@@ -54,7 +54,21 @@
 - **Aktion:** Datei `waechter/tests/test_web_search.py` mit dem Testskript erstellt.
 - **Aktion:** Testskript ausgeführt. Test fehlgeschlagen, da Backend-Server nicht erreichbar war. Warte auf Bestätigung des Benutzers, dass der Server läuft.
 
-### Aufgabe: Initialisiere ein neues, leeres Git-Repository im Projekt-Stammverzeichnis.
+### Aufgabe: Erstelle die leere Goldstandard-Verzeichnisstruktur.
 
-- **Aktion:** Überprüft, ob das `.git`-Verzeichnis existiert. Es wurde nicht gefunden.
-- **Aktion:** `git init` ausgeführt, um das Repository zu initialisieren.
+- **Aktion:** Hauptverzeichnis `backend` mit `mkdir` erstellt.
+- **Aktion:** Hauptverzeichnis `janus` mit `mkdir` erstellt.
+- **Aktion:** Hauptverzeichnis `waechter` mit `mkdir` erstellt.
+- **Aktion:** Unterverzeichnis `backend\agents` mit `mkdir` erstellt.
+- **Aktion:** Unterverzeichnis `janus\src` mit `mkdir` erstellt.
+- **Aktion:** Unterverzeichnis `waechter\tests` mit `mkdir` erstellt.
+
+### Aufgabe: Korrigiere den letzten Commit.
+
+- **Aktion:** `PHASE_1_FUNDAMENT.md` wurde als geändert, aber nicht gestaged identifiziert.
+- **Aktion:** `PHASE_1_FUNDAMENT.md` zum Staging-Bereich hinzugefügt.
+- **Aktion:** Der letzte Commit wurde geändert, um die gestagten Änderungen einzuschließen.
+
+### Aufgabe: Passe das health_check.py-Skript an.
+
+- **Aktion:** `health_check.py` mit dem neuen Code aktualisiert, um eine tiefere Validierung der Projektstruktur zu ermöglichen.

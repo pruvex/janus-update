@@ -2,11 +2,11 @@
 
 *Ziel: Am Ende dieser Phase haben wir ein leeres, aber startbares Anwendungs-Skelett. Ein Klick auf einen Knopf im Frontend sendet eine Anfrage an das Backend, und die Antwort wird im Frontend angezeigt. Das System ist stabil und versioniert.*
 
-- [ ] **[INFRASTRUKTUR] Git-Repository initialisieren:** Den `git init`-Befehl ausführen, um das Repository von Grund auf neu zu erstellen.
+- [x] **[INFRASTRUKTUR] Git-Repository initialisieren:** Den `git init`-Befehl ausführen, um das Repository von Grund auf neu zu erstellen.
 
-- [ ] **[INFRASTRUKTUR] .gitignore-Datei erstellen:** Eine saubere, umfassende `.gitignore`-Datei anlegen, die alle temporären Artefakte (wie `node_modules`, `venv`, `dist`, `target`) ignoriert.
+- [x] **[INFRASTRUKTUR] .gitignore-Datei erstellen:** Eine saubere, umfassende `.gitignore`-Datei anlegen, die alle temporären Artefakte (wie `node_modules`, `venv`, `dist`, `target`) ignoriert.
 
-- [ ] **[INFRASTRUKTUR] Projektstruktur anlegen:** Die leere Goldstandard-Struktur (`backend`, `janus`, `waechter` und deren Unterordner) erstellen.
+- [x] **[INFRASTRUKTUR] Projektstruktur anlegen:** Die leere Goldstandard-Struktur (`backend`, `janus`, `waechter` und deren Unterordner) erstellen.
 
 - [ ] **[INFRASTRUKTUR] Immunsystem anpassen (`health_check.py`):** Das existierende Skript anpassen, sodass es die vollständige, tiefe Goldstandard-Struktur (inkl. Unterordnern) überprüft.
 
