@@ -1,0 +1,54 @@
+{
+  "model": "gemini-1.5-flash",
+  "mcpServers": {
+    "filesystem": {
+      "command": "node",
+      "args": [
+        "C:/Users/pruve/AppData/Roaming/npm/node_modules/@modelcontextprotocol/server-filesystem/dist/index.js",
+        "C:/KI/Kiki"
+      ],
+      "cwd": "C:/KI/Kiki",
+      "trust": true
+    },
+    "memory": {
+      "command": "node",
+      "args": [
+        "C:/Users/pruve/AppData/Roaming/npm/node_modules/@modelcontextprotocol/server-memory/dist/index.js",
+        "C:/KI/Kiki/memory.json"
+      ],
+      "cwd": "C:/KI/Kiki",
+      "trust": true
+    },
+    "playwright": {
+      "command": "node",
+      "args": [
+        "C:/Users/pruve/AppData/Roaming/npm/node_modules/@executeautomation/playwright-mcp-server/dist/index.js"
+      ],
+      "cwd": "C:/KI/Kiki",
+      "trust": true
+    },
+    "fetch": {
+      "command": "python",
+      "args": [
+        "C:/KI/MCP_SOURCE/servers/src/fetch/src/mcp_server_fetch/__main__.py"
+      ],
+      "cwd": "C:/KI/Kiki",
+      "trust": true
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+      "cwd": "C:/KI/Kiki",
+      "trust": true
+    },
+    "knowledgebase": {
+      "command": "node",
+      "args": [
+        "C:/KI/MCP_SOURCE/servers/src/mcp-sqlite/mcp-sqlite-server.js",
+        "C:/KI/CascadeGehirn/KnowledgeBase/knowledgebase.db"
+      ],
+      "cwd": "C:/KI/Kiki",
+      "trust": true
+    }
+  }
+}
