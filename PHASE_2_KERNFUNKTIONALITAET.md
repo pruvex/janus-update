@@ -2,7 +2,7 @@
 
 *Ziel: Am Ende dieser Phase haben wir ein funktionierendes Chat-Fenster, das mit verschiedenen, vom Benutzer konfigurierten LLMs kommunizieren kann.*
 
-- [ ] **[JANUS] UI/UX-Grundgerüst:** Das statische HTML/CSS für das Dashboard, die einklappbare Sidebar und das (noch nicht funktionale) Einstellungs-Fenster umsetzen.
+- [x] **[JANUS] UI/UX-Grundgerüst:** Das statische HTML/CSS für das Dashboard, die einklappbare Sidebar und das (noch nicht funktionale) Einstellungs-Fenster umsetzen.
 
 - [ ] **[JANUS] Key-Management (Backend):** Die Logik zur sicheren, verschlüsselten Speicherung von API-Keys (z.B. in einer lokalen `config.json` oder einer `.db`-Datei) implementieren.
 
