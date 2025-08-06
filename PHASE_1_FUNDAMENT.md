@@ -10,7 +10,7 @@
 
 - [x] **[INFRASTRUKTUR] Immunsystem anpassen (`health_check.py`):** Das existierende Skript anpassen, sodass es die vollständige, tiefe Goldstandard-Struktur (inkl. Unterordnern) überprüft.
 
-- [ ] **[INFRASTRUKTUR] Frontend-Setup (Tauri & Vite):**
+- [x] **[INFRASTRUKTUR] Frontend-Setup (Tauri & Vite):**
     - Eine saubere `package.json` basierend auf der recherchierten Blaupause erstellen.
     - `npm install` ausführen, um eine `package-lock.json` zu erzeugen.
     - Eine saubere `tauri.conf.json` und `vite.config.ts` erstellen und konfigurieren.

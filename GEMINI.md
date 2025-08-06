@@ -31,8 +31,8 @@ Jedes Mal, wenn du vom Supervisor einen `AGENTIC HANDLUNGSPLAN` erhältst, musst
 *   Führe `python health_check.py` erneut aus.
 
 **Stufe 6: Archivierung & Lockfile-Garantie (KRITISCHE STUFE)**
-*   **6.1 Überprüfung der Lockfile:** Stelle vor dem Commit sicher, dass die Datei `package-lock.json` im `janus/`-Verzeichnis existiert. Überprüfe außerdem, dass die `.gitignore`-Datei diese Datei NICHT ignoriert. Dies ist die wichtigste Garantie für die Reproduzierbarkeit des Projekts. Wenn die Lockfile fehlt, brich ab und melde den Fehler.
-*   **6.2 Staging:** Führe `git add .` aus. Bestätige, dass `janus/package-lock.json` Teil des Staging-Bereichs ist.
+*   **6.1 Überprüfung der Lockfile:** Stelle vor dem Commit sicher, dass die Datei `package-lock.json` im `frontend/`-Verzeichnis existiert. Überprüfe außerdem, dass die `.gitignore`-Datei diese Datei NICHT ignoriert. Dies ist die wichtigste Garantie für die Reproduzierbarkeit des Projekts. Wenn die Lockfile fehlt, brich ab und melde den Fehler.
+*   **6.2 Staging:** Führe `git add .` aus. Bestätige, dass `frontend/package-lock.json` Teil des Staging-Bereichs ist.
 *   **6.3 Commit:** Erstelle einen Commit mit einer aussagekräftigen Nachricht.
 
 **Stufe 7: Dokumentation aktualisieren**
@@ -74,7 +74,7 @@ Ich bin darauf trainiert, `AGENTIC HANDLUNGSPLAN`s auch dann zu interpretieren, 
 C:\KI\Janus-Projekt\
 ├── .git\
 ├── backend\
-├── janus\
+├── frontend\
 └── waechter
 
 ## Allgemeine Best Practices

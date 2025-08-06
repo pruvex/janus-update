@@ -27,7 +27,7 @@ Der Plan:
     *   Führe `python health_check.py` erneut aus.
 
 6.  **Stufe 6: Archivierung & Lockfile-Garantie (KRITISCHE STUFE)**
-    *   [Überprüfe die Existenz und den Inhalt von `janus/package-lock.json` und `.gitignore` mit `read_file`.]
+    *   [Überprüfe die Existenz und den Inhalt von `frontend/package-lock.json` und `.gitignore` mit `read_file`.]
     *   Führe `git add .` aus.
     *   [Erstelle einen Commit mit einer aussagekräftigen Nachricht. Beispiel: `run_shell_command` mit `git commit -m "feat: Implementierung der neuen Funktion X"`.]
 

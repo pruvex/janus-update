@@ -1,9 +1,10 @@
 {
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
-    "frontendDist": "./dist"
+    "frontendDist": "../dist"
   },
   "package": {
     "productName": "janus",
@@ -12,11 +13,26 @@
   "tauri": {
     "bundle": {
       "active": true,
-      "identifier": "com.janus.app",
-      "icon": [],
-      "targets": "all"
+      "identifier": "com.janus.dev",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ]
     },
-    "security": { "csp": null },
-    "windows": [{ "title": "Janus", "width": 800, "height": 600 }]
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "title": "Janus",
+        "width": 800,
+        "height": 600,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ]
   }
 }

@@ -35,3 +35,19 @@
 **Schritt 7: Konfiguration der `tauri.conf.json`**
 - **WAS:** Die Datei `C:\KI\Janus-Projekt\janus\src-tauri\tauri.conf.json` wurde mit einer sauberen Version überschrieben, die den Autostart des Dev-Servers konfiguriert.
 - **WARUM:** Dies stellt sicher, dass Tauri korrekt mit dem Vite-Entwicklungsserver zusammenarbeitet und die Anwendung wie erwartet gestartet wird.
+
+### Systemanweisungen und Orchestrator-Template Anpassung
+
+**Ziel:** Aktualisiere die Systemanweisungen (GEMINI.md) und das Template für den Orchestrator (AGENT_HANDLUNGSPLAN_TEMPLATE.md), um die strategische Entscheidung für das Electron-Framework und die neue Roadmap widerzuspiegeln.
+
+**Phase 1: Selbstreflexion und Anpassung (GEMINI.md)**
+- **WAS:** Die Datei `C:\KI\Janus-Projekt\GEMINI.md` wurde aktualisiert.
+- **WARUM:** Die Referenz zur Ordnerstruktur wurde von `janus` zu `frontend` geändert und alle spezifischen Referenzen auf `Tauri` wurden entfernt, um die Umstellung auf Electron widerzuspiegeln.
+
+**Phase 2: Anpassung des Orchestrator-Templates (AGENT_HANDLUNGSPLAN_TEMPLATE.md)**
+- **WAS:** Die Datei `C:\KI\Janus-Projekt\AGENT_HANDLUNGSPLAN_TEMPLATE.md` wurde aktualisiert.
+- **WARUM:** Die Beispiel-Pfade wurden auf die neue `frontend`-Struktur angepasst und Electron-spezifische Befehle wurden als Beispiele hinzugefügt, um die Konsistenz mit dem neuen Framework zu gewährleisten.
+
+**Phase 3: Verifizierung**
+- **WAS:** Beide Dateien (`GEMINI.md` und `AGENT_HANDLUNGSPLAN_TEMPLATE.md`) wurden erneut gelesen und die korrekte Anwendung der Änderungen wurde bestätigt.
+- **WARUM:** Dies stellt sicher, dass die Anpassungen erfolgreich und fehlerfrei durchgeführt wurden.
