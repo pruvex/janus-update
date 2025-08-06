@@ -32,7 +32,7 @@ def check_node_dependencies():
 
     try:
         # npm audit kann auch bei Warnungen einen Fehlercode zurückgeben, daher check=False
-        result = subprocess.run(["npm", "audit"], cwd=frontend_dir, capture_output=True, text=True, check=False)
+        result = subprocess.run(["npm", "audit"], cwd=frontend_dir, capture_output=True, text=True, check=False, shell=True)
         if result.returncode != 0 and "found 0 vulnerabilities" not in result.stdout:
             errors.append(f"WARNUNG: 'npm audit' meldete Probleme:\n{result.stdout}\n{result.stderr}")
     except FileNotFoundError:
