@@ -1,14 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Janus Frontend</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Janus</title>
+  <link rel="stylesheet" href="src/styles.css" />
 </head>
 <body>
-    <h1>Hello Janus!</h1>
-    <button id="callBackend">Backend aufrufen</button>
-    <p id="responseOutput"></p>
-    <script src="main.js"></script>
+  <div id="dashboard">
+    <div id="sidebar">
+      <h2>Janus</h2>
+      <nav>
+        <button id="settings-btn">Einstellungen</button>
+        <!-- Weitere Nav-Elemente hier -->
+      </nav>
+    </div>
+    <div id="main-content">
+      <div id="chat-window">
+        <div id="chat-header">Chat</div>
+        <div id="chat-messages"></div>
+        <div id="chat-input-container">
+          <input type="text" id="chat-input" placeholder="Nachricht an Janus senden...">
+          <button id="send-btn">Senden</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="src/main.js" type="module"></script>
 </body>
 </html>
