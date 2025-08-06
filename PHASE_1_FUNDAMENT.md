@@ -15,7 +15,7 @@
     - `npm install` ausführen, um eine `package-lock.json` zu erzeugen.
     - Eine saubere `tauri.conf.json` und `vite.config.ts` erstellen und konfigurieren.
 
-- [ ] **[INFRASTRUKTUR] Backend-Setup (Python & FastAPI):**
+- [x] **[INFRASTRUKTUR] Backend-Setup (Python & FastAPI):**
     - Die `venv` erstellen.
     - Eine `requirements.in`-Datei erstellen und daraus eine `requirements.txt` kompilieren.
     - Die Abhängigkeiten installieren.
