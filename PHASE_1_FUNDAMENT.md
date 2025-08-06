@@ -20,7 +20,7 @@
     - Eine `requirements.in`-Datei erstellen und daraus eine `requirements.txt` kompilieren.
     - Die Abhängigkeiten installieren.
 
-- [ ] **[JANUS] "Hello World"-API-Endpunkt:** Im Backend einen `/api/health`-Endpunkt erstellen.
+- [x] **[JANUS] "Hello World"-API-Endpunkt:** Im Backend einen `/api/health`-Endpunkt erstellen.
 
 - [ ] **[WÄCHTER] "Hello World"-Test:** Einen Wächter-Test schreiben, der den `/api/health`-Endpunkt aufruft.
 
