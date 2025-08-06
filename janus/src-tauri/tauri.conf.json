@@ -1,0 +1,22 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "./dist"
+  },
+  "package": {
+    "productName": "janus",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "bundle": {
+      "active": true,
+      "identifier": "com.janus.app",
+      "icon": [],
+      "targets": "all"
+    },
+    "security": { "csp": null },
+    "windows": [{ "title": "Janus", "width": 800, "height": 600 }]
+  }
+}

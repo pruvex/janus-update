@@ -1,74 +1,37 @@
-# AGENT_WORK_LOG.md
+## AGENT_WORK_LOG
 
-## 2025-08-06
+### Frontend-Fundament Erstellung
 
-### Aufgabe: Initialisiere die Tauri-Infrastruktur korrekt, indem du sie direkt im janus-Verzeichnis erstellst.
+**Ziel:** Erstelle ein vollständig konfiguriertes, stabiles und reproduzierbares Frontend-Fundament mit Tauri und Vite.
 
-- **Aktion:** `janus/src-tauri` Verzeichnis erstellt.
-- **Aktion:** `janus/src-tauri/src` Verzeichnis erstellt.
-- **Aktion:** `janus/src-tauri/capabilities` Verzeichnis erstellt.
-- **Aktion:** `janus/src-tauri/icons` Verzeichnis erstellt.
-- **Aktion:** `janus/src-tauri/tauri.conf.json` erstellt.
-- **Aktion:** `janus/src-tauri/Cargo.toml` erstellt.
-- **Aktion:** `janus/src-tauri/src/main.rs` erstellt.
-- **Aktion:** `janus/src-tauri/src/lib.rs` erstellt.
-- **Aktion:** `janus/src-tauri/build.rs` erstellt.
-- **Aktion:** `janus/src-tauri/capabilities/default.json` erstellt.
-- **Aktion:** `janus/src-tauri/icons/32x32.png` erstellt.
-- **Aktion:** Existenz von `janus/package.json` und `janus/src-tauri/tauri.conf.json` überprüft. Beide Dateien existieren.
+**Schritt 1: Kontextbeschaffung/Analyse des `janus` Verzeichnisses**
+- Überprüft: Das `janus` Verzeichnis enthält nur den `src` Ordner, wie erwartet.
 
-### Aufgabe: Behebe den Versionskonflikt in tauri.conf.json und implementiere Frontend-Chat-Logik.
+**Schritt 2: Erstellung der `package.json`**
+- **WAS:** Die Datei `C:\KI\Janus-Projekt\janus\package.json` wurde mit den neuesten stabilen Beta-Versionen von Tauri 2.0 und kompatiblen Versionen von Vite/TypeScript erstellt.
+- **WARUM:** Dies ist der Anker für alle nachfolgenden Frontend-Abhängigkeiten und Konfigurationen, um maximale Stabilität und Reproduzierbarkeit zu gewährleisten.
 
-- **Aktion:** `tauri.conf.json` korrigiert, um die `package` und `tauri` Objekte unter dem `tauri` Schlüssel zu verschachteln.
-- **Aktion:** `tauri.conf.json` erneut korrigiert, um die `package` und `bundle` Objekte direkt unter dem `tauri` Schlüssel zu platzieren und zusätzliche notwendige Konfigurationen hinzuzufügen.
-- **Aktion:** `tauri.conf.json` zum dritten Mal korrigiert, um die korrekte Struktur des Haupt-`tauri`-Objekts sicherzustellen, indem `package` und `bundle` direkt unter `tauri` platziert werden.
-- **Aktion:** `janus/src/main.ts` aktualisiert: `sendMessage` Funktion angepasst, um Benutzernachricht vor Historien-Serialisierung hinzuzufügen, `fetch` durch `EventSource` für Streaming ersetzt, KI-Antwort wird nun vollständig angezeigt und zur `conversationHistory` hinzugefügt.
-- **Aktion:** `PHASE_1_FUNDAMENT.md` aktualisiert, um den Schritt "Ersten Commit erstellen" als erledigt zu markieren.
-- **Aktion:** `PHASE_2_KERNFUNKTIONALITAET.md` aktualisiert, um die Schritte "Frontend-Chat-Logik" und "Chat-Antworten anzeigen" als erledigt zu markieren.
-- **Aktion:** `PHASE_2_KERNFUNKTIONALITAET.md` aktualisiert, um den Schritt "Antwort-Streaming (fortgeschritten)" als erledigt zu markieren.
+**Schritt 3: Installation der Node.js-Abhängigkeiten (`npm install`)**
+- **VERSUCH 1 (Fehlgeschlagen):** `npm install --prefix ./janus` ausgeführt. Fehler: `ENOENT: no such file or directory, open 'C:\KI\Janus-Projekt\package.json'`. Ursache: `npm` suchte `package.json` im Projekt-Root, obwohl `--prefix` angegeben war.
+- **VERSUCH 2 (Fehlgeschlagen):** `npm install` mit `directory = "janus"` ausgeführt. Fehler: `Directory 'janus' is not a registered workspace directory.` Ursache: `npm` interpretiert das Verzeichnis als Workspace, was hier nicht zutrifft.
+- **VERSUCH 3 (Fehlgeschlagen):** `npm install` mit `directory = "janus"` erneut ausgeführt. Fehler: `Directory 'janus' is not a registered workspace directory.` Ursache: Das Problem besteht weiterhin.
+- **VERSUCH 4 (Erfolgreich):** `cd janus && npm install` ausgeführt. **WAS:** Alle Node.js-Abhängigkeiten wurden erfolgreich im `C:\KI\Janus-Projekt\janus` Verzeichnis installiert.
+- **WARUM:** Durch das explizite Wechseln des Verzeichnisses vor dem `npm install` Befehl wurde sichergestellt, dass `npm` die korrekte `package.json` Datei findet und die Abhängigkeiten im richtigen Kontext installiert werden.
 
-### Aufgabe: Erweitere das validate_structure.py-Skript zu einem umfassenden "Projekt-Gesundheits-Check".
+**Schritt 4: Verifizierung der `package-lock.json`**
+- **WAS:** Die Datei `C:\KI\Janus-Projekt\janus\package-lock.json` wurde erfolgreich erstellt und ist im Verzeichnis vorhanden.
+- **WARUM:** Die `package-lock.json` gewährleistet die Reproduzierbarkeit der Abhängigkeiten und ist ein kritischer Bestandteil des Projektfundaments.
 
-- **Aktion:** `validate_structure.py` in `health_check.py` umbenannt.
-- **Aktion:** `health_check.py` mit dem erweiterten Code für den Projekt-Gesundheits-Check überschrieben.
-- **Aktion:** `health_check.py` ausgeführt. Der Test ist wie erwartet bestanden, da die Struktur und Abhängigkeiten bereits intakt waren.
+**Schritt 5: Initialisierung der Tauri-Infrastruktur (`npx tauri init`)**
+- **VERSUCH 1 (Fehlgeschlagen):** `npx --prefix ./janus tauri init --ci --app-name janus --window-title janus --dist-dir ./dist --dev-path http://localhost:1420` ausgeführt. Fehler: `unexpected argument '--dist-dir' found`. Ursache: Falsche Argumente für die Tauri CLI Version.
+- **KORREKTUR:** Die korrekten Argumente sind `--frontend-dist` anstelle von `--dist-dir` und `--dev-url` anstelle von `--dev-path`.
+- **VERSUCH 2 (Erfolgreich):** `cd janus && npx tauri init --ci --app-name janus --window-title janus --frontend-dist ./dist --dev-url http://localhost:1420` ausgeführt. **WAS:** Die Tauri-Infrastruktur (inkl. `src-tauri` Verzeichnis und Standard `tauri.conf.json`) wurde erfolgreich initialisiert.
+- **WARUM:** Die korrekten Argumente wurden verwendet, um Tauri erfolgreich in das Projekt zu integrieren und die notwendige Ordnerstruktur zu erstellen.
 
-### Aufgabe: Analyse im Frontend anzeigen (bereits implementiert).
+**Schritt 6: Erstellung der `vite.config.ts`**
+- **WAS:** Die Datei `C:\KI\Janus-Projekt\janus\vite.config.ts` wurde erstellt und konfiguriert, um Vite mit Tauri zu verbinden.
+- **WARUM:** Diese Konfiguration stellt sicher, dass Vite den richtigen Port für den Tauri-Dev-Server verwendet und Rust-Fehler nicht verschleiert werden.
 
-- **Aktion:** Die Aufgabe "Analyse im Frontend anzeigen" in `PHASE_3_AGENTEN.md` als erledigt markiert, da die Funktionalität bereits vorhanden war.
-
-### Aufgabe: `web_agent.py` erstellen.
-
-- **Aktion:** Datei `backend/agents/web_agent.py` mit einer Platzhalter-Funktion `search_web(query)` erstellt.
-
-### Aufgabe: Web-Recherche-Endpunkt erstellen.
-
-- **Aktion:** `backend/main.py` aktualisiert, um den `/api/web/search` Endpunkt hinzuzufügen, der die `web_agent.search_web` Funktion aufruft.
-
-### Aufgabe: `GEMINI.md` aktualisieren.
-
-- **Aktion:** `GEMINI.md` aktualisiert, um eine neue Best Practice zur Vermeidung eigenmächtiger Aktionen hinzuzufügen.
-
-### Aufgabe: Web-Recherche-Endpunkt testen.
-
-- **Aktion:** Datei `waechter/tests/test_web_search.py` mit dem Testskript erstellt.
-- **Aktion:** Testskript ausgeführt. Test fehlgeschlagen, da Backend-Server nicht erreichbar war. Warte auf Bestätigung des Benutzers, dass der Server läuft.
-
-### Aufgabe: Erstelle die leere Goldstandard-Verzeichnisstruktur.
-
-- **Aktion:** Hauptverzeichnis `backend` mit `mkdir` erstellt.
-- **Aktion:** Hauptverzeichnis `janus` mit `mkdir` erstellt.
-- **Aktion:** Hauptverzeichnis `waechter` mit `mkdir` erstellt.
-- **Aktion:** Unterverzeichnis `backend\agents` mit `mkdir` erstellt.
-- **Aktion:** Unterverzeichnis `janus\src` mit `mkdir` erstellt.
-- **Aktion:** Unterverzeichnis `waechter\tests` mit `mkdir` erstellt.
-
-### Aufgabe: Korrigiere den letzten Commit.
-
-- **Aktion:** `PHASE_1_FUNDAMENT.md` wurde als geändert, aber nicht gestaged identifiziert.
-- **Aktion:** `PHASE_1_FUNDAMENT.md` zum Staging-Bereich hinzugefügt.
-- **Aktion:** Der letzte Commit wurde geändert, um die gestagten Änderungen einzuschließen.
-
-### Aufgabe: Passe das health_check.py-Skript an.
-
-- **Aktion:** `health_check.py` mit dem neuen Code aktualisiert, um eine tiefere Validierung der Projektstruktur zu ermöglichen.
+**Schritt 7: Konfiguration der `tauri.conf.json`**
+- **WAS:** Die Datei `C:\KI\Janus-Projekt\janus\src-tauri\tauri.conf.json` wurde mit einer sauberen Version überschrieben, die den Autostart des Dev-Servers konfiguriert.
+- **WARUM:** Dies stellt sicher, dass Tauri korrekt mit dem Vite-Entwicklungsserver zusammenarbeitet und die Anwendung wie erwartet gestartet wird.

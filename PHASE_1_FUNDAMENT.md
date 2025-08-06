@@ -8,7 +8,7 @@
 
 - [x] **[INFRASTRUKTUR] Projektstruktur anlegen:** Die leere Goldstandard-Struktur (`backend`, `janus`, `waechter` und deren Unterordner) erstellen.
 
-- [ ] **[INFRASTRUKTUR] Immunsystem anpassen (`health_check.py`):** Das existierende Skript anpassen, sodass es die vollständige, tiefe Goldstandard-Struktur (inkl. Unterordnern) überprüft.
+- [x] **[INFRASTRUKTUR] Immunsystem anpassen (`health_check.py`):** Das existierende Skript anpassen, sodass es die vollständige, tiefe Goldstandard-Struktur (inkl. Unterordnern) überprüft.
 
 - [ ] **[INFRASTRUKTUR] Frontend-Setup (Tauri & Vite):**
     - Eine saubere `package.json` basierend auf der recherchierten Blaupause erstellen.
