@@ -26,6 +26,6 @@
 
 - [x] **[JANUS] "Hello World"-UI:** Im Frontend eine simple `index.html` mit einem Knopf und einem Ausgabebereich erstellen.
 
-- [ ] **[JANUS] Frontend mit Backend verbinden:** Ein Klick auf den Knopf ruft den `/api/health`-Endpunkt auf und zeigt die Antwort an.
+- [x] **[JANUS] Frontend mit Backend verbinden:** Ein Klick auf den Knopf ruft den `/api/health`-Endpunkt auf und zeigt die Antwort an.
 
-- [ ] **[GIT] Stabilitäts-Commit:** Den funktionierenden "Hello World"-Zustand als ersten, goldenen Commit festhalten.
+- [x] **[GIT] Stabilitäts-Commit:** Den funktionierenden "Hello World"-Zustand als ersten, goldenen Commit festhalten.
