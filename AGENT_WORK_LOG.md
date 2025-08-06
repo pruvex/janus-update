@@ -60,7 +60,7 @@
 
 **Ziel:** Backend-Setup mit Python und FastAPI.
 
-**Schritt 1: Validierung des Ausgangszustands**
+**Schritt 1: Validierung des Ausgangs-Zustands**
 - **WAS:** Das `backend`-Verzeichnis wurde erstellt.
 - **WARUM:** Dies ist der erste Schritt, um die Backend-Infrastruktur aufzubauen.
 
@@ -79,3 +79,35 @@
 - **WAS:** Die fehlenden Verzeichnisse `frontend`, `waechter`, `backend/agents`, `frontend/src` und `waechter/tests` wurden erstellt.
 - **WAS:** Der grundlegende FastAPI-Server-Code wurde in die `backend/main.py`-Datei geschrieben.
 - **WARUM:** Diese Schritte etablieren die grundlegende Python-Backend-Umgebung mit den notwendigen Abhängigkeiten, stellen die vollständige Goldstandard-Projektstruktur wieder her und implementieren den initialen FastAPI-Endpunkt.
+
+### "Hello World"-API-Endpunkt Implementierung und Verifizierung
+
+**Ziel:** Erstelle einen einfachen `/api/health` "Hello World"-Endpunkt in der `backend/main.py`-Datei, um die grundlegende Funktionalität des FastAPI-Servers zu etablieren.
+
+**Schritt 1: Validierung des Ausgangszustands**
+- **WAS:** Der initiale Health Check wurde erfolgreich ausgeführt.
+- **WARUM:** Bestätigung der Integrität der Projektstruktur und der Backend-Abhängigkeiten.
+
+**Schritt 3: Implementierung & Arbeits-Logbuch**
+- **WAS:** Die `backend/main.py`-Datei wurde mit dem FastAPI "Hello World"-Endpunkt überschrieben.
+- **WARUM:** Etablierung der grundlegenden Funktionalität des FastAPI-Servers.
+
+**Schritt 4: Dynamische Verifizierung (Funktionstest)**
+- **WAS:** Ein temporäres Python-Skript wurde erstellt und ausgeführt, das eine GET-Anfrage an den `/api/health`-Endpunkt sendet und die Antwort überprüft. Der Test war erfolgreich.
+- **WARUM:** Verifizierung, dass der Endpunkt korrekt funktioniert und die erwartete Antwort liefert.
+
+**Schritt 5: Aufräumen & Finale Validierung**
+- **WAS:** Das temporäre Test-Skript wurde gelöscht und der finale Health Check wurde erfolgreich ausgeführt.
+- **WARUM:** Bereinigung der Testartefakte und erneute Bestätigung der Projektintegrität.
+
+### "Hello World"-UI Erstellung
+
+**Ziel:** Erstelle eine einfache `index.html` im Frontend mit einem Knopf und einem Ausgabebereich.
+
+**Schritt 1: Validierung des Ausgangszustands**
+- **WAS:** Der initiale Health Check wurde erfolgreich ausgeführt und das `frontend`-Verzeichnis wurde überprüft.
+- **WARUM:** Bestätigung der Projektstruktur vor der Implementierung.
+
+**Schritt 3: Implementierung & Arbeits-Logbuch**
+- **WAS:** Die Datei `C:\KI\Janus-Projekt\frontend\index.html` wurde mit dem grundlegenden HTML-Code für die "Hello World"-UI erstellt.
+- **WARUM:** Bereitstellung der visuellen Oberfläche für die Interaktion mit dem Backend.

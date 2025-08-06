@@ -22,7 +22,7 @@
 
 - [x] **[JANUS] "Hello World"-API-Endpunkt:** Im Backend einen `/api/health`-Endpunkt erstellen.
 
-- [ ] **[WÄCHTER] "Hello World"-Test:** Einen Wächter-Test schreiben, der den `/api/health`-Endpunkt aufruft.
+- [x] **[WÄCHTER] "Hello World"-Test:** Einen Wächter-Test schreiben, der den `/api/health`-Endpunkt aufruft.
 
 - [ ] **[JANUS] "Hello World"-UI:** Im Frontend eine simple `index.html` mit einem Knopf und einem Ausgabebereich erstellen.
 
