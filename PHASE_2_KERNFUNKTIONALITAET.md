@@ -12,7 +12,7 @@
 
 - [x] **[JANUS] Chat-API-Endpunkt:** Den `/api/chat`-Endpunkt erstellen, der eine Nachricht und einen Provider entgegennimmt und den LLM-Gateway aufruft.
 
-- [ ] **[WÄCHTER] Chat-Endpunkt testen:** Einen Wächter-Test für den Chat-Endpunkt schreiben (ohne echte API-Calls, nur mit Mocks, um Kosten zu vermeiden).
+- [x] **[WÄCHTER] Chat-Endpunkt testen:** Einen Wächter-Test für den Chat-Endpunkt schreiben (ohne echte API-Calls, nur mit Mocks, um Kosten zu vermeiden).
 
 - [ ] **[JANUS] Chat-UI-Logik (Frontend):** Die Logik implementieren, um Nachrichten aus einem Input-Feld zu senden, den Provider aus einem Dropdown auszuwählen und die gestreamte Antwort im Chatfenster anzuzeigen.
 

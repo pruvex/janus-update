@@ -21,8 +21,14 @@
         <div id="chat-header">Chat</div>
         <div id="chat-messages"></div>
         <div id="chat-input-container">
-          <input type="text" id="chat-input" placeholder="Nachricht an Janus senden...">
-          <button id="send-btn">Senden</button>
+          <form id="chat-form">
+            <input type="text" id="chat-input" placeholder="Nachricht an Janus senden...">
+            <select id="provider-select">
+              <option value="openai">OpenAI</option>
+              <option value="gemini">Gemini</option>
+            </select>
+            <button id="send-button" type="submit">Senden</button>
+          </form>
         </div>
       </div>
     </div>
@@ -42,5 +48,6 @@
   </div>
   <script src="src/main.js" type="module"></script>
   <script src="js/settings.js"></script>
+  <script src="js/chat.js"></script>
 </body>
 </html>

@@ -1,12 +1,12 @@
-
-
-**Zyklus: Erweiterung der Wächter-Tests für den Chat-Endpunkt**
+**Zyklus: Implementierung der Chat-UI-Logik**
 
 *   **Stufe 1: Validierung**
     *   `python health_check.py` erfolgreich ausgeführt.
-    *   Existenz von `waechter/test_chat_endpoint.py` validiert.
+    *   Existenz von `frontend/index.html` validiert.
 *   **Stufe 2: Planung & Recherche**
-    *   Analyse von `waechter/test_chat_endpoint.py`.
-    *   Planung des neuen Testfalls `test_chat_endpoint_with_invalid_payload`.
+    *   Analyse von `frontend/index.html`.
+    *   Planung der `sendMessage`-Funktion in `frontend/js/chat.js`.
 *   **Stufe 3: Implementierung**
-    *   `waechter/test_chat_endpoint.py` um den neuen Testfall für ungültige Payloads erweitert.
+    *   **HTML:** `frontend/index.html` um das Chat-Formular und Provider-Dropdown erweitert.
+    *   **JS:** `frontend/js/chat.js` mit der Logik zum Senden und Empfangen von Nachrichten erstellt.
+    *   Das neue Skript in `frontend/index.html` eingebunden.
