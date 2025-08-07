@@ -1,25 +1,5 @@
-### PHASE 2: Der Chat-Kern & Multi-Provider-Fähigkeit
-(Unverändert in den Zielen, nur die technische Umsetzung ändert sich leicht)
 
-### PHASE 3: Der Filesystem-Agent & Visuelle Interaktion
-(Unverändert in den Zielen, nur die technische Umsetzung ändert sich leicht)
-
-*Ziel: Am Ende dieser Phase haben wir ein funktionierendes Chat-Fenster, das mit verschiedenen, vom Benutzer konfigurierten LLMs kommunizieren kann.*
-
-- [x] **[JANUS] UI/UX-Grundgerüst:** Das statische HTML/CSS für das Dashboard, die einklappbare Sidebar und das (noch nicht funktionale) Einstellungs-Fenster umsetzen.
-
-- [x] **[JANUS] Key-Management (Backend):** Die Logik zur sicheren, verschlüsselten Speicherung von API-Keys (z.B. in einer lokalen `config.json` oder einer `.db`-Datei) implementieren.
-
-- [x] **[JANUS] Einstellungs-UI (Frontend):** Das UI zum Hinzufügen, Anzeigen (maskiert) und Löschen von API-Keys im Einstellungs-Fenster erstellen.
-
-- [x] **[JANUS] LLM-Gateway (Backend):** Das Kernmodul erstellen, das basierend auf einem Provider-Namen den korrekten API-Key lädt und eine Anfrage an die entsprechende LLM-API sendet.
-
-- [x] **[JANUS] Chat-API-Endpunkt:** Den `/api/chat`-Endpunkt erstellen, der eine Nachricht und einen Provider entgegennimmt und den LLM-Gateway aufruft.
-
-- [x] **[WÄCHTER] Chat-Endpunkt testen:** Einen Wächter-Test für den Chat-Endpunkt schreiben (ohne echte API-Calls, nur mit Mocks, um Kosten zu vermeiden).
-
-- [x] **[JANUS] Chat-UI-Logik (Frontend):** Die Logik implementieren, um Nachrichten aus einem Input-Feld zu senden, den Provider aus einem Dropdown auszuwählen und die gestreamte Antwort im Chatfenster anzuzeigen.
-
-- [x] **[JANUS] Chat-UI-Logik (Frontend):** Die Logik implementieren, um Nachrichten aus einem Input-Feld zu senden, den Provider aus einem Dropdown auszuwählen und die gestreamte Antwort im Chatfenster anzuzeigen.
-
-- [x] **[GIT] Meilenstein-Commit:** Den funktionierenden Chat-Kern committen.
+- [ ] [JANUS] Erweiterte Einstellungs-UI: Bei Key-Eingabe eine Liste der Provider-Modelle mit Preisen anzeigen und eine Auswahl für die Sidebar ermöglichen.
+- [ ] [JANUS] Kosten-Tracking (Backend): Token-Nutzung aus API-Antworten extrahieren, Kosten berechnen und persistent speichern.
+- [ ] [JANUS] Dynamische Modell-Auswahl (Sidebar): Provider- und Modell-Dropdown in der Sidebar implementieren.
+- [ ] [JANUS] Kosten-Visualisierung (UI): Kosten-Widget in der Sidebar und eine detaillierte Kosten-Ansicht erstellen.
