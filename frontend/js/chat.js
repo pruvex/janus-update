@@ -17,13 +17,18 @@ chatForm.addEventListener('submit', async (e) => {
     appendMessage('bot', '...'); // Ladeanzeige
 
     try {
-        const response = await fetch('/api/chat', {
+        const response = await fetch(`${API_BASE_URL}/api/chat`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ prompt, provider }),
         });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Unknown error');
+        }
 
         const data = await response.json();
         const botMessage = data.choices[0].message.content;
@@ -36,7 +41,7 @@ chatForm.addEventListener('submit', async (e) => {
         console.error('Error:', error);
         // Entferne Ladeanzeige
         chatMessages.removeChild(chatMessages.lastChild);
-        appendMessage('bot', 'Ein Fehler ist aufgetreten.');
+        appendMessage('bot', `Ein Fehler ist aufgetreten: ${error.message}`);
     }
 });
 

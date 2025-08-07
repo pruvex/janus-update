@@ -1,4 +1,8 @@
-# PHASE 2: Der Chat-Kern & Multi-Provider-Fähigkeit
+### PHASE 2: Der Chat-Kern & Multi-Provider-Fähigkeit
+(Unverändert in den Zielen, nur die technische Umsetzung ändert sich leicht)
+
+### PHASE 3: Der Filesystem-Agent & Visuelle Interaktion
+(Unverändert in den Zielen, nur die technische Umsetzung ändert sich leicht)
 
 *Ziel: Am Ende dieser Phase haben wir ein funktionierendes Chat-Fenster, das mit verschiedenen, vom Benutzer konfigurierten LLMs kommunizieren kann.*
 
@@ -16,4 +20,6 @@
 
 - [x] **[JANUS] Chat-UI-Logik (Frontend):** Die Logik implementieren, um Nachrichten aus einem Input-Feld zu senden, den Provider aus einem Dropdown auszuwählen und die gestreamte Antwort im Chatfenster anzuzeigen.
 
-- [ ] **[GIT] Meilenstein-Commit:** Den funktionierenden Chat-Kern committen.
+- [x] **[JANUS] Chat-UI-Logik (Frontend):** Die Logik implementieren, um Nachrichten aus einem Input-Feld zu senden, den Provider aus einem Dropdown auszuwählen und die gestreamte Antwort im Chatfenster anzuzeigen.
+
+- [x] **[GIT] Meilenstein-Commit:** Den funktionierenden Chat-Kern committen.

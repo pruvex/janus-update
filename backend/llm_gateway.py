@@ -5,13 +5,13 @@ def call_llm(provider: str, prompt: str, api_key: str):
     """
     Ruft eine LLM-API mit dem gegebenen Provider, Prompt und API-Key auf.
     """
-    url = f"https://api.mockllm.dev/v1/chat/completions"
+    url = f"https://api.openai.com/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
     data = {
-        "model": provider,
+        "model": "gpt-3.5-turbo",
         "messages": [
             {
                 "role": "user",

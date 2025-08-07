@@ -28,7 +28,7 @@ apiKeyForm.addEventListener('submit', async (e) => {
     const api_key = apiKeyInput.value;
 
     try {
-        await fetch('/api/keys', {
+        await fetch(`${API_BASE_URL}/api/keys`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -46,7 +46,13 @@ apiKeyForm.addEventListener('submit', async (e) => {
 async function loadApiKeys() {
     apiKeyList.innerHTML = ''; // Bestehende Liste leeren
     try {
-        const response = await fetch('/api/keys');
+        const response = await fetch(`${API_BASE_URL}/api/keys`);
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Unknown error');
+        }
+
         const data = await response.json();
         for (const provider in data.api_keys) {
             const listItem = document.createElement('li');
@@ -55,6 +61,6 @@ async function loadApiKeys() {
         }
     } catch (error) {
         console.error('Error loading API keys:', error);
-        alert('Fehler beim Laden der API-Keys.');
+        alert(`Fehler beim Laden der API-Keys: ${error.message}`);
     }
 }

@@ -9,6 +9,7 @@ function createWindow () {
 
   // Lade die index.html in das FENSTER (den Renderer Process).
   mainWindow.loadFile('index.html');
+  mainWindow.webContents.openDevTools();
 }
 
 app.whenReady().then(createWindow);
