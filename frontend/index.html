@@ -38,7 +38,10 @@
       <span class="close">&times;</span>
       <h2>Einstellungen</h2>
       <form id="api-key-form">
-        <input type="text" id="provider-input" placeholder="Anbieter (z.B. OpenAI)">
+                <select id="provider-input">
+          <option value="openai">OpenAI</option>
+          <option value="gemini">Gemini</option>
+        </select>
         <input type="password" id="api-key-input" placeholder="API Key">
         <button type="submit">Speichern</button>
       </form>
