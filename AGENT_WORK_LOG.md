@@ -1,12 +1,12 @@
-**Zyklus: Implementierung der Benutzeroberfläche (Frontend) für die Verwaltung von API-Keys**
+
+
+**Zyklus: Implementierung des LLM-Gateway**
 
 *   **Stufe 1: Validierung**
     *   `python health_check.py` erfolgreich ausgeführt.
-    *   Existenz von `frontend/index.html` validiert.
+    *   Existenz von `backend/config.json` validiert.
 *   **Stufe 2: Planung & Recherche**
-    *   `frontend/index.html` analysiert.
-    *   Design-Entscheidung: Modal über dem Hauptinhalt, ausgelöst durch einen Button in der Sidebar.
+    *   Entscheidung für die `requests`-Bibliothek für HTTP-Anfragen.
 *   **Stufe 3: Implementierung**
-    *   **HTML:** `frontend/index.html` um das Modal-Grundgerüst erweitert.
-    *   **CSS:** `frontend/css/settings.css` für das Modal-Styling erstellt.
-    *   **JS:** `frontend/js/settings.js` für die Modal-Logik und Mock-Anzeige von API-Keys erstellt.
+    *   `requests` zu `backend/requirements.txt` hinzugefügt und installiert.
+    *   `backend/llm_gateway.py` mit der Funktion `call_llm` erstellt.

@@ -6,7 +6,7 @@
 
 - [x] **[JANUS] Key-Management (Backend):** Die Logik zur sicheren, verschlüsselten Speicherung von API-Keys (z.B. in einer lokalen `config.json` oder einer `.db`-Datei) implementieren.
 
-- [ ] **[JANUS] Einstellungs-UI (Frontend):** Das UI zum Hinzufügen, Anzeigen (maskiert) und Löschen von API-Keys im Einstellungs-Fenster erstellen.
+- [x] **[JANUS] Einstellungs-UI (Frontend):** Das UI zum Hinzufügen, Anzeigen (maskiert) und Löschen von API-Keys im Einstellungs-Fenster erstellen.
 
 - [ ] **[JANUS] LLM-Gateway (Backend):** Das Kernmodul erstellen, das basierend auf einem Provider-Namen den korrekten API-Key lädt und eine Anfrage an die entsprechende LLM-API sendet.
 
