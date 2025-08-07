@@ -39,9 +39,14 @@ def check_node_dependencies():
         errors.append("FEHLER: 'npm' Befehl nicht gefunden. Ist Node.js installiert und im PATH?")
     return errors
 
+def find_misplaced_config_files():
+    misplaced_files = []
+    for root, dirs, files in os.walk("."):
+        if "config.json" in files and os.path.join(root, "config.json") != os.path.join("backend", "config.json"):
+            misplaced_files.append(os.path.join(root, "config.json"))
+    return misplaced_files
+
 def validate_deep():
-
-
     print("Starte 'Deep Validation' der Projektstruktur...")
     errors = []
 
@@ -84,6 +89,11 @@ def validate_deep():
     errors.extend(check_python_dependencies())
     errors.extend(check_node_dependencies())
 
+    # 6. Überprüfung auf falsch platzierte config.json Dateien
+    misplaced_configs = find_misplaced_config_files()
+    for f in misplaced_configs:
+        errors.append(f"WARNUNG: Falsch platzierte config.json gefunden: '{f}'. Sie sollte sich nur unter 'backend/config.json' befinden.")
+
     if not errors:
         print("VALIDATION PASSED: Die Projektstruktur und Abhängigkeiten sind in Ordnung.")
         sys.exit(0)
@@ -92,6 +102,3 @@ def validate_deep():
         for error in errors:
             print(f"- {error}")
         sys.exit(1)
-
-if __name__ == "__main__":
-    validate_deep()

@@ -15,7 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-CONFIG_FILE = "backend/config.json"
+CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
 
 class ChatRequest(BaseModel):
     prompt: str
@@ -26,22 +26,28 @@ class ApiKey(BaseModel):
     api_key: str
 
 def load_config():
+    if not os.path.exists(CONFIG_FILE):
+        return {"api_keys": {}} # Leere Konfiguration, wenn Datei nicht existiert
     try:
         with open(CONFIG_FILE, "r") as f:
             return json.load(f)
-    except FileNotFoundError:
-        return {"api_keys": {}} # Leere Konfiguration, wenn Datei nicht existiert
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        print(f"Error decoding config.json: {e}")
         return {"api_keys": {}} # Leere Konfiguration, wenn JSON ungültig ist
+    except Exception as e:
+        print(f"Unexpected error loading config: {e}")
+        raise # Re-raise other exceptions
 
 def save_config(config):
     try:
         # Sicherstellen, dass das Verzeichnis existiert
         os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
+        # Sicherstellen, dass 'api_keys' ein Dictionary ist
+        if "api_keys" not in config or not isinstance(config["api_keys"], dict):
+            config["api_keys"] = {}
         with open(CONFIG_FILE, "w") as f:
             json.dump(config, f, indent=2)
     except Exception as e:
-        # Hier könnte man ein Logging hinzufügen
         print(f"Error saving config: {e}")
         raise
 
