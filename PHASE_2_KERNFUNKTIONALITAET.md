@@ -4,7 +4,7 @@
 
 - [x] **[JANUS] UI/UX-Grundgerüst:** Das statische HTML/CSS für das Dashboard, die einklappbare Sidebar und das (noch nicht funktionale) Einstellungs-Fenster umsetzen.
 
-- [ ] **[JANUS] Key-Management (Backend):** Die Logik zur sicheren, verschlüsselten Speicherung von API-Keys (z.B. in einer lokalen `config.json` oder einer `.db`-Datei) implementieren.
+- [x] **[JANUS] Key-Management (Backend):** Die Logik zur sicheren, verschlüsselten Speicherung von API-Keys (z.B. in einer lokalen `config.json` oder einer `.db`-Datei) implementieren.
 
 - [ ] **[JANUS] Einstellungs-UI (Frontend):** Das UI zum Hinzufügen, Anzeigen (maskiert) und Löschen von API-Keys im Einstellungs-Fenster erstellen.
 
