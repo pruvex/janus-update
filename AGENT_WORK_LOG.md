@@ -1,12 +1,10 @@
-
-
-**Zyklus: Implementierung des LLM-Gateway**
+**Zyklus: Implementierung des Chat-API-Endpunkts**
 
 *   **Stufe 1: Validierung**
     *   `python health_check.py` erfolgreich ausgeführt.
-    *   Existenz von `backend/config.json` validiert.
+    *   Existenz von `backend/main.py` und `backend/llm_gateway.py` validiert.
 *   **Stufe 2: Planung & Recherche**
-    *   Entscheidung für die `requests`-Bibliothek für HTTP-Anfragen.
+    *   Analyse von `backend/main.py` zur Definition von FastAPI-Routen.
+    *   Planung des `ChatRequest` Pydantic-Modells.
 *   **Stufe 3: Implementierung**
-    *   `requests` zu `backend/requirements.txt` hinzugefügt und installiert.
-    *   `backend/llm_gateway.py` mit der Funktion `call_llm` erstellt.
+    *   `backend/main.py` um den `/api/chat`-Endpunkt und das `ChatRequest`-Modell erweitert.

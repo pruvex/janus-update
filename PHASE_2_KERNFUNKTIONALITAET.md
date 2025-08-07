@@ -8,7 +8,7 @@
 
 - [x] **[JANUS] Einstellungs-UI (Frontend):** Das UI zum Hinzufügen, Anzeigen (maskiert) und Löschen von API-Keys im Einstellungs-Fenster erstellen.
 
-- [ ] **[JANUS] LLM-Gateway (Backend):** Das Kernmodul erstellen, das basierend auf einem Provider-Namen den korrekten API-Key lädt und eine Anfrage an die entsprechende LLM-API sendet.
+- [x] **[JANUS] LLM-Gateway (Backend):** Das Kernmodul erstellen, das basierend auf einem Provider-Namen den korrekten API-Key lädt und eine Anfrage an die entsprechende LLM-API sendet.
 
 - [ ] **[JANUS] Chat-API-Endpunkt:** Den `/api/chat`-Endpunkt erstellen, der eine Nachricht und einen Provider entgegennimmt und den LLM-Gateway aufruft.
 
