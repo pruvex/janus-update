@@ -65,6 +65,8 @@ Roadmap-Erstellung: Basierend auf dieser Blaupause werde ich einen neuen, sauber
 *   **Backend:** Python mit FastAPI, wird als eigenständiger Serverprozess ausgeführt und über lokale HTTP-Anfragen vom Electron-Frontend angesprochen.
 *   **Versionskontrolle:** Git, mit einer strikten "Lockfile & Commit"-Doktrin zur Sicherung der Stabilität.
 *   **Pfad-Stabilität:** Der latente Pfad-Bug in backend/main.py wurde behoben, um die korrekte Handhabung von Konfigurationsdateien sicherzustellen.
+*   **Sicheres Key-Management:** Umstellung auf die `keyring`-Bibliothek zur sicheren Speicherung von API-Schlüsseln im System-Schlüsselbund.
+*   **Stabilitäts-Meilenstein:** Ein stabiler Meilenstein wurde nach der Behebung des Pfad-Bugs und der Implementierung des sicheren Key-Managements gesetzt.
 
 
 ## 5. Roadmap (Überarbeitet für Electron)

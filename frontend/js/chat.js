@@ -38,7 +38,6 @@ chatForm.addEventListener('submit', async (e) => {
         appendMessage('bot', botMessage);
 
     } catch (error) {
-        console.error('Error:', error);
         // Entferne Ladeanzeige
         chatMessages.removeChild(chatMessages.lastChild);
         appendMessage('bot', `Ein Fehler ist aufgetreten: ${error.message}`);

@@ -32,11 +32,9 @@ def load_config():
     try:
         with open(CONFIG_FILE, "r") as f:
             return json.load(f)
-    except json.JSONDecodeError as e:
-        print(f"Error decoding config.json: {e}")
+    except json.JSONDecodeError:
         return {} # Leere Konfiguration, wenn JSON ungültig ist
-    except Exception as e:
-        print(f"Unexpected error loading config: {e}")
+    except Exception:
         raise # Re-raise other exceptions
 
 def save_config(config):
@@ -46,7 +44,6 @@ def save_config(config):
         with open(CONFIG_FILE, "w") as f:
             json.dump(config, f, indent=2)
     except Exception as e:
-        print(f"Error saving config: {e}")
         raise
 
 @app.get("/api/health")
