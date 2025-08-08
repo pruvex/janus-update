@@ -67,3 +67,17 @@ Neustart des UI-Refactorings, nachdem die UI-Änderungen rückgängig gemacht wu
 
 **WAS & WARUM:**
 Die HTML-Struktur in `frontend/index.html` wurde umgebaut, um zwei Haupt-Container (`chat-view` und `settings-view`) zu verwenden. Die Logik zum Umschalten der Ansichten wurde in `frontend/js/app.js` implementiert. Die `frontend/js/settings.js` wurde angepasst, um die Modal-Logik zu entfernen und `console.error` Aufrufe zu entfernen.
+
+## Zyklus vom 2025-08-09: Implementierung der Modell-Verwaltung
+
+**ZIEL:** Innerhalb der neuen, bildschirmfüllenden Einstellungs-Ansicht die Funktionalität implementieren, mit der der Benutzer pro Anbieter eine Liste von Modellen auswählen und diese Auswahl persistent speichern kann.
+
+**WAS & WARUM:**
+Beginn der Implementierung der Modell-Verwaltung.
+
+## Feature: Modell-Verwaltungs-UI implementiert.
+
+**ZIEL:** Innerhalb der neuen, bildschirmfüllenden Einstellungs-Ansicht die Funktionalität implementieren, mit der der Benutzer pro Anbieter eine Liste von Modellen auswählen und diese Auswahl persistent speichern kann.
+
+**WAS & WARUM:**
+Der `GET /api/models/selection/{provider}`-Endpunkt wurde in `backend/main.py` hinzugefügt. Die `frontend/js/app.js` wurde erweitert, um die `renderSettingsView()`-Funktion aufzurufen, wenn die Einstellungsansicht aktiv ist, und die `renderModelManagementView(provider)`-Funktion wurde implementiert, um die Modellverwaltung anzuzeigen.

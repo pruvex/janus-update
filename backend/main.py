@@ -26,6 +26,10 @@ class ApiKey(BaseModel):
     provider: str
     api_key: str
 
+class ModelSelection(BaseModel):
+    provider: str
+    models: list[str]
+
 def load_config():
     if not os.path.exists(CONFIG_FILE):
         return {} # Leere Konfiguration, wenn Datei nicht existiert
@@ -61,6 +65,26 @@ async def get_api_keys():
         return {"api_keys": stored_api_keys}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error loading API keys: {str(e)}")
+
+@app.get("/api/models/selection/{provider}")
+async def get_model_selection(provider: str):
+    try:
+        config = load_config()
+        return {"selected_models": config.get("model_selection", {}).get(provider, [])}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading model selection: {str(e)}")
+
+@app.post("/api/models/selection")
+async def save_model_selection(selection: ModelSelection):
+    try:
+        config = load_config()
+        if "model_selection" not in config:
+            config["model_selection"] = {}
+        config["model_selection"][selection.provider] = selection.models
+        save_config(config)
+        return {"message": "Model selection saved successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error saving model selection: {str(e)}")
 
 @app.post("/api/keys")
 async def add_api_key(key: ApiKey):
