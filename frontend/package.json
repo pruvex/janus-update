@@ -6,7 +6,7 @@
   "scripts": {
     "start": "concurrently \"npm:start-backend\" \"npm:start-frontend\"",
     "start-frontend": "electron .",
-    "start-backend": "uvicorn --app-dir ../ backend.main:app --reload"
+    "start-backend": "C:/KI/Janus-Projekt/backend/venv/Scripts/python.exe -m uvicorn --app-dir ../ backend.main:app --reload"
   },
   "devDependencies": {
     "concurrently": "^9.2.0",
