@@ -1,35 +1,40 @@
-AGENTIC HANDLUNGSPLAN:
-Dein Ziel: Den Chat funktionsfähig machen, indem die Platzhalter-URL im LLM-Gateway durch die echte OpenAI-API-Endpunkt-URL ersetzt wird.
-Relevante PHASE_X.md: PHASE_2_KERNFUNKTIONALITAET.md
+AGENTIC HANDLUNGSPLAN (Korrektur des Logbuchs):
+Dein Ziel: Die AGENT_WORK_LOG.md-Datei korrigieren, indem der fehlende, aber entscheidende Log-Eintrag über die erfolgreiche Behebung des latenten Pfad-Bugs nachgetragen wird.
+Relevante PHASE_X.md: Keine. Dies ist eine reine Dokumentations- und Prozesskorrektur.
 Der Plan:
 Stufe 1: Validierung des Ausgangszustands
 Führe python health_check.py aus.
 Stufe 2: Planung & Recherche
-Planung: Plane die Bearbeitung der Datei backend/llm_gateway.py.
-Die Zeile, die die URL https://api.mockllm.dev/v1/chat/completions enthält, muss durch die korrekte OpenAI-API-URL ersetzt werden: https://api.openai.com/v1/chat/completions.
-Ebenso muss der payload (die Daten, die an die API gesendet werden) an das Format von OpenAI angepasst werden. OpenAI erwartet ein messages-Array und ein model. Wir werden das Modell vorerst hartcodieren (z.B. auf gpt-3.5-turbo).
+Die Analyse ist abgeschlossen. Die Aufgabe ist, den fehlenden Log-Eintrag hinzuzufügen.
+Protokolliere den Beginn dieser Korrektur.
 Stufe 3: Implementierung & Arbeits-Logbuch
-Verwende das replace-Tool, um in backend/llm_gateway.py die Platzhalter-URL durch die echte OpenAI-URL zu ersetzen.
-Verwende edit_file, um den payload-Teil in derselben Datei so zu ändern, dass er dem OpenAI-Format entspricht (z.B. payload = {"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": prompt}]}).
-Dokumentiere die Anbindung an die Live-API im AGENT_WORK_LOG.md.
-Stufe 4: Dynamische Verifizierung (Funktionstest)
-Manueller Test-Auftrag: Dies ist der finale Funktionstest für Phase 2.
-Ihre Anweisung: Starten Sie das System wie gewohnt mit npm start aus dem frontend-Verzeichnis.
-Testen Sie den finalen, vollständigen Zyklus:
-Stellen Sie sicher, dass Ihr OpenAI-API-Key in den Einstellungen gespeichert ist.
-Wählen Sie im Chat "OpenAI" aus.
-Senden Sie eine Nachricht wie "Hallo, Welt!".
-Erwartetes Ergebnis: Diesmal darf kein Fehler erscheinen. Stattdessen sollten Sie nach einem kurzen Moment eine echte Antwort von ChatGPT im Chatfenster sehen.
+Schritt 3.1: Logbuch aktualisieren:
+Lies den aktuellen Inhalt von AGENT_WORK_LOG.md mit read_file.
+Füge am Ende der Datei den korrekten, fehlenden Eintrag hinzu, der die letzte erfolgreiche Aktion beschreibt:
+code
+Markdown
+---
+## Zyklus vom 2025-08-09: Finale Behebung des latenten Pfad-Bugs
+
+**ZIEL:** Den latenten Pfad-Bug, der den `frontend/backend`-Ordner erstellt, endgültig beheben, indem die relative Pfadlogik in `backend/main.py` zwangsweise durch eine unmissverständliche, absolute Pfadlogik ersetzt wird.
+
+**WAS & WARUM:**
+Der Code in `backend/main.py` wurde mit `read_file` eingelesen. Die Pfadlogik wurde auf `os.path.realpath(__file__)` umgestellt, um absolute Pfade zu garantieren. Die modifizierte Datei wurde mit `write_file` zurückgeschrieben. Der fälschlicherweise erstellte Ordner `frontend/backend` wurde gelöscht. Ein anschließender Test bestätigte, dass die `config.json` nun korrekt und ausschließlich im `backend`-Verzeichnis erstellt und gelesen wird. Der grundlegende Stabilitätsfehler des Projekts ist damit behoben.
+Schreibe den gesamten, aktualisierten Inhalt mit write_file zurück nach AGENT_WORK_LOG.md.
+Schritt 3.2: Erneute Logbuch-Aktualisierung: Die soeben durchgeführte Aktion wird in diesem Zyklus nicht erneut protokolliert, da sie das Logbuch selbst betrifft.
+Stufe 4: Dynamische Verifizierung
+Lies den Inhalt von AGENT_WORK_LOG.md erneut mit read_file und überprüfe, ob der neue Eintrag korrekt hinzugefügt wurde.
 Stufe 5: Aufräumen & Finale Validierung
-Ich warte auf Ihre Bestätigung, dass Sie eine echte KI-Antwort erhalten haben.
-Führe python health_check.py aus.
-Stufe 6: Archivierung & Meilenstein-Commit (KRITISCHE STUFE)
+Führe python health_check.py erneut aus.
+Stufe 6: Archivierung & Lockfile-Garantie
 Führe git add . aus.
-Erstelle den Commit: git commit -m "milestone(Phase-2): Connect gateway to live OpenAI API and finalize core chat".
+Erstelle einen Commit mit der Nachricht: docs(log): Add missing entry for successful latent path bug fix
 Stufe 7: Dokumentation aktualisieren
-Markiere alle Aufgaben in PHASE_2_KERNFUNKTIONALITAET.md als erledigt (- [x]).
-Stufe 8: Vorbereitung für die Zukunft (Phase 3)
-Erstelle die neue Datei PHASE_3_FILESYSTEM_AGENT.md und befülle sie.
-Erstelle einen neuen Git-Branch für die erste Aufgabe von Phase 3.
+Nicht anwendbar.
+Stufe 8: Vorbereitung für die Zukunft
+Nachdem nun Code und Dokumentation synchron und korrekt sind, werden wir als Nächstes die von Ihnen aufgedeckte Sicherheitslücke schließen.
+Erstelle einen neuen Branch: feature/security-implement-keyring.
 Erfolgs-Kriterien:
-Eine im Chat-UI gesendete Nachricht resultiert in einer echten, nicht-gemockten Antwort der OpenAI-API, die im Chat-UI angezeigt wird.
+Das AGENT_WORK_LOG.md enthält den neuen, korrekten Eintrag.
+Die Änderung ist committet.
+Wir sind auf einem neuen, klar benannten Branch für die nächste, wichtige Aufgabe bereit

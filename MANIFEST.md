@@ -64,6 +64,8 @@ Roadmap-Erstellung: Basierend auf dieser Blaupause werde ich einen neuen, sauber
 *   **Frontend:** Standard-Web-Technologien (HTML, CSS, TypeScript).
 *   **Backend:** Python mit FastAPI, wird als eigenständiger Serverprozess ausgeführt und über lokale HTTP-Anfragen vom Electron-Frontend angesprochen.
 *   **Versionskontrolle:** Git, mit einer strikten "Lockfile & Commit"-Doktrin zur Sicherung der Stabilität.
+*   **Pfad-Stabilität:** Der latente Pfad-Bug in backend/main.py wurde behoben, um die korrekte Handhabung von Konfigurationsdateien sicherzustellen.
+
 
 ## 5. Roadmap (Überarbeitet für Electron)
 
