@@ -1,26 +1,7 @@
-// Logik für das Einstellungs-Modal
-const settingsModal = document.getElementById('settings-modal');
-const settingsBtn = document.getElementById('settings-btn');
-const closeBtn = document.getElementsByClassName('close')[0];
 const apiKeyForm = document.getElementById('api-key-form');
 const providerInput = document.getElementById('provider-input');
 const apiKeyInput = document.getElementById('api-key-input');
 const apiKeyList = document.getElementById('api-key-list');
-
-settingsBtn.onclick = function() {
-  settingsModal.style.display = 'block';
-  loadApiKeys();
-}
-
-closeBtn.onclick = function() {
-  settingsModal.style.display = 'none';
-}
-
-window.onclick = function(event) {
-  if (event.target == settingsModal) {
-    settingsModal.style.display = 'none';
-  }
-}
 
 apiKeyForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -60,7 +41,6 @@ async function loadApiKeys() {
             apiKeyList.appendChild(listItem);
         }
     } catch (error) {
-        console.error('Error loading API keys:', error);
         alert(`Fehler beim Laden der API-Keys: ${error.message}`);
     }
 }
