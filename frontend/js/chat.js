@@ -51,7 +51,13 @@ function scrollToChatBottom() {
 
 function appendMessage(sender, data) {
     const messageElement = document.createElement('div');
-    messageElement.classList.add('message', `${sender}-message`);
+    messageElement.classList.add('chat-message'); // Add base class
+
+    if (sender === 'user') {
+        messageElement.classList.add('user-message');
+    } else if (sender === 'bot') {
+        messageElement.classList.add('bot-message');
+    }
 
     let textContent = '';
     if (typeof data === 'string') {
