@@ -1,48 +1,37 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
 import httpx
 import os
 import json
 
 router = APIRouter()
 
-class ChatRequest(BaseModel):
-    model: str
-    messages: list
-    use_google_ai: bool = False
-
-@router.post("/chat")
-async def chat_endpoint(request: ChatRequest):
-    if request.use_google_ai:
-        api_key = os.getenv("GOOGLE_API_KEY")
-        if not api_key:
-            raise HTTPException(status_code=500, detail="Google API Key not configured.")
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{request.model}:generateContent?key={api_key}"
+async def call_llm(provider: str, model: str, prompt: str, api_key: str):
+    if provider == "gemini":
+        url = f"https://generativelanguage.googleapis.com/v1/models/{model}:generateContent?key={api_key}"
         headers = {"Content-Type": "application/json"}
-        payload = {"contents": request.messages}
+        payload = {"contents": [{"parts": [{"text": prompt}]}]}
         
         async with httpx.AsyncClient() as client:
             response = await client.post(url, headers=headers, json=payload)
             response.raise_for_status()
             return response.json()
-    else:
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise HTTPException(status_code=500, detail="OpenAI API Key not configured.")
+    elif provider == "openai":
         url = "https://api.openai.com/v1/chat/completions"
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {api_key}"
         }
         payload = {
-            "model": request.model,
-            "messages": request.messages
+            "model": "gpt-3.5-turbo", # Oder ein anderer Standard-OpenAI-Modell
+            "messages": [{"role": "user", "content": prompt}]
         }
         
         async with httpx.AsyncClient() as client:
             response = await client.post(url, headers=headers, json=payload)
             response.raise_for_status()
             return response.json()
+    else:
+        raise HTTPException(status_code=400, detail="Unsupported provider.")
 
 @router.get("/config")
 async def get_config():

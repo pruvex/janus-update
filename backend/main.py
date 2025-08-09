@@ -21,6 +21,7 @@ CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.j
 class ChatRequest(BaseModel):
     prompt: str
     provider: str
+    model: str
 
 class ApiKey(BaseModel):
     provider: str
@@ -102,7 +103,7 @@ async def chat(request: ChatRequest):
         if not api_key:
             raise HTTPException(status_code=400, detail=f"API Key for provider {request.provider} not found.")
         
-        return llm_gateway.call_llm(request.provider, request.prompt, api_key)
+        return await llm_gateway.call_llm(request.provider, request.model, request.prompt, api_key)
     except HTTPException as e:
         raise e
     except Exception as e:
