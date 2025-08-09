@@ -13,3 +13,9 @@ Code von temporären Diagnose-Anweisungen bereinigt, um einen stabilen, lauffäh
 - Fix (UI): Sicherstellung, dass das ausgewählte Modell im Dropdown nach Filterung gültig ist.
 - Debug (UI): Console.log-Statements in app.js hinzugefügt, um Modellfilterung zu debuggen.
 - Fix (UI): loadUserSelections() in renderSettingsView() aufgerufen, um sicherzustellen, dass die Benutzerauswahl aktuell ist.
+- Neuer Branch 'feature/ux-improvements3' erstellt und gewechselt.
+- Beginn der finalen Datenaktualisierung.
+- feat(data): OpenAI-Modellkatalog finalisiert (inkl. GPT-5 und DALL-E-Tiers).
+- Fix (UI): MODEL_CATALOG aus app.js entfernt und model-catalog.js in index.html eingebunden.
+- Fix (UI): Korrektur des Eigenschaftsnamens für die Modellbeschreibung (description zu desc) in app.js.
+- Fix (UI): Korrektur des Eigenschaftsnamens für die Modellbeschreibung (description zu desc) in renderModelManagementView in app.js.

@@ -30,7 +30,7 @@ function render() {
         filteredModels.forEach(model => {
             const option = document.createElement('option');
             option.value = model.id;
-            option.textContent = `${model.name} (${model.price}) - ${model.description}`;
+            option.textContent = `${model.name} (${model.price}) - ${model.desc}`;
             sidebarModelSelect.appendChild(option);
         });
         // Ensure the selected model is still valid after filtering
@@ -170,17 +170,7 @@ async function renderSettingsView() {
     });
 }
 
-// Placeholder for MODEL_CATALOG - this should eventually come from the backend
-const MODEL_CATALOG = {
-    "openai": [
-        { "id": "gpt-4o", "name": "GPT-4o", "price": "High", "description": "Latest flagship model" },
-        { "id": "gpt-3.5-turbo", "name": "GPT-3.5 Turbo", "price": "Low", "description": "Fast and cost-effective" }
-    ],
-    "gemini": [
-        { "id": "gemini-1.5-flash", "name": "Gemini 1.5 Flash", "price": "Medium", "description": "Fast and versatile" },
-        { "id": "gemini-1.5-pro", "name": "Gemini 1.5 Pro", "price": "High", "description": "Advanced reasoning and multimodal" }
-    ]
-};
+
 
 async function renderModelManagementView(provider) {
     const settingsView = document.getElementById('settings-view');
@@ -218,7 +208,7 @@ async function renderModelManagementView(provider) {
         const isChecked = selectedModels.includes(model.id) ? 'checked' : '';
         listItem.innerHTML = `
             <input type="checkbox" id="${model.id}" value="${model.id}" ${isChecked}>
-            <label for="${model.id}">${model.name} (${model.price}) - ${model.description}</label>
+            <label for="${model.id}">${model.name} (${model.price}) - ${model.desc}</label>
         `;
         modelList.appendChild(listItem);
     });
