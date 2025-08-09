@@ -22,7 +22,7 @@ chatForm.addEventListener('submit', async (e) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ prompt, provider }),
+            body: JSON.stringify({ prompt, provider, model }),
         });
 
         if (!response.ok) {
