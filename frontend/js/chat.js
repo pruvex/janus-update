@@ -42,6 +42,13 @@ chatForm.addEventListener('submit', async (e) => {
     }
 });
 
+function scrollToChatBottom() {
+    const chatHistory = document.getElementById('chat-messages');
+    setTimeout(() => {
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }, 0);
+}
+
 function appendMessage(sender, data) {
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', `${sender}-message`);
@@ -54,8 +61,15 @@ function appendMessage(sender, data) {
         if (data.image_url) {
             const imageElement = document.createElement('img');
             imageElement.src = data.image_url;
-            imageElement.style.maxWidth = '100%';
+            imageElement.style.maxWidth = '50%'; // Apply CSS max-width
             imageElement.style.height = 'auto';
+            imageElement.style.borderRadius = '8px';
+            imageElement.style.display = 'block';
+            imageElement.style.marginTop = '10px';
+            
+            imageElement.onload = () => { // Scroll after image loads
+                scrollToChatBottom();
+            };
             messageElement.appendChild(imageElement);
 
             const saveButton = document.createElement('button');
@@ -74,5 +88,5 @@ function appendMessage(sender, data) {
     messageElement.appendChild(textNode);
 
     chatMessages.appendChild(messageElement);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    scrollToChatBottom(); // Scroll after message is appended
 }
