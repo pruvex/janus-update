@@ -1,4 +1,5 @@
-## Zyklus vom 2025-08-09: Finaler UI-Polish für Sprechblasen abgeschlossen
-**ZIEL:** Das Design der Sprechblasen finalisieren, indem die Farben angepasst und die Breiten-Beschränkung für Modell-Antworten optimiert werden.
+
+## Zyklus vom 2025-08-09: Finaler UI-Polish V2 (Input-Feld-Fix)
+**ZIEL:** Das Texteingabefeld ist deutlich breiter und nutzt zusammen mit dem Senden-Button den verfügbaren Platz im Chat-Fenster optimal aus.
 **WAS & WARUM:**
-Die Farben der Sprechblasen wurden angepasst, um ein dezenteres und angenehmeres Erscheinungsbild zu erzielen. Die maximale Breite der Sprechblasen wurde auf 90% gesetzt, um die verfügbare Breite des Chat-Fensters besser auszunutzen und den unschönen rechten Rand zu vermeiden.
+Das `#chat-form` Element wurde als Flexbox-Container konfiguriert und nimmt 100% der Breite seines Elternteils ein, um sicherzustellen, dass das Eingabefeld den gesamten verfügbaren Platz ausnutzt.

@@ -45,13 +45,14 @@ html, body {
 
 #chat-input-container {
     display: flex;
-    padding: 0.5rem;
+    padding: 10px;
     border-top: 1px solid #666;
     height: 50px; /* Fixed height for input container */
 }
 
 #chat-input {
-    flex-grow: 1;
+    flex-grow: 1; /* Erlaubt dem Eingabefeld, den gesamten freien Platz einzunehmen */
+    margin-right: 10px; /* Fügt einen kleinen Abstand zum Button hinzu */
     background-color: #3c3c3c;
     border: 1px solid #555;
     color: #eee;
@@ -70,6 +71,11 @@ html, body {
 
 #send-button:hover {
     background-color: #0056b3;
+}
+
+#chat-form {
+    display: flex;
+    width: 100%;
 }
 
 /* Sidebar Styling */
@@ -126,14 +132,14 @@ html, body {
 }
 
 .user-message {
-    background-color: #00509E;
+    background-color: #0A2B4C;
     color: white;
     align-self: flex-end;
     max-width: 90%; /* Erlaubt der Blase, bis zu 90% der Fensterbreite zu nutzen */
 }
 
 .bot-message {
-    background-color: #3A3B3C;
+    background-color: #2C2C2E;
     color: white;
     align-self: flex-start;
     max-width: 90%; /* Erlaubt der Blase, bis zu 90% der Fensterbreite zu nutzen */
