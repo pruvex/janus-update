@@ -11,7 +11,7 @@ chatForm.addEventListener('submit', async (e) => {
 
     if (!prompt) return;
 
-    appendMessage('user', prompt);
+    appendMessage('user', { text: prompt });
     chatInput.value = '';
 
     appendMessage('bot', '...'); // Ladeanzeige
@@ -31,30 +31,48 @@ chatForm.addEventListener('submit', async (e) => {
         }
 
         const data = await response.json();
-        let botMessage;
-        if (provider === 'gemini') {
-            botMessage = data.candidates[0].content.parts[0].text;
-        } else if (provider === 'openai') {
-            botMessage = data.text;
-        } else {
-            botMessage = 'Unsupported provider response structure.';
-        }
-
         // Entferne Ladeanzeige
         chatMessages.removeChild(chatMessages.lastChild);
-        appendMessage('bot', botMessage);
+        appendMessage('bot', data); // Pass the whole data object
 
     } catch (error) {
         // Entferne Ladeanzeige
         chatMessages.removeChild(chatMessages.lastChild);
-        appendMessage('bot', `Ein Fehler ist aufgetreten: ${error.message}`);
+        appendMessage('bot', { text: `Ein Fehler ist aufgetreten: ${error.message}` });
     }
 });
 
-function appendMessage(sender, text) {
+function appendMessage(sender, data) {
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', `${sender}-message`);
-    messageElement.innerText = text;
+
+    let textContent = '';
+    if (typeof data === 'string') {
+        textContent = data;
+    } else if (typeof data === 'object' && data !== null) {
+        textContent = data.text || '';
+        if (data.image_url) {
+            const imageElement = document.createElement('img');
+            imageElement.src = data.image_url;
+            imageElement.style.maxWidth = '100%';
+            imageElement.style.height = 'auto';
+            messageElement.appendChild(imageElement);
+
+            const saveButton = document.createElement('button');
+            saveButton.textContent = 'Bild speichern';
+            saveButton.classList.add('save-image-button');
+            saveButton.onclick = () => {
+                // Send message to main process to save image
+                window.electron.saveImage(data.image_url);
+            };
+            messageElement.appendChild(saveButton);
+        }
+    }
+    
+    const textNode = document.createElement('p');
+    textNode.innerText = textContent;
+    messageElement.appendChild(textNode);
+
     chatMessages.appendChild(messageElement);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }

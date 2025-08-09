@@ -19,17 +19,81 @@ async def _call_dalle_api(api_key: str, prompt: str, quality: str):
     image_url = response.data[0].url
     return image_url # Return just the URL
 
+# Tool definition for DALL-E
+dalle_tool = {
+    "type": "function",
+    "function": {
+        "name": "generate_image",
+        "description": "Generiert ein Bild aus einer Textbeschreibung.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "prompt": {
+                    "type": "string",
+                    "description": "Die Textbeschreibung des zu generierenden Bildes."
+                },
+                "quality": {
+                    "type": "string",
+                    "enum": ["standard", "hd"],
+                    "description": "Die Qualität des Bildes. 'standard' ist schneller und günstiger, 'hd' bietet höhere Detailgenauigkeit."
+                }
+            },
+            "required": ["prompt"]
+        }
+    }
+}
+
 # New function for OpenAI Chat Completion API calls
 async def _call_chat_completion_api(api_key: str, prompt: str, model: str):
     client = OpenAI(api_key=api_key)
     
     messages = [{"role": "user", "content": prompt}]
     
+    # Pass the tool definition to the API call
     response = client.chat.completions.create(
         model=model,
         messages=messages,
+        tools=[dalle_tool], # Pass the tool here
+        tool_choice="auto", # Allow the model to decide whether to use the tool
     )
-    chat_response_text = response.choices[0].message.content
+
+    response_message = response.choices[0].message
+    
+    # Check if the model wants to call a tool
+    if response_message.tool_calls:
+        tool_call = response_message.tool_calls[0] # Assuming one tool call for simplicity
+        function_name = tool_call.function.name
+        
+        if function_name == "generate_image":
+            # Parse arguments
+            function_args = json.loads(tool_call.function.arguments)
+            image_prompt = function_args.get("prompt")
+            image_quality = function_args.get("quality", "standard") # Default to standard
+            
+            # Call the DALL-E API
+            image_url = await _call_dalle_api(api_key, image_prompt, image_quality)
+            
+            # Send the tool's response back to the model
+            messages.append(response_message)
+            messages.append(
+                {
+                    "tool_call_id": tool_call.id,
+                    "role": "tool",
+                    "name": function_name,
+                    "content": image_url,
+                }
+            )
+            
+            # Get the final response from the model
+            second_response = client.chat.completions.create(
+                model=model,
+                messages=messages,
+            )
+            final_message_content = second_response.choices[0].message.content
+            return {"text": final_message_content, "image_url": image_url}
+    
+    # If no tool call, return the regular chat response
+    chat_response_text = response_message.content
     return {"text": chat_response_text} # Return as JSON object
 
 async def call_llm(provider: str, model: str, prompt: str, api_key: str):
