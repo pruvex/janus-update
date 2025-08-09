@@ -40,3 +40,4 @@ typing-inspection==0.4.1
     # via pydantic
 uvicorn==0.35.0
     # via -r C:/KI/Janus-Projekt/backend/requirements.in
+openai # Added this line

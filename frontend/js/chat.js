@@ -35,7 +35,7 @@ chatForm.addEventListener('submit', async (e) => {
         if (provider === 'gemini') {
             botMessage = data.candidates[0].content.parts[0].text;
         } else if (provider === 'openai') {
-            botMessage = data.choices[0].message.content;
+            botMessage = data.text;
         } else {
             botMessage = 'Unsupported provider response structure.';
         }

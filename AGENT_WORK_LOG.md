@@ -29,3 +29,13 @@ Nach der erfolgreichen Wiederherstellung des Projekts wurde der lauffähige Zust
 - Beginn der Gateway-Reparatur.
 - Fix (API): Provider-Prüfung im Gateway von 'google' auf 'gemini' aktualisiert, um 404-Fehler zu beheben.
 - Fix (API): Modellnamen-Bereinigung für Gemini-URL implementiert, um 404-Fehler zu beheben.
+## Zyklus vom 2025-08-09: Stabilisierungs-Commit Abgeschlossen
+**ZIEL:** Den aktuellen, funktionierenden Zustand als stabile Basis für die Implementierung der Tool-Nutzung sichern.
+**WAS & WARUM:**
+Der Stabilisierungs-Commit wurde erfolgreich erstellt. Das Projekt befindet sich nun auf einem neuen Branch, bereit für die Implementierung der Tool-Nutzung.
+- Beginn der Implementierung der Backend-Weiche.
+- feat(gateway): Intelligente Weiche für Chat- vs. Bild-APIs implementiert.
+- Fix (Backend): Fehlenden from openai import OpenAI-Import in llm_gateway.py hinzugefügt, um NameError zu beheben.
+- Beginn der finalen Reparatur.
+- Fix (backend): Fehlende openai-Abhängigkeit in requirements.txt hinzugefügt und import-Anweisung in llm_gateway.py korrigiert.
+- Fix (API): Rückgabewert für OpenAI-Chat-Antworten korrigiert, um TypeError im Frontend zu beheben.
