@@ -126,13 +126,15 @@ html, body {
 }
 
 .user-message {
-    background-color: #007bff;
+    background-color: #00509E;
     color: white;
     align-self: flex-end;
+    max-width: 90%; /* Erlaubt der Blase, bis zu 90% der Fensterbreite zu nutzen */
 }
 
 .bot-message {
-    background-color: #555;
+    background-color: #3A3B3C;
     color: white;
     align-self: flex-start;
+    max-width: 90%; /* Erlaubt der Blase, bis zu 90% der Fensterbreite zu nutzen */
 }

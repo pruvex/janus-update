@@ -1,5 +1,4 @@
-### Implementierung des "Sprechblasen"-Layouts abgeschlossen
-- Datum: 2025-08-09
-- Änderungen:
-    - CSS (frontend/css/styles.css): `.chat-message`, `.user-message`, `.bot-message` Klassen hinzugefügt. `#chat-messages` auf Flexbox umgestellt.
-    - JavaScript (frontend/js/chat.js): `appendMessage` Funktion angepasst, um die neuen CSS-Klassen basierend auf dem Absender zuzuweisen.
+## Zyklus vom 2025-08-09: Finaler UI-Polish für Sprechblasen abgeschlossen
+**ZIEL:** Das Design der Sprechblasen finalisieren, indem die Farben angepasst und die Breiten-Beschränkung für Modell-Antworten optimiert werden.
+**WAS & WARUM:**
+Die Farben der Sprechblasen wurden angepasst, um ein dezenteres und angenehmeres Erscheinungsbild zu erzielen. Die maximale Breite der Sprechblasen wurde auf 90% gesetzt, um die verfügbare Breite des Chat-Fensters besser auszunutzen und den unschönen rechten Rand zu vermeiden.
