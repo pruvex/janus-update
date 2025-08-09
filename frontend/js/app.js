@@ -14,18 +14,32 @@ function render() {
     const sidebarModelSelect = document.getElementById('model-select');
 
     if (sidebarProviderSelect && sidebarModelSelect) {
+        console.log('render: appState.user_selections:', appState.user_selections);
         // Update sidebar provider dropdown
         sidebarProviderSelect.value = appState.last_active.provider;
 
         // Populate sidebar model dropdown based on selected provider
         sidebarModelSelect.innerHTML = ''; // Clear existing options
-        const selectedProviderModels = appState.user_selections[appState.last_active.provider] || [];
-        selectedProviderModels.forEach(modelId => {
+        const provider = appState.last_active.provider;
+        console.log('render: Current Provider:', provider);
+        const allowedModels = appState.user_selections[provider] || [];
+        console.log('render: Allowed Models (from user_selections):', allowedModels);
+        const filteredModels = MODEL_CATALOG[provider].filter(model => allowedModels.includes(model.id));
+        console.log('render: Filtered Models (from MODEL_CATALOG):', filteredModels);
+
+        filteredModels.forEach(model => {
             const option = document.createElement('option');
-            option.value = modelId;
-            option.textContent = modelId; // Display model ID for now
+            option.value = model.id;
+            option.textContent = `${model.name} (${model.price}) - ${model.description}`;
             sidebarModelSelect.appendChild(option);
         });
+        // Ensure the selected model is still valid after filtering
+        if (filteredModels.length > 0 && !allowedModels.includes(appState.last_active.model)) {
+            appState.last_active.model = filteredModels[0].id;
+        } else if (filteredModels.length === 0) {
+            appState.last_active.model = ''; // No models available
+        }
+        console.log('render: Final appState.last_active.model:', appState.last_active.model);
         sidebarModelSelect.value = appState.last_active.model;
     }
 
@@ -75,6 +89,7 @@ async function loadUserSelections() {
             const response = await fetch(`${API_BASE_URL}/api/models/selection/${provider}`);
             const data = await response.json();
             appState.user_selections[provider] = data.selected_models;
+            console.log(`loadUserSelections: Provider: ${provider}, Selected Models:`, data.selected_models);
         } catch (error) {
             appState.user_selections[provider] = []; // Default to empty if error
         }
@@ -82,6 +97,7 @@ async function loadUserSelections() {
 }
 
 async function renderSettingsView() {
+    await loadUserSelections(); // Ensure user_selections is up-to-date
     const settingsView = document.getElementById('settings-view');
     settingsView.innerHTML = `
         <div class="settings-content">

@@ -7,3 +7,9 @@ Code von temporären Diagnose-Anweisungen bereinigt, um einen stabilen, lauffäh
 - Fix (Frontend): Bedingte Logik für OpenAI und Gemini API-Antwort-Parsing in chat.js implementiert.
 - Beginn des Meilenstein-Zyklus: Vorbereitung für manuellen Verifizierungs-Schritt.
 - Code von temporären Diagnose-Anweisungen bereinigt, Vorbereitung für manuellen Verifizierungs-Schritt.
+- Neuer Branch 'feature/ux-improvements2' erstellt und gewechselt.
+- Beginn der Reparatur der Dropdown-Logik.
+- Fix (UI): Filterung für Modell-Dropdown wiederhergestellt, um Benutzerauswahl zu berücksichtigen.
+- Fix (UI): Sicherstellung, dass das ausgewählte Modell im Dropdown nach Filterung gültig ist.
+- Debug (UI): Console.log-Statements in app.js hinzugefügt, um Modellfilterung zu debuggen.
+- Fix (UI): loadUserSelections() in renderSettingsView() aufgerufen, um sicherzustellen, dass die Benutzerauswahl aktuell ist.
