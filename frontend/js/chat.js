@@ -31,7 +31,14 @@ chatForm.addEventListener('submit', async (e) => {
         }
 
         const data = await response.json();
-        const botMessage = data.candidates[0].content.parts[0].text;
+        let botMessage;
+        if (provider === 'gemini') {
+            botMessage = data.candidates[0].content.parts[0].text;
+        } else if (provider === 'openai') {
+            botMessage = data.choices[0].message.content;
+        } else {
+            botMessage = 'Unsupported provider response structure.';
+        }
 
         // Entferne Ladeanzeige
         chatMessages.removeChild(chatMessages.lastChild);
