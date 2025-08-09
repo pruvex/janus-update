@@ -7,7 +7,8 @@ router = APIRouter()
 
 async def call_llm(provider: str, model: str, prompt: str, api_key: str):
     if provider == "gemini":
-        url = f"https://generativelanguage.googleapis.com/v1/models/{model}:generateContent?key={api_key}"
+        api_model_name = model.replace('-latest', '') # Added this line
+        url = f"https://generativelanguage.googleapis.com/v1/models/{api_model_name}:generateContent?key={api_key}"
         headers = {"Content-Type": "application/json"}
         payload = {"contents": [{"parts": [{"text": prompt}]}]}
         

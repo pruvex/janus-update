@@ -19,3 +19,13 @@ Code von temporären Diagnose-Anweisungen bereinigt, um einen stabilen, lauffäh
 - Fix (UI): MODEL_CATALOG aus app.js entfernt und model-catalog.js in index.html eingebunden.
 - Fix (UI): Korrektur des Eigenschaftsnamens für die Modellbeschreibung (description zu desc) in app.js.
 - Fix (UI): Korrektur des Eigenschaftsnamens für die Modellbeschreibung (description zu desc) in renderModelManagementView in app.js.
+- NOTFALL-WIEDERHERSTELLUNG (Final): Projekt zwangsweise auf den Zustand vor dem IndentationError-Commit zurückgesetzt.
+## Zyklus vom 2025-08-09: Stabilisierungs-Commit
+**ZIEL:** Den aktuellen, funktionierenden Zustand als stabile Basis für die Implementierung der Tool-Nutzung sichern.
+**WAS & WARUM:**
+Nach der erfolgreichen Wiederherstellung des Projekts wurde der lauffähige Zustand, in dem sowohl OpenAI- als auch Google-Modelle korrekt antworten, verifiziert. Dieser Zustand wird nun committet, bevor mit der Implementierung der komplexen "Tool Use"-Funktionalität begonnen wird.
+- Beginn der Reparatur des Modell-Katalogs.
+- Fix (data): Provider-Name im MODEL_CATALOG von 'google' zu 'gemini' korrigiert, um TypeError zu beheben.
+- Beginn der Gateway-Reparatur.
+- Fix (API): Provider-Prüfung im Gateway von 'google' auf 'gemini' aktualisiert, um 404-Fehler zu beheben.
+- Fix (API): Modellnamen-Bereinigung für Gemini-URL implementiert, um 404-Fehler zu beheben.

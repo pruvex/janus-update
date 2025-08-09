@@ -4,11 +4,13 @@
       "gpt-5",
       "gpt-5-mini",
       "gpt-4o",
-      "gpt-4o-mini"
+      "gpt-4o-mini",
+      "dall-e-3-standard",
+      "dall-e-3-hd"
     ],
     "gemini": [
-      "gemini-1.5-flash",
-      "gemini-1.5-pro"
+      "gemini-1.5-pro-latest",
+      "gemini-1.5-flash-latest"
     ]
   }
 }
