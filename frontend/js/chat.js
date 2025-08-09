@@ -31,7 +31,7 @@ chatForm.addEventListener('submit', async (e) => {
         }
 
         const data = await response.json();
-        const botMessage = data.choices[0].message.content;
+        const botMessage = data.candidates[0].content.parts[0].text;
 
         // Entferne Ladeanzeige
         chatMessages.removeChild(chatMessages.lastChild);
