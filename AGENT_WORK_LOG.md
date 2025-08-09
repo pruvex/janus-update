@@ -39,3 +39,18 @@ Der Stabilisierungs-Commit wurde erfolgreich erstellt. Das Projekt befindet sich
 - Beginn der finalen Reparatur.
 - Fix (backend): Fehlende openai-Abhängigkeit in requirements.txt hinzugefügt und import-Anweisung in llm_gateway.py korrigiert.
 - Fix (API): Rückgabewert für OpenAI-Chat-Antworten korrigiert, um TypeError im Frontend zu beheben.
+## Meilenstein vom 2025-08-09: Abschluss Phase 2
+**ZIEL:** Den stabilen Zustand nach allen Bugfixes als finalen Meilenstein für die Kernfunktionalität festschreiben.
+**WAS & WARUM:**
+Nachdem alle bekannten API- und UI-Bugs für OpenAI und Gemini behoben wurden, ist die Kernfunktionalität (Multi-Provider-Chat) vollständig und stabil. Dieser Zustand wird committet, bevor mit der Implementierung von Phase 3 (visuelle Interaktion / Tool-Nutzung) begonnen wird.
+## Zyklus vom 2025-08-09: Prozesskorrektur: Erstellung eines neuen Branches
+**ZIEL:** Eine saubere Arbeitsumgebung für die Implementierung der Agenten-Fähigkeiten schaffen.
+**WAS & WARUM:**
+Nach dem Abschluss des Meilensteins für Phase 2 wurde der neue Branch `feature/agent-tool-use` erstellt, um die Implementierung der Tool-Nutzung sauber vom Haupt-Branch zu isolieren.
+- NOTFALL-KORREKTUR (Git): Branching-Fehler behoben. milestone/phase-2-complete erstellt und neuen feature/agent-tool-use-Branch davon abgezweigt.
+## Zyklus vom 2025-08-09: Finale Git-Korrektur
+**ZIEL:** Meinen prozessualen Fehler beheben, indem der aktuelle Branch in einen Meilenstein-Branch umbenannt und davon ein neuer, sauberer feature/agent-tool-use-Branch erstellt wird.
+**WAS & WARUM:**
+Der Branch `feature/agent-tool-use` wurde in `milestone/phase-2-complete` umbenannt und ein neuer `feature/agent-tool-use` Branch davon erstellt, um die Git-Historie zu korrigieren.
+- Beginn der Implementierung der Tool-Nutzung.
+- NOTFALL-KORREKTUR (Git): Branching-Fehler behoben. milestone/phase-2-complete erstellt und neuen feature/agent-tool-use-Branch davon abgezweigt.
