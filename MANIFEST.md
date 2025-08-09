@@ -68,6 +68,7 @@ Roadmap-Erstellung: Basierend auf dieser Blaupause werde ich einen neuen, sauber
 *   **Sicheres Key-Management:** Umstellung auf die `keyring`-Bibliothek zur sicheren Speicherung von API-Schlüsseln im System-Schlüsselbund.
 *   **Stabilitäts-Meilenstein:** Ein stabiler Meilenstein wurde nach der Behebung des Pfad-Bugs und der Implementierung des sicheren Key-Managements gesetzt.
 *   **UI-Refactoring:** Die Einstellungs-UI wurde von einem Modal zu einer bildschirmfüllenden Ansicht refaktorisiert.
+*   **Modell-Verwaltung:** Die Funktionalität zur Auswahl und persistenten Speicherung von Modellen pro Anbieter wurde implementiert.
 
 
 ## 5. Roadmap (Überarbeitet für Electron)

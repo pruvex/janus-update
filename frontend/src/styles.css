@@ -76,3 +76,31 @@ body, html {
 #send-btn {
   margin-left: 0.5rem;
 }
+
+/* Sidebar Styling */
+#sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Abstand zwischen den Elementen */
+}
+
+#sidebar select,
+#sidebar button {
+  width: 100%;
+  padding: 0.5rem;
+  background-color: #3c3c3c;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#sidebar select:focus,
+#sidebar button:focus {
+  outline: none;
+  border-color: #007bff; /* Beispiel für Fokusfarbe */
+}
+
+#sidebar button:hover {
+  background-color: #4a4a4a;
+}

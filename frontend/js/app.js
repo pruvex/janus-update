@@ -1,10 +1,33 @@
 const appState = {
-    currentView: 'chat'
+    currentView: 'chat',
+    user_selections: {},
+    last_active: {
+        provider: 'openai',
+        model: 'gpt-3.5-turbo'
+    }
 };
 
 function render() {
     const chatView = document.getElementById('chat-view');
     const settingsView = document.getElementById('settings-view');
+    const sidebarProviderSelect = document.getElementById('provider-select');
+    const sidebarModelSelect = document.getElementById('model-select');
+
+    if (sidebarProviderSelect && sidebarModelSelect) {
+        // Update sidebar provider dropdown
+        sidebarProviderSelect.value = appState.last_active.provider;
+
+        // Populate sidebar model dropdown based on selected provider
+        sidebarModelSelect.innerHTML = ''; // Clear existing options
+        const selectedProviderModels = appState.user_selections[appState.last_active.provider] || [];
+        selectedProviderModels.forEach(modelId => {
+            const option = document.createElement('option');
+            option.value = modelId;
+            option.textContent = modelId; // Display model ID for now
+            sidebarModelSelect.appendChild(option);
+        });
+        sidebarModelSelect.value = appState.last_active.model;
+    }
 
     if (appState.currentView === 'chat') {
         chatView.style.display = 'block';
@@ -16,9 +39,10 @@ function render() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const settingsBtn = document.getElementById('settings-btn');
     const backToChatBtn = document.getElementById('back-to-chat-btn');
+    const sidebarProviderSelect = document.getElementById('provider-select');
 
     settingsBtn.addEventListener('click', () => {
         appState.currentView = 'settings';
@@ -30,8 +54,32 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
     });
 
+    sidebarProviderSelect.addEventListener('change', () => {
+        appState.last_active.provider = sidebarProviderSelect.value;
+        render();
+    });
+
+    const sidebarModelSelect = document.getElementById('model-select');
+    sidebarModelSelect.addEventListener('change', () => {
+        appState.last_active.model = sidebarModelSelect.value;
+    });
+
+    await loadUserSelections(); // Load selections before initial render
     render(); // Initial render
 });
+
+async function loadUserSelections() {
+    const availableProviders = ["openai", "gemini"]; // Should come from backend eventually
+    for (const provider of availableProviders) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/models/selection/${provider}`);
+            const data = await response.json();
+            appState.user_selections[provider] = data.selected_models;
+        } catch (error) {
+            appState.user_selections[provider] = []; // Default to empty if error
+        }
+    }
+}
 
 async function renderSettingsView() {
     const settingsView = document.getElementById('settings-view');
@@ -79,8 +127,6 @@ async function renderSettingsView() {
             modelManagementButtons.appendChild(manageModelsBtn);
         }
     } catch (error) {
-        console.error('Error loading API keys or rendering settings view:', error);
-        alert(`Fehler beim Laden der API-Keys oder Rendern der Einstellungen: ${error.message}`);
     }
 
     // Re-attach API Key form submit listener (from settings.js)
@@ -104,7 +150,6 @@ async function renderSettingsView() {
             apiKeyInput.value = '';
             renderSettingsView(); // Reload settings view to show new key
         } catch (error) {
-            alert('Fehler beim Speichern des API-Keys.');
         }
     });
 }
@@ -149,8 +194,6 @@ async function renderModelManagementView(provider) {
         const data = await response.json();
         selectedModels = data.selected_models;
     } catch (error) {
-        console.error('Error fetching selected models:', error);
-        alert(`Fehler beim Laden der Modell-Auswahl: ${error.message}`);
     }
 
     // Populate model list
@@ -180,8 +223,6 @@ async function renderModelManagementView(provider) {
             });
             renderSettingsView(); // Go back to main settings view
         } catch (error) {
-            console.error('Error saving model selection:', error);
-            alert(`Fehler beim Speichern der Modell-Auswahl: ${error.message}`);
         }
     });
 }

@@ -1,7 +1,8 @@
 {
   "model_selection": {
     "openai": [
-      "gpt-4o"
+      "gpt-4o",
+      "gpt-3.5-turbo"
     ],
     "gemini": [
       "gemini-1.5-flash",

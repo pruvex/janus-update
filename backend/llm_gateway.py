@@ -1,58 +1,54 @@
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+import httpx
+import os
+import json
 
-import requests
+router = APIRouter()
 
-def call_llm(provider: str, prompt: str, api_key: str):
-    """
-    Ruft eine LLM-API mit dem gegebenen Provider, Prompt und API-Key auf.
-    """
-    if provider == "openai":
+class ChatRequest(BaseModel):
+    model: str
+    messages: list
+    use_google_ai: bool = False
+
+@router.post("/chat")
+async def chat_endpoint(request: ChatRequest):
+    if request.use_google_ai:
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="Google API Key not configured.")
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{request.model}:generateContent?key={api_key}"
+        headers = {"Content-Type": "application/json"}
+        payload = {"contents": request.messages}
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            return response.json()
+    else:
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="OpenAI API Key not configured.")
         url = "https://api.openai.com/v1/chat/completions"
-        model = "gpt-3.5-turbo"
-    elif provider == "gemini":
-        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
-        model = "gemini-1.5-flash"
-    else:
-        raise ValueError(f"Unsupported provider: {provider}")
-
-    headers = {
-        "Content-Type": "application/json"
-    }
-    if provider == "openai":
-        headers["Authorization"] = f"Bearer {api_key}"
-    elif provider == "gemini":
-        url += f"?key={api_key}"
-
-    if provider == "openai":
-        data = {
-            "model": model,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}"
         }
-    elif provider == "gemini":
-        data = {
-            "contents": [
-                {
-                    "parts": [
-                        {"text": prompt}
-                    ]
-                }
-            ]
+        payload = {
+            "model": request.model,
+            "messages": request.messages
         }
-    else:
-        raise ValueError(f"Unsupported provider: {provider}")
-    response = requests.post(url, headers=headers, json=data)
-    response.raise_for_status()  # Löst eine Ausnahme für HTTP-Fehler aus
-    json_response = response.json()
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            return response.json()
 
-    if provider == "gemini":
-        # Gemini-Antwort in OpenAI-ähnliches Format umwandeln
-        if "candidates" in json_response and len(json_response["candidates"]) > 0:
-            first_candidate = json_response["candidates"][0]
-            if "content" in first_candidate and "parts" in first_candidate["content"] and len(first_candidate["content"]["parts"]) > 0:
-                return {"choices": [{"message": {"content": first_candidate["content"]["parts"][0]["text"]}}]}
-        return {"choices": [{"message": {"content": "No valid response from Gemini."}}]}
-    return json_response
+@router.get("/config")
+async def get_config():
+    config_path = os.path.join(os.path.dirname(__file__), "config.json")
+    if not os.path.exists(config_path):
+        raise HTTPException(status_code=404, detail="Config file not found.")
+    with open(config_path, "r") as f:
+        config = json.load(f)
+    return config

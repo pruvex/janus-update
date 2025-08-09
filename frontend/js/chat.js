@@ -1,13 +1,13 @@
 
 const chatForm = document.getElementById('chat-form');
 const chatInput = document.getElementById('chat-input');
-const providerSelect = document.getElementById('provider-select');
 const chatMessages = document.getElementById('chat-messages');
 
 chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const prompt = chatInput.value;
-    const provider = providerSelect.value;
+    const provider = document.getElementById('provider-select').value;
+    const model = document.getElementById('model-select').value;
 
     if (!prompt) return;
 
