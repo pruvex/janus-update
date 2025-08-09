@@ -1,6 +1,4 @@
-
-### Implementierung eines festen Chat-Fensters abgeschlossen
-- Datum: 2025-08-09
-- Änderungen:
-    - CSS (frontend/css/styles.css): `#chat-view` zentriert, `.chat-window` Klasse mit fester Größe und Flexbox-Layout hinzugefügt, `#chat-messages` angepasst, um innerhalb des neuen Fensters zu wachsen und zu scrollen.
-    - HTML (frontend/index.html): `chat-window` Klasse zum `#chat-window` div hinzugefügt.
+## Meilenstein vom 2025-08-09: Abschluss Phase 3 (MVP)
+**ZIEL:** Den Zustand mit funktionierender Bilderzeugung und korrigiertem UI-Layout als "Minimum Viable Product" für Phase 3 festschreiben.
+**WAS & WARUM:**
+Die Kernfunktionen von Phase 3 (Bilderzeugung, Tool-Nutzung, UI-Layout) sind implementiert und funktionsfähig. Dieser Zustand wird committet, bevor mit dem Feinschliff der UI/UX begonnen wird.
