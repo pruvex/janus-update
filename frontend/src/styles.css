@@ -107,11 +107,13 @@ html, body {
 }
 
 .chat-message img {
-    max-width: 50%; /* Begrenzt die Bildbreite auf 50% des Containers */
-    height: auto;   /* Behält das Seitenverhältnis bei */
-    border-radius: 8px; /* Schöne abgerundete Ecken */
-    display: block; /* Verhindert seltsame Abstände */
-    margin-top: 10px; /* Etwas Abstand zum Text */
+    max-width: 95%; /* Nimmt fast die volle Breite der Sprechblase ein */
+    height: auto;
+    display: block;  /* Macht margin: auto möglich */
+    margin-left: auto; /* Zentriert das Bild horizontal */
+    margin-right: auto;/* Zentriert das Bild horizontal */
+    margin-top: 10px;
+    border-radius: 8px;
 }
 
 .chat-window {

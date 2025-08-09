@@ -90,6 +90,8 @@ async def _call_chat_completion_api(api_key: str, prompt: str, model: str):
                 messages=messages,
             )
             final_message_content = second_response.choices[0].message.content
+            # Remove the redundant Markdown image link from the text
+            final_message_content = final_message_content.replace(f"![Image]({image_url})", "").strip()
             return {"text": final_message_content, "image_url": image_url}
     
     # If no tool call, return the regular chat response

@@ -1,5 +1,5 @@
 
-## Zyklus vom 2025-08-09: Finaler UI-Polish V2 (Input-Feld-Fix)
-**ZIEL:** Das Texteingabefeld ist deutlich breiter und nutzt zusammen mit dem Senden-Button den verfügbaren Platz im Chat-Fenster optimal aus.
+## Zyklus vom 2025-08-09: Finaler UI-Polish V3 abgeschlossen
+**ZIEL:** Den redundanten Markdown-Link entfernen und die Größe sowie Ausrichtung des Vorschaubildes finalisieren.
 **WAS & WARUM:**
-Das `#chat-form` Element wurde als Flexbox-Container konfiguriert und nimmt 100% der Breite seines Elternteils ein, um sicherzustellen, dass das Eingabefeld den gesamten verfügbaren Platz ausnutzt.
+Der redundante Markdown-Link in der Backend-Antwort wurde entfernt. Die Größe und Ausrichtung des Vorschaubildes im Frontend wurden angepasst, um eine breitere und zentrierte Darstellung innerhalb der Sprechblase zu gewährleisten.
