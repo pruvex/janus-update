@@ -7,8 +7,8 @@ const MODEL_CATALOG = {
         { id: 'dall-e-3-standard', name: 'DALL-E 3 (Standard)', price: '$0.040 / Bild', desc: 'Bilderzeugung in Standard-Qualität.' },
         { id: 'dall-e-3-hd', name: 'DALL-E 3 (HD)', price: '$0.080 / Bild', desc: 'Bilderzeugung in höchster Qualität.' }
     ],
-    gemini: [ // Korrigierter Schlüssel
-        { id: 'gemini-1.5-pro-latest', name: 'Gemini 1.5 Pro', price: 'ca. $3.50 / $10.50', desc: 'Googles Flaggschiff mit riesigem Kontextfenster.' },
-        { id: 'gemini-1.5-flash-latest', name: 'Gemini 1.5 Flash', price: 'ca. $0.35 / $1.05', desc: 'Extrem schnell und kosteneffizient.' },
-    ],
+    gemini: [
+        { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', price: 'ca. $3.50 / $10.50', desc: 'Googles Flaggschiff mit riesigem Kontextfenster.' },
+        { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', price: 'ca. $0.35 / $1.05', desc: 'Extrem schnell und kosteneffizient.' },
+        ],
 };

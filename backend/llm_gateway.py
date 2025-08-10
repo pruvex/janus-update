@@ -3,6 +3,12 @@ import httpx
 import os
 import json
 from openai import OpenAI
+import logging
+import traceback
+
+
+
+
 
 router = APIRouter()
 
@@ -90,34 +96,56 @@ async def _call_chat_completion_api(api_key: str, prompt: str, model: str):
                 messages=messages,
             )
             final_message_content = second_response.choices[0].message.content
-            # Remove the redundant Markdown image link from the text
-            final_message_content = final_message_content.replace(f"![Image]({image_url})", "").strip()
+            # If an image was generated, ensure the text content does not contain the image URL.
+            if image_url:
+                final_message_content = "Hier ist das Bild, das mit DALL·E 3 erstellt wurde."
             return {"text": final_message_content, "image_url": image_url}
     
     # If no tool call, return the regular chat response
     chat_response_text = response_message.content
     return {"text": chat_response_text} # Return as JSON object
 
+
+
+
+
 async def call_llm(provider: str, model: str, prompt: str, api_key: str):
-    if provider == "gemini":
-        api_model_name = model.replace('-latest', '') # Added this line
-        url = f"https://generativelanguage.googleapis.com/v1/models/{api_model_name}:generateContent?key={api_key}"
+    print(f"Call LLM - Provider: {provider}, Model: {model}")
+    if provider == "openai":
+        if "dall-e" in model:
+            quality = "standard"
+            if "hd" in model:
+                quality = "hd"
+            image_url = await _call_dalle_api(api_key, prompt, quality)
+            return {"text": f"Hier ist das Bild, das mit DALL·E 3 erstellt wurde.", "image_url": image_url}
+        else:
+            return await _call_chat_completion_api(api_key, prompt, model)
+    
+    elif provider == "gemini":
+            # Existing Gemini Chat Logic
+        url = f"https://generativelanguage.googleapis.com/v1/models/{model}:generateContent?key={api_key}"
         headers = {"Content-Type": "application/json"}
         payload = {"contents": [{"parts": [{"text": prompt}]}]}
         
         async with httpx.AsyncClient() as client:
-            response = await client.post(url, headers=headers, json=payload)
-            response.raise_for_status()
-            return response.json()
-    elif provider == "openai":
-        if "dall-e" in model:
-            # Extract quality from model name if available (e.g., "dall-e-3-hd")
-            quality = "standard"
-            if "hd" in model:
-                quality = "hd"
-            return await _call_dalle_api(api_key, prompt, quality)
-        else:
-            return await _call_chat_completion_api(api_key, prompt, model)
+            try:
+                response = await client.post(url, headers=headers, json=payload, timeout=30)
+                response.raise_for_status()
+                gemini_response = response.json()
+
+                if "candidates" in gemini_response and gemini_response["candidates"]:
+                    if "content" in gemini_response["candidates"][0] and "parts" in gemini_response["candidates"][0]["content"] and gemini_response["candidates"][0]["content"]["parts"]:
+                        chat_response_text = gemini_response["candidates"][0]["content"]["parts"][0].get("text", "")
+                        return {"text": chat_response_text}
+
+                raise HTTPException(status_code=500, detail="Unerwartetes Antwortformat von der Gemini-API.")
+
+            except httpx.RequestError as e:
+                raise HTTPException(status_code=500, detail=f"Fehler bei der Kommunikation mit der Gemini-API: {e}")
+            except json.JSONDecodeError:
+                raise HTTPException(status_code=500, detail="Fehler beim Parsen der Gemini-API-Antwort.")
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Ein unerwarteter Fehler ist aufgetreten: {str(e)}")
     else:
         raise HTTPException(status_code=400, detail="Unsupported provider.")
 

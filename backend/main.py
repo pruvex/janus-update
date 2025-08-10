@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from . import llm_gateway
+import traceback
 
 app = FastAPI()
 
@@ -107,4 +108,9 @@ async def chat(request: ChatRequest):
     except HTTPException as e:
         raise e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error during chat processing: {str(e)}")
+        tb_str = traceback.format_exc()
+        print(f"Ein Fehler ist aufgetreten: {e}\nTraceback:\n{tb_str}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Ein interner Serverfehler ist aufgetreten.\n\nTraceback:\n{tb_str}"
+        )

@@ -83,15 +83,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadUserSelections() {
-    const availableProviders = ["openai", "gemini"]; // Should come from backend eventually
+    const availableProviders = ["openai", "gemini"];
+    const MAX_RETRIES = 5;
+    const RETRY_DELAY_MS = 1000; // 1 second delay
+
     for (const provider of availableProviders) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/models/selection/${provider}`);
-            const data = await response.json();
-            appState.user_selections[provider] = data.selected_models;
-            console.log(`loadUserSelections: Provider: ${provider}, Selected Models:`, data.selected_models);
-        } catch (error) {
-            appState.user_selections[provider] = []; // Default to empty if error
+        let success = false;
+        for (let i = 0; i < MAX_RETRIES; i++) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/models/selection/${provider}`);
+                if (!response.ok) {
+                    console.warn(`Attempt ${i + 1} failed for ${provider}: ${response.status} ${response.statusText}. Retrying...`);
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+                    continue;
+                }
+                const data = await response.json();
+                appState.user_selections[provider] = data.selected_models;
+                console.log(`loadUserSelections: Provider: ${provider}, Selected Models:`, data.selected_models);
+                success = true;
+                break; // Exit retry loop on success
+            } catch (error) {
+                console.warn(`Attempt ${i + 1} failed for ${provider} with error:`, error, `. Retrying...`);
+                await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+            }
+        }
+        if (!success) {
+            console.error(`Failed to load models for ${provider} after ${MAX_RETRIES} retries.`);
+            appState.user_selections[provider] = []; // Default to empty if all retries fail
         }
     }
 }

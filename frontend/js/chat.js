@@ -38,7 +38,7 @@ chatForm.addEventListener('submit', async (e) => {
     } catch (error) {
         // Entferne Ladeanzeige
         chatMessages.removeChild(chatMessages.lastChild);
-        appendMessage('bot', { text: `Ein Fehler ist aufgetreten: ${error.message}` });
+        appendMessage('bot', { text: error.message }); // Directly use error.message which contains the traceback
     }
 });
 
@@ -64,26 +64,43 @@ function appendMessage(sender, data) {
         textContent = data;
     } else if (typeof data === 'object' && data !== null) {
         textContent = data.text || '';
+        
+        let imageUrlForSaving = null;
+
+        // Handle image from URL (DALL-E)
         if (data.image_url) {
             const imageElement = document.createElement('img');
             imageElement.src = data.image_url;
-            imageElement.style.maxWidth = '50%'; // Apply CSS max-width
-            imageElement.style.height = 'auto';
-            imageElement.style.borderRadius = '8px';
-            imageElement.style.display = 'block';
-            imageElement.style.marginTop = '10px';
-            
-            imageElement.onload = () => { // Scroll after image loads
-                scrollToChatBottom();
-            };
+            imageUrlForSaving = data.image_url;
             messageElement.appendChild(imageElement);
+            imageElement.onload = () => scrollToChatBottom();
+
+        // Handle image from Base64 (Imagen)
+        } else if (data.image_base64 && data.mime_type) {
+            const imageElement = document.createElement('img');
+            const imageDataUrl = `data:${data.mime_type};base64,${data.image_base64}`;
+            imageElement.src = imageDataUrl;
+            imageUrlForSaving = imageDataUrl; // The save function can handle data URLs
+            messageElement.appendChild(imageElement);
+            imageElement.onload = () => scrollToChatBottom();
+        }
+
+        // Common image styling and save button
+        const imageInMessage = messageElement.querySelector('img');
+        if (imageInMessage) {
+            imageInMessage.style.maxWidth = '50%';
+            imageInMessage.style.height = 'auto';
+            imageInMessage.style.borderRadius = '8px';
+            imageInMessage.style.display = 'block';
+            imageInMessage.style.marginTop = '10px';
 
             const saveButton = document.createElement('button');
             saveButton.textContent = 'Bild speichern';
             saveButton.classList.add('save-image-button');
             saveButton.onclick = () => {
-                // Send message to main process to save image
-                window.electron.saveImage(data.image_url);
+                if (imageUrlForSaving) {
+                    window.electron.saveImage(imageUrlForSaving);
+                }
             };
             messageElement.appendChild(saveButton);
         }
