@@ -10,7 +10,7 @@ UX als Priorität: Die Benutzeroberfläche ist modern, intuitiv und darauf ausge
 2. Kernfunktionalität (Was Janus können wird)
 2.1 Agenten-Kern & LLM-Anbindung
 Multi-Provider Key Management: Sichere, lokale Speicherung von API-Keys für eine Vielzahl von Anbietern.
-Dynamische Modellauswahl: Einfacher Wechsel zwischen Anbietern und spezifischen Modellen (z.B. GPT-4o, Gemini 1.5 Pro) direkt in der Benutzeroberfläche.
+Dynamische Modellauswahl: Einfacher Wechsel zwischen Anbietern und spezifischen Modellen (z.B. GPT-4o, Gemini 2.5 Pro) direkt in der Benutzeroberfläche.
 Lokale LLM-Integration: Die Fähigkeit, lokale Large Language Models (z.B. über Ollama oder Llama.cpp) zu installieren und zu nutzen. Janus analysiert die Hardware-Leistung des Rechners, fragt den Benutzer nach seinen Zielen (z.B. "kreatives Schreiben", "Codierung") und schlägt basierend darauf passende, lokal installierbare Modelle vor. Auf Wunsch führt Janus die Installation und Einrichtung dieser Modelle durch.
 Kosten-Tracking: Ein Dashboard zur Überwachung der API-Nutzung und der damit verbundenen Kosten.
 2.2 Das Chat-Erlebnis
