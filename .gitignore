@@ -15,3 +15,7 @@ Thumbs.db
 # Python cache
 __pycache__/
 *.pyc
+
+# Added by Gemini
+backend/venv/
+backend/__pycache__/
