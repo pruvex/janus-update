@@ -71,34 +71,22 @@ Roadmap-Erstellung: Basierend auf dieser Blaupause werde ich einen neuen, sauber
 *   **Modell-Verwaltung:** Die Funktionalität zur Auswahl und persistenten Speicherung von Modellen pro Anbieter wurde implementiert.
 
 
-## 5. Roadmap (Überarbeitet für Electron)
+## 5. Roadmap (Neu Strukturiert nach UI-First-Prinzip)
 
-### PHASE 1: Das Stabile Fundament (Electron & "Hello World")
-*Ziel: Ein leeres, aber startbares Electron-Anwendungs-Skelett. Ein Klick auf einen Knopf im Frontend ruft das Backend auf und zeigt die Antwort an. Das System ist stabil und versioniert.*
+### PHASE 1: Das Stabile Fundament (Abgeschlossen)
+- [x] Ein startbares Electron-Anwendungs-Skelett mit funktionierender Backend-Kommunikation.
 
-- [ ] **[INFRASTRUKTUR] "Scorched Earth" & Setup:** Das Projektverzeichnis bis auf `.git` und die `.md`-Dateien leeren.
-- [ ] **[INFRASTRUKTUR] Git-Repository finalisieren:** Eine saubere, umfassende `.gitignore`-Datei für Electron, Node und Python erstellen.
-- [ ] **[INFRASTRUKTUR] Projektstruktur anlegen:** Die leere Goldstandard-Struktur (`backend`, `frontend`, `waechter`) erstellen.
-- [ ] **[INFRASTRUKTUR] Immunsystem (`health_check.py`) erstellen:** Ein Skript zur Validierung der Struktur und Kern-Abhängigkeiten schmieden.
-- [ ] **[INFRASTRUKTUR] Frontend-Setup (Electron):**
-    - Eine saubere `package.json` mit den notwendigen Electron-Abhängigkeiten erstellen.
-    - `npm install` ausführen, um eine `package-lock.json` zu erzeugen.
-    - Die grundlegenden Electron-Dateien (`main.js` für den Hauptprozess, `preload.js` für die Bridge) erstellen.
-- [ ] **[INFRASTRUKTUR] Backend-Setup (Python & FastAPI):** Die `venv` erstellen, eine `requirements.txt` anlegen und die Abhängigkeiten installieren.
-- [ ] **[JANUS] "Hello World"-API-Endpunkt:** Im Backend einen `/api/health`-Endpunkt erstellen.
-- [ ] **[WÄCHTER] "Hello World"-Test:** Einen Wächter-Test schreiben, der den laufenden Backend-Server aufruft.
-- [ ] **[JANUS] "Hello World"-UI:** Im Frontend eine simple `index.html` mit einem Knopf und einem Ausgabebereich erstellen.
-- [ ] **[JANUS] Frontend mit Backend verbinden:** Ein Klick auf den Knopf sendet über die Electron-Bridge eine Anfrage an das Backend und zeigt die Antwort an.
-- [ ] **[GIT] Stabilitäts-Commit:** Den funktionierenden "Hello World"-Zustand als ersten, goldenen Commit festhalten.
+### PHASE 2: Kernfunktionalität-Backend (Abgeschlossen)
+- [x] Backend-Logik für Key-Management, Modell-Auswahl und Kosten-Tracking.
 
-### PHASE 2: Der Chat-Kern & Multi-Provider-Fähigkeit
-(Unverändert in den Zielen, nur die technische Umsetzung ändert sich leicht)
+### PHASE 3: UI-Feinschliff & Kerninteraktion
+- [ ] Ziel: Eine polierte und intuitive Benutzeroberfläche mit beweglichem Chat-Fenster, einklappbarer Sidebar und Kosten-Visualisierung schaffen.
 
-### PHASE 3: Der Filesystem-Agent & Visuelle Interaktion
-(Unverändert in den Zielen, nur die technische Umsetzung ändert sich leicht)
+### PHASE 4: Gesprächs-Management & ChatGPT-Parität
+- [ ] Ziel: Janus die Fähigkeit geben, Chats zu speichern/laden, mehrere Chats zu verwalten und auf das Internet zuzugreifen.
 
-### PHASE 4: Lokale LLMs & Bilderzeugung (MVP)
-(Unverändert in den Zielen, nur die technische Umsetzung ändert sich leicht)
+### PHASE 5: Erweiterte Agenten-Fähigkeiten
+- [ ] Ziel: Implementierung des Filesystem-Agenten und anderer fortgeschrittener Werkzeuge.
 
 Teilweise abgebildet oder als Grundlage vorbereitet:
 Chat-Management & Chat-übergreifendes Gedächtnis: Die Grundlagen werden in Phase 2 geschaffen. Ein ausgefeiltes System ist eine spätere Erweiterung.
