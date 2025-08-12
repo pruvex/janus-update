@@ -1,7 +1,10 @@
 
 
-### 2025-08-12 - Mindestgröße Chatfenster
+### 2025-08-12 - Dynamische Bewegungsgrenzen Chatfenster (Feinjustierung)
 
-- **Problem:** Chatfenster konnte auf zu kleine Größe skaliert werden, was zu UI-Bruch führte.
-- **Lösung:** Mindestgröße für das Chat-Fenster mittels interact.js-Modifier `restrictSize` implementiert (min: width 300px, height 200px).
-- **Ergebnis:** Chatfenster kann nicht mehr kleiner als die definierte Mindestgröße gezogen werden.
+- **Problem:** Chatfenster konnte nicht bis an die Sidebar geschoben werden und hatte keine rechte Begrenzung.
+- **Lösung:**
+    - Die Klemm-Logik in `dragMoveListener` in `app.js` angepasst.
+    - `x`- und `y`-Positionen werden nun relativ zu den Dimensionen des Elternelements (`#chat-view`) geklemmt.
+    - `chatView.getBoundingClientRect()` wird verwendet, um die korrekten Dimensionen des Elternelements zu erhalten.
+- **Ergebnis:** Chatfenster sollte nun korrekt innerhalb der Grenzen des `#chat-view`-Containers beweglich sein, was die Sidebar-Überlappung und das Herausschieben aus dem Bild verhindert.

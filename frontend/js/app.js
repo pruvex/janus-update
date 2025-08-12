@@ -98,12 +98,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       .draggable({
         allowFrom: '#chat-header',
         inertia: true,
-        autoScroll: true,
         listeners: {
           start (event) {
             const target = event.target;
-            target.setAttribute('data-x', parseFloat(target.style.left) || 0);
-            target.setAttribute('data-y', parseFloat(target.style.top) || 0);
+            // Initialize data-x and data-y with the current position relative to its offsetParent
+            target.setAttribute('data-x', target.offsetLeft);
+            target.setAttribute('data-y', target.offsetTop);
+            console.log(`Drag Start: initialX=${target.offsetLeft}, initialY=${target.offsetTop}`);
           },
           move: dragMoveListener,
         }
@@ -140,6 +141,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       const target = event.target
       let x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
       let y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
+
+      // Get window and sidebar dimensions
+      const sidebarWidth = 250; // From styles.css
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+
+      // Get chat window dimensions
+      const chatWindowWidth = target.offsetWidth;
+      const chatWindowHeight = target.offsetHeight;
+
+      // Get chatView dimensions (parent of chat-window)
+      const chatView = document.getElementById('chat-view');
+      const chatViewRect = chatView.getBoundingClientRect();
+
+      // Clamp x position
+      x = Math.max(0, Math.min(x, chatViewRect.width - chatWindowWidth));
+
+      // Clamp y position
+      y = Math.max(0, Math.min(y, chatViewRect.height - chatWindowHeight));
 
       target.style.left = `${x}px`;
       target.style.top = `${y}px`;
