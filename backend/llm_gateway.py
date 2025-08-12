@@ -112,14 +112,7 @@ async def _call_chat_completion_api(api_key: str, prompt: str, model: str):
 async def call_llm(provider: str, model: str, prompt: str, api_key: str):
     print(f"Call LLM - Provider: {provider}, Model: {model}")
     if provider == "openai":
-        if "dall-e" in model:
-            quality = "standard"
-            if "hd" in model:
-                quality = "hd"
-            image_url = await _call_dalle_api(api_key, prompt, quality)
-            return {"text": f"Hier ist das Bild, das mit DALL·E 3 erstellt wurde.", "image_url": image_url}
-        else:
-            return await _call_chat_completion_api(api_key, prompt, model)
+        return await _call_chat_completion_api(api_key, prompt, model)
     
     elif provider == "gemini":
             # Existing Gemini Chat Logic

@@ -1,3 +1,5 @@
+import interact from 'interactjs';
+
 const appState = {
     currentView: 'chat',
     user_selections: {},
@@ -10,6 +12,9 @@ const appState = {
 function render() {
     const chatView = document.getElementById('chat-view');
     const settingsView = document.getElementById('settings-view');
+    console.log('render: currentView =', appState.currentView);
+    console.log('render: chatView =', chatView, 'settingsView =', settingsView);
+
     const sidebarProviderSelect = document.getElementById('provider-select');
     const sidebarModelSelect = document.getElementById('model-select');
 
@@ -55,6 +60,13 @@ function render() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     const settingsBtn = document.getElementById('settings-btn');
+    console.log('settingsBtn found:', settingsBtn);
+
+    settingsBtn.addEventListener('click', () => {
+        console.log('Settings button clicked!');
+        appState.currentView = 'settings';
+        render();
+    });
     const backToChatBtn = document.getElementById('back-to-chat-btn');
     const sidebarProviderSelect = document.getElementById('provider-select');
 
@@ -80,6 +92,53 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadUserSelections(); // Load selections before initial render
     render(); // Initial render
+
+    // --- interact.js logic ---
+    interact('.chat-window')
+      .draggable({
+        allowFrom: '#chat-header',
+        inertia: true,
+        modifiers: [
+          interact.modifiers.restrictRect({
+            restriction: 'parent',
+            endOnly: true
+          })
+        ],
+        autoScroll: true,
+        listeners: {
+          move: dragMoveListener,
+        }
+      })
+      .resizable({
+        edges: { left: true, right: true, bottom: true, top: true },
+        listeners: {
+          move (event) {
+            let { x, y } = event.target.dataset
+
+            x = (parseFloat(x) || 0) + event.deltaRect.left
+            y = (parseFloat(y) || 0) + event.deltaRect.top
+
+            Object.assign(event.target.style, {
+              width: `${event.rect.width}px`,
+              height: `${event.rect.height}px`,
+              transform: `translate(${x}px, ${y}px)`
+            })
+
+            Object.assign(event.target.dataset, { x, y })
+          }
+        }
+      })
+
+    function dragMoveListener (event) {
+      const target = event.target
+      const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
+      const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
+
+      target.style.transform = `translate(${x}px, ${y}px)`
+
+      target.setAttribute('data-x', x)
+      target.setAttribute('data-y', y)
+    }
 });
 
 async function loadUserSelections() {
