@@ -80,6 +80,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         render();
     });
 
+    const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
+    const appContainer = document.querySelector('.app-container');
+
+    toggleSidebarBtn.addEventListener('click', () => {
+        appContainer.classList.toggle('sidebar-collapsed');
+        if (appContainer.classList.contains('sidebar-collapsed')) {
+            toggleSidebarBtn.textContent = '▶';
+        } else {
+            toggleSidebarBtn.textContent = '◀';
+        }
+    });
+
     sidebarProviderSelect.addEventListener('change', () => {
         appState.last_active.provider = sidebarProviderSelect.value;
         render();
