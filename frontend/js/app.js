@@ -110,6 +110,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       })
       .resizable({
         edges: { left: true, right: true, bottom: true, top: true },
+        inertia: true,
+        // NEU: Fügt die Größenbeschränkung hinzu
+        modifiers: [
+          interact.modifiers.restrictSize({
+            min: { width: 300, height: 200 }
+          })
+        ],
         listeners: {
           move (event) {
             let { x, y } = event.target.dataset
