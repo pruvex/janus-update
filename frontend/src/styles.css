@@ -1,9 +1,22 @@
+:root {
+  --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --background-primary: #121212;
+  --background-secondary: #1E1E1E;
+  --surface-color: #2A2A2A;
+  --accent-color: #00A3FF;
+  --text-primary: #EAEAEA;
+  --text-secondary: #B3B3B3;
+  --border-radius-main: 8px;
+  --transition-speed: 0.3s;
+}
+
 html, body {
     height: 100%;
     margin: 0;
-    font-family: sans-serif;
-    background-color: #222;
-    color: #eee;
+    padding: 0;
+    font-family: var(--font-main);
+    background-color: var(--background-primary);
+    color: var(--text-primary);
 }
 
 .app-container {
@@ -13,9 +26,11 @@ html, body {
 
 #sidebar {
     width: 250px;
-    background-color: #333;
-    padding: 1rem;
-    border-right: 1px solid #555;
+    background-color: rgba(30, 30, 30, 0.75); /* Halbtransparent für Glassmorphism */
+    backdrop-filter: blur(10px);
+    border-right: 1px solid var(--surface-color);
+    border-radius: 0 var(--border-radius-main) var(--border-radius-main) 0; /* Runde Ecken nur rechts */
+    padding: 16px;
     display: flex;
     flex-direction: column;
     transition: width 0.3s ease;
@@ -117,25 +132,20 @@ html, body {
   gap: 10px; /* Abstand zwischen den Elementen */
 }
 
-#sidebar select,
-#sidebar button {
-  width: 100%;
-  padding: 0.5rem;
-  background-color: #3c3c3c;
-  color: #eee;
-  border: 1px solid #555;
-  border-radius: 4px;
+button, select {
+  background-color: var(--surface-color);
+  color: var(--text-primary);
+  border: 1px solid var(--accent-color);
+  border-radius: var(--border-radius-main);
+  padding: 8px 12px;
+  font-family: var(--font-main);
+  transition: all var(--transition-speed) ease;
+}
+
+button:hover {
+  background-color: var(--accent-color);
+  color: var(--background-primary);
   cursor: pointer;
-}
-
-#sidebar select:focus,
-#sidebar button:focus {
-  outline: none;
-  border-color: #007bff; /* Beispiel für Fokusfarbe */
-}
-
-#sidebar button:hover {
-  background-color: #4a4a4a;
 }
 
 .chat-message img {

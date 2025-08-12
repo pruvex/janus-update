@@ -33,3 +33,18 @@
     - **Grund:** Versionierung der stabilen und abgeschlossenen Funktion.
     - `git commit -m "feat(ui): Implement collapsible sidebar"`
 - **Ergebnis:** Die Anwendung verfügt nun über eine funktionale, animierte und optisch ansprechende einklappbare Sidebar.
+
+### 2025-08-12 - UI Polish Phase 1: Design Fundament
+
+- **Ziel:** Ein sauberes, klares und futuristisches Design-Fundament für die Anwendung etablieren.
+- **Aktion: CSS-Variablen für Theming**
+    - Ein `:root`-Block wurde in `styles.css` eingeführt, um zentrale Design-Token (Farben, Schriftarten, Radien) als CSS-Variablen zu definieren. Dies ermöglicht eine einfache und konsistente Verwaltung des Designs.
+- **Aktion: Globale Stile angepasst**
+    - Der `body`-Style wurde aktualisiert, um die neuen CSS-Variablen für Hintergrund, Textfarbe und Schriftart zu verwenden.
+- **Aktion: Sidebar überarbeitet**
+    - Die Sidebar nutzt nun einen halbtransparenten Hintergrund mit `backdrop-filter` (Glassmorphism-Effekt).
+    - Die Ecken sind auf der rechten Seite abgerundet, um eine modernere Optik zu erzielen.
+- **Aktion: Buttons und Dropdowns vereinheitlicht**
+    - Es wurden generische Stilregeln für alle `<button>`- und `<select>`-Elemente erstellt, um ein einheitliches Erscheinungsbild zu gewährleisten.
+    - Ein Hover-Effekt wurde für alle Buttons standardisiert.
+- **Ergebnis:** Das grundlegende Design-System ist implementiert. Die Anwendung hat eine neue, einheitliche Schriftart und ein dunkles, modernes Farbschema. Interaktive Elemente sind konsistent gestaltet.
