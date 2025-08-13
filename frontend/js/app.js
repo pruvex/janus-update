@@ -113,12 +113,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         listeners: {
           start (event) {
             const target = event.target;
-            // Initialize data-x and data-y with the current position relative to its offsetParent
             target.setAttribute('data-x', target.offsetLeft);
             target.setAttribute('data-y', target.offsetTop);
             console.log(`Drag Start: initialX=${target.offsetLeft}, initialY=${target.offsetTop}`);
           },
-          move: dragMoveListener,
+          move: dragListener,
         }
       })
       .resizable({
@@ -131,25 +130,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           })
         ],
         listeners: {
-          move (event) {
-            let { x, y } = event.target.dataset
-
-            x = (parseFloat(x) || 0) + event.deltaRect.left
-            y = (parseFloat(y) || 0) + event.deltaRect.top
-
-            Object.assign(event.target.style, {
-              width: `${event.rect.width}px`,
-              height: `${event.rect.height}px`,
-              left: `${x}px`,
-              top: `${y}px`
-            })
-
-            Object.assign(event.target.dataset, { x, y })
-          }
+          move: resizeListener
         }
       })
 
-    function dragMoveListener (event) {
+    function dragListener (event) {
       const target = event.target
       let x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
       let y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
@@ -178,6 +163,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       target.setAttribute('data-x', x)
       target.setAttribute('data-y', y)
+    }
+
+    function resizeListener (event) {
+      const target = event.target
+      let x = (parseFloat(target.getAttribute('data-x')) || 0) + event.deltaRect.left
+      let y = (parseFloat(target.getAttribute('data-y')) || 0) + event.deltaRect.top
+
+      Object.assign(event.target.style, {
+        width: `${event.rect.width}px`,
+        height: `${event.rect.height}px`,
+        left: `${x}px`,
+        top: `${y}px`
+      })
+
+      Object.assign(event.target.dataset, { x, y })
     }
 });
 
