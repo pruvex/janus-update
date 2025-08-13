@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "start-dev": "concurrently \"npm run start-electron\" \"npm run start-vite\" \"C:\\KI\\Janus-Projekt\\backend\\venv\\Scripts\\python.exe -m uvicorn backend.main:app --reload --port 8000\"",
-    "start-electron": "electron .",
+    "start-electron": "cross-env NODE_ENV=development electron .",
     "start-vite": "vite"
   },
   "keywords": [],
@@ -17,7 +17,8 @@
   "devDependencies": {
     "concurrently": "^8.2.2",
     "electron": "^31.0.2",
-    "vite": "^5.3.1"
+    "vite": "^5.3.1",
+    "cross-env": "^7.0.3"
   },
   "dependencies": {
     "interactjs": "^1.10.27"

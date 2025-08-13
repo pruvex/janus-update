@@ -1,22 +1,44 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, MenuItem } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const https = require('https'); // For downloading images
 
 function createWindow () {
-  const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+  // --- Neuer, robuster BrowserWindow-Konstruktor ---
+const preloadPath = path.join(__dirname, 'preload.js');
+console.log(`[Main Process] Attempting to load preload script from: ${preloadPath}`);
+
+mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'), // Ensure preload script is loaded
-      contextIsolation: true, // Enable context isolation
-      nodeIntegration: false, // Disable node integration
+        preload: preloadPath,
+        contextIsolation: true, // Entscheidend für die Sicherheit und Funktion der contextBridge
+        nodeIntegration: false // Aus Sicherheitsgründen deaktivieren
     }
-  });
+});
+// --- Ende des neuen Blocks ---
 
   // Lade die index.html in das FENSTER (den Renderer Process).
-  mainWindow.loadFile('index.html');
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.loadURL('http://localhost:5173/');
+  } else {
+    mainWindow.loadFile('index.html');
+  }
   mainWindow.webContents.openDevTools();
+
+  mainWindow.webContents.on('context-menu', (event, params) => {
+    const menu = new Menu();
+
+    // Add 'Kopieren' option
+    menu.append(new MenuItem({
+      label: 'Kopieren',
+      role: 'copy'
+    }));
+
+    // Show the custom context menu
+    menu.popup({ window: mainWindow });
+  });
 
   // Handle save-image IPC call
   ipcMain.on('save-image', async (event, imageUrl) => {
