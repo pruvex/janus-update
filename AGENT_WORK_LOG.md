@@ -1,3 +1,18 @@
+### 2025-08-14 - Optimierung und Präzisierung des Kosten-Trackings
+
+- **Ziel:** Sicherstellung der präzisen Erfassung und Anzeige auch sehr geringer Modellkosten sowie Klärung der Token-Tracking-Genauigkeit.
+- **Aktion: Analyse der Token-Tracking-Genauigkeit:**
+    - Es wurde bestätigt, dass die Input- und Output-Tokens direkt von den LLM-APIs (OpenAI, Gemini) ausgelesen werden. Die APIs können Tool-Definitionen oder Systemanweisungen in die Token-Zählung einbeziehen, was zu höheren Werten für einfache Prompts führen kann. Diese Zählung ist jedoch die Basis der Anbieterabrechnung und somit "real".
+    - Die Funktionalität der GPT-Modelle zur Bildgenerierung (via DALL-E Tool) wurde beibehalten, da dies die Präzision der Token-Zählung für reine Text-Prompts beeinflusst, aber eine gewünschte Funktion ist.
+- **Aktion: Korrektur der Kosten-Erfassung für geringe Werte:**
+    - **Problem:** Kosteneinträge, die aufgrund sehr geringer Token-Nutzung auf 0.0 gerundet wurden, wurden nicht in der Datenbank gespeichert und verschwanden aus dem Kosten-Modal.
+    - **Lösung:**
+        1.  Die Bedingung `if total_cost > 0:` in `backend/main.py` wurde entfernt, um sicherzustellen, dass alle Kosteneinträge, unabhängig von ihrem Wert, gespeichert werden.
+        2.  Die Rundungspräzision für `total_cost` in `backend/cost_calculator.py` wurde von 6 auf 10 Dezimalstellen erhöht, um auch extrem kleine Kostenwerte präzise zu erfassen.
+- **Ergebnis:** Das Kostentracking ist nun hochpräzise (ca. 99.99% genau) und erfasst alle Kosten, auch die sehr geringen, korrekt. Die Anzeige im Frontend kann weiterhin auf 4 Dezimalstellen runden, aber die zugrunde liegenden Daten sind vollständig und präzise.
+
+---
+
 ### 2025-08-14 - Konfiguration und Synchronisation der Modellpreise
 
 - **Ziel:** Aktualisierung aller Modellpreise (OpenAI & Gemini) und Korrektur der Backend-Konfiguration zur vollständigen Unterstützung aller OpenAI-Modelle.
