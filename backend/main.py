@@ -9,6 +9,40 @@ import traceback
 from fastapi.responses import JSONResponse
 from datetime import datetime
 from . import database
+from typing import List, Optional
+
+app = FastAPI()
+
+@app.on_event("startup")
+async def startup_event():
+    database.init_db()
+    print("Database initialized.") # Optional: Debugging-Meldung
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Erlaube alle Ursprünge für die lokale Entwicklung
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
+MODEL_CATALOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_catalog.json")
+
+def load_model_catalog():
+    print(f"DEBUG: Attempting to load model catalog from: {MODEL_CATALOG_FILE}")
+    print(f"DEBUG: Does model catalog file exist? {os.path.exists(MODEL_CATALOG_FILE)}")
+    if not os.path.exists(MODEL_CATALOG_FILE):
+        return []
+    try:
+        with open(MODEL_CATALOG_FILE, "r") as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        print(f"ERROR: Invalid JSON in model catalog file: {MODEL_CATALOG_FILE}")
+        return []
+    except Exception as e:
+        print(f"ERROR: Unexpected error loading model catalog: {e}")
+        raise
 
 # Helper function for cost saving (re-adding)
 def save_cost_entry(model: str, input_tokens: int = None, output_tokens: int = None, image_quality: str = None, image_cost: float = None, total_cost: float = 0):
@@ -26,30 +60,6 @@ def save_cost_entry(model: str, input_tokens: int = None, output_tokens: int = N
         )
     except Exception as e:
         print(f"ERROR: Kosteneintrag konnte nicht gespeichert werden: {e}")
-
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Erlaube alle Ursprünge für die lokale Entwicklung
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
-MODEL_CATALOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_catalog.json")
-
-def load_model_catalog():
-    if not os.path.exists(MODEL_CATALOG_FILE):
-        return []
-    try:
-        with open(MODEL_CATALOG_FILE, "r") as f:
-            return json.load(f)
-    except json.JSONDecodeError:
-        return []
-    except Exception:
-        raise
 
 class ChatRequest(BaseModel):
     prompt: str
@@ -172,3 +182,35 @@ async def chat(request: ChatRequest):
     except Exception as e:
         tb_str = traceback.format_exc()
         raise HTTPException(status_code=500, detail=f"Ein interner Serverfehler ist aufgetreten.\nTraceback:\n{tb_str}")
+
+# --- Hinzugefügt für Kosten-Visualisierung ---
+class CostDashboard(BaseModel):
+    current_month_cost: float
+    monthly_budget: float
+
+@app.get("/api/costs/dashboard", response_model=CostDashboard)
+async def get_costs_dashboard():
+    today = datetime.now()
+    current_month_cost = database.get_costs_for_month(today.year, today.month)
+    
+    # TODO: Implement logic to read budget from a config file
+    # For now, we use a hardcoded value
+    budget = 10.00
+    return CostDashboard(current_month_cost=current_month_cost, monthly_budget=budget)
+
+class CostDetail(BaseModel):
+    date: datetime
+    model: str
+    input_tokens: Optional[int] = None
+    output_tokens: Optional[int] = None
+    image_quality: Optional[str] = None
+    image_cost: Optional[float] = None
+    total_cost: float
+
+@app.get("/api/costs/details", response_model=List[CostDetail])
+async def get_costs_details():
+    # This will need a new function in database.py to fetch all details
+    # For now, return dummy data or implement a basic fetch
+    # Assuming database.py will have get_all_cost_entries()
+    # For now, let's just return an empty list or dummy data if database function is not ready
+    return [] # Placeholder for now, will implement database fetch later

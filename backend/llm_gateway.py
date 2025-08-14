@@ -117,7 +117,18 @@ async def _call_gemini_api(api_key: str, prompt: str, model: str):
             if "candidates" in gemini_response and gemini_response["candidates"]:
                 if "content" in gemini_response["candidates"][0] and "parts" in gemini_response["candidates"][0]["content"] and gemini_response["candidates"][0]["content"]["parts"]:
                     chat_response_text = gemini_response["candidates"][0]["content"]["parts"][0].get("text", "")
-                    return {"text": chat_response_text}
+                    
+                    # Estimate token usage
+                    input_tokens = len(prompt.split())
+                    output_tokens = len(chat_response_text.split())
+
+                    return {
+                        "text": chat_response_text,
+                        "usage": {
+                            "input_tokens": input_tokens,
+                            "output_tokens": output_tokens
+                        }
+                    }
 
             raise HTTPException(status_code=500, detail="Unerwartetes Antwortformat von der Gemini-API.")
 
