@@ -158,8 +158,7 @@ async def chat(request: ChatRequest):
         if usage and cost:
             total_cost = cost.get("total_cost", 0)
             
-            if total_cost > 0:
-                save_cost_entry(
+            save_cost_entry(
                     model=request.model,
                     input_tokens=usage.get("input_tokens"),
                     output_tokens=usage.get("output_tokens"),

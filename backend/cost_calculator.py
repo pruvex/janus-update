@@ -25,4 +25,4 @@ def calculate_cost(model_id: str, input_tokens: int, output_tokens: int) -> floa
     # Kosten werden pro 1 Million Token angegeben
     total_cost = (input_tokens * cost_per_input) + \
                  (output_tokens * cost_per_output)
-    return round(total_cost, 6)
+    return round(total_cost, 10)
