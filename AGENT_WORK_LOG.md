@@ -37,3 +37,11 @@
 - **Aktion: `frontend/js/cost-visualizer.js` erstellt:**
     - Die Datei `frontend/js/cost-visualizer.js` wurde neu erstellt, um Kostendaten von den Backend-APIs abzurufen und anzuzeigen.
 - **Ergebnis:** Die Anwendung ist nun voll funktionsfähig. DALL-E SD/HD-Optionen funktionieren, GPT-generierte Bilder werden korrekt angezeigt (nur Bild, kein Link), und die Grundlagen des Kosten-Trackings sind implementiert.
+
+
+### 2025-08-14 - Automatische Kosten-Aktualisierung implementiert
+- **Ziel:** Kosten-Widget aktualisiert sich automatisch nach jeder Chat-Interaktion.
+- **Aktion:** `window.fetchCostData` in `frontend/js/cost-visualizer.js` global verfügbar gemacht und den initialen Aufruf entfernt.
+- **Aktion:** Aufruf von `window.fetchCostData()` in `frontend/js/chat.js` nach erfolgreicher Chat-Antwort hinzugefügt.
+- **Aktion:** Veralteter "Kosten aktualisieren"-Button aus `frontend/index.html` entfernt.
+- **Ergebnis:** Die Kostenanzeige aktualisiert sich nun automatisch, ohne manuelle Interaktion.
