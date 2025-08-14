@@ -1,46 +1,85 @@
-PS C:\KI\Janus-Projekt> npm run start-dev
-
-> janus-projekt@1.0.0 start-dev
-> concurrently "npm run start-electron" "npm run start-vite" "C:\KI\Janus-Projekt\backend\venv\Scripts\python.exe -m uvicorn backend.main:app --reload --port 8000"
-
-[2] INFO:     Will watch for changes in these directories: ['C:\\KI\\Janus-Projekt']
-[2] INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-[2] INFO:     Started reloader process [28148] using WatchFiles
-[0]
-[0] > janus-projekt@1.0.0 start-electron
-[0] > cross-env NODE_ENV=development electron .
-[0]
-[1]
-[1] > janus-projekt@1.0.0 start-vite
-[1] > vite
-[1]
-[0]
-[1] The CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.
-[1]
-[1]   VITE v5.4.19  ready in 275 ms
-[1]
-[1]   ➜  Local:   http://localhost:5173/
-[1]   ➜  Network: use --host to expose
-[2] INFO:     Started server process [29536]
-[2] INFO:     Waiting for application startup.
-[2] INFO:     Application startup complete.
-[2] Database initialized.
-[2] Database initialized.
-[2] INFO:     127.0.0.1:57813 - "GET /api/costs/dashboard HTTP/1.1" 200 OK
-[2] DEBUG: Attempting to load model catalog from: C:\KI\Janus-Projekt\backend\model_catalog.json
-[2] DEBUG: Does model catalog file exist? True
-[2] INFO:     127.0.0.1:57813 - "GET /api/models/selection/openai HTTP/1.1" 200 OK
-[2] INFO:     127.0.0.1:57815 - "GET /api/costs/details HTTP/1.1" 200 OK
-[2] DEBUG: Attempting to load model catalog from: C:\KI\Janus-Projekt\backend\model_catalog.json
-[2] DEBUG: Does model catalog file exist? True
-[2] INFO:     127.0.0.1:57815 - "GET /api/models/selection/gemini HTTP/1.1" 200 OK
-[2] INFO:     127.0.0.1:57812 - "OPTIONS /api/chat HTTP/1.1" 200 OK
-[2] Call LLM - Provider: openai, Model: gpt-4o-mini
-[2] INFO:     127.0.0.1:57811 - "POST /api/chat HTTP/1.1" 500 Internal Server Error
-[2] Task exception was never retrieved
-[2] future: <Task finished name='Task-13' coro=<AsyncClient.aclose() done, defined at C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\httpx\_client.py:1978> exception=AttributeError("'AsyncHttpxClientWrapper' object has no attribute '_state'")>
-[2] Traceback (most recent call last):
-[2]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\httpx\_client.py", line 1982, in aclose
-[2]     if self._state != ClientState.CLOSED:
-[2]        ^^^^^^^^^^^
-[2] AttributeError: 'AsyncHttpxClientWrapper' object has no attribute '_state'
+AGENTIC HANDlungsplan: Kosmetische Überarbeitung des Kosten-Detail-Modals
+Dein Ziel: Das Design und Layout des Kosten-Detail-Modals verbessern, um es klarer, informativer und ästhetisch ansprechender zu gestalten.
+Der Plan:
+Stufe 1: Validierung & Vorbereitung
+An den CLI-Agenten: git status. Bestätige, dass wir uns auf dev/kosten-gemini-tracking-9 befinden.
+Stufe 2: HTML-Struktur anpassen (index.html)
+An den CLI-Agenten: Lese die Datei frontend/index.html.
+Ankerpunkt-Strategie: Finde die <thead>-Sektion der <table id="cost-details-table">.
+Ersetze: den Inhalt des <thead>:
+code
+Html
+<thead>
+  <tr>
+    <th>Datum</th>
+    <th>Modell</th>
+    <th>Details</th> <!-- Dieser Header wird jetzt umbenannt -->
+    <th>Kosten</th>
+  </tr>
+</thead>
+Mit:
+code
+Html
+<thead>
+  <tr>
+    <th>Modell</th>
+    <th>Tokens</th> <!-- Spalten umbenannt und "Typ" entfernt -->
+    <th>Gesamtkosten (€)</th>
+  </tr>
+</thead>
+(Hinweis: Wir entfernen auch "Datum" für mehr Kompaktheit und weil es in der linken Liste bereits angezeigt wird).
+Stufe 3: JavaScript-Logik anpassen (cost-visualizer.js)
+An den CLI-Agenten: Lese die Datei frontend/js/cost-visualizer.js.
+Ankerpunkt-Strategie: Finde die details.forEach(item => { ... })-Schleife, die die Tabelle befüllt.
+Ersetze: Den Inhalt dieser Schleife.
+Mit: der neuen Logik, die zur neuen Tabellenstruktur passt:
+code
+JavaScript
+details.forEach(item => {
+  const row = tableBody.insertRow();
+  row.insertCell(0).textContent = item.model;
+  
+  let detailText = '';
+  if (item.input_tokens !== null) {
+    detailText = `Eingabe: ${item.input_tokens}, Ausgabe: ${item.output_tokens}`;
+  } else if (item.image_quality) {
+    detailText = `Bilder: ${item.count} (${item.quality})`; // Annahme, Backend wird dies aggregieren
+  }
+  row.insertCell(1).textContent = detailText;
+  
+  row.insertCell(2).textContent = item.total_cost.toFixed(4);
+});
+Stufe 4: CSS-Styling anpassen (styles.css)
+An den CLI-Agenten: Lese die Datei frontend/src/styles.css.
+Ankerpunkt-Strategie: Finde die .modal-content-Regel.
+Modifiziere sie, um das Modal breiter zu machen:
+Ändere max-width: 700px; zu max-width: 800px;.
+Füge neue Regeln hinzu, um die Tabelle "hübscher" zu machen:
+code
+Css
+#cost-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+#cost-details-table th, #cost-details-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--surface-color);
+}
+#cost-details-table th {
+  background-color: var(--accent-color);
+  color: var(--background-primary);
+}
+#cost-details-table td:last-child {
+    text-align: right; /* Kosten rechtsbündig für bessere Lesbarkeit */
+    font-weight: 600;
+}
+Stufe 5: Implementierungs-Abschluss & Übergabe zur Verifizierung
+[KRITISCHER SCHRITT] Alle Änderungen sind implementiert. KEIN COMMIT.
+Ich übergebe die Kontrolle an Sie.
+Bitte überprüfen Sie das neue Modal-Design:
+Ist die "Typ"-Spalte verschwunden und "Details" zu "Tokens" umbenannt?
+Ist das Modal breiter?
+Hat die Tabelle das neue, saubere Styling?
+Ich warte auf Ihr expliziertes 'success'-Signal.
