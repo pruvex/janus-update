@@ -6,6 +6,26 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from . import llm_gateway
 import traceback
+from fastapi.responses import JSONResponse
+from datetime import datetime
+from . import database
+
+# Helper function for cost saving (re-adding)
+def save_cost_entry(model: str, input_tokens: int = None, output_tokens: int = None, image_quality: str = None, image_cost: float = None, total_cost: float = 0):
+    """Helper function to save a cost entry to the database."""
+    try:
+        print(f"DEBUG: Speichere Kosteneintrag: total_cost={total_cost}")
+        database.save_cost_entry(
+            date=datetime.now().isoformat(),
+            model=model,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            image_quality=image_quality,
+            image_cost=image_cost,
+            total_cost=total_cost
+        )
+    except Exception as e:
+        print(f"ERROR: Kosteneintrag konnte nicht gespeichert werden: {e}")
 
 app = FastAPI()
 
@@ -18,6 +38,18 @@ app.add_middleware(
 )
 
 CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
+MODEL_CATALOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_catalog.json")
+
+def load_model_catalog():
+    if not os.path.exists(MODEL_CATALOG_FILE):
+        return []
+    try:
+        with open(MODEL_CATALOG_FILE, "r") as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        return []
+    except Exception:
+        raise
 
 class ChatRequest(BaseModel):
     prompt: str
@@ -71,8 +103,10 @@ async def get_api_keys():
 @app.get("/api/models/selection/{provider}")
 async def get_model_selection(provider: str):
     try:
-        config = load_config()
-        return {"selected_models": config.get("model_selection", {}).get(provider, [])}
+        catalog = load_model_catalog()
+        # Filter models by provider and return their IDs
+        selected_models = [model["id"] for model in catalog if model["provider"] == provider]
+        return {"selected_models": selected_models}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error loading model selection: {str(e)}")
 
@@ -100,17 +134,41 @@ async def add_api_key(key: ApiKey):
 async def chat(request: ChatRequest):
     try:
         api_key = keyring.get_password("Janus-Projekt", request.provider)
-
         if not api_key:
             raise HTTPException(status_code=400, detail=f"API Key for provider {request.provider} not found.")
         
-        return await llm_gateway.call_llm(request.provider, request.model, request.prompt, api_key)
+        # Der Gateway gibt jetzt ein sauberes, flaches Dictionary zurück
+        gateway_response = await llm_gateway.call_llm(request.provider, request.model, request.prompt, api_key)
+        
+        # --- Korrekte Kosten-Speicherung ---
+        usage = gateway_response.get("usage")
+        cost = gateway_response.get("cost")
+
+        if usage and cost:
+            total_cost = cost.get("total_cost", 0)
+            
+            if total_cost > 0:
+                 save_cost_entry(
+                    model=request.model,
+                    input_tokens=usage.get("input_tokens"),
+                    output_tokens=usage.get("output_tokens"),
+                    image_quality=usage.get("image_quality"),
+                    image_cost=usage.get("image_cost"),
+                    total_cost=total_cost
+                )
+
+        # --- Korrekte Erstellung der finalen Antwort ---
+        final_response = {
+            "sender": "model",
+            "text": gateway_response.get("text", ""),
+            "image_url": gateway_response.get("image_url")
+        }
+
+        print(f"DEBUG (main.py chat): final_response['image_url'] = {final_response['image_url']}")
+        return final_response
+
     except HTTPException as e:
         raise e
     except Exception as e:
         tb_str = traceback.format_exc()
-        print(f"Ein Fehler ist aufgetreten: {e}\nTraceback:\n{tb_str}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Ein interner Serverfehler ist aufgetreten.\n\nTraceback:\n{tb_str}"
-        )
+        raise HTTPException(status_code=500, detail=f"Ein interner Serverfehler ist aufgetreten.\nTraceback:\n{tb_str}")

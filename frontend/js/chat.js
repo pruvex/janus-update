@@ -60,13 +60,13 @@ function appendMessage(sender, data) {
     }
 
     let textContent = '';
+    let imageUrlForSaving = null; // Declare here to be accessible later
+
     if (typeof data === 'string') {
         textContent = data;
     } else if (typeof data === 'object' && data !== null) {
         textContent = data.text || '';
         
-        let imageUrlForSaving = null;
-
         // Handle image from URL (DALL-E)
         if (data.image_url) {
             const imageElement = document.createElement('img');
@@ -74,6 +74,7 @@ function appendMessage(sender, data) {
             imageUrlForSaving = data.image_url;
             messageElement.appendChild(imageElement);
             imageElement.onload = () => scrollToChatBottom();
+            textContent = ''; // Clear textContent if image is present
 
         // Handle image from Base64 (Imagen)
         } else if (data.image_base64 && data.mime_type) {
@@ -83,6 +84,7 @@ function appendMessage(sender, data) {
             imageUrlForSaving = imageDataUrl; // The save function can handle data URLs
             messageElement.appendChild(imageElement);
             imageElement.onload = () => scrollToChatBottom();
+            textContent = ''; // Clear textContent if image is present
         }
 
         // Common image styling and save button
