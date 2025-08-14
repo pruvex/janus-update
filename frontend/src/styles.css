@@ -250,7 +250,7 @@ button:hover {
     max-width: 600px; /* Max width for readability */
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
     position: relative;
-    color: #FFFFFF; /* Keep white for readability */
+    color: black; /* Explicitly black for readability on white background */
     font-size: 1.1em; /* Keep increased font size */
 }
 
@@ -279,7 +279,7 @@ button:hover {
     border: 1px solid var(--surface-color);
     padding: 8px;
     text-align: left;
-    color: #FFFFFF; /* Explicitly white for better readability */
+    color: black; /* Explicitly black for readability on white background */
     font-size: 1em; /* Ensure font size is consistent */
 }
 
