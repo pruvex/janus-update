@@ -1,8 +1,12 @@
 {
   "model_selection": {
-    "openai": [],
+    "openai": [
+      "gpt-4o-mini",
+      "dall-e-3-standard"
+    ],
     "gemini": [
-      "gemini-2.5-pro"
+      "gemini-2.5-pro",
+      "gemini-2.5-flash"
     ]
   }
 }

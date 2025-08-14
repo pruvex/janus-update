@@ -1,3 +1,33 @@
+### 2025-08-14 - Analyse der Gemini-Preis-Synchronisation
+
+- **Ziel:** Analyse der Implementierung der Preisgestaltung für "Gemini 2.5 Pro", um Abweichungen zwischen Frontend-Anzeige und Backend-Berechnung zu identifizieren.
+- **Aktion: Code-Analyse durchgeführt:**
+    - **Suche:** Eine Suche nach den Werten "3.50" und "10.50" hat ergeben, dass diese ausschließlich in `frontend/js/model-catalog.js` für die Anzeige im Dropdown-Menü verwendet werden.
+    - **Backend-Prüfung (`backend/model_catalog.json`):** Die für die Kostenberechnung maßgebliche Datei enthält für `gemini-2.5-pro` die Werte `cost_per_token_input: 0.000001` und `cost_per_token_output: 0.000002`. Dies entspricht Preisen von $1.00 bzw. $2.00 pro 1 Million Token.
+    - **Frontend-Prüfung (`frontend/js/app.js` & `frontend/js/model-catalog.js`):** Die Preis-Anzeige im Frontend (`ca. $3.50 / $10.50`) wird aus einem hartcodierten String in `frontend/js/model-catalog.js` generiert und hat keine Verbindung zur Backend-Konfiguration.
+- **Ergebnis des Audits:**
+    - **Zu ändernde Dateien:**
+        1.  `frontend/js/model-catalog.js`: Der `price`-String für `gemini-2.5-pro` muss für die korrekte UI-Anzeige angepasst werden.
+        2.  `backend/model_catalog.json`: Die Werte `cost_per_token_input` und `cost_per_token_output` für `gemini-2.5-pro` müssen für die korrekte Backend-Berechnung angepasst werden.
+    - **Verknüpfung:** Es besteht **keine** direkte Verbindung zwischen der Frontend-Anzeige und der Backend-Berechnung. Beide müssen separat aktualisiert werden.
+    - **Diskrepanz:** Es wurde eine signifikante Abweichung zwischen den in der UI angezeigten Preisen ($3.50/$10.50), den im Backend für die Berechnung genutzten Preisen ($1.00/$2.00) und den vom Benutzer geforderten neuen Preisen ($1.25/$10.00) festgestellt.
+- **Status:** Audit abgeschlossen. Das System ist bereit für die Implementierung der Preis-Korrekturen.
+
+---
+
+### 2025-08-14 - Audit & Synchronisation der Dokumentation
+
+- **Ziel:** Audit des aktuellen, funktionierenden Code-Zustands und Aktualisierung der Planungsdokumente (`FEATURE_KOSTENKONTROLLE.md` und `AGENT_WORK_LOG.md`), um den Abschluss des Kostenkontroll-Features zu reflektieren.
+- **Aktion: Code-Audit durchgeführt:**
+    - **Backend (`llm_gateway.py`, `main.py`):** Die Analyse bestätigt, dass die Kosten- und Token-Erfassung für OpenAI (Text), Gemini (Text) und DALL-E (Bilder) vollständig implementiert ist. Die API-Endpunkte (`/api/costs/dashboard`, `/api/costs/details`, `/api/costs/summary`) zur Bereitstellung der Kostendaten sind funktionsfähig und greifen korrekt auf die Datenbank zu.
+    - **Frontend (`cost-visualizer.js`, `app.js`):** Die Analyse bestätigt, dass die Logik zum Abrufen und Anzeigen der Kostendaten vollständig implementiert ist. Dies beinhaltet die Dashboard-Ansicht (Budget vs. aktuelle Kosten) und ein interaktives Modal, das eine detaillierte Kostenaufschlüsselung nach Modellen anzeigt.
+- **Aktion: Dokumentations-Synchronisation:**
+    - **`FEATURE_KOSTENKONTROLLE.md`:** Die Checkbox für das interaktive Kosten-Detail-Modal (Punkt 2.3) wurde als erledigt markiert, um den Implementierungsstand korrekt widerzuspiegeln.
+    - **`AGENT_WORK_LOG.md`:** Dieser Eintrag wurde hinzugefügt, um den Audit-Prozess und das Ergebnis zu dokumentieren.
+- **Ergebnis:** Der Code und die Dokumentation sind nun synchron. Das Kostenkontroll-Feature ist vollständig implementiert wie in `FEATURE_KOSTENKONTROLLE.md` beschrieben. Das Projekt ist in einem sauberen, auditierten Zustand.
+
+---
+
 ### 2025-08-14 - Audit & Synchronisation
 - **Ziel:** Audit des bestehenden Kostenkontroll-Features und Abgleich der Dokumentation mit dem tatsächlichen Code-Stand.
 - **Aktion: Code-Analyse:**
@@ -22,7 +52,7 @@
     - `app = FastAPI()` und `app.add_middleware()` wurden an den Anfang der Datei verschoben, um `NameError` zu beheben.
     - `database.init_db()` wird nun beim Start der Anwendung aufgerufen.
 - **Aktion: `backend/llm_gateway.py` angepasst:**
-    - `_call_gemini_api` wurde erweitert, um `usage`-Daten (geschätzte Token) zurückzugeben.
+    - `_call_gemini_api` wurde erweitert, um `usage`-Daten (geschätzte Token) zurückzugegeben.
     - `_call_dalle_api` wurde angepasst, um `usage`- und `cost`-Daten zurückzugeben.
     - `_call_openai_api` wurde angepasst, um `usage`- und `cost`-Daten von DALL-E-Tool-Aufrufen zu verarbeiten.
 - **Aktion: `backend/database.py` wiederhergestellt:**
