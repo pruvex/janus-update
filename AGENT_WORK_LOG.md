@@ -1,3 +1,16 @@
+### 2025-08-14 - Konfiguration und Synchronisation der Modellpreise
+
+- **Ziel:** Aktualisierung aller Modellpreise (OpenAI & Gemini) und Korrektur der Backend-Konfiguration zur vollständigen Unterstützung aller OpenAI-Modelle.
+- **Aktion: Preis-Update für Gemini-Modelle:**
+    - Die Preise für `gemini-2.5-pro` und `gemini-2.5-flash` wurden in der Frontend-Anzeige (`frontend/js/model-catalog.js`) und in der Backend-Berechnung (`backend/model_catalog.json`) aktualisiert.
+- **Aktion: Korrektur und Update der OpenAI-Modelle:**
+    - Es wurde festgestellt, dass die Modelle `gpt-5`, `gpt-5-mini` und `gpt-4o` in der Backend-Konfiguration (`backend/model_catalog.json`) fehlten.
+    - Diese Modelle wurden zur `backend/model_catalog.json` hinzugefügt.
+    - Die Preise für alle vier OpenAI-Textmodelle wurden in der Backend-Konfiguration auf den neuesten Stand gebracht. Die Frontend-Anzeigepreise waren bereits korrekt.
+- **Ergebnis:** Die Preis-Konfiguration ist nun für alle Modelle konsistent und korrekt. Das Backend berechnet die Kosten für alle verfügbaren Modelle auf Basis der aktuellen Preise. Alle Änderungen wurden in einem Commit zusammengefasst.
+
+---
+
 ### 2025-08-14 - Analyse der Gemini-Preis-Synchronisation
 
 - **Ziel:** Analyse der Implementierung der Preisgestaltung für "Gemini 2.5 Pro", um Abweichungen zwischen Frontend-Anzeige und Backend-Berechnung zu identifizieren.
@@ -42,7 +55,7 @@
 
 ### 2025-08-14 - Finale DALL-E-Reparatur & Kosten-Tracking-Grundlagen
 
-- **Ziel:** DALL-E SD/HD-Optionen implementieren, GPT-Bildanzeige korrigieren und Grundlagen des Kosten-Trackings schaffen.
+- **Ziel:** DALL-E SD/HD-Optionen implementieren, GPT-bildanzeige korrigieren und Grundlagen des Kosten-Trackings schaffen.
 - **Aktion: `backend/model_catalog.json` erstellt:**
     - Eine neue Datei `backend/model_catalog.json` wurde erstellt, die detaillierte Informationen zu allen Modellen (GPT, Gemini, DALL-E SD/HD mit Kosten) enthält.
 - **Aktion: `backend/main.py` angepasst:**
@@ -52,7 +65,7 @@
     - `app = FastAPI()` und `app.add_middleware()` wurden an den Anfang der Datei verschoben, um `NameError` zu beheben.
     - `database.init_db()` wird nun beim Start der Anwendung aufgerufen.
 - **Aktion: `backend/llm_gateway.py` angepasst:**
-    - `_call_gemini_api` wurde erweitert, um `usage`-Daten (geschätzte Token) zurückzugegeben.
+    - `_call_gemini_api` wurde erweitert, um `usage`-Daten (geschätzte Token) zurückzugeben.
     - `_call_dalle_api` wurde angepasst, um `usage`- und `cost`-Daten zurückzugeben.
     - `_call_openai_api` wurde angepasst, um `usage`- und `cost`-Daten von DALL-E-Tool-Aufrufen zu verarbeiten.
 - **Aktion: `backend/database.py` wiederhergestellt:**
