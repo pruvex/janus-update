@@ -9,25 +9,31 @@ document.addEventListener('DOMContentLoaded', () => {
         refreshCostButton.addEventListener('click', fetchCostData);
     }
 
-    async function fetchCostData() {
+    window.fetchCostData = async function() {
+        const currentMonthCostElement = document.getElementById('current-month-cost');
+        const monthlyBudgetElement = document.getElementById('monthly-budget');
+
         try {
             // Fetch dashboard data
             const dashboardResponse = await fetch(`${API_BASE_URL}/api/costs/dashboard`);
             const dashboardData = await dashboardResponse.json();
             
-            if (costDashboardElement) {
-                costDashboardElement.innerHTML = `
-                    <h3>Kostenübersicht</h3>
-                    <p>Aktueller Monat: ${dashboardData.current_month_cost.toFixed(2)} €</p>
-                    <p>Budget: ${dashboardData.monthly_budget.toFixed(2)} €</p>
-                `;
+            // Update new summary widget
+            if (currentMonthCostElement) {
+                currentMonthCostElement.textContent = `Aktueller Monat: ${dashboardData.current_month_cost.toFixed(2)} €`;
             }
+            if (monthlyBudgetElement) {
+                monthlyBudgetElement.textContent = `Budget: ${dashboardData.current_month_cost.toFixed(2)} € / ${dashboardData.monthly_budget.toFixed(2)} €`;
+            }
+
+            // Existing cost dashboard update (if still needed, otherwise remove)
+            
 
             // Fetch details data
             const detailsResponse = await fetch(`${API_BASE_URL}/api/costs/details`);
             const detailsData = await detailsResponse.json();
 
-            if (costDetailsElement) {
+            if (costDetailsElement) { // Assuming costDetailsElement is still defined in this scope
                 let detailsHtml = '<h3>Kosten-Details</h3>';
                 if (detailsData.length > 0) {
                     detailsHtml += '<ul>';
@@ -51,11 +57,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Error fetching cost data:', error);
-            if (costDashboardElement) costDashboardElement.innerHTML = '<p>Fehler beim Laden der Kosten.</p>';
+            if (currentMonthCostElement) currentMonthCostElement.textContent = 'Fehler beim Laden der Kosten.';
+            if (monthlyBudgetElement) monthlyBudgetElement.textContent = '';
+            
             if (costDetailsElement) costDetailsElement.innerHTML = '';
         }
     }
 
     // Initial fetch
-    fetchCostData();
+    window.fetchCostData();
 });

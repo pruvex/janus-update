@@ -208,3 +208,18 @@ button:hover {
 .app-container.sidebar-collapsed #toggle-sidebar-btn {
     transform: rotate(180deg);
 }
+
+#cost-summary-widget {
+    background-color: var(--surface-color);
+    border: 1px solid var(--accent-color);
+    border-radius: var(--border-radius-main);
+    padding: 8px 12px;
+    margin-bottom: 10px; /* Space below the widget */
+    font-size: 0.9em;
+    color: var(--text-primary);
+}
+
+#cost-summary-widget p {
+    margin: 0;
+    line-height: 1.4;
+}
