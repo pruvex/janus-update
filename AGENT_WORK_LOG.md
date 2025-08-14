@@ -1,3 +1,14 @@
+### 2025-08-14 - Audit & Synchronisation
+- **Ziel:** Audit des bestehenden Kostenkontroll-Features und Abgleich der Dokumentation mit dem tatsächlichen Code-Stand.
+- **Aktion: Code-Analyse:**
+    - **DALL-E Kosten-Tracking:** Vollständig implementiert. `llm_gateway.py` liefert Kosten, `main.py` speichert sie.
+    - **Frontend Visualisierung:** Implementiert und funktionsfähig. `cost-visualizer.js` ruft die Endpunkte ab und stellt die Daten dar.
+    - **KRITISCHE LÜCKE:** Das Kosten-Tracking für **Gemini** ist **unvollständig**. `llm_gateway.py` extrahiert zwar die Token-Nutzung, berechnet aber keine Kosten. Folglich speichert `main.py` keine Kosteneinträge für Gemini-Modelle, da das `cost`-Objekt in der Antwort fehlt.
+- **Aktion: Dokumentations-Update:**
+    - `FEATURE_KOSTENKONTROLLE.md` wurde aktualisiert, um die Implementierungslücke bei der Gemini-Kostenverfolgung widerzuspiegeln. Die Checkbox für die Kostenextraktion (1.1) wurde deaktiviert und mit einem entsprechenden Hinweis versehen.
+- **Ergebnis:** Die Codebasis ist für den implementierten Umfang (DALL-E-Kosten) funktionsfähig. Die Dokumentation spiegelt nun den wahren Zustand wider, einschließlich der Lücke bei den Gemini-Kosten. Das Projekt befindet sich auf dem neuen Branch `dev/kosten-gemini-tracking-3` in einem sauberen, geprüften Zustand.
+
+---
 
 ### 2025-08-14 - Finale DALL-E-Reparatur & Kosten-Tracking-Grundlagen
 

@@ -5,8 +5,8 @@ Das Ziel ist es, eine umfassende Kostenverfolgung und -visualisierung zu impleme
 
 ## 1. Backend-Erweiterungen:
 
-*   **[x] 1.1. Kostenberechnung und Datenextraktion (llm_gateway.py):**
-    *   **Aktueller Zustand:** `_call_dalle_api` und `_call_openai_api` (für Bildgenerierung) geben bereits `usage`- und `cost`-Daten zurück. `_call_gemini_api` tut dies derzeit **nicht**.
+*   **[ ] 1.1. Kostenberechnung und Datenextraktion (llm_gateway.py):**
+    *   **Aktueller Zustand:** `_call_dalle_api` und `_call_openai_api` (für Bildgenerierung) geben `usage`- und `cost`-Daten zurück. `_call_gemini_api` gibt nur geschätzte `usage`-Daten (Tokens) zurück, berechnet aber **keine Kosten**.
     *   **Vorgeschlagene Änderung:** `_call_gemini_api` muss angepasst werden, um `usage` (z.B. `input_tokens`, `output_tokens`) und `cost` (z.B. `total_cost`) aus der Gemini-API-Antwort zu extrahieren und zurückzugeben. Dies erfordert das Parsen des Preismodells und der Antwortstruktur der Gemini-API. Falls die Gemini-API keine direkten Token-Zahlen liefert, müssen diese basierend auf der Prompt-/Antwortlänge geschätzt werden.
     *   **Nicht-destruktiver Aspekt:** Dies erweitert den Rückgabewert von `_call_gemini_api`, ohne dessen Kernfunktionalität zu ändern.
 
