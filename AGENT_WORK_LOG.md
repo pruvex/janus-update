@@ -37,3 +37,17 @@
 - **Aktion: `frontend/js/cost-visualizer.js` erstellt:**
     - Die Datei `frontend/js/cost-visualizer.js` wurde neu erstellt, um Kostendaten von den Backend-APIs abzurufen und anzuzeigen.
 - **Ergebnis:** Die Anwendung ist nun voll funktionsfähig. DALL-E SD/HD-Optionen funktionieren, GPT-generierte Bilder werden korrekt angezeigt (nur Bild, kein Link), und die Grundlagen des Kosten-Trackings sind implementiert.
+
+
+### 2025-08-14 - Finale Kosten- und Nutzungsdaten-Extraktion für Gemini
+- **Ziel:** `_call_gemini_api` in `llm_gateway.py` finalisiert, um Token-Nutzung und Kosten zu berechnen.
+- **Aktion:** `_call_gemini_api` in `backend/llm_gateway.py` wurde aktualisiert, um `google.generativeai` zu verwenden und `usage_metadata` für die Token-Zählung zu nutzen.
+- **Aktion:** Die Kostenberechnung erfolgt nun über `calculate_cost` aus `cost_calculator.py`.
+- **Aktion:** Ein Debug-Output wurde im Terminal hinzugefügt, um die Gemini-Nutzungs- und Kostendaten anzuzeigen.
+- **Ergebnis:** Die Gemini-API-Aufrufe liefern nun `usage`- und `cost`-Daten, die im Backend verarbeitet werden können.
+
+
+### 2025-08-14 - Debugging-Terminal-Output für OpenAI
+- **Ziel:** `_call_openai_api` in `llm_gateway.py` um Debug-Output für Token-Nutzung erweitern.
+- **Aktion:** Debug-Output-Block in `_call_openai_api` in `backend/llm_gateway.py` hinzugefügt, um `response.usage` zu nutzen und Token-Zahlen sowie berechnete Kosten im Terminal anzuzeigen.
+- **Ergebnis:** Die OpenAI-API-Aufrufe (Textmodelle) zeigen nun ihre Token-Nutzung und Kosten im Backend-Terminal an.

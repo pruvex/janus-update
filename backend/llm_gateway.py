@@ -6,6 +6,8 @@ import openai # Changed from 'from openai import OpenAI'
 import logging
 import traceback
 import re # Added for potential future use, not in current snippet but good practice
+import google.generativeai as genai
+from .cost_calculator import calculate_cost
 
 router = APIRouter()
 
@@ -60,6 +62,19 @@ async def _call_openai_api(api_key: str, prompt: str, model: str):
             tool_choice="auto", # Re-add tool call
         )
 
+        # --- DEBUG-OUTPUT FÜR OPENAI ---
+        if response.usage:
+            input_tokens = response.usage.prompt_tokens
+            output_tokens = response.usage.completion_tokens
+            total_cost = calculate_cost(model, input_tokens, output_tokens)
+            print("\n--- OPENAI USAGE TRACKING ---")
+            print(f"Model: {model}")
+            print(f"Input Tokens: {input_tokens}")
+            print(f"Output Tokens: {output_tokens}")
+            print(f"Calculated Cost: {total_cost:.6f} €")
+            print("-----------------------------\\n")
+        # --- ENDE DEBUG-OUTPUT ---
+
         response_message = response.choices[0].message
         
         if response_message.tool_calls:
@@ -101,42 +116,34 @@ async def _call_openai_api(api_key: str, prompt: str, model: str):
         chat_response_text = response_message.content
         return {"text": chat_response_text}
 
-# Refactored Gemini Chat Logic to _call_gemini_api
-async def _call_gemini_api(api_key: str, prompt: str, model: str):
-    url = f"https://generativelanguage.googleapis.com/v1/models/{model}:generateContent?key={api_key}"
-    headers = {"Content-Type": "application/json"}
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
-    
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(url, headers=headers, json=payload, timeout=30)
-            response.raise_for_status()
-            gemini_response = response.json()
-
-            if "candidates" in gemini_response and gemini_response["candidates"]:
-                if "content" in gemini_response["candidates"][0] and "parts" in gemini_response["candidates"][0]["content"] and gemini_response["candidates"][0]["content"]["parts"]:
-                    chat_response_text = gemini_response["candidates"][0]["content"]["parts"][0].get("text", "")
-                    
-                    # Estimate token usage
-                    input_tokens = len(prompt.split())
-                    output_tokens = len(chat_response_text.split())
-
-                    return {
-                        "text": chat_response_text,
-                        "usage": {
-                            "input_tokens": input_tokens,
-                            "output_tokens": output_tokens
-                        }
-                    }
-
-            raise HTTPException(status_code=500, detail="Unerwartetes Antwortformat von der Gemini-API.")
-
-        except httpx.RequestError as e:
-            raise HTTPException(status_code=500, detail=f"Fehler bei der Kommunikation mit der Gemini-API: {e}")
-        except json.JSONDecodeError:
-            raise HTTPException(status_code=500, detail="Fehler beim Parsen der Gemini-API-Antwort.")
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Ein unerwarteter Fehler ist aufgetreten: {str(e)}")
+async def _call_gemini_api(api_key, prompt, model_name):
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel(model_name)
+    try:
+        response = await model.generate_content_async(prompt)
+        usage_metadata = getattr(response, 'usage_metadata', None)
+        if usage_metadata:
+            input_tokens = usage_metadata.prompt_token_count
+            output_tokens = usage_metadata.candidates_token_count
+            total_cost = calculate_cost(model_name, input_tokens, output_tokens)
+            # --- NEUER DEBUG-OUTPUT IM TERMINAL ---
+            print("\n--- GEMINI USAGE TRACKING ---")
+            print(f"Model: {model_name}")
+            print(f"Input Tokens: {input_tokens}")
+            print(f"Output Tokens: {output_tokens}")
+            print(f"Calculated Cost: {total_cost:.6f} €")
+            print("-----------------------------\n")
+            # --- ENDE DEBUG-OUTPUT ---
+            return {
+                "text": response.text,
+                "usage": { "prompt_tokens": input_tokens, "completion_tokens": output_tokens },
+                "cost": { "total_cost": total_cost }
+            }
+        else:
+            return {"text": response.text}
+    except Exception as e:
+        print(f"Error calling Gemini API: {e}")
+        return {"text": f"An error occurred with the Gemini API: {e}"}
 
 # NEW, DEDICATED FUNCTION FOR DALL-E (from user's plan)
 async def _call_dalle_api(api_key, prompt, model_id): # Renamed 'model' to 'model_id' to avoid conflict with client.images.generate(model=...)
