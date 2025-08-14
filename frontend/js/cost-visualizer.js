@@ -4,10 +4,80 @@ document.addEventListener('DOMContentLoaded', () => {
     const costDashboardElement = document.getElementById('cost-dashboard');
     const costDetailsElement = document.getElementById('cost-details');
     const refreshCostButton = document.getElementById('refresh-cost-button');
+    const costSummaryWidget = document.getElementById('cost-summary-widget'); // NEW
 
     if (refreshCostButton) {
         refreshCostButton.addEventListener('click', fetchCostData);
     }
+
+    // NEW: Event listener for the cost summary widget
+    if (costSummaryWidget) {
+        costSummaryWidget.addEventListener('click', showDeepDiveModal);
+    }
+
+    const costDeepDiveModal = document.getElementById('cost-deep-dive-modal');
+    const closeButton = document.querySelector('#cost-deep-dive-modal .close-button');
+    const deepDiveContent = document.getElementById('deep-dive-content');
+
+    async function showDeepDiveModal() {
+        costDeepDiveModal.style.display = 'flex'; // Use flex to center content
+        deepDiveContent.innerHTML = 'Lade detaillierte Kosten...'; // Loading message
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/costs/summary`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const summaryData = await response.json();
+            
+            let html = '<h3>Kostenübersicht nach Modell</h3>';
+            if (summaryData.length === 0) {
+                html += '<p>Keine Kosteninformationen verfügbar.</p>';
+            } else {
+                html += '<table>';
+                html += '<thead><tr><th>Modell</th><th>Typ</th><th>Details</th><th>Gesamtkosten (€)</th></tr></thead>';
+                html += '<tbody>';
+                summaryData.forEach(item => {
+                    let details = '';
+                    if (item.type === 'text') {
+                        details = `Eingabe: ${item.input_tokens}, Ausgabe: ${item.output_tokens}`;
+                    } else if (item.type === 'image') {
+                        details = `Bilder: ${item.image_count}`;
+                    }
+                    html += `
+                        <tr>
+                            <td>${item.model}</td>
+                            <td>${item.type}</td>
+                            <td>${details}</td>
+                            <td>${item.total_cost.toFixed(4)}</td>
+                        </tr>
+                    `;
+                });
+                html += '</tbody></table>';
+            }
+            deepDiveContent.innerHTML = html;
+
+        } catch (error) {
+            console.error('Error fetching deep dive cost data:', error);
+            deepDiveContent.innerHTML = '<p>Fehler beim Laden der detaillierten Kosten.</p>';
+        }
+    }
+
+    function hideDeepDiveModal() {
+        costDeepDiveModal.style.display = 'none';
+    }
+
+    // Close the modal when the close button is clicked
+    if (closeButton) {
+        closeButton.addEventListener('click', hideDeepDiveModal);
+    }
+
+    // Close the modal when clicking outside of the modal content
+    window.addEventListener('click', (event) => {
+        if (event.target === costDeepDiveModal) {
+            hideDeepDiveModal();
+        }
+    });
 
     window.fetchCostData = async function() {
         const currentMonthCostElement = document.getElementById('current-month-cost');

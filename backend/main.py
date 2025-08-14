@@ -152,13 +152,14 @@ async def chat(request: ChatRequest):
         
         # --- Korrekte Kosten-Speicherung ---
         usage = gateway_response.get("usage")
+        print(f"DEBUG (main.py): Received usage from gateway: {usage}") # NEW
         cost = gateway_response.get("cost")
 
         if usage and cost:
             total_cost = cost.get("total_cost", 0)
             
             if total_cost > 0:
-                 save_cost_entry(
+                save_cost_entry(
                     model=request.model,
                     input_tokens=usage.get("input_tokens"),
                     output_tokens=usage.get("output_tokens"),
@@ -210,3 +211,46 @@ class CostDetail(BaseModel):
 async def get_costs_details():
     details = database.get_all_cost_entries()
     return details
+
+@app.get("/api/costs/summary")
+async def get_costs_summary():
+    all_entries = database.get_all_cost_entries()
+    model_catalog = load_model_catalog() # Load model catalog
+
+    summary = {} # Aggregate costs here
+
+    for entry in all_entries:
+        model_name = entry["model"]
+        total_cost = entry["total_cost"]
+        input_tokens = entry["input_tokens"]
+        output_tokens = entry["output_tokens"]
+        image_quality = entry["image_quality"]
+        image_cost = entry["image_cost"]
+
+        # Get model type from catalog
+        model_type = "unknown"
+        for model_info in model_catalog:
+            if model_info["id"] == model_name:
+                model_type = model_info.get("type", "unknown")
+                break
+
+        if model_name not in summary:
+            summary[model_name] = {
+                "model": model_name,
+                "total_cost": 0.0,
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "image_count": 0,
+                "type": model_type # Initialize type from catalog
+            }
+        
+        summary[model_name]["total_cost"] += total_cost
+
+        if model_type == "text":
+            summary[model_name]["input_tokens"] += (input_tokens if input_tokens is not None else 0)
+            summary[model_name]["output_tokens"] += (output_tokens if output_tokens is not None else 0)
+        elif model_type == "image":
+            summary[model_name]["image_count"] += 1 # Count each image generation
+
+    # Convert dictionary to list of values
+    return list(summary.values())

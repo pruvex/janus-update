@@ -217,9 +217,73 @@ button:hover {
     margin-bottom: 10px; /* Space below the widget */
     font-size: 0.9em;
     color: var(--text-primary);
+    cursor: pointer; /* Make it clickable */
 }
 
 #cost-summary-widget p {
     margin: 0;
     line-height: 1.4;
+}
+
+/* Modal Styling */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: var(--background-secondary); /* Revert to original background */
+    margin: auto;
+    padding: 20px;
+    border: 1px solid var(--surface-color);
+    border-radius: var(--border-radius-main);
+    width: 80%; /* Could be adjusted */
+    max-width: 600px; /* Max width for readability */
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    position: relative;
+    color: #FFFFFF; /* Keep white for readability */
+    font-size: 1.1em; /* Keep increased font size */
+}
+
+.close-button {
+    color: var(--text-secondary);
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: var(--accent-color);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Table Styling within Modal */
+.modal-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.modal-content th, .modal-content td {
+    border: 1px solid var(--surface-color);
+    padding: 8px;
+    text-align: left;
+    color: #FFFFFF; /* Explicitly white for better readability */
+    font-size: 1em; /* Ensure font size is consistent */
+}
+
+.modal-content th {
+    background-color: var(--accent-color); /* Use accent color for headers */
+    color: var(--background-primary); /* Text color for accent background */
 }

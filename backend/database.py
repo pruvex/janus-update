@@ -32,7 +32,7 @@ def save_cost_entry(date: str, model: str, input_tokens: int, output_tokens: int
     """, (date, model, input_tokens, output_tokens, image_quality, image_cost, total_cost))
     conn.commit()
     conn.close()
-    print(f"Cost entry saved: Model={model}, Total Cost={total_cost}")
+    
 
 def get_costs_for_month(year: int, month: int) -> float:
     conn = sqlite3.connect(DATABASE_FILE)
@@ -56,6 +56,7 @@ def get_all_cost_entries():
     """)
     rows = cursor.fetchall()
     conn.close()
+    
     
     # Convert rows to a list of dictionaries for easier processing
     results = []
