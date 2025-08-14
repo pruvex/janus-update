@@ -174,7 +174,6 @@ async def chat(request: ChatRequest):
             "image_url": gateway_response.get("image_url")
         }
 
-        print(f"DEBUG (main.py chat): final_response['image_url'] = {final_response['image_url']}")
         return final_response
 
     except HTTPException as e:
@@ -209,8 +208,5 @@ class CostDetail(BaseModel):
 
 @app.get("/api/costs/details", response_model=List[CostDetail])
 async def get_costs_details():
-    # This will need a new function in database.py to fetch all details
-    # For now, return dummy data or implement a basic fetch
-    # Assuming database.py will have get_all_cost_entries()
-    # For now, let's just return an empty list or dummy data if database function is not ready
-    return [] # Placeholder for now, will implement database fetch later
+    details = database.get_all_cost_entries()
+    return details

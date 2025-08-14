@@ -50,57 +50,56 @@ dalle_tool = {
 
 # Refactored _call_chat_completion_api to _call_openai_api
 async def _call_openai_api(api_key: str, prompt: str, model: str):
-    client = openai.OpenAI(api_key=api_key) # Use openai.OpenAI
-    
-    messages = [{"role": "user", "content": prompt}]
-    
-    response = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        tools=[dalle_tool],
-        tool_choice="auto",
-    )
-
-    response_message = response.choices[0].message
-    
-    if response_message.tool_calls:
-        tool_call = response_message.tool_calls[0]
-        function_name = tool_call.function.name
+    async with openai.AsyncOpenAI(api_key=api_key) as client:
+        messages = [{"role": "user", "content": prompt}]
         
-        if function_name == "generate_image":
-            function_args = json.loads(tool_call.function.arguments)
-            image_prompt = function_args.get("prompt")
-            image_quality = function_args.get("quality", "standard")
+        response = await client.chat.completions.create(
+            model=model,
+            messages=messages,
+            tools=[dalle_tool], # Re-add tool call
+            tool_choice="auto", # Re-add tool call
+        )
+
+        response_message = response.choices[0].message
+        
+        if response_message.tool_calls:
+            tool_call = response_message.tool_calls[0]
+            function_name = tool_call.function.name
             
-            # Call the NEW _call_dalle_api
-            dalle_response = await _call_dalle_api(api_key, image_prompt, f"dall-e-3-{image_quality}") # Pass model for quality
-            
-            messages.append(response_message)
-            messages.append(
-                {
-                    "tool_call_id": tool_call.id,
-                    "role": "tool",
-                    "name": function_name,
-                    "content": json.dumps({"image_url": dalle_response.get("image_url")}), # Use image_url from new dalle_response
+            if function_name == "generate_image":
+                function_args = json.loads(tool_call.function.arguments)
+                image_prompt = function_args.get("prompt")
+                image_quality = function_args.get("quality", "standard")
+                
+                # Call the NEW _call_dalle_api
+                dalle_response = await _call_dalle_api(api_key, image_prompt, f"dall-e-3-{image_quality}") # Pass model for quality
+                
+                messages.append(response_message)
+                messages.append(
+                    {
+                        "tool_call_id": tool_call.id,
+                        "role": "tool",
+                        "name": function_name,
+                        "content": json.dumps({"image_url": dalle_response.get("image_url")}), # Use image_url from new dalle_response
+                    }
+                )
+                
+                second_response = await client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                )
+                final_message_content = second_response.choices[0].message.content
+                
+                print(f"DEBUG (_call_openai_api): dalle_response.get('image_url') = {dalle_response.get('image_url')}")
+                return {
+                    "text": final_message_content,
+                    "image_url": dalle_response.get("image_url"), # This is correct!
+                    "usage": dalle_response.get("usage"),
+                    "cost": dalle_response.get("cost")
                 }
-            )
-            
-            second_response = client.chat.completions.create(
-                model=model,
-                messages=messages,
-            )
-            final_message_content = second_response.choices[0].message.content
-            
-            print(f"DEBUG (_call_openai_api): dalle_response.get('image_url') = {dalle_response.get('image_url')}")
-            return {
-                "text": final_message_content,
-                "image_url": dalle_response.get("image_url"), # This is correct!
-                "usage": dalle_response.get("usage"),
-                "cost": dalle_response.get("cost")
-            }
-    
-    chat_response_text = response_message.content
-    return {"text": chat_response_text}
+        
+        chat_response_text = response_message.content
+        return {"text": chat_response_text}
 
 # Refactored Gemini Chat Logic to _call_gemini_api
 async def _call_gemini_api(api_key: str, prompt: str, model: str):

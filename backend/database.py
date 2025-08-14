@@ -45,3 +45,28 @@ def get_costs_for_month(year: int, month: int) -> float:
     total_cost = cursor.fetchone()[0]
     conn.close()
     return total_cost if total_cost is not None else 0.0
+
+def get_all_cost_entries():
+    conn = sqlite3.connect(DATABASE_FILE)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT date, model, input_tokens, output_tokens, image_quality, image_cost, total_cost
+        FROM costs
+        ORDER BY date DESC
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    
+    # Convert rows to a list of dictionaries for easier processing
+    results = []
+    for row in rows:
+        results.append({
+            "date": row[0],
+            "model": row[1],
+            "input_tokens": row[2],
+            "output_tokens": row[3],
+            "image_quality": row[4],
+            "image_cost": row[5],
+            "total_cost": row[6]
+        })
+    return results
