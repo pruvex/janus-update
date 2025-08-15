@@ -38,11 +38,7 @@ class TestCostCalculator(unittest.TestCase):
             json.dump(self.test_catalog_content, f)
 
     def tearDown(self):
-        # Clean up the dummy model_catalog.json
-        if os.path.exists(MODEL_CATALOG_FILE):
-            os.remove(MODEL_CATALOG_FILE)
         # No need to remove the directory, as it's the 'backend' directory
-
 
     def test_calculate_cost_text_model(self):
         # Test case for a text model
