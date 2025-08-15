@@ -1,6 +1,7 @@
 import json
 import os
 import keyring
+import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -10,13 +11,17 @@ from fastapi.responses import JSONResponse
 from datetime import datetime
 from backend import database
 from typing import List, Optional
+from backend.logger_config import setup_logging
+
+setup_logging()
+logger = logging.getLogger('janus_backend')
 
 app = FastAPI()
 
 @app.on_event("startup")
 async def startup_event():
     database.init_db()
-    print("Database initialized.") # Optional: Debugging-Meldung
+    logger.info("Database initialized.") # Optional: Debugging-Meldung
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,25 +35,25 @@ CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.j
 MODEL_CATALOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_catalog.json")
 
 def load_model_catalog():
-    print(f"DEBUG: Attempting to load model catalog from: {MODEL_CATALOG_FILE}")
-    print(f"DEBUG: Does model catalog file exist? {os.path.exists(MODEL_CATALOG_FILE)}")
+    logger.debug(f"Attempting to load model catalog from: {MODEL_CATALOG_FILE}")
+    logger.debug(f"Does model catalog file exist? {os.path.exists(MODEL_CATALOG_FILE)}")
     if not os.path.exists(MODEL_CATALOG_FILE):
         return []
     try:
         with open(MODEL_CATALOG_FILE, "r") as f:
             return json.load(f)
     except json.JSONDecodeError:
-        print(f"ERROR: Invalid JSON in model catalog file: {MODEL_CATALOG_FILE}")
+        logger.error(f"Invalid JSON in model catalog file: {MODEL_CATALOG_FILE}")
         return []
     except Exception as e:
-        print(f"ERROR: Unexpected error loading model catalog: {e}")
+        logger.error(f"Unexpected error loading model catalog: {e}")
         raise
 
 # Helper function for cost saving (re-adding)
 def save_cost_entry(model: str, input_tokens: int = None, output_tokens: int = None, image_quality: str = None, image_cost: float = None, total_cost: float = 0):
     """Helper function to save a cost entry to the database."""
     try:
-        print(f"DEBUG: Speichere Kosteneintrag: total_cost={total_cost}")
+        logger.debug(f"Speichere Kosteneintrag: total_cost={total_cost}")
         database.save_cost_entry(
             date=datetime.now().isoformat(),
             model=model,
@@ -59,7 +64,7 @@ def save_cost_entry(model: str, input_tokens: int = None, output_tokens: int = N
             total_cost=total_cost
         )
     except Exception as e:
-        print(f"ERROR: Kosteneintrag konnte nicht gespeichert werden: {e}")
+        logger.error(f"Kosteneintrag konnte nicht gespeichert werden: {e}")
 
 class ChatRequest(BaseModel):
     prompt: str
@@ -152,7 +157,7 @@ async def chat(request: ChatRequest):
         
         # --- Korrekte Kosten-Speicherung ---
         usage = gateway_response.get("usage")
-        print(f"DEBUG (main.py): Received usage from gateway: {usage}") # NEW
+        logger.debug(f"Received usage from gateway: {usage}") # NEW
         cost = gateway_response.get("cost")
 
         if usage and cost:

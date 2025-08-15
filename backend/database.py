@@ -1,6 +1,9 @@
 import sqlite3
 import os
+import logging
 from datetime import datetime
+
+logger = logging.getLogger('janus_backend')
 
 DATABASE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "costs.db")
 
@@ -21,7 +24,7 @@ def init_db():
     """)
     conn.commit()
     conn.close()
-    print("Database initialized.")
+    logger.info("Database initialized.")
 
 def save_cost_entry(date: str, model: str, input_tokens: int, output_tokens: int, image_quality: str, image_cost: float, total_cost: float):
     conn = sqlite3.connect(DATABASE_FILE)

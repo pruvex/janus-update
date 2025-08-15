@@ -9,6 +9,8 @@ import re # Added for potential future use, not in current snippet but good prac
 import google.generativeai as genai
 from backend.cost_calculator import calculate_cost
 
+logger = logging.getLogger('janus_backend')
+
 router = APIRouter()
 
 # Existing _call_dalle_api (renamed to _call_dalle_api_old to avoid conflict)
@@ -92,7 +94,7 @@ async def _call_openai_api(api_key: str, prompt: str, model: str):
                 )
                 final_message_content = second_response.choices[0].message.content
                 
-                print(f"DEBUG (_call_openai_api): dalle_response.get('image_url') = {dalle_response.get('image_url')}")
+                logger.debug(f"(_call_openai_api): dalle_response.get('image_url') = {dalle_response.get('image_url')}")
                 return {
                     "text": final_message_content,
                     "image_url": dalle_response.get("image_url"), # This is correct!
@@ -137,7 +139,7 @@ async def _call_gemini_api(api_key: str, prompt: str, model_name: str):
             # Fallback if usage_metadata is not available
             return {"text": response.text}
     except Exception as e:
-        print(f"Error calling Gemini API: {e}")
+        logger.error(f"Error calling Gemini API: {e}")
         return {"text": f"An error occurred with the Gemini API: {e}"}
 
 # NEW, DEDICATED FUNCTION FOR DALL-E (from user's plan)
@@ -161,7 +163,7 @@ async def _call_dalle_api(api_key, prompt, model_id): # Renamed 'model' to 'mode
                 
         # Create a response that our backend understands
         image_cost = 0.04 if quality == "standard" else 0.08
-        print(f"DEBUG (_call_dalle_api): image_url = {image_url}")
+        logger.debug(f"(_call_dalle_api): image_url = {image_url}")
         return {
             "text": response.data[0].revised_prompt or "Hier ist das Bild, das mit DALL·E erstellt wurde.",
             "image_url": image_url, # Direct URL
@@ -169,12 +171,12 @@ async def _call_dalle_api(api_key, prompt, model_id): # Renamed 'model' to 'mode
             "cost": {"total_cost": image_cost}
         }
     except Exception as e:
-        print(f"Error calling DALL-E API: {e}")
+        logger.error(f"Error calling DALL-E API: {e}")
         raise
 
 # Replaced call_llm with the new switch logic
 async def call_llm(provider: str, model: str, prompt: str, api_key: str):
-    print(f"Call LLM - Provider: {provider}, Model: {model}")
+    logger.info(f"Call LLM - Provider: {provider}, Model: {model}")
     # --- NEW SWITCH for DALL-E ---
     if model.startswith("dall-e-3"):
         return await _call_dalle_api(api_key, prompt, model) # Pass model_id for quality check

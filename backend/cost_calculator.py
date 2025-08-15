@@ -1,5 +1,8 @@
 import json
 import os
+import logging
+
+logger = logging.getLogger('janus_backend')
 
 # Lade den Modellkatalog einmal beim Start, um die Leistung zu verbessern
 catalog_path = os.path.join(os.path.dirname(__file__), 'model_catalog.json')
@@ -18,7 +21,7 @@ def calculate_cost(model_id: str, input_tokens: int, output_tokens: int) -> floa
     """
     model_info = get_model_from_catalog(model_id)
     if not model_info:
-        print(f"Warning: Model '{model_id}' not found in catalog. Cost calculation skipped.")
+        logger.warning(f"Warning: Model '{model_id}' not found in catalog. Cost calculation skipped.")
         return 0.0
     model_type = model_info.get('type')
 
@@ -33,5 +36,5 @@ def calculate_cost(model_id: str, input_tokens: int, output_tokens: int) -> floa
                      (output_tokens * cost_per_output)
         return round(total_cost, 10)
     else:
-        print(f"Warning: Unknown model type '{model_type}' for model '{model_id}'. Cost calculation skipped.")
+        logger.warning(f"Unknown model type '{model_type}' for model '{model_id}'. Cost calculation skipped.")
         return 0.0

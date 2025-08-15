@@ -1,2 +1,5 @@
 import google.generativeai as genai
-print('google.generativeai imported successfully')
+import logging
+
+logger = logging.getLogger('janus_backend')
+logger.info('google.generativeai imported successfully')
