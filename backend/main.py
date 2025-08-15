@@ -192,10 +192,22 @@ async def get_costs_dashboard():
     today = datetime.now()
     current_month_cost = database.get_costs_for_month(today.year, today.month)
     
-    # TODO: Implement logic to read budget from a config file
-    # For now, we use a hardcoded value
-    budget = 10.00
+    config = load_config()
+    budget = config.get("monthly_budget", 10.00) # Default to 10.00 if not set
     return CostDashboard(current_month_cost=current_month_cost, monthly_budget=budget)
+
+class BudgetUpdate(BaseModel):
+    budget: float
+
+@app.post("/api/budget")
+async def update_budget(budget_update: BudgetUpdate):
+    try:
+        config = load_config()
+        config["monthly_budget"] = budget_update.budget
+        save_config(config)
+        return {"message": "Budget updated successfully."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 class CostDetail(BaseModel):
     date: datetime

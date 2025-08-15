@@ -303,3 +303,7 @@ button:hover {
     border-top: 2px solid var(--accent-color);
     font-weight: bold;
 }
+
+#monthly-budget.budget-exceeded {
+    color: red;
+}

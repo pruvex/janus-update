@@ -1,4 +1,5 @@
 {
+  "monthly_budget": 20.0,
   "model_selection": {
     "openai": [
       "gpt-4o-mini",

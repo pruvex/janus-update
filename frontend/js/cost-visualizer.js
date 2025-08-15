@@ -82,6 +82,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 html += `</table>`;
             }
+            html += `
+                <div class="budget-setter">
+                  <label for="budget-input">Monatsbudget festlegen (€):</label>
+                  <input type="number" id="budget-input" step="0.01">
+                  <button id="save-budget-btn">Speichern</button>
+                </div>
+            `;
             deepDiveContent.innerHTML = html;
 
         } catch (error) {
@@ -121,6 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (monthlyBudgetElement) {
                 monthlyBudgetElement.textContent = `Budget: ${dashboardData.current_month_cost.toFixed(2)} € / ${dashboardData.monthly_budget.toFixed(2)} €`;
+                if (dashboardData.current_month_cost > dashboardData.monthly_budget) {
+                    monthlyBudgetElement.classList.add('budget-exceeded');
+                } else {
+                    monthlyBudgetElement.classList.remove('budget-exceeded');
+                }
             }
 
             // Existing cost dashboard update (if still needed, otherwise remove)
@@ -139,4 +151,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial fetch
     window.fetchCostData();
+});
+
+document.addEventListener('click', async (event) => {
+  if (event.target && event.target.id === 'save-budget-btn') {
+    const budgetInput = document.getElementById('budget-input');
+    const newBudget = parseFloat(budgetInput.value);
+    if (!isNaN(newBudget)) {
+      await fetch(`${API_BASE_URL}/api/budget`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ budget: newBudget })
+      });
+      // Aktualisiere die Anzeige nach dem Speichern
+      window.fetchCostData(); 
+    }
+  }
 });
