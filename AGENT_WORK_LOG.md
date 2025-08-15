@@ -1,16 +1,15 @@
+---
+
+### 2025-08-15 - interactjs-Abhängigkeit verschoben
+
+- **Ziel:** `interactjs`-Abhängigkeit vom Root in den `frontend`-Workspace verschoben.
+- **Aktion:** `interactjs` wurde aus der Root `package.json` deinstalliert und direkt in die `frontend/package.json` installiert.
+- **Ergebnis:** Die `interactjs`-Abhängigkeit ist nun korrekt dem `frontend`-Projekt zugeordnet.
 
 ---
 
-### 2025-08-15 - Behebung des Frontend-Startfehlers & Konsolidierung der Skripte
+### 2025-08-15 - interactjs-Abhängigkeit in den frontend-Workspace verschoben (cd-Workaround)
 
-- **Ziel:** Behebung des `SyntaxError` beim Starten des Frontends und Konsolidierung der `npm`-Skripte in der Root `package.json`.
-- **Aktion: Analyse des Startfehlers:**
-    - Die Analyse der `npm run start-dev`-Ausgabe zeigte einen `SyntaxError` in einer JSON-Datei, der das Laden der PostCSS-Konfiguration verhinderte.
-    - Es wurde festgestellt, dass die `frontend/package.json` einen Syntaxfehler (überflüssiges Komma am Ende des `main`-Eintrags) enthielt.
-- **Aktion: Behebung des Syntaxfehlers:**
-    - Das überflüssige Komma in `frontend/package.json` wurde entfernt.
-- **Aktion: Konsolidierung der `npm`-Skripte:**
-    - Alle relevanten `npm`-Skripte aus `frontend/package.json` wurden in die Root `package.json` verschoben.
-    - Die `frontend/package.json` wurde bereinigt und enthält nun nur noch grundlegende Projektinformationen.
-    - Die `vite.config.js` wurde überprüft und es wurden keine Änderungen vorgenommen, da sie bereits korrekt konfiguriert war.
-- **Ergebnis:** Die Anwendung startet nun erfolgreich über den zentralen `npm run start-dev`-Befehl im Root-Verzeichnis. Die `package.json`-Struktur ist konsolidiert und sauber.
+- **Ziel:** `interactjs`-Abhängigkeit in den korrekten `frontend`-Workspace verschieben, unter Verwendung des `cd`-Workarounds.
+- **Aktion:** `npm uninstall interactjs` wurde im Hauptverzeichnis ausgeführt, um sicherzustellen, dass es aus dem Root entfernt wird. Anschließend wurde `cd frontend && npm install interactjs` ausgeführt, um es sauber im Frontend zu installieren.
+- **Ergebnis:** Die `interactjs`-Abhängigkeit ist nun korrekt dem `frontend`-Projekt zugeordnet und der Installationsprozess wurde an die Projektstruktur angepasst.

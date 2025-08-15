@@ -2,5 +2,8 @@
   "name": "janus-frontend",
   "version": "1.0.0",
   "description": "Frontend for Janus",
-  "main": "main.electron.js"
+  "main": "main.electron.js",
+  "dependencies": {
+    "interactjs": "^1.10.27"
+  }
 }
