@@ -1,4 +1,4 @@
-const MODEL_CATALOG = {
+export const MODEL_CATALOG = {
     openai: [
         { id: 'gpt-5', name: 'GPT-5', price: '$1.25 / $10.00 (Input/Output)', desc: 'Zukünftiges Flaggschiff, fähig zur Werkzeug-Nutzung.' },
         { id: 'gpt-5-mini', name: 'GPT-5 mini', price: '$0.25 / $2.00 (Input/Output)', desc: 'Zukünftiges schnelles & günstiges Modell.' },

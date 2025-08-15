@@ -1,4 +1,5 @@
 // frontend/js/cost-visualizer.js
+// import { API_BASE_URL } from './config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const costDashboardElement = document.getElementById('cost-dashboard');
