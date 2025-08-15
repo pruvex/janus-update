@@ -24,12 +24,23 @@ document.addEventListener('DOMContentLoaded', () => {
         deepDiveContent.innerHTML = 'Lade detaillierte Kosten...'; // Loading message
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/costs/summary-by-model`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            // Fetch both summary and dashboard data in parallel
+            const [summaryResponse, dashboardResponse] = await Promise.all([
+                fetch(`${API_BASE_URL}/api/costs/summary-by-model`),
+                fetch(`${API_BASE_URL}/api/costs/dashboard`)
+            ]);
+
+            if (!summaryResponse.ok) {
+                throw new Error(`HTTP error! status: ${summaryResponse.status}`);
             }
-            const summaryData = await response.json();
-            
+            if (!dashboardResponse.ok) {
+                throw new Error(`HTTP error! status: ${dashboardResponse.status}`);
+            }
+
+            const summaryData = await summaryResponse.json();
+            const dashboardData = await dashboardResponse.json();
+            const totalCost = dashboardData.current_month_cost;
+
             let html = '<h3>Kostenübersicht nach Modell (Dieser Monat)</h3>';
             if (summaryData.length === 0) {
                 html += '<p>Keine Kosteninformationen für den aktuellen Monat verfügbar.</p>';
@@ -60,7 +71,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     </tr>
                   `;
                 });
-                html += `</tbody></table>`;
+                html += `
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colspan="2"><strong>Gesamt</strong></td>
+                        <td><strong>${totalCost.toFixed(4)} €</strong></td>
+                      </tr>
+                    </tfoot>
+                `;
+                html += `</table>`;
             }
             deepDiveContent.innerHTML = html;
 

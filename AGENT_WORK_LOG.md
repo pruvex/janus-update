@@ -1,3 +1,14 @@
+### 2025-08-15 - Hinzufügen der Gesamt-Zeile zur Kosten-Detail-Tabelle
+
+- **Ziel:** Die Kosten-Detail-Tabelle um eine "Gesamt"-Zeile erweitern, um die Übersichtlichkeit zu verbessern.
+- **Aktion: Frontend-Anpassung:**
+    - In `frontend/js/cost-visualizer.js` wurde die `showDeepDiveModal`-Funktion so erweitert, dass sie parallel zum Abruf der Modelldetails auch den `/api/costs/dashboard`-Endpunkt abruft, um die Gesamtkosten des aktuellen Monats zu erhalten.
+    - Die Logik zum Erstellen der HTML-Tabelle wurde erweitert, um eine `<tfoot>`-Sektion hinzuzufügen, die die Gesamtkosten anzeigt.
+    - In `frontend/src/styles.css` wurden entsprechende CSS-Regeln für das `<tfoot>`-Element hinzugefügt, um es optisch (fett, mit einer oberen Trennlinie) von den anderen Zeilen abzuheben.
+- **Ergebnis:** Die Kosten-Detail-Tabelle enthält nun eine klar sichtbare "Gesamt"-Zeile am Ende, deren Wert mit der Kostenanzeige im Sidebar-Widget übereinstimmt. Dies verbessert die Nachvollziehbarkeit der Kosten erheblich.
+
+---
+
 ### 2025-08-15 - Wiederherstellung der Backend-Logik und UI-Feinschliff
 
 - **Ziel:** Die durch einen `git reset` verloren gegangene Backend-Logik für die aggregierte Kostenübersicht wiederherstellen und das Styling des Kosten-Detail-Modals für bessere Lesbarkeit finalisieren.
