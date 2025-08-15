@@ -196,7 +196,8 @@ button:hover {
 }
 
 .app-container.sidebar-collapsed #sidebar-header h2,
-.app-container.sidebar-collapsed #sidebar nav {
+.app-container.sidebar-collapsed #sidebar nav,
+.app-container.sidebar-collapsed #cost-summary-widget {
     display: none;
 }
 

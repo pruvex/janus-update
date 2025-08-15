@@ -2,7 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const costDashboardElement = document.getElementById('cost-dashboard');
-    const costDetailsElement = document.getElementById('cost-details');
+    
     const refreshCostButton = document.getElementById('refresh-cost-button');
     const costSummaryWidget = document.getElementById('cost-summary-widget'); // NEW
 
@@ -126,31 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Existing cost dashboard update (if still needed, otherwise remove)
             
 
-            // Fetch details data
-            const detailsResponse = await fetch(`${API_BASE_URL}/api/costs/details`);
-            const detailsData = await detailsResponse.json();
-
-            if (costDetailsElement) { // Assuming costDetailsElement is still defined in this scope
-                let detailsHtml = '<h3>Kosten-Details</h3>';
-                if (detailsData.length > 0) {
-                    detailsHtml += '<ul>';
-                    detailsData.forEach(detail => {
-                        detailsHtml += `
-                            <li>
-                                <strong>${new Date(detail.date).toLocaleDateString()}</strong> - 
-                                ${detail.model}: ${detail.total_cost.toFixed(4)} €
-                                ${detail.input_tokens ? `(In: ${detail.input_tokens})` : ''}
-                                ${detail.output_tokens ? `(Out: ${detail.output_tokens})` : ''}
-                                ${detail.image_quality ? `(Qualität: ${detail.image_quality})` : ''}
-                            </li>
-                        `;
-                    });
-                    detailsHtml += '</ul>';
-                } else {
-                    detailsHtml += '<p>Keine detaillierten Kosten verfügbar.</p>';
-                }
-                costDetailsElement.innerHTML = detailsHtml;
-            }
+            
 
         } catch (error) {
             console.error('Error fetching cost data:', error);

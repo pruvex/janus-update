@@ -1,3 +1,15 @@
+### 2025-08-15 - Aufräumarbeiten an der Sidebar
+
+- **Ziel:** Die Sidebar aufräumen, indem die redundante Kosten-Detail-Liste entfernt und das Layout des Kosten-Widgets beim Einklappen der Sidebar korrigiert wird.
+- **Aktion: Entfernung der Kosten-Detail-Liste:**
+    - Das `<div id="cost-details"></div>`-Element wurde aus `frontend/index.html` entfernt, da diese Informationen nun im Deep-Dive-Modal verfügbar sind.
+    - Der zugehörige Javascript-Code, der die Kosten-Detail-Liste befüllt hat, wurde aus `frontend/js/cost-visualizer.js` entfernt.
+- **Aktion: Korrektur des Kosten-Widget-Layouts:**
+    - In `frontend/src/styles.css` wurde die CSS-Regel `.app-container.sidebar-collapsed` um den Selektor `#cost-summary-widget` erweitert. Dadurch wird das Kosten-Widget nun korrekt ausgeblendet, wenn die Sidebar eingeklappt wird, und verhält sich konsistent zu den anderen Sidebar-Elementen.
+- **Ergebnis:** Die Sidebar ist nun aufgeräumter und bietet eine bessere Benutzererfahrung. Das Layout beim Einklappen der Sidebar ist jetzt konsistent.
+
+---
+
 ### 2025-08-15 - Hinzufügen der Gesamt-Zeile zur Kosten-Detail-Tabelle
 
 - **Ziel:** Die Kosten-Detail-Tabelle um eine "Gesamt"-Zeile erweitern, um die Übersichtlichkeit zu verbessern.
