@@ -160,7 +160,7 @@ button:hover {
 
 .chat-window {
     width: 600px;  /* Feste, vernünftige Breite */
-    height: 800px; /* Feste, vernünftige Höhe */
+    height: 700px; /* Feste, vernünftige Höhe */
     display: flex;
     flex-direction: column;
     border: 1px solid #444;
