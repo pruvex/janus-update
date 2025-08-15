@@ -45,3 +45,29 @@
     - Der erwartete Budgetwert im Test `test_get_costs_dashboard` in `backend/test_main_api.py` wurde von `10.00` auf `15.00` angepasst.
     - Die Funktion `calculate_cost` in `backend/cost_calculator.py` wurde erweitert, um die Kosten für Bildmodelle korrekt zu berechnen.
 - **Ergebnis:** Alle Python-Import-Fehler wurden behoben und alle Tests im `backend`-Verzeichnis laufen nun erfolgreich.
+
+---
+
+### 2025-08-15 - Goldstandard-Audit - Schritt 4 (Tests, Logging & Struktur)
+
+- **Ziel:** Eine Analyse der Testabdeckung, der Fehlerbehandlung und der allgemeinen Projektstruktur durchführen und einen Bericht mit Verbesserungsvorschlägen erstellen.
+- **Aktion:**
+    - **Test-Analyse:**
+        - Python-Tests in `backend/` und `waechter/` identifiziert und erfolgreich ausgeführt.
+        - Keine dedizierten JavaScript-Tests im `frontend/` Verzeichnis gefunden.
+        - Keine `playwright.config.js` gefunden, was auf fehlende Playwright-Tests hindeutet.
+    - **Logging & Fehler-Analyse:**
+        - `try...except` Blöcke in `backend/database.py`, `backend/llm_gateway.py`, `backend/main.py` gefunden.
+        - `try...catch` Blöcke in `frontend/js/app.js`, `frontend/js/chat.js`, `frontend/js/cost-visualizer.js`, `frontend/js/settings.js` und `frontend/main.js` gefunden.
+        - `console.log` in `frontend/js/app.js` für Debugging-Zwecke gefunden.
+        - `console.error` in `frontend/js/app.js`, `frontend/js/cost-visualizer.js`, `frontend/js/settings.js` für Fehlerprotokollierung gefunden.
+        - `print()` in `backend/cost_calculator.py`, `backend/database.py`, `backend/llm_gateway.py`, `backend/main.py`, `backend/test_genai.py`, `backend/test_openai.py` für Debugging, Warnungen und Statusmeldungen gefunden.
+    - **Struktur-Analyse:**
+        - Hauptverzeichnis enthält Projektkonfigurationsdateien, Dokumentationsdateien und Skripte.
+        - Unterverzeichnisse `backend/`, `frontend/`, `gemini-auth/`, `waechter/` mit spezifischen Inhalten.
+- **Verbesserungsvorschläge:**
+    1.  **Testabdeckung im Frontend:** Einführung eines Test-Frameworks (z.B. Jest, Playwright) und Erstellung von Tests für kritische UI-Komponenten und Funktionalitäten.
+    2.  **Umgang mit `print()` und `console.log`:** Implementierung eines zentralisierten Logging-Systems mit konfigurierbaren Log-Levels, um Debugging-Ausgaben in der Produktion zu unterdrücken.
+    3.  **Struktur der `gemini-auth/` Dateien:** Überprüfung der Notwendigkeit und des Zwecks dieser Dateien. Wenn sie projektübergreifend oder nur für die lokale Entwicklung relevant sind, sollten sie in ein separates `tools/` oder `scripts/` Verzeichnis auf Root-Ebene verschoben werden, das nicht Teil des Haupt-Builds ist.
+    4.  **Deprecation Warnings:** Aktualisierung der betroffenen Bibliotheken auf neuere Versionen oder Anpassung des Codes, um die empfohlenen Alternativen zu nutzen (z.B. `lifespan` Events in FastAPI).
+- **Ergebnis:** Detaillierter Audit-Bericht erstellt und im `AGENT_WORK_LOG.md` dokumentiert.
