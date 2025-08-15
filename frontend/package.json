@@ -2,14 +2,5 @@
   "name": "janus-frontend",
   "version": "1.0.0",
   "description": "Frontend for Janus",
-  "main": "main.electron.js",
-  "scripts": {
-    "start": "concurrently \"npm:start-backend\" \"npm:start-frontend\"",
-    "start-frontend": "electron .",
-    "start-backend": "C:/KI/Janus-Projekt/backend/venv/Scripts/python.exe -m uvicorn --app-dir ../ backend.main:app --reload"
-  },
-  "devDependencies": {
-    "concurrently": "^9.2.0",
-    "electron": "^28.0.0"
-  }
+  "main": "main.electron.js"
 }
