@@ -211,6 +211,11 @@ async def get_costs_details():
     details = database.get_all_cost_entries()
     return details
 
+@app.get("/api/costs/summary-by-model")
+async def get_costs_summary_by_model():
+    summary = database.get_costs_summary_by_model_for_current_month()
+    return summary
+
 @app.get("/api/costs/summary")
 async def get_costs_summary():
     all_entries = database.get_all_cost_entries()

@@ -241,21 +241,21 @@ button:hover {
 }
 
 .modal-content {
-    background-color: var(--background-secondary); /* Revert to original background */
+    background-color: white;
     margin: auto;
     padding: 20px;
-    border: 1px solid var(--surface-color);
+    border: 1px solid #888;
     border-radius: var(--border-radius-main);
-    width: 80%; /* Could be adjusted */
-    max-width: 600px; /* Max width for readability */
+    width: 80%;
+    max-width: 800px; /* Increased width */
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
     position: relative;
     color: black; /* Explicitly black for readability on white background */
-    font-size: 1.1em; /* Keep increased font size */
+    font-size: 1.1em;
 }
 
 .close-button {
-    color: var(--text-secondary);
+    color: #aaa;
     float: right;
     font-size: 28px;
     font-weight: bold;
@@ -263,27 +263,37 @@ button:hover {
 
 .close-button:hover,
 .close-button:focus {
-    color: var(--accent-color);
+    color: black;
     text-decoration: none;
     cursor: pointer;
 }
 
-/* Table Styling within Modal */
-.modal-content table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
+/* Styling für die Kostentabelle im Modal */
+#cost-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
 }
 
-.modal-content th, .modal-content td {
-    border: 1px solid var(--surface-color);
-    padding: 8px;
-    text-align: left;
-    color: black; /* Explicitly black for readability on white background */
-    font-size: 1em; /* Ensure font size is consistent */
+#cost-details-table th, 
+#cost-details-table td {
+  padding: 10px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  color: black;
 }
 
-.modal-content th {
-    background-color: var(--accent-color); /* Use accent color for headers */
-    color: var(--background-primary); /* Text color for accent background */
+#cost-details-table th {
+  background-color: var(--accent-color);
+  color: white;
+  font-weight: 600;
+}
+
+#cost-details-table td:last-child {
+    text-align: right;
+    font-family: monospace; /* Für besser lesbare Zahlen */
+}
+
+#cost-details-table tr:hover {
+    background-color: #f2f2f2;
 }

@@ -24,36 +24,43 @@ document.addEventListener('DOMContentLoaded', () => {
         deepDiveContent.innerHTML = 'Lade detaillierte Kosten...'; // Loading message
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/costs/summary`);
+            const response = await fetch(`${API_BASE_URL}/api/costs/summary-by-model`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const summaryData = await response.json();
             
-            let html = '<h3>Kostenübersicht nach Modell</h3>';
+            let html = '<h3>Kostenübersicht nach Modell (Dieser Monat)</h3>';
             if (summaryData.length === 0) {
-                html += '<p>Keine Kosteninformationen verfügbar.</p>';
+                html += '<p>Keine Kosteninformationen für den aktuellen Monat verfügbar.</p>';
             } else {
-                html += '<table>';
-                html += '<thead><tr><th>Modell</th><th>Typ</th><th>Details</th><th>Gesamtkosten (€)</th></tr></thead>';
-                html += '<tbody>';
+                html += `
+                  <table id="cost-details-table">
+                    <thead>
+                      <tr>
+                        <th>Modell</th>
+                        <th>Details / Tokens</th>
+                        <th>Gesamtkosten (€)</th>
+                      </tr>
+                    </thead>
+                    <tbody>`;
                 summaryData.forEach(item => {
-                    let details = '';
-                    if (item.type === 'text') {
-                        details = `Eingabe: ${item.input_tokens}, Ausgabe: ${item.output_tokens}`;
-                    } else if (item.type === 'image') {
-                        details = `Bilder: ${item.image_count}`;
-                    }
-                    html += `
-                        <tr>
-                            <td>${item.model}</td>
-                            <td>${item.type}</td>
-                            <td>${details}</td>
-                            <td>${item.total_cost.toFixed(4)}</td>
-                        </tr>
-                    `;
+                  let detailText = '';
+                  if (item.total_input_tokens > 0 || item.total_output_tokens > 0) {
+                    detailText = `Eingabe: ${item.total_input_tokens}, Ausgabe: ${item.total_output_tokens}`;
+                  } else if (item.image_count > 0) {
+                    detailText = `Bilder: ${item.image_count}`;
+                  }
+                  
+                  html += `
+                    <tr>
+                      <td>${item.model}</td>
+                      <td>${detailText}</td>
+                      <td>${item.total_cost.toFixed(4)}</td>
+                    </tr>
+                  `;
                 });
-                html += '</tbody></table>';
+                html += `</tbody></table>`;
             }
             deepDiveContent.innerHTML = html;
 

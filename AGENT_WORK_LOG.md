@@ -1,3 +1,16 @@
+### 2025-08-15 - Wiederherstellung der Backend-Logik und UI-Feinschliff
+
+- **Ziel:** Die durch einen `git reset` verloren gegangene Backend-Logik für die aggregierte Kostenübersicht wiederherstellen und das Styling des Kosten-Detail-Modals für bessere Lesbarkeit finalisieren.
+- **Aktion: Wiederherstellung der Backend-Logik:**
+    - In `backend/database.py` wurde die Funktion `get_costs_summary_by_model_for_current_month` erneut hinzugefügt, um die Kosten pro Modell für den aktuellen Monat zu aggregieren.
+    - In `backend/main.py` wurde der zugehörige API-Endpunkt `@app.get("/api/costs/summary-by-model")` wiederhergestellt, um die Daten für das Frontend bereitzustellen.
+- **Aktion: UI-Styling-Korrekturen:**
+    - In `frontend/js/cost-visualizer.js` wurde die Tabellenerstellung angepasst, um die aggregierten Daten korrekt zu verarbeiten und darzustellen.
+    - In `frontend/src/styles.css` wurde das Styling des Modals grundlegend überarbeitet. Es wird nun ein helles Theme (weißer Hintergrund) mit schwarzer Schriftfarbe verwendet, um die Lesbarkeit der Kostendetails signifikant zu verbessern. Die Tabellen-Header und Hover-Effekte wurden entsprechend angepasst.
+- **Ergebnis:** Der 404-Fehler wurde behoben. Das Kosten-Detail-Modal ist nun voll funktionsfähig, zeigt die korrekten aggregierten Monatsdaten an und ist dank des neuen hellen Themes und der klaren Schriftfarben gut lesbar und ästhetisch ansprechend.
+
+---
+
 ### 2025-08-14 - Optimierung und Präzisierung des Kosten-Trackings
 
 - **Ziel:** Sicherstellung der präzisen Erfassung und Anzeige auch sehr geringer Modellkosten sowie Klärung der Token-Tracking-Genauigkeit.
@@ -46,7 +59,7 @@
 ### 2025-08-14 - Audit & Synchronisation der Dokumentation
 
 - **Ziel:** Audit des aktuellen, funktionierenden Code-Zustands und Aktualisierung der Planungsdokumente (`FEATURE_KOSTENKONTROLLE.md` und `AGENT_WORK_LOG.md`), um den Abschluss des Kostenkontroll-Features zu reflektieren.
-- **Aktion: Code-Audit durchgeführt:**
+- **Aktion: Code-Analyse durchgeführt:**
     - **Backend (`llm_gateway.py`, `main.py`):** Die Analyse bestätigt, dass die Kosten- und Token-Erfassung für OpenAI (Text), Gemini (Text) und DALL-E (Bilder) vollständig implementiert ist. Die API-Endpunkte (`/api/costs/dashboard`, `/api/costs/details`, `/api/costs/summary`) zur Bereitstellung der Kostendaten sind funktionsfähig und greifen korrekt auf die Datenbank zu.
     - **Frontend (`cost-visualizer.js`, `app.js`):** Die Analyse bestätigt, dass die Logik zum Abrufen und Anzeigen der Kostendaten vollständig implementiert ist. Dies beinhaltet die Dashboard-Ansicht (Budget vs. aktuelle Kosten) und ein interaktives Modal, das eine detaillierte Kostenaufschlüsselung nach Modellen anzeigt.
 - **Aktion: Dokumentations-Synchronisation:**
