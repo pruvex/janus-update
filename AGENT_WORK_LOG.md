@@ -71,3 +71,22 @@
     3.  **Struktur der `gemini-auth/` Dateien:** Überprüfung der Notwendigkeit und des Zwecks dieser Dateien. Wenn sie projektübergreifend oder nur für die lokale Entwicklung relevant sind, sollten sie in ein separates `tools/` oder `scripts/` Verzeichnis auf Root-Ebene verschoben werden, das nicht Teil des Haupt-Builds ist.
     4.  **Deprecation Warnings:** Aktualisierung der betroffenen Bibliotheken auf neuere Versionen oder Anpassung des Codes, um die empfohlenen Alternativen zu nutzen (z.B. `lifespan` Events in FastAPI).
 - **Ergebnis:** Detaillierter Audit-Bericht erstellt und im `AGENT_WORK_LOG.md` dokumentiert.
+
+---
+
+### 2025-08-15 - Goldstandard-Audit - Schritt 4 (Struktur-Bereinigung)
+
+- **Ziel:** Die Projektstruktur bereinigen, indem der `gemini-auth/`-Ordner in ein neues, logisch korrektes `tools/`-Verzeichnis verschoben wird.
+- **Aktion:**
+    - Das Verzeichnis `tools/` wurde erstellt.
+    - Der Ordner `gemini-auth/` wurde nach `tools/` verschoben.
+    - Es wurden keine Code-Referenzen auf den alten Pfad gefunden, die angepasst werden müssten.
+- **Ergebnis:** Der `gemini-auth/`-Ordner befindet sich nun im `tools/`-Verzeichnis, was die Projektstruktur verbessert.
+
+---
+
+### 2025-08-15 - Goldstandard-Audit - Schritt 5 (Dokumentation aktualisieren)
+
+- **Ziel:** Eine umfassende und aktuelle `README.md`-Datei erstellen, die die Projektstruktur, die Installationsschritte und die Startbefehle klar und präzise dokumentiert.
+- **Aktion:** Die `README.md`-Datei wurde mit den relevanten Informationen zur Projektstruktur, Installation und Startbefehlen erstellt.
+- **Ergebnis:** Die Projektdokumentation wurde aktualisiert und ist nun zentral in der `README.md` verfügbar.
