@@ -3,8 +3,8 @@ import os
 import sqlite3
 from datetime import datetime
 from fastapi.testclient import TestClient
-from main import app # Assuming 'app' is the FastAPI instance
-from database import init_db, save_cost_entry, DATABASE_FILE
+from backend.main import app # Assuming 'app' is the FastAPI instance
+from backend.database import init_db, save_cost_entry, DATABASE_FILE
 
 class TestCostAPI(unittest.TestCase):
 
@@ -32,7 +32,7 @@ class TestCostAPI(unittest.TestCase):
         self.assertIn("current_month_cost", data)
         self.assertIn("monthly_budget", data)
         self.assertAlmostEqual(data["current_month_cost"], 0.03)
-        self.assertEqual(data["monthly_budget"], 10.00) # Hardcoded in main.py
+        self.assertEqual(data["monthly_budget"], 15.00) # Hardcoded in main.py
 
     def test_get_costs_details(self):
         # Add some dummy cost data

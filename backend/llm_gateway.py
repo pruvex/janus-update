@@ -7,7 +7,7 @@ import logging
 import traceback
 import re # Added for potential future use, not in current snippet but good practice
 import google.generativeai as genai
-from .cost_calculator import calculate_cost
+from backend.cost_calculator import calculate_cost
 
 router = APIRouter()
 

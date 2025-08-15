@@ -20,9 +20,18 @@ def calculate_cost(model_id: str, input_tokens: int, output_tokens: int) -> floa
     if not model_info:
         print(f"Warning: Model '{model_id}' not found in catalog. Cost calculation skipped.")
         return 0.0
-    cost_per_input = model_info.get('cost_per_token_input', 0)
-    cost_per_output = model_info.get('cost_per_token_output', 0)
-    # Kosten werden pro 1 Million Token angegeben
-    total_cost = (input_tokens * cost_per_input) + \
-                 (output_tokens * cost_per_output)
-    return round(total_cost, 10)
+    model_type = model_info.get('type')
+
+    if model_type == 'image':
+        cost_per_image = model_info.get('cost_per_image', 0)
+        return round(cost_per_image, 10)
+    elif model_type == 'text':
+        cost_per_input = model_info.get('cost_per_token_input', 0)
+        cost_per_output = model_info.get('cost_per_token_output', 0)
+        # Kosten werden pro 1 Million Token angegeben
+        total_cost = (input_tokens * cost_per_input) + \
+                     (output_tokens * cost_per_output)
+        return round(total_cost, 10)
+    else:
+        print(f"Warning: Unknown model type '{model_type}' for model '{model_id}'. Cost calculation skipped.")
+        return 0.0

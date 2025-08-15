@@ -4,11 +4,11 @@ import keyring
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from . import llm_gateway
+from backend import llm_gateway
 import traceback
 from fastapi.responses import JSONResponse
 from datetime import datetime
-from . import database
+from backend import database
 from typing import List, Optional
 
 app = FastAPI()

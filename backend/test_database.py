@@ -2,7 +2,7 @@ import unittest
 import os
 import sqlite3
 from datetime import datetime
-from database import init_db, save_cost_entry, get_costs_for_month, get_all_cost_entries, DATABASE_FILE
+from backend.database import init_db, save_cost_entry, get_costs_for_month, get_all_cost_entries, DATABASE_FILE
 
 class TestDatabase(unittest.TestCase):
 
