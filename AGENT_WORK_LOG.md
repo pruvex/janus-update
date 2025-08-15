@@ -1,3 +1,14 @@
+### 2025-08-15 - Analyse des Monats-Resets
+
+- **Ziel:** Überprüfen, ob die Anwendung die Kosten zu Beginn eines neuen Monats automatisch zurücksetzt.
+- **Aktion: Code-Analyse:**
+    - Eine Analyse des Backend-Codes wurde durchgeführt.
+    - In `backend/database.py` wurde bestätigt, dass die Funktion `get_costs_summary_by_model_for_current_month` die Kostendaten basierend auf dem aktuellen Monat filtert (`WHERE date >= ?`).
+    - In `backend/main.py` wurde bestätigt, dass die Endpunkte `/api/costs/summary-by-model` und `/api/costs/dashboard` diese datumsgefilterten Funktionen verwenden.
+- **Ergebnis:** Es wurde festgestellt, dass die Funktionalität für einen monatlichen "Reset" bereits implizit implementiert ist. Da alle relevanten Datenansichten (Kosten-Widget, Kosten-Detail-Modal) nur die Daten des aktuellen Monats abrufen, beginnen sie bei einem Monatswechsel automatisch wieder bei Null. Es waren keine Code-Änderungen erforderlich.
+
+---
+
 ### 2025-08-15 - Aufräumarbeiten an der Sidebar
 
 - **Ziel:** Die Sidebar aufräumen, indem die redundante Kosten-Detail-Liste entfernt und das Layout des Kosten-Widgets beim Einklappen der Sidebar korrigiert wird.
