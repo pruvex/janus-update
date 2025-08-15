@@ -90,3 +90,16 @@
 - **Ziel:** Eine umfassende und aktuelle `README.md`-Datei erstellen, die die Projektstruktur, die Installationsschritte und die Startbefehle klar und präzise dokumentiert.
 - **Aktion:** Die `README.md`-Datei wurde mit den relevanten Informationen zur Projektstruktur, Installation und Startbefehlen erstellt.
 - **Ergebnis:** Die Projektdokumentation wurde aktualisiert und ist nun zentral in der `README.md` verfügbar.
+
+---
+
+### 2025-08-15 - Goldstandard-Audit - Schritt 6 (Frontend Smoke Test)
+
+- **Ziel:** Einen ersten, grundlegenden End-to-End-"Smoke-Test" für das Frontend erstellen, der überprüft, ob die Anwendung startet und die Hauptkomponenten (Sidebar, Chat-Fenster) rendert.
+- **Aktion:**
+    - Das Verzeichnis `waechter/tests/e2e/` wurde erstellt.
+    - Die Testdatei `waechter/tests/e2e/smoke.spec.js` wurde erstellt und mit dem Smoke-Test-Code befüllt.
+    - Die Datei `playwright.config.js` wurde im Root-Verzeichnis erstellt und die `baseURL` auf `http://localhost:5173` gesetzt.
+    - Die Playwright-Abhängigkeiten wurden installiert.
+    - Der `npm run test:e2e` Befehl wurde erfolgreich ausgeführt.
+- **Ergebnis:** Ein grundlegender Smoke-Test für das Frontend ist nun vorhanden und läuft erfolgreich.
