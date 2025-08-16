@@ -1,22 +1,27 @@
 import json
 import os
 import keyring
+import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from . import llm_gateway
+from backend import llm_gateway
 import traceback
 from fastapi.responses import JSONResponse
 from datetime import datetime
-from . import database
+from backend import database
 from typing import List, Optional
+from backend.logger_config import setup_logging
+
+setup_logging()
+logger = logging.getLogger('janus_backend')
 
 app = FastAPI()
 
 @app.on_event("startup")
 async def startup_event():
     database.init_db()
-    print("Database initialized.") # Optional: Debugging-Meldung
+    logger.info("Database initialized.") # Optional: Debugging-Meldung
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,25 +35,25 @@ CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.j
 MODEL_CATALOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_catalog.json")
 
 def load_model_catalog():
-    print(f"DEBUG: Attempting to load model catalog from: {MODEL_CATALOG_FILE}")
-    print(f"DEBUG: Does model catalog file exist? {os.path.exists(MODEL_CATALOG_FILE)}")
+    logger.debug(f"Attempting to load model catalog from: {MODEL_CATALOG_FILE}")
+    logger.debug(f"Does model catalog file exist? {os.path.exists(MODEL_CATALOG_FILE)}")
     if not os.path.exists(MODEL_CATALOG_FILE):
         return []
     try:
         with open(MODEL_CATALOG_FILE, "r") as f:
             return json.load(f)
     except json.JSONDecodeError:
-        print(f"ERROR: Invalid JSON in model catalog file: {MODEL_CATALOG_FILE}")
+        logger.error(f"Invalid JSON in model catalog file: {MODEL_CATALOG_FILE}")
         return []
     except Exception as e:
-        print(f"ERROR: Unexpected error loading model catalog: {e}")
+        logger.error(f"Unexpected error loading model catalog: {e}")
         raise
 
 # Helper function for cost saving (re-adding)
 def save_cost_entry(model: str, input_tokens: int = None, output_tokens: int = None, image_quality: str = None, image_cost: float = None, total_cost: float = 0):
     """Helper function to save a cost entry to the database."""
     try:
-        print(f"DEBUG: Speichere Kosteneintrag: total_cost={total_cost}")
+        logger.debug(f"Speichere Kosteneintrag: total_cost={total_cost}")
         database.save_cost_entry(
             date=datetime.now().isoformat(),
             model=model,
@@ -59,7 +64,7 @@ def save_cost_entry(model: str, input_tokens: int = None, output_tokens: int = N
             total_cost=total_cost
         )
     except Exception as e:
-        print(f"ERROR: Kosteneintrag konnte nicht gespeichert werden: {e}")
+        logger.error(f"Kosteneintrag konnte nicht gespeichert werden: {e}")
 
 class ChatRequest(BaseModel):
     prompt: str
@@ -152,13 +157,13 @@ async def chat(request: ChatRequest):
         
         # --- Korrekte Kosten-Speicherung ---
         usage = gateway_response.get("usage")
+        logger.debug(f"Received usage from gateway: {usage}") # NEW
         cost = gateway_response.get("cost")
 
         if usage and cost:
             total_cost = cost.get("total_cost", 0)
             
-            if total_cost > 0:
-                 save_cost_entry(
+            save_cost_entry(
                     model=request.model,
                     input_tokens=usage.get("input_tokens"),
                     output_tokens=usage.get("output_tokens"),
@@ -192,10 +197,22 @@ async def get_costs_dashboard():
     today = datetime.now()
     current_month_cost = database.get_costs_for_month(today.year, today.month)
     
-    # TODO: Implement logic to read budget from a config file
-    # For now, we use a hardcoded value
-    budget = 10.00
+    config = load_config()
+    budget = config.get("monthly_budget", 10.00) # Default to 10.00 if not set
     return CostDashboard(current_month_cost=current_month_cost, monthly_budget=budget)
+
+class BudgetUpdate(BaseModel):
+    budget: float
+
+@app.post("/api/budget")
+async def update_budget(budget_update: BudgetUpdate):
+    try:
+        config = load_config()
+        config["monthly_budget"] = budget_update.budget
+        save_config(config)
+        return {"message": "Budget updated successfully."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 class CostDetail(BaseModel):
     date: datetime
@@ -210,3 +227,51 @@ class CostDetail(BaseModel):
 async def get_costs_details():
     details = database.get_all_cost_entries()
     return details
+
+@app.get("/api/costs/summary-by-model")
+async def get_costs_summary_by_model():
+    summary = database.get_costs_summary_by_model_for_current_month()
+    return summary
+
+@app.get("/api/costs/summary")
+async def get_costs_summary():
+    all_entries = database.get_all_cost_entries()
+    model_catalog = load_model_catalog() # Load model catalog
+
+    summary = {} # Aggregate costs here
+
+    for entry in all_entries:
+        model_name = entry["model"]
+        total_cost = entry["total_cost"]
+        input_tokens = entry["input_tokens"]
+        output_tokens = entry["output_tokens"]
+        image_quality = entry["image_quality"]
+        image_cost = entry["image_cost"]
+
+        # Get model type from catalog
+        model_type = "unknown"
+        for model_info in model_catalog:
+            if model_info["id"] == model_name:
+                model_type = model_info.get("type", "unknown")
+                break
+
+        if model_name not in summary:
+            summary[model_name] = {
+                "model": model_name,
+                "total_cost": 0.0,
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "image_count": 0,
+                "type": model_type # Initialize type from catalog
+            }
+        
+        summary[model_name]["total_cost"] += total_cost
+
+        if model_type == "text":
+            summary[model_name]["input_tokens"] += (input_tokens if input_tokens is not None else 0)
+            summary[model_name]["output_tokens"] += (output_tokens if output_tokens is not None else 0)
+        elif model_type == "image":
+            summary[model_name]["image_count"] += 1 # Count each image generation
+
+    # Convert dictionary to list of values
+    return list(summary.values())

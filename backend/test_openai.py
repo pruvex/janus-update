@@ -1,2 +1,5 @@
 import openai
-print('openai imported successfully')
+import logging
+
+logger = logging.getLogger('janus_backend')
+logger.info('openai imported successfully')

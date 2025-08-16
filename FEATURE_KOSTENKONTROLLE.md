@@ -5,9 +5,9 @@ Das Ziel ist es, eine umfassende Kostenverfolgung und -visualisierung zu impleme
 
 ## 1. Backend-Erweiterungen:
 
-*   **[ ] 1.1. Kostenberechnung und Datenextraktion (llm_gateway.py):**
-    *   **Aktueller Zustand:** `_call_dalle_api` und `_call_openai_api` (für Bildgenerierung) geben `usage`- und `cost`-Daten zurück. `_call_gemini_api` gibt nur geschätzte `usage`-Daten (Tokens) zurück, berechnet aber **keine Kosten**.
-    *   **Vorgeschlagene Änderung:** `_call_gemini_api` muss angepasst werden, um `usage` (z.B. `input_tokens`, `output_tokens`) und `cost` (z.B. `total_cost`) aus der Gemini-API-Antwort zu extrahieren und zurückzugeben. Dies erfordert das Parsen des Preismodells und der Antwortstruktur der Gemini-API. Falls die Gemini-API keine direkten Token-Zahlen liefert, müssen diese basierend auf der Prompt-/Antwortlänge geschätzt werden.
+*   **[x] 1.1. Kostenberechnung und Datenextraktion (llm_gateway.py):**
+    *   **Aktueller Zustand:** `_call_dalle_api`, `_call_openai_api` und `_call_gemini_api` geben `usage`- und `cost`-Daten zurück.
+    *   **Vorgeschlagene Änderung:** Die Implementierung ist abgeschlossen.
     *   **Nicht-destruktiver Aspekt:** Dies erweitert den Rückgabewert von `_call_gemini_api`, ohne dessen Kernfunktionalität zu ändern.
 
 *   **1.2. Kostenspeicherung (main.py & database.py):**
@@ -55,4 +55,4 @@ Das Ziel ist es, eine umfassende Kostenverfolgung und -visualisierung zu impleme
 ---
 
 **Status Update:**
-Die Implementierung der Grundlagen der Kostenkontrolle ist erfolgreich abgeschlossen. Die Anwendung ist voll funktionsfähig, DALL-E SD/HD-Optionen funktionieren, GPT-generierte Bilder werden korrekt angezeigt (nur Bild, kein Link), und die Kostenverfolgung für Bilder funktioniert. Die Kosten für Text-Chats werden ebenfalls erfasst.
+Die Implementierung der Grundlagen der Kostenkontrolle ist erfolgreich abgeschlossen. Die Anwendung ist voll funktionsfähig, DALL-E SD/HD-Optionen funktionieren, GPT-generierte Bilder werden korrekt angezeigt (nur Bild, kein Link), und die Kostenverfolgung für Bilder und Text-Chats funktioniert. Die Kostenanzeige aktualisiert sich nun automatisch nach jeder Chat-Interaktion.

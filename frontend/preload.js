@@ -1,7 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electron', {
-  saveImage: (imageUrl) => ipcRenderer.send('save-image', imageUrl),
+  saveImage: (url) => ipcRenderer.invoke('save-image', url),
   // Other existing functions...
   send: (channel, data) => {
     // whitelist channels

@@ -7,7 +7,9 @@ import logging
 import traceback
 import re # Added for potential future use, not in current snippet but good practice
 import google.generativeai as genai
-from .cost_calculator import calculate_cost
+from backend.cost_calculator import calculate_cost
+
+logger = logging.getLogger('janus_backend')
 
 router = APIRouter()
 
@@ -67,12 +69,12 @@ async def _call_openai_api(api_key: str, prompt: str, model: str):
             input_tokens = response.usage.prompt_tokens
             output_tokens = response.usage.completion_tokens
             total_cost = calculate_cost(model, input_tokens, output_tokens)
-            print("\n--- OPENAI USAGE TRACKING ---")
-            print(f"Model: {model}")
-            print(f"Input Tokens: {input_tokens}")
-            print(f"Output Tokens: {output_tokens}")
-            print(f"Calculated Cost: {total_cost:.6f} €")
-            print("-----------------------------\\n")
+            logger.info("\n--- OPENAI USAGE TRACKING ---")
+            logger.info(f"Model: {model}")
+            logger.info(f"Input Tokens: {input_tokens}")
+            logger.info(f"Output Tokens: {output_tokens}")
+            logger.info(f"Calculated Cost: {total_cost:.6f} €")
+            logger.info("-----------------------------\n")
         # --- ENDE DEBUG-OUTPUT ---
 
         response_message = response.choices[0].message
@@ -105,7 +107,7 @@ async def _call_openai_api(api_key: str, prompt: str, model: str):
                 )
                 final_message_content = second_response.choices[0].message.content
                 
-                print(f"DEBUG (_call_openai_api): dalle_response.get('image_url') = {dalle_response.get('image_url')}")
+                logger.debug(f"(_call_openai_api): dalle_response.get('image_url') = {dalle_response.get("image_url")}")
                 return {
                     "text": final_message_content,
                     "image_url": dalle_response.get("image_url"), # This is correct!
@@ -114,35 +116,43 @@ async def _call_openai_api(api_key: str, prompt: str, model: str):
                 }
         
         chat_response_text = response_message.content
-        return {"text": chat_response_text}
+        # Add usage and cost for regular chat completions
+        usage = {
+            "input_tokens": response.usage.prompt_tokens,
+            "output_tokens": response.usage.completion_tokens
+        }
+        total_cost = calculate_cost(model, usage["input_tokens"], usage["output_tokens"])
+        
+        return {
+            "text": chat_response_text,
+            "usage": usage,
+            "cost": {"total_cost": total_cost}
+        }
 
-async def _call_gemini_api(api_key, prompt, model_name):
+# Refactored Gemini Chat Logic to _call_gemini_api
+async def _call_gemini_api(api_key: str, prompt: str, model_name: str):
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(model_name)
     try:
         response = await model.generate_content_async(prompt)
         usage_metadata = getattr(response, 'usage_metadata', None)
+        
         if usage_metadata:
             input_tokens = usage_metadata.prompt_token_count
             output_tokens = usage_metadata.candidates_token_count
-            total_cost = calculate_cost(model_name, input_tokens, output_tokens)
-            # --- NEUER DEBUG-OUTPUT IM TERMINAL ---
-            print("\n--- GEMINI USAGE TRACKING ---")
-            print(f"Model: {model_name}")
-            print(f"Input Tokens: {input_tokens}")
-            print(f"Output Tokens: {output_tokens}")
-            print(f"Calculated Cost: {total_cost:.6f} €")
-            print("-----------------------------\n")
-            # --- ENDE DEBUG-OUTPUT ---
+            total_cost = calculate_cost(model_name, input_tokens, output_tokens) # Use calculate_cost
+            
+            
             return {
                 "text": response.text,
-                "usage": { "prompt_tokens": input_tokens, "completion_tokens": output_tokens },
+                "usage": { "input_tokens": input_tokens, "output_tokens": output_tokens },
                 "cost": { "total_cost": total_cost }
             }
         else:
+            # Fallback if usage_metadata is not available
             return {"text": response.text}
     except Exception as e:
-        print(f"Error calling Gemini API: {e}")
+        logger.error(f"Error calling Gemini API: {e}")
         return {"text": f"An error occurred with the Gemini API: {e}"}
 
 # NEW, DEDICATED FUNCTION FOR DALL-E (from user's plan)
@@ -166,7 +176,7 @@ async def _call_dalle_api(api_key, prompt, model_id): # Renamed 'model' to 'mode
                 
         # Create a response that our backend understands
         image_cost = 0.04 if quality == "standard" else 0.08
-        print(f"DEBUG (_call_dalle_api): image_url = {image_url}")
+        logger.debug(f"(_call_dalle_api): image_url = {image_url}")
         return {
             "text": response.data[0].revised_prompt or "Hier ist das Bild, das mit DALL·E erstellt wurde.",
             "image_url": image_url, # Direct URL
@@ -174,12 +184,12 @@ async def _call_dalle_api(api_key, prompt, model_id): # Renamed 'model' to 'mode
             "cost": {"total_cost": image_cost}
         }
     except Exception as e:
-        print(f"Error calling DALL-E API: {e}")
+        logger.error(f"Error calling DALL-E API: {e}")
         raise
 
 # Replaced call_llm with the new switch logic
 async def call_llm(provider: str, model: str, prompt: str, api_key: str):
-    print(f"Call LLM - Provider: {provider}, Model: {model}")
+    logger.info(f"Call LLM - Provider: {provider}, Model: {model}")
     # --- NEW SWITCH for DALL-E ---
     if model.startswith("dall-e-3"):
         return await _call_dalle_api(api_key, prompt, model) # Pass model_id for quality check

@@ -18,6 +18,10 @@
           </svg>
         </button>
       </div>
+      <div id="cost-summary-widget">
+        <p id="current-month-cost"></p>
+        <p id="monthly-budget"></p>
+      </div>
       <nav>
         <select id="provider-select">
           <option value="openai">OpenAI</option>
@@ -28,9 +32,9 @@
         <!-- Weitere Nav-Elemente hier -->
       </nav>
       <div id="cost-display-section">
-        <div id="cost-dashboard"></div>
-        <div id="cost-details"></div>
-        <button id="refresh-cost-button">Kosten aktualisieren</button>
+        
+        
+        
       </div>
     </div>
     <main id="chat-view" class="view">
@@ -64,11 +68,18 @@
       </div>
     </main>
   </div>
-  <script src="js/config.js"></script>
-  <script src="js/settings.js"></script>
-  <script src="js/chat.js"></script>
-  <script src="js/model-catalog.js"></script>
+  <script type="module" src="js/config.js"></script>
+  <script type="module" src="js/settings.js"></script>
+  <script type="module" src="js/chat.js"></script>
+  <script type="module" src="js/model-catalog.js"></script>
     <script type="module" src="js/app.js"></script>
-  <script src="js/cost-visualizer.js"></script>
+  <script type="module" src="js/cost-visualizer.js"></script>
+  <div id="cost-deep-dive-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <h2>Kosten-Details (Deep Dive)</h2>
+      <div id="deep-dive-content"></div>
+    </div>
+  </div>
 </body>
 </html>

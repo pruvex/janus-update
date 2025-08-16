@@ -160,7 +160,7 @@ button:hover {
 
 .chat-window {
     width: 600px;  /* Feste, vernünftige Breite */
-    height: 800px; /* Feste, vernünftige Höhe */
+    height: 700px; /* Feste, vernünftige Höhe */
     display: flex;
     flex-direction: column;
     border: 1px solid #444;
@@ -196,7 +196,8 @@ button:hover {
 }
 
 .app-container.sidebar-collapsed #sidebar-header h2,
-.app-container.sidebar-collapsed #sidebar nav {
+.app-container.sidebar-collapsed #sidebar nav,
+.app-container.sidebar-collapsed #cost-summary-widget {
     display: none;
 }
 
@@ -207,4 +208,102 @@ button:hover {
 
 .app-container.sidebar-collapsed #toggle-sidebar-btn {
     transform: rotate(180deg);
+}
+
+#cost-summary-widget {
+    background-color: var(--surface-color);
+    border: 1px solid var(--accent-color);
+    border-radius: var(--border-radius-main);
+    padding: 8px 12px;
+    margin-bottom: 10px; /* Space below the widget */
+    font-size: 0.9em;
+    color: var(--text-primary);
+    cursor: pointer; /* Make it clickable */
+}
+
+#cost-summary-widget p {
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Modal Styling */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: var(--border-radius-main);
+    width: 80%;
+    max-width: 800px; /* Increased width */
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    position: relative;
+    color: black; /* Explicitly black for readability on white background */
+    font-size: 1.1em;
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Styling für die Kostentabelle im Modal */
+#cost-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+#cost-details-table th, 
+#cost-details-table td {
+  padding: 10px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  color: black;
+}
+
+#cost-details-table th {
+  background-color: var(--accent-color);
+  color: white;
+  font-weight: 600;
+}
+
+#cost-details-table td:last-child {
+    text-align: right;
+    font-family: monospace; /* Für besser lesbare Zahlen */
+}
+
+#cost-details-table tr:hover {
+    background-color: #f2f2f2;
+}
+
+#cost-details-table tfoot tr {
+    border-top: 2px solid var(--accent-color);
+    font-weight: bold;
+}
+
+#monthly-budget.budget-exceeded {
+    color: red;
 }

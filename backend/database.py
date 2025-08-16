@@ -1,6 +1,9 @@
 import sqlite3
 import os
+import logging
 from datetime import datetime
+
+logger = logging.getLogger('janus_backend')
 
 DATABASE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "costs.db")
 
@@ -21,7 +24,7 @@ def init_db():
     """)
     conn.commit()
     conn.close()
-    print("Database initialized.")
+    logger.info("Database initialized.")
 
 def save_cost_entry(date: str, model: str, input_tokens: int, output_tokens: int, image_quality: str, image_cost: float, total_cost: float):
     conn = sqlite3.connect(DATABASE_FILE)
@@ -32,7 +35,7 @@ def save_cost_entry(date: str, model: str, input_tokens: int, output_tokens: int
     """, (date, model, input_tokens, output_tokens, image_quality, image_cost, total_cost))
     conn.commit()
     conn.close()
-    print(f"Cost entry saved: Model={model}, Total Cost={total_cost}")
+    
 
 def get_costs_for_month(year: int, month: int) -> float:
     conn = sqlite3.connect(DATABASE_FILE)
@@ -57,6 +60,7 @@ def get_all_cost_entries():
     rows = cursor.fetchall()
     conn.close()
     
+    
     # Convert rows to a list of dictionaries for easier processing
     results = []
     for row in rows:
@@ -70,3 +74,34 @@ def get_all_cost_entries():
             "total_cost": row[6]
         })
     return results
+
+def get_costs_summary_by_model_for_current_month():
+    conn = sqlite3.connect(DATABASE_FILE)
+    try:
+        c = conn.cursor()
+        first_day_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        c.execute('''
+            SELECT 
+                model,
+                SUM(input_tokens) as total_input,
+                SUM(output_tokens) as total_output,
+                SUM(CASE WHEN image_quality IS NOT NULL THEN 1 ELSE 0 END) as image_count,
+                SUM(total_cost) as total_cost
+            FROM costs
+            WHERE date >= ?
+            GROUP BY model
+        ''', (first_day_of_month,))
+        
+        summary = []
+        for row in c.fetchall():
+            summary.append({
+                "model": row[0],
+                "total_input_tokens": row[1] or 0,
+                "total_output_tokens": row[2] or 0,
+                "image_count": row[3] or 0,
+                "total_cost": row[4] or 0
+            })
+        return summary
+    finally:
+        conn.close()

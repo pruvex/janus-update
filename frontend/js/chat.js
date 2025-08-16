@@ -34,6 +34,10 @@ chatForm.addEventListener('submit', async (e) => {
         // Entferne Ladeanzeige
         chatMessages.removeChild(chatMessages.lastChild);
         appendMessage('bot', data); // Pass the whole data object
+        // NEU: Rufe die Kosten-Aktualisierung auf
+        if (window.fetchCostData) {
+            window.fetchCostData();
+        }
 
     } catch (error) {
         // Entferne Ladeanzeige
