@@ -107,7 +107,7 @@ async def _call_openai_api(api_key: str, prompt: str, model: str):
                 )
                 final_message_content = second_response.choices[0].message.content
                 
-                logger.debug(f"(_call_openai_api): dalle_response.get('image_url') = {dalle_response.get("image_url")}")
+                logger.debug(f"(_call_openai_api): dalle_response.get('image_url') = {dalle_response.get('image_url')}")
                 return {
                     "text": final_message_content,
                     "image_url": dalle_response.get("image_url"), # This is correct!
