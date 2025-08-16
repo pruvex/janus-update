@@ -1,11 +1,8 @@
 
 import unittest
 from unittest.mock import patch, MagicMock
-import sys
-import os
 
-# Füge das übergeordnete Verzeichnis zum Python-Pfad hinzu, um das Backend-Modul zu finden
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 from backend import llm_gateway
 

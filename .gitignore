@@ -19,3 +19,4 @@ __pycache__/
 # Added by Gemini
 backend/venv/
 backend/__pycache__/
+backend/costs.db
