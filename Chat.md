@@ -149,7 +149,7 @@ Basierend auf der Analyse des Projekts und den Kriterien aus `GEMINI.md` werden 
     *   **Vorschlag:** Alle API-Aufrufe im Frontend sollten die global definierte `API_BASE_URL` verwenden, um Konfigurationsänderungen zu vereinfachen und Fehler zu vermeiden.
     *   **Umsetzung:** `frontend/main.js` anpassen, um `window.API_BASE_URL` zu nutzen.
 
-6.  **Standardisierung der Python-Pfadbehandlung in Tests:**
+6.  ✅ **Standardisierung der Python-Pfadbehandlung in Tests:**
     *   **Problem:** Testdateien wie `waechter/test_chat_endpoint.py` und `waechter/test_llm_gateway.py` verwenden `sys.path.append` als Workaround für Importe. Dies ist eine unsaubere Lösung und kann zu Problemen führen.
     *   **Vorschlag:** Die Projektstruktur oder die Test-Runner-Konfiguration (z.B. `pytest.ini`) so anpassen, dass Python-Module korrekt importiert werden können, ohne den `sys.path` manuell zu manipulieren.
     *   **Umsetzung:** Eine `pytest.ini` im Root-Verzeichnis erstellen und den `pythonpath` entsprechend konfigurieren.
