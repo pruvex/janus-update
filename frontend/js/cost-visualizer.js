@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentMonthCostElement) currentMonthCostElement.textContent = 'Fehler beim Laden der Kosten.';
             if (monthlyBudgetElement) monthlyBudgetElement.textContent = '';
             
-            if (costDetailsElement) costDetailsElement.innerHTML = '';
+            if (costDashboardElement) costDashboardElement.innerHTML = '';
         }
     }
 
