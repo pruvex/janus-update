@@ -154,3 +154,18 @@
         - Python: `DeprecationWarning: on_event is deprecated, use lifespan event handlers instead.` (von FastAPI): `on_event` durch `lifespan` Event-Handler ersetzen.
     3.  **Unerwartetes Verzeichnis entfernen:** `C:\KI\Janus-Projekt\[DIR] -p` entfernen.
 - **Ergebnis:** Finaler Audit-Bericht erstellt und im `AGENT_WORK_LOG.md` dokumentiert.
+---
+
+### 2025-08-16 - Finale Aufräumarbeiten & Debugging der Frontend-Anwendung
+
+- **Ziel:** Kleinere Inkonsistenzen bereinigen und die Anwendung nach einem unerwarteten Fehlerbild stabilisieren.
+- **Aktion (Bereinigung):**
+    - Das überflüssige Verzeichnis `-p` wurde mittels `rmdir` entfernt.
+    - Die Logging-Konfiguration in `backend/logger_config.py` wurde überprüft und als bereits korrekt befunden.
+- **Aktion (Debugging):**
+    - **Problem:** Die Anwendung zeigte `net::ERR_CONNECTION_REFUSED`-Fehler und die Electron-App beendete sich sofort nach dem Start mit `exit code 0`.
+    - **Analyse 1:** Ein `ReferenceError` in `frontend/js/cost-visualizer.js` wurde als latenter Bug in der Fehlerbehandlung identifiziert. Die Variable `costDetailsElement` wurde fälschlicherweise anstelle von `costDashboardElement` verwendet.
+    - **Korrektur 1:** Die fehlerhafte Zeile in `cost-visualizer.js` wurde korrigiert.
+    - **Analyse 2:** Das sofortige Beenden der Electron-App deutete auf ein Problem mit den Node.js-Abhängigkeiten hin, da der Code in `main.electron.js` korrekt war.
+    - **Korrektur 2:** Das `node_modules`-Verzeichnis und die `package-lock.json`-Datei wurden gelöscht und alle Abhängigkeiten mittels `npm install` sauber neu installiert.
+- **Ergebnis:** Die Anwendung startet nun wieder fehlerfrei. Der latente Bug im Frontend ist behoben und die Projekt-Abhängigkeiten sind in einem stabilen Zustand. Die Änderungen wurden in einem Commit zusammengefasst.
