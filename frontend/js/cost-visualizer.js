@@ -150,8 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Initial fetch
-    window.fetchCostData();
+    // Initial fetch with delay to allow backend to start
+    setTimeout(window.fetchCostData, 2000);
 });
 
 document.addEventListener('click', async (event) => {
