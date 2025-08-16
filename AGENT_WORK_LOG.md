@@ -135,23 +135,22 @@
     - **Struktur-Analyse:**
         - `gemini-auth/` erfolgreich nach `tools/gemini-auth/` verschoben.
         - `test-results/` Verzeichnis vorhanden.
-        - Unerwartetes Verzeichnis `C:\KI\Janus-Projekt\[DIR] -p` gefunden.
+        - Unerwartetes Verzeichnis `C:\KI\Janus-Projekt\[DIR] -p` gefunden. (Hinweis: Dieses Verzeichnis konnte nicht direkt durch den Agenten gelöscht werden, da es sich um ein nicht-existierendes oder falsch benanntes Verzeichnis handelt, das nur in der `list_directory` Ausgabe so angezeigt wird.)
     - **Abhängigkeiten-Analyse:**
         - `pip freeze` erfolgreich ausgeführt.
 - **Bewertung der Goldstandard-Punkte:**
     1.  **Testabdeckung:** Teilweise erledigt. Python-Tests und grundlegender E2E-Frontend-Smoke-Test vorhanden und erfolgreich. **Verbleibende Schritte:** Umfassende Unit- und Integrationstests für das Frontend (Jest), Erweiterung der E2E-Tests für komplexere Flows.
     2.  **Testgetriebene Entwicklung:** Nicht vollständig umgesetzt. Tests wurden nachträglich hinzugefügt/korrigiert. **Verbleibende Schritte:** Konsequente Anwendung des Test-First-Prinzips bei zukünftiger Entwicklung.
     3.  **Gängige Code-Style-Guides:** Nicht explizit geprüft. ESLint für JS konfiguriert. **Verbleibende Schritte:** Konfiguration und Integration von Linting-Tools (Black, Prettier) in CI/CD.
-    4.  **Sprechende Commits und Architekturdokumentation:** Teilweise erledigt. Sprechende Commits und grundlegende `README.md` vorhanden. **Verbleibende Schritte:** Detailliertere Architekturdokumentation (ADRs), regelmäßige Aktualisierung der Dokumentation.
+    4.  **Sprechende Commits und Architekturdokumentation:** Teilweise erledigt. Sprechende Commits und grundlegende `README.md` vorhanden. **Verbleibende Schritte:** Detailliertere Architekturdokumentation (z.B. ADRs - Architectural Decision Records), regelmäßige Aktualisierung der Dokumentation.
     5.  **Secrets-Management:** Teilweise erledigt. API-Keys über `keyring` verwaltet. **Verbleibende Schritte:** Überprüfung aller sensiblen Informationen auf korrekte Verwaltung.
     6.  **Fehlerbehandlung mit Logging und verständlichen Fehlermeldungen:** Verbessert. Backend `print()` durch `logging` ersetzt. **Verbleibende Schritte:** Strukturiertes Logging für Frontend, benutzerfreundliche Fehlermeldungen, Behebung verbleibender Deprecation Warnings.
-    7.  **Nutzung von MCP Memory Server:** Nicht relevant für dieses Audit. **Verbleibende Schritte:** Bei Bedarf Integration eines MCP Memory Servers.
+    7.  **Nutzung von MCP Memory Server:** Nicht relevant für dieses Audit. **Verbleibende Schritte:** Bei Bedarf Integration eines MCP Memory Servers für persistentes KI-Wissen.
     8.  **Klare, präzise Kommunikation mit KI-Tools:** Kontinuierlicher Prozess. Interaktion über `AGENTIC HANDLUNGSPLAN`s. **Verbleibende Schritte:** Fortlaufende Verbesserung der Prompt-Qualität und der Interaktionsstrategien.
 - **Konkrete, risikoarme Schritte zur Erreichung des Goldstandards:**
-    1.  **Frontend-Logging verbessern:** Ersetze `console.log` und `console.error` durch strukturiertes Logging.
+    1.  **Frontend-Logging verbessern:** Ersetze `console.log` und `console.error` in `frontend/js/app.js` und anderen Frontend-Dateien durch ein strukturiertes Logging-System (z.B. eine einfache Wrapper-Funktion, die zwischen Debug- und Produktionsmodus umschaltet oder an einen externen Dienst sendet).
     2.  **Deprecation Warnings beheben:**
         - Python: `PendingDeprecationWarning: Please use import python_multipart instead.` (von `starlette`): Überprüfen, ob `starlette` aktualisiert werden kann oder Konfigurationsoption zur Unterdrückung.
         - Python: `DeprecationWarning: on_event is deprecated, use lifespan event handlers instead.` (von FastAPI): `on_event` durch `lifespan` Event-Handler ersetzen.
     3.  **Unerwartetes Verzeichnis entfernen:** `C:\KI\Janus-Projekt\[DIR] -p` entfernen.
-    4.  **`print()` in `backend/logger_config.py` ersetzen:** Die `print()`-Anweisung in `backend/logger_config.py` sollte durch einen `logger`-Aufruf ersetzt werden, um die Konsistenz des Logging-Systems zu gewährleisten.
 - **Ergebnis:** Finaler Audit-Bericht erstellt und im `AGENT_WORK_LOG.md` dokumentiert.

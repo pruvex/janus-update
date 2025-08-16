@@ -25,4 +25,4 @@ def setup_logging():
     # Füge den Handler zum Logger hinzu
     logger.addHandler(handler)
 
-    print("Logger wurde initialisiert.")
+    logger.info("Logger wurde initialisiert.")
