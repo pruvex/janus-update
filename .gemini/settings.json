@@ -5,9 +5,9 @@
       "command": "node",
       "args": [
         "C:/Users/pruve/AppData/Roaming/npm/node_modules/@modelcontextprotocol/server-filesystem/dist/index.js",
-        "C:/KI/Kiki"
+        "C:/KI/Janus-Projekt"
       ],
-      "cwd": "C:/KI/Kiki",
+      "cwd": "C:/KI/Janus-Projekt",
       "trust": true
     },
     "memory": {
@@ -16,7 +16,7 @@
         "C:/Users/pruve/AppData/Roaming/npm/node_modules/@modelcontextprotocol/server-memory/dist/index.js",
         "C:/KI/Kiki/memory.json"
       ],
-      "cwd": "C:/KI/Kiki",
+      "cwd": "C:/KI/Janus-Projekt",
       "trust": true
     },
     "playwright": {
@@ -24,7 +24,7 @@
       "args": [
         "C:/Users/pruve/AppData/Roaming/npm/node_modules/@executeautomation/playwright-mcp-server/dist/index.js"
       ],
-      "cwd": "C:/KI/Kiki",
+      "cwd": "C:/KI/Janus-Projekt",
       "trust": true
     },
     "fetch": {
@@ -32,13 +32,13 @@
       "args": [
         "C:/KI/MCP_SOURCE/servers/src/fetch/src/mcp_server_fetch/__main__.py"
       ],
-      "cwd": "C:/KI/Kiki",
+      "cwd": "C:/KI/Janus-Projekt",
       "trust": true
     },
     "puppeteer": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
-      "cwd": "C:/KI/Kiki",
+      "cwd": "C:/KI/Janus-Projekt",
       "trust": true
     },
     "knowledgebase": {
@@ -47,7 +47,7 @@
         "C:/KI/MCP_SOURCE/servers/src/mcp-sqlite/mcp-sqlite-server.js",
         "C:/KI/CascadeGehirn/KnowledgeBase/knowledgebase.db"
       ],
-      "cwd": "C:/KI/Kiki",
+      "cwd": "C:/KI/Janus-Projekt",
       "trust": true
     }
   }
