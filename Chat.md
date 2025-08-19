@@ -1,9 +1,9 @@
 📑 Roadmap & Architekturplan für Chat- und Memory-System
 1️⃣ Chats speichern (Persistenzschicht)
 
-Problem: Chats gehen verloren nach Session-Ende.
+Problem: Chats gehen verloren nach Session-Ende. Temporäre Bild-URLs laufen ab, wodurch Bilder in der Historie verschwinden.
 
-Lösung: Aufbau einer Datenbank.
+Lösung: Aufbau einer Datenbank für Chat-Nachrichten und lokale Speicherung von Bildern.
 
 Technik:
 
@@ -13,7 +13,13 @@ Tabellenstruktur:
 
 chats: id, titel, erstellt_am
 
-messages: id, chat_id, sender, timestamp, inhalt
+messages: id, chat_id, sender, timestamp, inhalt, image_path (NEU: Pfad zum lokal gespeicherten Bild)
+
+Bild-Persistenz:
+- Wenn ein Bild von DALL-E generiert wird, lädt das Backend das Bild von der temporären URL herunter.
+- Das Bild wird dann lokal auf dem Server in einem speziellen Ordner (z.B. `backend/static/images`) gespeichert.
+- Im Chat-Verlauf wird dann nicht die temporäre externe URL, sondern der lokale Pfad zu diesem Bild gespeichert.
+- Das Backend wird so konfiguriert, dass es diese lokalen Bilder über eine eigene URL (z.B. `/static/images/bildname.png`) bereitstellt.
 
 2️⃣ Mehrere Chats verwalten
 

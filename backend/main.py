@@ -2,8 +2,9 @@ import json
 import os
 import keyring
 import logging
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from backend import llm_gateway
 import traceback
@@ -11,12 +12,18 @@ from fastapi.responses import JSONResponse
 from datetime import datetime
 from backend import database
 from typing import List, Optional
+from sqlalchemy.orm import Session
+from backend.database import get_db, Chat, Message
+from fastapi import Depends
 from backend.logger_config import setup_logging
 
 setup_logging()
 logger = logging.getLogger('janus_backend')
 
 app = FastAPI()
+
+# Statische Dateien für Bilder
+app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
 
 @app.on_event("startup")
 async def startup_event():
@@ -66,10 +73,38 @@ def save_cost_entry(model: str, input_tokens: int = None, output_tokens: int = N
     except Exception as e:
         logger.error(f"Kosteneintrag konnte nicht gespeichert werden: {e}")
 
+class ChatCreate(BaseModel):
+    title: str
+
+class MessageCreate(BaseModel):
+    sender: str
+    content: str
+    image_path: Optional[str] = None
+
+class ChatResponse(BaseModel):
+    id: int
+    title: str
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+class MessageResponse(BaseModel):
+    id: int
+    chat_id: int
+    sender: str
+    content: str
+    image_path: Optional[str] = None
+    timestamp: datetime
+
+    class Config:
+        orm_mode = True
+
 class ChatRequest(BaseModel):
     prompt: str
     provider: str
     model: str
+    chat_id: Optional[int] = None # Hinzugefügt für Chat-Historie
 
 class ApiKey(BaseModel):
     provider: str
@@ -102,6 +137,32 @@ def save_config(config):
 @app.get("/api/health")
 async def read_health():
     return {"status": "ok", "message": "Hello from Janus Backend"}
+
+@app.post("/api/chats", response_model=ChatResponse)
+async def create_chat(chat: ChatCreate, db: Session = Depends(get_db)):
+    db_chat = Chat(title=chat.title)
+    db.add(db_chat)
+    db.commit()
+    db.refresh(db_chat)
+    return db_chat
+
+@app.get("/api/chats", response_model=List[ChatResponse])
+async def get_all_chats(db: Session = Depends(get_db)):
+    chats = db.query(Chat).all()
+    return chats
+
+@app.get("/api/chats/{chat_id}/messages", response_model=List[MessageResponse])
+async def get_chat_messages(chat_id: int, db: Session = Depends(get_db)):
+    messages = db.query(Message).filter(Message.chat_id == chat_id).all()
+    return messages
+
+@app.post("/api/chats/{chat_id}/messages", response_model=MessageResponse)
+async def add_message_to_chat(chat_id: int, message: MessageCreate, db: Session = Depends(get_db)):
+    db_message = Message(**message.dict(), chat_id=chat_id)
+    db.add(db_message)
+    db.commit()
+    db.refresh(db_message)
+    return db_message
 
 @app.get("/api/keys")
 async def get_api_keys():
@@ -146,14 +207,33 @@ async def add_api_key(key: ApiKey):
         raise HTTPException(status_code=500, detail=f"Error saving API key: {str(e)}")
 
 @app.post("/api/chat")
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest, db: Session = Depends(get_db)):
     try:
         api_key = keyring.get_password("Janus-Projekt", request.provider)
         if not api_key:
             raise HTTPException(status_code=400, detail=f"API Key for provider {request.provider} not found.")
         
+        # Speichere die Benutzer-Nachricht, falls eine chat_id vorhanden ist
+        if request.chat_id:
+            user_message = Message(chat_id=request.chat_id, sender="user", content=request.prompt)
+            db.add(user_message)
+            db.commit()
+            db.refresh(user_message)
+
         # Der Gateway gibt jetzt ein sauberes, flaches Dictionary zurück
         gateway_response = await llm_gateway.call_llm(request.provider, request.model, request.prompt, api_key)
+
+        # Speichere die LLM-Antwort, falls eine chat_id vorhanden ist
+        if request.chat_id:
+            model_message = Message(
+                chat_id=request.chat_id,
+                sender="model",
+                content=gateway_response.get("text", ""),
+                image_path=gateway_response.get("image_url")
+            )
+            db.add(model_message)
+            db.commit()
+            db.refresh(model_message)
         
         # --- Korrekte Kosten-Speicherung ---
         usage = gateway_response.get("usage")

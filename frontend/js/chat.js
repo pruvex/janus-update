@@ -1,4 +1,6 @@
 
+import { getCurrentChatId } from './chat-manager.js';
+
 const chatForm = document.getElementById('chat-form');
 const chatInput = document.getElementById('chat-input');
 const chatMessages = document.getElementById('chat-messages');
@@ -8,6 +10,7 @@ chatForm.addEventListener('submit', async (e) => {
     const prompt = chatInput.value;
     const provider = document.getElementById('provider-select').value;
     const model = document.getElementById('model-select').value;
+    const chat_id = getCurrentChatId(); // Get current chat ID
 
     if (!prompt) return;
 
@@ -22,7 +25,7 @@ chatForm.addEventListener('submit', async (e) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ prompt, provider, model }),
+            body: JSON.stringify({ prompt, provider, model, chat_id }), // Include chat_id
         });
 
         if (!response.ok) {
@@ -53,7 +56,7 @@ function scrollToChatBottom() {
     }, 0);
 }
 
-function appendMessage(sender, data) {
+export function appendMessage(sender, data) {
     const messageElement = document.createElement('div');
     messageElement.classList.add('chat-message'); // Add base class
 

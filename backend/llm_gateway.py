@@ -1,5 +1,36 @@
 from fastapi import APIRouter, HTTPException
 import httpx
+import aiofiles
+import uuid
+import os
+
+async def download_and_save_image(image_url: str) -> str:
+    """
+    Lädt ein Bild von der gegebenen URL herunter und speichert es lokal.
+    Gibt den relativen Pfad zum gespeicherten Bild zurück.
+    """
+    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "images")
+    os.makedirs(static_dir, exist_ok=True) # Sicherstellen, dass das Verzeichnis existiert
+
+    file_extension = image_url.split('.')[-1].split('?')[0] # Extrahiere Dateierweiterung
+    if not file_extension or len(file_extension) > 5: # Basic validation for extension
+        file_extension = "png" # Default to png if extension is not clear
+
+    file_name = f"{uuid.uuid4()}.{file_extension}"
+    file_path = os.path.join(static_dir, file_name)
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(image_url)
+        response.raise_for_status() # Raise an exception for bad status codes
+
+    async with aiofiles.open(file_path, 'wb') as out_file:
+        await out_file.write(response.content)
+    
+    relative_path = os.path.join("static", "images", file_name)
+    logger.info(f"Bild lokal gespeichert unter: {relative_path}")
+    return relative_path
+import aiofiles
+import uuid
 import os
 import json
 import openai # Changed from 'from openai import OpenAI'
@@ -173,13 +204,14 @@ async def _call_dalle_api(api_key, prompt, model_id): # Renamed 'model' to 'mode
             response_format="url",
         )
         image_url = response.data[0].url
+        local_image_path = await download_and_save_image(image_url)
                 
         # Create a response that our backend understands
         image_cost = 0.04 if quality == "standard" else 0.08
         logger.debug(f"(_call_dalle_api): image_url = {image_url}")
         return {
             "text": response.data[0].revised_prompt or "Hier ist das Bild, das mit DALL·E erstellt wurde.",
-            "image_url": image_url, # Direct URL
+            "image_url": local_image_path, # Direct URL
             "usage": {"image_quality": quality, "image_cost": image_cost},
             "cost": {"total_cost": image_cost}
         }
