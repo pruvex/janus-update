@@ -132,6 +132,10 @@ html, body {
   gap: 10px; /* Abstand zwischen den Elementen */
 }
 
+#new-chat-btn {
+  margin-top: 10px; /* Abstand zum Element darüber */
+}
+
 button, select {
   background-color: var(--surface-color);
   color: var(--text-primary);

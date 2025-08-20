@@ -99,9 +99,19 @@ export function appendMessage(sender, data) {
         
         // Handle image from URL (DALL-E)
         if (data.image_url) {
+            console.log('appendMessage: data.image_url =', data.image_url);
             const imageElement = document.createElement('img');
-            imageElement.src = data.image_url;
-            imageUrlForSaving = data.image_url;
+            let fullImageUrl = data.image_url;
+            // Normalize path separators (replace backslashes with forward slashes)
+            fullImageUrl = fullImageUrl.replace(/\\/g, '/');
+            // Check if it's a relative path (e.g., starts with 'static/')
+            if (fullImageUrl.startsWith('static/')) {
+                fullImageUrl = `${API_BASE_URL}/${fullImageUrl}`;
+            }
+            console.log('appendMessage: fullImageUrl after construction =', fullImageUrl);
+            imageElement.src = fullImageUrl;
+            console.log('appendMessage: imageElement.src =', imageElement.src);
+            imageUrlForSaving = fullImageUrl;
             messageElement.appendChild(imageElement);
             imageElement.onload = () => scrollToChatBottom();
             textContent = ''; // Clear textContent if image is present
