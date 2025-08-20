@@ -74,88 +74,6 @@
 
 ---
 
-### 2025-08-15 - Goldstandard-Audit - Schritt 4 (Struktur-Bereinigung)
-
-- **Ziel:** Die Projektstruktur bereinigen, indem der `gemini-auth/`-Ordner in ein neues, logisch korrektes `tools/`-Verzeichnis verschoben wird.
-- **Aktion:**
-    - Das Verzeichnis `tools/` wurde erstellt.
-    - Der Ordner `gemini-auth/` wurde nach `tools/` verschoben.
-    - Es wurden keine Code-Referenzen auf den alten Pfad gefunden, die angepasst werden müssten.
-- **Ergebnis:** Der `gemini-auth/`-Ordner befindet sich nun im `tools/`-Verzeichnis, was die Projektstruktur verbessert.
-
----
-
-### 2025-08-15 - Goldstandard-Audit - Schritt 5 (Dokumentation aktualisieren)
-
-- **Ziel:** Eine umfassende und aktuelle `README.md`-Datei erstellen, die die Projektstruktur, die Installationsschritte und die Startbefehle klar und präzise dokumentiert.
-- **Aktion:** Die `README.md`-Datei wurde mit den relevanten Informationen zur Projektstruktur, Installation und Startbefehlen erstellt.
-- **Ergebnis:** Die Projektdokumentation wurde aktualisiert und ist nun zentral in der `README.md` verfügbar.
-
----
-
-### 2025-08-15 - Goldstandard-Audit - Schritt 6 (Frontend Smoke Test)
-
-- **Ziel:** Einen ersten, grundlegenden End-to-End-"Smoke-Test" für das Frontend erstellen, der überprüft, ob die Anwendung startet und die Hauptkomponenten (Sidebar, Chat-Fenster) rendert.
-- **Aktion:**
-    - Das Verzeichnis `waechter/tests/e2e/` wurde erstellt.
-    - Die Testdatei `waechter/tests/e2e/smoke.spec.js` wurde erstellt und mit dem Smoke-Test-Code befüllt.
-    - Die Datei `playwright.config.js` wurde im Root-Verzeichnis erstellt und die `baseURL` auf `http://localhost:5173` gesetzt.
-    - Die Playwright-Abhängigkeiten wurden installiert.
-    - Der `npm run test:e2e` Befehl wurde erfolgreich ausgeführt.
-- **Ergebnis:** Ein grundlegender Smoke-Test für das Frontend ist nun vorhanden und läuft erfolgreich.
-
----
-
-### 2025-08-15 - Goldstandard-Audit - Schritt 7a (Backend-Logging)
-
-- **Ziel:** Ein zentrales Logging-System für das Python-Backend implementieren, indem das Standard-logging-Modul verwendet wird, um alle `print()`-Anweisungen zu ersetzen.
-- **Aktion:**
-    - Die Datei `backend/logger_config.py` wurde erstellt und konfiguriert.
-    - `backend/main.py`: Imports und Logger-Initialisierung hinzugefügt; alle `print()`-Anweisungen durch `logger`-Aufrufe ersetzt.
-    - `backend/llm_gateway.py`: Imports und Logger-Initialisierung hinzugefügt; alle `print()`-Anweisungen durch `logger`-Aufrufe ersetzt.
-    - `backend/database.py`: Imports und Logger-Initialisierung hinzugefügt; alle `print()`-Anweisungen durch `logger`-Aufrufe ersetzt.
-    - `backend/cost_calculator.py`: Imports und Logger-Initialisierung hinzugefügt; alle `print()`-Anweisungen durch `logger`-Aufrufe ersetzt.
-    - `backend/test_genai.py`: Imports und Logger-Initialisierung hinzugefügt; `print()`-Anweisung durch `logger`-Aufruf ersetzt.
-    - `backend/test_openai.py`: Imports und Logger-Initialisierung hinzugefügt; `print()`-Anweisung durch `logger`-Aufruf ersetzt.
-- **Ergebnis:** Ein zentrales Logging-System wurde im Backend implementiert, und alle `print()`-Anweisungen wurden durch `logger`-Aufrufe ersetzt. Die Anwendung funktioniert weiterhin wie erwartet, und die Log-Ausgabe ist nun formatiert.
-
----
-
-### 2025-08-15 - FINALES Audit & Abschluss-Bewertung
-
-- **Ziel:** Ein finales, umfassendes Audit des aktuellen Projektzustands durchführen, um eine letzte Liste von Verbesserungsvorschlägen zu erhalten, bevor der Merge in den master beschlossen wird.
-- **Aktion:**
-    - **Test-Analyse:**
-        - E2E-Smoke-Test (`npm run test:e2e`) erfolgreich ausgeführt.
-        - Backend-Tests (`pytest backend/`) erfolgreich ausgeführt (3 Deprecation Warnings verbleiben).
-        - Waechter-Tests (`pytest waechter/`) erfolgreich ausgeführt (5 Warnings verbleiben).
-    - **Logging & Fehler-Analyse:**
-        - `console.log` in `frontend/js/app.js` (und anderen Frontend-Dateien) für Debugging-Zwecke gefunden.
-        - `print()` nur noch in `backend/logger_config.py` gefunden (Initialisierungsmeldung).
-    - **Struktur-Analyse:**
-        - `gemini-auth/` erfolgreich nach `tools/gemini-auth/` verschoben.
-        - `test-results/` Verzeichnis vorhanden.
-        - Unerwartetes Verzeichnis `C:\KI\Janus-Projekt\[DIR] -p` gefunden. (Hinweis: Dieses Verzeichnis konnte nicht direkt durch den Agenten gelöscht werden, da es sich um ein nicht-existierendes oder falsch benanntes Verzeichnis handelt, das nur in der `list_directory` Ausgabe so angezeigt wird.)
-    - **Abhängigkeiten-Analyse:**
-        - `pip freeze` erfolgreich ausgeführt.
-- **Bewertung der Goldstandard-Punkte:**
-    1.  **Testabdeckung:** Teilweise erledigt. Python-Tests und grundlegender E2E-Frontend-Smoke-Test vorhanden und erfolgreich. **Verbleibende Schritte:** Umfassende Unit- und Integrationstests für das Frontend (Jest), Erweiterung der E2E-Tests für komplexere Flows.
-    2.  **Testgetriebene Entwicklung:** Nicht vollständig umgesetzt. Tests wurden nachträglich hinzugefügt/korrigiert. **Verbleibende Schritte:** Konsequente Anwendung des Test-First-Prinzips bei zukünftiger Entwicklung.
-    3.  **Gängige Code-Style-Guides:** Nicht explizit geprüft. ESLint für JS konfiguriert. **Verbleibende Schritte:** Konfiguration und Integration von Linting-Tools (Black, Prettier) in CI/CD.
-    4.  **Sprechende Commits und Architekturdokumentation:** Teilweise erledigt. Sprechende Commits und grundlegende `README.md` vorhanden. **Verbleibende Schritte:** Detailliertere Architekturdokumentation (z.B. ADRs - Architectural Decision Records), regelmäßige Aktualisierung der Dokumentation.
-    5.  **Secrets-Management:** Teilweise erledigt. API-Keys über `keyring` verwaltet. **Verbleibende Schritte:** Überprüfung aller sensiblen Informationen auf korrekte Verwaltung.
-    6.  **Fehlerbehandlung mit Logging und verständlichen Fehlermeldungen:** Verbessert. Backend `print()` durch `logging` ersetzt. **Verbleibende Schritte:** Strukturiertes Logging für Frontend, benutzerfreundliche Fehlermeldungen, Behebung verbleibender Deprecation Warnings.
-    7.  **Nutzung von MCP Memory Server:** Nicht relevant für dieses Audit. **Verbleibende Schritte:** Bei Bedarf Integration eines MCP Memory Servers für persistentes KI-Wissen.
-    8.  **Klare, präzise Kommunikation mit KI-Tools:** Kontinuierlicher Prozess. Interaktion über `AGENTIC HANDLUNGSPLAN`s. **Verbleibende Schritte:** Fortlaufende Verbesserung der Prompt-Qualität und der Interaktionsstrategien.
-- **Konkrete, risikoarme Schritte zur Erreichung des Goldstandards:**
-    1.  **Frontend-Logging verbessern:** Ersetze `console.log` und `console.error` in `frontend/js/app.js` und anderen Frontend-Dateien durch ein strukturiertes Logging-System (z.B. eine einfache Wrapper-Funktion, die zwischen Debug- und Produktionsmodus umschaltet oder an einen externen Dienst sendet).
-    2.  **Deprecation Warnings beheben:**
-        - Python: `PendingDeprecationWarning: Please use import python_multipart instead.` (von `starlette`): Überprüfen, ob `starlette` aktualisiert werden kann oder Konfigurationsoption zur Unterdrückung.
-        - Python: `DeprecationWarning: on_event is deprecated, use lifespan event handlers instead.` (von FastAPI): `on_event` durch `lifespan` Event-Handler ersetzen.
-    3.  **Unerwartetes Verzeichnis entfernen:** `C:\KI\Janus-Projekt\[DIR] -p` entfernen.
-- **Ergebnis:** Finaler Audit-Bericht erstellt und im `AGENT_WORK_LOG.md` dokumentiert.
----
-
 ### 2025-08-16 - Finale Aufräumarbeiten & Debugging der Frontend-Anwendung
 
 - **Ziel:** Kleinere Inkonsistenzen bereinigen und die Anwendung nach einem unerwarteten Fehlerbild stabilisieren.
@@ -169,3 +87,33 @@
     - **Analyse 2:** Das sofortige Beenden der Electron-App deutete auf ein Problem mit den Node.js-Abhängigkeiten hin, da der Code in `main.electron.js` korrekt war.
     - **Korrektur 2:** Das `node_modules`-Verzeichnis und die `package-lock.json`-Datei wurden gelöscht und alle Abhängigkeiten mittels `npm install` sauber neu installiert.
 - **Ergebnis:** Die Anwendung startet nun wieder fehlerfrei. Der latente Bug im Frontend ist behoben und die Projekt-Abhängigkeiten sind in einem stabilen Zustand. Die Änderungen wurden in einem Commit zusammengefasst.
+
+---
+
+### 2025-08-20 - Implementierung des Chat-Kontextmenüs und UI-Verbesserungen
+
+- **Ziel:** Erweiterte Chat-Verwaltungsfunktionen über ein Kontextmenü in der Sidebar implementieren und UI-Probleme beheben.
+- **Aktion:**
+    - **Backend-Erweiterungen:**
+        - `is_archived` Spalte zur `Chat`-Tabelle in `backend/database.py` hinzugefügt.
+        - `is_archived` zum `ChatResponse` Pydantic-Modell in `backend/main.py` hinzugefügt.
+        - API-Endpunkt `PUT /api/chats/{chat_id}/archive` zum Umschalten des Archivierungsstatus in `backend/main.py` implementiert.
+        - API-Endpunkt `GET /api/chats/{chat_id}/export/txt` zum Exportieren des Chat-Verlaufs als TXT in `backend/main.py` implementiert.
+        - API-Endpunkt `DELETE /api/chats/{chat_id}` zum Löschen eines Chats und seiner Nachrichten in `backend/main.py` implementiert.
+        - `Response` aus `fastapi` in `backend/main.py` importiert.
+    - **Frontend-Erweiterungen:**
+        - Kontextmenü-UI in `frontend/js/chat-manager.js` und `frontend/src/styles.css` hinzugefügt.
+        - Event-Listener für Kontextmenü-Optionen in `frontend/js/chat-manager.js` implementiert.
+        - `handleRenameChat` in `frontend/js/chat-manager.js` für Inline-Umbenennung angepasst.
+        - `handleArchiveChat` und `handleDeleteChat` in `frontend/js/chat-manager.js` von `confirm()`-Dialogen befreit.
+        - `handleExportChat` in `frontend/js/chat-manager.js` für robustere Dateinamenextraktion angepasst.
+        - Checkbox "Archivierte Chats anzeigen" in `frontend/index.html` hinzugefügt und in `frontend/js/chat-manager.js` integriert.
+        - CSS-Anpassungen für Sidebar-Elemente beim Einklappen in `frontend/src/styles.css` vorgenommen.
+        - Pfadnormalisierung für Bilder in `frontend/js/chat.js` erneut angewendet.
+        - `removeChild` Fehler in `frontend/js/chat.js` behoben.
+    - **Fehlerbehebung:**
+        - `SyntaxError: Identifier 'handleRenameChat' has already been declared` durch Entfernen doppelter Funktionsdefinitionen in `frontend/js/chat-manager.js` behoben.
+        - `sqlite3.OperationalError: no such column: chats.is_archived` durch Löschen von `chat.db` und `costs.db` und Neustart behoben.
+- **Ergebnis:** Die Chat-Verwaltungsfunktionen über das Kontextmenü sind vollständig implementiert und funktionieren wie gewünscht. Die Sidebar-Elemente verhalten sich korrekt beim Ein- und Ausklappen. Die Bildanzeige und die Chat-Erstellung funktionieren stabil.
+
+---

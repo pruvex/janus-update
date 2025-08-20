@@ -1,5 +1,5 @@
 📑 Roadmap & Architekturplan für Chat- und Memory-System
-1️⃣ Chats speichern (Persistenzschicht)
+1️⃣ ✅ Chats speichern (Persistenzschicht)
 
 Problem: Chats gehen verloren nach Session-Ende. Temporäre Bild-URLs laufen ab, wodurch Bilder in der Historie verschwinden.
 
@@ -21,7 +21,7 @@ Bild-Persistenz:
 - Im Chat-Verlauf wird dann nicht die temporäre externe URL, sondern der lokale Pfad zu diesem Bild gespeichert.
 - Das Backend wird so konfiguriert, dass es diese lokalen Bilder über eine eigene URL (z.B. `/static/images/bildname.png`) bereitstellt.
 
-2️⃣ Mehrere Chats verwalten
+2️⃣ ✅ Mehrere Chats verwalten
 
 UI:
 
