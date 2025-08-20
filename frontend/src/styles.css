@@ -278,7 +278,10 @@ button:hover {
 
 .app-container.sidebar-collapsed #sidebar-header h2,
 .app-container.sidebar-collapsed #sidebar nav,
-.app-container.sidebar-collapsed #cost-summary-widget {
+.app-container.sidebar-collapsed #cost-summary-widget,
+.app-container.sidebar-collapsed #new-chat-btn,
+.app-container.sidebar-collapsed #chat-list,
+.app-container.sidebar-collapsed .sidebar-option {
     display: none;
 }
 
