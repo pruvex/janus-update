@@ -2,7 +2,7 @@ import json
 import os
 import keyring
 import logging
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -85,6 +85,7 @@ class ChatResponse(BaseModel):
     id: int
     title: str
     created_at: datetime
+    is_archived: bool
 
     class Config:
         from_attributes = True
@@ -150,8 +151,11 @@ async def create_chat(chat: ChatCreate, db: Session = Depends(get_db)):
     return db_chat
 
 @app.get("/api/chats", response_model=List[ChatResponse])
-async def get_all_chats(db: Session = Depends(get_db)):
-    chats = db.query(Chat).all()
+async def get_all_chats(db: Session = Depends(get_db), include_archived: bool = False):
+    if not include_archived:
+        chats = db.query(Chat).filter(Chat.is_archived == False).all()
+    else:
+        chats = db.query(Chat).all()
     return chats
 
 @app.get("/api/chats/{chat_id}/messages", response_model=List[MessageResponse])
@@ -183,6 +187,46 @@ async def update_chat_title(chat_id: int, title_update: ChatTitleUpdate, db: Ses
     db.commit()
     db.refresh(chat)
     return {"message": "Chat title updated successfully"}
+
+@app.put("/api/chats/{chat_id}/archive")
+async def toggle_chat_archive(chat_id: int, db: Session = Depends(get_db)):
+    chat = db.query(Chat).filter(Chat.id == chat_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    chat.is_archived = not chat.is_archived
+    db.commit()
+    db.refresh(chat)
+    return {"message": "Chat archive status toggled successfully", "is_archived": chat.is_archived}
+
+@app.get("/api/chats/{chat_id}/export/txt")
+async def export_chat_to_txt(chat_id: int, db: Session = Depends(get_db)):
+    chat = db.query(Chat).filter(Chat.id == chat_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+
+    messages = db.query(Message).filter(Message.chat_id == chat_id).order_by(Message.timestamp).all()
+
+    export_content = f"Chat: {chat.title}\n\n"
+    for msg in messages:
+        timestamp = msg.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+        if msg.image_path:
+            export_content += f"{timestamp} - {msg.sender}: [Bild: {msg.image_path}]\n"
+        else:
+            export_content += f"{timestamp} - {msg.sender}: {msg.content}\n"
+    
+    return Response(content=export_content, media_type="text/plain", headers={"Content-Disposition": f"attachment; filename=\"chat_{chat_id}.txt\""})
+
+@app.delete("/api/chats/{chat_id}")
+async def delete_chat(chat_id: int, db: Session = Depends(get_db)):
+    chat = db.query(Chat).filter(Chat.id == chat_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    
+    # Delete associated messages first
+    db.query(Message).filter(Message.chat_id == chat_id).delete()
+    db.delete(chat)
+    db.commit()
+    return {"message": "Chat deleted successfully"}
 
 @app.get("/api/keys")
 async def get_api_keys():

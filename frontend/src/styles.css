@@ -162,6 +162,83 @@ button:hover {
     border-radius: 8px;
 }
 
+.chat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative; /* For positioning the context menu */
+}
+
+.archived-chat {
+    opacity: 0.6;
+    font-style: italic;
+}
+
+.archived-chat {
+    opacity: 0.6;
+    font-style: italic;
+}
+
+.chat-title {
+    flex-grow: 1;
+    cursor: pointer;
+    padding: 8px 12px; /* Match button padding */
+    border-radius: var(--border-radius-main);
+    transition: background-color var(--transition-speed) ease;
+}
+
+.chat-title:hover {
+    background-color: var(--surface-color);
+}
+
+.chat-title-input {
+    flex-grow: 1;
+    padding: 8px 12px;
+    border-radius: var(--border-radius-main);
+    border: 1px solid var(--accent-color);
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+}
+
+.chat-options-icon {
+    cursor: pointer;
+    font-weight: bold;
+    padding: 0 5px;
+    font-size: 1.2em;
+    color: var(--text-secondary);
+}
+
+.chat-options-icon:hover {
+    color: var(--accent-color);
+}
+
+.chat-context-menu {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 100%; /* Position below the icon */
+    right: 0;
+    background-color: var(--background-secondary);
+    border: 1px solid var(--surface-color);
+    border-radius: var(--border-radius-main);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    z-index: 100; /* Ensure it's above other elements */
+    min-width: 120px; /* Adjusted for shorter text */
+    max-width: 200px; /* Add a max-width to prevent it from being too wide */
+}
+
+.chat-context-menu .menu-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    color: var(--text-primary);
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.chat-context-menu .menu-item:hover {
+    background-color: var(--accent-color);
+    color: var(--background-primary);
+}
+
 .chat-window {
     width: 600px;  /* Feste, vernünftige Breite */
     height: 700px; /* Feste, vernünftige Höhe */

@@ -3,7 +3,7 @@ import os
 import logging
 from datetime import datetime
 
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
@@ -27,6 +27,7 @@ class Chat(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    is_archived = Column(Boolean, default=False) # NEW COLUMN
 
     messages = relationship("Message", back_populates="chat")
 

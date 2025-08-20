@@ -37,6 +37,21 @@ API: /chat/{id} → Laden eines Chats
 
 Jeder Chat = eindeutige ID → klare Trennung
 
+2️⃣.5 Chat-Verwaltung in der Liste (Kontextmenü)
+
+Ziel: Erweiterte Interaktion mit Chats direkt aus der Chatliste.
+
+Funktionen:
+- Umbenennen: Chat-Titel direkt aus der Liste ändern.
+- Archivieren: Chats aus der Hauptansicht ausblenden, aber nicht löschen.
+- Als TXT speichern: Export des Chat-Verlaufs in eine Textdatei.
+- Löschen: Endgültiges Entfernen eines Chats.
+
+Umsetzung:
+- Drei-Punkte-Menü (Kontextmenü) neben jedem Chat-Item in der Seitenleiste.
+- Implementierung der Backend-Endpunkte für Archivieren, Exportieren und Löschen.
+- Anpassung der Frontend-Logik zur Anzeige und Interaktion mit dem Kontextmenü.
+
 3️⃣ Context Memory (pro Chat)
 
 Ziel: Innerhalb eines Chats den Kontext halten.

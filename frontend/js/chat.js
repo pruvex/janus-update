@@ -30,7 +30,6 @@ chatForm.addEventListener('submit', async (e) => {
         }
         if (chat_id && chatHeader.textContent.trim() === 'Neuer Chat') {
             const newTitle = prompt.substring(0, 50); // Take first 50 chars of prompt as new title
-            console.trace('Before sending PUT request to update chat title');
             await fetch(`${API_BASE_URL}/api/chats/${chat_id}/title`, {
                 method: 'PUT',
                 headers: {
@@ -38,7 +37,6 @@ chatForm.addEventListener('submit', async (e) => {
                 },
                 body: JSON.stringify({ title: newTitle }),
             });
-            console.trace('After sending PUT request to update chat title');
             chatHeader.textContent = newTitle; // Direct update of header
             await loadChats(); // Refresh chat list and header
         }
@@ -67,7 +65,9 @@ chatForm.addEventListener('submit', async (e) => {
 
     } catch (error) {
         // Entferne Ladeanzeige
-        chatMessages.removeChild(chatMessages.lastChild);
+        if (loadingMessageElement && loadingMessageElement.parentNode === chatMessages) {
+            chatMessages.removeChild(loadingMessageElement);
+        }
         appendMessage('bot', { text: error.message }); // Directly use error.message which contains the traceback
     }
 });
@@ -99,7 +99,6 @@ export function appendMessage(sender, data) {
         
         // Handle image from URL (DALL-E)
         if (data.image_url) {
-            console.log('appendMessage: data.image_url =', data.image_url);
             const imageElement = document.createElement('img');
             let fullImageUrl = data.image_url;
             // Normalize path separators (replace backslashes with forward slashes)
@@ -108,9 +107,7 @@ export function appendMessage(sender, data) {
             if (fullImageUrl.startsWith('static/')) {
                 fullImageUrl = `${API_BASE_URL}/${fullImageUrl}`;
             }
-            console.log('appendMessage: fullImageUrl after construction =', fullImageUrl);
             imageElement.src = fullImageUrl;
-            console.log('appendMessage: imageElement.src =', imageElement.src);
             imageUrlForSaving = fullImageUrl;
             messageElement.appendChild(imageElement);
             imageElement.onload = () => scrollToChatBottom();
