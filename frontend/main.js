@@ -1,3 +1,5 @@
+import { API_BASE_URL } from './js/config.js';
+
 document.addEventListener('DOMContentLoaded', () => {
   const healthCheckButton = document.getElementById('callBackend');
   const responseOutput = document.getElementById('responseOutput');
@@ -5,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   healthCheckButton.addEventListener('click', async () => {
     responseOutput.textContent = 'Sende Anfrage...';
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/health');
+      const response = await fetch(`${API_BASE_URL}/api/health`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

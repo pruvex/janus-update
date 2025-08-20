@@ -1,5 +1,5 @@
 import interact from 'interactjs';
-// import { API_BASE_URL } from './config.js';
+import { API_BASE_URL } from './config.js';
 import { MODEL_CATALOG } from './model-catalog.js';
 
 const appState = {
@@ -12,6 +12,7 @@ const appState = {
 };
 
 function render() {
+    console.log('app.js: render() called');
     const chatView = document.getElementById('chat-view');
     const settingsView = document.getElementById('settings-view');
     console.log('render: currentView =', appState.currentView);
@@ -200,7 +201,6 @@ async function loadUserSelections() {
                 }
                 const data = await response.json();
                 appState.user_selections[provider] = data.selected_models;
-                console.log(`loadUserSelections: Provider: ${provider}, Selected Models:`, data.selected_models);
                 success = true;
                 break; // Exit retry loop on success
             } catch (error) {

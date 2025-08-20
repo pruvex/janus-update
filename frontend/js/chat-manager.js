@@ -1,5 +1,6 @@
 
 import { API_BASE_URL } from './config.js';
+import { appendMessage } from './chat.js';
 
 let currentChatId = null;
 
@@ -8,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (newChatBtn) {
         newChatBtn.addEventListener('click', createNewChat);
     }
-    loadChats();
+    setTimeout(loadChats, 2000);
 });
 
 export async function loadChats() {
@@ -61,6 +62,7 @@ export async function createNewChat() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const newChat = await response.json();
+        document.getElementById('chat-header').textContent = newChat.title; // Update header immediately
         await loadChats(); // Reload the list to include the new chat
         loadChat(newChat.id); // Load the newly created chat
     } catch (error) {
@@ -83,6 +85,19 @@ export async function loadChat(chatId) {
     chatMessagesDiv.innerHTML = '';
 
     try {
+        // Fetch chat details to get the title
+        const chatResponse = await fetch(`${API_BASE_URL}/api/chats/${chatId}`);
+        if (!chatResponse.ok) {
+            throw new Error(`HTTP error! status: ${chatResponse.status}`);
+        }
+        const chatDetails = await chatResponse.json();
+        const chatHeaderElement = document.getElementById('chat-header');
+        if (chatHeaderElement) {
+            chatHeaderElement.textContent = chatDetails.title; // Update header
+        } else {
+            console.error('Error: chat-header element not found in loadChat!');
+        }
+
         const response = await fetch(`${API_BASE_URL}/api/chats/${chatId}/messages`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -103,12 +118,4 @@ export function getCurrentChatId() {
     return currentChatId;
 }
 
-// Make appendMessage globally accessible if it's not already
-// This is a temporary workaround if appendMessage is not exported from chat.js
-// A better solution would be to import it directly if chat.js exports it.
-if (typeof window.appendMessage === 'undefined') {
-    // This assumes appendMessage is defined in chat.js and is meant to be global
-    // If chat.js is a module, you'll need to export/import it properly.
-    // For now, we'll just log a warning if it's not found.
-    console.warn("appendMessage not found globally. Ensure it's accessible or imported.");
-}
+

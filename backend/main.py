@@ -87,7 +87,7 @@ class ChatResponse(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class MessageResponse(BaseModel):
     id: int
@@ -98,7 +98,7 @@ class MessageResponse(BaseModel):
     timestamp: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class ChatRequest(BaseModel):
     prompt: str
@@ -113,6 +113,9 @@ class ApiKey(BaseModel):
 class ModelSelection(BaseModel):
     provider: str
     models: list[str]
+
+class ChatTitleUpdate(BaseModel):
+    title: str
 
 def load_config():
     if not os.path.exists(CONFIG_FILE):
@@ -156,6 +159,13 @@ async def get_chat_messages(chat_id: int, db: Session = Depends(get_db)):
     messages = db.query(Message).filter(Message.chat_id == chat_id).all()
     return messages
 
+@app.get("/api/chats/{chat_id}", response_model=ChatResponse)
+async def get_chat(chat_id: int, db: Session = Depends(get_db)):
+    chat = db.query(Chat).filter(Chat.id == chat_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    return chat
+
 @app.post("/api/chats/{chat_id}/messages", response_model=MessageResponse)
 async def add_message_to_chat(chat_id: int, message: MessageCreate, db: Session = Depends(get_db)):
     db_message = Message(**message.dict(), chat_id=chat_id)
@@ -163,6 +173,16 @@ async def add_message_to_chat(chat_id: int, message: MessageCreate, db: Session 
     db.commit()
     db.refresh(db_message)
     return db_message
+
+@app.put("/api/chats/{chat_id}/title")
+async def update_chat_title(chat_id: int, title_update: ChatTitleUpdate, db: Session = Depends(get_db)):
+    chat = db.query(Chat).filter(Chat.id == chat_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    chat.title = title_update.title
+    db.commit()
+    db.refresh(chat)
+    return {"message": "Chat title updated successfully"}
 
 @app.get("/api/keys")
 async def get_api_keys():

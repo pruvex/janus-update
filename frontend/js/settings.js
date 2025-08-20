@@ -1,3 +1,5 @@
+import { API_BASE_URL } from './config.js';
+
 const apiKeyForm = document.getElementById('api-key-form');
 const providerInput = document.getElementById('provider-input');
 const apiKeyInput = document.getElementById('api-key-input');
