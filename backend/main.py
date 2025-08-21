@@ -277,15 +277,23 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
         if not api_key:
             raise HTTPException(status_code=400, detail=f"API Key for provider {request.provider} not found.")
         
-        # Speichere die Benutzer-Nachricht, falls eine chat_id vorhanden ist
+        chat_history = []
         if request.chat_id:
+            messages_from_db = db.query(Message).filter(Message.chat_id == request.chat_id).order_by(Message.timestamp).all()
+            for msg in messages_from_db:
+                if msg.sender == "user":
+                    chat_history.append({"role": "user", "content": msg.content})
+                elif msg.sender == "model":
+                    chat_history.append({"role": "assistant", "content": msg.content})
+
+            # Speichere die Benutzer-Nachricht, falls eine chat_id vorhanden ist
             user_message = Message(chat_id=request.chat_id, sender="user", content=request.prompt)
             db.add(user_message)
             db.commit()
             db.refresh(user_message)
 
         # Der Gateway gibt jetzt ein sauberes, flaches Dictionary zurück
-        gateway_response = await llm_gateway.call_llm(request.provider, request.model, request.prompt, api_key)
+        gateway_response = await llm_gateway.call_llm(request.provider, request.model, request.prompt, api_key, chat_history=chat_history)
 
         # Speichere die LLM-Antwort, falls eine chat_id vorhanden ist
         if request.chat_id:

@@ -38,6 +38,7 @@ import logging
 import traceback
 import re # Added for potential future use, not in current snippet but good practice
 import google.generativeai as genai
+from typing import Optional, List, Dict # ADDED
 from backend.cost_calculator import calculate_cost
 
 logger = logging.getLogger('janus_backend')
@@ -84,9 +85,10 @@ dalle_tool = {
 }
 
 # Refactored _call_chat_completion_api to _call_openai_api
-async def _call_openai_api(api_key: str, prompt: str, model: str):
+async def _call_openai_api(api_key: str, prompt: str, model: str, chat_history: Optional[List[Dict]] = None):
     async with openai.AsyncOpenAI(api_key=api_key) as client:
-        messages = [{"role": "user", "content": prompt}]
+        messages = chat_history if chat_history else []
+        messages.append({"role": "user", "content": prompt})
         
         response = await client.chat.completions.create(
             model=model,
@@ -161,11 +163,24 @@ async def _call_openai_api(api_key: str, prompt: str, model: str):
         }
 
 # Refactored Gemini Chat Logic to _call_gemini_api
-async def _call_gemini_api(api_key: str, prompt: str, model_name: str):
+async def _call_gemini_api(api_key: str, prompt: str, model_name: str, chat_history: Optional[List[Dict]] = None):
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(model_name)
+
+    # Convert chat_history to Gemini format
+    gemini_history = []
+    if chat_history:
+        for msg in chat_history:
+            if msg["role"] == "user":
+                gemini_history.append({"role": "user", "parts": [msg["content"]]})
+            elif msg["role"] == "assistant":
+                gemini_history.append({"role": "model", "parts": [msg["content"]]})
+
+    # Add current prompt
+    gemini_history.append({"role": "user", "parts": [prompt]})
+
     try:
-        response = await model.generate_content_async(prompt)
+        response = await model.generate_content_async(gemini_history)
         usage_metadata = getattr(response, 'usage_metadata', None)
         
         if usage_metadata:
@@ -220,7 +235,7 @@ async def _call_dalle_api(api_key, prompt, model_id): # Renamed 'model' to 'mode
         raise
 
 # Replaced call_llm with the new switch logic
-async def call_llm(provider: str, model: str, prompt: str, api_key: str):
+async def call_llm(provider: str, model: str, prompt: str, api_key: str, chat_history: Optional[List[Dict]] = None):
     logger.info(f"Call LLM - Provider: {provider}, Model: {model}")
     # --- NEW SWITCH for DALL-E ---
     if model.startswith("dall-e-3"):
