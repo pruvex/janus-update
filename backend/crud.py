@@ -1,40 +1,59 @@
 from sqlalchemy.orm import Session
 from . import database, schemas
-from datetime import datetime
 
-def get_chat(db: Session, chat_id: int):
-    return db.query(database.Chat).filter(database.Chat.id == chat_id).first()
-
-def get_chats(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(database.Chat).offset(skip).limit(limit).all()
-
-def create_chat(db: Session, chat: schemas.ChatCreate):
-    db_chat = database.Chat(title=chat.title, created_at=datetime.utcnow())
+def create_chat(db: Session, title: str):
+    db_chat = database.Chat(title=title)
     db.add(db_chat)
     db.commit()
     db.refresh(db_chat)
     return db_chat
 
-def create_chat_message(db: Session, message: schemas.MessageCreate, chat_id: int):
-    db_message = database.Message(
-        chat_id=chat_id,
-        sender=message.sender,
-        content=message.content,
-        image_path=message.image_path, # Use image_path
-        timestamp=datetime.utcnow()
-    )
+def get_chats(db: Session, include_archived: bool = False):
+    if not include_archived:
+        return db.query(database.Chat).filter(database.Chat.is_archived == False).all()
+    else:
+        return db.query(database.Chat).all()
+
+def get_chat_by_id(db: Session, chat_id: int):
+    return db.query(database.Chat).filter(database.Chat.id == chat_id).first()
+
+def get_messages_by_chat_id(db: Session, chat_id: int):
+    return db.query(database.Message).filter(database.Message.chat_id == chat_id).order_by(database.Message.timestamp).all()
+
+def create_message(db: Session, chat_id: int, sender: str, content: str, image_path: str = None):
+    db_message = database.Message(chat_id=chat_id, sender=sender, content=content, image_path=image_path)
     db.add(db_message)
     db.commit()
     db.refresh(db_message)
     return db_message
 
-def get_messages_for_chat(db: Session, chat_id: int, skip: int = 0, limit: int = 100):
-    return db.query(database.Message).filter(database.Message.chat_id == chat_id).offset(skip).limit(limit).all()
+def update_chat_title(db: Session, chat_id: int, new_title: str):
+    chat = get_chat_by_id(db, chat_id)
+    if chat:
+        chat.title = new_title
+        db.commit()
+        db.refresh(chat)
+    return chat
+
+def toggle_archive_chat(db: Session, chat_id: int):
+    chat = get_chat_by_id(db, chat_id)
+    if chat:
+        chat.is_archived = not chat.is_archived
+        db.commit()
+        db.refresh(chat)
+    return chat
+
+def get_chat_with_messages(db: Session, chat_id: int):
+    chat = get_chat_by_id(db, chat_id)
+    if not chat:
+        return None, []
+    messages = get_messages_by_chat_id(db, chat_id)
+    return chat, messages
 
 def delete_chat(db: Session, chat_id: int):
-    db_chat = db.query(database.Chat).filter(database.Chat.id == chat_id).first()
-    if db_chat:
-        db.delete(db_chat)
+    chat = get_chat_by_id(db, chat_id)
+    if chat:
+        db.delete(chat)
         db.commit()
         return True
     return False

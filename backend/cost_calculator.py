@@ -4,37 +4,60 @@ import logging
 
 logger = logging.getLogger('janus_backend')
 
-# Lade den Modellkatalog einmal beim Start, um die Leistung zu verbessern
-catalog_path = os.path.join(os.path.dirname(__file__), 'model_catalog.json')
-with open(catalog_path, 'r') as f:
-    MODEL_CATALOG = json.load(f)
+MODEL_CATALOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_catalog.json")
 
-def get_model_from_catalog(model_id):
-    for model in MODEL_CATALOG:
-        if model['id'] == model_id:
-            return model
-    return None
+def load_model_prices():
+    try:
+        with open(MODEL_CATALOG_FILE, "r") as f:
+            models = json.load(f)
+        return {model["id"]: model for model in models}
+    except Exception as e:
+        logger.error(f"Error loading model catalog: {e}")
+        return {}
 
-def calculate_cost(model_id: str, input_tokens: int, output_tokens: int) -> float:
-    """
-    Berechnet die Kosten für einen bestimmten API-Aufruf basierend auf dem Modellkatalog.
-    """
-    model_info = get_model_from_catalog(model_id)
-    if not model_info:
-        logger.warning(f"Warning: Model '{model_id}' not found in catalog. Cost calculation skipped.")
-        return 0.0
-    model_type = model_info.get('type')
+MODEL_PRICES = load_model_prices()
 
-    if model_type == 'image':
-        cost_per_image = model_info.get('cost_per_image', 0)
-        return round(cost_per_image, 10)
-    elif model_type == 'text':
-        cost_per_input = model_info.get('cost_per_token_input', 0)
-        cost_per_output = model_info.get('cost_per_token_output', 0)
-        # Kosten werden pro 1 Million Token angegeben
-        total_cost = (input_tokens * cost_per_input) + \
-                     (output_tokens * cost_per_output)
-        return round(total_cost, 10)
-    else:
-        logger.warning(f"Unknown model type '{model_type}' for model '{model_id}'. Cost calculation skipped.")
-        return 0.0
+def calculate_cost(model_id, usage_data=None, custom_prompt=None):
+    if model_id not in MODEL_PRICES:
+        logger.warning(f"Price for model {model_id} not found.")
+        return {}, {}
+
+    model_info = MODEL_PRICES[model_id]
+    model_type = model_info.get("type")
+
+    usage = {}
+    cost = {}
+
+    if model_type == "text" and usage_data:
+        input_tokens = usage_data.prompt_tokens
+        output_tokens = usage_data.completion_tokens
+        
+        input_cost_per_mil = model_info.get("pricing", {}).get("input_cost_per_million_token", 0)
+        output_cost_per_mil = model_info.get("pricing", {}).get("output_cost_per_million_token", 0)
+        
+        input_cost = (input_tokens / 1_000_000) * input_cost_per_mil
+        output_cost = (output_tokens / 1_000_000) * output_cost_per_mil
+        
+        total_cost = input_cost + output_cost
+        
+        usage = {"input_tokens": input_tokens, "output_tokens": output_tokens}
+        cost = {"total_cost": total_cost}
+
+    elif model_type == "image":
+        quality = "standard"
+        size = "1024x1024"
+        
+        image_cost = model_info.get("pricing", {}).get(quality, {}).get(size, 0)
+        total_cost = image_cost
+
+        usage = {"image_quality": quality, "image_size": size}
+        cost = {"image_cost": image_cost, "total_cost": total_cost}
+    
+    logger.info(f"\n--- USAGE TRACKING ---\n"
+                f"Model: {model_id}\n"
+                f"Input Tokens: {usage.get('input_tokens', 'N/A')}\n"
+                f"Output Tokens: {usage.get('output_tokens', 'N/A')}\n"
+                f"Total Cost: {cost.get('total_cost', 0):.8f} €\n"
+                f"----------------------")
+
+    return usage, cost

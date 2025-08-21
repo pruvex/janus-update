@@ -2,420 +2,213 @@ import json
 import os
 import keyring
 import logging
+import traceback
 from fastapi import FastAPI, HTTPException, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from backend import llm_gateway
-import traceback
-from fastapi.responses import JSONResponse
 from datetime import datetime
-from backend import database
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from backend.database import get_db, Chat, Message
-from fastapi import Depends
 from backend.logger_config import setup_logging
+from backend import llm_gateway, database, crud, schemas
+from backend.context_manager import ContextManager
 
+# --- Initialisierung ---
 setup_logging()
 logger = logging.getLogger('janus_backend')
-
 app = FastAPI()
 
-# Statische Dateien für Bilder
+# --- Middleware & Statische Dateien ---
 app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
-
-@app.on_event("startup")
-async def startup_event():
-    database.init_db()
-    logger.info("Database initialized.") # Optional: Debugging-Meldung
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Erlaube alle Ursprünge für die lokale Entwicklung
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# --- Konfiguration & Startup ---
 CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
 MODEL_CATALOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_catalog.json")
 
-def load_model_catalog():
-    logger.debug(f"Attempting to load model catalog from: {MODEL_CATALOG_FILE}")
-    logger.debug(f"Does model catalog file exist? {os.path.exists(MODEL_CATALOG_FILE)}")
-    if not os.path.exists(MODEL_CATALOG_FILE):
-        return []
-    try:
-        with open(MODEL_CATALOG_FILE, "r") as f:
-            return json.load(f)
-    except json.JSONDecodeError:
-        logger.error(f"Invalid JSON in model catalog file: {MODEL_CATALOG_FILE}")
-        return []
-    except Exception as e:
-        logger.error(f"Unexpected error loading model catalog: {e}")
-        raise
-
-# Helper function for cost saving (re-adding)
-def save_cost_entry(model: str, input_tokens: int = None, output_tokens: int = None, image_quality: str = None, image_cost: float = None, total_cost: float = 0):
-    """Helper function to save a cost entry to the database."""
-    try:
-        logger.debug(f"Speichere Kosteneintrag: total_cost={total_cost}")
-        database.save_cost_entry(
-            date=datetime.now().isoformat(),
-            model=model,
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
-            image_quality=image_quality,
-            image_cost=image_cost,
-            total_cost=total_cost
-        )
-    except Exception as e:
-        logger.error(f"Kosteneintrag konnte nicht gespeichert werden: {e}")
-
-class ChatCreate(BaseModel):
-    title: str
-
-class MessageCreate(BaseModel):
-    sender: str
-    content: str
-    image_path: Optional[str] = None
-
-class ChatResponse(BaseModel):
-    id: int
-    title: str
-    created_at: datetime
-    is_archived: bool
-
-    class Config:
-        from_attributes = True
-
-class MessageResponse(BaseModel):
-    id: int
-    chat_id: int
-    sender: str
-    content: str
-    image_path: Optional[str] = None
-    timestamp: datetime
-
-    class Config:
-        from_attributes = True
-
-class ChatRequest(BaseModel):
-    prompt: str
-    provider: str
-    model: str
-    chat_id: Optional[int] = None # Hinzugefügt für Chat-Historie
-
-class ApiKey(BaseModel):
-    provider: str
-    api_key: str
-
-class ModelSelection(BaseModel):
-    provider: str
-    models: list[str]
-
-class ChatTitleUpdate(BaseModel):
-    title: str
-
 def load_config():
-    if not os.path.exists(CONFIG_FILE):
-        return {} # Leere Konfiguration, wenn Datei nicht existiert
-    try:
-        with open(CONFIG_FILE, "r") as f:
-            return json.load(f)
-    except json.JSONDecodeError:
-        return {} # Leere Konfiguration, wenn JSON ungültig ist
-    except Exception:
-        raise # Re-raise other exceptions
+    if not os.path.exists(CONFIG_FILE): return {}
+    with open(CONFIG_FILE, "r") as f: return json.load(f)
 
 def save_config(config):
+    os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
+    with open(CONFIG_FILE, "w") as f: json.dump(config, f, indent=2)
+
+def load_model_catalog():
+    with open(MODEL_CATALOG_FILE, "r") as f:
+        return json.load(f)
+
+model_catalog = load_model_catalog()
+context_manager = ContextManager(model_catalog=model_catalog)
+
+@app.on_event("startup")
+async def startup_event():
+    database.init_db()
+    logger.info("Database initialized.")
+
+def get_db():
+    db = database.SessionLocal()
     try:
-        # Sicherstellen, dass das Verzeichnis existiert
-        os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
-        with open(CONFIG_FILE, "w") as f:
-            json.dump(config, f, indent=2)
-    except Exception as e:
-        raise
+        yield db
+    finally:
+        db.close()
 
-@app.get("/api/health")
-async def read_health():
-    return {"status": "ok", "message": "Hello from Janus Backend"}
+# --- Pydantic Modelle ---
+class ChatRequest(BaseModel):
+    prompt: str; provider: str; model: str; chat_id: Optional[int] = None
+class ApiKey(BaseModel):
+    provider: str; api_key: str
+class ModelSelection(BaseModel):
+    provider: str; models: list[str]
+class ChatTitleUpdate(BaseModel):
+    title: str
+class BudgetUpdate(BaseModel):
+    budget: float
 
-@app.post("/api/chats", response_model=ChatResponse)
-async def create_chat(chat: ChatCreate, db: Session = Depends(get_db)):
-    db_chat = Chat(title=chat.title)
-    db.add(db_chat)
-    db.commit()
-    db.refresh(db_chat)
-    return db_chat
-
-@app.get("/api/chats", response_model=List[ChatResponse])
-async def get_all_chats(db: Session = Depends(get_db), include_archived: bool = False):
-    if not include_archived:
-        chats = db.query(Chat).filter(Chat.is_archived == False).all()
-    else:
-        chats = db.query(Chat).all()
-    return chats
-
-@app.get("/api/chats/{chat_id}/messages", response_model=List[MessageResponse])
-async def get_chat_messages(chat_id: int, db: Session = Depends(get_db)):
-    messages = db.query(Message).filter(Message.chat_id == chat_id).all()
-    return messages
-
-@app.get("/api/chats/{chat_id}", response_model=ChatResponse)
-async def get_chat(chat_id: int, db: Session = Depends(get_db)):
-    chat = db.query(Chat).filter(Chat.id == chat_id).first()
-    if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
-    return chat
-
-@app.post("/api/chats/{chat_id}/messages", response_model=MessageResponse)
-async def add_message_to_chat(chat_id: int, message: MessageCreate, db: Session = Depends(get_db)):
-    db_message = Message(**message.dict(), chat_id=chat_id)
-    db.add(db_message)
-    db.commit()
-    db.refresh(db_message)
-    return db_message
-
-@app.put("/api/chats/{chat_id}/title")
-async def update_chat_title(chat_id: int, title_update: ChatTitleUpdate, db: Session = Depends(get_db)):
-    chat = db.query(Chat).filter(Chat.id == chat_id).first()
-    if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
-    chat.title = title_update.title
-    db.commit()
-    db.refresh(chat)
-    return {"message": "Chat title updated successfully"}
-
-@app.put("/api/chats/{chat_id}/archive")
-async def toggle_chat_archive(chat_id: int, db: Session = Depends(get_db)):
-    chat = db.query(Chat).filter(Chat.id == chat_id).first()
-    if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
-    chat.is_archived = not chat.is_archived
-    db.commit()
-    db.refresh(chat)
-    return {"message": "Chat archive status toggled successfully", "is_archived": chat.is_archived}
-
-@app.get("/api/chats/{chat_id}/export/txt")
-async def export_chat_to_txt(chat_id: int, db: Session = Depends(get_db)):
-    chat = db.query(Chat).filter(Chat.id == chat_id).first()
-    if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
-
-    messages = db.query(Message).filter(Message.chat_id == chat_id).order_by(Message.timestamp).all()
-
-    export_content = f"Chat: {chat.title}\n\n"
-    for msg in messages:
-        timestamp = msg.timestamp.strftime("%Y-%m-%d %H:%M:%S")
-        if msg.image_path:
-            export_content += f"{timestamp} - {msg.sender}: [Bild: {msg.image_path}]\n"
-        else:
-            export_content += f"{timestamp} - {msg.sender}: {msg.content}\n"
-    
-    return Response(content=export_content, media_type="text/plain", headers={"Content-Disposition": f"attachment; filename=\"chat_{chat_id}.txt\""})
-
-@app.delete("/api/chats/{chat_id}")
-async def delete_chat(chat_id: int, db: Session = Depends(get_db)):
-    chat = db.query(Chat).filter(Chat.id == chat_id).first()
-    if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
-    
-    # Delete associated messages first
-    db.query(Message).filter(Message.chat_id == chat_id).delete()
-    db.delete(chat)
-    db.commit()
-    return {"message": "Chat deleted successfully"}
-
-@app.get("/api/keys")
-async def get_api_keys():
-    try:
-        available_providers = ["openai", "gemini"] # Annahme: Diese Liste kommt von llm_gateway
-        stored_api_keys = {}
-        for provider in available_providers:
-            if keyring.get_password("Janus-Projekt", provider) is not None:
-                stored_api_keys[provider] = "********" # Maskiere den Key für die UI
-        return {"api_keys": stored_api_keys}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error loading API keys: {str(e)}")
-
-@app.get("/api/models/selection/{provider}")
-async def get_model_selection(provider: str):
-    try:
-        catalog = load_model_catalog()
-        # Filter models by provider and return their IDs
-        selected_models = [model["id"] for model in catalog if model["provider"] == provider]
-        return {"selected_models": selected_models}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error loading model selection: {str(e)}")
-
-@app.post("/api/models/selection")
-async def save_model_selection(selection: ModelSelection):
-    try:
-        config = load_config()
-        if "model_selection" not in config:
-            config["model_selection"] = {}
-        config["model_selection"][selection.provider] = selection.models
-        save_config(config)
-        return {"message": "Model selection saved successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error saving model selection: {str(e)}")
-
-@app.post("/api/keys")
-async def add_api_key(key: ApiKey):
-    try:
-        keyring.set_password("Janus-Projekt", key.provider, key.api_key)
-        return {"message": "API Key saved successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error saving API key: {str(e)}")
+# --- API Endpunkte ---
 
 @app.post("/api/chat")
 async def chat(request: ChatRequest, db: Session = Depends(get_db)):
     try:
         api_key = keyring.get_password("Janus-Projekt", request.provider)
         if not api_key:
-            raise HTTPException(status_code=400, detail=f"API Key for provider {request.provider} not found.")
-        
-        # Speichere die Benutzer-Nachricht, falls eine chat_id vorhanden ist
-        if request.chat_id:
-            user_message = Message(chat_id=request.chat_id, sender="user", content=request.prompt)
-            db.add(user_message)
-            db.commit()
-            db.refresh(user_message)
+            raise HTTPException(status_code=400, detail=f"API Key for {request.provider} not found.")
 
-        # Der Gateway gibt jetzt ein sauberes, flaches Dictionary zurück
-        gateway_response = await llm_gateway.call_llm(request.provider, request.model, request.prompt, api_key)
-
-        # Speichere die LLM-Antwort, falls eine chat_id vorhanden ist
+        # 1. Lade die BESTEHENDE Historie (OHNE die neue Nachricht)
+        chat_history = []
         if request.chat_id:
-            model_message = Message(
-                chat_id=request.chat_id,
-                sender="model",
-                content=gateway_response.get("text", ""),
-                image_path=gateway_response.get("image_url")
+            messages_from_db = crud.get_messages_by_chat_id(db, chat_id=request.chat_id)
+            chat_history = [{"role": "user" if msg.sender == "user" else "assistant", "content": msg.content or ""} for msg in messages_from_db]
+
+        # 2. Füge die NEUE Nachricht des Benutzers zur Historie für den Prompt hinzu
+        chat_history.append({"role": "user", "content": request.prompt})
+
+        # 3. Baue den Prompt mit dem ContextManager
+        final_prompt = context_manager.build_prompt_history(chat_history, request.model)
+
+        # 4. Rufe die LLM-API auf
+        gateway_response = await llm_gateway.call_llm(request.provider, request.model, "", api_key, chat_history=final_prompt)
+
+        # 5. Speichere BEIDE neuen Nachrichten (Benutzer und KI) in der DB
+        if request.chat_id:
+            crud.create_message(db, chat_id=request.chat_id, sender="user", content=request.prompt)
+            crud.create_message(
+                db, chat_id=request.chat_id, sender="model",
+                content=gateway_response.get("text", ""), image_path=gateway_response.get("image_url")
             )
-            db.add(model_message)
-            db.commit()
-            db.refresh(model_message)
-        
-        # --- Korrekte Kosten-Speicherung ---
+
         usage = gateway_response.get("usage")
-        logger.debug(f"Received usage from gateway: {usage}") # NEW
-        cost = gateway_response.get("cost")
+        cost = gateway_response.get("cost", {})
+        if usage:
+            database.save_cost_entry(
+                date=datetime.now(), model=request.model,
+                input_tokens=usage.get("input_tokens"), output_tokens=usage.get("output_tokens"),
+                image_quality=usage.get("image_quality"), image_cost=cost.get("image_cost"),
+                total_cost=cost.get("total_cost", 0)
+            )
 
-        if usage and cost:
-            total_cost = cost.get("total_cost", 0)
-            
-            save_cost_entry(
-                    model=request.model,
-                    input_tokens=usage.get("input_tokens"),
-                    output_tokens=usage.get("output_tokens"),
-                    image_quality=usage.get("image_quality"),
-                    image_cost=usage.get("image_cost"),
-                    total_cost=total_cost
-                )
-
-        # --- Korrekte Erstellung der finalen Antwort ---
-        final_response = {
-            "sender": "model",
-            "text": gateway_response.get("text", ""),
-            "image_url": gateway_response.get("image_url")
-        }
-
-        return final_response
-
-    except HTTPException as e:
-        raise e
+        return { "sender": "model", "text": gateway_response.get("text", ""), "image_url": gateway_response.get("image_url") }
     except Exception as e:
         tb_str = traceback.format_exc()
-        raise HTTPException(status_code=500, detail=f"Ein interner Serverfehler ist aufgetreten.\nTraceback:\n{tb_str}")
+        logger.error(f"Error in chat endpoint: {e}\n{tb_str}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")
 
-# --- Hinzugefügt für Kosten-Visualisierung ---
-class CostDashboard(BaseModel):
-    current_month_cost: float
-    monthly_budget: float
+@app.post("/api/chats", response_model=schemas.ChatResponse)
+async def create_chat(chat: schemas.ChatCreate, db: Session = Depends(get_db)):
+    return crud.create_chat(db, title=chat.title)
 
-@app.get("/api/costs/dashboard", response_model=CostDashboard)
+@app.get("/api/chats", response_model=List[schemas.ChatResponse])
+async def get_all_chats(db: Session = Depends(get_db), include_archived: bool = False):
+    return crud.get_chats(db, include_archived=include_archived)
+
+@app.get("/api/chats/{chat_id}", response_model=schemas.ChatResponse)
+async def get_chat_details(chat_id: int, db: Session = Depends(get_db)):
+    chat = crud.get_chat_by_id(db, chat_id=chat_id)
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    return chat
+
+@app.get("/api/chats/{chat_id}/messages", response_model=List[schemas.MessageResponse])
+async def get_chat_messages(chat_id: int, db: Session = Depends(get_db)):
+    return crud.get_messages_by_chat_id(db, chat_id)
+    
+@app.put("/api/chats/{chat_id}/title")
+async def update_chat_title(chat_id: int, title_update: ChatTitleUpdate, db: Session = Depends(get_db)):
+    chat = crud.update_chat_title(db, chat_id, title_update.title)
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    return {"message": "Chat title updated successfully"}
+
+@app.put("/api/chats/{chat_id}/archive")
+async def toggle_chat_archive(chat_id: int, db: Session = Depends(get_db)):
+    chat = crud.toggle_archive_chat(db, chat_id)
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    return {"message": "Chat archive status toggled", "is_archived": chat.is_archived}
+    
+@app.get("/api/chats/{chat_id}/export/txt")
+async def export_chat_to_txt(chat_id: int, db: Session = Depends(get_db)):
+    chat, messages = crud.get_chat_with_messages(db, chat_id)
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    export_content = f"Chat: {chat.title}\n\n"
+    for msg in messages:
+        timestamp = msg.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+        export_content += f"{timestamp} - {msg.sender}: {msg.content}\n"
+    return Response(content=export_content, media_type="text/plain", headers={"Content-Disposition": f"attachment; filename=\"{chat.title}.txt\""})
+
+@app.delete("/api/chats/{chat_id}")
+async def delete_chat(chat_id: int, db: Session = Depends(get_db)):
+    success = crud.delete_chat(db, chat_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    return {"message": "Chat deleted successfully"}
+
+@app.get("/api/keys")
+async def get_api_keys():
+    providers = ["openai", "gemini"]
+    return {"api_keys": {provider: "********" for provider in providers if keyring.get_password("Janus-Projekt", provider)}}
+
+@app.post("/api/keys")
+async def add_api_key(key: ApiKey):
+    keyring.set_password("Janus-Projekt", key.provider, key.api_key)
+    return {"message": "API Key saved successfully"}
+
+@app.get("/api/models/selection/{provider}")
+async def get_model_selection(provider: str):
+    config = load_config()
+    return {"selected_models": config.get("model_selection", {}).get(provider, [])}
+
+@app.post("/api/models/selection")
+async def save_model_selection(selection: ModelSelection):
+    config = load_config()
+    if "model_selection" not in config: config["model_selection"] = {}
+    config["model_selection"][selection.provider] = selection.models
+    save_config(config)
+    return {"message": "Model selection saved successfully"}
+
+@app.get("/api/costs/dashboard")
 async def get_costs_dashboard():
     today = datetime.now()
     current_month_cost = database.get_costs_for_month(today.year, today.month)
-    
     config = load_config()
-    budget = config.get("monthly_budget", 10.00) # Default to 10.00 if not set
-    return CostDashboard(current_month_cost=current_month_cost, monthly_budget=budget)
-
-class BudgetUpdate(BaseModel):
-    budget: float
+    budget = config.get("monthly_budget", 10.00)
+    return {"current_month_cost": current_month_cost, "monthly_budget": budget}
 
 @app.post("/api/budget")
 async def update_budget(budget_update: BudgetUpdate):
-    try:
-        config = load_config()
-        config["monthly_budget"] = budget_update.budget
-        save_config(config)
-        return {"message": "Budget updated successfully."}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-class CostDetail(BaseModel):
-    date: datetime
-    model: str
-    input_tokens: Optional[int] = None
-    output_tokens: Optional[int] = None
-    image_quality: Optional[str] = None
-    image_cost: Optional[float] = None
-    total_cost: float
-
-@app.get("/api/costs/details", response_model=List[CostDetail])
-async def get_costs_details():
-    details = database.get_all_cost_entries()
-    return details
+    config = load_config()
+    config["monthly_budget"] = budget_update.budget
+    save_config(config)
+    return {"message": "Budget updated successfully."}
 
 @app.get("/api/costs/summary-by-model")
 async def get_costs_summary_by_model():
-    summary = database.get_costs_summary_by_model_for_current_month()
-    return summary
-
-@app.get("/api/costs/summary")
-async def get_costs_summary():
-    all_entries = database.get_all_cost_entries()
-    model_catalog = load_model_catalog() # Load model catalog
-
-    summary = {} # Aggregate costs here
-
-    for entry in all_entries:
-        model_name = entry["model"]
-        total_cost = entry["total_cost"]
-        input_tokens = entry["input_tokens"]
-        output_tokens = entry["output_tokens"]
-        image_quality = entry["image_quality"]
-        image_cost = entry["image_cost"]
-
-        # Get model type from catalog
-        model_type = "unknown"
-        for model_info in model_catalog:
-            if model_info["id"] == model_name:
-                model_type = model_info.get("type", "unknown")
-                break
-
-        if model_name not in summary:
-            summary[model_name] = {
-                "model": model_name,
-                "total_cost": 0.0,
-                "input_tokens": 0,
-                "output_tokens": 0,
-                "image_count": 0,
-                "type": model_type # Initialize type from catalog
-            }
-        
-        summary[model_name]["total_cost"] += total_cost
-
-        if model_type == "text":
-            summary[model_name]["input_tokens"] += (input_tokens if input_tokens is not None else 0)
-            summary[model_name]["output_tokens"] += (output_tokens if output_tokens is not None else 0)
-        elif model_type == "image":
-            summary[model_name]["image_count"] += 1 # Count each image generation
-
-    # Convert dictionary to list of values
-    return list(summary.values())
+    return database.get_costs_summary_by_model_for_current_month()

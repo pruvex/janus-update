@@ -2,32 +2,34 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
 
+# --- Message Schemas ---
 class MessageBase(BaseModel):
     sender: str
     content: str
-    image_path: Optional[str] = None # NEU: Pfad zum lokal gespeicherten Bild
+    image_path: Optional[str] = None
 
 class MessageCreate(MessageBase):
     pass
 
-class Message(MessageBase):
+class MessageResponse(MessageBase):
     id: int
-    chat_id: int # NEU: Foreign Key
+    chat_id: int
     timestamp: datetime
 
     class Config:
         from_attributes = True
 
+# --- Chat Schemas ---
 class ChatBase(BaseModel):
-    title: Optional[str] = "New Chat"
+    title: str
 
 class ChatCreate(ChatBase):
     pass
 
-class Chat(ChatBase):
+class ChatResponse(ChatBase):
     id: int
     created_at: datetime
-    messages: List[Message] = []
+    is_archived: bool
 
     class Config:
         from_attributes = True
