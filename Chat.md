@@ -52,7 +52,7 @@ Umsetzung:
 - Implementierung der Backend-Endpunkte für Archivieren, Exportieren und Löschen.
 - Anpassung der Frontend-Logik zur Anzeige und Interaktion mit dem Kontextmenü.
 
-3️⃣ Context Memory (pro Chat)
+3️⃣ ✅ Context Memory (pro Chat)
 
 Ziel: Innerhalb eines Chats den Kontext halten.
 

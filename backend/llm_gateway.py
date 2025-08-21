@@ -1,258 +1,69 @@
-from fastapi import APIRouter, HTTPException
-import httpx
-import aiofiles
-import uuid
-import os
-
-async def download_and_save_image(image_url: str) -> str:
-    """
-    Lädt ein Bild von der gegebenen URL herunter und speichert es lokal.
-    Gibt den relativen Pfad zum gespeicherten Bild zurück.
-    """
-    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "images")
-    os.makedirs(static_dir, exist_ok=True) # Sicherstellen, dass das Verzeichnis existiert
-
-    file_extension = image_url.split('.')[-1].split('?')[0] # Extrahiere Dateierweiterung
-    if not file_extension or len(file_extension) > 5: # Basic validation for extension
-        file_extension = "png" # Default to png if extension is not clear
-
-    file_name = f"{uuid.uuid4()}.{file_extension}"
-    file_path = os.path.join(static_dir, file_name)
-
-    async with httpx.AsyncClient() as client:
-        response = await client.get(image_url)
-        response.raise_for_status() # Raise an exception for bad status codes
-
-    async with aiofiles.open(file_path, 'wb') as out_file:
-        await out_file.write(response.content)
-    
-    relative_path = os.path.join("static", "images", file_name)
-    logger.info(f"Bild lokal gespeichert unter: {relative_path}")
-    return relative_path
-import aiofiles
-import uuid
-import os
-import json
-import openai # Changed from 'from openai import OpenAI'
 import logging
-import traceback
-import re # Added for potential future use, not in current snippet but good practice
+from typing import List, Dict, Optional
+import openai
 import google.generativeai as genai
-from typing import Optional, List, Dict # ADDED
 from backend.cost_calculator import calculate_cost
 
 logger = logging.getLogger('janus_backend')
 
-router = APIRouter()
+async def call_llm(provider: str, model: str, prompt: str, api_key: str, chat_history: Optional[List[Dict]] = None):
+    """
+    Haupt-Gateway-Funktion, die Anfragen an den entsprechenden API-Provider weiterleitet.
+    Der 'prompt' Parameter wird ignoriert, da der eigentliche Inhalt in 'chat_history' liegt.
+    """
+    if not chat_history:
+        chat_history = [{"role": "user", "content": prompt}]
 
-# Existing _call_dalle_api (renamed to _call_dalle_api_old to avoid conflict)
-# This will be removed later or adapted if needed.
-async def _call_dalle_api_old(api_key: str, prompt: str, quality: str):
-    client = openai.OpenAI(api_key=api_key) # Use openai.OpenAI
-    
-    response = client.images.generate(
-        model="dall-e-3", # DALL-E 3 is the model for image generation
-        prompt=prompt,
-        size="1024x1024",
-        quality=quality, # Use the passed quality
-        n=1,
-    )
-    image_url = response.data[0].url
-    return image_url # Return just the URL
+    if provider == "openai":
+        return await _call_openai_api(api_key, model, chat_history)
+    elif provider == "gemini":
+        return await _call_gemini_api(api_key, model, chat_history)
+    else:
+        raise ValueError(f"Unsupported provider: {provider}")
 
-# Tool definition for DALL-E (remains as is)
-dalle_tool = {
-    "type": "function",
-    "function": {
-        "name": "generate_image",
-        "description": "Generiert ein Bild aus einer Textbeschreibung.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "prompt": {
-                    "type": "string",
-                    "description": "Die Textbeschreibung des zu generierenden Bildes."
-                },
-                "quality": {
-                    "type": "string",
-                    "enum": ["standard", "hd"],
-                    "description": "Die Qualität des Bildes. 'standard' ist schneller und günstiger, 'hd' bietet höhere Detailgenauigkeit."
-                }
-            },
-            "required": ["prompt"]
-        }
-    }
-}
-
-# Refactored _call_chat_completion_api to _call_openai_api
-async def _call_openai_api(api_key: str, prompt: str, model: str, chat_history: Optional[List[Dict]] = None):
-    async with openai.AsyncOpenAI(api_key=api_key) as client:
-        messages = chat_history if chat_history else []
-        messages.append({"role": "user", "content": prompt})
-        
-        response = await client.chat.completions.create(
-            model=model,
-            messages=messages,
-            tools=[dalle_tool], # Re-add tool call
-            tool_choice="auto", # Re-add tool call
-        )
-
-        # --- DEBUG-OUTPUT FÜR OPENAI ---
-        if response.usage:
-            input_tokens = response.usage.prompt_tokens
-            output_tokens = response.usage.completion_tokens
-            total_cost = calculate_cost(model, input_tokens, output_tokens)
-            logger.info("\n--- OPENAI USAGE TRACKING ---")
-            logger.info(f"Model: {model}")
-            logger.info(f"Input Tokens: {input_tokens}")
-            logger.info(f"Output Tokens: {output_tokens}")
-            logger.info(f"Calculated Cost: {total_cost:.6f} €")
-            logger.info("-----------------------------\n")
-        # --- ENDE DEBUG-OUTPUT ---
-
-        response_message = response.choices[0].message
-        
-        if response_message.tool_calls:
-            tool_call = response_message.tool_calls[0]
-            function_name = tool_call.function.name
-            
-            if function_name == "generate_image":
-                function_args = json.loads(tool_call.function.arguments)
-                image_prompt = function_args.get("prompt")
-                image_quality = function_args.get("quality", "standard")
-                
-                # Call the NEW _call_dalle_api
-                dalle_response = await _call_dalle_api(api_key, image_prompt, f"dall-e-3-{image_quality}") # Pass model for quality
-                
-                messages.append(response_message)
-                messages.append(
-                    {
-                        "tool_call_id": tool_call.id,
-                        "role": "tool",
-                        "name": function_name,
-                        "content": json.dumps({"image_url": dalle_response.get("image_url")}), # Use image_url from new dalle_response
-                    }
-                )
-                
-                second_response = await client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                )
-                final_message_content = second_response.choices[0].message.content
-                
-                logger.debug(f"(_call_openai_api): dalle_response.get('image_url') = {dalle_response.get('image_url')}")
-                return {
-                    "text": final_message_content,
-                    "image_url": dalle_response.get("image_url"), # This is correct!
-                    "usage": dalle_response.get("usage"),
-                    "cost": dalle_response.get("cost")
-                }
-        
-        chat_response_text = response_message.content
-        # Add usage and cost for regular chat completions
-        usage = {
-            "input_tokens": response.usage.prompt_tokens,
-            "output_tokens": response.usage.completion_tokens
-        }
-        total_cost = calculate_cost(model, usage["input_tokens"], usage["output_tokens"])
-        
-        return {
-            "text": chat_response_text,
-            "usage": usage,
-            "cost": {"total_cost": total_cost}
-        }
-
-# Refactored Gemini Chat Logic to _call_gemini_api
-async def _call_gemini_api(api_key: str, prompt: str, model_name: str, chat_history: Optional[List[Dict]] = None):
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel(model_name)
-
-    # Convert chat_history to Gemini format
-    gemini_history = []
-    if chat_history:
-        for msg in chat_history:
-            if msg["role"] == "user":
-                gemini_history.append({"role": "user", "parts": [msg["content"]]})
-            elif msg["role"] == "assistant":
-                gemini_history.append({"role": "model", "parts": [msg["content"]]})
-
-    # Add current prompt
-    gemini_history.append({"role": "user", "parts": [prompt]})
-
-    try:
-        response = await model.generate_content_async(gemini_history)
-        usage_metadata = getattr(response, 'usage_metadata', None)
-        
-        if usage_metadata:
-            input_tokens = usage_metadata.prompt_token_count
-            output_tokens = usage_metadata.candidates_token_count
-            total_cost = calculate_cost(model_name, input_tokens, output_tokens) # Use calculate_cost
-            
-            
-            return {
-                "text": response.text,
-                "usage": { "input_tokens": input_tokens, "output_tokens": output_tokens },
-                "cost": { "total_cost": total_cost }
-            }
-        else:
-            # Fallback if usage_metadata is not available
-            return {"text": response.text}
-    except Exception as e:
-        logger.error(f"Error calling Gemini API: {e}")
-        return {"text": f"An error occurred with the Gemini API: {e}"}
-
-# NEW, DEDICATED FUNCTION FOR DALL-E (from user's plan)
-async def _call_dalle_api(api_key, prompt, model_id): # Renamed 'model' to 'model_id' to avoid conflict with client.images.generate(model=...)
+async def _call_openai_api(api_key: str, model_id: str, chat_history: List[Dict]):
     client = openai.AsyncOpenAI(api_key=api_key)
-        
-    quality = "standard"
-    if model_id == "dall-e-3-hd":
-        quality = "hd"
+    is_image_model = "dall-e" in model_id.lower()
+
     
-    try:
+
+    if is_image_model:
+        final_prompt = chat_history[-1]['content']
         response = await client.images.generate(
-            model="dall-e-3", # The REAL model name
-            prompt=prompt,
+            model=model_id,
+            prompt=final_prompt,
             n=1,
             size="1024x1024",
-            quality=quality,
-            response_format="url",
+            quality="standard"
         )
         image_url = response.data[0].url
-        local_image_path = await download_and_save_image(image_url)
-                
-        # Create a response that our backend understands
-        image_cost = 0.04 if quality == "standard" else 0.08
-        logger.debug(f"(_call_dalle_api): image_url = {image_url}")
-        return {
-            "text": response.data[0].revised_prompt or "Hier ist das Bild, das mit DALL·E erstellt wurde.",
-            "image_url": local_image_path, # Direct URL
-            "usage": {"image_quality": quality, "image_cost": image_cost},
-            "cost": {"total_cost": image_cost}
-        }
-    except Exception as e:
-        logger.error(f"Error calling DALL-E API: {e}")
-        raise
-
-# Replaced call_llm with the new switch logic
-async def call_llm(provider: str, model: str, prompt: str, api_key: str, chat_history: Optional[List[Dict]] = None):
-    logger.info(f"Call LLM - Provider: {provider}, Model: {model}")
-    # --- NEW SWITCH for DALL-E ---
-    if model.startswith("dall-e-3"):
-        return await _call_dalle_api(api_key, prompt, model) # Pass model_id for quality check
-        
-    if provider == "openai":
-        return await _call_openai_api(api_key, prompt, model)
-    elif provider == "gemini":
-        return await _call_gemini_api(api_key, prompt, model)
+        revised_prompt = response.data[0].revised_prompt
+        usage, cost = calculate_cost(model_id, custom_prompt=revised_prompt)
+        return {"text": revised_prompt, "image_url": image_url, "usage": usage, "cost": cost}
     else:
-        raise ValueError(f"Unknown provider: {provider}")
+        # Hier war der Fehler: `messages` MUSS chat_history sein.
+        response = await client.chat.completions.create(
+            model=model_id,
+            messages=chat_history
+        )
+        text_response = response.choices[0].message.content
+        usage, cost = calculate_cost(model_id, usage_data=response.usage)
+        return {"text": text_response, "image_url": None, "usage": usage, "cost": cost}
 
-@router.get("/config")
-async def get_config():
-    config_path = os.path.join(os.path.dirname(__file__), "config.json")
-    if not os.path.exists(config_path):
-        raise HTTPException(status_code=404, detail="Config file not found.")
-    with open(config_path, "r") as f:
-        config = json.load(f)
-    return config
+async def _call_gemini_api(api_key: str, model_id: str, chat_history: List[Dict]):
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel(model_id)
+    
+    # Konvertiere die OpenAI-Format Historie korrekt in das Gemini-Format
+    gemini_history = []
+    for msg in chat_history:
+        role = 'user' if msg['role'] == 'user' else 'model'
+        gemini_history.append({'role': role, 'parts': [msg['content']]})
+    
+    
+    
+    response = await model.generate_content_async(gemini_history)
+    
+    text_response = response.text
+    usage, cost = {}, {} # Platzhalter
+    return {"text": text_response, "image_url": None, "usage": usage, "cost": cost}
