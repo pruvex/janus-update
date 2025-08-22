@@ -1,18 +1,8 @@
-ARBEITSANWEISUNG: Global Memory (Korrektur der Test-Imports)
-Ziel: Den NameError beheben, der das Ausführen der Tests verhindert, indem die fehlenden SQLAlchemy-Imports in der Testdatei hinzugefügt werden.
-Aktueller Branch: feature/global-memory-v1
-Schritt 1: Korrektur der waechter/test_memory_crud.py
-Aktion: Ersetze den gesamten Inhalt der Datei mit der folgenden, korrigierten Version, die die richtigen Importe enthält.
-Tool: write_file
-Datei: waechter/test_memory_crud.py
-Inhalt (Korrigiert):
-code
-Python
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base # Korrigierter Import
-from backend.database import Chat, Memory # Nur die Modelle importieren
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Boolean, Text
+from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 from backend import crud
+from datetime import datetime
 
 # Eine separate In-Memory-Datenbank für Tests verwenden
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
@@ -22,19 +12,42 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 # Base hier für die Test-DB neu definieren
 Base = declarative_base()
 
+# --- SQLAlchemy Modelle für Chat-Historie (direkt hier definiert) ---
+class Chat(Base):
+    __tablename__ = "chats"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    is_archived = Column(Boolean, default=False)
+
+    messages = relationship("Message", back_populates="chat")
+    memories = relationship("Memory", back_populates="chat") # Hinzugefügt
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    chat_id = Column(Integer, ForeignKey("chats.id"))
+    sender = Column(String)
+    content = Column(String)
+    image_path = Column(String, nullable=True)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+    chat = relationship("Chat", back_populates="messages")
+
+class Memory(Base):
+    __tablename__ = "memory"
+    id = Column(Integer, primary_key=True, index=True)
+    chat_id = Column(Integer, ForeignKey("chats.id"))
+    snippet = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.now)
+
+    chat = relationship("Chat", back_populates="memories") # Hinzugefügt
+
 # Pytest Fixture, um eine saubere DB-Sitzung für jeden Test bereitzustellen
 @pytest.fixture(scope="function")
 def db_session():
-    # Stelle sicher, dass die Test-Tabellen von den Modellen abhängen
-    # Wir importieren die Modelle erneut, um sicherzustellen, dass sie an die Test-Base gebunden sind
-    from backend.database import Chat, Memory
-    
-    # Binde die Modelle an die Test-Base, falls sie es nicht schon sind
-    if not hasattr(Chat, 'metadata') or Chat.metadata != Base.metadata:
-        Chat.metadata = Base.metadata
-    if not hasattr(Memory, 'metadata') or Memory.metadata != Base.metadata:
-        Memory.metadata = Base.metadata
-
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     

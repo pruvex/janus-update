@@ -3,7 +3,7 @@ import os
 import logging
 from datetime import datetime
 
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Boolean, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
@@ -43,6 +43,13 @@ class Message(Base):
 
     chat = relationship("Chat", back_populates="messages")
 
+class Memory(Base):
+    __tablename__ = "memory"
+    id = Column(Integer, primary_key=True, index=True)
+    chat_id = Column(Integer, ForeignKey("chats.id"))
+    snippet = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.now)
+
 # --- Datenbank-Initialisierung ---
 def init_db():
     # Initialisiere Kosten-Datenbank (bestehend)
@@ -59,7 +66,8 @@ def init_db():
             image_cost REAL,
             total_cost REAL NOT NULL
         )
-    """)
+    """
+    )
     conn_costs.commit()
     conn_costs.close()
     logger.info("Costs database initialized.")
@@ -107,7 +115,8 @@ def get_all_cost_entries():
         SELECT date, model, input_tokens, output_tokens, image_quality, image_cost, total_cost
         FROM costs
         ORDER BY date DESC
-    """)
+    """
+    )
     rows = cursor.fetchall()
     conn.close()
     

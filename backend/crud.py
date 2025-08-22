@@ -57,3 +57,17 @@ def delete_chat(db: Session, chat_id: int):
         db.commit()
         return True
     return False
+
+# --- Memory CRUD ---
+def save_memory_snippet(db: Session, chat_id: int, snippet_text: str):
+    """Speichert einen neuen Fakt in der Memory-Tabelle."""
+    db_memory = database.Memory(chat_id=chat_id, snippet=snippet_text)
+    db.add(db_memory)
+    db.commit()
+    db.refresh(db_memory)
+    return db_memory
+
+def search_memory_by_text(db: Session, search_term: str, limit: int = 5):
+    """Durchsucht die Memory-Snippets mit einer einfachen LIKE-Suche."""
+    search_pattern = f"%{search_term}%"
+    return db.query(database.Memory).filter(database.Memory.snippet.like(search_pattern)).limit(limit).all()
