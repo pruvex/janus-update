@@ -75,6 +75,7 @@ def init_db():
     # Initialisiere Chat-Datenbank (neu)
     Base.metadata.create_all(bind=engine)
     logger.info("Chat database initialized.")
+    # init_memory_index() # Commented out
 
 # Dependency
 def get_db():
@@ -165,3 +166,23 @@ def get_costs_summary_by_model_for_current_month():
         return summary
     finally:
         conn.close()
+
+# import faiss # Commented out
+# import numpy as np # Commented out
+# import os # Commented out
+
+# FAISS_INDEX_FILE = "memory_index.faiss" # Commented out
+# memory_index = None # Commented out
+# memory_map = {} # Maps FAISS index to Memory DB ID # Commented out
+
+# def init_memory_index(): # Commented out
+#     global memory_index, memory_map # Commented out
+#     if os.path.exists(FAISS_INDEX_FILE): # Commented out
+#         logger.info("Lade bestehenden FAISS-Index.") # Commented out
+#         memory_index = faiss.read_index(FAISS_INDEX_FILE) # Commented out
+#         # Hier müsste man die memory_map ebenfalls laden, vereinfacht für den Start # Commented out
+#     else: # Commented out
+#         # Dimension für 'all-MiniLM-L6-v2' ist 384 # Commented out
+#         logger.info("Erstelle neuen FAISS-Index.") # Commented out
+#         memory_index = faiss.IndexFlatL2(384) # Commented out
+#         memory_map = {} # Commented out

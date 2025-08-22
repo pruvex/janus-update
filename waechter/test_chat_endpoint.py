@@ -36,8 +36,19 @@ class TestChatEndpoint(unittest.TestCase):
         # Überprüfe, ob der Response-Body der vom Mock definierten Antwort entspricht
         self.assertEqual(response.json(), {"sender": "model", "text": "mocked LLM answer", "image_url": None})
 
-        # Überprüfe, ob die llm_gateway.call_llm-Funktion mit den richtigen Argumenten aufgerufen wurde
-        mock_call_llm.assert_called_once_with("test-provider", "test-model", "", "mocked-api-key", chat_history=[{'role': 'user', 'content': 'Test prompt'}])
+        # Überprüfe, ob die llm_gateway.call_llm-Funktion zweimal aufgerufen wurde
+        self.assertEqual(mock_call_llm.call_count, 2)
+
+        # Überprüfe den ersten Aufruf (für die Hauptantwort)
+        first_call_args, first_call_kwargs = mock_call_llm.call_args_list[0]
+        self.assertEqual(first_call_args, ("test-provider", "test-model", "", "mocked-api-key"))
+        self.assertEqual(first_call_kwargs, {'chat_history': [{'role': 'user', 'content': 'Test prompt'}]})
+
+        # Überprüfe den zweiten Aufruf (für die Faktenextraktion)
+        second_call_args, second_call_kwargs = mock_call_llm.call_args_list[1]
+        self.assertEqual(second_call_args, ('openai', 'gpt-4o-mini', '', 'mocked-api-key'))
+        self.assertIn('chat_history', second_call_kwargs)
+        self.assertIn('--- Extrahierter Fakt ---', second_call_kwargs['chat_history'][0]['content'])
 
     def test_chat_endpoint_with_invalid_payload(self):
         # Rufe den Endpunkt mit einem ungültigen Payload auf (fehlender "prompt")
