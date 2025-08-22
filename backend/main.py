@@ -3,6 +3,8 @@ import os
 import keyring
 import logging
 import traceback
+import re
+import asyncio
 from fastapi import FastAPI, HTTPException, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -11,7 +13,7 @@ from datetime import datetime
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from backend.logger_config import setup_logging
-from backend import llm_gateway, database, crud, schemas
+from backend import llm_gateway, database, crud, schemas, memory_extractor
 from backend.context_manager import ContextManager
 
 # --- Initialisierung ---
@@ -42,8 +44,7 @@ def save_config(config):
     with open(CONFIG_FILE, "w") as f: json.dump(config, f, indent=2)
 
 def load_model_catalog():
-    with open(MODEL_CATALOG_FILE, "r") as f:
-        return json.load(f)
+    with open(MODEL_CATALOG_FILE, "r") as f: return json.load(f)
 
 model_catalog = load_model_catalog()
 context_manager = ContextManager(model_catalog=model_catalog)
@@ -81,22 +82,34 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
         if not api_key:
             raise HTTPException(status_code=400, detail=f"API Key for {request.provider} not found.")
 
-        # 1. Lade die BESTEHENDE Historie (OHNE die neue Nachricht)
+        # --- Verbessertes Memory Retrieval ---
+        clean_prompt = re.sub(r'[^\w\s]', '', request.prompt.lower())
+        search_words = [word for word in clean_prompt.split() if len(word) > 2]
+        all_snippets = set()
+        for word in search_words:
+            snippets = crud.search_memory_by_text(db, search_term=word)
+            for snippet in snippets:
+                all_snippets.add(snippet.snippet)
+        full_prompt_snippets = crud.search_memory_by_text(db, search_term=request.prompt)
+        for snippet in full_prompt_snippets:
+            all_snippets.add(snippet.snippet)
+        memory_context = "\n".join([f"- {s}" for s in all_snippets])
+        
         chat_history = []
         if request.chat_id:
             messages_from_db = crud.get_messages_by_chat_id(db, chat_id=request.chat_id)
             chat_history = [{"role": "user" if msg.sender == "user" else "assistant", "content": msg.content or ""} for msg in messages_from_db]
-
-        # 2. Füge die NEUE Nachricht des Benutzers zur Historie für den Prompt hinzu
+        
         chat_history.append({"role": "user", "content": request.prompt})
-
-        # 3. Baue den Prompt mit dem ContextManager
-        final_prompt = context_manager.build_prompt_history(chat_history, request.model)
-
-        # 4. Rufe die LLM-API auf
+        
+        final_prompt = context_manager.build_prompt_history(
+            chat_history, 
+            request.model,
+            global_memory=memory_context
+        )
+        
         gateway_response = await llm_gateway.call_llm(request.provider, request.model, "", api_key, chat_history=final_prompt)
-
-        # 5. Speichere BEIDE neuen Nachrichten (Benutzer und KI) in der DB
+        
         if request.chat_id:
             crud.create_message(db, chat_id=request.chat_id, sender="user", content=request.prompt)
             crud.create_message(
@@ -113,6 +126,17 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
                 image_quality=usage.get("image_quality"), image_cost=cost.get("image_cost"),
                 total_cost=cost.get("total_cost", 0)
             )
+
+        # Starte die Fakten-Extraktion als Hintergrundaufgabe
+        try:
+            full_exchange_text = f"User: {request.prompt}\nAssistant: {gateway_response.get('text', '')}"
+            asyncio.create_task(
+                memory_extractor.extract_and_save_fact(
+                    db=db, chat_id=request.chat_id, text_block=full_exchange_text, api_key=api_key
+                )
+            )
+        except Exception as e:
+            logger.error(f"Fehler beim Starten der Hintergrund-Faktenextraktion: {e}")
 
         return { "sender": "model", "text": gateway_response.get("text", ""), "image_url": gateway_response.get("image_url") }
     except Exception as e:
