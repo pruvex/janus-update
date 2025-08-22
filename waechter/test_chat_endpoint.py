@@ -37,7 +37,7 @@ class TestChatEndpoint(unittest.TestCase):
         self.assertEqual(response.json(), {"sender": "model", "text": "mocked LLM answer", "image_url": None})
 
         # Überprüfe, ob die llm_gateway.call_llm-Funktion mit den richtigen Argumenten aufgerufen wurde
-        mock_call_llm.assert_called_once_with("test-provider", "test-model", "Test prompt", "mocked-api-key")
+        mock_call_llm.assert_called_once_with("test-provider", "test-model", "", "mocked-api-key", chat_history=[{'role': 'user', 'content': 'Test prompt'}])
 
     def test_chat_endpoint_with_invalid_payload(self):
         # Rufe den Endpunkt mit einem ungültigen Payload auf (fehlender "prompt")

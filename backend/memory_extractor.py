@@ -1,13 +1,3 @@
-ARBEITSANWEISUNG: Global Memory (Phase 2, Teil 1: Die Extraktions-Logik)
-Ziel: Eine neue, isolierte Python-Datei erstellen, die die Logik zur Extraktion von relevanten Fakten aus einem Textblock mithilfe eines LLM-Aufrufs enthält.
-Aktueller Branch: feature/global-memory-v1
-Schritt 1: Erstellung des Extraktions-Moduls
-Aktion: Erstelle eine neue Datei backend/memory_extractor.py.
-Tool: write_file
-Datei: backend/memory_extractor.py
-Inhalt:
-code
-Python
 import logging
 from . import llm_gateway, crud
 from sqlalchemy.orm import Session
@@ -20,7 +10,7 @@ EXTRACTION_PROMPT = (
     "Fakten sind z.B. persönliche Vorlieben, Namen, Ziele, Projekte oder wichtige Termine. "
     "Formuliere den Fakt in einem kurzen, prägnanten Satz. "
     "Wenn der Text keine dauerhaft relevanten Fakten enthält, antworte AUSSCHLIESSLICH mit dem Wort 'None'."
-    "\n\n--- Gesprächs-Ausschnitt ---\n"
+    "\n\n--- Gesprächs-Ausschnitt ---"
     "{text_block}"
     "\n\n--- Extrahierter Fakt ---"
 )
@@ -41,7 +31,7 @@ async def extract_and_save_fact(db: Session, chat_id: int, text_block: str, api_
 
         gateway_response = await llm_gateway.call_llm(
             provider,
-            model_id,
+            model_id, 
             "", # Prompt ist in der History
             api_key,
             chat_history=extraction_history
