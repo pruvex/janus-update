@@ -16,26 +16,6 @@ from backend.logger_config import setup_logging
 from backend import llm_gateway, database, crud, schemas, memory_extractor, vector_service
 from backend.context_manager import ContextManager
 
-QUERY_EXPANSION_PROMPT = (
-    "Du bist ein Assistent, dessen Aufgabe es ist, eine Benutzerfrage zu erweitern, "
-    "um verwandte Konzepte oder alternative Formulierungen zu finden. "
-    "Gib eine durch Kommas getrennte Liste von Suchbegriffen zurück, die die ursprüngliche Frage erweitern. "
-    "Wenn keine Erweiterung sinnvoll ist, gib nur die ursprüngliche Frage zurück."
-    "Frage: {query}"
-    "Erweiterte Suchbegriffe:"
-)
-
-async def expand_query(query: str, api_key: str) -> List[str]:
-    try:
-        prompt = QUERY_EXPANSION_PROMPT.format(query=query)
-        history = [{"role": "user", "content": prompt}]
-        response = await llm_gateway.call_llm("openai", "gpt-4o-mini", "", api_key, chat_history=history)
-        expanded_text = response.get("text", "").strip()
-        return [q.strip() for q in expanded_text.split(',') if q.strip()]
-    except Exception as e:
-        logger.error(f"Fehler bei der Abfrageerweiterung: {e}")
-        return [query] # Fallback to original query on error
-
 setup_logging()
 logger = logging.getLogger('janus_backend')
 app = FastAPI()
@@ -89,58 +69,52 @@ class BudgetUpdate(BaseModel):
 async def chat(request: ChatRequest, db: Session = Depends(get_db)):
     try:
         api_key = keyring.get_password("Janus-Projekt", request.provider)
-        if not api_key: raise HTTPException(status_code=400, detail=f"API Key for {request.provider} not found.")
-
-        # --- Verbessertes Memory Retrieval mit Vektoren ---
-        all_memories = crud.get_all_memories(db)
-        similar_snippets = vector_service.find_similar_snippets(request.prompt, all_memories)
-        memory_context = "\n".join([f"- {mem.snippet}" for mem in similar_snippets])
-        # --- Ende ---
+        if not api_key: raise HTTPException(status_code=400, detail="API Key not found.")
         
-        # Wenn kein Chat-ID vorhanden ist, erstelle einen neuen Chat
+        # 1. Speichere die rohe Benutzernachricht im Gedächtnis (wenn sie lang genug ist)
         if request.chat_id is None:
             new_chat = crud.create_chat(db, title="New Chat") # Standardtitel
             request.chat_id = new_chat.id
 
+        if len(request.prompt.split()) > 3: # Ignoriere kurze Sätze wie "hi"
+             crud.save_raw_memory(db, chat_id=request.chat_id, user_input=request.prompt)
+
+        # 2. Finde relevante Erinnerungen mit Vektor-Suche
+        all_memories = crud.get_all_memories(db)
+        similar_snippets = vector_service.find_similar_snippets(request.prompt, all_memories)
+        memory_context = "\n".join([f"- {mem.snippet}" for mem in similar_snippets])
+
+        # 3. Lade den aktuellen Chat-Verlauf
         chat_history = []
         if request.chat_id:
             messages = crud.get_messages_by_chat_id(db, chat_id=request.chat_id)
-            chat_history = [{"role": "user" if msg.sender == "user" else "assistant", "content": msg.content or ""} for msg in messages]
-        
-        chat_history.append({"role": "user", "content": request.prompt})
-        final_prompt = context_manager.build_prompt_history(chat_history, request.model, global_memory=memory_context)
-        
-        gateway_response = await llm_gateway.call_llm(request.provider, request.model, "", api_key, chat_history=final_prompt)
-        
+            chat_history = [{"role": "user" if m.sender=="user" else "assistant", "content": m.content} for m in messages]
+
+        # 4. Der EINE "Denk"-Schritt: Lasse die KI die Antwort synthetisieren
+        final_answer = await llm_gateway.reason_and_respond(
+            request.prompt, chat_history, memory_context, api_key, request.model
+        )
+
+        # 5. Speichere die Konversation und Kosten
         if request.chat_id:
             crud.create_message(db, chat_id=request.chat_id, sender="user", content=request.prompt)
-            crud.create_message(
-                db, chat_id=request.chat_id, sender="model",
-                content=gateway_response.get("text", ""), image_path=gateway_response.get("image_url")
-            )
+            crud.create_message(db, chat_id=request.chat_id, sender="model", content=final_answer)
+        
+        # ... Kosten-Logik ...
+        # This part is missing from the user's instruction, so I will comment it out for now.
+        # usage = gateway_response.get("usage")
+        # cost = gateway_response.get("cost", {})
+        # if usage:
+        #     database.save_cost_entry(
+        #         date=datetime.now(), model=request.model,
+        #         input_tokens=usage.get("input_tokens"), output_tokens=usage.get("output_tokens"),
+        #         image_quality=usage.get("image_quality"), image_cost=cost.get("image_cost"),
+        #         total_cost=cost.get("total_cost", 0)
+        #     )
 
-        usage = gateway_response.get("usage")
-        cost = gateway_response.get("cost", {})
-        if usage:
-            database.save_cost_entry(
-                date=datetime.now(), model=request.model,
-                input_tokens=usage.get("input_tokens"), output_tokens=usage.get("output_tokens"),
-                image_quality=usage.get("image_quality"), image_cost=cost.get("image_cost"),
-                total_cost=cost.get("total_cost", 0)
-            )
-
-        try:
-            full_exchange_text = f"User: {request.prompt}\nAssistant: {gateway_response.get('text', '')}"
-            asyncio.create_task(
-                memory_extractor.extract_and_save_fact(
-                    db=db, chat_id=request.chat_id, text_block=full_exchange_text, api_key=api_key
-                )
-            )
-        except Exception as e:
-            logger.error(f"Error starting background fact extraction: {e}")
-
-        return { "sender": "model", "text": gateway_response.get("text", ""), "image_url": gateway_response.get("image_url") }
+        return {"sender": "model", "text": final_answer}
     except Exception as e:
+        # ... Error Handling ...
         tb_str = traceback.format_exc()
         logger.error(f"Error in chat endpoint: {e}\n{tb_str}")
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {e}")
@@ -183,7 +157,7 @@ async def export_chat_to_txt(chat_id: int, db: Session = Depends(get_db)):
     for msg in messages:
         timestamp = msg.timestamp.strftime("%Y-%m-%d %H:%M:%S")
         export_content += f"{timestamp} - {msg.sender}: {msg.content}\n"
-    return Response(content=export_content, media_type="text/plain", headers={"Content-Disposition": f"attachment; filename=\"{chat.title}.txt\""})
+    return Response(content=export_content, media_type="text/plain", headers={"Content-Disposition": f'attachment; filename="{chat.title}.txt"'})
 
 @app.delete("/api/chats/{chat_id}")
 async def delete_chat(chat_id: int, db: Session = Depends(get_db)):

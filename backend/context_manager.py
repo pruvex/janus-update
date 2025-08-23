@@ -1,6 +1,7 @@
 import tiktoken
 import logging
 from typing import List, Dict
+from backend import llm_gateway
 
 logger = logging.getLogger('janus_backend')
 
@@ -19,12 +20,15 @@ class ContextManager:
     def __init__(self, model_catalog: List[Dict]):
         self.model_limits = {model['id']: model.get('context_window', 8000) for model in model_catalog}
 
-    def build_prompt_history(self, messages: List[Dict], model_id: str, global_memory: str = None) -> List[Dict]:
+    async def build_prompt_history(self, messages: List[Dict], model_id: str, api_key: str, global_memory: str = None) -> List[Dict]:
         max_tokens = self.model_limits.get(model_id, 8000) - RESPONSE_BUFFER
                 
         system_prompt = None
         if global_memory:
-            # KORRIGIERTER MEHRZEILIGER STRING
+            # NEU: Widersprüche auflösen, bevor der Prompt gebaut wird
+            if len(global_memory.split('\n')) > 1:
+                global_memory = await llm_gateway.resolve_contradictions(global_memory, api_key)
+
             system_prompt_text = (
                 "Du bist ein persönlicher Assistent. Nutze die folgenden globalen Erinnerungen, um die Anfrage des Benutzers bestmöglich zu beantworten.\n"
                 "--- Globale Erinnerungen ---\n"

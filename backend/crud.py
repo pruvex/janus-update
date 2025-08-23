@@ -84,3 +84,8 @@ def update_memory_snippet(db: Session, memory_id: int, new_snippet: str):
         memory_item.snippet = new_snippet
         memory_item.embedding_json = vector_service.generate_embedding(new_snippet)
         db.commit()
+
+def save_raw_memory(db: Session, chat_id: int, user_input: str):
+    """Speichert die rohe Benutzereingabe als Gedächtnis."""
+    # Hier könnten in Zukunft noch Filter oder Extraktionslogiken rein
+    return save_memory_snippet(db, chat_id, user_input)

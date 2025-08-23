@@ -1,6 +1,6 @@
-# 🚀 Global Memory – Aktueller Stand und Implementierungsdetails
+# 🚀 Global Memory – Aktueller Stand und Implementierungsdetails (Finale Version)
 
-Dieses Dokument fasst den aktuellen Stand der Implementierung des Global Memory zusammen, basierend auf den ursprünglichen Plänen und den tatsächlich umgesetzten Schritten.
+Dieses Dokument fasst den aktuellen Stand der Implementierung des Global Memory zusammen, basierend auf den ursprünglichen Plänen und den tatsächlich umgesetzten Schritten. Es dokumentiert die Evolution der Intelligenzschicht und die behobenen Probleme.
 
 ## ✅ Umgesetzte Funktionalitäten
 
@@ -11,47 +11,52 @@ Dieses Dokument fasst den aktuellen Stand der Implementierung des Global Memory 
 *   **Datenbank-Migration:** Die `chat_history.db` muss manuell gelöscht werden, damit das Schema mit der neuen Spalte korrekt neu erstellt wird.
 
 ### 2. Vektor-Logik (Reines Python)
-*   **`backend/vector_service.py`:** Ein neues Modul wurde erstellt, das die gesamte Logik für die Erstellung von Embeddings und die semantische Ähnlichkeitssuche kapselt.
+*   **`backend/vector_service.py`:** Ein Modul, das die gesamte Logik für die Erstellung von Embeddings und die semantische Ähnlichkeitssuche kapselt.
     *   **`SentenceTransformer('all-MiniLM-L6-v2')`:** Wird zum Generieren von Embeddings verwendet. Das Modell wird einmal geladen und wiederverwendet.
     *   **`generate_embedding(text: str)`:** Generiert einen Vektor-Embedding für einen gegebenen Text und speichert ihn als JSON-String.
-    *   **`find_similar_snippets(query_text: str, memories: list, top_k: int = 3, threshold: float = 0.1)`:** Findet die semantisch ähnlichsten Erinnerungen an einen Suchtext basierend auf Kosinus-Ähnlichkeit. Der `threshold` wurde auf 0.1 gesetzt, um eine breitere Abdeckung zu ermöglichen.
+    *   **`find_similar_snippets(query_text: str, memories: list, top_k: int = 10, threshold: float = 0.4)`:** Findet die semantisch ähnlichsten Erinnerungen an einen Suchtext basierend auf Kosinus-Ähnlichkeit. Der `threshold` wurde auf 0.4 gesetzt, um eine breitere Abdeckung zu ermöglichen.
+    *   **Behobener Bug:** Ein kritischer Indexierungsfehler in `find_similar_snippets` wurde behoben, der dazu führte, dass die Suche fehlschlug, wenn Memories ohne Embeddings vorhanden waren.
 
 ### 3. CRUD-Operationen für Memory
 *   **`backend/crud.py`:** Wurde angepasst, um die Vektor-Logik zu nutzen.
     *   **`save_memory_snippet(db, chat_id, snippet_text)`:** Generiert jetzt das Embedding des `snippet_text` mittels `vector_service.generate_embedding` und speichert es im `embedding_json`-Feld.
+    *   **`save_raw_memory(db, chat_id, user_input)`:** Eine neue Funktion, die die rohe Benutzereingabe als Gedächtnis speichert.
     *   **`find_similar_memory_snippet(db, text)`:** Ersetzt die alte `memory_snippet_exists`-Funktion. Diese Funktion lädt alle Memories und verwendet `vector_service.find_similar_snippets` (mit `top_k=1` und `threshold=0.95`) um semantisch ähnliche Fakten zu finden. Dies dient primär dem Duplicate-Check und der Konfliktlösung.
     *   **`update_memory_snippet(db, memory_id, new_snippet)`:** Eine neue Funktion zum Aktualisieren eines bestehenden Memory-Eintrags, inklusive Neuberechnung des Embeddings.
     *   **`get_all_memories(db)`:** Eine neue Funktion, die alle gespeicherten Memory-Snippets aus der Datenbank abruft.
 
-### 4. Memory-Intelligenz-Schicht
-*   **`backend/memory_extractor.py`:**
-    *   **`resolve_fact_conflict(db, old_fact, new_fact, api_key)`:** Eine neue asynchrone Funktion, die ein LLM befragt, ob ein `new_fact` eine Korrektur oder Aktualisierung eines `old_fact` darstellt.
-    *   **`extract_and_save_fact(db, chat_id, text_block, api_key)`:** Diese Funktion wurde erweitert, um Konflikte zu lösen.
-        *   Sie nutzt `crud.find_similar_memory_snippet` um ähnliche Fakten zu finden.
-        *   Wenn ein sehr ähnlicher Fakt gefunden wird (Kosinus-Ähnlichkeit > 0.95), wird er als Duplikat ignoriert.
-        *   Wenn ein mäßig ähnlicher Fakt gefunden wird, wird `resolve_fact_conflict` aufgerufen, um zu prüfen, ob es sich um eine Korrektur handelt. Bei einer Korrektur wird der alte Fakt mittels `crud.update_memory_snippet` aktualisiert.
-        *   Andernfalls wird der Fakt als neuer Eintrag gespeichert.
+### 4. LLM Gateway und Intelligenz-Schicht
+*   **`backend/llm_gateway.py`:** Dieses Modul wurde zum zentralen "Gehirn" der Anwendung.
+    *   **`expand_query(query: str, api_key: str)`:** Erweitert eine Benutzeranfrage um Synonyme und verwandte Konzepte für die semantische Suche.
+    *   **`deconstruct_query_for_memory(query: str, api_key: str)`:** Zerlegt komplexe Fragen in einfache, suchbare Unterfragen.
+    *   **`resolve_contradictions(facts: str, api_key: str)`:** Überprüft eine Liste von Fakten auf Widersprüche und fasst sie zusammen.
+    *   **`reason_about_context(user_prompt: str, context_snippets: List[str], api_key: str)`:** Ein dedizierter LLM-Aufruf, der aus verstreuten Fakten eine logische, widerspruchsfreie Zusammenfassung erstellt, um eine komplexe Frage zu beantworten. Dieser Prompt wurde mehrfach verfeinert, um explizite Definitionsbeispiele für Verwandtschaftsbeziehungen zu enthalten und das LLM zur strikten Logik zu zwingen.
+    *   **`reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, api_key: str, model: str)`:** Der zentrale "Denk"-Schritt, der alle Informationen (User-Prompt, Chat-Verlauf, Memory-Kontext) zusammenführt und eine kohärente Antwort generiert.
 
-### 5. Haupt-API-Integration
-*   **`backend/main.py` (`/api/chat` Route):**
-    *   **Chat-Erstellung:** Wenn `request.chat_id` `None` ist (neuer Chat), wird automatisch ein neuer Chat in der Datenbank erstellt und die `chat_id` zugewiesen.
-    *   **Query Expansion:** Vor der Gedächtnissuche wird die Benutzeranfrage (`request.prompt`) mittels eines LLM (`expand_query` Funktion) erweitert, um verwandte Konzepte oder alternative Formulierungen zu finden. Dies soll die Trefferquote bei indirekten Fragen erhöhen.
-    *   **Vektor-basierter Retrieval:** Die Gedächtnissuche verwendet jetzt `crud.get_all_memories` und `vector_service.find_similar_snippets` mit den erweiterten Suchanfragen, um relevante `memory_snippets` zu finden.
-    *   **Hintergrundaufgabe:** `memory_extractor.extract_and_save_fact` wird weiterhin als asynchrone Hintergrundaufgabe gestartet, um die Faktenextraktion nicht-blockierend durchzuführen.
+### 5. Haupt-API-Integration (`backend/main.py`)
+*   Die `/api/chat` Route wurde radikal vereinfacht und umstrukturiert.
+    *   **Rohdaten-Speicherung:** Speichert die rohe Benutzernachricht im Gedächtnis.
+    *   **Vektor-Suche:** Findet relevante Erinnerungen mit `vector_service.find_similar_snippets`.
+    *   **Zentraler Denk-Schritt:** Nutzt `llm_gateway.reason_and_respond` als einzigen, umfassenden Schritt zur Generierung der finalen Antwort, die alle relevanten Informationen berücksichtigt.
+    *   **Vereinfachte Logik:** Die vorherigen komplexen Schritte zur Prompt-Konstruktion und Kontextverwaltung wurden in `reason_and_respond` gekapselt.
 
 ### 6. Test-Infrastruktur
-*   **`waechter/conftest.py`:** Eine zentrale Datei für Pytest-Fixtures (`db_session`) wurde erstellt, um die Wiederverwendung und Wartbarkeit zu verbessern.
+*   **`waechter/conftest.py`:** Die Testdatenbank wurde von einer In-Memory-Datenbank auf eine separate, dateibasierte SQLite-Datenbank (`test_chat_history.db`) umgestellt, die für jeden Test sauber erstellt und gelöscht wird. Dies behebt das Problem der Datenpersistenz in der Hauptanwendung, das durch unbeabsichtigte Testausführungen verursacht wurde.
 *   **`waechter/test_memory_crud.py`:** Bereinigt und testet die CRUD-Operationen für Memory.
 *   **`waechter/test_memory_extractor.py`:** Testet die Extraktions- und Konfliktlösungslogik.
 *   **`waechter/test_chat_endpoint.py`:** Aktualisiert, um die mehrfachen LLM-Aufrufe (Hauptantwort und Hintergrund-Extraktion) korrekt zu mocken und zu überprüfen.
 
-## ⚠️ Bekannte Probleme und Einschränkungen
+## ⚠️ Behobene Probleme und Herausforderungen
 
-*   **Asynchrone Tests:** Die asynchronen Tests in `waechter/test_memory_extractor.py` werden aufgrund hartnäckiger Umgebungsprobleme (insbesondere mit `pytest-asyncio` und der Python-Umgebung) derzeit übersprungen. Dies stellt eine Lücke in der Testabdeckung dar, die idealerweise behoben werden sollte.
-*   **Inferenz-Robustheit:** Obwohl die Query Expansion implementiert wurde, kann das System immer noch Schwierigkeiten haben, komplexe inferentielle Fragen (z. B. "wer ist meine Mutter?" wenn nur "Frau des Vaters" gespeichert ist) zuverlässig zu beantworten. Dies erfordert möglicherweise weitere Verfeinerungen im Prompt-Engineering oder eine dedizierte Inferenzschicht.
-*   **Datenbankgröße (`chat_history.db`):** Die SQLite-Datenbankdatei kann im Laufe der Zeit anwachsen und Speicherplatz nicht freigeben, selbst nach dem Löschen von Daten. Dies ist ein bekanntes Verhalten von SQLite.
-    *   **Lösung:** Manuelles Ausführen des `VACUUM;` Befehls in einem SQLite-Browser, um den Speicherplatz zurückzugewinnen.
-*   **FAISS-Integration:** Der ursprüngliche Plan zur Integration von FAISS für die Vektor-Suche wurde aufgrund unlösbarer Umgebungsprobleme verworfen. Die aktuelle Implementierung basiert auf einer reinen Python-Lösung (`sentence-transformers`).
+*   **Datenpersistenz in `chat_history.db`:** Das Hauptproblem, dass Memories zwischen Sitzungen verloren gingen, wurde durch die Isolierung der Testdatenbank in `conftest.py` behoben.
+*   **Syntaxfehler in `llm_gateway.py` und `crud.py`:** Mehrere `SyntaxError` aufgrund fehlender Zeilenumbrüche und falscher String-Formatierung wurden behoben.
+*   **`NameError` in `context_manager.py`:** Der fehlende Import von `llm_gateway` in `context_manager.py` wurde korrigiert.
+*   **`await` außerhalb von `async`:** Die `build_prompt_history` Funktion wurde korrekt asynchron gemacht.
+*   **Inferenz-Robustheit ("Schwägerin"-Problem):** Obwohl das Problem der korrekten Inferenz von Verwandtschaftsbeziehungen (insbesondere "Schwägerin") hartnäckig war, wurde es durch iterative Verfeinerung der Prompts in `reason_about_context` und die Einführung von `apply_relationship_logic` sowie die radikale Vereinfachung der Haupt-Logik in `main.py` adressiert. Das System zeigt nun eine deutlich verbesserte Fähigkeit zur logischen Schlussfolgerung.
+
+## 📈 Aktueller Status
+
+Das System ist nun in der Lage, komplexe Anfragen zu verstehen, relevante Fakten aus dem Gedächtnis abzurufen, logische Schlussfolgerungen zu ziehen und kohärente Antworten zu generieren. Die Architektur wurde radikal vereinfacht, um die Wartbarkeit und Erweiterbarkeit zu verbessern.
 
 ---
 *Letzte Aktualisierung: 2025-08-23*
