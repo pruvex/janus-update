@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
-from . import database, schemas
+from . import database, schemas, vector_service
 
+# --- Chat CRUD ---
 def create_chat(db: Session, title: str):
     db_chat = database.Chat(title=title)
     db.add(db_chat)
@@ -60,14 +61,26 @@ def delete_chat(db: Session, chat_id: int):
 
 # --- Memory CRUD ---
 def save_memory_snippet(db: Session, chat_id: int, snippet_text: str):
-    """Speichert einen neuen Fakt in der Memory-Tabelle."""
-    db_memory = database.Memory(chat_id=chat_id, snippet=snippet_text)
+    embedding = vector_service.generate_embedding(snippet_text)
+    if embedding is None:
+        return None
+    db_memory = database.Memory(chat_id=chat_id, snippet=snippet_text, embedding_json=embedding)
     db.add(db_memory)
     db.commit()
     db.refresh(db_memory)
     return db_memory
 
-def search_memory_by_text(db: Session, search_term: str, limit: int = 5):
-    """Durchsucht die Memory-Snippets mit einer einfachen LIKE-Suche."""
-    search_pattern = f"%{search_term}%"
-    return db.query(database.Memory).filter(database.Memory.snippet.like(search_pattern)).limit(limit).all()
+def find_similar_memory_snippet(db: Session, text: str):
+    all_memories = get_all_memories(db)
+    similar = vector_service.find_similar_snippets(text, all_memories, top_k=1, threshold=0.7)
+    return similar[0] if similar else None
+
+def get_all_memories(db: Session):
+    return db.query(database.Memory).all()
+
+def update_memory_snippet(db: Session, memory_id: int, new_snippet: str):
+    memory_item = db.query(database.Memory).filter(database.Memory.id == memory_id).first()
+    if memory_item:
+        memory_item.snippet = new_snippet
+        memory_item.embedding_json = vector_service.generate_embedding(new_snippet)
+        db.commit()

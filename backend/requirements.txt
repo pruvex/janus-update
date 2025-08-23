@@ -76,4 +76,3 @@ zipp==3.23.0
 tiktoken
 pytest-asyncio
 sentence-transformers
-faiss-cpu

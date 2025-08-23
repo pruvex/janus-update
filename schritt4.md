@@ -1,196 +1,57 @@
-🚦 Schritt-für-Schritt-Plan: Global Memory einfach bauen
-1️⃣ Datenbasis vorbereiten
-
-Wir nutzen im Prinzip schon eure bestehende DB-Struktur:
-
-chats
-
-messages
-
-👉 Ergänzen um eine neue Tabelle memory:
-
-memory (
-  id INTEGER PRIMARY KEY,
-  chat_id INTEGER,   -- aus welchem Chat kommt der Eintrag
-  snippet TEXT,      -- der eigentliche "Wissensbaustein"
-  embedding VECTOR,  -- Embedding für semantische Suche (optional, später)
-  created_at TIMESTAMP
-)
-
-
-Damit haben wir eine klare Trennung:
-
-Chats = originaler Verlauf
-
-Memory = extrahierte Wissenshappen
-
-2️⃣ Memory-Erstellung (einfacher Weg)
-
-Jeder Chat-Nachricht kann man eine Frage stellen:
-👉 „Ist diese Info global relevant?“
-
-Umsetzung:
-
-Frontend zeigt kleine UI-Frage (Checkbox / Button: „Global merken“).
-
-Wenn User klickt → Nachricht oder Zusammenfassung landet in memory.snippet.
-
-So bleibt die Kontrolle beim User, kein kompliziertes automatisches Extrahieren nötig (das kannst du später noch dazubauen).
-
-3️⃣ Global Memory Abfrage (MVP)
-
-Wenn User etwas fragt, machst du:
-
-Chat-Kontext normal laden (wie bisher).
-
-Zusätzlich Memory durchsuchen:
-
-Einfacher Start: SQL LIKE Suche (WHERE snippet LIKE '%Montag%')
-
-Später: Embeddings + Vektor-Suche.
-
-Ergebnis:
-
-Gefundene Memory-Snippets werden oben ins Prompt eingefügt (z. B. „🔎 Globale Erinnerungen: …“).
-
-4️⃣ Erweiterung auf Vektor-Suche (idiotensicher Schritt 2)
-
-Wenn SQLite/Postgres:
-
-SQLite → sqlite-vss Plugin oder pgvector in Postgres.
-
-Bei Speichern eines Snippets: Embedding berechnen → in DB speichern.
-
-Bei Query: Embedding der Frage berechnen → nächstgelegene Snippets abrufen.
-
-Falls dir das zu viel ist → erstmal nur Fulltext-Suche nehmen, funktioniert überraschend gut.
-
-5️⃣ Integration ins Context Manager
-
-Dein Context Manager (der schon Tokenbudget verteilt) bekommt jetzt eine neue Quelle:
-
-Chat-Verlauf
-
-Lokale Summary
-
-Global Memory Treffer
-
-→ Alle zusammen in ein Format packen:
-
-System:
-Du hast Zugriff auf globale Erinnerungen.
-
-Globale Erinnerungen:
-- Montag: User hat ein neues Projekt gestartet
-- Dienstag: Meeting um 14 Uhr
-
-Chat-Kontext:
-...
-
-🎯 Minimal-Ansatz (sofort machbar)
-
-Neue memory-Tabelle.
-
-UI-Button „Global merken“.
-
-Beim Prompt zusätzlich Memory-Snippets laden, die mit der User-Query matchen (LIKE-Suche).
-
-👉 Kein Vektor, kein Riesen-Framework → läuft sofort und gibt dir 80 % Nutzen.
-Die Embeddings kannst du später einfach „dazu stöpseln“.
-
-Soll ich dir mal einen ganz konkreten MVP-Workflow (inkl. API-Endpoints) skizzieren, sodass du das in 1–2 Tagen runterprogrammieren kannst?
-
-Du:
-ich möchte am ende dass das intelligent und automatisch geht, ohne manuelles speichern oder ähnliche
-ChatGPT:
-
-Perfekt, dann weiß ich, wo du hinwillst 🚀
-Du willst kein manuelles „Global merken“-Klicken, sondern dass das System automatisch entscheidet, was global relevant ist – und es dann bei Bedarf aus allen Chats intelligent wiederfindet.
-
-Das lässt sich in 3 klaren Ausbaustufen idiotensicher aufbauen:
-
-🧠 Automatisches Global Memory – Fahrplan
-1️⃣ Memory Extraction Pipeline
-
-Nach jeder neuen User-Nachricht oder Assistant-Antwort läuft eine kleine Pipeline:
-
-Relevanzprüfung (LLM oder Regelbasiert):
-
-Beispiel-Prompt an dein Modell:
-„Extrahiere nur Fakten oder dauerhaft relevante Infos (z. B. Vorlieben, Projekte, Termine, Definitionen). Formuliere sie in 1–2 Sätzen.“
-
-Output = mögliche Memory-Snippets.
-
-Duplicate-Check:
-
-Bevor ein Snippet gespeichert wird → Vergleich mit bestehenden (embedding similarity > 0.9 = schon bekannt).
-
-Falls neu → ablegen in memory.
-
-2️⃣ Memory Storage
-
-Tabellenstruktur bleibt fast identisch wie vorher vorgeschlagen:
-
-memory (
-  id INTEGER PRIMARY KEY,
-  chat_id INTEGER,
-  snippet TEXT,
-  embedding VECTOR,
-  created_at TIMESTAMP
-)
-
-
-snippet: der verdichtete Fakt
-
-embedding: Vektor fürs schnelle Wiederfinden
-
-chat_id: Herkunft (falls du wissen willst, woher die Info kommt)
-
-3️⃣ Memory Retrieval bei neuer Frage
-
-Wenn User etwas fragt:
-
-Embedding der User-Frage berechnen.
-
-Vektor-Suche im memory (z. B. top 5).
-
-Gefundene Snippets ins Prompt einfügen.
-
-👉 Dadurch weiß das Modell über mehrere Chats hinweg Bescheid.
-
-4️⃣ Intelligenz-Schicht
-
-Damit es sich wirklich smart anfühlt:
-
-Scoring: Jedes Snippet bekommt ein „Confidence/Importance“-Score vom LLM (0–1).
-→ Niedrige Scores kannst du weglassen, damit die DB nicht zugemüllt wird.
-
-Verdichtung: Bei 50+ ähnlichen Snippets → automatisch in 1 kompakten Eintrag zusammenfassen.
-
-Zeitgewichtung: Ältere Snippets langsam herabstufen (Decay-Faktor).
-
-⚡ Konkreter Minimal-Flow (ohne UI-Klickerei)
-Beim Speichern einer neuen Nachricht:
-on_new_message(msg):
-  candidate = LLM.extract_relevant_fact(msg)
-  if candidate != null:
-     if not exists_in_memory(candidate):
-         save_to_memory(candidate, embedding(candidate))
-
-Beim Prompt-Aufbau:
-on_user_query(query):
-  context = load_chat_context()
-  memory_hits = search_memory(embedding(query), top_k=5)
-  prompt = format_prompt(memory_hits, context, query)
-  return call_model(prompt)
-
-✅ Vorteil
-
-Kein manuelles Markieren mehr → User merkt nichts, aber Infos tauchen automatisch wieder auf.
-
-Einfach erweiterbar: Erst Fulltext, später Vektor. Erst simple Extraktion, später smarter.
-
-Sauber getrennt: Chat = Dialog, Memory = Wissensbank.
-
-👉 Meine Empfehlung: Fang mit LLM-basiertem „Extract Fact“-Prompt + Fulltext-Suche an.
-Wenn das läuft → baust du Embeddings + Scoring rein.
+# 🚀 Global Memory – Aktueller Stand und Implementierungsdetails
+
+Dieses Dokument fasst den aktuellen Stand der Implementierung des Global Memory zusammen, basierend auf den ursprünglichen Plänen und den tatsächlich umgesetzten Schritten.
+
+## ✅ Umgesetzte Funktionalitäten
+
+### 1. Datenbankschema-Erweiterung
+*   **Tabelle `memory`:** Eine neue Tabelle `memory` wurde in `backend/database.py` definiert, um extrahierte Wissensbausteine zu speichern.
+    *   Felder: `id`, `chat_id` (Herkunft des Eintrags), `snippet` (der eigentliche Wissensbaustein), `embedding_json` (Vektor-Embedding als JSON-String), `created_at`.
+*   **`embedding_json` Feld:** Das `Memory`-Modell in `backend/database.py` wurde um das Feld `embedding_json = Column(Text, nullable=True)` erweitert, um Vektor-Embeddings zu speichern.
+*   **Datenbank-Migration:** Die `chat_history.db` muss manuell gelöscht werden, damit das Schema mit der neuen Spalte korrekt neu erstellt wird.
+
+### 2. Vektor-Logik (Reines Python)
+*   **`backend/vector_service.py`:** Ein neues Modul wurde erstellt, das die gesamte Logik für die Erstellung von Embeddings und die semantische Ähnlichkeitssuche kapselt.
+    *   **`SentenceTransformer('all-MiniLM-L6-v2')`:** Wird zum Generieren von Embeddings verwendet. Das Modell wird einmal geladen und wiederverwendet.
+    *   **`generate_embedding(text: str)`:** Generiert einen Vektor-Embedding für einen gegebenen Text und speichert ihn als JSON-String.
+    *   **`find_similar_snippets(query_text: str, memories: list, top_k: int = 3, threshold: float = 0.1)`:** Findet die semantisch ähnlichsten Erinnerungen an einen Suchtext basierend auf Kosinus-Ähnlichkeit. Der `threshold` wurde auf 0.1 gesetzt, um eine breitere Abdeckung zu ermöglichen.
+
+### 3. CRUD-Operationen für Memory
+*   **`backend/crud.py`:** Wurde angepasst, um die Vektor-Logik zu nutzen.
+    *   **`save_memory_snippet(db, chat_id, snippet_text)`:** Generiert jetzt das Embedding des `snippet_text` mittels `vector_service.generate_embedding` und speichert es im `embedding_json`-Feld.
+    *   **`find_similar_memory_snippet(db, text)`:** Ersetzt die alte `memory_snippet_exists`-Funktion. Diese Funktion lädt alle Memories und verwendet `vector_service.find_similar_snippets` (mit `top_k=1` und `threshold=0.95`) um semantisch ähnliche Fakten zu finden. Dies dient primär dem Duplicate-Check und der Konfliktlösung.
+    *   **`update_memory_snippet(db, memory_id, new_snippet)`:** Eine neue Funktion zum Aktualisieren eines bestehenden Memory-Eintrags, inklusive Neuberechnung des Embeddings.
+    *   **`get_all_memories(db)`:** Eine neue Funktion, die alle gespeicherten Memory-Snippets aus der Datenbank abruft.
+
+### 4. Memory-Intelligenz-Schicht
+*   **`backend/memory_extractor.py`:**
+    *   **`resolve_fact_conflict(db, old_fact, new_fact, api_key)`:** Eine neue asynchrone Funktion, die ein LLM befragt, ob ein `new_fact` eine Korrektur oder Aktualisierung eines `old_fact` darstellt.
+    *   **`extract_and_save_fact(db, chat_id, text_block, api_key)`:** Diese Funktion wurde erweitert, um Konflikte zu lösen.
+        *   Sie nutzt `crud.find_similar_memory_snippet` um ähnliche Fakten zu finden.
+        *   Wenn ein sehr ähnlicher Fakt gefunden wird (Kosinus-Ähnlichkeit > 0.95), wird er als Duplikat ignoriert.
+        *   Wenn ein mäßig ähnlicher Fakt gefunden wird, wird `resolve_fact_conflict` aufgerufen, um zu prüfen, ob es sich um eine Korrektur handelt. Bei einer Korrektur wird der alte Fakt mittels `crud.update_memory_snippet` aktualisiert.
+        *   Andernfalls wird der Fakt als neuer Eintrag gespeichert.
+
+### 5. Haupt-API-Integration
+*   **`backend/main.py` (`/api/chat` Route):**
+    *   **Chat-Erstellung:** Wenn `request.chat_id` `None` ist (neuer Chat), wird automatisch ein neuer Chat in der Datenbank erstellt und die `chat_id` zugewiesen.
+    *   **Query Expansion:** Vor der Gedächtnissuche wird die Benutzeranfrage (`request.prompt`) mittels eines LLM (`expand_query` Funktion) erweitert, um verwandte Konzepte oder alternative Formulierungen zu finden. Dies soll die Trefferquote bei indirekten Fragen erhöhen.
+    *   **Vektor-basierter Retrieval:** Die Gedächtnissuche verwendet jetzt `crud.get_all_memories` und `vector_service.find_similar_snippets` mit den erweiterten Suchanfragen, um relevante `memory_snippets` zu finden.
+    *   **Hintergrundaufgabe:** `memory_extractor.extract_and_save_fact` wird weiterhin als asynchrone Hintergrundaufgabe gestartet, um die Faktenextraktion nicht-blockierend durchzuführen.
+
+### 6. Test-Infrastruktur
+*   **`waechter/conftest.py`:** Eine zentrale Datei für Pytest-Fixtures (`db_session`) wurde erstellt, um die Wiederverwendung und Wartbarkeit zu verbessern.
+*   **`waechter/test_memory_crud.py`:** Bereinigt und testet die CRUD-Operationen für Memory.
+*   **`waechter/test_memory_extractor.py`:** Testet die Extraktions- und Konfliktlösungslogik.
+*   **`waechter/test_chat_endpoint.py`:** Aktualisiert, um die mehrfachen LLM-Aufrufe (Hauptantwort und Hintergrund-Extraktion) korrekt zu mocken und zu überprüfen.
+
+## ⚠️ Bekannte Probleme und Einschränkungen
+
+*   **Asynchrone Tests:** Die asynchronen Tests in `waechter/test_memory_extractor.py` werden aufgrund hartnäckiger Umgebungsprobleme (insbesondere mit `pytest-asyncio` und der Python-Umgebung) derzeit übersprungen. Dies stellt eine Lücke in der Testabdeckung dar, die idealerweise behoben werden sollte.
+*   **Inferenz-Robustheit:** Obwohl die Query Expansion implementiert wurde, kann das System immer noch Schwierigkeiten haben, komplexe inferentielle Fragen (z. B. "wer ist meine Mutter?" wenn nur "Frau des Vaters" gespeichert ist) zuverlässig zu beantworten. Dies erfordert möglicherweise weitere Verfeinerungen im Prompt-Engineering oder eine dedizierte Inferenzschicht.
+*   **Datenbankgröße (`chat_history.db`):** Die SQLite-Datenbankdatei kann im Laufe der Zeit anwachsen und Speicherplatz nicht freigeben, selbst nach dem Löschen von Daten. Dies ist ein bekanntes Verhalten von SQLite.
+    *   **Lösung:** Manuelles Ausführen des `VACUUM;` Befehls in einem SQLite-Browser, um den Speicherplatz zurückzugewinnen.
+*   **FAISS-Integration:** Der ursprüngliche Plan zur Integration von FAISS für die Vektor-Suche wurde aufgrund unlösbarer Umgebungsprobleme verworfen. Die aktuelle Implementierung basiert auf einer reinen Python-Lösung (`sentence-transformers`).
+
+---
+*Letzte Aktualisierung: 2025-08-23*

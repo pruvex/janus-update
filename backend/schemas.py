@@ -33,3 +33,6 @@ class ChatResponse(ChatBase):
 
     class Config:
         from_attributes = True
+
+class ChatTitleUpdate(BaseModel):
+    title: str

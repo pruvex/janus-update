@@ -13,25 +13,39 @@ from datetime import datetime
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from backend.logger_config import setup_logging
-from backend import llm_gateway, database, crud, schemas, memory_extractor
+from backend import llm_gateway, database, crud, schemas, memory_extractor, vector_service
 from backend.context_manager import ContextManager
 
-# --- Initialisierung ---
+QUERY_EXPANSION_PROMPT = (
+    "Du bist ein Assistent, dessen Aufgabe es ist, eine Benutzerfrage zu erweitern, "
+    "um verwandte Konzepte oder alternative Formulierungen zu finden. "
+    "Gib eine durch Kommas getrennte Liste von Suchbegriffen zurück, die die ursprüngliche Frage erweitern. "
+    "Wenn keine Erweiterung sinnvoll ist, gib nur die ursprüngliche Frage zurück."
+    "Frage: {query}"
+    "Erweiterte Suchbegriffe:"
+)
+
+async def expand_query(query: str, api_key: str) -> List[str]:
+    try:
+        prompt = QUERY_EXPANSION_PROMPT.format(query=query)
+        history = [{"role": "user", "content": prompt}]
+        response = await llm_gateway.call_llm("openai", "gpt-4o-mini", "", api_key, chat_history=history)
+        expanded_text = response.get("text", "").strip()
+        return [q.strip() for q in expanded_text.split(',') if q.strip()]
+    except Exception as e:
+        logger.error(f"Fehler bei der Abfrageerweiterung: {e}")
+        return [query] # Fallback to original query on error
+
 setup_logging()
 logger = logging.getLogger('janus_backend')
 app = FastAPI()
 
-# --- Middleware & Statische Dateien ---
 app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"],
 )
 
-# --- Konfiguration & Startup ---
 CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
 MODEL_CATALOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_catalog.json")
 
@@ -52,7 +66,6 @@ context_manager = ContextManager(model_catalog=model_catalog)
 @app.on_event("startup")
 async def startup_event():
     database.init_db()
-    logger.info("Database initialized.")
 
 def get_db():
     db = database.SessionLocal()
@@ -61,7 +74,6 @@ def get_db():
     finally:
         db.close()
 
-# --- Pydantic Modelle ---
 class ChatRequest(BaseModel):
     prompt: str; provider: str; model: str; chat_id: Optional[int] = None
 class ApiKey(BaseModel):
@@ -73,40 +85,30 @@ class ChatTitleUpdate(BaseModel):
 class BudgetUpdate(BaseModel):
     budget: float
 
-# --- API Endpunkte ---
-
 @app.post("/api/chat")
 async def chat(request: ChatRequest, db: Session = Depends(get_db)):
     try:
         api_key = keyring.get_password("Janus-Projekt", request.provider)
-        if not api_key:
-            raise HTTPException(status_code=400, detail=f"API Key for {request.provider} not found.")
+        if not api_key: raise HTTPException(status_code=400, detail=f"API Key for {request.provider} not found.")
 
-        # --- Verbessertes Memory Retrieval ---
-        clean_prompt = re.sub(r'[^\w\s]', '', request.prompt.lower())
-        search_words = [word for word in clean_prompt.split() if len(word) > 2]
-        all_snippets = set()
-        for word in search_words:
-            snippets = crud.search_memory_by_text(db, search_term=word)
-            for snippet in snippets:
-                all_snippets.add(snippet.snippet)
-        full_prompt_snippets = crud.search_memory_by_text(db, search_term=request.prompt)
-        for snippet in full_prompt_snippets:
-            all_snippets.add(snippet.snippet)
-        memory_context = "\n".join([f"- {s}" for s in all_snippets])
+        # --- Verbessertes Memory Retrieval mit Vektoren ---
+        all_memories = crud.get_all_memories(db)
+        similar_snippets = vector_service.find_similar_snippets(request.prompt, all_memories)
+        memory_context = "\n".join([f"- {mem.snippet}" for mem in similar_snippets])
+        # --- Ende ---
         
+        # Wenn kein Chat-ID vorhanden ist, erstelle einen neuen Chat
+        if request.chat_id is None:
+            new_chat = crud.create_chat(db, title="New Chat") # Standardtitel
+            request.chat_id = new_chat.id
+
         chat_history = []
         if request.chat_id:
-            messages_from_db = crud.get_messages_by_chat_id(db, chat_id=request.chat_id)
-            chat_history = [{"role": "user" if msg.sender == "user" else "assistant", "content": msg.content or ""} for msg in messages_from_db]
+            messages = crud.get_messages_by_chat_id(db, chat_id=request.chat_id)
+            chat_history = [{"role": "user" if msg.sender == "user" else "assistant", "content": msg.content or ""} for msg in messages]
         
         chat_history.append({"role": "user", "content": request.prompt})
-        
-        final_prompt = context_manager.build_prompt_history(
-            chat_history, 
-            request.model,
-            global_memory=memory_context
-        )
+        final_prompt = context_manager.build_prompt_history(chat_history, request.model, global_memory=memory_context)
         
         gateway_response = await llm_gateway.call_llm(request.provider, request.model, "", api_key, chat_history=final_prompt)
         
@@ -127,7 +129,6 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
                 total_cost=cost.get("total_cost", 0)
             )
 
-        # Starte die Fakten-Extraktion als Hintergrundaufgabe
         try:
             full_exchange_text = f"User: {request.prompt}\nAssistant: {gateway_response.get('text', '')}"
             asyncio.create_task(
@@ -136,7 +137,7 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
                 )
             )
         except Exception as e:
-            logger.error(f"Fehler beim Starten der Hintergrund-Faktenextraktion: {e}")
+            logger.error(f"Error starting background fact extraction: {e}")
 
         return { "sender": "model", "text": gateway_response.get("text", ""), "image_url": gateway_response.get("image_url") }
     except Exception as e:
@@ -155,8 +156,7 @@ async def get_all_chats(db: Session = Depends(get_db), include_archived: bool = 
 @app.get("/api/chats/{chat_id}", response_model=schemas.ChatResponse)
 async def get_chat_details(chat_id: int, db: Session = Depends(get_db)):
     chat = crud.get_chat_by_id(db, chat_id=chat_id)
-    if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
+    if not chat: raise HTTPException(status_code=404, detail="Chat not found")
     return chat
 
 @app.get("/api/chats/{chat_id}/messages", response_model=List[schemas.MessageResponse])
@@ -164,24 +164,21 @@ async def get_chat_messages(chat_id: int, db: Session = Depends(get_db)):
     return crud.get_messages_by_chat_id(db, chat_id)
     
 @app.put("/api/chats/{chat_id}/title")
-async def update_chat_title(chat_id: int, title_update: ChatTitleUpdate, db: Session = Depends(get_db)):
+async def update_chat_title(chat_id: int, title_update: schemas.ChatTitleUpdate, db: Session = Depends(get_db)):
     chat = crud.update_chat_title(db, chat_id, title_update.title)
-    if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
+    if not chat: raise HTTPException(status_code=404, detail="Chat not found")
     return {"message": "Chat title updated successfully"}
 
 @app.put("/api/chats/{chat_id}/archive")
 async def toggle_chat_archive(chat_id: int, db: Session = Depends(get_db)):
     chat = crud.toggle_archive_chat(db, chat_id)
-    if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
+    if not chat: raise HTTPException(status_code=404, detail="Chat not found")
     return {"message": "Chat archive status toggled", "is_archived": chat.is_archived}
     
 @app.get("/api/chats/{chat_id}/export/txt")
 async def export_chat_to_txt(chat_id: int, db: Session = Depends(get_db)):
     chat, messages = crud.get_chat_with_messages(db, chat_id)
-    if not chat:
-        raise HTTPException(status_code=404, detail="Chat not found")
+    if not chat: raise HTTPException(status_code=404, detail="Chat not found")
     export_content = f"Chat: {chat.title}\n\n"
     for msg in messages:
         timestamp = msg.timestamp.strftime("%Y-%m-%d %H:%M:%S")
@@ -190,15 +187,13 @@ async def export_chat_to_txt(chat_id: int, db: Session = Depends(get_db)):
 
 @app.delete("/api/chats/{chat_id}")
 async def delete_chat(chat_id: int, db: Session = Depends(get_db)):
-    success = crud.delete_chat(db, chat_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Chat not found")
+    if not crud.delete_chat(db, chat_id): raise HTTPException(status_code=404, detail="Chat not found")
     return {"message": "Chat deleted successfully"}
 
 @app.get("/api/keys")
 async def get_api_keys():
     providers = ["openai", "gemini"]
-    return {"api_keys": {provider: "********" for provider in providers if keyring.get_password("Janus-Projekt", provider)}}
+    return {"api_keys": {p: "********" for p in providers if keyring.get_password("Janus-Projekt", p)}}
 
 @app.post("/api/keys")
 async def add_api_key(key: ApiKey):
@@ -221,10 +216,10 @@ async def save_model_selection(selection: ModelSelection):
 @app.get("/api/costs/dashboard")
 async def get_costs_dashboard():
     today = datetime.now()
-    current_month_cost = database.get_costs_for_month(today.year, today.month)
+    cost = database.get_costs_for_month(today.year, today.month)
     config = load_config()
     budget = config.get("monthly_budget", 10.00)
-    return {"current_month_cost": current_month_cost, "monthly_budget": budget}
+    return {"current_month_cost": cost, "monthly_budget": budget}
 
 @app.post("/api/budget")
 async def update_budget(budget_update: BudgetUpdate):
