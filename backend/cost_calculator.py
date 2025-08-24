@@ -29,14 +29,18 @@ def calculate_cost(model_id, usage_data=None, custom_prompt=None):
     cost = {}
 
     if model_type == "text" and usage_data:
-        input_tokens = usage_data.prompt_tokens
-        output_tokens = usage_data.completion_tokens
+        if isinstance(usage_data, dict):
+            input_tokens = usage_data.get("prompt_tokens", 0)
+            output_tokens = usage_data.get("completion_tokens", 0)
+        else: # Assume it's an object like OpenAI's usage object
+            input_tokens = usage_data.prompt_tokens
+            output_tokens = usage_data.completion_tokens
         
-        input_cost_per_mil = model_info.get("pricing", {}).get("input_cost_per_million_token", 0)
-        output_cost_per_mil = model_info.get("pricing", {}).get("output_cost_per_million_token", 0)
+        input_cost_per_token = model_info.get("cost_per_token_input", 0)
+        output_cost_per_token = model_info.get("cost_per_token_output", 0)
         
-        input_cost = (input_tokens / 1_000_000) * input_cost_per_mil
-        output_cost = (output_tokens / 1_000_000) * output_cost_per_mil
+        input_cost = input_tokens * input_cost_per_token
+        output_cost = output_tokens * output_cost_per_token
         
         total_cost = input_cost + output_cost
         
@@ -44,13 +48,10 @@ def calculate_cost(model_id, usage_data=None, custom_prompt=None):
         cost = {"total_cost": total_cost}
 
     elif model_type == "image":
-        quality = "standard"
-        size = "1024x1024"
-        
-        image_cost = model_info.get("pricing", {}).get(quality, {}).get(size, 0)
+        image_cost = model_info.get("cost_per_image", 0)
         total_cost = image_cost
 
-        usage = {"image_quality": quality, "image_size": size}
+        usage = {"image_quality": "standard", "image_size": "1024x1024"}
         cost = {"image_cost": image_cost, "total_cost": total_cost}
     
     logger.info(f"\n--- USAGE TRACKING ---\n"

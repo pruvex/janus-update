@@ -2,13 +2,14 @@ import logging
 from typing import List, Dict, Optional
 import openai
 import google.generativeai as genai
-from backend.cost_calculator import calculate_cost
+import json
+from backend.cost_calculator import calculate_cost, MODEL_PRICES
 from sqlalchemy.orm import Session # Import Session
 from backend import crud, vector_service # Import crud
 
 logger = logging.getLogger('janus_backend')
 
-async def call_llm(provider: str, model: str, prompt: str, api_key: str, chat_history: Optional[List[Dict]] = None):
+async def call_llm(provider: str, model_id: str, prompt: str, api_key: str, chat_history: Optional[List[Dict]] = None):
     """
     Haupt-Gateway-Funktion, die Anfragen an den entsprechenden API-Provider weiterleitet.
     Der 'prompt' Parameter wird ignoriert, da der eigentliche Inhalt in 'chat_history' liegt.
@@ -16,38 +17,137 @@ async def call_llm(provider: str, model: str, prompt: str, api_key: str, chat_hi
     if not chat_history:
         chat_history = [{"role": "user", "content": prompt}]
 
+    model_info = MODEL_PRICES.get(model_id)
+    if not model_info:
+        raise ValueError(f"Model {model_id} not found in model catalog.")
+
     if provider == "openai":
-        return await _call_openai_api(api_key, model, chat_history)
+        return await _call_openai_api(api_key, model_id, chat_history, model_info)
     elif provider == "gemini":
-        return await _call_gemini_api(api_key, model, chat_history)
+        return await _call_gemini_api(api_key, model_id, chat_history)
     else:
         raise ValueError(f"Unsupported provider: {provider}")
 
-async def _call_openai_api(api_key: str, model_id: str, chat_history: List[Dict]):
+async def _call_openai_api(api_key: str, model_id: str, chat_history: List[Dict], model_info: Dict):
     client = openai.AsyncOpenAI(api_key=api_key)
-    is_image_model = "dall-e" in model_id.lower()
+    is_image_model = model_info.get("type") == "image"
 
     if is_image_model:
         final_prompt = chat_history[-1]['content']
+        
+        # Extract quality and size from model_info
+        quality = model_info.get("quality", "standard")
+        size = model_info.get("size", "1024x1024")
+
         response = await client.images.generate(
-            model=model_id,
+            model="dall-e-3", # Always use dall-e-3 as the model name
             prompt=final_prompt,
             n=1,
-            size="1024x1024",
-            quality="standard"
+            size=size,
+            quality=quality
         )
         image_url = response.data[0].url
         revised_prompt = response.data[0].revised_prompt
         usage, cost = calculate_cost(model_id, custom_prompt=revised_prompt)
         return {"text": revised_prompt, "image_url": image_url, "usage": usage, "cost": cost}
     else:
+        # Define the tool for image generation
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "generate_image_tool",
+                    "description": "Generates an image based on a text prompt using DALL-E 3.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "prompt": {
+                                "type": "string",
+                                "description": "A detailed text description of the image to generate."
+                            },
+                            "size": {
+                                "type": "string",
+                                "enum": ["1024x1024", "1792x1024", "1024x1792"],
+                                "description": "The size of the generated image. Defaults to 1024x1024."
+                            },
+                            "quality": {
+                                "type": "string",
+                                "enum": ["standard", "hd"],
+                                "description": "The quality of the generated image. Defaults to standard."
+                            },
+                            "response_format": {
+                                "type": "string",
+                                "enum": ["url", "b64_json"],
+                                "description": "The format of the response, either a URL or base64 encoded JSON. Defaults to url."
+                            }
+                        },
+                        "required": ["prompt"]
+                    }
+                }
+            }
+        ]
+
+        # First LLM call with tool definition
         response = await client.chat.completions.create(
             model=model_id,
-            messages=chat_history
+            messages=chat_history,
+            tools=tools,
+            tool_choice="auto" # Allow the model to choose to call a tool
         )
-        text_response = response.choices[0].message.content
-        usage, cost = calculate_cost(model_id, usage_data=response.usage)
-        return {"text": text_response, "image_url": None, "usage": usage, "cost": cost}
+
+        response_message = response.choices[0].message
+        tool_calls = response_message.tool_calls
+
+        if tool_calls:
+            # Extend chat history with the model's tool call message
+            chat_history.append(response_message)
+
+            # Execute each tool call
+            for tool_call in tool_calls:
+                if tool_call.function.name == "generate_image_tool":
+                    function_args = json.loads(tool_call.function.arguments)
+                    
+                    # Execute the tool function
+                    tool_output = await generate_image_tool(
+                        api_key=api_key,
+                        prompt=function_args.get("prompt"),
+                        size=function_args.get("size", "1024x1024"),
+                        quality=function_args.get("quality", "standard"),
+                        response_format=function_args.get("response_format", "url")
+                    )
+                    
+                    # Add tool output to chat history
+                    chat_history.append(
+                        {
+                            "tool_call_id": tool_call.id,
+                            "role": "tool",
+                            "name": tool_call.function.name,
+                            "content": json.dumps(tool_output),
+                        }
+                    )
+            
+            # Second LLM call with tool output
+            second_response = await client.chat.completions.create(
+                model=model_id,
+                messages=chat_history
+            )
+            text_response = second_response.choices[0].message.content
+            
+            # Check if the tool output contains an image URL
+            image_url = None
+            if tool_output and "url" in tool_output:
+                image_url = tool_output["url"]
+            elif tool_output and "b64_json" in tool_output:
+                # Handle base64 image if needed, for now, we'll just pass the text
+                pass
+
+            usage, cost = calculate_cost(model_id, usage_data=response.usage) # Use usage from first call
+            return {"text": text_response, "image_url": image_url, "usage": usage, "cost": cost}
+        else:
+            # No tool call, just a regular text response
+            text_response = response.choices[0].message.content
+            usage, cost = calculate_cost(model_id, usage_data=response.usage)
+            return {"text": text_response, "image_url": None, "usage": usage, "cost": cost}
 
 async def _call_gemini_api(api_key: str, model_id: str, chat_history: List[Dict]):
     genai.configure(api_key=api_key)
@@ -74,8 +174,34 @@ async def _call_gemini_api(api_key: str, model_id: str, chat_history: List[Dict]
     response = await model.generate_content_async(gemini_history)
     
     text_response = response.text
-    usage, cost = {}, {} # Platzhalter
+
+    # Manuelle Token-Zählung für Gemini
+    input_tokens_count = model.count_tokens(gemini_history).total_tokens
+    output_tokens_count = model.count_tokens([{"role": "model", "parts": [text_response]}]).total_tokens
+
+    usage_data = {"prompt_tokens": input_tokens_count, "completion_tokens": output_tokens_count}
+    usage, cost = calculate_cost(model_id, usage_data=usage_data)
+
     return {"text": text_response, "image_url": None, "usage": usage, "cost": cost}
+
+async def generate_image_tool(api_key: str, prompt: str, size: str = "1024x1024", quality: str = "standard", response_format: str = "url"):
+    client = openai.AsyncOpenAI(api_key=api_key)
+    try:
+        response = await client.images.generate(
+            model="dall-e-3",
+            prompt=prompt,
+            n=1,
+            size=size,
+            quality=quality,
+            response_format=response_format
+        )
+        if response_format == "url":
+            return {"url": response.data[0].url, "created": response.created}
+        elif response_format == "b64_json":
+            return {"b64_json": response.data[0].b64_json, "created": response.created}
+    except Exception as e:
+        logger.error(f"Error generating image with tool: {e}")
+        return {"error": str(e)}
 
 async def expand_query(query: str, api_key: str) -> str:
     """
@@ -178,17 +304,17 @@ async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_
                 full_context += f"Zusammenfassung: {chat.summary}\n\n"
             full_context += "\n"
 
-    prompt = f"""Du bist ein intelligenter Assistent. Deine Aufgabe ist es, die Frage des Benutzers zu beantworten. Nutze dabei alle relevanten Informationen aus den bereitgestellten Erinnerungen und dem Chat-Verlauf. Formuliere eine präzise, hilfreiche und kohärente Antwort.
+    system_prompt = f"""Du bist ein intelligenter Assistent. Deine Aufgabe ist es, die Frage des Benutzers zu beantworten. Nutze dabei alle relevanten Informationen aus den bereitgestellten Erinnerungen und dem Chat-Verlauf. Formuliere eine präzise, hilfreiche und kohärente Antwort.
 
 {full_context}
---- AKTUELLE BENUTZERANFRAGE ---
-{user_prompt}
-
 --- ANTWORT ---"""
 
-    history = [{"role": "user", "content": prompt}]
-    response = await call_llm(provider, model, prompt, api_key, chat_history=history) # Corrected call
-    return response.get("text", "Es tut mir leid, ich konnte keine Antwort finden.")
+    history = [{"role": "system", "content": system_prompt}]
+    history.extend(chat_history)
+    history.append({"role": "user", "content": user_prompt})
+
+    response = await call_llm(provider, model, "", api_key, chat_history=history)
+    return response
 
 async def summarize_chat_topic(chat_history: List[Dict], api_key: str, provider: str, model: str) -> str:
     """
@@ -204,4 +330,4 @@ async def summarize_chat_topic(chat_history: List[Dict], api_key: str, provider:
     history.extend(chat_history)
 
     response = await call_llm(provider, model, prompt, api_key, chat_history=history)
-    return response.get("text", "Unbenannter Chat").strip()
+    return {"text": response.get("text", "Unbenannter Chat").strip(), "usage": response.get("usage"), "cost": response.get("cost")}

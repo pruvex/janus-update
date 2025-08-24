@@ -16,7 +16,11 @@
 *   **Status:** Implementiert.
 *   **Details:** Relevante Fakten werden aus allen Chats extrahiert und in einer globalen Wissensdatenbank mit Vektor-Embeddings gespeichert. Zusätzlich werden nach Abschluss eines Chats Zusammenfassungen erstellt und ebenfalls mit Vektor-Embeddings versehen. Wenn eine Benutzeranfrage auf frühere Gespräche hindeutet, wird eine Vektor-Suche über die Zusammenfassungen durchgeführt, um nur die relevantesten Chats als Kontext zu verwenden.
 
-⚙️ **5. Context-Window-Anpassung für verschiedene Modelle**
+✅ **5. Bildgenerierung über GPT-Modelle (Tool-Calling)**
+*   **Status:** Implementiert.
+*   **Details:** GPT-Modelle können nun über einen Tool-Calling-Mechanismus Bilder generieren. Das LLM ruft ein `generate_image_tool` auf, das die Bildgenerierung über DALL-E durchführt. Die generierten Bilder werden lokal gespeichert und korrekt im Chat angezeigt.
+
+⚙️ **6. Context-Window-Anpassung für verschiedene Modelle**
 *   **Status:** In Arbeit.
 *   **Details:** Eine adaptive Kontextverwaltung basierend auf den Token-Limits der Modelle ist konzipiert, aber noch nicht vollständig umgesetzt.
 

@@ -8,10 +8,21 @@
         "cost_per_token_output": 0.0000006
     },
     {
+        "id": "gpt-image-1",
+        "name": "GPT Image 1",
+        "provider": "openai",
+        "type": "image",
+        "cost_per_image": 0.04,
+        "supported_qualities": ["standard", "hd"],
+        "supported_sizes": ["1024x1024", "1792x1024", "1024x1792"]
+    },
+    {
         "id": "dall-e-3-standard",
         "name": "DALL·E 3 (SD)",
         "provider": "openai",
         "type": "image",
+        "quality": "standard",
+        "size": "1024x1024",
         "cost_per_image": 0.04
     },
     {
@@ -19,6 +30,8 @@
         "name": "DALL·E 3 (HD)",
         "provider": "openai",
         "type": "image",
+        "quality": "hd",
+        "size": "1024x1024",
         "cost_per_image": 0.08
     },
     {

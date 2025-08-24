@@ -103,9 +103,9 @@ export function appendMessage(sender, data) {
             let fullImageUrl = data.image_url;
             // Normalize path separators (replace backslashes with forward slashes)
             fullImageUrl = fullImageUrl.replace(/\\/g, '/');
-            // Check if it's a relative path (e.g., starts with 'static/')
-            if (fullImageUrl.startsWith('static/')) {
-                fullImageUrl = `${API_BASE_URL}/${fullImageUrl}`;
+            // If it's a relative path, prepend API_BASE_URL
+            if (!fullImageUrl.startsWith('http://') && !fullImageUrl.startsWith('https://')) {
+                fullImageUrl = `${API_BASE_URL}${fullImageUrl}`;
             }
             imageElement.src = fullImageUrl;
             imageUrlForSaving = fullImageUrl;

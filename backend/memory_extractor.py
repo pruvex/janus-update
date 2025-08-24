@@ -1,11 +1,12 @@
 import logging
 import asyncio
 from sqlalchemy.orm import Session
-from . import llm_gateway, crud
+from . import llm_gateway, crud, database
 from sentence_transformers import util # Added for util.cos_sim
 import json # Added for json.loads
 import numpy as np # Added for np.array
 import keyring # Import keyring
+import datetime # Import datetime
 
 logger = logging.getLogger('janus_backend')
 
@@ -51,6 +52,17 @@ async def extract_and_save_fact(db: Session, chat_id: int, text_block: str, main
 
         extracted_text = gateway_response.get("text", "").strip()
         logger.info(f"Extracted text: '{extracted_text}'")
+
+        # Kosten für die Fakten-Extraktion speichern
+        usage = gateway_response.get("usage")
+        cost = gateway_response.get("cost", {})
+        if usage and cost.get("total_cost", 0) > 0:
+            database.save_cost_entry(
+                date=datetime.datetime.now(), model=model,
+                input_tokens=usage.get("input_tokens"), output_tokens=usage.get("output_tokens"),
+                image_quality=usage.get("image_quality"), image_cost=cost.get("image_cost"),
+                total_cost=cost.get("total_cost", 0)
+            )
 
         if extracted_text and extracted_text.lower() != 'none':
             # Teile die Antwort in einzelne Fakten auf (eine pro Zeile)

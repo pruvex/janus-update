@@ -3,7 +3,8 @@
   "model_selection": {
     "openai": [
       "gpt-4o-mini",
-      "dall-e-3-standard"
+      "dall-e-3-standard",
+      "dall-e-3-hd"
     ],
     "gemini": [
       "gemini-2.5-pro",

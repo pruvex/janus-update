@@ -1,6 +1,6 @@
 import logging
 import datetime
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Float
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Float, func
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 
 logger = logging.getLogger('janus_backend')
@@ -73,13 +73,48 @@ def init_db():
 # --- Kosten-spezifische DB-Funktionen ---
 def get_costs_for_month(year, month):
     db = CostsSessionLocal()
-    # Implementierung hier ... (angenommen, sie ist korrekt)
-    return 0.0
+    try:
+        total_cost = db.query(func.sum(Cost.total_cost)).filter(
+            func.strftime('%Y', Cost.date) == str(year),
+            func.strftime('%m', Cost.date) == str(month).zfill(2)
+        ).scalar()
+        return total_cost if total_cost is not None else 0.0
+    finally:
+        db.close()
 
 def get_costs_summary_by_model_for_current_month():
     db = CostsSessionLocal()
-    # Implementierung hier ...
-    return []
+    try:
+        today = datetime.datetime.now()
+        current_month_costs = db.query(Cost).filter(
+            func.strftime('%Y', Cost.date) == str(today.year),
+            func.strftime('%m', Cost.date) == str(today.month).zfill(2)
+        ).all()
+
+        summary = {}
+        for cost_entry in current_month_costs:
+            model_name = cost_entry.model
+            if model_name not in summary:
+                summary[model_name] = {
+                    "model": model_name,
+                    "total_input_tokens": 0,
+                    "total_output_tokens": 0,
+                    "image_count": 0,
+                    "total_cost": 0.0
+                }
+            
+            summary[model_name]["total_cost"] += cost_entry.total_cost
+
+            if cost_entry.input_tokens is not None:
+                summary[model_name]["total_input_tokens"] += cost_entry.input_tokens
+            if cost_entry.output_tokens is not None:
+                summary[model_name]["total_output_tokens"] += cost_entry.output_tokens
+            if cost_entry.image_cost is not None and cost_entry.image_cost > 0:
+                summary[model_name]["image_count"] += 1 # Assuming 1 image per entry if image_cost > 0
+
+        return list(summary.values())
+    finally:
+        db.close()
     
 def save_cost_entry(date, model, input_tokens, output_tokens, image_quality, image_cost, total_cost):
     db = CostsSessionLocal()

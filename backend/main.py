@@ -95,15 +95,33 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
             chat_history = [{"role": "user" if m.sender=="user" else "assistant", "content": m.content} for m in messages]
 
         # 4. Der EINE "Denk"-Schritt: Lasse die KI die Antwort synthetisieren
-        final_answer = await llm_gateway.reason_and_respond(
+        llm_response = await llm_gateway.reason_and_respond(
             request.prompt, chat_history, memory_context, db, api_key, request.model, request.provider
         )
+        final_answer = llm_response.get("text")
+        image_url = llm_response.get("image_url")
+        usage = llm_response.get("usage")
+        cost = llm_response.get("cost", {})
 
         # 5. Speichere die Konversation und Kosten
         if request.chat_id:
             crud.create_message(db, chat_id=request.chat_id, sender="user", content=request.prompt)
-            crud.create_message(db, chat_id=request.chat_id, sender="model", content=final_answer)
+            
+            local_image_path = None
+            if image_url: # If an image was generated
+                local_image_path = crud.save_image_from_url(image_url)
+
+            crud.create_message(db, chat_id=request.chat_id, sender="model", content=final_answer, image_path=local_image_path)
         
+        # Speichere die Kosten der Haupt-LLM-Interaktion
+        if usage and cost.get("total_cost", 0) > 0:
+            database.save_cost_entry(
+                date=datetime.now(), model=request.model,
+                input_tokens=usage.get("input_tokens"), output_tokens=usage.get("output_tokens"),
+                image_quality=usage.get("image_quality"), image_cost=cost.get("image_cost"),
+                total_cost=cost.get("total_cost", 0)
+            )
+
         # NEU: Fakten aus der Konversation extrahieren und speichern
         full_exchange_text = f"User: {request.prompt}\nAssistant: {final_answer}"
         asyncio.create_task(
@@ -112,25 +130,13 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
             )
         )
 
-        # ... Kosten-Logik ...
-        # This part is missing from the user's instruction, so I will comment it out for now.
-        # usage = gateway_response.get("usage")
-        # cost = gateway_response.get("cost", {})
-        # if usage:
-        #     database.save_cost_entry(
-        #         date=datetime.now(), model=request.model,
-        #         input_tokens=usage.get("input_tokens"), output_tokens=usage.get("output_tokens"),
-        #         image_quality=usage.get("image_quality"), image_cost=cost.get("image_cost"),
-        #         total_cost=cost.get("total_cost", 0)
-        #     )
-
         # Save last used provider and model
         config = load_config()
         config["last_used_provider"] = request.provider
         config["last_used_model"] = request.model
         save_config(config)
 
-        return {"sender": "model", "text": final_answer}
+        return {"sender": "model", "text": final_answer, "image_url": image_url}
     except Exception as e:
         # ... Error Handling ...
         tb_str = traceback.format_exc()

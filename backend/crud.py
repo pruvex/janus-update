@@ -6,6 +6,39 @@ from backend.logger_config import setup_logging
 setup_logging()
 logger = logging.getLogger('janus_backend')
 
+from sqlalchemy.orm import Session
+from . import database, schemas, vector_service
+import logging
+import requests
+import uuid
+import os
+
+setup_logging()
+logger = logging.getLogger('janus_backend')
+
+IMAGE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "images")
+os.makedirs(IMAGE_DIR, exist_ok=True)
+
+def save_image_from_url(image_url: str) -> str:
+    """Lädt ein Bild von einer URL herunter und speichert es lokal."""
+    try:
+        response = requests.get(image_url, stream=True)
+        response.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
+
+        # Dateinamen aus der URL extrahieren oder UUID verwenden
+        file_name = str(uuid.uuid4()) + ".png" # Annahme: immer PNG
+        file_path = os.path.join(IMAGE_DIR, file_name)
+
+        with open(file_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        
+        # Rückgabe des relativen Pfades, der vom Frontend über /static/images/ erreichbar ist
+        return f"/static/images/{file_name}"
+    except Exception as e:
+        logger.error(f"Fehler beim Speichern des Bildes von URL {image_url}: {e}")
+        return None
+
 # --- Chat CRUD ---
 def create_chat(db: Session, title: str):
     db_chat = database.Chat(title=title)
