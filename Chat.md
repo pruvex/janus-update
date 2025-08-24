@@ -1,141 +1,24 @@
 📑 Roadmap & Architekturplan für Chat- und Memory-System
-1️⃣ ✅ Chats speichern (Persistenzschicht)
 
-Problem: Chats gehen verloren nach Session-Ende. Temporäre Bild-URLs laufen ab, wodurch Bilder in der Historie verschwinden.
+✅ **1. Chats speichern (Persistenzschicht)**
+*   **Status:** Implementiert.
+*   **Details:** Chats und Nachrichten werden in einer SQLite-Datenbank gespeichert. Bilder werden lokal persistiert, um ablaufende URLs zu vermeiden.
 
-Lösung: Aufbau einer Datenbank für Chat-Nachrichten und lokale Speicherung von Bildern.
+✅ **2. Mehrere Chats verwalten**
+*   **Status:** Implementiert.
+*   **Details:** Die Benutzeroberfläche ermöglicht das Erstellen, Löschen, Umbenennen, Archivieren und Exportieren von Chats.
 
-Technik:
+✅ **3. Context Memory (pro Chat)**
+*   **Status:** Implementiert.
+*   **Details:** Der gesamte Chat-Verlauf wird als Kontext für das LLM verwendet. Bei sehr langen Verläufen wird dies durch die Token-Limits der Modelle begrenzt.
 
-DB: lokal SQLite (Single-User) oder Postgres/MySQL (Multi-User).
+✅ **4. Übergreifendes Chat-Memory (Global Memory)**
+*   **Status:** Implementiert.
+*   **Details:** Relevante Fakten werden aus allen Chats extrahiert und in einer globalen Wissensdatenbank mit Vektor-Embeddings gespeichert. Zusätzlich werden nach Abschluss eines Chats Zusammenfassungen erstellt und ebenfalls mit Vektor-Embeddings versehen. Wenn eine Benutzeranfrage auf frühere Gespräche hindeutet, wird eine Vektor-Suche über die Zusammenfassungen durchgeführt, um nur die relevantesten Chats als Kontext zu verwenden.
 
-Tabellenstruktur:
-
-chats: id, titel, erstellt_am
-
-messages: id, chat_id, sender, timestamp, inhalt, image_path (NEU: Pfad zum lokal gespeicherten Bild)
-
-Bild-Persistenz:
-- Wenn ein Bild von DALL-E generiert wird, lädt das Backend das Bild von der temporären URL herunter.
-- Das Bild wird dann lokal auf dem Server in einem speziellen Ordner (z.B. `backend/static/images`) gespeichert.
-- Im Chat-Verlauf wird dann nicht die temporäre externe URL, sondern der lokale Pfad zu diesem Bild gespeichert.
-- Das Backend wird so konfiguriert, dass es diese lokalen Bilder über eine eigene URL (z.B. `/static/images/bildname.png`) bereitstellt.
-
-2️⃣ ✅ Mehrere Chats verwalten
-
-UI:
-
-„Neuen Chat starten“
-
-„Chatliste anzeigen“
-
-Chat-Switcher (Seitenleiste o. Dropdown)
-
-Backend:
-
-API: /chat/{id} → Laden eines Chats
-
-Jeder Chat = eindeutige ID → klare Trennung
-
-2️⃣.5 Chat-Verwaltung in der Liste (Kontextmenü)
-
-Ziel: Erweiterte Interaktion mit Chats direkt aus der Chatliste.
-
-Funktionen:
-- Umbenennen: Chat-Titel direkt aus der Liste ändern.
-- Archivieren: Chats aus der Hauptansicht ausblenden, aber nicht löschen.
-- Als TXT speichern: Export des Chat-Verlaufs in eine Textdatei.
-- Löschen: Endgültiges Entfernen eines Chats.
-
-Umsetzung:
-- Drei-Punkte-Menü (Kontextmenü) neben jedem Chat-Item in der Seitenleiste.
-- Implementierung der Backend-Endpunkte für Archivieren, Exportieren und Löschen.
-- Anpassung der Frontend-Logik zur Anzeige und Interaktion mit dem Kontextmenü.
-
-3️⃣ ✅ Context Memory (pro Chat)
-
-Ziel: Innerhalb eines Chats den Kontext halten.
-
-Ansätze:
-
-Kompletter Verlauf → für kleine Chats.
-
-Rolling Summary → bei langen Chats: ältere Teile zusammenfassen, neue Nachrichten anhängen.
-
-Funktionen:
-
-Vorschläge: „Soll ich diese Info global merken?“
-
-Kontextbezogene Nachfragen
-
-Stabile Kohärenz trotz langer Verläufe
-
-4️⃣ Übergreifendes Chat-Memory (Global Memory)
-
-Ziel: Infos aus mehreren Chats verknüpfen.
-
-Mechanik:
-
-Relevante Ausschnitte aus allen Chats in Knowledgebase speichern.
-
-Zugriff via Vektor-Suche (Embedding-Index).
-
-Fähigkeiten:
-
-Chatübergreifende Fragen: „Was haben wir Montag besprochen?“
-
-Themenprojekte durchsuchbar & abrufbar
-
-⚙️ Context-Window-Anpassung für verschiedene Modelle
-Problem
-
-Provider nutzen Modelle mit unterschiedlichem Tokenlimit (z. B. 4k, 16k, 32k, 200k).
-
-Ohne Anpassung → Gefahr von Truncation / unvollständigem Kontext.
-
-Lösung: Adaptive Context Manager
-
-Tokenbudget ermitteln
-
-Abhängig vom Modell (Provider API liefert Limit).
-
-Beispiel: GPT-4o → 128k, Gemini 2.5 → 1M, LLaMA lokal → evtl. 4k–8k.
-
-Budget-Verteilung definieren
-
-z. B.:
-
-70 % Verlauf/Memory
-
-20 % aktuelle User-Query
-
-10 % System-Prompts/Anweisungen
-
-Context-Skalierung
-
-Kleine Limits (4k–8k): Rolling Summary nutzen.
-
-Mittlere Limits (16k–32k): Teilweise vollständiger Verlauf.
-
-Große Limits (100k+): Voller Verlauf + Global Memory-Injektionen.
-
-Fallback-Strategie
-
-Bei Überschreitung → Priorisierung:
-
-Neueste Nachrichten
-
-Verdichtete Summary älterer Nachrichten
-
-Relevante Memory-Snippets
-
-✅ Vorteile der Reihenfolge
-
-Jeder Schritt bringt sofort funktionale Erweiterung.
-
-Context Memory (3) fühlt sich schon wie „intelligente KI“ an, auch ohne Global Memory (4).
-
-Durch adaptive Context-Strategie bleiben alle Provider kompatibel.
+⚙️ **5. Context-Window-Anpassung für verschiedene Modelle**
+*   **Status:** In Arbeit.
+*   **Details:** Eine adaptive Kontextverwaltung basierend auf den Token-Limits der Modelle ist konzipiert, aber noch nicht vollständig umgesetzt.
 
 ---
 

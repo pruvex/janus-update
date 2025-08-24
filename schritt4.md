@@ -1,62 +1,49 @@
-# 🚀 Global Memory – Aktueller Stand und Implementierungsdetails (Finale Version)
+# 🚀 Global Memory & Cross-Chat-Memory – Aktueller Stand (Finale Version)
 
-Dieses Dokument fasst den aktuellen Stand der Implementierung des Global Memory zusammen, basierend auf den ursprünglichen Plänen und den tatsächlich umgesetzten Schritten. Es dokumentiert die Evolution der Intelligenzschicht und die behobenen Probleme.
+Dieses Dokument fasst den aktuellen Stand der Implementierung des Global Memory und des übergreifenden Chat-Gedächtnisses zusammen. Es dokumentiert die Evolution der Intelligenzschicht und die behobenen Probleme.
 
 ## ✅ Umgesetzte Funktionalitäten
 
 ### 1. Datenbankschema-Erweiterung
-*   **Tabelle `memory`:** Eine neue Tabelle `memory` wurde in `backend/database.py` definiert, um extrahierte Wissensbausteine zu speichern.
-    *   Felder: `id`, `chat_id` (Herkunft des Eintrags), `snippet` (der eigentliche Wissensbaustein), `embedding_json` (Vektor-Embedding als JSON-String), `created_at`.
-*   **`embedding_json` Feld:** Das `Memory`-Modell in `backend/database.py` wurde um das Feld `embedding_json = Column(Text, nullable=True)` erweitert, um Vektor-Embeddings zu speichern.
-*   **Datenbank-Migration:** Die `chat_history.db` muss manuell gelöscht werden, damit das Schema mit der neuen Spalte korrekt neu erstellt wird.
+*   **Tabelle `memory`:** Definiert in `backend/database.py` zur Speicherung extrahierter Wissensbausteine.
+*   **Tabelle `chats` erweitert:** Die Tabelle `chats` wurde um zwei Spalten erweitert:
+    *   `summary`: Speichert die textuelle Zusammenfassung des Chats.
+    *   `summary_embedding_json`: Speichert das Vektor-Embedding der Zusammenfassung als JSON-String.
 
 ### 2. Vektor-Logik (Reines Python)
-*   **`backend/vector_service.py`:** Ein Modul, das die gesamte Logik für die Erstellung von Embeddings und die semantische Ähnlichkeitssuche kapselt.
-    *   **`SentenceTransformer('all-MiniLM-L6-v2')`:** Wird zum Generieren von Embeddings verwendet. Das Modell wird einmal geladen und wiederverwendet.
-    *   **`generate_embedding(text: str)`:** Generiert einen Vektor-Embedding für einen gegebenen Text und speichert ihn als JSON-String.
-    *   **`find_similar_snippets(query_text: str, memories: list, top_k: int = 10, threshold: float = 0.4)`:** Findet die semantisch ähnlichsten Erinnerungen an einen Suchtext basierend auf Kosinus-Ähnlichkeit. Der `threshold` wurde auf 0.4 gesetzt, um eine breitere Abdeckung zu ermöglichen.
-    *   **Behobener Bug:** Ein kritischer Indexierungsfehler in `find_similar_snippets` wurde behoben, der dazu führte, dass die Suche fehlschlug, wenn Memories ohne Embeddings vorhanden waren.
+*   **`backend/vector_service.py`:** Kapselt die Logik für Embeddings und Ähnlichkeitssuche.
+    *   **`find_similar_snippets`:** Findet die semantisch ähnlichsten *Fakten* im Memory.
+    *   **`find_similar_chat_summaries` (NEU):** Eine neue Funktion, die gezielt die semantisch ähnlichsten *Chat-Zusammenfassungen* findet, um übergreifende Fragen zu beantworten.
 
-### 3. CRUD-Operationen für Memory
-*   **`backend/crud.py`:** Wurde angepasst, um die Vektor-Logik zu nutzen.
-    *   **`save_memory_snippet(db, chat_id, snippet_text)`:** Generiert jetzt das Embedding des `snippet_text` mittels `vector_service.generate_embedding` und speichert es im `embedding_json`-Feld.
-    *   **`save_raw_memory(db, chat_id, user_input)`:** Eine neue Funktion, die die rohe Benutzereingabe als Gedächtnis speichert.
-    *   **`find_similar_memory_snippet(db, text)`:** Ersetzt die alte `memory_snippet_exists`-Funktion. Diese Funktion lädt alle Memories und verwendet `vector_service.find_similar_snippets` (mit `top_k=1` und `threshold=0.95`) um semantisch ähnliche Fakten zu finden. Dies dient primär dem Duplicate-Check und der Konfliktlösung.
-    *   **`update_memory_snippet(db, memory_id, new_snippet)`:** Eine neue Funktion zum Aktualisieren eines bestehenden Memory-Eintrags, inklusive Neuberechnung des Embeddings.
-    *   **`get_all_memories(db)`:** Eine neue Funktion, die alle gespeicherten Memory-Snippets aus der Datenbank abruft.
+### 3. CRUD-Operationen für Memory & Chats
+*   **`backend/crud.py`:**
+    *   Implementiert vollständige CRUD-Operationen für `memory`.
+    *   **`update_chat_summary`:** Wurde erweitert, um sowohl die Zusammenfassung als auch das zugehörige Embedding zu speichern.
 
 ### 4. LLM Gateway und Intelligenz-Schicht
-*   **`backend/llm_gateway.py`:** Dieses Modul wurde zum zentralen "Gehirn" der Anwendung.
-    *   **`expand_query(query: str, api_key: str)`:** Erweitert eine Benutzeranfrage um Synonyme und verwandte Konzepte für die semantische Suche.
-    *   **`deconstruct_query_for_memory(query: str, api_key: str)`:** Zerlegt komplexe Fragen in einfache, suchbare Unterfragen.
-    *   **`resolve_contradictions(facts: str, api_key: str)`:** Überprüft eine Liste von Fakten auf Widersprüche und fasst sie zusammen.
-    *   **`reason_about_context(user_prompt: str, context_snippets: List[str], api_key: str)`:** Ein dedizierter LLM-Aufruf, der aus verstreuten Fakten eine logische, widerspruchsfreie Zusammenfassung erstellt, um eine komplexe Frage zu beantworten. Dieser Prompt wurde mehrfach verfeinert, um explizite Definitionsbeispiele für Verwandtschaftsbeziehungen zu enthalten und das LLM zur strikten Logik zu zwingen.
-    *   **`reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, api_key: str, model: str)`:** Der zentrale "Denk"-Schritt, der alle Informationen (User-Prompt, Chat-Verlauf, Memory-Kontext) zusammenführt und eine kohärente Antwort generiert.
+*   **`backend/llm_gateway.py`:**
+    *   **`reason_and_respond`:** Der zentrale "Denk"-Schritt wurde verbessert. Anstatt bei Schlüsselwörtern *alle* Zusammenfassungen zu laden, wird nun die `find_similar_chat_summaries`-Funktion genutzt, um nur die relevantesten Chat-Zusammenfassungen zu finden und in den Kontext zu injizieren. Dies macht das System skalierbarer und präziser.
+    *   **`summarize_chat_topic`:** Generiert die Chat-Zusammenfassung.
 
 ### 5. Haupt-API-Integration (`backend/main.py`)
-*   Die `/api/chat` Route wurde radikal vereinfacht und umstrukturiert.
-    *   **Rohdaten-Speicherung:** Speichert die rohe Benutzernachricht im Gedächtnis.
-    *   **Vektor-Suche:** Findet relevante Erinnerungen mit `vector_service.find_similar_snippets`.
-    *   **Zentraler Denk-Schritt:** Nutzt `llm_gateway.reason_and_respond` als einzigen, umfassenden Schritt zur Generierung der finalen Antwort, die alle relevanten Informationen berücksichtigt.
-    *   **Vereinfachte Logik:** Die vorherigen komplexen Schritte zur Prompt-Konstruktion und Kontextverwaltung wurden in `reason_and_respond` gekapselt.
+*   **`/api/chat` Route:** Speichert u.a. den zuletzt verwendeten Provider und das Modell.
+*   **`/api/chats` Route (POST):** Startet die Hintergrundaufgabe zur Zusammenfassung des vorherigen Chats.
+*   **`/api/last-used-model` Route (GET):** Gibt das zuletzt verwendete Modell zurück, um den Frontend-Zustand zu initialisieren.
 
-### 6. Test-Infrastruktur
-*   **`waechter/conftest.py`:** Die Testdatenbank wurde von einer In-Memory-Datenbank auf eine separate, dateibasierte SQLite-Datenbank (`test_chat_history.db`) umgestellt, die für jeden Test sauber erstellt und gelöscht wird. Dies behebt das Problem der Datenpersistenz in der Hauptanwendung, das durch unbeabsichtigte Testausführungen verursacht wurde.
-*   **`waechter/test_memory_crud.py`:** Bereinigt und testet die CRUD-Operationen für Memory.
-*   **`waechter/test_memory_extractor.py`:** Testet die Extraktions- und Konfliktlösungslogik.
-*   **`waechter/test_chat_endpoint.py`:** Aktualisiert, um die mehrfachen LLM-Aufrufe (Hauptantwort und Hintergrund-Extraktion) korrekt zu mocken und zu überprüfen.
+### 6. Frontend-Anpassungen (`frontend/js/app.js`)
+*   Die UI ist nun robust und spiegelt den Anwendungszustand (Provider- und Modellauswahl) korrekt wider, auch beim Neustart der Anwendung.
 
 ## ⚠️ Behobene Probleme und Herausforderungen
 
-*   **Datenpersistenz in `chat_history.db`:** Das Hauptproblem, dass Memories zwischen Sitzungen verloren gingen, wurde durch die Isolierung der Testdatenbank in `conftest.py` behoben.
-*   **Syntaxfehler in `llm_gateway.py` und `crud.py`:** Mehrere `SyntaxError` aufgrund fehlender Zeilenumbrüche und falscher String-Formatierung wurden behoben.
-*   **`NameError` in `context_manager.py`:** Der fehlende Import von `llm_gateway` in `context_manager.py` wurde korrigiert.
-*   **`await` außerhalb von `async`:** Die `build_prompt_history` Funktion wurde korrekt asynchron gemacht.
-*   **Inferenz-Robustheit ("Schwägerin"-Problem):** Obwohl das Problem der korrekten Inferenz von Verwandtschaftsbeziehungen (insbesondere "Schwägerin") hartnäckig war, wurde es durch iterative Verfeinerung der Prompts in `reason_about_context` und die Einführung von `apply_relationship_logic` sowie die radikale Vereinfachung der Haupt-Logik in `main.py` adressiert. Das System zeigt nun eine deutlich verbesserte Fähigkeit zur logischen Schlussfolgerung.
+*   **`sqlite3.OperationalError: no such column` (NEU):** Nach dem Hinzufügen der `summary_embedding_json`-Spalte zum `Chat`-Modell trat dieser Fehler auf, da die existierende Datenbank-Datei nicht automatisch aktualisiert wurde.
+    *   **Lösung:** Die Datenbank-Datei (`chat_history.db`) wurde gelöscht und beim Neustart der Anwendung automatisch mit dem korrekten, neuen Schema erstellt.
+*   **Provider-Inkonsistenz bei Hintergrundaufgaben:** Das Problem, dass Hintergrundaufgaben (Fakten-Extraktion, Chat-Zusammenfassung) hartcodiert `openai` verwendeten, wurde behoben.
+*   **`invalid_value` Fehler bei Gemini:** Das Rollen-Mapping (`assistant` -> `model`) für die Gemini-API wurde korrigiert.
+*   **Diverse Frontend-Bugs:** Probleme mit der Modellauswahl und dem initialen Zustand der UI wurden behoben.
 
 ## 📈 Aktueller Status
 
-Das System ist nun in der Lage, komplexe Anfragen zu verstehen, relevante Fakten aus dem Gedächtnis abzurufen, logische Schlussfolgerungen zu ziehen und kohärente Antworten zu generieren. Die Architektur wurde radikal vereinfacht, um die Wartbarkeit und Erweiterbarkeit zu verbessern.
+Das System verfügt nun über ein voll funktionsfähiges, semantisches Cross-Chat-Memory. Es kann relevante Informationen aus allen vergangenen Gesprächen effizient und präzise abrufen, um komplexe, übergreifende Fragen zu beantworten. Die Architektur ist robust und skalierbar.
 
 ---
-*Letzte Aktualisierung: 2025-08-23*
+*Letzte Aktualisierung: 2025-08-24*

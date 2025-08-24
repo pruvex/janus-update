@@ -1,5 +1,10 @@
 from sqlalchemy.orm import Session
 from . import database, schemas, vector_service
+import logging
+from backend.logger_config import setup_logging
+
+setup_logging()
+logger = logging.getLogger('janus_backend')
 
 # --- Chat CRUD ---
 def create_chat(db: Session, title: str):
@@ -59,6 +64,18 @@ def delete_chat(db: Session, chat_id: int):
         return True
     return False
 
+def update_chat_summary(db: Session, chat_id: int, summary: str, embedding: str):
+    chat = get_chat_by_id(db, chat_id)
+    if chat:
+        chat.summary = summary
+        chat.summary_embedding_json = embedding
+        db.commit()
+        db.refresh(chat)
+    return chat
+
+def get_all_chat_summaries(db: Session):
+    return db.query(database.Chat).filter(database.Chat.summary != None).all()
+
 # --- Memory CRUD ---
 def save_memory_snippet(db: Session, chat_id: int, snippet_text: str):
     embedding = vector_service.generate_embedding(snippet_text)
@@ -87,5 +104,11 @@ def update_memory_snippet(db: Session, memory_id: int, new_snippet: str):
 
 def save_raw_memory(db: Session, chat_id: int, user_input: str):
     """Speichert die rohe Benutzereingabe als Gedächtnis."""
-    # Hier könnten in Zukunft noch Filter oder Extraktionslogiken rein
-    return save_memory_snippet(db, chat_id, user_input)
+    current_logger = logging.getLogger('janus_backend') # Get logger inside function
+    current_logger.info(f"Attempting to save raw memory for chat {chat_id}: '{user_input}'")
+    saved_memory = save_memory_snippet(db, chat_id, user_input)
+    if saved_memory:
+        current_logger.info(f"Raw memory saved successfully: '{user_input}'")
+    else:
+        current_logger.warning(f"Failed to save raw memory for chat {chat_id}: '{user_input}'")
+    return saved_memory

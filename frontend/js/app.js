@@ -41,12 +41,6 @@ function render() {
             option.textContent = `${model.name} (${model.price}) - ${model.desc}`;
             sidebarModelSelect.appendChild(option);
         });
-        // Ensure the selected model is still valid after filtering
-        if (filteredModels.length > 0 && !allowedModels.includes(appState.last_active.model)) {
-            appState.last_active.model = filteredModels[0].id;
-        } else if (filteredModels.length === 0) {
-            appState.last_active.model = ''; // No models available
-        }
         console.log('render: Final appState.last_active.model:', appState.last_active.model);
         sidebarModelSelect.value = appState.last_active.model;
     }
@@ -97,14 +91,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     sidebarProviderSelect.addEventListener('change', () => {
         appState.last_active.provider = sidebarProviderSelect.value;
+        const provider = appState.last_active.provider;
+        const allowedModels = appState.user_selections[provider] || [];
+        const filteredModels = MODEL_CATALOG[provider].filter(model => allowedModels.includes(model.id));
+        if (filteredModels.length > 0) {
+            appState.last_active.model = filteredModels[0].id;
+        } else {
+            appState.last_active.model = '';
+        }
         render();
     });
 
     const sidebarModelSelect = document.getElementById('model-select');
     sidebarModelSelect.addEventListener('change', () => {
         appState.last_active.model = sidebarModelSelect.value;
+        render();
     });
 
+    await loadLastUsedModel();
     await loadUserSelections(); // Load selections before initial render
     render(); // Initial render
 
@@ -183,6 +187,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       Object.assign(event.target.dataset, { x, y })
     }
 });
+
+async function loadLastUsedModel() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/last-used-model`);
+        const data = await response.json();
+        appState.last_active.provider = data.provider;
+        appState.last_active.model = data.model;
+    } catch (error) {
+        console.error('Failed to load last used model:', error);
+    }
+}
 
 async function loadUserSelections() {
     const availableProviders = ["openai", "gemini"];

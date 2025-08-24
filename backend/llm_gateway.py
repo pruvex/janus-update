@@ -3,6 +3,8 @@ from typing import List, Dict, Optional
 import openai
 import google.generativeai as genai
 from backend.cost_calculator import calculate_cost
+from sqlalchemy.orm import Session # Import Session
+from backend import crud, vector_service # Import crud
 
 logger = logging.getLogger('janus_backend')
 
@@ -52,10 +54,23 @@ async def _call_gemini_api(api_key: str, model_id: str, chat_history: List[Dict]
     model = genai.GenerativeModel(model_id)
     
     gemini_history = []
+    system_message_content = ""
+
     for msg in chat_history:
-        role = 'user' if msg['role'] == 'user' else 'model'
-        gemini_history.append({'role': role, 'parts': [msg['content']]})
-    
+        if msg['role'] == 'system':
+            system_message_content += msg['content'] + "\n"
+        elif msg['role'] == 'user':
+            gemini_history.append({'role': 'user', 'parts': [msg['content']]})
+        elif msg['role'] == 'assistant':
+            gemini_history.append({'role': 'model', 'parts': [msg['content']]})
+
+    # Prepend system message content to the first user message
+    if system_message_content and gemini_history and gemini_history[0]['role'] == 'user':
+        gemini_history[0]['parts'][0] = system_message_content + gemini_history[0]['parts'][0]
+    elif system_message_content and not gemini_history:
+        # If only a system message exists, create a dummy user message to carry it
+        gemini_history.append({'role': 'user', 'parts': [system_message_content]})
+
     response = await model.generate_content_async(gemini_history)
     
     text_response = response.text
@@ -86,15 +101,24 @@ async def expand_query(query: str, api_key: str) -> str:
         return query
 
 async def deconstruct_query_for_memory(query: str, api_key: str) -> List[str]:
-    """Zerlegt eine komplexe Frage in einfache, suchbare Unterfragen."""
+    """
+    Zerlegt eine komplexe Frage in einfache, suchbare Unterfragen.
+    """
     prompt = f"Zerlege die folgende Benutzerfrage in eine Liste von einfachen Schlüsselbegriff-Suchen für eine Datenbank. Jede Suche sollte in einer neuen Zeile stehen.\nFrage: {query}\n\nSuchen:"
     history = [{"role": "user", "content": prompt}]
     response = await _call_openai_api(api_key, "gpt-4o-mini", history)
     return response['text'].split('\n')
 
 async def resolve_contradictions(facts: str, api_key: str) -> str:
-    """Überprüft eine Liste von Fakten auf Widersprüche und fasst sie zusammen."""
-    prompt = f"Hier sind einige Fakten aus einer Datenbank. Fasse sie zu einer kohärenten, widerspruchsfreien Aussage zusammen. Ignoriere veraltete Informationen, wenn eine neuere Korrektur vorhanden ist.\n\nFakten:\n{facts}\n\nZusammenfassung:"
+    """
+    Überprüft eine Liste von Fakten auf Widersprüche und fasst sie zusammen.
+    """
+    prompt = f"""Hier sind einige Fakten aus einer Datenbank. Fasse sie zu einer kohärenten, widerspruchsfreien Aussage zusammen. Ignoriere veraltete Informationen, wenn eine neuere Korrektur vorhanden ist.
+
+Fakten:
+{facts}
+
+Zusammenfassung:"""
     history = [{"role": "user", "content": prompt}]
     response = await _call_openai_api(api_key, "gpt-4o-mini", history)
     return response['text']
@@ -121,7 +145,7 @@ async def reason_about_context(user_prompt: str, context_snippets: List[str], ap
     response = await _call_openai_api(api_key, "gpt-4o-mini", history)
     return response.get("text", "Ich konnte keine Antwort finden.")
 
-async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, api_key: str, model: str) -> str:
+async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, db: Session, api_key: str, model: str, provider: str) -> str:
     logger.info(f"reason_and_respond: user_prompt={user_prompt}")
     logger.info(f"reason_and_respond: chat_history={chat_history}")
     logger.info(f"reason_and_respond: memory_context={memory_context}")
@@ -131,9 +155,7 @@ async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_
     full_context = ""
     if memory_context:
         full_context += f"""--- RELEVANTE ERINNERUNGEN ---
-{memory_context}
-
-"""
+{memory_context}\n"""
     
     # Füge den bisherigen Chat-Verlauf hinzu
     if chat_history:
@@ -142,6 +164,19 @@ async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_
         for msg in chat_history:
             full_context += f"{msg['role']}: {msg['content']}\n"
         full_context += "\n"
+
+    # NEU: Cross-Chat-Memory mit Vektor-Suche
+    cross_chat_keywords = ["andere chats", "frühere gespräche", "worüber haben wir gesprochen", "andere unterhaltungen"]
+    if any(keyword in user_prompt.lower() for keyword in cross_chat_keywords):
+        all_chats = crud.get_chats(db, include_archived=True) # Alle Chats laden
+        similar_chats = vector_service.find_similar_chat_summaries(user_prompt, all_chats)
+        if similar_chats:
+            full_context += f"""--- ZUSAMMENFASSUNGEN ANDERER CHATS ---
+"""
+            for chat in similar_chats:
+                full_context += f"Chat ID: {chat.id}, Titel: {chat.title}\n"
+                full_context += f"Zusammenfassung: {chat.summary}\n\n"
+            full_context += "\n"
 
     prompt = f"""Du bist ein intelligenter Assistent. Deine Aufgabe ist es, die Frage des Benutzers zu beantworten. Nutze dabei alle relevanten Informationen aus den bereitgestellten Erinnerungen und dem Chat-Verlauf. Formuliere eine präzise, hilfreiche und kohärente Antwort.
 
@@ -152,5 +187,21 @@ async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_
 --- ANTWORT ---"""
 
     history = [{"role": "user", "content": prompt}]
-    response = await _call_openai_api(api_key, model, history)
+    response = await call_llm(provider, model, prompt, api_key, chat_history=history) # Corrected call
     return response.get("text", "Es tut mir leid, ich konnte keine Antwort finden.")
+
+async def summarize_chat_topic(chat_history: List[Dict], api_key: str, provider: str, model: str) -> str:
+    """
+    Erstellt eine prägnante Zusammenfassung eines Chats.
+    """
+    prompt = (
+        "Du bist ein Assistent zur Chat-Zusammenfassung. Deine Aufgabe ist es, aus dem folgenden Chatverlauf "
+        "ein kurzes, prägnantes Thema oder eine Zusammenfassung in einem Satz zu generieren. "
+        "Diese Zusammenfassung wird als Titel für den Chat verwendet. Antworte nur mit dem Titel."
+        "\n\n--- Chatverlauf ---"
+    )
+    history = [{"role": "user", "content": prompt}]
+    history.extend(chat_history)
+
+    response = await call_llm(provider, model, prompt, api_key, chat_history=history)
+    return response.get("text", "Unbenannter Chat").strip()

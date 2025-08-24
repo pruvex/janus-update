@@ -5,6 +5,7 @@ from . import llm_gateway, crud
 from sentence_transformers import util # Added for util.cos_sim
 import json # Added for json.loads
 import numpy as np # Added for np.array
+import keyring # Import keyring
 
 logger = logging.getLogger('janus_backend')
 
@@ -18,7 +19,7 @@ EXTRACTION_PROMPT = (
     "\n\n--- Extrahierte Fakten ---"
 )
 
-async def resolve_fact_conflict(db: Session, old_fact: str, new_fact: str, api_key: str):
+async def resolve_fact_conflict(db: Session, old_fact: str, new_fact: str, main_api_key: str, provider: str, model: str):
     """Fragt eine LLM, ob ein neuer Fakt einen alten korrigiert."""
     prompt = (
         f"ALTER FAKT: '{old_fact}'\n"
@@ -27,30 +28,29 @@ async def resolve_fact_conflict(db: Session, old_fact: str, new_fact: str, api_k
         "Antworte nur mit 'JA' oder 'NEIN'."
     )
     history = [{"role": "user", "content": prompt}]
-    response = await llm_gateway.call_llm("openai", "gpt-4o-mini", "", api_key, chat_history=history)
+    response = await llm_gateway.call_llm(provider, model, prompt, main_api_key, chat_history=history)
     return "ja" in response.get("text", "").lower()
 
-async def extract_and_save_fact(db: Session, chat_id: int, text_block: str, api_key: str):
+async def extract_and_save_fact(db: Session, chat_id: int, text_block: str, main_api_key: str, provider: str, model: str):
     """
     Extrahiert einen oder mehrere Fakten aus einem Textblock und speichert sie, wenn sie relevant sind.
     """
+    logger.info(f"Attempting to extract and save facts for chat {chat_id} from text: '{text_block}'")
     try:
-        model_id = "gpt-4o-mini"
-        provider = "openai"
-
         prompt = EXTRACTION_PROMPT.format(text_block=text_block)
         
         extraction_history = [{"role": "user", "content": prompt}]
 
         gateway_response = await llm_gateway.call_llm(
             provider,
-            model_id,
-            "",
-            api_key,
+            model,
+            prompt, # Pass prompt here
+            main_api_key,
             chat_history=extraction_history
         )
 
         extracted_text = gateway_response.get("text", "").strip()
+        logger.info(f"Extracted text: '{extracted_text}'")
 
         if extracted_text and extracted_text.lower() != 'none':
             # Teile die Antwort in einzelne Fakten auf (eine pro Zeile)
@@ -71,7 +71,7 @@ async def extract_and_save_fact(db: Session, chat_id: int, text_block: str, api_
                          continue
                     
                     # Wenn es nur mäßig ähnlich ist, könnte es eine Korrektur sein
-                    is_correction = await resolve_fact_conflict(db, similar_fact_obj.snippet, fact, api_key)
+                    is_correction = await resolve_fact_conflict(db, similar_fact_obj.snippet, fact, main_api_key, provider, model)
                     if is_correction:
                         logger.info(f"Fakt wird aktualisiert: '{similar_fact_obj.snippet}' -> '{fact}'.")
                         crud.update_memory_snippet(db, memory_id=similar_fact_obj.id, new_snippet=fact)

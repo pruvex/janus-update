@@ -21,6 +21,8 @@ class Chat(Base):
     title = Column(String, default="New Chat")
     created_at = Column(DateTime, default=datetime.datetime.now)
     is_archived = Column(Boolean, default=False)
+    summary = Column(Text, nullable=True)
+    summary_embedding_json = Column(Text, nullable=True)
     messages = relationship("Message", back_populates="chat", cascade="all, delete-orphan")
 
 class Message(Base):
