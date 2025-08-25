@@ -8,10 +8,12 @@ import os
 import asyncio # NEW
 import concurrent.futures # NEW
 
+from .utils.paths import get_app_data_dir
+
 setup_logging()
 logger = logging.getLogger('janus_backend')
 
-IMAGE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "images")
+IMAGE_DIR = os.path.join(get_app_data_dir(), "images")
 os.makedirs(IMAGE_DIR, exist_ok=True)
 
 def save_image_from_url(image_url: str) -> str:

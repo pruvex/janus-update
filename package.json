@@ -11,7 +11,9 @@
     "start-electron": "wait-on tcp:8000 && cross-env NODE_ENV=development electron .",
     "start-vite": "vite",
     "start-backend-only": "C:\\KI\\Janus-Projekt\\backend\\venv\\Scripts\\python.exe -m uvicorn backend.main:app --reload --port 8000 --host localhost",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "build-installer": "electron-builder",
+    "build-all": "npm run build && pyinstaller janus_backend.spec --clean -y && npm run build-installer"
   },
   "keywords": [],
   "author": "",
@@ -21,11 +23,44 @@
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
     "electron": "^31.0.2",
+    "electron-builder": "^26.0.12",
     "eslint": "^9.33.0",
     "vite": "^5.3.1",
     "wait-on": "^8.0.4"
   },
   "dependencies": {
     "axios": "^1.11.0"
+  },
+  "build": {
+    "appId": "com.janus-projekt.app",
+    "productName": "Janus Projekt",
+    "directories": {
+      "output": "release",
+      "buildResources": "assets"
+    },
+    "files": [
+      "dist/**/*",
+      "frontend/preload.js",
+      "main.electron.js",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "dist/janus_backend",
+        "to": "dist/janus_backend",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico",
+      "forceCodeSigning": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }

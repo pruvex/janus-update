@@ -1,12 +1,15 @@
 import logging
 import datetime
+import os
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Float, func
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
+from .utils.paths import get_app_data_dir
 
 logger = logging.getLogger('janus_backend')
 
 # --- Haupt-Datenbank für Chats und Memory ---
-DATABASE_URL = "sqlite:///./chat_history.db"
+DB_PATH = os.path.join(get_app_data_dir(), 'chat_history.db')
+DATABASE_URL = f"sqlite:///{DB_PATH}"
 engine = create_engine(
     DATABASE_URL,
     connect_args={"check_same_thread": False}
@@ -44,7 +47,8 @@ class Memory(Base):
     created_at = Column(DateTime, default=datetime.datetime.now)
 
 # --- Kosten-Datenbank ---
-COSTS_DATABASE_URL = "sqlite:///./costs.db"
+COSTS_DB_PATH = os.path.join(get_app_data_dir(), 'costs.db')
+COSTS_DATABASE_URL = f"sqlite:///{COSTS_DB_PATH}"
 costs_engine = create_engine(COSTS_DATABASE_URL, connect_args={"check_same_thread": False})
 CostsSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=costs_engine)
 CostsBase = declarative_base()

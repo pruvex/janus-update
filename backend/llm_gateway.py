@@ -142,8 +142,28 @@ async def _call_openai_api(api_key: str, model_id: str, chat_history: List[Dict]
                 # Handle base64 image if needed, for now, we'll just pass the text
                 pass
 
-            usage, cost = calculate_cost(model_id, usage_data=response.usage) # Use usage from first call
-            return {"text": text_response, "image_url": image_url, "usage": usage, "cost": cost}
+            # Combine usage data from all calls
+            total_usage = {
+                "prompt_tokens": response.usage.prompt_tokens + second_response.usage.prompt_tokens,
+                "completion_tokens": response.usage.completion_tokens + second_response.usage.completion_tokens,
+            }
+            
+            # Add image usage if available
+            if tool_output and "usage" in tool_output:
+                total_usage["image_quality"] = tool_output["usage"].get("image_quality")
+                total_usage["image_size"] = tool_output["usage"].get("image_size")
+
+            # Calculate total cost
+            _, total_cost_data = calculate_cost(model_id, usage_data=total_usage)
+            
+            # Add image cost if available
+            if tool_output and "cost" in tool_output:
+                if "image_cost" in tool_output["cost"]:
+                    total_cost_data["image_cost"] = tool_output["cost"]["image_cost"]
+                if "total_cost" in tool_output["cost"]:
+                    total_cost_data["total_cost"] += tool_output["cost"]["total_cost"] # Add image cost to total
+
+            return {"text": text_response, "image_url": image_url, "usage": total_usage, "cost": total_cost_data}
         else:
             # No tool call, just a regular text response
             text_response = response.choices[0].message.content
@@ -196,10 +216,21 @@ async def generate_image_tool(api_key: str, prompt: str, size: str = "1024x1024"
             quality=quality,
             response_format=response_format
         )
+        # Calculate cost for image generation
+        image_usage, image_cost_data = calculate_cost(
+            model_id="dall-e-3", # Use dall-e-3 as the model for cost calculation
+            usage_data={"image_quality": quality, "image_size": size} # Pass as usage_data
+        )
+
+        result = {"created": response.created}
         if response_format == "url":
-            return {"url": response.data[0].url, "created": response.created}
+            result["url"] = response.data[0].url
         elif response_format == "b64_json":
-            return {"b64_json": response.data[0].b64_json, "created": response.created}
+            result["b64_json"] = response.data[0].b64_json
+        
+        result["usage"] = image_usage
+        result["cost"] = image_cost_data
+        return result
     except Exception as e:
         logger.error(f"Error generating image with tool: {e}")
         return {"error": str(e)}

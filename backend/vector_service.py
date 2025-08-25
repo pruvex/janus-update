@@ -2,15 +2,18 @@ import logging
 import json
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
+from backend.utils.paths import resource_path
 
 logger = logging.getLogger('janus_backend')
 
 # Das Modell wird nur einmal beim Start geladen und im Speicher gehalten.
 # 'all-MiniLM-L6-v2' ist ein gutes Allround-Modell, das schnell und lokal läuft.
 try:
-    model = SentenceTransformer('all-MiniLM-L6-v2')
+    # Der Pfad zum Modell innerhalb des PyInstaller-Bundles
+    model_path = resource_path('backend/model_cache/all-MiniLM-L6-v2')
+    model = SentenceTransformer(model_path)
 except Exception as e:
-    logger.error(f"Konnte das SentenceTransformer-Modell nicht laden: {e}")
+    logger.error(f"Konnte das SentenceTransformer-Modell nicht laden von Pfad {model_path}: {e}")
     model = None
 
 def generate_embedding(text: str):

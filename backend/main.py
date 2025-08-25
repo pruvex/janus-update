@@ -5,6 +5,7 @@ import logging
 import traceback
 import re
 import asyncio
+import shutil
 from fastapi import FastAPI, HTTPException, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -15,48 +16,86 @@ from sqlalchemy.orm import Session
 from backend.logger_config import setup_logging
 from backend import llm_gateway, database, crud, schemas, memory_extractor, vector_service, chat_summarizer
 from backend.context_manager import ContextManager
+from backend.utils.paths import get_app_data_dir, resource_path
 
 setup_logging()
 logger = logging.getLogger('janus_backend')
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
+# --- Static Files Mounting ---
+# Mount the original static directory from the bundle for CSS, JS etc.
+app.mount("/static", StaticFiles(directory=resource_path("backend/static")), name="static_bundle")
+# Mount the user's data directory for images so they can be served
+image_dir = os.path.join(get_app_data_dir(), "images")
+os.makedirs(image_dir, exist_ok=True)
+app.mount("/user_images", StaticFiles(directory=image_dir), name="user_images")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"],
 )
 
-CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
-MODEL_CATALOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_catalog.json")
+# --- Path and Config Management ---
+DATA_DIR = get_app_data_dir()
+CONFIG_FILE = os.path.join(DATA_DIR, "config.json")
+MODEL_CATALOG_FILE = os.path.join(DATA_DIR, "model_catalog.json")
+
+# These point to the files within the bundled app
+TEMPLATE_CONFIG_FILE = resource_path("backend/config.json")
+TEMPLATE_MODEL_CATALOG_FILE = resource_path("backend/model_catalog.json")
+
+def initialize_file_from_template(template_path, destination_path):
+    """Copies a file from the template location to the user's data directory if it doesn't exist."""
+    if not os.path.exists(destination_path):
+        try:
+            # Make sure the destination directory exists
+            os.makedirs(os.path.dirname(destination_path), exist_ok=True)
+            shutil.copy2(template_path, destination_path)
+            logger.info(f"Initialized '{os.path.basename(destination_path)}' from template.")
+        except FileNotFoundError:
+            logger.error(f"Template file not found: {template_path}. Cannot initialize config.")
+            # Create a default empty file to avoid crashing the app
+            with open(destination_path, 'w') as f:
+                json.dump({}, f)
 
 def load_config():
-    if not os.path.exists(CONFIG_FILE): return {}
-    with open(CONFIG_FILE, "r") as f: return json.load(f)
+    initialize_file_from_template(TEMPLATE_CONFIG_FILE, CONFIG_FILE)
+    try:
+        with open(CONFIG_FILE, "r") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError):
+        logger.warning(f"Could not load or parse config file at {CONFIG_FILE}. Returning empty config.")
+        return {}
 
 def save_config(config):
-    os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
-    with open(CONFIG_FILE, "w") as f: json.dump(config, f, indent=2)
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(config, f, indent=2)
 
 def load_model_catalog():
-    with open(MODEL_CATALOG_FILE, "r") as f: return json.load(f)
+    initialize_file_from_template(TEMPLATE_MODEL_CATALOG_FILE, MODEL_CATALOG_FILE)
+    with open(MODEL_CATALOG_FILE, "r") as f:
+        return json.load(f)
 
-model_catalog = load_model_catalog()
-context_manager = ContextManager(model_catalog=model_catalog)
-
-@app.on_event("startup")
-async def startup_event():
-    database.init_db()
-    # NEW: Call image path migration
-    db = next(get_db()) # Get a DB session
-    await crud.migrate_image_paths(db) # Call the async migration function
-    db.close() # Close the session
-
+# --- Dependency Injection ---
 def get_db():
     db = database.SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+def get_model_catalog_dep():
+    return load_model_catalog()
+
+def get_context_manager(model_catalog: dict = Depends(get_model_catalog_dep)):
+    return ContextManager(model_catalog=model_catalog)
+
+
+@app.on_event("startup")
+async def startup_event():
+    database.init_db()
+    db = next(get_db())
+    await crud.migrate_image_paths(db)
+    db.close()
 
 class ChatRequest(BaseModel):
     prompt: str; provider: str; model: str; chat_id: Optional[int] = None
@@ -70,7 +109,7 @@ class BudgetUpdate(BaseModel):
     budget: float
 
 @app.post("/api/chat")
-async def chat(request: ChatRequest, db: Session = Depends(get_db)):
+async def chat(request: ChatRequest, db: Session = Depends(get_db), context_manager: ContextManager = Depends(get_context_manager)):
     try:
         api_key = keyring.get_password("Janus-Projekt", request.provider)
         if not api_key: raise HTTPException(status_code=400, detail="API Key not found.")
@@ -99,8 +138,9 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
             chat_history = []
             for m in messages:
                 msg_data = {"role": "user" if m.sender=="user" else "assistant", "content": m.content}
-                if m.image_path: # If there's an image path
-                    msg_data["image_url"] = m.image_path # Use image_url key for frontend compatibility
+                if m.image_path:
+                    # Adjust path to be served by the new user_images mount
+                    msg_data["image_url"] = m.image_path.replace("/static/images", "/user_images")
                 chat_history.append(msg_data)
 
         # 4. Der EINE "Denk"-Schritt: Lasse die KI die Antwort synthetisieren
@@ -126,7 +166,7 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
         if usage and cost.get("total_cost", 0) > 0:
             database.save_cost_entry(
                 date=datetime.now(), model=request.model,
-                input_tokens=usage.get("input_tokens"), output_tokens=usage.get("output_tokens"),
+                input_tokens=usage.get("prompt_tokens"), output_tokens=usage.get("completion_tokens"),
                 image_quality=usage.get("image_quality"), image_cost=cost.get("image_cost"),
                 total_cost=cost.get("total_cost", 0)
             )
@@ -144,6 +184,10 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
         config["last_used_provider"] = request.provider
         config["last_used_model"] = request.model
         save_config(config)
+
+        # Adjust returned image path for the frontend
+        if local_image_path:
+            local_image_path = local_image_path.replace("/static/images", "/user_images")
 
         return {"sender": "model", "text": final_answer, "image_url": local_image_path}
     except Exception as e:
@@ -184,7 +228,11 @@ async def get_chat_details(chat_id: int, db: Session = Depends(get_db)):
 
 @app.get("/api/chats/{chat_id}/messages", response_model=List[schemas.MessageResponse])
 async def get_chat_messages(chat_id: int, db: Session = Depends(get_db)):
-    return crud.get_messages_by_chat_id(db, chat_id)
+    messages = crud.get_messages_by_chat_id(db, chat_id)
+    for message in messages:
+        if message.image_path and message.image_path.startswith("/static/images"):
+            message.image_path = message.image_path.replace("/static/images", "/user_images")
+    return messages
     
 @app.put("/api/chats/{chat_id}/title")
 async def update_chat_title(chat_id: int, title_update: schemas.ChatTitleUpdate, db: Session = Depends(get_db)):
@@ -264,5 +312,10 @@ async def get_last_used_model():
     }
 
 @app.get("/api/models/catalog")
-async def get_model_catalog():
-    return load_model_catalog()
+async def get_model_catalog(catalog: dict = Depends(get_model_catalog_dep)):
+    return catalog
+
+if __name__ == "__main__":
+    import uvicorn
+    print("Attempting to start Uvicorn server...")
+    uvicorn.run(app, host="127.0.0.1", port=8000)

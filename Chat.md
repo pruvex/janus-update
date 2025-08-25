@@ -2,7 +2,7 @@
 
 ✅ **1. Chats speichern (Persistenzschicht)**
 *   **Status:** Implementiert.
-*   **Details:** Chats und Nachrichten werden in einer SQLite-Datenbank gespeichert. Bilder werden lokal persistiert, um ablaufende URLs zu vermeiden.
+*   **Details:** Chats und Nachrichten werden in einer SQLite-Datenbank gespeichert. Bilder werden lokal persistiert, um ablaufende URLs zu vermeiden. **Die lokale Persistenz und das Servieren von Bildern wurden robust implementiert, inklusive einer Migrationsfunktion für bestehende Daten.**
 
 ✅ **2. Mehrere Chats verwalten**
 *   **Status:** Implementiert.
@@ -10,7 +10,7 @@
 
 ✅ **3. Context Memory (pro Chat)**
 *   **Status:** Implementiert.
-*   **Details:** Der gesamte Chat-Verlauf wird als Kontext für das LLM verwendet. Bei sehr langen Verläufen wird dies durch die Token-Limits der Modelle begrenzt.
+*   **Details:** Der gesamte Chat-Verlauf wird als Kontext für das LLM verwendet. Bei sehr langen Verläufen wird dies durch die Token-Limits der Modelle begrenzt. **Eine adaptive Kontextverwaltung mit "Rolling Summary" wurde implementiert, um lange Chat-Verläufe effizient zu managen.**
 
 ✅ **4. Übergreifendes Chat-Memory (Global Memory)**
 *   **Status:** Implementiert.
@@ -18,11 +18,11 @@
 
 ✅ **5. Bildgenerierung über GPT-Modelle (Tool-Calling)**
 *   **Status:** Implementiert.
-*   **Details:** GPT-Modelle können nun über einen Tool-Calling-Mechanismus Bilder generieren. Das LLM ruft ein `generate_image_tool` auf, das die Bildgenerierung über DALL-E durchführt. Die generierten Bilder werden lokal gespeichert und korrekt im Chat angezeigt.
+*   **Details:** GPT-Modelle können nun über einen Tool-Calling-Mechanismus Bilder generieren. Das LLM ruft ein `generate_image_tool` auf, das die Bildgenerierung über DALL-E durchführt. Die generierten Bilder werden lokal gespeichert und korrekt im Chat angezeigt. **Die Bildgenerierung und -anzeige wurde robust gemacht, indem Bilder lokal gespeichert und über den Backend-Server bereitgestellt werden, um Probleme mit ablaufenden DALL-E URLs zu vermeiden.**
 
-⚙️ **6. Context-Window-Anpassung für verschiedene Modelle**
-*   **Status:** In Arbeit.
-*   **Details:** Eine adaptive Kontextverwaltung basierend auf den Token-Limits der Modelle ist konzipiert, aber noch nicht vollständig umgesetzt.
+✅ **6. Context-Window-Anpassung für verschiedene Modelle**
+*   **Status:** Implementiert.
+*   **Details:** Eine adaptive Kontextverwaltung basierend auf den Token-Limits der Modelle ist konzipiert, aber noch nicht vollständig umgesetzt. **Die adaptive Kontextverwaltung wurde implementiert und in den Haupt-Chat-Fluss integriert, einschließlich der Nutzung modell-spezifischer Token-Limits und der "Rolling Summary" für den Chat-Verlauf.**
 
 ---
 

@@ -4,6 +4,7 @@
 # Build files
 /build
 /dist
+/release
 
 # Log files
 *.log
@@ -21,4 +22,5 @@ backend/venv/
 backend/__pycache__/
 backend/costs.db
 backend/chat.db
+backend/model_cache/
 *.db
