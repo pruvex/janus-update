@@ -46,6 +46,10 @@ context_manager = ContextManager(model_catalog=model_catalog)
 @app.on_event("startup")
 async def startup_event():
     database.init_db()
+    # NEW: Call image path migration
+    db = next(get_db()) # Get a DB session
+    await crud.migrate_image_paths(db) # Call the async migration function
+    db.close() # Close the session
 
 def get_db():
     db = database.SessionLocal()
@@ -92,11 +96,16 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
         chat_history = []
         if request.chat_id:
             messages = crud.get_messages_by_chat_id(db, chat_id=request.chat_id)
-            chat_history = [{"role": "user" if m.sender=="user" else "assistant", "content": m.content} for m in messages]
+            chat_history = []
+            for m in messages:
+                msg_data = {"role": "user" if m.sender=="user" else "assistant", "content": m.content}
+                if m.image_path: # If there's an image path
+                    msg_data["image_url"] = m.image_path # Use image_url key for frontend compatibility
+                chat_history.append(msg_data)
 
         # 4. Der EINE "Denk"-Schritt: Lasse die KI die Antwort synthetisieren
         llm_response = await llm_gateway.reason_and_respond(
-            request.prompt, chat_history, memory_context, db, api_key, request.model, request.provider
+            request.prompt, chat_history, memory_context, db, api_key, request.model, request.provider, context_manager
         )
         final_answer = llm_response.get("text")
         image_url = llm_response.get("image_url")
@@ -136,7 +145,7 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
         config["last_used_model"] = request.model
         save_config(config)
 
-        return {"sender": "model", "text": final_answer, "image_url": image_url}
+        return {"sender": "model", "text": final_answer, "image_url": local_image_path}
     except Exception as e:
         # ... Error Handling ...
         tb_str = traceback.format_exc()
@@ -253,3 +262,7 @@ async def get_last_used_model():
         "provider": config.get("last_used_provider", "openai"),
         "model": config.get("last_used_model", "gpt-4o-mini")
     }
+
+@app.get("/api/models/catalog")
+async def get_model_catalog():
+    return load_model_catalog()

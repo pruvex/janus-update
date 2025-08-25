@@ -1,60 +1,154 @@
 import tiktoken
 import logging
 from typing import List, Dict
-from backend import llm_gateway
+from backend import llm_gateway # Import llm_gateway here
+import keyring # NEW IMPORT for accessing API keys
 
 logger = logging.getLogger('janus_backend')
 
 RESPONSE_BUFFER = 1000
 
-def count_tokens(text: str, model: str) -> int:
-    try:
-        encoding = tiktoken.encoding_for_model("gpt-4")
-        return len(encoding.encode(text))
-    except KeyError:
-        logger.warning(f"Could not find encoding for model {model}. Falling back to gpt-2 encoding.")
-        encoding = tiktoken.get_encoding("gpt2")
-        return len(encoding.encode(text))
-
 class ContextManager:
     def __init__(self, model_catalog: List[Dict]):
         self.model_limits = {model['id']: model.get('context_window', 8000) for model in model_catalog}
 
-    async def build_prompt_history(self, messages: List[Dict], model_id: str, api_key: str, global_memory: str = None) -> List[Dict]:
-        max_tokens = self.model_limits.get(model_id, 8000) - RESPONSE_BUFFER
-                
-        system_prompt = None
-        if global_memory:
-            # NEU: Widersprüche auflösen, bevor der Prompt gebaut wird
-            if len(global_memory.split('\n')) > 1:
-                global_memory = await llm_gateway.resolve_contradictions(global_memory, api_key)
+    def count_tokens(self, text: str, model: str) -> int:
+        try:
+            encoding = tiktoken.encoding_for_model("gpt-4")
+            return len(encoding.encode(text))
+        except KeyError:
+            logger.warning(f"Could not find encoding for model {model}. Falling back to gpt-2 encoding.")
+            encoding = tiktoken.get_encoding("gpt2")
+            return len(encoding.encode(text))
 
-            system_prompt_text = (
-                "Du bist ein persönlicher Assistent. Nutze die folgenden globalen Erinnerungen, um die Anfrage des Benutzers bestmöglich zu beantworten.\n"
-                "--- Globale Erinnerungen ---\n"
-                f"{global_memory}"
+    async def _summarize_chat_segment(self, messages: List[Dict], model_id: str, provider: str) -> Dict:
+        """Summarizes a segment of chat history using an LLM."""
+        # Use a smaller, efficient model for summarization if possible, or the main model
+        # For now, we'll use gpt-4o-mini as it's efficient and capable.
+        summary_model_id = "gpt-4o-mini"
+        summary_provider = "openai" # Assuming gpt-4o-mini is from openai
+
+        # Retrieve OpenAI API key specifically for summarization
+        openai_api_key = keyring.get_password("Janus-Projekt", "openai")
+        if not openai_api_key:
+            logger.error("OpenAI API key not found for summarization. Skipping summarization.")
+            return {"role": "system", "content": "--- ÄLTERER CHATVERLAUF (ZUSAMMENFASSUNG FEHLGESCHLAGEN: KEIN OPENAI KEY) ---"}
+
+        # Construct a prompt for summarization
+        prompt_messages = [
+            {"role": "system", "content": "Fasse den folgenden Chatverlauf prägnant zusammen. Konzentriere dich auf die Kernpunkte und wichtigen Informationen, die für eine Fortsetzung des Gesprächs relevant sind. Die Zusammenfassung sollte nicht länger als 200 Wörter sein."},
+        ]
+        prompt_messages.extend(messages) # Add the chat segment to be summarized
+
+        try:
+            # Call the LLM gateway for summarization
+            response = await llm_gateway.call_llm(
+                provider=summary_provider,
+                model_id=summary_model_id,
+                prompt="", # Prompt is in chat_history
+                api_key=openai_api_key, # Use the retrieved OpenAI key
+                chat_history=prompt_messages
             )
-            system_prompt = {"role": "system", "content": system_prompt_text}
-            max_tokens -= count_tokens(system_prompt_text, model_id)
+            return {"role": "system", "content": f"--- ZUSAMMENFASSUNG DES ÄLTEREN CHATVERLAUFS ---\n{response.get('text', '')}"}
+        except Exception as e:
+            logger.error(f"Error summarizing chat segment: {e}")
+            # Fallback: return a truncated version or a generic message
+            return {"role": "system", "content": "--- ÄLTERER CHATVERLAUF (ZUSAMMENFASSUNG FEHLGESCHLAGEN) ---"}
 
+    async def build_final_context(self, user_prompt: str, chat_history: List[Dict], memory_context: str, model_id: str, api_key: str, budget_config: Dict, provider: str) -> List[Dict]:
+        max_tokens = self.model_limits.get(model_id, 8000) - RESPONSE_BUFFER
         current_tokens = 0
-        truncated_history = []
+        final_history = []
 
-        for message in reversed(messages):
-            message_content = message.get("content", "")
-            if not message_content:
-                continue
+        # 1. System Prompt (highest priority)
+        system_prompt_text = (
+            "Du bist ein intelligenter Assistent. Deine Aufgabe ist es, die Frage des Benutzers zu beantworten. "
+            "Nutze dabei alle relevanten Informationen aus den bereitgestellten Erinnerungen und dem Chat-Verlauf. "
+            "Formuliere eine präzise, hilfreiche und kohärente Antwort."
+        )
+        system_prompt_tokens = self.count_tokens(system_prompt_text, model_id)
+        if system_prompt_tokens > max_tokens * budget_config.get("system_prompt_ratio", 0.1):
+            logger.warning("System prompt too long, will be truncated or ignored.")
+            # In a real scenario, we might truncate the system prompt or simplify it.
+            # For now, we assume it fits or is critical.
 
-            message_tokens = count_tokens(message_content, model_id)
-                        
-            if current_tokens + message_tokens > max_tokens:
-                logger.info(f"Context limit reached for model {model_id}. Truncating older messages.")
-                break
-                        
-            truncated_history.insert(0, message)
-            current_tokens += message_tokens
+        final_history.append({"role": "system", "content": system_prompt_text})
+        current_tokens += system_prompt_tokens
 
-        if system_prompt:
-            truncated_history.insert(0, system_prompt)
+        # 2. Memory Context (high priority, but can be truncated)
+        memory_context_tokens = self.count_tokens(memory_context, model_id)
+        memory_budget = max_tokens * budget_config.get("memory_ratio", 0.3)
+
+        if memory_context_tokens > 0:
+            if memory_context_tokens > memory_budget:
+                logger.info(f"Memory context too long ({memory_context_tokens} tokens), truncating to {memory_budget} tokens.")
+                # Simple truncation: take the most recent parts if it's a list of snippets
+                # For now, we'll just truncate the string, which might cut off facts mid-sentence.
+                # A more sophisticated approach would involve re-summarizing or selecting top-k snippets.
+                truncated_memory_context = memory_context[:int(memory_budget * 4)] # Rough char estimate for tokens
+                final_history.append({"role": "system", "content": f"--- RELEVANTE ERINNERUNGEN ---\n{truncated_memory_context}\n"})
+                current_tokens += self.count_tokens(truncated_memory_context, model_id)
+            else:
+                final_history.append({"role": "system", "content": f"--- RELEVANTE ERINNERUNGEN ---\n{memory_context}\n"})
+                current_tokens += memory_context_tokens
+
+        # 3. Chat History (medium priority, rolling window with summarization)
+        chat_history_budget = max_tokens * budget_config.get("chat_history_ratio", 0.5)
+        
+        # Calculate total tokens of the full chat history
+        full_chat_history_tokens = sum(self.count_tokens(msg.get("content", ""), model_id) for msg in chat_history)
+
+        SUMMARIZATION_THRESHOLD_TOKENS = 1500 # Example threshold for summarization
+        # Only summarize if the chat history is substantial and exceeds a threshold
+        if full_chat_history_tokens > SUMMARIZATION_THRESHOLD_TOKENS and len(chat_history) > 5: # Also check number of messages
+            logger.info(f"Chat history ({full_chat_history_tokens} tokens) exceeds summarization threshold. Attempting to summarize older parts.")
+            
+            # Find the split point for summarization
+            # Iterate from the oldest messages to find a segment to summarize
+            tokens_to_summarize = 0
+            split_index = 0
+            for i, message in enumerate(chat_history):
+                tokens_to_summarize += self.count_tokens(message.get("content", ""), model_id)
+                if tokens_to_summarize > SUMMARIZATION_THRESHOLD_TOKENS / 2: # Summarize roughly half the threshold
+                    split_index = i + 1
+                    break
+            
+            if split_index > 0:
+                messages_to_summarize = chat_history[:split_index]
+                remaining_messages = chat_history[split_index:]
+
+                summarized_segment = await self._summarize_chat_segment(messages_to_summarize, model_id, provider) # Removed api_key
                 
-        return truncated_history
+                # Reconstruct chat_history with summary and remaining messages
+                chat_history = [summarized_segment] + remaining_messages
+                logger.info(f"Chat history summarized. Original tokens: {full_chat_history_tokens}. New history length: {len(chat_history)} messages.")
+            else:
+                logger.info("Chat history not long enough for effective summarization despite token count.")
+
+
+        # Now, proceed with the rolling window logic on the potentially summarized history
+        remaining_budget = max_tokens - current_tokens
+        truncated_chat_history = []
+        for message in reversed(chat_history):
+            message_content = message.get("content", "")
+            message_tokens = self.count_tokens(message_content, model_id)
+
+            # Check if adding this message + user prompt exceeds max_tokens
+            # The user prompt is added last, so we need to account for its size
+            # Also account for the system prompt and memory context already added
+            if current_tokens + message_tokens + self.count_tokens(user_prompt, model_id) > max_tokens:
+                logger.info(f"Chat history limit reached. Truncating older messages.")
+                break
+            
+            truncated_chat_history.insert(0, message)
+            current_tokens += message_tokens
+        
+        if truncated_chat_history:
+            final_history.extend(truncated_chat_history)
+
+        # 4. User Prompt (always included, highest priority for remaining budget)
+        final_history.append({"role": "user", "content": user_prompt})
+        current_tokens += self.count_tokens(user_prompt, model_id)
+
+        logger.info(f"Final context built. Total tokens: {current_tokens}/{max_tokens}")
+        return final_history

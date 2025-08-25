@@ -1,6 +1,5 @@
 import interact from 'interactjs';
 import { API_BASE_URL } from './config.js';
-import { MODEL_CATALOG } from './model-catalog.js';
 
 const appState = {
     currentView: 'chat',
@@ -8,8 +7,17 @@ const appState = {
     last_active: {
         provider: 'openai',
         model: 'gpt-3.5-turbo'
-    }
+    },
+    model_catalog: {} // Will be loaded dynamically
 };
+
+function formatCost(cost, suffix) {
+    if (cost === 0) {
+        return `0.00${suffix}`;
+    }
+    // Use toLocaleString for better formatting of small numbers
+    return `${cost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}${suffix}`;
+}
 
 function render() {
     console.log('app.js: render() called');
@@ -32,13 +40,13 @@ function render() {
         console.log('render: Current Provider:', provider);
         const allowedModels = appState.user_selections[provider] || [];
         console.log('render: Allowed Models (from user_selections):', allowedModels);
-        const filteredModels = MODEL_CATALOG[provider].filter(model => allowedModels.includes(model.id));
+        const filteredModels = appState.model_catalog[provider].filter(model => allowedModels.includes(model.id));
         console.log('render: Filtered Models (from MODEL_CATALOG):', filteredModels);
 
         filteredModels.forEach(model => {
             const option = document.createElement('option');
             option.value = model.id;
-            option.textContent = `${model.name} (${model.price}) - ${model.desc}`;
+            option.textContent = `${model.name} (${model.cost_per_image ? formatCost(model.cost_per_image, '€/img') : (model.cost_per_token_input ? formatCost(model.cost_per_token_input * 1000000, '€/Mio. in') + ' / ' + formatCost(model.cost_per_token_output * 1000000, '€/Mio. out') : '')})${model.desc ? ' - ' + model.desc : ''}`;
             sidebarModelSelect.appendChild(option);
         });
         console.log('render: Final appState.last_active.model:', appState.last_active.model);
@@ -93,7 +101,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         appState.last_active.provider = sidebarProviderSelect.value;
         const provider = appState.last_active.provider;
         const allowedModels = appState.user_selections[provider] || [];
-        const filteredModels = MODEL_CATALOG[provider].filter(model => allowedModels.includes(model.id));
+        const filteredModels = appState.model_catalog[provider].filter(model => allowedModels.includes(model.id));
         if (filteredModels.length > 0) {
             appState.last_active.model = filteredModels[0].id;
         } else {
@@ -108,6 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         render();
     });
 
+    await loadModelCatalog();
     await loadLastUsedModel();
     await loadUserSelections(); // Load selections before initial render
     render(); // Initial render
@@ -187,6 +196,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       Object.assign(event.target.dataset, { x, y })
     }
 });
+
+async function loadModelCatalog() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/models/catalog`);
+        const data = await response.json();
+        // Transform the array into an object for easier lookup by provider
+        const catalogByProvider = {};
+        data.forEach(model => {
+            if (!catalogByProvider[model.provider]) {
+                catalogByProvider[model.provider] = [];
+            }
+            catalogByProvider[model.provider].push(model);
+        });
+        appState.model_catalog = catalogByProvider;
+    } catch (error) {
+        console.error('Failed to load model catalog:', error);
+    }
+}
 
 async function loadLastUsedModel() {
     try {
@@ -337,12 +364,16 @@ async function renderModelManagementView(provider) {
     }
 
     // Populate model list
-    MODEL_CATALOG[provider].forEach(model => {
+    appState.model_catalog[provider].forEach(model => {
+        // Exclude 'gpt-image-1' from the selection list as it's a tool-called model
+        if (model.id === 'gpt-image-1') {
+            return;
+        }
         const listItem = document.createElement('li');
         const isChecked = selectedModels.includes(model.id) ? 'checked' : '';
         listItem.innerHTML = `
             <input type="checkbox" id="${model.id}" value="${model.id}" ${isChecked}>
-            <label for="${model.id}">${model.name} (${model.price}) - ${model.desc}</label>
+            <label for="${model.id}">${model.name} (${model.cost_per_image ? formatCost(model.cost_per_image, '€/img') : (model.cost_per_token_input ? formatCost(model.cost_per_token_input * 1000000, '€/Mio. in') + ' / ' + formatCost(model.cost_per_token_output * 1000000, '€/Mio. out') : '')})${model.desc ? ' - ' + model.desc : ''}</label>
         `;
         modelList.appendChild(listItem);
     });

@@ -5,7 +5,8 @@
         "provider": "openai",
         "type": "text",
         "cost_per_token_input": 0.00000015,
-        "cost_per_token_output": 0.0000006
+        "cost_per_token_output": 0.0000006,
+        "desc": "Optimiert für Geschwindigkeit und Kosteneffizienz."
     },
     {
         "id": "gpt-image-1",
@@ -14,25 +15,28 @@
         "type": "image",
         "cost_per_image": 0.04,
         "supported_qualities": ["standard", "hd"],
-        "supported_sizes": ["1024x1024", "1792x1024", "1024x1792"]
+        "supported_sizes": ["1024x1024", "1792x1024", "1024x1792"],
+        "desc": "Generiert hochwertige Bilder basierend auf Textprompts."
     },
     {
         "id": "dall-e-3-standard",
-        "name": "DALL·E 3 (SD)",
+        "name": "DALL-E 3 (SD)",
         "provider": "openai",
         "type": "image",
         "quality": "standard",
         "size": "1024x1024",
-        "cost_per_image": 0.04
+        "cost_per_image": 0.04,
+        "desc": "Standardqualitt fr DALLE 3 Bilder."
     },
     {
         "id": "dall-e-3-hd",
-        "name": "DALL·E 3 (HD)",
+        "name": "DALL-E 3 (HD)",
         "provider": "openai",
         "type": "image",
         "quality": "hd",
         "size": "1024x1024",
-        "cost_per_image": 0.08
+        "cost_per_image": 0.08,
+        "desc": "Hochauflsende Qualitt fr DALLE 3 Bilder."
     },
     {
         "id": "gemini-2.5-pro",
@@ -40,7 +44,8 @@
         "provider": "gemini",
         "type": "text",
         "cost_per_token_input": 0.00000125,
-        "cost_per_token_output": 0.000010
+        "cost_per_token_output": 0.0000010,
+        "desc": "Leistungsstarkes Gemini-Modell fr komplexe Aufgaben."
     },
     {
         "id": "gemini-2.5-flash",
@@ -48,6 +53,7 @@
         "provider": "gemini",
         "type": "text",
         "cost_per_token_input": 0.00000030,
-        "cost_per_token_output": 0.0000025
+        "cost_per_token_output": 0.00000025,
+        "desc": "Schnelles und kostengnstiges Gemini-Modell."
     }
 ]

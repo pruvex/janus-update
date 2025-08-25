@@ -6,6 +6,7 @@ import json
 from backend.cost_calculator import calculate_cost, MODEL_PRICES
 from sqlalchemy.orm import Session # Import Session
 from backend import crud, vector_service # Import crud
+from backend.context_manager import ContextManager # NEW IMPORT
 
 logger = logging.getLogger('janus_backend')
 
@@ -271,49 +272,51 @@ async def reason_about_context(user_prompt: str, context_snippets: List[str], ap
     response = await _call_openai_api(api_key, "gpt-4o-mini", history)
     return response.get("text", "Ich konnte keine Antwort finden.")
 
-async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, db: Session, api_key: str, model: str, provider: str) -> str:
+async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, db: Session, api_key: str, model: str, provider: str, context_manager: ContextManager) -> str:
     logger.info(f"reason_and_respond: user_prompt={user_prompt}")
     logger.info(f"reason_and_respond: chat_history={chat_history}")
     logger.info(f"reason_and_respond: memory_context={memory_context}")
     """
     Der zentrale "Denk"-Schritt, der alle Informationen zusammenführt und eine kohärente Antwort generiert.
     """
-    full_context = ""
-    if memory_context:
-        full_context += f"""--- RELEVANTE ERINNERUNGEN ---
-{memory_context}\n"""
+    # Define budget configuration for ContextManager
+    budget_config = {
+        "system_prompt_ratio": 0.1,
+        "memory_ratio": 0.3,
+        "chat_history_ratio": 0.5,
+    }
     
-    # Füge den bisherigen Chat-Verlauf hinzu
-    if chat_history:
-        full_context += f"""--- CHAT VERLAUF ---
-"""
-        for msg in chat_history:
-            full_context += f"{msg['role']}: {msg['content']}\n"
-        full_context += "\n"
-
-    # NEU: Cross-Chat-Memory mit Vektor-Suche
+    # Integrate Cross-Chat-Memory into memory_context
+    cross_chat_memory_snippets = []
     cross_chat_keywords = ["andere chats", "frühere gespräche", "worüber haben wir gesprochen", "andere unterhaltungen"]
     if any(keyword in user_prompt.lower() for keyword in cross_chat_keywords):
         all_chats = crud.get_chats(db, include_archived=True) # Alle Chats laden
         similar_chats = vector_service.find_similar_chat_summaries(user_prompt, all_chats)
         if similar_chats:
-            full_context += f"""--- ZUSAMMENFASSUNGEN ANDERER CHATS ---
-"""
+            cross_chat_memory_snippets.append("--- ZUSAMMENFASSUNGEN ANDERER CHATS ---")
             for chat in similar_chats:
-                full_context += f"Chat ID: {chat.id}, Titel: {chat.title}\n"
-                full_context += f"Zusammenfassung: {chat.summary}\n\n"
-            full_context += "\n"
+                cross_chat_memory_snippets.append(f"Chat ID: {chat.id}, Titel: {chat.title}")
+                cross_chat_memory_snippets.append(f"Zusammenfassung: {chat.summary}")
+            cross_chat_memory_snippets.append("") # Add a newline for separation
+    
+    if cross_chat_memory_snippets:
+        if memory_context:
+            memory_context = memory_context + "\n" + "\n".join(cross_chat_memory_snippets)
+        else:
+            memory_context = "\n".join(cross_chat_memory_snippets)
 
-    system_prompt = f"""Du bist ein intelligenter Assistent. Deine Aufgabe ist es, die Frage des Benutzers zu beantworten. Nutze dabei alle relevanten Informationen aus den bereitgestellten Erinnerungen und dem Chat-Verlauf. Formuliere eine präzise, hilfreiche und kohärente Antwort.
+    # Use the ContextManager to build the final context
+    final_history = await context_manager.build_final_context(
+        user_prompt=user_prompt,
+        chat_history=chat_history,
+        memory_context=memory_context,
+        model_id=model,
+        api_key=api_key,
+        budget_config=budget_config,
+        provider=provider
+    )
 
-{full_context}
---- ANTWORT ---"""
-
-    history = [{"role": "system", "content": system_prompt}]
-    history.extend(chat_history)
-    history.append({"role": "user", "content": user_prompt})
-
-    response = await call_llm(provider, model, "", api_key, chat_history=history)
+    response = await call_llm(provider, model, "", api_key, chat_history=final_history)
     return response
 
 async def summarize_chat_topic(chat_history: List[Dict], api_key: str, provider: str, model: str) -> str:

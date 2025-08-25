@@ -7,10 +7,9 @@
       "dall-e-3-hd"
     ],
     "gemini": [
-      "gemini-2.5-pro",
       "gemini-2.5-flash"
     ]
   },
-  "last_used_provider": "openai",
-  "last_used_model": "gpt-4o-mini"
+  "last_used_provider": "gemini",
+  "last_used_model": "gemini-2.5-flash"
 }
