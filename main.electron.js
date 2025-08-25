@@ -184,7 +184,9 @@ function createWindow () {
   //   // In production, serve the index.html file
   //   mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
   // }
-  mainWindow.webContents.openDevTools();
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.webContents.openDevTools();
+  }
 
   mainWindow.webContents.on('context-menu', (event, params) => {
     const menu = new Menu();
