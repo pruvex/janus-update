@@ -101,7 +101,7 @@ Implementierung eines robusten, LLM-gesteuerten "Intelligenten Switches" für da
 3.  **LLM-Tool-Calling-Integration (`backend/llm_gateway.py`):**
     *   Modifizierung von `llm_gateway.py`, um dem LLM die verfügbaren Tool-Definitionen (aus dem neuen Tool-Register) bei einem Chat-Completion-Aufruf zu präsentieren.
     *   Verarbeitung der LLM-Antwort, um festzustellen, ob ein Tool-Aufruf vorgeschlagen wurde.
-    *   **Aktion:** `_call_gemini_api` und `_call_openai_api` anpassen, um Tool-Definitionen zu übergeben und Tool-Aufrufe zu verarbeiten. (Erledigt)
+    *   **Aktion:** `_call_gemini_api` und `_call_openai_api` anpassen, um Tool-Definitionen zu übergeben und Tool-Aufrufe zu verarbeiten. (Erledigt) (Erledigt)
 4.  **Dynamischer Tool-Dispatcher (`backend/llm_gateway.py` oder neue Utility):**
     *   Erstellung einer Funktion (z.B. `execute_tool_call`), die den Tool-Namen und die Argumente aus der LLM-Antwort entgegennimmt.
     *   Dynamisches Nachschlagen der entsprechenden Python-Funktion im Tool-Register.

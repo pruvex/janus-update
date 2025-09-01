@@ -1,1 +1,1 @@
-Aktion: llm_gateway.py refaktorisiert, um Tools dynamisch aus tool_registry zu laden. Grund: Entkopplung der Gateway-Logik von spezifischen Tool-Implementierungen.
+Aktion: backend/main.py vollständig überschrieben. Grund: Implementierung des 'Gold Standard Switch'. Die alte Logik (_classify_intent, match intent:) wurde entfernt und durch einen zentralen reason_and_respond-Aufruf mit anschließender Tool-Dispatch-Logik ersetzt.
