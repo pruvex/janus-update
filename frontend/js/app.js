@@ -33,24 +33,35 @@ function render() {
         console.log('render: appState.user_selections:', appState.user_selections);
         // Update sidebar provider dropdown
         sidebarProviderSelect.value = appState.last_active.provider;
+        console.log(`app.js: render() - Set sidebarProviderSelect.value to ${appState.last_active.provider}`);
 
         // Populate sidebar model dropdown based on selected provider
         sidebarModelSelect.innerHTML = ''; // Clear existing options
         const provider = appState.last_active.provider;
         console.log('render: Current Provider:', provider);
+        console.log('render: Model Catalog:', appState.model_catalog);
         const allowedModels = appState.user_selections[provider] || [];
         console.log('render: Allowed Models (from user_selections):', allowedModels);
-        const filteredModels = appState.model_catalog[provider].filter(model => allowedModels.includes(model.id));
-        console.log('render: Filtered Models (from MODEL_CATALOG):', filteredModels);
+        
+        if (appState.model_catalog[provider]) {
+            const filteredModels = appState.model_catalog[provider].filter(model => 
+                allowedModels.includes(model.id) && model.type !== 'image'
+            );
+            console.log('render: Filtered Models (from MODEL_CATALOG):', filteredModels);
 
-        filteredModels.forEach(model => {
-            const option = document.createElement('option');
-            option.value = model.id;
-            option.textContent = `${model.name} (${model.cost_per_image ? formatCost(model.cost_per_image, '€/img') : (model.cost_per_token_input ? formatCost(model.cost_per_token_input * 1000000, '€/Mio. in') + ' / ' + formatCost(model.cost_per_token_output * 1000000, '€/Mio. out') : '')})${model.desc ? ' - ' + model.desc : ''}`;
-            sidebarModelSelect.appendChild(option);
-        });
+            filteredModels.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.id;
+                option.textContent = `${model.name} (${model.cost_per_image ? formatCost(model.cost_per_image, '€/img') : (model.cost_per_token_input ? formatCost(model.cost_per_token_input * 1000000, '€/Mio. in') + ' / ' + formatCost(model.cost_per_token_output * 1000000, '€/Mio. out') : '')})${model.desc ? ' - ' + model.desc : ''}`;
+                sidebarModelSelect.appendChild(option);
+            });
+        } else {
+            console.warn(`No models found for provider: ${provider}`);
+        }
+
         console.log('render: Final appState.last_active.model:', appState.last_active.model);
         sidebarModelSelect.value = appState.last_active.model;
+        console.log(`app.js: render() - Set sidebarModelSelect.value to ${appState.last_active.model}`);
     }
 
     if (appState.currentView === 'chat') {

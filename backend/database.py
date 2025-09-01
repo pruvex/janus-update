@@ -17,6 +17,15 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+# FastAPI Dependency: DB-Session bereitstellen
+def get_db():
+    """Yieldet eine DB-Session für Requests und schließt sie danach."""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 # --- Modelle ---
 class Chat(Base):
     __tablename__ = "chats"
@@ -52,6 +61,9 @@ COSTS_DATABASE_URL = f"sqlite:///{COSTS_DB_PATH}"
 costs_engine = create_engine(COSTS_DATABASE_URL, connect_args={"check_same_thread": False})
 CostsSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=costs_engine)
 CostsBase = declarative_base()
+
+# Alias für Tests (Kompatibilität zu bestehenden Testfällen)
+DATABASE_FILE = COSTS_DB_PATH
 
 class Cost(CostsBase):
     __tablename__ = "costs"
@@ -117,6 +129,27 @@ def get_costs_summary_by_model_for_current_month():
                 summary[model_name]["image_count"] += 1 # Assuming 1 image per entry if image_cost > 0
 
         return list(summary.values())
+    finally:
+        db.close()
+    
+def get_all_cost_entries():
+    """Liefert alle Kosten-Einträge als Liste von Dicts, nach Datum DESC sortiert."""
+    db = CostsSessionLocal()
+    try:
+        entries = db.query(Cost).order_by(Cost.date.desc()).all()
+        result = []
+        for e in entries:
+            result.append({
+                "id": e.id,
+                "date": e.date,
+                "model": e.model,
+                "input_tokens": e.input_tokens,
+                "output_tokens": e.output_tokens,
+                "image_quality": e.image_quality,
+                "image_cost": e.image_cost,
+                "total_cost": e.total_cost,
+            })
+        return result
     finally:
         db.close()
     

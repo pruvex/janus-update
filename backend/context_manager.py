@@ -21,18 +21,18 @@ class ContextManager:
             encoding = tiktoken.get_encoding("gpt2")
             return len(encoding.encode(text))
 
-    async def _summarize_chat_segment(self, messages: List[Dict], model_id: str, provider: str) -> Dict:
+    async def _summarize_chat_segment(self, messages: List[Dict], model_id: str, provider: str, api_key: str) -> Dict:
         """Summarizes a segment of chat history using an LLM."""
         # Use a smaller, efficient model for summarization if possible, or the main model
-        # For now, we'll use gpt-4o-mini as it's efficient and capable.
-        summary_model_id = "gpt-4o-mini"
-        summary_provider = "openai" # Assuming gpt-4o-mini is from openai
+        # For now, we'll use the provided model for summarization.
+        summary_model_id = model_id
+        summary_provider = provider
 
-        # Retrieve OpenAI API key specifically for summarization
-        openai_api_key = keyring.get_password("Janus-Projekt", "openai")
-        if not openai_api_key:
-            logger.error("OpenAI API key not found for summarization. Skipping summarization.")
-            return {"role": "system", "content": "--- ÄLTERER CHATVERLAUF (ZUSAMMENFASSUNG FEHLGESCHLAGEN: KEIN OPENAI KEY) ---"}
+        # Retrieve API key for summarization
+        summary_api_key = api_key
+        if not summary_api_key:
+            logger.error(f"API key not found for {summary_provider} summarization. Skipping summarization.")
+            return {"role": "system", "content": f"--- ÄLTERER CHATVERLAUF (ZUSAMMENFASSUNG FEHLGESCHLAGEN: KEIN {summary_provider.upper()} KEY) ---"}
 
         # Construct a prompt for summarization
         prompt_messages = [
@@ -46,7 +46,7 @@ class ContextManager:
                 provider=summary_provider,
                 model_id=summary_model_id,
                 prompt="", # Prompt is in chat_history
-                api_key=openai_api_key, # Use the retrieved OpenAI key
+                api_key=summary_api_key, # Use the retrieved API key
                 chat_history=prompt_messages
             )
             return {"role": "system", "content": f"--- ZUSAMMENFASSUNG DES ÄLTEREN CHATVERLAUFS ---\n{response.get('text', '')}"}
@@ -117,7 +117,7 @@ class ContextManager:
                 messages_to_summarize = chat_history[:split_index]
                 remaining_messages = chat_history[split_index:]
 
-                summarized_segment = await self._summarize_chat_segment(messages_to_summarize, model_id, provider) # Removed api_key
+                summarized_segment = await self._summarize_chat_segment(messages_to_summarize, model_id, provider, api_key)
                 
                 # Reconstruct chat_history with summary and remaining messages
                 chat_history = [summarized_segment] + remaining_messages

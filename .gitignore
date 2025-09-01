@@ -24,3 +24,4 @@ backend/costs.db
 backend/chat.db
 backend/model_cache/
 *.db
+.env

@@ -13,12 +13,15 @@ chatForm.addEventListener('submit', async (e) => {
     const model = document.getElementById('model-select').value;
     const chat_id = getCurrentChatId(); // Get current chat ID
 
+    console.log(`chat.js: Sending request with provider: ${provider}, model: ${model}, chat_id: ${chat_id}`);
+
     if (!prompt) return;
 
     appendMessage('user', { text: prompt });
     chatInput.value = '';
 
     appendMessage('bot', '...'); // Ladeanzeige
+    const loadingMessageElement = chatMessages.lastChild;
 
     try {
         // Check if it's a new chat and the first message
@@ -97,7 +100,7 @@ export function appendMessage(sender, data) {
     } else if (typeof data === 'object' && data !== null) {
         textContent = data.text || '';
         
-        // Handle image from URL (DALL-E)
+        // Handle image from URL (DALL-E and Gemini)
         if (data.image_url) {
             const imageElement = document.createElement('img');
             let fullImageUrl = data.image_url;
@@ -111,7 +114,7 @@ export function appendMessage(sender, data) {
             imageUrlForSaving = fullImageUrl;
             messageElement.appendChild(imageElement);
             imageElement.onload = () => scrollToChatBottom();
-            textContent = ''; // Clear textContent if image is present
+            textContent = ''; // Ensure textContent is empty if image is present
 
         // Handle image from Base64 (Imagen)
         } else if (data.image_base64 && data.mime_type) {
@@ -145,9 +148,11 @@ export function appendMessage(sender, data) {
         }
     }
     
-    const textNode = document.createElement('p');
-    textNode.innerText = textContent;
-    messageElement.appendChild(textNode);
+    if (textContent) {
+        const textNode = document.createElement('p');
+        textNode.innerText = textContent;
+        messageElement.appendChild(textNode);
+    }
 
     chatMessages.appendChild(messageElement);
     scrollToChatBottom(); // Scroll after message is appended

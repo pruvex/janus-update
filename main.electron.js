@@ -207,27 +207,27 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     const win = createWindow();
-    startBackend(win);
-    waitForBackend().then(() => {
+    // startBackend(win); // Commented out for development
+    // waitForBackend().then(() => { // Commented out for development
         if (process.env.NODE_ENV === 'development') {
             win.loadURL('http://localhost:5173/');
         } else {
             win.loadFile(path.join(__dirname, 'dist', 'index.html'));
         }
-    });
+    // }); // Commented out for development
   }
 });
 
 app.whenReady().then(() => {
     const win = createWindow();
-    startBackend(win);
-    waitForBackend().then(() => {
+    // startBackend(win); // Commented out for development
+    // waitForBackend().then(() => { // Commented out for development
         if (process.env.NODE_ENV === 'development') {
             win.loadURL('http://localhost:5173/');
         } else {
             win.loadFile(path.join(__dirname, 'dist', 'index.html'));
         }
-    });
+    // }); // Commented out for development
 });
 
 app.on('will-quit', stopBackend);

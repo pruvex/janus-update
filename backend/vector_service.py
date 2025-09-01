@@ -30,42 +30,45 @@ def generate_embedding(text: str):
         logger.error(f"Fehler bei der Embedding-Generierung für Text '{text}': {e}")
         return None
 
-def find_similar_snippets(query_text: str, memories: list, top_k: int = 3, threshold: float = 0.1):
-    """
-    Findet die semantisch ähnlichsten Erinnerungen an einen Suchtext.
-    """
-    if model is None or not memories:
+def _find_similar_items(query_text: str, items: list, embedding_attribute: str, top_k: int, threshold: float):
+    if model is None or not items:
         return []
     try:
         query_embedding = model.encode(query_text)
 
-        # Filtere zuerst die Memories, die ein Embedding haben
-        memories_with_embeddings = [mem for mem in memories if mem.embedding_json]
-        if not memories_with_embeddings:
+        items_with_embeddings = [item for item in items if getattr(item, embedding_attribute)]
+        if not items_with_embeddings:
             return []
 
-        # Lade die Embeddings aus den gefilterten Datenbank-Objekten
-        corpus_embeddings = [json.loads(mem.embedding_json) for mem in memories_with_embeddings]
+        corpus_embeddings = [json.loads(getattr(item, embedding_attribute)) for item in items_with_embeddings]
 
-        # Berechne die Kosinus-Ähnlichkeit
         cos_scores = util.cos_sim(query_embedding, corpus_embeddings)[0]
 
-        # Finde die Indizes der Top K Treffer
         top_results_indices = np.argpartition(-cos_scores, range(min(top_k, len(cos_scores))))[:top_k]
 
-        # Filtere die Ergebnisse nach dem Schwellenwert und gib die Original-Memory-Objekte zurück
-        similar_memories = []
+        similar_items = []
         for i, idx in enumerate(top_results_indices):
-            score = cos_scores[idx]
-            logger.info(f"Snippet: '{memories_with_embeddings[idx].snippet}', Score: {score:.4f}")
+            score = float(cos_scores[idx]) # Convert to float
             if score > threshold:
-                # Greife auf die gefilterte Liste zu, um den korrekten Index zu verwenden
-                similar_memories.append(memories_with_embeddings[idx])
-        logger.info(f"find_similar_snippets: Returning {len(similar_memories)} similar memories.")
-        return similar_memories
+                similar_items.append(items_with_embeddings[idx])
+        return similar_items
     except Exception as e:
-        logger.error(f"Fehler bei der Vektor-Suche: {e}")
+        logger.error(f"Fehler bei der Vektor-Suche für {embedding_attribute}: {e}")
         return []
+
+def find_similar_snippets(query_text: str, memories: list, top_k: int = 3, threshold: float = 0.1):
+    """Findet die semantisch ähnlichsten Erinnerungen an einen Suchtext."""
+    similar_memories = _find_similar_items(query_text, memories, "embedding_json", top_k, threshold)
+    for mem in similar_memories:
+        # Access the score from the original cos_scores calculation if needed for logging
+        # For now, we'll just log the snippet and assume the score is handled by _find_similar_items
+        logger.info(f"Snippet: '{mem.snippet}')")
+    logger.info(f"find_similar_snippets: Returning {len(similar_memories)} similar memories.")
+    return similar_memories
+
+def find_similar_chat_summaries(query_text: str, chats: list, top_k: int = 3, threshold: float = 0.5):
+    """Findet die semantisch ähnlichsten Chat-Zusammenfassungen an einen Suchtext."""
+    return _find_similar_items(query_text, chats, "summary_embedding_json", top_k, threshold)
 
 def find_similar_chat_summaries(query_text: str, chats: list, top_k: int = 3, threshold: float = 0.5):
     """

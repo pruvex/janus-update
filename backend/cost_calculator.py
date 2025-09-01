@@ -28,7 +28,7 @@ def calculate_cost(model_id, usage_data=None, custom_prompt=None):
     usage = {}
     cost = {}
 
-    if model_type == "text" and usage_data:
+    if model_type == "text" and usage_data is not None:
         if isinstance(usage_data, dict):
             input_tokens = usage_data.get("prompt_tokens", 0)
             output_tokens = usage_data.get("completion_tokens", 0)
@@ -54,11 +54,4 @@ def calculate_cost(model_id, usage_data=None, custom_prompt=None):
         usage = {"image_quality": "standard", "image_size": "1024x1024"}
         cost = {"image_cost": image_cost, "total_cost": total_cost}
     
-    logger.info(f"\n--- USAGE TRACKING ---\n"
-                f"Model: {model_id}\n"
-                f"Input Tokens: {usage.get('input_tokens', 'N/A')}\n"
-                f"Output Tokens: {usage.get('output_tokens', 'N/A')}\n"
-                f"Total Cost: {cost.get('total_cost', 0):.8f} €\n"
-                f"----------------------")
-
     return usage, cost

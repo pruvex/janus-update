@@ -6,17 +6,9 @@
         "type": "text",
         "cost_per_token_input": 0.00000015,
         "cost_per_token_output": 0.0000006,
-        "desc": "Optimiert für Geschwindigkeit und Kosteneffizienz."
-    },
-    {
-        "id": "gpt-image-1",
-        "name": "GPT Image 1",
-        "provider": "openai",
-        "type": "image",
-        "cost_per_image": 0.04,
-        "supported_qualities": ["standard", "hd"],
-        "supported_sizes": ["1024x1024", "1792x1024", "1024x1792"],
-        "desc": "Generiert hochwertige Bilder basierend auf Textprompts."
+        "desc": "Optimiert für Geschwindigkeit und Kosteneffizienz.",
+        "image_generation_model": "dall-e-3-standard",
+        "capabilities": ["chat", "tool_calling", "memory_query"]
     },
     {
         "id": "dall-e-3-standard",
@@ -26,7 +18,8 @@
         "quality": "standard",
         "size": "1024x1024",
         "cost_per_image": 0.04,
-        "desc": "Standardqualitt fr DALLE 3 Bilder."
+        "desc": "Standardqualität für DALLE 3 Bilder.",
+        "capabilities": ["image_generation"]
     },
     {
         "id": "dall-e-3-hd",
@@ -36,7 +29,8 @@
         "quality": "hd",
         "size": "1024x1024",
         "cost_per_image": 0.08,
-        "desc": "Hochauflsende Qualitt fr DALLE 3 Bilder."
+        "desc": "Hochauflösende Qualität für DALLE 3 Bilder.",
+        "capabilities": ["image_generation"]
     },
     {
         "id": "gemini-2.5-pro",
@@ -45,7 +39,9 @@
         "type": "text",
         "cost_per_token_input": 0.00000125,
         "cost_per_token_output": 0.0000010,
-        "desc": "Leistungsstarkes Gemini-Modell fr komplexe Aufgaben."
+        "desc": "Leistungsstarkes Gemini-Modell für komplexe Aufgaben.",
+        "image_generation_model": "gemini-2.5-flash-image-preview",
+        "capabilities": ["chat", "tool_calling", "memory_query"]
     },
     {
         "id": "gemini-2.5-flash",
@@ -54,6 +50,26 @@
         "type": "text",
         "cost_per_token_input": 0.00000030,
         "cost_per_token_output": 0.00000025,
-        "desc": "Schnelles und kostengnstiges Gemini-Modell."
+        "desc": "Schnelles und kostengünstiges Gemini-Modell.",
+        "image_generation_model": "gemini-2.5-flash-image-preview",
+        "capabilities": ["chat", "tool_calling", "memory_query"]
+    },
+    {
+        "id": "gemini-2.5-flash-image-preview",
+        "name": "Gemini 2.5 Flash (Image)",
+        "provider": "gemini",
+        "type": "image",
+        "cost_per_image": 0.02,
+        "desc": "Generiert Bilder mit Gemini 2.5 Flash.",
+        "capabilities": ["image_generation"]
+    },
+    {
+        "id": "gemini-2.5-pro-image-preview",
+        "name": "Gemini 2.5 Pro (Image)",
+        "provider": "gemini",
+        "type": "image",
+        "cost_per_image": 0.03,
+        "desc": "Generiert Bilder mit Gemini 2.5 Pro.",
+        "capabilities": ["image_generation"]
     }
 ]
