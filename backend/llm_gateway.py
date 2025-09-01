@@ -1,4 +1,5 @@
 import logging
+from backend.tool_registry import get_all_tool_definitions
 from typing import List, Dict, Optional
 import openai
 import google.generativeai as genai
@@ -71,40 +72,7 @@ async def _call_openai_api(api_key: str, model_id: str, chat_history: List[Dict]
         usage, cost = _calculate_and_log_cost(model_id, custom_prompt=revised_prompt)
         return {"text": text_response, "image_url": image_url, "usage": usage, "cost": cost}
     else:
-        tools = [
-            {
-                "type": "function",
-                "function": {
-                    "name": "generate_image_tool",
-                    "description": "Generates an image based on a text prompt using DALL-E 3.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "prompt": {
-                                "type": "string",
-                                "description": "A detailed text description of the image to generate."
-                            },
-                            "size": {
-                                "type": "string",
-                                "enum": ["1024x1024", "1792x1024", "1024x1792"],
-                                "description": "The size of the generated image. Defaults to 1024x1024."
-                            },
-                            "quality": {
-                                "type": "string",
-                                "enum": ["standard", "hd"],
-                                "description": "The quality of the generated image. Defaults to standard."
-                            },
-                            "response_format": {
-                                "type": "string",
-                                "enum": ["url", "b64_json"],
-                                "description": "The format of the response, either a URL or base64 encoded JSON. Defaults to url."
-                            }
-                        },
-                        "required": ["prompt"]
-                    }
-                }
-            }
-        ]
+        tools = get_all_tool_definitions()
 
         response = await client.chat.completions.create(
             model=model_id,

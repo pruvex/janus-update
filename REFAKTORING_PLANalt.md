@@ -93,11 +93,11 @@ Implementierung eines robusten, LLM-gesteuerten "Intelligenten Switches" für da
 1.  **Tool-Definitionen (Pydantic-Modelle):**
     *   Erstellung von Pydantic-Modellen für alle Tools (z.B. `ImageGenerationTool`, `MemoryRetrievalTool`, `CrossChatMemoryTool`).
     *   Diese Modelle werden `name`, `description` und `parameters` (unter Verwendung von Pydantic für das Schema) enthalten.
-    *   **Aktion:** Neue Pydantic-Modelle in `backend/schemas.py` definieren. (Erledigt)
+    *   **Aktion:** Neue Pydantic-Modelle in `backend/schemas.py` definieren. (Erledigt) (Erledigt)
 2.  **Tool-Register (`backend/tool_registry.py`):**
     *   Formalisierung eines Tool-Registers, das Tool-Namen ihren Python-Funktionen und Pydantic-Schemata zuordnet.
     *   Dieses Register wird die Metadaten der Tools (Beschreibung, Parameter) für das LLM bereitstellen und die Mapping-Logik für die Ausführung enthalten.
-    *   **Aktion:** Neue Datei `backend/tool_registry.py` erstellen und die Tool-Definitionen dort zentralisieren. (Erledigt)
+    *   **Aktion:** Neue Datei `backend/tool_registry.py` erstellen und die Tool-Definitionen dort zentralisieren. (Erledigt) (Erledigt)
 3.  **LLM-Tool-Calling-Integration (`backend/llm_gateway.py`):**
     *   Modifizierung von `llm_gateway.py`, um dem LLM die verfügbaren Tool-Definitionen (aus dem neuen Tool-Register) bei einem Chat-Completion-Aufruf zu präsentieren.
     *   Verarbeitung der LLM-Antwort, um festzustellen, ob ein Tool-Aufruf vorgeschlagen wurde.
