@@ -113,7 +113,7 @@ Implementierung eines robusten, LLM-gesteuerten "Intelligenten Switches" für da
     *   Entfernung der heuristischen Keyword-Prüfungen für die Bilderzeugung und das Cross-Chat-Memory.
     *   Integration der LLM-Tool-Calling- und dynamischen Dispatch-Logik.
     *   Die Funktion `reason_and_respond` in `llm_gateway.py` wird der primäre Orchestrator für diese Logik sein.
-    *   **Aktion:** Anpassung des `/api/chat`-Endpunkts, um die neue Tool-Routing-Logik zu nutzen. (Erledigt)
+    *   **Aktion:** Anpassung des `/api/chat`-Endpunkts, um die neue Tool-Routing-Logik zu nutzen. (Erledigt) (Erledigt)
 6.  **Verbesserung der Fehlerbehandlung:**
     *   Implementierung von Wiederholungen (Retries) mit exponentiellem Backoff für externe API-Aufrufe (z.B. DALL-E, Gemini-Bilderzeugung).
     *   Verbesserung der benutzerseitigen Fehlermeldungen für Tool-Fehler.

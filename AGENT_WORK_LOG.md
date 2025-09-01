@@ -1,1 +1,1 @@
-Aktion: backend/main.py vollständig überschrieben. Grund: Implementierung des 'Gold Standard Switch'. Die alte Logik (_classify_intent, match intent:) wurde entfernt und durch einen zentralen reason_and_respond-Aufruf mit anschließender Tool-Dispatch-Logik ersetzt.
+Aktion: waechter/test_main_api.py mit Pytest-Tests überschrieben. Grund: Erstellung von Integrationstests für den neuen API-Flow (Text-Antwort und Tool-Aufruf).
