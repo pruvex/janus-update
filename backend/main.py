@@ -7,9 +7,9 @@ import asyncio
 import shutil
 from fastapi import FastAPI, HTTPException, Depends, Response, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 router = APIRouter()
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional, Dict
