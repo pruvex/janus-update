@@ -1,65 +1,59 @@
-﻿Schritt 1: Den Fakten-Extraktor disziplinieren (Halluzinationen stoppen)
-Wir müssen verhindern, dass der memory_extractor die Erfindungen der KI als Fakten speichert.
-Öffnen Sie backend/memory_extractor.py.
-Suchen Sie den extraction_prompt.
-Ersetzen Sie ihn durch diesen neuen, viel strengeren Prompt, der sich nur auf die Aussagen des Benutzers konzentriert:
+﻿Öffnen Sie die Datei backend/main.py.
+Suchen Sie die handle_chat_request-Funktion.
+Fügen Sie direkt nach der Zeile crud.create_message(...) den folgenden neuen Code-Block ein:
 code
 Python
-# In memory_extractor.py
-extraction_prompt = (
-    "Du bist ein Analyst für Faktenextraktion. Deine Aufgabe ist es, aus einem Dialog zwischen einem Benutzer und einem Assistenten FAKTEN zu extrahieren. "
-    "**REGEL 1: Extrahiere NUR Fakten, die der BENUTZER in seiner LETZTEN Nachricht explizit genannt hat.**\n"
-    "**REGEL 2: Ignoriere die Schlussfolgerungen, Meinungen oder Fragen des Assistenten VOLLSTÄNDIG.**\n"
-    "Formuliere die Fakten als einfache, neutrale Aussagen über den Benutzer (z.B. 'Der Benutzer heißt Klaus', 'Der Benutzer mag die Farbe Blau').\n"
-    "Wenn der Benutzer keine neuen Fakten nennt, antworte NUR mit dem Wort 'Keine'.\n\n"
-    "--- DIALOG ---\n"
-    "{text_block}\n\n"
-    "--- EXTRAHIERTE FAKTEN ---"
-)
-Schritt 2: Das LLM zum "Detektiv" machen (Konsistenz erzwingen)
-Wir ersetzen die fehleranfällige Filter-Logik in llm_gateway.py durch einen einzigen, extrem robusten "Master-Prompt".
-Öffnen Sie backend/llm_gateway.py.
-Suchen Sie die reason_and_respond-Funktion.
-Ersetzen Sie den gesamten Inhalt der Funktion durch diese finale Version, die das Detektiv-Prinzip anwendet:
-code
-Python
-# In llm_gateway.py
+# In main.py, in handle_chat_request, nach crud.create_message(...)
 
-async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, db: Session, api_key: str, model: str, provider: str, context_manager: ContextManager) -> Dict:
-    logger.info(f"reason_and_respond: Original user_prompt={user_prompt}")
+# --- NEU: Gemini-Bildgenerierung Vorab-Prüfung ---
+if request.provider == "gemini":
+    image_keywords = ["bild", "image", "picture", "foto", "photo", "draw", "create", "generate", "zeichne", "erstelle", "generiere"]
+    prompt_lower = request.prompt.lower()
     
-    # Der System-Prompt wird jetzt hier dynamisch aufgebaut
-    # und enthält die unmissverständlichen Anweisungen.
-    system_rules = (
-        "Du bist Janus, ein hilfreicher KI-Detektiv. Deine Aufgabe ist es, die Frage des Benutzers ausschließlich auf Basis der unten stehenden BEWEISE zu beantworten. Erfinde oder schlussfolgere nichts, was nicht direkt durch die Beweise gestützt wird.\n"
-        "**REGEL 1: Die 'FAKTEN AUS DEM LANGZEITGEDÄCHTNIS' sind die absolute Wahrheit.**\n"
-        "**REGEL 2: Der 'AKTUELLE GESPRÄCHSVERLAUF' liefert den unmittelbaren Kontext.**\n"
-        "**REGEL 3: Wenn die Beweise nicht ausreichen, um die Frage zu beantworten, antworte, dass du die Information nicht hast.**"
-    )
-
-    # Wir bauen den finalen Prompt für das LLM zusammen
-    final_prompt_for_llm = f"{system_rules}\n\n"
-    
-    if memory_context:
-        final_prompt_for_llm += f"--- FAKTEN AUS DEM LANGZEITGEDÄCHTNIS ---\n{memory_context}\n\n"
+    if any(keyword in prompt_lower for keyword in image_keywords):
+        logger.info("Gemini image generation intent detected by keyword. Bypassing reason_and_respond.")
         
-    # Wir übergeben den Chat-Verlauf als Teil des Prompts, um die Struktur zu wahren
-    history_str = "\n".join([f"{msg['role']}: {msg['content']}" for msg in chat_history])
-    final_prompt_for_llm += f"--- AKTUELLER GESPRÄCHSVERLAUF ---\n{history_str}\n\n"
-    
-    final_prompt_for_llm += f"--- FRAGE DES BENUTZERS ---\n{user_prompt}\n\n--- ANTWORT ---"
+        # Wähle ein passendes Gemini-Bildmodell
+        # (Diese Logik kann später aus dem model_catalog verfeinert werden)
+        image_model_id = "gemini-2.5-flash-image-preview"
 
-    # Wir rufen das LLM mit einem leeren Chat-Verlauf auf, da alles im Prompt steht
-    response = await call_llm(provider, model, final_prompt_for_llm, api_key, chat_history=[])
+        llm_response = await llm_gateway._call_gemini_image_generation_api(api_key, image_model_id, request.prompt)
+        
+        local_image_path = llm_response.get("image_url")
+        usage = llm_response.get("usage", {})
+        cost = llm_response.get("cost", {})
+        
+        final_answer = "Bild wurde erfolgreich mit Gemini generiert." if local_image_path else llm_response.get("text", "Fehler bei der Gemini-Bildgenerierung.")
+
+        # Speichere die Antwort und beende die Funktion frühzeitig
+        crud.create_message(db, chat_id=request.chat_id, sender="model", content=final_answer, image_path=local_image_path)
+        if usage and cost.get("total_cost", 0) > 0:
+            database.save_cost_entry(
+                date=datetime.now(), model=image_model_id, # Kosten für das Bildmodell verbuchen
+                input_tokens=usage.get("prompt_tokens", 0), 
+                output_tokens=usage.get("completion_tokens", 0),
+                image_quality=usage.get("image_quality"), 
+                image_cost=cost.get("image_cost", 0),
+                total_cost=cost.get("total_cost", 0)
+            )
+        return {"sender": "model", "text": final_answer, "image_url": local_image_path}
+# --- ENDE der Vorab-Prüfung ---
+
+# Der restliche Code der Funktion (ab "3. Chat-Historie und Gedächtnis-Kontext laden") bleibt unverändert
+# ...
+Entfernen Sie den alten Gemini-Fallback. Gehen Sie weiter nach unten in derselben Funktion zum elif response_type == "text":-Block und löschen Sie den gesamten "NEUER GEMINI FALLBACK"-Block, den wir zuvor eingefügt haben. Er wird nicht mehr benötigt und könnte zu Konflikten führen.
+code
+Python
+# In main.py, in handle_chat_request
+
+elif response_type == "text":
+    final_answer = llm_response.get("text") or ""
     
-    # Die Auswertung der LLM-Antwort bleibt gleich (für den Tool-Fall)
-    if response.get("type") == "tool_code":
-        return response
+    # --- DIESEN GESAMTEN BLOCK LÖSCHEN ---
+    # image_url_match = re.search(r"!\[.*?\]\((https?://[^\s]+)\)", final_answer)
+    # if request.provider == "gemini" and image_url_match:
+    #     ... (und so weiter)
+    # --- ENDE DES ZU LÖSCHENDEN BLOCKS ---
     
-    return {
-        "type": "text", 
-        "text": response.get("text"), 
-        "image_url": response.get("image_url"), 
-        "usage": response.get("usage"), 
-        "cost": response.get("cost")
-    }
+    if not local_image_path and final_answer:
+        # ... (dieser Teil bleibt)
