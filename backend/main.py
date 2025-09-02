@@ -109,55 +109,41 @@ def check_budget_and_raise_if_exceeded(db: Session):
         raise HTTPException(status_code=402, detail=f"Monthly budget of {monthly_budget:.2f} € exceeded. Current cost: {current_month_cost:.2f} €.")
 
 # --- GOLD STANDARD SWITCH IMPLEMENTATION ---
-async def handle_chat_request(request: ChatRequest, db: Session, context_manager: ContextManager, model_catalog: dict = Depends(get_model_catalog_dep)):
+# --- ERSETZE DIE GESAMTE handle_chat_request FUNKTION ---
+async def handle_chat_request(request: ChatRequest, db: Session, context_manager: ContextManager, model_catalog: dict):
     api_key = keyring.get_password("Janus-Projekt", request.provider)
     if not api_key:
         raise HTTPException(status_code=400, detail="API Key not found.")
-
     check_budget_and_raise_if_exceeded(db)
-
     # 1. Chat erstellen, falls nicht vorhanden
     if request.chat_id is None:
         new_chat = crud.create_chat(db, title="New Chat")
         request.chat_id = new_chat.id
         logger.info(f"New chat created with ID: {request.chat_id}")
-
     # 2. Benutzernachricht immer speichern
     crud.create_message(db, chat_id=request.chat_id, sender="user", content=request.prompt)
-
-    # --- NEU: Gemini-Bildgenerierung Vorab-Prüfung ---
+        # --- NEU: Gemini-Bildgenerierung Vorab-Prüfung ---
     if request.provider == "gemini":
         image_keywords = ["bild", "image", "picture", "foto", "photo", "draw", "create", "generate", "zeichne", "erstelle", "generiere"]
         prompt_lower = request.prompt.lower()
-        
-        if any(keyword in prompt_lower for keyword in image_keywords):
+                if any(keyword in prompt_lower for keyword in image_keywords):
             logger.info("Gemini image generation intent detected by keyword. Bypassing reason_and_respond.")
-            
-            # Wähle ein passendes Gemini-Bildmodell
-            # (Diese Logik kann später aus dem model_catalog verfeinert werden)
-            # --- HIER DIE ÄNDERUNG ---
-            # Hole das zum Textmodell passende Bildmodell aus dem Katalog
+                        # Hole das zum Textmodell passende Bildmodell aus dem Katalog
             selected_text_model = model_catalog.get(request.model, {})
             image_model_id = selected_text_model.get("image_generation_model_id")
             if not image_model_id:
-                # Fallback, falls das Feld im Katalog fehlt
                 logger.warning(f"Model {request.model} has no image_generation_model_id. Falling back to flash-image-preview.")
                 image_model_id = "gemini-2.5-flash-image-preview"
-            # --- ENDE DER ÄNDERUNG ---
-
             llm_response = await llm_gateway._call_gemini_image_generation_api(api_key, image_model_id, request.prompt)
-            
-            local_image_path = llm_response.get("image_url")
+                        local_image_path = llm_response.get("image_url")
             usage = llm_response.get("usage", {})
             cost = llm_response.get("cost", {})
-            
-            final_answer = "Bild wurde erfolgreich mit Gemini generiert." if local_image_path else llm_response.get("text", "Fehler bei der Gemini-Bildgenerierung.")
-
+                        final_answer = "Bild wurde erfolgreich mit Gemini generiert." if local_image_path else llm_response.get("text", "Fehler bei der Gemini-Bildgenerierung.")
             # Speichere die Antwort und beende die Funktion frühzeitig
             crud.create_message(db, chat_id=request.chat_id, sender="model", content=final_answer, image_path=local_image_path)
             if usage and cost.get("total_cost", 0) > 0:
                 database.save_cost_entry(
-                    date=datetime.now(), model=image_model_id, # Kosten für das Bildmodell verbuchen
+                    date=datetime.now(), model=image_model_id,
                     input_tokens=usage.get("prompt_tokens", 0), 
                     output_tokens=usage.get("completion_tokens", 0),
                     image_quality=usage.get("image_quality"), 
@@ -166,104 +152,66 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
                 )
             return {"sender": "model", "text": final_answer, "image_url": local_image_path}
     # --- ENDE der Vorab-Prüfung ---
-
-    # 3. Chat-Historie und Gedächtnis-Kontext laden
-
     # 3. Chat-Historie und Gedächtnis-Kontext laden
     chat_history = []
     messages = crud.get_messages_by_chat_id(db, request.chat_id)
     for m in messages:
-        if len(chat_history) < 20:
-             chat_history.append({"role": "user" if m.sender == "user" else "assistant", "content": m.content})
-    
-    all_facts = memory_manager.get_all_facts(db)
-    # Wir holen jetzt mehr Ergebnisse, um die Chance zu erhöhen, alle relevanten Fakten zu erwischen
+        if len(chat_history) < 20:             chat_history.append({"role": "user" if m.sender == "user" else "assistant", "content": m.content})        all_facts = memory_manager.get_all_facts(db)
     similar_snippets = vector_service.find_similar_snippets(request.prompt, all_facts, top_k=10)
     memory_context = "\n".join([f"- {mem.snippet}" for mem in similar_snippets])
-
     # 4. Zentraler Aufruf an den "Denk"-Prozess im Gateway
     llm_response = await llm_gateway.reason_and_respond(
-        request.prompt, chat_history, memory_context, db, api_key, request.model, request.provider, context_manager
+        request.prompt, chat_history, memory_context, db, api_key, request.model, provider, context_manager
     )
-
+    # ... (Rest der Funktion bleibt unverändert wie in der letzten funktionierenden Version)
+    # ... (bitte den gesamten restlichen Teil der Funktion von vorhin hier einfügen)
     final_answer = ""
     local_image_path = None
     usage = llm_response.get("usage", {})
     cost = llm_response.get("cost", {})
-
-    # 5. DER "SWITCH": Verarbeite die Antwort des Gateways
     response_type = llm_response.get("type")
-
     if response_type == "tool_code":
         tool_name = llm_response.get("tool_name")
         tool_args = llm_response.get("tool_args", {})
-
-        logger.info(f"Executing tool '{tool_name}' with args: {tool_args}")
-
-        tool = TOOL_REGISTRY.get(tool_name)
+                logger.info(f"Executing tool '{tool_name}' with args: {tool_args}")
+                tool = TOOL_REGISTRY.get(tool_name)
         if tool:
-            # --- HIER IST DIE KORREKTUR ---
-            # 1. Sammle alle Argumente, die wir potenziell übergeben könnten
-            all_possible_args = {
-                "api_key": api_key,
-                "db": db,
-                **tool_args  # Die vom LLM vorgeschlagenen Argumente
-            }
-            # 2. Finde heraus, welche Argumente die Tool-Funktion tatsächlich erwartet
+            all_possible_args = {"api_key": api_key, "db": db, **tool_args}
             tool_func_params = inspect.signature(tool.func).parameters
-            # 3. Baue ein Dictionary nur mit den Argumenten, die auch wirklich akzeptiert werden
-            final_tool_args = {
-                name: all_possible_args[name]
-                for name in tool_func_params
-                if name in all_possible_args
-            }
-            # 4. Rufe das Tool nur mit den passenden Argumenten auf
-            # Prüfen, ob die Funktion asynchron ist oder nicht
-            if inspect.iscoroutinefunction(tool.func):
+            final_tool_args = {name: all_possible_args[name] for name in tool_func_params if name in all_possible_args}
+                        if inspect.iscoroutinefunction(tool.func):
                 tool_result = await tool.func(**final_tool_args)
             else:
                 tool_result = tool.func(**final_tool_args)
-            # --- ENDE DER KORREKTUR ---
-
-            # Generische Ergebnisverarbeitung
-            # Wir nehmen an, dass Tools ein Dictionary zurückgeben
-            usage = tool_result.get("usage", {})
+                        usage = tool_result.get("usage", {})
             cost = tool_result.get("cost", {})
-
-            # Spezifische Verarbeitung nur für den Bild-Fall
-            image_url = tool_result.get("url")
+                        image_url = tool_result.get("url")
             if image_url:
                 local_image_path = image_manager.save_image_from_url(image_url)
                 final_answer = f"Tool '{tool_name}' erfolgreich ausgeführt. Bild wurde generiert."
             else:
-                # Generische Antwort für alle anderen Tools
                 output = tool_result.get("output", f"Tool '{tool_name}' erfolgreich ausgeführt.")
                 final_answer = f"Ergebnis von Tool '{tool_name}': {output}"
         else:
             final_answer = f"Fehler: Unbekanntes Tool '{tool_name}' angefordert."
             logger.error(final_answer)
-
     elif response_type == "text":
-        # HIER DIE ÄNDERUNG: Sicherstellen, dass final_answer nie None ist
         final_answer = llm_response.get("text") or ""
-        
-        if not local_image_path and final_answer:
+                if not local_image_path and final_answer:
             full_exchange_text = f"User: {request.prompt}\nAssistant: {final_answer}"
             asyncio.create_task(
                  memory_extractor.extract_and_save_fact(
                      db=db, chat_id=request.chat_id, text_block=full_exchange_text, 
                      original_prompt=request.prompt, main_api_key=api_key, 
                      provider=request.provider, model=request.model
-                 )
-             )
+                 )             )
     else:
         final_answer = "Ein unerwarteter Fehler ist aufgetreten."
         logger.error(f"Unknown response type from LLM gateway: {response_type}")
-
-    # 6. Speichere die finale Antwort des Models und die Kosten
+    if not final_answer and not local_image_path:
+        final_answer = "Es tut mir leid, ich konnte keine passende Antwort finden. Kannst du die Frage anders formulieren?"
     crud.create_message(db, chat_id=request.chat_id, sender="model", content=final_answer, image_path=local_image_path)
-    
-    if usage and cost.get("total_cost", 0) > 0:
+        if usage and cost.get("total_cost", 0) > 0:
         database.save_cost_entry(
             date=datetime.now(), model=request.model,
             input_tokens=usage.get("prompt_tokens", 0), 
@@ -272,20 +220,22 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
             image_cost=cost.get("image_cost", 0),
             total_cost=cost.get("total_cost", 0)
         )
-
-    # 7. Konfiguration speichern und Antwort an Frontend senden
     config = load_config()
     config["last_used_provider"] = request.provider
     config["last_used_model"] = request.model
     save_config(config)
-
     return {"sender": "model", "text": final_answer, "image_url": local_image_path}
-
-# --- API Endpoints ---
+# --- ERSETZE DEN CHAT ENDPUNKT ---
 @app.post("/api/chat")
-async def chat(request: ChatRequest, db: Session = Depends(get_db), context_manager: ContextManager = Depends(get_context_manager), model_catalog: dict = Depends(get_model_catalog_dep)):
+async def chat(
+    request: ChatRequest, 
+    db: Session = Depends(get_db), 
+    context_manager: ContextManager = Depends(get_context_manager),
+    model_catalog: dict = Depends(get_model_catalog_dep) # HIER WIRD DIE ABHÄNGIGKEIT KORREKT INJIZIERT
+):
     try:
-        return await handle_chat_request(request, db, context_manager)
+        # Und hier wird das Ergebnis (das dict) korrekt weitergegeben
+        return await handle_chat_request(request, db, context_manager, model_catalog)
     except Exception as e:
         tb_str = traceback.format_exc()
         logger.error(f"Error in chat endpoint: {e}\n{tb_str}")
