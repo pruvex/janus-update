@@ -109,11 +109,10 @@ async def _call_openai_api(api_key: str, model_id: str, chat_history: List[Dict]
 
 async def _call_gemini_api(api_key: str, model_id: str, user_prompt: str, chat_history: List[Dict], model_info: Dict):
     genai.configure(api_key=api_key)
-    
+
     model = genai.GenerativeModel(model_id)
     gemini_history = []
     system_message_content = ""
-
     for msg in chat_history:
         if msg['role'] == 'system':
             system_message_content += msg['content'] + "\n"
@@ -121,37 +120,34 @@ async def _call_gemini_api(api_key: str, model_id: str, user_prompt: str, chat_h
             gemini_history.append({'role': 'user', 'parts': [msg['content']]})
         elif msg['role'] == 'assistant':
             gemini_history.append({'role': 'model', 'parts': [msg['content']]})
-
     if system_message_content and gemini_history and gemini_history[0]['role'] == 'user':
         gemini_history[0]['parts'][0] = system_message_content + gemini_history[0]['parts'][0]
     elif system_message_content and not gemini_history:
         gemini_history.append({'role': 'user', 'parts': [system_message_content]})
-
-    try: # HIER BEGINNT DIE ÄNDERUNG
+    try:
         response = await model.generate_content_async(gemini_history)
-                
+
         text_response = response.text
         input_tokens_count = model.count_tokens(gemini_history).total_tokens
         output_tokens_count = model.count_tokens([{"role": "model", "parts": [text_response]}]).total_tokens
         usage_data = {"prompt_tokens": input_tokens_count, "completion_tokens": output_tokens_count}
         usage, cost = _calculate_and_log_cost(model_id, usage_data=usage_data)
         return {"type": "text", "text": text_response, "image_url": None, "usage": usage, "cost": cost}
-            
     except ResourceExhausted as e:
         logger.warning(f"Gemini API quota exceeded: {e.message}")
         return {
             "type": "text", 
             "text": f"Fehler: Das Anfragelimit für die Gemini API wurde überschritten. Bitte versuchen Sie es in einer Minute erneut. (Fehler: 429)",
-            "image_url": None, "usage": {},"cost": {}
+            "image_url": None, "usage": {}, "cost": {}
         }
     except Exception as e:
-        # Fallback für andere, unerwartete Fehler
         logger.error(f"An unexpected error occurred with Gemini API: {e}")
         return {
             "type": "text",
             "text": f"Ein unerwarteter Fehler ist mit der Gemini API aufgetreten.",
-            "image_url": None, "usage": {},"cost": {}
+            "image_url": None, "usage": {}, "cost": {}
         }
+
 
 
 
