@@ -11,15 +11,12 @@ import datetime # Import datetime
 logger = logging.getLogger('janus_backend')
 
 EXTRACTION_PROMPT = (
-    "Du bist ein Analyst für Faktenextraktion. Deine Aufgabe ist es, aus einem Dialog zwischen einem Benutzer und einem Assistenten FAKTEN zu extrahieren. "
-    "**REGEL 1: Extrahiere NUR Fakten, die der BENUTZER in seiner LETZTEN Nachricht explizit genannt hat.**\n"
-    "**REGEL 2: Ignoriere die Schlussfolgerungen, Meinungen oder Fragen des Assistenten VOLLSTÄNDIG.**\n"
-    "Formuliere die Fakten als einfache, neutrale Aussagen über den Benutzer (z.B. 'Der Benutzer heißt Klaus', 'Der Benutzer mag die Farbe Blau').\n"
-    "Wenn der Benutzer keine neuen Fakten nennt, antworte NUR mit dem Wort 'Keine'.\n\n"
+    "Du bist ein ultra-präziser Daten-Logger. Deine einzige Aufgabe ist es, Fakten aus der **letzten Äußerung des 'user'** in einem Dialog zu extrahieren. **IGNORIERE ALLES, WAS DER 'assistant' SAGT.**\n"
+    "Formuliere die Fakten als knappe, neutrale Aussagen in der dritten Person (z.B. 'Der Benutzer heißt Klaus', 'Der Benutzer mag die Farbe Blau').\n"
+    "Wenn der **'user'** in seiner letzten Nachricht keine neuen, konkreten Fakten nennt (z.B. nur eine Frage stellt oder Smalltalk macht), antworte NUR mit dem Wort 'Keine'.\n\n"
     "--- DIALOG ---\n"
-    "{text_block}"
-    "\n\n"
-    "--- EXTRAHIERTE FAKTEN ---"
+    "{text_block}\n\n"
+    "--- FAKTEN AUS DER LETZTEN USER-AUSSAGE ---"
 )
 
 async def resolve_fact_conflict(db: Session, old_fact: str, new_fact: str, main_api_key: str, provider: str, model: str):
