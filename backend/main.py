@@ -7,7 +7,7 @@ import traceback
 import asyncio
 import shutil
 import inspect
-from fastapi import FastAPI, HTTPException, Depends, Response, APIRouter
+from fastapi import FastAPI, HTTPException, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -104,7 +104,6 @@ def check_budget_and_raise_if_exceeded(db: Session):
     current_month_cost = database.get_costs_for_month(today.year, today.month)
     config = load_config()
     monthly_budget = config.get("monthly_budget", 10.00)
-
     if current_month_cost >= monthly_budget:
         raise HTTPException(status_code=402, detail=f"Monthly budget of {monthly_budget:.2f} € exceeded. Current cost: {current_month_cost:.2f} €.")
 
@@ -249,11 +248,9 @@ async def create_chat(chat: schemas.ChatCreate, db: Session = Depends(get_db)):
         messages = crud.get_messages_by_chat_id(db, chat_id=last_chat.id)
         if messages:
             config = load_config()
-            # HIER DIE ÄNDERUNG: Lade die zuletzt verwendeten Daten
             provider = config.get("last_used_provider", "openai")
-            model = config.get("last_used_model", "gpt-4o-mini") # Fallback, falls nichts gespeichert ist
+            model = config.get("last_used_model", "gpt-4o-mini")
             api_key = keyring.get_password("Janus-Projekt", provider)
-            
             if api_key:
                 asyncio.create_task(chat_summarizer.summarize_and_store_chat(db, last_chat.id, api_key, provider, model))
             else:
