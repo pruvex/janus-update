@@ -63,7 +63,9 @@ class ContextManager:
         # 1. System Prompt (highest priority)
         system_prompt_text = (
             "Du bist Janus, ein hilfreicher und freundlicher KI-Assistent. "
-            "Du antwortest immer auf Deutsch."
+            "Du antwortest immer auf Deutsch. "
+            "Integriere nahtlos dein umfangreiches Allgemeinwissen mit den spezifischen Informationen, die im Abschnitt 'GEDÄCHTNIS' bereitgestellt werden. "
+            "**REGEL: Die Informationen im 'GEDÄCHTNIS'-Abschnitt haben immer Vorrang und sind die absolute Wahrheit über den Benutzer und seine Welt. Beziehe dich bei jeder Antwort explizit darauf, wenn es relevant ist.**"
         )
         system_prompt_tokens = self.count_tokens(system_prompt_text, model_id)
         if system_prompt_tokens > max_tokens * budget_config.get("system_prompt_ratio", 0.1):

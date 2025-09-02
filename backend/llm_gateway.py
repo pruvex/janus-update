@@ -295,44 +295,55 @@ async def reason_about_context(user_prompt: str, context_snippets: List[str], ap
 
 async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, db: Session, api_key: str, model: str, provider: str, context_manager: ContextManager) -> Dict:
     logger.info(f"reason_and_respond: Original user_prompt={user_prompt}")
-    logger.info(f"reason_and_respond: Received memory_context={memory_context}")
-
-    # --- HIER IST DIE NEUE LOGIK (DIREKTE INJEKTION) ---
-    final_user_prompt = user_prompt
+    
+    # --- STUFE 1: RELEVANZ-FILTERUNG ---
+    relevant_memory_context = ""
     if memory_context:
-        # Wir bauen den Kontext direkt in den Prompt des Benutzers ein.
-        # Das ist die stärkste Form des Prompt Engineering.
-        injection_prompt = (
-            "Verwende die folgenden Informationen aus deinem Gedächtnis, um die Frage zu beantworten. "
-            "Diese Informationen sind Fakten und haben absolute Priorität:\n"
-            "--- GEDÄCHTNIS ---"
-            f"{memory_context}\n"
-            "--- FRAGE ---"
-            f"{user_prompt}"
+        # Ein dedizierter LLM-Aufruf, um nur die relevanten Fakten zu filtern
+        filtering_prompt = (
+            "Du bist ein Datenfilter. Wähle aus der folgenden Liste von Fakten NUR diejenigen aus, die absolut notwendig sind, um die Frage des Benutzers zu beantworten. "
+            "Gib jeden relevanten Fakt in einer neuen Zeile aus. Wenn keine Fakten relevant sind, gib 'None' zurück.\n\n"
+            "--- FAKTEN ---"
+            f"{memory_context}\n\n"
+            "--- FRAGE DES BENUTZERS ---"
+            f"{user_prompt}\n\n"
+            "--- RELEVANTE FAKTEN ---"
         )
-        final_user_prompt = injection_prompt
-        logger.info(f"reason_and_respond: Injected memory into prompt. New prompt length: {len(final_user_prompt)}")
+        
+        # Wir verwenden ein schnelles, günstiges Modell für diese Aufgabe
+        filter_response = await call_llm(provider, model, filtering_prompt, api_key, chat_history=[])
+        
+        filtered_facts = filter_response.get("text") or ""
+        if filtered_facts.strip().lower() != 'none':
+            relevant_memory_context = filtered_facts
+            logger.info(f"Filtered relevant facts: {relevant_memory_context}")
+        else:
+            logger.info("No relevant facts found by the filter.")
 
-    # Der 'memory_context' wird jetzt leer übergeben, da er bereits im Prompt ist.
+    # --- STUFE 2: ANTWORT-GENERIERUNG ---
     final_history = await context_manager.build_final_context(
-        user_prompt=final_user_prompt, # Wir übergeben den modifizierten Prompt
+        user_prompt=user_prompt,
         chat_history=chat_history,
-        memory_context="", # WICHTIG: Hier leer lassen!
+        memory_context=relevant_memory_context, # Nur die gefilterten Fakten übergeben!
         model_id=model,
         api_key=api_key,
-        # Budget anpassen, da der Prompt jetzt länger ist
-        budget_config={"system_prompt_ratio": 0.05, "memory_ratio": 0.0, "chat_history_ratio": 0.95},
+        budget_config={"system_prompt_ratio": 0.1, "memory_ratio": 0.4, "chat_history_ratio": 0.5},
         provider=provider
     )
 
-    response = await call_llm(provider, model, final_user_prompt, api_key, chat_history=final_history)
-
-    # If the response from call_llm is a tool code, return it directly
+    response = await call_llm(provider, model, user_prompt, api_key, chat_history=final_history)
+    
+    # ... (der Rest der Funktion, der die 'response' auswertet, bleibt gleich)
     if response.get("type") == "tool_code":
         return response
     
-    # Otherwise, process as a text response
-    return {"type": "text", "text": response.get("text"), "image_url": response.get("image_url"), "usage": response.get("usage"), "cost": response.get("cost")}
+    return {
+        "type": "text", 
+        "text": response.get("text"), 
+        "image_url": response.get("image_url"), 
+        "usage": response.get("usage"), 
+        "cost": response.get("cost")
+    }
 
 
 async def summarize_chat_topic(chat_history: List[Dict], api_key: str, provider: str, model: str) -> str:

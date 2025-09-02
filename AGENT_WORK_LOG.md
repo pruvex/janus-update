@@ -1,2 +1,3 @@
 Aktion: backend/main.py Regex für Gemini-Bild-URL-Erkennung korrigiert. Grund: Behebung eines Syntaxfehlers im regulären Ausdruck.
 Aktion: Refactoring der Memory-Injection. Grund: Umstellung auf direkte Prompt-Injektion für eine robustere Kontextübergabe, wie in Arbeitsanweisung.md beschrieben. Änderungen in `context_manager.py` und `llm_gateway.py` durchgeführt.
+Aktion: Refactoring der Memory-Verarbeitung. Grund: Umstellung auf eine zweistufige Logik mit vorgeschaltetem Relevanz-Filter zur Optimierung der Kontextqualität, wie in der aktualisierten Arbeitsanweisung.md beschrieben. Änderungen in `context_manager.py` und `llm_gateway.py` durchgeführt.
