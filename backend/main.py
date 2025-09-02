@@ -273,9 +273,11 @@ async def create_chat(chat: schemas.ChatCreate, db: Session = Depends(get_db)):
         messages = crud.get_messages_by_chat_id(db, chat_id=last_chat.id)
         if messages:
             config = load_config()
+            # HIER DIE ÄNDERUNG: Lade die zuletzt verwendeten Daten
             provider = config.get("last_used_provider", "openai")
-            model = config.get("last_used_model", "gpt-4o-mini")
+            model = config.get("last_used_model", "gpt-4o-mini") # Fallback, falls nichts gespeichert ist
             api_key = keyring.get_password("Janus-Projekt", provider)
+            
             if api_key:
                 asyncio.create_task(chat_summarizer.summarize_and_store_chat(db, last_chat.id, api_key, provider, model))
             else:

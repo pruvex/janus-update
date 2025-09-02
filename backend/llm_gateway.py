@@ -299,22 +299,21 @@ async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_
     # --- STUFE 1: RELEVANZ-FILTERUNG ---
     relevant_memory_context = ""
     if memory_context:
-        # Ein dedizierter LLM-Aufruf, um nur die relevanten Fakten zu filtern
         filtering_prompt = (
-            "Du bist ein Datenfilter. Wähle aus der folgenden Liste von Fakten NUR diejenigen aus, die absolut notwendig sind, um die Frage des Benutzers zu beantworten. "
-            "Gib jeden relevanten Fakt in einer neuen Zeile aus. Wenn keine Fakten relevant sind, gib 'None' zurück.\n\n"
-            "--- FAKTEN ---"
+            "Du bist ein Relevanz-Analyst. Deine Aufgabe ist es, aus einer Liste von Fakten diejenigen auszuwählen, die potenziell zur Beantwortung einer Benutzerfrage beitragen könnten. "
+            "Sei dabei nicht zu streng. Es ist besser, einen möglicherweise nützlichen Fakt mehr zu inkludieren als einen wichtigen zu übersehen.\n"
+            "Gib jeden relevanten Fakt in einer neuen Zeile aus. Wenn keine Fakten relevant sind, antworte nur mit dem Wort 'Keine'.\n\n"
+            "--- FAKTEN-LISTE ---\n"
             f"{memory_context}\n\n"
-            "--- FRAGE DES BENUTZERS ---"
+            "--- BENUTZERFRAGE ---"
             f"{user_prompt}\n\n"
-            "--- RELEVANTE FAKTEN ---"
+            "--- POTENZIELL RELEVANTE FAKTEN ---"
         )
-        
-        # Wir verwenden ein schnelles, günstiges Modell für diese Aufgabe
+
+        # Passen Sie auch die Prüfung danach an
         filter_response = await call_llm(provider, model, filtering_prompt, api_key, chat_history=[])
-        
         filtered_facts = filter_response.get("text") or ""
-        if filtered_facts.strip().lower() != 'none':
+        if filtered_facts.strip().lower() != 'keine': # Prüfe auf 'Keine'
             relevant_memory_context = filtered_facts
             logger.info(f"Filtered relevant facts: {relevant_memory_context}")
         else:
