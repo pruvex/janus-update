@@ -109,7 +109,7 @@ def check_budget_and_raise_if_exceeded(db: Session):
         raise HTTPException(status_code=402, detail=f"Monthly budget of {monthly_budget:.2f} € exceeded. Current cost: {current_month_cost:.2f} €.")
 
 # --- GOLD STANDARD SWITCH IMPLEMENTATION ---
-async def handle_chat_request(request: ChatRequest, db: Session, context_manager: ContextManager):
+async def handle_chat_request(request: ChatRequest, db: Session, context_manager: ContextManager, model_catalog: dict = Depends(get_model_catalog_dep)):
     api_key = keyring.get_password("Janus-Projekt", request.provider)
     if not api_key:
         raise HTTPException(status_code=400, detail="API Key not found.")
@@ -135,7 +135,15 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
             
             # Wähle ein passendes Gemini-Bildmodell
             # (Diese Logik kann später aus dem model_catalog verfeinert werden)
-            image_model_id = "gemini-2.5-flash-image-preview"
+            # --- HIER DIE ÄNDERUNG ---
+            # Hole das zum Textmodell passende Bildmodell aus dem Katalog
+            selected_text_model = model_catalog.get(request.model, {})
+            image_model_id = selected_text_model.get("image_generation_model_id")
+            if not image_model_id:
+                # Fallback, falls das Feld im Katalog fehlt
+                logger.warning(f"Model {request.model} has no image_generation_model_id. Falling back to flash-image-preview.")
+                image_model_id = "gemini-2.5-flash-image-preview"
+            # --- ENDE DER ÄNDERUNG ---
 
             llm_response = await llm_gateway._call_gemini_image_generation_api(api_key, image_model_id, request.prompt)
             
@@ -275,7 +283,7 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
 
 # --- API Endpoints ---
 @app.post("/api/chat")
-async def chat(request: ChatRequest, db: Session = Depends(get_db), context_manager: ContextManager = Depends(get_context_manager)):
+async def chat(request: ChatRequest, db: Session = Depends(get_db), context_manager: ContextManager = Depends(get_context_manager), model_catalog: dict = Depends(get_model_catalog_dep)):
     try:
         return await handle_chat_request(request, db, context_manager)
     except Exception as e:
