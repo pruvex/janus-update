@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from datetime import datetime
+from typing import List, Optional
 
 # --- Tool Schemas ---
 class GenerateImageToolArgs(BaseModel):
@@ -8,27 +9,26 @@ class GenerateImageToolArgs(BaseModel):
     quality: Optional[str] = "standard"
     response_format: Optional[str] = "url"
 
+class CrossChatMemoryToolArgs(BaseModel):
+    query: str
 
-class Message(BaseModel):
+# --- Message Schemas ---
+class MessageBase(BaseModel):
+    sender: str
+    content: str
+    image_path: Optional[str] = None
+
+class MessageCreate(MessageBase):
+    pass
+
+class MessageResponse(MessageBase):
     id: int
     chat_id: int
-    role: str
-    content: str
-    timestamp: str
-
+    timestamp: datetime
     class Config:
         from_attributes = True
 
-class MessageResponse(BaseModel):
-    id: int
-    chat_id: int
-    role: str
-    content: str
-    timestamp: str
-
-    class Config:
-        from_attributes = True
-
+# --- Chat Schemas ---
 class ChatBase(BaseModel):
     title: str
 
@@ -37,18 +37,18 @@ class ChatCreate(ChatBase):
 
 class Chat(ChatBase):
     id: int
-    created_at: str
-    updated_at: str
-    messages: List[Message] = []
+    created_at: datetime
+    updated_at: datetime
+    messages: List[MessageResponse] = []
 
     class Config:
         from_attributes = True
 
-class ChatResponse(BaseModel):
+class ChatResponse(ChatBase):
     id: int
     title: str
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    is_archived: bool
 
     class Config:
         from_attributes = True

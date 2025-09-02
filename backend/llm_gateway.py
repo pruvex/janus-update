@@ -8,6 +8,7 @@ from io import BytesIO
 from PIL import Image
 import os
 import uuid
+from google.api_core.exceptions import ResourceExhausted
 from backend.cost_calculator import calculate_cost, MODEL_PRICES
 from sqlalchemy.orm import Session
 from backend import crud, vector_service
@@ -71,38 +72,43 @@ async def _call_openai_api(api_key: str, model_id: str, chat_history: List[Dict]
         revised_prompt = response.data[0].revised_prompt
         usage, cost = _calculate_and_log_cost(model_id, custom_prompt=revised_prompt)
         return {"text": text_response, "image_url": image_url, "usage": usage, "cost": cost}
-    else:
+    else: # Für Text- und Tool-Calling-Modelle
         tools = get_all_tool_definitions()
-
         response = await client.chat.completions.create(
             model=model_id,
             messages=chat_history,
             tools=tools,
             tool_choice="auto"
         )
-
         response_message = response.choices[0].message
         tool_calls = response_message.tool_calls
-
+        # Fall 1: Das LLM will ein Tool aufrufen
         if tool_calls:
-            # Return tool call information to main.py for execution
-            for tool_call in tool_calls:
-                if tool_call.function.name == "generate_image_tool": # Only handle this specific tool for now
-                    function_args = json.loads(tool_call.function.arguments)
-                    return {"type": "tool_code", "tool_name": tool_call.function.name, "tool_args": function_args}
-            # If other tool calls are detected but not handled, fall through to text response
-            text_response = response.choices[0].message.content
-            usage, cost = _calculate_and_log_cost(model_id, usage_data=response.usage)
-            return {"type": "text", "text": text_response, "image_url": None, "usage": usage, "cost": cost}
-        else:
-            text_response = response.choices[0].message.content
-            usage, cost = _calculate_and_log_cost(model_id, usage_data=response.usage)
-            return {"type": "text", "text": text_response, "image_url": None, "usage": usage, "cost": cost}
+            # Wir nehmen nur den ersten Tool-Aufruf, um es einfach zu halten
+            tool_call = tool_calls[0]
+            function_args = json.loads(tool_call.function.arguments)
+            logger.info(f"LLM requested tool call: {tool_call.function.name} with args {function_args}")
+            return {
+                "type": "tool_code",
+                "tool_name": tool_call.function.name,
+                "tool_args": function_args,
+                "usage": response.usage, # Wichtig: usage trotzdem weitergeben
+                "cost": calculate_cost(model_id, usage_data=response.usage)[1]
+            }
+        # Fall 2: Das LLM gibt eine normale Textantwort
+        text_response = response_message.content
+        usage, cost = _calculate_and_log_cost(model_id, usage_data=response.usage)
+        return {
+            "type": "text",
+            "text": text_response,
+            "image_url": None,
+            "usage": usage,
+            "cost": cost
+        }
 
 async def _call_gemini_api(api_key: str, model_id: str, user_prompt: str, chat_history: List[Dict], model_info: Dict):
     genai.configure(api_key=api_key)
     
-    # Existing text generation logic
     model = genai.GenerativeModel(model_id)
     gemini_history = []
     system_message_content = ""
@@ -120,17 +126,32 @@ async def _call_gemini_api(api_key: str, model_id: str, user_prompt: str, chat_h
     elif system_message_content and not gemini_history:
         gemini_history.append({'role': 'user', 'parts': [system_message_content]})
 
-    response = await model.generate_content_async(gemini_history)
-    
-    text_response = response.text
+    try: # HIER BEGINNT DIE ÄNDERUNG
+        response = await model.generate_content_async(gemini_history)
+                
+        text_response = response.text
+        input_tokens_count = model.count_tokens(gemini_history).total_tokens
+        output_tokens_count = model.count_tokens([{"role": "model", "parts": [text_response]}]).total_tokens
+        usage_data = {"prompt_tokens": input_tokens_count, "completion_tokens": output_tokens_count}
+        usage, cost = _calculate_and_log_cost(model_id, usage_data=usage_data)
+        return {"type": "text", "text": text_response, "image_url": None, "usage": usage, "cost": cost}
+            
+    except ResourceExhausted as e:
+        logger.warning(f"Gemini API quota exceeded: {e.message}")
+        return {
+            "type": "text", 
+            "text": f"Fehler: Das Anfragelimit für die Gemini API wurde überschritten. Bitte versuchen Sie es in einer Minute erneut. (Fehler: 429)",
+            "image_url": None, "usage": {},"cost": {}
+        }
+    except Exception as e:
+        # Fallback für andere, unerwartete Fehler
+        logger.error(f"An unexpected error occurred with Gemini API: {e}")
+        return {
+            "type": "text",
+            "text": f"Ein unerwarteter Fehler ist mit der Gemini API aufgetreten.",
+            "image_url": None, "usage": {},"cost": {}
+        }
 
-    input_tokens_count = model.count_tokens(gemini_history).total_tokens
-    output_tokens_count = model.count_tokens([{"role": "model", "parts": [text_response]}]).total_tokens
-
-    usage_data = {"prompt_tokens": input_tokens_count, "completion_tokens": output_tokens_count}
-    usage, cost = _calculate_and_log_cost(model_id, usage_data=usage_data)
-
-    return {"type": "text", "text": text_response, "image_url": None, "usage": usage, "cost": cost}
 
 
 async def _call_gemini_image_generation_api(api_key: str, model_id: str, prompt: str):
@@ -273,51 +294,38 @@ async def reason_about_context(user_prompt: str, context_snippets: List[str], ap
     return response.get("text", "Ich konnte keine Antwort finden.")
 
 async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, db: Session, api_key: str, model: str, provider: str, context_manager: ContextManager) -> Dict:
-    logger.info(f"reason_and_respond: user_prompt={user_prompt}")
-    logger.info(f"reason_and_respond: chat_history={chat_history}")
-    logger.info(f"reason_and_respond: memory_context={memory_context}")
-    """
-    Der zentrale "Denk"-Schritt, der alle Informationen zusammenführt und eine kohärente Antwort generiert.
-    Kann auch Tool-Aufrufe zurückgeben.
-    """
-    # Define budget configuration for ContextManager
-    budget_config = {
-        "system_prompt_ratio": 0.1,
-        "memory_ratio": 0.3,
-        "chat_history_ratio": 0.5,
-    }
-    
-    # Integrate Cross-Chat-Memory into memory_context
-    cross_chat_memory_snippets = []
-    cross_chat_keywords = ["andere chats", "frühere gespräche", "worüber haben wir gesprochen", "andere unterhaltungen"]
-    if any(keyword in user_prompt.lower() for keyword in cross_chat_keywords):
-        all_chats = crud.get_chats(db, include_archived=True) # Alle Chats laden
-        similar_chats = vector_service.find_similar_chat_summaries(user_prompt, all_chats)
-        if similar_chats:
-            cross_chat_memory_snippets.append("--- ZUSAMMENFASSUNGEN ANDERER CHATS ---")
-            for chat in similar_chats:
-                cross_chat_memory_snippets.append(f"Chat ID: {chat.id}, Titel: {chat.title}")
-                cross_chat_memory_snippets.append(f"Zusammenfassung: {chat.summary}")
-            cross_chat_memory_snippets.append("") # Add a newline for separation
-    
-    if cross_chat_memory_snippets:
-        if memory_context:
-            memory_context = memory_context + "\n" + "\n".join(cross_chat_memory_snippets)
-        else:
-            memory_context = "\n".join(cross_chat_memory_snippets)
+    logger.info(f"reason_and_respond: Original user_prompt={user_prompt}")
+    logger.info(f"reason_and_respond: Received memory_context={memory_context}")
 
-    # Use the ContextManager to build the final context
+    # --- HIER IST DIE NEUE LOGIK (DIREKTE INJEKTION) ---
+    final_user_prompt = user_prompt
+    if memory_context:
+        # Wir bauen den Kontext direkt in den Prompt des Benutzers ein.
+        # Das ist die stärkste Form des Prompt Engineering.
+        injection_prompt = (
+            "Verwende die folgenden Informationen aus deinem Gedächtnis, um die Frage zu beantworten. "
+            "Diese Informationen sind Fakten und haben absolute Priorität:\n"
+            "--- GEDÄCHTNIS ---"
+            f"{memory_context}\n"
+            "--- FRAGE ---"
+            f"{user_prompt}"
+        )
+        final_user_prompt = injection_prompt
+        logger.info(f"reason_and_respond: Injected memory into prompt. New prompt length: {len(final_user_prompt)}")
+
+    # Der 'memory_context' wird jetzt leer übergeben, da er bereits im Prompt ist.
     final_history = await context_manager.build_final_context(
-        user_prompt=user_prompt,
+        user_prompt=final_user_prompt, # Wir übergeben den modifizierten Prompt
         chat_history=chat_history,
-        memory_context=memory_context,
+        memory_context="", # WICHTIG: Hier leer lassen!
         model_id=model,
         api_key=api_key,
-        budget_config=budget_config,
+        # Budget anpassen, da der Prompt jetzt länger ist
+        budget_config={"system_prompt_ratio": 0.05, "memory_ratio": 0.0, "chat_history_ratio": 0.95},
         provider=provider
     )
 
-    response = await call_llm(provider, model, user_prompt, api_key, chat_history=final_history)
+    response = await call_llm(provider, model, final_user_prompt, api_key, chat_history=final_history)
 
     # If the response from call_llm is a tool code, return it directly
     if response.get("type") == "tool_code":
@@ -325,6 +333,7 @@ async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_
     
     # Otherwise, process as a text response
     return {"type": "text", "text": response.get("text"), "image_url": response.get("image_url"), "usage": response.get("usage"), "cost": response.get("cost")}
+
 
 async def summarize_chat_topic(chat_history: List[Dict], api_key: str, provider: str, model: str) -> str:
     """

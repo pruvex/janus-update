@@ -62,9 +62,8 @@ class ContextManager:
 
         # 1. System Prompt (highest priority)
         system_prompt_text = (
-            "Du bist ein intelligenter Assistent. Deine Aufgabe ist es, die Frage des Benutzers zu beantworten. "
-            "Nutze dabei alle relevanten Informationen aus den bereitgestellten Erinnerungen und dem Chat-Verlauf. "
-            "Formuliere eine präzise, hilfreiche und kohärente Antwort."
+            "Du bist Janus, ein hilfreicher und freundlicher KI-Assistent. "
+            "Du antwortest immer auf Deutsch."
         )
         system_prompt_tokens = self.count_tokens(system_prompt_text, model_id)
         if system_prompt_tokens > max_tokens * budget_config.get("system_prompt_ratio", 0.1):

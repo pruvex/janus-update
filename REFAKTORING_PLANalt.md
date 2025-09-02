@@ -125,7 +125,7 @@ Implementierung eines robusten, LLM-gesteuerten "Intelligenten Switches" für da
     *   Schreiben von Unit-Tests für die neuen Tool-Definitionen, das Tool-Register und den dynamischen Dispatcher.
     *   Aktualisierung bestehender Integrationstests (z.B. `test_llm_gateway.py`, `test_main_api.py`), um die neue Routing-Logik widerzuspiegeln.
     *   Hinzufügen spezifischer Tests für Fehlerbehandlung, Wiederholungen und Fallbacks.
-    *   **Aktion:** Erstellung neuer Testdateien und Aktualisierung bestehender Tests. (Erledigt - `test_llm_gateway.py` ist grün, `test_main_api.py` hat noch Fehler, die mit In-Memory-DB behoben werden sollen)
+    *   **Aktion:** Erstellung neuer Testdateien und Aktualisierung bestehender Tests. (Erledigt - `test_llm_gateway.py` ist grün, `test_main_api.py` ist jetzt auch grün mit In-Memory-DB)
 
 #### Definition of Done (Block 8 - Goldstandard)
 *   LLM-basierte Intent-Klassifizierung und Tool-Calling sind vollständig implementiert und ersetzen heuristische Keyword-Prüfungen.
@@ -186,3 +186,13 @@ Die Blöcke werden in der folgenden Reihenfolge refaktorisiert, um Abhängigkeit
 10. **System-Validierung (Health Check):** Kann jederzeit unabhängig getestet und verifiziert werden.
 
 Jeder Block wird mit einem passenden Test versehen und sauber dokumentiert, bevor der nächste Block in Angriff genommen wird.
+
+## 4. Jüngste Änderungen (Sitzung vom 02.09.2025)
+
+- **Code-Audit und Korrekturen:**
+  - **`backend/memory_manager.py`:** Die Import-Anweisungen wurden korrigiert, um `from . import database` zu verwenden und alle Vorkommen von `models.Memory` wurden auf `database.Memory` umgestellt, um die Konsistenz mit dem Rest des Backends herzustellen.
+  - **`backend/main.py`:**
+    - Der Parameter `top_k` im Aufruf von `vector_service.find_similar_snippets` wurde auf `10` erhöht, um die Relevanz der aus dem Gedächtnis abgerufenen Informationen zu verbessern.
+    - Ein neuer API-Endpunkt `@app.get("/api/costs/summary-by-model")` wurde hinzugefügt, um eine Kostenübersicht nach Modell zu ermöglichen.
+    - Die Dekoratoren für die Endpunkte zum Aktualisieren und Löschen von Chats wurden von `@router` auf `@app` korrigiert.
+    - Der Aufruf der Funktion `get_costs_summary_by_model_for_current_month` wurde korrigiert, indem das unnötige `db`-Argument entfernt wurde.

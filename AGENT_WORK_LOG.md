@@ -1,1 +1,2 @@
-Aktion: waechter/test_main_api.py mit Pytest-Tests überschrieben. Grund: Erstellung von Integrationstests für den neuen API-Flow (Text-Antwort und Tool-Aufruf).
+Aktion: backend/main.py Regex für Gemini-Bild-URL-Erkennung korrigiert. Grund: Behebung eines Syntaxfehlers im regulären Ausdruck.
+Aktion: Refactoring der Memory-Injection. Grund: Umstellung auf direkte Prompt-Injektion für eine robustere Kontextübergabe, wie in Arbeitsanweisung.md beschrieben. Änderungen in `context_manager.py` und `llm_gateway.py` durchgeführt.

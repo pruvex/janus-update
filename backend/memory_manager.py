@@ -1,5 +1,10 @@
+# Am Anfang von backend/memory_manager.py
 from sqlalchemy.orm import Session
-from . import database, vector_service
+from typing import List
+from . import database # Importiert die gesamte database.py Datei
+from . import crud # Importiert die crud.py Datei
+from . import vector_service
+
 import logging
 from backend.logger_config import setup_logging
 
@@ -42,3 +47,15 @@ def save_raw_memory(db: Session, chat_id: int, user_input: str):
     else:
         current_logger.warning(f"Failed to save raw memory for chat {chat_id}: '{user_input}'")
     return saved_memory
+
+# In backend/memory_manager.py
+def get_all_facts(db: Session) -> List[database.Memory]: # Verwende database.Memory
+    """Gibt alle Erinnerungen zurück, die als Fakten und nicht als Fragen oder rohe Eingaben gelten."""
+    return db.query(database.Memory).filter( # Verwende database.Memory
+        ~database.Memory.snippet.startswith("wie "),
+        ~database.Memory.snippet.startswith("was "),
+        ~database.Memory.snippet.startswith("wer "),
+        ~database.Memory.snippet.startswith("wo "),
+        ~database.Memory.snippet.startswith("wann "),
+        ~database.Memory.snippet.startswith("warum ")
+    ).all()
