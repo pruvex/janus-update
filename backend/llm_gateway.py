@@ -1,4 +1,5 @@
 import logging
+from tenacity import retry, stop_after_attempt, wait_exponential
 from backend.tool_registry import get_all_tool_definitions
 from typing import List, Dict, Optional
 import openai
@@ -154,6 +155,9 @@ async def _call_gemini_api(api_key: str, model_id: str, user_prompt: str, chat_h
 
 
 
+@retry(
+    stop=stop_after_attempt(3), # Versuche es maximal 3 Mal
+    wait=wait_exponential(multiplier=1, min=2, max=10) # Warte 2s, dann 4s, dann 8s...)
 async def _call_gemini_image_generation_api(api_key: str, model_id: str, prompt: str):
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(model_id)
@@ -188,14 +192,18 @@ async def _call_gemini_image_generation_api(api_key: str, model_id: str, prompt:
         logger.debug(f"_call_gemini_image_generation_api: Returning image_url: {image_url}")
         return {"text": text_response, "image_url": image_url, "usage": usage, "cost": cost}
     except Exception as e:
-        logger.error(f"Error generating image with Gemini: {e}")
-        return {"text": f"Error generating image: {e}", "image_url": None, "usage": {}, "cost": {}}
+        logger.error(f"Error generating image with Gemini (attempt failed): {e}")
+        raise # WICHTIG: Fehler erneut auslösen, damit tenacity ihn fängt
 
 
 
+@retry(
+    stop=stop_after_attempt(3), # Versuche es maximal 3 Mal
+    wait=wait_exponential(multiplier=1, min=2, max=10) # Warte 2s, dann 4s, dann 8s...)
 async def generate_image_tool(api_key: str, prompt: str, size: str = "1024x1024", quality: str = "standard", response_format: str = "url"):
     client = openai.AsyncOpenAI(api_key=api_key)
     try:
+        logger.info(f"Attempting to generate image with prompt: {prompt}")
         response = await client.images.generate(
             model="dall-e-3", # <--- SO SOLLTE ES AUSSEHEN
             prompt=prompt,
@@ -221,8 +229,8 @@ async def generate_image_tool(api_key: str, prompt: str, size: str = "1024x1024"
         result["cost"] = image_cost_data
         return result
     except Exception as e:
-        logger.error(f"Error generating image with tool: {e}")
-        return {"error": str(e)}
+        logger.error(f"Error generating image with tool (attempt failed): {e}")
+        raise # WICHTIG: Fehler erneut auslösen, damit tenacity ihn fängt
 
 
 async def expand_query(query: str, api_key: str) -> str:
