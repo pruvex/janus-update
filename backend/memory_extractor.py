@@ -12,11 +12,21 @@ logger = logging.getLogger('janus_backend')
 
 EXTRACTION_PROMPT = (
     "Du bist ein ultra-präziser Daten-Logger. Deine einzige Aufgabe ist es, Fakten aus der **letzten Äußerung des 'user'** in einem Dialog zu extrahieren. **IGNORIERE ALLES, WAS DER 'assistant' SAGT.**\n"
-    "Formuliere die Fakten als knappe, neutrale Aussagen in der dritten Person (z.B. 'Der Benutzer heißt Klaus', 'Der Benutzer mag die Farbe Blau').\n"
-    "Wenn der **'user'** in seiner letzten Nachricht keine neuen, konkreten Fakten nennt (z.B. nur eine Frage stellt oder Smalltalk macht), antworte NUR mit dem Wort 'Keine'.\n\n"
+    "**REGELN:**\n"
+    "1.  Extrahiere jeden einzelnen Fakt auf einer **NEUEN ZEILE**.\n"
+    "2.  Formuliere die Fakten als knappe, neutrale Aussagen in der dritten Person (z.B. 'Der Benutzer heißt Klaus', 'Der Benutzer mag die Farbe Blau').\n"
+    "3.  Wenn der **'user'** in seiner letzten Nachricht keine neuen, konkreten Fakten nennt, antworte NUR mit dem Wort 'Keine'.\n\n"
+    "--- BEISPIEL ---\n"
+    "user: Ich heiße Anna, mein Hund Bello mag Knochen und meine Katze Minka ist schwarz.\n"
+    "--- EXTRAHIERTE FAKTEN ---\n"
+    "Der Benutzer heißt Anna.\n"
+    "Der Hund des Benutzers heißt Bello.\n"
+    "Bello mag Knochen.\n"
+    "Die Katze des Benutzers heißt Minka.\n"
+    "Minka ist schwarz.\n\n"
     "--- DIALOG ---\n"
     "{text_block}\n\n"
-    "--- FAKTEN AUS DER LETZTEN USER-AUSSAGE ---"
+    "--- EXTRAHIERTE FAKTEN ---"
 )
 
 async def resolve_fact_conflict(db: Session, old_fact: str, new_fact: str, main_api_key: str, provider: str, model: str):
