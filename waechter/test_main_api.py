@@ -56,8 +56,7 @@ def test_chat_cross_chat_tool_call(test_client, db_session):
         }
                 # 2. Simuliere das Ergebnis der Tool-Ausführung
         mock_memory_tool.return_value = {
-            "output": "--- ZUSAMMENFASSUNGEN ---
-Thema: Elektroautos",
+            "output": "--- ZUSAMMENFASSUNGEN ---\nThema: Elektroautos",
             "usage": {}, "cost": {}
         }
         response = test_client.post("/api/chat", json={
@@ -73,6 +72,7 @@ Thema: Elektroautos",
         mock_memory_tool.assert_called_once()
         args, kwargs = mock_memory_tool.call_args
         assert kwargs['query'] == 'past topics'
+
 
 def test_chat_gemini_image_shortcut(test_client, db_session):
     """
