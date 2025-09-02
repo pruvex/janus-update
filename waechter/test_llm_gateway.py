@@ -1,48 +1,42 @@
-
-import unittest
-from unittest.mock import patch, MagicMock
-
-
-
+# waechter/test_llm_gateway.py
+import pytest
+from unittest.mock import MagicMock, AsyncMock, patch
 from backend import llm_gateway
 
-class TestLlmGateway(unittest.TestCase):
+@pytest.mark.asyncio
+async def test_reason_and_respond_builds_correct_prompt():
+    # Testet, ob der "Detektiv-Prompt" korrekt zusammengebaut wird
 
-    @patch('openai.AsyncOpenAI')
-    @patch('httpx.AsyncClient.post')
-    async def test_call_llm(self, mock_httpx_post, mock_openai_async_openai):
-        # Mock für OpenAI AsyncOpenAI Client
-        mock_openai_client_instance = MagicMock()
-        mock_openai_async_openai.return_value.__aenter__.return_value = mock_openai_client_instance
-        mock_openai_client_instance.chat.completions.create.return_value = MagicMock(
-            choices=[MagicMock(message=MagicMock(content="mocked LLM answer"))],
-            usage=MagicMock(prompt_tokens=10, completion_tokens=20)
+    user_prompt = "Wer ist mein Onkel?"
+    memory_context = "- Der Onkel des Benutzers heißt Kalle."
+    chat_history = [{"role": "user", "content": "Hallo"}]
+
+    # Mocke die Abhängigkeiten, die nicht direkt getestet werden
+    mock_context_manager = MagicMock()
+    mock_context_manager.build_final_context = AsyncMock(return_value=chat_history) # Simpler Mock
+    with patch('backend.llm_gateway.call_llm', new_callable=AsyncMock) as mock_call_llm:
+        mock_call_llm.return_value = {"type": "text", "text": "Test"} # Dummy-Antwort
+
+        await llm_gateway.reason_and_respond(
+            user_prompt=user_prompt,
+            chat_history=chat_history,
+            memory_context=memory_context,
+            db=MagicMock(),
+            api_key="test",
+            model="test",
+            provider="test",
+            context_manager=mock_context_manager
         )
 
-        # Mock für httpx.AsyncClient.post (für DALL-E)
-        mock_httpx_response = MagicMock()
-        mock_httpx_response.status_code = 200
-        mock_httpx_response.json.return_value = {"data": [{"url": "http://mocked-image.url"}]}
-        mock_httpx_post.return_value = mock_httpx_response
+        # Überprüfe, ob call_llm mit dem korrekt zusammengebauten Master-Prompt aufgerufen wurde
+        mock_call_llm.assert_called_once()
+        args, kwargs = mock_call_llm.call_args
+        final_prompt = args[2] # Das ist der final_prompt_for_llm
 
-        provider = "openai"
-        model = "gpt-4o-mini"
-        prompt = "Test prompt"
-        api_key = "test-api-key"
-
-        response = await llm_gateway.call_llm(provider, model, prompt, api_key)
-
-        mock_openai_async_openai.assert_called_once_with(api_key=api_key)
-        mock_openai_client_instance.chat.completions.create.assert_called_once_with(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            tools=[llm_gateway.dalle_tool],
-            tool_choice="auto"
-        )
-
-        self.assertEqual(response["text"], "mocked LLM answer")
-        self.assertIn("usage", response)
-        self.assertIn("cost", response)
-
-if __name__ == '__main__':
-    unittest.main()
+        assert "Du bist Janus, ein hilfreicher KI-Detektiv" in final_prompt
+        assert "--- FAKTEN AUS DEM LANGZEITGEDÄCHTNIS ---" in final_prompt
+        assert "- Der Onkel des Benutzers heißt Kalle." in final_prompt
+        assert "--- AKTUELLER GESPRÄCHSVERLAUF ---" in final_prompt
+        assert "user: Hallo" in final_prompt
+        assert "--- FRAGE DES BENUTZERS ---" in final_prompt
+        assert "Wer ist mein Onkel?" in final_prompt

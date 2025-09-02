@@ -43,3 +43,32 @@ def test_chat_image_tool_call(test_client, db_session):
         assert "Bild wurde erfolgreich generiert" in data["text"]
         assert data["image_url"] == "/user_images/mocked_cat.png"
         mock_generate_image_tool.assert_called_once_with(api_key="mock_api_key", prompt="a cat", size="1024x1024", quality="standard", response_format="url") # Assert on the directly mocked function
+
+def test_chat_cross_chat_tool_call(test_client, db_session):
+    # Wir mocken wieder die Kette
+    with patch('backend.llm_gateway.reason_and_respond', new_callable=AsyncMock) as mock_reason, 
+         patch('backend.tool_registry.cross_chat_memory_tool') as mock_memory_tool:
+        # 1. Simuliere, dass das LLM das Memory-Tool aufrufen will
+        mock_reason.return_value = {
+            "type": "tool_code",
+            "tool_name": "cross_chat_memory_tool",
+            "tool_args": {"query": "past topics"}
+        }
+                # 2. Simuliere das Ergebnis der Tool-Ausführung
+        mock_memory_tool.return_value = {
+            "output": "--- ZUSAMMENFASSUNGEN ---\nThema: Elektroautos",
+            "usage": {}, "cost": {}
+        }
+        response = test_client.post("/api/chat", json={
+            "prompt": "was haben wir besprochen?", "provider": "openai", "model": "gpt-4o-mini"
+        })
+        # 3. Überprüfe die generische Antwort
+        assert response.status_code == 200
+        data = response.json()
+        assert "Ergebnis von Tool 'cross_chat_memory_tool'" in data["text"]
+        assert "Thema: Elektroautos" in data["text"]
+                # Überprüfe, ob das Tool mit den korrekten Argumenten aufgerufen wurde
+        # (beachte, dass 'db' vom Dispatcher hinzugefügt wird, was wir hier nicht direkt testen)
+        mock_memory_tool.assert_called_once()
+        args, kwargs = mock_memory_tool.call_args
+        assert kwargs['query'] == 'past topics'
