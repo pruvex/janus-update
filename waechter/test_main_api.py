@@ -56,7 +56,8 @@ def test_chat_cross_chat_tool_call(test_client, db_session):
         }
                 # 2. Simuliere das Ergebnis der Tool-Ausführung
         mock_memory_tool.return_value = {
-            "output": "--- ZUSAMMENFASSUNGEN ---\nThema: Elektroautos",
+            "output": "--- ZUSAMMENFASSUNGEN ---
+Thema: Elektroautos",
             "usage": {}, "cost": {}
         }
         response = test_client.post("/api/chat", json={
@@ -72,3 +73,51 @@ def test_chat_cross_chat_tool_call(test_client, db_session):
         mock_memory_tool.assert_called_once()
         args, kwargs = mock_memory_tool.call_args
         assert kwargs['query'] == 'past topics'
+
+def test_chat_gemini_image_shortcut(test_client, db_session):
+    """
+    Tests the keyword-based shortcut for Gemini image generation.
+    """
+    with patch('backend.llm_gateway._call_gemini_image_generation_api', new_callable=AsyncMock) as mock_gemini_image_api, 
+         patch('backend.main.load_model_catalog') as mock_load_catalog: # Wir mocken den Katalog, um Abhängigkeiten zu reduzieren
+                # 1. Simuliere den Modell-Katalog
+        mock_load_catalog.return_value = {
+            "gemini-2.5-flash": {"image_generation_model_id": "gemini-2.5-flash-image-preview"}
+        }
+        # 2. Simuliere eine erfolgreiche Bild-API-Antwort
+        mock_gemini_image_api.return_value = {
+            "image_url": "/user_images/gemini_test.png",
+            "usage": {}, "cost": {"total_cost": 0.02}
+        }
+                response = test_client.post("/api/chat", json={
+            "prompt": "zeichne ein bild von einem frosch",
+            "provider": "gemini",
+            "model": "gemini-2.5-flash",
+            "chat_id": 1 # Annahme: Chat 1 existiert
+        })
+        # 3. Überprüfe das Ergebnis
+        assert response.status_code == 200
+        data = response.json()
+        assert data["text"] == "Bild wurde erfolgreich mit Gemini generiert."
+        assert data["image_url"] == "/user_images/gemini_test.png"
+                # Stelle sicher, dass die teure reason_and_respond NICHT aufgerufen wurde
+        # (Dies erfordert einen weiteren Mock, kann aber vorerst weggelassen werden,
+        # die Log-Ausgabe würde es im echten Lauf bestätigen)
+
+def test_chat_budget_exceeded(test_client, db_session):
+    """
+    Tests that a 402 Payment Required error is raised when budget is exceeded.
+    """
+    # Wir mocken die Funktion, die die Kosten berechnet
+    with patch('backend.database.get_costs_for_month') as mock_get_costs:
+        # 1. Simuliere, dass die Kosten das Budget übersteigen
+        mock_get_costs.return_value = 999.0 # (Budget ist standardmäßig 10.0)
+        response = test_client.post("/api/chat", json={
+            "prompt": "irgendeine frage",
+            "provider": "openai",
+            "model": "gpt-4o-mini"
+        })
+        # 2. Überprüfe den Fehlercode und die Nachricht
+        assert response.status_code == 402
+        data = response.json()
+        assert "Monthly budget" in data["detail"]
