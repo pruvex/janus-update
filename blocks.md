@@ -196,3 +196,23 @@ Das Skript `health_check.py` ist vorhanden und funktional.
 ### Definition of Done
 - [x] **Skript vorhanden:** `health_check.py` existiert.
 - [x] **Funktional:** Das Skript kann ausgeführt werden und prüft die Systemgesundheit.
+
+---
+
+## Block 11: Dateisystem-Operationen
+- **Status:** `Erledigt`
+
+### Zweck
+Ermöglicht das sichere und kontrollierte Ausführen von Dateisystemoperationen (Erstellen, Löschen, Umbenennen, Verschieben von Dateien und Ordnern) über eine natürliche Sprachschnittstelle, gesteuert durch den LLM-Switch.
+
+### Implementierung
+Der Implementierungsplan ist in `PHASE_5_FILESYSTEM_OPERATIONS.md` detailliert beschrieben.
+
+### Definition of Done
+- [x] Alle angeforderten Dateisystemoperationen (Erstellen, Löschen, Umbenennen, Verschieben von Dateien/Ordnern) sind in `filesystem_manager.py` implementiert.
+- [x] Robuste Pfadvalidierung und Sicherheitsprüfungen (Ausschluss von Systemordnern, Schutz vor Directory Traversal) sind implementiert.
+- [x] Pydantic-Modelle für alle Dateisystem-Tools sind in `schemas.py` definiert.
+- [x] Alle Dateisystem-Tools sind in `tool_registry.py` registriert.
+- [x] Umfassende Unit-Tests für `filesystem_manager.py` sind vorhanden und grün.
+- [x] Integrationstests, die die LLM-gesteuerte Ausführung der Dateisystem-Tools verifizieren, sind vorhanden und grün.
+- [x] Der Block ist in der Dokumentation (`REFAKTORING_PLANalt.md`, `blocks.md`) als abgeschlossen markiert.
