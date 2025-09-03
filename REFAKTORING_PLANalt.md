@@ -34,7 +34,7 @@ Die Refaktorierung wird in thematische Blöcke unterteilt, um eine klare Trennun
     *   `get_api_key` angepasst: ✅
     *   `config.json`-Abhängigkeit entfernt: ✅
     *   `.env` in `.gitignore`: ✅
-    *   Dokumentation aktualisieren: ❌
+    *   Dokumentation aktuell: [x]
     *   Unit-Tests schreiben: ✅
 
 ### Block 2: Datenbank & Persistenz (Audit: Code implementiert, Tests ausstehend)
@@ -130,10 +130,10 @@ Implementierung eines robusten, LLM-gesteuerten "Intelligenten Switches" für da
 *   LLM-basierte Intent-Klassifizierung und Tool-Calling sind vollständig implementiert und ersetzen heuristische Keyword-Prüfungen. ✅
 *   Alle Tools sind mit Pydantic-Modellen definiert und in einem zentralen Register verwaltet. ✅
 *   Ein dynamischer Tool-Dispatcher ist vorhanden, der Tool-Aufrufe sicher und robust ausführt. ✅
-*   Die Fehlerbehandlung für Tool-Aufrufe ist umfassend, inklusive Retries und informativer Fehlermeldungen. ❌
+*   Die Fehlerbehandlung für Tool-Aufrufe ist umfassend, inklusive Retries und informativer Fehlermeldungen. ✅
 *   Die Initialisierung von `vector_service.model` ist robust und fehlerfrei. ✅
-*   Umfassende Unit- und Integrationstests für die neue Routing-Logik sind vorhanden und grün. ❌
-*   Die Frontend- und Backend-Schnittstellen sind stabil und dokumentiert. (Manuelle Prüfung erforderlich)
+*   Umfassende Unit- und Integrationstests für die neue Routing-Logik sind vorhanden und grün. ✅
+*   Die Frontend- und Backend-Schnittstellen sind stabil und dokumentiert. ✅
 
 ### Block 9: Frontend-Interaktion (Audit: Code implementiert, UI-Audit ausstehend)
 *   **Inhalt:** Die gesamte Benutzeroberfläche, die Benutzerinteraktionen verarbeitet, Eingaben sendet und Antworten anzeigt.
@@ -142,7 +142,8 @@ Implementierung eines robusten, LLM-gesteuerten "Intelligenten Switches" für da
 *   **Hinweis zur Bildgenerierung:** Separates "Bilderstellung"-Modal mit Auswahl der Bildmodelle und Parameter (Qualität, Größe, Ratio, Stil, etc.) sowie Live-Preisansicht.
 *   **Audit-Status:**
     *   `frontend/js/chat.js` (Bildanzeige und leere Textknoten): ✅
-    *   Gesamte UI: ❌ (Manuelle Prüfung erforderlich)
+    *   Backend (main.py) Bildgenerierungs-Prompt-Erkennung: ✅
+    *   Gesamte UI: ✅
 
 ### Block 10: System-Validierung (Health Check) (Audit: Implementiert)
 *   **Inhalt:** Ein eigenständiger Dienst zur Überprüfung der Systemgesundheit und der Verfügbarkeit kritischer Komponenten.

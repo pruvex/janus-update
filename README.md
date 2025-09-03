@@ -42,6 +42,23 @@ Janus ist ein lokaler KI-Assistent für den Desktop, der als "Bring Your Own Key
     npm install
     ```
 
+## API Key Management
+Janus uses environment variables, preferably loaded from a `.env` file, to manage API keys for various services (e.g., OpenAI, Gemini). This ensures that your sensitive keys are not hardcoded or committed to version control.
+
+To set up your API keys:
+1.  Create a file named `.env` in the root directory of the project (`C:\KI\Janus-Projekt\`).
+2.  Add your API keys to this file in the format `PROVIDER_API_KEY="your_api_key_here"`.
+    *   For OpenAI, use `OPENAI_API_KEY="sk-..."
+    *   For Gemini, use `GOOGLE_API_KEY="AIza..."
+    *   Example `.env` file:
+        ```
+        OPENAI_API_KEY="sk-your-openai-key"
+        GOOGLE_API_KEY="AIza-your-gemini-key"
+        ```
+3.  Ensure that the `.env` file is listed in your `.gitignore` to prevent accidental commits. (It should already be there, but it's good practice to verify).
+
+The application will automatically load these keys when it starts.
+
 ## Anwendung starten (Entwicklungsmodus)
 Um die Anwendung im Entwicklungsmodus mit Hot-Reload für Frontend und Backend zu starten, führe den folgenden Befehl im Hauptverzeichnis aus:
 ```bash
@@ -51,6 +68,7 @@ Dieser Befehl startet parallel:
 - Den Vite-Dev-Server für das Frontend.
 - Den Electron-Hauptprozess (der nach dem Vite-Build automatisch startet).
 - Den FastAPI/Uvicorn-Server für das Backend.
+
 
 ## Tests ausführen
 **Backend-Tests:**

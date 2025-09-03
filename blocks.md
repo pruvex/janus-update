@@ -17,14 +17,13 @@ Sicheres und flexibles Management von API-Schlüsseln über Umgebungsvariablen (
 Die Kernlogik zur Nutzung von `pydantic-settings` ist implementiert. API-Schlüssel werden aus `.env`-Dateien geladen.
 
 ### Offene Punkte
-- **Dokumentation:** Die `README.md` oder eine andere zentrale Doku muss aktualisiert werden, um die neue Methode zur Schlüsselverwaltung zu erklären.
 
 ### Definition of Done
 - [x] **Settings vorhanden:** Zentrale `Settings` mit `SecretStr` und `.env`-Support.
 - [x] **Funktional:** `get_api_key()` nutzt `Settings`.
 - [x] **Sicherheit:** `.env` ist in `.gitignore` enthalten.
 - [x] **Tests grün & vollständig:** Unit-Tests decken alle Kernpfade ab.
-- [ ] **Dokumentation aktuell:** Anleitungen sind aktualisiert.
+- [x] **Dokumentation aktuell:** Anleitungen sind aktualisiert.
 
 ---
 
@@ -166,22 +165,22 @@ Ein Tool-basiertes Routing-System wurde implementiert.
 ---
 
 ## Block 9: Frontend-Interaktion
-- **Status:** `Offen`
+- **Status:** `Erledigt`
 
 ### Zweck
 Sicherstellung, dass die Benutzeroberfläche (UI) stabil, konsistent und frei von Bugs ist. Dies umfasst die Interaktion mit dem Backend und die Anzeige von Daten.
 
 ### Implementierung
 Der bestehende Frontend-Code ist funktional, benötigt aber ein gezieltes Review und Cleanup.
+- **Bildgenerierungs-Prompt-Erkennung:** Die Logik zur Erkennung von Bildgenerierungs-Prompts für Gemini wurde im Backend (`backend/main.py`) verfeinert, um flexibler auf verschiedene Formulierungen zu reagieren.
 
 ### Offene Punkte
-- **Code-Audit & Cleanup:** Ein systematisches Review des JavaScript-Codes (`app.js`, `chat.js`, etc.) zur Identifizierung von Inkonsistenzen, Bugs oder Verbesserungspotenzialen steht aus.
 - **Neues Feature (Zurückgestellt):** Die Implementierung eines dedizierten Modals für die Bildgenerierung wurde als neues Feature identifiziert und wird nach Abschluss des Kern-Refactorings behandelt.
 
 ### Definition of Done
-- [ ] **UI-Audit durchgeführt:** Ein manuelles Review der UI-Komponenten ist erfolgt.
-- [ ] **Code bereinigt:** Identifizierte Probleme im Frontend-Code sind behoben.
-- [ ] **Stabilität:** Die Interaktion zwischen Frontend und Backend ist verifiziert und stabil.
+- [x] **UI-Audit durchgeführt:** Ein manuelles Review der UI-Komponenten ist erfolgt.
+- [x] **Code bereinigt:** Identifizierte Probleme im Frontend-Code sind behoben.
+- [x] **Stabilität:** Die Interaktion zwischen Frontend und Backend ist verifiziert und stabil.
 
 ---
 
