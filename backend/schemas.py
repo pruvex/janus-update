@@ -55,3 +55,31 @@ class ChatResponse(ChatBase):
 
 class ChatTitleUpdate(BaseModel):
     title: str
+
+# --- Filesystem Tool Schemas ---
+class CreateFileArgs(BaseModel):
+    path: str
+    content: Optional[str] = ""
+
+class ReadFileArgs(BaseModel):
+    path: str
+
+class DeleteFileArgs(BaseModel):
+    path: str
+
+class ListDirectoryArgs(BaseModel):
+    path: str
+
+class CreateDirectoryArgs(BaseModel):
+    path: str
+
+class DeleteDirectoryArgs(BaseModel):
+    path: str
+
+class MoveFileArgs(BaseModel):
+    source_path: str
+    destination_path: str
+
+class RenameFileArgs(BaseModel):
+    old_path: str
+    new_path: str
