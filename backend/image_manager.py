@@ -7,12 +7,14 @@ from backend.utils.paths import get_app_data_dir
 logger = logging.getLogger('janus_backend')
 
 # (Ihre neue Funktion 'save_image_from_bytes' sollte bereits so aussehen)
-def save_image_from_bytes(image_bytes: bytes) -> str:
+def save_image_from_bytes(image_bytes: bytes, filename: str = None) -> str:
     """Saves image data from bytes to a file and returns the web-accessible path."""
     image_dir = os.path.join(get_app_data_dir(), "images")
     os.makedirs(image_dir, exist_ok=True)
     
-    filename = f"{uuid.uuid4()}.png"
+    if filename is None:
+        filename = f"{uuid.uuid4()}.png"
+    
     file_path = os.path.join(image_dir, filename)
     
     with open(file_path, "wb") as f:

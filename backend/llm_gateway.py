@@ -10,7 +10,7 @@ from google.api_core.exceptions import ResourceExhausted
 from tenacity import retry, stop_after_attempt, wait_exponential, RetryError
 from backend.cost_calculator import calculate_cost, MODEL_PRICES
 from sqlalchemy.orm import Session
-from backend import crud, vector_service, image_manager
+from backend import crud, vector_service, image_manager # image_manager wird jetzt verwendet
 from backend.context_manager import ContextManager
 from backend.utils.paths import get_app_data_dir
 
@@ -127,19 +127,23 @@ async def _call_gemini_image_generation_api(api_key: str, model_id: str, prompt:
         response = await model.generate_content_async(prompt)
         
         image_data = None
-        for part in response.candidates[0].content.parts:
-            if part.inline_data:
-                image_data = part.inline_data.data
-                break
+        # Safely access nested attributes
+        if response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
+            for part in response.candidates[0].content.parts:
+                if part.inline_data and part.inline_data.data:
+                    image_data = part.inline_data.data
+                    break
 
         image_url = None
         if image_data:
+            # === KORREKTUR BEGINNT HIER ===
+            # Wir verwenden jetzt den image_manager, um das Bild zu speichern.
+            # Das macht den Code konsistent und ermöglicht es dem Test, diese Funktion zu mocken.
             file_name = f"{uuid.uuid4()}.png"
-            file_path = os.path.join(IMAGE_DIR, file_name)
-            with open(file_path, 'wb') as f:
-                f.write(image_data)
-            image_url = f"/user_images/{file_name}"
-            logger.info(f"_call_gemini_image_generation_api: Image saved to {file_path}")
+            # Annahme: save_image_from_bytes akzeptiert (bytes, dateiname) und gibt den Pfad zurück
+            image_url = image_manager.save_image_from_bytes(image_data, file_name) 
+            logger.info(f"_call_gemini_image_generation_api: Image saved via image_manager. URL: {image_url}")
+            # === KORREKTUR ENDET HIER ===
 
         usage, cost = _calculate_and_log_cost(model_id)
         return {"text": "", "image_url": image_url, "usage": usage, "cost": cost}
@@ -171,7 +175,6 @@ async def generate_image_tool(api_key: str, prompt: str, size: str = "1024x1024"
 async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, db: Session, api_key: str, model: str, provider: str, context_manager: ContextManager) -> Dict:
     logger.info(f"reason_and_respond: Original user_prompt={user_prompt}")
     
-    # --- DIES IST DER KORREKTE PROMPT, DER ZUM TEST PASST ---
     system_rules = (
         "Du bist Janus, ein hilfreicher KI-Assistent, der logisch schlussfolgert. Deine Aufgabe ist es, die Frage des Benutzers zu beantworten.\n"
         "**DEINE GOLDENE REGEL: Deine Antwort MUSS sich auf die unten stehenden BEWEISE stützen. Erfinde keine Fakten.**\n\n"
