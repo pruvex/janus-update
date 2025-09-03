@@ -31,7 +31,6 @@ def _calculate_and_log_cost(model_id, usage_data=None, custom_prompt=None):
 
 async def call_llm(provider: str, model_id: str, prompt: str, api_key: str, chat_history: Optional[List[Dict]] = None):
     if not chat_history:
-        # Erstelle eine minimale Historie, wenn keine übergeben wird
         chat_history = [{"role": "user", "content": prompt}]
 
     model_info = MODEL_PRICES.get(model_id)
@@ -89,7 +88,6 @@ async def _call_gemini_api(api_key: str, model_id: str, chat_history: List[Dict]
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(model_id)
     
-    # Konvertiere Chat-Historie für Gemini
     gemini_history = []
     for msg in chat_history:
         role = "user" if msg["role"] == "user" else "model"
@@ -120,24 +118,22 @@ async def _call_gemini_image_generation_api(api_key: str, model_id: str, prompt:
     try:
         logger.info(f"_call_gemini_image_generation_api: Calling model '{model_id}' with prompt: '{prompt}'")
         response = await model.generate_content_async(prompt)
-
-        # --- WIEDERHERGESTELLTE, FUNKTIONIERENDE LOGIK ---
+        
         image_data = None
-        # Wir müssen durch die "parts" der Antwort iterieren
         for part in response.candidates[0].content.parts:
             if part.inline_data:
                 image_data = part.inline_data.data
-                break # Wir haben das Bild gefunden, Schleife beenden
+                break
+
         image_url = None
         if image_data:
-            # Manuelles Speichern und Erstellen des Pfades
-            file_name = str(uuid.uuid4()) + ".png"
+            file_name = f"{uuid.uuid4()}.png"
             file_path = os.path.join(IMAGE_DIR, file_name)
             with open(file_path, 'wb') as f:
                 f.write(image_data)
             image_url = f"/user_images/{file_name}"
             logger.info(f"_call_gemini_image_generation_api: Image saved to {file_path}")
-        # --- ENDE DER WIEDERHERGESTELLTEN LOGIK ---
+
         usage, cost = _calculate_and_log_cost(model_id)
         return {"text": "", "image_url": image_url, "usage": usage, "cost": cost}
     except Exception as e:
@@ -168,6 +164,7 @@ async def generate_image_tool(api_key: str, prompt: str, size: str = "1024x1024"
 async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, db: Session, api_key: str, model: str, provider: str, context_manager: ContextManager) -> Dict:
     logger.info(f"reason_and_respond: Original user_prompt={user_prompt}")
     
+    # KORRIGIERTER PROMPT
     system_rules = (
         "Du bist Janus, ein hilfreicher KI-Assistent, der logisch schlussfolgert. Deine Aufgabe ist es, die Frage des Benutzers zu beantworten.\n"
         "**DEINE GOLDENE REGEL: Deine Antwort MUSS sich auf die unten stehenden BEWEISE stützen. Erfinde keine Fakten.**\n\n"
