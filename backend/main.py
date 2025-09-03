@@ -123,7 +123,16 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
     crud.create_message(db, chat_id=request.chat_id, sender="user", content=request.prompt)
     
     if request.provider == "gemini":
-        image_keywords = ["bild", "image", "picture", "foto", "photo", "draw", "create", "generate", "zeichne", "erstelle", "generiere", "mach ein bild", "mach mir ein bild", "erstelle ein bild", "generiere ein bild"]
+        # === KORREKTUR BEGINNT HIER ===
+        # Wir vereinfachen die Liste auf einzelne, effektive Schlüsselwörter.
+        # "mach" und "mache" fangen jetzt alle Variationen wie "mach mir...", "mach ein..." etc. ab.
+        image_keywords = [
+            "bild", "image", "picture", "foto", "photo", 
+            "draw", "create", "generate", 
+            "zeichne", "erstelle", "generiere", 
+            "mach", "mache"
+        ]
+        # === KORREKTUR ENDET HIER ===
         prompt_lower = request.prompt.lower()
         
         if any(keyword in prompt_lower for keyword in image_keywords):
@@ -243,6 +252,7 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
     save_config(config)
 
     return {"sender": "model", "text": final_answer, "image_url": local_image_path}
+
 
 # --- API Endpoints ---
 @app.post("/api/chat")
