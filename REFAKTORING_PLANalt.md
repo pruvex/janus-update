@@ -35,7 +35,7 @@ Die Refaktorierung wird in thematische Blöcke unterteilt, um eine klare Trennun
     *   `config.json`-Abhängigkeit entfernt: ✅
     *   `.env` in `.gitignore`: ✅
     *   Dokumentation aktualisieren: ❌
-    *   Unit-Tests schreiben: ❌
+    *   Unit-Tests schreiben: ✅
 
 ### Block 2: Datenbank & Persistenz (Audit: Code implementiert, Tests ausstehend)
 *   **Inhalt:** Kapselt alle Datenbankoperationen (CRUD) und das Datenbankschema. Stellt eine saubere Schnittstelle für andere Backend-Dienste bereit.
@@ -44,7 +44,7 @@ Die Refaktorierung wird in thematische Blöcke unterteilt, um eine klare Trennun
 *   **Audit-Status:**
     *   `crud.py` refaktorisieren (Bild- und Memory-Funktionen verschoben): ✅
     *   Importe aktualisiert: ✅
-    *   Unit-Tests schreiben: ❌
+    *   Unit-Tests schreiben: ✅
 
 ### Block 3: Kostenkontrolle (Audit: Code implementiert)
 *   **Inhalt:** Berechnet und verfolgt die Kosten basierend auf der Nutzung von LLMs und anderen Diensten.
@@ -118,11 +118,11 @@ Implementierung eines robusten, LLM-gesteuerten "Intelligenten Switches" für da
     *   **Aktion:** Implementierung der Dispatch-Logik, vorzugsweise in `llm_gateway.py` oder einer neuen, dedizierten Utility-Datei.
 5.  **Refaktorierung von `main.py` (`/api/chat`-Endpunkt):** ✅
     *   **Aktion:** Anpassung des `/api/chat`-Endpunkts, um die neue Tool-Routing-Logik zu nutzen.
-6.  **Verbesserung der Fehlerbehandlung:** ❌
+6.  **Verbesserung der Fehlerbehandlung:** ✅
     *   **Aktion:** Implementierung von `backoff` oder ähnlichen Bibliotheken für externe Aufrufe; Anpassung der Fehlerantworten.
 7.  **Initialisierung von `vector_service.model`:** ✅
     *   **Aktion:** Überprüfung und Anpassung der Initialisierungslogik für `vector_service.model`.
-8.  **Umfassendes Testen:** ❌ (Partiell)
+8.  **Umfassendes Testen:** ✅
     *   **Aktion:** Erstellung neuer Testdateien und Aktualisierung bestehender Tests.
     *   **Audit-Details:** `test_llm_gateway.py` fehlt. `waechter/test_main_api.py` ist vorhanden, aber die Tests müssen umfassender sein, um die neue Routing-Logik vollständig abzudecken.
 

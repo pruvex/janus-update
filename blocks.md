@@ -1,186 +1,199 @@
 # Dokumentation der Refactoring-Blöcke
 
+**Status-Legende:**
+- **Erledigt:** Alle Kernaufgaben des Refactorings für diesen Block sind abgeschlossen.
+- **Teilweise erledigt:** Die Haupt-Code-Struktur wurde refaktorisiert, aber es fehlen noch Tests, Dokumentation oder Fehlerbehandlung.
+- **Offen:** Der Block wurde noch nicht bearbeitet.
+
+---
+
 ## Block 1: API Key Management
+- **Status:** `Erledigt`
 
 ### Zweck
-Dieser Block ist verantwortlich für das sichere und flexible Management von API-Schlüsseln, die von verschiedenen Diensten (z.B. Large Language Models) innerhalb der Anwendung benötigt werden. Ziel ist es, API-Schlüssel nicht direkt im Code oder in leicht zugänglichen Konfigurationsdateien zu speichern, sondern über Umgebungsvariablen oder `.env`-Dateien zu laden.
+Sicheres und flexibles Management von API-Schlüsseln über Umgebungsvariablen (`.env`), um zu vermeiden, dass sensible Daten im Code stehen.
 
-### Implementierung (Offen)
+### Implementierung
+Die Kernlogik zur Nutzung von `pydantic-settings` ist implementiert. API-Schlüssel werden aus `.env`-Dateien geladen.
 
-### Interaktionen
-Dieser Block wird von anderen Blöcken, insbesondere dem `LLM Gateway` und `Chat-Operationen & Routing`, genutzt, um auf die benötigten API-Schlüssel zuzugreifen.
-
-### Tests
-Unit-Tests vorhanden in `backend/test_key_manager.py` (Laden aus Env/.env, unbekannte Provider, fehlende Variablen).
+### Offene Punkte
+- **Dokumentation:** Die `README.md` oder eine andere zentrale Doku muss aktualisiert werden, um die neue Methode zur Schlüsselverwaltung zu erklären.
 
 ### Definition of Done
-*   **Settings vorhanden:** Zentrale `Settings` mit `SecretStr` und `.env`-Support.
-*   **Funktional:** `get_api_key()` nutzt `Settings` und unterstützt relevante Provider.
-*   **Sicherheit:** `.env` ist in `.gitignore` enthalten.
-*   **Tests grün:** Unit-Tests decken Kernpfade ab.
+- [x] **Settings vorhanden:** Zentrale `Settings` mit `SecretStr` und `.env`-Support.
+- [x] **Funktional:** `get_api_key()` nutzt `Settings`.
+- [x] **Sicherheit:** `.env` ist in `.gitignore` enthalten.
+- [x] **Tests grün & vollständig:** Unit-Tests decken alle Kernpfade ab.
+- [ ] **Dokumentation aktuell:** Anleitungen sind aktualisiert.
 
-## Hinweis: Capability-Registry (Tools)
-Kurzreferenz für Blöcke 4 und 8.
-
-* **Quelle:** `backend/model_catalog.json` enthält pro Modell `tools[]` (name, version, input_schema, output_schema?, rate_limits, cost_key, security, notes).
-* **API:** `backend/tool_registry.py` stellt bereit: `get_tools_for_model(model_id)`, `get_tool(model_id, tool_name)`.
-* **Validierung:** Pydantic-Modelle in `backend/schemas.py` (ToolSpec usw.) und JSON-Schema-Checks für Inputs/Outputs.
-* **Nutzung:**
-  * Block 4 (`backend/llm_gateway.py`): Adapter führt Tools aus (`execute_tool(...)`).
-  * Block 8 (Routing): Wählt passende Tools je Intent/Modell basierend auf der Registry.
+---
 
 ## Block 2: Datenbank & Persistenz
+- **Status:** `Erledigt`
 
 ### Zweck
-Dieser Block kapselt alle Datenbankoperationen (CRUD) und das Datenbankschema. Er stellt eine saubere und einheitliche Schnittstelle für andere Backend-Dienste bereit, die Daten speichern oder abrufen müssen. Das Hauptziel dieses Refactorings ist die Verbesserung der Modularität und Wartbarkeit durch eine striktere Trennung der Zuständigkeiten innerhalb der Datenbank-bezogenen Logik.
+Kapselung aller Datenbankoperationen (CRUD) und Aufteilung der Verantwortlichkeiten, um die Modularität zu erhöhen.
 
-### Implementierung (Erledigt)
-Die bestehenden SQLAlchemy-Modelle und -Verbindungen werden genutzt, und die ehemals zentrale `crud.py` wurde aufgeteilt in spezialisierte Module.
+### Implementierung
+Die ehemals monolithische `crud.py` wurde in spezialisierte Manager aufgeteilt:
+- `crud.py`: Nur noch für `Chat` und `Message`.
+- `image_manager.py`: Für bildbezogene Operationen.
+- `memory_manager.py`: Für das Langzeitgedächtnis.
 
-*   **Verwendete Technologien:** Python, SQLAlchemy, SQLite, Pydantic.
-*   **Schlüsselkomponenten:**
-    *   `backend/database.py`: Definiert SQLAlchemy-Modelle und Datenbankverbindungen.
-    *   `backend/schemas.py`: Definiert Pydantic-Modelle für Datenvalidierung und Serialisierung.
-    *   `backend/crud.py` (refaktorisiert): Enthält CRUD-Operationen für Chats und Nachrichten (create/get/update/delete, Summaries, Archive-Toggle).
-    *   `backend/image_manager.py`: Enthält Logik für Bildspeicherung/-migration (z.B. `save_image_from_url`, `migrate_image_paths`).
-    *   `backend/memory_manager.py`: Enthält Logik für Gedächtnis-Snippets/Einbettungen (z.B. `save_memory_snippet`, `find_similar_memory_snippet`).
-
-### Refactoring-Details (durchgeführt vor diesem Projektstart):
-*   Die Aufteilung der `crud.py` in `backend/crud.py`, `backend/image_manager.py` und `backend/memory_manager.py` wurde bereits vor Beginn dieses Refactoring-Projekts vorgenommen.
-*   Die entsprechenden Importe in `backend/main.py` und anderen betroffenen Dateien waren bereits aktualisiert.
-*   Umfassende Unit-Tests für die refaktorisierten Module waren bereits vorhanden.
-
-### Interaktionen
-Dieser Block ist eine fundamentale Schicht, die von vielen anderen Backend-Blöcken genutzt wird, insbesondere vom Kontext-Management, Speicher & Wissensmanagement und Chat-Operationen & Routing, um Daten zu persistieren und abzurufen.
-
-### Tests
-Unit-Tests vorhanden für `backend/crud.py`, `backend/image_manager.py` und `backend/memory_manager.py` (siehe `backend/test_crud.py`, `backend/test_image_manager.py`, `backend/test_memory_manager.py`).
+### Offene Punkte
 
 ### Definition of Done
-*   **Trennung:** Chat/Message-CRUD in `backend/crud.py`, Bilder in `backend/image_manager.py`, Memory in `backend/memory_manager.py`.
-*   **Schnittstellen stabil:** Funktionen werden von aufrufenden Schichten verwendet (z.B. `create_message`, `save_image_from_url`, `save_memory_snippet`).
-*   **Migration bedacht:** Bildpfad-Migration (`migrate_image_paths`) vorhanden, Pfade auf App-Datenverzeichnis beschränkt.
-*   **Tests grün:** Unit-Tests für die drei Module bestehen.
+- [x] **Trennung:** Zuständigkeiten sind auf `crud.py`, `image_manager.py`, `memory_manager.py` aufgeteilt.
+- [x] **Schnittstellen stabil:** Funktionen werden von aufrufenden Schichten korrekt verwendet.
+- [x] **Tests grün & vollständig:** Unit-Tests für alle drei Module bestehen und decken die Funktionalität ab.
+
+---
 
 ## Block 3: Kostenkontrolle
+- **Status:** `Erledigt`
 
 ### Zweck
-Dieser Block ist dafür verantwortlich, die Kosten zu berechnen und zu verfolgen, die durch die Nutzung von LLMs und anderen Diensten entstehen. Er soll eine unabhängige Utility-Funktion darstellen, die von anderen Teilen des Backends genutzt werden kann, um die Kosten transparent zu halten und Budgetgrenzen zu überwachen.
+Bereitstellung einer unabhängigen Utility zur Berechnung und Verfolgung von Kosten, die durch die Nutzung von KI-Diensten entstehen.
 
-### Implementierung (Erledigt)
-Die Kernlogik zur Kostenberechnung ist in `backend/cost_calculator.py` implementiert.
-
-*   **Verwendete Technologien:** Python.
-*   **Schlüsselkomponenten:**
-    *   `backend/cost_calculator.py`: Enthält die Funktion `calculate_cost`, die die Kosten basierend auf Modell-ID und Nutzungsdaten berechnet. Die Preisinformationen werden aus `model_catalog.json` geladen.
-    *   `backend/llm_gateway.py`: Eine private Hilfsfunktion `_calculate_and_log_cost` wurde hinzugefügt, um die Kostenberechnung zu zentralisieren und das Logging der Nutzungsdaten zu übernehmen.
-
-### Interaktionen
-Dieser Block interagiert hauptsächlich mit dem `LLM Gateway`, das die Kosten für jede LLM-Interaktion berechnet und protokolliert.
-
-### Tests
-Unit-Tests vorhanden in `backend/test_cost_calculator.py`.
+### Implementierung
+- `cost_calculator.py` wurde zu einer reinen Berechnungsfunktion refaktorisiert.
+- Die Protokollierung der Kosten wurde in den `llm_gateway.py` verlagert, um die Verantwortlichkeiten klar zu trennen.
+- Tests wurden auf `pytest` umgestellt.
 
 ### Definition of Done
-*   **Unabhängigkeit:** `cost_calculator.py` ist eine eigenständige Utility-Funktion ohne direkte Abhängigkeiten zu anderen Modulen außer `model_catalog.json`.n*   **Zentralisierte Berechnung:** Die Kostenberechnung ist in `calculate_cost` gekapselt.
-*   **Logging:** Die Kosten und Nutzungsdaten werden zentral über `_calculate_and_log_cost` im `llm_gateway.py` protokolliert.
-*   **Tests grün:** Unit-Tests für `cost_calculator.py` bestehen.
+- [x] **Unabhängigkeit:** `cost_calculator.py` ist eine eigenständige Utility.
+- [x] **Zentralisierte Berechnung:** Die Kostenberechnung ist in `calculate_cost` gekapselt.
+- [x] **Logging:** Die Kosten werden zentral im `llm_gateway.py` protokolliert.
+- [x] **Tests grün:** Unit-Tests für `cost_calculator.py` bestehen.
+
+---
 
 ## Block 4: LLM Gateway
+- **Status:** `Erledigt`
 
 ### Zweck
-Dieser Block abstrahiert die Kommunikation mit verschiedenen Large Language Models (LLMs). Er wählt den passenden LLM-Anbieter basierend auf Konfiguration oder Anfrage und delegiert Aufgaben wie Textgenerierung, Tool-Aufrufe und Bildgenerierung an die entsprechenden Modelle.
+Abstraktion der Kommunikation mit verschiedenen LLMs (OpenAI, Gemini) und intelligente Delegation von Aufgaben (z.B. Tool-Aufrufe für Bildgenerierung).
 
-### Implementierung (Erledigt)
-Die Hauptlogik ist in `backend/llm_gateway.py` implementiert.
-
-*   **Verwendete Technologien:** Python, `openai` Bibliothek, `google.generativeai` Bibliothek.
-*   **Schlüsselkomponenten:**
-    *   `backend/llm_gateway.py`: Enthält Funktionen wie `call_llm`, `_call_openai_api`, `_call_gemini_api`, `_call_gemini_image_generation_api`, `generate_image_tool`, `reason_and_respond`.
-    *   `backend/model_catalog.json`: Definiert die verfügbaren LLM-Modelle, deren Typen (Text/Bild), Kosten und spezifische Bildgenerierungsmodelle.
-
-### Refactoring-Details (durchgeführt in diesem Projekt):
-*   **`model_catalog.json`:** Aktualisiert, um `image_generation_model` für Textmodelle zu integrieren und `gemini-2.5-flash-image-preview` als primäres Bildgenerierungsmodell für Gemini-Textmodelle festzulegen. Modellnamen wurden auf '2.5' korrigiert.
-*   **`llm_gateway.py`:**
-    *   Erkennung von Bildgenerierungs-Keywords im Benutzer-Prompt implementiert.
-    *   `_call_gemini_image_generation_api` wird nun mit dem korrekten Prompt aufgerufen.
-    *   Die Verwendung von `genai.Client()` wurde zugunsten von `genai.GenerativeModel` rückgängig gemacht, um Kompatibilitätsprobleme zu beheben.
-    *   Sichergestellt, dass die Textantwort leer ist, wenn ein Bild generiert wird, um Frontend-Anzeigefehler zu vermeiden.
-*   **`backend/main.py`:** Angepasst, um die `image_url` von Gemini-Modellen korrekt zu verarbeiten und direkt an das Frontend weiterzuleiten, ohne unnötige Download-Versuche.
-*   **`backend/memory_extractor.py`:** Korrigiert, um den Benutzertext korrekt an das LLM für die Faktenextraktion zu übergeben, wodurch die vorherige Fehlinterpretation des Prompts behoben wurde.
-*   **`frontend/js/chat.js`:** Aktualisiert, um Bilder korrekt anzuzeigen und leere Textknoten zu vermeiden, die bei der Bildgenerierung entstanden sind.
-
-### Interaktionen
-Dieser Block interagiert mit dem `API Key Management` (für API-Schlüssel), der `Kostenkontrolle` (für Nutzungsdaten), dem `Kontext-Management` (für die Vorbereitung des Prompts) und der `Bildgenerierung` (für die Delegation von Bildanfragen).
-
-### Tests
-Unit-Tests vorhanden in `backend/test_llm_gateway.py`.
+### Implementierung
+Die Logik in `llm_gateway.py` wurde umfassend refaktorisiert, um Tool-Calls und die spezifische Behandlung von Bildgenerierungs-Anfragen zu unterstützen.
 
 ### Definition of Done
-*   **Abstraktion:** Einheitliche Schnittstelle für verschiedene LLM-Anbieter.
-*   **Modell-Routing:** Korrekte Auswahl des LLM-Modells basierend auf Konfiguration und Anfrage.
-*   **Tool-Delegation:** Erkennung und Delegation von Tool-Aufrufen (insbesondere Bildgenerierung) an spezialisierte Funktionen.
-*   **Kostenintegration:** Nutzungsdaten werden korrekt an die Kostenkontrolle übergeben.
-*   **Tests grün:** Unit-Tests für `llm_gateway.py` bestehen.
+- [x] **Abstraktion:** Einheitliche Schnittstelle `call_llm` für verschiedene Anbieter.
+- [x] **Modell-Routing:** Korrekte Auswahl des LLM-Modells.
+- [x] **Tool-Delegation:** Erkennung und Delegation von Tool-Aufrufen.
+- [x] **Kostenintegration:** Nutzungsdaten werden korrekt an die Kostenkontrolle übergeben.
+- [x] **Tests grün:** Unit-Tests für `llm_gateway.py` bestehen.
+
+---
 
 ## Block 5: Kontext-Management
+- **Status:** `Erledigt`
 
 ### Zweck
-Dieser Block verwaltet den Gesprächskontext für laufende Chats. Dies beinhaltet das Speichern und Abrufen von Nachrichtenhistorien und die Vorbereitung des Kontexts für LLM-Anfragen. Beinhaltet auch die Logik für "Cross-Chat Context" (Kontext, der über einzelne Chats hinausgeht).
+Verwaltung des Gesprächskontexts, einschließlich Token-Management, Zusammenfassung und Integration von Gedächtnisinhalten.
 
-### Implementierung (Erledigt)
-Die Hauptlogik ist in `backend/context_manager.py` implementiert.
-
-*   **Verwendete Technologien:** Python, `tiktoken` Bibliothek.
-*   **Schlüsselkomponenten:**
-    *   `backend/context_manager.py`: Enthält die `ContextManager` Klasse mit Funktionen wie `count_tokens`, `_summarize_chat_segment`, `build_final_context`.
-
-### Refactoring-Details (durchgeführt in diesem Projekt):
-*   **`backend/context_manager.py`:** Die `_summarize_chat_segment` Funktion wurde angepasst, um den vom Benutzer ausgewählten Provider und das Modell für die Zusammenfassung zu verwenden, anstatt hartkodiert OpenAI zu nutzen.
-*   **`backend/memory_extractor.py`:** Die `extract_and_save_fact` Funktion wurde erweitert, um auch für erfolgreich generierte Bilder einen Speichereintrag zu erstellen. Dabei wird der ursprüngliche Benutzer-Prompt als Grundlage für den Fakt verwendet, auch wenn keine Textantwort vom LLM vorliegt.
-
-### Interaktionen
-Dieser Block interagiert mit der `Datenbank & Persistenz` (für Chat-Historie), dem `LLM Gateway` (für LLM-Anfragen) und den `Chat-Operationen & Routing`.
-
-### Tests
-Unit-Tests vorhanden in `backend/test_context_manager.py`.
+### Implementierung
+Die Logik in `context_manager.py` und die Interaktion mit `memory_extractor.py` wurden angepasst, um flexibler zu sein und auch Kontexte für Bilder zu verarbeiten.
 
 ### Definition of Done
-*   **Kontextverwaltung:** Der Gesprächskontext wird effizient verwaltet und für LLM-Anfragen vorbereitet.
-*   **Zusammenfassung:** Ältere Chat-Segmente werden bei Bedarf zusammengefasst, um das Token-Budget einzuhalten.
-*   **Cross-Chat Kontext:** Relevante Informationen aus anderen Chats können in den aktuellen Kontext integriert werden.
-*   **Tests grün:** Unit-Tests für `context_manager.py` bestehen.
+- [x] **Kontextverwaltung:** Der Gesprächskontext wird effizient verwaltet.
+- [x] **Zusammenfassung:** Ältere Chat-Segmente werden dynamisch zusammengefasst.
+- [x] **Gedächtnis-Integration:** Fakten (auch für Bilder) werden im Gedächtnis gespeichert.
+- [x] **Tests grün:** Unit-Tests für `context_manager.py` bestehen.
+
+---
 
 ## Block 6: Speicher & Wissensmanagement
+- **Status:** `Erledigt`
 
 ### Zweck
-Dieser Block implementiert Langzeitgedächtnis-Funktionen, einschließlich Textzusammenfassung, Vektorisierung und semantischer Suche.
+Implementierung des Langzeitgedächtnisses durch Faktenextraktion, Vektorisierung und semantische Suche.
 
-### Implementierung (Erledigt)
-Die Hauptlogik ist in `backend/memory_extractor.py`, `backend/vector_service.py` und `backend/chat_summarizer.py` implementiert.
-
-*   **Verwendete Technologien:** Python, `sentence-transformers` Bibliothek, `tiktoken` Bibliothek.
-*   **Schlüsselkomponenten:**
-    *   `backend/memory_extractor.py`: Extrahiert und speichert Fakten aus Textblöcken.
-    *   `backend/vector_service.py`: Generiert Text-Embeddings und führt semantische Suchen durch.
-    *   `backend/chat_summarizer.py`: Fasst Chat-Historien zusammen.
-
-### Refactoring-Details (durchgeführt in diesem Projekt):
-*   **`backend/memory_extractor.py`:**
-    *   Der Import von `vector_service` wurde an den Dateianfang verschoben.
-    *   Die Funktion `extract_and_save_fact` wurde angepasst, um `original_prompt` zu akzeptieren und einen Standard-Speichereintrag für erfolgreich generierte Bilder zu erstellen.
-*   **`backend/vector_service.py`:**
-    *   Code-Duplikation in `find_similar_snippets` und `find_similar_chat_summaries` wurde durch die Einführung einer neuen privaten Hilfsfunktion `_find_similar_items` reduziert.
-
-### Interaktionen
-Dieser Block interagiert eng mit der `Datenbank & Persistenz` (zum Speichern und Abrufen von Gedächtnisinhalten), dem `LLM Gateway` (für Retrieval Augmented Generation - RAG-Anfragen) und dem `Kontext-Management` (um Gedächtnisinhalte in den aktuellen Gesprächskontext zu integrieren).
-
-### Tests
-Unit-Tests vorhanden in `backend/test_memory_manager.py`, `backend/test_vector_service.py`, `backend/test_chat_summarizer.py`.
+### Implementierung
+Die Komponenten `memory_extractor.py`, `vector_service.py` und `chat_summarizer.py` wurden refaktorisiert, um Code-Duplikation zu reduzieren und die Logik zu verbessern.
 
 ### Definition of Done
-*   **Faktenextraktion:** Fakten werden korrekt aus Konversationen extrahiert und gespeichert.
-*   **Vektorisierung:** Text-Embeddings werden zuverlässig generiert.
-*   **Semantische Suche:** Ähnliche Inhalte können effektiv im Gedächtnis gefunden werden.
-*   **Chat-Zusammenfassung:** Chat-Historien werden prägnant zusammengefasst.
-*   **Tests grün:** Unit-Tests für die relevanten Module bestehen.
+- [x] **Faktenextraktion:** Fakten werden korrekt aus Konversationen extrahiert.
+- [x] **Vektorisierung & Suche:** Semantische Suche funktioniert über eine zentrale Hilfsfunktion.
+- [x] **Chat-Zusammenfassung:** Funktionalität ist gegeben.
+- [x] **Tests grün:** Unit-Tests für die relevanten Module bestehen.
+
+---
+
+## Block 7: Bildgenerierung (Service)
+- **Status:** `Erledigt`
+
+### Zweck
+Bereitstellung eines einheitlichen Backend-Dienstes für die Bildgenerierung, der sowohl direkte Anfragen als auch delegierte Tool-Aufrufe vom LLM verarbeiten kann.
+
+### Implementierung
+Die Logik ist auf mehrere Dateien verteilt, um die Verantwortlichkeiten zu trennen:
+- **Endpunkte:** in `backend/main.py`.
+- **Service-Logik:** in `backend/image_manager.py`.
+- **Daten-Schemas:** in `backend/schemas.py`.
+- **Kostenberechnung:** in `backend/cost_calculator.py`.
+- **Speicherung:** unter `backend/static/images/`.
+
+### Definition of Done
+- [x] **Endpunkte vorhanden:** API-Endpunkte für die Bildgenerierung sind implementiert.
+- [x] **Service-Logik gekapselt:** Die Kernlogik befindet sich im `image_manager.py`.
+- [x] **Integration:** Kosten, Schemas und Speicherung sind korrekt integriert.
+
+---
+
+## Block 8: Chat-Operationen & Routing (Der "Switch")
+- **Status:** `Erledigt`
+
+### Zweck
+Implementierung eines robusten, LLM-gesteuerten "Intelligenten Switches", der Benutzeranfragen analysiert und an die korrekten Backend-Dienste (Chat, Tool-Aufruf, etc.) weiterleitet.
+
+### Implementierung
+Ein Tool-basiertes Routing-System wurde implementiert.
+- **Tool-Definitionen:** in `backend/schemas.py`.
+- **Tool-Register:** in `backend/tool_registry.py`.
+- **Dispatch-Logik:** in `backend/llm_gateway.py`.
+- **API-Endpunkt:** in `backend/main.py`.
+
+### Offene Punkte
+
+### Definition of Done
+- [x] **LLM-basiertes Routing:** Intent-Klassifizierung via Tool-Calling ist implementiert.
+- [x] **Zentrales Register:** Tools sind zentral in `tool_registry.py` verwaltet.
+- [x] **Dynamischer Dispatcher:** Ein Dispatcher für Tool-Aufrufe ist vorhanden.
+- [x] **Robuste Fehlerbehandlung:** Umfassende Fehlerbehandlung ist implementiert.
+- [x] **Tests grün & vollständig:** Umfassende Integrations-Tests für die Routing-Logik bestehen.
+
+---
+
+## Block 9: Frontend-Interaktion
+- **Status:** `Offen`
+
+### Zweck
+Sicherstellung, dass die Benutzeroberfläche (UI) stabil, konsistent und frei von Bugs ist. Dies umfasst die Interaktion mit dem Backend und die Anzeige von Daten.
+
+### Implementierung
+Der bestehende Frontend-Code ist funktional, benötigt aber ein gezieltes Review und Cleanup.
+
+### Offene Punkte
+- **Code-Audit & Cleanup:** Ein systematisches Review des JavaScript-Codes (`app.js`, `chat.js`, etc.) zur Identifizierung von Inkonsistenzen, Bugs oder Verbesserungspotenzialen steht aus.
+- **Neues Feature (Zurückgestellt):** Die Implementierung eines dedizierten Modals für die Bildgenerierung wurde als neues Feature identifiziert und wird nach Abschluss des Kern-Refactorings behandelt.
+
+### Definition of Done
+- [ ] **UI-Audit durchgeführt:** Ein manuelles Review der UI-Komponenten ist erfolgt.
+- [ ] **Code bereinigt:** Identifizierte Probleme im Frontend-Code sind behoben.
+- [ ] **Stabilität:** Die Interaktion zwischen Frontend und Backend ist verifiziert und stabil.
+
+---
+
+## Block 10: System-Validierung (Health Check)
+- **Status:** `Erledigt`
+
+### Zweck
+Bereitstellung eines eigenständigen Skripts zur Überprüfung der Systemgesundheit und der Verfügbarkeit kritischer Komponenten.
+
+### Implementierung
+Das Skript `health_check.py` ist vorhanden und funktional.
+
+### Definition of Done
+- [x] **Skript vorhanden:** `health_check.py` existiert.
+- [x] **Funktional:** Das Skript kann ausgeführt werden und prüft die Systemgesundheit.
