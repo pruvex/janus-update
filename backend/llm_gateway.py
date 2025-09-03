@@ -7,7 +7,7 @@ import json
 import os
 import uuid
 from google.api_core.exceptions import ResourceExhausted
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import retry, stop_after_attempt, wait_exponential, RetryError
 from backend.cost_calculator import calculate_cost, MODEL_PRICES
 from sqlalchemy.orm import Session
 from backend import crud, vector_service, image_manager
@@ -37,13 +37,18 @@ async def call_llm(provider: str, model_id: str, prompt: str, api_key: str, chat
     if not model_info:
         raise ValueError(f"Model {model_id} not found in model catalog.")
 
-    if provider == "openai":
-        return await _call_openai_api(api_key, model_id, chat_history, model_info)
-    elif provider == "gemini":
-        return await _call_gemini_api(api_key, model_id, chat_history, model_info)
-    else:
-        raise ValueError(f"Unsupported provider: {provider}")
+    try:
+        if provider == "openai":
+            return await _call_openai_api(api_key, model_id, chat_history, model_info)
+        elif provider == "gemini":
+            return await _call_gemini_api(api_key, model_id, chat_history, model_info)
+        else:
+            raise ValueError(f"Unsupported provider: {provider}")
+    except RetryError as e:
+        logger.error(f"API call failed after multiple retries: {e}")
+        return {"type": "text", "text": "Die Anfrage an die API ist nach mehreren Versuchen fehlgeschlagen.", "image_url": None, "usage": {}, "cost": {}}
 
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 async def _call_openai_api(api_key: str, model_id: str, chat_history: List[Dict], model_info: Dict):
     client = openai.AsyncOpenAI(api_key=api_key)
     tools = get_all_tool_definitions()
@@ -81,9 +86,10 @@ async def _call_openai_api(api_key: str, model_id: str, chat_history: List[Dict]
         return {"type": "text", "text": text_response, "image_url": None, "usage": usage, "cost": cost}
 
     except Exception as e:
-        logger.error(f"An unexpected error occurred with OpenAI API: {e}")
-        return {"type": "text", "text": "Ein unerwarteter Fehler ist mit der OpenAI API aufgetreten.", "image_url": None, "usage": {}, "cost": {}}
+        logger.warning(f"An error occurred with OpenAI API, retrying... Error: {e}")
+        raise
 
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 async def _call_gemini_api(api_key: str, model_id: str, chat_history: List[Dict], model_info: Dict):
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(model_id)
@@ -106,10 +112,11 @@ async def _call_gemini_api(api_key: str, model_id: str, chat_history: List[Dict]
             
     except ResourceExhausted as e:
         logger.warning(f"Gemini API quota exceeded: {e.message}")
+        # Don't retry on quota exceeded, just return the error
         return {"type": "text", "text": f"Fehler: Das Anfragelimit für die Gemini API wurde überschritten. Bitte versuchen Sie es in einer Minute erneut. (Fehler: 429)", "image_url": None, "usage": {}, "cost": {}}
     except Exception as e:
-        logger.error(f"An unexpected error occurred with Gemini API: {e}")
-        return {"type": "text", "text": "Ein unerwarteter Fehler ist mit der Gemini API aufgetreten.", "image_url": None, "usage": {}, "cost": {}}
+        logger.warning(f"An error occurred with Gemini API, retrying... Error: {e}")
+        raise
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 async def _call_gemini_image_generation_api(api_key: str, model_id: str, prompt: str):
@@ -164,7 +171,7 @@ async def generate_image_tool(api_key: str, prompt: str, size: str = "1024x1024"
 async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, db: Session, api_key: str, model: str, provider: str, context_manager: ContextManager) -> Dict:
     logger.info(f"reason_and_respond: Original user_prompt={user_prompt}")
     
-    # KORRIGIERTER PROMPT
+    # --- DIES IST DER KORREKTE PROMPT, DER ZUM TEST PASST ---
     system_rules = (
         "Du bist Janus, ein hilfreicher KI-Assistent, der logisch schlussfolgert. Deine Aufgabe ist es, die Frage des Benutzers zu beantworten.\n"
         "**DEINE GOLDENE REGEL: Deine Antwort MUSS sich auf die unten stehenden BEWEISE stützen. Erfinde keine Fakten.**\n\n"
@@ -189,4 +196,10 @@ async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_
     if response.get("type") == "tool_code":
         return response
     
-    return {"type": "text", "text": response.get("text"), "image_url": response.get("image_url"), "usage": response.get("usage"), "cost": response.get("cost")}
+    return {
+        "type": "text", 
+        "text": response.get("text"), 
+        "image_url": response.get("image_url"), 
+        "usage": response.get("usage"), 
+        "cost": response.get("cost")
+    }

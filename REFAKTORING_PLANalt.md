@@ -91,7 +91,7 @@ Die Refaktorierung wird in thematische Blöcke unterteilt, um eine klare Trennun
     *   Costs in `backend/cost_calculator.py` (image cost calculation): ✅
     *   Storage under `backend/static/images/`: ✅
 
-### Block 8: Chat-Operationen & Routing (Der "Switch") - Goldstandard-Implementierung (Audit: Teilweise implementiert)
+### Block 8: Chat-Operationen & Routing (Der "Switch") - Goldstandard-Implementierung (Audit: Abgeschlossen)
 *   **Inhalt:** Die zentrale Logik, die eingehende Benutzeranfragen verarbeitet. Sie identifiziert die Art der Anfrage (reiner Chat, Tool-Aufruf, Dateiop, Bilderstellung, Memory-Operation etc.) und leitet sie an den entsprechenden Backend-Dienst weiter. Dies ist der "Switch"-Mechanismus.
 *   **Zugehörige Dateien:** `backend/main.py` (primär), `backend/llm_gateway.py`, `backend/tool_registry.py` (neu), `backend/schemas.py` (Erweiterung), `frontend/js/app.js`, `frontend/js/chat-manager.js` (Frontend-Teil der Interaktion).
 *   **Interagiert mit:** Allen anderen Backend-Blöcken (API Key Management, LLM Gateway, Kontext-Management, Speicher & Wissensmanagement, Kostenkontrolle, Datenbank & Persistenz, Bildgenerierung).
@@ -201,3 +201,4 @@ Jeder Block wird mit einem passenden Test versehen und sauber dokumentiert, bevo
     - Ein neuer API-Endpunkt `@app.get("/api/costs/summary-by-model")` wurde hinzugefügt, um eine Kostenübersicht nach Modell zu ermöglichen.
     - Die Dekoratoren für die Endpunkte zum Aktualisieren und Löschen von Chats wurden von `@router` auf `@app` korrigiert.
     - Der Aufruf der Funktion `get_costs_summary_by_model_for_current_month` wurde korrigiert, indem das unnötige `db`-Argument entfernt wurde.
+costs_summary_by_model_for_current_month` wurde korrigiert, indem das unnötige `db`-Argument entfernt wurde.
