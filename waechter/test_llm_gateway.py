@@ -35,7 +35,7 @@ async def test_reason_and_respond_builds_detective_prompt():
         final_prompt = args[2] # Argument `prompt` in `call_llm`
 
         # Prüfe auf die Schlüsselelemente des "Detektiv-Prompts"
-        assert "Du bist Janus, ein hilfreicher KI-Detektiv" in final_prompt
+        assert "Du bist Janus, ein hilfreicher KI-Assistent, der logisch schlussfolgert" in final_prompt
         assert "**DEINE GOLDENE REGEL:**" in final_prompt
         assert "--- FAKTEN AUS DEM LANGZEITGEDÄCHTNIS ---" in final_prompt
         assert "- Der Onkel des Benutzers heißt Kalle." in final_prompt
