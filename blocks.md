@@ -75,6 +75,7 @@ Abstraktion der Kommunikation mit verschiedenen LLMs (OpenAI, Gemini) und intell
 
 ### Implementierung
 Die Logik in `llm_gateway.py` wurde umfassend refaktorisiert, um Tool-Calls und die spezifische Behandlung von Bildgenerierungs-Anfragen zu unterstützen.
+- Die provider-spezifische Logik wurde in das `llm_providers`-Verzeichnis ausgelagert, um die Modularität zu erhöhen.
 
 ### Definition of Done
 - [x] **Abstraktion:** Einheitliche Schnittstelle `call_llm` für verschiedene Anbieter.

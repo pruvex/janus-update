@@ -28,9 +28,7 @@ async def test_call_openai_api_text_response():
 
         mock_client.chat.completions.create.assert_called_once_with(
             model=model_id,
-            messages=chat_history,
-            tools=tools,
-            tool_choice="auto"
+            messages=chat_history
         )
         assert result["type"] == "text"
         assert result["text"] == "Test response"

@@ -24,12 +24,15 @@ async def _call_openai_api(api_key: str, model_id: str, chat_history: List[Dict]
     client = openai.AsyncOpenAI(api_key=api_key)
     
     try:
-        response = await client.chat.completions.create(
-            model=model_id,
-            messages=chat_history,
-            tools=tools,
-            tool_choice="auto"
-        )
+        api_call_params = {
+            "model": model_id,
+            "messages": chat_history,
+        }
+        if tools:
+            api_call_params["tools"] = tools
+            api_call_params["tool_choice"] = "auto"
+
+        response = await client.chat.completions.create(**api_call_params)
 
         response_message = response.choices[0].message
         tool_calls = response_message.tool_calls

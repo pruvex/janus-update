@@ -65,6 +65,7 @@ Die Refaktorierung wird in thematische Blöcke unterteilt, um eine klare Trennun
     *   `llm_gateway.py` (Bildgenerierungs-Keywords, `_call_gemini_image_generation_api`, `genai.GenerativeModel`, leere Textantwort bei Bildgenerierung): ✅
     *   `backend/main.py` (Verarbeitung `image_url` von Gemini): ✅
     *   `backend/memory_extractor.py` (Benutzertext korrekt an LLM für Faktenextraktion): ✅
+    *   **Modularisierung:** Die Provider-spezifische Logik wurde in `backend/llm_providers` ausgelagert. ✅
 
 ### Block 5: Kontext-Management (Audit: Code implementiert)
 *   **Inhalt:** Verwaltet den Gesprächskontext für laufende Chats. Dies beinhaltet das Speichern und Abrufen von Nachrichtenhistorien und die Vorbereitung des Kontexts für LLM-Anfragen. Beinhaltet auch die Logik für "Cross-Chat Context" (Kontext, der über einzelne Chats hinausgeht).
