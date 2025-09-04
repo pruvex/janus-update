@@ -24,6 +24,12 @@ def _get_allowed_workspaces() -> list[Path]:
     """Lädt die vom Benutzer konfigurierten Workspaces und priorisiert sie korrekt."""
     # Beginne die Liste IMMER mit den benutzerdefinierten Pfaden.
     resolved_paths = []
+    
+    # Füge den Desktop-Pfad standardmäßig hinzu
+    desktop_path = Path.home() / "Desktop"
+    if desktop_path.is_dir() and desktop_path.resolve() not in resolved_paths:
+        resolved_paths.append(desktop_path.resolve())
+
     try:
         if CONFIG_FILE.exists():
             with open(CONFIG_FILE, "r", encoding='utf-8') as f:
@@ -32,8 +38,8 @@ def _get_allowed_workspaces() -> list[Path]:
             for path_str in user_workspaces:
                 final_path_str = PLACEHOLDER_MAP.get(path_str.upper(), path_str)
                 resolved_path = Path(final_path_str).resolve()
-                if resolved_path.is_dir() and resolved_path not in resolved_paths:
-                    resolved_paths.append(resolved_path)
+                if resolved_path.is_dir() and resolved_path.resolve() not in resolved_paths:
+                    resolved_paths.append(resolved_path.resolve())
     except Exception as e:
         logger.error(f"Fehler beim Laden der Workspace-Konfiguration: {e}")
     
