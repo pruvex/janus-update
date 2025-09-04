@@ -1,13 +1,13 @@
-# backend/tool_registry.py
+# Vollständige, finale Version: backend/tool_registry.py
+
 import inspect
 from typing import Callable, Dict, Any, Optional
 from pydantic import BaseModel
-from backend import llm_gateway, schemas
+from backend import schemas, filesystem_manager
+from backend.llm_providers.openai_service import generate_image_tool
+from backend.memory_manager import cross_chat_memory_tool
 from sqlalchemy.orm import Session
-from backend import crud, vector_service
-from backend.database import get_db
-from fastapi import Depends
-from backend import filesystem_manager
+from backend import crud
 
 class Tool:
     def __init__(self, func: Callable, args_schema: BaseModel):
@@ -37,80 +37,51 @@ TOOL_REGISTRY: Dict[str, Tool] = {}
 def register_tool(tool: Tool):
     TOOL_REGISTRY[tool.name] = tool
 
-async def generate_image_tool(api_key: str, prompt: str, size: str = "1024x1024", quality: str = "standard", response_format: str = "url"):
-    """
-    Generates an image based on a text prompt using DALL-E 3.
-    Use this tool whenever a user asks to create, draw, or generate an image.
-    """
-    return await llm_gateway.generate_image_tool(
-        api_key=api_key, prompt=prompt, size=size, quality=quality, response_format=response_format
-    )
+# --- Original Tools ---
 
-def cross_chat_memory_tool(query: str, db: Session): # Der Query wird ignoriert, aber vom LLM erwartet
-    """
-    Retrieves summaries of the last few conversations to answer questions about the past.
-    Use this tool whenever the user asks about topics discussed in previous, separate chats.
-    This is your primary method for accessing long-term, cross-chat memory.
-    """
-    # Wir holen einfach die letzten 5 Chats (ohne den aktuellen)
-    all_chats = crud.get_chats(db, include_archived=True)
-    
-    # Ignoriere den allerletzten Chat, da er der aktuelle ist.
-    # Sortiere nach Erstellungsdatum, um die neuesten zuerst zu bekommen.
-    recent_chats = sorted(all_chats, key=lambda chat: chat.created_at, reverse=True)[1:6]
-    
-    if not recent_chats:
-        return {"output": "Keine früheren Chats zum Überprüfen gefunden."}
-        
-    # Formatiere die Ergebnisse für die LLM-Antwort
-    output_snippets = ["--- ZUSAMMENFASSUNGEN DER LETZTEN CHATS ---"]
-    for chat in recent_chats:
-        if chat.summary: # Nur Chats mit einer Zusammenfassung anzeigen
-            output_snippets.append(f"Thema des Chats '{chat.title}': {chat.summary}")
-            
-    if len(output_snippets) == 1: # Wenn kein Chat eine Zusammenfassung hatte
-        return {"output": "Keine relevanten Zusammenfassungen in früheren Chats gefunden."}
-        
-    return {"output": "\n".join(output_snippets)}
 
-register_tool(Tool(func=generate_image_tool, args_schema=schemas.GenerateImageToolArgs))
-register_tool(Tool(func=cross_chat_memory_tool, args_schema=schemas.CrossChatMemoryToolArgs))
+
 
 # --- Filesystem Tools ---
-
 def create_file_tool(path: str, content: str = ""):
-    """Erstellt eine neue Datei in einem erlaubten Workspace. Pfade können absolut sein (z.B. 'D:\\Projekte\\neu.txt') oder relativ zu einem Workspace (z.B. 'neu.txt')."""
+    """Erstellt eine neue Datei im Workspace."""
     return filesystem_manager.create_file(path, content)
 
 def read_file_tool(path: str):
-    """Liest den Inhalt einer Datei aus einem erlaubten Workspace."""
+    """Liest den Inhalt einer Datei aus dem Workspace."""
     return filesystem_manager.read_file(path)
 
 def delete_file_tool(path: str):
-    """Löscht eine Datei aus einem erlaubten Workspace. Diese Aktion kann nicht rückgängig gemacht werden."""
+    """Löscht eine Datei aus dem Workspace."""
     return filesystem_manager.delete_file(path)
 
-def list_directory_tool(path: str = "."):
-    """Listet den Inhalt eines Ordners auf. Verwende '.' oder '' für eine Übersicht der erlaubten Workspaces."""
-    return filesystem_manager.list_directory(path)
+def list_directory_tool(path: str = ".", pattern: Optional[str] = None):
+    """Listet den Inhalt eines Ordners auf. Kann mit einem Wildcard-Muster wie '*.png' oder 'test*' filtern."""
+    return filesystem_manager.list_directory(path, pattern)
 
 def create_directory_tool(path: str):
-    """Erstellt einen neuen, leeren Ordner in einem erlaubten Workspace."""
+    """Erstellt einen neuen, leeren Ordner im Workspace."""
     return filesystem_manager.create_directory(path)
 
 def delete_directory_tool(path: str):
-    """Löscht einen Ordner und dessen gesamten Inhalt. Sei vorsichtig, diese Aktion kann nicht rückgängig gemacht werden."""
+    """Löscht einen Ordner und dessen gesamten Inhalt aus dem Workspace."""
     return filesystem_manager.delete_directory(path)
 
 def rename_file_tool(old_path: str, new_path: str):
-    """Benennt eine Datei oder einen Ordner innerhalb der erlaubten Workspaces um."""
+    """Benennt eine Datei oder einen Ordner um."""
     return filesystem_manager.rename_file(old_path, new_path)
 
 def move_file_tool(source_path: str, destination_path: str):
-    """Verschiebt eine Datei oder einen Ordner innerhalb der erlaubten Workspaces."""
+    """Verschiebt eine einzelne Datei oder einen Ordner."""
     return filesystem_manager.move_file(source_path, destination_path)
 
+def move_files_tool(source_directory: str, destination_directory: str, pattern: str):
+    """Verschiebt mehrere Dateien, die einem Muster (z.B. '*.png') entsprechen, von einem Ordner in einen anderen. Ideal für Massenoperationen."""
+    return filesystem_manager.move_files(source_directory, destination_directory, pattern)
 
+# --- Registrierung aller Tools ---
+register_tool(Tool(func=generate_image_tool, args_schema=schemas.GenerateImageToolArgs))
+register_tool(Tool(func=cross_chat_memory_tool, args_schema=schemas.CrossChatMemoryToolArgs))
 register_tool(Tool(func=create_file_tool, args_schema=schemas.CreateFileArgs))
 register_tool(Tool(func=read_file_tool, args_schema=schemas.ReadFileArgs))
 register_tool(Tool(func=delete_file_tool, args_schema=schemas.DeleteFileArgs))
@@ -119,6 +90,7 @@ register_tool(Tool(func=create_directory_tool, args_schema=schemas.CreateDirecto
 register_tool(Tool(func=delete_directory_tool, args_schema=schemas.DeleteDirectoryArgs))
 register_tool(Tool(func=rename_file_tool, args_schema=schemas.RenameFileArgs))
 register_tool(Tool(func=move_file_tool, args_schema=schemas.MoveFileArgs))
+register_tool(Tool(func=move_files_tool, args_schema=schemas.MoveFilesArgs)) # NEU
 
 def get_all_tool_definitions():
     return [tool.llm_definition for tool in TOOL_REGISTRY.values()]

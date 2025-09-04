@@ -59,3 +59,17 @@ def get_all_facts(db: Session) -> List[database.Memory]: # Verwende database.Mem
         ~database.Memory.snippet.startswith("wann "),
         ~database.Memory.snippet.startswith("warum ")
     ).all()
+
+def cross_chat_memory_tool(query: str, db: Session):
+    """Ruft Zusammenfassungen der letzten Konversationen ab, um Fragen über die Vergangenheit zu beantworten."""
+    all_chats = crud.get_chats(db, include_archived=True)
+    recent_chats = sorted(all_chats, key=lambda chat: chat.created_at, reverse=True)[1:6]
+    if not recent_chats:
+        return {"output": "Keine früheren Chats zum Überprüfen gefunden."}
+    output_snippets = ["--- ZUSAMMENFASSUNGEN DER LETZTEN CHATS ---"]
+    for chat in recent_chats:
+        if chat.summary:
+            output_snippets.append(f"Thema des Chats '{chat.title}': {chat.summary}")
+    if len(output_snippets) == 1:
+        return {"output": "Keine relevanten Zusammenfassungen in früheren Chats gefunden."}
+    return {"output": "\n".join(output_snippets)}

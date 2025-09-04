@@ -56,6 +56,7 @@ class ChatResponse(ChatBase):
 class ChatTitleUpdate(BaseModel):
     title: str
 
+# In backend/schemas.py (ersetzen Sie den gesamten Filesystem-Block)
 # --- Filesystem Tool Schemas ---
 class CreateFileArgs(BaseModel):
     path: str
@@ -67,8 +68,10 @@ class ReadFileArgs(BaseModel):
 class DeleteFileArgs(BaseModel):
     path: str
 
+# ERWEITERT: Füge einen optionalen Pattern-Parameter hinzu
 class ListDirectoryArgs(BaseModel):
     path: str
+    pattern: Optional[str] = None
 
 class CreateDirectoryArgs(BaseModel):
     path: str
@@ -83,3 +86,8 @@ class MoveFileArgs(BaseModel):
 class RenameFileArgs(BaseModel):
     old_path: str
     new_path: str
+    
+class MoveFilesArgs(BaseModel):
+    source_directory: str
+    destination_directory: str
+    pattern: str

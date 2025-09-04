@@ -16,6 +16,7 @@ from typing import List, Optional, Dict
 from sqlalchemy.orm import Session
 from backend.logger_config import setup_logging
 from backend import llm_gateway, database, crud, schemas, memory_extractor, vector_service, chat_summarizer, image_manager, memory_manager
+from backend.llm_providers import gemini_service
 from backend.database import get_db
 from backend.context_manager import ContextManager
 from backend.utils.paths import get_app_data_dir, resource_path
@@ -145,7 +146,7 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
                 logger.warning(f"Model {request.model} has no image_generation_model_id. Falling back to flash-image-preview.")
                 image_model_id = "gemini-2.5-flash-image-preview"
 
-            llm_response = await llm_gateway._call_gemini_image_generation_api(api_key, image_model_id, request.prompt)
+            llm_response = await gemini_service._call_gemini_image_generation_api(api_key, image_model_id, request.prompt)
             
             local_image_path = llm_response.get("image_url")
             usage = llm_response.get("usage", {})

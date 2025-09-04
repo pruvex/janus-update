@@ -15,3 +15,4 @@ platformdirs
 pywin32-ctypes
 pydantic-settings
 tenacity
+pyfakefs

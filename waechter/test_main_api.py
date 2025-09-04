@@ -36,7 +36,7 @@ def test_chat_cross_chat_tool_call(test_client, db_session):
     pass
 
 def test_chat_gemini_image_shortcut(test_client, db_session):
-    with patch('backend.llm_gateway._call_gemini_image_generation_api', new_callable=AsyncMock) as mock_gemini_image_api:
+    with patch('backend.main.gemini_service._call_gemini_image_generation_api', new_callable=AsyncMock) as mock_gemini_image_api:
         mock_gemini_image_api.return_value = {"image_url": "/user_images/gemini_test.png", "usage": {}, "cost": {"total_cost": 0.02}}
         
         response = test_client.post("/api/chat", json=    {

@@ -79,10 +79,10 @@ Dieser Block ermöglicht das sichere und kontrollierte Ausführen von Dateisyste
 
 ## 4. Definition of Done (für diesen Block)
 
-*   [ ] Alle angeforderten Dateisystemoperationen (Erstellen, Löschen, Umbenennen, Verschieben von Dateien/Ordnern) sind in `filesystem_manager.py` implementiert.
-*   [ ] Robuste Pfadvalidierung und Sicherheitsprüfungen (Ausschluss von Systemordnern, Schutz vor Directory Traversal) sind implementiert.
-*   [ ] Pydantic-Modelle für alle Dateisystem-Tools sind in `schemas.py` definiert.
-*   [ ] Alle Dateisystem-Tools sind in `tool_registry.py` registriert.
-*   [ ] Umfassende Unit-Tests für `filesystem_manager.py` sind vorhanden und grün.
-*   [ ] Integrationstests, die die LLM-gesteuerte Ausführung der Dateisystem-Tools verifizieren, sind vorhanden und grün.
-*   [ ] Der Block ist in der Dokumentation (`REFAKTORING_PLANalt.md`, `blocks.md`) als abgeschlossen markiert.
+*   [x] Alle angeforderten Dateisystemoperationen (Erstellen, Löschen, Umbenennen, Verschieben von Dateien/Ordnern) sind in `filesystem_manager.py` implementiert.
+*   [x] Robuste Pfadvalidierung und Sicherheitsprüfungen (Ausschluss von Systemordnern, Schutz vor Directory Traversal) sind implementiert.
+*   [x] Pydantic-Modelle für alle Dateisystem-Tools sind in `schemas.py` definiert.
+*   [x] Alle Dateisystem-Tools sind in `tool_registry.py` registriert.
+*   [x] Umfassende Unit-Tests für `filesystem_manager.py` sind vorhanden und grün.
+*   [x] Integrationstests, die die LLM-gesteuerte Ausführung der Dateisystem-Tools verifizieren, sind vorhanden und grün.
+*   [x] Der Block ist in der Dokumentation (`REFAKTORING_PLANalt.md`, `blocks.md`) als abgeschlossen markiert.

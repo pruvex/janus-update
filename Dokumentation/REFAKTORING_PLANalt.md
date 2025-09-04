@@ -66,7 +66,7 @@ Die Refaktorierung wird in thematische Blöcke unterteilt, um eine klare Trennun
     *   `backend/main.py` (Verarbeitung `image_url` von Gemini): ✅
     *   `backend/memory_extractor.py` (Benutzertext korrekt an LLM für Faktenextraktion): ✅
 
-### Block 5: Kontext-Management (Erledigt) (Erledigt) (Erledigt) (Erledigt) (Erledigt) (Audit: Code implementiert)
+### Block 5: Kontext-Management (Audit: Code implementiert)
 *   **Inhalt:** Verwaltet den Gesprächskontext für laufende Chats. Dies beinhaltet das Speichern und Abrufen von Nachrichtenhistorien und die Vorbereitung des Kontexts für LLM-Anfragen. Beinhaltet auch die Logik für "Cross-Chat Context" (Kontext, der über einzelne Chats hinausgeht).
 *   **Zugehörige Dateien:** `backend/context_manager.py`
 *   **Interagiert mit:** Datenbank & Persistenz, LLM Gateway, Chat-Operationen & Routing.
@@ -74,7 +74,7 @@ Die Refaktorierung wird in thematische Blöcke unterteilt, um eine klare Trennun
     *   `backend/context_manager.py` (`_summarize_chat_segment` angepasst): ✅
     *   `backend/memory_extractor.py` (`extract_and_save_fact` erweitert für Bilder): ✅
 
-### Block 6: Speicher & Wissensmanagement (Erledigt) (Erledigt) (Erledigt) (Erledigt) (Audit: Code implementiert)
+### Block 6: Speicher & Wissensmanagement (Audit: Code implementiert)
 *   **Inhalt:** Implementiert Langzeitgedächtnis-Funktionen, einschließlich Textzusammenfassung, Vektorisierung und semantischer Suche.
 *   **Zugehörige Dateien:** `backend/memory_extractor.py`, `backend/vector_service.py`, `backend/chat_summarizer.py`
 *   **Interagiert mit:** Datenbank & Persistenz, LLM Gateway (für RAG-Anfragen), Kontext-Management (für die Integration von Gedächtnisinhalten in den Kontext).
@@ -92,6 +92,7 @@ Die Refaktorierung wird in thematische Blöcke unterteilt, um eine klare Trennun
     *   Storage under `backend/static/images/`: ✅
 
 ### Block 8: Chat-Operationen & Routing (Der "Switch") - Goldstandard-Implementierung (Audit: Abgeschlossen)
+*   **Hinweis:** Phase 5 (Dateisystem-Operationen) ist nun vollständig implementiert und integriert.
 *   **Inhalt:** Die zentrale Logik, die eingehende Benutzeranfragen verarbeitet. Sie identifiziert die Art der Anfrage (reiner Chat, Tool-Aufruf, Dateiop, Bilderstellung, Memory-Operation etc.) und leitet sie an den entsprechenden Backend-Dienst weiter. Dies ist der "Switch"-Mechanismus.
 *   **Zugehörige Dateien:** `backend/main.py` (primär), `backend/llm_gateway.py`, `backend/tool_registry.py` (neu), `backend/schemas.py` (Erweiterung), `frontend/js/app.js`, `frontend/js/chat-manager.js` (Frontend-Teil der Interaktion).
 *   **Interagiert mit:** Allen anderen Backend-Blöcken (API Key Management, LLM Gateway, Kontext-Management, Speicher & Wissensmanagement, Kostenkontrolle, Datenbank & Persistenz, Bildgenerierung).
@@ -184,6 +185,9 @@ Die Blöcke werden in der folgenden Reihenfolge refaktorisiert, um Abhängigkeit
         3.  **Unit-Tests aktualisieren:** Die Tests in `test_cost_calculator.py` wurden auf pytest umgestellt und an die neue Signatur von `calculate_cost` angepasst.
 
 4.  **LLM Gateway:** Der Kern der KI-Interaktion, baut auf API Key Management auf.
+5.  **Dateisystem-Operationen:**
+    *   **Ziel:** Ermöglicht das sichere und kontrollierte Ausführen von Dateisystemoperationen über eine natürliche Sprachschnittstelle.
+    *   **Status:** Abgeschlossen.
 5.  **Kontext-Management:** Baut auf Datenbank auf und ist für kohärente Gespräche unerlässlich.
 6.  **Speicher & Wissensmanagement:** Baut auf Datenbank und Kontext auf.
 7.  **Bildgenerierung (Service):** Vereinheitlicht Tool-basierte und direkte Bildgenerierung inkl. Kosten/Storage.
