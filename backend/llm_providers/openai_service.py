@@ -76,6 +76,7 @@ async def generate_image_tool(api_key: str, prompt: str, size: str = "1024x1024"
         if response_format == "url":
             result["url"] = response.data[0].url
         
+        image_usage['model'] = cost_model_id # Add model to usage info
         result["usage"] = image_usage
         result["cost"] = image_cost_data
         return result

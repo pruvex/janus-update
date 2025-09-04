@@ -238,8 +238,9 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
     crud.create_message(db, chat_id=request.chat_id, sender="model", content=final_answer, image_path=local_image_path)
     
     if usage and cost.get("total_cost", 0) > 0:
+        model_for_cost = usage.get("model", request.model)
         database.save_cost_entry(
-            date=datetime.now(), model=request.model,
+            date=datetime.now(), model=model_for_cost,
             input_tokens=usage.get("prompt_tokens", 0), 
             output_tokens=usage.get("completion_tokens", 0),
             image_quality=usage.get("image_quality"), 
