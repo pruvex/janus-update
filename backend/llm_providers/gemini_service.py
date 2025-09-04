@@ -35,8 +35,8 @@ async def _call_gemini_api(api_key: str, model_id: str, chat_history: List[Dict]
         response = await model.generate_content_async(gemini_history)
         text_response = response.text
         
-        input_tokens = (await model.count_tokens(gemini_history)).total_tokens
-        output_tokens = (await model.count_tokens(text_response)).total_tokens
+        input_tokens = model.count_tokens(gemini_history).total_tokens
+        output_tokens = model.count_tokens(text_response).total_tokens
         
         usage, cost = _calculate_and_log_cost(model_id, usage_data={"prompt_tokens": input_tokens, "completion_tokens": output_tokens})
         
