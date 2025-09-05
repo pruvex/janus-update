@@ -61,11 +61,12 @@
 }
 
 #settings-nav {
-  flex: 0 0 200px; /* Feste Breite von 200px für die Navigation */
+  flex: 1; /* Hinzugefügt: Nimmt den gesamten verfügbaren Platz ein */
+  flex-basis: 200px; /* Behält die Mindestbreite bei */
   border-right: 1px solid #444;
   padding-right: 20px;
-  display: flex; /* Hinzugefügt */
-  flex-direction: column; /* Hinzugefügt */
+  display: flex;
+  flex-direction: column;
 }
 
 .settings-nav-link {
