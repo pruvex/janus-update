@@ -354,13 +354,13 @@ async def get_model_catalog(catalog: dict = Depends(get_model_catalog_dep)):
 
 @app.get("/api/keys")
 async def get_api_keys():
-    providers = ["openai", "gemini"]
+    providers = ["openai", "gemini", "anthropic", "cohere"]
     return {"api_keys": {p: "********" for p in providers if keyring.get_password("Janus-Projekt", p)}}
 
 @app.post("/api/keys")
 async def add_api_key(key: ApiKey):
     try:
-        keyring.set_password("Janus-Projekt", key.provider, key.api_key)
+        keyring.set_password("Janus-Projekt", key.provider.lower(), key.api_key)
         return {"message": "API Key saved successfully"}
     except Exception as e:
         logger.error(f"Failed to save API key for {key.provider}: {e}")
