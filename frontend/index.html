@@ -58,8 +58,22 @@
       </div>
     </main>
     <main id="settings-view" class="view" style="display: none;">
-      <div class="settings-content">
-        <h2>Einstellungen</h2>
+  <div class="settings-header">
+    <h2>Einstellungen</h2>
+    <button id="back-to-chat-btn">Zurück zum Chat</button>
+  </div>
+  <div class="settings-container">
+    <!-- Linke Spalte: Navigation -->
+    <div id="settings-nav">
+      <a href="#" class="settings-nav-link active-setting" data-target="api-key-section">API Keys</a>
+      <a href="#" class="settings-nav-link" data-target="model-management-section">Modellverwaltung</a>
+    </div>
+
+    <!-- Rechte Spalte: Inhalt -->
+    <div id="settings-content-area">
+      <!-- Sektion 1: API Key Verwaltung -->
+      <div id="api-key-section" class="settings-section">
+        <h3>API Key Verwaltung</h3>
         <form id="api-key-form">
           <select id="provider-input">
             <option value="openai">OpenAI</option>
@@ -68,11 +82,21 @@
           <input type="password" id="api-key-input" placeholder="API Key">
           <button type="submit">Speichern</button>
         </form>
-        <h3>Gespeicherte API Keys</h3>
+        <h4>Gespeicherte API Keys</h4>
         <ul id="api-key-list"></ul>
-        <button id="back-to-chat-btn">Zurück zum Chat</button>
       </div>
-    </main>
+
+      <!-- Sektion 2: Modellverwaltung (zunächst leer) -->
+      <div id="model-management-section" class="settings-section" style="display: none;">
+        <h3>Modellverwaltung</h3>
+        <p>Hier können Sie in Zukunft die Modelle verwalten.</p>
+        <!-- Platzhalter für zukünftige Inhalte -->
+        <button>Modelle für OpenAI verwalten</button>
+        <button>Modelle für Gemini verwalten</button>
+      </div>
+    </div>
+  </div>
+</main>
   </div>
   <script type="module" src="js/config.js"></script>
   <script type="module" src="js/settings.js"></script>

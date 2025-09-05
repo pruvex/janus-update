@@ -33,3 +33,71 @@
   text-decoration: none;
   cursor: pointer;
 }
+/* Neue Stile für das zweispaltige Einstellungs-Layout */
+
+#settings-view {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.settings-header h2 {
+  margin: 0;
+}
+
+.settings-container {
+  display: flex;
+  flex-grow: 1;
+  gap: 20px;
+  overflow: hidden; /* Verhindert, dass Container überlaufen */
+}
+
+#settings-nav {
+  flex: 0 0 200px; /* Feste Breite von 200px für die Navigation */
+  border-right: 1px solid #444;
+  padding-right: 20px;
+}
+
+.settings-nav-link {
+  display: block;
+  padding: 10px 15px;
+  text-decoration: none;
+  color: #ccc;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  transition: background-color 0.2s ease;
+}
+
+.settings-nav-link:hover {
+  background-color: #3a3a3a;
+}
+
+.settings-nav-link.active-setting {
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+}
+
+#settings-content-area {
+  flex-grow: 1;
+  padding-left: 20px;
+  overflow-y: auto; /* Scrollbar, falls der Inhalt zu lang wird */
+}
+
+.settings-section h3, .settings-section h4 {
+    margin-top: 0;
+}
+
+/* Anpassung der bestehenden Formular-Elemente */
+#api-key-form {
+    margin-bottom: 20px;
+}
