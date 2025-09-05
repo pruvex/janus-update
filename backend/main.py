@@ -15,7 +15,7 @@ from datetime import datetime
 from typing import List, Optional, Dict
 from sqlalchemy.orm import Session
 from backend.logger_config import setup_logging
-from backend import llm_gateway, database, crud, schemas, memory_extractor, vector_service, chat_summarizer, image_manager, memory_manager, key_manager
+from backend import llm_gateway, database, crud, schemas, memory_extractor, vector_service, chat_summarizer, image_manager, memory_manager
 from backend.llm_providers import gemini_service
 from backend.database import get_db
 from backend.context_manager import ContextManager
@@ -354,9 +354,8 @@ async def get_model_catalog(catalog: dict = Depends(get_model_catalog_dep)):
 
 @app.get("/api/keys")
 async def get_api_keys():
-    km = key_manager.KeyManager()
-    all_keys = km.get_all_keys()
-    return {"api_keys": {k.provider: "********" for k in all_keys}}
+    providers = ["openai", "gemini"]
+    return {"api_keys": {p: "********" for p in providers if keyring.get_password("Janus-Projekt", p)}}
 
 @app.post("/api/keys")
 async def add_api_key(key: ApiKey):
