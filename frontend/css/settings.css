@@ -1,4 +1,3 @@
-
 /* Stile für das Einstellungs-Modal */
 .modal {
   display: none;
@@ -65,6 +64,8 @@
   flex: 0 0 200px; /* Feste Breite von 200px für die Navigation */
   border-right: 1px solid #444;
   padding-right: 20px;
+  display: flex; /* Hinzugefügt */
+  flex-direction: column; /* Hinzugefügt */
 }
 
 .settings-nav-link {
@@ -100,4 +101,8 @@
 /* Anpassung der bestehenden Formular-Elemente */
 #api-key-form {
     margin-bottom: 20px;
+}
+
+#back-to-chat-btn {
+    margin-top: auto; /* Schiebt den Button ganz nach unten */
 }
