@@ -136,6 +136,10 @@ html, body {
   margin-top: 10px; /* Abstand zum Element darüber */
 }
 
+#back-to-chat-btn {
+  margin-top: auto; /* Schiebt den Button ganz nach unten */
+}
+
 button, select {
   background-color: var(--surface-color);
   color: var(--text-primary);
