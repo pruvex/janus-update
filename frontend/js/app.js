@@ -473,7 +473,6 @@ async function renderModelManagementView(provider) {
         }
     });
 }
-}
 
 
 
