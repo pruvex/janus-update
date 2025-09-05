@@ -11,6 +11,10 @@ const appState = {
     model_catalog: {} // Will be loaded dynamically
 };
 
+let modelSelectionForm;
+let backFromModelsBtn;
+let modelList;
+
 function formatCost(cost, suffix) {
     if (cost === 0) {
         return `0.00${suffix}`;
@@ -70,7 +74,29 @@ function render() {
     } else {
         chatView.style.display = 'none';
         settingsView.style.display = 'flex';
-        renderSettingsView();
+        // renderSettingsView(); // <-- DIESEN AUFRUF ENTFERNEN
+    }
+}
+
+// NEW: Settings navigation logic
+const settingsNav = document.getElementById('settings-nav');
+const navLinks = document.querySelectorAll('.settings-nav-link');
+const contentSections = document.querySelectorAll('.settings-section');
+
+function setActiveSettingsSection(targetId) {
+    navLinks.forEach(navLink => navLink.classList.remove('active-setting'));
+    const activeLink = document.querySelector(`.settings-nav-link[data-target="${targetId}"]`);
+    if (activeLink) {
+        activeLink.classList.add('active-setting');
+    }
+
+    contentSections.forEach(section => {
+        section.style.display = 'none';
+    });
+
+    const targetSection = document.getElementById(targetId);
+    if (targetSection) {
+        targetSection.style.display = 'block';
     }
 }
 
@@ -82,6 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('Settings button clicked!');
         appState.currentView = 'settings';
         render();
+        renderSettingsView(); // Call renderSettingsView() explicitly here
     });
     const backToChatBtn = document.getElementById('back-to-chat-btn');
     const sidebarProviderSelect = document.getElementById('provider-select');
@@ -132,6 +159,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadUserSelections(); // Load selections before initial render
     render(); // Initial render
 
+    // Initialize global variables for settings view elements
+    modelSelectionForm = document.getElementById('model-selection-form');
+    backFromModelsBtn = document.getElementById('back-from-models-btn');
+    modelList = document.getElementById('model-list');
+
     // Attach API Key form submit listener once
     const apiKeyForm = document.getElementById('api-key-form');
     const providerInput = document.getElementById('provider-input');
@@ -166,29 +198,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // --- interact.js logic ---
+    // Handle form submission for model selection
+    if (modelSelectionForm && !modelSelectionForm.dataset.listenerAttached) {
+        modelSelectionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const provider = modelSelectionForm.dataset.provider; // Get provider from dataset
+            const checkboxes = modelList.querySelectorAll('input[type="checkbox"]:checked');
+            const newSelection = Array.from(checkboxes).map(cb => cb.value);
 
-    // NEW: Settings navigation logic
-    const settingsNav = document.getElementById('settings-nav');
-    const navLinks = document.querySelectorAll('.settings-nav-link');
-    const contentSections = document.querySelectorAll('.settings-section');
-
-    function setActiveSettingsSection(targetId) {
-        navLinks.forEach(navLink => navLink.classList.remove('active-setting'));
-        const activeLink = document.querySelector(`.settings-nav-link[data-target="${targetId}"]`);
-        if (activeLink) {
-            activeLink.classList.add('active-setting');
-        }
-
-        contentSections.forEach(section => {
-            section.style.display = 'none';
+            try {
+                await fetch(`${API_BASE_URL}/api/models/selection`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ provider: provider, models: newSelection }),
+                });
+                renderSettingsView(); // Go back to main settings view
+            } catch (error) {
+                console.error('Error saving model selection:', error);
+            }
         });
-
-        const targetSection = document.getElementById(targetId);
-        if (targetSection) {
-            targetSection.style.display = 'block';
-        }
+        modelSelectionForm.dataset.listenerAttached = 'true';
     }
+
+    // Handle back button from model management view
+    if (backFromModelsBtn && !backFromModelsBtn.dataset.listenerAttached) {
+        backFromModelsBtn.addEventListener('click', () => {
+            renderSettingsView();
+        });
+        backFromModelsBtn.dataset.listenerAttached = 'true';
+    }
+
+    // --- interact.js logic ---
 
     settingsNav.addEventListener('click', (e) => {
         const link = e.target.closest('.settings-nav-link');
@@ -339,6 +381,7 @@ async function loadUserSelections() {
 }
 
 async function renderSettingsView() {
+    console.log('renderSettingsView() called');
     await loadUserSelections(); // Ensure user_selections is up-to-date
 
     // Set active navigation link and show API Key section
@@ -347,6 +390,7 @@ async function renderSettingsView() {
     // Load API Keys
     const apiKeyList = document.getElementById('api-key-list');
     if (apiKeyList) { // Check if element exists
+        console.log('Clearing apiKeyList');
         apiKeyList.innerHTML = ''; // Clear existing list items
         try {
             const response = await fetch(`${API_BASE_URL}/api/keys`);
@@ -356,8 +400,10 @@ async function renderSettingsView() {
                 const listItem = document.createElement('li');
                 listItem.textContent = `Provider: ${provider}, Key: ****`;
                 apiKeyList.appendChild(listItem);
+                console.log(`Added API Key for provider: ${provider}`);
             }
         } catch (error) {
+            console.error('Error loading API keys:', error);
         }
     }
 
@@ -383,14 +429,17 @@ async function renderSettingsView() {
                 apiKeyInput.value = '';
                 renderSettingsView(); // Reload settings view to show new key
             } catch (error) {
+                console.error('Error saving API key:', error);
             }
         });
         apiKeyForm.dataset.listenerAttached = 'true'; // Mark listener as attached
+        console.log('API Key form listener attached');
     }
 
     // Attach event listeners for model management buttons
     const modelManagementButtons = document.getElementById('model-management-buttons');
     if (modelManagementButtons) { // Check if element exists
+        console.log('Clearing modelManagementButtons');
         modelManagementButtons.innerHTML = ''; // Clear existing buttons
         try {
             const response = await fetch(`${API_BASE_URL}/api/keys`); // Re-fetch keys to get providers
@@ -402,8 +451,10 @@ async function renderSettingsView() {
                 manageModelsBtn.dataset.provider = provider; // Add data-provider attribute
                 // Event listener is now attached via delegation in DOMContentLoaded
                 modelManagementButtons.appendChild(manageModelsBtn);
+                console.log(`Added model management button for provider: ${provider}`);
             }
         } catch (error) {
+            console.error('Error loading providers for model management buttons:', error);
         }
     }
 }
@@ -420,13 +471,6 @@ async function renderModelManagementView(provider) {
     const modelList = document.getElementById('model-list');
     modelList.innerHTML = ''; // Clear existing list items
 
-    const backFromModelsBtn = document.getElementById('back-from-models-btn');
-    const modelSelectionForm = document.getElementById('model-selection-form');
-
-    backFromModelsBtn.addEventListener('click', () => {
-        renderSettingsView();
-    });
-
     // Fetch selected models from backend
     let selectedModels = [];
     try {
@@ -434,6 +478,7 @@ async function renderModelManagementView(provider) {
         const data = await response.json();
         selectedModels = data.selected_models;
     } catch (error) {
+        console.error('Error fetching selected models:', error);
     }
 
     // Populate model list
@@ -451,25 +496,8 @@ async function renderModelManagementView(provider) {
         modelList.appendChild(listItem);
     });
 
-    // Handle form submission
-    modelSelectionForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const checkboxes = modelList.querySelectorAll('input[type="checkbox"]:checked');
-        const newSelection = Array.from(checkboxes).map(cb => cb.value);
-
-        try {
-            await fetch(`${API_BASE_URL}/api/models/selection`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ provider: provider, models: newSelection }),
-            });
-            renderSettingsView(); // Go back to main settings view
-        } catch (error) {
-        }
-    });
+    // Set data-provider attribute on the form for later use in the global listener
+    modelSelectionForm.dataset.provider = provider;
 }
-
 
 
