@@ -271,24 +271,24 @@ async function loadUserSelections() {
 async function renderSettingsView() {
     await loadUserSelections(); // Ensure user_selections is up-to-date
     const settingsView = document.getElementById('settings-view');
-    settingsView.innerHTML = `
-        <div class="settings-content">
-            <h2>Einstellungen</h2>
-            <form id="api-key-form">
-                <select id="provider-input">
-                    <option value="openai">OpenAI</option>
-                    <option value="gemini">Gemini</option>
-                </select>
-                <input type="password" id="api-key-input" placeholder="API Key">
-                <button type="submit">Speichern</button>
-            </form>
-            <h3>Gespeicherte API Keys</h3>
-            <ul id="api-key-list"></ul>
-            <h3>Modellverwaltung</h3>
-            <div id="model-management-buttons"></div>
-            <button id="back-to-chat-btn">Zurück zum Chat</button>
-        </div>
-    `;
+    // settingsView.innerHTML = `
+    //     <div class="settings-content">
+    //         <h2>Einstellungen</h2>
+    //         <form id="api-key-form">
+    //             <select id="provider-input">
+    //                 <option value="openai">OpenAI</option>
+    //                 <option value="gemini">Gemini</option>
+    //             </select>
+    //             <input type="password" id="api-key-input" placeholder="API Key">
+    //             <button type="submit">Speichern</button>
+    //         </form>
+    //         <h3>Gespeicherte API Keys</h3>
+    //         <ul id="api-key-list"></ul>
+    //         <h3>Modellverwaltung</h3>
+    //         <div id="model-management-buttons"></div>
+    //         <button id="back-to-chat-btn">Zurück zum Chat</button>
+    //     </div>
+    // `;
 
     // Re-attach event listeners for dynamically created elements
     document.getElementById('back-to-chat-btn').addEventListener('click', () => {
