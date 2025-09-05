@@ -1,3 +1,4 @@
+import '../css/settings.css';
 import { API_BASE_URL } from './config.js';
 
 // Alte Element-Referenzen bleiben gültig
