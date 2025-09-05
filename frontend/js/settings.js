@@ -43,7 +43,15 @@ apiKeyForm.addEventListener('submit', async (e) => {
 });
 
 // Funktion zum Laden und Anzeigen der gespeicherten API-Keys (unverändert)
+let isLoadApiKeysRunning = false; // Globale Variable für die Sperre
+
 async function loadApiKeys() {
+    if (isLoadApiKeysRunning) {
+        console.warn("loadApiKeys is already running, skipping this call.");
+        return;
+    }
+    isLoadApiKeysRunning = true;
+
     apiKeyList.innerHTML = ''; // Bestehende Liste leeren
     try {
         const response = await fetch(`${API_BASE_URL}/api/keys`);
@@ -65,6 +73,8 @@ async function loadApiKeys() {
     } catch (error) {
         apiKeyList.innerHTML = '<li>Fehler beim Laden der API-Keys.</li>';
         console.error(`Fehler beim Laden der API-Keys: ${error.message}`);
+    } finally {
+        isLoadApiKeysRunning = false; // Sperre aufheben
     }
 }
 
@@ -101,6 +111,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadApiKeys();
 });
 
-// Da das Skript als Modul geladen wird, kann es sein, dass DOMContentLoaded schon vorbei ist.
-// Wir rufen es sicherheitshalber auch direkt auf.
-loadApiKeys();
+
