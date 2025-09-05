@@ -69,7 +69,7 @@ function render() {
         settingsView.style.display = 'none';
     } else {
         chatView.style.display = 'none';
-        settingsView.style.display = 'block';
+        settingsView.style.display = 'flex';
         renderSettingsView();
     }
 }
