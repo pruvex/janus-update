@@ -270,37 +270,14 @@ async function loadUserSelections() {
 
 async function renderSettingsView() {
     await loadUserSelections(); // Ensure user_selections is up-to-date
-    const settingsView = document.getElementById('settings-view');
-    // settingsView.innerHTML = `
-    //     <div class="settings-content">
-    //         <h2>Einstellungen</h2>
-    //         <form id="api-key-form">
-    //             <select id="provider-input">
-    //                 <option value="openai">OpenAI</option>
-    //                 <option value="gemini">Gemini</option>
-    //             </select>
-    //             <input type="password" id="api-key-input" placeholder="API Key">
-    //             <button type="submit">Speichern</button>
-    //         </form>
-    //         <h3>Gespeicherte API Keys</h3>
-    //         <ul id="api-key-list"></ul>
-    //         <h3>Modellverwaltung</h3>
-    //         <div id="model-management-buttons"></div>
-    //         <button id="back-to-chat-btn">Zurück zum Chat</button>
-    //     </div>
-    // `;
 
-    // Re-attach event listeners for dynamically created elements
-    document.getElementById('back-to-chat-btn').addEventListener('click', () => {
-        appState.currentView = 'chat';
-        render();
-    });
+    // Show API Key section and hide Model Management section initially
+    document.getElementById('api-key-section').style.display = 'block';
+    document.getElementById('model-management-section').style.display = 'none';
 
-    // Load API Keys and add model management buttons
+    // Load API Keys
     const apiKeyList = document.getElementById('api-key-list');
     apiKeyList.innerHTML = ''; // Clear existing list items
-    const modelManagementButtons = document.getElementById('model-management-buttons');
-
     try {
         const response = await fetch(`${API_BASE_URL}/api/keys`);
         const data = await response.json();
@@ -309,16 +286,11 @@ async function renderSettingsView() {
             const listItem = document.createElement('li');
             listItem.textContent = `Provider: ${provider}, Key: ****`;
             apiKeyList.appendChild(listItem);
-
-            const manageModelsBtn = document.createElement('button');
-            manageModelsBtn.textContent = `Modelle für ${provider} verwalten`;
-            manageModelsBtn.addEventListener('click', () => renderModelManagementView(provider));
-            modelManagementButtons.appendChild(manageModelsBtn);
         }
     } catch (error) {
     }
 
-    // Re-attach API Key form submit listener (from settings.js)
+    // Re-attach API Key form submit listener
     const apiKeyForm = document.getElementById('api-key-form');
     const providerInput = document.getElementById('provider-input');
     const apiKeyInput = document.getElementById('api-key-input');
@@ -341,24 +313,37 @@ async function renderSettingsView() {
         } catch (error) {
         }
     });
+
+    // Attach event listeners for model management buttons
+    const modelManagementButtons = document.getElementById('model-management-buttons');
+    modelManagementButtons.innerHTML = ''; // Clear existing buttons
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/keys`); // Re-fetch keys to get providers
+        const data = await response.json();
+
+        for (const provider in data.api_keys) {
+            const manageModelsBtn = document.createElement('button');
+            manageModelsBtn.textContent = `Modelle für ${provider} verwalten`;
+            manageModelsBtn.addEventListener('click', () => renderModelManagementView(provider));
+            modelManagementButtons.appendChild(manageModelsBtn);
+        }
+    } catch (error) {
+    }
 }
 
 
 
 async function renderModelManagementView(provider) {
-    const settingsContentArea = document.getElementById('settings-content-area');
-    settingsContentArea.innerHTML = `
-        <div class="settings-content">
-            <h2>Modelle für ${provider} verwalten</h2>
-            <form id="model-selection-form">
-                <ul id="model-list"></ul>
-                <button type="submit">Auswahl speichern</button>
-                <button type="button" id="back-from-models-btn">Zurück</button>
-            </form>
-        </div>
-    `;
+    // Hide API Key section and show Model Management section
+    document.getElementById('api-key-section').style.display = 'none';
+    document.getElementById('model-management-section').style.display = 'block';
+
+    // Update the title of the model management section
+    document.querySelector('#model-management-section h3').textContent = `Modelle für ${provider} verwalten`;
 
     const modelList = document.getElementById('model-list');
+    modelList.innerHTML = ''; // Clear existing list items
+
     const backFromModelsBtn = document.getElementById('back-from-models-btn');
     const modelSelectionForm = document.getElementById('model-selection-form');
 
