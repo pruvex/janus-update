@@ -136,7 +136,76 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadUserSelections(); // Load selections before initial render
     render(); // Initial render
 
+    // Attach API Key form submit listener once
+    const apiKeyForm = document.getElementById('api-key-form');
+    const providerInput = document.getElementById('provider-input');
+    const apiKeyInput = document.getElementById('api-key-input');
+
+    apiKeyForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const provider = providerInput.value;
+        const api_key = apiKeyInput.value;
+
+        try {
+            await fetch(`${API_BASE_URL}/api/keys`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ provider, api_key }),
+            });
+            apiKeyInput.value = '';
+            renderSettingsView(); // Reload settings view to show new key
+        } catch (error) {
+        }
+    });
+
+    // Attach event listeners for model management buttons once
+    // These buttons are dynamically created within renderSettingsView, so we need event delegation
+    const modelManagementButtonsContainer = document.getElementById('model-management-buttons');
+    modelManagementButtonsContainer.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            const provider = e.target.dataset.provider; // Assuming you add data-provider attribute to buttons
+            renderModelManagementView(provider);
+        }
+    });
+
     // --- interact.js logic ---
+
+    // NEW: Settings navigation logic
+    const settingsNav = document.getElementById('settings-nav');
+    const navLinks = document.querySelectorAll('.settings-nav-link');
+    const contentSections = document.querySelectorAll('.settings-section');
+
+    function setActiveSettingsSection(targetId) {
+        navLinks.forEach(navLink => navLink.classList.remove('active-setting'));
+        const activeLink = document.querySelector(`.settings-nav-link[data-target="${targetId}"]`);
+        if (activeLink) {
+            activeLink.classList.add('active-setting');
+        }
+
+        contentSections.forEach(section => {
+            section.style.display = 'none';
+        });
+
+        const targetSection = document.getElementById(targetId);
+        if (targetSection) {
+            targetSection.style.display = 'block';
+        }
+    }
+
+    settingsNav.addEventListener('click', (e) => {
+        const link = e.target.closest('.settings-nav-link');
+        if (!link) return;
+        
+        e.preventDefault();
+        const targetId = link.dataset.target;
+        setActiveSettingsSection(targetId);
+    });
+
+    // Initial call to set active section when settings view is first rendered
+    // This will be called by renderSettingsView() and renderModelManagementView()
+
     interact('.chat-window')
       .draggable({
         allowFrom: '#chat-header',
@@ -276,9 +345,8 @@ async function loadUserSelections() {
 async function renderSettingsView() {
     await loadUserSelections(); // Ensure user_selections is up-to-date
 
-    // Show API Key section and hide Model Management section initially
-    document.getElementById('api-key-section').style.display = 'block';
-    document.getElementById('model-management-section').style.display = 'none';
+    // Set active navigation link and show API Key section
+    setActiveSettingsSection('api-key-section');
 
     // Load API Keys
     const apiKeyList = document.getElementById('api-key-list');
@@ -334,12 +402,77 @@ async function renderSettingsView() {
             for (const provider in data.api_keys) {
                 const manageModelsBtn = document.createElement('button');
                 manageModelsBtn.textContent = `Modelle für ${provider} verwalten`;
-                manageModelsBtn.addEventListener('click', () => renderModelManagementView(provider));
+                manageModelsBtn.dataset.provider = provider; // Add data-provider attribute
+                // Event listener is now attached via delegation in DOMContentLoaded
                 modelManagementButtons.appendChild(manageModelsBtn);
             }
         } catch (error) {
         }
     }
+}
+
+
+
+async function renderModelManagementView(provider) {
+    // Set active navigation link and show Model Management section
+    setActiveSettingsSection('model-management-section');
+
+    // Update the title of the model management section
+    document.querySelector('#model-management-section h3').textContent = `Modelle für ${provider} verwalten`;
+
+    const modelList = document.getElementById('model-list');
+    modelList.innerHTML = ''; // Clear existing list items
+
+    const backFromModelsBtn = document.getElementById('back-from-models-btn');
+    const modelSelectionForm = document.getElementById('model-selection-form');
+
+    backFromModelsBtn.addEventListener('click', () => {
+        renderSettingsView();
+    });
+
+    // Fetch selected models from backend
+    let selectedModels = [];
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/models/selection/${provider}`);
+        const data = await response.json();
+        selectedModels = data.selected_models;
+    } catch (error) {
+    }
+
+    // Populate model list
+    appState.model_catalog[provider].forEach(model => {
+        // Exclude 'gpt-image-1' from the selection list as it's a tool-called model
+        if (model.id === 'gpt-image-1') {
+            return;
+        }
+        const listItem = document.createElement('li');
+        const isChecked = selectedModels.includes(model.id) ? 'checked' : '';
+        listItem.innerHTML = `
+            <input type="checkbox" id="${model.id}" value="${model.id}" ${isChecked}>
+            <label for="${model.id}">${model.name} (${model.cost_per_image ? formatCost(model.cost_per_image, '€/img') : (model.cost_per_token_input ? formatCost(model.cost_per_token_input * 1000000, '€/Mio. in') + ' / ' + formatCost(model.cost_per_token_output * 1000000, '€/Mio. out') : '')})${model.desc ? ' - ' + model.desc : ''}</label>
+        `;
+        modelList.appendChild(listItem);
+    });
+
+    // Handle form submission
+    modelSelectionForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const checkboxes = modelList.querySelectorAll('input[type="checkbox"]:checked');
+        const newSelection = Array.from(checkboxes).map(cb => cb.value);
+
+        try {
+            await fetch(`${API_BASE_URL}/api/models/selection`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ provider: provider, models: newSelection }),
+            });
+            renderSettingsView(); // Go back to main settings view
+        } catch (error) {
+        }
+    });
+}
 }
 
 

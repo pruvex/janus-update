@@ -7,41 +7,6 @@ const providerInput = document.getElementById('provider-input');
 const apiKeyInput = document.getElementById('api-key-input');
 const apiKeyList = document.getElementById('api-key-list');
 
-// Neue Element-Referenzen für die Navigation
-const settingsNav = document.getElementById('settings-nav');
-const navLinks = document.querySelectorAll('.settings-nav-link');
-const contentSections = document.querySelectorAll('.settings-section');
-
-// Event Listener für das Speichern von API-Keys (unverändert)
-apiKeyForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const provider = providerInput.value;
-    const api_key = apiKeyInput.value;
-
-    if (!api_key) {
-        alert('Bitte geben Sie einen API-Key ein.');
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/keys`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ provider, api_key }),
-        });
-        if (!response.ok) throw new Error('Fehler beim Speichern des Keys.');
-        
-        apiKeyInput.value = '';
-        loadApiKeys(); // Keys neu laden und anzeigen
-        alert('API Key erfolgreich gespeichert.');
-    } catch (error) {
-        console.error('Error saving API key:', error);
-        alert('Fehler beim Speichern des API-Keys.');
-    }
-});
-
 // Funktion zum Laden und Anzeigen der gespeicherten API-Keys (unverändert)
 let isLoadApiKeysRunning = false; // Globale Variable für die Sperre
 
@@ -77,33 +42,6 @@ async function loadApiKeys() {
         isLoadApiKeysRunning = false; // Sperre aufheben
     }
 }
-
-// NEUE LOGIK: Steuerung der Navigation in den Einstellungen
-settingsNav.addEventListener('click', (e) => {
-    // Sicherstellen, dass ein Link geklickt wurde
-    const link = e.target.closest('.settings-nav-link');
-    if (!link) return;
-    
-    e.preventDefault();
-
-    const targetId = link.dataset.target;
-
-    // Alle aktiven Klassen von den Links entfernen
-    navLinks.forEach(navLink => navLink.classList.remove('active-setting'));
-    // Dem geklickten Link die aktive Klasse geben
-    link.classList.add('active-setting');
-
-    // Alle Inhalts-Sektionen ausblenden
-    contentSections.forEach(section => {
-        section.style.display = 'none';
-    });
-
-    // Die Ziel-Sektion einblenden
-    const targetSection = document.getElementById(targetId);
-    if (targetSection) {
-        targetSection.style.display = 'block';
-    }
-});
 
 // Initiales Laden der API-Keys, wenn das Skript ausgeführt wird.
 // Stellt sicher, dass die Liste beim ersten Öffnen der Einstellungen gefüllt ist.
