@@ -70,11 +70,7 @@ function render() {
     } else {
         chatView.style.display = 'none';
         settingsView.style.display = 'flex';
-        // Nur rendern, wenn die Einstellungen nicht bereits sichtbar sind
-        if (!settingsView.dataset.rendered) {
-            renderSettingsView();
-            settingsView.dataset.rendered = 'true';
-        }
+        renderSettingsView();
     }
 }
 
@@ -367,7 +363,7 @@ async function renderSettingsView() {
 
     // Re-attach API Key form submit listener
     const apiKeyForm = document.getElementById('api-key-form');
-    if (apiKeyForm) { // Check if element exists
+    if (apiKeyForm && !apiKeyForm.dataset.listenerAttached) { // Check if element exists and listener not attached
         const providerInput = document.getElementById('provider-input');
         const apiKeyInput = document.getElementById('api-key-input');
 
@@ -389,6 +385,7 @@ async function renderSettingsView() {
             } catch (error) {
             }
         });
+        apiKeyForm.dataset.listenerAttached = 'true'; // Mark listener as attached
     }
 
     // Attach event listeners for model management buttons
