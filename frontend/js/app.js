@@ -70,7 +70,11 @@ function render() {
     } else {
         chatView.style.display = 'none';
         settingsView.style.display = 'flex';
-        renderSettingsView();
+        // Nur rendern, wenn die Einstellungen nicht bereits sichtbar sind
+        if (!settingsView.dataset.rendered) {
+            renderSettingsView();
+            settingsView.dataset.rendered = 'true';
+        }
     }
 }
 
@@ -238,7 +242,8 @@ async function loadLastUsedModel() {
 }
 
 async function loadUserSelections() {
-    const availableProviders = ["openai", "gemini"];
+    // Get all unique providers from the model catalog
+    const availableProviders = Object.keys(appState.model_catalog);
     const MAX_RETRIES = 5;
     const RETRY_DELAY_MS = 1000; // 1 second delay
 
@@ -277,57 +282,63 @@ async function renderSettingsView() {
 
     // Load API Keys
     const apiKeyList = document.getElementById('api-key-list');
-    apiKeyList.innerHTML = ''; // Clear existing list items
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/keys`);
-        const data = await response.json();
+    if (apiKeyList) { // Check if element exists
+        apiKeyList.innerHTML = ''; // Clear existing list items
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/keys`);
+            const data = await response.json();
 
-        for (const provider in data.api_keys) {
-            const listItem = document.createElement('li');
-            listItem.textContent = `Provider: ${provider}, Key: ****`;
-            apiKeyList.appendChild(listItem);
+            for (const provider in data.api_keys) {
+                const listItem = document.createElement('li');
+                listItem.textContent = `Provider: ${provider}, Key: ****`;
+                apiKeyList.appendChild(listItem);
+            }
+        } catch (error) {
         }
-    } catch (error) {
     }
 
     // Re-attach API Key form submit listener
     const apiKeyForm = document.getElementById('api-key-form');
-    const providerInput = document.getElementById('provider-input');
-    const apiKeyInput = document.getElementById('api-key-input');
+    if (apiKeyForm) { // Check if element exists
+        const providerInput = document.getElementById('provider-input');
+        const apiKeyInput = document.getElementById('api-key-input');
 
-    apiKeyForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const provider = providerInput.value;
-        const api_key = apiKeyInput.value;
+        apiKeyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const provider = providerInput.value;
+            const api_key = apiKeyInput.value;
 
-        try {
-            await fetch(`${API_BASE_URL}/api/keys`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ provider, api_key }),
-            });
-            apiKeyInput.value = '';
-            renderSettingsView(); // Reload settings view to show new key
-        } catch (error) {
-        }
-    });
+            try {
+                await fetch(`${API_BASE_URL}/api/keys`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ provider, api_key }),
+                });
+                apiKeyInput.value = '';
+                renderSettingsView(); // Reload settings view to show new key
+            } catch (error) {
+            }
+        });
+    }
 
     // Attach event listeners for model management buttons
     const modelManagementButtons = document.getElementById('model-management-buttons');
-    modelManagementButtons.innerHTML = ''; // Clear existing buttons
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/keys`); // Re-fetch keys to get providers
-        const data = await response.json();
+    if (modelManagementButtons) { // Check if element exists
+        modelManagementButtons.innerHTML = ''; // Clear existing buttons
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/keys`); // Re-fetch keys to get providers
+            const data = await response.json();
 
-        for (const provider in data.api_keys) {
-            const manageModelsBtn = document.createElement('button');
-            manageModelsBtn.textContent = `Modelle für ${provider} verwalten`;
-            manageModelsBtn.addEventListener('click', () => renderModelManagementView(provider));
-            modelManagementButtons.appendChild(manageModelsBtn);
+            for (const provider in data.api_keys) {
+                const manageModelsBtn = document.createElement('button');
+                manageModelsBtn.textContent = `Modelle für ${provider} verwalten`;
+                manageModelsBtn.addEventListener('click', () => renderModelManagementView(provider));
+                modelManagementButtons.appendChild(manageModelsBtn);
+            }
+        } catch (error) {
         }
-    } catch (error) {
     }
 }
 
