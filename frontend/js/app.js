@@ -1,5 +1,6 @@
 import interact from 'interactjs';
 import { API_BASE_URL } from './config.js';
+import '../css/settings.css';
 
 const appState = {
     currentView: 'chat',
