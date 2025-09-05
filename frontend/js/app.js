@@ -298,6 +298,7 @@ async function renderSettingsView() {
 
     // Load API Keys and add model management buttons
     const apiKeyList = document.getElementById('api-key-list');
+    apiKeyList.innerHTML = ''; // Clear existing list items
     const modelManagementButtons = document.getElementById('model-management-buttons');
 
     try {
