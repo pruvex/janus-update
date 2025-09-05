@@ -346,8 +346,8 @@ async function renderSettingsView() {
 
 
 async function renderModelManagementView(provider) {
-    const settingsView = document.getElementById('settings-view');
-    settingsView.innerHTML = `
+    const settingsContentArea = document.getElementById('settings-content-area');
+    settingsContentArea.innerHTML = `
         <div class="settings-content">
             <h2>Modelle für ${provider} verwalten</h2>
             <form id="model-selection-form">
