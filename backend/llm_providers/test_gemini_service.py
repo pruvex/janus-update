@@ -53,5 +53,5 @@ async def test_call_gemini_image_generation_api():
                 mock_configure.assert_called_once_with(api_key=api_key)
                 mock_gen_model.assert_called_once_with(model_id)
                 mock_model_instance.generate_content_async.assert_called_once_with(prompt)
-                mock_save_image.assert_called_once_with(b'image_data', description=prompt, file_extension="png")
+                mock_save_image.assert_called_once_with(b'image_data', description="A cat", file_extension="png")
                 assert result["image_url"] == "/path/to/image.png"

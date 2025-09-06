@@ -50,6 +50,21 @@ async def _call_gemini_api(api_key: str, model_id: str, chat_history: List[Dict]
         logger.warning(f"An error occurred with Gemini API, retrying... Error: {e}")
         raise
 
+def _extract_image_description(prompt: str) -> str:
+    # Remove common image generation prefixes
+    prefixes = [
+        "mache ein bild von",
+        "erstelle ein bild von",
+        "generiere ein bild von",
+        "make an image of",
+        "generate an image of",
+        "create an image of"
+    ]
+    for prefix in prefixes:
+        if prompt.lower().startswith(prefix):
+            return prompt[len(prefix):].strip()
+    return prompt
+
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 async def _call_gemini_image_generation_api(api_key: str, model_id: str, prompt: str):
     genai.configure(api_key=api_key)
@@ -68,7 +83,8 @@ async def _call_gemini_image_generation_api(api_key: str, model_id: str, prompt:
 
         image_url = None
         if image_data:
-            image_url = image_manager.save_image_from_bytes(image_data, description=prompt, file_extension="png") 
+            cleaned_description = _extract_image_description(prompt)
+            image_url = image_manager.save_image_from_bytes(image_data, description=cleaned_description, file_extension="png") 
             logger.info(f"_call_gemini_image_generation_api: Image saved via image_manager. URL: {image_url}")
 
         usage, cost = _calculate_and_log_cost(model_id)
