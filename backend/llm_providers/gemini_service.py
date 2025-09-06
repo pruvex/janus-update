@@ -64,7 +64,11 @@ def _extract_image_description(prompt: str) -> str:
         "generiere-ein-bild-von",
         "make-an-image-of",
         "generate-an-image-of",
-        "create-an-image-of"
+        "create-an-image-of",
+        "zeig-mir-bild-von",
+        "zeig-mir-ein-bild-von",
+        "zeige-mir-bild-von",
+        "zeige-mir-ein-bild-von"
     ]
     
     cleaned_prompt = normalized_prompt
@@ -74,15 +78,35 @@ def _extract_image_description(prompt: str) -> str:
 
     # Further clean up by removing common redundant phrases that might remain
     redundant_phrases = [
-        "eines", # e.g., "bild-eines-hauses"
+        "eines", 
         "einer",
         "ein",
         "eine",
-        "einem"
+        "einem",
+        "bild",
+        "foto",
+        "image",
+        "picture",
+        "zeig-mir",
+        "zeige-mir",
+        "erstelle",
+        "generiere",
+        "mache",
+        "mach",
+        "draw",
+        "create",
+        "generate",
+        "a",
+        "an",
+        "the",
+        "of"
     ]
     for phrase in redundant_phrases:
         # Use regex to replace whole words only, to avoid partial matches
         cleaned_prompt = re.sub(r'\b' + re.escape(phrase) + r'\b', '', cleaned_prompt).strip('-')
+
+    # Remove any remaining non-alphanumeric or non-hyphen characters
+    cleaned_prompt = re.sub(r'[^a-zA-Z0-9-]', '', cleaned_prompt)
 
     # Replace multiple hyphens with a single hyphen and strip leading/trailing hyphens
     cleaned_prompt = re.sub(r'-+', '-', cleaned_prompt).strip('-')
