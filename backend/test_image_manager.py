@@ -60,6 +60,36 @@ def test_save_image_from_bytes_default_values(mock_datetime, mock_open_func, moc
     mock_open_func().write.assert_called_once_with(image_bytes)
     assert result == expected_web_path
 
+    assert result == expected_web_path
+
+@patch('os.makedirs')
+@patch('uuid.uuid4', return_value=uuid.UUID('00000000-0000-0000-0000-000000000004'))
+@patch('builtins.open', new_callable=mock_open)
+@patch('backend.image_manager.datetime')
+@patch('os.path.exists')
+def test_save_image_from_bytes_collision(mock_exists, mock_datetime, mock_open_func, mock_uuid, mock_makedirs):
+    mock_datetime.now.return_value = datetime(2023, 1, 1)
+    image_bytes = b"test_image_data_collision"
+    description = "collision image"
+    file_extension = "png"
+    expected_dir = os.path.join('/mock/app/data', "images")
+    
+    # Simulate collision: first call to exists returns True, second returns False
+    mock_exists.side_effect = [True, False]
+
+    expected_filename = f"collision-image-01-01-23-1.{file_extension}"
+    expected_file_path = os.path.join(expected_dir, expected_filename)
+    expected_web_path = f"/user_images/{expected_filename}"
+
+    result = save_image_from_bytes(image_bytes, description=description, file_extension=file_extension)
+
+    mock_makedirs.assert_called_once_with(expected_dir, exist_ok=True)
+    # Check that os.path.exists was called twice
+    assert mock_exists.call_count == 2
+    mock_open_func.assert_called_once_with(expected_file_path, 'wb')
+    mock_open_func().write.assert_called_once_with(image_bytes)
+    assert result == expected_web_path
+
 @patch('os.makedirs')
 @patch('uuid.uuid4', return_value=uuid.UUID('00000000-0000-0000-0000-000000000002'))
 @patch('builtins.open', new_callable=mock_open)
