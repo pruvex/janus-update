@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from backend.logger_config import setup_logging
 from backend import llm_gateway, database, crud, schemas, memory_extractor, vector_service, chat_summarizer, image_manager, memory_manager, filesystem_manager
 from backend.llm_providers import gemini_service
+from backend.llm_providers.gemini_service import _extract_image_description
 from backend.database import get_db
 from backend.context_manager import ContextManager
 from backend.utils.paths import get_app_data_dir, resource_path
@@ -238,7 +239,7 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
             
             image_url = tool_result.get("url")
             if image_url:
-                local_image_path = image_manager.save_image_from_url(image_url, title=request.prompt)
+                local_image_path = image_manager.save_image_from_url(image_url, title=_extract_image_description(request.prompt))
                 final_answer = f"Tool '{tool_name}' erfolgreich ausgeführt. Bild wurde generiert."
             else:
                 output = tool_result.get("output", f"Tool '{tool_name}' erfolgreich ausgeführt.")

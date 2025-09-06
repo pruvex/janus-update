@@ -45,7 +45,7 @@ async def test_call_gemini_image_generation_api():
         with patch('backend.image_manager.save_image_from_bytes', return_value="/path/to/image.png") as mock_save_image:
             api_key = "test_key"
             model_id = "gemini-pro-vision"
-            prompt = "A cat"
+            prompt = "mache ein bild von einem gelben haus"
 
             with patch('google.generativeai.configure') as mock_configure:
                 result = await gemini_service._call_gemini_image_generation_api(api_key, model_id, prompt)
@@ -53,5 +53,5 @@ async def test_call_gemini_image_generation_api():
                 mock_configure.assert_called_once_with(api_key=api_key)
                 mock_gen_model.assert_called_once_with(model_id)
                 mock_model_instance.generate_content_async.assert_called_once_with(prompt)
-                mock_save_image.assert_called_once_with(b'image_data', description="A cat", file_extension="png")
+                mock_save_image.assert_called_once_with(b'image_data', description="gelben-haus", file_extension="png")
                 assert result["image_url"] == "/path/to/image.png"

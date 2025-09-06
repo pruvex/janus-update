@@ -39,13 +39,13 @@ def save_image_from_url(image_url: str, title: str = None) -> str:
         os.makedirs(image_dir, exist_ok=True)
         
         # Generate filename based on title and date
+        current_date = datetime.now().strftime("%d-%m-%y")
         if title:
-            # Sanitize title for filename (replace spaces with underscores, remove invalid chars)
-            sanitized_title = "".join(c if c.isalnum() or c == ' ' else '' for c in title).strip().replace(' ', '_')
-            current_date = datetime.now().strftime("%Y-%m-%d")
-            filename = f"{sanitized_title}_{current_date}.png"
+            sanitized_title = title.replace(' ', '-')
+            sanitized_title = re.sub(r'[^a-zA-Z0-9-]', '', sanitized_title).rstrip()
+            filename = f"{sanitized_title}-{current_date}_{uuid.uuid4()}.png"
         else:
-            filename = f"{uuid.uuid4()}.png"
+            filename = f"untitled-{current_date}_{uuid.uuid4()}.png"
 
         file_path = os.path.join(image_dir, filename)
 

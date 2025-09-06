@@ -61,20 +61,24 @@ def test_save_image_from_bytes_default_values(mock_datetime, mock_open_func, moc
     assert result == expected_web_path
 
 @patch('os.makedirs')
-@patch('uuid.uuid4', return_value=uuid.UUID('00000000-0000-0000-0000-000000000002')) # Corrected UUID
+@patch('uuid.uuid4', return_value=uuid.UUID('00000000-0000-0000-0000-000000000002'))
 @patch('builtins.open', new_callable=mock_open)
 @patch('requests.get')
-def test_save_image_from_url_success(mock_requests_get, mock_open_func, mock_uuid, mock_makedirs):
+@patch('backend.image_manager.datetime')
+def test_save_image_from_url_success(mock_datetime, mock_requests_get, mock_open_func, mock_uuid, mock_makedirs):
+    mock_datetime.now.return_value = datetime(2023, 1, 1)
     image_url = "http://example.com/image.png"
+    title = "test image from url"
     expected_dir = os.path.join('/mock/app/data', "images")
-    expected_file_path = os.path.join(expected_dir, "00000000-0000-0000-0000-000000000002.png")
-    expected_web_path = "/user_images/00000000-0000-0000-0000-000000000002.png"
+    expected_filename = f"test-image-from-url-01-01-23_00000000-0000-0000-0000-000000000002.png"
+    expected_file_path = os.path.join(expected_dir, expected_filename)
+    expected_web_path = f"/user_images/{expected_filename}"
     mock_response = MagicMock()
     mock_response.raise_for_status.return_value = None
     mock_response.iter_content.return_value = [b"chunk1", b"chunk2"]
     mock_requests_get.return_value = mock_response
 
-    result = save_image_from_url(image_url)
+    result = save_image_from_url(image_url, title=title)
 
     mock_requests_get.assert_called_once_with(image_url, stream=True)
     mock_makedirs.assert_called_once_with(expected_dir, exist_ok=True)

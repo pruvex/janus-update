@@ -1,5 +1,6 @@
 import logging
 import uuid
+import re
 from typing import List, Dict, Optional
 import google.generativeai as genai
 from google.api_core.exceptions import ResourceExhausted
@@ -51,19 +52,42 @@ async def _call_gemini_api(api_key: str, model_id: str, chat_history: List[Dict]
         raise
 
 def _extract_image_description(prompt: str) -> str:
-    # Remove common image generation prefixes
+    # Normalize prompt to lowercase and replace spaces with hyphens for consistent matching
+    normalized_prompt = prompt.lower().replace(' ', '-')
+
+    # Remove common image generation prefixes and model prefixes
     prefixes = [
-        "mache ein bild von",
-        "erstelle ein bild von",
-        "generiere ein bild von",
-        "make an image of",
-        "generate an image of",
-        "create an image of"
+        "gemini:",
+        "gpt:",
+        "mache-ein-bild-von",
+        "erstelle-ein-bild-von",
+        "generiere-ein-bild-von",
+        "make-an-image-of",
+        "generate-an-image-of",
+        "create-an-image-of"
     ]
+    
+    cleaned_prompt = normalized_prompt
     for prefix in prefixes:
-        if prompt.lower().startswith(prefix):
-            return prompt[len(prefix):].strip()
-    return prompt
+        if cleaned_prompt.startswith(prefix):
+            cleaned_prompt = cleaned_prompt[len(prefix):].strip('-') # Strip leading hyphens after removing prefix
+
+    # Further clean up by removing common redundant phrases that might remain
+    redundant_phrases = [
+        "eines", # e.g., "bild-eines-hauses"
+        "einer",
+        "ein",
+        "eine",
+        "einem"
+    ]
+    for phrase in redundant_phrases:
+        # Use regex to replace whole words only, to avoid partial matches
+        cleaned_prompt = re.sub(r'\b' + re.escape(phrase) + r'\b', '', cleaned_prompt).strip('-')
+
+    # Replace multiple hyphens with a single hyphen and strip leading/trailing hyphens
+    cleaned_prompt = re.sub(r'-+', '-', cleaned_prompt).strip('-')
+
+    return cleaned_prompt
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 async def _call_gemini_image_generation_api(api_key: str, model_id: str, prompt: str):
