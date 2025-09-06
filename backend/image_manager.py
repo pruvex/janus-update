@@ -7,26 +7,29 @@ from backend.utils.paths import get_app_data_dir
 logger = logging.getLogger('janus_backend')
 
 # (Ihre neue Funktion 'save_image_from_bytes' sollte bereits so aussehen)
-def save_image_from_bytes(image_bytes: bytes, filename: str = None) -> str:
-    """Saves image data from bytes to a file and returns the web-accessible path."""
+def save_image_from_bytes(image_bytes: bytes, description: str = "untitled", file_extension: str = "png") -> str:
+    """Saves image data from bytes to a file with a descriptive name and returns the web-accessible path."""
     image_dir = os.path.join(get_app_data_dir(), "images")
     os.makedirs(image_dir, exist_ok=True)
-    
-    if filename is None:
-        filename = f"{uuid.uuid4()}.png"
-    
+
+    current_date = datetime.now().strftime("%Y%m%d")
+    sanitized_description = "".join([c for c in description if c.isalnum() or c in (' ', '_')]).rstrip()
+    sanitized_description = sanitized_description.replace(' ', '_')
+
+    filename = f"{sanitized_description}_{current_date}_{uuid.uuid4()}.{file_extension}"
     file_path = os.path.join(image_dir, filename)
-    
+
     with open(file_path, "wb") as f:
         f.write(image_bytes)
-        
+
     logger.info(f"Image saved from bytes to {file_path}")
-    # Gibt den Pfad zurück, den das Frontend verwenden kann
     return f"/user_images/{filename}"
 
 
-def save_image_from_url(image_url: str) -> str:
-    """Downloads an image from a URL, saves it locally, and returns the web-accessible path."""
+from datetime import datetime
+
+def save_image_from_url(image_url: str, title: str = None) -> str:
+    """Downloads an image from a URL, saves it locally with a descriptive name, and returns the web-accessible path."""
     try:
         response = requests.get(image_url, stream=True)
         response.raise_for_status()
@@ -34,15 +37,21 @@ def save_image_from_url(image_url: str) -> str:
         image_dir = os.path.join(get_app_data_dir(), "images")
         os.makedirs(image_dir, exist_ok=True)
         
-        filename = f"{uuid.uuid4()}.png"
+        # Generate filename based on title and date
+        if title:
+            # Sanitize title for filename (replace spaces with underscores, remove invalid chars)
+            sanitized_title = "".join(c if c.isalnum() or c == ' ' else '' for c in title).strip().replace(' ', '_')
+            current_date = datetime.now().strftime("%Y-%m-%d")
+            filename = f"{sanitized_title}_{current_date}.png"
+        else:
+            filename = f"{uuid.uuid4()}.png"
+
         file_path = os.path.join(image_dir, filename)
 
         with open(file_path, 'wb') as f:
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
 
-        # --- KORREKTUR HIER ---
-        # Gibt jetzt direkt den korrekten, vom Server bereitgestellten Pfad zurück.
         relative_path = f"/user_images/{filename}"
         logger.debug(f"Image saved locally to {file_path}. Returning web path: {relative_path}")
         return relative_path

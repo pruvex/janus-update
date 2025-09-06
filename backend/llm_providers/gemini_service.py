@@ -35,8 +35,8 @@ async def _call_gemini_api(api_key: str, model_id: str, chat_history: List[Dict]
         response = await model.generate_content_async(gemini_history)
         text_response = response.text
         
-        input_tokens = model.count_tokens(gemini_history).total_tokens
-        output_tokens = model.count_tokens(text_response).total_tokens
+        input_tokens = (await model.count_tokens(gemini_history)).total_tokens
+        output_tokens = (await model.count_tokens(text_response)).total_tokens
         
         usage, cost = _calculate_and_log_cost(model_id, usage_data={"prompt_tokens": input_tokens, "completion_tokens": output_tokens})
         
@@ -68,8 +68,7 @@ async def _call_gemini_image_generation_api(api_key: str, model_id: str, prompt:
 
         image_url = None
         if image_data:
-            file_name = f"{uuid.uuid4()}.png"
-            image_url = image_manager.save_image_from_bytes(image_data, file_name) 
+            image_url = image_manager.save_image_from_bytes(image_data, description=prompt, file_extension="png") 
             logger.info(f"_call_gemini_image_generation_api: Image saved via image_manager. URL: {image_url}")
 
         usage, cost = _calculate_and_log_cost(model_id)

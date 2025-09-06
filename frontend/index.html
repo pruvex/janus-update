@@ -66,6 +66,7 @@
     <div id="settings-nav">
       <a href="#" class="settings-nav-link active-setting" data-target="api-key-section">API Keys</a>
       <a href="#" class="settings-nav-link" data-target="model-management-section">Modellverwaltung</a>
+      <a href="#" class="settings-nav-link" data-target="workspaces-section">Arbeitsverzeichnisse</a>
       <button id="back-to-chat-btn">Zurück zum Chat</button>
     </div>
 
@@ -96,6 +97,13 @@
           <button type="button" id="back-from-models-btn">Zurück</button>
         </form>
       </div>
+
+      <!-- Sektion 3: Arbeitsverzeichnisse -->
+      <div id="workspaces-section" class="settings-section" style="display: none;">
+          <h3>Arbeitsverzeichnisse</h3>
+          <ul id="workspaces-list"></ul>
+          <button id="add-workspace-btn">Verzeichnis hinzufügen</button>
+        </div>
     </div>
   </div>
 </main>

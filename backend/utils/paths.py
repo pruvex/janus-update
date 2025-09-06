@@ -3,7 +3,7 @@ import sys
 import os
 from platformdirs import user_data_dir
 
-APP_NAME = "Janus"
+APP_NAME = "Janus Projekt"
 APP_AUTHOR = "JanusDev"
 
 def get_app_data_dir():

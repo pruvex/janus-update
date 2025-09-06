@@ -13,7 +13,7 @@ async def test_call_gemini_api():
         mock_model_instance.generate_content_async.return_value = mock_response
         
         # Mock count_tokens
-        mock_model_instance.count_tokens.side_effect = [MagicMock(total_tokens=10), MagicMock(total_tokens=5)]
+        mock_model_instance.count_tokens.side_effect = [AsyncMock(return_value=MagicMock(total_tokens=10)), AsyncMock(return_value=MagicMock(total_tokens=5))]
 
         api_key = "test_key"
         model_id = "gemini-pro"
@@ -53,5 +53,5 @@ async def test_call_gemini_image_generation_api():
                 mock_configure.assert_called_once_with(api_key=api_key)
                 mock_gen_model.assert_called_once_with(model_id)
                 mock_model_instance.generate_content_async.assert_called_once_with(prompt)
-                mock_save_image.assert_called_once()
+                mock_save_image.assert_called_once_with(b'image_data', description=prompt, file_extension="png")
                 assert result["image_url"] == "/path/to/image.png"

@@ -5,7 +5,6 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=(
-        ('backend/config.json', 'backend'),
         ('backend/model_catalog.json', 'backend'),
         ('backend/static', 'backend/static'),
         ('backend/model_cache', 'backend/model_cache'),

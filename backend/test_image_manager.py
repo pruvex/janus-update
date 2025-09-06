@@ -4,6 +4,7 @@ import os
 import uuid
 import requests
 import logging
+from datetime import datetime
 from backend.image_manager import save_image_from_bytes, save_image_from_url, migrate_image_paths
 
 # Mock the logger to prevent actual logging during tests
@@ -20,13 +21,37 @@ def mock_get_app_data_dir():
         yield mock_func
 
 @patch('os.makedirs')
-@patch('uuid.uuid4', return_value=uuid.UUID('00000000-0000-0000-0000-000000000001')) # Corrected UUID
+@patch('uuid.uuid4', return_value=uuid.UUID('00000000-0000-0000-0000-000000000001'))
 @patch('builtins.open', new_callable=mock_open)
-def test_save_image_from_bytes_success(mock_open_func, mock_uuid, mock_makedirs):
+@patch('backend.image_manager.datetime')
+def test_save_image_from_bytes_success(mock_datetime, mock_open_func, mock_uuid, mock_makedirs):
+    mock_datetime.now.return_value = datetime(2023, 1, 1)
     image_bytes = b"test_image_data"
+    description = "test_image"
+    file_extension = "jpg"
     expected_dir = os.path.join('/mock/app/data', "images")
-    expected_file_path = os.path.join(expected_dir, "00000000-0000-0000-0000-000000000001.png")
-    expected_web_path = "/user_images/00000000-0000-0000-0000-000000000001.png"
+    expected_filename = f"{description}_20230101_00000000-0000-0000-0000-000000000001.{file_extension}"
+    expected_file_path = os.path.join(expected_dir, expected_filename)
+    expected_web_path = f"/user_images/{expected_filename}"
+
+    result = save_image_from_bytes(image_bytes, description=description, file_extension=file_extension)
+
+    mock_makedirs.assert_called_once_with(expected_dir, exist_ok=True)
+    mock_open_func.assert_called_once_with(expected_file_path, 'wb')
+    mock_open_func().write.assert_called_once_with(image_bytes)
+    assert result == expected_web_path
+
+@patch('os.makedirs')
+@patch('uuid.uuid4', return_value=uuid.UUID('00000000-0000-0000-0000-000000000003'))
+@patch('builtins.open', new_callable=mock_open)
+@patch('backend.image_manager.datetime')
+def test_save_image_from_bytes_default_values(mock_datetime, mock_open_func, mock_uuid, mock_makedirs):
+    mock_datetime.now.return_value = datetime(2023, 1, 1)
+    image_bytes = b"test_image_data_default"
+    expected_dir = os.path.join('/mock/app/data', "images")
+    expected_filename = f"untitled_20230101_00000000-0000-0000-0000-000000000003.png"
+    expected_file_path = os.path.join(expected_dir, expected_filename)
+    expected_web_path = f"/user_images/{expected_filename}"
 
     result = save_image_from_bytes(image_bytes)
 

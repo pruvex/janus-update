@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electron', {
+  openDirectoryDialog: () => ipcRenderer.invoke('open-directory-dialog'),
   saveImage: (url) => ipcRenderer.invoke('save-image', url),
   // Other existing functions...
   send: (channel, data) => {

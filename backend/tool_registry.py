@@ -79,6 +79,10 @@ def move_files_tool(source_directory: str, destination_directory: str, pattern: 
     """Verschiebt mehrere Dateien, die einem Muster (z.B. '*.png') entsprechen, von einem Ordner in einen anderen. Ideal für Massenoperationen."""
     return filesystem_manager.move_files(source_directory, destination_directory, pattern)
 
+def list_allowed_workspaces_tool():
+    """Listet alle für Dateioperationen freigegebenen Ordner (Workspaces) auf."""
+    return filesystem_manager.list_allowed_workspaces()
+
 # --- Registrierung aller Tools ---
 register_tool(Tool(func=generate_image_tool, args_schema=schemas.GenerateImageToolArgs))
 register_tool(Tool(func=cross_chat_memory_tool, args_schema=schemas.CrossChatMemoryToolArgs))
@@ -91,6 +95,7 @@ register_tool(Tool(func=delete_directory_tool, args_schema=schemas.DeleteDirecto
 register_tool(Tool(func=rename_file_tool, args_schema=schemas.RenameFileArgs))
 register_tool(Tool(func=move_file_tool, args_schema=schemas.MoveFileArgs))
 register_tool(Tool(func=move_files_tool, args_schema=schemas.MoveFilesArgs)) # NEU
+register_tool(Tool(func=list_allowed_workspaces_tool, args_schema=schemas.ListAllowedWorkspacesArgs))
 
 def get_all_tool_definitions():
     return [tool.llm_definition for tool in TOOL_REGISTRY.values()]

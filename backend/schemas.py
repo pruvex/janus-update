@@ -91,3 +91,6 @@ class MoveFilesArgs(BaseModel):
     source_directory: str
     destination_directory: str
     pattern: str
+
+class ListAllowedWorkspacesArgs(BaseModel):
+    pass

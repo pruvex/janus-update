@@ -15,7 +15,7 @@ from datetime import datetime
 from typing import List, Optional, Dict
 from sqlalchemy.orm import Session
 from backend.logger_config import setup_logging
-from backend import llm_gateway, database, crud, schemas, memory_extractor, vector_service, chat_summarizer, image_manager, memory_manager
+from backend import llm_gateway, database, crud, schemas, memory_extractor, vector_service, chat_summarizer, image_manager, memory_manager, filesystem_manager
 from backend.llm_providers import gemini_service
 from backend.database import get_db
 from backend.context_manager import ContextManager
@@ -25,6 +25,8 @@ from backend.tool_registry import TOOL_REGISTRY
 setup_logging()
 logger = logging.getLogger('janus_backend')
 app = FastAPI()
+
+FILE_OPERATION_HISTORY = []
 
 # --- Static Files Mounting ---
 app.mount("/static", StaticFiles(directory=resource_path("backend/static")), name="static_bundle")
@@ -98,6 +100,15 @@ class ChatTitleUpdate(BaseModel):
     title: str
 class BudgetUpdate(BaseModel):
     budget: float
+
+class WorkspaceAdd(BaseModel):
+    path: str
+
+class WorkspaceRemove(BaseModel):
+    path: str
+
+class WorkspaceUpdate(BaseModel):
+    workspaces: list[str]
 
 # --- Business Logic ---
 def check_budget_and_raise_if_exceeded(db: Session):
@@ -175,6 +186,19 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
     similar_snippets = vector_service.find_similar_snippets(request.prompt, all_facts, top_k=10)
     memory_context = "\n".join([f"- {mem.snippet}" for mem in similar_snippets])
 
+    # Add allowed workspaces to the context
+    allowed_workspaces = filesystem_manager._get_allowed_workspaces()
+    if allowed_workspaces:
+        memory_context += "\n\nAllowed workspaces:\n"
+        for ws in allowed_workspaces:
+            memory_context += f"- {ws.name}: {ws}\n"
+
+    # Add file operation history to the context
+    if FILE_OPERATION_HISTORY:
+        memory_context += "\n\nRecent file operations:\n"
+        for op in FILE_OPERATION_HISTORY:
+            memory_context += f"- {op}\n"
+
     llm_response = await llm_gateway.reason_and_respond(
         request.prompt, chat_history, memory_context, db, api_key, request.model, request.provider, context_manager
     )
@@ -201,13 +225,20 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
                 tool_result = await tool.func(**final_tool_args)
             else:
                 tool_result = tool.func(**final_tool_args)
+
+            # Add to file operation history
+            if "file" in tool_name or "directory" in tool_name:
+                op_string = f"{tool_name} with args {tool_args}"
+                FILE_OPERATION_HISTORY.append(op_string)
+                if len(FILE_OPERATION_HISTORY) > 5:
+                    FILE_OPERATION_HISTORY.pop(0)
             
             usage = tool_result.get("usage", {})
             cost = tool_result.get("cost", {})
             
             image_url = tool_result.get("url")
             if image_url:
-                local_image_path = image_manager.save_image_from_url(image_url)
+                local_image_path = image_manager.save_image_from_url(image_url, title=request.prompt)
                 final_answer = f"Tool '{tool_name}' erfolgreich ausgeführt. Bild wurde generiert."
             else:
                 output = tool_result.get("output", f"Tool '{tool_name}' erfolgreich ausgeführt.")
@@ -354,18 +385,68 @@ async def get_model_catalog(catalog: dict = Depends(get_model_catalog_dep)):
 
 @app.get("/api/keys")
 async def get_api_keys():
+    logger.info("Attempting to retrieve API keys.")
     providers = ["openai", "gemini", "anthropic", "cohere"]
-    return {"api_keys": {p: "********" for p in providers if keyring.get_password("Janus-Projekt", p)}}
+    retrieved_keys = {}
+    for p in providers:
+        try:
+            key = keyring.get_password("Janus-Projekt", p)
+            if key:
+                retrieved_keys[p] = "********"
+                logger.info(f"Successfully retrieved API key for provider: {p}")
+            else:
+                logger.info(f"No API key found for provider: {p}")
+        except Exception as e:
+            logger.error(f"Failed to retrieve API key for {p}: {e}", exc_info=True)
+    return {"api_keys": retrieved_keys}
 
 @app.post("/api/keys")
 async def add_api_key(key: ApiKey):
+    logger.info(f"Attempting to save API key for provider: {key.provider}")
     try:
         keyring.set_password("Janus-Projekt", key.provider.lower(), key.api_key)
+        logger.info(f"Successfully saved API key for provider: {key.provider}")
         return {"message": "API Key saved successfully"}
     except Exception as e:
-        logger.error(f"Failed to save API key for {key.provider}: {e}")
+        logger.error(f"Failed to save API key for {key.provider}: {e}", exc_info=True) # Add exc_info=True for full traceback
         raise HTTPException(status_code=500, detail="Failed to save API key.")
+
+@app.post("/api/workspaces/add")
+async def add_workspace(addition: WorkspaceAdd):
+    config = load_config()
+    if "filesystem_workspaces" not in config:
+        config["filesystem_workspaces"] = []
+    
+    # Avoid duplicates
+    if addition.path not in config["filesystem_workspaces"]:
+        config["filesystem_workspaces"].append(addition.path)
+        save_config(config)
+        return {"message": "Workspace added successfully"}
+    else:
+        return {"message": "Workspace already exists"}
+
+@app.post("/api/workspaces/remove")
+async def remove_workspace(removal: WorkspaceRemove):
+    config = load_config()
+    if "filesystem_workspaces" in config and removal.path in config["filesystem_workspaces"]:
+        config["filesystem_workspaces"].remove(removal.path)
+        save_config(config)
+        return {"message": "Workspace removed successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+
+@app.get("/api/workspaces")
+async def get_workspaces():
+    config = load_config()
+    return {"workspaces": config.get("filesystem_workspaces", [])}
+
+@app.post("/api/workspaces")
+async def save_workspaces(update: WorkspaceUpdate):
+    config = load_config()
+    config["filesystem_workspaces"] = update.workspaces
+    save_config(config)
+    return {"message": "Workspaces saved successfully"}
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8001)

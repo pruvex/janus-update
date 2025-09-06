@@ -114,7 +114,7 @@ function stopBackend() {
 function waitForBackend(retries = 30, delay = 1000) {
     return new Promise((resolve, reject) => {
         function check() {
-            axios.get('http://127.0.0.1:8000/api/models/catalog') // A simple endpoint to check if backend is alive
+            axios.get('http://127.0.0.1:8001/api/models/catalog') // A simple endpoint to check if backend is alive
                 .then(() => {
                     console.log('[Electron Main] Backend is ready!');
                     resolve(true);
@@ -160,6 +160,18 @@ ipcMain.handle('save-image', async (event, url) => {
   return { success: false, error: 'Save dialog cancelled.' };
 });
 // --- ENDE HANDLER ---
+
+ipcMain.handle('open-directory-dialog', async () => {
+  const { dialog } = require('electron');
+  const result = await dialog.showOpenDialog({
+    properties: ['openDirectory']
+  });
+  if (result.canceled) {
+    return null;
+  } else {
+    return result.filePaths[0];
+  }
+});
 console.log('Main process: ipcMain.handle registered for save-image');
 
 function createWindow () {
@@ -207,27 +219,27 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     const win = createWindow();
-    // startBackend(win); // Commented out for development
-    // waitForBackend().then(() => { // Commented out for development
+    startBackend(win);
+    waitForBackend().then(() => {
         if (process.env.NODE_ENV === 'development') {
             win.loadURL('http://localhost:5173/');
         } else {
             win.loadFile(path.join(__dirname, 'dist', 'index.html'));
         }
-    // }); // Commented out for development
+    });
   }
 });
 
 app.whenReady().then(() => {
     const win = createWindow();
-    // startBackend(win); // Commented out for development
-    // waitForBackend().then(() => { // Commented out for development
+    startBackend(win);
+    waitForBackend().then(() => {
         if (process.env.NODE_ENV === 'development') {
             win.loadURL('http://localhost:5173/');
         } else {
             win.loadFile(path.join(__dirname, 'dist', 'index.html'));
         }
-    // }); // Commented out for development
+    });
 });
 
 app.on('will-quit', stopBackend);

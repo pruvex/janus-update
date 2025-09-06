@@ -22,14 +22,9 @@ PLACEHOLDER_MAP = {
 
 def _get_allowed_workspaces() -> list[Path]:
     """Lädt die vom Benutzer konfigurierten Workspaces und priorisiert sie korrekt."""
-    # Beginne die Liste IMMER mit den benutzerdefinierten Pfaden.
     resolved_paths = []
     
-    # Füge den Desktop-Pfad standardmäßig hinzu
-    desktop_path = Path.home() / "Desktop"
-    if desktop_path.is_dir() and desktop_path.resolve() not in resolved_paths:
-        resolved_paths.append(desktop_path.resolve())
-
+    # Beginne die Liste IMMER mit den benutzerdefinierten Pfaden.
     try:
         if CONFIG_FILE.exists():
             with open(CONFIG_FILE, "r", encoding='utf-8') as f:
@@ -42,6 +37,11 @@ def _get_allowed_workspaces() -> list[Path]:
                     resolved_paths.append(resolved_path.resolve())
     except Exception as e:
         logger.error(f"Fehler beim Laden der Workspace-Konfiguration: {e}")
+
+    # Füge den Desktop-Pfad standardmäßig hinzu
+    desktop_path = Path.home() / "Desktop"
+    if desktop_path.is_dir() and desktop_path.resolve() not in resolved_paths:
+        resolved_paths.append(desktop_path.resolve())
     
     # Füge den Standard-Workspace am ENDE als Fallback hinzu.
     if DEFAULT_WORKSPACE.resolve() not in resolved_paths:
@@ -49,12 +49,9 @@ def _get_allowed_workspaces() -> list[Path]:
     
     return resolved_paths
 
-ALLOWED_WORKSPACES = _get_allowed_workspaces()
-logger.info(f"Erlaubte Filesystem-Workspaces (nach Priorität): {[str(p) for p in ALLOWED_WORKSPACES]}")
-
-
 def _resolve_and_validate_path(user_path: str, must_exist: bool = True) -> Path:
     """Findet den korrekten, absoluten Pfad und validiert ihn."""
+    allowed_workspaces = _get_allowed_workspaces() # Lade die Workspaces bei jedem Aufruf
     cleaned_path = Path(user_path.strip().replace('\\', '/'))
 
     # Determine if the path is absolute based on its anchor (drive letter, root)
@@ -62,7 +59,7 @@ def _resolve_and_validate_path(user_path: str, must_exist: bool = True) -> Path:
 
     if is_absolute_path:
         resolved = cleaned_path.resolve()
-        for ws in ALLOWED_WORKSPACES:
+        for ws in allowed_workspaces:
             if resolved.is_relative_to(ws.resolve()):
                 if must_exist and not resolved.exists():
                     raise FileNotFoundError(f"Pfad '{user_path}' existiert nicht.")
@@ -70,20 +67,21 @@ def _resolve_and_validate_path(user_path: str, must_exist: bool = True) -> Path:
         # If it's an absolute path but not relative to any allowed workspace
         raise PermissionError(f"Absoluter Pfad '{user_path}' ist nicht erlaubt.")
     else: # Handle relative paths
-        for ws in ALLOWED_WORKSPACES:
-            potential_path = None
-            # If the first part of the cleaned_path matches the workspace name,
-            # treat it as if it's directly within that workspace.
+        # First, check if the path starts with a workspace name
+        for ws in allowed_workspaces:
             if cleaned_path.parts and cleaned_path.parts[0].lower() == ws.name.lower():
-                # Example: ws = C:\Users\pruve\Desktop, cleaned_path = Desktop/file.txt
-                # We want C:\Users\pruve\Desktop\file.txt, not C:\Users\pruve\Desktop\Desktop\file.txt
-                # So, we join ws.parent with the rest of cleaned_path (excluding the first part)
-                                    potential_path = (ws / Path(*cleaned_path.parts[1:])).resolve()
-            else:
-                # Normal case: join the workspace with the cleaned_path
-                potential_path = (ws / cleaned_path).resolve()
-            
-            if potential_path and potential_path.is_relative_to(ws.resolve()):
+                potential_path = (ws / Path(*cleaned_path.parts[1:])).resolve()
+                if potential_path.is_relative_to(ws.resolve()):
+                    if must_exist:
+                        if potential_path.exists():
+                            return potential_path
+                    else:
+                        return potential_path
+
+        # If not, then check for relative paths in all workspaces
+        for ws in allowed_workspaces:
+            potential_path = (ws / cleaned_path).resolve()
+            if potential_path.is_relative_to(ws.resolve()):
                 if must_exist:
                     if potential_path.exists():
                         return potential_path
@@ -92,6 +90,7 @@ def _resolve_and_validate_path(user_path: str, must_exist: bool = True) -> Path:
     
     # If no path could be resolved (neither absolute nor relative within allowed workspaces)
     raise FileNotFoundError(f"Pfad '{user_path}' existiert nicht.")
+
 
 
 def create_file(path: str, content: str = "") -> dict:
@@ -128,8 +127,9 @@ def delete_file(path: str) -> dict:
 
 def list_directory(path: str, pattern: Optional[str] = None) -> dict:
     try:
+        allowed_workspaces = _get_allowed_workspaces()
         if path.strip() in ['.', '', '/']:
-            ws_names = [f"{w.name}/" for w in ALLOWED_WORKSPACES]
+            ws_names = [f"{w.name}/" for w in allowed_workspaces]
             return {"output": f"Es sind {len(ws_names)} Workspaces verfügbar: {', '.join(ws_names)}", "count": len(ws_names), "items": ws_names}
         
         safe_path = _resolve_and_validate_path(path, must_exist=True)
@@ -168,7 +168,7 @@ def create_directory(path: str) -> dict:
 def delete_directory(path: str) -> dict:
     try:
         safe_path = _resolve_and_validate_path(path, must_exist=True)
-        if safe_path in ALLOWED_WORKSPACES:
+        if safe_path in _get_allowed_workspaces():
              return {"output": "Fehler: Ein Workspace-Stammverzeichnis darf nicht gelöscht werden."}
         shutil.rmtree(safe_path)
         logger.info(f"Ordner rekursiv gelöscht: {safe_path}")
@@ -231,3 +231,9 @@ def move_files(source_directory: str, destination_directory: str, pattern: str) 
     except Exception as e:
         logger.error(f"Fehler bei move_files: {e}")
         return {"output": f"Fehler: {e}"}
+
+def list_allowed_workspaces() -> dict:
+    """Gibt eine Liste der erlaubten Arbeitsbereiche zurück."""
+    workspaces = _get_allowed_workspaces()
+    workspace_paths = [str(ws) for ws in workspaces]
+    return {"output": f"Erlaubte Arbeitsbereiche:\n" + "\n".join(workspace_paths), "workspaces": workspace_paths}
