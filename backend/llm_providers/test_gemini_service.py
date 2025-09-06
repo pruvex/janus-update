@@ -53,18 +53,18 @@ async def test_call_gemini_image_generation_api():
                 mock_configure.assert_called_once_with(api_key=api_key)
                 mock_gen_model.assert_called_once_with(model_id)
                 mock_model_instance.generate_content_async.assert_called_once_with(prompt)
-                mock_save_image.assert_called_once_with(b'image_data', description="gelben-haus", file_extension="png")
+                mock_save_image.assert_called_once_with(b'image_data', description="gelbes-haus", file_extension="png")
                 assert result["image_url"] == "/path/to/image.png"
 
 def test_extract_image_description_robustness():
     # Test with gemini prefix and common phrases
     prompt1 = "gemini:zeig mir bild blauen hauses"
-    expected1 = "blauen-hauses"
+    expected1 = "blaues-haus"
     assert gemini_service._extract_image_description(prompt1) == expected1
 
     # Test with gpt prefix and common phrases
     prompt2 = "gpt:erstelle ein bild eines roten autos"
-    expected2 = "roten-autos"
+    expected2 = "rotes-auto"
     assert gemini_service._extract_image_description(prompt2) == expected2
 
     # Test with mixed case and extra spaces

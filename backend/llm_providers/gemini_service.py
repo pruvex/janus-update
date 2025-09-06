@@ -105,6 +105,18 @@ def _extract_image_description(prompt: str) -> str:
         # Use regex to replace whole words only, to avoid partial matches
         cleaned_prompt = re.sub(r'\b' + re.escape(phrase) + r'\b', '', cleaned_prompt).strip('-')
 
+    # German grammatical normalization (heuristic) - more targeted replacements
+    cleaned_prompt = re.sub(r'\b(roten|blauen|gelben|grünen)-hauses\b', r'\1-haus', cleaned_prompt)
+    cleaned_prompt = re.sub(r'\b(roten|blauen|gelben|grünen)-autos\b', r'\1-auto', cleaned_prompt)
+    cleaned_prompt = re.sub(r'\b(roten|blauen|gelben|grünen)-hunde\b', r'\1-hund', cleaned_prompt)
+    cleaned_prompt = re.sub(r'\b(roten|blauen|gelben|grünen)-katzen\b', r'\1-katze', cleaned_prompt)
+    
+    # Specific adjective ending corrections (e.g., "roten" -> "rotes")
+    cleaned_prompt = cleaned_prompt.replace("roten-", "rotes-")
+    cleaned_prompt = cleaned_prompt.replace("blauen-", "blaues-")
+    cleaned_prompt = cleaned_prompt.replace("gelben-", "gelbes-")
+    cleaned_prompt = cleaned_prompt.replace("grünen-", "grünes-")
+
     # Remove any remaining non-alphanumeric or non-hyphen characters
     cleaned_prompt = re.sub(r'[^a-zA-Z0-9-]', '', cleaned_prompt)
 
