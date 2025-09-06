@@ -1,3 +1,4 @@
+import re
 import os
 import uuid
 import requests
@@ -12,11 +13,11 @@ def save_image_from_bytes(image_bytes: bytes, description: str = "untitled", fil
     image_dir = os.path.join(get_app_data_dir(), "images")
     os.makedirs(image_dir, exist_ok=True)
 
-    current_date = datetime.now().strftime("%Y%m%d")
-    sanitized_description = "".join([c for c in description if c.isalnum() or c in (' ', '_')]).rstrip()
-    sanitized_description = sanitized_description.replace(' ', '_')
+    current_date = datetime.now().strftime("%d-%m-%y")
+    sanitized_description = description.replace(' ', '-')
+    sanitized_description = re.sub(r'[^a-zA-Z0-9-]', '', sanitized_description).rstrip()
 
-    filename = f"{sanitized_description}_{current_date}_{uuid.uuid4()}.{file_extension}"
+    filename = f"{sanitized_description}-{current_date}_{uuid.uuid4()}.{file_extension}"
     file_path = os.path.join(image_dir, filename)
 
     with open(file_path, "wb") as f:

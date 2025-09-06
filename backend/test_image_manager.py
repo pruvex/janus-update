@@ -27,10 +27,10 @@ def mock_get_app_data_dir():
 def test_save_image_from_bytes_success(mock_datetime, mock_open_func, mock_uuid, mock_makedirs):
     mock_datetime.now.return_value = datetime(2023, 1, 1)
     image_bytes = b"test_image_data"
-    description = "test_image"
+    description = "test image"
     file_extension = "jpg"
     expected_dir = os.path.join('/mock/app/data', "images")
-    expected_filename = f"{description}_20230101_00000000-0000-0000-0000-000000000001.{file_extension}"
+    expected_filename = f"test-image-01-01-23_00000000-0000-0000-0000-000000000001.{file_extension}"
     expected_file_path = os.path.join(expected_dir, expected_filename)
     expected_web_path = f"/user_images/{expected_filename}"
 
@@ -49,7 +49,7 @@ def test_save_image_from_bytes_default_values(mock_datetime, mock_open_func, moc
     mock_datetime.now.return_value = datetime(2023, 1, 1)
     image_bytes = b"test_image_data_default"
     expected_dir = os.path.join('/mock/app/data', "images")
-    expected_filename = f"untitled_20230101_00000000-0000-0000-0000-000000000003.png"
+    expected_filename = f"untitled-01-01-23_00000000-0000-0000-0000-000000000003.png"
     expected_file_path = os.path.join(expected_dir, expected_filename)
     expected_web_path = f"/user_images/{expected_filename}"
 
