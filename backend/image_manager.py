@@ -17,7 +17,7 @@ def save_image_from_bytes(image_bytes: bytes, description: str = "untitled", fil
     sanitized_description = description.replace(' ', '-')
     sanitized_description = re.sub(r'[^a-zA-Z0-9-]', '', sanitized_description).rstrip()
 
-    filename = f"{sanitized_description}-{current_date}_{uuid.uuid4()}.{file_extension}"
+    filename = f"{sanitized_description}-{current_date}.{file_extension}"
     file_path = os.path.join(image_dir, filename)
 
     with open(file_path, "wb") as f:
@@ -43,9 +43,9 @@ def save_image_from_url(image_url: str, title: str = None) -> str:
         if title:
             sanitized_title = title.replace(' ', '-')
             sanitized_title = re.sub(r'[^a-zA-Z0-9-]', '', sanitized_title).rstrip()
-            filename = f"{sanitized_title}-{current_date}_{uuid.uuid4()}.png"
+            filename = f"{sanitized_title}-{current_date}.png"
         else:
-            filename = f"untitled-{current_date}_{uuid.uuid4()}.png"
+            filename = f"untitled-{current_date}.png"
 
         file_path = os.path.join(image_dir, filename)
 
