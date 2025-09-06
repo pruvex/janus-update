@@ -116,3 +116,8 @@ def test_extract_image_description_robustness():
     prompt12 = "gemini:"
     expected12 = ""
     assert gemini_service._extract_image_description(prompt12) == expected12
+
+    # Test with weisses-hauses
+    prompt13 = "zeig mir ein bild eines weissen hauses"
+    expected13 = "weisses-haus"
+    assert gemini_service._extract_image_description(prompt13) == expected13
