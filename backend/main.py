@@ -134,36 +134,40 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
         logger.info(f"New chat created with ID: {request.chat_id}")
 
     crud.create_message(db, chat_id=request.chat_id, sender="user", content=request.prompt)
-    
-    if request.provider == "gemini":
-        # === KORREKTUR BEGINNT HIER ===
-        # Wir vereinfachen die Liste auf einzelne, effektive Schlüsselwörter.
-        # "mach" und "mache" fangen jetzt alle Variationen wie "mach mir...", "mach ein..." etc. ab.
-        image_keywords = [
-            "bild", "image", "picture", "foto", "photo", 
-            "draw", "create", "generate", 
-            "zeichne", "erstelle", "generiere", 
-            "mach", "mache"
-        ]
-        # === KORREKTUR ENDET HIER ===
-        prompt_lower = request.prompt.lower()
-        
-        if any(keyword in prompt_lower for keyword in image_keywords):
-            logger.info("Gemini image generation intent detected by keyword. Bypassing reason_and_respond.")
-            
+
+    prompt_lower = request.prompt.lower()
+    image_keywords = [
+        "bild", "image", "picture", "foto", "photo",
+        "draw", "create", "generate",
+        "zeichne", "erstelle", "generiere",
+        "mach", "mache"
+    ]
+    if any(keyword in prompt_lower for keyword in image_keywords):
+            logger.info("Image generation intent detected by keyword. Bypassing reason_and_respond.")
+
             selected_text_model = model_catalog.get(request.model, {})
             image_model_id = selected_text_model.get("image_generation_model_id")
 
             if not image_model_id:
-                logger.warning(f"Model {request.model} has no image_generation_model_id. Falling back to flash-image-preview.")
-                image_model_id = "gemini-2.5-flash-image-preview"
+                # Fallback to a default image model if not specified
+                default_image_models = {
+                    "openai": "dall-e-3",
+                    "gemini": "gemini-1.5-flash-preview-0514"
+                }
+                image_model_id = default_image_models.get(request.provider, "")
+                logger.warning(f"Model {request.model} has no image_generation_model_id. Falling back to {image_model_id}.")
 
-            llm_response = await gemini_service._call_gemini_image_generation_api(api_key, image_model_id, request.prompt)
-            
+            if not image_model_id:
+                raise HTTPException(status_code=500, detail=f"No suitable image generation model found for provider {request.provider}")
+
+            # Use the new abstracted gateway function
+            llm_response = await llm_gateway.generate_image(request.provider, image_model_id, api_key, request.prompt)
+
+            # The rest of the logic for handling the response remains largely the same
             local_image_path = llm_response.get("image_url")
             usage = llm_response.get("usage", {})
             cost = llm_response.get("cost", {})
-            final_answer = "Bild wurde erfolgreich mit Gemini generiert." if local_image_path else llm_response.get("text", "Fehler bei der Gemini-Bildgenerierung.")
+            final_answer = f"Bild wurde erfolgreich mit {request.provider.capitalize()} generiert." if local_image_path else llm_response.get("text", f"Fehler bei der {request.provider.capitalize()}-Bildgenerierung.")
 
             crud.create_message(db, chat_id=request.chat_id, sender="model", content=final_answer, image_path=local_image_path)
             if usage and cost.get("total_cost", 0) > 0:

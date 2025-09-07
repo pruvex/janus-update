@@ -77,7 +77,7 @@ def test_save_image_from_bytes_collision(mock_exists, mock_datetime, mock_open_f
     # Simulate collision: first call to exists returns True, second returns False
     mock_exists.side_effect = [True, False]
 
-    expected_filename = f"collision-image-01-01-23-1.{file_extension}"
+    expected_filename = f"collision-image-1-01-01-23.{file_extension}"
     expected_file_path = os.path.join(expected_dir, expected_filename)
     expected_web_path = f"/user_images/{expected_filename}"
 

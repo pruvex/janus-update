@@ -1,9 +1,9 @@
 import pytest
 from unittest.mock import AsyncMock, patch
-from backend.llm_providers import openai_service
+from backend.llm_providers.openai_service import OpenAIServiceProvider, generate_image_tool
 
 @pytest.mark.asyncio
-async def test_call_openai_api_text_response():
+async def test_provider_generate_response():
     with patch('openai.AsyncOpenAI') as mock_async_openai:
         mock_client = AsyncMock()
         mock_async_openai.return_value = mock_client
@@ -18,44 +18,36 @@ async def test_call_openai_api_text_response():
         mock_response.usage.completion_tokens = 5
         mock_client.chat.completions.create.return_value = mock_response
 
-        api_key = "test_key"
-        model_id = "gpt-4"
-        chat_history = [{"role": "user", "content": "Hello"}]
-        model_info = {}
-        tools = []
-
-        result = await openai_service._call_openai_api(api_key, model_id, chat_history, model_info, tools)
+        provider = OpenAIServiceProvider()
+        result = await provider.generate_response(
+            api_key="test_key",
+            model="gpt-4",
+            messages=[{"role": "user", "content": "Hello"}]
+        )
 
         mock_client.chat.completions.create.assert_called_once_with(
-            model=model_id,
-            messages=chat_history
+            model="gpt-4",
+            messages=[{"role": "user", "content": "Hello"}]
         )
         assert result["type"] == "text"
         assert result["text"] == "Test response"
 
 @pytest.mark.asyncio
-async def test_generate_image_tool():
-    with patch('openai.AsyncOpenAI') as mock_async_openai:
-        mock_client = AsyncMock()
-        mock_async_openai.return_value = mock_client
-
-        mock_response = AsyncMock()
-        mock_response.created = 12345
-        mock_response.data = [AsyncMock()]
-        mock_response.data[0].url = "http://example.com/image.png"
-        mock_client.images.generate.return_value = mock_response
+async def test_generate_image_tool_wrapper():
+    # This tests the standalone wrapper function that is used for tool registration
+    with patch('backend.llm_providers.openai_service.OpenAIServiceProvider.generate_image') as mock_generate_image:
+        mock_generate_image.return_value = {
+            "image_url": "http://example.com/image.png",
+            "usage": {},
+            "cost": {}
+        }
 
         api_key = "test_key"
         prompt = "A cat"
 
-        result = await openai_service.generate_image_tool(api_key, prompt)
+        result = await generate_image_tool(api_key, prompt)
 
-        mock_client.images.generate.assert_called_once_with(
-            model="dall-e-3",
-            prompt=prompt,
-            n=1,
-            size="1024x1024",
-            quality="standard",
-            response_format="url"
+        mock_generate_image.assert_called_once_with(
+            api_key, "dall-e-3", prompt, size="1024x1024", quality="standard"
         )
         assert result["url"] == "http://example.com/image.png"
