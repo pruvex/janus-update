@@ -1,6 +1,7 @@
 # Vollständige, finale Version: backend/tool_registry.py
 
 import inspect
+import openai
 from typing import Callable, Dict, Any, Optional
 from pydantic import BaseModel
 from backend import schemas, filesystem_manager
@@ -84,9 +85,10 @@ def list_allowed_workspaces_tool():
     """Listet alle für Dateioperationen freigegebenen Ordner (Workspaces) auf."""
     return filesystem_manager.list_allowed_workspaces()
 
-def websearch_tool(query: str):
+async def websearch_tool(query: str, api_key: str):
     """Führt eine Websuche mit GPTs integriertem web.search Tool aus."""
-    return perform_websearch(query)
+    client = openai.OpenAI(api_key=api_key)
+    return await perform_websearch(query, client)
 
 # --- Registrierung aller Tools ---
 register_tool(Tool(func=generate_image_tool, args_schema=schemas.GenerateImageToolArgs))

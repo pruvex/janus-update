@@ -146,16 +146,16 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
             logger.info("Image generation intent detected by keyword. Bypassing reason_and_respond.")
 
             selected_text_model = model_catalog.get(request.model, {})
-            image_model_id = selected_text_model.get("image_generation_model_id")
+            image_model_id = selected_text_model.get("image_generation_model")
 
             if not image_model_id:
                 # Fallback to a default image model if not specified
                 default_image_models = {
                     "openai": "dall-e-3",
-                    "gemini": "gemini-1.5-flash-preview-0514"
+                    "gemini": "gemini-2.5-flash-image-preview"
                 }
                 image_model_id = default_image_models.get(request.provider, "")
-                logger.warning(f"Model {request.model} has no image_generation_model_id. Falling back to {image_model_id}.")
+                logger.warning(f"Model {request.model} has no image_generation_model. Falling back to {image_model_id}.")
 
             if not image_model_id:
                 raise HTTPException(status_code=500, detail=f"No suitable image generation model found for provider {request.provider}")
@@ -164,7 +164,26 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
             llm_response = await llm_gateway.generate_image(request.provider, image_model_id, api_key, request.prompt)
 
             # The rest of the logic for handling the response remains largely the same
-            local_image_path = llm_response.get("image_url")
+            remote_image_url = llm_response.get("image_url")
+            local_image_path = None
+
+            # --- NEUE LOGIK: Bilder lokal speichern ---
+            if remote_image_url and (remote_image_url.startswith("http://") or remote_image_url.startswith("https://")):
+                try:
+                    # Annahme: _extract_image_description ist für den Titel geeignet
+                    title = _extract_image_description(request.prompt)
+                    local_image_path = image_manager.save_image_from_url(remote_image_url, title=title)
+                    logger.info(f"[DEBUG] Image saved locally to: {local_image_path}")
+                except Exception as e:
+                    logger.error(f"Fehler beim lokalen Speichern des Bildes: {e}")
+                    # Wenn Speichern fehlschlägt, verwenden wir weiterhin die Remote-URL
+                    local_image_path = remote_image_url # Fallback to remote URL if local save fails
+            elif remote_image_url: # Already a local path (e.g., from Gemini)
+                local_image_path = remote_image_url
+            else:
+                local_image_path = None # No image URL provided
+            # --- ENDE NEUE LOGIK ---
+
             usage = llm_response.get("usage", {})
             cost = llm_response.get("cost", {})
             final_answer = f"Bild wurde erfolgreich mit {request.provider.capitalize()} generiert." if local_image_path else llm_response.get("text", f"Fehler bei der {request.provider.capitalize()}-Bildgenerierung.")
@@ -187,9 +206,12 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
         if len(chat_history) < 20:
              chat_history.append({"role": "user" if m.sender == "user" else "assistant", "content": m.content})
     
+    # The user prompt is already the last message in chat_history, so we pass the prompt directly
+    # to the vector service, but not again to the reason_and_respond function.
     all_facts = memory_manager.get_all_facts(db)
     similar_snippets = vector_service.find_similar_snippets(request.prompt, all_facts, top_k=10)
     memory_context = "\n".join([f"- {mem.snippet}" for mem in similar_snippets])
+    logger.info(f"[DEBUG] Memory Context Generated (length: {len(memory_context)}): {memory_context[:500]}")
 
     # Add allowed workspaces to the context
     allowed_workspaces = filesystem_manager._get_allowed_workspaces()
@@ -227,9 +249,9 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
             final_tool_args = {name: all_possible_args[name] for name in tool_func_params if name in all_possible_args}
             
             if inspect.iscoroutinefunction(tool.func):
-                tool_result = await tool.func(**final_tool_args)
+                tool_output = await tool.func(**final_tool_args)
             else:
-                tool_result = tool.func(**final_tool_args)
+                tool_output = tool.func(**final_tool_args)
 
             # Add to file operation history
             if "file" in tool_name or "directory" in tool_name:
@@ -238,15 +260,15 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
                 if len(FILE_OPERATION_HISTORY) > 5:
                     FILE_OPERATION_HISTORY.pop(0)
             
-            usage = tool_result.get("usage", {})
-            cost = tool_result.get("cost", {})
+            usage = tool_output.get("usage", {})
+            cost = tool_output.get("cost", {})
             
-            image_url = tool_result.get("url")
+            image_url = tool_output.get("url")
             if image_url:
                 local_image_path = image_manager.save_image_from_url(image_url, title=_extract_image_description(request.prompt))
                 final_answer = f"Tool '{tool_name}' erfolgreich ausgeführt. Bild wurde generiert."
             else:
-                output = tool_result.get("output", f"Tool '{tool_name}' erfolgreich ausgeführt.")
+                output = tool_output.get("output", f"Tool '{tool_name}' erfolgreich ausgeführt.")
                 final_answer = f"Ergebnis von Tool '{tool_name}': {output}"
         else:
             final_answer = f"Fehler: Unbekanntes Tool '{tool_name}' angefordert."
