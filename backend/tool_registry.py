@@ -5,6 +5,7 @@ from typing import Callable, Dict, Any, Optional
 from pydantic import BaseModel
 from backend import schemas, filesystem_manager
 from backend.llm_providers.openai_service import generate_image_tool
+from backend.websearch import perform_websearch
 from backend.memory_manager import cross_chat_memory_tool
 from sqlalchemy.orm import Session
 from backend import crud
@@ -83,6 +84,10 @@ def list_allowed_workspaces_tool():
     """Listet alle für Dateioperationen freigegebenen Ordner (Workspaces) auf."""
     return filesystem_manager.list_allowed_workspaces()
 
+def websearch_tool(query: str):
+    """Führt eine Websuche mit GPTs integriertem web.search Tool aus."""
+    return perform_websearch(query)
+
 # --- Registrierung aller Tools ---
 register_tool(Tool(func=generate_image_tool, args_schema=schemas.GenerateImageToolArgs))
 register_tool(Tool(func=cross_chat_memory_tool, args_schema=schemas.CrossChatMemoryToolArgs))
@@ -96,6 +101,7 @@ register_tool(Tool(func=rename_file_tool, args_schema=schemas.RenameFileArgs))
 register_tool(Tool(func=move_file_tool, args_schema=schemas.MoveFileArgs))
 register_tool(Tool(func=move_files_tool, args_schema=schemas.MoveFilesArgs)) # NEU
 register_tool(Tool(func=list_allowed_workspaces_tool, args_schema=schemas.ListAllowedWorkspacesArgs))
+register_tool(Tool(func=websearch_tool, args_schema=schemas.WebsearchToolArgs))
 
 def get_all_tool_definitions():
     return [tool.llm_definition for tool in TOOL_REGISTRY.values()]

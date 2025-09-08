@@ -94,3 +94,6 @@ class MoveFilesArgs(BaseModel):
 
 class ListAllowedWorkspacesArgs(BaseModel):
     pass
+
+class WebsearchToolArgs(BaseModel):
+    query: str
