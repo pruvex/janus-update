@@ -97,3 +97,4 @@ class ListAllowedWorkspacesArgs(BaseModel):
 
 class WebsearchToolArgs(BaseModel):
     query: str
+    api_key: str
