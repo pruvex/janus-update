@@ -152,7 +152,7 @@ numpy==2.3.2
     #   scikit-learn
     #   scipy
     #   transformers
-openai==1.99.9
+openai==1.106.1
     # via -r backend/requirements.in
 orjson==3.11.2
     # via fastapi
