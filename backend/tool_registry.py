@@ -87,8 +87,7 @@ def list_allowed_workspaces_tool():
 
 async def websearch_tool(query: str, api_key: str):
     """Führt eine Websuche mit GPTs integriertem web.search Tool aus."""
-    client = openai.OpenAI(api_key=api_key)
-    return await perform_websearch(query, client)
+    return await perform_websearch(query, api_key)
 
 # --- Registrierung aller Tools ---
 register_tool(Tool(func=generate_image_tool, args_schema=schemas.GenerateImageToolArgs))
