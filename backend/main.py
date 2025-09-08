@@ -260,8 +260,8 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
                 if len(FILE_OPERATION_HISTORY) > 5:
                     FILE_OPERATION_HISTORY.pop(0)
             
-            usage = tool_output.get("usage", {})
-            cost = tool_output.get("cost", {})
+            usage = getattr(tool_output, "meta", {}).get("usage", {})
+            cost = getattr(tool_output, "meta", {}).get("cost", {})
             
             image_url = tool_output.get("url")
             if image_url:
