@@ -85,9 +85,9 @@ def list_allowed_workspaces_tool():
     """Listet alle für Dateioperationen freigegebenen Ordner (Workspaces) auf."""
     return filesystem_manager.list_allowed_workspaces()
 
-async def websearch_tool(query: str, api_key: str):
+async def websearch_tool(query: str):
     """Führt eine Websuche mit GPTs integriertem web.search Tool aus."""
-    return await perform_websearch(query, api_key)
+    return await perform_websearch(query)
 
 # --- Registrierung aller Tools ---
 register_tool(Tool(func=generate_image_tool, args_schema=schemas.GenerateImageToolArgs))
