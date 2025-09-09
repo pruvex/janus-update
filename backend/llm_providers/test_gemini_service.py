@@ -4,15 +4,19 @@ from backend.llm_providers.gemini_service import GeminiServiceProvider, _extract
 
 @pytest.mark.asyncio
 async def test_provider_generate_response():
-    with patch('google.generativeai.GenerativeModel') as mock_gen_model:
-        mock_model_instance = AsyncMock()
-        mock_gen_model.return_value = mock_model_instance
+    with patch('google.generativeai.GenerativeModel') as MockGenerativeModel:
+        # Configure the mock instance that GenerativeModel() will return
+        mock_instance = MockGenerativeModel.return_value
+        
+        mock_chat_session = AsyncMock()
+        mock_instance.start_chat.return_value = mock_chat_session
 
         mock_response = AsyncMock()
         mock_response.text = "Test response"
-        mock_model_instance.generate_content_async.return_value = mock_response
+        mock_response.candidates = [] # Add this line to prevent function_call branch
+        mock_chat_session.send_message_async.return_value = mock_response
 
-        mock_model_instance.count_tokens.side_effect = [AsyncMock(return_value=MagicMock(total_tokens=10)), AsyncMock(return_value=MagicMock(total_tokens=5))]
+        mock_instance.count_tokens_async.side_effect = [MagicMock(total_tokens=10), MagicMock(total_tokens=5)]
 
         provider = GeminiServiceProvider()
         with patch('google.generativeai.configure') as mock_configure:
@@ -23,8 +27,9 @@ async def test_provider_generate_response():
             )
 
             mock_configure.assert_called_once_with(api_key="test_key")
-            mock_gen_model.assert_called_once_with("gemini-pro")
-            mock_model_instance.generate_content_async.assert_called_once()
+            MockGenerativeModel.assert_called_once_with("gemini-pro", tools=None)
+            mock_instance.start_chat.assert_called_once_with(history=[])
+            mock_chat_session.send_message_async.assert_called_once_with("Hello")
             assert result["type"] == "text"
             assert result["text"] == "Test response"
 

@@ -38,40 +38,25 @@ def _extract_image_description(prompt: str) -> str:
     cleaned_prompt = re.sub(r'-+', '-', cleaned_prompt).strip('-')
     return cleaned_prompt
 
-# --- FINALE, LOGISCH KORREKTE HILFSFUNKTION ---
 def _sanitize_schema_for_gemini(schema: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Bereinigt und konvertiert ein JSON Schema explizit für die Gemini API.
-    Diese Funktion ist so aufgebaut, dass sie die logische Struktur beibehält.
-    """
     if not isinstance(schema, dict):
         return schema
-
     new_schema = {}
-
-    # 1. Typ konvertieren, falls vorhanden
     if 'type' in schema and isinstance(schema['type'], str):
         new_schema['type'] = schema['type'].upper()
-
-    # 2. Gültige Felder direkt übernehmen
     if 'description' in schema:
         new_schema['description'] = schema['description']
     if 'required' in schema:
         new_schema['required'] = schema['required']
     if 'enum' in schema:
         new_schema['enum'] = schema['enum']
-
-    # 3. 'properties' rekursiv verarbeiten, falls vorhanden
     if 'properties' in schema and isinstance(schema['properties'], dict):
         new_schema['properties'] = {
             prop_name: _sanitize_schema_for_gemini(prop_schema)
             for prop_name, prop_schema in schema['properties'].items()
         }
-
-    # 4. 'items' (für Arrays) rekursiv verarbeiten, falls vorhanden
     if 'items' in schema and isinstance(schema['items'], dict):
         new_schema['items'] = _sanitize_schema_for_gemini(schema['items'])
-
     return new_schema
 
 class GeminiServiceProvider(BaseLLMProvider):
@@ -80,9 +65,8 @@ class GeminiServiceProvider(BaseLLMProvider):
     async def generate_response(self, api_key: str, model: str, messages: List[Dict], tools: Optional[List[Dict]] = None, **kwargs) -> Dict:
         genai.configure(api_key=api_key)
 
-        gemini_tools = None
+        gemini_tools = []
         if tools:
-            gemini_tools = []
             for tool in tools:
                 if tool.get('type') == 'function' and 'function' in tool:
                     func_def = tool['function']
@@ -92,7 +76,9 @@ class GeminiServiceProvider(BaseLLMProvider):
                 else:
                     gemini_tools.append(tool)
         
-        genai_model = genai.GenerativeModel(model, tools=gemini_tools)
+        final_tools = gemini_tools if gemini_tools else None
+        
+        genai_model = genai.GenerativeModel(model, tools=final_tools)
 
         gemini_history = []
         for msg in messages[:-1]:

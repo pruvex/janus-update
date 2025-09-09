@@ -69,6 +69,8 @@ AKTUELLER GESPRÄCHSVERLAUF:
     from backend.websearch import perform_websearch # Import perform_websearch
     tools = get_all_tool_definitions()
 
+    
+
     # Pass the constructed history to the LLM
     response = await call_llm(provider, model, api_key, messages=final_chat_history, tools=tools)
 
