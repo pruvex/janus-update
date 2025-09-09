@@ -2,6 +2,8 @@
 
 import inspect
 import openai
+from googlesearch import search
+import logging
 from typing import Callable, Dict, Any, Optional
 from pydantic import BaseModel
 from backend import schemas, filesystem_manager
@@ -10,6 +12,8 @@ from backend.websearch import perform_websearch
 from backend.memory_manager import cross_chat_memory_tool
 from sqlalchemy.orm import Session
 from backend import crud
+
+logger = logging.getLogger('janus_backend')
 
 class Tool:
     def __init__(self, func: Callable, args_schema: BaseModel):
@@ -85,9 +89,32 @@ def list_allowed_workspaces_tool():
     """Listet alle für Dateioperationen freigegebenen Ordner (Workspaces) auf."""
     return filesystem_manager.list_allowed_workspaces()
 
-async def websearch_tool(query: str):
-    """Führt eine Websuche mit GPTs integriertem web.search Tool aus."""
-    return await perform_websearch(query)
+# Dies ist die NEUE, UNABHÄNGIGE Implementierung
+def websearch_tool(query: str) -> str:
+    """
+    Führt eine Websuche mit der googlesearch-python Bibliothek durch und gibt die
+    Top-Ergebnisse als formatierten String zurück. Benötigt keinen API-Schlüssel.
+    """
+    logger.info(f"Performing independent web search for query: '{query}'")
+    try:
+        # Führe die Suche durch und sammle die ersten 5 Ergebnisse
+        # Wir setzen tld='com', lang='de' für relevantere deutsche Ergebnisse
+        search_results = list(search(query, num_results=5, lang="de"))
+
+        if not search_results:
+            return "Die Websuche ergab keine Ergebnisse."
+
+        # Formatiere die Ergebnisse für das LLM zu einem einzigen String
+        formatted_results = "Hier sind die Top-Ergebnisse der Websuche:\n"
+        for i, result in enumerate(search_results, 1):
+            formatted_results += f"[{i}] {result}\n"
+        
+        return formatted_results
+
+    except Exception as e:
+        logger.error(f"Error during independent web search: {e}", exc_info=True)
+        return f"Fehler bei der Websuche: {e}"
+
 
 # --- Registrierung aller Tools ---
 register_tool(Tool(func=generate_image_tool, args_schema=schemas.GenerateImageToolArgs))

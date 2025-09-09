@@ -5,6 +5,7 @@ from backend.context_manager import ContextManager
 from backend.llm_providers.base_provider import BaseLLMProvider
 from backend.llm_providers.gemini_service import GeminiServiceProvider
 from backend.llm_providers.openai_service import OpenAIServiceProvider
+from backend.tool_registry import TOOL_REGISTRY
 
 logger = logging.getLogger('janus_backend')
 
@@ -34,9 +35,7 @@ WEBSEARCH_COST_PER_QUERY = 0.01 # 1 Cent pro Websuche
 
 async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, db: Session, api_key: str, model: str, provider: str, context_manager: ContextManager) -> Dict:
     logger.info(f"reason_and_respond: Original user_prompt={user_prompt}")
-
     system_rules = f"""Du bist Janus, ein ultra-präziser und logischer Assistent. Deine Aufgabe ist es, die Fragen des Benutzers auf Basis der unten genannten FAKTEN zu beantworten.
-
 **DEINE REGELN SIND ABSOLUT:**
 1.  **FAKTENBASIERT ANTWORTEN:** Deine Antwort muss sich direkt aus den Informationen im 'LANGZEITGEDÄCHTNIS' oder dem 'AKTUELLEN GESPRÄCHSVERLAUF' ableiten lassen.
 2.  **LOGISCHE SCHLUSSFOLGERUNGEN ZIEHEN:** Du darfst und sollst gegebene Fakten kombinieren, um logische Schlussfolgerungen zu ziehen. Wenn du eine Schlussfolgerung ziehst, die nicht explizit als Fakt genannt wird, musst du deine Argumentation offenlegen.
@@ -48,46 +47,29 @@ async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_
 3.  **KEINE HALLUZINATIONEN:** Erfinde niemals Fakten, Namen oder Beziehungen. Wenn du eine Schlussfolgerung ziehst, muss sie auf den gegebenen Fakten beruhen.
 4.  **WISSENSLÜCKEN ZUGEBEN:** Wenn die Fakten keine direkte Antwort oder eine logische Schlussfolgerung zulassen, antworte ausschließlich: 'Ich habe dazu keine Informationen in meinen Fakten.'
 5.  **AUF AUSSAGEN REAGIEREN:** Wenn die letzte Nutzereingabe offensichtlich nur neue Informationen liefert und keine Frage stellt, antworte mit einer kurzen, freundlichen Bestätigung (z.B. 'Danke, ich habe mir das gemerkt.' oder 'Verstanden.').
-
 --- FAKTENGRUNDLAGE ---
-LANGZEITGEDÄCHTNIS:
-{memory_context}
-
-AKTUELLER GESPRÄCHSVERLAUF:
-"""
-
-    # Create a new list for the final prompt history
+LANGZEITGEDÄCHTNIS:{memory_context}AKTUELLER GESPRÄCHSVERLAUF:"""
     final_chat_history = []
-    
-    # Add system rules and memory as the first message
     final_chat_history.append({"role": "system", "content": system_rules})
-
-    # Add the actual chat history (which already includes the latest user prompt from main.py)
     final_chat_history.extend(chat_history)
-
-    from backend.tool_registry import get_all_tool_definitions
-    from backend.websearch import perform_websearch # Import perform_websearch
-    tools = get_all_tool_definitions()
-
     
-
-    # Pass the constructed history to the LLM
+    tools = get_all_tool_definitions()
     response = await call_llm(provider, model, api_key, messages=final_chat_history, tools=tools)
-
-    # Check if the LLM explicitly states it has no information
-    if response.get("type") == "text" and response.get("text") == "Ich habe dazu keine Informationen in meinen Fakten.":
-        logger.info("LLM indicated no information in facts. Performing web search...")
-        web_result = await perform_websearch(user_prompt)
+    # KORRIGIERTER FALLBACK-BLOCK
+    if response.get("type") == "text" and "Ich habe dazu keine Informationen" in response.get("text", ""):
+        logger.info("LLM indicated no information in facts. Performing independent fallback web search...")
+        
+        websearch_tool_func = TOOL_REGISTRY.get("websearch_tool").func
+        
+        web_result = websearch_tool_func(query=user_prompt)
         return {
             "type": "text",
             "text": web_result,
-            "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "model": "websearch"},
+            "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "model": "independent_websearch"},
             "cost": {"total_cost": WEBSEARCH_COST_PER_QUERY}
         }
-
     if response.get("type") == "tool_code":
         return response
-
     return {
         "type": "text",
         "text": response.get("text"),
