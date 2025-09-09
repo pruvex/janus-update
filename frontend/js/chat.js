@@ -1,4 +1,3 @@
-
 import { API_BASE_URL } from './config.js';
 import { getCurrentChatId, loadChats } from './chat-manager.js';
 
@@ -13,8 +12,6 @@ chatForm.addEventListener('submit', async (e) => {
     const model = document.getElementById('model-select').value;
     const chat_id = getCurrentChatId(); // Get current chat ID
 
-    console.log(`chat.js: Sending request with provider: ${provider}, model: ${model}, chat_id: ${chat_id}`);
-
     if (!prompt) return;
 
     appendMessage('user', { text: prompt });
@@ -28,7 +25,6 @@ chatForm.addEventListener('submit', async (e) => {
         const chatHeader = document.getElementById('chat-header');
         if (!chatHeader) {
             console.error('Error: chat-header element not found in chat.js submit handler!');
-            // Optionally, handle this error more gracefully, e.g., disable chat input
             return;
         }
         if (chat_id && chatHeader.textContent.trim() === 'Neuer Chat') {
@@ -58,20 +54,17 @@ chatForm.addEventListener('submit', async (e) => {
         }
 
         const data = await response.json();
-        // Entferne Ladeanzeige
         chatMessages.removeChild(chatMessages.lastChild);
-        appendMessage('bot', data); // Pass the whole data object
-        // NEU: Rufe die Kosten-Aktualisierung auf
+        appendMessage('bot', data);
         if (window.fetchCostData) {
             window.fetchCostData();
         }
 
     } catch (error) {
-        // Entferne Ladeanzeige
         if (loadingMessageElement && loadingMessageElement.parentNode === chatMessages) {
             chatMessages.removeChild(loadingMessageElement);
         }
-        appendMessage('bot', { text: error.message }); // Directly use error.message which contains the traceback
+        appendMessage('bot', { text: error.message });
     }
 });
 
@@ -83,58 +76,42 @@ function scrollToChatBottom() {
 }
 
 export function appendMessage(sender, data) {
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('chat-message'); // Add base class
+    const messageContainer = document.createElement('div');
+    messageContainer.classList.add('message', sender === 'user' ? 'user' : 'assistant');
 
-    if (sender === 'user') {
-        messageElement.classList.add('user-message');
-    } else if (sender === 'bot') {
-        messageElement.classList.add('bot-message');
-    }
+    const bubble = document.createElement('div');
+    bubble.classList.add('bubble');
 
     let textContent = '';
-    let imageUrlForSaving = null; // Declare here to be accessible later
+    let imageUrlForSaving = null;
 
     if (typeof data === 'string') {
         textContent = data;
     } else if (typeof data === 'object' && data !== null) {
         textContent = data.text || '';
-        
-        // Handle image from URL (DALL-E and Gemini)
+
+        let imageElement = null;
+
         if (data.image_url) {
-            const imageElement = document.createElement('img');
-            let fullImageUrl = data.image_url;
-            // Normalize path separators (replace backslashes with forward slashes)
-            fullImageUrl = fullImageUrl.replace(/\\/g, '/');
-            // If it's a relative path, prepend API_BASE_URL
+            imageElement = document.createElement('img');
+            let fullImageUrl = data.image_url.replace(/\\/g, '/');
             if (!fullImageUrl.startsWith('http://') && !fullImageUrl.startsWith('https://')) {
-                fullImageUrl = `${API_BASE_URL}${fullImageUrl}`;
+                fullImageUrl = API_BASE_URL + fullImageUrl;
             }
             imageElement.src = fullImageUrl;
             imageUrlForSaving = fullImageUrl;
-            messageElement.appendChild(imageElement);
-            imageElement.onload = () => scrollToChatBottom();
-            textContent = ''; // Ensure textContent is empty if image is present
-
-        // Handle image from Base64 (Imagen)
+            textContent = '';
         } else if (data.image_base64 && data.mime_type) {
-            const imageElement = document.createElement('img');
-            const imageDataUrl = `data:${data.mime_type};base64,${data.image_base64}`;
+            imageElement = document.createElement('img');
+            const imageDataUrl = 'data:' + data.mime_type + ';base64,' + data.image_base64;
             imageElement.src = imageDataUrl;
-            imageUrlForSaving = imageDataUrl; // The save function can handle data URLs
-            messageElement.appendChild(imageElement);
-            imageElement.onload = () => scrollToChatBottom();
-            textContent = ''; // Clear textContent if image is present
+            imageUrlForSaving = imageDataUrl;
+            textContent = '';
         }
 
-        // Common image styling and save button
-        const imageInMessage = messageElement.querySelector('img');
-        if (imageInMessage) {
-            imageInMessage.style.maxWidth = '50%';
-            imageInMessage.style.height = 'auto';
-            imageInMessage.style.borderRadius = '8px';
-            imageInMessage.style.display = 'block';
-            imageInMessage.style.marginTop = '10px';
+        if (imageElement) {
+            imageElement.onload = () => scrollToChatBottom();
+            bubble.appendChild(imageElement);
 
             const saveButton = document.createElement('button');
             saveButton.textContent = 'Bild speichern';
@@ -144,16 +121,24 @@ export function appendMessage(sender, data) {
                     window.electron.saveImage(imageUrlForSaving);
                 }
             };
-            messageElement.appendChild(saveButton);
+            bubble.appendChild(saveButton);
         }
     }
-    
+
     if (textContent) {
         const textNode = document.createElement('p');
         textNode.innerText = textContent;
-        messageElement.appendChild(textNode);
+        bubble.appendChild(textNode);
     }
 
-    chatMessages.appendChild(messageElement);
-    scrollToChatBottom(); // Scroll after message is appended
+    messageContainer.appendChild(bubble);
+
+    const timestamp = document.createElement('div');
+    timestamp.classList.add('timestamp');
+    const now = new Date();
+    timestamp.textContent = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    messageContainer.appendChild(timestamp);
+
+    chatMessages.appendChild(messageContainer);
+    scrollToChatBottom();
 }

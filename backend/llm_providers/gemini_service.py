@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 import google.generativeai as genai
 from google.api_core.exceptions import ResourceExhausted
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -23,7 +23,6 @@ def _calculate_and_log_cost(model_id, usage_data=None, custom_prompt=None):
     return usage, cost
 
 def _extract_image_description(prompt: str) -> str:
-    # Simplified and robust normalization
     cleaned_prompt = prompt.lower()
     prefixes = [
         "gemini:", "gpt:", "mache ein bild von", "erstelle ein bild von",
@@ -34,43 +33,97 @@ def _extract_image_description(prompt: str) -> str:
     for prefix in prefixes:
         if cleaned_prompt.startswith(prefix):
             cleaned_prompt = cleaned_prompt[len(prefix):].strip()
-
-    # Replace spaces and special characters with hyphens
     cleaned_prompt = cleaned_prompt.replace(' ', '-')
     cleaned_prompt = re.sub(r'[^a-z0-9-]', '', cleaned_prompt)
-
-    # Clean up multiple and leading/trailing hyphens
     cleaned_prompt = re.sub(r'-+', '-', cleaned_prompt).strip('-')
     return cleaned_prompt
+
+# --- FINALE, LOGISCH KORREKTE HILFSFUNKTION ---
+def _sanitize_schema_for_gemini(schema: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Bereinigt und konvertiert ein JSON Schema explizit für die Gemini API.
+    Diese Funktion ist so aufgebaut, dass sie die logische Struktur beibehält.
+    """
+    if not isinstance(schema, dict):
+        return schema
+
+    new_schema = {}
+
+    # 1. Typ konvertieren, falls vorhanden
+    if 'type' in schema and isinstance(schema['type'], str):
+        new_schema['type'] = schema['type'].upper()
+
+    # 2. Gültige Felder direkt übernehmen
+    if 'description' in schema:
+        new_schema['description'] = schema['description']
+    if 'required' in schema:
+        new_schema['required'] = schema['required']
+    if 'enum' in schema:
+        new_schema['enum'] = schema['enum']
+
+    # 3. 'properties' rekursiv verarbeiten, falls vorhanden
+    if 'properties' in schema and isinstance(schema['properties'], dict):
+        new_schema['properties'] = {
+            prop_name: _sanitize_schema_for_gemini(prop_schema)
+            for prop_name, prop_schema in schema['properties'].items()
+        }
+
+    # 4. 'items' (für Arrays) rekursiv verarbeiten, falls vorhanden
+    if 'items' in schema and isinstance(schema['items'], dict):
+        new_schema['items'] = _sanitize_schema_for_gemini(schema['items'])
+
+    return new_schema
 
 class GeminiServiceProvider(BaseLLMProvider):
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     async def generate_response(self, api_key: str, model: str, messages: List[Dict], tools: Optional[List[Dict]] = None, **kwargs) -> Dict:
         genai.configure(api_key=api_key)
-        genai_model = genai.GenerativeModel(model)
+
+        gemini_tools = None
+        if tools:
+            gemini_tools = []
+            for tool in tools:
+                if tool.get('type') == 'function' and 'function' in tool:
+                    func_def = tool['function']
+                    if 'parameters' in func_def:
+                        func_def['parameters'] = _sanitize_schema_for_gemini(func_def['parameters'])
+                    gemini_tools.append(func_def)
+                else:
+                    gemini_tools.append(tool)
+        
+        genai_model = genai.GenerativeModel(model, tools=gemini_tools)
 
         gemini_history = []
-        for msg in messages:
+        for msg in messages[:-1]:
             role = "user" if msg["role"] == "user" else "model"
             gemini_history.append({'role': role, 'parts': [msg['content']]})
 
+        last_user_prompt = messages[-1]['content']
+
         try:
-            response = await genai_model.generate_content_async(gemini_history)
+            chat_session = genai_model.start_chat(history=gemini_history)
+            response = await chat_session.send_message_async(last_user_prompt)
+
+            if response.candidates and response.candidates[0].content and response.candidates[0].content.parts and response.candidates[0].content.parts[0].function_call:
+                function_call = response.candidates[0].content.parts[0].function_call
+                tool_name = function_call.name
+                tool_args = {key: value for key, value in function_call.args.items()}
+                logger.info(f"Gemini LLM requested tool call: {tool_name} with args {tool_args}")
+                usage, cost = _calculate_and_log_cost(model)
+                return {"type": "tool_code", "tool_name": tool_name, "tool_args": tool_args, "usage": usage, "cost": cost}
+
             text_response = response.text
-
-            input_tokens = (await genai_model.count_tokens(gemini_history)).total_tokens
-            output_tokens = (await genai_model.count_tokens(text_response)).total_tokens
-
+            input_tokens = (await genai_model.count_tokens_async(gemini_history)).total_tokens
+            output_tokens = (await genai_model.count_tokens_async(text_response)).total_tokens
             usage, cost = _calculate_and_log_cost(model, usage_data={"prompt_tokens": input_tokens, "completion_tokens": output_tokens})
-
             return {"type": "text", "text": text_response, "image_url": None, "usage": usage, "cost": cost}
 
         except ResourceExhausted as e:
             logger.warning(f"Gemini API quota exceeded: {e.message}")
             return {"type": "text", "text": f"Fehler: Das Anfragelimit für die Gemini API wurde überschritten. (Fehler: 429)", "image_url": None, "usage": {}, "cost": {}}
         except Exception as e:
-            logger.warning(f"An error occurred with Gemini API, retrying... Error: {e}")
+            logger.error(f"An unexpected error occurred with Gemini API: {e}", exc_info=True)
             raise
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
@@ -80,22 +133,22 @@ class GeminiServiceProvider(BaseLLMProvider):
         try:
             logger.info(f"Calling Gemini image model '{model}' with prompt: '{prompt}'")
             response = await genai_model.generate_content_async(prompt)
-
             image_data = None
+            text_response = None
             if response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
                 for part in response.candidates[0].content.parts:
                     if part.inline_data and part.inline_data.data:
                         image_data = part.inline_data.data
                         break
-
+                    if part.text:
+                        text_response = part.text
             image_url = None
             if image_data:
                 cleaned_description = _extract_image_description(prompt)
                 image_url = image_manager.save_image_from_bytes(image_data, description=cleaned_description, file_extension="png")
-                logger.info(f"Image saved via image_manager. URL: {image_url}")
-
+                text_response = None
             usage, cost = _calculate_and_log_cost(model)
-            return {"text": "", "image_url": image_url, "usage": usage, "cost": cost}
+            return {"text": text_response, "image_url": image_url, "usage": usage, "cost": cost}
         except Exception as e:
             logger.error(f"Error generating image with Gemini (attempt failed): {e}")
             raise

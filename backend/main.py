@@ -7,6 +7,24 @@ import traceback
 import asyncio
 import shutil
 import inspect
+
+# Setup logging as early as possible
+from backend.logger_config import setup_logging
+setup_logging()
+logger = logging.getLogger('janus_backend')
+
+# Load OpenAI API key from keyring and set as environment variable as early as possible
+try:
+    openai_key = keyring.get_password("Janus-Projekt", "openai")
+    if openai_key:
+        os.environ["OPENAI_API_KEY"] = openai_key
+        logger.info("OpenAI API key loaded from keyring and set as environment variable.")
+    else:
+        logger.warning("OpenAI API key not found in keyring. Please ensure it's set.")
+except Exception as e:
+    logger.error(f"Error loading OpenAI API key from keyring: {e}", exc_info=True)
+
+# Now import other modules that might depend on the environment variable
 from fastapi import FastAPI, HTTPException, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -14,7 +32,6 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional, Dict
 from sqlalchemy.orm import Session
-from backend.logger_config import setup_logging
 from backend import llm_gateway, database, crud, schemas, memory_extractor, vector_service, chat_summarizer, image_manager, memory_manager, filesystem_manager
 from backend.llm_providers import gemini_service
 from backend.llm_providers.gemini_service import _extract_image_description
@@ -23,8 +40,6 @@ from backend.context_manager import ContextManager
 from backend.utils.paths import get_app_data_dir, resource_path
 from backend.tool_registry import TOOL_REGISTRY
 
-setup_logging()
-logger = logging.getLogger('janus_backend')
 app = FastAPI()
 
 FILE_OPERATION_HISTORY = []
@@ -137,10 +152,8 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
 
     prompt_lower = request.prompt.lower()
     image_keywords = [
-        "bild", "image", "picture", "foto", "photo",
-        "draw", "create", "generate",
-        "zeichne", "erstelle", "generiere",
-        "mach", "mache"
+        "bild", "image", "picture", "foto", "photo", # Eindeutige Substantive
+        "zeichne", "draw"  # Verben, die sehr stark auf Bilder hindeuten
     ]
     if any(keyword in prompt_lower for keyword in image_keywords):
             logger.info("Image generation intent detected by keyword. Bypassing reason_and_respond.")
@@ -260,16 +273,31 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
                 if len(FILE_OPERATION_HISTORY) > 5:
                     FILE_OPERATION_HISTORY.pop(0)
             
-            usage = getattr(tool_output, "meta", {}).get("usage", {})
-            cost = getattr(tool_output, "meta", {}).get("cost", {})
-            
-            image_url = tool_output.get("url")
-            if image_url:
-                local_image_path = image_manager.save_image_from_url(image_url, title=_extract_image_description(request.prompt))
-                final_answer = f"Tool '{tool_name}' erfolgreich ausgeführt. Bild wurde generiert."
+            # Fall 1: Dictionary-Ausgabe (z. B. Image-Generator)
+            if isinstance(tool_output, dict):
+                image_url = tool_output.get("url")
+                usage = llm_response.get("usage", {})
+                cost = llm_response.get("cost", {})
+                if image_url:
+                    local_image_path = image_manager.save_image_from_url(image_url, title=_extract_image_description(request.prompt))
+                    final_answer = f"Tool '{tool_name}' erfolgreich ausgeführt. Bild wurde generiert."
+                else:
+                    output = tool_output
+                    final_answer = f"Ergebnis von Tool '{tool_name}': {output}"
+            # Fall 2: String-Ausgabe (z. B. Websuche)
+            elif isinstance(tool_output, str):
+                usage = llm_response.get("usage", {})
+                cost = llm_response.get("cost", {})
+                image_url = None
+                local_image_path = None
+                final_answer = f"Ergebnis von Tool '{tool_name}': {tool_output}"
+            # Alles andere absichern
             else:
-                output = tool_output.get("output", f"Tool '{tool_name}' erfolgreich ausgeführt.")
-                final_answer = f"Ergebnis von Tool '{tool_name}': {output}"
+                usage = llm_response.get("usage", {})
+                cost = llm_response.get("cost", {})
+                image_url = None
+                local_image_path = None
+                final_answer = f"Ergebnis von Tool '{tool_name}': {str(tool_output)}"
         else:
             final_answer = f"Fehler: Unbekanntes Tool '{tool_name}' angefordert."
             logger.error(final_answer)
@@ -354,7 +382,12 @@ async def get_chat_details(chat_id: int, db: Session = Depends(get_db)):
 
 @app.get("/api/chats/{chat_id}/messages", response_model=List[schemas.MessageResponse])
 async def get_chat_messages(chat_id: int, db: Session = Depends(get_db)):
-    return crud.get_messages_by_chat_id(db, chat_id)
+    messages = crud.get_messages_by_chat_id(db, chat_id)
+    # NEU: Gehe durch die Nachrichten und stelle sicher, dass 'content' nie None ist.
+    for message in messages:
+        if message.content is None:
+            message.content = ""  # Ersetze None durch einen leeren String
+    return messages
 
 @app.put("/api/chats/{chat_id}/title")
 async def update_chat_title(chat_id: int, title_update: schemas.ChatTitleUpdate, db: Session = Depends(get_db)):

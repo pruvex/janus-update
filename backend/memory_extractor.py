@@ -38,7 +38,12 @@ async def resolve_fact_conflict(db: Session, old_fact: str, new_fact: str, main_
         "Antworte nur mit 'JA' oder 'NEIN'."
     )
     history = [{"role": "user", "content": prompt}]
-    response = await llm_gateway.call_llm(provider, model, prompt, main_api_key, chat_history=history)
+    response = await llm_gateway.call_llm(
+        provider=provider,
+        model_id=model,
+        api_key=main_api_key,
+        messages=history
+    )
     return "ja" in response.get("text", "").lower()
 
 async def extract_and_save_fact(db: Session, chat_id: int, text_block: str, original_prompt: str, main_api_key: str, provider: str, model: str):
@@ -58,11 +63,10 @@ async def extract_and_save_fact(db: Session, chat_id: int, text_block: str, orig
             ]
 
             gateway_response = await llm_gateway.call_llm(
-                provider,
-                model,
-                text_block, # Pass the actual text block as the prompt
-                main_api_key,
-                chat_history=extraction_history
+                provider=provider,
+                model_id=model,
+                api_key=main_api_key,
+                messages=extraction_history
             )
 
             extracted_text = gateway_response.get("text", "").strip()

@@ -26,10 +26,10 @@ html, body {
 
 #sidebar {
     width: 250px;
-    background-color: rgba(30, 30, 30, 0.75); /* Halbtransparent für Glassmorphism */
+    background-color: rgba(30, 30, 30, 0.75);
     backdrop-filter: blur(10px);
     border-right: 1px solid var(--surface-color);
-    border-radius: 0 var(--border-radius-main) var(--border-radius-main) 0; /* Runde Ecken nur rechts */
+    border-radius: 0 var(--border-radius-main) var(--border-radius-main) 0;
     padding: 16px;
     display: flex;
     flex-direction: column;
@@ -78,28 +78,28 @@ html, body {
     background-color: #555;
     border-bottom: 1px solid #666;
     text-align: center;
-    height: 30px; /* Added fixed height */
-    cursor: grab; /* Added cursor style */
+    height: 30px;
+    cursor: grab;
 }
 
 #chat-messages {
     flex-grow: 1;
     overflow-y: auto;
     padding: 10px;
-    display: flex; /* Added */
-    flex-direction: column; /* Added */
+    display: flex;
+    flex-direction: column;
 }
 
 #chat-input-container {
     display: flex;
     padding: 10px;
     border-top: 1px solid #666;
-    height: 50px; /* Fixed height for input container */
+    height: 50px;
 }
 
 #chat-input {
-    flex-grow: 1; /* Erlaubt dem Eingabefeld, den gesamten freien Platz einzunehmen */
-    margin-right: 10px; /* Fügt einen kleinen Abstand zum Button hinzu */
+    flex-grow: 1;
+    margin-right: 10px;
     background-color: #3c3c3c;
     border: 1px solid #555;
     color: #eee;
@@ -125,19 +125,18 @@ html, body {
     width: 100%;
 }
 
-/* Sidebar Styling */
 #sidebar nav {
   display: flex;
   flex-direction: column;
-  gap: 10px; /* Abstand zwischen den Elementen */
+  gap: 10px;
 }
 
 #new-chat-btn {
-  margin-top: 10px; /* Abstand zum Element darüber */
+  margin-top: 10px;
 }
 
 #back-to-chat-btn {
-  margin-top: auto; /* Schiebt den Button ganz nach unten */
+  margin-top: auto;
 }
 
 button, select {
@@ -156,26 +155,11 @@ button:hover {
   cursor: pointer;
 }
 
-.chat-message img {
-    max-width: 95%; /* Nimmt fast die volle Breite der Sprechblase ein */
-    height: auto;
-    display: block;  /* Macht margin: auto möglich */
-    margin-left: auto; /* Zentriert das Bild horizontal */
-    margin-right: auto;/* Zentriert das Bild horizontal */
-    margin-top: 10px;
-    border-radius: 8px;
-}
-
 .chat-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: relative; /* For positioning the context menu */
-}
-
-.archived-chat {
-    opacity: 0.6;
-    font-style: italic;
+    position: relative;
 }
 
 .archived-chat {
@@ -186,7 +170,7 @@ button:hover {
 .chat-title {
     flex-grow: 1;
     cursor: pointer;
-    padding: 8px 12px; /* Match button padding */
+    padding: 8px 12px;
     border-radius: var(--border-radius-main);
     transition: background-color var(--transition-speed) ease;
 }
@@ -218,24 +202,24 @@ button:hover {
 }
 
 .chat-context-menu {
-    display: none; /* Hidden by default */
+    display: none;
     position: absolute;
-    top: 100%; /* Position below the icon */
+    top: 100%;
     right: 0;
     background-color: var(--background-secondary);
     border: 1px solid var(--surface-color);
     border-radius: var(--border-radius-main);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-    z-index: 100; /* Ensure it's above other elements */
-    min-width: 120px; /* Adjusted for shorter text */
-    max-width: 200px; /* Add a max-width to prevent it from being too wide */
+    z-index: 100;
+    min-width: 120px;
+    max-width: 200px;
 }
 
 .chat-context-menu .menu-item {
     padding: 8px 12px;
     cursor: pointer;
     color: var(--text-primary);
-    white-space: nowrap; /* Prevent text wrapping */
+    white-space: nowrap;
 }
 
 .chat-context-menu .menu-item:hover {
@@ -244,35 +228,89 @@ button:hover {
 }
 
 .chat-window {
-    width: 600px;  /* Feste, vernünftige Breite */
-    height: 700px; /* Feste, vernünftige Höhe */
+    width: 600px;
+    height: 700px;
     display: flex;
     flex-direction: column;
     border: 1px solid #444;
     border-radius: 8px;
-    position: absolute; /* Add this */
+    position: absolute;
 }
 
-.chat-message {
-    padding: 8px 12px;
-    border-radius: 18px;
+/* NEW CHAT STYLES */
+.message { 
+    display: flex; 
+    flex-direction: column; 
+    max-width: 95%; /* Increased from 80% */ 
     margin-bottom: 10px;
-    max-width: 70%;
+}
+
+.user { 
+    align-self: flex-end; 
+}
+
+.assistant { 
+    align-self: flex-start; 
+}
+
+.bubble { 
+    padding: 10px 15px; 
+    border-radius: 18px; 
     word-wrap: break-word;
 }
 
-.user-message {
-    background-color: #0A2B4C;
-    color: white;
-    align-self: flex-end;
-    max-width: 90%; /* Erlaubt der Blase, bis zu 90% der Fensterbreite zu nutzen */
+.bubble p {
+    white-space: pre-wrap; /* Preserve line breaks */
 }
 
-.bot-message {
+.user .bubble { 
+    background-color: #0A2B4C; 
+    color: white; 
+}
+
+.assistant .bubble {
     background-color: #2C2C2E;
     color: white;
-    align-self: flex-start;
-    max-width: 90%; /* Erlaubt der Blase, bis zu 90% der Fensterbreite zu nutzen */
+}
+
+.timestamp { 
+    font-size: 0.75em; 
+    color: var(--text-secondary); 
+    margin-top: 4px;
+    padding: 0 5px;
+}
+
+.user .timestamp {
+    text-align: right;
+}
+
+.assistant .timestamp {
+    text-align: left;
+}
+
+.bubble img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    display: block;
+}
+
+.bubble .save-image-button {
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    display: block;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.bubble .save-image-button:hover {
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 .app-container.sidebar-collapsed #sidebar {
@@ -303,10 +341,10 @@ button:hover {
     border: 1px solid var(--accent-color);
     border-radius: var(--border-radius-main);
     padding: 8px 12px;
-    margin-bottom: 10px; /* Space below the widget */
+    margin-bottom: 10px;
     font-size: 0.9em;
     color: var(--text-primary);
-    cursor: pointer; /* Make it clickable */
+    cursor: pointer;
 }
 
 #cost-summary-widget p {
@@ -314,17 +352,16 @@ button:hover {
     line-height: 1.4;
 }
 
-/* Modal Styling */
 .modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1000; /* Sit on top */
+    display: none;
+    position: fixed;
+    z-index: 1000;
     left: 0;
     top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.7);
     justify-content: center;
     align-items: center;
 }
@@ -336,10 +373,10 @@ button:hover {
     border: 1px solid #888;
     border-radius: var(--border-radius-main);
     width: 80%;
-    max-width: 800px; /* Increased width */
+    max-width: 800px;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
     position: relative;
-    color: black; /* Explicitly black for readability on white background */
+    color: black;
     font-size: 1.1em;
 }
 
@@ -357,7 +394,6 @@ button:hover {
     cursor: pointer;
 }
 
-/* Styling für die Kostentabelle im Modal */
 #cost-details-table {
   width: 100%;
   border-collapse: collapse;
@@ -380,7 +416,7 @@ button:hover {
 
 #cost-details-table td:last-child {
     text-align: right;
-    font-family: monospace; /* Für besser lesbare Zahlen */
+    font-family: monospace;
 }
 
 #cost-details-table tr:hover {

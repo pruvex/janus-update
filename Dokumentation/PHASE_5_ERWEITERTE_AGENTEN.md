@@ -7,3 +7,4 @@
 - [ ] **[WÄCHTER] Bilderzeugung testen:** Die Anbindung an die Bild-API und die Tool-Nutzung durch das LLM testen.
 - [ ] **[JANUS] Vorbereitung für Agenten-Erstellung:** Die Architektur für benutzerdefinierte Agenten vorbereiten. (Architektur-Aufgabe, verifiziert durch Code-Review)
 - [ ] **[GIT] Meilenstein-Commit:** Die ersten erweiterten Agenten-Fähigkeiten als stabilen Meilenstein committen.
+- [x] **[JANUS] Websearch-Tool implementieren:** Ein Tool zur Durchführung von Websuchen über GPTs integriertes web.search Tool implementieren.

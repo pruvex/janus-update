@@ -1,20 +1,18 @@
-import openai
+import os
+from openai import AsyncOpenAI
 from typing import Any
 
-async def perform_websearch(query: str, api_key: str) -> str:
+# Initialisiere Client global mit ENV-Key
+openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+async def perform_websearch(query: str) -> str:
     """
     Führt eine Websuche mit GPTs eingebautem web.search Tool aus
     und gibt die Ergebnisse zurück.
     """
-    client = openai.AsyncOpenAI(api_key=api_key)
-    response = await client.chat.completions.create(
-        model="gpt-4.1", # or a model with web access
-        messages=[
-            {"role": "user", "content": f"Suche im Web nach: {query}"}
-        ],
-        tools=[{"type": "web_search"}],  # GPT internes Tool
+    response = await openai_client.responses.create(
+        model="gpt-4o-mini",
+        input=f"Suche im Web nach: {query}",
+        tools=[{"type": "web_search"}],
     )
-    # Extract response text
-    if response.output_text is not None:
-        return response.output_text
-    return ""
+    return response.output_text or "Keine Ergebnisse gefunden."

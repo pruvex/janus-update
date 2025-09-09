@@ -219,7 +219,9 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     const win = createWindow();
-    startBackend(win);
+    if (process.env.NODE_ENV !== 'development') {
+      startBackend(win);
+    }
     waitForBackend().then(() => {
         if (process.env.NODE_ENV === 'development') {
             win.loadURL('http://localhost:5173/');
@@ -232,7 +234,9 @@ app.on('activate', () => {
 
 app.whenReady().then(() => {
     const win = createWindow();
-    startBackend(win);
+    if (process.env.NODE_ENV !== 'development') {
+      startBackend(win);
+    }
     waitForBackend().then(() => {
         if (process.env.NODE_ENV === 'development') {
             win.loadURL('http://localhost:5173/');

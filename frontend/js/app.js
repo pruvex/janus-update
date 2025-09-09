@@ -24,34 +24,25 @@ function formatCost(cost, suffix) {
 }
 
 function render() {
-    console.log('app.js: render() called');
     const chatView = document.getElementById('chat-view');
     const settingsView = document.getElementById('settings-view');
-    console.log('render: currentView =', appState.currentView);
-    console.log('render: chatView =', chatView, 'settingsView =', settingsView);
 
     const sidebarProviderSelect = document.getElementById('provider-select');
     const sidebarModelSelect = document.getElementById('model-select');
 
     if (sidebarProviderSelect && sidebarModelSelect) {
-        console.log('render: appState.user_selections:', appState.user_selections);
         // Update sidebar provider dropdown
         sidebarProviderSelect.value = appState.last_active.provider;
-        console.log(`app.js: render() - Set sidebarProviderSelect.value to ${appState.last_active.provider}`);
 
         // Populate sidebar model dropdown based on selected provider
         sidebarModelSelect.innerHTML = ''; // Clear existing options
         const provider = appState.last_active.provider;
-        console.log('render: Current Provider:', provider);
-        console.log('render: Model Catalog:', appState.model_catalog);
         const allowedModels = appState.user_selections[provider] || [];
-        console.log('render: Allowed Models (from user_selections):', allowedModels);
         
         if (appState.model_catalog[provider]) {
             const filteredModels = appState.model_catalog[provider].filter(model => 
                 allowedModels.includes(model.id) && model.type !== 'image'
             );
-            console.log('render: Filtered Models (from MODEL_CATALOG):', filteredModels);
 
             filteredModels.forEach(model => {
                 const option = document.createElement('option');
@@ -63,9 +54,7 @@ function render() {
             console.warn(`No models found for provider: ${provider}`);
         }
 
-        console.log('render: Final appState.last_active.model:', appState.last_active.model);
         sidebarModelSelect.value = appState.last_active.model;
-        console.log(`app.js: render() - Set sidebarModelSelect.value to ${appState.last_active.model}`);
     }
 
     if (appState.currentView === 'chat') {
@@ -156,7 +145,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const target = event.target;
             target.setAttribute('data-x', target.offsetLeft);
             target.setAttribute('data-y', target.offsetTop);
-            console.log(`Drag Start: initialX=${target.offsetLeft}, initialY=${target.offsetTop}`);
           },
           move: dragListener,
         }
