@@ -40,6 +40,12 @@ from backend.context_manager import ContextManager
 from backend.utils.paths import get_app_data_dir, resource_path
 from backend.tool_registry import TOOL_REGISTRY
 
+def is_confirmation(prompt: str) -> bool:
+    """Prüft, ob ein User-Prompt eine positive Bestätigung ist."""
+    confirm_words = ["ja", "stimmt", "genau", "richtig", "korrekt", "das stimmt", "ja genau", "ja das stimmt"]
+    prompt_lower = prompt.lower().strip().replace('.', '').replace('!', '')
+    return prompt_lower in confirm_words
+
 app = FastAPI()
 
 FILE_OPERATION_HISTORY = []
@@ -152,8 +158,8 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
 
     prompt_lower = request.prompt.lower()
     image_keywords = [
-        "bild", "image", "picture", "foto", "photo", # Eindeutige Substantive
-        "zeichne", "draw"  # Verben, die sehr stark auf Bilder hindeuten
+        "bild", "image", "picture", "foto", "photo",
+        "zeichne", "draw"
     ]
     if any(keyword in prompt_lower for keyword in image_keywords):
             logger.info("Image generation intent detected by keyword. Bypassing reason_and_respond.")
@@ -162,7 +168,6 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
             image_model_id = selected_text_model.get("image_generation_model")
 
             if not image_model_id:
-                # Fallback to a default image model if not specified
                 default_image_models = {
                     "openai": "dall-e-3",
                     "gemini": "gemini-2.5-flash-image-preview"
@@ -173,29 +178,23 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
             if not image_model_id:
                 raise HTTPException(status_code=500, detail=f"No suitable image generation model found for provider {request.provider}")
 
-            # Use the new abstracted gateway function
             llm_response = await llm_gateway.generate_image(request.provider, image_model_id, api_key, request.prompt)
 
-            # The rest of the logic for handling the response remains largely the same
             remote_image_url = llm_response.get("image_url")
             local_image_path = None
 
-            # --- NEUE LOGIK: Bilder lokal speichern ---
             if remote_image_url and (remote_image_url.startswith("http://") or remote_image_url.startswith("https://")):
                 try:
-                    # Annahme: _extract_image_description ist für den Titel geeignet
                     title = _extract_image_description(request.prompt)
                     local_image_path = image_manager.save_image_from_url(remote_image_url, title=title)
                     logger.info(f"[DEBUG] Image saved locally to: {local_image_path}")
                 except Exception as e:
                     logger.error(f"Fehler beim lokalen Speichern des Bildes: {e}")
-                    # Wenn Speichern fehlschlägt, verwenden wir weiterhin die Remote-URL
-                    local_image_path = remote_image_url # Fallback to remote URL if local save fails
-            elif remote_image_url: # Already a local path (e.g., from Gemini)
+                    local_image_path = remote_image_url
+            elif remote_image_url:
                 local_image_path = remote_image_url
             else:
-                local_image_path = None # No image URL provided
-            # --- ENDE NEUE LOGIK ---
+                local_image_path = None
 
             usage = llm_response.get("usage", {})
             cost = llm_response.get("cost", {})
@@ -205,9 +204,9 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
             if usage and cost.get("total_cost", 0) > 0:
                 database.save_cost_entry(
                     date=datetime.now(), model=image_model_id,
-                    input_tokens=usage.get("prompt_tokens", 0), 
+                    input_tokens=usage.get("prompt_tokens", 0),
                     output_tokens=usage.get("completion_tokens", 0),
-                    image_quality=usage.get("image_quality"), 
+                    image_quality=usage.get("image_quality"),
                     image_cost=cost.get("image_cost", 0),
                     total_cost=cost.get("total_cost", 0)
                 )
@@ -219,28 +218,120 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
         if len(chat_history) < 20:
              chat_history.append({"role": "user" if m.sender == "user" else "assistant", "content": m.content})
     
-    # The user prompt is already the last message in chat_history, so we pass the prompt directly
-    # to the vector service, but not again to the reason_and_respond function.
-    all_facts = memory_manager.get_all_facts(db)
-    similar_snippets = vector_service.find_similar_snippets(request.prompt, all_facts, top_k=10)
-    memory_context = "\n".join([f"- {mem.snippet}" for mem in similar_snippets])
-    logger.info(f"[DEBUG] Memory Context Generated (length: {len(memory_context)}): {memory_context[:500]}")
+    # --- START NEUER CODEBLOCK: FEEDBACK-LOOP FÜR BESTÄTIGUNGEN ---
+    if is_confirmation(request.prompt) and len(chat_history) >= 2:
+        # Die letzte Nachricht ist die Bestätigung des Users.
+        # Die vorletzte Nachricht ist die Aussage des Assistenten, die bestätigt wurde.
+        confirmed_statement = chat_history[-2]['content']
+        
+        logger.info(f"User confirmed assistant's statement: '{confirmed_statement}'. Triggering fact extraction.")
+        
+        # Wir erstellen einen speziellen Textblock, um dem Extraktor zu sagen, dass diese Info validiert ist.
+        text_for_learning = f"Der Benutzer hat die folgende Aussage des Assistenten als korrekt bestätigt: {confirmed_statement}"
+        
+        # Wir rufen die Faktenextraktion auf diesem speziellen Block auf.
+        asyncio.create_task(
+             memory_extractor.extract_and_save_fact(
+                 db=db, chat_id=request.chat_id, text_block=text_for_learning, 
+                 original_prompt=request.prompt, main_api_key=api_key, 
+                 provider=request.provider, model=request.model
+             )
+         )
+    # --- ENDE NEUER CODEBLOCK ---
+    
+    # --- START ERSETZUNG: LÖSCHE DEN ALTEN GEDÄCHTNIS-BLOCK UND ERSETZE IHN HIERMIT ---
 
-    # Add allowed workspaces to the context
+    user_name = crud.get_user_name(db)
+    memory_context = ""
+
+    # === GOLD STANDARD HYBRID CONTEXT BUILDER ===
+
+    # 1. Konversations-Gedächtnis (Fakten aus dem aktuellen Chat)
+    # Hole ALLE Fakten, die in DIESEM Chat gelernt wurden. Diese sind IMMER relevant.
+    current_chat_memories = crud.get_memory_by_chat_id(db, request.chat_id)
+
+    # 2. Assoziatives Langzeitgedächtnis: Finde die relevantesten "Ankerpunkte" in alten Chats (STM + LTM).
+    all_searchable_past_memories = [
+        mem for mem in memory_manager.get_all_searchable_memories(db)
+        if mem.chat_id != request.chat_id
+    ]
+    similar_anchor_snippets = vector_service.find_similar_snippets(
+        request.prompt, all_searchable_past_memories, top_k=3
+    )
+
+    # LTM-Promotion: Wenn Anker aus dem LTM stammen, befördere sie zurück ins STM.
+    promoted_snippets = []
+    for anchor in similar_anchor_snippets:
+        if hasattr(anchor, 'source') and anchor.source == 'ltm':
+            logger.info(f"Relevanter Fakt im LTM gefunden: '{anchor.snippet}'. Befördere zu STM.")
+            promoted_memory = memory_manager.promote_ltm_to_stm(db, anchor)
+            if promoted_memory:
+                promoted_snippets.append(promoted_memory)
+        else:
+            # Es ist bereits im STM, füge es einfach zur Liste hinzu
+            promoted_snippets.append(anchor)
+    similar_anchor_snippets = promoted_snippets # Überschreibe die Liste mit den jetzt im STM befindlichen Objekten
+
+    # 3. Kontext-Cluster-Retrieval: Lade den VOLLSTÄNDIGEN Kontext der relevanten alten Chats.
+    contextual_cluster_facts = []
+    processed_chat_ids = set()
+
+    for anchor in similar_anchor_snippets:
+        # Stellen sicher, dass wir mit einem STM-Objekt arbeiten (nach der Promotion)
+        if anchor.chat_id not in processed_chat_ids:
+            logger.info(f"Relevanter alter Chat gefunden (ID: {anchor.chat_id}). Lade vollständigen Kontext dieses Chats.")
+            full_chat_context = crud.get_memory_by_chat_id(db, anchor.chat_id)
+            contextual_cluster_facts.extend(full_chat_context)
+            processed_chat_ids.add(anchor.chat_id)
+
+    # 4. Kombiniere alle Gedächtnisarten und entferne Duplikate
+    final_snippets = []
+    processed_ids = set()
+
+    # Priorität 1: Alle Erinnerungen aus dem aktuellen Chat.
+    for mem in current_chat_memories:
+        if mem.id not in processed_ids:
+            final_snippets.append(mem)
+            processed_ids.add(mem.id)
+    
+    # Priorität 2: Der vollständige Kontext relevanter alter Chats.
+    for mem in contextual_cluster_facts:
+        if mem.id not in processed_ids:
+            final_snippets.append(mem)
+            processed_ids.add(mem.id)
+
+    memory_context = "\n".join([f"- {mem.snippet}" for mem in final_snippets])
+    logger.info(f"[DEBUG] FINAL HYBRID Memory Context Generated (length: {len(memory_context)}): {memory_context[:1500]}")
+
+    # 5. "Touch" all used STM memories to update their last_accessed_at timestamp
+    for mem in final_snippets:
+        # Wir berühren nur Einträge, die aus dem STM stammen (LTM-Einträge haben keine ID im STM)
+        if hasattr(mem, 'id') and isinstance(mem, database.Memory):
+             memory_manager.touch_memory_snippet(db, mem.id)
+    logger.info(f"Touched {len(final_snippets)} memory snippets to update their relevance.")
+
     allowed_workspaces = filesystem_manager._get_allowed_workspaces()
     if allowed_workspaces:
-        memory_context += "\n\nAllowed workspaces:\n"
+        memory_context += "\n\n--- VERFÜGBARE ARBEITSBEREICHE ---\n"
         for ws in allowed_workspaces:
             memory_context += f"- {ws.name}: {ws}\n"
 
-    # Add file operation history to the context
     if FILE_OPERATION_HISTORY:
-        memory_context += "\n\nRecent file operations:\n"
+        memory_context += "\n\n--- LETZTE DATEIOPERATIONEN ---\n"
         for op in FILE_OPERATION_HISTORY:
             memory_context += f"- {op}\n"
 
+    # Übergebe den Kontext und den Benutzernamen an die Logik-Funktion
     llm_response = await llm_gateway.reason_and_respond(
-        request.prompt, chat_history, memory_context, db, api_key, request.model, request.provider, context_manager
+        user_prompt=request.prompt,
+        chat_history=chat_history,
+        memory_context=memory_context,
+        db=db,
+        api_key=api_key,
+        model=request.model,
+        provider=request.provider,
+        context_manager=context_manager,
+        user_name=user_name
     )
 
     final_answer = ""
@@ -266,38 +357,54 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
             else:
                 tool_output = tool.func(**final_tool_args)
 
-            # Add to file operation history
             if "file" in tool_name or "directory" in tool_name:
                 op_string = f"{tool_name} with args {tool_args}"
                 FILE_OPERATION_HISTORY.append(op_string)
                 if len(FILE_OPERATION_HISTORY) > 5:
                     FILE_OPERATION_HISTORY.pop(0)
-            
-            # Fall 1: Dictionary-Ausgabe (z. B. Image-Generator)
-            if isinstance(tool_output, dict):
-                image_url = tool_output.get("url")
-                usage = llm_response.get("usage", {})
-                cost = llm_response.get("cost", {})
-                if image_url:
-                    local_image_path = image_manager.save_image_from_url(image_url, title=_extract_image_description(request.prompt))
-                    final_answer = f"Tool '{tool_name}' erfolgreich ausgeführt. Bild wurde generiert."
-                else:
-                    output = tool_output
-                    final_answer = f"Ergebnis von Tool '{tool_name}': {output}"
-            # Fall 2: String-Ausgabe (z. B. Websuche)
-            elif isinstance(tool_output, str):
-                usage = llm_response.get("usage", {})
-                cost = llm_response.get("cost", {})
-                image_url = None
-                local_image_path = None
-                final_answer = f"Ergebnis von Tool '{tool_name}': {tool_output}"
-            # Alles andere absichern
+
+            if tool_name == "websearch_tool":
+                logger.info("Web search tool executed. Sending results back to LLM for summarization.")
+                
+                summarization_prompt = (
+                    f"Basierend auf den folgenden Suchergebnissen, beantworte bitte die ursprüngliche Frage des Benutzers.\n"
+                    f"Ursprüngliche Frage: '{request.prompt}'\n\n"
+                    f"--- Suchergebnisse ---\n{tool_output}\n--- Ende der Suchergebnisse ---"
+                )
+                
+                summarization_messages = chat_history[-2:]
+                summarization_messages.append({"role": "user", "content": summarization_prompt})
+
+                summarized_response = await llm_gateway.call_llm(
+                    request.provider, request.model, api_key, messages=summarization_messages
+                )
+                
+                final_answer = summarized_response.get("text", "Ich konnte die Suchergebnisse nicht zusammenfassen.")
+                usage = summarized_response.get("usage", {})
+                cost = summarized_response.get("cost", {})
             else:
-                usage = llm_response.get("usage", {})
-                cost = llm_response.get("cost", {})
-                image_url = None
-                local_image_path = None
-                final_answer = f"Ergebnis von Tool '{tool_name}': {str(tool_output)}"
+                if isinstance(tool_output, dict):
+                    image_url = tool_output.get("url")
+                    usage = llm_response.get("usage", {})
+                    cost = llm_response.get("cost", {})
+                    if image_url:
+                        local_image_path = image_manager.save_image_from_url(image_url, title=_extract_image_description(request.prompt))
+                        final_answer = f"Tool '{tool_name}' erfolgreich ausgeführt. Bild wurde generiert."
+                    else:
+                        output = tool_output.get("output", str(tool_output))
+                        final_answer = f"Ergebnis von Tool '{tool_name}': {output}"
+                elif isinstance(tool_output, str):
+                    usage = llm_response.get("usage", {})
+                    cost = llm_response.get("cost", {})
+                    image_url = None
+                    local_image_path = None
+                    final_answer = f"Ergebnis von Tool '{tool_name}': {tool_output}"
+                else:
+                    usage = llm_response.get("usage", {})
+                    cost = llm_response.get("cost", {})
+                    image_url = None
+                    local_image_path = None
+                    final_answer = f"Ergebnis von Tool '{tool_name}': {str(tool_output)}"
         else:
             final_answer = f"Fehler: Unbekanntes Tool '{tool_name}' angefordert."
             logger.error(final_answer)
@@ -309,8 +416,8 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
             full_exchange_text = f"User: {request.prompt}\nAssistant: {final_answer}"
             asyncio.create_task(
                  memory_extractor.extract_and_save_fact(
-                     db=db, chat_id=request.chat_id, text_block=full_exchange_text, 
-                     original_prompt=request.prompt, main_api_key=api_key, 
+                     db=db, chat_id=request.chat_id, text_block=full_exchange_text,
+                     original_prompt=request.prompt, main_api_key=api_key,
                      provider=request.provider, model=request.model
                  )
              )
@@ -327,9 +434,9 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
         model_for_cost = usage.get("model", request.model)
         database.save_cost_entry(
             date=datetime.now(), model=model_for_cost,
-            input_tokens=usage.get("prompt_tokens", 0), 
+            input_tokens=usage.get("prompt_tokens", 0),
             output_tokens=usage.get("completion_tokens", 0),
-            image_quality=usage.get("image_quality"), 
+            image_quality=usage.get("image_quality"),
             image_cost=cost.get("image_cost", 0),
             total_cost=cost.get("total_cost", 0)
         )
@@ -358,6 +465,7 @@ async def create_chat(chat: schemas.ChatCreate, db: Session = Depends(get_db)):
     if existing_chats:
         last_chat = existing_chats[-1]
         messages = crud.get_messages_by_chat_id(db, chat_id=last_chat.id)
+        # Dieser Block für die Zusammenfassung bleibt exakt so, wie er war.
         if messages:
             config = load_config()
             provider = config.get("last_used_provider", "openai")
@@ -367,7 +475,34 @@ async def create_chat(chat: schemas.ChatCreate, db: Session = Depends(get_db)):
                 asyncio.create_task(chat_summarizer.summarize_and_store_chat(db, last_chat.id, api_key, provider, model))
             else:
                 logger.warning(f"API key for {provider} not found. Skipping chat summarization.")
+    
+    # Die neue Archivierungslogik kommt hierhin, nach der Zusammenfassung und vor dem Erstellen des neuen Chats.
+    try:
+        # Wir rufen die neue Helferfunktion ohne Argumente auf.
+        asyncio.create_task(run_archival())
+    except Exception as e:
+        logger.error(f"Failed to schedule memory archival task: {e}")
+
     return crud.create_chat(db, title=chat.title)
+
+
+# Füge diese neue Helferfunktion irgendwo in main.py auf der obersten Ebene hinzu
+# (z.B. nach der create_chat Funktion).
+
+async def run_archival():
+    """
+    Wrapper, um die synchrone DB-Operation in einer asyncio-Task auszuführen.
+    Diese Funktion erstellt ihre eigene DB-Session, um für Hintergrund-Tasks sicher zu sein.
+    """
+    logger.info("Background memory archival task starting.")
+    db_session = database.SessionLocal()
+    try:
+        memory_manager.archive_old_memories(db_session)
+        logger.info("Background memory archival task finished successfully.")
+    except Exception as e:
+        logger.error(f"An error occurred in the background archival task: {e}", exc_info=True)
+    finally:
+        db_session.close()
 
 @app.get("/api/chats", response_model=List[schemas.ChatResponse])
 async def get_all_chats(db: Session = Depends(get_db), include_archived: bool = False):

@@ -1,21 +1,7 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, shell } = require('electron');
 
 contextBridge.exposeInMainWorld('electron', {
-  openDirectoryDialog: () => ipcRenderer.invoke('open-directory-dialog'),
-  saveImage: (url) => ipcRenderer.invoke('save-image', url),
-  // Other existing functions...
-  send: (channel, data) => {
-    // whitelist channels
-    let validChannels = ['save-image'];
-    if (validChannels.includes(channel)) {
-      ipcRenderer.send(channel, data);
-    }
-  },
-  receive: (channel, func) => {
-    let validChannels = ['image-saved']; // Example of a channel to receive from main
-    if (validChannels.includes(channel)) {
-      // Deliberately strip event as it includes `sender` which is a remote object
-      ipcRenderer.on(channel, (event, ...args) => func(...args));
-    }
-  }
+  saveImage: (url) => ipcRenderer.send('save-image', url),
+  openExternal: (url) => ipcRenderer.invoke('open-external-link', url), // Changed to use ipcRenderer.invoke
+  // we can also expose variables, not just functions
 });

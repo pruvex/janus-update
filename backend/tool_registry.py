@@ -4,6 +4,8 @@ import inspect
 import openai
 from googlesearch import search
 import logging
+import requests
+from bs4 import BeautifulSoup
 from typing import Callable, Dict, Any, Optional
 from pydantic import BaseModel
 from backend import schemas, filesystem_manager
@@ -89,31 +91,40 @@ def list_allowed_workspaces_tool():
     """Listet alle für Dateioperationen freigegebenen Ordner (Workspaces) auf."""
     return filesystem_manager.list_allowed_workspaces()
 
-# Dies ist die NEUE, UNABHÄNGIGE Implementierung
+# ERSETZEN SIE DIE ALTE websearch_tool FUNKTION MIT DIESER:
 def websearch_tool(query: str) -> str:
     """
-    Führt eine Websuche mit der googlesearch-python Bibliothek durch und gibt die
-    Top-Ergebnisse als formatierten String zurück. Benötigt keinen API-Schlüssel.
+    Führt eine Websuche durch, besucht die Top-Ergebnisse, extrahiert deren
+    Inhalt und gibt eine saubere Zusammenfassung für das LLM zurück.
     """
-    logger.info(f"Performing independent web search for query: '{query}'")
+    logger.info(f"Performing advanced web search for query: '{query}'")
     try:
-        # Führe die Suche durch und sammle die ersten 5 Ergebnisse
-        # Wir setzen tld='com', lang='de' für relevantere deutsche Ergebnisse
-        search_results = list(search(query, num_results=5, lang="de"))
-
-        if not search_results:
-            return "Die Websuche ergab keine Ergebnisse."
-
-        # Formatiere die Ergebnisse für das LLM zu einem einzigen String
-        formatted_results = "Hier sind die Top-Ergebnisse der Websuche:\n"
-        for i, result in enumerate(search_results, 1):
-            formatted_results += f"[{i}] {result}\n"
-        
-        return formatted_results
-
+        urls = list(search(query, num_results=3, lang="de"))
+        if not urls:
+            return "Die Websuche ergab keine URLs."
+        content_snippets = []
+        for i, url in enumerate(urls, 1):
+            try:
+                logger.info(f"Fetching content from URL [{i}/{len(urls)}]: {url}")
+                response = requests.get(url, timeout=5, headers={'User-Agent': 'Mozilla/5.0'})
+                response.raise_for_status()
+                soup = BeautifulSoup(response.content, 'html.parser')
+                for script_or_style in soup(["script", "style", "nav", "footer", "header"]):
+                    script_or_style.decompose()
+                text = soup.get_text(separator='\n', strip=True)
+                if len(text) > 1500:
+                    text = text[:1500] + "..."
+                snippet = f"Quelle [{i}] ({url}):\n{text}\n"
+                content_snippets.append(snippet)
+            except requests.RequestException as e:
+                logger.warning(f"Could not fetch content from {url}: {e}")
+                continue
+        if not content_snippets:
+            return "Konnte den Inhalt der gefundenen Webseiten nicht abrufen."
+        return "\n---\n".join(content_snippets)
     except Exception as e:
-        logger.error(f"Error during independent web search: {e}", exc_info=True)
-        return f"Fehler bei der Websuche: {e}"
+        logger.error(f"Error during advanced web search: {e}", exc_info=True)
+        return f"Ein unerwarteter Fehler ist bei der Websuche aufgetreten: {e}"
 
 
 # --- Registrierung aller Tools ---

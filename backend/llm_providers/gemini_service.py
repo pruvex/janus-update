@@ -1,5 +1,6 @@
 import logging
 import re
+import copy
 from typing import List, Dict, Optional, Any
 import google.generativeai as genai
 from google.api_core.exceptions import ResourceExhausted
@@ -67,7 +68,8 @@ class GeminiServiceProvider(BaseLLMProvider):
 
         gemini_tools = []
         if tools:
-            for tool in tools:
+            tools_copy = copy.deepcopy(tools)
+            for tool in tools_copy:
                 if tool.get('type') == 'function' and 'function' in tool:
                     func_def = tool['function']
                     if 'parameters' in func_def:
@@ -78,29 +80,49 @@ class GeminiServiceProvider(BaseLLMProvider):
         
         final_tools = gemini_tools if gemini_tools else None
         
-        genai_model = genai.GenerativeModel(model, tools=final_tools)
-
-        gemini_history = []
-        for msg in messages[:-1]:
+        system_instruction = None
+        gemini_history_for_api = []
+        
+        for msg in messages:
+            if msg.get("role") == "system":
+                system_instruction = msg.get("content")
+                continue
             role = "user" if msg["role"] == "user" else "model"
-            gemini_history.append({'role': role, 'parts': [msg['content']]})
-
-        last_user_prompt = messages[-1]['content']
+            gemini_history_for_api.append({'role': role, 'parts': [msg['content']]})
+        
+        genai_model = genai.GenerativeModel(
+            model, 
+            tools=final_tools,
+            system_instruction=system_instruction
+        )
 
         try:
-            chat_session = genai_model.start_chat(history=gemini_history)
-            response = await chat_session.send_message_async(last_user_prompt)
+            # --- HIER IST DER FINALE FIX ---
+            # Wir berechnen die Input-Tokens von der VOLLSTÄNDIGEN Historie, BEVOR wir sie verändern.
+            # Wir stellen auch sicher, dass die Liste nicht leer ist.
+            input_tokens = 0
+            if gemini_history_for_api:
+                input_tokens = (await genai_model.count_tokens_async(gemini_history_for_api)).total_tokens
+            
+            # Jetzt bereiten wir die Historie für den API-Aufruf vor.
+            last_user_prompt = gemini_history_for_api.pop() if gemini_history_for_api else {'parts': ['']}
+            chat_history_for_session = gemini_history_for_api
+            # -----------------------------
+
+            chat_session = genai_model.start_chat(history=chat_history_for_session)
+            response = await chat_session.send_message_async(last_user_prompt['parts'])
 
             if response.candidates and response.candidates[0].content and response.candidates[0].content.parts and response.candidates[0].content.parts[0].function_call:
                 function_call = response.candidates[0].content.parts[0].function_call
                 tool_name = function_call.name
                 tool_args = {key: value for key, value in function_call.args.items()}
                 logger.info(f"Gemini LLM requested tool call: {tool_name} with args {tool_args}")
-                usage, cost = _calculate_and_log_cost(model)
+                
+                # Wir verwenden die bereits berechneten Input-Tokens
+                usage, cost = _calculate_and_log_cost(model, usage_data={"prompt_tokens": input_tokens, "completion_tokens": 0})
                 return {"type": "tool_code", "tool_name": tool_name, "tool_args": tool_args, "usage": usage, "cost": cost}
 
             text_response = response.text
-            input_tokens = (await genai_model.count_tokens_async(gemini_history)).total_tokens
             output_tokens = (await genai_model.count_tokens_async(text_response)).total_tokens
             usage, cost = _calculate_and_log_cost(model, usage_data={"prompt_tokens": input_tokens, "completion_tokens": output_tokens})
             return {"type": "text", "text": text_response, "image_url": None, "usage": usage, "cost": cost}

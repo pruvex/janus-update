@@ -1,11 +1,13 @@
 import logging
+import datetime
 from typing import List, Dict, Optional
 from sqlalchemy.orm import Session
 from backend.context_manager import ContextManager
 from backend.llm_providers.base_provider import BaseLLMProvider
 from backend.llm_providers.gemini_service import GeminiServiceProvider
 from backend.llm_providers.openai_service import OpenAIServiceProvider
-from backend.tool_registry import TOOL_REGISTRY
+from backend.tool_registry import get_all_tool_definitions
+
 
 logger = logging.getLogger('janus_backend')
 
@@ -33,43 +35,95 @@ async def generate_image(provider: str, model_id: str, api_key: str, prompt: str
 
 WEBSEARCH_COST_PER_QUERY = 0.01 # 1 Cent pro Websuche
 
-async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, db: Session, api_key: str, model: str, provider: str, context_manager: ContextManager) -> Dict:
+async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, db: Session, api_key: str, model: str, provider: str, context_manager: ContextManager, user_name: Optional[str] = None) -> Dict:
     logger.info(f"reason_and_respond: Original user_prompt={user_prompt}")
+
+    current_month_year = datetime.date.today().strftime("%B %Y")
+
+    identity_prompt = ""
+    if user_name:
+        identity_prompt = f"**BENUTZERIDENTITÄT:** Du sprichst mit {user_name}. Alle Fakten, die sich auf '{user_name}' oder 'der Benutzer' beziehen, beziehen sich auf die Person, die 'ich' oder 'mein' sagt.\n\n"
+
     system_rules = f"""Du bist Janus, ein ultra-präziser und logischer Assistent. Deine Aufgabe ist es, die Fragen des Benutzers auf Basis der unten genannten FAKTEN zu beantworten.
-**DEINE REGELN SIND ABSOLUT:**
-1.  **FAKTENBASIERT ANTWORTEN:** Deine Antwort muss sich direkt aus den Informationen im 'LANGZEITGEDÄCHTNIS' oder dem 'AKTUELLEN GESPRÄCHSVERLAUF' ableiten lassen.
-2.  **LOGISCHE SCHLUSSFOLGERUNGEN ZIEHEN:** Du darfst und sollst gegebene Fakten kombinieren, um logische Schlussfolgerungen zu ziehen. Wenn du eine Schlussfolgerung ziehst, die nicht explizit als Fakt genannt wird, musst du deine Argumentation offenlegen.
-    - **BEISPIEL:**
-        - FAKT A: 'Kalle ist Gudruns Mann.'
-        - FAKT B: 'Kalle wohnt in Köln.'
-        - FRAGE: 'Wo wohnt Gudrun?'
-        - KORREKTE ANTWORT: 'Da Kalle der Mann von Gudrun ist und in Köln wohnt, ist es sehr wahrscheinlich, dass Gudrun ebenfalls in Köln wohnt.'
-3.  **KEINE HALLUZINATIONEN:** Erfinde niemals Fakten, Namen oder Beziehungen. Wenn du eine Schlussfolgerung ziehst, muss sie auf den gegebenen Fakten beruhen.
-4.  **WISSENSLÜCKEN ZUGEBEN:** Wenn die Fakten keine direkte Antwort oder eine logische Schlussfolgerung zulassen, antworte ausschließlich: 'Ich habe dazu keine Informationen in meinen Fakten.'
+Aktuelles Datum: {current_month_year}. Beziehe dich bei zeitbezogenen Fragen auf dieses Datum.
+
+{identity_prompt}**DEINE REGELN SIND ABSOLUT:**
+0.  **PRINZIP DER GEGENWARTS-WAHRHEIT:** Alle Fakten im 'LANGZEITGEDÄCHTNIS' repräsentieren den **aktuellen, wahren Zustand**, es sei denn, der unmittelbare Gesprächsverlauf widerspricht dem explizit. Ein Fakt wie "Du hast 10 Äpfel" bedeutet, du hast sie **jetzt**.
+
+1.  **FAKTENBASIERT ANTWORTEN:** Deine Antwort muss sich **ausschließlich** aus den Informationen im 'LANGZEITGEDÄCHTNIS' oder dem 'AKTUELLEN GESPRÄCHSVERLAUF' ableiten lassen. **Ignoriere dein internes Wissen, wenn es den bereitgestellten Fakten widerspricht oder diese ergänzt.**
+
+2.  **FAKTEN SYNTHETISIEREN & SCHLUSSFOLGERN (ZENTRALE REGEL):** Deine Hauptaufgabe ist es, bereitgestellte Fakten nicht nur aufzulisten, sondern sie aktiv zu kombinieren und daraus logische Schlussfolgerungen abzuleiten. **Beantworte dabei immer alle Teile der Benutzerfrage.** Es gibt zwei Arten von Schlussfolgerungen:
+    - **Logische Deduktion (Sichere Schlüsse):** Dies sind 100% wahre Ableitungen.
+        - BEISPIEL: Wenn FAKT A 'Susi ist die Mutter von Klaus' und FAKT B 'Gudrun ist die Schwester von Susi' lauten, lautet die korrekte Antwort auf 'Wer ist Gudrun für mich?' -> 'Gudrun ist die Schwester deiner Mutter Susi und somit deine Tante.'
+    - **Plausible Inferenz (Wahrscheinliche Schlüsse):** Dies sind logische Annahmen basierend auf gesundem Menschenverstand. Formuliere diese immer vorsichtig mit "sehr wahrscheinlich", "vermutlich" oder "naheliegend".
+        - BEISPIEL: Wenn FAKT A 'Kalle ist Gudruns Mann' und FAKT B 'Kalle wohnt in Köln' lauten, lautet die korrekte Antwort auf 'Wo wohnt Gudrun?' -> 'Da Kalle der Mann von Gudrun ist und in Köln wohnt, ist es sehr wahrscheinlich, dass Gudrun ebenfalls in Köln wohnt.'
+
+3.  **KEINE HALLUZINATIONEN:** Erfinde niemals Fakten, Namen oder Beziehungen. Jede Schlussfolgerung, auch eine wahrscheinliche, muss direkt auf den gegebenen Fakten beruhen.
+
+4.  **WISSENSLÜCKEN ZUGEBEN:** Wenn die Fakten weder eine sichere noch eine wahrscheinliche Schlussfolgerung zulassen, antworte ausschließlich: 'Ich habe dazu keine Informationen in meinen Fakten.'
+
 5.  **AUF AUSSAGEN REAGIEREN:** Wenn die letzte Nutzereingabe offensichtlich nur neue Informationen liefert und keine Frage stellt, antworte mit einer kurzen, freundlichen Bestätigung (z.B. 'Danke, ich habe mir das gemerkt.' oder 'Verstanden.').
+
+6.  **MARKDOWN VERWENDEN:** Formatiere deine Antworten immer mit Markdown, um die Lesbarkeit zu verbessern (z.B. Überschriften, Fettdruck, Listen, Code-Blöcke).
+
 --- FAKTENGRUNDLAGE ---
-LANGZEITGEDÄCHTNIS:{memory_context}AKTUELLER GESPRÄCHSVERLAUF:"""
+LANGZEITGEDÄCHTNIS:
+{memory_context}
+
+AKTUELLER GESPRÄCHSVERLAUF:
+"""
+
     final_chat_history = []
     final_chat_history.append({"role": "system", "content": system_rules})
     final_chat_history.extend(chat_history)
-    
+
+    from backend.tool_registry import get_all_tool_definitions
+    from backend.websearch import perform_websearch
     tools = get_all_tool_definitions()
+
     response = await call_llm(provider, model, api_key, messages=final_chat_history, tools=tools)
-    # KORRIGIERTER FALLBACK-BLOCK
-    if response.get("type") == "text" and "Ich habe dazu keine Informationen" in response.get("text", ""):
-        logger.info("LLM indicated no information in facts. Performing independent fallback web search...")
+
+    if response.get("type") == "text" and "Ich habe dazu keine Informationen in meinen Fakten" in response.get("text", ""):
+        logger.info("LLM indicated no information in facts. Performing web search...")
+        web_result = await perform_websearch(user_prompt)
         
-        websearch_tool_func = TOOL_REGISTRY.get("websearch_tool").func
+        logger.info("Web search performed. Now formatting result with LLM...")
+
+        formatting_prompt = f"""**WICHTIG: Beantworte die ursprüngliche Frage des Benutzers AUSSCHLIESSLICH und VOLLSTÄNDIG basierend auf den unten bereitgestellten WEBSUCHE-ERGEBNISSEN.**
+**Ignoriere jegliches internes Wissen, das den WEBSUCHE-ERGEBNISSEN widerspricht oder diese ergänzt.**
+**Die WEBSUCHE-ERGEBNISSE sind die einzige Quelle der Wahrheit für diese Antwort.**
+Formatiere die Antwort ansprechend mit Markdown. **Füge relevante Links aus den WEBSUCHE-ERGEBNISSEN in Markdown-Formatierung ([Text](URL)) in deine Antwort ein.**
+
+Ursprüngliche Frage: "{user_prompt}"
+
+WEBSUCHE-ERGEBNISSE:
+{web_result}
+"""
         
-        web_result = websearch_tool_func(query=user_prompt)
-        return {
-            "type": "text",
-            "text": web_result,
-            "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "model": "independent_websearch"},
-            "cost": {"total_cost": WEBSEARCH_COST_PER_QUERY}
-        }
+        formatting_messages = [{"role": "user", "content": formatting_prompt}]
+
+        formatted_response = await call_llm(
+            provider=provider, 
+            model_id=model, 
+            api_key=api_key, 
+            messages=formatting_messages
+        )
+        
+        total_cost = formatted_response.get("cost", {}).get("total_cost", 0) + WEBSEARCH_COST_PER_QUERY
+        if "cost" not in formatted_response:
+            formatted_response["cost"] = {}
+        formatted_response["cost"]["total_cost"] = total_cost
+        
+        if "usage" not in formatted_response:
+            formatted_response["usage"] = {}
+        current_model = formatted_response.get("usage", {}).get("model", model)
+        formatted_response["usage"]["model"] = f"{current_model}-with-websearch"
+
+        return formatted_response
+
     if response.get("type") == "tool_code":
         return response
+
     return {
         "type": "text",
         "text": response.get("text"),

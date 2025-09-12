@@ -75,3 +75,24 @@ def update_chat_summary(db: Session, chat_id: int, summary: str, embedding: str)
 
 def get_all_chat_summaries(db: Session):
     return db.query(database.Chat).filter(database.Chat.summary != None).all()
+
+def get_memory_by_chat_id(db: Session, chat_id: int):
+    return db.query(database.Memory).filter(database.Memory.chat_id == chat_id).all()
+
+# In backend/crud.py
+# ... (am Ende der Datei hinzufügen)
+from typing import Optional
+
+def get_user_name(db: Session) -> Optional[str]:
+    """Sucht im Gedächtnis nach dem Namen des Benutzers."""
+    # Wir suchen nach dem spezifischen Fakt, der den Namen festlegt.
+    memory_entry = db.query(database.Memory).filter(database.Memory.snippet.like("Der Benutzer heißt %")).first()
+    if memory_entry:
+        try:
+            # Extrahiert den Namen nach dem Muster "Der Benutzer heißt [Name]."
+            name = memory_entry.snippet.split("Der Benutzer heißt ")[1].strip().replace('.', '')
+            logger.info(f"Benutzername '{name}' aus dem Gedächtnis geladen.")
+            return name
+        except IndexError:
+            return None
+    return None

@@ -1,9 +1,29 @@
 import { API_BASE_URL } from './config.js';
 import { getCurrentChatId, loadChats } from './chat-manager.js';
 
+// Configure marked.js for stricter Markdown parsing
+marked.setOptions({
+  breaks: false, // Do not convert single newlines to <br>
+  gfm: true      // Use GitHub Flavored Markdown (stricter paragraph breaks)
+});
+
 const chatForm = document.getElementById('chat-form');
 const chatInput = document.getElementById('chat-input');
 const chatMessages = document.getElementById('chat-messages');
+
+// Event listener for opening links externally
+chatMessages.addEventListener('click', (event) => {
+    const target = event.target;
+    if (target.tagName === 'A' && target.href) {
+        event.preventDefault(); // Prevent default link navigation
+        if (window.electron && window.electron.openExternal) {
+            window.electron.openExternal(target.href); // Open link in external browser
+        } else {
+            // Fallback for web environment or if electron API is not available
+            window.open(target.href, '_blank');
+        }
+    }
+});
 
 chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -126,8 +146,9 @@ export function appendMessage(sender, data) {
     }
 
     if (textContent) {
+        console.log("Raw LLM textContent:", textContent); // Added for debugging
         const textNode = document.createElement('p');
-        textNode.innerText = textContent;
+        textNode.innerHTML = marked.parse(textContent); // Changed to innerHTML and marked.parse
         bubble.appendChild(textNode);
     }
 

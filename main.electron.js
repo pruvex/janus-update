@@ -161,6 +161,13 @@ ipcMain.handle('save-image', async (event, url) => {
 });
 // --- ENDE HANDLER ---
 
+// --- HANDLER FÜR EXTERNEN LINK ÖFFNEN ---
+ipcMain.handle('open-external-link', async (event, url) => {
+  const { shell } = require('electron'); // Import shell here
+  shell.openExternal(url);
+});
+// --- ENDE HANDLER ---
+
 ipcMain.handle('open-directory-dialog', async () => {
   const { dialog } = require('electron');
   const result = await dialog.showOpenDialog({

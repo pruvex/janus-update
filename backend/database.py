@@ -52,8 +52,22 @@ class Memory(Base):
     id = Column(Integer, primary_key=True, index=True)
     chat_id = Column(Integer, ForeignKey("chats.id"))
     snippet = Column(Text, nullable=False)
-    embedding_json = Column(Text, nullable=True) # Die wichtige Spalte
+    embedding_json = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.now)
+    # --- NEUE SPALTEN ---
+    last_accessed_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    is_core_fact = Column(Boolean, default=False)
+
+# --- NEUE TABELLE FÜR DAS LANGZEITGEDÄCHTNIS ---
+class LongTermMemory(Base):
+    __tablename__ = "long_term_memory"
+    id = Column(Integer, primary_key=True, index=True)
+    original_memory_id = Column(Integer) # Um den Ursprung nachzuverfolgen
+    chat_id = Column(Integer, ForeignKey("chats.id"))
+    snippet = Column(Text, nullable=False)
+    embedding_json = Column(Text, nullable=True)
+    created_at = Column(DateTime) # Wir übernehmen den ursprünglichen Zeitstempel
+    archived_at = Column(DateTime, default=datetime.datetime.now)
 
 # --- Kosten-Datenbank ---
 COSTS_DB_PATH = os.path.join(get_app_data_dir(), 'costs.db')
