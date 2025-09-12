@@ -6,6 +6,8 @@ from . import crud # Importiert die crud.py Datei
 from . import vector_service
 
 
+import datetime # <--- DIESE ZEILE HINZUFÜGEN
+
 # ÄNDERUNG: Signatur um expires_at erweitern
 def save_memory_snippet(db: Session, chat_id: int, snippet_text: str, is_core: bool = False, expires_at: Optional[datetime.datetime] = None):
     embedding = vector_service.generate_embedding(snippet_text)

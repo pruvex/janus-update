@@ -298,3 +298,6 @@ async def run_pruning():
         db_session.close()
 
 # ... (Rest der Datei bleibt unverändert)
+
+---
+**Implementierung abgeschlossen:** Alle Schritte dieser Arbeitsanweisung wurden erfolgreich umgesetzt.
