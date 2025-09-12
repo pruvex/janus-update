@@ -11,7 +11,7 @@
         "capabilities": ["chat", "tool_calling", "memory_query"]
     },
     {
-        "id": "dall-e-3-standard",
+        "id": "dall-e-3",
         "name": "DALL-E 3 (Standard)",
         "provider": "openai",
         "type": "image",
