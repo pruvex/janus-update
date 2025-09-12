@@ -1,4 +1,9 @@
 # Am Anfang von backend/memory_manager.py
+import logging
+from backend.logger_config import setup_logging
+
+setup_logging()
+logger = logging.getLogger('janus_backend')
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from . import database # Importiert die gesamte database.py Datei

@@ -395,7 +395,8 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
         model=request.model,
         provider=request.provider,
         context_manager=context_manager,
-        user_name=user_name
+        user_name=user_name,
+        chat_id=request.chat_id  # <--- DIESE ZEILE HINZUFÜGEN
     )
 
     final_answer = ""
