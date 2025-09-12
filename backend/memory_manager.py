@@ -1,31 +1,11 @@
 # Am Anfang von backend/memory_manager.py
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from . import database # Importiert die gesamte database.py Datei
 from . import crud # Importiert die crud.py Datei
 from . import vector_service
 
-import logging
-from backend.logger_config import setup_logging
 
-setup_logging()
-logger = logging.getLogger('janus_backend')
-
-# --- Memory CRUD ---
-import datetime
-from sqlalchemy.orm import Session
-from typing import List
-from . import database # Importiert die gesamte database.py Datei
-from . import crud # Importiert die crud.py Datei
-from . import vector_service
-
-import logging
-from backend.logger_config import setup_logging
-
-setup_logging()
-logger = logging.getLogger('janus_backend')
-
-# --- Memory CRUD ---
 # ÄNDERUNG: Signatur um expires_at erweitern
 def save_memory_snippet(db: Session, chat_id: int, snippet_text: str, is_core: bool = False, expires_at: Optional[datetime.datetime] = None):
     embedding = vector_service.generate_embedding(snippet_text)
