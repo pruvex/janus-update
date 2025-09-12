@@ -42,9 +42,16 @@ from backend.tool_registry import TOOL_REGISTRY
 
 def is_confirmation(prompt: str) -> bool:
     """Prüft, ob ein User-Prompt eine positive Bestätigung ist."""
-    confirm_words = ["ja", "stimmt", "genau", "richtig", "korrekt", "das stimmt", "ja genau", "ja das stimmt"]
+    # Liste von Phrasen, die eine exakte Übereinstimmung für eine Bestätigung erfordern.
+    # Dies verhindert, dass Sätze, die nur "ja" enthalten, fälschlicherweise als Bestätigung gewertet werden.
+    confirm_phrases = [
+        "das ist richtig", "das stimmt", "ja genau", "ja das stimmt", "ist korrekt",
+        "genau", "richtig", "korrekt", "stimmt", "ja"
+    ]
     prompt_lower = prompt.lower().strip().replace('.', '').replace('!', '')
-    return prompt_lower in confirm_words
+    
+    # Prüfe auf exakte Übereinstimmung mit einer der Phrasen in der Liste.
+    return prompt_lower in confirm_phrases
 
 app = FastAPI()
 

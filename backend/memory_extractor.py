@@ -123,7 +123,7 @@ async def extract_and_save_fact(db: Session, chat_id: int, text_block: str, orig
                 total_cost=cost.get("total_cost", 0)
             )
 
-        if extracted_text and extracted_text.lower() not in ['none', 'keine']:
+        if extracted_text and extracted_text.lower().strip().rstrip('.') not in ['none', 'keine']:
             lines = extracted_text.split('\n')
             extracted_facts = [line.strip() for line in lines if line.strip() and not line.strip().startswith('---')]
             

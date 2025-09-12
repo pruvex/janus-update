@@ -3,5 +3,5 @@
 - [x] 1️⃣ Chats speichern (Persistenzschicht)
 - [x] 2️⃣ Mehrere Chats verwalten
 - [x] 3️⃣ Context Memory (pro Chat)
-- [ ] 4️⃣ Übergreifendes Chat-Memory (Global Memory)
+- [x] 4️⃣ Übergreifendes Chat-Memory (Global Memory)
 - [ ] ⚙️ Context-Window-Anpassung für verschiedene Modelle
