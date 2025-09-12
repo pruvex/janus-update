@@ -1,5 +1,6 @@
 import logging
 import datetime
+import asyncio  # <--- DIESE ZEILE HINZUFÜGEN
 from typing import List, Dict, Optional
 from sqlalchemy.orm import Session
 from backend.context_manager import ContextManager
