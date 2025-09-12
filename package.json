@@ -16,7 +16,7 @@
     "start-backend-only": "C:\\KI\\Janus-Projekt\\backend\\venv\\Scripts\\python.exe -m uvicorn backend.main:app --reload --port 8001 --host localhost",
     "test:e2e": "playwright test",
     "build-installer": "electron-builder",
-    "build-all": "npm run build && pyinstaller janus_backend.spec --clean -y && npm run build-installer"
+    "build-all": "npm run build && pyinstaller janus_backend.spec --clean --noconfirm && npm run build-installer"
   },
   "keywords": [],
   "author": "",
