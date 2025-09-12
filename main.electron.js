@@ -197,14 +197,10 @@ function createWindow () {
     }
   });
 
-  // The window content will be loaded after the backend is ready
-  // if (process.env.NODE_ENV === 'development') {
-  //   mainWindow.loadURL('http://localhost:5173/');
-  // } else {
-  //   // In production, serve the index.html file
-  //   mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
-  // }
-  if (process.env.NODE_ENV === 'development') {
+  if (app.isPackaged) {
+    mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
+  } else {
+    mainWindow.loadURL('http://localhost:5173/');
     mainWindow.webContents.openDevTools();
   }
 
@@ -226,11 +222,11 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     const win = createWindow();
-    if (process.env.NODE_ENV !== 'development') {
+    if (app.isPackaged) {
       startBackend(win);
     }
     waitForBackend().then(() => {
-        if (process.env.NODE_ENV === 'development') {
+        if (!app.isPackaged) {
             win.loadURL('http://localhost:5173/');
         } else {
             win.loadFile(path.join(__dirname, 'dist', 'index.html'));
@@ -241,11 +237,11 @@ app.on('activate', () => {
 
 app.whenReady().then(() => {
     const win = createWindow();
-    if (process.env.NODE_ENV !== 'development') {
+    if (app.isPackaged) {
       startBackend(win);
     }
     waitForBackend().then(() => {
-        if (process.env.NODE_ENV === 'development') {
+        if (!app.isPackaged) {
             win.loadURL('http://localhost:5173/');
         } else {
             win.loadFile(path.join(__dirname, 'dist', 'index.html'));

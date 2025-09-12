@@ -231,19 +231,76 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
         # Die vorletzte Nachricht ist die Aussage des Assistenten, die bestätigt wurde.
         confirmed_statement = chat_history[-2]['content']
         
-        logger.info(f"User confirmed assistant's statement: '{confirmed_statement}'. Triggering fact extraction.")
+        logger.info(f"User confirmed assistant's statement: '{confirmed_statement}'. Triggering direct fact saving.")
+
+        # GOLD STANDARD FIX:
+        # Anstatt zu versuchen, den Fakt aus einem komplexen Satz zu extrahieren,
+        # nehmen wir die bestätigte Aussage, bereinigen sie von spekulativen Formulierungen
+        # und speichern sie direkt als neue, verifizierte Tatsache.
         
-        # Wir erstellen einen speziellen Textblock, um dem Extraktor zu sagen, dass diese Info validiert ist.
-        text_for_learning = f"Der Benutzer hat die folgende Aussage des Assistenten als korrekt bestätigt: {confirmed_statement}"
+        new_fact = confirmed_statement
         
-        # Wir rufen die Faktenextraktion auf diesem speziellen Block auf.
-        asyncio.create_task(
-             memory_extractor.extract_and_save_fact(
-                 db=db, chat_id=request.chat_id, text_block=text_for_learning, 
-                 original_prompt=request.prompt, main_api_key=api_key, 
-                 provider=request.provider, model=request.model
-             )
-         )
+        # Bereinige den Fakt von Formulierungen der Unsicherheit
+        speculative_phrases = [
+            "ist es sehr wahrscheinlich, dass ",
+            "Es ist sehr wahrscheinlich, dass ",
+            "vermutlich ",
+            "wahrscheinlich "
+        ]
+        for phrase in speculative_phrases:
+            if phrase in new_fact:
+                new_fact = new_fact.split(phrase)[-1]
+
+        # Entferne einleitende Nebensätze, die oft bei Schlussfolgerungen entstehen
+        if new_fact.startswith("Da ") and "," in new_fact:
+            new_fact = new_fact.split(",", 1)[1].strip()
+
+        # Finale Bereinigung
+        new_fact = new_fact.replace("ebenfalls ", "").strip().rstrip('.')
+        
+        # Erstelle eine Hintergrund-Aufgabe, um diesen neuen Fakt zu verarbeiten und zu speichern.
+        # Dies stellt sicher, dass die UI nicht warten muss.
+        async def process_confirmed_fact(fact_to_process, chat_id_to_save, provider_to_use, model_to_use, api_key_to_use):
+            db_session = database.SessionLocal()
+            try:
+                logger.info(f"Processing confirmed fact in background: '{fact_to_process}'")
+                
+                # 1. Klassifizieren (Core / Non-Core)
+                is_core = False
+                try:
+                    # Wir importieren hier, um Zirkel-Importe auf Modulebene zu vermeiden
+                    from backend import memory_extractor 
+                    classification_history = [{"role": "user", "content": memory_extractor.IS_CORE_FACT_PROMPT.format(fact=fact_to_process)}]
+                    classification_response = await llm_gateway.call_llm(
+                        provider=provider_to_use, model_id=model_to_use, api_key=api_key_to_use, messages=classification_history
+                    )
+                    if "ja" in classification_response.get("text", "").lower():
+                        is_core = True
+                        logger.info(f"Confirmed fact classified as CORE: '{fact_to_process}'")
+                    else:
+                        logger.info(f"Confirmed fact classified as NON-CORE: '{fact_to_process}'")
+                except Exception as e:
+                    logger.error(f"Could not classify confirmed fact '{fact_to_process}': {e}. Defaulting to NON-CORE.")
+
+                # 2. Mit bestehendem Wissen konsolidieren oder neu speichern
+                logger.info(f"Saving new, confirmed fact: '{fact_to_process}'")
+                memory_manager.save_memory_snippet(db_session, chat_id=chat_id_to_save, snippet_text=fact_to_process, is_core=is_core)
+            
+            except Exception as e:
+                logger.error(f"Error in background fact processing: {e}", exc_info=True)
+            finally:
+                db_session.close()
+
+        # Starte die Verarbeitung des neuen Fakts im Hintergrund
+        asyncio.create_task(process_confirmed_fact(
+            new_fact, request.chat_id, request.provider, request.model, api_key
+        ))
+        
+        # Gib dem User eine sofortige, positive Rückmeldung
+        final_answer = "Verstanden. Ich habe mir das als neuen Fakt gemerkt."
+        crud.create_message(db, chat_id=request.chat_id, sender="model", content=final_answer)
+        return {"sender": "model", "text": final_answer, "image_url": None}
+
     # --- ENDE NEUER CODEBLOCK ---
     
     # --- START ERSETZUNG: LÖSCHE DEN ALTEN GEDÄCHTNIS-BLOCK UND ERSETZE IHN HIERMIT ---
