@@ -55,10 +55,10 @@ class Memory(Base):
     embedding_json = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.now)
     # --- NEUE SPALTEN ---
-    last_accessed_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
-    is_core_fact = Column(Boolean, default=False)
+    last_accessed_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now, index=True)
+    is_core_fact = Column(Boolean, default=False, index=True)
     # --- NEUE SPALTE FÜR EPHEMERE ERINNERUNGEN ---
-    expires_at = Column(DateTime, nullable=True) # nullable=True ist entscheidend!
+    expires_at = Column(DateTime, nullable=True, index=True) # nullable=True ist entscheidend!
 
 # --- NEUE TABELLE FÜR DAS LANGZEITGEDÄCHTNIS ---
 class LongTermMemory(Base):
