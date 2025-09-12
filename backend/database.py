@@ -91,11 +91,26 @@ class Cost(CostsBase):
     total_cost = Column(Float)
 
 # --- Initialisierungs-Funktion ---
+from sqlalchemy.exc import OperationalError
+
 def init_db():
     try:
         # Erstellt alle Tabellen für Chat/Memory und Kosten
         Base.metadata.create_all(bind=engine)
         CostsBase.metadata.create_all(bind=costs_engine)
+    except OperationalError as e:
+        logger.warning(f"Database schema mismatch detected: {e}. Attempting to delete old database and retry.")
+        # Delete the old database file
+        if os.path.exists(DB_PATH):
+            os.remove(DB_PATH)
+            logger.info(f"Deleted old database file: {DB_PATH}")
+        else:
+            logger.warning(f"Database file not found at {DB_PATH}, cannot delete.")
+        
+        # Recreate tables
+        Base.metadata.create_all(bind=engine)
+        CostsBase.metadata.create_all(bind=costs_engine)
+        logger.info("Database tables recreated successfully after schema mismatch.")
     except Exception as e:
         logger.error(f"Error creating database tables: {e}")
         raise
