@@ -57,6 +57,8 @@ class Memory(Base):
     # --- NEUE SPALTEN ---
     last_accessed_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
     is_core_fact = Column(Boolean, default=False)
+    # --- NEUE SPALTE FÜR EPHEMERE ERINNERUNGEN ---
+    expires_at = Column(DateTime, nullable=True) # nullable=True ist entscheidend!
 
 # --- NEUE TABELLE FÜR DAS LANGZEITGEDÄCHTNIS ---
 class LongTermMemory(Base):

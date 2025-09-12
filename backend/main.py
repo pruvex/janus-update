@@ -540,12 +540,14 @@ async def create_chat(chat: schemas.ChatCreate, db: Session = Depends(get_db)):
             else:
                 logger.warning(f"API key for {provider} not found. Skipping chat summarization.")
     
-    # Die neue Archivierungslogik kommt hierhin, nach der Zusammenfassung und vor dem Erstellen des neuen Chats.
+    # Die neue Archivierungs- UND Aufräumlogik kommt hierhin
     try:
-        # Wir rufen die neue Helferfunktion ohne Argumente auf.
+        # Bestehende Archivierung
         asyncio.create_task(run_archival())
+        # NEU: Geplantes Aufräumen
+        asyncio.create_task(run_pruning()) 
     except Exception as e:
-        logger.error(f"Failed to schedule memory archival task: {e}")
+        logger.error(f"Failed to schedule memory maintenance tasks: {e}")
 
     return crud.create_chat(db, title=chat.title)
 
@@ -565,6 +567,25 @@ async def run_archival():
         logger.info("Background memory archival task finished successfully.")
     except Exception as e:
         logger.error(f"An error occurred in the background archival task: {e}", exc_info=True)
+    finally:
+        db_session.close()
+
+
+# Füge diese neue Helferfunktion irgendwo in main.py auf der obersten Ebene hinzu
+# (z.B. nach der run_archival Funktion).
+
+async def run_pruning():
+    """
+    Wrapper, um die synchrone DB-Operation zum Aufräumen in einer asyncio-Task auszuführen.
+    """
+    logger.info("Background memory pruning task starting.")
+    db_session = database.SessionLocal()
+    try:
+        # Hier rufen wir unsere neue Funktion auf
+        memory_manager.prune_expired_memories(db_session)
+        logger.info("Background memory pruning task finished successfully.")
+    except Exception as e:
+        logger.error(f"An error occurred in the background pruning task: {e}", exc_info=True)
     finally:
         db_session.close()
 

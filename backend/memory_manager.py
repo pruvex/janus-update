@@ -26,7 +26,8 @@ setup_logging()
 logger = logging.getLogger('janus_backend')
 
 # --- Memory CRUD ---
-def save_memory_snippet(db: Session, chat_id: int, snippet_text: str, is_core: bool = False):
+# ÄNDERUNG: Signatur um expires_at erweitern
+def save_memory_snippet(db: Session, chat_id: int, snippet_text: str, is_core: bool = False, expires_at: Optional[datetime.datetime] = None):
     embedding = vector_service.generate_embedding(snippet_text)
     if embedding is None:
         return None
@@ -35,7 +36,8 @@ def save_memory_snippet(db: Session, chat_id: int, snippet_text: str, is_core: b
         chat_id=chat_id, 
         snippet=snippet_text, 
         embedding_json=embedding, 
-        is_core_fact=is_core
+        is_core_fact=is_core,
+        expires_at=expires_at  # Das neue Feld wird übergeben
     )
     db.add(db_memory)
     db.commit()
@@ -91,6 +93,7 @@ def archive_old_memories(db: Session):
         candidates = (
             db.query(database.Memory)
             .filter(database.Memory.is_core_fact == False)
+            .filter(database.Memory.expires_at == None)  # <-- GOLD STANDARD: Nur zeitlose Fakten archivieren!
             .order_by(database.Memory.last_accessed_at.asc())
             .limit(num_to_archive)
             .all()
@@ -119,6 +122,32 @@ def archive_old_memories(db: Session):
 
     except Exception as e:
         logger.error(f"Error during memory archival: {e}")
+        db.rollback()
+
+# --- NEUE AUFRÄUMFUNKTION ---
+def prune_expired_memories(db: Session):
+    """Sucht und löscht alle ephemeren Erinnerungen, deren Ablaufdatum überschritten ist."""
+    try:
+        now = datetime.datetime.now()
+        # Finde alle Erinnerungen, deren expires_at in der Vergangenheit liegt
+        expired_memories = db.query(database.Memory).filter(
+            database.Memory.expires_at != None,
+            database.Memory.expires_at < now
+        ).all()
+
+        if not expired_memories:
+            logger.info("No expired memories to prune.")
+            return
+
+        count = len(expired_memories)
+        for mem in expired_memories:
+            logger.info(f"Pruning expired memory (ID: {mem.id}): '{mem.snippet}'")
+            db.delete(mem)
+        
+        db.commit()
+        logger.info(f"Successfully pruned {count} expired memory snippets.")
+    except Exception as e:
+        logger.error(f"Error during memory pruning: {e}")
         db.rollback()
 
 def find_similar_memory_snippet(db: Session, text: str):

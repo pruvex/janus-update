@@ -35,7 +35,7 @@ async def generate_image(provider: str, model_id: str, api_key: str, prompt: str
 
 WEBSEARCH_COST_PER_QUERY = 0.01 # 1 Cent pro Websuche
 
-async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, db: Session, api_key: str, model: str, provider: str, context_manager: ContextManager, user_name: Optional[str] = None) -> Dict:
+async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, db: Session, api_key: str, model: str, provider: str, context_manager: ContextManager, chat_id: int, user_name: Optional[str] = None) -> Dict:
     logger.info(f"reason_and_respond: Original user_prompt={user_prompt}")
 
     current_month_year = datetime.date.today().strftime("%B %Y")
@@ -109,6 +109,26 @@ WEBSUCHE-ERGEBNISSE:
             messages=formatting_messages
         )
         
+        # --- NEUER, INTELLIGENTER SPEICHER-BLOCK ---
+        
+        # Holen Sie sich den zusammengefassten Text aus der formatierten Antwort
+        summarized_web_answer = formatted_response.get("text")
+        
+        if summarized_web_answer:
+            # Erstelle eine Hintergrundaufgabe, um die Klassifizierung und Speicherung durchzuführen,
+            # ohne die Antwort an den Benutzer zu blockieren.
+            asyncio.create_task(
+                classify_and_save_web_result(
+                    db=db,
+                    user_question=user_prompt,
+                    llm_answer=summarized_web_answer,
+                    api_key=api_key,
+                    provider=provider,
+                    model=model,
+                    chat_id=chat_id # chat_id wird jetzt übergeben
+                )
+            )
+
         total_cost = formatted_response.get("cost", {}).get("total_cost", 0) + WEBSEARCH_COST_PER_QUERY
         if "cost" not in formatted_response:
             formatted_response["cost"] = {}
@@ -131,3 +151,45 @@ WEBSUCHE-ERGEBNISSE:
         "usage": response.get("usage"),
         "cost": response.get("cost")
     }
+
+
+# --- NEUE HELFERFUNKTION FÜR DEN LLM_GATEWAY ---
+
+async def classify_and_save_web_result(db: Session, user_question: str, llm_answer: str, api_key: str, provider: str, model: str, chat_id: int):
+    """
+    Klassifiziert eine aus einer Websuche gewonnene Information und speichert sie 
+    ggf. als ephemere Erinnerung.
+    """
+    from backend import memory_manager # Import hier, um Zirkelimporte zu vermeiden
+    
+    classification_prompt = f"""
+    Du bist ein Daten-Analyst. Deine Aufgabe ist es zu bewerten, ob eine Information zeitlos oder zeitkritisch ist.
+    Zeitkritische Informationen sind Dinge wie aktuelle Preise, Nachrichten, Termine, Wetter oder temporäre Zustände, die sich wahrscheinlich in weniger als 48 Stunden ändern.
+    Zeitlose Informationen sind Anleitungen, Fakten, technische Daten, biografische Details oder historisches Wissen.
+
+    Benutzerfrage: "{user_question}"
+    Antwort: "{llm_answer}"
+
+    Ist die Information in der ANTWORT basierend auf der FRAGE wahrscheinlich zeitkritisch?
+    Antworte NUR mit 'JA' oder 'NEIN'.
+    """
+    
+    try:
+        messages = [{"role": "user", "content": classification_prompt}]
+        # Wir verwenden ein schnelles, günstiges Modell für die Klassifizierung
+        classification_model = "gpt-4o-mini" if provider == "openai" else "gemini-1.5-flash-latest"
+        
+        response = await call_llm(provider, classification_model, api_key, messages)
+        decision = response.get("text", "NEIN").strip().upper()
+
+        if "JA" in decision:
+            expiration_date = datetime.datetime.now() + datetime.timedelta(days=2) # 48 Stunden Gültigkeit
+            logger.info(f"Web result classified as EPHEMERAL. Saving with expiration date. Fact: '{llm_answer[:100]}...'")
+            memory_manager.save_memory_snippet(db, chat_id, llm_answer, is_core=False, expires_at=expiration_date)
+        else:
+            logger.info(f"Web result classified as TIMELESS. Saving as a regular memory. Fact: '{llm_answer[:100]}...'")
+            # Wir speichern es als normalen, nicht-essentiellen Fakt, der den normalen Archivierungsprozess durchläuft
+            memory_manager.save_memory_snippet(db, chat_id, llm_answer, is_core=False, expires_at=None)
+
+    except Exception as e:
+        logger.error(f"Error during web result classification and saving: {e}", exc_info=True)

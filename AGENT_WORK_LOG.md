@@ -22,3 +22,12 @@
 *   **WARUM:** Um den `400 Bad Request` Fehler bei der OpenAI Bildgenerierung auf dem Testsystem zu beheben, da die OpenAI API den Modellnamen `"dall-e-3-standard"` nicht erkennt, aber `"dall-e-3"` unterstützt.
 *   **WAS:** Vollständiger Installer (`Janus Projekt Setup 1.1.0.exe`) neu gebaut, um die Änderungen zu integrieren.
 *   **WARUM:** Um die aktualisierte Funktionalität auf Testsystemen bereitzustellen.
+
+## Zyklus: Sicherstellung der korrekten Paketierung
+
+**Stufe 3: Implementierung & Arbeits-Logbuch**
+
+*   **WAS:** `janus_backend.spec` auf den ursprünglichen Zustand zurückgesetzt und PyInstaller-Cache aggressiv bereinigt.
+*   **WARUM:** Um sicherzustellen, dass die aktualisierte `model_catalog.json` korrekt in den Installer aufgenommen wird, nachdem frühere Versuche fehlgeschlagen sind.
+*   **WAS:** Vollständiger Installer (`Janus Projekt Setup 1.1.0.exe`) neu gebaut.
+*   **WARUM:** Um die aktualisierte Funktionalität auf Testsystemen bereitzustellen.
