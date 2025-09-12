@@ -2,10 +2,7 @@
 
 import inspect
 import openai
-from googlesearch import search
 import logging
-import requests
-from bs4 import BeautifulSoup
 from typing import Callable, Dict, Any, Optional
 from pydantic import BaseModel
 from backend import schemas, filesystem_manager
@@ -91,42 +88,6 @@ def list_allowed_workspaces_tool():
     """Listet alle für Dateioperationen freigegebenen Ordner (Workspaces) auf."""
     return filesystem_manager.list_allowed_workspaces()
 
-# ERSETZEN SIE DIE ALTE websearch_tool FUNKTION MIT DIESER:
-def websearch_tool(query: str) -> str:
-    """
-    Führt eine Websuche durch, besucht die Top-Ergebnisse, extrahiert deren
-    Inhalt und gibt eine saubere Zusammenfassung für das LLM zurück.
-    """
-    logger.info(f"Performing advanced web search for query: '{query}'")
-    try:
-        urls = list(search(query, num_results=3, lang="de"))
-        if not urls:
-            return "Die Websuche ergab keine URLs."
-        content_snippets = []
-        for i, url in enumerate(urls, 1):
-            try:
-                logger.info(f"Fetching content from URL [{i}/{len(urls)}]: {url}")
-                response = requests.get(url, timeout=5, headers={'User-Agent': 'Mozilla/5.0'})
-                response.raise_for_status()
-                soup = BeautifulSoup(response.content, 'html.parser')
-                for script_or_style in soup(["script", "style", "nav", "footer", "header"]):
-                    script_or_style.decompose()
-                text = soup.get_text(separator='\n', strip=True)
-                if len(text) > 1500:
-                    text = text[:1500] + "..."
-                snippet = f"Quelle [{i}] ({url}):\n{text}\n"
-                content_snippets.append(snippet)
-            except requests.RequestException as e:
-                logger.warning(f"Could not fetch content from {url}: {e}")
-                continue
-        if not content_snippets:
-            return "Konnte den Inhalt der gefundenen Webseiten nicht abrufen."
-        return "\n---\n".join(content_snippets)
-    except Exception as e:
-        logger.error(f"Error during advanced web search: {e}", exc_info=True)
-        return f"Ein unerwarteter Fehler ist bei der Websuche aufgetreten: {e}"
-
-
 # --- Registrierung aller Tools ---
 register_tool(Tool(func=generate_image_tool, args_schema=schemas.GenerateImageToolArgs))
 register_tool(Tool(func=cross_chat_memory_tool, args_schema=schemas.CrossChatMemoryToolArgs))
@@ -140,7 +101,6 @@ register_tool(Tool(func=rename_file_tool, args_schema=schemas.RenameFileArgs))
 register_tool(Tool(func=move_file_tool, args_schema=schemas.MoveFileArgs))
 register_tool(Tool(func=move_files_tool, args_schema=schemas.MoveFilesArgs)) # NEU
 register_tool(Tool(func=list_allowed_workspaces_tool, args_schema=schemas.ListAllowedWorkspacesArgs))
-register_tool(Tool(func=websearch_tool, args_schema=schemas.WebsearchToolArgs))
 
 def get_all_tool_definitions():
     return [tool.llm_definition for tool in TOOL_REGISTRY.values()]
