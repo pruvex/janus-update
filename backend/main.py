@@ -536,6 +536,7 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
             style=creative_style, # Verwende den extrahierten Stil
             selection="first"
         )
+        logger.info(f"Final answer immediately after creative_writer: '{final_answer}'")
         # Für die creative_writer Pipeline setzen wir usage und cost auf 0
         usage = {"prompt_tokens": 0, "completion_tokens": 0, "model": request.model}
         cost = {"total_cost": 0}
