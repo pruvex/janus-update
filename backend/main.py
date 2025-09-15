@@ -524,23 +524,20 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
 
     if active_personality_id == "creative_writer":
         logger.info("Creative Writer persona active. Calling creative_writer pipeline.")
-        # Extrahiere den Stil aus dem User-Prompt
         creative_style = _extract_creative_style(user_prompt_text)
         logger.info(f"Creative Writer - Extracted style: {creative_style}")
-
         final_answer = await creative_writer(
             user_prompt_text,
             provider=request.provider,
             model=request.model,
             api_key=api_key,
-            style=creative_style # Verwende den extrahierten Stil
+            style=creative_style
         )
         logger.info(f"Final answer immediately after creative_writer: '{final_answer}'")
-        # Für die creative_writer Pipeline setzen wir usage und cost auf 0
+        # Für die creative_writer Pipeline setzen wir usage/cost manuell.
         usage = {"prompt_tokens": 0, "completion_tokens": 0, "model": request.model}
         cost = {"total_cost": 0}
-        response_type = "text"
-    else:
+    else: # Standard-Logik für alle anderen Personas
         llm_response = await llm_gateway.reason_and_respond(
             user_prompt=user_prompt_text,
             chat_history=messages_for_llm,
@@ -557,111 +554,91 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
         usage = llm_response.get("usage", {})
         cost = llm_response.get("cost", {})
         response_type = llm_response.get("type")
-
-    if response_type == "tool_code":
-        tool_name = llm_response.get("tool_name")
-        tool_args = llm_response.get("tool_args", {})
-        
-        logger.info(f"Executing tool '{tool_name}' with args: {tool_args}")
-        
-        tool = TOOL_REGISTRY.get(tool_name)
-        tool_output_raw = f"Fehler: Unbekanntes Tool '{tool_name}' angefordert."
-
-        if tool:
-            # Wir rufen das Tool auf. Wichtig: Der API-Key ist hier der Key des *originalen Providers*
-            all_possible_args = {"api_key": api_key, "db": db, **tool_args}
-            tool_func_params = inspect.signature(tool.func).parameters
-            final_tool_args = {name: all_possible_args[name] for name in tool_func_params if name in all_possible_args}
-            
-            if inspect.iscoroutinefunction(tool.func):
-                tool_output_raw = await tool.func(**final_tool_args)
+        if response_type == "tool_code":
+            # Komplette Tool-Logik bleibt hier, sie ist bereits korrekt.
+            # (Der Einfachheit halber hier gekürzt, im Originalcode vollständig lassen)
+            tool_name = llm_response.get("tool_name")
+            # ... Rest der Tool-Logik...
+            # Diese Logik wird 'final_answer' selbst befüllen.
+            # --- START KOPIEREN/VERSCHIEBEN DES TOOL-CODES ---
+            tool_args = llm_response.get("tool_args", {})
+            logger.info(f"Executing tool '{tool_name}' with args: {tool_args}")
+            tool = TOOL_REGISTRY.get(tool_name)
+            tool_output_raw = f"Fehler: Unbekanntes Tool '{tool_name}' angefordert."
+            if tool:
+                all_possible_args = {"api_key": api_key, "db": db, **tool_args}
+                tool_func_params = inspect.signature(tool.func).parameters
+                final_tool_args = {name: all_possible_args[name] for name in tool_func_params if name in all_possible_args}
+                if inspect.iscoroutinefunction(tool.func):
+                    tool_output_raw = await tool.func(**final_tool_args)
+                else:
+                    tool_output_raw = tool.func(**final_tool_args)
+                if "file" in tool_name or "directory" in tool_name:
+                    op_string = f"{tool_name} with args {tool_args}"
+                    FILE_OPERATION_HISTORY.append(op_string)
+                    if len(FILE_OPERATION_HISTORY) > 5:
+                        FILE_OPERATION_HISTORY.pop(0)
+                if tool_name == "perform_websearch" and isinstance(tool_output_raw, dict):
+                    logger.info("Web search completed. Sending results back to the original LLM for final response.")
+                    web_search_text = tool_output_raw.get("text", "Keine Ergebnisse gefunden.")
+                    web_search_urls = tool_output_raw.get("urls", [])
+                    summarization_prompt = (
+                        "Hier sind die Ergebnisse einer Websuche. Formuliere basierend auf diesen Informationen eine klare und hilfreiche Antwort auf die ursprüngliche Frage des Benutzers. "
+                        "Gib am Ende deiner Antwort einen Abschnitt 'Quellen:' an und liste dort die gefundenen URLs auf.\n\n"
+                        f"Ursprüngliche Frage: '{user_prompt_text}'\n\n"
+                        f"--- Suchergebnisse ---\n{web_search_text}\n\n"
+                        f"--- Gefundene URLs ---\n" + "\n".join([f"- {url}" for url in web_search_urls])
+                    )
+                    messages_for_llm = list(chat_history)
+                    messages_for_llm.append({"role": "assistant", "content": None, "tool_calls": [{"id": "call_123", "type": "function", "function": {"name": tool_name, "arguments": json.dumps(tool_args)}}]})
+                    messages_for_llm.append({"role": "tool", "tool_call_id": "call_123", "name": tool_name, "content": summarization_prompt})
+                    final_response_from_llm = await llm_gateway.call_llm(
+                        request.provider, request.model, api_key, messages=messages_for_llm, tools=None
+                    )
+                    final_answer = final_response_from_llm.get("text", "Ich konnte die Suchergebnisse nicht zusammenfassen.")
+                    usage = final_response_from_llm.get("usage", {})
+                    cost = final_response_from_llm.get("cost", {})
+                else:
+                    if isinstance(tool_output_raw, dict):
+                        if tool_output_raw.get("url"):
+                            image_url = tool_output_raw.get("url")
+                            local_image_path = image_manager.save_image_from_url(image_url, title=_extract_image_description(user_prompt_text))
+                            final_answer = f"Tool '{tool_name}' erfolgreich ausgeführt. Bild wurde generiert."
+                            if llm_response.get("usage") and llm_response.get("cost"):
+                                database.save_cost_entry(
+                                    date=datetime.now(),
+                                    model=request.model,
+                                    input_tokens=llm_response["usage"].get("prompt_tokens", 0),
+                                    output_tokens=llm_response["usage"].get("completion_tokens", 0),
+                                    total_cost=llm_response["cost"].get("total_cost", 0)
+                                )
+                            return {"sender": "model", "text": final_answer, "image_url": local_image_path}
+                        else:
+                            final_answer = f"Ergebnis von Tool '{tool_name}': {json.dumps(tool_output_raw, indent=2)}"
+                    else:
+                        final_answer = f"Ergebnis von Tool '{tool_name}': {str(tool_output_raw)}"
+                    usage = llm_response.get("usage", {})
+                    cost = llm_response.get("cost", {})
             else:
-                tool_output_raw = tool.func(**final_tool_args)
-
-            if "file" in tool_name or "directory" in tool_name:
-                op_string = f"{tool_name} with args {tool_args}"
-                FILE_OPERATION_HISTORY.append(op_string)
-                if len(FILE_OPERATION_HISTORY) > 5:
-                    FILE_OPERATION_HISTORY.pop(0)
-            
-            # --- WIEDERHERGESTELLTE LOGIK: SPEZIALBEHANDLUNG FÜR WEBSUCHE ---
-            if tool_name == "perform_websearch" and isinstance(tool_output_raw, dict):
-                logger.info("Web search completed. Sending results back to the original LLM for final response.")
-                
-                web_search_text = tool_output_raw.get("text", "Keine Ergebnisse gefunden.")
-                web_search_urls = tool_output_raw.get("urls", [])
-
-                # Wir bauen den Anweisungstext, genau wie im alten Code
-                summarization_prompt = (
-                    "Hier sind die Ergebnisse einer Websuche. Formuliere basierend auf diesen Informationen eine klare und hilfreiche Antwort auf die ursprüngliche Frage des Benutzers. "
-                    "Gib am Ende deiner Antwort einen Abschnitt 'Quellen:' an und liste dort die gefundenen URLs auf.\n\n"
-                    f"Ursprüngliche Frage: '{user_prompt_text}'\n\n"
-                    f"--- Suchergebnisse ---\n{web_search_text}\n\n"
-                    f"--- Gefundene URLs ---\n" + "\n".join([f"- {url}" for url in web_search_urls])
-                )
-
-                # Wir bauen die Nachrichten für den finalen Aufruf
-                # Wichtig: Wir nehmen den bestehenden Verlauf und fügen die Tool-Antwort hinzu.
-                messages_for_llm = list(chat_history)
-                messages_for_llm.append({"role": "assistant", "content": None, "tool_calls": [{"id": "call_123", "type": "function", "function": {"name": tool_name, "arguments": json.dumps(tool_args)}}]})
-                messages_for_llm.append({"role": "tool", "tool_call_id": "call_123", "name": tool_name, "content": summarization_prompt})
-
-                # Wir rufen das *originale Modell* (z.B. Gemini) erneut auf, um die Zusammenfassung zu erstellen
-                final_response_from_llm = await llm_gateway.call_llm(
-                    request.provider, request.model, api_key, messages=messages_for_llm, tools=None
-                )
-
-                final_answer = final_response_from_llm.get("text", "Ich konnte die Suchergebnisse nicht zusammenfassen.")
-                usage = final_response_from_llm.get("usage", {})
-                cost = final_response_from_llm.get("cost", {})
-            
-            # --- Fallback für alle anderen Tools ---
-            else:
-                # Dieser Teil behandelt z.B. die Bildgenerierung oder Dateizugriffe
-                if isinstance(tool_output_raw, dict):
-                    if tool_output_raw.get("url"): # Bildgenerierung
-                        image_url = tool_output_raw.get("url")
-                        local_image_path = image_manager.save_image_from_url(image_url, title=_extract_image_description(user_prompt_text))
-                        final_answer = f"Tool '{tool_name}' erfolgreich ausgeführt. Bild wurde generiert."
-                        
-                        # Speichere die Kosten für den Tool-Aufruf
-                        if llm_response.get("usage") and llm_response.get("cost"):
-                            database.save_cost_entry(
-                                date=datetime.now(), 
-                                model=request.model, 
-                                input_tokens=llm_response["usage"].get("prompt_tokens", 0),
-                                output_tokens=llm_response["usage"].get("completion_tokens", 0),
-                                total_cost=llm_response["cost"].get("total_cost", 0)
-                            )
-                        return {"sender": "model", "text": final_answer, "image_url": local_image_path}
-                    else: # Andere Dictionary-Antworten
-                        final_answer = f"Ergebnis von Tool '{tool_name}': {json.dumps(tool_output_raw, indent=2)}"
-                else: # String-Antworten
-                    final_answer = f"Ergebnis von Tool '{tool_name}': {str(tool_output_raw)}"
-                
-                # Für nicht-Websuche-Tools speichern wir die ursprüngliche Antwort
-                usage = llm_response.get("usage", {})
-                cost = llm_response.get("cost", {})
-        else: # Fallback, falls das Tool nicht gefunden wird
-            final_answer = f"Fehler: Unbekanntes Tool '{tool_name}' angefordert."
-            logger.error(final_answer)
-            usage = {}
-            cost = {}
-    elif response_type == "text":
-        final_answer = llm_response.get("text") or ""
-        
-        if not local_image_path and final_answer and not is_greeting(user_prompt_text):
-            full_exchange_text = f"User: {user_prompt_text}\nAssistant: {final_answer}"
-            asyncio.create_task(
-                 memory_extractor.extract_and_save_fact(
-                     db=db, chat_id=request.chat_id, text_block=full_exchange_text,
-                     original_prompt=user_prompt_text, main_api_key=api_key,
-                     provider=request.provider, model=request.model
+                final_answer = f"Fehler: Unbekanntes Tool '{tool_name}' angefordert."
+                logger.error(final_answer)
+                usage = {}
+                cost = {}
+            # --- ENDE KOPIEREN/VERSCHIEBEN ---
+        elif response_type == "text":
+            final_answer = llm_response.get("text") or ""
+            if not local_image_path and final_answer and not is_greeting(user_prompt_text):
+                full_exchange_text = f"User: {user_prompt_text}\nAssistant: {final_answer}"
+                asyncio.create_task(
+                     memory_extractor.extract_and_save_fact(
+                         db=db, chat_id=request.chat_id, text_block=full_exchange_text,
+                         original_prompt=user_prompt_text, main_api_key=api_key,
+                         provider=request.provider, model=request.model
+                     )
                  )
-             )
-    else:
-        final_answer = "Ein unerwarteter Fehler ist aufgetreten."
-        logger.error(f"Unknown response type from LLM gateway: {response_type}")
+        else:
+            final_answer = "Ein unerwarteter Fehler ist aufgetreten."
+            logger.error(f"Unknown response type from LLM gateway: {response_type}")
 
     logger.info(f"Final answer before check: '{final_answer}'")
     if not final_answer and not local_image_path:
