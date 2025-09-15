@@ -48,3 +48,10 @@
 *   **WARUM:** Um sicherzustellen, dass das Eingabefeld beim Erstellen eines neuen Chats oder beim Laden eines bestehenden Chats geleert wird, wodurch eine Regression behoben wird.
 *   **WAS:** Bedingung `if (loadingMessageElement && loadingMessageElement.parentNode === chatMessages)` in `frontend/js/chat.js` an zwei Stellen hinzugefügt, bevor `chatMessages.removeChild(loadingMessageElement)` aufgerufen wird.
 *   **WARUM:** Um den Fehler "Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node." zu beheben, der auftrat, wenn der Ladeindikator entfernt werden sollte, aber bereits aus dem DOM entfernt war.
+
+## Zyklus: Aktualisierung des Prompts für den Kreativen Schreiber
+
+**Stufe 3: Implementierung & Arbeits-Logbuch**
+
+*   **WAS:** Prompt für die Persönlichkeit "Kreativer Schreiber" in `backend/personalities.json` aktualisiert.
+*   **WARUM:** Um die Beschreibung der Rolle des "Kreativen Schreibers" zu präzisieren und die gewünschten Verhaltensweisen und Prinzipien zu definieren.

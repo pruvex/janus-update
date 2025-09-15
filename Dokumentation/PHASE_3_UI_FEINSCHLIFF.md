@@ -6,4 +6,5 @@
 - [ ] **[JANUS] Kosten-Visualisierung (UI):** Die Kostenverfolgung im Frontend sichtbar machen.
 - [ ] **[WÄCHTER] Kosten-API testen:** Sicherstellen, dass der Backend-Endpunkt, der die Kostendaten für die UI bereitstellt, zuverlässig die korrekten Daten liefert.
 - [x] **[JANUS] Bildspeicherfunktion im UI reparieren:** Behebung des Fehlers beim Speichern von Bildern und der Funktionalität des Speicherbuttons.
+- [x] **[JANUS] Rechtsklick-Einfügen in Textfeldern:** Implementierung der Rechtsklick-Einfügen-Funktion und Behebung der Regressionen (leeres Eingabefeld bei neuem Chat, `removeChild`-Fehler).
 - [x] **[GIT] Meilenstein-Commit:** Den Abschluss des UI-Feinschliffs als stabilen Meilenstein committen.
