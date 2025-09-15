@@ -10,3 +10,4 @@
 - [x] **[JANUS] Websearch-Tool implementieren:** Ein Tool zur Durchführung von Websuchen über GPTs integriertes web.search Tool implementieren.
 - [x] **[JANUS] Prompt für Kreativen Schreiber aktualisiert:** Der Prompt für die Persönlichkeit "Kreativer Schreiber" wurde aktualisiert, um die Rolle und Prinzipien zu präzisieren.
 - [x] **[JANUS] Creative Writer Pipeline implementiert:** Eine Pipeline für kreatives Schreiben wurde implementiert, die Ideen-, Entwurfs- und Endfassungsphasen umfasst.
+- [x] **[JANUS] Creative Writer Pipeline in Backend integriert:** Die Logik in `backend/main.py` wurde angepasst, um die `creative_writer` Pipeline aufzurufen, wenn die Persönlichkeit "Kreativer Schreiber" aktiv ist.

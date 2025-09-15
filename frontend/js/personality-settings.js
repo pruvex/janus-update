@@ -1,4 +1,5 @@
 import { API_BASE_URL } from './config.js';
+import { updateActivePersonalityDisplay } from './settings.js';
 
 export class PersonalitySettings {
     constructor(containerId = 'personality-settings') {
@@ -59,6 +60,7 @@ export class PersonalitySettings {
             
             this.activePersonality = personalityId;
             this.render();
+            updateActivePersonalityDisplay(); // Update the display in the sidebar
             
             // Show success message
             const message = document.createElement('div');

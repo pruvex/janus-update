@@ -125,6 +125,33 @@ async function renderWorkspacesView() {
     }
 }
 
+export async function updateActivePersonalityDisplay() {
+    const activePersonalityDisplay = document.getElementById('active-personality-display');
+    if (!activePersonalityDisplay) return;
+
+    try {
+        // Get active personality ID
+        const activeResponse = await fetch(`${API_BASE_URL}/api/personalities/active`);
+        const activeData = await activeResponse.json();
+        const activePersonalityId = activeData.active_personality_id;
+
+        // Get all personalities to find the name
+        const allPersonalitiesResponse = await fetch(`${API_BASE_URL}/api/personalities`);
+        const allPersonalities = await allPersonalitiesResponse.json();
+
+        const activePersonality = allPersonalities.find(p => p.id === activePersonalityId);
+
+        if (activePersonality) {
+            activePersonalityDisplay.textContent = `(${activePersonality.name})`;
+        } else {
+            activePersonalityDisplay.textContent = '';
+        }
+    } catch (error) {
+        console.error('Error updating active personality display:', error);
+        activePersonalityDisplay.textContent = ''; // Clear on error
+    }
+}
+
 // --- Event Listeners ---
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -151,6 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Initial render
     renderSettingsView();
+    updateActivePersonalityDisplay(); // Initial call to display active personality
 
     // Navigation
     settingsNav.addEventListener('click', (e) => {

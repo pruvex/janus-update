@@ -69,3 +69,18 @@
 
 *   **WAS:** Logik in `backend/main.py` angepasst, um die `creative_writer` Pipeline aufzurufen, wenn die Persönlichkeit "Kreativer Schreiber" aktiv ist.
 *   **WARUM:** Um sicherzustellen, dass das `creative_writer` Modul immer genutzt wird, wenn die entsprechende Persönlichkeit ausgewählt ist, wie vom Benutzer gewünscht.
+
+## Zyklus: Anzeige der aktiven Persönlichkeit in der Sidebar
+
+**Stufe 3: Implementierung & Arbeits-Logbuch**
+
+*   **WAS:** HTML-Element (`<span>` mit ID `active-personality-display`) in `frontend/index.html` hinzugefügt, um den Namen der aktiven Persönlichkeit anzuzeigen.
+*   **WARUM:** Um die Benutzerfreundlichkeit zu verbessern, indem die aktuell ausgewählte Persönlichkeit direkt in der Sidebar sichtbar gemacht wird.
+*   **WAS:** Funktion `updateActivePersonalityDisplay` in `frontend/js/settings.js` erstellt und exportiert.
+*   **WARUM:** Um die Logik zum Abrufen und Anzeigen des Namens der aktiven Persönlichkeit zu kapseln.
+*   **WAS:** `updateActivePersonalityDisplay()` wird beim `DOMContentLoaded`-Event in `frontend/js/settings.js` aufgerufen.
+*   **WARUM:** Um die Anzeige der aktiven Persönlichkeit beim Laden der Seite zu initialisieren.
+*   **WAS:** `updateActivePersonalityDisplay` in `frontend/js/personality-settings.js` importiert.
+*   **WARUM:** Um die Funktion zum Aktualisieren der Sidebar-Anzeige nach einer Persönlichkeitsänderung nutzen zu können.
+*   **WAS:** `updateActivePersonalityDisplay()` wird in der `setActivePersonality`-Methode in `frontend/js/personality-settings.js` aufgerufen.
+*   **WARUM:** Um die Anzeige der aktiven Persönlichkeit in der Sidebar sofort zu aktualisieren, nachdem der Benutzer eine neue Persönlichkeit ausgewählt hat.
