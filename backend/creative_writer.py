@@ -1,5 +1,8 @@
 import random
+import logging
 from backend.llm_gateway import simple_llm_generate_content
+
+logger = logging.getLogger('janus_backend')
 
 async def creative_writer(input_text: str, provider: str, model: str, api_key: str, style: str = "poetisch", selection: str = "first"):
     """
@@ -27,6 +30,8 @@ Erstelle 3 unterschiedliche Varianten."""
         prompt=ideas_prompt
     )
     ideas = ideas_response.get('text', '') # Annahme: simple_llm_generate_content gibt ein Objekt mit .text zurück
+    logger.info(f"Creative Writer - Ideas Prompt: {ideas_prompt}")
+    logger.info(f"Creative Writer - Ideas Generated: {ideas[:500]}...") # Log first 500 chars
 
     # 2. Entwurfsphase
     drafts_prompt = f"""Schreibe 3 kurze Entwürfe im Stil "{style}"
@@ -39,6 +44,8 @@ basierend auf folgenden Ideen:
         prompt=drafts_prompt
     )
     drafts_list = drafts_response.get('text', '').split("\n\n") # Annahme: Entwürfe sind durch doppelte Zeilenumbrüche getrennt
+    logger.info(f"Creative Writer - Drafts Prompt: {drafts_prompt}")
+    logger.info(f"Creative Writer - Drafts List: {drafts_list}")
 
     chosen_draft = ""
     if selection == "random":
@@ -48,6 +55,7 @@ basierend auf folgenden Ideen:
         chosen_draft = drafts_list[0] # Vorerst einfach den ersten Entwurf nehmen
     else: # "first" oder Standard
         chosen_draft = drafts_list[0]
+    logger.info(f"Creative Writer - Chosen Draft: {chosen_draft[:500]}...") # Log first 500 chars
 
     # 3. Endfassung
     final_prompt = f"""Überarbeite den folgenden Entwurf zu einer polierten Endfassung:
@@ -59,6 +67,8 @@ basierend auf folgenden Ideen:
         prompt=final_prompt
     )
     final_text = final_response.get('text', '')
+    logger.info(f"Creative Writer - Final Prompt: {final_prompt}")
+    logger.info(f"Creative Writer - Final Text: {final_text[:500]}...") # Log first 500 chars
 
     return final_text
 
