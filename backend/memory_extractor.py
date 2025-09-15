@@ -39,45 +39,6 @@ IS_CORE_FACT_PROMPT = (
     "Handelt es sich hierbei um einen 'Core Fact'? Antworte NUR mit 'JA' oder 'NEIN'."
 )
 
-async def consolidate_state_with_new_fact(db: Session, old_fact: str, new_info: str, main_api_key: str, provider: str, model: str) -> str:
-    """
-    Nimmt einen alten Fakt (den aktuellen Zustand) und eine neue Information.
-    Gibt den neuen, konsolidierten Fakt zurck. Wenn keine Konsolidierung mglich ist, gibt es 'None' zurck.
-    """
-    prompt = (
-        f"Du bist eine ultra-przise Engine zur Zustands-Aktualisierung einer Wissensdatenbank. Deine Aufgabe ist es, einen neuen Fakt zu generieren, der den aktuellen Zustand widerspiegelt.\n\n"
-        f"**AKTUELLER ZUSTAND (ALTER FAKT):** '{old_fact}'\n"
-        f"**NEUE INFORMATION:** '{new_info}'\n\n"
-        f"**AUFGABE:** Analysiere die 'NEUE INFORMATION' im Kontext des 'AKTUELLEN ZUSTANDS'.\n"
-        f"- Wenn die neue Information den alten Zustand aktualisiert (z.B. eine Mengennderung, eine Statusnderung), formuliere den **neuen, finalen Zustand** als einen einzigen, przisen Fakt in der **Gegenwart** (z.B. 'Klaus hat 8 pfel.').\n"
-        f"- Wenn die neue Information eine vage Aussage durch eine spezifischere ersetzt (z.B. 'Der Benutzer' -> 'Klaus'), gib den neuen, spezifischeren Fakt zurck.\n"
-        f"- **WICHTIG:** Wenn die beiden Fakten unterschiedliche Themen behandeln (z.B. pfel und Verwandte), auch wenn sie sich auf dieselbe Person beziehen, haben sie nichts miteinander zu tun. Antworte in diesem Fall NUR mit dem Wort 'Keine'.\n\n"
-        f"**BEISPIEL 1 (Menge):**\n"
-        f"- ALTER FAKT: 'Klaus hat 10 pfel.'\n"
-        f"- NEUE INFORMATION: 'Klaus hat 2 pfel gegessen.'\n"
-        f"- ANTWORT: 'Klaus hat 8 pfel.'\n\n"
-        f"**BEISPIEL 2 (Spezifitt):**\n"
-        f"- ALTER FAKT: 'Der Benutzer hat einen Onkel.'\n"
-        f"- NEUE INFORMATION: 'Klaus' Onkel heit Kalle.'\n"
-        f"- ANTWORT: 'Klaus' Onkel heit Kalle.'\n\n"
-        f"**BEISPIEL 3 (Kein Bezug):**\n"
-        f"- ALTER FAKT: 'Klaus' Eltern sind Hans und Susi.'\n"
-        f"- NEUE INFORMATION: 'Klaus' Onkel heit Kalle.'\n"
-        f"- ANTWORT: 'Keine'\n\n"
-        f"--- NEUER, KONSOLIDIERTER FAKT ---"
-    )
-    history = [{"role": "user", "content": prompt}]
-    try:
-        response = await llm_gateway.call_llm(
-            provider=provider, model_id=model, api_key=main_api_key, messages=history
-        )
-        new_fact = response.get("text", "").strip()
-        if new_fact.lower() in ['keine', 'none', '']:
-            return None
-        return new_fact
-    except Exception as e:
-        logger.error(f"Error during state consolidation: {e}")
-        return None
 
 
 
@@ -94,9 +55,10 @@ async def consolidate_state_with_new_fact(db: Session, old_fact: str, new_info: 
 
 async def extract_and_save_fact(db: Session, chat_id: int, text_block: str, original_prompt: str, main_api_key: str, provider: str, model: str):
     """
-    Extrahiert Fakten, klassifiziert sie und konsolidiert sie mit dem bestehenden Wissen.
+    Extrahiert Fakten, klassifiziert sie und speichert sie als NEUE, getrennte Einträge.
+    Eine simple Duplikat-Prüfung verhindert identische Einträge.
     """
-    logger.info(f"Attempting to extract, classify, and save facts for chat {chat_id} from text: '{text_block}'")
+    logger.info(f"[FACT EXTRACTION] Starte Extraktion für Chat {chat_id} mit Text: '{text_block}'")
     try:
         gateway_response = {}
         if not text_block and original_prompt:
@@ -129,6 +91,19 @@ async def extract_and_save_fact(db: Session, chat_id: int, text_block: str, orig
             extracted_facts = [line.strip() for line in lines if line.strip() and not line.strip().startswith('---')]
             
             for fact in extracted_facts:
+                # --- FINALE, SICHERE LOGIK ---
+                # Finde nur sehr ähnliche Fakten, um exakte Duplikate zu vermeiden.
+                similar_fact_obj = memory_manager.find_similar_memory_snippet(db, text=fact)
+                if similar_fact_obj:
+                    similarity_score = util.cos_sim(
+                        vector_service.model.encode(fact),
+                        np.array(json.loads(similar_fact_obj.embedding_json), dtype=np.float32)
+                    )[0]
+                    if similarity_score > 0.98:
+                        logger.info(f"[DUPLICATE] Ignoriere bekannten Fakt (Ähnlichkeit: {similarity_score:.2f}): '{fact}'")
+                        continue
+
+                # Klassifiziere den Fakt als Core / Non-Core.
                 is_core = False
                 try:
                     classification_history = [{"role": "user", "content": IS_CORE_FACT_PROMPT.format(fact=fact)}]
@@ -143,23 +118,8 @@ async def extract_and_save_fact(db: Session, chat_id: int, text_block: str, orig
                 except Exception as e:
                     logger.error(f"Could not classify fact '{fact}': {e}. Defaulting to NON-CORE.")
 
-                similar_fact_obj = memory_manager.find_similar_memory_snippet(db, text=fact)
-                
-                if similar_fact_obj:
-                    if util.cos_sim(vector_service.model.encode(fact), np.array(json.loads(similar_fact_obj.embedding_json), dtype=np.float32))[0] > 0.98:
-                         logger.info(f"Bekannter Fakt ignoriert (Duplikat): '{fact}'.")
-                         continue
-                    
-                    consolidated_fact = await consolidate_state_with_new_fact(
-                        db, similar_fact_obj.snippet, fact, main_api_key, provider, model
-                    )
-
-                    if consolidated_fact:
-                        logger.info(f"Fakt wird konsolidiert/aktualisiert: '{similar_fact_obj.snippet}' -> '{consolidated_fact}'.")
-                        memory_manager.update_memory_snippet(db, memory_id=similar_fact_obj.id, new_snippet=consolidated_fact, is_core=is_core)
-                        continue 
-
-                logger.info(f"NEUER relevanter Fakt extrahiert: '{fact}'. Speichere in Memory.")
+                # Speichere den Fakt IMMER als neuen Eintrag. KEINE KONSOLIDIERUNG.
+                logger.info(f"[NEW FACT] Speichere neuen Fakt: '{fact}' (Core: {is_core})")
                 memory_manager.save_memory_snippet(db, chat_id=chat_id, snippet_text=fact, is_core=is_core)
             
             return extracted_facts
@@ -169,4 +129,5 @@ async def extract_and_save_fact(db: Session, chat_id: int, text_block: str, orig
     except Exception as e:
         logger.error(f"Fehler bei der Fakten-Extraktion: {e}", exc_info=True)
         return None
+
 

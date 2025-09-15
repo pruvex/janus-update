@@ -14,6 +14,7 @@ class BaseLLMProvider(ABC):
         model: str,
         messages: List[Dict[str, Any]],
         tools: Optional[List[Dict[str, Any]]] = None,
+        image_data: Optional[str] = None,
         **kwargs
     ) -> Dict[str, Any]:
         """

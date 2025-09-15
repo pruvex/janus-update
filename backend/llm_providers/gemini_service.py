@@ -1,13 +1,17 @@
 import logging
 import re
 import copy
+import json
+import httpx
+import asyncio
 from typing import List, Dict, Optional, Any
 import google.generativeai as genai
-from google.api_core.exceptions import ResourceExhausted
+from google.api_core.exceptions import ResourceExhausted, InvalidArgument
 from tenacity import retry, stop_after_attempt, wait_exponential
 from backend.cost_calculator import calculate_cost
 from backend import image_manager
 from backend.llm_providers.base_provider import BaseLLMProvider
+from backend.llm_providers.utils import _extract_image_description
 
 logger = logging.getLogger('janus_backend')
 
@@ -23,115 +27,214 @@ def _calculate_and_log_cost(model_id, usage_data=None, custom_prompt=None):
                 f"----------------------")
     return usage, cost
 
-def _extract_image_description(prompt: str) -> str:
-    cleaned_prompt = prompt.lower()
-    prefixes = [
-        "gemini:", "gpt:", "mache ein bild von", "erstelle ein bild von",
-        "generiere ein bild von", "make an image of", "generate an image of",
-        "create an image of", "zeig mir bild von", "zeig mir ein bild von",
-        "zeige mir bild von", "zeige mir ein bild von", "zeichne", "mache", "erstelle"
-    ]
-    for prefix in prefixes:
-        if cleaned_prompt.startswith(prefix):
-            cleaned_prompt = cleaned_prompt[len(prefix):].strip()
-    cleaned_prompt = cleaned_prompt.replace(' ', '-')
-    cleaned_prompt = re.sub(r'[^a-z0-9-]', '', cleaned_prompt)
-    cleaned_prompt = re.sub(r'-+', '-', cleaned_prompt).strip('-')
-    return cleaned_prompt
 
-def _sanitize_schema_for_gemini(schema: Dict[str, Any]) -> Dict[str, Any]:
-    if not isinstance(schema, dict):
-        return schema
-    new_schema = {}
-    if 'type' in schema and isinstance(schema['type'], str):
-        new_schema['type'] = schema['type'].upper()
-    if 'description' in schema:
-        new_schema['description'] = schema['description']
-    if 'required' in schema:
-        new_schema['required'] = schema['required']
-    if 'enum' in schema:
-        new_schema['enum'] = schema['enum']
-    if 'properties' in schema and isinstance(schema['properties'], dict):
-        new_schema['properties'] = {
-            prop_name: _sanitize_schema_for_gemini(prop_schema)
-            for prop_name, prop_schema in schema['properties'].items()
+
+async def _resolve_redirect(client: httpx.AsyncClient, url: str) -> str:
+    """Folgt einer Redirect-URL und gibt die finale, saubere URL zurück."""
+    try:
+        response = await client.head(url, follow_redirects=True, timeout=10)
+        return str(response.url)
+    except Exception as e:
+        logger.warning(f"Could not resolve redirect for {url}: {e}")
+        return url
+
+async def _format_response_with_citations(response_json: Dict) -> str:
+    """
+    Verarbeitet die JSON-Antwort, um den Text mit sauberen, gruppierten Inline-Nummern zu versehen
+    und eine separate, geordnete Quellenliste am Ende anzufügen.
+    """
+    try:
+        candidate = response_json['candidates'][0]
+        text = candidate['content']['parts'][0]['text']
+        
+        metadata = candidate.get('groundingMetadata')
+        if not metadata or not metadata.get('groundingSupports'):
+            return text
+
+        supports = metadata['groundingSupports']
+        chunks = metadata.get('groundingChunks', [])
+        
+        redirect_uris_to_resolve = {
+            chunk['web']['uri']
+            for chunk in chunks
+            if chunk.get('web') and chunk['web'].get('uri', '').startswith("https://vertexaisearch.cloud.google.com/")
         }
-    if 'items' in schema and isinstance(schema['items'], dict):
-        new_schema['items'] = _sanitize_schema_for_gemini(schema['items'])
-    return new_schema
+
+        resolved_urls_map = {}
+        if redirect_uris_to_resolve:
+            async with httpx.AsyncClient() as client:
+                tasks = [_resolve_redirect(client, uri) for uri in redirect_uris_to_resolve]
+                resolved_results = await asyncio.gather(*tasks)
+                resolved_urls_map = dict(zip(redirect_uris_to_resolve, resolved_results))
+
+        used_chunks = {}
+        for support in supports:
+            for index in support.get('groundingChunkIndices', []):
+                if index not in used_chunks and index < len(chunks):
+                    original_uri = chunks[index].get('web', {}).get('uri')
+                    clean_uri = resolved_urls_map.get(original_uri, original_uri)
+                    
+                    chunk_copy = copy.deepcopy(chunks[index])
+                    if 'web' in chunk_copy and 'uri' in chunk_copy['web']:
+                        chunk_copy['web']['uri'] = clean_uri
+                    used_chunks[index] = chunk_copy
+
+        source_map = {old_index: new_index + 1 for new_index, old_index in enumerate(sorted(used_chunks.keys()))}
+        citations_by_position = {}
+
+        for support in supports:
+            segment = support.get('segment', {})
+            end_index = segment.get('endIndex')
+            if end_index is None: continue
+            
+            insert_pos = end_index
+            while insert_pos < len(text) and text[insert_pos].isalnum():
+                insert_pos += 1
+
+            if insert_pos not in citations_by_position:
+                citations_by_position[insert_pos] = set()
+            
+            for index in support.get('groundingChunkIndices', []):
+                if index in source_map:
+                    citations_by_position[insert_pos].add(source_map[index])
+
+        sorted_positions = sorted(citations_by_position.keys(), reverse=True)
+        for position in sorted_positions:
+            sorted_indices = sorted(list(citations_by_position[position]))
+            citation_string = "".join([f"[{i}]" for i in sorted_indices])
+            if position > 0 and text[position-1].isalnum():
+                 citation_string = " " + citation_string
+            text = text[:position] + citation_string + text[position:]
+
+        if used_chunks:
+            source_list_markdown = "\n\n---\n**Quellen:**\n"
+            for old_index, new_index in sorted(source_map.items(), key=lambda item: item[1]):
+                chunk = used_chunks[old_index]
+                if chunk.get('web'):
+                    uri = chunk['web'].get('uri', '#')
+                    title = chunk['web'].get('title', uri)
+                    source_list_markdown += f"{new_index}. [{title}]({uri})\n"
+            text += source_list_markdown
+        
+        return text
+
+    except (KeyError, IndexError, TypeError) as e:
+        logger.warning(f"Could not parse grounding metadata: {e}. Returning raw text.", exc_info=True)
+        try:
+            return response_json['candidates'][0]['content']['parts'][0]['text']
+        except (KeyError, IndexError):
+            return "Fehler bei der Verarbeitung der Antwort."
 
 class GeminiServiceProvider(BaseLLMProvider):
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-    async def generate_response(self, api_key: str, model: str, messages: List[Dict], tools: Optional[List[Dict]] = None, **kwargs) -> Dict:
+    async def generate_response(self, api_key: str, model: str, messages: List[Dict], tools: Optional[List[Dict]] = None, image_data: Optional[str] = None, **kwargs) -> Dict:
         genai.configure(api_key=api_key)
 
-        gemini_tools = []
+        # --- START: Handle Image Data ---
+        if image_data:
+            logger.info("Image data detected for Gemini. Processing as a multi-modal request.")
+            try:
+                # 1. Parse the Data URI
+                header, encoded = image_data.split(",", 1)
+                mime_type = header.split(":")[1].split(";")[0]
+                
+                # 2. Decode Base64
+                import base64
+                image_bytes = base64.b64decode(encoded)
+
+                # 3. Extract text prompt from the last message
+                prompt_text = ""
+                if messages:
+                    # The last message content might be a list if it was prepared for another provider (like OpenAI)
+                    last_message_content = messages[-1].get("content")
+                    if isinstance(last_message_content, list):
+                        for part in last_message_content:
+                            if part.get("type") == "text":
+                                prompt_text = part.get("text", "")
+                                break
+                    elif isinstance(last_message_content, str):
+                        prompt_text = last_message_content
+
+                # 4. Construct Gemini's content list
+                # As per docs: for single image, put text after the image
+                gemini_content = [
+                    # The SDK can handle a dict with mime_type and data directly
+                    {'mime_type': mime_type, 'data': image_bytes},
+                    {'text': prompt_text}
+                ]
+
+                # 5. Call the API
+                genai_model = genai.GenerativeModel(model_name=model)
+                input_tokens = (await genai_model.count_tokens_async(gemini_content)).total_tokens
+                response = await genai_model.generate_content_async(gemini_content)
+                text_response = response.text
+                output_tokens = (await genai_model.count_tokens_async(text_response)).total_tokens
+                
+                usage, cost = _calculate_and_log_cost(model, usage_data={"prompt_tokens": input_tokens, "completion_tokens": output_tokens})
+                return {"type": "text", "text": text_response, "image_url": None, "usage": usage, "cost": cost}
+
+            except Exception as e:
+                logger.error(f"An unexpected error occurred with Gemini image processing: {e}", exc_info=True)
+                # Return a user-friendly error message
+                return {"type": "text", "text": f"Fehler bei der Bildverarbeitung mit Gemini: {e}", "image_url": None, "usage": {}, "cost": {}}
+        # --- END: Handle Image Data ---
+
+        # Existing logic for text-only messages
+        is_websearch_active = False
         if tools:
-            tools_copy = copy.deepcopy(tools)
-            for tool in tools_copy:
-                if tool.get('type') == 'function' and 'function' in tool:
-                    func_def = tool['function']
-                    if 'parameters' in func_def:
-                        func_def['parameters'] = _sanitize_schema_for_gemini(func_def['parameters'])
-                    gemini_tools.append(func_def)
-                else:
-                    gemini_tools.append(tool)
-        
-        final_tools = gemini_tools if gemini_tools else None
+            for tool in tools:
+                if tool.get('function', {}).get('name') == 'perform_websearch':
+                    is_websearch_active = True
+                    break
         
         system_instruction = None
         gemini_history_for_api = []
-        
         for msg in messages:
             if msg.get("role") == "system":
                 system_instruction = msg.get("content")
                 continue
             role = "user" if msg["role"] == "user" else "model"
-            gemini_history_for_api.append({'role': role, 'parts': [msg['content']]})
+            gemini_history_for_api.append({'role': role, 'parts': [{'text': msg.get('content', '')}]})
         
-        genai_model = genai.GenerativeModel(
-            model, 
-            tools=final_tools,
-            system_instruction=system_instruction
-        )
-
+        if is_websearch_active:
+            logger.info("Web search requested for Gemini. Using direct REST API call.")
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+            payload = {
+                "contents": gemini_history_for_api,
+                "tools": [{"google_search": {}}],
+                "systemInstruction": {"parts": [{"text": system_instruction}]} if system_instruction else None
+            }
+            try:
+                async with httpx.AsyncClient(timeout=120.0) as client:
+                    response = await client.post(url, json=payload)
+                    response.raise_for_status()
+                response_json = response.json()
+                text_response = await _format_response_with_citations(response_json)
+                input_tokens = len(json.dumps(payload)) // 4 
+                output_tokens = len(text_response) // 4
+                usage, cost = _calculate_and_log_cost(model, usage_data={"prompt_tokens": input_tokens, "completion_tokens": output_tokens})
+                return {"type": "text", "text": text_response, "image_url": None, "usage": usage, "cost": cost}
+            except httpx.HTTPStatusError as e:
+                error_body = e.response.json()
+                logger.error(f"HTTP Error during direct Gemini API call: {error_body}", exc_info=True)
+                error_message = error_body.get("error", {}).get("message", "Unbekannter API-Fehler")
+                return {"type": "text", "text": f"Fehler bei der Gemini-Websuche: {error_message}", "image_url": None, "usage": {}, "cost": {}}
+            except Exception as e:
+                logger.error(f"An unexpected error occurred with direct Gemini API call: {e}", exc_info=True)
+                raise
+        
+        logger.info("Standard Gemini request. Using Python SDK.")
+        genai_model = genai.GenerativeModel(model_name=model, system_instruction=system_instruction)
         try:
-            # --- HIER IST DER FINALE FIX ---
-            # Wir berechnen die Input-Tokens von der VOLLSTÄNDIGEN Historie, BEVOR wir sie verändern.
-            # Wir stellen auch sicher, dass die Liste nicht leer ist.
-            input_tokens = 0
-            if gemini_history_for_api:
-                input_tokens = (await genai_model.count_tokens_async(gemini_history_for_api)).total_tokens
-            
-            # Jetzt bereiten wir die Historie für den API-Aufruf vor.
-            last_user_prompt = gemini_history_for_api.pop() if gemini_history_for_api else {'parts': ['']}
-            chat_history_for_session = gemini_history_for_api
-            # -----------------------------
-
-            chat_session = genai_model.start_chat(history=chat_history_for_session)
-            response = await chat_session.send_message_async(last_user_prompt['parts'])
-
-            if response.candidates and response.candidates[0].content and response.candidates[0].content.parts and response.candidates[0].content.parts[0].function_call:
-                function_call = response.candidates[0].content.parts[0].function_call
-                tool_name = function_call.name
-                tool_args = {key: value for key, value in function_call.args.items()}
-                logger.info(f"Gemini LLM requested tool call: {tool_name} with args {tool_args}")
-                
-                # Wir verwenden die bereits berechneten Input-Tokens
-                usage, cost = _calculate_and_log_cost(model, usage_data={"prompt_tokens": input_tokens, "completion_tokens": 0})
-                return {"type": "tool_code", "tool_name": tool_name, "tool_args": tool_args, "usage": usage, "cost": cost}
-
+            input_tokens = (await genai_model.count_tokens_async(gemini_history_for_api)).total_tokens
+            response = await genai_model.generate_content_async(gemini_history_for_api)
             text_response = response.text
             output_tokens = (await genai_model.count_tokens_async(text_response)).total_tokens
             usage, cost = _calculate_and_log_cost(model, usage_data={"prompt_tokens": input_tokens, "completion_tokens": output_tokens})
             return {"type": "text", "text": text_response, "image_url": None, "usage": usage, "cost": cost}
-
-        except ResourceExhausted as e:
-            logger.warning(f"Gemini API quota exceeded: {e.message}")
-            return {"type": "text", "text": f"Fehler: Das Anfragelimit für die Gemini API wurde überschritten. (Fehler: 429)", "image_url": None, "usage": {}, "cost": {}}
         except Exception as e:
-            logger.error(f"An unexpected error occurred with Gemini API: {e}", exc_info=True)
+            logger.error(f"An unexpected error occurred with Gemini SDK: {e}", exc_info=True)
             raise
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))

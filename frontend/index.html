@@ -50,6 +50,8 @@
           <div id="chat-messages"></div>
           <div id="chat-input-container">
                         <form id="chat-form">
+              <input type="file" id="image-upload-input" style="display: none;" accept="image/*">
+              <button type="button" id="image-upload-btn">📎</button>
               <input type="text" id="chat-input" placeholder="Nachricht an Janus senden...">
               <button id="send-button" type="submit">Senden</button>
             </form>
@@ -67,6 +69,7 @@
       <a href="#" class="settings-nav-link active-setting" data-target="api-key-section">API Keys</a>
       <a href="#" class="settings-nav-link" data-target="model-management-section">Modellverwaltung</a>
       <a href="#" class="settings-nav-link" data-target="workspaces-section">Arbeitsverzeichnisse</a>
+      <a href="#" class="settings-nav-link" data-target="personality-section">Persönlichkeit</a>
       <button id="back-to-chat-btn">Zurück zum Chat</button>
     </div>
 
@@ -98,7 +101,15 @@
         </form>
       </div>
 
-      <!-- Sektion 3: Arbeitsverzeichnisse -->
+      <!-- Sektion 3: Persönlichkeit -->
+      <div id="personality-section" class="settings-section" style="display: none;">
+        <h3>Persönlichkeit des Assistenten</h3>
+        <div id="personality-settings">
+          <p>Lade Persönlichkeits-Einstellungen...</p>
+        </div>
+      </div>
+
+      <!-- Sektion 4: Arbeitsverzeichnisse -->
       <div id="workspaces-section" class="settings-section" style="display: none;">
           <h3>Arbeitsverzeichnisse</h3>
           <ul id="workspaces-list"></ul>

@@ -1,5 +1,6 @@
 import interact from 'interactjs';
 import { API_BASE_URL } from './config.js';
+import './personality-settings.js';
 
 const appState = {
     currentView: 'chat',

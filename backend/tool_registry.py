@@ -101,6 +101,7 @@ register_tool(Tool(func=rename_file_tool, args_schema=schemas.RenameFileArgs))
 register_tool(Tool(func=move_file_tool, args_schema=schemas.MoveFileArgs))
 register_tool(Tool(func=move_files_tool, args_schema=schemas.MoveFilesArgs)) # NEU
 register_tool(Tool(func=list_allowed_workspaces_tool, args_schema=schemas.ListAllowedWorkspacesArgs))
+register_tool(Tool(func=perform_websearch, args_schema=schemas.WebsearchToolArgs))
 
 def get_all_tool_definitions():
     return [tool.llm_definition for tool in TOOL_REGISTRY.values()]

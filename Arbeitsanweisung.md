@@ -1,303 +1,317 @@
-﻿Schritt 1: Datenbankmodell erweitern (database.py)
-Wir fügen der Memory-Tabelle unsere neue Spalte expires_at hinzu.
-code
+﻿Bildverständnis
+
+Gemini-Modelle sind von Grund auf multimodal konzipiert und ermöglichen eine Vielzahl von Bildverarbeitungs- und Computer Vision-Aufgaben, darunter Bilduntertitelung, ‑klassifizierung und Visual Question Answering, ohne dass spezielle ML-Modelle trainiert werden müssen.
+
+Tipp :Gemini-Modelle (2.0 und höher) bieten neben ihren allgemeinen multimodalen Funktionen durch zusätzliches Training eine höhere Genauigkeit für bestimmte Anwendungsfälle wie Objekterkennung und Segmentierung. Weitere Informationen finden Sie im Abschnitt Funktionen.
+Bilder an Gemini übergeben
+Sie haben zwei Möglichkeiten, Bilder als Eingabe für Gemini bereitzustellen:
+
+Inline-Bilddaten übergeben: Ideal für kleinere Dateien (Gesamtanfragegröße unter 20 MB, einschließlich Prompts).
+Bilder mit der File API hochladen: Empfohlen für größere Dateien oder wenn Bilder in mehreren Anfragen wiederverwendet werden sollen.
+Inline-Bilddaten übergeben
+Sie können Inline-Bilddaten im Request an generateContent übergeben. Sie können Bilddaten als Base64-codierte Strings bereitstellen oder lokale Dateien direkt lesen (je nach Sprache).
+
+Im folgenden Beispiel wird gezeigt, wie ein Bild aus einer lokalen Datei gelesen und zur Verarbeitung an die generateContent API übergeben wird.
+
 Python
-# backend/database.py
+JavaScript
+Ok
+REST
 
-# ... (andere imports)
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Float, func
+  from google.genai import types
 
-# ...
+  with open('path/to/small-sample.jpg', 'rb') as f:
+      image_bytes = f.read()
 
-class Memory(Base):
-    __tablename__ = "memory"
-    id = Column(Integer, primary_key=True, index=True)
-    chat_id = Column(Integer, ForeignKey("chats.id"))
-    snippet = Column(Text, nullable=False)
-    embedding_json = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.datetime.now)
-    last_accessed_at = Column(DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
-    is_core_fact = Column(Boolean, default=False)
-    # --- NEUE SPALTE FÜR EPHEMERE ERINNERUNGEN ---
-    expires_at = Column(DateTime, nullable=True) # nullable=True ist entscheidend!
+  response = client.models.generate_content(
+    model='gemini-2.5-flash',
+    contents=[
+      types.Part.from_bytes(
+        data=image_bytes,
+        mime_type='image/jpeg',
+      ),
+      'Caption this image.'
+    ]
+  )
 
-# ... (Rest der Datei bleibt unverändert)
-Das war's schon für die Datenbank. Da wir init_db() haben, wird die neue Spalte beim nächsten Start automatisch hinzugefügt.
-Schritt 2: Speicher- und Archivierungslogik anpassen (memory_manager.py)
-Jetzt bringen wir dem memory_manager bei, mit dem neuen Feld umzugehen.
-save_memory_snippet erweitern: Die Funktion muss das neue Feld annehmen können.
-archive_old_memories härten: Die Funktion muss ephemere Erinnerungen ignorieren.
-Neue Aufräumfunktion prune_expired_memories erstellen.
-code
+  print(response.text)
+Sie können auch ein Bild von einer URL abrufen, es in Byte konvertieren und an generateContent übergeben, wie in den folgenden Beispielen gezeigt.
+
 Python
-# backend/memory_manager.py
+JavaScript
+Ok
+REST
 
-# ... (imports, inkl. datetime)
-import datetime
-from typing import List, Optional # Optional hinzufügen
+from google import genai
+from google.genai import types
 
-# ...
+import requests
 
-# --- Memory CRUD ---
-# ÄNDERUNG: Signatur um expires_at erweitern
-def save_memory_snippet(db: Session, chat_id: int, snippet_text: str, is_core: bool = False, expires_at: Optional[datetime.datetime] = None):
-    embedding = vector_service.generate_embedding(snippet_text)
-    if embedding is None:
-        return None
-    # --- Geänderter Aufruf ---
-    db_memory = database.Memory(
-        chat_id=chat_id, 
-        snippet=snippet_text, 
-        embedding_json=embedding, 
-        is_core_fact=is_core,
-        expires_at=expires_at  # Das neue Feld wird übergeben
-    )
-    db.add(db_memory)
-    db.commit()
-    db.refresh(db_memory)
-    return db_memory
+image_path = "https://goo.gle/instrument-img"
+image_bytes = requests.get(image_path).content
+image = types.Part.from_bytes(
+  data=image_bytes, mime_type="image/jpeg"
+)
 
-# ... (get_all_long_term_memories, promote_ltm_to_stm, touch_memory_snippet bleiben unverändert)
+client = genai.Client()
 
-# --- NEUE ZENTRALE ARCHIVIERUNGSFUNKTION ---
-def archive_old_memories(db: Session):
-    """
-    Prüft, ob das STM bereinigt werden muss und verschiebt die ältesten,
-    am seltensten genutzten und nicht-essentiellen Erinnerungen ins LTM.
-    """
-    # ... (STM_LIMIT, STM_TARGET_SIZE, stm_count bleiben unverändert)
-    try:
-        stm_count = db.query(database.Memory).count()
-        if stm_count <= STM_LIMIT:
-            logger.info(f"STM size ({stm_count}) is within limit ({STM_LIMIT}). No archival needed.")
-            return
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents=["What is this image?", image],
+)
 
-        logger.info(f"STM size ({stm_count}) exceeds limit ({STM_LIMIT}). Starting archival process.")
+print(response.text)
+Hinweis: Durch Inline-Bilddaten wird die Gesamtgröße der Anfrage (Text-Prompts, Systemanweisungen und Inline-Bytes) auf 20 MB begrenzt. Bei größeren Anfragen laden Sie Bilddateien mit der File API hoch. Die Files API ist auch effizienter für Szenarien, in denen dasselbe Bild wiederholt verwendet wird.
+Bilder mit der File API hochladen
+Verwenden Sie für große Dateien oder um dieselbe Bilddatei wiederholt verwenden zu können, die Files API. Mit dem folgenden Code wird eine Bilddatei hochgeladen und dann in einem Aufruf von generateContent verwendet. Weitere Informationen und Beispiele finden Sie im Leitfaden zur Files API.
 
-        num_to_archive = stm_count - STM_TARGET_SIZE
+Python
+JavaScript
+Ok
+REST
 
-        # Finde Kandidaten: Nicht "core", sortiert nach dem letzten Zugriff (älteste zuerst)
-        # KORREKTUR/HÄRTUNG: Ignoriere ephemere Erinnerungen!
-        candidates = (
-            db.query(database.Memory)
-            .filter(database.Memory.is_core_fact == False)
-            .filter(database.Memory.expires_at == None)  # <-- GOLD STANDARD: Nur zeitlose Fakten archivieren!
-            .order_by(database.Memory.last_accessed_at.asc())
-            .limit(num_to_archive)
-            .all()
+from google import genai
+
+client = genai.Client()
+
+my_file = client.files.upload(file="path/to/sample.jpg")
+
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents=[my_file, "Caption this image."],
+)
+
+print(response.text)
+Prompts mit mehreren Bildern erstellen
+Sie können in einem einzelnen Prompt mehrere Bilder angeben, indem Sie mehrere Part-Objekte für Bilder in das contents-Array einfügen. Dabei kann es sich um eine Mischung aus Inline-Daten (lokale Dateien oder URLs) und File API-Referenzen handeln.
+
+Python
+JavaScript
+Ok
+REST
+
+from google import genai
+from google.genai import types
+
+client = genai.Client()
+
+# Upload the first image
+image1_path = "path/to/image1.jpg"
+uploaded_file = client.files.upload(file=image1_path)
+
+# Prepare the second image as inline data
+image2_path = "path/to/image2.png"
+with open(image2_path, 'rb') as f:
+    img2_bytes = f.read()
+
+# Create the prompt with text and multiple images
+response = client.models.generate_content(
+
+    model="gemini-2.5-flash",
+    contents=[
+        "What is different between these two images?",
+        uploaded_file,  # Use the uploaded file reference
+        types.Part.from_bytes(
+            data=img2_bytes,
+            mime_type='image/png'
         )
+    ]
+)
 
-        if not candidates:
-            logger.warning("STM is full but no non-core, timeless facts could be found to archive.")
-            return
+print(response.text)
+Objekterkennung
+Ab Gemini 2.0 werden Modelle weiter trainiert, um Objekte in einem Bild zu erkennen und die Koordinaten ihrer Begrenzungsrahmen zu ermitteln. Die Koordinaten werden relativ zu den Bilddimensionen auf [0, 1000] skaliert. Sie müssen diese Koordinaten anhand der Originalbildgröße herunterskalieren.
 
-        for mem in candidates:
-            # ... (Rest der Archivierungslogik bleibt exakt gleich)
-            # 1. In LTM kopieren
-            new_ltm_entry = database.LongTermMemory(
-                original_memory_id=mem.id,
-                chat_id=mem.chat_id,
-                snippet=mem.snippet,
-                embedding_json=mem.embedding_json,
-                created_at=mem.created_at
-            )
-            db.add(new_ltm_entry)
-
-            # 2. Aus STM löschen
-            db.delete(mem)
-
-        db.commit()
-        logger.info(f"Successfully archived {len(candidates)} memory snippets.")
-
-    except Exception as e:
-        logger.error(f"Error during memory archival: {e}")
-        db.rollback()
-
-
-# --- NEUE AUFRÄUMFUNKTION ---
-def prune_expired_memories(db: Session):
-    """Sucht und löscht alle ephemeren Erinnerungen, deren Ablaufdatum überschritten ist."""
-    try:
-        now = datetime.datetime.now()
-        # Finde alle Erinnerungen, deren expires_at in der Vergangenheit liegt
-        expired_memories = db.query(database.Memory).filter(
-            database.Memory.expires_at != None,
-            database.Memory.expires_at < now
-        ).all()
-
-        if not expired_memories:
-            logger.info("No expired memories to prune.")
-            return
-
-        count = len(expired_memories)
-        for mem in expired_memories:
-            logger.info(f"Pruning expired memory (ID: {mem.id}): '{mem.snippet}'")
-            db.delete(mem)
-        
-        db.commit()
-        logger.info(f"Successfully pruned {count} expired memory snippets.")
-    except Exception as e:
-        logger.error(f"Error during memory pruning: {e}")
-        db.rollback()
-
-# ... (Rest der Datei bleibt unverändert)
-
----
-**Implementierung abgeschlossen:** Alle Schritte dieser Arbeitsanweisung wurden erfolgreich umgesetzt.
-Schritt 3: Die Intelligenz implementieren (llm_gateway.py)
-Hier fügen wir die Klassifizierungslogik ein. Wenn eine Websuche durchgeführt wurde, fragen wir das LLM, ob das Ergebnis gespeichert werden soll und für wie lange.
-code
 Python
-# backend/llm_gateway.py
 
-# ... (imports, inkl. datetime)
-import datetime
-import asyncio # Wichtig für Hintergrund-Tasks
+from google import genai
+from google.genai import types
+from PIL import Image
+import json
 
-# ... (andere Funktionen)
+client = genai.Client()
+prompt = "Detect the all of the prominent items in the image. The box_2d should be [ymin, xmin, ymax, xmax] normalized to 0-1000."
 
-async def reason_and_respond(user_prompt: str, chat_history: List[Dict], memory_context: str, db: Session, api_key: str, model: str, provider: str, context_manager: ContextManager, user_name: Optional[str] = None) -> Dict:
-    # ... (Anfang der Funktion bis zur Websuche bleibt unverändert)
+image = Image.open("/path/to/image.png")
 
-    if response.get("type") == "text" and "Ich habe dazu keine Informationen in meinen Fakten" in response.get("text", ""):
-        logger.info("LLM indicated no information in facts. Performing web search...")
-        web_result = await perform_websearch(user_prompt)
-        
-        logger.info("Web search performed. Now formatting result with LLM...")
+config = types.GenerateContentConfig(
+  response_mime_type="application/json"
+  )
 
-        # ... (der formatting_prompt bleibt unverändert)
-        
-        formatting_messages = [{"role": "user", "content": formatting_prompt}]
+response = client.models.generate_content(model="gemini-2.5-flash",
+                                          contents=[image, prompt],
+                                          config=config
+                                          )
 
-        formatted_response = await call_llm(
-            provider=provider, 
-            model_id=model, 
-            api_key=api_key, 
-            messages=formatting_messages
-        )
-        
-        # --- NEUER, INTELLIGENTER SPEICHER-BLOCK ---
-        
-        # Holen Sie sich den zusammengefassten Text aus der formatierten Antwort
-        summarized_web_answer = formatted_response.get("text")
-        
-        if summarized_web_answer:
-            # Erstelle eine Hintergrundaufgabe, um die Klassifizierung und Speicherung durchzuführen,
-            # ohne die Antwort an den Benutzer zu blockieren.
-            asyncio.create_task(
-                classify_and_save_web_result(
-                    db=db,
-                    user_question=user_prompt,
-                    llm_answer=summarized_web_answer,
-                    api_key=api_key,
-                    provider=provider,
-                    model=model,
-                    chat_id=chat_history[-1].get('chat_id_for_saving') # Wir müssen die chat_id irgendwie hierher bekommen
-                )
-            )
+width, height = image.size
+bounding_boxes = json.loads(response.text)
 
-        # ... (der Rest der Funktion mit Kostenberechnung usw. bleibt gleich)
-        # ... (Rückgabe der formatted_response)
-        
-    # ... (Rest der Funktion)
+converted_bounding_boxes = []
+for bounding_box in bounding_boxes:
+    abs_y1 = int(bounding_box["box_2d"][0]/1000 * height)
+    abs_x1 = int(bounding_box["box_2d"][1]/1000 * width)
+    abs_y2 = int(bounding_box["box_2d"][2]/1000 * height)
+    abs_x2 = int(bounding_box["box_2d"][3]/1000 * width)
+    converted_bounding_boxes.append([abs_x1, abs_y1, abs_x2, abs_y2])
 
+print("Image size: ", width, height)
+print("Bounding boxes:", converted_bounding_boxes)
 
-# --- NEUE HELFERFUNKTION FÜR DEN LLM_GATEWAY ---
+Hinweis : Das Modell unterstützt auch das Generieren von Begrenzungsrahmen basierend auf benutzerdefinierten Anweisungen wie „Zeige Begrenzungsrahmen aller grünen Objekte in diesem Bild“. Außerdem werden benutzerdefinierte Labels wie „Kennzeichne die Artikel mit den Allergenen, die sie enthalten können“ unterstützt.
+Weitere Beispiele finden Sie in den folgenden Notebooks im Gemini Cookbook:
 
-async def classify_and_save_web_result(db: Session, user_question: str, llm_answer: str, api_key: str, provider: str, model: str, chat_id: int):
-    """
-    Klassifiziert eine aus einer Websuche gewonnene Information und speichert sie 
-    ggf. als ephemere Erinnerung.
-    """
-    from backend import memory_manager # Import hier, um Zirkelimporte zu vermeiden
-    
-    classification_prompt = f"""
-    Du bist ein Daten-Analyst. Deine Aufgabe ist es zu bewerten, ob eine Information zeitlos oder zeitkritisch ist.
-    Zeitkritische Informationen sind Dinge wie aktuelle Preise, Nachrichten, Termine, Wetter oder temporäre Zustände, die sich wahrscheinlich in weniger als 48 Stunden ändern.
-    Zeitlose Informationen sind Anleitungen, Fakten, technische Daten, biografische Details oder historisches Wissen.
+Notebook zum räumlichen 2D-Verständnis
+Experimentelles 3D-Zeigegerät für Notebooks
+Segmentierung
+Ab Gemini 2.5 können Modelle Elemente nicht nur erkennen, sondern auch segmentieren und ihre Konturmasken bereitstellen.
 
-    Benutzerfrage: "{user_question}"
-    Antwort: "{llm_answer}"
+Das Modell sagt eine JSON-Liste voraus, wobei jedes Element eine Segmentierungsmaske darstellt. Jedes Element hat einen Begrenzungsrahmen („box_2d“) im Format [y0, x0, y1, x1] mit normalisierten Koordinaten zwischen 0 und 1000, ein Label („label“), das das Objekt identifiziert, und schließlich die Segmentierungsmaske innerhalb des Begrenzungsrahmens als Base64-codiertes PNG, das eine Wahrscheinlichkeitskarte mit Werten zwischen 0 und 255 ist. Die Maske muss an die Abmessungen des umgebenden Rechtecks angepasst und dann mit dem von Ihnen festgelegten Konfidenzwert (127 für den Mittelpunkt) binarisiert werden.
 
-    Ist die Information in der ANTWORT basierend auf der FRAGE wahrscheinlich zeitkritisch?
-    Antworte NUR mit 'JA' oder 'NEIN'.
-    """
-    
-    try:
-        messages = [{"role": "user", "content": classification_prompt}]
-        # Wir verwenden ein schnelles, günstiges Modell für die Klassifizierung
-        classification_model = "gpt-4o-mini" if provider == "openai" else "gemini-1.5-flash-latest"
-        
-        response = await call_llm(provider, classification_model, api_key, messages)
-        decision = response.get("text", "NEIN").strip().upper()
-
-        if "JA" in decision:
-            expiration_date = datetime.datetime.now() + datetime.timedelta(days=2) # 48 Stunden Gültigkeit
-            logger.info(f"Web result classified as EPHEMERAL. Saving with expiration date. Fact: '{llm_answer[:100]}...'")
-            memory_manager.save_memory_snippet(db, chat_id, llm_answer, is_core=False, expires_at=expiration_date)
-        else:
-            logger.info(f"Web result classified as TIMELESS. Saving as a regular memory. Fact: '{llm_answer[:100]}...'")
-            # Wir speichern es als normalen, nicht-essentiellen Fakt, der den normalen Archivierungsprozess durchläuft
-            memory_manager.save_memory_snippet(db, chat_id, llm_answer, is_core=False, expires_at=None)
-
-    except Exception as e:
-        logger.error(f"Error during web result classification and saving: {e}", exc_info=True)
-
-# Anpassung, um die chat_id zu übergeben
-# In `main.py`, in `handle_chat_request`, müssen wir die chat_id in den Verlauf einfügen.
-# chat_history.append({"role": ..., "content": ..., "chat_id_for_saving": request.chat_id})
-# Aber eine sauberere Methode ist, die chat_id direkt an `reason_and_respond` zu übergeben.
-
-# Lass uns die Signatur von `reason_and_respond` anpassen:
-async def reason_and_respond(..., chat_id: int, ...):
-    # und dann rufen wir `classify_and_save_web_result` mit `chat_id=chat_id` auf.
-    # Die Änderungen in `main.py` wären dann trivial.
-Anmerkung: Die Übergabe der chat_id muss noch in der Aufrufkette von main.py -> llm_gateway.py durchgereicht werden. Das ist eine kleine, aber notwendige Anpassung.
-Schritt 4: Den Aufräumprozess einplanen (main.py)
-Wo rufen wir unsere neue prune_expired_memories-Funktion auf? Ein guter Ort ist derselbe wie für die Archivierung: Beim Erstellen eines neuen Chats. Das passiert regelmäßig, aber nicht so oft, dass es die Performance beeinträchtigt.
-code
+Hinweis :Wenn Sie das Thinking-Budget auf 0 setzen, lassen sich bessere Ergebnisse erzielen. Ein Beispiel finden Sie im Codebeispiel unten.
 Python
-# backend/main.py
 
-# ... (andere imports)
+from google import genai
+from google.genai import types
+from PIL import Image, ImageDraw
+import io
+import base64
+import json
+import numpy as np
+import os
 
-# ... (die bestehende create_chat Funktion)
+client = genai.Client()
 
-@app.post("/api/chats", response_model=schemas.ChatResponse)
-async def create_chat(chat: schemas.ChatCreate, db: Session = Depends(get_db)):
-    # ... (der bestehende Block zur Zusammenfassung bleibt unverändert)
-    
-    # Die neue Archivierungs- UND Aufräumlogik kommt hierhin
-    try:
-        # Bestehende Archivierung
-        asyncio.create_task(run_archival())
-        # NEU: Geplantes Aufräumen
-        asyncio.create_task(run_pruning()) 
-    except Exception as e:
-        logger.error(f"Failed to schedule memory maintenance tasks: {e}")
+def parse_json(json_output: str):
+  # Parsing out the markdown fencing
+  lines = json_output.splitlines()
+  for i, line in enumerate(lines):
+    if line == "```json":
+      json_output = "\n".join(lines[i+1:])  # Remove everything before "```json"
+      output = json_output.split("```")[0]  # Remove everything after the closing "```"
+      break  # Exit the loop once "```json" is found
+  return json_output
 
-    return crud.create_chat(db, title=chat.title)
+def extract_segmentation_masks(image_path: str, output_dir: str = "segmentation_outputs"):
+  # Load and resize image
+  im = Image.open(image_path)
+  im.thumbnail([1024, 1024], Image.Resampling.LANCZOS)
 
+  prompt = """
+  Give the segmentation masks for the wooden and glass items.
+  Output a JSON list of segmentation masks where each entry contains the 2D
+  bounding box in the key "box_2d", the segmentation mask in key "mask", and
+  the text label in the key "label". Use descriptive labels.
+  """
 
-# Füge diese neue Helferfunktion irgendwo in main.py auf der obersten Ebene hinzu
-# (z.B. nach der run_archival Funktion).
+  config = types.GenerateContentConfig(
+    thinking_config=types.ThinkingConfig(thinking_budget=0) # set thinking_budget to 0 for better results in object detection
+  )
 
-async def run_pruning():
-    """
-    Wrapper, um die synchrone DB-Operation zum Aufräumen in einer asyncio-Task auszuführen.
-    """
-    logger.info("Background memory pruning task starting.")
-    db_session = database.SessionLocal()
-    try:
-        # Hier rufen wir unsere neue Funktion auf
-        memory_manager.prune_expired_memories(db_session)
-        logger.info("Background memory pruning task finished successfully.")
-    except Exception as e:
-        logger.error(f"An error occurred in the background pruning task: {e}", exc_info=True)
-    finally:
-        db_session.close()
+  response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents=[prompt, im], # Pillow images can be directly passed as inputs (which will be converted by the SDK)
+    config=config
+  )
 
-# ... (Rest der Datei bleibt unverändert)
+  # Parse JSON response
+  items = json.loads(parse_json(response.text))
 
----
-**Implementierung abgeschlossen:** Alle Schritte dieser Arbeitsanweisung wurden erfolgreich umgesetzt.
+  # Create output directory
+  os.makedirs(output_dir, exist_ok=True)
+
+  # Process each mask
+  for i, item in enumerate(items):
+      # Get bounding box coordinates
+      box = item["box_2d"]
+      y0 = int(box[0] / 1000 * im.size[1])
+      x0 = int(box[1] / 1000 * im.size[0])
+      y1 = int(box[2] / 1000 * im.size[1])
+      x1 = int(box[3] / 1000 * im.size[0])
+
+      # Skip invalid boxes
+      if y0 >= y1 or x0 >= x1:
+          continue
+
+      # Process mask
+      png_str = item["mask"]
+      if not png_str.startswith("data:image/png;base64,"):
+          continue
+
+      # Remove prefix
+      png_str = png_str.removeprefix("data:image/png;base64,")
+      mask_data = base64.b64decode(png_str)
+      mask = Image.open(io.BytesIO(mask_data))
+
+      # Resize mask to match bounding box
+      mask = mask.resize((x1 - x0, y1 - y0), Image.Resampling.BILINEAR)
+
+      # Convert mask to numpy array for processing
+      mask_array = np.array(mask)
+
+      # Create overlay for this mask
+      overlay = Image.new('RGBA', im.size, (0, 0, 0, 0))
+      overlay_draw = ImageDraw.Draw(overlay)
+
+      # Create overlay for the mask
+      color = (255, 255, 255, 200)
+      for y in range(y0, y1):
+          for x in range(x0, x1):
+              if mask_array[y - y0, x - x0] > 128:  # Threshold for mask
+                  overlay_draw.point((x, y), fill=color)
+
+      # Save individual mask and its overlay
+      mask_filename = f"{item['label']}_{i}_mask.png"
+      overlay_filename = f"{item['label']}_{i}_overlay.png"
+
+      mask.save(os.path.join(output_dir, mask_filename))
+
+      # Create and save overlay
+      composite = Image.alpha_composite(im.convert('RGBA'), overlay)
+      composite.save(os.path.join(output_dir, overlay_filename))
+      print(f"Saved mask and overlay for {item['label']} to {output_dir}")
+
+# Example usage
+if __name__ == "__main__":
+  extract_segmentation_masks("path/to/image.png")
+
+Ein detaillierteres Beispiel finden Sie im Segmentierungsbeispiel im Cookbook-Leitfaden.
+
+Ein Tisch mit Cupcakes, auf dem die Holz- und Glasobjekte hervorgehoben sind
+Beispiel für eine Segmentierungsausgabe mit Objekten und Segmentierungsmasken
+Unterstützte Bildformate
+Gemini unterstützt die folgenden MIME-Typen für Bildformate:
+
+PNG - image/png
+JPEG - image/jpeg
+WEBP - image/webp
+HEIC – image/heic
+HEIF - image/heif
+Leistungsspektrum
+Alle Gemini-Modellversionen sind multimodal und können für eine Vielzahl von Bildverarbeitungs- und Computer Vision-Aufgaben verwendet werden, einschließlich, aber nicht beschränkt auf Bilduntertitelung, Visual Question Answering, Bildklassifizierung, Objekterkennung und Segmentierung.
+
+Je nach Ihren Qualitäts- und Leistungsanforderungen kann Gemini die Notwendigkeit reduzieren, spezielle ML-Modelle zu verwenden.
+
+Einige spätere Modellversionen werden speziell darauf trainiert, die Genauigkeit von spezialisierten Aufgaben zusätzlich zu den allgemeinen Funktionen zu verbessern:
+
+Gemini 2.0-Modelle werden weiter trainiert, um eine verbesserte Objekterkennung zu unterstützen.
+
+Gemini 2.5-Modelle werden zusätzlich trainiert, um neben der Objekterkennung auch eine verbesserte Segmentierung zu unterstützen.
+
+Einschränkungen und wichtige technische Informationen
+Dateilimit
+Gemini 2.5 Pro/Flash, 2.0 Flash, 1.5 Pro und 1.5 Flash unterstützen maximal 3.600 Bilddateien pro Anfrage.
+
+Tokenberechnung
+Gemini 1.5 Flash und Gemini 1.5 Pro: 258 Tokens, wenn beide Dimensionen kleiner oder gleich 384 Pixel sind. Größere Bilder werden gekachelt (mind. 256 Pixel, max. 768 Pixel, auf 768 × 768 Pixel skaliert). Jede Kachel kostet 258 Tokens.
+Gemini 2.0 Flash und Gemini 2.5 Flash/Pro: 258 Tokens, wenn beide Dimensionen kleiner oder gleich 384 Pixel sind. Größere Bilder werden in Kacheln mit 768 × 768 Pixeln aufgeteilt, die jeweils 258 Tokens kosten.
+Tipps und Best Practices
+Prüfen Sie, ob die Bilder richtig gedreht sind.
+Verwenden Sie klare, nicht verschwommene Bilder.
+Wenn Sie ein einzelnes Bild mit Text verwenden, platzieren Sie den Text-Prompt nach dem Bildteil im contents-Array.
+Nächste Schritte
+In diesem Leitfaden erfahren Sie, wie Sie Bilddateien hochladen und Textausgaben aus Bildeingaben generieren. Weitere Informationen finden Sie in den folgenden Ressourcen:
+
+Files API: Hier finden Sie weitere Informationen zum Hochladen und Verwalten von Dateien für die Verwendung mit Gemini.
+Systemanweisungen: Mit Systemanweisungen können Sie das Verhalten des Modells entsprechend Ihren spezifischen Anforderungen und Anwendungsfällen steuern.
+Strategien für Dateiprompts: Die Gemini API unterstützt Prompts mit Text-, Bild-, Audio- und Videodaten, auch bekannt als multimodale Prompts.
+Sicherheitshinweise: Generative KI-Modelle können manchmal unerwartete Ausgaben liefern, z. B. ungenaue, voreingenommene oder anstößige Ausgaben. Die Nachbearbeitung und menschliche Bewertung sind unerlässlich, um das Risiko von Schäden durch solche Ausgaben zu begrenzen.

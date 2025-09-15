@@ -25,47 +25,142 @@ chatMessages.addEventListener('click', (event) => {
     }
 });
 
+const imageUploadBtn = document.getElementById('image-upload-btn');
+const imageUploadInput = document.getElementById('image-upload-input');
+
+// Listener to trigger the hidden file input
+imageUploadBtn.addEventListener('click', () => {
+    imageUploadInput.click();
+});
+
+// Listener that handles the file selection and triggers the analysis
+imageUploadInput.addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) {
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const dataUrl = e.target.result;
+        const base64 = dataUrl.split(',')[1];
+
+        // 1. Append user's image to the UI immediately
+        appendMessage('user', { 
+            image_base64: base64,
+            mime_type: file.type
+        });
+
+        // 2. Prepare and send the request for analysis
+        const provider = document.getElementById('provider-select').value;
+        const model = document.getElementById('model-select').value;
+        const chat_id = getCurrentChatId();
+        const defaultPrompt = "Beschreibe dieses Bild detailliert.";
+
+        const requestBody = {
+            content: [
+                { type: 'text', text: defaultPrompt },
+                { type: 'image_url', image_url: dataUrl }
+            ],
+            provider,
+            model,
+            chat_id
+        };
+
+        // 3. Show loading indicator and send request
+        appendMessage('bot', '...'); // Loading indicator
+        const loadingMessageElement = chatMessages.lastChild;
+
+        try {
+            // Handle new chat title if it's a new chat
+            const chatHeader = document.getElementById('chat-header');
+            if (chat_id && chatHeader.textContent.trim() === 'Neuer Chat') {
+                const newTitle = "Bildanalyse";
+                await fetch(`${API_BASE_URL}/api/chats/${chat_id}/title`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: newTitle }),
+                });
+                chatHeader.textContent = newTitle;
+                await loadChats();
+            }
+
+            const response = await fetch(`${API_BASE_URL}/api/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Unknown error');
+            }
+
+            const data = await response.json();
+            chatMessages.removeChild(loadingMessageElement);
+            appendMessage('bot', data);
+            if (window.fetchCostData) {
+                window.fetchCostData();
+            }
+
+        } catch (error) {
+            if (loadingMessageElement && loadingMessageElement.parentNode === chatMessages) {
+                chatMessages.removeChild(loadingMessageElement);
+            }
+            appendMessage('bot', { text: error.message });
+        }
+    };
+    
+    reader.readAsDataURL(file);
+    
+    // Reset the input value to allow uploading the same file again
+    imageUploadInput.value = ''; 
+});
+
+// The form submission now only handles text messages
 chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const prompt = chatInput.value;
+    const promptText = chatInput.value;
+    if (!promptText) return;
+
     const provider = document.getElementById('provider-select').value;
     const model = document.getElementById('model-select').value;
-    const chat_id = getCurrentChatId(); // Get current chat ID
+    const chat_id = getCurrentChatId();
 
-    if (!prompt) return;
-
-    appendMessage('user', { text: prompt });
+    // 1. Append user message to UI
+    appendMessage('user', { text: promptText });
     chatInput.value = '';
 
-    appendMessage('bot', '...'); // Ladeanzeige
+    // 2. Prepare request body for API (text only)
+    const requestBody = { 
+        content: [{ type: 'text', text: promptText }],
+        provider, 
+        model, 
+        chat_id 
+    };
+
+    // 3. Show loading indicator and send request
+    appendMessage('bot', '...'); // Loading indicator
     const loadingMessageElement = chatMessages.lastChild;
 
     try {
-        // Check if it's a new chat and the first message
+        // Handle new chat title
         const chatHeader = document.getElementById('chat-header');
-        if (!chatHeader) {
-            console.error('Error: chat-header element not found in chat.js submit handler!');
-            return;
-        }
         if (chat_id && chatHeader.textContent.trim() === 'Neuer Chat') {
-            const newTitle = prompt.substring(0, 50); // Take first 50 chars of prompt as new title
+            const newTitle = promptText.substring(0, 50);
             await fetch(`${API_BASE_URL}/api/chats/${chat_id}/title`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title: newTitle }),
             });
-            chatHeader.textContent = newTitle; // Direct update of header
-            await loadChats(); // Refresh chat list and header
+            chatHeader.textContent = newTitle;
+            await loadChats();
         }
 
         const response = await fetch(`${API_BASE_URL}/api/chat`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ prompt, provider, model, chat_id }), // Include chat_id
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -74,7 +169,7 @@ chatForm.addEventListener('submit', async (e) => {
         }
 
         const data = await response.json();
-        chatMessages.removeChild(chatMessages.lastChild);
+        chatMessages.removeChild(loadingMessageElement);
         appendMessage('bot', data);
         if (window.fetchCostData) {
             window.fetchCostData();
@@ -133,15 +228,17 @@ export function appendMessage(sender, data) {
             imageElement.onload = () => scrollToChatBottom();
             bubble.appendChild(imageElement);
 
-            const saveButton = document.createElement('button');
-            saveButton.textContent = 'Bild speichern';
-            saveButton.classList.add('save-image-button');
-            saveButton.onclick = () => {
-                if (imageUrlForSaving) {
-                    window.electron.saveImage(imageUrlForSaving);
-                }
-            };
-            bubble.appendChild(saveButton);
+            if (sender === 'bot') {
+                const saveButton = document.createElement('button');
+                saveButton.textContent = 'Bild speichern';
+                saveButton.classList.add('save-image-button');
+                saveButton.onclick = () => {
+                    if (imageUrlForSaving) {
+                        window.electron.saveImage(imageUrlForSaving);
+                    }
+                };
+                bubble.appendChild(saveButton);
+            }
         }
     }
 

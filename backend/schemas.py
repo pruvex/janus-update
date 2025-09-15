@@ -97,3 +97,4 @@ class ListAllowedWorkspacesArgs(BaseModel):
 
 class WebsearchToolArgs(BaseModel):
     query: str
+    model: Optional[str] = None # Add model parameter

@@ -5,6 +5,7 @@ import openai
 from tenacity import retry, stop_after_attempt, wait_exponential
 from backend.cost_calculator import calculate_cost
 from backend.llm_providers.base_provider import BaseLLMProvider
+from backend.llm_providers.utils import _extract_image_description
 
 logger = logging.getLogger('janus_backend')
 
@@ -23,16 +24,23 @@ def _calculate_and_log_cost(model_id, usage_data=None, custom_prompt=None):
 class OpenAIServiceProvider(BaseLLMProvider):
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-    async def generate_response(self, api_key: str, model: str, messages: List[Dict], tools: Optional[List[Dict]] = None, **kwargs) -> Dict:
+    async def generate_response(self, api_key: str, model: str, messages: List[Dict], tools: Optional[List[Dict]] = None, image_data: Optional[str] = None, **kwargs) -> Dict:
         client = openai.AsyncOpenAI(api_key=api_key)
         try:
+            # The logic to handle image_data is now in main.py, 
+            # where the 'messages' list is constructed correctly from the start.
+            # This function now just passes the prepared messages list to the API.
+
             api_call_params = {
                 "model": model,
                 "messages": messages,
             }
             if tools:
                 api_call_params["tools"] = tools
-                api_call_params["tool_choice"] = "auto"
+                if model == "gpt-5": # Assuming "gpt-5" is the actual model ID
+                    api_call_params["tool_choice"] = "required"
+                else:
+                    api_call_params["tool_choice"] = "auto"
 
             response = await client.chat.completions.create(**api_call_params)
             response_message = response.choices[0].message
@@ -64,28 +72,62 @@ class OpenAIServiceProvider(BaseLLMProvider):
             raise
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-    async def generate_image(self, api_key: str, model: str, prompt: str, **kwargs) -> Dict:
+    async def generate_image(self, api_key: str, model: str, prompt: str, previous_response_id: Optional[str] = None, **kwargs) -> Dict:
         client = openai.AsyncOpenAI(api_key=api_key)
-        size = kwargs.get("size", "1024x1024")
-        quality = kwargs.get("quality", "standard")
         
         try:
-            logger.info(f"Attempting to generate image with prompt: {prompt}")
-            response = await client.images.generate(model=model, prompt=prompt, n=1, size=size, quality=quality, response_format="url")
+            # This API uses a chat model to generate images via a tool.
+            # We use a powerful vision-capable model like gpt-4o as a reliable choice.
+            chat_model_for_image_gen = "gpt-4o"
+            logger.info(f"Calling Responses API (using model {chat_model_for_image_gen}) with prompt: '{prompt}' and previous_response_id: '{previous_response_id}'")
 
-            cost_model_id = "dall-e-3-hd" if quality == "hd" else "dall-e-3-standard"
-            image_usage, image_cost_data = _calculate_and_log_cost(model_id=cost_model_id, usage_data={"image_quality": quality, "image_size": size})
+            api_params = {
+                "model": chat_model_for_image_gen,
+                "input": prompt,
+                "tools": [{"type": "image_generation"}]
+            }
+            if previous_response_id:
+                api_params["previous_response_id"] = previous_response_id
 
-            image_url = response.data[0].url
+            response = await client.responses.create(**api_params)
+
+            image_base64 = None
+            if response.output:
+                for output in response.output:
+                    if output.type == "image_generation_call":
+                        image_base64 = output.result
+                        break
             
-            # The base provider expects a dictionary with specific keys
+            if not image_base64:
+                text_response = ""
+                if response.output:
+                    for output in response.output:
+                        if output.type == "text":
+                            text_response = output.result
+                            break
+                logger.warning(f"No image data found in the Responses API output. Text response: {text_response}")
+                return {"type": "text", "text": text_response, "image_url": None, "usage": {}, "cost": {}, "response_id": response.id}
+
+
+            from backend import image_manager
+            import base64
+
+            image_bytes = base64.b64decode(image_base64)
+            cleaned_description = _extract_image_description(prompt)
+            image_url = image_manager.save_image_from_bytes(image_bytes, description=cleaned_description, file_extension="png")
+
+            usage_data = response.usage
+            usage, cost = _calculate_and_log_cost(chat_model_for_image_gen, usage_data=usage_data)
+
             return {
                 "image_url": image_url,
-                "usage": image_usage,
-                "cost": image_cost_data
+                "usage": usage,
+                "cost": cost,
+                "response_id": response.id
             }
+
         except Exception as e:
-            logger.error(f"Error generating image with OpenAI (attempt failed): {e}")
+            logger.error(f"Error generating image with OpenAI Responses API: {e}", exc_info=True)
             raise
 
 # Standalone wrapper function for tool registration
