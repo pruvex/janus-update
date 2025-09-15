@@ -12,3 +12,4 @@
 - [x] **[JANUS] Creative Writer Pipeline implementiert:** Eine Pipeline für kreatives Schreiben wurde implementiert, die Ideen-, Entwurfs- und Endfassungsphasen umfasst.
 - [x] **[JANUS] Creative Writer Pipeline in Backend integriert:** Die Logik in `backend/main.py` wurde angepasst, um die `creative_writer` Pipeline aufzurufen, wenn die Persönlichkeit "Kreativer Schreiber" aktiv ist.
 - [x] **[JANUS] Behebung des ImportError in der Creative Writer Pipeline:** Der `ImportError` in der Creative Writer Pipeline wurde behoben, indem `simple_llm_generate_content` in `backend/llm_gateway.py` hinzugefügt und die Aufrufe in `backend/creative_writer.py` und `backend/main.py` angepasst wurden.
+- [x] **[JANUS] Behebung des AttributeError in der Creative Writer Pipeline:** Der `AttributeError` in der Creative Writer Pipeline wurde behoben, indem alle Zugriffe auf `.text` in `backend/creative_writer.py` in `.get('text', '')` geändert wurden.

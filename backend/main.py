@@ -219,6 +219,7 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
     # --- START: Adapt for new content structure ---
     user_prompt_text = ""
     image_data = None
+    llm_response = {} # Initialize llm_response to prevent UnboundLocalError
 
     if request.content:
         # New format with content list
