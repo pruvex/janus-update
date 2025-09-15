@@ -9,3 +9,4 @@
 - [ ] **[GIT] Meilenstein-Commit:** Die ersten erweiterten Agenten-Fähigkeiten als stabilen Meilenstein committen.
 - [x] **[JANUS] Websearch-Tool implementieren:** Ein Tool zur Durchführung von Websuchen über GPTs integriertes web.search Tool implementieren.
 - [x] **[JANUS] Prompt für Kreativen Schreiber aktualisiert:** Der Prompt für die Persönlichkeit "Kreativer Schreiber" wurde aktualisiert, um die Rolle und Prinzipien zu präzisieren.
+- [x] **[JANUS] Creative Writer Pipeline implementiert:** Eine Pipeline für kreatives Schreiben wurde implementiert, die Ideen-, Entwurfs- und Endfassungsphasen umfasst.

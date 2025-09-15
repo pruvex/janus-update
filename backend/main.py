@@ -39,6 +39,7 @@ from backend.database import get_db
 from backend.context_manager import ContextManager
 from backend.utils.paths import get_app_data_dir, resource_path
 from backend.tool_registry import TOOL_REGISTRY
+from backend.creative_writer import creative_writer
 
 def is_confirmation(prompt: str) -> bool:
     """Prüft, ob ein User-Prompt eine positive Bestätigung ist. Toleriert Tippfehler."""
@@ -498,25 +499,38 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
     
     
     # Übergebe den Kontext und den Benutzernamen an die Logik-Funktion
-    llm_response = await llm_gateway.reason_and_respond(
-        user_prompt=user_prompt_text,
-        chat_history=messages_for_llm,
-        memory_context=memory_context,
-        db=db,
-        api_key=api_key,
-        model=request.model,
-        provider=request.provider,
-        context_manager=context_manager,
-        user_name=user_name,
-        chat_id=request.chat_id,
-        image_data=image_data
-    )
-
     final_answer = ""
     local_image_path = None
-    usage = llm_response.get("usage", {})
-    cost = llm_response.get("cost", {})
-    response_type = llm_response.get("type")
+    usage = {}
+    cost = {}
+    response_type = "text" # Default to text for creative writer
+
+    if active_personality_id == "creative_writer":
+        logger.info("Creative Writer persona active. Calling creative_writer pipeline.")
+        # Annahme: style und selection werden vorerst nicht aus dem Prompt extrahiert
+        # und verwenden Standardwerte. Dies kann später erweitert werden.
+        final_answer = await creative_writer(user_prompt_text, style="poetisch", selection="first")
+        # Für die creative_writer Pipeline setzen wir usage und cost auf 0
+        usage = {"prompt_tokens": 0, "completion_tokens": 0, "model": request.model}
+        cost = {"total_cost": 0}
+        response_type = "text"
+    else:
+        llm_response = await llm_gateway.reason_and_respond(
+            user_prompt=user_prompt_text,
+            chat_history=messages_for_llm,
+            memory_context=memory_context,
+            db=db,
+            api_key=api_key,
+            model=request.model,
+            provider=request.provider,
+            context_manager=context_manager,
+            user_name=user_name,
+            chat_id=request.chat_id,
+            image_data=image_data
+        )
+        usage = llm_response.get("usage", {})
+        cost = llm_response.get("cost", {})
+        response_type = llm_response.get("type")
 
     if response_type == "tool_code":
         tool_name = llm_response.get("tool_name")

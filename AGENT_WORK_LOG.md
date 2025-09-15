@@ -9,7 +9,7 @@
 
 **Stufe 3: Implementierung & Arbeits-Logbuch**
 
-*   **WAS:** `init_db()`-Funktion in `backend/database.py` modifiziert, um `sqlite3.OperationalError` (Schema-Mismatch) zu behandeln.
+*   **WAS:** `init_db()`-funktion in `backend/database.py` modifiziert, um `sqlite3.OperationalError` (Schema-Mismatch) zu behandeln.
 *   **WARUM:** Um sicherzustellen, dass die Anwendung auch bei einer älteren Datenbankversion startet, indem die alte Datenbank gelöscht und eine neue mit dem korrekten Schema erstellt wird. Dies ist eine temporäre Lösung für die Entwicklungsphase.
 *   **WAS:** Vollständiger Installer (`Janus Projekt Setup 1.1.0.exe`) neu gebaut, um die Änderungen zu integrieren.
 *   **WARUM:** Um die aktualisierte Funktionalität auf Testsystemen bereitzustellen.
@@ -62,3 +62,10 @@
 
 *   **WAS:** Neue Datei `backend/creative_writer.py` erstellt, die eine Pipeline für kreatives Schreiben implementiert. Diese Pipeline umfasst eine Ideenphase, eine Entwurfsphase und eine Endfassungsphase, die alle die `creative_writer` Persona nutzen.
 *   **WARUM:** Um die vom Benutzer vorgeschlagene Funktionalität für den "Kreativen Schreiber" umzusetzen und eine strukturierte Methode zur Generierung kreativer Texte zu ermöglichen.
+
+## Zyklus: Integration der Creative Writer Pipeline in das Backend
+
+**Stufe 3: Implementierung & Arbeits-Logbuch**
+
+*   **WAS:** Logik in `backend/main.py` angepasst, um die `creative_writer` Pipeline aufzurufen, wenn die Persönlichkeit "Kreativer Schreiber" aktiv ist.
+*   **WARUM:** Um sicherzustellen, dass das `creative_writer` Modul immer genutzt wird, wenn die entsprechende Persönlichkeit ausgewählt ist, wie vom Benutzer gewünscht.
