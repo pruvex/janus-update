@@ -3,9 +3,38 @@ import logging
 import re
 from backend.llm_gateway import simple_llm_generate_content
 
+async def creative_writer(input_text: str, provider: str, model: str, api_key: str, style: str = "poetisch", selection: str = "first"):
+    """
+    Intelligenter Dispatcher für kreatives Schreiben.
+    Analysiert den Nutzerwunsch und wählt automatisch die passende Pipeline
+    für kurze oder lange Texte.
+    """
+    # Schlüsselwörter, die auf einen langen Text hindeuten
+    LONG_TEXT_KEYWORDS = [
+        "geschichte", "story", "erzählung", "artikel", "blogpost",
+        "kapitel", "szene", "reportage", "essay", "absätze",
+        "seite", "wörter"
+    ]
+    # Analyse des Inputs: Prüfen, ob Keywords für lange Texte enthalten sind
+    # Wir prüfen den Input in Kleinbuchstaben, um die Erkennung zu verbessern.
+    is_long_form_request = any(keyword in input_text.lower() for keyword in LONG_TEXT_KEYWORDS)
+    if is_long_form_request:
+        # Der Nutzer wünscht sich wahrscheinlich einen langen Text.
+        # Wir rufen die Long-Form-Pipeline auf.
+        # Der Stil wird für Geschichten standardmäßig auf "narrativ" (erzählend) gesetzt,
+        # falls der Nutzer nicht explizit einen anderen Stil angibt (z.B. "humorvoll").
+        if style == "poetisch": # "poetisch" ist ein schlechter Stil für eine lange Geschichte
+            style = "narrativ"
+        return await _creative_writer_long_form_pipeline(input_text, provider, model, api_key, style, selection)
+    else:
+        # Keine Indikatoren für einen langen Text gefunden.
+        # Wir rufen die sichere und schnelle Short-Form-Pipeline auf.
+        return await _creative_writer_short_form_pipeline(input_text, provider, model, api_key, style, selection)
+
+
 logger = logging.getLogger('janus_backend')
 
-async def creative_writer(input_text: str, provider: str, model: str, api_key: str, style: str = "poetisch", selection: str = "first"):
+async def _creative_writer_short_form_pipeline(input_text: str, provider: str, model: str, api_key: str, style: str = "poetisch", selection: str = "first"):
     """
     Implementiert eine Pipeline für kreatives Schreiben.
 
@@ -100,11 +129,46 @@ Entwurf:
     return final_text
 
 
-# Beispiel-Aufruf (für lokale Tests, nicht Teil der eigentlichen Implementierung)
-# async def main():
-#     text = await creative_writer("Sternenhimmel", style="haiku")
-#     print(text)
-
-# if __name__ == "__main__":
-#     import asyncio
-#     asyncio.run(main())
+async def _creative_writer_long_form_pipeline(input_text: str, provider: str, model: str, api_key: str, style: str = "narrativ", selection: str = "first"):
+    """
+    Implementiert eine Pipeline für lange kreative Texte (z.B. Kurzgeschichten).
+    Generiert zuerst 3 Konzepte, wählt eines aus und schreibt dann den finalen Text.
+    """
+    logger.info("Creative Writer - Long-form pipeline selected.")
+    # 1. Konzeptphase
+    concepts_prompt = f"""Für das Thema "{input_text}" im Stil "{style}", erstelle 3 unterschiedliche und kreative Konzepte bzw. kurze Zusammenfassungen (Synopsen).
+Jede Synopsis sollte die Hauptfiguren, den zentralen Konflikt und eine grobe Handlungsidee für eine längere Geschichte skizzieren. Gib NUR die 3 Konzepte aus, getrennt durch '---'."""
+    concepts_response = await simple_llm_generate_content(
+        provider=provider,
+        model=model,
+        api_key=api_key,
+        prompt=concepts_prompt
+    )
+    concepts_list = concepts_response.get('text', '').split("---")
+    concepts_list = [c.strip() for c in concepts_list if c.strip()]
+    logger.info(f"Creative Writer - Concepts Prompt: {concepts_prompt}")
+    logger.info(f"Creative Writer - Concepts List: {concepts_list}")
+    if not concepts_list:
+        logger.error("Creative Writer - CRITICAL: Could not parse any valid concepts.")
+        return "Fehler: Es konnten keine kreativen Konzepte aus der Antwort extrahiert werden."
+    chosen_concept = ""
+    if selection == "random":
+        chosen_concept = random.choice(concepts_list)
+    else: # "first" oder "best" (noch keine Bewertungslogik)
+        chosen_concept = concepts_list[0]
+    logger.info(f"Creative Writer - Chosen Concept: {chosen_concept[:500]}...")
+    # 2. Ausarbeitungsphase
+    writing_prompt = f"""Schreibe eine vollständige und detaillierte Geschichte im Stil "{style}" basierend auf dem folgenden Konzept.
+Die Geschichte sollte fesselnd sein und einen klaren Anfang, Hauptteil und Schluss haben.
+Gib NUR die fertige Geschichte aus, ohne zusätzliche Kommentare.
+Konzept:{chosen_concept}"""
+    final_response = await simple_llm_generate_content(
+        provider=provider,
+        model=model,
+        api_key=api_key,
+        prompt=writing_prompt
+    )
+    final_text = final_response.get('text', '')
+    logger.info(f"Creative Writer - Writing Prompt: {writing_prompt}")
+    logger.info(f"Creative Writer - Final Text Generated (first 500 chars): {final_text[:500]}...")
+    return final_text
