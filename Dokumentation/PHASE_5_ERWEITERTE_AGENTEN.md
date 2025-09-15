@@ -17,3 +17,4 @@
 - [x] **[JANUS] Logging in Creative Writer Pipeline hinzugefügt:** Detaillierte Logging-Statements wurden in `backend/creative_writer.py` hinzugefügt, um die Fehlersuche bei der Inhaltserzeugung zu erleichtern.
 - [x] **[JANUS] Dynamische Stil-Extraktion für Creative Writer:** Die `handle_chat_request` Funktion in `backend/main.py` extrahiert nun dynamisch den kreativen Stil aus dem Benutzer-Prompt und übergibt ihn an die `creative_writer` Pipeline.
 - [x] **[JANUS] Logging für final_answer in main.py hinzugefügt:** Ein Logging-Statement wurde in `backend/main.py` hinzugefügt, um den Wert von `final_answer` vor der Überprüfung zu protokollieren.
+- [x] **[JANUS] Logging für Creative Writer Output in main.py hinzugefügt:** Ein Logging-Statement wurde in `backend/main.py` hinzugefügt, um den Wert von `final_answer` unmittelbar nach dem Aufruf der `creative_writer` Pipeline zu protokollieren.

@@ -58,7 +58,10 @@ basierend auf folgenden Ideen:
     logger.info(f"Creative Writer - Chosen Draft: {chosen_draft[:500]}...") # Log first 500 chars
 
     # 3. Endfassung
-    final_prompt = f"""Überarbeite den folgenden Entwurf zu einer polierten Endfassung:
+    final_prompt = f"""Überarbeite den folgenden Entwurf zu einer polierten Endfassung im Stil "{style}".
+Gib NUR die polierte Endfassung aus, ohne zusätzliche Kommentare oder Optionen.
+
+Entwurf:
 {chosen_draft}"""
     final_response = await simple_llm_generate_content(
         provider=provider,
