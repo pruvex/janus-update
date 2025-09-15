@@ -84,3 +84,14 @@
 *   **WARUM:** Um die Funktion zum Aktualisieren der Sidebar-Anzeige nach einer Persönlichkeitsänderung nutzen zu können.
 *   **WAS:** `updateActivePersonalityDisplay()` wird in der `setActivePersonality`-Methode in `frontend/js/personality-settings.js` aufgerufen.
 *   **WARUM:** Um die Anzeige der aktiven Persönlichkeit in der Sidebar sofort zu aktualisieren, nachdem der Benutzer eine neue Persönlichkeit ausgewählt hat.
+
+## Zyklus: Behebung des ImportErrors in der Creative Writer Pipeline
+
+**Stufe 3: Implementierung & Arbeits-Logbuch**
+
+*   **WAS:** Funktion `simple_llm_generate_content` in `backend/llm_gateway.py` hinzugefügt.
+*   **WARUM:** Um eine vereinfachte Schnittstelle für den LLM-Aufruf bereitzustellen, die von der `creative_writer` Pipeline genutzt werden kann.
+*   **WAS:** `backend/creative_writer.py` angepasst, um `simple_llm_generate_content` zu importieren und zu verwenden.
+*   **WARUM:** Um die `creative_writer` Pipeline korrekt mit dem LLM zu verbinden.
+*   **WAS:** Aufruf der `creative_writer` Funktion in `backend/main.py` angepasst, um die erforderlichen Parameter (`provider`, `model`, `api_key`) zu übergeben.
+*   **WARUM:** Um die korrekte Ausführung der `creative_writer` Pipeline mit den vom Benutzer ausgewählten LLM-Einstellungen zu gewährleisten.

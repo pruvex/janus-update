@@ -509,7 +509,14 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
         logger.info("Creative Writer persona active. Calling creative_writer pipeline.")
         # Annahme: style und selection werden vorerst nicht aus dem Prompt extrahiert
         # und verwenden Standardwerte. Dies kann später erweitert werden.
-        final_answer = await creative_writer(user_prompt_text, style="poetisch", selection="first")
+        final_answer = await creative_writer(
+            user_prompt_text,
+            provider=request.provider,
+            model=request.model,
+            api_key=api_key,
+            style="poetisch",
+            selection="first"
+        )
         # Für die creative_writer Pipeline setzen wir usage und cost auf 0
         usage = {"prompt_tokens": 0, "completion_tokens": 0, "model": request.model}
         cost = {"total_cost": 0}

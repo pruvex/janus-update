@@ -96,3 +96,10 @@ async def classify_and_save_web_result(db: Session, user_question: str, llm_answ
 
     except Exception as e:
         logger.error(f"Error during web result classification and saving: {e}", exc_info=True)
+
+async def simple_llm_generate_content(provider: str, model: str, api_key: str, prompt: str):
+    """
+    Eine vereinfachte Funktion zum Generieren von Inhalten, die nur den Prompt akzeptiert.
+    """
+    messages = [{"role": "user", "content": prompt}]
+    return await call_llm(provider, model, api_key, messages=messages)
