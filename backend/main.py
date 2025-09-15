@@ -663,6 +663,7 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
         final_answer = "Ein unerwarteter Fehler ist aufgetreten."
         logger.error(f"Unknown response type from LLM gateway: {response_type}")
 
+    logger.info(f"Final answer before check: '{final_answer}'")
     if not final_answer and not local_image_path:
         final_answer = "Es tut mir leid, ich konnte keine passende Antwort finden. Kannst du die Frage anders formulieren?"
 

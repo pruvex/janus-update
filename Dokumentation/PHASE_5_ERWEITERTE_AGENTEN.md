@@ -15,3 +15,4 @@
 - [x] **[JANUS] Behebung des AttributeError in der Creative Writer Pipeline:** Der `AttributeError` in der Creative Writer Pipeline wurde behoben, indem alle Zugriffe auf `.text` in `backend/creative_writer.py` in `.get('text', '')` geändert wurden.
 - [x] **[JANUS] Behebung des UnboundLocalError in handle_chat_request:** Der `llm_response` wurde in `backend/main.py` initialisiert, um `UnboundLocalError` zu verhindern.
 - [x] **[JANUS] Logging in Creative Writer Pipeline hinzugefügt:** Detaillierte Logging-Statements wurden in `backend/creative_writer.py` hinzugefügt, um die Fehlersuche bei der Inhaltserzeugung zu erleichtern.
+- [x] **[JANUS] Dynamische Stil-Extraktion für Creative Writer:** Die `handle_chat_request` Funktion in `backend/main.py` extrahiert nun dynamisch den kreativen Stil aus dem Benutzer-Prompt und übergibt ihn an die `creative_writer` Pipeline.
