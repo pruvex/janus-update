@@ -95,3 +95,10 @@
 *   **WARUM:** Um die `creative_writer` Pipeline korrekt mit dem LLM zu verbinden.
 *   **WAS:** Aufruf der `creative_writer` Funktion in `backend/main.py` angepasst, um die erforderlichen Parameter (`provider`, `model`, `api_key`) zu übergeben.
 *   **WARUM:** Um die korrekte Ausführung der `creative_writer` Pipeline mit den vom Benutzer ausgewählten LLM-Einstellungen zu gewährleisten.
+
+## Zyklus: Behebung des AttributeError in der Creative Writer Pipeline
+
+**Stufe 3: Implementierung & Arbeits-Logbuch**
+
+*   **WAS:** Alle Zugriffe auf `.text` in `backend/creative_writer.py` wurden in `.get('text', '')` geändert.
+*   **WARUM:** Um den `AttributeError: 'dict' object has no attribute 'text'` zu beheben, der auftrat, weil die `simple_llm_generate_content` Funktion ein Dictionary zurückgibt und nicht ein Objekt mit einem `.text`-Attribut. Dies macht den Code robuster gegenüber fehlenden Schlüsseln.

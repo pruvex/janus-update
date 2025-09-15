@@ -26,7 +26,7 @@ Erstelle 3 unterschiedliche Varianten."""
         api_key=api_key,
         prompt=ideas_prompt
     )
-    ideas = ideas_response.text # Annahme: simple_llm_generate_content gibt ein Objekt mit .text zurück
+    ideas = ideas_response.get('text', '') # Annahme: simple_llm_generate_content gibt ein Objekt mit .text zurück
 
     # 2. Entwurfsphase
     drafts_prompt = f"""Schreibe 3 kurze Entwürfe im Stil "{style}"
@@ -38,7 +38,7 @@ basierend auf folgenden Ideen:
         api_key=api_key,
         prompt=drafts_prompt
     )
-    drafts_list = drafts_response.text.split("\n\n") # Annahme: Entwürfe sind durch doppelte Zeilenumbrüche getrennt
+    drafts_list = drafts_response.get('text', '').split("\n\n") # Annahme: Entwürfe sind durch doppelte Zeilenumbrüche getrennt
 
     chosen_draft = ""
     if selection == "random":
@@ -58,7 +58,7 @@ basierend auf folgenden Ideen:
         api_key=api_key,
         prompt=final_prompt
     )
-    final_text = final_response.text
+    final_text = final_response.get('text', '')
 
     return final_text
 
