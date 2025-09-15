@@ -5,7 +5,9 @@ from typing import Dict, Any
 import logging
 
 logger = logging.getLogger('janus_backend')
-openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai_client = None
+if os.getenv("OPENAI_API_KEY"):
+    openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 async def perform_websearch(query: str) -> Dict[str, Any]:
     """

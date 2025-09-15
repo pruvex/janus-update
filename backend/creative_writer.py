@@ -1,5 +1,6 @@
 import random
 import logging
+import re
 from backend.llm_gateway import simple_llm_generate_content
 
 logger = logging.getLogger('janus_backend')
@@ -43,9 +44,32 @@ basierend auf folgenden Ideen:
         api_key=api_key,
         prompt=drafts_prompt
     )
-    drafts_list = drafts_response.get('text', '').split("\n\n") # Annahme: Entwürfe sind durch doppelte Zeilenumbrüche getrennt
+    drafts_text = drafts_response.get('text', '')
     logger.info(f"Creative Writer - Drafts Prompt: {drafts_prompt}")
-    logger.info(f"Creative Writer - Drafts List: {drafts_list}")
+    logger.info(f"Creative Writer - Raw Drafts Response: {drafts_text[:800]}...") # Log raw response for debugging
+    # Neue, robuste Extraktion der Entwürfe
+    # Wir suchen nach der Markierung "### Entwurf" und nehmen alles, was danach kommt.
+    # re.split behält den Trenner nicht, was hier ideal ist, um die Einleitung loszuwerden.
+    # Das Muster sucht nach einer neuen Zeile, gefolgt von '---' und optional '### Entwurf'.
+    drafts_list = re.split(r'\n---\n\n### Entwurf \d+:.*?\n|\n### Entwurf \d+:.*?\n', drafts_text)
+    # Das erste Element ist oft die Einleitung oder leer. Wir filtern es und leere Strings heraus.
+    if drafts_list:
+        drafts_list = [draft.strip() for draft in drafts_list[1:] if draft and draft.strip()]
+    # Fallback-Mechanismus: Wenn die neue Methode keine Entwürfe findet,
+    # wird die alte Methode als Sicherheit verwendet.
+    if not drafts_list:
+        logger.warning("Creative Writer - No structured drafts found. Falling back to simple split method.")
+        # Wir filtern hierbei aber direkt alles heraus, was zu kurz ist oder wie eine Einleitung klingt.
+        all_parts = drafts_text.split("\n\n")
+        drafts_list = [part.strip() for part in all_parts if len(part) > 100 and "Entwurf" not in part[:20]]
+    # Sicherheitscheck: Wenn immer noch keine Entwürfe da sind, kann etwas nicht stimmen.
+    if not drafts_list:
+        logger.error("Creative Writer - CRITICAL: Could not parse any valid drafts from the LLM response.")
+        # Im Fehlerfall wird der erste, nicht leere Block der alten Methode genommen, um einen Totalausfall zu verhindern.
+        drafts_list = [part.strip() for part in drafts_text.split("\n\n") if part.strip()]
+        if not drafts_list: # Absolute Notsicherung
+            return "Fehler: Es konnten keine kreativen Entwürfe aus der Antwort extrahiert werden."
+    logger.info(f"Creative Writer - Parsed Drafts List: {drafts_list}")
 
     chosen_draft = ""
     if selection == "random":
