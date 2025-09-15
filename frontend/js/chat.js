@@ -8,7 +8,7 @@ marked.setOptions({
 });
 
 const chatForm = document.getElementById('chat-form');
-const chatInput = document.getElementById('chat-input');
+export const chatInput = document.getElementById('chat-input');
 const chatMessages = document.getElementById('chat-messages');
 
 // Event listener for opening links externally
@@ -55,7 +55,7 @@ imageUploadInput.addEventListener('change', async (event) => {
         const provider = document.getElementById('provider-select').value;
         const model = document.getElementById('model-select').value;
         const chat_id = getCurrentChatId();
-        const defaultPrompt = "Beschreibe dieses Bild detailliert.";
+        const defaultPrompt = "Gib eine kurze Bestätigung und die wichtigsten Merkmale des Bildes in einem Satz.";
 
         const requestBody = {
             content: [
@@ -97,7 +97,9 @@ imageUploadInput.addEventListener('change', async (event) => {
             }
 
             const data = await response.json();
-            chatMessages.removeChild(loadingMessageElement);
+            if (loadingMessageElement && loadingMessageElement.parentNode === chatMessages) {
+                chatMessages.removeChild(loadingMessageElement);
+            }
             appendMessage('bot', data);
             if (window.fetchCostData) {
                 window.fetchCostData();
@@ -169,7 +171,9 @@ chatForm.addEventListener('submit', async (e) => {
         }
 
         const data = await response.json();
-        chatMessages.removeChild(loadingMessageElement);
+        if (loadingMessageElement && loadingMessageElement.parentNode === chatMessages) {
+            chatMessages.removeChild(loadingMessageElement);
+        }
         appendMessage('bot', data);
         if (window.fetchCostData) {
             window.fetchCostData();

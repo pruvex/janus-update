@@ -1,5 +1,5 @@
 import { API_BASE_URL } from './config.js';
-import { appendMessage } from './chat.js';
+import { appendMessage, chatInput } from './chat.js';
 
 let currentChatId = null;
 
@@ -227,6 +227,7 @@ export async function createNewChat() {
         document.getElementById('chat-header').textContent = newChat.title;
         await loadChats();
         loadChat(newChat.id);
+        chatInput.value = ''; // Clear the input field
     } catch (error) {
         console.error('createNewChat: Error creating new chat:', error);
     }
@@ -265,6 +266,7 @@ export async function loadChat(chatId) {
         messages.forEach(msg => {
             appendMessage(msg.sender, { text: msg.content, image_url: msg.image_path });
         });
+        chatInput.value = ''; // Clear the input field when loading a new chat
     } catch (error) {
         console.error('Error loading chat messages:', error);
     }

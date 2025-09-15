@@ -5,4 +5,5 @@
 - [x] **[JANUS] Einklappbare Sidebar:** Die linke Sidebar implementieren. (Verifizierung durch manuelle Abnahme)
 - [ ] **[JANUS] Kosten-Visualisierung (UI):** Die Kostenverfolgung im Frontend sichtbar machen.
 - [ ] **[WÄCHTER] Kosten-API testen:** Sicherstellen, dass der Backend-Endpunkt, der die Kostendaten für die UI bereitstellt, zuverlässig die korrekten Daten liefert.
-- [ ] **[GIT] Meilenstein-Commit:** Den Abschluss des UI-Feinschliffs als stabilen Meilenstein committen.
+- [x] **[JANUS] Bildspeicherfunktion im UI reparieren:** Behebung des Fehlers beim Speichern von Bildern und der Funktionalität des Speicherbuttons.
+- [x] **[GIT] Meilenstein-Commit:** Den Abschluss des UI-Feinschliffs als stabilen Meilenstein committen.
