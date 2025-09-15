@@ -82,6 +82,22 @@ def is_greeting(prompt: str) -> bool:
     prompt_lower = prompt.lower().strip().replace('.', '').replace('!', '').replace(',', '')
     return prompt_lower in greetings
 
+def _extract_creative_style(prompt: str) -> str:
+    """Extrahiert den gewünschten kreativen Stil aus dem Prompt."""
+    prompt_lower = prompt.lower()
+    if "haiku" in prompt_lower:
+        return "haiku"
+    if "gedicht" in prompt_lower or "poesie" in prompt_lower:
+        return "gedicht"
+    if "geschichte" in prompt_lower or "erzählung" in prompt_lower:
+        return "geschichte"
+    if "ballade" in prompt_lower:
+        return "ballade"
+    if "songtext" in prompt_lower:
+        return "songtext"
+    # Weitere Stile können hier hinzugefügt werden
+    return "poetisch" # Standard-Stil, wenn nichts Spezifisches gefunden wird
+
 app = FastAPI()
 
 FILE_OPERATION_HISTORY = []
@@ -508,14 +524,16 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
 
     if active_personality_id == "creative_writer":
         logger.info("Creative Writer persona active. Calling creative_writer pipeline.")
-        # Annahme: style und selection werden vorerst nicht aus dem Prompt extrahiert
-        # und verwenden Standardwerte. Dies kann später erweitert werden.
+        # Extrahiere den Stil aus dem User-Prompt
+        creative_style = _extract_creative_style(user_prompt_text)
+        logger.info(f"Creative Writer - Extracted style: {creative_style}")
+
         final_answer = await creative_writer(
             user_prompt_text,
             provider=request.provider,
             model=request.model,
             api_key=api_key,
-            style="poetisch",
+            style=creative_style, # Verwende den extrahierten Stil
             selection="first"
         )
         # Für die creative_writer Pipeline setzen wir usage und cost auf 0

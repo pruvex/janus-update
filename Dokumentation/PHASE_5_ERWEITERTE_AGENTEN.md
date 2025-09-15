@@ -14,3 +14,4 @@
 - [x] **[JANUS] Behebung des ImportError in der Creative Writer Pipeline:** Der `ImportError` in der Creative Writer Pipeline wurde behoben, indem `simple_llm_generate_content` in `backend/llm_gateway.py` hinzugefügt und die Aufrufe in `backend/creative_writer.py` und `backend/main.py` angepasst wurden.
 - [x] **[JANUS] Behebung des AttributeError in der Creative Writer Pipeline:** Der `AttributeError` in der Creative Writer Pipeline wurde behoben, indem alle Zugriffe auf `.text` in `backend/creative_writer.py` in `.get('text', '')` geändert wurden.
 - [x] **[JANUS] Behebung des UnboundLocalError in handle_chat_request:** Der `llm_response` wurde in `backend/main.py` initialisiert, um `UnboundLocalError` zu verhindern.
+- [x] **[JANUS] Logging in Creative Writer Pipeline hinzugefügt:** Detaillierte Logging-Statements wurden in `backend/creative_writer.py` hinzugefügt, um die Fehlersuche bei der Inhaltserzeugung zu erleichtern.
