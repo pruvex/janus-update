@@ -125,7 +125,7 @@ class GeminiWebSearch:
         logger.info("Web search requested for Gemini. Using direct REST API call.")
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
         payload = {
-            "contents": history,
+            "contents": [{"role": msg["role"], "parts": [{"text": msg["content"]}]} for msg in history],
             "tools": [{"google_search": {}}],
             "systemInstruction": {"parts": [{"text": system_instruction}]} if system_instruction else None
         }
