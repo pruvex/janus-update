@@ -1,317 +1,313 @@
-﻿Bildverständnis
-
-Gemini-Modelle sind von Grund auf multimodal konzipiert und ermöglichen eine Vielzahl von Bildverarbeitungs- und Computer Vision-Aufgaben, darunter Bilduntertitelung, ‑klassifizierung und Visual Question Answering, ohne dass spezielle ML-Modelle trainiert werden müssen.
-
-Tipp :Gemini-Modelle (2.0 und höher) bieten neben ihren allgemeinen multimodalen Funktionen durch zusätzliches Training eine höhere Genauigkeit für bestimmte Anwendungsfälle wie Objekterkennung und Segmentierung. Weitere Informationen finden Sie im Abschnitt Funktionen.
-Bilder an Gemini übergeben
-Sie haben zwei Möglichkeiten, Bilder als Eingabe für Gemini bereitzustellen:
-
-Inline-Bilddaten übergeben: Ideal für kleinere Dateien (Gesamtanfragegröße unter 20 MB, einschließlich Prompts).
-Bilder mit der File API hochladen: Empfohlen für größere Dateien oder wenn Bilder in mehreren Anfragen wiederverwendet werden sollen.
-Inline-Bilddaten übergeben
-Sie können Inline-Bilddaten im Request an generateContent übergeben. Sie können Bilddaten als Base64-codierte Strings bereitstellen oder lokale Dateien direkt lesen (je nach Sprache).
-
-Im folgenden Beispiel wird gezeigt, wie ein Bild aus einer lokalen Datei gelesen und zur Verarbeitung an die generateContent API übergeben wird.
-
-Python
-JavaScript
-Ok
-REST
-
-  from google.genai import types
-
-  with open('path/to/small-sample.jpg', 'rb') as f:
-      image_bytes = f.read()
-
-  response = client.models.generate_content(
-    model='gemini-2.5-flash',
-    contents=[
-      types.Part.from_bytes(
-        data=image_bytes,
-        mime_type='image/jpeg',
-      ),
-      'Caption this image.'
-    ]
-  )
-
-  print(response.text)
-Sie können auch ein Bild von einer URL abrufen, es in Byte konvertieren und an generateContent übergeben, wie in den folgenden Beispielen gezeigt.
-
-Python
-JavaScript
-Ok
-REST
-
-from google import genai
-from google.genai import types
-
-import requests
-
-image_path = "https://goo.gle/instrument-img"
-image_bytes = requests.get(image_path).content
-image = types.Part.from_bytes(
-  data=image_bytes, mime_type="image/jpeg"
-)
-
-client = genai.Client()
-
-response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents=["What is this image?", image],
-)
-
-print(response.text)
-Hinweis: Durch Inline-Bilddaten wird die Gesamtgröße der Anfrage (Text-Prompts, Systemanweisungen und Inline-Bytes) auf 20 MB begrenzt. Bei größeren Anfragen laden Sie Bilddateien mit der File API hoch. Die Files API ist auch effizienter für Szenarien, in denen dasselbe Bild wiederholt verwendet wird.
-Bilder mit der File API hochladen
-Verwenden Sie für große Dateien oder um dieselbe Bilddatei wiederholt verwenden zu können, die Files API. Mit dem folgenden Code wird eine Bilddatei hochgeladen und dann in einem Aufruf von generateContent verwendet. Weitere Informationen und Beispiele finden Sie im Leitfaden zur Files API.
-
-Python
-JavaScript
-Ok
-REST
-
-from google import genai
-
-client = genai.Client()
-
-my_file = client.files.upload(file="path/to/sample.jpg")
-
-response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents=[my_file, "Caption this image."],
-)
-
-print(response.text)
-Prompts mit mehreren Bildern erstellen
-Sie können in einem einzelnen Prompt mehrere Bilder angeben, indem Sie mehrere Part-Objekte für Bilder in das contents-Array einfügen. Dabei kann es sich um eine Mischung aus Inline-Daten (lokale Dateien oder URLs) und File API-Referenzen handeln.
-
-Python
-JavaScript
-Ok
-REST
-
-from google import genai
-from google.genai import types
-
-client = genai.Client()
-
-# Upload the first image
-image1_path = "path/to/image1.jpg"
-uploaded_file = client.files.upload(file=image1_path)
-
-# Prepare the second image as inline data
-image2_path = "path/to/image2.png"
-with open(image2_path, 'rb') as f:
-    img2_bytes = f.read()
-
-# Create the prompt with text and multiple images
-response = client.models.generate_content(
-
-    model="gemini-2.5-flash",
-    contents=[
-        "What is different between these two images?",
-        uploaded_file,  # Use the uploaded file reference
-        types.Part.from_bytes(
-            data=img2_bytes,
-            mime_type='image/png'
-        )
-    ]
-)
-
-print(response.text)
-Objekterkennung
-Ab Gemini 2.0 werden Modelle weiter trainiert, um Objekte in einem Bild zu erkennen und die Koordinaten ihrer Begrenzungsrahmen zu ermitteln. Die Koordinaten werden relativ zu den Bilddimensionen auf [0, 1000] skaliert. Sie müssen diese Koordinaten anhand der Originalbildgröße herunterskalieren.
-
-Python
-
-from google import genai
-from google.genai import types
-from PIL import Image
-import json
-
-client = genai.Client()
-prompt = "Detect the all of the prominent items in the image. The box_2d should be [ymin, xmin, ymax, xmax] normalized to 0-1000."
-
-image = Image.open("/path/to/image.png")
-
-config = types.GenerateContentConfig(
-  response_mime_type="application/json"
-  )
-
-response = client.models.generate_content(model="gemini-2.5-flash",
-                                          contents=[image, prompt],
-                                          config=config
-                                          )
-
-width, height = image.size
-bounding_boxes = json.loads(response.text)
-
-converted_bounding_boxes = []
-for bounding_box in bounding_boxes:
-    abs_y1 = int(bounding_box["box_2d"][0]/1000 * height)
-    abs_x1 = int(bounding_box["box_2d"][1]/1000 * width)
-    abs_y2 = int(bounding_box["box_2d"][2]/1000 * height)
-    abs_x2 = int(bounding_box["box_2d"][3]/1000 * width)
-    converted_bounding_boxes.append([abs_x1, abs_y1, abs_x2, abs_y2])
-
-print("Image size: ", width, height)
-print("Bounding boxes:", converted_bounding_boxes)
-
-Hinweis : Das Modell unterstützt auch das Generieren von Begrenzungsrahmen basierend auf benutzerdefinierten Anweisungen wie „Zeige Begrenzungsrahmen aller grünen Objekte in diesem Bild“. Außerdem werden benutzerdefinierte Labels wie „Kennzeichne die Artikel mit den Allergenen, die sie enthalten können“ unterstützt.
-Weitere Beispiele finden Sie in den folgenden Notebooks im Gemini Cookbook:
-
-Notebook zum räumlichen 2D-Verständnis
-Experimentelles 3D-Zeigegerät für Notebooks
-Segmentierung
-Ab Gemini 2.5 können Modelle Elemente nicht nur erkennen, sondern auch segmentieren und ihre Konturmasken bereitstellen.
-
-Das Modell sagt eine JSON-Liste voraus, wobei jedes Element eine Segmentierungsmaske darstellt. Jedes Element hat einen Begrenzungsrahmen („box_2d“) im Format [y0, x0, y1, x1] mit normalisierten Koordinaten zwischen 0 und 1000, ein Label („label“), das das Objekt identifiziert, und schließlich die Segmentierungsmaske innerhalb des Begrenzungsrahmens als Base64-codiertes PNG, das eine Wahrscheinlichkeitskarte mit Werten zwischen 0 und 255 ist. Die Maske muss an die Abmessungen des umgebenden Rechtecks angepasst und dann mit dem von Ihnen festgelegten Konfidenzwert (127 für den Mittelpunkt) binarisiert werden.
-
-Hinweis :Wenn Sie das Thinking-Budget auf 0 setzen, lassen sich bessere Ergebnisse erzielen. Ein Beispiel finden Sie im Codebeispiel unten.
-Python
-
-from google import genai
-from google.genai import types
-from PIL import Image, ImageDraw
-import io
-import base64
-import json
-import numpy as np
-import os
-
-client = genai.Client()
-
-def parse_json(json_output: str):
-  # Parsing out the markdown fencing
-  lines = json_output.splitlines()
-  for i, line in enumerate(lines):
-    if line == "```json":
-      json_output = "\n".join(lines[i+1:])  # Remove everything before "```json"
-      output = json_output.split("```")[0]  # Remove everything after the closing "```"
-      break  # Exit the loop once "```json" is found
-  return json_output
-
-def extract_segmentation_masks(image_path: str, output_dir: str = "segmentation_outputs"):
-  # Load and resize image
-  im = Image.open(image_path)
-  im.thumbnail([1024, 1024], Image.Resampling.LANCZOS)
-
-  prompt = """
-  Give the segmentation masks for the wooden and glass items.
-  Output a JSON list of segmentation masks where each entry contains the 2D
-  bounding box in the key "box_2d", the segmentation mask in key "mask", and
-  the text label in the key "label". Use descriptive labels.
-  """
-
-  config = types.GenerateContentConfig(
-    thinking_config=types.ThinkingConfig(thinking_budget=0) # set thinking_budget to 0 for better results in object detection
-  )
-
-  response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents=[prompt, im], # Pillow images can be directly passed as inputs (which will be converted by the SDK)
-    config=config
-  )
-
-  # Parse JSON response
-  items = json.loads(parse_json(response.text))
-
-  # Create output directory
-  os.makedirs(output_dir, exist_ok=True)
-
-  # Process each mask
-  for i, item in enumerate(items):
-      # Get bounding box coordinates
-      box = item["box_2d"]
-      y0 = int(box[0] / 1000 * im.size[1])
-      x0 = int(box[1] / 1000 * im.size[0])
-      y1 = int(box[2] / 1000 * im.size[1])
-      x1 = int(box[3] / 1000 * im.size[0])
-
-      # Skip invalid boxes
-      if y0 >= y1 or x0 >= x1:
-          continue
-
-      # Process mask
-      png_str = item["mask"]
-      if not png_str.startswith("data:image/png;base64,"):
-          continue
-
-      # Remove prefix
-      png_str = png_str.removeprefix("data:image/png;base64,")
-      mask_data = base64.b64decode(png_str)
-      mask = Image.open(io.BytesIO(mask_data))
-
-      # Resize mask to match bounding box
-      mask = mask.resize((x1 - x0, y1 - y0), Image.Resampling.BILINEAR)
-
-      # Convert mask to numpy array for processing
-      mask_array = np.array(mask)
-
-      # Create overlay for this mask
-      overlay = Image.new('RGBA', im.size, (0, 0, 0, 0))
-      overlay_draw = ImageDraw.Draw(overlay)
-
-      # Create overlay for the mask
-      color = (255, 255, 255, 200)
-      for y in range(y0, y1):
-          for x in range(x0, x1):
-              if mask_array[y - y0, x - x0] > 128:  # Threshold for mask
-                  overlay_draw.point((x, y), fill=color)
-
-      # Save individual mask and its overlay
-      mask_filename = f"{item['label']}_{i}_mask.png"
-      overlay_filename = f"{item['label']}_{i}_overlay.png"
-
-      mask.save(os.path.join(output_dir, mask_filename))
-
-      # Create and save overlay
-      composite = Image.alpha_composite(im.convert('RGBA'), overlay)
-      composite.save(os.path.join(output_dir, overlay_filename))
-      print(f"Saved mask and overlay for {item['label']} to {output_dir}")
-
-# Example usage
-if __name__ == "__main__":
-  extract_segmentation_masks("path/to/image.png")
-
-Ein detaillierteres Beispiel finden Sie im Segmentierungsbeispiel im Cookbook-Leitfaden.
-
-Ein Tisch mit Cupcakes, auf dem die Holz- und Glasobjekte hervorgehoben sind
-Beispiel für eine Segmentierungsausgabe mit Objekten und Segmentierungsmasken
-Unterstützte Bildformate
-Gemini unterstützt die folgenden MIME-Typen für Bildformate:
-
-PNG - image/png
-JPEG - image/jpeg
-WEBP - image/webp
-HEIC – image/heic
-HEIF - image/heif
-Leistungsspektrum
-Alle Gemini-Modellversionen sind multimodal und können für eine Vielzahl von Bildverarbeitungs- und Computer Vision-Aufgaben verwendet werden, einschließlich, aber nicht beschränkt auf Bilduntertitelung, Visual Question Answering, Bildklassifizierung, Objekterkennung und Segmentierung.
-
-Je nach Ihren Qualitäts- und Leistungsanforderungen kann Gemini die Notwendigkeit reduzieren, spezielle ML-Modelle zu verwenden.
-
-Einige spätere Modellversionen werden speziell darauf trainiert, die Genauigkeit von spezialisierten Aufgaben zusätzlich zu den allgemeinen Funktionen zu verbessern:
-
-Gemini 2.0-Modelle werden weiter trainiert, um eine verbesserte Objekterkennung zu unterstützen.
-
-Gemini 2.5-Modelle werden zusätzlich trainiert, um neben der Objekterkennung auch eine verbesserte Segmentierung zu unterstützen.
-
-Einschränkungen und wichtige technische Informationen
-Dateilimit
-Gemini 2.5 Pro/Flash, 2.0 Flash, 1.5 Pro und 1.5 Flash unterstützen maximal 3.600 Bilddateien pro Anfrage.
-
-Tokenberechnung
-Gemini 1.5 Flash und Gemini 1.5 Pro: 258 Tokens, wenn beide Dimensionen kleiner oder gleich 384 Pixel sind. Größere Bilder werden gekachelt (mind. 256 Pixel, max. 768 Pixel, auf 768 × 768 Pixel skaliert). Jede Kachel kostet 258 Tokens.
-Gemini 2.0 Flash und Gemini 2.5 Flash/Pro: 258 Tokens, wenn beide Dimensionen kleiner oder gleich 384 Pixel sind. Größere Bilder werden in Kacheln mit 768 × 768 Pixeln aufgeteilt, die jeweils 258 Tokens kosten.
-Tipps und Best Practices
-Prüfen Sie, ob die Bilder richtig gedreht sind.
-Verwenden Sie klare, nicht verschwommene Bilder.
-Wenn Sie ein einzelnes Bild mit Text verwenden, platzieren Sie den Text-Prompt nach dem Bildteil im contents-Array.
-Nächste Schritte
-In diesem Leitfaden erfahren Sie, wie Sie Bilddateien hochladen und Textausgaben aus Bildeingaben generieren. Weitere Informationen finden Sie in den folgenden Ressourcen:
-
-Files API: Hier finden Sie weitere Informationen zum Hochladen und Verwalten von Dateien für die Verwendung mit Gemini.
-Systemanweisungen: Mit Systemanweisungen können Sie das Verhalten des Modells entsprechend Ihren spezifischen Anforderungen und Anwendungsfällen steuern.
-Strategien für Dateiprompts: Die Gemini API unterstützt Prompts mit Text-, Bild-, Audio- und Videodaten, auch bekannt als multimodale Prompts.
-Sicherheitshinweise: Generative KI-Modelle können manchmal unerwartete Ausgaben liefern, z. B. ungenaue, voreingenommene oder anstößige Ausgaben. Die Nachbearbeitung und menschliche Bewertung sind unerlässlich, um das Risiko von Schäden durch solche Ausgaben zu begrenzen.
+﻿Windows PowerShell
+Copyright (C) Microsoft Corporation. Alle Rechte vorbehalten.
+
+Installieren Sie die neueste PowerShell für neue Funktionen und Verbesserungen! https://aka.ms/PSWindows
+
+PS C:\KI\Janus-Projekt> npm run start-dev
+
+> janus-projekt@1.1.0 start-dev
+> concurrently "npm:start-backend" "npm:start-frontend"
+
+[start-backend]
+[start-backend] > janus-projekt@1.1.0 start-backend
+[start-backend] > C:\KI\Janus-Projekt\backend\venv\Scripts\python.exe -m uvicorn backend.main:app --reload --port 8001 --host localhost
+[start-backend]
+[start-frontend]
+[start-frontend] > janus-projekt@1.1.0 start-frontend
+[start-frontend] > concurrently "npm run start-electron" "npm run start-vite"
+[start-frontend]
+[start-backend] INFO:     Will watch for changes in these directories: ['C:\\KI\\Janus-Projekt']
+[start-backend] INFO:     Uvicorn running on http://localhost:8001 (Press CTRL+C to quit)
+[start-backend] INFO:     Started reloader process [21344] using WatchFiles
+[start-frontend] [0]
+[start-frontend] [0] > janus-projekt@1.1.0 start-electron
+[start-frontend] [0] > wait-on tcp:8001 && cross-env NODE_ENV=development electron .
+[start-frontend] [0]
+[start-backend] 2025-09-17 18:26:54 - janus_backend - [INFO] - Logger wurde initialisiert.
+[start-frontend] [1]
+[start-frontend] [1] > janus-projekt@1.1.0 start-vite
+[start-frontend] [1] > vite
+[start-frontend] [1]
+[start-backend] 2025-09-17 18:26:54 - keyring.backend - [DEBUG] - Loading KWallet
+[start-backend] 2025-09-17 18:26:54 - keyring.backend - [DEBUG] - Loading SecretService
+[start-backend] 2025-09-17 18:26:54 - keyring.backend - [DEBUG] - Loading Windows
+[start-backend] 2025-09-17 18:26:54 - win32ctypes.core.ctypes - [DEBUG] - Loaded ctypes backend
+[start-backend] 2025-09-17 18:26:54 - keyring.backend - [DEBUG] - Loading chainer
+[start-backend] 2025-09-17 18:26:54 - keyring.backend - [DEBUG] - Loading libsecret
+[start-backend] 2025-09-17 18:26:54 - keyring.backend - [DEBUG] - Loading macOS
+[start-backend] 2025-09-17 18:26:54 - janus_backend - [INFO] - OpenAI API key loaded from keyring and set as environment variable.
+[start-frontend] [1] The CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.
+[start-frontend] [1]
+[start-frontend] [1]   VITE v5.4.19  ready in 315 ms
+[start-frontend] [1]
+[start-frontend] [1]   ➜  Local:   http://localhost:5173/
+[start-frontend] [1]   ➜  Network: use --host to expose
+[start-backend] 2025-09-17 18:26:57 - janus_backend - [INFO] - Logger wurde initialisiert.
+[start-backend] 2025-09-17 18:26:57 - janus_backend - [INFO] - Logger wurde initialisiert.
+[start-backend] 2025-09-17 18:27:03 - sentence_transformers.SentenceTransformer - [INFO] - Use pytorch device_name: cpu
+[start-backend] 2025-09-17 18:27:03 - sentence_transformers.SentenceTransformer - [INFO] - Load pretrained SentenceTransformer: C:\KI\Janus-Projekt\backend/model_cache/all-MiniLM-L6-v2
+[start-backend] 2025-09-17 18:27:03 - janus_backend - [INFO] - Application Data Directory: C:\Users\pruve\AppData\Local\JanusDev\Janus Projekt
+[start-backend] INFO:     Started server process [10624]
+[start-backend] INFO:     Waiting for application startup.
+[start-backend] 2025-09-17 18:27:03 - janus_backend - [INFO] - Scheduling initial memory maintenance tasks on startup.
+[start-backend] 2025-09-17 18:27:03 - janus_backend - [INFO] - Background memory archival task starting.
+[start-backend] 2025-09-17 18:27:03 - janus_backend - [INFO] - STM size (0) is within limit (250). No archival needed.
+[start-backend] 2025-09-17 18:27:03 - janus_backend - [INFO] - Background memory archival task finished successfully.
+[start-backend] 2025-09-17 18:27:03 - janus_backend - [INFO] - Background memory pruning task starting.
+[start-backend] 2025-09-17 18:27:03 - janus_backend - [INFO] - No expired memories to prune.
+[start-backend] INFO:     Application startup complete.
+[start-backend] 2025-09-17 18:27:03 - janus_backend - [INFO] - Background memory pruning task finished successfully.
+[start-frontend] [0]
+[start-frontend] [0] Main process: Script started (Root main.electron.js)
+[start-frontend] [0] Main process: ipcMain.handle registered for save-image
+[start-frontend] [0] Main process: createWindow called
+[start-frontend] [0] [Main Process] Attempting to load preload script from: C:\KI\Janus-Projekt\frontend\preload.js
+[start-backend] INFO:     127.0.0.1:51736 - "GET /api/models/catalog HTTP/1.1" 200 OK
+[start-frontend] [0] [Electron Main] Backend is ready!
+[start-backend] INFO:     127.0.0.1:51744 - "GET /api/models/catalog HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51745 - "GET /api/personalities HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51744 - "GET /api/models/catalog HTTP/1.1" 200 OK
+[start-backend] 2025-09-17 18:27:04 - janus_backend - [INFO] - Attempting to retrieve API keys.
+[start-backend] 2025-09-17 18:27:04 - janus_backend - [INFO] - Successfully retrieved API key for provider: openai
+[start-backend] 2025-09-17 18:27:04 - janus_backend - [INFO] - Successfully retrieved API key for provider: gemini
+[start-backend] 2025-09-17 18:27:04 - janus_backend - [INFO] - No API key found for provider: anthropic
+[start-backend] 2025-09-17 18:27:04 - janus_backend - [INFO] - No API key found for provider: cohere
+[start-backend] INFO:     127.0.0.1:51745 - "GET /api/keys HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51744 - "GET /api/personalities/active HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51746 - "GET /api/last-used-model HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51744 - "GET /api/personalities/active HTTP/1.1" 200 OK
+[start-backend] 2025-09-17 18:27:04 - janus_backend - [INFO] - Attempting to retrieve API keys.
+[start-backend] 2025-09-17 18:27:04 - janus_backend - [INFO] - Successfully retrieved API key for provider: openai
+[start-backend] 2025-09-17 18:27:04 - janus_backend - [INFO] - Successfully retrieved API key for provider: gemini
+[start-backend] 2025-09-17 18:27:04 - janus_backend - [INFO] - No API key found for provider: anthropic
+[start-backend] 2025-09-17 18:27:04 - janus_backend - [INFO] - No API key found for provider: cohere
+[start-backend] INFO:     127.0.0.1:51745 - "GET /api/keys HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51744 - "GET /api/personalities HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51746 - "GET /api/models/selection/openai HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51746 - "GET /api/models/selection/gemini HTTP/1.1" 200 OK
+[start-frontend] [0] [2764:0917/182704.697:ERROR:CONSOLE(1)] "Request Autofill.enable failed. {"code":-32601,"message":"'Autofill.enable' wasn't found"}", source: devtools://devtools/bundled/core/protocol_client/protocol_client.js (1)
+[start-frontend] [0] [2764:0917/182704.697:ERROR:CONSOLE(1)] "Request Autofill.setAddresses failed. {"code":-32601,"message":"'Autofill.setAddresses' wasn't found"}", source: devtools://devtools/bundled/core/protocol_client/protocol_client.js (1)
+[start-backend] INFO:     127.0.0.1:51744 - "GET /api/costs/dashboard HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51746 - "GET /api/chats?include_archived=false HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51746 - "OPTIONS /api/chats HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51744 - "POST /api/chats HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51744 - "GET /api/chats?include_archived=false HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51744 - "GET /api/chats/1 HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51744 - "GET /api/chats/1 HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51746 - "GET /api/chats/1/messages HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51746 - "GET /api/chats/1/messages HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51867 - "OPTIONS /api/chats/1/title HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51867 - "PUT /api/chats/1/title HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51867 - "GET /api/chats?include_archived=false HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51867 - "OPTIONS /api/chat HTTP/1.1" 200 OK
+[start-backend] 2025-09-17 18:27:37 - janus_backend - [INFO] - Explizite Werkzeug-Direktive wurde auf den System-Prompt angewendet.
+[start-backend] 2025-09-17 18:27:37 - janus_backend - [INFO] - Using persona prompt for 'ai_assistant'
+[start-backend] 2025-09-17 18:27:37 - grpc._cython.cygrpc - [DEBUG] - Using AsyncIOEngine.POLLER as I/O engine
+[start-backend] 2025-09-17 18:27:39 - janus_backend - [INFO] -
+[start-backend] --- USAGE TRACKING ---
+[start-backend] Model: gemini-2.5-flash
+[start-backend] Input Tokens: 0
+[start-backend] Output Tokens: 0
+[start-backend] Image Quality: N/A
+[start-backend] Image Size: N/A
+[start-backend] Total Cost: 0.00000000 �
+[start-backend] ----------------------
+[start-backend] 2025-09-17 18:27:39 - janus_backend - [INFO] - Final answer before check: 'Hallo! Wie kann ich Ihnen heute behilflich sein?'
+[start-backend] INFO:     127.0.0.1:51867 - "POST /api/chat HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51867 - "GET /api/costs/dashboard HTTP/1.1" 200 OK
+[start-backend] 2025-09-17 18:27:49 - janus_backend - [INFO] - Explizite Werkzeug-Direktive wurde auf den System-Prompt angewendet.
+[start-backend] 2025-09-17 18:27:49 - janus_backend - [INFO] - Using persona prompt for 'ai_assistant'
+[start-backend] 2025-09-17 18:27:49 - janus_backend - [INFO] - [DEBUG] FINAL HYBRID Memory Context Generated (length: 0):
+[start-backend] 2025-09-17 18:27:49 - janus_backend - [INFO] - Touched 0 memory snippets to update their relevance.
+[start-backend] 2025-09-17 18:27:49 - grpc._cython.cygrpc - [DEBUG] - Using AsyncIOEngine.POLLER as I/O engine
+[start-backend] 2025-09-17 18:27:51 - janus_backend - [INFO] - Gemini requested tool call: perform_websearch with args: {'query': 'Preis Nintendo Switch 2'}
+[start-backend] 2025-09-17 18:27:51 - janus_backend - [INFO] -
+[start-backend] --- USAGE TRACKING ---
+[start-backend] Model: gemini-2.5-flash
+[start-backend] Input Tokens: 0
+[start-backend] Output Tokens: 0
+[start-backend] Image Quality: N/A
+[start-backend] Image Size: N/A
+[start-backend] Total Cost: 0.00000000 �
+[start-backend] ----------------------
+[start-backend] 2025-09-17 18:27:51 - janus_backend - [WARNING] - Unknown tool call: perform_websearch for provider: gemini
+[start-backend] 2025-09-17 18:27:51 - janus_backend - [INFO] - Executing tool 'perform_websearch' with args: {'query': 'Preis Nintendo Switch 2'}
+[start-backend] 2025-09-17 18:27:52 - openai._base_client - [DEBUG] - Request options: {'method': 'post', 'url': '/responses', 'files': None, 'idempotency_key': 'stainless-python-retry-620c1033-a1f8-4c33-8ba1-77d5333b60ff', 'json_data': {'input': 'F�hre eine Websuche durch und gib eine detaillierte, faktenbasierte Antwort auf die folgende Frage: Preis Nintendo Switch 2', 'model': 'gpt-4o-mini', 'tools': [{'type': 'web_search'}]}}
+[start-backend] 2025-09-17 18:27:52 - openai._base_client - [DEBUG] - Sending HTTP Request: POST https://api.openai.com/v1/responses
+[start-backend] 2025-09-17 18:27:52 - httpcore.connection - [DEBUG] - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None
+[start-backend] 2025-09-17 18:27:52 - httpcore.connection - [DEBUG] - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x000001FFB6137750>
+[start-backend] 2025-09-17 18:27:52 - httpcore.connection - [DEBUG] - start_tls.started ssl_context=<ssl.SSLContext object at 0x000001FF891489E0> server_hostname='api.openai.com' timeout=5.0
+[start-backend] 2025-09-17 18:27:52 - httpcore.connection - [DEBUG] - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x000001FFB6786E90>
+[start-backend] 2025-09-17 18:27:52 - httpcore.http11 - [DEBUG] - send_request_headers.started request=<Request [b'POST']>
+[start-backend] 2025-09-17 18:27:52 - httpcore.http11 - [DEBUG] - send_request_headers.complete
+[start-backend] 2025-09-17 18:27:52 - httpcore.http11 - [DEBUG] - send_request_body.started request=<Request [b'POST']>
+[start-backend] 2025-09-17 18:27:52 - httpcore.http11 - [DEBUG] - send_request_body.complete
+[start-backend] 2025-09-17 18:27:52 - httpcore.http11 - [DEBUG] - receive_response_headers.started request=<Request [b'POST']>
+[start-backend] 2025-09-17 18:27:59 - httpcore.http11 - [DEBUG] - receive_response_headers.complete return_value=(b'HTTP/1.1', 429, b'Too Many Requests', [(b'Date', b'Wed, 17 Sep 2025 16:28:00 GMT'), (b'Content-Type', b'application/json'), (b'Content-Length', b'316'), (b'Connection', b'keep-alive'), (b'openai-version', b'2020-10-01'), (b'openai-organization', b'user-9rymi7trhkh9wx0cjpzb4txg'), (b'openai-project', b'proj_xZDNucsxSbdjkba6PitMv58d'), (b'x-request-id', b'req_988dd548cd28c801ed3413dfb5a0a808'), (b'openai-processing-ms', b'6992'), (b'x-envoy-upstream-service-time', b'6998'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'Set-Cookie', b'__cf_bm=oScvENzDw4sVut_yxSz8UCzwN4p.Op7mrnQT8WtZgpA-1758126480-1.0.1.1-GUJa7PUumk539UuFdsjrkBdLkPvT9rmSAJUjzCm4Kum9WypK1Gnm_Kar75JE_PpNNkvl1B7k_7xoNgpz0wO2nbURUeerj7EifSObS9moQ8Q; path=/; expires=Wed, 17-Sep-25 16:58:00 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'X-Content-Type-Options', b'nosniff'), (b'Set-Cookie', b'_cfuvid=24QwwdIQHXuzYGlt.DJUjJd6lkYMlfb5jTBc2KKuDVQ-1758126480800-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'Server', b'cloudflare'), (b'CF-RAY', b'9809f939fe1fc7dd-DUS'), (b'alt-svc', b'h3=":443"; ma=86400')])
+[start-backend] 2025-09-17 18:27:59 - httpx - [INFO] - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 429 Too Many Requests"
+[start-backend] 2025-09-17 18:27:59 - httpcore.http11 - [DEBUG] - receive_response_body.started request=<Request [b'POST']>
+[start-backend] 2025-09-17 18:27:59 - httpcore.http11 - [DEBUG] - receive_response_body.complete
+[start-backend] 2025-09-17 18:27:59 - httpcore.http11 - [DEBUG] - response_closed.started
+[start-backend] 2025-09-17 18:27:59 - httpcore.http11 - [DEBUG] - response_closed.complete
+[start-backend] 2025-09-17 18:27:59 - openai._base_client - [DEBUG] - HTTP Response: POST https://api.openai.com/v1/responses "429 Too Many Requests" Headers([('date', 'Wed, 17 Sep 2025 16:28:00 GMT'), ('content-type', 'application/json'), ('content-length', '316'), ('connection', 'keep-alive'), ('openai-version', '2020-10-01'), ('openai-organization', 'user-9rymi7trhkh9wx0cjpzb4txg'), ('openai-project', 'proj_xZDNucsxSbdjkba6PitMv58d'), ('x-request-id', 'req_988dd548cd28c801ed3413dfb5a0a808'), ('openai-processing-ms', '6992'), ('x-envoy-upstream-service-time', '6998'), ('strict-transport-security', 'max-age=31536000; includeSubDomains; preload'), ('cf-cache-status', 'DYNAMIC'), ('set-cookie', '__cf_bm=oScvENzDw4sVut_yxSz8UCzwN4p.Op7mrnQT8WtZgpA-1758126480-1.0.1.1-GUJa7PUumk539UuFdsjrkBdLkPvT9rmSAJUjzCm4Kum9WypK1Gnm_Kar75JE_PpNNkvl1B7k_7xoNgpz0wO2nbURUeerj7EifSObS9moQ8Q; path=/; expires=Wed, 17-Sep-25 16:58:00 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('x-content-type-options', 'nosniff'), ('set-cookie', '_cfuvid=24QwwdIQHXuzYGlt.DJUjJd6lkYMlfb5jTBc2KKuDVQ-1758126480800-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('server', 'cloudflare'), ('cf-ray', '9809f939fe1fc7dd-DUS'), ('alt-svc', 'h3=":443"; ma=86400')])
+[start-backend] 2025-09-17 18:27:59 - openai._base_client - [DEBUG] - request_id: req_988dd548cd28c801ed3413dfb5a0a808
+[start-backend] 2025-09-17 18:27:59 - openai._base_client - [DEBUG] - Encountered httpx.HTTPStatusError
+[start-backend] Traceback (most recent call last):
+[start-backend]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\openai\_base_client.py", line 1574, in request
+[start-backend]     response.raise_for_status()
+[start-backend]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+[start-backend]     raise HTTPStatusError(message, request=request, response=self)
+[start-backend] httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/responses'
+[start-backend] For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+[start-backend] 2025-09-17 18:27:59 - openai._base_client - [DEBUG] - Retrying due to status code 429
+[start-backend] 2025-09-17 18:27:59 - openai._base_client - [DEBUG] - 2 retries left
+[start-backend] 2025-09-17 18:27:59 - openai._base_client - [INFO] - Retrying request to /responses in 0.379645 seconds
+[start-backend] 2025-09-17 18:28:00 - openai._base_client - [DEBUG] - Request options: {'method': 'post', 'url': '/responses', 'files': None, 'idempotency_key': 'stainless-python-retry-620c1033-a1f8-4c33-8ba1-77d5333b60ff', 'json_data': {'input': 'F�hre eine Websuche durch und gib eine detaillierte, faktenbasierte Antwort auf die folgende Frage: Preis Nintendo Switch 2', 'model': 'gpt-4o-mini', 'tools': [{'type': 'web_search'}]}}
+[start-backend] 2025-09-17 18:28:00 - openai._base_client - [DEBUG] - Sending HTTP Request: POST https://api.openai.com/v1/responses
+[start-backend] 2025-09-17 18:28:00 - httpcore.http11 - [DEBUG] - send_request_headers.started request=<Request [b'POST']>
+[start-backend] 2025-09-17 18:28:00 - httpcore.http11 - [DEBUG] - send_request_headers.complete
+[start-backend] 2025-09-17 18:28:00 - httpcore.http11 - [DEBUG] - send_request_body.started request=<Request [b'POST']>
+[start-backend] 2025-09-17 18:28:00 - httpcore.http11 - [DEBUG] - send_request_body.complete
+[start-backend] 2025-09-17 18:28:00 - httpcore.http11 - [DEBUG] - receive_response_headers.started request=<Request [b'POST']>
+[start-backend] 2025-09-17 18:28:06 - httpcore.http11 - [DEBUG] - receive_response_headers.complete return_value=(b'HTTP/1.1', 429, b'Too Many Requests', [(b'Date', b'Wed, 17 Sep 2025 16:28:07 GMT'), (b'Content-Type', b'application/json'), (b'Content-Length', b'316'), (b'Connection', b'keep-alive'), (b'openai-version', b'2020-10-01'), (b'openai-organization', b'user-9rymi7trhkh9wx0cjpzb4txg'), (b'openai-project', b'proj_xZDNucsxSbdjkba6PitMv58d'), (b'x-request-id', b'req_dd83062500330dab368b291241fd8174'), (b'openai-processing-ms', b'6105'), (b'x-envoy-upstream-service-time', b'6109'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'X-Content-Type-Options', b'nosniff'), (b'Server', b'cloudflare'), (b'CF-RAY', b'9809f96b8df4c7dd-DUS'), (b'alt-svc', b'h3=":443"; ma=86400')])
+[start-backend] 2025-09-17 18:28:06 - httpx - [INFO] - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 429 Too Many Requests"
+[start-backend] 2025-09-17 18:28:06 - httpcore.http11 - [DEBUG] - receive_response_body.started request=<Request [b'POST']>
+[start-backend] 2025-09-17 18:28:06 - httpcore.http11 - [DEBUG] - receive_response_body.complete
+[start-backend] 2025-09-17 18:28:06 - httpcore.http11 - [DEBUG] - response_closed.started
+[start-backend] 2025-09-17 18:28:06 - httpcore.http11 - [DEBUG] - response_closed.complete
+[start-backend] 2025-09-17 18:28:06 - openai._base_client - [DEBUG] - HTTP Response: POST https://api.openai.com/v1/responses "429 Too Many Requests" Headers({'date': 'Wed, 17 Sep 2025 16:28:07 GMT', 'content-type': 'application/json', 'content-length': '316', 'connection': 'keep-alive', 'openai-version': '2020-10-01', 'openai-organization': 'user-9rymi7trhkh9wx0cjpzb4txg', 'openai-project': 'proj_xZDNucsxSbdjkba6PitMv58d', 'x-request-id': 'req_dd83062500330dab368b291241fd8174', 'openai-processing-ms': '6105', 'x-envoy-upstream-service-time': '6109', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'cf-cache-status': 'DYNAMIC', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9809f96b8df4c7dd-DUS', 'alt-svc': 'h3=":443"; ma=86400'})
+[start-backend] 2025-09-17 18:28:06 - openai._base_client - [DEBUG] - request_id: req_dd83062500330dab368b291241fd8174
+[start-backend] 2025-09-17 18:28:06 - openai._base_client - [DEBUG] - Encountered httpx.HTTPStatusError
+[start-backend] Traceback (most recent call last):
+[start-backend]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\openai\_base_client.py", line 1574, in request
+[start-backend]     response.raise_for_status()
+[start-backend]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+[start-backend]     raise HTTPStatusError(message, request=request, response=self)
+[start-backend] httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/responses'
+[start-backend] For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+[start-backend] 2025-09-17 18:28:06 - openai._base_client - [DEBUG] - Retrying due to status code 429
+[start-backend] 2025-09-17 18:28:06 - openai._base_client - [DEBUG] - 1 retry left
+[start-backend] 2025-09-17 18:28:06 - openai._base_client - [INFO] - Retrying request to /responses in 0.822013 seconds
+[start-backend] 2025-09-17 18:28:07 - openai._base_client - [DEBUG] - Request options: {'method': 'post', 'url': '/responses', 'files': None, 'idempotency_key': 'stainless-python-retry-620c1033-a1f8-4c33-8ba1-77d5333b60ff', 'json_data': {'input': 'F�hre eine Websuche durch und gib eine detaillierte, faktenbasierte Antwort auf die folgende Frage: Preis Nintendo Switch 2', 'model': 'gpt-4o-mini', 'tools': [{'type': 'web_search'}]}}
+[start-backend] 2025-09-17 18:28:07 - openai._base_client - [DEBUG] - Sending HTTP Request: POST https://api.openai.com/v1/responses
+[start-backend] 2025-09-17 18:28:07 - httpcore.http11 - [DEBUG] - send_request_headers.started request=<Request [b'POST']>
+[start-backend] 2025-09-17 18:28:07 - httpcore.http11 - [DEBUG] - send_request_headers.complete
+[start-backend] 2025-09-17 18:28:07 - httpcore.http11 - [DEBUG] - send_request_body.started request=<Request [b'POST']>
+[start-backend] 2025-09-17 18:28:07 - httpcore.http11 - [DEBUG] - send_request_body.complete
+[start-backend] 2025-09-17 18:28:07 - httpcore.http11 - [DEBUG] - receive_response_headers.started request=<Request [b'POST']>
+[start-backend] 2025-09-17 18:28:12 - httpcore.http11 - [DEBUG] - receive_response_headers.complete return_value=(b'HTTP/1.1', 429, b'Too Many Requests', [(b'Date', b'Wed, 17 Sep 2025 16:28:13 GMT'), (b'Content-Type', b'application/json'), (b'Content-Length', b'316'), (b'Connection', b'keep-alive'), (b'openai-version', b'2020-10-01'), (b'openai-organization', b'user-9rymi7trhkh9wx0cjpzb4txg'), (b'openai-project', b'proj_xZDNucsxSbdjkba6PitMv58d'), (b'x-request-id', b'req_d4448b158093f84b97d691e6838d35a3'), (b'openai-processing-ms', b'4574'), (b'x-envoy-upstream-service-time', b'4577'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'X-Content-Type-Options', b'nosniff'), (b'Server', b'cloudflare'), (b'CF-RAY', b'9809f997e959c7dd-DUS'), (b'alt-svc', b'h3=":443"; ma=86400')])
+[start-backend] 2025-09-17 18:28:12 - httpx - [INFO] - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 429 Too Many Requests"
+[start-backend] 2025-09-17 18:28:12 - httpcore.http11 - [DEBUG] - receive_response_body.started request=<Request [b'POST']>
+[start-backend] 2025-09-17 18:28:12 - httpcore.http11 - [DEBUG] - receive_response_body.complete
+[start-backend] 2025-09-17 18:28:12 - httpcore.http11 - [DEBUG] - response_closed.started
+[start-backend] 2025-09-17 18:28:12 - httpcore.http11 - [DEBUG] - response_closed.complete
+[start-backend] 2025-09-17 18:28:12 - openai._base_client - [DEBUG] - HTTP Response: POST https://api.openai.com/v1/responses "429 Too Many Requests" Headers({'date': 'Wed, 17 Sep 2025 16:28:13 GMT', 'content-type': 'application/json', 'content-length': '316', 'connection': 'keep-alive', 'openai-version': '2020-10-01', 'openai-organization': 'user-9rymi7trhkh9wx0cjpzb4txg', 'openai-project': 'proj_xZDNucsxSbdjkba6PitMv58d', 'x-request-id': 'req_d4448b158093f84b97d691e6838d35a3', 'openai-processing-ms': '4574', 'x-envoy-upstream-service-time': '4577', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'cf-cache-status': 'DYNAMIC', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9809f997e959c7dd-DUS', 'alt-svc': 'h3=":443"; ma=86400'})
+[start-backend] 2025-09-17 18:28:12 - openai._base_client - [DEBUG] - request_id: req_d4448b158093f84b97d691e6838d35a3
+[start-backend] 2025-09-17 18:28:12 - openai._base_client - [DEBUG] - Encountered httpx.HTTPStatusError
+[start-backend] Traceback (most recent call last):
+[start-backend]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\openai\_base_client.py", line 1574, in request
+[start-backend]     response.raise_for_status()
+[start-backend]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+[start-backend]     raise HTTPStatusError(message, request=request, response=self)
+[start-backend] httpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/responses'
+[start-backend] For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+[start-backend] 2025-09-17 18:28:12 - openai._base_client - [DEBUG] - Re-raising status error
+[start-backend] 2025-09-17 18:28:12 - janus_backend - [ERROR] - Error during OpenAI web search: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+[start-backend] Traceback (most recent call last):
+[start-backend]   File "C:\KI\Janus-Projekt\backend\websearch.py", line 20, in perform_websearch
+[start-backend]     response = await openai_client.responses.create(
+[start-backend]                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\openai\resources\responses\responses.py", line 2161, in create
+[start-backend]     return await self._post(
+[start-backend]            ^^^^^^^^^^^^^^^^^
+[start-backend]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\openai\_base_client.py", line 1794, in post
+[start-backend]     return await self.request(cast_to, opts, stream=stream, stream_cls=stream_cls)
+[start-backend]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\openai\_base_client.py", line 1594, in request
+[start-backend]     raise self._make_status_error_from_response(err.response) from None
+[start-backend] openai.RateLimitError: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+[start-backend] 2025-09-17 18:28:12 - janus_backend - [INFO] - Web search completed. Sending results back to the original LLM for final response.
+[start-backend] 2025-09-17 18:28:12 - grpc._cython.cygrpc - [DEBUG] - Using AsyncIOEngine.POLLER as I/O engine
+[start-backend] 2025-09-17 18:28:13 - janus_backend - [INFO] -
+[start-backend] --- USAGE TRACKING ---
+[start-backend] Model: gemini-2.5-flash
+[start-backend] Input Tokens: 0
+[start-backend] Output Tokens: 0
+[start-backend] Image Quality: N/A
+[start-backend] Image Size: N/A
+[start-backend] Total Cost: 0.00000000 �
+[start-backend] ----------------------
+[start-backend] 2025-09-17 18:28:13 - janus_backend - [INFO] - Final answer before check: 'Ich habe leider keine URLs gefunden.'
+[start-backend] INFO:     127.0.0.1:51868 - "POST /api/chat HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:51868 - "GET /api/costs/dashboard HTTP/1.1" 200 OK
+[start-backend] 2025-09-17 18:29:19 - janus_backend - [INFO] - Explizite Werkzeug-Direktive wurde auf den System-Prompt angewendet.
+[start-backend] 2025-09-17 18:29:19 - janus_backend - [INFO] - Using persona prompt for 'ai_assistant'
+[start-backend] 2025-09-17 18:29:19 - janus_backend - [INFO] - Image generation intent detected by keyword.
+[start-backend] 2025-09-17 18:29:19 - janus_backend - [INFO] - Calling Gemini image model 'gemini-2.5-flash-image-preview' with prompt: 'erstelle mir ein bild einer katze' and reference image: False
+[start-backend] 2025-09-17 18:29:19 - grpc._cython.cygrpc - [DEBUG] - Using AsyncIOEngine.POLLER as I/O engine
+[start-backend] 2025-09-17 18:29:26 - janus_backend - [INFO] - Image saved from bytes to C:\Users\pruve\AppData\Local\JanusDev\Janus Projekt\images\mir-ein-bild-einer-katze-17-09-25.png
+[start-backend] 2025-09-17 18:29:26 - janus_backend - [INFO] -
+[start-backend] --- USAGE TRACKING ---
+[start-backend] Model: gemini-2.5-flash-image-preview
+[start-backend] Input Tokens: N/A
+[start-backend] Output Tokens: N/A
+[start-backend] Image Quality: standard
+[start-backend] Image Size: 1024x1024
+[start-backend] Total Cost: 0.02000000 �
+[start-backend] ----------------------
+[start-backend] INFO:     127.0.0.1:52231 - "POST /api/chat HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:52231 - "GET /api/costs/dashboard HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:52260 - "GET /user_images/mir-ein-bild-einer-katze-17-09-25.png HTTP/1.1" 200 OK
+[start-backend] 2025-09-17 18:29:35 - janus_backend - [INFO] - Image saved from bytes to C:\Users\pruve\AppData\Local\JanusDev\Janus Projekt\images\user-upload-15-17-09-25.png
+[start-backend] 2025-09-17 18:29:35 - janus_backend - [INFO] - User-uploaded image saved to: /user_images/user-upload-15-17-09-25.png
+[start-backend] 2025-09-17 18:29:35 - janus_backend - [INFO] - Explizite Werkzeug-Direktive wurde auf den System-Prompt angewendet.
+[start-backend] 2025-09-17 18:29:35 - janus_backend - [INFO] - Using persona prompt for 'ai_assistant'
+[start-backend] 2025-09-17 18:29:35 - janus_backend - [INFO] - [DEBUG] FINAL HYBRID Memory Context Generated (length: 0):
+[start-backend] 2025-09-17 18:29:35 - janus_backend - [INFO] - Touched 0 memory snippets to update their relevance.
+[start-backend] 2025-09-17 18:29:35 - janus_backend - [INFO] - Image data detected for Gemini. Processing as a multi-modal request.
+[start-backend] 2025-09-17 18:29:35 - grpc._cython.cygrpc - [DEBUG] - Using AsyncIOEngine.POLLER as I/O engine
+[start-backend] 2025-09-17 18:29:47 - janus_backend - [INFO] -
+[start-backend] --- USAGE TRACKING ---
+[start-backend] Model: gemini-2.5-flash
+[start-backend] Input Tokens: 373
+[start-backend] Output Tokens: 49
+[start-backend] Total Cost: 0.00012415 �
+[start-backend] ----------------------
+[start-backend] 2025-09-17 18:29:47 - janus_backend - [INFO] - Final answer before check: 'Ja, das Bild zeigt eine l�chelnde Frau mit langen, welligen, r�tlich-braunen Haaren und hellen Augen, die freundlich in die Kamera blickt; es wurden keine weiteren Fakten zur Verf�gung gestellt.'
+[start-backend] 2025-09-17 18:29:47 - janus_backend - [INFO] - [FACT EXTRACTION] Starte Extraktion f�r Chat 1 mit Text: 'User: Gib eine kurze Best�tigung und die wichtigsten Merkmale des Bildes in einem Satz.
+[start-backend] Assistant: Ja, das Bild zeigt eine l�chelnde Frau mit langen, welligen, r�tlich-braunen Haaren und hellen Augen, die freundlich in die Kamera blickt; es wurden keine weiteren Fakten zur Verf�gung gestellt.'
+[start-backend] INFO:     127.0.0.1:52290 - "POST /api/chat HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:52290 - "GET /api/costs/dashboard HTTP/1.1" 200 OK
+[start-backend] 2025-09-17 18:29:50 - janus_backend - [INFO] -
+[start-backend] --- USAGE TRACKING ---
+[start-backend] Model: gemini-2.5-flash
+[start-backend] Input Tokens: 0
+[start-backend] Output Tokens: 0
+[start-backend] Image Quality: N/A
+[start-backend] Image Size: N/A
+[start-backend] Total Cost: 0.00000000 �
+[start-backend] ----------------------
+[start-backend] 2025-09-17 18:29:50 - janus_backend - [INFO] - Extracted text: 'Keine.'
+[start-backend] 2025-09-17 18:29:50 - janus_backend - [INFO] - Kein relevanter Fakt im Textblock gefunden.
+[start-backend] 2025-09-17 18:30:17 - janus_backend - [INFO] - Explizite Werkzeug-Direktive wurde auf den System-Prompt angewendet.
+[start-backend] 2025-09-17 18:30:17 - janus_backend - [INFO] - Using persona prompt for 'ai_assistant'
+[start-backend] 2025-09-17 18:30:17 - janus_backend - [INFO] - [DEBUG] FINAL HYBRID Memory Context Generated (length: 0):
+[start-backend] 2025-09-17 18:30:17 - janus_backend - [INFO] - Touched 0 memory snippets to update their relevance.
+[start-backend] 2025-09-17 18:30:20 - janus_backend - [INFO] - Gemini requested tool call: create_file_tool with args: {'content': 'Ja, das Bild zeigt eine l�chelnde Frau mit langen, welligen, r�tlich-braunen Haaren und hellen Augen, die freundlich in die Kamera blickt; es wurden keine weiteren Fakten zur Verf�gung gestellt.', 'path': 'C:\\Users\\pruve\\Desktop\\bildbeschreibung.txt'}
+[start-backend] 2025-09-17 18:30:20 - janus_backend - [INFO] -
+[start-backend] --- USAGE TRACKING ---
+[start-backend] Model: gemini-2.5-flash
+[start-backend] Input Tokens: 0
+[start-backend] Output Tokens: 0
+[start-backend] Image Quality: N/A
+[start-backend] Image Size: N/A
+[start-backend] Total Cost: 0.00000000 �
+[start-backend] ----------------------
+[start-backend] 2025-09-17 18:30:20 - janus_backend - [WARNING] - Unknown tool call: create_file_tool for provider: gemini
+[start-backend] 2025-09-17 18:30:20 - janus_backend - [INFO] - Executing tool 'create_file_tool' with args: {'content': 'Ja, das Bild zeigt eine l�chelnde Frau mit langen, welligen, r�tlich-braunen Haaren und hellen Augen, die freundlich in die Kamera blickt; es wurden keine weiteren Fakten zur Verf�gung gestellt.', 'path': 'C:\\Users\\pruve\\Desktop\\bildbeschreibung.txt'}
+[start-backend] 2025-09-17 18:30:20 - janus_backend - [INFO] - Datei erstellt: C:\Users\pruve\Desktop\bildbeschreibung.txt
+[start-backend] 2025-09-17 18:30:20 - janus_backend - [INFO] - Final answer before check: 'Ergebnis von Tool 'create_file_tool': {
+[start-backend]   "output": "Datei 'C:\\Users\\pruve\\Desktop\\bildbeschreibung.txt' wurde erfolgreich erstellt."
+[start-backend] }'
+[start-backend] INFO:     127.0.0.1:52441 - "POST /api/chat HTTP/1.1" 200 OK
+[start-backend] INFO:     127.0.0.1:52441 - "GET /api/costs/dashboard HTTP/1.1" 200 OK

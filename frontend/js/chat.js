@@ -219,7 +219,6 @@ export function appendMessage(sender, data) {
             }
             imageElement.src = fullImageUrl;
             imageUrlForSaving = fullImageUrl;
-            textContent = '';
         } else if (data.image_base64 && data.mime_type) {
             imageElement = document.createElement('img');
             const imageDataUrl = 'data:' + data.mime_type + ';base64,' + data.image_base64;

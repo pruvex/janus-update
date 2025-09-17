@@ -5,8 +5,26 @@ import openai
 import logging
 from typing import Callable, Dict, Any, Optional
 from pydantic import BaseModel
+from tenacity import retry, stop_after_attempt, wait_exponential
 from backend import schemas, filesystem_manager
-from backend.llm_providers.openai_service import generate_image_tool
+
+from backend.llm_providers.openai_service import OpenAIServiceProvider
+
+# This function is a standalone wrapper for tool registration.
+# It instantiates the provider and calls the appropriate method.
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+async def generate_image_tool(api_key: str, prompt: str, size: str = "1024x1024", quality: str = "standard", **kwargs) -> Dict:
+    """
+    Generiert ein Bild basierend auf einer Texteingabe unter Verwendung von DALL-E 3.
+    """
+    provider = OpenAIServiceProvider()
+    response = await provider.generate_image(api_key, "dall-e-3", prompt, size=size, quality=quality, **kwargs)
+    return {
+        "url": response.get("image_url"),
+        "usage": response.get("usage"),
+        "cost": response.get("cost")
+    }
+
 from backend.websearch import perform_websearch
 from backend.memory_manager import cross_chat_memory_tool
 from sqlalchemy.orm import Session
@@ -105,3 +123,7 @@ register_tool(Tool(func=perform_websearch, args_schema=schemas.WebsearchToolArgs
 
 def get_all_tool_definitions():
     return [tool.llm_definition for tool in TOOL_REGISTRY.values()]
+
+def get_all_tools() -> Dict[str, Tool]:
+    """Gibt das gesamte Tool-Registry-Wörterbuch zurück."""
+    return TOOL_REGISTRY

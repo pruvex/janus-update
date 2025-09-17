@@ -9,6 +9,7 @@ from backend.llm_providers.gemini_service import GeminiServiceProvider
 from backend.llm_providers.openai_service import OpenAIServiceProvider
 from backend.tool_registry import get_all_tool_definitions
 from backend.websearch import perform_websearch
+from backend.llm_providers.capabilities.gemini_web_search import GeminiWebSearch
 from backend import memory_manager
 
 
@@ -31,10 +32,10 @@ async def call_llm(provider: str, model_id: str, api_key: str, messages: List[Di
     llm_provider = get_provider(provider)
     return await llm_provider.generate_response(api_key=api_key, model=model_id, messages=messages, image_data=image_data, **kwargs)
 
-async def generate_image(provider: str, model_id: str, api_key: str, prompt: str, previous_response_id: Optional[str] = None, **kwargs):
+async def generate_image(provider: str, model_id: str, api_key: str, prompt: str, previous_response_id: Optional[str] = None, reference_image_path: Optional[str] = None, **kwargs):
     """Ruft den entsprechenden Provider auf, um ein Bild zu generieren."""
     llm_provider = get_provider(provider)
-    return await llm_provider.generate_image(api_key=api_key, model=model_id, prompt=prompt, previous_response_id=previous_response_id, **kwargs)
+    return await llm_provider.generate_image(api_key=api_key, model=model_id, prompt=prompt, previous_response_id=previous_response_id, reference_image_path=reference_image_path, **kwargs)
 
 WEBSEARCH_COST_PER_QUERY = 0.01 # 1 Cent pro Websuche
 
@@ -55,6 +56,33 @@ async def reason_and_respond(
     """
     tools = get_all_tool_definitions()
     llm_response = await call_llm(provider, model, api_key, messages=chat_history, tools=tools, image_data=image_data)
+
+    if llm_response.get("type") == "tool_code":
+        tool_name = llm_response["tool_name"]
+        tool_args = llm_response["tool_args"]
+        
+        if provider == "gemini" and tool_name == "google_search":
+            logger.info(f"Gemini requested Google Search with query: {tool_args.get('query')}")
+            gemini_web_search_instance = GeminiWebSearch()
+            web_search_result = await gemini_web_search_instance.search_and_generate(
+                api_key=api_key,
+                model=model,
+                history=chat_history,
+                system_instruction=context_manager.get_system_instruction(chat_id)
+            )
+            chat_history.append({"role": "tool", "content": web_search_result.get("text", "")})
+            llm_response = await call_llm(provider, model, api_key, messages=chat_history, tools=tools, image_data=image_data)
+            return llm_response
+        elif provider == "openai" and tool_name == "perform_websearch":
+            logger.info(f"OpenAI requested Web Search with query: {tool_args.get('query')}")
+            web_search_result = await perform_websearch(query=tool_args.get("query", ""))
+            chat_history.append({"role": "tool", "content": web_search_result.get("text", "")})
+            llm_response = await call_llm(provider, model, api_key, messages=chat_history, tools=tools, image_data=image_data)
+            return llm_response
+        else:
+            logger.warning(f"Unknown tool call: {tool_name} for provider: {provider}")
+            return llm_response
+    
     return llm_response
 
 

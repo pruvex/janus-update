@@ -6,6 +6,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from backend.cost_calculator import calculate_cost
 from backend.llm_providers.base_provider import BaseLLMProvider
 from backend.llm_providers.utils import _extract_image_description
+from backend.llm_providers.capabilities.openai_image_generation import OpenAIImageGeneration
 
 logger = logging.getLogger('janus_backend')
 
@@ -71,80 +72,9 @@ class OpenAIServiceProvider(BaseLLMProvider):
             logger.info(f"An error occurred with OpenAI API, retrying... Error: {e}")
             raise
 
+    def __init__(self):
+        self.image_generator = OpenAIImageGeneration()
+
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-    async def generate_image(self, api_key: str, model: str, prompt: str, previous_response_id: Optional[str] = None, **kwargs) -> Dict:
-        client = openai.AsyncOpenAI(api_key=api_key)
-        
-        try:
-            # This API uses a chat model to generate images via a tool.
-            # We use a powerful vision-capable model like gpt-4o as a reliable choice.
-            chat_model_for_image_gen = "gpt-4o"
-            logger.info(f"Calling Responses API (using model {chat_model_for_image_gen}) with prompt: '{prompt}' and previous_response_id: '{previous_response_id}'")
-
-            api_params = {
-                "model": chat_model_for_image_gen,
-                "input": prompt,
-                "tools": [{"type": "image_generation"}]
-            }
-            if previous_response_id:
-                api_params["previous_response_id"] = previous_response_id
-
-            response = await client.responses.create(**api_params)
-
-            image_base64 = None
-            if response.output:
-                for output in response.output:
-                    if output.type == "image_generation_call":
-                        image_base64 = output.result
-                        break
-            
-            if not image_base64:
-                text_response = ""
-                if response.output:
-                    for output in response.output:
-                        if output.type == "text":
-                            text_response = output.result
-                            break
-                logger.warning(f"No image data found in the Responses API output. Text response: {text_response}")
-                return {"type": "text", "text": text_response, "image_url": None, "usage": {}, "cost": {}, "response_id": response.id}
-
-
-            from backend import image_manager
-            import base64
-
-            image_bytes = base64.b64decode(image_base64)
-            cleaned_description = _extract_image_description(prompt)
-            image_url = image_manager.save_image_from_bytes(image_bytes, description=cleaned_description, file_extension="png")
-
-            usage_data = response.usage
-            usage, cost = _calculate_and_log_cost(chat_model_for_image_gen, usage_data=usage_data)
-
-            return {
-                "image_url": image_url,
-                "usage": usage,
-                "cost": cost,
-                "response_id": response.id
-            }
-
-        except Exception as e:
-            logger.error(f"Error generating image with OpenAI Responses API: {e}", exc_info=True)
-            raise
-
-# Standalone wrapper function for tool registration
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-async def generate_image_tool(api_key: str, prompt: str, size: str = "1024x1024", quality: str = "standard", **kwargs) -> Dict:
-    """ 
-    Standalone wrapper to be registered as a tool. 
-    It instantiates the provider and calls the class method.
-    """
-    provider = OpenAIServiceProvider()
-    # The tool was hardcoded to dall-e-3, so we pass it here.
-    response = await provider.generate_image(api_key, "dall-e-3", prompt, size=size, quality=quality)
-    
-    # The tool registry expects a slightly different format (url instead of image_url)
-    # We adapt it here to maintain compatibility.
-    return {
-        "url": response.get("image_url"),
-        "usage": response.get("usage"),
-        "cost": response.get("cost")
-    }
+    async def generate_image(self, api_key: str, model: str, prompt: str, **kwargs) -> Dict:
+        return await self.image_generator.generate_image(api_key, model, prompt, **kwargs)

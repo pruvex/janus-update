@@ -7,6 +7,7 @@ import traceback
 import asyncio
 import shutil
 import inspect
+import base64
 
 # Setup logging as early as possible
 from backend.logger_config import setup_logging
@@ -275,7 +276,23 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
         request.chat_id = new_chat.id
         logger.info(f"New chat created with ID: {request.chat_id}")
 
-    crud.create_message(db, chat_id=request.chat_id, sender="user", content=user_prompt_text)
+    # --- START: Save user-uploaded image and persist its path ---
+    local_user_image_path = None
+    if image_data:
+        try:
+            # The image_manager can save the image and return a local path
+            # We need to extract the raw base64 data from the data URI
+            header, encoded = image_data.split(",", 1)
+            image_bytes = base64.b64decode(encoded)
+            # Use a generic description for user-uploaded images
+            local_user_image_path = image_manager.save_image_from_bytes(image_bytes, description="user-upload")
+            logger.info(f"User-uploaded image saved to: {local_user_image_path}")
+        except Exception as e:
+            logger.error(f"Could not save user-uploaded image: {e}", exc_info=True)
+            local_user_image_path = None # Continue without the image path if saving fails
+
+    crud.create_message(db, chat_id=request.chat_id, sender="user", content=user_prompt_text, image_path=local_user_image_path)
+    # --- END: Save user-uploaded image ---
 
     config = load_config()
     personalities = load_personalities() # Lade aus der neuen Datei
@@ -321,12 +338,28 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
                 logger.info(f"Using persona prompt for '{active_personality_id}'")
             break
 
-    prompt_lower = user_prompt_text.lower()
-    image_keywords = [
-        "bild", "image", "picture", "foto", "photo",
-        "zeichne", "draw"
-    ]
-    is_image_generation_request = image_data is None and any(keyword in prompt_lower for keyword in image_keywords)
+    # Load chat history once to be used by multiple parts of the logic
+    messages_in_chat = crud.get_messages_by_chat_id(db, request.chat_id)
+
+    # --- START: Final, Robust Image Generation Intent Logic ---
+    is_image_generation_request = False
+    if image_data is None:
+        # ONLY if no image is being uploaded, we check for keywords.
+        prompt_lower = user_prompt_text.lower()
+
+        unambiguous_generation_keywords = ["zeichne", "draw", "erstelle", "erstell", "erzeuge", "generate", "create", "male", "füge", "add", "hinzufügen"]
+        is_unambiguous_request = any(keyword in prompt_lower for keyword in unambiguous_generation_keywords)
+
+        if is_unambiguous_request:
+            is_image_generation_request = True
+        else:
+            # Ambiguous keywords only trigger if no image is already in the conversation.
+            ambiguous_keywords = ["bild", "image", "picture", "foto", "photo"]
+            conversation_has_image = any(msg.image_path is not None for msg in messages_in_chat)
+
+            if not conversation_has_image and any(keyword in prompt_lower for keyword in ambiguous_keywords):
+                is_image_generation_request = True
+    # --- END: Final, Robust Image Generation Intent Logic ---
 
     if is_image_generation_request:
         logger.info("Image generation intent detected by keyword.")
@@ -344,13 +377,26 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
         selected_text_model = model_catalog.get(request.model, {})
         image_model_id = selected_text_model.get("image_generation_model", "gpt-4o") # Fallback to gpt-4o
 
+        # --- START: Image-to-Image Context Logic ---
+        reference_image_path = None
+        # The check for conversation_has_image is already done when detecting intent.
+        # We can find the latest image path from the messages we already fetched.
+        # Iterate in reverse to find the most recent image.
+        for msg in reversed(messages_in_chat):
+            if msg.image_path:
+                reference_image_path = msg.image_path
+                logger.info(f"Found reference image for image-to-image task: {reference_image_path}")
+                break
+
         llm_response = await llm_gateway.generate_image(
             provider=provider_for_gen, 
             model_id=image_model_id, 
             api_key=api_key, 
             prompt=user_prompt_text,
-            previous_response_id=previous_response_id
+            previous_response_id=previous_response_id,
+            reference_image_path=reference_image_path # Pass the new parameter
         )
+        # --- END: Image-to-Image Context Logic ---
 
         # Store the new response ID for the next turn, or clear if no image was returned
         if request.chat_id and llm_response.get("response_id") and llm_response.get("image_url"):

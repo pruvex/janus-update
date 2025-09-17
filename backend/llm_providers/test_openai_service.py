@@ -1,9 +1,10 @@
 import pytest
 from unittest.mock import AsyncMock, patch
-from backend.llm_providers.openai_service import OpenAIServiceProvider, generate_image_tool
+from backend.llm_providers.openai_service import OpenAIServiceProvider
 
 @pytest.mark.asyncio
 async def test_provider_generate_response():
+    # This test is unchanged as it tests a different functionality
     with patch('openai.AsyncOpenAI') as mock_async_openai:
         mock_client = AsyncMock()
         mock_async_openai.return_value = mock_client
@@ -33,21 +34,29 @@ async def test_provider_generate_response():
         assert result["text"] == "Test response"
 
 @pytest.mark.asyncio
-async def test_generate_image_tool_wrapper():
-    # This tests the standalone wrapper function that is used for tool registration
-    with patch('backend.llm_providers.openai_service.OpenAIServiceProvider.generate_image') as mock_generate_image:
-        mock_generate_image.return_value = {
+async def test_provider_generate_image():
+    # This test now checks if the main provider class correctly calls the new capability class.
+    with patch('backend.llm_providers.capabilities.openai_image_generation.OpenAIImageGeneration.generate_image') as mock_generate_image_impl:
+        # The mocked implementation will return this dictionary
+        mock_generate_image_impl.return_value = {
             "image_url": "http://example.com/image.png",
             "usage": {},
-            "cost": {}
+            "cost": {},
+            "text": None
         }
 
+        provider = OpenAIServiceProvider()
         api_key = "test_key"
         prompt = "A cat"
+        model = "dall-e-3"
+        kwargs = {"size": "1024x1024", "quality": "standard"}
 
-        result = await generate_image_tool(api_key, prompt)
+        # Call the method on the main provider
+        result = await provider.generate_image(api_key, model, prompt, **kwargs)
 
-        mock_generate_image.assert_called_once_with(
-            api_key, "dall-e-3", prompt, size="1024x1024", quality="standard"
+        # Assert that the internal implementation was called correctly
+        mock_generate_image_impl.assert_called_once_with(
+            api_key, model, prompt, **kwargs
         )
-        assert result["url"] == "http://example.com/image.png"
+        # Assert that the main provider returns the result from the implementation
+        assert result["image_url"] == "http://example.com/image.png"
