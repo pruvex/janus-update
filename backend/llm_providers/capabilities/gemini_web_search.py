@@ -39,6 +39,9 @@ async def _format_response_with_citations(response_json: Dict) -> str:
         candidate = response_json['candidates'][0]
         text = candidate['content']['parts'][0]['text']
         
+        if not text: # Add this check
+            return "" # Return empty string if text is empty
+
         metadata = candidate.get('groundingMetadata')
         if not metadata or not metadata.get('groundingSupports'):
             return text
@@ -94,7 +97,7 @@ async def _format_response_with_citations(response_json: Dict) -> str:
         for position in sorted_positions:
             sorted_indices = sorted(list(citations_by_position[position]))
             citation_string = "".join([f"[{i}]" for i in sorted_indices])
-            if position > 0 and text[position-1].isalnum():
+            if text and position > 0 and position - 1 < len(text) and text[position-1].isalnum():
                  citation_string = " " + citation_string
             text = text[:position] + citation_string + text[position:]
 
@@ -124,12 +127,45 @@ class GeminiWebSearch:
     async def search_and_generate(self, api_key: str, model: str, history: List[Dict], system_instruction: str) -> Dict:
         logger.info("Web search requested for Gemini. Using direct REST API call.")
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+        logger.info(f"Original History for Gemini Web Search: {history}")
+        
+        # Filter history to ensure alternating user/model roles and remove system prompts
+        filtered_history = []
+        for msg in history:
+            # Skip system messages (including system prompts embedded as user messages)
+            if msg["role"] == "system" or (msg["role"] == "user" and "WICHTIG: Nutze die folgenden Fakten" in msg["content"]):
+                continue 
+            
+            # Ensure alternating roles
+            current_role = "model" if msg["role"] == "assistant" else msg["role"]
+            
+            # If the current message is a user message and the last message was also a user message,
+            # it means the previous user message was a system prompt that was not filtered out.
+            # In this case, we should replace the previous user message with the current one.
+            if filtered_history and filtered_history[-1]["role"] == current_role and current_role == "user":
+                filtered_history[-1]["content"] = msg["content"]
+            elif filtered_history and filtered_history[-1]["role"] == current_role:
+                # If roles are the same (and not user-user due to system prompt), append content to the last message
+                filtered_history[-1]["content"] += "\n" + msg["content"]
+            else:
+                # Otherwise, add the message with the correct role
+                filtered_history.append({
+                    "role": current_role,
+                    "content": msg["content"]
+                })
+
+        # Convert filtered history to Gemini API format
+        gemini_contents = []
+        for msg in filtered_history:
+            gemini_contents.append({"role": msg["role"], "parts": [{"text": msg["content"]}]})
+
         payload = {
-            "contents": [{"role": "model" if msg["role"] == "assistant" else msg["role"], "parts": [{"text": msg["content"]}]} for msg in history if msg["role"] in ["user", "assistant"]],
+            "contents": gemini_contents,
             "tools": [{"google_search": {}}],
             "systemInstruction": {"parts": [{"text": system_instruction}]} if system_instruction else None
         }
         logger.info(f"Gemini Web Search Payload: {json.dumps(payload, indent=2)}")
+
         try:
             async with httpx.AsyncClient(timeout=120.0) as client:
                 response = await client.post(url, json=payload)
