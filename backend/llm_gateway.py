@@ -61,7 +61,7 @@ async def reason_and_respond(
         tool_name = llm_response["tool_name"]
         tool_args = llm_response["tool_args"]
         
-        if provider == "gemini" and tool_name == "google_search":
+        if provider == "gemini" and (tool_name == "google_search" or tool_name == "perform_websearch"):
             logger.info(f"Gemini requested Google Search with query: {tool_args.get('query')}")
             gemini_web_search_instance = GeminiWebSearch()
             web_search_result = await gemini_web_search_instance.search_and_generate(

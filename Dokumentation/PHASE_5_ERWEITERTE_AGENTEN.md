@@ -7,7 +7,7 @@
 - [ ] **[WÄCHTER] Bilderzeugung testen:** Die Anbindung an die Bild-API und die Tool-Nutzung durch das LLM testen.
 - [ ] **[JANUS] Vorbereitung für Agenten-Erstellung:** Die Architektur für benutzerdefinierte Agenten vorbereiten. (Architektur-Aufgabe, verifiziert durch Code-Review)
 - [ ] **[GIT] Meilenstein-Commit:** Die ersten erweiterten Agenten-Fähigkeiten als stabilen Meilenstein committen.
-- [x] **[JANUS] Websearch-Tool implementieren:** Ein Tool zur Durchführung von Websuchen über GPTs integriertes web.search Tool implementieren.
+- [x] **[JANUS] Websuche-Integration für Gemini und OpenAI:** Implementierung eines Tools zur Durchführung von Websuchen. Sichergestellt, dass Gemini-Modelle ihre eigene Google-Suche verwenden und OpenAI-Modelle ihre spezifische Websuche, mit korrekter Weiterleitung der Tool-Aufrufe im LLM-Gateway.
 - [x] **[JANUS] Prompt für Kreativen Schreiber aktualisiert:** Der Prompt für die Persönlichkeit "Kreativer Schreiber" wurde aktualisiert, um die Rolle und Prinzipien zu präzisieren.
 - [x] **[JANUS] Creative Writer Pipeline implementiert:** Eine Pipeline für kreatives Schreiben wurde implementiert, die Ideen-, Entwurfs- und Endfassungsphasen umfasst.
 - [x] **[JANUS] Creative Writer Pipeline in Backend integriert:** Die Logik in `backend/main.py` wurde angepasst, um die `creative_writer` Pipeline aufzurufen, wenn die Persönlichkeit "Kreativer Schreiber" aktiv ist.
