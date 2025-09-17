@@ -125,10 +125,11 @@ class GeminiWebSearch:
         logger.info("Web search requested for Gemini. Using direct REST API call.")
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
         payload = {
-            "contents": [{"role": msg["role"], "parts": [{"text": msg["content"]}]} for msg in history],
+            "contents": [{"role": "model" if msg["role"] == "assistant" else msg["role"], "parts": [{"text": msg["content"]}]} for msg in history if msg["role"] in ["user", "assistant"]],
             "tools": [{"google_search": {}}],
             "systemInstruction": {"parts": [{"text": system_instruction}]} if system_instruction else None
         }
+        logger.info(f"Gemini Web Search Payload: {json.dumps(payload, indent=2)}")
         try:
             async with httpx.AsyncClient(timeout=120.0) as client:
                 response = await client.post(url, json=payload)
