@@ -68,7 +68,7 @@ async def reason_and_respond(
                 api_key=api_key,
                 model=model,
                 history=chat_history,
-                system_instruction=context_manager.get_system_instruction(chat_id)
+                system_instruction=context_manager.get_system_instruction()
             )
             chat_history.append({"role": "tool", "content": web_search_result.get("text", "")})
             llm_response = await call_llm(provider, model, api_key, messages=chat_history, tools=tools, image_data=image_data)

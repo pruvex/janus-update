@@ -11,6 +11,15 @@ RESPONSE_BUFFER = 1000
 class ContextManager:
     def __init__(self, model_catalog: List[Dict]):
         self.model_limits = {model['id']: model.get('context_window', 8000) for model in model_catalog}
+        self.system_prompt_text = (
+            "Du bist Janus, ein hilfreicher und freundlicher KI-Assistent. "
+            "Du antwortest immer auf Deutsch. "
+            "Integriere nahtlos dein umfangreiches Allgemeinwissen mit den spezifischen Informationen, die im Abschnitt 'GEDÄCHTNIS' bereitgestellt werden. "
+            "**REGEL: Die Informationen im 'GEDÄCHTNIS'-Abschnitt haben immer Vorrang und sind die absolute Wahrheit über den Benutzer und seine Welt. Beziehe dich bei jeder Antwort explizit darauf, wenn es relevant ist.**"
+        )
+
+    def get_system_instruction(self) -> str:
+        return self.system_prompt_text
 
     def count_tokens(self, text: str, model: str) -> int:
         try:
@@ -61,19 +70,13 @@ class ContextManager:
         final_history = []
 
         # 1. System Prompt (highest priority)
-        system_prompt_text = (
-            "Du bist Janus, ein hilfreicher und freundlicher KI-Assistent. "
-            "Du antwortest immer auf Deutsch. "
-            "Integriere nahtlos dein umfangreiches Allgemeinwissen mit den spezifischen Informationen, die im Abschnitt 'GEDÄCHTNIS' bereitgestellt werden. "
-            "**REGEL: Die Informationen im 'GEDÄCHTNIS'-Abschnitt haben immer Vorrang und sind die absolute Wahrheit über den Benutzer und seine Welt. Beziehe dich bei jeder Antwort explizit darauf, wenn es relevant ist.**"
-        )
-        system_prompt_tokens = self.count_tokens(system_prompt_text, model_id)
+        system_prompt_tokens = self.count_tokens(self.system_prompt_text, model_id)
         if system_prompt_tokens > max_tokens * budget_config.get("system_prompt_ratio", 0.1):
             logger.warning("System prompt too long, will be truncated or ignored.")
             # In a real scenario, we might truncate the system prompt or simplify it.
             # For now, we assume it fits or is critical.
 
-        final_history.append({"role": "system", "content": system_prompt_text})
+        final_history.append({"role": "system", "content": self.system_prompt_text})
         current_tokens += system_prompt_tokens
 
         # 2. Memory Context (high priority, but can be truncated)

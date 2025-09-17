@@ -28,7 +28,7 @@ Nutzer-Prompt:Ihre Anwendung sendet den Prompt eines Nutzers an die Gemini API, 
 Prompt-Analyse:Das Modell analysiert den Prompt und ermittelt, ob eine Google-Suche die Antwort verbessern kann.
 Google Suche:Bei Bedarf generiert das Modell automatisch eine oder mehrere Suchanfragen und führt sie aus.
 Verarbeitung der Suchergebnisse:Das Modell verarbeitet die Suchergebnisse, fasst die Informationen zusammen und formuliert eine Antwort.
-Fundierte Antwort:Die API gibt eine endgültige, nutzerfreundliche Antwort zurück, die auf den Suchergebnissen basiert. Diese Antwort enthält die Textantwort des Modells und groundingMetadata mit den Suchanfragen, Webergebnissen und Quellenangaben.
+Fundierte Antwort:Die API gibt eine endgültige, nutzerfreundliche Antwort zurück, die auf den Suchergebnissen basiert. Diese Antwort enthält die Textantwort des Modells und groundingMetadata mit den Suchanfragen, Webergebnisse und Quellenangaben.
 
 Antworten auf Grundlage von Kontext verstehen
 Wenn eine Antwort erfolgreich fundiert ist, enthält sie das Feld groundingMetadata. Diese strukturierten Daten sind unerlässlich, um Behauptungen zu überprüfen und eine umfassende Zitationsfunktion in Ihrer Anwendung zu erstellen.
