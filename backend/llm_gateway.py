@@ -48,11 +48,26 @@ async def reason_and_respond(
     db: Session,
     user_prompt: str,
     chat_id: int,
+    system_instruction: Optional[str] = None,
     memory_context: Optional[str] = None,
     user_name: Optional[str] = None,
     image_data: Optional[str] = None):
     """
     Nimmt eine fertige Nachrichtenliste entgegen, ruft das LLM auf und führt bei Bedarf eine Websuche als Fallback durch.
+    
+    Args:
+        provider: Der LLM-Provider (z.B. 'gemini', 'openai')
+        model: Die zu verwendende Modell-ID
+        api_key: Der API-Schlüssel für den LLM-Provider
+        chat_history: Die Chat-Historie im ChatML-Format
+        context_manager: Der Kontext-Manager für die Verwaltung des Kontexts
+        db: Die Datenbank-Session
+        user_prompt: Die Benutzereingabe
+        chat_id: Die ID des Chats
+        system_instruction: Optionaler expliziter System-Prompt, der den Standard-Prompt überschreibt
+        memory_context: Optionaler Speicherkontext
+        user_name: Optionaler Benutzername
+        image_data: Optionale Bilddaten für visuelle Eingaben
     """
     tools = get_all_tool_definitions()
     llm_response = await call_llm(provider, model, api_key, messages=chat_history, tools=tools, image_data=image_data)
@@ -64,15 +79,21 @@ async def reason_and_respond(
         if provider == "gemini" and (tool_name == "google_search" or tool_name == "perform_websearch"):
             logger.info(f"Gemini requested Google Search with query: {tool_args.get('query')}")
             gemini_web_search_instance = GeminiWebSearch()
-            web_search_result = await gemini_web_search_instance.search_and_generate(
+            
+            # Verwende den übergebenen System-Prompt oder den aus dem Kontext-Manager
+            final_system_instruction = system_instruction or context_manager.get_system_instruction()
+            
+            # Die search_and_generate Funktion gibt bereits eine fertige Antwort zurück
+            web_search_response = await gemini_web_search_instance.search_and_generate(
                 api_key=api_key,
                 model=model,
                 history=chat_history,
-                system_instruction=context_manager.get_system_instruction()
+                system_instruction=final_system_instruction
             )
-            chat_history.append({"role": "tool", "content": web_search_result.get("text", "")})
-            llm_response = await call_llm(provider, model, api_key, messages=chat_history, tools=tools, image_data=image_data)
-            return llm_response
+            
+            # Die Antwort von der Websuche ist die ENDGÜLTIGE Antwort
+            # Wir rufen das LLM NICHT erneut auf
+            return web_search_response
         elif provider == "openai" and tool_name == "perform_websearch":
             logger.info(f"OpenAI requested Web Search with query: {tool_args.get('query')}")
             web_search_result = await perform_websearch(query=tool_args.get("query", ""))

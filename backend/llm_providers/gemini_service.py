@@ -134,8 +134,13 @@ class GeminiServiceProvider(BaseLLMProvider):
             return {"type": "text", "text": f"Fehler bei der Initialisierung des Modells: {e}"}
 
         try:
+            usage_metadata = None  # Initialize to prevent UnboundLocalError
             response = await genai_model.generate_content_async(gemini_history_for_api)
             
+            if not response.candidates: # Move this check to the beginning
+                logger.warning(f"Gemini returned no candidates, possibly due to safety filters or an empty prompt. History: {gemini_history_for_api}")
+                return {"type": "text", "text": "Ich konnte keine passende Antwort generieren. Möglicherweise wurde sie durch einen Sicherheitsfilter blockiert."}
+
             first_candidate = response.candidates[0]
             
             if not first_candidate.content.parts:
@@ -155,10 +160,13 @@ class GeminiServiceProvider(BaseLLMProvider):
                 logger.info(f"Gemini requested tool call: {tool_name} with args: {tool_args}")
                 
                 usage_metadata = response.usage_metadata
-                usage, cost = _calculate_and_log_cost(model, {
-                    "input_tokens": usage_metadata.prompt_token_count,
-                    "output_tokens": usage_metadata.candidates_token_count
-                })
+                if usage_metadata:
+                    usage, cost = _calculate_and_log_cost(model, {
+                        "prompt_tokens": usage_metadata.prompt_token_count,
+                        "completion_tokens": usage_metadata.candidates_token_count
+                    })
+                else:
+                    usage, cost = {}, {}
 
                 return {
                     "type": "tool_code",
@@ -170,10 +178,13 @@ class GeminiServiceProvider(BaseLLMProvider):
             else:
                 text_response = response.text
                 usage_metadata = response.usage_metadata
-                usage, cost = _calculate_and_log_cost(model, {
-                    "input_tokens": usage_metadata.prompt_token_count,
-                    "output_tokens": usage_metadata.candidates_token_count
-                })
+                if usage_metadata:
+                    usage, cost = _calculate_and_log_cost(model, {
+                        "prompt_tokens": usage_metadata.prompt_token_count,
+                        "completion_tokens": usage_metadata.candidates_token_count
+                    })
+                else:
+                    usage, cost = {}, {}
                 return {
                     "type": "text",
                     "text": text_response,

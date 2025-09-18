@@ -99,6 +99,37 @@ def _extract_creative_style(prompt: str) -> str:
     # Weitere Stile können hier hinzugefügt werden
     return "poetisch" # Standard-Stil, wenn nichts Spezifisches gefunden wird
 
+def _is_image_unrelated_task(prompt: str) -> bool:
+    """
+    Prüft mit Schlüsselwörtern, ob ein Prompt eine aufgabenorientierte, nicht-visuelle Aufgabe ist
+    (wie Dateioperationen oder Websuche), bei der der visuelle Kontext stören würde.
+    """
+    prompt_lower = prompt.lower()
+    
+    # Schlüsselwörter für Aufgaben, die KEINEN Bildkontext wollen
+    task_keywords = [
+        # Dateioperationen
+        "datei", "file", "ordner", "folder", "verzeichnis", "directory", 
+        "speicher", "save", "schreibe", "write", "lese", "read", "erstelle", "create",
+        "kopiere", "copy", "verschiebe", "move", "lösche", "delete", "benenne", "rename", "führe aus", "execute",
+        # Websuche
+        "suche", "search", "finde", "find", "preis", "price", "kostet", "costs",
+        "gewonnen", "won", "ergebnis", "result", "nachrichten", "news", "wetter", "weather"
+    ]
+    
+    if any(keyword in prompt_lower for keyword in task_keywords):
+        return True
+    
+    return False
+
+def _get_most_recent_image_path_from_history(messages: List[schemas.MessageResponse]) -> Optional[str]:
+    """Durchsucht die Nachrichtenverlauf von neu nach alt und gibt den Pfad des letzten Bildes zurück."""
+    for message in reversed(messages):
+        if message.image_path:
+            # Wir geben den relativen Pfad zurück, wie er in der DB steht
+            return message.image_path
+    return None
+
 app = FastAPI()
 
 FILE_OPERATION_HISTORY = []
@@ -276,9 +307,42 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
         request.chat_id = new_chat.id
         logger.info(f"New chat created with ID: {request.chat_id}")
 
+    # Lade den Verlauf einmal, um ihn mehrfach zu verwenden
+    messages_in_chat_from_db = crud.get_messages_by_chat_id(db, request.chat_id)
+
+    # --- START: VISUELLES GEDÄCHTNIS ---
+    # Wenn kein NEUES Bild hochgeladen wird, prüfen wir, ob ein ALTES im Verlauf existiert.
+    if not image_data:
+        logger.info("No new image uploaded. Checking history for existing image context.")
+        
+        # Prüfe ZUERST, ob die Anfrage überhaupt bildbezogen ist.
+        if not _is_image_unrelated_task(user_prompt_text):
+            most_recent_image_path_relative = _get_most_recent_image_path_from_history(messages_in_chat_from_db)
+            if most_recent_image_path_relative:
+                try:
+                    # Baue den vollständigen, absoluten Pfad zum Bild
+                    base_image_dir = os.path.join(get_app_data_dir(), "images")
+                    image_filename = os.path.basename(most_recent_image_path_relative)
+                    full_image_path = os.path.join(base_image_dir, image_filename)
+
+                    if os.path.exists(full_image_path):
+                        logger.info(f"Image context is relevant. Reloading previous image: {full_image_path}")
+                        with open(full_image_path, "rb") as f:
+                            encoded_string = base64.b64encode(f.read()).decode('utf-8')
+                            image_data = f"data:image/png;base64,{encoded_string}"
+                    else:
+                        logger.warning(f"Image path found in history, but file does not exist: {full_image_path}")
+                except Exception as e:
+                    logger.error(f"Error reloading image from history: {e}", exc_info=True)
+                    image_data = None
+        else:
+            logger.info("Task-oriented prompt detected (file ops/web search). Suppressing visual context to ensure tool usage.")
+    # --- ENDE: VISUELLES GEDÄCHTNIS ---
+
     # --- START: Save user-uploaded image and persist its path ---
     local_user_image_path = None
-    if image_data:
+    if request.content and any(part.type == 'image_url' for part in request.content):
+        # Wir speichern nur, wenn in der ursprünglichen Anfrage ein Bild war
         try:
             # The image_manager can save the image and return a local path
             # We need to extract the raw base64 data from the data URI
@@ -445,8 +509,8 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
     
     # Lade den Verlauf nur, wenn es KEINE Identitätsfrage ist
     if not is_identity_query(user_prompt_text):
-        messages = crud.get_messages_by_chat_id(db, request.chat_id)
-        for m in messages:
+        # Wir verwenden die bereits geladenen Nachrichten aus messages_in_chat_from_db
+        for m in messages_in_chat_from_db:
             if len(chat_history) < 20:
                 chat_history.append({"role": "user" if m.sender == "user" else "assistant", "content": m.content})
     else:

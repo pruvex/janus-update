@@ -1,4 +1,3 @@
-
 import logging
 import httpx
 import json
@@ -39,8 +38,8 @@ async def _format_response_with_citations(response_json: Dict) -> str:
         candidate = response_json['candidates'][0]
         text = candidate['content']['parts'][0]['text']
         
-        if not text: # Add this check
-            return "" # Return empty string if text is empty
+        if not text:
+            return ""
 
         metadata = candidate.get('groundingMetadata')
         if not metadata or not metadata.get('groundingSupports'):
@@ -127,37 +126,35 @@ class GeminiWebSearch:
     async def search_and_generate(self, api_key: str, model: str, history: List[Dict], system_instruction: str) -> Dict:
         logger.info("Web search requested for Gemini. Using direct REST API call.")
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-        logger.info(f"Original History for Gemini Web Search: {history}")
         
-        # Filter history to ensure alternating user/model roles and remove system prompts
-        filtered_history = []
-        for msg in history:
-            # Skip system messages (including system prompts embedded as user messages)
-            if msg["role"] == "system" or (msg["role"] == "user" and "WICHTIG: Nutze die folgenden Fakten" in msg["content"]):
-                continue 
-            
-            # Ensure alternating roles
-            current_role = "model" if msg["role"] == "assistant" else msg["role"]
-            
-            # If the current message is a user message and the last message was also a user message,
-            # it means the previous user message was a system prompt that was not filtered out.
-            # In this case, we should replace the previous user message with the current one.
-            if filtered_history and filtered_history[-1]["role"] == current_role and current_role == "user":
-                filtered_history[-1]["content"] = msg["content"]
-            elif filtered_history and filtered_history[-1]["role"] == current_role:
-                # If roles are the same (and not user-user due to system prompt), append content to the last message
-                filtered_history[-1]["content"] += "\n" + msg["content"]
-            else:
-                # Otherwise, add the message with the correct role
-                filtered_history.append({
-                    "role": current_role,
-                    "content": msg["content"]
-                })
+        # --- START: NEUE, ROBUSTERE LOGIK ---
+        
+        # 1. Finde die letzte User-Nachricht
+        last_user_message_content = ""
+        for msg in reversed(history):
+            if msg.get("role") == "user":
+                content = msg.get("content")
+                if isinstance(content, str):
+                    last_user_message_content = content
+                    break
+        
+        if not last_user_message_content:
+            logger.error("Could not find a user message in history for web search.")
+            return {"type": "text", "text": "Fehler: Keine Benutzeranfrage für die Websuche gefunden.", "usage": {}, "cost": {}}
 
-        # Convert filtered history to Gemini API format
-        gemini_contents = []
-        for msg in filtered_history:
-            gemini_contents.append({"role": msg["role"], "parts": [{"text": msg["content"]}]})
+        # 2. Extrahiere die *eigentliche* Anfrage aus dem Wrapper
+        prompt_marker = "--- AKTUELLE ANFRAGE DES BENUTZERS ---\n"
+        if prompt_marker in last_user_message_content:
+            actual_prompt = last_user_message_content.split(prompt_marker, 1)[-1].strip()
+        else:
+            actual_prompt = last_user_message_content.strip()
+
+        # 3. Baue einen sauberen 'contents'-Block, der garantiert nicht leer ist
+        gemini_contents = [
+            {"role": "user", "parts": [{"text": actual_prompt}]}
+        ]
+        
+        # --- ENDE: NEUE, ROBUSTERE LOGIK ---
 
         payload = {
             "contents": gemini_contents,
@@ -172,15 +169,14 @@ class GeminiWebSearch:
                 response.raise_for_status()
             response_json = response.json()
             text_response = await _format_response_with_citations(response_json)
-            # Token calculation for web search is an approximation
             input_tokens = len(json.dumps(payload)) // 4 
             output_tokens = len(text_response) // 4
             usage, cost = _calculate_and_log_cost(model, usage_data={"prompt_tokens": input_tokens, "completion_tokens": output_tokens})
             return {"type": "text", "text": text_response, "image_url": None, "usage": usage, "cost": cost}
         except httpx.HTTPStatusError as e:
             error_body = e.response.json()
-            logger.error(f"HTTP Error during direct Gemini API call: {error_body}", exc_info=True)
             error_message = error_body.get("error", {}).get("message", "Unbekannter API-Fehler")
+            logger.error(f"HTTP Error during direct Gemini API call: {error_body}", exc_info=True)
             return {"type": "text", "text": f"Fehler bei der Gemini-Websuche: {error_message}", "image_url": None, "usage": {}, "cost": {}}
         except Exception as e:
             logger.error(f"An unexpected error occurred with direct Gemini API call: {e}", exc_info=True)

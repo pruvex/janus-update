@@ -3,37 +3,56 @@ from unittest.mock import AsyncMock, patch, MagicMock
 from backend.llm_providers.gemini_service import GeminiServiceProvider, _extract_image_description
 
 @pytest.mark.asyncio
-async def test_provider_generate_response():
+@patch('backend.llm_providers.gemini_service._calculate_and_log_cost')
+@patch('google.generativeai.GenerativeModel')
+@patch('google.generativeai.configure')
+async def test_provider_generate_response(mock_configure, mock_gen_model, mock_calculate_cost):
     # This test checks if the main provider class correctly calls the new text generation capability.
-    with patch('backend.llm_providers.capabilities.gemini_text_generation.GeminiTextGeneration.generate_text') as mock_generate_text:
-        # The mocked implementation will return this dictionary
-        mock_generate_text.return_value = {
-            "type": "text",
-            "text": "Test response",
-            "image_url": None,
-            "usage": {},
-            "cost": {}
-        }
 
-        provider = GeminiServiceProvider()
-        api_key = "test_key"
-        model = "gemini-pro"
-        messages = [{"role": "user", "content": "Hello"}]
+    # Setup mock for the cost calculation
+    mock_calculate_cost.return_value = ({'input_tokens': 10, 'output_tokens': 20}, {'total_cost': 0.001})
 
-        # Call the method on the main provider
-        result = await provider.generate_response(api_key, model, messages)
+    # Setup mock for the model and its response
+    mock_model_instance = AsyncMock()
+    mock_response = MagicMock()
+    mock_response.text = "Test response"
 
-        # Prepare expected arguments for the mocked call
-        system_instruction = None
-        gemini_history_for_api = [{'role': 'user', 'parts': [{'text': 'Hello'}]}]
+    # Mock usage_metadata as an object
+    mock_usage_metadata = MagicMock()
+    mock_usage_metadata.prompt_token_count = 10
+    mock_usage_metadata.candidates_token_count = 20
+    mock_response.usage_metadata = mock_usage_metadata
 
-        # Assert that the internal implementation was called correctly
-        mock_generate_text.assert_called_once_with(
-            model, gemini_history_for_api, system_instruction
-        )
-        
-        # Assert that the main provider returns the result from the implementation
-        assert result["text"] == "Test response"
+    # Mock the response part to simulate a text response (no function call)
+    mock_part = MagicMock()
+    mock_part.function_call = None
+    mock_response.candidates = [MagicMock()]
+    mock_response.candidates[0].content.parts = [mock_part]
+
+    mock_model_instance.generate_content_async.return_value = mock_response
+    mock_gen_model.return_value = mock_model_instance
+
+    provider = GeminiServiceProvider()
+    api_key = "test_key"
+    model = "gemini-pro"
+    messages = [{"role": "user", "content": "Hello"}]
+
+    # Call the method on the main provider
+    result = await provider.generate_response(api_key, model, messages)
+
+    # Assert that configure was called
+    mock_configure.assert_called_once_with(api_key=api_key)
+
+    # Assert that the model was initialized correctly
+    mock_gen_model.assert_called_once_with(
+        model_name=model,
+        system_instruction=None,
+        tools=None
+    )
+
+    # Assert that the main provider returns the result from the implementation
+    assert result["text"] == "Test response"
+    assert result["usage"] == {'input_tokens': 10, 'output_tokens': 20}
 
 @pytest.mark.asyncio
 async def test_provider_generate_image():
@@ -42,7 +61,10 @@ async def test_provider_generate_image():
         mock_gen_model.return_value = mock_model_instance
 
         mock_response = MagicMock()
+        # Fix: Make the mock for the response part specific to image data
         mock_part = MagicMock()
+        # Ensure the first check for `part.data` fails by removing the attribute
+        del mock_part.data
         mock_part.inline_data.data = b'image_data'
         mock_response.candidates = [MagicMock()]
         mock_response.candidates[0].content.parts = [mock_part]
@@ -73,38 +95,53 @@ def test_extract_image_description_logic():
     assert _extract_image_description(prompt2) == expected2
 
 @pytest.mark.asyncio
-async def test_provider_generate_response_with_websearch():
-    # This test checks if the main provider class correctly calls the new web search capability.
-    with patch('backend.llm_providers.capabilities.gemini_web_search.GeminiWebSearch.search_and_generate') as mock_search_and_generate:
-        # The mocked implementation will return this dictionary
-        mock_search_and_generate.return_value = {
-            "type": "text",
-            "text": "Web search result",
-            "image_url": None,
-            "usage": {},
-            "cost": {}
-        }
+@patch('backend.llm_providers.gemini_service._calculate_and_log_cost')
+@patch('google.generativeai.GenerativeModel')
+@patch('google.generativeai.configure')
+async def test_provider_generate_response_with_tool_call(mock_configure, mock_gen_model, mock_calculate_cost):
+    # This test checks the tool-calling capability.
 
-        provider = GeminiServiceProvider()
-        api_key = "test_key"
-        model = "gemini-pro"
-        messages = [{"role": "user", "content": "Search for cats"}]
-        tools = [{"function": {"name": "perform_websearch"}}]
+    # Setup mock for the cost calculation
+    mock_calculate_cost.return_value = ({'input_tokens': 10, 'output_tokens': 5}, {'total_cost': 0.001})
 
-        # Call the method on the main provider
-        result = await provider.generate_response(api_key, model, messages, tools=tools)
+    # Setup mock for the model to return a function call
+    mock_model_instance = AsyncMock()
+    mock_response = MagicMock()
 
-        # Prepare expected arguments for the mocked call
-        system_instruction = None
-        gemini_history_for_api = [{'role': 'user', 'parts': [{'text': 'Search for cats'}]}]
+    # Mock the response part to simulate a tool call response
+    mock_tool_call = MagicMock()
+    mock_tool_call.name = "perform_websearch"
+    mock_tool_call.args = {"query": "cats"}
 
-        # Assert that the internal implementation was called correctly
-        mock_search_and_generate.assert_called_once_with(
-            api_key, model, gemini_history_for_api, system_instruction
-        )
-        
-        # Assert that the main provider returns the result from the implementation
-        assert result["text"] == "Web search result"
+    mock_part = MagicMock()
+    mock_part.function_call = mock_tool_call
+    mock_response.candidates = [MagicMock()]
+    mock_response.candidates[0].content.parts = [mock_part]
+
+    # Mock usage metadata
+    mock_usage_metadata = MagicMock()
+    mock_usage_metadata.prompt_token_count = 10
+    mock_usage_metadata.candidates_token_count = 5
+    mock_response.usage_metadata = mock_usage_metadata
+
+    mock_model_instance.generate_content_async.return_value = mock_response
+    mock_gen_model.return_value = mock_model_instance
+
+    provider = GeminiServiceProvider()
+    api_key = "test_key"
+    model = "gemini-pro"
+    messages = [{"role": "user", "content": "Search for cats"}]
+    # This is a simplified mock tool definition, the real one is more complex
+    tools = [{"function": {"name": "perform_websearch"}}]
+
+    # Call the method on the main provider
+    result = await provider.generate_response(api_key, model, messages, tools=tools)
+
+    # Assert that the result is a tool_code type
+    assert result["type"] == "tool_code"
+    assert result["tool_name"] == "perform_websearch"
+    assert result["tool_args"] == {"query": "cats"}
+    assert result["usage"] == {'input_tokens': 10, 'output_tokens': 5}
 
 @pytest.mark.asyncio
 async def test_provider_generate_response_with_image_data():
