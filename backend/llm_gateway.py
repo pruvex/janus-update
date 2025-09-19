@@ -27,10 +27,10 @@ def get_provider(provider_name: str) -> BaseLLMProvider:
         raise ValueError(f"Unbekannter Provider: {provider_name}")
     return provider_class()
 
-async def call_llm(provider: str, model_id: str, api_key: str, messages: List[Dict], image_data: Optional[str] = None, **kwargs):
+async def call_llm(provider: str, model_id: str, api_key: str, messages: List[Dict], image_data: Optional[str] = None, is_image_analysis_request: bool = False, **kwargs):
     """Ruft den entsprechenden LLM-Provider auf, um eine Antwort zu generieren."""
     llm_provider = get_provider(provider)
-    return await llm_provider.generate_response(api_key=api_key, model=model_id, messages=messages, image_data=image_data, **kwargs)
+    return await llm_provider.generate_response(api_key=api_key, model=model_id, messages=messages, image_data=image_data, is_image_analysis_request=is_image_analysis_request, **kwargs)
 
 async def generate_image(provider: str, model_id: str, api_key: str, prompt: str, previous_response_id: Optional[str] = None, reference_image_path: Optional[str] = None, **kwargs):
     """Ruft den entsprechenden Provider auf, um ein Bild zu generieren."""
@@ -51,7 +51,8 @@ async def reason_and_respond(
     system_instruction: Optional[str] = None,
     memory_context: Optional[str] = None,
     user_name: Optional[str] = None,
-    image_data: Optional[str] = None):
+    image_data: Optional[str] = None,
+    is_image_analysis_request: bool = False): # NEU
     """
     Nimmt eine fertige Nachrichtenliste entgegen, ruft das LLM auf und führt bei Bedarf eine Websuche als Fallback durch.
     
@@ -68,9 +69,10 @@ async def reason_and_respond(
         memory_context: Optionaler Speicherkontext
         user_name: Optionaler Benutzername
         image_data: Optionale Bilddaten für visuelle Eingaben
+        is_image_analysis_request: NEU: Flag, ob es sich um eine reine Bildanalyse-Anfrage handelt.
     """
     tools = get_all_tool_definitions()
-    llm_response = await call_llm(provider, model, api_key, messages=chat_history, tools=tools, image_data=image_data)
+    llm_response = await call_llm(provider, model, api_key, messages=chat_history, tools=tools, image_data=image_data, is_image_analysis_request=is_image_analysis_request)
 
     if llm_response.get("type") == "tool_code":
         tool_name = llm_response["tool_name"]
@@ -98,7 +100,7 @@ async def reason_and_respond(
             logger.info(f"OpenAI requested Web Search with query: {tool_args.get('query')}")
             web_search_result = await perform_websearch(query=tool_args.get("query", ""))
             chat_history.append({"role": "tool", "content": web_search_result.get("text", "")})
-            llm_response = await call_llm(provider, model, api_key, messages=chat_history, tools=tools, image_data=image_data)
+            llm_response = await call_llm(provider, model, api_key, messages=chat_history, tools=tools, image_data=image_data, is_image_analysis_request=is_image_analysis_request)
             return llm_response
         else:
             logger.warning(f"Unknown tool call: {tool_name} for provider: {provider}")

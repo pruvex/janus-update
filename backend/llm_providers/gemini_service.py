@@ -96,48 +96,78 @@ class GeminiServiceProvider(BaseLLMProvider):
         return [genai.types.Tool(function_declarations=gemini_tools)] if gemini_tools else None
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-    async def generate_response(self, api_key: str, model: str, messages: List[Dict], tools: Optional[List[Dict]] = None, image_data: Optional[str] = None, **kwargs) -> Dict:
+    async def generate_response(self, api_key: str, model: str, messages: List[Dict], tools: Optional[List[Dict]] = None, image_data: Optional[str] = None, is_image_analysis_request: bool = False, **kwargs) -> Dict:
         genai.configure(api_key=api_key)
-
-        if image_data:
-            return await self.multimodal_generator.generate_with_image(model, messages, image_data)
-
+        
         system_instruction = None
         gemini_history_for_api = []
-        for msg in messages:
+
+        # --- START: Integrierte Logik für Text und Bild ---
+        import base64
+
+        for i, msg in enumerate(messages):
             if msg.get("role") == "system":
                 system_instruction = msg.get("content")
                 continue
-            
+
             content = msg.get("content")
-            if content is None or content == "":
+            if content is None:
                 continue
-                
+            
             role = "user" if msg["role"] == "user" else "model"
+            
+            # Teile für die Gemini API vorbereiten
+            parts = []
+
+            # 1. Text-Inhalt verarbeiten
+            text_content = ""
             if isinstance(content, list):
-                text_content = next((part['text'] for part in content if part['type'] == 'text'), '')
-                if text_content:
-                     gemini_history_for_api.append({'role': role, 'parts': [{'text': text_content}]})
+                # Neuer mehrteiliger Inhalt (z.B. von der Frontend-Anfrage)
+                text_content = next((part.get('text', '') for part in content if part.get('type') == 'text'), '')
             elif isinstance(content, str):
-                gemini_history_for_api.append({'role': role, 'parts': [{'text': content}]})
+                # Alter String-basierter Inhalt
+                text_content = content
+            
+            if text_content:
+                parts.append({'text': text_content})
+
+            # 2. Bild-Inhalt verarbeiten (nur für die letzte User-Nachricht)
+            if role == 'user' and i == len(messages) - 1 and image_data:
+                try:
+                    header, encoded = image_data.split(",", 1)
+                    mime_type = header.split(":")[1].split(";")[0]
+                    image_bytes = base64.b64decode(encoded)
+                    parts.append({'inline_data': {'mime_type': mime_type, 'data': image_bytes}})
+                    logger.info("Successfully added image data to the Gemini request parts.")
+                except Exception as e:
+                    logger.error(f"Error processing image data URI for Gemini: {e}", exc_info=True)
+                    return {"type": "text", "text": f"Fehler bei der Verarbeitung der Bilddaten: {e}"}
+
+            if parts:
+                gemini_history_for_api.append({'role': role, 'parts': parts})
+        # --- ENDE: Integrierte Logik ---
 
         gemini_tools = self._convert_tools_to_gemini_format(tools)
 
         try:
-            genai_model = genai.GenerativeModel(
-                model_name=model,
-                system_instruction=system_instruction,
-                tools=gemini_tools
-            )
+            if is_image_analysis_request: # NEU: Vereinfachte Initialisierung für Bildanalyse
+                logger.info("Initializing Gemini model for pure image analysis (no system instruction, no tools).")
+                genai_model = genai.GenerativeModel(model_name=model)
+            else:
+                genai_model = genai.GenerativeModel(
+                    model_name=model,
+                    system_instruction=system_instruction,
+                    tools=gemini_tools
+                )
         except Exception as e:
             logger.error(f"Error initializing Gemini model: {e}", exc_info=True)
             return {"type": "text", "text": f"Fehler bei der Initialisierung des Modells: {e}"}
 
         try:
-            usage_metadata = None  # Initialize to prevent UnboundLocalError
+            usage_metadata = None
             response = await genai_model.generate_content_async(gemini_history_for_api)
             
-            if not response.candidates: # Move this check to the beginning
+            if not response.candidates:
                 logger.warning(f"Gemini returned no candidates, possibly due to safety filters or an empty prompt. History: {gemini_history_for_api}")
                 return {"type": "text", "text": "Ich konnte keine passende Antwort generieren. Möglicherweise wurde sie durch einen Sicherheitsfilter blockiert."}
 
@@ -176,7 +206,7 @@ class GeminiServiceProvider(BaseLLMProvider):
                     "cost": cost
                 }
             else:
-                text_response = response.text
+                text_response = "".join(part.text for part in first_candidate.content.parts if hasattr(part, 'text'))
                 usage_metadata = response.usage_metadata
                 if usage_metadata:
                     usage, cost = _calculate_and_log_cost(model, {

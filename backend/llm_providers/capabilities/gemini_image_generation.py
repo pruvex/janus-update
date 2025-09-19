@@ -37,18 +37,26 @@ class GeminiImageGeneration:
         
         # Prepare the content payload for the API
         contents = []
+        parts = []
         
         try:
             # --- START: New Image-to-Image Logic ---
-            if reference_image_path:
+            if reference_image_path and isinstance(reference_image_path, str):
                 logger.info(f"Reference image provided: {reference_image_path}. Preparing image-to-image generation.")
                 try:
                     # We need the absolute path to the file on the server
                     from backend.utils.paths import get_app_data_dir
                     import os
+                    
                     # The path from DB is web-style (/user_images/...), convert to OS-style path
-                    base_filename = reference_image_path.split('/')[-1]
-                    absolute_path = os.path.join(get_app_data_dir(), "images", base_filename)
+                    # IMPORTANT: The replace call might be platform-dependent.
+                    # Let's make it more robust by handling both / and \ separators.
+                    relative_path = reference_image_path.replace("/user_images/", "").replace("\\user_images\\", "")
+                    
+                    # Construct the full, absolute path
+                    absolute_path = os.path.join(get_app_data_dir(), "images", relative_path)
+                    
+                    logger.info(f"Attempting to open reference image at absolute path: {absolute_path}")
 
                     with open(absolute_path, "rb") as image_file:
                         image_bytes = image_file.read()
@@ -59,8 +67,8 @@ class GeminiImageGeneration:
 
                     # Construct the multi-part content as per Google's documentation
                     # IMPORTANT: The order matters for some models. Text first, then image.
-                    contents.append({"text": prompt})
-                    contents.append({
+                    parts.append({"text": prompt})
+                    parts.append({
                         "inline_data": {
                             "mime_type": mime_type,
                             "data": base64.b64encode(image_bytes).decode('utf-8')
@@ -68,10 +76,16 @@ class GeminiImageGeneration:
                     })
                 except FileNotFoundError:
                     logger.error(f"Reference image not found at path: {absolute_path}. Falling back to text-only.")
-                    contents.append({"text": prompt})
+                    parts.append({"text": prompt})
+                except Exception as e:
+                    logger.error(f"An unexpected error occurred during reference image processing: {e}", exc_info=True)
+                    parts.append({"text": prompt}) # Fallback
             else:
                 # Fallback to original text-to-image logic
-                contents.append({"text": prompt})
+                parts.append({"text": prompt})
+            
+            if parts:
+                contents.append({'role': 'user', 'parts': parts})
             # --- END: New Image-to-Image Logic ---
 
             logger.info(f"Calling Gemini image model '{model}' with prompt: '{prompt}' and reference image: {bool(reference_image_path)}")

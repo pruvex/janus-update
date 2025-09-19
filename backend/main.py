@@ -110,7 +110,7 @@ def _is_image_unrelated_task(prompt: str) -> bool:
     task_keywords = [
         # Dateioperationen
         "datei", "file", "ordner", "folder", "verzeichnis", "directory", 
-        "speicher", "save", "schreibe", "write", "lese", "read", "erstelle", "create",
+        "speicher", "save", "schreibe", "write", "lese", "read", 
         "kopiere", "copy", "verschiebe", "move", "lösche", "delete", "benenne", "rename", "führe aus", "execute",
         # Websuche
         "suche", "search", "finde", "find", "preis", "price", "kostet", "costs",
@@ -287,6 +287,9 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
 
     if not user_prompt_text:
         raise HTTPException(status_code=400, detail="No prompt provided.")
+
+    # Defensive fix for encoding issues.
+    user_prompt_text = user_prompt_text.encode('utf-8').decode('utf-8')
     # --- END: Adapt for new content structure ---
 
 
@@ -322,7 +325,9 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
                 try:
                     # Baue den vollständigen, absoluten Pfad zum Bild
                     base_image_dir = os.path.join(get_app_data_dir(), "images")
-                    image_filename = os.path.basename(most_recent_image_path_relative)
+                    # Der in der DB gespeicherte Pfad ist ein Web-Pfad, z.B. "/user_images/bild.png".
+                    # Wir entfernen den Präfix, um den reinen Dateinamen zu erhalten.
+                    image_filename = most_recent_image_path_relative.replace("/user_images/", "")
                     full_image_path = os.path.join(base_image_dir, image_filename)
 
                     if os.path.exists(full_image_path):
@@ -349,7 +354,11 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
             header, encoded = image_data.split(",", 1)
             image_bytes = base64.b64decode(encoded)
             # Use a generic description for user-uploaded images
-            local_user_image_path = image_manager.save_image_from_bytes(image_bytes, description="user-upload")
+            local_user_image_path = image_manager.save_image_from_bytes(
+                image_bytes, 
+                description="user-upload", 
+                subdirectory="uploads"
+            )
             logger.info(f"User-uploaded image saved to: {local_user_image_path}")
         except Exception as e:
             logger.error(f"Could not save user-uploaded image: {e}", exc_info=True)
@@ -378,12 +387,11 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
 
                 # WIR GEBEN JETZT ALLEN MODELLEN EINE EXPLIZITE ANWEISUNG, UM INKONSISTENZEN ZU VERMEIDEN
                 tool_directive = (
-                    "**WERKZEUGNUTZUNGS-DIREKTIVE:** Du MUSST deine Werkzeuge benutzen, um Fragen zu beantworten. "
+                    "**WERKZEUGNUTZUNGS-DIREKTIVE:** Du solltest deine Werkzeuge benutzen, wenn sie relevant sind. "
                     "Wenn eine Frage aktuelle Informationen (nach 2023), Preise, Personen oder spezifische Fakten betrifft, "
                     "ist die Nutzung des 'perform_websearch'-Werkzeugs ZWINGEND VORGESCHRIEBEN. "
                     "Antworte NICHT aus deinem Gedächtnis, wenn ein Werkzeug die Frage besser beantworten kann."
-                )
-                
+                )                
                 import re
                 if "**Werkzeugnutzung:**" in persona_prompt:
                     # Ersetze die alte, allgemeine Anweisung
@@ -405,25 +413,35 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
     # Load chat history once to be used by multiple parts of the logic
     messages_in_chat = crud.get_messages_by_chat_id(db, request.chat_id)
 
-    # --- START: Final, Robust Image Generation Intent Logic ---
+    # --- START: Final, Robust Image Generation Intent Logic (v4) ---
     is_image_generation_request = False
-    if image_data is None:
-        # ONLY if no image is being uploaded, we check for keywords.
-        prompt_lower = user_prompt_text.lower()
+    prompt_lower = user_prompt_text.lower()
 
-        unambiguous_generation_keywords = ["zeichne", "draw", "erstelle", "erstell", "erzeuge", "generate", "create", "male", "füge", "add", "hinzufügen"]
-        is_unambiguous_request = any(keyword in prompt_lower for keyword in unambiguous_generation_keywords)
+    # Keywords that explicitly mean "create a new image" (from scratch)
+    explicit_creation_keywords = ["zeichne", "draw", "male", "paint", "erzeuge", "generate"]
 
-        if is_unambiguous_request:
+    # Keywords that explicitly mean "edit an existing image" (requires image_data or reference_image_path)
+    explicit_editing_keywords = ["erstelle", "erstell", "create", "ändere", "change", "ersetze", "replace", "mach", "make", "füge hinzu", "add", "soll", "tragen", "mit", "statt", "verwandle", "gib ihr", "gib ihm"]
+
+    # Scenario 1: User wants to create a brand new image (no image_data, explicit creation keyword)
+    if image_data is None and any(keyword in prompt_lower for keyword in explicit_creation_keywords):
+        is_image_generation_request = True
+    # Scenario 2: User wants to edit an existing image (image_data present, explicit editing keyword)
+    elif image_data is not None and any(keyword in prompt_lower for keyword in explicit_editing_keywords):
+        is_image_generation_request = True
+    # Scenario 3: User wants to create a new image with ambiguous keywords (no image_data, ambiguous keyword, no image in history)
+    elif image_data is None: # This covers cases where no image is uploaded, but user might say "create a picture"
+        ambiguous_creation_keywords = ["erstelle", "erstell", "create", "bild", "image", "picture", "foto", "photo"]
+        conversation_has_image = any(msg.image_path is not None for msg in messages_in_chat)
+        if not conversation_has_image and any(keyword in prompt_lower for keyword in ambiguous_creation_keywords):
             is_image_generation_request = True
-        else:
-            # Ambiguous keywords only trigger if no image is already in the conversation.
-            ambiguous_keywords = ["bild", "image", "picture", "foto", "photo"]
-            conversation_has_image = any(msg.image_path is not None for msg in messages_in_chat)
 
-            if not conversation_has_image and any(keyword in prompt_lower for keyword in ambiguous_keywords):
-                is_image_generation_request = True
-    # --- END: Final, Robust Image Generation Intent Logic ---
+    # If none of the above, it's NOT an image generation request.
+    # This means initial image uploads with generic prompts will default to analysis.
+    # --- END: Final, Robust Image Generation Intent Logic (v4) ---
+
+    # Determine if this is a pure image analysis request (image present, but not generation/editing intent)
+    is_image_analysis_request = image_data is not None and not is_image_generation_request
 
     if is_image_generation_request:
         logger.info("Image generation intent detected by keyword.")
@@ -433,9 +451,6 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
         
         # For iterative generation, we must use the OpenAI provider.
         provider_for_gen = request.provider
-        if previous_response_id and provider_for_gen != "openai":
-            logger.warning(f"Iterative image generation is only supported for OpenAI. Forcing provider to OpenAI.")
-            provider_for_gen = "openai"
 
         # The model used for the new Responses API is a chat model, not a dall-e model.
         selected_text_model = model_catalog.get(request.model, {})
@@ -507,17 +522,22 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
     # Lade den Chat-Verlauf, ABER wende eine spezielle Logik für Identitätsfragen an
     chat_history = []
     
-    # Lade den Verlauf nur, wenn es KEINE Identitätsfrage ist
-    if not is_identity_query(user_prompt_text):
+    # Lade den Verlauf nur, wenn es KEINE Identitätsfrage ist UND es KEINE reine Bildanalyse ist
+    if not is_identity_query(user_prompt_text) and not is_image_analysis_request:
         # Wir verwenden die bereits geladenen Nachrichten aus messages_in_chat_from_db
         for m in messages_in_chat_from_db:
             if len(chat_history) < 20:
                 chat_history.append({"role": "user" if m.sender == "user" else "assistant", "content": m.content})
     else:
-        # Für Identitätsfragen: Lasse den Verlauf leer, um die Persona zu erzwingen.
-        logger.info("Identity query detected. Using a clean context to reinforce persona.")
-        # WICHTIG: Füge hier nur die aktuelle User-Frage hinzu.
-        chat_history.append({"role": "user", "content": user_prompt_text})
+        # Für Identitätsfragen oder reine Bildanalyse: Lasse den Verlauf leer, um die Persona zu erzwingen.
+        # Oder um das Modell auf die Bildanalyse zu fokussieren.
+        if is_identity_query(user_prompt_text):
+            logger.info("Identity query detected. Using a clean context to reinforce persona.")
+        elif is_image_analysis_request:
+            logger.info("Pure image analysis request detected. Suppressing chat history for focused analysis.")
+        # WICHTIG: Füge hier nur die aktuelle User-Frage hinzu (wird später hinzugefügt).
+        # chat_history bleibt hier leer, wenn es eine Identitätsfrage oder Bildanalyse ist.
+
 
     user_name = None
     memory_context = ""
@@ -594,7 +614,7 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
 
     # --- Kombiniere System-Prompt mit dem (jetzt korrekten) Chat-Verlauf ---
     messages_for_llm = []
-    if system_message:
+    if system_message and not is_image_analysis_request:
         messages_for_llm.append(system_message)
     
     # Füge den (potenziell leeren) Chat-Verlauf hinzu
@@ -659,7 +679,8 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
             context_manager=context_manager,
             user_name=user_name,
             chat_id=request.chat_id,
-            image_data=image_data
+            image_data=image_data,
+            is_image_analysis_request=is_image_analysis_request
         )
         usage = llm_response.get("usage", {})
         cost = llm_response.get("cost", {})

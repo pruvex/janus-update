@@ -22,8 +22,7 @@ def _find_unique_filename(base_filename: str, image_dir: str) -> str:
     """
     filename_without_ext, file_extension = os.path.splitext(base_filename)
     
-    # First, check if the filename already has a counter and date pattern we can extract
-    pattern = r'^(.*?)(-\d+)?(-\d{2}-\d{2}-\d{2})?$' # Corrected regex for date part
+    pattern = r'^(.*?)(-\d+)?(-\d{2}-\d{2}-\d{2})?$'
     match = re.match(pattern, filename_without_ext)
     
     if match:
@@ -37,7 +36,6 @@ def _find_unique_filename(base_filename: str, image_dir: str) -> str:
         description_part = base_name
         date_part = ""
     
-    # Find a unique filename by appending a counter if needed
     counter = counter_part
     while True:
         if counter == 0:
@@ -49,30 +47,29 @@ def _find_unique_filename(base_filename: str, image_dir: str) -> str:
             return new_filename
             
         counter += 1
-        if counter > 1000:  # Safety check to prevent infinite loops
-            # If we can't find a unique name, append a UUID
+        if counter > 1000:
             return f"{base_name}-{uuid.uuid4()}{file_extension}"
 
-
-def save_image_from_url(image_url: str, title: Optional[str] = None) -> Optional[str]:
+def save_image_from_url(image_url: str, title: Optional[str] = None, subdirectory: Optional[str] = None) -> Optional[str]:
     """
-    Download an image from a URL and save it locally with a descriptive name.
+    Download an image from a URL and save it locally.
     
     Args:
-        image_url: URL of the image to download
-        title: Optional title to use in the filename
+        image_url: URL of the image to download.
+        title: Optional title for the filename.
+        subdirectory: Optional subfolder within the main images directory.
         
     Returns:
-        Web-accessible path to the saved image, or None if download failed
+        Web-accessible path to the saved image, or None if download failed.
     """
     try:
         response = requests.get(image_url, stream=True)
         response.raise_for_status()
 
-        image_dir = os.path.join(get_app_data_dir(), "images")
+        base_image_dir = os.path.join(get_app_data_dir(), "images")
+        image_dir = os.path.join(base_image_dir, subdirectory) if subdirectory else base_image_dir
         os.makedirs(image_dir, exist_ok=True)
         
-        # Generate filename based on title and date
         current_date = datetime.now().strftime("%d-%m-%y")
         if title:
             sanitized_title = title.replace(' ', '-')
@@ -81,7 +78,6 @@ def save_image_from_url(image_url: str, title: Optional[str] = None) -> Optional
         else:
             base_filename = f"untitled-{current_date}.png"
         
-        # Find a unique filename
         unique_filename = _find_unique_filename(base_filename, image_dir)
         file_path = os.path.join(image_dir, unique_filename)
 
@@ -89,7 +85,11 @@ def save_image_from_url(image_url: str, title: Optional[str] = None) -> Optional
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
 
-        relative_path = f"/user_images/{unique_filename}"
+        if subdirectory:
+            relative_path = f"/user_images/{subdirectory}/{unique_filename}"
+        else:
+            relative_path = f"/user_images/{unique_filename}"
+            
         logger.debug(f"Image saved locally to {file_path}. Returning web path: {relative_path}")
         return relative_path
 
@@ -97,32 +97,31 @@ def save_image_from_url(image_url: str, title: Optional[str] = None) -> Optional
         logger.error(f"Error downloading image from {image_url}: {e}")
         return None
 
-
-def save_image_from_bytes(image_bytes: bytes, description: str = "untitled", file_extension: str = "png") -> str:
+def save_image_from_bytes(image_bytes: bytes, description: str = "untitled", file_extension: str = "png", subdirectory: Optional[str] = None) -> str:
     """
-    Save image data from bytes to a file with a descriptive name.
+    Save image data from bytes to a file.
     
     Args:
-        image_bytes: Raw image data as bytes
-        description: Description to use in the filename
-        file_extension: File extension to use (without the dot)
+        image_bytes: Raw image data as bytes.
+        description: Description for the filename.
+        file_extension: File extension to use.
+        subdirectory: Optional subfolder within the main images directory.
         
     Returns:
-        Web-accessible path to the saved image
+        Web-accessible path to the saved image.
     """
-    image_dir = os.path.join(get_app_data_dir(), "images")
+    base_image_dir = os.path.join(get_app_data_dir(), "images")
+    image_dir = os.path.join(base_image_dir, subdirectory) if subdirectory else base_image_dir
     os.makedirs(image_dir, exist_ok=True)
 
     current_date = datetime.now().strftime("%d-%m-%y")
     sanitized_description = description.replace(' ', '-')
     sanitized_description = re.sub(r'[^a-zA-Z0-9-]', '', sanitized_description).rstrip()
 
-    # Truncate the description to avoid overly long filenames
     if len(sanitized_description) > 100:
         sanitized_description = sanitized_description[:100]
 
     filename = f"{sanitized_description}-{current_date}.{file_extension}"
-    # Find a unique filename
     unique_filename = _find_unique_filename(filename, image_dir)
     file_path = os.path.join(image_dir, unique_filename)
 
@@ -130,19 +129,16 @@ def save_image_from_bytes(image_bytes: bytes, description: str = "untitled", fil
         f.write(image_bytes)
 
     logger.info(f"Image saved from bytes to {file_path}")
-    return f"/user_images/{unique_filename}"
+    
+    if subdirectory:
+        return f"/user_images/{subdirectory}/{unique_filename}"
+    else:
+        return f"/user_images/{unique_filename}"
 
 
 async def migrate_image_paths(db_session, message_model) -> None:
     """
     Migrate image paths from external URLs to local paths.
-    
-    This function scans all messages with image paths and migrates any external
-    DALL-E image URLs to local file paths.
-    
-    Args:
-        db_session: Database session
-        message_model: Message model class
     """
     logger.info("Starting image path migration...")
     messages_with_images = db_session.query(message_model).filter(message_model.image_path.isnot(None)).all()
@@ -150,7 +146,8 @@ async def migrate_image_paths(db_session, message_model) -> None:
     for message in messages_with_images:
         if message.image_path and message.image_path.startswith("https://oaidalleapiprodscus.blob.core.windows.net"):
             logger.debug(f"Migrating image for message ID {message.id} from URL.")
-            new_path = save_image_from_url(message.image_path)
+            # For migration, we save to the root image folder, not a subfolder.
+            new_path = save_image_from_url(message.image_path, subdirectory=None)
             if new_path:
                 message.image_path = new_path
         else:
