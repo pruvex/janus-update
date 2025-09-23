@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import List, Optional
 
@@ -98,3 +98,11 @@ class ListAllowedWorkspacesArgs(BaseModel):
 class WebsearchToolArgs(BaseModel):
     query: str
     model: Optional[str] = None # Add model parameter
+
+# Am Ende von backend/schemas.py hinzufügen
+
+class CreatePdfFromMarkdownArgs(BaseModel):
+    content: str = Field(..., description="Der Inhalt der PDF-Datei im Markdown-Format.")
+    filename: str = Field(..., description="Der gewünschte Dateiname (z.B. 'zusammenfassung.pdf').")
+    location: Optional[str] = Field("Documents", description="Der Speicherort. Mögliche Werte: 'Desktop', 'Documents', 'Downloads'. Standard ist 'Documents'.")
+    include_image: Optional[bool] = Field(False, description="Setze dies auf 'true', wenn das letzte Bild aus dem Chatverlauf in die PDF eingefügt werden soll.")

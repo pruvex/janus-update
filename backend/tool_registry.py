@@ -1,39 +1,15 @@
-# Vollständige, finale Version: backend/tool_registry.py
+# backend/tool_registry.py
 
 import inspect
-import openai
-import logging
 from typing import Callable, Dict, Any, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from tenacity import retry, stop_after_attempt, wait_exponential
 from backend import schemas, filesystem_manager
 
-from backend.llm_providers.openai_service import OpenAIServiceProvider
-
-# This function is a standalone wrapper for tool registration.
-# It instantiates the provider and calls the appropriate method.
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-async def generate_image_tool(api_key: str, prompt: str, size: str = "1024x1024", quality: str = "standard", **kwargs) -> Dict:
-    """
-    Generiert ein Bild basierend auf einer Texteingabe unter Verwendung von DALL-E 3.
-    """
-    provider = OpenAIServiceProvider()
-    response = await provider.generate_image(api_key, "dall-e-3", prompt, size=size, quality=quality, **kwargs)
-    return {
-        "url": response.get("image_url"),
-        "usage": response.get("usage"),
-        "cost": response.get("cost")
-    }
-
-from backend.websearch import perform_websearch
-from backend.memory_manager import cross_chat_memory_tool
-from sqlalchemy.orm import Session
-from backend import crud
-
-logger = logging.getLogger('janus_backend')
+# --- Werkzeug-Klassen und Registrierungs-Logik ---
 
 class Tool:
-    def __init__(self, func: Callable, args_schema: BaseModel):
+    def __init__(self, func: Callable, args_schema: Optional[BaseModel] = None):
         self.func = func
         self.args_schema = args_schema
         self.name = func.__name__
@@ -41,7 +17,7 @@ class Tool:
         self.llm_definition = self._build_llm_definition()
 
     def _build_llm_definition(self) -> Dict[str, Any]:
-        schema = self.args_schema.model_json_schema()
+        schema = self.args_schema.model_json_schema() if self.args_schema else {"properties": {}, "required": []}
         return {
             "type": "function",
             "function": {
@@ -60,12 +36,21 @@ TOOL_REGISTRY: Dict[str, Tool] = {}
 def register_tool(tool: Tool):
     TOOL_REGISTRY[tool.name] = tool
 
-# --- Original Tools ---
+# --- Werkzeug-Funktionen ---
 
+from backend.llm_providers.openai_service import OpenAIServiceProvider
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+async def generate_image_tool(api_key: str, prompt: str, size: str = "1024x1024", quality: str = "standard", **kwargs) -> Dict:
+    """Generiert ein Bild basierend auf einer Texteingabe unter Verwendung von DALL-E 3."""
+    provider = OpenAIServiceProvider()
+    response = await provider.generate_image(api_key, "dall-e-3", prompt, size=size, quality=quality, **kwargs)
+    return {"url": response.get("image_url"), "usage": response.get("usage"), "cost": response.get("cost")}
 
+from backend.websearch import perform_websearch
+from backend.memory_manager import cross_chat_memory_tool
+from backend.tools.pdf_generator import create_pdf_from_markdown
 
-
-# --- Filesystem Tools ---
+# Filesystem Tools
 def create_file_tool(path: str, content: str = ""):
     """Erstellt eine neue Datei im Workspace."""
     return filesystem_manager.create_file(path, content)
@@ -99,7 +84,7 @@ def move_file_tool(source_path: str, destination_path: str):
     return filesystem_manager.move_file(source_path, destination_path)
 
 def move_files_tool(source_directory: str, destination_directory: str, pattern: str):
-    """Verschiebt mehrere Dateien, die einem Muster (z.B. '*.png') entsprechen, von einem Ordner in einen anderen. Ideal für Massenoperationen."""
+    """Verschiebt mehrere Dateien, die einem Muster (z.B. '*.png') entsprechen, von einem Ordner in einen anderen."""
     return filesystem_manager.move_files(source_directory, destination_directory, pattern)
 
 def list_allowed_workspaces_tool():
@@ -107,8 +92,12 @@ def list_allowed_workspaces_tool():
     return filesystem_manager.list_allowed_workspaces()
 
 # --- Registrierung aller Tools ---
+
 register_tool(Tool(func=generate_image_tool, args_schema=schemas.GenerateImageToolArgs))
 register_tool(Tool(func=cross_chat_memory_tool, args_schema=schemas.CrossChatMemoryToolArgs))
+register_tool(Tool(func=perform_websearch, args_schema=schemas.WebsearchToolArgs))
+
+# Filesystem
 register_tool(Tool(func=create_file_tool, args_schema=schemas.CreateFileArgs))
 register_tool(Tool(func=read_file_tool, args_schema=schemas.ReadFileArgs))
 register_tool(Tool(func=delete_file_tool, args_schema=schemas.DeleteFileArgs))
@@ -117,11 +106,17 @@ register_tool(Tool(func=create_directory_tool, args_schema=schemas.CreateDirecto
 register_tool(Tool(func=delete_directory_tool, args_schema=schemas.DeleteDirectoryArgs))
 register_tool(Tool(func=rename_file_tool, args_schema=schemas.RenameFileArgs))
 register_tool(Tool(func=move_file_tool, args_schema=schemas.MoveFileArgs))
-register_tool(Tool(func=move_files_tool, args_schema=schemas.MoveFilesArgs)) # NEU
+register_tool(Tool(func=move_files_tool, args_schema=schemas.MoveFilesArgs))
 register_tool(Tool(func=list_allowed_workspaces_tool, args_schema=schemas.ListAllowedWorkspacesArgs))
-register_tool(Tool(func=perform_websearch, args_schema=schemas.WebsearchToolArgs))
+
+# Unser neues PDF Werkzeug, jetzt korrekt registriert
+register_tool(Tool(func=create_pdf_from_markdown, args_schema=schemas.CreatePdfFromMarkdownArgs))
+
+
+# --- Hilfsfunktionen für den Rest der Anwendung ---
 
 def get_all_tool_definitions():
+    """Gibt die Definitionen aller registrierten Tools für das LLM zurück."""
     return [tool.llm_definition for tool in TOOL_REGISTRY.values()]
 
 def get_all_tools() -> Dict[str, Tool]:

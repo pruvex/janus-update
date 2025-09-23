@@ -6,6 +6,7 @@
   <title>Janus</title>
   <link rel="stylesheet" href="src/styles.css" />
   <link rel="stylesheet" href="css/settings.css" />
+  <link rel="stylesheet" href="css/gallery.css" /> <!-- NEU -->
 </head>
 <body>
   <div class="app-container">
@@ -36,6 +37,12 @@
         <input type="checkbox" id="show-archived-chats">
         <label for="show-archived-chats">Archivierte Chats anzeigen</label>
       </div>
+      <!-- NEUER BEREICH START -->
+      <div class="sidebar-option">
+        <input type="checkbox" id="show-gallery">
+        <label for="show-gallery">Galerie anzeigen</label>
+      </div>
+      <!-- NEUER BEREICH ENDE -->
       <button id="new-chat-btn">Neuer Chat</button>
       <div id="chat-list"></div>
       <div id="cost-display-section">
@@ -71,6 +78,7 @@
       <a href="#" class="settings-nav-link" data-target="model-management-section">Modellverwaltung</a>
       <a href="#" class="settings-nav-link" data-target="workspaces-section">Arbeitsverzeichnisse</a>
       <a href="#" class="settings-nav-link" data-target="personality-section">Persönlichkeit</a>
+      <a href="#" class="settings-nav-link" data-target="rag-management-section">Wissensbasis</a>
       <button id="back-to-chat-btn">Zurück zum Chat</button>
     </div>
 
@@ -116,9 +124,45 @@
           <ul id="workspaces-list"></ul>
           <button id="add-workspace-btn">Verzeichnis hinzufügen</button>
         </div>
+
+      <div id="rag-management-section" class="settings-section" style="display: none;">
+          <h3>Wissensbasis-Verwaltung (RAG)</h3>
+          <p>Füge Inhalte zu spezifischen Wissens-Bibliotheken hinzu.</p>
+          
+          <div class="rag-control-group" style="margin-bottom: 20px;">
+              <label for="rag-collection-select" style="display: block; margin-bottom: 5px;">Wissens-Bibliothek:</label>
+              <select id="rag-collection-select"></select>
+              <input type="text" id="rag-new-collection-name-input" placeholder="Name für neue Bibliothek..." style="display: none; margin-top: 8px;">
+          </div>
+          
+          <div class="rag-control-group">
+              <h4>Dateien aus Ordner indexieren (PDF, EPUB)</h4>
+              <input type="text" id="rag-folder-path-input" placeholder="Vollständiger Pfad zum Ordner...">
+              <button id="rag-index-folder-btn">Indexierung starten</button>
+          </div>
+          
+          <p id="rag-status-message" style="margin-top: 15px; color: #aaa;"></p>
+          <div id="rag-progress-container" style="display: none; margin-top: 15px;">
+              <p id="rag-progress-text"></p>
+              <progress id="rag-progress-bar" value="0" max="100" style="width: 100%;"></progress>
+          </div>
+      </div>
     </div>
   </div>
 </main>
+    <!-- NEUER BEREICH START -->
+    <div id="gallery-view" class="view" style="display: none;">
+      <div id="gallery-window" class="resizable draggable">
+        <div id="gallery-header">
+          <span>Bildergalerie</span>
+          <button id="close-gallery-btn">&times;</button>
+        </div>
+        <div id="gallery-content">
+          <!-- Bilder werden hier dynamisch eingefügt -->
+        </div>
+      </div>
+    </div>
+    <!-- NEUER BEREICH ENDE -->
   </div>
   <script type="module" src="js/config.js"></script>
   <script type="module" src="js/settings.js"></script>
@@ -128,6 +172,7 @@
     <script type="module" src="js/app.js"></script>
   <script type="module" src="js/cost-visualizer.js"></script>
   <script type="module" src="js/context-menu.js"></script>
+  <script type="module" src="js/gallery.js"></script> <!-- NEU -->
   <div id="cost-deep-dive-modal" class="modal">
     <div class="modal-content">
       <span class="close-button">&times;</span>

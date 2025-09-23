@@ -257,4 +257,137 @@ document.addEventListener('DOMContentLoaded', async () => {
             renderWorkspacesView();
         }
     });
+
+    // --- RAG WISSENSBASIS-VERWALTUNG ---
+    const ragFolderPathInput = document.getElementById('rag-folder-path-input');
+    const ragIndexFolderBtn = document.getElementById('rag-index-folder-btn');
+    const ragStatusMessage = document.getElementById('rag-status-message');
+    const collectionSelect = document.getElementById('rag-collection-select');
+    const newCollectionNameInput = document.getElementById('rag-new-collection-name-input');
+    const progressContainer = document.getElementById('rag-progress-container');
+    const progressText = document.getElementById('rag-progress-text');
+    const progressBar = document.getElementById('rag-progress-bar');
+    let pollingInterval = null;
+
+    async function loadCollections() {
+        try {
+            const response = await fetch('/api/rag/collections');
+            const data = await response.json();
+            const currentSelection = collectionSelect.value;
+            collectionSelect.innerHTML = '';
+            
+            const newOption = document.createElement('option');
+            newOption.value = '__new__';
+            newOption.textContent = 'Neue Bibliothek erstellen...';
+            collectionSelect.appendChild(newOption);
+
+            if (data.collections) {
+                data.collections.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    collectionSelect.appendChild(option);
+                });
+            }
+            // Stelle die vorherige Auswahl wieder her, falls möglich
+            if (currentSelection && collectionSelect.querySelector(`option[value="${currentSelection}"]`)) {
+                collectionSelect.value = currentSelection;
+            }
+            handleCollectionChange();
+        } catch (error) { console.error('Fehler beim Laden der Wissens-Bibliotheken:', error); }
+    }
+
+    function handleCollectionChange() {
+        newCollectionNameInput.style.display = collectionSelect.value === '__new__' ? 'block' : 'none';
+    }
+
+    collectionSelect.addEventListener('change', handleCollectionChange);
+
+    function getSelectedCollectionName() {
+        return collectionSelect.value === '__new__' ? newCollectionNameInput.value.trim() : collectionSelect.value;
+    }
+
+    async function updateProgress() {
+        try {
+            const response = await fetch('/api/rag/indexing-status');
+            if (!response.ok) throw new Error(`Server-Fehler: ${response.status}`);
+            const status = await response.json();
+
+            if (status.in_progress) {
+                progressContainer.style.display = 'block';
+                if (status.total_files > 0) {
+                    progressBar.max = status.total_files;
+                    progressBar.value = status.processed_files;
+                    progressText.textContent = `[${status.processed_files}/${status.total_files}] Verarbeite: ${status.current_file || '...'}`;
+                } else {
+                    progressText.textContent = 'Berechne Dateien...';
+                }
+            } else {
+                if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                    pollingInterval = null;
+                }
+                progressContainer.style.display = 'none';
+                ragStatusMessage.textContent = status.message || 'Prozess beendet.';
+                ragStatusMessage.style.color = '#10b981';
+                ragIndexFolderBtn.disabled = false;
+                loadCollections();
+            }
+        } catch (error) {
+            console.error("Fehler beim Abrufen des Indexierungsstatus:", error);
+            ragStatusMessage.textContent = `Fehler beim Abruf des Status: ${error.message}`;
+            ragStatusMessage.style.color = '#b91c1c';
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+            ragIndexFolderBtn.disabled = false;
+        }
+    }
+    
+    ragIndexFolderBtn.addEventListener('click', async () => {
+        const path = ragFolderPathInput.value.trim();
+        const collectionName = getSelectedCollectionName();
+        if (!path || !collectionName) {
+            alert('Bitte geben Sie einen Ordnerpfad UND einen gültigen Bibliotheksnamen an.');
+            return;
+        }
+        if (pollingInterval) clearInterval(pollingInterval);
+
+        ragIndexFolderBtn.disabled = true;
+        ragStatusMessage.textContent = 'Indexierung wird gestartet...';
+        ragStatusMessage.style.color = '#3b82f6';
+        progressContainer.style.display = 'block';
+        progressText.textContent = 'Initialisiere...';
+        progressBar.value = 0;
+
+        try {
+            const response = await fetch('/api/rag/index-folder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path, collection_name: collectionName })
+            });
+            const result = await response.json();
+            if (response.ok) {
+                ragStatusMessage.textContent = result.message;
+                setTimeout(() => {
+                    updateProgress();
+                    pollingInterval = setInterval(updateProgress, 2000);
+                }, 1000);
+            } else {
+                throw new Error(result.detail || 'Fehler beim Starten.');
+            }
+        } catch (error) {
+            ragStatusMessage.textContent = `Fehler: ${error.message}`;
+            ragStatusMessage.style.color = '#b91c1c';
+            ragIndexFolderBtn.disabled = false;
+            progressContainer.style.display = 'none';
+        }
+    });
+
+    // Sorge dafür, dass die Sammlungen geladen werden, wenn der Tab geklickt wird
+    const ragNavLink = document.querySelector('.settings-nav-link[data-target="rag-management-section"]');
+    if(ragNavLink) {
+        ragNavLink.addEventListener('click', loadCollections);
+    }
 });

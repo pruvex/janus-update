@@ -26,7 +26,8 @@ except Exception as e:
     logger.error(f"Error loading OpenAI API key from keyring: {e}", exc_info=True)
 
 # Now import other modules that might depend on the environment variable
-from fastapi import FastAPI, HTTPException, Depends, Response
+from fastapi import FastAPI, HTTPException, Depends, Response, File, UploadFile
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -55,7 +56,6 @@ def is_confirmation(prompt: str) -> bool:
         return True
     
     return False
-
 
 def is_identity_query(prompt: str) -> bool:
     """Prüft, ob ein User-Prompt eine Frage zur Identität oder den Fähigkeiten der KI ist."""
@@ -118,6 +118,24 @@ def _is_image_unrelated_task(prompt: str) -> bool:
     ]
     
     if any(keyword in prompt_lower for keyword in task_keywords):
+        return True
+    
+    return False
+
+def _is_explicitly_image_related_task(prompt: str) -> bool:
+    """
+    Prüft, ob ein Prompt eine explizite Frage zum visuellen Inhalt eines Bildes ist.
+    Diese Funktion hat Vorrang vor _is_image_unrelated_task.
+    """
+    prompt_lower = prompt.lower()
+    
+    # Schlüsselwörter für Aufgaben, die den Bildkontext ZWINGEND benötigen
+    image_keywords = [
+        "beschreibe", "erkennst", "was siehst du", "was ist das", "was ist auf dem bild",
+        "analysiere das bild", "erkläre das bild", "identifiziere", "was für ein"
+    ]
+    
+    if any(keyword in prompt_lower for keyword in image_keywords):
         return True
     
     return False
@@ -223,6 +241,15 @@ async def startup_event():
     db = next(get_db())
     db.close()
 
+# Nahe am Anfang der Datei, bei den anderen Imports
+from backend import rag_manager
+from typing import Dict, Any
+
+# Fügen Sie diese globale Variable nach den Imports hinzu
+RAG_INDEXING_STATUS: Dict[str, Any] = {
+    "in_progress": False, "total_files": 0, "processed_files": 0,
+    "current_file": "", "message": "Keine Indexierung aktiv."
+}
 # --- Pydantic Models for API ---
 class ContentPart(BaseModel):
     type: str
@@ -253,6 +280,14 @@ class WorkspaceRemove(BaseModel):
 class WorkspaceUpdate(BaseModel):
     workspaces: list[str]
 
+class RagFolderRequest(BaseModel):
+    path: str
+    collection_name: str
+
+class RagUrlRequest(BaseModel):
+    url: str
+    collection_name: str
+
 # --- Business Logic ---
 def check_budget_and_raise_if_exceeded(db: Session):
     today = datetime.now()
@@ -261,6 +296,36 @@ def check_budget_and_raise_if_exceeded(db: Session):
     monthly_budget = config.get("monthly_budget", 10.00)
     if current_month_cost >= monthly_budget:
         raise HTTPException(status_code=402, detail=f"Monthly budget of {monthly_budget:.2f} € exceeded. Current cost: {current_month_cost:.2f} €.")
+
+@app.get("/api/rag/collections")
+async def get_rag_collections():
+    return {"collections": rag_manager.list_collections()}
+
+@app.get("/api/rag/indexing-status")
+async def get_indexing_status():
+    return RAG_INDEXING_STATUS
+
+@app.post("/api/rag/index-folder")
+async def index_folder(request: RagFolderRequest):
+    if RAG_INDEXING_STATUS["in_progress"]:
+        raise HTTPException(status_code=409, detail="Eine Indexierung läuft bereits.")
+    
+    try:
+        RAG_INDEXING_STATUS.update({
+            "in_progress": True, "total_files": 0, "processed_files": 0,
+            "message": "Indexierung wird gestartet..."
+        })
+        asyncio.create_task(
+            asyncio.to_thread(
+                rag_manager.process_and_index_folder, 
+                request.path, RAG_INDEXING_STATUS, request.collection_name
+            )
+        )
+        return {"message": "Indexierung gestartet."}
+    except Exception as e:
+        RAG_INDEXING_STATUS["in_progress"] = False
+        logger.error(f"Fehler beim Start der Ordner-Indexierung: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Fehler beim Start der Indexierung.")
 
 # --- GOLD STANDARD SWITCH IMPLEMENTATION ---
 async def handle_chat_request(request: ChatRequest, db: Session, context_manager: ContextManager, model_catalog: dict):
@@ -313,20 +378,35 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
     # Lade den Verlauf einmal, um ihn mehrfach zu verwenden
     messages_in_chat_from_db = crud.get_messages_by_chat_id(db, request.chat_id)
 
-    # --- START: VISUELLES GEDÄCHTNIS ---
+    # --- START: VISUELLES GEDÄCHTNIS (v2) ---
     # Wenn kein NEUES Bild hochgeladen wird, prüfen wir, ob ein ALTES im Verlauf existiert.
     if not image_data:
         logger.info("No new image uploaded. Checking history for existing image context.")
         
-        # Prüfe ZUERST, ob die Anfrage überhaupt bildbezogen ist.
-        if not _is_image_unrelated_task(user_prompt_text):
+        # Logik: Lade das letzte Bild, es sei denn, die Aufgabe verbietet es explizit.
+        # Eine explizite Bild-Frage hat dabei immer Vorrang.
+        
+        load_image_from_history = False
+        is_explicitly_related = _is_explicitly_image_related_task(user_prompt_text)
+        is_explicitly_unrelated = _is_image_unrelated_task(user_prompt_text)
+
+        if is_explicitly_related:
+            # Wenn der User explizit nach dem Bild fragt, laden wir es auf jeden Fall.
+            load_image_from_history = True
+            logger.info("Explicit image-related prompt detected. Forcing visual context.")
+        elif not is_explicitly_unrelated:
+            # Wenn es keine explizit bild-fremde Aufgabe ist, laden wir es als Standardkontext.
+            load_image_from_history = True
+        else:
+            # Nur wenn es eine explizit bild-fremde Aufgabe ist, unterdrücken wir das Laden.
+            logger.info("Task-oriented prompt detected (file ops/web search). Suppressing visual context to ensure tool usage.")
+
+        if load_image_from_history:
             most_recent_image_path_relative = _get_most_recent_image_path_from_history(messages_in_chat_from_db)
             if most_recent_image_path_relative:
                 try:
                     # Baue den vollständigen, absoluten Pfad zum Bild
                     base_image_dir = os.path.join(get_app_data_dir(), "images")
-                    # Der in der DB gespeicherte Pfad ist ein Web-Pfad, z.B. "/user_images/bild.png".
-                    # Wir entfernen den Präfix, um den reinen Dateinamen zu erhalten.
                     image_filename = most_recent_image_path_relative.replace("/user_images/", "")
                     full_image_path = os.path.join(base_image_dir, image_filename)
 
@@ -340,9 +420,7 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
                 except Exception as e:
                     logger.error(f"Error reloading image from history: {e}", exc_info=True)
                     image_data = None
-        else:
-            logger.info("Task-oriented prompt detected (file ops/web search). Suppressing visual context to ensure tool usage.")
-    # --- ENDE: VISUELLES GEDÄCHTNIS ---
+    # --- ENDE: VISUELLES GEDÄCHTNIS (v2) ---
 
     # --- START: Save user-uploaded image and persist its path ---
     local_user_image_path = None
@@ -421,7 +499,15 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
     explicit_creation_keywords = ["zeichne", "draw", "male", "paint", "erzeuge", "generate"]
 
     # Keywords that explicitly mean "edit an existing image" (requires image_data or reference_image_path)
-    explicit_editing_keywords = ["erstelle", "erstell", "create", "ändere", "change", "ersetze", "replace", "mach", "make", "füge hinzu", "add", "soll", "tragen", "mit", "statt", "verwandle", "gib ihr", "gib ihm"]
+    # --- KORREKTUR START ---
+    # Wir ersetzen "füge hinzu" durch das flexiblere "füge".
+    explicit_editing_keywords = [
+        "erstelle", "erstell", "create", "ändere", "änder", "change", "ersetze", "replace", 
+        "mach", "make", "füge", "add", "soll", "tragen", "mit", "statt", 
+        "verwandle", "gib ihr", "gib ihm", "lass", "setze"
+    ]
+    # --- KORREKTUR ENDE ---
+
 
     # Scenario 1: User wants to create a brand new image (no image_data, explicit creation keyword)
     if image_data is None and any(keyword in prompt_lower for keyword in explicit_creation_keywords):
@@ -686,14 +772,36 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
         cost = llm_response.get("cost", {})
         response_type = llm_response.get("type")
         if response_type == "tool_code":
-            # Komplette Tool-Logik bleibt hier, sie ist bereits korrekt.
-            # (Der Einfachheit halber hier gekürzt, im Originalcode vollständig lassen)
             tool_name = llm_response.get("tool_name")
-            # ... Rest der Tool-Logik...
-            # Diese Logik wird 'final_answer' selbst befüllen.
-            # --- START KOPIEREN/VERSCHIEBEN DES TOOL-CODES ---
             tool_args = llm_response.get("tool_args", {})
             logger.info(f"Executing tool '{tool_name}' with args: {tool_args}")
+            
+            # --- NEUE, INTELLIGENTE LOGIK FÜR DAS PDF-WERKZEUG ---
+            if tool_name == "create_pdf_from_markdown" and tool_args.get("include_image"):
+                logger.info("PDF tool: Anforderung zum Einfügen eines Bildes erkannt.")
+                # Finde den Pfad des letzten Bildes im aktuellen Chat
+                messages_in_chat = crud.get_messages_by_chat_id(db, request.chat_id)
+                last_image_path = None
+                for message in reversed(messages_in_chat):
+                    if message.image_path:
+                        # Baue den vollständigen, absoluten Pfad zum Bild
+                        base_image_dir = os.path.join(get_app_data_dir(), "images")
+                        image_filename = os.path.basename(message.image_path)
+                        last_image_path = os.path.join(base_image_dir, image_filename)
+                        break
+                
+                if last_image_path:
+                    logger.info(f"Letztes Bild gefunden: {last_image_path}")
+                    # Füge den echten Bildpfad zu den Argumenten hinzu
+                    tool_args["image_path"] = last_image_path
+                else:
+                    logger.warning("Kein Bild im Chatverlauf gefunden, um es zur PDF hinzuzufügen.")
+                
+                # Entferne das 'include_image'-Argument, da die Python-Funktion es nicht kennt
+                if "include_image" in tool_args:
+                    del tool_args["include_image"]
+            # --- ENDE DER NEUEN LOGIK ---
+
             tool = TOOL_REGISTRY.get(tool_name)
             tool_output_raw = f"Fehler: Unbekanntes Tool '{tool_name}' angefordert."
             if tool:
@@ -758,6 +866,34 @@ async def handle_chat_request(request: ChatRequest, db: Session, context_manager
             # --- ENDE KOPIEREN/VERSCHIEBEN ---
         elif response_type == "text":
             final_answer = llm_response.get("text") or ""
+            
+            # --- NEUER CODE START: FAKTEN-PROMOTION BEI BESTÄTIGUNG ---
+            # Prüfen, ob der User-Input eine Bestätigung war.
+            if is_confirmation(user_prompt_text):
+                logger.info("Confirmation detected. Attempting to promote the last AI deduction into a fact.")
+                # Wir holen uns die Nachrichten VOR der Antwort der KI.
+                # Die letzte Nachricht in dieser Liste ist die, auf die der User mit "richtig" geantwortet hat.
+                messages_before_this_turn = crud.get_messages_by_chat_id(db, request.chat_id)
+                
+                # Wir brauchen mindestens zwei Nachrichten (KI-Aussage + User-Bestätigung),
+                # also prüfen wir auf mindestens eine Nachricht davor.
+                if messages_before_this_turn:
+                    # Die letzte Nachricht in der DB zu diesem Zeitpunkt ist die vorherige Aussage der KI.
+                    last_assistant_message = messages_before_this_turn[-1]
+                    
+                    if last_assistant_message.sender == "model":
+                        logger.info(f"Promoting content from last AI message: '{last_assistant_message.content}'")
+                        # Wir starten eine separate Faktenextraktion NUR für die bestätigte Aussage.
+                        asyncio.create_task(
+                             memory_extractor.extract_and_save_fact(
+                                 db=db, chat_id=request.chat_id, text_block=last_assistant_message.content,
+                                 original_prompt=user_prompt_text, main_api_key=api_key,
+                                 provider=request.provider, model=request.model
+                             )
+                         )
+
+            # --- NEUER CODE ENDE ---
+
             if not local_image_path and final_answer and not is_greeting(user_prompt_text):
                 full_exchange_text = f"User: {user_prompt_text}\nAssistant: {final_answer}"
                 asyncio.create_task(
@@ -1030,6 +1166,33 @@ async def set_active_personality(update: PersonalityUpdate):
     save_config(config)
     logger.info(f"Active personality set to '{update.personality_id}'")
     return {"message": f"Active personality set to {update.personality_id}"}
+
+# --- NEUER API ENDPUNKT FÜR DIE GALERIE ---
+@app.get("/api/images")
+async def get_all_images():
+    """
+    Listet alle Bilder auf, die im 'images' Verzeichnis gespeichert sind.
+    """
+    image_dir = os.path.join(get_app_data_dir(), "images")
+    supported_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.webp')
+    try:
+        # Liste alle Dateien auf und filtere nach Bild-Endungen
+        all_files = os.listdir(image_dir)
+        image_files = [f for f in all_files if f.lower().endswith(supported_extensions)]
+        
+        # Sortiere die Bilder, die neuesten zuerst
+        image_files.sort(key=lambda x: os.path.getmtime(os.path.join(image_dir, x)), reverse=True)
+
+        # Erstelle die vollständigen URLs, die das Frontend verwenden kann
+        image_urls = [f"/user_images/{f}" for f in image_files]
+        
+        return {"images": image_urls}
+    except FileNotFoundError:
+        logger.warning(f"Image directory not found at: {image_dir}")
+        return {"images": []}
+    except Exception as e:
+        logger.error(f"Error reading image directory: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Could not retrieve images.")
 
 if __name__ == "__main__":
     import uvicorn
