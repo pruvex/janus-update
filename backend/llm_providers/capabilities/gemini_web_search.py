@@ -5,20 +5,24 @@ import copy
 import asyncio
 from typing import Dict, List
 
-from backend.cost_calculator import calculate_cost
+from backend.services.cost_calculator import calculate_cost
 
-logger = logging.getLogger('janus_backend')
+logger = logging.getLogger("janus_backend")
+
 
 def _calculate_and_log_cost(model_id, usage_data=None, custom_prompt=None):
     """Helper to calculate and log cost."""
     usage, cost = calculate_cost(model_id, usage_data, custom_prompt)
-    logger.info(f"\n--- USAGE TRACKING ---\n" 
-                f"Model: {model_id}\n" 
-                f"Input Tokens: {usage.get('input_tokens', 'N/A')}\n" 
-                f"Output Tokens: {usage.get('output_tokens', 'N/A')}\n" 
-                f"Total Cost: {cost.get('total_cost', 0):.8f} €\n" 
-                f"----------------------")
+    logger.info(
+        f"\n--- USAGE TRACKING ---\n"
+        f"Model: {model_id}\n"
+        f"Input Tokens: {usage.get('input_tokens', 'N/A')}\n"
+        f"Output Tokens: {usage.get('output_tokens', 'N/A')}\n"
+        f"Total Cost: {cost.get('total_cost', 0):.8f} €\n"
+        f"----------------------"
+    )
     return usage, cost
+
 
 async def _resolve_redirect(client: httpx.AsyncClient, url: str) -> str:
     """Follows a redirect URL and returns the final, clean URL."""
@@ -29,66 +33,78 @@ async def _resolve_redirect(client: httpx.AsyncClient, url: str) -> str:
         logger.warning(f"Could not resolve redirect for {url}: {e}")
         return url
 
+
 async def _format_response_with_citations(response_json: Dict) -> str:
     """
     Processes the JSON response to add clean, grouped inline numbers to the text
     and append a separate, ordered list of sources at the end.
     """
     try:
-        candidate = response_json['candidates'][0]
-        text = candidate['content']['parts'][0]['text']
-        
+        candidate = response_json["candidates"][0]
+        text = candidate["content"]["parts"][0]["text"]
+
         if not text:
             return ""
 
-        metadata = candidate.get('groundingMetadata')
-        if not metadata or not metadata.get('groundingSupports'):
+        metadata = candidate.get("groundingMetadata")
+        if not metadata or not metadata.get("groundingSupports"):
             return text
 
-        supports = metadata['groundingSupports']
-        chunks = metadata.get('groundingChunks', [])
-        
+        supports = metadata["groundingSupports"]
+        chunks = metadata.get("groundingChunks", [])
+
         redirect_uris_to_resolve = {
-            chunk['web']['uri']
+            chunk["web"]["uri"]
             for chunk in chunks
-            if chunk.get('web') and chunk['web'].get('uri', '').startswith("https://vertexaisearch.cloud.google.com/")
+            if chunk.get("web")
+            and chunk["web"]
+            .get("uri", "")
+            .startswith("https://vertexaisearch.cloud.google.com/")
         }
 
         resolved_urls_map = {}
         if redirect_uris_to_resolve:
             async with httpx.AsyncClient() as client:
-                tasks = [_resolve_redirect(client, uri) for uri in redirect_uris_to_resolve]
+                tasks = [
+                    _resolve_redirect(client, uri) for uri in redirect_uris_to_resolve
+                ]
                 resolved_results = await asyncio.gather(*tasks)
-                resolved_urls_map = dict(zip(redirect_uris_to_resolve, resolved_results))
+                resolved_urls_map = dict(
+                    zip(redirect_uris_to_resolve, resolved_results)
+                )
 
         used_chunks = {}
         for support in supports:
-            for index in support.get('groundingChunkIndices', []):
+            for index in support.get("groundingChunkIndices", []):
                 if index not in used_chunks and index < len(chunks):
-                    original_uri = chunks[index].get('web', {}).get('uri')
+                    original_uri = chunks[index].get("web", {}).get("uri")
                     clean_uri = resolved_urls_map.get(original_uri, original_uri)
-                    
+
                     chunk_copy = copy.deepcopy(chunks[index])
-                    if 'web' in chunk_copy and 'uri' in chunk_copy['web']:
-                        chunk_copy['web']['uri'] = clean_uri
+                    if "web" in chunk_copy and "uri" in chunk_copy["web"]:
+                        chunk_copy["web"]["uri"] = clean_uri
                     used_chunks[index] = chunk_copy
 
-        source_map = {old_index: new_index + 1 for new_index, old_index in enumerate(sorted(used_chunks.keys()))}
+        source_map = {
+            old_index: new_index + 1
+            for new_index, old_index in enumerate(sorted(used_chunks.keys()))
+        }
         citations_by_position = {}
 
         for support in supports:
-            segment = support.get('segment', {})
-            end_index = segment.get('endIndex')
-            if end_index is None: continue
-            
+            segment = support.get("segment", {})
+            end_index = segment.get("endIndex")
+            if end_index is None:
+                continue
+
             insert_pos = end_index
             while insert_pos < len(text) and text[insert_pos].isalnum():
                 insert_pos += 1
 
             if insert_pos not in citations_by_position:
                 citations_by_position[insert_pos] = set()
-            
-            for index in support.get('groundingChunkIndices', []):
+
+            for index in support.get("groundingChunkIndices", []):
                 if index in source_map:
                     citations_by_position[insert_pos].add(source_map[index])
 
@@ -96,39 +112,53 @@ async def _format_response_with_citations(response_json: Dict) -> str:
         for position in sorted_positions:
             sorted_indices = sorted(list(citations_by_position[position]))
             citation_string = "".join([f"[{i}]" for i in sorted_indices])
-            if text and position > 0 and position - 1 < len(text) and text[position-1].isalnum():
-                 citation_string = " " + citation_string
+            if (
+                text
+                and position > 0
+                and position - 1 < len(text)
+                and text[position - 1].isalnum()
+            ):
+                citation_string = " " + citation_string
             text = text[:position] + citation_string + text[position:]
 
         if used_chunks:
             source_list_markdown = "\n\n---\n**Quellen:**\n"
-            for old_index, new_index in sorted(source_map.items(), key=lambda item: item[1]):
+            for old_index, new_index in sorted(
+                source_map.items(), key=lambda item: item[1]
+            ):
                 chunk = used_chunks[old_index]
-                if chunk.get('web'):
-                    uri = chunk['web'].get('uri', '#')
-                    title = chunk['web'].get('title', uri)
+                if chunk.get("web"):
+                    uri = chunk["web"].get("uri", "#")
+                    title = chunk["web"].get("title", uri)
                     source_list_markdown += f"{new_index}. [{title}]({uri})\n"
             text += source_list_markdown
-        
+
         return text
 
     except (KeyError, IndexError, TypeError) as e:
-        logger.warning(f"Could not parse grounding metadata: {e}. Returning raw text.", exc_info=True)
+        logger.warning(
+            f"Could not parse grounding metadata: {e}. Returning raw text.",
+            exc_info=True,
+        )
         try:
-            return response_json['candidates'][0]['content']['parts'][0]['text']
+            return response_json["candidates"][0]["content"]["parts"][0]["text"]
         except (KeyError, IndexError):
             return "Fehler bei der Verarbeitung der Antwort."
+
 
 class GeminiWebSearch:
     """
     Encapsulates the web search functionality for the Gemini provider.
     """
-    async def search_and_generate(self, api_key: str, model: str, history: List[Dict], system_instruction: str) -> Dict:
+
+    async def search_and_generate(
+        self, api_key: str, model: str, history: List[Dict], system_instruction: str
+    ) -> Dict:
         logger.info("Web search requested for Gemini. Using direct REST API call.")
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-        
+
         # --- START: NEUE, ROBUSTERE LOGIK ---
-        
+
         # 1. Finde die letzte User-Nachricht
         last_user_message_content = ""
         for msg in reversed(history):
@@ -137,29 +167,28 @@ class GeminiWebSearch:
                 if isinstance(content, str):
                     last_user_message_content = content
                     break
-        
+
         if not last_user_message_content:
             logger.error("Could not find a user message in history for web search.")
-            return {"type": "text", "text": "Fehler: Keine Benutzeranfrage für die Websuche gefunden.", "usage": {}, "cost": {}}
+            return {
+                "type": "text",
+                "text": "Fehler: Keine Benutzeranfrage für die Websuche gefunden.",
+                "usage": {},
+                "cost": {},
+            }
 
-        # 2. Extrahiere die *eigentliche* Anfrage aus dem Wrapper
-        prompt_marker = "--- AKTUELLE ANFRAGE DES BENUTZERS ---\n"
-        if prompt_marker in last_user_message_content:
-            actual_prompt = last_user_message_content.split(prompt_marker, 1)[-1].strip()
-        else:
-            actual_prompt = last_user_message_content.strip()
+        # 2. Baue einen sauberen 'contents'-Block, der den VOLLSTÄNDIGEN Kontext enthält.
+        # Wir entfernen das Stripping des Kontexts, damit die FAKTENGRUNDLAGE erhalten bleibt.
+        gemini_contents = [{"role": "user", "parts": [{"text": last_user_message_content}]}]
 
-        # 3. Baue einen sauberen 'contents'-Block, der garantiert nicht leer ist
-        gemini_contents = [
-            {"role": "user", "parts": [{"text": actual_prompt}]}
-        ]
-        
         # --- ENDE: NEUE, ROBUSTERE LOGIK ---
 
         payload = {
             "contents": gemini_contents,
             "tools": [{"google_search": {}}],
-            "systemInstruction": {"parts": [{"text": system_instruction}]} if system_instruction else None
+            "systemInstruction": {"parts": [{"text": system_instruction}]}
+            if system_instruction
+            else None,
         }
         logger.info(f"Gemini Web Search Payload: {json.dumps(payload, indent=2)}")
 
@@ -169,15 +198,40 @@ class GeminiWebSearch:
                 response.raise_for_status()
             response_json = response.json()
             text_response = await _format_response_with_citations(response_json)
-            input_tokens = len(json.dumps(payload)) // 4 
+            input_tokens = len(json.dumps(payload)) // 4
             output_tokens = len(text_response) // 4
-            usage, cost = _calculate_and_log_cost(model, usage_data={"prompt_tokens": input_tokens, "completion_tokens": output_tokens})
-            return {"type": "text", "text": text_response, "image_url": None, "usage": usage, "cost": cost}
+            usage, cost = _calculate_and_log_cost(
+                model,
+                usage_data={
+                    "prompt_tokens": input_tokens,
+                    "completion_tokens": output_tokens,
+                },
+            )
+            return {
+                "type": "text",
+                "text": text_response,
+                "image_url": None,
+                "usage": usage,
+                "cost": cost,
+            }
         except httpx.HTTPStatusError as e:
             error_body = e.response.json()
-            error_message = error_body.get("error", {}).get("message", "Unbekannter API-Fehler")
-            logger.error(f"HTTP Error during direct Gemini API call: {error_body}", exc_info=True)
-            return {"type": "text", "text": f"Fehler bei der Gemini-Websuche: {error_message}", "image_url": None, "usage": {}, "cost": {}}
+            error_message = error_body.get("error", {}).get(
+                "message", "Unbekannter API-Fehler"
+            )
+            logger.error(
+                f"HTTP Error during direct Gemini API call: {error_body}", exc_info=True
+            )
+            return {
+                "type": "text",
+                "text": f"Fehler bei der Gemini-Websuche: {error_message}",
+                "image_url": None,
+                "usage": {},
+                "cost": {},
+            }
         except Exception as e:
-            logger.error(f"An unexpected error occurred with direct Gemini API call: {e}", exc_info=True)
+            logger.error(
+                f"An unexpected error occurred with direct Gemini API call: {e}",
+                exc_info=True,
+            )
             raise

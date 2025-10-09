@@ -61,6 +61,8 @@
               <input type="file" id="image-upload-input" style="display: none;" accept="image/*">
               <button type="button" id="image-upload-btn">📎</button>
               <input type="text" id="chat-input" placeholder="Nachricht an Janus senden...">
+              <button type="button" id="mic-btn">🎤</button>
+              <button type="button" id="tts-toggle-btn" title="TTS aktivieren/deaktivieren">🔊</button>
               <button id="send-button" type="submit">Senden</button>
             </form>
           </div>
@@ -79,6 +81,7 @@
       <a href="#" class="settings-nav-link" data-target="workspaces-section">Arbeitsverzeichnisse</a>
       <a href="#" class="settings-nav-link" data-target="personality-section">Persönlichkeit</a>
       <a href="#" class="settings-nav-link" data-target="rag-management-section">Wissensbasis</a>
+      <a href="#" class="settings-nav-link" data-target="tts-section">TTS Stimmen</a>
       <button id="back-to-chat-btn">Zurück zum Chat</button>
     </div>
 
@@ -146,6 +149,39 @@
               <p id="rag-progress-text"></p>
               <progress id="rag-progress-bar" value="0" max="100" style="width: 100%;"></progress>
           </div>
+      </div>
+
+      <!-- Sektion: TTS Stimmen -->
+      <div id="tts-section" class="settings-section" style="display: none;">
+          <h3>Text-to-Speech Einstellungen</h3>
+          <p>Konfiguriere die Stimme und Geschwindigkeit für das Vorlesen von Chatausgaben.</p>
+          
+          <div class="tts-control-group" style="margin-bottom: 20px;">
+              <label for="tts-voice-select" style="display: block; margin-bottom: 5px;">Stimme:</label>
+              <select id="tts-voice-select" style="width: 100%; padding: 8px;">
+                  <option value="">Lade Stimmen...</option>
+              </select>
+          </div>
+          
+          <div class="tts-control-group" style="margin-bottom: 20px;">
+              <label for="tts-preset-select" style="display: block; margin-bottom: 5px;">Preset:</label>
+              <select id="tts-preset-select" style="width: 100%; padding: 8px;">
+                  <option value="">Lade Presets...</option>
+              </select>
+          </div>
+          
+          <div class="tts-control-group" style="margin-bottom: 20px;">
+              <label for="tts-speed-input" style="display: block; margin-bottom: 5px;">
+                  Geschwindigkeit: <span id="tts-speed-value">1.0</span>x
+              </label>
+              <input type="range" id="tts-speed-input" min="0.5" max="2.0" step="0.1" value="1.0" style="width: 100%;">
+          </div>
+          
+          <div class="tts-control-group" style="margin-bottom: 20px;">
+              <button id="tts-test-btn" style="padding: 10px 20px;">Testausgabe</button>
+          </div>
+          
+          <p id="tts-status-message" style="margin-top: 15px; color: #aaa;"></p>
       </div>
     </div>
   </div>

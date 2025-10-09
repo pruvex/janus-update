@@ -16,3 +16,11 @@ pywin32-ctypes
 pydantic-settings
 tenacity
 pyfakefs
+fpdf2
+pypdf
+ebooklib
+openai-whisper
+ffmpeg-python
+chromadb>=0.5.0
+pydub
+soundfile

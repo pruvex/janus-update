@@ -179,24 +179,45 @@ html, body {
     border-top: 1px solid #666;
     height: 50px;
 }
-
 #chat-input {
     flex-grow: 1;
     margin-right: 10px;
     background-color: #3c3c3c;
     border: 1px solid #555;
     color: #eee;
-    padding: 0.5rem;
 }
 
-#send-button {
-    margin-left: 0.5rem;
-    padding: 0.5rem 1rem;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
+#image-upload-btn {
+    margin-right: 0.5rem;
+}
+
+#mic-btn {
+    margin-right: 0.5rem;
     cursor: pointer;
+    border: 1px solid #555;
+    background-color: #3c3c3c;
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+#tts-toggle-btn {
+    margin-right: 0.5rem;
+    cursor: pointer;
+    border: 1px solid #555;
+    background-color: #3c3c3c;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+#tts-toggle-btn.active {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+#tts-toggle-btn:hover {
+    background-color: #555;
 }
 
 #send-button:hover {

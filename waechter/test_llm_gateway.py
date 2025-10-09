@@ -2,19 +2,24 @@ import pytest
 from unittest.mock import MagicMock, AsyncMock, patch
 from backend import llm_gateway
 
-@pytest.mark.skip(reason="Skipping stubborn test that fails despite correct code, suspecting cache/env issue.")
+
+@pytest.mark.skip(
+    reason="Skipping stubborn test that fails despite correct code, suspecting cache/env issue."
+)
 @pytest.mark.asyncio
 async def test_reason_and_respond_builds_detective_prompt():
     """
     Tests that the 'detective prompt' is correctly assembled.
     """
     user_prompt = "Wer ist mein Onkel und was mag er?"
-    memory_context = "- Der Onkel des Benutzers heißt Kalle.\n- Kalle mag die Farbe Blau."
+    memory_context = (
+        "- Der Onkel des Benutzers heißt Kalle.\n- Kalle mag die Farbe Blau."
+    )
     chat_history = [{"role": "user", "content": "Hallo"}]
     mock_context_manager = MagicMock()
 
     # Wir mocken die Funktion, die am Ende der Kette aufgerufen wird
-    with patch('backend.llm_gateway.call_llm', new_callable=AsyncMock) as mock_call_llm:
+    with patch("backend.llm_gateway.call_llm", new_callable=AsyncMock) as mock_call_llm:
         mock_call_llm.return_value = {"type": "text", "text": "Dummy"}
 
         await llm_gateway.reason_and_respond(
@@ -25,13 +30,13 @@ async def test_reason_and_respond_builds_detective_prompt():
             api_key="test_key",
             model="test_model",
             provider="test_provider",
-            context_manager=mock_context_manager
+            context_manager=mock_context_manager,
         )
 
         # Wir überprüfen, womit unser Mock aufgerufen wurde
         mock_call_llm.assert_called_once()
         args, kwargs = mock_call_llm.call_args
-        
+
         # Das 'prompt'-Argument ist das dritte Positionsargument (Index 2)
         final_prompt_sent_to_llm = args[2]
 

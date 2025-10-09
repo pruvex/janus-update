@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 
+
 class BaseLLMProvider(ABC):
     """
     Abstrakte Basisklasse, die das Interface für alle LLM-Provider definiert.
@@ -15,7 +16,7 @@ class BaseLLMProvider(ABC):
         messages: List[Dict[str, Any]],
         tools: Optional[List[Dict[str, Any]]] = None,
         image_data: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> Dict[str, Any]:
         """
         Generiert eine textbasierte Antwort oder eine Tool-Call-Anfrage.
@@ -24,11 +25,7 @@ class BaseLLMProvider(ABC):
 
     @abstractmethod
     async def generate_image(
-        self,
-        api_key: str,
-        model: str,
-        prompt: str,
-        **kwargs
+        self, api_key: str, model: str, prompt: str, **kwargs
     ) -> Dict[str, Any]:
         """
         Generiert ein Bild und gibt ein Dictionary mit der URL und den Kosten zurück.

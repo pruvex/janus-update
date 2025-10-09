@@ -6,9 +6,10 @@ from typing import Optional
 from fpdf import FPDF
 from backend.utils.paths import resource_path
 
-logger = logging.getLogger('janus_backend')
+logger = logging.getLogger("janus_backend")
 
 FONT_PATH = resource_path("backend/assets/fonts/DejaVuSans.ttf")
+
 
 def get_known_locations():
     home = os.path.expanduser("~")
@@ -18,57 +19,106 @@ def get_known_locations():
         "downloads": os.path.join(home, "Downloads"),
     }
 
+
 class PDF(FPDF):
     def footer(self):
         self.set_y(-15)
-        self.set_font('DejaVu', 'I', 8)
-        self.cell(0, 10, f'Seite {self.page_no()}', 0, 0, 'C')
+        self.set_font("DejaVu", "I", 8)
+        self.cell(0, 10, f"Seite {self.page_no()}", 0, 0, "C")
 
-    def add_markdown_text(self, markdown_text):
-        # ... (Diese Funktion bleibt unverändert)
-        lines = markdown_text.split('\n')
+    def add_markdown_text(self, markdown_text: str, font_size: int):
+        lines = markdown_text.split("\n")
+        self.set_font("DejaVu", "", font_size)
+        
         for line in lines:
-            if line.startswith('# '): self.set_font('DejaVu', 'B', 16); self.cell(0, 10, line[2:].strip(), 0, 1, 'L')
-            elif line.startswith('## '): self.set_font('DejaVu', 'B', 14); self.cell(0, 10, line[3:].strip(), 0, 1, 'L')
-            elif line.startswith('### '): self.set_font('DejaVu', 'B', 12); self.cell(0, 10, line[4:].strip(), 0, 1, 'L')
-            elif line.strip().startswith(('* ', '- ')): self.set_font('DejaVu', '', 11); self.cell(5); self.cell(0, 5, f"• {line.strip()[2:]}", 0, 1)
-            else: self.set_font('DejaVu', '', 11); self.multi_cell(0, 5, line)
-            self.ln(2)
+            line = line.strip()
+            
+            if line.startswith("# "):
+                self.set_font("DejaVu", "B", font_size * 1.5)
+                self.multi_cell(0, 10, line[2:].strip(), 0, "L")
+                self.ln(2)
+            elif line.startswith("## "):
+                self.set_font("DejaVu", "B", font_size * 1.3)
+                self.multi_cell(0, 9, line[3:].strip(), 0, "L")
+                self.ln(1)
+            elif line.startswith("### "):
+                self.set_font("DejaVu", "B", font_size * 1.1)
+                self.multi_cell(0, 8, line[4:].strip(), 0, "L")
+                self.ln(1)
+            elif line.strip().startswith(("* ", "- ")):
+                self.set_font("DejaVu", "", font_size)
+                self.cell(5)
+                self.multi_cell(0, 5, f"• {line.strip()[2:]}")
+                self.ln(1)
+            elif line:
+                self.set_font("DejaVu", "", font_size)
+                self.multi_cell(0, 5, line)
+                self.ln(2)
+            else:
+                self.ln(5)
+        # Setzt die Schriftart am Ende wieder auf den Normalzustand zurück
+        self.set_font("DejaVu", "", font_size)
 
-# WICHTIG: Die Signatur der Funktion ändert sich!
-def create_pdf_from_markdown(content: str, filename: str, location: str = "Documents", image_path: Optional[str] = None) -> str:
+
+# WICHTIG: Die Signatur der Hauptfunktion wird um die neuen Parameter erweitert.
+def create_pdf_from_markdown(
+    content: str,
+    filename: str,
+    location: str = "Documents",
+    image_path: Optional[str] = None,
+    # --- START: ANGEPASSTE STANDARDWERTE ---
+    font_size: int = 12,
+    image_width: int = 40, # 40mm entspricht 4cm
+    # --- ENDE: ANGEPASSTE STANDARDWERTE ---
+) -> str:
     """
-    Erstellt eine PDF mit Text und optional einem Bild.
+    Kombiniert vorhandenen Text und optional das ZULETZT im Chatverlauf erstellte Bild zu einer PDF-Datei.
+
+    WICHTIG: Dieses Werkzeug generiert unter keinen Umständen neue Inhalte oder Bilder.
+    Es dient ausschließlich dazu, bereits existierende Elemente aus dem Chatverlauf zu formatieren und zu speichern.
+    Nutze es, wenn der Benutzer explizit darum bittet, eine Geschichte, einen Text oder ein Bild zu speichern.
     """
     try:
-        # ... (Logik für Dateinamen und Speicherort bleibt gleich)
-        if not filename.lower().endswith('.pdf'): filename += '.pdf'
-        valid_filename = "".join(c for c in filename if c.isalnum() or c in (' ', '.', '_')).rstrip()
+        logger.info(f"PDF-Erstellung gestartet mit folgenden Parametern:")
+        logger.info(f"  - Dateiname: {filename}")
+        logger.info(f"  - Speicherort: {location}")
+        logger.info(f"  - Schriftgröße: {font_size}pt")
+        logger.info(f"  - Bildpfad: {image_path}")
+        logger.info(f"  - Bildbreite: {image_width}mm")
+
+        if not filename.lower().endswith(".pdf"):
+            filename += ".pdf"
+        valid_filename = "".join(
+            c for c in filename if c.isalnum() or c in (" ", ".", "_")
+        ).rstrip()
         known_locations = get_known_locations()
         output_dir = known_locations.get(location.lower(), known_locations["documents"])
         janus_output_dir = os.path.join(output_dir, "JanusPDFs")
         os.makedirs(janus_output_dir, exist_ok=True)
         output_path = os.path.join(janus_output_dir, valid_filename)
 
-        logger.info(f"Erstelle PDF: {output_path} mit fpdf2.")
+        logger.info(f"Speichere PDF unter: {output_path}")
 
         pdf = PDF()
-        pdf.add_font('DejaVu', '', FONT_PATH, uni=True)
-        pdf.add_font('DejaVu', 'B', FONT_PATH, uni=True)
-        pdf.add_font('DejaVu', 'I', FONT_PATH, uni=True)
+        pdf.add_font("DejaVu", "", FONT_PATH, uni=True)
+        pdf.add_font("DejaVu", "B", FONT_PATH, uni=True)
+        pdf.add_font("DejaVu", "I", FONT_PATH, uni=True)
         pdf.add_page()
-        
-        # NEUE LOGIK: Bild einfügen, falls ein Pfad übergeben wurde
+
         if image_path and os.path.exists(image_path):
             logger.info(f"Füge Bild hinzu: {image_path}")
-            # Füge das Bild ein und passe die Breite an die Seite an
-            # A4-Breite ist 210mm, mit Rändern (10mm links/rechts) bleiben 190mm
-            pdf.image(image_path, x=10, y=None, w=190)
-            pdf.ln(10) # Abstand nach dem Bild
+            
+            page_width = pdf.w - 2 * pdf.l_margin
+            effective_width = image_width if image_width > 0 else page_width
+            if effective_width > page_width:
+                effective_width = page_width
 
-        pdf.add_markdown_text(content)
+            pdf.image(image_path, x=10, y=None, w=effective_width)
+            pdf.ln(10)
+
+        pdf.add_markdown_text(content, font_size)
         pdf.output(output_path)
-        
+
         success_message = f"PDF '{valid_filename}' wurde erfolgreich auf deinem '{location}' im Ordner 'JanusPDFs' gespeichert."
         logger.info(success_message)
         return success_message
