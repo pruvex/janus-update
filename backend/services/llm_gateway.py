@@ -213,12 +213,18 @@ async def reason_and_respond(
             content = tool_args.get("content", "")
             path = tool_args.get("path", "")
 
+            # Ensure content is bytes for base64.b64decode
+            if isinstance(content, str):
+                content_bytes = content.encode('utf-8') # Encode to bytes first
+            else:
+                content_bytes = content # Assume it's already bytes
+
             try:
                 # Try to decode as base64
-                decoded_content = base64.b64decode(content)
+                decoded_content = base64.b64decode(content_bytes)
                 # If successful, proceed with saving
                 return filesystem_manager.create_file(path, decoded_content, is_binary=True)
-            except (base64.binascii.Error, UnicodeDecodeError) as e:
+            except (binascii.Error, UnicodeDecodeError) as e:
                 # If decoding fails, assume it's raw text and try to synthesize
                 logger.warning(f"Content for save_mp3_tool is not valid base64 ({e}). Attempting to synthesize text.")
                 
