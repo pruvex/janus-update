@@ -11,6 +11,7 @@ from backend.tool_registry import get_all_tool_definitions
 from backend.services.websearch import perform_websearch
 from backend.llm_providers.capabilities.gemini_web_search import GeminiWebSearch
 from backend.services import memory_manager
+import base64
 
 
 logger = logging.getLogger("janus_backend")
@@ -205,6 +206,19 @@ async def reason_and_respond(
             return second_llm_response
         # --- ENDE: NEUE LOGIK ---
 
+
+        # Validate base64 content for save_mp3_tool
+        if tool_name == "save_mp3_tool":
+            try:
+                base64.b64decode(tool_args.get("content", ""))
+            except Exception as e:
+                logger.error(f"Invalid base64 content for save_mp3_tool: {e}")
+                return {
+                    "type": "tool_code_error",
+                    "tool_name": tool_name,
+                    "tool_args": tool_args,
+                    "error": f"Der Inhalt für save_mp3_tool ist kein gültiger Base64-String: {e}. Bitte stelle sicher, dass der Inhalt korrekt Base64-kodiert ist."
+                }
 
         # Der Rest der Funktion bleibt gleich...
         # --- START: KORRIGIERTER, VEREINHEITLICHTER BLOCK ---

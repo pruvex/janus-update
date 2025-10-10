@@ -82,7 +82,7 @@ def create_file_tool(path: str, content: str | bytes = "", is_binary: bool = Fal
     return filesystem_manager.create_file(path, content, is_binary)
 
 def save_mp3_tool(path: str, content: str):
-    """Speichert MP3-Audiodaten als Binärdatei im Workspace. Der Inhalt muss Base64-kodiert sein."""
+    """Speichert MP3-Audiodaten als Binärdatei im Workspace. Der Inhalt MUSS ein gültiger Base64-kodierter String der MP3-Daten sein."""
     decoded_content = base64.b64decode(content)
     return filesystem_manager.create_file(path, decoded_content, is_binary=True)
 
