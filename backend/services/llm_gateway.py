@@ -134,6 +134,7 @@ async def reason_and_respond(
     image_data: Optional[str] = None,
     is_image_analysis_request: bool = False,
     disable_tools: bool = False,  # NEU
+    tts_voice_id: Optional[str] = None
 ):  # NEU
     """
     Nimmt eine fertige Nachrichtenliste entgegen, ruft das LLM auf und führt bei Bedarf eine Websuche als Fallback durch.
@@ -237,10 +238,11 @@ async def reason_and_respond(
 
                 try:
                     # Synthesize the text (content is still the original string here)
-                    audio_bytes = tts_service.synthesize(text=content, lang="de", fmt="mp3", llm_provider=provider) # Assuming German and MP3
+                    audio_bytes = tts_service.synthesize(text=content, lang="de", fmt="mp3", llm_provider=provider, voice=tts_voice_id) # Assuming German and MP3
                     
                     # Save the synthesized audio
-                    return filesystem_manager.create_file(path, audio_bytes, is_binary=True)
+                    file_creation_result = filesystem_manager.create_file(path, audio_bytes, is_binary=True)
+                    return {"type": "text", "text": file_creation_result.get("output", "Unbekannter Fehler beim Speichern der Datei.")}
                 except Exception as tts_e:
                     logger.error(f"Failed to synthesize and save MP3 from raw text: {tts_e}")
                     return {
@@ -248,9 +250,7 @@ async def reason_and_respond(
                         "tool_name": tool_name,
                         "tool_args": tool_args,
                         "error": f"Fehler beim Speichern der MP3-Datei. Der Inhalt war kein gültiger Base64-String und die Sprachsynthese des Textes ist fehlgeschlagen: {tts_e}"
-                    }
-
-        # Der Rest der Funktion bleibt gleich...
+                    }        # Der Rest der Funktion bleibt gleich...
         # --- START: KORRIGIERTER, VEREINHEITLICHTER BLOCK ---
         
         # Es gibt keine Sonderbehandlung mehr. Jedes Werkzeug wird gleich behandelt.
