@@ -97,29 +97,39 @@ class TTSService:
         return TTS_CACHE_DIR / f"{key}.{fmt}"
     
     def _select_provider_chain(self, lang: str, voice_provider: Optional[str] = None, llm_provider: Optional[str] = None) -> List[str]:
+        logger.debug(f"_select_provider_chain called with: lang={lang}, voice_provider={voice_provider}, llm_provider={llm_provider}")
         """Select provider fallback chain based on language and voice preference."""
+        
         # If a specific voice provider is requested
         if voice_provider:
             if voice_provider == "openai":
-                return ["openai", "piper", "silero"]
+                provider_chain = ["openai", "piper", "silero"]
             elif voice_provider == "piper":
-                return ["piper", "silero"]
+                provider_chain = ["piper", "silero"]
             elif voice_provider == "silero":
-                return ["silero"]
+                provider_chain = ["silero"]
+            else:
+                provider_chain = ["piper", "silero"] # Default fallback if unknown voice_provider
+            logger.debug(f"_select_provider_chain returning (voice_provider): {provider_chain}")
+            return provider_chain
         
         # If an LLM provider is specified, prioritize its native TTS
         if llm_provider == "openai":
             if self.openai.is_available():
-                return ["openai", "piper", "silero"]
+                provider_chain = ["openai", "piper", "silero"]
+                logger.debug(f"_select_provider_chain returning (llm_provider=openai): {provider_chain}")
+                return provider_chain
         elif llm_provider == "gemini":
             # TODO: Add Gemini TTS here when implemented
             pass # Fallback to generic if Gemini TTS not implemented yet
 
         # Default: Piper first (if available), then Silero
         if lang.startswith("de") and self.piper.is_available():
-            return ["piper", "silero"]
+            provider_chain = ["piper", "silero"]
         else:
-            return ["silero"]
+            provider_chain = ["silero"]
+        logger.debug(f"_select_provider_chain returning (default): {provider_chain}")
+        return provider_chain
     
     def _get_voice_config(self, voice_id: str) -> Optional[dict]:
         """Get voice configuration by ID."""
@@ -177,12 +187,14 @@ class TTSService:
         # Extract speaker name and provider from voice config
         speaker = voice_config.get("speaker", "random")
         voice_provider = voice_config.get("provider")
+        logger.debug(f"Synthesize: voice_config={voice_config}, speaker={speaker}, voice_provider={voice_provider}")
         
         # Select provider chain
         if provider:
             provider_chain = [provider]
         else:
             provider_chain = self._select_provider_chain(lang, voice_provider, llm_provider)
+        logger.debug(f"Synthesize: provider_chain={provider_chain}")
         
         # Normalize text if German
         normalized_text = normalize_text_de(text) if lang.startswith("de") else text
