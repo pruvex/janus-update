@@ -209,16 +209,36 @@ async def reason_and_respond(
 
         # Validate base64 content for save_mp3_tool
         if tool_name == "save_mp3_tool":
+            content = tool_args.get("content", "")
+            path = tool_args.get("path", "")
+
             try:
-                base64.b64decode(tool_args.get("content", ""))
+                # Try to decode as base64
+                decoded_content = base64.b64decode(content.encode('ascii'))
+                # If successful, proceed with saving
+                return filesystem_manager.create_file(path, decoded_content, is_binary=True)
             except Exception as e:
-                logger.error(f"Invalid base64 content for save_mp3_tool: {e}")
-                return {
-                    "type": "tool_code_error",
-                    "tool_name": tool_name,
-                    "tool_args": tool_args,
-                    "error": f"Der Inhalt für save_mp3_tool ist kein gültiger Base64-String: {e}. Bitte stelle sicher, dass der Inhalt korrekt Base64-kodiert ist."
-                }
+                # If decoding fails, assume it's raw text and try to synthesize
+                logger.warning(f"Content for save_mp3_tool is not valid base64 ({e}). Attempting to synthesize text.")
+                
+                # Import tts_service here to avoid circular dependency if imported at top
+                from backend.services.tts_service import get_tts_service
+                tts_service = get_tts_service()
+
+                try:
+                    # Synthesize the text
+                    audio_bytes = tts_service.synthesize(text=content, lang="de", fmt="mp3") # Assuming German and MP3
+                    
+                    # Save the synthesized audio
+                    return filesystem_manager.create_file(path, audio_bytes, is_binary=True)
+                except Exception as tts_e:
+                    logger.error(f"Failed to synthesize and save MP3 from raw text: {tts_e}")
+                    return {
+                        "type": "tool_code_error",
+                        "tool_name": tool_name,
+                        "tool_args": tool_args,
+                        "error": f"Fehler beim Speichern der MP3-Datei. Der Inhalt war kein gültiger Base64-String und die Sprachsynthese des Textes ist fehlgeschlagen: {tts_e}"
+                    }
 
         # Der Rest der Funktion bleibt gleich...
         # --- START: KORRIGIERTER, VEREINHEITLICHTER BLOCK ---
