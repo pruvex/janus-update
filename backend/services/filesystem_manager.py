@@ -99,13 +99,20 @@ def _resolve_and_validate_path(user_path: str, must_exist: bool = True) -> Path:
     raise FileNotFoundError(f"Pfad '{user_path}' existiert nicht.")
 
 
-def create_file(path: str, content: str = "") -> dict:
+def create_file(path: str, content: str | bytes = "", is_binary: bool = False) -> dict:
     try:
         safe_path = _resolve_and_validate_path(path, must_exist=False)
         if safe_path.exists():
             return {"output": f"Fehler: '{path}' existiert bereits."}
         safe_path.parent.mkdir(parents=True, exist_ok=True)
-        safe_path.write_text(content, encoding="utf-8")
+        if is_binary:
+            if isinstance(content, str):
+                content = content.encode("latin-1") # Assuming binary content passed as latin-1 encoded string
+            safe_path.write_bytes(content)
+        else:
+            if isinstance(content, bytes):
+                content = content.decode("utf-8") # Assuming text content passed as utf-8 encoded bytes
+            safe_path.write_text(content, encoding="utf-8")
         logger.info(f"Datei erstellt: {safe_path}")
         return {"output": f"Datei '{path}' wurde erfolgreich erstellt."}
     except Exception as e:

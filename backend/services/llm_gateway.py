@@ -31,6 +31,7 @@ def _is_user_intent_aligned_with_tool(user_prompt: str, tool_name: str) -> bool:
         "move_file_tool",
         "create_directory_tool",
         "delete_directory_tool",
+        "save_mp3_tool",
     ]
 
     # Schlüsselwörter, die der Benutzer explizit verwenden muss, um diese Aktionen auszulösen.
@@ -38,7 +39,7 @@ def _is_user_intent_aligned_with_tool(user_prompt: str, tool_name: str) -> bool:
         "speicher", "save", "erstelle", "create", "schreib", "write",
         "mache", "make", "exportiere", "export", "datei", "file",
         "pdf", "dokument", "document", "lösche", "delete", "benenne um",
-        "rename", "verschiebe", "move", "ordner", "directory",
+        "rename", "verschiebe", "move", "ordner", "directory", "mp3",
     ]
 
     if tool_name in critical_file_tools:

@@ -72,6 +72,12 @@ class ChatTitleUpdate(BaseModel):
 class CreateFileArgs(BaseModel):
     path: str
     content: Optional[str] = ""
+    is_binary: Optional[bool] = False
+
+
+class SaveMp3Args(BaseModel):
+    path: str
+    content: str = Field(..., description="Base64-encoded MP3 binary content.")
 
 
 class ReadFileArgs(BaseModel):

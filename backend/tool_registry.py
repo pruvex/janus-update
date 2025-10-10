@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from tenacity import retry, stop_after_attempt, wait_exponential
 from backend.data import schemas
 from backend.services import filesystem_manager
+import base64
 
 # --- Werkzeug-Klassen und Registrierungs-Logik ---
 
@@ -76,9 +77,14 @@ from backend.tools.pdf_generator import create_pdf_from_markdown
 
 
 # Filesystem Tools
-def create_file_tool(path: str, content: str = ""):
+def create_file_tool(path: str, content: str | bytes = "", is_binary: bool = False):
     """Erstellt eine neue Datei im Workspace."""
-    return filesystem_manager.create_file(path, content)
+    return filesystem_manager.create_file(path, content, is_binary)
+
+def save_mp3_tool(path: str, content: str):
+    """Speichert MP3-Audiodaten als Binärdatei im Workspace. Der Inhalt muss Base64-kodiert sein."""
+    decoded_content = base64.b64decode(content)
+    return filesystem_manager.create_file(path, decoded_content, is_binary=True)
 
 
 def read_file_tool(path: str):
@@ -138,6 +144,7 @@ register_tool(Tool(func=perform_websearch, args_schema=schemas.WebsearchToolArgs
 
 # Filesystem
 register_tool(Tool(func=create_file_tool, args_schema=schemas.CreateFileArgs))
+register_tool(Tool(func=save_mp3_tool, args_schema=schemas.SaveMp3Args))
 register_tool(Tool(func=read_file_tool, args_schema=schemas.ReadFileArgs))
 register_tool(Tool(func=delete_file_tool, args_schema=schemas.DeleteFileArgs))
 register_tool(Tool(func=list_directory_tool, args_schema=schemas.ListDirectoryArgs))

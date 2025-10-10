@@ -5,7 +5,8 @@ from typing import Optional, List, Dict
 from pathlib import Path
 
 from backend.tts_providers.silero import SileroTTS
-from backend.tts_providers.piper import PiperTTS, apply_basic_normalization
+from backend.tts_providers.piper import PiperTTS
+from backend.services.tts_normalizer import normalize_text_de
 from backend.utils.paths import get_app_data_dir
 
 logger = logging.getLogger("janus_backend")
@@ -148,8 +149,11 @@ class TTSService:
         else:
             provider_chain = self._select_provider_chain(lang, voice_provider)
         
+        # Normalize text if German
+        normalized_text = normalize_text_de(text) if lang.startswith("de") else text
+
         # Generate cache key
-        cache_key = self._cache_key(text, voice, lang, speed, fmt, provider_chain[0], preset_name)
+        cache_key = self._cache_key(normalized_text, voice, lang, speed, fmt, provider_chain[0], preset_name)
         cache_file = self._cache_path(cache_key, fmt)
         
         # Check cache
@@ -169,9 +173,6 @@ class TTSService:
             
             try:
                 logger.info(f"Synthesizing with {prov_name}: {text[:50]}...")
-                # Apply normalization only for Piper for now, as it's designed for it
-                normalized_text = apply_basic_normalization(text) if prov_name == "piper" else text
-
                 audio_bytes = prov.synthesize(
                     text=normalized_text,
                     voice=speaker,  # Use speaker for all providers

@@ -6,8 +6,6 @@ import io
 import logging
 from typing import Generator, Optional, List, Dict
 from pydub import AudioSegment
-from num2words import num2words
-
 from backend.tts_providers.base import TTSProviderBase
 from backend.utils.paths import resource_path
 
@@ -50,11 +48,23 @@ PRESETS = {
 }
 
 def apply_basic_normalization(text: str) -> str:
+    def _normalize_date_ordinal(m):
+        prefix = m.group(1)
+        number = m.group(2)
+        ordinal = num2words(int(number), to='ordinal', lang='de')
+        if ordinal.endswith('e'):
+            ordinal += 'n'
+        
+        if prefix:
+            return f"{prefix} {ordinal}"
+        else:
+            return ordinal
+
     txt = text.strip()
     txt = re.sub(r"\bz\. ?b\.\b", "zum Beispiel", txt, flags=re.IGNORECASE)
     txt = re.sub(r"\bca\.\b", "circa", txt, flags=re.IGNORECASE)
     txt = re.sub(r"\bu\. ?a\.\b", "unter anderem", txt, flags=re.IGNORECASE)
-    txt = re.sub(r"(\bden\s+)(\d{1,2})\.", lambda m: f"{m.group(1)}{num2words(int(m.group(2)), to='ordinal', lang='de') + ('n' if num2words(int(m.group(2)), to='ordinal', lang='de').endswith('e') else '')}", txt, flags=re.IGNORECASE)
+    txt = re.sub(r"(?:\b(den|am)\s+)?(\d{1,2})\.", _normalize_date_ordinal, txt, flags=re.IGNORECASE)
     txt = txt.replace("%", " Prozent").replace("€", " Euro")
     txt = re.sub(r"\s{2,}", " ", txt)
     return txt
@@ -164,8 +174,6 @@ class PiperTTS(TTSProviderBase):
             logger.error(f"Piper binary not found at: {binary_path}")
             raise FileNotFoundError(f"Piper binary not found: {binary_path}")
         
-        # Apply basic normalization
-        text = apply_basic_normalization(text)
 
         # Get preset parameters
         p = PRESETS.get(preset_name, PRESETS["assistenz"])
@@ -257,8 +265,7 @@ class PiperTTS(TTSProviderBase):
         if not model:
             raise ValueError(f"Unknown Piper voice: {voice}")
         
-        # Apply basic normalization
-        text = apply_basic_normalization(text)
+
 
         # Get preset parameters
         p = PRESETS.get(preset_name, PRESETS["assistenz"])

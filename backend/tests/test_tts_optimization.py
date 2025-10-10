@@ -8,7 +8,7 @@ from pathlib import Path
 # Import the main FastAPI app
 from backend.main import app
 from backend.services.tts_service import TTS_CACHE_DIR
-from backend.tts_providers.piper import apply_basic_normalization # Import the normalization function
+from backend.services.tts_normalizer import normalize_text_de
 
 client = TestClient(app)
 
@@ -169,40 +169,29 @@ def test_synthesize_speech_unknown_voice():
     assert "Unknown voice: unknown_voice" in response.json()["detail"]
 
 
-def test_normalization_applied(mock_piper_tts_available):
+def test_advanced_normalization(mock_piper_tts_available):
     mock_is_available, mock_list_voices, mock_synthesize, mock_select_provider_chain = mock_piper_tts_available
 
-    test_text = "z.B. ca. 10% u.a. in €"
+    test_cases = {
+        "Morgen ist der 11. Oktober 2025.": "Morgen ist der elfte Oktober zweitausendfünfundzwanzig.",
+        "1. Eintrag\n2. Nächster Punkt": "Punkt 1: Eintrag\nPunkt 2: Nächster Punkt",
+        "Das war 2025.": "Das war zweitausendfünfundzwanzig.",
+        "Höchsttemperatur: Ca. 14°C": "Höchsttemperatur: circa 14 Grad Celsius",
+        "Morgen ist der 11. Oktober 2025.": "Morgen ist der elfte Oktober zweitausendfünfundzwanzig.",
+        "Morgen ist am 11. Oktober 2025.": "Morgen ist am elften Oktober zweitausendfünfundzwanzig.",
+    }
 
-    client.post(
-        "/api/tts/synthesize",
-        params={
-            "text": test_text,
-            "lang": "de",
-            "voice_id": "piper_de_DE-thorsten-high",
-            "preset": "assistenz"
-        }
-    )
-    # Verify that the synthesize method was called with the normalized text
-    mock_synthesize.assert_called_once()
-    call_args = mock_synthesize.call_args[1]
-    assert call_args["text"] == apply_basic_normalization(test_text)
-
-def test_ordinal_normalization(mock_piper_tts_available):
-    mock_is_available, mock_list_voices, mock_synthesize, mock_select_provider_chain = mock_piper_tts_available
-
-    test_text = "Am den 10. Oktober"
-
-    client.post(
-        "/api/tts/synthesize",
-        params={
-            "text": test_text,
-            "lang": "de",
-            "voice_id": "piper_de_DE-thorsten-high",
-            "preset": "assistenz"
-        }
-    )
-    # Verify that the synthesize method was called with the normalized text
-    mock_synthesize.assert_called_once()
-    call_args = mock_synthesize.call_args[1]
-    assert call_args["text"] == "Am den zehnten Oktober"
+    for text, expected_normalized_text in test_cases.items():
+        mock_synthesize.reset_mock()
+        client.post(
+            "/api/tts/synthesize",
+            params={
+                "text": text,
+                "lang": "de",
+                "voice_id": "piper_de_DE-thorsten-high",
+                "preset": "assistenz"
+            }
+        )
+        mock_synthesize.assert_called_once()
+        call_args = mock_synthesize.call_args[1]
+        assert call_args["text"] == expected_normalized_text
