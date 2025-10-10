@@ -7,6 +7,9 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from backend.data import schemas
 from backend.services import filesystem_manager
 import base64
+import logging
+
+logger = logging.getLogger("janus_backend")
 
 # --- Werkzeug-Klassen und Registrierungs-Logik ---
 
