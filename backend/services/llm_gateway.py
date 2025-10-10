@@ -309,6 +309,13 @@ async def reason_and_respond(
             # Dies ist der Standardfall für alle ANDEREN Werkzeuge (Dateisystem etc.).
             # Wir geben den validierten Werkzeugaufruf einfach an main.py weiter.
             logger.info(f"Tool call '{tool_name}' validated and passed for execution.")
+            
+            # NEU: Sonderbehandlung für save_mp3_tool
+            if tool_name == "save_mp3_tool":
+                # Wir wissen, dass das Tool erfolgreich war, da wir hier angekommen sind.
+                # Statt der technischen Ausgabe geben wir eine benutzerfreundliche Meldung zurück.
+                return {"type": "text", "text": f"Die MP3-Datei '{tool_args.get('path', 'unbekannt')}' wurde erfolgreich gespeichert."}
+            
             return llm_response
         # --- ENDE: KORRIGIERTER, VEREINHEITLICHTER BLOCK ---
 

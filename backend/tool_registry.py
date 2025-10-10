@@ -82,9 +82,38 @@ def create_file_tool(path: str, content: str | bytes = "", is_binary: bool = Fal
     return filesystem_manager.create_file(path, content, is_binary)
 
 def save_mp3_tool(path: str, content: str):
-    """Speichert MP3-Audiodaten als Binärdatei im Workspace. Der Inhalt MUSS ein gültiger Base64-kodierter String der MP3-Daten sein."""
-    decoded_content = base64.b64decode(content.encode('ascii'))
-    return filesystem_manager.create_file(path, decoded_content, is_binary=True)
+    """Speichert MP3-Audiodaten als Binärdatei im Workspace. Der Inhalt MUSS ein gültiger Base64-kodierter String der MP3-Daten sein. Wenn reiner Text übergeben wird, wird dieser automatisch in Sprache umgewandelt und gespeichert."""
+    
+    # Ensure content is bytes for base64.b64decode
+    if isinstance(content, str):
+        content_bytes = content.encode('utf-8') # Encode to bytes first
+    else:
+        content_bytes = content # Assume it's already bytes
+
+    try:
+        # Try to decode as base64
+        decoded_content = base64.b64decode(content_bytes)
+        # If successful, proceed with saving
+        return filesystem_manager.create_file(path, decoded_content, is_binary=True)
+    except (base64.binascii.Error, UnicodeDecodeError) as e:
+        # If decoding fails, assume it's raw text and try to synthesize
+        logger.warning(f"Content for save_mp3_tool is not valid base64 ({e}). Attempting to synthesize text.")
+        
+        # Import tts_service here to avoid circular dependency if imported at top
+        from backend.services.tts_service import get_tts_service
+        tts_service = get_tts_service()
+
+        try:
+            # Synthesize the text (content is still the original string here)
+            audio_bytes = tts_service.synthesize(text=content, lang="de", fmt="mp3") # Assuming German and MP3
+            
+            # Save the synthesized audio
+            return filesystem_manager.create_file(path, audio_bytes, is_binary=True)
+        except Exception as tts_e:
+            logger.error(f"Failed to synthesize and save MP3 from raw text: {tts_e}")
+            return {
+                "output": f"Fehler beim Speichern der MP3-Datei. Der Inhalt war kein gültiger Base64-String und die Sprachsynthese des Textes ist fehlgeschlagen: {tts_e}"
+            }
 
 
 def read_file_tool(path: str):
