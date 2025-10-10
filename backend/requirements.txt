@@ -66,6 +66,8 @@ distro==1.9.0
     #   posthog
 dnspython==2.7.0
     # via email-validator
+docopt==0.6.2
+    # via num2words
 durationpy==0.10
     # via kubernetes
 ebooklib==0.19
@@ -209,6 +211,8 @@ mpmath==1.3.0
     # via sympy
 networkx==3.5
     # via torch
+num2words==0.5.14
+    # via -r C:/KI/Janus-Projekt/backend/requirements.in
 numba==0.62.1
     # via openai-whisper
 numpy==2.3.2

@@ -5,7 +5,7 @@ from typing import Optional, List, Dict
 from pathlib import Path
 
 from backend.tts_providers.silero import SileroTTS
-from backend.tts_providers.piper import PiperTTS
+from backend.tts_providers.piper import PiperTTS, apply_basic_normalization
 from backend.utils.paths import get_app_data_dir
 
 logger = logging.getLogger("janus_backend")
@@ -35,12 +35,12 @@ class TTSService:
             piper_voices = self.piper.list_voices()
             for v in piper_voices:
                 all_voices.append({
-                    "id": f"piper_{v['id']}",
-                    "name": f"Piper {v['name']}",
-                    "lang": v['lang'],
+                    "id": f"piper_{v.get('id')}",
+                    "name": f"Piper {v.get('name')}",
+                    "lang": v.get('lang'),
                     "provider": "piper",
-                    "speaker": v['id'],
-                    "path": v['path']
+                    "speaker": v.get('id'),
+                    "path": v.get('path')
                 })
         
         # Add Silero voices (hardcoded for now, can be made dynamic later)
@@ -169,9 +169,12 @@ class TTSService:
             
             try:
                 logger.info(f"Synthesizing with {prov_name}: {text[:50]}...")
+                # Apply normalization only for Piper for now, as it's designed for it
+                normalized_text = apply_basic_normalization(text) if prov_name == "piper" else text
+
                 audio_bytes = prov.synthesize(
-                    text=text,
-                    voice=speaker,  # Use speaker name instead of voice ID
+                    text=normalized_text,
+                    voice=speaker,  # Use speaker for all providers
                     lang=lang,
                     speed=speed,
                     fmt=fmt,

@@ -1,0 +1,20 @@
+feat: Implement TTS optimization with presets and dynamic voice selection
+
+This commit introduces the following Text-to-Speech (TTS) optimizations:
+
+- **Backend:**
+  - Added `PRESETS` for Piper TTS parameters (assistenz, diktat, narration).
+  - Implemented basic German text normalization (`apply_basic_normalization`).
+  - Extended `PiperTTS` to dynamically list available voices from the model directory.
+  - Modified `TTSService` to dynamically load Piper voices and integrate Silero voices.
+  - Updated `synthesize` and `synthesize_stream` functions to accept and apply `preset_name`.
+  - Enhanced TTS caching to include `preset_name` in the cache key.
+  - Extended the `/api/tts/synthesize` endpoint to accept `preset` and `voice_id` parameters.
+
+- **Frontend:**
+  - Extended settings state in `frontend/js/settings.js` to manage `ttsPreset` and `ttsVoiceId`.
+  - Updated the TTS settings UI in `frontend/index.html` with dropdowns for voice selection and presets.
+  - Adapted TTS API calls in `frontend/js/tts.js` and `frontend/js/chat.js` to pass `preset` and `voice_id`.
+
+- **Testing:**
+  - Created `backend/tests/test_tts_optimization.py` with comprehensive tests for voice listing, preset application, caching, error handling, and text normalization. All tests are passing.

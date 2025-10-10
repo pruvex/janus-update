@@ -2,7 +2,7 @@ import os
 import io
 import logging
 import torch
-from typing import Optional
+from typing import Optional, List, Dict
 from pydub import AudioSegment
 
 from backend.tts_providers.base import TTSProviderBase
@@ -28,8 +28,28 @@ class SileroTTS(TTSProviderBase):
         self.models = {}  # lang -> model
         self.device = torch.device("cpu")
 
+    def is_available(self) -> bool:
+        """Check if Silero is available."""
+        # Silero is always considered available if the models can be loaded/downloaded
+        # We don't check for an external binary like Piper
+        return True
+
     def supports_streaming(self, fmt: str) -> bool:
         return False
+
+    def list_voices(self) -> List[Dict]:
+        """List available Silero voices."""
+        voices = []
+        for lang_key, info in SILERO_MODELS.items():
+            # For Silero, we'll just list a generic voice per language for now
+            voices.append({
+                "id": f"{lang_key}_random",
+                "name": f"Silero {lang_key.upper()} (Zufällig)",
+                "lang": lang_key,
+                "provider": "silero",
+                "speaker": "random" # Silero uses generic speakers or random
+            })
+        return voices
 
     def _load_model(self, lang: str):
         """Load or retrieve cached Silero model."""
@@ -61,7 +81,7 @@ class SileroTTS(TTSProviderBase):
             logger.error(f"Failed to load Silero model: {e}")
             raise
 
-    def synthesize(self, text: str, voice: str, lang: str, speed: float, fmt: str) -> bytes:
+    def synthesize(self, text: str, voice: str, lang: str, speed: float, fmt: str, preset_name: Optional[str] = None) -> bytes:
         """Synthesize speech using Silero TTS."""
         try:
             model = self._load_model(lang)

@@ -6,6 +6,7 @@ import io
 import logging
 from typing import Generator, Optional, List, Dict
 from pydub import AudioSegment
+from num2words import num2words
 
 from backend.tts_providers.base import TTSProviderBase
 from backend.utils.paths import resource_path
@@ -53,6 +54,7 @@ def apply_basic_normalization(text: str) -> str:
     txt = re.sub(r"\bz\. ?b\.\b", "zum Beispiel", txt, flags=re.IGNORECASE)
     txt = re.sub(r"\bca\.\b", "circa", txt, flags=re.IGNORECASE)
     txt = re.sub(r"\bu\. ?a\.\b", "unter anderem", txt, flags=re.IGNORECASE)
+    txt = re.sub(r"(\bden\s+)(\d{1,2})\.", lambda m: f"{m.group(1)}{num2words(int(m.group(2)), to='ordinal', lang='de') + ('n' if num2words(int(m.group(2)), to='ordinal', lang='de').endswith('e') else '')}", txt, flags=re.IGNORECASE)
     txt = txt.replace("%", " Prozent").replace("€", " Euro")
     txt = re.sub(r"\s{2,}", " ", txt)
     return txt
@@ -111,7 +113,9 @@ class PiperTTS(TTSProviderBase):
         if not self.is_available():
             raise RuntimeError("Piper binary not available")
         
-        wav_bytes = self._run_piper(text=text, voice=voice, speed=speed, preset_name=preset_name)
+        # Remove 'piper_' prefix if present
+        voice_id = voice.replace('piper_', '', 1) if voice.startswith('piper_') else voice
+        wav_bytes = self._run_piper(text=text, voice=voice_id, speed=speed, preset_name=preset_name)
         
         if fmt.lower() == "wav":
             return wav_bytes
@@ -131,7 +135,9 @@ class PiperTTS(TTSProviderBase):
             raise RuntimeError("Piper binary not available")
         
         def gen():
-            wav_stream = self._run_piper_stream(text=text, voice=voice, speed=speed, preset_name=preset_name)
+            # Remove 'piper_' prefix if present
+            voice_id = voice.replace('piper_', '', 1) if voice.startswith('piper_') else voice
+            wav_stream = self._run_piper_stream(text=text, voice=voice_id, speed=speed, preset_name=preset_name)
             for chunk in wav_stream:
                 yield chunk
         return gen()
