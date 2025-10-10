@@ -12,6 +12,7 @@ from backend.services.websearch import perform_websearch
 from backend.llm_providers.capabilities.gemini_web_search import GeminiWebSearch
 from backend.services import memory_manager
 import base64
+import base64.binascii
 
 
 logger = logging.getLogger("janus_backend")
@@ -214,10 +215,10 @@ async def reason_and_respond(
 
             try:
                 # Try to decode as base64
-                decoded_content = base64.b64decode(content.encode('ascii'))
+                decoded_content = base64.b64decode(content)
                 # If successful, proceed with saving
                 return filesystem_manager.create_file(path, decoded_content, is_binary=True)
-            except Exception as e:
+            except (base64.binascii.Error, UnicodeDecodeError) as e:
                 # If decoding fails, assume it's raw text and try to synthesize
                 logger.warning(f"Content for save_mp3_tool is not valid base64 ({e}). Attempting to synthesize text.")
                 
