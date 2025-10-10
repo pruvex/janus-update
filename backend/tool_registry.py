@@ -84,9 +84,8 @@ def create_file_tool(path: str, content: str | bytes = "", is_binary: bool = Fal
     """Erstellt eine neue Datei im Workspace."""
     return filesystem_manager.create_file(path, content, is_binary)
 
-def save_mp3_tool(path: str, content: str):
+def save_mp3_tool(path: str, content: str, llm_provider: Optional[str] = None):
     """Speichert MP3-Audiodaten als Binärdatei im Workspace. Der Inhalt MUSS ein gültiger Base64-kodierter String der MP3-Daten sein. Wenn reiner Text übergeben wird, wird dieser automatisch in Sprache umgewandelt und gespeichert."""
-    from backend.services import filesystem_manager
     
     # Ensure content is bytes for base64.b64decode
     if isinstance(content, str):
@@ -109,7 +108,7 @@ def save_mp3_tool(path: str, content: str):
 
         try:
             # Synthesize the text (content is still the original string here)
-            audio_bytes = tts_service.synthesize(text=content, lang="de", fmt="mp3") # Assuming German and MP3
+            audio_bytes = tts_service.synthesize(text=content, lang="de", fmt="mp3", llm_provider=llm_provider) # Assuming German and MP3
             
             # Save the synthesized audio
             return filesystem_manager.create_file(path, audio_bytes, is_binary=True)

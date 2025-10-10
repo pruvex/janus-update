@@ -10,7 +10,7 @@ from backend.llm_providers.openai_service import OpenAIServiceProvider
 from backend.tool_registry import get_all_tool_definitions
 from backend.services.websearch import perform_websearch
 from backend.llm_providers.capabilities.gemini_web_search import GeminiWebSearch
-from backend.services import memory_manager
+from backend.services import memory_manager, filesystem_manager
 import base64
 import binascii
 
@@ -225,7 +225,8 @@ async def reason_and_respond(
                 # Try to decode as base64
                 decoded_content = base64.b64decode(content_bytes)
                 # If successful, proceed with saving
-                return filesystem_manager.create_file(path, decoded_content, is_binary=True)
+                file_creation_result = filesystem_manager.create_file(path, decoded_content, is_binary=True)
+                return {"type": "text", "text": file_creation_result.get("output", "Unbekannter Fehler beim Speichern der Datei.")}
             except (binascii.Error, UnicodeDecodeError) as e:
                 # If decoding fails, assume it's raw text and try to synthesize
                 logger.warning(f"Content for save_mp3_tool is not valid base64 ({e}). Attempting to synthesize text.")
@@ -235,8 +236,8 @@ async def reason_and_respond(
                 tts_service = get_tts_service()
 
                 try:
-                    # Synthesize the text
-                    audio_bytes = tts_service.synthesize(text=content, lang="de", fmt="mp3") # Assuming German and MP3
+                    # Synthesize the text (content is still the original string here)
+                    audio_bytes = tts_service.synthesize(text=content, lang="de", fmt="mp3", llm_provider=provider) # Assuming German and MP3
                     
                     # Save the synthesized audio
                     return filesystem_manager.create_file(path, audio_bytes, is_binary=True)

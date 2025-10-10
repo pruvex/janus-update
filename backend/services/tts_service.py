@@ -6,6 +6,7 @@ from pathlib import Path
 
 from backend.tts_providers.silero import SileroTTS
 from backend.tts_providers.piper import PiperTTS
+from backend.tts_providers.openai import OpenAITTS
 from backend.services.tts_normalizer import normalize_text_de
 from backend.utils.paths import get_app_data_dir
 
@@ -22,9 +23,11 @@ class TTSService:
     def __init__(self):
         self.silero = SileroTTS()
         self.piper = PiperTTS()
+        self.openai = OpenAITTS()
         self.providers = {
             "silero": self.silero,
             "piper": self.piper,
+            "openai": self.openai,
         }
     
     def get_voices(self, lang: Optional[str] = None) -> List[Dict]:
@@ -57,7 +60,28 @@ class TTSService:
             {"id": "silero_en_1", "name": "Silero English Voice 1", "lang": "en", "provider": "silero", "speaker": "en_1"},
         ]
         all_voices.extend(silero_voices)
+        silero_voices = [
+            {"id": "silero_de_random", "name": "Silero Deutsch (Zufällig)", "lang": "de", "provider": "silero", "speaker": "random"},
+            {"id": "silero_de_eva_k", "name": "Silero Deutsch Eva K", "lang": "de", "provider": "silero", "speaker": "eva_k"},
+            {"id": "silero_de_hokuspokus", "name": "Silero Deutsch Hokuspokus", "lang": "de", "provider": "silero", "speaker": "hokuspokus"},
+            {"id": "silero_de_karlsson", "name": "Silero Deutsch Karlsson", "lang": "de", "provider": "silero", "speaker": "karlsson"},
+            {"id": "silero_en_random", "name": "Silero English (Random)", "lang": "en", "provider": "silero", "speaker": "random"},
+            {"id": "silero_en_0", "name": "Silero English Voice 0", "lang": "en", "provider": "silero", "speaker": "en_0"},
+            {"id": "silero_en_1", "name": "Silero English Voice 1", "lang": "en", "provider": "silero", "speaker": "en_1"},
+        ]
+        all_voices.extend(silero_voices)
 
+        # Add OpenAI voices
+        if self.openai.is_available():
+            openai_voices = self.openai.list_voices()
+            for v in openai_voices:
+                all_voices.append({
+                    "id": f"openai_{v.get('id')}",
+                    "name": f"OpenAI {v.get('name')}",
+                    "lang": v.get('lang'),
+                    "provider": "openai",
+                    "speaker": v.get('id'),
+                })
         if lang:
             all_voices = [v for v in all_voices if v["lang"].startswith(lang)]
         
@@ -72,15 +96,25 @@ class TTSService:
         """Get cache file path."""
         return TTS_CACHE_DIR / f"{key}.{fmt}"
     
-    def _select_provider_chain(self, lang: str, voice_provider: Optional[str] = None) -> List[str]:
+    def _select_provider_chain(self, lang: str, voice_provider: Optional[str] = None, llm_provider: Optional[str] = None) -> List[str]:
         """Select provider fallback chain based on language and voice preference."""
+        # If a specific voice provider is requested
         if voice_provider:
-            # Use specific provider requested by voice
-            if voice_provider == "piper":
-                return ["piper", "silero"]  # Fallback to Silero if Piper fails
+            if voice_provider == "openai":
+                return ["openai", "piper", "silero"]
+            elif voice_provider == "piper":
+                return ["piper", "silero"]
             elif voice_provider == "silero":
                 return ["silero"]
         
+        # If an LLM provider is specified, prioritize its native TTS
+        if llm_provider == "openai":
+            if self.openai.is_available():
+                return ["openai", "piper", "silero"]
+        elif llm_provider == "gemini":
+            # TODO: Add Gemini TTS here when implemented
+            pass # Fallback to generic if Gemini TTS not implemented yet
+
         # Default: Piper first (if available), then Silero
         if lang.startswith("de") and self.piper.is_available():
             return ["piper", "silero"]
@@ -104,7 +138,8 @@ class TTSService:
         fmt: str = "mp3",
         provider: Optional[str] = None,
         stream: bool = False,
-        preset_name: Optional[str] = None
+        preset_name: Optional[str] = None,
+        llm_provider: Optional[str] = None
     ) -> bytes:
         """
         Synthesize speech from text.
@@ -147,7 +182,7 @@ class TTSService:
         if provider:
             provider_chain = [provider]
         else:
-            provider_chain = self._select_provider_chain(lang, voice_provider)
+            provider_chain = self._select_provider_chain(lang, voice_provider, llm_provider)
         
         # Normalize text if German
         normalized_text = normalize_text_de(text) if lang.startswith("de") else text

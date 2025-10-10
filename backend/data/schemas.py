@@ -78,6 +78,7 @@ class CreateFileArgs(BaseModel):
 class SaveMp3Args(BaseModel):
     path: str
     content: str = Field(..., description="Base64-encoded MP3 binary content.")
+    llm_provider: Optional[str] = None
 
 
 class ReadFileArgs(BaseModel):
