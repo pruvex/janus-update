@@ -292,6 +292,7 @@ class GeminiServiceProvider(BaseLLMProvider):
                 tool_name = tool_call.name
                 tool_args = {key: value for key, value in tool_call.args.items()}
                 logger.info(f"Gemini requested tool call: {tool_name} with args: {tool_args}")
+                logger.debug(f"Gemini tool_call.args: {tool_call.args}")
 
                 # 1. Erstelle die rohe Assistenten-Nachricht, die der OpenAI-Struktur entspricht.
                 # WICHTIG: Die tool_call.id wird hier künstlich erzeugt, da Gemini keine stabile ID liefert.

@@ -157,6 +157,8 @@ async def reason_and_respond(
     tools = get_all_tool_definitions() if not disable_tools else None
     if disable_tools:
         logger.info("Tool usage has been explicitly disabled for this LLM call.")
+    else:
+        logger.info(f"Tools offered to LLM: {[tool.get('function', {}).get('name') for tool in tools]}")
 
     llm_response = await call_llm(
         provider,

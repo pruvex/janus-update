@@ -128,7 +128,7 @@ class TTSService:
         if not voice:
             # Use Piper by default if available, otherwise Silero
             if self.piper.is_available() and lang.startswith("de"):
-                voice = "de_thorsten_medium"  # Medium is more natural than high
+                voice = "piper_de_DE-thorsten-medium"  # Medium is more natural than high
             elif lang.startswith("de"):
                 voice = "de_random"
             else:
