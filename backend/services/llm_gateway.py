@@ -12,7 +12,7 @@ from backend.services.websearch import perform_websearch
 from backend.llm_providers.capabilities.gemini_web_search import GeminiWebSearch
 from backend.services import memory_manager
 import base64
-import base64.binascii
+import binascii
 
 
 logger = logging.getLogger("janus_backend")
