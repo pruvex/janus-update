@@ -1,3 +1,4 @@
+import os
 import logging
 import hashlib
 import time
@@ -20,10 +21,10 @@ TTS_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 class TTSService:
     """Text-to-Speech service with caching and provider fallback."""
     
-    def __init__(self):
+    def __init__(self, openai_api_key: Optional[str] = None):
         self.silero = SileroTTS()
         self.piper = PiperTTS()
-        self.openai = OpenAITTS()
+        self.openai = OpenAITTS(api_key=openai_api_key) if openai_api_key else OpenAITTS(api_key=os.environ.get("OPENAI_API_KEY"))
         self.providers = {
             "silero": self.silero,
             "piper": self.piper,
@@ -249,9 +250,9 @@ class TTSService:
 _tts_service = None
 
 
-def get_tts_service() -> TTSService:
+def get_tts_service(openai_api_key: Optional[str] = None) -> TTSService:
     """Get or create TTS service singleton."""
     global _tts_service
     if _tts_service is None:
-        _tts_service = TTSService()
+        _tts_service = TTSService(openai_api_key=openai_api_key)
     return _tts_service

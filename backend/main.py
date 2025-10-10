@@ -1749,7 +1749,10 @@ async def synthesize_speech(
         Audio file
     """
     try:
-        tts_service = get_tts_service()
+        openai_api_key = keyring.get_password("Janus-Projekt", "openai")
+        if not openai_api_key:
+            logger.warning("OpenAI API key not found in keyring. OpenAI TTS might not work.")
+        tts_service = get_tts_service(openai_api_key=openai_api_key)
         # Resolve voice_id
         final_voice_id = voice_id if voice_id else voice
 

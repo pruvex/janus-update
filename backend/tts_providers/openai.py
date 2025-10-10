@@ -13,8 +13,8 @@ class OpenAITTS(TTSProviderBase):
     """OpenAI TTS Provider - Uses OpenAI's GPT-4o mini TTS model."""
     name = "openai"
 
-    def __init__(self):
-        self.client = OpenAI()
+    def __init__(self, api_key: str):
+        self.client = OpenAI(api_key=api_key)
         self.available_voices = [
             {"id": "alloy", "name": "Alloy", "lang": "en", "provider": "openai"},
             {"id": "ash", "name": "Ash", "lang": "en", "provider": "openai"},
