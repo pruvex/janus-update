@@ -21,7 +21,9 @@ TTS_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 class TTSService:
     """Text-to-Speech service with caching and provider fallback."""
     
-    def __init__(self, openai_api_key: Optional[str] = None):
+    def __init__(self, config: Dict, openai_api_key: Optional[str] = None):
+        self.config = config
+        self.use_piper_tts = self.config.get("tts_settings", {}).get("use_piper_tts", False)
         self.silero = SileroTTS()
         self.piper = PiperTTS()
         self.openai = OpenAITTS(api_key=openai_api_key) if openai_api_key else OpenAITTS(api_key=os.environ.get("OPENAI_API_KEY"))
@@ -100,6 +102,11 @@ class TTSService:
     def _select_provider_chain(self, lang: str, voice_provider: Optional[str] = None, llm_provider: Optional[str] = None) -> List[str]:
         logger.debug(f"_select_provider_chain called with: lang={lang}, voice_provider={voice_provider}, llm_provider={llm_provider}")
         """Select provider fallback chain based on language and voice preference."""
+
+        # User override to always use Piper
+        if self.use_piper_tts:
+            logger.debug(f"_select_provider_chain returning (user override): [\"piper\", \"silero\"]")
+            return ["piper", "silero"]
         
         # If a specific voice provider is requested
         if voice_provider:
@@ -197,8 +204,8 @@ class TTSService:
             provider_chain = self._select_provider_chain(lang, voice_provider, llm_provider)
         logger.debug(f"Synthesize: provider_chain={provider_chain}")
         
-        # Normalize text if German
-        normalized_text = normalize_text_de(text) if lang.startswith("de") else text
+        # Always normalize text with the German normalizer as per user request
+        normalized_text = normalize_text_de(text)
 
         # Generate cache key
         cache_key = self._cache_key(normalized_text, voice, lang, speed, fmt, provider_chain[0], preset_name)
@@ -247,12 +254,30 @@ class TTSService:
 
 
 # Singleton instance
+
+
 _tts_service = None
 
 
-def get_tts_service(openai_api_key: Optional[str] = None) -> TTSService:
+
+
+
+def get_tts_service(config: Dict, openai_api_key: Optional[str] = None) -> TTSService:
+
+
     """Get or create TTS service singleton."""
+
+
     global _tts_service
-    if _tts_service is None:
-        _tts_service = TTSService(openai_api_key=openai_api_key)
+
+
+    # For simplicity, we re-initialize every time to ensure config changes are picked up.
+
+
+    # A more complex implementation could check if the config has actually changed.
+
+
+    _tts_service = TTSService(config=config, openai_api_key=openai_api_key)
+
+
     return _tts_service

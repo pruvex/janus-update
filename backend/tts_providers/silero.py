@@ -117,3 +117,6 @@ class SileroTTS(TTSProviderBase):
         except Exception as e:
             logger.error(f"Silero TTS synthesis failed: {e}")
             raise
+
+    def synthesize_stream(self, text: str, voice: str, lang: str, speed: float, fmt: str, preset_name: Optional[str] = None):
+        raise NotImplementedError("Silero TTS does not support streaming.")

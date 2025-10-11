@@ -106,6 +106,7 @@ def create_file(path: str, content: str | bytes = "", is_binary: bool = False) -
             return {"output": f"Fehler: '{path}' existiert bereits."}
         safe_path.parent.mkdir(parents=True, exist_ok=True)
         if is_binary:
+            logger.debug(f"create_file: is_binary=True. Content type: {type(content)}. First 100 bytes: {content[:100] if isinstance(content, bytes) else content[:100].encode('utf-8')}")
             if isinstance(content, str):
                 content = content.encode("latin-1") # Assuming binary content passed as latin-1 encoded string
             safe_path.write_bytes(content)

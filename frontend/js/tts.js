@@ -3,7 +3,7 @@ import { API_BASE_URL } from './config.js';
 let ttsEnabled = false;
 let ttsVoice = null;
 let ttsSpeed = 1.0;
-let ttsPreset = null; // NEU
+export let ttsPreset = null; // NEU
 let currentAudio = null;
 
 /**
@@ -131,16 +131,26 @@ export function setTTSSpeed(speed) {
  * Initialize TTS system
  */
 export async function initTTS() {
-  // Load saved settings
+  // Load saved settings from backend
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/tts/settings`);
+    const settings = await response.json();
+
+    ttsVoice = settings.voice || null;
+    ttsSpeed = settings.speed || 1.0;
+    ttsPreset = settings.preset || "assistenz";
+
+  } catch (error) {
+    console.error('Error loading TTS settings for init:', error);
+    // Fallback to localStorage if backend fails
+    ttsVoice = localStorage.getItem('tts_voice');
+    ttsSpeed = parseFloat(localStorage.getItem('tts_speed')) || 1.0;
+    ttsPreset = localStorage.getItem('tts_preset') || "assistenz";
+  }
+
+  // Load enabled state from localStorage (this is a local UI preference)
   const savedEnabled = localStorage.getItem('tts_enabled') === 'true';
-  const savedVoice = localStorage.getItem('tts_voice');
-  const savedSpeed = parseFloat(localStorage.getItem('tts_speed')) || 1.0;
-  const savedPreset = localStorage.getItem('tts_preset') || "assistenz"; // NEU
-  
   ttsEnabled = savedEnabled;
-  ttsVoice = savedVoice;
-  ttsSpeed = savedSpeed;
-  ttsPreset = savedPreset; // NEU
   
   // Set up toggle button
   const ttsBtn = document.getElementById('tts-toggle-btn');

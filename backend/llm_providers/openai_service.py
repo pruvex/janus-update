@@ -54,7 +54,7 @@ class OpenAIServiceProvider(BaseLLMProvider):
             if tools:
                 api_call_params["tools"] = tools
                 if model == "gpt-5":  # Assuming "gpt-5" is the actual model ID
-                    api_call_params["tool_choice"] = "required"
+                    api_call_params["tool_choice"] = "auto"
                 else:
                     api_call_params["tool_choice"] = "auto"
 

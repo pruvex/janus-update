@@ -1,5 +1,6 @@
 import '../css/settings.css';
 import { API_BASE_URL } from './config.js';
+import { initTTS } from './tts.js';
 
 const appState = { // Minimal appState for settings
   model_catalog: {},
@@ -396,15 +397,79 @@ document.addEventListener('DOMContentLoaded', async () => {
   const ttsSpeedInput = document.getElementById('tts-speed-input');
   const ttsSpeedValue = document.getElementById('tts-speed-value');
   const ttsTestBtn = document.getElementById('tts-test-btn');
-  const ttsStatusMessage = document.getElementById('tts-status-message');
-  const ttsPresetSelect = document.getElementById('tts-preset-select'); // NEU
-
-  async function loadTTSVoices() {
+    const ttsStatusMessage = document.getElementById('tts-status-message');
+    const ttsPresetSelect = document.getElementById('tts-preset-select'); // NEU
+    const usePiperTtsCheckbox = document.getElementById('use-piper-tts');
+  
+    async function saveTtsSettings() {
+      const settings = {
+        voice: ttsVoiceSelect.value,
+        speed: parseFloat(ttsSpeedInput.value),
+        preset: ttsPresetSelect.value,
+        use_piper_tts: usePiperTtsCheckbox.checked
+      };
+  
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/tts/settings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(settings)
+        });
+        if (!response.ok) {
+          throw new Error('Failed to save TTS settings');
+        }
+        const result = await response.json();
+        ttsStatusMessage.textContent = 'TTS-Einstellungen gespeichert.';
+        ttsStatusMessage.style.color = '#10b981';
+        initTTS(); // Re-initialize TTS to apply changes immediately
+      } catch (error) {
+        console.error('Error saving TTS settings:', error);
+        ttsStatusMessage.textContent = 'Fehler beim Speichern der TTS-Einstellungen.';
+        ttsStatusMessage.style.color = '#b91c1c';
+      }
+    }
+  
+    async function loadTtsSettings() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/tts/settings`);
+        const settings = await response.json();
+  
+        if (settings.voice && ttsVoiceSelect.querySelector(`option[value="${settings.voice}"]`)) {
+          ttsVoiceSelect.value = settings.voice;
+        }
+        if (settings.speed) {
+          ttsSpeedInput.value = settings.speed;
+          ttsSpeedValue.textContent = settings.speed.toFixed(1);
+        }
+        if (settings.preset) {
+          ttsPresetSelect.value = settings.preset;
+        }
+        if (settings.use_piper_tts) {
+          usePiperTtsCheckbox.checked = settings.use_piper_tts;
+        }
+  
+      } catch (error) {
+        console.error('Error loading TTS settings:', error);
+      }
+    }
+  
+    async function loadTTSVoices() {
     try {
+      // First, load the saved settings to know if we need to filter for Piper
+      await loadTtsSettings();
+
       const response = await fetch(`${API_BASE_URL}/api/tts/voices`);
       const data = await response.json();
-      const voices = data.voices || [];
+      let voices = data.voices || [];
       
+      const usePiperTts = usePiperTtsCheckbox.checked;
+
+      if (usePiperTts) {
+        voices = voices.filter(voice => voice.provider === 'piper');
+      }
+
+      const currentVoice = ttsVoiceSelect.value;
+
       ttsVoiceSelect.innerHTML = '';
       voices.forEach(voice => {
         const option = document.createElement('option');
@@ -412,19 +477,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         option.textContent = `${voice.name} (${voice.lang.toUpperCase()})`;
         ttsVoiceSelect.appendChild(option);
       });
-      
-      // Load saved voice
-      const savedVoice = localStorage.getItem('tts_voice');
-      if (savedVoice && voices.find(v => v.id === savedVoice)) {
-        ttsVoiceSelect.value = savedVoice;
-      } else if (voices.length > 0) {
-        ttsVoiceSelect.value = voices[0].id; // Select first voice if no saved voice or saved voice not found
-        localStorage.setItem('tts_voice', voices[0].id);
+
+      // Restore selection if possible
+      if (voices.find(v => v.id === currentVoice)) {
+        ttsVoiceSelect.value = currentVoice;
+      } else if (usePiperTts) {
+        const defaultPiperVoice = 'piper_de_DE-thorsten-high';
+        if (ttsVoiceSelect.querySelector(`option[value="${defaultPiperVoice}"]`)) {
+          ttsVoiceSelect.value = defaultPiperVoice;
+        }
       }
       
-      ttsStatusMessage.textContent = `${voices.length} Stimme(n) geladen.`;
-      ttsStatusMessage.style.color = '#10b981';
-
       // Populate TTS Presets
       const presets = ["assistenz", "diktat", "narration"];
       ttsPresetSelect.innerHTML = '';
@@ -434,15 +497,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         option.textContent = preset.charAt(0).toUpperCase() + preset.slice(1); // Capitalize first letter
         ttsPresetSelect.appendChild(option);
       });
-
-      // Load saved preset
-      const savedPreset = localStorage.getItem('tts_preset');
-      if (savedPreset && presets.includes(savedPreset)) {
-        ttsPresetSelect.value = savedPreset;
-      } else {
-        ttsPresetSelect.value = "assistenz"; // Default to assistenz
-        localStorage.setItem('tts_preset', "assistenz");
-      }
+      
+      ttsStatusMessage.textContent = `${voices.length} Stimme(n) geladen.`;
+      ttsStatusMessage.style.color = '#10b981';
 
     } catch (error) {
       console.error('Error loading TTS voices:', error);
@@ -451,32 +508,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Load saved speed
-  const savedSpeed = parseFloat(localStorage.getItem('tts_speed')) || 1.0;
-  ttsSpeedInput.value = savedSpeed;
-  ttsSpeedValue.textContent = savedSpeed.toFixed(1);
+
 
   // Voice selection
-  ttsVoiceSelect.addEventListener('change', () => {
-    const voice = ttsVoiceSelect.value;
-    localStorage.setItem('tts_voice', voice);
-    ttsStatusMessage.textContent = `Stimme gespeichert: ${ttsVoiceSelect.options[ttsVoiceSelect.selectedIndex].text}`;
-    ttsStatusMessage.style.color = '#10b981';
-  });
+  ttsVoiceSelect.addEventListener('change', saveTtsSettings);
 
   // Speed adjustment
   ttsSpeedInput.addEventListener('input', () => {
-    const speed = parseFloat(ttsSpeedInput.value);
-    ttsSpeedValue.textContent = speed.toFixed(1);
-    localStorage.setItem('tts_speed', speed.toString());
+    ttsSpeedValue.textContent = parseFloat(ttsSpeedInput.value).toFixed(1);
+    saveTtsSettings();
   });
 
   // Preset selection
-  ttsPresetSelect.addEventListener('change', () => {
-    const preset = ttsPresetSelect.value;
-    localStorage.setItem('tts_preset', preset);
-    ttsStatusMessage.textContent = `Preset gespeichert: ${ttsPresetSelect.options[ttsPresetSelect.selectedIndex].text}`;
-    ttsStatusMessage.style.color = '#10b981';
+  ttsPresetSelect.addEventListener('change', saveTtsSettings);
+
+  // Piper TTS preference
+  usePiperTtsCheckbox.addEventListener('change', async () => {
+    await saveTtsSettings();
+    await loadTTSVoices();
+
+    // After reloading, check if the current selection is valid
+    const selectedOption = ttsVoiceSelect.querySelector(`option[value="${ttsVoiceSelect.value}"]`);
+    if (!selectedOption) {
+        console.log('Invalid voice selection after filter change. Setting default Piper voice.');
+        const defaultPiperVoice = 'piper_de_DE-thorsten-high';
+        if (ttsVoiceSelect.querySelector(`option[value="${defaultPiperVoice}"]`)) {
+            ttsVoiceSelect.value = defaultPiperVoice;
+            await saveTtsSettings(); // Save the new default selection
+        }
+    }
   });
 
   // Test button

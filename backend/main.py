@@ -1713,12 +1713,43 @@ from fastapi import Query
 async def get_tts_voices(lang: Optional[str] = None):
     """Get available TTS voices, optionally filtered by language."""
     try:
-        tts_service = get_tts_service()
+        config = load_config()
+        tts_service = get_tts_service(config=config)
         voices = tts_service.get_voices(lang=lang)
         return {"voices": voices}
     except Exception as e:
         logger.error(f"Error getting TTS voices: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to get voices: {e}")
+
+class TtsSettings(BaseModel):
+    voice: Optional[str] = None
+    speed: Optional[float] = None
+    preset: Optional[str] = None
+    use_piper_tts: Optional[bool] = None
+
+@app.post("/api/tts/settings")
+async def save_tts_settings(settings: TtsSettings):
+    config = load_config()
+    if "tts_settings" not in config:
+        config["tts_settings"] = {}
+    
+    if settings.voice is not None:
+        config["tts_settings"]["voice"] = settings.voice
+    if settings.speed is not None:
+        config["tts_settings"]["speed"] = settings.speed
+    if settings.preset is not None:
+        config["tts_settings"]["preset"] = settings.preset
+    if settings.use_piper_tts is not None:
+        config["tts_settings"]["use_piper_tts"] = settings.use_piper_tts
+        
+    save_config(config)
+    return {"message": "TTS settings saved successfully"}
+
+@app.get("/api/tts/settings")
+async def get_tts_settings():
+    config = load_config()
+    return config.get("tts_settings", {})
+
 
 
 @app.post("/api/tts/synthesize")
@@ -1749,10 +1780,11 @@ async def synthesize_speech(
         Audio file
     """
     try:
+        config = load_config()
         openai_api_key = keyring.get_password("Janus-Projekt", "openai")
         if not openai_api_key:
             logger.warning("OpenAI API key not found in keyring. OpenAI TTS might not work.")
-        tts_service = get_tts_service(openai_api_key=openai_api_key)
+        tts_service = get_tts_service(config=config, openai_api_key=openai_api_key)
         # Resolve voice_id
         final_voice_id = voice_id if voice_id else voice
 

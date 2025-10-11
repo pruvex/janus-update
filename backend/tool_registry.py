@@ -8,6 +8,7 @@ from backend.data import schemas
 from backend.services import filesystem_manager
 import base64
 import logging
+import binascii
 
 logger = logging.getLogger("janus_backend")
 
@@ -84,39 +85,61 @@ def create_file_tool(path: str, content: str | bytes = "", is_binary: bool = Fal
     """Erstellt eine neue Datei im Workspace."""
     return filesystem_manager.create_file(path, content, is_binary)
 
-def save_mp3_tool(path: str, content: str, llm_provider: Optional[str] = None, voice_id: Optional[str] = None):
-    """Speichert MP3-Audiodaten als Binärdatei im Workspace. Der Inhalt MUSS ein gültiger Base64-kodierter String der MP3-Daten sein. Wenn reiner Text übergeben wird, wird dieser automatisch in Sprache umgewandelt und gespeichert."""
-    
-    # Ensure content is bytes for base64.b64decode
-    if isinstance(content, str):
-        content_bytes = content.encode('utf-8') # Encode to bytes first
-    else:
-        content_bytes = content # Assume it's already bytes
+def save_mp3_tool(path: str, content: str, llm_provider: str | None = None, voice_id: str | None = None) -> str:
+    """
+    Speichert eine MP3-Datei. Der Inhalt kann entweder Base64-kodiert sein oder reiner Text,
+    der dann automatisch in Sprache umgewandelt wird.
+    """
+    from backend.services.tts_service import get_tts_service
+    from backend.main import load_config
+
+    config = load_config()
 
     try:
-        # Try to decode as base64
-        decoded_content = base64.b64decode(content_bytes)
-        # If successful, proceed with saving
-        return filesystem_manager.create_file(path, decoded_content, is_binary=True)
-    except (base64.binascii.Error, UnicodeDecodeError) as e:
-        # If decoding fails, assume it's raw text and try to synthesize
-        logger.warning(f"Content for save_mp3_tool is not valid base64 ({e}). Attempting to synthesize text.")
+        # Versuch 1: Angenommen, der Inhalt ist gültiger Base64-Code
+        logger.debug("Attempting to decode content as Base64.")
+        # Python's b64decode ist streng und benötigt korrekte "padding" Zeichen (=)
+        # Wir fügen sie hinzu, falls die KI sie vergessen hat.
+        missing_padding = len(content) % 4
+        if missing_padding:
+            content += '=' * (4 - missing_padding)
         
-        # Import tts_service here to avoid circular dependency if imported at top
-        from backend.services.tts_service import get_tts_service
-        tts_service = get_tts_service()
+        audio_bytes = base64.b64decode(content, validate=True)
+        logger.info("Base64 content successfully decoded.")
 
+    except (binascii.Error, ValueError) as e:
+        # Versuch 2: Fallback, wenn der Inhalt kein Base64, sondern reiner Text ist.
+        logger.warning(f"Content is not valid Base64 ({e}). Attempting to synthesize text directly.")
+        
         try:
-            # Synthesize the text (content is still the original string here)
-            audio_bytes = tts_service.synthesize(text=content, lang="de", fmt="mp3", llm_provider=llm_provider, voice=voice_id) # Assuming German and MP3
-            
-            # Save the synthesized audio
-            return filesystem_manager.create_file(path, audio_bytes, is_binary=True)
-        except Exception as tts_e:
-            logger.error(f"Failed to synthesize and save MP3 from raw text: {tts_e}")
-            return {
-                "output": f"Fehler beim Speichern der MP3-Datei. Der Inhalt war kein gültiger Base64-String und die Sprachsynthese des Textes ist fehlgeschlagen: {tts_e}"
-            }
+            # NEU & KORREKT: Rufen Sie den TTS-Service auf, um aus dem Text Audio zu erzeugen.
+            # Der `content` ist hier der zu sprechende Text.
+            tts_service_instance = get_tts_service(config=config)
+            audio_bytes = tts_service_instance.synthesize(
+                text=content,
+                voice=voice_id,  # Verwendet die vom Benutzer ausgewählte Stimme
+                provider=llm_provider, # Stellt sicher, dass der richtige Provider genutzt wird
+            )
+            if not audio_bytes:
+                raise ValueError("TTS synthesis returned empty audio data.")
+            logger.info("Successfully synthesized text to audio.")
+
+        except Exception as synth_error:
+            # Wenn auch die Synthese fehlschlägt, geben wir einen klaren Fehler zurück.
+            error_message = f"Failed to process content for MP3 saving. It was not valid Base64, and TTS synthesis also failed: {synth_error}"
+            logger.error(error_message)
+            return f'{{"error": "{error_message}"}}'
+
+    # Egal ob aus Base64 dekodiert oder neu synthetisiert, hier speichern wir die Binärdaten.
+    try:
+        filesystem_manager.create_file(path, content=audio_bytes, is_binary=True)
+        success_message = f"Datei '{path}' wurde erfolgreich erstellt."
+        logger.info(success_message)
+        return f'{{"output": "{success_message}"}}'
+    except Exception as file_error:
+        error_message = f"Failed to write MP3 file to '{path}': {file_error}"
+        logger.error(error_message)
+        return f'{{"error": "{error_message}"}}'
 
 
 def read_file_tool(path: str):
@@ -166,6 +189,19 @@ def list_allowed_workspaces_tool():
     return filesystem_manager.list_allowed_workspaces()
 
 
+# --- Hilfsfunktionen für den Rest der Anwendung ---
+
+
+def get_all_tool_definitions():
+    """Gibt die Definitionen aller registrierten Tools für das LLM zurück."""
+    return [tool.llm_definition for tool in TOOL_REGISTRY.values()]
+
+
+def get_all_tools() -> Dict[str, Tool]:
+    """Gibt das gesamte Tool-Registry-Wörterbuch zurück."""
+    return TOOL_REGISTRY
+
+
 # --- Registrierung aller Tools ---
 
 register_tool(Tool(func=generate_image_tool, args_schema=schemas.GenerateImageToolArgs))
@@ -195,16 +231,3 @@ register_tool(
 register_tool(
     Tool(func=create_pdf_from_markdown, args_schema=schemas.CreatePdfFromMarkdownArgs)
 )
-
-
-# --- Hilfsfunktionen für den Rest der Anwendung ---
-
-
-def get_all_tool_definitions():
-    """Gibt die Definitionen aller registrierten Tools für das LLM zurück."""
-    return [tool.llm_definition for tool in TOOL_REGISTRY.values()]
-
-
-def get_all_tools() -> Dict[str, Tool]:
-    """Gibt das gesamte Tool-Registry-Wörterbuch zurück."""
-    return TOOL_REGISTRY

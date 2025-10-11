@@ -175,17 +175,18 @@ class PiperTTS(TTSProviderBase):
             raise FileNotFoundError(f"Piper binary not found: {binary_path}")
         
 
-        # Get preset parameters
-        p = PRESETS.get(preset_name, PRESETS["assistenz"])
+        # Get preset parameters and adjust length_scale with speed
+        # p = PRESETS.get(preset_name, PRESETS["assistenz"])
+        length_scale = 1 / speed
 
         args = [
             binary_path,
             "-m", model_path,
             "-f", "wav",
-            "--length-scale", str(p["length_scale"]),
-            "--noise-scale", str(p["noise_scale"]),
-            "--noise-w", str(p["noise_w"]),
-            "--sentence-silence", str(p["sentence_silence"]),
+            "--length-scale", str(length_scale),
+            # "--noise-scale", str(p["noise_scale"]),
+            # "--noise-w", str(p["noise_w"]),
+            # "--sentence-silence", str(p["sentence_silence"]),
         ]
         
         # Add speaker if multi-speaker model
@@ -267,17 +268,18 @@ class PiperTTS(TTSProviderBase):
         
 
 
-        # Get preset parameters
-        p = PRESETS.get(preset_name, PRESETS["assistenz"])
+        # Get preset parameters and adjust length_scale with speed
+        # p = PRESETS.get(preset_name, PRESETS["assistenz"])
+        length_scale = 1 / speed
 
         args = [
             self.binary,
             "-m", model["model"],
             "-f", "wav",
-            "--length-scale", str(p["length_scale"]),
-            "--noise-scale", str(p["noise_scale"]),
-            "--noise-w", str(p["noise_w"]),
-            "--sentence-silence", str(p["sentence_silence"]),
+            "--length-scale", str(length_scale),
+            # "--noise-scale", str(p["noise_scale"]),
+            # "--noise-w", str(p["noise_w"]),
+            # "--sentence-silence", str(p["sentence_silence"]),
         ]
         
         if os.path.exists(model["json"]):

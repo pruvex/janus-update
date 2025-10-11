@@ -1,6 +1,6 @@
 import { API_BASE_URL } from './config.js';
 import { getCurrentChatId, loadChats } from './chat-manager.js';
-import { speakText, isTTSEnabled, initTTS } from './tts.js';
+import { speakText, isTTSEnabled, initTTS, ttsPreset } from './tts.js';
 
 // Configure marked.js for stricter Markdown parsing
 marked.setOptions({
@@ -337,8 +337,7 @@ export function appendMessage(sender, data) {
         .trim();
       
       if (plainText) {
-        const ttsPreset = localStorage.getItem('tts_preset') || "assistenz"; // Get preset from localStorage
-        speakText(plainText, 'de', ttsPreset); // Pass preset to speakText
+        speakText(plainText, 'de', ttsPreset || 'assistenz'); // Pass preset to speakText
       }
     }
   }
