@@ -18,6 +18,8 @@ def load_model_prices():
         return {}
 
 
+USD_TO_EUR_RATE = 0.9009 # 1 Euro = 1.11 Dollar, also 1 Dollar = 1/1.11 Euro
+
 MODEL_PRICES = load_model_prices()
 
 
@@ -49,13 +51,13 @@ def calculate_cost(model_id, usage_data=None, custom_prompt=None):
         total_cost = input_cost + output_cost
 
         usage = {"input_tokens": input_tokens, "output_tokens": output_tokens}
-        cost = {"total_cost": total_cost}
+        cost = {"total_cost": total_cost * USD_TO_EUR_RATE} # Umrechnung in Euro
 
     elif model_type == "image":
         image_cost = model_info.get("cost_per_image", 0)
         total_cost = image_cost
 
         usage = {"image_quality": "standard", "image_size": "1024x1024"}
-        cost = {"image_cost": image_cost, "total_cost": total_cost}
+        cost = {"image_cost": image_cost * USD_TO_EUR_RATE, "total_cost": total_cost * USD_TO_EUR_RATE} # Umrechnung in Euro
 
     return usage, cost

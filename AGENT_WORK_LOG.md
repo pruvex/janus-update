@@ -118,3 +118,45 @@
     *   Ein neuer Git-Branch wird erstellt.
 
 **Ergebnis:** Die TTS-Optimierung wurde erfolgreich implementiert und getestet.
+
+### Zyklus-Abschluss: Behebung des GPT-5 Modellverhaltens (Problem an AI Studio weitergeleitet)
+
+**Ziel:** Das unerwartete Verhalten des GPT-5 Modells beheben, bei dem es Chat-Zusammenfassungen anstatt direkter Antworten lieferte und keine Websuchen anstieß.
+
+**Schritte:**
+
+1.  **Validierung des Ausgangszustands:**
+    *   `python health_check.py` wurde erfolgreich ausgeführt.
+
+2.  **Planung & Recherche:**
+    *   Identifizierung der relevanten Dateien: `backend/config/model_catalog.json`, `backend/services/llm_gateway.py`, `backend/llm_providers/openai_service.py`, `backend/main.py`, `backend/tool_registry.py`, `backend/services/websearch.py`.
+    *   Analyse der `model_catalog.json` zeigte, dass "gpt-5" als `id` definiert ist und dem `openai` Provider zugeordnet ist.
+    *   Analyse der `llm_gateway.py` zeigte die Logik für die `_is_user_intent_aligned_with_tool` Funktion, die Tool-Aufrufe abbricht, wenn die Benutzerabsicht nicht übereinstimmt.
+    *   Analyse der `openai_service.py` zeigte, dass für das Modell "gpt-5" die `tool_choice` auf "required" gesetzt war, was das Modell zwang, ein Tool aufzurufen. Dies wurde auf "auto" geändert.
+    *   Analyse der `main.py` zeigte die `tool_directive` im System-Prompt. Diese wurde angepasst, um die Nutzung von `perform_websearch` für aktuelle Informationen stärker zu betonen.
+
+3.  **Implementierung & Arbeits-Logbuch:**
+    *   Die `tool_choice`-Einstellung für das "gpt-5"-Modell in `backend/llm_providers/openai_service.py` wurde von "required" auf "auto" geändert.
+    *   Die `tool_directive` im System-Prompt in `backend/main.py` wurde angepasst, um die Nutzung von `perform_websearch` für aktuelle Informationen stärker zu betonen.
+
+4.  **Dynamische Verifizierung (Funktionstest):**
+    *   Ein temporärer Test `backend/tests/temp_test_gpt5_websearch.py` wurde erstellt, um die Änderung zu verifizieren.
+    *   Der Test schlug wiederholt fehl mit `AssertionError: Expected 'perform_websearch' to be called once. Called 0 times.`.
+    *   Mehrere Versuche, den Mock-Pfad zu korrigieren, waren erfolglos.
+
+5.  **Aufräumen & Finale Validierung:**
+    *   Die temporäre Testdatei `backend/tests/temp_test_gpt5_websearch.py` wurde gelöscht.
+    *   `python health_check.py` wurde erneut erfolgreich ausgeführt.
+
+6.  **Archivierung & Lockfile-Garantie:**
+    *   `frontend/package-lock.json` existiert und ist nicht ignoriert.
+    *   `git add .` wurde ausgeführt.
+    *   Commit wurde erstellt.
+
+7.  **Dokumentation aktualisieren:**
+    *   Dieser Eintrag wird in `AGENT_WORK_LOG.md` hinzugefügt.
+
+8.  **Vorbereitung für die Zukunft:**
+    *   Ein neuer Git-Branch wird erstellt.
+
+**Ergebnis:** Das Problem konnte nicht eigenständig gelöst werden und wurde zur weiteren Diagnose und Lösung an AI Studio weitergeleitet.

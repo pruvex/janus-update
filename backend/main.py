@@ -644,8 +644,9 @@ async def handle_chat_request(
                     "**WERKZEUGNUTZUNGS-DIREKTIVE:** Deine primäre Informationsquelle ist die **FAKTENGRUNDLAGE**. "
                     "Wenn eine Frage nach aktuellen Informationen (nach 2023), Preisen, Personen oder spezifischen Fakten gestellt wird, "
                     "prüfe **ZUERST**, ob die Antwort bereits in der FAKTENGRUNDLAGE enthalten ist. "
-                    "**NUR WENN DIE FAKTENGRUNDLAGE KEINE ANTWORT LIEFERT**, benutze das 'perform_websearch'-Werkzeug, um die Information zu finden. "
-                    "Antworte NICHT aus deinem internen Wissen, wenn die Faktenbasis oder eine Websuche eine bessere Antwort liefern kann."
+                    "**WENN DIE FAKTENGRUNDLAGE KEINE ANTWORT LIEFERT ODER DIE INFORMATIONEN VERALTET SIND**, "
+                    "MUSST du das 'perform_websearch'-Werkzeug benutzen, um die Information zu finden. "
+                    "Antworte NIEMALS aus deinem internen Wissen, wenn eine Websuche eine aktuellere oder präzisere Antwort liefern kann."
                 )
                 
                 # --- START: NEUE, ENTSCHEIDENDE REGEL ---
