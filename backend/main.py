@@ -62,6 +62,15 @@ from backend.utils.paths import get_app_data_dir, resource_path
 from backend.tool_registry import TOOL_REGISTRY
 from backend.services.creative_writer import creative_writer
 
+def is_creative_writing_request(prompt: str) -> bool:
+    """Prüft, ob ein Prompt eine kreative Schreibaufgabe ist."""
+    prompt_lower = prompt.lower()
+    creative_keywords = [
+        "schreib", "erzähl", "dichte", "gedicht", "geschichte", "haiku",
+        "erfinde", "reime", "songtext", "ballade", "märchen", "dialog"
+    ]
+    return any(keyword in prompt_lower for keyword in creative_keywords)
+
 
 def is_confirmation(prompt: str) -> bool:
     """Prüft, ob ein User-Prompt eine positive Bestätigung ist. Toleriert Tippfehler."""
@@ -473,6 +482,19 @@ async def index_folder(request: RagFolderRequest):
         )
 
 
+def is_creative_writing_request(prompt: str) -> bool:
+    """
+    Prüft, ob ein Prompt eine kreative Schreibaufgabe ist.
+    Ein Befehl zum Speichern ist KEINE kreative Aufgabe.
+    """
+    prompt_lower = prompt.lower().strip()
+    creative_keywords = [
+        "schreib", "erzähl", "dichte", "gedicht", "geschichte", "haiku",
+        "erfinde", "reime", "songtext", "ballade", "märchen", "dialog"
+    ]
+    # Die Anfrage ist nur kreativ, wenn sie mit einem dieser Wörter BEGINNT.
+    return any(prompt_lower.startswith(keyword) for keyword in creative_keywords)
+
 # --- GOLD STANDARD SWITCH IMPLEMENTATION ---
 async def handle_chat_request(
     request: ChatRequest,
@@ -483,7 +505,108 @@ async def handle_chat_request(
     # --- START: Adapt for new content structure ---
     user_prompt_text = ""
     image_data = None
+    llm_response = {}
+
+    if request.content:
+        for part in request.content:
+            if part.type == "text":
+                user_prompt_text = part.text
+            elif part.type == "image_url" and part.image_url:
+                image_data = part.image_url
+        if not user_prompt_text:
+            user_prompt_text = "Analyze the image."
+    elif request.prompt:
+        user_prompt_text = request.prompt
+
+    if not user_prompt_text:
+        raise HTTPException(status_code=400, detail="No prompt provided.")
+
+    user_prompt_text = user_prompt_text.encode("utf-8").decode("utf-8")
+
+    api_key = keyring.get_password("Janus-Projekt", request.provider)
+    if not api_key:
+        raise HTTPException(status_code=400, detail="API Key not found.")
+
+    check_budget_and_raise_if_exceeded(db)
+
+    is_new_chat = False
+    if request.chat_id is None:
+        is_new_chat = True
+        new_chat = crud.create_chat(db, title="New Chat")
+        request.chat_id = new_chat.id
+        logger.info(f"New chat created with ID: {request.chat_id}")
+
+    messages_in_chat_from_db = crud.get_messages_by_chat_id(db, request.chat_id)
+
+    if not image_data:
+        logger.info("No new image uploaded. Checking history for existing image context.")
+        load_image_from_history = False
+        is_explicitly_related = _is_explicitly_image_related_task(user_prompt_text)
+        is_explicitly_unrelated = _is_image_unrelated_task(user_prompt_text)
+
+        if is_explicitly_related:
+            load_image_from_history = True
+            logger.info("Explicit image-related prompt detected. Forcing visual context.")
+        elif not is_explicitly_unrelated:
+            load_image_from_history = True
+        else:
+            logger.info("Task-oriented prompt detected (file ops/web search). Suppressing visual context.")
+
+        if load_image_from_history:
+            most_recent_image_path_relative = _get_most_recent_image_path_from_history(messages_in_chat_from_db)
+            if most_recent_image_path_relative:
+                try:
+                    base_image_dir = os.path.join(get_app_data_dir(), "images")
+                    image_filename = most_recent_image_path_relative.replace("/user_images/", "")
+                    full_image_path = os.path.join(base_image_dir, image_filename)
+                    if os.path.exists(full_image_path):
+                        logger.info(f"Reloading previous image: {full_image_path}")
+                        with open(full_image_path, "rb") as f:
+                            encoded_string = base64.b64encode(f.read()).decode("utf-8")
+                            image_data = f"data:image/png;base64,{encoded_string}"
+                    else:
+                        logger.warning(f"Image path in history, but file not found: {full_image_path}")
+                except Exception as e:
+                    logger.error(f"Error reloading image from history: {e}", exc_info=True)
+                    image_data = None
+
+    local_user_image_path = None
+    if request.content and any(part.type == "image_url" for part in request.content):
+        try:
+            header, encoded = image_data.split(",", 1)
+            image_bytes = base64.b64decode(encoded)
+            local_user_image_path = image_manager.save_image_from_bytes(
+                image_bytes, description="user-upload", subdirectory="uploads"
+            )
+            logger.info(f"User-uploaded image saved to: {local_user_image_path}")
+        except Exception as e:
+            logger.error(f"Could not save user-uploaded image: {e}", exc_info=True)
+            local_user_image_path = None
+
+    crud.create_message(
+        db, chat_id=request.chat_id, sender="user", content=user_prompt_text, image_path=local_user_image_path
+    )
+
+    config = load_config()
+    personalities = load_personalities()
+    active_personality_id = config.get("active_personality", "ai_assistant")
+    system_message = None
+    for p in personalities:
+        if p.get("id") == active_personality_id:
+            persona_prompt = p.get("prompt")
+            if persona_prompt:
+                # ... [Persona-Prompt Erstellung bleibt gleich] ...
+                system_message = {"role": "system", "content": persona_prompt}
+                logger.info(f"Using persona prompt for '{active_personality_id}'")
+            break
+
+    messages_in_chat = crud.get_messages_by_chat_id(db, request.chat_id)
+    image_data = None
     llm_response = {}  # Initialize llm_response to prevent UnboundLocalError
+    
+    # Get active personality
+    config = load_config()
+    active_personality_id = config.get("active_personality", "ai_assistant")
 
     if request.content:
         # New format with content list
@@ -1047,22 +1170,57 @@ async def handle_chat_request(
     cost = {}
     response_type = "text"  # Default to text for creative writer
 
-    if active_personality_id == "creative_writer":
-        logger.info("Creative Writer persona active. Calling creative_writer pipeline.")
+    final_answer = ""
+    local_image_path = None
+    usage = {}
+    cost = {}
+    response_type = "text"
+
+    is_creative_request = is_creative_writing_request(user_prompt_text)
+
+    # Die intelligente Weiche
+    if active_personality_id == "creative_writer" and is_creative_request:
+        logger.info("Creative Writer persona active for creative task. Calling creative_writer pipeline.")
         creative_style = _extract_creative_style(user_prompt_text)
         logger.info(f"Creative Writer - Extracted style: {creative_style}")
-        final_answer = await creative_writer(
-            user_prompt_text,
-            provider=request.provider,
-            model=request.model,
-            api_key=api_key,
-            style=creative_style,
-        )
-        logger.info(f"Final answer immediately after creative_writer: '{final_answer}'")
-        # Für die creative_writer Pipeline setzen wir usage/cost manuell.
+        try:
+            final_answer = await creative_writer(
+                user_prompt_text,
+                provider=request.provider,
+                model=request.model,
+                api_key=api_key,
+                style=creative_style,
+            )
+        except Exception as e:
+            logger.error(f"Error in creative writing pipeline: {e}", exc_info=True)
+            final_answer = "Entschuldigung, beim Verarbeiten deiner kreativen Anfrage ist ein Fehler aufgetreten. Bitte versuche es später erneut."
+        
         usage = {"prompt_tokens": 0, "completion_tokens": 0, "model": request.model}
         cost = {"total_cost": 0}
-    else:  # Standard-Logik für alle anderen Personas
+    else:
+        if active_personality_id == "creative_writer" and not is_creative_request:
+            logger.info("Creative Writer persona performing a tool-based or follow-up action.")
+
+        # KORREKTUR: Hier wird die korrekte Funktion `reason_and_respond` aufgerufen.
+        llm_response = await llm_gateway.reason_and_respond(
+            user_prompt=user_prompt_text,
+            chat_history=messages_for_llm, # Stellen Sie sicher, dass `messages_for_llm` hier korrekt befüllt ist
+            memory_context=memory_context, # Stellen Sie sicher, dass `memory_context` hier korrekt befüllt ist
+            db=db,
+            api_key=api_key,
+            model=request.model,
+            provider=request.provider,
+            context_manager=context_manager,
+            user_name=user_name,
+            chat_id=request.chat_id,
+            image_data=image_data,
+            is_image_analysis_request=is_image_analysis_request,
+            disable_tools=is_conceptual_conversation,
+        )
+        # Der Rest des Codes zur Verarbeitung der `llm_response` bleibt exakt so wie er war.
+        usage = llm_response.get("usage", {})
+        cost = llm_response.get("cost", {})
+        response_type = llm_response.get("type")
         llm_response = await llm_gateway.reason_and_respond(
             user_prompt=user_prompt_text,
             chat_history=messages_for_llm,
@@ -1723,6 +1881,16 @@ async def transcribe_audio(file: UploadFile = File(...)):
 # --- TTS API ENDPOINTS ---
 from backend.services.tts_service import get_tts_service
 from fastapi import Query
+
+
+def is_creative_writing_request(prompt: str) -> bool:
+    """Prüft, ob ein Prompt eine kreative Schreibaufgabe ist."""
+    prompt_lower = prompt.lower()
+    creative_keywords = [
+        "schreib", "erzähl", "dichte", "gedicht", "geschichte", "haiku",
+        "erfinde", "reime", "songtext", "ballade", "märchen", "dialog"
+    ]
+    return any(keyword in prompt_lower for keyword in creative_keywords)
 
 @app.get("/api/tts/voices")
 async def get_tts_voices(lang: Optional[str] = None):
