@@ -163,33 +163,36 @@ class TTSService:
             try:
                 logger.info(f"Synthesizing with {prov_name}: {text[:50]}...")
                 audio_bytes = prov.synthesize(
-                    text=normalized_text, voice=speaker, lang=lang, speed=speed, fmt=fmt, preset_name=preset_name
+                    text=normalized_text, voice=speaker, lang=lang, speed=speed, fmt=fmt
                 )
                 
+                if not audio_bytes:
+                    logger.warning(f"TTS provider {prov_name} returned no audio data.")
+                    continue
+
                 cache_file.write_bytes(audio_bytes)
                 elapsed = time.time() - start_time
                 logger.info(f"TTS synthesis completed in {elapsed:.2f}s ({len(audio_bytes)} bytes)")
 
-                # --- NEU: KOSTEN-TRACKING FÜR OPENAI TTS ---
                 if prov_name == "openai":
                     try:
                         tts_model_id = "gpt-4o-mini-tts"
                         usage_data = {"input_characters": len(normalized_text)}
-                        
                         usage, cost = cost_calculator.calculate_cost(tts_model_id, usage_data)
                         
                         if cost.get("total_cost", 0) > 0:
                             database.save_cost_entry(
                                 date=datetime.now(),
                                 model=tts_model_id,
-                                input_tokens=usage.get("input_tokens", 0), # Hier sind es Zeichen
+                                input_tokens=usage.get("input_tokens", 0),
                                 output_tokens=0,
+                                image_quality=None,  # Standardwert für Nicht-Bild-Modelle
+                                image_cost=0,        # Standardwert für Nicht-Bild-Modelle
                                 total_cost=cost.get("total_cost", 0),
                             )
                             logger.info(f"Successfully tracked TTS cost: {cost.get('total_cost')} EUR")
                     except Exception as e:
                         logger.error(f"Failed to track TTS cost: {e}", exc_info=True)
-                # --- ENDE NEUER BLOCK ---
 
                 return audio_bytes
             except Exception as e:
