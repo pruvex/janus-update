@@ -103,5 +103,14 @@
         "cost_per_token_output": 0.000000375,
         "desc": "Gemini-Modell für multimodale Eingaben (Text und Bild).",
         "capabilities": ["chat", "image_generation"]
+    },
+    {
+        "id": "websearch",
+        "name": "Web Search",
+        "provider": "internal",
+        "type": "websearch",
+        "cost_per_query": 0.01,
+        "desc": "Kosten für eine Websuche.",
+        "capabilities": ["web_search"]
     }
 ]

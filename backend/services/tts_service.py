@@ -21,7 +21,7 @@ TTS_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 class TTSService:
     """Text-to-Speech service with caching and provider fallback."""
     
-    def __init__(self, config: Dict, openai_api_key: Optional[str] = None):
+    def __init__(self, config: Dict, tts_settings: Dict, openai_api_key: Optional[str] = None):
         self.config = config
         self.use_piper_tts = self.config.get("tts_settings", {}).get("use_piper_tts", False)
         self.silero = SileroTTS()
@@ -179,8 +179,11 @@ class TTSService:
         
         # Select default voice if not specified
         if not voice:
-            # Use Piper by default if available, otherwise Silero
-            if self.piper.is_available() and lang.startswith("de"):
+            # Use the voice from tts_settings if available
+            if self.tts_settings.get("voice"):
+                voice = self.tts_settings.get("voice")
+            # Otherwise, use Piper by default if available, otherwise Silero
+            elif self.piper.is_available() and lang.startswith("de"):
                 voice = "piper_de_DE-thorsten-medium"  # Medium is more natural than high
             elif lang.startswith("de"):
                 voice = "de_random"
@@ -263,21 +266,8 @@ _tts_service = None
 
 
 def get_tts_service(config: Dict, openai_api_key: Optional[str] = None) -> TTSService:
-
-
     """Get or create TTS service singleton."""
-
-
     global _tts_service
-
-
-    # For simplicity, we re-initialize every time to ensure config changes are picked up.
-
-
-    # A more complex implementation could check if the config has actually changed.
-
-
-    _tts_service = TTSService(config=config, openai_api_key=openai_api_key)
-
-
+    tts_settings = config.get("tts_settings", {})
+    _tts_service = TTSService(config=config, tts_settings=tts_settings, openai_api_key=openai_api_key)
     return _tts_service

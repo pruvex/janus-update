@@ -17,8 +17,8 @@ def load_model_prices():
         logger.error(f"Error loading model catalog: {e}")
         return {}
 
-
-USD_TO_EUR_RATE = 0.9009 # 1 Euro = 1.11 Dollar, also 1 Dollar = 1/1.11 Euro
+# KORREKTUR: Die Variable wird jetzt konsistent verwendet.
+USD_TO_EUR_CONVERSION_RATE = 0.9009 # 1 Euro = 1.11 Dollar, also 1 Dollar = 1/1.11 Euro
 
 MODEL_PRICES = load_model_prices()
 
@@ -32,32 +32,48 @@ def calculate_cost(model_id, usage_data=None, custom_prompt=None):
     model_type = model_info.get("type")
 
     usage = {}
-    cost = {}
+    cost_usd = 0.0
 
     if model_type == "text" and usage_data is not None:
         if isinstance(usage_data, dict):
             input_tokens = usage_data.get("prompt_tokens", 0)
             output_tokens = usage_data.get("completion_tokens", 0)
-        else:  # Assume it's an object like OpenAI's usage object
+        else:
             input_tokens = usage_data.prompt_tokens
             output_tokens = usage_data.completion_tokens
 
         input_cost_per_token = model_info.get("cost_per_token_input", 0)
         output_cost_per_token = model_info.get("cost_per_token_output", 0)
 
-        input_cost = input_tokens * input_cost_per_token
-        output_cost = output_tokens * output_cost_per_token
-
-        total_cost = input_cost + output_cost
+        input_cost_usd = input_tokens * input_cost_per_token
+        output_cost_usd = output_tokens * output_cost_per_token
+        
+        cost_usd = input_cost_usd + output_cost_usd
 
         usage = {"input_tokens": input_tokens, "output_tokens": output_tokens}
-        cost = {"total_cost": total_cost * USD_TO_EUR_RATE} # Umrechnung in Euro
 
     elif model_type == "image":
-        image_cost = model_info.get("cost_per_image", 0)
-        total_cost = image_cost
+        image_cost_usd = model_info.get("cost_per_image", 0)
+        cost_usd = image_cost_usd
 
         usage = {"image_quality": "standard", "image_size": "1024x1024"}
-        cost = {"image_cost": image_cost * USD_TO_EUR_RATE, "total_cost": total_cost * USD_TO_EUR_RATE} # Umrechnung in Euro
+
+    elif model_type == "websearch": # NEU: Websuchkosten
+        cost_usd = model_info.get("cost_per_query", 0)
+        usage = {"query_count": 1} # Eine Websuche
+
+    # Umrechnung von USD in EUR am Ende der Berechnung
+    if USD_TO_EUR_CONVERSION_RATE > 0:
+        total_cost_eur = cost_usd * USD_TO_EUR_CONVERSION_RATE
+    else:
+        total_cost_eur = cost_usd
+        
+    cost = {"total_cost": total_cost_eur}
+
+    # KORREKTUR: Bei Bildern muss auch der `image_cost` umgerechnet werden.
+    if model_type == "image":
+        cost["image_cost"] = cost_usd * USD_TO_EUR_CONVERSION_RATE
+    elif model_type == "websearch": # NEU: Websuchkosten
+        cost["query_cost"] = cost_usd * USD_TO_EUR_CONVERSION_RATE
 
     return usage, cost

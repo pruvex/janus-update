@@ -160,3 +160,47 @@
     *   Ein neuer Git-Branch wird erstellt.
 
 **Ergebnis:** Das Problem konnte nicht eigenständig gelöst werden und wurde zur weiteren Diagnose und Lösung an AI Studio weitergeleitet.
+
+### Zyklus-Abschluss: Websuchkosten-Tracking (Problem an AI Studio weitergeleitet)
+
+**Ziel:** Die Kostenverfolgung für Websuchen wiederherstellen und sicherstellen, dass sie im Kosten-Deep-Dive sichtbar sind.
+
+**Schritte:**
+
+1.  **Validierung des Ausgangszustands:**
+    *   `python health_check.py` wurde erfolgreich ausgeführt.
+
+2.  **Planung & Recherche:**
+    *   Identifizierung der relevanten Dateien: `backend/services/cost_calculator.py`, `backend/services/websearch.py`, `backend/main.py`, `backend/data/database.py`, `backend/data/schemas.py`.
+    *   `backend/services/cost_calculator.py` wurde angepasst, um einen neuen `model_type` "websearch" zu berücksichtigen.
+    *   `backend/config/model_catalog.json` wurde angepasst, um den neuen `model_id` "websearch" mit den entsprechenden Kosten zu definieren.
+    *   `backend/services/websearch.py` wurde angepasst, um die `model_id` "websearch" an `calculate_cost` zu übergeben und die Kosten zurückzugeben.
+    *   `backend/main.py` wurde angepasst, um die von `perform_websearch` zurückgegebenen Kosten an `database.save_cost_entry` zu übergeben, einschließlich der fehlenden Argumente `output_tokens`, `image_quality` und `image_cost` mit Standardwerten.
+
+3.  **Implementierung & Arbeits-Logbuch:**
+    *   Die `calculate_cost` Funktion in `backend/services/cost_calculator.py` wurde erweitert, um einen neuen `model_type` "websearch" zu berücksichtigen.
+    *   Ein neuer `model_id` "websearch" mit `cost_per_query` von 0.01 USD wurde in `backend/config/model_catalog.json` hinzugefügt.
+    *   Die `perform_websearch` Funktion in `backend/services/websearch.py` wurde angepasst, um `calculate_cost` mit dem `model_id` "websearch" aufzurufen und die Kosten zurückzugeben.
+    *   Die `handle_chat_request` Funktion in `backend/main.py` wurde angepasst, um die von `perform_websearch` zurückgegebenen Kosten an `database.save_cost_entry` zu übergeben, einschließlich der fehlenden Argumente `output_tokens`, `image_quality` und `image_cost` mit Standardwerten.
+
+4.  **Dynamische Verifizierung (Funktionstest):**
+    *   Ein temporärer Test `backend/tests/test_websearch_cost_tracking_fix.py` wurde erstellt, um die Änderung zu verifizieren.
+    *   Der Test schlug wiederholt fehl mit `AssertionError: Expected 'perform_websearch' to be called once. Called 0 times.`.
+    *   Mehrere Versuche, den Mock-Pfad zu korrigieren, waren erfolglos.
+
+5.  **Aufräumen & Finale Validierung:**
+    *   Die temporäre Testdatei `backend/tests/test_websearch_cost_tracking_fix.py` wurde gelöscht.
+    *   `python health_check.py` wurde erneut erfolgreich ausgeführt.
+
+6.  **Archivierung & Lockfile-Garantie:**
+    *   `frontend/package-lock.json` existiert und ist nicht ignoriert.
+    *   `git add .` wurde ausgeführt.
+    *   Commit wurde erstellt.
+
+7.  **Dokumentation aktualisieren:**
+    *   Dieser Eintrag wird in `AGENT_WORK_LOG.md` hinzugefügt.
+
+8.  **Vorbereitung für die Zukunft:**
+    *   Ein neuer Git-Branch wird erstellt.
+
+**Ergebnis:** Das Problem konnte nicht eigenständig gelöst werden und wurde zur weiteren Diagnose und Lösung an AI Studio weitergeleitet.

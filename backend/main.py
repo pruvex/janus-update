@@ -1171,6 +1171,20 @@ async def handle_chat_request(
                         "text", "Keine Ergebnisse gefunden."
                     )
                     web_search_urls = tool_output_raw.get("urls", [])
+
+                    # NEU: Websuchkosten speichern
+                    websearch_usage = tool_output_raw.get("usage", {})
+                    websearch_cost = tool_output_raw.get("cost", {})
+                    if websearch_cost.get("total_cost", 0) > 0:
+                        database.save_cost_entry(
+                            date=datetime.now(),
+                            model="websearch", # Fester model_id für Websuche
+                            input_tokens=websearch_usage.get("query_count", 0), # query_count als input_tokens
+                            output_tokens=0, # NEU: Standardwert für Websuche
+                            image_quality=None, # NEU: Standardwert für Websuche
+                            image_cost=0, # NEU: Standardwert für Websuche
+                            total_cost=websearch_cost.get("total_cost", 0),
+                        )
                     summarization_prompt = (
                         "Hier sind die Ergebnisse einer Websuche. Formuliere basierend auf diesen Informationen eine klare und hilfreiche Antwort auf die ursprüngliche Frage des Benutzers. "
                         "Gib am Ende deiner Antwort einen Abschnitt 'Quellen:' an und liste dort die gefundenen URLs auf.\n\n"
@@ -1785,9 +1799,13 @@ async def synthesize_speech(
         openai_api_key = keyring.get_password("Janus-Projekt", "openai")
         if not openai_api_key:
             logger.warning("OpenAI API key not found in keyring. OpenAI TTS might not work.")
-        tts_service = get_tts_service(config=config, openai_api_key=openai_api_key)
+        tts_service = get_tts_service(config, openai_api_key)
+        
         # Resolve voice_id
         final_voice_id = voice_id if voice_id else voice
+        if not final_voice_id:
+            tts_settings = config.get("tts_settings", {})
+            final_voice_id = tts_settings.get("voice")
 
         audio_bytes = tts_service.synthesize(
             text=text,
