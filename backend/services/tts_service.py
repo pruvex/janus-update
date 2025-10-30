@@ -23,6 +23,7 @@ class TTSService:
     
     def __init__(self, config: Dict, tts_settings: Dict, openai_api_key: Optional[str] = None):
         self.config = config
+        self.tts_settings = tts_settings
         self.use_piper_tts = self.config.get("tts_settings", {}).get("use_piper_tts", False)
         self.silero = SileroTTS()
         self.piper = PiperTTS()

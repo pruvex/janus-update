@@ -98,8 +98,6 @@ def save_mp3_tool(path: str, content: str, llm_provider: str | None = None, voic
     try:
         # Versuch 1: Angenommen, der Inhalt ist gültiger Base64-Code
         logger.debug("Attempting to decode content as Base64.")
-        # Python's b64decode ist streng und benötigt korrekte "padding" Zeichen (=)
-        # Wir fügen sie hinzu, falls die KI sie vergessen hat.
         missing_padding = len(content) % 4
         if missing_padding:
             content += '=' * (4 - missing_padding)
@@ -112,22 +110,26 @@ def save_mp3_tool(path: str, content: str, llm_provider: str | None = None, voic
         logger.warning(f"Content is not valid Base64 ({e}). Attempting to synthesize text directly.")
         
         try:
-            # NEU & KORREKT: Rufen Sie den TTS-Service auf, um aus dem Text Audio zu erzeugen.
-            # Der `content` ist hier der zu sprechende Text.
+            # KORREKTUR: Wir holen die Service-Instanz korrekt mit allen Einstellungen.
+            tts_settings = config.get("tts_settings", {})
             tts_service_instance = get_tts_service(config=config)
+
+            # Wir verwenden die vom LLM vorgeschlagene Stimme (voice_id),
+            # aber als Fallback die in der UI eingestellte Stimme.
+            final_voice = voice_id or tts_settings.get("voice")
+
             audio_bytes = tts_service_instance.synthesize(
                 text=content,
-                voice=voice_id,  # Verwendet die vom Benutzer ausgewählte Stimme
-                provider=llm_provider, # Stellt sicher, dass der richtige Provider genutzt wird
+                voice=final_voice, 
+                provider=llm_provider,
             )
             if not audio_bytes:
                 raise ValueError("TTS synthesis returned empty audio data.")
-            logger.info("Successfully synthesized text to audio.")
+            logger.info("Successfully synthesized text to audio using voice: %s", final_voice)
 
         except Exception as synth_error:
-            # Wenn auch die Synthese fehlschlägt, geben wir einen klaren Fehler zurück.
             error_message = f"Failed to process content for MP3 saving. It was not valid Base64, and TTS synthesis also failed: {synth_error}"
-            logger.error(error_message)
+            logger.error(error_message, exc_info=True) # Log mit Stack Trace
             return f'{{"error": "{error_message}"}}'
 
     # Egal ob aus Base64 dekodiert oder neu synthetisiert, hier speichern wir die Binärdaten.

@@ -1736,34 +1736,9 @@ async def get_tts_voices(lang: Optional[str] = None):
         logger.error(f"Error getting TTS voices: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to get voices: {e}")
 
-class TtsSettings(BaseModel):
-    voice: Optional[str] = None
-    speed: Optional[float] = None
-    preset: Optional[str] = None
-    use_piper_tts: Optional[bool] = None
 
-@app.post("/api/tts/settings")
-async def save_tts_settings(settings: TtsSettings):
-    config = load_config()
-    if "tts_settings" not in config:
-        config["tts_settings"] = {}
-    
-    if settings.voice is not None:
-        config["tts_settings"]["voice"] = settings.voice
-    if settings.speed is not None:
-        config["tts_settings"]["speed"] = settings.speed
-    if settings.preset is not None:
-        config["tts_settings"]["preset"] = settings.preset
-    if settings.use_piper_tts is not None:
-        config["tts_settings"]["use_piper_tts"] = settings.use_piper_tts
-        
-    save_config(config)
-    return {"message": "TTS settings saved successfully"}
 
-@app.get("/api/tts/settings")
-async def get_tts_settings():
-    config = load_config()
-    return config.get("tts_settings", {})
+
 
 
 
@@ -1771,59 +1746,54 @@ async def get_tts_settings():
 async def synthesize_speech(
     text: str,
     lang: str = Query("de"),
-    voice: Optional[str] = None,
-    speed: float = Query(1.0, ge=0.5, le=2.0),
+    # Die folgenden Parameter sind jetzt optional, da wir sie aus der Persönlichkeit holen
+    voice_id: Optional[str] = None,
+    speed: Optional[float] = None,
     fmt: str = Query("mp3"),
     provider: Optional[str] = None,
-    stream: bool = False,
-    preset: Optional[str] = None,
-    voice_id: Optional[str] = None
+    stream: bool = False
 ):
     """
-    Synthesize speech from text using TTS.
-    
-    Args:
-        text: Text to synthesize
-        lang: Language code (de, en)
-        voice: Voice ID (optional)
-        speed: Speech speed 0.5-2.0
-        fmt: Audio format (mp3, wav, ogg)
-        provider: TTS provider (optional)
-        stream: Enable streaming (if supported)
-    
-    Returns:
-        Audio file
+    Synthesize speech from text using TTS. The voice and speed are now
+    primarily determined by the active personality's settings.
     """
     try:
         config = load_config()
+        personalities = load_personalities()
         openai_api_key = keyring.get_password("Janus-Projekt", "openai")
         if not openai_api_key:
             logger.warning("OpenAI API key not found in keyring. OpenAI TTS might not work.")
-        tts_service = get_tts_service(config, openai_api_key)
         
-        # Resolve voice_id
-        final_voice_id = voice_id if voice_id else voice
-        if not final_voice_id:
-            tts_settings = config.get("tts_settings", {})
-            final_voice_id = tts_settings.get("voice")
+        tts_service = get_tts_service(config, openai_api_key)
+
+        # --- NEUE LOGIK: Lade TTS-Einstellungen aus der aktiven Persönlichkeit ---
+        active_personality_id = config.get("active_personality", "ai_assistant")
+        active_personality = next((p for p in personalities if p.get("id") == active_personality_id), None)
+
+        # Standard-Fallback-Werte, falls in der JSON etwas fehlt
+        default_settings = {"voice": "openai_alloy", "speed": 1.0}
+        
+        # Lade die Einstellungen aus der Persönlichkeit oder nutze den Fallback
+        personality_tts_settings = active_personality.get("tts_settings", default_settings)
+        
+        # Überschreibe nur, wenn explizit Parameter übergeben wurden (z.B. für Tests),
+        # ansonsten nutze die Einstellungen der Persönlichkeit.
+        final_voice_id = voice_id or personality_tts_settings.get("voice")
+        final_speed = speed or personality_tts_settings.get("speed")
+        
+        logger.info(f"Synthesizing with personality '{active_personality_id}': voice='{final_voice_id}', speed={final_speed}")
 
         audio_bytes = tts_service.synthesize(
             text=text,
             lang=lang,
             voice=final_voice_id,
-            speed=speed,
+            speed=final_speed,
             fmt=fmt,
             provider=provider,
             stream=stream,
-            preset_name=preset # Pass the preset name
         )
         
-        # Determine MIME type
-        mime_types = {
-            "mp3": "audio/mpeg",
-            "wav": "audio/wav",
-            "ogg": "audio/ogg"
-        }
+        mime_types = { "mp3": "audio/mpeg", "wav": "audio/wav", "ogg": "audio/ogg" }
         mime_type = mime_types.get(fmt.lower(), "application/octet-stream")
         
         return Response(content=audio_bytes, media_type=mime_type)
