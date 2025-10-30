@@ -112,5 +112,14 @@
         "cost_per_query": 0.01,
         "desc": "Kosten für eine Websuche.",
         "capabilities": ["web_search"]
+    },
+    {
+        "id": "gpt-4o-mini-tts",
+        "name": "GPT-4o Mini (TTS)",
+        "provider": "openai",
+        "type": "audio",
+        "cost_per_character_input": 0.0000006,
+        "desc": "Effizientes Text-to-Speech-Modell von OpenAI.",
+        "capabilities": ["tts"]
     }
 ]

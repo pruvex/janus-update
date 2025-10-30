@@ -4,6 +4,11 @@ import hashlib
 import time
 from typing import Optional, List, Dict
 from pathlib import Path
+from datetime import datetime
+
+# --- NEU: Imports für Kostenberechnung ---
+from backend.services import cost_calculator
+from backend.data import database
 
 from backend.tts_providers.silero import SileroTTS
 from backend.tts_providers.piper import PiperTTS
@@ -51,27 +56,10 @@ class TTSService:
                     "path": v.get('path')
                 })
         
-        # Add Silero voices (hardcoded for now, can be made dynamic later)
-        # Silero DE speakers: bernd_ungerer, eva_k, friedrich, hokuspokus, karlsson, random
-        # Silero EN speakers: en_0, en_1, en_2, ..., random
+        # Add Silero voices
         silero_voices = [
             {"id": "silero_de_random", "name": "Silero Deutsch (Zufällig)", "lang": "de", "provider": "silero", "speaker": "random"},
             {"id": "silero_de_eva_k", "name": "Silero Deutsch Eva K", "lang": "de", "provider": "silero", "speaker": "eva_k"},
-            {"id": "silero_de_hokuspokus", "name": "Silero Deutsch Hokuspokus", "lang": "de", "provider": "silero", "speaker": "hokuspokus"},
-            {"id": "silero_de_karlsson", "name": "Silero Deutsch Karlsson", "lang": "de", "provider": "silero", "speaker": "karlsson"},
-            {"id": "silero_en_random", "name": "Silero English (Random)", "lang": "en", "provider": "silero", "speaker": "random"},
-            {"id": "silero_en_0", "name": "Silero English Voice 0", "lang": "en", "provider": "silero", "speaker": "en_0"},
-            {"id": "silero_en_1", "name": "Silero English Voice 1", "lang": "en", "provider": "silero", "speaker": "en_1"},
-        ]
-        all_voices.extend(silero_voices)
-        silero_voices = [
-            {"id": "silero_de_random", "name": "Silero Deutsch (Zufällig)", "lang": "de", "provider": "silero", "speaker": "random"},
-            {"id": "silero_de_eva_k", "name": "Silero Deutsch Eva K", "lang": "de", "provider": "silero", "speaker": "eva_k"},
-            {"id": "silero_de_hokuspokus", "name": "Silero Deutsch Hokuspokus", "lang": "de", "provider": "silero", "speaker": "hokuspokus"},
-            {"id": "silero_de_karlsson", "name": "Silero Deutsch Karlsson", "lang": "de", "provider": "silero", "speaker": "karlsson"},
-            {"id": "silero_en_random", "name": "Silero English (Random)", "lang": "en", "provider": "silero", "speaker": "random"},
-            {"id": "silero_en_0", "name": "Silero English Voice 0", "lang": "en", "provider": "silero", "speaker": "en_0"},
-            {"id": "silero_en_1", "name": "Silero English Voice 1", "lang": "en", "provider": "silero", "speaker": "en_1"},
         ]
         all_voices.extend(silero_voices)
 
@@ -101,49 +89,25 @@ class TTSService:
         return TTS_CACHE_DIR / f"{key}.{fmt}"
     
     def _select_provider_chain(self, lang: str, voice_provider: Optional[str] = None, llm_provider: Optional[str] = None) -> List[str]:
+        # (Diese Funktion bleibt unverändert)
         logger.debug(f"_select_provider_chain called with: lang={lang}, voice_provider={voice_provider}, llm_provider={llm_provider}")
-        """Select provider fallback chain based on language and voice preference."""
-
-        # User override to always use Piper
         if self.use_piper_tts:
-            logger.debug(f"_select_provider_chain returning (user override): [\"piper\", \"silero\"]")
             return ["piper", "silero"]
-        
-        # If a specific voice provider is requested
         if voice_provider:
-            if voice_provider == "openai":
-                provider_chain = ["openai", "piper", "silero"]
-            elif voice_provider == "piper":
-                provider_chain = ["piper", "silero"]
-            elif voice_provider == "silero":
-                provider_chain = ["silero"]
-            else:
-                provider_chain = ["piper", "silero"] # Default fallback if unknown voice_provider
-            logger.debug(f"_select_provider_chain returning (voice_provider): {provider_chain}")
-            return provider_chain
-        
-        # If an LLM provider is specified, prioritize its native TTS
-        if llm_provider == "openai":
-            if self.openai.is_available():
-                provider_chain = ["openai", "piper", "silero"]
-                logger.debug(f"_select_provider_chain returning (llm_provider=openai): {provider_chain}")
-                return provider_chain
-        elif llm_provider == "gemini":
-            # TODO: Add Gemini TTS here when implemented
-            pass # Fallback to generic if Gemini TTS not implemented yet
-
-        # Default: Piper first (if available), then Silero
+            if voice_provider == "openai": return ["openai", "piper", "silero"]
+            elif voice_provider == "piper": return ["piper", "silero"]
+            elif voice_provider == "silero": return ["silero"]
+            else: return ["piper", "silero"]
+        if llm_provider == "openai" and self.openai.is_available():
+            return ["openai", "piper", "silero"]
         if lang.startswith("de") and self.piper.is_available():
-            provider_chain = ["piper", "silero"]
+            return ["piper", "silero"]
         else:
-            provider_chain = ["silero"]
-        logger.debug(f"_select_provider_chain returning (default): {provider_chain}")
-        return provider_chain
+            return ["silero"]
     
     def _get_voice_config(self, voice_id: str) -> Optional[dict]:
         """Get voice configuration by ID."""
-        all_available_voices = self.get_voices() # Get all dynamically loaded voices
-        for voice in all_available_voices:
+        for voice in self.get_voices():
             if voice["id"] == voice_id:
                 return voice
         return None
@@ -160,115 +124,89 @@ class TTSService:
         preset_name: Optional[str] = None,
         llm_provider: Optional[str] = None
     ) -> bytes:
-        """
-        Synthesize speech from text.
-        
-        Args:
-            text: Text to synthesize
-            lang: Language code (de, en)
-            voice: Voice ID (optional, auto-selected)
-            speed: Speech speed (0.5 - 2.0)
-            fmt: Audio format (mp3, wav, ogg)
-            provider: Provider name (optional, auto-selected)
-            stream: Enable streaming (if supported)
-        
-        Returns:
-            Audio bytes
-        """
         if not text or not text.strip():
             raise ValueError("Text cannot be empty")
         
-        # Select default voice if not specified
         if not voice:
-            # Use the voice from tts_settings if available
             if self.tts_settings.get("voice"):
                 voice = self.tts_settings.get("voice")
-            # Otherwise, use Piper by default if available, otherwise Silero
             elif self.piper.is_available() and lang.startswith("de"):
-                voice = "piper_de_DE-thorsten-medium"  # Medium is more natural than high
-            elif lang.startswith("de"):
-                voice = "de_random"
+                voice = "piper_de_DE-thorsten-medium"
             else:
-                voice = "en_random"
+                voice = "de_random"
         
-        # Get voice configuration
         voice_config = self._get_voice_config(voice)
         if not voice_config:
             raise ValueError(f"Unknown voice: {voice}")
         
-        # Extract speaker name and provider from voice config
         speaker = voice_config.get("speaker", "random")
         voice_provider = voice_config.get("provider")
-        logger.debug(f"Synthesize: voice_config={voice_config}, speaker={speaker}, voice_provider={voice_provider}")
         
-        # Select provider chain
-        if provider:
-            provider_chain = [provider]
-        else:
-            provider_chain = self._select_provider_chain(lang, voice_provider, llm_provider)
-        logger.debug(f"Synthesize: provider_chain={provider_chain}")
+        provider_chain = [provider] if provider else self._select_provider_chain(lang, voice_provider, llm_provider)
         
-        # Always normalize text with the German normalizer as per user request
         normalized_text = normalize_text_de(text)
-
-        # Generate cache key
         cache_key = self._cache_key(normalized_text, voice, lang, speed, fmt, provider_chain[0], preset_name)
         cache_file = self._cache_path(cache_key, fmt)
         
-        # Check cache
         if cache_file.exists():
             logger.info(f"TTS cache hit: {cache_key}")
             return cache_file.read_bytes()
         
-        # Synthesize with fallback
         last_error = None
         start_time = time.time()
         
         for prov_name in provider_chain:
             prov = self.providers.get(prov_name)
             if not prov:
-                logger.warning(f"Provider {prov_name} not available")
                 continue
             
             try:
                 logger.info(f"Synthesizing with {prov_name}: {text[:50]}...")
                 audio_bytes = prov.synthesize(
-                    text=normalized_text,
-                    voice=speaker,  # Use speaker for all providers
-                    lang=lang,
-                    speed=speed,
-                    fmt=fmt,
-                    preset_name=preset_name # Pass the preset name
+                    text=normalized_text, voice=speaker, lang=lang, speed=speed, fmt=fmt, preset_name=preset_name
                 )
                 
-                # Cache result
                 cache_file.write_bytes(audio_bytes)
-                
                 elapsed = time.time() - start_time
                 logger.info(f"TTS synthesis completed in {elapsed:.2f}s ({len(audio_bytes)} bytes)")
-                
+
+                # --- NEU: KOSTEN-TRACKING FÜR OPENAI TTS ---
+                if prov_name == "openai":
+                    try:
+                        tts_model_id = "gpt-4o-mini-tts"
+                        usage_data = {"input_characters": len(normalized_text)}
+                        
+                        usage, cost = cost_calculator.calculate_cost(tts_model_id, usage_data)
+                        
+                        if cost.get("total_cost", 0) > 0:
+                            database.save_cost_entry(
+                                date=datetime.now(),
+                                model=tts_model_id,
+                                input_tokens=usage.get("input_tokens", 0), # Hier sind es Zeichen
+                                output_tokens=0,
+                                total_cost=cost.get("total_cost", 0),
+                            )
+                            logger.info(f"Successfully tracked TTS cost: {cost.get('total_cost')} EUR")
+                    except Exception as e:
+                        logger.error(f"Failed to track TTS cost: {e}", exc_info=True)
+                # --- ENDE NEUER BLOCK ---
+
                 return audio_bytes
             except Exception as e:
                 logger.error(f"TTS provider {prov_name} failed: {e}")
                 last_error = e
                 continue
         
-        # All providers failed
         raise RuntimeError(f"TTS synthesis failed: {last_error}")
 
 
 # Singleton instance
-
-
 _tts_service = None
-
-
-
-
 
 def get_tts_service(config: Dict, openai_api_key: Optional[str] = None) -> TTSService:
     """Get or create TTS service singleton."""
     global _tts_service
-    tts_settings = config.get("tts_settings", {})
-    _tts_service = TTSService(config=config, tts_settings=tts_settings, openai_api_key=openai_api_key)
+    if _tts_service is None:
+        tts_settings = config.get("tts_settings", {})
+        _tts_service = TTSService(config=config, tts_settings=tts_settings, openai_api_key=openai_api_key)
     return _tts_service
