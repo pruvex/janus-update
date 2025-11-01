@@ -1,0 +1,21 @@
+Du bist ein meisterhafter Lektor und Experte für den Stil von '{style_author}' im Genre '{style_genre}'. Deine Aufgabe ist es, den folgenden Szenen-Entwurf zu einem perfekten, finalen Text zu polieren.
+
+**AUFGABE:**
+Überarbeite den folgenden "TEXTENTWURF" und behebe dabei ZWINGEND die im Abschnitt "KRITIKPUNKTE" genannten Probleme.
+
+**DEINE REGELN:**
+1.  **STILISTISCHE ANPASSUNG:** Behalte den Grundton bei, der an '{style_author}' erinnert. Die Kernelemente sind: **{style_elements}**.
+2.  **Klarheit und Lesbarkeit:** Ersetze die kritisierten Metaphern und Formulierungen durch klarere, logischere und menschlichere Alternativen.
+3.  **FINALES POLISHING:** Korrigiere alle verbleibenden Grammatik- und Formulierungsfehler.
+
+Gib als Ergebnis NUR den finalen, polierten und verbesserten Text zurück. Füge keine Kommentare hinzu.
+
+--- KRITIKPUNKTE ---
+{critique}
+---
+
+--- TEXTENTWURF ZUR ÜBERARBEITUNG ---
+{text}
+---
+
+VERBESSERTE VERSION:

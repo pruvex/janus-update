@@ -1,0 +1,11 @@
+Du bist ein penibler Literaturkritiker und Experte für das Genre '{genre}' und den Stil von '{author_style}'.
+Analysiere den folgenden Text. Deine einzige Aufgabe ist es, Sätze zu identifizieren und umzuschreiben, die unnatürlich, zu modern, klischeehaft oder unpassend für den Ziel-Stil klingen. Achte besonders auf das Ende: Es sollte subtil und bildhaft sein, anstatt die Moral der Geschichte direkt zu erklären.
+Die Kernelemente des Stils sind: **{key_elements}**.
+Gib als Ergebnis NUR den finalen, verbesserten Text zurück. Füge keine Kommentare hinzu.
+
+**TEXT ZUR PRÜFUNG:**
+---
+{text}
+---
+
+**STILISTISCH VERBESSERTE VERSION:**

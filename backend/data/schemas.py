@@ -76,9 +76,9 @@ class CreateFileArgs(BaseModel):
 
 
 class SaveMp3Args(BaseModel):
-    path: str
-    content: str = Field(..., description="Base64-encoded MP3 binary content or plain text to be synthesized.")
-    llm_provider: Optional[str] = None
+    content: str = Field(..., description="Der zu vertonende Text. Dies sollte der vollständige Text (inklusive SSML-Tags wie <speak>) aus der vorherigen Assistenten-Antwort sein.")
+    filename: str = Field(..., description="Der Zieldateiname für die MP3, z.B. 'geschichte.mp3'.")
+    voice: Optional[str] = Field("fable", description="Nur relevant für SSML/OpenAI. Stimme zur Vertonung. Verfügbar: 'alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'. Standard ist 'fable'.")
 
 
 class ReadFileArgs(BaseModel):

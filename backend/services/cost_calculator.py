@@ -32,7 +32,7 @@ def calculate_cost(model_id, usage_data=None, custom_prompt=None):
     usage = {}
     cost_usd = 0.0
 
-    if model_type == "text" and usage_data is not None:
+    if (model_type == "text" or model_type == "audio") and usage_data is not None:
         if isinstance(usage_data, dict):
             input_tokens = usage_data.get("prompt_tokens", 0)
             output_tokens = usage_data.get("completion_tokens", 0)
@@ -53,14 +53,7 @@ def calculate_cost(model_id, usage_data=None, custom_prompt=None):
         cost_usd = model_info.get("cost_per_query", 0)
         usage = {"query_count": 1}
 
-    # --- NEUER BLOCK FÜR TTS-KOSTEN ---
-    elif model_type == "audio" and usage_data is not None:
-        input_chars = usage_data.get("input_characters", 0)
-        cost_per_char = model_info.get("cost_per_character_input", 0)
-        cost_usd = input_chars * cost_per_char
-        # Für die Datenbank speichern wir die Zeichenanzahl als "Input-Token"
-        usage = {"input_tokens": input_chars, "output_tokens": 0}
-    # --- ENDE NEUER BLOCK ---
+
 
     total_cost_eur = cost_usd * USD_TO_EUR_CONVERSION_RATE
     cost = {"total_cost": total_cost_eur}

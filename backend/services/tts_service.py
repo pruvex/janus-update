@@ -2,6 +2,7 @@ import os
 import logging
 import hashlib
 import time
+import tiktoken
 from typing import Optional, List, Dict
 from pathlib import Path
 from datetime import datetime
@@ -177,20 +178,27 @@ class TTSService:
                 if prov_name == "openai":
                     try:
                         tts_model_id = "gpt-4o-mini-tts"
-                        usage_data = {"input_characters": len(normalized_text)}
+                        encoding = tiktoken.get_encoding("o200k_base")
+                        prompt_tokens = 0
+                        completion_tokens = len(encoding.encode(normalized_text))
+                        
+                        usage_data = {
+                            "prompt_tokens": prompt_tokens,
+                            "completion_tokens": completion_tokens
+                        }
                         usage, cost = cost_calculator.calculate_cost(tts_model_id, usage_data)
                         
                         if cost.get("total_cost", 0) > 0:
                             database.save_cost_entry(
                                 date=datetime.now(),
                                 model=tts_model_id,
-                                input_tokens=usage.get("input_tokens", 0),
-                                output_tokens=0,
-                                image_quality=None,  # Standardwert für Nicht-Bild-Modelle
-                                image_cost=0,        # Standardwert für Nicht-Bild-Modelle
+                                input_tokens=0,
+                                output_tokens=usage.get("output_tokens", 0),
+                                image_quality=None,
+                                image_cost=0,
                                 total_cost=cost.get("total_cost", 0),
                             )
-                            logger.info(f"Successfully tracked TTS cost: {cost.get('total_cost')} EUR")
+                            logger.info(f"Successfully tracked TTS cost: {cost.get('total_cost')} EUR for {completion_tokens} tokens")
                     except Exception as e:
                         logger.error(f"Failed to track TTS cost: {e}", exc_info=True)
 

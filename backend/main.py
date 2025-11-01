@@ -60,7 +60,7 @@ from backend.data.database import get_db
 from backend.services.context_manager import ContextManager
 from backend.utils.paths import get_app_data_dir, resource_path
 from backend.tool_registry import TOOL_REGISTRY
-from backend.services.creative_writer import creative_writer
+from backend.services.creative_writer import creative_writer, generate_style_profile_from_rag
 
 def is_creative_writing_request(prompt: str) -> bool:
     """Prüft, ob ein Prompt eine kreative Schreibaufgabe ist."""
@@ -245,6 +245,7 @@ app = FastAPI()
 
 FILE_OPERATION_HISTORY = []
 LAST_RESPONSE_ID_PER_CHAT = {}
+LAST_SSML_RESPONSE_PER_CHAT = {}
 
 # --- Static Files Mounting ---
 app.mount(
@@ -426,6 +427,19 @@ class RagFolderRequest(BaseModel):
 class RagUrlRequest(BaseModel):
     url: str
     collection_name: str
+
+
+# In backend/main.py, bei den anderen Pydantic-Modellen
+class StyleProfile(BaseModel):
+    genre: str
+    author_style: str
+    key_elements: List[str]
+    complexity: str
+
+
+class StyleProfileSaveRequest(BaseModel):
+    profile_key: str
+    profile_data: StyleProfile
 
 
 # --- Business Logic ---
@@ -1184,13 +1198,18 @@ async def handle_chat_request(
         creative_style = _extract_creative_style(user_prompt_text)
         logger.info(f"Creative Writer - Extracted style: {creative_style}")
         try:
-            final_answer = await creative_writer(
+            ssml_answer = await creative_writer(
                 user_prompt_text,
                 provider=request.provider,
                 model=request.model,
                 api_key=api_key,
                 style=creative_style,
             )
+            # Store the original SSML response
+            LAST_SSML_RESPONSE_PER_CHAT[request.chat_id] = ssml_answer
+            # Clean the SSML for display
+            final_answer = re.sub(r'<[^>]+>', '', ssml_answer)
+
         except Exception as e:
             logger.error(f"Error in creative writing pipeline: {e}", exc_info=True)
             final_answer = "Entschuldigung, beim Verarbeiten deiner kreativen Anfrage ist ein Fehler aufgetreten. Bitte versuche es später erneut."
@@ -1262,6 +1281,23 @@ async def handle_chat_request(
             tool_args = llm_response.get("tool_args", {})
             logger.info(f"Executing tool '{tool_name}' with args: {tool_args}")
 
+            # ================================================================
+            # START: KORREKTURLOGIK FÜR save_mp3_tool (Ticket TTS-001)
+            # ================================================================
+            if tool_name == "save_mp3_tool":
+                # Lade die letzte SSML-Antwort aus der temporären Variable
+                last_ssml_content = LAST_SSML_RESPONSE_PER_CHAT.get(request.chat_id)
+                
+                if last_ssml_content:
+                    logger.info("Korrektur für 'save_mp3_tool': Überschreibe 'content' mit dem zwischengespeicherten SSML-Text.")
+                    # Überschreibe den (falschen) Inhalt vom LLM mit dem korrekten, vollständigen SSML-Text
+                    tool_args['content'] = last_ssml_content
+                else:
+                    logger.warning("Konnte keine zwischengespeicherte SSML-Antwort finden, um den Inhalt für TTS zu extrahieren.")
+            # ================================================================
+            # ENDE: KORREKTURLOGIK FÜR save_mp3_tool
+            # ================================================================
+
             # --- ROBUSTE LOGIK FÜR PDF-WERKZEUG (v2) ---
             if tool_name == "create_pdf_from_markdown":
                 # Wir prüfen auf ZWEI Bedingungen:
@@ -1297,8 +1333,7 @@ async def handle_chat_request(
                 # Entferne das 'include_image'-Argument, da die Python-Funktion es nicht kennt
                 if "include_image" in tool_args:
                     del tool_args["include_image"]
-                # --- ENDE DER ROBUSTEn LOGIK ---
-            # --- ENDE DER NEUEN LOGIK ---
+            # --- ENDE DER ROBUSTEn LOGIK ---
 
             tool = TOOL_REGISTRY.get(tool_name)
             tool_output_raw = f"Fehler: Unbekanntes Tool '{tool_name}' angefordert."
@@ -1426,66 +1461,57 @@ async def handle_chat_request(
             # --- ENDE KOPIEREN/VERSCHIEBEN ---
         elif response_type == "text":
             final_answer = llm_response.get("text") or ""
-
-            # --- NEUER CODE START: FAKTEN-PROMOTION BEI BESTÄTIGUNG ---
-            # Prüfen, ob der User-Input eine Bestätigung war.
-            if is_confirmation(user_prompt_text):
+    # =========================================================================
+    # --- START: HIER DEN AUSGESCHNITTENEN BLOCK EINFÜGEN ---
+    # Diese Logik wird jetzt für JEDE finale Antwort ausgeführt.
+    # =========================================================================
+    # Prüfen, ob der User-Input eine Bestätigung war.
+    if is_confirmation(user_prompt_text):
+        logger.info(
+            "Confirmation detected. Attempting to promote the last AI deduction into a fact."
+        )
+        messages_before_this_turn = crud.get_messages_by_chat_id(
+            db, request.chat_id
+        )
+        if messages_before_this_turn:
+            last_assistant_message = messages_before_this_turn[-1]
+            if last_assistant_message.sender == "model":
                 logger.info(
-                    "Confirmation detected. Attempting to promote the last AI deduction into a fact."
-                )
-                # Wir holen uns die Nachrichten VOR der Antwort der KI.
-                # Die letzte Nachricht in dieser Liste ist die, auf die der User mit "richtig" geantwortet hat.
-                messages_before_this_turn = crud.get_messages_by_chat_id(
-                    db, request.chat_id
-                )
-
-                # Wir brauchen mindestens zwei Nachrichten (KI-Aussage + User-Bestätigung),
-                # also prüfen wir auf mindestens eine Nachricht davor.
-                if messages_before_this_turn:
-                    # Die letzte Nachricht in der DB zu diesem Zeitpunkt ist die vorherige Aussage der KI.
-                    last_assistant_message = messages_before_this_turn[-1]
-
-                    if last_assistant_message.sender == "model":
-                        logger.info(
-                            f"Promoting content from last AI message: '{last_assistant_message.content}'"
-                        )
-                        # Wir starten eine separate Faktenextraktion NUR für die bestätigte Aussage.
-                        asyncio.create_task(
-                            memory_extractor.extract_and_save_fact(
-                                db=db,
-                                chat_id=request.chat_id,
-                                text_block=last_assistant_message.content,
-                                # original_prompt wird nicht mehr benötigt
-                                main_api_key=api_key,
-                                provider=request.provider,
-                                model=request.model,
-                            )
-                        )
-
-            # --- NEUER CODE ENDE ---
-
-            if (
-                not local_image_path
-                and final_answer
-                and not is_greeting(user_prompt_text)
-            ):
-                full_exchange_text = (
-                    f"User: {user_prompt_text}\nAssistant: {final_answer}"
+                    f"Promoting content from last AI message: '{last_assistant_message.content}'"
                 )
                 asyncio.create_task(
                     memory_extractor.extract_and_save_fact(
                         db=db,
                         chat_id=request.chat_id,
-                        text_block=full_exchange_text,
-                        # original_prompt wird nicht mehr benötigt
+                        text_block=last_assistant_message.content,
                         main_api_key=api_key,
                         provider=request.provider,
                         model=request.model,
                     )
                 )
-        else:
-            final_answer = "Ein unerwarteter Fehler ist aufgetreten."
-            logger.error(f"Unknown response type from LLM gateway: {response_type}")
+
+    # Standard-Faktenextraktion für den normalen Dialog
+    if (
+        not local_image_path
+        and final_answer
+        and not is_greeting(user_prompt_text)
+    ):
+        full_exchange_text = (
+            f"User: {user_prompt_text}\nAssistant: {final_answer}"
+        )
+        asyncio.create_task(
+            memory_extractor.extract_and_save_fact(
+                db=db,
+                chat_id=request.chat_id,
+                text_block=full_exchange_text,
+                main_api_key=api_key,
+                provider=request.provider,
+                model=request.model,
+            )
+        )
+    # =========================================================================
+    # --- ENDE DES EINGEFÜGTEN BLOCKS ---
+    # =========================================================================
 
     logger.info(f"Final answer before check: '{final_answer}'")
     if not final_answer and not local_image_path:
@@ -1970,6 +1996,58 @@ async def synthesize_speech(
     except Exception as e:
         logger.error(f"TTS synthesis failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"TTS synthesis failed: {e}")
+
+
+
+@app.post("/api/rag/collections/{collection_name}/analyze-style", response_model=StyleProfile)
+async def analyze_collection_style(collection_name: str):
+    """
+    Stößt die Stilanalyse für eine gegebene RAG-Collection an.
+    Dies ist der Endpunkt für den "Meta-Agenten".
+    """
+    logger.info(f"Anfrage zur Stilanalyse für Collection '{collection_name}' erhalten.")
+    try:
+        # Hier rufen wir die neue Logik aus creative_writer.py auf
+        style_profile_json = await generate_style_profile_from_rag(
+            collection_name=collection_name,
+            api_key=keyring.get_password("Janus-Projekt", "openai"), # Annahme: Wir nutzen OpenAI für die Analyse
+            model="gpt-4o-mini", # Ein günstiges, aber fähiges Modell für diese Aufgabe
+            provider="openai"
+        )
+        return style_profile_json
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Collection '{collection_name}' nicht gefunden oder leer.")
+    except Exception as e:
+        logger.error(f"Fehler bei der Stilanalyse für '{collection_name}': {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Stilanalyse fehlgeschlagen: {e}")
+
+
+@app.post("/api/styles/profiles")
+async def save_style_profile(request: StyleProfileSaveRequest):
+    """
+    Speichert ein neues oder aktualisiertes Stil-Profil in der style_profiles.json.
+    """
+    profiles_path = resource_path("backend/config/style_profiles.json")
+    try:
+        # Lade existierende Profile
+        profiles = {}
+        if os.path.exists(profiles_path):
+            with open(profiles_path, "r", encoding="utf-8-sig") as f:
+                profiles = json.load(f)
+
+        # Füge hinzu oder überschreibe
+        profiles[request.profile_key] = request.profile_data.dict()
+
+        # Speichere die aktualisierte Datei
+        with open(profiles_path, "w", encoding="utf-8") as f:
+            json.dump(profiles, f, indent=2, ensure_ascii=False)
+        
+        logger.info(f"Stil-Profil für '{request.profile_key}' erfolgreich gespeichert.")
+        return {"message": f"Stil-Profil für '{request.profile_key}' gespeichert."}
+    except Exception as e:
+        logger.error(f"Fehler beim Speichern des Stil-Profils: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Speichern des Profils fehlgeschlagen: {e}")
+
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,0 +1,22 @@
+Du bist ein unbarmherziger Lektor mit einer Allergie gegen "Purple Prose" und pseudo-intellektuelles Geschwafel. Deine Aufgabe ist es, den folgenden, bereits stilisierten Text zu analysieren und ihn menschlicher und klarer zu machen, ohne den Kernstil zu zerstören.
+
+DEINE AUFGABEN:
+1. **Jage und vernichte bedeutungslose Metaphern:** Suche nach Sätzen, die versuchen, übermäßig poetisch oder tiefgründig zu klingen, aber bei genauerem Hinsehen unklar, unlogisch oder bedeutungslos sind.
+2. **Ersetze sie:** Wandle diese Sätze in klarere, direktere und konkretere Formulierungen um, die die gleiche Idee auf eine verständliche und stilistisch passende Weise vermitteln.
+3. **Behalte den Ton bei:** Zerstöre nicht den Stil von '{style_author}'. Mache ihn nur besser und glaubwürdiger.
+
+**BEISPIEL 1:**
+- **SCHLECHT:** '...so daß er Raum ließ, die unvermeidliche Not zu benennen.'
+- **GUT:** '...mit einer Geste, die andeutete, dass das Schlimmste noch bevorstand.'
+
+**BEISPIEL 2:**
+- **SCHLECHT:** 'Aus der Themse stiegen feuchte Kälte, Teergeruch und der Duft von Pferdemist.'
+- **GUT:** 'Vom Fluss zog feuchte Kälte hoch. Teer und Pferdemist hingen in der Luft.'
+
+Gib als Ergebnis NUR den finalen, klareren und menschlicheren Text zurück.
+
+--- TEXT ZUR KLÄRUNG ---
+{text}
+---
+
+KLARE, VERBESSERTE VERSION:

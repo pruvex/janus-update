@@ -9,6 +9,7 @@ import requests
 from bs4 import BeautifulSoup
 import ebooklib
 from ebooklib import epub
+from typing import List
 
 logger = logging.getLogger("janus_backend")
 
@@ -159,4 +160,23 @@ def list_collections() -> list[str]:
         return [c.name for c in client.list_collections()]
     except Exception as e:
         logger.error(f"Fehler beim Auflisten der Sammlungen: {e}", exc_info=True)
+        return []
+
+def get_all_documents_from_collection(collection_name: str, limit: int = 15) -> List[str]:
+    """Holt eine Liste von Dokumenteninhalten aus einer spezifischen Collection."""
+    try:
+        client = chromadb.PersistentClient(path=CHROMA_PATH)
+        collection = client.get_collection(name=collection_name)
+        # get() holt Dokumente; wir beschränken die Anzahl mit 'limit'
+        results = collection.get(limit=limit, include=["documents"])
+        
+        documents = results.get("documents")
+        if not documents:
+            logger.warning(f"Keine Dokumente in der Collection '{collection_name}' gefunden.")
+            return []
+            
+        logger.info(f"{len(documents)} Dokumente aus '{collection_name}' für die Stilanalyse abgerufen.")
+        return documents
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen von Dokumenten aus Collection '{collection_name}': {e}", exc_info=True)
         return []

@@ -133,7 +133,11 @@
           <p>Füge Inhalte zu spezifischen Wissens-Bibliotheken hinzu.</p>
           
           <div class="rag-control-group" style="margin-bottom: 20px;">
-              <label for="rag-collection-select" style="display: block; margin-bottom: 5px;">Wissens-Bibliothek:</label>
+              <label style="display: block; margin-bottom: 5px;">Wissens-Bibliotheken:</label>
+              <ul id="rag-collection-list"></ul>
+          </div>
+          <div class="rag-control-group" style="margin-bottom: 20px;">
+              <label for="rag-collection-select" style="display: block; margin-bottom: 5px;">Wissens-Bibliothek für Indexierung auswählen:</label>
               <select id="rag-collection-select"></select>
               <input type="text" id="rag-new-collection-name-input" placeholder="Name für neue Bibliothek..." style="display: none; margin-top: 8px;">
           </div>
@@ -222,5 +226,17 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <div id="style-profile-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h3 id="style-profile-modal-title"></h3>
+        <textarea id="style-profile-textarea"></textarea>
+        <div class="modal-buttons">
+            <button id="style-profile-save-btn">Speichern</button>
+            <button id="style-profile-cancel-btn">Abbrechen</button>
+        </div>
+        <div id="style-profile-modal-error" class="error-message"></div>
+    </div>
+  </div>
 </body>
 </html>

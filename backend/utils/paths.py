@@ -37,3 +37,7 @@ def get_model_cache_dir():
     cache_dir = os.path.join(get_app_data_dir(), "model_cache")
     os.makedirs(cache_dir, exist_ok=True)
     return cache_dir
+
+def get_desktop_path() -> str:
+    """Gibt den plattformunabhängigen Pfad zum Desktop des Benutzers zurück."""
+    return os.path.join(os.path.expanduser('~'), 'Desktop')

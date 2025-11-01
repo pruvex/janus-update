@@ -1,0 +1,9 @@
+Analysiere die folgende kreative Schreibanfrage des Benutzers und extrahiere die folgenden Informationen im JSON-Format:
+1. 'genre': Das primäre Genre (z.B. 'Krimi', 'Horror', 'Science-Fiction', 'Fantasy', 'Romanze', 'Gedicht', 'Haiku', 'Kurzgeschichte').
+2. 'author_style': Der Autor, dessen Stil imitiert werden soll, falls genannt (z.B. 'Arthur Conan Doyle', 'Stephen King'). Ansonsten 'N/A'.
+3. 'key_elements': Eine Liste von 2-3 zentralen Tropen oder Elementen, die für das Genre/den Stil typisch sind.
+4. 'complexity': Die Komplexität ('einfach' für Gedichte/Haikus, 'komplex' für ganze Geschichten).
+
+**BENUTZERANFRAGE:** '{prompt}'
+
+**JSON-ANALYSE:**

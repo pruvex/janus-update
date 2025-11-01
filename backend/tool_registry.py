@@ -6,10 +6,13 @@ import base64
 import logging
 import binascii
 import inspect
-from typing import Callable, Dict, Any, Optional
+import io
+import re
+from typing import Callable, Dict, Any, Optional, List
 from pydantic import BaseModel, Field
 from tenacity import retry, stop_after_attempt, wait_exponential
 from pydub import AudioSegment
+from openai import AsyncOpenAI
 
 # Importiere die Services und Schemas, die wir benötigen
 from backend.data import schemas
@@ -18,8 +21,12 @@ from backend.services.websearch import perform_websearch
 from backend.services.memory_manager import cross_chat_memory_tool
 from backend.tools.pdf_generator import create_pdf_from_markdown
 from backend.llm_providers.openai_service import OpenAIServiceProvider
+from backend.services.tts_service import TTSService 
+from backend.utils.paths import get_desktop_path
+
 
 logger = logging.getLogger("janus_backend")
+client = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 
 # --- Tool-Klasse und Registrierungs-Logik ---
@@ -61,6 +68,119 @@ def register_tool(tool: Tool):
 
 # --- Werkzeug-Funktionen ---
 
+def split_text_into_chunks(text: str, max_length: int = 4000):
+    """
+    Teilt einen SSML-Text intelligent in Chunks unterhalb der max_length auf,
+    ohne SSML-Tags zu zerschneiden. Behandelt Sätze und Tags als unteilbare Einheiten.
+    """
+    logger.info("Starting intelligent SSML chunking...")
+    
+    # Entferne den umschließenden <speak>-Tag für die Verarbeitung
+    inner_ssml = re.sub(r'</?speak>', '', text, flags=re.IGNORECASE).strip()
+    
+    # Zerlege den Text in eine Liste von Sätzen (inkl. Satzzeichen) UND kompletten SSML-Tags.
+    # Dies ist der Kern der Logik: Jedes Element ist entweder ein Satz oder ein Tag.
+    parts = re.findall(r'(<[^>]+>|[^.!?]+(?:[.!?]|$))', inner_ssml)
+    
+    chunks = []
+    current_chunk = ""
+    
+    for part in parts:
+        part_stripped = part.strip()
+        if not part_stripped:
+            continue
+            
+        # Wenn das Hinzufügen des nächsten Teils die Maximallänge überschreiten würde,
+        # schließe den aktuellen Chunk ab und beginne einen neuen.
+        if len(current_chunk) + len(part_stripped) + 1 > max_length:
+            if current_chunk:
+                chunks.append(f"<speak>{current_chunk.strip()}</speak>")
+            current_chunk = part_stripped
+        else:
+            current_chunk += " " + part_stripped
+    
+    # Füge den letzten verbleibenden Chunk hinzu, falls vorhanden.
+    if current_chunk:
+        chunks.append(f"<speak>{current_chunk.strip()}</speak>")
+    
+    logger.info(f"SSML text successfully split into {len(chunks)} chunks.")
+    return chunks
+
+async def save_mp3_tool(content: str, filename: str, voice: str = "fable") -> Dict[str, str]:
+    """
+    Speichert Text als MP3. Erkennt SSML und nutzt dann die OpenAI API für hohe Qualität.
+    Fällt für reinen Text auf die lokale TTS-Engine zurück. Lange SSML-Texte werden aufgeteilt.
+    """
+    if not filename.lower().endswith('.mp3'):
+        filename += '.mp3'
+    filename = os.path.basename(filename)
+    desktop_path = get_desktop_path()
+    if not desktop_path:
+        return {"status": "error", "message": "Desktop-Pfad nicht gefunden."}
+    
+    speech_file_path = os.path.join(desktop_path, filename)
+
+    is_ssml = content.strip().startswith("<speak>") and content.strip().endswith("</speak>")
+
+    if is_ssml:
+        logger.info(f"SSML-Text erkannt. Nutze OpenAI TTS mit Stimme '{voice}' für hohe Qualität.")
+        try:
+            # Chunking logic for long SSML texts
+            ssml_chunks = split_text_into_chunks(content)
+            audio_segments = []
+
+            for i, chunk in enumerate(ssml_chunks):
+                logger.info(f"Synthesizing chunk {i+1}/{len(ssml_chunks)}...")
+                response = await client.audio.speech.create(
+                    model="tts-1-hd",
+                    voice=voice,
+                    input=chunk
+                )
+                
+                # Load audio data into a pydub AudioSegment
+                audio_data = io.BytesIO(response.content)
+                segment = AudioSegment.from_file(audio_data, format="mp3")
+                audio_segments.append(segment)
+
+            logger.info("Füge alle Audio-Teile zusammen...")
+            final_audio = sum(audio_segments, AudioSegment.empty())
+            
+            # Export the final combined audio
+            final_audio.export(speech_file_path, format="mp3")
+
+            success_msg = f"Audiodatei erfolgreich mit Stimme '{voice}' unter '{speech_file_path}' gespeichert."
+            logger.info(success_msg)
+            return {"status": "success", "message": success_msg}
+        except Exception as e:
+            error_msg = f"Fehler bei der OpenAI TTS-Synthese: {e}"
+            logger.error(error_msg, exc_info=True)
+            return {"status": "error", "message": error_msg}
+    else:
+        logger.info("Reiner Text erkannt. Nutze lokale TTS-Engine (Piper).")
+        try:
+            from backend.main import load_config
+            config = load_config()
+            tts_service_instance = TTSService(config=config, tts_settings=config.get("tts_settings", {}))
+            audio_bytes = tts_service_instance.synthesize(
+                text=content,
+                voice='piper_de_DE-thorsten-medium',
+                speed=1.0
+            )
+            
+            if audio_bytes:
+                with open(speech_file_path, "wb") as f:
+                    f.write(audio_bytes)
+                success_msg = f"Audiodatei erfolgreich mit lokaler Stimme unter '{speech_file_path}' gespeichert."
+                logger.info(success_msg)
+                return {"status": "success", "message": success_msg}
+            else:
+                raise RuntimeError("Lokale TTS hat keine Audiodaten zurückgegeben.")
+
+        except Exception as e:
+            error_msg = f"Fehler bei der lokalen TTS-Synthese: {e}"
+            logger.error(error_msg, exc_info=True)
+            return {"status": "error", "message": error_msg}
+
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 async def generate_image_tool(
     api_key: str,
@@ -85,135 +205,6 @@ def create_file_tool(path: str, content: str | bytes = "", is_binary: bool = Fal
     """Erstellt eine neue Datei im Workspace."""
     return filesystem_manager.create_file(path, content, is_binary)
 
-
-def save_mp3_tool(path: str, content: str, llm_provider: str | None = None) -> str:
-    """
-    Speichert eine MP3-Datei. Der Inhalt kann entweder Base64-kodiert sein oder reiner Text,
-    der dann automatisch in Sprache umgewandelt wird. Lange Texte werden automatisch aufgeteilt.
-    """
-    from backend.services.tts_service import get_tts_service
-    from backend.main import load_config, load_personalities
-
-    # Zuerst versuchen, den Inhalt als Base64 zu dekodieren.
-    # Wenn das fehlschlägt, gehen wir davon aus, dass es reiner Text ist und synthetisieren ihn.
-    is_base64 = False
-    try:
-        # Prüfen, ob der Inhalt ein gültiger Base64-String ist
-        missing_padding = len(content) % 4
-        if missing_padding:
-            content += '=' * (4 - missing_padding)
-        base64.b64decode(content, validate=True)
-        is_base64 = True
-    except (binascii.Error, ValueError):
-        logger.debug("Content is not valid Base64. Will attempt to synthesize text.")
-        is_base64 = False
-
-    if is_base64:
-        try:
-            audio_bytes = base64.b64decode(content, validate=True)
-            logger.info("Base64 content successfully decoded.")
-            filesystem_manager.create_file(path, content=audio_bytes, is_binary=True)
-            success_message = f"Datei '{os.path.basename(path)}' wurde erfolgreich gespeichert."
-            logger.info(success_message)
-            return f'{{"output": "{success_message}"}}'
-        except Exception as e:
-            logger.error(f"Fehler beim Speichern der Base64-MP3: {e}", exc_info=True)
-            return f'{{"error": "Fehler beim Speichern der Base64-MP3: {e}"}}'
-    else:
-        # Fallback zur Text-Synthese
-        logger.warning("Content is not Base64. Attempting to synthesize text directly.")
-        try:
-            config = load_config()
-            personalities = load_personalities()
-            tts_service_instance = get_tts_service(config=config)
-
-            active_personality_id = config.get("active_personality", "ai_assistant")
-            active_personality = next((p for p in personalities if p.get("id") == active_personality_id), None)
-            
-            default_settings = {"voice": "openai_alloy", "speed": 1.0}
-            personality_tts_settings = active_personality.get("tts_settings", default_settings) if active_personality else default_settings
-            
-            final_voice = personality_tts_settings.get("voice")
-            final_speed = personality_tts_settings.get("speed")
-            
-            logger.info(f"save_mp3_tool using personality '{active_personality_id}': voice='{final_voice}', speed={final_speed}")
-
-            # --- CHUNKING LOGIK ---
-            max_chunk_size = 3800
-            text_chunks = []
-            
-            paragraphs = content.split('\n\n')
-            
-            # Prüfen, ob überhaupt ein Chunking notwendig ist
-            if len(content) > max_chunk_size:
-                logger.info("Text is too long, splitting into chunks...")
-                current_chunk = ""
-                for paragraph in paragraphs:
-                    if not paragraph.strip():
-                        continue
-                    if len(current_chunk) + len(paragraph) + 2 <= max_chunk_size:
-                        current_chunk += paragraph + "\n\n"
-                    else:
-                        if current_chunk:
-                            text_chunks.append(current_chunk)
-                        # Wenn ein einzelner Absatz zu lang ist, wird er hart geteilt
-                        while len(paragraph) > max_chunk_size:
-                            split_point = paragraph.rfind('.', 0, max_chunk_size)
-                            if split_point == -1: split_point = max_chunk_size
-                            text_chunks.append(paragraph[:split_point+1])
-                            paragraph = paragraph[split_point+1:]
-                        current_chunk = paragraph + "\n\n"
-                if current_chunk:
-                    text_chunks.append(current_chunk)
-            else:
-                text_chunks.append(content)
-
-            logger.info(f"Text in {len(text_chunks)} Teile aufgeteilt, um API-Limits einzuhalten.")
-
-            audio_segments = []
-            temp_files = []
-            for i, chunk in enumerate(text_chunks):
-                logger.info(f"Synthesizing chunk {i+1}/{len(text_chunks)}...")
-
-                # --- FINALE KORREKTUR: Regieanweisungen HIER entfernen ---
-                clean_chunk = chunk.replace('*', '').replace('...', ' ')
-                
-                chunk_audio_bytes = tts_service_instance.synthesize(
-                    text=clean_chunk, voice=final_voice, speed=final_speed, provider=llm_provider
-                )
-                
-                if not chunk_audio_bytes:
-                    raise ValueError(f"TTS service returned empty audio for chunk {i+1}")
-                
-                temp_path = f"temp_chunk_{i}.mp3"
-                with open(temp_path, "wb") as f:
-                    f.write(chunk_audio_bytes)
-                
-                audio_segments.append(AudioSegment.from_mp3(temp_path))
-                temp_files.append(temp_path)
-
-            logger.info("Combining audio chunks into final file...")
-            pause_between_chunks = AudioSegment.silent(duration=500) # 0.5 Sekunden Pause
-            combined_audio = AudioSegment.empty()
-            for i, seg in enumerate(audio_segments):
-                combined_audio += seg
-                # Füge keine Pause nach dem letzten Segment hinzu
-                if i < len(audio_segments) - 1:
-                    combined_audio += pause_between_chunks
-
-            combined_audio.export(path, format="mp3")
-            
-            for temp_file in temp_files:
-                os.remove(temp_file)
-
-            success_message = f"Hörbuch '{os.path.basename(path)}' wurde erfolgreich erstellt."
-            logger.info(success_message)
-            return f'{{"output": "{success_message}"}}'
-
-        except Exception as synth_error:
-            error_message = f"Fehler bei der MP3-Erstellung: {synth_error}"
-            logger.error(error_message, exc_info=True)
-            return f'{{"error": "{error_message}"}}'
 
 def read_file_tool(path: str):
     """Liest den Inhalt einer Datei aus dem Workspace."""
@@ -282,6 +273,7 @@ register_tool(Tool(func=create_pdf_from_markdown, args_schema=schemas.CreatePdfF
 
 
 # --- Hilfsfunktionen für den Rest der Anwendung ---
+
 
 def get_all_tool_definitions():
     """Gibt die Definitionen aller registrierten Tools für das LLM zurück."""

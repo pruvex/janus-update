@@ -271,31 +271,67 @@ document.addEventListener('DOMContentLoaded', async () => {
   let pollingInterval = null;
 
   async function loadCollections() {
+    const ragCollectionList = document.getElementById('rag-collection-list');
+    const collectionSelect = document.getElementById('rag-collection-select');
+    
     try {
       const response = await fetch(`${API_BASE_URL}/api/rag/collections`);
       const data = await response.json();
-      const currentSelection = collectionSelect.value;
-      collectionSelect.innerHTML = '';
-            
-      const newOption = document.createElement('option');
-      newOption.value = '__new__';
-      newOption.textContent = 'Neue Bibliothek erstellen...';
-      collectionSelect.appendChild(newOption);
+      
+      // Get current selection before clearing
+      const currentSelection = collectionSelect ? collectionSelect.value : null;
+
+      // Clear both the list and the dropdown
+      if(ragCollectionList) ragCollectionList.innerHTML = '';
+      if(collectionSelect) {
+        collectionSelect.innerHTML = '';
+        const newOption = document.createElement('option');
+        newOption.value = '__new__';
+        newOption.textContent = 'Neue Bibliothek erstellen...';
+        collectionSelect.appendChild(newOption);
+      }
 
       if (data.collections) {
         data.collections.forEach(name => {
-          const option = document.createElement('option');
-          option.value = name;
-          option.textContent = name;
-          collectionSelect.appendChild(option);
+          // Populate the list for display
+          if(ragCollectionList) {
+            const listItem = document.createElement('li');
+            listItem.className = 'collection-list-item';
+            
+            const collectionNameSpan = document.createElement('span');
+            collectionNameSpan.textContent = name;
+            listItem.appendChild(collectionNameSpan);
+            
+            const analyzeBtn = document.createElement('button');
+            analyzeBtn.innerHTML = '✨';
+            analyzeBtn.className = 'analyze-style-btn';
+            analyzeBtn.title = 'Stil-Profil für diese Collection generieren';
+            analyzeBtn.dataset.collectionName = name;
+            listItem.appendChild(analyzeBtn);
+            
+            ragCollectionList.appendChild(listItem);
+          }
+
+          // Populate the dropdown for indexing
+           if(collectionSelect) {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            collectionSelect.appendChild(option);
+           }
         });
       }
-      // Stelle die vorherige Auswahl wieder her, falls möglich
-      if (currentSelection && collectionSelect.querySelector(`option[value="${currentSelection}"]`)) {
+      
+      // Restore selection in dropdown
+      if (collectionSelect && currentSelection && collectionSelect.querySelector(`option[value="${currentSelection}"]`)) {
         collectionSelect.value = currentSelection;
       }
       handleCollectionChange();
-    } catch (error) { console.error('Fehler beim Laden der Wissens-Bibliotheken:', error); }
+
+    } catch (error) { 
+      console.error('Fehler beim Laden der Wissens-Bibliotheken:', error); 
+      if(ragCollectionList) ragCollectionList.innerHTML = '<li>Fehler beim Laden der Bibliotheken.</li>';
+    }
   }
 
   function handleCollectionChange() {
@@ -390,6 +426,41 @@ document.addEventListener('DOMContentLoaded', async () => {
   const ragNavLink = document.querySelector('.settings-nav-link[data-target="rag-management-section"]');
   if(ragNavLink) {
     ragNavLink.addEventListener('click', loadCollections);
+  }
+
+  const ragCollectionList = document.getElementById('rag-collection-list');
+  if (ragCollectionList) {
+      ragCollectionList.addEventListener('click', async (e) => {
+          if (e.target.classList.contains('analyze-style-btn')) {
+              const collectionName = e.target.dataset.collectionName;
+              const button = e.target;
+
+              // Show loading indicator
+              button.disabled = true;
+              button.innerHTML = '<div class="spinner"></div>';
+
+              try {
+                  const response = await fetch(`${API_BASE_URL}/api/rag/collections/${collectionName}/analyze-style`, {
+                      method: 'POST'
+                  });
+
+                  if (!response.ok) {
+                      throw new Error(`HTTP error! status: ${response.status}`);
+                  }
+
+                  const profile = await response.json();
+                  showStyleProfileModal(collectionName, profile);
+
+              } catch (error) {
+                  console.error('Error analyzing style:', error);
+                  alert(`Fehler bei der Stilanalyse für ${collectionName}: ${error.message}`);
+              } finally {
+                  // Restore button
+                  button.disabled = false;
+                  button.innerHTML = '✨';
+              }
+          }
+      });
   }
 
   // --- TTS SETTINGS ---
@@ -599,5 +670,70 @@ document.addEventListener('DOMContentLoaded', async () => {
   const ttsNavLink = document.querySelector('.settings-nav-link[data-target="tts-section"]');
   if (ttsNavLink) {
     ttsNavLink.addEventListener('click', loadTTSVoices);
+  }
+
+  function showStyleProfileModal(collectionName, profile) {
+    const modal = document.getElementById('style-profile-modal');
+    const modalTitle = document.getElementById('style-profile-modal-title');
+    const textarea = document.getElementById('style-profile-textarea');
+    const saveBtn = document.getElementById('style-profile-save-btn');
+    const cancelBtn = document.getElementById('style-profile-cancel-btn');
+    const closeBtn = modal.querySelector('.close-button');
+    const errorDiv = document.getElementById('style-profile-modal-error');
+
+    modalTitle.textContent = `Stil-Profil für ${collectionName}`;
+    textarea.value = JSON.stringify(profile, null, 2);
+    errorDiv.textContent = '';
+    modal.style.display = 'block';
+
+    const saveHandler = async () => {
+        const updatedProfileStr = textarea.value;
+        let updatedProfile;
+
+        try {
+            updatedProfile = JSON.parse(updatedProfileStr);
+        } catch (error) {
+            errorDiv.textContent = 'Fehler: Das eingegebene JSON ist ungültig.';
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/styles/profiles`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    profile_key: collectionName,
+                    profile_data: updatedProfile
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Speichern fehlgeschlagen');
+            }
+
+            alert('Profil erfolgreich gespeichert!');
+            modal.style.display = 'none';
+            // Remove event listeners to avoid duplicates
+            saveBtn.removeEventListener('click', saveHandler);
+            cancelBtn.removeEventListener('click', cancelHandler);
+            closeBtn.removeEventListener('click', cancelHandler);
+
+        } catch (error) {
+            errorDiv.textContent = `Fehler: ${error.message}`;
+        }
+    };
+
+    const cancelHandler = () => {
+        modal.style.display = 'none';
+        // Remove event listeners to avoid duplicates
+        saveBtn.removeEventListener('click', saveHandler);
+        cancelBtn.removeEventListener('click', cancelHandler);
+        closeBtn.removeEventListener('click', cancelHandler);
+    };
+
+    saveBtn.addEventListener('click', saveHandler);
+    cancelBtn.addEventListener('click', cancelHandler);
+    closeBtn.addEventListener('click', cancelHandler);
   }
 });
