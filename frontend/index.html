@@ -1,242 +1,476 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Janus</title>
-  <link rel="stylesheet" href="src/styles.css" />
-  <link rel="stylesheet" href="css/settings.css" />
-  <link rel="stylesheet" href="css/gallery.css" /> <!-- NEU -->
-</head>
-<body>
-  <div class="app-container">
-    <div id="sidebar">
-      <div id="sidebar-header">
-        <h2>Janus</h2>
-        <span id="active-personality-display" style="font-size: 0.8em; margin-left: 10px; color: #aaa;"></span>
-        <button id="toggle-sidebar-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-        </button>
-      </div>
-      <div id="cost-summary-widget">
-        <p id="current-month-cost"></p>
-        <p id="monthly-budget"></p>
-      </div>
-      <nav>
-        <select id="provider-select">
-          <option value="openai">OpenAI</option>
-          <option value="gemini">Gemini</option>
-        </select>
-        <select id="model-select"></select>
-        <button id="settings-btn">Einstellungen</button>
-        <!-- Weitere Nav-Elemente hier -->
-      </nav>
-      <div class="sidebar-option">
-        <input type="checkbox" id="show-archived-chats">
-        <label for="show-archived-chats">Archivierte Chats anzeigen</label>
-      </div>
-      <!-- NEUER BEREICH START -->
-      <div class="sidebar-option">
-        <input type="checkbox" id="show-gallery">
-        <label for="show-gallery">Galerie anzeigen</label>
-      </div>
-      <!-- NEUER BEREICH ENDE -->
-      <button id="new-chat-btn">Neuer Chat</button>
-      <div id="chat-list"></div>
-      <div id="cost-display-section">
-        
-        
-        
-      </div>
-    </div>
-    <main id="chat-view" class="view">
-      <div id="main-content">
-        <div id="chat-window" class="chat-window">
-          <div id="chat-header">Neuer Chat</div>
-          <div id="chat-messages"></div>
-          <div id="chat-input-container">
-                        <form id="chat-form">
-              <input type="file" id="image-upload-input" style="display: none;" accept="image/*">
-              <button type="button" id="image-upload-btn">📎</button>
-              <input type="text" id="chat-input" placeholder="Nachricht an Janus senden...">
-              <button type="button" id="mic-btn">🎤</button>
-              <button type="button" id="tts-toggle-btn" title="TTS aktivieren/deaktivieren">🔊</button>
-              <button id="send-button" type="submit">Senden</button>
-            </form>
-          </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Janus</title>
+    <link rel="stylesheet" href="src/styles.css" />
+    <link rel="stylesheet" href="css/settings.css" />
+    <link rel="stylesheet" href="css/gallery.css" />
+    <link rel="stylesheet" href="css/image-studio.css" />
+    <!-- NEU -->
+  </head>
+  <body>
+    <div class="app-container">
+      <div id="sidebar">
+        <div id="sidebar-header">
+          <h2>Janus</h2>
+          <span
+            id="active-personality-display"
+            style="font-size: 0.8em; margin-left: 10px; color: #aaa"
+          ></span>
+          <button id="toggle-sidebar-btn">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
         </div>
-      </div>
-    </main>
-    <main id="settings-view" class="view" style="display: none;">
-  <div class="settings-header">
-    <h2>Einstellungen</h2>
-  </div>
-  <div class="settings-container">
-    <!-- Linke Spalte: Navigation -->
-    <div id="settings-nav">
-      <a href="#" class="settings-nav-link active-setting" data-target="api-key-section">API Keys</a>
-      <a href="#" class="settings-nav-link" data-target="model-management-section">Modellverwaltung</a>
-      <a href="#" class="settings-nav-link" data-target="workspaces-section">Arbeitsverzeichnisse</a>
-      <a href="#" class="settings-nav-link" data-target="personality-section">Persönlichkeit</a>
-      <a href="#" class="settings-nav-link" data-target="rag-management-section">Wissensbasis</a>
-      <a href="#" class="settings-nav-link" data-target="tts-section">TTS Stimmen</a>
-      <button id="back-to-chat-btn">Zurück zum Chat</button>
-    </div>
-
-    <!-- Rechte Spalte: Inhalt -->
-    <div id="settings-content-area">
-      <!-- Sektion 1: API Key Verwaltung -->
-      <div id="api-key-section" class="settings-section">
-        <h3>API Key Verwaltung</h3>
-        <form id="api-key-form">
-          <select id="provider-input">
+        <div id="cost-summary-widget">
+          <p id="current-month-cost"></p>
+          <p id="monthly-budget"></p>
+        </div>
+        <nav>
+          <select id="provider-select">
             <option value="openai">OpenAI</option>
             <option value="gemini">Gemini</option>
           </select>
-          <input type="password" id="api-key-input" placeholder="API Key">
-          <button type="submit">Speichern</button>
-        </form>
-        <h4>Gespeicherte API Keys</h4>
-        <ul id="api-key-list"></ul>
-      </div>
-
-      <!-- Sektion 2: Modellverwaltung -->
-      <div id="model-management-section" class="settings-section" style="display: none;">
-        <h3>Modellverwaltung</h3>
-        <div id="model-management-buttons"></div>
-        <form id="model-selection-form">
-          <ul id="model-list"></ul>
-          <button type="submit">Auswahl speichern</button>
-          <button type="button" id="back-from-models-btn">Zurück</button>
-        </form>
-      </div>
-
-      <!-- Sektion 3: Persönlichkeit -->
-      <div id="personality-section" class="settings-section" style="display: none;">
-        <h3>Persönlichkeit des Assistenten</h3>
-        <div id="personality-settings">
-          <p>Lade Persönlichkeits-Einstellungen...</p>
+          <select id="model-select"></select>
+          <button id="settings-btn">Einstellungen</button>
+          <!-- Weitere Nav-Elemente hier -->
+        </nav>
+        <div class="sidebar-option">
+          <input type="checkbox" id="show-archived-chats" />
+          <label for="show-archived-chats">Archivierte Chats anzeigen</label>
         </div>
-      </div>
-
-      <!-- Sektion 4: Arbeitsverzeichnisse -->
-      <div id="workspaces-section" class="settings-section" style="display: none;">
-          <h3>Arbeitsverzeichnisse</h3>
-          <ul id="workspaces-list"></ul>
-          <button id="add-workspace-btn">Verzeichnis hinzufügen</button>
+        <!-- NEUER BEREICH START -->
+        <div class="sidebar-option">
+          <input type="checkbox" id="show-gallery" />
+          <label for="show-gallery">Galerie anzeigen</label>
         </div>
-
-      <div id="rag-management-section" class="settings-section" style="display: none;">
-          <h3>Wissensbasis-Verwaltung (RAG)</h3>
-          <p>Füge Inhalte zu spezifischen Wissens-Bibliotheken hinzu.</p>
-          
-          <div class="rag-control-group" style="margin-bottom: 20px;">
-              <label style="display: block; margin-bottom: 5px;">Wissens-Bibliotheken:</label>
-              <ul id="rag-collection-list"></ul>
-          </div>
-          <div class="rag-control-group" style="margin-bottom: 20px;">
-              <label for="rag-collection-select" style="display: block; margin-bottom: 5px;">Wissens-Bibliothek für Indexierung auswählen:</label>
-              <select id="rag-collection-select"></select>
-              <input type="text" id="rag-new-collection-name-input" placeholder="Name für neue Bibliothek..." style="display: none; margin-top: 8px;">
-          </div>
-          
-          <div class="rag-control-group">
-              <h4>Dateien aus Ordner indexieren (PDF, EPUB)</h4>
-              <input type="text" id="rag-folder-path-input" placeholder="Vollständiger Pfad zum Ordner...">
-              <button id="rag-index-folder-btn">Indexierung starten</button>
-          </div>
-          
-          <p id="rag-status-message" style="margin-top: 15px; color: #aaa;"></p>
-          <div id="rag-progress-container" style="display: none; margin-top: 15px;">
-              <p id="rag-progress-text"></p>
-              <progress id="rag-progress-bar" value="0" max="100" style="width: 100%;"></progress>
-          </div>
+        <!-- NEUER BEREICH ENDE -->
+        <div class="sidebar-option">
+          <button id="open-image-studio-btn" class="sidebar-button">
+            <span class="icon">🎨</span> Image Studio
+          </button>
+        </div>
+        <div id="projects-section">
+          <h4>Projekte</h4>
+          <button id="new-project-btn">Neues Projekt</button>
+          <div id="project-list"></div>
+        </div>
+        <button id="new-chat-btn">Neuer Chat</button>
+        <div id="chat-list"></div>
+        <div id="cost-display-section"></div>
       </div>
+      <main id="chat-view" class="view">
+        <div id="main-content">
+          <div id="chat-window-host">
+            <div id="chat-window" class="chat-window">
+              <div id="chat-header">Neuer Chat</div>
+              <div id="chat-messages"></div>
+              <div id="chat-input-container">
+                <form id="chat-form">
+                  <input type="file" id="image-upload-input" style="display: none" accept="image/*" />
+                  <button type="button" id="image-upload-btn">📎</button>
+                  <input type="text" id="chat-input" placeholder="Nachricht an Janus senden..." />
+                  <button type="button" id="mic-btn">🎤</button>
+                  <button type="button" id="tts-toggle-btn" title="TTS aktivieren/deaktivieren">
+                    🔊
+                  </button>
+                  <button id="send-button" type="submit">Senden</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      
+      <!-- Project Dashboard View -->
+      <main id="project-dashboard-view" class="view" style="display: none">
+        <div class="project-dashboard-container">
+          <div id="project-header">
+            <h2 id="project-dashboard-title">Projekt-Dashboard</h2>
+            <button id="back-to-chat-from-project" class="back-button">← Zurück zu Chats</button>
+          </div>
+          <div class="project-dashboard-split">
+            <div id="project-chat-host" class="project-chat-host"></div>
+            <div class="project-right-column">
+              <div id="project-layout" class="project-layout">
+                <div id="project-chat-list-container" class="project-panel floating-panel">
+                  <div class="panel-header">
+                    <h3>Chats in diesem Projekt</h3>
+                    <button id="new-project-chat-btn" class="primary-button">+ Neuer Chat</button>
+                  </div>
+                  <div id="project-chat-list" class="project-chat-list">
+                    <!-- Chats will be loaded here dynamically -->
+                  </div>
+                </div>
+                <div id="project-files-container" class="project-panel floating-panel">
+                  <div class="panel-header">
+                    <h3>Wissensbasis</h3>
+                  </div>
+                  <div id="project-files-dropzone" class="dropzone">
+                    <p>Dateien hierher ziehen (PDF, TXT, DOCX, MD)</p>
+                    <p>oder</p>
+                    <button id="browse-files-btn" class="secondary-button">Dateien auswählen</button>
+                    <input type="file" id="file-input" multiple style="display: none" />
+                  </div>
+                  <div id="project-files-list" class="files-list">
+                    <!-- Files will be listed here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      
+      <main id="settings-view" class="view" style="display: none">
+        <div class="settings-header">
+          <h2>Einstellungen</h2>
+        </div>
+        <div class="settings-container">
+          <!-- Linke Spalte: Navigation -->
+          <div id="settings-nav">
+            <a href="#" class="settings-nav-link active-setting" data-target="api-key-section"
+              >API Keys</a
+            >
+            <a href="#" class="settings-nav-link" data-target="model-management-section"
+              >Modellverwaltung</a
+            >
+            <a href="#" class="settings-nav-link" data-target="workspaces-section"
+              >Arbeitsverzeichnisse</a
+            >
+            <a href="#" class="settings-nav-link" data-target="personality-section"
+              >Persönlichkeit</a
+            >
+            <a href="#" class="settings-nav-link" data-target="rag-management-section"
+              >Wissensbasis</a
+            >
+            <a href="#" class="settings-nav-link" data-target="tts-section">TTS Stimmen</a>
+            <a href="#" class="settings-nav-link" data-target="memory-section"
+              >Persönliche Informationen</a
+            >
+            <a href="#" class="settings-nav-link" data-target="address-book-section">Adressbuch</a>
+            <button id="back-to-chat-btn">Zurück zum Chat</button>
+          </div>
 
-      <!-- Sektion: TTS Stimmen -->
-      <div id="tts-section" class="settings-section" style="display: none;">
-          <h3>Text-to-Speech Einstellungen</h3>
-          <p>Konfiguriere die Stimme und Geschwindigkeit für das Vorlesen von Chatausgaben.</p>
-          
-          <div class="tts-control-group" style="margin-bottom: 20px;">
-              <label for="tts-voice-select" style="display: block; margin-bottom: 5px;">Stimme:</label>
-              <select id="tts-voice-select" style="width: 100%; padding: 8px;">
+          <!-- Rechte Spalte: Inhalt -->
+          <div id="settings-content-area">
+            <!-- Sektion 1: API Key Verwaltung -->
+            <div id="api-key-section" class="settings-section">
+              <h3>API Key Verwaltung</h3>
+              <form id="api-key-form">
+                <select id="provider-input">
+                  <option value="openai">OpenAI</option>
+                  <option value="gemini">Gemini</option>
+                </select>
+                <input type="password" id="api-key-input" placeholder="API Key" />
+                <button type="submit">Speichern</button>
+              </form>
+              <h4>Gespeicherte API Keys</h4>
+              <ul id="api-key-list"></ul>
+            </div>
+
+            <!-- Sektion 2: Modellverwaltung -->
+            <div id="model-management-section" class="settings-section" style="display: none">
+              <h3>Modellverwaltung</h3>
+              <div id="model-management-buttons"></div>
+              <form id="model-selection-form">
+                <ul id="model-list"></ul>
+                <button type="submit">Auswahl speichern</button>
+                <button type="button" id="back-from-models-btn">Zurück</button>
+              </form>
+            </div>
+
+            <!-- Sektion 3: Persönlichkeit -->
+            <div id="personality-section" class="settings-section" style="display: none">
+              <h3>Persönlichkeit des Assistenten</h3>
+              <div id="personality-settings">
+                <p>Lade Persönlichkeits-Einstellungen...</p>
+              </div>
+            </div>
+
+            <!-- Sektion 4: Arbeitsverzeichnisse -->
+            <div id="workspaces-section" class="settings-section" style="display: none">
+              <h3>Arbeitsverzeichnisse</h3>
+              <ul id="workspaces-list"></ul>
+              <button id="add-workspace-btn">Verzeichnis hinzufügen</button>
+            </div>
+
+            <div id="rag-management-section" class="settings-section" style="display: none">
+              <h3>Wissensbasis-Verwaltung (RAG)</h3>
+              <p>Füge Inhalte zu spezifischen Wissens-Bibliotheken hinzu.</p>
+
+              <div class="rag-control-group" style="margin-bottom: 20px">
+                <label style="display: block; margin-bottom: 5px">Wissens-Bibliotheken:</label>
+                <ul id="rag-collection-list"></ul>
+              </div>
+              <div class="rag-control-group" style="margin-bottom: 20px">
+                <label for="rag-collection-select" style="display: block; margin-bottom: 5px"
+                  >Wissens-Bibliothek für Indexierung auswählen:</label
+                >
+                <select id="rag-collection-select"></select>
+                <input
+                  type="text"
+                  id="rag-new-collection-name-input"
+                  placeholder="Name für neue Bibliothek..."
+                  style="display: none; margin-top: 8px"
+                />
+              </div>
+
+              <div class="rag-control-group">
+                <h4>Dateien aus Ordner indexieren (PDF, EPUB)</h4>
+                <input
+                  type="text"
+                  id="rag-folder-path-input"
+                  placeholder="Vollständiger Pfad zum Ordner..."
+                />
+                <button id="rag-index-folder-btn">Indexierung starten</button>
+              </div>
+
+              <p id="rag-status-message" style="margin-top: 15px; color: #aaa"></p>
+              <div id="rag-progress-container" style="display: none; margin-top: 15px">
+                <p id="rag-progress-text"></p>
+                <progress id="rag-progress-bar" value="0" max="100" style="width: 100%"></progress>
+              </div>
+            </div>
+
+            <!-- Sektion: TTS Stimmen -->
+            <div id="tts-section" class="settings-section" style="display: none">
+              <h3>Text-to-Speech Einstellungen</h3>
+              <p>Konfiguriere die Stimme und Geschwindigkeit für das Vorlesen von Chatausgaben.</p>
+
+              <div class="tts-control-group" style="margin-bottom: 20px">
+                <label for="tts-voice-select" style="display: block; margin-bottom: 5px"
+                  >Stimme:</label
+                >
+                <select id="tts-voice-select" style="width: 100%; padding: 8px">
                   <option value="">Lade Stimmen...</option>
-              </select>
-          </div>
-          
-          <div class="tts-control-group" style="margin-bottom: 20px;">
-              <label for="tts-preset-select" style="display: block; margin-bottom: 5px;">Preset:</label>
-              <select id="tts-preset-select" style="width: 100%; padding: 8px;">
-                  <option value="">Lade Presets...</option>
-              </select>
-          </div>
-          
-          <div class="tts-control-group" style="margin-bottom: 20px;">
-              <label for="tts-speed-input" style="display: block; margin-bottom: 5px;">
-                  Geschwindigkeit: <span id="tts-speed-value">1.0</span>x
-              </label>
-              <input type="range" id="tts-speed-input" min="0.5" max="2.0" step="0.1" value="1.0" style="width: 100%;">
-          </div>
-          
-          <div class="tts-control-group" style="margin-bottom: 20px;">
-              <button id="tts-test-btn" style="padding: 10px 20px;">Testausgabe</button>
-          </div>
+                </select>
+              </div>
 
-          <div class="tts-control-group" style="margin-bottom: 20px;">
-            <input type="checkbox" id="use-piper-tts" name="use-piper-tts">
-            <label for="use-piper-tts">Immer Piper TTS verwenden (lokal/kostenlos)</label>
+              <div class="tts-control-group" style="margin-bottom: 20px">
+                <label for="tts-preset-select" style="display: block; margin-bottom: 5px"
+                  >Preset:</label
+                >
+                <select id="tts-preset-select" style="width: 100%; padding: 8px">
+                  <option value="">Lade Presets...</option>
+                </select>
+              </div>
+
+              <div class="tts-control-group" style="margin-bottom: 20px">
+                <label for="tts-speed-input" style="display: block; margin-bottom: 5px">
+                  Geschwindigkeit: <span id="tts-speed-value">1.0</span>x
+                </label>
+                <input
+                  type="range"
+                  id="tts-speed-input"
+                  min="0.5"
+                  max="2.0"
+                  step="0.1"
+                  value="1.0"
+                  style="width: 100%"
+                />
+              </div>
+
+              <div class="tts-control-group" style="margin-bottom: 20px">
+                <button id="tts-test-btn" style="padding: 10px 20px">Testausgabe</button>
+              </div>
+
+              <div class="tts-control-group" style="margin-bottom: 20px">
+                <input type="checkbox" id="use-piper-tts" name="use-piper-tts" />
+                <label for="use-piper-tts">Immer Piper TTS verwenden (lokal/kostenlos)</label>
+              </div>
+
+              <p id="tts-status-message" style="margin-top: 15px; color: #aaa"></p>
+            </div>
+
+            <!-- Sektion: Persönliche Informationen (Gedächtnis) -->
+            <div id="memory-section" class="settings-section" style="display: none">
+              <h3>Persönliche Informationen (Gedächtnis)</h3>
+              <p>
+                Hier kannst du die von Janus gespeicherten Fakten über dich einsehen und verwalten.
+              </p>
+              <div id="memory-list-container">
+                <p>Lade Gedächtniseinträge...</p>
+              </div>
+            </div>
+
+            <!-- Sektion: Adressbuch -->
+            <div id="address-book-section" class="settings-section" style="display: none">
+              <h3>Adressbuch</h3>
+              <p>Hier kannst du deine Kontakte verwalten.</p>
+              <button id="add-contact-btn">Neuen Kontakt hinzufügen</button>
+              <div id="contact-list-container">
+                <p>Lade Kontakte...</p>
+              </div>
+            </div>
+          </div>
         </div>
-          
-          <p id="tts-status-message" style="margin-top: 15px; color: #aaa;"></p>
+      </main>
+
+      <!-- Modal für Kontakt hinzufügen/bearbeiten -->
+      <div id="contact-modal" class="modal" style="display: none">
+        <div class="modal-content">
+          <span class="close-button">&times;</span>
+          <h3 id="contact-modal-title">Neuer Kontakt</h3>
+          <form id="contact-form">
+            <input type="hidden" id="contact-id" />
+            <label for="contact-name">Name:</label>
+            <input type="text" id="contact-name" required />
+            <label for="contact-category">Kategorie:</label>
+            <input type="text" id="contact-category" />
+            <label for="contact-email">E-Mail:</label>
+            <input type="email" id="contact-email" />
+            <label for="contact-phone">Telefon:</label>
+            <input type="tel" id="contact-phone" />
+            <label for="contact-address">Adresse:</label>
+            <textarea id="contact-address"></textarea>
+            <label for="contact-website">Website:</label>
+            <input type="url" id="contact-website" />
+            <label for="contact-notes">Notizen:</label>
+            <textarea id="contact-notes"></textarea>
+            <div class="modal-buttons">
+              <button type="submit" id="contact-save-btn">Speichern</button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
-  </div>
-</main>
-    <!-- NEUER BEREICH START -->
-    <div id="gallery-view" class="view" style="display: none;">
-      <div id="gallery-window" class="resizable draggable">
-        <div id="gallery-header">
-          <span>Bildergalerie</span>
-          <button id="close-gallery-btn">&times;</button>
-        </div>
-        <div id="gallery-content">
-          <!-- Bilder werden hier dynamisch eingefügt -->
+
+      <!-- Modal für Projekt hinzufügen -->
+      <div id="project-modal" class="modal" style="display: none">
+        <div class="modal-content">
+          <span class="close-button" id="close-project-modal">&times;</span>
+          <h3 id="project-modal-title">Neues Projekt</h3>
+          <form id="project-form">
+            <label for="project-name">Projektname:</label>
+            <input type="text" id="project-name" required />
+            <label for="project-path">Projektpfad:</label>
+            <input type="text" id="project-path" readonly required />
+            <button type="button" id="select-project-path-btn">Verzeichnis auswählen</button>
+            <div class="modal-buttons">
+              <button type="submit" id="project-save-btn">Speichern</button>
+            </div>
+          </form>
         </div>
       </div>
+      <!-- NEUER BEREICH START -->
+      <div id="gallery-view" class="view" style="display: none">
+        <div id="gallery-window" class="resizable draggable">
+          <div id="gallery-header">
+            <span>Bildergalerie</span>
+            <button id="close-gallery-btn">&times;</button>
+          </div>
+          <div id="gallery-content">
+            <!-- Bilder werden hier dynamisch eingefügt -->
+          </div>
+        </div>
+      </div>
+      <!-- NEUER BEREICH ENDE -->
     </div>
-    <!-- NEUER BEREICH ENDE -->
-  </div>
-  <script type="module" src="js/config.js"></script>
-  <script type="module" src="js/settings.js"></script>
-  <script type="module" src="js/chat-manager.js"></script>
-  <script type="module" src="js/chat.js"></script>
-  
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/settings.js"></script>
+    <script type="module" src="js/chat-manager.js"></script>
+    <script type="module" src="js/chat.js"></script>
+
     <script type="module" src="js/app.js"></script>
-  <script type="module" src="js/cost-visualizer.js"></script>
-  <script type="module" src="js/context-menu.js"></script>
-  <script type="module" src="js/gallery.js"></script> <!-- NEU -->
-  <div id="cost-deep-dive-modal" class="modal">
-    <div class="modal-content">
-      <span class="close-button">&times;</span>
-      <h2>Kosten-Details (Deep Dive)</h2>
-      <div id="deep-dive-content"></div>
+    <script type="module" src="js/cost-visualizer.js"></script>
+    <script type="module" src="js/context-menu.js"></script>
+    <script type="module" src="js/gallery.js"></script>
+    <script type="module" src="js/projects.js"></script>
+    <script type="module" src="js/project-dashboard.js"></script>
+    <script type="module" src="js/image-studio.js"></script>
+    <!-- NEU -->
+    <div id="cost-deep-dive-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Kosten-Details (Deep Dive)</h2>
+        <div id="deep-dive-content"></div>
+      </div>
     </div>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <div id="style-profile-modal" class="modal" style="display: none;">
-    <div class="modal-content">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <div id="style-profile-modal" class="modal" style="display: none">
+      <div class="modal-content">
         <span class="close-button">&times;</span>
         <h3 id="style-profile-modal-title"></h3>
         <textarea id="style-profile-textarea"></textarea>
         <div class="modal-buttons">
-            <button id="style-profile-save-btn">Speichern</button>
-            <button id="style-profile-cancel-btn">Abbrechen</button>
+          <button id="style-profile-save-btn">Speichern</button>
+          <button id="style-profile-cancel-btn">Abbrechen</button>
         </div>
         <div id="style-profile-modal-error" class="error-message"></div>
+      </div>
     </div>
-  </div>
-</body>
+
+    <!-- Image Modal -->
+    <div id="image-modal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 1024px;">
+        <div class="modal-header"> <!-- NEU -->
+          <h3>Bildvorschau</h3> <!-- NEU -->
+          <span class="close-button" id="close-image-modal">&times;</span>
+        </div>
+        <img id="image-modal-img" src="" alt="Full size image" style="width: 100%; height: auto;">
+      </div>
+    </div>
+    
+    <!-- Image Studio Modal -->
+    <div id="image-studio-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Image Studio</h3>
+          <span class="close-button" id="close-image-studio-modal">&times;</span>
+        </div>
+        <div class="image-studio-container">
+          <!-- Linke Spalte: Kontrollpanel -->
+          <div class="image-studio-controls">
+            <h4>Einstellungen</h4>
+            <div class="control-group">
+              <label for="is-prompt">Prompt</label>
+              <textarea id="is-prompt" rows="5" placeholder="Beschreibe dein Bild..."></textarea>
+            </div>
+            <div class="control-group">
+              <label for="is-provider-select">Provider</label>
+              <select id="is-provider-select"></select>
+            </div>
+            <div class="control-group">
+              <label for="is-model-select">Modell</label>
+              <select id="is-model-select"></select>
+            </div>
+            <div id="is-dynamic-params" class="control-group">
+              <!-- Dynamische Parameter werden hier eingefügt -->
+            </div>
+            <div class="control-group cost-display">
+                <span>Geschätzte Kosten / Bild:</span>
+                <strong id="is-estimated-cost">$N/A</strong>
+            </div>
+            <button id="is-generate-btn" class="primary-button">Generieren</button>
+          </div>
+          <!-- Rechte Spalte: Anzeige -->
+          <div class="image-studio-display">
+            <div id="is-preview-container" class="preview-container">
+              <p>Vorschau des generierten Bildes</p>
+            </div>
+            <div class="gallery-container">
+              <h4>Generierte Bilder</h4>
+              <div id="is-gallery" class="gallery">
+                <p>Die Galerie erscheint hier.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
 </html>

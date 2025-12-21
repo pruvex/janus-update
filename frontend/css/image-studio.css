@@ -1,0 +1,18 @@
+/* Styles for the image studio preview container */
+.is-preview-container {
+    width: 500px; /* Fixed width */
+    height: 500px; /* Fixed height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #1a1a1a; /* Dark background for empty space */
+    border: 1px solid #444;
+    border-radius: 8px;
+    overflow: hidden; /* Ensure image doesn't overflow container */
+}
+
+.is-preview-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* The magic command */
+}
