@@ -88,12 +88,18 @@ document.addEventListener('DOMContentLoaded', () => {
     modelSelect.innerHTML = '';
     const selectedProvider = providerSelect.value;
     if (pricingData && pricingData[selectedProvider]) {
-      for (const model in pricingData[selectedProvider]) {
+      // Filter for image models (type: "image")
+      const imageModels = Object.entries(pricingData[selectedProvider]).filter(([modelId, modelData]) => {
+          // Check if modelData is an object and has 'type' and 'capabilities' properties
+          return typeof modelData === 'object' && modelData.type === 'image' && modelData.capabilities && modelData.capabilities.includes('image_generation');
+      });
+
+      imageModels.forEach(([modelId, modelData]) => {
         const option = document.createElement('option');
-        option.value = model;
-        option.textContent = model;
+        option.value = modelId;
+        option.textContent = modelData.name; // Display the user-friendly name
         modelSelect.appendChild(option);
-      }
+      });
     }
     populateDynamicParams();
   }
@@ -101,18 +107,17 @@ document.addEventListener('DOMContentLoaded', () => {
   function populateDynamicParams() {
       dynamicParamsContainer.innerHTML = '';
       const selectedProvider = providerSelect.value;
-      const selectedModelBase = modelSelect.value; // z.B. "dall-e-3"
+      const selectedModelId = modelSelect.value; // modelId, e.g., "gpt-image-1.5"
       
-      if(!pricingData || !pricingData[selectedProvider] || !pricingData[selectedProvider][selectedModelBase]) {
+      if(!pricingData || !pricingData[selectedProvider] || !pricingData[selectedProvider][selectedModelId]) {
           updateCost();
-
           return;
       }
 
-      let modelPricing = pricingData[selectedProvider][selectedModelBase];
-
-      // Spezielle Behandlung für OpenAI DALL-E Modelle
-      if (selectedProvider === 'openai' && selectedModelBase.startsWith('dall-e')) {
+      const modelData = pricingData[selectedProvider][selectedModelId];
+      
+      // Check if the selected model has a 'pricing' structure (indicating it's an image generation model)
+      if (modelData.type === 'image' && modelData.pricing) {
           // Dropdown für Qualität
           const qualityDiv = document.createElement('div');
           qualityDiv.classList.add('control-group');
@@ -120,13 +125,15 @@ document.addEventListener('DOMContentLoaded', () => {
           dynamicParamsContainer.appendChild(qualityDiv);
           const qualitySelect = qualityDiv.querySelector('select');
 
-          for(const q in modelPricing) { // modelPricing now contains keys like "standard", "hd"
+          const availableQualities = Object.keys(modelData.pricing);
+          availableQualities.forEach(q => {
               const option = document.createElement('option');
               option.value = q;
               option.textContent = q.charAt(0).toUpperCase() + q.slice(1);
               qualitySelect.appendChild(option);
-          }
-          if(qualitySelect.value === '') qualitySelect.value = Object.keys(modelPricing)[0]; // Standardwert setzen
+          });
+          qualitySelect.value = modelData.default_quality || availableQualities[0];
+
 
           // Dropdown für Größe (Auflösung)
           const sizeDiv = document.createElement('div');
@@ -138,28 +145,27 @@ document.addEventListener('DOMContentLoaded', () => {
           const populateSizeOptions = () => {
               sizeSelect.innerHTML = ''; // Vorherige Optionen löschen
               const currentQuality = qualitySelect.value;
-              const availableSizes = modelPricing[currentQuality] ? Object.keys(modelPricing[currentQuality]) : [];
+              const availableSizes = modelData.pricing[currentQuality] ? Object.keys(modelData.pricing[currentQuality]) : [];
               availableSizes.forEach(s => {
                   const option = document.createElement('option');
                   option.value = s;
                   option.textContent = s;
                   sizeSelect.appendChild(option);
               });
-              if(sizeSelect.value === '') sizeSelect.value = availableSizes[0]; // Standardwert setzen
+              sizeSelect.value = modelData.default_size || availableSizes[0];
               updateCost(); // Kosten aktualisieren, wenn Größenoptionen neu geladen wurden
-
           };
 
           qualitySelect.addEventListener('change', populateSizeOptions);
           sizeSelect.addEventListener('change', updateCost);
 
-
           // Initial befüllen
           populateSizeOptions();
 
       } else {
-          // Generische Behandlung für andere Modelle (wie Gemini)
-          const parameterKeys = Object.keys(modelPricing).filter(key => typeof modelPricing[key] === 'object');
+          // Generische Behandlung für andere Modelle (wie Gemini oder legacy DALL-E)
+          // This block should still handle text models or other types that don't have the 'pricing' structure
+          const parameterKeys = Object.keys(modelData).filter(key => typeof modelData[key] === 'object' && key !== 'pricing' && key !== 'capabilities');
           
           parameterKeys.forEach(paramKey => {
               const div = document.createElement('div');
@@ -167,7 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
               div.innerHTML = `<label for="is-param-${paramKey}">${paramKey.charAt(0).toUpperCase() + paramKey.slice(1)}</label><select id="is-param-${paramKey}" data-param-key="${paramKey}"></select>`;
               dynamicParamsContainer.appendChild(div);
               const select = div.querySelector('select');
-
+              
+              const paramData = modelData[paramKey]; // Correctly get the parameter data
               for(const optionValue in paramData) {
                   const option = document.createElement('option');
                   option.value = optionValue;
@@ -175,63 +182,73 @@ document.addEventListener('DOMContentLoaded', () => {
                   select.appendChild(option);
               }
               select.addEventListener('change', updateCost);
-
               if(select.value === '') select.value = Object.keys(paramData)[0]; // Standardwert setzen
           });
           updateCost();
-
       }
   }
 
   function updateCost() {
     costDisplay.textContent = 'Berechne...';
     const selectedProvider = providerSelect.value;
-    const selectedModelBase = modelSelect.value; // z.B. "dall-e-3"
+    const selectedModelId = modelSelect.value; 
 
-    if (!pricingData || !selectedProvider || !selectedModelBase) {
+    if (!pricingData || !selectedProvider || !selectedModelId) {
       costDisplay.textContent = 'N/A';
       return;
     }
 
     try {
-      let currentCostLookup = pricingData[selectedProvider]?.[selectedModelBase];
+      const modelData = pricingData[selectedProvider]?.[selectedModelId];
 
-      if (!currentCostLookup) {
+      if (!modelData) {
         costDisplay.textContent = 'N/A';
         return;
       }
 
       let finalCost = 'N/A';
 
-      if (selectedProvider === 'openai' && selectedModelBase.startsWith('dall-e')) {
+      // If it's an image model with nested pricing
+      if (modelData.type === 'image' && modelData.pricing) {
         const qualitySelect = dynamicParamsContainer.querySelector('#is-param-quality');
         const sizeSelect = dynamicParamsContainer.querySelector('#is-param-size');
 
         const quality = qualitySelect ? qualitySelect.value : null;
         const size = sizeSelect ? sizeSelect.value : null;
-
-        if (quality && size) {
-          finalCost = currentCostLookup?.[quality]?.[size];
+        
+        if (quality && size && modelData.pricing[quality] && modelData.pricing[quality][size]) {
+            finalCost = modelData.pricing[quality][size];
+        } else {
+            // Fallback for cases where specific quality/size combo isn't found
+            finalCost = 'N/A';
         }
       } else {
-        // Generische Kostenberechnung für andere Modelle
+        // Generic cost calculation for other models (text, websearch, tts, etc.)
+        // This block needs to be more robust if there are other complex pricing structures
+        // For now, it assumes direct cost_per_image or simple parameter-based lookup
         const params = {};
         dynamicParamsContainer.querySelectorAll('select').forEach(sel => {
             params[sel.dataset.paramKey] = sel.value;
         });
 
-        // Hier müsste die generische Logik angepasst werden, wenn sie mehr als eine Ebene hat.
-        // Für den aktuellen Stand reicht es, die erste dynamische Ebene zu nehmen (z.B. Gemini Standard)
-        const firstParamKey = Object.keys(currentCostLookup).find(key => typeof currentCostLookup[key] === 'object');
-        if (firstParamKey && params[firstParamKey]) {
-            finalCost = currentCostLookup[firstParamKey]?.[params[firstParamKey]];
-        } else if (typeof currentCostLookup === 'number') { // Fallback, falls keine weiteren Parameter
-            finalCost = currentCostLookup;
+        // Assuming a simple cost_per_image for non-nested image models or other types
+        if (modelData.cost_per_image) {
+            finalCost = modelData.cost_per_image;
+        } else if (modelData.cost_per_token_input && modelData.cost_per_token_output) {
+            // This is for text models, which currently don't show up here, but as a fallback
+            finalCost = "Variiert"; // Or some other indication
+        } else if (modelData.cost_per_query) {
+             finalCost = modelData.cost_per_query;
         } else {
-             // Für Gemini-Modelle ohne weitere verschachtelte Parameter (die nur "standard" unter sich haben)
-             if (currentCostLookup.standard) {
-                 finalCost = currentCostLookup.standard['1024x1024']; // Oder einen anderen Standardwert
-             }
+            // Attempt to find a direct cost if it exists at the top level of modelData
+            const firstParamKey = Object.keys(modelData).find(key => typeof modelData[key] === 'object' && key !== 'pricing' && key !== 'capabilities');
+            if (firstParamKey && params[firstParamKey]) {
+                 finalCost = modelData[firstParamKey]?.[params[firstParamKey]];
+            } else if (typeof modelData === 'number') { // Fallback, if modelData itself is a cost
+                finalCost = modelData;
+            } else {
+                finalCost = 'N/A';
+            }
         }
       }
       
