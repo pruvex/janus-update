@@ -65,9 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!response.ok) {
         throw new Error('Fehler beim Laden der Preisdaten');
       }
-      pricingData = await response.json();
-      populateProviderSelect();
-    } catch (error) {
+                  pricingData = await response.json();
+                  console.log('Loaded pricingData:', pricingData); // Debug-Ausgabe
+                  populateProviderSelect();    } catch (error) {
       console.error(error);
       costDisplay.textContent = 'Fehler';
     }
@@ -94,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return typeof modelData === 'object' && modelData.type === 'image' && modelData.capabilities && modelData.capabilities.includes('image_generation');
       });
 
+      console.log('Filtered image models:', imageModels); // Debug-Ausgabe
       imageModels.forEach(([modelId, modelData]) => {
         const option = document.createElement('option');
         option.value = modelId;
@@ -199,9 +200,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const modelData = pricingData[selectedProvider]?.[selectedModelId];
-
-      if (!modelData) {
+                  const modelData = pricingData[selectedProvider]?.[selectedModelId];
+                  console.log('Model Data in populateDynamicParams:', modelData); // Debug-Ausgabe
+                        if (!modelData) {
         costDisplay.textContent = 'N/A';
         return;
       }
