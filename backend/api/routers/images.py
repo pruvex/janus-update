@@ -87,6 +87,7 @@ async def generate_image(
             input_tokens=image_usage.get("input_tokens"), # Falls relevant für Multimodal
             output_tokens=image_usage.get("output_tokens"), # Falls relevant für Multimodal
             image_quality=image_usage.get("image_quality") or selected_quality,
+            image_size=image_usage.get("image_size") or selected_size, # NEU: image_size hinzufügen
             image_cost=image_cost_details.get("image_cost"),
             total_cost=image_cost_details.get("total_cost"),
         )

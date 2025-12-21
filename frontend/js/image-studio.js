@@ -56,6 +56,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
   generateBtn.addEventListener('click', generateImage);
 
+  // --- Drag-and-Drop Funktionalität für das Vorschaufenster ---
+  previewContainer.addEventListener('dragover', (event) => {
+    event.preventDefault(); // Ermöglicht das Ablegen
+    previewContainer.classList.add('drag-over'); // Optional: visueller Hinweis
+  });
+
+  previewContainer.addEventListener('dragleave', () => {
+    previewContainer.classList.remove('drag-over'); // Optional: visueller Hinweis entfernen
+  });
+
+  previewContainer.addEventListener('drop', (event) => {
+    event.preventDefault(); // Verhindert Standardverhalten (z.B. Öffnen des Bildes in neuem Tab)
+    previewContainer.classList.remove('drag-over'); // Optional: visueller Hinweis entfernen
+
+    const imageUrl = event.dataTransfer.getData('text/plain');
+    if (imageUrl) {
+      console.log('Image dropped:', imageUrl); // Debug-Ausgabe
+      previewContainer.innerHTML = ''; // Alten Inhalt entfernen
+
+      const droppedImgElement = document.createElement('img');
+      droppedImgElement.src = imageUrl;
+      droppedImgElement.alt = "Vorschau des ausgewählten Bildes"; // Generischer Alt-Text
+      // Styling wird bereits über CSS-Klassen gehandhabt: .is-preview-container img
+      previewContainer.appendChild(droppedImgElement);
+
+      // Optional: Update prompt input with image URL or alt text
+      promptInput.value = `Referenzbild: ${imageUrl}`; // Könnte später durch einen besseren Prompt ersetzt werden
+      updateCost(); // Kosten aktualisieren, falls das Bild einen Einfluss hat
+      // TODO: Später kann hier eine Logik für Multi-Turn Image Generation hinzugefügt werden
+      // z.B. eine Hidden-Input mit der Referenz-Image-URL für den nächsten Generate-Call
+    }
+  });
 
 
   // --- Logic ---
@@ -329,9 +361,16 @@ document.addEventListener('DOMContentLoaded', () => {
         thumbnailImg.src = imageUrl;
         thumbnailImg.alt = payload.prompt;
         thumbnailImg.classList.add('gallery-thumbnail'); // Füge eine Klasse für Styling hinzu
+        thumbnailImg.draggable = true; // Macht das Bild ziehbar
 
         thumbnailImg.addEventListener('click', () => {
             openImageModal(imageUrl); // Öffne das Bild im großen Modal
+        });
+
+        thumbnailImg.addEventListener('dragstart', (event) => {
+            event.dataTransfer.setData('text/plain', imageUrl); // Speichert die Bild-URL
+            event.dataTransfer.effectAllowed = 'copy'; // Zeigt an, dass das Element kopiert wird
+            console.log('Drag started for image:', imageUrl); // Debug-Ausgabe
         });
 
         galleryContainer.prepend(thumbnailImg); // Am Anfang der Galerie hinzufügen (neueste zuerst)
