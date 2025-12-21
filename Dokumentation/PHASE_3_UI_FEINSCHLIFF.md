@@ -10,6 +10,7 @@
 - [x] **[JANUS] GPT Image Modelle im Image Studio integrieren:** DALL-E Modelle durch GPT Image 1.5 und GPT Image 1 Mini ersetzen, Qualität (low, medium, high), Ratio und Preise aktualisieren.
 - [x] **[JANUS] Fehlerbehebung: GPT Image Modelle im Image Studio korrekt anzeigen und Kosten berechnen.**
 - [x] **[JANUS] Fehlerbehebung: Korrekte Kostenberechnung und Logging für GPT Image Modelle im Backend.**
+- [x] **[JANUS] Drag-and-Drop für Bilder im Image Studio implementieren und Bildgröße in Kostenübersicht korrigieren.**
 - [x] **[JANUS] Rechtsklick-Einfügen in Textfeldern:** Implementierung der Rechtsklick-Einfügen-Funktion und Behebung der Regressionen (leeres Eingabefeld bei neuem Chat, `removeChild`-Fehler).
 - [x] **[JANUS] Anzeige der aktiven Persönlichkeit in der Sidebar:** Implementierung der Anzeige der aktuell ausgewählten Persönlichkeit in der Sidebar.
 - [x] **[GIT] Meilenstein-Commit:** Den Abschluss des UI-Feinschliffs als stabilen Meilenstein committen.
