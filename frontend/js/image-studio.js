@@ -22,6 +22,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const maskModeCheckbox = document.getElementById('is-mask-mode');
   const previewWrapper = document.getElementById('is-preview-wrapper');
   
+  // Style Presets Elements
+  const presetsModeCheckbox = document.getElementById('is-presets-mode');
+  const presetsContainer = document.getElementById('is-presets-container');
+  const styleSelect = document.getElementById('is-style-select');
+  const variationSelect = document.getElementById('is-variation-select');
+
+  // Style Presets Data - Simplified version
+  const stylePresets = {
+    "Fotorealistisch": [
+      "Fotorealismus 1", 
+      "Fotorealismus 2"
+    ]
+    // Hier können später weitere Stile wie "Comic", etc. hinzugefügt werden
+  };
+
   // Inpainting State
   let isDrawing = false;
   let ctx = null;
@@ -956,12 +971,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function populateProviderSelect() {
     providerSelect.innerHTML = '';
-    for (const provider in pricingData) {
-      const option = document.createElement('option');
-      option.value = provider;
-      option.textContent = provider;
-      providerSelect.appendChild(option);
+    // Sicherheitsabfrage, falls pricingData noch nicht geladen ist
+    if (!pricingData) {
+        console.error("populateProviderSelect called before pricingData was loaded.");
+        return;
     }
+
+    const availableProviders = Object.keys(pricingData);
+    if (availableProviders.length === 0) {
+        console.error("No providers found in pricingData.");
+        return;
+    }
+
+    // Dropdown befüllen
+    availableProviders.forEach(provider => {
+        const option = document.createElement('option');
+        option.value = provider;
+        option.textContent = provider;
+        providerSelect.appendChild(option);
+    });
+
+    // --- ENTSCHEIDENDE KORREKTUR ---
+    // Wir stellen sicher, dass ein gültiger Wert ausgewählt ist.
+    // Wenn app.js 'undefined' oder einen ungültigen Wert setzt,
+    // korrigieren wir das hier, indem wir den ersten Provider als Standard nehmen.
+    if (!providerSelect.value || !pricingData[providerSelect.value]) {
+        console.warn("Image Studio: Provider was not set or invalid. Defaulting to the first available provider.");
+        providerSelect.value = availableProviders[0];
+    }
+    
+    // Jetzt, wo wir garantiert einen validen Provider haben, rufen wir den nächsten Schritt auf.
     populateModelSelect();
   }
 
@@ -1429,9 +1468,94 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // --- Style Presets Logic ---
+  
+  // Populate the style select dropdown
+  function populateStyleSelect() {
+    styleSelect.innerHTML = '';
+    for (const styleName in stylePresets) {
+      const option = document.createElement('option');
+      option.value = styleName;
+      option.textContent = styleName;
+      styleSelect.appendChild(option);
+    }
+    // After populating styles, update variations for the first style
+    populateVariationSelect();
+  }
+
+  // Populate the variation select based on selected style
+  function populateVariationSelect() {
+    const selectedStyle = styleSelect.value;
+    const variations = stylePresets[selectedStyle] || [];
+    variationSelect.innerHTML = '';
+
+    variations.forEach(variationName => {
+      const option = document.createElement('option');
+      option.value = variationName;
+      option.textContent = variationName;
+      variationSelect.appendChild(option);
+    });
+  }
+
+  // Toggle presets container visibility
+  presetsModeCheckbox.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      presetsContainer.style.display = 'flex';
+      // Apply the current style to the prompt
+      updatePromptWithPreset();
+    } else {
+      presetsContainer.style.display = 'none';
+      // Remove any style from the prompt
+      removeStyleFromPrompt();
+    }
+  });
+
+  // Update variations when style changes
+  styleSelect.addEventListener('change', () => {
+    populateVariationSelect();
+    if (presetsModeCheckbox.checked) {
+      updatePromptWithPreset();
+    }
+  });
+
+  // Update prompt when variation changes
+  variationSelect.addEventListener('change', () => {
+    if (presetsModeCheckbox.checked) {
+      updatePromptWithPreset();
+    }
+  });
+
+  // Update the prompt with the selected style and variation
+  function updatePromptWithPreset() {
+    const style = styleSelect.value;
+    const variation = variationSelect.value;
+    
+    if (!style || !variation) return;
+    
+    // Add style and variation to the prompt
+    let currentPrompt = promptInput.value.trim();
+    
+    // Remove any existing style tags
+    currentPrompt = currentPrompt.replace(/\s*\(.*?\)$/, '').trim();
+    
+    // Add new style tag
+    promptInput.value = `${currentPrompt} (${variation} Stil)`;
+  }
+
+  // Remove style from prompt
+  function removeStyleFromPrompt() {
+    let currentPrompt = promptInput.value.trim();
+    // Remove style tag if it exists
+    currentPrompt = currentPrompt.replace(/\s*\(.*?\s*Stil\)$/, '').trim();
+    promptInput.value = currentPrompt;
+  }
+
   // Register listener
   providerSelect.addEventListener('change', updateCapabilityUI);
   
   // Also run once on startup
   updateCapabilityUI();
+
+  // Initialize style presets on startup
+  populateStyleSelect();
 });

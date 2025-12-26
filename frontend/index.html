@@ -468,6 +468,14 @@
                     🖌️ Inpainting (Maske zeichnen)
                   </label>
                 </div>
+
+                <!-- Stil-Presets -->
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <input type="checkbox" id="is-presets-mode" style="width: auto;">
+                  <label for="is-presets-mode" style="margin-bottom: 0; cursor: pointer; font-size: 0.9em; color: var(--accent-color);">
+                    🌟 Stil-Presets verwenden
+                  </label>
+                </div>
                 
                 <!-- NEU: Drop-Slots Container (Initial ausgeblendet) -->
                 <div id="combine-slots-wrapper" style="display: none; margin-top: 10px; margin-bottom: 10px;">
@@ -509,23 +517,42 @@
             <div class="control-group">
               <input type="text" id="is-image-filename" value="unbenannt" maxlength="50" />
             </div>
-            <!-- Wrapper für relative Positionierung des Canvas über dem Vorschaubild -->
-            <div id="is-preview-wrapper" style="position: relative; width: 100%; min-height: 300px; display: flex; justify-content: center; align-items: center; background: #2a2a2a; border-radius: 8px; overflow: hidden; margin-bottom: 10px;">
-                <div id="is-preview-container" class="preview-container" style="width: 100%; height: 100%; border: none;">
-                    <p>Vorschau des generierten Bildes</p>
+
+            <!-- NEU: Wrapper für Hauptanzeigebereich (Bild + Presets) -->
+            <div class="display-main-area">
+              
+              <!-- Linke Seite: Wrapper für die Bildvorschau -->
+              <div id="is-preview-wrapper">
+                  <div id="is-preview-container" class="preview-container">
+                      <p>Vorschau des generierten Bildes</p>
+                  </div>
+                  <!-- Der Canvas liegt absolut darüber -->
+                  <canvas id="is-mask-canvas"></canvas>
+              </div>
+
+              <!-- Rechte Seite: Preset-Dropdowns (initial ausgeblendet) -->
+              <div id="is-presets-container" class="presets-container">
+                <div class="control-group">
+                  <label for="is-style-select">Stil</label>
+                  <select id="is-style-select"></select>
                 </div>
-                <!-- Der Canvas liegt absolut darüber -->
-                <canvas id="is-mask-canvas" style="position: absolute; top: 0; left: 0; touch-action: none; display: none;"></canvas>
+                <div class="control-group">
+                  <label for="is-variation-select">Variation</label>
+                  <select id="is-variation-select"></select>
+                </div>
+              </div>
+
             </div>
+            <!-- Ende des neuen Wrappers -->
             
             <!-- Controls für Maske -->
-            <div id="mask-controls" style="display: none; margin-bottom: 15px; gap: 15px; align-items: center; background: #333; padding: 10px; border-radius: 4px;">
-                <button id="clear-mask-btn" class="secondary-button" style="padding: 5px 10px; font-size: 0.8em;">Maske löschen</button>
-                <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1;">
-                    <label style="font-size: 0.8em; color: #ccc;">Pinsel:</label>
-                    <input type="range" id="brush-size" min="10" max="100" value="30" style="flex-grow: 1;">
+            <div id="mask-controls">
+                <button id="clear-mask-btn" class="secondary-button">Maske löschen</button>
+                <div class="mask-controls-group">
+                    <label>Pinsel:</label>
+                    <input type="range" id="brush-size" min="10" max="100" value="30">
                 </div>
-                <div style="font-size: 0.8em; color: #aaa;">Male über den Bereich, der geändert werden soll.</div>
+                <div class="mask-hint">Male über den Bereich, der geändert werden soll.</div>
             </div>
             <div class="is-galleries-wrapper">
               <!-- Box 1: Generierte Bilder -->

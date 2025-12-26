@@ -163,3 +163,103 @@
 .combine-slot.filled:hover .remove-slot-btn {
     opacity: 1; /* Zeige X beim Hover */
 }
+
+/* Layout für den Hauptbereich (Bild + Presets) */
+.display-main-area {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+  align-items: flex-start;
+}
+
+/* Die Bildvorschau nimmt den verfügbaren Platz ein */
+#is-preview-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #2a2a2a;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-grow: 1;
+}
+
+/* Preview Container */
+#is-preview-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #2a2a2a;
+}
+
+/* Mask Canvas */
+#is-mask-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  display: none;
+}
+
+/* Der Container für die Presets */
+.presets-container {
+  display: none; /* Initially hidden */
+  flex-direction: column;
+  gap: 15px;
+  min-width: 200px;
+  width: 25%;
+  background: #1e1e23;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+/* Mask Controls */
+#mask-controls {
+  display: none;
+  margin-bottom: 15px;
+  gap: 15px;
+  align-items: center;
+  background: #333;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.mask-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-grow: 1;
+}
+
+.mask-controls-group label {
+  font-size: 0.8em;
+  color: #ccc;
+}
+
+.mask-controls-group input[type="range"] {
+  flex-grow: 1;
+}
+
+.mask-hint {
+  font-size: 0.8em;
+  color: #aaa;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 992px) {
+  .display-main-area {
+    flex-direction: column;
+  }
+  
+  .presets-container {
+    width: 100%;
+    min-width: auto;
+  }
+}
