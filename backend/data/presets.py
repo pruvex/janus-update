@@ -98,7 +98,7 @@ PRESET_DATABASE = {
 
 # --- 3. DIE DSL (Logik / Builder) ---
 
-def _compile_gpt_instruction(config: PresetConfig, user_prompt: str) -> str:
+def _compile_gpt_instruction(config: PresetConfig, prompt: str) -> str:
     """Baut die 'Diamond Standard' System-Instruktion für GPT-5.2"""
     
     imperfections_list = "\n- ".join(config.imperfections)
@@ -131,13 +131,13 @@ def _compile_gpt_instruction(config: PresetConfig, user_prompt: str) -> str:
         f"2. You MUST call the 'image_generation' tool with the rewritten prompt.\n\n"
         
         f"USER REQUEST:\n"
-        f"{user_prompt}"
+        f"{prompt}"
     )
 
-def _compile_gemini_prompt(config: PresetConfig, user_prompt: str) -> str:
+def _compile_gemini_prompt(config: PresetConfig, prompt: str) -> str:
     """Baut den strukturierten Prompt für Gemini (Imagen 3)"""
     return (
-        f"Generate a {config.gemini_style_keywords} image of {user_prompt}. "
+        f"Generate a {config.gemini_style_keywords} image of {prompt}. "
         f"Camera: {config.camera} with {config.lens}. "
         f"Lighting: {config.lighting}. "
         f"Details: {', '.join(config.imperfections)}. "
@@ -155,19 +155,19 @@ def get_preset(provider: str, style: str, variation: str, prompt: str) -> str:
         # 1. Config suchen
         category = PRESET_DATABASE.get(style)
         if not category:
-            return user_prompt
+            return prompt
             
         config = category.get(variation)
         if not config:
-            return user_prompt
+            return prompt
 
         # 2. Prompt bauen je nach Provider
         if provider == "openai":
-            return _compile_gpt_instruction(config, user_prompt)
+            return _compile_gpt_instruction(config, prompt)
         elif provider == "gemini":
-            return _compile_gemini_prompt(config, user_prompt)
+            return _compile_gemini_prompt(config, prompt)
             
     except Exception as e:
         logger.error(f"Fehler beim Bauen des Presets: {e}")
     
-    return user_prompt
+    return prompt

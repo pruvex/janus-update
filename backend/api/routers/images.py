@@ -121,7 +121,7 @@ async def generate_image(
         # --- PRESET LOGIK (ROBUSTER) ---
         preset_config = None # Initialisiere als None
         
-        if image_request.style_preset and image_request.variation_preset:
+        if image_request.style_preset and image_request.style_preset.get('style') and image_request.style_preset.get('variation'):
             # Holen Sie sich den formatierten Prompt
             formatted_prompt = get_preset(
                 provider=image_request.provider,
