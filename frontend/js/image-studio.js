@@ -1213,15 +1213,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
           // For Gemini, cost is often token-based. We need tokens_per_image and costs per million tokens.
           // The selected resolution might influence the tokens_per_image for a given aspect ratio.
-          // Currently, modelData only contains 'tokens_per_image' at the top level, implying it's fixed
-          // or needs more complex lookup. For now, we'll assume a simple calculation.
           
           if (modelData.cost_per_million_tokens_input && modelData.cost_per_million_tokens_output && modelData.tokens_per_resolution) {
               const selectedResolution = resolutionSelect ? resolutionSelect.value : (modelData.default_resolution || "1K");
-              const currentTokensPerImage = modelData.tokens_per_resolution[selectedResolution] || modelData.tokens_per_resolution["1K"] || 1120; // Fallback-Wert
+              const outputTokensPerImage = modelData.tokens_per_resolution[selectedResolution] || modelData.tokens_per_resolution["1K"] || 1120; // Fallback-Wert
               
-              const inputCostPerImage = (currentTokensPerImage / 1000000) * modelData.cost_per_million_tokens_input;
-              const outputCostPerImage = (currentTokensPerImage / 1000000) * modelData.cost_per_million_tokens_output;
+              // Frontend: Fixed 560 input tokens for Gemini Image, as per README
+              const inputTokensPerImage = 560; 
+              
+              const inputCostPerImage = (inputTokensPerImage / 1000000) * modelData.cost_per_million_tokens_input;
+              const outputCostPerImage = (outputTokensPerImage / 1000000) * modelData.cost_per_million_tokens_output;
               finalCost = inputCostPerImage + outputCostPerImage;
               
           } else if (modelData.cost_per_image) {

@@ -160,6 +160,7 @@ class GeneratedImage(Base):
     # Add these new fields for context tracking
     previous_response_id = Column(String, nullable=True)
     previous_image_id = Column(String, nullable=True)
+    quality_gate_stats = Column(JSON, nullable=True)
 
 
 

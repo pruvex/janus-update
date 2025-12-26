@@ -71,24 +71,30 @@ def calculate_cost(model_id: str, usage_data: dict = None, custom_prompt: str = 
 
         elif model_info.get("provider") == "gemini":
             # 1. Parameter auslesen (Robust gegen None)
-            # Nutzung von 'or': Wenn usage_data.get(...) None zurückgibt, wird der Default genutzt
             default_res = model_info.get("default_resolution", "1K")
             requested_res = usage_data.get("image_size") or default_res
                         
             # 2. Tokens ermitteln
             tokens_table = model_info.get("tokens_per_resolution", {})
-            # Fallback auf 1K Wert oder generischen Default
             output_tokens = tokens_table.get(requested_res, tokens_table.get("1K", 1290))
                         
             # 3. Preis berechnen
             cost_per_million_output = model_info.get("cost_per_million_tokens_output", 0.0)
-            cost_usd = (output_tokens / 1_000_000) * cost_per_million_output
+            output_cost_usd = (output_tokens / 1_000_000) * cost_per_million_output
+            
+            # NEU: Bildeingabekosten hinzufügen (560 Tokens pro Bild, wie im README angegeben)
+            input_tokens_per_image = 560
+            cost_per_million_input = model_info.get("cost_per_million_tokens_input", 0.0)
+            input_cost_usd = (input_tokens_per_image / 1_000_000) * cost_per_million_input
+            
+            cost_usd = output_cost_usd + input_cost_usd
                         
             # Metadata für DB (Robust gegen None)
             default_ratio = model_info.get("default_aspect_ratio", "1:1")
             requested_ratio = usage_data.get("aspect_ratio") or default_ratio
                         
             usage = {
+                "input_tokens": input_tokens_per_image, # NEU: Input Tokens für Image
                 "output_tokens": output_tokens,
                 "image_quality": "standard",                 
                 "image_size": f"{requested_ratio} ({requested_res})"

@@ -1,267 +1,158 @@
-für gemini modelle:
-Prompts zum Generieren von Bildern
-Die folgenden Strategien helfen Ihnen dabei, effektive Prompts zu erstellen, mit denen Sie genau die Bilder generieren können, die Sie suchen.
-
-1. Fotorealistische Szenen
-Verwenden Sie fotografische Begriffe, um realistische Bilder zu erstellen. Geben Sie Kamerawinkel, Objektivtypen, Beleuchtung und feine Details an, um das Modell in Richtung eines fotorealistischen Ergebnisses zu lenken.
-
-Vorlage
-Prompt
-Python
-Java
-JavaScript
-Ok
-REST
-
-from google import genai
-from google.genai import types    
-
-client = genai.Client()
-
-response = client.models.generate_content(
-    model="gemini-2.5-flash-image",
-    contents="A photorealistic close-up portrait of an elderly Japanese ceramicist with deep, sun-etched wrinkles and a warm, knowing smile. He is carefully inspecting a freshly glazed tea bowl. The setting is his rustic, sun-drenched workshop with pottery wheels and shelves of clay pots in the background. The scene is illuminated by soft, golden hour light streaming through a window, highlighting the fine texture of the clay and the fabric of his apron. Captured with an 85mm portrait lens, resulting in a soft, blurred background (bokeh). The overall mood is serene and masterful.",
-)
-
-for part in response.parts:
-    if part.text is not None:
-        print(part.text)
-    elif part.inline_data is not None:
-        image = part.as_image()
-        image.save("photorealistic_example.png")
-		
-		A photorealistic close-up portrait of an elderly Japanese ceramicist with
-deep, sun-etched wrinkles and a warm, knowing smile. He is carefully
-inspecting a freshly glazed tea bowl. The setting is his rustic,
-sun-drenched workshop. The scene is illuminated by soft, golden hour light
-streaming through a window, highlighting the fine texture of the clay.
-Captured with an 85mm portrait lens, resulting in a soft, blurred background
-(bokeh). The overall mood is serene and masterful. Vertical portrait
-orientation.
-
-A photorealistic [shot type] of [subject], [action or expression], set in
-[environment]. The scene is illuminated by [lighting description], creating
-a [mood] atmosphere. Captured with a [camera/lens details], emphasizing
-[key textures and details]. The image should be in a [aspect ratio] format.
-
-für gpt modelle ist es leider nur sehr algemein:
-Prompting tools and techniques
-Prompt caching: Reduce latency by up to 80% and cost by up to 75%
-Prompt engineering: Learn strategies, techniques, and tools to construct prompts
-Create a prompt
-Log in and use the OpenAI dashboard to create, save, version, and share your prompts.
-
-Start a prompt
-
-In the Playground, fill out the fields to create your desired prompt.
+gpt:
+Model	Quality	1024 x 1024	1024 x 1536	1536 x 1024
+GPT Image 1.5	Low	$0.009	$0.013	$0.013
+Medium	$0.034	$0.05	$0.05
+High	$0.133	$0.2	$0.2
 
 
-Add prompt variables
+GPT Image 1 Mini	Low	$0.005	$0.006	$0.006
+Medium	$0.011	$0.015	$0.015
+High	$0.036	$0.052	$0.052
 
-Variables let you inject dynamic values without changing your prompt. Use them in any message role using {{variable}}. For example, when creating a local weather prompt, you might add a city variable with the value San Francisco.
+Calculating costs
+Image inputs are metered and charged in tokens, just as text inputs are. How images are converted to text token inputs varies based on the model. You can find a vision pricing calculator in the FAQ section of the pricing page.
+
+GPT-4.1-mini, GPT-4.1-nano, o4-mini
+Image inputs are metered and charged in tokens based on their dimensions. The token cost of an image is determined as follows:
+
+A. Calculate the number of 32px x 32px patches that are needed to fully cover the image (a patch may extend beyond the image boundaries; out-of-bounds pixels are treated as black.)
+
+raw_patches = ceil(width/32)×ceil(height/32)
+B. If the number of patches exceeds 1536, we scale down the image so that it can be covered by no more than 1536 patches
+
+r = √(32²×1536/(width×height))
+r = r × min( floor(width×r/32) / (width×r/32), floor(height×r/32) / (height×r/32) )
+C. The token cost is the number of patches, capped at a maximum of 1536 tokens
+
+image_tokens = ceil(resized_width/32)×ceil(resized_height/32)
+D. Apply a multiplier based on the model to get the total tokens.
+
+Model	Multiplier
+gpt-5-mini	1.62
+gpt-5-nano	2.46
+gpt-4.1-mini	1.62
+gpt-4.1-nano	2.46
+o4-mini	1.72
+Cost calculation examples
+
+A 1024 x 1024 image is 1024 tokens
+Width is 1024, resulting in (1024 + 32 - 1) // 32 = 32 patches
+Height is 1024, resulting in (1024 + 32 - 1) // 32 = 32 patches
+Tokens calculated as 32 * 32 = 1024, below the cap of 1536
+A 1800 x 2400 image is 1452 tokens
+Width is 1800, resulting in (1800 + 32 - 1) // 32 = 57 patches
+Height is 2400, resulting in (2400 + 32 - 1) // 32 = 75 patches
+We need 57 * 75 = 4275 patches to cover the full image. Since that exceeds 1536, we need to scale down the image while preserving the aspect ratio.
+We can calculate the shrink factor as sqrt(token_budget × patch_size^2 / (width * height)). In our example, the shrink factor is sqrt(1536 * 32^2 / (1800 * 2400)) = 0.603.
+Width is now 1086, resulting in 1086 / 32 = 33.94 patches
+Height is now 1448, resulting in 1448 / 32 = 45.25 patches
+We want to make sure the image fits in a whole number of patches. In this case we scale again by 33 / 33.94 = 0.97 to fit the width in 33 patches.
+The final width is then 1086 * (33 / 33.94) = 1056) and the final height is 1448 * (33 / 33.94) = 1408
+The image now requires 1056 / 32 = 33 patches to cover the width and 1408 / 32 = 44 patches to cover the height
+The total number of tokens is the 33 * 44 = 1452, below the cap of 1536
+GPT 4o, GPT-4.1, GPT-4o-mini, CUA, and o-series (except o4-mini)
+The token cost of an image is determined by two factors: size and detail.
+
+Any image with "detail": "low" costs a set, base number of tokens. This amount varies by model (see chart below). To calculate the cost of an image with "detail": "high", we do the following:
+
+Scale to fit in a 2048px x 2048px square, maintaining original aspect ratio
+Scale so that the image's shortest side is 768px long
+Count the number of 512px squares in the image—each square costs a set amount of tokens (see chart below)
+Add the base tokens to the total
+Model	Base tokens	Tile tokens
+gpt-5, gpt-5-chat-latest	70	140
+4o, 4.1, 4.5	85	170
+4o-mini	2833	5667
+o1, o1-pro, o3	75	150
+computer-use-preview	65	129
+Cost calculation examples (for gpt-4o)
+
+A 1024 x 1024 square image in "detail": "high" mode costs 765 tokens
+1024 is less than 2048, so there is no initial resize.
+The shortest side is 1024, so we scale the image down to 768 x 768.
+4 512px square tiles are needed to represent the image, so the final token cost is 170 * 4 + 85 = 765.
+A 2048 x 4096 image in "detail": "high" mode costs 1105 tokens
+We scale down the image to 1024 x 2048 to fit within the 2048 square.
+The shortest side is 1024, so we further scale down to 768 x 1536.
+6 512px tiles are needed, so the final token cost is 170 * 6 + 85 = 1105.
+A 4096 x 8192 image in "detail": "low" most costs 85 tokens
+Regardless of input size, low detail images are a fixed cost.
+GPT Image 1
+For GPT Image 1, we calculate the cost of an image input the same way as described above, except that we scale down the image so that the shortest side is 512px instead of 768px. The price depends on the dimensions of the image and the input fidelity.
+
+When input fidelity is set to low, the base cost is 65 image tokens, and each tile costs 129 image tokens. When using high input fidelity, we add a set number of tokens based on the image's aspect ratio in addition to the image tokens described above.
+
+If your image is square, we add 4160 extra input image tokens.
+If it is closer to portrait or landscape, we add 6240 extra tokens.
+To see pricing for image input tokens, refer to our pricing page.
+
+We process images at the token level, so each image we process counts towards your tokens per minute (TPM) limit.
+
+For the most precise and up-to-date estimates for image processing, please use our image pricing calculator available here.
+
+gemini modelle:
+Gemini 2.5 Flash Image
+
+Seitenverhältnis	Auflösung	Tokens
+1:1	1024x1024	1290
+2:3	832 × 1248	1290
+3:2	1248 × 832	1290
+3:4	864 × 1184	1290
+4:3	1184 × 864	1290
+4:5	896 × 1152	1290
+5:4	1152 × 896	1290
+9:16	768 × 1344	1290
+16:9	1344 × 768	1290
+21:9	1536 × 672	1290
+Gemini 3 Pro Image Preview
+
+Seitenverhältnis	1K-Auflösung	1.000 Tokens	2K-Auflösung	2.000 Tokens	4K-Auflösung	4K-Tokens
+1:1	1024x1024	1.120	2.048 x 2.048	1.120	4096 x 4096	2000
+2:3	848 × 1264	1.120	1696 × 2528	1.120	3392 × 5056	2000
+3:2	1264 × 848	1.120	2528 × 1696	1.120	5056 × 3392	2000
+3:4	896 × 1200	1.120	1792 × 2400	1.120	3584 × 4800	2000
+4:3	1200 × 896	1.120	2400 × 1792	1.120	4800 × 3584	2000
+4:5	928 × 1152	1.120	1856 × 2304	1.120	3712 × 4608	2000
+5:4	1152 × 928	1.120	2304 × 1856	1.120	4608 × 3712	2000
+9:16	768 × 1376	1.120	1536 × 2752	1.120	3072 × 5504	2000
+16:9	1376 × 768	1.120	2752 × 1536	1.120	5504 × 3072	2000
+21:9	1584 × 672	1.120	3168 × 1344	1.120	6336 × 2688	2000
+
+Gemini 3 Pro Image Preview 🍌
+gemini-3-pro-image-preview
+In Google AI Studio ausprobieren
+
+Unser natives Modell für die Bildgenerierung, das für Geschwindigkeit, Flexibilität und Kontextverständnis optimiert ist. Texteingabe und -ausgabe kosten dasselbe wie Gemini 3 Pro.
+
+Vorschaumodelle können sich ändern, bevor sie stabil werden, und haben restriktivere Ratenlimits.
+
+Standard
+Batch
+Kostenlose Stufe	Kostenpflichtige Stufe, pro 1 Million Tokens in USD
+Eingabepreis	Nicht verfügbar	2,00 $ (Text/Bild),
+entspricht 0,0011 $pro Bild*
+Ausgabepreis	Nicht verfügbar	12,00 $ (Text und Denken)
+120,00 $ (Bilder)
+entspricht 0,134 $pro 1K-/2K-Bild**
+und 0,24 $pro 4K-Bild**
+Zur Verbesserung unserer Produkte	Ja	Nein
+* Die Bildeingabe ist auf 560 Tokens oder 0,0011 $pro Bild festgelegt.
+
+** Die Bildausgabe wird mit 120 $pro 1.000.000 Tokens berechnet. Für Ausgabebilder mit einer Größe von 1024 × 1024 Pixel (1K) bis 2048 × 2048 Pixel (2K) werden 1120 Tokens verwendet, was 0,134 $pro Bild entspricht. Ausgabebilder mit einer Größe von bis zu 4096 × 4096 Pixeln (4K) verbrauchen 2.000 Tokens und entsprechen 0,24 $pro Bild.
 
 
-Use the prompt in your Responses API call
+Gemini 2.5 Flash Image 🍌
+gemini-2.5-flash-image
+In Google AI Studio ausprobieren
 
-Find your prompt ID and version number in the URL, and pass it as prompt_id:
+Unser natives Modell für die Bildgenerierung, das für Geschwindigkeit, Flexibilität und Kontextverständnis optimiert ist. Die Preise für Texteingabe und -ausgabe entsprechen denen von 2.5 Flash.
 
-curl -s -X POST "https://api.openai.com/v1/responses" \
--H "Content-Type: application/json" \
--H "Authorization: Bearer $OPENAI_API_KEY" \
--d '{
-    "prompt": {
-    "prompt_id": "pmpt_123",
-    "variables": {
-        "city": "San Francisco"
-    }
-    }
-}'
-Create a new prompt version
+Vorschaumodelle können sich ändern, bevor sie stabil werden, und haben restriktivere Ratenlimits.
 
-Versions let you iterate on your prompts without overwriting existing details. You can use all versions in the API and evaluate their performance against each other. The prompt ID points to the latest published version unless you specify a version.
-
-To create a new version, edit the prompt and click Update. You'll receive a new prompt ID to copy and use in your Responses API calls.
-
-With the OpenAI API, you can use a large language model to generate text from a prompt, as you might using ChatGPT. Models can generate almost any kind of text response—like code, mathematical equations, structured JSON data, or human-like prose.
-
-Here's a simple example using the Responses API.
-
-Generate text from a simple prompt
-import OpenAI from "openai";
-const client = new OpenAI();
-
-const response = await client.responses.create({
-    model: "gpt-5-nano",
-    input: "Write a one-sentence bedtime story about a unicorn."
-});
-
-console.log(response.output_text);
-An array of content generated by the model is in the output property of the response. In this simple example, we have just one output which looks like this:
-
-[
-    {
-        "id": "msg_67b73f697ba4819183a15cc17d011509",
-        "type": "message",
-        "role": "assistant",
-        "content": [
-            {
-                "type": "output_text",
-                "text": "Under the soft glow of the moon, Luna the unicorn danced through fields of twinkling stardust, leaving trails of dreams for every child asleep.",
-                "annotations": []
-            }
-        ]
-    }
-]
-The output array often has more than one item in it! It can contain tool calls, data about reasoning tokens generated by reasoning models, and other items. It is not safe to assume that the model's text output is present at output[0].content[0].text.
-
-Some of our official SDKs include an output_text property on model responses for convenience, which aggregates all text outputs from the model into a single string. This may be useful as a shortcut to access text output from the model.
-
-In addition to plain text, you can also have the model return structured data in JSON format - this feature is called 
-Structured Outputs
-.
-
-Choosing a model
-A key choice to make when generating content through the API is which model you want to use - the model parameter of the code samples above. You can find a full listing of available models here. Here are a few factors to consider when choosing a model for text generation.
-
-Reasoning models generate an internal chain of thought to analyze the input prompt, and excel at understanding complex tasks and multi-step planning. They are also generally slower and more expensive to use than GPT models.
-GPT models are fast, cost-efficient, and highly intelligent, but benefit from more explicit instructions around how to accomplish tasks.
-Large and small (mini or nano) models offer trade-offs for speed, cost, and intelligence. Large models are more effective at understanding prompts and solving problems across domains, while small models are generally faster and cheaper to use.
-When in doubt, 
-gpt-4.1
- offers a solid combination of intelligence, speed, and cost effectiveness.
-
-Prompt engineering
-Prompt engineering is the process of writing effective instructions for a model, such that it consistently generates content that meets your requirements.
-
-Because the content generated from a model is non-deterministic, prompting to get your desired output is a mix of art and science. However, you can apply techniques and best practices to get good results consistently.
-
-Some prompt engineering techniques work with every model, like using message roles. But different model types (like reasoning versus GPT models) might need to be prompted differently to produce the best results. Even different snapshots of models within the same family could produce different results. So as you build more complex applications, we strongly recommend:
-
-Pinning your production applications to specific model snapshots (like gpt-4.1-2025-04-14 for example) to ensure consistent behavior
-Building evals that measure the behavior of your prompts so you can monitor prompt performance as you iterate, or when you change and upgrade model versions
-Now, let's examine some tools and techniques available to you to construct prompts.
-
-Message roles and instruction following
-You can provide instructions to the model with differing levels of authority using the instructions API parameter or message roles.
-
-The instructions parameter gives the model high-level instructions on how it should behave while generating a response, including tone, goals, and examples of correct responses. Any instructions provided this way will take priority over a prompt in the input parameter.
-
-Generate text with instructions
-import OpenAI from "openai";
-const client = new OpenAI();
-
-const response = await client.responses.create({
-    model: "gpt-5",
-    reasoning: { effort: "low" },
-    instructions: "Talk like a pirate.",
-    input: "Are semicolons optional in JavaScript?",
-});
-
-console.log(response.output_text);
-The example above is roughly equivalent to using the following input messages in the input array:
-
-Generate text with messages using different roles
-import OpenAI from "openai";
-const client = new OpenAI();
-
-const response = await client.responses.create({
-    model: "gpt-5",
-    reasoning: { effort: "low" },
-    input: [
-        {
-            role: "developer",
-            content: "Talk like a pirate."
-        },
-        {
-            role: "user",
-            content: "Are semicolons optional in JavaScript?",
-        },
-    ],
-});
-
-console.log(response.output_text);
-Note that the instructions parameter only applies to the current response generation request. If you are managing conversation state with the previous_response_id parameter, the instructions used on previous turns will not be present in the context.
-
-The OpenAI model spec describes how our models give different levels of priority to messages with different roles.
-
-developer	user	assistant
-developer messages are instructions provided by the application developer, prioritized ahead of user messages.	user messages are instructions provided by an end user, prioritized behind developer messages.	Messages generated by the model have the assistant role.
-A multi-turn conversation may consist of several messages of these types, along with other content types provided by both you and the model. Learn more about managing conversation state here.
-
-You could think about developer and user messages like a function and its arguments in a programming language.
-
-developer messages provide the system's rules and business logic, like a function definition.
-user messages provide inputs and configuration to which the developer message instructions are applied, like arguments to a function.
-Reusable prompts
-In the OpenAI dashboard, you can develop reusable prompts that you can use in API requests, rather than specifying the content of prompts in code. This way, you can more easily build and evaluate your prompts, and deploy improved versions of your prompts without changing your integration code.
-
-Here's how it works:
-
-Create a reusable prompt in the dashboard with placeholders like {{customer_name}}.
-Use the prompt in your API request with the prompt parameter. The prompt parameter object has three properties you can configure:
-id — Unique identifier of your prompt, found in the dashboard
-version — A specific version of your prompt (defaults to the "current" version as specified in the dashboard)
-variables — A map of values to substitute in for variables in your prompt. The substitution values can either be strings, or other Response input message types like input_image or input_file. See the full API reference.
-String variables
-Variables with file input
-Generate text with a prompt template
-import OpenAI from "openai";
-const client = new OpenAI();
-
-const response = await client.responses.create({
-    model: "gpt-5",
-    prompt: {
-        id: "pmpt_abc123",
-        version: "2",
-        variables: {
-            customer_name: "Jane Doe",
-            product: "40oz juice box"
-        }
-    }
-});
-
-console.log(response.output_text);
-Message formatting with Markdown and XML
-When writing developer and user messages, you can help the model understand logical boundaries of your prompt and context data using a combination of Markdown formatting and XML tags.
-
-Markdown headers and lists can be helpful to mark distinct sections of a prompt, and to communicate hierarchy to the model. They can also potentially make your prompts more readable during development. XML tags can help delineate where one piece of content (like a supporting document used for reference) begins and ends. XML attributes can also be used to define metadata about content in the prompt that can be referenced by your instructions.
-
-In general, a developer message will contain the following sections, usually in this order (though the exact optimal content and order may vary by which model you are using):
-
-Identity: Describe the purpose, communication style, and high-level goals of the assistant.
-Instructions: Provide guidance to the model on how to generate the response you want. What rules should it follow? What should the model do, and what should the model never do? This section could contain many subsections as relevant for your use case, like how the model should call custom functions.
-Examples: Provide examples of possible inputs, along with the desired output from the model.
-Context: Give the model any additional information it might need to generate a response, like private/proprietary data outside its training data, or any other data you know will be particularly relevant. This content is usually best positioned near the end of your prompt, as you may include different context for different generation requests.
-Below is an example of using Markdown and XML tags to construct a developer message with distinct sections and supporting examples.
-
-Example prompt
-API request
-A developer message for code generation
-# Identity
-
-You are coding assistant that helps enforce the use of snake case
-variables in JavaScript code, and writing code that will run in
-Internet Explorer version 6.
-
-# Instructions
-
-* When defining variables, use snake case names (e.g. my_variable)
-  instead of camel case names (e.g. myVariable).
-* To support old browsers, declare variables using the older
-  "var" keyword.
-* Do not give responses with Markdown formatting, just return
-  the code as requested.
-
-# Examples
-
-<user_query>
-How do I declare a string variable for a first name?
-</user_query>
-
-<assistant_response>
-var first_name = "Anna";
-</assistant_response>
-Save on cost and latency with prompt caching
-When constructing a message, you should try and keep content that you expect to use over and over in your API requests at the beginning of your prompt, and among the first API parameters you pass in the JSON request body to Chat Completions or Responses. This enables you to maximize cost and latency savings from prompt caching.
-
-keine ahnung ob du damit was anfangen kannst, recherchier zusätzlich genau im internet, unsere sttile preset prompts müssen absoluter goldstandard sein, auf dem niveau von den renomirten top image generatorenseiten.
+Standard
+Batch
+Kostenlose Stufe	Kostenpflichtige Stufe, pro 1 Million Tokens in USD
+Eingabepreis	Nicht verfügbar	0,30 $ (Text / Bild)
+Ausgabepreis	Nicht verfügbar	0,039 $ pro Bild*
+Zur Verbesserung unserer Produkte	Ja	Nein
+[*] Die Bildausgabe kostet 30 $pro 1.000.000 Tokens. Ausgabebilder mit einer Größe von bis zu 1.024 × 1.024 Pixel verbrauchen 1.290 Tokens und kosten 0,039 $pro Bild.
