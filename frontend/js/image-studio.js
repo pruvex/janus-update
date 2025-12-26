@@ -1348,8 +1348,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 reader.readAsDataURL(blob);
             });
           
-        // Automatically enable refine mode for the next generation
+        // Automatically enable refine mode and disable others for the next generation
         document.getElementById('is-refine-mode').checked = true;
+        document.getElementById('is-combine-mode').checked = false;
+        document.getElementById('is-edit-mode').checked = false;
+        document.getElementById('is-mask-mode').checked = false;
 
         // Extrahiere den Dateinamen aus der URL für das Input-Feld
         const filenameMatch = imageUrl.match(/\/([^\/]+)$/);
