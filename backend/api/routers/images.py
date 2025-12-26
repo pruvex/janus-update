@@ -183,7 +183,6 @@ async def generate_image(
             qg_stats["total_cost"] += image_cost_details.get("total_cost", 0.0)
 
             save_cost_entry(
-                db=db,
                 date=datetime.now(),
                 model=full_model_id,
                 provider=image_request.provider,
