@@ -118,43 +118,57 @@ async def generate_image(
         
         full_model_id = image_request.model
 
-        # --- PRESET LOGIK ---
-        final_prompt = image_request.prompt
+        # --- PRESET LOGIK (ROBUSTER) ---
+        preset_config = None # Initialisiere als None
+        
         if image_request.style_preset and image_request.variation_preset:
-            final_prompt = get_preset(
+            # Holen Sie sich den formatierten Prompt
+            formatted_prompt = get_preset(
                 provider=image_request.provider,
-                style=image_request.style_preset,
-                variation=image_request.variation_preset,
-                user_prompt=image_request.prompt
+                style=image_request.style_preset.get('style'), # Jetzt ein Diktat
+                variation=image_request.style_preset.get('variation'), # Jetzt ein Diktat
+                prompt=image_request.prompt # Hier sollte der User-Prompt übergeben werden
             )
-            logger.info(f"Stil-Preset '{image_request.style_preset} / {image_request.variation_preset}' wird angewendet.")
+            final_prompt = formatted_prompt if formatted_prompt else image_request.prompt
+
+            # Holen Sie sich die volle Konfiguration des Presets
+            # image_request.style_preset ist jetzt ein Diktat, muss entsprechend zugegriffen werden
+            preset_conf_data = PRESET_DATABASE.get(image_request.style_preset.get('style'), {}).get(image_request.style_preset.get('variation'))
+            if preset_conf_data:
+                # Konvertiere das Diktat in ein Objekt, um 'hasattr' zu ermöglichen
+                preset_config = type('PresetConfig', (object,), preset_conf_data)()
+            
+            logger.info(f"Stil-Preset '{image_request.style_preset.get('style')} / {image_request.style_preset.get('variation')}' wird angewendet.")
+        else:
+            # Wenn keine Presets, nutze den Original-Prompt
+            final_prompt = image_request.prompt
 
         # --- QUALITY GATE SETUP ---
         current_prompt = final_prompt
         gate_level = image_request.quality_gate_level or "none"
         gate_config = QUALITY_GATE_CONFIG.get(gate_level, QUALITY_GATE_CONFIG["none"])
         max_retries = gate_config["retries"]
-        min_score = gate_config["threshold"]
+        min_score = gate_config["threshold"]  # Standard-Threshold aus der Konfiguration
+        
+        # Überschreibe den Threshold, falls im Preset definiert
+        vision_criteria = []
+        if preset_config:
+            if hasattr(preset_config, 'vision_criteria') and preset_config.vision_criteria:
+                vision_criteria = preset_config.vision_criteria
+            if hasattr(preset_config, 'vision_pass_score') and preset_config.vision_pass_score is not None:
+                min_score = preset_config.vision_pass_score  # Überschreibe mit Preset-spezifischem Wert
         
         attempt = 0
         final_result = None
         
-        # NEU: Stats-Objekt initialisieren
+        # Stats-Objekt initialisieren
         qg_stats = {
             "was_active": gate_level != "none",
             "attempts": 0,
             "total_cost": 0.0,
-            "final_score": 0
+            "final_score": 0,
+            "min_required_score": min_score
         }
-
-        vision_criteria = []
-        if image_request.style_preset and image_request.variation_preset:
-            try:
-                preset_conf = PRESET_DATABASE.get(image_request.style_preset, {}).get(image_request.variation_preset)
-                if preset_conf and hasattr(preset_conf, 'vision_criteria'):
-                    vision_criteria = preset_conf.vision_criteria
-            except Exception as e:
-                logger.warning(f"Konnte Vision-Kriterien nicht laden: {e}")
 
         logger.info(f"Starte Generierung mit Quality Gate: {gate_level} (Max Retries: {max_retries})")
 
@@ -227,9 +241,9 @@ async def generate_image(
                         break
                     
                     if attempt < max_retries:
-                        suggestion = evaluation.get("suggestion", "Make it look more realistic.")
+                        suggestion = evaluation.get("suggestion", "make it look more realistic")
                         logger.warning(f"Quality Gate NICHT bestanden. Optimiere Prompt... Suggestion: {suggestion}")
-                        current_prompt = f"{current_prompt}\n\nCORRECTION REQUEST: {suggestion}. Focus on RAW realism."
+                        current_prompt = f"{current_prompt} - {suggestion}"
                         image_request.previous_response_id = None
                         image_request.previous_image_id = None
                 else:

@@ -2,8 +2,9 @@ import logging
 import base64
 import json
 import httpx
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 import openai
+from backend.data.presets import VisionCriterion  # WICHTIG: Die neue Klasse importieren
 
 logger = logging.getLogger("janus_backend")
 
@@ -17,13 +18,16 @@ class QualityGateService:
         api_key: str, 
         image_bytes: bytes, 
         prompt: str, 
-        criteria: List[str] = None
+        criteria: List[VisionCriterion] = None
     ) -> Dict:
         """
-        Sendet das Bild an GPT-4o Vision zur Analyse.
+        Verteilt die Anfrage an den passenden Provider.
         """
+        # Fallback auf generische Kriterien, wenn keine spezifischen übergeben werden
         if not criteria:
-            criteria = ["Is the image photorealistic?", "Are there obvious AI artifacts?"]
+            criteria = [
+                VisionCriterion(id="photorealism", description="Is the image photorealistic?", weight=100)
+            ]
 
         if provider == "openai":
             return await self._evaluate_with_openai(api_key, image_bytes, prompt, criteria)
@@ -33,24 +37,26 @@ class QualityGateService:
             logger.error(f"Unbekannter Provider für Quality Gate: {provider}")
             return self._fallback_result()
 
-    async def _evaluate_with_openai(self, api_key: str, image_bytes: bytes, prompt: str, criteria: List[str]) -> Dict:
-        # Kriterien formatieren
-        criteria_text = "\n".join([f"- {c}" for c in criteria])
-        base64_image = base64.b64encode(image_bytes).decode('utf-8')
+    async def _evaluate_with_openai(self, api_key: str, image_bytes: bytes, prompt: str, criteria: List[VisionCriterion]) -> Dict:
+        # Kriterien in eine Scorecard für den Vision Prompt umwandeln
+        scorecard_text = ""
+        for c in criteria:
+            scorecard_text += f"- {c.description} (id: {c.id})\n"
         
+        base64_image = base64.b64encode(image_bytes).decode('utf-8')
         client = openai.AsyncOpenAI(api_key=api_key)
         
         system_prompt = (
-            "You are a strict Photography Critic and AI Quality Control Agent. "
-            "Your job is to REJECT images that look like 'typical AI art' (plastic skin, perfect symmetry, weird hands) "
-            "and ACCEPT only images that look like real photos.\n"
-            f"CRITERIA TO CHECK:\n{criteria_text}"
+            "You are a strict Photography Critic. "
+            "Evaluate the image against the provided scorecard. "
+            "For each criterion, provide a score from 0 to 100. "
+            "Return ONLY a valid JSON object with a list of scores and nothing else."
         )
         
         user_message = (
             f"Original Prompt: {prompt}\n\n"
-            "Evaluate this image. Does it meet the criteria? "
-            "Return a JSON object with: { 'passed': boolean, 'score': 0-100, 'reason': 'string', 'suggestion': 'string' }"
+            f"SCORECARD:\n{scorecard_text}\n"
+            "JSON format: { \"scores\": [{\"id\": \"criterion_id\", \"score\": 0-100, \"reason\": \"short string\"}] }"
         )
 
         try:
@@ -64,28 +70,31 @@ class QualityGateService:
                     ]}
                 ],
                 response_format={"type": "json_object"},
-                max_tokens=300
+                max_tokens=500 # Mehr Platz für detailliertere Scores
             )
-            return json.loads(response.choices[0].message.content)
+            # Hier berechnen wir den finalen Score
+            return self._calculate_final_score(json.loads(response.choices[0].message.content), criteria)
         except Exception as e:
             logger.error(f"OpenAI Quality Gate Error: {e}")
             return self._fallback_result()
 
-    async def _evaluate_with_gemini(self, api_key: str, image_bytes: bytes, prompt: str, criteria: List[str]) -> Dict:
-        # UPDATE: Wir nutzen jetzt Gemini 3 Flash (Preview)
+    async def _evaluate_with_gemini(self, api_key: str, image_bytes: bytes, prompt: str, criteria: List[VisionCriterion]) -> Dict:
         model = "gemini-3-flash-preview"
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
         
-        criteria_text = "\n".join([f"- {c}" for c in criteria])
+        # Scorecard für den Prompt erstellen
+        scorecard_text = ""
+        for c in criteria:
+            scorecard_text += f"- {c.description} (id: {c.id})\n"
+            
         base64_image = base64.b64encode(image_bytes).decode('utf-8')
         
-        # Prompt Konstruktion
         full_prompt = (
-            "You are a strict Photography Critic. Analyze this image based on these criteria:\n"
-            f"{criteria_text}\n\n"
-            f"Original Request: {prompt}\n\n"
-            "Output strictly valid JSON with no markdown formatting:\n"
-            "{ \"passed\": boolean, \"score\": 0-100, \"reason\": \"string\", \"suggestion\": \"string\" }"
+            "You are a strict Photography Critic. Evaluate the image against this scorecard. "
+            "For each criterion, provide a score from 0 to 100.\n"
+            f"SCORECARD:\n{scorecard_text}\n"
+            "Output strictly valid JSON with no markdown:\n"
+            "{ \"scores\": [{\"id\": \"criterion_id\", \"score\": 0-100, \"reason\": \"short string\"}] }"
         )
 
         payload = {
@@ -101,7 +110,7 @@ class QualityGateService:
                 ]
             }],
             "generationConfig": {
-                "response_mime_type": "application/json" # JSON Mode erzwingen
+                "response_mime_type": "application/json"
             }
         }
 
@@ -113,14 +122,43 @@ class QualityGateService:
             data = response.json()
             # Text extrahieren
             text_result = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "{}")
-            return json.loads(text_result)
+            return self._calculate_final_score(json.loads(text_result), criteria)
             
         except Exception as e:
             logger.error(f"Gemini Quality Gate Error: {e}")
             return self._fallback_result()
 
+    def _calculate_final_score(self, evaluation_json: Dict, criteria: List[VisionCriterion]) -> Dict:
+        """Berechnet den gewichteten Score und findet den schlechtesten Punkt für die Degradation."""
+        total_score = 0
+        total_weight = 0
+        lowest_score = 101
+        degradation_suggestion = "make it look more realistic"
+        
+        scores_map = {item['id']: item for item in evaluation_json.get('scores', [])}
+        
+        for c in criteria:
+            total_weight += c.weight
+            score_item = scores_map.get(c.id)
+            if score_item:
+                score = score_item.get('score', 0)
+                total_score += score * c.weight
+                
+                # Finde das Kriterium mit dem niedrigsten Score für die Korrektur
+                if score < lowest_score:
+                    lowest_score = score
+                    if c.failure_hint:
+                        degradation_suggestion = c.failure_hint
+
+        final_score = int(total_score / total_weight) if total_weight > 0 else 0
+        
+        return {
+            "score": final_score,
+            "suggestion": degradation_suggestion
+        }
+
     def _fallback_result(self):
-        return {"passed": True, "score": 100, "reason": "Check skipped due to error", "suggestion": ""}
+        return {"score": 100, "suggestion": ""}
 
 # Singleton Instanz
 quality_gate_service = QualityGateService()

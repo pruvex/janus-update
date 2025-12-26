@@ -150,7 +150,7 @@ class GeneratedImage(Base):
     id = Column(Integer, primary_key=True, index=True)
     # user_id = Column(Integer, ForeignKey("users.id"), nullable=True) # Vorerst auskommentiert
     prompt = Column(Text, nullable=True)
-    style_preset = Column(String, nullable=True)
+    style_preset = Column(JSON, nullable=True)
     provider = Column(String, nullable=True)
     model = Column(String, nullable=True)
     parameters = Column(JSON, nullable=True)

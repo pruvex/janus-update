@@ -1,31 +1,35 @@
 # backend/data/presets.py
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 import logging
 
 logger = logging.getLogger("janus_backend")
 
-# --- 1. DIE MATRIX (Datenstruktur) ---
+# --- 1. NEUE DATENKLASSE FÜR STRUKTURIERTE VISION-KRITERIEN ---
+@dataclass
+class VisionCriterion:
+    id: str               # Eindeutiger Name für das Kriterium (z.B. "skin_texture")
+    description: str      # Was soll der Vision-Checker prüfen?
+    weight: int           # Wie wichtig ist dieses Kriterium für den Gesamt-Score?
+    failure_hint: Optional[str] = None # Anweisung für die automatische Korrektur (Degradation)
 
+# --- 2. VERBESSERTE MATRIX-DATENSTRUKTUR ---
 @dataclass
 class PresetConfig:
     name: str
-    # Identität
     camera: str
     lens: str
-    film_stock: str      # z.B. "Unprocessed RAW" oder "Kodak Portra 400"
-    lighting: str        # z.B. "Available Light" oder "Studio Strobe"
+    film_stock: str
+    lighting: str
+    imperfections: List[str]
+    forbidden: List[str]
     
-    # Die "Signatur" (Was macht diesen Look einzigartig?)
-    imperfections: List[str] 
-    forbidden: List[str]      
-    
-    # Gemini spezifisch (Optional, falls abweichend)
     gemini_style_keywords: str = "Photorealistic, Raw, Detailed"
     
-    # Qualitätskriterien für das Quality Gate
-    vision_criteria: List[str] = field(default_factory=list)
+    # NEU: Strukturierte Kriterien und ein Pass-Score
+    vision_criteria: List[VisionCriterion] = field(default_factory=list)
+    vision_pass_score: int = 75 # Standard-Schwelle, kann pro Preset überschrieben werden
 
 # --- 2. DIE DATENBANK (Hier definierst du neue Presets) ---
 
@@ -38,26 +42,44 @@ PRESET_DATABASE = {
             film_stock="Unprocessed RAW",
             lighting="Natural / Available Light",
             imperfections=[
-                "Extremely shallow depth of field",
-                "Smooth but imperfect bokeh",
-                "Visible skin texture and pores",
-                "Subtle film-like grain",
-                "Slight focus falloff toward edges",
+                "Extremely shallow depth of field", 
+                "Smooth but imperfect bokeh", 
+                "Visible skin texture and pores", 
+                "Subtle film-like grain", 
+                "Slight focus falloff toward edges", 
                 "Natural vignette"
             ],
             forbidden=[
                 "Studio lighting", "Perfect sharpness", "Synthetic clarity", 
                 "Cinematic framing", "Symmetry perfection", "CGI", "3D Render"
             ],
-            gemini_style_keywords="Raw Photography, National Geographic Style, 8k",
+            gemini_style_keywords="Raw photography, documentary realism, natural imperfections",
+            vision_pass_score=80, # Für dieses Preset wollen wir strenger sein
             vision_criteria=[
-                "Does the skin look like real skin with pores (not plastic)?",
-                "Is the background bokeh natural and not just a gaussian blur?",
-                "Are there subtle imperfections like noise or slight focus miss?",
-                "Does the lighting look physically plausible (no weird rim lights)?",
-                "Are the textures (fabric, skin, surfaces) photorealistic with fine details?",
-                "Is the depth of field consistent with the focal length and aperture?",
-                "Are there any visible AI artifacts (distortions, weird patterns, or glitches)?"
+                VisionCriterion(
+                    id="skin_texture",
+                    description="Skin shows natural pores and micro texture, not plastic or airbrushed.",
+                    weight=30,
+                    failure_hint="add more realistic skin texture and pores"
+                ),
+                VisionCriterion(
+                    id="bokeh_realism",
+                    description="Background blur (bokeh) looks optically plausible, not like a simple gaussian blur.",
+                    weight=20,
+                    failure_hint="make the bokeh less uniform and add optical imperfections"
+                ),
+                VisionCriterion(
+                    id="lighting_physics",
+                    description="Lighting appears physically plausible, coming from a clear, natural source.",
+                    weight=25,
+                    failure_hint="simplify the lighting to a single, strong natural light source"
+                ),
+                VisionCriterion(
+                    id="ai_artifacts",
+                    description="There are no obvious signs of AI, like overly smooth surfaces or weird details.",
+                    weight=25,
+                    failure_hint="reduce synthetic smoothness and add micro-textures"
+                )
             ]
         ),
         "Fotorealismus 2": PresetConfig(
@@ -66,19 +88,12 @@ PRESET_DATABASE = {
             lens="80mm f/1.9",
             film_stock="Digital Medium Format",
             lighting="Professional Studio Strobes (Butterfly Lighting)",
-            imperfections=[
-                "Sharp focus falloff",
-                "Makeup texture visible",
-                "Flash reflections in eyes",
-                "Micro-contrast"
-            ],
-            forbidden=[
-                "Natural Light", "Blurry", "Amateur", "Grainy", "Low resolution"
-            ],
+            imperfections=["Sharp focus falloff", "Makeup texture visible", "Flash reflections in eyes"],
+            forbidden=["Natural Light", "Blurry", "Amateur", "Grainy"],
             gemini_style_keywords="Studio Photography, Vogue Magazine Style, Editorial"
         )
     }
-    # Hier können später einfach neue Kategorien wie "Comic" hin
+    # Weitere Kategorien können hier hinzugefügt werden
 }
 
 # --- 3. DIE DSL (Logik / Builder) ---
@@ -91,8 +106,7 @@ def _compile_gpt_instruction(config: PresetConfig, user_prompt: str) -> str:
     
     return (
         f"ROLE:\n"
-        f"You are a photographic prompt engineer specialized in OpenAI's gpt-image-1.5.\n"
-        f"You enforce a single, consistent look: {config.name}.\n\n"
+        f"You are a photographic prompt engineer. You enforce a single, consistent look: {config.name}.\n\n"
         
         f"PRESET IDENTITY:\n"
         f"- Camera: {config.camera}\n"
@@ -102,14 +116,19 @@ def _compile_gpt_instruction(config: PresetConfig, user_prompt: str) -> str:
         
         f"STRICT RULES:\n"
         f"1. FORBIDDEN TOKENS: Do NOT use {forbidden_list}.\n"
-        f"2. REQUIRED SIGNATURE: You MUST describe these exact imperfections:\n"
-        f"- {imperfections_list}\n"
+        f"2. REQUIRED SIGNATURE: You MUST describe these exact imperfections:\n- {imperfections_list}\n"
         f"3. PHYSICS: Simulate the sensor behavior of a {config.camera}.\n\n"
         
+        f"ANTI-DEVIATION:\n" 
+        f"- Do not reinterpret the preset creatively.\n"
+        f"- Do not adapt the style to the subject. The preset overrides artistic intent.\n\n"
+        
+        f"FAILURE CONDITION:\n" 
+        f"If the user request conflicts with the preset, keep the preset and degrade the request.\n\n"
+
         f"EXECUTION:\n"
         f"1. Rewrite the user request to strictly conform to this preset.\n"
-        f"2. DO NOT output the text to the user.\n"
-        f"3. You MUST call the 'image_generation' tool with the rewritten prompt.\n\n"
+        f"2. You MUST call the 'image_generation' tool with the rewritten prompt.\n\n"
         
         f"USER REQUEST:\n"
         f"{user_prompt}"
@@ -127,7 +146,7 @@ def _compile_gemini_prompt(config: PresetConfig, user_prompt: str) -> str:
 
 # --- 4. PUBLIC API (Schnittstelle) ---
 
-def get_preset(provider: str, style: str, variation: str, user_prompt: str) -> str:
+def get_preset(provider: str, style: str, variation: str, prompt: str) -> str:
     """
     Öffentliche Funktion, die von images.py aufgerufen wird.
     Sucht das Config-Objekt und wählt den richtigen Builder.

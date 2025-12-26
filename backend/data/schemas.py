@@ -509,7 +509,7 @@ class ImageParameters(BaseModel):
 
 class GeneratedImageBase(BaseModel):
     prompt: Optional[str] = None
-    style_preset: Optional[str] = None
+    style_preset: Optional[Dict[str, str]] = None
     provider: Optional[str] = None
     model: Optional[str] = None
     parameters: Optional[ImageParameters] = None
@@ -526,8 +526,7 @@ class GeneratedImageCreate(BaseModel):
     previous_response_id: Optional[str] = None
     previous_image_id: Optional[str] = None
     mask_image_data: Optional[str] = None
-    style_preset: Optional[str] = None
-    variation_preset: Optional[str] = None
+    style_preset: Optional[Dict[str, str]] = None
     quality_gate_level: Optional[str] = "none"
     quality_gate_stats: Optional[Dict[str, Any]] = None
 
