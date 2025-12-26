@@ -20,7 +20,7 @@
   background-color: #2a2a2e;
   border: 1px solid #444;
   border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
   position: absolute; /* Für Drag-and-Drop */
@@ -67,24 +67,26 @@
   object-fit: cover;
   border-radius: 4px;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 #gallery-content img:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 /* Stil für die Resizable-Handles (optional, aber empfohlen) */
 .ui-resizable-handle {
-    position: absolute;
-    font-size: 0.1px;
-    display: block;
+  position: absolute;
+  font-size: 0.1px;
+  display: block;
 }
 .ui-resizable-se {
-    cursor: se-resize;
-    width: 12px;
-    height: 12px;
-    right: 1px;
-    bottom: 1px;
+  cursor: se-resize;
+  width: 12px;
+  height: 12px;
+  right: 1px;
+  bottom: 1px;
 }

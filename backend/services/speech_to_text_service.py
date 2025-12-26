@@ -1,12 +1,13 @@
-
-import whisper
 import logging
 import os
+
+import whisper
 from backend.utils.paths import get_model_cache_dir
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 class SpeechToTextService:
     _instance = None
@@ -47,13 +48,14 @@ class SpeechToTextService:
 
         try:
             logger.info(f"Transcribing audio file: {audio_file_path}")
-            result = self._model.transcribe(audio_file_path, fp16=False) # fp16=False for CPU
+            result = self._model.transcribe(audio_file_path, fp16=False)  # fp16=False for CPU
             transcribed_text = result["text"]
             logger.info(f"Transcription successful. Text: {transcribed_text[:100]}...")
             return transcribed_text
         except Exception as e:
             logger.error(f"Error during audio transcription: {e}")
             return ""
+
 
 # Singleton instance for easy access
 def get_stt_service():
@@ -62,4 +64,3 @@ def get_stt_service():
     except Exception as e:
         logger.error(f"Failed to initialize SpeechToTextService: {e}")
         return None
-

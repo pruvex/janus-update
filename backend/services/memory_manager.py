@@ -1,37 +1,45 @@
 # Am Anfang von backend/memory_manager.py
+import datetime
 import logging
+from typing import Dict, List, Optional
+
+from backend.data import (
+    crud,  # Importiert die crud.py Datei
+    database,  # Importiert die gesamte database.py Datei
+)
 from backend.logger_config import setup_logging
+from backend.services import llm_gateway  # NEU
+from sqlalchemy.orm import Session
+
+from . import vector_service
 
 setup_logging()
 logger = logging.getLogger("janus_backend")
-from sqlalchemy.orm import Session
-from typing import List, Optional
-from backend.data import database  # Importiert die gesamte database.py Datei
-from backend.data import crud  # Importiert die crud.py Datei
-from . import vector_service
 
 
-import datetime  # <--- DIESE ZEILE HINZUFÜGEN
-
-
-# ÄNDERUNG: Signatur um expires_at erweitern
 def save_memory_snippet(
     db: Session,
     chat_id: int,
     snippet_text: str,
-    is_core: bool = False,
+    category: str = "General Fact",
     expires_at: Optional[datetime.datetime] = None,
+    is_core: bool = False,  # NEU
 ):
+    """Speichert einen Gedächtnisschnipsel mit einer spezifischen Kategorie."""
     embedding = vector_service.generate_embedding(snippet_text)
     if embedding is None:
+        logger.error(
+            f"Konnte kein Embedding für '{snippet_text}' erstellen. Speichern abgebrochen."
+        )
         return None
-    # --- Geänderter Aufruf ---
+
     db_memory = database.Memory(
         chat_id=chat_id,
         snippet=snippet_text,
         embedding_json=embedding,
-        is_core_fact=is_core,
-        expires_at=expires_at,  # Das neue Feld wird übergeben
+        category=category,
+        expires_at=expires_at,
+        is_core_fact=is_core,  # NEU
     )
     db.add(db_memory)
     db.commit()
@@ -50,9 +58,7 @@ def promote_ltm_to_stm(db: Session, ltm_item: database.LongTermMemory):
     """Befördert einen LTM-Eintrag zurück ins STM und löscht ihn aus dem LTM."""
     logger.info(f"Promoting memory from LTM to STM: '{ltm_item.snippet}'")
     # Im STM neu erstellen (is_core wird hier als False angenommen, da es nicht archiviert worden wäre, wenn es True wäre)
-    reinstated_memory = save_memory_snippet(
-        db, ltm_item.chat_id, ltm_item.snippet, is_core=False
-    )
+    reinstated_memory = save_memory_snippet(db, ltm_item.chat_id, ltm_item.snippet, is_core=False)
 
     # Aus dem LTM löschen
     db.delete(ltm_item)
@@ -63,9 +69,7 @@ def promote_ltm_to_stm(db: Session, ltm_item: database.LongTermMemory):
 # --- NEUE FUNKTION ---
 def touch_memory_snippet(db: Session, memory_id: int):
     """Aktualisiert den last_accessed_at Zeitstempel eines STM-Eintrags."""
-    memory_item = (
-        db.query(database.Memory).filter(database.Memory.id == memory_id).first()
-    )
+    memory_item = db.query(database.Memory).filter(database.Memory.id == memory_id).first()
     if memory_item:
         memory_item.last_accessed_at = datetime.datetime.now()
         db.commit()
@@ -78,9 +82,7 @@ def archive_old_memories(db: Session):
     am seltensten genutzten und nicht-essentiellen Erinnerungen ins LTM.
     """
     STM_LIMIT = 250
-    STM_TARGET_SIZE = (
-        200  # Reduzieren auf dieses Niveau, um nicht ständig zu archivieren
-    )
+    STM_TARGET_SIZE = 200  # Reduzieren auf dieses Niveau, um nicht ständig zu archivieren
 
     try:
         stm_count = db.query(database.Memory).count()
@@ -100,9 +102,9 @@ def archive_old_memories(db: Session):
         # KORREKTUR: Die gesamte Abfrage wird in runde Klammern gesetzt, um IndentationErrors zu vermeiden.
         candidates = (
             db.query(database.Memory)
-            .filter(database.Memory.is_core_fact == False)
+            .filter(not database.Memory.is_core_fact)
             .filter(
-                database.Memory.expires_at == None
+                database.Memory.expires_at is None
             )  # <-- GOLD STANDARD: Nur zeitlose Fakten archivieren!
             .order_by(database.Memory.last_accessed_at.asc())
             .limit(num_to_archive)
@@ -110,9 +112,7 @@ def archive_old_memories(db: Session):
         )
 
         if not candidates:
-            logger.warning(
-                "STM is full but no non-core facts could be found to archive."
-            )
+            logger.warning("STM is full but no non-core facts could be found to archive.")
             return
 
         for mem in candidates:
@@ -145,9 +145,7 @@ def prune_expired_memories(db: Session):
         # Finde alle Erinnerungen, deren expires_at in der Vergangenheit liegt
         expired_memories = (
             db.query(database.Memory)
-            .filter(
-                database.Memory.expires_at != None, database.Memory.expires_at < now
-            )
+            .filter(database.Memory.expires_at is not None, database.Memory.expires_at < now)
             .all()
         )
 
@@ -169,9 +167,7 @@ def prune_expired_memories(db: Session):
 
 def find_similar_memory_snippet(db: Session, text: str):
     all_memories = get_all_memories(db)
-    similar = vector_service.find_similar_snippets(
-        text, all_memories, top_k=1, threshold=0.7
-    )
+    similar = vector_service.find_similar_snippets(text, all_memories, top_k=1, threshold=0.7)
     return similar[0] if similar else None
 
 
@@ -180,9 +176,7 @@ def get_all_memories(db: Session):
 
 
 def update_memory_snippet(db: Session, memory_id: int, new_snippet: str, is_core: bool):
-    memory_item = (
-        db.query(database.Memory).filter(database.Memory.id == memory_id).first()
-    )
+    memory_item = db.query(database.Memory).filter(database.Memory.id == memory_id).first()
     if memory_item:
         memory_item.snippet = new_snippet
         memory_item.embedding_json = vector_service.generate_embedding(new_snippet)
@@ -196,16 +190,12 @@ def update_memory_snippet(db: Session, memory_id: int, new_snippet: str, is_core
 def save_raw_memory(db: Session, chat_id: int, user_input: str):
     """Speichert die rohe Benutzereingabe als Gedächtnis."""
     current_logger = logging.getLogger("janus_backend")  # Get logger inside function
-    current_logger.info(
-        f"Attempting to save raw memory for chat {chat_id}: '{user_input}'"
-    )
+    current_logger.info(f"Attempting to save raw memory for chat {chat_id}: '{user_input}'")
     saved_memory = save_memory_snippet(db, chat_id, user_input)
     if saved_memory:
         current_logger.info(f"Raw memory saved successfully: '{user_input}'")
     else:
-        current_logger.warning(
-            f"Failed to save raw memory for chat {chat_id}: '{user_input}'"
-        )
+        current_logger.warning(f"Failed to save raw memory for chat {chat_id}: '{user_input}'")
     return saved_memory
 
 
@@ -226,35 +216,134 @@ def get_all_facts(db: Session) -> List[database.Memory]:  # Verwende database.Me
     )
 
 
-def cross_chat_memory_tool(query: str, db: Session):
-    """Ruft Zusammenfassungen der letzten Konversationen ab, um Fragen über die Vergangenheit zu beantworten."""
-    all_chats = crud.get_chats(db, include_archived=True)
-    recent_chats = sorted(all_chats, key=lambda chat: chat.created_at, reverse=True)[
-        1:6
-    ]
-    if not recent_chats:
-        return {"output": "Keine früheren Chats zum Überprüfen gefunden."}
-    output_snippets = ["--- ZUSAMMENFASSUNGEN DER LETZTEN CHATS ---"]
-    for chat in recent_chats:
-        if chat.summary:
-            output_snippets.append(f"Thema des Chats '{chat.title}': {chat.summary}")
-    if len(output_snippets) == 1:
-        return {
-            "output": "Keine relevanten Zusammenfassungen in früheren Chats gefunden."
-        }
-    return {"output": "\n".join(output_snippets)}
+def search_past_conversation_summaries_tool(query: str):
+    """Benutze dieses Werkzeug NUR, wenn der Benutzer explizit nach Informationen aus "anderen", "früheren" oder "letzten" Chats fragt. Es durchsucht die Zusammenfassungen abgeschlossener Konversationen. Für Informationen aus dem AKTUELLEN Chat ist dieses Werkzeug ungeeignet."""
+    db = database.SessionLocal()
+    try:
+        all_chats = crud.get_chats(db, include_archived=True)
+        recent_chats = sorted(all_chats, key=lambda chat: chat.created_at, reverse=True)[1:6]
+        if not recent_chats:
+            return {"output": "Keine früheren Chats zum Überprüfen gefunden."}
+        output_snippets = ["--- ZUSAMMENFASSUNGEN DER LETZTEN CHATS ---"]
+        for chat in recent_chats:
+            if chat.summary:
+                output_snippets.append(f"Thema des Chats '{chat.title}': {chat.summary}")
+        if len(output_snippets) == 1:
+            return {"output": "Keine relevanten Zusammenfassungen in früheren Chats gefunden."}
+        return {"output": "\n".join(output_snippets)}
+    finally:
+        db.close()
 
 
-def get_all_searchable_memories(db: Session) -> List[any]:
+def get_all_searchable_memories(db: Session):
     """
     Gibt eine kombinierte Liste aller Erinnerungen aus dem STM (Memory)
     und LTM (LongTermMemory) für eine umfassende Vektorsuche zurück.
     """
     stm_memories = db.query(database.Memory).all()
     ltm_memories = db.query(database.LongTermMemory).all()
-    # Wir fügen ein temporäres Attribut hinzu, um die Quelle zu identifizieren.
+
+    # Kombiniere die Erinnerungen und füge einen Typ-Hinweis hinzu
+    combined = []
     for mem in stm_memories:
-        mem.source = "stm"
+        # Füge die ursprünglichen Objekte hinzu, nicht Dictionaries
+        setattr(mem, "memory_type", "stm")  # Füge den Typ als Attribut hinzu
+        combined.append(mem)
+
     for mem in ltm_memories:
-        mem.source = "ltm"
-    return stm_memories + ltm_memories
+        # Füge die ursprünglichen Objekte hinzu, nicht Dictionaries
+        setattr(mem, "memory_type", "ltm")  # Füge den Typ als Attribut hinzu
+        combined.append(mem)
+
+    return combined
+
+
+def save_core_memory_fact(fact: str, category: str) -> Dict[str, str]:
+    """
+    Speichert einen Fakt explizit als Kern-Erinnerung (is_core_fact=True).
+    Diese Funktion wird direkt vom save_core_memory_tool aufgerufen.
+    """
+    db = database.SessionLocal()
+    try:
+        embedding = vector_service.generate_embedding(fact)
+        if embedding is None:
+            raise ValueError(f"Konnte kein Embedding für '{fact}' erstellen.")
+
+        # Wichtig: is_core_fact wird auf True gesetzt
+        db_memory = database.Memory(
+            chat_id=1,  # Wir weisen es einem "globalen" Chat zu oder dem letzten Chat
+            snippet=fact,
+            embedding_json=embedding,
+            category=category,
+            is_core_fact=True,  # Das ist der entscheidende Punkt
+        )
+        db.add(db_memory)
+        db.commit()
+        db.refresh(db_memory)
+
+        success_message = f"Die Kern-Erinnerung '{fact}' wurde erfolgreich gespeichert."
+        logger.info(success_message)
+        return {"status": "success", "output": success_message}
+
+    except Exception as e:
+        db.rollback()
+        error_message = f"Fehler beim Speichern der Kern-Erinnerung: {e}"
+        logger.error(error_message, exc_info=True)
+        return {"status": "error", "output": error_message}
+    finally:
+        db.close()
+
+
+# Platzhalter für den LLM-Aufruf
+async def call_llm(prompt: str, api_key: str, provider: str, model: str) -> str:
+    """
+    Führt einen internen LLM-Aufruf durch, um die Benutzeranfrage anzureichern.
+    """
+    messages = [{"role": "user", "content": prompt}]
+    response = await llm_gateway.call_llm(
+        provider=provider,
+        model_id=model,
+        api_key=api_key,
+        messages=messages,
+        force_no_tools=True,  # Wichtig: Keine Tools für diesen internen Aufruf!
+    )
+    return response.get("text", "").strip()
+
+
+async def enrich_user_query_with_memory(
+    original_query: str, relevant_memory_facts: List[str], api_key: str, provider: str, model: str
+) -> str:
+    """
+    Reichert die Benutzeranfrage proaktiv mit relevanten Fakten an, ABER NUR, wenn es sich um einen Suchbefehl handelt.
+    Fragen werden bewusst nicht verändert.
+    """
+    if not relevant_memory_facts:
+        return original_query
+
+    # Heuristik zur Erkennung von Fragen vs. Befehlen
+    is_question = original_query.lower().strip().startswith(
+        ("wie", "was", "wer", "wo", "wann", "warum", "welche")
+    ) or original_query.strip().endswith("?")
+    is_search_command = (
+        "suche" in original_query.lower()
+        or "empfiehl" in original_query.lower()
+        or "news" in original_query.lower()
+    )
+
+    if is_question and not is_search_command:
+        logger.info(
+            f"Query '{original_query}' identified as a direct question. Passing through without enrichment to avoid corruption."
+        )
+        return original_query
+
+    # Nur wenn es ein klarer Suchbefehl ist, versuchen wir eine Anreicherung.
+    # Hier kann später eine komplexere LLM-basierte Anreicherung stehen, aber für den Moment
+    # ist die sichere Nicht-Veränderung von Fragen wichtiger.
+    logger.info(
+        f"Query '{original_query}' is not a direct question. Applying context for potential enrichment by the main LLM."
+    )
+
+    # Wir geben die Query unverändert zurück, da der Kontext dem Haupt-LLM separat übergeben wird.
+    # Die Anreicherung findet durch den System-Prompt im ChatOrchestrator statt.
+    # Diese Funktion dient nun als Sicherheits-Gate.
+    return original_query

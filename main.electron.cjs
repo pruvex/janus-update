@@ -179,9 +179,41 @@ ipcMain.handle('open-directory-dialog', async () => {
     return result.filePaths[0];
   }
 });
+
+ipcMain.handle('create-project', async (event, projectData) => {
+  console.log(`[Electron Main] Received 'create-project' IPC call for:`, projectData.name);
+  
+  try {
+    // Forward the project data to the backend API
+    const response = await axios.post('http://localhost:8001/api/projects', {
+      name: projectData.name,
+      description: projectData.description,
+      active_provider: projectData.activeProvider,
+      active_model: projectData.activeModel
+    });
+
+    if (response.status === 200 || response.status === 201) {
+      console.log('[Electron Main] Project created successfully on backend.');
+      
+      // WICHTIG: Sende ein Event zurück an das Frontend, damit es sich aktualisiert
+      const win = BrowserWindow.fromWebContents(event.sender);
+      if (win) {
+        win.webContents.send('project-list-updated');
+      }
+      
+      return { success: true, data: response.data };
+    } else {
+      throw new Error(`Backend returned status ${response.status}`);
+    }
+  } catch (error) {
+    console.error('[Electron Main] Failed to create project via API:', error.message);
+    dialog.showErrorBox('Fehler', 'Das Projekt konnte nicht auf dem Server erstellt werden.');
+    return { success: false, error: error.message };
+  }
+});
 console.log('Main process: ipcMain.handle registered for save-image');
 
-function createWindow () {
+function createWindow() {
   console.log('Main process: createWindow called');
   const preloadPath = path.join(__dirname, 'frontend/preload.js');
   console.log(`[Main Process] Attempting to load preload script from: ${preloadPath}`);
@@ -191,17 +223,38 @@ function createWindow () {
     height: 800,
     autoHideMenuBar: true,
     webPreferences: {
-        preload: preloadPath,
-        contextIsolation: true,
-        nodeIntegration: false
-    }
+      preload: preloadPath,
+      contextIsolation: true,
+      nodeIntegration: false
+    },
+    show: false // Fenster zunächst verstecken
   });
 
-  if (app.isPackaged) {
-    mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
+  // Lade die URL basierend auf dem Build-Modus
+  const loadApp = () => {
+    if (app.isPackaged) {
+      mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
+    } else {
+      mainWindow.loadURL('http://localhost:5173/');
+      mainWindow.webContents.openDevTools();
+    }
+  };
+
+  // Im Entwicklungsmodus auf das Backend warten, bevor geladen wird
+  if (!app.isPackaged) {
+    waitForBackend()
+      .then(() => {
+        loadApp();
+        mainWindow.show();
+      })
+      .catch(err => {
+        console.error('Failed to start backend:', err);
+        app.quit();
+      });
   } else {
-    mainWindow.loadURL('http://localhost:5173/');
-    mainWindow.webContents.openDevTools();
+    // Im Produktionsmodus sofort laden
+    loadApp();
+    mainWindow.show();
   }
 
   mainWindow.webContents.on('context-menu', (event, params) => {
@@ -225,13 +278,6 @@ app.on('activate', () => {
     if (app.isPackaged) {
       startBackend(win);
     }
-    waitForBackend().then(() => {
-        if (!app.isPackaged) {
-            win.loadURL('http://localhost:5173/');
-        } else {
-            win.loadFile(path.join(__dirname, 'dist', 'index.html'));
-        }
-    });
   }
 });
 
@@ -240,13 +286,7 @@ app.whenReady().then(() => {
     if (app.isPackaged) {
       startBackend(win);
     }
-    waitForBackend().then(() => {
-        if (!app.isPackaged) {
-            win.loadURL('http://localhost:5173/');
-        } else {
-            win.loadFile(path.join(__dirname, 'dist', 'index.html'));
-        }
-    });
+    // No need to wait for backend or load URL here as it's already handled in createWindow()
 });
 
 app.on('will-quit', stopBackend);

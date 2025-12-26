@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Generator, List, Dict
+from typing import Dict, Generator, List, Optional
 
 
 class TTSProviderBase(ABC):
     """Abstract base class for all TTS providers."""
+
     name = "base"
 
     @abstractmethod

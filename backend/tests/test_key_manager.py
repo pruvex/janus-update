@@ -1,6 +1,4 @@
-import pytest
 import backend.services.key_manager
-from pydantic import SecretStr
 
 
 def test_get_openai_api_key_mocked(monkeypatch):

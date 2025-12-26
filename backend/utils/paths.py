@@ -1,5 +1,6 @@
-import sys
 import os
+import sys
+
 from platformdirs import user_data_dir
 
 APP_NAME = "Janus Projekt"
@@ -29,6 +30,7 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
+
 def get_model_cache_dir():
     """
     Gibt das Verzeichnis für den Modell-Cache zurück.
@@ -38,6 +40,7 @@ def get_model_cache_dir():
     os.makedirs(cache_dir, exist_ok=True)
     return cache_dir
 
+
 def get_desktop_path() -> str:
     """Gibt den plattformunabhängigen Pfad zum Desktop des Benutzers zurück."""
-    return os.path.join(os.path.expanduser('~'), 'Desktop')
+    return os.path.join(os.path.expanduser("~"), "Desktop")

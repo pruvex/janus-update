@@ -52,9 +52,9 @@ def calculate_cost(model_id: str, usage_data: dict = None, custom_prompt: str = 
             requested_quality = usage_data.get("quality", model_info.get("default_quality", "medium"))
             requested_size = usage_data.get("size", model_info.get("default_size", "1024x1024"))
 
-            if "pricing" in model_info and \
-               requested_quality in model_info["pricing"] and \
-               requested_size in model_info["pricing"][requested_quality]:
+            if ("pricing" in model_info and 
+                requested_quality in model_info["pricing"] and 
+                requested_size in model_info["pricing"][requested_quality]):
                 
                 cost_usd = model_info["pricing"][requested_quality][requested_size]
                 usage = {
@@ -68,14 +68,34 @@ def calculate_cost(model_id: str, usage_data: dict = None, custom_prompt: str = 
                     "image_quality": requested_quality,
                     "image_size": requested_size
                 }
-        # Prüfe, ob es sich um ein Gemini-Bildmodell mit Token-basierter Preisgestaltung handelt
-        elif model_info.get("provider") == "gemini" and "output_tokens_per_image_1024x1024" in model_info:
-            output_tokens = model_info.get("output_tokens_per_image_1024x1024", 0)
-            cost_per_million_output_tokens = model_info.get("cost_per_million_output_tokens", 0)
-            cost_usd = (output_tokens / 1_000_000) * cost_per_million_output_tokens
-            usage = {"output_tokens": output_tokens, "image_quality": "standard", "image_size": "1024x1024"}
+
+        elif model_info.get("provider") == "gemini":
+            # 1. Parameter auslesen (Robust gegen None)
+            # Nutzung von 'or': Wenn usage_data.get(...) None zurückgibt, wird der Default genutzt
+            default_res = model_info.get("default_resolution", "1K")
+            requested_res = usage_data.get("image_size") or default_res
+                        
+            # 2. Tokens ermitteln
+            tokens_table = model_info.get("tokens_per_resolution", {})
+            # Fallback auf 1K Wert oder generischen Default
+            output_tokens = tokens_table.get(requested_res, tokens_table.get("1K", 1290))
+                        
+            # 3. Preis berechnen
+            cost_per_million_output = model_info.get("cost_per_million_tokens_output", 0.0)
+            cost_usd = (output_tokens / 1_000_000) * cost_per_million_output
+                        
+            # Metadata für DB (Robust gegen None)
+            default_ratio = model_info.get("default_aspect_ratio", "1:1")
+            requested_ratio = usage_data.get("aspect_ratio") or default_ratio
+                        
+            usage = {
+                "output_tokens": output_tokens,
+                "image_quality": "standard",                 
+                "image_size": f"{requested_ratio} ({requested_res})"
+            }
+
         else:
-            # Fallback für andere Bildmodelle mit fixem cost_per_image, falls quality/size nicht in id
+            # Fallback für andere Bildmodelle mit fixem cost_per_image
             cost_usd = model_info.get("cost_per_image", 0)
             usage = {"image_quality": "standard", "image_size": "1024x1024"}
 

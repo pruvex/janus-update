@@ -1,0 +1,77 @@
+import logging
+import requests
+from geopy.geocoders import Nominatim
+from typing import Dict
+from pydantic import BaseModel, Field
+
+logger = logging.getLogger("janus_backend")
+
+class CleanGetDistanceArgs(BaseModel):
+    origin: str = Field(..., description="Der Startort. MUSS explizit im Text stehen (z.B. 'von München'). Rate NICHT.")
+    destination: str = Field(..., description="Der Zielort. MUSS explizit im Text stehen (z.B. 'nach Hamburg'). Rate NICHT.")
+    mode: str = Field("driving", description="Modus: 'driving', 'walking', 'cycling'.")
+
+def get_distance_and_route_tool(origin: str, destination: str, mode: str = "driving") -> Dict[str, str]:
+    """
+    Berechnet Entfernung mit OSRM.
+    """
+    # FIX: Eindeutigerer User-Agent und höheres Timeout für Geocoding
+    geolocator = Nominatim(user_agent="Janus_AI_Assistant_V2_Project", timeout=20)
+    
+    try:
+        # Wir versuchen erst, die Orte zu finden
+        try:
+            loc_a = geolocator.geocode(origin)
+            loc_b = geolocator.geocode(destination)
+        except Exception as geo_error:
+            logger.warning(f"Geocoding Timeout oder Fehler: {geo_error}")
+            return {"status": "error", "message": "Konnte Orte nicht auflösen (Timeout). Bitte versuche es später noch einmal."}
+
+        if not loc_a: 
+            return {"status": "error", "message": f"Ort '{origin}' nicht gefunden."}
+        if not loc_b: 
+            return {"status": "error", "message": f"Ort '{destination}' nicht gefunden."}
+
+        osrm_mode = "driving"
+        if mode == "walking": 
+            osrm_mode = "foot"
+        elif mode == "cycling": 
+            osrm_mode = "bike"
+        
+        # Timeout für OSRM ebenfalls erhöhen
+        url = f"http://router.project-osrm.org/route/v1/{osrm_mode}/{loc_a.longitude},{loc_a.latitude};{loc_b.longitude},{loc_b.latitude}?overview=false"
+        response = requests.get(url, timeout=20) 
+        
+        if response.status_code != 200:
+             return {"status": "error", "message": "Routing-Dienst antwortet nicht."}
+
+        data = response.json()
+        if data.get("code") != "Ok" or not data.get("routes"):
+             return {"status": "error", "message": "Keine Route gefunden."}
+
+        route = data["routes"][0]
+        distance_km = route["distance"] / 1000
+        duration_seconds = route["duration"]
+        
+        hours = int(duration_seconds // 3600)
+        minutes = int((duration_seconds % 3600) // 60)
+        
+        duration_str = ""
+        if hours > 0: 
+            duration_str += f"{hours} Std. "
+        if minutes > 0: 
+            duration_str += f"{minutes} Min."
+        if not duration_str: 
+            duration_str = "< 1 Min"
+
+        output = (
+            f"Route von {origin} nach {destination} ({mode}):\n"
+            f"Entfernung: {distance_km:.1f} km\n"
+            f"Geschätzte Dauer: {duration_str}"
+        )
+        logger.info(output)
+        return {"status": "success", "output": output}
+
+    except Exception as e:
+        logger.error(f"Distance-Tool Fehler: {e}")
+        return {"status": "error", "message": f"Allgemeiner Fehler: {e}"}

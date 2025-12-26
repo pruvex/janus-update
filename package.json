@@ -10,11 +10,12 @@
     "preview": "vite preview",
     "start-backend": "cross-env PYTHONIOENCODING=UTF-8 C:\\KI\\Janus-Projekt\\backend\\venv\\Scripts\\python.exe -m uvicorn backend.main:app --reload --port 8001 --host localhost",
     "start-frontend": "concurrently \"npm run start-electron\" \"npm run start-vite\"",
-    "start-dev": "concurrently \"npm:start-backend\" \"npm:start-frontend\"",
+    "start-dev": "concurrently \"npm:start-backend-only\" \"npm:start-vite\" \"npm:start-electron\"",
     "start-electron": "wait-on tcp:8001 && cross-env NODE_ENV=development electron .",
     "start-electron-only": "cross-env NODE_ENV=development electron .",
-    "start-vite": "vite",
+    "start-vite": "vite frontend",
     "start-backend-only": "cross-env PYTHONIOENCODING=UTF-8 C:\\KI\\Janus-Projekt\\backend\\venv\\Scripts\\python.exe -m uvicorn backend.main:app --reload --port 8001 --host localhost",
+    "start-backend-only-without-reload": "cross-env PYTHONIOENCODING=UTF-8 C:\\KI\\Janus-Projekt\\backend\\venv\\Scripts\\python.exe -m uvicorn backend.main:app --port 8001 --host localhost",
     "test:e2e": "playwright test",
     "build-installer": "electron-builder",
     "build-all": "npm run build && pyinstaller janus_backend.spec --clean --noconfirm && npm run build-installer"
@@ -45,7 +46,7 @@
     "files": [
       "dist/**/*",
       "frontend/preload.js",
-      "main.electron.js",
+      "main.electron.cjs",
       "package.json"
     ],
           "extraResources": [
@@ -57,11 +58,11 @@
               ]
             },
         {
-          "from": "backend/personalities.json",
+          "from": "backend/config/personalities.json",
           "to": "dist/janus_backend/_internal/backend/personalities.json"
         },
         {
-          "from": "backend/config.json",
+          "from": "backend/config/config.json",
           "to": "dist/janus_backend/_internal/backend/config.json"
         }          ],    "win": {
       "target": "nsis",

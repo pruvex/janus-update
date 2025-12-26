@@ -1,82 +1,123 @@
-# Janus - Souveräner KI-Desktop-Assistent
-Janus ist ein lokaler KI-Assistent für den Desktop, der als "Bring Your Own Key" (BYOK) Anwendung konzipiert ist. Er gibt dem Benutzer die volle Kontrolle über seine Daten, Kosten und die Wahl der KI-Anbieter.
+Multi-Turn-Bildbearbeitung
+Bilder weiterhin per Prompt generieren und bearbeiten Wir empfehlen, Bilder in einem Chat oder einer Multi-Turn Conversation zu optimieren. Im folgenden Beispiel wird ein Prompt zum Generieren einer Infografik zur Fotosynthese gezeigt.
 
-## Architektur & Technologie-Stack
-- **Desktop Framework:** Electron
-- **Frontend:** Vanilla JavaScript (ESM), HTML, CSS
-- **Backend:** Python mit FastAPI
-- **Build-System:** Vite für das Frontend und die Electron-Prozesse
-- **Paket-Manager:** npm Workspaces (Root-Projekt + `frontend`-Workspace)
-- **Datenbank:** SQLite für das Kosten-Tracking
+Python
+JavaScript
+Ok
+Java
+REST
 
-## Projektstruktur
-- **/backend:** Enthält den gesamten Python/FastAPI-Code.
-  - **/venv:** Die virtuelle Python-Umgebung.
-- **/frontend:** Enthält den gesamten Frontend-Code (HTML, CSS, JS).
-  - **/node_modules:** Node.js-Abhängigkeiten für das Frontend.
-- **/tools:** Enthält Hilfsskripte (z.B. für die Authentifizierung).
-- **/waechter:** Enthält die Test-Suiten (Backend-Tests und E2E-Tests).
-- **`package.json` (Root):** Definiert die Projektstruktur, Entwicklungs-Abhängigkeiten und die zentralen `npm`-Skripte.
+from google import genai
+from google.genai import types
 
-## Installation
-1.  **Klone das Repository:**
-    ```bash
-    git clone [URL_DES_REPOSITORIES]
-    cd Janus-Projekt
-    ```
-2.  **Richte die Python-Umgebung ein:**
-    ```bash
-    python -m venv backend/venv
-    # Windows
-    backend\venv\Scripts\activate
-    # macOS/Linux
-    source backend/venv/bin/activate
-    ```
-3.  **Installiere die Python-Abhängigkeiten:**
-    ```bash
-    pip install -r backend/requirements.txt
-    ```
-4.  **Installiere die Node.js-Abhängigkeiten:**
-    (Dieser Befehl installiert die Abhängigkeiten im Root und im `frontend`-Workspace)
-    ```bash
-    npm install
-    ```
+client = genai.Client()
 
-## API Key Management
-Janus uses environment variables, preferably loaded from a `.env` file, to manage API keys for various services (e.g., OpenAI, Gemini). This ensures that your sensitive keys are not hardcoded or committed to version control.
+chat = client.chats.create(
+    model="gemini-3-pro-image-preview",
+    config=types.GenerateContentConfig(
+        response_modalities=['TEXT', 'IMAGE'],
+        tools=[{"google_search": {}}]
+    )
+)
 
-To set up your API keys:
-1.  Create a file named `.env` in the root directory of the project (`C:\KI\Janus-Projekt\`).
-2.  Add your API keys to this file in the format `PROVIDER_API_KEY="your_api_key_here"`.
-    *   For OpenAI, use `OPENAI_API_KEY="sk-..."
-    *   For Gemini, use `GOOGLE_API_KEY="AIza..."
-    *   Example `.env` file:
-        ```
-        OPENAI_API_KEY="sk-your-openai-key"
-        GOOGLE_API_KEY="AIza-your-gemini-key"
-        ```
-3.  Ensure that the `.env` file is listed in your `.gitignore` to prevent accidental commits. (It should already be there, but it's good practice to verify).
+message = "Create a vibrant infographic that explains photosynthesis as if it were a recipe for a plant's favorite food. Show the \"ingredients\" (sunlight, water, CO2) and the \"finished dish\" (sugar/energy). The style should be like a page from a colorful kids' cookbook, suitable for a 4th grader."
 
-The application will automatically load these keys when it starts.
+response = chat.send_message(message)
 
-## Anwendung starten (Entwicklungsmodus)
-Um die Anwendung im Entwicklungsmodus mit Hot-Reload für Frontend und Backend zu starten, führe den folgenden Befehl im Hauptverzeichnis aus:
-```bash
-npm run start-dev
-```
-Dieser Befehl startet parallel:
-- Den Vite-Dev-Server für das Frontend.
-- Den Electron-Hauptprozess (der nach dem Vite-Build automatisch startet).
-- Den FastAPI/Uvicorn-Server für das Backend.
+for part in response.parts:
+    if part.text is not None:
+        print(part.text)
+    elif image:= part.as_image():
+        image.save("photosynthesis.png")
+KI-generierte Infografik zur Fotosynthese
+KI-generierte Infografik zur Fotosynthese
+Sie können dann denselben Chat verwenden, um die Sprache der Grafik in Spanisch zu ändern.
 
+Python
+JavaScript
+Ok
+Java
+REST
 
-## Tests ausführen
-**Backend-Tests:**
-```bash
-# Stelle sicher, dass die venv aktiviert ist
-pytest backend/
-```
-**End-to-End-Tests:**
-```bash
-npm run test:e2e
-```
+message = "Update this infographic to be in Spanish. Do not change any other elements of the image."
+aspect_ratio = "16:9" # "1:1","2:3","3:2","3:4","4:3","4:5","5:4","9:16","16:9","21:9"
+resolution = "2K" # "1K", "2K", "4K"
+
+response = chat.send_message(message,
+    config=types.GenerateContentConfig(
+        image_config=types.ImageConfig(
+            aspect_ratio=aspect_ratio,
+            image_size=resolution
+        ),
+    ))
+
+for part in response.parts:
+    if part.text is not None:
+        print(part.text)
+    elif image:= part.as_image():
+        image.save("photosynthesis_spanish.png")
+KI-generierte Infografik zur Fotosynthese auf Spanisch
+KI-generierte Infografik zur Fotosynthese auf Spanisch
+
+Multi-Turn-Bildbearbeitung
+Bilder weiterhin per Prompt generieren und bearbeiten Wir empfehlen, Bilder in einem Chat oder einer Multi-Turn Conversation zu optimieren. Im folgenden Beispiel wird ein Prompt zum Generieren einer Infografik zur Fotosynthese gezeigt.
+
+Python
+JavaScript
+Ok
+Java
+REST
+
+curl -s -X POST \
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent" \
+  -H "x-goog-api-key: $GEMINI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [{
+      "role": "user",
+      "parts": [
+        {"text": "Create a vibrant infographic that explains photosynthesis as if it were a recipe for a plants favorite food. Show the \"ingredients\" (sunlight, water, CO2) and the \"finished dish\" (sugar/energy). The style should be like a page from a colorful kids cookbook, suitable for a 4th grader."}
+      ]
+    }],
+    "generationConfig": {
+      "responseModalities": ["TEXT", "IMAGE"]
+    }
+  }'
+KI-generierte Infografik zur Fotosynthese
+KI-generierte Infografik zur Fotosynthese
+Sie können dann denselben Chat verwenden, um die Sprache der Grafik in Spanisch zu ändern.
+
+Python
+JavaScript
+Ok
+Java
+REST
+
+curl -s -X POST \
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent" \
+  -H "x-goog-api-key: $GEMINI_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "contents": [
+      {
+        "role": "user",
+        "parts": [{"text": "Create a vibrant infographic that explains photosynthesis..."}]
+      },
+      {
+        "role": "model",
+        "parts": [{"inline_data": {"mime_type": "image/png", "data": "<PREVIOUS_IMAGE_DATA>"}}]
+      },
+      {
+        "role": "user",
+        "parts": [{"text": "Update this infographic to be in Spanish. Do not change any other elements of the image."}]
+      }
+    ],
+    "tools": [{"google_search": {}}],
+    "generationConfig": {
+      "responseModalities": ["TEXT", "IMAGE"],
+      "imageConfig": {
+        "aspectRatio": "16:9",
+        "imageSize": "2K"
+      }
+    }
+  }'

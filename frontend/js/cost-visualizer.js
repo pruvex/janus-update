@@ -1,34 +1,34 @@
 // frontend/js/cost-visualizer.js
-import { API_BASE_URL } from './config.js';
+import { API_BASE_URL } from "./config.js";
 
-document.addEventListener('DOMContentLoaded', () => {
-  const costDashboardElement = document.getElementById('cost-dashboard');
-    
-  const refreshCostButton = document.getElementById('refresh-cost-button');
-  const costSummaryWidget = document.getElementById('cost-summary-widget'); // NEW
+document.addEventListener("DOMContentLoaded", () => {
+  const costDashboardElement = document.getElementById("cost-dashboard");
+
+  const refreshCostButton = document.getElementById("refresh-cost-button");
+  const costSummaryWidget = document.getElementById("cost-summary-widget"); // NEW
 
   if (refreshCostButton) {
-    refreshCostButton.addEventListener('click', fetchCostData);
+    refreshCostButton.addEventListener("click", fetchCostData);
   }
 
   // NEW: Event listener for the cost summary widget
   if (costSummaryWidget) {
-    costSummaryWidget.addEventListener('click', showDeepDiveModal);
+    costSummaryWidget.addEventListener("click", showDeepDiveModal);
   }
 
-  const costDeepDiveModal = document.getElementById('cost-deep-dive-modal');
-  const closeButton = document.querySelector('#cost-deep-dive-modal .close-button');
-  const deepDiveContent = document.getElementById('deep-dive-content');
+  const costDeepDiveModal = document.getElementById("cost-deep-dive-modal");
+  const closeButton = document.querySelector("#cost-deep-dive-modal .close-button");
+  const deepDiveContent = document.getElementById("deep-dive-content");
 
   async function showDeepDiveModal() {
-    costDeepDiveModal.style.display = 'flex'; // Use flex to center content
-    deepDiveContent.innerHTML = 'Lade detaillierte Kosten...'; // Loading message
+    costDeepDiveModal.style.display = "flex"; // Use flex to center content
+    deepDiveContent.innerHTML = "Lade detaillierte Kosten..."; // Loading message
 
     try {
       // Fetch both summary and dashboard data in parallel
       const [summaryResponse, dashboardResponse] = await Promise.all([
         fetch(`${API_BASE_URL}/api/costs/summary-by-model`),
-        fetch(`${API_BASE_URL}/api/costs/dashboard`)
+        fetch(`${API_BASE_URL}/api/costs/dashboard`),
       ]);
 
       if (!summaryResponse.ok) {
@@ -42,9 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const dashboardData = await dashboardResponse.json();
       const totalCost = dashboardData.current_month_cost;
 
-      let html = '<h3>Kostenübersicht nach Modell (Dieser Monat)</h3>';
+      let html = "<h3>Kostenübersicht nach Modell (Dieser Monat)</h3>";
       if (summaryData.length === 0) {
-        html += '<p>Keine Kosteninformationen für den aktuellen Monat verfügbar.</p>';
+        html += "<p>Keine Kosteninformationen für den aktuellen Monat verfügbar.</p>";
       } else {
         html += `
                   <table id="cost-details-table">
@@ -56,14 +56,14 @@ document.addEventListener('DOMContentLoaded', () => {
                       </tr>
                     </thead>
                     <tbody>`;
-        summaryData.forEach(item => {
-          let detailText = '';
+        summaryData.forEach((item) => {
+          let detailText = "";
           if (item.total_input_tokens > 0 || item.total_output_tokens > 0) {
             detailText = `Eingabe: ${item.total_input_tokens}, Ausgabe: ${item.total_output_tokens}`;
           } else if (item.image_count > 0) {
             detailText = `Bilder: ${item.image_count}`;
           }
-                  
+
           html += `
                     <tr>
                       <td>${item.model}</td>
@@ -71,6 +71,18 @@ document.addEventListener('DOMContentLoaded', () => {
                       <td>${item.total_cost.toFixed(4)}</td>
                     </tr>
                   `;
+            // NEU: Detaillierte Bildinformationen anzeigen
+            if (item.image_details && item.image_details.length > 0) {
+                item.image_details.forEach(detail => {
+                    html += `
+                        <tr class="image-detail-row">
+                            <td></td>
+                            <td class="image-detail-text">Qualität: ${detail.quality}, Größe: ${detail.size}</td>
+                            <td>${detail.cost.toFixed(4)}</td>
+                        </tr>
+                    `;
+                });
+            }
         });
         html += `
                     </tbody>
@@ -81,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       </tr>
                     </tfoot>
                 `;
-        html += '</table>';
+        html += "</table>";
       }
       html += `
                 <div class="budget-setter">
@@ -91,38 +103,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
       deepDiveContent.innerHTML = html;
-
     } catch (error) {
-      console.error('Error fetching deep dive cost data:', error);
-      deepDiveContent.innerHTML = '<p>Fehler beim Laden der detaillierten Kosten.</p>';
+      console.error("Error fetching deep dive cost data:", error);
+      deepDiveContent.innerHTML = "<p>Fehler beim Laden der detaillierten Kosten.</p>";
     }
   }
 
   function hideDeepDiveModal() {
-    costDeepDiveModal.style.display = 'none';
+    costDeepDiveModal.style.display = "none";
   }
 
   // Close the modal when the close button is clicked
   if (closeButton) {
-    closeButton.addEventListener('click', hideDeepDiveModal);
+    closeButton.addEventListener("click", hideDeepDiveModal);
   }
 
   // Close the modal when clicking outside of the modal content
-  window.addEventListener('click', (event) => {
+  window.addEventListener("click", (event) => {
     if (event.target === costDeepDiveModal) {
       hideDeepDiveModal();
     }
   });
 
-  window.fetchCostData = async function() {
-    const currentMonthCostElement = document.getElementById('current-month-cost');
-    const monthlyBudgetElement = document.getElementById('monthly-budget');
+  window.fetchCostData = async function () {
+    const currentMonthCostElement = document.getElementById("current-month-cost");
+    const monthlyBudgetElement = document.getElementById("monthly-budget");
 
     try {
       // Fetch dashboard data
       const dashboardResponse = await fetch(`${API_BASE_URL}/api/costs/dashboard`);
       const dashboardData = await dashboardResponse.json();
-            
+
       // Update new summary widget
       if (currentMonthCostElement) {
         currentMonthCostElement.textContent = `Aktueller Monat: ${dashboardData.current_month_cost.toFixed(2)} €`;
@@ -130,23 +141,20 @@ document.addEventListener('DOMContentLoaded', () => {
       if (monthlyBudgetElement) {
         monthlyBudgetElement.textContent = `Budget: ${dashboardData.current_month_cost.toFixed(2)} € / ${dashboardData.monthly_budget.toFixed(2)} €`;
         if (dashboardData.current_month_cost > dashboardData.monthly_budget) {
-          monthlyBudgetElement.classList.add('budget-exceeded');
+          monthlyBudgetElement.classList.add("budget-exceeded");
         } else {
-          monthlyBudgetElement.classList.remove('budget-exceeded');
+          monthlyBudgetElement.classList.remove("budget-exceeded");
         }
       }
 
       // Existing cost dashboard update (if still needed, otherwise remove)
-            
-
-            
-
     } catch (error) {
-      console.error('Error fetching cost data:', error);
-      if (currentMonthCostElement) currentMonthCostElement.textContent = 'Fehler beim Laden der Kosten.';
-      if (monthlyBudgetElement) monthlyBudgetElement.textContent = '';
-            
-      if (costDashboardElement) costDashboardElement.innerHTML = '';
+      console.error("Error fetching cost data:", error);
+      if (currentMonthCostElement)
+        currentMonthCostElement.textContent = "Fehler beim Laden der Kosten.";
+      if (monthlyBudgetElement) monthlyBudgetElement.textContent = "";
+
+      if (costDashboardElement) costDashboardElement.innerHTML = "";
     }
   };
 
@@ -154,18 +162,18 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(window.fetchCostData, 2000);
 });
 
-document.addEventListener('click', async (event) => {
-  if (event.target && event.target.id === 'save-budget-btn') {
-    const budgetInput = document.getElementById('budget-input');
+document.addEventListener("click", async (event) => {
+  if (event.target && event.target.id === "save-budget-btn") {
+    const budgetInput = document.getElementById("budget-input");
     const newBudget = parseFloat(budgetInput.value);
     if (!isNaN(newBudget)) {
       await fetch(`${API_BASE_URL}/api/budget`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ budget: newBudget })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ budget: newBudget }),
       });
       // Aktualisiere die Anzeige nach dem Speichern
-      window.fetchCostData(); 
+      window.fetchCostData();
     }
   }
 });

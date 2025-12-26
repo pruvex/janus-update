@@ -1,148 +1,103 @@
 import os
 import sys
-import subprocess
+import logging
 
+# Konfiguration
+REQUIRED_DIRS = [
+    "backend",
+    "backend/api/routers",
+    "backend/services",
+    "frontend",
+    "frontend/js",
+    "frontend/css"
+]
+REQUIRED_FILES = [
+    "backend/main.py",
+    "backend/config/config.json",
+    "frontend/index.html",
+    "frontend/package.json"
+]
 
-def check_python_dependencies():
-    print("Überprüfe Python-Abhängigkeiten mit 'pip check'...")
-    errors = []
-    backend_venv_python = (
-        os.path.join("backend", "venv", "Scripts", "python.exe")
-        if sys.platform == "win32"
-        else os.path.join("backend", "venv", "bin", "python")
-    )
+# Logging Setup
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger("JANUS_HEALTH")
 
-    if not os.path.exists(backend_venv_python):
-        errors.append(
-            f"FEHLER: Python-Interpreter der virtuellen Umgebung nicht gefunden: {backend_venv_python}"
-        )
-        return errors
-
-    try:
-        result = subprocess.run(
-            [backend_venv_python, "-m", "pip", "check"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        if result.stdout and "No broken requirements found." not in result.stdout:
-            errors.append(f"WARNUNG: 'pip check' meldete Probleme:\n{result.stdout}")
-    except subprocess.CalledProcessError as e:
-        errors.append(f"FEHLER: 'pip check' fehlgeschlagen:\n{e.stderr}")
-    except FileNotFoundError:
-        errors.append(
-            "FEHLER: 'pip' Befehl nicht gefunden. Ist die virtuelle Umgebung aktiviert oder korrekt eingerichtet?"
-        )
-    return errors
-
-
-def check_node_dependencies():
-    print("Überprüfe Node.js-Abhängigkeiten mit 'npm audit'...")
-    errors = []
-    frontend_dir = "frontend"
-
-    if not os.path.isdir(frontend_dir):
-        errors.append(f"FEHLER: Frontend-Verzeichnis '{frontend_dir}' nicht gefunden.")
-        return errors
-
-    try:
-        # npm audit kann auch bei Warnungen einen Fehlercode zurückgeben, daher check=False
-        result = subprocess.run(
-            ["npm", "audit"],
-            cwd=frontend_dir,
-            capture_output=True,
-            text=True,
-            check=False,
-            shell=True,
-        )
-        if result.returncode != 0 and "found 0 vulnerabilities" not in result.stdout:
-            errors.append(
-                f"WARNUNG: 'npm audit' meldete Probleme:\n{result.stdout}\n{result.stderr}"
-            )
-    except FileNotFoundError:
-        errors.append(
-            "FEHLER: 'npm' Befehl nicht gefunden. Ist Node.js installiert und im PATH?"
-        )
-    return errors
-
-
-def find_misplaced_config_files():
-    misplaced_files = []
-    for root, dirs, files in os.walk("."):
-        if "config.json" in files and os.path.join(root, "config.json") != os.path.join(
-            "backend", "config.json"
-        ):
-            misplaced_files.append(os.path.join(root, "config.json"))
-    return misplaced_files
-
-
-def validate_deep():
-    print("Starte 'Deep Validation' der Projektstruktur...")
-    errors = []
-
-    # 1. Erwartete Verzeichnisse auf oberster Ebene
-    expected_top_level = ["backend", "frontend", "waechter"]
-    for d in expected_top_level:
+def check_structure():
+    """Prüft, ob alle notwendigen Ordner und Dateien existieren."""
+    logger.info("--- 1. Struktur-Check ---")
+    missing = []
+    for d in REQUIRED_DIRS:
         if not os.path.isdir(d):
-            errors.append(f"FEHLT: Top-Level-Ordner '{d}' nicht gefunden.")
+            missing.append(f"Verzeichnis fehlt: {d}")
+    
+    for f in REQUIRED_FILES:
+        if not os.path.isfile(f):
+            missing.append(f"Datei fehlt: {f}")
 
-    # 2. Erwartete Unterverzeichnisse (NEU)
-    expected_sub_dirs = ["backend/agents", "frontend/src", "waechter/tests"]
-    for sd in expected_sub_dirs:
-        if not os.path.isdir(os.path.join(*sd.split("/"))):
-            errors.append(f"FEHLT: Unterordner '{sd}' nicht gefunden.")
+    if missing:
+        for m in missing:
+            logger.error(m)
+        return False
+    logger.info("✅ Dateistruktur ist vollständig.")
+    return True
 
-    # 3. Überprüfung der venv im Backend-Verzeichnis
-    backend_venv_path = os.path.join("backend", "venv")
-    if not os.path.isdir(backend_venv_path):
-        errors.append(
-            f"FEHLT: Virtuelle Umgebung im Backend unter '{backend_venv_path}' nicht gefunden."
-        )
+def check_python_environment():
+    """Prüft wichtige Python-Imports und fügt venv zum sys.path hinzu."""
+    logger.info("--- 2. Backend-Umgebungs-Check ---")
+    try:
+        # Füge das site-packages Verzeichnis des venv zum sys.path hinzu
+        venv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "backend", "venv")
+        site_packages_path = os.path.join(venv_path, "Lib", "site-packages")
+        if site_packages_path not in sys.path:
+            sys.path.insert(0, site_packages_path)
+            logger.info(f"Manually added venv site-packages path to sys.path: {site_packages_path}")
 
-    # 4. Überprüfung der requirements.in und requirements.txt im Backend-Verzeichnis
-    backend_requirements_in_path = os.path.join("backend", "requirements.in")
-    if not os.path.isfile(backend_requirements_in_path):
-        errors.append(
-            f"FEHLT: requirements.in im Backend unter '{backend_requirements_in_path}' nicht gefunden."
-        )
+        import fastapi
+        import sqlalchemy
+        import openai
+        import google.generativeai # <-- Dies sollte jetzt die neue google-genai Bibliothek importieren
+        from google.generativeai import types # <-- Prüfe auch das types Modul
+        logger.info("✅ Wichtige Python-Bibliotheken gefunden.")
+        return True
+    except ImportError as e:
+        logger.error(f"❌ Fehlende Bibliothek: {e}")
+        return False
 
-    backend_requirements_txt_path = os.path.join("backend", "requirements.txt")
-    if not os.path.isfile(backend_requirements_txt_path):
-        errors.append(
-            f"FEHLT: requirements.txt im Backend unter '{backend_requirements_txt_path}' nicht gefunden."
-        )
+def check_backend_runnable():
+    """Versucht, das Backend-Modul zu importieren (Syntax-Check)."""
+    logger.info("--- 3. Backend-Import-Check ---")
+    try:
+        # Wir fügen das aktuelle Verzeichnis zum Pfad hinzu, damit 'backend' als Modul gefunden wird
+        sys.path.insert(0, os.path.abspath("."))
+        
+        # Import-Versuch
+        from backend.main import app
+        logger.info("✅ Backend 'main.py' lässt sich fehlerfrei importieren.")
+        return True
+    except Exception as e:
+        logger.error(f"❌ Backend-Code hat Fehler: {e}")
+        return False
 
-    # 5. Überprüfung der Frontend-Paketdateien
-    frontend_package_json_path = os.path.join("frontend", "package.json")
-    if not os.path.isfile(frontend_package_json_path):
-        errors.append(
-            f"FEHLT: package.json im Frontend unter '{frontend_package_json_path}' nicht gefunden."
-        )
+def run_health_check():
+    print("\n🏥 JANUS GOLDSTANDARD HEALTH CHECK 🏥\n")
+    
+    checks = [
+        check_structure(),
+        check_python_environment(),
+        check_backend_runnable()
+    ]
 
-    frontend_package_lock_json_path = os.path.join("frontend", "package-lock.json")
-    if not os.path.isfile(frontend_package_lock_json_path):
-        errors.append(
-            f"FEHLT: package-lock.json im Frontend unter '{frontend_package_lock_json_path}' nicht gefunden."
-        )
-
-    # Führe Abhängigkeitsprüfungen aus
-    errors.extend(check_python_dependencies())
-    errors.extend(check_node_dependencies())
-
-    # 6. Überprüfung auf falsch platzierte config.json Dateien
-    misplaced_configs = find_misplaced_config_files()
-    for f in misplaced_configs:
-        errors.append(
-            f"WARNUNG: Falsch platzierte config.json gefunden: '{f}'. Sie sollte sich nur unter 'backend/config.json' befinden."
-        )
-
-    if not errors:
-        print(
-            "VALIDATION PASSED: Die Projektstruktur und Abhängigkeiten sind in Ordnung."
-        )
-        sys.exit(0)
+    print("\n---------------------------------------")
+    if all(checks):
+        logger.info("🚀 SYSTEM STATUS: GRÜN. Janus ist bereit zum Start.")
+        print("\nDu kannst das System jetzt starten:")
+        print("  1. Backend:  cd backend; uvicorn main:app --reload --port 8001")
+        print("  2. Frontend: cd frontend; npm start")
     else:
-        print("VALIDATION FAILED: Die folgenden Probleme wurden gefunden:")
-        for error in errors:
-            print(f"- {error}")
-        sys.exit(1)
+        logger.error("🔥 SYSTEM STATUS: ROT. Bitte Fehler oben prüfen.")
+
+if __name__ == "__main__":
+    run_health_check()

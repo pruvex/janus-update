@@ -1,53 +1,58 @@
-import os
-import re
-from openai import AsyncOpenAI
-from typing import Dict, Any
+# backend/services/websearch.py (Gateway-Implementierung)
+
 import logging
-from backend.services.cost_calculator import calculate_cost # NEU: Importiere calculate_cost
+from typing import Dict, Any, Optional
+
+from backend.utils.config_loader import load_model_catalog
+from .websearch.openai_provider import OpenAIWebSearchProvider
+from .websearch.gemini_provider import GeminiWebSearchProvider
 
 logger = logging.getLogger("janus_backend")
-openai_client = None
-if os.getenv("OPENAI_API_KEY"):
-    openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Mapping von Provider-Namen zu den Implementierungs-Klassen
+PROVIDERS = {
+    "openai": OpenAIWebSearchProvider(),
+    "gemini": GeminiWebSearchProvider(),
+}
 
-async def perform_websearch(query: str) -> Dict[str, Any]:
+async def perform_websearch(
+    query: str,
+    api_key: str,
+    provider: Optional[str] = None,
+    model: Optional[str] = None,
+) -> Dict[str, Any]:
     """
-    Führt IMMER eine Websuche mit dem spezialisierten Web-Search-Tool von OpenAI (via gpt-4o-mini) durch,
-    um die qualitativ hochwertigsten und am besten belegten Ergebnisse zu erhalten. Benutze dieses Werkzeug,
-    wenn der Benutzer nach aktuellen Ereignissen, Preisen, Definitionen oder Fakten fragt, die nach 2023
-    passiert sind oder sich ändern können.
+    Gateway-Funktion: Wählt den passenden Provider und führt die Suche aus.
+    
+    Args:
+        query: Die Suchanfrage
+        api_key: Der API-Schlüssel für den Provider
+        provider: Der zu verwendende Provider ('openai' oder 'gemini')
+        model: Das zu verwendende Modell (optional, falls vom Provider benötigt)
+        
+    Returns:
+        Dict mit 'text', 'urls', 'usage' und 'cost'
     """
-    try:
-        response = await openai_client.responses.create(
-            model="gpt-4o-mini",
-            input=f"Führe eine Websuche durch und gib eine detaillierte, faktenbasierte Antwort auf die folgende Frage: {query}",
-            tools=[{"type": "web_search"}],
-        )
-        text_output = response.output_text or "Keine Ergebnisse gefunden."
-        urls = []
-        if hasattr(response, "citations") and response.citations:
-            for citation in response.citations:
-                if hasattr(citation, "url") and citation.url:
-                    urls.append(citation.url)
+    # Fallback, falls kein Provider explizit übergeben wird
+    if not provider:
+        config = load_model_catalog()
+        provider = config.get("last_used_provider", "openai").lower()
+        logger.info(f"Provider not explicitly set. Using default from config: {provider}")
+    else:
+        provider = provider.lower()
 
-        # Fallback zur URL-Extraktion aus dem Text
-        if not urls and text_output:
-            url_pattern = r"https?://[\S]+"
-            found_urls = re.findall(url_pattern, text_output)
-            urls.extend(found_urls)
-            if urls:
-                urls = list(dict.fromkeys(urls))
-
-        # NEU: Kosten für die Websuche berechnen
-        usage, cost = calculate_cost("websearch") # model_id "websearch" verwenden
-
-        return {"text": text_output, "urls": urls, "usage": usage, "cost": cost} # NEU: usage und cost zurückgeben
-    except Exception as e:
-        logger.error(f"Error during OpenAI web search: {e}", exc_info=True)
+    search_provider = PROVIDERS.get(provider)
+    
+    if not search_provider:
+        logger.error(f"Web search for provider '{provider}' is not implemented.")
         return {
-            "text": f"Bei der Websuche über die OpenAI API ist ein Fehler aufgetreten.",
-            "urls": [],
-            "usage": {}, # NEU: Leere usage und cost bei Fehler
-            "cost": {}
+            "text": f"Websuche für Provider '{provider}' nicht implementiert.",
+            "urls": [], 
+            "usage": {}, 
+            "cost": {},
         }
+    
+    logger.info(f"perform_websearch called for provider: '{provider}'")
+    
+    # Ruft die standardisierte .search() Methode des ausgewählten Providers auf
+    return await search_provider.search(api_key=api_key, query=query, model=model)

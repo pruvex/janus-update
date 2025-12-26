@@ -1,21 +1,30 @@
+import json
+import asyncio  # Add asyncio for await asyncio.to_thread
+import base64
+import binascii
 import logging
-import datetime
-import asyncio
-from typing import List, Dict, Optional
-from sqlalchemy.orm import Session
-from backend.services.context_manager import ContextManager
+import re
+import json
+from typing import Dict, List, Optional, Any
+
+from backend import llm_providers
+
 from backend.llm_providers.base_provider import BaseLLMProvider
 from backend.llm_providers.gemini_service import GeminiServiceProvider
 from backend.llm_providers.openai_service import OpenAIServiceProvider
+from backend.services import (
+    filesystem_manager,
+)
+from backend.services.context_manager import ContextManager
+from backend.services.tool_executor import ToolExecutor
 from backend.tool_registry import get_all_tool_definitions
-from backend.services.websearch import perform_websearch
-from backend.llm_providers.capabilities.gemini_web_search import GeminiWebSearch
-from backend.services import memory_manager, filesystem_manager
-import base64
-import binascii
-
+from backend.utils.config_loader import load_config_data, load_model_catalog
+from backend.utils import intent_classifier
+from sqlalchemy.orm import Session
+from backend.services.cost_service import create_cost_entry
 
 logger = logging.getLogger("janus_backend")
+
 
 def _is_user_intent_aligned_with_tool(user_prompt: str, tool_name: str) -> bool:
     """
@@ -38,10 +47,30 @@ def _is_user_intent_aligned_with_tool(user_prompt: str, tool_name: str) -> bool:
 
     # Schlüsselwörter, die der Benutzer explizit verwenden muss, um diese Aktionen auszulösen.
     explicit_keywords = [
-        "speicher", "save", "erstelle", "create", "schreib", "write",
-        "mache", "make", "exportiere", "export", "datei", "file",
-        "pdf", "dokument", "document", "lösche", "delete", "benenne um",
-        "rename", "verschiebe", "move", "ordner", "directory", "mp3",
+        "speicher",
+        "save",
+        "erstelle",
+        "create",
+        "schreib",
+        "write",
+        "mache",
+        "make",
+        "exportiere",
+        "export",
+        "datei",
+        "file",
+        "pdf",
+        "dokument",
+        "document",
+        "lösche",
+        "delete",
+        "benenne um",
+        "rename",
+        "verschiebe",
+        "move",
+        "ordner",
+        "directory",
+        "mp3",
     ]
 
     if tool_name in critical_file_tools:
@@ -59,6 +88,7 @@ def _is_user_intent_aligned_with_tool(user_prompt: str, tool_name: str) -> bool:
 
     # Für alle anderen, nicht-kritischen Werkzeuge (wie Websuche, Bildgenerierung etc.) vertrauen wir der KI.
     return True
+
 
 PROVIDER_MAP = {
     "gemini": GeminiServiceProvider,
@@ -84,6 +114,30 @@ async def call_llm(
     **kwargs,
 ):
     """Ruft den entsprechenden LLM-Provider auf, um eine Antwort zu generieren."""
+    # --- START KORREKTUR: Provider und Modell Validierung ---
+    model_catalog = await asyncio.to_thread(load_model_catalog)
+    model_info = model_catalog.get(model_id)
+
+    if not model_info:
+        raise ValueError(f"Modell '{model_id}' nicht im Katalog gefunden.")
+
+    expected_provider = model_info.get("provider")
+
+    if not provider and expected_provider:
+        logger.warning(
+            f"Provider nicht explizit angegeben für Modell '{model_id}'. Verwende erwarteten Provider: '{expected_provider}'."
+        )
+        provider = expected_provider
+    elif provider and expected_provider and provider.lower() != expected_provider.lower():
+        raise ValueError(
+            f"Angegebener Provider '{provider}' stimmt nicht mit dem erwarteten Provider '{expected_provider}' für Modell '{model_id}' überein."
+        )
+    elif not provider and not expected_provider:
+        raise ValueError(
+            f"Kein Provider für Modell '{model_id}' im Katalog gefunden und nicht explizit angegeben."
+        )
+    # --- ENDE KORREKTUR ---
+
     llm_provider = get_provider(provider)
     return await llm_provider.generate_response(
         api_key=api_key,
@@ -119,217 +173,267 @@ async def generate_image(
 WEBSEARCH_COST_PER_QUERY = 0.01  # 1 Cent pro Websuche
 
 
+
+def _attempt_to_fix_json_hallucination(response: Dict) -> Dict:
+    """
+    Untersucht Text-Antworten auf versehentlich ausgegebenen JSON-Code,
+    der eigentlich ein Tool-Call sein sollte.
+    """
+    if response.get("type") != "text":
+        return response
+
+    text = response.get("text", "")
+    if not text:
+        return response
+
+    # Suche nach JSON-Blöcken, die einen "query"-Parameter enthalten
+    try:
+        match = re.search(r'(\{.*"query"\s*:\s*".*?\}.*?\}?)', text, re.DOTALL)
+        if match:
+            potential_json = match.group(1)
+            data = json.loads(potential_json)
+            
+            # Validierung: Ist es ein bekannter Tool-Call?
+            if isinstance(data, dict) and "query" in data:
+                logger.info(f"🛡️ Gateway: Halluzinierten Tool-Call erkannt und repariert.")
+                
+                # Tool-Namen bestimmen (Default: perform_websearch)
+                tool_name = "find_local_business_tool" if "location" in data else "perform_websearch"
+
+                return {
+                    "type": "tool_code",
+                    "tool_calls": [{
+                        "id": "hallucination_fix_" + str(hash(text)),
+                        "type": "function",
+                        "function": {
+                            "name": tool_name,
+                            "arguments": json.dumps(data)
+                        }
+                    }],
+                    "usage": response.get("usage"),
+                    "cost": response.get("cost"),
+                    "raw_assistant_response": {"content": text}
+                }
+    except Exception:
+        pass # Parsing fehlgeschlagen, ignoriere
+
+    return response
+
+
+def _aggregate_cost(existing_cost: Dict, new_cost: Dict) -> Dict:
+    """Aggregiert Kostendaten (z.B. Gesamtkosten)."""
+    aggregated = existing_cost.copy()
+    for key, value in new_cost.items():
+        if key == "total_cost" and isinstance(value, (int, float)):
+            aggregated[key] = aggregated.get(key, 0.0) + value
+        elif isinstance(value, (int, float)):
+            aggregated[key] = aggregated.get(key, 0.0) + value
+        else:
+            aggregated[key] = value  # Oder andere Aggregationslogik für nicht-numerische Werte
+    return aggregated
+
 async def reason_and_respond(
     provider: str,
     model: str,
     api_key: str,
-    chat_history: list,
-    context_manager: ContextManager,
-    db: Session,
+    chat_history: List[Dict],
+    context_manager: Any,
+    db: Any,
     user_prompt: str,
     chat_id: int,
-    system_instruction: Optional[str] = None,
-    memory_context: Optional[str] = None,
-    user_name: Optional[str] = None,
-    image_data: Optional[str] = None,
-    is_image_analysis_request: bool = False,
-    disable_tools: bool = False,  # NEU
-    tts_voice_id: Optional[str] = None
-):  # NEU
-    """
-    Nimmt eine fertige Nachrichtenliste entgegen, ruft das LLM auf und führt bei Bedarf eine Websuche als Fallback durch.
+    tool_executor: ToolExecutor,
+    tools_override: Optional[List[Dict]] = None,
+    disable_tools: bool = False,
+    image_data: Optional[str] = None
+) -> Dict[str, Any]:
+    
+    provider_service = llm_providers.get_provider(provider)
+    if not provider_service:
+        return {"text": f"Error: Provider '{provider}' not supported."}
 
-    Args:
-        provider: Der LLM-Provider (z.B. 'gemini', 'openai')
-        model: Die zu verwendende Modell-ID
-        api_key: Der API-Schlüssel für den LLM-Provider
-        chat_history: Die Chat-Historie im ChatML-Format
-        context_manager: Der Kontext-Manager für die Verwaltung des Kontexts
-        db: Die Datenbank-Session
-        user_prompt: Die Benutzereingabe
-        chat_id: Die ID des Chats
-        system_instruction: Optionaler expliziter System-Prompt, der den Standard-Prompt überschreibt
-        memory_context: Optionaler Speicherkontext
-        user_name: Optionaler Benutzername
-        image_data: Optionale Bilddaten für visuelle Eingaben
-        is_image_analysis_request: NEU: Flag, ob es sich um eine reine Bildanalyse-Anfrage handelt.
-        disable_tools: NEU: Flag, um die Werkzeugnutzung für diesen Aufruf zu deaktivieren.
-    """
-    tools = get_all_tool_definitions() if not disable_tools else None
-    if disable_tools:
-        logger.info("Tool usage has been explicitly disabled for this LLM call.")
-    else:
-        logger.info(f"Tools offered to LLM: {[tool.get('function', {}).get('name') for tool in tools]}")
+    # === ERSTER LLM-AUFRUF (REASONING & TOOL CALLS) ===
+    
+    # Standard-Parameter für den API-Aufruf
+    api_call_params = {
+        "api_key": api_key,
+        "model": model,
+        "messages": chat_history,
+        "tools": tools_override if not disable_tools else None,
+        "image_data": image_data
+    }
 
-    llm_response = await call_llm(
-        provider,
-        model,
-        api_key,
-        messages=chat_history,
-        tools=tools,
-        image_data=image_data,
-        is_image_analysis_request=is_image_analysis_request,
+    # Wenn der Intent klar eine Websuche ist, zwingen wir das Modell dazu.
+    # Dies verhindert das "Plaudern" über die Suche.
+    if intent_classifier.is_web_search_intent(user_prompt) and not disable_tools:
+        logger.info("Web search intent detected. Forcing 'perform_websearch' tool.")
+        api_call_params["tool_choice"] = {"type": "function", "function": {"name": "perform_websearch"}}
+
+    # Wir rufen jetzt mit den vorbereiteten Parametern auf
+    first_response = await provider_service.generate_response(**api_call_params)
+    
+    # Versuche, Halluzinationen zu reparieren (falsche Tool-Calls als Text)
+    first_response = _attempt_to_fix_json_hallucination(first_response)
+
+    if "cost" in first_response and first_response["cost"].get("total_cost"):
+        create_cost_entry(
+            db=db,
+            amount=first_response["cost"]["total_cost"],
+            model=model,
+            provider=provider,
+            source_type="conversation",
+            input_tokens=first_response.get("usage", {}).get("input_tokens", 0),
+            output_tokens=first_response.get("usage", {}).get("output_tokens", 0)
+        )
+
+    if first_response.get("type") != "tool_code":
+        return first_response
+
+    # === TOOL-AUSFÜHRUNG & ZWEITER LLM-AUFRUF ===
+
+    tool_calls = first_response.get("tool_calls", [])
+    if not tool_calls:
+        return {"text": "Ein Fehler ist aufgetreten: Leere Tool-Aufrufe."}
+
+    tool_results = await tool_executor.execute_tool_calls(tool_calls)
+    
+    generated_image_url = None # NEU: Variable für generierte Bild-URL
+
+    # --- START: FINALE, KORRIGIERTE LOGIK ZUM SAMMELN ALLER QUELL-URLS ---
+    all_source_urls = set()
+    for result in tool_results:
+        try:
+            content_data = json.loads(result.get("content", "{}"))
+            
+            # 1. Kosten-Tracking (bleibt unverändert)
+            if "cost" in content_data and content_data["cost"].get("total_cost", 0) > 0:
+                create_cost_entry(
+                    db=db,
+                    amount=content_data["cost"]["total_cost"],
+                    model=result.get("name"),
+                    provider=provider,
+                    source_type="tool"
+                )
+
+            # 2. URLs sammeln & Bild-URL extrahieren
+            if result.get("name") == "generate_image_tool" and content_data.get("url"):
+                generated_image_url = content_data["url"] # NEU: Bild-URL speichern
+            
+            if "text" in content_data and content_data["text"]:
+                markdown_links = re.findall(r'\[.*?\]\((https?://[^\s)]+)\)', content_data["text"])
+                for url in markdown_links:
+                    all_source_urls.add(url)
+                    
+            # Fallback: URLs aus dem urls-Feld (falls vorhanden)
+            if "urls" in content_data and content_data["urls"]:
+                for url in content_data["urls"]:
+                    if isinstance(url, str):
+                        all_source_urls.add(url)
+                    
+        except (json.JSONDecodeError, KeyError, TypeError) as e:
+            logger.warning(f"Konnte Tool-Content nicht vollständig verarbeiten: {e}")
+    # --- ENDE: FINALE LOGIK ZUM SAMMELN ---
+    
+    second_call_history = provider_service.prepare_history_for_second_call(
+        chat_history=chat_history,
+        raw_assistant_response=first_response.get("raw_assistant_response"),
+        tool_results=tool_results
     )
 
-    if llm_response.get("type") == "tool_code":
-        tool_name = llm_response["tool_name"]
-        tool_args = llm_response["tool_args"]
+    # === ZWEITER LLM-AUFRUF (FINALE ANTWORT) ===
+    
+    final_response = await provider_service.generate_response(
+        api_key=api_key,
+        model=model,
+        messages=second_call_history,
+        tools=None 
+    )
 
-        # --- START: HIER IST DIE NEUE, ROBUSTE LOGIK ---
-        if not _is_user_intent_aligned_with_tool(user_prompt, tool_name):
-            # Die Absicht des Benutzers und das Werkzeug stimmen nicht überein.
-            # Wir verwerfen den Werkzeugaufruf und bitten die KI, die Frage direkt zu beantworten.
-            
-            # 1. Erstelle eine neue Anweisung für die KI.
-            clarification_prompt = (
-                "Deine vorherige Idee, ein Werkzeug zu benutzen, war nicht korrekt. "
-                "Der Benutzer hat nur eine Frage gestellt. Bitte beantworte die folgende Frage direkt und umfassend im Chat. "
-                "Du kannst am Ende deiner Antwort vorschlagen, die Informationen zu speichern, wenn es passend erscheint.\n\n"
-                f"Ursprüngliche Frage des Benutzers: '{user_prompt}'"
-            )
+    if "cost" in final_response and final_response["cost"].get("total_cost"):
+         create_cost_entry(
+            db=db,
+            amount=final_response["cost"]["total_cost"],
+            model=model,
+            provider=provider,
+            source_type="conversation",
+            input_tokens=final_response.get("usage", {}).get("input_tokens", 0),
+            output_tokens=final_response.get("usage", {}).get("output_tokens", 0)
+        )
+    
+    # NEU: Füge die generierte Bild-URL zur final_response hinzu
+    if generated_image_url:
+        final_response["image_url"] = generated_image_url
 
-            # 2. Wir entfernen die letzte (fehlerhafte) Assistant-Antwort aus der Historie, falls sie dort schon ist.
-            # In deinem Code wird die Historie erst später modifiziert, also können wir sie hier direkt verwenden.
-            # Wir fügen die neue Anweisung als User-Nachricht hinzu, um die KI zu korrigieren.
-            
-            # WICHTIG: Wir verwenden die ursprüngliche `chat_history` ohne die fehlerhafte Werkzeug-Antwort.
-            # Wir ersetzen die letzte User-Nachricht durch unsere Korrekturanweisung.
-            corrected_history = chat_history[:-1] # Entfernt die letzte User-Nachricht mit dem ganzen Kontext
-            corrected_history.append({"role": "user", "content": clarification_prompt})
-
-            logger.info("Re-prompting LLM to answer directly after misaligned tool call.")
-            
-            # 3. Rufe das LLM erneut auf, diesmal OHNE Werkzeuge, um eine Textantwort zu erzwingen.
-            second_llm_response = await call_llm(
-                provider,
-                model,
-                api_key,
-                messages=corrected_history,
-                tools=None, # Wichtig: Keine Werkzeuge erlauben!
-            )
-            return second_llm_response
-        # --- ENDE: NEUE LOGIK ---
-
-
-        # Validate base64 content for save_mp3_tool
-        if tool_name == "save_mp3_tool":
-            content = tool_args.get("content", "")
-            path = tool_args.get("path", "")
-
-            # Ensure content is bytes for base64.b64decode
-            if isinstance(content, str):
-                content_bytes = content.encode('utf-8') # Encode to bytes first
-            else:
-                content_bytes = content # Assume it's already bytes
-
-            try:
-                # Try to decode as base64
-                decoded_content = base64.b64decode(content_bytes)
-                # If successful, proceed with saving
-                file_creation_result = filesystem_manager.create_file(path, decoded_content, is_binary=True)
-                return {"type": "text", "text": file_creation_result.get("output", "Unbekannter Fehler beim Speichern der Datei.")}
-            except (binascii.Error, UnicodeDecodeError) as e:
-                # If decoding fails, assume it's raw text and try to synthesize
-                logger.warning(f"Content for save_mp3_tool is not valid base64 ({e}). Attempting to synthesize text.")
-                
-                # Import tts_service here to avoid circular dependency if imported at top
-                from backend.services.tts_service import get_tts_service
-                tts_service = get_tts_service()
-
-                try:
-                    # Synthesize the text (content is still the original string here)
-                    audio_bytes = tts_service.synthesize(text=content, lang="de", fmt="mp3", llm_provider=provider, voice=tts_voice_id) # Assuming German and MP3
-                    
-                    # Save the synthesized audio
-                    file_creation_result = filesystem_manager.create_file(path, audio_bytes, is_binary=True)
-                    return {"type": "text", "text": file_creation_result.get("output", "Unbekannter Fehler beim Speichern der Datei.")}
-                except Exception as tts_e:
-                    logger.error(f"Failed to synthesize and save MP3 from raw text: {tts_e}")
-                    return {
-                        "type": "tool_code_error",
-                        "tool_name": tool_name,
-                        "tool_args": tool_args,
-                        "error": f"Fehler beim Speichern der MP3-Datei. Der Inhalt war kein gültiger Base64-String und die Sprachsynthese des Textes ist fehlgeschlagen: {tts_e}"
-                    }        # Der Rest der Funktion bleibt gleich...
-        # --- START: KORRIGIERTER, VEREINHEITLICHTER BLOCK ---
+    # --- NUR NOCH DAS URLS-FELD FÜR DIE UI AKTUALISIEREN ---
+    if all_source_urls:
+        # Wir fügen die URLs nur noch als separates Feld für die UI hinzu
+        # und lassen den von der KI formatierten Text unberührt.
+        final_response["urls"] = sorted(list(all_source_urls))
         
-        # Es gibt keine Sonderbehandlung mehr. Jedes Werkzeug wird gleich behandelt.
-        # Die Logik prüft, ob es sich um die spezielle Websuche handelt, die eine 
-        # zweite LLM-Runde zur Zusammenfassung benötigt.
+    logger.debug(f"llm_gateway.py: reason_and_respond - Final response before returning: {final_response}") # NEU
 
-        if tool_name == "perform_websearch":
-            logger.info(f"Unified Web Search requested with query: {tool_args.get('query')}")
+    return final_response
 
-            # 1. Hole die rohe Assistenten-Antwort vom ersten Aufruf.
-            # Diese ist in der ursprünglichen llm_response enthalten.
-            raw_assistant_response = llm_response.get("raw_assistant_response")
-            if not raw_assistant_response:
-                logger.error("Could not find raw_assistant_response in LLM response.")
-                return {"type": "text", "text": "Error processing tool call."}
 
-            # 2. Hänge die Antwort des Assistenten an die Historie an.
-            chat_history.append(raw_assistant_response)
+async def get_active_image_generation_model(provider: str) -> Optional[str]:
+    """
+    Ermittelt das aktuell aktive Bildgenerierungsmodell für den angegebenen Provider
+    basierend auf der Konfiguration und dem Modellkatalog.
+    """
+    logger.debug(f"get_active_image_generation_model called for provider: {provider}")
+    config = await asyncio.to_thread(load_config_data)
+    
+    last_used_text_model_id = config.get("last_used_model") 
+    model_catalog = await asyncio.to_thread(load_model_catalog)
+    
+    logger.debug(f"Config last_used_model: {last_used_text_model_id}")
+    logger.debug(f"Model catalog loaded. Number of models: {len(model_catalog)}")
 
-            # 3. Extrahiere die tool_call_id.
-            tool_call_id = raw_assistant_response.get("tool_calls", [{}])[0].get("id")
-            if not tool_call_id:
-                logger.error("Could not extract tool_call_id from assistant response.")
-                return {"type": "text", "text": "Error processing tool call ID."}
+    # NEU: Debugging des relevanten Teils des Modellkatalogs
+    logger.debug(f"Model catalog for provider '{provider}':")
+    for model_id, model_info in model_catalog.items():
+        if model_info.get("provider") == provider:
+            logger.debug(f"  - ID: {model_id}, Type: {model_info.get('type')}, ImageGenModel: {model_info.get('image_generation_model')}")
 
-            # 4. Führe das zentrale Websuch-Werkzeug aus.
-            web_search_result = await perform_websearch(
-                query=tool_args.get("query", "")
-            )
-
-            # 5. Erstelle den Prompt für die Zusammenfassung mit den URLs.
-            web_search_text = web_search_result.get("text", "Keine Ergebnisse gefunden.")
-            web_search_urls = web_search_result.get("urls", [])
-            summarization_prompt = (
-                "Hier sind die Ergebnisse einer Websuche. Formuliere basierend auf diesen Informationen eine klare und hilfreiche Antwort auf die ursprüngliche Frage des Benutzers. "
-                "Gib am Ende deiner Antwort einen Abschnitt 'Quellen:' an und liste dort die gefundenen URLs auf.\n\n"
-                f"Ursprüngliche Frage: '{user_prompt}'\n\n" 
-                f"--- Suchergebnisse ---\n{web_search_text}\n\n"
-                f"--- Gefundene URLs ---\n"
-                + "\n".join([f"- {url}" for url in web_search_urls])
-            )
-
-            # 6. Hänge das Werkzeug-Ergebnis an die Historie an.
-            chat_history.append(
-                {
-                    "role": "tool",
-                    "tool_call_id": tool_call_id,
-                    "name": tool_name,
-                    "content": summarization_prompt, 
-                }
-            )
-
-            # 7. Rufe das LLM erneut auf, um die Ergebnisse zusammenzufassen.
-            second_llm_response = await call_llm(
-                provider, model, api_key, messages=chat_history, tools=tools
-            )
-            return second_llm_response
+    # 1. Prüfe, ob das aktive Textmodell ein dediziertes Bildgenerierungsmodell hat
+    if last_used_text_model_id and last_used_text_model_id in model_catalog:
+        text_model_info = model_catalog[last_used_text_model_id]
+        logger.debug(f"Text model info: {text_model_info}")
+        if text_model_info.get("provider") == provider:
+            image_gen_model_id = text_model_info.get("image_generation_model")
+            logger.debug(f"Image generation model from text model info: {image_gen_model_id}")
+            if image_gen_model_id and image_gen_model_id in model_catalog and model_catalog[image_gen_model_id].get("type") == "image":
+                logger.info(f"Using image_generation_model '{image_gen_model_id}' from active text model '{last_used_text_model_id}'.")
+                return image_gen_model_id
+            else:
+                logger.warning(f"Active text model '{last_used_text_model_id}' for provider '{provider}' does not specify a valid image_generation_model in catalog (or it's not type 'image'). Returning None from step 1.")
         else:
-            # Dies ist der Standardfall für alle ANDEREN Werkzeuge (Dateisystem etc.).
-            # Wir geben den validierten Werkzeugaufruf einfach an main.py weiter.
-            logger.info(f"Tool call '{tool_name}' validated and passed for execution.")
-            
-            # NEU: Sonderbehandlung für save_mp3_tool
-            if tool_name == "save_mp3_tool":
-                # Wir wissen, dass das Tool erfolgreich war, da wir hier angekommen sind.
-                # Statt der technischen Ausgabe geben wir eine benutzerfreundliche Meldung zurück.
-                return {"type": "text", "text": f"Die MP3-Datei '{tool_args.get('path', 'unbekannt')}' wurde erfolgreich gespeichert."}
-            
-            return llm_response
-        # --- ENDE: KORRIGIERTER, VEREINHEITLICHTER BLOCK ---
+            logger.debug(f"Provider mismatch for text model. Text model provider: {text_model_info.get('provider')}, requested provider: {provider}")
+    else:
+        logger.warning(f"No last used text model '{last_used_text_model_id}' found in catalog for provider '{provider}' (or last_used_text_model_id is None). Continuing to fallback logic.")
 
-    return llm_response
+    # 2. Fallback: Finde das "beste" Bildmodell für den Provider
+    logger.debug(f"Entering fallback logic for provider: {provider}")
+    if provider == "gemini":
+        # Priorisiere gemini-2.5-flash-image-preview für normale Bildgenerierung
+        if "gemini-2.5-flash-image-preview" in model_catalog:
+            logger.info("Fallback: Using 'gemini-2.5-flash-image-preview' for Gemini (as requested).")
+            return "gemini-2.5-flash-image-preview"
+        elif "gemini-3-pro-image-preview" in model_catalog:
+            logger.info("Fallback: Using 'gemini-3-pro-image-preview' for Gemini.")
+            return "gemini-3-pro-image-preview"
+        logger.debug(f"No specific Gemini image model found in fallback for provider: {provider}. Returning None.") # NEU
+    elif provider == "openai":
+        if "dall-e-3" in model_catalog:
+            logger.info("Fallback: Using 'dall-e-3' for OpenAI.")
+            return "dall-e-3"
+        logger.debug(f"No specific OpenAI image model found in fallback for provider: {provider}. Returning None.") # NEU
+
+    final_return_value = None # NEU
+    logger.warning(f"No suitable image generation model found for provider '{provider}' after all attempts. Returning {final_return_value}") # NEU
+    return final_return_value # NEU
 
 
-# --- STELLEN SIE SICHER, DASS DIESE FUNKTION AUCH IN DER DATEI IST ---
-
-async def simple_llm_generate_content(
-    provider: str, model: str, api_key: str, prompt: str
-):
+async def simple_llm_generate_content(provider: str, model: str, api_key: str, prompt: str):
     """
     Eine vereinfachte Funktion zum Generieren von Inhalten, die nur den Prompt akzeptiert.
     """

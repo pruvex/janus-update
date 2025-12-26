@@ -1,285 +1,188 @@
 # backend/tool_registry.py
-
-# Benötigte Imports ganz oben in der Datei
-import os
-import base64
 import logging
-import binascii
-import inspect
-import io
-import re
-from typing import Callable, Dict, Any, Optional, List
-from pydantic import BaseModel, Field
-from tenacity import retry, stop_after_attempt, wait_exponential
-from pydub import AudioSegment
-from openai import AsyncOpenAI
+from typing import Any, Dict, Optional
 
-# Importiere die Services und Schemas, die wir benötigen
-from backend.data import schemas
-from backend.services import filesystem_manager
-from backend.services.websearch import perform_websearch
-from backend.services.memory_manager import cross_chat_memory_tool
-from backend.tools.pdf_generator import create_pdf_from_markdown
-from backend.llm_providers.openai_service import OpenAIServiceProvider
-from backend.services.tts_service import TTSService 
-from backend.utils.paths import get_desktop_path
+import keyring
 
+# --- IMPORTS DER LOGIK ---
+# Wir importieren die Module, damit die Funktionen verfügbar sind
+from backend.data import contact_schemas, schemas
+from backend.utils.config_loader import load_model_catalog
+from backend.services import filesystem_manager, memory_manager
+from backend.services.scraper_service import scrape_website
+from backend.services.tool_manager import tool_manager
+from backend.services.websearch.websearch import perform_websearch_service
+from backend.tools.calendar_tools import (
+    create_calendar_event,
+    delete_calendar_event,
+    find_address_and_update_calendar_event,
+    find_and_update_calendar_event,
+    find_free_time_slots,
+    get_calendar_events,
+    update_calendar_event,
+    update_calendar_event_description,
+)
+from backend.tools.db_wrappers import (
+    create_or_update_contact_tool,
+    delete_contact_by_id_wrapper,
+    list_contacts_wrapper,
+)
+from backend.tools.geo_service import (
+    CleanGetDistanceArgs,
+    find_local_business_tool,
+    get_country_info_tool,
+    get_distance_and_route_tool,
+)
+
+# WICHTIG: Hier wurde 'find_contact_and_send_email' ENTFERNT, da es nicht in gmail_tools existiert!
+from backend.tools.gmail_tools import get_latest_emails, read_email, send_email
+from backend.tools.media_tools import generate_image_tool, save_mp3_tool
+from backend.tools.pdf_generator import CleanCreatePdfArgs, create_pdf_from_markdown
+
+# Tools aus den Modulen
+from backend.tools.rss_service import CleanGetLatestNewsRssToolArgs, get_latest_news_rss
+from backend.tools.weather_service import CleanGetWeatherFromApiToolArgs, get_weather_from_api_tool
+from backend.tools.wiki_service import CleanGetWikipediaSummaryArgs, get_wikipedia_summary
 
 logger = logging.getLogger("janus_backend")
-client = AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+# --- Hilfs-Wrapper (Lokal definiert) ---
 
 
-# --- Tool-Klasse und Registrierungs-Logik ---
-
-class Tool:
-    def __init__(self, func: Callable, args_schema: Optional[BaseModel] = None):
-        self.func = func
-        self.args_schema = args_schema
-        self.name = func.__name__
-        self.description = inspect.getdoc(func)
-        self.llm_definition = self._build_llm_definition()
-
-    def _build_llm_definition(self) -> Dict[str, Any]:
-        schema = (
-            self.args_schema.model_json_schema()
-            if self.args_schema
-            else {"properties": {}, "required": []}
-        )
-        return {
-            "type": "function",
-            "function": {
-                "name": self.name,
-                "description": self.description,
-                "parameters": {
-                    "type": "object",
-                    "properties": schema.get("properties", {}),
-                    "required": schema.get("required", []),
-                },
-            },
-        }
+async def perform_websearch(query: str, provider: str, model: Optional[str] = None) -> dict:
+    """Wrapper für Websuche mit Keyring, der den aktiven Provider nutzt."""
+    try:
+        # Der korrekte Provider wird jetzt direkt übergeben
+        key = keyring.get_password("Janus-Projekt", provider)
+        if not key:
+            return {"status": "error", "output": f"API Key für {provider} fehlt."}
+        
+        # Wir rufen den Gateway-Service mit dem korrekten Provider auf
+        return await perform_websearch_service(query=query, api_key=key, provider=provider, model=model)
+        
+    except Exception as e:
+        return {"status": "error", "output": str(e)}
 
 
-TOOL_REGISTRY: Dict[str, Tool] = {}
+async def find_contact_and_send_email_wrapper(name_query: str, subject: str, body: str) -> dict:
+    """Sucht Kontakt in DB und sendet Mail."""
+    from backend.data import crud, database
+
+    db = next(database.get_db())
+    try:
+        contacts = crud.search_contacts_by_name(db, name_query=name_query)
+        if not contacts:
+            return {"status": "error", "message": f"Kontakt '{name_query}' nicht gefunden."}
+        target_contact = contacts[0]
+        if not target_contact.email:
+            return {
+                "status": "error",
+                "message": f"Kontakt '{target_contact.name}' hat keine E-Mail.",
+            }
+
+        return send_email(to=target_contact.email, subject=subject, body=body)
+    finally:
+        db.close()
 
 
-def register_tool(tool: Tool):
-    TOOL_REGISTRY[tool.name] = tool
+# --- REGISTRIERUNG ---
+def register_all_tools():
+    """Lädt alle Tools in den Manager."""
+    if tool_manager.get_all_tools():
+        return
 
-
-# --- Werkzeug-Funktionen ---
-
-def split_text_into_chunks(text: str, max_length: int = 4000):
-    """
-    Teilt einen SSML-Text intelligent in Chunks unterhalb der max_length auf,
-    ohne SSML-Tags zu zerschneiden. Behandelt Sätze und Tags als unteilbare Einheiten.
-    """
-    logger.info("Starting intelligent SSML chunking...")
-    
-    # Entferne den umschließenden <speak>-Tag für die Verarbeitung
-    inner_ssml = re.sub(r'</?speak>', '', text, flags=re.IGNORECASE).strip()
-    
-    # Zerlege den Text in eine Liste von Sätzen (inkl. Satzzeichen) UND kompletten SSML-Tags.
-    # Dies ist der Kern der Logik: Jedes Element ist entweder ein Satz oder ein Tag.
-    parts = re.findall(r'(<[^>]+>|[^.!?]+(?:[.!?]|$))', inner_ssml)
-    
-    chunks = []
-    current_chunk = ""
-    
-    for part in parts:
-        part_stripped = part.strip()
-        if not part_stripped:
-            continue
-            
-        # Wenn das Hinzufügen des nächsten Teils die Maximallänge überschreiten würde,
-        # schließe den aktuellen Chunk ab und beginne einen neuen.
-        if len(current_chunk) + len(part_stripped) + 1 > max_length:
-            if current_chunk:
-                chunks.append(f"<speak>{current_chunk.strip()}</speak>")
-            current_chunk = part_stripped
-        else:
-            current_chunk += " " + part_stripped
-    
-    # Füge den letzten verbleibenden Chunk hinzu, falls vorhanden.
-    if current_chunk:
-        chunks.append(f"<speak>{current_chunk.strip()}</speak>")
-    
-    logger.info(f"SSML text successfully split into {len(chunks)} chunks.")
-    return chunks
-
-async def save_mp3_tool(content: str, filename: str, voice: str = "fable") -> Dict[str, str]:
-    """
-    Speichert Text als MP3. Erkennt SSML und nutzt dann die OpenAI API für hohe Qualität.
-    Fällt für reinen Text auf die lokale TTS-Engine zurück. Lange SSML-Texte werden aufgeteilt.
-    """
-    if not filename.lower().endswith('.mp3'):
-        filename += '.mp3'
-    filename = os.path.basename(filename)
-    desktop_path = get_desktop_path()
-    if not desktop_path:
-        return {"status": "error", "message": "Desktop-Pfad nicht gefunden."}
-    
-    speech_file_path = os.path.join(desktop_path, filename)
-
-    is_ssml = content.strip().startswith("<speak>") and content.strip().endswith("</speak>")
-
-    if is_ssml:
-        logger.info(f"SSML-Text erkannt. Nutze OpenAI TTS mit Stimme '{voice}' für hohe Qualität.")
-        try:
-            # Chunking logic for long SSML texts
-            ssml_chunks = split_text_into_chunks(content)
-            audio_segments = []
-
-            for i, chunk in enumerate(ssml_chunks):
-                logger.info(f"Synthesizing chunk {i+1}/{len(ssml_chunks)}...")
-                response = await client.audio.speech.create(
-                    model="tts-1-hd",
-                    voice=voice,
-                    input=chunk
-                )
-                
-                # Load audio data into a pydub AudioSegment
-                audio_data = io.BytesIO(response.content)
-                segment = AudioSegment.from_file(audio_data, format="mp3")
-                audio_segments.append(segment)
-
-            logger.info("Füge alle Audio-Teile zusammen...")
-            final_audio = sum(audio_segments, AudioSegment.empty())
-            
-            # Export the final combined audio
-            final_audio.export(speech_file_path, format="mp3")
-
-            success_msg = f"Audiodatei erfolgreich mit Stimme '{voice}' unter '{speech_file_path}' gespeichert."
-            logger.info(success_msg)
-            return {"status": "success", "message": success_msg}
-        except Exception as e:
-            error_msg = f"Fehler bei der OpenAI TTS-Synthese: {e}"
-            logger.error(error_msg, exc_info=True)
-            return {"status": "error", "message": error_msg}
-    else:
-        logger.info("Reiner Text erkannt. Nutze lokale TTS-Engine (Piper).")
-        try:
-            from backend.main import load_config
-            config = load_config()
-            tts_service_instance = TTSService(config=config, tts_settings=config.get("tts_settings", {}))
-            audio_bytes = tts_service_instance.synthesize(
-                text=content,
-                voice='piper_de_DE-thorsten-medium',
-                speed=1.0
-            )
-            
-            if audio_bytes:
-                with open(speech_file_path, "wb") as f:
-                    f.write(audio_bytes)
-                success_msg = f"Audiodatei erfolgreich mit lokaler Stimme unter '{speech_file_path}' gespeichert."
-                logger.info(success_msg)
-                return {"status": "success", "message": success_msg}
-            else:
-                raise RuntimeError("Lokale TTS hat keine Audiodaten zurückgegeben.")
-
-        except Exception as e:
-            error_msg = f"Fehler bei der lokalen TTS-Synthese: {e}"
-            logger.error(error_msg, exc_info=True)
-            return {"status": "error", "message": error_msg}
-
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-async def generate_image_tool(
-    api_key: str,
-    prompt: str,
-    size: str = "1024x1024",
-    quality: str = "standard",
-    **kwargs,
-) -> Dict:
-    """Generiert ein Bild basierend auf einer Texteingabe unter Verwendung von DALL-E 3."""
-    provider = OpenAIServiceProvider()
-    response = await provider.generate_image(
-        api_key, "dall-e-3", prompt, size=size, quality=quality, **kwargs
+    # 1. Info
+    tool_manager.register_tool(
+        get_latest_news_rss, CleanGetLatestNewsRssToolArgs, "Ruft aktuelle Schlagzeilen ab."
     )
-    return {
-        "url": response.get("image_url"),
-        "usage": response.get("usage"),
-        "cost": response.get("cost"),
-    }
+    tool_manager.register_tool(
+        scrape_website, schemas.ReadUrlContentArgs, "Liest den Textinhalt einer Webseite."
+    )
+    tool_manager.register_tool(
+        get_weather_from_api_tool, CleanGetWeatherFromApiToolArgs, "Wettervorhersage."
+    )
+    tool_manager.register_tool(get_wikipedia_summary, CleanGetWikipediaSummaryArgs)
+    tool_manager.register_tool(perform_websearch, schemas.WebsearchToolArgs)
 
+    # 2. Geo
+    tool_manager.register_tool(
+        get_distance_and_route_tool, CleanGetDistanceArgs, "Distanzberechnung."
+    )
+    tool_manager.register_tool(find_local_business_tool, schemas.FindLocalBusinessArgs)
+    tool_manager.register_tool(get_country_info_tool, schemas.GetCountryInfoToolArgs)
 
-def create_file_tool(path: str, content: str | bytes = "", is_binary: bool = False):
-    """Erstellt eine neue Datei im Workspace."""
-    return filesystem_manager.create_file(path, content, is_binary)
+    # 3. Media
+    tool_manager.register_tool(
+        create_pdf_from_markdown, CleanCreatePdfArgs, "Erstellt PDF. WICHTIG: Nutze 'filename'."
+    )
+    tool_manager.register_tool(save_mp3_tool, schemas.SaveMp3Args)
+    tool_manager.register_tool(generate_image_tool, schemas.GenerateImageToolArgs)
 
+    # 4. Filesystem
+    fs_tools = [
+        (filesystem_manager.create_file, schemas.CreateFileArgs),
+        (filesystem_manager.read_file, schemas.ReadFileArgs),
+        (filesystem_manager.delete_file, schemas.DeleteFileArgs),
+        (filesystem_manager.list_directory, schemas.ListDirectoryArgs),
+        (filesystem_manager.list_allowed_workspaces, schemas.ListAllowedWorkspacesArgs),
+        (filesystem_manager.create_directory, schemas.CreateDirectoryArgs),
+        (filesystem_manager.delete_directory, schemas.DeleteDirectoryArgs),
+        (filesystem_manager.rename_file, schemas.RenameFileArgs),
+        (filesystem_manager.move_file, schemas.MoveFileArgs),
+        (filesystem_manager.move_files, schemas.MoveFilesArgs),
+    ]
+    for func, schema in fs_tools:
+        tool_manager.register_tool(func, schema)
 
-def read_file_tool(path: str):
-    """Liest den Inhalt einer Datei aus dem Workspace."""
-    return filesystem_manager.read_file(path)
+    # 5. Kalender & Mail
+    cal_tools = [
+        (get_calendar_events, schemas.GetCalendarEventsArgs),
+        (create_calendar_event, schemas.CreateCalendarEventArgs),
+        (delete_calendar_event, schemas.DeleteCalendarEventArgs),
+        (update_calendar_event, schemas.UpdateCalendarEventArgs),
+        (find_free_time_slots, schemas.FindFreeTimeSlotsArgs),
+        (update_calendar_event_description, schemas.UpdateCalendarEventDescriptionArgs),
+        (find_and_update_calendar_event, schemas.FindAndUpdateCalendarEventArgs),
+        (find_address_and_update_calendar_event, schemas.FindAddressAndUpdateCalendarEventArgs),
+        (get_latest_emails, schemas.GetLatestEmailsArgs),
+        (send_email, schemas.SendEmailArgs),
+        (read_email, schemas.ReadEmailArgs),
+    ]
+    for func, schema in cal_tools:
+        tool_manager.register_tool(func, schema)
 
+    # Mail Wrapper manuell registrieren
+    tool_manager.register_tool(
+        find_contact_and_send_email_wrapper, schemas.FindContactAndSendEmailArgs
+    )
 
-def delete_file_tool(path: str):
-    """Löscht eine Datei aus dem Workspace."""
-    return filesystem_manager.delete_file(path)
-
-
-def list_directory_tool(path: str = ".", pattern: Optional[str] = None):
-    """Listet den Inhalt eines Ordners auf. Kann mit einem Wildcard-Muster wie '*.png' oder 'test*' filtern."""
-    return filesystem_manager.list_directory(path, pattern)
-
-
-def create_directory_tool(path: str):
-    """Erstellt einen neuen, leeren Ordner im Workspace."""
-    return filesystem_manager.create_directory(path)
-
-
-def delete_directory_tool(path: str):
-    """Löscht einen Ordner und dessen gesamten Inhalt aus dem Workspace."""
-    return filesystem_manager.delete_directory(path)
-
-
-def rename_file_tool(old_path: str, new_path: str):
-    """Benennt eine Datei oder einen Ordner um."""
-    return filesystem_manager.rename_file(old_path, new_path)
-
-
-def move_file_tool(source_path: str, destination_path: str):
-    """Verschiebt eine einzelne Datei oder einen Ordner."""
-    return filesystem_manager.move_file(source_path, destination_path)
-
-
-def move_files_tool(source_directory: str, destination_directory: str, pattern: str):
-    """Verschiebt mehrere Dateien, die einem Muster (z.B. '*.png') entsprechen, von einem Ordner in einen anderen."""
-    return filesystem_manager.move_files(
-        source_directory, destination_directory, pattern
+    # 6. Kontakte & Memory
+    tool_manager.register_tool(
+        create_or_update_contact_tool, contact_schemas.CreateOrUpdateContactArgs
+    )
+    tool_manager.register_tool(list_contacts_wrapper, contact_schemas.ContactListArgs)
+    tool_manager.register_tool(delete_contact_by_id_wrapper, contact_schemas.ContactDeleteArgs)
+    tool_manager.register_tool(memory_manager.save_core_memory_fact, schemas.SaveCoreMemoryToolArgs)
+    tool_manager.register_tool(
+        memory_manager.search_past_conversation_summaries_tool, schemas.CrossChatMemoryToolArgs
     )
 
 
-def list_allowed_workspaces_tool():
-    """Listet alle für Dateioperationen freigegebenen Ordner (Workspaces) auf."""
-    return filesystem_manager.list_allowed_workspaces()
+# --- PUBLIC API / LEGACY SUPPORT ---
 
-
-# --- Registrierung aller Tools ---
-
-register_tool(Tool(func=generate_image_tool, args_schema=schemas.GenerateImageToolArgs))
-register_tool(Tool(func=cross_chat_memory_tool, args_schema=schemas.CrossChatMemoryToolArgs))
-register_tool(Tool(func=perform_websearch, args_schema=schemas.WebsearchToolArgs))
-register_tool(Tool(func=create_file_tool, args_schema=schemas.CreateFileArgs))
-register_tool(Tool(func=save_mp3_tool, args_schema=schemas.SaveMp3Args))
-register_tool(Tool(func=read_file_tool, args_schema=schemas.ReadFileArgs))
-register_tool(Tool(func=delete_file_tool, args_schema=schemas.DeleteFileArgs))
-register_tool(Tool(func=list_directory_tool, args_schema=schemas.ListDirectoryArgs))
-register_tool(Tool(func=create_directory_tool, args_schema=schemas.CreateDirectoryArgs))
-register_tool(Tool(func=delete_directory_tool, args_schema=schemas.DeleteDirectoryArgs))
-register_tool(Tool(func=rename_file_tool, args_schema=schemas.RenameFileArgs))
-register_tool(Tool(func=move_file_tool, args_schema=schemas.MoveFileArgs))
-register_tool(Tool(func=move_files_tool, args_schema=schemas.MoveFilesArgs))
-register_tool(Tool(func=list_allowed_workspaces_tool, args_schema=schemas.ListAllowedWorkspacesArgs))
-register_tool(Tool(func=create_pdf_from_markdown, args_schema=schemas.CreatePdfFromMarkdownArgs))
-
-
-# --- Hilfsfunktionen für den Rest der Anwendung ---
+# Alias für direkten Zugriff (damit alter Code nicht bricht)
+TOOL_REGISTRY = tool_manager.tools
 
 
 def get_all_tool_definitions():
-    """Gibt die Definitionen aller registrierten Tools für das LLM zurück."""
-    return [tool.llm_definition for tool in TOOL_REGISTRY.values()]
+    if not tool_manager.get_all_tools():
+        register_all_tools()
+    return tool_manager.get_tool_definitions()
 
 
-def get_all_tools() -> Dict[str, Tool]:
-    """Gibt das gesamte Tool-Registry-Wörterbuch zurück."""
-    return TOOL_REGISTRY
+def get_all_tools() -> Dict[str, Any]:
+    if not tool_manager.get_all_tools():
+        register_all_tools()
+    # Da Legacy-Code ein 'Tool'-Objekt mit .func erwartet, und ToolDefinition.func existiert,
+    # ist ToolDefinition kompatibel zum alten Tool-Objekt.
+    return tool_manager.get_all_tools()

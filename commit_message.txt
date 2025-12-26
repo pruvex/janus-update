@@ -1,20 +1,13 @@
-feat: Implement TTS optimization with presets and dynamic voice selection
+feat: Connect "New Project" button to Electron IPC
 
-This commit introduces the following Text-to-Speech (TTS) optimizations:
+Discovered that the frontend is a Vanilla JavaScript application, not React.
+Adapted the task to connect the "Neues Projekt" button's functionality to the Electron main process.
 
-- **Backend:**
-  - Added `PRESETS` for Piper TTS parameters (assistenz, diktat, narration).
-  - Implemented basic German text normalization (`apply_basic_normalization`).
-  - Extended `PiperTTS` to dynamically list available voices from the model directory.
-  - Modified `TTSService` to dynamically load Piper voices and integrate Silero voices.
-  - Updated `synthesize` and `synthesize_stream` functions to accept and apply `preset_name`.
-  - Enhanced TTS caching to include `preset_name` in the cache key.
-  - Extended the `/api/tts/synthesize` endpoint to accept `preset` and `voice_id` parameters.
+- Modified `frontend/js/projects.js` to:
+  - Capture project name and path from the modal form.
+  - Call `window.electron.createProject()` via IPC to send project data to the main process.
+  - Dispatch a custom `project-created` event after successful IPC communication (for future frontend updates).
+- Confirmed `window.electron.createProject` is exposed in `frontend/preload.js`.
+- Confirmed `ipcMain.handle('create-project', ...)` exists in `main.electron.cjs` and logs received project data.
 
-- **Frontend:**
-  - Extended settings state in `frontend/js/settings.js` to manage `ttsPreset` and `ttsVoiceId`.
-  - Updated the TTS settings UI in `frontend/index.html` with dropdowns for voice selection and presets.
-  - Adapted TTS API calls in `frontend/js/tts.js` and `frontend/js/chat.js` to pass `preset` and `voice_id`.
-
-- **Testing:**
-  - Created `backend/tests/test_tts_optimization.py` with comprehensive tests for voice listing, preset application, caching, error handling, and text normalization. All tests are passing.
+This establishes the dynamic communication path for project creation, fulfilling the intent of making the project creation dynamic and backend-aware within the existing Vanilla JS frontend architecture. The actual backend logic for project creation is marked with a TODO in `main.electron.cjs`.

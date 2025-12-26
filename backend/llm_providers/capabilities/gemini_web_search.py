@@ -1,10 +1,10 @@
-import logging
-import httpx
-import json
-import copy
 import asyncio
+import copy
+import json
+import logging
 from typing import Dict, List
 
+import httpx
 from backend.services.cost_calculator import calculate_cost
 
 logger = logging.getLogger("janus_backend")
@@ -57,21 +57,15 @@ async def _format_response_with_citations(response_json: Dict) -> str:
             chunk["web"]["uri"]
             for chunk in chunks
             if chunk.get("web")
-            and chunk["web"]
-            .get("uri", "")
-            .startswith("https://vertexaisearch.cloud.google.com/")
+            and chunk["web"].get("uri", "").startswith("https://vertexaisearch.cloud.google.com/")
         }
 
         resolved_urls_map = {}
         if redirect_uris_to_resolve:
             async with httpx.AsyncClient() as client:
-                tasks = [
-                    _resolve_redirect(client, uri) for uri in redirect_uris_to_resolve
-                ]
+                tasks = [_resolve_redirect(client, uri) for uri in redirect_uris_to_resolve]
                 resolved_results = await asyncio.gather(*tasks)
-                resolved_urls_map = dict(
-                    zip(redirect_uris_to_resolve, resolved_results)
-                )
+                resolved_urls_map = dict(zip(redirect_uris_to_resolve, resolved_results))
 
         used_chunks = {}
         for support in supports:
@@ -112,20 +106,13 @@ async def _format_response_with_citations(response_json: Dict) -> str:
         for position in sorted_positions:
             sorted_indices = sorted(list(citations_by_position[position]))
             citation_string = "".join([f"[{i}]" for i in sorted_indices])
-            if (
-                text
-                and position > 0
-                and position - 1 < len(text)
-                and text[position - 1].isalnum()
-            ):
+            if text and position > 0 and position - 1 < len(text) and text[position - 1].isalnum():
                 citation_string = " " + citation_string
             text = text[:position] + citation_string + text[position:]
 
         if used_chunks:
             source_list_markdown = "\n\n---\n**Quellen:**\n"
-            for old_index, new_index in sorted(
-                source_map.items(), key=lambda item: item[1]
-            ):
+            for old_index, new_index in sorted(source_map.items(), key=lambda item: item[1]):
                 chunk = used_chunks[old_index]
                 if chunk.get("web"):
                     uri = chunk["web"].get("uri", "#")
@@ -216,12 +203,8 @@ class GeminiWebSearch:
             }
         except httpx.HTTPStatusError as e:
             error_body = e.response.json()
-            error_message = error_body.get("error", {}).get(
-                "message", "Unbekannter API-Fehler"
-            )
-            logger.error(
-                f"HTTP Error during direct Gemini API call: {error_body}", exc_info=True
-            )
+            error_message = error_body.get("error", {}).get("message", "Unbekannter API-Fehler")
+            logger.error(f"HTTP Error during direct Gemini API call: {error_body}", exc_info=True)
             return {
                 "type": "text",
                 "text": f"Fehler bei der Gemini-Websuche: {error_message}",

@@ -1,19 +1,20 @@
-import pytest
 from unittest.mock import MagicMock, patch
+
+import backend.data.database  # Added this import
+import pytest
 from backend.data.crud import (
     create_chat,
-    get_chats,
-    get_chat_by_id,
-    get_messages_by_chat_id,
     create_message,
-    update_chat_title,
-    toggle_archive_chat,
-    get_chat_with_messages,
     delete_chat,
-    update_chat_summary,
     get_all_chat_summaries,
+    get_chat_by_id,
+    get_chat_with_messages,
+    get_chats,
+    get_messages_by_chat_id,
+    toggle_archive_chat,
+    update_chat_summary,
+    update_chat_title,
 )
-import backend.data.database  # Added this import
 
 
 @pytest.fixture
@@ -60,15 +61,13 @@ def test_create_chat(mock_chat_class, mock_db_session):
 
 @patch("backend.data.database.Chat")  # Patch the actual database.Chat
 def test_get_chats(mock_chat_class, mock_db_session, mock_chat_model):
-    mock_db_session.query.return_value.filter.return_value.all.return_value = [
-        mock_chat_model
-    ]
+    mock_db_session.query.return_value.filter.return_value.all.return_value = [mock_chat_model]
 
     result = get_chats(mock_db_session)
 
     mock_db_session.query.assert_called_once_with(mock_chat_class)
     mock_db_session.query.return_value.filter.assert_called_once_with(
-        mock_chat_class.is_archived == False
+        not mock_chat_class.is_archived
     )
     assert result == [mock_chat_model]
 
@@ -78,9 +77,7 @@ def test_get_chats_include_archived(mock_db_session, mock_chat_model):
 
     result = get_chats(mock_db_session, include_archived=True)
 
-    mock_db_session.query.assert_called_once_with(
-        backend.data.database.Chat
-    )  # Corrected this line
+    mock_db_session.query.assert_called_once_with(backend.data.database.Chat)  # Corrected this line
     mock_db_session.query.return_value.all.assert_called_once()
     assert result == [mock_chat_model]
 
@@ -95,16 +92,12 @@ def test_get_chats_no_chats(mock_db_session):
 
 @patch("backend.data.database.Chat")  # Patch the actual database.Chat
 def test_get_chat_by_id(mock_chat_class, mock_db_session, mock_chat_model):
-    mock_db_session.query.return_value.filter.return_value.first.return_value = (
-        mock_chat_model
-    )
+    mock_db_session.query.return_value.filter.return_value.first.return_value = mock_chat_model
 
     result = get_chat_by_id(mock_db_session, 1)
 
     mock_db_session.query.assert_called_once_with(mock_chat_class)
-    mock_db_session.query.return_value.filter.assert_called_once_with(
-        mock_chat_class.id == 1
-    )
+    mock_db_session.query.return_value.filter.assert_called_once_with(mock_chat_class.id == 1)
     assert result == mock_chat_model
 
 
@@ -117,9 +110,7 @@ def test_get_chat_by_id_not_found(mock_db_session):
 
 
 @patch("backend.data.database.Message")  # Patch the actual database.Message
-def test_get_messages_by_chat_id(
-    mock_message_class, mock_db_session, mock_message_model
-):
+def test_get_messages_by_chat_id(mock_message_class, mock_db_session, mock_message_model):
     mock_db_session.query.return_value.filter.return_value.order_by.return_value.all.return_value = [
         mock_message_model
     ]
@@ -147,6 +138,7 @@ def test_create_message(mock_message_class, mock_db_session):
     mock_db_session.refresh.assert_called_once_with(mock_message_instance)
     assert result == mock_message_instance
 
+
 def test_create_message_with_image_path(mock_db_session):
     with patch("backend.data.database.Message") as mock_message_class:
         mock_message_instance = MagicMock()
@@ -169,9 +161,7 @@ def test_create_message_with_image_path(mock_db_session):
 
 
 def test_update_chat_title(mock_db_session, mock_chat_model):
-    mock_db_session.query.return_value.filter.return_value.first.return_value = (
-        mock_chat_model
-    )
+    mock_db_session.query.return_value.filter.return_value.first.return_value = mock_chat_model
 
     result = update_chat_title(mock_db_session, 1, "Updated Title")
 
@@ -191,28 +181,24 @@ def test_update_chat_title_not_found(mock_db_session):
 
 
 def test_toggle_archive_chat(mock_db_session, mock_chat_model):
-    mock_db_session.query.return_value.filter.return_value.first.return_value = (
-        mock_chat_model
-    )
+    mock_db_session.query.return_value.filter.return_value.first.return_value = mock_chat_model
     mock_chat_model.is_archived = False
 
     result = toggle_archive_chat(mock_db_session, 1)
 
-    assert mock_chat_model.is_archived == True
+    assert mock_chat_model.is_archived
     mock_db_session.commit.assert_called_once()
     mock_db_session.refresh.assert_called_once_with(mock_chat_model)
     assert result == mock_chat_model
 
 
 def test_toggle_archive_chat_from_archived(mock_db_session, mock_chat_model):
-    mock_db_session.query.return_value.filter.return_value.first.return_value = (
-        mock_chat_model
-    )
+    mock_db_session.query.return_value.filter.return_value.first.return_value = mock_chat_model
     mock_chat_model.is_archived = True
 
     result = toggle_archive_chat(mock_db_session, 1)
 
-    assert mock_chat_model.is_archived == False
+    assert not mock_chat_model.is_archived
     mock_db_session.commit.assert_called_once()
     mock_db_session.refresh.assert_called_once_with(mock_chat_model)
     assert result == mock_chat_model
@@ -228,9 +214,7 @@ def test_toggle_archive_chat_not_found(mock_db_session):
 
 
 def test_get_chat_with_messages(mock_db_session, mock_chat_model, mock_message_model):
-    mock_db_session.query.return_value.filter.return_value.first.return_value = (
-        mock_chat_model
-    )
+    mock_db_session.query.return_value.filter.return_value.first.return_value = mock_chat_model
     mock_db_session.query.return_value.filter.return_value.order_by.return_value.all.return_value = [
         mock_message_model
     ]
@@ -251,9 +235,7 @@ def test_get_chat_with_messages_no_chat(mock_db_session):
 
 
 def test_get_chat_with_messages_no_messages(mock_db_session, mock_chat_model):
-    mock_db_session.query.return_value.filter.return_value.first.return_value = (
-        mock_chat_model
-    )
+    mock_db_session.query.return_value.filter.return_value.first.return_value = mock_chat_model
     mock_db_session.query.return_value.filter.return_value.order_by.return_value.all.return_value = []
 
     chat, messages = get_chat_with_messages(mock_db_session, 1)
@@ -263,15 +245,13 @@ def test_get_chat_with_messages_no_messages(mock_db_session, mock_chat_model):
 
 
 def test_delete_chat(mock_db_session, mock_chat_model):
-    mock_db_session.query.return_value.filter.return_value.first.return_value = (
-        mock_chat_model
-    )
+    mock_db_session.query.return_value.filter.return_value.first.return_value = mock_chat_model
 
     result = delete_chat(mock_db_session, 1)
 
     mock_db_session.delete.assert_called_once_with(mock_chat_model)
     mock_db_session.commit.assert_called_once()
-    assert result == True
+    assert result
 
 
 def test_delete_chat_not_found(mock_db_session):
@@ -279,15 +259,13 @@ def test_delete_chat_not_found(mock_db_session):
 
     result = delete_chat(mock_db_session, 999)
 
-    assert result == False
+    assert not result
     mock_db_session.delete.assert_not_called()
     mock_db_session.commit.assert_not_called()
 
 
 def test_update_chat_summary(mock_db_session, mock_chat_model):
-    mock_db_session.query.return_value.filter.return_value.first.return_value = (
-        mock_chat_model
-    )
+    mock_db_session.query.return_value.filter.return_value.first.return_value = mock_chat_model
 
     result = update_chat_summary(mock_db_session, 1, "New Summary", "[0.1, 0.2]")
 
@@ -300,9 +278,7 @@ def test_update_chat_summary(mock_db_session, mock_chat_model):
 
 @patch("backend.data.database.Chat")  # Patch the actual database.Chat
 def test_get_all_chat_summaries(mock_chat_class, mock_db_session, mock_chat_model):
-    mock_db_session.query.return_value.filter.return_value.all.return_value = [
-        mock_chat_model
-    ]
+    mock_db_session.query.return_value.filter.return_value.all.return_value = [mock_chat_model]
     result = get_all_chat_summaries(mock_db_session)
 
     mock_db_session.query.assert_called_once_with(mock_chat_class)

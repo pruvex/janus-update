@@ -1,7 +1,7 @@
 import logging
-from typing import List, Dict
-import google.generativeai as genai
+from typing import Dict, List
 
+import google.generativeai as genai
 from backend.services.cost_calculator import calculate_cost
 
 logger = logging.getLogger("janus_backend")
@@ -26,20 +26,14 @@ class GeminiTextGeneration:
     Encapsulates the standard text generation functionality for the Gemini provider.
     """
 
-    async def generate_text(
-        self, model: str, history: List[Dict], system_instruction: str
-    ) -> Dict:
+    async def generate_text(self, model: str, history: List[Dict], system_instruction: str) -> Dict:
         logger.info("Standard Gemini request. Using Python SDK.")
-        genai_model = genai.GenerativeModel(
-            model_name=model, system_instruction=system_instruction
-        )
+        genai_model = genai.GenerativeModel(model_name=model, system_instruction=system_instruction)
         try:
             input_tokens = (await genai_model.count_tokens_async(history)).total_tokens
             response = await genai_model.generate_content_async(history)
             text_response = response.text
-            output_tokens = (
-                await genai_model.count_tokens_async(text_response)
-            ).total_tokens
+            output_tokens = (await genai_model.count_tokens_async(text_response)).total_tokens
             usage, cost = _calculate_and_log_cost(
                 model,
                 usage_data={
@@ -55,7 +49,5 @@ class GeminiTextGeneration:
                 "cost": cost,
             }
         except Exception as e:
-            logger.error(
-                f"An unexpected error occurred with Gemini SDK: {e}", exc_info=True
-            )
+            logger.error(f"An unexpected error occurred with Gemini SDK: {e}", exc_info=True)
             raise

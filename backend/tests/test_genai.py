@@ -1,4 +1,3 @@
-import google.generativeai as genai
 import logging
 
 logger = logging.getLogger("janus_backend")

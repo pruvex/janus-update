@@ -1,169 +1,143 @@
-import logging
-from typing import Optional, Dict, List
 import base64
-import google.generativeai as genai
-from tenacity import retry, stop_after_attempt, wait_exponential
+import logging
+import httpx
+import json
+from typing import Dict, List, Optional
+
+# Korrigierte Import-Pfade
 from backend.services import image_manager
-from backend.llm_providers.utils import _extract_image_description
 from backend.services.cost_calculator import calculate_cost
+from backend.llm_providers.utils import _extract_image_description
 
 logger = logging.getLogger("janus_backend")
 
 
-def _calculate_and_log_cost(model_id, usage_data=None, custom_prompt=None):
-    """Helper to calculate and log cost."""
-    usage, cost = calculate_cost(model_id, usage_data, custom_prompt)
+def _calculate_and_log_cost(model_id, usage_data=None):
+    """Helper to calculate and log cost for Gemini."""
+    usage, cost = calculate_cost(model_id, usage_data)
     logger.info(
-        f"\n--- USAGE TRACKING ---\n"
+        f"\n--- USAGE TRACKING (Gemini) ---\n"
         f"Model: {model_id}\n"
-        f"Input Tokens: {usage.get('input_tokens', 'N/A')}\n"
-        f"Output Tokens: {usage.get('output_tokens', 'N/A')}\n"
-        f"Image Quality: {usage.get('image_quality', 'N/A')}\n"
-        f"Image Size: {usage.get('image_size', 'N/A')}\n"
-        f"Total Cost: {cost.get('total_cost', 0):.8f} €\n"
-        f"----------------------"
+        f"Specs: {usage.get('image_size', 'N/A')}\n"
+        f"Cost: {cost.get('total_cost', 0):.6f} €\n"
+        f"-------------------------------"
     )
     return usage, cost
 
 
 class GeminiImageGeneration:
     """
-    Encapsulates the image generation functionality for the Gemini provider.
+    Handler for Gemini Image Generation via direct REST API.
     """
 
-    @retry(
-        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10)
-    )
-    async def generate_image(
-        self,
-        api_key: str,
-        model: str,
-        prompt: str,
-        reference_image_path: Optional[str] = None,
-        **kwargs,
-    ) -> dict:
-        """
-        Generates an image using the Gemini API, with optional support for a reference image.
-        """
-        genai.configure(api_key=api_key)
-        genai_model = genai.GenerativeModel(model)
+    async def generate_image(self, api_key: str, model: str, prompt: str, image_bytes_list: list = None, **kwargs) -> Dict:
+        # Endpunkt-URL bauen
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+        
+        # --- 1. Konfiguration ---
+        generation_config = {"responseModalities": ["IMAGE"]}
+        image_config = {}
+        aspect_ratio = kwargs.get("aspect_ratio")
+        image_size = kwargs.get("image_size")
+        
+        if aspect_ratio: image_config["aspectRatio"] = aspect_ratio
+        if image_size: image_config["imageSize"] = image_size
+        if image_config: generation_config["imageConfig"] = image_config
+            
+        logger.info(f"Gemini Image Config: {generation_config}")
 
-        # Prepare the content payload for the API
-        contents = []
-        parts = []
+        # --- 2. Tools (Google Search) ---
+        tools_list = []
+        if "gemini-3-pro-image" in model:
+            tools_list.append({"google_search": {}})
+            logger.info("Gemini Grounding: Offering Google Search tool.")
+        
+        # --- 3. Content (Prompt + Bilder) ---
+        if image_bytes_list:
+            if len(image_bytes_list) > 1:
+                # MULTI-IMAGE (Combine) PROMPT
+                logger.info(f"PROVIDER CHECK: Processing {len(image_bytes_list)} images for COMBINE.")
+                final_prompt = (
+                    f"INSTRUCTION: Combine the attached images based on the user's request. "
+                    f"Identify the main subjects in each image (e.g., person, object, background) and merge them into a new, coherent scene.\n\n"
+                    f"USER REQUEST: \"{prompt}\""
+                )
+            else:
+                # SINGLE-IMAGE (Edit/Refine) PROMPT - GOLDSTANDARD
+                logger.info("PROVIDER CHECK: Processing 1 image for EDIT/REFINE.")
+                final_prompt = (
+                    f"INSTRUCTION: Perform a precise edit on the attached image. "
+                    f"Your primary goal is to preserve the main subject (e.g., the person, the animal, the object) with high fidelity, keeping their appearance completely unchanged. "
+                    f"Then, apply ONLY the following modification:\n\n"
+                    f"USER REQUEST: \"{prompt}\""
+                )
+            
+            parts = [{"text": final_prompt}]
+            for img_bytes in image_bytes_list:
+                mime_type = "image/jpeg" if img_bytes.startswith(b'\xff\xd8') else "image/png"
+                parts.append({
+                    "inline_data": {
+                        "mime_type": mime_type,
+                        "data": base64.b64encode(img_bytes).decode('utf-8')
+                    }
+                })
+        else:
+            parts = [{"text": prompt}]
+        
+        contents = [{"parts": parts}]
+
+        # --- 4. Payload für REST-API ---
+        payload = {
+            "contents": contents,
+            "generationConfig": generation_config
+        }
+        if tools_list:
+            payload["tools"] = tools_list
 
         try:
-            # --- START: New Image-to-Image Logic ---
-            if reference_image_path and isinstance(reference_image_path, str):
-                logger.info(
-                    f"Reference image provided: {reference_image_path}. Preparing image-to-image generation."
-                )
-                try:
-                    # We need the absolute path to the file on the server
-                    from backend.utils.paths import get_app_data_dir
-                    import os
-
-                    # The path from DB is web-style (/user_images/...), convert to OS-style path
-                    # IMPORTANT: The replace call might be platform-dependent.
-                    # Let's make it more robust by handling both / and \ separators.
-                    relative_path = reference_image_path.replace(
-                        "/user_images/", ""
-                    ).replace("\\user_images\\", "")
-
-                    # Construct the full, absolute path
-                    absolute_path = os.path.join(
-                        get_app_data_dir(), "images", relative_path
-                    )
-
-                    logger.info(
-                        f"Attempting to open reference image at absolute path: {absolute_path}"
-                    )
-
-                    with open(absolute_path, "rb") as image_file:
-                        image_bytes = image_file.read()
-
-                    # Simple mime type detection from extension
-                    file_ext = absolute_path.split(".")[-1].lower()
-                    mime_type = (
-                        f"image/{file_ext}"
-                        if file_ext in ["jpeg", "jpg", "png", "webp"]
-                        else "image/png"
-                    )
-
-                    # Construct the multi-part content as per Google's documentation
-                    # IMPORTANT: The order matters for some models. Text first, then image.
-                    parts.append({"text": prompt})
-                    parts.append(
-                        {
-                            "inline_data": {
-                                "mime_type": mime_type,
-                                "data": base64.b64encode(image_bytes).decode("utf-8"),
-                            }
-                        }
-                    )
-                except FileNotFoundError:
-                    logger.error(
-                        f"Reference image not found at path: {absolute_path}. Falling back to text-only."
-                    )
-                    parts.append({"text": prompt})
-                except Exception as e:
-                    logger.error(
-                        f"An unexpected error occurred during reference image processing: {e}",
-                        exc_info=True,
-                    )
-                    parts.append({"text": prompt})  # Fallback
-            else:
-                # Fallback to original text-to-image logic
-                parts.append({"text": prompt})
-
-            if parts:
-                contents.append({"role": "user", "parts": parts})
-            # --- END: New Image-to-Image Logic ---
-
-            logger.info(
-                f"Calling Gemini image model '{model}' with prompt: '{prompt}' and reference image: {bool(reference_image_path)}"
-            )
-            response = await genai_model.generate_content_async(contents)
-
-            image_data = None
-            text_response = None
-
-            if (
-                response.candidates
-                and response.candidates[0].content
-                and response.candidates[0].content.parts
-            ):
-                for part in response.candidates[0].content.parts:
-                    # Check for direct 'data' field as suggested by curl example
-                    if hasattr(part, "data") and part.data:
-                        image_data = part.data
-                        break
-                    elif part.inline_data and part.inline_data.data:
-                        image_data = part.inline_data.data
-                        break
-                    if part.text:
-                        text_response = part.text
-
-            image_url = None
-            if image_data:
+            async with httpx.AsyncClient(timeout=180.0) as client: # Längeres Timeout für Bilder
+                response = await client.post(url, json=payload)
+                response.raise_for_status()
+            
+            response_json = response.json()
+            
+            # --- 5. Response-Verarbeitung ---
+            first_part = response_json.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0]
+            
+            if "inlineData" in first_part:
+                image_data = first_part["inlineData"]["data"]
+                image_bytes_result = base64.b64decode(image_data)
+                
+                # Speichern
                 cleaned_description = _extract_image_description(prompt)
                 image_url = image_manager.save_image_from_bytes(
-                    image_data, description=cleaned_description, file_extension="png"
+                    image_bytes_result, description=cleaned_description, file_extension="png"
                 )
-                text_response = "Bild wurde erfolgreich generiert."  # If we get an image, we don't want to return text
+                
+                usage_data_for_cost = {"aspect_ratio": aspect_ratio, "image_size": image_size}
+                usage, cost = _calculate_and_log_cost(model, usage_data=usage_data_for_cost)
+                
+                return {
+                    "image_url": image_url,
+                    "usage": usage,
+                    "cost": cost,
+                    "previous_response_id": response_json.get("candidates", [{}])[0].get("content", {}).get("response_id"),
+                    "previous_image_id": response_json.get("candidates", [{}])[0].get("content", {}).get("image_id")
+                }
+            else:
+                text_content = first_part.get("text", "Unbekannte Antwort von Gemini.")
+                logger.warning(f"Gemini lieferte Text: {text_content}")
+                return { 
+                    "type": "text", 
+                    "text": f"Gemini Hinweis: {text_content}", 
+                    "image_url": None 
+                }
 
-            usage, cost = _calculate_and_log_cost(model)
-
-            return {
-                "text": text_response,
-                "image_url": image_url,
-                "usage": usage,
-                "cost": cost,
-            }
-
+        except httpx.HTTPStatusError as e:
+            error_body = e.response.json()
+            error_message = error_body.get("error", {}).get("message", "API-Fehler")
+            logger.error(f"HTTP Error Gemini Image: {error_body}")
+            raise ValueError(f"Fehler bei Gemini: {error_message}")
         except Exception as e:
-            logger.error(
-                f"Error generating image with Gemini (attempt failed): {e}",
-                exc_info=True,
-            )
+            logger.error(f"Error Gemini Image Generation: {e}", exc_info=True)
             raise

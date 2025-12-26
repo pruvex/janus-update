@@ -8,7 +8,7 @@
   width: 100%;
   height: 100%;
   overflow: auto;
-  background-color: rgba(0,0,0,0.4);
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
 .modal-content {
@@ -51,7 +51,9 @@
 
 .personality-option:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .personality-option.active {
@@ -210,41 +212,361 @@
   overflow-y: auto; /* Scrollbar, falls der Inhalt zu lang wird */
 }
 
-.settings-section h3, .settings-section h4 {
-    margin-top: 0;
+.settings-section h3,
+.settings-section h4 {
+  margin-top: 0;
 }
 
 /* Anpassung der bestehenden Formular-Elemente */
 #api-key-form {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 #back-to-chat-btn {
-    margin-top: auto; /* Schiebt den Button ganz nach unten */
+  margin-top: auto; /* Schiebt den Button ganz nach unten */
 }
 
 #workspaces-list li {
-    display: flex;
-    justify-content: space-between; /* Distribute space between items */
-    align-items: center; /* Vertically align items */
-    padding: 8px 0;
-    border-bottom: 1px solid #444; /* Optional: for visual separation */
+  display: flex;
+  justify-content: space-between; /* Distribute space between items */
+  align-items: center; /* Vertically align items */
+  padding: 8px 0;
+  border-bottom: 1px solid #444; /* Optional: for visual separation */
 }
 
 #workspaces-list li:last-child {
-    border-bottom: none; /* No border for the last item */
+  border-bottom: none; /* No border for the last item */
 }
 
 .remove-workspace-btn {
-    background-color: #dc3545; /* Red color for delete button */
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+  background-color: #dc3545; /* Red color for delete button */
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .remove-workspace-btn:hover {
-    background-color: #c82333; /* Darker red on hover */
+  background-color: #c82333; /* Darker red on hover */
+}
+
+/* Stile für Memory Section */
+#memory-section {
+  padding: 15px;
+  background-color: #2e2e2e;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#memory-section h3 {
+  color: #eee;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #444;
+  padding-bottom: 10px;
+}
+
+#memory-list-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 15px;
+}
+
+.memory-card {
+  background-color: #3a3a3a;
+  border: 1px solid #555;
+  border-radius: 5px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 120px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.memory-content {
+  flex-grow: 1;
+  margin-bottom: 10px;
+}
+
+.memory-snippet {
+  display: block;
+  font-size: 0.95em;
+  color: #ddd;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.memory-category {
+  display: inline-block;
+  background-color: #555;
+  color: #fff;
+  font-size: 0.75em;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* Category specific colors */
+.category-personal {
+  background-color: #007bff;
+} /* Blue */
+.category-preference {
+  background-color: #6610f2;
+} /* Indigo */
+.category-goal {
+  background-color: #28a745;
+} /* Green */
+.category-value {
+  background-color: #fd7e14;
+} /* Orange */
+.category-experience {
+  background-color: #dc3545;
+} /* Red */
+.category-professional {
+  background-color: #6f42c1;
+} /* Purple */
+.category-general-fact {
+  background-color: #6c757d;
+} /* Gray */
+
+.memory-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.memory-actions button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  transition: background-color 0.2s ease;
+}
+
+.edit-memory-btn,
+.save-memory-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.edit-memory-btn:hover,
+.save-memory-btn:hover {
+  background-color: #0056b3;
+}
+
+.delete-memory-btn,
+.cancel-edit-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.delete-memory-btn:hover,
+.cancel-edit-btn:hover {
+  background-color: #c82333;
+}
+
+/* Edit mode styles */
+.edit-snippet-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  background-color: #222;
+  color: #eee;
+  resize: vertical;
+}
+
+.edit-category-select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  background-color: #222;
+  color: #eee;
+}
+
+/* --- Adressbuch Stile --- */
+#address-book-section {
+  padding: 15px;
+  background-color: #2e2e2e;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#address-book-section h3 {
+  color: #eee;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #444;
+  padding-bottom: 10px;
+}
+
+#add-contact-btn {
+  background-color: #28a745; /* Green for add button */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-bottom: 20px;
+}
+
+#add-contact-btn:hover {
+  background-color: #218838;
+}
+
+#contact-list-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+.contact-card {
+  background-color: #3a3a3a;
+  border: 1px solid #555;
+  border-radius: 5px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 150px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.contact-details {
+  flex-grow: 1;
+  margin-bottom: 10px;
+  color: #ddd;
+}
+
+.contact-details strong {
+  display: block;
+  font-size: 1.1em;
+  color: #fff;
+  margin-bottom: 5px;
+}
+
+.contact-details small.category {
+  display: inline-block;
+  background-color: #555;
+  color: #fff;
+  font-size: 0.7em;
+  padding: 3px 7px;
+  border-radius: 3px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.contact-details p {
+  margin: 3px 0;
+  font-size: 0.9em;
+}
+
+.contact-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.contact-actions button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  transition: background-color 0.2s ease;
+}
+
+.edit-contact-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.edit-contact-btn:hover {
+  background-color: #0056b3;
+}
+
+.delete-contact-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.delete-contact-btn:hover {
+  background-color: #c82333;
+}
+
+/* Contact Modal Styles */
+#contact-modal .modal-content {
+  width: 50%;
+  max-width: 600px;
+  margin: 10% auto;
+  background-color: #2e2e2e;
+  color: #eee;
+  border: 1px solid #444;
+}
+
+#contact-modal h3 {
+  color: #eee;
+  border-bottom: 1px solid #444;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+#contact-form label {
+  display: block;
+  margin-bottom: 5px;
+  color: #ccc;
+}
+
+#contact-form input[type="text"],
+#contact-form input[type="email"],
+#contact-form input[type="tel"],
+#contact-form textarea {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #3a3a3a;
+  color: #eee;
+  box-sizing: border-box;
+}
+
+#contact-form textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+#contact-form input:focus,
+#contact-form textarea:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+#contact-form .modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+#contact-form #contact-save-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#contact-form #contact-save-btn:hover {
+  background-color: #0056b3;
 }

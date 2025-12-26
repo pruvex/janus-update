@@ -1,8 +1,9 @@
-import os
 import io
 import logging
+import os
+from typing import Dict, List, Optional
+
 import torch
-from typing import Optional, List, Dict
 from pydub import AudioSegment
 
 from backend.tts_providers.base import TTSProviderBase
@@ -22,6 +23,7 @@ os.makedirs(CACHE_DIR, exist_ok=True)
 
 class SileroTTS(TTSProviderBase):
     """Silero TTS Provider - Local PyTorch-based TTS."""
+
     name = "silero"
 
     def __init__(self):
@@ -42,13 +44,15 @@ class SileroTTS(TTSProviderBase):
         voices = []
         for lang_key, info in SILERO_MODELS.items():
             # For Silero, we'll just list a generic voice per language for now
-            voices.append({
-                "id": f"{lang_key}_random",
-                "name": f"Silero {lang_key.upper()} (Zufällig)",
-                "lang": lang_key,
-                "provider": "silero",
-                "speaker": "random" # Silero uses generic speakers or random
-            })
+            voices.append(
+                {
+                    "id": f"{lang_key}_random",
+                    "name": f"Silero {lang_key.upper()} (Zufällig)",
+                    "lang": lang_key,
+                    "provider": "silero",
+                    "speaker": "random",  # Silero uses generic speakers or random
+                }
+            )
         return voices
 
     def _load_model(self, lang: str):
@@ -56,20 +60,21 @@ class SileroTTS(TTSProviderBase):
         lang_key = "de" if lang.startswith("de") else "en"
         if lang_key in self.models:
             return self.models[lang_key]
-        
+
         info = SILERO_MODELS[lang_key]
         local_path = os.path.join(CACHE_DIR, info["name"] + ".pt")
-        
+
         if not os.path.exists(local_path):
             logger.info(f"Downloading Silero model {info['name']}...")
             import urllib.request
+
             try:
                 urllib.request.urlretrieve(info["url"], local_path)
                 logger.info(f"Silero model downloaded to {local_path}")
             except Exception as e:
                 logger.error(f"Failed to download Silero model: {e}")
                 raise
-        
+
         # Load model
         try:
             model = torch.package.PackageImporter(local_path).load_pickle("tts_models", "model")
@@ -81,29 +86,34 @@ class SileroTTS(TTSProviderBase):
             logger.error(f"Failed to load Silero model: {e}")
             raise
 
-    def synthesize(self, text: str, voice: str, lang: str, speed: float, fmt: str, preset_name: Optional[str] = None) -> bytes:
+    def synthesize(
+        self,
+        text: str,
+        voice: str,
+        lang: str,
+        speed: float,
+        fmt: str,
+        preset_name: Optional[str] = None,
+    ) -> bytes:
         """Synthesize speech using Silero TTS."""
         try:
             model = self._load_model(lang)
             sample_rate = 48000  # Silero default
-            
+
             # Silero kennt die Piper-Stimmen nicht. Wir wählen eine gültige aus der Liste.
             speaker_to_use = "random"  # Sicherster Fallback
 
             audio = model.apply_tts(text=text, speaker=speaker_to_use, sample_rate=sample_rate)
-            
+
             # Convert tensor to bytes
             audio_np = audio.numpy()
-            audio_int16 = (audio_np * 32767).astype('int16')
-            
+            audio_int16 = (audio_np * 32767).astype("int16")
+
             # Create audio segment
             seg = AudioSegment(
-                audio_int16.tobytes(),
-                frame_rate=sample_rate,
-                sample_width=2,
-                channels=1
+                audio_int16.tobytes(), frame_rate=sample_rate, sample_width=2, channels=1
             )
-            
+
             # Export to requested format
             out = io.BytesIO()
             if fmt.lower() == "wav":
@@ -112,11 +122,19 @@ class SileroTTS(TTSProviderBase):
                 seg.export(out, format="ogg")
             else:
                 seg.export(out, format="mp3")
-            
+
             return out.getvalue()
         except Exception as e:
             logger.error(f"Silero TTS synthesis failed: {e}")
             raise
 
-    def synthesize_stream(self, text: str, voice: str, lang: str, speed: float, fmt: str, preset_name: Optional[str] = None):
+    def synthesize_stream(
+        self,
+        text: str,
+        voice: str,
+        lang: str,
+        speed: float,
+        fmt: str,
+        preset_name: Optional[str] = None,
+    ):
         raise NotImplementedError("Silero TTS does not support streaming.")

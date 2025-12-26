@@ -1,4 +1,4 @@
-fastapi
+fastapi==0.121.0
 uvicorn
 pydantic
 keyring
@@ -15,7 +15,6 @@ platformdirs
 pywin32-ctypes
 pydantic-settings
 tenacity
-pyfakefs
 fpdf2
 pypdf
 ebooklib
@@ -24,5 +23,12 @@ ffmpeg-python
 chromadb>=0.5.0
 pydub
 soundfile
-num2words
-git+https://github.com/repodiac/german_transliterate
+google-auth-oauthlib
+google-api-python-client
+sqlalchemy
+beautifulsoup4
+feedparser
+geopy
+Wikipedia-API
+dateparser
+thefuzz

@@ -1,9 +1,9 @@
+import datetime
 import logging
-from sqlalchemy.orm import Session
+
 from backend.data import crud, database
 from backend.services import llm_gateway, vector_service
-from typing import List, Dict
-import datetime
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger("janus_backend")
 
@@ -62,6 +62,4 @@ async def summarize_and_store_chat(
         crud.update_chat_summary(db, chat_id, summary, embedding)
         logger.info(f"Chat {chat_id} erfolgreich zusammengefasst: '{summary}'")
     except Exception as e:
-        logger.error(
-            f"Fehler beim Zusammenfassen von Chat {chat_id}: {e}", exc_info=True
-        )
+        logger.error(f"Fehler beim Zusammenfassen von Chat {chat_id}: {e}", exc_info=True)

@@ -112,31 +112,40 @@
         "name": "Gemini 3 Pro Image (Preview)",
         "provider": "gemini",
         "type": "image",
-        "cost_per_million_output_tokens": 30.0,
-        "output_tokens_per_image_1024x1024": 1290,
-        "cost_per_text_input_token": 0.000002,
-        "desc": "Generiert Bilder mit Gemini 3 Pro Image (Preview).",
-        "capabilities": ["image_generation"]
+        "desc": "High-end image generation with advanced reasoning and text rendering.",
+        "capabilities": ["image_generation"],
+        "cost_per_million_tokens_input": 2.00,
+        "cost_per_million_tokens_output": 120.00, 
+        "default_aspect_ratio": "1:1",
+        "aspect_ratios": [
+            "1:1", "16:9", "9:16", "4:3", "3:4"
+        ],
+        "default_resolution": "1K",
+        "resolutions": ["1K", "2K", "4K"],
+        "tokens_per_resolution": {
+            "1K": 1120,
+            "2K": 1120,
+            "4K": 2000
+        }
     },
     {
-        "id": "gemini-2.5-flash-image-preview",
-        "name": "Gemini 2.5 Flash (Image)",
+        "id": "gemini-2.5-flash-image",
+        "name": "Gemini 2.5 Flash Image",
         "provider": "gemini",
         "type": "image",
-        "cost_per_million_output_tokens": 30.0,
-        "output_tokens_per_image_1024x1024": 1290,
-        "desc": "Generiert Bilder mit Gemini 2.5 Flash.",
-        "capabilities": ["image_generation"]
-    },
-    {
-        "id": "gemini-2.5-pro-image-preview",
-        "name": "Gemini 2.5 Pro (Image)",
-        "provider": "gemini",
-        "type": "image",
-        "cost_per_million_output_tokens": 30.0,
-        "output_tokens_per_image_1024x1024": 1290,
-        "desc": "Generiert Bilder mit Gemini 2.5 Pro.",
-        "capabilities": ["image_generation"]
+        "desc": "Fast and efficient image generation.",
+        "capabilities": ["image_generation"],
+        "cost_per_million_tokens_input": 0.30,
+        "cost_per_million_tokens_output": 30.00,
+        "default_aspect_ratio": "1:1",
+        "aspect_ratios": [
+            "1:1", "16:9", "9:16", "4:3", "3:4"
+        ],
+        "default_resolution": "1K",
+        "resolutions": ["1K"],
+        "tokens_per_resolution": {
+            "1K": 1290
+        }
     },
     {
         "id": "websearch_gemini",

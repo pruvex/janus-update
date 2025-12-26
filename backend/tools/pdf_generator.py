@@ -3,7 +3,10 @@
 import logging
 import os
 from typing import Optional
+
 from fpdf import FPDF
+from pydantic import BaseModel, Field
+
 from backend.utils.paths import resource_path
 
 logger = logging.getLogger("janus_backend")
@@ -29,10 +32,10 @@ class PDF(FPDF):
     def add_markdown_text(self, markdown_text: str, font_size: int):
         lines = markdown_text.split("\n")
         self.set_font("DejaVu", "", font_size)
-        
+
         for line in lines:
             line = line.strip()
-            
+
             if line.startswith("# "):
                 self.set_font("DejaVu", "B", font_size * 1.5)
                 self.multi_cell(0, 10, line[2:].strip(), 0, "L")
@@ -66,20 +69,20 @@ def create_pdf_from_markdown(
     filename: str,
     location: str = "Documents",
     image_path: Optional[str] = None,
-    # --- START: ANGEPASSTE STANDARDWERTE ---
     font_size: int = 12,
-    image_width: int = 40, # 40mm entspricht 4cm
-    # --- ENDE: ANGEPASSTE STANDARDWERTE ---
+    image_width: int = 40,
+    last_image_path: Optional[str] = None,
 ) -> str:
     """
     Kombiniert vorhandenen Text und optional das ZULETZT im Chatverlauf erstellte Bild zu einer PDF-Datei.
-
-    WICHTIG: Dieses Werkzeug generiert unter keinen Umständen neue Inhalte oder Bilder.
-    Es dient ausschließlich dazu, bereits existierende Elemente aus dem Chatverlauf zu formatieren und zu speichern.
-    Nutze es, wenn der Benutzer explizit darum bittet, eine Geschichte, einen Text oder ein Bild zu speichern.
     """
+    # Logik-Update: Wenn kein expliziter Bildpfad angegeben ist, aber ein letztes Bild existiert
+    if not image_path and last_image_path and os.path.exists(last_image_path):
+        # Einfache Heuristik: Wenn der User explizit nach "PDF mit Bild" fragt oder wir Kontext haben, nutzen wir es.
+        # Da create_pdf oft explizit ist, nutzen wir es als Fallback.
+        image_path = last_image_path
     try:
-        logger.info(f"PDF-Erstellung gestartet mit folgenden Parametern:")
+        logger.info("PDF-Erstellung gestartet mit folgenden Parametern:")
         logger.info(f"  - Dateiname: {filename}")
         logger.info(f"  - Speicherort: {location}")
         logger.info(f"  - Schriftgröße: {font_size}pt")
@@ -107,7 +110,7 @@ def create_pdf_from_markdown(
 
         if image_path and os.path.exists(image_path):
             logger.info(f"Füge Bild hinzu: {image_path}")
-            
+
             page_width = pdf.w - 2 * pdf.l_margin
             effective_width = image_width if image_width > 0 else page_width
             if effective_width > page_width:
@@ -127,3 +130,17 @@ def create_pdf_from_markdown(
         error_message = f"Fehler beim Erstellen der PDF mit fpdf2: {e}"
         logger.error(error_message, exc_info=True)
         return error_message
+
+
+# --- Schema Definition ---
+class CleanCreatePdfArgs(BaseModel):
+    content: str = Field(
+        ..., description="Der vollständige Textinhalt für die PDF (Markdown erlaubt)."
+    )
+    filename: str = Field(
+        ...,
+        description="Der Dateiname. WICHTIG: Der Parameter MUSS zwingend 'filename' heißen (NICHT 'file_name'). Endung muss .pdf sein.",
+    )
+    location: str = Field(
+        "Desktop", description="Speicherort: 'Desktop', 'Documents' oder 'Downloads'."
+    )

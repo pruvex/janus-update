@@ -157,6 +157,9 @@ class GeneratedImage(Base):
     image_url = Column(String, nullable=False)
     is_uploaded = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.now)
+    # Add these new fields for context tracking
+    previous_response_id = Column(String, nullable=True)
+    previous_image_id = Column(String, nullable=True)
 
 
 

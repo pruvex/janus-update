@@ -563,3 +563,342 @@ button:hover {
     border-radius: 10px;
     margin-top: 10px;
 }
+
+/* ==========================================================================
+   FINALE MODAL STYLES - 20.12.2025
+   ========================================================================== */
+
+/* 1. Bildvorschau-Modal (#image-modal)
+   -------------------------------------------------------------------------- */
+
+#image-modal {
+  display: flex; /* Sicherstellen, dass der Modal-overlay Flexbox ist */
+  justify-content: center; /* Horizontal zentrieren */
+  align-items: flex-start; /* Oben ausrichten */
+  padding-top: 20px; /* Abstand von oben */
+  z-index: 1001; /* Höherer z-index, damit es über dem Image Studio Modal liegt */
+}
+
+#image-modal .modal-content {
+  position: relative; /* Wichtig für margin: auto */
+  margin: 0 auto; /* Horizontal zentrieren */
+  
+  background-color: var(--background-secondary);
+  padding: 0;
+  border: none;
+  border-radius: var(--border-radius-main);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  
+  max-width: 90vw;
+  max-height: calc(100vh - 40px); /* 20px oben + 20px unten Puffer */
+  overflow: hidden; /* Wichtig für sauberes Layout */
+  display: flex;
+  flex-direction: column;
+}
+
+#image-modal .modal-header {
+  background-color: var(--surface-color);
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--surface-color);
+  cursor: grab;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-primary);
+  font-weight: bold;
+  border-top-left-radius: var(--border-radius-main);
+  border-top-right-radius: var(--border-radius-main);
+}
+
+#image-modal .modal-header h3 {
+  margin: 0;
+  font-size: 1.1em;
+}
+
+#image-modal-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(100% - 45px); /* Höhe des Headers abziehen */
+  object-fit: contain;
+  margin: auto;
+}
+
+#image-modal .close-button {
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 10;
+  /* float:right wird nicht mehr benötigt */
+  position: static; /* Zurücksetzen */
+}
+
+#image-modal .close-button:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+
+/* 2. Image-Studio-Modal (#image-studio-modal)
+   -------------------------------------------------------------------------- */
+
+#image-studio-modal .modal-content {
+  max-width: 1550px; /* 30px breiter auf der rechten Seite */
+  width: calc(100vw - 240px); /* Gesamtbreite - (linker Offset + rechter Puffer) */
+  height: calc(100vh - 40px); /* Gesamtfensterhöhe - Puffer (20px oben, 20px unten) */
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+  padding: 0;
+  position: fixed; /* Positionierung direkt relativ zum Viewport */
+  top: 0; /* Starte bei 0px vom oberen Rand */
+  margin-top: 20px; /* Verschiebe es um 20px nach unten */
+  left: 290px; /* Links bündig mit der Sidebar + weiterer Puffer */
+  box-sizing: border-box; /* Sicherstellen, dass padding/border in width/height einberechnet wird */
+}
+
+#image-studio-modal .modal-header {
+  background-color: var(--surface-color);
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--surface-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-primary);
+  font-weight: bold;
+  border-top-left-radius: var(--border-radius-main);
+  border-top-right-radius: var(--border-radius-main);
+}
+
+#image-studio-modal .modal-header h3 {
+  margin: 0;
+  font-size: 1.1em;
+  padding-left: 10px; /* Etwas Einrückung für den Titel */
+}
+
+#is-preview-wrapper {
+    position: relative;
+    /* FIX: Feste Größe erzwingen */
+    width: 512px !important; 
+    height: 512px !important;
+    min-width: 512px;
+    min-height: 512px;
+    
+    /* FIX: Verhindern, dass Flexbox es streckt */
+    flex: 0 0 auto; 
+    align-self: flex-start; /* Links ausrichten (oder center für Mitte) */
+    
+    background: #2a2a2a;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    border: 1px solid #444;
+}
+
+/* Der innere Container passt sich dem Wrapper an */
+#is-preview-container {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Das Bild darf maximal so groß sein wie der Wrapper, behält aber Ratio */
+#is-preview-container img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+}
+
+/* Standard: Canvas lässt Klicks durch (für Drag&Drop) */
+#is-mask-canvas {
+    position: absolute;
+    pointer-events: none; 
+    z-index: 10;
+    cursor: crosshair; /* Fadenkreuz beim Malen */
+    /* FIX: Optische Transparenz hier regeln, damit Pixel voll deckend sein können */
+    opacity: 0.6; 
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* Wenn Inpainting aktiv ist: Canvas fängt Klicks ab */
+#is-mask-canvas.active {
+    pointer-events: auto !important;
+}
+
+#image-studio-modal .modal-header .close-button {
+  float: none; /* Deaktiviert float, damit Flexbox es handhabt */
+  position: static; /* Setzt die Position zurück */
+  order: 1; /* Stellt sicher, dass es am Ende kommt in der Flexbox */
+}
+
+.image-studio-display {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Verhindert das Strecken auf volle Breite */
+    gap: 10px;
+    width: 100%;
+    overflow-y: auto;
+}
+
+/* Das Textfeld für den Dateinamen soll aber breit bleiben */
+.image-studio-display .control-group {
+    width: 100%;
+}
+
+.image-studio-container {
+  display: flex;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.image-studio-controls {
+  flex: 0 0 325px;
+  padding: 20px;
+  border-right: 1px solid var(--surface-color);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.image-studio-controls h4 {
+  margin-top: 0;
+  color: var(--accent-color);
+}
+
+.control-group {
+  margin-bottom: 15px;
+}
+
+.control-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.control-group input[type="text"],
+.control-group textarea,
+.control-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--surface-color);
+  border-radius: var(--border-radius-main);
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+}
+
+.control-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.cost-display {
+  margin-top: auto;
+  padding-top: 15px;
+  border-top: 1px solid var(--surface-color);
+  text-align: right;
+  font-size: 1.1em;
+}
+
+.cost-display strong {
+  color: var(--accent-color);
+}
+
+.image-studio-display {
+  flex-grow: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.preview-container {
+  flex: 0 0 auto;
+  width: 500px; /* Feste Breite wie in README.md vorgeschlagen */
+  height: 500px; /* Feste Höhe wie in README.md vorgeschlagen */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--background-primary);
+  border-radius: var(--border-radius-main);
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-container img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* Der magische Befehl aus README.md */
+  border-radius: var(--border-radius-main);
+}
+
+.preview-container p {
+  color: var(--text-secondary);
+}
+
+.gallery-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  border-top: 1px solid var(--surface-color);
+  padding-top: 20px;
+}
+
+.gallery-container h4 {
+  margin-top: 0;
+  color: var(--accent-color);
+  margin-bottom: 15px;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+}
+
+.gallery img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: var(--border-radius-main);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.gallery img:hover {
+  transform: scale(1.05);
+}
+
+.loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--accent-color);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 2s linear infinite;
+  position: absolute;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

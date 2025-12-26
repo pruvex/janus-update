@@ -1,14 +1,14 @@
-import pytest
-from unittest.mock import MagicMock, patch, mock_open
 import os
 import uuid
-import requests
-import logging
 from datetime import datetime
+from unittest.mock import MagicMock, mock_open, patch
+
+import pytest
+import requests
 from backend.services.image_manager import (
+    migrate_image_paths,
     save_image_from_bytes,
     save_image_from_url,
-    migrate_image_paths,
 )
 
 
@@ -31,9 +31,7 @@ def mock_get_app_data_dir():
 @patch("uuid.uuid4", return_value=uuid.UUID("00000000-0000-0000-0000-000000000001"))
 @patch("builtins.open", new_callable=mock_open)
 @patch("backend.services.image_manager.datetime")
-def test_save_image_from_bytes_success(
-    mock_makedirs, mock_uuid, mock_datetime, mock_open_func
-):
+def test_save_image_from_bytes_success(mock_datetime, mock_open_func, mock_uuid, mock_makedirs):
     mock_datetime.now.return_value = datetime(2023, 1, 1)
     image_bytes = b"test_image_data"
     description = "test image"
@@ -63,7 +61,7 @@ def test_save_image_from_bytes_default_values(
     mock_datetime.now.return_value = datetime(2023, 1, 1)
     image_bytes = b"test_image_data_default"
     expected_dir = os.path.join("/mock/app/data", "images")
-    expected_filename = f"untitled-01-01-23.png"
+    expected_filename = "untitled-01-01-23.png"
     expected_file_path = os.path.join(expected_dir, expected_filename)
     expected_web_path = f"/user_images/{expected_filename}"
 
@@ -122,7 +120,7 @@ def test_save_image_from_url_success(
     image_url = "http://example.com/image.png"
     title = "test image from url"
     expected_dir = os.path.join("/mock/app/data", "images")
-    expected_filename = f"test-image-from-url-01-01-23.png"
+    expected_filename = "test-image-from-url-01-01-23.png"
     expected_file_path = os.path.join(expected_dir, expected_filename)
     expected_web_path = f"/user_images/{expected_filename}"
     mock_response = MagicMock()
@@ -143,9 +141,7 @@ def test_save_image_from_url_success(
 @patch("requests.get")
 def test_save_image_from_url_request_exception(mock_requests_get, mock_logger):
     image_url = "http://example.com/image.png"
-    mock_requests_get.side_effect = requests.exceptions.RequestException(
-        "Network error"
-    )
+    mock_requests_get.side_effect = requests.exceptions.RequestException("Network error")
 
     result = save_image_from_url(image_url)
 
@@ -159,9 +155,7 @@ def test_save_image_from_url_request_exception(mock_requests_get, mock_logger):
 def mock_message_model_for_migration():
     mock_msg = MagicMock()
     mock_msg.id = 1
-    mock_msg.image_path = (
-        "https://oaidalleapiprodscus.blob.core.windows.net/some_image.png"
-    )
+    mock_msg.image_path = "https://oaidalleapiprodscus.blob.core.windows.net/some_image.png"
     return mock_msg
 
 

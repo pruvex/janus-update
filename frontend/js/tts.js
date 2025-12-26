@@ -1,4 +1,4 @@
-import { API_BASE_URL } from './config.js';
+import { API_BASE_URL } from "./config.js";
 
 let ttsEnabled = false;
 let ttsVoice = null;
@@ -11,7 +11,9 @@ let currentAudio = null;
  */
 export async function loadTTSVoices(lang = null) {
   try {
-    const url = lang ? `${API_BASE_URL}/api/tts/voices?lang=${encodeURIComponent(lang)}` : `${API_BASE_URL}/api/tts/voices`;
+    const url = lang
+      ? `${API_BASE_URL}/api/tts/voices?lang=${encodeURIComponent(lang)}`
+      : `${API_BASE_URL}/api/tts/voices`;
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to load voices");
     const data = await response.json();
@@ -25,28 +27,38 @@ export async function loadTTSVoices(lang = null) {
 /**
  * Synthesize speech from text
  */
-export async function synthesizeSpeech({ text, lang, voice_id, speed = 1.0, format = "mp3", provider = null, preset = null }) {
+export async function synthesizeSpeech({
+  text,
+  lang,
+  voice_id,
+  speed = 1.0,
+  format = "mp3",
+  provider = null,
+  preset = null,
+  llm_provider = null,
+}) {
   try {
-    const params = new URLSearchParams({ 
-      text, 
-      lang, 
-      speed: String(speed), 
-      fmt: format 
+    const params = new URLSearchParams({
+      text,
+      lang,
+      speed: String(speed),
+      fmt: format,
     });
-    
-    if (voice_id) params.append("voice_id", voice_id); // NEU: voice_id statt voice
+
+    if (voice_id) params.append("voice_id", voice_id);
     if (provider) params.append("provider", provider);
-    if (preset) params.append("preset", preset); // NEU
-    
-    const response = await fetch(`${API_BASE_URL}/api/tts/synthesize?${params.toString()}`, { 
-      method: "POST" 
+    if (preset) params.append("preset", preset);
+    if (llm_provider) params.append("llm_provider", llm_provider); // NEU: llm_provider hinzufügen
+
+    const response = await fetch(`${API_BASE_URL}/api/tts/synthesize?${params.toString()}`, {
+      method: "POST",
     });
-    
+
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.detail || "TTS synthesis failed");
     }
-    
+
     const blob = await response.blob();
     return URL.createObjectURL(blob);
   } catch (error) {
@@ -58,29 +70,30 @@ export async function synthesizeSpeech({ text, lang, voice_id, speed = 1.0, form
 /**
  * Play text as speech
  */
-export async function speakText(text, lang = "de") {
+export async function speakText(text, lang = "de", llm_provider = null) {
   if (!ttsEnabled) return;
-  
+
   // Stop any currently playing audio
   if (currentAudio) {
     currentAudio.pause();
     currentAudio = null;
   }
-  
+
   try {
     const audioUrl = await synthesizeSpeech({
       text,
       lang,
-      voice_id: ttsVoice, // NEU: voice_id statt voice
+      voice_id: ttsVoice,
       speed: ttsSpeed,
       format: "mp3",
-      preset: ttsPreset // NEU
+      preset: ttsPreset,
+      llm_provider: llm_provider, // NEU: llm_provider übergeben
     });
-    
+
     currentAudio = new Audio(audioUrl);
     currentAudio.play();
-    
-    currentAudio.addEventListener('ended', () => {
+
+    currentAudio.addEventListener("ended", () => {
       URL.revokeObjectURL(audioUrl);
       currentAudio = null;
     });
@@ -94,13 +107,13 @@ export async function speakText(text, lang = "de") {
  */
 export function setTTSEnabled(enabled) {
   ttsEnabled = enabled;
-  localStorage.setItem('tts_enabled', enabled ? 'true' : 'false');
-  
+  localStorage.setItem("tts_enabled", enabled ? "true" : "false");
+
   // Update button state
-  const ttsBtn = document.getElementById('tts-toggle-btn');
+  const ttsBtn = document.getElementById("tts-toggle-btn");
   if (ttsBtn) {
-    ttsBtn.classList.toggle('active', enabled);
-    ttsBtn.title = enabled ? 'TTS aktiviert' : 'TTS deaktiviert';
+    ttsBtn.classList.toggle("active", enabled);
+    ttsBtn.title = enabled ? "TTS aktiviert" : "TTS deaktiviert";
   }
 }
 
@@ -116,7 +129,7 @@ export function isTTSEnabled() {
  */
 export function setTTSVoice(voice) {
   ttsVoice = voice;
-  localStorage.setItem('tts_voice', voice);
+  localStorage.setItem("tts_voice", voice);
 }
 
 /**
@@ -124,7 +137,7 @@ export function setTTSVoice(voice) {
  */
 export function setTTSSpeed(speed) {
   ttsSpeed = speed;
-  localStorage.setItem('tts_speed', String(speed));
+  localStorage.setItem("tts_speed", String(speed));
 }
 
 /**
@@ -139,24 +152,23 @@ export async function initTTS() {
     ttsVoice = settings.voice || null;
     ttsSpeed = settings.speed || 1.0;
     ttsPreset = settings.preset || "assistenz";
-
   } catch (error) {
-    console.error('Error loading TTS settings for init:', error);
+    console.error("Error loading TTS settings for init:", error);
     // Fallback to localStorage if backend fails
-    ttsVoice = localStorage.getItem('tts_voice');
-    ttsSpeed = parseFloat(localStorage.getItem('tts_speed')) || 1.0;
-    ttsPreset = localStorage.getItem('tts_preset') || "assistenz";
+    ttsVoice = localStorage.getItem("tts_voice");
+    ttsSpeed = parseFloat(localStorage.getItem("tts_speed")) || 1.0;
+    ttsPreset = localStorage.getItem("tts_preset") || "assistenz";
   }
 
   // Load enabled state from localStorage (this is a local UI preference)
-  const savedEnabled = localStorage.getItem('tts_enabled') === 'true';
+  const savedEnabled = localStorage.getItem("tts_enabled") === "true";
   ttsEnabled = savedEnabled;
-  
+
   // Set up toggle button
-  const ttsBtn = document.getElementById('tts-toggle-btn');
+  const ttsBtn = document.getElementById("tts-toggle-btn");
   if (ttsBtn) {
-    ttsBtn.classList.toggle('active', ttsEnabled);
-    ttsBtn.addEventListener('click', () => {
+    ttsBtn.classList.toggle("active", ttsEnabled);
+    ttsBtn.addEventListener("click", () => {
       setTTSEnabled(!ttsEnabled);
     });
   }

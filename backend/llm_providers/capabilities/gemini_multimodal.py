@@ -1,8 +1,8 @@
-import logging
 import base64
-from typing import List, Dict
-import google.generativeai as genai
+import logging
+from typing import Dict, List
 
+import google.generativeai as genai
 from backend.services.cost_calculator import calculate_cost
 
 logger = logging.getLogger("janus_backend")
@@ -27,12 +27,8 @@ class GeminiMultiModal:
     Encapsulates the multi-modal (image + text) generation functionality for the Gemini provider.
     """
 
-    async def generate_with_image(
-        self, model: str, messages: List[Dict], image_data: str
-    ) -> Dict:
-        logger.info(
-            "Image data detected for Gemini. Processing as a multi-modal request."
-        )
+    async def generate_with_image(self, model: str, messages: List[Dict], image_data: str) -> Dict:
+        logger.info("Image data detected for Gemini. Processing as a multi-modal request.")
         try:
             # 1. Parse the Data URI
             header, encoded = image_data.split(",", 1)
@@ -61,14 +57,10 @@ class GeminiMultiModal:
 
             # 5. Call the API
             genai_model = genai.GenerativeModel(model_name=model)
-            input_tokens = (
-                await genai_model.count_tokens_async(gemini_content)
-            ).total_tokens
+            input_tokens = (await genai_model.count_tokens_async(gemini_content)).total_tokens
             response = await genai_model.generate_content_async(gemini_content)
             text_response = response.text
-            output_tokens = (
-                await genai_model.count_tokens_async(text_response)
-            ).total_tokens
+            output_tokens = (await genai_model.count_tokens_async(text_response)).total_tokens
 
             usage, cost = _calculate_and_log_cost(
                 model,

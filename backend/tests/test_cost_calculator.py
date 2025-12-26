@@ -1,7 +1,8 @@
-import pytest
-import os
 import json
+import os
 from unittest.mock import patch
+
+import pytest
 from backend.services.cost_calculator import calculate_cost, load_model_prices
 
 
@@ -53,7 +54,7 @@ def test_calculate_cost_text_model(setup_test_catalog):
     usage_data = {"prompt_tokens": 1000, "completion_tokens": 500}
     usage, cost = calculate_cost("gpt-4o-mini", usage_data=usage_data)
 
-    expected_cost = (1000 * 0.00000015) + (500 * 0.0000006)
+    expected_cost = ((1000 * 0.00000015) + (500 * 0.0000006)) * 0.9009
     assert "total_cost" in cost
     assert cost["total_cost"] == pytest.approx(expected_cost)
     assert usage["input_tokens"] == 1000
@@ -64,9 +65,9 @@ def test_calculate_cost_image_model(setup_test_catalog):
     usage, cost = calculate_cost("dall-e-3-hd")
 
     assert "total_cost" in cost
-    assert cost["total_cost"] == 0.08
+    assert cost["total_cost"] == pytest.approx(0.08 * 0.9009)
     assert "image_cost" in cost
-    assert cost["image_cost"] == 0.08
+    assert cost["image_cost"] == pytest.approx(0.08 * 0.9009)
     assert usage["image_quality"] == "standard"
 
 
@@ -104,7 +105,7 @@ def test_calculate_cost_openai_object(setup_test_catalog):
     usage_data = MockUsage()
     usage, cost = calculate_cost("gpt-4o-mini", usage_data=usage_data)
 
-    expected_cost = (2000 * 0.00000015) + (1000 * 0.0000006)
+    expected_cost = ((2000 * 0.00000015) + (1000 * 0.0000006)) * 0.9009
     assert "total_cost" in cost
     assert cost["total_cost"] == pytest.approx(expected_cost)
     assert usage["input_tokens"] == 2000

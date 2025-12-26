@@ -1,11 +1,11 @@
 # Finale, korrekte und stabile Version: backend/filesystem_manager.py
 
-import os
-import shutil
-import logging
 import json
+import logging
+import shutil
 from pathlib import Path
 from typing import Optional
+
 from backend.utils.paths import get_app_data_dir
 
 logger = logging.getLogger("janus_backend")
@@ -34,10 +34,7 @@ def _get_allowed_workspaces() -> list[Path]:
             for path_str in user_workspaces:
                 final_path_str = PLACEHOLDER_MAP.get(path_str.upper(), path_str)
                 resolved_path = Path(final_path_str).resolve()
-                if (
-                    resolved_path.is_dir()
-                    and resolved_path.resolve() not in resolved_paths
-                ):
+                if resolved_path.is_dir() and resolved_path.resolve() not in resolved_paths:
                     resolved_paths.append(resolved_path.resolve())
     except Exception as e:
         logger.error(f"Fehler beim Laden der Workspace-Konfiguration: {e}")
@@ -56,9 +53,7 @@ def _get_allowed_workspaces() -> list[Path]:
 
 def _resolve_and_validate_path(user_path: str, must_exist: bool = True) -> Path:
     """Findet den korrekten, absoluten Pfad und validiert ihn."""
-    allowed_workspaces = (
-        _get_allowed_workspaces()
-    )  # Lade die Workspaces bei jedem Aufruf
+    allowed_workspaces = _get_allowed_workspaces()  # Lade die Workspaces bei jedem Aufruf
     cleaned_path = Path(user_path.strip().replace("\\", "/"))
 
     # Determine if the path is absolute based on its anchor (drive letter, root)
@@ -99,20 +94,26 @@ def _resolve_and_validate_path(user_path: str, must_exist: bool = True) -> Path:
     raise FileNotFoundError(f"Pfad '{user_path}' existiert nicht.")
 
 
-def create_file(path: str, content: str | bytes = "", is_binary: bool = False) -> dict:
+def create_file(path: str, content: str = "", is_binary: bool = False) -> dict:
     try:
         safe_path = _resolve_and_validate_path(path, must_exist=False)
         if safe_path.exists():
             return {"output": f"Fehler: '{path}' existiert bereits."}
         safe_path.parent.mkdir(parents=True, exist_ok=True)
         if is_binary:
-            logger.debug(f"create_file: is_binary=True. Content type: {type(content)}. First 100 bytes: {content[:100] if isinstance(content, bytes) else content[:100].encode('utf-8')}")
+            logger.debug(
+                f"create_file: is_binary=True. Content type: {type(content)}. First 100 bytes: {content[:100] if isinstance(content, bytes) else content[:100].encode('utf-8')}"
+            )
             if isinstance(content, str):
-                content = content.encode("latin-1") # Assuming binary content passed as latin-1 encoded string
+                content = content.encode(
+                    "latin-1"
+                )  # Assuming binary content passed as latin-1 encoded string
             safe_path.write_bytes(content)
         else:
             if isinstance(content, bytes):
-                content = content.decode("utf-8") # Assuming text content passed as utf-8 encoded bytes
+                content = content.decode(
+                    "utf-8"
+                )  # Assuming text content passed as utf-8 encoded bytes
             safe_path.write_text(content, encoding="utf-8")
         logger.info(f"Datei erstellt: {safe_path}")
         return {"output": f"Datei '{path}' wurde erfolgreich erstellt."}
@@ -157,7 +158,9 @@ def list_directory(path: str, pattern: Optional[str] = None) -> dict:
 
         if pattern:
             items = list(safe_path.glob(pattern))
-            output_intro = f"Es wurden {len(items)} Einträge passend zu '{pattern}' in '{path}' gefunden."
+            output_intro = (
+                f"Es wurden {len(items)} Einträge passend zu '{pattern}' in '{path}' gefunden."
+            )
         else:
             items = list(safe_path.iterdir())
             output_intro = f"Es wurden {len(items)} Einträge in '{path}' gefunden."
@@ -192,9 +195,7 @@ def delete_directory(path: str) -> dict:
     try:
         safe_path = _resolve_and_validate_path(path, must_exist=True)
         if safe_path in _get_allowed_workspaces():
-            return {
-                "output": "Fehler: Ein Workspace-Stammverzeichnis darf nicht gelöscht werden."
-            }
+            return {"output": "Fehler: Ein Workspace-Stammverzeichnis darf nicht gelöscht werden."}
         shutil.rmtree(safe_path)
         logger.info(f"Ordner rekursiv gelöscht: {safe_path}")
         return {"output": f"Ordner '{path}' und sein Inhalt wurden gelöscht."}
@@ -210,7 +211,7 @@ def move_file(source_path: str, destination_path: str) -> dict:
 
         if safe_dest.exists():
             return {"output": f"Fehler: Ziel '{destination_path}' existiert bereits."}
-        if safe_source in ALLOWED_WORKSPACES:
+        if safe_source in _get_allowed_workspaces():
             return {
                 "output": "Fehler: Ein Workspace-Stammverzeichnis kann nicht verschoben/umbenannt werden."
             }
@@ -231,9 +232,7 @@ rename_file = move_file
 def move_files(source_directory: str, destination_directory: str, pattern: str) -> dict:
     try:
         safe_source_dir = _resolve_and_validate_path(source_directory, must_exist=True)
-        safe_dest_dir = _resolve_and_validate_path(
-            destination_directory, must_exist=False
-        )
+        safe_dest_dir = _resolve_and_validate_path(destination_directory, must_exist=False)
 
         if not safe_dest_dir.exists():
             safe_dest_dir.mkdir(parents=True, exist_ok=True)
@@ -280,6 +279,6 @@ def list_allowed_workspaces() -> dict:
     workspaces = _get_allowed_workspaces()
     workspace_paths = [str(ws) for ws in workspaces]
     return {
-        "output": f"Erlaubte Arbeitsbereiche:\n" + "\n".join(workspace_paths),
+        "output": "Erlaubte Arbeitsbereiche:\n" + "\n".join(workspace_paths),
         "workspaces": workspace_paths,
     }

@@ -1,13 +1,13 @@
-import pytest
-from pyfakefs.fake_filesystem_unittest import TestCase
-import os
-import shutil
-from pathlib import Path
 import json
-from unittest.mock import patch, MagicMock
+import os
+from pathlib import Path
+from unittest.mock import patch
+
+import pytest
 
 # Assuming filesystem_manager is in the same directory or accessible via PYTHONPATH
 from backend.services import filesystem_manager
+from pyfakefs.fake_filesystem_unittest import TestCase
 
 
 class TestFilesystemManager(TestCase):
@@ -34,9 +34,7 @@ class TestFilesystemManager(TestCase):
         config_data = {
             "filesystem_workspaces": [
                 str(self.default_workspace),
-                str(
-                    self.fake_desktop_dir
-                ),  # Use the explicitly created fake desktop path
+                str(self.fake_desktop_dir),  # Use the explicitly created fake desktop path
             ]
         }
         with open(self.config_file, "w") as f:
@@ -59,9 +57,7 @@ class TestFilesystemManager(TestCase):
         # Re-run the initialization logic in filesystem_manager to pick up the mocked values
         # This is a bit hacky, but necessary for module-level variables.
         # In a real scenario, you might refactor filesystem_manager to allow easier re-initialization.
-        filesystem_manager.ALLOWED_WORKSPACES = (
-            filesystem_manager._get_allowed_workspaces()
-        )
+        filesystem_manager.ALLOWED_WORKSPACES = filesystem_manager._get_allowed_workspaces()
         filesystem_manager.DEFAULT_WORKSPACE = (
             self.default_workspace
         )  # Ensure this points to the fake one
@@ -121,9 +117,7 @@ class TestFilesystemManager(TestCase):
         (self.default_workspace / "image1.png").write_text("content")
         (self.default_workspace / "image2.jpg").write_text("content")
         (self.default_workspace / "document.txt").write_text("content")
-        result = filesystem_manager.list_directory(
-            str(self.default_workspace), pattern="*.png"
-        )
+        result = filesystem_manager.list_directory(str(self.default_workspace), pattern="*.png")
         assert "image1.png" in result["items"]
         assert "image2.jpg" not in result["items"]
         assert result["count"] == 1
@@ -156,8 +150,7 @@ class TestFilesystemManager(TestCase):
     def test_delete_directory_workspace_root_protected(self):
         result = filesystem_manager.delete_directory(str(self.default_workspace))
         assert (
-            "Fehler: Ein Workspace-Stammverzeichnis darf nicht gelöscht werden."
-            in result["output"]
+            "Fehler: Ein Workspace-Stammverzeichnis darf nicht gelöscht werden." in result["output"]
         )
         assert self.default_workspace.exists()
 
@@ -230,9 +223,7 @@ class TestFilesystemManager(TestCase):
 
     def test_resolve_and_validate_path_relative_allowed(self):
         (self.default_workspace / "relative_test.txt").write_text("content")
-        resolved_path = filesystem_manager._resolve_and_validate_path(
-            "relative_test.txt"
-        )
+        resolved_path = filesystem_manager._resolve_and_validate_path("relative_test.txt")
         assert resolved_path == (self.default_workspace / "relative_test.txt").resolve()
 
     def test_resolve_and_validate_path_relative_not_found(self):

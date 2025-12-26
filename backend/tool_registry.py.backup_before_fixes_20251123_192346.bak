@@ -1,0 +1,1070 @@
+# backend/tool_registry.py
+# Python Standard-Bibliotheken
+import os
+import logging
+import inspect
+import io
+import re
+import feedparser
+import asyncio
+import json
+from typing import Callable, Dict, Any, Optional, List
+
+# Externe Bibliotheken (pip install)
+import requests
+from geopy.geocoders import Nominatim
+from pydantic import BaseModel, Field
+from tenacity import retry, stop_after_attempt, wait_exponential
+from pydub import AudioSegment
+from openai import AsyncOpenAI
+import wikipediaapi
+from datetime import datetime
+from dateutil import parser
+import keyring
+
+# Interne Projekt-Imports
+from backend.data import schemas, contact_schemas, database, crud
+from backend.data.contact_schemas import UpdateContactToolArgs
+from backend.services import filesystem_manager, contact_manager
+from backend.services.tts_service import TTSService
+from backend.services.memory_manager import search_past_conversation_summaries_tool
+from backend.services.websearch import perform_websearch as perform_websearch_service
+from typing import Optional
+from backend.tools.pdf_generator import create_pdf_from_markdown
+from backend.llm_providers.openai_service import OpenAIServiceProvider
+from backend.utils.paths import get_desktop_path
+from backend.tools.calendar_tools import get_calendar_events, create_calendar_event, delete_calendar_event, update_calendar_event, find_address_and_update_calendar_event, find_free_time_slots, update_calendar_event_description, find_and_update_calendar_event
+from backend.tools.gmail_tools import get_latest_emails, send_email, read_email
+
+logger = logging.getLogger("janus_backend")
+
+
+def _normalize_url(url: Optional[str]) -> Optional[str]:
+    """
+    Normalisiert eine URL, indem sichergestellt wird, dass ein Protokoll vorhanden ist.
+    Priorisiert https.
+    """
+    if not url:
+        return None
+    
+    url = url.strip().strip("'<>'")
+    if not url:
+        return None
+    
+    # Wenn die URL bereits ein Protokoll hat, belassen wir sie so.
+    if url.startswith('http://') or url.startswith('https://'):
+        return url
+        
+    # Wenn kein Protokoll vorhanden ist, fügen wir https:// hinzu.
+    logger.info(f"Normalizing URL: '{url}' to 'https://{url}'")
+    return 'https://' + url
+
+
+# --- Tool-Klasse und Registrierungs-Logik ---
+
+class Tool:
+    def __init__(self, func: Callable, args_schema: Optional[BaseModel] = None, description: Optional[str] = None):
+        self.func = func
+        self.args_schema = args_schema
+        self.name = func.__name__
+        self.description = description or inspect.getdoc(func)
+        self.llm_definition = self._build_llm_definition()
+
+    def _build_llm_definition(self) -> Dict[str, Any]:
+        from datetime import datetime
+
+        schema = (
+            self.args_schema.model_json_schema()
+            if self.args_schema
+            else {"properties": {}, "required": []}
+        )
+
+        description = self.description or ""
+        if "{current_date}" in description:
+            current_date_str = datetime.now().strftime('%d. %B %Y')
+            description = description.replace("{current_date}", current_date_str)
+
+        return {
+            "type": "function",
+            "function": {
+                "name": self.name,
+                "description": description, # Verwende die modifizierte Beschreibung
+                "parameters": {
+                    "type": "object",
+                    "properties": schema.get("properties", {}),
+                    "required": schema.get("required", []),
+                },
+            },
+        }
+
+
+TOOL_REGISTRY: Dict[str, Tool] = {}
+
+
+def register_tool(tool: Tool):
+    TOOL_REGISTRY[tool.name] = tool
+
+
+# --- Werkzeug-Funktionen ---
+
+def get_wikipedia_summary(query: str, lang: str = 'de') -> Dict[str, str]:
+    """
+    Benutze dieses Werkzeug IMMER für Anfragen nach Definitionen, Biografien, historischen Ereignissen oder etablierten Konzepten (Wissenschaft, Kunst etc.).
+    Es liefert eine präzise und verlässliche Zusammenfassung direkt aus Wikipedia. Es ist der Websuche für Wissensfragen vorzuziehen.
+    """
+    try:
+        wiki_wiki = wikipediaapi.Wikipedia(
+            'Janus AI Assistant (janus.projekt@example.com)',
+            lang,
+            timeout=10
+        )
+        page = wiki_wiki.page(query)
+
+        if not page.exists():
+            logger.warning(f"Wikipedia-Artikel für '{query}' nicht gefunden.")
+            return {"status": "success", "output": f"Ich konnte leider keinen Wikipedia-Artikel zum Thema '{query}' finden."}
+
+        summary_sentences = page.summary.split('.')
+        short_summary = ". ".join(summary_sentences[:3]) + "."
+        
+        logger.info(f"Wikipedia-Zusammenfassung für '{query}' erfolgreich abgerufen.")
+        return {"status": "success", "output": short_summary}
+
+    except Exception as e:
+        logger.error(f"Fehler bei der Wikipedia-Abfrage für '{query}': {e}", exc_info=True)
+        return {"status": "error", "message": f"Bei der Abfrage von Wikipedia ist ein Fehler aufgetreten: {e}"}
+
+
+def split_text_into_chunks(text: str, max_length: int = 4000):
+    """
+    Teilt einen SSML-Text intelligent in Chunks unterhalb der max_length auf,
+    ohne SSML-Tags zu zerschneiden. Behandelt Sätze und Tags als unteilbare Einheiten.
+    """
+    logger.info("Starting intelligent SSML chunking...")
+    
+    inner_ssml = re.sub(r'</?speak>', '', text, flags=re.IGNORECASE).strip()
+    parts = re.findall(r'(<[^>]+>|[^.!?]+(?:[.!?]|$))', inner_ssml)
+    
+    chunks = []
+    current_chunk = ""
+    
+    for part in parts:
+        part_stripped = part.strip()
+        if not part_stripped:
+            continue
+            
+        if len(current_chunk) + len(part_stripped) + 1 > max_length:
+            if current_chunk:
+                chunks.append(f"<speak>{current_chunk.strip()}</speak>")
+            current_chunk = part_stripped
+        else:
+            current_chunk += " " + part_stripped
+    
+    if current_chunk:
+        chunks.append(f"<speak>{current_chunk.strip()}</speak>")
+    
+    logger.info(f"SSML text successfully split into {len(chunks)} chunks.")
+    return chunks
+
+async def save_mp3_tool(content: str, filename: str, voice: str = "fable") -> Dict[str, str]:
+    """
+    Benutze dieses Werkzeug NUR, wenn der Benutzer explizit darum bittet, einen Text als MP3-Datei zu speichern.
+    Es ist NICHT zum Vorlesen im Chat gedacht. Es synthetisiert Text zu Audio und speichert ihn in einer Datei auf dem Desktop.
+    """
+    if not filename.lower().endswith('.mp3'):
+        filename += '.mp3'
+    filename = os.path.basename(filename)
+    desktop_path = get_desktop_path()
+    if not desktop_path:
+        return {"status": "error", "message": "Desktop-Pfad nicht gefunden."}
+    
+    speech_file_path = os.path.join(desktop_path, filename)
+
+    is_ssml = content.strip().startswith("<speak>") and content.strip().endswith("</speak>")
+
+    if is_ssml:
+        logger.info(f"SSML-Text erkannt. Nutze OpenAI TTS mit Stimme '{voice}' für hohe Qualität.")
+        try:
+            api_key_from_env = os.environ.get("OPENAI_API_KEY")
+            if not api_key_from_env:
+                logger.error("OPENAI_API_KEY environment variable not found for SSML.")
+                return {"status": "error", "message": "OpenAI API key is not configured for SSML."}
+            
+            local_client = AsyncOpenAI(api_key=api_key_from_env)
+            ssml_chunks = split_text_into_chunks(content)
+            audio_segments = []
+
+            for i, chunk in enumerate(ssml_chunks):
+                logger.info(f"Synthesizing chunk {i+1}/{len(ssml_chunks)}...")
+                response = await local_client.audio.speech.create(
+                    model="tts-1-hd",
+                    voice=voice,
+                    input=chunk
+                )
+                audio_data = io.BytesIO(response.content)
+                segment = AudioSegment.from_file(audio_data, format="mp3")
+                audio_segments.append(segment)
+
+            logger.info("Füge alle Audio-Teile zusammen...")
+            final_audio = sum(audio_segments, AudioSegment.empty())
+            final_audio.export(speech_file_path, format="mp3")
+
+            success_msg = f"Audiodatei erfolgreich mit Stimme '{voice}' unter '{speech_file_path}' gespeichert."
+            logger.info(success_msg)
+            return {"status": "success", "message": success_msg}
+        except Exception as e:
+            error_msg = f"Fehler bei der OpenAI TTS-Synthese: {e}"
+            logger.error(error_msg, exc_info=True)
+            return {"status": "error", "message": error_msg}
+    else:
+        logger.info("Reiner Text erkannt. Nutze lokale TTS-Engine (Piper).")
+        try:
+            from backend.main import load_config
+            config = load_config()
+            tts_service_instance = TTSService(config=config, tts_settings=config.get("tts_settings", {}))
+            audio_bytes = tts_service_instance.synthesize(
+                text=content,
+                voice='piper_de_DE-thorsten-medium',
+                speed=1.0
+            )
+            
+            if audio_bytes:
+                with open(speech_file_path, "wb") as f:
+                    f.write(audio_bytes)
+                success_msg = f"Audiodatei erfolgreich mit lokaler Stimme unter '{speech_file_path}' gespeichert."
+                logger.info(success_msg)
+                return {"status": "success", "message": success_msg}
+            else:
+                raise RuntimeError("Lokale TTS hat keine Audiodaten zurückgegeben.")
+
+        except Exception as e:
+            error_msg = f"Fehler bei der lokalen TTS-Synthese: {e}"
+            logger.error(error_msg, exc_info=True)
+            return {"status": "error", "message": error_msg}
+
+def get_country_info_tool(country_name: str, info_type: str) -> Dict[str, str]:
+    """
+    Benutze dieses Werkzeug, um spezifische Fakten über ein Land abzurufen, wie Hauptstadt, Bevölkerung, Währung, Sprachen oder Region.
+    Dieses Tool ist extrem schnell und präzise für geografische und politische Fakten.
+    """
+    try:
+        country_mapping = {
+            "deutschland": "germany", "frankreich": "france", "spanien": "spain",
+            "italien": "italy", "österreich": "austria", "schweiz": "switzerland",
+            "usa": "united states of america", "vereinigte staaten": "united states of america"
+        }
+        search_name = country_mapping.get(country_name.lower(), country_name)
+        api_url = f"https://restcountries.com/v3.1/name/{search_name}?fullText=true"
+        response = requests.get(api_url, timeout=10)
+        response.raise_for_status()
+        data = response.json()[0]
+
+        output = ""
+        info_type = info_type.lower()
+
+        if info_type == 'capital':
+            output = f"Die Hauptstadt von {country_name.title()} ist {data.get('capital', ['N/A'])[0]}."
+        elif info_type == 'population':
+            output = f"{country_name.title()} hat eine Einwohnerzahl von ca. {data.get('population', 'N/A'):,}."
+        elif info_type == 'currency':
+            currencies = data.get('currencies', {})
+            curr_code = list(currencies.keys())[0]
+            curr_name = currencies[curr_code].get('name', 'N/A')
+            output = f"Die Währung in {country_name.title()} ist der {curr_name} ({curr_code})."
+        elif info_type == 'languages':
+            languages = ", ".join(list(data.get('languages', {}).values()))
+            output = f"In {country_name.title()} werden folgende Sprachen gesprochen: {languages}."
+        elif info_type == 'region':
+            output = f"{country_name.title()} liegt in der Region {data.get('region', 'N/A')} ({data.get('subregion', '')})."
+        else:
+            return {"status": "error", "message": f"Unbekannter info_type: '{info_type}'."}
+
+        logger.info(f"Länder-API erfolgreich abgefragt: {output}")
+        return {"status": "success", "output": output}
+    except requests.exceptions.HTTPError as e:
+         logger.error(f"Land '{country_name}' nicht gefunden oder API-Fehler: {e}", exc_info=True)
+         return {"status": "error", "message": f"Ich konnte keine Informationen für das Land '{country_name}' finden."}
+    except Exception as e:
+        logger.error(f"Unerwarteter Fehler im Länder-Tool: {e}", exc_info=True)
+        return {"status": "error", "message": f"Ein unerwarteter Fehler ist aufgetreten: {e}"}
+
+def _get_weather_code_description(code: int) -> str:
+    """Wandelt den WMO-Wettercode in eine verständliche Beschreibung um."""
+    weather_codes = {
+        0: "Klarer Himmel", 1: "Leicht bewölkt", 2: "Teils bewölkt", 3: "Bedeckt",
+        45: "Nebel", 48: "Raureifnebel", 51: "Leichter Nieselregen", 53: "Mäßiger Nieselregen",
+        55: "Dichter Nieselregen", 56: "Leichter gefrierender Nieselregen", 57: "Dichter gefrierender Nieselregen",
+        61: "Leichter Regen", 63: "Mäßiger Regen", 65: "Starker Regen",
+        66: "Leichter gefrierender Regen", 67: "Starker gefrierender Regen", 71: "Leichter Schneefall",
+        73: "Mäßiger Schneefall", 75: "Starker Schneefall", 77: "Schneekörner",
+        80: "Leichte Regenschauer", 81: "Mäßige Regenschauer", 82: "Heftige Regenschauer",
+        85: "Leichte Schneeschauer", 86: "Starke Schneeschauer", 95: "Gewitter",
+        96: "Gewitter mit leichtem Hagel", 99: "Gewitter mit starkem Hagel",
+    }
+    return weather_codes.get(code, "Unbekanntes Wetterphänomen")
+
+def get_weather_from_api_tool(city: str, date_str: Optional[str] = None) -> Dict[str, str]:
+    """
+    Benutze IMMER dieses Werkzeug, um die Wettervorhersage für eine Stadt abzurufen. Akzeptiert auch Datumsangaben in natürlicher Sprache (z.B. 'Samstag', 'übermorgen', '15. November'), um eine Vorhersage für einen bestimmten Tag zu erhalten. Wenn kein Datum angegeben wird, wird die Vorhersage für den nächsten verfügbaren Tag zurückgegeben.
+    Es ist schneller und genauer als eine allgemeine Websuche.
+    """
+    geolocator = Nominatim(user_agent="janus_projekt_weather_tool")
+    try:
+        location = geolocator.geocode(city)
+        if not location:
+            return {"status": "error", "message": f"Stadt '{city}' konnte nicht gefunden werden."}
+
+        lat, lon = location.latitude, location.longitude
+        logger.info(f"Koordinaten für '{city}' gefunden: Lat {lat}, Lon {lon}")
+
+        target_date = None
+        if date_str:
+            try:
+                target_date = parser.parse(date_str, default=datetime.now())
+                if target_date.date() < datetime.now().date():
+                    return {"status": "info", "output": "Ich kann die Wettervorhersage nur für die Zukunft abrufen."}
+            except parser.ParserError:
+                target_date = None
+
+        api_url = (
+            f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
+            "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max"
+            "&timezone=Europe/Berlin&forecast_days=7"
+        )
+        response = requests.get(api_url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        daily_data = data.get("daily", {})
+        forecast_dates = daily_data.get("time", [])
+        day_index = 0 
+
+        if target_date and forecast_dates:
+            try:
+                day_index = [datetime.fromisoformat(d).date() for d in forecast_dates].index(target_date.date())
+            except ValueError:
+                return {"status": "info", "output": f"Ich konnte keine Wettervorhersage für den {target_date.strftime('%d.%m.%Y')} finden."}
+        
+        if not forecast_dates or day_index >= len(forecast_dates):
+            return {"status": "error", "message": "Konnte keine Vorhersagedaten abrufen."}
+
+        weather_date = daily_data["time"][day_index]
+        temp_max = daily_data["temperature_2m_max"][day_index]
+        temp_min = daily_data["temperature_2m_min"][day_index]
+        prec_prob = daily_data["precipitation_probability_max"][day_index]
+        wind_speed_max = daily_data["wind_speed_10m_max"][day_index]
+        weather_desc = _get_weather_code_description(daily_data["weather_code"][day_index])
+
+        output = (
+            f"Wettervorhersage für {city.title()} am {datetime.fromisoformat(weather_date).strftime('%d.%m.%Y')}: "
+            f"Es wird {weather_desc.lower()} erwartet. Höchsttemperatur: {temp_max}°C, Tiefsttemperatur: {temp_min}°C. "
+            f"Niederschlagswahrscheinlichkeit: {prec_prob}%. Windböen bis zu {wind_speed_max} km/h."
+        )
+        logger.info(f"Detaillierte Wetter-API erfolgreich abgefragt: {output}")
+        return {"status": "success", "output": output}
+    except Exception as e:
+        logger.error(f"Fehler im Wetter-Tool: {e}", exc_info=True)
+        return {"status": "error", "message": f"Ein unerwarteter Fehler ist aufgetreten: {e}"}
+
+RSS_FEEDS = {
+    "tagesschau": "https://www.tagesschau.de/xml/rss2", "spiegel": "https://www.spiegel.de/schlagzeilen/tops/index.rss",
+    "zeit": "https://newsfeed.zeit.de/index", "heise": "https://www.heise.de/rss/heise-atom.xml",
+    "gamestar": "https://www.gamestar.de/news/rss/news.rss", "reuters": "https://www.reuters.com/rssFeed/topNews",
+    "bbc": "https://feeds.bbci.co.uk/news/world/rss.xml"
+}
+
+async def get_latest_news_rss(query: Optional[str] = None, source: Optional[str] = None, url: Optional[str] = None) -> Dict[str, str]:
+    """
+    Ruft journalistische Artikel ab. Versucht zuerst RSS-Feeds. 
+    Wenn eine spezifische Suche ('query') im RSS keine Treffer liefert, 
+    wird automatisch eine Websuche als Fallback durchgeführt.
+    """
+    # --- FIX FÜR HALLUZINIERTE PARAMETER ---
+    if url:
+        logger.warning(f"Tool 'get_latest_news_rss' wurde mit halluziniertem Parameter 'url={url}' aufgerufen.")
+        if not source:
+            url_lower = url.lower()
+            for key in RSS_FEEDS.keys():
+                if key in url_lower:
+                    source = key
+                    break
+    # ---------------------------------------
+
+    # Hilfsfunktion für sauberen Download mit User-Agent (verhindert Blockaden bei Spiegel/Gamestar)
+    def _download_and_parse_feed(feed_url):
+        try:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+                'Accept': 'application/xml,application/rss+xml,application/rdf+xml;q=0.8,text/xml;q=0.8,application/xhtml+xml;q=0.5,text/html;q=0.5,*/*;q=0.1',
+                'Accept-Language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
+            }
+            response = requests.get(feed_url, headers=headers, timeout=15)
+            logger.info(f"Anfrage an RSS-Feed {feed_url} gesendet. Status: {response.status_code}")
+            if response.status_code != 200:
+                logger.error(f"Fehler beim Abrufen des Feeds von {feed_url}. Status-Code: {response.status_code}")
+                return None
+            return feedparser.parse(response.content)
+        except Exception as e:
+            logger.error(f"RSS Download oder Parse-Fehler für {feed_url}: {e}", exc_info=True)
+            return None
+
+    async def fetch_feed(name, feed_url):
+        try:
+            loop = asyncio.get_running_loop()
+            # Wir nutzen requests im Thread-Pool für Stabilität
+            feed = await loop.run_in_executor(None, _download_and_parse_feed, feed_url)
+            
+            if not feed or feed.bozo:
+                error_msg = feed.get('bozo_exception') if feed else "Download failed"
+                logger.warning(f"Fehler beim Parsen von {name}: {error_msg}")
+                return name, []
+            return name, feed.entries
+        except Exception as e:
+            logger.error(f"Fehler beim Abrufen von {name}: {e}")
+            return name, []
+
+    # 1. Direkte Quellenabfrage
+    if source:
+        source = source.lower()
+        if source not in RSS_FEEDS:
+            return {"status": "error", "message": f"Unbekannte Quelle. Verfügbar sind: {list(RSS_FEEDS.keys())}"}
+        
+        _, entries = await fetch_feed(source, RSS_FEEDS[source])
+        
+        # WICHTIG: Wenn der Feed leer ist (z.B. Cloudflare-Block), SOFORT Fallback auf Websuche
+        if not entries:
+             logger.info(f"RSS-Feed von {source} leer. Starte Fallback-Websuche.")
+             web_result = await perform_websearch(query=f"{source} aktuelle schlagzeilen")
+             return {"status": "success", "output": f"Der direkte RSS-Feed von {source} war nicht erreichbar. Hier sind aktuelle Web-Ergebnisse:\n{web_result.get('text', 'Keine Ergebnisse.')}"}
+
+        if query:
+            query_lower = query.lower()
+            # Wir filtern nur, wenn die Query NICHT "schlagzeilen" oder "news" ist
+            if query_lower and query_lower not in ["schlagzeilen", "news", "nachrichten"]:
+                # Zerlege Query in einzelne Suchbegriffe (getrennt durch Leerzeichen oder Semikolon)
+                keywords = [k.strip() for k in query_lower.replace(';', ' ').split() if k.strip()]
+                
+                filtered_entries = []
+                for e in entries:
+                    title = e.get('title', '').lower()
+                    summary = e.get('summary', '').lower()
+                    content = title + " " + summary
+                    
+                    # Ein Artikel passt, wenn ALLE Keywords enthalten sind (strikter Filter)
+                    # ODER wenn bei vielen Keywords (>=3) zumindest die MEISTEN enthalten sind.
+                    # Hier: Wir verlangen, dass mindestens eines der Haupt-Keywords vorkommt.
+                    if any(k in content for k in keywords):
+                        filtered_entries.append(e)
+                entries = filtered_entries
+            
+            if not entries:
+                logger.info(f"Keine RSS-Treffer in {source} für '{query}'. Starte Fallback-Websuche.")
+                web_result = await perform_websearch(query=f"{source} {query} news")
+                return {"status": "success", "output": f"Im RSS-Feed von {source} wurde nichts gefunden, aber hier ist das Ergebnis der Websuche:\n{web_result.get('text', 'Keine Ergebnisse.')}"}
+
+        output_lines = [f"Hier sind die Top-Schlagzeilen von '{source.title()}':"] + [f"- {entry.title}" for entry in entries[:5]]
+        return {"status": "success", "output": "\n".join(output_lines)}
+
+    # 2. Globale Suche (Query ohne Source)
+    if query:
+        logger.info(f"Suche nach '{query}' über {len(RSS_FEEDS)} Feeds...")
+        tasks = [fetch_feed(name, url) for name, url in RSS_FEEDS.items()]
+        results = await asyncio.gather(*tasks)
+        
+        query_lower = query.lower()
+        found_articles = []
+        for source_name, entries in results:
+            # Zerlege Query in einzelne Suchbegriffe (getrennt durch Leerzeichen oder Semikolon)
+            keywords = [k.strip() for k in query_lower.replace(';', ' ').split() if k.strip()]
+            
+            for entry in entries:
+                title = entry.get('title', '').lower()
+                summary = entry.get('summary', '').lower()
+                content = title + " " + summary
+                
+                # Ein Artikel passt, wenn mindestens eines der Keywords enthalten ist
+                if any(k in content for k in keywords):
+                    entry.source_name = entry.get('source_name', source_name)
+                    found_articles.append(entry)
+        
+        if not found_articles:
+            logger.info(f"Keine RSS-Treffer für '{query}'. Starte automatische Fallback-Websuche.")
+            web_result = await perform_websearch(query=f"{query} News aktuell")
+            
+            fallback_text = web_result.get("text", "")
+            if not fallback_text or "Keine Ergebnisse" in fallback_text:
+                 return {"status": "success", "output": f"Ich konnte weder in den RSS-Feeds noch im Web aktuelle Nachrichten zu '{query}' finden."}
+            
+            return {"status": "success", "output": f"In den direkten RSS-Feeds war nichts Spezifisches zu finden, aber hier sind aktuelle Web-Ergebnisse:\n{fallback_text}"}
+            
+        unique_articles = list({article.link: article for article in found_articles}.values())
+        output_lines = [f"Hier sind die Top-Ergebnisse aus den RSS-Feeds für '{query}':"] + [f"- '{a.title}' (Quelle: {a.get('source_name', 'News').title()})" for a in unique_articles[:5]]
+        return {"status": "success", "output": "\n".join(output_lines)}
+        
+    if url:
+         return {"status": "error", "message": "Ich konnte die URL nicht verarbeiten."}
+
+    return {"status": "error", "message": "Bitte gib eine Quelle oder ein Thema an."}
+    return {"status": "error", "message": "Bitte gib eine Quelle oder ein Thema an."}
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+async def generate_image_tool(api_key: str, prompt: str, size: str = "1024x1024", quality: str = "standard", **kwargs) -> Dict:
+    """Generiert ein Bild basierend auf einer Texteingabe unter Verwendung von DALL-E 3."""
+    provider = OpenAIServiceProvider()
+    response = await provider.generate_image(api_key, "dall-e-3", prompt, size=size, quality=quality, **kwargs)
+    return {"url": response.get("image_url"), "usage": response.get("usage"), "cost": response.get("cost")}
+
+# Filesystem Tools
+def create_file_tool(path: str, content: str = "", is_binary: bool = False): return filesystem_manager.create_file(path, content, is_binary)
+def read_file_tool(path: str): return filesystem_manager.read_file(path)
+def delete_file_tool(path: str): return filesystem_manager.delete_file(path)
+def list_directory_tool(path: str = ".", pattern: Optional[str] = None): return filesystem_manager.list_directory(path, pattern)
+def create_directory_tool(path: str): return filesystem_manager.create_directory(path)
+def delete_directory_tool(path: str): return filesystem_manager.delete_directory(path)
+def rename_file_tool(old_path: str, new_path: str): return filesystem_manager.rename_file(old_path, new_path)
+def move_file_tool(source_path: str, destination_path: str): return filesystem_manager.move_file(source_path, destination_path)
+def move_files_tool(source_directory: str, destination_directory: str, pattern: str): return filesystem_manager.move_files(source_directory, destination_directory, pattern)
+def list_allowed_workspaces_tool(): return filesystem_manager.list_allowed_workspaces()
+
+async def find_local_business_tool(query: str, location: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Benutze DIESES WERKZEUG IMMER UND AUSSCHLIESSLICH, um nach lokalen Orten, Geschäften, Restaurants, Dienstleistungen, **Freizeitaktivitäten, Museen, Sehenswürdigkeiten oder Events** zu suchen.
+    
+    WICHTIGE ANWEISUNG ZUR AUSFÜHRUNG:
+    Wenn der Benutzer eine Frage stellt wie "Kannst du mir ein Restaurant empfehlen?", "Was kann man hier unternehmen?" oder "Schlag mir Aktivitäten vor", 
+    interpretiere dies als DIREKTEN BEFEHL zur sofortigen Suche. 
+    Frage NICHT um Erlaubnis ("Soll ich suchen?"). Führe die Suche SOFORT aus.
+    
+    Es führt eine mehrstufige, detaillierte Suche durch, um möglichst vollständige Informationen zu sammeln.
+    """
+    if not location:
+        return {"status": "clarification_needed", "output": "Ich benötige einen Ort, um lokale Geschäfte zu finden. Wo soll ich für dich suchen?"}
+
+    logger.info(f"Starting multi-step local business search for '{query}' in '{location}'.")
+
+    try:
+        # Lade API-Schlüssel und initialisiere den Client
+        api_key = keyring.get_password("Janus-Projekt", "openai")
+        if not api_key:
+            return {"status": "error", "output": "OpenAI API key is not configured."}
+        local_client = AsyncOpenAI(api_key=api_key)
+
+        # --- SCHRITT 1: Breite Suche zur Identifizierung von Kandidaten ---
+        initial_search_query = f"Liste von '{query}' in '{location}'"
+        logger.info(f"Step 1: Performing broad search with query: '{initial_search_query}'")
+        search_results = await perform_websearch_service(query=initial_search_query, api_key=api_key, provider="openai")
+        search_text = search_results.get("text", "")
+        if not search_text:
+            return {"status": "error", "output": "Keine Ergebnisse bei der initialen Websuche gefunden."}
+
+        # --- SCHRITT 2: Extraktion der Namen aus der breiten Suche ---
+        name_extraction_prompt = f"""
+        Extrahiere aus dem folgenden Text eine einfache Liste von Geschäftsnamen.
+        Antworte NUR mit einem JSON-Objekt, das einen Schlüssel 'names' enthält, der ein Array von Strings ist.
+        Beispiel: {{"names": ["Restaurant A", "Pizzeria B", "Cafe C"]}}
+        
+        Text:
+        {search_text}
+        
+        JSON-Antwort:
+        """
+        logger.info("Step 2: Extracting business names from broad search results.")
+        name_extraction_response = await local_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": name_extraction_prompt}],
+            response_format={"type": "json_object"}
+        )
+        candidate_names_data = json.loads(name_extraction_response.choices[0].message.content)
+        candidate_names = candidate_names_data.get("names", [])
+        
+        if not candidate_names:
+            return {"status": "success", "output": "Ich konnte zwar allgemeine Informationen finden, aber keine spezifischen Geschäftsnamen extrahieren."}
+        
+        logger.info(f"Found {len(candidate_names)} candidates: {candidate_names}")
+
+        # --- SCHRITT 3: Gezielte Einzelsuchen zur Anreicherung ---
+        enriched_contacts = []
+        for name in candidate_names[:5]:  # Begrenze auf die ersten 5 Ergebnisse, um Kosten/Zeit zu sparen
+            detail_search_query = f"Adresse, Telefonnummer, Website und kurze Beschreibung für '{name}' in '{location}'"
+            logger.info(f"Step 3: Performing detailed search for '{name}' with query: '{detail_search_query}'")
+            detail_results = await perform_websearch_service(query=detail_search_query, api_key=api_key, provider="openai")
+            detail_text = detail_results.get("text", "")
+
+            if not detail_text:
+                continue
+
+            data_extraction_prompt = f"""
+            Extrahiere aus dem folgenden Text die Detailinformationen für das Geschäft '{name}'.
+            Antworte NUR mit einem einzigen JSON-Objekt.
+            Das Objekt muss die Schlüssel 'name', 'address', 'phone', 'email', 'website' und 'description' haben.
+            Setze den Wert auf null, wenn die Information nicht gefunden wird. Gib den Namen '{name}' im 'name'-Feld zurück.
+            
+            Text:
+            {detail_text}
+            
+            JSON-Antwort:
+            """
+            detail_extraction_response = await local_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": data_extraction_prompt}],
+                response_format={"type": "json_object"}
+            )
+            try:
+                extracted_data = json.loads(detail_extraction_response.choices[0].message.content)
+                # Stelle sicher, dass der Name korrekt ist und füge es der Liste hinzu
+                extracted_data['name'] = name 
+                enriched_contacts.append(extracted_data)
+                logger.info(f"Successfully enriched data for '{name}'.")
+            except json.JSONDecodeError:
+                logger.warning(f"Failed to parse JSON for '{name}'.")
+                continue
+        
+        if not enriched_contacts:
+            return {"status": "success", "output": "Keine spezifischen Geschäftsdaten gefunden, obwohl Namen identifiziert wurden."}
+
+        # --- SCHRITT 4: (Optional) Ergebnisse in der Kontaktdatenbank speichern ---
+        db_session = next(database.get_db())
+        try:
+            for contact_data in enriched_contacts:
+                # --- HIER IST DER GOLDSTANDARD-FIX ---
+                if contact_data.get("website"):
+                    contact_data["website"] = _normalize_url(contact_data["website"])
+                # --- ENDE DES FIXES ---
+                
+                if contact_data.get("name") and not crud.search_contacts_by_name(db_session, name_query=contact_data["name"]):
+                    logger.info(f"Saving new business contact to database: '{contact_data['name']}'")
+                    contact_to_create = contact_schemas.ContactCreate(**contact_data, category="Business")
+                    crud.create_contact(db_session, contact=contact_to_create)
+        finally:
+            db_session.close()
+
+        logger.info("Multi-step local business search completed successfully.")
+        return {"status": "success", "output": json.dumps(enriched_contacts, ensure_ascii=False, indent=2)}
+
+    except Exception as e:
+        logger.error(f"Error in multi-step local business search: {e}", exc_info=True)
+        return {"status": "error", "output": f"Bei der Suche nach lokalen Geschäften ist ein Fehler aufgetreten: {str(e)}"}
+        return {"status": "error", "output": f"Bei der Suche nach lokalen Geschäften ist ein Fehler aufgetreten: {str(e)}"}
+
+async def perform_websearch(query: str, model: Optional[str] = None) -> Dict[str, Any]:
+    """Wrapper-Funktion für perform_websearch, die den API-Schlüssel und Provider intern abruft."""
+    try:
+        from backend.main import load_config
+        config = load_config()
+        provider = config.get("last_used_provider", "openai")
+        api_key = keyring.get_password("Janus-Projekt", provider)
+        if not api_key:
+            return {"status": "error", "output": f"API key für {provider} nicht konfiguriert."}
+        # WICHTIG: Hier den umbenannten Service aufrufen
+        return await perform_websearch_service(query=query, api_key=api_key, provider=provider, model=model)
+    except Exception as e:
+        logger.error(f"Fehler im perform_websearch wrapper: {e}", exc_info=True)
+        return {"status": "error", "output": f"Ein Fehler ist bei der Websuche aufgetreten: {str(e)}"}
+
+# --- Wrapper-Funktionen für Kontakt-Tools ---
+
+def list_contacts_wrapper() -> dict:
+    """Ein Wrapper für contact_manager.list_contacts, der die DB-Session intern beschafft."""
+    db = next(database.get_db())
+    try:
+        return contact_manager.list_contacts(db=db)
+    finally:
+        db.close()
+
+def search_contacts_wrapper(name_query: str) -> dict:
+    """Ein Wrapper für die Kontaktsuche, der die DB-Session intern beschafft."""
+    db = next(database.get_db())
+    try:
+        # Rufe direkt die korrekte CRUD-Funktion auf.
+        contacts = crud.search_contacts_by_name(db, name_query=name_query)
+        # Pydantic-Modelle in Dictionaries umwandeln für JSON-Serialisierung
+        return [contact.model_dump() for contact in contacts]
+    finally:
+        db.close()
+
+async def update_contact_tool_wrapper(
+    name_query: str,
+    new_name: Optional[str] = None,
+    email: Optional[str] = None,
+    phone: Optional[str] = None,
+    address: Optional[str] = None,
+    website: Optional[str] = None,
+    notes: Optional[str] = None,
+    category: Optional[str] = None
+) -> dict:
+    """Wrapper, um die Details eines bestehenden Kontakts zu aktualisieren."""
+    db = next(database.get_db())
+    try:
+        # 1. Finde den Kontakt
+        search_results = crud.search_contacts_by_name(db, name_query)
+        if not search_results:
+            return {"status": "error", "message": f"Kontakt '{name_query}' nicht gefunden."}
+        if len(search_results) > 1:
+            logger.warning(f"Mehrere Kontakte für '{name_query}' gefunden. Aktualisiere den ersten Treffer (ID: {search_results[0].id}).")
+        
+        target_contact = search_results[0]
+
+        # 2. Baue das 'updates'-Dictionary
+        updates = {}
+        if new_name:
+            updates['name'] = new_name
+        if email:
+            updates['email'] = email
+        if phone:
+            updates['phone'] = phone
+        if address:
+            updates['address'] = address
+        if website:
+            updates['website'] = website
+        if notes:
+            # Spezieller Fall für Notizen: Anhängen statt überschreiben
+            existing_notes = target_contact.notes or ""
+            updates['notes'] = f"{existing_notes}\n{notes}".strip()
+        if category:
+            updates['category'] = category
+
+        if not updates:
+            return {"status": "info", "message": "Keine neuen Informationen zum Aktualisieren angegeben."}
+
+        # 3. Rufe die Kernlogik auf
+        return await contact_manager.update_contact_details(
+            db=db,
+            contact_id=target_contact.id,
+            updates=updates
+        )
+    finally:
+        db.close()
+
+async def update_contact_details_wrapper(contact_id: int, updates: dict, name: Optional[str] = None) -> dict:
+    """Wrapper to update contact details, handling the DB session internally."""
+    db = next(database.get_db())
+    try:
+        # Die 'updates' werden jetzt direkt durchgereicht, wie es das Schema vorsieht.
+        # 'name' wird als optionaler Suchparameter beibehalten.
+        return await contact_manager.update_contact_details(
+            db=db, 
+            contact_id=contact_id,
+            name_query=name, 
+            updates=updates
+        )
+    finally:
+        db.close()
+
+def delete_contact_by_id_wrapper(contact_id: int) -> dict:
+    """Ein Wrapper für contact_manager.delete_contact_by_id, der die DB-Session intern beschafft."""
+    db = next(database.get_db())
+    try:
+        return contact_manager.delete_contact_by_id(db=db, contact_id=contact_id)
+    finally:
+        db.close()
+
+async def create_or_update_contact_tool(
+    name: str,
+    email: Optional[str] = None,
+    phone: Optional[str] = None,
+    address: Optional[str] = None,
+    notes: Optional[str] = None,
+    category: Optional[str] = "Privat"
+) -> dict:
+    """
+    Benutze dieses Werkzeug IMMER, um einen Kontakt zu erstellen oder zu aktualisieren.
+    Es sucht zuerst nach einem Kontakt mit dem angegebenen Namen.
+    - Wenn ein Kontakt gefunden wird, werden die neuen Informationen (E-Mail, Telefon etc.) hinzugefügt.
+    - Wenn kein Kontakt gefunden wird, wird ein komplett neuer Kontakt erstellt.
+    """
+    db = next(database.get_db())
+    try:
+        # Suche nach einem existierenden Kontakt
+        existing_contacts = crud.search_contacts_by_name(db, name_query=name)
+        
+        updates = {
+            "email": email,
+            "phone": phone,
+            "address": address,
+            "notes": notes,
+            "category": category,
+        }
+        # Entferne leere Werte, um bestehende Daten nicht zu überschreiben
+        updates = {k: v for k, v in updates.items() if v is not None}
+
+        if existing_contacts:
+            # Kontakt existiert -> Aktualisieren
+            contact_to_update = existing_contacts[0]
+            logger.info(f"Kontakt '{name}' gefunden. Aktualisiere mit: {updates}")
+            updated_contact = crud.update_contact(db, contact_id=contact_to_update.id, updates=updates)
+            return {
+                "status": "success", 
+                "message": f"Kontakt '{updated_contact.name}' erfolgreich aktualisiert.", 
+                "contact": contact_schemas.ContactResponse.model_validate(updated_contact).model_dump()
+            }
+        else:
+            # Kontakt existiert nicht -> Neu erstellen
+            logger.info(f"Kontakt '{name}' nicht gefunden. Erstelle neuen Kontakt mit: {updates}")
+            new_contact_data = contact_schemas.ContactCreate(name=name, **updates)
+            created_contact = crud.create_contact(db, contact=new_contact_data)
+            return {
+                "status": "success", 
+                "message": f"Neuer Kontakt '{created_contact.name}' erfolgreich erstellt.", 
+                "contact": contact_schemas.ContactResponse.model_validate(created_contact).model_dump()
+            }
+
+    finally:
+        db.close()
+
+async def find_contact_and_send_email(name_query: str, subject: str, body: str) -> dict:
+    """
+    Benutze dieses Werkzeug, um eine E-Mail an einen im Adressbuch gespeicherten Kontakt anhand seines Namens zu senden.
+    Das Werkzeug sucht automatisch die korrekte E-Mail-Adresse und versendet dann die Nachricht.
+    """
+    db = next(database.get_db())
+    try:
+        # SCHRITT 1: Kontakt suchen
+        contacts = crud.search_contacts_by_name(db, name_query=name_query)
+        if not contacts:
+            return {"status": "error", "message": f"Kontakt '{name_query}' konnte nicht im Adressbuch gefunden werden."}
+        
+        target_contact = contacts[0]
+        if not target_contact.email:
+            return {"status": "error", "message": f"Kontakt '{target_contact.name}' hat keine gespeicherte E-Mail-Adresse."}
+
+        # SCHRITT 2: E-Mail senden
+        email_address = target_contact.email
+        # Da send_email nicht async ist, führen wir es in einem Thread aus.
+        result = await asyncio.to_thread(send_email, to=email_address, subject=subject, body=body)
+        return result
+
+    finally:
+        db.close()
+
+async def extract_and_save_contact_tool_wrapper(text: str) -> Dict[str, str]:
+    """
+    Analysiert einen Textblock und extrahiert NUR explizite Kontaktinformationen, um sie im Adressbuch zu speichern.
+    """
+    from backend.main import load_config
+    import keyring
+    try:
+        config = load_config()
+        provider = config.get("last_used_provider", "openai")
+        model = config.get("last_used_model", "gpt-4o-mini")
+        api_key = keyring.get_password("Janus-Projekt", provider)
+        result = await contact_manager.extract_and_save_contact(
+            text_block=text, provider=provider, model=model, api_key=api_key
+        )
+        return {"status": "success", "message": "Kontakt-Extraktion erfolgreich durchgeführt."}
+    except Exception as e:
+        logger.error(f"Fehler im extract_and_save_contact_tool_wrapper: {e}", exc_info=True)
+        return {"status": "error", "message": str(e)}
+
+def save_core_memory_tool(fact: str, category: str) -> Dict[str, str]:
+    """
+    Benutze dieses Werkzeug IMMER, wenn der Benutzer explizit darum bittet, eine Information für die Zukunft zu speichern.
+    """
+    from backend.services import memory_manager 
+    return memory_manager.save_core_memory_fact(fact=fact, category=category)
+
+def get_distance_and_route_tool(origin: str, destination: str, mode: str = "driving") -> Dict[str, str]:
+    """
+    Berechnet die Entfernung und Reisezeit zwischen zwei Orten.
+    Modi: 'driving' (Auto), 'walking' (Zu Fuß), 'cycling' (Fahrrad).
+    Nutzt OpenStreetMap Daten (Nominatim & OSRM).
+    """
+    geolocator = Nominatim(user_agent="janus_projekt_distance_tool")
+    try:
+        # 1. Koordinaten ermitteln
+        loc_a = geolocator.geocode(origin)
+        loc_b = geolocator.geocode(destination)
+
+        if not loc_a:
+            return {"status": "error", "message": f"Ort '{origin}' konnte nicht gefunden werden."}
+        if not loc_b:
+            return {"status": "error", "message": f"Ort '{destination}' konnte nicht gefunden werden."}
+
+        # 2. OSRM API abfragen
+        # Mapping der LLM-Begriffe auf OSRM-API-Endpunkte ('bike', 'foot', 'driving')
+        osrm_mode = "driving"  # Standard
+        if mode == "walking": 
+            osrm_mode = "foot"
+        elif mode == "cycling": 
+            osrm_mode = "bike"
+        
+        # URL Aufbau
+        url = f"http://router.project-osrm.org/route/v1/{osrm_mode}/{loc_a.longitude},{loc_a.latitude};{loc_b.longitude},{loc_b.latitude}?overview=false"
+        
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+
+        if data.get("code") != "Ok" or not data.get("routes"):
+             return {"status": "error", "message": "Keine Route gefunden."}
+
+        route = data["routes"][0]
+        distance_km = route["distance"] / 1000
+        duration_seconds = route["duration"]
+        
+        # Formatierung der Dauer
+        hours = int(duration_seconds // 3600)
+        minutes = int((duration_seconds % 3600) // 60)
+        
+        duration_str = ""
+        if hours > 0: duration_str += f"{hours} Std. "
+        if minutes > 0: duration_str += f"{minutes} Min."
+        if not duration_str: duration_str = "weniger als 1 Minute"
+
+        output = (
+            f"Route von {origin} nach {destination} ({mode}):\n"
+            f"Entfernung: {distance_km:.1f} km\n"
+            f"Geschätzte Dauer: {duration_str}"
+        )
+        
+        logger.info(f"Route berechnet: {output}")
+        return {"status": "success", "output": output}
+
+    except Exception as e:
+        logger.error(f"Fehler im Distance-Tool: {e}", exc_info=True)
+        return {"status": "error", "message": f"Fehler bei der Routenberechnung: {e}"}
+
+# --- NEUE SAUBERE SCHEMAS (ADD-ON PATTERN) ---
+# Wir definieren diese LOKAL, um die Core-Schemas in backend/data/schemas.py nicht zu ändern.
+# Diese hier haben KEINE Beispiele, um Gemini-Halluzinationen (Köln/Rom) zu stoppen.
+
+class CleanGetDistanceArgs(BaseModel):
+    origin: str = Field(..., description="Der Startort der Route. Extrahiere diesen exakt aus der Anfrage.")
+    destination: str = Field(..., description="Der Zielort der Route. Extrahiere diesen exakt aus der Anfrage.")
+    mode: str = Field("driving", description="Der Fortbewegungsmodus: 'driving' (Auto), 'walking' (Zu Fuß), 'cycling' (Fahrrad).")
+
+class CleanGetWeatherFromApiToolArgs(BaseModel):
+    city: str = Field(..., description="Die Stadt für die Wettervorhersage. Nenne NUR die Stadt aus der Anfrage.")
+    date_str: Optional[str] = Field(None, description="Das Datum (z.B. 'heute', 'morgen', 'Samstag').")
+
+class CleanGetWikipediaSummaryArgs(BaseModel):
+    query: str = Field(..., description="Der genaue Suchbegriff für Wikipedia (z.B. 'Eiffelturm', 'Thermodynamik').")
+    lang: str = Field("de", description="Sprachcode, meist 'de'.")
+
+# --- NEU: Sauberes News-Schema gegen Überoptimierung ---
+class CleanGetLatestNewsRssToolArgs(BaseModel):
+    source: str = Field(..., description="Die Quelle. Wähle exakt: 'spiegel', 'gamestar', 'tagesschau', 'zeit', 'heise', 'reuters' oder 'bbc'.")
+    query: Optional[str] = Field(None, description="Optional: Ein spezifisches Thema zur Filterung. Nutze hierfür explizite Themen vom Benutzer ODER bekannte Interessen aus dem Core Memory (z.B. 'Nintendo Switch', 'BVB').")
+
+# --- Registrierung aller Tools ---
+
+def register_all_tools():
+    """Registriert alle verfügbaren Tools im System."""
+    # Allgemeine Tools
+    
+    # 1. DISTANZ: Härtere Formulierung gegen Halluzinationen
+    register_tool(Tool(
+        func=get_distance_and_route_tool, 
+        args_schema=CleanGetDistanceArgs,
+        description=(
+            "Berechnet die exakte Entfernung, Route und Fahrzeit zwischen zwei Orten. "
+            "WARNUNG: Nutze NUR die Orte, die der Benutzer im Chat genannt hat. "
+            "Erfinde NIEMALS Start oder Ziel (wie 'Rom' oder 'Köln'). "
+            "Wenn ein Ort fehlt, FRAGE den Benutzer."
+        )
+    ))
+    
+    register_tool(Tool(func=find_local_business_tool, args_schema=schemas.FindLocalBusinessArgs))
+    register_tool(Tool(func=get_country_info_tool, args_schema=schemas.GetCountryInfoToolArgs))
+    
+    # 2. RSS: Mit expliziter Ausgabe-Anweisung und Erlaubnis für Memory-Nutzung
+    register_tool(Tool(
+        func=get_latest_news_rss, 
+        args_schema=CleanGetLatestNewsRssToolArgs,
+        description=(
+            "Ruft aktuelle Schlagzeilen ab (z.B. Spiegel, Gamestar). "
+            "Nutze User-Präferenzen aus dem Gedächtnis als Filter (query), falls vorhanden. "
+            "WICHTIG: Du MUSST die erhaltenen Schlagzeilen als Liste in deiner Antwort ausgeben!"
+        )
+    ))
+    
+    # 3. WETTER: Parallel-Hinweis beibehalten
+    register_tool(Tool(
+        func=get_weather_from_api_tool, 
+        args_schema=CleanGetWeatherFromApiToolArgs,
+        description=(
+            "Ruft Wettervorhersagen für eine GENANNTE Stadt ab. Rate keine Städte. "
+            "Wenn der Nutzer AUCH nach Sehenswürdigkeiten fragt, rufe ZUSÄTZLICH das Wikipedia-Tool auf."
+        )
+    ))
+    
+    register_tool(Tool(func=generate_image_tool, args_schema=schemas.GenerateImageToolArgs))
+    register_tool(Tool(func=search_past_conversation_summaries_tool, args_schema=schemas.CrossChatMemoryToolArgs))
+    register_tool(Tool(func=perform_websearch, args_schema=schemas.WebsearchToolArgs))
+    register_tool(Tool(func=save_mp3_tool, args_schema=schemas.SaveMp3Args))
+    register_tool(Tool(func=create_pdf_from_markdown, args_schema=schemas.CreatePdfFromMarkdownArgs))
+    
+    # 4. WIKIPEDIA: Trigger-Worte
+    register_tool(Tool(
+        func=get_wikipedia_summary, 
+        args_schema=CleanGetWikipediaSummaryArgs,
+        description=(
+            "Liefert Definitionen, Fakten und Infos zu Sehenswürdigkeiten (z.B. Eiffelturm). "
+            "Nutze dies IMMER für Wissensfragen. Nutze es parallel zum Wetter-Tool bei Reisefragen."
+        )
+    ))
+    
+    # Filesystem Tools
+    register_tool(Tool(func=create_file_tool, args_schema=schemas.CreateFileArgs))
+    register_tool(Tool(func=read_file_tool, args_schema=schemas.ReadFileArgs))
+    register_tool(Tool(func=delete_file_tool, args_schema=schemas.DeleteFileArgs))
+    register_tool(Tool(func=list_directory_tool, args_schema=schemas.ListDirectoryArgs))
+    register_tool(Tool(func=create_directory_tool, args_schema=schemas.CreateDirectoryArgs))
+    register_tool(Tool(func=delete_directory_tool, args_schema=schemas.DeleteDirectoryArgs))
+    register_tool(Tool(func=rename_file_tool, args_schema=schemas.RenameFileArgs))
+    register_tool(Tool(func=move_file_tool, args_schema=schemas.MoveFileArgs))
+    register_tool(Tool(func=move_files_tool, args_schema=schemas.MoveFilesArgs))
+    register_tool(Tool(func=list_allowed_workspaces_tool, args_schema=schemas.ListAllowedWorkspacesArgs))
+
+    # Kalender & E-Mail Tools
+    register_tool(Tool(func=find_address_and_update_calendar_event, args_schema=schemas.FindAddressAndUpdateCalendarEventArgs))
+    register_tool(Tool(
+        func=get_latest_emails,
+        args_schema=schemas.GetLatestEmailsArgs,
+        description=(
+            "Sucht und listet E-Mails auf. Benutze dieses Tool IMMER, wenn du E-Mails finden musst. "
+            "Setze 'fetch_body' auf True, wenn die Anfrage des Benutzers eine Zusammenfassung, Übersetzung oder eine andere Detailanalyse des E-Mail-Inhalts erfordert."
+        )
+    ))
+    register_tool(Tool(func=send_email, args_schema=schemas.SendEmailArgs))
+    register_tool(Tool(func=find_contact_and_send_email, args_schema=schemas.FindContactAndSendEmailArgs))
+    register_tool(Tool(func=read_email, args_schema=schemas.ReadEmailArgs))
+    register_tool(Tool(func=get_calendar_events, args_schema=schemas.GetCalendarEventsArgs))
+    register_tool(Tool(func=create_calendar_event, args_schema=schemas.CreateCalendarEventArgs))
+    register_tool(Tool(func=delete_calendar_event, args_schema=schemas.DeleteCalendarEventArgs))
+    register_tool(Tool(func=update_calendar_event, args_schema=schemas.UpdateCalendarEventArgs))
+    register_tool(Tool(func=find_free_time_slots, args_schema=schemas.FindFreeTimeSlotsArgs))
+    register_tool(Tool(func=update_calendar_event_description, args_schema=schemas.UpdateCalendarEventDescriptionArgs))
+    register_tool(Tool(func=find_and_update_calendar_event, args_schema=schemas.FindAndUpdateCalendarEventArgs))
+
+    # Kontakt & Memory Tools
+    register_tool(Tool(
+        func=create_or_update_contact_tool,
+        args_schema=contact_schemas.CreateOrUpdateContactArgs,
+        description="Benutze dieses Werkzeug ZWINGEND UND AUSSCHLIESSLICH für ALLE Anfragen, die das Erstellen oder Ändern eines Kontakts betreffen. Es ist das einzige Werkzeug für die Kontaktverwaltung. Es sucht zuerst nach dem Namen. Wenn ein Kontakt gefunden wird, werden die neuen Informationen hinzugefügt. Wenn kein Kontakt gefunden wird, wird ein komplett neuer Kontakt erstellt."
+    ))
+    register_tool(Tool(func=list_contacts_wrapper, args_schema=contact_schemas.ContactListArgs, description="Listet alle im Adressbuch gespeicherten Kontakte auf."))
+    register_tool(Tool(func=delete_contact_by_id_wrapper, args_schema=contact_schemas.ContactDeleteArgs, description="Löscht einen Kontakt anhand seiner ID. Die ID muss zuerst durch eine Suche ermittelt werden."))
+    register_tool(Tool(
+        func=save_core_memory_tool,
+        args_schema=schemas.SaveCoreMemoryToolArgs,
+        description=(
+            "Benutze dieses Werkzeug AUSSCHLIESSLICH, wenn der Benutzer einen **direkten und expliziten Befehl** gibt, "
+            "sich etwas für die Zukunft zu merken. Achte auf Schlüsselphrasen wie: 'Merke dir, dass...', "
+            "'Speichere die Information, dass...', 'Du sollst dir merken, dass...', 'Speichere in meinem Core Memory:'. "
+            "WICHTIG: Bewahre den Kontext! Wenn eine Vorliebe an ein bestimmtes Objekt geknüpft ist (z.B. 'Ich mag Rennspiele auf der PS5'), "
+            "speichere dies so, dass der Bezug erhalten bleibt (z.B. 'Auf der PS5 spiele ich am liebsten Rennspiele') "
+            "und trenne es NICHT in zusammenhanglose Einzelfakten auf."
+        )
+    ))
+
+# Initialisiere alle Tools beim Start
+register_all_tools()
+
+# --- Hilfsfunktionen für den Rest der Anwendung ---
+
+def get_all_tool_definitions():
+    """Gibt die Definitionen aller registrierten Tools für das LLM zurück."""
+    return [tool.llm_definition for tool in TOOL_REGISTRY.values()]
+
+def get_all_tools() -> Dict[str, Tool]:
+    """Gibt das gesamte Tool-Registry-Wörterbuch zurück."""
+    return TOOL_REGISTRY

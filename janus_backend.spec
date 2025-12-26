@@ -5,12 +5,11 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=(
-        ('backend/model_catalog.json', 'backend'),
+        ('backend/config/model_catalog.json', 'backend/config'),
         ('backend/static', 'backend/static'),
         ('backend/model_cache', 'backend/model_cache'),
-        (r'C:\Users\pruve\AppData\Roaming\Python\Python311\site-packages\tiktoken', 'tiktoken'),
-        (r'C:\Users\pruve\AppData\Roaming\Python\Python311\site-packages\tiktoken_ext', 'tiktoken_ext'),
-        (r'C:\Users\pruve\AppData\Roaming\Python\Python311\site-packages\fpdf', 'fpdf')    ),
+        ('backend/bin', 'backend/bin')
+    ),
     hiddenimports=['uvicorn.workers', 'backend.utils.paths', 'uvicorn', 'watchfiles', 'websockets', 'fpdf', 'pypdf', 'ebooklib'],
     hookspath=['hooks'],
     hooksconfig={},

@@ -1,8 +1,8 @@
-import tiktoken
 import logging
-from typing import List, Dict
+from typing import Dict, List
+
+import tiktoken
 from backend.services import llm_gateway
-import keyring  # NEW IMPORT for accessing API keys
 
 logger = logging.getLogger("janus_backend")
 
@@ -14,12 +14,39 @@ class ContextManager:
         self.model_limits = {
             model["id"]: model.get("context_window", 8000) for model in model_catalog
         }
-        self.system_prompt_text = (
-            "Du bist Janus, ein hilfreicher und freundlicher KI-Assistent. "
-            "Du antwortest immer auf Deutsch. "
-            "Integriere nahtlos dein umfangreiches Allgemeinwissen mit den spezifischen Informationen, die im Abschnitt 'GEDÄCHTNIS' bereitgestellt werden. "
-            "**REGEL: Die Informationen im 'GEDÄCHTNIS'-Abschnitt haben immer Vorrang und sind die absolute Wahrheit über den Benutzer und seine Welt. Beziehe dich bei jeder Antwort explizit darauf, wenn es relevant ist.**"
-        )
+        self.system_prompt_text = """# PRIMÄRDIREKTIVE
+Du bist Janus, ein hilfreicher und freundlicher KI-Assistent. 
+Du antwortest immer auf Deutsch. 
+Integriere nahtlos dein umfangreiches Allgemeinwissen mit den spezifischen Informationen, die im Abschnitt 'GEDÄCHTNIS' bereitgestellt werden.
+
+**WICHTIGE REGELN:**
+1. **Fokus auf die letzte Eingabe:** Deine Antwort MUSS sich IMMER direkt auf die unmittelbar letzte Aussage oder Frage des Benutzers beziehen. Ignoriere frühere, abgeschlossene Aktionen im Gesprächsverlauf, es sei denn, der Benutzer bezieht sich explizit darauf.
+2. **Gedächtnis hat Vorrang:** Die Informationen im 'GEDÄCHTNIS'-Abschnitt haben immer Vorrang und sind die absolute Wahrheit über den Benutzer und seine Welt. Beziehe dich bei jeder Antwort explizit darauf, wenn es relevant ist.
+
+# HANDLUNGSANWEISUNG 1: PROAKTIVE PERSONALISIERUNG (RSS & NEWS)
+DEINE WICHTIGSTE AUFGABE ist es, Informationsanfragen sofort zu personalisieren. Wenn der Benutzer eine allgemeine Anfrage stellt (z.B. "Gaming-News", "Film-News") und du relevante Informationen in der 'ALLGEMEINE FAKTENGRUNDLAGE' hast (z.B. Konsolenbesitz, Lieblingsgenres), MUSST du diese Informationen nutzen, um den `query`-Parameter des Werkzeugs zu befüllen.
+
+**REGELN FÜR FILTER:**
+- Nutze **Schlagworte** statt ganzer Sätze für den `query`-Parameter (Suchmaschinen arbeiten besser mit Keywords).
+- Kombiniere Plattform (z.B. "Switch") und Genre (z.B. "RPG").
+
+**BEISPIEL:**
+- Anfrage: `Zeig mir die neuesten Gaming-News.` 
+- Gedächtnis: `Besitzt eine Nintendo Switch 2`, `Lieblings-Spielegenres sind RPGs`.
+- **KORREKTE AKTION:** Rufe `get_latest_news_rss(source="...", query="Switch RPG")` auf.
+- **FEHLERHAFTE AKTION:** Rufe `get_latest_news_rss(source="...", query=None)` auf. <- VERBOTEN, wenn Präferenzen bekannt sind!
+
+# HANDLUNGSANWEISUNG 2: LOKALE SUCHE
+- Für JEDE Anfrage nach einem Ort, Restaurant, Geschäft oder einer Dienstleistung MUSST du das `find_local_business_tool` verwenden. 
+- Die Nutzung von `get_latest_news_rss` oder `perform_websearch` für lokale Anfragen ist strikt verboten.
+- Wenn der Benutzer keinen spezifischen Ort nennt, verwende den Standort aus dem Gedächtnis oder frage nach, wo gesucht werden soll.
+
+**BEISPIEL:**
+- Anfrage: `Ich möchte heute Abend Pizza essen.` 
+- **KORREKTE AKTION:** Rufe `find_local_business_tool(query="Pizzeria")` auf.
+- **KORREKTE AKTION (mit Ort):** Rufe `find_local_business_tool(query="Italienisches Restaurant", location="Köln")` auf.
+- **FEHLERHAFTE AKTION:** Verwende NIEMALS `perform_websearch` oder `get_latest_news_rss` für solche Anfragen.
+"""
 
     def get_system_instruction(self) -> str:
         return self.system_prompt_text
@@ -41,18 +68,13 @@ class ContextManager:
         """Summarizes a segment of chat history using an LLM."""
         # Use a smaller, efficient model for summarization if possible, or the main model
         # For now, we'll use the provided model for summarization.
-        summary_model_id = model_id
-        summary_provider = provider
-
         # Retrieve API key for summarization
         summary_api_key = api_key
         if not summary_api_key:
-            logger.error(
-                f"API key not found for {summary_provider} summarization. Skipping summarization."
-            )
+            logger.error(f"API key not found for {provider} summarization. Skipping summarization.")
             return {
                 "role": "system",
-                "content": f"--- ÄLTERER CHATVERLAUF (ZUSAMMENFASSUNG FEHLGESCHLAGEN: KEIN {summary_provider.upper()} KEY) ---",
+                "content": f"--- ÄLTERER CHATVERLAUF (ZUSAMMENFASSUNG FEHLGESCHLAGEN: KEIN {provider.upper()} KEY) ---",
             }
 
         # Construct a prompt for summarization
@@ -67,8 +89,8 @@ class ContextManager:
         try:
             # Call the LLM gateway for summarization
             response = await llm_gateway.call_llm(
-                provider=summary_provider,
-                model_id=summary_model_id,
+                provider=provider,
+                model_id=model_id,
                 prompt="",  # Prompt is in chat_history
                 api_key=summary_api_key,  # Use the retrieved API key
                 chat_history=prompt_messages,
@@ -101,9 +123,7 @@ class ContextManager:
 
         # 1. System Prompt (highest priority)
         system_prompt_tokens = self.count_tokens(self.system_prompt_text, model_id)
-        if system_prompt_tokens > max_tokens * budget_config.get(
-            "system_prompt_ratio", 0.1
-        ):
+        if system_prompt_tokens > max_tokens * budget_config.get("system_prompt_ratio", 0.1):
             logger.warning("System prompt too long, will be truncated or ignored.")
             # In a real scenario, we might truncate the system prompt or simplify it.
             # For now, we assume it fits or is critical.
@@ -143,7 +163,6 @@ class ContextManager:
                 current_tokens += memory_context_tokens
 
         # 3. Chat History (medium priority, rolling window with summarization)
-        chat_history_budget = max_tokens * budget_config.get("chat_history_ratio", 0.5)
 
         # Calculate total tokens of the full chat history
         full_chat_history_tokens = sum(
@@ -153,8 +172,7 @@ class ContextManager:
         SUMMARIZATION_THRESHOLD_TOKENS = 1500  # Example threshold for summarization
         # Only summarize if the chat history is substantial and exceeds a threshold
         if (
-            full_chat_history_tokens > SUMMARIZATION_THRESHOLD_TOKENS
-            and len(chat_history) > 5
+            full_chat_history_tokens > SUMMARIZATION_THRESHOLD_TOKENS and len(chat_history) > 5
         ):  # Also check number of messages
             logger.info(
                 f"Chat history ({full_chat_history_tokens} tokens) exceeds summarization threshold. Attempting to summarize older parts."
@@ -165,9 +183,7 @@ class ContextManager:
             tokens_to_summarize = 0
             split_index = 0
             for i, message in enumerate(chat_history):
-                tokens_to_summarize += self.count_tokens(
-                    message.get("content", ""), model_id
-                )
+                tokens_to_summarize += self.count_tokens(message.get("content", ""), model_id)
                 if (
                     tokens_to_summarize > SUMMARIZATION_THRESHOLD_TOKENS / 2
                 ):  # Summarize roughly half the threshold
@@ -193,7 +209,6 @@ class ContextManager:
                 )
 
         # Now, proceed with the rolling window logic on the potentially summarized history
-        remaining_budget = max_tokens - current_tokens
         truncated_chat_history = []
         for message in reversed(chat_history):
             message_content = message.get("content", "")
@@ -203,12 +218,10 @@ class ContextManager:
             # The user prompt is added last, so we need to account for its size
             # Also account for the system prompt and memory context already added
             if (
-                current_tokens
-                + message_tokens
-                + self.count_tokens(user_prompt, model_id)
+                current_tokens + message_tokens + self.count_tokens(user_prompt, model_id)
                 > max_tokens
             ):
-                logger.info(f"Chat history limit reached. Truncating older messages.")
+                logger.info("Chat history limit reached. Truncating older messages.")
                 break
 
             truncated_chat_history.insert(0, message)

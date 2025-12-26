@@ -1,11 +1,11 @@
-import pytest
 from unittest.mock import AsyncMock, patch
+
+import pytest
 from backend.llm_providers.openai_service import OpenAIServiceProvider
 
 
 @pytest.mark.asyncio
 async def test_provider_generate_response():
-    # This test is unchanged as it tests a different functionality
     with patch("openai.AsyncOpenAI") as mock_async_openai:
         mock_client = AsyncMock()
         mock_async_openai.return_value = mock_client
@@ -15,6 +15,7 @@ async def test_provider_generate_response():
         mock_response.choices[0].message = AsyncMock()
         mock_response.choices[0].message.tool_calls = None
         mock_response.choices[0].message.content = "Test response"
+        mock_response.choices[0].message.refusal = False # Set refusal to False for this test
         mock_response.usage = AsyncMock()
         mock_response.usage.prompt_tokens = 10
         mock_response.usage.completion_tokens = 5
@@ -58,8 +59,6 @@ async def test_provider_generate_image():
         result = await provider.generate_image(api_key, model, prompt, **kwargs)
 
         # Assert that the internal implementation was called correctly
-        mock_generate_image_impl.assert_called_once_with(
-            api_key, model, prompt, **kwargs
-        )
+        mock_generate_image_impl.assert_called_once_with(api_key, model, prompt, **kwargs)
         # Assert that the main provider returns the result from the implementation
         assert result["image_url"] == "http://example.com/image.png"
