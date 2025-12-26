@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from pydantic import (
     BaseModel,
@@ -521,7 +521,7 @@ class GeneratedImageCreate(BaseModel):
     provider: str
     model: str
     parameters: ImageParameters
-    style_preset: Optional[str] = None
+    style_preset: Optional[Dict[str, str]] = None
     previous_response_id: Optional[str] = None
     previous_image_id: Optional[str] = None
     

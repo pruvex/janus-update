@@ -18,7 +18,7 @@ GPT_PRESETS = {
             "2. FORBIDDEN TOKENS: Do NOT use 'photorealistic', 'hyperrealistic', '4k', '8k', or 'HDR'. These trigger a fake/CGI look. "
             "3. IMPERFECTIONS: Explicitly ask for 'natural skin texture', 'slight film grain', 'motion blur', or 'atmospheric dust'. "
             "4. CAMERA SPECS: Use 'Shot on Sony A7R V', '50mm f/1.2 GM lens', 'ISO 400', 'Global Illumination'. "
-            "5. OUTPUT: Provide ONLY the rewritten prompt, nothing else. "
+            "5. EXECUTION: Call the 'image_generation' tool with the final, rewritten prompt. Do not add any commentary. "
             "USER REQUEST: {prompt}"
         ),
         "Fotorealismus 2": (
@@ -26,6 +26,7 @@ GPT_PRESETS = {
              "GOAL: A high-end Editorial/Fashion shot. "
              "SPECS: Use 'Hasselblad X2D, 90mm f/3.2', 'Profoto strobe with softbox', 'subtle rim light'. "
              "STYLE: Clean, modern, luxury aesthetic. "
+             "EXECUTION: Call the 'image_generation' tool with the final prompt. "
              "USER REQUEST: {prompt}"
         )
     }

@@ -1,6 +1,7 @@
 import logging
 import keyring
 import os
+import json
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from typing import Optional
 from backend.utils.paths import get_app_data_dir
@@ -180,6 +181,11 @@ async def generate_image(
             total_cost=image_cost_details.get("total_cost"),
         )
 
+
+        # --- VORBEREITUNG FÜR DB-SPEICHERUNG ---
+        # Konvertiere das style_preset Diktat in einen JSON-String, falls es existiert
+        if isinstance(image_request.style_preset, dict):
+            image_request.style_preset = json.dumps(image_request.style_preset)
 
         # Create database entry for the generated image
         new_image_entry = crud.create_generated_image(
