@@ -263,3 +263,97 @@
     min-width: auto;
   }
 }
+
+/* --- GOLDSTANDARD UI COMPACTING (No Scrollbar) --- */
+
+.image-studio-container {
+    /* Optimiertes Grid, um Scrollen zu vermeiden */
+    align-items: flex-start;
+    overflow: hidden; /* Verhindert Doppel-Scrollbalken */
+}
+
+.image-studio-controls {
+    /* Weniger Innenabstand */
+    padding: 15px; 
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Gleichmäßiger Abstand statt Margin */
+    max-height: 80vh; /* Begrenzung */
+    overflow-y: auto; /* Scrollen nur im Notfall innerhalb der Leiste */
+}
+
+/* Elemente näher zusammenrücken */
+.image-studio-controls .control-group {
+    margin-bottom: 0 !important; /* Gap regelt das jetzt */
+}
+
+/* Kleinere, knackige Labels */
+.image-studio-controls label {
+    font-size: 0.75rem !important;
+    margin-bottom: 2px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    color: #888;
+}
+
+/* Kompaktierte Inputs */
+.image-studio-controls select,
+.image-studio-controls input[type="text"],
+.image-studio-controls input[type="number"] {
+    padding: 6px 8px !important;
+    font-size: 0.85rem !important;
+    height: auto;
+}
+
+/* Prompt-Feld kleiner machen (nimmt am meisten Platz) */
+#is-prompt {
+    height: 60px !important; /* Fixe, kleinere Höhe */
+    min-height: 60px !important;
+    font-size: 0.85rem !important;
+    line-height: 1.2;
+}
+
+/* Checkboxen-Liste kompakter */
+.image-studio-controls .control-group div[style*="flex-direction: column"] {
+    gap: 4px !important; /* Enger zusammen */
+}
+
+.image-studio-controls label[for^="is-refine"],
+.image-studio-controls label[for^="is-edit"],
+.image-studio-controls label[for^="is-mask"],
+.image-studio-controls label[for^="is-presets"],
+.image-studio-controls label[for^="is-combine"] {
+    font-size: 0.8rem !important; /* Normale Schreibweise für Optionen */
+    text-transform: none !important;
+    letter-spacing: 0;
+    color: var(--text-color) !important;
+}
+
+/* Kosten-Display aufräumen */
+.cost-display {
+    margin-top: auto; /* Drückt es nach unten */
+    background: rgba(0,0,0,0.2);
+    padding: 10px;
+    border-radius: 6px;
+}
+
+/* --- FIX: Horizontal Scrollbar entfernen --- */
+.image-studio-controls {
+    overflow-x: hidden !important; /* Horizontalen Scrollbalken erzwingen weg */
+    width: 300px; /* Oder die Breite, die es im Grid hat */
+    min-width: 0; /* Flexbox Fix */
+}
+
+/* Sicherstellen, dass nichts breiter ist als der Container */
+.image-studio-controls select,
+.image-studio-controls input,
+.image-studio-controls .control-group {
+    max-width: 100% !important;
+    box-sizing: border-box !important; /* Padding inklusive */
+}
+
+/* Button Container Fix */
+.image-studio-controls button {
+    max-width: 100%;
+}

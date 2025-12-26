@@ -3,21 +3,18 @@ import keyring
 import os
 import json
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from typing import Optional
+from typing import Optional, List
 from backend.utils.paths import get_app_data_dir
 from sqlalchemy.orm import Session
 from backend.data import schemas, crud
-from backend.data.database import get_db
+from backend.data.database import get_db, save_cost_entry, GeneratedImage
 from backend.services import cost_calculator
 from backend.llm_providers.openai_service import OpenAIServiceProvider
 from backend.llm_providers.gemini_service import GeminiServiceProvider
-from backend.data.database import save_cost_entry, get_db # NEU: Direkter Import
-from datetime import datetime # NEU: Für den Zeitstempel der Kosten
-from backend.services import image_manager # NEU: Für Bildmanagement
-from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException
-from backend.data.database import GeneratedImage
-from backend.data.presets import get_preset
+from datetime import datetime
+from backend.services import image_manager
+from backend.data.presets import get_preset, PRESET_DATABASE
+from backend.services.quality_gate import quality_gate_service
 
 logger = logging.getLogger("janus_backend")
 router = APIRouter()
@@ -29,6 +26,14 @@ gemini_provider = GeminiServiceProvider()
 PROVIDER_MAP = {
     "openai": openai_provider,
     "gemini": gemini_provider,
+}
+
+# Konfiguration für Quality Gate Retries und Thresholds
+QUALITY_GATE_CONFIG = {
+    "none":   {"retries": 0, "threshold": 0},
+    "low":    {"retries": 1, "threshold": 70},
+    "medium": {"retries": 2, "threshold": 80},
+    "high":   {"retries": 3, "threshold": 90}
 }
 
 def get_api_key(provider: str) -> str:
@@ -45,7 +50,7 @@ async def generate_image(
 ):
     """
     Nimmt eine Anfrage zur Bilderstellung entgegen.
-    Unterstützt Text-zu-Bild und Bild-zu-Bild (Editierung) via 'reference_image_url'.
+    Unterstützt Text-zu-Bild, Bild-zu-Bild und Quality Gates.
     """
     logger.info(f"Anfrage zur Bilderstellung erhalten für Provider {image_request.provider} und Modell {image_request.model}")
     
@@ -57,36 +62,26 @@ async def generate_image(
     
     # --- BILDER LADEN (Universal-Loader) ---
     image_bytes_list = []
-    
-    # 1. Wir bestimmen, welche Bilder geladen werden sollen
     target_urls = []
     
-    # Hat der User die "Kombinieren"-Liste geschickt?
     if image_request.reference_image_urls and len(image_request.reference_image_urls) > 0:
         target_urls = image_request.reference_image_urls
         logger.info(f"Kombinieren-Modus aktiv: {len(target_urls)} Bilder angefordert.")
-        
-    # Oder ist es ein Einzelbild (Refinement/Edit)?
     elif image_request.reference_image_url:
         target_urls = [image_request.reference_image_url]
         logger.info("Single-Image Modus aktiv.")
 
-    # 2. Lade-Schleife
     if target_urls:
         base_dir = os.getcwd()
         for url in target_urls:
             try:
                 filename = url.split("/")[-1]
-                
-                # Pfad-Such-Strategie (für Uploads UND Generierte)
                 possible_paths = [
                     os.path.join(base_dir, "images", "uploads", filename),
                     os.path.join(base_dir, "backend", "user_images", "uploads", filename),
                     os.path.join(base_dir, "images", "generated", filename),
-                    # LOCALAPPDATA (Server-Speicherort)
                     os.path.join(os.getenv('LOCALAPPDATA', ''), "JanusDev", "Janus Projekt", "images", "uploads", filename),
                     os.path.join(os.getenv('LOCALAPPDATA', ''), "JanusDev", "Janus Projekt", "images", filename),
-                    # APPDATA Fallback
                     os.path.join(os.getenv('APPDATA', ''), "JanusDev", "Janus Projekt", "images", "uploads", filename),
                     os.path.join(os.getenv('APPDATA', ''), "JanusDev", "Janus Projekt", "images", filename)
                 ]
@@ -110,97 +105,164 @@ async def generate_image(
             except Exception as e:
                 logger.error(f"Fehler beim Laden von {url}: {e}")
                 raise HTTPException(status_code=500, detail=f"Ladefehler: {str(e)}")
-    # ---------------------------------------
-
-    # --- STIL-PRESETS ANWENDEN (NEUE LOGIK) ---
-    if isinstance(image_request.style_preset, dict) and 'style' in image_request.style_preset and 'variation' in image_request.style_preset:
-        style = image_request.style_preset['style']
-        variation = image_request.style_preset['variation']
-        logger.info(f"Stil-Preset '{style} / {variation}' wird angewendet.")
-        
-        preset_prompt = get_preset(
-            provider=image_request.provider,
-            style=style,
-            variation=variation,
-            prompt=image_request.prompt
-        )
-        
-        if preset_prompt:
-            # Der Preset-Prompt ersetzt den User-Prompt, da er ihn bereits enthält
-            image_request.prompt = preset_prompt
-        else:
-            logger.warning(f"Stil-Preset '{style} / {variation}' für Provider '{image_request.provider}' nicht gefunden.")
 
     try:
         # Parameter extrahieren
-        selected_quality = image_request.parameters.model_dump().get("quality", "medium") # Default to 'medium' for GPT Image
-        selected_size = image_request.parameters.model_dump().get("resolution", "1024x1024")
+        selected_quality = "medium"
+        selected_size = "1024x1024"
         
-        # full_model_id is simply the requested model for GPT Image models
+        if image_request.parameters:
+            params_dict = image_request.parameters if isinstance(image_request.parameters, dict) else image_request.parameters.model_dump()
+            selected_quality = params_dict.get("quality", "medium")
+            selected_size = params_dict.get("resolution", "1024x1024")
+        
         full_model_id = image_request.model
 
-        # WICHTIG: Wir übergeben jetzt IMMER eine Liste (image_bytes_list)
-        # und entfernen das alte "image_bytes" Argument
-        result = await provider_service.generate_image(
-            api_key=api_key,
-            model=image_request.model,
-            prompt=image_request.prompt,
-            image_bytes_list=image_bytes_list,
-            size=selected_size,
-            quality=selected_quality,
-            previous_response_id=image_request.previous_response_id,
-            previous_image_id=image_request.previous_image_id,
-            mask_image_data=image_request.mask_image_data,
-        )
+        # --- PRESET LOGIK ---
+        final_prompt = image_request.prompt
+        if image_request.style_preset and image_request.variation_preset:
+            final_prompt = get_preset(
+                provider=image_request.provider,
+                style=image_request.style_preset,
+                variation=image_request.variation_preset,
+                user_prompt=image_request.prompt
+            )
+            logger.info(f"Stil-Preset '{image_request.style_preset} / {image_request.variation_preset}' wird angewendet.")
+
+        # --- QUALITY GATE SETUP ---
+        current_prompt = final_prompt
+        gate_level = image_request.quality_gate_level or "none"
+        gate_config = QUALITY_GATE_CONFIG.get(gate_level, QUALITY_GATE_CONFIG["none"])
+        max_retries = gate_config["retries"]
+        min_score = gate_config["threshold"]
         
-        # Update the request with the new IDs for database storage
-        if result.get('previous_response_id') is not None:
-            image_request.previous_response_id = result.get('previous_response_id')
-        if result.get('previous_image_id') is not None:
-            image_request.previous_image_id = result.get('previous_image_id')
-
-        image_url = result.get("image_url")
-        if not image_url:
-            raise HTTPException(status_code=500, detail="Bildgenerierung fehlgeschlagen, keine URL erhalten.")
-
-        # Kosteninformationen extrahieren
-        image_usage = result.get("usage", {})
-        image_cost_details = result.get("cost", {})
+        attempt = 0
+        final_result = None
         
-        # Kosten in der Datenbank speichern
-        save_cost_entry(
-            date=datetime.now(),
-            model=full_model_id, # Speichere die vollständige Model-ID
-            provider=image_request.provider,
-            source_type="image_generation",
-            input_tokens=image_usage.get("input_tokens"), # Falls relevant für Multimodal
-            output_tokens=image_usage.get("output_tokens"), # Falls relevant für Multimodal
-            image_quality=image_usage.get("image_quality") or selected_quality,
-            image_size=image_usage.get("image_size") or selected_size, # NEU: image_size hinzufügen
-            image_cost=image_cost_details.get("image_cost"),
-            total_cost=image_cost_details.get("total_cost"),
-        )
+        # NEU: Stats-Objekt initialisieren
+        qg_stats = {
+            "was_active": gate_level != "none",
+            "attempts": 0,
+            "total_cost": 0.0,
+            "final_score": 0
+        }
 
+        vision_criteria = []
+        if image_request.style_preset and image_request.variation_preset:
+            try:
+                preset_conf = PRESET_DATABASE.get(image_request.style_preset, {}).get(image_request.variation_preset)
+                if preset_conf and hasattr(preset_conf, 'vision_criteria'):
+                    vision_criteria = preset_conf.vision_criteria
+            except Exception as e:
+                logger.warning(f"Konnte Vision-Kriterien nicht laden: {e}")
 
-        # --- VORBEREITUNG FÜR DB-SPEICHERUNG ---
-        # Konvertiere das style_preset Diktat in einen JSON-String, falls es existiert
+        logger.info(f"Starte Generierung mit Quality Gate: {gate_level} (Max Retries: {max_retries})")
+
+        # --- DER LOOP ---
+        while attempt <= max_retries:
+            qg_stats["attempts"] = attempt + 1
+            logger.info(f"--- Generierungs-Versuch {qg_stats['attempts']} von {max_retries + 1} ---")
+            
+            result = await provider_service.generate_image(
+                api_key=api_key,
+                model=image_request.model,
+                prompt=current_prompt,
+                image_bytes_list=image_bytes_list,
+                size=selected_size,
+                quality=selected_quality,
+                previous_response_id=image_request.previous_response_id,
+                previous_image_id=image_request.previous_image_id,
+                mask_image_data=image_request.mask_image_data,
+            )
+            
+            final_result = result
+            image_url = result.get("image_url")
+            
+            # Kosten für diesen Versuch addieren
+            image_cost_details = result.get("cost", {})
+            qg_stats["total_cost"] += image_cost_details.get("total_cost", 0.0)
+
+            save_cost_entry(
+                db=db,
+                date=datetime.now(),
+                model=full_model_id,
+                provider=image_request.provider,
+                source_type="image_generation",
+                input_tokens=result.get("usage", {}).get("input_tokens"),
+                output_tokens=result.get("usage", {}).get("output_tokens"),
+                image_quality=result.get("usage", {}).get("image_quality") or selected_quality,
+                image_size=result.get("usage", {}).get("image_size") or selected_size,
+                image_cost=image_cost_details.get("image_cost"),
+                total_cost=image_cost_details.get("total_cost"),
+            )
+
+            if gate_level == "none" or not image_url:
+                break
+
+            # Quality Gate Check
+            try:
+                # Bildpfad ermitteln
+                filename = image_url.split("/")[-1]
+                app_data_dir = get_app_data_dir()
+                final_path = os.path.join(app_data_dir, "images", filename)
+                
+                if os.path.exists(final_path):
+                    with open(final_path, "rb") as img_file:
+                        img_bytes = img_file.read()
+                    
+                    check_api_key = get_api_key(image_request.provider)
+                    
+                    evaluation = await quality_gate_service.evaluate_image(
+                        provider=image_request.provider,
+                        api_key=check_api_key,
+                        image_bytes=img_bytes,
+                        prompt=current_prompt,
+                        criteria=vision_criteria
+                    )
+                    
+                    score = evaluation.get("score", 0)
+                    qg_stats["final_score"] = score
+                    
+                    if score >= min_score:
+                        logger.info(f"Quality Gate BESTANDEN mit Score {score}/{min_score}.")
+                        break
+                    
+                    if attempt < max_retries:
+                        suggestion = evaluation.get("suggestion", "Make it look more realistic.")
+                        logger.warning(f"Quality Gate NICHT bestanden. Optimiere Prompt... Suggestion: {suggestion}")
+                        current_prompt = f"{current_prompt}\n\nCORRECTION REQUEST: {suggestion}. Focus on RAW realism."
+                        image_request.previous_response_id = None
+                        image_request.previous_image_id = None
+                else:
+                    logger.error(f"Konnte Bild für Quality Check nicht finden: {final_path}")
+                    break
+            except Exception as e:
+                logger.error(f"Fehler im Quality Gate Loop: {e}", exc_info=True)
+                break
+            
+            attempt += 1
+        # --- ENDE LOOP ---
+
+        if not final_result or not final_result.get("image_url"):
+             raise HTTPException(status_code=500, detail="Generierung fehlgeschlagen nach allen Versuchen.")
+
+        # DB Eintrag erstellen
         if isinstance(image_request.style_preset, dict):
-            image_request.style_preset = json.dumps(image_request.style_preset)
-
-        # Create database entry for the generated image
+             image_request.style_preset = json.dumps(image_request.style_preset)
+             
         new_image_entry = crud.create_generated_image(
             db=db, 
             image_data=image_request, 
-            image_url=image_url
+            image_url=final_result.get("image_url")
         )
         
-        # Return all required fields in the response
         response_data = {
             "id": new_image_entry.id,
             "image_url": new_image_entry.image_url,
-            "previous_response_id": result.get('previous_response_id'),
-            "previous_image_id": result.get('previous_image_id'),
-            "created_at": new_image_entry.created_at  # Required by the response model
+            "previous_response_id": final_result.get('previous_response_id'),
+            "previous_image_id": final_result.get('previous_image_id'),
+            "created_at": new_image_entry.created_at,
+            "quality_gate_stats": qg_stats # Stats an das Frontend senden
         }
         
         return response_data
@@ -211,49 +273,35 @@ async def generate_image(
         logger.error(f"Fehler bei der Bilderstellung: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Interne Server-Fehler bei der Bilderstellung: {str(e)}")
 
-
 @router.post("/images/upload", response_model=schemas.GeneratedImage)
 async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_db)):
-    """
-    Handles user-uploaded images.
-    Saves the image locally, creates a database entry, and returns the image object.
-    """
+    """Handles user-uploaded images."""
     try:
         if not file.content_type.startswith("image/"):
             raise HTTPException(status_code=400, detail="File is not an image.")
 
-        # Use the new generic function in image_manager
         new_image_entry = await image_manager.save_uploaded_file(db=db, file=file)
-        
         return new_image_entry
 
     except HTTPException as e:
-        # Re-raise HTTPException to let FastAPI handle it
         raise e
     except Exception as e:
         logger.error(f"Error uploading image: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to process image: {str(e)}")
 
-
 @router.get("/images/pricing")
 async def get_pricing_info():
     """Gibt die Preisstruktur für die Bilderstellung zurück."""
     try:
-        pricing_data = cost_calculator.get_image_pricing_structure()
-        return pricing_data
+        return cost_calculator.get_image_pricing_structure()
     except Exception as e:
         logger.error(f"Fehler beim Abrufen der Preisinformationen: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Preisinformationen konnten nicht geladen werden.")
 
-
 @router.get("/images/context")
 async def get_image_context(url: str, db: Session = Depends(get_db)):
-    """
-    Gibt den Kontext (previous_response_id und previous_image_id) für ein bestimmtes Bild zurück.
-    """
-    # Extrahiere den Dateinamen aus der URL
+    """Gibt den Kontext für ein Bild zurück."""
     filename = url.split("/")[-1]
-    # Suche in der Datenbank nach dem Eintrag für dieses Bild
     img_entry = db.query(GeneratedImage).filter(GeneratedImage.image_url.contains(filename)).first()
     
     if not img_entry:
@@ -266,14 +314,10 @@ async def get_image_context(url: str, db: Session = Depends(get_db)):
 
 @router.post("/images/rename", response_model=schemas.GeneratedImage)
 async def rename_image(rename_request: schemas.ImageRenameRequest, db: Session = Depends(get_db)):
-    """
-    Benennt eine generierte Bilddatei auf der Festplatte und in der Datenbank um.
-    """
+    """Benennt eine Bilddatei um."""
     try:
-        # 1. Datei im Dateisystem umbenennen (ruft die korrigierte Funktion auf)
         image_manager.rename_image_file(rename_request.old_path, rename_request.new_filename)
 
-        # 2. Datenbankeintrag aktualisieren (Logik hier, um circular import zu vermeiden)
         old_image_url = f"/user_images/{rename_request.old_path}"
         image_entry = db.query(GeneratedImage).filter(GeneratedImage.image_url == old_image_url).first()
 
@@ -288,16 +332,14 @@ async def rename_image(rename_request: schemas.ImageRenameRequest, db: Session =
         db.refresh(image_entry)
         
         logger.info(f"Datenbankeintrag für Bild ID {image_entry.id} auf '{new_image_url}' aktualisiert.")
-
         return image_entry
 
     except (FileNotFoundError, FileExistsError, LookupError) as e:
         logger.warning(f"Fehler beim Umbenennen des Bildes: {e}")
-        # Für den Client ist es oft hilfreicher, einen spezifischen Fehlercode zu erhalten
         if isinstance(e, FileNotFoundError) or isinstance(e, LookupError):
              raise HTTPException(status_code=404, detail=str(e))
-        else: # FileExistsError
-             raise HTTPException(status_code=409, detail=str(e)) # 409 Conflict
+        else:
+             raise HTTPException(status_code=409, detail=str(e))
     except Exception as e:
-        logger.error(f"Unerwarteter Fehler beim Umbenennen des Bildes: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Ein interner Fehler ist aufgetreten: {str(e)}")
+        logger.error(f"Unerwarteter Fehler beim Umbenennen: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Fehler: {str(e)}")

@@ -27,6 +27,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const presetsContainer = document.getElementById('is-presets-container');
   const styleSelect = document.getElementById('is-style-select');
   const variationSelect = document.getElementById('is-variation-select');
+  
+  // Quality Gate Elements
+  const qualityGateSelect = document.getElementById('is-quality-gate-select');
+  const maxCostWrapper = document.getElementById('is-max-cost-wrapper');
+  const maxCostDisplay = document.getElementById('is-max-cost');
+  
+  // Quality Gate Configuration
+  const QUALITY_GATE_CONFIG = {
+    none:   { retries: 0 },
+    low:    { retries: 1 },
+    medium: { retries: 2 },
+    high:   { retries: 3 }
+  };
+  
+  // Geschätzte Kosten für GPT-4o Vision (Input Image + Prompt + Output Token)
+  const ESTIMATED_VISION_COST = 0.01;
 
   // Style Presets Data - Simplified version
   const stylePresets = {
@@ -1242,9 +1258,31 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       if (typeof finalCost === 'number') {
-        costDisplay.textContent = `$${finalCost.toFixed(4)}`;
+        // 1. Basis-Anzeige aktualisieren
+        const basePrice = finalCost.toFixed(4);
+        costDisplay.textContent = `$${basePrice}`;
+        
+        // 2. Quality Gate Berechnung
+        const gateLevel = qualityGateSelect ? qualityGateSelect.value : 'none';
+
+        if (gateLevel === 'none' || finalCost === 0) {
+            if (maxCostWrapper) maxCostWrapper.style.display = 'none';
+        } else {
+            if (maxCostWrapper) maxCostWrapper.style.display = 'flex';
+            
+            const config = QUALITY_GATE_CONFIG[gateLevel];
+            const totalRuns = 1 + config.retries;
+            
+            // Formel: (Bildpreis + Vision-Check) * Anzahl der Läufe
+            const maxRisk = (finalCost + ESTIMATED_VISION_COST) * totalRuns;
+            
+            if (maxCostDisplay) {
+                maxCostDisplay.textContent = `$${maxRisk.toFixed(4)}`;
+            }
+        }
       } else {
         costDisplay.textContent = 'N/A';
+        if (maxCostWrapper) maxCostWrapper.style.display = 'none';
       }
 
     } catch (e) {
@@ -1254,6 +1292,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function generateImage() {
+    // UI Reset: Grüne Box ausblenden, Blaue Box (Risk) theoretisch wieder möglich
+    const actualResultWrapper = document.getElementById('is-actual-result-wrapper');
+    const maxCostWrapper = document.getElementById('is-max-cost-wrapper');
+    
+    if (actualResultWrapper) actualResultWrapper.style.display = 'none';
+    if (maxCostWrapper && document.getElementById('is-quality-gate-select').value !== 'none') {
+        maxCostWrapper.style.display = 'flex'; // Blaues Risiko wieder zeigen während Generierung
+    }
+    
     previewContainer.innerHTML = '<div class="loader"></div>';
     generateBtn.disabled = true;
     generateBtn.textContent = 'Generiere...';
@@ -1287,6 +1334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         provider: providerSelect.value,
         model: modelSelect.value, 
         parameters: {},
+        quality_gate_level: qualityGateSelect ? qualityGateSelect.value : 'none',
         // Include context only if refine mode is active and we have previous IDs and not in combine mode
         previous_response_id: (refineActive && !combineModeActive) ? lastContextIds.response_id : null,
         previous_image_id: (refineActive && !combineModeActive) ? lastContextIds.image_id : null,
@@ -1376,6 +1424,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const result = await response.json();
+        console.log("Server Result:", result); // Debugging
+        
+        // --- UPDATE KOSTENANZEIGE ---
+        if (result.quality_gate_stats && result.quality_gate_stats.was_active) {
+            console.log("Stats received:", result.quality_gate_stats);
+            
+            const stats = result.quality_gate_stats;
+            const actualWrapper = document.getElementById('is-actual-result-wrapper');
+            const maxWrapper = document.getElementById('is-max-cost-wrapper');
+
+            if (actualWrapper) {
+                // 1. Daten füllen
+                const costEl = document.getElementById('is-actual-cost');
+                const attemptsEl = document.getElementById('is-actual-attempts');
+                const scoreEl = document.getElementById('is-actual-score');
+
+                if (costEl) costEl.textContent = `$${stats.total_cost.toFixed(4)}`;
+                if (attemptsEl) attemptsEl.textContent = `${stats.attempts}`;
+                if (scoreEl) {
+                    scoreEl.textContent = `${stats.final_score}%`;
+                    scoreEl.style.color = stats.final_score >= 80 ? '#4caf50' : (stats.final_score >= 60 ? '#ffc107' : '#f44336');
+                }
+
+                // 2. Sichtbarkeit umschalten (Toggle)
+                if (maxWrapper) maxWrapper.style.display = 'none'; // Blau WEG
+                actualWrapper.style.display = 'flex';              // Grün DA
+            }
+        }
+        // -----------------------------
+        
         const imageUrl = `http://localhost:8001${result.image_url}`;
         currentImageFullUrl = imageUrl; // Speichere die volle URL
         
@@ -1558,8 +1636,13 @@ document.addEventListener('DOMContentLoaded', () => {
     promptInput.value = currentPrompt;
   }
 
-  // Register listener
+  // Register listeners
   providerSelect.addEventListener('change', updateCapabilityUI);
+  
+  // Quality Gate Change Listener
+  if (qualityGateSelect) {
+    qualityGateSelect.addEventListener('change', updateCost);
+  }
   
   // Also run once on startup
   updateCapabilityUI();

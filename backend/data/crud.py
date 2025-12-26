@@ -365,16 +365,27 @@ def add_file_to_project(
 
 def create_generated_image(db: Session, image_data: schemas.GeneratedImageCreate, image_url: str) -> database.GeneratedImage:
     """Erstellt einen neuen Eintrag für ein generiertes oder hochgeladenes Bild."""
+    # Parameter sicher extrahieren
+    params_to_save = {}
+    if image_data.parameters:
+        if isinstance(image_data.parameters, dict):
+            params_to_save = image_data.parameters
+        elif hasattr(image_data.parameters, "model_dump"):
+            params_to_save = image_data.parameters.model_dump()
+        elif hasattr(image_data.parameters, "dict"):
+            params_to_save = image_data.parameters.dict()
+
     db_image = database.GeneratedImage(
         prompt=image_data.prompt,
         style_preset=image_data.style_preset,
         provider=image_data.provider,
         model=image_data.model,
-        parameters=image_data.parameters.model_dump(),
+        parameters=params_to_save,
         image_url=image_url,
         is_uploaded=False, # Standard für Generierung
         previous_response_id=image_data.previous_response_id,
-        previous_image_id=image_data.previous_image_id
+        previous_image_id=image_data.previous_image_id,
+        quality_gate_stats=image_data.quality_gate_stats
     )
     db.add(db_image)
     db.commit()

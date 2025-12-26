@@ -506,10 +506,58 @@
                 <label for="is-resolution-select">Auflösung</label>
                 <select id="is-resolution-select"></select>
             </div>
-            <div class="control-group cost-display">
-                <span>Geschätzte Kosten / Bild:</span>
-                <strong id="is-estimated-cost">$N/A</strong>
+            
+            <!-- Quality Gate Control -->
+            <div class="control-group">
+              <label for="is-quality-gate-select" style="display: flex; align-items: center; gap: 5px;">
+                ✨ Quality Gate (Auto-Refine)
+                <span title="Automatische Qualitätsprüfung durch GPT-4o Vision. Generiert bei Bedarf neu." style="cursor: help; font-size: 0.8em;">ℹ️</span>
+              </label>
+              <select id="is-quality-gate-select">
+                <option value="none" selected>Aus (Standard)</option>
+                <option value="low">Low (Max. 1 Retry)</option>
+                <option value="medium">Medium (Max. 2 Retries)</option>
+                <option value="high">High (Max. 3 Retries)</option>
+              </select>
             </div>
+
+            <!-- Cost Display Update -->
+            <div class="control-group cost-display">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Basis-Kosten / Bild:</span>
+                    <strong id="is-estimated-cost" style="color: var(--text-color);">$N/A</strong>
+                </div>
+                
+                <!-- Initial ausgeblendet, wird per JS aktiviert -->
+                <div id="is-max-cost-wrapper" style="display: none; flex-direction: column; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: #aaa;">
+                        <span>Vision Check (geschätzt):</span>
+                        <span>+ $0.0100 / Lauf</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; color: var(--accent-color);">
+                        <span style="font-weight: bold;">Max. Kosten-Risiko:</span>
+                        <strong id="is-max-cost">$0.0000</strong>
+                    </div>
+                    <span style="font-size: 0.7em; color: #666; text-align: right; margin-top: 2px;">(Nur im Worst-Case bei allen Retries)</span>
+                </div>
+                
+                <!-- Actual Result Wrapper (initially hidden) -->
+                <div id="is-actual-result-wrapper" style="display: none; flex-direction: column; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0, 255, 0, 0.3);">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: #8f8;">
+                        <span>✨ Qualität erreicht:</span>
+                        <strong id="is-actual-score">--</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #ccc;">
+                        <span>Durchläufe:</span>
+                        <span id="is-actual-attempts">--</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; color: #8f8;">
+                        <span style="font-weight: bold;">Tatsächliche Kosten:</span>
+                        <strong id="is-actual-cost">--</strong>
+                    </div>
+                </div>
+            </div>
+            
             <button id="is-generate-btn" class="primary-button">Generieren</button>
           </div>
           <!-- Rechte Spalte: Anzeige -->

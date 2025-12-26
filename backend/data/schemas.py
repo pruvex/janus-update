@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 
 from pydantic import (
     BaseModel,
@@ -516,46 +516,27 @@ class GeneratedImageBase(BaseModel):
     image_url: str
     is_uploaded: bool = False
 
-class GeneratedImageCreate(BaseModel):  
+class GeneratedImageCreate(BaseModel):
     prompt: str
     provider: str
     model: str
-    parameters: ImageParameters
-    style_preset: Optional[Dict[str, str]] = None
+    parameters: Optional[Dict[str, Any]] = None
+    reference_image_url: Optional[str] = None
+    reference_image_urls: Optional[List[str]] = []
     previous_response_id: Optional[str] = None
     previous_image_id: Optional[str] = None
-    
-    # Legacy field (for single images / Edit Mode)
-    reference_image_url: Optional[str] = Field(
-        None,
-        description="URL of the reference image to use for editing/variation. "
-                   "The image must be already uploaded to the server."
-    )
-    
-    # NEW: List for Combine Mode
-    reference_image_urls: Optional[List[str]] = Field(
-        default=[],
-        description="List of image URLs to combine/merge."
-    )
-    mask_image_data: Optional[str] = Field(
-        None,
-        description="Base64 encoded PNG data of the mask. Transparent pixels = keep, Opaque pixels = edit."
-    )
-    use_dalle2_inpainting: Optional[bool] = Field(
-        False,
-        description="If true, use DALL-E 2 for pixel-perfect inpainting."
-    )
-    history: Optional[GeminiHistory] = Field(
-        None,
-        description="Previous prompt and image for Gemini refinement."
-    )
+    mask_image_data: Optional[str] = None
+    style_preset: Optional[str] = None
+    variation_preset: Optional[str] = None
+    quality_gate_level: Optional[str] = "none"
+    quality_gate_stats: Optional[Dict[str, Any]] = None
 
 class GeneratedImage(GeneratedImageBase):
     id: int
     created_at: datetime
-    # Fields for multi-turn image generation
     previous_response_id: Optional[str] = None
     previous_image_id: Optional[str] = None
+    quality_gate_stats: Optional[Dict[str, Any]] = None
 
     class Config:
         from_attributes = True
