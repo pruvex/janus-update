@@ -189,7 +189,7 @@ class OpenAIImageGeneration:
 
 
         target_image_model = model
-        orchestrator_model = "gpt-5.1"  # UPGRADE: Uses the newer, more intelligent model as director
+        orchestrator_model = "gpt-5.2"  # UPGRADE: Uses the newer, more intelligent model as director
         
         prev_res_id = kwargs.get("previous_response_id")
         prev_img_id = kwargs.get("previous_image_id")

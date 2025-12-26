@@ -397,19 +397,32 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCost();
   });
 
-  // Toggle between refine and edit modes (mutually exclusive)
-  document.getElementById('is-refine-mode').addEventListener('change', (e) => {
-    if (e.target.checked) {
-      // If refine mode is checked, uncheck edit mode
-      document.getElementById('is-edit-mode').checked = false;
-    }
-  });
+  // --- NEU: Zentralisierte Funktion für exklusive Modi ---
+  const exclusiveModeCheckboxes = ['is-refine-mode', 'is-edit-mode', 'is-mask-mode', 'is-combine-mode'];
 
-  document.getElementById('is-edit-mode').addEventListener('change', (e) => {
-    if (e.target.checked) {
-      // If edit mode is checked, uncheck refine mode
-      document.getElementById('is-refine-mode').checked = false;
+  function updateExclusiveModes(activeModeId) {
+    exclusiveModeCheckboxes.forEach(id => {
+      if (id !== activeModeId) {
+        document.getElementById(id).checked = false;
+      }
+    });
+    // Manuelle Anpassungen nach der Auswahl
+    if(activeModeId === 'is-combine-mode') {
+         slotsWrapper.style.display = 'block';
+         promptInput.placeholder = "Beschreibe, wie die Bilder kombiniert werden sollen...";
+    } else {
+        slotsWrapper.style.display = 'none';
+        promptInput.placeholder = "Beschreibe dein Bild...";
     }
+  }
+
+  exclusiveModeCheckboxes.forEach(id => {
+    const checkbox = document.getElementById(id);
+    checkbox.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        updateExclusiveModes(id);
+      }
+    });
   });
   
     // dynamicParamsContainer.addEventListener('change', (event) => {
