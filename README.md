@@ -1,123 +1,267 @@
-Multi-Turn-Bildbearbeitung
-Bilder weiterhin per Prompt generieren und bearbeiten Wir empfehlen, Bilder in einem Chat oder einer Multi-Turn Conversation zu optimieren. Im folgenden Beispiel wird ein Prompt zum Generieren einer Infografik zur Fotosynthese gezeigt.
+für gemini modelle:
+Prompts zum Generieren von Bildern
+Die folgenden Strategien helfen Ihnen dabei, effektive Prompts zu erstellen, mit denen Sie genau die Bilder generieren können, die Sie suchen.
 
+1. Fotorealistische Szenen
+Verwenden Sie fotografische Begriffe, um realistische Bilder zu erstellen. Geben Sie Kamerawinkel, Objektivtypen, Beleuchtung und feine Details an, um das Modell in Richtung eines fotorealistischen Ergebnisses zu lenken.
+
+Vorlage
+Prompt
 Python
+Java
 JavaScript
 Ok
-Java
 REST
 
 from google import genai
-from google.genai import types
+from google.genai import types    
 
 client = genai.Client()
 
-chat = client.chats.create(
-    model="gemini-3-pro-image-preview",
-    config=types.GenerateContentConfig(
-        response_modalities=['TEXT', 'IMAGE'],
-        tools=[{"google_search": {}}]
-    )
+response = client.models.generate_content(
+    model="gemini-2.5-flash-image",
+    contents="A photorealistic close-up portrait of an elderly Japanese ceramicist with deep, sun-etched wrinkles and a warm, knowing smile. He is carefully inspecting a freshly glazed tea bowl. The setting is his rustic, sun-drenched workshop with pottery wheels and shelves of clay pots in the background. The scene is illuminated by soft, golden hour light streaming through a window, highlighting the fine texture of the clay and the fabric of his apron. Captured with an 85mm portrait lens, resulting in a soft, blurred background (bokeh). The overall mood is serene and masterful.",
 )
 
-message = "Create a vibrant infographic that explains photosynthesis as if it were a recipe for a plant's favorite food. Show the \"ingredients\" (sunlight, water, CO2) and the \"finished dish\" (sugar/energy). The style should be like a page from a colorful kids' cookbook, suitable for a 4th grader."
-
-response = chat.send_message(message)
-
 for part in response.parts:
     if part.text is not None:
         print(part.text)
-    elif image:= part.as_image():
-        image.save("photosynthesis.png")
-KI-generierte Infografik zur Fotosynthese
-KI-generierte Infografik zur Fotosynthese
-Sie können dann denselben Chat verwenden, um die Sprache der Grafik in Spanisch zu ändern.
+    elif part.inline_data is not None:
+        image = part.as_image()
+        image.save("photorealistic_example.png")
+		
+		A photorealistic close-up portrait of an elderly Japanese ceramicist with
+deep, sun-etched wrinkles and a warm, knowing smile. He is carefully
+inspecting a freshly glazed tea bowl. The setting is his rustic,
+sun-drenched workshop. The scene is illuminated by soft, golden hour light
+streaming through a window, highlighting the fine texture of the clay.
+Captured with an 85mm portrait lens, resulting in a soft, blurred background
+(bokeh). The overall mood is serene and masterful. Vertical portrait
+orientation.
 
-Python
-JavaScript
-Ok
-Java
-REST
+A photorealistic [shot type] of [subject], [action or expression], set in
+[environment]. The scene is illuminated by [lighting description], creating
+a [mood] atmosphere. Captured with a [camera/lens details], emphasizing
+[key textures and details]. The image should be in a [aspect ratio] format.
 
-message = "Update this infographic to be in Spanish. Do not change any other elements of the image."
-aspect_ratio = "16:9" # "1:1","2:3","3:2","3:4","4:3","4:5","5:4","9:16","16:9","21:9"
-resolution = "2K" # "1K", "2K", "4K"
+für gpt modelle ist es leider nur sehr algemein:
+Prompting tools and techniques
+Prompt caching: Reduce latency by up to 80% and cost by up to 75%
+Prompt engineering: Learn strategies, techniques, and tools to construct prompts
+Create a prompt
+Log in and use the OpenAI dashboard to create, save, version, and share your prompts.
 
-response = chat.send_message(message,
-    config=types.GenerateContentConfig(
-        image_config=types.ImageConfig(
-            aspect_ratio=aspect_ratio,
-            image_size=resolution
-        ),
-    ))
+Start a prompt
 
-for part in response.parts:
-    if part.text is not None:
-        print(part.text)
-    elif image:= part.as_image():
-        image.save("photosynthesis_spanish.png")
-KI-generierte Infografik zur Fotosynthese auf Spanisch
-KI-generierte Infografik zur Fotosynthese auf Spanisch
+In the Playground, fill out the fields to create your desired prompt.
 
-Multi-Turn-Bildbearbeitung
-Bilder weiterhin per Prompt generieren und bearbeiten Wir empfehlen, Bilder in einem Chat oder einer Multi-Turn Conversation zu optimieren. Im folgenden Beispiel wird ein Prompt zum Generieren einer Infografik zur Fotosynthese gezeigt.
 
-Python
-JavaScript
-Ok
-Java
-REST
+Add prompt variables
 
-curl -s -X POST \
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent" \
-  -H "x-goog-api-key: $GEMINI_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "contents": [{
-      "role": "user",
-      "parts": [
-        {"text": "Create a vibrant infographic that explains photosynthesis as if it were a recipe for a plants favorite food. Show the \"ingredients\" (sunlight, water, CO2) and the \"finished dish\" (sugar/energy). The style should be like a page from a colorful kids cookbook, suitable for a 4th grader."}
-      ]
-    }],
-    "generationConfig": {
-      "responseModalities": ["TEXT", "IMAGE"]
+Variables let you inject dynamic values without changing your prompt. Use them in any message role using {{variable}}. For example, when creating a local weather prompt, you might add a city variable with the value San Francisco.
+
+
+Use the prompt in your Responses API call
+
+Find your prompt ID and version number in the URL, and pass it as prompt_id:
+
+curl -s -X POST "https://api.openai.com/v1/responses" \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer $OPENAI_API_KEY" \
+-d '{
+    "prompt": {
+    "prompt_id": "pmpt_123",
+    "variables": {
+        "city": "San Francisco"
     }
-  }'
-KI-generierte Infografik zur Fotosynthese
-KI-generierte Infografik zur Fotosynthese
-Sie können dann denselben Chat verwenden, um die Sprache der Grafik in Spanisch zu ändern.
+    }
+}'
+Create a new prompt version
 
-Python
-JavaScript
-Ok
-Java
-REST
+Versions let you iterate on your prompts without overwriting existing details. You can use all versions in the API and evaluate their performance against each other. The prompt ID points to the latest published version unless you specify a version.
 
-curl -s -X POST \
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent" \
-  -H "x-goog-api-key: $GEMINI_API_KEY" \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "contents": [
-      {
-        "role": "user",
-        "parts": [{"text": "Create a vibrant infographic that explains photosynthesis..."}]
-      },
-      {
-        "role": "model",
-        "parts": [{"inline_data": {"mime_type": "image/png", "data": "<PREVIOUS_IMAGE_DATA>"}}]
-      },
-      {
-        "role": "user",
-        "parts": [{"text": "Update this infographic to be in Spanish. Do not change any other elements of the image."}]
-      }
+To create a new version, edit the prompt and click Update. You'll receive a new prompt ID to copy and use in your Responses API calls.
+
+With the OpenAI API, you can use a large language model to generate text from a prompt, as you might using ChatGPT. Models can generate almost any kind of text response—like code, mathematical equations, structured JSON data, or human-like prose.
+
+Here's a simple example using the Responses API.
+
+Generate text from a simple prompt
+import OpenAI from "openai";
+const client = new OpenAI();
+
+const response = await client.responses.create({
+    model: "gpt-5-nano",
+    input: "Write a one-sentence bedtime story about a unicorn."
+});
+
+console.log(response.output_text);
+An array of content generated by the model is in the output property of the response. In this simple example, we have just one output which looks like this:
+
+[
+    {
+        "id": "msg_67b73f697ba4819183a15cc17d011509",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+            {
+                "type": "output_text",
+                "text": "Under the soft glow of the moon, Luna the unicorn danced through fields of twinkling stardust, leaving trails of dreams for every child asleep.",
+                "annotations": []
+            }
+        ]
+    }
+]
+The output array often has more than one item in it! It can contain tool calls, data about reasoning tokens generated by reasoning models, and other items. It is not safe to assume that the model's text output is present at output[0].content[0].text.
+
+Some of our official SDKs include an output_text property on model responses for convenience, which aggregates all text outputs from the model into a single string. This may be useful as a shortcut to access text output from the model.
+
+In addition to plain text, you can also have the model return structured data in JSON format - this feature is called 
+Structured Outputs
+.
+
+Choosing a model
+A key choice to make when generating content through the API is which model you want to use - the model parameter of the code samples above. You can find a full listing of available models here. Here are a few factors to consider when choosing a model for text generation.
+
+Reasoning models generate an internal chain of thought to analyze the input prompt, and excel at understanding complex tasks and multi-step planning. They are also generally slower and more expensive to use than GPT models.
+GPT models are fast, cost-efficient, and highly intelligent, but benefit from more explicit instructions around how to accomplish tasks.
+Large and small (mini or nano) models offer trade-offs for speed, cost, and intelligence. Large models are more effective at understanding prompts and solving problems across domains, while small models are generally faster and cheaper to use.
+When in doubt, 
+gpt-4.1
+ offers a solid combination of intelligence, speed, and cost effectiveness.
+
+Prompt engineering
+Prompt engineering is the process of writing effective instructions for a model, such that it consistently generates content that meets your requirements.
+
+Because the content generated from a model is non-deterministic, prompting to get your desired output is a mix of art and science. However, you can apply techniques and best practices to get good results consistently.
+
+Some prompt engineering techniques work with every model, like using message roles. But different model types (like reasoning versus GPT models) might need to be prompted differently to produce the best results. Even different snapshots of models within the same family could produce different results. So as you build more complex applications, we strongly recommend:
+
+Pinning your production applications to specific model snapshots (like gpt-4.1-2025-04-14 for example) to ensure consistent behavior
+Building evals that measure the behavior of your prompts so you can monitor prompt performance as you iterate, or when you change and upgrade model versions
+Now, let's examine some tools and techniques available to you to construct prompts.
+
+Message roles and instruction following
+You can provide instructions to the model with differing levels of authority using the instructions API parameter or message roles.
+
+The instructions parameter gives the model high-level instructions on how it should behave while generating a response, including tone, goals, and examples of correct responses. Any instructions provided this way will take priority over a prompt in the input parameter.
+
+Generate text with instructions
+import OpenAI from "openai";
+const client = new OpenAI();
+
+const response = await client.responses.create({
+    model: "gpt-5",
+    reasoning: { effort: "low" },
+    instructions: "Talk like a pirate.",
+    input: "Are semicolons optional in JavaScript?",
+});
+
+console.log(response.output_text);
+The example above is roughly equivalent to using the following input messages in the input array:
+
+Generate text with messages using different roles
+import OpenAI from "openai";
+const client = new OpenAI();
+
+const response = await client.responses.create({
+    model: "gpt-5",
+    reasoning: { effort: "low" },
+    input: [
+        {
+            role: "developer",
+            content: "Talk like a pirate."
+        },
+        {
+            role: "user",
+            content: "Are semicolons optional in JavaScript?",
+        },
     ],
-    "tools": [{"google_search": {}}],
-    "generationConfig": {
-      "responseModalities": ["TEXT", "IMAGE"],
-      "imageConfig": {
-        "aspectRatio": "16:9",
-        "imageSize": "2K"
-      }
+});
+
+console.log(response.output_text);
+Note that the instructions parameter only applies to the current response generation request. If you are managing conversation state with the previous_response_id parameter, the instructions used on previous turns will not be present in the context.
+
+The OpenAI model spec describes how our models give different levels of priority to messages with different roles.
+
+developer	user	assistant
+developer messages are instructions provided by the application developer, prioritized ahead of user messages.	user messages are instructions provided by an end user, prioritized behind developer messages.	Messages generated by the model have the assistant role.
+A multi-turn conversation may consist of several messages of these types, along with other content types provided by both you and the model. Learn more about managing conversation state here.
+
+You could think about developer and user messages like a function and its arguments in a programming language.
+
+developer messages provide the system's rules and business logic, like a function definition.
+user messages provide inputs and configuration to which the developer message instructions are applied, like arguments to a function.
+Reusable prompts
+In the OpenAI dashboard, you can develop reusable prompts that you can use in API requests, rather than specifying the content of prompts in code. This way, you can more easily build and evaluate your prompts, and deploy improved versions of your prompts without changing your integration code.
+
+Here's how it works:
+
+Create a reusable prompt in the dashboard with placeholders like {{customer_name}}.
+Use the prompt in your API request with the prompt parameter. The prompt parameter object has three properties you can configure:
+id — Unique identifier of your prompt, found in the dashboard
+version — A specific version of your prompt (defaults to the "current" version as specified in the dashboard)
+variables — A map of values to substitute in for variables in your prompt. The substitution values can either be strings, or other Response input message types like input_image or input_file. See the full API reference.
+String variables
+Variables with file input
+Generate text with a prompt template
+import OpenAI from "openai";
+const client = new OpenAI();
+
+const response = await client.responses.create({
+    model: "gpt-5",
+    prompt: {
+        id: "pmpt_abc123",
+        version: "2",
+        variables: {
+            customer_name: "Jane Doe",
+            product: "40oz juice box"
+        }
     }
-  }'
+});
+
+console.log(response.output_text);
+Message formatting with Markdown and XML
+When writing developer and user messages, you can help the model understand logical boundaries of your prompt and context data using a combination of Markdown formatting and XML tags.
+
+Markdown headers and lists can be helpful to mark distinct sections of a prompt, and to communicate hierarchy to the model. They can also potentially make your prompts more readable during development. XML tags can help delineate where one piece of content (like a supporting document used for reference) begins and ends. XML attributes can also be used to define metadata about content in the prompt that can be referenced by your instructions.
+
+In general, a developer message will contain the following sections, usually in this order (though the exact optimal content and order may vary by which model you are using):
+
+Identity: Describe the purpose, communication style, and high-level goals of the assistant.
+Instructions: Provide guidance to the model on how to generate the response you want. What rules should it follow? What should the model do, and what should the model never do? This section could contain many subsections as relevant for your use case, like how the model should call custom functions.
+Examples: Provide examples of possible inputs, along with the desired output from the model.
+Context: Give the model any additional information it might need to generate a response, like private/proprietary data outside its training data, or any other data you know will be particularly relevant. This content is usually best positioned near the end of your prompt, as you may include different context for different generation requests.
+Below is an example of using Markdown and XML tags to construct a developer message with distinct sections and supporting examples.
+
+Example prompt
+API request
+A developer message for code generation
+# Identity
+
+You are coding assistant that helps enforce the use of snake case
+variables in JavaScript code, and writing code that will run in
+Internet Explorer version 6.
+
+# Instructions
+
+* When defining variables, use snake case names (e.g. my_variable)
+  instead of camel case names (e.g. myVariable).
+* To support old browsers, declare variables using the older
+  "var" keyword.
+* Do not give responses with Markdown formatting, just return
+  the code as requested.
+
+# Examples
+
+<user_query>
+How do I declare a string variable for a first name?
+</user_query>
+
+<assistant_response>
+var first_name = "Anna";
+</assistant_response>
+Save on cost and latency with prompt caching
+When constructing a message, you should try and keep content that you expect to use over and over in your API requests at the beginning of your prompt, and among the first API parameters you pass in the JSON request body to Chat Completions or Responses. This enables you to maximize cost and latency savings from prompt caching.
+
+keine ahnung ob du damit was anfangen kannst, recherchier zusätzlich genau im internet, unsere sttile preset prompts müssen absoluter goldstandard sein, auf dem niveau von den renomirten top image generatorenseiten.

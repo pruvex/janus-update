@@ -1334,6 +1334,14 @@ document.addEventListener('DOMContentLoaded', () => {
         })()
     };
     
+    // --- Stil-Preset hinzufügen, falls aktiviert ---
+    if (presetsModeCheckbox.checked) {
+        payload.style_preset = {
+            style: styleSelect.value,
+            variation: variationSelect.value
+        };
+    }
+    
     // Debug logging for context
     console.log("Sending payload:", {
         refineActive,

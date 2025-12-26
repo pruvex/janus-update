@@ -433,7 +433,7 @@ class OpenAIImageGeneration:
                 # FALL 4: Text-to-Image (Neu)
                 else:
                     logger.info("Mode: Text-to-Image (New)")
-                    input_data = [{"role": "user", "content": [{"type": "input_text", "text": f"Generate an image based on this description: {prompt}"}]}]
+                    input_data = [{"role": "user", "content": [{"type": "input_text", "text": prompt}]}]
                 
                 # Set the input data in the request parameters
                 request_params["input"] = input_data

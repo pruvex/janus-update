@@ -16,6 +16,7 @@ from backend.services import image_manager # NEU: Für Bildmanagement
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException
 from backend.data.database import GeneratedImage
+from backend.data.presets import get_preset
 
 logger = logging.getLogger("janus_backend")
 router = APIRouter()
@@ -110,6 +111,24 @@ async def generate_image(
                 raise HTTPException(status_code=500, detail=f"Ladefehler: {str(e)}")
     # ---------------------------------------
 
+    # --- STIL-PRESETS ANWENDEN (NEUE LOGIK) ---
+    if isinstance(image_request.style_preset, dict) and 'style' in image_request.style_preset and 'variation' in image_request.style_preset:
+        style = image_request.style_preset['style']
+        variation = image_request.style_preset['variation']
+        logger.info(f"Stil-Preset '{style} / {variation}' wird angewendet.")
+        
+        preset_prompt = get_preset(
+            provider=image_request.provider,
+            style=style,
+            variation=variation,
+            prompt=image_request.prompt
+        )
+        
+        if preset_prompt:
+            # Der Preset-Prompt ersetzt den User-Prompt, da er ihn bereits enthält
+            image_request.prompt = preset_prompt
+        else:
+            logger.warning(f"Stil-Preset '{style} / {variation}' für Provider '{image_request.provider}' nicht gefunden.")
 
     try:
         # Parameter extrahieren
