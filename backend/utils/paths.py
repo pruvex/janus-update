@@ -1,35 +1,34 @@
-import os
 import sys
-
-from platformdirs import user_data_dir
-
-APP_NAME = "Janus Projekt"
-APP_AUTHOR = "JanusDev"
-
+import os
 
 def get_app_data_dir():
     """
-    Gibt das benutzerspezifische Anwendungsdatenverzeichnis zurück.
-    Erstellt das Verzeichnis, wenn es nicht existiert.
+    Gibt den Pfad zum schreibbaren Benutzer-Ordner zurück.
+    Windows: %APPDATA%\Janus Projekt
     """
-    app_data_dir = user_data_dir(APP_NAME, APP_AUTHOR)
-    os.makedirs(app_data_dir, exist_ok=True)
-    return app_data_dir
-
+    app_name = "Janus Projekt"
+    if sys.platform == "win32":
+        base_path = os.getenv("APPDATA")
+    else:
+        base_path = os.path.expanduser("~")
+        app_name = ".janus_project"
+    
+    path = os.path.join(base_path, app_name)
+    os.makedirs(path, exist_ok=True)
+    return path
 
 def resource_path(relative_path):
     """
-    Ermittelt den absoluten Pfad zu einer Ressource, funktioniert für Entwicklung und PyInstaller.
+    Findet statische Ressourcen (Code, Templates, Defaults) im Installationsordner.
     """
-    try:
-        # PyInstaller erstellt einen temporären Ordner und speichert den Pfad in _MEIPASS
-        base_path = sys._MEIPASS
-    except AttributeError:
-        # Im Entwicklungsmodus ist der base_path das Root-Verzeichnis des Backends
-        base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-
+    if getattr(sys, 'frozen', False):
+        # PyInstaller Mode
+        base_path = os.path.dirname(sys.executable)
+    else:
+        # Dev Mode
+        base_path = os.path.abspath(".")
+    
     return os.path.join(base_path, relative_path)
-
 
 def get_model_cache_dir():
     """
@@ -39,7 +38,6 @@ def get_model_cache_dir():
     cache_dir = os.path.join(get_app_data_dir(), "model_cache")
     os.makedirs(cache_dir, exist_ok=True)
     return cache_dir
-
 
 def get_desktop_path() -> str:
     """Gibt den plattformunabhängigen Pfad zum Desktop des Benutzers zurück."""

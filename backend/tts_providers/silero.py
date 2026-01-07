@@ -1,3 +1,4 @@
+import hashlib
 import io
 import logging
 import os
@@ -13,13 +14,22 @@ logger = logging.getLogger("janus_backend")
 
 # Model configurations
 SILERO_MODELS = {
-    "en": {"name": "en_v3", "url": "https://models.silero.ai/models/tts/en/v3_en.pt"},
-    "de": {"name": "de_v3", "url": "https://models.silero.ai/models/tts/de/v3_de.pt"},
+    "en": {"name": "en_v3", "url": "https://models.silero.ai/models/tts/en/v3_en.pt", "sha256": "02b71034d9f13bc4001195017bac9db1c6bb6115e03fea52983e8abcff13b665"},
+    "de": {"name": "de_v3", "url": "https://models.silero.ai/models/tts/de/v3_de.pt", "sha256": "2e22f38619e1d1da96d963bda5fab6d53843e8837438cb5a45dc376882b0354b"},
 }
 
 CACHE_DIR = os.path.join(get_app_data_dir(), "tts_cache")
 os.makedirs(CACHE_DIR, exist_ok=True)
 
+
+def calculate_sha256(file_path: str) -> str:
+    """Calculates the SHA256 hash of a file."""
+    sha256_hash = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        # Read and update hash string in blocks of 4K
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
 
 class SileroTTS(TTSProviderBase):
     """Silero TTS Provider - Local PyTorch-based TTS."""
@@ -74,6 +84,21 @@ class SileroTTS(TTSProviderBase):
             except Exception as e:
                 logger.error(f"Failed to download Silero model: {e}")
                 raise
+
+        # --- NEU: Integritätsprüfung des heruntergeladenen Modells ---
+        expected_sha256 = info.get("sha256")
+        if expected_sha256:
+            actual_sha256 = calculate_sha256(local_path)
+            if actual_sha256 != expected_sha256:
+                error_msg = f"Integritätsprüfung für Silero-Modell {info['name']} fehlgeschlagen! Erwartet: {expected_sha256}, Gefunden: {actual_sha256}"
+                logger.error(error_msg)
+                # Lösche die potenziell bösartige Datei
+                os.remove(local_path)
+                raise ValueError(error_msg)
+            else:
+                logger.info(f"Integritätsprüfung für Silero-Modell {info['name']} erfolgreich.")
+        else:
+            logger.warning(f"Kein SHA256-Hash für Silero-Modell {info['name']} in Konfiguration gefunden. Laden ohne Integritätsprüfung.")
 
         # Load model
         try:

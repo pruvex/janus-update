@@ -36,7 +36,7 @@ tool_directive = """
    - **SPEZIFISCHES VERBOT:** Nutze NIEMALS `set_user_property`, `save_user_preference`, `google_search` oder `functions.xxx`. Diese existieren nicht und führen zu Fehlern.
 
 2. **GEDÄCHTNIS & SPEICHERUNG:**
-   - Um etwas über den Benutzer zu speichern, nutze AUSSCHLIESSLICH: `save_core_memory_fact`.
+   - Das Speichern von Fakten über dich geschieht vollautomatisch im Hintergrund durch eine separate Engine. Du musst nichts weiter tun und hast kein Werkzeug dafür.
    - Parameter-Injektion: Nutze Wissen aus dem Memory, um Anfragen zu präzisieren (z.B. User fragt "News", du suchst "Nintendo Switch News" basierend auf Memory).
 
 3. **INFORMATIONSSUCHE & EMPFEHLUNGEN (ZWINGEND):**

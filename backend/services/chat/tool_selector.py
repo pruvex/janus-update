@@ -4,8 +4,17 @@ from backend.tool_registry import get_all_tool_definitions
 class ToolSelector:
     """
     Zuständig für die Auswahl relevanter Werkzeuge basierend auf dem User-Prompt.
+    OPTIMIERTE VERSION mit Candidate Retrieval.
     """
 
+    # Liste gefährlicher Tools, die eine Bestätigung erfordern
+    RISKY_TOOLS = {
+        "delete_file_tool",
+        "delete_directory",
+        "delete_calendar_event",
+        "send_email",
+    }
+    
     # Erweiterte Keyword-Liste für bessere Trefferquote
     TOOL_CATEGORIES = {
         # E-Mail / Kommunikation
@@ -71,6 +80,14 @@ class ToolSelector:
         "sagen": ["save_mp3_tool"],
     }
 
+    # Kritische Aktionen, die eine Bestätigung erfordern
+    RISKY_TOOLS = {
+        "delete_file_tool",
+        "delete_directory",
+        "delete_calendar_event",
+        "send_email",
+    }
+    
     # Basis-Tools, die immer verfügbar sein sollten
     CORE_TOOLS = {
         "perform_websearch",
@@ -82,18 +99,57 @@ class ToolSelector:
     }
 
     @classmethod
-    def select_tools(cls, user_prompt: str, email_context: List[Any] = None) -> List[Dict]:
+    def retrieve_candidates(cls, user_prompt: str) -> List[Dict[str, Any]]:
+        """
+        Identifiziert eine Liste von wahrscheinlichen Tool-Namen mit Konfidenzwerten.
+        
+        Returns:
+            List[Dict]: Liste von Dictionaries mit 'tool_name' und 'confidence' für jedes Tool
+        """
         prompt_lower = user_prompt.lower()
-        selected_names: Set[str] = set(cls.CORE_TOOLS)
-
-        # 1. Kategorie-Matching
+        candidates = []
+        
+        # 1. Core-Tools mit hoher Konfidenz (0.95) hinzufügen
+        for tool_name in cls.CORE_TOOLS:
+            candidates.append({
+                "tool_name": tool_name,
+                "confidence": 0.95
+            })
+        
+        # 2. Keyword-basierte Kandidaten mit mittlerer Konfidenz (0.65) hinzufügen
         for keyword, tools in cls.TOOL_CATEGORIES.items():
-            # Einfaches Substring-Matching
             if keyword in prompt_lower:
-                selected_names.update(tools)
+                for tool_name in tools:
+                    # Nur hinzufügen, wenn nicht bereits in der Liste (vermeide Duplikate)
+                    if not any(c["tool_name"] == tool_name for c in candidates):
+                        candidates.append({
+                            "tool_name": tool_name,
+                            "confidence": 0.65
+                        })
+        
+        return candidates
 
-        # 2. Kontext-Guardrails (E-Mail Kontext)
+    @classmethod
+    def is_risky(cls, tool_name: str) -> bool:
+        """Prüft, ob ein Tool als risikoreich eingestuft ist und eine Bestätigung erfordert.
+        
+        Args:
+            tool_name: Name des zu prüfenden Tools
+            
+        Returns:
+            bool: True, wenn das Tool risikoreich ist, sonst False
+        """
+        return tool_name in cls.RISKY_TOOLS
+
+    @classmethod
+    def select_tools(cls, user_prompt: str, email_context: List[Any] = None) -> List[Dict]:
+        """
+        Wählt die finalen Tool-Definitionen basierend auf den Kandidaten aus.
+        Behält die alte Signatur bei, nutzt aber intern die neue Logik.
+        """
+        # Kontext-Guardrails (E-Mail Kontext) hat Vorrang
         if email_context:
+            prompt_lower = user_prompt.lower()
             nav_keywords = ["lies", "öffne", "erste", "zweite", "nummer", "inhalt"]
             if any(kw in prompt_lower for kw in nav_keywords):
                 # Fokus auf E-Mail Interaktion
@@ -102,14 +158,22 @@ class ToolSelector:
                     if t["function"]["name"] in ["read_email", "perform_websearch"]
                 ]
 
-        # 3. Definitionen zurückgeben
+        # Schritt 1: Kandidaten finden
+        candidates = cls.retrieve_candidates(user_prompt)
+        
+        # Extrahiere die Namen aus den Dictionaries
+        # Wir nutzen ein Set für schnelleren Zugriff
+        candidate_names = {c["tool_name"] for c in candidates}
+
+        # Schritt 2: Definitionen aus dem Katalog filtern
         all_tools = get_all_tool_definitions()
         
-        # Extrahiere die passenden Tools
-        filtered = []
+        filtered_tools = []
         for tool in all_tools:
             name = tool.get("function", {}).get("name")
-            if name in selected_names:
-                filtered.append(tool)
+            if name in candidate_names:
+                filtered_tools.append(tool)
         
-        return filtered if filtered else all_tools
+        # Wenn keine Kandidaten gefunden wurden, bieten wir sicherheitshalber alle an.
+        # Dies können wir später durch einen LLM-Router-Call ersetzen.
+        return filtered_tools if filtered_tools else all_tools

@@ -38,7 +38,7 @@ async def initialize_project_knowledge(
     # Logik, um ein gutes, günstiges Modell für die Recherche auszuwählen
     research_model = active_model
     if active_provider == "openai":
-        research_model = "gpt-4o-mini"  # Wir überschreiben, um Kosten zu sparen
+        research_model = "gpt-5-nano"  # Wir überschreiben, um Kosten zu sparen
 
     try:
         # 1. LLM fragen, was zu tun ist
@@ -66,7 +66,7 @@ async def initialize_project_knowledge(
         
         for query in search_queries:
             # Websuche durchführen
-            search_result = await search_provider.search(api_key=api_key, query=query, model="gpt-4o-mini")
+            search_result = await search_provider.search(api_key=api_key, query=query, model="gpt-5-nano")
             search_result_text = search_result.get("text", "")
             
             # Extrahiere URLs aus dem Ergebnis

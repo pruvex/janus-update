@@ -37,7 +37,7 @@ async def test_openai_websearch_responses_api():
     """
     query = "Wetter in Berlin"
     api_key = "test_openai_key"
-    model = "gpt-4o-mini" # Aktuelles GPT Modell
+    model = "gpt-5-nano" # Aktuelles GPT Modell
     provider = "openai"
 
     mock_responses_create_response = MockResponsesCreateResponse(

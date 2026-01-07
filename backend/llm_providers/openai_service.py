@@ -20,10 +20,10 @@ def _calculate_and_log_cost(model_id, usage_data=None, custom_prompt=None):
     """
     usage, cost = calculate_cost(model_id, usage_data, custom_prompt)
     
-    # Visuelles Logging für das Terminal
-    input_tokens = usage.get('input_tokens', 0) if usage else 0
-    output_tokens = usage.get('output_tokens', 0) if usage else 0
-    total_cost = cost.get('total_cost', 0)
+    # FIX: Korrekte Dictionary-Keys für das Logging verwenden
+    input_tokens = usage.get('input_tokens', 0)
+    output_tokens = usage.get('output_tokens', 0)
+    total_cost = cost.get('total_cost', 0) if isinstance(cost, dict) else 0
     
     logger.info(
         f"\n--- USAGE TRACKING (OpenAI) ---\n"

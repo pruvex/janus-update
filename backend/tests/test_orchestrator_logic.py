@@ -32,7 +32,7 @@ def orchestrator_instance(mock_db_session):
         orchestrator = chat_orchestrator.ChatOrchestrator(
             db=mock_db_session,
             context_manager=MagicMock(),
-            model_catalog={"gpt-4o-mini": {}},
+            model_catalog={"gpt-5-nano": {}},  # Using internal model alias
             config_file_path="dummy",
             template_config_file_path="dummy",
             personalities_file_path="dummy",
@@ -96,7 +96,7 @@ async def test_fact_extraction_called_when_no_core_memory_tool_used(
         chat_id=1,
         content=[schemas.ContentPart(type="text", text="Ich komme aus Deutschland.")],
         provider="openai",
-        model="gpt-4o-mini",
+        model="gpt-5-nano",
     )
 
     # ACT

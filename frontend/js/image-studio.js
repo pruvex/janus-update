@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const previewContainer = document.getElementById('is-preview-container');
   const generatedGallery = document.getElementById('is-gallery-generated');
   const uploadedGallery = document.getElementById('is-gallery-uploaded');
-  const imageFilenameInput = document.getElementById('is-image-filename'); // NEU: Für Dateiname
+  const imageFilenameInput = document.getElementById('is-image-filename');
   
   // Inpainting Elements
   const maskCanvas = document.getElementById('is-mask-canvas');
@@ -22,11 +22,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const maskModeCheckbox = document.getElementById('is-mask-mode');
   const previewWrapper = document.getElementById('is-preview-wrapper');
   
+  // Edit Mode Elements
+  const editModeCheckbox = document.getElementById('is-edit-mode');
+  const applyPresetContainer = document.getElementById('apply-preset-to-edit-container');
+  const applyPresetCheckbox = document.getElementById('is-apply-preset-to-edit');
+  
+  // Refine Mode Elements
+  const applyPresetToRefineContainer = document.getElementById('apply-preset-to-refine-container');
+  const applyPresetToRefineCheckbox = document.getElementById('is-apply-preset-to-refine');
+  
   // Style Presets Elements
   const presetsModeCheckbox = document.getElementById('is-presets-mode');
   const presetsContainer = document.getElementById('is-presets-container');
   const styleSelect = document.getElementById('is-style-select');
   const variationSelect = document.getElementById('is-variation-select');
+  const stylePreviewContainer = document.getElementById('is-style-preview-container');
+  const stylePreviewImg = document.getElementById('current-style-image');
+  const styleImagePlaceholder = document.getElementById('style-image-placeholder');
   
   // Quality Gate Elements
   const qualityGateSelect = document.getElementById('is-quality-gate-select');
@@ -41,17 +53,253 @@ document.addEventListener('DOMContentLoaded', () => {
     high:   { retries: 3 }
   };
   
-  // Geschätzte Kosten für GPT-4o Vision (Input Image + Prompt + Output Token)
+  // Geschätzte Kosten für GPT-4o Vision
   const ESTIMATED_VISION_COST = 0.01;
 
-  // Style Presets Data - Simplified version
-  const stylePresets = {
-    "Fotorealistisch": [
-      "Fotorealismus 1", 
-      "Fotorealismus 2"
-    ]
-    // Hier können später weitere Stile wie "Comic", etc. hinzugefügt werden
-  };
+  // --- DIAGNOSE-VERSION: updateStylePreviewImage ---
+  function updateStylePreviewImage() {
+      console.log("--- DIAGNOSE: updateStylePreviewImage() WURDE AUFGERUFEN ---");
+
+      const stylePreviewImg = document.getElementById('current-style-image');
+      const placeholder = document.getElementById('style-image-placeholder');
+
+      if (!stylePreviewImg || !placeholder) {
+          console.error("DIAGNOSE-FEHLER: HTML-Element für Vorschau nicht gefunden!");
+          return;
+      }
+      if (!loadedPresetData) {
+          console.error("DIAGNOSE-FEHLER: Preset-Daten sind noch nicht geladen.");
+          return;
+      }
+
+      const provider = providerSelect.value;
+      const variation = variationSelect.value;
+
+      // Wir loggen die exakten Werte, die die Funktion sieht
+      console.log(`DIAGNOSE: Gelesener Provider-Wert -> "${provider}"`);
+      console.log(`DIAGNOSE: Gelesener Variation-Wert -> "${variation}"`);
+
+      if (!provider || !variation) {
+          console.error("DIAGNOSE-STOP: Einer der Werte ist leer. Ladevorgang wird abgebrochen.");
+          stylePreviewImg.style.display = 'none';
+          placeholder.style.display = 'flex';
+          placeholder.textContent = "Wähle ein Preset (Debug)";
+          return;
+      }
+
+      const cleanVar = variation.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+      const filename = `${cleanVar}_${provider}.png`;
+      const imageUrl = `http://localhost:8001/assets/previews/${filename}`;
+
+      console.log(`DIAGNOSE: Berechneter Dateiname -> "${filename}"`);
+      console.log(`DIAGNOSE: Finale URL -> "${imageUrl}"`);
+
+      const imgTester = new Image();
+      imgTester.onload = function() {
+          console.log(`%cDIAGNOSE-ERFOLG: Bild "${filename}" geladen!`, 'color: lightgreen; font-weight: bold;');
+          stylePreviewImg.src = imageUrl;
+          stylePreviewImg.style.display = 'block';
+          placeholder.style.display = 'none';
+      };
+      imgTester.onerror = function() {
+          console.error(`%cDIAGNOSE-FEHLER: Bild "${filename}" konnte nicht geladen werden. Prüfe Pfad und Dateinamen!`, 'color: orange; font-weight: bold;');
+          stylePreviewImg.style.display = 'none';
+          placeholder.style.display = 'flex';
+          placeholder.innerHTML = `<div style="text-align:center; font-size:0.8em; color:#666;">Bild fehlt:<br>${filename}</div>`;
+      };
+      
+      imgTester.src = imageUrl;
+  }
+
+  // --- PRESETS V2.0 LOGIK START ---
+  let loadedPresetData = null;
+  
+  // Globale Variablen für den Generierungskontext
+  let lastContextIds = { response_id: null, image_id: null };
+  let lastGeneratedPrompt = null;
+  let lastGeneratedImageBase64 = null;
+  
+  // --- NEU: Zentrale Funktion zur Steuerung der Preset-Spalten ---
+  function updatePresetVisibility() {
+      const presetsActive = document.getElementById('is-presets-mode').checked;
+      
+      const editModeActive = document.getElementById('is-edit-mode').checked;
+      const applyToEditActive = document.getElementById('is-apply-preset-to-edit')?.checked || false;
+  
+      const refineModeActive = document.getElementById('is-refine-mode').checked;
+      const applyToRefineActive = document.getElementById('is-apply-preset-to-refine')?.checked || false;
+      
+      // Sichtbarkeit: Entweder Haupt-Preset-Modus AN, ODER Edit+Preset AN, ODER Refine+Preset AN
+      const shouldBeVisible = presetsActive || 
+                             (editModeActive && applyToEditActive) || 
+                             (refineModeActive && applyToRefineActive);
+      
+      // 1. Mittlere Spalte (Dropdowns & Text)
+      if (presetsContainer) {
+          presetsContainer.style.display = shouldBeVisible ? 'flex' : 'none'; // 'flex' für Layout
+      }
+
+      // 2. Rechte Spalte (Bild-Vorschau) - DAS HAT GEFEHLT
+      if (stylePreviewContainer) {
+          stylePreviewContainer.style.display = shouldBeVisible ? 'flex' : 'none';
+      }
+      
+      // Aufräumen wenn unsichtbar
+      if (!shouldBeVisible) {
+          if (styleSelect && styleSelect.options.length > 0) styleSelect.selectedIndex = 0;
+          // Variation nicht nullen, sonst verlieren wir Status, aber UI ist eh weg
+          if (stylePreviewImg) stylePreviewImg.style.display = 'none';
+          if (styleImagePlaceholder) styleImagePlaceholder.style.display = 'flex';
+      }
+  }
+  
+  // Toggle visibility of the 'Apply Preset to Refine' checkbox
+  function togglePresetForRefineUI() {
+    const refineCheckbox = document.getElementById('is-refine-mode');
+    if (!refineCheckbox || !applyPresetToRefineContainer) return;
+
+    if (refineCheckbox.checked) {
+      applyPresetToRefineContainer.style.display = 'block';
+    } else {
+      applyPresetToRefineContainer.style.display = 'none';
+      if (applyPresetToRefineCheckbox) {
+        applyPresetToRefineCheckbox.checked = false;
+      }
+    }
+    updatePresetVisibility();
+  }
+
+  // Toggle visibility of the 'Apply Preset to Edit' checkbox
+  function togglePresetForEditUI() {
+    if (!editModeCheckbox || !applyPresetContainer) return;
+
+    if (editModeCheckbox.checked) {
+      applyPresetContainer.style.display = 'block';
+    } else {
+      applyPresetContainer.style.display = 'none';
+      if (applyPresetCheckbox) {
+        applyPresetCheckbox.checked = false; // Reset when hiding
+      }
+    }
+    updatePresetVisibility();
+  }
+
+  async function fetchPresets() {
+    try {
+        // Pfad zum Backend-Endpoint
+        const response = await fetch('http://localhost:8001/api/images/presets/list');
+        
+        if (!response.ok) throw new Error('Failed to load presets');
+        
+        loadedPresetData = await response.json();
+        console.log("Presets loaded:", loadedPresetData);
+        populateStyleSelect(); 
+    } catch (error) {
+        console.error("Error loading presets:", error);
+    }
+  }
+
+  function populateStyleSelect() {
+    styleSelect.innerHTML = '';
+    
+    if (!loadedPresetData) {
+        const option = document.createElement('option');
+        option.text = "Lade...";
+        styleSelect.add(option);
+        return;
+    }
+
+    for (const styleName in loadedPresetData) {
+      const option = document.createElement('option');
+      option.value = styleName;
+      option.textContent = styleName;
+      styleSelect.appendChild(option);
+    }
+    populateVariationSelect();
+  }
+
+  function populateVariationSelect() {
+    const selectedStyle = styleSelect.value;
+    variationSelect.innerHTML = '';
+
+    if (loadedPresetData && loadedPresetData[selectedStyle]) {
+        const variations = loadedPresetData[selectedStyle];
+        Object.keys(variations).forEach(variationName => {
+            const option = document.createElement('option');
+            option.value = variationName;
+            option.textContent = variationName;
+            variationSelect.appendChild(option);
+        });
+    }
+    
+    // Aktualisiere die Text-Info
+    updatePresetInfoBox();
+    
+    // Das Bild wird jetzt vom aufrufenden Event-Listener aktualisiert
+    // (in styleSelect.addEventListener('change', ...))
+  }
+
+  function updatePresetInfoBox() {
+    const style = styleSelect.value;
+    const variation = variationSelect.value;
+    const infoBox = document.getElementById('preset-info-display');
+    
+    if (!infoBox) return; 
+    
+    if (!loadedPresetData || !loadedPresetData[style] || !loadedPresetData[style][variation]) {
+        infoBox.style.display = 'none';
+        return;
+    }
+
+    const config = loadedPresetData[style][variation];
+    const usageText = config.recommended_use || "Standard preset configuration.";
+
+    infoBox.innerHTML = `
+        <div style="margin-bottom: 10px;">
+            <strong style="color: var(--accent-color); display:block; font-size: 0.85em; margin-bottom:4px; text-transform:uppercase;">🎯 ${config.name}</strong>
+            <div style="font-size: 0.9em; color: #ddd; line-height: 1.4; margin-bottom: 6px;">${config.preset_intent}</div>
+            <div style="font-size: 0.85em; color: #aaa; font-style: italic; border-left: 2px solid var(--accent-color); padding-left: 8px;">
+                Empfohlen für: ${usageText}
+            </div>
+        </div>
+        <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.8em; color: #bbb;">
+            <div>📸 ${config.camera}</div>
+            <div>🔍 ${config.lens}</div>
+            <div>🎞️ ${config.film_stock}</div>
+            <div>💡 ${config.lighting}</div>
+        </div>
+    `;
+    
+    infoBox.style.display = 'block';
+  }
+  // --- PRESET WIEDERHERSTELLUNG (REIN DATA) ---
+  function restorePresetSettings(style, variation) {
+    if (!style || !variation) return;
+
+    console.log("Stelle Preset-Werte wieder her (UI-Agnostisch):", style, variation);
+
+    // WICHTIG: Wir fassen hier KEINE Checkboxen mehr an!
+    // Das Aktivieren der richtigen Checkbox (Main, Edit oder Refine)
+    // ist Aufgabe des Aufrufers (loadImageContext).
+
+    // 1. Stil auswählen
+    if (styleSelect) {
+        styleSelect.value = style;
+        // Variationen für diesen Stil laden
+        populateVariationSelect();
+    }
+
+    // 2. Variation auswählen
+    if (variationSelect) {
+        variationSelect.value = variation;
+        
+        // Info-Box und Vorschau-Bild aktualisieren
+        updatePresetInfoBox();
+        updateStylePreviewImage();
+    }
+  }
+
+  // --- PRESETS V2.0 LOGIK ENDE ---
 
   // Inpainting State
   let isDrawing = false;
@@ -61,38 +309,28 @@ document.addEventListener('DOMContentLoaded', () => {
   let hiddenCtx = null;
 
   let pricingData = null;
-  let referenceImageUrl = null; // Für Drag-and-Drop Referenzbild
-  let currentImageFullUrl = null; // Speichere die aktuelle volle URL des angezeigten Bildes
-  let lastContextIds = { response_id: null, image_id: null }; // Für Multi-turn Refinement
-  let lastGeneratedPrompt = null; // Speichert den letzten generierten Prompt
-  let lastGeneratedImageBase64 = null; // Speichert das letzte generierte Bild als Base64
+  let referenceImageUrl = null; 
+  let currentImageFullUrl = null;
   
-  // --- MASKING V8 (Native Resolution + Visual Scaling) ---
+  // --- MASKING V8 ---
   let canvasScaleFactor = 1;
   let isInitDone = false;
 
   const isResolutionSelect = document.getElementById('is-resolution-select');
   const isResolutionControlGroup = document.getElementById('is-resolution-control-group');
-  // Da openImageModal jetzt global im window-Objekt verfügbar gemacht wurde:
-  const openImageModal = window.openImageModal; // Referenz auf die globale Funktion
+  const openImageModal = window.openImageModal; 
 
-
-    // Funktion zum Initialisieren des Masking-Canvas
-    // (Wird aufgerufen, wenn Checkbox aktiv ist oder Bild geladen wird)
     function initInpainting() {
         const img = previewContainer.querySelector('img');
         const wrapper = document.getElementById('is-preview-wrapper');
         
         if (!img || !wrapper) return;
 
-        // Warten auf Bild
         if (!img.complete || img.naturalWidth === 0) {
             img.onload = initInpainting;
             return;
         }
 
-        // --- 1. Layout Fixieren (Shrink-to-Fit) ---
-        // Wir berechnen die Anzeigegröße (max 512px)
         const MAX_DISPLAY = 512;
         const ratio = img.naturalWidth / img.naturalHeight;
         
@@ -105,39 +343,30 @@ document.addEventListener('DOMContentLoaded', () => {
             displayW = displayH * ratio;
         }
 
-        // Loop-Schutz: Wenn Größe schon stimmt, abbrechen
         if (isInitDone && Math.abs(parseFloat(wrapper.style.width) - displayW) < 1) return;
 
         console.log("Initializing Inpainting V8...");
 
-        // Wrapper exakt auf Bildgröße zwingen (keine schwarzen Balken!)
         wrapper.style.width = `${displayW}px`;
         wrapper.style.height = `${displayH}px`;
         
-        // Bild füllt Wrapper
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.objectFit = 'fill';
 
-        // --- 2. Canvas Setup (Originalauflösung!) ---
-        // Der Canvas hat intern die echten Bild-Pixel (z.B. 1024x1024)
         maskCanvas.width = img.naturalWidth;
         maskCanvas.height = img.naturalHeight;
         
-        // Per CSS skalieren wir ihn deckungsgleich zum Bild
         maskCanvas.style.width = '100%';
         maskCanvas.style.height = '100%';
         maskCanvas.style.top = '0px';
         maskCanvas.style.left = '0px';
         
-        // Faktor für Maus-Events berechnen
         canvasScaleFactor = img.naturalWidth / displayW;
         
-        // Context Reset
         ctx = maskCanvas.getContext('2d');
         ctx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
         
-        // Pinsel initialisieren (skaliert!)
         updateBrushStyle();
         
         isInitDone = true;
@@ -149,7 +378,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (img && img.complete) {
       maskCanvas.width = img.width;
       maskCanvas.height = img.height;
-      // Position the canvas over the image
       const imgRect = img.getBoundingClientRect();
       const containerRect = previewWrapper.getBoundingClientRect();
       maskCanvas.style.top = (imgRect.top - containerRect.top) + 'px';
@@ -158,12 +386,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function clearMaskCanvas() {
-    // Clear visible canvas
     if (ctx) {
       ctx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
     }
-    
-    // Clear hidden canvas
     if (hiddenCtx && hiddenMaskCanvas) {
       hiddenCtx.clearRect(0, 0, hiddenMaskCanvas.width, hiddenMaskCanvas.height);
     }
@@ -181,30 +406,25 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       
-      // Uncheck other modes
       document.getElementById('is-edit-mode').checked = false;
       document.getElementById('is-refine-mode').checked = false;
       document.getElementById('is-combine-mode').checked = false;
       
-      // Show mask controls and canvas
       maskCanvas.style.display = 'block';
       maskCanvas.classList.add('active');
       maskControls.style.display = 'flex';
       
-      // Initialize inpainting with a small delay to ensure layout is ready
       setTimeout(initInpainting, 50);
       updateCanvasSize();
       initInpainting();
     } else {
-      // If mask mode is unchecked, reset everything
       maskCanvas.style.display = 'none';
       maskCanvas.classList.remove('active');
       maskControls.style.display = 'none';
       
-      // Reset layout to default
       if (wrapper) {
-        wrapper.style.width = '512px'; // Default width
-        wrapper.style.height = '512px'; // Default height
+        wrapper.style.width = '512px'; 
+        wrapper.style.height = '512px'; 
       }
       if (img) {
         img.style.width = 'auto';
@@ -214,48 +434,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Clear mask button
   clearMaskBtn.addEventListener('click', () => {
     clearMaskCanvas();
   });
 
-  // Update brush style when brush size changes
   brushSizeInput.addEventListener('input', updateBrushStyle);
 
   function getCanvasCoordinates(e) {
       const rect = maskCanvas.getBoundingClientRect();
-      // Mausposition im Element (0 bis displayWidth)
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      
-      // Umrechnung auf interne Auflösung (0 bis naturalWidth)
       return {
           x: x * canvasScaleFactor,
           y: y * canvasScaleFactor
       };
   }
 
-  // Pinselgröße an die Auflösung anpassen
   function updateBrushStyle() {
     if (!ctx) return;
     const baseSize = document.getElementById('brush-size').value;
-    // WICHTIG: Pinselgröße mit Skalierungsfaktor multiplizieren
-    // Damit ist "30" auf einem riesigen Bild auch riesig.
     ctx.lineWidth = baseSize * canvasScaleFactor; 
-    ctx.strokeStyle = '#ff0000'; // Rot
+    ctx.strokeStyle = '#ff0000'; 
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
   }
   
-  // Event Listener für Slider
   document.getElementById('brush-size').addEventListener('input', updateBrushStyle);
 
-  // Maus-Koordinaten umrechnen
   function getNativeCoords(e) {
     const rect = maskCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    // Skalieren auf native Auflösung
     return {
       x: x * canvasScaleFactor,
       y: y * canvasScaleFactor
@@ -276,67 +485,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const p = getNativeCoords(e);
     ctx.lineTo(p.x, p.y);
     ctx.stroke();
-    
-    // Neuen Pfad für flüssiges Zeichnen starten
     ctx.beginPath();
     ctx.moveTo(p.x, p.y);
   }
 
   function stopDrawing() {
     isDrawing = false;
-    ctx.beginPath(); // Reset path
+    ctx.beginPath(); 
   }
 
-  // Add event listeners for drawing
   maskCanvas.addEventListener('mousedown', startDrawing);
   maskCanvas.addEventListener('mousemove', draw);
   maskCanvas.addEventListener('mouseup', stopDrawing);
   maskCanvas.addEventListener('mouseout', stopDrawing);
   
-  // Update mask checkbox event listener
-  maskModeCheckbox.addEventListener('change', (e) => {
-    const wrapper = document.getElementById('is-preview-wrapper');
-    const img = previewContainer.querySelector('img');
-
-    if (e.target.checked) {
-      if (!currentImageFullUrl) {
-        alert("Bitte erst ein Bild laden/generieren!");
-        e.target.checked = false;
-        return;
-      }
-      // Deaktiviere andere Modi
-      document.getElementById('is-combine-mode').checked = false;
-      
-      maskCanvas.style.display = 'block';
-      // WICHTIG: Pointer-Events aktivieren!
-      maskCanvas.classList.add('active'); 
-      
-      maskControls.style.display = 'flex';
-      
-      // Verzögertes Init, damit Layout steht
-      setTimeout(initInpainting, 50); 
-    } else {
-      maskCanvas.style.display = 'none';
-      // WICHTIG: Pointer-Events deaktivieren!
-      maskCanvas.classList.remove('active');
-      
-      maskControls.style.display = 'none';
-      
-      // RESET LAYOUT (Wichtig!)
-      // Wir setzen die Inline-Styles zurück, damit CSS wieder greift (512x512 fix)
-      if (wrapper) {
-        wrapper.style.width = ''; 
-        wrapper.style.height = '';
-      }
-      if (img) {
-        img.style.width = '';
-        img.style.height = '';
-        img.style.objectFit = ''; // Zurück zu CSS 'contain'
-      }
-    }
-  });
-
-  // Also handle touch events for mobile
+  // Touch events
   maskCanvas.addEventListener('touchstart', (e) => {
     const touch = e.touches[0];
     const mouseEvent = new MouseEvent('mousedown', {
@@ -360,25 +523,21 @@ document.addEventListener('DOMContentLoaded', () => {
     maskCanvas.dispatchEvent(mouseEvent);
   });
 
-  // Update canvas size when image is loaded
   previewContainer.addEventListener('load', (e) => {
     if (e.target.tagName === 'IMG') {
       updateCanvasSize();
     }
   }, true);
 
-  // Add observer to handle dynamic image loading
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       if (mutation.addedNodes.length) {
         const img = previewContainer.querySelector('img');
         if (img) {
           currentImageElement = img;
-          // If image is already loaded, update canvas size
           if (img.complete) {
             updateCanvasSize();
           } else {
-            // If not, wait for it to load
             img.onload = () => {
               updateCanvasSize();
             };
@@ -388,16 +547,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Start observing the preview container for changes
   observer.observe(previewContainer, { childList: true, subtree: true });
 
-  // --- Event Listeners ---
+  // --- Event Listeners UI ---
   openBtn.addEventListener('click', () => {
     modal.style.display = 'flex';
     if (!pricingData) {
       loadPricingData();
     }
-    // Initialize inpainting when opening the modal
     initInpainting();
   });
 
@@ -418,17 +575,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   modelSelect.addEventListener('change', () => {
     const newModel = modelSelect.value;
-    // Only reset context if switching to a non-OpenAI model
     if (!newModel.startsWith('gpt-image-')) {
       lastContextIds = { response_id: null, image_id: null };
       document.getElementById('is-refine-mode').checked = false;
     }
-    // Keep lastContextIds for OpenAI model switches to enable cross-model refinement
     populateDynamicParams();
     updateCost();
   });
 
-  // --- NEU: Zentralisierte Funktion für exklusive Modi ---
+  // --- Exklusive Modi ---
   const exclusiveModeCheckboxes = ['is-refine-mode', 'is-edit-mode', 'is-mask-mode', 'is-combine-mode'];
 
   function updateExclusiveModes(activeModeId) {
@@ -437,7 +592,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById(id).checked = false;
       }
     });
-    // Manuelle Anpassungen nach der Auswahl
     if(activeModeId === 'is-combine-mode') {
          slotsWrapper.style.display = 'block';
          promptInput.placeholder = "Beschreibe, wie die Bilder kombiniert werden sollen...";
@@ -445,67 +599,174 @@ document.addEventListener('DOMContentLoaded', () => {
         slotsWrapper.style.display = 'none';
         promptInput.placeholder = "Beschreibe dein Bild...";
     }
+    
+    // Handle refine mode specific UI updates
+    if (activeModeId === 'is-refine-mode') {
+        togglePresetForRefineUI();
+    } else {
+        // Bei anderen Modi sicherstellen, dass es weg ist
+        const container = document.getElementById('apply-preset-to-refine-container');
+        if (container) container.style.display = 'none';
+    }
   }
 
+  // Initialize event listeners for exclusive mode checkboxes
   exclusiveModeCheckboxes.forEach(id => {
     const checkbox = document.getElementById(id);
+    if (!checkbox) return;
+    
+    // Special handling for refine mode checkbox
+    if (id === 'is-refine-mode') {
+      checkbox.addEventListener('change', (e) => {
+        updateExclusiveModes(id);
+        togglePresetForRefineUI();
+        updatePresetVisibility();
+      });
+      return;
+    }
+    
     checkbox.addEventListener('change', (e) => {
       if (e.target.checked) {
         updateExclusiveModes(id);
       }
+      
+      // Handle refine mode specific logic
+      if (id === 'is-refine-mode') {
+        togglePresetForRefineUI();
+      }
+      
+      // Update both UI states when any exclusive mode changes
+      togglePresetForEditUI();
+      updatePresetVisibility(); // Update preset visibility based on new state
     });
   });
   
-    // dynamicParamsContainer.addEventListener('change', (event) => {
+  // Event listener for apply preset to refine checkbox
+  if (applyPresetToRefineCheckbox) {
+    applyPresetToRefineCheckbox.addEventListener('change', (e) => {
+      updatePresetVisibility();
+      if (e.target.checked) {
+        // Sofort Presets laden (Variation & Bild)
+        populateVariationSelect();
+        updateStylePreviewImage();
+      }
+    });
+  }
+
+  generateBtn.addEventListener('click', generateImage);
   
-    //     if(event.target.tagName === 'SELECT') {
-  
-    //         updateCost();
-  
-    //     }
-  
-    // }); // Dies wird jetzt innerhalb von populateDynamicParams() spezifisch behandelt
-  
-  
-  
-  
-  
-    generateBtn.addEventListener('click', generateImage);
-  
-  
-  
-  // --- Drag-and-Drop Funktionalität für das Vorschaufenster ---
-  
+  // --- Drag-and-Drop Preview ---
   previewContainer.addEventListener('dragover', (event) => {
-  
-    event.preventDefault(); // Ermöglicht das Ablegen
-  
-    previewContainer.classList.add('drag-over'); // Optional: visueller Hinweis
-  
+    event.preventDefault(); 
+    previewContainer.classList.add('drag-over'); 
   });
-  
-  
   
   previewContainer.addEventListener('dragleave', () => {
-  
-    previewContainer.classList.remove('drag-over'); // Optional: visueller Hinweis entfernen
-  
+    previewContainer.classList.remove('drag-over'); 
   });
-  
-  
   
   previewContainer.addEventListener('drop', async (event) => {
     event.preventDefault();
+    event.stopPropagation();
     previewContainer.classList.remove('drag-over');
     
-    // Handle file uploads from desktop
+    // Check for image ID from gallery first (new approach)
+    const imageId = event.dataTransfer.getData('application/janus-image-id');
+    
+    if (imageId) {
+      console.log("Image dropped from gallery with ID:", imageId);
+      previewContainer.innerHTML = '<div class="loader"></div>';
+      
+      try {
+        // 1. Kontext laden
+        const response = await fetch(`http://localhost:8001/api/context_by_id/${imageId}`);
+        if (!response.ok) throw new Error('Konnte den Bildkontext nicht laden.');
+        
+        const context = await response.json();
+        console.log("Kontext für Drop geladen:", context);
+        
+        // 2. Bild URL holen
+        const galleryImg = document.querySelector(`.gallery-thumbnail[data-image-id="${imageId}"]`);
+        if (!galleryImg) throw new Error('Bild in der Galerie nicht gefunden.');
+        
+        const imageUrl = galleryImg.src;
+        updatePreviewImage(imageUrl, "Geladenes Bild");
+        currentImageFullUrl = imageUrl; // WICHTIG: URL global setzen für Refine/Edit
+
+        // Globalen Kontext aktualisieren (für Refine Mode wichtig)
+        lastContextIds.response_id = context.response_id;
+        lastContextIds.image_id = imageId; // oder context.image_id
+        
+        // 3. Modus-Entscheidung: Refine vs. Edit
+        if (context.response_id) {
+            // Es ist ein generiertes Bild -> REFINE Mode
+            console.log("Generiertes Bild erkannt -> Schalte auf REFINE Mode");
+            document.getElementById('is-refine-mode').checked = true;
+            document.getElementById('is-edit-mode').checked = false;
+            
+            // Edit-spezifische Checkboxen zurücksetzen
+            const applyPresetBox = document.getElementById('is-apply-preset-to-edit');
+            if (applyPresetBox) applyPresetBox.checked = false;
+            
+            updateExclusiveModes('is-refine-mode');
+        } else {
+            // Es ist ein Upload -> EDIT Mode
+            console.log("Upload erkannt -> Schalte auf EDIT Mode");
+            setEditMode();
+        }
+
+        // 4. Presets Logik (Präzise Prüfung)
+        // Wir prüfen strikt, ob echte Werte vorhanden sind (keine leeren Strings)
+        const hasStyle = context.style_preset && context.style_preset !== "" && context.style_preset !== "null";
+        const hasVar = context.variation_preset && context.variation_preset !== "" && context.variation_preset !== "null";
+
+        if (hasStyle && hasVar) {
+            console.log(`Presets gefunden: "${context.style_preset}" / "${context.variation_preset}" -> Aktiviere UI`);
+            restorePresetSettings(context.style_preset, context.variation_preset);
+
+            // NEU: Hake die richtige "Apply Preset" Checkbox an
+            if (document.getElementById('is-refine-mode').checked) {
+                if (applyPresetToRefineCheckbox) applyPresetToRefineCheckbox.checked = true;
+            } else if (document.getElementById('is-edit-mode').checked) {
+                if (applyPresetCheckbox) applyPresetCheckbox.checked = true;
+            }
+
+        } else {
+            console.log("Keine Presets im Kontext -> Deaktiviere alle Preset-Optionen");
+            
+            // Alle relevanten Preset-Checkboxen ausschalten
+            if (presetsModeCheckbox) presetsModeCheckbox.checked = false;
+            if (applyPresetCheckbox) applyPresetCheckbox.checked = false;
+            if (applyPresetToRefineCheckbox) applyPresetToRefineCheckbox.checked = false;
+            
+            // Dropdowns auf Standard zurücksetzen
+            if (styleSelect) {
+                styleSelect.selectedIndex = 0;
+                populateVariationSelect(); 
+            }
+            
+            // Info-Box leeren/verstecken
+            const infoBox = document.getElementById('preset-info-display');
+            if (infoBox) infoBox.style.display = 'none';
+        }
+        
+        // WICHTIG: UI-Sichtbarkeit *IMMER* am Ende basierend auf dem finalen State aktualisieren
+        updatePresetVisibility();
+        
+      } catch (error) {
+        console.error('Fehler beim Laden des Bildes:', error);
+        previewContainer.innerHTML = `<p style="color: red;">Fehler: ${error.message}</p>`;
+      }
+      return;
+    }
+    
+    // Fallback: Check for file drop
     if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
       const file = event.dataTransfer.files[0];
       if (!file.type.startsWith('image/')) {
         alert('Bitte laden Sie nur Bilddateien hoch.');
         return;
       }
-      
       previewContainer.innerHTML = '<div class="loader"></div>';
       
       try {
@@ -525,203 +786,86 @@ document.addEventListener('DOMContentLoaded', () => {
         const imageData = await response.json();
         const newImageUrl = `http://localhost:8001${imageData.image_url}`;
 
-        // --- Display in preview ---
-        previewContainer.innerHTML = '';
-        const imgElement = document.createElement('img');
-        imgElement.src = newImageUrl;
-        imgElement.alt = "Hochgeladenes Bild";
-        imgElement.style.maxWidth = '100%';
-        imgElement.style.maxHeight = '100%';
-        imgElement.style.objectFit = 'contain';
-        previewContainer.appendChild(imgElement);
-        currentImageFullUrl = newImageUrl;
+        // Update the preview
+        updatePreviewImage(newImageUrl, "Hochgeladenes Bild");
         
-        // --- Add to uploaded gallery ---
+        // Add to gallery and update UI
         addImageToGallery(imageData, uploadedGallery);
         
-        // --- Update filename input ---
         const filename = imageData.image_url.split('/').pop();
         imageFilenameInput.value = filename.split('.').slice(0, -1).join('.');
 
-        // --- NEU: Editiermodus standardmäßig aktivieren ---
-        document.getElementById('is-edit-mode').checked = true;
-        // Andere exklusive Modi deaktivieren
-        document.getElementById('is-refine-mode').checked = false;
-        document.getElementById('is-mask-mode').checked = false;
-        document.getElementById('is-combine-mode').checked = false;
-
+        // Set edit mode and update UI
+        setEditMode();
+        
       } catch (error) {
         console.error('Fehler beim Hochladen des Bildes:', error);
         previewContainer.innerHTML = `<p style="color: red;">Fehler: ${error.message}</p>`;
       }
-      return; // End execution for file drop
+      return; 
     }
-    
-    // Handle drag from internal galleries
+
+    // Legacy fallback: Check for image URL from gallery (old approach)
     const imageUrl = event.dataTransfer.getData('text/plain');
     if (imageUrl) {
-      console.log('Image dropped from gallery:', imageUrl);
+      // Set edit mode and update UI
+      setEditMode();
       
-      previewContainer.innerHTML = '';
-      const droppedImgElement = document.createElement('img');
-      droppedImgElement.src = imageUrl;
-      droppedImgElement.alt = "Vorschau des ausgewählten Bildes";
-      droppedImgElement.style.maxWidth = '100%';
-      droppedImgElement.style.maxHeight = '100%';
-      droppedImgElement.style.objectFit = 'contain';
-      previewContainer.appendChild(droppedImgElement);
-      
-      currentImageFullUrl = imageUrl;
-      
-      const filenameMatch = imageUrl.match(/\/([^\/]+)$/);
-      if (filenameMatch && filenameMatch[1]) {
-        imageFilenameInput.value = filenameMatch[1].split('.')[0];
-      } else {
-        imageFilenameInput.value = "unbenannt";
-      }
-      
-      promptInput.placeholder = `Prompt (Referenzbild geladen)`;
-      
-      // Reset modes before fetching context
-      document.getElementById('is-edit-mode').checked = false;
-      document.getElementById('is-refine-mode').checked = false;
-      document.getElementById('is-mask-mode').checked = false;
-      document.getElementById('is-combine-mode').checked = false;
-
+      // Load image context
       try {
-        const contextRes = await fetch(`http://localhost:8001/api/images/context?url=${encodeURIComponent(imageUrl)}`);
-        if (contextRes.ok) {
-          const contextData = await contextRes.json();
-          lastContextIds.response_id = contextData.response_id;
-          lastContextIds.image_id = contextData.image_id;
-          console.log("Context for dropped image:", lastContextIds);
-          
-          // CORE LOGIC: Set mode based on context
-          if (contextData.response_id) {
-            // It's a generated image, so enable refine mode
-            document.getElementById('is-refine-mode').checked = true;
-          } else {
-            // It's an uploaded image without generation context, so enable edit mode
-            document.getElementById('is-edit-mode').checked = true;
-          }
-        } else {
-          // If context fetch fails, default to edit mode
-          document.getElementById('is-edit-mode').checked = true;
-        }
-      } catch (err) {
-        console.error("Error loading image context:", err);
-        // On error, also default to edit mode
-        document.getElementById('is-edit-mode').checked = true;
+        await loadImageContext(imageUrl);
+      } catch (error) {
+        console.error('Fehler beim Laden des Bildkontexts:', error);
       }
-
-      updateCost();
     }
   });
-  
-  
-  
-  // --- Event Listener für Dateinamen-Änderung ---
   
   imageFilenameInput.addEventListener('blur', async () => {
-  
     await renameImageFile();
-  
   });
-  
-  
   
   imageFilenameInput.addEventListener('keydown', async (event) => {
-  
     if (event.key === 'Enter') {
-  
-      event.preventDefault(); // Verhindert das Absenden eines Formulars
-  
-      imageFilenameInput.blur(); // Löst den blur-Event aus, der renameImageFile aufruft
-  
+      event.preventDefault(); 
+      imageFilenameInput.blur(); 
     }
-  
   });
   
-  
-  
-  // --- Funktion zum Umbenennen der Bilddatei ---
-  
   async function renameImageFile() {
-  
     if (!currentImageFullUrl) {
-  
       console.warn("Kein Bild geladen, Dateiname kann nicht geändert werden.");
-  
       return;
-  
     }
-  
-  
-  
     const oldFilenameWithExtension = currentImageFullUrl.match(/\/([^\/]+)$/)[1];
-  
     const oldFilename = oldFilenameWithExtension.split('.')[0];
-  
     const fileExtension = oldFilenameWithExtension.split('.').pop();
-  
     const newFilename = imageFilenameInput.value.trim();
   
-  
-  
     if (newFilename === oldFilename || newFilename === "") {
-  
-      // Keine Änderung oder leerer Name, nichts tun
-  
-      imageFilenameInput.value = oldFilename; // Setze den alten Namen zurück, falls leer
-  
+      imageFilenameInput.value = oldFilename; 
       return;
-  
     }
   
-  
-  
     const newFullFilenameWithExtension = `${newFilename}.${fileExtension}`;
-  
     const oldLocalPath = currentImageFullUrl.replace('http://localhost:8001/user_images/', '');
   
-  
-  
     try {
-  
       const response = await fetch('http://localhost:8001/api/images/rename', {
-  
         method: 'POST',
-  
         headers: { 'Content-Type': 'application/json' },
-  
         body: JSON.stringify({ old_path: oldLocalPath, new_filename: newFullFilenameWithExtension })
-  
       });
-  
-  
-  
       if (!response.ok) {
-  
         const errorData = await response.json();
-  
         throw new Error(errorData.detail || 'Fehler beim Umbenennen der Datei');
-  
       }
       const newImageData = await response.json();
       const newImageUrl = `http://localhost:8001${newImageData.image_url}`;
-
-      console.log(`Datei erfolgreich umbenannt zu ${newImageUrl}`);
-  
-      // Aktualisiere die interne Full URL, um zukünftige Umbenennungen korrekt zu behandeln
       currentImageFullUrl = newImageUrl;
-      // Aktualisiere die Bildquelle im Preview Container
       if (previewContainer.querySelector('img')) {
           previewContainer.querySelector('img').src = newImageUrl;
       }
-  
-      // Finde und aktualisiere das entsprechende Thumbnail in der Galerie
       const oldThumbnailSrc = currentImageFullUrl.replace(newFullFilenameWithExtension, oldFilenameWithExtension); 
-        
       const allThumbnails = document.querySelectorAll('.gallery-thumbnail');
       allThumbnails.forEach(thumbnail => {
           if (thumbnail.src === oldThumbnailSrc) {
@@ -733,15 +877,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   
     } catch (error) {
-  
       console.error("Fehler beim Umbenennen der Datei:", error);
-  
       alert(`Fehler beim Umbenennen der Datei: ${error.message}`);
-  
-      imageFilenameInput.value = oldFilename; // Setze den Namen auf den alten Wert zurück
-  
+      imageFilenameInput.value = oldFilename; 
     }
-  
   }
 
   // --- Combine Slots Logic ---
@@ -750,7 +889,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const slots = document.querySelectorAll('.combine-slot');
   let combineSlotsData = [null, null, null, null, null];
 
-  // Toggle Visibility
   combineCheckbox.addEventListener('change', (e) => {
     if (e.target.checked) {
       slotsWrapper.style.display = 'block';
@@ -763,7 +901,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Slot Drag & Drop Handlers
   slots.forEach(slot => {
     slot.addEventListener('dragover', (e) => {
       e.preventDefault();
@@ -771,24 +908,18 @@ document.addEventListener('DOMContentLoaded', () => {
         slot.classList.add('drag-over');
       }
     });
-
     slot.addEventListener('dragleave', () => {
       slot.classList.remove('drag-over');
     });
-
     slot.addEventListener('drop', (e) => {
       e.preventDefault();
       slot.classList.remove('drag-over');
-      
       const imageUrl = e.dataTransfer.getData('text/plain');
       if (!imageUrl) return;
-
       const index = parseInt(slot.dataset.index);
       combineSlotsData[index] = imageUrl;
       updateSlotsUI();
     });
-    
-    // Click to remove
     slot.addEventListener('click', () => {
       const index = parseInt(slot.dataset.index);
       if (combineSlotsData[index]) {
@@ -801,29 +932,23 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateSlotsUI() {
     slots.forEach((slot, index) => {
       const url = combineSlotsData[index];
-      slot.innerHTML = ''; // Clear contents
+      slot.innerHTML = ''; 
       slot.classList.remove('filled');
-
       if (url) {
         slot.classList.add('filled');
-        // Add image
         const img = document.createElement('img');
         img.src = url;
         slot.appendChild(img);
-        
-        // Add remove button overlay
         const removeDiv = document.createElement('div');
         removeDiv.classList.add('remove-slot-btn');
-        removeDiv.innerHTML = '&times;'; // X symbol
+        removeDiv.innerHTML = '&times;'; 
         slot.appendChild(removeDiv);
       } else {
-        // Show number
         slot.textContent = index + 1;
       }
     });
   }
 
-  // --- Drag-and-Drop Funktionalität für die Upload-Galerie ---
     uploadedGallery.addEventListener('dragover', (event) => {
         event.preventDefault();
         uploadedGallery.classList.add('drag-over');
@@ -836,138 +961,86 @@ document.addEventListener('DOMContentLoaded', () => {
     uploadedGallery.addEventListener('drop', async (event) => {
         event.preventDefault();
         uploadedGallery.classList.remove('drag-over');
-
         const files = event.dataTransfer.files;
         if (files && files.length > 0) {
-            // Remove placeholder
             const hint = uploadedGallery.querySelector('.is-empty-hint');
             if (hint) hint.remove();
-
             for (const file of files) {
                 if (!file.type.startsWith('image/')) {
-                    console.warn(`Skipping non-image file: ${file.name}`);
                     continue;
                 }
-
                 const formData = new FormData();
                 formData.append('file', file);
-
                 try {
                     const response = await fetch('http://localhost:8001/api/images/upload', {
                         method: 'POST',
                         body: formData
                     });
-
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.detail || 'Upload failed');
                     }
-
                     const imageData = await response.json();
                     addImageToGallery(imageData, uploadedGallery);
-
                 } catch (error) {
                     console.error('Error uploading file:', file.name, error);
-                    // Optionally show an error message in the UI
                 }
             }
         }
     });
 
-    // --- Helper function to add image to a gallery ---
     function addImageToGallery(imageData, galleryElement) {
-        // Remove placeholder text if it exists
         const hint = galleryElement.querySelector('.is-empty-hint');
         if (hint) hint.remove();
-
         const fullImageUrl = `http://localhost:8001${imageData.image_url}`;
-
         const thumbnailImg = document.createElement('img');
         thumbnailImg.src = fullImageUrl;
         thumbnailImg.alt = imageData.prompt || 'Uploaded image';
         thumbnailImg.classList.add('gallery-thumbnail');
         thumbnailImg.draggable = true;
-
+        // Store the image ID as a data attribute
+        thumbnailImg.dataset.imageId = imageData.id;
+        
         thumbnailImg.addEventListener('click', () => {
             openImageModal(fullImageUrl);
         });
-
+        
+        // Update the dragstart event to use the image ID
         thumbnailImg.addEventListener('dragstart', (event) => {
-            event.dataTransfer.setData('text/plain', event.target.src);
+            // Store the image ID in a custom data type
+            event.dataTransfer.setData('application/janus-image-id', imageData.id);
             event.dataTransfer.effectAllowed = 'copy';
         });
-
+        
         galleryElement.prepend(thumbnailImg);
     }
   
-  
-    // --- Mask Data Handling ---
   function getMaskData() {
-    if (!maskModeCheckbox.checked || !ctx) {
-      console.log("Mask generation skipped: mask mode not active or context not ready");
-      return null;
-    }
-    
+    if (!maskModeCheckbox.checked || !ctx) return null;
     const imgElement = previewContainer.querySelector('img');
-    if (!imgElement) {
-      console.log("Mask generation failed: no image element found");
-      return null;
-    }
+    if (!imgElement) return null;
     
     const originalWidth = imgElement.naturalWidth || 1024;
     const originalHeight = imgElement.naturalHeight || 1024;
     
-    console.log(`Generating mask from canvas ${maskCanvas.width}x${maskCanvas.height} to ${originalWidth}x${originalHeight}`);
-    
-    // 1. High-Res Canvas erstellen (Originalgröße)
     const finalCanvas = document.createElement('canvas');
     finalCanvas.width = originalWidth;
     finalCanvas.height = originalHeight;
     const fCtx = finalCanvas.getContext('2d');
     
-    // 2. Alles Schwarz füllen (Das ist der Bereich, der behalten wird)
     fCtx.fillStyle = 'black';
     fCtx.fillRect(0, 0, originalWidth, originalHeight);
-    
-    // 3. Die Maske ausstanzen (Transparent = Änderung)
     fCtx.globalCompositeOperation = 'destination-out';
-    
-    // FIX: Glättung deaktivieren für schärfere Masken-Kanten (verhindert Halb-Transparenz)
     fCtx.imageSmoothingEnabled = false; 
     
-    // WICHTIG: Wir skalieren den kleinen Canvas auf den großen
-    // Da 'maskCanvas' jetzt exakt das Seitenverhältnis des Bildes hat,
-    // gibt es keine Verzerrung mehr!
     fCtx.drawImage(
       maskCanvas, 
-      0, 0, maskCanvas.width, maskCanvas.height, // Quelle
-      0, 0, originalWidth, originalHeight        // Ziel
+      0, 0, maskCanvas.width, maskCanvas.height, 
+      0, 0, originalWidth, originalHeight        
     );
     
-    // Glättung für zukünftige Operationen wieder aktivieren (falls nötig)
     fCtx.imageSmoothingEnabled = true;
-    
-    const maskData = finalCanvas.toDataURL('image/png');
-    console.log("Mask generated successfully");
-    
-    // --- DEBUG: Maske direkt im UI anzeigen (statt Popup) ---
-    let debugContainer = document.getElementById('mask-debug-view');
-    if (!debugContainer) {
-        debugContainer = document.createElement('div');
-        debugContainer.id = 'mask-debug-view';
-        debugContainer.style.marginTop = '10px';
-        debugContainer.style.border = '2px solid red';
-        debugContainer.style.padding = '5px';
-        debugContainer.style.background = '#333';
-        // Einfügen nach dem Preview Container
-        document.querySelector('.image-studio-display').appendChild(debugContainer);
-    }
-    debugContainer.innerHTML = `
-        <p style="color:white; margin:0;">Debug: Gesendete Maske (${originalWidth}x${originalHeight})</p>
-        <img src="${maskData}" style="max-width: 200px; background: url('https://www.transparenttextures.com/patterns/checkerboard.png');">
-    `;
-    
-    return maskData;
+    return finalCanvas.toDataURL('image/png');
   }
 
   // --- Logic ---
@@ -977,9 +1050,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!response.ok) {
         throw new Error('Fehler beim Laden der Preisdaten');
       }
-                  pricingData = await response.json();
-                  console.log('Loaded pricingData:', pricingData); // Debug-Ausgabe
-                  populateProviderSelect();    } catch (error) {
+      pricingData = await response.json();
+      console.log('Loaded pricingData:', pricingData);
+      populateProviderSelect();    
+    } catch (error) {
       console.error(error);
       costDisplay.textContent = 'Fehler';
     }
@@ -987,19 +1061,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function populateProviderSelect() {
     providerSelect.innerHTML = '';
-    // Sicherheitsabfrage, falls pricingData noch nicht geladen ist
-    if (!pricingData) {
-        console.error("populateProviderSelect called before pricingData was loaded.");
-        return;
-    }
+    if (!pricingData) return;
 
     const availableProviders = Object.keys(pricingData);
-    if (availableProviders.length === 0) {
-        console.error("No providers found in pricingData.");
-        return;
-    }
+    if (availableProviders.length === 0) return;
 
-    // Dropdown befüllen
     availableProviders.forEach(provider => {
         const option = document.createElement('option');
         option.value = provider;
@@ -1007,16 +1073,9 @@ document.addEventListener('DOMContentLoaded', () => {
         providerSelect.appendChild(option);
     });
 
-    // --- ENTSCHEIDENDE KORREKTUR ---
-    // Wir stellen sicher, dass ein gültiger Wert ausgewählt ist.
-    // Wenn app.js 'undefined' oder einen ungültigen Wert setzt,
-    // korrigieren wir das hier, indem wir den ersten Provider als Standard nehmen.
     if (!providerSelect.value || !pricingData[providerSelect.value]) {
-        console.warn("Image Studio: Provider was not set or invalid. Defaulting to the first available provider.");
         providerSelect.value = availableProviders[0];
     }
-    
-    // Jetzt, wo wir garantiert einen validen Provider haben, rufen wir den nächsten Schritt auf.
     populateModelSelect();
   }
 
@@ -1024,17 +1083,14 @@ document.addEventListener('DOMContentLoaded', () => {
     modelSelect.innerHTML = '';
     const selectedProvider = providerSelect.value;
     if (pricingData && pricingData[selectedProvider]) {
-      // Filter for image models (type: "image")
       const imageModels = Object.entries(pricingData[selectedProvider]).filter(([modelId, modelData]) => {
-          // Check if modelData is an object and has 'type' and 'capabilities' properties
           return typeof modelData === 'object' && modelData.type === 'image' && modelData.capabilities && modelData.capabilities.includes('image_generation');
       });
 
-      console.log('Filtered image models:', imageModels); // Debug-Ausgabe
       imageModels.forEach(([modelId, modelData]) => {
         const option = document.createElement('option');
         option.value = modelId;
-        option.textContent = modelData.name; // Display the user-friendly name
+        option.textContent = modelData.name; 
         modelSelect.appendChild(option);
       });
     }
@@ -1044,9 +1100,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function populateDynamicParams() {
       dynamicParamsContainer.innerHTML = '';
       const selectedProvider = providerSelect.value;
-      const selectedModelId = modelSelect.value; // modelId, e.g., "gpt-image-1.5"
+      const selectedModelId = modelSelect.value; 
       
-      // Ensure resolution control group is hidden by default for all calls
       isResolutionControlGroup.style.display = 'none';
 
       if(!pricingData || !pricingData[selectedProvider] || !pricingData[selectedProvider][selectedModelId]) {
@@ -1056,9 +1111,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const modelData = pricingData[selectedProvider][selectedModelId];
       
-      // Case 1: OpenAI-style image model with quality and size parameters
       if (modelData.type === 'image' && modelData.pricing) {
-          // Dropdown für Qualität
           const qualityDiv = document.createElement('div');
           qualityDiv.classList.add('control-group');
           qualityDiv.innerHTML = `<label for="is-param-quality">Qualität</label><select id="is-param-quality" data-param-key="quality"></select>`;
@@ -1074,7 +1127,6 @@ document.addEventListener('DOMContentLoaded', () => {
           });
           qualitySelect.value = modelData.default_quality || availableQualities[0];
 
-          // Dropdown für Größe (Auflösung)
           const sizeDiv = document.createElement('div');
           sizeDiv.classList.add('control-group');
           sizeDiv.innerHTML = `<label for="is-param-size">Auflösung</label><select id="is-param-size" data-param-key="size"></select>`;
@@ -1082,7 +1134,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const sizeSelect = sizeDiv.querySelector('select');
 
           const populateSizeOptions = () => {
-              sizeSelect.innerHTML = ''; // Vorherige Optionen löschen
+              sizeSelect.innerHTML = ''; 
               const currentQuality = qualitySelect.value;
               const availableSizes = modelData.pricing[currentQuality] ? Object.keys(modelData.pricing[currentQuality]) : [];
               availableSizes.forEach(s => {
@@ -1092,23 +1144,25 @@ document.addEventListener('DOMContentLoaded', () => {
                   sizeSelect.appendChild(option);
               });
               sizeSelect.value = modelData.default_size || availableSizes[0];
-              updateCost(); // Kosten aktualisieren, wenn Größenoptionen neu geladen wurden
+              updateCost(); 
           };
 
-          // Event-Listener für Qualitätsänderungen
           qualitySelect.addEventListener('change', populateSizeOptions);
-          populateSizeOptions(); // Initiale Größenoptionen laden
+          
+          // Add event listener for resolution changes
+          sizeSelect.addEventListener('change', () => {
+              updateCost();
+          });
+          
+          populateSizeOptions(); 
       } 
-      // Case 2: Gemini-style image model with aspect ratios
       else if (modelData.type === 'image' && modelData.aspect_ratios) {
-          // Display aspect ratio selector for all Gemini image models
           const ratioDiv = document.createElement('div');
           ratioDiv.classList.add('control-group');
           ratioDiv.innerHTML = `<label for="is-param-aspect-ratio">Seitenverhältnis</label><select id="is-param-aspect-ratio" data-param-key="aspect_ratio"></select>`;
           dynamicParamsContainer.appendChild(ratioDiv);
           const ratioSelect = ratioDiv.querySelector('select');
 
-          // Add aspect ratio options
           modelData.aspect_ratios.forEach(ratio => {
               const option = document.createElement('option');
               option.value = ratio;
@@ -1116,18 +1170,15 @@ document.addEventListener('DOMContentLoaded', () => {
               ratioSelect.appendChild(option);
           });
           
-          // Set default aspect ratio
           ratioSelect.value = modelData.default_aspect_ratio || "1:1";
-          
-          // Update cost when aspect ratio changes
           ratioSelect.addEventListener('change', updateCost);
           
-          // Specific logic for Gemini 3 Image models (resolution dropdown)
-          if (selectedModelId.startsWith('gemini-3')) { // Check if it's a Gemini 3 model
+          if (selectedModelId.startsWith('gemini-3')) { 
             isResolutionControlGroup.style.display = 'block';
-            isResolutionSelect.innerHTML = ''; // Clear existing options
+            isResolutionSelect.innerHTML = ''; 
+            isResolutionSelect.dataset.paramKey = 'image_size'; 
 
-            const availableResolutions = modelData.resolutions || ["1K", "2K"]; // Fallback, falls nicht definiert
+            const availableResolutions = modelData.resolutions || ["1K", "2K"]; 
 
             availableResolutions.forEach(res => {
                 const option = document.createElement('option');
@@ -1136,15 +1187,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 isResolutionSelect.appendChild(option);
             });
             isResolutionSelect.value = modelData.default_resolution || availableResolutions[0];
-            isResolutionSelect.addEventListener('change', updateCost); // Event Listener für Kosten
+            isResolutionSelect.addEventListener('change', updateCost); 
           } else {
-            isResolutionControlGroup.style.display = 'none'; // Hide if not Gemini 3
+            isResolutionControlGroup.style.display = 'none'; 
           }
           updateCost();
 
       } else {
-          // Generische Behandlung für andere Modelle (wie Textmodelle oder legacy DALL-E)
-          isResolutionControlGroup.style.display = 'none'; // Hide resolution dropdown for other models
+          isResolutionControlGroup.style.display = 'none'; 
           const parameterKeys = Object.keys(modelData).filter(key => typeof modelData[key] === 'object' && key !== 'pricing' && key !== 'capabilities');
           
           parameterKeys.forEach(paramKey => {
@@ -1154,7 +1204,7 @@ document.addEventListener('DOMContentLoaded', () => {
               dynamicParamsContainer.appendChild(div);
               const select = div.querySelector('select');
               
-              const paramData = modelData[paramKey]; // Correctly get the parameter data
+              const paramData = modelData[paramKey]; 
               for(const optionValue in paramData) {
                   const option = document.createElement('option');
                   option.value = optionValue;
@@ -1162,7 +1212,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   select.appendChild(option);
               }
               select.addEventListener('change', updateCost);
-              if(select.value === '') select.value = Object.keys(paramData)[0]; // Standardwert setzen
+              if(select.value === '') select.value = Object.keys(paramData)[0]; 
           });
           updateCost();
       }
@@ -1179,18 +1229,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-                  const modelData = pricingData[selectedProvider]?.[selectedModelId];
-                  console.log('Model Data in populateDynamicParams:', modelData); // Debug-Ausgabe
-                        if (!modelData) {
+      const modelData = pricingData[selectedProvider]?.[selectedModelId];
+      if (!modelData) {
         costDisplay.textContent = 'N/A';
         return;
       }
 
       let finalCost = 'N/A';
 
-      // If it's an image model with nested pricing (OpenAI DALL-E style)
       if (modelData.type === 'image' && modelData.pricing) {
-        isResolutionControlGroup.style.display = 'none'; // Hide resolution dropdown for OpenAI models
+        isResolutionControlGroup.style.display = 'none'; 
         const qualitySelect = dynamicParamsContainer.querySelector('#is-param-quality');
         const sizeSelect = dynamicParamsContainer.querySelector('#is-param-size');
 
@@ -1203,22 +1251,14 @@ document.addEventListener('DOMContentLoaded', () => {
             finalCost = 'N/A';
         }
       } 
-      // If it's a Gemini image model (aspect ratios and potentially resolutions)
       else if (modelData.type === 'image' && modelData.aspect_ratios) {
           const ratioSelect = dynamicParamsContainer.querySelector('#is-param-aspect-ratio');
-          const resolutionSelect = document.getElementById('is-resolution-select'); // Get the new resolution select
+          const resolutionSelect = document.getElementById('is-resolution-select'); 
 
-          const aspectRatio = ratioSelect ? ratioSelect.value : null;
-          const resolution = resolutionSelect ? resolutionSelect.value : null;
-
-          // For Gemini, cost is often token-based. We need tokens_per_image and costs per million tokens.
-          // The selected resolution might influence the tokens_per_image for a given aspect ratio.
+          const selectedResolution = resolutionSelect ? resolutionSelect.value : (modelData.default_resolution || "1K");
           
           if (modelData.cost_per_million_tokens_input && modelData.cost_per_million_tokens_output && modelData.tokens_per_resolution) {
-              const selectedResolution = resolutionSelect ? resolutionSelect.value : (modelData.default_resolution || "1K");
-              const outputTokensPerImage = modelData.tokens_per_resolution[selectedResolution] || modelData.tokens_per_resolution["1K"] || 1120; // Fallback-Wert
-              
-              // Frontend: Fixed 560 input tokens for Gemini Image, as per README
+              const outputTokensPerImage = modelData.tokens_per_resolution[selectedResolution] || modelData.tokens_per_resolution["1K"] || 1120; 
               const inputTokensPerImage = 560; 
               
               const inputCostPerImage = (inputTokensPerImage / 1000000) * modelData.cost_per_million_tokens_input;
@@ -1233,8 +1273,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       }
       else {
-        isResolutionControlGroup.style.display = 'none'; // Hide resolution dropdown for other models
-        // Generic cost calculation for other models (text, websearch, tts, etc.)
+        isResolutionControlGroup.style.display = 'none'; 
         const params = {};
         dynamicParamsContainer.querySelectorAll('select').forEach(sel => {
             params[sel.dataset.paramKey] = sel.value;
@@ -1259,11 +1298,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       if (typeof finalCost === 'number') {
-        // 1. Basis-Anzeige aktualisieren
         const basePrice = finalCost.toFixed(4);
         costDisplay.textContent = `$${basePrice}`;
         
-        // 2. Quality Gate Berechnung
         const gateLevel = qualityGateSelect ? qualityGateSelect.value : 'none';
 
         if (gateLevel === 'none' || finalCost === 0) {
@@ -1274,7 +1311,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const config = QUALITY_GATE_CONFIG[gateLevel];
             const totalRuns = 1 + config.retries;
             
-            // Formel: (Bildpreis + Vision-Check) * Anzahl der Läufe
             const maxRisk = (finalCost + ESTIMATED_VISION_COST) * totalRuns;
             
             if (maxCostDisplay) {
@@ -1293,13 +1329,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function generateImage() {
-    // UI Reset: Grüne Box ausblenden, Blaue Box (Risk) theoretisch wieder möglich
     const actualResultWrapper = document.getElementById('is-actual-result-wrapper');
     const maxCostWrapper = document.getElementById('is-max-cost-wrapper');
     
     if (actualResultWrapper) actualResultWrapper.style.display = 'none';
     if (maxCostWrapper && document.getElementById('is-quality-gate-select').value !== 'none') {
-        maxCostWrapper.style.display = 'flex'; // Blaues Risiko wieder zeigen während Generierung
+        maxCostWrapper.style.display = 'flex'; 
     }
     
     previewContainer.innerHTML = '<div class="loader"></div>';
@@ -1310,10 +1345,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const editModeActive = document.getElementById('is-edit-mode').checked;
     const combineModeActive = document.getElementById('is-combine-mode').checked;
     
-    // Collect active images from combine slots
     const activeCombineImages = combineSlotsData.filter(url => url !== null);
     
-    // Validate based on mode
     if (combineModeActive && activeCombineImages.length < 1) {
       previewContainer.innerHTML = '<p style="color: red;">Bitte ziehe mindestens ein Bild in die nummerierten Felder.</p>';
       generateBtn.disabled = false;
@@ -1321,7 +1354,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     
-    // Validate that we have a reference image in edit mode
     if (editModeActive && !currentImageFullUrl) {
       previewContainer.innerHTML = '<p style="color: red;">Bitte lade zuerst ein Bild hoch, um es zu bearbeiten.</p>';
       generateBtn.disabled = false;
@@ -1329,85 +1361,72 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     
-    // Collect data
+    // Define when to apply presets
+    const applyRefinePreset = document.getElementById('is-apply-preset-to-refine')?.checked || false;
+    const applyEditPreset = document.getElementById('is-apply-preset-to-edit')?.checked || false;
+    
+    const shouldSendPresets = presetsModeCheckbox.checked || 
+                            (editModeActive && applyEditPreset) || 
+                            (refineActive && applyRefinePreset);
+
     const payload = {
         prompt: promptInput.value,
         provider: providerSelect.value,
         model: modelSelect.value, 
         parameters: {},
         quality_gate_level: qualityGateSelect ? qualityGateSelect.value : 'none',
-        // Include context only if refine mode is active and we have previous IDs and not in combine mode
         previous_response_id: (refineActive && !combineModeActive) ? lastContextIds.response_id : null,
         previous_image_id: (refineActive && !combineModeActive) ? lastContextIds.image_id : null,
+        apply_preset_to_edit: applyEditPreset,
+        apply_preset_to_refine: applyRefinePreset,
+        style_preset: shouldSendPresets ? styleSelect.value : null,
+        variation_preset: shouldSendPresets ? variationSelect.value : null,
         
-        // Add history for Gemini refinement
+        // Debug information
         history: (refineActive && providerSelect.value === 'gemini') ? {
             prompt: lastGeneratedPrompt,
             image_base64: lastGeneratedImageBase64
         } : null,
         
-        // FIX: Aggressivere Logik für Cross-Provider Refinement
-        // Wenn Refine an ist, aber wir keine Response-ID haben (Gemini Fall),
-        // MÜSSEN wir das Bild als URL mitschicken, damit das Backend es als Edit-Upload behandelt.
         reference_image_url: (
             editModeActive || 
             maskModeCheckbox.checked || 
             (refineActive && !lastContextIds.response_id) ||
-            (refineActive && providerSelect.value === 'openai' && !lastContextIds.response_id) // Explizit für Gemini->GPT Wechsel
+            (refineActive && providerSelect.value === 'openai' && !lastContextIds.response_id) 
         ) ? currentImageFullUrl : null,
         
-        // Combine List (Only send filled slots)
         reference_image_urls: combineModeActive ? activeCombineImages : [],
         
-        // Add mask data if inpainting is active
         mask_image_data: (() => {
             if (!maskModeCheckbox.checked) return null;
-            
-            // High-Res Canvas erstellen (Copy)
             const finalCanvas = document.createElement('canvas');
             finalCanvas.width = maskCanvas.width;   
             finalCanvas.height = maskCanvas.height; 
             const fCtx = finalCanvas.getContext('2d');
-            
-            // 1. Hintergrund Schwarz (Behalten)
             fCtx.fillStyle = 'black';
             fCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-            
-            // 2. Zeichnung ausstanzen (Destination-Out)
             fCtx.globalCompositeOperation = 'destination-out';
             fCtx.drawImage(maskCanvas, 0, 0); 
-            
-            const maskData = finalCanvas.toDataURL('image/png');
-            
-            return maskData;
+            return finalCanvas.toDataURL('image/png');
         })()
     };
     
-    // --- Stil-Preset hinzufügen, falls aktiviert ---
-    if (presetsModeCheckbox.checked) {
-        payload.style_preset = {
-            style: styleSelect.value,
-            variation: variationSelect.value
-        };
-    }
-    
-    // Debug logging for context
-    console.log("Sending payload:", {
-        refineActive,
-        editModeActive,
-        response_id: payload.previous_response_id,
-        image_id: payload.previous_image_id,
-        reference_image_url: payload.reference_image_url
+    // Debug log for preset values
+    console.log("PAYLOAD CHECK:", {
+        style: payload.style_preset,
+        variation: payload.variation_preset,
+        apply_edit: payload.apply_preset_to_edit,
+        editModeActive: editModeActive,
+        presetsModeActive: presetsModeCheckbox.checked
     });
+    
+    console.log("Sending payload:", payload);
 
-    const selectedModelId = modelSelect.value; // Füge dies hinzu
-    // Dynamische Parameter sammeln
+    const selectedModelId = modelSelect.value; 
     dynamicParamsContainer.querySelectorAll('select').forEach(sel => {
-        // Direkte Zuordnung für die meisten dynamischen Parameter
         payload.parameters[sel.dataset.paramKey] = sel.value;
     });
 
-    // Spezielle Handhabung für Gemini 3 Modelle und Auflösung
     if (selectedModelId.startsWith('gemini-3') && isResolutionControlGroup.style.display !== 'none') {
         payload.parameters['resolution'] = isResolutionSelect.value;
     }
@@ -1425,18 +1444,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const result = await response.json();
-        console.log("Server Result:", result); // Debugging
+        console.log("Server Result:", result); 
         
-        // --- UPDATE KOSTENANZEIGE ---
         if (result.quality_gate_stats && result.quality_gate_stats.was_active) {
-            console.log("Stats received:", result.quality_gate_stats);
-            
             const stats = result.quality_gate_stats;
             const actualWrapper = document.getElementById('is-actual-result-wrapper');
             const maxWrapper = document.getElementById('is-max-cost-wrapper');
 
             if (actualWrapper) {
-                // 1. Daten füllen
                 const costEl = document.getElementById('is-actual-cost');
                 const attemptsEl = document.getElementById('is-actual-attempts');
                 const scoreEl = document.getElementById('is-actual-score');
@@ -1448,76 +1463,62 @@ document.addEventListener('DOMContentLoaded', () => {
                     scoreEl.style.color = stats.final_score >= 80 ? '#4caf50' : (stats.final_score >= 60 ? '#ffc107' : '#f44336');
                 }
 
-                // 2. Sichtbarkeit umschalten (Toggle)
-                if (maxWrapper) maxWrapper.style.display = 'none'; // Blau WEG
-                actualWrapper.style.display = 'flex';              // Grün DA
+                if (maxWrapper) maxWrapper.style.display = 'none'; 
+                actualWrapper.style.display = 'flex';             
             }
         }
-        // -----------------------------
         
         const imageUrl = `http://localhost:8001${result.image_url}`;
-        currentImageFullUrl = imageUrl; // Speichere die volle URL
+        currentImageFullUrl = imageUrl; 
         
-        // Save the context IDs for the next turn if they are provided in the response
         if (result.previous_response_id || result.previous_image_id) {
           lastContextIds = {
             response_id: result.previous_response_id || null,
             image_id: result.previous_image_id || null
           };
-          console.log("Kontext für das aktuelle Bild gespeichert:", lastContextIds);
         } else {
-          // If no context is provided, clear the context
           lastContextIds = { response_id: null, image_id: null };
         }
         
-        // Save prompt and image for next refinement (for ALL providers)
         lastGeneratedPrompt = payload.prompt;
         
-        // We need the image as Base64 for Gemini Refinement
-        // This is inefficient. It would be better if the backend would cache it.
-        // But for now, we'll fetch it again.
         fetch(imageUrl)
             .then(res => res.blob())
             .then(blob => {
                 const reader = new FileReader();
                 reader.onload = () => {
-                    lastGeneratedImageBase64 = reader.result.split(',')[1]; // Only the Base64 part
-                    console.log("Image cached as Base64 for Gemini Refinement.");
+                    lastGeneratedImageBase64 = reader.result.split(',')[1]; 
                 };
                 reader.readAsDataURL(blob);
             });
           
-        // Automatically enable refine mode and disable others for the next generation
         document.getElementById('is-refine-mode').checked = true;
         document.getElementById('is-combine-mode').checked = false;
         document.getElementById('is-edit-mode').checked = false;
         document.getElementById('is-mask-mode').checked = false;
+        togglePresetForRefineUI(); // <--- FIX: Menü sichtbar machen
 
-        // Extrahiere den Dateinamen aus der URL für das Input-Feld
         const filenameMatch = imageUrl.match(/\/([^\/]+)$/);
         if (filenameMatch && filenameMatch[1]) {
-            imageFilenameInput.value = filenameMatch[1].split('.')[0]; // Dateiname ohne Extension
+            imageFilenameInput.value = filenameMatch[1].split('.')[0]; 
         } else {
             imageFilenameInput.value = "unbenannt";
         }
         
-        // --- Bild im Preview Container anzeigen und Click-Handler hinzufügen ---
-        previewContainer.innerHTML = ''; // Lade-Spinner entfernen
+        previewContainer.innerHTML = ''; 
         const imgElement = document.createElement('img');
         imgElement.src = imageUrl;
         imgElement.alt = payload.prompt;
         imgElement.style.maxWidth = '100%';
         imgElement.style.maxHeight = '100%';
         imgElement.style.objectFit = 'contain';
-        imgElement.style.cursor = 'pointer'; // Visueller Hinweis
+        imgElement.style.cursor = 'pointer'; 
         
         imgElement.addEventListener('click', () => {
-            openImageModal(imageUrl); // Öffne das Bild im großen Modal
+            openImageModal(imageUrl); 
         });
 
         previewContainer.appendChild(imgElement);
-
-        // --- Thumbnail zur generierten Galerie hinzufügen (Refactored) ---
         addImageToGallery(result, generatedGallery);
 
     } catch (error) {
@@ -1529,125 +1530,277 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- Provider Switch Logic ---
-  // Gemini doesn't support mask upload inpainting -> Disable checkbox
   function updateCapabilityUI() {
     const provider = providerSelect.value;
     const maskCheckbox = document.getElementById('is-mask-mode');
-    const maskLabel = document.querySelector('label[for="is-mask-mode"]');
-    const maskContainer = maskCheckbox.parentElement; // The surrounding div
+    const maskContainer = maskCheckbox.parentElement; 
 
     if (provider === 'gemini') {
-      // Disable
       if (maskCheckbox.checked) {
         maskCheckbox.checked = false;
-        // Trigger event to hide canvas
         maskCheckbox.dispatchEvent(new Event('change'));
       }
       maskCheckbox.disabled = true;
       maskContainer.style.opacity = '0.5';
-      maskContainer.title = "Inpainting (mask) is currently not supported by Gemini. Please use prompt instructions.";
+      maskContainer.title = "Inpainting is currently not supported by Gemini.";
     } else {
-      // Enable (OpenAI)
       maskCheckbox.disabled = false;
       maskContainer.style.opacity = '1';
       maskContainer.title = "";
     }
   }
 
-  // --- Style Presets Logic ---
-  
-  // Populate the style select dropdown
-  function populateStyleSelect() {
-    styleSelect.innerHTML = '';
-    for (const styleName in stylePresets) {
-      const option = document.createElement('option');
-      option.value = styleName;
-      option.textContent = styleName;
-      styleSelect.appendChild(option);
-    }
-    // After populating styles, update variations for the first style
-    populateVariationSelect();
+  // Helper function to update preview image
+  function updatePreviewImage(src, alt) {
+    previewContainer.innerHTML = '';
+    const imgElement = document.createElement('img');
+    imgElement.src = src;
+    imgElement.alt = alt || "Vorschau";
+    imgElement.style.maxWidth = '100%';
+    imgElement.style.maxHeight = '100%';
+    imgElement.style.objectFit = 'contain';
+    previewContainer.appendChild(imgElement);
   }
+  
+  // Helper function to set edit mode
+  function setEditMode() {
+    editModeCheckbox.checked = true;
+    document.getElementById('is-refine-mode').checked = false;
+    document.getElementById('is-mask-mode').checked = false;
+    document.getElementById('is-combine-mode').checked = false;
+    updateExclusiveModes('is-edit-mode');
+    togglePresetForEditUI();
+  }
+  
+  // Helper function to load image context
+  async function loadImageContext(imageUrl) {
+    try {
+      const contextRes = await fetch(`http://localhost:8001/api/images/context?url=${encodeURIComponent(imageUrl)}`);
+      if (!contextRes.ok) throw new Error('Konnte Bildkontext nicht laden');
+      
+      const contextData = await contextRes.json();
+      lastContextIds.response_id = contextData.response_id;
+      lastContextIds.image_id = contextData.image_id;
+      
+      console.log("Bild-Kontext geladen:", contextData);
 
-  // Populate the variation select based on selected style
-  function populateVariationSelect() {
-    const selectedStyle = styleSelect.value;
-    const variations = stylePresets[selectedStyle] || [];
-    variationSelect.innerHTML = '';
+      // --- PHASE 1: TOTAL RESET (Sicherheits-Löschung) ---
+      // Wir löschen alle Haken, BEVOR wir den Modus wechseln.
+      // Das verhindert, dass alte Zustände kurzzeitig sichtbar werden.
+      if (presetsModeCheckbox) presetsModeCheckbox.checked = false;
+      const refinePresetCb = document.getElementById('is-apply-preset-to-refine');
+      if (refinePresetCb) refinePresetCb.checked = false;
+      const editPresetCb = document.getElementById('is-apply-preset-to-edit');
+      if (editPresetCb) editPresetCb.checked = false;
+      
+      // UI Update erzwingen, damit alles sauber ist
+      updatePresetVisibility();
 
-    variations.forEach(variationName => {
-      const option = document.createElement('option');
-      option.value = variationName;
-      option.textContent = variationName;
-      variationSelect.appendChild(option);
+      // --- PHASE 2: MODUS SETZEN ---
+      if (contextData.response_id) {
+        // Refine mode
+        document.getElementById('is-refine-mode').checked = true;
+        document.getElementById('is-edit-mode').checked = false;
+        
+        // Menü sichtbar machen (Checkbox ist aber FALSE)
+        togglePresetForRefineUI(); 
+        updateExclusiveModes('is-refine-mode');
+      } else {
+        // Edit mode
+        document.getElementById('is-edit-mode').checked = true;
+        document.getElementById('is-refine-mode').checked = false;
+        
+        // Menü sichtbar machen (Checkbox ist aber FALSE)
+        togglePresetForEditUI();
+        updateExclusiveModes('is-edit-mode');
+      }
+
+      // --- PHASE 3: PRESETS LADEN (Falls vorhanden) ---
+      const hasStyle = contextData.style_preset && contextData.style_preset !== "" && contextData.style_preset !== "null";
+      const hasVar = contextData.variation_preset && contextData.variation_preset !== "" && contextData.variation_preset !== "null";
+
+      if (hasStyle && hasVar) {
+          console.log(`Presets gefunden: "${contextData.style_preset}" / "${contextData.variation_preset}" -> Aktiviere UI`);
+
+          // A. Werte in Dropdowns setzen (Daten)
+          // Timeout hilft, um sicherzustellen, dass die UI-Container bereit sind
+          setTimeout(() => {
+              restorePresetSettings(contextData.style_preset, contextData.variation_preset);
+          }, 0);
+
+          // B. Die passende Checkbox aktivieren (UI)
+          if (contextData.response_id) {
+              // Refine
+              if (refinePresetCb) refinePresetCb.checked = true;
+          } else {
+              // Edit
+              if (editPresetCb) editPresetCb.checked = true;
+          }
+      } else {
+          console.log("Keine Presets im Kontext -> UI bleibt im Reset-Zustand.");
+          // Dropdowns auf Standard zurücksetzen (optisch)
+          if (styleSelect) styleSelect.selectedIndex = 0;
+          const infoBox = document.getElementById('preset-info-display');
+          if (infoBox) infoBox.style.display = 'none';
+      }
+
+      // --- PHASE 4: FINALES UI UPDATE ---
+      // Jetzt, wo alle Haken korrekt sitzen, aktualisieren wir die Sichtbarkeit der großen Boxen.
+      updatePresetVisibility();
+      
+    } catch (err) {
+      console.error("Fehler beim Laden des Bildkontexts:", err);
+      // Fallback
+      document.getElementById('is-edit-mode').checked = true;
+      updateExclusiveModes('is-edit-mode');
+    }
+    updateCost();
+  }
+  
+  // --- EVENT LISTENER: Vorschaubild anklickbar machen ---
+  if (stylePreviewImg) {
+    stylePreviewImg.addEventListener('click', () => {
+      // Hole die aktuelle URL des Bildes
+      const imageUrl = stylePreviewImg.src;
+
+      // Prüfe, ob eine gültige URL vorhanden ist (kein leerer String)
+      if (imageUrl && imageUrl.includes('/assets/previews/')) {
+        // Rufe die globale Funktion zum Öffnen des Modals auf
+        if (typeof window.openImageModal === 'function') {
+          window.openImageModal(imageUrl);
+        } else {
+          console.warn('openImageModal function is not defined');
+        }
+      }
     });
   }
 
-  // Toggle presets container visibility
-  presetsModeCheckbox.addEventListener('change', (e) => {
-    if (e.target.checked) {
-      presetsContainer.style.display = 'flex';
-      // Apply the current style to the prompt
-      updatePromptWithPreset();
-    } else {
-      presetsContainer.style.display = 'none';
-      // Remove any style from the prompt
-      removeStyleFromPrompt();
-    }
-  });
-
-  // Update variations when style changes
-  styleSelect.addEventListener('change', () => {
-    populateVariationSelect();
-    if (presetsModeCheckbox.checked) {
-      updatePromptWithPreset();
-    }
-  });
-
-  // Update prompt when variation changes
-  variationSelect.addEventListener('change', () => {
-    if (presetsModeCheckbox.checked) {
-      updatePromptWithPreset();
-    }
-  });
-
-  // Update the prompt with the selected style and variation
-  function updatePromptWithPreset() {
-    const style = styleSelect.value;
-    const variation = variationSelect.value;
-    
-    if (!style || !variation) return;
-    
-    // Add style and variation to the prompt
-    let currentPrompt = promptInput.value.trim();
-    
-    // Remove any existing style tags
-    currentPrompt = currentPrompt.replace(/\s*\(.*?\)$/, '').trim();
-    
-    // Add new style tag
-    promptInput.value = `${currentPrompt} (${variation} Stil)`;
-  }
-
-  // Remove style from prompt
-  function removeStyleFromPrompt() {
-    let currentPrompt = promptInput.value.trim();
-    // Remove style tag if it exists
-    currentPrompt = currentPrompt.replace(/\s*\(.*?\s*Stil\)$/, '').trim();
-    promptInput.value = currentPrompt;
-  }
-
-  // Register listeners
-  providerSelect.addEventListener('change', updateCapabilityUI);
+  // --- EVENT LISTENERS (HIER WIRD ALLES VERKNÜPFT) ---
   
-  // Quality Gate Change Listener
+  // Update model select event listener
+  modelSelect.addEventListener('change', () => {
+    populateDynamicParams();
+    updateCost();
+  });
+  
+  // Toggle both presets and style preview containers
+  if (presetsModeCheckbox) {
+    presetsModeCheckbox.addEventListener('change', updatePresetVisibility);
+  } else {
+    presetsContainer.style.display = 'none';
+    if (stylePreviewContainer) stylePreviewContainer.style.display = 'none';
+  }
+  
+  // Provider-Wechsel
+  providerSelect.addEventListener('change', () => {
+    updateCapabilityUI();
+    populateModelSelect();
+    updateCost();
+    updateStylePreviewImage(); // Bild tauschen
+  });
+
+  // Style change handler
+  styleSelect.addEventListener('change', () => {
+    // Don't clear context when in refine+preset mode
+    const isRefiningWithPreset = document.getElementById('is-refine-mode').checked && 
+                               document.getElementById('is-apply-preset-to-refine').checked;
+                               
+    if (!isRefiningWithPreset) {
+        clearGenerationContext();
+    }
+    
+    populateVariationSelect(); // Update variations for the new style
+    updateStylePreviewImage(); // Update the style preview image
+  });
+
+  // Variation change handler
+  variationSelect.addEventListener('change', () => {
+    const refineActive = document.getElementById('is-refine-mode').checked;
+    const applyToRefine = document.getElementById('is-apply-preset-to-refine')?.checked || false;
+    
+    // Only clear context if not in refine+preset mode
+    if (!(refineActive && applyToRefine)) {
+      clearGenerationContext();
+    }
+    
+    updateStylePreviewImage();
+  });
+  
+  // Clear generation context when presets are changed
+  function clearGenerationContext() {
+    // Clear previous generation IDs
+    lastContextIds = { response_id: null, image_id: null };
+    lastGeneratedPrompt = null;
+    lastGeneratedImageBase64 = null;
+    
+    // Uncheck 'Refine' checkbox to indicate a fresh start
+    const refineCheckbox = document.getElementById('is-refine-mode');
+    if (refineCheckbox) refineCheckbox.checked = false;
+    
+    console.log("Kontext bereinigt: Bereit für frischen Start.");
+  }
+
+  // Style change handler
+  styleSelect.addEventListener('change', () => {
+    const refineActive = document.getElementById('is-refine-mode').checked;
+    const applyToRefine = document.getElementById('is-apply-preset-to-refine')?.checked || false;
+    
+    // Only clear context if not in refine+preset mode
+    if (!(refineActive && applyToRefine)) {
+      clearGenerationContext();
+    }
+    
+    populateVariationSelect();
+    updateStylePreviewImage(); 
+  });
+  
   if (qualityGateSelect) {
     qualityGateSelect.addEventListener('change', updateCost);
   }
   
-  // Also run once on startup
-  updateCapabilityUI();
+  // Add event listeners for preset-related checkboxes
+  if (editModeCheckbox) {
+    editModeCheckbox.addEventListener('change', () => {
+      togglePresetForEditUI();
+      updatePresetVisibility();
+    });
+  }
+  
+  // Add event listener for the 'Apply Preset to Edit' checkbox
+  if (applyPresetCheckbox) {
+    applyPresetCheckbox.addEventListener('change', (e) => {
+      updatePresetVisibility();
+      // FIX: Wenn aktiviert, sofort Infos und Bild laden!
+      if (e.target.checked) {
+        // FIX: Sicherstellen, dass Variationen zum Stil passen, bevor wir anzeigen
+        populateVariationSelect();
+        // (populateVariationSelect ruft updatePresetInfoBox automatisch auf)
+        updateStylePreviewImage();
+      }
+    });
+  }
+  
+  // --- FINAL INITIALIZATION ---
 
-  // Initialize style presets on startup
-  populateStyleSelect();
+  async function initializeStudio() {
+    // 1. Lade Preisdaten und baue die Provider/Model-Dropdowns
+    await loadPricingData(); // Wir warten, bis das fertig ist
+
+    // 2. Lade die Preset-Daten (was populateStyleSelect -> populateVariationSelect anstößt)
+    await fetchPresets(); 
+    
+    // 3. JETZT, wo garantiert alles geladen und im DOM ist, rufen wir die Funktion einmal auf.
+    console.log("DIAGNOSE: Initialisierung abgeschlossen. Lade erstes Vorschaubild.");
+    updateStylePreviewImage();
+  }
+
+  // --- Initialisierung beim Start ---
+  updateCapabilityUI(); 
+  if (maskControls) maskControls.style.display = 'none';
+  togglePresetForEditUI(); 
+  togglePresetForRefineUI();
+  updatePresetVisibility();
+
+  // Starte die kontrollierte Lade-Kette
+  initializeStudio();
 });

@@ -159,6 +159,7 @@ def mock_message_model_for_migration():
     return mock_msg
 
 
+@pytest.mark.asyncio
 @patch(
     "backend.services.image_manager.save_image_from_url",
     return_value="/user_images/migrated.png",
@@ -182,6 +183,7 @@ async def test_migrate_image_paths_dalle_url(
     mock_logger.info.assert_called_with("Image path migration complete.")
 
 
+@pytest.mark.asyncio
 @patch("backend.services.image_manager.save_image_from_url")
 async def test_migrate_image_paths_local_path(mock_save_image_from_url, mock_logger):
     mock_db_session = MagicMock()
@@ -198,6 +200,7 @@ async def test_migrate_image_paths_local_path(mock_save_image_from_url, mock_log
     mock_logger.info.assert_called_with("Image path migration complete.")
 
 
+@pytest.mark.asyncio
 @patch("backend.services.image_manager.save_image_from_url", return_value=None)
 async def test_migrate_image_paths_save_fails(
     mock_save_image_from_url, mock_logger, mock_message_model_for_migration

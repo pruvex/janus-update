@@ -8,7 +8,8 @@ import keyring
 # Wir importieren die Module, damit die Funktionen verfügbar sind
 from backend.data import contact_schemas, schemas
 from backend.utils.config_loader import load_model_catalog
-from backend.services import filesystem_manager, memory_manager
+from backend.services import filesystem_manager
+from backend.services.memory_manager import search_past_conversation_summaries_tool
 from backend.services.scraper_service import scrape_website
 from backend.services.tool_manager import tool_manager
 from backend.services.websearch.websearch import perform_websearch_service
@@ -162,9 +163,8 @@ def register_all_tools():
     )
     tool_manager.register_tool(list_contacts_wrapper, contact_schemas.ContactListArgs)
     tool_manager.register_tool(delete_contact_by_id_wrapper, contact_schemas.ContactDeleteArgs)
-    tool_manager.register_tool(memory_manager.save_core_memory_fact, schemas.SaveCoreMemoryToolArgs)
     tool_manager.register_tool(
-        memory_manager.search_past_conversation_summaries_tool, schemas.CrossChatMemoryToolArgs
+        search_past_conversation_summaries_tool, schemas.CrossChatMemoryToolArgs
     )
 
 

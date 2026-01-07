@@ -38,8 +38,13 @@ def calculate_cost(model_id: str, usage_data: dict = None, custom_prompt: str = 
     cost_usd = 0.0
 
     if (model_type == "text" or model_type == "audio") and usage_data is not None:
-        input_tokens = usage_data.get("prompt_tokens", 0)
-        output_tokens = usage_data.get("completion_tokens", 0)
+        # Flexibler Zugriff auf Token-Daten (für Objekte und Dictionaries)
+        if isinstance(usage_data, dict):
+            input_tokens = usage_data.get('prompt_tokens', 0)
+            output_tokens = usage_data.get('completion_tokens', 0)
+        else:
+            input_tokens = getattr(usage_data, 'prompt_tokens', 0)
+            output_tokens = getattr(usage_data, 'completion_tokens', 0)
 
         input_cost_per_token = model_info.get("cost_per_token_input", 0)
         output_cost_per_token = model_info.get("cost_per_token_output", 0)

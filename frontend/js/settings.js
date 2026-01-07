@@ -24,6 +24,13 @@ const workspacesList = document.getElementById("workspaces-list");
 const addWorkspaceBtn = document.getElementById("add-workspace-btn");
 const memoryListContainer = document.getElementById("memory-list-container");
 
+// Memory Modal Elements
+const memoryModal = document.getElementById("memory-modal");
+const memoryForm = document.getElementById("memory-form");
+const closeMemoryModalBtn = document.getElementById("close-memory-modal");
+const addMemoryBtn = document.getElementById("add-memory-btn");
+const memoryPrioritySelect = document.getElementById("memory-priority");
+
 // --- Functions ---
 
 function setActiveSettingsSection(targetId) {
@@ -92,8 +99,17 @@ async function renderModelManagementView(provider) {
     console.error("Error fetching selected models:", error);
   }
 
+  const excludedModels = [
+    "gpt-image-1.5",
+    "gpt-image-1-mini",
+    "gpt-4o-mini-tts",
+    "gpt-image-1",
+    "gemini-3-pro-image-preview",
+    "gemini-2.5-flash-image",
+    "gemini-pro-vision"
+  ];
   appState.model_catalog[provider].forEach((model) => {
-    if (model.id === "gpt-image-1") return;
+    if (excludedModels.includes(model.id)) return;
     const listItem = document.createElement("li");
     const isChecked = selectedModels.includes(model.id) ? "checked" : "";
     listItem.innerHTML = `<input type="checkbox" id="${model.id}" value="${model.id}" ${isChecked}> <label for="${model.id}">${model.name}</label>`;
@@ -131,50 +147,206 @@ async function renderWorkspacesView() {
 
 async function renderMemoryView() {
   setActiveSettingsSection("memory-section");
-  memoryListContainer.innerHTML = "<p>Lade Gedächtniseinträge...</p>"; // Lade-Indikator
+  memoryListContainer.innerHTML = '<div class="spinner"></div> Lade Diamond Memory...';
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/memory`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    
     const memories = await response.json();
 
-    if (memories.length === 0) {
-      memoryListContainer.innerHTML = "<p>Keine persönlichen Informationen gespeichert.</p>";
+    if (!memories || memories.length === 0) {
+      memoryListContainer.innerHTML = "<p>Keine Einträge gefunden. Füge deinen ersten Fakt hinzu!</p>";
       return;
     }
 
-    memoryListContainer.innerHTML = ""; // Clear loading indicator
+    memoryListContainer.innerHTML = "";
+    
     memories.forEach((memory) => {
       const memoryCard = document.createElement("div");
-      memoryCard.className = "memory-card";
+      
+      // Styling & Labeling Logik
+      let priorityClass = "priority-general";
+      let icon = "📄";
+      let label = "General";
+      
+      const priority = memory.core_priority !== undefined ? memory.core_priority : 0;
+      
+      if (priority === 2) {
+          priorityClass = "priority-core-identity";
+          icon = "💎";
+          label = "Core Identity";
+      } else if (priority === 1) {
+          priorityClass = "priority-core-detail";
+          icon = "🔹";
+          label = "Core Detail";
+      }
+
+      // --- NEU: Zuerst das JSON-Objekt aus dem Snippet parsen ---
+      let factObject;
+      try {
+          factObject = JSON.parse(memory.snippet);
+      } catch (e) {
+          // Fallback für alte, nicht-JSON-formatierte Einträge
+          factObject = { fact: memory.snippet, category: memory.category };
+      }
+      // --- ENDE NEU ---
+
+      memoryCard.className = `memory-card ${priorityClass}`;
       memoryCard.dataset.id = memory.id;
 
+      // --- KORREKTUR: Daten für das Modal aus dem geparsten Objekt speichern ---
+      // Speichert das ganze Objekt als String, um es im Modal wieder zu laden
+      memoryCard.dataset.factObject = JSON.stringify(factObject); 
+      // --- ENDE KORREKTUR ---
+
       memoryCard.innerHTML = `
-        <div class="memory-content">
-          <span class="memory-snippet">${memory.snippet}</span>
-          <span class="memory-category category-${memory.category.toLowerCase().replace(/\s/g, "-")}" data-category="${memory.category}">${memory.category}</span>
+        <div class="memory-header" style="display:flex; justify-content:space-between; font-size:0.8em; margin-bottom:8px; opacity:0.9;">
+            <span class="mem-type" style="font-weight:bold;">${icon} ${label}</span>
+            <span class="mem-cat" style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px;">${factObject.category || "Unkategorisiert"}</span>
+        </div>
+        <div class="memory-content" style="margin-bottom:15px; line-height:1.5;">
+          <span class="memory-snippet">${factObject.fact}</span> <!-- KORREKTUR: Nur das 'fact'-Feld anzeigen -->
         </div>
         <div class="memory-actions">
-          <button class="edit-memory-btn">Bearbeiten</button>
-          <button class="delete-memory-btn">Löschen</button>
+          <button class="edit-memory-btn secondary-button">Bearbeiten</button>
+          <button class="delete-memory-btn secondary-button" style="border-color:#b91c1c; color:#fca5a5;">Löschen</button>
         </div>
       `;
       memoryListContainer.appendChild(memoryCard);
     });
 
-    // Event Listeners for edit and delete buttons
-    memoryListContainer.querySelectorAll(".edit-memory-btn").forEach((button) => {
-      button.addEventListener("click", (e) => editMemoryEntry(e.target.closest(".memory-card")));
+    // Event Listeners für die neuen Buttons
+    document.querySelectorAll(".edit-memory-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => openMemoryModal(e.target.closest(".memory-card")));
     });
-    memoryListContainer.querySelectorAll(".delete-memory-btn").forEach((button) => {
-      button.addEventListener("click", (e) => deleteMemoryEntry(e.target.closest(".memory-card")));
+    
+    document.querySelectorAll(".delete-memory-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => deleteMemoryEntry(e.target.closest(".memory-card")));
     });
+
   } catch (error) {
-    console.error("Error loading memory entries:", error);
-    memoryListContainer.innerHTML = `<p>Fehler beim Laden der Gedächtniseinträge: ${error.message}</p>`;
+    console.error("Error loading memory:", error);
+    memoryListContainer.innerHTML = `<p class="error-message">Fehler: ${error.message}</p>`;
   }
+}
+
+// --- Memory Modal Logic ---
+
+function openMemoryModal(card = null) {
+  const title = document.getElementById("memory-modal-title");
+  const idInput = document.getElementById("memory-id");
+  const snippetInput = document.getElementById("memory-snippet");
+  const catInput = document.getElementById("memory-category");
+  const prioInput = document.getElementById("memory-priority");
+
+  if (card) {
+    // Edit Mode
+    const factObject = JSON.parse(card.dataset.factObject);
+    title.textContent = "Fakt bearbeiten";
+    idInput.value = card.dataset.id;
+    snippetInput.value = factObject.fact; // Aus dem Objekt lesen
+    catInput.value = factObject.category; // Aus dem Objekt lesen
+    
+    let priority = 0;
+    if (factObject.type === "CORE_IDENTITY") priority = 2;
+    else if (factObject.type === "CORE_DETAIL") priority = 1;
+    prioInput.value = priority;
+  } else {
+    // Add Mode
+    title.textContent = "Neuen Fakt hinzufügen";
+    idInput.value = "";
+    snippetInput.value = "";
+    catInput.value = "Allgemein";
+    prioInput.value = "0";
+  }
+  
+  memoryModal.style.display = "block";
+}
+
+function updatePriorityDescription(priority, element) {
+    const descriptions = {
+        "2": "Definiert fundamentale Eigenschaften der Identität. Diese Fakten werden IMMER im Kontext berücksichtigt.",
+        "1": "Wichtige Details zu deiner Person. Diese Fakten werden bei thematischer Relevanz automatisch abgerufen.",
+        "0": "Allgemeine Informationen. Diese Fakten können bei Bedarf aus dem aktiven Speicher entfernt werden."
+    };
+    
+    if (element) {
+        element.textContent = descriptions[priority] || "";
+    }
+}
+
+function closeMemoryModal() {
+    memoryModal.style.display = "none";
+}
+
+// Event Listeners für das Memory-Modal
+if (addMemoryBtn) addMemoryBtn.addEventListener("click", () => openMemoryModal(null));
+if (closeMemoryModalBtn) closeMemoryModalBtn.addEventListener("click", closeMemoryModal);
+if (memoryPrioritySelect) {
+    memoryPrioritySelect.addEventListener("change", (e) => {
+        updatePriorityDescription(e.target.value, document.getElementById("priority-desc"));
+    });
+}
+
+// Schließen des Modals, wenn außerhalb geklickt wird
+window.addEventListener("click", (event) => {
+    if (event.target === memoryModal) {
+        closeMemoryModal();
+    }
+});
+
+// Form Submit Handler
+if (memoryForm) {
+    memoryForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const id = document.getElementById("memory-id").value;
+        const snippet = document.getElementById("memory-snippet").value.trim();
+        const category = document.getElementById("memory-category").value.trim() || "Allgemein";
+        const priority = parseInt(document.getElementById("memory-priority").value) || 0;
+        
+        if (!snippet) {
+            alert("Bitte gib einen Fakt ein.");
+            return;
+        }
+
+        const payload = {
+            snippet: snippet,
+            category: category,
+            core_priority: priority,
+            is_core_fact: priority > 0
+        };
+
+        const url = id ? `${API_BASE_URL}/api/memory/${id}` : `${API_BASE_URL}/api/memory`;
+        const method = id ? "PUT" : "POST";
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || "Speichern fehlgeschlagen");
+            }
+            
+            closeMemoryModal();
+            await renderMemoryView(); // Refresh list
+
+        } catch (error) {
+            console.error("Error saving memory:", error);
+            alert(`Fehler: ${error.message}`);
+        }
+    });
+}
+
+// Abbrechen-Button
+const cancelMemoryBtn = document.getElementById("memory-cancel-btn");
+if (cancelMemoryBtn) {
+    cancelMemoryBtn.addEventListener("click", closeMemoryModal);
 }
 
 // --- START: Address Book Functions ---
@@ -477,6 +649,12 @@ export async function updateActivePersonalityDisplay() {
 // --- Event Listeners ---
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // Display app version
+  const versionDisplay = document.getElementById('app-version-display');
+  if (versionDisplay) {
+    versionDisplay.textContent = `Version ${import.meta.env.APP_VERSION || '0.1.0-beta.1'}`;
+  }
+
   // Load initial data
   try {
     const response = await fetch(`${API_BASE_URL}/api/models/catalog`);
@@ -524,13 +702,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     e.preventDefault();
     const provider = providerInput.value;
     const api_key = apiKeyInput.value;
-    await fetch(`${API_BASE_URL}/api/keys`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ provider, api_key }),
-    });
-    apiKeyInput.value = "";
-    renderSettingsView();
+    
+    // Visuelles Feedback
+    const submitBtn = apiKeyForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = "Speichere...";
+    submitBtn.disabled = true;
+
+    try {
+        await fetch(`${API_BASE_URL}/api/keys`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ provider, api_key }),
+        });
+        
+        apiKeyInput.value = "";
+        
+        // --- FIX: HARTER NEUSTART ---
+        // Zwingt die App, neu zu laden. Dadurch werden 'initializeApp' 
+        // und 'loadChats' erneut ausgeführt, diesmal MIT gültigem Token.
+        console.log("API Key gespeichert. Führe Neustart durch...");
+        window.location.reload(); 
+        // ----------------------------
+
+    } catch (error) {
+        console.error("Fehler beim Speichern des Keys:", error);
+        alert("Fehler beim Speichern: " + error.message);
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }
   });
 
   // Model Management
@@ -546,11 +746,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     const provider = modelSelectionForm.dataset.provider;
     const checkboxes = modelList.querySelectorAll('input[type="checkbox"]:checked');
     const newSelection = Array.from(checkboxes).map((cb) => cb.value);
+    
     await fetch(`${API_BASE_URL}/api/models/selection`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ provider: provider, models: newSelection }),
     });
+
+    // Send update signal to the main app
+    console.log("Modelle gespeichert, sende Update-Signal...");
+    document.dispatchEvent(new CustomEvent("models-updated"));
+    
     renderSettingsView();
   });
 

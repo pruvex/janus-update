@@ -1,11 +1,15 @@
+# backend/data/schemas.py
+
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from enum import Enum
+from typing import List, Optional, Dict, Any, Literal
 
 from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-)  # Stellen Sie sicher, dass ConfigDict importiert wird
+)
+from typing import List, Literal, Optional, Dict, Any
 
 
 # --- Tool Schemas ---
@@ -15,7 +19,7 @@ class GenerateImageToolArgs(BaseModel):
     quality: Optional[str] = Field(
         "standard",
         description="Die Qualität des generierten Bildes. Unterstützte Werte sind 'standard' und 'hd'.",
-        pattern="^(standard|hd)$" # <-- NEU: Regex, um nur 'standard' oder 'hd' zu erlauben
+        pattern="^(standard|hd)$"
     )
     response_format: Optional[str] = "url"
 
@@ -61,7 +65,7 @@ class ChatRequest(BaseModel):
     provider: str
     model: str
     chat_id: Optional[int] = None
-    project_id: Optional[int] = None  # NEU
+    project_id: Optional[int] = None
 
 
 # --- Project Schemas ---
@@ -89,7 +93,6 @@ class ProjectFileResponse(BaseModel):
 class ProjectResponse(ProjectBase):
     id: int
     created_at: datetime
-    # Wir geben hier erstmal nur eine Liste der Dateinamen oder IDs zurück, um Traffic zu sparen
     files: List[ProjectFileResponse] = []
 
     class Config:
@@ -120,7 +123,7 @@ class ChatResponse(ChatBase):
     title: str
     created_at: datetime
     is_archived: bool
-    project_id: Optional[int] = None  # NEU
+    project_id: Optional[int] = None
 
     class Config:
         from_attributes = True
@@ -140,12 +143,12 @@ class CreateFileArgs(BaseModel):
 class SaveMp3Args(BaseModel):
     content: str = Field(
         ...,
-        description="Der zu vertonende Text. Dies sollte der vollständige Text (inklusive SSML-Tags wie <speak>) aus der vorherigen Assistenten-Antwort sein.",
+        description="Der zu vertonende Text.",
     )
-    filename: str = Field(..., description="Der Zieldateiname für die MP3, z.B. 'geschichte.mp3'.")
+    filename: str = Field(..., description="Der Zieldateiname für die MP3.")
     voice: Optional[str] = Field(
         "fable",
-        description="Nur relevant für SSML/OpenAI. Stimme zur Vertonung. Verfügbar: 'alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'. Standard ist 'fable'.",
+        description="Stimme zur Vertonung.",
     )
 
 
@@ -191,321 +194,264 @@ class ListAllowedWorkspacesArgs(BaseModel):
 
 
 class FindLocalBusinessArgs(BaseModel):
-    """
-    Argumente für die Suche nach lokalen Geschäften und Dienstleistungen.
-    """
-
-    query: str = Field(..., description="Was gesucht wird, z.B. 'Pizzeria', 'Kino', 'Supermarkt'.")
-    location: Optional[str] = Field(
-        None,
-        description="Der Ort, in dem gesucht werden soll, z.B. 'Köln', 'Berlin'. Wenn nicht angegeben, wird 'in meiner Nähe' angenommen.",
-    )
+    query: str = Field(..., description="Was gesucht wird.")
+    location: Optional[str] = Field(None, description="Der Ort.")
 
 
 class WebsearchToolArgs(BaseModel):
-    """
-    Führt eine allgemeine Websuche für Informationen, Produkte, Personen oder beliebige andere nicht-lokale Anfragen durch.
-    NICHT VERWENDEN für lokale Geschäfte, Restaurants oder Dienstleistungen - dafür find_local_business_tool verwenden.
-    """
-
     query: str = Field(..., description="Die Suchanfrage.")
 
 
 class ReadUrlContentArgs(BaseModel):
-    """Liest den reinen Textinhalt einer Webseite, nachdem HTML-Boilerplate entfernt wurde."""
-    url: str = Field(..., description="Die vollständige URL der zu lesenden Webseite (muss mit http:// oder https:// beginnen).")
+    url: str = Field(..., description="Die vollständige URL.")
 
 
-# --- PDF Tool Schema (ERWEITERT) ---
 class CreatePdfFromMarkdownArgs(BaseModel):
     content: str = Field(..., description="Der Inhalt der PDF-Datei im Markdown-Format.")
-    filename: str = Field(..., description="Der gewünschte Dateiname (z.B. 'zusammenfassung.pdf').")
-    location: str = Field(
-        "Documents",
-        description="Der Speicherort. Mögliche Werte: 'Desktop', 'Documents', 'Downloads'. Standard ist 'Documents'.",
-    )
-    include_image: bool = Field(
-        False,
-        description="Setze dies auf 'true', wenn das letzte Bild aus dem Chatverlauf in die PDF eingefügt werden soll.",
-    )
-    # NEUE PARAMETER
-    font_size: int = Field(
-        default=11,
-        description="Die Schriftgröße für den Haupttext in der PDF. Der Standardwert ist 11. Überschriften sind relativ größer.",
-    )
-    image_width: int = Field(
-        default=0,
-        description="Die gewünschte Breite des Bildes in Millimetern. Bei 0 wird die Breite automatisch an die Seite angepasst (ca. 190mm). Gib z.B. 100 an für ein 10cm breites Bild.",
-    )
-
-
-from typing import Optional
+    filename: str = Field(..., description="Der gewünschte Dateiname.")
+    location: str = Field("Documents", description="Der Speicherort.")
+    include_image: bool = Field(False, description="Bild einfügen?")
+    font_size: int = Field(default=11, description="Die Schriftgröße.")
+    image_width: int = Field(default=0, description="Die gewünschte Breite des Bildes.")
 
 
 class GetWeatherFromApiToolArgs(BaseModel):
-    city: str = Field(
-        ...,
-        description="Die Stadt, für die die Wettervorhersage abgerufen werden soll, z.B. 'Berlin' oder 'Köln'.",
-    )
-    date_str: Optional[str] = Field(
-        None,
-        description="Optional: Ein Datum in natürlicher Sprache (z.B. 'Samstag', 'übermorgen', '15. November'), um eine Vorhersage für einen bestimmten Tag zu erhalten. Wenn kein Datum angegeben wird, wird die Vorhersage für den nächsten verfügbaren Tag zurückgegeben.",
-    )
+    city: str = Field(..., description="Die Stadt.")
+    date_str: Optional[str] = Field(None, description="Optional: Ein Datum.")
 
 
 class GetCountryInfoToolArgs(BaseModel):
-    country_name: str = Field(
-        ...,
-        description="Der offizielle englische Name des Landes, z.B. 'Germany', 'Peru', 'Japan'.",
-    )
-    info_type: str = Field(
-        ...,
-        description="Die Art der Information, die angefragt wird. Mögliche Werte: 'capital' (Hauptstadt), 'population' (Einwohnerzahl), 'currency' (Währung), 'languages' (Sprachen), 'region' (Kontinent/Region).",
-    )
+    country_name: str = Field(..., description="Der offizielle englische Name des Landes.")
+    info_type: str = Field(..., description="Die Art der Information.")
 
 
 class GetLatestNewsRssToolArgs(BaseModel):
-    query: Optional[str] = Field(
-        None,
-        description="Das Thema, nach dem über alle Nachrichtenquellen hinweg gesucht werden soll. Verfeinere diese Suchanfrage IMMER mit relevanten persönlichen Vorlieben (z.B. spezifische Genres, Konsolen, Themen), die im Kontext oder der Faktenlage verfügbar sind.",
-    )
-    source: Optional[str] = Field(
-        None,
-        description="Die spezifische Quelle für Top-Schlagzeilen. Verfügbare Quellen sind: 'tagesschau', 'spiegel', 'zeit', 'heise', 'reuters', 'bbc'.",
-    )
+    query: Optional[str] = Field(None, description="Das Thema.")
+    source: Optional[str] = Field(None, description="Die spezifische Quelle.")
 
 
 class GetWikipediaSummaryArgs(BaseModel):
-    query: str = Field(
-        ...,
-        description="Das Thema, der Name oder das Konzept, nach dem in Wikipedia gesucht werden soll.",
-    )
-    lang: str = Field(
-        "de",
-        description="Der Sprachcode für die Wikipedia-Version (z.B. 'de' für Deutsch, 'en' für Englisch). Standard ist 'de'.",
-    )
+    query: str = Field(..., description="Das Thema.")
+    lang: str = Field("de", description="Sprachcode.")
 
 
 class GetCalendarEventsArgs(BaseModel):
-    days_in_future: Optional[int] = Field(
-        7,
-        description="Die Anzahl der Tage, die in die Zukunft geschaut werden soll. Wird ignoriert, wenn start_date gesetzt ist.",
-    )
-    start_date: Optional[str] = Field(
-        None,
-        description="Das Startdatum für die Suche im Format YYYY-MM-DD. Wenn angegeben, wird days_in_future ignoriert.",
-    )
-    end_date: Optional[str] = Field(
-        None,
-        description="Das Enddatum für die Suche im Format YYYY-MM-DD. Wenn nicht angegeben, wird nur der start_date durchsucht.",
-    )
+    days_in_future: Optional[int] = Field(7, description="Anzahl Tage.")
+    start_date: Optional[str] = Field(None, description="Startdatum.")
+    end_date: Optional[str] = Field(None, description="Enddatum.")
 
 
 class CreateCalendarEventArgs(BaseModel):
-    summary: str = Field(..., description="Der Titel oder die Zusammenfassung des Termins.")
-    start_time_str: str = Field(
-        ...,
-        description=(
-            "Die Startzeit des Termins, IMMER als absolutes Datum und Uhrzeit im ISO-8601-Format (YYYY-MM-DDTHH:MM:SS). "
-            "Du MUSST relative Angaben wie 'morgen' oder 'nächste Woche' basierend auf dem heutigen Datum (im Systemprompt) "
-            "selbstständig in dieses Format umrechnen, BEVOR du das Werkzeug aufrufst."
-        ),
-    )
-    location: Optional[str] = Field(default=None, description="Optionaler Ort des Termins.")
-    description: Optional[str] = Field(
-        default=None,
-        description="Optionale Details oder eine Beschreibung für den Termin, z.B. 'ich lerne heute klavier'.",
-    )
+    summary: str = Field(..., description="Titel.")
+    start_time_str: str = Field(..., description="Startzeit.")
+    location: Optional[str] = Field(default=None, description="Ort.")
+    description: Optional[str] = Field(default=None, description="Details.")
 
 
 class DeleteCalendarEventArgs(BaseModel):
-    """Argumente für das Werkzeug delete_calendar_event."""
-
-    event_id: str = Field(
-        ...,
-        description="Die eindeutige ID des zu löschenden Termins, die zuvor mit get_calendar_events abgerufen wurde.",
-    )
+    event_id: str = Field(..., description="ID des Termins.")
 
 
 class UpdateCalendarEventArgs(BaseModel):
-    """Argumente für das Werkzeug update_calendar_event."""
-
-    event_id: str = Field(..., description="Die eindeutige ID des zu ändernden Termins.")
-    summary: Optional[str] = Field(None, description="Der neue Titel des Termins.")
-    start_time_str: Optional[str] = Field(
-        None, description="Die neue Startzeit des Termins als Text."
-    )
-    end_time_str: Optional[str] = Field(None, description="Die neue Endzeit des Termins als Text.")
-    location: Optional[str] = Field(None, description="Der neue Ort des Termins.")
-    description: Optional[str] = Field(
-        None, description="Die neue, vollständige Beschreibung des Termins."
-    )
+    event_id: str = Field(..., description="ID des Termins.")
+    summary: Optional[str] = Field(None, description="Neuer Titel.")
+    start_time_str: Optional[str] = Field(None, description="Neue Startzeit.")
+    end_time_str: Optional[str] = Field(None, description="Neue Endzeit.")
+    location: Optional[str] = Field(None, description="Neuer Ort.")
+    description: Optional[str] = Field(None, description="Neue Beschreibung.")
 
 
 class FindAddressAndUpdateCalendarEventArgs(BaseModel):
-    """Argumente für das Werkzeug find_address_and_update_calendar_event."""
-
-    event_title_query: str = Field(
-        ...,
-        description="Ein oder zwei Schlüsselwörter aus dem Titel des zu aktualisierenden Kalendereintrags, z.B. 'Magenspülung' oder 'Zahnarzt'.",
-    )
-    location_query: str = Field(
-        ...,
-        description="Die Suchanfrage, um die Adresse zu finden, z.B. 'Praxis Dr. Freudenhammer Merheim' oder 'Zahnarzt Müller Köln'.",
-    )
+    event_title_query: str = Field(..., description="Schlüsselwörter aus dem Titel.")
+    location_query: str = Field(..., description="Suchanfrage für Adresse.")
 
 
-# --- START OF CODE ---
-# Schemas für die Gedächtnis-Verwaltung im Frontend
+# --- STRUCTURED MEMORY SCHEMAS (V2) ---
+
+# Type Definitions
+Predicate = Literal[
+    "is", "owns", "name_is", "likes", "allergic_to", "prefers_food", "lives_in"
+]
+SubjectRole = Literal["user", "pet", "relative"]
+RelativeType = Literal[
+    "grandmother", "uncle", "aunt", "grandfather", 
+    "mother", "father", "sister", "brother", "cousin", "unknown"
+]
+PetType = Literal["cat", "dog", "unknown"]
+
+class MemoryCategory(str, Enum):
+    GESUNDHEIT = "Gesundheit"
+    BEZIEHUNGEN = "Beziehungen"
+    HAUSTIER_DETAILS = "Haustier-Details"
+    VORLIEBEN = "Vorlieben"
+    BERUF = "Beruf"
+    TERMINE = "Termine"
+    ALLGEMEIN = "Allgemein"
+
+class ExtractedFact(BaseModel):
+    """Structured fact extracted from user conversation."""
+    fact: str = Field(..., description="Der extrahierte Fakt (Deutsch, Template-konform).")
+    category: MemoryCategory
+    
+    # Make these fields optional with default values
+    type: Optional[Literal["CORE_IDENTITY", "CORE_DETAIL", "EPHEMERAL", "GENERAL"]] = "GENERAL"
+    expires_in_hours: Optional[int] = None
+    
+    # Make these fields optional with default values
+    canonical_key: Optional[str] = Field(None, description="Kanonischer Schlüssel, z.B. 'likes|relative:grandmother:gertrude|cats'")
+    subject_role: Optional[str] = None  # Changed from SubjectRole to str
+    subject_pet_type: Optional[str] = None  # Changed from PetType to str
+    subject_relative_type: Optional[str] = None  # Changed from RelativeType to str
+    subject_name: Optional[str] = None
+    predicate: Optional[str] = None  # Changed from Predicate to str
+    object_value: Optional[str] = None
+    evidence: Optional[str] = Field(None, description="Kurzes Zitat aus dem User-Text.")
+
+class FactExtractionResponse(BaseModel):
+    """Response containing extracted facts from LLM."""
+    facts: List[ExtractedFact]
+
+# Legacy memory models (keep for backward compatibility)
+class MemoryBase(BaseModel):
+    snippet: str
+    category: MemoryCategory = MemoryCategory.ALLGEMEIN
+    is_core_fact: bool = False
+    core_priority: int = 0
+
+class MemoryCreate(MemoryBase):
+    pass
+
 class MemoryUpdate(BaseModel):
-    snippet: str
-    category: str
+    snippet: Optional[str] = None
+    category: Optional[MemoryCategory] = None
+    is_core_fact: Optional[bool] = None
+    core_priority: Optional[int] = None
 
-
-class MemoryResponse(BaseModel):
+class MemoryResponse(MemoryBase):
     id: int
-    snippet: str
-    category: str
+    chat_id: int
     created_at: datetime
-    last_accessed_at: datetime
-
-    class Config:
-        orm_mode = True
+    last_accessed_at: Optional[datetime]
+    expires_at: Optional[datetime] = None
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Gmail Tool Schemas ---
 
-
 class GetLatestEmailsArgs(BaseModel):
-    """Arguments for the get_latest_emails tool."""
-
-    max_results: Optional[int] = Field(
-        5, description="The maximum number of emails to retrieve (default is 5)."
-    )
-    query: Optional[str] = Field(
-        None,
-        description="A Gmail search query to filter emails. "
-        "Examples: 'from:sender@example.com', 'is:unread', 'subject:project update'",
-    )
-    # --- START GOLDSTANDARD-FIX ---
-    fetch_body: bool = Field(
-        False,
-        description="Set to true ONLY if the user's request requires the full content of the email, e.g., for 'summarize', 'translate', or 'extract information from'.",
-    )
-    # --- ENDE GOLDSTANDARD-FIX ---
+    max_results: Optional[int] = Field(5, description="Max emails.")
+    query: Optional[str] = Field(None, description="Search query.")
+    fetch_body: bool = Field(False, description="Fetch body?")
 
 
 class SendEmailArgs(BaseModel):
-    """Arguments for the send_email tool."""
-
-    to: str = Field(
-        ...,
-        description="Die E-Mail-Adresse des Empfängers. Mehrere Empfänger können mit Komma getrennt werden.",
-    )
-    subject: str = Field(..., description="Die Betreffzeile der E-Mail.")
-    body: str = Field(..., description="Der Textinhalt der E-Mail.")
-    attachment_path: Optional[str] = Field(
-        None,
-        description="Optional: Der vollständige, absolute Dateipfad zu einer Datei, die als Anhang gesendet werden soll.",
-    )
+    to: str = Field(..., description="Empfänger.")
+    subject: str = Field(..., description="Betreff.")
+    body: str = Field(..., description="Inhalt.")
+    attachment_path: Optional[str] = Field(None, description="Anhang Pfad.")
 
 
 class FindFreeTimeSlotsArgs(BaseModel):
-    """Arguments for the find_free_time_slots tool."""
-
-    year: int = Field(..., description="Das Jahr, in dem gesucht werden soll, z.B. 2025.")
-    month: int = Field(
-        ..., description="Der Monat, in dem gesucht werden soll (als Zahl, z.B. 11 für November)."
-    )
-    location_for_weather: Optional[str] = Field(
-        None,
-        description="Optional: Der Ort (Stadt), für den das Wetter geprüft werden soll, um trockene Tage zu markieren.",
-    )
+    year: int = Field(..., description="Jahr.")
+    month: int = Field(..., description="Monat.")
+    location_for_weather: Optional[str] = Field(None, description="Ort für Wetter.")
 
 
 class UpdateCalendarEventDescriptionArgs(BaseModel):
-    """Argumente für das Werkzeug update_calendar_event_description."""
-
-    event_title_query: str = Field(
-        ...,
-        description="Ein oder zwei Schlüsselwörter aus dem Titel des zu aktualisierenden Kalendereintrags, z.B. 'Chinesisch Essen' oder 'Klavierunterricht'.",
-    )
-    new_description_part: str = Field(
-        ...,
-        description="Der Text, der zur bestehenden Beschreibung des Termins hinzugefügt werden soll, z.B. 'Begleitung: Kalle'.",
-    )
+    event_title_query: str = Field(..., description="Titel Query.")
+    new_description_part: str = Field(..., description="Text zum Hinzufügen.")
 
 
 class SaveCoreMemoryToolArgs(BaseModel):
-    """Arguments for the save_core_memory_tool function."""
-
-    fact: str = Field(
-        ..., description="Der reine Fakt oder die Information, die gespeichert werden soll."
-    )
-    category: str = Field(
-        ...,
-        description="Eine passende Kategorie für den Fakt, z.B. 'Preference', 'Personal', 'Goal'.",
-    )
-
-
-# --- START OF CODE ---
+    fact: str = Field(..., description="Der reine Fakt.")
+    category: str = Field(..., description="Kategorie.")
 
 
 class FindAndUpdateCalendarEventArgs(BaseModel):
-    event_title_query: str = Field(
-        ...,
-        description="Ein oder zwei Schlüsselwörter aus dem Titel des zu findenden und zu aktualisierenden Termins.",
-    )
-    new_summary: Optional[str] = Field(None, description="Der neue Titel des Termins.")
-    new_start_time: Optional[str] = Field(
-        None, description="Die neue Startzeit des Termins als Text."
-    )
-    new_end_time: Optional[str] = Field(None, description="Die neue Endzeit des Termins als Text.")
-    new_location: Optional[str] = Field(None, description="Der neue Ort des Termins.")
-    new_description: Optional[str] = Field(None, description="Die neue Beschreibung des Termins.")
-    cancel_event: Optional[bool] = Field(
-        default=False,
-        description="Setze dies auf 'true', um den gefundenen Termin zu stornieren, anstatt ihn zu aktualisieren.",
-    )
+    event_title_query: str = Field(..., description="Titel Query.")
+    new_summary: Optional[str] = Field(None, description="Neuer Titel.")
+    new_start_time: Optional[str] = Field(None, description="Neue Startzeit.")
+    new_end_time: Optional[str] = Field(None, description="Neue Endzeit.")
+    new_location: Optional[str] = Field(None, description="Neuer Ort.")
+    new_description: Optional[str] = Field(None, description="Neue Beschreibung.")
+    cancel_event: Optional[bool] = Field(default=False, description="Stornieren?")
 
 
 class ReadEmailArgs(BaseModel):
-    email_id: str = Field(description="Die eindeutige ID der zu lesenden E-Mail.")
+    email_id: str = Field(description="ID der E-Mail.")
 
 
 class GetDistanceArgs(BaseModel):
-    origin: str = Field(..., description="Der Startort, z.B. 'München'.")
-    destination: str = Field(..., description="Der Zielort, z.B. 'Hamburg'.")
-    mode: str = Field(
-        "driving",
-        description="Die Reiseart: 'driving' (Auto), 'walking' (Zu Fuß), 'cycling' (Fahrrad). Standard ist 'driving'.",
+    origin: str = Field(..., description="Startort.")
+    destination: str = Field(..., description="Zielort.")
+    mode: str = Field("driving", description="Reiseart.")
+
+
+# --- Planner/Reasoner Layer Schemas ---
+
+class PlannerKeyExtraction(BaseModel):
+    """Das ultra-schlanke Output-Schema für den 'Zero-Thinking' Planner."""
+    relevant_indices: List[int] = Field(..., description="Eine Liste der Indizes der relevanten Fakten.")
+
+
+class CandidateAnalysis(BaseModel):
+    """Analysis of a single candidate in the decision-making process."""
+    candidate_identifier: str = Field(..., description="Unique identifier for the candidate, e.g., 'relative:grandmother:gertrude'")
+    candidate_name: str = Field(..., description="Human-readable name of the candidate")
+    is_viable: bool = Field(..., description="Whether this candidate is currently viable")
+    reasoning_summary: str = Field(..., description="Concise summary of the analysis for this candidate")
+    pros: List[Dict] = Field(default_factory=list, description="Positive aspects supporting this candidate (vereinfacht zu Dict).")
+    cons: List[Dict] = Field(default_factory=list, description="Negative aspects against this candidate (vereinfacht zu Dict).")
+    final_score: float = Field(0.0, description="Numeric score for this candidate")
+
+
+class DecisionContext(BaseModel):
+    """
+    Structured decision context generated by the Planner/Reasoner layer.
+    """
+    status: Literal["ok", "need_more_info", "cannot_answer"] = Field(
+        ..., 
+        description="Overall status of the decision process"
+    )
+    task_summary: str = Field(..., description="Concise summary of the user's task or question")
+    analysis_summary: str = Field(..., description="Brief summary of the analysis results")
+    recommendations: List[CandidateAnalysis] = Field(
+        default_factory=list, 
+        description="List of analyzed candidates with recommendations"
+    )
+    clarifying_questions: Optional[List[str]] = Field(
+        None, 
+        description="Questions needed to proceed, if status is 'need_more_info'"
+    )
+    assumptions_made: Optional[List[str]] = Field(
+        None, 
+        description="Any assumptions made during the analysis"
     )
 
 
 class SetLastUsedModelRequest(BaseModel):
-    provider: str
-    model: str
+    provider: Optional[str] = None
+    model: Optional[str] = None
+
+
+class GetLastUsedModelResponse(BaseModel):
+    provider: Optional[str]
+    model: Optional[str]
 
 
 class FindContactAndSendEmailArgs(BaseModel):
-    name_query: str = Field(
-        ..., description="Der Name des Kontakts, an den die E-Mail gesendet werden soll."
-    )
-    subject: str = Field(..., description="Der Betreff der E-Mail.")
-    body: str = Field(..., description="Der Inhalt der E-Mail.")
+    name_query: str = Field(..., description="Name Query.")
+    subject: str = Field(..., description="Betreff.")
+    body: str = Field(..., description="Inhalt.")
 
 # --- Image Studio Schemas ---
 
 class GeminiHistory(BaseModel):
-    """Stores the previous prompt and image for Gemini refinement."""
     prompt: str
     image_base64: str
 
 class ImageParameters(BaseModel):
-    # Erlaubt beliebige Schlüssel-Wert-Paare, um flexibel zu sein
-    # z.B. {"quality": "hd", "resolution": "1024x1024", "style": "vivid"}
     model_config = ConfigDict(extra='allow')
-
 
 class GeneratedImageBase(BaseModel):
     prompt: Optional[str] = None
@@ -526,7 +472,11 @@ class GeneratedImageCreate(BaseModel):
     previous_response_id: Optional[str] = None
     previous_image_id: Optional[str] = None
     mask_image_data: Optional[str] = None
-    style_preset: Optional[Dict[str, str]] = None
+    
+    style_preset: Optional[str] = None
+    variation_preset: Optional[str] = None
+    apply_preset_to_edit: bool = False
+    
     quality_gate_level: Optional[str] = "none"
     quality_gate_stats: Optional[Dict[str, Any]] = None
 
@@ -536,11 +486,11 @@ class GeneratedImage(GeneratedImageBase):
     previous_response_id: Optional[str] = None
     previous_image_id: Optional[str] = None
     quality_gate_stats: Optional[Dict[str, Any]] = None
+    style_preset: str = ""
 
     class Config:
         from_attributes = True
 
-# --- Image Rename Schema ---
 class ImageRenameRequest(BaseModel):
-    old_path: str = Field(..., description="Der relative Pfad des umzubenennenden Bildes (z.B. 'user_images/old_name.png').")
-    new_filename: str = Field(..., description="Der neue vollständige Dateiname des Bildes (z.B. 'new_name.png').")
+    old_path: str = Field(..., description="Pfad alt.")
+    new_filename: str = Field(..., description="Dateiname neu.")

@@ -1,12 +1,12 @@
-# VOLLSTÄNDIGER, FINALER UND KORRIGIERTER INHALT FÜR: backend/llm_providers/gemini_service.py
-
 import datetime
 import json
 import logging
+import re # <<< Hinzugefügt
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
 
 import google.generativeai as genai
+import sentry_sdk
 from google.api_core.exceptions import InvalidArgument, ResourceExhausted
 from google.generativeai import protos
 from google.generativeai.types import (
@@ -44,12 +44,10 @@ def _calculate_and_log_cost(model_id, usage_data=None, custom_prompt=None):
 
 
 def _proto_to_dict(obj: Any) -> Any:
-    """Rekursive Konvertierung von Google Protobuf Typen (RepeatedComposite, MapComposite) in native Python Typen."""
-    if hasattr(obj, "items"):  # MapComposite oder Dict
+    """Rekursive Konvertierung von Google Protobuf Typen."""
+    if hasattr(obj, "items"):
         return {k: _proto_to_dict(v) for k, v in obj.items()}
-    elif hasattr(obj, "__iter__") and not isinstance(
-        obj, (str, bytes)
-    ):  # RepeatedComposite oder List
+    elif hasattr(obj, "__iter__") and not isinstance(obj, (str, bytes)):
         return [_proto_to_dict(v) for v in obj]
     else:
         return obj
@@ -76,7 +74,6 @@ class GeminiServiceProvider(BaseLLMProvider):
 
         tool_registry = get_all_tools()
 
-        # --- START GOLDSTANDARD-FIX FÜR GEMINI-TOOL-KONVERTIERUNG V3.0 (AGGRESSIVE CLEANUP) ---
         def clean_schema_for_gemini(obj):
             """
             Bereinigt ein Pydantic-Schema-Dictionary rekursiv für Gemini.
@@ -85,62 +82,29 @@ class GeminiServiceProvider(BaseLLMProvider):
             """
             if isinstance(obj, dict):
                 # 1. Aggressive Entfernung aller Metadaten, die Gemini verwirren können.
-                # 'default' ist besonders wichtig zu entfernen, da Gemini sonst oft stolpert.
                 keys_to_remove = [
-                    "title",
-                    "default",
-                    "format",
-                    "pattern",
-                    "example",
-                    "examples",
-                    "uniqueItems",
-                    "minItems",
-                    "maxItems",
-                    "minLength",
-                    "maxLength",
-                    "exclusiveMinimum",
-                    "exclusiveMaximum",
-                    "multipleOf",
-                    "additionalProperties",
+                    "title", "default", "format", "pattern", "example", "examples",
+                    "uniqueItems", "minItems", "maxItems", "minLength", "maxLength",
+                    "exclusiveMinimum", "exclusiveMaximum", "multipleOf", "additionalProperties",
                 ]
                 for key in keys_to_remove:
                     obj.pop(key, None)
 
                 # 2. 'anyOf' auflösen (für Optional[...])
                 if "anyOf" in obj:
-                    any_of_list = obj["anyOf"]
-                    is_nullable = False
-                    non_null_type = None
-
-                    for item in any_of_list:
-                        if item.get("type") == "null":
-                            is_nullable = True
-                        else:
-                            # Wir nehmen den ersten echten Typen
-                            non_null_type = item
-
-                    # 'anyOf' entfernen
-                    obj.pop("anyOf")
+                    any_of_list = obj.pop("anyOf")
+                    is_nullable = any(item.get("type") == "null" for item in any_of_list)
+                    non_null_type = next((item for item in any_of_list if item.get("type") != "null"), None)
 
                     if non_null_type:
-                        # Den eigentlichen Typ in das aktuelle Objekt mergen
                         obj.update(non_null_type)
-
-                    # Nullable explizit setzen
                     if is_nullable:
                         obj["nullable"] = True
-
-                    # Rekursiv reinigen (wichtig, falls der gemergte Typ noch schmutzig ist)
+                    
+                    # Rekursiv reinigen, falls der gemergte Typ noch schmutzig ist
                     clean_schema_for_gemini(obj)
 
-                # 3. 'allOf' auflösen (selten, aber sicher ist sicher)
-                if "allOf" in obj:
-                    first_type = obj["allOf"][0] if obj["allOf"] else {}
-                    obj.pop("allOf")
-                    obj.update(first_type)
-                    clean_schema_for_gemini(obj)
-
-                # 4. Rekursion für Properties und Items
+                # 3. Rekursion für Properties und Items
                 for key, value in list(obj.items()):
                     if isinstance(value, (dict, list)):
                         clean_schema_for_gemini(value)
@@ -149,35 +113,40 @@ class GeminiServiceProvider(BaseLLMProvider):
                 for item in obj:
                     clean_schema_for_gemini(item)
 
-            return obj
+            # Nach allen Änderungen: Bereinige das 'required'-Array
+            if isinstance(obj, dict) and "required" in obj and "properties" in obj:
+                obj["required"] = [
+                    prop for prop in obj["required"] if prop in obj["properties"]
+                ]
+                if not obj["required"]:
+                    obj.pop("required") # Entferne leeres required-Array
 
-        # --- ENDE GOLDSTANDARD-FIX V3.0 ---
+            return obj
 
         gemini_tools = []
         for tool_def in tools:
-            func_name = tool_def.get("function", {}).get("name")
+            # Greife direkt auf Attribute des Tool-Objekts zu
+            func_name = tool_def.name
+            description = tool_def.description
+            args_schema = tool_def.args_schema
+
+            # Prüfe, ob func_name im Tool-Registry vorhanden ist (was bei Tool-Objekten immer der Fall sein sollte)
             if func_name not in tool_registry:
+                logger.warning(f"Tool '{func_name}' from tool_def object not found in tool_registry during conversion. Skipping.")
                 continue
 
-            logger.info(f"Converting tool to Gemini format: {func_name}")
-
             try:
-                tool_obj = tool_registry[func_name]
                 parameters = {"type": "object", "properties": {}, "required": []}
-
-                if tool_obj.args_schema:
-                    # Generiere das Schema und reinige es sofort und aggressiv
-                    schema = tool_obj.args_schema.model_json_schema()
+                if args_schema:
+                    schema = args_schema.model_json_schema()
                     cleaned_schema = clean_schema_for_gemini(schema)
-                    parameters.update(
-                        {
-                            "properties": cleaned_schema.get("properties", {}),
-                            "required": cleaned_schema.get("required", []),
-                        }
-                    )
+                    parameters.update({
+                        "properties": cleaned_schema.get("properties", {}),
+                        "required": cleaned_schema.get("required", []),
+                    })
 
                 function_declaration = genai.types.FunctionDeclaration(
-                    name=func_name, description=tool_obj.description or "", parameters=parameters
+                    name=func_name, description=description or "", parameters=parameters
                 )
                 gemini_tools.append(function_declaration)
 
@@ -185,9 +154,11 @@ class GeminiServiceProvider(BaseLLMProvider):
                 logger.error(f"Failed to convert tool '{func_name}' for Gemini: {e}", exc_info=True)
                 continue
 
-        return [genai.types.Tool(function_declarations=gemini_tools)] if gemini_tools else None
+        if gemini_tools:
+            return [genai.types.Tool(function_declarations=gemini_tools)]
+        else:
+            return None
 
-    # ... Der Rest der Datei bleibt unverändert ...
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     async def generate_response(
         self,
@@ -197,10 +168,13 @@ class GeminiServiceProvider(BaseLLMProvider):
         tools: Optional[List[Dict]] = None,
         image_data: Optional[str] = None,
         force_no_tools: bool = False,
+        _internal_retry_count: int = 0,
+        force_tool_name: Optional[str] = None,  # Hinzugefügt
         **kwargs,
     ) -> Dict:
         genai.configure(api_key=api_key)
 
+        # Standard Safety Settings (nicht zu restriktiv)
         safety_settings = {
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
@@ -212,47 +186,47 @@ class GeminiServiceProvider(BaseLLMProvider):
             "safety_settings": safety_settings,
         }
 
+        # --- TOOL KONFIGURATION ---
         if tools and not force_no_tools:
             gemini_tools = self._convert_tools_to_gemini_format(tools)
             if gemini_tools:
                 model_kwargs["tools"] = gemini_tools
-                tool_config = to_tool_config({"function_calling_config": {"mode": "auto"}})
-                model_kwargs["tool_config"] = tool_config
+                if force_tool_name:
+                    model_kwargs["tool_config"] = to_tool_config({
+                        "function_calling_config": {
+                            "mode": "ANY", # oder "REQUIRED" wenn nur dieses Tool erlaubt ist
+                            "allowed_function_names": [force_tool_name]
+                        }
+                    })
+                else:
+                    # "auto" ist normalerweise gut, aber bei Problemen kann man "any" erzwingen (Vorsicht)
+                    model_kwargs["tool_config"] = to_tool_config({"function_calling_config": {"mode": "auto"}})
         else:
-            model_kwargs["tool_config"] = to_tool_config(
-                {"function_calling_config": {"mode": "none"}}
-            )
+            # Explizit KEINE Tools senden
+            model_kwargs.pop("tools", None)
+            model_kwargs.pop("tool_config", None)
 
+        # --- SYSTEM PROMPT & HISTORIE ---
         system_instruction = None
-        gemini_history_for_api = []
-
-        import base64
-
-        # --- START GOLDSTANDARD-FIX V2: "Kontext-Erhaltungs"-Strategie für Gemini ---
-        # Diese Strategie formatiert den gesamten von der Orchestrierung übergebenen
-        # Verlauf für Gemini, ohne ihn zu kürzen. Dies stellt sicher, dass der
-        # volle Konversationskontext erhalten bleibt, was für mehrstufige Aufgaben
-        # und kontextbezogene Anfragen entscheidend ist.
-
-        # 1. Extrahiere die Systemanweisung, da sie separat übergeben wird.
         for message in messages:
             if message.get("role") == "system":
                 system_instruction = message.get("content")
                 break
 
-        # 2. Filtere die Systemanweisung aus dem Verlauf, um Duplikate zu vermeiden.
-        history_without_system_prompt = [msg for msg in messages if msg.get("role") != "system"]
+        history_without_system = [msg for msg in messages if msg.get("role") != "system"]
+        gemini_history_for_api = []
 
-        # 3. Baue die vollständige, aber saubere Historie für die API auf.
-        for message in history_without_system_prompt:
+        import base64
+
+        # Historie aufbauen
+        for message in history_without_system:
             role = "user" if message["role"] == "user" else "model"
 
-            # Normale Text- oder Assistenten-Nachrichten (ohne Tool-Calls)
+            # 1. Text / Bild Nachrichten
             if message["role"] in ["user", "assistant", "model"] and "tool_calls" not in message:
                 parts = []
                 content = message.get("content")
 
-                # Verarbeite einfachen Text oder eine Liste von Inhaltsteilen
                 if isinstance(content, str):
                     parts.append(content)
                 elif isinstance(content, list):
@@ -260,182 +234,137 @@ class GeminiServiceProvider(BaseLLMProvider):
                         if part_data.get("type") == "text":
                             parts.append(part_data.get("text", ""))
 
-                # Füge Bilddaten hinzu, wenn sie für diese spezifische Nachricht relevant sind
-                if image_data and message == history_without_system_prompt[-1]:
+                # Bild anhängen (nur beim letzten User-Prompt relevant für diesen Call)
+                if image_data and message == history_without_system[-1]:
                     try:
                         header, encoded = image_data.split(",", 1)
                         mime_type = header.split(":")[1].split(";")[0]
                         image_bytes = base64.b64decode(encoded)
-                        parts.append(
-                            protos.Part(
-                                inline_data=protos.Blob(mime_type=mime_type, data=image_bytes)
-                            )
-                        )
+                        parts.append(protos.Part(inline_data=protos.Blob(mime_type=mime_type, data=image_bytes)))
                     except Exception as e:
-                        logger.error(
-                            f"Error processing image data URI for Gemini: {e}", exc_info=True
-                        )
-                        return {
-                            "type": "text",
-                            "text": f"Fehler bei der Verarbeitung der Bilddaten: {e}",
-                        }
+                        logger.error(f"Image decode error: {e}")
 
                 if parts:
                     gemini_history_for_api.append({"role": role, "parts": parts})
 
-            # Assistenten-Nachrichten, die Tool-Calls enthalten
+            # 2. Assistant Tool Calls (Historie)
             elif message["role"] in ["assistant", "model"] and "tool_calls" in message:
-                tool_calls_proto = [
-                    protos.Part(
-                        function_call=protos.FunctionCall(
-                            name=tc["function"]["name"],
-                            args=json.loads(tc["function"]["arguments"]),
-                        )
+                tool_calls_proto = []
+                for tc in message["tool_calls"]:
+                    try:
+                        args = json.loads(tc["function"]["arguments"])
+                    except:
+                        args = {}
+                    tool_calls_proto.append(
+                        protos.Part(function_call=protos.FunctionCall(name=tc["function"]["name"], args=args))
                     )
-                    for tc in message["tool_calls"]
-                ]
                 gemini_history_for_api.append({"role": "model", "parts": tool_calls_proto})
 
-            # Tool-Antworten
+            # 3. Tool Results (Antworten auf Calls)
             elif message["role"] == "tool":
-                # CRITICAL FIX: Gemini benötigt zwingend den Funktionsnamen (z.B. 'get_latest_emails'),
-                # nicht die tool_call_id (z.B. 'call_123').
-
                 tool_call_id = message.get("tool_call_id")
                 function_name = message.get("name")
-
-                # Wenn der Name im Tool-Message-Objekt fehlt, rekonstruieren wir ihn aus der Historie
+                
+                # Name finden, falls fehlt (Gemini braucht den Namen zwingend)
                 if not function_name and tool_call_id:
-                    # Wir suchen rückwärts durch die bisherigen Nachrichten
-                    # (reversed, um den jüngsten passenden Aufruf zuerst zu finden)
                     for past_msg in reversed(messages):
-                        if past_msg.get("role") == "assistant" and "tool_calls" in past_msg:
+                        if "tool_calls" in past_msg:
                             for tc in past_msg["tool_calls"]:
                                 if tc.get("id") == tool_call_id:
                                     function_name = tc["function"]["name"]
                                     break
-                        if function_name:
-                            break
-
-                # Fallback: Wenn wir trotz Suche nichts finden, nehmen wir die ID (besser als nichts)
-                final_name = function_name or tool_call_id
-
-                # Das 'user'-Rollback für Tool-Antworten ist spezifisch für die Gemini API Struktur
-                gemini_history_for_api.append(
-                    {
-                        "role": "user",
-                        "parts": [
-                            protos.Part(
-                                function_response=protos.FunctionResponse(
-                                    name=final_name, response={"content": message.get("content")}
-                                )
-                            )
-                        ],
-                    }
-                )
-        # --- ENDE GOLDSTANDARD-FIX V2 ---
+                        if function_name: break
+                
+                final_name = function_name or "unknown_function"
+                
+                # Tool Response als 'user' (Gemini Konvention für function_response)
+                gemini_history_for_api.append({
+                    "role": "user",
+                    "parts": [
+                        protos.Part(function_response=protos.FunctionResponse(
+                            name=final_name, 
+                            response={"content": message.get("content")}
+                        ))
+                    ]
+                })
 
         try:
             gemini_model = genai.GenerativeModel(
-                model_name=model, system_instruction=system_instruction
+                model_name=model, 
+                system_instruction=system_instruction
             )
-            request_options = {"timeout": 130}
-
-            generation_config = {}
-            if "thinking_level" in kwargs:
-                generation_config["thinkingConfig"] = {"thinkingLevel": kwargs["thinking_level"]}
-            if "media_resolution" in kwargs:
-                generation_config["mediaResolution"] = {"level": kwargs["media_resolution"]}
             
-            if generation_config:
-                model_kwargs["generation_config"] = generation_config
-
+            # Timeout etwas erhöhen für Websearch
+            request_options = {"timeout": 150} 
 
             response = await gemini_model.generate_content_async(
-                contents=gemini_history_for_api, request_options=request_options, **model_kwargs
+                contents=gemini_history_for_api, 
+                request_options=request_options, 
+                **model_kwargs
             )
 
+            # --- FEHLERBEHANDLUNG & RETRY LOGIK ---
+            
+            # Sicherheitsfilter checken
             if response.prompt_feedback.block_reason:
-                block_reason = response.prompt_feedback.block_reason.name
-                logger.error(f"Gemini response blocked due to prompt. Reason: {block_reason}")
-                return {
-                    "type": "error",
-                    "message": f"Die Anfrage wurde vom Sicherheitsfilter blockiert: {block_reason}",
-                }
+                return {"type": "error", "message": f"Blockiert: {response.prompt_feedback.block_reason.name}"}
 
             if not response.candidates:
-                logger.warning(f"Gemini returned no candidates. History: {gemini_history_for_api}")
-                return {
-                    "type": "text",
-                    "text": "Ich konnte keine passende Antwort generieren (Keine Kandidaten).",
-                }
+                return {"type": "text", "text": "Keine Antwort vom Modell erhalten."}
 
             first_candidate = response.candidates[0]
+            finish_reason = getattr(first_candidate, "finish_reason", 0)
 
-            finish_reason_obj = getattr(first_candidate, "finish_reason", None)
-            logger.info(f"Gemini Finish Reason: {finish_reason_obj}")
+            # SPEZIAL-BEHANDLUNG FÜR TOOL-ABSTÜRZE (Reason 10)
+            if finish_reason == 10:
+                logger.warning(f"Gemini Tool Error (Reason 10). Retry: {_internal_retry_count}")
+                
+                # Sentry Info (ohne Crash)
+                sentry_sdk.capture_message(f"Gemini Reason 10 (Retry {_internal_retry_count})", level="warning")
 
-            if finish_reason_obj == 2:  # protos.FinishReason.SAFETY
-                safety_ratings = [
-                    str(rating) for rating in getattr(first_candidate, "safety_ratings", [])
-                ]
-                logger.warning(
-                    f"Gemini response blocked. Reason: SAFETY. Ratings: {safety_ratings}"
-                )
-                return {
-                    "type": "text",
-                    "text": "Meine Antwort wurde aufgrund von Sicherheitsrichtlinien blockiert.",
-                }
+                # Strategie: Wir versuchen es NOCHMAL MIT TOOLS.
+                # Oft ist Reason 10 ein temporäres Problem oder Kontext-Problem.
+                # Wir geben dem Modell bis zu 2 Chancen, das Tool richtig zu nutzen.
+                if _internal_retry_count < 2:
+                    logger.info("Retrying WITH tools...")
+                    return await self.generate_response(
+                        api_key=api_key, model=model, messages=messages, tools=tools,
+                        image_data=image_data, force_no_tools=False, # Weiterhin Tools erlauben!
+                        _internal_retry_count=_internal_retry_count + 1,
+                        **kwargs
+                    )
+                else:
+                    # Letzter Ausweg: Ohne Tools, damit User wenigstens Text kriegt.
+                    logger.warning("Giving up on tools. Fallback to text.")
+                    return await self.generate_response(
+                        api_key=api_key, model=model, messages=messages, 
+                        tools=None, force_no_tools=True, # Hier schalten wir ab
+                        _internal_retry_count=_internal_retry_count + 1,
+                        **kwargs
+                    )
 
-            if not first_candidate.content.parts:
-                logger.warning(f"Gemini response has no parts. Finish Reason: {finish_reason_obj}")
-                return {
-                    "type": "text",
-                    "text": "Ich habe die Daten verarbeitet, aber die KI hat eine leere Antwort zurückgegeben.",
-                }
-
-            # --- GOLDSTANDARD FIX: PARALLEL FUNCTION CALLING ---
-            # Wir sammeln ALLE Function Calls aus ALLEN Parts, nicht nur dem ersten.
+            # --- ERGEBNIS VERARBEITUNG ---
+            
             all_gateway_tool_calls = []
             text_accumulated = ""
 
+            if not first_candidate.content.parts:
+                 return {"type": "text", "text": "Leere Antwort erhalten (Fehler bei Verarbeitung)."}
+
             for part in first_candidate.content.parts:
-                logger.debug(f"Gemini response part: {part}") # NEU
-                # 1. Text-Parts sammeln
-                if hasattr(part, "text") and part.text:
+                if hasattr(part, "function_call") and part.function_call:
+                    # Wenn es ein Funktionsaufruf ist, behandle ihn
+                    fc = part.function_call
+                    tool_args = _proto_to_dict(fc.args) or {}
+                    
+                    all_gateway_tool_calls.append({
+                        "id": f"call_{fc.name}_{datetime.datetime.now().timestamp()}",
+                        "type": "function",
+                        "function": {"name": fc.name, "arguments": json.dumps(tool_args)}
+                    })
+                elif hasattr(part, "text") and part.text:
+                    # Wenn es reiner Text ist und kein Funktionsaufruf, akkumuliere ihn
                     text_accumulated += part.text
-
-                # 2. Function-Calls sammeln
-                # Prüfe explizit auf function_call und image Parts
-                function_call = None
-                if hasattr(part, "function_call"):
-                    function_call = part.function_call
-                
-                # Image parts for multimodal input/output are not directly handled as tool_calls here
-                # but rather by other parts of the generate_response logic or context building.
-                # However, for the purpose of ensuring a tool call is identified correctly,
-                # we focus on the function_call attribute.
-
-                if function_call:
-                    tool_name = function_call.name
-                    logger.info(f"Gemini triggered a function call in part: {tool_name}")
-
-                    try:
-                        # Versuche, args als Dictionary zu interpretieren, falls es nicht schon eins ist
-                        tool_args = _proto_to_dict(function_call.args)
-                        if tool_args is None:
-                            tool_args = {}
-                    except Exception as e:
-                        logger.error(f"Error converting tool args for {tool_name}: {e}")
-                        tool_args = {}
-
-                    all_gateway_tool_calls.append(
-                        {
-                            "id": f"call_{tool_name}_{datetime.datetime.now().timestamp()}_{len(all_gateway_tool_calls)}",
-                            "type": "function",
-                            "function": {"name": tool_name, "arguments": json.dumps(tool_args)},
-                        }
-                    )
 
             usage_metadata = response.usage_metadata
             usage, cost = _calculate_and_log_cost(
@@ -446,152 +375,74 @@ class GeminiServiceProvider(BaseLLMProvider):
                 },
             )
 
-            # Entscheidung: Haben wir Tool Calls gefunden?
             if all_gateway_tool_calls:
-                logger.info(f"Gemini returned {len(all_gateway_tool_calls)} tool calls.")
-
-                raw_assistant_response_for_gateway = {
-                    "role": "assistant",
-                    "content": text_accumulated
-                    if text_accumulated
-                    else None,  # Gemini kann Text UND Tools senden
-                    "tool_calls": all_gateway_tool_calls,
-                }
+                parts_for_raw_assistant = []
+                # Füge immer einen Text-Part hinzu, auch wenn er leer ist, um thought_signature zu erfüllen
+                parts_for_raw_assistant.append(protos.Part(text=text_accumulated if text_accumulated else ""))
+                
+                # Füge die Tool Calls hinzu
+                for tc in all_gateway_tool_calls:
+                    parts_for_raw_assistant.append(
+                        protos.Part(function_call=protos.FunctionCall(
+                            name=tc["function"]["name"], 
+                            args=json.loads(tc["function"]["arguments"]) # args muss als Dict übergeben werden
+                        ))
+                    )
 
                 return {
                     "type": "tool_code",
                     "tool_calls": all_gateway_tool_calls,
                     "usage": usage,
                     "cost": cost,
-                    "raw_assistant_response": raw_assistant_response_for_gateway,
+                    "raw_assistant_response": {
+                        "role": "model", # Wichtig: "model" statt "assistant" hier
+                        "parts": parts_for_raw_assistant # Verwende die neue Struktur
+                    }
                 }
             else:
-                # Nur Textantwort
                 return {"type": "text", "text": text_accumulated, "usage": usage, "cost": cost}
 
-        except (InvalidArgument, ResourceExhausted) as e:
-            logger.error(f"Gemini API error: {e}", exc_info=True)
-            return {"type": "error", "message": f"Gemini API Fehler: {str(e)}"}
-        except StopCandidateException as e:
-            logger.warning(f"Gemini StopCandidateException: {e}")
-            return {"type": "text", "text": f"Die Antwort wurde vorzeitig beendet: {e}"}
         except Exception as e:
-            logger.error(f"Unexpected error during Gemini call: {e}", exc_info=True)
-            return {"type": "error", "message": f"Ein unerwarteter Fehler ist aufgetreten: {str(e)}"}
+            logger.error(f"Gemini Exception: {e}", exc_info=True)
+            return {"type": "error", "message": f"Fehler: {str(e)}"}
 
-    async def generate_structured_response(
-        self,
-        api_key: str,
-        model: str,
-        messages: List[Dict],
-        response_format: BaseModel,
-        **kwargs,
-    ) -> tuple[BaseModel, Dict]:
-        """
-        Generiert eine strukturierte JSON-Antwort basierend auf einem Pydantic-Modell.
-        Diese Funktion ist spezifisch für Gemini und nutzt einen Prompt-basierten Ansatz.
-        """
-        try:
-            # 1. Erstelle das JSON-Schema aus dem Pydantic-Modell
-            json_schema = response_format.model_json_schema()
+    async def generate_structured_response(self, api_key, model, messages, response_format, **kwargs):
+        # Implementierung für JSON Mode (z.B. für Memory Extraction)
+        # Nutzen wir hier die einfache Prompting-Methode, da Gemini JSON Mode zickig sein kann
+        json_schema = response_format.model_json_schema()
+        prompt_suffix = f"\n\nANTWORTE AUSSCHLIESSLICH IM JSON-FORMAT. SCHEMA:\n{json.dumps(json_schema)}"
+        
+        # System-Prompt anpassen oder anhängen
+        mod_messages = list(messages)
+        mod_messages.append({"role": "user", "content": "Generiere die strukturierte Antwort jetzt." + prompt_suffix})
+        
+        resp = await self.generate_response(api_key, model, mod_messages, force_no_tools=True, **kwargs)
+        
+        if resp["type"] == "text":
+            try:
+                # Regex, um den JSON-Block zu finden (auch wenn unerwünschter Text davor/danach steht)
+                json_match = re.search(r"```json\s*(\{.*?\})\s*```", resp["text"], re.DOTALL)
+                if json_match:
+                    clean_json = json_match.group(1)
+                else:
+                    # Fallback: Versuchen, den gesamten Text als JSON zu parsen, wenn kein Code-Block gefunden wird
+                    clean_json = resp["text"].strip()
+                    # Zusätzliche Bereinigungen, falls Gemini doch etwas anderes als ```json``` liefert
+                    clean_json = clean_json.replace("```json", "").replace("```", "").strip()
 
-            # 2. Erstelle eine spezifische Systemanweisung
-            json_instruction = (
-                "Deine Aufgabe ist es, die Anfrage des Benutzers zu analysieren und "
-                "deine Antwort ausschließlich und exakt im folgenden JSON-Format zurückzugeben. "
-                "Gib nichts anderes als das JSON-Objekt aus. Kein einleitender Text, keine Erklärungen, "
-                "keine Code-Block-Markierungen (```json). Nur das reine JSON.\n\n"
-                f"JSON-Schema:\n{json.dumps(json_schema, indent=2)}"
-            )
-
-            # 3. Bereite die Nachrichtenliste vor
-            modified_messages = messages.copy()
-            # Füge die Anweisung am Anfang ein, damit sie als System-Prompt wirkt
-            modified_messages.insert(0, {"role": "system", "content": json_instruction})
-
-            # 4. Normale Response generieren (Tools deaktiviert!)
-            response = await self.generate_response(
-                api_key=api_key,
-                model=model,
-                messages=modified_messages,
-                force_no_tools=True,
-                **kwargs
-            )
-
-            # 5. Ergebnis parsen
-            if response["type"] == "text":
-                text_content = response["text"]
-                # Entferne Markdown-Code-Blöcke, falls das Modell sie trotzdem sendet
-                cleaned_text = text_content.replace("```json", "").replace("```", "").strip()
-                parsed_obj = response_format.model_validate_json(cleaned_text)
-                
-                # Kosten aus der normalen Response extrahieren
-                cost_data = response.get("cost", {})
-                
-                # RÜCKGABE: Tuple (Parsed Object, Cost Data)
-                return parsed_obj, cost_data
-            
-            elif response["type"] == "error":
-                raise ValueError(f"Gemini Error: {response.get('message')}")
-            else:
-                raise ValueError(f"Unexpected response type from Gemini: {response['type']}")
-
-        except Exception as e:
-            logger.error(f"Error in generate_structured_response (Gemini): {e}", exc_info=True)
-            raise
+                return response_format.model_validate_json(clean_json), resp.get("cost", {})
+            except Exception as e:
+                logger.error(f"JSON Parse Error in generate_structured_response: {e}", exc_info=True)
+                raise
+        # Wenn der response-Typ nicht "text" ist, ist es ein Fehler
+        raise ValueError("Keine Textantwort für Structured Output erhalten")
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-    async def generate_image(
-        self,
-        api_key: str,
-        model: str,
-        prompt: str,
-        image_bytes_list: list = None,
-        **kwargs,
-    ) -> Dict:
-        """
-        Routes the image generation request to the GeminiImageGeneration class.
-        """
+    async def generate_image(self, api_key, model, prompt, image_bytes_list=None, **kwargs):
         return await self.image_generator.generate_image(
-            api_key=api_key,
-            model=model,
-            prompt=prompt,
-            image_bytes_list=image_bytes_list,
-            **kwargs
+            api_key=api_key, model=model, prompt=prompt, image_bytes_list=image_bytes_list, **kwargs
         )
         
-    def prepare_history_for_second_call(
-        self,
-        chat_history: List[Dict],
-        raw_assistant_response: Dict,
-        tool_results: List[Dict]
-    ) -> List[Dict]:
-        """
-        Bereitet die Chat-Historie für den Folgeaufruf nach einer Tool-Ausführung vor.
-        
-        Für Gemini hängen wir die Ergebnisse an und fügen eine explizite
-        Benutzeraufforderung hinzu, damit das Modell die Ergebnisse verarbeitet
-        und eine finale Antwort formuliert.
-        
-        Args:
-            chat_history: Die bisherige Chat-Historie
-            raw_assistant_response: Die rohe Antwort des Assistenten mit dem Tool-Aufruf
-            tool_results: Die Ergebnisse der Tool-Ausführung(en)
-            
-        Returns:
-            Die vorbereitete Chat-Historie für den nächsten Aufruf
-        """
-        # Füge die Antwort des Assistenten und die Tool-Ergebnisse zur Historie hinzu
-        new_history = chat_history + [raw_assistant_response] + tool_results
-        
-        # Füge eine explizite Aufforderung als User hinzu
-        trigger_message = {
-            "role": "user",
-            "content": (
-                "Die Werkzeuge wurden erfolgreich ausgeführt und die Ergebnisse liegen oben vor (siehe 'tool' messages). "
-                "Bitte analysiere diese Ergebnisse jetzt und formuliere basierend darauf deine endgültige Antwort an mich."
-            ),
-        }
-        new_history.append(trigger_message)
-        
-        return new_history
+    def prepare_history_for_second_call(self, chat_history, raw_assistant_response, tool_results):
+        # Gemini braucht die Ergebnisse in der Historie
+        return chat_history + [raw_assistant_response] + tool_results

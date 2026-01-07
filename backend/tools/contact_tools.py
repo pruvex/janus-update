@@ -21,7 +21,7 @@ async def extract_and_save_contact_from_text(
         db: Die aktive Datenbank-Session.
         api_key: Der API-Schlüssel für den LLM-Aufruf.
         provider: Der LLM-Anbieter (z.B. 'openai').
-        model: Das zu verwendende LLM (z.B. 'gpt-4o-mini').
+        model: Das zu verwendende LLM (z.B. 'gpt-5-nano').
         location_context: Der vom Benutzer genannte Ort (z.B. 'Köln'), um die Suche zu verfeinern.
 
     Returns:

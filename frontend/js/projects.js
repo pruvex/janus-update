@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const projectName = document.getElementById('project-name').value;
       const projectPath = projectPathInput.value;
       const provider = document.getElementById('provider-select')?.value || 'openai';
-      const model = document.getElementById('model-select')?.value || 'gpt-4';
+      const model = document.getElementById('model-select')?.value || 'gpt-5-nano';
 
       try {
         const result = await window.electron.createProject({ 

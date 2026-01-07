@@ -199,7 +199,9 @@ async def save_uploaded_file(db: Session, file: UploadFile) -> schemas.Generated
         provider="user_upload",
         model="local",
         parameters={},
-        style_preset="N/A"
+        style_preset="",  # Always use empty string as default
+        variation_preset="",
+        quality_gate_level="none"
     )
     
     new_image_entry = crud.create_generated_image(

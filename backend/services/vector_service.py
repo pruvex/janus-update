@@ -1,120 +1,125 @@
+# backend/services/vector_service.py
+
 import json
 import logging
 import os
+import time
+from typing import List, Optional
 
 import numpy as np
-from backend.utils.paths import resource_path
+from backend.utils.paths import get_app_data_dir
 from sentence_transformers import SentenceTransformer, util
 
-# Strictly enforce offline mode for all Hugging Face components
-os.environ["TRANSFORMERS_OFFLINE"] = "1"
-os.environ["HF_DATASETS_OFFLINE"] = "1"
-os.environ["HF_EVALUATE_OFFLINE"] = "1"
-os.environ["HF_HUB_OFFLINE"] = "1"  # Explicitly disable hub access
+# Configure environment variables for better control
 os.environ["TOKENIZERS_PARALLELISM"] = "false"  # Prevent tokenizer warnings
+os.environ["HF_HUB_OFFLINE"] = "0"  # Enable hub access for model downloads
 
 logger = logging.getLogger("janus_backend")
 
-# Das Modell wird nur einmal beim Start geladen und im Speicher gehalten.
-# 'all-MiniLM-L6-v2' ist ein gutes Allround-Modell, das schnell und lokal läuft.
+# Configure model cache in AppData directory
+app_data = get_app_data_dir()
+model_cache_path = os.path.join(app_data, "model_cache")
+os.makedirs(model_cache_path, exist_ok=True)
+
+# Set the cache directory for sentence-transformers
+os.environ["SENTENCE_TRANSFORMERS_HOME"] = model_cache_path
+model_name = "all-MiniLM-L6-v2"
+
+logger.info(f"Loading Vector Model from/to: {model_cache_path}")
+
+# Initialize the model with proper error handling
 try:
-    # Der Pfad zum Modell innerhalb des PyInstaller-Bundles
-    model_path = resource_path("backend/model_cache/all-MiniLM-L6-v2")
-
-    # Verify the model files exist locally
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Model directory not found at {model_path}")
-
-    logger.info(f"Loading SentenceTransformer model in OFFLINE mode from: {model_path}")
-
-    # Load model with minimal configuration for offline use
+    # Device map 'cpu' to ensure stability on standard backends
     model = SentenceTransformer(
-        model_path,
-        device="cpu",  # Force CPU usage to avoid CUDA initialization delays
+        model_name,
+        cache_folder=model_cache_path,
+        device="cpu"
     )
-
-    logger.info(
-        f"Successfully loaded SentenceTransformer model from local cache. Model device: {model.device}"
-    )
-    logger.info(f"Model max sequence length: {model.max_seq_length}")
-
+    logger.info(f"Successfully loaded model: {model_name}")
 except Exception as e:
-    logger.error(
-        f"Critical error loading SentenceTransformer model from {model_path}: {str(e)}",
-        exc_info=True,
-    )
-    logger.error("Application will continue but vector search functionality will be disabled.")
-
-    # Log environment for debugging
-    logger.info("Environment variables for debugging:")
-    for key, value in os.environ.items():
-        if key.startswith(("HF_", "TRANSFORMERS_", "TOKENIZERS_")):
-            logger.info(f"{key}={value}")
-
+    logger.error(f"Failed to load SentenceTransformer: {str(e)}", exc_info=True)
+    logger.warning("Vector search functionality will be disabled.")
     model = None
 
 
-def generate_embedding(text: str):
+def generate_embedding(text: str) -> Optional[str]:
     """Generiert einen Vektor-Embedding für einen gegebenen Text."""
     if model is None:
         logger.error("Embedding-Modell ist nicht verfügbar.")
         return None
     try:
-        logger.info(f"Generating embedding for text: '{text}'")
+        # Normalize text slightly
+        text = text.replace("\n", " ").strip()
         embedding = model.encode(text)
-        logger.info(f"Embedding generated successfully for text: '{text}'")
-        return json.dumps(embedding.tolist())  # Speichere als JSON-String
+        return json.dumps(embedding.tolist())
     except Exception as e:
         logger.error(f"Fehler bei der Embedding-Generierung für Text '{text}': {e}")
         return None
 
 
-def _find_similar_items(
-    query_text: str, items: list, embedding_attribute: str, top_k: int, threshold: float
-):
-    if model is None or not items:
+def calculate_similarity_batch(query_text: str, candidate_embeddings: List[List[float]]) -> List[float]:
+    """
+    Berechnet die Ähnlichkeit zwischen Query-Text und einer Liste von Vektoren.
+    """
+    if model is None or not candidate_embeddings:
         return []
+
     try:
+        # 1. Query Text -> Vektor
         query_embedding = model.encode(query_text)
+        
+        # 2. Kandidaten -> Matrix
+        corpus_embeddings = np.array(candidate_embeddings, dtype=np.float32)
 
-        items_with_embeddings = [item for item in items if getattr(item, embedding_attribute)]
-        if not items_with_embeddings:
-            return []
-
-        corpus_embeddings = [
-            json.loads(getattr(item, embedding_attribute)) for item in items_with_embeddings
-        ]
-
+        # 3. Cosine Similarity berechnen
+        # util.cos_sim gibt einen Tensor zurück
         cos_scores = util.cos_sim(query_embedding, corpus_embeddings)[0]
-
-        top_results_indices = np.argpartition(-cos_scores, range(min(top_k, len(cos_scores))))[
-            :top_k
-        ]
-
-        similar_items = []
-        for i, idx in enumerate(top_results_indices):
-            score = float(cos_scores[idx])  # Convert to float
-            if score > threshold:
-                similar_items.append(items_with_embeddings[idx])
-        return similar_items
+        
+        return cos_scores.tolist()
     except Exception as e:
-        logger.error(f"Fehler bei der Vektor-Suche für {embedding_attribute}: {e}")
+        logger.error(f"Error in batch similarity calculation: {e}")
+        return [0.0] * len(candidate_embeddings)
+
+
+def find_most_similar_indices(query_text: str, embeddings_list: List[List[float]], top_k: int, threshold: float) -> List[int]:
+    """
+    Gibt die INDIZES der Top-K ähnlichsten Embeddings zurück.
+    Erwartet 'query_text' als String und 'embeddings_list' als Liste von Vektoren.
+    """
+    # Berechnung der Scores
+    scores = calculate_similarity_batch(query_text, embeddings_list)
+    
+    if not scores:
         return []
 
+    # Filtern nach Threshold und Index merken
+    qualified_indices = [i for i, s in enumerate(scores) if s >= threshold]
+    
+    if not qualified_indices:
+        return []
 
+    # Sortieren nach Score (höchster zuerst)
+    qualified_indices.sort(key=lambda i: scores[i], reverse=True)
+    
+    return qualified_indices[:top_k]
+
+
+# Veraltete Funktionen für Kompatibilität (optional, falls noch irgendwo aufgerufen)
 def find_similar_snippets(query_text: str, memories: list, top_k: int = 3, threshold: float = 0.1):
-    """Findet die semantisch ähnlichsten Erinnerungen an einen Suchtext."""
-    similar_memories = _find_similar_items(query_text, memories, "embedding_json", top_k, threshold)
-    for mem in similar_memories:
-        # Access the score from the original cos_scores calculation if needed for logging
-        # For now, we'll just log the snippet and assume the score is handled by _find_similar_items
-        logger.info(f"Snippet: '{mem.snippet}')")
-    logger.info(f"find_similar_snippets: Returning {len(similar_memories)} similar memories.")
-    return similar_memories
-
-
-def find_similar_chat_summaries(
-    query_text: str, chats: list, top_k: int = 3, threshold: float = 0.5
-):
-    """Findet die semantisch ähnlichsten Chat-Zusammenfassungen an einen Suchtext."""
-    return _find_similar_items(query_text, chats, "summary_embedding_json", top_k, threshold)
+    # Dies ist ein Wrapper für alten Code, der DB-Objekte erwartet
+    if not memories:
+        return []
+    
+    embeddings = []
+    valid_memories = []
+    
+    for mem in memories:
+        try:
+            emb = json.loads(mem.embedding_json)
+            embeddings.append(emb)
+            valid_memories.append(mem)
+        except:
+            continue
+            
+    indices = find_most_similar_indices(query_text, embeddings, top_k, threshold)
+    return [valid_memories[i] for i in indices]

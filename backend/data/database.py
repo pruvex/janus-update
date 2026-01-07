@@ -3,6 +3,12 @@ import logging
 import os
 import re # NEU: Für RegEx zum Parsen der Bildgröße
 
+import datetime
+import logging
+import os
+import re # NEU: Für RegEx zum Parsen der Bildgröße
+
+from backend.utils.encryption import EncryptedString
 from backend.utils.paths import get_app_data_dir
 from sqlalchemy import (
     Boolean,
@@ -10,6 +16,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     JSON,
     String,
@@ -45,16 +52,13 @@ def get_db():
 class Chat(Base):
     __tablename__ = "chats"
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True)
+    title = Column(String, index=True) # Bleibt unverschlüsselt für die Anzeige
     created_at = Column(DateTime, default=datetime.datetime.now)
-    summary = Column(String, nullable=True)
+    summary = Column(EncryptedString, nullable=True) # Verschlüsselt
     summary_embedding_json = Column(String, nullable=True)
     is_archived = Column(Boolean, default=False)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
 
-    # HINZUGEFÜGT: Definiert die "andere Seite" der Beziehung.
-    # Ein Chat kann viele Memory-Einträge haben.
-    # "cascade" sorgt dafür, dass beim Löschen eines Chats auch alle zugehörigen Memories gelöscht werden.
     memories = relationship("Memory", back_populates="chat", cascade="all, delete-orphan")
     messages = relationship("Message", back_populates="chat", cascade="all, delete-orphan")
     project = relationship("Project", back_populates="chats")
@@ -64,66 +68,81 @@ class Message(Base):
     __tablename__ = "messages"
     id = Column(Integer, primary_key=True, index=True)
     chat_id = Column(Integer, ForeignKey("chats.id"))
-    sender = Column(String)
-    content = Column(Text)
-    image_path = Column(String, nullable=True)
+    sender = Column(String) # Bleibt unverschlüsselt ('user' oder 'assistant')
+    content = Column(EncryptedString) # Verschlüsselt
+    image_path = Column(EncryptedString, nullable=True) # Verschlüsselt
     timestamp = Column(DateTime, default=datetime.datetime.now)
     chat = relationship("Chat", back_populates="messages")
 
 
 class Memory(Base):
     __tablename__ = "memories"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
+    
     chat_id = Column(Integer, ForeignKey("chats.id"), nullable=False)
-    snippet = Column(String, nullable=False)
+    snippet = Column(EncryptedString, nullable=False)
     embedding_json = Column(String, nullable=False)
+    
+    # --- NEUE FELDER HINZUFÜGEN ---
+    normalized_text = Column(String, nullable=False, server_default='')
+    text_hash = Column(String, nullable=False, server_default='')
+    # --- ENDE NEUE FELDER ---
+    
     created_at = Column(DateTime, default=datetime.datetime.now)
     last_accessed_at = Column(
         DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now
     )
-    expires_at = Column(DateTime, nullable=True)  # Für kurzlebige Erinnerungen
-
-    # NEU: Ersetzt das alte 'is_core_fact' durch ein flexibleres Kategoriesystem.
-    category = Column(String, default="General Fact", nullable=False)
-    is_core_fact = Column(Boolean, default=False, nullable=False)  # Markiert Kern-Erinnerungen
+    
+    expires_at = Column(DateTime, nullable=True)
+    retain_until = Column(DateTime, nullable=True)
+    
+    category = Column(String, default="Allgemein", nullable=False)  # Default auf Deutsch ändern
+    is_core_fact = Column(Boolean, default=False, nullable=False)
+    core_priority = Column(Integer, default=0, nullable=False)
 
     chat = relationship("Chat", back_populates="memories")
 
+    __table_args__ = (
+        Index('ix_memories_chat_expiry', 'chat_id', 'expires_at'),
+        Index('ix_memories_chat_retain', 'chat_id', 'retain_until'),
+        Index('ix_memories_chat_core', 'chat_id', 'is_core_fact', 'core_priority'),
+        Index('ix_memories_access', 'last_accessed_at'),
+        # Diese Zeile erzwingt, dass pro Chat jeder Fakt nur einmal vorkommen kann
+        Index('ix_memories_chat_hash', 'chat_id', 'text_hash', unique=True, sqlite_where=text("text_hash != ''")),
+    )
 
-# --- NEUE TABELLE FÜR DAS LANGZEITGEDÄCHTNIS ---
+
 class LongTermMemory(Base):
     __tablename__ = "long_term_memory"
     id = Column(Integer, primary_key=True, index=True)
-    original_memory_id = Column(Integer)  # Um den Ursprung nachzuverfolgen
+    original_memory_id = Column(Integer)
     chat_id = Column(Integer, ForeignKey("chats.id"))
-    snippet = Column(Text, nullable=False)
+    snippet = Column(EncryptedString, nullable=False) # Verschlüsselt
     embedding_json = Column(Text, nullable=True)
-    created_at = Column(DateTime)  # Wir übernehmen den ursprünglichen Zeitstempel
+    created_at = Column(DateTime)
     archived_at = Column(DateTime, default=datetime.datetime.now)
 
 
-# --- NEUE TABELLE FÜR DAS ADRESSBUCH ---
 class Contact(Base):
     __tablename__ = "contacts"
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False, index=True)
+    name = Column(EncryptedString, nullable=False, index=True) # Verschlüsselt
     category = Column(String, default="Unkategorisiert", nullable=False)
-    email = Column(String, nullable=True, unique=True, index=True)
-    phone = Column(String, nullable=True)
-    address = Column(Text, nullable=True)
-    website = Column(String, nullable=True)
-    notes = Column(Text, nullable=True)
+    email = Column(EncryptedString, nullable=True, unique=True, index=True) # Verschlüsselt
+    phone = Column(EncryptedString, nullable=True) # Verschlüsselt
+    address = Column(EncryptedString, nullable=True) # Verschlüsselt
+    website = Column(EncryptedString, nullable=True) # Verschlüsselt
+    notes = Column(EncryptedString, nullable=True) # Verschlüsselt
     created_at = Column(DateTime, default=datetime.datetime.now)
 
 
 class Project(Base):
     __tablename__ = "projects"
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True, nullable=False)
-    description = Column(Text, nullable=True)
+    name = Column(EncryptedString, index=True, nullable=False) # Verschlüsselt
+    description = Column(EncryptedString, nullable=True) # Verschlüsselt
     created_at = Column(DateTime, default=datetime.datetime.now)
 
-    # Beziehungen
     chats = relationship("Chat", back_populates="project")
     files = relationship("ProjectFile", back_populates="project", cascade="all, delete-orphan")
 
@@ -132,11 +151,10 @@ class ProjectFile(Base):
     __tablename__ = "project_files"
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
-    filename = Column(String, nullable=False)
-    local_path = Column(String, nullable=False)  # Pfad im lokalen Dateisystem
-    file_type = Column(String)  # z.B. 'pdf', 'txt', 'url_dump'
+    filename = Column(EncryptedString, nullable=False) # Verschlüsselt
+    local_path = Column(EncryptedString, nullable=False) # Verschlüsselt
+    file_type = Column(String)
     
-    # Provider-spezifische IDs (für Hybrid-Nutzung)
     openai_file_id = Column(String, nullable=True) 
     gemini_file_uri = Column(String, nullable=True)
     
@@ -148,19 +166,19 @@ class ProjectFile(Base):
 class GeneratedImage(Base):
     __tablename__ = "generated_images"
     id = Column(Integer, primary_key=True, index=True)
-    # user_id = Column(Integer, ForeignKey("users.id"), nullable=True) # Vorerst auskommentiert
-    prompt = Column(Text, nullable=True)
-    style_preset = Column(JSON, nullable=True)
+    prompt = Column(EncryptedString, nullable=True) # Verschlüsselt
+    style_preset = Column(String, nullable=True)
+    variation_preset = Column(String, nullable=True)
     provider = Column(String, nullable=True)
     model = Column(String, nullable=True)
     parameters = Column(JSON, nullable=True)
     image_url = Column(String, nullable=False)
     is_uploaded = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.now)
-    # Add these new fields for context tracking
     previous_response_id = Column(String, nullable=True)
     previous_image_id = Column(String, nullable=True)
     quality_gate_stats = Column(JSON, nullable=True)
+    provider_response_id = Column(String, nullable=True)
 
 
 
@@ -197,22 +215,50 @@ def init_db():
         Base.metadata.create_all(bind=engine)
         CostsBase.metadata.create_all(bind=costs_engine)
         
-        # 2. Migration: Prüfen ob 'project_id' in 'chats' existiert (für Bestands-User)
+        # 2. Migrationen und Index-Checks
         with engine.connect() as conn:
-            # SQLite spezifischer Check
+            # A) Check 'project_id' in 'chats'
             columns_info = conn.execute(text("PRAGMA table_info(chats)")).fetchall()
-            column_names = [col[1] for col in columns_info]  # Index 1 ist der Name
+            column_names = [col[1] for col in columns_info]
             
             if "project_id" not in column_names:
                 logger.info("Migration: Füge 'project_id' Spalte zur Tabelle 'chats' hinzu.")
                 conn.execute(text("ALTER TABLE chats ADD COLUMN project_id INTEGER REFERENCES projects(id)"))
-                conn.commit()
+            
+            # B) Manuelle Index-Prüfung (Falls create_all sie verpasst hat oder bei Migrationen)
+            # Wichtig: Wir nutzen text() für den SQL String!
+            existing_indices_result = conn.execute(text("""
+                SELECT name FROM sqlite_master 
+                WHERE type='index' AND name IN (
+                    'ix_memories_chat_expiry',
+                    'ix_memories_chat_retain',
+                    'ix_memories_chat_core',
+                    'ix_memories_access'
+                )
+            """)).fetchall()
+            
+            existing_names = [row[0] for row in existing_indices_result]
+
+            # Indizes explizit erstellen, falls sie fehlen
+            if 'ix_memories_chat_expiry' not in existing_names:
+                 conn.execute(text("CREATE INDEX IF NOT EXISTS ix_memories_chat_expiry ON memories (chat_id, expires_at)"))
+            
+            if 'ix_memories_chat_retain' not in existing_names:
+                 conn.execute(text("CREATE INDEX IF NOT EXISTS ix_memories_chat_retain ON memories (chat_id, retain_until)"))
+
+            if 'ix_memories_chat_core' not in existing_names:
+                 conn.execute(text("CREATE INDEX IF NOT EXISTS ix_memories_chat_core ON memories (chat_id, is_core_fact, core_priority)"))
+
+            if 'ix_memories_access' not in existing_names:
+                 conn.execute(text("CREATE INDEX IF NOT EXISTS ix_memories_access ON memories (last_accessed_at)"))
+
+            conn.commit()
         
     except OperationalError as e:
-        logger.warning(f"Database schema mismatch or locked: {e}.")
+        logger.warning(f"Database schema warning (safe to ignore if app works): {e}")
     except Exception as e:
-        logger.error(f"Error creating/migrating database: {e}", exc_info=True)
-        raise
+        logger.error(f"Error initializing database: {e}", exc_info=True)
+        # Wir raisen hier nicht, damit der Server bei kleinen DB-Warnungen trotzdem startet
 
 
 # --- Kosten-spezifische DB-Funktionen ---

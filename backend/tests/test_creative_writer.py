@@ -7,7 +7,7 @@ headers = {"Content-Type": "application/json"}
 body = {
     "prompt": "Schreibe eine kurze Horrorgeschichte im Stil von Stephen King über ein altes Auto, das verlassen an einer Landstraße in Maine steht.",
     "provider": "openai",
-    "model": "gpt-4o-mini",
+    "model": "gpt-5-nano",
     "chat_id": 1,
 }
 

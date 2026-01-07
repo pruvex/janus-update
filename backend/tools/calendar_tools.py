@@ -44,16 +44,29 @@ def _get_google_client_secrets():
     if client_secrets_json:
         return json.loads(client_secrets_json)
 
-    credentials_file_path = os.path.join(BACKEND_DIR, "credentials.json")
-    if os.path.exists(credentials_file_path):
-        with open(credentials_file_path, "r") as f:
-            client_secrets = json.load(f)
+    # Fallback: Lade aus Umgebungsvariablen und speichere im Keyring
+    client_id = os.getenv("GOOGLE_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+
+    if client_id and client_secret:
+        client_secrets = {
+            "web": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "redirect_uris": ["http://localhost"],
+                "javascript_origins": ["http://localhost"],
+            }
+        }
         keyring.set_password(
             "janus_google_credentials", GOOGLE_CLIENT_SECRETS_KEY, json.dumps(client_secrets)
         )
-        logger.info("Google Client-Geheimnisse aus Datei geladen und im Keyring gespeichert.")
+        logger.info("Google Client-Geheimnisse aus Umgebungsvariablen geladen und im Keyring gespeichert.")
         return client_secrets
-    logger.error("Google Client-Geheimnisse weder im Keyring noch in credentials.json gefunden.")
+    
+    logger.error("Google Client-Geheimnisse weder im Keyring noch in Umgebungsvariablen gefunden.")
     return None
 
 

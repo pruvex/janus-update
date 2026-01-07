@@ -122,22 +122,56 @@ def get_memory_by_chat_id(db: Session, chat_id: int):
 
 
 def get_user_name(db: Session) -> Optional[str]:
-    """Sucht im Gedächtnis nach dem Namen des Benutzers."""
-    # Wir suchen nach dem spezifischen Fakt, der den Namen festlegt.
+    """Sucht im Gedächtnis nach dem Namen des Benutzers mit neuer, robuster Methode."""
+    # 1. Bevorzugte Methode: Suche nach der dedizierten Kategorie
     memory_entry = (
+        db.query(database.Memory).filter(database.Memory.category == "USER_NAME").first()
+    )
+
+    if memory_entry:
+        try:
+            # Extrahiert den Namen aus dem Snippet, z.B. "Der Benutzer heißt Peter."
+            name = memory_entry.snippet.split(" ", 3)[-1].strip().rstrip(".")
+            logger.info(f"Benutzername '{name}' aus Kategorie 'USER_NAME' geladen.")
+            return name
+        except IndexError:
+            logger.warning("Eintrag mit Kategorie 'USER_NAME' gefunden, aber Snippet-Format ist unerwartet.")
+            return None
+
+    # 2. Fallback-Methode: Suche nach dem alten Text-Muster (für Abwärtskompatibilität)
+    logger.info("Kein Memory mit Kategorie 'USER_NAME' gefunden, versuche alte Methode...")
+    memory_entry_old = (
         db.query(database.Memory)
         .filter(database.Memory.snippet.like("Der Benutzer heißt %"))
         .first()
     )
-    if memory_entry:
+
+    if memory_entry_old:
         try:
-            # Extrahiert den Namen nach dem Muster "Der Benutzer heißt [Name]."
-            name = memory_entry.snippet.split("Der Benutzer heißt ")[1].strip().replace(".", "")
-            logger.info(f"Benutzername '{name}' aus dem Gedächtnis geladen.")
+            # Extrahiert den Namen
+            name = memory_entry_old.snippet.split("Der Benutzer heißt ")[1].strip().replace(".", "")
+            logger.info(f"Benutzername '{name}' mit alter Methode gefunden.")
+
+            # 3. Lazy Migration: Aktualisiere den gefundenen Eintrag für die Zukunft
+            logger.info(f"Führe Lazy-Migration für Memory-ID {memory_entry_old.id} durch: Setze Kategorie auf 'USER_NAME'.")
+            update_memory_category(db, memory_entry_old.id, "USER_NAME")
+            
             return name
         except IndexError:
-            return None
+            return None # Alter Eintrag ist fehlerhaft formatiert
+
     return None
+
+
+def update_memory_category(db: Session, memory_id: int, new_category: str) -> bool:
+    """Aktualisiert die Kategorie eines Memory-Eintrags."""
+    db_memory = db.query(database.Memory).filter(database.Memory.id == memory_id).first()
+    if db_memory:
+        db_memory.category = new_category
+        db.commit()
+        logger.info(f"Kategorie für Memory-ID {memory_id} auf '{new_category}' aktualisiert.")
+        return True
+    return False
 
 
 # --- START OF CODE ---

@@ -42,7 +42,7 @@ async def get_latest_news_rss(
     query: Optional[str] = None,
     api_key: str = None,
     provider: str = "openai",
-    model: str = "gpt-4o-mini",
+    model: str = "gpt-5-nano",  # Internal alias for the default model
     **kwargs,
 ) -> dict:
     """

@@ -13,6 +13,7 @@ from backend.llm_providers.openai_service import OpenAIServiceProvider
 from backend.llm_providers.gemini_service import GeminiServiceProvider
 from datetime import datetime
 from backend.services import image_manager
+from dataclasses import asdict
 from backend.data.presets import get_preset, PRESET_DATABASE
 from backend.services.quality_gate import quality_gate_service
 
@@ -54,6 +55,59 @@ async def generate_image(
     """
     logger.info(f"Anfrage zur Bilderstellung erhalten für Provider {image_request.provider} und Modell {image_request.model}")
     
+    # 1. Preset-Text laden und in den Prompt integrieren
+    if image_request.style_preset and image_request.variation_preset:
+        try:
+            presets_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'config', 'image_presets.json')
+            if os.path.exists(presets_path):
+                with open(presets_path, "r", encoding="utf-8") as f:
+                    presets_data = json.load(f)
+            
+                if (image_request.style_preset in presets_data and 
+                    image_request.variation_preset in presets_data[image_request.style_preset]):
+                    
+                    preset_config = presets_data[image_request.style_preset][image_request.variation_preset]
+                    system_prompt_add = preset_config.get("system_prompt_add", "")
+                    
+                    user_input = image_request.prompt if image_request.prompt else ""
+                    
+                    # Wir aktivieren den aggressiven Stil-Modus, sobald wir ein Referenzbild haben 
+                    # UND ein Preset gewählt wurde. Egal ob Upload oder KI-Bild.
+                    # Denn auch bei Uploads willst du ja, dass der Stil sich ändert!
+                    is_style_transfer = (image_request.previous_response_id is not None or image_request.reference_image_url is not None) and image_request.style_preset is not None
+                    
+                    if is_style_transfer:
+                        # FALL 1: Refinement mit Preset -> "Time Travel" Modus
+                        logger.info(f"🎨 Applying TIME TRAVEL / STYLE ADAPTATION: {image_request.variation_preset}")
+                        
+                        task_instruction = (
+                            "⚡ TASK: ERA ADAPTATION & STYLE TRANSFER ⚡\n"
+                            "1. ANALYZE the subject (face/pose) from the reference image.\n"
+                            "2. KEEP the person's identity and facial features strictly consistent.\n"
+                            "3. CHANGE the clothing, hairstyle, and background to match the target ERA defined below.\n"
+                            "   (e.g., If preset is 1890s, replace modern clothes with victorian attire).\n"
+                            "4. APPLY the visual aesthetic (film stock, lighting) of the preset."
+                        )
+                        
+                        image_request.prompt = (
+                            f"{task_instruction}\n\n"
+                            f"▼▼▼ TARGET PRESET / ERA ▼▼▼\n"
+                            f"{system_prompt_add}\n\n"
+                            f"▼▼▼ USER MODIFICATION ▼▼▼\n"
+                            f"{user_input}"
+                        )
+                        
+                    else:
+                        # FALL 2: Neues Bild ohne Referenz (kein Stil-Transfer)
+                        logger.info(f"🎨 Standard mode: No style transfer - {image_request.variation_preset}")
+                        image_request.prompt = f"{system_prompt_add}\n\nUSER REQUEST:\n{user_input}"
+                        
+            else:
+                logger.warning(f"Preset file not found at {presets_path}")
+                
+        except Exception as e:
+            logger.error(f"Error applying preset text: {e}")
+
     provider_service = PROVIDER_MAP.get(image_request.provider)
     if not provider_service:
         raise HTTPException(status_code=400, detail=f"Provider '{image_request.provider}' wird nicht unterstützt.")
@@ -72,25 +126,36 @@ async def generate_image(
         logger.info("Single-Image Modus aktiv.")
 
     if target_urls:
-        base_dir = os.getcwd()
         for url in target_urls:
             try:
-                filename = url.split("/")[-1]
-                possible_paths = [
-                    os.path.join(base_dir, "images", "uploads", filename),
-                    os.path.join(base_dir, "backend", "user_images", "uploads", filename),
-                    os.path.join(base_dir, "images", "generated", filename),
-                    os.path.join(os.getenv('LOCALAPPDATA', ''), "JanusDev", "Janus Projekt", "images", "uploads", filename),
-                    os.path.join(os.getenv('LOCALAPPDATA', ''), "JanusDev", "Janus Projekt", "images", filename),
-                    os.path.join(os.getenv('APPDATA', ''), "JanusDev", "Janus Projekt", "images", "uploads", filename),
-                    os.path.join(os.getenv('APPDATA', ''), "JanusDev", "Janus Projekt", "images", filename)
-                ]
-
-                file_path = None
-                for p in possible_paths:
-                    if os.path.exists(p):
-                        file_path = p
-                        break
+                # URL parsen, um den Pfad zu bekommen
+                from urllib.parse import urlparse
+                parsed_url = urlparse(url)
+                url_path = parsed_url.path  # z.B. "/user_images/uploads/meinbild.jpg"
+                
+                filename = os.path.basename(url_path)
+                app_data = get_app_data_dir()
+                
+                # LOGIK-FIX: Prüfen, ob das Bild im Uploads-Ordner liegt
+                if "/uploads/" in url_path or "uploads" in url_path.split("/"):
+                    # Es ist ein Upload -> Pfad: AppData/images/uploads/filename
+                    file_path = os.path.join(app_data, "images", "uploads", filename)
+                    logger.info(f"Using uploaded reference image from: {file_path}")
+                else:
+                    # Es ist ein generiertes Bild -> Pfad: AppData/images/filename
+                    file_path = os.path.join(app_data, "images", filename)
+                    logger.info(f"Using generated reference image from: {file_path}")
+                
+                # Sicherheitscheck
+                if not os.path.exists(file_path):
+                    logger.error(f"Reference image not found at: {file_path}")
+                    # Versuche Fallback (vielleicht liegt es doch im anderen Ordner?)
+                    fallback_path = os.path.join(app_data, "images", "generated" if "/uploads/" in url_path else "uploads", filename)
+                    if os.path.exists(fallback_path):
+                        file_path = fallback_path
+                        logger.info(f"Found image at fallback path: {file_path}")
+                    else:
+                        raise HTTPException(status_code=404, detail=f"Bild '{filename}' nicht gefunden.")
                 
                 if file_path:
                     with open(file_path, "rb") as f:
@@ -107,41 +172,96 @@ async def generate_image(
                 raise HTTPException(status_code=500, detail=f"Ladefehler: {str(e)}")
 
     try:
-        # Parameter extrahieren
-        selected_quality = "medium"
-        selected_size = "1024x1024"
-        
+        # Parameter als Dictionary extrahieren
+        params_dict = {}
         if image_request.parameters:
-            params_dict = image_request.parameters if isinstance(image_request.parameters, dict) else image_request.parameters.model_dump()
-            selected_quality = params_dict.get("quality", "medium")
-            selected_size = params_dict.get("resolution", "1024x1024")
+            if hasattr(image_request.parameters, "model_dump"):
+                params_dict = image_request.parameters.model_dump()
+            elif isinstance(image_request.parameters, dict):
+                params_dict = image_request.parameters
         
         full_model_id = image_request.model
 
-        # --- PRESET LOGIK (ROBUSTER) ---
-        preset_config = None # Initialisiere als None
-        
-        if image_request.style_preset and image_request.style_preset.get('style') and image_request.style_preset.get('variation'):
-            # Holen Sie sich den formatierten Prompt
-            formatted_prompt = get_preset(
-                provider=image_request.provider,
-                style=image_request.style_preset.get('style'), # Jetzt ein Diktat
-                variation=image_request.style_preset.get('variation'), # Jetzt ein Diktat
-                prompt=image_request.prompt # Hier sollte der User-Prompt übergeben werden
-            )
-            final_prompt = formatted_prompt if formatted_prompt else image_request.prompt
+        # --- PRESET LOGIK (Version 3.0 - mit Edit-Mode-Integration) ---
+        preset_config = None
+        user_prompt_for_preset = image_request.prompt or ""
 
-            # Holen Sie sich die volle Konfiguration des Presets
-            # image_request.style_preset ist jetzt ein Diktat, muss entsprechend zugegriffen werden
-            preset_conf_data = PRESET_DATABASE.get(image_request.style_preset.get('style'), {}).get(image_request.style_preset.get('variation'))
-            if preset_conf_data:
-                # Konvertiere das Diktat in ein Objekt, um 'hasattr' zu ermöglichen
-                preset_config = type('PresetConfig', (object,), preset_conf_data)()
+        # --- PRESET EDIT LOGIK (Version 4.0 - True Time Travel) ---
+        
+        # Spezial-Logik für "Preset auf eigenes Bild anwenden"
+        if getattr(image_request, 'apply_preset_to_edit', False):
+            # Basis-Prompt setzen, falls leer
+            if not user_prompt_for_preset.strip():
+                user_prompt_for_preset = "Ein Porträt der Person aus dem Referenzbild."
+
+            # --- DIE NEUE DIAMOND-STANDARD INSTRUKTION ---
+            # Wir nutzen eine hierarchische Struktur, um Identität und Zeit zu trennen.
+            identity_locked_protocol = (
+                "\n\n--- EDITING MODE: IDENTITY-LOCKED TEMPORAL RECOMPOSITION ---\n\n"
+                "1. IDENTITY (LOCKED – MUST NOT CHANGE):\n"
+                "- Preserve the exact facial structure, proportions, and identity of the person from the reference image.\n"
+                "- Do not beautify, stylize, or idealize the face beyond the limits of the film stock.\n"
+                "- The person must remain clearly recognizable as the specific individual from the source.\n\n"
+                
+                "2. TEMPORAL OVERRIDE (MANDATORY):\n"
+                "- COMPLETELY REPLACE clothing, hairstyle, background, objects, and environment.\n"
+                "- IGNORE the modern context of the reference image (e.g., modern streets, t-shirts, cars).\n"
+                "- All replaced elements must strictly conform to the selected PRESET ERA.\n"
+                "- Example: Replace a hoodie with a period-correct coat/suit; replace neon lights with gas lamps.\n\n"
+                
+                "3. PHYSICAL RE-SIMULATION (MANDATORY):\n"
+                "- Re-render the entire image as if it were originally captured using the camera, lens, film stock, and lighting defined in the preset.\n"
+                "- The result must look like a GENUINE photograph from that era, not a modern photo with a vintage filter.\n\n"
+                
+                "FAILURE CONDITION:\n"
+                "- If the image shows modern clothing or objects with a vintage filter, the result is invalid.\n"
+            )
             
-            logger.info(f"Stil-Preset '{image_request.style_preset.get('style')} / {image_request.style_preset.get('variation')}' wird angewendet.")
+            user_prompt_for_preset += identity_locked_protocol
+            logger.info("Edit-Mode: 'Identity-Locked' Protokoll aktiviert.")
+
+        # --- DEBUG: PRESET-ANWENDUNG PRÜFEN ---
+        logger.info("--- DEBUG: PRESET-ANWENDUNG PRÜFEN ---")
+        logger.info(f"Style Preset vom Frontend: {image_request.style_preset}")
+        logger.info(f"Variation Preset vom Frontend: {image_request.variation_preset}")
+        logger.info(f"Reference Image URL vorhanden: {bool(image_request.reference_image_url)}")
+        logger.info(f"Apply Preset to Edit-Checkbox: {getattr(image_request, 'apply_preset_to_edit', False)}")
+        
+        # Bedingung, um Presets anzuwenden:
+        # 1. Preset wurde explizit im UI ausgewählt.
+        # UND (
+        # 2. Es ist KEIN Edit-Mode ODER es ist Edit-Mode UND die "Preset anwenden"-Box ist gecheckt.
+        # )
+        should_apply_preset = (
+            image_request.style_preset and 
+            image_request.variation_preset and
+            (not image_request.reference_image_url or getattr(image_request, 'apply_preset_to_edit', False))
+        )
+        
+        logger.info(f"Ergebnis der Prüfung 'should_apply_preset': {should_apply_preset}")
+
+        if should_apply_preset:
+            # Presets sind aktiv
+            logger.info(f"Stil-Preset '{image_request.style_preset} / {image_request.variation_preset}' wird angewendet.")
+            config, prompt = get_preset(
+                provider=image_request.provider,
+                style=image_request.style_preset,
+                variation=image_request.variation_preset,
+                user_prompt=user_prompt_for_preset
+            )
+            preset_config = config
+            final_prompt = prompt
         else:
-            # Wenn keine Presets, nutze den Original-Prompt
-            final_prompt = image_request.prompt
+            # Presets sind NICHT aktiv -> Nutze Default-Verhalten
+            logger.info("Kein Preset angewendet. Standard-Generierung wird verwendet.")
+            config, prompt = get_preset(
+                provider=image_request.provider,
+                style="", # Leere Werte, damit Fallback greift
+                variation="",
+                user_prompt=user_prompt_for_preset
+            )
+            preset_config = config 
+            final_prompt = prompt
 
         # --- QUALITY GATE SETUP ---
         current_prompt = final_prompt
@@ -182,19 +302,38 @@ async def generate_image(
                 model=image_request.model,
                 prompt=current_prompt,
                 image_bytes_list=image_bytes_list,
-                size=selected_size,
-                quality=selected_quality,
                 previous_response_id=image_request.previous_response_id,
                 previous_image_id=image_request.previous_image_id,
                 mask_image_data=image_request.mask_image_data,
+                **params_dict  # Alle Parameter aus dem Frontend durchreichen
             )
             
             final_result = result
             image_url = result.get("image_url")
             
+            # --- LEAK FIX: Prompt für Anzeige/DB aktualisieren ---
+            # Wenn der Provider einen "echten" Prompt zurückgibt (vom Orchestrator),
+            # nutzen wir diesen als 'Wahrheit' für die DB und das Frontend.
+            # Wenn nicht, nutzen wir den ORIGINALEN User-Prompt (image_request.prompt),
+            # NIEMALS die technische Instruktion (current_prompt/final_prompt).
+            
+            actual_image_prompt = result.get("revised_prompt")
+            if not actual_image_prompt:
+                actual_image_prompt = image_request.prompt  # Fallback auf User-Input (z.B. "ein apfel")
+            
+            # Aktualisiere current_prompt für den nächsten Loop-Durchlauf
+            # ACHTUNG: Hier müssen wir vorsichtig sein, um das Preset nicht zu verlieren
+            if actual_image_prompt and actual_image_prompt != current_prompt:
+                logger.info(f"Aktualisiere Prompt für Quality Gate: {actual_image_prompt[:100]}...")
+                current_prompt = actual_image_prompt
+            
             # Kosten für diesen Versuch addieren
             image_cost_details = result.get("cost", {})
             qg_stats["total_cost"] += image_cost_details.get("total_cost", 0.0)
+
+            # --- FIX: Variablen für Kostenspeicherung definieren ---
+            selected_quality = image_request.params.get('quality', 'standard') if hasattr(image_request, 'params') else 'standard'
+            selected_size = image_request.params.get('size', '1024x1024') if hasattr(image_request, 'params') else '1024x1024'
 
             save_cost_entry(
                 date=datetime.now(),
@@ -259,23 +398,95 @@ async def generate_image(
         if not final_result or not final_result.get("image_url"):
              raise HTTPException(status_code=500, detail="Generierung fehlgeschlagen nach allen Versuchen.")
 
-        # DB Eintrag erstellen
+        # --- LEAK FIX: Datenbank & Frontend bereinigen ---
+        # Wir entscheiden hier, welcher Text gespeichert wird.
+        # Priorität 1: Was das Modell tatsächlich "gesehen" hat (revised_prompt)
+        # Priorität 2: Was der User eingegeben hat (image_request.prompt)
+        # NIEMALS: current_prompt (das enthält die System-Instruktionen!)
+        
+        clean_prompt_for_db = image_request.prompt # Standard: User Input
+        
+        if final_result.get("revised_prompt"):
+            clean_prompt_for_db = final_result.get("revised_prompt")
+            # Optional: Assert gegen Leaks
+            if "ROLE:" in clean_prompt_for_db or "PRESET IDENTITY:" in clean_prompt_for_db:
+                logger.error("CRITICAL: Meta-Prompt Leak detected in revised_prompt! Reverting to user prompt.")
+                clean_prompt_for_db = image_request.prompt
+
+        # Wir patchen das Objekt für den CRUD-Aufruf
+        original_prompt = image_request.prompt
+        image_request.prompt = clean_prompt_for_db
+        
+        # --- PRESET PERSISTENCE FIX ---
+        # Wir stellen sicher, dass die Presets im Objekt sind, bevor wir speichern.
+        
+        # 1. JSON Cleaning (falls es Dictionary ist)
         if isinstance(image_request.style_preset, dict):
-             image_request.style_preset = json.dumps(image_request.style_preset)
-             
+            image_request.style_preset = json.dumps(image_request.style_preset)
+        
+        # 2. Wiederherstellung aus Parametern (Falls Frontend es in params versteckt hat)
+        if not image_request.variation_preset and "variation_preset" in params_dict:
+             image_request.variation_preset = params_dict["variation_preset"]
+
+        # 3. WICHTIG: Im Refine-Modus müssen wir die Presets explizit setzen, 
+        # falls sie im ursprünglichen Request 'None' waren (weil Checkbox aus),
+        # aber wir sie trotzdem angewendet haben (z.B. durch interne Logik).
+        # HIER: Wir nehmen einfach das, was im Request ankam. Wenn der User
+        # "Preset anwenden" geklickt hat, sind die Daten da.
+        
+        # Manuelles Cleaning von Quotes (Sicherheit)
+        if image_request.style_preset:
+             if isinstance(image_request.style_preset, str):
+                image_request.style_preset = image_request.style_preset.strip('"')
+        
+        if image_request.variation_preset:
+             if isinstance(image_request.variation_preset, str):
+                image_request.variation_preset = image_request.variation_preset.strip('"')
+
+        # DB Eintrag erstellen
         new_image_entry = crud.create_generated_image(
             db=db, 
             image_data=image_request, 
             image_url=final_result.get("image_url")
         )
+
+        # --- FIX: Provider ID & PRESETS HART NACHSPEICHERN ---
+        
+        # 1. Provider/Response ID
+        provider_id = (
+            final_result.get("previous_response_id") or 
+            final_result.get("response_id") or 
+            final_result.get("id")
+        )
+        if provider_id:
+            new_image_entry.provider_response_id = provider_id
+            
+        # 2. PRESETS ERZWINGEN (Das behebt den Fehler beim Reinziehen!)
+        # Wir nehmen direkt die Werte aus dem Request-Objekt
+        if image_request.style_preset:
+            val = image_request.style_preset
+            if isinstance(val, dict): val = json.dumps(val)
+            new_image_entry.style_preset = str(val).strip('"')
+            
+        if image_request.variation_preset:
+            val = image_request.variation_preset
+            new_image_entry.variation_preset = str(val).strip('"')
+
+        # 3. Speichern
+        db.add(new_image_entry) # Wichtig: Als "modified" markieren
+        db.commit()
+        db.refresh(new_image_entry)
+        
+        # Stelle den ursprünglichen Prompt wieder her
+        image_request.prompt = original_prompt
         
         response_data = {
             "id": new_image_entry.id,
             "image_url": new_image_entry.image_url,
-            "previous_response_id": final_result.get('previous_response_id'),
+            "previous_response_id": new_image_entry.provider_response_id, # WICHTIG: Hier die neue ID zurückgeben
             "previous_image_id": final_result.get('previous_image_id'),
             "created_at": new_image_entry.created_at,
-            "quality_gate_stats": qg_stats # Stats an das Frontend senden
+            "quality_gate_stats": qg_stats
         }
         
         return response_data
@@ -313,16 +524,47 @@ async def get_pricing_info():
 
 @router.get("/images/context")
 async def get_image_context(url: str, db: Session = Depends(get_db)):
-    """Gibt den Kontext für ein Bild zurück."""
+    """Gibt den Kontext (IDs und PRESETS) für ein Bild zurück."""
     filename = url.split("/")[-1]
+    # Suche auch nach Dateien, die evtl. Suffixe haben, indem wir matchen
     img_entry = db.query(GeneratedImage).filter(GeneratedImage.image_url.contains(filename)).first()
     
     if not img_entry:
-        return {"response_id": None, "image_id": None}
-        
+        return {
+            "response_id": None, 
+            "image_id": None,
+            "style_preset": None,
+            "variation_preset": None
+        }
+    
+    return _format_image_context_response(img_entry)
+
+@router.get("/context_by_id/{image_id}")
+async def get_image_context_by_id(image_id: int, db: Session = Depends(get_db)):
+    """Gibt den Kontext (IDs und PRESETS) für ein Bild anhand seiner ID zurück."""
+    img_entry = db.query(GeneratedImage).filter(GeneratedImage.id == image_id).first()
+    if not img_entry:
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    return _format_image_context_response(img_entry)
+
+def _format_image_context_response(img_entry):
+    """Hilfsfunktion zum Formatieren der Bildkontext-Antwort."""
+    # --- PRESET CLEANUP ---
+    style = img_entry.style_preset
+    variation = img_entry.variation_preset
+    
+    # Clean up JSON quotes if present (Legacy safety)
+    if style and style.startswith('"') and style.endswith('"'):
+        style = style[1:-1]
+    if variation and variation.startswith('"') and variation.endswith('"'):
+        variation = variation[1:-1]
+
     return {
-        "response_id": img_entry.previous_response_id,
-        "image_id": img_entry.previous_image_id
+        "response_id": img_entry.provider_response_id, 
+        "image_id": img_entry.previous_image_id,  # Für Gemini History
+        "style_preset": style,
+        "variation_preset": variation
     }
 
 @router.post("/images/rename", response_model=schemas.GeneratedImage)
@@ -356,3 +598,18 @@ async def rename_image(rename_request: schemas.ImageRenameRequest, db: Session =
     except Exception as e:
         logger.error(f"Unerwarteter Fehler beim Umbenennen: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Fehler: {str(e)}")
+
+@router.get("/images/presets/list")
+async def list_presets():
+    """Gibt die Preset-Datenbank inkl. Metadaten für die UI zurück."""
+    try:
+        # Konvertiere Dataclasses in JSON-kompatible Dicts
+        serializable_db = {}
+        for category, presets in PRESET_DATABASE.items():
+            serializable_db[category] = {}
+            for name, config in presets.items():
+                serializable_db[category][name] = asdict(config)
+        return serializable_db
+    except Exception as e:
+        logger.error(f"Fehler beim Laden der Presets: {e}")
+        raise HTTPException(status_code=500, detail="Could not load presets")

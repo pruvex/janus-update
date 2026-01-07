@@ -108,6 +108,11 @@ async def transcribe_audio(file: UploadFile = File(...)):
 
 # --- Endpoints: TTS ---
 
+@router.get("/tts/settings")
+async def get_tts_settings():
+    # Dummy-Endpunkt, um 404-Fehler im Frontend zu vermeiden.
+    # TODO: Mit echter Konfiguration füllen, falls benötigt.
+    return {}
 
 @router.get("/tts/voices")
 async def get_tts_voices(lang: Optional[str] = None):

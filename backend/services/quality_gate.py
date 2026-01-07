@@ -61,7 +61,7 @@ class QualityGateService:
 
         try:
             response = await client.chat.completions.create(
-                model="gpt-4o",
+                model="gpt-5-nano",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": [
@@ -129,11 +129,15 @@ class QualityGateService:
             return self._fallback_result()
 
     def _calculate_final_score(self, evaluation_json: Dict, criteria: List[VisionCriterion]) -> Dict:
-        """Berechnet den gewichteten Score und findet den schlechtesten Punkt für die Degradation."""
+        """
+        Berechnet den gewichteten Score.
+        NEU: Prüft auf 'Critical Fail' (K.O.-Kriterien).
+        """
         total_score = 0
         total_weight = 0
         lowest_score = 101
         degradation_suggestion = "make it look more realistic"
+        critical_fail = False  # Flag für K.O.
         
         scores_map = {item['id']: item for item in evaluation_json.get('scores', [])}
         
@@ -144,13 +148,24 @@ class QualityGateService:
                 score = score_item.get('score', 0)
                 total_score += score * c.weight
                 
-                # Finde das Kriterium mit dem niedrigsten Score für die Korrektur
+                # Check Critical Fail
+                # Wenn ein kritisches Kriterium unter 60 fällt -> Sofort Fail
+                if c.is_critical and score < 60:
+                    critical_fail = True
+                    logger.warning(f"CRITICAL FAIL on criterion '{c.id}' (Score: {score}).")
+                
+                # Finde schlechtesten Punkt für Suggestion
                 if score < lowest_score:
                     lowest_score = score
                     if c.failure_hint:
                         degradation_suggestion = c.failure_hint
 
         final_score = int(total_score / total_weight) if total_weight > 0 else 0
+        
+        # Wenn Critical Fail, erzwinge einen niedrigen Score (damit der Loop weitergeht)
+        if critical_fail and final_score >= 70:
+            final_score = 59
+            degradation_suggestion = f"CRITICAL ISSUE DETECTED: {degradation_suggestion}"
         
         return {
             "score": final_score,

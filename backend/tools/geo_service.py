@@ -125,7 +125,7 @@ async def find_local_business_tool(
     location: Optional[str] = None,
     api_key: str = "",
     provider: str = "openai",
-    model: str = "gpt-4o-mini",
+    model: str = "gpt-5-nano",  # Internal alias for the default model
     **kwargs,
 ) -> dict:
     """
@@ -215,7 +215,7 @@ async def get_country_info_tool(
     country_name: str,
     api_key: str = "",
     provider: str = "openai",
-    model: str = "gpt-4o-mini",
+    model: str = "gpt-5-nano",  # Internal alias for the default model
     **kwargs,
 ) -> dict:
     """

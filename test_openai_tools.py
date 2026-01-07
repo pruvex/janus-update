@@ -51,7 +51,7 @@ async def test_openai_tool_call():
     ]
 
     print("--- Starte OpenAI API-Aufruf ---")
-    print(f"Modell: gpt-4-1106-preview")
+    print(f"Modell: gpt-5-nano")
     print(f"System-Prompt: {system_prompt}")
     print(f"Benutzer-Nachricht: {user_message}")
     print("-" * 30)
@@ -59,7 +59,7 @@ async def test_openai_tool_call():
     try:
         # 5. Der API-Aufruf
         response = await client.chat.completions.create(
-            model="gpt-4-1106-preview",  # Ein Modell, das Tool-Calling gut unterstützt
+            model="gpt-5-nano",  # Ein Modell, das Tool-Calling gut unterstützt
             messages=messages,
             tools=tools,
             tool_choice="auto",

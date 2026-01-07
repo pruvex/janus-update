@@ -73,7 +73,7 @@ async def test_reason_and_respond_with_llm_cost_aggregation(
         
         result = await reason_and_respond(
             provider="gemini",
-            model="gemini-pro",
+            model="gemini-3-flash-preview",  # Using internal model alias
             api_key="test_key",
             chat_history=[],
             context_manager=mock_context_manager,
@@ -136,7 +136,7 @@ async def test_reason_and_respond_with_tool_cost_aggregation_single_tool(
 
         result = await reason_and_respond(
             provider="gemini",
-            model="gemini-pro",
+            model="gemini-3-flash-preview",  # Using internal model alias
             api_key="test_key",
             chat_history=[],
             context_manager=mock_context_manager,

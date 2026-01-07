@@ -33,7 +33,7 @@ async def analyze_collection_style(collection_name: str):
         return await generate_style_profile_from_rag(
             collection_name=collection_name,
             api_key=key,
-            model="gpt-4o-mini",
+            model="gpt-5-nano",
             provider="openai",
         )
     except FileNotFoundError:

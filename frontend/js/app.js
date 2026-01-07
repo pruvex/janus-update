@@ -1,3 +1,26 @@
+// ================= SENTRY INTEGRATION (LOKALES MODUL) =================
+import * as Sentry from '@sentry/browser';
+
+Sentry.init({
+  dsn: "https://52d089968563a42a98ed367df7723736@o4510659131670528.ingest.de.sentry.io/4510660337533008",
+  
+  // --- AUTOMATISCHE VERSIONIERUNG ---
+  // Vite ersetzt 'import.meta.env.APP_VERSION' beim Build automatisch 
+  // mit der Version aus deiner package.json
+  release: "janus-projekt@" + (import.meta.env.APP_VERSION || "0.0.0-dev"),
+  // ----------------------------------
+
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration(),
+  ],
+  tracesSampleRate: 1.0,
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
+});
+
+// ======================== ENDE DER INTEGRATION ========================
+
 import interact from "interactjs";
 import { API_BASE_URL } from "./config.js";
 import "./personality-settings.js";
@@ -104,12 +127,257 @@ function formatCost(cost, suffix, isImageCost = false) { // NEU: isImageCost Par
   }
 }
 
+function showLoginScreen() {
+    console.log("Showing login screen");
+    
+    // Hide main app container if it exists
+    const appContainer = document.querySelector('.app-container');
+    if (appContainer) {
+        appContainer.style.display = 'none';
+    }
+
+    // Check if login screen already exists
+    let loginScreen = document.getElementById('login-screen');
+    if (loginScreen) {
+        loginScreen.style.display = 'flex';
+        return;
+    }
+
+    // Create login screen
+    loginScreen = document.createElement('div');
+    loginScreen.id = 'login-screen';
+    loginScreen.innerHTML = `
+        <div class="login-container">
+            <h1>Janus</h1>
+            <p>Please configure your API keys to continue.</p>
+            <div class="login-actions">
+                <button id="open-settings-btn">Open Settings</button>
+                <button id="retry-login-btn">Retry</button>
+            </div>
+            <p class="login-error" id="login-error-msg" style="display: none;"></p>
+            <p class="login-hint">Please ensure your API keys are properly configured in the settings.</p>
+        </div>
+    `;
+    document.body.appendChild(loginScreen);
+
+    // Add styles for the login screen if they don't exist
+    if (!document.getElementById('login-screen-styles')) {
+        const style = document.createElement('style');
+        style.id = 'login-screen-styles';
+        style.textContent = `
+            #login-screen {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(5px);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                color: #e0e0e0;
+                z-index: 1000;
+                padding: 20px;
+                box-sizing: border-box;
+            }
+            .login-container {
+                background: #2a2a2a;
+                padding: 2.5rem;
+                border-radius: 12px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                max-width: 500px;
+                width: 100%;
+                border: 1px solid #404040;
+            }
+            .login-container h1 {
+                margin: 0 0 1rem 0;
+                font-size: 2rem;
+                color: #ffffff;
+            }
+            .login-container p {
+                margin: 0 0 1.5rem 0;
+                line-height: 1.5;
+            }
+            .login-actions {
+                display: flex;
+                gap: 1rem;
+                justify-content: center;
+                margin-bottom: 1.5rem;
+            }
+            #open-settings-btn,
+            #retry-login-btn {
+                padding: 0.75rem 1.5rem;
+                border-radius: 6px;
+                border: none;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                font-size: 0.95rem;
+            }
+            #open-settings-btn {
+                background: #007bff;
+                color: white;
+            }
+            #open-settings-btn:hover {
+                background: #0056b3;
+                transform: translateY(-1px);
+            }
+            #retry-login-btn {
+                background: #404040;
+                color: #e0e0e0;
+                border: 1px solid #555;
+            }
+            #retry-login-btn:hover {
+                background: #505050;
+                transform: translateY(-1px);
+            }
+            .login-error {
+                margin: 1rem 0 0;
+                color: #ff6b6b;
+                font-size: 0.9rem;
+                min-height: 1.5rem;
+            }
+            .login-hint {
+                margin: 1.5rem 0 0 !important;
+                font-size: 0.85rem;
+                color: #a0a0a0;
+            }
+            @media (max-width: 600px) {
+                .login-container {
+                    padding: 1.5rem;
+                }
+                .login-actions {
+                    flex-direction: column;
+                }
+                #open-settings-btn,
+                #retry-login-btn {
+                    width: 100%;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Add event listeners
+    const retryBtn = document.getElementById('retry-login-btn');
+    const settingsBtn = document.getElementById('open-settings-btn');
+    const errorMsg = document.getElementById('login-error-msg');
+
+    if (retryBtn) {
+        retryBtn.addEventListener('click', async () => {
+            errorMsg.style.display = 'none';
+            const isAuthenticated = await attemptSilentLogin();
+            if (!isAuthenticated) {
+                errorMsg.textContent = 'Still unable to authenticate. Please check your API keys in settings.';
+                errorMsg.style.display = 'block';
+            }
+        });
+    }
+
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', () => {
+            console.log("Notfall-Button gedrückt: Erzwinge Einstellungen...");
+
+            // 1. DAS MODAL ZWANGSWEISE AUSBLENDEN
+            // Wir suchen das Modal-Element (das Eltern-Element des Buttons)
+            const blockingModal = settingsBtn.closest('.modal-overlay') || settingsBtn.closest('div[style*="fixed"]');
+            if (blockingModal) {
+                blockingModal.style.display = 'none';
+                blockingModal.remove(); // Sicher ist sicher: Weg damit aus dem DOM
+            }
+            
+            // Versuchen wir auch, den "Login Screen" Container zu finden, falls er es ist
+            const loginScreen = document.getElementById('login-screen');
+            if (loginScreen) loginScreen.style.display = 'none';
+
+            // 2. DIE NORMALE APP-OBERFLÄCHE EINBLENDEN
+            const appContainer = document.querySelector('.app-container');
+            if (appContainer) appContainer.style.display = 'flex';
+
+            // 3. ZU DEN EINSTELLUNGEN WECHSELN
+            // Wir nutzen die globale switchView Funktion, falls verfügbar
+            if (typeof window.switchView === 'function') {
+                window.switchView('settings-view');
+            } else {
+                // Manuelles Umschalten (Fallback)
+                document.querySelectorAll('main.view').forEach(v => v.style.display = 'none');
+                const settingsView = document.getElementById('settings-view');
+                if (settingsView) settingsView.style.display = 'block';
+            }
+
+            // 4. API-KEY TAB AKTIVIEREN
+            // Damit der User direkt im richtigen Feld landet
+            setTimeout(() => {
+                const apiKeyLink = document.querySelector('[data-target="api-key-section"]');
+                if (apiKeyLink) apiKeyLink.click();
+            }, 100);
+        });
+    }
+}
+
+function hideLoginScreen() {
+    console.log("Hiding login screen");
+    const loginScreen = document.getElementById('login-screen');
+    if (loginScreen) {
+        // Instead of removing, just hide it so we can show it again if needed
+        loginScreen.style.display = 'none';
+    }
+    
+    // Show the main app container
+    const appContainer = document.querySelector('.app-container');
+    if (appContainer) {
+        appContainer.style.display = ''; // Revert to default display
+    }
+}
+
+
+async function validateToken() {
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    console.warn("No authentication token found in localStorage for validation.");
+    return false;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+      method: "GET",
+      headers: {
+        "x-api-key": token,
+      },
+    });
+
+    if (response.ok) {
+      console.log("Token validation successful.");
+      return true;
+    } else {
+      console.warn(`Token validation failed with status: ${response.status}`);
+      localStorage.removeItem('auth_token'); // Remove invalid token
+      return false;
+    }
+  } catch (error) {
+    console.error("Error during token validation:", error);
+    return false;
+  }
+}
+
 // NEU: Funktion zum Speichern des zuletzt verwendeten Modells und Providers im Backend
 async function updateLastUsedModelInBackend() {
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    console.warn("Cannot update last used model: No auth token found.");
+    return;
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/last-used-model`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "x-api-key": token
+      },
       body: JSON.stringify({
         provider: appState.last_active.provider,
         model: appState.last_active.model,
@@ -134,49 +402,134 @@ function render() {
   const sidebarModelSelect = document.getElementById("model-select");
 
   if (sidebarProviderSelect && sidebarModelSelect) {
-    // Update sidebar provider dropdown
-    sidebarProviderSelect.value = appState.last_active.provider;
+    // --- START DER FINALEN KORREKTUR ---
 
-    // Populate sidebar model dropdown based on selected provider
-    sidebarModelSelect.innerHTML = ""; // Clear existing options
-    const provider = appState.last_active.provider;
-    const allowedModels = appState.user_selections[provider] || [];
+    // 1. Hole die korrekten Werte aus dem State, BEVOR wir das DOM manipulieren.
+    const targetProvider = appState.last_active.provider;
+    const targetModel = appState.last_active.model;
 
-    if (appState.model_catalog[provider]) {
-                const filteredModels = appState.model_catalog[provider].filter(
-                  (model) => allowedModels.includes(model.id)
-                );
+    // 2. Setze den Provider-Wert. Dies kann ein 'change'-Event auslösen, aber das ist uns jetzt egal.
+    console.log(`--> [Render] Setting provider to: ${targetProvider}`);
+    sidebarProviderSelect.value = targetProvider;
+
+    // 3. Fülle die Modell-Liste basierend auf dem korrekten Provider.
+    console.log(`--> [Render] Populating model list for provider: ${targetProvider}`);
+    sidebarModelSelect.innerHTML = ""; // Leere die alte Liste
+    let allowedModels = appState.user_selections[targetProvider] || [];
+    
+    // Fallback für neue Benutzer
+    if (allowedModels.length === 0 && appState.model_catalog[targetProvider]) {
+      console.warn(`Keine Modelle für Provider '${targetProvider}' ausgewählt. Zeige alle als Fallback an.`);
+      allowedModels = appState.model_catalog[targetProvider].map(model => model.id);
+    }
+    
+    if (appState.model_catalog[targetProvider]) {
+      // DIAGNOSTIC LOGS - START
+      console.log("--- DROPDOWN-FILTER-DIAGNOSE ---");
+      console.log("Ausgewählter Provider:", targetProvider);
+      console.log("Verfügbare Modelle für diesen Provider:", appState.model_catalog[targetProvider]);
+      console.log("Vom User erlaubte Modell-IDs:", allowedModels);
+
+      const filteredModels = appState.model_catalog[targetProvider].filter(
+        (model) => {
+          const isAllowed = allowedModels.includes(model.id);
+          const isNotExcluded = !["gpt-image-1.5", "gpt-image-1-mini", "gpt-4o-mini-tts"].includes(model.id);
+          console.log(`Modell: ${model.id} - Erlaubt: ${isAllowed}, Nicht ausgeschlossen: ${isNotExcluded}`);
+          return isAllowed && isNotExcluded;
+        }
+      );
+
+      console.log("Ergebnis des Filters (anzuzeigende Modelle):", filteredModels);
+      console.log("---------------------------------");
+      // DIAGNOSTIC LOGS - END
+      
+      // Fülle die Dropdown-Liste mit den gefilterten Modellen
       filteredModels.forEach((model) => {
         const option = document.createElement("option");
         option.value = model.id;
-        console.log("Debugging cost display for model:", model.id, "cost_per_image:", model.cost_per_image, "cost_per_text_input_token:", model.cost_per_text_input_token); // NEU
-                                let costDisplay = "";
-                                if (model.type === "image") {
-                                  // Für Gemini Bildmodelle mit Token-basierter Preisgestaltung
-                                  if (model.provider === "gemini" && model.cost_per_million_output_tokens) {
-                                    const costPerImage = (model.output_tokens_per_image_1024x1024 / 1000000) * model.cost_per_million_output_tokens;
-                                    costDisplay = `${formatCost(costPerImage, "€/img", true)}`;
-                                    if (model.cost_per_text_input_token) {
-                                        costDisplay += ` + ${formatCost(model.cost_per_text_input_token * 1000000, "€/Mio. in")}`;
-                                    }
-                                  }
-                                  // Fallback für andere Bildmodelle (z.B. DALL-E 3) mit fixem cost_per_image
-                                  else if (model.cost_per_image) {
-                                    costDisplay = formatCost(model.cost_per_image, "€/img", true);
-                                    if (model.cost_per_text_input_token) {
-                                        costDisplay += ` + ${formatCost(model.cost_per_text_input_token * 1000000, "€/Mio. in")}`;
-                                    }
-                                  }
-                                } else if (model.cost_per_token_input) {
-                                  costDisplay = `${formatCost(model.cost_per_token_input * 1000000, "€/Mio. in")} / ${formatCost(model.cost_per_token_output * 1000000, "€/Mio. out")}`;
-                                }        option.textContent = `${model.name} (${costDisplay})${model.desc ? " - " + model.desc : ""}`;
+        
+        // Berechne die Kostenanzeige
+        let costDisplay = "";
+        if (model.type === "image") {
+          // Für Gemini Bildmodelle mit Token-basierter Preisgestaltung
+          if (model.provider === "gemini" && model.cost_per_million_output_tokens) {
+            const costPerImage = (model.output_tokens_per_image_1024x1024 / 1000000) * model.cost_per_million_output_tokens;
+            costDisplay = `${formatCost(costPerImage, "€/img", true)}`;
+            if (model.cost_per_text_input_token) {
+              costDisplay += ` + ${formatCost(model.cost_per_text_input_token * 1000000, "€/Mio. in")}`;
+            }
+          }
+          // Fallback für andere Bildmodelle (z.B. DALL-E 3) mit fixem cost_per_image
+          else if (model.cost_per_image) {
+            costDisplay = formatCost(model.cost_per_image, "€/img", true);
+            if (model.cost_per_text_input_token) {
+              costDisplay += ` + ${formatCost(model.cost_per_text_input_token * 1000000, "€/Mio. in")}`;
+            }
+          }
+        } else if (model.cost_per_token_input) {
+          costDisplay = `${formatCost(model.cost_per_token_input * 1000000, "€/Mio. in")} / ${formatCost(model.cost_per_token_output * 1000000, "€/Mio. out")}`;
+        }
+        
+        option.textContent = `${model.name} (${costDisplay})${model.desc ? " - " + model.desc : ""}`;
         sidebarModelSelect.appendChild(option);
       });
     } else {
-      console.warn(`No models found for provider: ${provider}`);
+      console.warn(`No models found for provider: ${targetProvider}`);
     }
 
-    sidebarModelSelect.value = appState.last_active.model;
+    // 4. Intelligentes Setzen des Modells
+    // Wir prüfen erst, ob das gewünschte Modell überhaupt in der Liste existiert.
+    const availableOptions = Array.from(sidebarModelSelect.options).map(o => o.value);
+    console.log(`--> [Render] Verfügbare Modell-Optionen:`, availableOptions);
+    console.log(`--> [Render] Ziel-Modell: ${targetModel}`);
+
+    if (availableOptions.includes(targetModel)) {
+      // Fall A: Alles gut, das Modell existiert.
+      console.log(`--> [Render] Ziel-Modell '${targetModel}' gefunden, wird ausgewählt.`);
+      sidebarModelSelect.value = targetModel;
+    } else if (availableOptions.length > 0) {
+      // Fall B: Das gespeicherte Modell existiert nicht mehr (z.B. gpt-4o-mini).
+      // Selbstheilung: Wir wählen automatisch das erste verfügbare Modell.
+      const fallbackModel = availableOptions[0];
+      console.log(`--> [Render] Gespeichertes Modell '${targetModel}' nicht verfügbar. Wechsele zu Fallback: '${fallbackModel}'`);
+      
+      sidebarModelSelect.value = fallbackModel;
+      
+      // Wir aktualisieren auch gleich den State, damit beim nächsten Mal alles stimmt.
+      appState.last_active.model = fallbackModel;
+      updateLastUsedModelInBackend(); // Speichern im Hintergrund
+      
+      // Optional: Benachrichtigung an den Benutzer (kann entfernt werden, wenn nicht gewünscht)
+      const notification = document.createElement('div');
+      notification.className = 'notification is-warning is-light';
+      notification.style.position = 'fixed';
+      notification.style.top = '1rem';
+      notification.style.right = '1rem';
+      notification.style.zIndex = '1000';
+      notification.innerHTML = `
+        <button class="delete"></button>
+        Modell '${targetModel}' ist nicht verfügbar. Verwende stattdessen '${fallbackModel}'.
+      `;
+      document.body.appendChild(notification);
+      
+      // Schließen-Button für die Benachrichtigung
+      notification.querySelector('.delete').addEventListener('click', () => {
+        notification.remove();
+      });
+      
+      // Automatisches Ausblenden nach 5 Sekunden
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 5000);
+    } else {
+      // Fall C: Keine Modelle verfügbar
+      console.error('--> [Render] Keine Modelle für den ausgewählten Provider verfügbar!');
+      appState.last_active.model = null;
+    }
+
+    // --- ENDE DER FINALEN KORREKTUR ---
   }
 
   if (appState.currentView === "chat") {
@@ -185,80 +538,245 @@ function render() {
   } else {
     chatView.style.display = "none";
     settingsView.style.display = "flex";
-    // renderSettingsView(); // <-- DIESEN AUFRUF ENTFERNEN
   }
 }
 
+// Function to handle silent login
+/**
+ * Attempts to authenticate the user either with an existing token or via silent login
+ * @returns {Promise<boolean>} True if authentication was successful
+ */
+async function authenticate() {
+    const token = localStorage.getItem('auth_token');
+    
+    // If we have a token, validate it first
+    if (token) {
+        try {
+            const isValid = await validateToken(token);
+            if (isValid) {
+                console.log("Existing token is valid");
+                return true;
+            }
+        } catch (error) {
+            console.warn("Token validation failed:", error);
+            // Continue with silent login if token validation fails
+        }
+    }
+    
+    // If no valid token, try silent login
+    return await attemptSilentLogin();
+}
+
+/**
+ * Attempts to perform silent login by getting a new token from the backend
+ * @returns {Promise<boolean>} True if silent login was successful
+ */
+async function attemptSilentLogin() {
+    try {
+        console.log("Attempting silent login...");
+        const response = await fetch(`${API_BASE_URL}/api/auth/token`, { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+            },
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                console.log("No valid API keys found in keyring");
+                return false;
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.access_token) {
+            localStorage.setItem('auth_token', data.access_token);
+            console.log("Silent login successful");
+            return true;
+        }
+        
+        return false;
+    } catch (error) {
+        console.error("Silent login failed:", error);
+        return false;
+    }
+}
+
+
+// The single entry point of the application
 document.addEventListener("DOMContentLoaded", async () => {
-  const settingsBtn = document.getElementById("settings-btn");
-  console.log("settingsBtn found:", settingsBtn);
+  console.log("--> [1] DOM fully loaded. Starting application initialization...");
+  await initializeApp();
+});
 
-  settingsBtn.addEventListener("click", () => {
-    console.log("Settings button clicked!");
-    appState.currentView = "settings";
+// The central initialization function that controls the entire startup process
+async function initializeApp() {
+  console.log("--> [1] Starting application initialization...");
+
+  let isAuthenticated = false;
+
+  // --- START DER FINALEN KORREKTUR ---
+  try {
+    // Validate the existing token
+    console.log("--> [1.1] Validating existing token...");
+    const isTokenValid = await validateToken();
+
+    if (isTokenValid) {
+      console.log("--> [2a] Existing token is valid.");
+      isAuthenticated = true;
+    } else {
+      // If token is invalid, throw an error to trigger the silent login fallback
+      throw new Error("Existing token is invalid or missing.");
+    }
+  } catch (validationError) {
+    console.warn("--> [2b] Token validation failed, attempting silent login:", validationError.message);
+    
+    // FALLBACK: Attempt silent login
+    try {
+      console.log("--> [2c] Attempting silent login...");
+      const isSilentLoginSuccess = await attemptSilentLogin();
+      if (isSilentLoginSuccess) {
+        isAuthenticated = true;
+        console.log("--> [2d] Silent login successful.");
+      } else {
+        throw new Error("Silent login failed.");
+      }
+    } catch (silentLoginError) {
+      console.error("--> [!] Both token validation and silent login failed:", silentLoginError.message);
+      isAuthenticated = false;
+    }
+  }
+
+  // FINALE PHASE: Wird nur ausgeführt, wenn einer der Versuche erfolgreich war
+  if (isAuthenticated) {
+    console.log("--> [3] Authentication successful. Loading application data...");
+    
+    // Lade ALLE notwendigen Daten.
+    // Diese Funktionen sollten jetzt erfolgreich sein, da wir einen gültigen Token haben.
+    try {
+      console.log("--> [3.1] Loading model catalog...");
+      await loadModelCatalog();
+      
+      console.log("--> [3.2] Loading user selections...");
+      await loadUserSelections();
+      
+      console.log("--> [3.3] Loading last used model...");
+      await loadLastUsedModel();
+      
+      console.log("--> [3.4] Loading projects...");
+      await loadProjects();
+
+      // RENDERE die UI und MACHE sie INTERAKTIV
+      console.log("--> [3.5] Rendering UI and setting up event listeners...");
+      render();
+      setupEventListeners();
+
+      // Lade die Chat-Liste als letzten Schritt
+      console.log("--> [3.6] Loading chat list...");
+      await loadChats();
+
+      // Show the app container and hide login screen
+      const appContainer = document.querySelector('.app-container');
+      if (appContainer) {
+        appContainer.style.display = '';
+      }
+      hideLoginScreen();
+      
+      console.log("--> [4] Initialization complete. Janus is ready.");
+    } catch (error) {
+      console.error("--> [ERROR] Failed to initialize application after successful authentication:", error);
+      showLoginScreen();
+    }
+  } else {
+    // Fallback, wenn absolut nichts funktioniert hat
+    console.error("--> [!] All authentication attempts failed. Showing login screen.");
+    showLoginScreen();
+  }
+}
+
+// A helper function to bundle all event listeners
+function setupEventListeners() {
+  console.log("Setting up UI event listeners...");
+
+  // Listener for model updates from settings
+  document.addEventListener("models-updated", async () => {
+    console.log("--> [Event] Models updated externally. Refreshing catalog...");
+    
+    // 1. Reload user selections from server
+    await loadUserSelections();
+    
+    // 2. (Optional) Reload catalog if API keys might have changed
+    // await loadModelCatalog();
+
+    // 3. Re-render UI (updates dropdowns)
     render();
-    // Dispatch a custom event to notify settings.js
-    document.dispatchEvent(new CustomEvent("show-settings"));
   });
-  const backToChatBtn = document.getElementById("back-to-chat-btn");
+  
+  // Provider select dropdown
   const sidebarProviderSelect = document.getElementById("provider-select");
+  if (sidebarProviderSelect) {
+    sidebarProviderSelect.addEventListener("change", async () => {
+      // --- START DER FINALEN KORREKTUR ---
+      console.log("--> [Event] Provider changed!");
 
-  backToChatBtn.addEventListener("click", () => {
-    appState.currentView = "chat";
-    render();
-  });
+      // 1. Neuen Provider aus dem Dropdown lesen und im State speichern
+      const newProvider = sidebarProviderSelect.value;
+      appState.last_active.provider = newProvider;
+      console.log(`--> [Event] New provider set in state: ${newProvider}`);
 
-  const toggleSidebarBtn = document.getElementById("toggle-sidebar-btn");
-  const appContainer = document.querySelector(".app-container");
+      // 2. Ein sinnvolles Standard-Modell für den neuen Provider finden und setzen
+      // Das verhindert, dass ein ungültiges Modell (z.B. GPT in Gemini) ausgewählt bleibt.
+      const firstAvailableModel = findFirstAvailableModel(newProvider);
+      if (firstAvailableModel) {
+        appState.last_active.model = firstAvailableModel.id;
+        console.log(`--> [Event] New model set in state: ${firstAvailableModel.id}`);
+      } else {
+        appState.last_active.model = null; // Fallback, falls keine Modelle da sind
+        console.warn(`--> [Event] No available models found for provider: ${newProvider}`);
+      }
 
-  toggleSidebarBtn.addEventListener("click", () => {
-    appContainer.classList.toggle("sidebar-collapsed");
-    if (appContainer.classList.contains("sidebar-collapsed")) {
-      toggleSidebarBtn.textContent = "▶";
-    } else {
-      toggleSidebarBtn.textContent = "◀";
-    }
-  });
+      // 3. Den Backend-Status aktualisieren (wichtig für den nächsten App-Start)
+      await updateLastUsedModelInBackend();
 
-  sidebarProviderSelect.addEventListener("change", async () => {
-    appState.last_active.provider = sidebarProviderSelect.value;
-    const provider = appState.last_active.provider;
-    const allowedModels = appState.user_selections[provider] || [];
-    const filteredModels = appState.model_catalog[provider].filter((model) =>
-      allowedModels.includes(model.id)
-    );
-    if (filteredModels.length > 0) {
-      appState.last_active.model = filteredModels[0].id;
-    } else {
-      appState.last_active.model = "";
-    }
-    await updateLastUsedModelInBackend();
-    render();
-  });
+      // 4. Die UI komplett neu zeichnen, um die Änderungen anzuzeigen
+      console.log("--> [Event] Calling render() to update the UI...");
+      render(); 
+    });
+  }
+  
+  // Settings button
+  const settingsBtn = document.getElementById("settings-btn");
+  if (settingsBtn) {
+    settingsBtn.addEventListener("click", () => {
+      console.log("Settings button clicked!");
+      appState.currentView = "settings";
+      render();
+      document.dispatchEvent(new CustomEvent("show-settings"));
+    });
+  }
 
-  const sidebarModelSelect = document.getElementById("model-select");
-  sidebarModelSelect.addEventListener("change", async () => {
-    appState.last_active.model = sidebarModelSelect.value;
-    await updateLastUsedModelInBackend();
-    render();
-  });
+  // Back to chat button
+  const backToChatBtn = document.getElementById("back-to-chat-btn");
+  if (backToChatBtn) {
+    backToChatBtn.addEventListener("click", () => {
+      appState.currentView = "chat";
+      render();
+    });
+  }
+  
+  // Initialize draggable and resizable elements
+  initializeDraggableElements();
+  
+  console.log("Event listeners successfully set up.");
+}
 
-  await loadModelCatalog();
-  await loadLastUsedModel();
-  await loadUserSelections(); // Load selections before initial render
-  render(); // Initial render
-
-  // Load projects
-  await loadProjects();
-
-  // Initialize global variables for settings view elements
-  modelSelectionForm = document.getElementById("model-selection-form");
-  backFromModelsBtn = document.getElementById("back-from-models-btn");
-  modelList = document.getElementById("model-list");
-
-  // Initial call to set active section when settings view is first rendered
-  // This will be called by renderSettingsView() and renderModelManagementView()
-
+// Function to initialize all draggable and resizable elements
+function initializeDraggableElements() {
+  // Chat window
   interact(".chat-window")
     .draggable({
       allowFrom: "#chat-header",
@@ -267,7 +785,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         start(event) {
           const target = event.target;
           const rect = target.getBoundingClientRect();
-          // Setze die Startposition relativ zum Viewport, um konsistent zu sein
           target.setAttribute("data-x", rect.left);
           target.setAttribute("data-y", rect.top);
         },
@@ -277,7 +794,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     .resizable({
       edges: { left: true, right: true, bottom: true, top: true },
       inertia: true,
-      // NEU: Fügt die Größenbeschränkung hinzu
       modifiers: [
         interact.modifiers.restrictSize({
           min: { width: 300, height: 200 },
@@ -288,6 +804,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       },
     });
 
+  // Floating panel
   interact(".floating-panel")
     .draggable({
       allowFrom: ".panel-header",
@@ -317,10 +834,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       },
     });
 
-  // NEU: Drag-and-Drop für das Image Modal
+  // Image modal
   interact("#image-modal .modal-content")
     .draggable({
-      allowFrom: "#image-modal .modal-header", // Header als Drag-Handle
+      allowFrom: "#image-modal .modal-header",
       inertia: true,
       listeners: {
         start(event) {
@@ -328,29 +845,27 @@ document.addEventListener("DOMContentLoaded", async () => {
           const rect = target.getBoundingClientRect();
           target.setAttribute("data-x", rect.left);
           target.setAttribute("data-y", rect.top);
-          window.justDragged = false; // Zurücksetzen am Start des Drags
+          window.justDragged = false;
         },
         move: dragListener,
         end(event) {
-            window.justDragged = true; // Markiere, dass ein Drag beendet wurde
+            window.justDragged = true;
         }
       },
-    }); // Keine resizable Konfiguration für das Bild-Modal
+    });
+}
 
   function dragListener(event) {
     const target = event.target;
     let x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
     let y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
 
-    // Wiederherstellung der separaten Logik zur Fehlerbehebung
     if (target.closest('#image-modal .modal-content')) {
-      // Spezifische Logik für das Bild-Modal
       const maxX = window.innerWidth - target.offsetWidth;
       const maxY = window.innerHeight - target.offsetHeight;
       x = Math.max(0, Math.min(x, maxX));
       y = Math.max(0, Math.min(y, maxY));
     } else {
-      // Logik für alle anderen draggable Elemente (z.B. Chat-Fenster)
       const maxX = window.innerWidth - target.offsetWidth;
       const maxY = window.innerHeight - target.offsetHeight;
       x = Math.max(0, Math.min(x, maxX));
@@ -430,7 +945,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     Object.assign(event.target.dataset, { x, y });
   }
 
-  // Listener for project list updates from the main process
   if (window.electron && typeof window.electron.on === 'function') {
     window.electron.on('project-list-updated', () => {
       console.log("Event 'project-list-updated' received. Reloading projects.");
@@ -438,7 +952,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-    // Back to chat from project dashboard
   const backToProjectChatBtn = document.getElementById('back-to-chat-from-project');
   if (backToProjectChatBtn) {
     backToProjectChatBtn.addEventListener('click', () => {
@@ -448,18 +961,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // New chat in project
   const newProjectChatBtn = document.getElementById('new-project-chat-btn');
   if (newProjectChatBtn) {
     newProjectChatBtn.addEventListener('click', () => {
       if (appState.currentProjectId) {
-        // Create a new chat in the current project
         createNewChatInProject(appState.currentProjectId);
       }
     });
   }
 
-  // File upload button
+  // Initialize file input handling
   const browseFilesBtn = document.getElementById('browse-files-btn');
   const fileInput = document.getElementById('file-input');
   if (browseFilesBtn && fileInput) {
@@ -473,7 +984,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
   }
-});
 
 async function loadProjects() {
   try {
@@ -482,7 +992,20 @@ async function loadProjects() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const projects = await response.json();
+    
+    // --- SICHERHEITS-CHECK ---
+    if (!Array.isArray(projects)) {
+        console.warn("Projects data is not an array:", projects);
+        return; // Abbrechen, bevor es knallt
+    }
+    // -------------------------
+
     const projectListDiv = document.getElementById('project-list');
+    if (!projectListDiv) {
+      console.warn("Project list container not found");
+      return;
+    }
+    
     projectListDiv.innerHTML = ''; // Clear existing list
     projects.forEach(project => {
       const projectDiv = document.createElement('div');
@@ -584,8 +1107,17 @@ async function handleFiles(files, projectId) {
 async function loadModelCatalog() {
   try {
     const response = await fetch(`${API_BASE_URL}/api/models/catalog`);
+    if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+    
     const data = await response.json();
-    // Transform the array into an object for easier lookup by provider
+    
+    // SAFETY CHECK: Is the data actually an array?
+    if (!Array.isArray(data)) {
+      console.error("Model catalog data is not an array:", data);
+      appState.model_catalog = {};
+      return;
+    }
+
     const catalogByProvider = {};
     data.forEach((model) => {
       if (!catalogByProvider[model.provider]) {
@@ -596,52 +1128,255 @@ async function loadModelCatalog() {
     appState.model_catalog = catalogByProvider;
   } catch (error) {
     console.error("Failed to load model catalog:", error);
+    // Set empty object to prevent crashes in dependent code
+    appState.model_catalog = {}; 
   }
 }
 
 async function loadLastUsedModel() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/last-used-model`);
+    // Get the authentication token from localStorage
+    const token = localStorage.getItem('auth_token');
+    
+    if (!token) {
+      console.warn("No authentication token found. User might not be logged in.");
+      return; // Return here, as the request will fail anyway
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/last-used-model`, {
+      method: "GET", 
+      headers: { 
+        "x-api-key": token
+      },
+    });
+
+    if (!response.ok) {
+        // Falls der Endpunkt einen Fehler wirft (z.B. 401 Unauthorized, 404 Not Found)
+        throw new Error(`Failed to fetch last used model: ${response.status} ${response.statusText}`);
+    }
+
     const data = await response.json();
-    appState.last_active.provider = data.provider;
-    appState.last_active.model = data.model;
-    console.log("loadLastUsedModel - data:", data); // Debug Log
-    console.log("appState.last_active.provider after loadLastUsedModel:", appState.last_active.provider); // Debug Log
+
+    // Nur aktualisieren, wenn gültige Daten zurückkommen
+    if (data && data.provider && data.model) {
+        appState.last_active.provider = data.provider;
+        appState.last_active.model = data.model;
+        console.log("Successfully loaded last used model:", appState.last_active);
+    } else {
+        console.warn("Received incomplete data for last used model:", data);
+    }
+
   } catch (error) {
-    console.error("Failed to load last used model:", error);
+    // Bei einem Fehler werden einfach die Standardwerte beibehalten, die App stürzt nicht ab.
+    console.warn("Could not load last used model, using defaults:", error.message);
   }
 }
 
 async function loadUserSelections() {
-  // Get all unique providers from the model catalog
-  const availableProviders = Object.keys(appState.model_catalog);
-  const MAX_RETRIES = 5;
-  const RETRY_DELAY_MS = 1000; // 1 second delay
+  try {
+    // --- SICHERHEITS-CHECK ---
+    if (!appState.model_catalog || typeof appState.model_catalog !== 'object') {
+      console.warn("Model catalog is not properly initialized:", appState.model_catalog);
+      appState.model_catalog = {}; // Ensure it's at least an object
+    }
+    // -------------------------
 
-  for (const provider of availableProviders) {
-    let success = false;
-    for (let i = 0; i < MAX_RETRIES; i++) {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      console.warn("Cannot load user selections: No auth token found.");
+      // Populate with empty selections to prevent errors
+      const availableProviders = Object.keys(appState.model_catalog);
+      for (const provider of availableProviders) {
+          appState.user_selections[provider] = [];
+      }
+      return;
+    }
+
+    // Get all unique providers from the model catalog
+    const availableProviders = Object.keys(appState.model_catalog);
+    
+    const selectionPromises = availableProviders.map(async (provider) => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/models/selection/${provider}`);
+        const response = await fetch(`${API_BASE_URL}/api/models/selection/${provider}`, {
+          headers: {
+            "x-api-key": token,
+          },
+        });
         if (!response.ok) {
-          console.warn(
-            `Attempt ${i + 1} failed for ${provider}: ${response.status} ${response.statusText}. Retrying...`
-          );
-          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
-          continue;
+          throw new Error(`HTTP error ${response.status}`);
         }
         const data = await response.json();
+        
+        // --- SICHERHEITS-CHECK ---
+        if (!data || !Array.isArray(data.selected_models)) {
+          console.warn(`Invalid response format for provider ${provider}:`, data);
+          appState.user_selections[provider] = [];
+          return;
+        }
+        // -------------------------
+        
         appState.user_selections[provider] = data.selected_models;
-        success = true;
-        break; // Exit retry loop on success
       } catch (error) {
-        console.warn(`Attempt ${i + 1} failed for ${provider} with error:`, error, ". Retrying...");
-        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+        console.error(`Failed to load models for ${provider}:`, error);
+        appState.user_selections[provider] = []; // Default to empty on error
       }
-    }
-    if (!success) {
-      console.error(`Failed to load models for ${provider} after ${MAX_RETRIES} retries.`);
-      appState.user_selections[provider] = []; // Default to empty if all retries fail
+    });
+
+    await Promise.all(selectionPromises);
+  } catch (error) {
+    console.error("Unexpected error in loadUserSelections:", error);
+    // Ensure we have at least an empty object to prevent further errors
+    if (!appState.user_selections || typeof appState.user_selections !== 'object') {
+      appState.user_selections = {};
     }
   }
 }
+
+function findFirstAvailableModel(provider) {
+  // Stellt sicher, dass der Provider im Katalog existiert, um Fehler zu vermeiden.
+  if (!appState.model_catalog[provider]) {
+    console.error(`Provider '${provider}' not found in model catalog.`);
+    return null;
+  }
+
+  // Holt die vom User erlaubten Modelle oder nimmt alle als Fallback.
+  let allowedModels = appState.user_selections[provider] || [];
+  if (allowedModels.length === 0) {
+      allowedModels = appState.model_catalog[provider].map(m => m.id);
+  }
+  
+  // Filtert die Modelle (z.B. um reine TTS-Modelle auszublenden).
+  const availableModels = appState.model_catalog[provider].filter(
+    model => allowedModels.includes(model.id) && 
+             !["gpt-image-1.5", "gpt-image-1-mini", "gpt-4o-mini-tts"].includes(model.id)
+  );
+
+  // Gibt das erste gefundene Modell zurück oder null, wenn die Liste leer ist.
+  return availableModels.length > 0 ? availableModels[0] : null;
+}
+
+// ============================================================
+// NOTFALL-FIX FÜR NAVIGATION (Am Ende von app.js einfügen)
+// ============================================================
+
+// 1. Die Funktion, die garantiert die Einstellungen öffnet
+function forceOpenSettings() {
+    console.log(">>> NOTFALL-NAVIGATION: Öffne Einstellungen...");
+
+    // A) Störende Modals/Overlays entfernen
+    const loginScreen = document.getElementById('login-screen');
+    if (loginScreen) loginScreen.style.display = 'none';
+    
+    document.querySelectorAll('.modal, .modal-overlay').forEach(el => {
+        el.style.display = 'none';
+    });
+
+    // B) App-Container sichtbar machen
+    const appContainer = document.querySelector('.app-container');
+    if (appContainer) appContainer.style.display = 'flex';
+
+    // C) Alle Haupt-Ansichten ausblenden
+    document.querySelectorAll('main.view').forEach(view => {
+        view.style.display = 'none';
+    });
+
+    // D) Nur die Settings-Ansicht einblenden
+    const settingsView = document.getElementById('settings-view');
+    if (settingsView) {
+        settingsView.style.display = 'block';
+        settingsView.style.visibility = 'visible'; // Sicherheitsnetz
+    } else {
+        console.error("CRITICAL: #settings-view nicht im HTML gefunden!");
+        return; 
+    }
+
+    // E) In den Einstellungen zum API-Key Tab springen
+    // Erst alle Unter-Sektionen ausblenden
+    document.querySelectorAll('.settings-section').forEach(sec => sec.style.display = 'none');
+    // Dann API Key Sektion zeigen
+    const apiKeySection = document.getElementById('api-key-section');
+    if (apiKeySection) apiKeySection.style.display = 'block';
+
+    console.log(">>> Einstellungen sollten jetzt sichtbar sein.");
+
+    // --- NEU: DIESEN BLOCK HINZUFÜGEN ---
+    // Damit die App merkt, dass sie jetzt vielleicht Keys hat und Daten laden soll.
+    console.log(">>> Triggering App Re-Initialization...");
+    if (typeof window.initializeApp === 'function') {
+        // Wir rufen die Haupt-Start-Funktion erneut auf.
+        // Sie prüft den Token, lädt Modelle und Chats neu.
+        window.initializeApp().catch(err => console.error("Re-Init failed:", err));
+    }
+    // -------------------------------------
+}
+
+// 2. Event-Listener neu setzen (mit kurzer Verzögerung, um sicherzugehen, dass DOM da ist)
+setTimeout(() => {
+    // Button 1: Der im Start-Modal ("Open Settings")
+    // Wir suchen nach ID oder Klasse, um ihn sicher zu treffen
+    const modalBtn = document.getElementById('error-settings-btn') || 
+                     document.querySelector('#login-screen button.primary-button');
+    
+    if (modalBtn) {
+        // Wir klonen den Button, um alte, kaputte Event-Listener loszuwerden
+        const newModalBtn = modalBtn.cloneNode(true);
+        modalBtn.parentNode.replaceChild(newModalBtn, modalBtn);
+        
+        newModalBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            forceOpenSettings();
+        });
+        console.log("Fix für Modal-Button angewendet.");
+    }
+
+    // Button 2: Der in der Sidebar ("Einstellungen")
+    const sidebarBtn = document.getElementById('settings-btn');
+    if (sidebarBtn) {
+        // Auch hier: Klonen um alte Listener zu löschen
+        const newSidebarBtn = sidebarBtn.cloneNode(true);
+        sidebarBtn.parentNode.replaceChild(newSidebarBtn, sidebarBtn);
+        
+        newSidebarBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            forceOpenSettings();
+        });
+        console.log("Fix für Sidebar-Button angewendet.");
+    }
+}, 500); // 500ms warten nach App-Start
+// ============================================================
+
+// ============================================================
+// NOTFALL-FIX: ZURÜCK ZUM CHAT
+// ============================================================
+setTimeout(() => {
+    const backBtn = document.getElementById('back-to-chat-btn');
+    if (backBtn) {
+        // Alten Listener entfernen (durch Klonen)
+        const newBackBtn = backBtn.cloneNode(true);
+        backBtn.parentNode.replaceChild(newBackBtn, backBtn);
+
+        newBackBtn.addEventListener('click', (e) => {
+            console.log(">>> NOTFALL: Zurück zum Chat...");
+            e.preventDefault();
+
+            // 1. Settings ausblenden
+            const settingsView = document.getElementById('settings-view');
+            if (settingsView) settingsView.style.display = 'none';
+
+            // 2. Chat einblenden
+            const chatView = document.getElementById('chat-view');
+            if (chatView) chatView.style.display = 'block';
+            
+            // 3. App-Container sicherstellen
+            const appContainer = document.querySelector('.app-container');
+            if (appContainer) appContainer.style.display = 'flex';
+            
+            // 4. State aktualisieren (falls möglich)
+            if (typeof appState !== 'undefined') {
+                appState.currentView = 'chat';
+            }
+        });
+        console.log("Fix für Zurück-Button angewendet.");
+    }
+}, 1000); // Etwas später ausführen als den anderen Fix
+// ============================================================

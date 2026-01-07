@@ -1,3 +1,124 @@
+/* ===== MEMORY COMPONENTS ===== */
+
+/* Memory Card Styling */
+.memory-card {
+  background: #2d3748;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  position: relative;
+  transition: all 0.2s ease;
+  border: 1px solid #4a5568;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.memory-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Priority-based Styling */
+.priority-core-identity {
+  border-left: 4px solid #ffd700;
+  background: linear-gradient(145deg, #2a2a2a, #3a3320);
+}
+
+.priority-core-detail {
+  border-left: 4px solid #3b82f6;
+  background: linear-gradient(145deg, #2a2a2a, #20283a);
+}
+
+.priority-general {
+  border-left: 4px solid #666;
+  background: #3a3a3a;
+}
+
+/* Memory Header */
+.memory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-size: 0.85em;
+}
+
+.mem-type {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mem-cat {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8em;
+}
+
+/* Memory Content */
+.memory-content {
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+/* Memory Actions */
+.memory-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.memory-actions button {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #4a5568;
+  border-radius: 4px;
+  background: transparent;
+  color: #e2e8f0;
+  cursor: pointer;
+  font-size: 0.85em;
+  transition: all 0.2s;
+}
+
+.memory-actions button:hover {
+  opacity: 0.9;
+}
+
+.memory-actions .edit-memory-btn {
+  background: #4299e1;
+  border-color: #4299e1;
+}
+
+.memory-actions .delete-memory-btn {
+  background: #e53e3e;
+  border-color: #e53e3e;
+  color: white;
+}
+
+/* Loading State */
+.spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 0.5em;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error Message */
+.error-message {
+  color: #f56565;
+  background: rgba(245, 101, 101, 0.1);
+  padding: 0.75rem;
+  border-radius: 4px;
+  border-left: 3px solid #f56565;
+}
+
 /* Stile für das Einstellungs-Modal */
 .modal {
   display: none;
@@ -528,6 +649,21 @@
 #contact-form input[type="text"],
 #contact-form input[type="email"],
 #contact-form input[type="tel"],
+/* Version Information Styles */
+.version-info {
+  margin-top: 30px;
+  padding-top: 15px;
+  border-top: 1px solid #444;
+  text-align: right;
+}
+
+.app-version {
+  font-size: 0.8em;
+  color: #777;
+  opacity: 0.8;
+  font-style: italic;
+}
+
 #contact-form textarea {
   width: calc(100% - 20px);
   padding: 10px;

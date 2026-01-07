@@ -1,45 +1,43 @@
 # backend/tests/conftest.py
-import os
+
 import sys
-from unittest.mock import patch
+import os
 
-import pytest
-
-# --- PATH FIX START (Goldstandard für Robustheit) ---
-# Wir ermitteln den Pfad zu dieser Datei (conftest.py)
-current_test_dir = os.path.dirname(os.path.abspath(__file__))
-# Wir ermitteln den 'backend' Ordner (ein Level höher)
-backend_dir = os.path.dirname(current_test_dir)
-# Wir ermitteln das Projekt-Root (noch ein Level höher)
-project_root = os.path.dirname(backend_dir)
-
-# Wir fügen Projekt-Root hinzu, damit 'from backend.main import ...' funktioniert
+# --- HIER IST DIE KORREKTUR ---
+# Fügt das Projekt-Stammverzeichnis (C:\KI\Janus-Projekt) zum Suchpfad hinzu.
+# Dies muss GANZ AM ANFANG stehen, vor allen anderen Imports.
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
+# --- ENDE DER KORREKTUR ---
 
-# Wir fügen backend_dir hinzu, damit Importe innerhalb von backend funktionieren
-if backend_dir not in sys.path:
-    sys.path.insert(0, backend_dir)
-# --- PATH FIX END ---
 
-# Jetzt können wir sicher importieren
+# Jetzt können die restlichen Imports folgen, und sie werden funktionieren.
+# Wir korrigieren hier auch den relativen Import zu einem absoluten.
+
+import pytest
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# Wir nutzen try-except für Importe, um flexibler zu sein
-try:
-    from backend.data.database import Base, get_db
-    from backend.main import app
-except ImportError:
-    # Fallback, falls wir direkt im backend ordner sind und 'backend.' Prefix stört
-    from data.database import Base, get_db
-    from main import app
+# KORRIGIERTER IMPORT:
+from backend.data.database import Base, get_db
+# ALT (falsch): from data.database import Base, get_db
+
+from backend.main import app
+
+
+# --- Der Rest deiner conftest.py Datei ---
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+Base.metadata.create_all(bind=engine)
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_database():
@@ -51,7 +49,7 @@ def setup_database():
 
 @pytest.fixture(scope="function")
 def db_session():
-    """Erstellt eine frische Datenbank-Session für jeden Test."""
+    """Create a new database session for a test."""
     connection = engine.connect()
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
@@ -60,10 +58,9 @@ def db_session():
     transaction.rollback()
     connection.close()
 
-
 @pytest.fixture(scope="function")
 def test_client(db_session):
-    """Erstellt einen Test-Client mit gemockter DB und Auth."""
+    """Create a test client that uses the_session fixture."""
 
     def override_get_db():
         yield db_session

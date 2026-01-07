@@ -7,13 +7,13 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Any, Dict, Optional
-
 import keyring
 from bs4 import BeautifulSoup  # NEU: Importieren
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+from backend.utils.paths import get_app_data_dir
 
 # Configure logger
 logger = logging.getLogger("janus_backend")
@@ -31,6 +31,11 @@ GOOGLE_CLIENT_SECRETS_KEY = "janus_google_client_secrets"
 
 BACKEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
+# NEU: Sicheres Verzeichnis für Anhänge
+ATTACHMENT_UPLOAD_DIR = os.path.join(get_app_data_dir(), "temp_email_attachments")
+os.makedirs(ATTACHMENT_UPLOAD_DIR, exist_ok=True)
+logger.info(f"Sicheres Verzeichnis für E-Mail-Anhänge: {ATTACHMENT_UPLOAD_DIR}")
+
 
 def _get_google_client_secrets():
     """Ruft Client-Geheimnisse aus dem Keyring ab oder lädt sie aus der Datei und speichert sie dann im Keyring."""
@@ -40,17 +45,29 @@ def _get_google_client_secrets():
     if client_secrets_json:
         return json.loads(client_secrets_json)
 
-    # Fallback: Lade aus Datei und speichere im Keyring
-    credentials_file_path = os.path.join(BACKEND_DIR, "credentials.json")
-    if os.path.exists(credentials_file_path):
-        with open(credentials_file_path, "r") as f:
-            client_secrets = json.load(f)
+    # Fallback: Lade aus Umgebungsvariablen und speichere im Keyring
+    client_id = os.getenv("GOOGLE_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+
+    if client_id and client_secret:
+        client_secrets = {
+            "web": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "redirect_uris": ["http://localhost"],
+                "javascript_origins": ["http://localhost"],
+            }
+        }
         keyring.set_password(
             "janus_google_credentials", GOOGLE_CLIENT_SECRETS_KEY, json.dumps(client_secrets)
         )
-        logger.info("Google Client-Geheimnisse aus Datei geladen und im Keyring gespeichert.")
+        logger.info("Google Client-Geheimnisse aus Umgebungsvariablen geladen und im Keyring gespeichert.")
         return client_secrets
-    logger.error("Google Client-Geheimnisse weder im Keyring noch in credentials.json gefunden.")
+    
+    logger.error("Google Client-Geheimnisse weder im Keyring noch in Umgebungsvariablen gefunden.")
     return None
 
 
@@ -346,7 +363,7 @@ def send_email(
     Der Pfad zum Anhang muss ein absoluter Pfad sein, den der Benutzer angibt.
     """
     logger.info(f"Versuch, eine E-Mail zu senden an: {to}, Betreff: '{subject}'")
-    logger.debug(f"E-Mail-Text: {body}")
+    # logger.debug(f"E-Mail-Text: {body}")
     if attachment_path:
         logger.info(f"Mit Anhang: {attachment_path}")
 
@@ -360,12 +377,22 @@ def send_email(
         message.attach(MIMEText(body, "plain"))
 
         if attachment_path:
+            # NEU: Sicherheitsprüfung für Anhangpfad
+            normalized_attachment_path = os.path.normpath(attachment_path)
+            if not normalized_attachment_path.startswith(os.path.normpath(ATTACHMENT_UPLOAD_DIR)):
+                logger.error(f"Versuch, eine Datei außerhalb des zulässigen Anhang-Verzeichnisses anzuhängen: {attachment_path}")
+                return {
+                    "status": "error",
+                    "output": "Fehler: Es dürfen nur Dateien aus dem sicheren Anhang-Verzeichnis angehängt werden."
+                }
+
             if not os.path.exists(attachment_path):
                 logger.error(f"Anhang-Datei nicht gefunden: {attachment_path}")
                 return {
                     "status": "error",
                     "output": f"Fehler: Die Anhang-Datei wurde unter '{attachment_path}' nicht gefunden.",
                 }
+
 
             with open(attachment_path, "rb") as attachment:
                 part = MIMEBase("application", "octet-stream")

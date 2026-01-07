@@ -31,7 +31,7 @@ def test_chat_text_response(test_client, db_session):
                 json={
                     "prompt": "Hello",
                     "provider": "openai",
-                    "model": "gpt-4o-mini",
+                    "model": "gpt-5-nano",  # Using internal model alias
                     "chat_id": chat_id,
                 },
             )
@@ -41,7 +41,7 @@ def test_chat_text_response(test_client, db_session):
 
 @pytest.mark.skip(reason="Refactoring: Mocking issues with Intent Classifier integration")
 @pytest.mark.parametrize(
-    "provider, model", [("openai", "gpt-4o-mini"), ("gemini", "gemini-2.5-flash")]
+    "provider, model", [("openai", "gpt-5-nano"), ("gemini", "gemini-3-flash-preview")]
 )
 def test_chat_image_shortcut(test_client, db_session, provider, model):
     # Create a chat to get a valid chat_id

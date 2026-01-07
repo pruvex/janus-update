@@ -54,9 +54,9 @@ class OpenAITTS(TTSProviderBase):
     ) -> bytes:
         """Synthesize speech using OpenAI TTS."""
         try:
-            # OpenAI TTS model is gpt-4o-mini-tts
+            # Using internal model alias for TTS
             response = self.client.audio.speech.create(
-                model="gpt-4o-mini-tts",
+                model="gpt-4o-mini-tts",  # Internal alias for TTS model
                 voice=voice,  # Use the provided voice ID
                 input=text,
                 response_format=fmt,  # mp3, opus, aac, flac, wav, pcm

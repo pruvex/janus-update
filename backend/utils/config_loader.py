@@ -30,10 +30,37 @@ def initialize_file_from_template(template_path, destination_path):
 
 
 def load_model_catalog() -> Dict[str, Any]:
-    initialize_file_from_template(TEMPLATE_MODEL_CATALOG_FILE, MODEL_CATALOG_FILE)
-    with open(MODEL_CATALOG_FILE, "r") as f:
-        models_list = json.load(f)
-    return {model["id"]: model for model in models_list}
+    """
+    Lädt den Modell-Katalog.
+    Priorität 1: %APPDATA%/Janus Projekt/model_catalog.json (Benutzer-Config)
+    Priorität 2: Install-Ordner/backend/config/model_catalog.json (Fallback/Original)
+    """
+    # 1. Suche im AppData Ordner
+    app_data_path = os.path.join(get_app_data_dir(), "model_catalog.json")
+    
+    if os.path.exists(app_data_path):
+        try:
+            with open(app_data_path, 'r', encoding='utf-8') as f:
+                logger.info(f"Loading model catalog from AppData: {app_data_path}")
+                models_list = json.load(f)
+                return {model["id"]: model for model in models_list}
+        except Exception as e:
+            logger.error(f"Failed to load catalog from AppData: {e}")
+
+    # 2. Fallback: Installationsverzeichnis
+    fallback_path = resource_path("backend/config/model_catalog.json")
+    
+    if os.path.exists(fallback_path):
+        try:
+            with open(fallback_path, 'r', encoding='utf-8') as f:
+                logger.info(f"Loading model catalog from internal resources: {fallback_path}")
+                models_list = json.load(f)
+                return {model["id"]: model for model in models_list}
+        except Exception as e:
+            logger.error(f"Failed to load internal catalog: {e}")
+            
+    logger.error("No model catalog found in AppData or resources.")
+    return {}  # Leeres Dict zurückgeben, damit der Code nicht crasht
 
 # NEU: Funktion zum Laden der Hauptkonfigurationsdatei
 def load_config_data() -> Dict[str, Any]:

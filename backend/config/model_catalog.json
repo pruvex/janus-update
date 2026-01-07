@@ -1,14 +1,14 @@
 [
     {
-        "id": "gpt-5",
-        "name": "GPT-5",
+        "id": "gpt-5-nano",
+        "name": "GPT-5 Nano",
         "provider": "openai",
         "type": "text",
-        "cost_per_token_input": 0.00000125,
-        "cost_per_token_output": 0.00001000,
-        "desc": "Hypothetisches Next-Gen-Modell für maximale Leistung.",
-        "image_generation_model": "gpt-image-1.5",
-        "capabilities": ["chat", "tool_calling", "memory_query"]
+        "cost_per_token_input": 0.00000005,
+        "cost_per_token_output": 0.00000040,
+        "desc": "Extrem schnell und kostengünstig. Ideal für einfache Aufgaben und schnelle Antworten.",
+        "image_generation_model": "gpt-image-1-mini",
+        "capabilities": ["chat", "tool_calling"]
     },
     {
         "id": "gpt-5-mini",
@@ -17,18 +17,29 @@
         "type": "text",
         "cost_per_token_input": 0.00000025,
         "cost_per_token_output": 0.00000200,
-        "desc": "Hypothetisches Next-Gen-Modell, optimiert für Effizienz.",
+        "desc": "Der Allrounder. Eine exzellente Balance aus Geschwindigkeit, Kosten und Intelligenz.",
         "image_generation_model": "gpt-image-1.5",
         "capabilities": ["chat", "tool_calling", "memory_query"]
     },
     {
-        "id": "gpt-4o-mini",
-        "name": "GPT-4o Mini",
+        "id": "gpt-5.2",
+        "name": "GPT-5.2 (Standard)",
         "provider": "openai",
         "type": "text",
-        "cost_per_token_input": 0.00000015,
-        "cost_per_token_output": 0.0000006,
-        "desc": "Optimiert für Geschwindigkeit und Kosteneffizienz.",
+        "cost_per_token_input": 0.00000175,
+        "cost_per_token_output": 0.00001400,
+        "desc": "Leistungsstarkes Standardmodell für komplexe Anfragen und kreatives Schreiben.",
+        "image_generation_model": "gpt-image-1.5",
+        "capabilities": ["chat", "tool_calling", "memory_query"]
+    },
+    {
+        "id": "gpt-5.2-pro",
+        "name": "GPT-5.2 Pro (Maximum)",
+        "provider": "openai",
+        "type": "text",
+        "cost_per_token_input": 0.00002100,
+        "cost_per_token_output": 0.00016800,
+        "desc": "Das absolute Spitzenmodell. Maximale Leistung für kritische und hochkomplexe Aufgaben.",
         "image_generation_model": "gpt-image-1.5",
         "capabilities": ["chat", "tool_calling", "memory_query"]
     },
@@ -40,21 +51,9 @@
         "desc": "Our latest and most advanced model for image generation.",
         "capabilities": ["image_generation"],
         "pricing": {
-            "low": {
-                "1024x1024": 0.009,
-                "1024x1536": 0.013,
-                "1536x1024": 0.013
-            },
-            "medium": {
-                "1024x1024": 0.034,
-                "1024x1536": 0.05,
-                "1536x1024": 0.05
-            },
-            "high": {
-                "1024x1024": 0.133,
-                "1024x1536": 0.2,
-                "1536x1024": 0.2
-            }
+            "low": { "1024x1024": 0.009, "1024x1536": 0.013, "1536x1024": 0.013 },
+            "medium": { "1024x1024": 0.034, "1024x1536": 0.05, "1536x1024": 0.05 },
+            "high": { "1024x1024": 0.133, "1024x1536": 0.2, "1536x1024": 0.2 }
         },
         "default_quality": "medium",
         "default_size": "1024x1024"
@@ -67,24 +66,22 @@
         "desc": "Cost-effective option for image generation.",
         "capabilities": ["image_generation"],
         "pricing": {
-            "low": {
-                "1024x1024": 0.005,
-                "1024x1536": 0.006,
-                "1536x1024": 0.006
-            },
-            "medium": {
-                "1024x1024": 0.011,
-                "1024x1536": 0.015,
-                "1536x1024": 0.015
-            },
-            "high": {
-                "1024x1024": 0.036,
-                "1024x1536": 0.052,
-                "1536x1024": 0.052
-            }
+            "low": { "1024x1024": 0.005, "1024x1536": 0.006, "1536x1024": 0.006 },
+            "medium": { "1024x1024": 0.011, "1024x1536": 0.015, "1536x1024": 0.015 },
+            "high": { "1024x1024": 0.036, "1024x1536": 0.052, "1536x1024": 0.052 }
         },
         "default_quality": "medium",
         "default_size": "1024x1024"
+    },
+    {
+        "id": "gpt-4o-mini-tts",
+        "name": "GPT-4o Mini (TTS)",
+        "provider": "openai",
+        "type": "audio",
+        "cost_per_token_input": 0,
+        "cost_per_token_output": 0.000015,
+        "desc": "Effizientes Text-to-Speech-Modell von OpenAI.",
+        "capabilities": ["tts"]
     },
     {
         "id": "gemini-3-pro-preview",
@@ -115,18 +112,12 @@
         "desc": "High-end image generation with advanced reasoning and text rendering.",
         "capabilities": ["image_generation"],
         "cost_per_million_tokens_input": 2.00,
-        "cost_per_million_tokens_output": 120.00, 
+        "cost_per_million_tokens_output": 120.00,
         "default_aspect_ratio": "1:1",
-        "aspect_ratios": [
-            "1:1", "16:9", "9:16", "4:3", "3:4"
-        ],
+        "aspect_ratios": ["1:1", "16:9", "9:16", "4:3", "3:4"],
         "default_resolution": "1K",
         "resolutions": ["1K", "2K", "4K"],
-        "tokens_per_resolution": {
-            "1K": 1120,
-            "2K": 1120,
-            "4K": 2000
-        }
+        "tokens_per_resolution": { "1K": 1120, "2K": 1120, "4K": 2000 }
     },
     {
         "id": "gemini-2.5-flash-image",
@@ -138,23 +129,10 @@
         "cost_per_million_tokens_input": 0.30,
         "cost_per_million_tokens_output": 30.00,
         "default_aspect_ratio": "1:1",
-        "aspect_ratios": [
-            "1:1", "16:9", "9:16", "4:3", "3:4"
-        ],
+        "aspect_ratios": ["1:1", "16:9", "9:16", "4:3", "3:4"],
         "default_resolution": "1K",
         "resolutions": ["1K"],
-        "tokens_per_resolution": {
-            "1K": 1290
-        }
-    },
-    {
-        "id": "websearch_gemini",
-        "name": "Gemini Google Search",
-        "provider": "google",
-        "type": "websearch",
-        "cost_per_query": 0.0,
-        "currency": "USD",
-        "description": "Kosten pro Suchanfrage. HINWEIS: 5.000 fundierte Prompts/Monat sind kostenlos. Zukünftige Kosten: ca. 0,014 USD pro einzelner Suchanfrage."
+        "tokens_per_resolution": { "1K": 1290 }
     },
     {
         "id": "gemini-pro-vision",
@@ -167,6 +145,15 @@
         "capabilities": ["chat", "image_generation"]
     },
     {
+        "id": "websearch_gemini",
+        "name": "Gemini Google Search",
+        "provider": "google",
+        "type": "websearch",
+        "cost_per_query": 0.0,
+        "currency": "USD",
+        "description": "Kosten pro Suchanfrage. HINWEIS: 5.000 fundierte Prompts/Monat sind kostenlos. Zukünftige Kosten: ca. 0,014 USD pro einzelner Suchanfrage."
+    },
+    {
         "id": "websearch",
         "name": "Web Search",
         "provider": "internal",
@@ -174,15 +161,5 @@
         "cost_per_query": 0.01,
         "desc": "Kosten für eine Websuche.",
         "capabilities": ["web_search"]
-    },
-    {
-        "id": "gpt-4o-mini-tts",
-        "name": "GPT-4o Mini (TTS)",
-        "provider": "openai",
-        "type": "audio",
-        "cost_per_token_input": 0,
-        "cost_per_token_output": 0.000015,
-        "desc": "Effizientes Text-to-Speech-Modell von OpenAI.",
-        "capabilities": ["tts"]
     }
 ]

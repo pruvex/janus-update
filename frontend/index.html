@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="css/settings.css" />
     <link rel="stylesheet" href="css/gallery.css" />
     <link rel="stylesheet" href="css/image-studio.css" />
-    <!-- NEU -->
   </head>
   <body>
     <div class="app-container">
@@ -298,10 +297,21 @@
 
             <!-- Sektion: Persönliche Informationen (Gedächtnis) -->
             <div id="memory-section" class="settings-section" style="display: none">
-              <h3>Persönliche Informationen (Gedächtnis)</h3>
+              <div class="section-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>Persönliche Informationen (Diamond Memory)</h3>
+                <button id="add-memory-btn" class="primary-button">+ Neuer Fakt</button>
+              </div>
               <p>
-                Hier kannst du die von Janus gespeicherten Fakten über dich einsehen und verwalten.
+                Verwalte hier dein "Core Identity" und allgemeine Fakten. Janus nutzt diese Prioritäten für das Langzeitgedächtnis.
               </p>
+              
+              <!-- Filter / Legende -->
+              <div class="memory-legend" style="margin-bottom: 15px; font-size: 0.9em; color: #aaa; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px;">
+                <span style="margin-right: 15px;">💎 <strong>Core Identity:</strong> Immer aktiv</span>
+                <span style="margin-right: 15px;">🔹 <strong>Core Detail:</strong> Wichtige Details</span>
+                <span>📄 <strong>General:</strong> Allgemeines Wissen</span>
+              </div>
+
               <div id="memory-list-container">
                 <p>Lade Gedächtniseinträge...</p>
               </div>
@@ -315,6 +325,11 @@
               <div id="contact-list-container">
                 <p>Lade Kontakte...</p>
               </div>
+            </div>
+            
+            <!-- Version Information -->
+            <div class="version-info">
+              <span id="app-version-display" class="app-version"></span>
             </div>
           </div>
         </div>
@@ -447,12 +462,32 @@
                     🎨 Aktuelles Bild als Basis verwenden (Refine)
                   </label>
                 </div>
+                
+                <!-- NEU: Sub-Checkbox für Refine-Presets -->
+                <div id="apply-preset-to-refine-container" style="display: none; padding-left: 25px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px;">
+                    <input type="checkbox" id="is-apply-preset-to-refine" style="width: auto;">
+                    <label for="is-apply-preset-to-refine" style="margin-bottom: 0; font-size: 0.85em; color: #ccc;">
+                      Preset auf Refinement anwenden
+                    </label>
+                  </div>
+                </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <input type="checkbox" id="is-edit-mode" style="width: auto;">
                   <label for="is-edit-mode" style="margin-bottom: 0; cursor: pointer; font-size: 0.9em; color: var(--accent-color);">
                     ✏️ Eigenes Bild bearbeiten (Edit Mode)
                   </label>
                 </div>
+                <!-- NEUER BLOCK START -->
+                <div id="apply-preset-to-edit-container" style="display: none; padding-left: 25px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="is-apply-preset-to-edit" style="width: auto;">
+                    <label for="is-apply-preset-to-edit" style="margin-bottom: 0; font-size: 0.85em; color: #ccc;">
+                      Preset auf dieses Bild anwenden
+                    </label>
+                  </div>
+                </div>
+                <!-- NEUER BLOCK ENDE -->
                 <!-- Combine Mode -->
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <input type="checkbox" id="is-combine-mode" style="width: auto;">
@@ -566,10 +601,10 @@
               <input type="text" id="is-image-filename" value="unbenannt" maxlength="50" />
             </div>
 
-            <!-- NEU: Wrapper für Hauptanzeigebereich (Bild + Presets) -->
+            <!-- NEU: Wrapper für Hauptanzeigebereich (Bild + Presets + Vorschau) -->
             <div class="display-main-area">
               
-              <!-- Linke Seite: Wrapper für die Bildvorschau -->
+              <!-- Spalte 1: Generiertes Bild (Existiert bereits) -->
               <div id="is-preview-wrapper">
                   <div id="is-preview-container" class="preview-container">
                       <p>Vorschau des generierten Bildes</p>
@@ -578,7 +613,7 @@
                   <canvas id="is-mask-canvas"></canvas>
               </div>
 
-              <!-- Rechte Seite: Preset-Dropdowns (initial ausgeblendet) -->
+              <!-- Spalte 2: Einstellungen & Text (Existiert bereits) -->
               <div id="is-presets-container" class="presets-container">
                 <div class="control-group">
                   <label for="is-style-select">Stil</label>
@@ -588,6 +623,17 @@
                   <label for="is-variation-select">Variation</label>
                   <select id="is-variation-select"></select>
                 </div>
+                <div id="preset-info-display" class="preset-info-box" style="display: none;"></div>
+              </div>
+
+              <!-- Spalte 3: NEU - Stil-Vorschau Bild -->
+              <div id="is-style-preview-container" class="style-preview-box">
+                  <div class="style-preview-header">Stil-Beispiel</div>
+                  <div class="style-image-wrapper">
+                      <!-- Platzhalter-Bild oder leer -->
+                      <img id="current-style-image" src="" alt="Vorschau nicht verfügbar" style="display: none;">
+                      <div id="style-image-placeholder">Keine Vorschau</div>
+                  </div>
               </div>
 
             </div>
@@ -621,6 +667,51 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Memory Modal for adding/editing facts -->
+    <div id="memory-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <span class="close-button" id="close-memory-modal">&times;</span>
+        <h3 id="memory-modal-title">Fakt bearbeiten</h3>
+        <form id="memory-form">
+          <input type="hidden" id="memory-id" />
+          
+          <div class="form-group">
+            <label for="memory-snippet">Fakt / Information:</label>
+            <textarea id="memory-snippet" rows="3" required placeholder="z.B. Ich bin allergisch gegen Erdnüsse."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="memory-category">Kategorie:</label>
+            <input type="text" id="memory-category" list="category-suggestions" placeholder="z.B. Gesundheit, Arbeit..." />
+            <datalist id="category-suggestions">
+              <option value="Persönlich">
+              <option value="Beruf">
+              <option value="Gesundheit">
+              <option value="Präferenzen">
+              <option value="Ziele">
+            </datalist>
+          </div>
+
+          <div class="form-group" style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; margin-top: 10px;">
+            <label for="memory-priority">Diamond Priorität:</label>
+            <select id="memory-priority" style="width: 100%; padding: 8px; margin-top: 5px;">
+              <option value="2">💎 Core Identity (Höchste Priorität - Immer im Kontext)</option>
+              <option value="1">🔹 Core Detail (Hohe Priorität - Suchbar)</option>
+              <option value="0">📄 General (Standard - Kann archiviert werden)</option>
+            </select>
+            <p style="font-size: 0.8em; color: #888; margin-top: 5px;" id="priority-desc">
+              Definiert fundamentale Eigenschaften der Identität.
+            </p>
+          </div>
+
+          <div class="modal-buttons">
+            <button type="submit" id="memory-save-btn" class="primary-button">Speichern</button>
+            <button type="button" id="memory-cancel-btn" class="secondary-button">Abbrechen</button>
+          </div>
+        </form>
       </div>
     </div>
 

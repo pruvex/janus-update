@@ -71,7 +71,7 @@ class OpenAIImageGeneration:
         
         try:
             response = await client.responses.create(
-                model="gpt-4o",
+                model="gpt-5-nano",
                 input=[
                     {
                         "role": "user",
@@ -189,7 +189,7 @@ class OpenAIImageGeneration:
 
 
         target_image_model = model
-        orchestrator_model = "gpt-5.2"  # UPGRADE: Uses the newer, more intelligent model as director
+        orchestrator_model = "gpt-5-nano"  # UPGRADE: Uses the newer, more intelligent model as director
         
         prev_res_id = kwargs.get("previous_response_id")
         prev_img_id = kwargs.get("previous_image_id")
@@ -199,16 +199,9 @@ class OpenAIImageGeneration:
         has_images = image_bytes_list is not None and len(image_bytes_list) > 0
         is_multi_image = has_images and len(image_bytes_list) > 1
         
-        GPT_IMAGE_SERIES_SIZES = ["1024x1024", "1024x1536", "1536x1024"]
-        DALLE_LEGACY_SIZES = ["1024x1024", "1792x1024", "1024x1792"]
-
+        # Respektiere die vom Benutzer ausgewählte Größe
         selected_size = kwargs.get("size", "1024x1024")
         selected_quality = kwargs.get("quality", "medium")
-
-        if target_image_model.startswith("gpt-image-") and selected_size not in GPT_IMAGE_SERIES_SIZES:
-            selected_size = "1024x1024"
-        elif not target_image_model.startswith("gpt-image-") and selected_size not in DALLE_LEGACY_SIZES:
-            selected_size = "1024x1024"
 
         # Tool Definition
         image_tool = {
@@ -384,16 +377,32 @@ class OpenAIImageGeneration:
                 # FALL 1: Combine-Modus (Mehrere Bilder)
                 elif has_images and is_multi_image:
                     logger.info("Mode: Multi-Image Combine")
-                    user_content = [{"type": "input_text", "text": f"Combine these images based on this description: {prompt}"}]
-                    for idx, img_bytes in enumerate(image_bytes_list):
-                        # MIME Type Logic
-                        mime_type = "image/png"
-                        if img_bytes.startswith(b'\xff\xd8'): mime_type = "image/jpeg"
-                        elif img_bytes.startswith(b'RIFF'): mime_type = "image/webp"
-                        b64_img = base64.b64encode(img_bytes).decode('utf-8')
-                        user_content.append({"type": "input_image", "image_url": f"data:{mime_type};base64,{b64_img}"})
                     
-                    input_data = [{"role": "user", "content": user_content}]
+                    # --- MESSAGE ASSEMBLY (BUGFIXED) ---
+                    # 1. Start with the text content (Preset Prompt OR Normal Prompt)
+                    content_list = [{"type": "input_text", "text": f"Combine these images based on this description: {prompt}"}]
+
+                    # 2. Add Reference Image(s) if available
+                    # WICHTIG: Das muss passieren, EGAL ob ein Preset aktiv ist oder nicht!
+                    if image_bytes_list:
+                        for img_bytes in image_bytes_list:
+                            # MIME Type Logic
+                            mime_type = "image/png"
+                            if img_bytes.startswith(b'\xff\xd8'): mime_type = "image/jpeg"
+                            elif img_bytes.startswith(b'RIFF'): mime_type = "image/webp"
+                            b64_img = base64.b64encode(img_bytes).decode('utf-8')
+                            content_list.insert(0, {  # Bild VOR den Text stellen
+                                "type": "input_image", 
+                                "image_url": f"data:{mime_type};base64,{b64_img}"
+                            })
+                            logger.info("Bild zu OpenAI-Request hinzugefügt (Multi-Image Mode).")
+                    
+                    input_data = [
+                        {
+                            "role": "user",
+                            "content": content_list
+                        }
+                    ]
 
                 # FALL 2: Native Refinement mit Context (DER GPT GOLDSTANDARD)
                 # WICHTIG: Das kommt VOR dem Single Image Edit.
@@ -414,19 +423,34 @@ class OpenAIImageGeneration:
                 elif has_images: 
                     logger.info("Mode: Single Image Edit / Cross-Provider (Bytes only)")
                     img_bytes = image_bytes_list[0]
-                    # MIME Type
+                    
+                    # --- MESSAGE ASSEMBLY (BUGFIXED) ---
+                    # 1. Start with the image (comes BEFORE the text)
+                    content_list = []
+                    
+                    # 2. Add the image first
                     mime_type = "image/png"
                     if img_bytes.startswith(b'\xff\xd8'): mime_type = "image/jpeg"
                     elif img_bytes.startswith(b'RIFF'): mime_type = "image/webp"
                     b64_img = base64.b64encode(img_bytes).decode('utf-8')
-
+                    
+                    content_list.append({
+                        "type": "input_image", 
+                        "image_url": f"data:{mime_type};base64,{b64_img}"
+                    })
+                    
+                    # 3. Then add the text
+                    content_list.append({
+                        "type": "input_text", 
+                        "text": f"Edit the attached image: {prompt}"
+                    })
+                    
+                    logger.info("Bild zu OpenAI-Request hinzugefügt (Single Image Edit Mode).")
+                    
                     input_data = [
                         {
                             "role": "user",
-                            "content": [
-                                {"type": "input_text", "text": f"Edit the attached image: {prompt}"},
-                                {"type": "input_image", "image_url": f"data:{mime_type};base64,{b64_img}"}
-                            ]
+                            "content": content_list
                         }
                     ]
 
@@ -460,6 +484,19 @@ class OpenAIImageGeneration:
                         "cost": {}
                     }
                 
+                # --- LEAK FIX: Den ECHTEN Prompt aus dem Tool-Call extrahieren ---
+                # Das ist der "Diamond Standard": Wir holen uns exakt das, was der Orchestrator 
+                # an das Bild-Modell gesendet hat. Das ist der saubere Text ohne "ROLE:..."
+                
+                revised_prompt = None
+                try:
+                    # Zugriff auf die Argumente des Tool-Calls
+                    if hasattr(image_call, 'image_generation') and image_call.image_generation:
+                         revised_prompt = image_call.image_generation.prompt
+                         logger.info(f"Leak-Fix: Revised Prompt extrahiert: {revised_prompt[:50]}...")
+                except Exception as e:
+                    logger.warning(f"Konnte Revised Prompt nicht extrahieren (verwende Fallback): {e}")
+
                 try:
                     image_bytes_result = base64.b64decode(image_call.result)
                     new_response_id = response.id
@@ -489,10 +526,20 @@ class OpenAIImageGeneration:
                 new_response_id = None
                 new_image_id = None
 
-            # Save image
-            cleaned_description = _extract_image_description(prompt)
+            # --- SPEICHERN ---
+            
+            # WICHTIG: Wir nutzen für den Dateinamen den sauberen revised_prompt,
+            # oder den originalen User-Prompt, aber NIEMALS die Instruktion.
+            
+            # Wir übergeben den Prompt NICHT mehr an save_image_from_bytes für den Dateinamen,
+            # das macht der Router jetzt sauberer. Wir geben nur die URL zurück.
+            # Um Rückwärtskompatibilität zu wahren, übergeben wir "generated_image" als Fallback-Name,
+            # falls der Router das Renaming nicht übernimmt.
+            
             image_url = image_manager.save_image_from_bytes(
-                image_bytes_result, description=cleaned_description, file_extension="png"
+                image_bytes_result, 
+                description=revised_prompt if revised_prompt else "generated_image", 
+                file_extension="png"
             )
 
             usage, cost = _calculate_and_log_cost(model, usage_data=kwargs, custom_prompt=prompt)
@@ -502,7 +549,8 @@ class OpenAIImageGeneration:
                 "previous_response_id": new_response_id,
                 "previous_image_id": new_image_id,
                 "usage": usage,
-                "cost": cost
+                "cost": cost,
+                "revised_prompt": revised_prompt  # Gebe den extrahierten Prompt zurück
             }
 
         except openai.BadRequestError as e:

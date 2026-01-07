@@ -1,6 +1,6 @@
 {
   "name": "janus-projekt",
-  "version": "1.1.0",
+  "version": "0.1.0-beta.9",
   "description": "",
   "type": "module",
   "main": "main.electron.cjs",
@@ -17,14 +17,18 @@
     "start-backend-only": "cross-env PYTHONIOENCODING=UTF-8 C:\\KI\\Janus-Projekt\\backend\\venv\\Scripts\\python.exe -m uvicorn backend.main:app --reload --port 8001 --host localhost",
     "start-backend-only-without-reload": "cross-env PYTHONIOENCODING=UTF-8 C:\\KI\\Janus-Projekt\\backend\\venv\\Scripts\\python.exe -m uvicorn backend.main:app --port 8001 --host localhost",
     "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:log": "playwright test --reporter=list > test-log.md",
     "build-installer": "electron-builder",
-    "build-all": "npm run build && pyinstaller janus_backend.spec --clean --noconfirm && npm run build-installer"
+    "build-all": "npm run build && python -m PyInstaller janus_backend.spec --clean --noconfirm && npm run build-installer"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.45.0",
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^25.0.3",
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
     "electron": "^31.0.2",
@@ -44,27 +48,37 @@
       "buildResources": "assets"
     },
     "files": [
-      "dist/**/*",
+      "frontend/dist/**/*",
       "frontend/preload.js",
       "main.electron.cjs",
       "package.json"
     ],
-          "extraResources": [
-            {
-              "from": "dist/janus_backend",
-              "to": "dist/janus_backend",
-              "filter": [
-                "**/*"
-              ]
-            },
-        {
-          "from": "backend/config/personalities.json",
-          "to": "dist/janus_backend/_internal/backend/personalities.json"
-        },
-        {
-          "from": "backend/config/config.json",
-          "to": "dist/janus_backend/_internal/backend/config.json"
-        }          ],    "win": {
+    "extraResources": [
+      {
+        "from": "dist/janus_backend",
+        "to": "backend",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "backend/config",
+        "to": "backend/backend/config"
+      },
+      {
+        "from": "backend/static",
+        "to": "backend/backend/static"
+      },
+      {
+        "from": "backend/assets",
+        "to": "backend/backend/assets"
+      },
+      {
+        "from": "backend/bin",
+        "to": "backend/backend/bin"
+      }
+    ],
+    "win": {
       "target": "nsis",
       "icon": "assets/icon.ico",
       "forceCodeSigning": false

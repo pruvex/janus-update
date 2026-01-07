@@ -458,8 +458,8 @@ async def creative_writer(
         writer_model = model
         editor_model = model
         critique_model = (
-            "gpt-4o-mini" if provider == "openai" else "gemini-1.5-flash"
-        )  # Intelligente Auswahl des günstigen Modells
+            "gpt-5-nano" if provider == "openai" else "gemini-3-flash-preview"
+        )  # Using internal model aliases
 
         logger.info(f"Modell-Setup: Writer/Editor -> {writer_model}, Kritiker -> {critique_model}")
 

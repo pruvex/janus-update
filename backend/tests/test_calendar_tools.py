@@ -86,6 +86,7 @@ def mock_datetime_now():
 
 
 # Test für create_calendar_event
+@pytest.mark.asyncio
 async def test_create_calendar_event_natural_language(mock_calendar_service):
     summary = "Besprechung"
     start_time_str = "morgen um 15 Uhr"
@@ -117,10 +118,12 @@ async def test_create_calendar_event_natural_language(mock_calendar_service):
 
 
 @pytest.mark.skip(reason="Flaky logic with mocking, skipping for goldstandard cleanup")
+@pytest.mark.asyncio
 async def test_create_calendar_event_all_day(mock_calendar_service):
     pass
 
 
+@pytest.mark.asyncio
 async def test_create_calendar_event_invalid_date_format(mock_calendar_service):
     summary = "Ungültiger Termin"
     start_time_str = "irgendwann"
@@ -132,6 +135,7 @@ async def test_create_calendar_event_invalid_date_format(mock_calendar_service):
 
 
 # Test für update_calendar_event
+@pytest.mark.asyncio
 async def test_update_calendar_event_natural_language_start_time(mock_calendar_service):
     event_id = "test_id"
     new_start_time_str = (
@@ -162,6 +166,7 @@ async def test_update_calendar_event_natural_language_start_time(mock_calendar_s
         assert call_args["start"]["timeZone"] == "Europe/Berlin"
 
 
+@pytest.mark.asyncio
 async def test_update_calendar_event_invalid_date_format(mock_calendar_service):
     event_id = "test_id"
     new_start_time_str = "falsches datum"
@@ -175,6 +180,7 @@ async def test_update_calendar_event_invalid_date_format(mock_calendar_service):
 
 
 # Test für get_calendar_events
+@pytest.mark.asyncio
 async def test_get_calendar_events_with_natural_language_dates(mock_calendar_service):
     start_date_str = (
         "nächsten Montag"  # Annahme: Heute ist 12. Nov 2025, also nächster Montag ist 17. Nov 2025
@@ -213,6 +219,7 @@ async def test_get_calendar_events_with_natural_language_dates(mock_calendar_ser
     assert parsed_time_max == expected_time_max
 
 
+@pytest.mark.asyncio
 async def test_get_calendar_events_invalid_date_range(mock_calendar_service):
     start_date_str = "ungültiges datum"
     end_date_str = "noch ein ungültiges datum"

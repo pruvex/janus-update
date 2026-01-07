@@ -73,14 +73,21 @@ def _get_retry_session(retries=3, backoff_factor=1.5, status_forcelist=(500, 502
     return session
 
 
-def get_weather_from_api_tool(city: str, date_str: Optional[str] = None) -> Dict[str, str]:
+def get_weather_from_api_tool(city: str = None, location: str = None, date_str: Optional[str] = None) -> Dict[str, str]:
     """
     Wettervorhersage via Open-Meteo mit robuster Retry-Strategie.
+    Akzeptiert sowohl 'city' als auch 'location' als Parameter.
     """
+    # Fallback: Wenn 'city' fehlt, nimm 'location'
+    target_city = city or location
+    
+    if not target_city:
+        return {"status": "error", "message": "Kein Ort angegeben. Bitte gib eine Stadt an."}
+        
     # Timeout auch für Geocoding erhöhen
     geolocator = Nominatim(user_agent="janus_projekt_weather_tool", timeout=15)
     try:
-        location = geolocator.geocode(city)
+        location = geolocator.geocode(target_city)
         if not location:
             return {"status": "error", "message": f"Stadt '{city}' konnte nicht gefunden werden."}
 

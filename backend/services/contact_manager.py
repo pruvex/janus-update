@@ -166,7 +166,7 @@ async def _is_ambiguous_result(
 
     model_to_use = model
     if provider == "openai":
-        model_to_use = "gpt-4o-mini"
+        model_to_use = "gpt-5-nano"
     elif provider == "gemini":
         model_to_use = "gemini-2.5-flash"
 
@@ -291,7 +291,7 @@ async def enrich_incomplete_contacts(
             model_to_use_for_websearch = "gpt-4o-mini"
         elif provider_for_model == "openai":
             model_to_use_for_websearch = (
-                "gpt-4o-mini"  # Feste Modellwahl für interne OpenAI-Websuche
+                "gpt-5-nano"  # Feste Modellwahl für interne OpenAI-Websuche
             )
         elif provider_for_model == "gemini":
             model_to_use_for_websearch = (
