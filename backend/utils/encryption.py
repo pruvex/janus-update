@@ -33,42 +33,37 @@ def get_encryption_key() -> bytes:
     """
     Lädt den Verschlüsselungsschlüssel aus der .env-Datei im AppData-Ordner.
     Wenn kein Schlüssel existiert, wird ein neuer generiert und gespeichert.
+    Löst einen Fehler aus, wenn der Schlüssel weder geladen noch gespeichert werden kann.
     """
-    # 1. Bestimme den sicheren Pfad im AppData Ordner
     env_path = get_config_path()
     logger.info(f"Lade Konfiguration aus: {env_path}")
     
-    # 2. Lade existierende Env-Datei, falls vorhanden
     load_dotenv(env_path)
-
-    # 3. Versuche, den Key zu lesen
     key = os.getenv("ENCRYPTION_KEY")
 
     if key:
         logger.info("ENCRYPTION_KEY erfolgreich aus der Konfiguration geladen.")
         return key.encode('utf-8')
 
-    # 4. Wenn kein Schlüssel gefunden wurde, generiere einen neuen
+    # Wenn kein Schlüssel gefunden wurde, generiere, speichere und lade einen neuen.
     logger.warning("ENCRYPTION_KEY nicht gefunden. Generiere einen neuen Schlüssel...")
-    
     try:
         new_key_bytes = generate_key()
         new_key_str = new_key_bytes.decode('utf-8')
         
-        # 5. Speichere den Key im APPDATA Ordner
+        # Speichere den neuen Schlüssel in der .env-Datei
         set_key(env_path, "ENCRYPTION_KEY", new_key_str)
-        logger.info(f"Neuer Schlüssel erfolgreich gespeichert in: {env_path}")
+        logger.info(f"Neuer Schlüssel erfolgreich in {env_path} gespeichert.")
         
-        # 6. Setze die Umgebungsvariable für den aktuellen Prozess
+        # Setze die Umgebungsvariable für den aktuellen Prozess, damit sie sofort verfügbar ist
         os.environ["ENCRYPTION_KEY"] = new_key_str
         
         return new_key_bytes
         
     except Exception as e:
-        logger.error(f"KRITISCHER FEHLER: Konnte Key nicht in {env_path} speichern: {e}", exc_info=True)
-        # Zur Not im Speicher behalten, aber er ist beim Neustart weg
-        os.environ["ENCRYPTION_KEY"] = new_key_str
-        return new_key_bytes
+        logger.critical(f"KRITISCHER FEHLER: Konnte neuen Schlüssel nicht in {env_path} speichern: {e}", exc_info=True)
+        # Löse einen Fehler aus, um die Anwendung am Start mit einem temporären Schlüssel zu hindern
+        raise IOError(f"Failed to save new encryption key to {env_path}. Cannot continue securely.")
 
 
 # --- SQLAlchemy TypeDecorator für Verschlüsselung ---

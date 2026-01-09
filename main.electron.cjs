@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
 const { spawn, exec } = require('child_process');
+const { autoUpdater } = require('electron-updater');
 
 let backendProcess = null;
 
@@ -111,24 +112,27 @@ function stopBackend() {
     }
 }
 
-function waitForBackend(retries = 30, delay = 1000) {
+function waitForBackend(retries = 10, delay = 2000) { // Längere Pausen!
     return new Promise((resolve, reject) => {
+        console.log(`[Electron Main] Waiting for backend... (Max retries: ${retries})`);
+        
         function check() {
-            axios.get('http://127.0.0.1:8001/api/models/catalog') // A simple endpoint to check if backend is alive
+            // Wir nutzen axios für den Check
+            axios.get('http://127.0.0.1:8001/api/models/catalog', { timeout: 1000 })
                 .then(() => {
-                    console.log('[Electron Main] Backend is ready!');
+                    console.log('[Electron Main] Backend is ready and responding!');
                     resolve(true);
                 })
                 .catch((error) => {
-                    console.log(`[Electron Main] Waiting for backend... Retries left: ${retries}`);
+                    console.log(`[Electron Main] Backend not ready yet. Retries left: ${retries}`);
                     if (retries === 0) {
-                        console.error('[Electron Main] Backend did not start in time.', error);
-                        dialog.showErrorBox('Backend Error', 'Backend did not start in time. Please check logs.');
-                        app.quit();
-                        reject(false);
+                        console.error('[Electron Main] Backend timed out.');
+                        // Wir geben trotzdem resolve() zurück, damit das Fenster aufgeht 
+                        // und der User wenigstens eine Fehlermeldung sieht, statt gar nichts.
+                        resolve(false); 
                     } else {
-                        setTimeout(check, delay);
                         retries--;
+                        setTimeout(check, delay);
                     }
                 });
         }
@@ -283,7 +287,7 @@ function createWindow() {
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
-      nodeIntegration: false
+      sandbox: true
     },
     show: false // Fenster zunächst verstecken
   });
@@ -291,29 +295,31 @@ function createWindow() {
   // Lade die URL basierend auf dem Build-Modus
   const loadApp = () => {
     if (app.isPackaged) {
-      mainWindow.loadFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
+      return mainWindow.loadFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
     } else {
-      mainWindow.loadURL('http://localhost:5173/');
       mainWindow.webContents.openDevTools();
+      return mainWindow.loadURL('http://localhost:5173/');
     }
   };
 
-  // Im Entwicklungsmodus auf das Backend warten, bevor geladen wird
-  if (!app.isPackaged) {
-    waitForBackend()
-      .then(() => {
-        loadApp();
-        mainWindow.show();
-      })
-      .catch(err => {
-        console.error('Failed to start backend:', err);
-        app.quit();
-      });
-  } else {
-    // Im Produktionsmodus sofort laden
-    loadApp();
-    mainWindow.show();
-  }
+  // Auf das Backend warten, bevor geladen wird (sowohl in Entwicklung als auch Produktion)
+  waitForBackend()
+    .then((isReady) => {
+      if (isReady) {
+        console.log('[Electron Main] Backend ready, loading app...');
+      } else {
+        console.warn('[Electron Main] Backend not ready, but continuing to load app...');
+      }
+      return loadApp();
+    })
+    .then(() => {
+      mainWindow.show();
+    })
+    .catch(err => {
+      console.error('Failed to start app:', err);
+      dialog.showErrorBox('Startup Error', 'Failed to start application. Please check logs.');
+      app.quit();
+    });
 
   mainWindow.webContents.on('context-menu', (event, params) => {
     const menu = new Menu();
@@ -340,11 +346,69 @@ app.on('activate', () => {
 });
 
 app.whenReady().then(() => {
-    const win = createWindow();
+    // 1. Erstelle das Fenster, aber halte es unsichtbar
+    const win = createWindow(); 
+    
+    // 2. Starte das Backend (nur in der installierten Version)
     if (app.isPackaged) {
       startBackend(win);
     }
-    // No need to wait for backend or load URL here as it's already handled in createWindow()
+
+    // 3. Wenn das Fenster bereit ist, UND die App installiert ist, DANN suche nach Updates.
+    // Das 'did-finish-load' Event stellt sicher, dass die UI da ist, um Notfalls 
+    // Fehlermeldungen anzuzeigen.
+    win.webContents.on('did-finish-load', () => {
+        if (app.isPackaged) {
+            console.log("[AutoUpdater] UI is ready. Checking for updates now...");
+            
+            // Configure autoUpdater
+            autoUpdater.autoDownload = true;
+            autoUpdater.autoInstallOnAppQuit = true;
+            autoUpdater.allowPrerelease = true;
+            
+            // --- Hier beginnt die bekannte Update-Logik ---
+            autoUpdater.on('update-available', (info) => {
+                console.log('[AutoUpdater] Update available:', info.version);
+                win.webContents.send('update-available', { 
+                    version: info.version, 
+                    releaseNotes: info.releaseNotes || 'Keine Änderungsnotizen verfügbar.'
+                });
+            });
+
+            autoUpdater.on('download-progress', (progressInfo) => {
+                win.webContents.send('download-progress', {
+                    percent: progressInfo.percent,
+                    bytesPerSecond: progressInfo.bytesPerSecond,
+                    transferred: progressInfo.transferred,
+                    total: progressInfo.total
+                });
+            });
+
+            autoUpdater.on('update-downloaded', (info) => {
+                console.log('[AutoUpdater] Update downloaded, ready to install');
+                win.webContents.send('update-downloaded');
+            });
+            
+            autoUpdater.on('error', (err) => {
+                console.error('[AutoUpdater] Error:', err);
+                // (Optional) Sende eine Fehlermeldung an das Frontend
+                win.webContents.send('update-error', err.message);
+            });
+
+            // Starte die Update-Prüfung
+            autoUpdater.checkForUpdates().catch(err => {
+                console.error('[AutoUpdater] Failed to check for updates:', err);
+                win.webContents.send('update-error', `Update-Prüfung fehlgeschlagen: ${err.message}`);
+            });
+        }
+    });
+
+    // Dieser Listener für den Neustart bleibt global
+    ipcMain.on('restart-app-for-update', () => {
+        console.log('[AutoUpdater] Restarting app to install update...');
+        autoUpdater.quitAndInstall(true, true);
+        app.quit();
+    });
 });
 
 app.on('will-quit', stopBackend);

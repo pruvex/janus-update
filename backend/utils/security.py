@@ -9,8 +9,11 @@ import logging
 
 logger = logging.getLogger("janus_backend")
 
-# JWT Settings (in production, use environment variables and proper secrets management)
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-here")  # Change this in production!
+# Load the secret key from environment variables
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("No JWT_SECRET_KEY set for JWT token generation. Please set this environment variable.")
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30  # Token expires after 30 minutes
 
