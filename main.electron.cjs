@@ -1,6 +1,11 @@
 console.log('Main process: Script started (Root main.electron.js)'); // Unique identifier
 
 const { app, BrowserWindow, ipcMain, dialog, Menu, MenuItem, net, session, shell, protocol } = require('electron');
+
+// ============================================================
+// YOUTUBE ORIGIN FIX: Disable site-per-process isolation to prevent iframe blocking
+// ============================================================
+app.commandLine.appendSwitch('disable-features', 'IsolateOrigins,site-per-process');
 const path = require('path');
 const fs = require('fs');
 const http = require('http'); // For health check
@@ -615,8 +620,8 @@ function createWindow() {
   mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback, details) => {
     console.log('[PERMISSION REQUEST]', permission, details?.requestingUrl || webContents.getURL());
     // Allow all permissions from YouTube origins via details.requestingUrl (safer wildcard)
-    if (details && details.requestingUrl && (details.requestingUrl.includes('youtube.com') || details.requestingUrl.includes('youtube-nocookie.com'))) {
-      console.log('[PERMISSION REQUEST] ALLOWED: YouTube origin');
+    if (details && details.requestingUrl && (details.requestingUrl.includes('youtube.com') || details.requestingUrl.includes('youtube-nocookie.com') || details.requestingUrl.includes('googlevideo.com'))) {
+      console.log('[PERMISSION REQUEST] ALLOWED: YouTube/GoogleVideo origin');
       callback(true);
       return;
     }
