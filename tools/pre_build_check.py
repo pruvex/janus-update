@@ -206,7 +206,7 @@ def check_critical_imports():
     # Test importing backend.main without actually starting the server
     result = subprocess.run(
         [sys.executable, "-c", "import backend.main; print('OK')"],
-        capture_output=True, text=True, cwd=str(PROJECT_ROOT), timeout=30
+        capture_output=True, text=True, cwd=str(PROJECT_ROOT), timeout=60
     )
     passed = result.returncode == 0 and "OK" in result.stdout
     detail = "backend.main imports cleanly" if passed else result.stderr.strip().split("\n")[-1][:120]

@@ -1,10 +1,40 @@
 ---
-description: Production release workflow - build, package and publish installer
+description: Production release workflow - build, package and publish installer (Diamond-Release-Guard)
 ---
 
-## Production Release Steps
+## Production Release Steps (Diamond-Release-Guard)
 
 This workflow runs all steps automatically. If any step fails, it stops and reports the error.
+
+### Phase 0: Git Integration & Versioning (CRITICAL GATE)
+
+// turbo
+0.1 Switch to master branch:
+   ```bash
+   git checkout master
+   ```
+   ❌ **If this fails:** STOP. Cannot proceed with release from wrong branch.
+
+// turbo
+0.2 Merge develop with --no-ff:
+   ```bash
+   git merge --no-ff develop -m 'Release update'
+   ```
+   ❌ **If this fails (merge conflict):** STOP. Resolve conflicts manually before retrying.
+
+// turbo
+0.3 Bump version (patch):
+   ```bash
+   npm version patch
+   ```
+   ❌ **If this fails:** STOP. Version bump failed.
+
+// turbo
+0.4 Sync backend version:
+   ```bash
+   npm run write-version
+   ```
+   ❌ **If this fails:** STOP. Backend version sync failed.
 
 ### Phase 1: Pre-Build Verification (GATE)
 
@@ -56,6 +86,15 @@ This workflow runs all steps automatically. If any step fails, it stops and repo
    # Open browser to GitHub releases page
    start https://github.com/pruvex/janus-update/releases
    ```
+
+### Phase 5: Post-Release Cleanup
+
+// turbo
+7. Switch back to develop branch:
+   ```bash
+   git checkout develop
+   ```
+   ❌ **If this fails:** Manual intervention required to restore workflow state.
 
 ## Expected Outcome
 

@@ -1,6 +1,6 @@
 {
   "name": "janus-projekt",
-  "version": "0.4.15-beta.11",
+  "version": "0.4.15",
   "description": "",
   "type": "module",
   "main": "main.electron.cjs",
