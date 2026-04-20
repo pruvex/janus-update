@@ -1078,7 +1078,10 @@ function setupEventListeners() {
 
       // 4. Die UI komplett neu zeichnen, um die Änderungen anzuzeigen
       console.log("--> [Event] Calling render() to update the UI...");
-      render(); 
+      render();
+
+      // Sync window headers in 'Wie Sidebar' mode
+      syncChatWindowHeaderLlm(); 
     });
   }
 
@@ -1091,6 +1094,8 @@ function setupEventListeners() {
         Sentry.setTag("active_model", m);
       }
       await updateLastUsedModelInBackend();
+      // Sync window headers in 'Wie Sidebar' mode
+      syncChatWindowHeaderLlm();
     });
   }
   

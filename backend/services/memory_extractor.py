@@ -438,11 +438,11 @@ EXTRACTION_PROMPT = """!--- KRITISCHE AUSGABE-REGEL (NUR JSON) ---!
 ANTWORTE NUR MIT DEM JSON-ARRAY. KEIN TEXT DAVOR ODER DANACH. KEINE MARKDOWN-FORMATIERUNG. NUR ROHES JSON!
 
 !--- JSON SCHEMA ZWINGEND ERFORDERLICH ---!
-Das Response-JSON MUSS folgende Struktur haben - das 'fact'-Feld ist PFLICHT:
+Das Response-JSON MUSS folgende Struktur haben - das 'fact'-Feld ist !!! ABSOLUT VERPFLICHTEND !!!:
 {
   "facts": [
     {
-      "fact": "WICHTIG: Das Feld 'fact' MUSS ein grammatikalisch korrekter, natürlicher deutscher Satz sein (z.B. 'Stefan ist der Bruder des Nutzers'). Verwende interne/technische Prädikate wie 'ist_beziehung' AUSSCHLIESSLICH im Feld 'predicate', NIEMALS im 'fact' Text!",
+      "fact": "!!! ABSOLUT VERPFLICHTEND !!!: Das Feld 'fact' MUSS an ERSTER STELLE stehen und ein grammatikalisch korrekter, natürlicher deutscher Satz sein (z.B. 'Stefan ist der Bruder des Nutzers'). Verwende interne/technische Prädikate wie 'ist_beziehung' AUSSCHLIESSLICH im Feld 'predicate', NIEMALS im 'fact' Text!",
       "subject_name": "max",
       "predicate": "hat",
       "object_value": "braune haare",
@@ -451,7 +451,7 @@ Das Response-JSON MUSS folgende Struktur haben - das 'fact'-Feld ist PFLICHT:
     }
   ]
 }
-ACHTUNG: Das oberste 'fact'-Feld darf NICHT weggelassen werden! Jedes Objekt in der 'facts'-Liste MUSS ein 'fact'-Feld enthalten.
+!!! KRITISCHE REGEL !!!: Ein JSON-Objekt ohne das Feld "fact" wird als schwerer Systemfehler gewertet. Das Feld 'fact' MUSS IMMER als ERSTES Feld in jedem facts-Objekt stehen. Jedes Objekt in der 'facts'-Liste MUSS ein 'fact'-Feld enthalten.
 
 !--- META-NOISE REJECTION RULE (ABSOLUT KRITISCH!) ---!
 Ignoriere alle Informationen, die sich auf die Arbeitsweise der KI, Anweisungen zur Beschreibung, Regeln für den Chat oder KI-Vorgaben beziehen (z.B. 'Notiere dir die Regeln für Personenbeschreibungen', 'Merke dir wie du Bilder beschreiben sollst', 'Wie man X macht'). Das sind keine Fakten über den Nutzer oder die Welt, sondern Meta-Instruktionen. Extrahiere diese NIEMALS als Fakten!
@@ -465,8 +465,8 @@ USER-TRUTH-REGEL: Informationen, die der User explizit über sich oder eine Pers
 Du neigst dazu, Vorlieben und kleine Fakten zu IGNORIEREN, wenn der User gleichzeitig seinen Namen nennt oder eine Korrektur macht. Das ist ein FEHLER!
 JEDER Fakt in der Nachricht MUSS extrahiert werden — egal wie viele es sind.
 BEISPIEL: "Ich bin Maximilian und ich hasse Tee"
-→ Fakt 1: {"subject_name": "user", "predicate": "heißt", "object_value": "maximilian", "category": "Physis", "canonical_key": "user:physis:heisst:name"}
-→ Fakt 2: {"subject_name": "user", "predicate": "hasst", "object_value": "tee", "category": "Vorlieben", "canonical_key": "user:vorlieben:hasst:tee"}
+→ Fakt 1: {"fact": "Der Nutzer heißt Maximilian", "subject_name": "user", "predicate": "heißt", "object_value": "maximilian", "category": "Physis", "canonical_key": "user:physis:heisst:name"}
+→ Fakt 2: {"fact": "Der Nutzer hasst Tee", "subject_name": "user", "predicate": "hasst", "object_value": "tee", "category": "Vorlieben", "canonical_key": "user:vorlieben:hasst:tee"}
 BEIDE Fakten sind PFLICHT! 'Ich hasse Tee' ist ein eigenständiger Fakt der Kategorie 'Vorlieben'. Ihn wegzulassen ist ein kritischer Datenverlust!
 Wenn die Nachricht 3 Informationen enthält, MÜSSEN 3 Fakten extrahiert werden. Zähle nach!
 
@@ -481,8 +481,8 @@ Wenn der Nutzer sagt "Ich bin X", "Ich heiße X", "Mein Name ist X" oder ähnlic
 - object_value ist der Name X (zu Kleinbuchstaben normalisieren)
 - category MUSS "Physis" sein
 - canonical_key MUSS immer exakt "user:physis:heisst:name" lauten (festes Slot-Kennzeichen!)
-BEISPIEL: "Ich bin Captain Janus" → {"subject_name": "user", "predicate": "heißt", "object_value": "captain janus", "category": "Physis", "canonical_key": "user:physis:heisst:name"}
-BEISPIEL: "Mein Name ist Max" → {"subject_name": "user", "predicate": "heißt", "object_value": "max", "category": "Physis", "canonical_key": "user:physis:heisst:name"}
+BEISPIEL: "Ich bin Captain Janus" → {"fact": "Der Nutzer heißt Captain Janus", "subject_name": "user", "predicate": "heißt", "object_value": "captain janus", "category": "Physis", "canonical_key": "user:physis:heisst:name"}
+BEISPIEL: "Mein Name ist Max" → {"fact": "Der Nutzer heißt Max", "subject_name": "user", "predicate": "heißt", "object_value": "max", "category": "Physis", "canonical_key": "user:physis:heisst:name"}
 Dieser feste Schlüssel ist essenziell: Er garantiert, dass spätere memory.read-Abfragen den Namen immer unter derselben Adresse finden!
 !--- MULTI-ENTITY SAFETY ---!
 Wenn der Nutzer den Namen einer Person korrigiert (z.B. 'Nein, das ist Elena'), stelle sicher, dass alle neuen Fakten NUR dem neuen Namen zugeordnet werden und keine alten Merkmale der fälschlicherweise identifizierten Person übernommen werden.
@@ -532,6 +532,7 @@ Text: "Max ist ein Mann und hat braune Haare."
 Fakten:
 [
   {
+    "fact": "Max ist ein Mann",
     "subject_name": "max",
     "predicate": "ist",
     "object_value": "mann",
@@ -539,6 +540,7 @@ Fakten:
     "canonical_key": "max:person:ist:mann"
   },
   {
+    "fact": "Max hat braune Haare",
     "subject_name": "max",
     "predicate": "hat",
     "object_value": "braune haare",
@@ -553,10 +555,10 @@ Achte besonders darauf, dass:
   Wenn der Assistant eine Frage zur Rasse/Art gestellt hat (z.B. 'Ist Egon ein Leguan?') 
   und der Nutzer in seiner Nachricht zustimmt (z.B. 'Ja', 'Genau', 'Richtig'), 
   dann extrahiere diese Information als verifizierten Fakt.
-  Beispiel: 
-  Assistant: 'Ist Pody ein Podenco?' 
-  User: 'Ja, genau!' 
-  Extrahiere: {"subject_name": "pody", "predicate": "ist_rasse", "object_value": "podenco", "category": "pet"}
+  Beispiel:
+  Assistant: 'Ist Pody ein Podenco?'
+  User: 'Ja, genau!'
+  Extrahiere: {"fact": "Pody ist ein Podenco", "subject_name": "pody", "predicate": "ist_rasse", "object_value": "podenco", "category": "pet"}
 - Namen von Personen oder Objekten, die als Subjekt oder Objekt fungieren, korrekt identifiziert und normalisiert werden.
 - Jedes Faktum eine passende Kategorie erhält.
 - Der `canonical_key` korrekt und einzigartig für jedes Faktum generiert wird.
@@ -606,14 +608,14 @@ Ohne Richtung kann das LLM die Rollen vertauschen (z.B. denken, der Freund sei d
 
 MUSTER für Beziehungen:
 1. "X ist meine/meiner Y" → subject: X, predicate: ist_beziehung, object: Y, fact: "X ist Y des Nutzers"
-   Beispiel: "Lisa ist meine Frau" → (lisa | ist_beziehung | ehefrau), fact: "Lisa ist Ehefrau des Nutzers"
+   Beispiel: "Lisa ist meine Frau" → {"fact": "Lisa ist Ehefrau des Nutzers", "subject_name": "lisa", "predicate": "ist_beziehung", "object_value": "ehefrau"}
 2. "mein/meine Y heißt X" → subject: X, predicate: ist_beziehung, object: Y, fact: "X ist Y des Nutzers"
-   Beispiel: "mein Bruder heißt Tom" → (tom | ist_beziehung | bruder), fact: "Tom ist Bruder des Nutzers"
+   Beispiel: "mein Bruder heißt Tom" → {"fact": "Tom ist Bruder des Nutzers", "subject_name": "tom", "predicate": "ist_beziehung", "object_value": "bruder"}
 3. "ich habe einen/eine Y namens X" → subject: X, predicate: ist_beziehung, object: Y, fact: "X ist Y des Nutzers"
-   Beispiel: "ich habe eine Schwester namens Anna" → (anna | ist_beziehung | schwester), fact: "Anna ist Schwester des Nutzers"
+   Beispiel: "ich habe eine Schwester namens Anna" → {"fact": "Anna ist Schwester des Nutzers", "subject_name": "anna", "predicate": "ist_beziehung", "object_value": "schwester"}
 4. "mein Freund X heißt eigentlich Z" → ZWEI Fakten:
-   Fakt 1: (X | ist_beziehung | freund), fact: "X ist Freund des Nutzers"
-   Fakt 2: (X | heisst_eigentlich | Z), fact: "X heißt eigentlich Z"
+   Fakt 1: {"fact": "X ist Freund des Nutzers", "subject_name": "X", "predicate": "ist_beziehung", "object_value": "freund"}
+   Fakt 2: {"fact": "X heißt eigentlich Z", "subject_name": "X", "predicate": "heisst_eigentlich", "object_value": "Z"}
    WICHTIG: Der Nutzer ist NICHT Z! Z ist der echte Name von X.
 
 BEZIEHUNGSTYPEN zu erkennen:

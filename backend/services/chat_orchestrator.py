@@ -1037,16 +1037,20 @@ class ChatOrchestrator:
             current_model = request.model if hasattr(request, 'model') else None
             current_provider = request.provider if hasattr(request, 'provider') else None
 
-            # If provider is not set or looks suspicious, detect from model name
-            if current_model and (not current_provider or current_provider.lower() == 'unknown'):
+            # Always detect provider from model name to ensure PROVIDER-COHERENCE
+            # This prevents misdirection (e.g., Gemini model with provider='openai')
+            if current_model:
                 detected_provider = self._get_provider_from_model(current_model)
                 if detected_provider:
-                    logger.info(
-                        "[HELP-FAST-PATH] Auto-detected provider '%s' from model '%s'",
-                        detected_provider,
-                        current_model
-                    )
-                    current_provider = detected_provider
+                    # Override current_provider if model name indicates a different provider
+                    if current_provider != detected_provider:
+                        logger.info(
+                            "[PROVIDER-COHERENCE] Corrected provider from '%s' to '%s' based on model '%s'",
+                            current_provider,
+                            detected_provider,
+                            current_model
+                        )
+                        current_provider = detected_provider
 
             wf.help_result = self.help_skill.handle(
                 query=wf.user_text,

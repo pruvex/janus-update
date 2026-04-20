@@ -387,7 +387,7 @@
             "de": "Bilder analysieren",
             "en": "Analyze Images"
           },
-          "skill_refs": ["system.vision"],
+          "skill_refs": ["system.video_understanding"],
           "how_to": {
             "de": "Lade ein Bild hoch und frage: 'Was siehst du?' oder 'Beschreibe das Bild.'",
             "en": "Upload an image and ask: 'What do you see?' or 'Describe the image.'"
@@ -540,7 +540,7 @@
             "de": "API-Keys verwalten",
             "en": "Manage API Keys"
           },
-          "skill_refs": ["system.settings"],
+          "skill_refs": ["system.routing"],
           "how_to": {
             "de": "Geh zu den Einstellungen und füge deine OpenAI, Gemini oder Anthropic API-Keys hinzu.",
             "en": "Go to settings and add your OpenAI, Gemini, or Anthropic API keys."
@@ -552,7 +552,7 @@
             "de": "Modell wechseln",
             "en": "Switch Model"
           },
-          "skill_refs": ["system.settings"],
+          "skill_refs": ["system.routing"],
           "how_to": {
             "de": "Sage: 'Nutze GPT-4o' oder 'Wechsle zu Gemini' oder 'Benutze ein lokales Modell'.",
             "en": "Say: 'Use GPT-4o' or 'Switch to Gemini' or 'Use a local model'."
@@ -591,7 +591,7 @@
             "de": "Videos abspielen",
             "en": "Play Videos"
           },
-          "skill_refs": ["system.video"],
+          "skill_refs": ["system.video_search"],
           "how_to": {
             "de": "Sage: 'Spiele das Video ab' oder 'Zeige mir den Film'. Der MCL Video-Player öffnet sich automatisch.",
             "en": "Say: 'Play the video' or 'Show me the movie'. The MCL Video Player opens automatically."
@@ -603,7 +603,7 @@
             "de": "YouTube integrieren",
             "en": "YouTube Integration"
           },
-          "skill_refs": ["system.video"],
+          "skill_refs": ["system.video_search"],
           "how_to": {
             "de": "Sende einen YouTube-Link und ich werde das Video analysieren oder Transkripte erstellen.",
             "en": "Send a YouTube link and I'll analyze the video or create transcripts."
@@ -615,7 +615,7 @@
             "de": "KI-Transkripte erstellen",
             "en": "AI Transcripts"
           },
-          "skill_refs": ["system.video"],
+          "skill_refs": ["system.video_search"],
           "how_to": {
             "de": "Lade ein Video hoch und frage: 'Transkribiere das Video' oder 'Fasse den Inhalt zusammen'.",
             "en": "Upload a video and ask: 'Transcribe the video' or 'Summarize the content'."

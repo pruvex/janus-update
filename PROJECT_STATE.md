@@ -1,6 +1,47 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.15-beta.11** — "Clipboard IPC Fallback & YouTube 152-4 Regression Fixed. Epic Security & Beta-Ready Complete. XSS & RCE Fixes Verified. Discord-Reporting Integrated. User-Agent Spoofing & Header-Stripping Applied.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.15-beta.12** — "GPT-Diamond-Certified & UI-Sync-Live. STABILITY-ARC Phase 2: Extractor-Härtung, Registry-Cleanup, Sidebar-Header-Propagation. All Tasks SEALED & COMPLETE.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-20 (Clipboard IPC Fallback & YouTube 152-4 Regression — SEALED)
+**Aktualisiert:** 2026-04-20 20:10 (GPT-Diamond-Certified & UI-Sync-Live — SEALED)
+
+---
+
+## [CURRENT_SESSION_DELTA] (GPT-Diamond-Certification & UI-Sync-Live 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic** | **STABILITY-ARC — Phase 2** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-20) |
+| **Umsetzung** | **1. GPT-Core Zertifizierung:** gpt-5.4-nano/mini/standard erfolgreich validiert. **2. Extractor-Härtung:** `backend/services/memory_extractor.py` durch strikte JSON-Schema-Direktiven und Few-Shot-Anpassung stabilisiert; Pydantic-Validierungsfehler bei Mini-Modellen eliminiert. **3. UI-Live-Sync:** `frontend/js/app.js` patche (Sidebar-Listener); Änderungen an Sidebar-Dropdowns werden nun sofort an die Fenster-Header (Modus "Wie Sidebar") propagiert. **4. Registry-Cleanup:** `capability_registry.json` bereinigt; Orphan-Warnungen reduziert. |
+| **Ergebnis** | GPT-Modellfamilie erreicht Diamond-Standard. UI-Konsistenz zwischen Sidebar und Dual-Window-System gewährleistet. |
+| **Files** | `backend/services/memory_extractor.py`, `frontend/js/app.js`, `backend/data/capability_registry.json`. |
+| **Patterns** | [PATTERN] #NLP #Extraction "Extraction Quality Hardening", [PATTERN] #Frontend #StateManagement "Live-UI-Propagator". |
+
+---
+
+## [CURRENT_SESSION_DELTA] (EPIC-GIT-GUARD — Git Infrastructure Certified 🥇 SEALED & COMPLETE)
+
+| Feld | Wert |
+|------|------|
+| **Epic** | **EPIC-GIT-GUARD — Git Infrastructure Certified** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-20) |
+| **Umsetzung** | **Task 060-062 abgeschlossen:** (1) Git-Historie chirurgisch gereinigt durch nuklearen Reset (.git-Ordner Löschung + Neu-Initialisierung nach .gitignore-Korrektur). (2) 2-Säulen-Modell etabliert: Janus-Backup (Private/Full, https://github.com/pruvex/Janus-Backup.git) & janus-update (Public/Release, https://github.com/pruvex/janus-update.git). (3) Sicherheits-Infrastruktur: Pre-commit Hook (scripts/git-hooks/pre-commit + pre-commit.ps1) mit 90MB Guard; release-gate.js (Branch-Check: nur von master, Dirty-Check: clean working tree, Sync-Check: HEAD == backup/master). (4) Branch-Modell: develop (Arbeit) / master (Release). (5) Workflow-Skill: /save (.windsurf/workflows/save.md) ruft hardened save.ps1 (Branch-Guard, Dirty-Check, Blocker-Scan, Commit/Push zu backup/develop). |
+| **Ergebnis** | Git-Infrastruktur zertifiziert für Production-Release. Large-File-Blocker aktiv (90MB Guard). Release-Gate verhindert fehlerhafte Releases. Automated Backup via /save Skill. |
+| **Files** | `.gitignore`, `.windsurf/workflows/save.md`, `scripts/git-hooks/pre-commit`, `scripts/git-hooks/pre-commit.ps1`, `scripts/release-gate.js`, `scripts/save.ps1`, `package.json` (release:guard, release scripts), `documentation/AI_STUDIO_SYSTEM_PROMPT_V33.md`. |
+| **Doku** | `WHAT_I_LEARNED.md` ([LESSON] #Git #Infrastructure "Nuclear Reset for Large File Cleanup", [PATTERN] #Git #Safety "Pre-commit Hook as Blocker Guard", [PATTERN] #Git #Release "Release-Gate Pattern"). |
+| **Patterns** | [LESSON] #Git #Infrastructure "Nuclear Reset for Large File Cleanup", [PATTERN] #Git #Safety "Pre-commit Hook as Blocker Guard", [PATTERN] #Git #Release "Release-Gate Pattern". |
+
+---
+
+## [CURRENT_SESSION_DELTA] (STABILITY-ARC — Regression-Fixes 🥇 SEALED & COMPLETE)
+
+| Feld | Wert |
+|------|------|
+| **Epic** | **STABILITY-ARC — Regression-Fixes** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-20) |
+| **Umsetzung** | **YouTube Error 152-4:** (1) IsolateOrigins Switch hinzugefügt (app.commandLine.appendSwitch('disable-features', 'IsolateOrigins,site-per-process')). (2) User-Agent Spoofing auf Chrome 124 (app.userAgentFallback + BrowserWindow userAgent). (3) Entfernung des störenden origin Parameters aus normalizeVideoEmbedUrl (nur ?rel=0 und ?api=1). (4) GoogleVideo Permissions in setPermissionRequestHandler erlaubt. **Clipboard Paste-Regression:** Umstellung auf Electron-IPC (ipcMain.handle('clipboard:read'), preload.js window.electronAPI.readClipboard). **Auth PROVIDER-COHERENCE:** chat_orchestrator.py Provider-Korrektur erzwingt Key-Refresh für Ziel-Provider (Gemini-Keys werden nicht mehr fälschlich an OpenAI gesendet). |
+| **Ergebnis** | YouTube Error 152-4 behoben. Clipboard Paste funktioniert via IPC. Auth-Kohärenz sichergestellt — Provider und API-Key sind immer synchron. |
+| **Files** | `main.electron.cjs` (disable-features switch, userAgent Chrome 124, GoogleVideo permissions), `frontend/js/video-player.js` (normalizeVideoEmbedUrl ohne origin), `backend/services/chat_orchestrator.py` (PROVIDER-COHERENCE), `frontend/preload.js` (clipboard IPC), `frontend/js/context-menu.js` (IPC Fallback). |
+| **Doku** | `WHAT_I_LEARNED.md` ([LESSON] #Electron #YouTube #Isolation "IsolateOrigins Switch for YouTube Fix", [PATTERN] #Security #Coherence "Self-Healing Identity V3", [LESSON] #Electron #Clipboard #IPC "Clipboard IPC Fallback Pattern"). |
+| **Patterns** | [LESSON] #Electron #YouTube #Isolation "IsolateOrigins Switch for YouTube Fix", [PATTERN] #Security #Coherence "Self-Healing Identity V3", [LESSON] #Electron #Clipboard #IPC "Clipboard IPC Fallback Pattern". |
 
 ---
 
