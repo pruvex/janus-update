@@ -23,6 +23,7 @@ backend/__pycache__/
 backend/costs.db
 backend/chat.db
 backend/model_cache/
+backend/version.py
 *.db
 .env
 
@@ -33,3 +34,9 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+.vercel
+
+# Large binary files (ffmpeg, ffprobe, ffplay, Piper models)
+backend/bin/
+backend/models/piper/
