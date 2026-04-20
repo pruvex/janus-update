@@ -1,0 +1,44 @@
+{
+  "legacy_name": "hardened_edit_pdf",
+  "skill": "knowledge.hardened_edit",
+  "version": "1.0.0",
+  "sandbox_level": "workspace_only",
+  "latency_class": "normal",
+  "tags": [
+    "knowledge",
+    "composite",
+    "backup"
+  ],
+  "capabilities": [
+    "document_edit",
+    "safe_edit",
+    "workflow_composition"
+  ],
+  "is_agent_ready": true,
+  "max_calls_per_turn": 2,
+  "depends_on": [
+    "filesystem.create_directory",
+    "filesystem.move_file",
+    "knowledge.edit_pdf"
+  ],
+  "examples": [
+    {
+      "input": {
+        "original_filename": "workspace/reports/audit.pdf",
+        "modifications": [
+          {
+            "search": "alte Aussage",
+            "replace": "neue Aussage"
+          }
+        ],
+        "backup_directory": "workspace/backups"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "operation": "knowledge.hardened_edit"
+        }
+      }
+    }
+  ]
+}

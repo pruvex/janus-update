@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "dunkel",
+    "FRISUR": "lang und windgepeitscht",
+    "OUTERWEAR": "schwarzer Blazer",
+    "KLEIDUNG": "schwarzes Top",
+    "LEGWEAR": "schwarze Hose",
+    "SCHUH_SATZ": "Schwarze Stiefeletten",
+    "POSE_SATZ": "Sie steht halb im Schatten, der Sonnenuntergang hinter ihr, das Gesicht kaum sichtbar wegen der Silhouette und wehenden Haare.",
+    "AMBIENTE_SATZ": "City-Dämmerung mit Flussfront und Lichtermeer im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Backlit", "Silhouette", "Full Body", "Evening", "Street"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "High Heels"],
+    "NOTIZ": "GPT-Image 1.5, synthetisch, passender Backlit-Look."
+  }
+}

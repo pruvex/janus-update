@@ -1,0 +1,38 @@
+{
+  "filename": "59.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "kurz, zerzaust",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "Brille mit dunklem, rechteckigem Gestell",
+    "SCHMUCK": "Ring am linken Ringfinger",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "olivgrüne Bluse mit floralem Muster (pink, weiß, dunkelgrün)",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "zwei orangefarbene Cocktails mit tierförmiger Strohhalm-Deko, Smartphone in roter Hülle, Aschenbecher mit Zigarette, kleine Sukkulente im Topf",
+    "POSE_SATZ": "Die Frau sitzt an einem Cafétisch, hält ein Smartphone in der Hand und blickt lächelnd direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Ein belebter Außenbereich eines Cafés mit Kopfsteinpflaster und roten Markisen über den Tischen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "olivgrüne Blumenbluse",
+      "dunkle Vollrandbrille",
+      "zwei Cocktails",
+      "tierförmige Strohhalm-Deko",
+      "Ring am linken Ringfinger",
+      "Smartphone in roter Hülle",
+      "Aschenbecher mit Zigarette",
+      "Kopfsteinpflaster",
+      "rote Markisen"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Sonnenbrille",
+      "kein Schal",
+      "keine sichtbaren Schuhe"
+    ]
+  }
+}

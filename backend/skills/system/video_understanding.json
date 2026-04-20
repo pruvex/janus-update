@@ -1,0 +1,55 @@
+{
+  "legacy_name": "video.understand",
+  "skill": "video.understand",
+  "description": "Hole das Transkript und analysiere den Inhalt eines YouTube-Videos. Nutze diesen Skill wenn der Nutzer ein Video zusammenfassen, erklären oder Schritte daraus extrahieren möchte. Keywords: zusammenfassen, fasse zusammen, erklären, transcript, transkript, schritte, anleitung, was ist im video, worum geht es im video. VORAUSSETZUNG: Du brauchst eine video_id (11 Zeichen). Falls der Nutzer kein konkretes Video nennt, nutze ZUERST video.search um die passende video_id zu finden, und dann video.understand mit dieser ID.",
+  "version": "1.0.0",
+  "optimal_model_tier": {
+    "openai": "quality",
+    "gemini": "quality",
+    "ollama": "quality"
+  },
+  "sandbox_level": "unrestricted",
+  "latency_class": "slow",
+  "timeout_ms": 300000,
+  "tags": ["system", "video", "youtube", "understanding", "transcript", "summary"],
+  "capabilities": ["video_summary", "video_explanation", "step_extraction", "transcript_retrieval"],
+  "is_agent_ready": true,
+  "deterministic_renderer": false,
+  "max_calls_per_turn": 1,
+  "depends_on": ["video.search"],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "video_id": {
+        "type": "string",
+        "minLength": 11,
+        "maxLength": 11,
+        "description": "YouTube Video-ID (exakt 11 Zeichen)."
+      },
+      "task": {
+        "type": "string",
+        "enum": ["summarize", "explain", "extract_steps"],
+        "description": "Aufgabentyp."
+      },
+      "language": {
+        "type": "string",
+        "default": "de",
+        "description": "Zielsprache (ISO 639-1)."
+      },
+      "detail_level": {
+        "type": "string",
+        "enum": ["brief", "medium", "detailed"],
+        "default": "medium"
+      }
+    },
+    "required": ["video_id", "task"]
+  },
+  "output_schema": {
+    "summary": "string",
+    "key_points": ["string"],
+    "structured_notes": "dict|null",
+    "transcript_source": "string",
+    "chunk_count": "int"
+  },
+  "synthesis_directives": "Du bist ein Video-Analyst. Nutze AUSSCHLIESSLICH die Daten aus dem Tool-Result. Formatiere die Ausgabe als strukturiertes Markdown: Überschrift mit Video-Titel, dann Zusammenfassung/Erklärung, dann Key Points als nummerierte Liste. Bei extract_steps: Nummerierte Schritte mit Beschreibung. KRITISCH: Auch wenn transcript_source='unavailable' ist oder ein Fehler auftritt, MUSST du zwingend den Link zum Video im Format [Video ansehen](https://www.youtube.com/watch?v={video_id}) ausgeben, damit der Player in der UI öffnet! Wenn transcript_source='unavailable', teile dem Nutzer mit, dass kein Transkript verfügbar war, schlage vor, ein anderes Video zu versuchen, und füge auf jeden Fall den Video-Link hinzu. WICHTIG: Wenn der Aufruf NICHT vom UI-Button kommt (source != 'ui_button'), DARFST DU DIESES TOOL NICHT AUSFÜHREN! Antworte stattdessen: 'Um eine Zusammenfassung oder Analyse dieses Videos zu erhalten, öffne bitte das Video und klicke auf den 🧠 (Brain) Button oben links im Video-Player.'"
+}

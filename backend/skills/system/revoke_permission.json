@@ -1,0 +1,53 @@
+{
+  "legacy_name": "system_revoke_permission",
+  "skill": "system.revoke_permission",
+  "description": "Widerruft eine zuvor erteilte dauerhafte Freigabe für einen Skill und erzwingt erneute Consent-Abfrage.",
+  "version": "1.1.0",
+  "sandbox_level": "unrestricted",
+  "latency_class": "fast",
+  "timeout_ms": 5000,
+  "tags": [
+    "system",
+    "security",
+    "permissions",
+    "policy"
+  ],
+  "capabilities": [
+    "policy_write",
+    "security_override"
+  ],
+  "is_agent_ready": false,
+  "deterministic_renderer": true,
+  "max_calls_per_turn": 1,
+  "depends_on": [],
+  "examples": [
+    {
+      "input": {
+        "skill_id": "filesystem.delete_file"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "skill_id": "filesystem.delete_file",
+          "action": "revoked",
+          "permission_state": "requires_consent",
+          "removed": true
+        },
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "skill_id": "nonexistent.skill"
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "SKILL_NOT_FOUND",
+          "message": "Skill 'nonexistent.skill' ist nicht registriert."
+        }
+      }
+    }
+  ]
+}

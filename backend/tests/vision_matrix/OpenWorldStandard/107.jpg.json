@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "blond",
+    "FRISUR": "straff zurückgesteckt",
+    "OUTERWEAR": "roter Blazer",
+    "KLEIDUNG": "weißes Shirt",
+    "LEGWEAR": "gerissene Jeans",
+    "SCHUH_SATZ": "Weiße Flats",
+    "POSE_SATZ": "Sie geht frontal auf die Kamera zu, Tasche über der Schulter.",
+    "AMBIENTE_SATZ": "Parkplatz mit Hochhäusern im Hintergrund bei Tageslicht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Bag", "Layered Clothing", "Full Body"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "No Bag"],
+    "NOTIZ": "Layered look mit Blazer + Shirt, Tasche hängt an der Schulter."
+  }
+}

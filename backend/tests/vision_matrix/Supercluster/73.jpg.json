@@ -1,0 +1,19 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "TEINT": "gebräunten (oliv)",
+    "AUGEN": "braun",
+    "HAARFARBE": "Die Haare sind braun",
+    "FRISUR": "nach hinten gesteckt (Chignon-Style)",
+    "HAAR_STRUKTUR": "glatt",
+    "KLEIDUNG": "schwarzes Satin-Oberteil",
+    "LEGWEAR": "schwarze Lederhose",
+    "MATERIAL": "Leder",
+    "SCHUH_SATZ": "Dazu trägt sie elegante schwarze High Heels.",
+    "POSE_SATZ": "Die Person lehnt entspannt an einem Tisch und hält ein Glas Wasser.",
+    "AMBIENTE_SATZ": "Die Szene spielt in einem modern gestalteten Innenraum.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Lederhose", "Satin", "High Heels", "Wasserglas"],
+    "AUSSCHLUSS_PFLICHT": ["Jeans", "Sneaker"]
+  }
+}

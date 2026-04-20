@@ -1,0 +1,11 @@
+﻿{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "rotbraunen",
+    "HAAR_STRUKTUR": "lockig",
+    "AUGEN": "grün",
+    "KLEIDUNG": "gemusterten Kleidung",
+    "HALSKMUCK": null
+  }
+}

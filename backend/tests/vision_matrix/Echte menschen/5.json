@@ -1,0 +1,33 @@
+{
+  "filename": "5.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "rotbraun",
+    "FRISUR": "lang, zum Pferdeschwanz gebunden, mit Pony",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "dunkle Halskette",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "schwarzes Langarmshirt",
+    "LEGWEAR": "blauer Jeansrock über schwarzen Leggings",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "orange-weiße Katze im Vordergrund",
+    "POSE_SATZ": "Die schwangere Frau steht im Profil, hält mit einer Hand ihren Bauch und blickt lächelnd zur Kamera.",
+    "AMBIENTE_SATZ": "Ein helles Wohnzimmer mit Parkettboden, einem großen Flachbildfernseher auf einem weißen Sideboard und einer dekorativen Stehlampe.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarzes Langarmshirt",
+      "blauer Jeansrock",
+      "schwarze Leggings",
+      "orange-weiße Katze",
+      "Flachbildfernseher",
+      "weißes Sideboard"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Schuhe sichtbar"
+    ]
+  }
+}

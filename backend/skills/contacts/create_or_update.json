@@ -1,0 +1,18 @@
+{
+  "legacy_name": "create_or_update_contact_tool",
+  "skill": "contacts.create_or_update",
+  "version": "1.0.0",
+  "sandbox_level": "read_only_fs",
+  "latency_class": "fast",
+  "tags": [
+    "contacts"
+  ],
+  "capabilities": [
+    "contact_write",
+    "addressbook_mutation"
+  ],
+  "is_agent_ready": true,
+  "max_calls_per_turn": 3,
+  "depends_on": [],
+  "examples": []
+}

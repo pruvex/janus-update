@@ -1,0 +1,5 @@
+{"type": "system", "content": "Memory initialized", "timestamp": "INIT"}
+{"type": "pattern", "content": "Circular import solution", "timestamp": "0.046875"}
+{"type": "learning", "issue": "Circular import error", "solution": "Use shared config module D", "tags": ["import", "python", "circular"], "timestamp": "0.046875"}
+{"type": "failure", "issue": "ImportError on startup", "attempt": "Tried direct import in __init__.py", "timestamp": "0.046875"}
+{"type": "failure", "issue": "tool_calls UnboundLocalError", "attempt": "Accessing tool_calls before assignment in execution_engine.py line 532", "timestamp": "0.03125"}

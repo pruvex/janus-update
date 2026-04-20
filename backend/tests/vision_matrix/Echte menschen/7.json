@@ -1,0 +1,33 @@
+{
+  "filename": "7.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "weiß-grau",
+    "FRISUR": "kurz, fransig geschnitten",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "schwarze Vollrandbrille mit weißem Muster an den Bügelansätzen",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "schwarzer Kapuzenpullover",
+    "KLEIDUNG": "schwarzer Hoodie",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau macht ein Selfie und blickt dabei lächelnd direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Ein heller, moderner Wohnraum mit einer dekorativen Wandkonsole und einem Fernseher im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarzer Hoodie",
+      "weiß-graue Haare",
+      "Brille mit schwarz-weißem Muster",
+      "Wandkonsole",
+      "heller Innenraum",
+      "Kapuze"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Kette sichtbar"
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "filename": "43.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "blond",
+    "FRISUR": "hochgesteckt / unordentlicher Dutt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "Halskette mit Lebensbaum-Anhänger, Nasenring, Augenbrauenpiercing, Lippenpiercing, große Creolen",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "neongrünes T-Shirt",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt für eine Selfie-Aufnahme leicht geneigt nach unten direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Innenraumaufnahme mit einem hellen Fenster im Hintergrund und einem dekorativen Bild an der Wand.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "neongrünes T-Shirt",
+      "Lebensbaum-Anhänger",
+      "Nasenring",
+      "Piercings im Gesicht",
+      "große Creolen",
+      "dekoratives Wandbild"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung"
+    ]
+  }
+}

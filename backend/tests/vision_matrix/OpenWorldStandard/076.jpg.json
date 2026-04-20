@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "dunkel",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "beiger Mantel",
+    "KLEIDUNG": "schwarzer Hoodie",
+    "LEGWEAR": "schwarze Jeans",
+    "SCHUH_SATZ": "Braune Chelsea Boots",
+    "POSE_SATZ": "Er sitzt auf einer Treppenstufe, lehnt leicht aneinander und schaut nach unten.",
+    "AMBIENTE_SATZ": "Offener Außenbereich mit Treppe und Geländer bei Tageslicht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Treppe", "Mantel", "Chelsea Boots", "Urban"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "Sporthose", "High Heels"],
+    "NOTIZ": "Sitzt im Portrait, aber Full Body über die Stufen sichtbar; entspricht der Stairs-Anforderung."
+  }
+}

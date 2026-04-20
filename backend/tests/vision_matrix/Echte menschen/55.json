@@ -1,0 +1,34 @@
+{
+  "filename": "55.jpg",
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "sehr kurz, rasiert",
+    "BART": "Dreitagebart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "Augenbrauenpiercing, Lippenpiercing",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "schwarzes T-Shirt mit Totenkopf-Motiv",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "roter Rucksack",
+    "POSE_SATZ": "Der Mann macht ein Selfie und blickt mit ernstem Gesichtsausdruck direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Im Freien auf einer Wiese mit gelben und violetten Blumen; im Hintergrund sind Bäume und ein bewölkter Himmel zu sehen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarzes T-Shirt mit Totenkopf",
+      "roter Rucksack",
+      "Augenbrauenpiercing",
+      "Lippenpiercing",
+      "grüne Wiese mit Blumen",
+      "bewölkter Himmel"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "keine Kopfbedeckung",
+      "kein Vollbart",
+      "kein Schal"
+    ]
+  }
+}

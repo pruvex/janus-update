@@ -1,0 +1,69 @@
+{
+  "legacy_name": "get_weather_from_api_tool",
+  "skill": "system.weather",
+  "description": "Liefert die Wettervorhersage für eine Stadt via Open-Meteo API. Unterstützt Datumsangaben bis 10 Tage in die Zukunft. Fallback auf wttr.in bei fehlendem API-Key.",
+  "version": "1.1.0",
+  "sandbox_level": "unrestricted",
+  "latency_class": "normal",
+  "timeout_ms": 15000,
+  "tags": [
+    "system",
+    "weather",
+    "api",
+    "geography"
+  ],
+  "capabilities": [
+    "weather_lookup",
+    "api_read"
+  ],
+  "is_agent_ready": true,
+  "deterministic_renderer": true,
+  "max_calls_per_turn": 2,
+  "depends_on": [],
+  "examples": [
+    {
+      "input": {
+        "city": "Berlin",
+        "date_str": "morgen"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "forecast": "Wettervorhersage für Berlin am 18.03.2026 (morgen): Es wird leicht bewölkt erwartet. Höchsttemperatur: 12°C, Tiefsttemperatur: 4°C. Niederschlagswahrscheinlichkeit: 15%. Windböen bis zu 25 km/h.",
+          "city": "Berlin",
+          "temp_max": 12,
+          "temp_min": 4,
+          "source": "open-meteo"
+        },
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "city": "Nimmerstadt"
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "Stadt 'Nimmerstadt' konnte nicht gefunden werden."
+        }
+      }
+    },
+    {
+      "input": {
+        "city": "Hamburg",
+        "date_str": "in 30 Tagen"
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "DATE_OUT_OF_RANGE",
+          "message": "Keine Wetterdaten für den 16.04.2026 verfügbar (nur nächste 10 Tage)."
+        }
+      }
+    }
+  ]
+}

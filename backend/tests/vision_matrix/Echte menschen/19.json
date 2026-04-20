@@ -1,0 +1,32 @@
+{
+  "filename": "19.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "hellblond",
+    "FRISUR": "mittellang, glatt, die vorderen Haare sind voluminös nach hinten gestylt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "kleine Ohrringe, Tätowierung am Hals",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "roter Strickpullover",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt mit einem neutralen bis leicht ernsten Gesichtsausdruck direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Ein heller Wohnraum mit einem Regal voller Dekorationsartikel und einer geöffneten Zimmertür im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "roter Strickpullover",
+      "blonde Haare",
+      "Tätowierung am Hals",
+      "weißes Regal",
+      "Zimmertür"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung"
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "blond",
+    "FRISUR": "leicht gewellt",
+    "OUTERWEAR": "hellblaue Jeansjacke",
+    "KLEIDUNG": "weißes T-Shirt",
+    "LEGWEAR": "hellblaue ripped Jeans",
+    "SCHUH_SATZ": "Dazu trägt sie weiße Sneaker.",
+    "POSE_SATZ": "Die Person steht lässig auf der Straße und blickt zur Seite.",
+    "AMBIENTE_SATZ": "Städtischer Kreuzungsbereich mit modernen Gebäuden im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Jeansjacke", "T-Shirt", "Jeans", "Weiße Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["High Heels", "Anzug", "Schwarze Schuhe", "Rollkragen"]
+  }
+}

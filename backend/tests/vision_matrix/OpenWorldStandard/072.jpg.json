@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "brünett",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "schlichter schwarzer T-Shirt",
+    "KLEIDUNG": "weiße Chinohose",
+    "LEGWEAR": "Knöchel frei",
+    "SCHUH_SATZ": "Schwarze Low-Top-Sneaker",
+    "POSE_SATZ": "Er lehnt mit dem Rücken an einem massiven Steinpfeiler und schaut seitlich zur Straße.",
+    "AMBIENTE_SATZ": "Städtischer Platz mit klassischer Architektur und Abendlicht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Lehnt an Wand", "Seitprofil", "Urbanes Portrait", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor-Szene", "High Heels", "Anzug"],
+    "NOTIZ": "Full body Lean gegen eine Wand in einer urbanen Umgebung, erfüllt Brief."
+  }
+}

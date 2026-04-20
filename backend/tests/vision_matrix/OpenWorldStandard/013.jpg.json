@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "blonde Haare",
+    "FRISUR": "lang und offen",
+    "OUTERWEAR": "beiger Cardigan",
+    "KLEIDUNG": "weißes Top mit V-Ausschnitt",
+    "LEGWEAR": "schwarze Stoffhose",
+    "ZUBEHOER_SATZ": "Sie trägt eine große schwarze Business-Tasche.",
+    "SCHUH_SATZ": "Dazu trägt sie beige Pumps.",
+    "POSE_SATZ": "Die Person steht frontal vor einem dekorativen Eingang und lächelt in die Kamera.",
+    "AMBIENTE_SATZ": "Städtischer Eingang mit dunkler Tür und Tageslicht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Cardigan", "weißes Top", "Stoffhose", "Business-Tasche"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Jeans", "Shorts", "Sporttasche"]
+  }
+}

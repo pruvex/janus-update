@@ -1,0 +1,34 @@
+{
+  "filename": "57.jpg",
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "grau-weiß",
+    "FRISUR": "kurz, oben aufgestellt",
+    "BART": "Ziegenbart und Schnurrbart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "Ring am linken Ringfinger",
+    "OUTERWEAR": "schwarzer Kapuzenpullover mit flauschigem Kragen",
+    "KLEIDUNG": "helles (vermutlich graues) Poloshirt unter dem Pullover",
+    "LEGWEAR": "blaue Jeans",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "kleiner schwarzer Pudel-Mischling, blaue Flexi-Leine",
+    "POSE_SATZ": "Der Mann sitzt in einer Gondel oder Sesselliftkabine, hält einen kleinen Hund im Arm und lächelt freundlich in die Kamera.",
+    "AMBIENTE_SATZ": "In einer Gondel oder Sesselliftkabine, umgeben von dichtem grünem Laubwerk; eine weitere Kabine ist im Hintergrund sichtbar.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarzer Kapuzenpullover",
+      "kleiner schwarzer Hund",
+      "blaue Flexi-Leine",
+      "Ring am linken Ringfinger",
+      "Ziegenbart und Schnurrbart",
+      "grüne Bäume"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "keine Kopfbedeckung",
+      "kein Vollbart",
+      "kein Schal"
+    ]
+  }
+}

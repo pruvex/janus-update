@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "kurzes volles Deckhaar",
+    "OUTERWEAR": "grauer karierter Doppelreiher",
+    "KLEIDUNG": "schwarzer Rollkragenpullover",
+    "LEGWEAR": "graue karierte Anzughose",
+    "SCHUH_SATZ": "Helle Quasten-Loafer",
+    "POSE_SATZ": "Er schreitet auf einer ruhigen Straße und hält eine Zeitung, dabei blickt er nach vorn.",
+    "AMBIENTE_SATZ": "Trockene Straße vor Garagen mit Bäumen im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Karoblazer", "Rollkragenpullover", "karierte Hose", "Loafer"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Sportjacke", "Shorts"]
+  }
+}

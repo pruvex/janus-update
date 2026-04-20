@@ -1,0 +1,32 @@
+{
+  "filename": "17.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "kurz, wuschelig und fransig gestylt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "Brille mit Schildpatt-Muster",
+    "SCHMUCK": "große türkisfarbene Ohrhänger in Blütenform",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "weißer, flauschiger Strickpullover",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt lächelnd frontal in die Kamera für eine Selfie-Aufnahme.",
+    "AMBIENTE_SATZ": "Ein wohnlicher Innenraum mit einem modernen Kaminofen und gerahmten Bildern an der Wand.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "weißer Flauschpullover",
+      "Schildpatt-Brille",
+      "türkisfarbene Blumenohrringe",
+      "Kaminofen",
+      "Wandbilder"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Sonnenbrille"
+    ]
+  }
+}

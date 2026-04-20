@@ -1,0 +1,39 @@
+{
+  "dataset_name": "UnknownLive-v0",
+  "version": "0.1",
+  "description": "Template for unknown live real-image benchmark with diversity metadata and rubric labels.",
+  "rubric": {
+    "score_scale": "1-5",
+    "dimensions": [
+      "factual_correctness",
+      "hallucination_control",
+      "consistency",
+      "useful_specificity"
+    ]
+  },
+  "items": [
+    {
+      "id": "UL-0001",
+      "image_path": "backend/tests/vision_matrix/UnknownLive/images/UL-0001.jpg",
+      "source": "manual_capture",
+      "priority": "high",
+      "tags": [
+        "indoor",
+        "occlusion",
+        "mixed_light"
+      ],
+      "diversity": {
+        "camera_type": "smartphone",
+        "lighting": "mixed",
+        "pose_complexity": "medium",
+        "occlusion": "partial",
+        "background_complexity": "high"
+      },
+      "review": {
+        "status": "pending",
+        "annotator": "",
+        "notes": ""
+      }
+    }
+  ]
+}

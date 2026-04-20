@@ -1,0 +1,33 @@
+{
+  "filename": "23.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "rot-blond",
+    "FRISUR": "schulterlang mit Pony",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "Brille mit bräunlichem Gestell",
+    "SCHMUCK": "kleine Ohrringe",
+    "OUTERWEAR": "blaue Jeansjacke",
+    "KLEIDUNG": "blaue Jeansjacke",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "Sicherheitsgurt",
+    "POSE_SATZ": "Die Frau macht ein Selfie im Sitzen und blickt direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Innenraum eines Fahrzeugs mit Sicht auf die Kopfstütze und eine Leitplanke außerhalb des Fensters.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "blaue Jeansjacke",
+      "Brille mit braunem Gestell",
+      "Sicherheitsgurt",
+      "rot-blonder Pony",
+      "Autositz",
+      "Leitplanke"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "kein Schal"
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "filename": "6.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "blond mit dunklem Ansatz",
+    "FRISUR": "kurz, seitlich gestylt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "Perlenkette, große runde Ohrringe",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "roter Rollkragenpullover",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt für ein Porträt direkt und mit einem leichten Lächeln in die Kamera.",
+    "AMBIENTE_SATZ": "Die Aufnahme entstand in einem Innenraum vor einem Fenster mit Blick auf eine verschneite Winterlandschaft und Häuser.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "roter Rollkragenpullover",
+      "Perlenkette",
+      "große runde Ohrringe",
+      "blonde Haare",
+      "Winterlandschaft",
+      "Fensterrahmen"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung"
+    ]
+  }
+}

@@ -1,0 +1,1787 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Janus</title>
+    <link rel="stylesheet" href="src/styles.css" />
+    <link rel="stylesheet" href="css/settings.css" />
+    <link rel="stylesheet" href="css/gallery.css" />
+    <link rel="stylesheet" href="css/image-studio.css" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <div id="sidebar">
+        <div class="sidebar-fixed-top">
+          <header id="sidebar-header">
+            <div class="sidebar-brand-row">
+              <h2>Janus</h2>
+              <span id="active-personality-display"></span>
+              <button
+                type="button"
+                id="settings-btn"
+                class="sidebar-icon-btn"
+                title="Einstellungen"
+                aria-label="Einstellungen"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                  ></path>
+                </svg>
+              </button>
+              <button
+                type="button"
+                id="btn-open-feedback"
+                class="sidebar-icon-btn"
+                title="Fehler melden / Feedback geben"
+                aria-label="Fehler melden / Feedback geben"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <path d="M12 8v4"></path>
+                  <path d="M12 16h.01"></path>
+                </svg>
+              </button>
+            </div>
+            <button
+              type="button"
+              id="toggle-sidebar-btn"
+              aria-label="Sidebar einklappen"
+              aria-expanded="true"
+              title="Sidebar einklappen"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+          </header>
+
+          <div id="cost-summary-widget">
+            <p id="current-month-cost" class="cost-line-primary"></p>
+            <p id="monthly-budget" class="cost-line-budget"></p>
+            <div class="budget-progress-track" aria-hidden="true">
+              <div id="budget-progress-fill" class="budget-progress-fill"></div>
+            </div>
+          </div>
+
+          <div class="sidebar-model-panel">
+            <select id="provider-select" aria-label="Provider">
+              <option value="openai">OpenAI</option>
+              <option value="gemini">Gemini</option>
+              <option value="ollama">Ollama (Lokal)</option>
+            </select>
+            <select id="model-select" aria-label="Modell"></select>
+          </div>
+
+          <nav id="sidebar-nav" class="sidebar-main-nav" aria-label="Hauptnavigation">
+            <button type="button" class="sidebar-nav-item" id="sidebar-nav-projects">
+              <span class="sidebar-nav-icon icon-projects" aria-hidden="true">
+                <svg
+                  class="janus-nav-icon-svg"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9l-1.42-2.1a2 2 0 0 0-1.67-.9H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
+                  />
+                </svg>
+              </span>
+              <span class="sidebar-nav-label">Projekte</span>
+            </button>
+            <button type="button" class="sidebar-nav-item" id="btn-react-knowledge">
+              <span class="sidebar-nav-icon icon-knowledge" aria-hidden="true">
+                <svg
+                  class="janus-nav-icon-svg"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                </svg>
+              </span>
+              <span class="sidebar-nav-label">Wissensdatenbank</span>
+            </button>
+            <button type="button" class="sidebar-nav-item" id="open-image-studio-btn">
+              <span class="sidebar-nav-icon icon-studio" aria-hidden="true">
+                <svg
+                  class="janus-nav-icon-svg"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"
+                  />
+                  <path d="M20 3v4M22 5h-4M4 17v2M5 18H3" />
+                </svg>
+              </span>
+              <span class="sidebar-nav-label">Image Studio</span>
+            </button>
+            <button
+              type="button"
+              class="sidebar-nav-item"
+              id="sidebar-nav-gallery"
+              aria-pressed="false"
+              aria-label="Bildgalerie ein- oder ausblenden"
+            >
+              <span class="sidebar-nav-icon icon-gallery" aria-hidden="true">
+                <svg
+                  class="janus-nav-icon-svg"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect width="7" height="7" x="3" y="3" rx="1" />
+                  <rect width="7" height="7" x="14" y="3" rx="1" />
+                  <rect width="7" height="7" x="14" y="14" rx="1" />
+                  <rect width="7" height="7" x="3" y="14" rx="1" />
+                </svg>
+              </span>
+              <span class="sidebar-nav-label">Bildgalerie</span>
+            </button>
+          </nav>
+        </div>
+
+        <div class="sidebar-chat-region">
+          <div
+            id="active-chat-bar"
+            class="active-chat-bar"
+            role="group"
+            aria-label="Aktive Chats in Fenster A und B"
+          >
+            <div class="active-chat-bar-label">Aktive Chats</div>
+            <div class="active-chat-bar-chips">
+              <button
+                type="button"
+                id="active-chat-chip-a"
+                class="active-chat-chip active-chat-chip--a"
+                data-window="A"
+                title="Fenster A fokussieren"
+              >
+                <span class="active-chat-chip-window" aria-hidden="true">A</span>
+                <span class="active-chat-chip-title" id="active-chat-title-a">—</span>
+              </button>
+              <button
+                type="button"
+                id="active-chat-chip-b"
+                class="active-chat-chip active-chat-chip--b"
+                data-window="B"
+                title="Fenster B fokussieren"
+              >
+                <span class="active-chat-chip-window" aria-hidden="true">B</span>
+                <span class="active-chat-chip-title" id="active-chat-title-b">—</span>
+              </button>
+            </div>
+          </div>
+          <button type="button" id="new-chat-btn" class="sidebar-new-chat-btn">
+            <span class="sidebar-new-chat-icon" aria-hidden="true">+</span>
+            <span class="sidebar-new-chat-label">Neuer Chat</span>
+          </button>
+          <div id="sidebar-chat-sessions" class="sidebar-chat-scroll" aria-label="Chat-Verlauf">
+            <div class="sidebar-chat-toolbar">
+              <label class="visually-hidden" for="chat-list-sort-select">Chats sortieren</label>
+              <select
+                id="chat-list-sort-select"
+                class="chat-list-sort-select"
+                aria-label="Sortierung der Chatliste"
+              >
+                <option value="recent">Chronologisch (Neu oben)</option>
+                <option value="category">Kategorien (AI)</option>
+                <option value="alphabetical">Alphabetisch (A–Z)</option>
+              </select>
+              <label class="visually-hidden" for="chat-list-search">Chats durchsuchen</label>
+              <input
+                type="search"
+                id="chat-list-search"
+                class="chat-list-search"
+                placeholder="Chats durchsuchen…"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <p class="sidebar-chat-toolbar-hint">
+                Für KI-Ordner: neuen Chat starten und z.&nbsp;B. zu Kochen oder Programmieren schreiben — nach
+                automatischer Titel- und Kategorisierung erscheint der Eintrag im passenden Ordner (nicht nur unter
+                General).
+              </p>
+            </div>
+            <div id="chat-list"></div>
+            <div id="cost-display-section"></div>
+          </div>
+        </div>
+
+        <footer id="sidebar-version" class="sidebar-footer"></footer>
+      </div>
+      <main id="chat-view" class="view">
+        <div id="main-content" class="dual-chat-workspace">
+          <div id="chat-window-host-A" class="chat-window-host" data-window="A">
+            <div
+              id="chat-window-A"
+              class="chat-window window-active"
+              data-window="A"
+              role="region"
+              aria-label="Chat-Fenster A"
+            >
+              <div id="chat-header-A" class="chat-header-dual">
+                <div class="chat-header-row chat-header-row--top">
+                  <button
+                    type="button"
+                    class="chat-window-reset-btn"
+                    id="chat-window-reset-btn-A"
+                    title="Position und Größe zurücksetzen"
+                    aria-label="Position und Größe zurücksetzen"
+                  >
+                    ⟲
+                  </button>
+                  <div class="chat-header-drag-strip">
+                    <span class="chat-header-title-label">Neuer Chat</span>
+                  </div>
+                  <div class="chat-header-actions">
+                    <button
+                      type="button"
+                      class="chat-window-minimize-btn"
+                      id="chat-window-minimize-btn-A"
+                      title="Fenster minimieren"
+                      aria-label="Fenster A minimieren"
+                    >
+                      _
+                    </button>
+                  </div>
+                </div>
+                <div
+                  class="chat-header-row chat-header-row--llm"
+                  role="group"
+                  aria-label="Provider und Modell für Fenster A"
+                >
+                  <label class="visually-hidden" for="chat-header-provider-A">Provider</label>
+                  <select
+                    id="chat-header-provider-A"
+                    class="chat-header-select chat-header-select--provider"
+                    data-window="A"
+                    aria-label="Provider Fenster A"
+                  ></select>
+                  <label class="visually-hidden" for="chat-header-model-A">Modell</label>
+                  <select
+                    id="chat-header-model-A"
+                    class="chat-header-select chat-header-select--model"
+                    data-window="A"
+                    aria-label="Modell Fenster A"
+                  ></select>
+                </div>
+              </div>
+              <div id="chat-messages-A"></div>
+              <div id="chat-input-container-A">
+                <form id="chat-form-A">
+                  <input type="file" id="image-upload-input-A" style="display: none" accept="image/*" />
+                  <div class="chat-input-row">
+                    <button type="button" id="image-upload-btn-A" aria-label="Datei anhängen">📎</button>
+                    <div class="chat-input-field-wrap">
+                      <textarea
+                        id="user-input-A"
+                        rows="1"
+                        placeholder="Nachricht an Janus senden..."
+                        autocomplete="off"
+                        spellcheck="true"
+                      ></textarea>
+                    </div>
+                    <div class="chat-input-actions">
+                      <button type="button" id="mic-btn-A" aria-label="Spracheingabe">🎤</button>
+                      <button
+                        type="button"
+                        id="tts-toggle-btn-A"
+                        title="TTS aktivieren/deaktivieren"
+                        aria-label="TTS"
+                      >
+                        🔊
+                      </button>
+                      <button id="send-button-A" type="submit">Senden</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div id="chat-window-host-B" class="chat-window-host" data-window="B">
+            <div
+              id="chat-window-B"
+              class="chat-window"
+              data-window="B"
+              role="region"
+              aria-label="Chat-Fenster B"
+            >
+              <div id="chat-header-B" class="chat-header-dual">
+                <div class="chat-header-row chat-header-row--top">
+                  <button
+                    type="button"
+                    class="chat-window-reset-btn"
+                    id="chat-window-reset-btn-B"
+                    title="Position und Größe zurücksetzen"
+                    aria-label="Position und Größe zurücksetzen"
+                  >
+                    ⟲
+                  </button>
+                  <div class="chat-header-drag-strip">
+                    <span class="chat-header-title-label">Neuer Chat</span>
+                  </div>
+                  <div class="chat-header-actions">
+                    <button
+                      type="button"
+                      class="chat-window-minimize-btn"
+                      id="chat-window-minimize-btn-B"
+                      title="Fenster minimieren"
+                      aria-label="Fenster B minimieren"
+                    >
+                      _
+                    </button>
+                    <button
+                      type="button"
+                      class="chat-window-close-btn"
+                      id="chat-window-close-btn-B"
+                      title="Zweites Fenster ausblenden"
+                      aria-label="Zweites Fenster ausblenden"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+                <div
+                  class="chat-header-row chat-header-row--llm"
+                  role="group"
+                  aria-label="Provider und Modell für Fenster B"
+                >
+                  <label class="visually-hidden" for="chat-header-provider-B">Provider</label>
+                  <select
+                    id="chat-header-provider-B"
+                    class="chat-header-select chat-header-select--provider"
+                    data-window="B"
+                    aria-label="Provider Fenster B"
+                  ></select>
+                  <label class="visually-hidden" for="chat-header-model-B">Modell</label>
+                  <select
+                    id="chat-header-model-B"
+                    class="chat-header-select chat-header-select--model"
+                    data-window="B"
+                    aria-label="Modell Fenster B"
+                  ></select>
+                </div>
+              </div>
+              <div id="chat-messages-B"></div>
+              <div id="chat-input-container-B">
+                <form id="chat-form-B">
+                  <input type="file" id="image-upload-input-B" style="display: none" accept="image/*" />
+                  <div class="chat-input-row">
+                    <button type="button" id="image-upload-btn-B" aria-label="Datei anhängen">📎</button>
+                    <div class="chat-input-field-wrap">
+                      <textarea
+                        id="user-input-B"
+                        rows="1"
+                        placeholder="Nachricht an Janus senden..."
+                        autocomplete="off"
+                        spellcheck="true"
+                      ></textarea>
+                    </div>
+                    <div class="chat-input-actions">
+                      <button type="button" id="mic-btn-B" aria-label="Spracheingabe">🎤</button>
+                      <button
+                        type="button"
+                        id="tts-toggle-btn-B"
+                        title="TTS aktivieren/deaktivieren"
+                        aria-label="TTS"
+                      >
+                        🔊
+                      </button>
+                      <button id="send-button-B" type="submit">Senden</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <div id="dock-bar" aria-label="Taskleiste">
+        <button type="button" id="dock-chat-a" class="dock-item dock-item--a" aria-label="Chat A">
+          Chat A
+        </button>
+        <button type="button" id="dock-chat-b" class="dock-item dock-item--b" aria-label="Chat B">
+          Chat B
+        </button>
+        <button
+          type="button"
+          id="dock-knowledge-center"
+          class="dock-item dock-item--knowledge"
+          aria-label="Wissensdatenbank"
+          title="Wissensdatenbank"
+        >
+          <span class="dock-knowledge-icon icon-knowledge" aria-hidden="true">
+            <svg
+              class="janus-nav-icon-svg"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+            </svg>
+          </span>
+        </button>
+        <button
+          type="button"
+          id="dock-transcript"
+          class="dock-item dock-item--transcript"
+          aria-label="KI-Analyse"
+          title="KI-Analyse"
+        >
+          <span class="dock-transcript-icon icon-transcript" aria-hidden="true">
+            <svg
+              class="janus-nav-icon-svg"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+            </svg>
+          </span>
+        </button>
+        <button
+          type="button"
+          id="dock-image-studio"
+          class="dock-item dock-item--image-studio"
+          aria-label="Image Studio"
+          title="Image Studio"
+        >
+          <span class="dock-image-studio-icon icon-studio" aria-hidden="true">
+            <svg
+              class="janus-nav-icon-svg"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"
+              />
+              <path d="M20 3v4M22 5h-4M4 17v2M5 18H3" />
+            </svg>
+          </span>
+        </button>
+        <button
+          type="button"
+          id="dock-gallery"
+          class="dock-item dock-item--gallery"
+          aria-label="Bildgalerie"
+          title="Bildgalerie"
+        >
+          <span class="dock-gallery-icon icon-gallery" aria-hidden="true">
+            <svg
+              class="janus-nav-icon-svg"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect width="7" height="7" x="3" y="3" rx="1" />
+              <rect width="7" height="7" x="14" y="3" rx="1" />
+              <rect width="7" height="7" x="14" y="14" rx="1" />
+              <rect width="7" height="7" x="3" y="14" rx="1" />
+            </svg>
+          </span>
+        </button>
+        <button
+          type="button"
+          id="dock-video-player"
+          class="dock-item dock-item--video"
+          aria-label="Video Player"
+          title="Video Player"
+        >
+          <span class="dock-video-icon" aria-hidden="true">▶</span>
+        </button>
+      </div>
+      
+      <!-- Project Dashboard View -->
+      <main id="project-dashboard-view" class="view" style="display: none">
+        <div class="project-dashboard-container">
+          <div id="project-header">
+            <h2 id="project-dashboard-title">Projekt-Dashboard</h2>
+            <button id="back-to-chat-from-project" class="back-button">← Zurück zu Chats</button>
+          </div>
+          <div class="project-dashboard-split">
+            <div id="project-chat-host" class="project-chat-host"></div>
+            <div class="project-right-column">
+              <div id="project-layout" class="project-layout">
+                <div id="project-chat-list-container" class="project-panel floating-panel">
+                  <div class="panel-header">
+                    <h3>Chats in diesem Projekt</h3>
+                    <button id="new-project-chat-btn" class="primary-button">+ Neuer Chat</button>
+                  </div>
+                  <div id="project-chat-list" class="project-chat-list">
+                    <!-- Chats will be loaded here dynamically -->
+                  </div>
+                </div>
+                <div id="project-files-container" class="project-panel floating-panel">
+                  <div class="panel-header">
+                    <h3>Wissensbasis</h3>
+                  </div>
+                  <div id="project-files-dropzone" class="dropzone">
+                    <p>Dateien hierher ziehen (PDF, TXT, DOCX, MD)</p>
+                    <p>oder</p>
+                    <button id="browse-files-btn" class="secondary-button">Dateien auswählen</button>
+                    <input type="file" id="file-input" multiple style="display: none" />
+                  </div>
+                  <div id="project-files-list" class="files-list">
+                    <!-- Files will be listed here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      
+      <main id="settings-view" class="view" style="display: none">
+        <div class="settings-header">
+          <h2>Einstellungen</h2>
+        </div>
+        <div class="settings-container">
+          <!-- Linke Spalte: Navigation -->
+          <div id="settings-nav">
+            <a href="#" class="settings-nav-link active-setting" data-target="api-key-section"
+              >API Keys</a
+            >
+            <a href="#" class="settings-nav-link" data-target="display-options-section"
+              >Anzeige-Optionen</a
+            >
+            <a href="#" class="settings-nav-link" data-target="model-management-section"
+              >Modellverwaltung</a
+            >
+            <a href="#" class="settings-nav-link" data-target="local-llm-section"
+              >Lokales LLM (Ollama)</a
+            >
+            <a href="#" class="settings-nav-link" data-target="settings-section-image-gen"
+              >Lokale Bild-Engine</a
+            >
+            <a href="#" class="settings-nav-link" data-target="workspaces-section"
+              >Arbeitsverzeichnisse</a
+            >
+            <a href="#" class="settings-nav-link" data-target="personality-section"
+              >Persönlichkeit</a
+            >
+            <a href="#" class="settings-nav-link" data-target="assistenz-section"
+              >Assistenz &amp; Proaktivität</a
+            >
+            <a href="#" class="settings-nav-link" data-target="rag-management-section"
+              >Wissensbasis</a
+            >
+            <a href="#" class="settings-nav-link" data-target="tts-section">TTS Stimmen</a>
+            <a href="#" class="settings-nav-link" data-target="memory-section"
+              >Persönliche Informationen</a
+            >
+            <a href="#" class="settings-nav-link" data-target="address-book-section">Adressbuch</a>
+            <button id="back-to-chat-btn">Zurück zum Chat</button>
+          </div>
+
+          <!-- Rechte Spalte: Inhalt -->
+          <div id="settings-content-area">
+            <!-- Sektion 1: API Key Verwaltung -->
+            <div id="api-key-section" class="settings-section">
+              <h3>API Key Verwaltung</h3>
+              <form id="api-key-form">
+                <select id="provider-input">
+                  <option value="openai">OpenAI</option>
+                  <option value="gemini">Gemini</option>
+                </select>
+                <input type="password" id="api-key-input" placeholder="API Key" />
+                <button type="submit">Speichern</button>
+              </form>
+              <h4>Gespeicherte API Keys</h4>
+              <ul id="api-key-list"></ul>
+            </div>
+
+            <div id="display-options-section" class="settings-section" style="display: none">
+              <h3>Anzeige-Optionen</h3>
+              <p class="settings-lead">
+                Steuert, welche Chats in der Seitenleiste erscheinen.
+              </p>
+              <label class="settings-checkbox-row">
+                <input type="checkbox" id="show-archived-chats" />
+                <span>Archivierte Chats anzeigen</span>
+              </label>
+            </div>
+
+            <!-- Sektion 2: Modellverwaltung -->
+            <div id="model-management-section" class="settings-section" style="display: none">
+              <h3>Modellverwaltung</h3>
+              <div id="model-management-buttons"></div>
+              <form id="model-selection-form">
+                <ul id="model-list"></ul>
+                <button type="submit">Auswahl speichern</button>
+                <button type="button" id="back-from-models-btn">Zurück</button>
+              </form>
+            </div>
+
+            <div id="local-llm-section" class="settings-section" style="display: none">
+              <div id="local-llm-wizard-root"></div>
+            </div>
+
+            <div id="settings-section-image-gen" class="settings-section" style="display: none">
+              <h3>Lokale Bild-Engine</h3>
+              <p id="image-gen-status">Status wird geprüft...</p>
+              <br />
+              <button id="btn-install-image-gen" class="primary-button" style="margin-top: 10px">
+                Engine installieren (adaptiv)
+              </button>
+              <button id="btn-start-image-gen" class="primary-button" style="display: none; margin-top: 10px">
+                Engine starten
+              </button>
+              <button
+                id="btn-uninstall-image-gen"
+                class="primary-button button-danger"
+                style="display: none; margin-top: 10px"
+              >
+                Engine deinstallieren
+              </button>
+              <p id="image-gen-action-feedback" style="display:none; color:#88c0d0; font-style:italic; margin-top:14px"></p>
+              <div id="image-gen-container" class="model-catalog" style="margin-top: 10px"></div>
+            </div>
+
+            <!-- Sektion 3: Persönlichkeit -->
+            <div id="personality-section" class="settings-section" style="display: none">
+              <h3>Persönlichkeit des Assistenten</h3>
+              <div id="personality-settings">
+                <p>Lade Persönlichkeits-Einstellungen...</p>
+              </div>
+            </div>
+
+            <!-- Assistenz & Proaktivität -->
+            <div id="assistenz-section" class="settings-section" style="display: none">
+              <h3>Assistenz &amp; Proaktivität</h3>
+              <p class="settings-lead">
+                Steuere, wie viel Janus am Ende einer Antwort proaktiv nächste Schritte vorschlägt.
+              </p>
+              <div class="suggestion-mode-panel">
+                <label class="suggestion-mode-label" for="suggestion-mode-slider"
+                  >Proaktive Vorschläge</label
+                >
+                <div class="suggestion-mode-slider-row">
+                  <span class="suggestion-mode-tick">Aus</span>
+                  <input
+                    type="range"
+                    id="suggestion-mode-slider"
+                    class="suggestion-mode-range"
+                    min="0"
+                    max="2"
+                    step="1"
+                    value="1"
+                    aria-valuemin="0"
+                    aria-valuemax="2"
+                    aria-valuenow="1"
+                  />
+                  <span class="suggestion-mode-tick">Proaktiv</span>
+                </div>
+                <div class="suggestion-mode-scale">
+                  <span>0 · Aus</span>
+                  <span>1 · Smart</span>
+                  <span>2 · Proaktiv</span>
+                </div>
+                <p id="suggestion-mode-description" class="suggestion-mode-description"></p>
+                <p id="suggestion-mode-status" class="settings-inline-status" style="display: none"></p>
+              </div>
+            </div>
+
+            <!-- Sektion 4: Arbeitsverzeichnisse -->
+            <div id="workspaces-section" class="settings-section" style="display: none">
+              <h3>Arbeitsverzeichnisse</h3>
+              <ul id="workspaces-list"></ul>
+              <button id="add-workspace-btn">Verzeichnis hinzufügen</button>
+            </div>
+
+            <div id="rag-management-section" class="settings-section" style="display: none">
+              <h3>Wissensbasis-Verwaltung (RAG)</h3>
+              <p>Füge Inhalte zu spezifischen Wissens-Bibliotheken hinzu.</p>
+
+              <div class="rag-control-group" style="margin-bottom: 20px">
+                <label style="display: block; margin-bottom: 5px">Wissens-Bibliotheken:</label>
+                <ul id="rag-collection-list"></ul>
+              </div>
+              <div class="rag-control-group" style="margin-bottom: 20px">
+                <label for="rag-collection-select" style="display: block; margin-bottom: 5px"
+                  >Wissens-Bibliothek für Indexierung auswählen:</label
+                >
+                <select id="rag-collection-select"></select>
+                <input
+                  type="text"
+                  id="rag-new-collection-name-input"
+                  placeholder="Name für neue Bibliothek..."
+                  style="display: none; margin-top: 8px"
+                />
+              </div>
+
+              <div class="rag-control-group">
+                <h4>Dateien aus Ordner indexieren (PDF, EPUB)</h4>
+                <input
+                  type="text"
+                  id="rag-folder-path-input"
+                  placeholder="Vollständiger Pfad zum Ordner..."
+                />
+                <button id="rag-index-folder-btn">Indexierung starten</button>
+              </div>
+
+              <p id="rag-status-message" style="margin-top: 15px; color: #aaa"></p>
+              <div id="rag-progress-container" style="display: none; margin-top: 15px">
+                <p id="rag-progress-text"></p>
+                <progress id="rag-progress-bar" value="0" max="100" style="width: 100%"></progress>
+              </div>
+            </div>
+
+            <!-- Sektion: TTS Stimmen -->
+            <div id="tts-section" class="settings-section" style="display: none">
+              <h3>Text-to-Speech Einstellungen</h3>
+              <p>Konfiguriere die Stimme und Geschwindigkeit für das Vorlesen von Chatausgaben.</p>
+
+              <div class="tts-control-group" style="margin-bottom: 20px">
+                <label for="tts-voice-select" style="display: block; margin-bottom: 5px"
+                  >Stimme:</label
+                >
+                <select id="tts-voice-select" style="width: 100%; padding: 8px">
+                  <option value="">Lade Stimmen...</option>
+                </select>
+              </div>
+
+              <div class="tts-control-group" style="margin-bottom: 20px">
+                <label for="tts-preset-select" style="display: block; margin-bottom: 5px"
+                  >Preset:</label
+                >
+                <select id="tts-preset-select" style="width: 100%; padding: 8px">
+                  <option value="">Lade Presets...</option>
+                </select>
+              </div>
+
+              <div class="tts-control-group" style="margin-bottom: 20px">
+                <label for="tts-speed-input" style="display: block; margin-bottom: 5px">
+                  Geschwindigkeit: <span id="tts-speed-value">1.0</span>x
+                </label>
+                <input
+                  type="range"
+                  id="tts-speed-input"
+                  min="0.5"
+                  max="2.0"
+                  step="0.1"
+                  value="1.0"
+                  style="width: 100%"
+                />
+              </div>
+
+              <div class="tts-control-group" style="margin-bottom: 20px">
+                <button id="tts-test-btn" style="padding: 10px 20px">Testausgabe</button>
+              </div>
+
+              <div class="tts-control-group" style="margin-bottom: 20px">
+                <input type="checkbox" id="use-piper-tts" name="use-piper-tts" />
+                <label for="use-piper-tts">Immer Piper TTS verwenden (lokal/kostenlos)</label>
+              </div>
+
+              <p id="tts-status-message" style="margin-top: 15px; color: #aaa"></p>
+            </div>
+
+            <!-- Sektion: Persönliche Informationen (Gedächtnis) -->
+            <div id="memory-section" class="settings-section" style="display: none">
+              <div class="section-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>Persönliche Informationen (Diamond Memory)</h3>
+                <button id="add-memory-btn" class="primary-button">+ Neuer Fakt</button>
+              </div>
+              <p>
+                Verwalte hier dein "Core Identity" und allgemeine Fakten. Janus nutzt diese Prioritäten für das Langzeitgedächtnis.
+              </p>
+              
+              <!-- Filter / Legende -->
+              <div class="memory-legend" style="margin-bottom: 15px; font-size: 0.9em; color: #aaa; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px;">
+                <span style="margin-right: 15px;">💎 <strong>Core Identity:</strong> Immer aktiv</span>
+                <span style="margin-right: 15px;">🔹 <strong>Core Detail:</strong> Wichtige Details</span>
+                <span>📄 <strong>General:</strong> Allgemeines Wissen</span>
+              </div>
+
+              <div id="memory-list-container">
+                <p>Lade Gedächtniseinträge...</p>
+              </div>
+            </div>
+
+            <!-- Sektion: Adressbuch -->
+            <div id="address-book-section" class="settings-section" style="display: none">
+              <h3>Adressbuch</h3>
+              <p>Hier kannst du deine Kontakte verwalten.</p>
+              <button id="add-contact-btn">Neuen Kontakt hinzufügen</button>
+              <div id="contact-list-container">
+                <p>Lade Kontakte...</p>
+              </div>
+            </div>
+            
+            <!-- Version Information -->
+            <div class="version-info">
+              <span id="app-version-display" class="app-version"></span>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Modal für Kontakt hinzufügen/bearbeiten -->
+      <div id="contact-modal" class="modal" style="display: none">
+        <div class="modal-content">
+          <span class="close-button">&times;</span>
+          <h3 id="contact-modal-title">Neuer Kontakt</h3>
+          <form id="contact-form">
+            <input type="hidden" id="contact-id" />
+            <label for="contact-name">Name:</label>
+            <input type="text" id="contact-name" required />
+            <label for="contact-category">Kategorie:</label>
+            <input type="text" id="contact-category" />
+            <label for="contact-email">E-Mail:</label>
+            <input type="email" id="contact-email" />
+            <label for="contact-phone">Telefon:</label>
+            <input type="tel" id="contact-phone" />
+            <label for="contact-address">Adresse:</label>
+            <textarea id="contact-address"></textarea>
+            <label for="contact-website">Website:</label>
+            <input type="url" id="contact-website" />
+            <label for="contact-notes">Notizen:</label>
+            <textarea id="contact-notes"></textarea>
+            <div class="modal-buttons">
+              <button type="submit" id="contact-save-btn">Speichern</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Projekt-Dashboard (Zweispaltig: Liste + Inhalt) -->
+      <div id="project-modal" class="modal" style="display: none" role="dialog" aria-modal="true" aria-labelledby="project-modal-title">
+        <div class="modal-content project-modal-content project-modal-dashboard">
+          <div class="project-modal-chrome">
+            <h3 id="project-modal-title">Projekte</h3>
+            <span class="close-button" id="close-project-modal" title="Schließen">&times;</span>
+          </div>
+          <div class="project-modal-split">
+            <aside class="project-modal-sidebar" aria-label="Projektliste">
+              <div class="project-modal-list-scroll">
+                <div id="project-list" class="project-modal-list"></div>
+              </div>
+              <button type="button" id="project-modal-new-btn" class="project-modal-new-project-btn">
+                + Neues Projekt
+              </button>
+            </aside>
+            <main class="project-modal-main" aria-label="Projektdetails">
+              <div id="project-modal-view-welcome" class="project-modal-pane project-modal-pane-welcome">
+                <p class="project-modal-welcome-lead">Willkommen</p>
+                <p class="project-modal-welcome-text">
+                  Wählen Sie links ein Projekt aus, oder legen Sie mit „+ Neues Projekt“ ein neues an.
+                </p>
+              </div>
+              <div id="project-modal-view-create" class="project-modal-pane project-modal-pane-create" hidden>
+                <h4 class="project-modal-main-title">Neues Projekt</h4>
+                <form id="project-form">
+                  <label for="project-name">Projektname:</label>
+                  <input type="text" id="project-name" required />
+                  <label for="project-path">Projektpfad:</label>
+                  <input type="text" id="project-path" readonly required />
+                  <button type="button" id="select-project-path-btn">Verzeichnis auswählen</button>
+                  <div class="modal-buttons project-modal-form-actions">
+                    <button type="button" id="project-form-cancel" class="project-modal-btn-secondary">Abbrechen</button>
+                    <button type="submit" id="project-save-btn">Speichern</button>
+                  </div>
+                </form>
+              </div>
+              <div id="project-modal-view-detail" class="project-modal-pane project-modal-pane-detail" hidden>
+                <h4 id="project-detail-name" class="project-modal-main-title"></h4>
+                <p id="project-detail-description" class="project-modal-detail-desc"></p>
+                <p id="project-detail-meta" class="project-modal-detail-meta"></p>
+                <div class="project-modal-detail-actions">
+                  <button type="button" id="project-modal-open-workspace" class="primary-button">
+                    Projekt-Dashboard öffnen
+                  </button>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+      <!-- NEUER BEREICH START -->
+      <div id="gallery-view" class="view" style="display: none">
+        <div id="gallery-window" class="resizable draggable">
+          <div id="gallery-header" class="chat-header-dual dock-panel-header">
+            <div class="chat-header-row chat-header-row--top">
+              <button
+                type="button"
+                class="chat-window-reset-btn"
+                id="gallery-reset-btn"
+                title="Position und Größe zurücksetzen"
+                aria-label="Bildgalerie zurücksetzen"
+              >
+                ↺
+              </button>
+              <div class="chat-header-drag-strip">
+                <span>Bildergalerie</span>
+              </div>
+              <div class="chat-header-actions">
+                <button
+                  type="button"
+                  id="gallery-minimize-btn"
+                  class="chat-window-minimize-btn"
+                  title="Bildgalerie minimieren (Taskleiste)"
+                  aria-label="Bildgalerie minimieren"
+                >
+                  _
+                </button>
+                <button
+                  type="button"
+                  id="close-gallery-btn"
+                  class="chat-window-close-btn"
+                  title="Bildgalerie schließen"
+                  aria-label="Bildgalerie schließen"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="gallery-content">
+            <!-- Bilder werden hier dynamisch eingefügt -->
+          </div>
+        </div>
+      </div>
+      <!-- NEUER BEREICH ENDE -->
+
+      <div id="knowledge-center-modal" class="dock-panel dock-panel--knowledge">
+        <div class="dock-panel-content knowledge-center-content">
+          <div class="chat-header-dual dock-panel-header">
+            <div class="chat-header-row chat-header-row--top">
+              <button
+                type="button"
+                class="chat-window-reset-btn"
+                id="knowledge-center-reset-btn"
+                title="Position und Größe zurücksetzen"
+                aria-label="Wissensdatenbank zurücksetzen"
+              >
+                ⟲
+              </button>
+              <div class="chat-header-drag-strip">
+                <div class="knowledge-header-titles">
+                  <span class="knowledge-header-brand">Janus Wissensdatenbank</span>
+                  <span id="knowledge-header-doc-title" class="knowledge-header-doc-title">Kein Dokument ausgewählt</span>
+                </div>
+              </div>
+              <div class="chat-header-actions">
+                <button
+                  type="button"
+                  class="chat-window-minimize-btn"
+                  id="knowledge-center-minimize-btn"
+                  title="Wissensdatenbank minimieren"
+                  aria-label="Wissensdatenbank minimieren"
+                >
+                  _
+                </button>
+                <button
+                  type="button"
+                  class="chat-window-close-btn"
+                  id="close-knowledge-center-btn"
+                  title="Wissensdatenbank schließen"
+                  aria-label="Wissensdatenbank schließen"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="knowledge-center-layout">
+            <aside class="knowledge-documents-panel">
+              <h4>Dokumente</h4>
+              <ul id="knowledge-doc-list"></ul>
+            </aside>
+            <section class="knowledge-preview-panel">
+              <div id="knowledge-preview-empty" class="knowledge-preview-empty">
+                Kein Dokument ausgewählt.
+              </div>
+              <iframe
+                id="knowledge-pdf-preview"
+                title="PDF Vorschau"
+                style="display: none;"
+              ></iframe>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/window-state.js"></script>
+    <script type="module" src="js/modal-api.js"></script>
+    <script type="module" src="js/video-player.js"></script>
+    <script type="module" src="js/app.js"></script>
+    <script type="module" src="js/settings.js"></script>
+    <script type="module" src="js/chat-manager.js"></script>
+    <script type="module" src="js/chat.js"></script>
+    <script type="module" src="js/dock.js"></script>
+    <script type="module" src="js/cost-visualizer.js"></script>
+    <script type="module" src="js/context-menu.js"></script>
+    <script type="module" src="js/gallery.js"></script>
+    <script type="module" src="js/knowledge-center.js"></script>
+    <script type="module" src="js/projects.js"></script>
+    <script type="module" src="js/project-dashboard.js"></script>
+    <script type="module" src="js/image-studio.js"></script>
+    <script type="module" src="/src/local-llm-wizard-bridge.tsx"></script>
+    <!-- NEU -->
+    <div id="cost-deep-dive-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Kosten-Details (Deep Dive)</h2>
+        <div id="deep-dive-content"></div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <div id="style-profile-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h3 id="style-profile-modal-title"></h3>
+        <textarea id="style-profile-textarea"></textarea>
+        <div class="modal-buttons">
+          <button id="style-profile-save-btn">Speichern</button>
+          <button id="style-profile-cancel-btn">Abbrechen</button>
+        </div>
+        <div id="style-profile-modal-error" class="error-message"></div>
+      </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="image-modal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 1024px;">
+        <div class="modal-header"> <!-- NEU -->
+          <h3>Bildvorschau</h3> <!-- NEU -->
+          <span class="close-button" id="close-image-modal">&times;</span>
+        </div>
+        <img id="image-modal-img" src="" alt="Full size image" style="width: 100%; height: auto;">
+      </div>
+    </div>
+
+    <!-- Video player host (MCL: dock module video-player → Z-Index via window-state) -->
+    <div
+      id="video-player-modal"
+      class="dock-panel dock-panel--video video-player-mcl-host"
+      style="display: none"
+      role="dialog"
+      aria-label="Video"
+    >
+      <div class="dock-panel-content video-player-mcl-content">
+        <div class="chat-header-dual dock-panel-header video-player-mcl-header">
+          <div class="chat-header-row chat-header-row--top">
+            <button
+              type="button"
+              class="chat-window-reset-btn"
+              id="video-player-reset-btn"
+              title="Position und Größe zurücksetzen"
+              aria-label="Video-Player zurücksetzen"
+            >
+              ↺
+            </button>
+            <div class="chat-header-drag-strip">
+              <span id="video-player-modal-title">Video</span>
+            </div>
+            <div class="chat-header-actions">
+              <button
+                type="button"
+                class="chat-window-minimize-btn"
+                id="btn-video-analyze"
+                title="KI-Analyse (Zusammenfassung)"
+                aria-label="KI-Analyse (Zusammenfassung)"
+              >
+                🧠
+              </button>
+              <button
+                type="button"
+                class="chat-window-minimize-btn"
+                id="video-player-minimize-btn"
+                title="Video minimieren"
+                aria-label="Video minimieren"
+              >
+                _
+              </button>
+              <button
+                type="button"
+                class="chat-window-close-btn"
+                id="close-video-player-modal"
+                title="Video schließen"
+                aria-label="Video schließen"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="video-player-embed-wrap">
+          <iframe
+            id="video-player-iframe"
+            title="Video-Einbettung"
+            sandbox="allow-scripts allow-same-origin allow-popups"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            referrerpolicy="strict-origin-when-cross-origin"
+          ></iframe>
+        </div>
+        <div id="video-analysis-status" class="video-status-overlay" style="display: none; text-align: center; padding: 8px; background: rgba(0, 0, 0, 0.8); color: #fff; border-radius: 4px; margin-top: 8px; font-size: 14px;">
+          ⏳ KI-Analyse läuft im Hintergrund...
+        </div>
+        <p class="video-player-fallback-line" id="video-player-fallback-line" hidden>
+          <span class="video-player-fallback-muted">Lädt nicht?</span>
+          <a id="video-player-external-link" class="video-player-fallback-a" href="#" target="_blank" rel="noopener noreferrer">Auf YouTube ansehen</a>
+        </p>
+        <div class="video-player-resize-handle video-player-resize-handle--right" aria-hidden="true"></div>
+        <div class="video-player-resize-handle video-player-resize-handle--bottom" aria-hidden="true"></div>
+        <div class="video-player-resize-handle video-player-resize-handle--corner" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <!-- Video Transcript Modal (dock-panel style) - Independent from video-player-modal -->
+    <div id="transcript-modal" class="dock-panel dock-panel--transcript transcript-mcl-host" style="display: none" role="dialog" aria-label="KI-Analyse">
+      <div class="dock-panel-content transcript-mcl-content">
+        <div class="chat-header-dual dock-panel-header transcript-mcl-header">
+          <div class="chat-header-row chat-header-row--top">
+            <button type="button" class="chat-window-reset-btn" id="transcript-reset-btn" title="Position und Größe zurücksetzen" aria-label="Transkript zurücksetzen">↺</button>
+            <div class="chat-header-drag-strip">
+              <span id="transcript-modal-title">KI-Analyse</span>
+            </div>
+            <div class="chat-header-actions">
+              <button type="button" class="chat-window-minimize-btn" id="transcript-minimize-btn" title="Transkript minimieren" aria-label="Transkript minimieren">_</button>
+              <button type="button" class="chat-window-close-btn" id="transcript-close-btn" title="Transkript schließen" aria-label="Transkript schließen">×</button>
+            </div>
+          </div>
+        </div>
+        <div class="transcript-scroll-area" id="transcript-scroll-area">
+          <div id="transcript-loading">Analyse läuft...</div>
+          <div id="transcript-result">
+            <div id="transcript-summary"></div>
+            <ul id="transcript-key-points"></ul>
+          </div>
+        </div>
+        <div class="transcript-resize-handle transcript-resize-handle--right" aria-hidden="true"></div>
+        <div class="transcript-resize-handle transcript-resize-handle--bottom" aria-hidden="true"></div>
+        <div class="transcript-resize-handle transcript-resize-handle--corner" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <!-- Image Studio Modal -->
+    <div id="image-studio-modal" class="modal" style="display: none;">
+      <!-- Context Menu für Galeriebilder -->
+      <div id="is-gallery-context-menu" class="context-menu" style="display: none;">
+        <div class="context-menu-item" data-action="save-as" id="ctx-export-item">Speichern unter...</div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item delete" data-action="delete" id="ctx-delete-item">Löschen...</div>
+      </div>
+      
+      <!-- Download Ladeanzeige -->
+      <!-- Context Menu Overlay -->
+      <div id="is-context-menu-overlay" class="context-menu-overlay" style="display: none;"></div>
+      
+      <!-- Download Ladeanzeige -->
+      <div id="is-download-indicator" class="download-indicator" style="display: none;">
+        <div class="spinner"></div>
+        <span>Konvertiere & lade Bild herunter...</span>
+      </div>
+      
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Image Studio</h3>
+          <div class="header-buttons image-studio-header-actions">
+            <button
+              type="button"
+              id="open-tutorial-btn"
+              class="icon-button image-studio-header-help"
+              title="Anleitung & Hilfe"
+            >
+              <span style="font-size: 1.2rem;">ℹ️</span> Hilfe
+            </button>
+            <div class="image-studio-header-window-controls">
+              <button
+                type="button"
+                class="image-studio-header-minimize-btn"
+                id="image-studio-minimize-btn"
+                title="Image Studio minimieren (Taskleiste)"
+                aria-label="Image Studio minimieren"
+              >
+                _
+              </button>
+              <button
+                type="button"
+                class="close-button image-studio-header-close-btn"
+                id="close-image-studio-modal"
+                title="Image Studio schließen"
+                aria-label="Image Studio schließen"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="image-studio-container">
+          <!-- Linke Spalte: Kontrollpanel -->
+          <div class="image-studio-controls">
+            <h4>Einstellungen</h4>
+            <div class="control-group">
+              <label for="is-prompt">Prompt</label>
+              <textarea id="is-prompt" rows="5" placeholder="Beschreibe dein Bild..."></textarea>
+            </div>
+            <div class="control-group" style="margin-top: -10px; margin-bottom: 15px;">
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <input type="checkbox" id="is-refine-mode" style="width: auto;">
+                  <label for="is-refine-mode" style="margin-bottom: 0; cursor: pointer; font-size: 0.9em; color: var(--accent-color);">
+                    🎨 Aktuelles Bild als Basis verwenden (Refine)
+                    <span class="is-info-icon" title="KI-Gedächtnis: Behält den Inhalt und Stil des aktuellen Bildes bei. Änderungen am Prompt passen das Bild nur dezent an.">ℹ️</span>
+                  </label>
+                </div>
+                
+                <!-- NEU: Sub-Checkbox für Refine-Presets -->
+                <div id="apply-preset-to-refine-container" style="display: none; padding-left: 25px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px;">
+                    <input type="checkbox" id="is-apply-preset-to-refine" style="width: auto;">
+                    <label for="is-apply-preset-to-refine" style="margin-bottom: 0; font-size: 0.85em; color: #ccc;">
+                      Preset auf Refinement anwenden
+                    </label>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <input type="checkbox" id="is-edit-mode" style="width: auto;">
+                  <label for="is-edit-mode" style="margin-bottom: 0; cursor: pointer; font-size: 0.9em; color: var(--accent-color);">
+                    ✏️ Eigenes Bild bearbeiten (Edit Mode)
+                    <span class="is-info-icon" title="Bild-zu-Bild: Nutzt ein hochgeladenes Foto als Vorlage für Pose und Komposition, kann aber den Stil komplett verändern.">ℹ️</span>
+                  </label>
+                </div>
+                <!-- NEUER BLOCK START -->
+                <div id="apply-preset-to-edit-container" style="display: none; padding-left: 25px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="is-apply-preset-to-edit" style="width: auto;">
+                    <label for="is-apply-preset-to-edit" style="margin-bottom: 0; font-size: 0.85em; color: #ccc;">
+                      Preset auf dieses Bild anwenden
+                    </label>
+                  </div>
+                </div>
+                <!-- NEUER BLOCK ENDE -->
+                <!-- Combine Mode -->
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <input type="checkbox" id="is-combine-mode" style="width: auto;">
+                  <label for="is-combine-mode" style="margin-bottom: 0; cursor: pointer; font-size: 0.9em; color: var(--accent-color);">
+                    🧩 Bilder kombinieren (Multi-Select)
+                    <span class="is-info-icon" title="Verschmelzung: Mische die Motive aus mehreren Bildern (z.B. eine Person in einen neuen Hintergrund) zu einer neuen Szene.">ℹ️</span>
+                  </label>
+                </div>
+                
+                <!-- Inpainting Mode -->
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <input type="checkbox" id="is-mask-mode" style="width: auto;">
+                  <label for="is-mask-mode" style="margin-bottom: 0; cursor: pointer; font-size: 0.9em; color: var(--accent-color);">
+                    🖌️ Inpainting (Maske zeichnen)
+                    <span class="is-info-icon" title="Reparatur-Modus: Zeichne mit dem Pinsel über einen Bereich, den du ändern willst. Der Rest des Bildes bleibt unberührt.">ℹ️</span>
+                  </label>
+                </div>
+
+                <!-- Stil-Presets -->
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <input type="checkbox" id="is-presets-mode" style="width: auto;">
+                  <label for="is-presets-mode" style="margin-bottom: 0; cursor: pointer; font-size: 0.9em; color: var(--accent-color);">
+                    🌟 Stil-Presets verwenden
+                    <span class="is-info-icon" title="Diamond Standard: Vordefinierte Profi-Einstellungen für Kamera, Linse und Film-Emulationen.">ℹ️</span>
+                  </label>
+                </div>
+                
+                <!-- NEU: Drop-Slots Container (Initial ausgeblendet) -->
+                <div id="combine-slots-wrapper" style="display: none; margin-top: 10px; margin-bottom: 10px;">
+                    <p style="font-size: 0.8em; color: #888; margin-bottom: 5px;">Ziehe Bilder aus der Galerie hierher:</p>
+                    <div class="combine-slots-container" style="display: flex; gap: 5px; justify-content: space-between;">
+                        <!-- 5 Slots -->
+                        <div class="combine-slot" data-index="0">1</div>
+                        <div class="combine-slot" data-index="1">2</div>
+                        <div class="combine-slot" data-index="2">3</div>
+                        <div class="combine-slot" data-index="3">4</div>
+                        <div class="combine-slot" data-index="4">5</div>
+                    </div>
+                </div>
+              </div>
+            </div>
+            <div class="control-group">
+              <label for="is-provider-select">Provider</label>
+              <select id="is-provider-select"></select>
+            </div>
+            <div class="control-group">
+              <label for="is-model-select">Modell</label>
+              <select id="is-model-select"></select>
+            </div>
+            <div id="is-dynamic-params" class="control-group">
+              <!-- Dynamische Parameter werden hier eingefügt -->
+            </div>
+            <div class="control-group" id="is-resolution-control-group" style="display: none;">
+                <label for="is-resolution-select">Auflösung</label>
+                <select id="is-resolution-select"></select>
+            </div>
+            
+            <!-- Quality Gate Control -->
+            <div class="control-group">
+              <label for="is-quality-gate-select" style="display: flex; align-items: center; gap: 5px;">
+                ✨ Quality Gate (Auto-Refine)
+                <span class="is-info-icon" title="Prüfinstanz: Eine zweite KI (GPT-4o Vision) begutachtet das Ergebnis. Bei Fehlern (z.B. falsche Finger) wird automatisch neu generiert.">ℹ️</span>
+              </label>
+              <select id="is-quality-gate-select">
+                <option value="none" selected>Aus (Standard)</option>
+                <option value="low">Low (Max. 1 Retry)</option>
+                <option value="medium">Medium (Max. 2 Retries)</option>
+                <option value="high">High (Max. 3 Retries)</option>
+              </select>
+            </div>
+
+            <!-- Cost Display Update -->
+            <div class="control-group cost-display">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Basis-Kosten / Bild:</span>
+                    <strong id="is-estimated-cost" style="color: var(--text-color);">$N/A</strong>
+                </div>
+                
+                <!-- Initial ausgeblendet, wird per JS aktiviert -->
+                <div id="is-max-cost-wrapper" style="display: none; flex-direction: column; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: #aaa;">
+                        <span>Vision Check (geschätzt):</span>
+                        <span>+ $0.0100 / Lauf</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; color: var(--accent-color);">
+                        <span style="font-weight: bold;">Max. Kosten-Risiko:</span>
+                        <strong id="is-max-cost">$0.0000</strong>
+                    </div>
+                    <span style="font-size: 0.7em; color: #666; text-align: right; margin-top: 2px;">(Nur im Worst-Case bei allen Retries)</span>
+                </div>
+                
+                <!-- Actual Result Wrapper (initially hidden) -->
+                <div id="is-actual-result-wrapper" style="display: none; flex-direction: column; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0, 255, 0, 0.3);">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: #8f8;">
+                        <span>✨ Qualität erreicht:</span>
+                        <strong id="is-actual-score">--</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #ccc;">
+                        <span>Durchläufe:</span>
+                        <span id="is-actual-attempts">--</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; color: #8f8;">
+                        <span style="font-weight: bold;">Tatsächliche Kosten:</span>
+                        <strong id="is-actual-cost">--</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="is-generate-btn" class="primary-button">Generieren</button>
+          </div>
+          <!-- Rechte Spalte: Anzeige -->
+          <div class="image-studio-display">
+            <div class="control-group">
+              <input type="text" id="is-image-filename" value="unbenannt" maxlength="50" />
+            </div>
+
+            <!-- NEU: Wrapper für Hauptanzeigebereich (Bild + Presets + Vorschau) -->
+            <div class="display-main-area">
+              
+              <!-- Spalte 1: Generiertes Bild (Existiert bereits) -->
+              <div id="is-preview-wrapper">
+                  <div id="is-preview-container" class="preview-container">
+                      <p>Vorschau des generierten Bildes</p>
+                  </div>
+                  <!-- Der Canvas liegt absolut darüber -->
+                  <canvas id="is-mask-canvas"></canvas>
+              </div>
+
+              <!-- Spalte 2: Einstellungen & Text (Existiert bereits) -->
+              <div id="is-presets-container" class="presets-container">
+                <div class="control-group">
+                  <label for="is-style-select">Stil</label>
+                  <select id="is-style-select"></select>
+                </div>
+                <div class="control-group">
+                  <label for="is-variation-select">Variation</label>
+                  <select id="is-variation-select"></select>
+                </div>
+                <div id="preset-info-display" class="preset-info-box" style="display: none;"></div>
+              </div>
+
+              <!-- Spalte 3: NEU - Stil-Vorschau Bild -->
+              <div id="is-style-preview-container" class="style-preview-box">
+                  <div class="style-preview-header">Stil-Beispiel</div>
+                  <div class="style-image-wrapper">
+                      <!-- Platzhalter-Bild oder leer -->
+                      <img id="current-style-image" src="" alt="Vorschau nicht verfügbar" style="display: none;">
+                      <div id="style-image-placeholder">Keine Vorschau</div>
+                  </div>
+              </div>
+
+        
+        <!-- KORREKTE POSITION: Innerhalb des Haupt-Anzeigebereichs -->
+        <div id="mask-controls" style="display: none;">
+            <!-- Hier drin müssen die Slider etc. sein -->
+            <div class="control-group brush-control">
+                <label for="brush-size">Pinselgröße</label>
+                <input type="range" id="brush-size" min="5" max="100" value="30">
+            </div>
+            <button id="clear-mask-btn" class="secondary-btn">Maske löschen</button>
+        </div>
+    </div>
+            <!-- Ende des neuen Wrappers -->
+            
+            <div class="is-galleries-wrapper">
+              <!-- Box 1: Generierte Bilder -->
+              <div class="is-gallery-box">
+                <h4>Generierte Bilder</h4>
+                <div id="is-gallery-generated" class="gallery">
+                  <p class="is-empty-hint">Noch keine Bilder generiert</p>
+                </div>
+              </div>
+
+              <!-- Box 2: Hochgeladene Bilder -->
+              <div class="is-gallery-box">
+                <h4>Hochgeladene Bilder</h4>
+                <div id="is-gallery-uploaded" class="gallery">
+                  <p class="is-empty-hint">Zieh Bilder hierher zum Upload</p>
+                </div>
+              </div>
+
+              <!-- Box 3: Alle Bilder (NEU) -->
+              <div class="is-gallery-box">
+                <h4>Alle Bilder</h4>
+                <div id="is-gallery-all" class="gallery">
+                  <p class="is-empty-hint">Lade Bilder...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export Options Modal -->
+    <div id="is-jpeg-options-modal" class="jpeg-options-modal" style="display: none;">
+        <div class="jpeg-options-content">
+            <!-- Close X Button -->
+            <span id="export-close-x" class="export-close-button">&times;</span>
+            <h4>Bild exportieren</h4>
+
+            <!-- Vorschau-Container (unverändert, nur ID behalten) -->
+            <div class="jpeg-preview-container">
+                <div id="jpeg-preview-loader" class="spinner" style="display: none;"></div>
+                <img id="jpeg-preview-image" src="" alt="Vorschau" style="display: none;">
+            </div>
+
+            <div class="jpeg-controls-wrapper">
+                
+                <!-- NEU: Das Format-Dropdown -->
+                <div class="export-format-selection" style="margin-bottom: 10px;">
+                    <label for="export-format-select" style="display:block; margin-bottom:5px; color:#ccc; font-size:0.9em;">Format:</label>
+                    <select id="export-format-select" style="width:100%; padding:8px; background:#1a1a1a; border:1px solid #444; color:#fff; border-radius:4px;">
+                        <option value="jpg">JPG (Hohe Qualität)</option>
+                        <option value="png">PNG (Verlustfrei, Original)</option>
+                        <option value="webp">WebP (Modern, Verlustfrei)</option>
+                        <option value="avif">AVIF (Ultra-Modern, Verlustfrei)</option>
+                        <option value="tiff_zip">TIFF (Komprimiert, ZIP/Deflate)</option>
+                        <option value="tiff">TIFF (Unkomprimiert, Druck)</option>
+                        <option value="pdf">PDF (Dokument)</option>
+                    </select>
+                </div>
+
+                <!-- NEU: Die Format-Beschreibung -->
+                <div id="export-format-description" class="format-description">
+                    Der Allrounder. Sehr gute Qualität bei kleiner Dateigröße. Perfekt für Web, E-Mail und schnelles Teilen.
+                </div>
+
+                <!-- Qualitäts-Steuerelemente -->
+                <div id="jpeg-quality-controls" style="display: flex; flex-direction: column; gap: 5px;">
+                    
+                    <!-- Die Info-Zeile: Links Qualität, Rechts Größe -->
+                    <div class="jpeg-info-line" style="display: flex; justify-content: space-between; font-size: 0.9em; color: #ccc;">
+                        <span>Qualität: <span id="jpeg-quality-value">95</span></span>
+                        <span id="jpeg-size-estimate">Berechne...</span>
+                    </div>
+
+                    <!-- Der Slider -->
+                    <input type="range" id="jpeg-quality-slider" min="1" max="100" value="95" style="width: 100%;">
+                </div>
+            </div>
+
+            <div class="jpeg-options-buttons">
+                <button id="jpeg-export-confirm" class="btn-primary">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Memory Modal for adding/editing facts -->
+    <div id="memory-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <span class="close-button" id="close-memory-modal">&times;</span>
+        <h3 id="memory-modal-title">Fakt bearbeiten</h3>
+        <form id="memory-form">
+          <input type="hidden" id="memory-id" />
+          
+          <div class="form-group">
+            <label for="memory-snippet">Fakt / Information:</label>
+            <textarea id="memory-snippet" rows="3" required placeholder="z.B. Ich bin allergisch gegen Erdnüsse."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="memory-category">Kategorie:</label>
+            <input type="text" id="memory-category" list="category-suggestions" placeholder="z.B. Gesundheit, Arbeit..." />
+            <datalist id="category-suggestions">
+              <option value="Persönlich">
+              <option value="Beruf">
+              <option value="Gesundheit">
+              <option value="Präferenzen">
+              <option value="Ziele">
+            </datalist>
+          </div>
+
+          <div class="form-group" style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; margin-top: 10px;">
+            <label for="memory-priority">Diamond Priorität:</label>
+            <select id="memory-priority" style="width: 100%; padding: 8px; margin-top: 5px;">
+              <option value="2">💎 Core Identity (Höchste Priorität - Immer im Kontext)</option>
+              <option value="1">🔹 Core Detail (Hohe Priorität - Suchbar)</option>
+              <option value="0">📄 General (Standard - Kann archiviert werden)</option>
+            </select>
+            <p style="font-size: 0.8em; color: #888; margin-top: 5px;" id="priority-desc">
+              Definiert fundamentale Eigenschaften der Identität.
+            </p>
+          </div>
+
+          <div class="modal-buttons">
+            <button type="submit" id="memory-save-btn" class="primary-button">Speichern</button>
+            <button type="button" id="memory-cancel-btn" class="secondary-button">Abbrechen</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div id="is-tutorial-modal" class="modal" style="display: none; z-index: 3000;">
+        <div class="modal-content tutorial-content">
+            <div class="modal-header">
+                <h3>📖 Image Studio Handbuch</h3>
+                <span id="close-tutorial-modal" class="close-button">&times;</span>
+            </div>
+            <div class="tutorial-body">
+                
+                <!-- SEKTION 1: FEATURES (Das Highlight) -->
+                <div class="tutorial-section feature-highlight">
+                    <h4>🚀 Was kann das Image Studio?</h4>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <div class="icon">🎨</div>
+                            <strong>Multi-Provider</strong>
+                            <p>Nutze OpenAI (DALL-E) oder Google (Gemini/Imagen) in einem Interface.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon">🎭</div>
+                            <strong>Smart Presets</strong>
+                            <p>Wähle aus vordefinierten Stilen (Cinematic, Anime, Analog) für professionelle Ergebnisse.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon">🖌️</div>
+                            <strong>Inpainting</strong>
+                            <p>Markiere Bereiche im Bild und verändere nur diese (Maskierungs-Modus).</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon">🔄</div>
+                            <strong>Refine & Edit</strong>
+                            <p>Verfeinere Ergebnisse iterativ oder bearbeite hochgeladene Bilder komplett neu.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon">📂</div>
+                            <strong>Smart Gallery</strong>
+                            <p>Drag & Drop, automatisches Umbenennen und Historie aller generierten Bilder.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon">🛡️</div>
+                            <strong>Quality Gate</strong>
+                            <p>Automatische Qualitätskontrolle, die Generierungen wiederholt, bis sie gut genug sind.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="tutorial-divider">
+
+                <!-- SEKTION 2: ANLEITUNG -->
+                <div class="tutorial-section">
+                    <h4>🛠️ Wie nutze ich es richtig?</h4>
+                    
+                    <div class="step-box">
+                        <strong>1. Generieren (Grundlagen)</strong>
+                        <p>Wähle links einen Provider (z.B. OpenAI) und ein Modell. Gib deinen Prompt ein. Optional: Öffne die "Stil-Presets", um dem Bild einen Look (z.B. "Analog Film") zu geben.</p>
+                    </div>
+
+                    <div class="step-box">
+                        <strong>2. Der Unterschied: Refine vs. Edit</strong>
+                        <ul>
+                            <li><span class="highlight">Refine Mode (Verfeinern):</span> Aktiviert sich automatisch nach einer Generierung. Das System behält den "Kontext" (Bildinhalt). Wenn du den Prompt änderst, wird das bestehende Bild nur leicht angepasst.</li>
+                            <li><span class="highlight">Edit Mode (Bearbeiten):</span> Ziehe ein Bild aus der Galerie in die Vorschau. Hier wird das Bild als <em>Referenz</em> genommen, aber Stil und Inhalt können stark verändert werden.</li>
+                        </ul>
+                    </div>
+
+                    <div class="step-box">
+                        <strong>3. Inpainting (Maskieren)</strong>
+                        <p>Aktiviere die Checkbox <code>Maskierungs-Modus</code>. Male mit dem Pinsel über den Bereich, den du ändern willst (z.B. ein Gesicht oder den Hintergrund). Beschreibe im Prompt, was an dieser Stelle erscheinen soll.</p>
+                        <small><em>Hinweis: Nicht verfügbar bei allen Modellen (z.B. Gemini).</em></small>
+                    </div>
+
+                    <div class="step-box">
+                        <strong>4. Workflow Tipps</strong>
+                        <ul>
+                            <li><strong>Drag & Drop:</strong> Ziehe Bilder aus der unteren Galerie direkt in die Vorschau, um mit ihnen weiterzuarbeiten.</li>
+                            <li><strong>Umbenennen:</strong> Klicke auf den Dateinamen unter dem Bild, um es umzubenennen. Die Datei wird auch auf der Festplatte geändert.</li>
+                            <li><strong>Kombinieren:</strong> Nutze den "Kombinieren"-Modus, um bis zu 5 Bilder in Slots zu ziehen und daraus ein neues Bild zu mischen.</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- ============================================= -->
+    <!-- ==== Custom Confirm Modal for Deleting ==== -->
+    <!-- ============================================= -->
+    <div id="is-delete-confirm-modal" class="modal" style="display: none; background-color: rgba(0, 0, 0, 0.8);">
+        <div class="modal-content" style="max-width: 400px; text-align: center; border-color: var(--warning-color);">
+            <h2 id="delete-dialog-title" style="margin-top:0; color: var(--warning-color);">Bild löschen?</h2>
+            <p id="delete-dialog-text" style="margin-bottom: 25px;">Diese Aktion kann nicht rückgängig gemacht werden.</p>
+            <div class="button-group" style="justify-content: center;">
+                <button id="delete-confirm-btn" class="button button-danger">Ja, löschen</button>
+                <button id="delete-cancel-btn" class="button">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- ==== Beta Feedback Modal ==================== -->
+    <!-- ============================================= -->
+    <div id="modal-feedback" class="modal" style="position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; background-color: rgba(0, 0, 0, 0.8) !important; display: none !important; justify-content: center !important; align-items: center !important; z-index: 9999999 !important;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🐞 Beta-Feedback & Bug Report</h3>
+                <span id="close-feedback-modal" class="close-button">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="feedback-form">
+                    <div class="form-group">
+                        <label for="feedback-type">Typ:</label>
+                        <select id="feedback-type" required style="width: 100%; padding: 10px; margin-top: 5px;">
+                            <option value="bug">🐞 Bug/Fehler</option>
+                            <option value="feature">💡 Feature-Wunsch</option>
+                            <option value="feedback">💬 Allgemeines Feedback</option>
+                            <option value="crash">💥 Absturz/Crash</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="feedback-description">Beschreibe dein Anliegen:</label>
+                        <textarea 
+                            id="feedback-description" 
+                            rows="5" 
+                            required 
+                            minlength="10"
+                            placeholder="Was ist passiert? Was hast du erwartet? Was möchtest du vorschlagen?"
+                            style="width: 100%; padding: 10px; margin-top: 5px; resize: vertical;"
+                        ></textarea>
+                        <small style="color: #888;">Mindestens 10 Zeichen</small>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="feedback-include-logs" checked style="width: auto;">
+                            <span>System-Logs mitschicken</span>
+                        </label>
+                        <small style="color: #888; margin-left: 24px;">Die letzten 200 Zeilen des Logs werden angehängt.</small>
+                    </div>
+                    <div class="modal-buttons" style="margin-top: 20px;">
+                        <button type="submit" id="feedback-submit-btn" class="primary-button">Bericht senden</button>
+                        <button type="button" id="feedback-cancel-btn" class="secondary-button">Abbrechen</button>
+                    </div>
+                </form>
+                <div id="feedback-status" style="display: none; margin-top: 15px; padding: 10px; border-radius: 5px; text-align: center;"></div>
+            </div>
+        </div>
+    </div>
+  </body>
+</html>

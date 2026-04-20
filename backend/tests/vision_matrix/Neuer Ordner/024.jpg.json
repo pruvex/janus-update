@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "blond",
+    "FRISUR": "kurz und gestylt",
+    "OUTERWEAR": "denim Jacke",
+    "KLEIDUNG": "blaues T-Shirt",
+    "LEGWEAR": "hellblaue Jeans",
+    "SCHUH_SATZ": "Dazu trägt er weiße Sneaker.",
+    "POSE_SATZ": "Die Person geht die Straße entlang und blickt seitlich.",
+    "AMBIENTE_SATZ": "Urbaner Straßenzug mit Gebäude und Fußweg.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Jeansjacke", "T-Shirt", "Jeans", "Weiße Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Anzug", "Hut", "Stiefel"]
+  }
+}

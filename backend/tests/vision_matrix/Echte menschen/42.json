@@ -1,0 +1,33 @@
+{
+  "filename": "42.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "silbergrau",
+    "FRISUR": "kurz, wellig gestylt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "runde Brille mit dunklem Metallgestell",
+    "SCHMUCK": "kleine Ohrstecker",
+    "OUTERWEAR": "hellblau gemustertes Mieder (Dirndl)",
+    "KLEIDUNG": "weiße Trachtenbluse mit Spitzenärmeln und schwarzen Knöpfen",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt mit einem breiten Lächeln frontal direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Innenraumaufnahme vor einer weißen Wand mit einem Lichtschalter und einer dunklen Türzarge im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "hellblau gemustertes Mieder",
+      "weiße Bluse mit Spitzenbesatz",
+      "schwarze Knöpfe",
+      "runde Metallbrille",
+      "silbergraue Haare",
+      "Lichtschalter"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Kopfbedeckung",
+      "kein Bart",
+      "keine Sonnenbrille"
+    ]
+  }
+}

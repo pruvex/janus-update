@@ -1,0 +1,186 @@
+{
+  "nintendo_switch_2": {
+    "name": "Nintendo Switch 2",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/206193300_-switch-2-nintendo.html",
+      "geizhals.de": "https://geizhals.de/nintendo-switch-2-schwarz-10015151-a3461948.html"
+    },
+    "aliases": ["switch 2", "nintendo switch 2 konsole", "konsole (eu)"]
+  },
+  "nintendo_switch_2_mario_kart": {
+    "name": "Nintendo Switch 2 Mario Kart World Bundle",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/206193302_-switch-2-mario-kart-world-nintendo.html",
+      "geizhals.de": "https://geizhals.de/nintendo-switch-2-mario-kart-world-bundle-a3461949.html"
+    },
+    "aliases": ["switch 2 bundle", "mario kart world bundle", "nintendo switch 2 mario kart"]
+  },
+  "playstation_5_slim": {
+    "name": "PlayStation 5 Slim",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/203515743_-playstation-5-slim-ps5-slim-sony.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["ps5", "ps5 slim", "playstation 5"]
+  },
+  "playstation_5_digital": {
+    "name": "PlayStation 5 Slim Digital Edition",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/203554857_-playstation-5-slim-ps5-slim-digital-edition-sony.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["ps5 digital", "ps5 slim digital", "playstation 5 digital"]
+  },
+  "playstation_5_pro": {
+    "name": "PlayStation 5 Pro",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/204772461_-playstation-5-pro-ps5-pro-sony.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["ps5 pro", "playstation 5 pro"]
+  },
+  "xbox_series_x": {
+    "name": "Xbox Series X",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/200642029_-xbox-series-x-microsoft.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["xbox series x", "series x"]
+  },
+  "xbox_series_s": {
+    "name": "Xbox Series S",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/200642030_-xbox-series-s-microsoft.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["xbox series s", "series s"]
+  },
+  "steam_deck": {
+    "name": "Steam Deck",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/202318498_-steam-deck-valve.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["steam deck", "valve steam deck"]
+  },
+  "steam_deck_oled": {
+    "name": "Steam Deck OLED",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/204346847_-steam-deck-oled-512gb-valve.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["steam deck oled", "steam deck oled 512gb"]
+  },
+  "iphone_15": {
+    "name": "iPhone 15",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/203033222_-iphone-15-128gb-apple.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["iphone 15", "apple iphone 15"]
+  },
+  "iphone_15_pro": {
+    "name": "iPhone 15 Pro",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/203033224_-iphone-15-pro-128gb-apple.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["iphone 15 pro", "apple iphone 15 pro"]
+  },
+  "iphone_15_pro_max": {
+    "name": "iPhone 15 Pro Max",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/203033226_-iphone-15-pro-max-256gb-apple.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["iphone 15 pro max", "apple iphone 15 pro max"]
+  },
+  "samsung_galaxy_s24": {
+    "name": "Samsung Galaxy S24",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/204346849_-galaxy-s24-128gb-samsung.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["galaxy s24", "samsung galaxy s24"]
+  },
+  "samsung_galaxy_s24_ultra": {
+    "name": "Samsung Galaxy S24 Ultra",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/204346853_-galaxy-s24-ultra-256gb-samsung.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["galaxy s24 ultra", "samsung galaxy s24 ultra"]
+  },
+  "ipad_pro_11": {
+    "name": "iPad Pro 11 (2024)",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/204346855_-ipad-pro-11-2024-256gb-apple.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["ipad pro 11", "ipad pro 11 2024"]
+  },
+  "ipad_pro_13": {
+    "name": "iPad Pro 13 (2024)",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/204346857_-ipad-pro-13-2024-256gb-apple.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["ipad pro 13", "ipad pro 13 2024"]
+  },
+  "macbook_air_m3": {
+    "name": "MacBook Air M3",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/204346859_-macbook-air-13-2024-m3-apple.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["macbook air m3", "macbook air 13 m3"]
+  },
+  "macbook_pro_m3": {
+    "name": "MacBook Pro M3",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/204346861_-macbook-pro-14-2024-m3-apple.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["macbook pro m3", "macbook pro 14 m3"]
+  },
+  "nintendo_switch_oled": {
+    "name": "Nintendo Switch OLED",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/201846573_-switch-oled-64gb-weiss-nintendo.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["nintendo switch oled", "switch oled"]
+  },
+  "meta_quest_3": {
+    "name": "Meta Quest 3",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/204346863_-quest-3-128gb-meta.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["meta quest 3", "quest 3"]
+  },
+  "rtx_5090": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/206193310_-geforce-rtx-5090-nvidia.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["rtx 5090", "nvidia rtx 5090", "geforce rtx 5090"]
+  },
+  "rtx_5080": {
+    "name": "NVIDIA GeForce RTX 5080",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/206193311_-geforce-rtx-5080-nvidia.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["rtx 5080", "nvidia rtx 5080", "geforce rtx 5080"]
+  },
+  "rtx_5070": {
+    "name": "NVIDIA GeForce RTX 5070",
+    "links": {
+      "idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/206193312_-geforce-rtx-5070-nvidia.html",
+      "geizhals.de": ""
+    },
+    "aliases": ["rtx 5070", "nvidia rtx 5070", "geforce rtx 5070"]
+  }
+}

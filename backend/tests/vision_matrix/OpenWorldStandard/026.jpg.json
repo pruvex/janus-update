@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "schwarze Jacke",
+    "KLEIDUNG": "orange Hoodie",
+    "LEGWEAR": "schwarze Trainingshose",
+    "SCHUH_SATZ": "Dazu trägt er weiße Sneaker mit orangefarbenen Details.",
+    "POSE_SATZ": "Die Person geht über einen Zebrastreifen und schaut auf ihr Smartphone.",
+    "AMBIENTE_SATZ": "Städtische Straße mit Backsteinfassaden.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Jacke", "Hoodie", "Trainingshose", "Weiße Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Anzug", "High Heels", "Regenschirm"]
+  }
+}

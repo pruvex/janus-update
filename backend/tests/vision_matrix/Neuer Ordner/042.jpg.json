@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "blond",
+    "FRISUR": "zur Hälfte hochgesteckt",
+    "OUTERWEAR": "schwarz-weißer karierter Blazer",
+    "KLEIDUNG": "schwarzes cropped Top",
+    "LEGWEAR": "weite schwarze Cargo-Hose",
+    "SCHUH_SATZ": "Graue Sneaker mit auffälliger Sohle",
+    "POSE_SATZ": "Sie lehnt mit einer Hand an einer gotischen Tür und blickt direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Alte Steinarchitektur mit schwerer Holztür und gedämpftem Licht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Karoblazer", "cropped Top", "Cargo-Hose", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["High Heels", "Jacke mit Logo", "Minirock"]
+  }
+}

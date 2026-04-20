@@ -1,0 +1,34 @@
+{
+  "filename": "47.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "braun",
+    "FRISUR": "lang, glatt mit schrägem Pony",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "Nasenpiercing",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "hellrosa T-Shirt mit schwarzem und pinkem Leopardenmuster",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt mit einem neutralen, leicht besorgten Gesichtsausdruck direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Ein Innenraum mit blauer Wandbeleuchtung, einer Deckenlampe und einem hellen Sofa im unscharfen Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "hellrosa T-Shirt",
+      "Leopardenmuster",
+      "Nasenpiercing",
+      "lange braune Haare",
+      "blaue Wandbeleuchtung",
+      "Deckenlampe"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "kein Schal"
+    ]
+  }
+}

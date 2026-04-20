@@ -1,0 +1,73 @@
+{
+  "legacy_name": "find_local_business_tool",
+  "skill": "system.local_business",
+  "description": "Sucht lokale Geschäfte, Restaurants und Dienstleister via OpenStreetMap und optionaler Web-Enrichment. Für Ollama wird der OSM-Only Fast-Path genutzt.",
+  "version": "1.1.0",
+  "sandbox_level": "unrestricted",
+  "latency_class": "slow",
+  "timeout_ms": 45000,
+  "tags": [
+    "system",
+    "geo",
+    "search",
+    "local",
+    "places"
+  ],
+  "capabilities": [
+    "local_search",
+    "location_lookup",
+    "place_discovery"
+  ],
+  "is_agent_ready": true,
+  "deterministic_renderer": true,
+  "max_calls_per_turn": 2,
+  "depends_on": [],
+  "examples": [
+    {
+      "input": {
+        "query": "italienisches Restaurant",
+        "location": "Hamburg Altona",
+        "limit": 5
+      },
+      "output": {
+        "status": "ok",
+        "data": [
+          {
+            "name": "Trattoria da Luigi",
+            "address": "Ottenser Hauptstr. 12, 22765 Hamburg",
+            "phone": "+49 40 123456",
+            "website": "https://trattoria-luigi.de"
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "query": "Baumarkt",
+        "location": "Nimmerland",
+        "limit": 3
+      },
+      "output": {
+        "status": "ok",
+        "data": [],
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "query": "",
+        "location": "Berlin",
+        "limit": 5
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "INVALID_INPUT",
+          "message": "Der Parameter 'query' darf nicht leer sein."
+        }
+      }
+    }
+  ]
+}

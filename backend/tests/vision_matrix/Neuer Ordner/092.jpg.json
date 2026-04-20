@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "lang",
+    "OUTERWEAR": "gelber Mantel mit schwarzem Innenfutter",
+    "KLEIDUNG": "schwarzes Oberteil",
+    "LEGWEAR": "schwarze Hose",
+    "SCHUH_SATZ": "Schwarze Stiefel",
+    "POSE_SATZ": "Sie geht dem Betrachter entgegen, Hände in den Taschen, Blick geradeaus.",
+    "AMBIENTE_SATZ": "Städtische Nacht mit Neonlichtern und Verkehr im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Low-Light", "Street", "Full Body", "Stiefel"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "High Heels", "Daylight"],
+    "NOTIZ": "Klare Abendstimmung mit warmem Ton und vollen Straßenlichtern."
+  }
+}

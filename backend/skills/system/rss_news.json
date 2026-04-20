@@ -1,0 +1,54 @@
+{
+  "legacy_name": "get_latest_news_rss",
+  "skill": "system.rss_news",
+  "description": "Ruft aktuelle Schlagzeilen und Nachrichtenüberblicke von RSS-Feeds ab (Spiegel, Tagesschau, BBC, etc.). Für News-Headlines, nicht für Live-Preise oder Marktdaten.",
+  "version": "1.1.0",
+  "sandbox_level": "unrestricted",
+  "latency_class": "normal",
+  "timeout_ms": 15000,
+  "tags": [
+    "system",
+    "news",
+    "rss",
+    "media",
+    "headlines"
+  ],
+  "capabilities": [
+    "news_fetch",
+    "web_read"
+  ],
+  "is_agent_ready": true,
+  "deterministic_renderer": false,
+  "max_calls_per_turn": 2,
+  "depends_on": [],
+  "examples": [
+    {
+      "input": {
+        "source": "tagesschau",
+        "query": null
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "headlines": ["Bundestag beschließt neues Klimagesetz", "DAX erreicht Rekordhoch"],
+          "source": "tagesschau",
+          "count": 2
+        },
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "source": "unbekannt"
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "INVALID_SOURCE",
+          "message": "Unbekannte Quelle: unbekannt. Verfügbar: spiegel, gamestar, tagesschau, zeit, heise, reuters, bbc"
+        }
+      }
+    }
+  ]
+}

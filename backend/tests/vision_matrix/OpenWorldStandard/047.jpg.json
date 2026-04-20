@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz und leicht gewellt",
+    "OUTERWEAR": "dunkelblauer Blazer",
+    "KLEIDUNG": "blau-weiß gestreiftes Hemd",
+    "LEGWEAR": "weiße Chinohose",
+    "SCHUH_SATZ": "Schwarze Sneaker mit weißen Akzenten",
+    "POSE_SATZ": "Er steht mit Händen in den Taschen auf einer Pariser Straße und schaut leicht zur Seite.",
+    "AMBIENTE_SATZ": "Urbanes Straßenszenario mit historischer Fassade und perspektivisch verlaufender Allee.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Blazer", "gestreiftes Hemd", "Chinohose", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Anzughose", "Kapuze", "T-Shirt"]
+  }
+}

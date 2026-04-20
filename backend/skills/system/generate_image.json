@@ -1,0 +1,113 @@
+{
+  "legacy_name": "generate_image_tool",
+  "skill": "system.generate_image",
+  "version": "1.1.0",
+  "description": "Erzeugt ein einzelnes Bild aus einem Prompt und liefert den gespeicherten Bildpfad, eine Markdown-Einbettung und Metadaten zurück. Nutze diesen Skill immer für Bildwünsche wie 'Erstell mir ein Bild', 'Zeichne', 'Male' oder 'Generiere ein Foto'. Verwende system.create_pdf nicht als Ersatz für Bildgenerierung.",
+  "sandbox_level": "unrestricted",
+  "latency_class": "normal",
+  "timeout_ms": 30000,
+  "tags": [
+    "system",
+    "image",
+    "vision",
+    "media"
+  ],
+  "capabilities": [
+    "image_generation",
+    "media_generation",
+    "drawing"
+  ],
+  "is_agent_ready": true,
+  "deterministic_renderer": true,
+  "max_calls_per_turn": 2,
+  "depends_on": [],
+  "examples": [
+    {
+      "input": {
+        "prompt": "A cozy watercolor illustration of a red cat sleeping on a windowsill",
+        "size": "1024x1024",
+        "quality": "medium"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "message": "Bild erfolgreich generiert und im Image Studio gespeichert.",
+          "local_image_path": "/user_images/red_cat.png",
+          "image_url": "/user_images/red_cat.png",
+          "markdown_image": "![A_cozy_watercolor_illustr](\/user_images\/red_cat.png)",
+          "prompt_used": "A cozy watercolor illustration of a red cat sleeping on a windowsill",
+          "cost": 0.04
+        },
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "prompt": "Draw a bright wooden house by a lake at sunrise",
+        "size": "1536x1024",
+        "quality": "high"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "message": "Bild erfolgreich generiert und im Image Studio gespeichert.",
+          "local_image_path": "/user_images/lake_house.png",
+          "image_url": "/user_images/lake_house.png",
+          "markdown_image": "![Draw_a_bright_wooden_hou](\/user_images\/lake_house.png)",
+          "prompt_used": "Draw a bright wooden house by a lake at sunrise",
+          "cost": 0.12
+        },
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "prompt": "Generate a realistic photo of a blue sports car on a mountain road",
+        "size": "1024x1024",
+        "quality": "ultra"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "message": "Bild erfolgreich generiert und im Image Studio gespeichert.",
+          "local_image_path": "/user_images/blue_sports_car.png",
+          "image_url": "/user_images/blue_sports_car.png",
+          "markdown_image": "![Generate_a_realistic_ph](\/user_images\/blue_sports_car.png)",
+          "prompt_used": "Generate a realistic photo of a blue sports car on a mountain road",
+          "cost": 0.06
+        },
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "prompt": "Create a cinematic portrait of a fox in snow",
+        "size": "1024x1024",
+        "quality": "low"
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "PROVIDER_KEY_MISSING",
+          "message": "API Key für 'openai' fehlt."
+        }
+      }
+    },
+    {
+      "input": {
+        "prompt": "Create an illustration of a tiny robot watering flowers",
+        "size": "1024x1024",
+        "quality": "medium"
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "GENERATION_FAILED",
+          "message": "Der Provider lieferte kein Bild zurück."
+        }
+      }
+    }
+  ]
+}

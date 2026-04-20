@@ -1,0 +1,32 @@
+{
+  "filename": "24.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "kurz, glatter Bob",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "grau-melierte Sweatjacke",
+    "KLEIDUNG": "hellblauer Schal",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt ruhig und mit einem leichten Lächeln direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Ein heller Innenraum mit einem klassischen weißen Vitrinenschrank im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "grau-melierte Sweatjacke",
+      "hellblauer Schal",
+      "weißer Vitrinenschrank",
+      "kurzer brauner Bob",
+      "Reißverschluss"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung"
+    ]
+  }
+}

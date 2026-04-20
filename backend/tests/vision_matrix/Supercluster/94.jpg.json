@@ -1,0 +1,20 @@
+{
+    "expected": {
+        "GESCHLECHT": "Mann",
+        "ALTER": "junger Mann",
+        "TEINT": "hell",
+        "AUGEN": "dunkel",
+        "HAARFARBE": "Die Haare sind braun",
+        "KOPF_ACCESSOIRE": "Brille",
+        "AUDIO_HARDWARE": "große Over-Ear-Kopfhörer",
+        "OUTERWEAR": "graue Jacke",
+        "KLEIDUNG": "beiges Shirt unter grauer Jacke",
+        "LEGWEAR": "dunkle Jeans",
+        "SCHUH_SATZ": "Dazu trägt er weiße Sneaker.",
+        "TASCHE_SATZ": "Dazu trägt er einen dunklen Rucksack und zieht einen silbernen Rollkoffer.",
+        "POSE_SATZ": "Die Person läuft konzentriert durch eine moderne Bahnhofshalle und blickt auf ihr Smartphone.",
+        "AMBIENTE_SATZ": "Die Szene spielt in einem modernen, hell erleuchteten Transitbereich.",
+        "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Kopfhörer", "Rollkoffer", "Rucksack", "Smartphone", "Bahnhof"],
+        "AUSSCHLUSS_PFLICHT": ["Sitzen", "Wald", "Hut"]
+    }
+}

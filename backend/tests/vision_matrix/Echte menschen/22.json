@@ -1,0 +1,33 @@
+{
+  "filename": "22.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "grau-blond",
+    "FRISUR": "kurz, Pixie-Schnitt mit violetter Strähne im Pony",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "feine goldene Halskette",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "beiger Strickpullover mit Dackel-Motiv und Schriftzug 'salut'",
+    "LEGWEAR": "blaue Jeans",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau steht frontal vor der Kamera und lächelt freundlich.",
+    "AMBIENTE_SATZ": "Ein wohnlicher Innenraum mit einem Regal voller Miniaturhäuser im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "beiger Strickpullover",
+      "Dackel-Motiv",
+      "Schriftzug salut",
+      "violette Haarsträhne",
+      "blaue Jeans",
+      "Miniaturhäuser"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung"
+    ]
+  }
+}

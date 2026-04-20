@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "lang und nass",
+    "OUTERWEAR": "floral bedrucktes Kleid",
+    "KLEIDUNG": "leichter Sommerstoff",
+    "LEGWEAR": "frei",
+    "SCHUH_SATZ": "barfuß",
+    "POSE_SATZ": "Sie streckt die Arme aus und lässt den Regen auf sich niederprasseln.",
+    "AMBIENTE_SATZ": "Vordergrund Rasen und Straße, im Hintergrund Wohnhäuser bei Regen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Light Rain", "Wet Street", "Single Person", "Full Body"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "Dry Weather"],
+    "NOTIZ": "Person steht klar im Fokus, Regen und nasser Untergrund sichtbar."
+  }
+}

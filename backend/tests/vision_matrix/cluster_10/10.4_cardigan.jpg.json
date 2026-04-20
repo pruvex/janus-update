@@ -1,0 +1,10 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "HAARFARBE": "rotbraunen",
+    "FRISUR": "lockig",
+    "OUTERWEAR": "Strickjacke",
+    "INNER_LAYER": "gemusterten Oberteil",
+    "PRINT": "Grafik-Print"
+  }
+}

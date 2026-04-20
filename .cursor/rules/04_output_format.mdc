@@ -1,0 +1,17 @@
+---
+description: Output Requirements
+globs: *
+---
+## Output Requirements
+
+Always provide:
+
+1. Files Changed
+2. Exact Code Changes (copy-paste ready)
+3. Explanation of Fix
+4. Expected Result
+5. Test Instructions
+
+## Clarity
+- Be concise
+- Avoid unnecessary explanations

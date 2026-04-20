@@ -1,0 +1,33 @@
+{
+  "filename": "11.jpg",
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "graumeliert",
+    "FRISUR": "kurz, lichtes Haar mit Stirnglatze",
+    "BART": "Dreitagebart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "Brille auf der Stirn",
+    "SCHMUCK": "goldene Halskette mit Anhänger, silbernes Armband, Smartwatch",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "graues T-Shirt mit Aufdruck 'METROPOLIS New York'",
+    "LEGWEAR": "weiße Hose",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "Smartwatch am Handgelenk",
+    "POSE_SATZ": "Der Mann sitzt entspannt an einem Tisch im Freien und lächelt direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Außenbereich eines Restaurants mit einer rustikalen Steinmauer und roten Blumen im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "graues T-Shirt",
+      "Aufdruck METROPOLIS",
+      "goldene Halskette",
+      "silbernes Armband",
+      "Brille auf der Stirn",
+      "Steinmauer"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille auf der Nase",
+      "kein Vollbart",
+      "keine Kopfbedeckung"
+    ]
+  }
+}

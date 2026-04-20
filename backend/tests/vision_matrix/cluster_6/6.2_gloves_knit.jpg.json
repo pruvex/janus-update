@@ -1,0 +1,11 @@
+{
+  "expected": {
+    "ALTER": "junge Frau",
+    "TEINT": "hell",
+    "AUGEN": "blau",
+    "HAARFARBE": "rotbraunen",
+    "KLEIDUNG": "einem Schal",
+    "ZUBEHOER_SATZ": " Zudem trägt die Person eine graue Wollmütze.",
+    "HANDSCHUH_SATZ": " Dazu trägt die Person bunte Strickhandschuhe."
+  }
+}

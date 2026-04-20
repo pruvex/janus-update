@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "schulterlang",
+    "OUTERWEAR": "grünes Top",
+    "KLEIDUNG": "dunkler Rock",
+    "LEGWEAR": "frei",
+    "SCHUH_SATZ": "Flip-Flops",
+    "POSE_SATZ": "Sie genießt den starken Regen und lächelt, während sie auf nassem Asphalt steht.",
+    "AMBIENTE_SATZ": "Städtischer Regen mit hellen Reflexionen und Wasserfall-Effekt.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Light Rain", "Wet Street", "Full Body"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "Trockenes Wetter"],
+    "NOTIZ": "Szenische Regenaufnahme mit einer Person im Mittelpunkt, nasse Straße sichtbar."
+  }
+}

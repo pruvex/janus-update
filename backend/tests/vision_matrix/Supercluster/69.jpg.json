@@ -1,0 +1,11 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "KLEIDUNG": "weißes Hemd",
+    "POSE_SATZ": "Die Person steht an einem Fenster und blickt nachdenklich hinaus.",
+    "AMBIENTE_SATZ": "Durch eine Jalousie fallen markante, streifenförmige Schatten auf die Person.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Jalousie", "Schattenstreifen", "Fenster"],
+    "AUSSCHLUSS_PFLICHT": ["T-Shirt", "Brille"]
+  }
+}

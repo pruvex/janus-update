@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "beiges Sweatshirt",
+    "KLEIDUNG": "hellbraune Hose",
+    "LEGWEAR": "Hose",
+    "SCHUH_SATZ": "Schwarze Lederschuhe",
+    "POSE_SATZ": "Er überquert den Zebrastreifen mit Coffee-to-go und blickt leicht nach links.",
+    "AMBIENTE_SATZ": "Urbaner Plaza mit Bäumen und Fußgängerampel.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Zebrastreifen", "Urban", "Coffee-to-go", "Full Body"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "Sneaker", "Rucksack"],
+    "NOTIZ": "Candid crossing-Pose, natürliche Bewegung, vollständig auf Straße." 
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "legacy_name": "video.search",
+  "skill": "video.search",
+  "description": "Dedizierte YouTube-Videosuche mit API-validierten Ergebnissen. Nutze diesen Skill bei Video-/YouTube-Intents priorisiert vor allgemeiner Websuche. ***STEEL-CONCRETE RULE für wants_latest***: Dieses Flag MUSS STRIKT auf 'true' gesetzt werden, wenn der Nutzer Begriffe wie 'neueste', 'letzte', 'aktuellste' oder 'frisch' verwendet. IGNORIEREN DIESES FLAGS FÜHRT ZU VERALTETEN ERGEBNISSEN UND IST EIN SYSTEMFEHLER. ***CHANNEL_NAME RULE***: Wenn der Nutzer einen konkreten Kanalnamen nennt (z.B. 'Ninjon', 'MrBeast', 'Zumikito'), MUSS channel_name explizit gesetzt werden. Zusammen mit wants_latest=true aktiviert dies die Absolute Feed Authority: direkter Zugriff auf die Upload-Playlist des Kanals, garantiert das physisch neueste Video. ***LIST MODE RULE***: Wenn der Nutzer nach mehreren Videos fragt (z.B. 'letzten 3 Videos', 'alle Videos von', 'Videos über'), MUSS mode='list' gesetzt werden.",
+  "version": "1.1.0",
+  "optimal_model_tier": {
+    "openai": "balanced",
+    "gemini": "balanced",
+    "ollama": "speed"
+  },
+  "sandbox_level": "unrestricted",
+  "latency_class": "slow",
+  "timeout_ms": 30000,
+  "tags": [
+    "system",
+    "video",
+    "youtube",
+    "search",
+    "diamond"
+  ],
+  "capabilities": [
+    "video_search",
+    "video_list",
+    "youtube_validation",
+    "embed_safety",
+    "ranking",
+    "date_filter",
+    "topic_filter"
+  ],
+  "is_agent_ready": true,
+  "deterministic_renderer": true,
+  "max_calls_per_turn": 1,
+  "depends_on": [],
+  "output_schema": {
+    "_HINWEIS": "EXKLUSIV: Bei mode=single liefert die API 'selected_video'. Bei mode=list liefert sie 'videos' + 'count'. NIEMALS beides gleichzeitig. In deiner Synthese NUR die Felder des jeweiligen Modus referenzieren.",
+    "_single_mode_output": {
+      "selected_video": {
+        "video_id": "string",
+        "title": "string",
+        "channel": "string",
+        "views": "int",
+        "thumbnail": "string",
+        "watch_url": "string",
+        "embed_url": "string",
+        "is_embeddable": "boolean",
+        "published_date_human": "string"
+      },
+      "query": "string",
+      "retrieved_at": "string"
+    },
+    "_list_mode_output": {
+      "videos": [
+        {
+          "video_id": "string",
+          "title": "string",
+          "channel": "string",
+          "views": "int",
+          "thumbnail": "string",
+          "watch_url": "string",
+          "embed_url": "string",
+          "is_embeddable": "boolean",
+          "published_date_human": "string"
+        }
+      ],
+      "count": "int",
+      "query": "string",
+      "retrieved_at": "string",
+      "mode": "list"
+    }
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "query": {"type": "string", "minLength": 2, "description": "PFLICHTFELD. Mindestens 2 Zeichen. Wenn du nur Videos eines Kanals willst, schreibe '[Kanalname] Videos' hier rein. EIN LEERER STRING IST STRENGSTENS VERBOTEN UND FÜHRT ZU EINEM FEHLER."},
+      "wants_latest": {"type": "boolean"},
+      "channel_name": {"type": "string"},
+      "mode": {"type": "string", "enum": ["single", "list"], "default": "single"},
+      "max_results": {"type": "integer", "default": 5, "minimum": 1, "maximum": 15},
+      "published_after": {"type": "string", "format": "date", "nullable": true},
+      "published_before": {"type": "string", "format": "date", "nullable": true},
+      "topic_query": {"type": "string", "nullable": true}
+    },
+    "required": ["query", "wants_latest", "channel_name", "mode"]
+  },
+  "synthesis_directives": "Du bist ein Video-Synthesizer. PFLICHT-AUSGABEFORMAT: Erstelle eine nummerierte Liste. Du MUSST JEDES Video als Markdown-Link formatieren: [Video ansehen](URL). Ohne eckige Klammern [ ] erkennt das System keinen Link. Das ist ein P0 Fehler. !!! ABSOLUTE KOPIER-PFLICHT !!!: Du MUSST für JEDES Video in der Liste den Link Video ansehen wortwörtlich aus dem Tool-Result übernehmen. Es ist STRENGSTENS VERBOTEN, die Links wegzulassen oder die Liste zu kürzen. Deine Antwort ist erst vollständig, wenn alle Videos mit ihren jeweiligen [Video ansehen] Links aufgeführt sind. Nutze NIEMALS die nackte URL im Text. Nutze IMMER das Format [Video ansehen](URL). HINWEIS FÜR KANAL-EXTRAKTION: Fülle bei Anfragen zu bestimmten Kanälen oder Personen (z.B. MrBeast, Ninjon, Zumikito) IMMER das Feld 'channel_name' aus. ***QUERY-PFLICHTFELD***: Generiere NIEMALS einen Tool-Call mit leerer 'query'. Nutze im Zweifel den Kanalnamen als Query. DATENQUELLE: Nutze AUSSCHLIESSLICH die Videos aus dem aktuellen Tool-Result. Ignoriere Video-Informationen aus dem KONTEXT-WISSEN oder GLOBALEN ERINNERUNGEN — diese sind veraltet."
+}

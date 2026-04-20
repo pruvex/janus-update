@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "grauer Anzugblazer",
+    "KLEIDUNG": "hellblaues, vertikal gestreiftes Hemd",
+    "LEGWEAR": "passende graue Anzughose",
+    "SCHUH_SATZ": "Braune Lederschuhe",
+    "POSE_SATZ": "Die Person steht frontal vor einer Holztafel und lächelt leicht in die Kamera.",
+    "AMBIENTE_SATZ": "Studiohintergrund mit dunklen Holzbrettern.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Blazer", "gestreiftes Hemd", "Anzughose", "Lederschuhe"],
+    "AUSSCHLUSS_PFLICHT": ["T-Shirt", "Sneaker", "Kapuze"]
+  }
+}

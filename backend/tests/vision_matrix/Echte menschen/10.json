@@ -1,0 +1,33 @@
+{
+  "filename": "10.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junges Alter",
+    "HAARFARBE": "dunkelblond",
+    "FRISUR": "lang, glatt, Deckhaar am Oberkopf teilweise zurückgesteckt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "Nasenpiercing, Armband, Halskette",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "hellblaues Maxikleid mit Blumenmuster und hellblauen Spitze-Einsätzen",
+    "LEGWEAR": "nicht sichtbar (Kleid)",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "Smartphone in der Hand",
+    "POSE_SATZ": "Die schwangere Frau steht frontal vor einem Spiegel, hält ihr Smartphone für ein Selfie und stützt mit der anderen Hand ihren Bauch.",
+    "AMBIENTE_SATZ": "Wohnlicher Innenraum mit Fliesenboden, einem großen Holzschrank und einem Wandspiegel im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "hellblaues Blumenkleid",
+      "hellblaue Spitze",
+      "Smartphone",
+      "Holzschrank",
+      "Nasenpiercing",
+      "Tätowierung am Arm"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "kein Hut"
+    ]
+  }
+}

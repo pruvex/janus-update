@@ -1,0 +1,10 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "HAARFARBE": "dunkelbraunen",
+    "FRISUR": "glatt",
+    "KLEIDUNG": "einem hellen Oberteil",
+    "LEGWEAR_SATZ": "Dazu trägt er eine klassische blaue Jeans.",
+    "GUERTEL_SATZ": "Gehalten wird diese von einem braunen Ledergürtel."
+  }
+}

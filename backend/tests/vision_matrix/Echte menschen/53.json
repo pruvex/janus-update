@@ -1,0 +1,34 @@
+{
+  "filename": "53.jpg",
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "kurz, voluminös, nach hinten gestylt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "dunkelgrauer Hoodie",
+    "KLEIDUNG": "dunkelgrauer Kapuzenpullover über einem weißen Shirt",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Der Mann macht ein Selfie und blickt mit einem breiten Lächeln direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Ein dunklerer Innenraum mit einer braunen Wand und einer weißen Pinnwand im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "dunkelgrauer Hoodie",
+      "weißes Shirt unter Hoodie",
+      "braune Wand",
+      "weiße Pinnwand",
+      "dunkle voluminöse Haare",
+      "Lächeln"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "kein Schmuck sichtbar"
+    ]
+  }
+}

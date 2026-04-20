@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "dunkel",
+    "FRISUR": "kurz, zurückgekämmt",
+    "OUTERWEAR": "roter, gerippter Rollkragenpullover",
+    "KLEIDUNG": "dunkle, schmal geschnittene Chino",
+    "LEGWEAR": "schwarze Chinohose",
+    "SCHUH_SATZ": "schwarze Lederhalbschuhe",
+    "POSE_SATZ": "Er steht frontal, schaut über die Sonnenbrille direkt zur Kamera und hält eine Ledermappe locker unter dem Arm.",
+    "AMBIENTE_SATZ": "Hell beleuchtetes Studio vor weißer Marmorwand ohne Requisiten.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Full Body", "Clothing Details"],
+    "AUSSCHLUSS_PFLICHT": ["Mixed Materials Leather Denim Knit Outfit", "Frau"],
+    "NOTIZ": "Mann im monochromen, eleganten Look. Kein klarer Materialmix aus Leder/Denim/Strick und entspricht daher nicht vollständig dem Mixed Materials Brie f; abstrakte Notiz enthält Abweichung."
+  }
+}

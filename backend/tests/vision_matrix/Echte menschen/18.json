@@ -1,0 +1,34 @@
+{
+  "filename": "18.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "hellblond",
+    "FRISUR": "schulterlang, wellig mit lichten Stirnfransen",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "schwarzes Oberteil mit V-Ausschnitt",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt mit einem breiten Lächeln frontal in die Kamera.",
+    "AMBIENTE_SATZ": "Die Aufnahme wurde vor einer dunklen Wand aus vertikalen Holzlatten gemacht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "hellblonde Haare",
+      "schwarzes Oberteil",
+      "V-Ausschnitt",
+      "Holzlattenhintergrund",
+      "wellige Frisur",
+      "Lächeln"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "kein Schmuck"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "mittellang",
+    "OUTERWEAR": "schwarzer Bolero",
+    "KLEIDUNG": "schwarzes Abendkleid",
+    "LEGWEAR": "freie Beine",
+    "SCHUH_SATZ": "Schwarze Sandalen",
+    "POSE_SATZ": "Sie lehnt entspannt an einer Balustrade und blickt mit gedämpftem Blick in die Ferne.",
+    "AMBIENTE_SATZ": "Low-Light City Street mit warmen Straßenlichtern und verschwommenem Verkehr im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Low-Light", "Street", "Evening", "Full Body", "Sandalen"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "Sneaker", "Sportoutfit"],
+    "NOTIZ": "Szenische Abendaufnahme mit Fokus auf elegantes Street Outfit." 
+  }
+}

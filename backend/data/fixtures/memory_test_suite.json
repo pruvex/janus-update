@@ -1,0 +1,169 @@
+[
+  {
+    "id": "T001",
+    "name": "Identity Extraction",
+    "input_text": "Ich bin Max",
+    "expected": {
+      "logs": ["\\[ENRICHER\\]"],
+      "min_priority": 0.85,
+      "tags": ["identity"]
+    }
+  },
+  {
+    "id": "T002",
+    "name": "Preference Extraction",
+    "input_text": "Ich mag Kaffee",
+    "expected": {
+      "logs": ["\\[ENRICHER\\]"],
+      "min_priority": 0.7,
+      "tags": ["preference"]
+    }
+  },
+  {
+    "id": "T003",
+    "name": "Cache Hit Verification",
+    "input_text": "Wie heiße ich?",
+    "expected": {
+      "logs": ["\\[CACHE HIT\\]", "\\[MEMORY RETRIEVE\\]"],
+      "min_priority": null,
+      "tags": []
+    }
+  },
+  {
+    "id": "T004",
+    "name": "Context Recommendation",
+    "input_text": "Ich bin bald in Berlin, was kann ich machen?",
+    "expected": {
+      "logs": ["\\[KNAPSACK\\]", "Selected .* slots"],
+      "tags_present": ["preference", "personal"]
+    }
+  },
+  {
+    "id": "T005",
+    "name": "Multi Person Logic",
+    "setup_context": [
+      "Onkel Franz hasst Hunde",
+      "Tante Elsa liebt Hunde",
+      "Mein Hund hat Getreideunverträglichkeit"
+    ],
+    "input_text": "Wer soll auf meinen Hund aufpassen?",
+    "expected": {
+      "logs": ["\\[CACHE HIT\\]"],
+      "semantic_intent": "Franz ausschließen, Elsa empfehlen, Getreide erwähnen"
+    }
+  },
+  {
+    "id": "T006",
+    "name": "TTL Weather",
+    "input_text": "Wie wird das Wetter am Donnerstag?",
+    "expected": {
+      "logs": ["\\[ENRICHER\\]"],
+      "memory_type": "TEMPORAL",
+      "min_priority": 0.6
+    }
+  },
+  {
+    "id": "T007",
+    "name": "TTL Expiry Zombie Purge",
+    "input_text": "SYSTEM_TRIGGER_CLEANUP",
+    "expected": {
+      "logs": ["\\[ZOMBIE PURGE\\]", "Deleted .* memories"]
+    }
+  },
+  {
+    "id": "T008",
+    "name": "Dedup Merge",
+    "setup_context": ["Meine Katze heißt Luna"],
+    "input_text": "Luna ist schwarz",
+    "expected": {
+      "logs": ["\\[DEDUP MERGE\\]", "Priority upgraded", "\\[CACHE INVALIDATE\\]"]
+    }
+  },
+  {
+    "id": "T009",
+    "name": "Cache Hit Performance",
+    "input_text": "Wie heiße ich?",
+    "expected": {
+      "logs": ["\\[CACHE HIT\\]"],
+      "max_latency_ms": 5.0
+    }
+  },
+  {
+    "id": "T010",
+    "name": "LRU Eviction",
+    "input_text": "SYSTEM_FILL_CACHE_501",
+    "expected": {
+      "logs": ["\\[CACHE EVICT\\]", "priority="]
+    }
+  },
+  {
+    "id": "T011",
+    "name": "Token Budget Knapsack",
+    "input_text": "Erzähl mir eine lange Geschichte basierend auf meinen Fakten.",
+    "expected": {
+      "logs": ["\\[KNAPSACK\\]", "Skipping .* slot"],
+      "min_budget_utilization": 0.85
+    }
+  },
+  {
+    "id": "T012",
+    "name": "Security User Editable Guard",
+    "input_text": "Lösche meine Core Identity ID 1",
+    "expected": {
+      "logs": ["\\[SECURITY\\] BLOCKED", "non-editable"]
+    }
+  },
+  {
+    "id": "T013",
+    "name": "User Edit Success",
+    "input_text": "Ändere meinen Wohnort auf München",
+    "expected": {
+      "logs": ["\\[SAVED\\]", "source_skill=user.explicit"]
+    }
+  },
+  {
+    "id": "T014",
+    "name": "Skill Integration Web Search",
+    "input_text": "Wie ist der aktuelle Goldpreis?",
+    "expected": {
+      "logs": ["source_skill=skill.websearch", "priority=0.6"]
+    }
+  },
+  {
+    "id": "T015",
+    "name": "Timestamp Query",
+    "input_text": "Worüber haben wir letzten Donnerstag gesprochen?",
+    "expected": {
+      "logs": ["\\[TIMESTAMP MATCH\\]"]
+    }
+  },
+  {
+    "id": "T016",
+    "name": "Suggestion Mode",
+    "input_text": "Ich plane einen Trip",
+    "expected": {
+      "logs": ["\\[SUGGESTION MODE\\]"]
+    }
+  },
+  {
+    "id": "T017",
+    "name": "Circuit Breaker Resilience",
+    "input_text": "SYSTEM_SIMULATE_API_FAIL_3",
+    "expected": {
+      "logs": ["\\[CIRCUIT BREAKER\\] State: \\u2192 OPEN"]
+    }
+  },
+  {
+    "id": "T018",
+    "name": "Diamond Real-Life Scenario",
+    "setup_context": [
+      "Ich mag Museen",
+      "Hannes geht gerne tanzen"
+    ],
+    "input_text": "Wir fahren nach Berlin, was machen wir?",
+    "expected": {
+      "logs": ["\\[CACHE HIT\\]", "\\[KNAPSACK\\]"],
+      "semantic_intent": "Museen für User, Clubs für Hannes, Berlin-Bezug"
+    }
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "dunkelblaue Longline-Cardigan",
+    "KLEIDUNG": "grauer Knit Sweater",
+    "LEGWEAR": "beige Chinohose",
+    "SCHUH_SATZ": "Dazu trägt sie beige Sneaker.",
+    "POSE_SATZ": "Die Person lehnt entspannt an einer Graffiti-Wand und blickt zur Seite.",
+    "AMBIENTE_SATZ": "Streetstyle-Kulisse mit Ziegelwand und urbanem Flair.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Cardigan", "Sweater", "Chinohose", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["High Heels", "Anzug", "Sandalen"]
+  }
+}

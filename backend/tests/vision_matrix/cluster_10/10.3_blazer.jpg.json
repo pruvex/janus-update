@@ -1,0 +1,9 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "AUGEN": "blau",
+    "HAARFARBE": "dunkelbraunen",
+    "OUTERWEAR": "Sakko",
+    "INNER_LAYER": "Hemd"
+  }
+}

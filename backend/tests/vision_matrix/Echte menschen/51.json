@@ -1,0 +1,34 @@
+{
+  "filename": "51.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "dunkelblond",
+    "FRISUR": "zum unordentlichen Dutt hochgesteckt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "beiger Rollkragenpullover mit Zopfmuster an den Ärmeln",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt für ein Selfie mit einem sanften Lächeln direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Ein dunklerer Innenraum mit einer Kerze auf einem Tisch und roten Vorhängen im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "beiger Rollkragenpullover",
+      "Zopfmuster an den Ärmeln",
+      "hochgesteckte Frisur",
+      "brennende Kerze im Glas",
+      "rote Vorhänge",
+      "dunkler Hintergrund"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "kein Schmuck sichtbar"
+    ]
+  }
+}

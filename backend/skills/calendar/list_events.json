@@ -1,0 +1,18 @@
+{
+  "legacy_name": "get_calendar_events",
+  "skill": "calendar.list_events",
+  "version": "1.0.0",
+  "sandbox_level": "unrestricted",
+  "latency_class": "normal",
+  "tags": [
+    "calendar"
+  ],
+  "capabilities": [
+    "calendar_read",
+    "schedule_lookup"
+  ],
+  "is_agent_ready": true,
+  "max_calls_per_turn": 3,
+  "depends_on": [],
+  "examples": []
+}

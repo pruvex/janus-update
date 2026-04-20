@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz und gestylt",
+    "OUTERWEAR": "camel-farbene Jacke",
+    "KLEIDUNG": "schwarzer Rollkragenpullover",
+    "LEGWEAR": "grüne Chinohose",
+    "SCHUH_SATZ": "Dazu trägt er braune Wildlederboots.",
+    "POSE_SATZ": "Der Mann geht mit entspanntem Blick die Straße entlang und hält die Hände locker an den Seiten.",
+    "AMBIENTE_SATZ": "Moderne Urbanstraße mit Glasfassade im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Jacke", "Rollkragenpullover", "Chinohose", "Wildlederboots"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Jeans", "Hoodie", "Shorts"]
+  }
+}

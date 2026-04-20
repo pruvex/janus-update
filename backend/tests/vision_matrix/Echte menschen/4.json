@@ -1,0 +1,33 @@
+{
+  "filename": "4.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "rot",
+    "FRISUR": "kurz, fransig geschnitten mit kurzem Pony",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "weiße Armbanduhr, kleine Brosche am Kragen",
+    "OUTERWEAR": "dunkelgrauer Strickpullover",
+    "KLEIDUNG": "weiße Bluse mit großem, spitzem Kragen",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "Automagazin auf dem Tisch",
+    "POSE_SATZ": "Die Frau sitzt an einem Tisch, stützt ihr Kinn auf die linke Hand und blickt leicht lächelnd in die Kamera.",
+    "AMBIENTE_SATZ": "Ein Innenraum mit einer dekorativen Ziegelwand und verschiedenen Verkaufs- oder Dekoartikeln im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "rotes Haar",
+      "weiße Bluse",
+      "dunkelgrauer Pullover",
+      "weiße Armbanduhr",
+      "Ziegelwand",
+      "großer Kragen"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung"
+    ]
+  }
+}

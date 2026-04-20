@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "dunkelbraune Haare",
+    "FRISUR": "",
+    "OUTERWEAR": "",
+    "KLEIDUNG": "hellrosa Hemd",
+    "LEGWEAR": "graue Chinohose",
+    "GUERTEL_SATZ": "Er trägt einen dunkelbraunen Ledergürtel mit silberfarbener Schnalle.",
+    "SCHUH_SATZ": "Dazu trägt er braune Lederschuhe.",
+    "POSE_SATZ": "Der Mann steht frontal vor einem neutralen Hintergrund mit einer Hand in der Hosentasche.",
+    "AMBIENTE_SATZ": "Studiohintergrund in Grau ohne erkennbare Architektur.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["hellrosa Hemd", "graue Chinohose", "Ledergürtel", "braune Lederschuhe"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Jeans", "T-Shirt", "Jacke"]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "AUGEN": "braun",
+    "HAARFARBE": "Die Haare sind braun",
+    "HAAR_STRUKTUR": "wellig",
+    "KLEIDUNG": "grauer Strickpullover",
+    "MATERIAL": "Strick",
+    "POSE_SATZ": "Die Person sitzt entspannt auf einem Sofa und hält eine flauschige beige Katze im Arm.",
+    "AMBIENTE_SATZ": "Die Szene spielt in einem gemütlichen Wohnzimmer bei weichem Tageslicht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Katze", "Haustier", "Strickpullover"],
+    "AUSSCHLUSS_PFLICHT": ["Hund", "draußen", "Leder"]
+  }
+}

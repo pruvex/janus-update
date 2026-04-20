@@ -1,0 +1,13 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "Die Haare sind dunkel",
+    "OUTERWEAR": "dunkler Wollmantel",
+    "KLEIDUNG": "grauer Wollschal",
+    "POSE_SATZ": "Die Person ist von hinten beim Gehen zu sehen und trägt einen schwarzen Instrumentenkoffer.",
+    "AMBIENTE_SATZ": "Die Szene spielt in einem belebten Bahnhof.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Instrumentenkoffer", "Wollmantel", "von hinten"],
+    "AUSSCHLUSS_PFLICHT": ["Gesicht", "Gitarre"]
+  }
+}

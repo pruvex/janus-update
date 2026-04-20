@@ -1,0 +1,9 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "AUGEN": "braun",
+    "HAARFARBE": "rotbraunen",
+    "KLEIDUNG": "gemusterten Kleidung",
+    "OUTERWEAR": "Steppjacke"
+  }
+}

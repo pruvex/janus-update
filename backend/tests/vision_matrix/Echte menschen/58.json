@@ -1,0 +1,36 @@
+{
+  "filename": "58.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz, zerzaust",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "Brille mit dunklem, rechteckigem Gestell",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "olivgrüne Funktionsjacke mit orangefarbenem Reißverschluss",
+    "KLEIDUNG": "dunkelblaues, gemustertes Oberteil",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau sitzt auf einem Caféstuhl und blickt mit einem neutralen Ausdruck direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Ein sonniger, belebter Platz im Freien mit Kopfsteinpflaster, Cafétischen und historischen Gebäuden im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "olivgrüne Funktionsjacke",
+      "orangefarbener Reißverschluss",
+      "dunkle Brille",
+      "kurze braune Haare",
+      "Kopfsteinpflaster",
+      "Caféstühle",
+      "historische Gebäude"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Sonnenbrille",
+      "kein Schal",
+      "keine Tasche"
+    ]
+  }
+}

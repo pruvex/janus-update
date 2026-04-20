@@ -1,0 +1,113 @@
+{
+  "system.websearch": [
+    {
+      "prompt": "Wann erscheint die Nintendo Switch 2 in Deutschland und was kostet sie?",
+      "quality_check": [
+        ["switch 2"],
+        ["release", "erscheint", "erscheinung"],
+        ["preis", "price", "kosten", "euro", "€"],
+        ["deutschland", "germany", "de"]
+      ],
+      "few_shot_example": {
+        "user_prompt": "Was kostet die neue Playstation 5 Pro in Deutschland und wann erscheint sie?",
+        "tool_call_arguments": {"query": "Playstation 5 Pro release date price Germany Euro"}
+      }
+    },
+    {
+      "prompt": "Zeig mir die Top 5 PC Spiele für 2026.",
+      "quality_check": [
+        ["top 5", "top five"],
+        ["pc spiele", "pc games"],
+        ["2026"]
+      ],
+      "few_shot_example": {
+        "user_prompt": "Was kostet die neue Playstation 5 Pro in Deutschland und wann erscheint sie?",
+        "tool_call_arguments": {"query": "Playstation 5 Pro release date price Germany Euro"}
+      }
+    },
+    {
+      "prompt": "Wer hat gestern das Formel 1 Rennen gewonnen und wie waren die Rundenzeiten?",
+      "quality_check": [
+        ["formel 1", "formula 1", "f1"],
+        ["gewonnen", "won", "sieger", "winner"],
+        ["rundenzeiten", "lap times"],
+        ["gestern", "yesterday"]
+      ],
+      "few_shot_example": {
+        "user_prompt": "Was kostet die neue Playstation 5 Pro in Deutschland und wann erscheint sie?",
+        "tool_call_arguments": {"query": "Playstation 5 Pro release date price Germany Euro"}
+      }
+    }
+  ],
+  "system.weather": [
+    {
+      "prompt": "Brauche ich morgen in Berlin einen Regenschirm?",
+      "quality_check": [
+        ["berlin"],
+        ["regen", "regenschirm"],
+        ["morgen", "tomorrow"]
+      ],
+      "few_shot_example": {
+        "user_prompt": "Wie ist das Wetter heute in München?",
+        "tool_call_arguments": {"city": "München", "date": "today"}
+      }
+    },
+    {
+      "prompt": "Wie ist die Temperatur aktuell in Kairo?",
+      "quality_check": [
+        ["kairo", "cairo"],
+        ["temperatur", "temperature"]
+      ],
+      "few_shot_example": {
+        "user_prompt": "Wie ist das Wetter heute in München?",
+        "tool_call_arguments": {"city": "München", "date": "today"}
+      }
+    }
+  ],
+  "knowledge.edit_pdf": [
+    {
+      "prompt": "Im Dokument 'vertrag.pdf' steht 'Frau Müller'. Ändere das bitte überall in 'Herr Meier'.",
+      "quality_check": [
+        ["vertrag.pdf"],
+        ["müller"],
+        ["meier"]
+      ],
+      "few_shot_example": {
+        "user_prompt": "In 'bericht.pdf' soll 'GmbH' überall durch 'AG' ersetzt werden.",
+        "tool_call_arguments": {
+          "original_filename": "bericht.pdf",
+          "modifications": [{"search": "GmbH", "replace": "AG"}]
+        }
+      }
+    }
+  ],
+  "system.price_comparison": [
+    {
+      "prompt": "Was kostet die Nintendo Switch 2 aktuell in Deutschland?",
+      "quality_check": [
+        ["Nintendo", "Switch"],
+        ["de_DE", "DE"]
+      ]
+    },
+    {
+      "prompt": "How much is an iPhone 15 Pro in the US right now?",
+      "quality_check": [
+        ["iPhone"],
+        ["en_US", "US"]
+      ]
+    },
+    {
+      "prompt": "Ich suche eine Switch 2. Ist ein refurbished Gerät aktuell viel günstiger als Neuware?",
+      "quality_check": [
+        ["Switch"],
+        ["both", "refurbished", "condition_filter"]
+      ]
+    },
+    {
+      "prompt": "Was kostet eine Unze Feingold aktuell?",
+      "quality_check": [
+        ["Gold", "Feingold"]
+      ]
+    }
+  ]
+}

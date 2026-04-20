@@ -1,0 +1,1 @@
+{ "expected": { "GESCHLECHT": "Frau", "HAARFARBE": "lange blonde Haare", "OUTERWEAR": "brauner Mantel", "KLEIDUNG": "grauer Schal", "LEGWEAR": "karierter Minirock", "POSE_SATZ": "Die Person geht über eine Straße.", "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Mantel", "Schal", "Minirock", "blond"], "AUSSCHLUSS_PFLICHT": ["dunkler Rock", "Hose", "Strickjacke"] } }

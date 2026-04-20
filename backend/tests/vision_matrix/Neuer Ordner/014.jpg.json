@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "blonde Haare",
+    "FRISUR": "leicht gewellt",
+    "OUTERWEAR": "hellgrauer Cardigan",
+    "KLEIDUNG": "weißes Seidenblusentop",
+    "LEGWEAR": "graue Bürohosen",
+    "GUERTEL_SATZ": "Sie trägt einen schmalen schwarzen Gürtel mit Schnalle.",
+    "SCHUH_SATZ": "Dazu trägt sie schwarze Pumps.",
+    "POSE_SATZ": "Die Person steht locker vor einem Schreibtisch in einem modernen Office-Bereich.",
+    "AMBIENTE_SATZ": "Helles Büro mit Glasfront und Lounge-Möbeln.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Cardigan", "Bluse", "Hose", "Pumps"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Jeans", "Shorts", "T-Shirt"]
+  }
+}

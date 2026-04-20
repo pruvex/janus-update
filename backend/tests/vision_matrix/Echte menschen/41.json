@@ -1,0 +1,33 @@
+{
+  "filename": "41.jpg",
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "dunkelblond",
+    "FRISUR": "kurz, am Oberkopf leicht aufgestellt",
+    "BART": "Vollbart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "schwarze Vollrandbrille",
+    "SCHMUCK": "Ohr-Plugs / Tunnel",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "schwarzes T-Shirt",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "großflächige Tätowierungen an beiden Unterarmen",
+    "POSE_SATZ": "Der Mann steht mit vor der Brust verschränkten Armen und blickt mit einem ernsten, neutralen Ausdruck direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Ein Porträt vor einem tiefschwarzen, schlichten Hintergrund, der die Person stark freistellt.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarze Vollrandbrille",
+      "schwarzes T-Shirt",
+      "Vollbart",
+      "Tätowierungen an den Armen",
+      "Ohr-Plugs",
+      "schwarzer Hintergrund"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Kopfbedeckung",
+      "keine Sonnenbrille",
+      "kein Schal"
+    ]
+  }
+}

@@ -1,0 +1,199 @@
+[
+    {
+        "id": "gpt-5.4-nano",
+        "name": "GPT-5.4 Nano",
+        "provider": "openai",
+        "type": "text",
+        "cost_per_token_input": 0.00000020,
+        "cost_per_token_output": 0.00000125,
+        "desc": "Extrem schnell und kostengünstig. Ideal für einfache Aufgaben und schnelle Antworten.",
+        "capabilities": ["chat", "tool_calling", "simple_tools", "memory_query"]
+    },
+    {
+        "id": "gpt-5.4-mini",
+        "name": "gpt-5.4-mini",
+        "provider": "openai",
+        "type": "text",
+        "cost_per_token_input": 0.00000075,
+        "cost_per_token_output": 0.00000450,
+        "desc": "Der Allrounder. Eine exzellente Balance aus Geschwindigkeit, Kosten und Intelligenz.",
+        "capabilities": ["chat", "tool_calling", "list_synthesis", "memory_query"]
+    },
+    {
+        "id": "gpt-5.4",
+        "name": "GPT-5.4 (Standard)",
+        "provider": "openai",
+        "type": "text",
+        "cost_per_token_input": 0.00000250,
+        "cost_per_token_output": 0.00001500,
+        "desc": "Leistungsstarkes Standardmodell für komplexe Anfragen und kreatives Schreiben.",
+        "capabilities": ["chat", "tool_calling", "list_synthesis", "complex_reasoning", "memory_query"]
+    },
+    {
+        "id": "gpt-5.4-pro",
+        "name": "GPT-5.4 Pro (Maximum)",
+        "provider": "openai",
+        "type": "text",
+        "cost_per_token_input": 0.00003000,
+        "cost_per_token_output": 0.00018000,
+        "desc": "Das absolute Spitzenmodell. Maximale Leistung für kritische und hochkomplexe Aufgaben.",
+        "capabilities": ["chat", "tool_calling", "complex_reasoning", "deep_research_synthesis", "memory_query"]
+    },
+    {
+        "id": "gpt-image-1.5",
+        "name": "GPT Image 1.5",
+        "provider": "openai",
+        "type": "image",
+        "desc": "Our latest and most advanced model for image generation.",
+        "capabilities": ["image_generation"],
+        "pricing": {
+            "low": { "1024x1024": 0.009, "1024x1536": 0.013, "1536x1024": 0.013 },
+            "medium": { "1024x1024": 0.034, "1024x1536": 0.05, "1536x1024": 0.05 },
+            "high": { "1024x1024": 0.133, "1024x1536": 0.2, "1536x1024": 0.2 }
+        },
+        "default_quality": "medium",
+        "default_size": "1024x1024"
+    },
+    {
+        "id": "gpt-image-1-mini",
+        "name": "GPT Image 1 Mini",
+        "provider": "openai",
+        "type": "image",
+        "desc": "Cost-effective option for image generation.",
+        "capabilities": ["image_generation"],
+        "pricing": {
+            "low": { "1024x1024": 0.005, "1024x1536": 0.006, "1536x1024": 0.006 },
+            "medium": { "1024x1024": 0.011, "1024x1536": 0.015, "1536x1024": 0.015 },
+            "high": { "1024x1024": 0.036, "1024x1536": 0.052, "1536x1024": 0.052 }
+        },
+        "default_quality": "medium",
+        "default_size": "1024x1024"
+    },
+    {
+        "id": "gpt-4o",
+        "name": "GPT-4o (Vision)",
+        "provider": "openai",
+        "type": "text",
+        "cost_per_token_input": 0.0000025,
+        "cost_per_token_output": 0.000010,
+        "desc": "High-intelligence flagship model used for Vision tasks.",
+        "capabilities": ["chat", "vision"]
+    },
+    {
+        "id": "gpt-4o-mini",
+        "name": "GPT-4o Mini (TTS)",
+        "provider": "openai",
+        "type": "audio",
+        "cost_per_token_input": 0.000015,
+        "cost_per_token_output": 0,
+        "desc": "Effizientes Text-to-Speech-Modell von OpenAI ($0.015/1k Char).",
+        "capabilities": ["tts"]
+    },
+    {
+        "id": "gemini-3-pro-preview",
+        "name": "Gemini 3 Pro (Preview)",
+        "provider": "gemini",
+        "type": "text",
+        "cost_per_token_input": 0.000002,
+        "cost_per_token_output": 0.000012,
+        "desc": "Höchste Qualität und Reasoning-Tiefe für komplexe Aufgaben, lange Kontexte und anspruchsvolle Tool-Nutzung (Preview).",
+        "image_generation_model": "gemini-2.5-flash-image-preview",
+        "capabilities": ["chat", "tool_calling", "memory_query"]
+    },
+    {
+        "id": "gemini-3-flash-preview",
+        "name": "Gemini 3 Flash (Preview)",
+        "provider": "gemini",
+        "type": "text",
+        "cost_per_token_input": 0.00000050,
+        "cost_per_token_output": 0.000003,
+        "desc": "Schnelles und kostengünstiges Gemini 3 Modell (Preview).",
+        "image_generation_model": "gemini-2.5-flash-image-preview",
+        "capabilities": ["chat", "tool_calling", "memory_query"]
+    },
+    {
+        "id": "gemini-3-pro-image-preview",
+        "name": "Gemini 3 Pro Image (Preview)",
+        "provider": "gemini",
+        "type": "image",
+        "desc": "High-end image generation with advanced reasoning and text rendering.",
+        "capabilities": ["image_generation"],
+        "cost_per_million_tokens_input": 2.00,
+        "cost_per_million_tokens_output": 120.00,
+        "default_aspect_ratio": "1:1",
+        "aspect_ratios": ["1:1", "16:9", "9:16", "4:3", "3:4"],
+        "default_resolution": "1K",
+        "resolutions": ["1K", "2K", "4K"],
+        "tokens_per_resolution": { "1K": 1120, "2K": 1120, "4K": 2000 }
+    },
+    {
+        "id": "gemini-2.5-flash-image",
+        "name": "Gemini 2.5 Flash Image",
+        "provider": "gemini",
+        "type": "image",
+        "desc": "Fast and efficient image generation.",
+        "capabilities": ["image_generation"],
+        "cost_per_million_tokens_input": 0.30,
+        "cost_per_million_tokens_output": 30.00,
+        "default_aspect_ratio": "1:1",
+        "aspect_ratios": ["1:1", "16:9", "9:16", "4:3", "3:4"],
+        "default_resolution": "1K",
+        "resolutions": ["1K"],
+        "tokens_per_resolution": { "1K": 1290 }
+    },
+    {
+        "id": "gemini-pro-vision",
+        "name": "Gemini Pro Vision",
+        "provider": "gemini",
+        "type": "text_image",
+        "cost_per_token_input": 0.000000125,
+        "cost_per_token_output": 0.000000375,
+        "desc": "Gemini-Modell für multimodale Eingaben (Text und Bild).",
+        "capabilities": ["chat", "image_generation"]
+    },
+    {
+        "id": "mistral-nemo:12b",
+        "name": "Mistral Nemo (12B)",
+        "provider": "ollama",
+        "type": "text",
+        "desc": "Reasoning-starker Allrounder fuer Agentic-Tasks mit stabilem Tool-Use.",
+        "capabilities": ["chat", "tool_calling", "memory_query"],
+        "reasoning_capability": "high"
+    },
+    {
+        "id": "qwen2.5:14b",
+        "name": "Qwen 2.5 (14B)",
+        "provider": "ollama",
+        "type": "text",
+        "desc": "Exzellentes Tool-Parsing und robuste mehrstufige Agenten-Reasoning-Leistung.",
+        "capabilities": ["chat", "tool_calling", "memory_query"],
+        "reasoning_capability": "high"
+    },
+    {
+        "id": "gemma2:27b",
+        "name": "Gemma 2 (27B)",
+        "provider": "ollama",
+        "type": "text",
+        "desc": "Sehr starkes High-End-Reasoning fuer komplexe Tool-Ketten auf leistungsfaehigen Nodes.",
+        "capabilities": ["chat", "tool_calling", "memory_query"],
+        "reasoning_capability": "high"
+    },
+    {
+        "id": "websearch_gemini",
+        "name": "Gemini Google Search",
+        "provider": "google",
+        "type": "websearch",
+        "cost_per_query": 0.0,
+        "currency": "USD",
+        "description": "Kosten pro Suchanfrage. HINWEIS: 5.000 fundierte Prompts/Monat sind kostenlos. Zukünftige Kosten: ca. 0,014 USD pro einzelner Suchanfrage."
+    },
+    {
+        "id": "websearch",
+        "name": "Web Search",
+        "provider": "internal",
+        "type": "websearch",
+        "cost_per_query": 0.01,
+        "desc": "Kosten für eine Websuche.",
+        "capabilities": ["web_search"]
+    }
+]

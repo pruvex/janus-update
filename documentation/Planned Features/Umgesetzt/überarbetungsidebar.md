@@ -1,0 +1,1 @@
+Sidebar optisch überarbeiten, ca. nach bildvorlage. 

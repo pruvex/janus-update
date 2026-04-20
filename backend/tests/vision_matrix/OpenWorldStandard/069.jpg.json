@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "blond",
+    "FRISUR": "lang, glatt",
+    "OUTERWEAR": "schwarzer Blazer",
+    "KLEIDUNG": "dunkle Jeans",
+    "LEGWEAR": "weite Jeans",
+    "SCHUH_SATZ": "Weiße Sneaker",
+    "POSE_SATZ": "Sie steht im Profil mit Blick zur Seite und hält eine Chipstüte vor dem Bauch.",
+    "AMBIENTE_SATZ": "Abendliche Stadtstraße mit beleuchteter Fassade und passierenden Autos.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Seitprofil", "Blazer", "Jeans", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["High Heels", "T-Shirt", "Indoor-Setting"],
+    "NOTIZ": "Seitliche Pose in urbaner Abend-Location erfüllt die Vorgabe."
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "filename": "36.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "blond",
+    "FRISUR": "kurz, wuschelig gestylt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "silberne Halskette",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "rotes Oberteil",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt für eine Porträtaufnahme mit einem sanften Lächeln direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Im Hintergrund ist eine braune Wand mit einer deutlichen Ziegel- oder Fliesenstruktur erkennbar.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "rotes Oberteil",
+      "silberne Halskette",
+      "kurze blonde Haare",
+      "braune Ziegelwand",
+      "markant nachgezogene Augenbrauen"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "blond",
+    "FRISUR": "lockig",
+    "OUTERWEAR": "schwarzes Top",
+    "KLEIDUNG": "schwarzes Jumpsuit",
+    "LEGWEAR": "Schwarz",
+    "SCHUH_SATZ": "Schwarze High Heels",
+    "POSE_SATZ": "Sie steht mit einer Hand auf der Hüfte und blickt leicht nach oben.",
+    "AMBIENTE_SATZ": "Neutraler leicht grüner Hintergrund im Studio.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Neutral Background", "Full Body", "Clothing Details"],
+    "AUSSCHLUSS_PFLICHT": ["Outdoor", "Mehrere Personen"],
+    "NOTIZ": "Kontrastreiche, neutrale Kulisse, Fokus aufs Outfit."
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz und gegelt",
+    "OUTERWEAR": "schwarzer Anzugblazer",
+    "KLEIDUNG": "weißes Hemd",
+    "LEGWEAR": "schwarze Anzughose",
+    "SCHUH_SATZ": "Schwarze Lederschuhe",
+    "POSE_SATZ": "Er steht frontal mit leicht verschränkten Händen vor neutralem Hintergrund und blickt geradeaus.",
+    "AMBIENTE_SATZ": "Studioaufnahme mit hellem, einfarbigem Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Blazer", "Hemd", "Anzughose", "Lederschuhe", "blaue Krawatte mit weißen Punkten"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Outdoorjacke", "Kapuze"],
+    "NOTIZ": "Krawatte zeigt deutliches Polka-Dot-Muster, erfüllt das Kriterium trotz minimaler Umgebung." 
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "filename": "28.jpg",
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz",
+    "BART": "Schnurrbart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "silbernes Gliederarmband, Halskette",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "schwarzes T-Shirt mit rotem Grafikaufdruck",
+    "LEGWEAR": "schwarze Shorts",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "Smartphone in der Hand",
+    "POSE_SATZ": "Der Mann sitzt entspannt auf einem schwarzen Metallgitterstuhl und blickt lächelnd in die Kamera.",
+    "AMBIENTE_SATZ": "Außenbereich mit Rasenfläche, pinkfarbenen Blumentöpfen und einem Nebengebäude im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarzes Grafik-T-Shirt",
+      "Schnurrbart",
+      "Metallgitterstuhl",
+      "Smartphone",
+      "pinke Blumentöpfe",
+      "silbernes Armband"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Hut",
+      "kein Vollbart"
+    ]
+  }
+}

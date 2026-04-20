@@ -1,0 +1,32 @@
+{
+  "filename": "9.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "grau-meliert",
+    "FRISUR": "schulterlang, wellig",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "lila Halbrandbrille",
+    "SCHMUCK": "filigrane goldene Halskette",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "grauer Pullover mit V-Ausschnitt",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt mit einem neutralen Gesichtsausdruck direkt und frontal in die Kamera.",
+    "AMBIENTE_SATZ": "Die Aufnahme erfolgte in einem Innenraum vor einer weißen Raufasertapete.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "lila Halbrandbrille",
+      "grauer V-Ausschnitt-Pullover",
+      "goldene Halskette",
+      "graumeliertes gewelltes Haar",
+      "Raufasertapete"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Sonnenbrille"
+    ]
+  }
+}

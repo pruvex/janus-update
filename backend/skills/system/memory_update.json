@@ -1,0 +1,35 @@
+{
+  "legacy_name": "update_core_memory",
+  "skill": "memory.update",
+  "id": "memory_update",
+  "name": "Aktualisiere Erinnerung",
+  "description": "Aktualisiert oder korrigiert eine bestehende Erinnerung. Nur für user_editable=true Memories erlaubt.",
+  "version": "2.0.0",
+  "category": "memory",
+  "risk_level": "medium",
+  "parameters": {
+    "type": "object",
+    "required": ["memory_id", "new_fact"],
+    "properties": {
+      "memory_id": {
+        "type": "integer",
+        "description": "ID der zu aktualisierenden Memory (von memory_read)"
+      },
+      "new_fact": {
+        "type": "string",
+        "description": "Neuer/korrigierter Fakt-Text"
+      },
+      "new_priority": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 1.0,
+        "description": "OPTIONAL: Neue Priority. Wird ggf. durch Guard gekappt."
+      }
+    }
+  },
+  "error_cases": [
+    "Memory nicht gefunden",
+    "Memory ist nicht editierbar (user_editable=false)",
+    "Permission denied (externe Skills dürfen nur eigene Memories editieren)"
+  ]
+}

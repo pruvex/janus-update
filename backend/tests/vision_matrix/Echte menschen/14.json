@@ -1,0 +1,33 @@
+{
+  "filename": "14.jpg",
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "weiß",
+    "FRISUR": "kurz, licht",
+    "BART": "grauer Vollbart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "runde Metallbrille",
+    "SCHMUCK": "silberner Ohrring am linken Ohr",
+    "OUTERWEAR": "schwarze Funktionsjacke mit orangefarbenen Reißverschlüssen",
+    "KLEIDUNG": "grau gemustertes Poloshirt mit großem Textaufdruck",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Der Mann steht aufrecht und blickt mit einem neutralen Gesichtsausdruck direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Im Hintergrund befindet sich ein mobiler Verkaufsstand mit der Aufschrift 'Getränke Flath'.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarze Funktionsjacke",
+      "orangefarbene Reißverschlüsse",
+      "runde Metallbrille",
+      "grauer Vollbart",
+      "Schriftzug Getränke Flath",
+      "silberner Ohrring"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Kopfbedeckung",
+      "kein Schal",
+      "keine Sonnenbrille"
+    ]
+  }
+}

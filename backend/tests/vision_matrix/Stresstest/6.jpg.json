@@ -1,0 +1,1 @@
+{ "expected": { "GESCHLECHT": "Frau", "KLEIDUNG": "beiger Grobstrick-Pullover mit Cut-Outs", "LEGWEAR": "cremefarbener Lederrock", "SCHUH_SATZ": "Sie trägt braune Mules mit Absatz.", "KOPF_ACCESSOIRE": "getönte Sonnenbrille", "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Cut-Outs", "Lederrock", "Sonnenbrille", "Strickpullover"], "AUSSCHLUSS_PFLICHT": ["Hose", "Chino", "Karo"] } }

@@ -1,0 +1,32 @@
+{
+  "filename": "50.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "mittellang, glatt mit Pony",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "dunkle Vollrandbrille",
+    "SCHMUCK": "helle Perlenkette",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "dunkles Oberteil",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt frontal mit einem leichten Lächeln in die Kamera.",
+    "AMBIENTE_SATZ": "Ein heller Innenraum mit einem unscharfen Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "dunkle Vollrandbrille",
+      "schwarzes Haar mit Pony",
+      "helle Perlenkette",
+      "dunkles Oberteil",
+      "roter Lippenstift"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Sonnenbrille"
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "filename": "12.jpg",
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "kurz, leicht zerzaust",
+    "BART": "Oberlippenbart und Kinnbart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "Tätowierung am Unterarm",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "schwarzes T-Shirt mit weißem geometrischem Grafikmuster",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "Krankenhaus-Patientenarmband",
+    "POSE_SATZ": "Der Mann liegt leicht aufgerichtet in einem Krankenhausbett und lächelt in die Kamera.",
+    "AMBIENTE_SATZ": "Krankenhauszimmer mit einem Nachttisch, auf dem Getränkeflaschen stehen, und einem Klemmbrett im Vordergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "gemustertes T-Shirt",
+      "Krankenhausbett",
+      "Patientenarmband",
+      "Coca-Cola Flasche",
+      "Klemmbrett mit Unterlagen",
+      "Tätowierung am Arm"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "keine Kopfbedeckung",
+      "kein Vollbart"
+    ]
+  }
+}

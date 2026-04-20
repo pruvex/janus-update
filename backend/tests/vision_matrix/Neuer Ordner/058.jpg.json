@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "lang, leicht gewellt",
+    "OUTERWEAR": "hellblaue cropped Denim-Jacke",
+    "KLEIDUNG": "helles Denim-Top",
+    "LEGWEAR": "weit geschnittene Jeans mit Umschlag",
+    "SCHUH_SATZ": "Schwarze Stiefeletten mit goldener Spitze",
+    "POSE_SATZ": "Sie läuft mit einem Hut und Sonnenbrille an einer Stadtkulisse vorbei.",
+    "AMBIENTE_SATZ": "Städtischer Gehweg mit Steinmauer.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Denim-Jacke", "Denim-Hose", "Stiefeletten"],
+    "AUSSCHLUSS_PFLICHT": ["Kleid", "Sneaker", "Anzug"],
+    "NOTIZ": "Hut und Tasche ergänzen Look, Fokus bleibt auf Denim-on-Denim." 
+  }
+}

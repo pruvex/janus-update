@@ -1,0 +1,34 @@
+{
+  "filename": "48.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "kurz, voluminös und nach oben gestylt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "helle Bluse mit dunklem, roten und beigen Blumenmuster",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau steht frontal, lächelt breit und blickt direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Innenraum vor einer hellen, strukturierten Wand mit einem gerahmten Bild im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "helle Blumenbluse",
+      "dunkelrote Rosenmuster",
+      "kurze voluminöse Haare",
+      "gerahmtes Bild",
+      "helle Wand",
+      "breites Lächeln"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "kein Schal"
+    ]
+  }
+}

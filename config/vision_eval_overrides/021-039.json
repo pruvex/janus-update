@@ -1,0 +1,985 @@
+[
+  {
+    "ALTER": "junge Frau",
+    "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+    "HAARFARBE": "hellblonde Haare",
+    "FRISUR": "lang und wellig",
+    "OUTERWEAR": "hellgrauer Mantel",
+    "OUTERWEAR_SATZ": "Dazu trägt sie einen hellgrauen Mantel.",
+    "KLEIDUNG": "beiger Strickpullover über weißem Hemd",
+    "LEGWEAR": "schwarze Lederhose",
+    "LEGWEAR_SATZ": "Dazu trägt sie eine schwarze Lederhose.",
+    "MATERIAL": "Leder und Strick",
+    "SCHUH_SATZ": "Dazu trägt sie weiße High-Top-Sneaker (Stoffschuhe).",
+    "POSE_SATZ": "Die Person steht lächelnd in einer Wohnstraße und blickt leicht zur Seite.",
+    "AMBIENTE_SATZ": "Eine ruhige Allee mit parkenden Autos und Stadthäusern im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Lederhose",
+      "grauer Mantel",
+      "Strickpullover",
+      "weiße Sneaker",
+      "Lächeln"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Jeans",
+      "schwarze Schuhe",
+      "kurze Haare",
+      "Regen",
+      "Sonnenbrille"
+    ],
+    "image_name": "005.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein erwachsener Mann",
+    "HAARFARBE": "dunkelbraune Haare",
+    "KLEIDUNG": "hellrosa Hemd",
+    "LEGWEAR": "graue Chinohose",
+    "LEGWEAR_SATZ": "Dazu trägt er graue Chinohose.",
+    "MATERIAL": "Leder",
+    "GUERTEL_SATZ": "Er trägt einen dunkelbraunen Ledergürtel mit silberfarbener Schnalle.",
+    "SCHUH_SATZ": "Dazu trägt er braune Lederschuhe.",
+    "POSE_SATZ": "Der Mann steht frontal vor einem neutralen Hintergrund mit einer Hand in der Hosentasche.",
+    "AMBIENTE_SATZ": "Studiohintergrund in Grau ohne erkennbare Architektur.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "hellrosa Hemd",
+      "graue Chinohose",
+      "Ledergürtel",
+      "braune Lederschuhe"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Sneaker",
+      "Jeans",
+      "T-Shirt",
+      "Jacke"
+    ],
+    "image_name": "006.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein erwachsener Mann",
+    "HAARFARBE": "dunkelbraune Haare",
+    "FRISUR": "kurz und gepflegt",
+    "KLEIDUNG": "hellblaues Button-down-Hemd mit hochgekrempelten Ärmeln",
+    "LEGWEAR": "braune Chinohose",
+    "LEGWEAR_SATZ": "Dazu trägt er braune Chinohose.",
+    "GUERTEL_SATZ": "Er trägt einen geflochtenen Leder-Gürtel mit Metallschließe.",
+    "SCHUH_SATZ": "Weiße Sneaker mit beige-braunen Akzenten.",
+    "POSE_SATZ": "Der Mann lehnt entspannt an einem Metallgeländer und lächelt in die Kamera.",
+    "AMBIENTE_SATZ": "Helle Büroterrasse mit Glasfassade und Betonboden.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "hellblaues Hemd",
+      "braune Chinohose",
+      "geflochtener Gürtel",
+      "Sneaker",
+      "Geländer"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Anzug",
+      "Jeans",
+      "Hoodie",
+      "Mütze"
+    ],
+    "image_name": "007.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein junger Mann",
+    "HAARFARBE": "dunkelbraunes Haar",
+    "FRISUR": "kurz und zurückgestylt",
+    "KLEIDUNG": "schwarzes Button-down-Hemd über schwarzer Chinohose",
+    "LEGWEAR": "schwarze Chinohose",
+    "LEGWEAR_SATZ": "Dazu trägt er schwarze Chinohose.",
+    "OUTFIT_UNTEN": "schwarze Chinohose, schwarze Chelsea-Boots",
+    "GUERTEL_SATZ": "Er trägt einen schwarzen Ledergürtel mit silberner Schnalle.",
+    "ZUBEHOER_SATZ": "Er hält eine schwarze Lederjacke und einen schicken Weekender in der Hand.",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Chelsea-Boots aus Glattleder.",
+    "MATERIAL": "Leder",
+    "POSE_SATZ": "Der Mann geht mit ruhigem Schritt auf den Betrachter zu.",
+    "AMBIENTE_SATZ": "Städtische Straße mit Restaurantfenstern und Pflanzen hinter ihm.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarzes Hemd",
+      "schwarze Chinohose",
+      "Ledergürtel",
+      "Chelsea-Boots"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Sneaker",
+      "Jeans",
+      "Kapuze",
+      "T-Shirt"
+    ],
+    "image_name": "008.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein erwachsener Mann",
+    "HAARFARBE": "dunkelbraune Haare",
+    "FRISUR": "kurz und gepflegt",
+    "KLEIDUNG": "hellblaues Hemd",
+    "LEGWEAR": "braune Chinohose",
+    "LEGWEAR_SATZ": "Dazu trägt er braune Chinohose.",
+    "OUTFIT_UNTEN": "braune Chinohose, weiße Sneaker",
+    "GUERTEL_SATZ": "Er trägt einen geflochtenen Ledergürtel mit metallischer Schnalle.",
+    "SCHUH_SATZ": "Weiße Sneaker mit beigefarbenem Obermaterial.",
+    "POSE_SATZ": "Der Mann lehnt lächelnd an einem Geländer und steht leicht seitlich.",
+    "AMBIENTE_SATZ": "Büroterrasse mit Glasfassade und Betonboden.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "hellblaues Hemd",
+      "braune Chinohose",
+      "geflochtener Gürtel",
+      "Sneaker"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Anzug",
+      "Jeans",
+      "Hoodie",
+      "Mütze"
+    ],
+    "image_name": "009.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein erwachsener Mann",
+    "HAARFARBE": "hellbraune Haare",
+    "FRISUR": "kurz und ordentlich",
+    "OUTERWEAR": "dunkelblaues Sakko",
+    "OUTERWEAR_SATZ": "Dazu trägt er ein dunkelblaues Sakko.",
+    "KLEIDUNG": "hellblaues Hemd",
+    "LEGWEAR": "graue Chinohose",
+    "LEGWEAR_SATZ": "Dazu trägt er graue Chinohose.",
+    "OUTFIT_UNTEN": "graue Chinohose, braune Lederschuhe",
+    "GUERTEL_SATZ": "Er trägt einen cognacfarbenen Ledergürtel mit goldener Schnalle.",
+    "SCHUH_SATZ": "Dazu trägt er braune Lederschuhe.",
+    "POSE_SATZ": "Der Mann steht selbstbewusst auf einem Weg im Park und hat eine Hand in der Hosentasche.",
+    "AMBIENTE_SATZ": "Parkweg mit Rasen und Bäumen im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "dunkelblaues Sakko",
+      "hellblaues Hemd",
+      "graue Chinohose",
+      "Ledergürtel",
+      "braune Schuhe"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Sneaker",
+      "Jeans",
+      "Sportjacke",
+      "Mütze"
+    ],
+    "image_name": "010.jpg"
+  },
+  {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "hochgesteckt",
+    "OUTERWEAR": "kariertes Sakko",
+    "OUTERWEAR_SATZ": "Dazu trägt sie ein kariertes Sakko.",
+    "KLEIDUNG": "schwarz-weiß gestreiftes Hemd",
+    "LEGWEAR": "rotbraune Anzughose",
+    "LEGWEAR_SATZ": "Dazu trägt sie eine rotbraune Anzughose.",
+    "OUTFIT_UNTEN": "rotbraune Anzughose, schwarze Sandaletten",
+    "SCHUH_SATZ": "Dazu trägt sie schwarze Sandaletten mit dünnem Riemen.",
+    "POSE_SATZ": "Die Person steht leicht seitlich vor einer Glaswand und schaut in die Kamera.",
+    "AMBIENTE_SATZ": "Helle Hallenfront eines modernen Bürogebäudes.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "kariertes Sakko",
+      "gestreiftes Hemd",
+      "Anzughose",
+      "Sandaletten"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Shorts",
+      "Sneaker",
+      "T-Shirt",
+      "dunkle Jeans"
+    ],
+    "image_name": "011.jpg"
+  },
+  {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+    "HAARFARBE": "dunkelbraune Haare",
+    "FRISUR": "nach hinten gesteckt",
+    "OUTERWEAR": "grauer Hahnentritt-Blazer",
+    "OUTERWEAR_SATZ": "Dazu trägt sie einen grauen Hahnentritt-Blazer.",
+    "KLEIDUNG": "schwarzes Top unter Blazer",
+    "LEGWEAR": "graue Hosen mit feinem Hahnentritt",
+    "LEGWEAR_SATZ": "Dazu trägt sie graue Hosen mit feinem Hahnentritt.",
+    "OUTFIT_UNTEN": "graue Hosen mit feinem Hahnentritt, schwarze Pumps",
+    "SCHUH_SATZ": "Dazu trägt sie schwarze Pumps mit spitzer Kappe.",
+    "POSE_SATZ": "Die Person steht selbstbewusst vor einer weißen Tür und hält eine Clutch.",
+    "AMBIENTE_SATZ": "Helles Studio mit weißen Wänden und Türen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Blazer",
+      "schwarzes Top",
+      "Hose",
+      "Pumps"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Sneaker",
+      "Shorts",
+      "T-Shirt",
+      "Jeans"
+    ],
+    "image_name": "012.jpg"
+  },
+  {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+    "HAARFARBE": "blonde Haare",
+    "FRISUR": "lang und offen",
+    "OUTERWEAR": "beiger Cardigan",
+    "OUTERWEAR_SATZ": "Dazu trägt sie einen beigen Cardigan.",
+    "KLEIDUNG": "weißes Top mit V-Ausschnitt",
+    "LEGWEAR": "schwarze Stoffhose",
+    "LEGWEAR_SATZ": "Dazu trägt sie eine schwarze Stoffhose.",
+    "OUTFIT_UNTEN": "schwarze Stoffhose, beige Pumps",
+    "ZUBEHOER_SATZ": "Sie trägt eine große schwarze Business-Tasche.",
+    "SCHUH_SATZ": "Dazu trägt sie beige Pumps.",
+    "POSE_SATZ": "Die Person steht frontal vor einem dekorativen Eingang und lächelt in die Kamera.",
+    "AMBIENTE_SATZ": "Städtischer Eingang mit dunkler Tür und Tageslicht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Cardigan",
+      "weißes Top",
+      "Stoffhose",
+      "Business-Tasche"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Sneaker",
+      "Jeans",
+      "Shorts",
+      "Sporttasche"
+    ],
+    "image_name": "013.jpg"
+  },
+  {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "ALTER_GESCHLECHT_SATZ": "eine erwachsene Frau",
+    "HAARFARBE": "blonde Haare",
+    "FRISUR": "leicht gewellt",
+    "OUTERWEAR": "hellgrauer Cardigan",
+    "OUTERWEAR_SATZ": "Dazu trägt sie einen hellgrauen Cardigan.",
+    "KLEIDUNG": "weißes Seidenblusentop",
+    "LEGWEAR": "graue Bürohosen",
+    "LEGWEAR_SATZ": "Dazu trägt sie graue Bürohosen.",
+    "OUTFIT_UNTEN": "graue Bürohosen, schwarze Pumps",
+    "GUERTEL_SATZ": "Sie trägt einen schmalen schwarzen Gürtel mit Schnalle.",
+    "SCHUH_SATZ": "Dazu trägt sie schwarze Pumps.",
+    "POSE_SATZ": "Die Person steht locker vor einem Schreibtisch in einem modernen Office-Bereich.",
+    "AMBIENTE_SATZ": "Helles Büro mit Glasfront und Lounge-Möbeln.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Cardigan",
+      "Bluse",
+      "Hose",
+      "Pumps"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Sneaker",
+      "Jeans",
+      "Shorts",
+      "T-Shirt"
+    ],
+    "image_name": "014.jpg"
+  },
+  {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+    "HAARFARBE": "schwarze Haare",
+    "FRISUR": "locker zusammengebunden",
+    "OUTERWEAR": "orangefarbener Blazer",
+    "OUTERWEAR_SATZ": "Dazu trägt sie einen orangefarbenen Blazer.",
+    "KLEIDUNG": "weißes Blusentop mit feinem Muster",
+    "LEGWEAR": "orangefarbene Stoffhose",
+    "LEGWEAR_SATZ": "Dazu trägt sie eine orangefarbene Stoffhose.",
+    "OUTFIT_UNTEN": "orangefarbene Stoffhose, schwarze Sandaletten",
+    "ZUBEHOER_SATZ": "Sie hält eine passende Clutch mit goldener Hardware.",
+    "SCHUH_SATZ": "Dazu trägt sie schwarze Sandaletten mit Riemen.",
+    "POSE_SATZ": "Die Person steht leicht seitlich und blickt lächelnd zur Seite.",
+    "AMBIENTE_SATZ": "Stadtplatz mit Bäumen und modernen Gebäuden im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Blazer",
+      "Stoffhose",
+      "Clutch",
+      "Sandaletten"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Sneaker",
+      "Jeans",
+      "Hoodie",
+      "Kappe"
+    ],
+    "image_name": "015.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein junger Mann",
+    "HAARFARBE": "rote Haare",
+    "FRISUR": "kurz und nach hinten gestylt",
+    "OUTERWEAR": "dunkelgrüner Strickpullover",
+    "OUTERWEAR_SATZ": "Dazu trägt er einen dunkelgrünen Strickpullover.",
+    "KLEIDUNG": "heller Rollkragenpullover",
+    "LEGWEAR": "hellbeige Cordhose",
+    "LEGWEAR_SATZ": "Dazu trägt er hellbeige Cordhose.",
+    "OUTFIT_UNTEN": "hellbeige Cordhose, schwarze Slip-on Sneaker",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Slip-on Sneaker mit hellgrünem Detail.",
+    "POSE_SATZ": "Der Mann steht entspannt mit den Händen in den Taschen und blickt direkt zur Kamera.",
+    "AMBIENTE_SATZ": "Neutraler Studiohintergrund mit heller Wand und Holzboden.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Strickpullover",
+      "Rollkragenpullover",
+      "Cordhose",
+      "Sneaker"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Mehrere Personen",
+      "Regen",
+      "Nacht",
+      "Hoodie"
+    ],
+    "image_name": "016.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein erwachsener Mann",
+    "HAARFARBE": "dunkelbraune Haare",
+    "FRISUR": "kurz und gepflegt",
+    "OUTERWEAR": "langes camel-farbenes Mantel",
+    "OUTERWEAR_SATZ": "Dazu trägt er ein langes camel-farbenes Mantel.",
+    "KLEIDUNG": "burgunderfarbenes Rollkragenpullover",
+    "LEGWEAR": "dunkelblaue Chinohose",
+    "LEGWEAR_SATZ": "Dazu trägt er dunkelblaue Chinohose.",
+    "OUTFIT_UNTEN": "dunkelblaue Chinohose, schwarze Lederschuhe",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Lederschuhe aus Glattleder.",
+    "POSE_SATZ": "Der Mann steht leicht seitlich vor einem neutralen Hintergrund und hält den Mantel geöffnet.",
+    "AMBIENTE_SATZ": "Studioaufbau mit weißem Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Mantel",
+      "Rollkragenpullover",
+      "Chinohose",
+      "Lederschuhe"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Sneaker",
+      "Jeans",
+      "T-Shirt",
+      "Kapuze"
+    ],
+    "image_name": "017.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein erwachsener Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz und gestutzt",
+    "OUTERWEAR": "grauer Wollmantel",
+    "OUTERWEAR_SATZ": "Dazu trägt er einen grauen Wollmantel.",
+    "KLEIDUNG": "schwarzer Rollkragenpullover",
+    "LEGWEAR": "schwarze Stoffhose",
+    "LEGWEAR_SATZ": "Dazu trägt er schwarze Stoffhose.",
+    "OUTFIT_UNTEN": "schwarze Stoffhose, schwarze Lederstiefel",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Lederstiefel.",
+    "POSE_SATZ": "Der Mann steht mit verschränkten Händen auf einer Straße und blickt seitlich.",
+    "AMBIENTE_SATZ": "Städtische Straße mit Parkplätzen und Gebäuden im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Wollmantel",
+      "Rollkragenpullover",
+      "Stoffhose",
+      "Lederstiefel"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Sneaker",
+      "Jeans",
+      "T-Shirt",
+      "Kapuzenpullover"
+    ],
+    "image_name": "018.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein erwachsener Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz und gestylt",
+    "OUTERWEAR": "camel-farbene Jacke",
+    "OUTERWEAR_SATZ": "Dazu trägt er eine camel-farbene Jacke.",
+    "KLEIDUNG": "schwarzer Rollkragenpullover",
+    "LEGWEAR": "grüne Chinohose",
+    "LEGWEAR_SATZ": "Dazu trägt er grüne Chinohose.",
+    "OUTFIT_UNTEN": "grüne Chinohose, braune Wildlederboots",
+    "SCHUH_SATZ": "Dazu trägt er braune Wildlederboots.",
+    "POSE_SATZ": "Der Mann geht mit entspanntem Blick die Straße entlang und hält die Hände locker an den Seiten.",
+    "AMBIENTE_SATZ": "Moderne Urbanstraße mit Glasfassade im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Jacke",
+      "Rollkragenpullover",
+      "Chinohose",
+      "Wildlederboots"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Sneaker",
+      "Jeans",
+      "Hoodie",
+      "Shorts"
+    ],
+    "image_name": "019.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein erwachsener Mann",
+    "HAARFARBE": "blonde Haare",
+    "FRISUR": "kurz und zurückgekämmt",
+    "OUTERWEAR": "dunkelblaues Sakko",
+    "OUTERWEAR_SATZ": "Dazu trägt er ein dunkelblaues Sakko.",
+    "KLEIDUNG": "schwarzer Rollkragenpullover",
+    "LEGWEAR": "dunkelgraue Anzughose",
+    "LEGWEAR_SATZ": "Dazu trägt er dunkelgraue Anzughose.",
+    "OUTFIT_UNTEN": "dunkelgraue Anzughose, braune oxford Lederschuhe",
+    "GUERTEL_SATZ": "Er trägt einen schwarzen Gürtel mit silberner Schnalle.",
+    "SCHUH_SATZ": "Dazu trägt er braune oxford Lederschuhe.",
+    "POSE_SATZ": "Der Mann steht selbstbewusst mitten auf einer Stadtstraße und schaut leicht zur Seite.",
+    "AMBIENTE_SATZ": "Urbaner Stadtverkehr mit Hochhäusern und herbstlicher Stimmung im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Sakko",
+      "Rollkragenpullover",
+      "Anzughose",
+      "Lederschuhe"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Sneaker",
+      "Jeans",
+      "Hoodie",
+      "Shorts"
+    ],
+    "image_name": "020.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein junger Mann",
+    "HAARFARBE": "blond",
+    "FRISUR": "kurz und gewellt",
+    "OUTERWEAR": "hellblaue Jeansjacke",
+    "OUTERWEAR_SATZ": "Dazu trägt er eine hellblaue Jeansjacke.",
+    "KLEIDUNG": "weißes T-Shirt",
+    "LEGWEAR": "helle Jeanshose",
+    "LEGWEAR_SATZ": "Dazu trägt er helle Jeanshose.",
+    "OUTFIT_UNTEN": "helle Jeanshose, weiße Sneaker mit grauen Akzenten",
+    "SCHUH_SATZ": "Dazu trägt er weiße Sneaker mit grauen Akzenten.",
+    "POSE_SATZ": "Die Person sitzt gespannt vor einer dunklen Wand und schaut nach unten.",
+    "AMBIENTE_SATZ": "Urbanes Straßeneck mit minimalistischem Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Jeansjacke",
+      "T-Shirt",
+      "Jeanshose",
+      "weiße Sneaker"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Hose mit auffälligem Muster",
+      "Bundhose",
+      "Stiefel",
+      "Blazer"
+    ],
+    "image_name": "021.jpg"
+  },
+  {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+    "HAARFARBE": "dunkelbraune Haare",
+    "FRISUR": "offen und glatt",
+    "KLEIDUNG": "hellblaues Top",
+    "LEGWEAR": "hellblaue Jeans",
+    "LEGWEAR_SATZ": "Dazu trägt sie hellblaue Jeans.",
+    "OUTFIT_UNTEN": "hellblaue Jeans, weiße Sneaker mit leichtem Plateau",
+    "SCHUH_SATZ": "Dazu trägt sie weiße Sneaker mit leichtem Plateau.",
+    "POSE_SATZ": "Die Person sitzt seitlich auf einer blauen Mauer und stützt das Kinn auf die Hand.",
+    "AMBIENTE_SATZ": "Farbenfrohe Outdoor-Szene mit klarer Tageslichtstimmung.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Jeansjacke",
+      "Top",
+      "Jeanshose",
+      "Weiße Sneaker"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Hose mit auffälligem Muster",
+      "Bundhose",
+      "Stiefel",
+      "Blazer"
+    ],
+    "image_name": "022.jpg"
+  },
+  {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "lockig",
+    "OUTERWEAR": "hellblaue Jeansjacke",
+    "OUTERWEAR_SATZ": "Dazu trägt sie eine hellblaue Jeansjacke.",
+    "KLEIDUNG": "hellblauer Sweater",
+    "LEGWEAR": "schwarze enge Jeans",
+    "LEGWEAR_SATZ": "Dazu trägt sie schwarze enge Jeans.",
+    "OUTFIT_UNTEN": "schwarze enge Jeans, weiße Sneaker mit schwarzen Details",
+    "SCHUH_SATZ": "Dazu trägt sie weiße Sneaker mit schwarzen Details.",
+    "POSE_SATZ": "Die Person steht am Straßenrand und schaut auf ihr Smartphone.",
+    "AMBIENTE_SATZ": "Städtische Fassade mit klassischer Architektur und Skateboard daneben.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Jeansjacke",
+      "Sweater",
+      "Schwarze Jeans",
+      "Weiße Sneaker"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Heels",
+      "Schicke Tasche",
+      "Rollkragen"
+    ],
+    "image_name": "023.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein erwachsener Mann",
+    "HAARFARBE": "blond",
+    "FRISUR": "kurz und gestylt",
+    "OUTERWEAR": "denim Jacke",
+    "OUTERWEAR_SATZ": "Dazu trägt er eine denim Jacke.",
+    "KLEIDUNG": "blaues T-Shirt",
+    "LEGWEAR": "hellblaue Jeans",
+    "LEGWEAR_SATZ": "Dazu trägt er hellblaue Jeans.",
+    "OUTFIT_UNTEN": "hellblaue Jeans, weiße Sneaker",
+    "SCHUH_SATZ": "Dazu trägt er weiße Sneaker.",
+    "POSE_SATZ": "Die Person geht die Straße entlang und blickt seitlich.",
+    "AMBIENTE_SATZ": "Urbaner Straßenzug mit Gebäude und Fußweg.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Jeansjacke",
+      "T-Shirt",
+      "Jeans",
+      "Weiße Sneaker"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Anzug",
+      "Hut",
+      "Stiefel"
+    ],
+    "image_name": "024.jpg"
+  },
+  {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+    "HAARFARBE": "blond",
+    "FRISUR": "leicht gewellt",
+    "OUTERWEAR": "hellblaue Jeansjacke",
+    "OUTERWEAR_SATZ": "Dazu trägt sie eine hellblaue Jeansjacke.",
+    "KLEIDUNG": "weißes T-Shirt",
+    "LEGWEAR": "hellblaue ripped Jeans",
+    "LEGWEAR_SATZ": "Dazu trägt sie hellblaue ripped Jeans.",
+    "OUTFIT_UNTEN": "hellblaue ripped Jeans, weiße Sneaker",
+    "SCHUH_SATZ": "Dazu trägt sie weiße Sneaker.",
+    "POSE_SATZ": "Die Person steht lässig auf der Straße und blickt zur Seite.",
+    "AMBIENTE_SATZ": "Städtischer Kreuzungsbereich mit modernen Gebäuden im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Jeansjacke",
+      "T-Shirt",
+      "Jeans",
+      "Weiße Sneaker"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "High Heels",
+      "Anzug",
+      "Schwarze Schuhe",
+      "Rollkragen"
+    ],
+    "image_name": "025.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein junger Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "schwarze Jacke",
+    "OUTERWEAR_SATZ": "Dazu trägt er eine schwarze Jacke.",
+    "KLEIDUNG": "orange Hoodie",
+    "LEGWEAR": "schwarze Trainingshose",
+    "LEGWEAR_SATZ": "Dazu trägt er schwarze Trainingshose.",
+    "OUTFIT_UNTEN": "schwarze Trainingshose, weiße Sneaker mit orangefarbenen Details",
+    "SCHUH_SATZ": "Dazu trägt er weiße Sneaker mit orangefarbenen Details.",
+    "POSE_SATZ": "Die Person geht über einen Zebrastreifen und schaut auf ihr Smartphone.",
+    "AMBIENTE_SATZ": "Städtische Straße mit Backsteinfassaden.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Jacke",
+      "Hoodie",
+      "Trainingshose",
+      "Weiße Sneaker"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Anzug",
+      "High Heels",
+      "Regenschirm"
+    ],
+    "image_name": "026.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "mittlerer Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein mittlerer Mann",
+    "HAARFARBE": "grau",
+    "FRISUR": "kurz",
+    "KLEIDUNG": "hellblaues Sweatshirt und Shorts",
+    "LEGWEAR": "beige Shorts",
+    "LEGWEAR_SATZ": "Dazu trägt er beige Shorts.",
+    "OUTFIT_UNTEN": "beige Shorts, marineblaue Slip-ons",
+    "SCHUH_SATZ": "Dazu trägt er marineblaue Slip-ons.",
+    "POSE_SATZ": "Der Mann steht auf einem Zebrastreifen und schaut auf sein Smartphone.",
+    "AMBIENTE_SATZ": "Städtische Kreuzung mit parkenden Autos.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Sweatshirt",
+      "Shorts",
+      "Sneaker",
+      "Zebrastreifen"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Anzug",
+      "Regenschirm",
+      "Sporttasche"
+    ],
+    "image_name": "027.jpg"
+  },
+  {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "locker",
+    "OUTERWEAR": "hellbeige Steppjacke",
+    "OUTERWEAR_SATZ": "Dazu trägt sie eine hellbeige Steppjacke.",
+    "KLEIDUNG": "weißes Hemd",
+    "LEGWEAR": "schwarze Hosen",
+    "LEGWEAR_SATZ": "Dazu trägt sie schwarze Hosen.",
+    "OUTFIT_UNTEN": "schwarze Hosen, weiße Sneaker",
+    "SCHUH_SATZ": "Dazu trägt sie weiße Sneaker.",
+    "POSE_SATZ": "Die Person geht über einen beleuchteten Zebrastreifen und schaut nach rechts.",
+    "AMBIENTE_SATZ": "Nächtliche Stadtstraße mit Straßenlaternen und Fußgängerampeln.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Jacke",
+      "Hemd",
+      "Hose",
+      "Weiße Sneaker"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "High Heels",
+      "Sandalen",
+      "Regenschirm"
+    ],
+    "image_name": "028.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein junger Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz",
+    "KLEIDUNG": "schwarzes T-Shirt",
+    "LEGWEAR": "schwarze Chinohose",
+    "LEGWEAR_SATZ": "Dazu trägt er schwarze Chinohose.",
+    "OUTFIT_UNTEN": "schwarze Chinohose, weiße Sneaker",
+    "SCHUH_SATZ": "Dazu trägt er weiße Sneaker.",
+    "POSE_SATZ": "Der Mann geht über einen Zebrastreifen und schaut seitlich, während der Verkehr vorbeirollt.",
+    "AMBIENTE_SATZ": "Städtische Kreuzung mit Verkehrskontakt im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "T-Shirt",
+      "Chinohose",
+      "Weiße Sneaker",
+      "Zebrastreifen"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Anzug",
+      "High Heels",
+      "Sporttasche"
+    ],
+    "image_name": "029.jpg"
+  },
+  {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "gebunden",
+    "KLEIDUNG": "schwarzes Croptop mit V-Ausschnitt",
+    "LEGWEAR": "schwarze Jogginghose mit rotem Seitenstreifen",
+    "LEGWEAR_SATZ": "Dazu trägt sie schwarze Jogginghose mit rotem Seitenstreifen.",
+    "OUTFIT_UNTEN": "schwarze Jogginghose mit rotem Seitenstreifen, schwarze Ballerinas",
+    "SCHUH_SATZ": "Dazu trägt sie schwarze Ballerinas.",
+    "POSE_SATZ": "Die Person steht entspannt auf einem Zebrastreifen mit einer Hand in der Hüfte.",
+    "AMBIENTE_SATZ": "Städtische Kreuzung mit Hochhäusern und Verkehrsampeln im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Croptop",
+      "Jogginghose",
+      "Ballerinas",
+      "Zebrastreifen"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "High Heels",
+      "Anzug",
+      "Regenmantel"
+    ],
+    "image_name": "030.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein erwachsener Mann",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "kurz und lässig",
+    "OUTERWEAR": "schwarze Lederjacke",
+    "OUTERWEAR_SATZ": "Dazu trägt er eine schwarze Lederjacke.",
+    "KLEIDUNG": "schwarzes Shirt und dunkle Jeans",
+    "LEGWEAR": "dunkle Jeans",
+    "LEGWEAR_SATZ": "Dazu trägt er dunkle Jeans.",
+    "OUTFIT_UNTEN": "dunkle Jeans, Sneaker mit buntem Muster",
+    "SCHUH_SATZ": "Dazu trägt er Sneaker mit buntem Muster.",
+    "POSE_SATZ": "Die Person schreitet über eine nasse Pflasterstraße in urbaner Kulisse.",
+    "AMBIENTE_SATZ": "Städtische Straße mit Altbauten und parkenden Autos.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Lederjacke",
+      "Jeans",
+      "Sneaker"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Anzug",
+      "Hochhackige Schuhe",
+      "Sporttasche"
+    ],
+    "image_name": "031.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein junger Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "schwarze Lederjacke",
+    "OUTERWEAR_SATZ": "Dazu trägt er eine schwarze Lederjacke.",
+    "KLEIDUNG": "weißes T-Shirt",
+    "LEGWEAR": "grau melierte Hose",
+    "LEGWEAR_SATZ": "Dazu trägt er grau melierte Hose.",
+    "OUTFIT_UNTEN": "grau melierte Hose, schwarze Lederoxfords",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Lederoxfords.",
+    "POSE_SATZ": "Die Person lehnt lässig an einer urbanen Struktur und schaut direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Städtische Straße mit Metalltor und graffitiartiger Kulisse.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Lederjacke",
+      "T-Shirt",
+      "Hose",
+      "Lederschuhe"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Sneaker",
+      "Sportkleidung",
+      "Kapuzenpullover"
+    ],
+    "image_name": "032.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein erwachsener Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "schulterlang",
+    "OUTERWEAR": "schwarze Lederjacke",
+    "OUTERWEAR_SATZ": "Dazu trägt er eine schwarze Lederjacke.",
+    "KLEIDUNG": "schwarzes Shirt",
+    "LEGWEAR": "dunkle Jeans",
+    "LEGWEAR_SATZ": "Dazu trägt er dunkle Jeans.",
+    "OUTFIT_UNTEN": "dunkle Jeans, schwarze Boots",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Boots.",
+    "POSE_SATZ": "Die Person steht auf einer urbanen Straße und blickt zur Seite.",
+    "AMBIENTE_SATZ": "Straße mit Palmen und urbanen Versorgungseinrichtungen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Lederjacke",
+      "Jeans",
+      "Boots"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Sneaker",
+      "Anzug",
+      "Hut"
+    ],
+    "image_name": "033.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein erwachsener Mann",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz und zurückgekämmt",
+    "OUTERWEAR": "schwarze Lederjacke",
+    "OUTERWEAR_SATZ": "Dazu trägt er eine schwarze Lederjacke.",
+    "KLEIDUNG": "weißes Hemd",
+    "LEGWEAR": "schwarze Ripped-Jeans",
+    "LEGWEAR_SATZ": "Dazu trägt er schwarze Ripped-Jeans.",
+    "OUTFIT_UNTEN": "schwarze Ripped-Jeans, schwarze Sneaker",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Sneaker.",
+    "POSE_SATZ": "Die Person steht vor einer historischen Steinwand und schaut leicht nach links.",
+    "AMBIENTE_SATZ": "Urbaner Altstadtflair mit Mauerwerk.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Lederjacke",
+      "Hemd",
+      "Jeans",
+      "Sneaker"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "Anzug",
+      "High Heels",
+      "Kapişon"
+    ],
+    "image_name": "034.jpg"
+  },
+  {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "ALTER_GESCHLECHT_SATZ": "eine erwachsene Frau",
+    "HAARFARBE": "blond",
+    "FRISUR": "leicht gewellt",
+    "OUTERWEAR": "schwarze Lederjacke",
+    "OUTERWEAR_SATZ": "Dazu trägt sie eine schwarze Lederjacke.",
+    "KLEIDUNG": "schwarzes Top",
+    "LEGWEAR": "schwarze Jeans",
+    "LEGWEAR_SATZ": "Dazu trägt sie schwarze Jeans.",
+    "OUTFIT_UNTEN": "schwarze Jeans, weiße Sneaker",
+    "SCHUH_SATZ": "Dazu trägt sie weiße Sneaker.",
+    "POSE_SATZ": "Die Person spaziert durch eine Innenstadt mit Taschen in der Hand.",
+    "AMBIENTE_SATZ": "Urbanes Geschäftsviertel mit Gebäude im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Lederjacke",
+      "Jeans",
+      "Sneaker"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "High Heels",
+      "Anzug",
+      "Hut"
+    ],
+    "image_name": "035.jpg"
+  },
+  {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "leicht gewellt",
+    "OUTERWEAR": "cremefarbener Cardigan",
+    "OUTERWEAR_SATZ": "Dazu trägt sie einen cremefarbenen Cardigan.",
+    "KLEIDUNG": "rosa Knit Sweater",
+    "LEGWEAR": "klassische blaue Jeans",
+    "LEGWEAR_SATZ": "Dazu trägt sie klassische blaue Jeans.",
+    "OUTFIT_UNTEN": "klassische blaue Jeans, weiße Chunky-Sneaker",
+    "SCHUH_SATZ": "Dazu trägt sie weiße Chunky-Sneaker.",
+    "POSE_SATZ": "Die Person steht locker vor einem Café und schaut direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Städtische Straßenszene mit Bistro-Tischen im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Cardigan",
+      "Sweater",
+      "Jeans",
+      "Sneaker"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "High Heels",
+      "Regenschirm",
+      "Too-bright Lighting"
+    ],
+    "image_name": "036.jpg"
+  },
+  {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "schulterlang",
+    "OUTERWEAR": "beiger Cardigan",
+    "OUTERWEAR_SATZ": "Dazu trägt sie einen beigen Cardigan.",
+    "KLEIDUNG": "heller Knit Sweater",
+    "LEGWEAR": "dunkle Jeans",
+    "LEGWEAR_SATZ": "Dazu trägt sie dunkle Jeans.",
+    "OUTFIT_UNTEN": "dunkle Jeans, weiße Sneaker",
+    "SCHUH_SATZ": "Dazu trägt sie weiße Sneaker.",
+    "POSE_SATZ": "Die Person geht selbstbewusst durch eine moderne Business-Umgebung.",
+    "AMBIENTE_SATZ": "Städtischer Campus mit Glasfassaden.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Cardigan",
+      "Sweater",
+      "Jeans",
+      "Sneaker"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "High Heels",
+      "Dress",
+      "Hoodie"
+    ],
+    "image_name": "037.jpg"
+  },
+  {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "dunkelblaue Longline-Cardigan",
+    "OUTERWEAR_SATZ": "Dazu trägt sie eine dunkelblaue Longline-Cardigan.",
+    "KLEIDUNG": "grauer Knit Sweater",
+    "LEGWEAR": "beige Chinohose",
+    "LEGWEAR_SATZ": "Dazu trägt sie beige Chinohose.",
+    "OUTFIT_UNTEN": "beige Chinohose, beige Sneaker",
+    "SCHUH_SATZ": "Dazu trägt sie beige Sneaker.",
+    "POSE_SATZ": "Die Person lehnt entspannt an einer Graffiti-Wand und blickt zur Seite.",
+    "AMBIENTE_SATZ": "Streetstyle-Kulisse mit Ziegelwand und urbanem Flair.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "Cardigan",
+      "Sweater",
+      "Chinohose",
+      "Sneaker"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "High Heels",
+      "Anzug",
+      "Sandalen"
+    ],
+    "image_name": "038.jpg"
+  },
+  {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "ALTER_GESCHLECHT_SATZ": "ein erwachsener Mann",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz und wellig",
+    "OUTERWEAR": "dunkelgrauer Cardigan",
+    "KLEIDUNG": "burgunderfarbenes Rollkragen-Sweater",
+    "LEGWEAR": "dunkle Chinohose",
+    "LEGWEAR_SATZ": "Dazu trägt er dunkle Chinohose.",
+    "OUTFIT_OBEN": "dunkelgrauer Cardigan, burgunderfarbenes Rollkragen-Sweater",
+    "OUTFIT_UNTEN": "\" \".join(cleaned_lower.split())",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Sneaker.",
+    "POSE_SATZ": "Die Person steht auf einem nassen Zebrastreifen und schaut zur Seite.",
+    "AMBIENTE_SATZ": "Städtische Abendstimmung mit beleuchteten Straßenkreuzungen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": "deduped_verified",
+    "AUSSCHLUSS_PFLICHT": "deduped_exclusions",
+    "image_name": "039.jpg"
+  }
+]

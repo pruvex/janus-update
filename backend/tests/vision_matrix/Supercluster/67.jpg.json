@@ -1,0 +1,11 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "KLEIDUNG": "olivgrünes T-Shirt unter einer beigen Anglerweste",
+    "POSE_SATZ": "Die Person hält eine Kamera vor das Gesicht und macht gerade ein Foto.",
+    "AMBIENTE_SATZ": "Das Porträt wurde vor einem neutralen Hintergrund aufgenommen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Kamera", "Fotograf", "Anglerweste"],
+    "AUSSCHLUSS_PFLICHT": ["Smartphone", "Frau"]
+  }
+}

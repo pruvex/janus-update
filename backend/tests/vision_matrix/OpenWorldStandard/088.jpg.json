@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "mittellang",
+    "OUTERWEAR": "schwarzer taillierter Mantel",
+    "KLEIDUNG": "schwarzes Kleid",
+    "LEGWEAR": "schwarze Overknee-Stiefel",
+    "SCHUH_SATZ": "Schwarze Stiefel",
+    "POSE_SATZ": "Sie steht mit Händen in der Hüfte vor einem weißen, geometrischen Betonbauwerk und blickt nach vorn.",
+    "AMBIENTE_SATZ": "Tonalität aus weißem Beton mit starken Schatten, urbaner, moderner Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Betonwand", "Full Body", "Fashion", "Stiefel"],
+    "AUSSCHLUSS_PFLICHT": ["Holz", "Gras", "Sneaker"],
+    "NOTIZ": "Streng geometrische Betonarchitektur, Person voll sichtbar."
+  }
+}

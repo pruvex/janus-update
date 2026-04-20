@@ -1,0 +1,33 @@
+{
+  "filename": "25.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz, voluminös gelockt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "schwarz-grüne Vollrandbrille",
+    "SCHMUCK": "Halskette mit glitzerndem Anhänger",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "dunkelblaues Oberteil mit weitem Rundhalsausschnitt",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Person sitzt auf einem roten Stuhl und blickt direkt mit einem leichten Lächeln in die Kamera.",
+    "AMBIENTE_SATZ": "Ein heller Innenraum mit einem Regal im Hintergrund, auf dem kleine Hundefiguren und gerahmte Bilder stehen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarz-grüne Brille",
+      "dunkelblaues Oberteil",
+      "braune Locken",
+      "Halskette mit Anhänger",
+      "Hundefiguren",
+      "roter Stuhl"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Sonnenbrille"
+    ]
+  }
+}

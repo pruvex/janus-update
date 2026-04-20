@@ -1,0 +1,4187 @@
+{
+  "results": [
+    {
+      "image_name": "1.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell",
+      "AUGEN": "braun",
+      "HAARFARBE": "braune Haare",
+      "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine Ã¤ltere Frau",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "outerwear": "cloud_verifier",
+        "footwear": "clip_candidate",
+        "neckwear": "clip_candidate"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell",
+        "AUGEN": "braun",
+        "HAARFARBE": "braune Haare",
+        "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "AUGEN",
+          "HAARFARBE",
+          "FRISUR_SATZ"
+        ],
+        "watch": [],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 60s",
+          "score": 0.7102577090263367,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine Ã¤ltere Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.14801211655139923,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "deep brown eyes",
+          "score": 0.2093525230884552,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "braun",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "grey hair",
+          "score": 0.14401549100875854,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "braune Haare",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "shoulder-length",
+          "score": 0.15522976219654083,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": true,
+        "TEINT": true,
+        "AUGEN": true,
+        "HAARFARBE": true,
+        "FRISUR": false,
+        "FRISUR_SATZ": false
+      },
+      "truth_mismatches": [
+        {
+          "slot": "FRISUR",
+          "expected": "Kurz, glatt, Seitenscheitel",
+          "actual": "Schulterlang, Seitenscheitel"
+        },
+        {
+          "slot": "FRISUR_SATZ",
+          "expected": "Die Haare sind kurz, glatt und werden seitlich gescheitelt.",
+          "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+        }
+      ],
+      "truth_match_count": 4,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "HAARFARBE": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "image_name": "10.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell",
+      "AUGEN": "braun",
+      "HAARFARBE": "braune Haare",
+      "FRISUR_SATZ": "Die Haare sind lang, glatt und werden offen mit einem Pony in der Stirn getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine Ã¤ltere Frau",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "footwear": "clip_candidate"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell",
+        "AUGEN": "braun",
+        "HAARFARBE": "braune Haare",
+        "FRISUR_SATZ": "Die Haare sind lang, glatt und werden offen mit einem Pony in der Stirn getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "AUGEN",
+          "FRISUR_SATZ"
+        ],
+        "watch": [
+          "HAARFARBE"
+        ],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 60s",
+          "score": 0.5514925122261047,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine Ã¤ltere Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.23392564058303833,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "black eyes",
+          "score": 0.1566675901412964,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "braun",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "grey hair",
+          "score": 0.06171322613954544,
+          "cloud": true,
+          "maturity": "watch",
+          "slot_value": "braune Haare",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "long hair",
+          "score": 0.1621198207139969,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "Die Haare sind lang, glatt und werden offen mit einem Pony in der Stirn getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": true,
+        "TEINT": true,
+        "AUGEN": false,
+        "HAARFARBE": true,
+        "FRISUR": true,
+        "FRISUR_SATZ": true
+      },
+      "truth_mismatches": [
+        {
+          "slot": "AUGEN",
+          "expected": "grün",
+          "actual": "braun"
+        }
+      ],
+      "truth_match_count": 5,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "HAARFARBE": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": true
+          },
+          "FRISUR_SATZ": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "image_name": "11.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell",
+      "AUGEN": "nicht erkennbar",
+      "HAARFARBE": "blonde Haare",
+      "FRISUR_SATZ": "Die Haare sind locker und werden nach hinten zu einer Hochsteckfrisur getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine erwachsene Frau",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "lower_primary": "cloud_verifier",
+        "footwear": "clip_candidate",
+        "eyewear": "cloud_verifier"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell",
+        "AUGEN": "nicht erkennbar",
+        "HAARFARBE": "blonde Haare",
+        "FRISUR_SATZ": "Die Haare sind locker und werden nach hinten zu einer Hochsteckfrisur getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "AUGEN",
+          "HAARFARBE"
+        ],
+        "watch": [
+          "FRISUR_SATZ"
+        ],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 50s",
+          "score": 0.3757214844226837,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine erwachsene Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.5416557192802429,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "black eyes",
+          "score": 0.16936558485031128,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "nicht erkennbar",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "golden blonde hair",
+          "score": 0.15045621991157532,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "blonde Haare",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "shoulder-length",
+          "score": 0.08396701514720917,
+          "cloud": true,
+          "maturity": "watch",
+          "slot_value": "Die Haare sind locker und werden nach hinten zu einer Hochsteckfrisur getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": false,
+        "TEINT": true,
+        "AUGEN": true,
+        "HAARFARBE": true,
+        "FRISUR": false,
+        "FRISUR_SATZ": false
+      },
+      "truth_mismatches": [
+        {
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "expected": "eine Frau mittleren Alters",
+          "actual": "eine erwachsene Frau"
+        },
+        {
+          "slot": "FRISUR",
+          "expected": "Hochgesteckt, lockig, voluminös",
+          "actual": "Hochgesteckt, Schulterlang"
+        },
+        {
+          "slot": "FRISUR_SATZ",
+          "expected": "Die Haare sind lockig, voluminös und werden aus dem Gesicht nach hinten zu einer lockeren Hochsteckfrisur getragen.",
+          "actual": "Die Haare sind locker und werden nach hinten zu einer Hochsteckfrisur getragen."
+        }
+      ],
+      "truth_match_count": 3,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "HAARFARBE": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "image_name": "12.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell",
+      "AUGEN": "braun",
+      "HAARFARBE": "",
+      "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine Ã¤ltere Frau",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "footwear": "clip_candidate",
+        "eyewear": "cloud_verifier"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell",
+        "AUGEN": "braun",
+        "HAARFARBE": "",
+        "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "AUGEN",
+          "FRISUR_SATZ"
+        ],
+        "watch": [],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 60s",
+          "score": 0.38156718015670776,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine Ã¤ltere Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.3624231219291687,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "black eyes",
+          "score": 0.12048353999853134,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "braun",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "black hair",
+          "score": 0.07633307576179504,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "<none>",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "shoulder length",
+          "score": 0.11591615527868271,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": false,
+        "TEINT": true,
+        "AUGEN": false,
+        "HAARFARBE": false,
+        "FRISUR": false,
+        "FRISUR_SATZ": false
+      },
+      "truth_mismatches": [
+        {
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "expected": "eine Frau mittleren Alters",
+          "actual": "eine Ã¤ltere Frau"
+        },
+        {
+          "slot": "AUGEN",
+          "expected": "blau",
+          "actual": "braun"
+        },
+        {
+          "slot": "HAARFARBE",
+          "expected": "schwarze Haare",
+          "actual": ""
+        },
+        {
+          "slot": "FRISUR",
+          "expected": "Halblang, glatt, mit Pony",
+          "actual": "Schulterlang, Seitenscheitel"
+        },
+        {
+          "slot": "FRISUR_SATZ",
+          "expected": "Die Haare sind halblang, glatt und werden offen mit einem ins Gesicht fallenden Pony getragen.",
+          "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+        }
+      ],
+      "truth_match_count": 1,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "HAARFARBE": {
+            "ready": false,
+            "value_present": false,
+            "gate_confirmed": false,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          }
+        }
+      },
+      "status": "FAIL"
+    },
+    {
+      "image_name": "13.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell",
+      "AUGEN": "braun",
+      "HAARFARBE": "braune Haare",
+      "FRISUR_SATZ": "Die Haare sind kurz, glatt und werden hochgesteckt getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine Ã¤ltere Frau",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "footwear": "clip_candidate"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell",
+        "AUGEN": "braun",
+        "HAARFARBE": "braune Haare",
+        "FRISUR_SATZ": "Die Haare sind kurz, glatt und werden hochgesteckt getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "AUGEN",
+          "HAARFARBE",
+          "FRISUR_SATZ"
+        ],
+        "watch": [],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 60s",
+          "score": 0.28211674094200134,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine Ã¤ltere Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.1540844738483429,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "sky reflection in eyes",
+          "score": 0.1470388025045395,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "braun",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "grey hair",
+          "score": 0.07455801963806152,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "braune Haare",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "short hair",
+          "score": 0.14774952828884125,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "Die Haare sind kurz, glatt und werden hochgesteckt getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": false,
+        "TEINT": true,
+        "AUGEN": true,
+        "HAARFARBE": true,
+        "FRISUR": false,
+        "FRISUR_SATZ": false
+      },
+      "truth_mismatches": [
+        {
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "expected": "eine Frau mittleren Alters",
+          "actual": "eine Ã¤ltere Frau"
+        },
+        {
+          "slot": "FRISUR",
+          "expected": "Hochgesteckt, Dutt, locker",
+          "actual": "Kurz, glatt, hochgesteckt"
+        },
+        {
+          "slot": "FRISUR_SATZ",
+          "expected": "Die Haare sind am Oberkopf zu einem hohen, lockeren Dutt zusammengebunden.",
+          "actual": "Die Haare sind kurz, glatt und werden hochgesteckt getragen."
+        }
+      ],
+      "truth_match_count": 3,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "HAARFARBE": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "image_name": "14.jpg",
+      "GESCHLECHT": "Mann",
+      "TEINT": "hell",
+      "AUGEN": "braun",
+      "HAARFARBE": "schwarze Haare",
+      "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+      "ALTER_GESCHLECHT_SATZ": "einen erwachsenen Mann",
+      "validations": [
+        "eyewear_slot_clothing_contamination"
+      ],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "outerwear": "cloud_verifier",
+        "footwear": "clip_candidate",
+        "eyewear": "clip_candidate"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Mann",
+        "TEINT": "hell",
+        "AUGEN": "braun",
+        "HAARFARBE": "schwarze Haare",
+        "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "AUGEN"
+        ],
+        "watch": [
+          "HAARFARBE",
+          "FRISUR_SATZ"
+        ],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "man in his 40s",
+          "score": 0.3559824824333191,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "einen erwachsenen Mann",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "olive skin",
+          "score": 0.16724993288516998,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "sky reflection in eyes",
+          "score": 0.1731112003326416,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "braun",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "<none>",
+          "score": 0.0,
+          "cloud": true,
+          "maturity": "unstable",
+          "slot_value": "schwarze Haare",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "shoulder-length",
+          "score": 0.056707531213760376,
+          "cloud": true,
+          "maturity": "watch",
+          "slot_value": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": false,
+        "TEINT": true,
+        "AUGEN": true,
+        "HAARFARBE": true,
+        "FRISUR": false,
+        "FRISUR_SATZ": false
+      },
+      "truth_mismatches": [
+        {
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "expected": "ein Mann mittleren Alters",
+          "actual": "einen erwachsenen Mann"
+        },
+        {
+          "slot": "FRISUR",
+          "expected": "Kurz, voluminös, nach hinten frisiert",
+          "actual": "Schulterlang, Seitenscheitel"
+        },
+        {
+          "slot": "FRISUR_SATZ",
+          "expected": "Die Haare sind kurz, dicht und werden am Oberkopf voluminös nach hinten frisiert getragen.",
+          "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+        }
+      ],
+      "truth_match_count": 3,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "HAARFARBE": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": true
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "image_name": "15.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell",
+      "AUGEN": "braun",
+      "HAARFARBE": "blonde Haare",
+      "FRISUR_SATZ": "Die Haare sind locker und werden nach hinten zu einer Hochsteckfrisur getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine Ã¤ltere Frau",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "footwear": "clip_candidate",
+        "eyewear": "cloud_verifier",
+        "ambiente": "resolver_cloud_veto",
+        "neckwear": "clip_candidate"
+      },
+      "brief_text": "smartphone gaze",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell",
+        "AUGEN": "braun",
+        "HAARFARBE": "blonde Haare",
+        "FRISUR_SATZ": "Die Haare sind locker und werden nach hinten zu einer Hochsteckfrisur getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "AUGEN",
+          "HAARFARBE",
+          "FRISUR_SATZ"
+        ],
+        "watch": [],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 60s",
+          "score": 0.559382975101471,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine Ã¤ltere Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.3581194281578064,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "black eyes",
+          "score": 0.1997954547405243,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "braun",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "grey hair",
+          "score": 0.21720051765441895,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "blonde Haare",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "shoulder-length",
+          "score": 0.16232387721538544,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "Die Haare sind locker und werden nach hinten zu einer Hochsteckfrisur getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": true,
+        "TEINT": true,
+        "AUGEN": true,
+        "HAARFARBE": true,
+        "FRISUR": false,
+        "FRISUR_SATZ": false
+      },
+      "truth_mismatches": [
+        {
+          "slot": "FRISUR",
+          "expected": "Hochgesteckt, mit Pony, locker",
+          "actual": "Hochgesteckt, Schulterlang"
+        },
+        {
+          "slot": "FRISUR_SATZ",
+          "expected": "Die Haare sind locker nach hinten gebunden, mit einem vollen Pony, der in die Stirn fällt.",
+          "actual": "Die Haare sind locker und werden nach hinten zu einer Hochsteckfrisur getragen."
+        }
+      ],
+      "truth_match_count": 4,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "HAARFARBE": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "image_name": "16.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell",
+      "AUGEN": "braun",
+      "HAARFARBE": "blonde Haare",
+      "FRISUR_SATZ": "Die Haare sind kurz, glatt und werden kurz getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine Ã¤ltere Frau",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "cloud_verifier",
+        "footwear": "clip_candidate",
+        "eyewear": "cloud_verifier",
+        "ambiente": "cloud_verifier"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell",
+        "AUGEN": "braun",
+        "HAARFARBE": "blonde Haare",
+        "FRISUR_SATZ": "Die Haare sind kurz, glatt und werden kurz getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "HAARFARBE",
+          "FRISUR_SATZ"
+        ],
+        "watch": [
+          "AUGEN"
+        ],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 60s",
+          "score": 0.4031555652618408,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine Ã¤ltere Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.16639113426208496,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "dark eyes",
+          "score": 0.09812331944704056,
+          "cloud": false,
+          "maturity": "watch",
+          "slot_value": "braun",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "platinum blonde hair",
+          "score": 0.18955130875110626,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "blonde Haare",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "pixie cut",
+          "score": 0.24757778644561768,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "Die Haare sind kurz, glatt und werden kurz getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": false,
+        "TEINT": true,
+        "AUGEN": true,
+        "HAARFARBE": true,
+        "FRISUR": true,
+        "FRISUR_SATZ": true
+      },
+      "truth_mismatches": [
+        {
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "expected": "eine Frau mittleren Alters",
+          "actual": "eine Ã¤ltere Frau"
+        }
+      ],
+      "truth_match_count": 5,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": true
+          },
+          "HAARFARBE": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "FRISUR_SATZ": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "image_name": "17.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell",
+      "AUGEN": "blau",
+      "HAARFARBE": "blonde Haare",
+      "FRISUR_SATZ": "Die Haare sind kurz, lockig und werden kurz getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine Ã¤ltere Frau",
+      "validations": [],
+      "source_of_truth": {
+        "footwear": "clip_candidate",
+        "eyewear": "cloud_verifier",
+        "upper_primary": "cloud_verifier"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell",
+        "AUGEN": "blau",
+        "HAARFARBE": "blonde Haare",
+        "FRISUR_SATZ": "Die Haare sind kurz, lockig und werden kurz getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "AUGEN",
+          "HAARFARBE"
+        ],
+        "watch": [
+          "FRISUR_SATZ"
+        ],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 60s",
+          "score": 0.6897097826004028,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine Ã¤ltere Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.2919650077819824,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "sky reflection in eyes",
+          "score": 0.1584004908800125,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "blau",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "platinum blonde hair",
+          "score": 0.0943543091416359,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "blonde Haare",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "short hair",
+          "score": 0.027485080063343048,
+          "cloud": false,
+          "maturity": "unstable",
+          "slot_value": "Die Haare sind kurz, lockig und werden kurz getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": true,
+        "TEINT": true,
+        "AUGEN": false,
+        "HAARFARBE": false,
+        "FRISUR": true,
+        "FRISUR_SATZ": true
+      },
+      "truth_mismatches": [
+        {
+          "slot": "AUGEN",
+          "expected": "braun",
+          "actual": "blau"
+        },
+        {
+          "slot": "HAARFARBE",
+          "expected": "weiße Haare",
+          "actual": "blonde Haare"
+        }
+      ],
+      "truth_match_count": 4,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "HAARFARBE": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": true
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "image_name": "18.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell mit vielen Sommersprossen",
+      "AUGEN": "blau",
+      "HAARFARBE": "rote Haare",
+      "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "footwear": "clip_candidate"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell mit vielen Sommersprossen",
+        "AUGEN": "blau",
+        "HAARFARBE": "rote Haare",
+        "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "AUGEN",
+          "HAARFARBE",
+          "FRISUR_SATZ"
+        ],
+        "watch": [],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 30s",
+          "score": 0.4043552279472351,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine junge Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.5995721817016602,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell mit vielen Sommersprossen",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "brown eyes",
+          "score": 0.12,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "blau",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "auburn hair",
+          "score": 0.3707180291414261,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "rote Haare",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "shoulder-length",
+          "score": 0.12601338326931,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": true,
+        "TEINT": false,
+        "AUGEN": true,
+        "HAARFARBE": true,
+        "FRISUR": false,
+        "FRISUR_SATZ": false
+      },
+      "truth_mismatches": [
+        {
+          "slot": "TEINT",
+          "expected": "hell",
+          "actual": "hell mit vielen Sommersprossen"
+        },
+        {
+          "slot": "FRISUR",
+          "expected": "Lang, glatt, Seitenscheitel",
+          "actual": "Schulterlang, Seitenscheitel"
+        },
+        {
+          "slot": "FRISUR_SATZ",
+          "expected": "Die Haare sind lang, glatt und werden offen mit einem leichten Seitenscheitel getragen.",
+          "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+        }
+      ],
+      "truth_match_count": 3,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "TEINT": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "AUGEN": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "HAARFARBE": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "image_name": "19.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell",
+      "AUGEN": "braun",
+      "HAARFARBE": "braune Haare",
+      "FRISUR_SATZ": "Die Haare sind schulterlang, lockig und werden schulterlang getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine Ã¤ltere Frau",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "cloud_verifier",
+        "footwear": "clip_candidate"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell",
+        "AUGEN": "braun",
+        "HAARFARBE": "braune Haare",
+        "FRISUR_SATZ": "Die Haare sind schulterlang, lockig und werden schulterlang getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "AUGEN",
+          "FRISUR_SATZ"
+        ],
+        "watch": [
+          "HAARFARBE"
+        ],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 60s",
+          "score": 0.2530260384082794,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine Ã¤ltere Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.28294306993484497,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "black eyes",
+          "score": 0.1316600739955902,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "braun",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "<none>",
+          "score": 0.0,
+          "cloud": true,
+          "maturity": "unstable",
+          "slot_value": "braune Haare",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "shoulder-length",
+          "score": 0.26539474725723267,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "Die Haare sind schulterlang, lockig und werden schulterlang getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": false,
+        "TEINT": true,
+        "AUGEN": true,
+        "HAARFARBE": false,
+        "FRISUR": true,
+        "FRISUR_SATZ": true
+      },
+      "truth_mismatches": [
+        {
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "expected": "eine junge Frau",
+          "actual": "eine Ã¤ltere Frau"
+        },
+        {
+          "slot": "HAARFARBE",
+          "expected": "hellbraune Haare",
+          "actual": "braune Haare"
+        }
+      ],
+      "truth_match_count": 4,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "HAARFARBE": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          },
+          "FRISUR_SATZ": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "image_name": "2.jpg",
+      "GESCHLECHT": "Mann",
+      "TEINT": "hell",
+      "AUGEN": "blau",
+      "HAARFARBE": "",
+      "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+      "ALTER_GESCHLECHT_SATZ": "einen Ã¤lteren Mann",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "footwear": "clip_candidate",
+        "eyewear": "cloud_verifier",
+        "ambiente": "resolver_cloud_veto",
+        "lower_primary": "cloud_verifier"
+      },
+      "brief_text": "Die Person sitzt mit überschlagenen Beinen.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Mann",
+        "TEINT": "hell",
+        "AUGEN": "blau",
+        "HAARFARBE": "",
+        "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT"
+        ],
+        "watch": [
+          "AUGEN",
+          "FRISUR_SATZ"
+        ],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "man in his 60s",
+          "score": 0.5759785175323486,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "einen Ã¤lteren Mann",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.2579498589038849,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "sky reflection in eyes",
+          "score": 0.10853545367717743,
+          "cloud": false,
+          "maturity": "watch",
+          "slot_value": "blau",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "<none>",
+          "score": 0.0,
+          "cloud": false,
+          "maturity": "unstable",
+          "slot_value": "<none>",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "shoulder-length",
+          "score": 0.02815106138586998,
+          "cloud": false,
+          "maturity": "unstable",
+          "slot_value": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": false,
+        "TEINT": true,
+        "AUGEN": true,
+        "HAARFARBE": false,
+        "FRISUR": false,
+        "FRISUR_SATZ": false
+      },
+      "truth_mismatches": [
+        {
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "expected": "ein älterer Mann",
+          "actual": "einen Ã¤lteren Mann"
+        },
+        {
+          "slot": "HAARFARBE",
+          "expected": "graue Haare",
+          "actual": ""
+        },
+        {
+          "slot": "FRISUR",
+          "expected": "Sehr kurz, Stirnglatze, Haarkranz",
+          "actual": "Schulterlang, Seitenscheitel"
+        },
+        {
+          "slot": "FRISUR_SATZ",
+          "expected": "Die Haare sind sehr kurz geschnitten, mit einer ausgeprägten Stirnglatze und einem kurzen Haarkranz an den Seiten und am Hinterkopf.",
+          "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+        }
+      ],
+      "truth_match_count": 2,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": true
+          },
+          "HAARFARBE": {
+            "ready": false,
+            "value_present": false,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          }
+        }
+      },
+      "status": "FAIL"
+    },
+    {
+      "image_name": "20.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell",
+      "AUGEN": "braun",
+      "HAARFARBE": "blonde Haare",
+      "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "outerwear": "clip_candidate",
+        "lower_primary": "cloud_verifier",
+        "footwear": "resolver_cloud_veto",
+        "ambiente": "resolver_cloud_veto"
+      },
+      "brief_text": "Die Person sitzt entspannt in einem Sessel, die Beine sind locker Ã¼bereinandergeschlagen.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell",
+        "AUGEN": "braun",
+        "HAARFARBE": "blonde Haare",
+        "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "AUGEN",
+          "HAARFARBE",
+          "FRISUR_SATZ"
+        ],
+        "watch": [],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 30s",
+          "score": 0.2997831702232361,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine junge Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.28631848096847534,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "dark eyes",
+          "score": 0.20860867202281952,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "braun",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "honey blonde hair",
+          "score": 0.11451102048158646,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "blonde Haare",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "shoulder length",
+          "score": 0.3308800160884857,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": false,
+        "TEINT": true,
+        "AUGEN": true,
+        "HAARFARBE": true,
+        "FRISUR": false,
+        "FRISUR_SATZ": false
+      },
+      "truth_mismatches": [
+        {
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "expected": "eine Frau mittleren Alters",
+          "actual": "eine junge Frau"
+        },
+        {
+          "slot": "FRISUR",
+          "expected": "Lang, glatt, zurückgebunden",
+          "actual": "Schulterlang, Seitenscheitel"
+        },
+        {
+          "slot": "FRISUR_SATZ",
+          "expected": "Die Haare sind lang, glatt und werden streng aus dem Gesicht nach hinten gebunden.",
+          "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+        }
+      ],
+      "truth_match_count": 3,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "HAARFARBE": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "image_name": "3.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell",
+      "AUGEN": "braun",
+      "HAARFARBE": "blonde Haare",
+      "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "lower_primary": "cloud_verifier",
+        "footwear": "clip_candidate",
+        "eyewear": "cloud_verifier"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell",
+        "AUGEN": "braun",
+        "HAARFARBE": "blonde Haare",
+        "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "AUGEN",
+          "HAARFARBE",
+          "FRISUR_SATZ"
+        ],
+        "watch": [],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 30s",
+          "score": 0.2979874312877655,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine junge Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.4513023793697357,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "black eyes",
+          "score": 0.2157568335533142,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "braun",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "platinum blonde hair",
+          "score": 0.14854617416858673,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "blonde Haare",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "shoulder length",
+          "score": 0.16989567875862122,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": false,
+        "TEINT": true,
+        "AUGEN": false,
+        "HAARFARBE": true,
+        "FRISUR": false,
+        "FRISUR_SATZ": true
+      },
+      "truth_mismatches": [
+        {
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "expected": "eine Frau mittleren Alters",
+          "actual": "eine junge Frau"
+        },
+        {
+          "slot": "AUGEN",
+          "expected": "blau",
+          "actual": "braun"
+        },
+        {
+          "slot": "FRISUR",
+          "expected": "Schulterlang, glatt, Mittelscheitel",
+          "actual": "Schulterlang, Seitenscheitel"
+        }
+      ],
+      "truth_match_count": 3,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "HAARFARBE": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "FRISUR_SATZ": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "image_name": "4.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell",
+      "AUGEN": "",
+      "HAARFARBE": "",
+      "FRISUR_SATZ": "",
+      "ALTER_GESCHLECHT_SATZ": "eine Ã¤ltere Frau",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "footwear": "clip_candidate",
+        "eyewear": "cloud_verifier"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell",
+        "AUGEN": "",
+        "HAARFARBE": "",
+        "FRISUR_SATZ": ""
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT"
+        ],
+        "watch": [],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 60s",
+          "score": 0.6105250716209412,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine Ã¤ltere Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.46757882833480835,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "<none>",
+          "score": 0.0,
+          "cloud": false,
+          "maturity": "unstable",
+          "slot_value": "<none>",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "<none>",
+          "score": 0.0,
+          "cloud": false,
+          "maturity": "unstable",
+          "slot_value": "<none>",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "<none>",
+          "score": 0.0,
+          "cloud": false,
+          "maturity": "unstable",
+          "slot_value": "<none>",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": true,
+        "TEINT": true,
+        "AUGEN": false,
+        "HAARFARBE": false,
+        "FRISUR": false,
+        "FRISUR_SATZ": false
+      },
+      "truth_mismatches": [
+        {
+          "slot": "AUGEN",
+          "expected": "grün",
+          "actual": ""
+        },
+        {
+          "slot": "HAARFARBE",
+          "expected": "graue Haare",
+          "actual": ""
+        },
+        {
+          "slot": "FRISUR",
+          "expected": "Lang, gewellt, Seitenscheitel, gestuft",
+          "actual": ""
+        },
+        {
+          "slot": "FRISUR_SATZ",
+          "expected": "Die Haare sind über schulterlang, leicht gewellt, gestuft geschnitten und fallen voluminös mit einem Seitenscheitel offen herab.",
+          "actual": ""
+        }
+      ],
+      "truth_match_count": 2,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": false,
+            "value_present": false,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          },
+          "HAARFARBE": {
+            "ready": false,
+            "value_present": false,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": false,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          }
+        }
+      },
+      "status": "FAIL"
+    },
+    {
+      "image_name": "5.jpg",
+      "GESCHLECHT": "Mann",
+      "TEINT": "hell",
+      "AUGEN": "braun",
+      "HAARFARBE": "",
+      "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+      "ALTER_GESCHLECHT_SATZ": "einen erwachsenen Mann",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "footwear": "clip_candidate",
+        "ambiente": "cloud_verifier"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Mann",
+        "TEINT": "hell",
+        "AUGEN": "braun",
+        "HAARFARBE": "",
+        "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "AUGEN"
+        ],
+        "watch": [
+          "FRISUR_SATZ"
+        ],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "man in his 40s",
+          "score": 0.31242886185646057,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "einen erwachsenen Mann",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.23835015296936035,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "black eyes",
+          "score": 0.37046605348587036,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "braun",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "<none>",
+          "score": 0.0,
+          "cloud": false,
+          "maturity": "unstable",
+          "slot_value": "<none>",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "medium hair",
+          "score": 0.07413147389888763,
+          "cloud": false,
+          "maturity": "watch",
+          "slot_value": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": false,
+        "TEINT": true,
+        "AUGEN": true,
+        "HAARFARBE": false,
+        "FRISUR": false,
+        "FRISUR_SATZ": false
+      },
+      "truth_mismatches": [
+        {
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "expected": "ein Mann mittleren Alters",
+          "actual": "einen erwachsenen Mann"
+        },
+        {
+          "slot": "HAARFARBE",
+          "expected": "braune Haare",
+          "actual": ""
+        },
+        {
+          "slot": "FRISUR",
+          "expected": "Sehr kurz, Buzzcut, rasiert",
+          "actual": "Schulterlang, Seitenscheitel"
+        },
+        {
+          "slot": "FRISUR_SATZ",
+          "expected": "Die Haare sind extrem kurz geschoren und als Buzzcut fast kahl rasiert.",
+          "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+        }
+      ],
+      "truth_match_count": 2,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "HAARFARBE": {
+            "ready": false,
+            "value_present": false,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          }
+        }
+      },
+      "status": "FAIL"
+    },
+    {
+      "image_name": "6.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell",
+      "AUGEN": "blau",
+      "HAARFARBE": "",
+      "FRISUR_SATZ": "Die Haare sind kurz, lockig und werden kurz getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine erwachsene Frau",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "outerwear": "resolver_cloud_veto",
+        "inner_layer": "clip_candidate",
+        "footwear": "clip_candidate"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell",
+        "AUGEN": "blau",
+        "HAARFARBE": "",
+        "FRISUR_SATZ": "Die Haare sind kurz, lockig und werden kurz getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "AUGEN"
+        ],
+        "watch": [
+          "TEINT",
+          "FRISUR_SATZ"
+        ],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 50s",
+          "score": 0.27886998653411865,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine erwachsene Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.12433093041181564,
+          "cloud": false,
+          "maturity": "watch",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "dark eyes",
+          "score": 0.11294449865818024,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "blau",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "<none>",
+          "score": 0.0,
+          "cloud": false,
+          "maturity": "unstable",
+          "slot_value": "<none>",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "short hair",
+          "score": 0.021759428083896637,
+          "cloud": false,
+          "maturity": "unstable",
+          "slot_value": "Die Haare sind kurz, lockig und werden kurz getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": false,
+        "TEINT": true,
+        "AUGEN": true,
+        "HAARFARBE": false,
+        "FRISUR": false,
+        "FRISUR_SATZ": false
+      },
+      "truth_mismatches": [
+        {
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "expected": "eine Frau mittleren Alters",
+          "actual": "eine erwachsene Frau"
+        },
+        {
+          "slot": "HAARFARBE",
+          "expected": "braune Haare",
+          "actual": ""
+        },
+        {
+          "slot": "FRISUR",
+          "expected": "Schulterlang, lockig, Seitenscheitel",
+          "actual": "Kurz, lockig"
+        },
+        {
+          "slot": "FRISUR_SATZ",
+          "expected": "Die Haare sind schulterlang, voluminös gelockt, von hellen Strähnen durchzogen und werden mit einem Seitenscheitel offen getragen.",
+          "actual": "Die Haare sind kurz, lockig und werden kurz getragen."
+        }
+      ],
+      "truth_match_count": 2,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "TEINT": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "HAARFARBE": {
+            "ready": false,
+            "value_present": false,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          }
+        }
+      },
+      "status": "FAIL"
+    },
+    {
+      "image_name": "7.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell",
+      "AUGEN": "blau",
+      "HAARFARBE": "graue Haare",
+      "FRISUR_SATZ": "Die Haare sind kurz, glatt und werden kurz getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine Ã¤ltere Frau",
+      "validations": [
+        "eyewear_slot_clothing_contamination"
+      ],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "outerwear": "cloud_verifier",
+        "footwear": "clip_candidate",
+        "eyewear": "clip_candidate"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell",
+        "AUGEN": "blau",
+        "HAARFARBE": "",
+        "FRISUR_SATZ": "Die Haare sind kurz, glatt und werden kurz getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "AUGEN",
+          "HAARFARBE",
+          "FRISUR_SATZ"
+        ],
+        "watch": [],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 60s",
+          "score": 0.4838351607322693,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine Ã¤ltere Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.25507619976997375,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "sky reflection in eyes",
+          "score": 0.12238456308841705,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "blau",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "grey hair",
+          "score": 0.27554768323898315,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "<none>",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "pixie cut",
+          "score": 0.17959082126617432,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "Die Haare sind kurz, glatt und werden kurz getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": true,
+        "TEINT": true,
+        "AUGEN": true,
+        "HAARFARBE": false,
+        "FRISUR": true,
+        "FRISUR_SATZ": false
+      },
+      "truth_mismatches": [
+        {
+          "slot": "HAARFARBE",
+          "expected": "blonde Haare",
+          "actual": "graue Haare"
+        },
+        {
+          "slot": "FRISUR_SATZ",
+          "expected": "Die Haare sind kurz, leicht gestuft und werden mit einem fransigen Pony in der Stirn getragen.",
+          "actual": "Die Haare sind kurz, glatt und werden kurz getragen."
+        }
+      ],
+      "truth_match_count": 4,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "HAARFARBE": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          }
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "image_name": "8.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "",
+      "AUGEN": "braun",
+      "HAARFARBE": "graue Haare",
+      "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine Ã¤ltere Frau",
+      "validations": [],
+      "source_of_truth": {
+        "footwear": "clip_candidate",
+        "eyewear": "clip_candidate",
+        "upper_primary": "cloud_verifier"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "",
+        "AUGEN": "braun",
+        "HAARFARBE": "",
+        "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "AUGEN",
+          "HAARFARBE"
+        ],
+        "watch": [
+          "FRISUR_SATZ"
+        ],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 60s",
+          "score": 0.7745237946510315,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine Ã¤ltere Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "olive skin",
+          "score": 0.09316541999578476,
+          "cloud": false,
+          "maturity": "unstable",
+          "slot_value": "<none>",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "black eyes",
+          "score": 0.22121943533420563,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "braun",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "grey hair",
+          "score": 0.42050471901893616,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "<none>",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "shoulder-length",
+          "score": 0.06871860474348068,
+          "cloud": false,
+          "maturity": "watch",
+          "slot_value": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": true,
+        "TEINT": false,
+        "AUGEN": false,
+        "HAARFARBE": false,
+        "FRISUR": false,
+        "FRISUR_SATZ": false
+      },
+      "truth_mismatches": [
+        {
+          "slot": "TEINT",
+          "expected": "hell",
+          "actual": ""
+        },
+        {
+          "slot": "AUGEN",
+          "expected": "blau",
+          "actual": "braun"
+        },
+        {
+          "slot": "HAARFARBE",
+          "expected": "blonde Haare",
+          "actual": "graue Haare"
+        },
+        {
+          "slot": "FRISUR",
+          "expected": "Kurz, locker, nach hinten frisiert",
+          "actual": "Schulterlang, Seitenscheitel"
+        },
+        {
+          "slot": "FRISUR_SATZ",
+          "expected": "Die Haare sind kurz geschnitten und am Oberkopf voluminös und locker nach hinten frisiert.",
+          "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+        }
+      ],
+      "truth_match_count": 1,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "TEINT": {
+            "ready": false,
+            "value_present": false,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          },
+          "AUGEN": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "HAARFARBE": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          }
+        }
+      },
+      "status": "FAIL"
+    },
+    {
+      "image_name": "9.jpg",
+      "GESCHLECHT": "Frau",
+      "TEINT": "hell",
+      "AUGEN": "",
+      "HAARFARBE": "graue Haare",
+      "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+      "ALTER_GESCHLECHT_SATZ": "eine Ã¤ltere Frau",
+      "validations": [],
+      "source_of_truth": {
+        "upper_primary": "clip_candidate",
+        "footwear": "clip_candidate",
+        "eyewear": "cloud_verifier",
+        "neckwear": "clip_candidate"
+      },
+      "brief_text": "Die genaue Pose ist nicht sicher erkennbar.",
+      "mapped_snapshot": {
+        "GESCHLECHT": "Frau",
+        "TEINT": "hell",
+        "AUGEN": "",
+        "HAARFARBE": "graue Haare",
+        "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      "plugin_gate": {
+        "confirmed": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "HAARFARBE"
+        ],
+        "watch": [
+          "FRISUR_SATZ"
+        ],
+        "withheld": {}
+      },
+      "plugin_maturity": [
+        {
+          "plugin": "AgeGender",
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "label": "woman in her 60s",
+          "score": 0.5355300903320312,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "eine Ã¤ltere Frau",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "TEINT",
+          "label": "fair skin",
+          "score": 0.4682498872280121,
+          "cloud": false,
+          "maturity": "stable",
+          "slot_value": "hell",
+          "stable_threshold": 0.14,
+          "min_threshold": 0.1,
+          "require_cloud": false
+        },
+        {
+          "plugin": "SkinEye",
+          "slot": "AUGEN",
+          "label": "black eyes",
+          "score": 0.06007927656173706,
+          "cloud": false,
+          "maturity": "unstable",
+          "slot_value": "<none>",
+          "stable_threshold": 0.11,
+          "min_threshold": 0.08,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "HAARFARBE",
+          "label": "silver hair",
+          "score": 0.4172675907611847,
+          "cloud": true,
+          "maturity": "stable",
+          "slot_value": "graue Haare",
+          "stable_threshold": 0.07,
+          "min_threshold": 0.03,
+          "require_cloud": false
+        },
+        {
+          "plugin": "Hair",
+          "slot": "FRISUR_SATZ",
+          "label": "shoulder-length",
+          "score": 0.055141206830739975,
+          "cloud": true,
+          "maturity": "watch",
+          "slot_value": "Die Haare sind schulterlang, glatt und werden schulterlang getragen.",
+          "stable_threshold": 0.1,
+          "min_threshold": 0.04,
+          "require_cloud": false
+        }
+      ],
+      "truth_comparison": {
+        "ALTER_GESCHLECHT_SATZ": false,
+        "TEINT": true,
+        "AUGEN": false,
+        "HAARFARBE": true,
+        "FRISUR": false,
+        "FRISUR_SATZ": false
+      },
+      "truth_mismatches": [
+        {
+          "slot": "ALTER_GESCHLECHT_SATZ",
+          "expected": "eine Frau mittleren Alters",
+          "actual": "eine Ã¤ltere Frau"
+        },
+        {
+          "slot": "AUGEN",
+          "expected": "braun",
+          "actual": ""
+        },
+        {
+          "slot": "FRISUR",
+          "expected": "Kurz, gestuft, Seitenscheitel",
+          "actual": "Schulterlang, Seitenscheitel"
+        },
+        {
+          "slot": "FRISUR_SATZ",
+          "expected": "Die Haare sind kurz, fransig gestuft und werden mit einem Seitenscheitel voluminös getragen.",
+          "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+        }
+      ],
+      "truth_match_count": 2,
+      "truth_total_slots": 6,
+      "live_ready": {
+        "core_ready": false,
+        "strict_ready": false,
+        "slots": {
+          "ALTER_GESCHLECHT_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": false
+          },
+          "TEINT": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "AUGEN": {
+            "ready": false,
+            "value_present": false,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          },
+          "HAARFARBE": {
+            "ready": true,
+            "value_present": true,
+            "gate_confirmed": true,
+            "maturity_stable": true,
+            "truth_match": true
+          },
+          "FRISUR_SATZ": {
+            "ready": false,
+            "value_present": true,
+            "gate_confirmed": false,
+            "maturity_stable": false,
+            "truth_match": false
+          }
+        }
+      },
+      "status": "FAIL"
+    }
+  ],
+  "aggregate": {
+    "total_images": 20,
+    "truth_images": 20,
+    "slot_accuracy": {
+      "ALTER_GESCHLECHT_SATZ": {
+        "count": 8,
+        "total": 20,
+        "percent": 40.0
+      },
+      "TEINT": {
+        "count": 18,
+        "total": 20,
+        "percent": 90.0
+      },
+      "AUGEN": {
+        "count": 13,
+        "total": 20,
+        "percent": 65.0
+      },
+      "HAARFARBE": {
+        "count": 11,
+        "total": 20,
+        "percent": 55.0
+      },
+      "FRISUR": {
+        "count": 5,
+        "total": 20,
+        "percent": 25.0
+      },
+      "FRISUR_SATZ": {
+        "count": 5,
+        "total": 20,
+        "percent": 25.0
+      }
+    },
+    "aggregate_focus": {
+      "ALTER_GESCHLECHT_SATZ": {
+        "accuracy": {
+          "count": 8,
+          "total": 20,
+          "percent": 40.0
+        },
+        "gate": {
+          "confirmed": {
+            "count": 20,
+            "total": 20,
+            "percent": 100.0
+          },
+          "watch": {
+            "count": 0,
+            "total": 20,
+            "percent": 0.0
+          },
+          "withheld": {
+            "count": 0,
+            "total": 20,
+            "percent": 0.0
+          }
+        },
+        "maturity": {
+          "stable": {
+            "count": 20,
+            "total": 20,
+            "percent": 100.0
+          },
+          "watch": {
+            "count": 0,
+            "total": 20,
+            "percent": 0.0
+          },
+          "unstable": {
+            "count": 0,
+            "total": 20,
+            "percent": 0.0
+          },
+          "unknown": {
+            "count": 0,
+            "total": 20,
+            "percent": 0.0
+          }
+        }
+      },
+      "TEINT": {
+        "accuracy": {
+          "count": 18,
+          "total": 20,
+          "percent": 90.0
+        },
+        "gate": {
+          "confirmed": {
+            "count": 18,
+            "total": 20,
+            "percent": 90.0
+          },
+          "watch": {
+            "count": 1,
+            "total": 20,
+            "percent": 5.0
+          },
+          "withheld": {
+            "count": 0,
+            "total": 20,
+            "percent": 0.0
+          }
+        },
+        "maturity": {
+          "stable": {
+            "count": 18,
+            "total": 20,
+            "percent": 90.0
+          },
+          "watch": {
+            "count": 1,
+            "total": 20,
+            "percent": 5.0
+          },
+          "unstable": {
+            "count": 1,
+            "total": 20,
+            "percent": 5.0
+          },
+          "unknown": {
+            "count": 0,
+            "total": 20,
+            "percent": 0.0
+          }
+        }
+      },
+      "AUGEN": {
+        "accuracy": {
+          "count": 13,
+          "total": 20,
+          "percent": 65.0
+        },
+        "gate": {
+          "confirmed": {
+            "count": 16,
+            "total": 20,
+            "percent": 80.0
+          },
+          "watch": {
+            "count": 2,
+            "total": 20,
+            "percent": 10.0
+          },
+          "withheld": {
+            "count": 0,
+            "total": 20,
+            "percent": 0.0
+          }
+        },
+        "maturity": {
+          "stable": {
+            "count": 16,
+            "total": 20,
+            "percent": 80.0
+          },
+          "watch": {
+            "count": 2,
+            "total": 20,
+            "percent": 10.0
+          },
+          "unstable": {
+            "count": 2,
+            "total": 20,
+            "percent": 10.0
+          },
+          "unknown": {
+            "count": 0,
+            "total": 20,
+            "percent": 0.0
+          }
+        }
+      },
+      "HAARFARBE": {
+        "accuracy": {
+          "count": 11,
+          "total": 20,
+          "percent": 55.0
+        },
+        "gate": {
+          "confirmed": {
+            "count": 12,
+            "total": 20,
+            "percent": 60.0
+          },
+          "watch": {
+            "count": 3,
+            "total": 20,
+            "percent": 15.0
+          },
+          "withheld": {
+            "count": 0,
+            "total": 20,
+            "percent": 0.0
+          }
+        },
+        "maturity": {
+          "stable": {
+            "count": 13,
+            "total": 20,
+            "percent": 65.0
+          },
+          "watch": {
+            "count": 1,
+            "total": 20,
+            "percent": 5.0
+          },
+          "unstable": {
+            "count": 6,
+            "total": 20,
+            "percent": 30.0
+          },
+          "unknown": {
+            "count": 0,
+            "total": 20,
+            "percent": 0.0
+          }
+        }
+      },
+      "FRISUR_SATZ": {
+        "accuracy": {
+          "count": 5,
+          "total": 20,
+          "percent": 25.0
+        },
+        "gate": {
+          "confirmed": {
+            "count": 11,
+            "total": 20,
+            "percent": 55.0
+          },
+          "watch": {
+            "count": 8,
+            "total": 20,
+            "percent": 40.0
+          },
+          "withheld": {
+            "count": 0,
+            "total": 20,
+            "percent": 0.0
+          }
+        },
+        "maturity": {
+          "stable": {
+            "count": 11,
+            "total": 20,
+            "percent": 55.0
+          },
+          "watch": {
+            "count": 5,
+            "total": 20,
+            "percent": 25.0
+          },
+          "unstable": {
+            "count": 4,
+            "total": 20,
+            "percent": 20.0
+          },
+          "unknown": {
+            "count": 0,
+            "total": 20,
+            "percent": 0.0
+          }
+        }
+      }
+    },
+    "live_ready": {
+      "criteria": {
+        "core_slots": [
+          "AUGEN",
+          "HAARFARBE",
+          "FRISUR_SATZ"
+        ],
+        "strict_slots": [
+          "ALTER_GESCHLECHT_SATZ",
+          "TEINT",
+          "AUGEN",
+          "HAARFARBE",
+          "FRISUR_SATZ"
+        ],
+        "rules": [
+          "slot value present",
+          "plugin gate confirmed (not watch/withheld)",
+          "plugin maturity stable",
+          "truth match required when truth data exists"
+        ]
+      },
+      "core": {
+        "ready": {
+          "count": 0,
+          "total": 20,
+          "percent": 0.0
+        },
+        "images": []
+      },
+      "strict": {
+        "ready": {
+          "count": 0,
+          "total": 20,
+          "percent": 0.0
+        },
+        "images": []
+      }
+    },
+    "mismatches": [
+      {
+        "image": "1.jpg",
+        "slot": "FRISUR",
+        "expected": "Kurz, glatt, Seitenscheitel",
+        "actual": "Schulterlang, Seitenscheitel"
+      },
+      {
+        "image": "1.jpg",
+        "slot": "FRISUR_SATZ",
+        "expected": "Die Haare sind kurz, glatt und werden seitlich gescheitelt.",
+        "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      {
+        "image": "10.jpg",
+        "slot": "AUGEN",
+        "expected": "grün",
+        "actual": "braun"
+      },
+      {
+        "image": "11.jpg",
+        "slot": "ALTER_GESCHLECHT_SATZ",
+        "expected": "eine Frau mittleren Alters",
+        "actual": "eine erwachsene Frau"
+      },
+      {
+        "image": "11.jpg",
+        "slot": "FRISUR",
+        "expected": "Hochgesteckt, lockig, voluminös",
+        "actual": "Hochgesteckt, Schulterlang"
+      },
+      {
+        "image": "11.jpg",
+        "slot": "FRISUR_SATZ",
+        "expected": "Die Haare sind lockig, voluminös und werden aus dem Gesicht nach hinten zu einer lockeren Hochsteckfrisur getragen.",
+        "actual": "Die Haare sind locker und werden nach hinten zu einer Hochsteckfrisur getragen."
+      },
+      {
+        "image": "12.jpg",
+        "slot": "ALTER_GESCHLECHT_SATZ",
+        "expected": "eine Frau mittleren Alters",
+        "actual": "eine Ã¤ltere Frau"
+      },
+      {
+        "image": "12.jpg",
+        "slot": "AUGEN",
+        "expected": "blau",
+        "actual": "braun"
+      },
+      {
+        "image": "12.jpg",
+        "slot": "HAARFARBE",
+        "expected": "schwarze Haare",
+        "actual": ""
+      },
+      {
+        "image": "12.jpg",
+        "slot": "FRISUR",
+        "expected": "Halblang, glatt, mit Pony",
+        "actual": "Schulterlang, Seitenscheitel"
+      },
+      {
+        "image": "12.jpg",
+        "slot": "FRISUR_SATZ",
+        "expected": "Die Haare sind halblang, glatt und werden offen mit einem ins Gesicht fallenden Pony getragen.",
+        "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      {
+        "image": "13.jpg",
+        "slot": "ALTER_GESCHLECHT_SATZ",
+        "expected": "eine Frau mittleren Alters",
+        "actual": "eine Ã¤ltere Frau"
+      },
+      {
+        "image": "13.jpg",
+        "slot": "FRISUR",
+        "expected": "Hochgesteckt, Dutt, locker",
+        "actual": "Kurz, glatt, hochgesteckt"
+      },
+      {
+        "image": "13.jpg",
+        "slot": "FRISUR_SATZ",
+        "expected": "Die Haare sind am Oberkopf zu einem hohen, lockeren Dutt zusammengebunden.",
+        "actual": "Die Haare sind kurz, glatt und werden hochgesteckt getragen."
+      },
+      {
+        "image": "14.jpg",
+        "slot": "ALTER_GESCHLECHT_SATZ",
+        "expected": "ein Mann mittleren Alters",
+        "actual": "einen erwachsenen Mann"
+      },
+      {
+        "image": "14.jpg",
+        "slot": "FRISUR",
+        "expected": "Kurz, voluminös, nach hinten frisiert",
+        "actual": "Schulterlang, Seitenscheitel"
+      },
+      {
+        "image": "14.jpg",
+        "slot": "FRISUR_SATZ",
+        "expected": "Die Haare sind kurz, dicht und werden am Oberkopf voluminös nach hinten frisiert getragen.",
+        "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      {
+        "image": "15.jpg",
+        "slot": "FRISUR",
+        "expected": "Hochgesteckt, mit Pony, locker",
+        "actual": "Hochgesteckt, Schulterlang"
+      },
+      {
+        "image": "15.jpg",
+        "slot": "FRISUR_SATZ",
+        "expected": "Die Haare sind locker nach hinten gebunden, mit einem vollen Pony, der in die Stirn fällt.",
+        "actual": "Die Haare sind locker und werden nach hinten zu einer Hochsteckfrisur getragen."
+      },
+      {
+        "image": "16.jpg",
+        "slot": "ALTER_GESCHLECHT_SATZ",
+        "expected": "eine Frau mittleren Alters",
+        "actual": "eine Ã¤ltere Frau"
+      },
+      {
+        "image": "17.jpg",
+        "slot": "AUGEN",
+        "expected": "braun",
+        "actual": "blau"
+      },
+      {
+        "image": "17.jpg",
+        "slot": "HAARFARBE",
+        "expected": "weiße Haare",
+        "actual": "blonde Haare"
+      },
+      {
+        "image": "18.jpg",
+        "slot": "TEINT",
+        "expected": "hell",
+        "actual": "hell mit vielen Sommersprossen"
+      },
+      {
+        "image": "18.jpg",
+        "slot": "FRISUR",
+        "expected": "Lang, glatt, Seitenscheitel",
+        "actual": "Schulterlang, Seitenscheitel"
+      },
+      {
+        "image": "18.jpg",
+        "slot": "FRISUR_SATZ",
+        "expected": "Die Haare sind lang, glatt und werden offen mit einem leichten Seitenscheitel getragen.",
+        "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      {
+        "image": "19.jpg",
+        "slot": "ALTER_GESCHLECHT_SATZ",
+        "expected": "eine junge Frau",
+        "actual": "eine Ã¤ltere Frau"
+      },
+      {
+        "image": "19.jpg",
+        "slot": "HAARFARBE",
+        "expected": "hellbraune Haare",
+        "actual": "braune Haare"
+      },
+      {
+        "image": "2.jpg",
+        "slot": "ALTER_GESCHLECHT_SATZ",
+        "expected": "ein älterer Mann",
+        "actual": "einen Ã¤lteren Mann"
+      },
+      {
+        "image": "2.jpg",
+        "slot": "HAARFARBE",
+        "expected": "graue Haare",
+        "actual": ""
+      },
+      {
+        "image": "2.jpg",
+        "slot": "FRISUR",
+        "expected": "Sehr kurz, Stirnglatze, Haarkranz",
+        "actual": "Schulterlang, Seitenscheitel"
+      },
+      {
+        "image": "2.jpg",
+        "slot": "FRISUR_SATZ",
+        "expected": "Die Haare sind sehr kurz geschnitten, mit einer ausgeprägten Stirnglatze und einem kurzen Haarkranz an den Seiten und am Hinterkopf.",
+        "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      {
+        "image": "20.jpg",
+        "slot": "ALTER_GESCHLECHT_SATZ",
+        "expected": "eine Frau mittleren Alters",
+        "actual": "eine junge Frau"
+      },
+      {
+        "image": "20.jpg",
+        "slot": "FRISUR",
+        "expected": "Lang, glatt, zurückgebunden",
+        "actual": "Schulterlang, Seitenscheitel"
+      },
+      {
+        "image": "20.jpg",
+        "slot": "FRISUR_SATZ",
+        "expected": "Die Haare sind lang, glatt und werden streng aus dem Gesicht nach hinten gebunden.",
+        "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      {
+        "image": "3.jpg",
+        "slot": "ALTER_GESCHLECHT_SATZ",
+        "expected": "eine Frau mittleren Alters",
+        "actual": "eine junge Frau"
+      },
+      {
+        "image": "3.jpg",
+        "slot": "AUGEN",
+        "expected": "blau",
+        "actual": "braun"
+      },
+      {
+        "image": "3.jpg",
+        "slot": "FRISUR",
+        "expected": "Schulterlang, glatt, Mittelscheitel",
+        "actual": "Schulterlang, Seitenscheitel"
+      },
+      {
+        "image": "4.jpg",
+        "slot": "AUGEN",
+        "expected": "grün",
+        "actual": ""
+      },
+      {
+        "image": "4.jpg",
+        "slot": "HAARFARBE",
+        "expected": "graue Haare",
+        "actual": ""
+      },
+      {
+        "image": "4.jpg",
+        "slot": "FRISUR",
+        "expected": "Lang, gewellt, Seitenscheitel, gestuft",
+        "actual": ""
+      },
+      {
+        "image": "4.jpg",
+        "slot": "FRISUR_SATZ",
+        "expected": "Die Haare sind über schulterlang, leicht gewellt, gestuft geschnitten und fallen voluminös mit einem Seitenscheitel offen herab.",
+        "actual": ""
+      },
+      {
+        "image": "5.jpg",
+        "slot": "ALTER_GESCHLECHT_SATZ",
+        "expected": "ein Mann mittleren Alters",
+        "actual": "einen erwachsenen Mann"
+      },
+      {
+        "image": "5.jpg",
+        "slot": "HAARFARBE",
+        "expected": "braune Haare",
+        "actual": ""
+      },
+      {
+        "image": "5.jpg",
+        "slot": "FRISUR",
+        "expected": "Sehr kurz, Buzzcut, rasiert",
+        "actual": "Schulterlang, Seitenscheitel"
+      },
+      {
+        "image": "5.jpg",
+        "slot": "FRISUR_SATZ",
+        "expected": "Die Haare sind extrem kurz geschoren und als Buzzcut fast kahl rasiert.",
+        "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      {
+        "image": "6.jpg",
+        "slot": "ALTER_GESCHLECHT_SATZ",
+        "expected": "eine Frau mittleren Alters",
+        "actual": "eine erwachsene Frau"
+      },
+      {
+        "image": "6.jpg",
+        "slot": "HAARFARBE",
+        "expected": "braune Haare",
+        "actual": ""
+      },
+      {
+        "image": "6.jpg",
+        "slot": "FRISUR",
+        "expected": "Schulterlang, lockig, Seitenscheitel",
+        "actual": "Kurz, lockig"
+      },
+      {
+        "image": "6.jpg",
+        "slot": "FRISUR_SATZ",
+        "expected": "Die Haare sind schulterlang, voluminös gelockt, von hellen Strähnen durchzogen und werden mit einem Seitenscheitel offen getragen.",
+        "actual": "Die Haare sind kurz, lockig und werden kurz getragen."
+      },
+      {
+        "image": "7.jpg",
+        "slot": "HAARFARBE",
+        "expected": "blonde Haare",
+        "actual": "graue Haare"
+      },
+      {
+        "image": "7.jpg",
+        "slot": "FRISUR_SATZ",
+        "expected": "Die Haare sind kurz, leicht gestuft und werden mit einem fransigen Pony in der Stirn getragen.",
+        "actual": "Die Haare sind kurz, glatt und werden kurz getragen."
+      },
+      {
+        "image": "8.jpg",
+        "slot": "TEINT",
+        "expected": "hell",
+        "actual": ""
+      },
+      {
+        "image": "8.jpg",
+        "slot": "AUGEN",
+        "expected": "blau",
+        "actual": "braun"
+      },
+      {
+        "image": "8.jpg",
+        "slot": "HAARFARBE",
+        "expected": "blonde Haare",
+        "actual": "graue Haare"
+      },
+      {
+        "image": "8.jpg",
+        "slot": "FRISUR",
+        "expected": "Kurz, locker, nach hinten frisiert",
+        "actual": "Schulterlang, Seitenscheitel"
+      },
+      {
+        "image": "8.jpg",
+        "slot": "FRISUR_SATZ",
+        "expected": "Die Haare sind kurz geschnitten und am Oberkopf voluminös und locker nach hinten frisiert.",
+        "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      },
+      {
+        "image": "9.jpg",
+        "slot": "ALTER_GESCHLECHT_SATZ",
+        "expected": "eine Frau mittleren Alters",
+        "actual": "eine Ã¤ltere Frau"
+      },
+      {
+        "image": "9.jpg",
+        "slot": "AUGEN",
+        "expected": "braun",
+        "actual": ""
+      },
+      {
+        "image": "9.jpg",
+        "slot": "FRISUR",
+        "expected": "Kurz, gestuft, Seitenscheitel",
+        "actual": "Schulterlang, Seitenscheitel"
+      },
+      {
+        "image": "9.jpg",
+        "slot": "FRISUR_SATZ",
+        "expected": "Die Haare sind kurz, fransig gestuft und werden mit einem Seitenscheitel voluminös getragen.",
+        "actual": "Die Haare sind schulterlang, glatt und werden schulterlang getragen."
+      }
+    ],
+    "plugin_gate": {
+      "ALTER_GESCHLECHT_SATZ": {
+        "confirmed": {
+          "count": 20,
+          "total": 20,
+          "percent": 100.0
+        },
+        "watch": {
+          "count": 0,
+          "total": 20,
+          "percent": 0.0
+        },
+        "withheld": {
+          "count": 0,
+          "total": 20,
+          "percent": 0.0
+        }
+      },
+      "AUGEN": {
+        "confirmed": {
+          "count": 16,
+          "total": 20,
+          "percent": 80.0
+        },
+        "watch": {
+          "count": 2,
+          "total": 20,
+          "percent": 10.0
+        },
+        "withheld": {
+          "count": 0,
+          "total": 20,
+          "percent": 0.0
+        }
+      },
+      "FRISUR_SATZ": {
+        "confirmed": {
+          "count": 11,
+          "total": 20,
+          "percent": 55.0
+        },
+        "watch": {
+          "count": 8,
+          "total": 20,
+          "percent": 40.0
+        },
+        "withheld": {
+          "count": 0,
+          "total": 20,
+          "percent": 0.0
+        }
+      },
+      "HAARFARBE": {
+        "confirmed": {
+          "count": 12,
+          "total": 20,
+          "percent": 60.0
+        },
+        "watch": {
+          "count": 3,
+          "total": 20,
+          "percent": 15.0
+        },
+        "withheld": {
+          "count": 0,
+          "total": 20,
+          "percent": 0.0
+        }
+      },
+      "TEINT": {
+        "confirmed": {
+          "count": 18,
+          "total": 20,
+          "percent": 90.0
+        },
+        "watch": {
+          "count": 1,
+          "total": 20,
+          "percent": 5.0
+        },
+        "withheld": {
+          "count": 0,
+          "total": 20,
+          "percent": 0.0
+        }
+      }
+    },
+    "plugin_maturity": {
+      "ALTER_GESCHLECHT_SATZ": {
+        "stable": {
+          "count": 20,
+          "total": 20,
+          "percent": 100.0
+        },
+        "watch": {
+          "count": 0,
+          "total": 20,
+          "percent": 0.0
+        },
+        "unstable": {
+          "count": 0,
+          "total": 20,
+          "percent": 0.0
+        },
+        "unknown": {
+          "count": 0,
+          "total": 20,
+          "percent": 0.0
+        }
+      },
+      "AUGEN": {
+        "stable": {
+          "count": 16,
+          "total": 20,
+          "percent": 80.0
+        },
+        "watch": {
+          "count": 2,
+          "total": 20,
+          "percent": 10.0
+        },
+        "unstable": {
+          "count": 2,
+          "total": 20,
+          "percent": 10.0
+        },
+        "unknown": {
+          "count": 0,
+          "total": 20,
+          "percent": 0.0
+        }
+      },
+      "FRISUR_SATZ": {
+        "stable": {
+          "count": 11,
+          "total": 20,
+          "percent": 55.0
+        },
+        "watch": {
+          "count": 5,
+          "total": 20,
+          "percent": 25.0
+        },
+        "unstable": {
+          "count": 4,
+          "total": 20,
+          "percent": 20.0
+        },
+        "unknown": {
+          "count": 0,
+          "total": 20,
+          "percent": 0.0
+        }
+      },
+      "HAARFARBE": {
+        "stable": {
+          "count": 13,
+          "total": 20,
+          "percent": 65.0
+        },
+        "watch": {
+          "count": 1,
+          "total": 20,
+          "percent": 5.0
+        },
+        "unstable": {
+          "count": 6,
+          "total": 20,
+          "percent": 30.0
+        },
+        "unknown": {
+          "count": 0,
+          "total": 20,
+          "percent": 0.0
+        }
+      },
+      "TEINT": {
+        "stable": {
+          "count": 18,
+          "total": 20,
+          "percent": 90.0
+        },
+        "watch": {
+          "count": 1,
+          "total": 20,
+          "percent": 5.0
+        },
+        "unstable": {
+          "count": 1,
+          "total": 20,
+          "percent": 5.0
+        },
+        "unknown": {
+          "count": 0,
+          "total": 20,
+          "percent": 0.0
+        }
+      }
+    }
+  }
+}

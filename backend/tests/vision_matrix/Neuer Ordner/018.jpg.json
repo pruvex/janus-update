@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz und gestutzt",
+    "OUTERWEAR": "grauer Wollmantel",
+    "KLEIDUNG": "schwarzer Rollkragenpullover",
+    "LEGWEAR": "schwarze Stoffhose",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Lederstiefel.",
+    "POSE_SATZ": "Der Mann steht mit verschränkten Händen auf einer Straße und blickt seitlich.",
+    "AMBIENTE_SATZ": "Städtische Straße mit Parkplätzen und Gebäuden im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Wollmantel", "Rollkragenpullover", "Stoffhose", "Lederstiefel"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Jeans", "T-Shirt", "Kapuzenpullover"]
+  }
+}

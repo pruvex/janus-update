@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "lange, glatt",
+    "OUTERWEAR": "karierter Blazer",
+    "KLEIDUNG": "pinkes Shirt",
+    "LEGWEAR": "boyfriend Jeans",
+    "SCHUH_SATZ": "Weiße Chucks",
+    "POSE_SATZ": "Sie läuft mit Blick zur Seite über einen Zebrastreifen, die Tasche in der Hand.",
+    "AMBIENTE_SATZ": "Urbaner Nachmittag in der City, Autos und Gebäude im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Bag", "Layered Clothing", "Full Body"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "No Bag"],
+    "NOTIZ": "Layering mit Blazer + Shirt, Tasche klar sichtbar."
+  }
+}

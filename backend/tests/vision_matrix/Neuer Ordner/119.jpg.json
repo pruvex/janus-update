@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "dunkel",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "hellgrauer, gerippter Strickpullover",
+    "KLEIDUNG": "weißer Rollkragenpullover darunter",
+    "LEGWEAR": "dunkle Chinohose",
+    "SCHUH_SATZ": "schwarze Lederschuhe",
+    "POSE_SATZ": "Er sitzt am Boden, die Knie angewinkelt, blickt zur Seite und hält einen Schuh in der Hand.",
+    "AMBIENTE_SATZ": "Unordentlicher urbane Hinterhofkulisse mit Fahrradrahmen und Metallgestellen im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Full Body", "Clothing Details"],
+    "AUSSCHLUSS_PFLICHT": ["Mixed Materials Leather Denim Knit Outfit"],
+    "NOTIZ": "Die Szene zeigt einen nachdenklich sitzenden Mann mit Strick und Chino, aber keine Frau und keine klaren Mixed-Materials-Details; daher gibt es eine Abweichung zum Briefing."
+  }
+}

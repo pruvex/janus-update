@@ -1,0 +1,33 @@
+{
+  "filename": "3.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "grau-meliert",
+    "FRISUR": "lang, leicht wellig mit Seitenscheitel",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "randlose Brille",
+    "SCHMUCK": "goldene Halskette",
+    "OUTERWEAR": "rosa Steppjacke",
+    "KLEIDUNG": "rosa Schal",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau macht eine Selfie-Aufnahme und blickt dabei lächelnd direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Die Aufnahme findet im Freien vor einem Hintergrund aus dichten, grünen Nadelbäumen statt.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "rosa Steppjacke",
+      "rosa Schal",
+      "randlose Brille",
+      "goldene Kette",
+      "grüne Nadelbäume",
+      "graumeliertes Haar"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Sonnenbrille"
+    ]
+  }
+}

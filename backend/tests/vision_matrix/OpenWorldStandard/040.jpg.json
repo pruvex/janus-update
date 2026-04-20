@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "dunkler Cardigan",
+    "KLEIDUNG": "senfgelber Knit Sweater",
+    "LEGWEAR": "dunkle Jeans",
+    "SCHUH_SATZ": "Dazu trägt er braune Leder-Sneaker.",
+    "POSE_SATZ": "Die Person steht auf einem Dach mit City-Skyline und schaut in die Kamera.",
+    "AMBIENTE_SATZ": "Urbanes Rooftop bei Sonnenuntergang.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Cardigan", "Sweater", "Jeans", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Anzug", "High Heels", "Sportjacke"]
+  }
+}

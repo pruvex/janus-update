@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "intent": "Production hardening gates for unknown real images",
+  "regression": {
+    "strict_v3_pass_rate_min": 0.98
+  },
+  "unknown_live": {
+    "hallucination_rate_max": 0.03,
+    "contradiction_rate_max": 0.02,
+    "human_acceptance_min": 4.3,
+    "unsure_handling_rate_min": 0.90
+  },
+  "stability": {
+    "required_consecutive_green_runs": 3,
+    "allow_new_critical_error_classes": false
+  },
+  "dataset_targets": {
+    "phase_start_min_images": 80,
+    "phase_start_max_images": 120,
+    "phase_stabilization_images": 200,
+    "phase_release_min_images": 300,
+    "phase_release_max_images": 500
+  }
+}

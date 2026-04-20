@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz und zurückgekämmt",
+    "OUTERWEAR": "schwarze Lederjacke",
+    "KLEIDUNG": "weißes Hemd",
+    "LEGWEAR": "schwarze Ripped-Jeans",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Sneaker.",
+    "POSE_SATZ": "Die Person steht vor einer historischen Steinwand und schaut leicht nach links.",
+    "AMBIENTE_SATZ": "Urbaner Altstadtflair mit Mauerwerk.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Lederjacke", "Hemd", "Jeans", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Anzug", "High Heels", "Kapişon"]
+  }
+}

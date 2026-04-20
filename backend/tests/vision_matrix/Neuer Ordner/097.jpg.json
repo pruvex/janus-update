@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "glatt",
+    "OUTERWEAR": "schwarzer Hoodie",
+    "KLEIDUNG": "schwarze Jacke",
+    "LEGWEAR": "schwarze Hose",
+    "SCHUH_SATZ": "Schwarze Sneaker",
+    "POSE_SATZ": "Er lehnt mit dem Rücken an einer Betonwand, der Kopf leicht gesenkt und die Silhouette vom Licht akzentuiert.",
+    "AMBIENTE_SATZ": "Abendliches, urbanes Setting mit Lichtstrahl aus dem Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Backlit", "Silhouette", "Full Body", "Street"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "High Heels"],
+    "NOTIZ": "GPT-Image 1.5—synthetisch, aber die Lichtsetzung entspricht dem Brief."
+  }
+}

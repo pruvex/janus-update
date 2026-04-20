@@ -1,0 +1,18 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "TEINT": "hell",
+    "AUGEN": "geschlossen",
+    "HAARFARBE": "Die Haare sind braun",
+    "FRISUR": "kurz und wellig",
+    "HAAR_STRUKTUR": "wellig",
+    "KLEIDUNG": "beiges Leinenhemd",
+    "LEGWEAR": "beige Leinenhose",
+    "MATERIAL": "Leinen",
+    "POSE_SATZ": "Die Person sitzt im Schneidersitz auf dem Boden und meditiert.",
+    "AMBIENTE_SATZ": "Die Szene spielt in einem hellen, ruhig gestalteten Raum auf einer Textilmatte.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Meditation", "Schneidersitz", "Leinen", "geschlossene Augen"],
+    "AUSSCHLUSS_PFLICHT": ["Schuhe", "Jeans"]
+  }
+}

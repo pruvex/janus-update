@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurzes Deckhaar",
+    "OUTERWEAR": "brauner Mantel",
+    "KLEIDUNG": "grauer Pullover",
+    "LEGWEAR": "dunkle Chinohose",
+    "SCHUH_SATZ": "Braune Lederstiefel",
+    "POSE_SATZ": "Er schreitet direkt auf die Kamera zu, die Hände in den Taschen.",
+    "AMBIENTE_SATZ": "Herbstliche Allee mit Bäumen und Menschen im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Mantel", "Pullover", "Hose", "Stiefel"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Kapuze", "Sporthose"],
+    "NOTIZ": "Full body walking pose, klare Bewegung Richtung Kamera."
+  }
+}

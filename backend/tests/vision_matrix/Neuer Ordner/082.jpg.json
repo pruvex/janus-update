@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "blond",
+    "FRISUR": "lockig",
+    "OUTERWEAR": "dunkelblaues T-Shirt",
+    "KLEIDUNG": "graue Shorts",
+    "LEGWEAR": "freie Beine",
+    "SCHUH_SATZ": "Graue Sneaker",
+    "POSE_SATZ": "Sie schreitet seitlich über die Straße, Blick nach vorn.",
+    "AMBIENTE_SATZ": "Städtische Straße mit Bäumen und Laternen im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Straße", "Candid", "Sneaker", "Full Body"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "High Heels", "Radfahrer"],
+    "NOTIZ": "Candid crossing, natürliche Pose ohne Blick zur Kamera."
+  }
+}

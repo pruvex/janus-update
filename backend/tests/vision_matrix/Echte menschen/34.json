@@ -1,0 +1,33 @@
+{
+  "filename": "34.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "weiß",
+    "FRISUR": "kurz, leicht hochfrisiert",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "Brille mit blauen Bügeln",
+    "SCHMUCK": "weißes Armband",
+    "OUTERWEAR": "rote Strickjacke",
+    "KLEIDUNG": "türkisfarbenes Oberteil mit Stickerei",
+    "LEGWEAR": "hellgraue Hose",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "Rollstuhl, Rollator im Hintergrund",
+    "POSE_SATZ": "Die Frau sitzt lächelnd in einem Rollstuhl und hat die Hände im Schoß gefaltet.",
+    "AMBIENTE_SATZ": "Ein helles Zimmer mit Holzschrank, Fernseher und einem Pflegebett im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "rote Strickjacke",
+      "türkisfarbenes Oberteil",
+      "Rollstuhl",
+      "Brille mit blauen Bügeln",
+      "weißes Armband",
+      "Rollator"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Sonnenbrille"
+    ]
+  }
+}

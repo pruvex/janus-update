@@ -1,0 +1,33 @@
+{
+  "filename": "1.jpg",
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz, oben fülliger",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "schwarzes T-Shirt mit weißem Textaufdruck 'ILLUMINATE THE NIGHT'",
+    "LEGWEAR": "beige Cargoshorts",
+    "SCHUH_SATZ": "braune Leder-Halbschuhe mit weißen Socken",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Der Mann lehnt mit der rechten Hand an einem Metallgeländer und lächelt frontal in die Kamera.",
+    "AMBIENTE_SATZ": "Im Hintergrund befindet sich eine steile, grün bewachsene Felswand unter freiem Himmel.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarzes T-Shirt",
+      "Aufdruck ILLUMINATE THE NIGHT",
+      "beige Cargoshorts",
+      "braune Lederschuhe",
+      "weiße Socken",
+      "Metallgeländer"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung"
+    ]
+  }
+}

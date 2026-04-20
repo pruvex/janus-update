@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "schwarze Haare",
+    "FRISUR": "locker zusammengebunden",
+    "OUTERWEAR": "orangefarbener Blazer",
+    "KLEIDUNG": "weißes Blusentop mit feinem Muster",
+    "LEGWEAR": "orangefarbene Stoffhose",
+    "ZUBEHOER_SATZ": "Sie hält eine passende Clutch mit goldener Hardware.",
+    "SCHUH_SATZ": "Dazu trägt sie schwarze Sandaletten mit Riemen.",
+    "POSE_SATZ": "Die Person steht leicht seitlich und blickt lächelnd zur Seite.",
+    "AMBIENTE_SATZ": "Stadtplatz mit Bäumen und modernen Gebäuden im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Blazer", "Stoffhose", "Clutch", "Sandaletten"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Jeans", "Hoodie", "Kappe"]
+  }
+}

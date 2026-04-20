@@ -1,0 +1,34 @@
+{
+  "filename": "49.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "hellblond",
+    "FRISUR": "zum hohen Dutt gebunden",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "Sonnenbrille",
+    "SCHMUCK": "silberne Halskette mit Anhänger, kleine Ohrstecker",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "schwarzes ärmelloses Oberteil mit Nietenbesatz am Ausschnitt",
+    "LEGWEAR": "schwarze Hose",
+    "SCHUH_SATZ": "schwarze Sandalen mit Keilabsatz und Blumenapplikationen",
+    "ZUBEHOER_SATZ": "Tätowierung am rechten Oberarm",
+    "POSE_SATZ": "Die Frau sitzt entspannt auf einer Parkbank, lehnt sich leicht zurück und blickt zur Seite.",
+    "AMBIENTE_SATZ": "Ein sonniger Außenbereich, wahrscheinlich ein Stadtpark, mit Bäumen und einer Straße im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarzes ärmelloses Oberteil",
+      "Nietenbesatz am Ausschnitt",
+      "Sonnenbrille",
+      "silberne Halskette",
+      "schwarze Sandalen mit Keilabsatz",
+      "Tätowierung am Oberarm",
+      "hölzerne Parkbank"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille (auf der Nase)",
+      "kein Bart",
+      "keine Kopfbedeckung"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "lang, leicht gewellt",
+    "OUTERWEAR": "mehrfarbige Strick-Poncho mit Web-Details",
+    "KLEIDUNG": "schwarzes Oberteil mit feinem Glanz",
+    "LEGWEAR": "dunkle Skinny-Jeans",
+    "SCHUH_SATZ": "schwarze Leder-Stiefel mit grobem Profil",
+    "POSE_SATZ": "Sie steht locker an einer Backsteinwand, eine Hand hält die Tasche, die andere entspannt an der Seite.",
+    "AMBIENTE_SATZ": "Industrial Outdoor-Setting mit schwarzer Fassade und Tageslicht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Full Body", "Mixed Materials", "Clothing Details"],
+    "AUSSCHLUSS_PFLICHT": ["Mehrere Personen", "Indoor Studio Setting"],
+    "NOTIZ": "Poncho, Oberteil und Lederboots liefern den geforderten Materialmix mit städtischer Kulisse."
+  }
+}

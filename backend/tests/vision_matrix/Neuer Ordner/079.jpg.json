@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "lockig",
+    "OUTERWEAR": "gelber Blazer",
+    "KLEIDUNG": "hellblaue Jeans",
+    "LEGWEAR": "enge Jeans",
+    "SCHUH_SATZ": "Weiße Sneaker",
+    "POSE_SATZ": "Sie sitzt auf einer Metalltreppe, eine Hand auf dem Knie, Blick zur Kamera.",
+    "AMBIENTE_SATZ": "Outdoor-Metalltreppe zwischen Gebäuden, urbanes Flair.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Treppe", "Urban", "Blazer", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "High Heels", "Business Formal"],
+    "NOTIZ": "Full body fashion portrait auf Treppe, passt zum Brief."
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "filename": "44.jpg",
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "nicht erkennbar unter Kappe",
+    "BART": "Vollbart",
+    "KOPFBDECKUNG": "weiße Baseballcap (verkehrt herum)",
+    "BRILLE": "Brille mit dunklem Vollrandgestell",
+    "SCHMUCK": "goldene Gliederkette",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "dunkelblaues T-Shirt mit FC Barcelona Logo",
+    "LEGWEAR": "beige Hose",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "Glas mit FC Barcelona Logo und dunklem Getränk",
+    "POSE_SATZ": "Der Mann sitzt, hält ein Glas in der Hand, zeigt den Daumen nach oben und blickt direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Dunkler Innenraum mit hartem Blitzlicht und Schlagschatten an der Wand.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "weiße Baseballcap",
+      "FC Barcelona Logo",
+      "goldene Gliederkette",
+      "großes Hals-Tattoo",
+      "Vollbart",
+      "Trinkglas"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Sonnenbrille",
+      "keine Jacke",
+      "keine Uhr sichtbar"
+    ]
+  }
+}

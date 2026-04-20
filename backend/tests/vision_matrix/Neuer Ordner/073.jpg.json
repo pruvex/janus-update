@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "blond",
+    "FRISUR": "lang und halb aufgeföhnt",
+    "OUTERWEAR": "schwarzer Body",
+    "KLEIDUNG": "schwarzer Body",
+    "LEGWEAR": "frei",
+    "SCHUH_SATZ": "Schwarze Absatzschuhe",
+    "POSE_SATZ": "Sie lehnt mit dem Rücken an einer gelben Wand, das Bein angezogen und den Blick zur Kamera gerichtet.",
+    "AMBIENTE_SATZ": "Bunte Wand mit rotem Streifen, laternenähnliche Betonstütze.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Lehnt an Wand", "Seitliches Profil", "Urban", "High Heels"],
+    "AUSSCHLUSS_PFLICHT": ["Outdoor/Natur", "Sneaker", "Kleider mit Ärmeln"],
+    "NOTIZ": "Portrait mit deutlichem Seitenprofil und voller Körperhaltung, urbane Wand." 
+  }
+}

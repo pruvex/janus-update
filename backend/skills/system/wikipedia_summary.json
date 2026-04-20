@@ -1,0 +1,55 @@
+{
+  "legacy_name": "get_wikipedia_summary",
+  "skill": "system.wikipedia_summary",
+  "description": "Liefert enzyklopädische Wikipedia-Zusammenfassungen zu Begriffen, Personen, Orten oder historischen Themen. Nicht geeignet für Live-Preise, aktuelle Kurse oder Marktdaten.",
+  "version": "1.1.0",
+  "sandbox_level": "read_only_fs",
+  "latency_class": "normal",
+  "timeout_ms": 10000,
+  "tags": [
+    "system",
+    "reference",
+    "wikipedia",
+    "knowledge",
+    "encyclopedia"
+  ],
+  "capabilities": [
+    "reference_lookup",
+    "web_read"
+  ],
+  "is_agent_ready": true,
+  "deterministic_renderer": false,
+  "max_calls_per_turn": 2,
+  "depends_on": [],
+  "examples": [
+    {
+      "input": {
+        "query": "Eiffelturm",
+        "lang": "de"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "title": "Eiffelturm",
+          "summary": "Der Eiffelturm ist ein 330 Meter hoher Eisenfachwerkturm in Paris...",
+          "url": "https://de.wikipedia.org/wiki/Eiffelturm"
+        },
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "query": "Xyzzy_nonexistent_article",
+        "lang": "de"
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "Weder Artikel noch ähnliche Ergebnisse für 'Xyzzy_nonexistent_article' gefunden."
+        }
+      }
+    }
+  ]
+}

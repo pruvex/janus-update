@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "graue Jacke über den Schultern",
+    "KLEIDUNG": "grauer Oversized Pullover",
+    "LEGWEAR": "graue Shorts",
+    "SCHUH_SATZ": "Weiße High-Top Sneaker",
+    "POSE_SATZ": "Er steht seitlich vor einer Betonwand und blickt in die Ferne.",
+    "AMBIENTE_SATZ": "Große Industriewand aus Sichtbeton mit Befestigungen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Betonwand", "Full Body", "Urban", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Holz", "Natur", "Dress Shoes"],
+    "NOTIZ": "Person sichtbar komplett vor modernem Betonwall."
+  }
+}

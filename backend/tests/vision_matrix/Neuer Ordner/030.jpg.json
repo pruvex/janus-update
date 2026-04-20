@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "gebunden",
+    "OUTERWEAR": "",
+    "KLEIDUNG": "schwarzes Croptop mit V-Ausschnitt",
+    "LEGWEAR": "schwarze Jogginghose mit rotem Seitenstreifen",
+    "SCHUH_SATZ": "Dazu trägt sie schwarze Ballerinas.",
+    "POSE_SATZ": "Die Person steht entspannt auf einem Zebrastreifen mit einer Hand in der Hüfte.",
+    "AMBIENTE_SATZ": "Städtische Kreuzung mit Hochhäusern und Verkehrsampeln im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Croptop", "Jogginghose", "Ballerinas", "Zebrastreifen"],
+    "AUSSCHLUSS_PFLICHT": ["High Heels", "Anzug", "Regenmantel"]
+  }
+}

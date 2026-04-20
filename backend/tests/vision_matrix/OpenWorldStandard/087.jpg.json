@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "blond",
+    "FRISUR": "lang",
+    "OUTERWEAR": "weißes ärmelloses Oberteil",
+    "KLEIDUNG": "weißes Ensemble",
+    "LEGWEAR": "weiße Hose",
+    "SCHUH_SATZ": "Beige Pumps",
+    "POSE_SATZ": "Sie steht frontal vor einer modernen Betonfassade und blickt in die Kamera.",
+    "AMBIENTE_SATZ": "Geometrische Betonstruktur mit klaren Linien und Schatten.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Beton", "Full Body", "Urban", "Pumps"],
+    "AUSSCHLUSS_PFLICHT": ["Holz", "Natur", "Sneaker"],
+    "NOTIZ": "Stands with minimalistic concrete background; fully compliant."
+  }
+}

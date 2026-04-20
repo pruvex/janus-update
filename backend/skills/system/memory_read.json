@@ -1,0 +1,66 @@
+{
+  "legacy_name": "search_past_conversation_summaries_tool",
+  "skill": "memory.read",
+  "id": "memory_read",
+  "name": "Lese Erinnerung",
+  "description": "Durchsucht das Gedächtnis nach relevanten Informationen zu einem Thema oder Namen.",
+  "version": "2.0.0",
+  "category": "memory",
+  "risk_level": "low",
+  "parameters": {
+    "type": "object",
+    "required": ["query"],
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "Suchbegriff oder Frage. Beispiele: 'Wie heißt der Hund?', 'Was weiß ich über Max?', 'Termine nächste Woche'"
+      },
+      "filter_tags": {
+        "type": "array",
+        "items": {"type": "string"},
+        "description": "OPTIONAL: Nur Memories mit diesen Tags berücksichtigen."
+      },
+      "min_priority": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 1.0,
+        "default": 0.0,
+        "description": "OPTIONAL: Minimale Priority (0.0 = alle, 0.8 = nur wichtige)"
+      },
+      "include_expired": {
+        "type": "boolean",
+        "default": false,
+        "description": "OPTIONAL: Auch abgelaufene Memories anzeigen (Grace Period)?"
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50,
+        "default": 10,
+        "description": "OPTIONAL: Maximale Anzahl Ergebnisse."
+      }
+    }
+  },
+  "response_schema": {
+    "type": "object",
+    "properties": {
+      "memories": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "fact": {"type": "string"},
+            "priority": {"type": "number"},
+            "category": {"type": "string"},
+            "tags": {"type": "array", "items": {"type": "string"}},
+            "created_at": {"type": "string"},
+            "expires_at": {"type": "string", "nullable": true}
+          }
+        }
+      },
+      "total_found": {"type": "integer"},
+      "query": {"type": "string"}
+    }
+  },
+  "synthesis_directives": "STRENGE REGEL: Wenn Erinnerungen gefunden wurden, verwende sie DIREKT in deiner Antwort. Sage niemals 'laut meiner Erinnerung' oder 'laut Gedächtnis'. Antworte einfach natürlich, als wüsstest du es."
+}

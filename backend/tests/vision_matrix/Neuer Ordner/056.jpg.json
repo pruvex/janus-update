@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "lockiger Afro",
+    "OUTERWEAR": "klassische Denim-Jacke",
+    "KLEIDUNG": "weißes Top",
+    "LEGWEAR": "gerippte Destroyed-Jeans",
+    "SCHUH_SATZ": "Schwarze Combat Boots",
+    "POSE_SATZ": "Sie sitzt mit gespreizten Beinen auf einem Gym-Ball und blickt selbstbewusst nach vorn.",
+    "AMBIENTE_SATZ": "Klares Studio mit weißem Hintergrund und aufgestellten Denim-Pieces.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Denim-Jacke", "Jeans", "Combat Boots"],
+    "AUSSCHLUSS_PFLICHT": ["Kleid", "Sneaker", "Anzug"],
+    "NOTIZ": "Single Person in total denim look, mehrere zusätzliche Denim-Stücke im Bild unterstreichen den Fokus."
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "filename": "21.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "dunkelblond",
+    "FRISUR": "schulterlang, voluminös gelockt, mit gelber Haarschleife",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "gelbe Haarschleife",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "Halskette, Armband am Handgelenk, Ohrringe",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "gelbes Neckholder-Kleid im Rockabilly-Stil, Oberteil weiß mit gelben Punkten",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "gelb-weiße Riemchenpumps mit kleinem Absatz",
+    "ZUBEHOER_SATZ": "runde schwarze Handtasche mit einem Porträtaufdruck",
+    "POSE_SATZ": "Die Frau steht aufrecht neben einer hohen, pinken Blumensäule und berührt diese mit ihrer rechten Hand.",
+    "AMBIENTE_SATZ": "Gepflasterter städtischer Bereich mit einer Straße und Wohnhäusern im Hintergrund bei hellem Tageslicht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "gelbes Kleid",
+      "pinke Blumensäule",
+      "gelbe Haarschleife",
+      "gelb-weiße Pumps",
+      "Handtasche mit Porträt",
+      "Tätowierung am Oberarm"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Jacke"
+    ]
+  }
+}

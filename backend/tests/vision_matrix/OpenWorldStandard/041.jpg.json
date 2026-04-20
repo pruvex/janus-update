@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "kurzer Pixie",
+    "OUTERWEAR": "dunkelblauer Karoblazer",
+    "KLEIDUNG": "gestreiftes Hemd und karierter Midi-Rock",
+    "LEGWEAR": "netzartige Strumpfhose",
+    "SCHUH_SATZ": "Gelbe, riemchenbesetzte High Heels",
+    "POSE_SATZ": "Sie steht frontal mit leicht gespreizten Beinen an einer Ziegelwand und hält eine farblich abgestimmte Handtasche.",
+    "AMBIENTE_SATZ": "Urbaner Hinterhof mit heller Ziegelwand und rauem Betonboden.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Karoblazer", "gestreiftes Hemd", "Karorock", "netzstrumpfhose", "gelbe High Heels", "Handtasche"],
+    "AUSSCHLUSS_PFLICHT": ["Anzug", "Sneaker", "Sweatshirt"]
+  }
+}

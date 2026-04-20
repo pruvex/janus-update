@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "blond",
+    "FRISUR": "mittellang, leicht gewellt",
+    "OUTERWEAR": "braun-beiger Hahnentritt-Blazer",
+    "KLEIDUNG": "senfgelber Rollkragenpullover",
+    "LEGWEAR": "schwarze Anzughose",
+    "SCHUH_SATZ": "Braune spitze Pumps",
+    "POSE_SATZ": "Sie steht vor einem Spiegel und nimmt ein Full-Body-Selfie, Blick leicht zur Seite.",
+    "AMBIENTE_SATZ": "Minimalistisch eingerichtetes, helles Interior mit cremefarbenen Wänden.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Blazer", "Rollkragenpullover", "Anzughose", "Pumps"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Jeans", "T-Shirt"]
+  }
+}

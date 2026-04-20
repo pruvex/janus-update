@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "dunkel",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "gelber Regenmantel",
+    "KLEIDUNG": "dunkle Shorts",
+    "LEGWEAR": "frei",
+    "SCHUH_SATZ": "Schwarze Sneaker",
+    "POSE_SATZ": "Er läuft über eine nasse Straße mit Blick nach vorn, während der Regen vom Himmel fällt.",
+    "AMBIENTE_SATZ": "Großstadt-Straße mit durch Regen verwischten Graffiti-Wänden.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Rain", "Wet Street", "Full Body"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "Dry Pavement"],
+    "NOTIZ": "Leichter Regen, deutliche Straßenreflexionen, Person trägt Regenmantel."
+  }
+}

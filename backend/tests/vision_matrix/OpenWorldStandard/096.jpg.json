@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "dunkler Mantel",
+    "KLEIDUNG": "schwarze Hose",
+    "LEGWEAR": "dunkle Hose",
+    "SCHUH_SATZ": "Schwarze Sneaker",
+    "POSE_SATZ": "Er steht seitlich in einer nassen Gasse, das Sonnenlicht von hinten betont die Silhouette.",
+    "AMBIENTE_SATZ": "Urbaner Abend mit warmem Backlight und reflektierendem Pfützenlicht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Backlit", "Silhouette", "Full Body", "Street", "nasser Boden"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "High Heels"],
+    "NOTIZ": "GPT-Image 1.5, synthetisch, erfüllt die Backlit-Silhouette-Anforderung."
+  }
+}

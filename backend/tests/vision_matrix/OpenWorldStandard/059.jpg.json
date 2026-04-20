@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "lang und glatt",
+    "OUTERWEAR": "hellblaue Denim-Bluse",
+    "KLEIDUNG": "verwaschene blaue Jeans",
+    "LEGWEAR": "High-Waist Bootcut-Jeans",
+    "SCHUH_SATZ": "Schwarze Plateausneaker",
+    "POSE_SATZ": "Sie steht selbstbewusst in einem Restaurant mit einer Hand auf der Hüfte.",
+    "AMBIENTE_SATZ": "Luxuriöses Restaurant mit runden Lampen über einem Holztresen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Denim-Bluse", "Jeans", "Plateausneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Kleid", "Sandalen", "Sporthose"],
+    "NOTIZ": "Trotz Accessoires (Goldschmuck, XXL-Brille) bleibt die Denim-on-Denim-Story erhalten."
+  }
+}

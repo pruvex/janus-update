@@ -1,0 +1,33 @@
+{
+  "filename": "29.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "weiß-grau",
+    "FRISUR": "kurz, eng gelockt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "schwarze Vollrandbrille",
+    "SCHMUCK": "goldene Gliederkette",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "schwarzes T-Shirt mit weißem grafischem Muster am unteren Rand",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt für eine Selfie-Aufnahme frontal und lächelnd direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Innenraum vor einer dunklen, strukturierten Wand und einem Vorhang mit grau-silbernem Barockmuster.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarze Vollrandbrille",
+      "goldene Gliederkette",
+      "weiß-graue Locken",
+      "barockes Vorhangmuster",
+      "schwarzes T-Shirt",
+      "strukturierte Tapete"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Sonnenbrille"
+    ]
+  }
+}

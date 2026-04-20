@@ -1,0 +1,282 @@
+import logging
+from typing import Any, Dict, List, Optional
+from functools import lru_cache
+import asyncio
+
+from backend.llm_providers.gemini.gateway import GeminiGateway
+from backend.llm_providers.openai.gateway import OpenAIGateway
+from backend.llm_providers.ollama.gateway import OllamaGateway
+from backend.services.tool_executor import ToolExecutor
+from backend.services.skill_selector import SkillSelector
+from backend.services.tool_manager import tool_manager
+from backend.utils.config_loader import load_model_catalog
+
+logger = logging.getLogger("janus_backend")
+
+# Process-weite Gateway-Silos (zustandslose Orchestrierer; keine Re-Instanziierung pro Request)
+_GEMINI_GATEWAY = GeminiGateway()
+_OPENAI_GATEWAY = OpenAIGateway()
+_OLLAMA_GATEWAY = OllamaGateway()
+_GATEWAY_SILOS: Dict[str, Any] = {
+    "gemini": _GEMINI_GATEWAY,
+    "openai": _OPENAI_GATEWAY,
+    "ollama": _OLLAMA_GATEWAY,
+}
+
+# --- CACHING FÜR MODELLKATALOG ---
+@lru_cache(maxsize=1)
+def get_cached_model_catalog():
+    """Lädt den Modellkatalog und cacht das Ergebnis in-memory."""
+    return load_model_catalog()
+
+
+async def reason_and_respond(
+    provider: str, model: str, api_key: str, chat_history: List[Dict],
+    context_manager: Any, db: Any, user_prompt: str, chat_id: int,
+    tool_executor: ToolExecutor, tools_override: Optional[List[Dict]] = None,
+    disable_tools: bool = False, image_data: Optional[str] = None,
+    allowed_skill_ids: Optional[List[str]] = None,
+    background_tasks: Any = None, max_tool_rounds: int = 5, bypass_policy: bool = False, **kwargs
+) -> Dict[str, Any]:
+    """
+    Zentraler Einstiegspunkt für die LLM-Orchestrierung.
+    Fungiert als Gateway-Router und delegiert an providerspezifische Silos.
+    """
+    if not tool_manager.get_all_tools():
+        from backend import tool_registry as registry
+        registry.register_all_tools()
+
+    # 1. Bestimme das Silo
+    provider_key = str(provider).lower()
+    selected_silo = _GATEWAY_SILOS.get(provider_key)
+    if not selected_silo:
+        logger.error(f"Provider {provider_key} nicht unterstützt.")
+        raise ValueError(f"Provider {provider_key} nicht unterstützt.")
+
+    # 2. Bestimme effektive Skills (Router-Logik)
+    effective_allowed_skill_ids: Optional[List[str]] = None
+    if allowed_skill_ids is not None:
+        effective_allowed_skill_ids = [str(s).strip() for s in (allowed_skill_ids or []) if str(s).strip()]
+    elif not disable_tools and str(user_prompt or "").strip():
+        selector = SkillSelector()
+        selected_skills = selector.get_relevant_skills(user_prompt, top_k=5)
+        available_skill_ids = {
+            str(tool_manager.get_skill_id(getattr(tool, "name", "") or "") or "").strip()
+            for tool in tool_manager.get_all_tools().values()
+        }
+        normalized_selected = [
+            str(s).strip() for s in (selected_skills or [])
+            if str(s).strip() and str(s).strip() in available_skill_ids
+        ]
+        if normalized_selected:
+            effective_allowed_skill_ids = normalized_selected[:5]
+            if "system.websearch" in available_skill_ids and "system.websearch" not in effective_allowed_skill_ids and len(effective_allowed_skill_ids) < 5:
+                effective_allowed_skill_ids.append("system.websearch")
+        else:
+            effective_allowed_skill_ids = ["system.websearch"]
+
+    # 3. Delegiere Orchestrierung an das Silo
+    logger.info(f"GATEWAY-ROUTER: Delegiere an {provider_key}-Silo.")
+
+    # DIAMOND FIX: Listen-/Ranking-Anfragen benötigen mehr Such-Runden mit Gemini
+    normalized_prompt = str(user_prompt or "").lower()
+    is_list_heavy_query = any(marker in normalized_prompt for marker in ("liste", "list", "top", "ranking", "beste"))
+    if provider_key == "gemini" and is_list_heavy_query:
+        if max_tool_rounds < 10:
+            logger.info("DIAMOND-RESEARCH: Listen-Anfrage erkannt. Erhöhe max_tool_rounds auf 10 für tiefe Gemini-Suchen.")
+        max_tool_rounds = max(max_tool_rounds, 10)
+    
+    silo_args = {
+        "provider": provider,
+        "model": model,
+        "api_key": api_key,
+        "chat_history": chat_history,
+        "context_manager": context_manager,
+        "db": db,
+        "user_prompt": user_prompt,
+        "chat_id": chat_id,
+        "tool_executor": tool_executor,
+        "allowed_skill_ids": effective_allowed_skill_ids,
+        "max_tool_rounds": max_tool_rounds,
+    }
+
+    if tools_override is not None:
+        silo_args["tools_override"] = tools_override
+    if disable_tools:
+        silo_args["disable_tools"] = disable_tools
+    if image_data is not None:
+        silo_args["image_data"] = image_data
+    if background_tasks is not None:
+        silo_args["background_tasks"] = background_tasks
+    if bypass_policy:
+        silo_args["bypass_policy"] = bypass_policy
+
+    tool_results = kwargs.get("tool_results")
+    if tool_results is not None:
+        silo_args["tool_results"] = tool_results
+
+    trimmed_tool_results = kwargs.get("trimmed_tool_results")
+    if trimmed_tool_results is not None:
+        silo_args["trimmed_tool_results"] = trimmed_tool_results
+
+    websearch_synthesis_instruction = kwargs.get("websearch_synthesis_instruction")
+    if websearch_synthesis_instruction is not None:
+        silo_args["websearch_synthesis_instruction"] = websearch_synthesis_instruction
+
+    tool_limit_reached = kwargs.get("tool_limit_reached")
+    if tool_limit_reached is not None:
+        silo_args["tool_limit_reached"] = tool_limit_reached
+
+    allow_pdf_enrichment = kwargs.get("allow_pdf_enrichment")
+    if allow_pdf_enrichment is not None:
+        silo_args["allow_pdf_enrichment"] = allow_pdf_enrichment
+
+    request_budget = kwargs.get("request_budget")
+    if request_budget is not None:
+        silo_args["request_budget"] = request_budget
+
+    validated_tool_definitions = kwargs.get("validated_tool_definitions")
+    if validated_tool_definitions is not None:
+        silo_args["validated_tool_definitions"] = validated_tool_definitions
+
+    current_round = kwargs.get("current_round")
+    if current_round is not None:
+        silo_args["current_round"] = current_round
+
+    forced_tool = kwargs.get("forced_tool")
+    if forced_tool is not None:
+        silo_args["forced_tool"] = forced_tool
+
+    all_tool_definitions = kwargs.get("all_tool_definitions")
+    if all_tool_definitions is not None:
+        silo_args["all_tool_definitions"] = all_tool_definitions
+
+    if provider_key == "gemini" and kwargs.get("_gemini_engine_owned_tool_loop"):
+        silo_args["_gemini_engine_owned_tool_loop"] = True
+
+    return await selected_silo.reason_and_respond(**silo_args)
+
+
+def get_provider(provider_name: str):
+    """
+    Gibt eine Instanz des angeforderten Service-Providers zurück.
+    Wird primär für Legacy-Kompatibilität (z.B. chat_orchestrator) bereitgestellt.
+    """
+    provider_key = str(provider_name).lower()
+    if provider_key == "gemini":
+        from backend.llm_providers.gemini.service import GeminiServiceProvider
+        return GeminiServiceProvider()
+    elif provider_key == "openai":
+        from backend.llm_providers.openai.service import OpenAIServiceProvider
+        return OpenAIServiceProvider()
+    elif provider_key == "ollama":
+        from backend.llm_providers.ollama.service import OllamaServiceProvider
+        return OllamaServiceProvider()
+    else:
+        raise ValueError(f"Unbekannter Provider: {provider_name}")
+
+
+async def call_llm(*args: Any, **kwargs: Any) -> Dict[str, Any]:
+    """
+    Ein-Zug-LLM-Aufruf für Tools und Hilfsdienste (geo_service, Kontakte, Vision, Intent, …).
+
+    Unterstützt:
+    - Nur Keyword: ``provider``, ``model_id``/``model``, ``api_key``, ``messages=``, …
+    - Positional (Legacy): ``call_llm(provider, model, api_key, messages=[...])``
+    - ``chat_history`` als Alias für ``messages`` (context_manager)
+    """
+    kw = dict(kwargs)
+    if len(args) >= 3:
+        kw.setdefault("provider", args[0])
+        kw.setdefault("model_id", args[1])
+        kw.setdefault("api_key", args[2])
+        args = args[3:]
+    if args:
+        raise TypeError(f"call_llm: unexpected positional arguments after provider/model/api_key: {args!r}")
+
+    provider = str(kw.pop("provider", "") or "")
+    model_id = str(kw.pop("model_id", None) or kw.pop("model", "") or "")
+    api_key = str(kw.pop("api_key", "") or "")
+
+    messages: Optional[List[Dict[str, Any]]] = kw.pop("messages", None)
+    chat_history = kw.pop("chat_history", None)
+    if messages is None and chat_history is not None:
+        messages = chat_history
+    prompt = kw.pop("prompt", None)
+    if messages is None:
+        messages = [{"role": "user", "content": str(prompt or "")}]
+
+    tools = kw.pop("tools", None)
+    force_no_tools = bool(kw.pop("force_no_tools", False))
+
+    svc = get_provider(provider)
+    return await svc.generate_response(
+        api_key=api_key,
+        model=model_id,
+        messages=messages,
+        tools=tools,
+        force_no_tools=force_no_tools,
+        **kw,
+    )
+
+
+async def get_active_image_generation_model(provider: str) -> Optional[str]:
+    """
+    Ermittelt das aktuell aktive Bildgenerierungsmodell für den Provider.
+    """
+    from backend.utils.config_loader import load_config_data
+    config = await asyncio.to_thread(load_config_data)
+    
+    last_used_text_model_id = config.get("last_used_model") 
+    model_catalog = await asyncio.to_thread(get_cached_model_catalog)
+    
+    if last_used_text_model_id and last_used_text_model_id in model_catalog:
+        text_model_info = model_catalog[last_used_text_model_id]
+        if text_model_info.get("provider") == provider:
+            image_gen_model_id = text_model_info.get("image_generation_model")
+            if image_gen_model_id and image_gen_model_id in model_catalog and model_catalog[image_gen_model_id].get("type") == "image":
+                return image_gen_model_id
+
+    # Fallback-Logik
+    if provider == "gemini":
+        if "gemini-2.5-flash-image-preview" in model_catalog:
+            return "gemini-2.5-flash-image-preview"
+    elif provider == "openai":
+        if "gpt-image-1.5" in model_catalog:
+            return "gpt-image-1.5"
+
+    return None
+
+
+async def simple_llm_generate_content(provider: str, model: str, api_key: str, prompt: str):
+    """
+    Vereinfachte Generierung (nur für interne Hilfszwecke).
+    """
+    # Da wir call_llm entfernt haben, delegieren wir hier auch an reason_and_respond oder ein Silo
+    # Für Einfachheit nutzen wir hier direkt das Silo-Konzept
+    provider_key = str(provider).lower()
+    if provider_key == "gemini":
+        from backend.llm_providers.gemini.service import GeminiServiceProvider
+        svc = GeminiServiceProvider()
+    elif provider_key == "openai":
+        from backend.llm_providers.openai.service import OpenAIServiceProvider
+        svc = OpenAIServiceProvider()
+    elif provider_key == "ollama":
+        from backend.llm_providers.ollama.service import OllamaServiceProvider
+        svc = OllamaServiceProvider()
+    else:
+        raise ValueError(f"Provider {provider} nicht unterstützt.")
+
+    return await svc.generate_response(
+        api_key=api_key,
+        model=model,
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+
+def get_model_details(model_id: str) -> Dict:
+    """
+    Gibt Details für eine model_id aus dem gecachten Modellkatalog zurück.
+    """
+    catalog = get_cached_model_catalog()
+    return catalog.get(model_id, {})

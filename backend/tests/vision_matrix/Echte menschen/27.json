@@ -1,0 +1,33 @@
+{
+  "filename": "27.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junges Alter",
+    "HAARFARBE": "goldblond",
+    "FRISUR": "lang, gewellt mit lichtem Pony",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "schwarze Bluse mit transparenten Punkte-Ärmeln",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt mit einem sanften Lächeln direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Ein heller Innenraum mit einer dekorativen Lichterkette im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarze Bluse",
+      "transparente Ärmel",
+      "Punktemuster",
+      "blonde lange Haare",
+      "Lichterkette",
+      "heller Hintergrund"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung"
+    ]
+  }
+}

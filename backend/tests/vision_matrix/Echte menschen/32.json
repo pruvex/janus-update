@@ -1,0 +1,33 @@
+{
+  "filename": "32.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "streng zurückgebunden, violett schimmernde Haarspitzen im Nacken",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "kleine dunkle Ohrstecker",
+    "OUTERWEAR": "blaue Kapuzenjacke mit weißem Reißverschluss",
+    "KLEIDUNG": "blaue Sweatjacke",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt frontal mit einem neutralen Gesichtsausdruck direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Innenraum vor einem hellen Fenster; an der Wand dahinter hängen ein Kalender und eine Uhr.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "blaue Kapuzenjacke",
+      "weißer Reißverschluss",
+      "Wandkalender mit Fotos",
+      "weiße Wanduhr",
+      "violette Haarspitzen",
+      "Fenster mit Jalousie"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung"
+    ]
+  }
+}

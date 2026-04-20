@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "schulterlang",
+    "OUTERWEAR": "grünes Wickelshirt",
+    "KLEIDUNG": "beige Crop-Top",
+    "LEGWEAR": "breite braune Stoffhose",
+    "SCHUH_SATZ": "Beige Pumps",
+    "POSE_SATZ": "Sie steht vor neutralem Hintergrund, die Hände hinter dem Kopf gefasst und blickt zur Seite.",
+    "AMBIENTE_SATZ": "Neutraler Studiohintergrund mit heller Wand.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Neutral Background", "Full Body", "Clothing Details"],
+    "AUSSCHLUSS_PFLICHT": ["Outdoor", "Mehrere Personen"],
+    "NOTIZ": "Sauberes Studio-Setting, sieht nach neutralem Portrait aus."
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "hellbeige gestreifte Jacke",
+    "KLEIDUNG": "weißes Hemd",
+    "LEGWEAR": "schwarze Hose",
+    "SCHUH_SATZ": "Beige Sneaker",
+    "POSE_SATZ": "Er steht frontal vor einer neutralen Wand mit den Händen in den Taschen.",
+    "AMBIENTE_SATZ": "Ruhiges Studio mit weißem Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Neutral Background", "Full Body", "Clothing Details"],
+    "AUSSCHLUSS_PFLICHT": ["Outdoor", "Mehrere Personen"],
+    "NOTIZ": "Studioaufnahme mit klaren Kleidungsdetails."
+  }
+}

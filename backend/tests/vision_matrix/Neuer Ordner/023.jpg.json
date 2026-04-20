@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "lockig",
+    "OUTERWEAR": "hellblaue Jeansjacke",
+    "KLEIDUNG": "hellblauer Sweater",
+    "LEGWEAR": "schwarze enge Jeans",
+    "SCHUH_SATZ": "Dazu trägt sie weiße Sneaker mit schwarzen Details.",
+    "POSE_SATZ": "Die Person steht am Straßenrand und schaut auf ihr Smartphone.",
+    "AMBIENTE_SATZ": "Städtische Fassade mit klassischer Architektur und Skateboard daneben.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Jeansjacke", "Sweater", "Schwarze Jeans", "Weiße Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Heels", "Schicke Tasche", "Rollkragen"]
+  }
+}

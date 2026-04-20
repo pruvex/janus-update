@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz und sauber gestylt",
+    "OUTERWEAR": "grau-blauer karierter Blazer",
+    "KLEIDUNG": "dunkelblauer Strickweste über weißem Hemd",
+    "LEGWEAR": "darkwash Jeans",
+    "SCHUH_SATZ": "Braune Lederstiefel",
+    "POSE_SATZ": "Er sitzt auf einer Holzbank mit verschränkten Händen und leicht geneigtem Kopf Richtung Kamera.",
+    "AMBIENTE_SATZ": "Dunkler Holzunterstand mit Blick auf offene Küstenlandschaft.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["karierter Blazer", "Strickweste", "Jeans", "Lederstiefel"],
+    "AUSSCHLUSS_PFLICHT": ["Anzughose", "Sneaker", "Sportuhr"]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "lange, lockige Haare",
+    "OUTERWEAR": "braune, lockere Jacke",
+    "KLEIDUNG": "orangene Mütze und lässiges Outfit",
+    "LEGWEAR": "weite Jeans",
+    "SCHUH_SATZ": "Sportschuhe",
+    "POSE_SATZ": "Sie steht seitlich zur Kamera und schaut nach unten, als würde sie auf ihr Handy sprechen.",
+    "AMBIENTE_SATZ": "Städtische Skyline mit Hochhäusern im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Seitliches Profil", "Jacke", "Weite Jeans", "Stadt",
+"Sportschuhe"],
+    "AUSSCHLUSS_PFLICHT": ["Anzug", "High Heels", "Indoor-Setting"],
+    "NOTIZ": "Person in Seitprofil, stehend, urbaner Hintergrund erfüllt die Vorgabe."
+  }
+}

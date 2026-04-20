@@ -1,0 +1,18 @@
+[
+  {
+    "id": "flux-schnell",
+    "name": "Flux.1 [Schnell]",
+    "type": "gpu",
+    "desc": "Beste Qualität, erfordert Nvidia GPU (CUDA).",
+    "install_script": "scripts/install_comfyui_gpu.bat",
+    "install_dir": "C:\\KI\\Janus-Image-Engine"
+  },
+  {
+    "id": "sd15-cpu",
+    "name": "Stable Diffusion 1.5 (CPU)",
+    "type": "cpu",
+    "desc": "Läuft auf jedem PC, geringere Detailtiefe.",
+    "install_script": "scripts/install_sd_cpu.bat",
+    "install_dir": "C:\\KI\\Janus-Image-Engine-CPU"
+  }
+]

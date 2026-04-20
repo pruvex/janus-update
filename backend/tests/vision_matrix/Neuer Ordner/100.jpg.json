@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "dunkel",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "hellgrauer Blazer",
+    "KLEIDUNG": "dunkles Hemd",
+    "LEGWEAR": "dunkle Hose",
+    "SCHUH_SATZ": "Schwarze Lederschuhe",
+    "POSE_SATZ": "Er steht seitlich auf einer Betonrampe, das Gesicht größtenteils in Schatten, das Sonnenlicht hinter ihm.",
+    "AMBIENTE_SATZ": "Sonnenuntergang über der Stadt, Betonarchitektur und warme Lichtreflexe.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Backlit", "Silhouette", "Full Body", "Street", "Sunset"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "High Heels"],
+    "NOTIZ": "GPT-Image 1.5 synthetisches Bild; erfüllt die Licht- und Silhouettenvorgabe." 
+  }
+}

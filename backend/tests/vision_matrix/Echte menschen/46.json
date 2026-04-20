@@ -1,0 +1,34 @@
+{
+  "filename": "46.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "weiß-grau",
+    "FRISUR": "kurz, voluminös und nach hinten gekämmt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "ovale Brille mit goldenem Metallgestell",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "florale Weste in Beige-Tönen",
+    "KLEIDUNG": "weißes Hemd mit Rüschen am Kragen",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "kleiner, geschmückter Weihnachtsbaum",
+    "POSE_SATZ": "Die Frau steht leicht zur Seite gedreht und blickt mit einem Lächeln frontal in die Kamera.",
+    "AMBIENTE_SATZ": "Ein wohnlicher Innenraum mit einer leuchtend orangefarbenen Wand, einem Barometer und einem gerahmten Bild im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "florale Weste",
+      "weißes Rüschenhemd",
+      "goldene Brille",
+      "orangefarbene Wand",
+      "Barometer",
+      "kleiner Weihnachtsbaum"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Sonnenbrille",
+      "keine Schuhe sichtbar"
+    ]
+  }
+}

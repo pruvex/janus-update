@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "long and straight",
+    "OUTERWEAR": "weißer ärmelloser Oberteil mit fließendem Chiffon",
+    "KLEIDUNG": "lange, weiße fließende Rockpartie",
+    "LEGWEAR": "nackt",
+    "SCHUH_SATZ": "barfuß",
+    "POSE_SATZ": "Sie steht im Profil, hält Blumen nah ans Gesicht, blickt leicht zur Seite.",
+    "AMBIENTE_SATZ": "Strand mit ruhiger See, sanfte Wellen im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Seitprofil", "Blumen", "Strand"],
+    "AUSSCHLUSS_PFLICHT": ["Stadt", "Indoor-Szene", "Schuhe"],
+    "NOTIZ": "Obwohl keine Stadtkulisse, sie steht seitlich, was auf Profil ausgerichtet ist; Abweichung vom 'city' Teil beachten."  
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Erwachsener",
+    "HAARFARBE": "braun",
+    "FRISUR": "mittellang und leicht gewellt",
+    "OUTERWEAR": "grüne Bomberjacke",
+    "KLEIDUNG": "schwarzer Hoodie",
+    "LEGWEAR": "lockere Jogginghose",
+    "SCHUH_SATZ": "Weiße Sneaker",
+    "POSE_SATZ": "Er lehnt mit dem Rücken an einer bemalten Backsteinwand und schaut seitlich zur Kamera.",
+    "AMBIENTE_SATZ": "Streetart-gesprenkelte urbane Gasse bei Tageslicht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Seitprofil", "Wand", "Bomberjacke", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "Anzug", "Leerstand"],
+    "NOTIZ": "Lehnt entspannt mit Blick zur Seite, erfüllt die Anforderungen an eine urbane Portraitpose."
+  }
+}

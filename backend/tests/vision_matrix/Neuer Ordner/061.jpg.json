@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "lang, lockig",
+    "OUTERWEAR": "gelber Bandeau-Top",
+    "KLEIDUNG": "gestreifter Crop-Top über dem Bauch",
+    "LEGWEAR": "blaue Ripped-Jeans",
+    "SCHUH_SATZ": "Weiße Sneaker",
+    "POSE_SATZ": "Sie schreitet direkt auf die Kamera zu und blickt leicht nach oben.",
+    "AMBIENTE_SATZ": "Dachterrasse mit Skyline und bewölktem Himmel.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Crop-Top", "Jeans", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Anzug", "Kleid", "High Heels"],
+    "NOTIZ": "Full-Body, vorwärtsgerichtete Bewegung mit Skyline im Hintergrund"
+  }
+}

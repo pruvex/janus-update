@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "schwarze Lederjacke",
+    "KLEIDUNG": "weißes T-Shirt",
+    "LEGWEAR": "grau melierte Hose",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Lederoxfords.",
+    "POSE_SATZ": "Die Person lehnt lässig an einer urbanen Struktur und schaut direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Städtische Straße mit Metalltor und graffitiartiger Kulisse.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Lederjacke", "T-Shirt", "Hose", "Lederschuhe"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Sportkleidung", "Kapuzenpullover"]
+  }
+}

@@ -1,0 +1,20 @@
+---
+description: Memory & Context Awareness
+globs: *
+---
+## Memory Awareness
+
+Use the following files as context:
+
+1. WHAT_I_LEARNED.md
+   - Reuse known fixes and patterns
+   - Prefer existing solutions over new ones
+
+2. SESSION_LOG.md
+   - Understand recent changes
+   - Avoid repeating failed approaches
+
+## Rules
+- If a known pattern exists → use it first
+- Do not repeat failed fixes
+- Build on previous iterations

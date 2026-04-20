@@ -1,0 +1,33 @@
+{
+  "filename": "38.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "blond",
+    "FRISUR": "schulterlang, glatt, mit Pony",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "Brille mit dünnem Metallgestell",
+    "SCHMUCK": "silbernes Armband, feine Halskette",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "pfirsichfarbener Pullover mit einem markanten, vertikalen schwarzen Reißverschluss an der Seite",
+    "LEGWEAR": "schwarze Hose",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "gelbe Tasche am unteren Bildrand",
+    "POSE_SATZ": "Die Frau steht frontal zur Kamera, hält ihre Hände vor dem Körper verschränkt und blickt lächelnd in die Linse.",
+    "AMBIENTE_SATZ": "Ein heller Innenraum mit weißer Raufasertapete und hellen Holzmöbeln im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "pfirsichfarbener Pullover",
+      "vertikaler schwarzer Reißverschluss",
+      "blonde Haare mit Pony",
+      "Brille mit Metallgestell",
+      "weiße Raufasertapete",
+      "gelbe Tasche"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "kein Schal"
+    ]
+  }
+}

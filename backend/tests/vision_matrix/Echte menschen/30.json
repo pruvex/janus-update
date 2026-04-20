@@ -1,0 +1,32 @@
+{
+  "filename": "30.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "weiß-grau",
+    "FRISUR": "kurz, glatt nach hinten frisiert",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "rosa Strickpullover mit Rundhalsausschnitt",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau sitzt mit vor der Brust verschränkten Armen und blickt mit neutralem Gesichtsausdruck zur Seite.",
+    "AMBIENTE_SATZ": "Die Person befindet sich vor einer schlichten, gleichmäßig ausgeleuchteten grauen Wand.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "rosa Strickpullover",
+      "verschränkte Arme",
+      "weiß-graue Haare",
+      "graue Wand",
+      "Rundhalsausschnitt"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "kein Schmuck sichtbar"
+    ]
+  }
+}

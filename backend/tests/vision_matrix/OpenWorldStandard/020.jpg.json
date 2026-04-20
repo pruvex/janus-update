@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "blonde Haare",
+    "FRISUR": "kurz und zurückgekämmt",
+    "OUTERWEAR": "dunkelblaues Sakko",
+    "KLEIDUNG": "schwarzer Rollkragenpullover",
+    "LEGWEAR": "dunkelgraue Anzughose",
+    "GUERTEL_SATZ": "Er trägt einen schwarzen Gürtel mit silberner Schnalle.",
+    "SCHUH_SATZ": "Dazu trägt er braune oxford Lederschuhe.",
+    "POSE_SATZ": "Der Mann steht selbstbewusst mitten auf einer Stadtstraße und schaut leicht zur Seite.",
+    "AMBIENTE_SATZ": "Urbaner Stadtverkehr mit Hochhäusern und herbstlicher Stimmung im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Sakko", "Rollkragenpullover", "Anzughose", "Lederschuhe"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Jeans", "Hoodie", "Shorts"]
+  }
+}

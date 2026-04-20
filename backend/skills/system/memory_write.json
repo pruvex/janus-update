@@ -1,0 +1,51 @@
+{
+  "legacy_name": "save_core_memory_fact",
+  "skill": "memory.write",
+  "id": "memory_write",
+  "name": "Speichere Erinnerung",
+  "description": "Speichert einen Fakt oder eine Information im Langzeitgedächtnis. Wird automatisch aufgerufen wenn der User etwas Wichtiges erwähnt.",
+  "version": "2.0.0",
+  "category": "memory",
+  "risk_level": "low",
+  "parameters": {
+    "type": "object",
+    "required": ["fact"],
+    "properties": {
+      "fact": {
+        "type": "string",
+        "description": "Der zu speichernde Fakt in natürlicher Sprache (Deutsch). Beispiel: 'Max hat braune Haare'"
+      },
+      "subject_name": {
+        "type": "string",
+        "description": "Name des Subjekts (Person, Tier, Objekt). Kleinbuchstaben."
+      },
+      "category": {
+        "type": "string",
+        "enum": ["Gesundheit", "Beziehungen", "Haustier-Details", "Vorlieben", "Beruf", "Termine", "Allgemein", "Physis", "Stil"],
+        "description": "Kategorie des Fakts"
+      },
+      "priority_override": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 0.95,
+        "description": "OPTIONAL: Manuelle Priority (0.0-0.95). Ohne Angabe wird automatisch berechnet. Max 0.95 auch für explizite Anfragen."
+      },
+      "ttl_days": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 365,
+        "description": "OPTIONAL: Anzahl Tage bis zum Ablauf. Ohne Angabe wird aus Kategorie abgeleitet."
+      },
+      "tags": {
+        "type": "array",
+        "items": {"type": "string"},
+        "description": "OPTIONAL: Zusätzliche Tags für Filterung."
+      },
+      "evidence": {
+        "type": "string",
+        "description": "OPTIONAL: Zitat aus der User-Nachricht als Beleg."
+      }
+    }
+  },
+  "synthesis_directives": "STRENGE REGEL: Bei erfolgreichem Speichern erwähne die Speicherung NICHT. Es ist selbstverständlich. Verwende das Wissen in Zukunft natürlich, ohne die Speicherung zu kommentieren."
+}

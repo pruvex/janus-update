@@ -1,0 +1,32 @@
+# Binaries & Blocker (>100MB)
+backend/bin/
+frontend/node_modules/
+dist/
+build/
+*.exe
+*.dll
+# KI-Modelle
+backend/models/piper/
+backend/models/whisper/
+backend/model_cache/
+*.onnx
+*.bin
+*.safetensors
+# Environment & Virtual Environments
+node_modules/
+backend/venv/
+__pycache__/
+.env
+local_config.json
+# Large build artifacts
+release/
+Asthma/
+workspace/temp_audio/
+# PyInstaller builds
+*.spec
+# Debug and temp files
+tmp/
+images/debug/
+nathan/
+*.vtt
+*.log

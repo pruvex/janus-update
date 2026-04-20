@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "TEINT": "hell",
+    "AUGEN": "grün",
+    "HAARFARBE": "Die Haare sind braun",
+    "FRISUR": "lang und offen",
+    "HAAR_STRUKTUR": "wellig",
+    "KLEIDUNG": "weißes Hemd",
+    "MATERIAL": "Baumwolle",
+    "POSE_SATZ": "Die Person blickt direkt in die Kamera, während ein Regenbogen-Lichtreflex über ihr Gesicht fällt.",
+    "AMBIENTE_SATZ": "Das Porträt wurde bei natürlichem Licht mit einer prismatischen Lichtbrechung aufgenommen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Regenbogen", "grüne Augen", "Lichtreflex"],
+    "AUSSCHLUSS_PFLICHT": ["Brille", "Studio"]
+  }
+}

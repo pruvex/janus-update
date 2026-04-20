@@ -1,0 +1,72 @@
+{
+  "legacy_name": "create_pdf_from_markdown",
+  "skill": "system.create_pdf",
+  "description": "Erzeugt PDF-Dokumente aus Markdown. Unterstützt DRY_RUN für Vorschau-Zwecke.",
+  "version": "1.1.1",
+  "sandbox_level": "workspace_only",
+  "latency_class": "normal",
+  "timeout_ms": 15000,
+  "tags": [
+    "system",
+    "document",
+    "pdf"
+  ],
+  "capabilities": [
+    "document_generation",
+    "file_write"
+  ],
+  "is_agent_ready": true,
+  "deterministic_renderer": true,
+  "max_calls_per_turn": 2,
+  "depends_on": [],
+  "examples": [
+    {
+      "input": {
+        "content": "# Projektbericht\n\nDies ist eine PDF-Datei.",
+        "filename": "projektbericht.pdf",
+        "location": "workspace/reports",
+        "font_size": 12,
+        "image_width": 0,
+        "dry_run": false
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "file_path": "workspace/reports/projektbericht.pdf"
+        },
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "content": "# Vorschau\n\nNur Test ohne Datei.",
+        "filename": "preview.pdf",
+        "location": "workspace/reports",
+        "dry_run": true
+      },
+      "output": {
+        "status": "dry_run_success",
+        "data": {
+          "preview_url": "data:application/pdf;base64,JVBERi0x..."
+        },
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "content": "# Titel\n\nUnbalanciert [",
+        "filename": "broken.pdf",
+        "location": "workspace/reports",
+        "dry_run": false
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "MARKDOWN_PARSE_ERROR",
+          "message": "Markdown konnte nicht verarbeitet werden."
+        }
+      }
+    }
+  ]
+}

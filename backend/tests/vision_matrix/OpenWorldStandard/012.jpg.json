@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "dunkelbraune Haare",
+    "FRISUR": "nach hinten gesteckt",
+    "OUTERWEAR": "grauer Hahnentritt-Blazer",
+    "KLEIDUNG": "schwarzes Top unter Blazer",
+    "LEGWEAR": "graue Hosen mit feinem Hahnentritt",
+    "SCHUH_SATZ": "Dazu trägt sie schwarze Pumps mit spitzer Kappe.",
+    "POSE_SATZ": "Die Person steht selbstbewusst vor einer weißen Tür und hält eine Clutch.",
+    "AMBIENTE_SATZ": "Helles Studio mit weißen Wänden und Türen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Blazer", "schwarzes Top", "Hose", "Pumps"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Shorts", "T-Shirt", "Jeans"]
+  }
+}

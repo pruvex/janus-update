@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "lang, leicht gewellt",
+    "OUTERWEAR": "beiger Wollmantel",
+    "KLEIDUNG": "cremefarbener Overall",
+    "LEGWEAR": "weite Stoffhose",
+    "SCHUH_SATZ": "Weiße Sneaker",
+    "POSE_SATZ": "Sie überquert einen New Yorker Zebrastreifen in Richtung Kamera mit selbstbewusstem Blick.",
+    "AMBIENTE_SATZ": "Städtische Kreuzung mit Autos und Gebäuden, Fußgängerampel im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Mantel", "Overall", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["High Heels", "Jogginghose", "Anzug"],
+    "NOTIZ": "Full body walk, Fokus auf Bewegung ins Bild hinein."
+  }
+}

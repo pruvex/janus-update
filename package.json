@@ -1,0 +1,95 @@
+{
+  "name": "janus-projekt",
+  "version": "0.4.15-beta.11",
+  "description": "",
+  "type": "module",
+  "main": "main.electron.cjs",
+  "scripts": {
+    "start": "vite",
+    "build": "npm run write-version && python tools/generate_release_notes.py && vite build",
+    "preview": "vite preview",
+    "write-version": "node -e \"require('fs').writeFileSync('backend/version.py', 'APP_VERSION = \\\"' + require('./package.json').version + '\\\"')\"",
+    "start-backend": "cross-env PYTHONIOENCODING=UTF-8 C:\\KI\\Janus-Projekt\\backend\\venv\\Scripts\\python.exe -m uvicorn backend.main:app --reload --port 8001 --host localhost",
+    "start-frontend": "concurrently \"npm run start-electron\" \"npm run start-vite\"",
+    "start-dev": "concurrently \"npm:start-backend-only\" \"npm:start-vite\" \"npm:start-electron\"",
+    "start-electron": "wait-on --timeout 180000 tcp:8001 && cross-env NODE_ENV=development electron .",
+    "start-electron-only": "cross-env NODE_ENV=development electron .",
+    "start-vite": "vite",
+    "start-backend-only": "cross-env PYTHONIOENCODING=UTF-8 C:\\KI\\Janus-Projekt\\backend\\venv\\Scripts\\python.exe -m uvicorn backend.main:app --reload --reload-dir backend --port 8001 --host localhost",
+    "start-backend-only-without-reload": "cross-env PYTHONIOENCODING=UTF-8 C:\\KI\\Janus-Projekt\\backend\\venv\\Scripts\\python.exe -m uvicorn backend.main:app --port 8001 --host localhost",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:log": "playwright test --reporter=list > test-log.md",
+    "test:vision:stresstest": "python backend/tests/tools/vision_evaluator.py --matrix-dir backend/tests/vision_matrix/Stresstest --e2e",
+    "test:vision:stresstest:kpi": "python backend/tests/tools/vision_evaluator.py --matrix-dir backend/tests/vision_matrix/Stresstest --e2e --kpi-gate --max-contradiction-rate 0.0 --min-source-map-coverage 0.95",
+    "test:vision:openworld": "python backend/tests/tools/vision_evaluator.py --matrix-dir backend/tests/vision_matrix/OpenWorldStandard --e2e --kpi-gate --max-contradiction-rate 0.0 --min-source-map-coverage 0.95",
+    "prebuild-installer": "echo 'Vision-Tests deaktiviert für schnelle Builds'",
+    "prebuild-all": "npm run test:vision:stresstest:kpi && npm run test:vision:openworld",
+    "build-installer": "electron-builder",
+    "build-all": "npm run build && python -m PyInstaller janus_backend.spec --clean --noconfirm && npm run build-installer"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@sentry/vite-plugin": "^4.6.1",
+    "@types/node": "^25.0.3",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^31.0.2",
+    "electron-builder": "^26.0.12",
+    "eslint": "^9.33.0",
+    "vite": "^5.3.1",
+    "wait-on": "^8.0.4"
+  },
+  "dependencies": {
+    "axios": "^1.11.0",
+    "dompurify": "^3.4.0",
+    "electron-log": "^5.4.3",
+    "electron-updater": "^6.7.3",
+    "node-fetch": "^2.7.0"
+  },
+  "build": {
+    "appId": "de.pruvex.janus",
+    "productName": "Janus Projekt",
+    "artifactName": "janus-setup-${version}.${ext}",
+    "directories": {
+      "output": "release"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "pruvex",
+      "repo": "janus-update",
+      "releaseType": "prerelease",
+      "timeout": 600000
+    },
+    "releaseInfo": {
+      "releaseNotesFile": "RELEASE_NOTES.md"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "frontend/assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "differentialPackage": true
+    },
+    "files": [
+      "frontend/dist/",
+      "main.electron.cjs",
+      "frontend/preload.js",
+      "package.json",
+      "splash.html"
+    ],
+    "extraResources": [
+      {
+        "from": "dist/janus_backend.exe",
+        "to": "backend/janus_backend.exe"
+      }
+    ]
+  }
+}

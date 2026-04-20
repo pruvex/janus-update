@@ -1,0 +1,1354 @@
+/* --- JPEG EXPORT-OPTIONEN MODAL (FINALE VERSION) --- */
+.jpeg-options-modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10002;
+}
+
+.jpeg-options-content {
+    background-color: #2a2a2e;
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid #555;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    width: 650px; /* Increased for better content display and readability */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative; /* WICHTIG für die Positionierung des X */
+}
+
+.export-close-button {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 20px; /* Vertikale Ausrichtung */
+    transition: color 0.2s;
+    z-index: 1;
+    text-decoration: none;
+    background: none;
+    border: none;
+    padding: 5px 10px;
+}
+
+.export-close-button:hover {
+    color: #fff;
+}
+
+.jpeg-options-content h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.2em;
+    color: var(--accent-color);
+    text-align: center;
+}
+
+.jpeg-preview-container {
+    width: 100%;
+    height: 380px;
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid #333;
+}
+
+#jpeg-preview-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+#jpeg-preview-loader {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+/* Format description styling */
+.format-description {
+    font-size: 1.1em; /* Larger for better readability */
+    line-height: 1.6; /* More spacious line height */
+    color: #fff; /* Pure white for maximum contrast */
+    margin: 0;
+    padding: 18px; /* More padding for better spacing */
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 80px; /* Prevent layout shifts with short texts */
+}
+
+/* Style for lists within format descriptions */
+.format-description ul {
+    font-size: 1em !important; /* Override inline style from JS */
+    color: #ddd !important; /* Lighter gray for better readability */
+    margin: 8px 0 0 0; /* Adjust spacing */
+    padding-left: 20px; /* Proper indentation for list items */
+}
+
+.format-description li {
+    margin-bottom: 6px; /* Space between list items */
+}
+
+/* Wrapper für die Steuerung */
+.jpeg-controls-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Die Zeile über dem Slider */
+.jpeg-info-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+    color: #ccc;
+    padding: 0 5px;
+}
+
+/* Slider Styling */
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #444;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+    transform: scale(1.1);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Buttons */
+.jpeg-options-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #444;
+    color: #ddd;
+}
+
+.btn-primary:hover {
+    background-color: #1a8cff;
+    transform: translateY(-1px);
+}
+
+.btn-secondary:hover {
+    background-color: #555;
+    transform: translateY(-1px);
+}
+
+/* --- CONTEXT MENU OVERLAY --- */
+.context-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5); /* Semi-transparent black */
+    z-index: 9999; /* Just below the menu */
+    backdrop-filter: blur(2px); /* Slight blur effect */
+}
+
+/* --- DOWNLOAD LADEANZEIGE (Neue zentrierte Position) --- */
+.download-indicator {
+    position: fixed; /* Fixiert relativ zum gesamten Fenster */
+    
+    /* --- HIER IST DIE MAGIE FÜR DIE ZENTRIERUNG --- */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Schiebt das Element um seine halbe Größe zurück */
+    
+    z-index: 10001;
+    background-color: #2a2a2e;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 0.95em;
+    border: 1px solid #444;
+}
+
+.download-indicator .spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Die spin-Animation haben wir schon, aber hier ist sie nochmal zur Sicherheit */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Styles for the image studio preview container */
+.is-preview-container {
+    width: 500px; /* Fixed width */
+    height: 500px; /* Fixed height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #1a1a1a; /* Dark background for empty space */
+    border: 1px solid #444;
+    border-radius: 8px;
+    overflow: hidden; /* Ensure image doesn't overflow container */
+}
+
+/* ============================================================= */
+/*       FINALE GALERIE: 4 SPALTEN, PERFEKTE HÖHE FÜR 2 REIHEN   */
+/* ============================================================= */
+
+/* 1. Der Container */
+.is-galleries-wrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box;
+  padding-right: 5px;
+  
+  /* 220px − Taskleisten-Reserve: bündig mit #dock-bar, Inhalt scrollbar (Kinder overflow-y: auto) */
+  height: calc(220px - var(--image-studio-dock-reserve, 48px));
+  max-height: calc(220px - var(--image-studio-dock-reserve, 48px));
+  flex-shrink: 0; 
+  margin-top: 0;
+  overflow: hidden; 
+}
+
+/* 2. Jede einzelne Galerie-Box */
+.is-gallery-box {
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+  background-color: #2a2a2e;
+  border: 1px solid #38383f;
+  border-radius: 8px;
+  
+  /* PLATZ SPAREN: Weniger Innenabstand */
+  padding: 6px 6px 2px 6px; 
+  
+  min-width: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* Titel extrem kompakt */
+.is-gallery-box h4 {
+    margin: 0 0 4px 0; /* Nur 4px Abstand nach unten */
+    font-size: 0.8em;  /* Etwas kleiner */
+    color: var(--accent-color);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-left: 2px;
+    height: 16px; /* Feste Höhe für Titelzeile */
+    line-height: 16px;
+}
+
+/* 3. Das Gitter INNEN */
+#is-gallery-generated, 
+#is-gallery-uploaded, 
+#is-gallery-local,
+#is-gallery-all {
+  display: grid !important;
+  
+  /* 5 Spalten */
+  grid-template-columns: repeat(5, 1fr) !important; 
+  
+  grid-auto-rows: min-content; 
+  
+  /* PLATZ SPAREN: Lücke auf 4px verkleinert */
+  gap: 4px; 
+  
+  overflow-y: auto; 
+  overflow-x: hidden;
+  height: 100%;
+  
+  /* TRICK: Padding rechts erhöht -> macht Bilder schmaler -> macht Bilder niedriger! */
+  padding-right: 8px; 
+  
+  align-content: start; 
+}
+
+/* 4. Die Bilder */
+#is-gallery-generated img,
+#is-gallery-uploaded img,
+#is-gallery-local img,
+#is-gallery-all img,
+.gallery-thumbnail {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1 !important; 
+  object-fit: cover !important;
+  
+  border-radius: 3px; 
+  cursor: pointer;
+  border: 1px solid transparent; 
+  display: block;
+  transition: transform 0.1s;
+}
+
+/* Hover */
+#is-gallery-generated img:hover,
+#is-gallery-uploaded img:hover,
+#is-gallery-local img:hover,
+#is-gallery-all img:hover,
+.gallery-thumbnail:hover {
+  transform: scale(1.1); /* Zoom */
+  border-color: var(--accent-color);
+  z-index: 10;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Scrollbar Style */
+#is-gallery-generated::-webkit-scrollbar,
+#is-gallery-uploaded::-webkit-scrollbar,
+#is-gallery-local::-webkit-scrollbar,
+#is-gallery-all::-webkit-scrollbar {
+    width: 5px;
+}
+#is-gallery-generated::-webkit-scrollbar-thumb,
+#is-gallery-uploaded::-webkit-scrollbar-thumb,
+#is-gallery-local::-webkit-scrollbar-thumb,
+#is-gallery-all::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 2px;
+}
+
+/* Modal Scrollschutz */
+#image-studio-modal .modal-content {
+    overflow: hidden !important; 
+}
+
+.is-preview-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* The magic command */
+}
+
+.is-preview-container.drag-over {
+    border: 2px dashed #007bff; /* Beispiel: Blauer gestrichelter Rand */
+    background-color: #2a2a2e; /* Leicht dunklerer Hintergrund */
+}
+
+/* Spezifische Korrektur für das Dateinamen-Feld am oberen Rand */
+.image-studio-display > .control-group:first-child {
+    margin-bottom: 0 !important; /* Entfernt den Standard-Abstand der Gruppe */
+}
+
+#is-image-filename {
+    width: 250px;
+    margin-bottom: 10px !important; /* 10px vom Feld aus nach unten */
+    text-align: center;
+}
+
+/* Styling für die Kombinier-Slots */
+.combine-slot {
+    width: 50px;
+    height: 50px;
+    border: 2px dashed #555;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: default;
+    background-color: rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden; /* Damit das Bild nicht rausragt */
+    transition: all 0.2s ease;
+}
+
+.combine-slot.drag-over {
+    border-color: var(--accent-color);
+    background-color: rgba(var(--accent-color-rgb), 0.1);
+    transform: scale(1.05);
+}
+
+.combine-slot.filled {
+    border: 2px solid var(--accent-color);
+    background-color: black;
+}
+
+.combine-slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.combine-slot .remove-slot-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.combine-slot.filled:hover .remove-slot-btn {
+    opacity: 1; /* Zeige X beim Hover */
+}
+
+/* Layout für den Hauptbereich (Bild + Presets) */
+.display-main-area {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+  align-items: flex-start;
+}
+
+/* Der Wrapper um das Bild/Canvas - FIXIERT AUF 512px */
+#is-preview-wrapper {
+  /* Flex-Eigenschaften: Nicht wachsen, nicht schrumpfen, Basis 512px */
+  flex: 0 0 512px;
+  
+  /* Harte Größenbeschränkung */
+  width: 512px !important;
+  height: 600px;
+  min-width: 600px;
+  min-height: 600px;
+  
+  /* Optik */
+  background: rgba(0, 0, 0, 0.3); /* Etwas dunklerer Hintergrund */
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  /* Inhalt zentrieren */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden; /* Wichtig, damit nichts übersteht */
+}
+
+/* Sicherstellen, dass der innere Container den Wrapper ausfüllt */
+#is-preview-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #2a2a2a;
+}
+
+/* Das Bild selbst darf maximal so groß sein wie der Container */
+#is-preview-container img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* Bildverhältnis beibehalten */
+}
+
+/* Mask Canvas */
+#is-mask-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  display: none;
+}
+
+/* Der Container für die Presets */
+.presets-container {
+  display: none; /* Initially hidden */
+  flex-direction: column;
+  gap: 15px;
+  min-width: 200px;
+  width: 25%;
+  background: #1e1e23;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+/* Mask Controls */
+#mask-controls {
+  display: none; /* WICHTIG: Das entfernt den schwarzen Balken beim Start */
+  margin-top: 10px;
+  padding: 10px;
+  background: #222;
+  border-radius: 6px;
+  border-top: 2px solid var(--accent-color);
+  gap: 15px;
+  align-items: center;
+}
+
+.mask-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-grow: 1;
+}
+
+.mask-controls-group label {
+  font-size: 0.8em;
+  color: #ccc;
+}
+
+.mask-controls-group input[type="range"] {
+  flex-grow: 1;
+}
+
+.mask-hint {
+  font-size: 0.8em;
+  color: #aaa;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 992px) {
+  .display-main-area {
+    flex-direction: column;
+  }
+  
+  .presets-container {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+/* --- GOLDSTANDARD UI COMPACTING (No Scrollbar) --- */
+
+.image-studio-container {
+    /* Optimiertes Grid, um Scrollen zu vermeiden */
+    align-items: flex-start;
+    overflow: hidden; /* Verhindert Doppel-Scrollbalken */
+}
+
+.image-studio-controls {
+    /* Weniger Innenabstand */
+    padding: 15px; 
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Gleichmäßiger Abstand statt Margin */
+    max-height: 80vh; /* Begrenzung */
+    overflow-y: auto; /* Scrollen nur im Notfall innerhalb der Leiste */
+}
+
+.image-studio-controls .control-group {
+    /* Das ist der "Grüne Abstand" von deinem Screenshot: */
+    margin-bottom: 20px !important; 
+    display: flex;
+    flex-direction: column;
+}
+
+.image-studio-controls label {
+    font-size: 0.75rem !important;
+    
+    /* Einheitlicher Abstand zum Eingabefeld darunter: */
+    margin-bottom: 6px !important; 
+    
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    color: #888;
+}
+
+/* Kompaktierte Inputs */
+.image-studio-controls select,
+.image-studio-controls input[type="text"],
+.image-studio-controls input[type="number"] {
+    padding: 6px 8px !important;
+    font-size: 0.85rem !important;
+    height: auto;
+}
+
+/* Prompt-Feld kleiner machen (nimmt am meisten Platz) */
+#is-prompt {
+    height: 60px !important; /* Fixe, kleinere Höhe */
+    min-height: 60px !important;
+    font-size: 0.85rem !important;
+    line-height: 1.2;
+}
+
+/* Checkboxen-Liste kompakter */
+.image-studio-controls .control-group div[style*="flex-direction: column"] {
+    gap: 4px !important; /* Enger zusammen */
+}
+
+.image-studio-controls label[for^="is-refine"],
+.image-studio-controls label[for^="is-edit"],
+.image-studio-controls label[for^="is-mask"],
+.image-studio-controls label[for^="is-presets"],
+.image-studio-controls label[for^="is-combine"] {
+    font-size: 0.8rem !important; /* Normale Schreibweise für Optionen */
+    text-transform: none !important;
+    letter-spacing: 0;
+    color: var(--text-color) !important;
+}
+
+/* Kosten-Display aufräumen */
+.cost-display {
+    margin-top: auto; /* Drückt es nach unten */
+    background: rgba(0,0,0,0.2);
+    padding: 10px;
+    border-radius: 6px;
+}
+
+/* --- FIX: Horizontal Scrollbar entfernen --- */
+.image-studio-controls {
+    overflow-x: hidden !important; /* Horizontalen Scrollbalken erzwingen weg */
+    width: 300px; /* Oder die Breite, die es im Grid hat */
+    min-width: 0; /* Flexbox Fix */
+}
+
+/* Sicherstellen, dass nichts breiter ist als der Container */
+.image-studio-controls select,
+.image-studio-controls input,
+.image-studio-controls .control-group {
+    max-width: 100% !important;
+    box-sizing: border-box !important; /* Padding inklusive */
+}
+
+/* Button Container Fix */
+.image-studio-controls button {
+    max-width: 100%;
+}
+
+/* --- FINALES FIXING --- */
+
+/* 1. Masken-Panel unsichtbar machen (Schwarzer Balken weg) */
+#mask-controls {
+    display: none; /* Standardmäßig ausblenden! */
+    
+    /* Styles für den aktiven Zustand */
+    margin-top: 10px;
+    padding: 10px;
+    background: #222;
+    border-radius: 6px;
+    border-top: 2px solid var(--accent-color);
+    /* Flexbox wird erst per JS aktiviert */
+}
+
+/* 2. Info-Box bündig nach unten ziehen */
+.display-main-area {
+    align-items: stretch; /* Zwingt beide Spalten auf gleiche Höhe */
+}
+
+/* FIX: Feste Höhe passend zum Vorschaubild (512px) */
+#is-presets-container {
+    display: none;
+    
+    /* Breite fixieren */
+    flex: 0 0 300px; 
+    width: 300px;
+    min-width: 300px;
+    
+    /* HÖHE FIXIEREN (Das verhindert das Springen) */
+    height: 600px;
+    max-height: 600px;
+    
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 10px;
+    
+    /* Damit Padding/Border in die 512px eingerechnet werden */
+    box-sizing: border-box; 
+}
+
+.preset-info-box {
+    flex-grow: 1; /* Füllt den Rest des Containers aus */
+    
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 0;
+    font-size: 0.95em; /* Schrift leicht verkleinert für mehr Platz */
+    line-height: 1.4;
+    
+    /* SCROLLBALKEN erlauben, wenn Text zu lang ist */
+    overflow-y: auto; 
+    
+    display: flex;
+    flex-direction: column;
+}
+
+/* Scrollbar stylen, damit es gut aussieht */
+.preset-info-box::-webkit-scrollbar {
+    width: 6px;
+}
+.preset-info-box::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 3px;
+}
+
+/* ==========================================================================
+   FINAL IMAGE STUDIO STYLES (CLEANED & MERGED)
+   ========================================================================== */
+
+#image-studio-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2147483000 !important;
+    overflow: hidden;
+    padding-left: 280px; /* an #sidebar width (src/styles.css) */
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-right: 0;
+    box-sizing: border-box;
+    display: none; 
+    align-items: stretch; /* Füllt die volle Höhe */
+    justify-content: stretch;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    /* Synchron zu dock.js getDockBarHeightPx() / DOCK_BAR_HEIGHT_PX */
+    --image-studio-dock-reserve: 48px;
+}
+
+/* Sichtbarkeit: Klasse + !important schlägt Basis-display:none und HTML-inline (Dock-Wiederherstellung) */
+#image-studio-modal.image-studio-modal--visible {
+    display: flex !important;
+}
+
+#image-studio-modal::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: var(--image-studio-dock-reserve, 48px);
+    left: 280px; /* an #sidebar width (src/styles.css) */
+    background: var(--background-primary, #121212);
+    pointer-events: none;
+}
+
+#image-studio-modal .modal-content {
+    width: 100%;  /* Nutzt den kompletten Raum rechts der Sidebar */
+    height: calc(100vh - var(--image-studio-dock-reserve, 48px));
+    max-height: calc(100dvh - var(--image-studio-dock-reserve, 48px));
+    max-width: none; /* Keine künstliche Begrenzung */
+    border-radius: 0; /* Eckig sieht im Vollbild-Modus besser aus */
+    border-left: 1px solid #444;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    background-color: var(--background-secondary, #1e1e1e) !important;
+    opacity: 1;
+}
+
+#image-studio-modal .modal-header {
+  background-color: var(--surface-color);
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--surface-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#image-studio-modal .modal-header h3 { margin: 0; }
+#image-studio-modal .close-button { float: none; }
+
+#image-studio-modal .image-studio-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-left: auto;
+}
+
+#image-studio-modal .image-studio-header-help {
+  margin-right: 18px;
+}
+
+#image-studio-modal .image-studio-header-window-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#image-studio-modal .image-studio-header-minimize-btn,
+#image-studio-modal .image-studio-header-close-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #bbb;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#image-studio-modal .image-studio-header-close-btn {
+  color: #aaa;
+  font-size: 18px;
+}
+
+#image-studio-modal .image-studio-header-minimize-btn:hover {
+  background: rgba(130, 130, 130, 0.25);
+  border-color: rgba(200, 200, 200, 0.45);
+  color: #fff;
+}
+
+#image-studio-modal .image-studio-header-close-btn:hover {
+  background: rgba(220, 80, 80, 0.25);
+  border-color: rgba(255, 120, 120, 0.45);
+  color: #fff;
+}
+
+#image-studio-modal .image-studio-header-minimize-btn:focus,
+#image-studio-modal .image-studio-header-close-btn:focus {
+  outline: none;
+}
+
+#image-studio-modal .image-studio-header-minimize-btn:focus-visible,
+#image-studio-modal .image-studio-header-close-btn:focus-visible {
+  outline: 2px solid rgba(0, 163, 255, 0.4);
+  outline-offset: 1px;
+}
+
+/* --- UPDATED LAYOUT (3 SPALTEN IM HAUPTBEREICH) --- */
+
+.image-studio-controls {
+  flex: 0 0 320px; /* Etwas breiter für die Schalter */
+  padding: 20px;
+  border-right: 1px solid var(--surface-color);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0 !important; 
+  background-color: var(--background-secondary);
+}
+
+/* 2. Hauptbereich Container */
+.image-studio-display {
+  flex-grow: 1;
+  padding: 15px 20px; /* Padding oben von 10px auf 15px erhöht */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; 
+  gap: 0;
+  overflow-y: auto;
+  background-color: var(--background-secondary, #1e1e1e);
+}
+
+.image-studio-container {
+  background-color: var(--background-secondary, #1e1e1e);
+}
+
+.display-main-area {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch; 
+    gap: 15px; 
+    
+    /* MATHEMATISCHE SYMMETRIE: */
+    margin-top: 10px !important;    /* 10px (Block) + 10px (Name) = 20px Lücke oben */
+    margin-bottom: 20px !important; /* Exakt 20px Lücke unten */
+    
+    flex-shrink: 0; 
+}
+/* 3. Spalte 1: Generiertes Bild (Bleibt 512px) */
+/* --- TUTORIAL MODAL STYLES --- */
+
+/* Header buttons container */
+.header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Modal Content spezifisch für Tutorial */
+.tutorial-content {
+    max-width: 800px !important; /* Schmaler als das Hauptfenster für bessere Lesbarkeit */
+    height: 85vh !important;
+    background-color: #1e1e23 !important;
+    border: 1px solid #444;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    display: flex;
+    flex-direction: column;
+}
+
+.tutorial-body {
+    padding: 30px;
+    overflow-y: auto;
+    color: #ddd;
+    line-height: 1.6;
+}
+
+.tutorial-section h4 {
+    color: #4caf50;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 10px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Feature Grid (Kacheln) */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.feature-card {
+    background: rgba(255,255,255,0.05);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: transform 0.2s, background 0.2s;
+}
+
+.feature-card:hover {
+    transform: translateY(-3px);
+    background: rgba(255,255,255,0.08);
+    border-color: #4caf50;
+}
+
+.feature-card .icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.feature-card strong {
+    display: block;
+    color: #fff;
+    margin-bottom: 5px;
+    font-size: 1.1em;
+}
+
+.feature-card p {
+    font-size: 0.9em;
+    color: #aaa;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Divider */
+.tutorial-divider {
+    border: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    margin: 30px 0;
+}
+
+/* Step Boxes */
+.step-box {
+    background: rgba(0,0,0,0.2);
+    padding: 15px 20px;
+    border-left: 3px solid #4caf50;
+    margin-bottom: 20px;
+    border-radius: 0 6px 6px 0;
+}
+
+.step-box strong {
+    display: block;
+    color: #fff;
+    font-size: 1.1em;
+    margin-bottom: 8px;
+}
+
+.step-box ul {
+    padding-left: 20px;
+    margin: 10px 0;
+}
+
+.step-box li {
+    margin-bottom: 8px;
+    color: #ccc;
+}
+
+.step-box .highlight {
+    color: #4caf50;
+    font-weight: bold;
+}
+
+/* Button im Header Style */
+#open-tutorial-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #ccc;
+    cursor: pointer;
+    padding: 5px 12px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    margin-right: 15px; /* Abstand zum Schließen Button */
+}
+
+#open-tutorial-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border-color: #fff;
+}
+
+#is-preview-wrapper {
+    flex: 0 0 600px; /* Fixiert auf 600px */
+    width: 600px !important;
+    height: 600px !important;
+    min-width: 600px;
+    min-height: 600px;
+    background: #1a1a1a;
+    border: 1px solid #444;
+    border-radius: 6px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+#is-preview-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#is-preview-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Mask Canvas */
+#is-mask-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  display: block; /* WAR: none. Muss block sein! */
+  pointer-events: none; /* Standardmäßig klick-durchlässig */
+  z-index: 10; /* Über dem Bild */
+}
+
+/* 4. Spalte 2: Preset Text-Infos (Schmaler gemacht) */
+#is-presets-container {
+    display: none; /* JS toggled das */
+    
+    /* Symmetrische Breite zur rechten Spalte */
+    flex: 0 0 300px; 
+    width: 300px;
+    min-width: 300px;
+    
+    flex-direction: column;
+    justify-content: flex-start; /* Oben bündig */
+    gap: 10px;
+    
+    /* Damit Padding/Border in die 512px eingerechnet werden */
+    box-sizing: border-box; 
+    
+    height: 600px !important; /* Gleiche Höhe wie das Bild */
+    max-height: 600px !important;
+}
+
+.preset-info-box {
+    flex-grow: 1;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 0;
+    font-size: 1.05em;
+    line-height: 1.5;
+    animation: fadeIn 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Style for the preview image */
+.style-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    display: block;
+    cursor: pointer; /* Zeigt an, dass man klicken kann */
+    transition: opacity 0.2s ease; /* Sanfter Übergang */
+}
+
+.style-image-wrapper img:hover {
+    opacity: 0.9; /* Bild wird beim Hovern leicht heller */
+}
+
+/* Rechte Spalte: Stil-Vorschau */
+#is-style-preview-container {
+    /* Standardmäßig ausblenden (wird per JS aktiviert) */
+    display: none; 
+    
+    /* Symmetrisch zur mittleren Spalte */
+    flex: 0 0 300px;
+    width: 300px;
+    min-width: 300px;
+    
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.03); /* Leicht sichtbar */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    
+    height: 600px !important; /* Gleiche Höhe wie das Bild */
+    max-height: 600px !important;
+}
+
+.style-preview-header {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    font-weight: bold;
+    color: var(--accent-color);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.style-image-wrapper {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    min-height: 200px;
+}
+
+#style-image-placeholder {
+    color: #666;
+    font-style: italic;
+}
+
+/* Stil für das Vorschaubild */
+#current-style-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: none; /* Wird per JS ein-/ausgeblendet */
+}
+
+/* 6. BUGFIX: SCHWARZER BALKEN ENTFERNEN */
+#mask-controls {
+  display: none; /* KEIN !important mehr! */
+  /* Restliche Styles für Aussehen bleiben... */
+  margin-top: 10px;
+  padding: 10px;
+  background: #222;
+  border-radius: 6px;
+  border-top: 2px solid var(--accent-color);
+  box-sizing: border-box;
+  /* Flexbox wird per JS gesetzt */
+}
+
+/* --- 7. GALLERIES & REST --- */
+
+/* Globale Helper */
+.control-group { margin-bottom: 15px; width: 100%; }
+.loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--accent-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; position: absolute; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Sichtbarkeit über .image-studio-modal--visible (siehe oben) */
+
+/* Großes Bild-Modal */
+#image-modal { z-index: 2000; display: none; padding-top: 20px; }
+#image-modal .modal-content { max-width: 95vw; max-height: 95vh; background: #1a1a1a; position: relative; margin: 0 auto; }
+#image-modal-img { max-height: 85vh; margin: 0 auto; display: block; }
+
+/* ============================================================= */
+/*       KONTEXTMENÜ FÜR GALERIEBILDER                            */
+/* ============================================================= */
+
+/* --- CONTEXT MENU FÜR GALERIEBILDER --- */
+.context-menu {
+    position: absolute; /* Wichtig für die Positionierung per JS */
+    z-index: 10000;
+    background-color: #2a2a2e;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 5px 0;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    min-width: 180px;
+    font-size: 0.9em;
+}
+
+.context-menu-item {
+    padding: 8px 15px;
+    color: #ddd;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.context-menu-item:hover {
+    background-color: var(--accent-color);
+    color: #fff;
+}
+
+.context-menu-divider {
+    height: 1px;
+    margin: 4px 0;
+    background-color: #444;
+}
+
+.context-menu-item.delete:hover {
+    background-color: #e53935; /* Rot für Gefahr */
+    color: #fff;
+}
+
+/* ============================================================= */
+/*       KOSMETIK: THUMBNAILS & SCROLLVERHALTEN                  */
+/* ============================================================= */
+
+/* --- MULTI-SELECT GALERIE STYLES (FINAL FIX) --- */
+
+/* 1. Der Wrapper um das Bild */
+.gallery-item-wrapper {
+    position: relative !important; /* Zwingend für absolute Positionierung der Kinder */
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Damit nichts rausragt */
+    border-radius: 3px;
+    /* Kein cursor: pointer hier, damit wir unterscheiden können */
+}
+
+/* 2. Das Bild selbst anpassen */
+.gallery-item-wrapper img {
+    /* Wir stellen sicher, dass das Bild den Wrapper füllt, aber nicht dominiert */
+    position: relative; 
+    z-index: 1; /* Niedriger Z-Index */
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block;
+    transition: transform 0.2s;
+}
+
+/* Hover-Zoom (optional, sieht aber gut aus) */
+.gallery-item-wrapper:hover img {
+    transform: scale(1.05);
+}
+
+/* 3. Die Checkbox (Der kritische Teil) */
+.gallery-checkbox {
+    position: absolute;
+    /* Näher an den Rand */
+    top: 4px;  /* VORHER: 8px */
+    left: 4px; /* VORHER: 8px */
+    
+    /* Kleiner machen */
+    width: 18px;  /* VORHER: 24px */
+    height: 18px; /* VORHER: 24px */
+    
+    /* Design: Halbtransparentes Schwarz mit weißem Rand */
+    background-color: rgba(0, 0, 0, 0.6); 
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    border-radius: 4px; /* Etwas weniger Radius für die kleinere Box */
+    z-index: 1000 !important; 
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0; 
+    transition: opacity 0.2s ease-in-out, background-color 0.2s;
+}
+
+/* 4. Anzeigen bei Hover ODER Auswahl */
+.gallery-item-wrapper:hover .gallery-checkbox,
+.gallery-item-wrapper.selected .gallery-checkbox {
+    opacity: 1 !important; /* Erzwinge Sichtbarkeit */
+}
+
+/* 5. Ausgewählter Zustand (Blaues Kästchen) */
+.gallery-item-wrapper.selected .gallery-checkbox {
+    background-color: #2196F3 !important; /* Kräftiges Blau */
+    border-color: #2196F3 !important;
+}
+
+/* Das Häkchen (nur wenn ausgewählt) */
+.gallery-item-wrapper.selected .gallery-checkbox::after {
+    content: '\2713';
+    color: white;
+    font-size: 11px; /* VORHER: 14px -> Kleineres Häkchen */
+    font-weight: bold;
+}
+
+/* 6. Rahmen um das Bild bei Auswahl */
+.gallery-item-wrapper.selected {
+    box-shadow: inset 0 0 0 4px #2196F3; /* Innenrahmen, zerstört das Layout nicht */
+}
+
+.is-info-icon {
+    cursor: help;
+    font-size: 0.9em;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    margin-left: 4px;
+}
+
+.is-info-icon:hover {
+    opacity: 1;
+}
+
+#is-dynamic-params {
+    margin-bottom: 0 !important; /* Der Inhalt bringt seinen eigenen Margin mit */
+}

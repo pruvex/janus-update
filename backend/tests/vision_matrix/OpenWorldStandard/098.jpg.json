@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "dunkel",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "graue Jacke",
+    "KLEIDUNG": "schwarze Cargohose",
+    "LEGWEAR": "Cargohose",
+    "SCHUH_SATZ": "Weiße Sneaker",
+    "POSE_SATZ": "Er steht auf einem regennassen Zebrastreifen, der Rücken zum Licht, die Silhouette von der Sonne gerahmt.",
+    "AMBIENTE_SATZ": "Urbane Straße mit Hochhäusern, Sonnenaufgangslicht und reflektierendem Asphalt.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Backlit", "Silhouette", "Full Body", "Street"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "High Heels"],
+    "NOTIZ": "Synthesisches GPT-Image 1.5, Betonung auf goldener Rückbeleuchtung."
+  }
+}

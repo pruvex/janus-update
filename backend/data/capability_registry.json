@@ -1,0 +1,641 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-04-18",
+  "provider_details": {
+    "openai": {
+      "display_name": {
+        "de": "OpenAI",
+        "en": "OpenAI"
+      },
+      "strengths": {
+        "de": "Ultimative Logik & Code (GPT-5.4 Trinity Logic/Mini/Nano)",
+        "en": "Ultimate Logic & Code (GPT-5.4 Trinity Logic/Mini/Nano)"
+      },
+      "weaknesses": {
+        "de": "Hohe Kosten bei Logic-Tier",
+        "en": "High cost for Logic Tier"
+      }
+    },
+    "gemini": {
+      "display_name": {
+        "de": "Google Gemini",
+        "en": "Google Gemini"
+      },
+      "strengths": {
+        "de": "1M Context, Video-Analyse, Native Suche (Gemini 3)",
+        "en": "1M Context, Video Analysis, Native Search (Gemini 3)"
+      },
+      "weaknesses": {
+        "de": "Manchmal ausschweifend",
+        "en": "Sometimes verbose"
+      }
+    },
+    "anthropic": {
+      "display_name": {
+        "de": "Anthropic Claude",
+        "en": "Anthropic Claude"
+      },
+      "strengths": {
+        "de": "Nuanciertes Reasoning, kreatives Schreiben",
+        "en": "Nuanced reasoning, creative writing"
+      },
+      "weaknesses": {
+        "de": "Striktere Safety-Filter",
+        "en": "Stricter safety filters"
+      }
+    },
+    "ollama": {
+      "display_name": {
+        "de": "Ollama (Lokal)",
+        "en": "Ollama (Local)"
+      },
+      "strengths": {
+        "de": "100% Privacy, Offline",
+        "en": "100% Privacy, Offline"
+      },
+      "weaknesses": {
+        "de": "Abhängig von lokaler Hardware-Power",
+        "en": "Dependent on local hardware power"
+      }
+    }
+  },
+  "model_tiers": {
+    "nano": {
+      "use_cases": {
+        "de": "Kurze Fragen, Chat-Verlauf scannen, Wetter-Check",
+        "en": "Short questions, chat history scan, weather check"
+      },
+      "cost_label": {
+        "de": "Nahezu kostenlos (Ideal für Dauerbetrieb)",
+        "en": "Nearly free (Ideal for continuous operation)"
+      }
+    },
+    "mini": {
+      "use_cases": {
+        "de": "E-Mails schreiben, Texte zusammenfassen, einfache Coding-Aufgaben",
+        "en": "Writing emails, summarizing texts, simple coding tasks"
+      },
+      "cost_label": {
+        "de": "Sehr günstig (Beste Preis-Leistung)",
+        "en": "Very affordable (Best price-performance)"
+      }
+    },
+    "logic": {
+      "use_cases": {
+        "de": "Komplexe Programmierung, Architektur-Planung, tiefgehende Datenanalyse",
+        "en": "Complex programming, architecture planning, deep data analysis"
+      },
+      "cost_label": {
+        "de": "Premium-Preise (Nur für anspruchsvolle Aufgaben empfohlen)",
+        "en": "Premium prices (Recommended only for demanding tasks)"
+      }
+    },
+    "pro": {
+      "use_cases": {
+        "de": "Komplexe Programmierung, Architektur-Planung, tiefgehende Datenanalyse",
+        "en": "Complex programming, architecture planning, deep data analysis"
+      },
+      "cost_label": {
+        "de": "Premium-Preise (Nur für anspruchsvolle Aufgaben empfohlen)",
+        "en": "Premium prices (Recommended only for demanding tasks)"
+      }
+    },
+    "gemini-flash": {
+      "use_cases": {
+        "de": "Video-Scanning, schnelle Analyse großer Dokumente, Alltagsfragen",
+        "en": "Video scanning, fast analysis of large documents, everyday questions"
+      },
+      "cost_label": {
+        "de": "Sehr preiswert (Hervorragend für große Datenmengen)",
+        "en": "Very affordable (Excellent for large data volumes)"
+      }
+    },
+    "gemini-pro": {
+      "use_cases": {
+        "de": "Tiefgreifende Forschung, komplexe logische Schlüsse, maximale Detailtreue",
+        "en": "Deep research, complex logical reasoning, maximum detail accuracy"
+      },
+      "cost_label": {
+        "de": "Premium-Preise (Nur für hochkomplexe Aufgaben)",
+        "en": "Premium prices (Only for highly complex tasks)"
+      }
+    }
+  },
+  "model_profiles": {
+    "gemini-3-flash-preview": {
+      "level": 2,
+      "ux_category": "Speed",
+      "short_description": {
+        "de": "Ein extrem schnelles, leichtgewichtiges Modell für Alltag, Automatisierung und große Datenmengen.",
+        "en": "An extremely fast, lightweight model for everyday use, automation, and large data volumes."
+      },
+      "strengths": {
+        "de": "Sehr hohe Geschwindigkeit, Sehr günstig im Betrieb, Gut bei einfachen Analysen & Standard-Aufgaben, Stabil bei großen Inputs (z. B. Logs, Listen, Rohdaten)",
+        "en": "Very high speed, Very affordable, Good at simple analysis & standard tasks, Stable with large inputs (e.g., logs, lists, raw data)"
+      },
+      "ideal_for": {
+        "de": "Alltagsfragen, Schnelle Antworten, Datenverarbeitung & Parsing, Tool-Orchestrierung (z. B. Video-Search, Web-Calls), UI-Interaktionen & Chat",
+        "en": "Everyday questions, Quick responses, Data processing & parsing, Tool orchestration (e.g., video search, web calls), UI interactions & chat"
+      },
+      "weaknesses": {
+        "de": "Begrenzte Tiefe bei komplexer Logik, Weniger geeignet für anspruchsvollen Code, Kann bei komplexen Anforderungen ungenau werden",
+        "en": "Limited depth with complex logic, Less suitable for demanding code, Can be inaccurate with complex requirements"
+      },
+      "cost_profile": {
+        "de": "Sehr günstig, Perfekt für Dauerbetrieb & Skalierung",
+        "en": "Very affordable, Perfect for continuous operation & scaling"
+      }
+    },
+    "gemini-3-pro": {
+      "level": 3,
+      "ux_category": "Balance",
+      "short_description": {
+        "de": "Ein starkes Allround-Modell mit Fokus auf Verständnis, Qualität und komplexe Aufgaben.",
+        "en": "A strong all-round model with focus on understanding, quality, and complex tasks."
+      },
+      "strengths": {
+        "de": "Deutlich bessere Logik als Flash, Sehr gutes Sprachverständnis, Stark bei strukturierten Antworten, Stabil bei längeren Kontexten",
+        "en": "Significantly better logic than Flash, Very good language understanding, Strong at structured responses, Stable with longer contexts"
+      },
+      "ideal_for": {
+        "de": "Anspruchsvollere Analysen, Textverständnis & Zusammenfassungen, Planung & strukturierte Antworten, Mittlere bis komplexe Tasks",
+        "en": "More demanding analyses, Text understanding & summarization, Planning & structured responses, Medium to complex tasks"
+      },
+      "weaknesses": {
+        "de": "Langsamer als Flash, Teurer im Dauerbetrieb, Kein High-End Coding-Level",
+        "en": "Slower than Flash, More expensive for continuous operation, Not high-end coding level"
+      },
+      "cost_profile": {
+        "de": "Mittelklasse, Gute Balance zwischen Qualität & Kosten",
+        "en": "Mid-range, Good balance between quality & cost"
+      }
+    },
+    "gpt-5.4-nano": {
+      "level": 1,
+      "ux_category": "Speed",
+      "short_description": {
+        "de": "Ultra-effizientes Modell für schnelle, einfache Aufgaben mit minimalem Ressourcenverbrauch.",
+        "en": "Ultra-efficient model for fast, simple tasks with minimal resource consumption."
+      },
+      "strengths": {
+        "de": "Extrem schnell, Extrem günstig, Sehr stabil bei einfachen Tasks, Perfekt für hohe Skalierung",
+        "en": "Extremely fast, Extremely affordable, Very stable with simple tasks, Perfect for high scaling"
+      },
+      "ideal_for": {
+        "de": "Simple Queries, Klassifizierung, Routing / Intent Detection, Vorverarbeitung von Daten, UI-Feedback & schnelle Antworten",
+        "en": "Simple queries, Classification, Routing / intent detection, Data preprocessing, UI feedback & quick responses"
+      },
+      "weaknesses": {
+        "de": "Kaum Tiefenverständnis, Schwach bei komplexer Logik, Nicht geeignet für Coding oder Analyse",
+        "en": "Little depth understanding, Weak at complex logic, Not suitable for coding or analysis"
+      },
+      "cost_profile": {
+        "de": "Minimal, Optimal für Massenanfragen",
+        "en": "Minimal, Optimal for mass requests"
+      }
+    },
+    "gpt-5.4-mini": {
+      "level": 2,
+      "ux_category": "Balance",
+      "short_description": {
+        "de": "Leichtgewichtiges Modell mit solider Allround-Leistung für typische Anwendungen.",
+        "en": "Lightweight model with solid all-round performance for typical applications."
+      },
+      "strengths": {
+        "de": "Gute Balance aus Speed & Qualität, Besseres Verständnis als Nano, Stabil bei Standard-Usecases, Flexibel einsetzbar",
+        "en": "Good balance of speed & quality, Better understanding than Nano, Stable with standard use cases, Flexible deployment"
+      },
+      "ideal_for": {
+        "de": "Chat & Interaktion, Leichte Analysen, Textverarbeitung, Strukturierte Antworten",
+        "en": "Chat & interaction, Light analysis, Text processing, Structured responses"
+      },
+      "weaknesses": {
+        "de": "Begrenzte Tiefe bei komplexen Problemen, Nicht optimal für High-End Coding, Kann bei komplexer Logik schwächeln",
+        "en": "Limited depth with complex problems, Not optimal for high-end coding, Can struggle with complex logic"
+      },
+      "cost_profile": {
+        "de": "Günstig, Sehr gutes Preis-Leistungs-Verhältnis",
+        "en": "Affordable, Very good price-performance ratio"
+      }
+    },
+    "gpt-5.4-standard": {
+      "level": 4,
+      "ux_category": "Balance",
+      "short_description": {
+        "de": "Das zuverlässige Kernmodell für anspruchsvolle Allround-Aufgaben.",
+        "en": "The reliable core model for demanding all-round tasks."
+      },
+      "strengths": {
+        "de": "Starke Logik & gutes Verständnis, Sehr vielseitig einsetzbar, Gute Code-Fähigkeiten, Stabil bei komplexeren Aufgaben",
+        "en": "Strong logic & good understanding, Very versatile, Good coding capabilities, Stable with more complex tasks"
+      },
+      "ideal_for": {
+        "de": "Anspruchsvolle Chats, Programmierung, Analyse & Problemlösung, Systemlogik & Architektur",
+        "en": "Demanding chats, Programming, Analysis & problem solving, System logic & architecture"
+      },
+      "weaknesses": {
+        "de": "Teurer als Mini/Nano, Langsamer als kleine Modelle, Für einfache Tasks oft Overkill",
+        "en": "More expensive than Mini/Nano, Slower than small models, Often overkill for simple tasks"
+      },
+      "cost_profile": {
+        "de": "Mittel bis gehoben, Standard-Modell für Qualität",
+        "en": "Mid to high, Standard model for quality"
+      }
+    },
+    "gpt-5.4-pro": {
+      "level": 5,
+      "ux_category": "Power",
+      "short_description": {
+        "de": "High-End Modell für maximale Leistung, komplexe Logik und tiefgehende Analysen.",
+        "en": "High-end model for maximum performance, complex logic, and deep analysis."
+      },
+      "strengths": {
+        "de": "Sehr starke Logik & Reasoning, Exzellente Coding-Fähigkeiten, Tiefe Analyse & Problemlösung, Sehr präzise Antworten",
+        "en": "Very strong logic & reasoning, Excellent coding capabilities, Deep analysis & problem solving, Very precise responses"
+      },
+      "ideal_for": {
+        "de": "Komplexe Systeme, Software-Architektur, Debugging & anspruchsvollen Code, Strategische Planung, Deep Analysis",
+        "en": "Complex systems, Software architecture, Debugging & demanding code, Strategic planning, Deep analysis"
+      },
+      "weaknesses": {
+        "de": "Höhere Kosten, Langsamer als kleinere Modelle, Nicht sinnvoll für einfache Tasks",
+        "en": "Higher costs, Slower than smaller models, Not sensible for simple tasks"
+      },
+      "cost_profile": {
+        "de": "Hoch, Für Premium-Usecases gedacht",
+        "en": "High, Intended for premium use cases"
+      }
+    }
+  },
+  "categories": {
+    "file_management": {
+      "display_name": {
+        "de": "Dateiverwaltung",
+        "en": "File Management"
+      },
+      "icon": "📁",
+      "description": {
+        "de": "Lokale Dateiverwaltung auf der Festplatte",
+        "en": "Local File Management on Your Drive"
+      },
+      "abilities": [
+        {
+          "id": "file.upload",
+          "label": {
+            "de": "Dateien hochladen",
+            "en": "Upload Files"
+          },
+          "skill_refs": ["filesystem.upload"],
+          "how_to": {
+            "de": "Ziehe eine Datei per Drag & Drop in den Chat oder nutze das Upload-Symbol.",
+            "en": "Drag and drop a file into the chat, or use the upload button."
+          }
+        },
+        {
+          "id": "file.search",
+          "label": {
+            "de": "Dateien suchen",
+            "en": "Search Files"
+          },
+          "skill_refs": ["knowledge.query"],
+          "how_to": {
+            "de": "Sage: 'Finde die Datei Rechnung.pdf' oder 'Wo ist mein Dokument?'.",
+            "en": "Say: 'Find the file invoice.pdf' or 'Where is my document?'"
+          }
+        }
+      ],
+      "ui_locations": {
+        "files": {
+          "label": {
+            "de": "Dateimanager",
+            "en": "File Manager"
+          },
+          "action": {
+            "type": "open_module",
+            "payload": {
+              "module": "files"
+            }
+          }
+        }
+      }
+    },
+    "memory_v2": {
+      "display_name": {
+        "de": "Erinnerungen",
+        "en": "Memories"
+      },
+      "icon": "🧠",
+      "description": {
+        "de": "Speichere und finde persönliche Informationen (Cross-Chat & Cross-Provider Gedächtnis)",
+        "en": "Store and retrieve personal information (Cross-Chat & Cross-Provider Memory)"
+      },
+      "abilities": [
+        {
+          "id": "memory.find",
+          "label": {
+            "de": "Erinnerungen finden",
+            "en": "Find Memories"
+          },
+          "skill_refs": ["memory.read"],
+          "how_to": {
+            "de": "Frage: 'Wie heißt der Hund von Max?' oder 'Was weiß ich über...?'",
+            "en": "Ask: 'What is Max's dog called?' or 'What do I know about...?'"
+          }
+        },
+        {
+          "id": "memory.save_person",
+          "label": {
+            "de": "Personen merken",
+            "en": "Remember People"
+          },
+          "skill_refs": ["memory.write"],
+          "how_to": {
+            "de": "Sag: 'Merke dir: Max hat einen Hund namens Bello.'",
+            "en": "Say: 'Remember: Max has a dog named Bello.'"
+          }
+        }
+      ],
+      "ui_locations": {
+        "memories": {
+          "label": {
+            "de": "Erinnerungen",
+            "en": "Memories"
+          },
+          "action": {
+            "type": "open_settings",
+            "payload": {
+              "section": "memory"
+            }
+          }
+        }
+      }
+    },
+    "vision": {
+      "display_name": {
+        "de": "Bildanalyse",
+        "en": "Image Analysis"
+      },
+      "icon": "👁️",
+      "description": {
+        "de": "Analysiere Bilder mit KI",
+        "en": "Analyze images with AI"
+      },
+      "abilities": [
+        {
+          "id": "vision.analyze",
+          "label": {
+            "de": "Bilder analysieren",
+            "en": "Analyze Images"
+          },
+          "skill_refs": ["system.vision"],
+          "how_to": {
+            "de": "Lade ein Bild hoch und frage: 'Was siehst du?' oder 'Beschreibe das Bild.'",
+            "en": "Upload an image and ask: 'What do you see?' or 'Describe the image.'"
+          }
+        },
+        {
+          "id": "vision.generate",
+          "label": {
+            "de": "Bilder generieren",
+            "en": "Generate Images"
+          },
+          "skill_refs": ["system.generate_image"],
+          "how_to": {
+            "de": "Sag: 'Erstelle ein Bild von...' oder 'Zeichne mir...'",
+            "en": "Say: 'Create an image of...' or 'Draw me...'"
+          }
+        }
+      ],
+      "ui_locations": {
+        "image_studio": {
+          "label": {
+            "de": "Bild-Studio",
+            "en": "Image Studio"
+          },
+          "action": {
+            "type": "open_module",
+            "payload": {
+              "module": "image-studio"
+            }
+          }
+        }
+      }
+    },
+    "knowledge_hub": {
+      "display_name": {
+        "de": "Wissens-Hub",
+        "en": "Knowledge Hub"
+      },
+      "icon": "📚",
+      "description": {
+        "de": "PDF-Audit, Wissensdatenbank & RAG (Retrieval-Augmented Generation)",
+        "en": "PDF Audit, Knowledge Base & RAG (Retrieval-Augmented Generation)"
+      },
+      "abilities": [
+        {
+          "id": "knowledge.analyze_pdf",
+          "label": {
+            "de": "PDF analysieren",
+            "en": "Analyze PDF"
+          },
+          "skill_refs": ["knowledge.query"],
+          "how_to": {
+            "de": "Lade eine PDF hoch und frage: 'Was steht in diesem Dokument?' oder 'Zusammenfasse die wichtigsten Punkte.'",
+            "en": "Upload a PDF and ask: 'What's in this document?' or 'Summarize the key points.'"
+          }
+        },
+        {
+          "id": "knowledge.search_docs",
+          "label": {
+            "de": "Dokumente durchsuchen",
+            "en": "Search Documents"
+          },
+          "skill_refs": ["knowledge.query"],
+          "how_to": {
+            "de": "Sage: 'Finde alle Dokumente über...' oder 'Wo steht etwas über...?'",
+            "en": "Say: 'Find all documents about...' or 'Where does it mention...?'"
+          }
+        }
+      ],
+      "ui_locations": {
+        "files": {
+          "label": {
+            "de": "Dateimanager",
+            "en": "File Manager"
+          },
+          "action": {
+            "type": "open_module",
+            "payload": {
+              "module": "files"
+            }
+          }
+        }
+      }
+    },
+    "image_studio": {
+      "display_name": {
+        "de": "Bild-Studio",
+        "en": "Image Studio"
+      },
+      "icon": "🎨",
+      "description": {
+        "de": "Vision-Analyse & Bildgenerierung (DALL-E/Lokal)",
+        "en": "Vision Analysis & Image Generation (DALL-E/Local)"
+      },
+      "abilities": [
+        {
+          "id": "image.generate",
+          "label": {
+            "de": "Bilder generieren",
+            "en": "Generate Images"
+          },
+          "skill_refs": ["system.generate_image"],
+          "how_to": {
+            "de": "Sag: 'Erstelle ein Bild von...' oder 'Zeichne mir...' mit Stil-Angaben wie 'realistisch', 'comic', 'abstrakt'.",
+            "en": "Say: 'Create an image of...' or 'Draw me...' with style hints like 'realistic', 'comic', 'abstract'."
+          }
+        },
+        {
+          "id": "image.edit",
+          "label": {
+            "de": "Bilder bearbeiten",
+            "en": "Edit Images"
+          },
+          "skill_refs": ["system.generate_image"],
+          "how_to": {
+            "de": "Lade ein Bild hoch und sage: 'Ändere den Hintergrund' oder 'Füge ein Objekt hinzu'.",
+            "en": "Upload an image and say: 'Change the background' or 'Add an object'."
+          }
+        }
+      ],
+      "ui_locations": {
+        "image_studio": {
+          "label": {
+            "de": "Bild-Studio",
+            "en": "Image Studio"
+          },
+          "action": {
+            "type": "open_module",
+            "payload": {
+              "module": "image-studio"
+            }
+          }
+        }
+      }
+    },
+    "provider_hub": {
+      "display_name": {
+        "de": "Provider-Hub",
+        "en": "Provider Hub"
+      },
+      "icon": "🔑",
+      "description": {
+        "de": "Multi-Provider API Key Management & nahtloser Modellwechsel",
+        "en": "Multi-Provider API Key Management & Seamless Model Switching"
+      },
+      "abilities": [
+        {
+          "id": "provider.manage_keys",
+          "label": {
+            "de": "API-Keys verwalten",
+            "en": "Manage API Keys"
+          },
+          "skill_refs": ["system.settings"],
+          "how_to": {
+            "de": "Geh zu den Einstellungen und füge deine OpenAI, Gemini oder Anthropic API-Keys hinzu.",
+            "en": "Go to settings and add your OpenAI, Gemini, or Anthropic API keys."
+          }
+        },
+        {
+          "id": "provider.switch_model",
+          "label": {
+            "de": "Modell wechseln",
+            "en": "Switch Model"
+          },
+          "skill_refs": ["system.settings"],
+          "how_to": {
+            "de": "Sage: 'Nutze GPT-4o' oder 'Wechsle zu Gemini' oder 'Benutze ein lokales Modell'.",
+            "en": "Say: 'Use GPT-4o' or 'Switch to Gemini' or 'Use a local model'."
+          }
+        }
+      ],
+      "ui_locations": {
+        "settings": {
+          "label": {
+            "de": "Einstellungen",
+            "en": "Settings"
+          },
+          "action": {
+            "type": "open_settings",
+            "payload": {
+              "section": "providers"
+            }
+          }
+        }
+      }
+    },
+    "video_system": {
+      "display_name": {
+        "de": "Video-System",
+        "en": "Video System"
+      },
+      "icon": "🎬",
+      "description": {
+        "de": "MCL Video-Player, YouTube-Integration & KI-Transkripte",
+        "en": "MCL Video Player, YouTube Integration & AI Transcripts"
+      },
+      "abilities": [
+        {
+          "id": "video.play",
+          "label": {
+            "de": "Videos abspielen",
+            "en": "Play Videos"
+          },
+          "skill_refs": ["system.video"],
+          "how_to": {
+            "de": "Sage: 'Spiele das Video ab' oder 'Zeige mir den Film'. Der MCL Video-Player öffnet sich automatisch.",
+            "en": "Say: 'Play the video' or 'Show me the movie'. The MCL Video Player opens automatically."
+          }
+        },
+        {
+          "id": "video.youtube",
+          "label": {
+            "de": "YouTube integrieren",
+            "en": "YouTube Integration"
+          },
+          "skill_refs": ["system.video"],
+          "how_to": {
+            "de": "Sende einen YouTube-Link und ich werde das Video analysieren oder Transkripte erstellen.",
+            "en": "Send a YouTube link and I'll analyze the video or create transcripts."
+          }
+        },
+        {
+          "id": "video.transcribe",
+          "label": {
+            "de": "KI-Transkripte erstellen",
+            "en": "AI Transcripts"
+          },
+          "skill_refs": ["system.video"],
+          "how_to": {
+            "de": "Lade ein Video hoch und frage: 'Transkribiere das Video' oder 'Fasse den Inhalt zusammen'.",
+            "en": "Upload a video and ask: 'Transcribe the video' or 'Summarize the content'."
+          }
+        }
+      ],
+      "ui_locations": {
+        "video_player": {
+          "label": {
+            "de": "Video-Player",
+            "en": "Video Player"
+          },
+          "action": {
+            "type": "open_module",
+            "payload": {
+              "module": "video-player"
+            }
+          }
+        }
+      }
+    }
+  }
+}

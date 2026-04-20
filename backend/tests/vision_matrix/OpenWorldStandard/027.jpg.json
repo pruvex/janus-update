@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "mittlerer Mann",
+    "HAARFARBE": "grau",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "",
+    "KLEIDUNG": "hellblaues Sweatshirt und Shorts",
+    "LEGWEAR": "beige Shorts",
+    "SCHUH_SATZ": "Dazu trägt er marineblaue Slip-ons.",
+    "POSE_SATZ": "Der Mann steht auf einem Zebrastreifen und schaut auf sein Smartphone.",
+    "AMBIENTE_SATZ": "Städtische Kreuzung mit parkenden Autos.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Sweatshirt", "Shorts", "Sneaker", "Zebrastreifen"],
+    "AUSSCHLUSS_PFLICHT": ["Anzug", "Regenschirm", "Sporttasche"]
+  }
+}

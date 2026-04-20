@@ -1,0 +1,11 @@
+﻿{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "rotbraunen",
+    "HAAR_STRUKTUR": "lockig",
+    "AUGEN": "braun",
+    "KLEIDUNG": "einem Rollkragenpullover",
+    "OHRRINGE": "große silberne Creolen"
+  }
+}

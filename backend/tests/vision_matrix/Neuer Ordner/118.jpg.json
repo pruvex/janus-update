@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "mittlere Erwachsene",
+    "HAARFARBE": "blond",
+    "FRISUR": "schulterlang, leicht stufig",
+    "OUTERWEAR": "jeansfarbene Weste mit Nieten und Metallknöpfen",
+    "KLEIDUNG": "schwarzes T-Shirt mit Vintage-Print",
+    "LEGWEAR": "gewaschene Jeans mit Cut-outs, darunter Netzstrümpfe sichtbar",
+    "SCHUH_SATZ": "schwarze Plateauschuhe mit Veloursleder",
+    "POSE_SATZ": "Sie sitzt auf einem Hocker, ein Bein aufgestellt, die Hand mit halb gefingerlosen Handschuh am Knie, zeigt ein Rock-Handzeichen und blickt leicht zur Seite.",
+    "AMBIENTE_SATZ": "Studio mit einfarbigem dunklem Hintergrund, Fokus auf die Person ohne Requisiten.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Mixed Materials", "Clothing Details"],
+    "AUSSCHLUSS_PFLICHT": ["Outdoor", "Mehrere Personen"],
+    "NOTIZ": "Kombination aus Denim, Netz und Lederaccessoires erfüllen das Mixed-Materials-Briefing; Neonhandschuh und Hut liefern zusätzliche Details."  
+  }
+}

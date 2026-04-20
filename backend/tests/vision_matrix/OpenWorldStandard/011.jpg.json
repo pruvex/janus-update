@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "hochgesteckt",
+    "OUTERWEAR": "kariertes Sakko",
+    "KLEIDUNG": "schwarz-weiß gestreiftes Hemd",
+    "LEGWEAR": "rotbraune Anzughose",
+    "SCHUH_SATZ": "Dazu trägt sie schwarze Sandaletten mit dünnem Riemen.",
+    "POSE_SATZ": "Die Person steht leicht seitlich vor einer Glaswand und schaut in die Kamera.",
+    "AMBIENTE_SATZ": "Helle Hallenfront eines modernen Bürogebäudes.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["kariertes Sakko", "gestreiftes Hemd", "Anzughose", "Sandaletten"],
+    "AUSSCHLUSS_PFLICHT": ["Shorts", "Sneaker", "T-Shirt", "dunkle Jeans"]
+  }
+}

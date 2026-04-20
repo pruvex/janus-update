@@ -1,0 +1,11 @@
+﻿{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "ältere Frau",
+    "HAARFARBE": "grau-melierten",
+    "HAAR_STRUKTUR": "glatt",
+    "AUGEN": "braun",
+    "KLEIDUNG": "einem Schal",
+    "SCHMUCK": null
+  }
+}

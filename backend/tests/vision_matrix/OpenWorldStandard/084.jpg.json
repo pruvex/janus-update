@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "zurückgebunden",
+    "OUTERWEAR": "weißes Hemd",
+    "KLEIDUNG": "weiße Culotte",
+    "LEGWEAR": "freie Beine",
+    "SCHUH_SATZ": "Schwarze Pumps",
+    "POSE_SATZ": "Sie schreitet über die Straße und hält einen Coffee-to-go in der Hand, Blick leicht zur Seite.",
+    "AMBIENTE_SATZ": "Urbanes Straßenbild mit Glasfassade und Zebrastreifen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Zebrastreifen", "Urban", "Full Body", "Pumps"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "Jogginghose", "Sneaker"],
+    "NOTIZ": "Fashionable Crossing Scene, hält die Pose natürlich."
+  }
+}

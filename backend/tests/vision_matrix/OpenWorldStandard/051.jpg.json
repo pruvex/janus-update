@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "blond",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "dunkelblauer Anzugblazer",
+    "KLEIDUNG": "hellblaues Hemd",
+    "LEGWEAR": "dunkelblaue Anzughose",
+    "SCHUH_SATZ": "Braune Lederschuhe",
+    "POSE_SATZ": "Er steht frontal auf einer Brücke in der Stadt und schaut in die Kamera.",
+    "AMBIENTE_SATZ": "Städtische Umgebung mit Backsteinfassaden und Blick auf ein Wasserkanalgeländer.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Anzugblazer", "gestreiftes Hemd", "Anzughose", "Lederschuhe", "Krawatte mit feinen Punkten"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Kapuze", "T-Shirt"],
+    "NOTIZ": "Tie ist dunkelblau mit feinem Punktmuster, passt zu 'polka dot tie'."
+  }
+}

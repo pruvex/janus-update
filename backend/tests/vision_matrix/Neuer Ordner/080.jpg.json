@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "kariertes Overshirt",
+    "KLEIDUNG": "karaffe-farbener Pullover",
+    "LEGWEAR": "beige Chinohose",
+    "SCHUH_SATZ": "Weiße Sneaker",
+    "POSE_SATZ": "Er geht die orange Treppe hinunter und blickt auf sein Handy.",
+    "AMBIENTE_SATZ": "Stadt mit farbiger Wand und blauem Geländer, Treppenstufen als Hauptkulisse.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Treppe", "Outdoor", "Chinohose", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "High Heels", "Jogginghose"],
+    "NOTIZ": "Gehpose auf Treppe, urbaner Look, passt zum Brief."
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "filename": "60.jpg",
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "kurz, voluminös und nach hinten gestylt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "Armbanduhr",
+    "OUTERWEAR": "grüne Jacke mit orangefarbenem Innenfutter",
+    "KLEIDUNG": "schwarzes T-Shirt mit weißem Oldtimer-Motiv und Schriftzug 'FORMULA'",
+    "LEGWEAR": "blaue Jeans",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "Armbanduhr mit orangefarbenem Zifferblatt und schwarzem Armband",
+    "POSE_SATZ": "Der Mann blickt lächelnd leicht zur Seite, hat die Arme angewinkelt und ist bis zur Hüfte sichtbar.",
+    "AMBIENTE_SATZ": "Im Freien vor einem bewölkten Himmel mit Bäumen im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "grüne Jacke",
+      "orangefarbenes Innenfutter",
+      "schwarzes T-Shirt",
+      "weißes Oldtimer-Motiv",
+      "Armbanduhr mit orangefarbenem Zifferblatt",
+      "blaue Jeans",
+      "bewölkter Himmel"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "kein Schal"
+    ]
+  }
+}

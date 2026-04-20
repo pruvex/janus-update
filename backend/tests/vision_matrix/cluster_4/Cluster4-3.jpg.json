@@ -1,0 +1,12 @@
+﻿{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "dunkelbraunen",
+    "HAAR_STRUKTUR": "wellig",
+    "AUGEN": "braun",
+    "TEINT": "oliv",
+    "HALSKMUCK": null,
+    "OHRRINGE": "große Holzohrringe"
+  }
+}

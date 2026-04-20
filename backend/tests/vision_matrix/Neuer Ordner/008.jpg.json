@@ -1,0 +1,18 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "HAARFARBE": "dunkelbraunes Haar",
+    "FRISUR": "kurz und zurückgestylt",
+    "OUTERWEAR": "",
+    "KLEIDUNG": "schwarzes Button-down-Hemd über schwarzer Chinohose",
+    "LEGWEAR": "schwarze Chinohose",
+    "GUERTEL_SATZ": "Er trägt einen schwarzen Ledergürtel mit silberner Schnalle.",
+    "ZUBEHOER_SATZ": "Er hält eine schwarze Lederjacke und einen schicken Weekender in der Hand.",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Chelsea-Boots aus Glattleder.",
+    "POSE_SATZ": "Der Mann geht mit ruhigem Schritt auf den Betrachter zu.",
+    "AMBIENTE_SATZ": "Städtische Straße mit Restaurantfenstern und Pflanzen hinter ihm.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["schwarzes Hemd", "schwarze Chinohose", "Ledergürtel", "Chelsea-Boots"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Jeans", "Kapuze", "T-Shirt"]
+  }
+}

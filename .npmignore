@@ -1,0 +1,20 @@
+# Ignoriere alles, was nur für die Entwicklung da ist
+.vscode
+.git
+.github
+
+# Ignoriere den kompletten Backend-Quellcode (wir brauchen nur die gebaute EXE)
+/backend
+
+# Ignoriere alle temporären Build-Ordner
+/build
+/dist
+/release
+
+# Ignoriere die Konfigurationsdateien
+/janus_backend.spec
+/vite.config.js
+/README.md
+
+# Ignoriere Node-Module auf der obersten Ebene (Electron-Builder holt sich, was es braucht)
+/node_modules

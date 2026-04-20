@@ -1,0 +1,63 @@
+ 2026-02-19 17:01:21 - janus_backend - [ERROR] - VISION ERROR: QueuePool limit of size 5 overflow 10 reached, connection timed out, timeout 30.00 (Background on this error at: https://sqlalche.me/e/20/3o7r)
+[start-backend-only] Traceback (most recent call last):
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\services\vision_service.py", line 175, in process_image
+[start-backend-only]     known_encodings, known_names = crud_vision.get_all_known_faces(db)
+[start-backend-only]                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\data\crud_vision.py", line 71, in get_all_known_faces
+[start-backend-only]     persons = db.query(PersonProfile).options(joinedload(PersonProfile.encodings)).all()
+[start-backend-only]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+[start-backend-only]     return self._iter().all()  # type: ignore
+[start-backend-only]            ^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+[start-backend-only]     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+[start-backend-only]                                                   ^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+[start-backend-only]     return self._execute_internal(
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2239, in _execute_internal
+[start-backend-only]     conn = self._connection_for_bind(bind)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2108, in _connection_for_bind
+[start-backend-only]     return trans._connection_for_bind(engine, execution_options)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "<string>", line 2, in _connection_for_bind
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+[start-backend-only]     ret_value = fn(self, *arg, **kw)
+[start-backend-only]                 ^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1187, in _connection_for_bind
+[start-backend-only]     conn = bind.connect()
+[start-backend-only]            ^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3277, in connect
+[start-backend-only]     return self._connection_cls(self)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 143, in __init__
+[start-backend-only]     self._dbapi_connection = engine.raw_connection()
+[start-backend-only]                              ^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3301, in raw_connection
+[start-backend-only]     return self.pool.connect()
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 447, in connect
+[start-backend-only]     return _ConnectionFairy._checkout(self)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1264, in _checkout
+[start-backend-only]     fairy = _ConnectionRecord.checkout(pool)
+[start-backend-only]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 711, in checkout
+[start-backend-only]     rec = pool._do_get()
+[start-backend-only]           ^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 166, in _do_get
+[start-backend-only]     raise exc.TimeoutError(
+[start-backend-only] sqlalchemy.exc.TimeoutError: QueuePool limit of size 5 overflow 10 reached, connection timed out, timeout 30.00 (Background on this error at: https://sqlalche.me/e/20/3o7r)
+[start-backend-only] 2026-02-19 17:01:24 - janus_backend - [INFO] - 🔍 Vision-Ergebnis: 5 Keys gefunden
+[start-backend-only] 2026-02-19 17:01:24 - janus_backend - [ERROR] - Error in chat endpoint: list index out of range
+[start-backend-only] Traceback (most recent call last):
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\api\routers\chat.py", line 50, in chat
+[start-backend-only]     return await orchestrator.handle_chat_request(request)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\services\chat_orchestrator.py", line 367, in handle_chat_request
+[start-backend-only]     ChatOrchestrator.UNKNOWN_FACE_BUFFER[request.chat_id] = res["unknown_encodings"][0]
+[start-backend-only]                                                             ~~~~~~~~~~~~~~~~~~~~~~~~^^^
+[start-backend-only] IndexError: list index out of range
+[start-backend-only]
+[start-backend-only] INFO:     127.0.0.1:56738 - "POST /api/chat HTTP/1.1" 500 Internal Server Error

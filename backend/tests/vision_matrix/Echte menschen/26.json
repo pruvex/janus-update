@@ -1,0 +1,33 @@
+{
+  "filename": "26.jpg",
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "weiß-grau",
+    "FRISUR": "kurz, nach hinten gekämmt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "schmale Brille",
+    "SCHMUCK": "Armbanduhr, silbernes Gliederarmband",
+    "OUTERWEAR": "dunkelgrüne Steppweste",
+    "KLEIDUNG": "rotes Langarmshirt",
+    "LEGWEAR": "schwarze Sporthose mit Reebok-Aufdruck",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "brennende Zigarette, rote Tasse auf dem Tisch",
+    "POSE_SATZ": "Der Mann sitzt an einem Gartentisch, blickt direkt in die Kamera und hält eine brennende Zigarette in der rechten Hand.",
+    "AMBIENTE_SATZ": "Eine Terrasse im Freien mit Sicht auf einen Garten, Sträucher und eine Gartenlaterne.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "dunkelgrüne Steppweste",
+      "rotes Langarmshirt",
+      "schmale Brille",
+      "Reebok-Schriftzug",
+      "brennende Zigarette",
+      "rote Tasse"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "kein Schal"
+    ]
+  }
+}

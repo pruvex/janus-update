@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "lockig",
+    "OUTERWEAR": "cremefarbener Blazer",
+    "KLEIDUNG": "cremefarbene Anzughose",
+    "LEGWEAR": "cremefarbene Hose",
+    "SCHUH_SATZ": "Schwarze Pumps",
+    "POSE_SATZ": "Sie sitzt auf einer niedrigen Treppe, die Beine gespreizt, Hände auf den Knien.",
+    "AMBIENTE_SATZ": "Moderne Glasfassade hinter ihr, urbaner Stil.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Treppe", "Urban", "Blazer", "Pump"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Outdoor-Wald", "Jogginghose"],
+    "NOTIZ": "Full body Treppen-Composition erfüllt den Fashion-Brief."
+  }
+}

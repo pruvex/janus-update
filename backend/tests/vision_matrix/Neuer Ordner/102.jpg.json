@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "brauner Regenmantel",
+    "KLEIDUNG": "schwarzes Outfit",
+    "LEGWEAR": "eng anliegende Hose",
+    "SCHUH_SATZ": "Schwarze Stiefeletten",
+    "POSE_SATZ": "Sie geht auf einem nassen Zebrastreifen in Richtung Kamera, Hände in den Taschen.",
+    "AMBIENTE_SATZ": "Großstadtstraße mit Regen, reflektierendem Asphalt und Ampeln.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Regen", "Single Person", "Nasse Straße", "Full Body"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "Trockenes Wetter"],
+    "NOTIZ": "Leichtes Regenwetter, kein Fokus auf weitere Personen."
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "legacy_name": "get_distance_and_route_tool",
+  "skill": "system.routing",
+  "description": "Berechnet die exakte Straßendistanz und Fahrzeit zwischen zwei Orten. Nutze diesen Skill IMMER anstelle einer Websuche, wenn nach Entfernungen, Routen oder Reisezeiten gefragt wird. Er liefert präzise Daten aus einem Routing-System.",
+  "version": "1.1.1",
+  "sandbox_level": "unrestricted",
+  "latency_class": "normal",
+  "timeout_ms": 15000,
+  "tags": [
+    "system",
+    "geography",
+    "navigation"
+  ],
+  "capabilities": [
+    "routing",
+    "distance_lookup",
+    "travel_time_lookup"
+  ],
+  "is_agent_ready": true,
+  "deterministic_renderer": true,
+  "max_calls_per_turn": 2,
+  "depends_on": [],
+  "examples": [
+    {
+      "input": {
+        "origin": "Berlin",
+        "destination": "Hamburg",
+        "mode": "driving"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "origin": "Berlin",
+          "destination": "Hamburg",
+          "distance_km": 289.0,
+          "duration": "3 Std. 15 Min.",
+          "maps_link": "https://www.google.com/maps/dir/?api=1&origin=Berlin&destination=Hamburg&travelmode=driving"
+        },
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "origin": "Berlin",
+        "destination": "Nimmerland",
+        "mode": "driving"
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "INVALID_COORDINATES",
+          "message": "Konnte einen der Orte nicht finden: 'Berlin' oder 'Nimmerland'. Bitte präzisiere die Eingabe."
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "langen, leicht gewellten",
+    "OUTERWEAR": "grau melierter Blazer",
+    "KLEIDUNG": "cremefarbener Oberkörper und schwarze Hose",
+    "LEGWEAR": "schwarze Skinnyhose",
+    "SCHUH_SATZ": "Weiße Sneaker",
+    "POSE_SATZ": "Sie steht seitlich zur Kamera, Blick nach vorn, auf dem großen Platz.",
+    "AMBIENTE_SATZ": "St. Petersburg inspiriertes Stadtbild mit historischer Architektur, Säule und überdimensionalem Platz.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Seitprofil", "Blazer", "Stadtplatz", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Wald", "Indoor", "High Heels"],
+    "NOTIZ": "Full body, side profile, urban setting, erfüllt die Vorgabe klar."
+  }
+}

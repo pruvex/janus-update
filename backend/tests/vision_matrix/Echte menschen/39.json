@@ -1,0 +1,33 @@
+{
+  "filename": "39.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "silbergrau",
+    "FRISUR": "lang, voluminös und wellig gestuft",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "schwarze Vollrandbrille",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "weißes Oberteil mit buntem Blumenmuster",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau macht ein Selfie und blickt dabei mit einem freundlichen Lächeln direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Ein heller Innenraum mit einer gelben Wand und einem gerahmten Bild im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarze Vollrandbrille",
+      "weißes Oberteil",
+      "buntes Blumenmuster",
+      "silbergraue Haare",
+      "wellig gestufte Frisur",
+      "gelbe Wand"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Sonnenbrille"
+    ]
+  }
+}

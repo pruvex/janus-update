@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz und seitlich gescheitelt",
+    "OUTERWEAR": "dunkelgrauer Nadelstreifenanzug",
+    "KLEIDUNG": "weißes Hemd",
+    "LEGWEAR": "dunkle Anzughose",
+    "SCHUH_SATZ": "Braune Oxford-Schuhe",
+    "POSE_SATZ": "Er geht mit verschränkten Händen die Straße entlang, Blick nach vorn.",
+    "AMBIENTE_SATZ": "Städtische Straße mit Geschäftsgebäuden und spätnachmittäglichem Licht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Blazer", "Hemd", "Anzughose", "Oxford-Schuhe", "rote Krawatte mit punktuellem Muster"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Kapuze", "Casual-Hose"],
+    "NOTIZ": "Krawatte hat punktiertes Muster, jedoch nicht streng rund – am ehesten als Polka-Dot interpretierbar."
+  }
+}

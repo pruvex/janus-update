@@ -1,0 +1,33 @@
+{
+  "filename": "33.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "rot",
+    "FRISUR": "kurz",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "Halskette, Armbanduhr, Ring",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "olivgrünes T-Shirt",
+    "LEGWEAR": "blaue Jeans-Shorts",
+    "SCHUH_SATZ": "helle Sandalen",
+    "ZUBEHOER_SATZ": "schwarzer Rucksack mit einer Trinkflasche im Seitenfach",
+    "POSE_SATZ": "Die Frau steht lächelnd auf einem Waldweg und trägt einen vollgepackten Rucksack.",
+    "AMBIENTE_SATZ": "Ein dicht bewachsenes Waldstück mit vielen grünen Blättern und einem hellen Schotterweg.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "rote Kurzhaarfrisur",
+      "olivgrünes T-Shirt",
+      "schwarzer Rucksack",
+      "blaue Jeans-Shorts",
+      "Trinkflasche",
+      "Waldweg"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung"
+    ]
+  }
+}

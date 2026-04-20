@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "schulterlang und glatt",
+    "OUTERWEAR": "hellblaue Denim-Blazer",
+    "KLEIDUNG": "weißes Top",
+    "LEGWEAR": "hoch geschnittene Denim-Jeans",
+    "SCHUH_SATZ": "Rote Riemchensandalen",
+    "POSE_SATZ": "Sie geht selbstbewusst durch eine Straßenszene und schaut lächelnd zur Seite.",
+    "AMBIENTE_SATZ": "New Yorker Straße mit geparkten Autos und hohen Häusern.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Denim-Blazer", "Jeans", "Sandalen"],
+    "AUSSCHLUSS_PFLICHT": ["T-Shirt", "Sneaker", "Sporthose"],
+    "NOTIZ": "Denim-only Look, trotz roter Sandalen bleibt der Schwerpunkt auf der Jeans."
+  }
+}

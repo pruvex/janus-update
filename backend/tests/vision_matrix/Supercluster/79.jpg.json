@@ -1,0 +1,15 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "TEINT": "hell",
+    "HAARFARBE": "Die Haare sind blond/braun",
+    "FRISUR": "kurz",
+    "LEGWEAR": "dunkle Jeans",
+    "SCHUH_SATZ": "Dazu trägt er braune Stiefel.",
+    "POSE_SATZ": "Die Person trägt einen großen Pappkarton vor sich her, der den Oberkörper teilweise verdeckt.",
+    "AMBIENTE_SATZ": "Die Szene spielt in einem hell erleuchteten Flur.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Pappkarton", "Kiste", "Tragen", "Flur"],
+    "AUSSCHLUSS_PFLICHT": ["Rucksack", "draußen"]
+  }
+}

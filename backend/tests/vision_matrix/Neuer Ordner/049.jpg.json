@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "kurz, leicht zurückgekämmt",
+    "OUTERWEAR": "dunkelblauer Blazer",
+    "KLEIDUNG": "rot-schwarz gestreiftes Rugby-Shirt",
+    "LEGWEAR": "weiße Chinohose",
+    "SCHUH_SATZ": "Braune Derby-Schuhe",
+    "POSE_SATZ": "Er geht entschlossen auf einem Gehweg entlang, Blick leicht zur Seite.",
+    "AMBIENTE_SATZ": "Historische Gebäudefassade mit Sandsteinrelief, Tageslicht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Blazer", "gestreiftes Shirt", "Chinohose", "Derby-Schuhe"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Jogginghose", "Kapuze"]
+  }
+}

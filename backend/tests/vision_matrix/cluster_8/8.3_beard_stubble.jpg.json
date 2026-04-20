@@ -1,0 +1,10 @@
+{
+  "expected": {
+    "ALTER": "erwachsener Mann",
+    "TEINT": "hell",
+    "AUGEN": "braun",
+    "HAARFARBE": "dunkelbraunen",
+    "HAAR_STRUKTUR": "lockig",
+    "BART_SATZ": " Zudem trägt er einen Dreitagebart."
+  }
+}

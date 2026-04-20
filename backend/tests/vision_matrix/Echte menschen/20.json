@@ -1,0 +1,33 @@
+{
+  "filename": "20.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "hellblond",
+    "FRISUR": "kurz, mit hellem Pony",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "silberne Halskette mit Herzanhänger, kleine Creolen",
+    "OUTERWEAR": "blaugraue Kapuzenjacke mit weißem Aufdruck 'Hollister CALIFORNIA'",
+    "KLEIDUNG": "schwarzes Top unter der Jacke",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau schaut mit einem neutralen Gesichtsausdruck leicht von oben herab direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Die Aufnahme entstand im Freien vor dem Hintergrund einer dichten, grünen Hecke.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "blaugraue Kapuzenjacke",
+      "Aufdruck Hollister CALIFORNIA",
+      "silberne Halskette mit Herz",
+      "silberne Creolen",
+      "grüne Hecke",
+      "hellblonder Pony"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung"
+    ]
+  }
+}

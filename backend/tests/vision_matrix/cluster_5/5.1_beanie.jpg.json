@@ -1,0 +1,10 @@
+{
+   "expected": {
+     "ALTER": "junge Frau",
+     "GESCHLECHT": "Frau",
+     "TEINT": "hell",
+     "HAARFARBE": "rotbraunen",
+     "KOPF_BEDECKUNG": "grey beanie",
+     "ZUBEHOER_SATZ": " Zudem trägt die Person eine graue Wollmütze."
+   }
+ }

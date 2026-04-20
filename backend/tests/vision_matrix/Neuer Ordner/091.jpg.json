@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "dunkel",
+    "FRISUR": "lang mit Hut",
+    "OUTERWEAR": "pinkfarbener Teddy-Mantel",
+    "KLEIDUNG": "pinkfarbene Jacke",
+    "LEGWEAR": "rosa Hose",
+    "SCHUH_SATZ": "Weiße Sneaker",
+    "POSE_SATZ": "Sie geht über eine regennasse Straße bei Abenddämmerung und schaut auf ihr Handy.",
+    "AMBIENTE_SATZ": "City Street im Low-Light mit Lichterketten und Reflexionen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Low-Light", "Street", "Full Body", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "High Heels", "Tageslicht"],
+    "NOTIZ": "Nachtaufnahme mit reflektierendem Boden und warmem Licht."
+  }
+}

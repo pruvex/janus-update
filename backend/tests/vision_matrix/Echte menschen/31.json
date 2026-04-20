@@ -1,0 +1,33 @@
+{
+  "filename": "31.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "blond",
+    "FRISUR": "kurz, glatt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "Brille",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "dunkle Jacke",
+    "KLEIDUNG": "pfirsichfarbener Schal, dunkles Oberteil",
+    "LEGWEAR": "schwarze Hose",
+    "SCHUH_SATZ": "schwarze Halbschuhe",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau steht aufrecht auf den Stufen einer prunkvollen Holztreppe und stützt ihre linke Hand auf das Geländer.",
+    "AMBIENTE_SATZ": "Ein luxuriöser, klassischer Innenraum mit einer monumentalen Treppenanlage aus dunklem Holz, kunstvollen Schnitzereien und einer goldenen Engelsstatue.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "pfirsichfarbener Schal",
+      "prunkvolle Holztreppe",
+      "goldene Engelsstatue",
+      "Wanduhr mit Holzschnitzereien",
+      "schwarze Hose",
+      "schwarze Schuhe"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Sonnenbrille"
+    ]
+  }
+}

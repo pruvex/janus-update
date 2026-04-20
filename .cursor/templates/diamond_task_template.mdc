@@ -1,0 +1,44 @@
+---
+description: Auto-Fill Template für Diamond-Task
+alwaysApply: true
+globs: ["documentation/tasks/*.md"]
+---
+# 💎 DIAMOND TASK: [TASK-NAME]
+
+---
+task_id: [YYYYMMDD-XX]             
+status: OPEN                        
+assigned_to: [JANUS-ARCHITECT/CURSOR-DEV]       
+confidence_level: [HIGH/MEDIUM/LOW]
+created_at: [YYYY-MM-DD HH:MM]
+updated_at: [YYYY-MM-DD HH:MM]
+completion_gate:
+  tests: false                      
+  audit_trail: false                
+  lessons_learned: false            
+---
+
+# 1️⃣ Task Description
+- Kurzbeschreibung des Ziels (Feature/Bug/Refactor)
+
+# 2️⃣ Requirements / Acceptance Criteria
+- [ ] Kriterium 1
+- [ ] Kriterium 2
+
+# 3️⃣ Implementation Notes
+- Architektur-Referenz: `backend/data/schemas.py` 
+- Modell-Prio: [Modell-Name aus 01_foundation]
+- Pacing: [70/30 Budget-Check]
+
+# 4️⃣ Audit Trail (Minimalist-Log)
+| Datum | Status | Änderung | Verantwortlich | Bemerkung |
+| :--- | :--- | :--- | :--- | :--- |
+| [YYYY-MM-DD] | OPEN | Task initialisiert | Janus | Initial |
+
+# 5️⃣ Lessons Learned (Loop-Back)
+- *Wird nach Abschluss oder Escalation gefüllt*
+
+# 6️⃣ Checkliste Completion Gate (Rule: 04)
+- [ ] Tests grün (Linter + Unit-Tests)
+- [ ] Audit-Trail im Tabellenformat aktualisiert
+- [ ] Lessons Learned (falls nötig) extrahiert

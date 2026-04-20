@@ -1,0 +1,33 @@
+{
+  "filename": "15.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "hellviolett-grau",
+    "FRISUR": "sehr kurz, Pixie-Schnitt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "große goldene Metallbrille",
+    "SCHMUCK": "kleine Ohrstecker",
+    "OUTERWEAR": "rosa Kapuzenpullover",
+    "KLEIDUNG": "rosa Hoodie mit weißem Aufdruck 'Freundin'",
+    "LEGWEAR": "blaue Jeans",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau steht aufrecht vor einem geschmückten Weihnachtsbaum und lächelt leicht.",
+    "AMBIENTE_SATZ": "Ein wohnlicher Innenraum mit einem großen, festlich beleuchteten Tannenbaum im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "rosa Hoodie",
+      "Aufdruck Freundin",
+      "goldene Brille",
+      "Weihnachtsbaum",
+      "blaue Lichterkette",
+      "blaue Jeans"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Schuhe sichtbar"
+    ]
+  }
+}

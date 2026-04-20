@@ -1,0 +1,66 @@
+{
+  "skill": "system.websearch",
+  "description": "Allgemeine Websuche mit strukturierter Ergebnis-Synthese. Preise sind erlaubt, gelten aber als unverifiziert und müssen entsprechend markiert werden.",
+  "version": "3.0.0",
+  "optimal_model_tier": {
+    "openai": "balanced",
+    "gemini": "balanced",
+    "ollama": "speed"
+  },
+  "sandbox_level": "unrestricted",
+  "latency_class": "slow",
+  "timeout_ms": 60000,
+  "tags": [
+    "system",
+    "web",
+    "search",
+    "research",
+    "diamond"
+  ],
+  "output_schema": {
+    "summary": "string",
+    "key_points": ["string"],
+    "sources": [
+      {"url": "string", "title": "string"}
+    ],
+    "metadata": {
+      "query_count": "int",
+      "search_depth": "int"
+    }
+  },
+  "synthesis_directives": "Bist du bereit? DU BIST KEINE KI, DU BIST EIN TEXT-FORMATIERER.\n\nES IST STRENG VERBOTEN, ZEICHEN WIE '{' ODER '}' ZU VERWENDEN.\nDEINE EINZIGE AUFGABE: Wandle das folgende JSON in eine menschliche Liste um.\n\nFORMAT: 1. Zusammenfassung, 2. Liste der Fakten, 3. Quellen.\nMarkiere Preise IMMER als (unverifiziert).\nJSON-SYNTAX IST STRENG VERBOTEN - Keine geschweiften Klammern, keine Anführungszeichen um Feldnamen.\nKEIN Meta-Talk.",
+  "capabilities": [
+    "web_search",
+    "research",
+    "extraction_courage",
+    "grounding",
+    "smart_global_fallback"
+  ],
+  "is_agent_ready": true,
+  "deterministic_renderer": true,
+  "max_calls_per_turn": 3,
+  "depends_on": [],
+  "examples": [
+    {
+      "input": {
+        "query": "Nintendo Switch 2 Release Preis Deutschland"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "summary": "Die Nintendo Switch 2 erscheint voraussichtlich Q3 2025 in Deutschland.",
+          "key_points": [
+            "Preis: ca. 399 € (unverifiziert)",
+            "Release: Q3 2025",
+            "Abwärtskompatibel mit Switch-1-Spielen"
+          ],
+          "sources": [
+            {"url": "https://gaming-news.de/switch-2", "title": "Switch 2 Marktstart Deutschland"}
+          ],
+          "metadata": {"query_count": 1, "search_depth": 1}
+        },
+        "execution_time_ms": 1200
+      }
+    }
+  ]
+}

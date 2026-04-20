@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "schulterlang, leicht gewellt",
+    "OUTERWEAR": "dunkelgrauer Oversize-Cardigan",
+    "KLEIDUNG": "grauer, grobstolliger Strickpullover",
+    "LEGWEAR": "dunkle, leicht zerrissene Jeans",
+    "SCHUH_SATZ": "schwarze Lederstiefel mit dicker Profilsohle",
+    "POSE_SATZ": "Sie sitzt mit einem angewinkelten Bein auf einem Stuhl, sie stützt das Gesicht mit der Hand und blickt entspannt zur Kamera.",
+    "AMBIENTE_SATZ": "Helles Loft-Studio mit Glasfront und neutralem Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Full Body", "Mixed Materials", "Clothing Details"],
+    "AUSSCHLUSS_PFLICHT": ["Mehrere Personen", "Outdoor"],
+    "NOTIZ": "Kombiniert Strick, Denim und Lederboots – entspricht dem Mixed-Materials-Brief."
+  }
+}

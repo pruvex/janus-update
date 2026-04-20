@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Erwachsener",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "weißes T-Shirt",
+    "KLEIDUNG": "weißes T-Shirt",
+    "LEGWEAR": "schwarze Jogginghose",
+    "SCHUH_SATZ": "Weiße Sneaker",
+    "POSE_SATZ": "Er steht mit leicht gespreizten Beinen und Blick in Richtung Kamera vor neutralem Hintergrund.",
+    "AMBIENTE_SATZ": "Hellgrauer Studiohintergrund ohne Requisiten.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Neutral Background", "Full Body", "Clothing Details"],
+    "AUSSCHLUSS_PFLICHT": ["Outdoor", "Mehrere Personen"],
+    "NOTIZ": "Minimalistische Studioaufnahme, Fokus auf Basic-Look."
+  }
+}

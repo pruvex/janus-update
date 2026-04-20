@@ -1,0 +1,32 @@
+{
+  "filename": "40.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "lavendel-grau",
+    "FRISUR": "kurz, fransig geschnitten",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "rote Vollrandbrille",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "weißes Oberteil mit dunkelblauem Blumenmuster",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt frontal und mit einem neutralen Gesichtsausdruck direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Ein heller Innenraum mit einer weißen Wand und einer Zimmerecke im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "rote Vollrandbrille",
+      "lavendel-graues Haar",
+      "gemustertes Oberteil",
+      "kurze Frisur",
+      "helle Wand"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Kette sichtbar"
+    ]
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "legacy_name": "system_grant_permission",
+  "skill": "system.grant_permission",
+  "description": "Erteilt eine dauerhafte Freigabe für einen bestimmten Skill, sodass dieser künftig ohne Rückfrage ausgeführt werden darf.",
+  "version": "1.1.0",
+  "sandbox_level": "unrestricted",
+  "latency_class": "fast",
+  "timeout_ms": 5000,
+  "tags": [
+    "system",
+    "security",
+    "permissions",
+    "policy"
+  ],
+  "capabilities": [
+    "policy_write",
+    "security_override"
+  ],
+  "is_agent_ready": false,
+  "deterministic_renderer": true,
+  "max_calls_per_turn": 1,
+  "depends_on": [],
+  "examples": [
+    {
+      "input": {
+        "skill_id": "communication.read_email"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "skill_id": "communication.read_email",
+          "action": "granted",
+          "permission_state": "always_allow",
+          "already_present": false
+        },
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "skill_id": "nonexistent.skill"
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "SKILL_NOT_FOUND",
+          "message": "Skill 'nonexistent.skill' ist nicht registriert."
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Erwachsener",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz und strukturiert",
+    "OUTERWEAR": "hellblaues Denim-Hemd",
+    "KLEIDUNG": "weiße T-Shirt-Schichten unter dem Shirt",
+    "LEGWEAR": "hellblaue, leicht destroyed Jeans",
+    "SCHUH_SATZ": "Weiße Sneaker",
+    "POSE_SATZ": "Er lehnt entspannt auf einer Treppe und blickt nach oben.",
+    "AMBIENTE_SATZ": "Urbanes Outdoor-Setting mit Beton und Edelstahlgeländer.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Denim-Shirt", "Jeans", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Hoodie", "Kleid", "Gehstock"],
+    "NOTIZ": "Layering mit Denim-Hemd und Jeans erfüllt den Denim-on-Denim Brief trotz kleinem weißen T-Shirt darunter."
+  }
+}

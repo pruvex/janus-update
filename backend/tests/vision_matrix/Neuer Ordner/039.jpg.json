@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz und wellig",
+    "OUTERWEAR": "dunkelgrauer Cardigan",
+    "KLEIDUNG": "burgunderfarbenes Rollkragen-Sweater",
+    "LEGWEAR": "dunkle Chinohose",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Sneaker.",
+    "POSE_SATZ": "Die Person steht auf einem nassen Zebrastreifen und schaut zur Seite.",
+    "AMBIENTE_SATZ": "Städtische Abendstimmung mit beleuchteten Straßenkreuzungen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Cardigan", "Sweater", "Chinohose", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Anzug", "High Heels", "Kapuze"]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "TEINT": "gebräunten",
+    "AUGEN": "dunkel",
+    "HAARFARBE": "Die Haare sind dunkelbraun",
+    "HAAR_STRUKTUR": "glatt",
+    "KLEIDUNG": "schwarzes Kompressionsshirt",
+    "MATERIAL": "Funktionsgewebe",
+    "POSE_SATZ": "Die Person ist in einer dynamischen Vorwärtsbewegung beim Laufen eingefangen, die Haut ist schweißgebadet.",
+    "AMBIENTE_SATZ": "Die Szene spielt in einem Stadion unter hellem Flutlicht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Schweiß", "Kompressionsshirt", "Laufen", "Flutlicht"],
+    "AUSSCHLUSS_PFLICHT": ["Hemd", "Sakko"]
+  }
+}

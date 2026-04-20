@@ -1,0 +1,18 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "TEINT": "hell",
+    "AUGEN": "blau",
+    "HAARFARBE": "Die Haare sind hellbraun",
+    "FRISUR": "kurz und wellig",
+    "HAAR_STRUKTUR": "wellig",
+    "BART": "Dreitagebart",
+    "KLEIDUNG": "schwarzes Pailletten-Sakko über schwarzem T-Shirt",
+    "MATERIAL": "Pailletten",
+    "POSE_SATZ": "Die Person steht frontal zur Kamera und blickt den Betrachter ruhig an.",
+    "AMBIENTE_SATZ": "Die Szene ist nachts in ein urbanes Setting eingebettet, das vom bunten Schein von Neonreklamen erhellt wird.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Pailletten", "Neon", "Sakko"],
+    "AUSSCHLUSS_PFLICHT": ["Leder", "Tageslicht"]
+  }
+}

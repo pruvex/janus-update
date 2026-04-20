@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "dunkelbraune Haare",
+    "FRISUR": "glatt und offen",
+    "OUTERWEAR": "hellblaue Jeansjacke",
+    "KLEIDUNG": "hellblaues Top",
+    "LEGWEAR": "hellblaue Jeans",
+    "SCHUH_SATZ": "Dazu trägt sie weiße Sneaker mit leichtem Plateau.",
+    "POSE_SATZ": "Die Person sitzt seitlich auf einer blauen Mauer und stützt das Kinn auf die Hand.",
+    "AMBIENTE_SATZ": "Farbenfrohe Outdoor-Szene mit klarer Tageslichtstimmung.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Jeansjacke", "Top", "Jeans", "Weiße Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Hohe Absätze", "Hoodie", "Schwarze Schuhe", "Rollkragen"]
+  }
+}

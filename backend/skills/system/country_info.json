@@ -1,0 +1,96 @@
+{
+  "legacy_name": "get_country_info_tool",
+  "skill": "system.country_info",
+  "description": "Liefert verifizierte Basisdaten zu einem Land (Name, Hauptstadt, Bevölkerung, Region, Währungen, Sprachen). Dieser Skill ist die primäre Quelle für Länderfakten. Nutze ihn immer zuerst bei Fragen zu Staaten und greife NICHT auf Websuche als Ersatz zurück, solange die Anfrage ein Land betrifft.",
+  "version": "1.1.1",
+  "sandbox_level": "unrestricted",
+  "latency_class": "normal",
+  "timeout_ms": 10000,
+  "tags": ["system", "geography", "reference", "facts"],
+  "capabilities": ["country_lookup", "reference_lookup", "demographic_lookup"],
+  "is_agent_ready": true,
+  "deterministic_renderer": true,
+  "max_calls_per_turn": 2,
+  "depends_on": [],
+  "examples": [
+    {
+      "input": {
+        "country": "Japan",
+        "language": "de"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "name": "Japan",
+          "capital": "Tokio",
+          "population": 125100000,
+          "region": "Asia",
+          "currencies": ["Japanischer Yen (JPY)"],
+          "languages": ["Japanisch"]
+        },
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "country": "France",
+        "language": "en"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "name": "France",
+          "capital": "Paris",
+          "population": 68000000,
+          "region": "Europe",
+          "currencies": ["Euro (EUR)"],
+          "languages": ["French"]
+        },
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "country": "Nimmerland",
+        "language": "de"
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "Keine Daten für das Land 'Nimmerland' gefunden."
+        }
+      }
+    },
+    {
+      "input": {
+        "country": "",
+        "language": "de"
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "INVALID_INPUT",
+          "message": "Der Parameter 'country' darf nicht leer sein."
+        }
+      }
+    },
+    {
+      "input": {
+        "country": "Japan",
+        "language": "de"
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "API_ERROR",
+          "message": "Die Länder-Datenbank ist derzeit nicht erreichbar.",
+          "details": "Read timed out"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "legacy_name": "find_free_time_slots",
+  "skill": "calendar.find_slots",
+  "version": "1.0.0",
+  "sandbox_level": "unrestricted",
+  "latency_class": "normal",
+  "tags": [
+    "calendar"
+  ],
+  "capabilities": [
+    "calendar_read",
+    "availability_lookup"
+  ],
+  "is_agent_ready": true,
+  "max_calls_per_turn": 3,
+  "depends_on": [],
+  "examples": []
+}

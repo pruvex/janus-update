@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "blond",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "burgunderfarbener Blazer",
+    "KLEIDUNG": "burgunderfarbene Weste",
+    "LEGWEAR": "blaue Jeans",
+    "SCHUH_SATZ": "Leopardmuster Pumps",
+    "POSE_SATZ": "Sie steht mit Tasche am Arm im Garten und blickt lächelnd zur Kamera.",
+    "AMBIENTE_SATZ": "Garten mit herbstlicher Vegetation, Tageslicht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Bag", "Layered Clothing"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "No Bag"],
+    "NOTIZ": "Layering aus Blazer + Weste, Tasche gut sichtbar."
+  }
+}

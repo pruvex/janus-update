@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "lockig",
+    "OUTERWEAR": "beige Jacke",
+    "KLEIDUNG": "weißes Top",
+    "LEGWEAR": "jeans",
+    "SCHUH_SATZ": "braune Stiefeletten",
+    "POSE_SATZ": "Sie steht mit Tasche an einer modernen Fassadenwand und blickt zur Seite.",
+    "AMBIENTE_SATZ": "Städtische Szenerie mit Glas und Stein.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Bag", "Layered Clothing", "Full Body", "Outdoor"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "No Bag"],
+    "NOTIZ": "Layering aus Jacke und Top, Tasche in der Hand; entspricht Brief."
+  }
+}

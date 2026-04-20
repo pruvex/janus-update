@@ -1,0 +1,18 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "TEINT": "hell",
+    "AUGEN": "dunkel",
+    "HAARFARBE": "Die Haare sind dunkelbraun",
+    "FRISUR": "kurz und wuschelig",
+    "HAAR_STRUKTUR": "wellig",
+    "OUTERWEAR": "dunkle Daunenjacke",
+    "LEGWEAR": "beige Cargo-Hose",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Sneaker.",
+    "POSE_SATZ": "Die Person hockt am Boden und bindet sich konzentriert die Schuhe.",
+    "AMBIENTE_SATZ": "Die Szene spielt in einem herbstlichen Park mit trockenem Laub auf dem Boden.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Hocke", "Schuhe binden", "Laub", "Daunenjacke"],
+    "AUSSCHLUSS_PFLICHT": ["Stehen", "Sommer"]
+  }
+}

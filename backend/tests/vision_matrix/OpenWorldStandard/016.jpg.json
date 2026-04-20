@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "HAARFARBE": "rote Haare",
+    "FRISUR": "kurz und nach hinten gestylt",
+    "OUTERWEAR": "dunkelgrüner Strickpullover",
+    "KLEIDUNG": "heller Rollkragenpullover",
+    "LEGWEAR": "hellbeige Cordhose",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Slip-on Sneaker mit hellgrünem Detail.",
+    "POSE_SATZ": "Der Mann steht entspannt mit den Händen in den Taschen und blickt direkt zur Kamera.",
+    "AMBIENTE_SATZ": "Neutraler Studiohintergrund mit heller Wand und Holzboden.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Strickpullover", "Rollkragenpullover", "Cordhose", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Mehrere Personen", "Regen", "Nacht", "Hoodie"]
+  }
+}

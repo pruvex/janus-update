@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "graue Steppjacke",
+    "KLEIDUNG": "klassisches Hemd",
+    "LEGWEAR": "blaue Jeans",
+    "SCHUH_SATZ": "Schwarze Ballerinas",
+    "POSE_SATZ": "Sie geht auf einem Zebrastreifen direkt auf die Kamera zu, die Hände in den Taschen.",
+    "AMBIENTE_SATZ": "Stadtstraße mit Autos und typischen Straßenschildern.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Steppjacke", "Jeans", "Ballerinas"],
+    "AUSSCHLUSS_PFLICHT": ["Shorts", "Sneaker", "Hoodie"],
+    "NOTIZ": "Full body walking pose, Fokus auf Bewegung in urbaner Crosswalk-Szene."
+  }
+}

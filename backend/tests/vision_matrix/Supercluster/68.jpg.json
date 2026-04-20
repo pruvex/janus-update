@@ -1,0 +1,14 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "Die Haare sind braun",
+    "KLEIDUNG": "floral gemustertes Kleid",
+    "PRINT": "floral",
+    "TASCHE_SATZ": "Dazu trägt sie einen kleinen braunen Lederrucksack.",
+    "POSE_SATZ": "Die Person schiebt ein Fahrrad über einen sonnigen Gehweg.",
+    "AMBIENTE_SATZ": "Die Szene spielt an einem sonnigen Tag in einer Allee.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Fahrrad", "Rucksack", "floral"],
+    "AUSSCHLUSS_PFLICHT": ["Hose", "Regen"]
+  }
+}

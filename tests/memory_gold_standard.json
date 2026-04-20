@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Text-Check: Haustier-Name",
+    "input_user": "Mein Hund heißt Pody.",
+    "input_assistant": "Das ist ein schöner Name!",
+    "expected_subject": "pody",
+    "expected_canonical_contains": "pody:pet"
+  },
+  {
+    "name": "Vision-Check: Personen-Merkmal",
+    "input_user": "Das ist Thomas.",
+    "input_assistant": "[VISION ANALYSE]: Die Person trägt eine schwarze Brille.",
+    "expected_subject": "thomas",
+    "expected_canonical_contains": "thomas:person"
+  }
+]

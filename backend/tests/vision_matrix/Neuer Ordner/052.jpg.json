@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "blond",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "schwarzer Sakko",
+    "KLEIDUNG": "hellblaues Hemd",
+    "LEGWEAR": "blaue, leicht gewaschene Jeans",
+    "SCHUH_SATZ": "Braune Loafer",
+    "POSE_SATZ": "Er läuft durch die Stadt, Blick leicht zur Seite, ein Tablet unter dem Arm.",
+    "AMBIENTE_SATZ": "Städtische Straße mit Autos und Backsteinfassaden im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Sakko", "gestreiftes Hemd", "Jeans", "Loafer", "graue Krawatte mit weißen Punkten"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Kapuze", "Sporthose"]
+  }
+}

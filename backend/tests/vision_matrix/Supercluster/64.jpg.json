@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "AUGEN": "graublau",
+    "HAARFARBE": "Die Haare sind blond",
+    "HAAR_STRUKTUR": "wellig",
+    "KLEIDUNG": "blaues Jeanshemd unter hellblauer Jeansjacke",
+    "LEGWEAR": "dunkelblaue Jeans",
+    "MATERIAL": "Denim",
+    "SCHUH_SATZ": "Dazu trägt sie weiße Sneaker.",
+    "POSE_SATZ": "Die Person steht aufrecht mit den Händen in den Hosentaschen in einer nassen Gasse.",
+    "AMBIENTE_SATZ": "Die Szene spielt in einer urbanen Gasse nach dem Regen, der Asphalt ist nass.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Denim", "Jeansjacke", "nasser Asphalt"],
+    "AUSSCHLUSS_PFLICHT": ["Mantel", "Sonne"]
+  }
+}

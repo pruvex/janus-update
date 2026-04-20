@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "kurz und lässig",
+    "OUTERWEAR": "schwarze Lederjacke",
+    "KLEIDUNG": "schwarzes Shirt und dunkle Jeans",
+    "LEGWEAR": "dunkle Jeans",
+    "SCHUH_SATZ": "Dazu trägt er Sneaker mit buntem Muster.",
+    "POSE_SATZ": "Die Person schreitet über eine nasse Pflasterstraße in urbaner Kulisse.",
+    "AMBIENTE_SATZ": "Städtische Straße mit Altbauten und parkenden Autos.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Lederjacke", "Jeans", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Anzug", "Hochhackige Schuhe", "Sporttasche"]
+  }
+}

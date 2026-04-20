@@ -1,0 +1,16 @@
+{
+    "expected": {
+        "GESCHLECHT": "Mann",
+        "ALTER": "junger Mann",
+        "TEINT": "hell",
+        "HAARFARBE": "Die Haare sind braun",
+        "FRISUR": "kurz und zerzaust",
+        "OUTERWEAR": "grauer Hoodie",
+        "LEGWEAR": "beige Cargo-Hose",
+        "SCHUH_SATZ": "Dazu trägt er weiße Sneaker.",
+        "POSE_SATZ": "Die Person ist mitten in einem Sprung in der Luft eingefangen, die Beine sind angewinkelt.",
+        "AMBIENTE_SATZ": "Die Szene spielt in einem grünen Park unter einem bewölkten Himmel.",
+        "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Sprung", "Hoodie", "Cargo-Hose", "in der Luft"],
+        "AUSSCHLUSS_PFLICHT": ["Stehen", "Sitzen", "Anzug"]
+    }
+}

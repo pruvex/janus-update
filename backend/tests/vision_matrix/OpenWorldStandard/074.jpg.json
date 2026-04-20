@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "leicht hochgesteckt",
+    "OUTERWEAR": "weißes Oversize-Hemd",
+    "KLEIDUNG": "blaues Top",
+    "LEGWEAR": "denim Shorts",
+    "SCHUH_SATZ": "Weiße Sandalen",
+    "POSE_SATZ": "Sie lehnt entspannt mit dem Rücken an einer Wand und schaut auf ihr Smartphone.",
+    "AMBIENTE_SATZ": "Städtischer Fußweg vor einem hellen Gebäude.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Lehnt an Wand", "Stadt", "Smartphone", "Sandalen"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "Heels", "Rücken zur Kamera"],
+    "NOTIZ": "Urbane Wand mit leichtem Portraitstil - passt zum Brief."
+  }
+}

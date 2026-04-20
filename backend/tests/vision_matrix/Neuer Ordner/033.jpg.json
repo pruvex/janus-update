@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "schulterlang",
+    "OUTERWEAR": "schwarze Lederjacke",
+    "KLEIDUNG": "schwarzes Shirt",
+    "LEGWEAR": "dunkle Jeans",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Boots.",
+    "POSE_SATZ": "Die Person steht auf einer urbanen Straße und blickt zur Seite.",
+    "AMBIENTE_SATZ": "Straße mit Palmen und urbanen Versorgungseinrichtungen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Lederjacke", "Jeans", "Boots"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Anzug", "Hut"]
+  }
+}

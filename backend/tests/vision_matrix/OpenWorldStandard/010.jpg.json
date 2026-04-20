@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "hellbraune Haare",
+    "FRISUR": "kurz und ordentlich",
+    "OUTERWEAR": "dunkelblaues Sakko",
+    "KLEIDUNG": "hellblaues Hemd",
+    "LEGWEAR": "graue Chinohose",
+    "GUERTEL_SATZ": "Er trägt einen cognacfarbenen Ledergürtel mit goldener Schnalle.",
+    "SCHUH_SATZ": "Dazu trägt er braune Lederschuhe.",
+    "POSE_SATZ": "Der Mann steht selbstbewusst auf einem Weg im Park und hat eine Hand in der Hosentasche.",
+    "AMBIENTE_SATZ": "Parkweg mit Rasen und Bäumen im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["dunkelblaues Sakko", "hellblaues Hemd", "graue Chinohose", "Ledergürtel", "braune Schuhe"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Jeans", "Sportjacke", "Mütze"]
+  }
+}

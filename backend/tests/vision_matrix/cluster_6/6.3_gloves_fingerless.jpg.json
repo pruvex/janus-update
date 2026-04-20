@@ -1,0 +1,11 @@
+{
+  "expected": {
+    "ALTER": "junger Mann",
+    "TEINT": "gebräunten",
+    "AUGEN": "braun",
+    "HAARFARBE": "dunkelbraunen",
+    "HAAR_STRUKTUR": "lockig",
+    "BART_SATZ": " Zudem trägt er einen Bart.",
+    "HANDSCHUH_SATZ": " Dazu trägt die Person fingerlose Handschuhe."
+  }
+}

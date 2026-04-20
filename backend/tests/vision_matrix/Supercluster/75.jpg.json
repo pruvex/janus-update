@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "TEINT": "gebräunten",
+    "AUGEN": "braun",
+    "HAARFARBE": "Die Haare sind blond",
+    "FRISUR": "Pferdeschwanz",
+    "HAAR_STRUKTUR": "glatt",
+    "KLEIDUNG": "braunes Sport-Top",
+    "LEGWEAR": "braune Leggings",
+    "POSE_SATZ": "Die Person steht mit erhobenen Armen da und streckt sich.",
+    "AMBIENTE_SATZ": "Das Porträt wurde vor einem neutralen Hintergrund mit hellem Studio-Licht aufgenommen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Pferdeschwanz", "Sport-Top", "Leggings", "Studio"],
+    "AUSSCHLUSS_PFLICHT": ["Kleid", "offene Haare"]
+  }
+}

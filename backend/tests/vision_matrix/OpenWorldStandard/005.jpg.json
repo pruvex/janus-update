@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "hellblonde Haare",
+    "FRISUR": "lang und wellig",
+    "OUTERWEAR": "hellgrauer Mantel",
+    "KLEIDUNG": "beiger Strickpullover über weißem Hemd",
+    "LEGWEAR": "schwarze Lederhose",
+    "MATERIAL": "Leder und Strick",
+    "SCHUH_SATZ": "Dazu trägt sie weiße High-Top-Sneaker (Stoffschuhe).",
+    "POSE_SATZ": "Die Person steht lächelnd in einer Wohnstraße und blickt leicht zur Seite.",
+    "AMBIENTE_SATZ": "Eine ruhige Allee mit parkenden Autos und Stadthäusern im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Lederhose", "grauer Mantel", "Strickpullover", "weiße Sneaker", "Lächeln"],
+    "AUSSCHLUSS_PFLICHT": ["Jeans", "schwarze Schuhe", "kurze Haare", "Regen", "Sonnenbrille"]
+  }
+}

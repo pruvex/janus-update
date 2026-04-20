@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "",
+    "KLEIDUNG": "schwarzes T-Shirt",
+    "LEGWEAR": "schwarze Chinohose",
+    "SCHUH_SATZ": "Dazu trägt er weiße Sneaker.",
+    "POSE_SATZ": "Der Mann geht über einen Zebrastreifen und schaut seitlich, während der Verkehr vorbeirollt.",
+    "AMBIENTE_SATZ": "Städtische Kreuzung mit Verkehrskontakt im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["T-Shirt", "Chinohose", "Weiße Sneaker", "Zebrastreifen"],
+    "AUSSCHLUSS_PFLICHT": ["Anzug", "High Heels", "Sporttasche"]
+  }
+}

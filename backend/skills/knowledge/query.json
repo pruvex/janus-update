@@ -1,0 +1,19 @@
+{
+  "legacy_name": "query_knowledge_base",
+  "skill": "knowledge.query",
+  "version": "1.0.0",
+  "sandbox_level": "read_only_fs",
+  "latency_class": "normal",
+  "tags": [
+    "knowledge"
+  ],
+  "capabilities": [
+    "document_analysis",
+    "semantic_search",
+    "fact_lookup"
+  ],
+  "is_agent_ready": true,
+  "max_calls_per_turn": 3,
+  "depends_on": [],
+  "examples": []
+}

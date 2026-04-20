@@ -1,0 +1,34 @@
+{
+  "filename": "45.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "lang, wellig, hochgesteckter Zopf mit Pony",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "Halskette mit Strasssteinen, Ohrhänger mit Strasssteinen, glitzerndes Armband",
+    "OUTERWEAR": "weiße Strickjacke mit Perlenbesatz",
+    "KLEIDUNG": "schwarzes transparentes Oberteil, schwarzer kurzer Rock",
+    "LEGWEAR": "schwarzer Rock (nicht sichtbar, ob Hose/Strumpfhose darunter)",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "Haarspange im Zopf",
+    "POSE_SATZ": "Die Frau steht lächelnd und frontal in die Kamera, mit leicht angewinkelten Armen.",
+    "AMBIENTE_SATZ": "Ein festlich dekorierter Innenraum mit einem beleuchteten Weihnachtsbaum im Hintergrund und einer Stehlampe am Rand.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "weiße Strickjacke mit Perlen",
+      "schwarzes transparentes Oberteil",
+      "Strass-Halskette",
+      "Strass-Ohrhänger",
+      "beleuchteter Weihnachtsbaum",
+      "hochgesteckte Frisur mit Pony"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Schuhe sichtbar"
+    ]
+  }
+}

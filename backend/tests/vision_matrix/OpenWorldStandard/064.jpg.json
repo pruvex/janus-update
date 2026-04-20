@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz und zurückgekämmt",
+    "OUTERWEAR": "beiger Mantel",
+    "KLEIDUNG": "dunkler Rollkragenpullover",
+    "LEGWEAR": "dunkle Nadelstreifenhose",
+    "SCHUH_SATZ": "Braune Oxfords",
+    "POSE_SATZ": "Er geht mit Blick nach unten über eine Stadtstraße direkt auf die Kamera zu.",
+    "AMBIENTE_SATZ": "Urbanes Stadtbild mit Stahltor und Laternen, leicht nasse Straße.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Mantel", "Rollkragenpullover", "Anzughose", "Oxford-Schuhe"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Shorts", "Kapuzenpullover"],
+    "NOTIZ": "Full-body walk mit Bewegung Richtung Kamera, dezente Lichtreflexe auf der Straße."
+  }
+}

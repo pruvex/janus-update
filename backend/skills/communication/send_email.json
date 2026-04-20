@@ -1,0 +1,18 @@
+{
+  "legacy_name": "send_email",
+  "skill": "communication.send_email",
+  "version": "1.0.0",
+  "sandbox_level": "unrestricted",
+  "latency_class": "normal",
+  "tags": [
+    "communication"
+  ],
+  "capabilities": [
+    "mail_write",
+    "external_send"
+  ],
+  "is_agent_ready": true,
+  "max_calls_per_turn": 1,
+  "depends_on": [],
+  "examples": []
+}

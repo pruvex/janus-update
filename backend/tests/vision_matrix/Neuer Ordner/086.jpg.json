@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "schwarz",
+    "FRISUR": "lang",
+    "OUTERWEAR": "grauer Wollmantel",
+    "KLEIDUNG": "graues Kleid mit Kapuze",
+    "LEGWEAR": "schwarze Leggings",
+    "SCHUH_SATZ": "Weißgraue Sneaker",
+    "POSE_SATZ": "Sie steht frontal vor einem geschwungenen Betonbauwerk und blickt leicht nach oben.",
+    "AMBIENTE_SATZ": "Monolithische Betonarchitektur mit fließenden Kurven, strenges Licht.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Beton", "Full Body", "Urban", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Holz", "Natur", "High Heels"],
+    "NOTIZ": "Stehend vor modernem Betonbau, entspricht Brief vollständig."
+  }
+}

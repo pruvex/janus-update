@@ -1,0 +1,33 @@
+{
+  "filename": "37.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz, mit Pony",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "Brille mit rötlich-braunem Gestell",
+    "SCHMUCK": "kleine Ohrringe",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "grauer Pullover",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau blickt für ein Selfie mit neutralem Gesichtsausdruck direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Innenraum mit einer hellen Wand und einer Dekoration im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "grauer Pullover",
+      "rötlich-braunes Brillengestell",
+      "braune Haare mit Pony",
+      "kleine Ohrstecker",
+      "weiße Wand",
+      "Wanddekoration"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Sonnenbrille"
+    ]
+  }
+}

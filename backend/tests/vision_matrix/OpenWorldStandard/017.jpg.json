@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "dunkelbraune Haare",
+    "FRISUR": "kurz und gepflegt",
+    "OUTERWEAR": "langes camel-farbenes Mantel",
+    "KLEIDUNG": "burgunderfarbenes Rollkragenpullover",
+    "LEGWEAR": "dunkelblaue Chinohose",
+    "SCHUH_SATZ": "Dazu trägt er schwarze Lederschuhe aus Glattleder.",
+    "POSE_SATZ": "Der Mann steht leicht seitlich vor einem neutralen Hintergrund und hält den Mantel geöffnet.",
+    "AMBIENTE_SATZ": "Studioaufbau mit weißem Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Mantel", "Rollkragenpullover", "Chinohose", "Lederschuhe"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Jeans", "T-Shirt", "Kapuze"]
+  }
+}

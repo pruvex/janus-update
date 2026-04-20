@@ -1,0 +1,14 @@
+{
+    "expected": {
+        "GESCHLECHT": "Mann",
+        "ALTER": "erwachsener Mann",
+        "TEINT": "hell",
+        "HAARFARBE": "Die Haare sind dunkelbraun",
+        "KLEIDUNG": "weißes Polohemd",
+        "SCHMUCK": "silberne Armbanduhr",
+        "POSE_SATZ": "Die Person hält ein großes Sandwich mit beiden Händen direkt vor ihr Gesicht und ist im Begriff hineinzubeißen.",
+        "AMBIENTE_SATZ": "Die Person sitzt an einem Tisch in einem Café im Freien.",
+        "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Sandwich", "Essen", "Armbanduhr", "Polohemd"],
+        "AUSSCHLUSS_PFLICHT": ["Trinken", "Smartphone", "Krawatte"]
+    }
+}

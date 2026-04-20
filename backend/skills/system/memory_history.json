@@ -1,0 +1,47 @@
+{
+  "legacy_name": "get_memory_history",
+  "skill": "memory.history",
+  "id": "memory_history",
+  "name": "Zeige Memory-Verlauf",
+  "description": "Zeigt den Änderungsverlauf einer Erinnerung an (Audit-Trail).",
+  "version": "2.0.0",
+  "category": "memory",
+  "risk_level": "low",
+  "parameters": {
+    "type": "object",
+    "required": ["memory_id"],
+    "properties": {
+      "memory_id": {
+        "type": "integer",
+        "description": "ID der Memory (von memory_read)"
+      }
+    }
+  },
+  "response_schema": {
+    "type": "object",
+    "properties": {
+      "memory_id": {"type": "integer"},
+      "history": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "timestamp": {"type": "string"},
+            "action": {"type": "string"},
+            "old_snippet": {"type": "string"},
+            "source": {"type": "string"}
+          }
+        }
+      },
+      "current_state": {
+        "type": "object",
+        "properties": {
+          "fact": {"type": "string"},
+          "priority": {"type": "number"},
+          "category": {"type": "string"},
+          "tags": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

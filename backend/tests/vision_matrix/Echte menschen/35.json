@@ -1,0 +1,33 @@
+{
+  "filename": "35.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junges Alter",
+    "HAARFARBE": "dunkelblond",
+    "FRISUR": "lang, offen und glatt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "Brille",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "schwarze Steppjacke",
+    "KLEIDUNG": "schwarze Leggings",
+    "LEGWEAR": "schwarze Leggings",
+    "SCHUH_SATZ": "schwarze Winterschuhe",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau vollführt eine akrobatische Dehnübung, bei der sie auf einem Bein im Schnee balanciert und das andere Bein senkrecht in die Höhe streckt.",
+    "AMBIENTE_SATZ": "Eine winterliche Küstenlandschaft mit Eisflächen und Schnee am Ufer eines Gewässers unter klarem, blauem Himmel.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarze Steppjacke",
+      "schwarze Leggings",
+      "Eisschollen",
+      "schwarze Winterstiefel",
+      "blaues Wasser",
+      "Brille"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "kein Schal"
+    ]
+  }
+}

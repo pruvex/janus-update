@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "dunkelbraune Haare",
+    "FRISUR": "kurz und gepflegt",
+    "OUTERWEAR": "",
+    "KLEIDUNG": "hellblaues Button-down-Hemd mit hochgekrempelten Ärmeln",
+    "LEGWEAR": "braune Chinohose",
+    "GUERTEL_SATZ": "Er trägt einen geflochtenen Leder-Gürtel mit Metallschließe.",
+    "SCHUH_SATZ": "Weiße Sneaker mit beige-braunen Akzenten.",
+    "POSE_SATZ": "Der Mann lehnt entspannt an einem Metallgeländer und lächelt in die Kamera.",
+    "AMBIENTE_SATZ": "Helle Büroterrasse mit Glasfassade und Betonboden.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["hellblaues Hemd", "braune Chinohose", "geflochtener Gürtel", "Sneaker", "Geländer"],
+    "AUSSCHLUSS_PFLICHT": ["Anzug", "Jeans", "Hoodie", "Mütze"]
+  }
+}

@@ -1,0 +1,183 @@
+{
+  "query_knowledge_base": {
+    "skill": "knowledge.query",
+    "capabilities": ["document_analysis", "semantic_search", "fact_lookup"]
+  },
+  "open_knowledge_document": {
+    "skill": "knowledge.open_document",
+    "capabilities": ["document_navigation", "ui_open"]
+  },
+  "get_full_document_text": {
+    "skill": "knowledge.read_full_text",
+    "capabilities": ["document_read", "fulltext_extraction"]
+  },
+  "edit_pdf_text_in_place": {
+    "skill": "knowledge.edit_pdf",
+    "capabilities": ["document_edit", "correction_batch"]
+  },
+  "list_knowledge_documents": {
+    "skill": "knowledge.list_documents",
+    "capabilities": ["document_inventory", "knowledge_discovery"]
+  },
+  
+  "create_file": {
+    "skill": "filesystem.create_file",
+    "capabilities": ["file_write", "workspace_mutation"]
+  },
+  "read_file": {
+    "skill": "filesystem.read_file",
+    "capabilities": ["file_read", "workspace_inspection"]
+  },
+  "delete_file": {
+    "skill": "filesystem.delete_file",
+    "capabilities": ["file_delete", "workspace_mutation"]
+  },
+  "list_directory": {
+    "skill": "filesystem.list_directory",
+    "capabilities": ["file_read", "workspace_discovery"]
+  },
+  "list_allowed_workspaces": {
+    "skill": "filesystem.list_workspaces",
+    "capabilities": ["workspace_discovery", "policy_scope_read"]
+  },
+  "create_directory": {
+    "skill": "filesystem.create_directory",
+    "capabilities": ["directory_create", "workspace_mutation"]
+  },
+  "delete_directory": {
+    "skill": "filesystem.delete_directory",
+    "capabilities": ["directory_delete", "workspace_mutation"]
+  },
+  "move_file": {
+    "skill": "filesystem.move_file",
+    "capabilities": ["file_move", "workspace_mutation"]
+  },
+  "move_files": {
+    "skill": "filesystem.move_files",
+    "capabilities": ["file_move", "bulk_operation"]
+  },
+  "rename_file": {
+    "skill": "filesystem.rename_file",
+    "capabilities": ["file_rename", "workspace_mutation"]
+  },
+  
+  "get_latest_news_rss": {
+    "skill": "system.rss_news",
+    "capabilities": ["news_fetch", "web_read"]
+  },
+  "scrape_website": {
+    "skill": "system.scrape_website",
+    "capabilities": ["web_scrape", "web_read"]
+  },
+  "get_weather_from_api_tool": {
+    "skill": "system.weather",
+    "capabilities": ["weather_lookup", "api_read"]
+  },
+  "get_wikipedia_summary": {
+    "skill": "system.wikipedia_summary",
+    "capabilities": ["reference_lookup", "web_read"]
+  },
+  "perform_websearch": {
+    "skill": "system.websearch",
+    "capabilities": ["web_search", "research"]
+  },
+  "get_distance_and_route_tool": {
+    "skill": "system.routing",
+    "capabilities": ["routing", "location_lookup"]
+  },
+  "find_local_business_tool": {
+    "skill": "system.local_business",
+    "capabilities": ["local_search", "location_lookup"]
+  },
+  "get_country_info_tool": {
+    "skill": "system.country_info",
+    "capabilities": ["country_lookup", "reference_lookup"]
+  },
+  "create_pdf_from_markdown": {
+    "skill": "system.create_pdf",
+    "capabilities": ["document_generation", "file_write"]
+  },
+  "save_mp3_tool": {
+    "skill": "system.save_mp3",
+    "capabilities": ["audio_generation", "file_write"]
+  },
+  "generate_image_tool": {
+    "skill": "system.generate_image",
+    "capabilities": ["image_generation", "media_generation"]
+  },
+  "system_grant_permission": {
+    "skill": "system.grant_permission",
+    "capabilities": ["policy_write", "security_override"]
+  },
+  "system_revoke_permission": {
+    "skill": "system.revoke_permission",
+    "capabilities": ["policy_write", "security_override"]
+  },
+  
+  "get_calendar_events": {
+    "skill": "calendar.list_events",
+    "capabilities": ["calendar_read", "schedule_lookup"]
+  },
+  "create_calendar_event": {
+    "skill": "calendar.create_event",
+    "capabilities": ["calendar_write", "schedule_mutation"]
+  },
+  "delete_calendar_event": {
+    "skill": "calendar.delete_event",
+    "capabilities": ["calendar_write", "schedule_mutation"]
+  },
+  "update_calendar_event": {
+    "skill": "calendar.update_event",
+    "capabilities": ["calendar_write", "schedule_mutation"]
+  },
+  "find_free_time_slots": {
+    "skill": "calendar.find_slots",
+    "capabilities": ["calendar_read", "availability_lookup"]
+  },
+  "update_calendar_event_description": {
+    "skill": "calendar.update_event_description",
+    "capabilities": ["calendar_write", "schedule_mutation"]
+  },
+  "find_and_update_calendar_event": {
+    "skill": "calendar.find_and_update_event",
+    "capabilities": ["calendar_write", "schedule_mutation"]
+  },
+  "find_address_and_update_calendar_event": {
+    "skill": "calendar.find_address_and_update_event",
+    "capabilities": ["calendar_write", "schedule_mutation"]
+  },
+  
+  "get_latest_emails": {
+    "skill": "communication.list_emails",
+    "capabilities": ["mail_read", "inbox_lookup"]
+  },
+  "read_email": {
+    "skill": "communication.read_email",
+    "capabilities": ["mail_read", "inbox_lookup"]
+  },
+  "send_email": {
+    "skill": "communication.send_email",
+    "capabilities": ["mail_write", "external_send"]
+  },
+  "create_or_update_contact_tool": {
+    "skill": "contacts.create_or_update",
+    "capabilities": ["contact_write", "addressbook_mutation"]
+  },
+  "list_contacts_wrapper": {
+    "skill": "contacts.list",
+    "capabilities": ["contact_read", "addressbook_lookup"]
+  },
+  "delete_contact_by_id_wrapper": {
+    "skill": "contacts.delete",
+    "capabilities": ["contact_write", "addressbook_mutation"]
+  },
+  "find_contact_and_send_email_wrapper": {
+    "skill": "communication.find_contact_and_email",
+    "capabilities": ["mail_write", "contact_lookup"]
+  },
+  
+  "search_past_conversation_summaries_tool": {
+    "skill": "memory.search_summaries",
+    "capabilities": ["memory_read", "history_lookup"]
+  }
+}

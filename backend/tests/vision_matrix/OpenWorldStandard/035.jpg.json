@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "blond",
+    "FRISUR": "leicht gewellt",
+    "OUTERWEAR": "schwarze Lederjacke",
+    "KLEIDUNG": "schwarzes Top",
+    "LEGWEAR": "schwarze Jeans",
+    "SCHUH_SATZ": "Dazu trägt sie weiße Sneaker.",
+    "POSE_SATZ": "Die Person spaziert durch eine Innenstadt mit Taschen in der Hand.",
+    "AMBIENTE_SATZ": "Urbanes Geschäftsviertel mit Gebäude im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Lederjacke", "Jeans", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["High Heels", "Anzug", "Hut"]
+  }
+}

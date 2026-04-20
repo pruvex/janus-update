@@ -1,0 +1,32 @@
+{
+  "filename": "13.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "braun-grau meliert",
+    "FRISUR": "schulterlang, stark gelockt mit hellgrauen Strähnen",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "keine Brille",
+    "SCHMUCK": "nicht sichtbar",
+    "OUTERWEAR": "keine",
+    "KLEIDUNG": "schwarzer, grob gestrickter Pullover mit weitem Ausschnitt",
+    "LEGWEAR": "nicht sichtbar",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "nicht sichtbar",
+    "POSE_SATZ": "Die Frau neigt den Kopf leicht zur Seite und blickt mit einem sanften Lächeln direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Innenraum mit einer Holztür und Wanddekoration im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "schwarzer Strickpullover",
+      "grau melierte Locken",
+      "blaue Augen",
+      "Holztür",
+      "Zimmerpflanze am Rand"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille",
+      "kein Bart",
+      "keine Kopfbedeckung"
+    ]
+  }
+}

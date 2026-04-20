@@ -1,0 +1,162 @@
+{
+  "1.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine ältere Frau",
+    "TEINT": "hell",
+    "AUGEN": "braun",
+    "HAARFARBE": "braune Haare",
+    "FRISUR": "Kurz, glatt, Seitenscheitel",
+    "FRISUR_SATZ": "Die Haare sind kurz, glatt und werden seitlich gescheitelt."
+  },
+  "2.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "ein älterer Mann",
+    "TEINT": "hell",
+    "AUGEN": "blau",
+    "HAARFARBE": "graue Haare",
+    "FRISUR": "Sehr kurz, Stirnglatze, Haarkranz",
+    "FRISUR_SATZ": "Die Haare sind sehr kurz geschnitten, mit einer ausgeprägten Stirnglatze und einem kurzen Haarkranz an den Seiten und am Hinterkopf."
+  },
+  "3.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine Frau mittleren Alters",
+    "TEINT": "hell",
+    "AUGEN": "blau",
+    "HAARFARBE": "blonde Haare",
+    "FRISUR": "Schulterlang, glatt, Mittelscheitel",
+    "FRISUR_SATZ": "Die Haare sind schulterlang, glatt und werden mit einem Mittelscheitel offen getragen."
+  }
+  ,"4.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine ältere Frau",
+    "TEINT": "hell",
+    "AUGEN": "grün",
+    "HAARFARBE": "graue Haare",
+    "FRISUR": "Lang, gewellt, Seitenscheitel, gestuft",
+    "FRISUR_SATZ": "Die Haare sind über schulterlang, leicht gewellt, gestuft geschnitten und fallen voluminös mit einem Seitenscheitel offen herab."
+  },
+  "5.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "ein Mann mittleren Alters",
+    "TEINT": "hell",
+    "AUGEN": "braun",
+    "HAARFARBE": "braune Haare",
+    "FRISUR": "Sehr kurz, Buzzcut, rasiert",
+    "FRISUR_SATZ": "Die Haare sind extrem kurz geschoren und als Buzzcut fast kahl rasiert."
+  },
+  "6.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine Frau mittleren Alters",
+    "TEINT": "hell",
+    "AUGEN": "blau",
+    "HAARFARBE": "braune Haare",
+    "FRISUR": "Schulterlang, lockig, Seitenscheitel",
+    "FRISUR_SATZ": "Die Haare sind schulterlang, voluminös gelockt, von hellen Strähnen durchzogen und werden mit einem Seitenscheitel offen getragen."
+  }
+  ,"7.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine ältere Frau",
+    "TEINT": "hell",
+    "AUGEN": "blau",
+    "HAARFARBE": "blonde Haare",
+    "FRISUR": "Kurz, glatt, mit Pony",
+    "FRISUR_SATZ": "Die Haare sind kurz, leicht gestuft und werden mit einem fransigen Pony in der Stirn getragen."
+  }
+  ,"8.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine ältere Frau",
+    "TEINT": "hell",
+    "AUGEN": "blau",
+    "HAARFARBE": "blonde Haare",
+    "FRISUR": "Kurz, locker, nach hinten frisiert",
+    "FRISUR_SATZ": "Die Haare sind kurz geschnitten und am Oberkopf voluminös und locker nach hinten frisiert."
+  }
+  ,"9.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine Frau mittleren Alters",
+    "TEINT": "hell",
+    "AUGEN": "braun",
+    "HAARFARBE": "graue Haare",
+    "FRISUR": "Kurz, gestuft, Seitenscheitel",
+    "FRISUR_SATZ": "Die Haare sind kurz, fransig gestuft und werden mit einem Seitenscheitel voluminös getragen."
+  }
+  ,"10.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine ältere Frau",
+    "TEINT": "hell",
+    "AUGEN": "grün",
+    "HAARFARBE": "braune Haare",
+    "FRISUR": "Lang, glatt, mit Pony",
+    "FRISUR_SATZ": "Die Haare sind sehr lang, glatt und werden offen mit einem Pony in der Stirn getragen."
+  }
+  ,"11.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine Frau mittleren Alters",
+    "TEINT": "hell",
+    "AUGEN": "nicht erkennbar",
+    "HAARFARBE": "blonde Haare",
+    "FRISUR": "Hochgesteckt, lockig, voluminös",
+    "FRISUR_SATZ": "Die Haare sind lockig, voluminös und werden aus dem Gesicht nach hinten zu einer lockeren Hochsteckfrisur getragen."
+  }
+  ,"12.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine Frau mittleren Alters",
+    "TEINT": "hell",
+    "AUGEN": "blau",
+    "HAARFARBE": "schwarze Haare",
+    "FRISUR": "Halblang, glatt, mit Pony",
+    "FRISUR_SATZ": "Die Haare sind halblang, glatt und werden offen mit einem ins Gesicht fallenden Pony getragen."
+  }
+  ,"13.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine Frau mittleren Alters",
+    "TEINT": "hell",
+    "AUGEN": "braun",
+    "HAARFARBE": "braune Haare",
+    "FRISUR": "Hochgesteckt, Dutt, locker",
+    "FRISUR_SATZ": "Die Haare sind am Oberkopf zu einem hohen, lockeren Dutt zusammengebunden."
+  }
+  ,"14.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "ein Mann mittleren Alters",
+    "TEINT": "hell",
+    "AUGEN": "braun",
+    "HAARFARBE": "schwarze Haare",
+    "FRISUR": "Kurz, voluminös, nach hinten frisiert",
+    "FRISUR_SATZ": "Die Haare sind kurz, dicht und werden am Oberkopf voluminös nach hinten frisiert getragen."
+  }
+  ,"15.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine ältere Frau",
+    "TEINT": "hell",
+    "AUGEN": "braun",
+    "HAARFARBE": "blonde Haare",
+    "FRISUR": "Hochgesteckt, mit Pony, locker",
+    "FRISUR_SATZ": "Die Haare sind locker nach hinten gebunden, mit einem vollen Pony, der in die Stirn fällt."
+  }
+  ,"16.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine Frau mittleren Alters",
+    "TEINT": "hell",
+    "AUGEN": "braun",
+    "HAARFARBE": "blonde Haare",
+    "FRISUR": "Kurz, glatt, Seitenscheitel",
+    "FRISUR_SATZ": "Die Haare sind zu einem glatten, gestuften Kurzhaarschnitt mit Seitenscheitel frisiert."
+  }
+  ,"17.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine ältere Frau",
+    "TEINT": "hell",
+    "AUGEN": "braun",
+    "HAARFARBE": "weiße Haare",
+    "FRISUR": "Kurz, lockig, voluminös, mit Pony",
+    "FRISUR_SATZ": "Die Haare sind kurz, lockig und voluminös geschnitten, mit einem vollen Pony, der die Stirn bedeckt."
+  }
+  ,"18.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+    "TEINT": "hell",
+    "AUGEN": "blau",
+    "HAARFARBE": "rote Haare",
+    "FRISUR": "Lang, glatt, Seitenscheitel",
+    "FRISUR_SATZ": "Die Haare sind lang, glatt und werden offen mit einem leichten Seitenscheitel getragen."
+  }
+  ,"19.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine junge Frau",
+    "TEINT": "hell",
+    "AUGEN": "braun",
+    "HAARFARBE": "hellbraune Haare",
+    "FRISUR": "Schulterlang, lockig, gestuft",
+    "FRISUR_SATZ": "Die Haare sind schulterlang, lockig, gestuft und werden voluminös und offen getragen."
+  }
+  ,"20.jpg": {
+    "ALTER_GESCHLECHT_SATZ": "eine Frau mittleren Alters",
+    "TEINT": "hell",
+    "AUGEN": "braun",
+    "HAARFARBE": "blonde Haare",
+    "FRISUR": "Lang, glatt, zurückgebunden",
+    "FRISUR_SATZ": "Die Haare sind lang, glatt und werden streng aus dem Gesicht nach hinten gebunden."
+  }
+}

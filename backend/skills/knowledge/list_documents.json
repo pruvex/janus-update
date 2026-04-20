@@ -1,0 +1,18 @@
+{
+  "legacy_name": "list_knowledge_documents",
+  "skill": "knowledge.list_documents",
+  "version": "1.0.0",
+  "sandbox_level": "read_only_fs",
+  "latency_class": "normal",
+  "tags": [
+    "knowledge"
+  ],
+  "capabilities": [
+    "document_inventory",
+    "knowledge_discovery"
+  ],
+  "is_agent_ready": true,
+  "max_calls_per_turn": 3,
+  "depends_on": [],
+  "examples": []
+}

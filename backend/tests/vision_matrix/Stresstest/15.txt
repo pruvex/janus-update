@@ -1,0 +1,206 @@
+textContent before marked.parse: ...
+chat.js:496 textNode.innerHTML after marked.parse: <p>...</p>
+
+localhost/:1 Access to fetch at 'http://127.0.0.1:8001/api/costs/dashboard' from origin 'http://localhost:5173' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
+app.js:42 
+        
+        
+       GET http://127.0.0.1:8001/api/costs/dashboard net::ERR_FAILED 500 (Internal Server Error)
+window.fetch @ app.js:42
+await in window.fetch (async)
+(anonymous) @ @sentry_browser.js?v=9df485b1:10922
+window.fetchCostData @ cost-visualizer.js:134
+(anonymous) @ chat.js:298
+Show 1 more frame
+Show less
+cost-visualizer.js:152 Error fetching cost data: TypeError: Failed to fetch
+    at window.fetch (app.js:42:16)
+    at async window.fetchCostData (cost-visualizer.js:134:33)
+
+[start-backend-only] INFO:     127.0.0.1:49492 - "GET /api/costs/dashboard HTTP/1.1" 500 Internal Server Error
+[start-backend-only] ERROR:    Exception in ASGI application
+[start-backend-only] Traceback (most recent call last):
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 411, in run_asgi
+[start-backend-only]     result = await app(  # type: ignore[func-returns-value]
+[start-backend-only]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 69, in __call__
+[start-backend-only]     return await self.app(scope, receive, send)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\fastapi\applications.py", line 1134, in __call__
+[start-backend-only]     await super().__call__(scope, receive, send)
+[start-backend-only]   File "C:\python311\Lib\site-packages\sentry_sdk\integrations\starlette.py", line 416, in _sentry_patched_asgi_app
+[start-backend-only]     return await middleware(scope, receive, send)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\python311\Lib\site-packages\sentry_sdk\integrations\asgi.py", line 170, in _run_asgi3
+[start-backend-only]     return await self._run_app(scope, receive, send, asgi_version=3)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\python311\Lib\site-packages\sentry_sdk\integrations\asgi.py", line 262, in _run_app
+[start-backend-only]     raise exc from None
+[start-backend-only]   File "C:\python311\Lib\site-packages\sentry_sdk\integrations\asgi.py", line 257, in _run_app
+[start-backend-only]     return await self.app(
+[start-backend-only]            ^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\starlette\applications.py", line 113, in __call__
+[start-backend-only]     await self.middleware_stack(scope, receive, send)
+[start-backend-only]   File "C:\python311\Lib\site-packages\sentry_sdk\integrations\starlette.py", line 164, in _create_span_call
+[start-backend-only]     return await old_call(app, scope, receive, send, **kwargs)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+[start-backend-only]     raise exc
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+[start-backend-only]     await self.app(scope, receive, _send)
+[start-backend-only]   File "C:\python311\Lib\site-packages\sentry_sdk\integrations\starlette.py", line 164, in _create_span_call
+[start-backend-only]     return await old_call(app, scope, receive, send, **kwargs)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\starlette\middleware\cors.py", line 93, in __call__
+[start-backend-only]     await self.simple_response(scope, receive, send, request_headers=headers)
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\starlette\middleware\cors.py", line 144, in simple_response
+[start-backend-only]     await self.app(scope, receive, send)
+[start-backend-only]   File "C:\python311\Lib\site-packages\sentry_sdk\integrations\starlette.py", line 303, in _sentry_exceptionmiddleware_call
+[start-backend-only]     await old_call(self, scope, receive, send)
+[start-backend-only]   File "C:\python311\Lib\site-packages\sentry_sdk\integrations\starlette.py", line 164, in _create_span_call
+[start-backend-only]     return await old_call(app, scope, receive, send, **kwargs)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+[start-backend-only]     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+[start-backend-only]     raise exc
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+[start-backend-only]     await app(scope, receive, sender)
+[start-backend-only]   File "C:\python311\Lib\site-packages\sentry_sdk\integrations\starlette.py", line 164, in _create_span_call
+[start-backend-only]     return await old_call(app, scope, receive, send, **kwargs)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+[start-backend-only]     await self.app(scope, receive, send)
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\starlette\routing.py", line 716, in __call__
+[start-backend-only]     await self.middleware_stack(scope, receive, send)
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\starlette\routing.py", line 736, in app
+[start-backend-only]     await route.handle(scope, receive, send)
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\starlette\routing.py", line 290, in handle
+[start-backend-only]     await self.app(scope, receive, send)
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\fastapi\routing.py", line 125, in app
+[start-backend-only]     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+[start-backend-only]     raise exc
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+[start-backend-only]     await app(scope, receive, sender)
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\fastapi\routing.py", line 111, in app
+[start-backend-only]     response = await f(request)
+[start-backend-only]                ^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\python311\Lib\site-packages\sentry_sdk\integrations\fastapi.py", line 132, in _sentry_app
+[start-backend-only]     return await old_app(*args, **kwargs)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\fastapi\routing.py", line 391, in app
+[start-backend-only]     raw_response = await run_endpoint_function(
+[start-backend-only]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+[start-backend-only]     return await dependant.call(**values)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\api\routers\system.py", line 94, in get_costs_dashboard
+[start-backend-only]     cost = crud.get_costs_for_month(db, today.year, today.month)  # Updated to use crud with db parameter
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\data\crud.py", line 493, in get_costs_for_month
+[start-backend-only]     ).all()
+[start-backend-only]       ^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+[start-backend-only]     return self._iter().all()  # type: ignore
+[start-backend-only]            ^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+[start-backend-only]     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+[start-backend-only]                                                   ^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+[start-backend-only]     return self._execute_internal(
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2239, in _execute_internal
+[start-backend-only]     conn = self._connection_for_bind(bind)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2108, in _connection_for_bind
+[start-backend-only]     return trans._connection_for_bind(engine, execution_options)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "<string>", line 2, in _connection_for_bind
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+[start-backend-only]     ret_value = fn(self, *arg, **kw)
+[start-backend-only]                 ^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1187, in _connection_for_bind
+[start-backend-only]     conn = bind.connect()
+[start-backend-only]            ^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3277, in connect
+[start-backend-only]     return self._connection_cls(self)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 143, in __init__
+[start-backend-only]     self._dbapi_connection = engine.raw_connection()
+[start-backend-only]                              ^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3301, in raw_connection
+[start-backend-only]     return self.pool.connect()
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 447, in connect
+[start-backend-only]     return _ConnectionFairy._checkout(self)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1264, in _checkout
+[start-backend-only]     fairy = _ConnectionRecord.checkout(pool)
+[start-backend-only]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 711, in checkout
+[start-backend-only]     rec = pool._do_get()
+[start-backend-only]           ^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 166, in _do_get
+[start-backend-only]     raise exc.TimeoutError(
+[start-backend-only] sqlalchemy.exc.TimeoutError: QueuePool limit of size 5 overflow 10 reached, connection timed out, timeout 30.00 (Background on this error at: https://sqlalche.me/e/20/3o7r)
+[start-backend-only] 2026-02-19 17:02:52 - janus_backend - [INFO] - Loading model catalog from AppData: C:\Users\pruve\AppData\Roaming\Janus Projekt\model_catalog.json
+[start-backend-only] 2026-02-19 17:02:52 - janus_backend - [INFO] - --- ORCHESTRATOR START (Goldstandard-Architektur) ---
+[start-backend-only] 2026-02-19 17:02:52 - janus_backend - [INFO] - API-Key-Fingerprint (openai): sk-pr...P1iwA
+[start-backend-only] 2026-02-19 17:02:52 - janus_backend - [INFO] - 📸 Bild-Check: has_image=True
+[start-backend-only] 2026-02-19 17:03:22 - janus_backend - [ERROR] - Error in chat endpoint: QueuePool limit of size 5 overflow 10 reached, connection timed out, timeout 30.00 (Background on this error at: https://sqlalche.me/e/20/3o7r)
+[start-backend-only] Traceback (most recent call last):
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\api\routers\chat.py", line 50, in chat
+[start-backend-only]     return await orchestrator.handle_chat_request(request)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\services\chat_orchestrator.py", line 327, in handle_chat_request
+[start-backend-only]     chat_row = crud.get_chat_by_id(self.db, request.chat_id)
+[start-backend-only]                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\data\crud.py", line 66, in get_chat_by_id
+[start-backend-only]     return db.query(models.Chat).filter(models.Chat.id == chat_id).first()
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
+[start-backend-only]     return self.limit(1)._iter().first()  # type: ignore
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+[start-backend-only]     result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+[start-backend-only]                                                   ^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+[start-backend-only]     return self._execute_internal(
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2239, in _execute_internal
+[start-backend-only]     conn = self._connection_for_bind(bind)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2108, in _connection_for_bind
+[start-backend-only]     return trans._connection_for_bind(engine, execution_options)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "<string>", line 2, in _connection_for_bind
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+[start-backend-only]     ret_value = fn(self, *arg, **kw)
+[start-backend-only]                 ^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1187, in _connection_for_bind
+[start-backend-only]     conn = bind.connect()
+[start-backend-only]            ^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3277, in connect
+[start-backend-only]     return self._connection_cls(self)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 143, in __init__
+[start-backend-only]     self._dbapi_connection = engine.raw_connection()
+[start-backend-only]                              ^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3301, in raw_connection
+[start-backend-only]     return self.pool.connect()
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 447, in connect
+[start-backend-only]     return _ConnectionFairy._checkout(self)
+[start-backend-only]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1264, in _checkout
+[start-backend-only]     fairy = _ConnectionRecord.checkout(pool)
+[start-backend-only]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 711, in checkout
+[start-backend-only]     rec = pool._do_get()
+[start-backend-only]           ^^^^^^^^^^^^^^
+[start-backend-only]   File "C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 166, in _do_get
+[start-backend-only]     raise exc.TimeoutError(
+[start-backend-only] sqlalchemy.exc.TimeoutError: QueuePool limit of size 5 overflow 10 reached, connection timed out, timeout 30.00 (Background on this error at: https://sqlalche.me/e/20/3o7r)
+[start-backend-only]
+[start-backend-only] INFO:     127.0.0.1:49777 - "POST /api/chat HTTP/1.1" 500 Internal Server Error

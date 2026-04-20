@@ -1,0 +1,18 @@
+{
+  "legacy_name": "read_email",
+  "skill": "communication.read_email",
+  "version": "1.0.0",
+  "sandbox_level": "unrestricted",
+  "latency_class": "normal",
+  "tags": [
+    "communication"
+  ],
+  "capabilities": [
+    "mail_read",
+    "inbox_lookup"
+  ],
+  "is_agent_ready": true,
+  "max_calls_per_turn": 3,
+  "depends_on": [],
+  "examples": []
+}

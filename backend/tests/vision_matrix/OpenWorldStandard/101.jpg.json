@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "dunkel",
+    "FRISUR": "lang und nass",
+    "OUTERWEAR": "schwarzer Trenchcoat",
+    "KLEIDUNG": "beiges Top",
+    "LEGWEAR": "weite Jeans",
+    "SCHUH_SATZ": "Weiße Sneaker",
+    "POSE_SATZ": "Sie hält eine Zeitung über dem Kopf, während sie durch den Regen läuft und nach vorne schaut.",
+    "AMBIENTE_SATZ": "Feuchte Straßenfläche mit Reflexionen, verschwommene Lichter, leichte Dämmerung.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Regen", "Single Person", "Nasse Straße", "Full Body", "Urban"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "Trockenes Wetter"],
+    "NOTIZ": "Light rain, wet street, natural mood—keine weiteren Personen im Fokus."
+  }
+}

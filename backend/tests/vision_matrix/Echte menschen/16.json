@@ -1,0 +1,33 @@
+{
+  "filename": "16.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "reiferes Alter",
+    "HAARFARBE": "weiß-grau",
+    "FRISUR": "kurz, gepflegt geschnitten",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "braune Vollrandbrille",
+    "SCHMUCK": "Hörgerät am rechten Ohr sichtbar",
+    "OUTERWEAR": "mintgrüner Kapuzenpullover mit kleinem Ankermuster",
+    "KLEIDUNG": "mintgrüner Hoodie",
+    "LEGWEAR": "dunkelblaue Jeans",
+    "SCHUH_SATZ": "nicht sichtbar",
+    "ZUBEHOER_SATZ": "kleiner, wuscheliger brauner Hund auf dem Schoß",
+    "POSE_SATZ": "Die Frau sitzt lächelnd auf einem braunen Sofa und hält einen kleinen Hund im Arm.",
+    "AMBIENTE_SATZ": "Wohnzimmer mit Sofa, Stehlampe, einer Wanduhr und Bildern an der Wand.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "mintgrüner Hoodie",
+      "Ankermuster",
+      "braune Brille",
+      "kleiner Hund",
+      "braunes Sofa",
+      "Stehlampe"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "kein Bart",
+      "keine Kopfbedeckung",
+      "keine Tasche"
+    ]
+  }
+}

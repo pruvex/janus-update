@@ -1,0 +1,12 @@
+{
+   "expected": {
+     "ALTER": "junge Frau",
+     "GESCHLECHT": "Frau",
+     "TEINT": "dunkel",
+     "AUGEN": "braun",
+     "HAARFARBE": "schwarzen",
+     "HAAR_STRUKTUR": "lockig",
+     "AUDIO_HARDWARE": "large over-ear headphones",
+     "ZUBEHOER_SATZ": " Zudem trägt die Person große Over-Ear-Kopfhörer."
+   }
+ }

@@ -1,0 +1,11 @@
+﻿{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "blonden",
+    "HAAR_STRUKTUR": "glatt",
+    "AUGEN": "blau",
+    "TEINT": "hell",
+    "HALSKMUCK": "silbernen Anhänger"
+  }
+}

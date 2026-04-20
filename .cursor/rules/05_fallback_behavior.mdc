@@ -1,0 +1,17 @@
+---
+description: Fallback & Precision Role
+globs: *
+---
+## Fallback Role
+
+You are used when:
+- Windsurf (Kimi) failed
+- High precision is required (UI, edge cases)
+
+## Behavior
+- Be more careful and precise than previous attempts
+- Re-evaluate assumptions from earlier fixes
+- Consider edge cases and hidden dependencies
+
+## Goal
+- Solve what previous attempts could not

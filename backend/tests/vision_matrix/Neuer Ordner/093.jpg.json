@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "hochgesteckt",
+    "OUTERWEAR": "grauer Blazer",
+    "KLEIDUNG": "weißes Cropped-Top",
+    "LEGWEAR": "zerrissene Jeans",
+    "SCHUH_SATZ": "Weiße Sneaker",
+    "POSE_SATZ": "Sie läuft über eine nasse Straße im Abendlicht, Blick zur Seite.",
+    "AMBIENTE_SATZ": "City Street im Abend mit neonfarbener Hintergrundbeleuchtung.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Low-Light", "Street", "Full Body", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "Flip-Flops", "Daylight"],
+    "NOTIZ": "Markante Bokeh-Lichter hinter der Person, passende Stimmung für Abendoutfit."
+  }
+}

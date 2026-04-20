@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "hochgebunden",
+    "OUTERWEAR": "weißes Hemdkleid",
+    "KLEIDUNG": "weißes Hemdkleid",
+    "LEGWEAR": "frei",
+    "SCHUH_SATZ": "Schwarze Combat Boots",
+    "POSE_SATZ": "Sie steht in frontale, mit erhobenem Arm vor einer Betonwand und schaut seitlich zur Kamera.",
+    "AMBIENTE_SATZ": "Rauer Beton mit sichtbaren Schalungsdetails, modern urban.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Beton", "Full Body", "Urban", "Boots"],
+    "AUSSCHLUSS_PFLICHT": ["Holz", "Gras", "High Heels"],
+    "NOTIZ": "Stehend vor massiver Betonwand; modern."
+  }
+}

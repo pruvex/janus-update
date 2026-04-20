@@ -1,0 +1,15 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "TEINT": "gebräunten",
+    "AUGEN": "dunkel",
+    "HAARFARBE": "Die Haare sind dunkel",
+    "KLEIDUNG": "nasses weißes T-Shirt",
+    "LEGWEAR": "schwarze Shorts",
+    "POSE_SATZ": "Die Person steht mit nasser Kleidung am Rand eines Pools.",
+    "AMBIENTE_SATZ": "Die Person befindet sich an einem hellen Pool unter der gleißenden Mittagssonne.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["nasses T-Shirt", "Pool", "Wasser", "Sonne"],
+    "AUSSCHLUSS_PFLICHT": ["trocken", "Mantel"]
+  }
+}

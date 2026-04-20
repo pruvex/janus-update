@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "blonde Haare",
+    "FRISUR": "lang und leicht gewellt",
+    "OUTERWEAR": "cremefarbener Blazer",
+    "KLEIDUNG": "",
+    "LEGWEAR": "hellblaue Jeans",
+    "SCHUH_SATZ": "Dazu trägt sie elegante beige High Heels.",
+    "POSE_SATZ": "Die Person lehnt an einem Metallgeländer in einer urbanen Straße.",
+    "AMBIENTE_SATZ": "Moderne urbane Architektur mit Glasfassaden im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["cremefarbener Blazer", "hellblaue Jeans", "High Heels", "Geländer", "roter Lippenstift"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Mantel", "kurze Haare", "Schal", "Sonnenbrille"]
+  }
+}

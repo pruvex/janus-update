@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "",
+    "HAARFARBE": "",
+    "FRISUR": "",
+    "OUTERWEAR": "",
+    "KLEIDUNG": "",
+    "LEGWEAR": "graue",
+    "ZUBEHOER_SATZ": "schwarze Sonnenbrille",
+    "SCHUH_SATZ": "schwarze Stiefel",
+    "POSE_SATZ": "",
+    "AMBIENTE_SATZ": "",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Sonnenbrille", "Stiefel"],
+    "AUSSCHLUSS_PFLICHT": ["Rock", "Sneaker"]
+  }
+}

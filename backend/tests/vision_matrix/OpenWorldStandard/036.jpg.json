@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "leicht gewellt",
+    "OUTERWEAR": "cremefarbener Cardigan",
+    "KLEIDUNG": "rosa Knit Sweater",
+    "LEGWEAR": "klassische blaue Jeans",
+    "SCHUH_SATZ": "Dazu trägt sie weiße Chunky-Sneaker.",
+    "POSE_SATZ": "Die Person steht locker vor einem Café und schaut direkt in die Kamera.",
+    "AMBIENTE_SATZ": "Städtische Straßenszene mit Bistro-Tischen im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Cardigan", "Sweater", "Jeans", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["High Heels", "Regenschirm", "Too-bright Lighting"]
+  }
+}

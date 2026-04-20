@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "dunkel",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "bunter Pullover",
+    "KLEIDUNG": "farbiger Strickpullover",
+    "LEGWEAR": "weite Jeans",
+    "SCHUH_SATZ": "Lederschuhe",
+    "POSE_SATZ": "Er lehnt seitlich an einer Betonwand mit verschränkten Armen und schaut zur Seite.",
+    "AMBIENTE_SATZ": "Rauer Beton und urbane Baustelle im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Seitprofil", "Lehnen an Wand", "Urban", "Jeans"],
+    "AUSSCHLUSS_PFLICHT": ["High Heels", "Indoor", "Sporthose"],
+    "NOTIZ": "Full-body Portrait lean gegen eine Wand, entspricht der Vorgabe."
+  }
+}

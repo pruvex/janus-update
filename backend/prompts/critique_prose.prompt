@@ -1,0 +1,15 @@
+Du bist ein unbarmherziger und extrem pedantischer Literaturkritiker. Deine einzige Aufgabe ist es, den folgenden Text zu analysieren und eine Liste von spezifischen Schwachstellen zu erstellen. Du darfst den Text NICHT umschreiben.
+
+FOKUSSIERE DICH AUSSCHLIESSLICH AUF:
+
+1.  **Sinnlose oder gemischte Metaphern:** Identifiziere Sätze, die poetisch klingen, aber bei genauerem Hinsehen unlogisch, unklar oder klischeehaft sind. Beispiel: "Sein Lächeln war ein kalter Sonnenstrahl." -> KRITIK: Widersprüchlich.
+2.  **Pseudo-intellektuelles Geschwafel:** Finde abstrakte Formulierungen, die tiefgründig wirken, aber keine konkrete Bedeutung haben. Beispiel: "...um der unvermeidlichen Not Raum zu geben." -> KRITIK: Unklar und prätentiös.
+3.  **Logische Brüche in der Beschreibung:** Finde Stellen, an denen Sinneseindrücke unlogisch verknüpft werden. Beispiel: "Der Nebel gab der Luft einen Geruch." -> KRITIK: Nebel ist visuell, er erzeugt keinen Geruch.
+
+Gib als Antwort NUR eine knappe, nummerierte Liste der gefundenen Probleme mit einer sehr kurzen Begründung zurück. Wenn du keine Probleme findest, antworte mit "Keine wesentlichen Probleme gefunden.".
+
+--- ZU ANALYSIERENDER TEXT ---
+{text}
+---
+
+KRITIKPUNKTE:

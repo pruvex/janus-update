@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "lang und glatt",
+    "OUTERWEAR": "schwarzer Parka",
+    "KLEIDUNG": "grauer Pullover",
+    "LEGWEAR": "blue jeans",
+    "SCHUH_SATZ": "Schwarze Sneaker",
+    "POSE_SATZ": "Sie überquert ruhig den Zebrastreifen und schaut auf ihr Smartphone.",
+    "AMBIENTE_SATZ": "Urbaner Straßenzug mit Graffiti-Wänden und Laternenpfosten.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Zebrastreifen", "Urban", "Full Body", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "High Heels", "Radfahrer"],
+    "NOTIZ": "Candid Fußgängerin beim Crossing; Blick aufs Handy."
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "HAARFARBE": "blond",
+    "FRISUR": "kurz und gewellt",
+    "OUTERWEAR": "hellblaue Jeansjacke",
+    "KLEIDUNG": "weißes T-Shirt",
+    "LEGWEAR": "helle Jeanshose",
+    "SCHUH_SATZ": "Dazu trägt er weiße Sneaker mit grauen Akzenten.",
+    "POSE_SATZ": "Die Person sitzt gespannt vor einer dunklen Wand und schaut nach unten.",
+    "AMBIENTE_SATZ": "Urbanes Straßeneck mit minimalistischem Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Jeansjacke", "T-Shirt", "Jeanshose", "weiße Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Hose mit auffälligem Muster", "Bundhose", "Stiefel", "Blazer"]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "blond",
+    "FRISUR": "kurz, leicht zur Seite gekämmt",
+    "OUTERWEAR": "hellgrauer Blazer",
+    "KLEIDUNG": "weiß-schwarz gestreiftes Shirt",
+    "LEGWEAR": "olivgrüne Chinohose",
+    "SCHUH_SATZ": "Grau-weiße Sneaker",
+    "POSE_SATZ": "Er lehnt mit einem Bein am gelben Putz und schaut lässig in die Kamera.",
+    "AMBIENTE_SATZ": "Verwitterte Hauswand mit gemischten Farben, sonnige Gassenkulisse.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Blazer", "gestreiftes Shirt", "Chinohose", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Anzughose", "High Heels", "Hoodie"]
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "legacy_name": "scrape_website",
+  "skill": "system.scrape_website",
+  "description": "Liest den Textinhalt einer Webseite herunter und extrahiert den Haupttext. Für Ollama wird der Content auf 1000 Zeichen begrenzt.",
+  "version": "1.1.0",
+  "sandbox_level": "unrestricted",
+  "latency_class": "normal",
+  "timeout_ms": 15000,
+  "tags": [
+    "system",
+    "web",
+    "scraping",
+    "research"
+  ],
+  "capabilities": [
+    "web_scrape",
+    "web_read"
+  ],
+  "is_agent_ready": true,
+  "deterministic_renderer": false,
+  "max_calls_per_turn": 2,
+  "depends_on": [],
+  "examples": [
+    {
+      "input": {
+        "url": "https://example.com"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "content": "Titel: Example Domain\nURL: https://example.com\n\n--- INHALT ---\nThis domain is for use in illustrative examples.",
+          "url": "https://example.com",
+          "char_count": 95
+        },
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "url": ""
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "INVALID_INPUT",
+          "message": "Keine URL angegeben."
+        }
+      }
+    },
+    {
+      "input": {
+        "url": "https://nonexistent.invalid"
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "SCRAPE_FAILED",
+          "message": "Fehler beim Scraping: <urlopen error [Errno 11001] getaddrinfo failed>"
+        }
+      }
+    }
+  ]
+}

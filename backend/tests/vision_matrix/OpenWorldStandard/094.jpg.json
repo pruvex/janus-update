@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "zurückgebunden",
+    "OUTERWEAR": "grauer Blazer",
+    "KLEIDUNG": "schwarzes Top",
+    "LEGWEAR": "schwarze Hose",
+    "SCHUH_SATZ": "Schwarze Stiefeletten",
+    "POSE_SATZ": "Sie steht selbstbewusst auf der Straße, Blick seitlich, in der Abenddämmerung.",
+    "AMBIENTE_SATZ": "Urbane Abendstraße mit dampfenden Abgasen und Hochhäusern.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Low-Light", "Street", "Full Body", "Blazer"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "High Heels", "Sportanzug"],
+    "NOTIZ": "City-Nachtstimmung, passende urban fashion."
+  }
+}

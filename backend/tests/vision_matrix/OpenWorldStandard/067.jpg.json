@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Erwachsener",
+    "HAARFARBE": "rot",
+    "FRISUR": "kurz mit leichter Welle",
+    "OUTERWEAR": "rosa T-Shirt",
+    "KLEIDUNG": "hellblaue Shorts",
+    "LEGWEAR": "bare Beine",
+    "SCHUH_SATZ": "graue Sneaker",
+    "POSE_SATZ": "Er steht in Seitenansicht und blickt zur Seite, beide Hände locker an der Hüfte.",
+    "AMBIENTE_SATZ": "City Street mit modernen Gebäuden und Parkplätzen im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Seitprofil", "City", "T-Shirt", "Shorts"],
+    "AUSSCHLUSS_PFLICHT": ["Anzug", "Formalwear", "Indoor Hintergrund"],
+    "NOTIZ": "Klar erkennbares Seitenprofil, volle Körperhöhe auf der Straße."
+  }
+}

@@ -1,0 +1,123 @@
+﻿[
+    {
+        "image":  1,
+        "log":  "c:\\KI\\Janus-Projekt\\backend\\tests\\tools\\_calib_logs\\supercluster-1-final2.log",
+        "openai_final":  "In der **Erscheinung** wirkt die junge Frau mit hellem Teint konzentriert, ihr blondes Haar fällt glatt. Beim **Outfit** dominiert dunkle Kleidung: Sie trägt eine schwarze, robuste **Lederjacke** (Material: **Leder**), dazu eine **steppjacke**, kombiniert mit einem Shirt mit Grafik-Print. In der **Szene** sitzt sie in einer urbanen Umgebung entlang einer Straße, hält ihr Smartphone mit beiden Händen und richtet den Blick fokussiert nach unten.",
+        "openai_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "openai_leder":  "- Leder: FOUND",
+        "openai_nike":  "- Nike: N/A (nicht im GT erwartet)",
+        "gemini_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "gemini_leder":  "- Leder: FOUND",
+        "gemini_nike":  "- Nike: N/A (nicht im GT erwartet)"
+    },
+    {
+        "image":  2,
+        "log":  "c:\\KI\\Janus-Projekt\\backend\\tests\\tools\\_calib_logs\\supercluster-2-final3.log",
+        "openai_final":  "In der Erscheinung zeigt sich ein junger Mann mit hellem Teint und langem, blondem, glattem Haar, das schulterlang getragen wird, dazu eine Sonnenbrille. Beim Outfit trägt er ein **solid black cotton shirt** unter einem Sakko, ergänzt durch eine graue Anzughose und dunkelbraune Lederschuhe, wobei **Lederdetails** klar sichtbar sind. In der Szene ist er in einer dynamischen Vorwärtsbewegung beim Gehen eingefangen, in einer urbanen Umgebung entlang einer Straße.",
+        "openai_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "openai_leder":  "- Leder: FOUND",
+        "openai_nike":  "- Nike: N/A (nicht im GT erwartet)",
+        "gemini_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "gemini_leder":  "- Leder: FOUND",
+        "gemini_nike":  "- Nike: N/A (nicht im GT erwartet)"
+    },
+    {
+        "image":  3,
+        "log":  "c:\\KI\\Janus-Projekt\\backend\\tests\\tools\\_calib_logs\\supercluster-3-final2.log",
+        "openai_final":  "In der Erscheinung zeigt sich eine junge Frau mit olivfarbenem Teint und langem, blondem, glattem Haar, das lang getragen wird. Im Outfit kombiniert sie ein white t-shirt mit einem dunklen Rock; abgerundet wird der Look durch spitze High Heels in einem passenden Nude-Ton. Die Szene spielt in einer urbanen Umgebung entlang einer Straße.",
+        "openai_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "openai_leder":  "- Leder: N/A (nicht im GT erwartet)",
+        "openai_nike":  "- Nike: N/A (nicht im GT erwartet)",
+        "gemini_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "gemini_leder":  "- Leder: N/A (nicht im GT erwartet)",
+        "gemini_nike":  "- Nike: N/A (nicht im GT erwartet)"
+    },
+    {
+        "image":  4,
+        "log":  "c:\\KI\\Janus-Projekt\\backend\\tests\\tools\\_calib_logs\\supercluster-4-final2.log",
+        "openai_final":  "In der Erscheinung zeigt sich ein junger Mann mit hellem Teint und langem, blondem, glattem Haar, das glatt getragen wird. Beim Outfit trägt er ein flannel shirt, darüber einen braunen Mantel mit Karomuster (Muster: feines Karo), dazu ein Shirt mit Grafik-Print; Lederdetails sind klar sichtbar. In der Szene sitzt die Person entspannt in einem Sessel, die Beine locker übereinandergeschlagen, in einer urbanen Umgebung entlang einer Straße.",
+        "openai_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "openai_leder":  "- Leder: FOUND",
+        "openai_nike":  "- Nike: N/A (nicht im GT erwartet)",
+        "gemini_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "gemini_leder":  "- Leder: FOUND",
+        "gemini_nike":  "- Nike: N/A (nicht im GT erwartet)"
+    },
+    {
+        "image":  5,
+        "log":  "c:\\KI\\Janus-Projekt\\backend\\tests\\tools\\_calib_logs\\supercluster-5-final2.log",
+        "openai_final":  "**Erscheinung:** Ein junger Mann mit hellem Teint und langem, blondem, glattem Haar, das glatt getragen wird, steht aufrecht da und hat die Arme fest vor der Brust verschränkt.   **Outfit:** Er trägt einen braunen Mantel; um den Hals liegt ein Schal aus **Strick**, als „woven fabric around neck“ beschrieben, und **Lederdetails** sind klar sichtbar.   **Szene:** Die Aufnahme spielt in einer urbanen Umgebung entlang einer Straße.",
+        "openai_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "openai_leder":  "- Leder: FOUND",
+        "openai_nike":  "- Nike: N/A (nicht im GT erwartet)",
+        "gemini_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "gemini_leder":  "- Leder: FOUND",
+        "gemini_nike":  "- Nike: N/A (nicht im GT erwartet)"
+    },
+    {
+        "image":  6,
+        "log":  "c:\\KI\\Janus-Projekt\\backend\\tests\\tools\\_calib_logs\\supercluster-6-final2.log",
+        "openai_final":  "In der **Erscheinung** wirkt die junge Frau mit hellem Teint durch ihr **langes, blondes, glattes Haar**, das glatt getragen wird, klar und modern. Beim **Outfit** trägt sie ein **solid black cotton shirt**, darüber ein **sakko** sowie eine klassische **Jeansjacke aus Denim**, kombiniert mit einer **jeans blau**. In der **Szene** lehnt sie mit dem Rücken an einer Wand, ein Bein lässig angewinkelt, in einer urbanen Umgebung entlang einer Straße.",
+        "openai_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "openai_leder":  "- Leder: N/A (nicht im GT erwartet)",
+        "openai_nike":  "- Nike: N/A (nicht im GT erwartet)",
+        "gemini_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "gemini_leder":  "- Leder: N/A (nicht im GT erwartet)",
+        "gemini_nike":  "- Nike: N/A (nicht im GT erwartet)"
+    },
+    {
+        "image":  7,
+        "log":  "c:\\KI\\Janus-Projekt\\backend\\tests\\tools\\_calib_logs\\supercluster-7-final2.log",
+        "openai_final":  "In der Erscheinung zeigt sich ein junger Mann mit hellem Teint, blauen Augen und langem, blondem, glattem Haar, das glatt getragen wird. Beim Outfit trägt er eine schwarze Lederjacke, bei der **Lederdetails** klar sichtbar sind, zudem ein sakko und Nike Sneaker. In der Szene lehnt er mit dem Rücken an einer Wand, ein Bein lässig angewinkelt, in einer urbanen Umgebung entlang einer Straße.",
+        "openai_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "openai_leder":  "- Leder: FOUND",
+        "openai_nike":  "- Nike: FOUND",
+        "gemini_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "gemini_leder":  "- Leder: FOUND",
+        "gemini_nike":  "- Nike: FOUND"
+    },
+    {
+        "image":  8,
+        "log":  "c:\\KI\\Janus-Projekt\\backend\\tests\\tools\\_calib_logs\\supercluster-8-final2.log",
+        "openai_final":  "**Erscheinung:** Ein junger Mann mit dunklem Teint steht aufrecht da, die Arme fest vor der Brust verschränkt; sein langes, graues, glattes Haar wird schulterlang getragen. **Outfit:** Er trägt ein Sakko über einem *solid black cotton shirt* und dazu eine schwarze Lederjacke, deren Lederdetails klar sichtbar sind, kombiniert mit dunkelbraunen Lederschuhen. **Szene:** Die Szene zeigt eine urbane Umgebung entlang einer Straße.",
+        "openai_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "openai_leder":  "- Leder: N/A (nicht im GT erwartet)",
+        "openai_nike":  "- Nike: N/A (nicht im GT erwartet)",
+        "gemini_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "gemini_leder":  "- Leder: N/A (nicht im GT erwartet)",
+        "gemini_nike":  "- Nike: N/A (nicht im GT erwartet)"
+    },
+    {
+        "image":  9,
+        "log":  "c:\\KI\\Janus-Projekt\\backend\\tests\\tools\\_calib_logs\\supercluster-9-final2.log",
+        "openai_final":  "**Erscheinung:** Zu sehen ist eine junge Frau mit dunklem Teint und blondem, langem, glattem Haar, das schulterlang getragen wird.   **Outfit:** Um den Hals trägt sie *woven fabric around neck*, als Schal, kombiniert mit einem Shirt mit **Grafik-Print**.   **Szene:** Die Aufnahme spielt in einer urbanen Umgebung entlang einer Straße.",
+        "openai_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "openai_leder":  "- Leder: N/A (nicht im GT erwartet)",
+        "openai_nike":  "- Nike: N/A (nicht im GT erwartet)",
+        "gemini_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "gemini_leder":  "- Leder: N/A (nicht im GT erwartet)",
+        "gemini_nike":  "- Nike: N/A (nicht im GT erwartet)"
+    },
+    {
+        "image":  10,
+        "log":  "c:\\KI\\Janus-Projekt\\backend\\tests\\tools\\_calib_logs\\supercluster-10-final2.log",
+        "openai_final":  "**Erscheinung:** Zu sehen ist ein älterer Mann mit hellem Teint, grauen, glatt getragenen Haaren, zudem trägt er einen Dreitagebart.   **Outfit:** Um den Hals liegt *woven fabric around neck*, ein Schal.   **Szene:** Die Szene zeigt eine urbane Umgebung entlang einer Straße.",
+        "openai_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "openai_leder":  "- Leder: N/A (nicht im GT erwartet)",
+        "openai_nike":  "- Nike: N/A (nicht im GT erwartet)",
+        "gemini_karomuster":  "- Karomuster: N/A (nicht im GT erwartet)",
+        "gemini_leder":  "- Leder: N/A (nicht im GT erwartet)",
+        "gemini_nike":  "- Nike: N/A (nicht im GT erwartet)"
+    },
+    {
+        "image":  11,
+        "log":  "c:\\KI\\Janus-Projekt\\backend\\tests\\tools\\_calib_logs\\supercluster-11-final2.log",
+        "openai_final":  "In der Aufnahme ist eine junge Frau mit hellem Teint in einer dynamischen Vorwärtsbewegung beim Gehen eingefangen; ihr langes, blondes, glattes Haar wird schulterlang getragen. Dazu kombiniert sie dark clothing mit einer schwarzen Lederjacke, bei der Lederdetails klar sichtbar sind, sowie einem braunen Mantel. Als Kontrast setzt sie unten einen kurzen Rock mit feinem Karomuster und trägt unter dem Arm eine große cognacfarbene Ledertasche, während eine Sonnenbrille den Look ergänzt. Die Szene spielt in einer urbanen Umgebung entlang einer Straße.",
+        "openai_karomuster":  "- Karomuster: FOUND",
+        "openai_leder":  "- Leder: FOUND",
+        "openai_nike":  "- Nike: N/A (nicht im GT erwartet)",
+        "gemini_karomuster":  "- Karomuster: FOUND",
+        "gemini_leder":  "- Leder: FOUND",
+        "gemini_nike":  "- Nike: N/A (nicht im GT erwartet)"
+    }
+]

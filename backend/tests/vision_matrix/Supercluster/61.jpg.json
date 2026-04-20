@@ -1,0 +1,32 @@
+{
+    "expected": {
+        "GESCHLECHT": "Frau",
+        "ALTER": "junge Frau",
+        "HAARFARBE": "Die Haare sind braun",
+        "FRISUR": "Die Haare sind zu einem eleganten Knoten oder Chignon zurückgesteckt",
+        "HAAR_STRUKTUR": "glatt",
+        "AUGEN": "braun",
+        "TEINT": "hell",
+        "KLEIDUNG": "smaragdgrünes Seiden-Ensemble (Wickelbluse und fließender Rock)",
+        "MATERIAL": "Satin",
+        "SCHUH_SATZ": "Dazu trägt sie elegante goldene High Heels.",
+        "TASCHE_SATZ": "In der Hand hält sie eine goldene Clutch.",
+        "OHRRINGE": "große goldene Creolen",
+        "POSE_SATZ": "Die Person schreitet elegant durch eine prachtvolle, sonnendurchflutete Halle.",
+        "AMBIENTE_SATZ": "Die Szene zeigt eine prachtvolle Halle mit Marmorboden, hohen Säulen und Bogenfenstern, durch die warmes Sonnenlicht fällt.",
+        "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+            "Satin",
+            "smaragdgrün",
+            "goldene High Heels",
+            "Halle",
+            "Säulen"
+        ],
+        "AUSSCHLUSS_PFLICHT": [
+            "Leder",
+            "urban",
+            "Straße",
+            "Stadt",
+            "draußen"
+        ]
+    }
+}

@@ -1,0 +1,54 @@
+{
+  "legacy_name": "save_mp3_tool",
+  "skill": "system.save_mp3",
+  "description": "Synthetisiert Text zu Audio (MP3) und speichert die Datei auf dem Desktop. Unterstützt sowohl OpenAI TTS (SSML) als auch lokale Piper-TTS.",
+  "version": "1.1.0",
+  "sandbox_level": "workspace_only",
+  "latency_class": "slow",
+  "timeout_ms": 30000,
+  "tags": [
+    "system",
+    "audio",
+    "tts",
+    "media"
+  ],
+  "capabilities": [
+    "audio_generation",
+    "file_write"
+  ],
+  "is_agent_ready": true,
+  "deterministic_renderer": true,
+  "max_calls_per_turn": 2,
+  "depends_on": [],
+  "examples": [
+    {
+      "input": {
+        "content": "Hallo, dies ist ein Test.",
+        "filename": "test_audio.mp3",
+        "voice": "fable"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "file_path": "C:/Users/User/Desktop/test_audio.mp3",
+          "filename": "test_audio.mp3"
+        },
+        "error": null
+      }
+    },
+    {
+      "input": {
+        "content": "",
+        "filename": "leer.mp3"
+      },
+      "output": {
+        "status": "error",
+        "data": null,
+        "error": {
+          "code": "INVALID_INPUT",
+          "message": "Kein Text zum Speichern gefunden."
+        }
+      }
+    }
+  ]
+}

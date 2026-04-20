@@ -1,0 +1,18 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "TEINT": "hell",
+    "AUGEN": "braun",
+    "HAARFARBE": "Die Haare sind dunkel",
+    "FRISUR": "kurz (Pixie-Cut)",
+    "HAAR_STRUKTUR": "glatt",
+    "OUTERWEAR": "dunkler Mantel",
+    "KLEIDUNG": "heller Schal",
+    "MATERIAL": "Wolle",
+    "POSE_SATZ": "Die Person blickt in ein Schaufenster, wobei sich ihr Gesicht im Glas spiegelt.",
+    "AMBIENTE_SATZ": "Die Szene ist nachts in ein urbanes Setting eingebettet, mit warmen Lichtreflexionen im Fenster.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Spiegelung", "Nacht", "kurze Haare", "Schal"],
+    "AUSSCHLUSS_PFLICHT": ["Tageslicht", "lange Haare"]
+  }
+}

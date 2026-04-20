@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "HAARFARBE": "braun",
+    "FRISUR": "kurz",
+    "OUTERWEAR": "beiger Blazer",
+    "KLEIDUNG": "weiß-blau gestreiftes Shirt",
+    "LEGWEAR": "braune Anzughose",
+    "SCHUH_SATZ": "Bunte Sneaker mit mehrfarbiger Sohle",
+    "POSE_SATZ": "Er steht in einer Pariser Straße, Hände in den Taschen, Blick in Richtung Kamera.",
+    "AMBIENTE_SATZ": "City Street mit klassischer Architektur und leicht verschwommener Tiefe.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Blazer", "gestreiftes Shirt", "Anzughose", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Hoodie", "Shorts", "Flipflops"]
+  }
+}

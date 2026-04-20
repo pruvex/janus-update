@@ -1,0 +1,15 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "erwachsener Mann",
+    "TEINT": "hell",
+    "AUGEN": "braun/grün",
+    "HAARFARBE": "Die Haare sind braun",
+    "FRISUR": "kurz",
+    "BART": "Dreitagebart",
+    "KOPF_ACCESSOIRE": "Brille",
+    "POSE_SATZ": "Das Bild zeigt ein Porträt des Gesichts mit Fokus auf eine Brille mit gesprungenem Glas.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["gesprungenes Glas", "kaputte Brille", "Dreitagebart"],
+    "AUSSCHLUSS_PFLICHT": ["Sonnenbrille", "Hut"]
+  }
+}

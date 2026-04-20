@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "blond",
+    "FRISUR": "leicht gewellt",
+    "OUTERWEAR": "schwarze Lederjacke",
+    "KLEIDUNG": "beiger Pullover",
+    "LEGWEAR": "schwarze Leggings",
+    "SCHUH_SATZ": "graue Stiefeletten",
+    "POSE_SATZ": "Sie steht lächelnd vor einer Mauer, Tasche lässig an der Schulter.",
+    "AMBIENTE_SATZ": "Städtische Dachterrasse mit Mauer und Gebäuden im Hintergrund.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Bag", "Layered Clothing", "Full Body"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "No Bag"],
+    "NOTIZ": "Layering aus Lederjacke + Pullover, Handtasche sichtbar."
+  }
+}

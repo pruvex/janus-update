@@ -1,0 +1,45 @@
+{
+  "ArthurConanDoyle": {
+    "genre": "Krimi",
+    "author_style": "Arthur Conan Doyle",
+    "key_elements": [
+      "Detailreiche Deduktion",
+      "Atmosphärische Beschreibung des viktorianischen London",
+      "Falsche Fährten",
+      "Erzählung aus Watsons Perspektive"
+    ],
+    "complexity": "komplex"
+  },
+  "Warhammer40k": {
+    "genre": "Science-Fantasy / Grimdark",
+    "author_style": "Dan Abnett / Black Library",
+    "key_elements": [
+      "Gotische, epische Sprache",
+      "Brutale, schnelle Action",
+      "Themen von Opfer und Verrat",
+      "Fokus auf den 'Grim Dark'-Ton"
+    ],
+    "complexity": "komplex"
+  },
+  "Haiku": {
+    "genre": "Haiku",
+    "author_style": "N/A",
+    "key_elements": [
+      "5-7-5 Silbenstruktur",
+      "Naturbezug",
+      "Momentaufnahme"
+    ],
+    "complexity": "einfach"
+  },
+  "StephenKing": {
+    "genre": "Psychologischer Thriller",
+    "author_style": "Stephen King",
+    "key_elements": [
+      "Dichten, psychologischen Spannungsaufbau",
+      "Alltagsnahe Charaktere mit inneren Dämonen",
+      "Humorvolle Dialoge, die die Spannung konterkarieren",
+      "Der Einsatz von alltäglichen Gegenständen als Symbole"
+    ],
+    "complexity": "komplex"
+  }
+}

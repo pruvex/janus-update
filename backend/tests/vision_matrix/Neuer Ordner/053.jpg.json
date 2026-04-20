@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Erwachsener",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "kurz und sauber frisiert",
+    "OUTERWEAR": "schwarzer Anzugblazer",
+    "KLEIDUNG": "weißes Hemd",
+    "LEGWEAR": "schwarze Anzughose",
+    "SCHUH_SATZ": "Schwarze Loafer",
+    "POSE_SATZ": "Er steht locker mit einer Hand in der Tasche vor einem modernen Gebäude.",
+    "AMBIENTE_SATZ": "Urbanes Büroviertel mit Glasfassaden und Betonplattform.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Blazer", "Hemd", "Anzughose", "Loafer", "braune Krawatte mit kleinen Punkten"],
+    "AUSSCHLUSS_PFLICHT": ["Sneaker", "Kapuze", "Cargo-Hose"],
+    "NOTIZ": "Tie zeigt ein feines Punktmuster, entspricht damit den polka-dot Anforderungen."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "LEGWEAR": "beige Cargo-Hose",
+    "OUTERWEAR": "dunkler Hoodie",
+    "POSE_SATZ": "Die Person steht mit dem Rücken zur Kamera unter einer massiven Betonbrücke.",
+    "AMBIENTE_SATZ": "Das Bild zeigt eine Person vor einer massiven Betonstruktur mit geometrischen Linien.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Beton", "Brücke", "Cargo-Hose", "von hinten"],
+    "AUSSCHLUSS_PFLICHT": ["Wald", "Gesicht"]
+  }
+}

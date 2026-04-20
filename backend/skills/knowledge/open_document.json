@@ -1,0 +1,18 @@
+{
+  "legacy_name": "open_knowledge_document",
+  "skill": "knowledge.open_document",
+  "version": "1.0.0",
+  "sandbox_level": "read_only_fs",
+  "latency_class": "normal",
+  "tags": [
+    "knowledge"
+  ],
+  "capabilities": [
+    "document_navigation",
+    "ui_open"
+  ],
+  "is_agent_ready": true,
+  "max_calls_per_turn": 3,
+  "depends_on": [],
+  "examples": []
+}

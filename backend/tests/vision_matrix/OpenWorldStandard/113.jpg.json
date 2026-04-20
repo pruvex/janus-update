@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "lang",
+    "OUTERWEAR": "beiges Kleid",
+    "KLEIDUNG": "braunes Kleid",
+    "LEGWEAR": "braune Strumpfhose",
+    "SCHUH_SATZ": "Beige Stiefeletten",
+    "POSE_SATZ": "Sie steht leicht zur Seite gedreht vor neutralem Hintergrund und schaut in die Kamera.",
+    "AMBIENTE_SATZ": "Sauberer weißer Hintergrund mit weicher Beleuchtung.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Single Person", "Neutral Background", "Full Body", "Clothing Details"],
+    "AUSSCHLUSS_PFLICHT": ["Outdoor", "Mehrere Personen"],
+    "NOTIZ": "Minimalistisches Studio-Setting, Fokus auf monochromen Outfit."
+  }
+}

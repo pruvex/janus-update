@@ -1,0 +1,10 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "TEINT": "gebräunten",
+    "AUGEN": "braun",
+    "HAARFARBE": "rotbraunen",
+    "OUTERWEAR": "Mantel",
+    "INNER_LAYER": "Rollkragenpullover"
+  }
+}

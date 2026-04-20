@@ -1,0 +1,33 @@
+{
+  "filename": "2.jpg",
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "mittleres Alter",
+    "HAARFARBE": "dunkelbraun",
+    "FRISUR": "kurz, Pixie-Schnitt",
+    "BART": "kein Bart",
+    "KOPFBDECKUNG": "keine Kopfbedeckung",
+    "BRILLE": "Sonnenbrille auf dem Kopf",
+    "SCHMUCK": "Ohrringe",
+    "OUTERWEAR": "brauner Teddy-Mantel",
+    "KLEIDUNG": "heller Schal mit Tiermuster, braune Handschuhe",
+    "LEGWEAR": "dunkelbraune Hose",
+    "SCHUH_SATZ": "braune Plateau-Stiefeletten mit heller Sohle",
+    "ZUBEHOER_SATZ": "beige Umhängetasche mit Quaste",
+    "POSE_SATZ": "Die Frau steht lächelnd auf einer Brücke und hält ihre behandschuhten Hände vor dem Körper verschränkt.",
+    "AMBIENTE_SATZ": "Hinter der Person erstreckt sich ein Fluss mit einem alten Boot sowie eine Kulisse aus historischen Fachwerkhäusern.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": [
+      "brauner Teddy-Mantel",
+      "gemusterter Schal",
+      "Plateau-Stiefeletten",
+      "beige Umhängetasche",
+      "Brückengeländer",
+      "Fachwerkhaus"
+    ],
+    "AUSSCHLUSS_PFLICHT": [
+      "keine Brille auf der Nase",
+      "kein Bart",
+      "kein Hut"
+    ]
+  }
+}

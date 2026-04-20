@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "junge Frau",
+    "HAARFARBE": "rotblonde Haare (Erdbeerblond)",
+    "FRISUR": "wellige Haare",
+    "OUTERWEAR": "brauner karierter Mantel",
+    "KLEIDUNG": "schwarzes eng anliegendes Kleid",
+    "LEGWEAR": "schwarze blickdichte Strumpfhose",
+    "TASCHE_SATZ": "Sie trägt eine kleine schwarze Umhängetasche mit goldener Kette.",
+    "SCHUH_SATZ": "Dazu trägt sie schwarze Lederstiefel mit Absatz.",
+    "POSE_SATZ": "Die Person schreitet vor einer hellen Steinfassade entlang.",
+    "AMBIENTE_SATZ": "Ein sonniger Tag in einer europäischen Stadt, im Hintergrund ist eine Kutsche sichtbar.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["karierter Mantel", "schwarzes Kleid", "Lederstiefel", "Umhängetasche", "Goldkette"],
+    "AUSSCHLUSS_PFLICHT": ["Jeans", "Sneaker", "Hose", "weiße Kleidung", "Sonnenbrille"]
+  }
+}

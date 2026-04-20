@@ -1,0 +1,7 @@
+.\choose-auth-mode.ps1
+
+
+.\gemini-auth\use-api.ps1
+.\gemini-auth\use-auth.ps1
+.\gemini-auth\gemini-mode.ps1
+

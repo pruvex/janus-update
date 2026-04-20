@@ -1,0 +1,12 @@
+{
+  "expected": {
+    "GESCHLECHT": "Mann",
+    "ALTER": "junger Mann",
+    "KOPF_ACCESSOIRE": "schwarze Mütze",
+    "OUTERWEAR": "dunkler Hoodie",
+    "POSE_SATZ": "Die Person hält ihr Smartphone vor einen Badezimmerspiegel, um ein Selfie von sich zu machen.",
+    "AMBIENTE_SATZ": "Die Szene spielt in einem schwach beleuchteten Badezimmer.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Selfie", "Spiegel", "Smartphone", "Mütze"],
+    "AUSSCHLUSS_PFLICHT": ["Fotograf", "hell"]
+  }
+}

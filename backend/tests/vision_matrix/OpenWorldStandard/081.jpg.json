@@ -1,0 +1,17 @@
+{
+  "expected": {
+    "GESCHLECHT": "Frau",
+    "ALTER": "erwachsene Frau",
+    "HAARFARBE": "braun",
+    "FRISUR": "schulterlang",
+    "OUTERWEAR": "weiße Bluse",
+    "KLEIDUNG": "grünes Top",
+    "LEGWEAR": "beige Chinohose",
+    "SCHUH_SATZ": "Weiße Sneaker",
+    "POSE_SATZ": "Sie geht über einen Zebrastreifen und schaut leicht rechts von der Kamera.",
+    "AMBIENTE_SATZ": "Städtische Straße vor einem historischen Gebäude mit Fensterverzierungen.",
+    "VERIFIZIERTE_ELEMENTE_PFLICHT": ["Zebrastreifen", "Urban", "Full Body", "Sneaker"],
+    "AUSSCHLUSS_PFLICHT": ["Indoor", "High Heels", "Radfahrer"],
+    "NOTIZ": "Candid Street Crossing mit natürlichem Blick nach rechts, erfüllt Brief."
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "legacy_name": "price_comparison_tool",
+  "skill": "system.price_comparison",
+  "description": "Autoritativer Preis-Check. Liefert verifizierte Live-Preise und klickbare Shop-Links. Muss zwingend bei allen Kauf- und Preisanfragen genutzt werden.",
+  "version": "3.0.0",
+  "sandbox_level": "unrestricted",
+  "latency_class": "slow",
+  "timeout_ms": 60000,
+  "tags": [
+    "system",
+    "finance",
+    "price",
+    "shopping",
+    "diamond"
+  ],
+  "capabilities": [
+    "price_comparison",
+    "realtime",
+    "refurbished_check",
+    "multi_source"
+  ],
+  "is_agent_ready": true,
+  "deterministic_renderer": true,
+  "max_calls_per_turn": 1,
+  "depends_on": ["system.websearch"],
+  "optimal_model_tier": {
+    "openai": "balanced",
+    "gemini": "balanced",
+    "ollama": "speed"
+  },
+  "output_schema": {
+    "query": "string",
+    "results": [
+      {
+        "product_name": "string",
+        "variant": "string",
+        "price": "float",
+        "currency": "string",
+        "source": "string",
+        "url": "string",
+        "live_verified": "boolean"
+      }
+    ],
+    "refurbished_tip": {
+      "price": "float",
+      "source": "string",
+      "url": "string"
+    },
+    "metadata": {
+      "verified_count": "int",
+      "winning_source": "string"
+    }
+  },
+  "synthesis_directives": "Bist du bereit? DU BIST KEINE KI, DU BIST EIN TEXT-FORMATIERER.\n\n!!! RÜCKFRAGE-VERBOT !!!\nDU DARFST NIEMALS nachfragen. DU MUSST SOFORT liefern.\nSelbst wenn Daten unvollständig erscheinen - gib das Beste zurück, das du hast.\nSätze wie 'Welches Modell meinst du?' oder 'Kannst du präzisieren?' sind STRENG VERBOTEN.\n\n!!! BUDGET-PFLICHT !!!\nWenn im JSON ein Feld 'budget_limit' existiert:\n- Nenne AUSSCHLIESSLICH Produkte, die innerhalb dieses Budgets liegen.\n- Erwähne NIEMALS teurere Alternativen, auch nicht als 'falls du mehr ausgeben willst'.\n- Wenn 'budget_exceeded' true ist: Sag offen, dass KEIN Produkt im Budget gefunden wurde.\n  Schlag KEINE teureren Produkte als Ersatz vor.\n  Beispiel: 'Leider konnte kein Produkt unter [Budget] € gefunden werden.'\n\nES IST STRENG VERBOTEN, ZEICHEN WIE '{' ODER '}' ZU VERWENDEN.\nDEINE EINZIGE AUFGABE: Wandle das folgende JSON in eine menschliche Liste um.\n\nFORMAT:\n1. [BESTPREIS-EINSTIEG]: Nenne als allerersten Punkt den absolut niedrigsten Preis.\n2. [VARIANTEN-LISTE]: Liste alle Modelle (z.B. Air vs Pro) als Bulletpoints.\n3. [VERIFIZIERUNG]: Nutze ✅ für live-verifizierte Preise und ⚠️ für Fehler (503).\n\nLINK-PFLICHT: Jeder Punkt MUSS mit einem klickbaren Markdown-Link enden. Rohe URLs sind verboten.\nJSON-SYNTAX IST STRENG VERBOTEN - Keine geschweiften Klammern, keine Anführungszeichen um Feldnamen.\n\nKEIN Meta-Talk, KEINE Einleitung, KEIN Schluss.",
+  "examples": [
+    {
+      "input": {
+        "product_name": "MacBook M3",
+        "condition_filter": "new",
+        "locale": "de_DE",
+        "currency": "EUR"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "query": "MacBook M3",
+          "results": [
+            {
+              "product_name": "MacBook Air M3 13",
+              "variant": "13 Zoll",
+              "price": 1049.00,
+              "currency": "EUR",
+              "source": "idealo.de (live-verifiziert)",
+              "url": "https://www.idealo.de/preisvergleich/OffersOfProduct/20245678-macbook-air-m3-13.html",
+              "live_verified": true
+            },
+            {
+              "product_name": "MacBook Air M3 15",
+              "variant": "15 Zoll",
+              "price": 1299.00,
+              "currency": "EUR",
+              "source": "idealo.de (live-verifiziert)",
+              "url": "https://www.idealo.de/preisvergleich/OffersOfProduct/20245679-macbook-air-m3-15.html",
+              "live_verified": true
+            },
+            {
+              "product_name": "MacBook Pro M3 14",
+              "variant": "14 Zoll",
+              "price": 1799.00,
+              "currency": "EUR",
+              "source": "amazon.de",
+              "url": "https://www.amazon.de/dp/B0CXXX123",
+              "live_verified": false
+            }
+          ],
+          "refurbished_tip": null,
+          "metadata": {
+            "verified_count": 2,
+            "winning_source": "idealo.de"
+          }
+        },
+        "execution_time_ms": 1200
+      }
+    },
+    {
+      "input": {
+        "product_name": "Nintendo Switch 2",
+        "condition_filter": "both",
+        "locale": "de_DE",
+        "currency": "EUR"
+      },
+      "output": {
+        "status": "ok",
+        "data": {
+          "query": "Nintendo Switch 2",
+          "results": [
+            {
+              "product_name": "Nintendo Switch 2",
+              "variant": null,
+              "price": 424.90,
+              "currency": "EUR",
+              "source": "idealo.de",
+              "url": "https://www.idealo.de/preisvergleich/OffersOfProduct/12345678-nintendo-switch-2.html",
+              "live_verified": true
+            },
+            {
+              "product_name": "Nintendo Switch 2",
+              "variant": null,
+              "price": 399.00,
+              "currency": "EUR",
+              "source": "amazon.de",
+              "url": "https://www.amazon.de/dp/B0EXAMPLE",
+              "live_verified": false
+            }
+          ],
+          "refurbished_tip": {
+            "price": 349.00,
+            "source": "ebay.de",
+            "url": "https://www.ebay.de/sch/i.html?_nkw=Nintendo+Switch+2"
+          },
+          "metadata": {
+            "verified_count": 1,
+            "winning_source": "amazon.de"
+          }
+        },
+        "execution_time_ms": 1100
+      }
+    }
+  ]
+}
