@@ -27,7 +27,9 @@
     "prebuild-installer": "echo 'Vision-Tests deaktiviert für schnelle Builds'",
     "prebuild-all": "npm run test:vision:stresstest:kpi && npm run test:vision:openworld",
     "build-installer": "electron-builder",
-    "build-all": "npm run build && python -m PyInstaller janus_backend.spec --clean --noconfirm && npm run build-installer"
+    "build-all": "npm run build && python -m PyInstaller janus_backend.spec --clean --noconfirm && npm run build-installer",
+    "release:guard": "node scripts/release-gate.js",
+    "release": "npm run release:guard && npm run build-all && electron-builder --publish always"
   },
   "keywords": [],
   "author": "",
