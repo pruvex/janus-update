@@ -1,6 +1,19 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.15-beta.11** — "Git Infrastructure Certified & Stability Arc Complete. EPIC-GIT-GUARD (2-Säulen-Modell, Pre-commit Hook, Release-Gate) + STABILITY-ARC (YouTube 152-4, Clipboard IPC, Auth Coherence). All Tasks SEALED & COMPLETE.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.15-beta.12** — "GPT-Diamond-Certified & UI-Sync-Live. STABILITY-ARC Phase 2: Extractor-Härtung, Registry-Cleanup, Sidebar-Header-Propagation. All Tasks SEALED & COMPLETE.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-20 19:46 (Git Infrastructure Certified & Stability Arc Complete — SEALED)
+**Aktualisiert:** 2026-04-20 20:10 (GPT-Diamond-Certified & UI-Sync-Live — SEALED)
+
+---
+
+## [CURRENT_SESSION_DELTA] (GPT-Diamond-Certification & UI-Sync-Live 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic** | **STABILITY-ARC — Phase 2** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-20) |
+| **Umsetzung** | **1. GPT-Core Zertifizierung:** gpt-5.4-nano/mini/standard erfolgreich validiert. **2. Extractor-Härtung:** `backend/services/memory_extractor.py` durch strikte JSON-Schema-Direktiven und Few-Shot-Anpassung stabilisiert; Pydantic-Validierungsfehler bei Mini-Modellen eliminiert. **3. UI-Live-Sync:** `frontend/js/app.js` patche (Sidebar-Listener); Änderungen an Sidebar-Dropdowns werden nun sofort an die Fenster-Header (Modus "Wie Sidebar") propagiert. **4. Registry-Cleanup:** `capability_registry.json` bereinigt; Orphan-Warnungen reduziert. |
+| **Ergebnis** | GPT-Modellfamilie erreicht Diamond-Standard. UI-Konsistenz zwischen Sidebar und Dual-Window-System gewährleistet. |
+| **Files** | `backend/services/memory_extractor.py`, `frontend/js/app.js`, `backend/data/capability_registry.json`. |
+| **Patterns** | [PATTERN] #NLP #Extraction "Extraction Quality Hardening", [PATTERN] #Frontend #StateManagement "Live-UI-Propagator". |
 
 ---
 
