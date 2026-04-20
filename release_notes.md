@@ -1,5 +1,5 @@
-# Janus Projekt 0.4.15
-**Released:** 2026-04-20 20:27
+# Janus Projekt 0.4.16
+**Released:** 2026-04-20 20:50
 
 ## 🚀 Changes in this Release
 
