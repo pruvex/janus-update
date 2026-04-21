@@ -210,16 +210,26 @@ class IngestionRun:
         Recursively find all supported files under root_dir.
 
         FINAL: Format-Gatekeeper ensures only Gold-Formates are processed.
+        HOTFIX: Uses os.walk with onerror callback for robust error handling.
         """
         files: List[Path] = []
         if not self.root_dir.exists():
             logger.warning(f"Root directory does not exist: {self.root_dir}")
             return files
 
-        for p in self.root_dir.rglob("*"):
-            # FINAL: Check if file is supported AND is a gold format
-            if p.is_file() and FormatRouter.is_supported(p) and FormatRouter.is_gold_format(p):
-                files.append(p)
+        def onerror(error: OSError) -> None:
+            """Handle errors during os.walk without stopping the entire scan."""
+            logger.warning(f"[RAG V2] Scan error at {error.filename}: {error.strerror}")
+
+        try:
+            for dirpath, dirnames, filenames in os.walk(self.root_dir, onerror=onerror):
+                for filename in filenames:
+                    file_path = Path(dirpath) / filename
+                    # FINAL: Check if file is supported AND is a gold format
+                    if FormatRouter.is_supported(file_path) and FormatRouter.is_gold_format(file_path):
+                        files.append(file_path)
+        except Exception as e:
+            logger.error(f"[RAG V2] Unexpected error during file scan: {e}", exc_info=True)
 
         logger.info(f"Scan found {len(files)} gold-format files in {self.root_dir}")
         return files
