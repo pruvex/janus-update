@@ -2,6 +2,15 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [LESSON] #LLM #BrevityBias "Faule Modelle bevorzugen kurze Antworten aus Memory über Tool-Calls — bei Suchanfragen muss Tool-Call-Pflicht explizit erzwungen werden"
+- **Kontext:** Memory-Context ist so gut, dass "faule" Modelle (wie Nano) Suchanfragen mit alten Erinnerungen aus Memory beantworten statt Tool-Calls durchzuführen. User fragt "Wo liegt die Datei X?" → LLM antwortet "Ich erinnere mich, dass X im Ordner Y liegt" statt `filesystem.find_files` aufzurufen. Resultat: veraltete Informationen statt aktueller Hardware-Validierung.
+- **Problem:** "Brevity-Bias" bei faulen Modellen: Wenn Memory bereits Informationen enthält, bevorzugen LLMs kurze Antworten aus Memory über Tool-Calls, auch wenn die Anfrage explizit eine Suche fordert. Das führt zu veralteten Informationen und schlechter UX bei Dateisuchen.
+- **Lösung:** Prompt-Registry-Direktive `search_command_priority` hinzufügen: "!!! WERKZEUGNUTZUNGS-DIREKTIVE — SUCHANFRAGEN HABEN VORRANG VOR MEMORY !!! Wenn der Nutzer eine Suche auf dem System oder der Festplatte fordert, reicht das Wissen aus der FAKTENGRUNDLAGE (Memory) NICHT aus. Du MUSST in diesem Fall zwingend das entsprechende filesystem-Tool aufrufen, um den aktuellen Stand der Hardware zu validieren. VERBOTEN: Antworten basierend auf alten Erinnerungen ohne Tool-Call."
+- **Tripwire:** Wenn ein LLM Suchanfragen mit Memory-Antworten beantwortet statt Tool-Calls durchzuführen → fehlt eine explizite Tool-Call-Pflicht-Direktive für Suchanfragen.
+- **Location:** `backend/services/orchestrator/prompt_registry.py:74`, gefixt 2026-04-21.
+- **Confidence:** High (Unit-Smoke: Direktive enthält "FAKTENGRUNDLAGE", "filesystem-Tool aufrufen" und "Wo liegt die Datei X" ✅).
+- **Tags:** LLM, BrevityBias, ToolCall, Memory, Search, PromptRegistry
+
 ## [LESSON] #UX #Prompting "LLM braucht explizite Anweisungen für proaktive UX-Maßnahmen (Dubletten-Hinweis) — Default ist stille Ausgabe"
 - **Kontext:** `filesystem.find_files` liefert korrekt Duplikate (z.B. 2 Kopien von `gundula1.pdf` an verschiedenen Orten), aber der LLM hatte keine explizite Anweisung, den User darauf hinzuweisen. Resultat: Liste von Pfaden ohne Kontext, User weiß nicht, ob es Dubletten sind oder ob das Tool nur einen Treffer gefunden hat.
 - **Problem:** LLMs sind standardmäßig "stille Ausgeber" — sie geben das Tool-Result aus, ohne proaktive UX-Verbesserungen einzubauen, es sei denn, es ist explizit angeordnet. Für Dateisuchen ist das kritisch: Dubletten sind ein häufiges UX-Problem, und der User möchte wissen, ob es mehrere Kopien gibt.

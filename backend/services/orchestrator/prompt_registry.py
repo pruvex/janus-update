@@ -71,6 +71,13 @@ _DIRECTIVES: Dict[str, str] = {
         "Liefere sofort verifizierte Preise und klickbare Shop-Links.\n"
         "KEINE Ausreden wie 'Ich kann nicht browsen' - das Tool existiert, NUTZE ES.\n"
     ),
+    "search_command_priority": (
+        "\n\n!!! WERKZEUGNUTZUNGS-DIREKTIVE — SUCHANFRAGEN HABEN VORRANG VOR MEMORY !!!\n"
+        "Wenn der Nutzer eine Suche auf dem System oder der Festplatte fordert, reicht das Wissen aus der FAKTENGRUNDLAGE (Memory) NICHT aus. "
+        "Du MUSST in diesem Fall zwingend das entsprechende filesystem-Tool aufrufen, um den aktuellen Stand der Hardware zu validieren.\n"
+        "VERBOTEN: Antworten basierend auf alten Erinnerungen ohne Tool-Call. "
+        "BEISPIEL: User fragt 'Wo liegt die Datei X?' → DU MUSST filesystem.find_files oder filesystem.list_directory aufrufen, nicht nur 'Ich erinnere mich, dass X im Ordner Y liegt' sagen."
+    ),
     "policy_injection_one_time": (
         "USER-ENTSCHEIDUNG: '1' (Einmalig erlauben).\n"
         "SYSTEM-BEFEHL: Führe jetzt SOFORT das blockierte Tool aus.\n"

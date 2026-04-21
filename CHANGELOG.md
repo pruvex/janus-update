@@ -7,6 +7,12 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+## [0.4.16-beta.15] - 2026-04-21
+
+### Changed
+- **Prompt-Registry: Neue WERKZEUGNUTZUNGS-DIREKTIVE für Suchanfragen** — `prompt_registry.py::search_command_priority` hinzugefügt: "Wenn der Nutzer eine Suche auf dem System oder der Festplatte fordert, reicht das Wissen aus der FAKTENGRUNDLAGE (Memory) NICHT aus. Du MUSST in diesem Fall zwingend das entsprechende filesystem-Tool aufrufen, um den aktuellen Stand der Hardware zu validieren." Behebt "Brevity-Bias" bei faulen Modellen (wie Nano), die Suchanfragen mit alten Erinnerungen aus Memory beantworten statt Tool-Calls durchzuführen.
+- Version bumped to 0.4.16-beta.15.
+
 ## [0.4.16-beta.14] - 2026-04-21
 
 ### Fixed

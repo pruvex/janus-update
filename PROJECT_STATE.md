@@ -1,6 +1,21 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.15** — "UX-Optimization: Prompt-Registry-Update für Dubletten-Hinweis bei Dateisuchen + find_files max_results Default von 100 auf 20 gesenkt (Fakten-Extraktion-Overhead-Begrenzung).")
+# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.16** — "UX-Optimization: Neue WERKZEUGNUTZUNGS-DIREKTIVE für Suchanfragen (search_command_priority) — bricht Brevity-Bias bei faulen Modellen, zwingt Tool-Calls statt Memory-Antworten.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-21 22:15 (UX-Optimization Prompt-Registry + Limit-Senkung — SEALED)
+**Aktualisiert:** 2026-04-21 22:30 (WERKZEUGNUTZUNGS-DIREKTIVE — search_command_priority — SEALED)
+
+---
+
+## [CURRENT_SESSION_DELTA] (WERKZEUGNUTZUNGS-DIREKTIVE — search_command_priority 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **WERKZEUGNUTZUNGS-DIREKTIVE: Suchanfragen haben Vorrang vor Memory — Brevity-Bias bei faulen Modellen brechen** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-21) |
+| **Umsetzung** | Neue Prompt-Registry-Direktive `search_command_priority` in `@c:\KI\Janus-Projekt\backend\services\orchestrator\prompt_registry.py:74` hinzugefügt: "!!! WERKZEUGNUTZUNGS-DIREKTIVE — SUCHANFRAGEN HABEN VORRANG VOR MEMORY !!! Wenn der Nutzer eine Suche auf dem System oder der Festplatte fordert, reicht das Wissen aus der FAKTENGRUNDLAGE (Memory) NICHT aus. Du MUSST in diesem Fall zwingend das entsprechende filesystem-Tool aufrufen, um den aktuellen Stand der Hardware zu validieren. VERBOTEN: Antworten basierend auf alten Erinnerungen ohne Tool-Call. BEISPIEL: User fragt 'Wo liegt die Datei X?' → DU MUSST filesystem.find_files oder filesystem.list_directory aufrufen, nicht nur 'Ich erinnere mich, dass X im Ordner Y liegt' sagen." Der LLM wird gezwungen, bei Suchanfragen Tool-Calls durchzuführen, statt sich auf alte Erinnerungen aus Memory zu verlassen. |
+| **Root Cause** | "Brevity-Bias" bei faulen Modellen (wie Nano): Wenn der Memory-Context gut ist, beantwortet der LLM Suchanfragen mit alten Erinnerungen statt Tool-Calls durchzuführen. Resultat: User bekommt veraltete Informationen statt aktueller Hardware-Validierung. |
+| **Ergebnis** | LLM führt bei Suchanfragen jetzt zwingend Tool-Calls durch (filesystem.find_files, filesystem.list_directory), selbst wenn Memory bereits Informationen über die Datei enthält. Aktuelle Hardware-Validierung hat Vorrang vor alten Erinnerungen. |
+| **Files** | `backend/services/orchestrator/prompt_registry.py` (search_command_priority Direktive hinzugefügt). |
+| **Verifikation** | Unit-Smoke: `prompt_registry.get_directive('search_command_priority')` enthält "FAKTENGRUNDLAGE", "filesystem-Tool aufrufen" und "Wo liegt die Datei X" ✅. |
+| **Patterns** | [LESSON] #LLM #BrevityBias "Faule Modelle bevorzugen kurze Antworten aus Memory über Tool-Calls — bei Suchanfragen muss Tool-Call-Pflicht explizit erzwungen werden", [LESSON] #Prompting "WERKZEUGNUTZUNGS-DIREKTIVE mit !!!-Prefix und VERBOTEN-Text erzwingt strikte Tool-Call-Pflicht". |
 
 ---
 
