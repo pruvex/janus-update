@@ -192,7 +192,7 @@ class SkillMetadata(BaseModel):
     tags: List[str] = Field(default_factory=list)
     capabilities: List[str] = Field(default_factory=list)
     version: str = "1.0.0"
-    sandbox_level: Literal["unrestricted", "workspace_only", "read_only_fs"] = "unrestricted"
+    sandbox_level: Literal["unrestricted", "workspace_only", "read_only_fs", "full"] = "unrestricted"
     depends_on: List[str] = Field(default_factory=list)
     is_agent_ready: bool = True
     max_calls_per_turn: int = Field(default=3, ge=1)

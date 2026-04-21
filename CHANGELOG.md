@@ -7,6 +7,15 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+## [0.4.16-beta.14] - 2026-04-21
+
+### Fixed
+- **Core-Repair: Numpy Shape Error im Memory-Retrieval** — `calculate_similarity_with_precomputed()` / `calculate_similarity_batch()` in `backend/services/vector_service.py` crashten regelmäßig mit `setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (N,) + inhomogeneous part` bei jedem Chat-Query. Ursache: `np.array(candidate_embeddings, dtype=float32)` bricht ab, sobald auch nur ein Memory-Slot ein `None`-Embedding oder eine abweichende Vektor-Dimension hat (kommt bei Slots ohne gecachtes Embedding oder Legacy-Embeddings anderer Modell-Versionen vor). Fix: Neuer Helper `_safe_stack_embeddings()` filtert invalide Einträge (None, falscher Shape, Dim-Mismatch, NaN) vor `np.stack`. Beide API-Funktionen behalten die Output-Länge bei (0.0-Padding an gefilterten Positionen), damit Caller-Alignment intakt bleibt. Bei gefilterten Einträgen wird ein WARNING mit Count + Query-Dim geloggt.
+- **Core-Repair: SkillMetadata-Literal-Divergenz** — `schemas.py::SkillMetadata.sandbox_level` erlaubte nur `"unrestricted" | "workspace_only" | "read_only_fs"`, während **11 filesystem-Skill-Manifests** konsistent `"full"` nutzten. Pydantic validierte den Wert still nicht (tolerate-Loader-Pfad), aber jede zukünftige Strict-Validierung wäre gebrochen. Fix: `"full"` als valides Literal hinzugefügt (semantisch: volle FS-Rechte innerhalb der Path-Sentinel-Workspace-Grenze, distinkt von `"workspace_only"` oder `"read_only_fs"`).
+
+### Changed
+- Version bumped to 0.4.16-beta.14.
+
 ## [0.4.16-beta.13] - 2026-04-21
 
 ### Added

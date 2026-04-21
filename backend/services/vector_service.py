@@ -189,20 +189,94 @@ def generate_embedding(text: str, wait_for_model: bool = True) -> Optional[str]:
         return None
 
 
+def _safe_stack_embeddings(
+    candidate_embeddings: List[Any],
+    expected_dim: Optional[int] = None,
+) -> tuple[List[int], Optional[np.ndarray], int]:
+    """Filtert invalide Embeddings (None, falsche Shape, falsche Dimension) aus einer heterogenen
+    Kandidatenliste und stackt den Rest in ein kompaktes np.ndarray (float32).
+
+    Gibt zurück:
+        valid_indices: Die Original-Indizes der validen Embeddings (für Score-Alignment).
+        stacked:       (n_valid, dim)-Array oder None, wenn nichts valide war.
+        dropped:       Anzahl gefilterter Einträge (für Log-Diagnose).
+
+    Hintergrund: np.array(list_of_lists, dtype=float32) bricht mit
+    "inhomogeneous shape" ab, sobald auch nur ein Eintrag None ist oder eine
+    abweichende Länge hat. Das passiert im Memory-Retrieval, wenn Slots ohne
+    gecachtes Embedding oder mit legacy-Embeddings unterschiedlicher Modell-Versionen
+    gemischt werden.
+    """
+    if not candidate_embeddings:
+        return [], None, 0
+
+    valid_pairs: list[tuple[int, np.ndarray]] = []
+    dropped = 0
+    for i, emb in enumerate(candidate_embeddings):
+        if emb is None:
+            dropped += 1
+            continue
+        if not isinstance(emb, (list, tuple, np.ndarray)):
+            dropped += 1
+            continue
+        try:
+            arr = np.asarray(emb, dtype=np.float32)
+        except (ValueError, TypeError):
+            dropped += 1
+            continue
+        if arr.ndim != 1 or arr.size == 0:
+            dropped += 1
+            continue
+        if not np.all(np.isfinite(arr)):
+            dropped += 1
+            continue
+        valid_pairs.append((i, arr))
+
+    if not valid_pairs:
+        return [], None, dropped
+
+    # Referenz-Dimension: explizit vorgegeben, sonst die des ersten validen Eintrags
+    ref_dim = expected_dim if expected_dim is not None else valid_pairs[0][1].size
+    consistent = [(i, a) for i, a in valid_pairs if a.size == ref_dim]
+    dropped += len(valid_pairs) - len(consistent)
+
+    if not consistent:
+        return [], None, dropped
+
+    indices = [i for i, _ in consistent]
+    stacked = np.stack([a for _, a in consistent], axis=0)
+    return indices, stacked, dropped
+
+
 def calculate_similarity_batch(query_text: str, candidate_embeddings: List[List[float]]) -> List[float]:
     """
     Berechnet die Ähnlichkeit zwischen Query-Text und einer Liste von Vektoren.
+
+    Robust gegen inhomogene Embedding-Listen (None, falsche Dimension, NaN) —
+    invalide Einträge werden übersprungen und mit Score 0.0 aligned.
     """
     model = _get_model()  # Modell "lazy" anfordern
     if model is None or not candidate_embeddings:
-        return []
+        return [0.0] * len(candidate_embeddings) if candidate_embeddings else []
 
     try:
         from sentence_transformers import util
         query_embedding = model.encode(query_text)
-        corpus_embeddings = np.array(candidate_embeddings, dtype=np.float32)
-        cos_scores = util.cos_sim(query_embedding, corpus_embeddings)[0]
-        return cos_scores.tolist()
+        query_dim = int(np.asarray(query_embedding).size)
+        indices, corpus, dropped = _safe_stack_embeddings(candidate_embeddings, expected_dim=query_dim)
+        if dropped:
+            logger.warning(
+                "calculate_similarity_batch: %d/%d Embeddings gefiltert (None/Shape/Dim-Mismatch zu query_dim=%d)",
+                dropped, len(candidate_embeddings), query_dim,
+            )
+        if corpus is None:
+            return [0.0] * len(candidate_embeddings)
+        cos_scores = util.cos_sim(query_embedding, corpus)[0].tolist()
+        # Alignment: Original-Länge beibehalten, invalide Positionen = 0.0
+        scores = [0.0] * len(candidate_embeddings)
+        for local_idx, orig_idx in enumerate(indices):
+            scores[orig_idx] = float(cos_scores[local_idx])
+        return scores
     except Exception as e:
         logger.error(f"Error in batch similarity calculation: {e}")
         return [0.0] * len(candidate_embeddings)
@@ -214,15 +288,29 @@ def calculate_similarity_with_precomputed(
     """
     ISSUE 011: Berechnet Ähnlichkeit mit bereits berechnetem Query-Embedding.
     Vermeidet redundant encode() Aufrufe bei mehreren Suchen pro Query.
+
+    Robust gegen inhomogene Embedding-Listen (None, falsche Dimension, NaN) —
+    invalide Einträge werden übersprungen und mit Score 0.0 aligned.
     """
     if not candidate_embeddings:
         return []
 
     try:
         from sentence_transformers import util
-        corpus_embeddings = np.array(candidate_embeddings, dtype=np.float32)
-        cos_scores = util.cos_sim(query_embedding, corpus_embeddings)[0]
-        return cos_scores.tolist()
+        query_dim = int(np.asarray(query_embedding).size)
+        indices, corpus, dropped = _safe_stack_embeddings(candidate_embeddings, expected_dim=query_dim)
+        if dropped:
+            logger.warning(
+                "calculate_similarity_with_precomputed: %d/%d Embeddings gefiltert (None/Shape/Dim-Mismatch zu query_dim=%d)",
+                dropped, len(candidate_embeddings), query_dim,
+            )
+        if corpus is None:
+            return [0.0] * len(candidate_embeddings)
+        cos_scores = util.cos_sim(query_embedding, corpus)[0].tolist()
+        scores = [0.0] * len(candidate_embeddings)
+        for local_idx, orig_idx in enumerate(indices):
+            scores[orig_idx] = float(cos_scores[local_idx])
+        return scores
     except Exception as e:
         logger.error(f"Error in precomputed similarity calculation: {e}")
         return [0.0] * len(candidate_embeddings)

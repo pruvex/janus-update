@@ -2,6 +2,49 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [LESSON] #Numpy #Embeddings #Robustness "np.array/np.stack auf heterogenen Embedding-Listen bricht mit 'inhomogeneous shape' — sanitize vor stack, Alignment via Padding erhalten"
+- **Kontext:** `backend/services/vector_service.py::calculate_similarity_with_precomputed` baute das Corpus-Array via `np.array(candidate_embeddings, dtype=np.float32)` aus einer `List[List[float]]`. Im Memory-Retrieval sind die Einträge aber *heterogen*: manche Slots haben kein gecachtes Embedding (→ `None`), andere stammen aus älteren Modell-Versionen mit abweichender Dimension (z.B. 512 statt 384), vereinzelt NaN aus defekten Encodings.
+- **Problem:** `np.array(mixed_list, dtype=float32)` scheitert **deterministisch** bei jeder inhomogenen Stelle mit `ValueError: setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (N,) + inhomogeneous part.` Der gesamte Similarity-Batch wirft eine Exception und der Caller kriegt `[0.0] * len(candidates)` zurück — obwohl 26/27 Embeddings valide gewesen wären. Der Bug ist still, weil er im `except Exception` abgefangen und nur geloggt wird; Retrieval-Qualität kollabiert lautlos.
+- **Lösung:** Helper `_safe_stack_embeddings(candidates, expected_dim)` filtert *vor* `np.stack`:
+  ```python
+  valid_pairs = []
+  for i, emb in enumerate(candidates):
+      if emb is None or not isinstance(emb, (list, tuple, np.ndarray)): continue
+      try: arr = np.asarray(emb, dtype=np.float32)
+      except (ValueError, TypeError): continue
+      if arr.ndim != 1 or arr.size == 0 or not np.all(np.isfinite(arr)): continue
+      valid_pairs.append((i, arr))
+  ref_dim = expected_dim or valid_pairs[0][1].size
+  consistent = [(i, a) for i, a in valid_pairs if a.size == ref_dim]
+  return [i for i,_ in consistent], np.stack([a for _,a in consistent]), dropped_count
+  ```
+  **Kritisch: Alignment-Preservation.** Die Consumer-APIs geben `[0.0] * len(original)` zurück und schreiben Scores per `valid_indices[local]→original_idx` — damit bleibt der Caller (Knapsack-Selector o.ä.) index-kompatibel.
+- **Tripwire:** Im Log `Error in precomputed similarity calculation` oder `Error in batch similarity calculation` mit `inhomogeneous part` → **exakt dieser Bug**. Außerdem: Retrieval liefert plötzlich nur noch 0-Scores obwohl Chat aktiv ist.
+- **Location:** `backend/services/vector_service.py::_safe_stack_embeddings` (neu), `calculate_similarity_batch`, `calculate_similarity_with_precomputed`, gefixt 2026-04-21.
+- **Confidence:** High (Unit-Smoke mit `[valid, None, wrong_dim, nan, valid, 'not_list']` → 4 gefiltert, 2 korrekt gescored, Output-Länge 6 erhalten).
+- **Tags:** Numpy, Embeddings, Similarity, Memory, Retrieval, Robustness, Shape, Alignment
+
+## [LESSON] #Pydantic #SchemaDrift "Literals in Pydantic-Schemas driften stillschweigend von realen Config-Werten — baue CI-Drift-Check gegen alle Manifests"
+- **Kontext:** `backend/data/schemas.py::SkillMetadata.sandbox_level` definierte `Literal["unrestricted", "workspace_only", "read_only_fs"]`. Die **11 filesystem-Skill-Manifests** (`read_file.json`, `move_file.json`, …) nutzten aber seit Längerem konsistent den Wert `"full"`.
+- **Problem:** Der Mismatch warf beim Skill-Loading **keinen Fehler** — offenbar wird `SkillMetadata` im Loader mit tolerantem Pfad (`extra=allow` oder `model_validate` ohne `strict=True`) gebaut, oder `sandbox_level` wird überhaupt nie gegen das Schema validiert beim Load. Die Divergenz existiert damit still, aber jede zukünftige Strict-Validierung (z.B. wenn jemand `ConfigDict(strict=True)` hinzufügt) würde 11 Skills auf einmal brechen.
+- **Lösung:** Literal-Liste um tatsächlich genutzten Wert erweitern: `Literal["unrestricted", "workspace_only", "read_only_fs", "full"]`. Die korrekte Richtung war NICHT, 11 Manifests umzubiegen — `"full"` ist semantisch distinkt (volle FS-Rechte innerhalb der Path-Sentinel-Workspace-Grenze, anders als `"workspace_only"` oder `"read_only_fs"`) und die Konvention war gewollt.
+- **Härtung (empfohlen, nicht implementiert):** CI-Check, der alle Manifests in `backend/skills/**/*.json` gegen `SkillMetadata` strikt validiert, würde zukünftige Drift sofort sichtbar machen.
+- **Tripwire:** Wenn ein Schema-Feld einen Literal-Typ hat und eine Config-Datei einen davon abweichenden Wert, aber kein Fehler geworfen wird — das ist der Drift. Erkennbar nur durch manuelles Cross-Ref oder CI-Validator.
+- **Location:** `backend/data/schemas.py:195` (Literal erweitert), gefixt 2026-04-21.
+- **Confidence:** Medium-High (Unit-Smoke: alle 4 Literals akzeptiert, `"hacky"` abgelehnt — aber ohne CI-Validator bleibt Drift-Risiko).
+- **Tags:** Pydantic, Literal, Schema, Config, Drift, Validation, CI
+
+## [PATTERN] #Planning #FehlbefundZurueckweisung "Externe Fix-Pläne immer gegen Code verifizieren, bevor implementiert wird"
+- **Kontext:** Der User übergab einen 3-Punkte-Fix-Plan aus AI Studio. Punkt #2 lautete: "Repariere den OllamaCompiler Import in `backend/services/prompting/factory.py`."
+- **Problem:** Blindes Abarbeiten hätte hier einen Phantom-Fix produziert — `factory.py:3` importiert sauber aus `backend/llm_providers/ollama/compiler.py`, die Klasse `OllamaCompiler(BasePromptCompiler)` existiert, hat eine funktionierende `compile()`-Methode. Der Live-Log zeigte keinen Import-Fehler; Ollama-Polling lief erfolgreich. Kein Beweis für einen Bug.
+- **Pattern:** **Vor Implementation Scope-Review.** Jeder Plan-Punkt wird gegen drei Quellen abgeglichen: (1) Code (existiert die vermutete Fehlstelle?), (2) Log (gibt es Runtime-Evidenz?), (3) Stacktrace/Reproduktion (ist der Bug reproduzierbar?). Nur bei Treffer in mindestens einer Quelle implementieren.
+- **Kommunikation mit User:** Fehlbefund *nicht* stillschweigend skippen, sondern explizit zurückmelden mit Beweis (Code-Zitat, Log-Quote) und User entscheiden lassen — eventuell sieht er etwas, das in meinem Scan fehlte.
+- **Counter-Pattern:** AI-Studio-Pläne blind als Ground-Truth behandeln. Das produziert Schein-Commits, die echten Bugs Aufmerksamkeit wegnehmen und die Test-Suite mit Non-Fixes aufblähen.
+- **Tripwire:** Wenn ein Fix-Plan sehr spezifisch klingt ("Repariere X in Datei Y"), aber du beim Öffnen der Datei keinen Bug siehst und im Log keine Spur findest — **nicht fixen**. Stattdessen zurückmelden.
+- **Location:** Session 2026-04-21 Core-Repair-Arc (OllamaCompiler-Plan-Punkt zurückgewiesen).
+- **Confidence:** High (Backend läuft produktiv, Ollama-Integration aktiv, keine Import-Error-Logs).
+- **Tags:** Planning, Review, AIStudio, FalsePositive, VerifyBeforeFix, Communication
+
 ## [LESSON] #Python #Pathlib #Robustness "Path.rglob bricht bei FileNotFoundError komplett ab — nutze os.walk mit onerror für robuste rekursive Suche"
 - **Kontext:** Für `filesystem.find_files` (rekursive Dateisuche) wurde zunächst `Path(root).rglob(pattern)` genutzt. Auf Windows-Systemen mit defekten/falsch benannten Desktop-Ordnern (z.B. `C:\Users\pruve\Desktop\kikitest.` — Trailing-Dot ist auf NTFS lesbar, aber über manche API-Pfade nicht auflösbar) wirft `rglob` intern `FileNotFoundError: [WinError 3]` und **bricht die gesamte Iteration ab** statt nur den betroffenen Pfad zu überspringen. Ergebnis: Suche liefert 0 Treffer obwohl Datei vorhanden ist.
 - **Lösung:** `os.walk(root, onerror=_walk_onerror)` mit einem `onerror`-Callback, der Per-Pfad-Fehler auf DEBUG loggt und die Iteration weiterführt. Kombiniert mit `fnmatch.filter(filenames, pattern)` ersetzt das `rglob` vollständig, ist robuster UND erlaubt zusätzlich die In-Place-Mutation von `dirnames[:]` für Noise-Ordner-Skips (`Windows`, `node_modules`, etc.).

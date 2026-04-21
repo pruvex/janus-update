@@ -1,6 +1,22 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.13** — "FEATURE: Neuer filesystem.find_files Skill mit rekursiver Dateisuche, Fuzzy-Fallback und Auto-Escalation auf alle lokalen Laufwerke bei ≤1 Workspace-Treffern. Beide Provider (OpenAI + Gemini) verifiziert.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.14** — "CORE-REPAIR: Numpy-Shape-Error im Memory-Retrieval gefixt (inhomogene Embedding-Listen via _safe_stack_embeddings) + SkillMetadata-Literal-Divergenz behoben ('full' sandbox_level regularisiert). Ollama-Compiler-Import als Fehlbefund zurückgewiesen (Code läuft).")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-21 21:45 (FEATURE filesystem.find_files + Auto-Escalation — SEALED)
+**Aktualisiert:** 2026-04-21 22:00 (CORE-REPAIR numpy-shape + sandbox-literal — SEALED)
+
+---
+
+## [CURRENT_SESSION_DELTA] (CORE-REPAIR — Memory-Similarity + Schema-Literal 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **CORE-REPAIR-ARC — "innere Blutungen" im Memory-Retrieval und Schema-Layer stoppen** (Phase 1 von 3-Punkt-AI-Studio-Plan) |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-21) |
+| **Umsetzung** | **Scope-Review mit Fehlbefund-Zurückweisung:** Vor Implementierung alle 3 geplanten Baustellen gegen Code verifiziert. Bug #1 (Numpy) und #3 (Schema) bestätigt; Bug #2 (OllamaCompiler-Import) als Fehlbefund zurückgewiesen — `@c:\KI\Janus-Projekt\backend\services\prompting\factory.py:3` importiert sauber aus intakter `@c:\KI\Janus-Projekt\backend\llm_providers\ollama\compiler.py:5`, Live-Log zeigt keinen Import-Fehler. **Fix #1 — Numpy Shape Error:** In `@c:\KI\Janus-Projekt\backend\services\vector_service.py` neuer Helper `_safe_stack_embeddings(candidates, expected_dim)` filtert None, Nicht-Listen, leere Arrays, NaN-Vektoren und Dim-Mismatches vor `np.stack`. Beide Consumer (`calculate_similarity_batch`, `calculate_similarity_with_precomputed`) nutzen den Helper und behalten Output-Alignment via 0.0-Padding auf invaliden Positionen. Warning-Log bei jedem gefilterten Eintrag mit `dropped/total` und `query_dim` für Diagnose. **Fix #3 — SkillMetadata-Literal:** `@c:\KI\Janus-Projekt\backend\data\schemas.py:195` um `"full"` als 4. valides Literal erweitert (wird von 11 filesystem-Skills konsistent genutzt — war stille Divergenz zwischen Manifests und Schema). |
+| **Root Cause (#1)** | Embedding-Kandidatenlisten im Memory-Retrieval sind heterogen: Slots ohne gecachtes Embedding liefern `None`, Legacy-Slots aus anderen Modell-Versionen haben abweichende Dimensionen (z.B. 512 statt 384 des `all-MiniLM-L6-v2`). `np.array(list, dtype=float32)` bricht bei jeder inhomogenen Stelle mit `ValueError: setting an array element with a sequence` ab — der gesamte Similarity-Batch scheiterte, obwohl 26 von 27 Embeddings valide gewesen wären. |
+| **Root Cause (#3)** | Drift zwischen Skill-Manifests (nutzten `"full"`) und Pydantic-Schema (kannte nur 3 Literals). Validator war offenbar im toleranten Pfad eingehängt, sodass der Mismatch keinen Ladungsfehler warf, aber jede strikte Validierung wäre zerbrochen. |
+| **Ergebnis** | `[ERROR] Error in precomputed similarity calculation: ... inhomogeneous part` verschwindet aus dem Log. Memory-Retrieval liefert korrekte Scores für alle validen Slots statt 0-Fallback-Liste. `SkillMetadata(sandbox_level="full")` validiert jetzt sauber (Smoke-Test: alle 4 Literals akzeptiert, invalide Werte `ValidationError`). Unit-Smoke mit 6-Element-Mischliste (2 valide, 4 invalide): `scores=[0.99, 0.0, 0.0, 0.0, 1.0, 0.0]` — perfektes Alignment. |
+| **Files** | `backend/services/vector_service.py` (+~60 Zeilen: `_safe_stack_embeddings` Helper + beide Consumer gehärtet mit Alignment-Preservation), `backend/data/schemas.py` (1-Zeilen-Edit: Literal um `"full"` erweitert). |
+| **Verifikation** | Unit-Smoke Fix #1: `_safe_stack_embeddings` mit homogener Liste → `dropped=0` ✅ · mit `[valid, None, wrong_dim, nan_vec, valid, 'not_list']` → `dropped=4, shape=(2,384)` ✅ · `calculate_similarity_with_precomputed` behält Output-Länge 6 mit 0.0-Padding ✅ · empty/all-bad keine Crashes ✅. Unit-Smoke Fix #3: alle 4 Literal-Werte akzeptiert ✅, `"hacky"` → `ValidationError` ✅. |
+| **Patterns** | [LESSON] #Numpy #Embeddings #Robustness "np.array/np.stack auf heterogenen Embedding-Listen (None/Dim-Drift) bricht mit inhomogeneous shape — sanitize vor stack, Alignment via Padding erhalten", [LESSON] #Pydantic #SchemaDrift "Literals in Schemas und die tatsächlichen Werte in Config-Files/Manifests driften stillschweigend auseinander, wenn der Loader tolerant ist — Schema-Drift-Check beim CI gegen alle Manifests wäre eine sinnvolle Härtung", [PATTERN] #Planning #FehlbefundZurueckweisung "Externe Fix-Pläne (AI-Studio-generiert) immer gegen Code verifizieren, bevor implementiert wird — blindes Abarbeiten führt zu Schein-Commits ohne realen Bug-Bezug". |
 
 ---
 
