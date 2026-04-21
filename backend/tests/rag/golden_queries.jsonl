@@ -1,0 +1,29 @@
+{"query": "Skandinavien Hauptstadt", "expected_paths": ["die.pdf"], "min_rank": 1, "query_type": "prose", "confidence": "high"}
+{"query": "Schweden Hauptstadt Stockholm", "expected_paths": ["die.pdf"], "min_rank": 1, "query_type": "prose", "confidence": "high"}
+{"query": "Bevoelkerung Skandinavien", "expected_paths": ["die.pdf"], "min_rank": 5, "query_type": "prose", "confidence": "high"}
+{"query": "Hauptstaedte Skandinavien", "expected_paths": ["die.pdf"], "min_rank": 1, "query_type": "prose", "confidence": "high"}
+{"query": "Recherchierte Kerndaten", "expected_paths": ["die.pdf"], "min_rank": 1, "query_type": "prose", "confidence": "high"}
+{"query": "Skill knowledge query", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill filesystem find files", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill memory recall", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill video transcript", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill web search", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill rag query", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill pdf generator", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill execution engine", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill orchestrator", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill memory save", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill memory extract", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill project", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill video player", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill image analysis", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill audio", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill code", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill file system", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill database", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill api", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill router", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill selector", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill tool", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill workflow", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
+{"query": "Skill integration", "expected_paths": ["janus_skill_index"], "min_rank": 1, "query_type": "code", "confidence": "high"}
