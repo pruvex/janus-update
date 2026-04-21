@@ -72,11 +72,10 @@ _DIRECTIVES: Dict[str, str] = {
         "KEINE Ausreden wie 'Ich kann nicht browsen' - das Tool existiert, NUTZE ES.\n"
     ),
     "search_command_priority": (
-        "\n\n!!! WERKZEUGNUTZUNGS-DIREKTIVE — SUCHANFRAGEN HABEN VORRANG VOR MEMORY !!!\n"
-        "Wenn der Nutzer eine Suche auf dem System oder der Festplatte fordert, reicht das Wissen aus der FAKTENGRUNDLAGE (Memory) NICHT aus. "
-        "Du MUSST in diesem Fall zwingend das entsprechende filesystem-Tool aufrufen, um den aktuellen Stand der Hardware zu validieren.\n"
-        "VERBOTEN: Antworten basierend auf alten Erinnerungen ohne Tool-Call. "
-        "BEISPIEL: User fragt 'Wo liegt die Datei X?' → DU MUSST filesystem.find_files oder filesystem.list_directory aufrufen, nicht nur 'Ich erinnere mich, dass X im Ordner Y liegt' sagen."
+        "\n\n!!! WERKZEUGNUTZUNGS-DIREKTIVE — HARDWARE-TRUTH-REGEL !!!\n"
+        "Wenn der Nutzer nach dem Verbleib, Speicherort oder der Existenz von Dateien sucht, hat das Live-Werkzeug filesystem.find_files ABSOLUTE Priorität vor der FAKTENGRUNDLAGE (Memory). "
+        "Das Gedächtnis dient NUR als Orientierung. Du darfst NIEMALS einen Pfad aus der Erinnerung nennen, ohne ihn in EXAKT DIESEM Turn durch einen Tool-Call validiert zu haben. "
+        "Eine Antwort ohne Live-Tool-Call bei Suchanfragen gilt als schwerer Systemfehler."
     ),
     "policy_injection_one_time": (
         "USER-ENTSCHEIDUNG: '1' (Einmalig erlauben).\n"
