@@ -377,6 +377,56 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"[P8] Failed to start RAG Watchdog: {e}")
 
+    # 6. FINAL: Global Scope Discovery (Async indexing of ~/Documents and ~/Desktop)
+    def run_global_discovery():
+        """Run background discovery of global user directories."""
+        try:
+            import os
+            from backend.services.rag.ingestion import IngestionRun
+            from backend.utils.paths import get_app_data_dir
+
+            gold_formats = [".pdf", ".md", ".txt", ".py", ".js", ".ts", ".docx"]
+
+            # Discover global locations
+            global_locations = []
+            documents_path = os.path.expanduser("~/Documents")
+            desktop_path = os.path.expanduser("~/Desktop")
+
+            if os.path.exists(documents_path):
+                global_locations.append(documents_path)
+            if os.path.exists(desktop_path):
+                global_locations.append(desktop_path)
+
+            if not global_locations:
+                logger.info("[FINAL] No global locations found for discovery")
+                return
+
+            logger.info(f"[FINAL] Background Discovery started for {len(global_locations)} locations: {global_locations}")
+
+            # Run ingestion for each location
+            for location in global_locations:
+                try:
+                    ingest = IngestionRun(
+                        root_dir=location,
+                        chroma_path=str(Path(get_app_data_dir()) / "rag_chroma_db_v2"),
+                        db_path=str(Path(get_app_data_dir()) / "knowledge_index_v2.db"),
+                        enable_path_policy=True,
+                    )
+                    stats = ingest.run()
+                    logger.info(f"[FINAL] Discovery completed for {location}: {stats}")
+                except Exception as e:
+                    logger.error(f"[FINAL] Discovery failed for {location}: {e}", exc_info=True)
+
+        except Exception as e:
+            logger.error(f"[FINAL] Global discovery failed: {e}", exc_info=True)
+
+    try:
+        discovery_thread = threading.Thread(target=run_global_discovery, daemon=True)
+        discovery_thread.start()
+        logger.info("[FINAL] Global discovery thread started (daemon)")
+    except Exception as e:
+        logger.warning(f"[FINAL] Failed to start global discovery: {e}")
+
     # 5. Test database connection
     try:
         db = next(database.get_db_sync())

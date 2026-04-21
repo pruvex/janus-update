@@ -87,12 +87,22 @@ class FormatRouter:
     Routes file paths to the appropriate adapter based on extension.
 
     Adapters are tried in order; the first one whose .supports() returns True wins.
+
+    FINAL: Format-Gatekeeper ensures only Gold-Formates are processed.
     """
 
     ADAPTERS: List[BaseAdapter] = [
         MarkdownAdapter(),
         CodeAdapter(),
     ]
+
+    # FINAL: Gold-Formates for global discovery
+    GOLD_FORMATS = {".pdf", ".md", ".txt", ".py", ".js", ".ts", ".docx"}
+
+    @classmethod
+    def is_gold_format(cls, path: Path) -> bool:
+        """Check if file extension is in the Gold-Formats list."""
+        return path.suffix.lower() in cls.GOLD_FORMATS
 
     @classmethod
     def get_adapter(cls, path: Path) -> Optional[BaseAdapter]:
@@ -196,17 +206,22 @@ class IngestionRun:
         return COLLECTION_PROSE
 
     def _scan_files(self) -> List[Path]:
-        """Recursively find all supported files under root_dir."""
+        """
+        Recursively find all supported files under root_dir.
+
+        FINAL: Format-Gatekeeper ensures only Gold-Formates are processed.
+        """
         files: List[Path] = []
         if not self.root_dir.exists():
             logger.warning(f"Root directory does not exist: {self.root_dir}")
             return files
 
         for p in self.root_dir.rglob("*"):
-            if p.is_file() and FormatRouter.is_supported(p):
+            # FINAL: Check if file is supported AND is a gold format
+            if p.is_file() and FormatRouter.is_supported(p) and FormatRouter.is_gold_format(p):
                 files.append(p)
 
-        logger.info(f"Scan found {len(files)} supported files in {self.root_dir}")
+        logger.info(f"Scan found {len(files)} gold-format files in {self.root_dir}")
         return files
 
     def _needs_indexing(self, path: Path, stored: Optional[IndexedFile]) -> Tuple[bool, str]:
