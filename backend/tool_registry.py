@@ -410,6 +410,7 @@ def register_all_tools():
         (filesystem_manager.rename_file, schemas.RenameFileArgs),
         (filesystem_tools.move_file, schemas.MoveFileArgs),
         (filesystem_manager.move_files, schemas.MoveFilesArgs),
+        (filesystem_manager.find_files, schemas.FindFilesArgs),
     ]
     for func, schema in fs_tools:
         tool_manager.register_tool(func, schema)

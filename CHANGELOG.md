@@ -7,6 +7,21 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+## [0.4.16-beta.13] - 2026-04-21
+
+### Added
+- **Neuer Skill `filesystem.find_files`** — rekursive Dateisuche über alle freigegebenen Workspaces mit Auto-Escalation auf alle lokalen Laufwerke (C:\, D:\, E:\) bei ≤1 Treffer. Schließt die Lücke, dass Janus bei "wo finde ich datei xy?" bisher nichts finden konnte (vorhandene `list_directory` war non-rekursiv). Features: Glob-Pattern (`*.pdf`, `*gundula*`), Fuzzy-Substring-Fallback (reiner Name → `*name*`), Path-Sentinel-Schutz, Noise-Ordner-Skip (`Windows`, `Program Files`, `node_modules`, `.git`, `AppData`, etc.), Duplikat-Dedup via `existing`-Set, explizites `search_all_drives` für bewusste Opt-In-Suche, `auto_escalated`-Flag in Response.
+- `_enumerate_local_drives()` Helper und `_ALL_DRIVES_EXCLUDE_DIRS` Noise-Liste in `backend/services/filesystem_manager.py`.
+- `FindFilesArgs` Pydantic-Schema in `backend/data/schemas.py` mit LLM-Trigger-Hints für `search_all_drives` (User-Formulierungen "überall", "Duplikate", "ganzer Rechner").
+- Skill-Manifest `backend/skills/filesystem/find_files.json` mit `latency_class: slow` und `max_calls_per_turn: 2`.
+
+### Changed
+- `backend/tool_registry.py`: `filesystem.find_files` in `fs_tools` registriert.
+- Version bumped to 0.4.16-beta.13.
+
+### Fixed
+- Interne Robustheit bei rekursiver Suche: Umstieg von `Path.rglob` auf `os.walk` + `fnmatch` mit `onerror`-Callback, da `rglob` bei defekten Symlinks/unerreichbaren Desktop-Ordnern (`C:\Users\pruve\Desktop\kikitest.`) mit `FileNotFoundError` abbricht, statt einzelne Pfade zu überspringen.
+
 ## [0.4.16-beta.11] - 2026-04-21
 
 ### Fixed

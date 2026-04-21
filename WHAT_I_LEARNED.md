@@ -2,6 +2,45 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [LESSON] #Python #Pathlib #Robustness "Path.rglob bricht bei FileNotFoundError komplett ab — nutze os.walk mit onerror für robuste rekursive Suche"
+- **Kontext:** Für `filesystem.find_files` (rekursive Dateisuche) wurde zunächst `Path(root).rglob(pattern)` genutzt. Auf Windows-Systemen mit defekten/falsch benannten Desktop-Ordnern (z.B. `C:\Users\pruve\Desktop\kikitest.` — Trailing-Dot ist auf NTFS lesbar, aber über manche API-Pfade nicht auflösbar) wirft `rglob` intern `FileNotFoundError: [WinError 3]` und **bricht die gesamte Iteration ab** statt nur den betroffenen Pfad zu überspringen. Ergebnis: Suche liefert 0 Treffer obwohl Datei vorhanden ist.
+- **Lösung:** `os.walk(root, onerror=_walk_onerror)` mit einem `onerror`-Callback, der Per-Pfad-Fehler auf DEBUG loggt und die Iteration weiterführt. Kombiniert mit `fnmatch.filter(filenames, pattern)` ersetzt das `rglob` vollständig, ist robuster UND erlaubt zusätzlich die In-Place-Mutation von `dirnames[:]` für Noise-Ordner-Skips (`Windows`, `node_modules`, etc.).
+  ```python
+  def _walk_onerror(err: OSError) -> None:
+      logger.debug("find_files: Überspringe unerreichbaren Pfad (%s)", err)
+
+  for dirpath, dirnames, filenames in os.walk(str(root), onerror=_walk_onerror):
+      if apply_exclude:
+          dirnames[:] = [d for d in dirnames if d.lower() not in EXCLUDE_DIRS]
+      for fname in fnmatch.filter(filenames, effective_pattern):
+          matches.append(os.path.join(dirpath, fname))
+  ```
+- **Tripwire:** Wenn eine rekursive Path-Suche auf Windows unerwartet 0 Treffer liefert, obwohl die Datei existiert, und im Log `WinError 3` oder `FileNotFoundError` auftaucht — das ist der Bug.
+- **Location:** `backend/services/filesystem_manager.py::find_files` (Z. 370ff), gefixt 2026-04-21
+- **Confidence:** High (Live-verifiziert: Auto-Escalation über 3 Laufwerke findet beide Duplikate trotz 20+ defekten Desktop-Ordnern)
+- **Tags:** Python, Pathlib, rglob, os.walk, Windows, Symlink, Robustness, Iteration
+
+## [PATTERN] #Skill #AutoEscalation "Mehrstufige Skill-Eskalation (cheap→expensive) ohne LLM-Intervention"
+- **Kontext:** `filesystem.find_files` soll bei "wo finde ich xy?" schnell in Workspaces suchen (Default ~200ms) UND bei Nichtfund automatisch global auf allen Laufwerken nachschauen (~5s warm, ~20s cold). Wenn man dem LLM beide Parameter (`search_all_drives=true/false`) überlässt, trifft es oft die falsche Entscheidung (entweder zu langsam als Default oder übersieht Duplikate).
+- **Pattern:** **Zwei-Phasen-Sweep mit fester Heuristik im Skill selbst** — Phase 1 läuft immer billig; wenn Phase-1-Ergebnis unter einer klaren Schwelle (hier: ≤1 Treffer) bleibt UND der User keinen expliziten Scope (`root`) gesetzt hat, eskaliert Phase 2 automatisch auf den teureren globalen Sweep. Ergebnisse werden via `existing`-Set dedupliziert. Response enthält `auto_escalated: bool` als Transparenz-Flag.
+  ```python
+  # Phase 1: billig
+  truncated = _sweep(workspaces, apply_exclude=False, current_matches=matches)
+  # Phase 2: bei Bedarf teuer
+  if not truncated and len(matches) <= 1 and not explicit_root:
+      auto_escalated = True
+      _sweep(_enumerate_local_drives(), apply_exclude=True, current_matches=matches)
+  ```
+- **Warum im Skill, nicht im LLM:** (a) Das LLM muss keine Latenz-Tradeoff-Entscheidung treffen. (b) Keine Token-Verschwendung durch zweiten Tool-Call. (c) Die Heuristik ist deterministisch testbar. (d) Der User kriegt das beste UX: Frage einmal, richtige Antwort — egal ob Datei im Workspace oder außerhalb.
+- **Trigger-Kriterien für Auto-Escalation allgemein:**
+  1. Phase-1-Ergebnis ist **informationsarm** (leer, 1 Treffer, generische Fehlermeldung).
+  2. Kein expliziter User-Scope gesetzt, der das verbieten würde.
+  3. Phase-2-Kosten sind **akzeptabel** (hier: +5s, nicht +5min).
+- **Counter-Pattern (NICHT):** Auto-Escalation in Phase 2 darf NIEMALS mutierend sein (z.B. auto-upgrade von `find` auf `delete`). Nur read-only/discovery-Skills qualifizieren.
+- **Location:** `backend/services/filesystem_manager.py::find_files` (Auto-Escalation-Block ~Z. 404-413)
+- **Confidence:** High (Live-Test mit beiden Providern OpenAI + Gemini: simple User-Frage findet beide Duplikate automatisch)
+- **Tags:** Skill, AutoEscalation, Pattern, LatencyTradeoff, Filesystem, Discovery, UX
+
 ## [LESSON] #LLM #Gemini #ToolResponse "Structured Dict for FunctionResponse — NEVER pass JSON-string as content wrapper"
 - **Kontext:** Der Gemini-Provider (`backend/llm_providers/gemini/service.py`) übersetzt OpenAI-kompatible Tool-Messages (`role: "tool"`) in `protos.FunctionResponse`. Die `content`-Felder in unseren Tool-Results sind historisch **JSON-Strings** (`'{"status":"ok","data":{"contents":[...]}}'`), weil die Executor-Schicht alles uniform serialisiert.
 - **Problem:** Beim ersten Versuch wurde schlicht `response={"content": message.get("content")}` an `protos.FunctionResponse` übergeben. Gemini bekam also ein Dict, dessen einziger Wert ein undurchsichtiger JSON-String ist. Gemini interpretierte das **nicht** als "Tool hat Daten geliefert" — im zweiten Roundtrip rief Gemini dasselbe Tool mit identischen Args erneut auf. Der `HARD-LOOP-BREAKER` im Orchestrator blockte den Duplicate-Call → Gemini halluzinierte eine irrelevante Antwort ("Das PDF ist in Ihrer Dokumentenliste verfügbar."). OpenAI war davon nie betroffen, weil OpenAI JSON-Strings im `content`-Feld tolerant parst.

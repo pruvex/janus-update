@@ -183,6 +183,10 @@ class SkillResponse(BaseModel):
 
 
 class SkillMetadata(BaseModel):
+    description: Optional[str] = Field(
+        default=None,
+        description="Menschenlesbare Skill-Beschreibung (für Agent-Planner Prompts und UI).",
+    )
     examples: List[Dict[str, Any]] = Field(default_factory=list)
     latency_class: Literal["fast", "normal", "slow"] = "normal"
     tags: List[str] = Field(default_factory=list)
@@ -687,6 +691,42 @@ class MoveFilesArgs(BaseModel):
     pattern: str = Field(
         ...,
         description="Glob-Muster nur für Dateinamen im Quellordner (z.B. '*.pdf'). Keine '..'.",
+    )
+
+
+class FindFilesArgs(BaseModel):
+    pattern: str = Field(
+        ...,
+        description=(
+            "Dateinamen-Glob für die rekursive Suche (z.B. '*.pdf', '*gundula*', 'gundula1.pdf'). "
+            "KEINE Pfadsegmente, nur Dateinamen. Wenn das Pattern weder '*' noch '?' enthält, "
+            "wird automatisch Substring-Suche verwendet (z.B. 'gundula' → '*gundula*')."
+        ),
+    )
+    root: Optional[str] = Field(
+        None,
+        description=(
+            "Optional: Startordner (Workspace-relativer oder absoluter Pfad). "
+            "Wenn leer/None, werden ALLE freigegebenen Workspaces rekursiv durchsucht — "
+            "das ist der empfohlene Default, wenn der User keinen Pfad nennt."
+        ),
+    )
+    max_results: Optional[int] = Field(
+        100,
+        ge=1,
+        le=1000,
+        description="Obergrenze für Treffer (1–1000, Default 100).",
+    )
+    search_all_drives: Optional[bool] = Field(
+        False,
+        description=(
+            "Wenn True: durchsucht ALLE lokalen Laufwerke (C:\\, D:\\, ...) — nicht nur freigegebene Workspaces. "
+            "SETZE DIESEN PARAMETER AUF TRUE, wenn der User Formulierungen wie 'überall', 'auf dem ganzen Rechner', "
+            "'alle Kopien', 'Duplikate', 'wo liegt die Datei überall' benutzt, ODER wenn ein vorheriger find_files-Aufruf "
+            "ohne dieses Flag nur 0 oder 1 Treffer lieferte und der User mehr Instanzen erwartet. "
+            "Dauert deutlich länger (mehrere Sekunden), überspringt aber automatisch System-/Noise-Ordner. "
+            "Wird ignoriert, wenn 'root' gesetzt ist."
+        ),
     )
 
 

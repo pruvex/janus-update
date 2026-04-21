@@ -285,6 +285,161 @@ def list_directory(path: str, pattern: Optional[str] = None) -> ToolResultV1:
         return _map_filesystem_exception(started, e)
 
 
+_ALL_DRIVES_EXCLUDE_DIRS = {
+    # Windows-System / Noise-Ordner — nie durchsuchen
+    "$recycle.bin", "system volume information", "windows", "windows.old",
+    "program files", "program files (x86)", "programdata",
+    "msocache", "recovery", "perflogs",
+    # Entwickler-Noise
+    "node_modules", ".git", ".venv", "venv", "__pycache__", ".cache",
+    ".pytest_cache", ".ruff_cache", ".mypy_cache", "dist", "build",
+    # Browser-Caches & AppData-Untermengen (zu groß, irrelevant)
+    "appdata",
+}
+
+
+def _enumerate_local_drives() -> list[Path]:
+    """Liefert vorhandene lokale Windows-Laufwerke (C:\\, D:\\, ...)."""
+    import string
+    drives: list[Path] = []
+    for letter in string.ascii_uppercase:
+        drive = Path(f"{letter}:\\")
+        try:
+            if drive.exists():
+                drives.append(drive)
+        except OSError:
+            continue
+    return drives
+
+
+def find_files(
+    pattern: str,
+    root: Optional[str] = None,
+    max_results: int = 100,
+    search_all_drives: bool = False,
+) -> ToolResultV1:
+    """Rekursive Dateisuche über alle freigegebenen Workspaces (oder einen spezifischen Root).
+
+    Args:
+        pattern: Glob-Muster (z.B. '*.pdf', '*gundula*', 'gundula1.pdf'). Nur Dateinamen, keine Pfadsegmente.
+                 Wenn das Pattern weder '*' noch '?' enthält, wird es als '*<pattern>*' (Substring-Suche) interpretiert.
+        root:    Optional: Workspace-relativer oder absoluter Pfad als Startordner. None → ALLE Workspaces.
+        max_results: Harte Obergrenze für Treffer (Default 100).
+        search_all_drives: Wenn True, werden ALLE lokalen Windows-Laufwerke (C:\\, D:\\, ...) durchsucht
+                           — unabhängig von Workspaces. Dauert länger, findet aber Duplikate überall.
+                           System-/Noise-Ordner (Windows, Program Files, node_modules, .git, ...) werden übersprungen.
+
+    Returns:
+        ToolResultV1 mit data.matches (Liste von absoluten Pfaden) und data.count.
+    """
+    started = time.perf_counter()
+    try:
+        if not pattern or not str(pattern).strip():
+            return _fs_err("INVALID_ARGUMENT", "Fehler: 'pattern' darf nicht leer sein.", started=started)
+
+        _validate_glob_pattern(pattern)
+        # Pfadsegmente im Pattern verbieten (Suche nur nach Dateinamen):
+        if "/" in pattern or "\\" in pattern:
+            return _fs_err(
+                "INVALID_ARGUMENT",
+                "Fehler: 'pattern' darf keine Pfadsegmente enthalten — nur Dateinamen-Glob (z.B. '*.pdf').",
+                started=started,
+            )
+
+        # Fuzzy-Fallback: Wenn kein Glob-Zeichen vorhanden → Substring-Suche
+        effective_pattern = pattern
+        if "*" not in pattern and "?" not in pattern:
+            effective_pattern = f"*{pattern}*"
+
+        try:
+            max_results_int = max(1, min(int(max_results), 1000))
+        except Exception:
+            max_results_int = 100
+
+        import fnmatch
+        import os as _os
+
+        def _walk_onerror(err: OSError) -> None:
+            logger.debug("find_files: Überspringe unerreichbaren Pfad (%s)", err)
+
+        def _sweep(sweep_roots: list[Path], apply_exclude: bool, current_matches: list[str]) -> bool:
+            """Durchsucht sweep_roots rekursiv, appendet an current_matches. Returns True wenn truncated."""
+            existing = set(current_matches)
+            for ws_root in sweep_roots:
+                if not ws_root.is_dir():
+                    continue
+                if str(ws_root) not in searched_roots:
+                    searched_roots.append(str(ws_root))
+                for dirpath, dirnames, filenames in _os.walk(str(ws_root), onerror=_walk_onerror):
+                    if apply_exclude:
+                        dirnames[:] = [d for d in dirnames if d.lower() not in _ALL_DRIVES_EXCLUDE_DIRS]
+                    for fname in fnmatch.filter(filenames, effective_pattern):
+                        full = _os.path.join(dirpath, fname)
+                        if full in existing:
+                            continue
+                        existing.add(full)
+                        current_matches.append(full)
+                        if len(current_matches) >= max_results_int:
+                            return True
+            return False
+
+        matches: list[str] = []
+        searched_roots: list[str] = []
+        auto_escalated = False
+        explicit_root = bool(root and str(root).strip() and str(root).strip() not in (".", "/"))
+        explicit_all_drives = bool(search_all_drives)
+
+        # --- Phase 1: primärer Sweep ---
+        if explicit_root:
+            primary_roots = [_resolve_and_validate_path(str(root), must_exist=True)]
+            truncated = _sweep(primary_roots, apply_exclude=False, current_matches=matches)
+        elif explicit_all_drives:
+            primary_roots = _enumerate_local_drives()
+            truncated = _sweep(primary_roots, apply_exclude=True, current_matches=matches)
+        else:
+            # Default: Workspaces
+            primary_roots = _get_allowed_workspaces()
+            truncated = _sweep(primary_roots, apply_exclude=False, current_matches=matches)
+
+            # --- Phase 2: Auto-Escalation bei ≤1 Treffer ---
+            # Wenn Workspace-Suche wenig Erfolg hatte, erweitere auf alle Laufwerke,
+            # um mögliche Duplikate/weitere Instanzen zu finden.
+            if not truncated and len(matches) <= 1:
+                auto_escalated = True
+                all_drives = _enumerate_local_drives()
+                # Laufwerke skippen, deren Workspace-Roots schon gescannt wurden?
+                # Nein — wir müssen andere Pfade auf demselben Drive auch abdecken.
+                # Dedupe läuft über existing-Set in _sweep.
+                truncated = _sweep(all_drives, apply_exclude=True, current_matches=matches)
+
+        if matches:
+            preview = "\n".join(matches[:25])
+            extra = f"\n... (+{len(matches) - 25} weitere)" if len(matches) > 25 else ""
+            escalation_note = " (globale Suche auf allen Laufwerken aktiviert)" if auto_escalated else ""
+            out = f"{len(matches)} Treffer für '{pattern}'{escalation_note}:\n{preview}{extra}"
+        else:
+            out = (
+                f"Keine Datei passend zu '{pattern}' gefunden (durchsuchte Roots: {len(searched_roots)})."
+            )
+
+        return _fs_ok(
+            {
+                "output": out,
+                "pattern": pattern,
+                "effective_pattern": effective_pattern,
+                "matches": matches,
+                "count": len(matches),
+                "searched_roots": searched_roots,
+                "truncated": truncated,
+                "auto_escalated": auto_escalated,
+            },
+            message=out,
+            started=started,
+        )
+    except Exception as e:
+        return _map_filesystem_exception(started, e)
+
+
 def create_directory(path: str) -> ToolResultV1:
     started = time.perf_counter()
     try:

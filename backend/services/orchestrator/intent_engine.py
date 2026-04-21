@@ -649,9 +649,34 @@ class IntentEngine:
         return any(pattern.search(user_text) for pattern in HELP_HOW_TO_PATTERNS)
 
     def detect_navigation(self, user_text: str) -> bool:
-        """Return True for navigation queries ("Wo finde ich...", "Wo ist...")."""
+        """Return True for navigation queries ("Wo finde ich...", "Wo ist...").
+
+        Dateinamen mit Extensions (z.B. .pdf, .txt, .docx) sollen den Fast-Path
+        NICHT triggern, sondern zum normalen filesystem Skill-Router gehen.
+        """
         if not user_text:
             return False
+
+        # Guard: Wenn Dateiendung erkannt wird → kein Navigation-Intent
+        # (soll zum filesystem Skill-Router gehen)
+        _FILE_EXTENSIONS = (
+            '.pdf', '.txt', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+            '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.webp',
+            '.mp4', '.mp3', '.wav', '.flac', '.zip', '.rar', '.7z',
+            '.json', '.xml', '.csv', '.md', '.html', '.css', '.js',
+            '.py', '.java', '.c', '.cpp', '.h', '.php', '.rb', '.go',
+            '.ts', '.tsx', '.jsx', '.vue', '.svelte', '.sql', '.db',
+        )
+        text_lower = user_text.lower()
+        for ext in _FILE_EXTENSIONS:
+            if ext in text_lower:
+                logger.debug(
+                    "[INTENT-ENGINE] Navigation blocked by file extension guard: %s in %r",
+                    ext,
+                    user_text[:60],
+                )
+                return False
+
         return any(pattern.search(user_text) for pattern in HELP_NAVIGATION_PATTERNS)
 
     def detect_model_introspektion(self, user_text: str) -> bool:

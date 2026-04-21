@@ -1,6 +1,21 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.12** — "HOTFIX: Gemini-Tool-Response-Envelope gefixt — Gemini loopt nicht mehr bei Filesystem-Tools. Zusätzlich: Backend/Vite Route-Kollision aufgelöst, packaged UI wieder gestyled.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.13** — "FEATURE: Neuer filesystem.find_files Skill mit rekursiver Dateisuche, Fuzzy-Fallback und Auto-Escalation auf alle lokalen Laufwerke bei ≤1 Workspace-Treffern. Beide Provider (OpenAI + Gemini) verifiziert.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-21 20:27 (HOTFIX Gemini-Tool-Loop — SEALED)
+**Aktualisiert:** 2026-04-21 21:45 (FEATURE filesystem.find_files + Auto-Escalation — SEALED)
+
+---
+
+## [CURRENT_SESSION_DELTA] (FEATURE — filesystem.find_files Skill mit Auto-Escalation 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **FEATURE — Janus konnte Dateien nicht finden, wenn der User nur den Dateinamen (ohne Pfad) nannte** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-21) |
+| **Umsetzung** | Gap-Analyse zeigte: Die 10 existierenden `filesystem.*`-Skills boten keinen rekursiven Such-Skill — nur `list_directory` (non-rekursiv) und `list_workspaces`. Bei "wo finde ich gundula1.pdf?" rief das LLM daher `list_workspaces` + `list_directory` auf, fand nichts und halluzinierte. **Lösung in 3 Iterationen:** **1. Grund-Skill** `filesystem.find_files` implementiert (`@c:\KI\Janus-Projekt\backend\services\filesystem_manager.py:288-440` via `os.walk` + `fnmatch`, robust gegen defekte Symlinks/PermissionErrors via `onerror`-Callback; initial mit `Path.rglob`, aber das warf bei defekten Desktop-Ordnern `FileNotFoundError` → Umstieg auf `os.walk`). **2. Globale Suche** via neuem Parameter `search_all_drives: bool` (durchsucht C:\\, D:\\, E:\\ mit Noise-Skip-Liste für `Windows`, `Program Files`, `node_modules`, `.git`, `AppData`, etc.). **3. Auto-Escalation** — wenn Workspace-Sweep ≤1 Treffer UND kein expliziter root UND kein truncated → automatisch zweiter Sweep über alle Laufwerke, dedupliziert via `existing`-Set, `auto_escalated`-Flag in Response. Damit reicht die simple User-Frage "wo finde ich xy?" für Duplikat-Erkennung, ohne dass das LLM daran denken muss. |
+| **Root Cause** | Fehlender Suche-Skill im Filesystem-Domain. Das LLM hatte kein Werkzeug für rekursive Filename-Suche und konnte mit den vorhandenen Tools keine dateiübergreifende Discovery betreiben. |
+| **Ergebnis** | User-Frage "wo finde ich die datei gundula1.pdf?" findet jetzt beide Kopien (`C:\Users\pruve\Desktop\JanusPDFs\gundula1.pdf` und `C:\test2\gundula1.pdf`) automatisch. Primärer Workspace-Sweep: ~0.2s. Auto-Escalation (3 Laufwerke): 4-5s warm, ~20s cold. **Live-verifiziert an beiden Providern:** Gemini 3 Flash + GPT-5.4-nano, beide rufen den neuen Skill korrekt auf, erhalten beide Treffer und geben korrekte Antwort. |
+| **Files** | `backend/services/filesystem_manager.py` (+150 Zeilen: `_ALL_DRIVES_EXCLUDE_DIRS`, `_enumerate_local_drives()`, `find_files()` mit 2-Phasen-Sweep & Auto-Escalation), `backend/data/schemas.py` (`FindFilesArgs` mit Trigger-Hints für LLM), `backend/tool_registry.py` (Registrierung in `fs_tools`), `backend/skills/filesystem/find_files.json` (NEU — Manifest mit Description, die dem LLM sagt, wann `search_all_drives=true` zu setzen ist). |
+| **Verifikation** | Unit-Smoke: `find_files('*.md', max_results=5)` → 5 Treffer aus Desktop-Workspace ✅ · `find_files('gundula')` → Fuzzy-Fallback `*gundula*` → 1 Treffer ✅ · `find_files('gundula1.pdf', search_all_drives=True)` → 2 Treffer über C: + D: + E: in 21s (cold) ✅ · `find_files('gundula1.pdf')` (Default) → Auto-Escalation aktiviert, 2 Treffer in 4.5s (warm) ✅ · Registry-Check: `tool_manager.get_skill_metadata('filesystem.find_files')` returns Metadata ✅ · Live-Test Chat 63 (OpenAI) + Chat 64 (Gemini) — beide finden beide Duplikate, Log zeigt `auto_escalated=true`, `execution_time_ms=5085`. |
+| **Patterns** | [LESSON] #Python #Pathlib #Robustness "Path.rglob bricht bei FileNotFoundError ab — nutze os.walk mit onerror für robuste rekursive Suche", [PATTERN] #Skill #AutoEscalation "Ein Skill kann mehrstufig eskalieren (cheap→expensive) ohne LLM-Intervention, wenn die Phase-1-Heuristik klare Schwelle hat (hier: ≤1 Treffer ⇒ Phase 2)". |
 
 ---
 
