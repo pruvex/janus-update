@@ -29,6 +29,7 @@ from backend.utils.paths import get_app_data_dir
 from .adapters.base import BaseAdapter, RawChunk
 from .adapters.code import CodeAdapter
 from .adapters.markdown import MarkdownAdapter
+from .fts_store import FTSStore
 from .index_store import IndexStore, IndexedFile
 
 logger = logging.getLogger("janus_backend")
@@ -134,6 +135,8 @@ class IngestionRun:
 
         # ISOLATION GUARD
         _assert_isolation(self.chroma_path)
+
+        self.fts = FTSStore()
 
         self._client = None
         self._collection = None
@@ -244,6 +247,16 @@ class IngestionRun:
             ids=ids,
         )
 
+        # Upsert into FTS5 keyword index (parallel sparse index)
+        source_paths = [str(path)] * len(chunks)
+        formats = [FormatRouter.get_format(path)] * len(chunks)
+        self.fts.add_chunks(
+            chunk_ids=ids,
+            source_paths=source_paths,
+            formats=formats,
+            texts=texts,
+        )
+
         # Store in index
         mtime, size = BaseAdapter.get_file_stats(path)
         sha = BaseAdapter.compute_sha256(path)
@@ -263,12 +276,17 @@ class IngestionRun:
         return ids
 
     def _delete_file_index(self, path: str, chunk_ids: List[str]) -> None:
-        """Remove a file from both ChromaDB and the SQLite index."""
+        """Remove a file from ChromaDB, FTS5, and the SQLite index."""
         try:
             self.collection.delete(ids=chunk_ids)
             logger.info(f"Deleted {len(chunk_ids)} ChromaDB chunks for {path}")
         except Exception as e:
             logger.error(f"Failed to delete ChromaDB chunks for {path}: {e}")
+
+        try:
+            self.fts.delete_chunks(chunk_ids)
+        except Exception as e:
+            logger.error(f"Failed to delete FTS5 chunks for {path}: {e}")
 
         self.store.delete(path)
 
@@ -356,6 +374,7 @@ class IngestionRun:
 
     def close(self) -> None:
         self.store.close()
+        self.fts.close()
 
     def __enter__(self):
         return self

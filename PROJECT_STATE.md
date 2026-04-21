@@ -1,23 +1,24 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.19** — "EPIC-SYSTEM-HARVESTER (V2): P0 Eval-Harness SEALED, P1 Format-Router + Incremental Index SEALED. RAG V2 Ingestion mit physischer Isolation, SHA-256 Incremental Indexing, Orphan-Cleanup, CodeAdapter, MarkdownAdapter.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.20** — "EPIC-SYSTEM-HARVESTER (V2): P0 Eval-Harness SEALED, P1 Format-Router + Incremental Index SEALED, P2 FTS5+RRF Fusion SEALED. RAG V2 Hybrid-Retriever mit Dense+Sparse, physischer Isolation, SHA-256 Incremental Indexing.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-22 00:13 (EPIC-SYSTEM-HARVESTER — P0+P1 COMPLETE — IN PROGRESS)
+**Aktualisiert:** 2026-04-22 00:23 (EPIC-SYSTEM-HARVESTER — P0+P1+P2 COMPLETE — IN PROGRESS)
 
 ---
 
-## [CURRENT_SESSION_DELTA] (EPIC-SYSTEM-HARVESTER (V2) — P0 ✅ SEALED / P1 ✅ SEALED / P2 🏗️ NEXT)
+## [CURRENT_SESSION_DELTA] (EPIC-SYSTEM-HARVESTER (V2) — P0 ✅ SEALED / P1 ✅ SEALED / P2 ✅ SEALED / P3 🏗️ NEXT)
 
 | Feld | Wert |
 |------|------|
 | **Epic / Task** | **EPIC-SYSTEM-HARVESTER (V2): Universal Knowledge-Harvester — Diamond-Standard RAG V2 mit Zero-Regression-Contract** |
-| **Status** | **P0 ✅ SEALED / P1 ✅ SEALED / P2 🏗️ NEXT** (2026-04-22) |
+| **Status** | **P0 ✅ SEALED / P1 ✅ SEALED / P2 ✅ SEALED / P3 🏗️ NEXT** (2026-04-22) |
 | **Scope** | Lokale, semantische + lexikalische Suche über alle Text-/Dokument-/Code-Formate in Janus-Workspaces. Hybrid-Retrieval: Dense (ChromaDB dual-embedding) + Keyword (SQLite FTS5) + RRF + Cross-Encoder-Reranking. Code-aware Chunking via tree-sitter. Query-Router via Regex-Heuristik. Background-Watchdog. |
 | **Architecture Decisions** | **Strangler-Fig statt Replace:** V2 läuft parallel zu Legacy-RAG. Opt-in via 11 granularer Feature-Flags (alle default `false`). **Physische Isolation:** V2 nutzt eigenen Chroma-Pfad `rag_chroma_db_v2/`. Legacy `rag_chroma_db/` ist untouchable. **Freeze-Contract:** 7 Files + 3 Collections sind für V2-Executors hart gesperrt (§ 1.5.2 im Master-Plan). **API-Additivität:** `knowledge.query` bleibt byte-identisch. V2 nur via neuem Skill `knowledge.code_search` oder explizitem `retrieval_mode="v2"`. **Code-First-Scope:** Prose (PDFs, Projekt-URLs, Creative-Writer) bleibt komplett Legacy. V2 indiziert initial nur Code + Markdown. Prose-Migration ist optionaler P9, nicht im kritischen Pfad. |
-| **P0 — Eval-Harness** | `@c:\KI\Janus-Projekt\backend/tests/rag/golden_queries.jsonl` (30 Queries), `harness.py` (MRR@10/Recall@5/P@1), `test_baseline.py`, `test_legacy_filesystem_isolation.py` (SHA-Guard). Baseline: MRR@10=0.1724 (PROSE 1.0000, CODE 0.0000 — Skill-Index hat keine textuelle Metadaten). |
-| **P1 — Format-Router + Incremental Index** | `@c:\KI\Janus-Projekt\backend/services/rag/index_store.py` (SQLite, SHA-256, Orphan-Management), `adapters/base.py` (BaseAdapter Interface), `adapters/code.py` (blank-line splitting), `adapters/markdown.py` (heading boundaries), `ingestion.py` (FormatRouter + IngestionRun + `_assert_isolation()` Guard). Tests: `test_adapters.py`, `test_index_store.py`, `test_ingestion.py`. |
-| **Files** | `@c:\KI\Janus-Projekt\documentation\RAG_V2_MASTER_PLAN.md` (v1.1). `@c:\KI\Janus-Projekt\documentation\tasks\rag-v2\P0_eval_harness.md`. `@c:\KI\Janus-Projekt\documentation\tasks\rag-v2\P1_format_router.md`. |
-| **Executor Assignment** | SWE 1.6: P0 (Eval-Harness ✅), P1 (Ingestion ✅), P4 (Reranker), P6 (Security/Obs), P7 (Skill-API), P8 (Watchdog). Kimi K2.5: P2 (FTS5+RRF 🏗️ NEXT), P3 (Code-Chunking), P5 (Query-Router). |
-| **Gate-Regel** | P0 ✅ Golden Queries + Baseline + Legacy SHA-Guard grün. P1 ✅ Idempotenz (2. Run: 0 indexed), Isolation (Legacy-Hash unverändert), Orphan-Delete, Atomic Rename. **P2-Gate:** Kein P2 ohne grüne P0+P1 Regression-Suite. |
-| **Patterns** | [PATTERN] #Architecture #RAG The Strangler-Fig Migration, [PATTERN] #Architecture #HybridSearch Reciprocal Rank Fusion (RRF) Baseline, [PATTERN] #Security #Isolation Physical Vector-Store Separation, [PATTERN] #Performance #IncrementalIndex SHA-256 + mtime Prefilter |
+| **P0 — Eval-Harness** | `@c:\KI\Janus-Projekt\backend/tests/rag/golden_queries.jsonl` (30 Queries), `harness.py` (MRR@10/Recall@5/P@1), `test_baseline.py`, `test_legacy_filesystem_isolation.py` (SHA-Guard). Baseline: MRR@10=0.1724 (PROSE 1.0000, CODE 0.0000). |
+| **P1 — Format-Router + Incremental Index** | `@c:\KI\Janus-Projekt\backend/services/rag/index_store.py` (SQLite, SHA-256, Orphan-Management), `adapters/base.py`, `adapters/code.py`, `adapters/markdown.py`, `ingestion.py` (FormatRouter + IngestionRun + `_assert_isolation()`). Tests: `test_adapters.py`, `test_index_store.py`, `test_ingestion.py`. |
+| **P2 — FTS5 + RRF Fusion** | `@c:\KI\Janus-Projekt\backend/services/rag/fts_store.py` (FTS5, unicode61, WAL), `rrf.py` (k=60, pure function), `hybrid_retriever.py` (Dense+Sparse+RRF). `ingestion.py` erweitert um FTS5-Write/Delete Hook. Tests: `test_rrf.py` (7 Tests), `test_fts_store.py` (7 Tests), `test_hybrid_retriever.py` (5 Tests). |
+| **Files** | `@c:\KI\Janus-Projekt\documentation\RAG_V2_MASTER_PLAN.md` (v1.1). `@c:\KI\Janus-Projekt\documentation\tasks\rag-v2\P0_eval_harness.md`. `@c:\KI\Janus-Projekt\documentation\tasks\rag-v2\P1_format_router.md`. `@c:\KI\Janus-Projekt\documentation\tasks\rag-v2\P2_fts5_rrf.md`. |
+| **Executor Assignment** | SWE 1.6: P0 (Eval-Harness ✅), P1 (Ingestion ✅), P4 (Reranker), P6 (Security/Obs), P7 (Skill-API), P8 (Watchdog). Kimi K2.5: P2 (FTS5+RRF ✅), P3 (Code-Chunking 🏗️ NEXT), P5 (Query-Router). |
+| **Gate-Regel** | P0 ✅ Golden Queries + Baseline + Legacy SHA-Guard grün. P1 ✅ Idempotenz, Isolation, Orphan-Delete, Atomic Rename. P2 ✅ RRF-Symmetrie, FTS5-Boost, Hybrid-Integration, Legacy-Isolation (Hash: 607afb4e...). **P3-Gate:** Kein P3 ohne grüne P0+P1+P2 Regression-Suite. |
+| **Patterns** | [PATTERN] #Architecture #RAG The Strangler-Fig Migration, [PATTERN] #Architecture #HybridSearch Reciprocal Rank Fusion (RRF) Baseline, [PATTERN] #Security #Isolation Physical Vector-Store Separation, [PATTERN] #Performance #IncrementalIndex SHA-256 + mtime Prefilter, [PATTERN] #HybridSearch #FTS5 SQLite Full-Text Search with BM25 |
 
 ---
 
