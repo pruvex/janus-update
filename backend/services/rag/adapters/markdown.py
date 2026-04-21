@@ -48,6 +48,10 @@ class MarkdownAdapter(BaseAdapter):
                 if chunk_text:
                     # Build heading breadcrumb
                     headings = [h[1] for h in heading_stack]
+                    # P3: Prefix chunk text with breadcrumb for vector search context
+                    if headings:
+                        breadcrumb = " > ".join(headings)
+                        chunk_text = f"## {breadcrumb}\n\n{chunk_text}"
                     chunks.append(
                         RawChunk(
                             text=chunk_text,
@@ -58,6 +62,7 @@ class MarkdownAdapter(BaseAdapter):
                                 "format": "markdown",
                                 "headings": headings,
                                 "heading_stack": [h[1] for h in heading_stack],
+                                "breadcrumb": " > ".join(headings) if headings else "",
                             },
                         )
                     )

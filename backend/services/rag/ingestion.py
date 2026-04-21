@@ -56,7 +56,14 @@ def _assert_isolation(chroma_path: str) -> None:
     logger.debug(f"Isolation check passed: {normalized} != {legacy_marker}")
 
 
+# --- COLLECTION NAMES ---
+COLLECTION_CODE = "kb_code_v2"
+COLLECTION_PROSE = "kb_prose_v2"
+
+
 # --- LAZY EMBEDDING ---
+# P3: Shared MiniLM for both code and prose.
+# P4: Will split into kb_code_v2 (Jina-Code) + kb_prose_v2 (MiniLM).
 _embedding_function = None
 
 
@@ -124,12 +131,10 @@ class IngestionRun:
     def __init__(
         self,
         root_dir: str,
-        collection_name: str = "kb_code_v2",
         chroma_path: Optional[str] = None,
         db_path: Optional[str] = None,
     ):
         self.root_dir = Path(root_dir).resolve()
-        self.collection_name = collection_name
         self.chroma_path = chroma_path or V2_CHROMA_PATH
         self.store = IndexStore(db_path=db_path)
 
@@ -139,7 +144,7 @@ class IngestionRun:
         self.fts = FTSStore()
 
         self._client = None
-        self._collection = None
+        self._collections: Dict[str, any] = {}  # collection_name -> Collection
         self._run_id: Optional[int] = None
         self.stats = {
             "scanned": 0,
@@ -157,15 +162,26 @@ class IngestionRun:
             self._client = chromadb.PersistentClient(path=self.chroma_path)
         return self._client
 
-    @property
-    def collection(self):
-        if self._collection is None:
-            self._collection = self.client.get_or_create_collection(
-                name=self.collection_name,
+    def _get_collection(self, collection_name: str):
+        """Get or create a ChromaDB collection by name (lazy)."""
+        if collection_name not in self._collections:
+            self._collections[collection_name] = self.client.get_or_create_collection(
+                name=collection_name,
                 embedding_function=get_embedding_function(),
                 metadata={"hnsw:space": "cosine"},
             )
-        return self._collection
+        return self._collections[collection_name]
+
+    def _route_format_to_collection(self, fmt: str) -> str:
+        """
+        Route a file format to its target collection.
+
+        P3: Both code and prose use MiniLM (shared embedding).
+        P4: Code will switch to Jina-Code embeddings in kb_code_v2.
+        """
+        if fmt == "code":
+            return COLLECTION_CODE
+        return COLLECTION_PROSE
 
     def _scan_files(self) -> List[Path]:
         """Recursively find all supported files under root_dir."""
@@ -240,8 +256,13 @@ class IngestionRun:
             for i, chunk in enumerate(chunks)
         ]
 
+        # P3 Dual-Collection: route chunks to code or prose collection
+        fmt = FormatRouter.get_format(path)
+        target_collection = self._route_format_to_collection(fmt)
+        collection = self._get_collection(target_collection)
+
         # Upsert into ChromaDB
-        self.collection.add(
+        collection.add(
             documents=texts,
             metadatas=metadatas,
             ids=ids,
@@ -275,11 +296,13 @@ class IngestionRun:
         logger.info(f"Indexed {path}: {len(chunks)} chunks")
         return ids
 
-    def _delete_file_index(self, path: str, chunk_ids: List[str]) -> None:
+    def _delete_file_index(self, path: str, chunk_ids: List[str], fmt: str = "unknown") -> None:
         """Remove a file from ChromaDB, FTS5, and the SQLite index."""
+        target_collection = self._route_format_to_collection(fmt)
+        collection = self._get_collection(target_collection)
         try:
-            self.collection.delete(ids=chunk_ids)
-            logger.info(f"Deleted {len(chunk_ids)} ChromaDB chunks for {path}")
+            collection.delete(ids=chunk_ids)
+            logger.info(f"Deleted {len(chunk_ids)} ChromaDB chunks from {target_collection} for {path}")
         except Exception as e:
             logger.error(f"Failed to delete ChromaDB chunks for {path}: {e}")
 
@@ -332,7 +355,7 @@ class IngestionRun:
                 try:
                     # If re-indexing, first delete old chunks
                     if stored and stored.chunk_ids:
-                        self._delete_file_index(stored.path, stored.chunk_ids)
+                        self._delete_file_index(stored.path, stored.chunk_ids, stored.format)
 
                     self._index_file(path, run_id)
                     self.stats["indexed"] += 1
@@ -345,7 +368,7 @@ class IngestionRun:
             for orphan_path in orphans:
                 orphan = index.get(orphan_path)
                 if orphan and orphan.chunk_ids:
-                    self._delete_file_index(orphan_path, orphan.chunk_ids)
+                    self._delete_file_index(orphan_path, orphan.chunk_ids, orphan.format)
                 self.stats["deleted"] += 1
 
             self.store.end_run(

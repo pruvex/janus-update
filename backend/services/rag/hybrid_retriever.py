@@ -22,6 +22,7 @@ from backend.utils.paths import get_app_data_dir
 
 from .fts_store import FTSStore
 from .rrf import reciprocal_rank_fusion, K
+from .ingestion import COLLECTION_CODE, COLLECTION_PROSE
 
 logger = logging.getLogger("janus_backend")
 
@@ -38,16 +39,16 @@ class HybridRetriever:
 
     def __init__(
         self,
-        collection_name: str = "kb_code_v2",
+        collection_name: Optional[str] = None,  # P3: None = search both collections
         chroma_path: Optional[str] = None,
         fts_db_path: Optional[str] = None,
     ):
-        self.collection_name = collection_name
+        self.collection_name = collection_name  # P3: None = auto-detect both
         self.chroma_path = chroma_path or V2_CHROMA_PATH
         self.fts = FTSStore(db_path=fts_db_path)
 
         self._client = None
-        self._collection = None
+        self._collections: Dict[str, any] = {}  # P3: multi-collection support
         self._embedding_function = None
 
     def _get_embedding_function(self):
@@ -65,30 +66,37 @@ class HybridRetriever:
             self._client = chromadb.PersistentClient(path=self.chroma_path)
         return self._client
 
-    @property
-    def collection(self):
-        if self._collection is None:
-            self._collection = self.client.get_or_create_collection(
-                name=self.collection_name,
+    def _get_collection(self, collection_name: str):
+        """Get or create a ChromaDB collection by name (lazy)."""
+        if collection_name not in self._collections:
+            self._collections[collection_name] = self.client.get_or_create_collection(
+                name=collection_name,
                 embedding_function=self._get_embedding_function(),
                 metadata={"hnsw:space": "cosine"},
             )
-        return self._collection
+        return self._collections[collection_name]
 
-    def _vector_search(self, query: str, top_k: int = 10) -> List[Dict[str, any]]:
+    def _get_collection_names(self) -> List[str]:
+        """P3: Return list of collections to search."""
+        if self.collection_name:
+            return [self.collection_name]
+        return [COLLECTION_CODE, COLLECTION_PROSE]
+
+    def _vector_search_collection(self, query: str, collection_name: str, top_k: int = 10) -> List[Dict[str, any]]:
         """
-        Query ChromaDB collection for top-k vector matches.
+        Query a single ChromaDB collection for top-k vector matches.
 
-        Returns list of {chunk_id, distance, text, metadata, rank}.
+        Returns list of {chunk_id, distance, text, metadata, rank, collection}.
         """
         try:
-            results = self.collection.query(
+            collection = self._get_collection(collection_name)
+            results = collection.query(
                 query_texts=[query],
                 n_results=top_k,
                 include=["documents", "metadatas", "distances"],
             )
         except Exception as e:
-            logger.error(f"Vector search failed: {e}")
+            logger.error(f"Vector search failed for {collection_name}: {e}")
             return []
 
         if not results or not results["ids"] or not results["ids"][0]:
@@ -110,11 +118,37 @@ class HybridRetriever:
                     "metadata": meta,
                     "distance": dist,
                     "rank": rank_pos,
+                    "collection": collection_name,
                 }
             )
 
-        logger.debug(f"Vector search returned {len(vector_results)} results")
+        logger.debug(f"Vector search [{collection_name}] returned {len(vector_results)} results")
         return vector_results
+
+    def _vector_search(self, query: str, top_k: int = 10) -> List[Dict[str, any]]:
+        """
+        P3: Query all relevant collections and merge results.
+
+        When collection_name is set, search only that collection.
+        Otherwise search both kb_code_v2 and kb_prose_v2.
+        """
+        all_results = []
+        collections = self._get_collection_names()
+        per_collection_k = max(top_k // len(collections), 5)
+
+        for coll_name in collections:
+            results = self._vector_search_collection(query, coll_name, per_collection_k)
+            all_results.extend(results)
+
+        # Re-rank merged results by distance (best first)
+        all_results.sort(key=lambda r: r["distance"])
+
+        # Assign new merged ranks
+        for rank_pos, result in enumerate(all_results, start=1):
+            result["rank"] = rank_pos
+
+        logger.debug(f"Vector search merged {len(all_results)} results from {len(collections)} collections")
+        return all_results[:top_k]
 
     def _keyword_search(self, query: str, top_k: int = 10) -> List[Dict[str, any]]:
         """
@@ -204,6 +238,12 @@ class HybridRetriever:
                     "bm25_rank": k["bm25_rank"] if k else None,
                 }
             )
+
+        # Add collection provenance
+        for r in final_results:
+            v = vector_map.get(r["chunk_id"])
+            if v:
+                r["collection"] = v.get("collection", "unknown")
 
         logger.info(
             f"Hybrid query returned {len(final_results)} results "
