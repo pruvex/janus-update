@@ -31,6 +31,8 @@ from .adapters.code import CodeAdapter
 from .adapters.markdown import MarkdownAdapter
 from .fts_store import FTSStore
 from .index_store import IndexStore, IndexedFile
+from .path_policy import PathPolicy, SecurityError, set_global_policy
+from .retrieval_logger import get_retrieval_logger
 
 logger = logging.getLogger("janus_backend")
 
@@ -133,6 +135,7 @@ class IngestionRun:
         root_dir: str,
         chroma_path: Optional[str] = None,
         db_path: Optional[str] = None,
+        enable_path_policy: bool = True,  # P6: Enable path security checks
     ):
         self.root_dir = Path(root_dir).resolve()
         self.chroma_path = chroma_path or V2_CHROMA_PATH
@@ -141,7 +144,15 @@ class IngestionRun:
         # ISOLATION GUARD
         _assert_isolation(self.chroma_path)
 
+        # P6: Path Policy (Security)
+        self.path_policy = None
+        if enable_path_policy:
+            self.path_policy = PathPolicy(self.root_dir)
+            set_global_policy(self.root_dir)  # Set global policy for other modules
+            logger.info(f"[P6] PathPolicy enabled for root: {self.root_dir}")
+
         self.fts = FTSStore()
+        self.retrieval_logger = get_retrieval_logger()  # P6: Retrieval logger
 
         self._client = None
         self._collections: Dict[str, any] = {}  # collection_name -> Collection
@@ -152,6 +163,7 @@ class IngestionRun:
             "skipped": 0,
             "deleted": 0,
             "errors": 0,
+            "denied": 0,  # P6: Count of denied files
         }
 
     @property
@@ -294,6 +306,14 @@ class IngestionRun:
         self.store.upsert(indexed)
 
         logger.info(f"Indexed {path}: {len(chunks)} chunks")
+
+        # P6: Log successful ingestion
+        self.retrieval_logger.log_ingestion_success(
+            file_path=str(path),
+            num_chunks=len(chunks),
+            collection=target_collection,
+        )
+
         return ids
 
     def _delete_file_index(self, path: str, chunk_ids: List[str], fmt: str = "unknown") -> None:
@@ -332,6 +352,15 @@ class IngestionRun:
 
             # Process each file
             for path in files:
+                # P6: Path Policy Check (Security)
+                if self.path_policy:
+                    denied_reason = self.path_policy.get_denied_reason(path)
+                    if denied_reason:
+                        self.retrieval_logger.log_ingestion_skip(str(path), denied_reason)
+                        logger.warning(f"[P6] [SKIP] {path}: {denied_reason}")
+                        self.stats["denied"] += 1
+                        continue
+
                 stored = index.get(str(path))
                 needs_index, reason = self._needs_indexing(path, stored)
 

@@ -27,6 +27,7 @@ from .reranker import CrossEncoderReranker
 from .context_expander import ContextExpander
 from .index_store import IndexStore
 from .query_router import route as query_route, RouterDecision
+from .retrieval_logger import get_retrieval_logger
 
 logger = logging.getLogger("janus_backend")
 
@@ -62,6 +63,7 @@ class HybridRetriever:
         self._embedding_function = None
         self._reranker = None  # P4: lazy-loaded
         self._expander = None  # P4: lazy-loaded
+        self.retrieval_logger = get_retrieval_logger()  # P6: Retrieval logger
 
     def _get_embedding_function(self):
         if self._embedding_function is None:
@@ -280,11 +282,19 @@ class HybridRetriever:
             f"Hybrid query: '{query_text[:60]}...' (vector_k={vector_k}, keyword_k={keyword_k}, k={k})"
         )
 
+        # P6: Latency tracking
+        latencies = {}
+        overall_start = time.time()
+
         # 1. Dense search (vector)
+        vec_start = time.time()
         vector_results = self._vector_search(query_text, top_k=vector_k)
+        latencies["vector_ms"] = (time.time() - vec_start) * 1000
 
         # 2. Sparse search (keyword)
+        fts_start = time.time()
         keyword_results = self._keyword_search(query_text, top_k=keyword_k)
+        latencies["keyword_ms"] = (time.time() - fts_start) * 1000
 
         # Build RRF input: list of [(chunk_id, score), ...] per source
         vector_ranking = [(r["chunk_id"], 1.0 / r["rank"]) for r in vector_results]
@@ -292,6 +302,7 @@ class HybridRetriever:
 
         # 3. Fuse via RRF (get top-20 for reranking)
         # P5: Use weighted RRF if router is active
+        rrf_start = time.time()
         if router_decision and (router_decision.vector_weight != 0.5 or router_decision.keyword_weight != 0.5):
             fused = weighted_reciprocal_rank_fusion(
                 [vector_ranking, keyword_ranking],
@@ -300,6 +311,7 @@ class HybridRetriever:
             )
         else:
             fused = reciprocal_rank_fusion([vector_ranking, keyword_ranking], k=k)
+        latencies["rrf_ms"] = (time.time() - rrf_start) * 1000
         rrf_candidates = fused[:20]  # P4: Keep top-20 for reranking
 
         # 4. Build lookup maps for enrichment
@@ -329,6 +341,7 @@ class HybridRetriever:
             )
 
         # 6. P4: Rerank with cross-encoder (if enabled)
+        rerank_start = time.time()
         if self.use_reranker:
             reranker = self._get_reranker()
             if reranker.is_available():
@@ -339,8 +352,10 @@ class HybridRetriever:
                 candidates = candidates[:rerank_k]
         else:
             candidates = candidates[:rerank_k]
+        latencies["rerank_ms"] = (time.time() - rerank_start) * 1000
 
         # 7. P4: Context expansion (if enabled)
+        expand_start = time.time()
         if self.expand_context:
             expander = self._get_expander()
             expanded = expander.expand(candidates, expand_window=expand_window, max_expanded=top_k)
@@ -352,6 +367,8 @@ class HybridRetriever:
             final_results = expanded[:top_k]
         else:
             final_results = candidates[:top_k]
+        latencies["expand_ms"] = (time.time() - expand_start) * 1000
+        latencies["total_ms"] = (time.time() - overall_start) * 1000
 
         # Add collection provenance
         for r in final_results:
@@ -381,6 +398,35 @@ class HybridRetriever:
             f"Hybrid query returned {len(final_results)} results "
             f"(from {len(vector_results)} vector + {len(keyword_results)} keyword)"
         )
+
+        # P6: Log retrieval with latency breakdown
+        router_dict = None
+        if router_decision:
+            router_dict = {
+                "mode": router_decision.mode,
+                "collections": router_decision.collections,
+                "vector_weight": router_decision.vector_weight,
+                "keyword_weight": router_decision.keyword_weight,
+                "code_bias": router_decision.code_bias,
+            }
+
+        top_result = final_results[0] if final_results else None
+        top_dict = None
+        if top_result:
+            top_dict = {
+                "chunk_id": top_result.get("chunk_id"),
+                "source_path": top_result.get("source_path"),
+                "rrf_score": top_result.get("rrf_score"),
+            }
+
+        self.retrieval_logger.log_query(
+            query=query_text,
+            router_decision=router_dict,
+            latency_breakdown=latencies,
+            top_result=top_dict,
+            num_results=len(final_results),
+        )
+
         return final_results
 
     def close(self) -> None:
