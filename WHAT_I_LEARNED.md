@@ -1480,3 +1480,33 @@
 - **Confidence:** High (BUG-ORCH-002)
 - **Tags:** Pydantic, Safety, AliasHandling, ExecutionResponse, SchemaEvolution, BUG-ORCH-002
 
+## [PATTERN] #Architecture #RAG "The Strangler-Fig Migration — run the new system alongside the old"
+- **Kontext:** RAG V2 Master-Plan v1.1 — User wollte den bestehenden Legacy-RAG (PDF-Drops, Memory-Vektoren, Projekt-Collections, Skill-Routing-Index) nicht kaputt machen, obwohl V2 eine völlig andere Architektur (Hybrid Retrieval, dual Embeddings, Code-aware Chunking) bekommen soll.
+- **Problem:** Big-Bang-Rewrites brechen bestehende Produktionspipelines mit 100%iger Wahrscheinlichkeit. Selbst "additive" Änderungen können scheitern, wenn sie dieselben Collections/Files/Funktionen modifizieren. Das Legacy-RAG-Surface von Janus ist komplex (6 verschiedene Collection-Nutzungsmuster, geteilte `janus_global_documents` zwischen PDFs und Memory).
+- **Lösung:** Strangler-Fig-Pattern: V2 läuft physisch und logisch parallel. Kein Modifikation am Legacy-Code. V2 bekommt eigenen Chroma-Pfad (`rag_chroma_db_v2/`), eigene SQLite-DBs (`knowledge_fts_v2.db`, `knowledge_index_v2.db`), eigenen Feature-Flag-Layer (11 Flags, alle default `false`). Die Legacy-Pipeline läuft unverändert weiter. V2 ist nur via explizitem Opt-in (neuer Skill `knowledge.code_search` oder `retrieval_mode="v2"`) erreichbar. Optionaler Cutover (P9) ist eine separate Entscheidung, erst nach Full-Regression mit 500+ Queries.
+- **Ergebnis:** Zero-Regression-Contract: Legacy-E2E-Tests laufen 100% grün, auch wenn V2 vollständig installiert ist. Feature-Flags ermöglichen Phase-by-Phase-Integration ohne Big-Bang. Physische Isolation verhindert, dass ein V2-Crash den Legacy-Index korrumpiert.
+- **Tripwire:** Wenn ein neues Feature in denselben Collections/Files/Pfade wie bestehende Logik schreibt → Strangler-Fig verletzt. Sofort: physischer Subpfad + eigene Collections + Freeze-Contract.
+- **Location:** `documentation/RAG_V2_MASTER_PLAN.md` § 1.5, § 11, 2026-04-21.
+- **Confidence:** High (Pattern bewährt in Martin Fowler's Strangler Fig Application; physische Isolation ist unumkehrbarer Schutz).
+- **Tags:** Architecture, RAG, StranglerFig, Migration, ZeroRegression, ParallelRun, Coexistence
+
+## [PATTERN] #Architecture #HybridSearch "Reciprocal Rank Fusion (RRF) — the canonical baseline for combining dense + sparse"
+- **Kontext:** RAG V2 braucht sowohl semantische Suche (ChromaDB Dense Embeddings, "Was meint er?") als auch lexikalische Suche (SQLite FTS5, "Wo steht exakt das Wort?"). Für Code-Snippets und Dateinamen ist FTS5 überlegen; für konzeptuelle Prosa-Queries sind Embeddings überlegen.
+- **Problem:** Score-Kalibrierung zwischen Dense (0–1 Cosine) und Sparse (arbitrary BM25-style scores) ist unmöglich. Gewichtete Addition `0.7*vec + 0.3*fts` ist brüchig, weil die Score-Ranges nicht vergleichbar sind und sich mit Corpus-Größe verschieben.
+- **Lösung:** Reciprocal Rank Fusion (Cormack et al. 2009) mit `score(d) = Σ_r 1/(k + rank_r(d))` und `k=60`. Benutzt nur die **Rangposition** jedes Dokuments in jedem Ranking, nicht die absoluten Scores. Damit ist die Fusion robust gegen Score-Drift und Corpus-Größen-Änderungen. Query-Router entscheidet später, welche Rankings einbezogen werden (vec-heavy, fts-heavy, balanced), aber die Fusion-Methode bleibt unverändert.
+- **Ergebnis:** Deterministische, rechenbare, parameter-robuste Kombination von semantischer und lexikalischer Suche. Keine Notwendigkeit für Score-Normalisierung oder Trainingsdaten.
+- **Tripwire:** Wenn eine Hybrid-Search gewichtete Score-Addition nutzt → RRF ist der saubere Ersatz. Zusätzlich: k=60 ist der canonical Wert aus der Literatur; Änderungen nur mit evaluierter Regression.
+- **Location:** `documentation/RAG_V2_MASTER_PLAN.md` § 1.1, § 2, 2026-04-21.
+- **Confidence:** High (SIGIR-Paper, in Produktion bei mehreren Enterprise-RAG-Systemen validiert).
+- **Tags:** Architecture, HybridSearch, RRF, DenseSparse, RankingFusion, Retrieval, Baseline
+
+## [PATTERN] #Security #Isolation "Physical Vector-Store Separation — the last line of defense against regression"
+- **Kontext:** Janus' Legacy-RAG nutzt `rag_chroma_db/janus_global_documents` sowohl für PDF-Drops als auch für Memory-Vektoren (geteilt!). V2 soll denselben Chroma-Client nutzen, aber mit neuen Collections. Risiko: V2-Code könnte aus Versehen die Legacy-Collection ansprechen (z.B. falscher Collection-Name, Copy-Paste-Fehler, Bug im Ingestion-Adapter).
+- **Problem:** Logische Trennung (verschiedene Collection-Namen) ist notwendig aber nicht hinreichend. Ein Bug in `client.get_or_create_collection()` mit dynamischem Namen oder ein String-Concat-Fehler könnte die Legacy-Collection treffen. Ohne physische Isolation ist der Schaden irreversibel (Embeddings gelöscht = PDFs/Memory unwiederbringlich verloren).
+- **Lösung:** V2 bekommt **eigenen PersistentClient-Pfad**: `{app_data_dir}/rag_chroma_db_v2/`. Legacy bleibt in `{app_data_dir}/rag_chroma_db/`. Zusätzlich: Freeze-Contract (§ 1.5.2) verbietet V2-Code explizit, jemals `rag_chroma_db/` anzutasten. SHA-Baum-Assertion im CI verifiziert, dass `rag_chroma_db/` vor und nach V2-Runs byte-identisch bleibt.
+- **Ergebnis:** Selbst ein totaler V2-Crash (infinite loop, DB corruption, accidental `collection.delete()`) kann den Legacy-Index nicht berühren. Rollback = `Remove-Item -Recurse rag_chroma_db_v2/` — keine Migration, kein Restore nötig.
+- **Tripwire:** Wenn ein neues Feature denselben Datenpfad wie ein bestehendes Feature nutzt → sofort physische Separation. Ausnahme nur, wenn beide Features identische Recovery-Strategien und getestete Rollbacks haben.
+- **Location:** `documentation/RAG_V2_MASTER_PLAN.md` § 1.3, § 1.5.2, § 10.1, 2026-04-21.
+- **Confidence:** High (Unumkehrbarer Schutz; SHA-Assertion macht Regression sichtbar).
+- **Tags:** Security, Isolation, VectorStore, ChromaDB, Regression, PhysicalSeparation, FreezeContract
+
