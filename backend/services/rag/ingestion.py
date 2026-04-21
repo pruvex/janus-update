@@ -333,6 +333,122 @@ class IngestionRun:
 
         self.store.delete(path)
 
+    def run_partial(self, file_paths: List[str]) -> dict:
+        """
+        Re-index only specific files (P8: for watcher).
+
+        This is used by the background watchdog to re-index changed files
+        without running a full ingestion scan.
+
+        Args:
+            file_paths: List of file paths to re-index.
+
+        Returns:
+            Statistics dict for the partial run.
+        """
+        self._run_id = self.store.start_run(str(self.root_dir))
+        run_id = self._run_id
+        logger.info(f"[P8] Partial ingestion run {run_id} started for {len(file_paths)} files")
+
+        partial_stats = {
+            "scanned": 0,
+            "indexed": 0,
+            "skipped": 0,
+            "deleted": 0,
+            "errors": 0,
+            "denied": 0,
+        }
+
+        try:
+            # Get current index state
+            index = self.store.get_all()
+
+            # Process only the specified files
+            for file_path_str in file_paths:
+                path = Path(file_path_str)
+
+                # P6: Path Policy Check (Security)
+                if self.path_policy:
+                    denied_reason = self.path_policy.get_denied_reason(path)
+                    if denied_reason:
+                        self.retrieval_logger.log_ingestion_skip(str(path), denied_reason)
+                        logger.warning(f"[P8] [SKIP] {path}: {denied_reason}")
+                        partial_stats["denied"] += 1
+                        continue
+
+                # Check if file exists
+                if not path.exists():
+                    # File was deleted, remove from index
+                    stored = index.get(str(path))
+                    if stored and stored.chunk_ids:
+                        self._delete_file_index(stored.path, stored.chunk_ids, stored.format)
+                        partial_stats["deleted"] += 1
+                    continue
+
+                # Check if file is supported
+                if not FormatRouter.is_supported(path):
+                    partial_stats["skipped"] += 1
+                    continue
+
+                partial_stats["scanned"] += 1
+                stored = index.get(str(path))
+                needs_index, reason = self._needs_indexing(path, stored)
+
+                if not needs_index:
+                    partial_stats["skipped"] += 1
+                    continue
+
+                try:
+                    # If re-indexing, first delete old chunks
+                    if stored and stored.chunk_ids:
+                        self._delete_file_index(stored.path, stored.chunk_ids, stored.format)
+
+                    self._index_file(path, run_id)
+                    partial_stats["indexed"] += 1
+                except Exception as e:
+                    logger.error(f"[P8] Failed to index {path}: {e}", exc_info=True)
+                    partial_stats["errors"] += 1
+
+            # Update last_run_id for all files in this partial run
+            for file_path_str in file_paths:
+                stored = index.get(file_path_str)
+                if stored:
+                    updated = IndexedFile(
+                        path=stored.path,
+                        sha256=stored.sha256,
+                        mtime=stored.mtime,
+                        size_bytes=stored.size_bytes,
+                        last_run_id=run_id,
+                        chunk_ids=stored.chunk_ids,
+                        format=stored.format,
+                        indexed_at=stored.indexed_at,
+                    )
+                    self.store.upsert(updated)
+
+            self.store.end_run(
+                run_id=run_id,
+                files_scanned=partial_stats["scanned"],
+                files_indexed=partial_stats["indexed"],
+                files_skipped=partial_stats["skipped"],
+                files_deleted=partial_stats["deleted"],
+                status="completed" if partial_stats["errors"] == 0 else "completed_with_errors",
+            )
+
+        except Exception as e:
+            logger.error(f"[P8] Partial ingestion run {run_id} failed: {e}", exc_info=True)
+            self.store.end_run(run_id=run_id, status="failed")
+            raise
+
+        logger.info(
+            f"[P8] Partial ingestion run {run_id} completed\n"
+            f"  Scanned:  {partial_stats['scanned']}\n"
+            f"  Indexed:  {partial_stats['indexed']}\n"
+            f"  Skipped:  {partial_stats['skipped']}\n"
+            f"  Deleted:  {partial_stats['deleted']}\n"
+            f"  Errors:   {partial_stats['errors']}"
+        )
+        return partial_stats
+
     def run(self) -> dict:
         """
         Execute the full ingestion pipeline.

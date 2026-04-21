@@ -349,6 +349,34 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Failed to start maintenance tasks: {e}")
 
+    # 5. P8: RAG V2 Background Watchdog (Optional - only if configured)
+    rag_watcher = None
+    try:
+        from backend.services.rag.watcher import RAGWatcher
+        from backend.utils.config_loader import load_config_data
+
+        config = load_config_data()
+        workspaces = config.get("filesystem_workspaces", [])
+
+        if workspaces:
+            # Start watcher for first workspace (can be extended for multiple)
+            workspace_root = workspaces[0] if workspaces else None
+            if workspace_root:
+                rag_watcher = RAGWatcher(
+                    workspace_root=workspace_root,
+                    enable_path_policy=True,
+                )
+                rag_watcher.start()
+                logger.info(f"[P8] RAG Watchdog started for workspace: {workspace_root}")
+            else:
+                logger.info("[P8] RAG Watchdog not started: no workspace configured")
+        else:
+            logger.info("[P8] RAG Watchdog not started: no workspaces in config")
+    except ImportError:
+        logger.info("[P8] RAG Watchdog not available (watchdog library not installed)")
+    except Exception as e:
+        logger.warning(f"[P8] Failed to start RAG Watchdog: {e}")
+
     # 5. Test database connection
     try:
         db = next(database.get_db_sync())
@@ -372,6 +400,15 @@ async def lifespan(app: FastAPI):
             logger.info("Memory cleanup task cancelled successfully.")
         except Exception as e:
             logger.warning(f"Error during cleanup task cancellation: {e}")
+
+    # P8: Stop RAG Watchdog
+    if rag_watcher:
+        logger.info("[P8] Shutting down: Stopping RAG Watchdog...")
+        try:
+            rag_watcher.stop()
+            logger.info("[P8] RAG Watchdog stopped successfully.")
+        except Exception as e:
+            logger.warning(f"[P8] Error stopping RAG Watchdog: {e}")
 
 
 import secrets
