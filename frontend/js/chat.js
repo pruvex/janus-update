@@ -790,6 +790,37 @@ export async function sendMessage(fromWindowId) {
           streamModalRequest = data.modal_request ?? null;
           stripInlineAssistantVideoLinks(loadingMessageElement);
           ensureVideoReopenLinkForStreamMessage(loadingMessageElement, streamModalRequest);
+        } else if (data.type === "tool_result") {
+          // Handle tool results including permission_required from Path Sentinel
+          let result = data.result;
+          if (typeof result === 'string') {
+            try {
+              result = JSON.parse(result);
+            } catch (e) {
+              console.warn("[SSE] Failed to parse tool result as JSON:", e);
+            }
+          }
+
+          if (result && result.status === 'permission_required') {
+            // Extract consent details
+            const challengeId = result.data?.challenge_id;
+            const path = result.data?.path;
+            const op = result.data?.op;
+
+            if (challengeId && path && op) {
+              // Import and show consent modal
+              import('./consent-modal.js').then(({ showConsentModal }) => {
+                showConsentModal(challengeId, path, op, (decision) => {
+                  // On user decision, send a message to continue the flow
+                  if (decision !== 'deny') {
+                    import('./chat.js').then(({ sendMessage }) => {
+                      sendMessage("[System] Die Berechtigung wurde erteilt. Bitte führe die abgebrochene Dateisystem-Aktion jetzt erneut aus.");
+                    });
+                  }
+                });
+              });
+            }
+          }
         } else if (data.type === "done") {
           break;
         } else if (data.type === "error") {

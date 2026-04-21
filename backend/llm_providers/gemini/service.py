@@ -371,14 +371,28 @@ class GeminiServiceProvider(BaseLLMProvider):
                         if function_name: break
                 
                 final_name = function_name or "unknown_function"
-                
+
+                # Gemini expects ``function_response.response`` to be a structured
+                # dict. Parse the JSON envelope so Gemini sees the real payload and
+                # does not loop by re-calling the tool.
+                raw_content = message.get("content")
+                if isinstance(raw_content, dict):
+                    parsed_response = raw_content
+                else:
+                    try:
+                        parsed_response = json.loads(str(raw_content))
+                        if not isinstance(parsed_response, dict):
+                            parsed_response = {"content": parsed_response}
+                    except Exception:
+                        parsed_response = {"content": str(raw_content) if raw_content is not None else ""}
+
                 # Tool Response als 'user' (Gemini Konvention für function_response)
                 gemini_history_for_api.append({
                     "role": "user",
                     "parts": [
                         protos.Part(function_response=protos.FunctionResponse(
-                            name=final_name, 
-                            response={"content": message.get("content")}
+                            name=final_name,
+                            response=parsed_response,
                         ))
                     ]
                 })
@@ -682,12 +696,29 @@ class GeminiServiceProvider(BaseLLMProvider):
 
                 final_name = function_name or "unknown_function"
 
+                # Gemini expects ``function_response.response`` to be a structured dict.
+                # Passing a raw JSON-string under {"content": "..."} prevents Gemini from
+                # seeing the tool actually returned data, causing it to re-call the tool
+                # in a loop. Parse the JSON envelope and hand Gemini the structured
+                # payload directly; fall back to a string wrapper only on parse errors.
+                raw_content = message.get("content")
+                parsed_response: Dict[str, Any]
+                if isinstance(raw_content, dict):
+                    parsed_response = raw_content
+                else:
+                    try:
+                        parsed_response = json.loads(str(raw_content))
+                        if not isinstance(parsed_response, dict):
+                            parsed_response = {"content": parsed_response}
+                    except Exception:
+                        parsed_response = {"content": str(raw_content) if raw_content is not None else ""}
+
                 gemini_history_for_api.append({
                     "role": "user",
                     "parts": [
                         protos.Part(function_response=protos.FunctionResponse(
                             name=final_name,
-                            response={"content": message.get("content")},
+                            response=parsed_response,
                         ))
                     ],
                 })

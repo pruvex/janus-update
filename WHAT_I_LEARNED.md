@@ -2,6 +2,59 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [LESSON] #LLM #Gemini #ToolResponse "Structured Dict for FunctionResponse — NEVER pass JSON-string as content wrapper"
+- **Kontext:** Der Gemini-Provider (`backend/llm_providers/gemini/service.py`) übersetzt OpenAI-kompatible Tool-Messages (`role: "tool"`) in `protos.FunctionResponse`. Die `content`-Felder in unseren Tool-Results sind historisch **JSON-Strings** (`'{"status":"ok","data":{"contents":[...]}}'`), weil die Executor-Schicht alles uniform serialisiert.
+- **Problem:** Beim ersten Versuch wurde schlicht `response={"content": message.get("content")}` an `protos.FunctionResponse` übergeben. Gemini bekam also ein Dict, dessen einziger Wert ein undurchsichtiger JSON-String ist. Gemini interpretierte das **nicht** als "Tool hat Daten geliefert" — im zweiten Roundtrip rief Gemini dasselbe Tool mit identischen Args erneut auf. Der `HARD-LOOP-BREAKER` im Orchestrator blockte den Duplicate-Call → Gemini halluzinierte eine irrelevante Antwort ("Das PDF ist in Ihrer Dokumentenliste verfügbar."). OpenAI war davon nie betroffen, weil OpenAI JSON-Strings im `content`-Feld tolerant parst.
+- **Lösung:** Tool-Content vor dem Einhängen in `protos.FunctionResponse.response` deserialisieren. Gemini sieht dann die **reale Struktur** (`contents`, `count`, `path`, …) und erkennt den Tool-Call als abgeschlossen:
+  ```python
+  raw_content = message.get("content")
+  if isinstance(raw_content, dict):
+      parsed_response = raw_content
+  else:
+      try:
+          parsed_response = json.loads(str(raw_content))
+          if not isinstance(parsed_response, dict):
+              parsed_response = {"content": parsed_response}
+      except Exception:
+          parsed_response = {"content": str(raw_content) if raw_content is not None else ""}
+
+  gemini_history_for_api.append({
+      "role": "user",
+      "parts": [protos.Part(function_response=protos.FunctionResponse(
+          name=final_name,
+          response=parsed_response,
+      ))],
+  })
+  ```
+  Fallback auf `{"content": "<string>"}` nur, wenn der Inhalt nicht parsbar ist — so bleibt das Verhalten für non-JSON-Tools stabil.
+- **Regressions-Guard:** Symmetrisch in **beiden** Pfaden nötig (Sync: `_gemini_generate_response`, Stream: `_gemini_stream_build_request`). Wer nur einen Pfad fixt, merkt es erst in Produktion.
+- **Tripwire:** Symptom ist spezifisch — `HARD-LOOP-BREAKER` Log-Eintrag + Output-Token-Zahl deutlich niedriger (Re-Call) + halluzinierte Antwort ohne Bezug zur User-Frage. Wenn man nur die UI-Antwort sieht, wirkt es wie ein reines Prompting-Problem — der Log entlarvt es.
+- **Erkennungssignatur im Log:**
+  ```
+  [HARD-LOOP-BREAKER] BLOCKED duplicate tool call: filesystem.<x>
+  ```
+  in Kombination mit einem **vorherigen** erfolgreichen `TOOL CALL RESULT` für dasselbe Tool+Args → eindeutig dieser Bug.
+- **Location:** `backend/llm_providers/gemini/service.py` (Sync ~Z. 373-398, Stream ~Z. 683-710), gefixt 2026-04-21
+- **Confidence:** High (Live-Run Chat 52 mit `C:\test2` grün, 7 Dateien korrekt enumeriert, kein Loop-Breaker-Trigger)
+- **Tags:** Gemini, ToolResponse, FunctionResponse, LLM, Provider, LoopBreaker, JSON, Envelope
+
+## [LESSON] #FastAPI #StaticFiles #MountOrder "Silent Mount-Prefix Shadowing"
+- **Kontext:** Janus-Backend mountet in `backend/main.py` sowohl Backend-Preview-Bilder (`/assets` → `backend/assets/`) als auch Frontend-Bundles (`/` → `frontend/dist/`, mit `html=True`). Vite-Production-Builds emittieren gehashte JS/CSS nach `frontend/dist/assets/index-*.{js,css}`, d.h. Asset-URLs auf dem Client lauten `/assets/index-*.js`.
+- **Problem:** Das frühere `/assets`-Mount fängt ALLES unterhalb seines Präfixes ab — inklusive `/assets/index-*.js` — und gibt 404, weil die Dateien nicht in `backend/assets/` liegen. Im packaged Build (Electron lädt aus `http://127.0.0.1:8001/`) werden CSS/JS dadurch unsichtbar geshadowed → UI rendert komplett ohne Styles. In Dev unsichtbar, weil Vite-Dev-Server (Port 5173) das Backend-Mount-Layout nicht verwendet.
+- **Lösung:** Kollidierende Präfixe zwischen Backend-Previews und Vite-Build-Assets eliminieren. Entweder Backend-Previews auf einen eigenen Pfad (z.B. `/backend_assets/` oder `/previews/`) verschieben, oder den Vite-Output in ein anderes Verzeichnis (`build.assetsDir`) umleiten. In dieser Codebase: `/assets`-Mount entfernt (war Duplikat zu `/backend_assets`).
+  ```python
+  # NICHT machen — shadowed Vite-Bundles:
+  # app.mount("/assets", StaticFiles(directory="backend/assets"))
+  app.mount("/backend_assets", StaticFiles(directory="backend/assets"))
+  # ... später:
+  app.mount("/", StaticFiles(directory="frontend/dist", html=True))
+  ```
+- **Regressions-Guard:** Inline-Kommentar direkt an der Mount-Stelle, der erklärt WARUM `/assets` nicht zurückkommen darf. Zusätzlich: Verifikation im Build-Flow durch direkten HTTP-Call an das gebündelte `janus_backend.exe` mit einer expliziten Prüfung auf `/assets/index-*.{js,css}` → 200.
+- **Tripwire:** Bug wurde erst sichtbar, nachdem Electron die Lade-Strategie von `file://` / `janus://` auf `http://127.0.0.1:8001/` umgestellt hatte (YouTube-Error-153 Mitigation, v0.4.16-beta.9). Vorher kamen Asset-URLs nie durch das Backend. **Lektion:** Bei Architektur-Switches immer das Mount-/Routing-Layout auf Präfix-Kollisionen mit neu relevant werdenden Clients prüfen.
+- **Location:** `backend/main.py` (ehemals Zeile 510), behoben in v0.4.16-beta.11
+- **Confidence:** High (vor-/nach-verifiziert via HTTP-Smoke-Test am packaged Build)
+- **Tags:** FastAPI, StaticFiles, MountOrder, Vite, Packaging, Electron, Regression
+
 ## [PATTERN] #Electron #BrowserSpoofing "The Identity Cloak"
 - **Kontext:** Electron-Apps werden oft von YouTube und anderen Plattformen blockiert (Fehler 152), weil der User-Agent auf "Electron" oder eine nicht-standardisierte Zeichenfolge zeigt, die als Bot/Scraper erkannt wird.
 - **Problem:** YouTube erkennt Electron-Apps als nicht-legitime Browser und blockiert iFrame-Embedding aus file:// Pfaden oder unsicheren Origins. Header-Spoofing allein reicht nicht aus, wenn der User-Agent selbst verdächtig ist.

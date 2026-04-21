@@ -1,5 +1,124 @@
 /* Chat composer: ChatGPT-style growing textarea + Janus Diamond aesthetic */
 
+/* Path Sentinel Consent Modal Styles */
+#consent-modal.hidden {
+    display: none;
+}
+
+#consent-modal {
+    display: flex;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+}
+
+#consent-modal .modal-content {
+    background-color: #2d2d2d;
+    border: 1px solid #555;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+#consent-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#consent-modal .modal-header h3 {
+    margin: 0;
+    color: #eee;
+    font-size: 18px;
+}
+
+#consent-modal .close-button {
+    font-size: 28px;
+    font-weight: bold;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+#consent-modal .close-button:hover {
+    color: #fff;
+}
+
+#consent-modal .modal-body {
+    margin-bottom: 24px;
+}
+
+#consent-modal .modal-body p {
+    margin: 8px 0;
+    color: #ccc;
+}
+
+#consent-modal .consent-path {
+    background-color: #1a1a1a;
+    padding: 12px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: #4dc4ff;
+    word-break: break-all;
+    margin: 12px 0;
+}
+
+#consent-modal .consent-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+#consent-modal .consent-buttons .button {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+#consent-modal .consent-buttons .button-primary {
+    background: linear-gradient(180deg, #4dc4ff 0%, var(--janus-blue) 50%, #0066aa 100%);
+    color: #fff;
+}
+
+#consent-modal .consent-buttons .button-primary:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+#consent-modal .consent-buttons .button-secondary {
+    background-color: #555;
+    color: #eee;
+}
+
+#consent-modal .consent-buttons .button-secondary:hover {
+    background-color: #666;
+}
+
+#consent-modal .consent-always-btn {
+    position: relative;
+}
+
+#consent-modal .consent-always-btn::before {
+    content: '⚠';
+    margin-right: 6px;
+}
+
 [id^="chat-input-container-"] {
   display: flex;
   flex-direction: column;

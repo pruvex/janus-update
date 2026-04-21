@@ -20,7 +20,13 @@ class SkillSelector:
 
     DOMAIN_KEYWORDS: Dict[str, List[str]] = {
         "communication": ["mail", "email", "e-mail", "inbox", "nachricht"],
-        "filesystem": ["datei", "file", "ordner", "folder", "verzeichnis", "pfad"],
+        "filesystem": [
+            "datei", "dateien", "file", "files",
+            "ordner", "folder", "folders",
+            "verzeichnis", "verzeichnisse", "directory", "directories",
+            "pfad", "pfade", "path",
+            "auflisten", "list",
+        ],
         "knowledge": ["dokument", "pdf", "wissen", "suche", "recherche"],
         "calendar": ["kalender", "termin", "meeting", "event"],
         "system": [
@@ -148,9 +154,14 @@ class SkillSelector:
     def _domain_priorities(self, *, prompt: str) -> List[str]:
         lowered = prompt.lower()
         prioritized_domains: List[str] = []
+        # Detect drive-letter paths (C:\, D:/, etc.) or UNC paths -> filesystem intent
+        has_path_pattern = bool(re.search(r"[a-zA-Z]:[\\/]|\\\\[a-zA-Z0-9]", prompt))
         for domain, keywords in self.DOMAIN_KEYWORDS.items():
             if any(self._contains_keyword(lowered, keyword) for keyword in keywords):
                 prioritized_domains.append(domain)
+
+        if has_path_pattern and "filesystem" not in prioritized_domains:
+            prioritized_domains.insert(0, "filesystem")
 
         if not prioritized_domains:
             return []

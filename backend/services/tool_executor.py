@@ -852,37 +852,6 @@ class ToolExecutor:
                     result_slots[idx] = result
                     continue
 
-            sandbox_level = self.tool_manager.get_sandbox_level(skill_id)
-            if sandbox_level == "workspace_only":
-                violation = self._get_sandbox_violation(func_args)
-                if violation:
-                    sandbox_payload = SkillResponse(
-                        status="error",
-                        error={
-                            "code": "SANDBOX_VIOLATION",
-                            "message": (
-                                "Pfad liegt außerhalb der erlaubten Workspaces "
-                                f"(sandbox_level={sandbox_level})."
-                            ),
-                            "details": {
-                                "skill_id": skill_id,
-                                "path_arg": violation["arg"],
-                                "path_value": violation["value"],
-                            },
-                        },
-                    ).model_dump()
-                    result = self._finalize_tool_result(
-                        original_name=str(func_name or ""),
-                        skill_id=skill_id,
-                        payload=sandbox_payload,
-                        started_at=started_at,
-                        trace_id=trace_id,
-                        arguments_json=func_args,
-                    )
-                    result["tool_call_id"] = tool_call.get("id")
-                    result_slots[idx] = result
-                    continue
-
             limit = self.tool_manager.get_max_calls_per_turn(skill_id)
             current_count = per_skill_counts.get(skill_id, 0) + 1
             per_skill_counts[skill_id] = current_count
@@ -1099,62 +1068,6 @@ class ToolExecutor:
                 self.db.rollback()
             except Exception:
                 pass
-
-    def _iter_candidate_paths(self, arguments_json: Dict[str, Any]) -> List[Dict[str, str]]:
-        candidates: List[Dict[str, str]] = []
-        for key, value in (arguments_json or {}).items():
-            if not isinstance(value, str):
-                continue
-            key_l = str(key).lower()
-            if "path" not in key_l and key_l not in {"filename", "file", "target", "source", "destination"}:
-                continue
-            normalized = value.strip()
-            if not normalized:
-                continue
-            candidates.append({"arg": str(key), "value": normalized})
-        return candidates
-
-    def _is_virtual_workspace_path(self, candidate_path: str) -> bool:
-        normalized = str(candidate_path or "").strip().replace("\\", "/").lower()
-        return normalized.startswith("/user_images/") or normalized.startswith("user_images/")
-
-    def _is_path_allowed(self, candidate_path: str, allowed_roots: List[os.PathLike]) -> bool:
-        if not os.path.isabs(str(candidate_path)):
-            return True
-
-        try:
-            candidate = os.path.realpath(os.path.abspath(candidate_path))
-        except Exception:
-            return False
-
-        for root in allowed_roots:
-            try:
-                root_path = os.path.realpath(os.path.abspath(str(root)))
-                common = os.path.commonpath([candidate, root_path])
-                if common == root_path:
-                    return True
-            except Exception:
-                continue
-        return False
-
-    def _get_sandbox_violation(self, arguments_json: Dict[str, Any]) -> Optional[Dict[str, str]]:
-        candidates = self._iter_candidate_paths(arguments_json)
-        if not candidates:
-            return None
-
-        try:
-            from backend.services.filesystem_manager import _get_allowed_workspaces
-
-            allowed_roots = _get_allowed_workspaces()
-        except Exception:
-            allowed_roots = []
-
-        for candidate in candidates:
-            if self._is_virtual_workspace_path(candidate["value"]):
-                continue
-            if not self._is_path_allowed(candidate["value"], allowed_roots):
-                return candidate
-        return None
 
     def _decode_tool_content(self, wrapped_result: Dict[str, Any]) -> Dict[str, Any]:
         if not isinstance(wrapped_result, dict):

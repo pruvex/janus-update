@@ -118,6 +118,12 @@ def _ensure_sqlite_schema_migrations() -> None:
                         )
                     )
                 logger.info("Migration: memories.source_type added (default='text').")
+
+        # Path Sentinel: Create path_permissions table if it doesn't exist
+        if not insp.has_table("path_permissions"):
+            from backend.data.models import PathPermission
+            PathPermission.__table__.create(bind=engine)
+            logger.info("Migration: path_permissions table created.")
     except Exception:
         logger.warning(
             "SQLite schema migration skipped or failed (non-fatal).",

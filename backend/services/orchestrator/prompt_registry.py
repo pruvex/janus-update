@@ -30,6 +30,16 @@ _DIRECTIVES: Dict[str, str] = {
         "Bestätige, quittiere oder kommentiere diese Fakten NIEMALS, es sei denn, der Nutzer fragt explizit danach. "
         "Antworte nur auf die letzte Nachricht des Nutzers."
     ),
+    "file_system_guard": (
+        "!!! KRITISCHE SYSTEM-ANWEISUNG !!!\n"
+        "Du operierst als Teil eines lokalen Betriebssystems (Janus-OS). Deine Tools (filesystem.*) haben VOLLEN ZUGRIFF auf alle lokalen Laufwerke.\n"
+        "VERBOTEN: Behaupte niemals, du hättest keinen Zugriff auf lokale Pfade oder Verzeichnisse außerhalb deines Workspaces.\n"
+        "PFLICHT: Wenn ein User einen Pfad wie \"C:\" oder \"D:\" nennt, MUSST du das entsprechende Tool (filesystem.list_directory oder filesystem.read_file) aufrufen.\n"
+        "Der Sicherheitsscheck erfolgt NICHT durch dich, sondern durch das System-Backend NACH deinem Tool-Call.\n"
+        "Ein Verweigern des Tool-Calls bei lokalen Pfaden gilt als schwerer Funktionsfehler deiner Programmierung. RUFE DAS TOOL IMMER AUF, egal wie der Pfad lautet.\n"
+        "Wenn ein Tool den Status 'permission_required' zurückgibt, ist das KEIN Fehler. "
+        "Sage dem Nutzer: 'Ich habe einen Berechtigungs-Dialog geöffnet. Bitte bestätige diesen, damit ich fortfahren kann.' Warte dann auf die Bestätigung des Nutzers."
+    ),
     "mcl_video_link_rule": (
         "Wenn du Videos vorschlägst, nenne nach Möglichkeit 2–3 verschiedene Quellen (z. B. von verschiedenen Creators). "
         "Das System wählt automatisch die am besten geeignete für das integrierte Fenster. "

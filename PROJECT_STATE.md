@@ -1,6 +1,36 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.15-beta.13** — "STABILITY-ARC COMPLETE: Diamond-Release-Guard & Atomic State-Save fully operational. Production-Release v0.4.16 published. All Tasks SEALED & COMPLETE.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.12** — "HOTFIX: Gemini-Tool-Response-Envelope gefixt — Gemini loopt nicht mehr bei Filesystem-Tools. Zusätzlich: Backend/Vite Route-Kollision aufgelöst, packaged UI wieder gestyled.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-20 21:20 (STABILITY-ARC COMPLETE — SEALED)
+**Aktualisiert:** 2026-04-21 20:27 (HOTFIX Gemini-Tool-Loop — SEALED)
+
+---
+
+## [CURRENT_SESSION_DELTA] (HOTFIX — Gemini Tool-Response Envelope Loop 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **HOTFIX — Gemini halluzinierte PDFs statt Tool-Ergebnisse bei `filesystem.list_directory`** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-21) |
+| **Umsetzung** | Root-Cause im `@c:\KI\Janus-Projekt\backend\llm_providers\gemini\service.py` lokalisiert: Tool-Response wurde als **JSON-String** im Wrapper `{"content": "<json-string>"}` an `protos.FunctionResponse.response` übergeben. Gemini konnte die verschachtelte Struktur nicht als "Tool-Call erledigt" interpretieren, rief das Tool ein zweites Mal mit identischen Args auf → `HARD-LOOP-BREAKER` blockte → Gemini halluzinierte "Das PDF ist in Ihrer Dokumentenliste verfügbar." **Fix:** JSON-Envelope vorab in ein strukturiertes Dict parsen, sodass Gemini direkt `contents: [...]`, `count: 7` etc. sieht. Fallback auf String-Wrapper bei Parse-Fehlern. Symmetrisch angewandt in Sync-Pfad (Z. 373-398) und Stream-Pfad (Z. 683-710). |
+| **Root Cause** | Die Gemini-`FunctionResponse.response` erwartet ein strukturiertes Dict; ein eingebetteter JSON-String als String-Value wird von Gemini nicht als "Daten" erkannt. OpenAI akzeptiert beides tolerant, weshalb der Bug nur bei Gemini auftrat. |
+| **Ergebnis** | Gemini liefert bei `filesystem.list_directory` (und analogen Tools) jetzt korrekte Dateilisten. Kein `HARD-LOOP-BREAKER` Trigger, kein 2. Re-Call, keine PDF-Halluzinationen. Live-Verifikation `C:\test2`: 7 Dateien + 1 Ordner korrekt enumeriert; Output 94 Tokens statt 81 (echte Antwort statt Re-Call). |
+| **Files** | `backend/llm_providers/gemini/service.py` (Sync-Pfad + Stream-Pfad: JSON-Envelope-Parsing statt String-Wrapper). |
+| **Verifikation** | 55/55 Unit-Tests grün (`pytest backend/tests/test_path_sentinel.py`); Live-Run Chat 52 Gemini `was liegt in "C:\test2"` → korrekte Antwort; Log-Beweis: `GEMINI-HISTORY: Stream-Model-Parts übernommen` gefolgt von 94-Token-Antwort ohne Loop-Breaker. |
+| **Patterns** | [LESSON] #LLM #Gemini #ToolResponse "Structured Dict for FunctionResponse — NEVER pass JSON-string as content wrapper". |
+
+---
+
+## [CURRENT_SESSION_DELTA] (HOTFIX v0.4.16-beta.10/11 — Packaged-UI Route-Kollision 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **HOTFIX — Packaged UI ungestyled auf Testsystemen / Beta-Testern** (Regression aus beta.9 HTTP-Origin Switch) |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-21) |
+| **Umsetzung** | **1. beta.10:** `frontend/dist/assets/` war leer, obwohl `dist/index.html` auf gehashte Assets verwies → `npm run build` regeneriert + Installer veröffentlicht. Reichte nicht, weil strukturelles Problem dahinter lag. **2. beta.11 (eigentlicher Fix):** Route-Kollision in `backend/main.py` lokalisiert: `app.mount("/assets", StaticFiles(directory=backend/assets))` (Preview-Bilder) überschattete den späten `app.mount("/", StaticFiles(directory=frontend/dist))`, weil StaticFiles-Mounts sich an Präfixen binden und `/assets/...` vom früheren Mount abgegriffen wurde → Vite-Bundles `/assets/index-*.{js,css}` = 404. Kollidierenden Mount entfernt (war Duplikat zu `/backend_assets`), Kommentar gegen Rückfall im Code. **3. Verifikation:** gebündelten `janus_backend.exe` direkt gestartet, `/`, CSS und JS via `Invoke-WebRequest` geprüft → alle 200 mit korrektem Content-Type. **4. Release-Pipeline:** `/release-production` Phase 1 + 3.4 + 3.5 durchlaufen, GitHub-Release `v0.4.16-beta.11` signiert & published. |
+| **Root Cause** | beta.9 hatte die Electron-Lade-Strategie von `file://` / `janus://` auf `http://127.0.0.1:8001/` umgestellt (YouTube-Error-153 Mitigation). Dadurch wurde das FastAPI-Mount-Layout **erstmals produktiv relevant** — vorher kamen Asset-URLs nie durchs Backend. Die Kollision existierte latent seit langem und wurde erst durch den Architektur-Switch sichtbar. |
+| **Ergebnis** | Packaged UI ist auf Testsystem wieder voll gestyled (User-bestätigt: „es geht!! super!!"). HTTP-Origin-Architektur für YouTube-153 ist jetzt produktionsreif. |
+| **Files** | `backend/main.py` (Zeile 510: `/assets`-Mount entfernt + Gegen-Regression-Kommentar), `package.json` (Version 0.4.16-beta.10 → beta.11), `backend/version.py` (auto-sync), `frontend/dist/` (neu gebaut, JS-Hash `index-CGX2xgmF.js`), `CHANGELOG.md` (beta.10 + beta.11 Einträge), `RELEASE_NOTES.md` (regeneriert), `WHAT_I_LEARNED.md` ([LESSON] #FastAPI #StaticFiles #MountOrder). |
+| **Verifikation** | `python tools/pre_build_check.py` 14/14 ✅ · PyInstaller Exit 0 · HTTP-Smoke-Test am gebündelten Backend: `/` 200 (84215 bytes), `/assets/index-CGX2xgmF.js` 200 (819050 bytes, `application/javascript`), `/assets/index-Dtd3qBjz.css` 200 (100653 bytes, `text/css`) ✅ · GitHub Release `v0.4.16-beta.11` published. |
+| **Patterns** | [LESSON] #FastAPI #StaticFiles #MountOrder "StaticFiles-Mount-Präfixe fangen alles darunter — kollidierende Präfixe zwischen Backend-Assets und Vite-Build-Assets führen zu lautlosen 404s im packaged Build." |
 
 ---
 

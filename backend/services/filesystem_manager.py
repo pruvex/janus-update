@@ -128,13 +128,19 @@ def _resolve_and_validate_path(user_path: str, must_exist: bool = True) -> Path:
 
     if is_absolute_path:
         resolved = cleaned_path.resolve()
+        # Check if path is in a workspace (for must_exist validation)
+        in_workspace = False
         for ws in allowed_workspaces:
             if resolved.is_relative_to(ws.resolve()):
+                in_workspace = True
                 if must_exist and not resolved.exists():
                     raise FileNotFoundError(f"Pfad '{user_path}' existiert nicht.")
                 return resolved
-        # If it's an absolute path but not relative to any allowed workspace
-        raise PermissionError(f"Absoluter Pfad '{user_path}' ist nicht erlaubt.")
+        # If absolute path is not in a workspace, still return it
+        # The @requires_path_auth decorator will handle permission checking
+        if must_exist and not resolved.exists():
+            raise FileNotFoundError(f"Pfad '{user_path}' existiert nicht.")
+        return resolved
     else:  # Handle relative paths
         # First, check if the path starts with a workspace name
         for ws in allowed_workspaces:

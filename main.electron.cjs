@@ -4,6 +4,8 @@ const { app, BrowserWindow, ipcMain, dialog, Menu, MenuItem, net, session, shell
 
 // ============================================================
 // YOUTUBE ORIGIN FIX: Disable site-per-process isolation to prevent iframe blocking
+// disable-site-isolation-trials was removed in v0.4.16-beta.3 as it caused
+// startup instability without measurable benefit for YouTube embedding.
 // ============================================================
 app.commandLine.appendSwitch('disable-features', 'IsolateOrigins,site-per-process');
 const path = require('path');
@@ -32,7 +34,7 @@ protocol.registerSchemesAsPrivileged([
 // ============================================================
 // YOUTUBE ORIGIN FIX: Mask Janus as real Chrome browser globally
 // ============================================================
-app.userAgentFallback = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+// Moved to app.ready to prevent startup crash in some Electron versions
 
 // ============================================================
 // DIAMANT-STANDARD UPDATE KONFIGURATION
@@ -550,6 +552,12 @@ function createWindow() {
       contextIsolation: true,
       sandbox: true,
       // ============================================================
+      // YOUTUBE ORIGIN FIX (v0.4.16-beta.3): Dedicated persistent session partition.
+      // Gives YouTube iframe a stable cookie jar for CONSENT cookies and
+      // recommendation state, which reduces Error 150/153 occurrences.
+      // ============================================================
+      partition: "persist:janus",
+      // ============================================================
       // YOUTUBE ORIGIN FIX: Allow running insecure content for YouTube embedding
       // ============================================================
       allowRunningInsecureContent: true
@@ -565,14 +573,27 @@ function createWindow() {
   });
 
   // ============================================================
-  // YOUTUBE ORIGIN FIX: Referer/Origin Spoofing + Header-Stripping
+  // YOUTUBE ORIGIN FIX (reverted to beta.3 state): UA-only, diagnostic logging.
+  // We log the ORIGINAL Referer/Origin/Sec-Fetch values so we can see what
+  // Electron actually sends before any spoofing. This is diagnostic-first —
+  // we will decide the actual header strategy based on what the logs show.
   // ============================================================
-  // --- Request-Header: User-Agent hardening for YouTube ---
+  const CHROME_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+  let _ytRequestLogCount = 0;
   mainWindow.webContents.session.webRequest.onBeforeSendHeaders(
-    { urls: ['*://*.youtube.com/*'] },
+    { urls: ['*://*.youtube.com/*', '*://*.youtube-nocookie.com/*', '*://*.googlevideo.com/*'] },
     (details, callback) => {
-      // Force User-Agent to match Chrome 124 (same as window userAgent and app.userAgentFallback)
-      details.requestHeaders['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+      if (_ytRequestLogCount < 30) {
+        _ytRequestLogCount++;
+        const ref = details.requestHeaders['Referer'] || details.requestHeaders['referer'] || '(none)';
+        const org = details.requestHeaders['Origin'] || details.requestHeaders['origin'] || '(none)';
+        const sfs = details.requestHeaders['Sec-Fetch-Site'] || '(none)';
+        const sfm = details.requestHeaders['Sec-Fetch-Mode'] || '(none)';
+        console.log(`[YT-REQ ${_ytRequestLogCount}] ${details.method} ${details.url.substring(0, 100)} | ref=${ref.substring(0, 50)} origin=${org} sfs=${sfs} sfm=${sfm}`);
+      }
+      // Only normalize User-Agent (avoid "Electron/x.x.x" substring block).
+      // Do NOT touch Referer/Origin/Sec-Fetch-* — we log them instead to diagnose.
+      details.requestHeaders['User-Agent'] = CHROME_UA;
       callback({ cancel: false, requestHeaders: details.requestHeaders });
     }
   );
@@ -603,9 +624,15 @@ function createWindow() {
       console.log('[PERMISSION CHECK] ALLOWED: YouTube origin');
       return true;
     }
-    // Allow all permissions from file:// origin (renderer runs locally)
-    if (requestingOrigin && requestingOrigin.startsWith('file://')) {
-      console.log('[PERMISSION CHECK] ALLOWED: file:// origin');
+    // Allow all permissions from local renderer origins
+    // (file://, janus:// legacy, http://127.0.0.1:8001 and http://localhost:* for Vite dev)
+    if (requestingOrigin && (
+      requestingOrigin.startsWith('file://') ||
+      requestingOrigin.startsWith('janus://') ||
+      requestingOrigin.startsWith('http://127.0.0.1:8001') ||
+      requestingOrigin.startsWith('http://localhost:')
+    )) {
+      console.log('[PERMISSION CHECK] ALLOWED: local origin', requestingOrigin);
       return true;
     }
     // Allow clipboard, fullscreen, and background-sync permissions for app context
@@ -625,10 +652,22 @@ function createWindow() {
       callback(true);
       return;
     }
-    // Allow all permissions from file:// origin (renderer runs locally)
-    const requestingOrigin = webContents.getURL();
-    if (requestingOrigin && requestingOrigin.startsWith('file://')) {
-      console.log('[PERMISSION REQUEST] ALLOWED: file:// origin');
+    // Allow all permissions from local renderer origins
+    // (file://, janus:// legacy, http://127.0.0.1:8001 and http://localhost:* for Vite dev)
+    const requestingOrigin = (details && details.requestingUrl) || webContents.getURL();
+    if (requestingOrigin && (
+      requestingOrigin.startsWith('file://') ||
+      requestingOrigin.startsWith('janus://') ||
+      requestingOrigin.startsWith('http://127.0.0.1:8001') ||
+      requestingOrigin.startsWith('http://localhost:')
+    )) {
+      console.log('[PERMISSION REQUEST] ALLOWED: local origin', requestingOrigin);
+      callback(true);
+      return;
+    }
+    // For openExternal with no origin yet (initial navigation to janus://), allow as well
+    if (permission === 'openExternal' && (!requestingOrigin || requestingOrigin === '' || requestingOrigin.startsWith('janus:') || requestingOrigin === 'about:blank')) {
+      console.log('[PERMISSION REQUEST] ALLOWED: openExternal during janus:// navigation');
       callback(true);
       return;
     }
@@ -645,13 +684,23 @@ function createWindow() {
   // Function to load the main app content
   const loadApp = () => {
     return new Promise((resolve, reject) => {
+      // v0.4.16-beta.9: Load packaged app from http://127.0.0.1:8001/ instead
+      // of a custom scheme. Required by YouTube's embed player (Error 153 was
+      // caused by the non-http `janus://` origin). The backend's FastAPI app
+      // already mounts frontend/dist at `/`, so it serves the UI over HTTP.
+      // Dev mode keeps Vite's hot-reload server at http://localhost:5173/.
       const loadPromise = app.isPackaged
-        ? mainWindow.loadFile(path.join(__dirname, 'frontend', 'dist', 'index.html'))
+        ? (() => {
+            // Keep DevTools open during beta to observe runtime behaviour.
+            mainWindow.webContents.openDevTools({ mode: 'detach' });
+            console.log('[LOAD] Using HTTP origin: http://127.0.0.1:8001/');
+            return mainWindow.loadURL('http://127.0.0.1:8001/');
+          })()
         : (() => {
             mainWindow.webContents.openDevTools();
             return mainWindow.loadURL('http://localhost:5173/');
           })();
-      
+
       loadPromise.then(resolve).catch(reject);
     });
   };
@@ -1042,8 +1091,89 @@ ipcMain.handle('clipboard:read', () => {
 //  APP INITIALIZATION
 // ===================================================================
 app.whenReady().then(async () => {
-    // 💎 YOUTUBE FIX: Disable site isolation to allow YouTube embedding
-    app.commandLine.appendSwitch('disable-features', 'IsolateOrigins,site-per-process');
+    // YOUTUBE ORIGIN FIX: Mask Janus as real Chrome browser globally (set here to avoid startup race conditions).
+    // Note: command-line switches like disable-features are set at the top of the script (before app init).
+    app.userAgentFallback = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+    // ============================================================
+    // YOUTUBE ORIGIN FIX (v0.4.16-beta.5): Register janus:// protocol handler.
+    // Root cause of Error 153: Production used loadFile() → file:// origin →
+    // YouTube embed endpoint refuses any non-http(s) referrer.
+    // Fix: Serve frontend/dist via custom 'janus' scheme (registered as
+    // privileged+secure+standard at top of script). Origin becomes janus://app,
+    // which YouTube treats as a standard web origin.
+    // ============================================================
+    const { protocol: electronProtocol, session: electronSession } = require('electron');
+    const distRoot = path.join(__dirname, 'frontend', 'dist');
+    const MIME_TYPES = {
+      '.html': 'text/html; charset=utf-8',
+      '.js':   'text/javascript; charset=utf-8',
+      '.mjs':  'text/javascript; charset=utf-8',
+      '.css':  'text/css; charset=utf-8',
+      '.json': 'application/json; charset=utf-8',
+      '.map':  'application/json; charset=utf-8',
+      '.png':  'image/png',
+      '.jpg':  'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.gif':  'image/gif',
+      '.svg':  'image/svg+xml',
+      '.webp': 'image/webp',
+      '.ico':  'image/x-icon',
+      '.woff':  'font/woff',
+      '.woff2': 'font/woff2',
+      '.ttf':   'font/ttf',
+      '.otf':   'font/otf',
+      '.mp3':  'audio/mpeg',
+      '.wav':  'audio/wav',
+      '.mp4':  'video/mp4',
+      '.txt':  'text/plain; charset=utf-8',
+    };
+    const janusHandler = async (request) => {
+      try {
+        const parsed = new URL(request.url);
+        let relPath = decodeURIComponent(parsed.pathname).replace(/^\/+/, '');
+        if (!relPath || relPath.endsWith('/')) relPath += 'index.html';
+        const absPath = path.normalize(path.join(distRoot, relPath));
+        if (!absPath.startsWith(distRoot)) {
+          console.warn(`[JANUS-PROTO] Blocked path traversal: ${request.url}`);
+          return new Response('Forbidden', { status: 403 });
+        }
+        let data;
+        try {
+          data = await fs.promises.readFile(absPath);
+        } catch (readErr) {
+          console.warn(`[JANUS-PROTO] File not found: ${absPath} (url=${request.url})`);
+          return new Response('Not Found', { status: 404 });
+        }
+        const ext = path.extname(absPath).toLowerCase();
+        const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+        console.log(`[JANUS-PROTO] Served: ${relPath} (${data.length} bytes, ${contentType})`);
+        return new Response(data, {
+          status: 200,
+          headers: { 'Content-Type': contentType, 'Cache-Control': 'no-cache' },
+        });
+      } catch (err) {
+        console.error('[JANUS-PROTO] Handler error:', err && err.stack ? err.stack : err);
+        return new Response('Internal Error', { status: 500 });
+      }
+    };
+
+    // Register on default session (for safety / fallback)
+    electronProtocol.handle('janus', janusHandler);
+    // CRITICAL: Also register on the persist:janus partition session,
+    // because our BrowserWindow uses `partition: "persist:janus"` which is
+    // a separate session with its own protocol registry.
+    const partitionSession = electronSession.fromPartition('persist:janus');
+    partitionSession.protocol.handle('janus', janusHandler);
+    console.log(`[JANUS-PROTO] Custom scheme registered on default + persist:janus sessions, serving from: ${distRoot}`);
+
+    // NOTE: Previous beta.6 introduced a YouTube Referer/Origin rewriter via
+    // webRequest.onBeforeSendHeaders. It was removed in beta.8 because:
+    //  - It did not fix the reported Error 153 (reproducible in plain browser
+    //    on the affected machine, not an Electron issue).
+    //  - Manipulating Referer/Origin/Sec-Fetch headers can INCREASE YouTube's
+    //    bot-detection score for normal users. Browser defaults are trusted
+    //    signals; leaving them untouched is the safer baseline.
 
     // 1. Splash zeigen
     createSplashWindow();

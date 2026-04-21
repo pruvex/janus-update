@@ -1178,20 +1178,50 @@ button:hover {
 
 .video-player-fallback-line {
     text-align: center;
-    margin: 8px 10px 10px;
-    font-size: 0.85rem;
+    margin: 10px 10px 12px;
+    font-size: 0.9rem;
     line-height: 1.4;
     flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .video-player-fallback-muted {
-    color: #666;
-    margin-right: 6px;
+    color: #9aa0a6;
 }
 
 .video-player-fallback-a {
-    color: var(--accent-color, #00a3ff);
-    text-decoration: underline;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--accent-color, #00a3ff);
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background 0.15s ease, transform 0.1s ease;
+    cursor: pointer;
+}
+
+.video-player-fallback-a:hover {
+    background: var(--accent-color-hover, #0088d6);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.video-player-fallback-a:active {
+    transform: translateY(0);
+}
+
+.video-player-fallback-a::before {
+    content: "↗";
+    font-size: 1.05em;
+    line-height: 1;
 }
 
 #video-player-modal .video-player-resize-handle {

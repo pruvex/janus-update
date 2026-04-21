@@ -89,6 +89,15 @@ def _stream_event_to_frontend_sse_line(ev: StreamEvent) -> Optional[str]:
             msg = str(ev.metadata.get("message") or "stream error")
         payload = {"type": "error", "message": msg}
         return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+    if t == "tool_result":
+        # 💎 PATH-SENTINEL: Propagate permission_required (and future tool events) to UI
+        blob = ev.content if isinstance(ev.content, dict) else {}
+        result = blob.get("result") if isinstance(blob, dict) else None
+        payload = {"type": "tool_result", "result": result}
+        if isinstance(ev.metadata, dict):
+            payload["name"] = ev.metadata.get("name")
+            payload["tool_call_id"] = ev.metadata.get("tool_call_id")
+        return f"data: {json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
     # tool_start / tool_end / provider finish / done: omit for legacy UI (or use StreamEvent.to_sse() in a debug client)
     return None
 

@@ -2,17 +2,18 @@
   "legacy_name": "list_directory",
   "skill": "filesystem.list_directory",
   "version": "1.0.0",
-  "sandbox_level": "workspace_only",
+  "sandbox_level": "full",
   "latency_class": "fast",
   "tags": [
     "filesystem"
   ],
   "capabilities": [
     "file_read",
-    "workspace_discovery"
+    "filesystem_discovery"
   ],
   "is_agent_ready": true,
   "max_calls_per_turn": 3,
   "depends_on": [],
-  "examples": []
+  "examples": [],
+  "description": "Listet den Inhalt eines Verzeichnisses auf. WICHTIG: Wenn du einen Unterordner siehst, musst du list_directory erneut für diesen Unterordner aufrufen, um dessen Inhalt zu sehen. Diese Funktion ist nicht rekursiv."
 }

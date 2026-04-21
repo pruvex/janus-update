@@ -87,7 +87,14 @@ function enrichEmbedUrlForApi(raw) {
     const u = new URL(s);
     const host = u.hostname.toLowerCase();
     if (host.includes("youtube.com") || host.includes("youtube-nocookie.com")) {
-      if (!u.searchParams.has("enablejsapi")) u.searchParams.set("enablejsapi", "1");
+      // NOTE: enablejsapi=1 requires a matching origin= query parameter that
+      // YouTube only validates as http(s) origin. Our app runs under
+      // janus://app (packaged) or http://localhost (dev), which causes
+      // Error 153 ("Video player configuration error"). We intentionally do
+      // NOT set enablejsapi here. pauseVideoPlayback/resumeVideoPlayback via
+      // postMessage will be no-ops (player ignores without JS API), but the
+      // video itself plays fine with the native controls.
+      u.searchParams.delete("enablejsapi");
       if (!u.searchParams.has("rel")) u.searchParams.set("rel", "0");
     } else if (host.includes("vimeo.com")) {
       if (!u.searchParams.has("api")) u.searchParams.set("api", "1");
@@ -351,18 +358,42 @@ function setFallbackLink(payload) {
   if (ext) {
     a.href = ext;
     const src = String(payload.source || "").toLowerCase();
-    const label = String(payload.title || "").trim();
-    a.textContent = label || (src === "vimeo" ? "Auf Vimeo ansehen" : "Auf YouTube ansehen");
+    a.textContent = src === "vimeo" ? "Auf Vimeo öffnen" : "Auf YouTube öffnen";
     if (muted) {
       muted.textContent = externalOnly
         ? String(payload.external_hint || "Nur direkt auf YouTube verfügbar.")
-        : "Lädt nicht?";
+        : "Spielt nicht ab?";
     }
+    // v0.4.16-beta.7: Always show the external-open button, not only on error.
+    // Error 153 (YouTube player config error) cannot be detected via iframe.onerror
+    // because the iframe itself loads (HTTP 200) and the error is only displayed
+    // by the YouTube player JS inside the cross-origin iframe. Giving users a
+    // one-click escape hatch is the most reliable workaround for all embed issues
+    // (restricted mode, embeds disabled, regional blocks, corporate firewalls).
     line.hidden = false;
+    // Route click through Electron shell.openExternal when available to ensure
+    // the link actually opens in the user's default OS browser (which works in
+    // scenarios where the in-app embed doesn't).
+    if (!a.dataset.electronBound) {
+      a.dataset.electronBound = "1";
+      a.addEventListener("click", (ev) => {
+        const url = a.getAttribute("href") || "";
+        if (!url || url === "#") return;
+        if (window.electron && typeof window.electron.openExternalLink === "function") {
+          ev.preventDefault();
+          try {
+            window.electron.openExternalLink(url);
+          } catch (err) {
+            console.warn("openExternalLink failed, falling back to target=_blank", err);
+          }
+        }
+        // else: normal target="_blank" behaviour (dev in browser)
+      });
+    }
   } else {
     line.hidden = true;
     a.removeAttribute("href");
-    if (muted) muted.textContent = "Lädt nicht?";
+    if (muted) muted.textContent = "Spielt nicht ab?";
   }
 }
 

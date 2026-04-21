@@ -123,6 +123,7 @@ from backend.api.routers import (
     users,
     local_llm,
     image_engine,
+    consent,
 )
 log_startup_time("Router importiert")
 
@@ -476,7 +477,9 @@ origins = [
     "http://localhost:3000",  # Common React port
     "http://127.0.0.1:3000",  # Common React port alternative
     "http://localhost:8080",  # Common alternative port
-    "http://127.0.0.1:8080"   # Common alternative port
+    "http://127.0.0.1:8080",  # Common alternative port
+    "janus://app",            # Custom scheme for packaged Electron (v0.4.16-beta.5)
+    "null",                   # file:// origin serialises to "null" in CORS
 ]
 
 # Add CORS middleware with comprehensive settings
@@ -505,7 +508,14 @@ if not os.path.exists(assets_path):
     # Fallback if folder is missing (prevents crash)
     os.makedirs(assets_path, exist_ok=True)
     
-app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
+# NOTE: Do NOT mount "/assets" here. Vite's production build emits hashed
+# frontend bundles into `frontend/dist/assets/` (e.g. `/assets/index-*.css`).
+# Since the "/" StaticFiles mount at the bottom of this file serves
+# `frontend/dist`, a "/assets" mount at this point would shadow those URLs
+# and cause 404s for the built CSS/JS -> UI renders completely unstyled in
+# the packaged app (Electron loads from http://127.0.0.1:8001/). The old
+# "/assets" route pointed to backend preview images; its duplicate
+# "/backend_assets" below is the canonical path for those.
 app.mount("/backend_assets", StaticFiles(directory=assets_path), name="backend_assets")
 
 from backend.dependencies import api_key_auth
@@ -666,6 +676,7 @@ app.include_router(projects.router, prefix="/api", tags=["Projects"], dependenci
 app.include_router(images.router, prefix="/api", tags=["Images"], dependencies=[Depends(api_key_auth)])
 app.include_router(users.router, prefix="/api", tags=["Users"], dependencies=[Depends(api_key_auth)])
 app.include_router(tasks.router, prefix="/api", tags=["Tasks"], dependencies=[Depends(api_key_auth)])
+app.include_router(consent.router, prefix="/api/consent", tags=["Consent"])
 
 
 from backend.dependencies import (

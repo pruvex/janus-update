@@ -307,3 +307,14 @@ class Task(Base):
     
     chat = relationship("Chat", back_populates="tasks")
     project = relationship("Project", back_populates="tasks")
+
+
+class PathPermission(Base):
+    """Path Sentinel: Persistent path permissions for users."""
+    __tablename__ = "path_permissions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, index=True, nullable=False)
+    path_raw = Column(String, nullable=False)  # Normalized path
+    op = Column(String, nullable=False)  # read/write/delete
+    created_at = Column(DateTime, default=datetime.utcnow)

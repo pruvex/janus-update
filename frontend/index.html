@@ -1100,6 +1100,7 @@
     <script type="module" src="js/settings.js"></script>
     <script type="module" src="js/chat-manager.js"></script>
     <script type="module" src="js/chat.js"></script>
+    <script type="module" src="js/consent-modal.js"></script>
     <script type="module" src="js/dock.js"></script>
     <script type="module" src="js/cost-visualizer.js"></script>
     <script type="module" src="js/context-menu.js"></script>
@@ -1209,9 +1210,9 @@
         <div id="video-analysis-status" class="video-status-overlay" style="display: none; text-align: center; padding: 8px; background: rgba(0, 0, 0, 0.8); color: #fff; border-radius: 4px; margin-top: 8px; font-size: 14px;">
           ⏳ KI-Analyse läuft im Hintergrund...
         </div>
-        <p class="video-player-fallback-line" id="video-player-fallback-line" hidden>
+        <p class="video-player-fallback-line" id="video-player-fallback-line">
           <span class="video-player-fallback-muted">Lädt nicht?</span>
-          <a id="video-player-external-link" class="video-player-fallback-a" href="#" target="_blank" rel="noopener noreferrer">Auf YouTube ansehen</a>
+          <a id="video-player-external-link" class="video-player-fallback-a" href="#" target="_blank" rel="noopener noreferrer">Im Browser öffnen</a>
         </p>
         <div class="video-player-resize-handle video-player-resize-handle--right" aria-hidden="true"></div>
         <div class="video-player-resize-handle video-player-resize-handle--bottom" aria-hidden="true"></div>
@@ -1731,6 +1732,29 @@
             <div class="button-group" style="justify-content: center;">
                 <button id="delete-confirm-btn" class="button button-danger">Ja, löschen</button>
                 <button id="delete-cancel-btn" class="button">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- ==== Path Sentinel Consent Modal ==== -->
+    <!-- ============================================= -->
+    <div id="consent-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Zugriffsberechtigung erforderlich</h3>
+                <span class="close-button" id="close-consent-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Janus benötigt Berechtigungen für folgenden Pfad:</p>
+                <p id="consent-path-display" class="consent-path"></p>
+                <p><strong>Operation:</strong> <span id="consent-op-display"></span></p>
+            </div>
+            <div class="modal-buttons consent-buttons">
+                <button id="consent-deny-btn" class="button button-secondary">Ablehnen</button>
+                <button id="consent-once-btn" class="button button-primary">Einmalig</button>
+                <button id="consent-session-btn" class="button button-primary">Für diese Session</button>
+                <button id="consent-always-btn" class="button button-primary consent-always-btn">Immer</button>
             </div>
         </div>
     </div>

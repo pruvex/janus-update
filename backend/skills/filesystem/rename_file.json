@@ -2,14 +2,14 @@
   "legacy_name": "rename_file",
   "skill": "filesystem.rename_file",
   "version": "1.0.0",
-  "sandbox_level": "workspace_only",
+  "sandbox_level": "full",
   "latency_class": "fast",
   "tags": [
     "filesystem"
   ],
   "capabilities": [
     "file_rename",
-    "workspace_mutation"
+    "filesystem_mutation"
   ],
   "is_agent_ready": true,
   "max_calls_per_turn": 3,

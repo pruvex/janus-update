@@ -12,6 +12,7 @@ import keyring
 # Wir importieren die Module, damit die Funktionen verfügbar sind
 from backend.data import contact_schemas, schemas
 from backend.services import filesystem_manager
+from backend.tools import filesystem_tools
 from backend.tools.memory_tools import (
     memory_write_tool,
     memory_read_tool,
@@ -399,15 +400,15 @@ def register_all_tools():
 
     # 4. Filesystem
     fs_tools = [
-        (filesystem_manager.create_file, schemas.CreateFileArgs),
-        (filesystem_manager.read_file, schemas.ReadFileArgs),
-        (filesystem_manager.delete_file, schemas.DeleteFileArgs),
-        (filesystem_manager.list_directory, schemas.ListDirectoryArgs),
+        (filesystem_tools.create_file, schemas.CreateFileArgs),
+        (filesystem_tools.read_file, schemas.ReadFileArgs),
+        (filesystem_tools.delete_file, schemas.DeleteFileArgs),
+        (filesystem_tools.list_directory, schemas.ListDirectoryArgs),
         (filesystem_manager.list_allowed_workspaces, schemas.ListAllowedWorkspacesArgs),
         (filesystem_manager.create_directory, schemas.CreateDirectoryArgs),
         (filesystem_manager.delete_directory, schemas.DeleteDirectoryArgs),
         (filesystem_manager.rename_file, schemas.RenameFileArgs),
-        (filesystem_manager.move_file, schemas.MoveFileArgs),
+        (filesystem_tools.move_file, schemas.MoveFileArgs),
         (filesystem_manager.move_files, schemas.MoveFilesArgs),
     ]
     for func, schema in fs_tools:

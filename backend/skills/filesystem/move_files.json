@@ -2,7 +2,7 @@
   "legacy_name": "move_files",
   "skill": "filesystem.move_files",
   "version": "1.0.0",
-  "sandbox_level": "workspace_only",
+  "sandbox_level": "full",
   "latency_class": "fast",
   "tags": [
     "filesystem"

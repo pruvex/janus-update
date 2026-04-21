@@ -2232,6 +2232,18 @@ class OrchestratorExecutionEngine:
                         _sn = str(tr.get("name") or "").strip()
                         if _sn and _sn not in all_used_skills:
                             all_used_skills.append(_sn)
+                        # 💎 PATH-SENTINEL: Emit permission_required to frontend so consent modal opens
+                        try:
+                            _raw = tr.get("_raw_content") or tr.get("content", "{}")
+                            _parsed = json.loads(_raw) if isinstance(_raw, str) else dict(_raw or {})
+                            if isinstance(_parsed, dict) and _parsed.get("status") == "permission_required":
+                                yield StreamEvent(
+                                    type="tool_result",
+                                    content={"result": _parsed},
+                                    metadata={"name": _sn, "tool_call_id": tr.get("tool_call_id")},
+                                )
+                        except Exception:
+                            pass
                         # 💎 VIDEO-LIST-METADATA: Extrahiere video.search List-Mode Daten für Frontend
                         if _sn == "video.search":
                             try:
