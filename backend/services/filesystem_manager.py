@@ -315,7 +315,7 @@ def _enumerate_local_drives() -> list[Path]:
 def find_files(
     pattern: str,
     root: Optional[str] = None,
-    max_results: int = 100,
+    max_results: int = 20,
     search_all_drives: bool = False,
 ) -> ToolResultV1:
     """Rekursive Dateisuche über alle freigegebenen Workspaces (oder einen spezifischen Root).
@@ -324,7 +324,7 @@ def find_files(
         pattern: Glob-Muster (z.B. '*.pdf', '*gundula*', 'gundula1.pdf'). Nur Dateinamen, keine Pfadsegmente.
                  Wenn das Pattern weder '*' noch '?' enthält, wird es als '*<pattern>*' (Substring-Suche) interpretiert.
         root:    Optional: Workspace-relativer oder absoluter Pfad als Startordner. None → ALLE Workspaces.
-        max_results: Harte Obergrenze für Treffer (Default 100).
+        max_results: Harte Obergrenze für Treffer (Default 20 — begrenzt Fakten-Extraktion-Overhead nach Dateisuchen).
         search_all_drives: Wenn True, werden ALLE lokalen Windows-Laufwerke (C:\\, D:\\, ...) durchsucht
                            — unabhängig von Workspaces. Dauert länger, findet aber Duplikate überall.
                            System-/Noise-Ordner (Windows, Program Files, node_modules, .git, ...) werden übersprungen.

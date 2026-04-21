@@ -38,7 +38,8 @@ _DIRECTIVES: Dict[str, str] = {
         "Der Sicherheitsscheck erfolgt NICHT durch dich, sondern durch das System-Backend NACH deinem Tool-Call.\n"
         "Ein Verweigern des Tool-Calls bei lokalen Pfaden gilt als schwerer Funktionsfehler deiner Programmierung. RUFE DAS TOOL IMMER AUF, egal wie der Pfad lautet.\n"
         "Wenn ein Tool den Status 'permission_required' zurückgibt, ist das KEIN Fehler. "
-        "Sage dem Nutzer: 'Ich habe einen Berechtigungs-Dialog geöffnet. Bitte bestätige diesen, damit ich fortfahren kann.' Warte dann auf die Bestätigung des Nutzers."
+        "Sage dem Nutzer: 'Ich habe einen Berechtigungs-Dialog geöffnet. Bitte bestätige diesen, damit ich fortfahren kann.' Warte dann auf die Bestätigung des Nutzers.\n"
+        "WICHTIG: Wenn ein Such-Tool (z.B. filesystem.find_files) mehrere Dateien mit identischem Namen an verschiedenen Orten findet, MUSST du den Nutzer explizit auf diese Dubletten hinweisen (z.B. 'Ich habe die Datei an 2 Stellen gefunden: ...')."
     ),
     "mcl_video_link_rule": (
         "Wenn du Videos vorschlägst, nenne nach Möglichkeit 2–3 verschiedene Quellen (z. B. von verschiedenen Creators). "

@@ -2,6 +2,25 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [LESSON] #UX #Prompting "LLM braucht explizite Anweisungen für proaktive UX-Maßnahmen (Dubletten-Hinweis) — Default ist stille Ausgabe"
+- **Kontext:** `filesystem.find_files` liefert korrekt Duplikate (z.B. 2 Kopien von `gundula1.pdf` an verschiedenen Orten), aber der LLM hatte keine explizite Anweisung, den User darauf hinzuweisen. Resultat: Liste von Pfaden ohne Kontext, User weiß nicht, ob es Dubletten sind oder ob das Tool nur einen Treffer gefunden hat.
+- **Problem:** LLMs sind standardmäßig "stille Ausgeber" — sie geben das Tool-Result aus, ohne proaktive UX-Verbesserungen einzubauen, es sei denn, es ist explizit angeordnet. Für Dateisuchen ist das kritisch: Dubletten sind ein häufiges UX-Problem, und der User möchte wissen, ob es mehrere Kopien gibt.
+- **Lösung:** Prompt-Registry-Direktive `file_system_guard` erweitern: "WICHTIG: Wenn ein Such-Tool (z.B. filesystem.find_files) mehrere Dateien mit identischem Namen an verschiedenen Orten findet, MUSST du den Nutzer explizit auf diese Dubletten hinweisen (z.B. 'Ich habe die Datei an 2 Stellen gefunden: ...')."
+- **Tripwire:** Wenn ein Tool-Output eine Liste von ähnlichen Einträgen liefert (Dateien, Produkte, Personen), aber der LLM diese nicht gruppiert oder auf Duplikate hinweist → fehlt eine Prompt-Direktive.
+- **Location:** `backend/services/orchestrator/prompt_registry.py:42`, gefixt 2026-04-21.
+- **Confidence:** High (Unit-Smoke: Direktive enthält "Dubletten" und "find_files" ✅).
+- **Tags:** UX, Prompting, Dubletten, LLM, Proaktivität, PromptRegistry
+
+## [LESSON] #Performance #FactExtraction "Tool-Output-Größe beeinflusst downstream-Fakten-Extraktion massiv — max_results Default an downstream-Overhead anpassen"
+- **Kontext:** `filesystem.find_files(max_results=100)` lieferte bis zu 100 Dateipfade als Tool-Output. Die Fakten-Extraktion (`extract_and_save_fact_from_interaction`) verarbeitet die Assistant-Message (die die Dateiliste enthält) und Nano extrahiert jeden Pfad als separate "Langzeit-Fakt". Bei 87 Pfaden → 87 Fakten → DB-Overhead für Sekunden, System-Lag.
+- **Problem:** `max_results`-Default wurde nur nach Such-Qualität (Vollständigkeit) gewählt, nicht nach downstream-Kosten (Fakten-Extraktion). 100 Pfade sind für die meisten Use-Cases überdimensioniert und führen zu massivem Overhead.
+- **Lösung:** `max_results` Default von 100 auf 20 gesenkt. 20 Treffer sind für die meisten Use-Cases ausreichend; bei Bedarf kann der User `search_all_drives=true` oder explizites `max_results` nutzen. Docstring aktualisiert mit Begründung ("begrenzt Fakten-Extraktion-Overhead nach Dateisuchen").
+- **Härtung (empfohlen, nicht implementiert):** Fakten-Extraktion härten, um Pfade als "Langzeit-Fakten" zu ignorieren oder zu deduplizieren. Aktuell ist die Limit-Senkung der pragmatische Fix.
+- **Tripwire:** Wenn ein Tool-Output eine große Liste von Items liefert (Dateien, Produkte, Personen) und das System nach der Antwort für Sekunden "friert" → Fakten-Extraktion extrahiert jedes Item als separate Fact.
+- **Location:** `backend/services/filesystem_manager.py:318` (max_results Default 100 → 20), gefixt 2026-04-21.
+- **Confidence:** High (Unit-Smoke: `max_results default == 20` ✅).
+- **Tags:** Performance, FactExtraction, Limit, ToolOutput, Downstream, Nano
+
 ## [LESSON] #Numpy #Embeddings #Robustness "np.array/np.stack auf heterogenen Embedding-Listen bricht mit 'inhomogeneous shape' — sanitize vor stack, Alignment via Padding erhalten"
 - **Kontext:** `backend/services/vector_service.py::calculate_similarity_with_precomputed` baute das Corpus-Array via `np.array(candidate_embeddings, dtype=np.float32)` aus einer `List[List[float]]`. Im Memory-Retrieval sind die Einträge aber *heterogen*: manche Slots haben kein gecachtes Embedding (→ `None`), andere stammen aus älteren Modell-Versionen mit abweichender Dimension (z.B. 512 statt 384), vereinzelt NaN aus defekten Encodings.
 - **Problem:** `np.array(mixed_list, dtype=float32)` scheitert **deterministisch** bei jeder inhomogenen Stelle mit `ValueError: setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (N,) + inhomogeneous part.` Der gesamte Similarity-Batch wirft eine Exception und der Caller kriegt `[0.0] * len(candidates)` zurück — obwohl 26/27 Embeddings valide gewesen wären. Der Bug ist still, weil er im `except Exception` abgefangen und nur geloggt wird; Retrieval-Qualität kollabiert lautlos.

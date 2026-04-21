@@ -1,6 +1,22 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.14** — "CORE-REPAIR: Numpy-Shape-Error im Memory-Retrieval gefixt (inhomogene Embedding-Listen via _safe_stack_embeddings) + SkillMetadata-Literal-Divergenz behoben ('full' sandbox_level regularisiert). Ollama-Compiler-Import als Fehlbefund zurückgewiesen (Code läuft).")
+# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.15** — "UX-Optimization: Prompt-Registry-Update für Dubletten-Hinweis bei Dateisuchen + find_files max_results Default von 100 auf 20 gesenkt (Fakten-Extraktion-Overhead-Begrenzung).")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-21 22:00 (CORE-REPAIR numpy-shape + sandbox-literal — SEALED)
+**Aktualisiert:** 2026-04-21 22:15 (UX-Optimization Prompt-Registry + Limit-Senkung — SEALED)
+
+---
+
+## [CURRENT_SESSION_DELTA] (UX-OPTIMIZATION — Prompt-Registry + Limit-Senkung 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **UX-Optimization: Dubletten-Hinweis bei Dateisuchen + Fakten-Extraktion-Overhead begrenzen** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-21) |
+| **Umsetzung** | **Fix #1 — Prompt-Registry-Update:** `@c:\KI\Janus-Projekt\backend\services\orchestrator\prompt_registry.py:42` erweitert die `file_system_guard`-Direktive um expliziten Dubletten-Hinweis: "WICHTIG: Wenn ein Such-Tool (z.B. filesystem.find_files) mehrere Dateien mit identischem Namen an verschiedenen Orten findet, MUSST du den Nutzer explizit auf diese Dubletten hinweisen (z.B. 'Ich habe die Datei an 2 Stellen gefunden: ...')." Der LLM muss den User bei Duplikaten proaktiv informieren, statt die Liste stillschweigend auszugeben. **Fix #2 — Limit-Senkung:** `@c:\KI\Janus-Projekt\backend\services\filesystem_manager.py:318` Default für `max_results` von 100 auf 20 gesenkt. Hintergrund: Bei Dateisuchen mit 100 Treffern würde Nano versuchen, jeden Pfad als separate "Langzeit-Fakt" zu speichern, was das System für Sekunden lähmt (87 Pfade → 87 Fakten → DB-Overhead). 20 Treffer sind für die meisten Use-Cases ausreichend; bei Bedarf kann der User `search_all_drives=true` oder explizites `max_results` nutzen. |
+| **Root Cause (#1)** | `filesystem.find_files` liefert Duplikate korrekt, aber der LLM hatte keine explizite Anweisung, den User darauf hinzuweisen. Resultat: Liste von Pfaden ohne Kontext, User weiß nicht, ob es Dubletten sind. |
+| **Root Cause (#2)** | `find_files(max_results=100)` war zu hoch für Fakten-Extraktion nach Dateisuchen. Nano extrahiert aus der Assistant-Message (die die Dateiliste enthält) jeden Pfad als separate "Langzeit-Fakt", was zu massivem DB-Overhead führt. |
+| **Ergebnis** | LLM weist User jetzt explizit auf Dubletten hin (z.B. "Ich habe gundula1.pdf an 2 Stellen gefunden: Desktop\JanusPDFs\gundula1.pdf und C:\test2\gundula1.pdf"). Fakten-Extraktion nach Dateisuchen ist entlastet (max 20 Pfade statt 100), System-Lag durch 87-Fakten-Extraktion vermieden. |
+| **Files** | `backend/services/orchestrator/prompt_registry.py` (file_system_guard erweitert), `backend/services/filesystem_manager.py` (max_results Default 100 → 20, Docstring aktualisiert). |
+| **Verifikation** | Unit-Smoke: `prompt_registry.get_directive('file_system_guard')` enthält "Dubletten" und "find_files" ✅ · `inspect.signature(find_files).parameters['max_results'].default == 20` ✅. |
+| **Patterns** | [LESSON] #UX #Prompting "LLM braucht explizite Anweisungen für proaktive UX-Maßnahmen (Dubletten-Hinweis) — Default ist stille Ausgabe", [LESSON] #Performance #FactExtraction "Tool-Output-Größe beeinflusst downstream-Fakten-Extraktion massiv — max_results Default an downstream-Overhead anpassen, nicht nur an Such-Qualität". |
 
 ---
 
