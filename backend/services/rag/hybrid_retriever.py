@@ -23,6 +23,9 @@ from backend.utils.paths import get_app_data_dir
 from .fts_store import FTSStore
 from .rrf import reciprocal_rank_fusion, K
 from .ingestion import COLLECTION_CODE, COLLECTION_PROSE
+from .reranker import CrossEncoderReranker
+from .context_expander import ContextExpander
+from .index_store import IndexStore
 
 logger = logging.getLogger("janus_backend")
 
@@ -42,14 +45,22 @@ class HybridRetriever:
         collection_name: Optional[str] = None,  # P3: None = search both collections
         chroma_path: Optional[str] = None,
         fts_db_path: Optional[str] = None,
+        index_db_path: Optional[str] = None,
+        use_reranker: bool = True,  # P4: Enable cross-encoder reranking
+        expand_context: bool = True,  # P4: Enable context expansion
     ):
         self.collection_name = collection_name  # P3: None = auto-detect both
         self.chroma_path = chroma_path or V2_CHROMA_PATH
         self.fts = FTSStore(db_path=fts_db_path)
+        self.index_store = IndexStore(db_path=index_db_path)
+        self.use_reranker = use_reranker
+        self.expand_context = expand_context
 
         self._client = None
         self._collections: Dict[str, any] = {}  # P3: multi-collection support
         self._embedding_function = None
+        self._reranker = None  # P4: lazy-loaded
+        self._expander = None  # P4: lazy-loaded
 
     def _get_embedding_function(self):
         if self._embedding_function is None:
@@ -160,6 +171,18 @@ class HybridRetriever:
         logger.debug(f"Keyword search returned {len(results)} results")
         return results
 
+    def _get_reranker(self) -> CrossEncoderReranker:
+        """Lazy-load the cross-encoder reranker."""
+        if self._reranker is None:
+            self._reranker = CrossEncoderReranker.get_instance()
+        return self._reranker
+
+    def _get_expander(self) -> ContextExpander:
+        """Lazy-load the context expander."""
+        if self._expander is None:
+            self._expander = ContextExpander(self.index_store)
+        return self._expander
+
     def query(
         self,
         query_text: str,
@@ -167,25 +190,31 @@ class HybridRetriever:
         vector_k: int = 20,
         keyword_k: int = 20,
         k: int = K,
+        rerank_k: int = 5,  # P4: Top-k after reranking
+        expand_window: int = 1,  # P4: ±N chunks for context expansion
     ) -> List[Dict[str, any]]:
         """
-        Execute hybrid retrieval: vector + keyword → RRF fusion.
+        Execute P4 hybrid retrieval: vector + keyword → RRF → Rerank → Expand → Final.
 
         Args:
             query_text: The user query string.
-            top_k: Number of final fused results to return.
+            top_k: Number of final results to return.
             vector_k: Number of candidates from vector search.
             keyword_k: Number of candidates from keyword search.
             k: RRF constant (default 60).
+            rerank_k: Number of results to keep after reranking (default 5).
+            expand_window: Number of chunks to expand on each side (default 1).
 
         Returns:
-            List of result dicts ordered by fused relevance (best first):
+            List of result dicts ordered by relevance (best first):
             {
                 "chunk_id": str,
                 "text": str,
                 "source_path": str,
                 "metadata": dict,
                 "rrf_score": float,
+                "rerank_score": Optional[float],
+                "is_expanded": bool,
                 "vector_rank": Optional[int],
                 "keyword_rank": Optional[int],
                 "distance": Optional[float],
@@ -206,32 +235,29 @@ class HybridRetriever:
         vector_ranking = [(r["chunk_id"], 1.0 / r["rank"]) for r in vector_results]
         keyword_ranking = [(r["chunk_id"], 1.0 / r["rank"]) for r in keyword_results]
 
-        # 3. Fuse via RRF
+        # 3. Fuse via RRF (get top-20 for reranking)
         fused = reciprocal_rank_fusion([vector_ranking, keyword_ranking], k=k)
+        rrf_candidates = fused[:20]  # P4: Keep top-20 for reranking
 
         # 4. Build lookup maps for enrichment
         vector_map: Dict[str, Dict] = {r["chunk_id"]: r for r in vector_results}
         keyword_map: Dict[str, Dict] = {r["chunk_id"]: r for r in keyword_results}
 
-        # 5. Enrich and return top-k
-        final_results = []
-        for rank_pos, (chunk_id, rrf_score) in enumerate(fused[:top_k], start=1):
+        # 5. Build candidate list for reranking
+        candidates = []
+        for chunk_id, rrf_score in rrf_candidates:
             v = vector_map.get(chunk_id)
             k = keyword_map.get(chunk_id)
-
-            # Prefer vector text/metadata if available, fallback to keyword
             text = v["text"] if v else (k["text"] if k else "")
             metadata = v["metadata"] if v else {}
             source_path = metadata.get("source_path", k["source_path"] if k else "")
-
-            final_results.append(
+            candidates.append(
                 {
                     "chunk_id": chunk_id,
                     "text": text,
                     "source_path": source_path,
                     "metadata": metadata,
                     "rrf_score": rrf_score,
-                    "rank": rank_pos,
                     "vector_rank": v["rank"] if v else None,
                     "keyword_rank": k["rank"] if k else None,
                     "distance": v["distance"] if v else None,
@@ -239,7 +265,32 @@ class HybridRetriever:
                 }
             )
 
-        # Add collection provenance
+        # 6. P4: Rerank with cross-encoder (if enabled)
+        if self.use_reranker:
+            reranker = self._get_reranker()
+            if reranker.is_available():
+                candidates = reranker.rerank(query_text, candidates, top_k=rerank_k)
+                logger.info(f"[P4] Reranked to {len(candidates)} results")
+            else:
+                logger.debug("[P4] Reranker not available, using RRF ranking")
+                candidates = candidates[:rerank_k]
+        else:
+            candidates = candidates[:rerank_k]
+
+        # 7. P4: Context expansion (if enabled)
+        if self.expand_context:
+            expander = self._get_expander()
+            expanded = expander.expand(candidates, expand_window=expand_window, max_expanded=top_k)
+            stats = expander.get_expansion_stats(expanded)
+            logger.info(
+                f"[P4] Context expansion: {stats['original_count']} → {stats['total_count']} chunks "
+                f"(added {stats['expanded_count']}, {stats['unique_sources']} sources)"
+            )
+            final_results = expanded[:top_k]
+        else:
+            final_results = candidates[:top_k]
+
+        # 8. Add collection provenance
         for r in final_results:
             v = vector_map.get(r["chunk_id"])
             if v:

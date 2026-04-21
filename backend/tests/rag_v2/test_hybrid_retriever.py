@@ -21,10 +21,14 @@ class TestHybridRetriever:
         with tempfile.TemporaryDirectory() as tmpdir:
             chroma_tmp = Path(tmpdir) / "chroma_v2"
             db_tmp = Path(tmpdir) / "fts_v2.db"
+            idx_tmp = Path(tmpdir) / "index_v2.db"
 
             retriever = HybridRetriever(
                 chroma_path=str(chroma_tmp),
                 fts_db_path=str(db_tmp),
+                index_db_path=str(idx_tmp),
+                use_reranker=False,  # P4: Disable reranker for basic test
+                expand_context=False,  # P4: Disable expansion for basic test
             )
             results = retriever.query("hello", top_k=5)
             assert results == []
@@ -49,10 +53,13 @@ class TestHybridRetriever:
                 stats = ingest.run()
                 assert stats["indexed"] == 1
 
-            # Query via hybrid retriever
+            # Query via hybrid retriever (P4: disable reranker/expansion for basic test)
             retriever = HybridRetriever(
                 chroma_path=str(chroma_tmp),
                 fts_db_path=str(db_tmp),
+                index_db_path=str(idx_tmp),
+                use_reranker=False,
+                expand_context=False,
             )
             results = retriever.query("hello world function", top_k=5)
             assert len(results) > 0
@@ -86,6 +93,9 @@ class TestHybridRetriever:
             retriever = HybridRetriever(
                 chroma_path=str(chroma_tmp),
                 fts_db_path=str(db_tmp),
+                index_db_path=str(idx_tmp),
+                use_reranker=False,
+                expand_context=False,
             )
             # Search for exact symbol "ferb"
             results = retriever.query("ferb", top_k=5)
@@ -115,6 +125,9 @@ class TestHybridRetriever:
             retriever = HybridRetriever(
                 chroma_path=str(chroma_tmp),
                 fts_db_path=str(db_tmp),
+                index_db_path=str(idx_tmp),
+                use_reranker=False,
+                expand_context=False,
             )
             results = retriever.query("foo bar function", top_k=5)
 
@@ -148,6 +161,9 @@ class TestHybridRetriever:
             retriever = HybridRetriever(
                 chroma_path=str(chroma_tmp),
                 fts_db_path=str(db_tmp),
+                index_db_path=str(idx_tmp),
+                use_reranker=False,
+                expand_context=False,
             )
             results = retriever.query("function", top_k=3)
             assert len(results) <= 3
