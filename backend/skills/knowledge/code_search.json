@@ -1,0 +1,40 @@
+{
+  "id": "knowledge.code_search",
+  "name": "Code Search",
+  "description": "Search through code files with AST-aware chunking, cross-encoder reranking, and context expansion. Optimized for technical queries about function definitions, class hierarchies, and code references.",
+  "category": "knowledge",
+  "parameters": {
+    "query": {
+      "type": "string",
+      "description": "The search query (can be code snippets, function names, or natural language)",
+      "required": true
+    },
+    "top_k": {
+      "type": "integer",
+      "description": "Number of results to return",
+      "default": 10
+    },
+    "file_type_filter": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Optional list of file extensions to filter (e.g., [\".py\", \".js\"])",
+      "default": null
+    }
+  },
+  "examples": [
+    {
+      "query": "Where is the process_data function defined?",
+      "description": "Search for a specific function"
+    },
+    {
+      "query": "user_repository.findById",
+      "description": "Search for a specific method call"
+    },
+    {
+      "query": "How does the authentication module work?",
+      "description": "Natural language query about code behavior"
+    }
+  ],
+  "focus": "code_heavy",
+  "retrieval_mode": "v2"
+}

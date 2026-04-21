@@ -455,6 +455,18 @@
             "de": "Sage: 'Finde alle Dokumente über...' oder 'Wo steht etwas über...?'",
             "en": "Say: 'Find all documents about...' or 'Where does it mention...?'"
           }
+        },
+        {
+          "id": "knowledge.code_search",
+          "label": {
+            "de": "Code-Suche",
+            "en": "Code Search"
+          },
+          "skill_refs": ["knowledge.code_search"],
+          "how_to": {
+            "de": "Sage: 'Wo ist die Funktion X definiert?' oder 'Zeige mir den Code für Y' oder 'Wie funktioniert die Klasse Z?'",
+            "en": "Say: 'Where is function X defined?' or 'Show me the code for Y' or 'How does class Z work?'"
+          }
         }
       ],
       "ui_locations": {

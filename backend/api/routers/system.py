@@ -175,7 +175,7 @@ async def remove_workspace(removal: WorkspaceRemove):
 @router.post("/feedback")
 async def submit_feedback_endpoint(request: FeedbackRequest):
     """Submit beta feedback/bug reports to Discord webhook.
-    
+
     The submission happens asynchronously (fire-and-forget) to avoid
     blocking the API response. Success/failure is logged internally.
     """
@@ -186,10 +186,10 @@ async def submit_feedback_endpoint(request: FeedbackRequest):
             description=request.description,
             include_logs=request.include_logs,
         )
-        
-        logger.info("[FEEDBACK-API] Feedback submission queued: type=%s, logs=%s", 
+
+        logger.info("[FEEDBACK-API] Feedback submission queued: type=%s, logs=%s",
                     request.type, request.include_logs)
-        
+
         return {
             "success": True,
             "message": "Feedback submitted successfully",
@@ -198,3 +198,39 @@ async def submit_feedback_endpoint(request: FeedbackRequest):
     except Exception as e:
         logger.error("[FEEDBACK-API] Failed to queue feedback: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to submit feedback: {e}")
+
+
+# P7: RAG V2 Health Check Endpoint
+
+
+@router.get("/rag-status")
+async def get_rag_status():
+    """
+    P7: Health check endpoint for RAG systems.
+
+    Returns status of both Chroma instances (legacy V1 and V2),
+    number of indexed files in V2, and FTS5 status.
+    """
+    try:
+        from backend.services.rag.api_adapter import get_v2_status
+        from backend.utils.paths import get_app_data_dir
+        import os
+
+        # Legacy ChromaDB (V1) status
+        legacy_chroma_path = os.path.join(get_app_data_dir(), "rag_chroma_db")
+        legacy_chroma_exists = os.path.exists(legacy_chroma_path)
+
+        # V2 status
+        v2_status = get_v2_status()
+
+        return {
+            "legacy": {
+                "chroma_path": legacy_chroma_path,
+                "chroma_exists": legacy_chroma_exists,
+                "status": "available" if legacy_chroma_exists else "unavailable",
+            },
+            "v2": v2_status,
+        }
+    except Exception as e:
+        logger.error("[RAG-STATUS] Failed to get RAG status: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get RAG status: {e}")
