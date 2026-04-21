@@ -21,11 +21,12 @@ from chromadb.utils import embedding_functions
 from backend.utils.paths import get_app_data_dir
 
 from .fts_store import FTSStore
-from .rrf import reciprocal_rank_fusion, K
+from .rrf import reciprocal_rank_fusion, weighted_reciprocal_rank_fusion, K
 from .ingestion import COLLECTION_CODE, COLLECTION_PROSE
 from .reranker import CrossEncoderReranker
 from .context_expander import ContextExpander
 from .index_store import IndexStore
+from .query_router import route as query_route, RouterDecision
 
 logger = logging.getLogger("janus_backend")
 
@@ -192,9 +193,12 @@ class HybridRetriever:
         k: int = K,
         rerank_k: int = 5,  # P4: Top-k after reranking
         expand_window: int = 1,  # P4: ±N chunks for context expansion
+        use_router: bool = True,  # P5: Enable query router
+        retrieval_mode: Optional[str] = None,  # P5: Override router: "code" | "prose" | "hybrid"
+        file_type_filter: Optional[List[str]] = None,  # P5: Optional file extension filter
     ) -> List[Dict[str, any]]:
         """
-        Execute P4 hybrid retrieval: vector + keyword → RRF → Rerank → Expand → Final.
+        Execute P5 hybrid retrieval: Router → vector + keyword → Weighted RRF → Rerank → Expand → Final.
 
         Args:
             query_text: The user query string.
@@ -204,6 +208,9 @@ class HybridRetriever:
             k: RRF constant (default 60).
             rerank_k: Number of results to keep after reranking (default 5).
             expand_window: Number of chunks to expand on each side (default 1).
+            use_router: P5: Enable query-based routing (code/prose/hybrid detection).
+            retrieval_mode: P5: Override router decision. "code" | "prose" | "hybrid".
+            file_type_filter: P5: Optional list of file extensions to filter results.
 
         Returns:
             List of result dicts ordered by relevance (best first):
@@ -215,12 +222,60 @@ class HybridRetriever:
                 "rrf_score": float,
                 "rerank_score": Optional[float],
                 "is_expanded": bool,
+                "router_mode": Optional[str],
                 "vector_rank": Optional[int],
                 "keyword_rank": Optional[int],
                 "distance": Optional[float],
                 "bm25_rank": Optional[float],
             }
         """
+        # P5: Route query to determine search strategy
+        router_decision = None
+        if use_router:
+            if retrieval_mode:
+                # Manual override
+                from .query_router import RouterDecision
+                if retrieval_mode == "code":
+                    router_decision = RouterDecision(
+                        mode="code_heavy",
+                        collections=["kb_code_v2"],
+                        vector_weight=0.25,
+                        keyword_weight=0.75,
+                        code_bias=+1.0,
+                    )
+                elif retrieval_mode == "prose":
+                    router_decision = RouterDecision(
+                        mode="prose_heavy",
+                        collections=["kb_prose_v2"],
+                        vector_weight=0.80,
+                        keyword_weight=0.20,
+                        code_bias=-1.0,
+                    )
+                else:
+                    router_decision = RouterDecision(
+                        mode="hybrid",
+                        collections=["kb_code_v2", "kb_prose_v2"],
+                        vector_weight=0.50,
+                        keyword_weight=0.50,
+                        code_bias=0.0,
+                    )
+            else:
+                router_decision = query_route(query_text)
+
+            logger.info(
+                f"[P5] Router: mode={router_decision.mode} "
+                f"collections={router_decision.collections} "
+                f"v_w={router_decision.vector_weight:.2f} k_w={router_decision.keyword_weight:.2f}"
+            )
+
+            # Override collection targets for this query
+            if router_decision.mode == "code_heavy":
+                self.collection_name = COLLECTION_CODE
+            elif router_decision.mode == "prose_heavy":
+                self.collection_name = COLLECTION_PROSE
+            else:
+                self.collection_name = None  # Search both
+
         logger.info(
             f"Hybrid query: '{query_text[:60]}...' (vector_k={vector_k}, keyword_k={keyword_k}, k={k})"
         )
@@ -236,7 +291,15 @@ class HybridRetriever:
         keyword_ranking = [(r["chunk_id"], 1.0 / r["rank"]) for r in keyword_results]
 
         # 3. Fuse via RRF (get top-20 for reranking)
-        fused = reciprocal_rank_fusion([vector_ranking, keyword_ranking], k=k)
+        # P5: Use weighted RRF if router is active
+        if router_decision and (router_decision.vector_weight != 0.5 or router_decision.keyword_weight != 0.5):
+            fused = weighted_reciprocal_rank_fusion(
+                [vector_ranking, keyword_ranking],
+                weights=[router_decision.vector_weight, router_decision.keyword_weight],
+                k=k,
+            )
+        else:
+            fused = reciprocal_rank_fusion([vector_ranking, keyword_ranking], k=k)
         rrf_candidates = fused[:20]  # P4: Keep top-20 for reranking
 
         # 4. Build lookup maps for enrichment
@@ -290,11 +353,29 @@ class HybridRetriever:
         else:
             final_results = candidates[:top_k]
 
-        # 8. Add collection provenance
+        # Add collection provenance
         for r in final_results:
             v = vector_map.get(r["chunk_id"])
             if v:
                 r["collection"] = v.get("collection", "unknown")
+
+        # P5: Add router metadata to results
+        if router_decision:
+            for r in final_results:
+                r["router_mode"] = router_decision.mode
+                r["router_code_bias"] = router_decision.code_bias
+
+        # P5: Apply file_type_filter if specified
+        if file_type_filter and final_results:
+            filtered = []
+            for r in final_results:
+                source = r.get("source_path", "")
+                ext = os.path.splitext(source)[1].lower()
+                if any(f.lower() == ext or f.lower() == ext.lstrip(".") for f in file_type_filter):
+                    filtered.append(r)
+            if filtered:
+                final_results = filtered
+                logger.info(f"[P5] File type filter applied: {len(final_results)} results remain")
 
         logger.info(
             f"Hybrid query returned {len(final_results)} results "

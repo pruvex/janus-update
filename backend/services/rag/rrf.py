@@ -91,3 +91,48 @@ def fuse_with_fallback(
         )
 
     return results
+
+
+def weighted_reciprocal_rank_fusion(
+    rankings: List[List[Tuple[str, float]]],
+    weights: List[float],
+    k: int = K,
+) -> List[Tuple[str, float]]:
+    """
+    P5: Weighted Reciprocal Rank Fusion.
+
+    Allows giving different sources different weights in the fusion.
+    Useful when the query router determines one channel (vector vs keyword)
+    should be trusted more for a specific query type.
+
+    Formula:
+        score(d) = Σ (weight_i / (k + rank_i(d)))
+
+    Args:
+        rankings: List of rankings, each ranking is a list of (doc_id, score) tuples.
+                  Order within each ranking matters (best first, rank=1).
+        weights: Weight for each ranking source. Must sum to approximately 1.0.
+                 If shorter than rankings, remaining weights default to 1.0.
+        k: RRF constant. Default 60.
+
+    Returns:
+        List of (doc_id, rrf_score) tuples, sorted by descending RRF score.
+    """
+    if not rankings:
+        return []
+
+    # Normalize weights
+    norm_weights = list(weights) + [1.0] * (len(rankings) - len(weights))
+    norm_weights = norm_weights[: len(rankings)]
+
+    # Aggregate weighted RRF scores per document
+    scores: Dict[str, float] = {}
+
+    for weight, ranking in zip(norm_weights, rankings):
+        for rank_pos, (doc_id, _) in enumerate(ranking, start=1):
+            rrf_score = weight * (1.0 / (k + rank_pos))
+            scores[doc_id] = scores.get(doc_id, 0.0) + rrf_score
+
+    # Sort by descending RRF score
+    sorted_results = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    return sorted_results

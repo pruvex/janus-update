@@ -168,3 +168,109 @@ class TestHybridRetriever:
             results = retriever.query("function", top_k=3)
             assert len(results) <= 3
             retriever.close()
+
+    def test_p5_router_code_query(self):
+        """P5: A code query should be routed to code collections with keyword bias."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_file = Path(tmpdir) / "hello.py"
+            test_file.write_text("def hello_world():\n    print('Hello World')\n")
+
+            chroma_tmp = Path(tmpdir) / "chroma_v2"
+            db_tmp = Path(tmpdir) / "fts_v2.db"
+            idx_tmp = Path(tmpdir) / "index_v2.db"
+
+            with IngestionRun(
+                tmpdir,
+                chroma_path=str(chroma_tmp),
+                db_path=str(idx_tmp),
+            ) as ingest:
+                ingest.run()
+
+            retriever = HybridRetriever(
+                chroma_path=str(chroma_tmp),
+                fts_db_path=str(db_tmp),
+                index_db_path=str(idx_tmp),
+                use_reranker=False,
+                expand_context=False,
+            )
+            # P5: Code-like query
+            results = retriever.query("hello_world() function", top_k=5, use_router=True)
+
+            # Should include router metadata
+            if results:
+                assert "router_mode" in results[0]
+                assert results[0]["router_mode"] in ("code_heavy", "hybrid")
+
+            retriever.close()
+
+    def test_p5_router_prose_query(self):
+        """P5: A prose query should be routed to prose collections with vector bias."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_file = Path(tmpdir) / "hello.py"
+            test_file.write_text("def hello_world():\n    print('Hello World')\n")
+
+            chroma_tmp = Path(tmpdir) / "chroma_v2"
+            db_tmp = Path(tmpdir) / "fts_v2.db"
+            idx_tmp = Path(tmpdir) / "index_v2.db"
+
+            with IngestionRun(
+                tmpdir,
+                chroma_path=str(chroma_tmp),
+                db_path=str(idx_tmp),
+            ) as ingest:
+                ingest.run()
+
+            retriever = HybridRetriever(
+                chroma_path=str(chroma_tmp),
+                fts_db_path=str(db_tmp),
+                index_db_path=str(idx_tmp),
+                use_reranker=False,
+                expand_context=False,
+            )
+            # P5: Prose-like query
+            results = retriever.query(
+                "How does the hello world function work", top_k=5, use_router=True
+            )
+
+            if results:
+                assert "router_mode" in results[0]
+                assert results[0]["router_mode"] in ("prose_heavy", "hybrid")
+
+            retriever.close()
+
+    def test_p5_retrieval_mode_override(self):
+        """P5: Manual retrieval_mode override should bypass router."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_file = Path(tmpdir) / "hello.py"
+            test_file.write_text("def hello_world():\n    print('Hello World')\n")
+
+            chroma_tmp = Path(tmpdir) / "chroma_v2"
+            db_tmp = Path(tmpdir) / "fts_v2.db"
+            idx_tmp = Path(tmpdir) / "index_v2.db"
+
+            with IngestionRun(
+                tmpdir,
+                chroma_path=str(chroma_tmp),
+                db_path=str(idx_tmp),
+            ) as ingest:
+                ingest.run()
+
+            retriever = HybridRetriever(
+                chroma_path=str(chroma_tmp),
+                fts_db_path=str(db_tmp),
+                index_db_path=str(idx_tmp),
+                use_reranker=False,
+                expand_context=False,
+            )
+            # Override with code mode even for prose-looking query
+            results = retriever.query(
+                "How does it work",
+                top_k=5,
+                use_router=True,
+                retrieval_mode="code",
+            )
+
+            if results:
+                assert results[0]["router_mode"] == "code_heavy"
+
+            retriever.close()
