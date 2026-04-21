@@ -1,6 +1,25 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.16** — "UX-Optimization: Neue WERKZEUGNUTZUNGS-DIREKTIVE für Suchanfragen (search_command_priority) — bricht Brevity-Bias bei faulen Modellen, zwingt Tool-Calls statt Memory-Antworten.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.17** — "Dead-Code-Fix: HARDWARE-TRUTH-REGEL wird nun tatsächlich in den LLM-Prompt injiziert. Zuvor definierte, aber nie verwendete Direktiven `file_system_guard` + `search_command_priority` werden jetzt via `apply_verbosity_control` in jeden DEFAULT-Dialog-Turn eingeschleust.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-21 22:30 (WERKZEUGNUTZUNGS-DIREKTIVE — search_command_priority — SEALED)
+**Aktualisiert:** 2026-04-21 23:00 (DEAD-CODE-FIX — Direktiven-Injection — SEALED)
+
+---
+
+## [CURRENT_SESSION_DELTA] (DEAD-CODE-FIX — Direktiven-Injection 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **Dead-Code-Fix: HARDWARE-TRUTH-REGEL + file_system_guard werden nun tatsächlich in den LLM-System-Prompt injiziert** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-21) |
+| **Root Cause** | User meldete: "Gemini nutzt Suchtool (2 Treffer), aber Nano nimmt Info aus Memory statt neuer Suche." Log-Analyse des OpenAI-Request (chat_id=74, query "wo liegt gundula1.pdf?"): System-Prompt enthielt `PRIMÄRDIREKTIVE`, `FAKTEN-DIREKTIVE`, `🚨 SYSTEM-DIREKTIVE (STRIKTE KASKADE)` (alles aus DB-Persönlichkeit), aber WEDER `search_command_priority` NOCH `file_system_guard`. Mini-Modell (via MoA-Upgrade von Nano) wählte einen von 3 widersprüchlichen Pfaden aus den Memory-Fakten (c:\test2\, desktop\januspdfs\, "nicht gefunden") und antwortete ohne Tool-Call. Ursache: Die beiden Direktiven waren in `prompt_registry.py::_DIRECTIVES` definiert, aber NIEMALS injiziert. Der echte System-Prompt wird in `@c:\KI\Janus-Projekt\backend\services\orchestrator\execution_dispatcher.py:190` via `apply_verbosity_control(wf.system_prompt_for_llm)` gebaut — welches bisher nur `verbosity_control` + `no_meta_talk` anhängte. |
+| **Umsetzung** | `@c:\KI\Janus-Projekt\backend\services\orchestrator\prompt_registry.py:197-216` — `apply_verbosity_control()` erweitert: Schleife iteriert jetzt über 4 statt 2 Direktiven (`verbosity_control`, `no_meta_talk`, `file_system_guard`, `search_command_priority`). Dedup-Check (`if rule not in base_text`) bleibt unverändert → Idempotenz garantiert. Damit erhält jeder DEFAULT-Dialog-Turn automatisch: (a) Dubletten-Hinweis-Pflicht bei Such-Treffern an mehreren Orten, (b) Live-Tool-Call-Pflicht für Suchanfragen mit "schwerer Systemfehler"-Formulierung. |
+| **Ergebnis** | LLM (Nano, Mini, Sonnet, Gemini) bekommt nun bei JEDEM regulären Chat-Turn die HARDWARE-TRUTH-REGEL im System-Prompt. Damit wird "Brevity-Bias" bei faulen Modellen gebrochen: Sie können nicht mehr auf Memory-Fakten zurückfallen, wenn der User nach Datei-Pfaden sucht. |
+| **Files** | `backend/services/orchestrator/prompt_registry.py` (apply_verbosity_control erweitert). Keine Call-Site-Änderungen notwendig — Fix ist lokal in der Helper-Funktion. |
+| **Verifikation** | Unit-Smoke: `apply_verbosity_control('Du bist Janus.')` enthält jetzt `HARDWARE-TRUTH-REGEL` ✅, `KRITISCHE SYSTEM-ANWEISUNG` ✅, `Antworte im normalen Gespräch stets prägnant` ✅, `No-Meta-Talk` ✅. Idempotenz: `apply_verbosity_control(out) == out` ✅. |
+| **Patterns** | [LESSON] #DeadCode #Prompting "Registry-Direktiven müssen nicht nur definiert, sondern auch injiziert werden — ein Prompt-Registry-Eintrag ohne Call-Site ist wirkungslos", [LESSON] #SystemPrompt #DB-Persönlichkeit "Base-System-Prompts aus DB (z.B. personality.prompt) können Prompt-Registry-Direktiven überstimmen, wenn diese nicht per apply_verbosity_control angehängt werden". |
+
+---
+
+## [CURRENT_SESSION_DELTA] (WERKZEUGNUTZUNGS-DIREKTIVE — search_command_priority 🥇 SEALED)
 
 ---
 

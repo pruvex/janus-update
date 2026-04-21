@@ -7,11 +7,16 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
-## [0.4.16-beta.15] - 2026-04-21
+## [0.4.16-beta.16] - 2026-04-21
+
+### Fixed
+- **Dead-Code-Fix: HARDWARE-TRUTH-REGEL + file_system_guard werden nun tatsächlich in den LLM-System-Prompt injiziert** — Root-Cause: `prompt_registry.py::search_command_priority` und `file_system_guard` waren definiert, aber nirgends injiziert. Der reale System-Prompt wird in `execution_dispatcher.py:190` via `apply_verbosity_control(wf.system_prompt_for_llm)` gebaut, welches bisher NUR `verbosity_control` + `no_meta_talk` anhängte. Resultat: Nano/Mini-Modelle beantworteten Datei-Such-Anfragen aus Memory-Fakten ohne Tool-Call, obwohl der User die HARDWARE-TRUTH-REGEL explizit angefordert hatte (im Log sichtbar: System-Prompt enthielt `PRIMÄRDIREKTIVE` + `🚨 SYSTEM-DIREKTIVE (STRIKTE KASKADE)` aus DB-Persönlichkeit, aber KEINE HARDWARE-TRUTH-REGEL). Fix: `apply_verbosity_control()` injiziert nun zusätzlich `file_system_guard` + `search_command_priority` (dedupliziert, idempotent). Damit erhält jeder DEFAULT-Dialog-Turn die Dubletten-Hinweis-Pflicht und die Live-Tool-Call-Pflicht für Such-Anfragen.
 
 ### Changed
 - **Prompt-Registry: HARDWARE-TRUTH-REGEL für Suchanfragen verschärft** — `prompt_registry.py::search_command_priority` aktualisiert mit stärkerer Formulierung: "!!! WERKZEUGNUTZUNGS-DIREKTIVE — HARDWARE-TRUTH-REGEL !!! Wenn der Nutzer nach dem Verbleib, Speicherort oder der Existenz von Dateien sucht, hat das Live-Werkzeug filesystem.find_files ABSOLUTE Priorität vor der FAKTENGRUNDLAGE (Memory). Das Gedächtnis dient NUR als Orientierung. Du darfst NIEMALS einen Pfad aus der Erinnerung nennen, ohne ihn in EXAKT DIESEM Turn durch einen Tool-Call validiert zu haben. Eine Antwort ohne Live-Tool-Call bei Suchanfragen gilt als schwerer Systemfehler." Behebt "Brevity-Bias" bei faulen Modellen (wie Nano) mit strikterer "schwerer Systemfehler"-Formulierung.
-- Version bumped to 0.4.16-beta.15.
+- Version bumped to 0.4.16-beta.16.
+
+## [0.4.16-beta.15] - 2026-04-21
 
 ## [0.4.16-beta.14] - 2026-04-21
 

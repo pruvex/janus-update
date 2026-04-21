@@ -2,6 +2,15 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [LESSON] #DeadCode #Prompting #PromptRegistry "Registry-Direktiven müssen nicht nur definiert, sondern auch injiziert werden — sonst sind sie wirkungslos"
+- **Kontext:** User verschärfte `prompt_registry.py::search_command_priority` + ergänzte `file_system_guard` mit Dubletten-Hinweis über 3 Sessions hinweg. Trotzdem berichteten faule Modelle (Nano/Mini) weiter Datei-Pfade aus Memory ohne Tool-Call. Log-Analyse des echten OpenAI-Request zeigte: Der System-Prompt enthielt WEDER `search_command_priority` NOCH `file_system_guard`.
+- **Problem:** Beide Direktiven waren in `_DIRECTIVES` als Einträge definiert, aber nirgends per `prompt_registry.get_directive(...)` aufgerufen und an den System-Prompt angehängt. Der reale Prompt-Build in `execution_dispatcher.py:190` ruft `apply_verbosity_control(wf.system_prompt_for_llm)` — welches bisher nur `verbosity_control` + `no_meta_talk` anhängte. Ergebnis: Dead Code. Die schärfsten Formulierungen ("schwerer Systemfehler", "ABSOLUTE Priorität") erreichten den LLM nie.
+- **Lösung:** `apply_verbosity_control()` erweitert — Schleife iteriert über 4 Direktiven statt 2. Damit werden `file_system_guard` + `search_command_priority` bei jedem DEFAULT-Dialog-Turn angehängt. Dedup-Check (`if rule not in base_text`) garantiert Idempotenz bei wiederholten Aufrufen.
+- **Tripwire:** Wenn ein neu hinzugefügter `prompt_registry`-Eintrag nicht wirkt → grep nach `get_directive("<key>")` über den Code — fehlt dieser Call, ist die Direktive Dead Code. Besonders kritisch bei Base-System-Prompts aus der DB (Persönlichkeiten), die Prompt-Registry-Direktiven überstimmen können.
+- **Location:** `backend/services/orchestrator/prompt_registry.py:197-216` (apply_verbosity_control), gefixt 2026-04-21.
+- **Confidence:** High (Smoke: alle 4 Direktiven injiziert + idempotent).
+- **Tags:** DeadCode, Prompting, PromptRegistry, SystemPrompt, Injection, BrevityBias
+
 ## [LESSON] #LLM #BrevityBias "Faule Modelle bevorzugen kurze Antworten aus Memory über Tool-Calls — bei Suchanfragen muss Tool-Call-Pflicht explizit erzwungen werden"
 - **Kontext:** Memory-Context ist so gut, dass "faule" Modelle (wie Nano) Suchanfragen mit alten Erinnerungen aus Memory beantworten statt Tool-Calls durchzuführen. User fragt "Wo liegt die Datei X?" → LLM antwortet "Ich erinnere mich, dass X im Ordner Y liegt" statt `filesystem.find_files` aufzurufen. Resultat: veraltete Informationen statt aktueller Hardware-Validierung.
 - **Problem:** "Brevity-Bias" bei faulen Modellen: Wenn Memory bereits Informationen enthält, bevorzugen LLMs kurze Antworten aus Memory über Tool-Calls, auch wenn die Anfrage explizit eine Suche fordert. Das führt zu veralteten Informationen und schlechter UX bei Dateisuchen.

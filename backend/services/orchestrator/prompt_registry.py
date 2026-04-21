@@ -204,7 +204,12 @@ def apply_verbosity_control(prompt_text: str) -> str:
         Prompt with ``verbosity_control`` and ``no_meta_talk`` directives deduplicated.
     """
     base_text = str(prompt_text or prompt_registry.get_directive("personality_fallback_prompt"))
-    for rule_key in ("verbosity_control", "no_meta_talk"):
+    for rule_key in (
+        "verbosity_control",
+        "no_meta_talk",
+        "file_system_guard",
+        "search_command_priority",
+    ):
         rule = prompt_registry.get_directive(rule_key)
         if rule not in base_text:
             base_text = f"{base_text}\n\n{rule}"
