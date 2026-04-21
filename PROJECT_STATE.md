@@ -1,21 +1,23 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.18** — "EPIC-SYSTEM-HARVESTER (V2): RAG V2 Master-Plan v1.1 regression-proof verankert. Strangler-Fig, Freeze-Contract, physische Isolation, 11 Feature-Flags, Regression-Matrix.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.19** — "EPIC-SYSTEM-HARVESTER (V2): P0 Eval-Harness SEALED, P1 Format-Router + Incremental Index SEALED. RAG V2 Ingestion mit physischer Isolation, SHA-256 Incremental Indexing, Orphan-Cleanup, CodeAdapter, MarkdownAdapter.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-21 23:50 (EPIC-SYSTEM-HARVESTER — RAG V2 Architecture — IN PLANNING)
+**Aktualisiert:** 2026-04-22 00:13 (EPIC-SYSTEM-HARVESTER — P0+P1 COMPLETE — IN PROGRESS)
 
 ---
 
-## [CURRENT_SESSION_DELTA] (EPIC-SYSTEM-HARVESTER (V2) — RAG V2 Master-Plan v1.1 🏗️ IN PLANNING)
+## [CURRENT_SESSION_DELTA] (EPIC-SYSTEM-HARVESTER (V2) — P0 ✅ SEALED / P1 ✅ SEALED / P2 🏗️ NEXT)
 
 | Feld | Wert |
 |------|------|
 | **Epic / Task** | **EPIC-SYSTEM-HARVESTER (V2): Universal Knowledge-Harvester — Diamond-Standard RAG V2 mit Zero-Regression-Contract** |
-| **Status** | **🏗️ IN PLANNING** (2026-04-21) |
+| **Status** | **P0 ✅ SEALED / P1 ✅ SEALED / P2 🏗️ NEXT** (2026-04-22) |
 | **Scope** | Lokale, semantische + lexikalische Suche über alle Text-/Dokument-/Code-Formate in Janus-Workspaces. Hybrid-Retrieval: Dense (ChromaDB dual-embedding) + Keyword (SQLite FTS5) + RRF + Cross-Encoder-Reranking. Code-aware Chunking via tree-sitter. Query-Router via Regex-Heuristik. Background-Watchdog. |
 | **Architecture Decisions** | **Strangler-Fig statt Replace:** V2 läuft parallel zu Legacy-RAG. Opt-in via 11 granularer Feature-Flags (alle default `false`). **Physische Isolation:** V2 nutzt eigenen Chroma-Pfad `rag_chroma_db_v2/`. Legacy `rag_chroma_db/` ist untouchable. **Freeze-Contract:** 7 Files + 3 Collections sind für V2-Executors hart gesperrt (§ 1.5.2 im Master-Plan). **API-Additivität:** `knowledge.query` bleibt byte-identisch. V2 nur via neuem Skill `knowledge.code_search` oder explizitem `retrieval_mode="v2"`. **Code-First-Scope:** Prose (PDFs, Projekt-URLs, Creative-Writer) bleibt komplett Legacy. V2 indiziert initial nur Code + Markdown. Prose-Migration ist optionaler P9, nicht im kritischen Pfad. |
-| **Files** | `@c:\KI\Janus-Projekt\documentation\RAG_V2_MASTER_PLAN.md` (v1.1, 1100+ Zeilen, 9 Sektionen, 8+1 Phasen, Regression-Matrix, Feature-Flag-Register, Coexistence-Inventar, Freeze-Contract). |
-| **Executor Assignment** | SWE 1.6: P0 (Eval-Harness), P1 (Ingestion), P4 (Reranker), P6 (Security/Obs), P7 (Skill-API), P8 (Watchdog). Kimi K2.5: P2 (FTS5+RRF), P3 (Code-Chunking), P5 (Query-Router). |
-| **Gate-Regel** | Keine Phase P{n≥1} ohne P0-Abschluss. Kein Proceed ohne grüne Legacy-Regression-Suite (§ 10.1). SHA-Baum-Assertion auf `rag_chroma_db/` vor/nach jedem V2-Run. |
-| **Patterns** | [PATTERN] #Architecture #RAG The Strangler-Fig Migration, [PATTERN] #Architecture #HybridSearch Reciprocal Rank Fusion (RRF) Baseline, [PATTERN] #Security #Isolation Physical Vector-Store Separation |
+| **P0 — Eval-Harness** | `@c:\KI\Janus-Projekt\backend/tests/rag/golden_queries.jsonl` (30 Queries), `harness.py` (MRR@10/Recall@5/P@1), `test_baseline.py`, `test_legacy_filesystem_isolation.py` (SHA-Guard). Baseline: MRR@10=0.1724 (PROSE 1.0000, CODE 0.0000 — Skill-Index hat keine textuelle Metadaten). |
+| **P1 — Format-Router + Incremental Index** | `@c:\KI\Janus-Projekt\backend/services/rag/index_store.py` (SQLite, SHA-256, Orphan-Management), `adapters/base.py` (BaseAdapter Interface), `adapters/code.py` (blank-line splitting), `adapters/markdown.py` (heading boundaries), `ingestion.py` (FormatRouter + IngestionRun + `_assert_isolation()` Guard). Tests: `test_adapters.py`, `test_index_store.py`, `test_ingestion.py`. |
+| **Files** | `@c:\KI\Janus-Projekt\documentation\RAG_V2_MASTER_PLAN.md` (v1.1). `@c:\KI\Janus-Projekt\documentation\tasks\rag-v2\P0_eval_harness.md`. `@c:\KI\Janus-Projekt\documentation\tasks\rag-v2\P1_format_router.md`. |
+| **Executor Assignment** | SWE 1.6: P0 (Eval-Harness ✅), P1 (Ingestion ✅), P4 (Reranker), P6 (Security/Obs), P7 (Skill-API), P8 (Watchdog). Kimi K2.5: P2 (FTS5+RRF 🏗️ NEXT), P3 (Code-Chunking), P5 (Query-Router). |
+| **Gate-Regel** | P0 ✅ Golden Queries + Baseline + Legacy SHA-Guard grün. P1 ✅ Idempotenz (2. Run: 0 indexed), Isolation (Legacy-Hash unverändert), Orphan-Delete, Atomic Rename. **P2-Gate:** Kein P2 ohne grüne P0+P1 Regression-Suite. |
+| **Patterns** | [PATTERN] #Architecture #RAG The Strangler-Fig Migration, [PATTERN] #Architecture #HybridSearch Reciprocal Rank Fusion (RRF) Baseline, [PATTERN] #Security #Isolation Physical Vector-Store Separation, [PATTERN] #Performance #IncrementalIndex SHA-256 + mtime Prefilter |
 
 ---
 
