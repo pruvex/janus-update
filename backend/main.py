@@ -420,12 +420,16 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.error(f"[FINAL] Global discovery failed: {e}", exc_info=True)
 
-    try:
-        discovery_thread = threading.Thread(target=run_global_discovery, daemon=True)
-        discovery_thread.start()
-        logger.info("[FINAL] Global discovery thread started (daemon)")
-    except Exception as e:
-        logger.warning(f"[FINAL] Failed to start global discovery: {e}")
+    # HOTFIX: RAG_V2_AUTO_INGEST environment check to speed up boot for testing
+    if os.environ.get("RAG_V2_AUTO_INGEST", "false").lower() == "true":
+        try:
+            discovery_thread = threading.Thread(target=run_global_discovery, daemon=True)
+            discovery_thread.start()
+            logger.info("[FINAL] Global discovery thread started (daemon)")
+        except Exception as e:
+            logger.warning(f"[FINAL] Failed to start global discovery: {e}")
+    else:
+        logger.info("[FINAL] Global Discovery disabled via RAG_V2_AUTO_INGEST.")
 
     # 5. Test database connection
     try:
