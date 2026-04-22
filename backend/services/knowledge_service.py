@@ -19,7 +19,7 @@ logger = logging.getLogger("janus_backend")
 def query(
     query_text: str,
     top_k: int = 10,
-    retrieval_mode: Literal["legacy", "v2", "hybrid"] = "legacy",
+    retrieval_mode: Literal["legacy", "v2", "hybrid"] = "hybrid",
     file_type_filter: Optional[List[str]] = None,
     **kwargs,
 ) -> Dict:
@@ -29,7 +29,7 @@ def query(
     Args:
         query_text: The search query.
         top_k: Number of results to return.
-        retrieval_mode: "legacy" (V1, default), "v2" (RAG V2 only), "hybrid" (both).
+        retrieval_mode: "legacy" (V1), "v2" (RAG V2 only), "hybrid" (both, default).
         file_type_filter: Optional list of file extensions to filter (V2 only).
         **kwargs: Additional parameters passed to underlying implementation.
 
@@ -37,8 +37,9 @@ def query(
         Dict with results and metadata.
 
     Zero-Regression Guard:
-        - When retrieval_mode="legacy" (default), V2 is NOT initialized.
+        - When retrieval_mode="legacy", V2 is NOT initialized.
         - V2 is only loaded when retrieval_mode="v2" or "hybrid".
+        - Default is now "hybrid" for V2 Cutover.
     """
     # Legacy mode (V1) - default behavior
     if retrieval_mode == "legacy":

@@ -14,5 +14,15 @@
   "is_agent_ready": true,
   "max_calls_per_turn": 3,
   "depends_on": [],
-  "examples": []
+  "examples": [],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "file_path": {
+        "type": "string",
+        "description": "Pfad zur zu löschenden Datei"
+      }
+    },
+    "required": ["file_path"]
+  }
 }

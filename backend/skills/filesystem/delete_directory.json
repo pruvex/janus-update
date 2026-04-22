@@ -14,5 +14,15 @@
   "is_agent_ready": true,
   "max_calls_per_turn": 1,
   "depends_on": [],
-  "examples": []
+  "examples": [],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "directory_path": {
+        "type": "string",
+        "description": "Pfad zum zu löschenden Verzeichnis"
+      }
+    },
+    "required": ["directory_path"]
+  }
 }

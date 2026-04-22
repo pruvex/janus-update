@@ -15,5 +15,15 @@
   "max_calls_per_turn": 3,
   "depends_on": [],
   "examples": [],
-  "description": "Listet den Inhalt eines Verzeichnisses auf. WICHTIG: Wenn du einen Unterordner siehst, musst du list_directory erneut für diesen Unterordner aufrufen, um dessen Inhalt zu sehen. Diese Funktion ist nicht rekursiv."
+  "description": "Listet den Inhalt eines Verzeichnisses auf. WICHTIG: Wenn du einen Unterordner siehst, musst du list_directory erneut für diesen Unterordner aufrufen, um dessen Inhalt zu sehen. Diese Funktion ist nicht rekursiv.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string",
+        "description": "Pfad zum Verzeichnis"
+      }
+    },
+    "required": ["path"]
+  }
 }
