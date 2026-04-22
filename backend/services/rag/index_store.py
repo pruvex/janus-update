@@ -169,6 +169,135 @@ class IndexStore:
         ).fetchone()
         return IndexedFile.from_row(row) if row else None
 
+    def find_by_filename(self, filename: str) -> List[IndexedFile]:
+        """
+        Fuzzy filename resolution: find files where source_path contains the
+        given needle. Callers should post-filter by basename / stem for
+        strict matching - this SQL step is intentionally permissive so that
+        stems like "aegypten" still match paths like ".../aegypten.pdf".
+
+        Args:
+            filename: The needle (full basename, stem, or any substring).
+
+        Returns:
+            List of IndexedFile objects whose path contains the needle.
+        """
+        if not filename:
+            return []
+        conn = self._get_conn()
+        # Normalize slashes for Windows compatibility
+        pattern = f"%{filename}%"
+        rows = conn.execute(
+            "SELECT * FROM indexed_files WHERE path LIKE ?", (pattern,)
+        ).fetchall()
+        return [IndexedFile.from_row(row) for row in rows]
+
+    def get_all_paths_for_filename(self, filename: str) -> List[str]:
+        """
+        Get all absolute paths for a given filename (stem or full name).
+        Used for duplicate detection - if multiple files with the same name
+        exist at different locations, the system should warn the user.
+
+        Args:
+            filename: The filename to search for (stem or full name, case-insensitive).
+
+        Returns:
+            List of absolute paths matching the filename.
+        """
+        if not filename:
+            return []
+        conn = self._get_conn()
+        # Normalize filename: remove extension, lowercase
+        from pathlib import PurePath
+        stem = PurePath(filename).stem.lower()
+        # Search for paths containing the stem (case-insensitive)
+        pattern = f"%{stem}%"
+        rows = conn.execute(
+            "SELECT path FROM indexed_files WHERE LOWER(path) LIKE ?",
+            (pattern.lower(),)
+        ).fetchall()
+        # Post-filter by basename stem for exact match
+        matched_paths = []
+        for row in rows:
+            path = row["path"]
+            path_stem = PurePath(path).stem.lower()
+            if path_stem == stem:
+                matched_paths.append(path)
+        return matched_paths
+
+    def get_chunk(self, chunk_id: str) -> Optional[Dict]:
+        """
+        Get chunk metadata from ChromaDB by chunk_id.
+
+        This is a convenience method for ContextExpander.
+        Note: IndexStore itself only stores file-level metadata; chunks are in ChromaDB.
+        """
+        try:
+            import chromadb
+            from backend.utils.paths import get_app_data_dir
+
+            chroma_path = Path(get_app_data_dir()) / "rag_chroma_db_v2"
+            client = chromadb.PersistentClient(path=str(chroma_path))
+
+            # Try both collections
+            for collection_name in ["kb_code_v2", "kb_prose_v2"]:
+                try:
+                    collection = client.get_collection(collection_name)
+                    results = collection.get(ids=[chunk_id], include=["metadatas", "documents"])
+                    if results["ids"]:
+                        return {
+                            "chunk_id": chunk_id,
+                            "metadata": results["metadatas"][0] if results.get("metadatas") else {},
+                            "text": results["documents"][0] if results.get("documents") else "",
+                            "collection": collection_name,
+                        }
+                except Exception:
+                    continue
+            return None
+        except Exception as e:
+            logger.warning(f"IndexStore.get_chunk failed for {chunk_id}: {e}")
+            return None
+
+    def get_chunks_by_file(self, source_path: str) -> List[Dict]:
+        """
+        Get all chunks for a given file path from ChromaDB.
+
+        This is a convenience method for ContextExpander.
+        """
+        try:
+            import chromadb
+            from backend.utils.paths import get_app_data_dir
+
+            # Normalize path for Windows compatibility (backslashes -> forward slashes)
+            normalized_path = source_path.replace("\\", "/") if source_path else source_path
+
+            chroma_path = Path(get_app_data_dir()) / "rag_chroma_db_v2"
+            client = chromadb.PersistentClient(path=str(chroma_path))
+
+            chunks = []
+            # Try both collections
+            for collection_name in ["kb_code_v2", "kb_prose_v2"]:
+                try:
+                    collection = client.get_collection(collection_name)
+                    results = collection.get(
+                        where={"source_path": normalized_path},
+                        include=["metadatas", "documents", "ids"],
+                        limit=10000,
+                    )
+                    for idx, chunk_id in enumerate(results.get("ids", [])):
+                        chunks.append({
+                            "chunk_id": chunk_id,
+                            "text": results.get("documents", [])[idx] if idx < len(results.get("documents", [])) else "",
+                            "metadata": results.get("metadatas", [])[idx] if idx < len(results.get("metadatas", [])) else {},
+                            "collection": collection_name,
+                        })
+                except Exception:
+                    continue
+            return chunks
+        except Exception as e:
+            logger.warning(f"IndexStore.get_chunks_by_file failed for {source_path}: {e}")
+            return []
+
     def get_all(self) -> Dict[str, IndexedFile]:
         """Retrieve all indexed files as a dict keyed by path."""
         conn = self._get_conn()

@@ -29,6 +29,7 @@ from backend.utils.paths import get_app_data_dir
 from .adapters.base import BaseAdapter, RawChunk
 from .adapters.code import CodeAdapter
 from .adapters.markdown import MarkdownAdapter
+from .adapters.pdf import PdfAdapter
 from .fts_store import FTSStore
 from .index_store import IndexStore, IndexedFile
 from .path_policy import PathPolicy, SecurityError, set_global_policy
@@ -64,12 +65,15 @@ def _sanitize_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
 
     ChromaDB only accepts str, int, float, bool types.
     Convert list and dict values to JSON strings.
+    Convert None to empty string.
 
-    HOTFIX: Prevents crashes when metadata contains list/dict values.
+    HOTFIX: Prevents crashes when metadata contains list/dict values or None.
     """
     sanitized = {}
     for key, value in metadata.items():
-        if isinstance(value, (list, dict)):
+        if value is None:
+            sanitized[key] = ""  # Convert None to empty string
+        elif isinstance(value, (list, dict)):
             sanitized[key] = json.dumps(value)
         else:
             sanitized[key] = value
@@ -112,6 +116,7 @@ class FormatRouter:
     ADAPTERS: List[BaseAdapter] = [
         MarkdownAdapter(),
         CodeAdapter(),
+        PdfAdapter(),
     ]
 
     # FINAL: Gold-Formates for global discovery
@@ -142,6 +147,8 @@ class FormatRouter:
             return "code"
         if isinstance(adapter, MarkdownAdapter):
             return "markdown"
+        if isinstance(adapter, PdfAdapter):
+            return "pdf"
         return "other"
 
 

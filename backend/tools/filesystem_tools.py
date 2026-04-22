@@ -6,17 +6,17 @@ from backend.services.path_sentinel.models import PathOp
 
 
 @requires_path_auth(op=PathOp.READ, path_arg="path")
-def list_directory(path: str, **kwargs) -> dict:
+def list_directory(**kwargs) -> dict:
     """
     List contents of a directory.
 
     Args:
-        path: Path to the directory
-        **kwargs: Additional arguments including session_id, user_id, sentinel, db, etc.
+        **kwargs: Tool arguments including path, session_id, user_id, sentinel, db, etc.
 
     Returns:
         Dict with status and directory contents
     """
+    path = kwargs.get('path')
     try:
         if not os.path.exists(path):
             return {"status": "error", "message": f"Directory not found: {path}"}
@@ -42,17 +42,17 @@ def list_directory(path: str, **kwargs) -> dict:
 
 
 @requires_path_auth(op=PathOp.READ, path_arg="file_path")
-def read_file(file_path: str, **kwargs) -> dict:
+def read_file(**kwargs) -> dict:
     """
     Read contents of a file.
 
     Args:
-        file_path: Path to the file
-        **kwargs: Additional arguments including session_id, user_id, sentinel, db, etc.
+        **kwargs: Tool arguments including file_path, session_id, user_id, sentinel, db, etc.
 
     Returns:
         Dict with status and file contents
     """
+    file_path = kwargs.get('file_path')
     try:
         if not os.path.exists(file_path):
             return {"status": "error", "message": f"File not found: {file_path}"}
@@ -156,17 +156,17 @@ def move_file(source_path: str, destination_path: str, **kwargs) -> dict:
 
 
 @requires_path_auth(op=PathOp.DELETE, path_arg="file_path")
-def delete_file(file_path: str, **kwargs) -> dict:
+def delete_file(**kwargs) -> dict:
     """
     Delete a file.
 
     Args:
-        file_path: Path to the file to delete
-        **kwargs: Additional arguments including session_id, user_id, sentinel, db, etc.
+        **kwargs: Tool arguments including file_path, session_id, user_id, sentinel, db, etc.
 
     Returns:
         Dict with status
     """
+    file_path = kwargs.get('file_path')
     try:
         if not os.path.exists(file_path):
             return {"status": "error", "message": f"File not found: {file_path}"}
@@ -186,17 +186,17 @@ def delete_file(file_path: str, **kwargs) -> dict:
 
 
 @requires_path_auth(op=PathOp.DELETE, path_arg="directory_path")
-def delete_directory(directory_path: str, **kwargs) -> dict:
+def delete_directory(**kwargs) -> dict:
     """
     Delete a directory and all its contents.
 
     Args:
-        directory_path: Path to the directory to delete
-        **kwargs: Additional arguments including session_id, user_id, sentinel, db, etc.
+        **kwargs: Tool arguments including directory_path, session_id, user_id, sentinel, db, etc.
 
     Returns:
         Dict with status
     """
+    directory_path = kwargs.get('directory_path')
     try:
         if not os.path.exists(directory_path):
             return {"status": "error", "message": f"Directory not found: {directory_path}"}

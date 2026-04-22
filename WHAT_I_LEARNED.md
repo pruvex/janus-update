@@ -2,6 +2,69 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [LESSON] #RAG #WindowsPaths "The Slash-Trap — Normalisiere Pfade immer auf Forwardslashes vor Vektor-Filtern"
+- **Kontext:** RAG V2 Vektorsuche (ChromaDB) speichert Metadaten-Pfade mit Backslashes (`C:\Users\...\aegypten.pdf`). Der Filename-Filter im `hybrid_retriever.py` verglich User-Input (`aegypten`) direkt mit diesen DB-Pfaden. Auf Windows führte der Slash-Mismatch dazu, dass die Vektorsuche 0 Treffer lieferte obwohl die Datei physisch im Index existierte. Das System fiel dann auf globale Suche zurück → Halluzinationen (z.B. "aegypten.pdf enthält Skandinavien-Analyse").
+- **Problem:** Path-String-Vergleich ohne Normalisierung ist auf Windows nicht deterministisch. `C:\foo\bar.pdf` vs `C:/foo/bar.pdf` vs `C:\FOO\BAR.PDF` sind für String-Endswith-Vergleiche unterschiedliche Werte, obwohl sie dieselbe Datei referenzieren. ChromaDB-Metadaten speichern Pfade wie sie beim Ingest eingehen (meist mit Backslashes), während User-Input variieren kann (Forward-Slashes, Lower/Upper-Case, mit/ohne Extension).
+- **Lösung:** **Pfad-Normalisierung-Funktion** (`_normalize_path(p: str) -> str`) die Backslashes zu Forwardslashes wandelt und lowercased. Diese Funktion wird auf ALLE Pfad-Vergleiche angewendet:
+  ```python
+  @staticmethod
+  def _normalize_path(p: str) -> str:
+      return p.replace("\\", "/").lower() if p else p
+  ```
+  Angewendet in:
+  - `hybrid_retriever.py`: Filename-Filter und IndexStore-Lookup
+  - `tool_executor.py`: `_v2_fulltext_fallback` Stem-Matching
+  - `index_store.py`: `get_chunks_by_file` ChromaDB-Query
+- **Härtung (Lockdown):** Wenn `filename`-Parameter übergeben wird, wird die globale Vektorsuche komplett übersprungen. Nur noch IndexStore-Lookup + Rescue-Path (direkter SQL-Zugriff auf Chunks). Wenn das 0 Ergebnisse liefert → leer zurückgeben, NIE globale Suche als Fallback.
+- **Tripwire:** Wenn RAG-Filename-Suche auf Windows "nichts findet" obwohl die Datei im Index existiert → Slash-Trap. Erkennbar im Log: `[FILENAME-FILTER] Retrieval miss for '{filename}'` obwohl die Datei physisch vorhanden ist.
+- **Location:** `backend/services/rag/hybrid_retriever.py` (normalize + lockdown), `backend/services/tool_executor.py` (normalize), `backend/services/rag/index_store.py` (normalize), gefixt 2026-04-22.
+- **Confidence:** High (Test mit 5 Varianten: `aegypten`, `aegypten.pdf`, `AEGYPTEN.PDF`, `Aegypten.Pdf`, voller Pfad — alle 5 treffen korrekt).
+- **Tags:** RAG, WindowsPaths, SlashTrap, Normalization, ChromaDB, PathComparison, HybridRetriever
+
+## [LESSON] #HardwareTruth #RAG "Hardware-Truth over Index-Faith — Physischer Scan vor Tool-Ausführung"
+- **Kontext:** RAG V2 Dubletten-Erkennung basierte auf IndexStore-Lookup (`get_all_paths_for_filename`). Nach Memory-Purge war das zweite Duplikat (Documents\JanusPDFs\aegypten.pdf) nicht mehr indiziert, aber physisch vorhanden. Tool-Executor vertraute blind auf Index und injizierte keinen Warn-Header → KI wählte Datei stillschweigend aus ("Silent Selection") ohne User-Transparenz.
+- **Problem:** Blindes Vertrauen auf Datenbank-Index führt zu "Silent File Mismatch" Halluzinationen. Der Index kann veraltet sein (durch Purges, Re-Indexing, oder inkrementelle Updates). Wenn eine Datei physisch existiert aber nicht im Index, "sieht" das Tool sie nicht und wählt eine andere Datei stillschweigend aus. Der User erhält keine Warnung über die Redundanz.
+- **Lösung:** **Physischer Dubletten-Scan** vor Tool-Ausführung. Wissens-Tools (knowledge.query, knowledge.read_full_text) müssen vor der eigentlichen Ausführung einen schnellen physischen Scan über die Workspaces machen (via `filesystem_manager.find_files` oder glob). Wenn `count > 1`, wird ein Warn-Header injiziert:
+  ```python
+  # Physical duplicate detection in tool_executor.py
+  from backend.services.filesystem_manager import find_files
+  stem_pattern = f"{needle_stem}.*"
+  fs_result = find_files(pattern=stem_pattern, max_results=100, search_all_drives=False)
+  if len(filtered_physical) > 1:
+      # Inject warning header
+      warning_block = f"!!! SYSTEM-WARNHINWEIS: MEHRERE DATEIEN GEFUNDEN !!!\nDateiname: {filename}\nGefundene Pfade:\n{paths}\nAktuelle Auswahl: {chosen.path}"
+  ```
+  P0-Direktive in Skill-JSONs zwingt LLM zur Transparenz: "Hinweis: Ich habe [Anzahl] Versionen von [Datei] gefunden. Ich verwende hier die Datei aus [Pfad]. Die anderen Fundorte sind: [Liste]."
+- **Härtung:** Warn-Header ist P0-Priorität (vor jedem anderen Content). LLM muss mit dem Hinweis beginnen, sonst gilt die Antwort als "schwerer Systemfehler". Der Header ist im Tool-Output physisch injiziert, nicht nur im LLM-System-Prompt.
+- **Tripwire:** Wenn User nach einer Datei fragt und das Tool eine Datei liefert, aber es gibt physisch weitere Kopien mit demselben Namen im Workspace → Hardware-Truth-Verletzung. Erkennbar im Log: Fehlender `[DUPLICATE-DETECTION]` Eintrag trotz physischer Dubletten.
+- **Location:** `backend/services/tool_executor.py` (physical duplicate detection), `backend/skills/knowledge/query.json` (P0 directives), `backend/skills/knowledge/read_full_text.json` (P0 directives), gefixt 2026-04-22.
+- **Confidence:** High (Physischer Scan findet alle Dateien unabhängig vom Index-Stand).
+- **Tags:** RAG, HardwareTruth, IndexFaith, DuplicateDetection, Filesystem, Transparency, P0Directives
+
+## [LESSON] #Orchestration #ToolManager "The Store-Key Ambiguity — Registriere Tools immer unter ihrer globalen Skill-ID, nicht unter dem lokalen Funktionsnamen"
+- **Kontext:** `ToolManager.register_tool()` speicherte Tools unter `func.__name__` (z.B. `query_knowledge_base`, `read_file`, `list_directory`), während `get_tool()` versuchte, unter der Skill-ID (z.B. `knowledge.query`, `filesystem.read_file`) zu suchen. Legacy-Routing-Logik existierte, aber der Store-Key war asymmetrisch — ein Reverse-Lookup auf einen nicht existierenden Key.
+- **Problem:** `get_tool("knowledge.query")` lieferte immer `None`, weil das Tool unter `"query_knowledge_base"` gespeichert war. Das Forward-Mapping (legacy → skill) existierte im Code, aber der Store war unter dem Legacy-Namen, nicht der Skill-ID. Ergebnis: Zwei parallele Namensräume ohne funktionierende Verbindung.
+- **Lösung:** `register_tool()` persistiert jetzt primär unter `skill_id = self.get_skill_id(tool_name)` und legt bei Divergenz einen Alias unter dem Legacy-Namen an:
+  ```python
+  skill_id = self.get_skill_id(tool_name)
+  self.tools[skill_id] = tool  # Registrierung unter Skill-ID (z.B. knowledge.query)
+  if tool_name != skill_id:
+      self.tools[tool_name] = tool  # Alias unter Legacy-Name (z.B. query_knowledge_base)
+  ```
+- **Tripwire:** Wenn `get_tool(skill_id)` für ein existierendes Skill-ID `None` zurückgibt, obwohl das Tool registriert ist → Store-Key-Mismatch zwischen `register_tool()` und `get_tool()`.
+- **Location:** `backend/services/tool_manager.py::register_tool` (Zeilen 326-329), gefixt 2026-04-22.
+- **Confidence:** High (Audit + Code-Review bestätigt Asymmetrie).
+- **Tags:** Orchestration, ToolManager, SkillID, LegacyRouting, StoreKey, Asymmetry
+
+## [LESSON] #Pydantic #SchemaDrift "The Parameter Trinity — Manifest (JSON), Schema (Pydantic) und Decorator (Python) müssen denselben Parameter-Namen verwenden"
+- **Kontext:** Filesystem-Skills hatten einen Drei-Ebenen-Drift: Skill-JSON (`read_file.json`) definierte `"file_path"`, Pydantic-Schema (`ReadFileArgs`) deklarierte `path: str`, und Python-Decorator (`@requires_path_auth`) erwartete `path_arg="file_path"`. Das JSON-`input_schema` wurde vom System komplett ignoriert.
+- **Problem:** Pydantic-Validation akzeptierte `{"path": "..."}`, aber der Decorator las `kwargs["file_path"]` → KeyError/Auth-Fehler trotz erfolgreicher Schema-Validierung. Die gecachte Modell-Instanz (`ToolDefinition.args_schema`) war der "Zombie", der das LLM mit falschem Schema fütterte. Skill-JSON-Schemas waren toter Code (nie gelesen).
+- **Lösung:** Pydantic-Schemas an Skill-JSON und Decorator angleichen: `ReadFileArgs.path` → `file_path`, `DeleteFileArgs.path` → `file_path`, `CreateFileArgs.path` → `file_path`. Einheitlicher Parameter-Name `file_path` auf allen drei Ebenen.
+- **Tripwire:** Wenn Tool-Validation erfolgreich ist, aber die Ausführung mit `KeyError` auf einem Parameter bricht, der im Schema anders heißt → Parameter-Trinity-Violation.
+- **Location:** `backend/data/schemas.py` (Zeilen 620, 646, 650), gefixt 2026-04-22.
+- **Confidence:** High (Cross-Reference JSON ↔ Pydantic ↔ Decorator bestätigt Inkonsistenz).
+- **Tags:** Pydantic, SchemaDrift, ParameterTrinity, file_path, SkillJSON, Decorator
+
 ## [LESSON] #DeadCode #Prompting #PromptRegistry "Registry-Direktiven müssen nicht nur definiert, sondern auch injiziert werden — sonst sind sie wirkungslos"
 - **Kontext:** User verschärfte `prompt_registry.py::search_command_priority` + ergänzte `file_system_guard` mit Dubletten-Hinweis über 3 Sessions hinweg. Trotzdem berichteten faule Modelle (Nano/Mini) weiter Datei-Pfade aus Memory ohne Tool-Call. Log-Analyse des echten OpenAI-Request zeigte: Der System-Prompt enthielt WEDER `search_command_priority` NOCH `file_system_guard`.
 - **Problem:** Beide Direktiven waren in `_DIRECTIVES` als Einträge definiert, aber nirgends per `prompt_registry.get_directive(...)` aufgerufen und an den System-Prompt angehängt. Der reale Prompt-Build in `execution_dispatcher.py:190` ruft `apply_verbosity_control(wf.system_prompt_for_llm)` — welches bisher nur `verbosity_control` + `no_meta_talk` anhängte. Ergebnis: Dead Code. Die schärfsten Formulierungen ("schwerer Systemfehler", "ABSOLUTE Priorität") erreichten den LLM nie.

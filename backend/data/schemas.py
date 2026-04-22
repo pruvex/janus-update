@@ -617,7 +617,7 @@ _WORKSPACE_PATH_DESC = (
 
 
 class CreateFileArgs(BaseModel):
-    path: str = Field(..., description=_WORKSPACE_PATH_DESC)
+    file_path: str = Field(..., description=_WORKSPACE_PATH_DESC)
     content: Optional[str] = ""
     is_binary: Optional[bool] = Field(
         False,
@@ -643,11 +643,11 @@ class SaveMp3Args(BaseModel):
 
 
 class ReadFileArgs(BaseModel):
-    path: str = Field(..., description=_WORKSPACE_PATH_DESC)
+    file_path: str = Field(..., description=_WORKSPACE_PATH_DESC)
 
 
 class DeleteFileArgs(BaseModel):
-    path: str = Field(..., description=_WORKSPACE_PATH_DESC)
+    file_path: str = Field(..., description=_WORKSPACE_PATH_DESC)
 
 
 class ListDirectoryArgs(BaseModel):

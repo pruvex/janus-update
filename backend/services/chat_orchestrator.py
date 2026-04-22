@@ -1238,6 +1238,40 @@ class ChatOrchestrator:
         except Exception as exc:
             logger.debug('SkillSelector fallback (keine Filterung): %s', exc)
             wf.relevant_skill_ids = []
+        
+        # File Extension Guard: Always allow knowledge skills when file extensions are detected
+        _FILE_EXTENSIONS = (
+            '.pdf', '.txt', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+            '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.webp',
+            '.mp4', '.mp3', '.wav', '.flac', '.zip', '.rar', '.7z',
+            '.json', '.xml', '.csv', '.md', '.html', '.css', '.js',
+            '.py', '.java', '.c', '.cpp', '.h', '.php', '.rb', '.go',
+            '.ts', '.tsx', '.jsx', '.vue', '.svelte', '.sql', '.db',
+        )
+        text_lower = (wf.user_text or '').lower()
+        has_file_extension = any(ext in text_lower for ext in _FILE_EXTENSIONS)
+        if has_file_extension:
+            for skill in ['knowledge.query', 'knowledge.code_search']:
+                if skill not in wf.relevant_skill_ids:
+                    wf.relevant_skill_ids.append(skill)
+            logger.debug(
+                "[FILE-EXTENSION-GUARD] Added knowledge skills to relevant_skill_ids: %s",
+                [s for s in ['knowledge.query', 'knowledge.code_search'] if s in wf.relevant_skill_ids]
+            )
+        
+        # PDF Routing Guard: Prevent filesystem.read_file for PDF files, ensure knowledge skills
+        if '.pdf' in text_lower:
+            if 'filesystem.read_file' in wf.relevant_skill_ids:
+                wf.relevant_skill_ids.remove('filesystem.read_file')
+                logger.debug("[PDF-ROUTING-GUARD] Removed filesystem.read_file (PDF detected)")
+            # Ensure knowledge.query or knowledge.read_full_text is included
+            for knowledge_skill in ['knowledge.query', 'knowledge.read_full_text']:
+                if knowledge_skill not in wf.relevant_skill_ids:
+                    wf.relevant_skill_ids.append(knowledge_skill)
+            logger.debug(
+                "[PDF-ROUTING-GUARD] Added knowledge skills for PDF: %s",
+                [s for s in ['knowledge.query', 'knowledge.read_full_text'] if s in wf.relevant_skill_ids]
+            )
         if wf._is_personal_recall and (not wf.is_video_intent):
             wf._websearch_skills = {'system.websearch', 'system.rss_news'}
             wf._before = len(wf.relevant_skill_ids)

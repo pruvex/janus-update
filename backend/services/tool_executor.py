@@ -105,13 +105,180 @@ async def list_knowledge_documents(db: Session) -> ToolResultV1:
         return tool_err_v1("OPERATION_FAILED", str(e), tags=tags, started_at=started)
 
 
+async def _read_file_fulltext(
+    file_path: str,
+    started: float,
+    tags: List[str],
+) -> Optional[ToolResultV1]:
+    """Read full text from a file on disk (PDF via PyMuPDF/pypdf, else UTF-8 text)."""
+    ext = os.path.splitext(file_path)[1].lower()
+    filename_only = os.path.basename(file_path)
+
+    def _extract() -> Optional[str]:
+        try:
+            if ext == ".pdf":
+                try:
+                    import fitz  # PyMuPDF
+                    doc_pdf = fitz.open(file_path)
+                    text = "\n".join((page.get_text() or "") for page in doc_pdf)
+                    doc_pdf.close()
+                    return text.strip()
+                except Exception:
+                    from pypdf import PdfReader
+                    reader = PdfReader(file_path)
+                    return "\n".join((p.extract_text() or "") for p in reader.pages).strip()
+            elif ext == ".docx":
+                try:
+                    import docx  # python-docx
+                    d = docx.Document(file_path)
+                    return "\n".join(p.text for p in d.paragraphs).strip()
+                except Exception as exc:
+                    logger.warning("DOCX read failed for %s: %s", file_path, exc)
+                    return None
+            else:
+                with open(file_path, "r", encoding="utf-8", errors="replace") as fh:
+                    return fh.read().strip()
+        except Exception as exc:
+            logger.warning("File read failed for %s: %s", file_path, exc)
+            return None
+
+    content = await asyncio.to_thread(_extract)
+    if not content:
+        return None
+
+    # Inject source header directly into content to make it inseparable for LLMs
+    source_header = f"[DOKUMENT-QUELLE: {file_path}]"
+    content = f"{source_header}\n\n{content}"
+
+    return tool_ok_v1(
+        {
+            "content": content,
+            "source": "rag_v2_filesystem",
+            "filename": filename_only,
+            "file_path": file_path,
+        },
+        message=f"Volltext aus Quell-Datei geladen ({ext or 'text'}).",
+        tags=tags,
+        started_at=started,
+    )
+
+
+async def _v2_fulltext_fallback(
+    filename: str,
+    started: float,
+    tags: List[str],
+) -> Optional[ToolResultV1]:
+    """Resolve a filename via RAG-V2 IndexStore (endswith match) and read the file from disk."""
+    if not filename:
+        return None
+    try:
+        from backend.services.rag.index_store import IndexStore
+        from backend.utils.paths import get_app_data_dir
+
+        index_db = os.path.join(get_app_data_dir(), "knowledge_index_v2.db")
+        if not os.path.exists(index_db):
+            return None
+
+        # Robust path-based matching: compare by stem (no extension, lowercase)
+        # Normalize paths for Windows compatibility (backslashes -> forward slashes)
+        from pathlib import PurePath
+
+        def _normalize_path(p: str) -> str:
+            """Convert backslashes to forward slashes and lowercase for path comparison."""
+            return p.replace("\\", "/").lower() if p else p
+
+        needle_basename = PurePath(filename).name.lower()
+        needle_stem = PurePath(needle_basename).stem
+
+        store = IndexStore(db_path=index_db)
+        try:
+            # Query using stem → broader, but we post-filter strictly
+            raw_matches = store.find_by_filename(needle_stem)
+        finally:
+            store.close()
+
+        def _stem_match(path: str) -> bool:
+            base = PurePath(_normalize_path(path)).name
+            return base == needle_basename or PurePath(base).stem == needle_stem
+
+        matches = [m for m in raw_matches if _stem_match(m.path)]
+        if not matches:
+            return None
+
+        # Check for multiple matches and collect all paths for warning
+        all_matched_paths = sorted([m.path for m in matches])
+
+        # PHYSICAL DUPLICATE DETECTION: Use filesystem_manager.find_files to check for
+        # ALL physical copies of the file, not just indexed ones. This catches duplicates
+        # even if they were purged from the index.
+        try:
+            from backend.services.filesystem_manager import find_files
+            # Use stem for search (without extension) to catch aegypten.pdf, aegypten.PDF, etc.
+            stem_pattern = f"{needle_stem}.*"
+            fs_result = find_files(
+                pattern=stem_pattern,
+                max_results=100,  # Get more results to catch all duplicates
+                search_all_drives=False  # Search only in registered workspaces
+            )
+            if fs_result and fs_result.data and fs_result.data.get("matches"):
+                physical_matches = fs_result.data["matches"]
+                # Filter by exact stem match to avoid false positives
+                from pathlib import PurePath
+                filtered_physical = [
+                    p for p in physical_matches
+                    if PurePath(p).stem.lower() == needle_stem
+                ]
+                if len(filtered_physical) > 1:
+                    all_matched_paths = sorted(filtered_physical)
+                    logger.info(
+                        f"[DUPLICATE-DETECTION] Physical search found {len(filtered_physical)} "
+                        f"copies of '{filename}': {all_matched_paths}"
+                    )
+        except Exception as exc:
+            logger.warning("Physical duplicate detection failed for '%s': %s", filename, exc)
+
+        # Prefer exact basename match, else most recent indexed_at
+        exact = [m for m in matches if PurePath(m.path).name.lower() == needle_basename]
+        chosen = (exact or sorted(matches, key=lambda m: m.indexed_at, reverse=True))[0]
+
+        if not os.path.exists(chosen.path):
+            logger.warning("RAG V2 resolved %s but file missing on disk: %s", filename, chosen.path)
+            return None
+
+        result = await _read_file_fulltext(chosen.path, started=started, tags=tags)
+        if result and len(all_matched_paths) > 1:
+            # Inject warning if multiple files matched
+            paths_info = "\n".join(f"  - {p}" for p in all_matched_paths)
+            warning_block = f"!!! SYSTEM-WARNHINWEIS: MEHRERE DATEIEN GEFUNDEN !!!\nDateiname: {filename}\nGefundene Pfade:\n{paths_info}\nAktuelle Auswahl: {chosen.path}"
+            result.data["content"] = f"{warning_block}\n\n{result.data['content']}"
+        return result
+    except Exception as exc:
+        logger.warning("V2 fulltext fallback failed for '%s': %s", filename, exc)
+        return None
+
+
 async def get_full_document_text(filename: str, db: Session) -> ToolResultV1:
-    """Liefert den kompletten Text einer Datei, ohne die Chroma-Kürzung."""
+    """Liefert den kompletten Text einer Datei, ohne die Chroma-Kürzung.
+
+    Zuerst wird die Legacy-Document-Tabelle (Uploads) geprüft. Schlägt das fehl,
+    wird die RAG-V2 Fuzzy-Filename-Resolution verwendet, um Dateien zu finden,
+    die via globaler Indizierung aufgenommen wurden (z. B. ~/Desktop, ~/Documents).
+    Absolute Pfade werden ebenfalls direkt akzeptiert.
+    """
     from backend.data.models import Document
 
     started = time.perf_counter()
     tags = ["knowledge", "documents"]
     try:
+        # --- V2 FUZZY RESOLUTION (absolute path OR filename) ---
+        # Accept absolute paths from find_files directly
+        if filename and (os.path.isabs(filename) or filename.startswith(("/", "\\"))):
+            if os.path.exists(filename):
+                result = await _read_file_fulltext(filename, started=started, tags=tags)
+                if result is not None:
+                    return result
+
+        # Legacy Document lookup
         doc = (
             db.query(Document)
             .filter(Document.filename.ilike(f"%{filename}%"))
@@ -119,6 +286,11 @@ async def get_full_document_text(filename: str, db: Session) -> ToolResultV1:
             .first()
         )
         if not doc:
+            # V2 Fallback: fuzzy filename resolution via IndexStore
+            v2_result = await _v2_fulltext_fallback(filename, started=started, tags=tags)
+            if v2_result is not None:
+                return v2_result
+
             return tool_err_v1(
                 "NOT_FOUND",
                 f"Datei '{filename}' nicht gefunden.",

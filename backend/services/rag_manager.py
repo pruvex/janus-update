@@ -233,6 +233,17 @@ def query_knowledge_base(query_text: str, filename: Optional[str] = None, n_resu
                     where=search_filter,
                 )
 
+        # LOCKDOWN: When filename filter is active, NEVER fall back to global search
+        # If the specific file search returns 0 results, return empty instead of searching globally
+        if filename and (not results or not results.get("documents") or not results["documents"][0]):
+            logger.warning(f"RAG: Datei '{clean_filename}' nicht gefunden oder keine Treffer. Kein Fallback auf globale Suche.")
+            return tool_err_v1(
+                "NOT_FOUND",
+                f"Keine relevanten Informationen in Datei '{clean_filename}' gefunden.",
+                tags=tags,
+                started_at=started,
+            )
+
         if not results or not results.get("documents") or not results["documents"][0]:
             logger.info("RAG: Filter lieferte kein Ergebnis. Starte globale Suche...")
             results = collection.query(

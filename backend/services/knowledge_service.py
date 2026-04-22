@@ -21,6 +21,7 @@ def query(
     top_k: int = 10,
     retrieval_mode: Literal["legacy", "v2", "hybrid"] = "hybrid",
     file_type_filter: Optional[List[str]] = None,
+    filename: Optional[str] = None,
     **kwargs,
 ) -> Dict:
     """
@@ -31,6 +32,7 @@ def query(
         top_k: Number of results to return.
         retrieval_mode: "legacy" (V1), "v2" (RAG V2 only), "hybrid" (both, default).
         file_type_filter: Optional list of file extensions to filter (V2 only).
+        filename: Optional filename to filter results (V2 only, fuzzy match).
         **kwargs: Additional parameters passed to underlying implementation.
 
     Returns:
@@ -43,7 +45,7 @@ def query(
     """
     # Legacy mode (V1) - default behavior
     if retrieval_mode == "legacy":
-        return _query_legacy(query_text, top_k=top_k, **kwargs)
+        return _query_legacy(query_text, top_k=top_k, filename=filename, **kwargs)
 
     # V2 mode or hybrid mode
     if retrieval_mode in ("v2", "hybrid"):
@@ -51,6 +53,7 @@ def query(
             query_text,
             top_k=top_k,
             file_type_filter=file_type_filter,
+            filename=filename,
             retrieval_mode_override=None,  # Let router decide
             **kwargs,
         )
@@ -99,6 +102,7 @@ def _query_v2(
     query_text: str,
     top_k: int = 10,
     file_type_filter: Optional[List[str]] = None,
+    filename: Optional[str] = None,
     retrieval_mode_override: Optional[Literal["code", "prose", "hybrid"]] = None,
     **kwargs,
 ) -> Dict:
@@ -114,6 +118,7 @@ def _query_v2(
             query_text=query_text,
             top_k=top_k,
             file_type_filter=file_type_filter,
+            filename=filename,
             retrieval_mode_override=retrieval_mode_override,
             **kwargs,
         )

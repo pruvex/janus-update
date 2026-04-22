@@ -435,6 +435,29 @@ def apply_run_tool_loop_result_to_workflow(ctx: RequestContext) -> None:
                 wf.final_text = "Audit abgeschlossen. Der Bericht wurde generiert."
     wf.skip_fact_extraction = bool(isinstance(wf.response, dict) and wf.response.get("skip_fact_extraction"))
 
+    # Memory-Integrity Validation Guard: block fact extraction if the model
+    # received a SYSTEM-WARNHINWEIS (ambiguous document match) but did not
+    # acknowledge it in its final answer.
+    if not wf.skip_fact_extraction:
+        try:
+            from backend.services.orchestrator.warning_guard import (
+                did_model_ignore_warning,
+            )
+            tool_results_for_guard = (
+                getattr(wf.run_tool_loop_result, "all_tool_results", None)
+                or getattr(wf, "tool_results", None)
+                or []
+            )
+            if did_model_ignore_warning(tool_results_for_guard, wf.final_text or ""):
+                wf.skip_fact_extraction = True
+                if isinstance(wf.response, dict):
+                    wf.response["skip_fact_extraction"] = True
+        except Exception as _guard_exc:  # pragma: no cover - defensive
+            import logging as _lg
+            _lg.getLogger("janus_backend").debug(
+                "[WARNING-GUARD] guard check failed: %s", _guard_exc
+            )
+
 
 def apply_post_generation_tail(ctx: RequestContext) -> None:
     """Audit/UI tail after tool loop (parity with execute_generation)."""

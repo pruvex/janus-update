@@ -85,6 +85,7 @@ def query_v2(
     enable_reranker: bool = True,
     enable_context_expansion: bool = True,
     enable_router: bool = True,
+    filename: Optional[str] = None,
 ) -> Dict:
     """
     Execute a V2 hybrid retrieval query.
@@ -98,6 +99,7 @@ def query_v2(
         enable_reranker: Enable cross-encoder reranking.
         enable_context_expansion: Enable context expansion.
         enable_router: Enable query router.
+        filename: Optional filename to filter results (fuzzy match on source_path).
 
     Returns:
         Dict with results and metadata:
@@ -132,6 +134,7 @@ def query_v2(
             use_router=enable_router,
             retrieval_mode=retrieval_mode_override,
             file_type_filter=file_type_filter,
+            filename=filename,
         )
 
         return {

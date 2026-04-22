@@ -189,9 +189,17 @@ class GeminiServiceProvider(BaseLLMProvider):
 
     def _convert_tools_to_gemini_format(self, tools: List[Any]) -> List[Any]:
         gemini_tools = []
+        seen_names = set()  # Track seen function names to prevent duplicates
         for tool in tools:
             try:
                 name = getattr(tool, "name", tool.get("name") if isinstance(tool, dict) else "unknown")
+                
+                # Skip duplicate tool names to prevent Gemini ValueError
+                if name in seen_names:
+                    logger.debug("Gemini: Skipping duplicate tool name '%s'", name)
+                    continue
+                seen_names.add(name)
+                
                 desc = getattr(tool, "description", tool.get("description") if isinstance(tool, dict) else "")
                 args_schema_model = getattr(tool, "args_schema", None)
                 

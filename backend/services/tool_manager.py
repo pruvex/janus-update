@@ -323,7 +323,10 @@ class ToolManager:
         skill_name = self.get_skill_id(tool_name)
         skill_metadata = self.get_skill_metadata(skill_name)
         tool = ToolDefinition(func, args_schema, description, skill_metadata=skill_metadata, name=tool_name)
-        self.tools[tool.name] = tool
+        skill_id = self.get_skill_id(tool_name)
+        self.tools[skill_id] = tool  # Registrierung unter Skill-ID (z.B. knowledge.query)
+        if tool_name != skill_id:
+            self.tools[tool_name] = tool  # Alias unter Legacy-Name (z.B. query_knowledge_base)
         self._tool_definitions_cache.clear()
         if tool.name not in self._skill_mapping:
             logger.warning("SKILL-SYSTEM: Kein Mapping für Tool '%s'.", tool.name)

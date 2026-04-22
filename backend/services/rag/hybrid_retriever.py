@@ -13,6 +13,8 @@ Pipeline:
 
 import logging
 import os
+import time
+from pathlib import PurePath
 from typing import Dict, List, Optional
 
 import chromadb
@@ -50,6 +52,7 @@ class HybridRetriever:
         index_db_path: Optional[str] = None,
         use_reranker: bool = True,  # P4: Enable cross-encoder reranking
         expand_context: bool = True,  # P4: Enable context expansion
+        use_router: bool = True,
     ):
         self.collection_name = collection_name  # P3: None = auto-detect both
         self.chroma_path = chroma_path or V2_CHROMA_PATH
@@ -57,6 +60,7 @@ class HybridRetriever:
         self.index_store = IndexStore(db_path=index_db_path)
         self.use_reranker = use_reranker
         self.expand_context = expand_context
+        self.use_router = use_router
 
         self._client = None
         self._collections: Dict[str, any] = {}  # P3: multi-collection support
@@ -64,6 +68,11 @@ class HybridRetriever:
         self._reranker = None  # P4: lazy-loaded
         self._expander = None  # P4: lazy-loaded
         self.retrieval_logger = get_retrieval_logger()  # P6: Retrieval logger
+
+    @staticmethod
+    def _normalize_path(p: str) -> str:
+        """Convert backslashes to forward slashes and lowercase for path comparison."""
+        return p.replace("\\", "/").lower() if p else p
 
     def _get_embedding_function(self):
         if self._embedding_function is None:
@@ -198,6 +207,7 @@ class HybridRetriever:
         use_router: bool = True,  # P5: Enable query router
         retrieval_mode: Optional[str] = None,  # P5: Override router: "code" | "prose" | "hybrid"
         file_type_filter: Optional[List[str]] = None,  # P5: Optional file extension filter
+        filename: Optional[str] = None,  # Fuzzy filename resolution: filter by source_path endswith(filename)
     ) -> List[Dict[str, any]]:
         """
         Execute P5 hybrid retrieval: Router → vector + keyword → Weighted RRF → Rerank → Expand → Final.
@@ -213,6 +223,7 @@ class HybridRetriever:
             use_router: P5: Enable query-based routing (code/prose/hybrid detection).
             retrieval_mode: P5: Override router decision. "code" | "prose" | "hybrid".
             file_type_filter: P5: Optional list of file extensions to filter results.
+            filename: Fuzzy filename resolution: filter results by source_path endswith(filename).
 
         Returns:
             List of result dicts ordered by relevance (best first):
@@ -286,59 +297,74 @@ class HybridRetriever:
         latencies = {}
         overall_start = time.time()
 
-        # 1. Dense search (vector)
-        vec_start = time.time()
-        vector_results = self._vector_search(query_text, top_k=vector_k)
-        latencies["vector_ms"] = (time.time() - vec_start) * 1000
-
-        # 2. Sparse search (keyword)
-        fts_start = time.time()
-        keyword_results = self._keyword_search(query_text, top_k=keyword_k)
-        latencies["keyword_ms"] = (time.time() - fts_start) * 1000
-
-        # Build RRF input: list of [(chunk_id, score), ...] per source
-        vector_ranking = [(r["chunk_id"], 1.0 / r["rank"]) for r in vector_results]
-        keyword_ranking = [(r["chunk_id"], 1.0 / r["rank"]) for r in keyword_results]
-
-        # 3. Fuse via RRF (get top-20 for reranking)
-        # P5: Use weighted RRF if router is active
-        rrf_start = time.time()
-        if router_decision and (router_decision.vector_weight != 0.5 or router_decision.keyword_weight != 0.5):
-            fused = weighted_reciprocal_rank_fusion(
-                [vector_ranking, keyword_ranking],
-                weights=[router_decision.vector_weight, router_decision.keyword_weight],
-                k=k,
-            )
+        # LOCKDOWN: When filename is provided, skip global search entirely.
+        # Only use index_store lookup + rescue path. This prevents the system
+        # from falling back to global search when the filename filter fails.
+        if filename:
+            logger.info(f"[FILENAME-LOCKDOWN] Skipping global search, using index_store-only mode for '{filename}'")
+            # Initialize empty results for the global search path
+            vector_results = []
+            keyword_results = []
+            vector_map = {}
+            keyword_map = {}
+            candidates = []
+            latencies["vector_ms"] = 0.0
+            latencies["keyword_ms"] = 0.0
+            latencies["rrf_ms"] = 0.0
         else:
-            fused = reciprocal_rank_fusion([vector_ranking, keyword_ranking], k=k)
-        latencies["rrf_ms"] = (time.time() - rrf_start) * 1000
-        rrf_candidates = fused[:20]  # P4: Keep top-20 for reranking
+            # 1. Dense search (vector)
+            vec_start = time.time()
+            vector_results = self._vector_search(query_text, top_k=vector_k)
+            latencies["vector_ms"] = (time.time() - vec_start) * 1000
 
-        # 4. Build lookup maps for enrichment
-        vector_map: Dict[str, Dict] = {r["chunk_id"]: r for r in vector_results}
-        keyword_map: Dict[str, Dict] = {r["chunk_id"]: r for r in keyword_results}
+            # 2. Sparse search (keyword)
+            fts_start = time.time()
+            keyword_results = self._keyword_search(query_text, top_k=keyword_k)
+            latencies["keyword_ms"] = (time.time() - fts_start) * 1000
 
-        # 5. Build candidate list for reranking
-        candidates = []
-        for chunk_id, rrf_score in rrf_candidates:
-            v = vector_map.get(chunk_id)
-            k = keyword_map.get(chunk_id)
-            text = v["text"] if v else (k["text"] if k else "")
-            metadata = v["metadata"] if v else {}
-            source_path = metadata.get("source_path", k["source_path"] if k else "")
-            candidates.append(
-                {
-                    "chunk_id": chunk_id,
-                    "text": text,
-                    "source_path": source_path,
-                    "metadata": metadata,
-                    "rrf_score": rrf_score,
-                    "vector_rank": v["rank"] if v else None,
-                    "keyword_rank": k["rank"] if k else None,
-                    "distance": v["distance"] if v else None,
-                    "bm25_rank": k["bm25_rank"] if k else None,
-                }
-            )
+            # Build RRF input: list of [(chunk_id, score), ...] per source
+            vector_ranking = [(r["chunk_id"], 1.0 / r["rank"]) for r in vector_results]
+            keyword_ranking = [(r["chunk_id"], 1.0 / r["rank"]) for r in keyword_results]
+
+            # 3. Fuse via RRF (get top-20 for reranking)
+            # P5: Use weighted RRF if router is active
+            rrf_start = time.time()
+            if router_decision and (router_decision.vector_weight != 0.5 or router_decision.keyword_weight != 0.5):
+                fused = weighted_reciprocal_rank_fusion(
+                    [vector_ranking, keyword_ranking],
+                    weights=[router_decision.vector_weight, router_decision.keyword_weight],
+                    k=k,
+                )
+            else:
+                fused = reciprocal_rank_fusion([vector_ranking, keyword_ranking], k=k)
+            latencies["rrf_ms"] = (time.time() - rrf_start) * 1000
+            rrf_candidates = fused[:20]  # P4: Keep top-20 for reranking
+
+            # 4. Build lookup maps for enrichment
+            vector_map: Dict[str, Dict] = {r["chunk_id"]: r for r in vector_results}
+            keyword_map: Dict[str, Dict] = {r["chunk_id"]: r for r in keyword_results}
+
+            # 5. Build candidate list for reranking
+            candidates = []
+            for chunk_id, rrf_score in rrf_candidates:
+                v = vector_map.get(chunk_id)
+                k = keyword_map.get(chunk_id)
+                text = v["text"] if v else (k["text"] if k else "")
+                metadata = v["metadata"] if v else {}
+                source_path = metadata.get("source_path", k["source_path"] if k else "")
+                candidates.append(
+                    {
+                        "chunk_id": chunk_id,
+                        "text": text,
+                        "source_path": source_path,
+                        "metadata": metadata,
+                        "rrf_score": rrf_score,
+                        "vector_rank": v["rank"] if v else None,
+                        "keyword_rank": k["rank"] if k else None,
+                        "distance": v["distance"] if v else None,
+                        "bm25_rank": k["bm25_rank"] if k else None,
+                    }
+                )
 
         # 6. P4: Rerank with cross-encoder (if enabled)
         rerank_start = time.time()
@@ -393,6 +419,121 @@ class HybridRetriever:
             if filtered:
                 final_results = filtered
                 logger.info(f"[P5] File type filter applied: {len(final_results)} results remain")
+
+        # Fuzzy filename resolution: robust path-based matcher.
+        # Normalizes both needle and haystack to stems (no extension, lowercase)
+        # and converts all backslashes to forward slashes for Windows compatibility.
+        # So "aegypten", "aegypten.pdf", "AEGYPTEN.PDF",
+        # "C:\foo\aegypten.pdf" all collide with a DB path like
+        # "C:\Users\...\JanusPDFs\aegypten.pdf".
+        if filename:
+            filter_start = time.time()
+
+            needle = PurePath(filename).name.lower()
+            needle_stem = PurePath(needle).stem  # strips extension
+            logger.info(f"[FILENAME-FILTER] needle='{filename}' -> stem='{needle_stem}'")
+
+            def _path_matches(source: str) -> bool:
+                if not source:
+                    return False
+                # Normalize slashes and case before comparison
+                source_norm = self._normalize_path(source)
+                basename = PurePath(source_norm).name
+                if basename == needle or basename == needle_stem:
+                    return True
+                source_stem = PurePath(basename).stem
+                return source_stem == needle_stem
+
+            # LOCKDOWN: When filename is provided, ONLY filtered search + rescue.
+            # NEVER fall back to global search results.
+            # Skip the global retrieval entirely and go straight to index_store.
+            all_found_paths: set = set()
+            try:
+                # Query by stem; find_by_filename uses LIKE '%{needle}' → broader,
+                # we then apply _path_matches to be strict on basename/stem.
+                indexed_candidates = self.index_store.find_by_filename(needle_stem)
+                for idx_file in indexed_candidates:
+                    # Normalize path before comparison
+                    if _path_matches(idx_file.path):
+                        all_found_paths.add(idx_file.path)
+            except Exception as exc:
+                logger.warning(f"[FILENAME-FILTER] IndexStore lookup failed: {exc}")
+
+            # DUPLICATE DETECTION: Check if multiple files with the same name exist
+            all_paths_for_filename = self.index_store.get_all_paths_for_filename(filename)
+            has_duplicates = len(all_paths_for_filename) > 1
+
+            # Filter current retrieval results (may be empty if we skipped global search)
+            filtered = [r for r in final_results if _path_matches(r.get("source_path", ""))]
+
+            # RESCUE: If retrieval returned nothing for this file but the file
+            # IS indexed, fetch its chunks directly so the LLM gets real content
+            # instead of a global fallback.
+            if not filtered and all_found_paths:
+                logger.warning(
+                    f"[FILENAME-FILTER] Retrieval miss for '{filename}', "
+                    f"rescuing chunks for: {sorted(all_found_paths)}"
+                )
+                rescued: List[Dict[str, any]] = []
+                try:
+                    for path in sorted(all_found_paths):
+                        for chunk in self.index_store.get_chunks_by_file(path):
+                            rescued.append({
+                                "chunk_id": chunk["chunk_id"],
+                                "text": chunk.get("text", ""),
+                                "source_path": path,
+                                "metadata": chunk.get("metadata", {}),
+                                "rrf_score": 0.0,
+                                "rescued": True,
+                            })
+                except Exception as exc:
+                    logger.warning(f"[FILENAME-FILTER] Rescue fetch failed: {exc}")
+                filtered = rescued[:top_k]
+
+            if filtered:
+                final_results = filtered
+                # Ensure every path that matched is reported, even if only one
+                # chunk survived the filter (this is the ambiguity signal).
+                for r in final_results:
+                    all_found_paths.add(r.get("source_path", ""))
+                all_found_paths.discard("")
+                for r in final_results:
+                    r["all_matched_paths"] = sorted(list(all_found_paths))
+                logger.info(
+                    f"[FILENAME-FILTER] Applied for '{filename}': "
+                    f"{len(final_results)} chunks, {len(all_found_paths)} distinct file(s)"
+                )
+            else:
+                logger.warning(f"[FILENAME-FILTER] No results found matching filename '{filename}' - LOCKDOWN: Returning empty instead of global search")
+                final_results = []
+                latencies["filename_filter_ms"] = (time.time() - filter_start) * 1000
+                # Early return to prevent any fallback to global search
+                return RetrievalResult(
+                    results=[],
+                    query_text=query_text,
+                    latencies=latencies,
+                    router_decision=router_decision,
+                    metadata={"filename": filename, "lockdown": True}
+                )
+            latencies["filename_filter_ms"] = (time.time() - filter_start) * 1000
+
+        # Inject source header directly into text to make it inseparable for LLMs
+        for r in final_results:
+            source_path = r.get("source_path", "")
+            if source_path:
+                source_header = f"[DOKUMENT-QUELLE: {source_path}]"
+                r["text"] = f"{source_header}\n\n{r.get('text', '')}"
+                # DUPLICATE WARNING: If multiple files with same name exist, add prominent warning
+                if has_duplicates and len(all_paths_for_filename) > 1:
+                    paths_info = "\n".join(f"  - {p}" for p in sorted(all_paths_for_filename))
+                    warning_block = f"!!! SYSTEM-WARNHINWEIS: MEHRERE DATEIEN GEFUNDEN !!!\nDateiname: {filename}\nGefundene Pfade:\n{paths_info}\nAktuelle Auswahl: {source_path}"
+                    r["text"] = f"{warning_block}\n\n{r['text']}"
+                # Legacy: If all_matched_paths exists, add it as a prominent warning block
+                all_matched = r.get("all_matched_paths")
+                if all_matched and len(all_matched) > 1:
+                    paths_info = "\n".join(f"  - {p}" for p in all_matched)
+                    warning_block = f"!!! SYSTEM-WARNHINWEIS: MEHRERE DATEIEN GEFUNDEN !!!\nPfade:\n{paths_info}"
+                    r["text"] = f"{warning_block}\n\n{r['text']}"
 
         logger.info(
             f"Hybrid query returned {len(final_results)} results "

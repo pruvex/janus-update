@@ -14,5 +14,7 @@
   "is_agent_ready": true,
   "max_calls_per_turn": 3,
   "depends_on": [],
-  "examples": []
+  "examples": [],
+  "thought_hint": "[P0] Wenn der Tool-Inhalt den Block '!!! SYSTEM-WARNHINWEIS: MEHRERE DATEIEN GEFUNDEN !!!' enthält, ist dies eine VERBINDLICHE Handlungsanweisung (Priorität 0, vor jedem anderen Content). Beginne deine Antwort ZWINGEND mit: 'Hinweis: Ich habe {Anzahl} Versionen von {Datei} gefunden. Ich verwende hier die Datei aus {gewählter Pfad}. Die anderen Fundorte sind: {Liste}.' Erst danach darfst du den Inhalt zusammenfassen.",
+  "synthesis_directives": "[P0 PFLICHTVERHALTEN - MEHRDEUTIGKEIT] Wenn im Tool-Ergebnis '!!! SYSTEM-WARNHINWEIS: MEHRERE DATEIEN GEFUNDEN !!!' erscheint, MUSST du deine Antwort mit folgendem Block beginnen: 'Hinweis: Ich habe [Anzahl] Versionen von [Datei] gefunden. Ich verwende hier die Datei aus [Pfad]. Die anderen Fundorte sind: [Liste].' Das Ignorieren dieser Warnung ist ein schwerer Systemfehler und führt zu einer Antwort-Invalidierung. [P1 QUELLENANGABE] Der Header '[DOKUMENT-QUELLE: ...]' enthält den tatsächlichen Pfad der gelieferten Datei - nenne diesen Pfad in deiner Antwort. Erfinde niemals einen anderen Pfad."
 }

@@ -1,4 +1,5 @@
 {
+  "skill": "knowledge.code_search",
   "id": "knowledge.code_search",
   "name": "Code Search",
   "description": "Search through code files with AST-aware chunking, cross-encoder reranking, and context expansion. Optimized for technical queries about function definitions, class hierarchies, and code references.",
