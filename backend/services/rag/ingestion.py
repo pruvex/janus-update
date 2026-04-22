@@ -19,7 +19,7 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 
 import chromadb
 from chromadb.utils import embedding_functions
@@ -56,6 +56,24 @@ def _assert_isolation(chroma_path: str) -> None:
             f"V2 code must NEVER use '{LEGACY_CHROMA_PATH}'. Aborting."
         )
     logger.debug(f"Isolation check passed: {normalized} != {legacy_marker}")
+
+
+def _sanitize_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Sanitize metadata to ensure ChromaDB compatibility.
+
+    ChromaDB only accepts str, int, float, bool types.
+    Convert list and dict values to JSON strings.
+
+    HOTFIX: Prevents crashes when metadata contains list/dict values.
+    """
+    sanitized = {}
+    for key, value in metadata.items():
+        if isinstance(value, (list, dict)):
+            sanitized[key] = json.dumps(value)
+        else:
+            sanitized[key] = value
+    return sanitized
 
 
 # --- COLLECTION NAMES ---
@@ -286,6 +304,10 @@ class IngestionRun:
             }
             for c in chunks
         ]
+
+        # HOTFIX: Sanitize metadata to ensure ChromaDB compatibility
+        metadatas = [_sanitize_metadata(m) for m in metadatas]
+
         ids = [
             hashlib.sha256(
                 f"{path}:{i}:{chunk.text[:100]}".encode()
