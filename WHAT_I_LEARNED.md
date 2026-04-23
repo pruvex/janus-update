@@ -7,7 +7,7 @@
 - **Problem:** Der Code extrahiert Tool-Calls aus der Gemini-Antwort und konstruiert neue `protos.Part(function_call=...)` Objekte ohne die `thought_signature` aus dem ursprünglichen Part zu übernehmen. Gemini 3 validiert strikt, dass der erste `functionCall` part in jedem Schritt des aktuellen Turns eine `thought_signature` enthält.
 - **Lösung:** Die `thought_signature` muss aus der ursprünglichen Gemini-Antwort extrahiert werden, wenn Tool-Calls verarbeitet werden. Parts sollten nicht neu erstellt, sondern direkt aus der API-Antwort übernommen werden. **Fix-Empfehlung:** Original Parts direkt in `_gemini_raw_model_parts` speichern und später wiederverwenden, anstatt neue Parts zu erstellen.
 - **Dokumentation:** Gemini API Docs: https://ai.google.dev/gemini-api/docs/thought-signatures — "The first functionCall part in each step of the current turn must include its thought_signature. If you omit a thought_signature for the first functionCall part in any step of the current turn, the request will fail with a 400 error."
-- **Status:** BLOCKED — Fix erfordert tiefgreifende Änderungen an Gemini-Service-Logik. Opus-Eskalation empfohlen.
+- **Status:** Pending Investigation — Forensische Dokumentation in `documentation/forensics/GEMINI_THOUGHT_FAIL_MATRIX.md` erstellt. Test-Matrix für systematische Fehleranalyse vorbereitet. Opus-Eskalation empfohlen für tiefgreifende Änderungen an Gemini-Service-Logik.
 - **Location:** `backend/llm_providers/gemini/service.py` (Zeilen 540-545: function_call Parts ohne thought_signature), dokumentiert 2026-04-24.
 - **Confidence:** High (API-Dokumentation bestätigt Anforderung, Fehlermeldung eindeutig).
 - **Tags:** Gemini, API, ThoughtSignature, FunctionCall, LLM, Provider, 400Error

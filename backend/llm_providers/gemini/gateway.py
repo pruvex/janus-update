@@ -626,9 +626,6 @@ class GeminiGateway(BaseProviderGateway):
         passthrough_kwargs = dict(kwargs or {})
         provider = passthrough_kwargs.pop("provider", None)
         model = passthrough_kwargs.pop("model", None)
-        # 💎 FORENSIC-LOG: Temporär — zeigt exakt, was der Gateway empfängt
-        logger.debug(f"💎 FORENSIC-LOG: Gemini Gateway received chat_history: {passthrough_kwargs.get('chat_history', '(already popped)')}")
-        logger.debug(f"💎 FORENSIC-LOG: Gemini Gateway model={model}, provider={provider}")
         api_key = passthrough_kwargs.pop("api_key", None)
         chat_history = passthrough_kwargs.pop("chat_history", [])
         user_prompt = passthrough_kwargs.pop("user_prompt", "")
