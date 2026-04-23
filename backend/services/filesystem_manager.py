@@ -41,10 +41,14 @@ def _get_allowed_workspaces() -> list[Path]:
     except Exception as e:
         logger.error(f"Fehler beim Laden der Workspace-Konfiguration: {e}")
 
-    # Füge den Desktop-Pfad standardmäßig hinzu
+    # Füge die Standard-Systempfade hinzu ( synchron mit Global Discovery )
     desktop_path = Path.home() / "Desktop"
     if desktop_path.is_dir() and desktop_path.resolve() not in resolved_paths:
         resolved_paths.append(desktop_path.resolve())
+
+    documents_path = Path.home() / "Documents"
+    if documents_path.is_dir() and documents_path.resolve() not in resolved_paths:
+        resolved_paths.append(documents_path.resolve())
 
     # Füge den Standard-Workspace am ENDE als Fallback hinzu.
     if DEFAULT_WORKSPACE.resolve() not in resolved_paths:

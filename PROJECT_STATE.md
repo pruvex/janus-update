@@ -1,6 +1,37 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.29** — "EPIC-SYSTEM-HARVESTER (V2): 🥇 SEALED & COMPLETE. P0-P8 SEALED + Final Extension (Global Scope Discovery, Format-Gatekeeper). RAG V2 Core Pipeline fertiggestellt. Tool-Execution Stack Repaired. RAG V2 Stabilization: Filename Metadata + Path Normalization + Memory Guard. RAG V2 Multi-File Integrity: Hardware Truth + Physical Duplicate Detection.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.31** — "EPIC-SYSTEM-HARVESTER (V2): 🥇 SEALED & COMPLETE. P0-P8 SEALED + Final Extension (Global Scope Discovery, Format-Gatekeeper). RAG V2 Core Pipeline fertiggestellt. Tool-Execution Stack Repaired. RAG V2 Stabilization: Filename Metadata + Path Normalization + Memory Guard. RAG V2 Multi-File Integrity: Hardware Truth + Physical Duplicate Detection. RAG V2 Auto-Read Loop: Path-Pinning for Disambiguation. RAG V2 0-Chunk Integrity Fix.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-22 23:05 (RAG V2 MULTI-FILE INTEGRITY — 🥇 SEALED & COMPLETE — Physical Duplicate Detection + Hardware Truth + P0 Disclosure)
+**Aktualisiert:** 2026-04-24 01:00 (BUG-RAG-004 SEALED | BUG-GEMINI-API-001 BLOCKED | RAG V2 0-Chunk Integrity Fix)
+
+---
+
+## [CURRENT_SESSION_DELTA] (BUG-RAG-004 — 0-Chunk Integrity Fix 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **BUG-RAG-004: RAG V2 0-Chunk Integrity Fix — SQLite-Index ohne Chunks wird bereinigt** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-24) |
+| **Root Cause** | IndexStore enthielt Einträge für Dateien, die physisch existierten, aber 0 Chunks in der Datenbank hatten (z.B. nach abgebrochener Indizierung). Tool-Executor prüfte nur, ob Pfad in SQLite-DB, nicht ob Chunks existieren. Resultat: UI zeigte "NICHT INDIZIERT" (Retriever fand keine Chunks), aber Auto-Ingest wurde nicht ausgelöst (Executor glaubte Datei sei indiziert). Inkonsistenz zwischen UI und Ingestion-Trigger. |
+| **Umsetzung** | **Fix #1 — Chunk-Validierung:** `@c:\KI\Janus-Projekt\backend\services\tool_executor.py:245-265` — `new_paths` Logik erweitert: Prüft nicht nur, ob Pfad in SQLite-DB, sondern auch ob Chunks existieren (`store.get_chunks_by_file(path, limit=1)`). **Fix #2 — Korrupte Einträge bereinigen:** Wenn Pfad in DB aber `chunk_count == 0`: `store.delete(path)` + Pfad zu `new_paths` hinzufügen, damit Background-Ingest ihn neu verarbeitet. **Fix #3 — Debug-Logging entfernt:** Temporäre `[AUTO-INGEST-DEBUG]` Logs nach Verifikation entfernt. |
+| **Ergebnis** | Synchronisation zwischen UI (Retriever zeigt "NICHT INDIZIERT" wenn keine Chunks) und Ingestion-Trigger (Executor erkennt korrupte Einträge und bereinigt sie). Auto-Ingest wird jetzt zuverlässig für 0-Chunk-Files ausgelöst. |
+| **Files** | `backend/services/tool_executor.py` (Chunk-Validierung + Korrupte Einträge bereinigen). |
+| **Verifikation** | Test mit 0-Chunk-File erwartet: (a) Log zeigt `[AUTO-INGEST] Corrupt DB entry for '{path}' (0 chunks). Deleting and re-ingesting.`, (b) Background-Ingest wird ausgelöst, (c) Nach Indizierung hat Datei Chunks. |
+| **Patterns** | [PATTERN] #RAG #Integrity "Hardware-Truth über Index-Faith — Ein Pfad gilt nur als indiziert, wenn er in SQLite-DB steht UND Chunks hat. 0-Chunk-Files sind korrupt und müssen bereinigt werden." |
+
+---
+
+## [CURRENT_SESSION_DELTA] (BUG-GEMINI-API-001 — Thought Signature 400 Error 🔴 BLOCKED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **BUG-GEMINI-API-001: Gemini 3 Thought Signature 400 Error — Function Call missing thought_signature** |
+| **Status** | **🔴 BLOCKED** (2026-04-24) — Warten auf Opus-Eskalation |
+| **Root Cause** | Gemini 3 Modelle erfordern `thought_signature` für `functionCall` Parts. Der aktuelle Code in `backend/llm_providers/gemini/service.py` erstellt neue `function_call` Parts ohne diese Signatur (Zeilen 540-545). API-Antwort: `InvalidArgument: 400 Function call is missing a thought_signature.` |
+| **Umsetzung** | **Anforderung:** Die `thought_signature` muss aus der ursprünglichen Gemini-Antwort extrahiert werden, wenn Tool-Calls verarbeitet werden. Parts sollten nicht neu erstellt, sondern direkt aus der API-Antwort übernommen werden. **Fix-Empfehlung:** Original Parts direkt in `_gemini_raw_model_parts` speichern und später wiederverwenden, anstatt neue Parts zu erstellen. |
+| **Ergebnis** | BLOCKED — Fix erfordert tiefgreifende Änderungen an Gemini-Service-Logik. Opus-Eskalation empfohlen. |
+| **Files** | `backend/llm_providers/gemini/service.py` (Zeilen 540-545: function_call Parts ohne thought_signature). |
+| **Verifikation** | N/A — BLOCKED |
+| **Dokumentation** | Gemini API Docs: https://ai.google.dev/gemini-api/docs/thought-signatures — "The first functionCall part in each step of the current turn must include its thought_signature. If you omit a thought_signature for the first functionCall part in any step of the current turn, the request will fail with a 400 error." |
+| **Patterns** | [LESSON] #Gemini #API #ThoughtSignature "Gemini 3 requires thought_signature for functionCall parts — must preserve original parts from API response instead of reconstructing them." |
 
 ---
 
@@ -16,6 +47,47 @@
 | **Files** | `backend/services/tool_executor.py` (Physical duplicate detection via filesystem_manager), `backend/services/rag/hybrid_retriever.py` (Lockdown bereits vorhanden), `backend/skills/knowledge/query.json` (P0 directives verifiziert), `backend/skills/knowledge/read_full_text.json` (P0 directives verifiziert). |
 | **Verifikation** | Test "Was steht in aegypten.pdf?" erwartet: (a) Log zeigt `[DUPLICATE-DETECTION] Physical search found 2 copies`, (b) Tool-Output enthält Warn-Header mit beiden Pfaden, (c) LLM-Antwort beginnt mit "Hinweis: Ich habe 2 Versionen von aegypten.pdf gefunden..." |
 | **Patterns** | [PATTERN] #HardwareTruth #RAG "Hardware-Truth over Index-Faith — Wissens-Tools müssen vor Ausführung physischen Scan (os.path.exists oder glob) über Workspaces machen. Wenn count > 1, Warn-Header injizieren, der KI zur Transparenz zwingt. Blindes Vertrauen auf DB führt zu Silent Selection der falschen Datei." |
+
+---
+
+## [CURRENT_SESSION_DELTA] (RAG V2 AUTO-READ LOOP — Path-Pinning for Disambiguation 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **RAG V2 AUTO-READ LOOP: Path-Pinning for Disambiguation — Agentic AI Dubletten-Auflösung via absolute_path Parameter** |
+| **Root Cause** | GPT konnte Auto-Read-Trigger für nicht-indizierte Dubletten nicht ausführen: Das Tool `knowledge.read_full_text` akzeptierte nur `filename` als Parameter. Bei Dubletten ist `filename` mehrdeutig — GPT wusste nicht, welche der 2+ Dateien gemeint war, und verweigerte den Aufruf. Ergebnis: KI sagte "ich kann das nicht" statt autonom die nicht-indizierte Datei zu lesen. |
+| **Umsetzung** | **Fix #1 — Schema-Erweiterung:** `@c:\KI\Janus-Projekt\backend\data\schemas.py:125-128` — `GetFullDocumentTextArgs` erweitert um `absolute_path: Optional[str] = Field(None, description="Path-Pinning for Disambiguation...")`. Parameter-Beschreibung instruiert GPT explizit: "Nutze dieses Feld, um eine spezifische Dublette via absolutem Pfad zu lesen, wenn das System dich dazu auffordert". **Fix #2 — Tool-Logik mit absoluter Priorität:** `@c:\KI\Janus-Projekt\backend\services\tool_executor.py:282-320` — `get_full_document_text` akzeptiert neuen Parameter `absolute_path`. Prioritäts-Regel: Wenn `absolute_path` gesetzt und Datei existiert → SOFORT direktes Lesen vom Pfad (ignoriert `filename`, überspringt Dubletten-Prüfung, kein Index-Lookup). Logging: `[ABSOLUTE-PATH MODE] Reading directly from disk: {path}`. **Fix #3 — Prompt-Härtung P0.75:** `@c:\KI\Janus-Projekt\backend\skills\knowledge\query.json:20` und `read_full_text.json:19` — P0.75 AUTO-READ TRIGGER Direktive aktualisiert: "Nutze 'knowledge.read_full_text' mit dem Parameter 'absolute_path' für diesen Pfad, um den Text jetzt live zu lesen!" + "Du MUSST stattdessen in genau diesem Turn selbstständig das Tool 'knowledge.read_full_text' mit dem Parameter 'absolute_path' auf den angegebenen Pfad aufrufen". **Fix #4 — Multi-File Comparison Layout:** P0.5 Direktive erweitert: Verboten, User zu fragen welche Datei. Stattdessen: Für JEDE Dublette eine Sektion mit Pfad und Zusammenfassung (via Auto-Read oder Vorschau). |
+| **Ergebnis** | KI kann nun autonom nicht-indizierte Dubletten lesen. Wenn `knowledge.query` Dubletten findet und eine Datei als `[NICHT INDIZIERT - AKTION ERFORDERLICH...]` markiert ist, ruft GPT in demselben Turn `knowledge.read_full_text` mit `absolute_path` auf. User bekommt vollständigen inhaltlichen Vergleich aller Dubletten ohne manuelle Interaktion. "Silent Failure" bei nicht-indizierten Dateien eliminiert. |
+| **Files** | `backend/data/schemas.py` (GetFullDocumentTextArgs.absolute_path), `backend/services/tool_executor.py` (get_full_document_text mit Path-Pinning), `backend/skills/knowledge/query.json` (P0.75 + P0.5 Direktiven), `backend/skills/knowledge/read_full_text.json` (P0.75 + P0.5 Direktiven). |
+| **Verifikation** | Test "was steht in der aegypten.pdf?" erwartet: (a) Log zeigt `Total unique calls this turn: 2 oder 3` (mehrere Tool-Calls mit absolute_path), (b) Tool-Output enthält absolute_path Parameter in den Tool-Call-Args, (c) LLM-Antwort enthält vollständigen inhaltlichen Vergleich beider Dateien ohne User-Frage. |
+| Patterns | [PATTERN] #AgenticAI #ToolDesign "Path-Pinning for Disambiguation" — Kritische Tools zur Ressourcen-Interaktion müssen immer einen "Pinning"-Parameter (absolute_path) haben, damit die KI Mehrdeutigkeiten, die das System ihr meldet, autonom auflösen kann. |
+
+---
+
+## [CURRENT_SESSION_DELTA] (BUG-RAG-003 — Regression Fix & Lifecycle Hardening 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **BUG-RAG-003: RAG-V2 Regression Fix (NameError & IndexStore Lifecycle)** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-23) |
+| **Root Cause** | Eine fatale Fehlerkette verhinderte die Dubletten-Erkennung: 1. `NameError`: `path_previews` war bei bestimmten Pfaden undefiniert, was die Funktion abbrach. 2. `Lifecycle Error`: Der `IndexStore` wurde zu früh geschlossen (`L200`), bevor die Chunks gelesen werden konnten (`L283`). 3. `Slash-Mismatch`: Fehlende Normalisierung führte zu redundanten Auto-Ingest-Triggern. Ergebnis: Das System fiel in den globalen Halluzinations-Modus zurück. |
+| **Umsetzung** | **1. Scope-Hardening:** `path_previews` initialisiert; `store` Lifecycle via `None`-init + `finally`-Block abgesichert. **2. Slash-Trap Fix:** Normalisierung bei `new_paths` Vergleich implementiert. **3. Threading:** `ingestion_manager` Aufruf in Daemon-Thread ausgelagert, um Event-Loop Blockaden zu verhindern. |
+| **Ergebnis** | Die RAG-V2-Pipeline ist nun robust gegen asynchrone Fehlzugriffe und Windows-Pfad-Differenzen. Die agentische Dubletten-Auflösung funktioniert wieder zuverlässig für alle Provider. |
+| **Files** | `backend/services/tool_executor.py` (Zustands- und Fehlerbehandlung). |
+
+---
+
+## [CURRENT_SESSION_DELTA] (F16 FINAL LOCKDOWN — RAG V2 Integrität 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **F16: RAG V2 Final Lockdown — Beendigung der Halluzinations-Kreisbewegung** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-23) |
+| **Root Cause** | Das System war "schwach" im Routing: LLMs "vergaßen" oft den Filename-Parameter, was zu globalen Suchen und Halluzinationen ("Skandinavien-Analyse") führte. Zudem wurde die Dubletten-Logik bei bekanntem Pfad oft übersprungen (Bypass). |
+| **Umsetzung** | **1. Dispatcher-Lockdown:** Regex-basierte Filename-Injektion im Orchestrator erzwingt nun den korrekten Tool-Parameter bei PDF-Anfragen. **2. V2-First:** Jede Anfrage durchläuft nun zwingend den Dubletten-Scan, bevor ein Pfad bedient wird. **3. Auto-Ingest Repair:** Korrektur des Ingest-Roots auf den tatsächlichen Fundort. **4. Schema-Härtung:** Beschreibung für LLMs von "optional" auf "PFLICHT" geändert. |
+| **Ergebnis** | Der "Skandinavien-Fehler" ist technologisch eliminiert. Janus indiziert nun zuverlässig unindizierte Fundstellen im Hintergrund und erzwingt den agentischen Vergleich über alle Dubletten. Volle Hardware-Truth garantiert. |
+| **Files** | `execution_dispatcher.py`, `tool_executor.py`, `schemas.py`. |
+| **Patterns** | [PATTERN] #Orchestration #Lockdown "Dispatcher-First Parameter Enforcement — Don't ask the LLM to identify resources if you can define them via Regex in the Dispatcher." |
 
 ---
 

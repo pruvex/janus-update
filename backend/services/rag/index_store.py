@@ -258,18 +258,23 @@ class IndexStore:
             logger.warning(f"IndexStore.get_chunk failed for {chunk_id}: {e}")
             return None
 
-    def get_chunks_by_file(self, source_path: str) -> List[Dict]:
+    def get_chunks_by_file(self, source_path: str, limit: int = None) -> List[Dict]:
         """
-        Get all chunks for a given file path from ChromaDB.
+        Get chunks for a given file path from ChromaDB.
 
-        This is a convenience method for ContextExpander.
+        Args:
+            source_path: The file path to search for.
+            limit: Maximum number of chunks to return (default None = no limit).
+
+        This is a convenience method for ContextExpander and duplicate preview.
         """
         try:
             import chromadb
             from backend.utils.paths import get_app_data_dir
 
-            # Normalize path for Windows compatibility (backslashes -> forward slashes)
-            normalized_path = source_path.replace("\\", "/") if source_path else source_path
+            # DO NOT normalize path - ChromaDB stores paths with backslashes as-is from Windows
+            # Normalization to forward slashes causes path mismatch
+            query_path = source_path
 
             chroma_path = Path(get_app_data_dir()) / "rag_chroma_db_v2"
             client = chromadb.PersistentClient(path=str(chroma_path))
@@ -279,10 +284,12 @@ class IndexStore:
             for collection_name in ["kb_code_v2", "kb_prose_v2"]:
                 try:
                     collection = client.get_collection(collection_name)
+                    # Use limit if provided, otherwise get all chunks (high limit)
+                    query_limit = limit if limit is not None else 10000
                     results = collection.get(
-                        where={"source_path": normalized_path},
+                        where={"source_path": query_path},
                         include=["metadatas", "documents", "ids"],
-                        limit=10000,
+                        limit=query_limit,
                     )
                     for idx, chunk_id in enumerate(results.get("ids", [])):
                         chunks.append({

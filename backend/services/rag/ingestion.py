@@ -179,12 +179,23 @@ class IngestionRun:
         # ISOLATION GUARD
         _assert_isolation(self.chroma_path)
 
-        # P6: Path Policy (Security)
+        # P6: Path Policy (Security) - Multi-workspace support
         self.path_policy = None
         if enable_path_policy:
-            self.path_policy = PathPolicy(self.root_dir)
-            set_global_policy(self.root_dir)  # Set global policy for other modules
-            logger.info(f"[P6] PathPolicy enabled for root: {self.root_dir}")
+            # Get all registered workspaces from FilesystemManager
+            try:
+                from backend.services.filesystem_manager import _get_allowed_workspaces
+                allowed_workspaces = _get_allowed_workspaces()
+                if not allowed_workspaces:
+                    allowed_workspaces = [self.root_dir]
+                self.path_policy = PathPolicy(allowed_workspaces)
+                set_global_policy(allowed_workspaces)
+                logger.info(f"[P6] PathPolicy enabled for {len(allowed_workspaces)} workspace(s): {allowed_workspaces}")
+            except Exception as exc:
+                logger.warning(f"[P6] Failed to get workspaces, falling back to root_dir: {exc}")
+                self.path_policy = PathPolicy(self.root_dir)
+                set_global_policy(self.root_dir)
+                logger.info(f"[P6] PathPolicy enabled for root: {self.root_dir}")
 
         self.fts = FTSStore()
         self.retrieval_logger = get_retrieval_logger()  # P6: Retrieval logger

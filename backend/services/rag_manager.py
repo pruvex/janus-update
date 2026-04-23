@@ -215,6 +215,60 @@ def query_knowledge_base(query_text: str, filename: Optional[str] = None, n_resu
     """Durchsucht die hochgeladenen PDFs nach relevanten Textstellen."""
     started = time.perf_counter()
     tags = ["knowledge", "rag"]
+    
+    # PHYSICAL DUPLICATE DETECTION: Check for multiple files with the same name
+    # This must happen before any retrieval to ensure the AI is warned about duplicates
+    duplicate_warning = None
+    if filename:
+        try:
+            from backend.services.filesystem_manager import find_files
+            from pathlib import PurePath
+            # Use stem for search (without extension) to catch aegypten.pdf, aegypten.PDF, etc.
+            needle_stem = PurePath(filename).stem.lower()
+            stem_pattern = f"{needle_stem}.*"
+            fs_result = find_files(
+                pattern=stem_pattern,
+                max_results=100,
+                search_all_drives=False
+            )
+            if fs_result and fs_result.data and fs_result.data.get("matches"):
+                physical_matches = fs_result.data["matches"]
+                # Filter by exact stem match to avoid false positives
+                filtered_physical = [
+                    p for p in physical_matches
+                    if PurePath(p).stem.lower() == needle_stem
+                ]
+                if len(filtered_physical) > 1:
+                    # Generate content previews for each duplicate
+                    from backend.services.rag.index_store import IndexStore
+                    from backend.utils.paths import get_app_data_dir
+                    index_db = Path(get_app_data_dir()) / "knowledge_index_v2.db"
+                    store = IndexStore(db_path=str(index_db))
+                    
+                    path_previews = {}
+                    for path in sorted(filtered_physical):
+                        try:
+                            chunks = store.get_chunks_by_file(path, limit=2)
+                            if chunks:
+                                preview = chunks[0].get("text", "")[:200]
+                                path_previews[path] = preview
+                            else:
+                                path_previews[path] = "[DATEI GEFUNDEN, ABER NOCH NICHT INDIZIERT]"
+                        except Exception:
+                            path_previews[path] = "[DATEI GEFUNDEN, ABER NOCH NICHT INDIZIERT]"
+                    
+                    store.close()
+                    
+                    # Build warning block with previews
+                    paths_info = ""
+                    for path in sorted(filtered_physical):
+                        preview = path_previews.get(path, "[Keine Vorschau]")
+                        paths_info += f"\n  - {path}\n    Vorschau: {preview}\n"
+                    duplicate_warning = f"!!! SYSTEM-WARNHINWEIS: MEHRERE DATEIEN GEFUNDEN !!!\nDateiname: {filename}\nGefundene Pfade:{paths_info}"
+                    logger.info(f"[DUPLICATE-DETECTION] Found {len(filtered_physical)} copies of '{filename}'")
+        except Exception as exc:
+            logger.warning(f"Physical duplicate detection failed for '{filename}': {exc}")
+    
     try:
         collection = _get_or_create_collection("janus_global_documents")
         clean_query = query_text.replace(".pdf", "").replace(".PDF", "").strip()
@@ -237,15 +291,20 @@ def query_knowledge_base(query_text: str, filename: Optional[str] = None, n_resu
         # If the specific file search returns 0 results, return empty instead of searching globally
         if filename and (not results or not results.get("documents") or not results["documents"][0]):
             logger.warning(f"RAG: Datei '{clean_filename}' nicht gefunden oder keine Treffer. Kein Fallback auf globale Suche.")
+            error_msg = f"Keine relevanten Informationen in Datei '{clean_filename}' gefunden."
+            if duplicate_warning:
+                error_msg = f"{duplicate_warning}\n\n{error_msg}"
             return tool_err_v1(
                 "NOT_FOUND",
-                f"Keine relevanten Informationen in Datei '{clean_filename}' gefunden.",
+                error_msg,
                 tags=tags,
                 started_at=started,
             )
 
-        if not results or not results.get("documents") or not results["documents"][0]:
-            logger.info("RAG: Filter lieferte kein Ergebnis. Starte globale Suche...")
+        # LOCKDOWN: If no filename specified, allow global search. If filename was specified and we reach here,
+        # we already have results (the check above would have returned if filename search failed).
+        if not filename and (not results or not results.get("documents") or not results["documents"][0]):
+            logger.info("RAG: Kein Filter gesetzt. Starte globale Suche...")
             results = collection.query(
                 query_texts=[candidate_query],
                 n_results=n_results,
@@ -287,6 +346,10 @@ def query_knowledge_base(query_text: str, filename: Optional[str] = None, n_resu
             })
 
         context = "\n---\n".join(context_parts)
+        
+        # Inject duplicate warning into successful results if present
+        if duplicate_warning:
+            context = f"{duplicate_warning}\n\n{context}"
         primary_hit = hits[0] if hits else {"source": filename or "Dokument", "page": None}
         data = {
             "context": context,

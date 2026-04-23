@@ -335,6 +335,31 @@ async def execute_generation_prepare_gateway(
                 "filename": request.audit_file,
             }
             logger.info("💎 ANTI-HALLUCINATION: Forcing knowledge.query tool_choice for audit_file=%s with pre-filled arguments", request.audit_file)
+        # 💎 F16 FILENAME-REGEX-INJECTION: Detect filenames in user text and force
+        # knowledge.read_full_text with filename pre-filled. This prevents the LLM
+        # from "being lazy" and calling knowledge.query without filename parameter,
+        # which causes global search → hallucinations (Skandinavien statt Ägypten).
+        if not getattr(request, "audit_file", None) and not bool(getattr(wf, "is_video_intent", False)):
+            _FILE_REGEX = re.compile(
+                r'(?:^|[\s"\'\(])([a-zA-ZäöüÄÖÜß0-9_\-]+\.(?:pdf|docx?|xlsx?|pptx?|txt|md|csv))\b',
+                re.IGNORECASE
+            )
+            _fn_match = _FILE_REGEX.search(wf.user_text or "")
+            if _fn_match:
+                _detected_filename = _fn_match.group(1)
+                logger.info(
+                    "💎 F16 FILENAME-INJECTION: Detected filename '%s' in user text. "
+                    "Forcing knowledge.read_full_text with filename pre-filled.",
+                    _detected_filename,
+                )
+                wf.gateway_kwargs["forced_tool"] = {
+                    "skill_id": "knowledge.read_full_text",
+                    "provider_tool_name": "knowledge.read_full_text",
+                }
+                wf.gateway_kwargs["force_tool_name"] = "knowledge.read_full_text"
+                wf.gateway_kwargs["forced_tool_args"] = {
+                    "filename": _detected_filename,
+                }
         if user_budget_info:
             wf.gateway_kwargs['_user_budget_info'] = user_budget_info
         if background_tasks is not None:

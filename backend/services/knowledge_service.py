@@ -4,10 +4,10 @@ Knowledge Service - Unified RAG Interface
 Provides a unified interface for knowledge queries with support for both
 legacy (V1) and V2 RAG implementations.
 
-Zero-Regression Guard:
-- Default retrieval_mode="legacy" uses V1 (rag_manager.py)
-- V2 (hybrid_retriever) is only initialized when retrieval_mode="v2" or "hybrid"
-- This ensures V2 components are not loaded unless explicitly requested
+V2 Cutover:
+- Default retrieval_mode="v2" uses RAG V2 (hybrid_retriever.py) to eliminate hallucinations
+- Legacy mode still available via retrieval_mode="legacy"
+- Hybrid mode combines both via retrieval_mode="hybrid"
 """
 
 import logging
@@ -19,7 +19,7 @@ logger = logging.getLogger("janus_backend")
 def query(
     query_text: str,
     top_k: int = 10,
-    retrieval_mode: Literal["legacy", "v2", "hybrid"] = "hybrid",
+    retrieval_mode: Literal["legacy", "v2", "hybrid"] = "v2",
     file_type_filter: Optional[List[str]] = None,
     filename: Optional[str] = None,
     **kwargs,
@@ -30,7 +30,7 @@ def query(
     Args:
         query_text: The search query.
         top_k: Number of results to return.
-        retrieval_mode: "legacy" (V1), "v2" (RAG V2 only), "hybrid" (both, default).
+        retrieval_mode: "legacy" (V1), "v2" (RAG V2 only, default), "hybrid" (both).
         file_type_filter: Optional list of file extensions to filter (V2 only).
         filename: Optional filename to filter results (V2 only, fuzzy match).
         **kwargs: Additional parameters passed to underlying implementation.
@@ -41,8 +41,10 @@ def query(
     Zero-Regression Guard:
         - When retrieval_mode="legacy", V2 is NOT initialized.
         - V2 is only loaded when retrieval_mode="v2" or "hybrid".
-        - Default is now "hybrid" for V2 Cutover.
+        - Default is now "v2" for V2 Cutover to eliminate hallucinations.
     """
+    logger.info(f"[KNOWLEDGE-SERVICE] Executing query with retrieval_mode='{retrieval_mode}'")
+
     # Legacy mode (V1) - default behavior
     if retrieval_mode == "legacy":
         return _query_legacy(query_text, top_k=top_k, filename=filename, **kwargs)

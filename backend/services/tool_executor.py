@@ -5,9 +5,11 @@ import json
 import logging
 import os
 import re
+import threading
 import time
 import uuid
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from backend.data.models import SkillTelemetry
@@ -167,10 +169,21 @@ async def _v2_fulltext_fallback(
     filename: str,
     started: float,
     tags: List[str],
+    absolute_path: Optional[str] = None,
 ) -> Optional[ToolResultV1]:
-    """Resolve a filename via RAG-V2 IndexStore (endswith match) and read the file from disk."""
+    """Resolve a filename via RAG-V2 IndexStore (endswith match) and read the file from disk.
+    
+    DUPLICATE HANDLING LOGIC (always enforced):
+    1. Physical duplicate scan runs FIRST (before any file reading)
+    2. If duplicates found:
+       - Build warning_block with all paths
+       - If no absolute_path: Content Withholding (return ONLY warning)
+       - If absolute_path: Read file + prepend warning to content
+    3. If no duplicates: Normal single-file flow
+    """
     if not filename:
         return None
+    store = None  # FIX #1: Managed lifecycle — close only at the end
     try:
         from backend.services.rag.index_store import IndexStore
         from backend.utils.paths import get_app_data_dir
@@ -191,11 +204,7 @@ async def _v2_fulltext_fallback(
         needle_stem = PurePath(needle_basename).stem
 
         store = IndexStore(db_path=index_db)
-        try:
-            # Query using stem → broader, but we post-filter strictly
-            raw_matches = store.find_by_filename(needle_stem)
-        finally:
-            store.close()
+        raw_matches = store.find_by_filename(needle_stem)
 
         def _stem_match(path: str) -> bool:
             base = PurePath(_normalize_path(path)).name
@@ -205,38 +214,136 @@ async def _v2_fulltext_fallback(
         if not matches:
             return None
 
-        # Check for multiple matches and collect all paths for warning
-        all_matched_paths = sorted([m.path for m in matches])
+        # Initialize path_previews for potential duplicate handling
+        path_previews = {}
+        duplicate_paths = None  # Will hold paths if duplicates found
+        new_paths = []  # Unindexed paths found during duplicate scan
 
-        # PHYSICAL DUPLICATE DETECTION: Use filesystem_manager.find_files to check for
-        # ALL physical copies of the file, not just indexed ones. This catches duplicates
-        # even if they were purged from the index.
+        # PHYSICAL DUPLICATE DETECTION: Run FIRST before any reading decision
+        # This ensures warning_block is always generated when duplicates exist
         try:
             from backend.services.filesystem_manager import find_files
-            # Use stem for search (without extension) to catch aegypten.pdf, aegypten.PDF, etc.
             stem_pattern = f"{needle_stem}.*"
             fs_result = find_files(
                 pattern=stem_pattern,
-                max_results=100,  # Get more results to catch all duplicates
-                search_all_drives=False  # Search only in registered workspaces
+                max_results=100,
+                search_all_drives=False
             )
             if fs_result and fs_result.data and fs_result.data.get("matches"):
                 physical_matches = fs_result.data["matches"]
-                # Filter by exact stem match to avoid false positives
-                from pathlib import PurePath
                 filtered_physical = [
                     p for p in physical_matches
                     if PurePath(p).stem.lower() == needle_stem
                 ]
                 if len(filtered_physical) > 1:
-                    all_matched_paths = sorted(filtered_physical)
+                    duplicate_paths = sorted(filtered_physical)
                     logger.info(
                         f"[DUPLICATE-DETECTION] Physical search found {len(filtered_physical)} "
-                        f"copies of '{filename}': {all_matched_paths}"
+                        f"copies of '{filename}': {duplicate_paths}"
                     )
+
+                    # Identify new (unindexed) paths - validate both DB entry AND chunks
+                    indexed_paths_normalized = {_normalize_path(m.path) for m in matches}
+
+                    new_paths = []
+                    for path in duplicate_paths:
+                        normalized_path = _normalize_path(path)
+                        is_in_db = normalized_path in indexed_paths_normalized
+
+                        if not is_in_db:
+                            # Path not in DB at all -> needs ingestion
+                            new_paths.append(path)
+                        else:
+                            # Path is in DB, but check if it has chunks
+                            chunks = store.get_chunks_by_file(path, limit=1)
+                            chunk_count = len(chunks) if chunks else 0
+
+                            if chunk_count == 0:
+                                # Corrupt entry: DB has record but no chunks -> delete and re-ingest
+                                logger.warning(f"[AUTO-INGEST] Corrupt DB entry for '{path}' (0 chunks). Deleting and re-ingesting.")
+                                store.delete(path)
+                                new_paths.append(path)
+
+                    # Auto-Ingest in background
+                    if new_paths:
+                        logger.info(f"[AUTO-INGEST] Found {len(new_paths)} unindexed files, triggering background ingestion: {new_paths}")
+                        def _background_ingest(paths_to_ingest):
+                            logger.info(f"[AUTO-INGEST] Background thread STARTED for {len(paths_to_ingest)} files: {paths_to_ingest}")
+                            try:
+                                from backend.services.rag.ingestion import IngestionRun
+                                # Use parent of first file as root_dir (IngestionRun needs
+                                # a valid existing directory for start_run)
+                                root_dir = str(Path(paths_to_ingest[0]).parent)
+                                logger.info(f"[AUTO-INGEST] Initializing IngestionRun with root_dir: {root_dir}")
+                                mgr = IngestionRun(root_dir=root_dir)
+                                try:
+                                    logger.info(f"[AUTO-INGEST] Calling mgr.run_partial with file_paths: {paths_to_ingest}")
+                                    mgr.run_partial(file_paths=paths_to_ingest)
+                                    logger.info(f"[AUTO-INGEST] Completed ingestion for {len(paths_to_ingest)} files")
+                                except Exception as exc:
+                                    logger.error(f"[AUTO-INGEST] Failed to ingest files: {exc}", exc_info=True)
+                            except Exception as exc:
+                                logger.error(f"[AUTO-INGEST] Could not initialize IngestionRun: {exc}", exc_info=True)
+                            logger.info(f"[AUTO-INGEST] Background thread FINISHED")
+                        logger.info(f"[AUTO-INGEST] Starting background thread...")
+                        threading.Thread(target=_background_ingest, args=(list(new_paths),), daemon=True).start()
+
+                    # Generate content previews for all duplicate paths
+                    try:
+                        for path in duplicate_paths:
+                            try:
+                                chunks = store.get_chunks_by_file(path, limit=2)
+                                if chunks:
+                                    preview = chunks[0].get("text", "")[:200]
+                                    path_previews[path] = preview
+                                else:
+                                    path_previews[path] = "[NICHT INDIZIERT - AKTION ERFORDERLICH: Nutze 'knowledge.read_full_text' mit dem Parameter 'absolute_path' für diesen Pfad, um den Text jetzt live zu lesen!]"
+                            except Exception as exc:
+                                logger.warning("Failed to get preview for '%s': %s", path, exc)
+                                path_previews[path] = "[NICHT INDIZIERT - AKTION ERFORDERLICH: Nutze 'knowledge.read_full_text' mit dem Parameter 'absolute_path' für diesen Pfad, um den Text jetzt live zu lesen!]"
+                    except Exception as exc:
+                        logger.warning("Content preview generation failed: %s", exc)
         except Exception as exc:
             logger.warning("Physical duplicate detection failed for '%s': %s", filename, exc)
 
+        # DUPLICATE HANDLING: If duplicates found, enforce warning + decide on content
+        if duplicate_paths:
+            # Build warning block (always included when duplicates exist)
+            paths_info = ""
+            for path in duplicate_paths:
+                preview = path_previews.get(path, "[Keine Vorschau]")
+                paths_info += f"\n  - {path}\n    Vorschau: {preview}\n"
+            
+            auto_ingest_notice = ""
+            if new_paths:
+                auto_ingest_notice = f"\n[SYSTEM] Ich habe die Indizierung für {len(new_paths)} neue Datei(en) soeben automatisch gestartet. Sie stehen in wenigen Sekunden im RAG zur Verfügung.\n"
+            
+            warning_block = f"!!! SYSTEM-WARNHINWEIS: MEHRERE DATEIEN GEFUNDEN !!!\nDateiname: {filename}\nGefundene Pfade:{paths_info}{auto_ingest_notice}"
+
+            # CONTENT WITHHOLDING: No absolute_path provided → return ONLY warning
+            if not absolute_path:
+                logger.info(f"[CONTENT-WITHHOLDING] Duplicates found for '{filename}' without absolute_path. Forcing agentic loop.")
+                full_warning = f"{warning_block}\nAKTION ERFORDERLICH: Rufe für JEDEN Pfad oben 'knowledge.read_full_text' mit dem Parameter 'absolute_path' auf, um den Inhalt zu lesen und einen Vergleich zu erstellen."
+                return tool_ok_v1(
+                    data={"content": full_warning},
+                    message=f"Mehrere Dateien gefunden ({len(duplicate_paths)}). Die KI muss nun die einzelnen Pfade autonom auslesen.",
+                    started_at=started,
+                    tags=tags,
+                )
+
+            # ABSOLUTE_PATH PROVIDED: Read the specific file + prepend warning
+            logger.info(f"[DUPLICATE-WITH-PINNING] absolute_path provided for '{filename}'. Reading file with warning prepended.")
+            if not os.path.exists(absolute_path):
+                logger.warning(f"absolute_path '{absolute_path}' does not exist for duplicate resolution")
+                return None
+            
+            result = await _read_file_fulltext(absolute_path, started=started, tags=tags)
+            if result:
+                # Prepend warning to content
+                result.data["content"] = f"{warning_block}\nAktuelle Auswahl (via absolute_path): {absolute_path}\n\n{result.data['content']}"
+            return result
+
+        # NO DUPLICATES: Normal single-file flow
         # Prefer exact basename match, else most recent indexed_at
         exact = [m for m in matches if PurePath(m.path).name.lower() == needle_basename]
         chosen = (exact or sorted(matches, key=lambda m: m.indexed_at, reverse=True))[0]
@@ -245,40 +352,63 @@ async def _v2_fulltext_fallback(
             logger.warning("RAG V2 resolved %s but file missing on disk: %s", filename, chosen.path)
             return None
 
-        result = await _read_file_fulltext(chosen.path, started=started, tags=tags)
-        if result and len(all_matched_paths) > 1:
-            # Inject warning if multiple files matched
-            paths_info = "\n".join(f"  - {p}" for p in all_matched_paths)
-            warning_block = f"!!! SYSTEM-WARNHINWEIS: MEHRERE DATEIEN GEFUNDEN !!!\nDateiname: {filename}\nGefundene Pfade:\n{paths_info}\nAktuelle Auswahl: {chosen.path}"
-            result.data["content"] = f"{warning_block}\n\n{result.data['content']}"
-        return result
+        return await _read_file_fulltext(chosen.path, started=started, tags=tags)
     except Exception as exc:
         logger.warning("V2 fulltext fallback failed for '%s': %s", filename, exc)
         return None
+    finally:
+        # FIX #1 contd: Close store AFTER all usage
+        if store is not None:
+            try:
+                store.close()
+            except Exception:
+                pass
 
 
-async def get_full_document_text(filename: str, db: Session) -> ToolResultV1:
+async def get_full_document_text(filename: str, db: Session, absolute_path: Optional[str] = None) -> ToolResultV1:
     """Liefert den kompletten Text einer Datei, ohne die Chroma-Kürzung.
 
     Zuerst wird die Legacy-Document-Tabelle (Uploads) geprüft. Schlägt das fehl,
     wird die RAG-V2 Fuzzy-Filename-Resolution verwendet, um Dateien zu finden,
     die via globaler Indizierung aufgenommen wurden (z. B. ~/Desktop, ~/Documents).
     Absolute Pfade werden ebenfalls direkt akzeptiert.
+    
+    PATH-PINNING: Wenn absolute_path gesetzt ist, hat dieser Parameter ABSOLUTE
+    PRIORITÄT: filename wird ignoriert, keine Dubletten-Prüfung, direktes Lesen vom
+    angegebenen Pfad. Dies ermöglicht Agentic AI-Loops zur autonomen Dubletten-Auflösung.
+    
+    Args:
+        filename: Dateiname oder relativer Pfad (wird ignoriert wenn absolute_path gesetzt)
+        db: Database session
+        absolute_path: Optionaler absoluter Pfad für Path-Pinning - wenn gesetzt, wird diese
+                       Datei direkt von der Festplatte gelesen (ignoriert filename, Index und Dubletten-Suche)
     """
     from backend.data.models import Document
 
     started = time.perf_counter()
     tags = ["knowledge", "documents"]
     try:
-        # --- V2 FUZZY RESOLUTION (absolute path OR filename) ---
-        # Accept absolute paths from find_files directly
+        # --- V2 RESOLUTION FIRST (handles duplicates, auto-ingest, warning injection) ---
+        # _v2_fulltext_fallback handles BOTH filename-only AND absolute_path calls.
+        # It always runs physical duplicate detection and prepends warnings.
+        v2_result = await _v2_fulltext_fallback(filename, started=started, tags=tags, absolute_path=absolute_path)
+        if v2_result is not None:
+            return v2_result
+
+        # --- DIRECT PATH FALLBACK: If V2 couldn't resolve but path exists on disk ---
+        if absolute_path and os.path.exists(absolute_path):
+            logger.info(f"[ABSOLUTE-PATH FALLBACK] V2 miss, reading directly from disk: {absolute_path}")
+            result = await _read_file_fulltext(absolute_path, started=started, tags=tags)
+            if result is not None:
+                return result
+
         if filename and (os.path.isabs(filename) or filename.startswith(("/", "\\"))):
             if os.path.exists(filename):
                 result = await _read_file_fulltext(filename, started=started, tags=tags)
                 if result is not None:
                     return result
 
-        # Legacy Document lookup
+        # Legacy Document lookup (uploaded PDFs in DB)
         doc = (
             db.query(Document)
             .filter(Document.filename.ilike(f"%{filename}%"))
@@ -286,11 +416,6 @@ async def get_full_document_text(filename: str, db: Session) -> ToolResultV1:
             .first()
         )
         if not doc:
-            # V2 Fallback: fuzzy filename resolution via IndexStore
-            v2_result = await _v2_fulltext_fallback(filename, started=started, tags=tags)
-            if v2_result is not None:
-                return v2_result
-
             return tool_err_v1(
                 "NOT_FOUND",
                 f"Datei '{filename}' nicht gefunden.",

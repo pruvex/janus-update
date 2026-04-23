@@ -2,6 +2,18 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [LESSON] #Gemini #API #ThoughtSignature "Gemini 3 requires thought_signature for functionCall parts — must preserve original parts from API response instead of reconstructing them"
+- **Kontext:** Gemini 3 Modelle erfordern `thought_signature` für `functionCall` Parts. Der aktuelle Code in `backend/llm_providers/gemini/service.py` erstellt neue `function_call` Parts ohne diese Signatur (Zeilen 540-545). API-Antwort: `InvalidArgument: 400 Function call is missing a thought_signature.`
+- **Problem:** Der Code extrahiert Tool-Calls aus der Gemini-Antwort und konstruiert neue `protos.Part(function_call=...)` Objekte ohne die `thought_signature` aus dem ursprünglichen Part zu übernehmen. Gemini 3 validiert strikt, dass der erste `functionCall` part in jedem Schritt des aktuellen Turns eine `thought_signature` enthält.
+- **Lösung:** Die `thought_signature` muss aus der ursprünglichen Gemini-Antwort extrahiert werden, wenn Tool-Calls verarbeitet werden. Parts sollten nicht neu erstellt, sondern direkt aus der API-Antwort übernommen werden. **Fix-Empfehlung:** Original Parts direkt in `_gemini_raw_model_parts` speichern und später wiederverwenden, anstatt neue Parts zu erstellen.
+- **Dokumentation:** Gemini API Docs: https://ai.google.dev/gemini-api/docs/thought-signatures — "The first functionCall part in each step of the current turn must include its thought_signature. If you omit a thought_signature for the first functionCall part in any step of the current turn, the request will fail with a 400 error."
+- **Status:** BLOCKED — Fix erfordert tiefgreifende Änderungen an Gemini-Service-Logik. Opus-Eskalation empfohlen.
+- **Location:** `backend/llm_providers/gemini/service.py` (Zeilen 540-545: function_call Parts ohne thought_signature), dokumentiert 2026-04-24.
+- **Confidence:** High (API-Dokumentation bestätigt Anforderung, Fehlermeldung eindeutig).
+- **Tags:** Gemini, API, ThoughtSignature, FunctionCall, LLM, Provider, 400Error
+
+---
+
 ## [LESSON] #RAG #WindowsPaths "The Slash-Trap — Normalisiere Pfade immer auf Forwardslashes vor Vektor-Filtern"
 - **Kontext:** RAG V2 Vektorsuche (ChromaDB) speichert Metadaten-Pfade mit Backslashes (`C:\Users\...\aegypten.pdf`). Der Filename-Filter im `hybrid_retriever.py` verglich User-Input (`aegypten`) direkt mit diesen DB-Pfaden. Auf Windows führte der Slash-Mismatch dazu, dass die Vektorsuche 0 Treffer lieferte obwohl die Datei physisch im Index existierte. Das System fiel dann auf globale Suche zurück → Halluzinationen (z.B. "aegypten.pdf enthält Skandinavien-Analyse").
 - **Problem:** Path-String-Vergleich ohne Normalisierung ist auf Windows nicht deterministisch. `C:\foo\bar.pdf` vs `C:/foo/bar.pdf` vs `C:\FOO\BAR.PDF` sind für String-Endswith-Vergleiche unterschiedliche Werte, obwohl sie dieselbe Datei referenzieren. ChromaDB-Metadaten speichern Pfade wie sie beim Ingest eingehen (meist mit Backslashes), während User-Input variieren kann (Forward-Slashes, Lower/Upper-Case, mit/ohne Extension).
@@ -1573,3 +1585,33 @@
 - **Confidence:** High (Unumkehrbarer Schutz; SHA-Assertion macht Regression sichtbar).
 - **Tags:** Security, Isolation, VectorStore, ChromaDB, Regression, PhysicalSeparation, FreezeContract
 
+## [LESSON] #AgenticAI #ToolDesign "Path-Pinning for Disambiguation — Kritische Tools müssen absolute Adressierung für autonome Mehrdeutigkeitsauflösung unterstützen"
+- **Kontext:** Auto-Read-Trigger für Dubletten: Wenn `knowledge.query` mehrere Dateien mit gleichem Namen findet, soll die KI autonom `knowledge.read_full_text` für nicht-indizierte Dubletten aufrufen. Das Tool-Schema akzeptierte aber nur `filename` als Parameter, wodurch GPT den Aufruf verweigerte (kann Dublette nicht spezifisch adressieren).
+- **Problem:** Eine KI kann Anweisungen ("lies diese Datei") nicht befolgen, wenn das Tool-Schema nur relative Namen (`filename`) und keine absoluten Adressen (`absolute_path`) akzeptiert. Bei Dubletten ist `filename` mehrdeutig — die KI weiß nicht, welche der 2+ Dateien gemeint ist. Ergebnis: Halluzination oder "ich kann das nicht" statt autonomer Auflösung.
+- **Lösung:** **Path-Pinning-Parameter** zu `knowledge.read_full_text` hinzugefügt:
+  ```python
+  class GetFullDocumentTextArgs(BaseModel):
+      filename: str = Field(...)
+      absolute_path: Optional[str] = Field(
+          None,
+          description="Path-Pinning for Disambiguation: Nutze dieses Feld, um eine spezifische Dublette via absolutem Pfad zu lesen..."
+      )
+  ```
+  Tool-Logik priorisiert `absolute_path` absolut: Wenn gesetzt, wird `filename` ignoriert, keine Dubletten-Prüfung, direktes Lesen vom angegebenen Pfad. P0.75-Direktive in Skill-JSONs instruiert GPT: "Nutze 'knowledge.read_full_text' mit dem Parameter 'absolute_path' für diesen Pfad".
+- **Härtung:** Parameter-Priorität ist unidirektional: `absolute_path` > `filename`. Kein Fallback von absolute_path auf filename-Suche (wenn absolute_path gesetzt aber ungültig → Fehler, nicht silent filename-Resolution).
+- **Tripwire:** Wenn ein Tool Dubletten meldet, aber die KI kann die spezifische Datei nicht autonom lesen → fehlender Pinning-Parameter im Schema. GPT-Refusal bei "[NICHT INDIZIERT...]" Hinweis ist ein klarer Indikator.
+- **Location:** `backend/data/schemas.py` (GetFullDocumentTextArgs.absolute_path), `backend/services/tool_executor.py` (get_full_document_text), `backend/skills/knowledge/read_full_text.json` (P0.75 AUTO-READ TRIGGER), gefixt 2026-04-23.
+- **Confidence:** High (Pattern: Kritische Tools zur Ressourcen-Interaktion brauchen immer Pinning-Parameter für Agentic Loops).
+- **Tags:** AgenticAI, ToolDesign, PathPinning, Disambiguation, DuplicateResolution, AutoRead, absolute_path, knowledge.read_full_text
+
+## [LESSON] #Python #ResourceManagement "The Shared Resource Lifecycle — Resource-Closing must happen AFTER the last possible usage point"
+- **Problem:** In komplexen Funktionen mit mehreren logischen Zweigen wird eine Ressource (z.B. `DB-Connection`, `IndexStore`) oft im "Erfolgszweig" der ersten Phase geschlossen. Wenn spätere Phasen (z.B. Fallbacks oder Vorschau-Generierung) dieselbe Ressource benötigen, kommt es zu Abstürzen oder Datenverlust.
+- **Lösung:** Nutze das **"Init-to-None"** Pattern kombiniert mit einem **`finally`-Block** am Ende der Hauptfunktion. Schließe die Ressource niemals "mittendrin", sondern markiere sie nur zur Schließung.
+- **Beispiel:** `store = None; try: store = open(); ... finally: if store: store.close()`.
+- **Location:** `backend/services/tool_executor.py` (BUG-RAG-003).
+
+## [PATTERN] #Orchestration #Lockdown "Dispatcher-First Parameter Enforcement — Command-Chain Integrity"
+- **Problem:** LLMs ignorieren bei komplexen Aufgaben oft "optionale" Parameter (wie Filenames), was zu unscharfen Tool-Calls und weitreichenden Fehlern (globale Suche statt spezifischer Datei) führt.
+- **Lösung:** Wenn eine Ressource (z.B. eine Datei) im User-Text klar identifizierbar ist, darf der Orchestrator (Dispatcher) nicht darauf hoffen, dass das LLM dies korrekt mappt. Er muss die Information selbst extrahieren (Regex) und den Tool-Call mit diesen Argumenten hart erzwingen.
+- **Vorteil:** Erhöht die System-Stabilität von "probabilistisch" (LLM-Laune) auf "deterministisch" (Code-Integrität).
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py` (F16 FINAL LOCKDOWN).

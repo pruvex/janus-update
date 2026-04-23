@@ -21,7 +21,7 @@ SecurityError is raised for violations.
 import logging
 import os
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Union
 
 logger = logging.getLogger("janus_backend")
 
@@ -101,21 +101,24 @@ class PathPolicy:
     Enforces path security policy for RAG ingestion.
 
     - Resolves paths to absolute
-    - Validates against allowed workspace root
+    - Validates against allowed workspace roots (multiple workspaces supported)
     - Checks denylist for sensitive files
-    - Prevents path-traversal attacks (../, symlinks outside root)
+    - Prevents path-traversal attacks (../, symlinks outside roots)
     """
 
-    def __init__(self, allowed_root: Path):
+    def __init__(self, allowed_roots: Union[Path, List[Path]]):
         """
-        Initialize policy with allowed workspace root.
+        Initialize policy with allowed workspace roots.
 
         Args:
-            allowed_root: Absolute path to the workspace root.
-                          All files to index must be within this directory.
+            allowed_roots: Single path or list of paths to allowed workspace roots.
+                          All files to index must be within at least one of these directories.
         """
-        self.allowed_root = Path(allowed_root).resolve()
-        logger.debug(f"[PathPolicy] Allowed root set to: {self.allowed_root}")
+        if isinstance(allowed_roots, (str, Path)):
+            self.allowed_roots = [Path(allowed_roots).resolve()]
+        else:
+            self.allowed_roots = [Path(r).resolve() for r in allowed_roots]
+        logger.debug(f"[PathPolicy] Allowed roots set to: {self.allowed_roots}")
 
     def is_allowed(self, file_path: Path) -> bool:
         """
@@ -146,12 +149,19 @@ class PathPolicy:
         except Exception as e:
             raise SecurityError(f"Cannot resolve path '{file_path}': {e}")
 
-        # Path-Traversal check: must be within allowed root
-        try:
-            absolute.relative_to(self.allowed_root)
-        except ValueError:
+        # Path-Traversal check: must be within at least one allowed root
+        allowed = False
+        for root in self.allowed_roots:
+            try:
+                absolute.relative_to(root)
+                allowed = True
+                break
+            except ValueError:
+                continue
+        if not allowed:
+            roots_str = ', '.join(str(r) for r in self.allowed_roots)
             raise SecurityError(
-                f"Path '{absolute}' is outside allowed workspace root '{self.allowed_root}'"
+                f"Path '{absolute}' is outside allowed workspace roots: [{roots_str}]"
             )
 
         # Check denylist extensions
@@ -186,11 +196,18 @@ class PathPolicy:
         except Exception:
             return "Cannot resolve path"
 
-        # Check root
-        try:
-            absolute.relative_to(self.allowed_root)
-        except ValueError:
-            return f"Outside allowed root: {self.allowed_root}"
+        # Check roots
+        allowed = False
+        for root in self.allowed_roots:
+            try:
+                absolute.relative_to(root)
+                allowed = True
+                break
+            except ValueError:
+                continue
+        if not allowed:
+            roots_str = ', '.join(str(r) for r in self.allowed_roots)
+            return f"Outside allowed roots: [{roots_str}]"
 
         # Check denylist
         ext = absolute.name.lower()
@@ -216,11 +233,11 @@ class PathPolicy:
 _global_policy: Optional[PathPolicy] = None
 
 
-def set_global_policy(allowed_root: Path) -> None:
+def set_global_policy(allowed_roots: Union[Path, List[Path]]) -> None:
     """Set the global path policy for RAG ingestion."""
     global _global_policy
-    _global_policy = PathPolicy(allowed_root)
-    logger.info(f"[PathPolicy] Global policy set to: {allowed_root}")
+    _global_policy = PathPolicy(allowed_roots)
+    logger.info(f"[PathPolicy] Global policy set to: {allowed_roots}")
 
 
 def get_global_policy() -> Optional[PathPolicy]:

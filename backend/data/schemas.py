@@ -88,7 +88,7 @@ class QueryKnowledgeBaseArgs(BaseModel):
     )
     filename: Optional[str] = Field(
         None,
-        description="Optional: auf eine bestimmte PDF-Datei einschränken (Dateiname wie in der DB).",
+        description="PFLICHT wenn die User-Anfrage einen Dateinamen enthält (z.B. 'aegypten.pdf'): Setze hier den exakten Dateinamen ein, um die Suche auf diese Datei einzuschränken. Ohne diesen Parameter werden ALLE Dokumente durchsucht, was zu falschen Ergebnissen führt!",
     )
     n_results: Optional[int] = Field(10, description="Maximale Anzahl Chunks/Treffer (Standard 10).")
 
@@ -121,6 +121,10 @@ class GetFullDocumentTextArgs(BaseModel):
             "Volltext eines registrierten Dokuments (DB/Chroma/PDF-Datei). "
             + _KNOWLEDGE_VS_MEMORY
         ),
+    )
+    absolute_path: Optional[str] = Field(
+        None,
+        description="Path-Pinning for Disambiguation: Nutze dieses Feld, um eine spezifische Dublette via absolutem Pfad zu lesen, wenn das System dich dazu auffordert (z.B. '[NICHT INDIZIERT - AKTION ERFORDERLICH...]'). Wenn absolute_path gesetzt ist, hat dieser Parameter ABSOLUTE PRIORITÄT: filename wird ignoriert, keine Dubletten-Prüfung, direktes Lesen vom angegebenen Pfad.",
     )
 
 
