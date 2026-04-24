@@ -264,7 +264,7 @@ async def _v2_fulltext_fallback(
                                 from backend.services.rag.ingestion import IngestionRun
                                 # Use parent of first file as root_dir (IngestionRun needs
                                 # a valid existing directory for start_run)
-                                root_dir = str(pathlib.Path(paths_to_ingest[0]).parent)
+                                root_dir = str(pathlib.Path(paths_to_ingest[0]).parent.resolve())
                                 logger.info(f"[AUTO-INGEST] Initializing IngestionRun with root_dir: {root_dir}")
                                 mgr = IngestionRun(root_dir=root_dir)
                                 try:

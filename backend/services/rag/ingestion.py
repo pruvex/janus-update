@@ -253,14 +253,47 @@ class IngestionRun:
             logger.warning(f"Root directory does not exist: {self.root_dir}")
             return files
 
+        def is_junction_or_symlink(path: Path) -> bool:
+            """Check if a path is a junction point or symbolic link."""
+            try:
+                if path.is_symlink():
+                    return True
+                # On Windows, check for junction points (reparse points)
+                if os.name == 'nt':
+                    import stat
+                    # Junction points are reparse points with IO_REPARSE_TAG_MOUNT_POINT
+                    # We can detect them by checking if the directory is a reparse point
+                    if path.is_dir():
+                        try:
+                            stat_result = os.stat(path)
+                            if hasattr(stat_result, 'st_file_attributes'):
+                                # FILE_ATTRIBUTE_REPARSE_POINT = 0x400
+                                if stat_result.st_file_attributes & 0x400:
+                                    return True
+                        except (OSError, AttributeError):
+                            pass
+                return False
+            except Exception:
+                return False
+
         def onerror(error: OSError) -> None:
             """Handle errors during os.walk without stopping the entire scan."""
-            logger.warning(f"[RAG V2] Scan error at {error.filename}: {error.strerror}")
+            # Reduce logging for known system directories
+            system_dirs = {"Windows", "Program Files", "Program Files (x86)", "ProgramData", "System Volume Information", "$RECYCLE.BIN", "Config.Msi", "Recovery"}
+            error_path = Path(error.filename) if error.filename else Path("")
+            if not any(str(exclude) in str(error_path) for exclude in system_dirs):
+                logger.warning(f"[RAG V2] Scan error at {error.filename}: {error.strerror}")
 
         try:
+            # EXCLUDE_DIRS: Immediately skip these directories to prevent deep recursion
+            exclude_dirs = {"node_modules", ".git", "venv", ".venv", ".virtualenv", "__pycache__", "dist", "build", ".pytest_cache", ".tox", ".idea", ".vscode"}
             for dirpath, dirnames, filenames in os.walk(self.root_dir, onerror=onerror):
+                # Remove junctions and symlinks from dirnames to prevent os.walk from following them
+                dirnames[:] = [d for d in dirnames if not is_junction_or_symlink(Path(dirpath) / d)]
+                # Remove excluded directories from dirnames to prevent deep recursion
+                dirnames[:] = [d for d in dirnames if d.lower() not in exclude_dirs]
                 for filename in filenames:
-                    file_path = Path(dirpath) / filename
+                    file_path = (Path(dirpath) / filename).resolve()
                     # FINAL: Check if file is supported AND is a gold format
                     if FormatRouter.is_supported(file_path) and FormatRouter.is_gold_format(file_path):
                         files.append(file_path)
@@ -431,7 +464,7 @@ class IngestionRun:
 
             # Process only the specified files
             for file_path_str in file_paths:
-                path = Path(file_path_str)
+                path = Path(file_path_str).resolve()
 
                 # P6: Path Policy Check (Security)
                 if self.path_policy:

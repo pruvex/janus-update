@@ -272,9 +272,8 @@ class IndexStore:
             import chromadb
             from backend.utils.paths import get_app_data_dir
 
-            # DO NOT normalize path - ChromaDB stores paths with backslashes as-is from Windows
-            # Normalization to forward slashes causes path mismatch
-            query_path = source_path
+            # Normalize path to match ingestion normalization (pathlib.Path(p).resolve().as_posix().lower())
+            query_path = Path(source_path).resolve().as_posix().lower()
 
             chroma_path = Path(get_app_data_dir()) / "rag_chroma_db_v2"
             client = chromadb.PersistentClient(path=str(chroma_path))

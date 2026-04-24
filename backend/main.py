@@ -384,9 +384,21 @@ async def lifespan(app: FastAPI):
             import os
             import pathlib
             from backend.services.rag.ingestion import IngestionRun
+            from backend.services.rag.index_store import IndexStore
             from backend.utils.paths import get_app_data_dir
 
             gold_formats = [".pdf", ".md", ".txt", ".py", ".js", ".ts", ".docx"]
+
+            # Check if database is empty before running global scan
+            db_path = Path(get_app_data_dir()) / "knowledge_index_v2.db"
+            store = IndexStore(str(db_path))
+            index = store.get_all()
+
+            if len(index) > 0:
+                logger.info(f"[GLOBAL-SKIP] Database already contains {len(index)} indexed files. Skipping global discovery.")
+                return
+
+            logger.info("[GLOBAL-SCAN-START] Database is empty. Starting global discovery.")
 
             # Discover all local drives
             global_locations = []
@@ -398,25 +410,45 @@ async def lifespan(app: FastAPI):
             if os.path.exists(desktop_path):
                 global_locations.append(desktop_path)
 
-            # Enumerate all local drives (Windows)
+            # Enumerate all local drives (Windows) - but exclude system directories
             if os.name == 'nt':
                 import string
+                system_excludes = {"Windows", "Program Files", "Program Files (x86)", "ProgramData", "System Volume Information", "$RECYCLE.BIN", "Config.Msi", "Recovery", "$Recycle.Bin"}
+                # Exclude Janus installation directory to prevent self-indexing
+                janus_install_dir = r"C:\KI\Janus-Projekt"
                 for drive in string.ascii_uppercase:
                     drive_path = f"{drive}:\\"
                     if os.path.exists(drive_path):
-                        global_locations.append(drive_path)
+                        # Scan drive root for user-accessible directories, exclude system directories
+                        try:
+                            for item in os.listdir(drive_path):
+                                item_path = os.path.join(drive_path, item)
+                                if os.path.isdir(item_path) and item not in system_excludes:
+                                    # Skip Janus installation directory to prevent self-indexing
+                                    if item_path.lower() == janus_install_dir.lower():
+                                        logger.info(f"[GLOBAL-SCAN] Skipping Janus installation directory: {item_path}")
+                                        continue
+                                    global_locations.append(item_path)
+                                    logger.info(f"[GLOBAL-SCAN] Added directory: {item_path}")
+                        except PermissionError:
+                            # Only log if not a known system directory
+                            if not any(exclude in drive_path for exclude in system_excludes):
+                                logger.warning(f"[GLOBAL-SCAN] Permission denied for {drive_path}")
+                        except Exception as e:
+                            logger.error(f"[GLOBAL-SCAN] Error scanning {drive_path}: {e}")
 
             if not global_locations:
                 logger.info("[FINAL] No global locations found for discovery")
                 return
 
-            logger.info(f"[FINAL] Background Discovery started for {len(global_locations)} locations: {global_locations}")
+            logger.info("[GLOBAL-SCAN-START] Global Discovery started")
+            logger.info(f"[GLOBAL-SCAN-START] Scanning {len(global_locations)} locations: {global_locations}")
 
             # Run ingestion for each location
             total_indexed = 0
-            for location in global_locations:
+            for idx, location in enumerate(global_locations, 1):
                 try:
-                    logger.info(f"[FINAL] Scanning location: {location}")
+                    logger.info(f"[GLOBAL-SCAN-PROGRESS] [{idx}/{len(global_locations)}] Scanning location: {location}")
                     ingest = IngestionRun(
                         root_dir=location,
                         chroma_path=str(Path(get_app_data_dir()) / "rag_chroma_db_v2"),
@@ -424,20 +456,24 @@ async def lifespan(app: FastAPI):
                         enable_path_policy=True,
                     )
                     stats = ingest.run()
-                    total_indexed += stats.get("indexed", 0)
-                    logger.info(f"[FINAL] Discovery completed for {location}: {stats}")
+                    indexed_count = stats.get("indexed", 0)
+                    total_indexed += indexed_count
+                    logger.info(f"[GLOBAL-SCAN-PROGRESS] [{idx}/{len(global_locations)}] Completed: {location} (indexed: {indexed_count}, total: {total_indexed})")
                 except Exception as e:
-                    logger.error(f"[FINAL] Discovery failed for {location}: {e}", exc_info=True)
+                    logger.error(f"[GLOBAL-SCAN-PROGRESS] [{idx}/{len(global_locations)}] Failed for {location}: {e}", exc_info=True)
 
             # Wait-and-Signal: Final summary
-            logger.info(f"[FINAL] Global Discovery COMPLETE. Total files indexed: {total_indexed}")
+            logger.info(f"[GLOBAL-SCAN-COMPLETE] Total files indexed: {total_indexed}")
 
         except Exception as e:
             logger.error(f"[FINAL] Global discovery failed: {e}", exc_info=True)
 
     # HOTFIX: RAG_V2_AUTO_INGEST environment check to speed up boot for testing
-    if os.environ.get("RAG_V2_AUTO_INGEST", "false").lower() == "true":
+    if os.environ.get("RAG_V2_AUTO_INGEST", "true").lower() == "true":
         try:
+            from backend.services.rag.path_policy import enable_global_scan_mode
+            # Enable global scan mode BEFORE starting the thread (global for all threads)
+            enable_global_scan_mode()
             discovery_thread = threading.Thread(target=run_global_discovery, daemon=True)
             discovery_thread.start()
             logger.info("[FINAL] Global discovery thread started (daemon)")

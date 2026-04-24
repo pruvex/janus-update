@@ -126,6 +126,9 @@ class PathPolicy:
 
         Returns True if allowed, False if denied (without exception).
         """
+        # In global scan mode, allow all paths found by the scanner
+        if _global_scan_mode:
+            return True
         try:
             self.validate(file_path)
             return True
@@ -141,6 +144,10 @@ class PathPolicy:
         Args:
             file_path: File path to validate.
         """
+        # In global scan mode, bypass all validation
+        if _global_scan_mode:
+            return
+
         path = Path(file_path)
 
         # Resolve to absolute to catch symlinks and ../
@@ -231,13 +238,39 @@ class PathPolicy:
 # --- Singleton for global policy ---
 
 _global_policy: Optional[PathPolicy] = None
+_global_scan_mode: bool = False
+
+
+def _enumerate_local_drives() -> List[Path]:
+    """Enumerate all local drives on Windows."""
+    drives = []
+    if os.name == 'nt':
+        import string
+        for drive in string.ascii_uppercase:
+            drive_path = f"{drive}:\\"
+            if os.path.exists(drive_path):
+                drives.append(Path(drive_path))
+    return drives
+
+
+def enable_global_scan_mode() -> None:
+    """Enable global scan mode - allow all local drives as roots."""
+    global _global_scan_mode
+    _global_scan_mode = True
+    logger.info("[PathPolicy] Global scan mode enabled - all local drives allowed")
 
 
 def set_global_policy(allowed_roots: Union[Path, List[Path]]) -> None:
     """Set the global path policy for RAG ingestion."""
     global _global_policy
-    _global_policy = PathPolicy(allowed_roots)
-    logger.info(f"[PathPolicy] Global policy set to: {allowed_roots}")
+    if _global_scan_mode:
+        # In global scan mode, accept all local drives as roots
+        all_drives = _enumerate_local_drives()
+        _global_policy = PathPolicy(all_drives)
+        logger.info(f"[PathPolicy] Global policy set to all local drives: {all_drives}")
+    else:
+        _global_policy = PathPolicy(allowed_roots)
+        logger.info(f"[PathPolicy] Global policy set to: {allowed_roots}")
 
 
 def get_global_policy() -> Optional[PathPolicy]:
