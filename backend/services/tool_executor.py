@@ -4,6 +4,7 @@ import inspect
 import json
 import logging
 import os
+import pathlib
 import re
 import threading
 import time
@@ -243,26 +244,16 @@ async def _v2_fulltext_fallback(
                     )
 
                     # Identify new (unindexed) paths - validate both DB entry AND chunks
-                    indexed_paths_normalized = {_normalize_path(m.path) for m in matches}
+                    indexed_paths_normalized = {pathlib.Path(m.path).resolve().as_posix().lower() for m in matches}
 
                     new_paths = []
                     for path in duplicate_paths:
-                        normalized_path = _normalize_path(path)
+                        normalized_path = pathlib.Path(path).resolve().as_posix().lower()
                         is_in_db = normalized_path in indexed_paths_normalized
 
                         if not is_in_db:
                             # Path not in DB at all -> needs ingestion
                             new_paths.append(path)
-                        else:
-                            # Path is in DB, but check if it has chunks
-                            chunks = store.get_chunks_by_file(path, limit=1)
-                            chunk_count = len(chunks) if chunks else 0
-
-                            if chunk_count == 0:
-                                # Corrupt entry: DB has record but no chunks -> delete and re-ingest
-                                logger.warning(f"[AUTO-INGEST] Corrupt DB entry for '{path}' (0 chunks). Deleting and re-ingesting.")
-                                store.delete(path)
-                                new_paths.append(path)
 
                     # Auto-Ingest in background
                     if new_paths:
@@ -273,7 +264,7 @@ async def _v2_fulltext_fallback(
                                 from backend.services.rag.ingestion import IngestionRun
                                 # Use parent of first file as root_dir (IngestionRun needs
                                 # a valid existing directory for start_run)
-                                root_dir = str(Path(paths_to_ingest[0]).parent)
+                                root_dir = str(pathlib.Path(paths_to_ingest[0]).parent)
                                 logger.info(f"[AUTO-INGEST] Initializing IngestionRun with root_dir: {root_dir}")
                                 mgr = IngestionRun(root_dir=root_dir)
                                 try:

@@ -377,17 +377,18 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"[P8] Failed to start RAG Watchdog: {e}")
 
-    # 6. FINAL: Global Scope Discovery (Async indexing of ~/Documents and ~/Desktop)
+    # 6. FINAL: Global Scope Discovery (Async indexing of all drives)
     def run_global_discovery():
-        """Run background discovery of global user directories."""
+        """Run background discovery of all local drives."""
         try:
             import os
+            import pathlib
             from backend.services.rag.ingestion import IngestionRun
             from backend.utils.paths import get_app_data_dir
 
             gold_formats = [".pdf", ".md", ".txt", ".py", ".js", ".ts", ".docx"]
 
-            # Discover global locations
+            # Discover all local drives
             global_locations = []
             documents_path = os.path.expanduser("~/Documents")
             desktop_path = os.path.expanduser("~/Desktop")
@@ -397,6 +398,14 @@ async def lifespan(app: FastAPI):
             if os.path.exists(desktop_path):
                 global_locations.append(desktop_path)
 
+            # Enumerate all local drives (Windows)
+            if os.name == 'nt':
+                import string
+                for drive in string.ascii_uppercase:
+                    drive_path = f"{drive}:\\"
+                    if os.path.exists(drive_path):
+                        global_locations.append(drive_path)
+
             if not global_locations:
                 logger.info("[FINAL] No global locations found for discovery")
                 return
@@ -404,8 +413,10 @@ async def lifespan(app: FastAPI):
             logger.info(f"[FINAL] Background Discovery started for {len(global_locations)} locations: {global_locations}")
 
             # Run ingestion for each location
+            total_indexed = 0
             for location in global_locations:
                 try:
+                    logger.info(f"[FINAL] Scanning location: {location}")
                     ingest = IngestionRun(
                         root_dir=location,
                         chroma_path=str(Path(get_app_data_dir()) / "rag_chroma_db_v2"),
@@ -413,9 +424,13 @@ async def lifespan(app: FastAPI):
                         enable_path_policy=True,
                     )
                     stats = ingest.run()
+                    total_indexed += stats.get("indexed", 0)
                     logger.info(f"[FINAL] Discovery completed for {location}: {stats}")
                 except Exception as e:
                     logger.error(f"[FINAL] Discovery failed for {location}: {e}", exc_info=True)
+
+            # Wait-and-Signal: Final summary
+            logger.info(f"[FINAL] Global Discovery COMPLETE. Total files indexed: {total_indexed}")
 
         except Exception as e:
             logger.error(f"[FINAL] Global discovery failed: {e}", exc_info=True)

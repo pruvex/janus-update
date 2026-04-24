@@ -311,10 +311,11 @@ class IngestionRun:
 
         # Prepare ChromaDB payload
         texts = [c.text for c in chunks]
+        normalized_path = path.resolve().as_posix().lower()
         metadatas = [
             {
                 **c.metadata,
-                "source_path": str(path),
+                "source_path": normalized_path,
                 "format": FormatRouter.get_format(path),
                 "start_line": c.start_line,
                 "end_line": c.end_line,
@@ -346,7 +347,7 @@ class IngestionRun:
         )
 
         # Upsert into FTS5 keyword index (parallel sparse index)
-        source_paths = [str(path)] * len(chunks)
+        source_paths = [normalized_path] * len(chunks)
         formats = [FormatRouter.get_format(path)] * len(chunks)
         self.fts.add_chunks(
             chunk_ids=ids,
@@ -359,7 +360,7 @@ class IngestionRun:
         mtime, size = BaseAdapter.get_file_stats(path)
         sha = BaseAdapter.compute_sha256(path)
         indexed = IndexedFile(
-            path=str(path),
+            path=normalized_path,
             sha256=sha,
             mtime=mtime,
             size_bytes=size,
@@ -374,7 +375,7 @@ class IngestionRun:
 
         # P6: Log successful ingestion
         self.retrieval_logger.log_ingestion_success(
-            file_path=str(path),
+            file_path=normalized_path,
             num_chunks=len(chunks),
             collection=target_collection,
         )
@@ -436,7 +437,7 @@ class IngestionRun:
                 if self.path_policy:
                     denied_reason = self.path_policy.get_denied_reason(path)
                     if denied_reason:
-                        self.retrieval_logger.log_ingestion_skip(str(path), denied_reason)
+                        self.retrieval_logger.log_ingestion_skip(path.resolve().as_posix().lower(), denied_reason)
                         logger.warning(f"[P8] [SKIP] {path}: {denied_reason}")
                         partial_stats["denied"] += 1
                         continue
@@ -444,7 +445,7 @@ class IngestionRun:
                 # Check if file exists
                 if not path.exists():
                     # File was deleted, remove from index
-                    stored = index.get(str(path))
+                    stored = index.get(path.resolve().as_posix().lower())
                     if stored and stored.chunk_ids:
                         self._delete_file_index(stored.path, stored.chunk_ids, stored.format)
                         partial_stats["deleted"] += 1
@@ -456,7 +457,7 @@ class IngestionRun:
                     continue
 
                 partial_stats["scanned"] += 1
-                stored = index.get(str(path))
+                stored = index.get(path.resolve().as_posix().lower())
                 needs_index, reason = self._needs_indexing(path, stored)
 
                 if not needs_index:
@@ -537,12 +538,12 @@ class IngestionRun:
                 if self.path_policy:
                     denied_reason = self.path_policy.get_denied_reason(path)
                     if denied_reason:
-                        self.retrieval_logger.log_ingestion_skip(str(path), denied_reason)
+                        self.retrieval_logger.log_ingestion_skip(path.resolve().as_posix().lower(), denied_reason)
                         logger.warning(f"[P6] [SKIP] {path}: {denied_reason}")
                         self.stats["denied"] += 1
                         continue
 
-                stored = index.get(str(path))
+                stored = index.get(path.resolve().as_posix().lower())
                 needs_index, reason = self._needs_indexing(path, stored)
 
                 if not needs_index:
