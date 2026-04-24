@@ -77,6 +77,11 @@ _DIRECTIVES: Dict[str, str] = {
         "Das Gedächtnis dient NUR als Orientierung. Du darfst NIEMALS einen Pfad aus der Erinnerung nennen, ohne ihn in EXAKT DIESEM Turn durch einen Tool-Call validiert zu haben. "
         "Eine Antwort ohne Live-Tool-Call bei Suchanfragen gilt als schwerer Systemfehler."
     ),
+    "rag_sort_policy": (
+        "!!! SORTIER-VETRAG !!! Wenn Dateien in der Liste als [INDIZIERT] markiert sind, verfügst du über deren Volltext. "
+        "Es ist ein schwerer Logikfehler zu behaupten, sie seien nicht lesbar. Du MUSST 'knowledge.query' nutzen, um die Themen dieser Dateien einzeln oder im Batch zu bestimmen. "
+        "Erst danach darfst du 'move_files' planen."
+    ),
     "policy_injection_one_time": (
         "USER-ENTSCHEIDUNG: '1' (Einmalig erlauben).\n"
         "SYSTEM-BEFEHL: Führe jetzt SOFORT das blockierte Tool aus.\n"
@@ -209,6 +214,7 @@ def apply_verbosity_control(prompt_text: str) -> str:
         "no_meta_talk",
         "file_system_guard",
         "search_command_priority",
+        "rag_sort_policy",
     ):
         rule = prompt_registry.get_directive(rule_key)
         if rule not in base_text:

@@ -17,6 +17,8 @@ from backend.services.orchestrator.suggestion_engine import SuggestionEngine
 from backend.services.tool_executor import ToolExecutor
 from backend.services.tool_manager import tool_manager
 from backend.utils import intent_classifier
+# Der Model-Katalog ist ein Service, der die JSON-Config lädt und verarbeitet.
+from backend.services.model_catalog import get_models_by_provider
 
 logger = logging.getLogger("janus_backend")
 
@@ -119,6 +121,38 @@ async def _reason_and_respond_with_provider_fixes(**kwargs: Any) -> Dict[str, An
     return await llm_gateway.reason_and_respond(**kwargs)
 
 
+def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
+    """Apply intent-based model escalation for complex tasks before resolution."""
+    # --- Intent-based Model Escalation ---
+    last_msg = wf.get_last_user_message_content() if hasattr(wf, 'get_last_user_message_content') else None
+    if not last_msg and hasattr(wf, 'user_text'):
+        last_msg = wf.user_text
+    if last_msg:
+        query = last_msg.lower()
+        # Harte Erkennung für den Sortier-Auftrag
+        if 'sortiere' in query and ('pdf' in query or 'dateien' in query):
+            # Nutze die zentrale Hierarchie-Logik
+            from backend.llm_providers.shared.moa import MOA_MODEL_HIERARCHY
+            # Wir erzwingen das 'logic' Modell (Standard)
+            current_provider = wf.provider or request.provider
+            provider_key = str(current_provider or "").strip().lower()
+            provider_tiers = MOA_MODEL_HIERARCHY.get(provider_key)
+            logic_model = provider_tiers.get('logic') if provider_tiers else None
+
+            if logic_model and wf.chosen_model != logic_model:
+                logger.info(f"🔥 [INTENT-OVERRIDE] Sortier-Auftrag erkannt. Erbitte logic-Tier Upgrade: {wf.chosen_model} -> {logic_model}")
+                wf.chosen_model = logic_model
+
+            # Knowledge-Skills für Sortier-Intent hinzufügen
+            if hasattr(wf, 'relevant_skill_ids'):
+                knowledge_skills = {'knowledge.query', 'knowledge.read_full_text'}
+                for skill in knowledge_skills:
+                    if skill not in wf.relevant_skill_ids:
+                        wf.relevant_skill_ids.append(skill)
+                        logger.info(f"[INTENT-GUARD] Added {skill} to relevant_skill_ids for sort intent")
+    # --- End of Intent-based Model Escalation ---
+
+
 async def execute_generation_prepare_gateway(
     ctx: RequestContext,
     *,
@@ -132,6 +166,8 @@ async def execute_generation_prepare_gateway(
     """Builds prompts, history, ToolExecutor, and gateway_kwargs (parity with execute_generation, pre tool-loop)."""
     wf = ctx.workflow
     request = ctx.request
+    # Apply pre-resolution guards (intent-based model escalation, etc.)
+    _apply_pre_resolution_guards(wf, request)
     background_tasks = ctx.background_tasks
     if wf.skip_llm_generation:
         if not wf.final_text:
@@ -305,8 +341,9 @@ async def execute_generation_prepare_gateway(
         wf.executor = ToolExecutor(db, wf.api_key, request.provider, wf.chosen_model, additional_context={'chat_id': request.chat_id, 'trace_id': wf.request_trace_id, 'original_user_text': wf.user_text})
         # 💎 HARD-LOOP-BREAKER: Tracking für wiederholte Tool-Calls (Case-Variation-Schutz)
         wf.kpi_retry_paths: set[str] = set()
+        wf.kpi_tool_status: dict[str, str] = {}  # cache_key -> status (für Self-Correction bei Error)
         wf._normalize_tool_args_fn = _normalize_tool_args
-        wf.gateway_kwargs = {'provider': request.provider, 'model': wf.chosen_model, 'api_key': wf.api_key, 'chat_history': wf.messages, 'context_manager': context_manager, 'db': db, 'user_prompt': wf.user_text, 'chat_id': request.chat_id, 'tool_executor': wf.executor, 'disable_tools': wf.disable_tools, 'allowed_skill_ids': wf.relevant_skill_ids, 'requested_skills': wf.relevant_skill_ids, 'tools_override': wf.tools_override, 'bypass_policy': wf.bypass_policy_this_turn, 'reason_and_respond_fn': _reason_and_respond_with_provider_fixes, '_kpi_retry_paths': wf.kpi_retry_paths, '_normalize_tool_args_fn': wf._normalize_tool_args_fn, '_suggestion_context': {'base_system': getattr(wf, '_system_prompt_base_for_suggestions', wf.final_system_prompt), 'mode': suggestion_mode, 'memory_context': str(wf.memory_context_string or ''), 'user_text': str(wf.user_text or '')}}
+        wf.gateway_kwargs = {'provider': request.provider, 'model': wf.chosen_model, 'api_key': wf.api_key, 'chat_history': wf.messages, 'context_manager': context_manager, 'db': db, 'user_prompt': wf.user_text, 'chat_id': request.chat_id, 'tool_executor': wf.executor, 'disable_tools': wf.disable_tools, 'allowed_skill_ids': wf.relevant_skill_ids, 'requested_skills': wf.relevant_skill_ids, 'tools_override': wf.tools_override, 'bypass_policy': wf.bypass_policy_this_turn, 'reason_and_respond_fn': _reason_and_respond_with_provider_fixes, '_kpi_retry_paths': wf.kpi_retry_paths, '_kpi_tool_status': wf.kpi_tool_status, '_normalize_tool_args_fn': wf._normalize_tool_args_fn, '_suggestion_context': {'base_system': getattr(wf, '_system_prompt_base_for_suggestions', wf.final_system_prompt), 'mode': suggestion_mode, 'memory_context': str(wf.memory_context_string or ''), 'user_text': str(wf.user_text or '')}}
         # P0 control-flow gate: MOA router may run only after smalltalk gating and only for likely tool turns.
         wf.gateway_kwargs["_allow_moa_hard_lock"] = bool(
             (not wf.is_smalltalk_turn)
@@ -379,9 +416,24 @@ async def execute_generation_prepare_gateway(
         wf.gateway_kwargs['max_tool_rounds'] = wf.current_limit
         # 💎 HARD-LOOP-BREAKER: Registriere Callback für Tool-Call-Tracking
         def _track_tool_call(tool_name: str, arguments: Dict[str, Any]) -> bool:
-            """Returns True if this is a duplicate call (should be blocked)."""
+            """Returns True if this is a duplicate call (should be blocked).
+
+            Self-Correction Exception: Duplicate call is ALLOWED if previous result was an error
+            (especially INVALID_ARGUMENTS), enabling the model to retry with corrected arguments.
+            """
             cache_key = _normalize_tool_args(tool_name, arguments)
             if cache_key in wf.kpi_retry_paths:
+                # Check if previous result was an error (allow self-correction)
+                previous_status = wf.kpi_tool_status.get(cache_key, "")
+                if previous_status and "error" in previous_status.lower():
+                    logger.info(
+                        "[HARD-LOOP-BREAKER] ALLOWED duplicate tool call for self-correction: %s "
+                        "(previous status: %s). Retrying with corrected arguments.",
+                        tool_name, previous_status
+                    )
+                    # Clear previous status to allow one retry
+                    wf.kpi_tool_status[cache_key] = "retry_attempt"
+                    return False  # Allow retry
                 logger.warning(
                     "[HARD-LOOP-BREAKER] BLOCKED duplicate tool call: %s (normalized key: %s). "
                     "Forcing text-only response.",

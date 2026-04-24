@@ -2,6 +2,18 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [LESSON] #LoopBreaker #SelfCorrection "Error-Retry-Exception — Duplicate Calls sind erlaubt, wenn das vorherige Tool-Ergebnis einen Fehler zurückgab"
+- **Kontext:** HARD-LOOP-BREAKER blockierte alle Duplicate Calls strikt, auch wenn das vorherige Tool-Ergebnis einen Fehler (z.B. INVALID_ARGUMENTS) zurückgab. Dies verhinderte Self-Correction durch das Modell — bei fehlerhaften Argumenten konnte das Modell nicht erneut versuchen mit korrigierten Argumenten. Resultat: Modelle halluzinierten Antworten statt Tool-Errors zu korrigieren.
+- **Problem:** Striktes Duplicate-Blocking ohne Kontext-Berücksichtigung führt zu unnötigen Fehlern bei Self-Correction-Szenarien. Wenn ein Tool einen Fehler aufgrund ungültiger Argumente zurückgibt, sollte das Modell die Möglichkeit haben, den Tool-Call mit korrigierten Argumenten zu wiederholen, ohne vom Loop-Breaker blockiert zu werden.
+- **Lösung:** **Tool-Status-Tracking:** Speichere den Status jedes Tool-Ergebnisses in `wf.kpi_tool_status: dict[str, str]` (cache_key -> status). **Self-Correction-Exception:** Erweitere `_track_tool_call_fn` um zu prüfen, ob der vorherige Status "error" enthält. Wenn ja, erlaube einen Retry für Self-Correction. **Status-Speicherung:** Nach Tool-Ausführung speichere den Status, wenn "error" oder "invalid" enthalten ist (sowohl im non-stream als auch im stream Pfad).
+- **Härtung:** Die Self-Correction-Exception ist auf Error-Status beschränkt (nicht auf Success). Ein Retry ist nur einmal erlaubt (Status wird auf "retry_attempt" gesetzt). Die Sicherheitsmechanismen bleiben für echte Loops aktiv.
+- **Tripwire:** Wenn ein Modell bei einem Tool-Error halluziniert statt Self-Correction zu versuchen → Self-Correction-Exception fehlt oder ist zu restriktiv. Erkennbar im Log: `[HARD-LOOP-BREAKER] BLOCKED duplicate tool call` trotz vorherigem Fehler.
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py` (wf.kpi_tool_status + Self-Correction-Exception), `backend/services/orchestrator/execution_engine.py` (Tool-Status-Tracking non-stream + stream), gefixt 2026-04-24.
+- **Confidence:** High (Error-Retry-Exception ermöglicht Self-Correction ohne Deaktivierung der Sicherheitsmechanismen).
+- **Tags:** LoopBreaker, SelfCorrection, ErrorRetry, ToolStatus, INVALID_ARGUMENTS, ModelSelfCorrection
+
+---
+
 ## [LESSON] #Gemini #API #ThoughtSignature "Gemini 3 requires thought_signature for functionCall parts — must preserve original parts from API response instead of reconstructing them"
 - **Kontext:** Gemini 3 Modelle erfordern `thought_signature` für `functionCall` Parts. Der aktuelle Code in `backend/llm_providers/gemini/service.py` erstellt neue `function_call` Parts ohne diese Signatur (Zeilen 540-545). API-Antwort: `InvalidArgument: 400 Function call is missing a thought_signature.`
 - **Problem:** Der Code extrahiert Tool-Calls aus der Gemini-Antwort und konstruiert neue `protos.Part(function_call=...)` Objekte ohne die `thought_signature` aus dem ursprünglichen Part zu übernehmen. Gemini 3 validiert strikt, dass der erste `functionCall` part in jedem Schritt des aktuellen Turns eine `thought_signature` enthält.
@@ -145,6 +157,26 @@
 - **Location:** `backend/data/schemas.py:195` (Literal erweitert), gefixt 2026-04-21.
 - **Confidence:** Medium-High (Unit-Smoke: alle 4 Literals akzeptiert, `"hacky"` abgelehnt — aber ohne CI-Validator bleibt Drift-Risiko).
 - **Tags:** Pydantic, Literal, Schema, Config, Drift, Validation, CI
+
+## [PATTERN] #Orchestration #IntentOverride "Pre-Resolution Logic-Escalation für Planungs-Tasks"
+- **Kontext:** Komplexe Planungs-Tasks (z.B. Sortieren von PDFs nach Themeninhalt) erfordern höhere Reasoning-Kapazität als Standard-Modelle bieten. Das System soll solche Intents automatisch erkennen und vor der Tool-Ausführung auf ein Logic-Tier-Modell eskalieren, ohne dass der LLM explizit nach einem Upgrade fragen muss.
+- **Problem:** Ohne Intent-Eskalation versuchen "faule" Modelle (Nano/Mini) komplexe Sortieraufgaben mit glob-Pattern statt semantischer Analyse. Resultat: Ungenaue Sortierung nach Dateinamen statt Inhalt, fehlerhafte Bulk-Operationen.
+- **Pattern:** **Pre-Resolution Intent-Detection + MOA-Hierarchie-Upgrade.** In `_apply_pre_resolution_guards()` (vor Tool-Loop) wird die letzte User-Nachricht auf Sortier-Intents geprüft (`sortiere` + `pdf/dateien`). Wenn erkannt, wird via `MOA_MODEL_HIERARCHY` das Logic-Tier-Modell für den aktuellen Provider ermittelt und `wf.chosen_model` überschrieben. Das Upgrade gilt nur für den aktuellen Turn.
+  ```python
+  if 'sortiere' in query and ('pdf' in query or 'dateien' in query):
+      provider_key = str(current_provider or "").strip().lower()
+      provider_tiers = MOA_MODEL_HIERARCHY.get(provider_key)
+      logic_model = provider_tiers.get('logic') if provider_tiers else None
+      if logic_model and wf.chosen_model != logic_model:
+          wf.chosen_model = logic_model
+  ```
+- **Warum Pre-Resolution:** Das Modell-Upgrade muss VOR dem Prompt-Build passieren, damit der LLM mit dem Logic-Tier-Modell den Plan erstellt und die Tool-Aufrufe generiert. Nachträgliches Upgrade wäre zu spät.
+- **Trigger-Kriterien für Intent-Override:** (1) Klare Intent-Keywords (`sortiere`, `ordnen`, `thematisch`). (2) Subjekt-Keywords (`pdfs`, `dateien`). (3) Provider-agnostische Hierarchie via MOA_MODEL_HIERARCHY (OpenAI: gpt-5.4, Gemini: gemini-3-pro-preview).
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py` (_apply_pre_resolution_guards), `backend/llm_providers/shared/moa.py` (MOA_MODEL_HIERARCHY), implementiert 2026-04-24.
+- **Confidence:** High (Intent-Erkennung ist deterministisch, MOA-Hierarchie ist zentral definiert und provider-agnostisch).
+- **Tags:** Orchestration, IntentOverride, LogicEscalation, MOA, PreResolution, Planning, Sorting
+
+---
 
 ## [PATTERN] #Planning #FehlbefundZurueckweisung "Externe Fix-Pläne immer gegen Code verifizieren, bevor implementiert wird"
 - **Kontext:** Der User übergab einen 3-Punkte-Fix-Plan aus AI Studio. Punkt #2 lautete: "Repariere den OllamaCompiler Import in `backend/services/prompting/factory.py`."

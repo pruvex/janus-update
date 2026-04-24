@@ -13,7 +13,7 @@
     "fact_lookup"
   ],
   "is_agent_ready": true,
-  "max_calls_per_turn": 3,
+  "max_calls_per_turn": 30,
   "depends_on": [],
   "examples": [],
   "thought_hint": "[P0] Wenn ein Tool-Chunk den Block '!!! SYSTEM-WARNHINWEIS: MEHRERE DATEIEN GEFUNDEN !!!' enthält, ist dies eine VERBINDLICHE Handlungsanweisung (Priorität 0, vor jedem anderen Content). Beginne deine Antwort ZWINGEND mit: 'Hinweis: Ich habe {Anzahl} Versionen von {Datei} gefunden. Ich verwende hier die Datei aus {gewählter Pfad}. Die anderen Fundorte sind: {Liste}.' Erst danach darfst du den Inhalt zusammenfassen. Das Ignorieren dieser Warnung invalidiert deine Antwort.",

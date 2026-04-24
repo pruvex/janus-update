@@ -1,6 +1,7 @@
 {
   "legacy_name": "read_file",
   "skill": "filesystem.read_file",
+  "description": "WICHTIG: Dieses Tool kann KEINE PDFs lesen! Wenn du PDFs inhaltlich analysieren sollst (z.B. für thematisches Sortieren), MUSST du auf den Index zugreifen: Nutze dafür 'knowledge.query' oder 'knowledge.read_full_text'.",
   "version": "1.0.0",
   "sandbox_level": "full",
   "latency_class": "fast",

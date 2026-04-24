@@ -13,6 +13,8 @@
 | 3 | RAG (knowledge.query) | RAG-Query mit Tool-Call | ❌ FAIL | `InvalidArgument: 400 Function call is missing a thought_signature` | 🔴 KRITISCHER FEHLERPFAD — RAG-Task ohne thought_signature |
 | 4 | filesystem.find_files | "Suche nach Dateien" | ✅ OK | - | function_call Part mit thought_signature erfolgreich |
 | 5 | knowledge.read_full_text | "Lese Datei X" | ✅ OK | - | function_call Part mit thought_signature erfolgreich |
+| 6 | filesystem.create_directory | "leg ordner Rolf_Test2 an" | ⚠️ PARTIAL | - | ✅ Technisch (Ordner physisch erstellt) / ❌ UI Text (Antwort halluziniert, Double-Call blockiert) |
+| 7 | filesystem.rename_directory | "Benenne Rolf_Test2 um..." | ✅ OK | - | Überraschung: Gemini hat Umbenennung ohne 400er Fehler und ohne Loop-Breaker abgeschlossen (GPT & Gemini beide ✅ PERFEKT) |
 
 ## Test-Plan
 

@@ -1,6 +1,7 @@
 {
   "legacy_name": "move_files",
   "skill": "filesystem.move_files",
+  "description": "WICHTIG: Nutze DIESES Tool für das Verschieben mehrerer Dateien. Wenn du Dateien in verschiedene Themen-Ordner sortierst, rufe dieses Tool mehrfach auf (genau 1x pro Zielordner) und übergib die jeweilige Liste an Dateinamen.",
   "version": "1.0.0",
   "sandbox_level": "full",
   "latency_class": "fast",
@@ -12,7 +13,21 @@
     "bulk_operation"
   ],
   "is_agent_ready": true,
-  "max_calls_per_turn": 3,
+  "max_calls_per_turn": 10,
   "depends_on": [],
+  "parameters": {
+    "source_directory": {
+      "type": "string",
+      "description": "Quellverzeichnis, aus dem Dateien verschoben werden"
+    },
+    "destination_directory": {
+      "type": "string",
+      "description": "Zielverzeichnis, in das Dateien verschoben werden"
+    },
+    "file_names": {
+      "type": "list[str]",
+      "description": "Liste der exakten Dateinamen, die verschoben werden sollen"
+    }
+  },
   "examples": []
 }

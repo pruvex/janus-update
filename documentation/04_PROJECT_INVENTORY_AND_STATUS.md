@@ -16,6 +16,7 @@
 - [ ] **Migration:** Initialisierung des Diamond-OS (Finaler Sync).
 
 ## ✅ 4. DONE
+- [x] 2026-04-24: **Task FEAT-FS-BULK-MOVE:** Bulk File Move Feature - Parameter-Upgrade (pattern → file_names), Intent-basierte Modell-Eskalation (MOA-Hierarchie), RAG-Sort-Policy, PDF-Indizierungs-Markierung in list_directory, Rate-Limits erhöht. Status: 🥇 SEALED & COMPLETE.
 - [x] 2026-04-19: **Task 052:** Chromium Extra Headers Fix - Aktivierung von extraHeaders Flag in onBeforeSendHeaders und onHeadersReceived zur Aufhebung der Chromium-Blockade von Referer-Manipulationen. Behebung von YouTube Error 15-4 / 153. Status: 🥇 SEALED & COMPLETE.
 - [x] 2026-04-19: **Task 050:** CSP Bypass & iFrame Hardening - Header-Deletion-Pattern (radikales Entfernen von CSP-Headern), allowRunningInsecureContent, Permission Handlers (media/display-capture), Autoplay CSP Modification. Status: 🥇 SEALED & COMPLETE.
 - [x] 2026-04-19: **Task 049:** YouTube Final Master Fix - YouTube-Nocookie Transition, Header-Stripping (X-Frame-Options), Cross-Domain Spoofing (googlevideo.com), PreloadMediaEngagementData Disabling. Status: 🥇 SEALED & COMPLETE.

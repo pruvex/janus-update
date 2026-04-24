@@ -1,6 +1,21 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.31** — "EPIC-SYSTEM-HARVESTER (V2): 🥇 SEALED & COMPLETE. P0-P8 SEALED + Final Extension (Global Scope Discovery, Format-Gatekeeper). RAG V2 Core Pipeline fertiggestellt. Tool-Execution Stack Repaired. RAG V2 Stabilization: Filename Metadata + Path Normalization + Memory Guard. RAG V2 Multi-File Integrity: Hardware Truth + Physical Duplicate Detection. RAG V2 Auto-Read Loop: Path-Pinning for Disambiguation. RAG V2 0-Chunk Integrity Fix.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.32** — "EPIC-SYSTEM-HARVESTER (V2): 🥇 SEALED & COMPLETE. P0-P8 SEALED + Final Extension (Global Scope Discovery, Format-Gatekeeper). RAG V2 Core Pipeline fertiggestellt. Tool-Execution Stack Repaired. RAG V2 Stabilization: Filename Metadata + Path Normalization + Memory Guard. RAG V2 Multi-File Integrity: Hardware Truth + Physical Duplicate Detection. RAG V2 Auto-Read Loop: Path-Pinning for Disambiguation. RAG V2 0-Chunk Integrity Fix. Loop-Breaker Self-Correction. FEAT-FS-BULK-MOVE SEALED.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-24 01:00 (BUG-RAG-004 SEALED | BUG-GEMINI-API-001 BLOCKED | RAG V2 0-Chunk Integrity Fix)
+**Aktualisiert:** 2026-04-24 06:10 (FEAT-FS-BULK-MOVE SEALED | BUG-RAG-004 SEALED | BUG-GEMINI-API-001 BLOCKED | Loop-Breaker Self-Correction | FS Rate-Limit Erhöhung)
+
+---
+
+## [CURRENT_SESSION_DELTA] (FEAT-FS-BULK-MOVE — Bulk File Move Feature 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **FEAT-FS-BULK-MOVE: Bulk File Move Feature — Parameter-Upgrade + Intent-basierte Modell-Eskalation + RAG-Sortier-Policy** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-24) |
+| **Root Cause** | Das move_files-Skill nutzte ein Glob-Pattern (`pattern`) statt einer exakten Dateiliste. Dies führte zu ungenauer Kontrolle bei Bulk-Operationen und erschwerte das Sortieren nach Dateiinhalt. Zudem fehlte eine Intent-basierte Modell-Eskalation für komplexe Sortieraufgaben. |
+| **Umsetzung** | **Fix #1 — Schema-Upgrade:** `@c:\KI\Janus-Projekt\backend\data\schemas.py:692-698` — `MoveFilesArgs`: `pattern` entfernt, `file_names: List[str]` hinzugefügt. **Fix #2 — Skill-JSON:** `@c:\KI\Janus-Projekt\backend\skills\filesystem\move_files.json` — Parameter `pattern` → `file_names: list[str]`, `max_calls_per_turn` auf 10 erhöht, Beschreibung mit Batch-Nutzungs-Hinweis. **Fix #3 — Backend-Logik:** `@c:\KI\Janus-Projekt\backend\services\filesystem_manager.py:535-576` — `move_files()` iteriert über `file_names` Liste statt Glob-Pattern. **Fix #4 — Rate-Limits:** `create_directory.json` (3→20), `move_file.json` (3→50), `move_files.json` (3→10). **Fix #5 — Prompt-Härtung:** `move_file.json` Warnung gegen Bulk-Missbrauch, `read_file.json` PDF-Umleitung zu Knowledge-Tools. **Fix #6 — Intent-Override:** `@c:\KI\Janus-Projekt\backend\services\orchestrator\execution_dispatcher.py:124-145` — `_apply_pre_resolution_guards()` mit MOA_MODEL_HIERARCHY für Sortier-Intents (`sortiere` + `pdf/dateien`). **Fix #7 — list_directory Enhancement:** `@c:\KI\Janus-Projekt\backend\services\filesystem_manager.py:251-296` — PDF-Indizierungs-Markierung `[INDIZIERT]` via IndexStore-Check. **Fix #8 — RAG-Sort-Policy:** `@c:\KI\Janus-Projekt\backend\services\orchestrator\prompt_registry.py:80-83` — `rag_sort_policy` Direktive in `apply_verbosity_control` injiziert. |
+| **Ergebnis** | Bulk-Datei-Verschiebe-Operationen nutzen jetzt exakte Dateilisten für präzise Kontrolle. Komplexe Sortieraufgaben eskalieren automatisch zum Logic-Tier-Modell. PDFs in list_directory zeigen Indizierungs-Status. RAG-Sort-Policy erzwingt Knowledge-Query für indizierte Dateien vor Move-Operationen. |
+| **Files** | `backend/data/schemas.py` (MoveFilesArgs), `backend/skills/filesystem/move_files.json` (Parameter + Limits), `backend/skills/filesystem/move_file.json` (Warnung + Limits), `backend/skills/filesystem/create_directory.json` (Limits), `backend/skills/filesystem/read_file.json` (PDF-Umleitung), `backend/services/filesystem_manager.py` (move_files + list_directory), `backend/services/orchestrator/execution_dispatcher.py` (Intent-Override), `backend/services/orchestrator/prompt_registry.py` (rag_sort_policy), `backend/services/model_catalog.py` (get_models_by_provider). |
+| **Verifikation** | Audit: Parameter Trinity synchron (file_names: List[str] in schemas.py, move_files.json, filesystem_manager.py) ✅ |
+| **Patterns** | [PATTERN] #Orchestration #IntentOverride "Pre-Resolution Logic-Escalation für Planungs-Tasks — Erkennung von Sortier-Intents vor Tool-Ausführung und automatisches Upgrade zum Logic-Tier-Modell via MOA_MODEL_HIERARCHY." |
 
 ---
 
@@ -16,6 +31,21 @@
 | **Files** | `backend/services/tool_executor.py` (Chunk-Validierung + Korrupte Einträge bereinigen). |
 | **Verifikation** | Test mit 0-Chunk-File erwartet: (a) Log zeigt `[AUTO-INGEST] Corrupt DB entry for '{path}' (0 chunks). Deleting and re-ingesting.`, (b) Background-Ingest wird ausgelöst, (c) Nach Indizierung hat Datei Chunks. |
 | **Patterns** | [PATTERN] #RAG #Integrity "Hardware-Truth über Index-Faith — Ein Pfad gilt nur als indiziert, wenn er in SQLite-DB steht UND Chunks hat. 0-Chunk-Files sind korrupt und müssen bereinigt werden." |
+
+---
+
+## [CURRENT_SESSION_DELTA] (Loop-Breaker Self-Correction — INVALID_ARGUMENTS Retry 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **Loop-Breaker Self-Correction: INVALID_ARGUMENTS Retry — Modelle können Tool-Errors korrigieren** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-24) |
+| **Root Cause** | HARD-LOOP-BREAKER blockierte alle Duplicate Calls strikt, auch wenn das vorherige Tool-Ergebnis einen Fehler (z.B. INVALID_ARGUMENTS) zurückgab. Dies verhinderte Self-Correction durch das Modell — bei fehlerhaften Argumenten konnte das Modell nicht erneut versuchen mit korrigierten Argumenten. |
+| **Umsetzung** | **Fix #1 — Tool-Status-Tracking:** `@c:\KI\Janus-Projekt\backend\services\orchestrator\execution_dispatcher.py:308` — `wf.kpi_tool_status: dict[str, str]` hinzugefügt (cache_key -> status). **Fix #2 — Self-Correction-Exception:** `_track_tool_call_fn` erweitert: Prüft, ob vorheriger Status "error" enthält. Wenn ja, erlaubt es einen Retry für Self-Correction. **Fix #3 — Status-Speicherung:** `@c:\KI\Janus-Projekt\backend\services\orchestrator\execution_engine.py:1324-1350` (non-stream) und `2250-2278` (stream) — Tool-Status nach Ausführung speichern, wenn "error" oder "invalid" im Status enthalten ist. **Fix #4 — Rate-Limit Erhöhung:** `@c:\KI\Janus-Projekt\backend\skills\filesystem\create_directory.json:15` und `move_file.json:15` — max_calls_per_turn von 3 auf 10 erhöht für FS-Choreography. |
+| **Ergebnis** | Modelle können jetzt Self-Correction durchführen: Wenn ein Tool einen Fehler zurückgibt (z.B. INVALID_ARGUMENTS), wird der Status gespeichert. Bei erneutem Versuch mit denselben Argumenten wird der vorherige Status geprüft und bei Error ein Retry erlaubt. Dies ermöglicht Modell-Self-Correction ohne Deaktivierung der Sicherheitsmechanismen. |
+| **Files** | `backend/services/orchestrator/execution_dispatcher.py` (wf.kpi_tool_status + Self-Correction-Exception), `backend/services/orchestrator/execution_engine.py` (Tool-Status-Tracking non-stream + stream), `backend/skills/filesystem/create_directory.json` (max_calls_per_turn 3→10), `backend/skills/filesystem/move_file.json` (max_calls_per_turn 3→10). |
+| **Verifikation** | Test mit INVALID_ARGUMENTS erwartet: (a) Tool gibt error zurück, (b) Status wird gespeichert, (c) Modell kann erneut versuchen mit korrigierten Argumenten, (d) Retry wird nicht geblockt. |
+| **Patterns** | [PATTERN] #LoopBreaker #SelfCorrection "Error-Retry-Exception — Duplicate Calls sind erlaubt, wenn das vorherige Tool-Ergebnis einen Fehler (error/invalid) zurückgab. Dies ermöglicht Modell-Self-Correction ohne Deaktivierung der Sicherheitsmechanismen." |
 
 ---
 

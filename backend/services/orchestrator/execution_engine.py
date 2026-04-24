@@ -1321,12 +1321,34 @@ class OrchestratorExecutionEngine:
 
             # 💎 PDF-SUCCESS-TRACKER: Tracken ob PDF bereits erfolgreich war für Loop-Break
             _pdf_already_succeeded = False
+            # 💎 SELF-CORRECTION TRACKER: Speichere Tool-Status für Retry-Logik
+            _kpi_tool_status = gateway_kwargs.get("_kpi_tool_status", {})
+            _normalize_tool_args_fn = gateway_kwargs.get("_normalize_tool_args_fn")
             for _tr in (tool_results or []):
                 logger.error("💎 TOOL CALL RESULT: %s", _tr)
                 if isinstance(_tr, dict):
                     _skill_name = str(_tr.get("name") or "").strip()
                     if _skill_name and _skill_name not in all_used_skills:
                         all_used_skills.append(_skill_name)
+                    # 💎 SELF-CORRECTION: Speichere Tool-Status für Retry-Logik
+                    _raw_content = _tr.get("_raw_content") or _tr.get("content") or "{}"
+                    try:
+                        _parsed = json.loads(_raw_content) if isinstance(_raw_content, str) else dict(_raw_content or {})
+                        _status = str(_parsed.get("status", "")).lower()
+                        # Wenn Status "error" enthält, speichere für Self-Correction
+                        if "error" in _status or "invalid" in _status:
+                            # Extrahiere Tool-Name und Arguments aus dem Tool-Call
+                            _tool_args = _tr.get("arguments", {})
+                            if callable(_normalize_tool_args_fn):
+                                _cache_key = _normalize_tool_args_fn(_skill_name, _tool_args)
+                                _kpi_tool_status[_cache_key] = _status
+                                logger.info(
+                                    "[SELF-CORRECTION-TRACKER] Tool %s returned error status: %s. "
+                                    "Storing for potential retry.",
+                                    _skill_name, _status
+                                )
+                    except Exception:
+                        pass
                     # Prüfe auf erfolgreiches PDF
                     if _skill_name.lower() == "system.create_pdf":
                         _raw = _tr.get("_raw_content") or _tr.get("content") or "{}"
@@ -2225,6 +2247,9 @@ class OrchestratorExecutionEngine:
                 )
 
             if tool_results:
+                # 💎 SELF-CORRECTION TRACKER: Speichere Tool-Status für Retry-Logik (Stream)
+                _kpi_tool_status = gateway_kwargs.get("_kpi_tool_status", {})
+                _normalize_tool_args_fn = gateway_kwargs.get("_normalize_tool_args_fn")
                 for tr in tool_results:
                     logger.error("💎 TOOL CALL RESULT: %s", tr)
                     if isinstance(tr, dict):
@@ -2232,6 +2257,25 @@ class OrchestratorExecutionEngine:
                         _sn = str(tr.get("name") or "").strip()
                         if _sn and _sn not in all_used_skills:
                             all_used_skills.append(_sn)
+                        # 💎 SELF-CORRECTION: Speichere Tool-Status für Retry-Logik
+                        _raw_content = tr.get("_raw_content") or tr.get("content", "{}")
+                        try:
+                            _parsed = json.loads(_raw_content) if isinstance(_raw_content, str) else dict(_raw_content or {})
+                            _status = str(_parsed.get("status", "")).lower()
+                            # Wenn Status "error" enthält, speichere für Self-Correction
+                            if "error" in _status or "invalid" in _status:
+                                # Extrahiere Tool-Name und Arguments aus dem Tool-Call
+                                _tool_args = tr.get("arguments", {})
+                                if callable(_normalize_tool_args_fn):
+                                    _cache_key = _normalize_tool_args_fn(_sn, _tool_args)
+                                    _kpi_tool_status[_cache_key] = _status
+                                    logger.info(
+                                        "[SELF-CORRECTION-TRACKER] (stream) Tool %s returned error status: %s. "
+                                        "Storing for potential retry.",
+                                        _sn, _status
+                                    )
+                        except Exception:
+                            pass
                         # 💎 PATH-SENTINEL: Emit permission_required to frontend so consent modal opens
                         try:
                             _raw = tr.get("_raw_content") or tr.get("content", "{}")

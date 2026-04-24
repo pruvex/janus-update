@@ -692,9 +692,9 @@ class RenameFileArgs(BaseModel):
 class MoveFilesArgs(BaseModel):
     source_directory: str = Field(..., description=_WORKSPACE_PATH_DESC)
     destination_directory: str = Field(..., description=_WORKSPACE_PATH_DESC)
-    pattern: str = Field(
+    file_names: List[str] = Field(
         ...,
-        description="Glob-Muster nur für Dateinamen im Quellordner (z.B. '*.pdf'). Keine '..'.",
+        description="Liste der exakten Dateinamen im Quellordner, die verschoben werden sollen.",
     )
 
 

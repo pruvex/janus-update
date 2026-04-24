@@ -248,6 +248,20 @@ def delete_file(path: str) -> ToolResultV1:
         return _map_filesystem_exception(started, e)
 
 
+def _is_pdf_indexed(file_path: Path) -> bool:
+    """Prüft, ob eine PDF-Datei im IndexStore/ChromaDB indiziert ist."""
+    if file_path.suffix.lower() != ".pdf":
+        return False
+    try:
+        from backend.services.rag.index_store import IndexStore
+        store = IndexStore()
+        indexed_file = store.get(str(file_path))
+        return indexed_file is not None and len(indexed_file.chunk_ids) > 0
+    except Exception as e:
+        logger.debug(f"IndexStore check failed for {file_path}: {e}")
+        return False
+
+
 def list_directory(path: str, pattern: Optional[str] = None) -> ToolResultV1:
     started = time.perf_counter()
     try:
@@ -273,7 +287,13 @@ def list_directory(path: str, pattern: Optional[str] = None) -> ToolResultV1:
             items = list(safe_path.iterdir())
             output_intro = f"Es wurden {len(items)} Einträge in '{path}' gefunden."
 
-        item_names = [f"{item.name}{'/' if item.is_dir() else ''}" for item in items]
+        item_names = []
+        for item in items:
+            name = item.name
+            if item.is_file() and item.suffix.lower() == ".pdf":
+                if _is_pdf_indexed(item):
+                    name = f"{name} [INDIZIERT]"
+            item_names.append(f"{name}{'/' if item.is_dir() else ''}")
 
         if 0 < len(item_names) < 25:
             output = f"{output_intro}\n" + "\n".join(item_names)
@@ -512,10 +532,9 @@ def rename_file(old_path: str, new_path: str) -> ToolResultV1:
         return _map_filesystem_exception(started, e)
 
 
-def move_files(source_directory: str, destination_directory: str, pattern: str) -> ToolResultV1:
+def move_files(source_directory: str, destination_directory: str, file_names: list[str]) -> ToolResultV1:
     started = time.perf_counter()
     try:
-        _validate_glob_pattern(pattern)
         safe_source_dir = _resolve_and_validate_path(source_directory, must_exist=True)
         safe_dest_dir = _resolve_and_validate_path(destination_directory, must_exist=False)
 
@@ -523,11 +542,14 @@ def move_files(source_directory: str, destination_directory: str, pattern: str) 
             safe_dest_dir.mkdir(parents=True, exist_ok=True)
             logger.info(f"Zielordner '{destination_directory}' wurde erstellt.")
 
-        files_to_move = [f for f in safe_source_dir.glob(pattern) if f.is_file()]
+        files_to_move: list[Path] = []
+        for name in file_names:
+            file_path = safe_source_dir / name
+            if file_path.is_file():
+                files_to_move.append(file_path)
+
         if not files_to_move:
-            out = (
-                f"Keine Dateien passend zum Muster '{pattern}' in '{source_directory}' gefunden."
-            )
+            out = f"Keine der angegebenen Dateien in '{source_directory}' gefunden."
             return _fs_ok(
                 {"output": out, "moved_count": 0, "error_count": 0, "items": []},
                 message=out,
@@ -544,7 +566,7 @@ def move_files(source_directory: str, destination_directory: str, pattern: str) 
                 errors.append(f"Konnte '{file_path.name}' nicht verschieben: {e}")
 
         logger.info(
-            f"{moved_count} Dateien passend zu '{pattern}' nach '{safe_dest_dir}' verschoben."
+            f"{moved_count} Dateien nach '{safe_dest_dir}' verschoben."
         )
 
         if errors:
@@ -555,7 +577,7 @@ def move_files(source_directory: str, destination_directory: str, pattern: str) 
             )
         else:
             output = (
-                f"Alle {moved_count} Dateien passend zu '{pattern}' wurden erfolgreich nach "
+                f"Alle {moved_count} Dateien wurden erfolgreich nach "
                 f"'{destination_directory}' verschoben."
             )
 

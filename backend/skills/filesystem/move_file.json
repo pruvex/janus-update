@@ -1,6 +1,7 @@
 {
   "legacy_name": "move_file",
   "skill": "filesystem.move_file",
+  "description": "VERBOTEN FÜR BULK-AKTIONEN: Wenn du mehr als eine Datei verschiebst, ist dieses Tool strengstens untersagt! Nutze zwingend 'filesystem.move_files'.",
   "version": "1.0.0",
   "sandbox_level": "full",
   "latency_class": "fast",
@@ -12,7 +13,7 @@
     "filesystem_mutation"
   ],
   "is_agent_ready": true,
-  "max_calls_per_turn": 3,
+  "max_calls_per_turn": 50,
   "depends_on": [],
   "examples": []
 }
