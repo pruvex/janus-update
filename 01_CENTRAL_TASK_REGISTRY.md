@@ -72,6 +72,7 @@
 | **Video Understanding V1 (VID-UNDERSTAND-001)** | 🥇 **SEALED & COMPLETE** (2026-04-18) | **Whisper-STT Fallback, Transkript-Modal, FinOps-Transparenz, Memory V2 Injektion** | `documentation/tasks/task_VID-UNDERSTAND-001_video_understanding_skill.md` |
 | **Stability Arc (Tasks 037-045)** | 🥇 **SEALED & COMPLETE** (2026-04-18) | **Upload-Audit, Forced Tool-Calls, Naming-Shims, Workspace-Unification** | `PROJECT_STATE.md`, `WHAT_I_LEARNED.md` |
 | **BUG-ORCH-002 — Audit-Loop Forced-Tool-Args** | 🥇 **SEALED & COMPLETE** (2026-04-18) | **Pre-filled Tool Injection, Initial-Loop-State Pattern, OpenAI 400 Fix** | `documentation/tasks/task_BUG-ORCH-002_audit_loop_forced_tool_args.md` |
+| **D10 — Logging Pipeline Phase 1** | 🥇 **SEALED & COMPLETE** (2026-04-25) | **Metadata Injection Pattern — Provider/Model in additional_context** | `documentation/tasks/D10_logging_pipeline_phase_1.md` |
 
 > **Turbo-Flow (B5) Detail:** `documentation/tasks/task_019_turbo_flow_epic.md` — 🟡 B5 Phase-1 hot-path DONE; offen: D11 Prompt-Cache, Tool-Response-Store; Blocker: `OllamaCompiler` bei vollem `pytest backend/tests`.
 

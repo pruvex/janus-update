@@ -2669,6 +2669,8 @@ class OrchestratorExecutionEngine:
             additional_context={
                 "chat_id": chat_id,
                 "allowed_skill_ids": list(completed_skills),
+                "provider": provider,
+                "model": model,
             },
         )
 

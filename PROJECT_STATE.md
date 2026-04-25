@@ -1,6 +1,6 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.37** — "EPIC-SYSTEM-HARVESTER (V2): 🥇 SEALED & COMPLETE. P0-P8 SEALED + Final Extension (Global Scope Discovery, Format-Gatekeeper). RAG V2 Core Pipeline fertiggestellt. Tool-Execution Stack Repaired. RAG V2 Stabilization: Filename Metadata + Path Normalization + Memory Guard. RAG V2 Multi-File Integrity: Hardware Truth + Physical Duplicate Detection. RAG V2 Auto-Read Loop: Path-Pinning for Disambiguation. RAG V2 0-Chunk Integrity Fix. Loop-Breaker Self-Correction. FEAT-FS-BULK-MOVE SEALED. TEST-CLEANUP SEALED. LOGGING PIPELINE PHASE 1: COMPLETE (Supabase Client + Pydantic Schemas + Logger Core + Batch Worker + Graceful Shutdown + Event Integration).")
+# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.37** — "EPIC-SYSTEM-HARVESTER (V2): 🥇 SEALED & COMPLETE. P0-P8 SEALED + Final Extension (Global Scope Discovery, Format-Gatekeeper). RAG V2 Core Pipeline fertiggestellt. Tool-Execution Stack Repaired. RAG V2 Stabilization: Filename Metadata + Path Normalization + Memory Guard. RAG V2 Multi-File Integrity: Hardware Truth + Physical Duplicate Detection. RAG V2 Auto-Read Loop: Path-Pinning for Disambiguation. RAG V2 0-Chunk Integrity Fix. Loop-Breaker Self-Correction. FEAT-FS-BULK-MOVE SEALED. TEST-CLEANUP SEALED. LOGGING PIPELINE PHASE 1: COMPLETE (Supabase Client + Pydantic Schemas + Logger Core + Batch Worker + Graceful Shutdown + Event Integration + Metadata Fixes 🥇 D10 SEALED).")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-25 17:11 (LOGGING PIPELINE PHASE 1: COMPLETE 🥇 SEALED)
+**Aktualisiert:** 2026-04-25 19:50 (LOGGING PIPELINE PHASE 1: D10 Metadata Fixes 🥇 SEALED & COMPLETE)
 
 ---
 
@@ -16,6 +16,21 @@
 | **Files** | `backend/services/orchestrator/execution_engine.py` (tool_start/tool_end/error logging + latency measurement), `backend/services/chat_orchestrator.py` (error logging in handle_chat_request + handle_chat_request_stream). |
 | **Verifikation** | Syntax Check: `python -m py_compile backend/services/orchestrator/execution_engine.py` ✅ · Syntax Check: `python -m py_compile backend/services/chat_orchestrator.py` ✅ |
 | **Patterns** | [PATTERN] #Logging #EventIntegration "Strategic Event Logging — Loge Events an kritischen Punkten (Tool-Start/End, Error) mit Kontext-Daten für Observability." · [PATTERN] #Performance #LatencyMeasurement "Latency Tracking — Messe Zeit vor und nach Tool-Execution für Performance-Monitoring." |
+
+---
+
+## [CURRENT_SESSION_DELTA] (LOGGING PIPELINE PHASE 1 — Metadata Fixes 🥇 D10 SEALED & COMPLETE)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **D10 — Logging Pipeline Phase 1: Metadata Fixes — Provider/Model in additional_context** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-25) |
+| **Root Cause** | `provider` und `model` wurden als "unknown" geloggt für Diamond-Skills, weil sie nicht an `additional_context` übergeben wurden bei ToolExecutor-Instanziierungen. |
+| **Umsetzung** | **Fix #1 — chat_orchestrator.py:** `provider` und `model` zu `additional_context` hinzugefügt (Zeile 1905-1917, 747-759). **Fix #2 — agent_runtime.py:** `provider` und `model` zu `additional_context` hinzugefügt (Zeile 60-73, 97-112, 127-140). **Fix #3 — ChatRequest-Fix:** `req.chosen_model` → `req.model` korrigiert (ChatRequest hat `model`, nicht `chosen_model`). **Fix #4 — Cleanup:** Forensische Logs aus tool_executor.py, execution_engine.py, weather_service.py entfernt. |
+| **Ergebnis** | `provider` und `model` werden jetzt konsistent an `additional_context` übergeben bei allen ToolExecutor-Instanziierungen. Logging zeigt korrekte Werte (nicht mehr "unknown"). ChatRequest-Attribut-Fehler behoben. |
+| **Files** | `backend/services/chat_orchestrator.py` (additional_context fixes), `backend/services/agent_runtime.py` (additional_context fixes), `backend/services/tool_executor.py` (cleanup), `backend/services/orchestrator/execution_engine.py` (cleanup), `backend/tools/weather_service.py` (cleanup). |
+| **Verifikation** | Test: `test_logging_fix.py` ✅ PASS — Context enthält `{'chat_id': 999999, 'provider': 'openai', 'model': 'gpt-4o-mini'}` |
+| **Patterns** | [PATTERN] #Logging #Context "Metadata Injection Pattern — ToolExecutor benötigt explizite Provider/Model-Daten im additional_context für akkurate Telemetrie." |
 
 ---
 

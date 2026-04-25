@@ -753,6 +753,8 @@ class ChatOrchestrator:
                         "chat_id": request.chat_id,
                         "trace_id": str(uuid.uuid4()),
                         "allowed_skill_ids": ["system.country_info"],
+                        "provider": request.provider,
+                        "model": request.model,
                     },
                 )
                 tool_call = {
@@ -1900,16 +1902,17 @@ class ChatOrchestrator:
 
             self.db.commit()
             self.db.expunge_all()
-
             wf.executor = ToolExecutor(
                 self.db,
                 wf.api_key,
                 req.provider,
-                wf.chosen_model,
+                req.model,
                 additional_context={
                     "chat_id": req.chat_id,
                     "trace_id": getattr(wf, "request_trace_id", str(uuid.uuid4())),
                     "original_user_text": wf.user_text,
+                    "provider": req.provider,
+                    "model": req.model,
                 },
             )
             if getattr(wf, "gateway_kwargs", None):

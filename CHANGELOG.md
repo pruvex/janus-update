@@ -9,6 +9,7 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Changed
 - **Bulk File Move Feature** - Parameter-Upgrade (pattern → file_names), Intent-basierte Modell-Eskalation (MOA-Hierarchie), RAG-Sort-Policy, PDF-Indizierungs-Markierung in list_directory, Rate-Limits erhöht. Task FEAT-FS-BULK-MOVE.
+- **Logging Pipeline Phase 1: Metadata Fixes** - Provider und Model werden jetzt konsistent an additional_context übergeben bei allen ToolExecutor-Instanziierungen. Logging zeigt korrekte Werte (nicht mehr "unknown"). ChatRequest-Attribut-Fix: req.chosen_model → req.model. Task D10.
 
 ## [0.4.16-beta.16] - 2026-04-21
 

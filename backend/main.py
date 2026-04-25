@@ -493,11 +493,13 @@ async def lifespan(app: FastAPI):
 
     # 6. Logging Pipeline: Start batch upload worker
     try:
-        from backend.services.logging.logger_core import start_worker
-        await start_worker()
+        logger.info("Attempting to import logger_core...")
+        from backend.services.logging import logger_core
+        logger.info("logger_core imported successfully, starting worker...")
+        await logger_core.start_worker()
         logger.info("Logging batch upload worker started successfully.")
     except Exception as e:
-        logger.error(f"Failed to start logging worker: {e}")
+        logger.error(f"Failed to start logging worker: {e}", exc_info=True)
         # Don't exit here, logging is non-critical
 
     # Let the application start even if some non-critical components failed

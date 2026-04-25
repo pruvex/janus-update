@@ -344,7 +344,7 @@ async def execute_generation_prepare_gateway(
             elif wf.is_ollama_vague_smalltalk and wf.is_meta_agent_run:
                 logger.info('META-AGENT BYPASS: Smalltalk-Guard fuer interne Recherche-Phase deaktiviert.')
         wf.request_trace_id = str(uuid.uuid4())
-        wf.executor = ToolExecutor(db, wf.api_key, request.provider, wf.chosen_model, additional_context={'chat_id': request.chat_id, 'trace_id': wf.request_trace_id, 'original_user_text': wf.user_text})
+        wf.executor = ToolExecutor(db, wf.api_key, request.provider, wf.chosen_model, additional_context={'chat_id': request.chat_id, 'trace_id': wf.request_trace_id, 'original_user_text': wf.user_text, 'provider': request.provider, 'model': wf.chosen_model})
         # 💎 HARD-LOOP-BREAKER: Tracking für wiederholte Tool-Calls (Case-Variation-Schutz)
         wf.kpi_retry_paths: set[str] = set()
         wf.kpi_tool_status: dict[str, str] = {}  # cache_key -> status (für Self-Correction bei Error)

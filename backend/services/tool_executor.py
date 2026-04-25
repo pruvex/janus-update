@@ -25,6 +25,7 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from backend.tools.tool_contract_v1 import tool_err_v1, tool_ok_v1
+from backend.services.logging.logger_core import log_event, LogEventCreate
 
 logger = logging.getLogger("janus_backend")
 
@@ -1060,6 +1061,7 @@ class ToolExecutor:
         dry_run: bool = False,
     ) -> List[Dict[str, Any]]:
         """Führt eine Liste von Tool-Aufrufen parallel aus."""
+        logger.info(f"DEBUG-LOGGING: Context contains keys: {self.additional_context.keys()}")
         result_slots = [None] * len(tool_calls)
         pending_tasks = []
         pending_indices = []
@@ -1072,6 +1074,12 @@ class ToolExecutor:
         logger.info(
             f"EXECUTOR: execute_tool_calls aufgerufen. Bypass={bypass_policy}, DryRun={dry_run}, Anzahl Tools={len(tool_calls)}"
         )
+
+        # Extract context data for logging
+        ctx_data = self.additional_context or {}
+        provider = str(ctx_data.get("provider") or "MISSING_PROVIDER")
+        model = str(ctx_data.get("model") or ctx_data.get("model_id") or "MISSING_MODEL")
+        session_id = str(ctx_data.get("chat_id") or ctx_data.get("session_id") or "MISSING_SESSION")
 
         for idx, tool_call in enumerate(tool_calls):
             function = tool_call.get("function", {})
@@ -1236,7 +1244,46 @@ class ToolExecutor:
                 continue
 
             pending_indices.append(idx)
-            pending_tasks.append(self.execute_tool_call(func_name, func_args, trace_id=trace_id))
+            # Create a wrapper that handles logging
+            async def _execute_with_logging(skill_id, func_name, func_args, trace_id, idx):
+                start_time = time.perf_counter()
+                
+                # Log tool start
+                try:
+                    await log_event(LogEventCreate(
+                        session_id=session_id,
+                        provider=provider,
+                        model=model,
+                        skill=skill_id,
+                        event_type="tool_start",
+                        payload={"arguments": func_args}
+                    ))
+                except Exception as log_exc:
+                    logger.error(f"Failed to log tool_start event: {log_exc}")
+
+                # Execute the tool
+                result = await self.execute_tool_call(func_name, func_args, trace_id=trace_id)
+
+                # Log tool end
+                latency_ms = int((time.perf_counter() - start_time) * 1000)
+                status = "success" if result.get("status") in ("ok", "dry_run_success") else "error"
+                try:
+                    await log_event(LogEventCreate(
+                        session_id=session_id,
+                        provider=provider,
+                        model=model,
+                        skill=skill_id,
+                        event_type="tool_end",
+                        status=status,
+                        payload={"result": result.get("data") if status == "success" else result.get("error")},
+                        latency_ms=latency_ms
+                    ))
+                except Exception as log_exc:
+                    logger.error(f"Failed to log tool_end event: {log_exc}")
+
+                return result
+
+            pending_tasks.append(_execute_with_logging(skill_id or resolved_name or func_name or "", func_name, func_args, trace_id, idx))
 
         if pending_tasks:
             execution_results = await asyncio.gather(*pending_tasks)

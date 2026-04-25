@@ -2,6 +2,23 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [LESSON] #Logging #Context "Metadata Injection Pattern — ToolExecutor benötigt explizite Provider/Model-Daten im additional_context für akkurate Telemetrie"
+- **Kontext:** Diamond-Skills wie `system.weather` bypassen den `ToolExecutor` und werden direkt ausgeführt. Das Logging extrahiert `provider` und `model` aus `additional_context`, aber diese Werte wurden nicht an allen ToolExecutor-Instanziierungen übergeben. Resultat: Logs zeigten "unknown" für provider/model.
+- **Problem:** Inkonsistente Context-Propagation bei ToolExecutor-Instanziierungen. `tool_executor.py` extrahiert `provider` und `model` aus `self.additional_context`, aber nicht alle Instanziierungs-Orte übergaben diese Werte. Dies führte zu "MISSING_PROVIDER"/"MISSING_MODEL" Fallbacks im Logging.
+- **Lösung:** **Konsistente Metadata-Injection:** `provider` und `model` zu `additional_context` hinzugefügt bei ALLEN ToolExecutor-Instanziierungen:
+  - `chat_orchestrator.py` (Zeile 1905-1917, 747-759)
+  - `agent_runtime.py` (Zeile 60-73, 97-112, 127-140)
+  - `execution_dispatcher.py` (bereits korrekt)
+  - `policy_handler.py` (bereits korrekt)
+  - `meta_agent_pipeline.py` (bereits korrekt)
+- **Härtung:** ChatRequest-Attribut-Fix: `req.chosen_model` → `req.model` (ChatRequest-Schema hat `model`, nicht `chosen_model`). Forensische Logs aus allen Dateien entfernt (Debug-Code Cleanup).
+- **Tripwire:** Wenn Logs "unknown" für provider/model zeigen → ToolExecutor-Instanziierung ohne additional_context-Propagation. Erkennbar im Log: `!!! LOGGING-DEBUG !!! Raw Context Keys: ['chat_id']` (provider/model fehlen).
+- **Location:** `backend/services/chat_orchestrator.py`, `backend/services/agent_runtime.py`, `backend/services/tool_executor.py`, gefixt 2026-04-25.
+- **Confidence:** High (Test bestätigt: Context enthält `{'chat_id': 999999, 'provider': 'openai', 'model': 'gpt-4o-mini'}`).
+- **Tags:** Logging, Context, MetadataInjection, ToolExecutor, Provider, Model, DiamondSkills, Telemetry
+
+---
+
 ## [LESSON] #LoopBreaker #SelfCorrection "Error-Retry-Exception — Duplicate Calls sind erlaubt, wenn das vorherige Tool-Ergebnis einen Fehler zurückgab"
 - **Kontext:** HARD-LOOP-BREAKER blockierte alle Duplicate Calls strikt, auch wenn das vorherige Tool-Ergebnis einen Fehler (z.B. INVALID_ARGUMENTS) zurückgab. Dies verhinderte Self-Correction durch das Modell — bei fehlerhaften Argumenten konnte das Modell nicht erneut versuchen mit korrigierten Argumenten. Resultat: Modelle halluzinierten Antworten statt Tool-Errors zu korrigieren.
 - **Problem:** Striktes Duplicate-Blocking ohne Kontext-Berücksichtigung führt zu unnötigen Fehlern bei Self-Correction-Szenarien. Wenn ein Tool einen Fehler aufgrund ungültiger Argumente zurückgibt, sollte das Modell die Möglichkeit haben, den Tool-Call mit korrigierten Argumenten zu wiederholen, ohne vom Loop-Breaker blockiert zu werden.

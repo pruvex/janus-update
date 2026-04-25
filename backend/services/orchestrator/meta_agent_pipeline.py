@@ -495,6 +495,8 @@ async def run_meta_agent_direct_pdf_generation(
             "chat_id": request.chat_id,
             "trace_id": str(uuid.uuid4()),
             "allowed_skill_ids": ["system.create_pdf"],
+            "provider": request.provider,
+            "model": request.model,
         },
     )
     tool_call = {
@@ -591,6 +593,8 @@ async def collect_scandinavia_country_facts(
                     "chat_id": request.chat_id,
                     "trace_id": str(uuid.uuid4()),
                     "allowed_skill_ids": ["system.country_info"],
+                    "provider": request.provider,
+                    "model": request.model,
                 },
             )
             tool_call = {

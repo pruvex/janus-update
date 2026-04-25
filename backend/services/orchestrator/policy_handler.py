@@ -43,7 +43,7 @@ async def handle_policy_consent_phase(
                 wf.api_key,
                 request.provider,
                 request.model,
-                additional_context={"chat_id": request.chat_id, "trace_id": wf.request_trace_id},
+                additional_context={"chat_id": request.chat_id, "trace_id": wf.request_trace_id, "provider": request.provider, "model": request.model},
             )
             if intent_engine.is_one_time_policy_choice(wf.user_text_clean):
                 wf.resume_results = await wf.executor.execute_tool_calls(
