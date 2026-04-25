@@ -183,3 +183,4 @@ clip
 diffusers
 pymupdf
 psutil
+supabase
