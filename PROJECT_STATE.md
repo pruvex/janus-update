@@ -1,6 +1,21 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.35** — "EPIC-SYSTEM-HARVESTER (V2): 🥇 SEALED & COMPLETE. P0-P8 SEALED + Final Extension (Global Scope Discovery, Format-Gatekeeper). RAG V2 Core Pipeline fertiggestellt. Tool-Execution Stack Repaired. RAG V2 Stabilization: Filename Metadata + Path Normalization + Memory Guard. RAG V2 Multi-File Integrity: Hardware Truth + Physical Duplicate Detection. RAG V2 Auto-Read Loop: Path-Pinning for Disambiguation. RAG V2 0-Chunk Integrity Fix. Loop-Breaker Self-Correction. FEAT-FS-BULK-MOVE SEALED. TEST-CLEANUP SEALED. LOGGING PIPELINE PHASE 1: Supabase Client + Pydantic Schemas + Logger Core.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.36** — "EPIC-SYSTEM-HARVESTER (V2): 🥇 SEALED & COMPLETE. P0-P8 SEALED + Final Extension (Global Scope Discovery, Format-Gatekeeper). RAG V2 Core Pipeline fertiggestellt. Tool-Execution Stack Repaired. RAG V2 Stabilization: Filename Metadata + Path Normalization + Memory Guard. RAG V2 Multi-File Integrity: Hardware Truth + Physical Duplicate Detection. RAG V2 Auto-Read Loop: Path-Pinning for Disambiguation. RAG V2 0-Chunk Integrity Fix. Loop-Breaker Self-Correction. FEAT-FS-BULK-MOVE SEALED. TEST-CLEANUP SEALED. LOGGING PIPELINE PHASE 1: Supabase Client + Pydantic Schemas + Logger Core + Batch Worker + Graceful Shutdown.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-25 17:03 (LOGGING PIPELINE PHASE 1: Logger Core (Async RAM-Queue) 🥇 SEALED)
+**Aktualisiert:** 2026-04-25 17:07 (LOGGING PIPELINE PHASE 1: Batch Worker + Graceful Shutdown 🥇 SEALED)
+
+---
+
+## [CURRENT_SESSION_DELTA] (LOGGING PIPELINE PHASE 1 — Batch Worker + Graceful Shutdown 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **LOGGING PIPELINE PHASE 1: Batch Worker + Graceful Shutdown — Async Background Worker mit Exponential Backoff** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-25) |
+| **Root Cause** | Keine Event-Verarbeitung im Hintergrund vorhanden. Blocking I/O würde Orchestrator-Performance beeinträchtigen. Kein Graceful-Shutdown für Datenverlust-Prävention. |
+| **Umsetzung** | **Fix #1 — Batch Worker:** `@c:\KI\Janus-Projekt\backend\services\logging\logger_core.py` — `_batch_upload_worker()` in Endlosschleife. Batching: 50 Events ODER 2 Sekunden Timeout. **Fix #2 — Supabase Upload:** `_upload_batch_to_supabase()` nutzt Supabase-Client für Batch-Insert in `logs_raw` Tabelle. **Fix #3 — Error Handling:** Exponential Backoff (1s, 2s, 4s, 8s...) bei Upload-Fehlern. Events werden bei Failure zurück in Queue gelegt (kein Datenverlust). MAX_RETRIES=5. **Fix #4 — Graceful Shutdown:** `flush_log_queue()` leert Queue vor Shutdown (alle verbleibenden Events hochladen). `stop_worker()` mit Timeout und Cancel-Fallback. **Fix #5 — Lifecycle Integration:** `@c:\KI\Janus-Projekt\backend\main.py` — `lifespan` Context Manager: `start_worker()` vor `yield`, `flush_log_queue()` + `stop_worker()` nach `yield`. |
+| **Ergebnis** | Background Worker verarbeitet Events asynchron mit Batching (50/2s). Exponential Backoff schützt bei Netzwerkfehlern (Events bleiben in Queue). Graceful Shutdown garantiert keine Datenverluste beim App-Stop. Logging Pipeline voll funktionsfähig. |
+| **Files** | `backend/services/logging/logger_core.py` (_batch_upload_worker + _upload_batch_to_supabase + flush_log_queue + start_worker + stop_worker), `backend/main.py` (lifespan integration). |
+| **Verifikation** | Syntax Check: `python -m py_compile backend/services/logging/logger_core.py` ✅ · Syntax Check: `python -m py_compile backend/main.py` ✅ |
+| **Patterns** | [PATTERN] #Async #Worker "Background Worker Pattern — Nutze asyncio.create_task für non-blocking Background-Processing im FastAPI lifespan." · [PATTERN] #Resilience #ExponentialBackoff "Exponential Backoff mit Queue-Restore — Bei Upload-Fehlern Events zurück in Queue legen, um Datenverlust zu vermeiden." · [PATTERN] #Lifecycle #GracefulShutdown "Graceful Shutdown Pattern — Flush Queue vor App-Stop, um keine Events zu verlieren." |
 
 ---
 

@@ -491,6 +491,15 @@ async def lifespan(app: FastAPI):
         logger.error(f"Database connection test failed: {e}")
         # Don't exit here, let the health check handle the status
 
+    # 6. Logging Pipeline: Start batch upload worker
+    try:
+        from backend.services.logging.logger_core import start_worker
+        await start_worker()
+        logger.info("Logging batch upload worker started successfully.")
+    except Exception as e:
+        logger.error(f"Failed to start logging worker: {e}")
+        # Don't exit here, logging is non-critical
+
     # Let the application start even if some non-critical components failed
     # The health check will report the actual status
     yield
@@ -514,6 +523,16 @@ async def lifespan(app: FastAPI):
             logger.info("[P8] RAG Watchdog stopped successfully.")
         except Exception as e:
             logger.warning(f"[P8] Error stopping RAG Watchdog: {e}")
+
+    # Logging Pipeline: Flush queue and stop worker
+    try:
+        from backend.services.logging.logger_core import flush_log_queue, stop_worker
+        logger.info("Shutting down: Flushing log queue...")
+        await flush_log_queue()
+        await stop_worker()
+        logger.info("Logging pipeline shutdown complete.")
+    except Exception as e:
+        logger.error(f"Error during logging pipeline shutdown: {e}")
 
 
 import secrets
