@@ -1,6 +1,21 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.36** — "EPIC-SYSTEM-HARVESTER (V2): 🥇 SEALED & COMPLETE. P0-P8 SEALED + Final Extension (Global Scope Discovery, Format-Gatekeeper). RAG V2 Core Pipeline fertiggestellt. Tool-Execution Stack Repaired. RAG V2 Stabilization: Filename Metadata + Path Normalization + Memory Guard. RAG V2 Multi-File Integrity: Hardware Truth + Physical Duplicate Detection. RAG V2 Auto-Read Loop: Path-Pinning for Disambiguation. RAG V2 0-Chunk Integrity Fix. Loop-Breaker Self-Correction. FEAT-FS-BULK-MOVE SEALED. TEST-CLEANUP SEALED. LOGGING PIPELINE PHASE 1: Supabase Client + Pydantic Schemas + Logger Core + Batch Worker + Graceful Shutdown.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.37** — "EPIC-SYSTEM-HARVESTER (V2): 🥇 SEALED & COMPLETE. P0-P8 SEALED + Final Extension (Global Scope Discovery, Format-Gatekeeper). RAG V2 Core Pipeline fertiggestellt. Tool-Execution Stack Repaired. RAG V2 Stabilization: Filename Metadata + Path Normalization + Memory Guard. RAG V2 Multi-File Integrity: Hardware Truth + Physical Duplicate Detection. RAG V2 Auto-Read Loop: Path-Pinning for Disambiguation. RAG V2 0-Chunk Integrity Fix. Loop-Breaker Self-Correction. FEAT-FS-BULK-MOVE SEALED. TEST-CLEANUP SEALED. LOGGING PIPELINE PHASE 1: COMPLETE (Supabase Client + Pydantic Schemas + Logger Core + Batch Worker + Graceful Shutdown + Event Integration).")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-25 17:07 (LOGGING PIPELINE PHASE 1: Batch Worker + Graceful Shutdown 🥇 SEALED)
+**Aktualisiert:** 2026-04-25 17:11 (LOGGING PIPELINE PHASE 1: COMPLETE 🥇 SEALED)
+
+---
+
+## [CURRENT_SESSION_DELTA] (LOGGING PIPELINE PHASE 1 — Event Integration 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **LOGGING PIPELINE PHASE 1: Event Integration — Tool-Execution & Error Logging mit log_event()** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-25) |
+| **Root Cause** | Keine Event-Integration in die Codebase vorhanden. Tool-Ausführungen und Fehler wurden nicht in Supabase geloggt. |
+| **Umsetzung** | **Fix #1 — Execution Engine:** `@c:\KI\Janus-Projekt\backend\services\orchestrator\execution_engine.py` — Importe: `time`, `LogEventCreate`, `log_event`. **Fix #2 — Tool Start Logging:** Vor `tool_executor.execute_tool_calls` (non-stream + stream) → `log_event(event_type='tool_start', skill, payload=arguments)`. **Fix #3 — Tool End Logging:** Nach `tool_executor.execute_tool_calls` → `log_event(event_type='tool_end', status, payload=result, latency_ms)`. **Fix #4 — Error Logging:** Bei Exception in tool execution → `log_event(event_type='error', status='error', payload=error, latency_ms)`. **Fix #5 — Context Data:** Extraktion von `session_id` (chat_id), `provider`, `model` aus `gateway_kwargs`. **Fix #6 — Chat Orchestrator:** `@c:\KI\Janus-Projekt\backend\services\chat_orchestrator.py` — `handle_chat_request()` und `handle_chat_request_stream()` mit global try/except Block → `log_event(event_type='error', status='error', payload=error)`. |
+| **Ergebnis** | Tool-Start, Tool-End (mit Latenz), und Error-Events werden nun automatisch in Supabase `logs_raw` Tabelle geloggt. Kontext-Daten (session_id, provider, model) korrekt übergeben. Non-Blocking durch async/await. |
+| **Files** | `backend/services/orchestrator/execution_engine.py` (tool_start/tool_end/error logging + latency measurement), `backend/services/chat_orchestrator.py` (error logging in handle_chat_request + handle_chat_request_stream). |
+| **Verifikation** | Syntax Check: `python -m py_compile backend/services/orchestrator/execution_engine.py` ✅ · Syntax Check: `python -m py_compile backend/services/chat_orchestrator.py` ✅ |
+| **Patterns** | [PATTERN] #Logging #EventIntegration "Strategic Event Logging — Loge Events an kritischen Punkten (Tool-Start/End, Error) mit Kontext-Daten für Observability." · [PATTERN] #Performance #LatencyMeasurement "Latency Tracking — Messe Zeit vor und nach Tool-Execution für Performance-Monitoring." |
 
 ---
 

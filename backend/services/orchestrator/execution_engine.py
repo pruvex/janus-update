@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+import time
 import uuid
 from urllib.parse import urlparse
 from typing import Any, AsyncIterator, Dict, List, Optional, cast
@@ -9,6 +10,8 @@ from typing import Any, AsyncIterator, Dict, List, Optional, cast
 import keyring
 
 from backend.data.schemas import AgentSpec
+from backend.data.schemas_logging import LogEventCreate
+from backend.services.logging.logger_core import log_event
 from backend.llm_providers.gemini.service import GeminiServiceProvider
 from backend.llm_providers.ollama.service import OllamaServiceProvider
 from backend.llm_providers.openai.service import OpenAIServiceProvider
@@ -1307,17 +1310,77 @@ class OrchestratorExecutionEngine:
                     function.get("arguments"),
                 )
 
+            # Extract context data for logging
+            provider = str(gateway_kwargs.get("provider") or "").lower()
+            model = str(gateway_kwargs.get("model") or "")
+            session_id = str(gateway_kwargs.get("chat_id") or gateway_kwargs.get("session_id") or "")
+
+            # Log tool start events
+            for tc in tool_calls:
+                fn = tc.get("function") or {}
+                skill_name = str(fn.get("name") or "").strip()
+                try:
+                    await log_event(LogEventCreate(
+                        session_id=session_id,
+                        provider=provider,
+                        model=model,
+                        skill=skill_name,
+                        event_type="tool_start",
+                        payload={"arguments": fn.get("arguments")}
+                    ))
+                except Exception as log_exc:
+                    logger.error(f"Failed to log tool_start event: {log_exc}")
+
             try:
+                start_time = time.time()
                 tool_results = await tool_executor.execute_tool_calls(
                     tool_calls,
                     bypass_policy=bypass_policy_this_turn,
                 )
+                latency_ms = int((time.time() - start_time) * 1000)
                 if bypass_policy_this_turn:
                     bypass_policy_this_turn = False
             except Exception as exc:
+                latency_ms = int((time.time() - start_time) * 1000)
                 logger.error("Error in orchestrator.execution_engine.run_tool_loop: tool execution crash", exc_info=True)
                 response = {"text": f"Die Korrektur ist fehlgeschlagen. Grund: {exc}"}
+                
+                # Log tool end events with error status
+                for tc in tool_calls:
+                    fn = tc.get("function") or {}
+                    skill_name = str(fn.get("name") or "").strip()
+                    try:
+                        await log_event(LogEventCreate(
+                            session_id=session_id,
+                            provider=provider,
+                            model=model,
+                            skill=skill_name,
+                            event_type="tool_end",
+                            status="error",
+                            payload={"error": str(exc)},
+                            latency_ms=latency_ms
+                        ))
+                    except Exception as log_exc:
+                        logger.error(f"Failed to log tool_end event: {log_exc}")
                 break
+
+            # Log tool end events with success status
+            for tr in (tool_results or []):
+                if isinstance(tr, dict):
+                    skill_name = str(tr.get("name") or "").strip()
+                    try:
+                        await log_event(LogEventCreate(
+                            session_id=session_id,
+                            provider=provider,
+                            model=model,
+                            skill=skill_name,
+                            event_type="tool_end",
+                            status="success",
+                            payload={"result": tr.get("content")},
+                            latency_ms=latency_ms
+                        ))
+                    except Exception as log_exc:
+                        logger.error(f"Failed to log tool_end event: {log_exc}")
 
             # 💎 PDF-SUCCESS-TRACKER: Tracken ob PDF bereits erfolgreich war für Loop-Break
             _pdf_already_succeeded = False
@@ -2224,18 +2287,60 @@ class OrchestratorExecutionEngine:
                     metadata={"name": fn.get("name"), "id": tc.get("id")},
                 )
 
+            # Extract context data for logging
+            provider = str(gateway_kwargs.get("provider") or "").lower()
+            model = str(gateway_kwargs.get("model") or "")
+            session_id = str(gateway_kwargs.get("chat_id") or gateway_kwargs.get("session_id") or "")
+
+            # Log tool start events (streaming)
+            for tc in tool_calls:
+                fn = tc.get("function") or {}
+                skill_name = str(fn.get("name") or "").strip()
+                try:
+                    await log_event(LogEventCreate(
+                        session_id=session_id,
+                        provider=provider,
+                        model=model,
+                        skill=skill_name,
+                        event_type="tool_start",
+                        payload={"arguments": fn.get("arguments")}
+                    ))
+                except Exception as log_exc:
+                    logger.error(f"Failed to log tool_start event: {log_exc}")
+
             tool_results: List[Dict[str, Any]] = []
             try:
+                start_time = time.time()
                 tool_results = await tool_executor.execute_tool_calls(
                     tool_calls,
                     bypass_policy=bypass_policy_this_turn,
                 )
+                latency_ms = int((time.time() - start_time) * 1000)
                 tool_results = tool_results or []
                 if bypass_policy_this_turn:
                     bypass_policy_this_turn = False
             except Exception as exc:
+                latency_ms = int((time.time() - start_time) * 1000)
                 logger.error("run_tool_loop_stream: tool execution crash", exc_info=True)
                 response = {"text": f"Die Korrektur ist fehlgeschlagen. Grund: {exc}"}
+                
+                # Log tool end events with error status (streaming)
+                for tc in tool_calls:
+                    fn = tc.get("function") or {}
+                    skill_name = str(fn.get("name") or "").strip()
+                    try:
+                        await log_event(LogEventCreate(
+                            session_id=session_id,
+                            provider=provider,
+                            model=model,
+                            skill=skill_name,
+                            event_type="tool_end",
+                            status="error",
+                            payload={"error": str(exc)},
+                            latency_ms=latency_ms
+                        ))
+                    except Exception as log_exc:
+                        logger.error(f"Failed to log tool_end event: {log_exc}")
                 break
 
             for tc in tool_calls:
@@ -2245,6 +2350,24 @@ class OrchestratorExecutionEngine:
                     content={"ok": True},
                     metadata={"name": fn.get("name"), "id": tc.get("id")},
                 )
+
+            # Log tool end events with success status (streaming)
+            for tr in tool_results:
+                if isinstance(tr, dict):
+                    skill_name = str(tr.get("name") or "").strip()
+                    try:
+                        await log_event(LogEventCreate(
+                            session_id=session_id,
+                            provider=provider,
+                            model=model,
+                            skill=skill_name,
+                            event_type="tool_end",
+                            status="success",
+                            payload={"result": tr.get("content")},
+                            latency_ms=latency_ms
+                        ))
+                    except Exception as log_exc:
+                        logger.error(f"Failed to log tool_end event: {log_exc}")
 
             if tool_results:
                 # 💎 SELF-CORRECTION TRACKER: Speichere Tool-Status für Retry-Logik (Stream)

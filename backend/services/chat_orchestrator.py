@@ -1744,13 +1744,31 @@ class ChatOrchestrator:
         )
 
     async def handle_chat_request(self, request: schemas.ChatRequest, background_tasks: Any = None) -> Dict:
-        ctx = self._classify_request(request, background_tasks)
-        early = await self._try_early_exit(ctx)
-        if early is not None:
-            return early
-        ctx = await self._build_memory_context(ctx)
-        ctx = await self._execute_generation(ctx)
-        return await self._finalize_response(ctx)
+        try:
+            ctx = self._classify_request(request, background_tasks)
+            early = await self._try_early_exit(ctx)
+            if early is not None:
+                return early
+            ctx = await self._build_memory_context(ctx)
+            ctx = await self._execute_generation(ctx)
+            return await self._finalize_response(ctx)
+        except Exception as exc:
+            # Log error event to Supabase
+            try:
+                from backend.services.logging.logger_core import log_event
+                from backend.data.schemas_logging import LogEventCreate
+                
+                await log_event(LogEventCreate(
+                    session_id=str(request.chat_id or ""),
+                    provider=str(request.provider or "").lower(),
+                    model=str(request.model or ""),
+                    event_type="error",
+                    status="error",
+                    payload={"error": str(exc), "request_type": "chat_request"}
+                ))
+            except Exception as log_exc:
+                logger.error(f"Failed to log error event: {log_exc}")
+            raise
 
     def _iter_modal_request_stream_events(self, ctx: Any):
         """Nach ``finalize_response_async``: StreamEvent(s), damit SSE-Clients ``modal_request`` wie POST /chat erhalten."""
@@ -1787,123 +1805,152 @@ class ChatOrchestrator:
         from backend.services.orchestrator.response_finalizer import finalize_response_async
         from backend.services.orchestrator.stream_protocol import StreamEvent
 
-        ctx = self._classify_request(request, background_tasks)
-        early = await self._try_early_exit(ctx)
-        if early is not None:
-            wf = ctx.workflow
-            if isinstance(early, ExecutionResponse):
-                wf.final_text = str(early.text or "")
-                wf.execution_for_api = early
-            elif isinstance(early, dict):
-                wf.final_text = str(early.get("text") or early.get("message") or "")
-            else:
-                wf.final_text = str(early)
-            wf.run_tool_loop_result = None
-            wf.response = {}
-            yield StreamEvent(type="stream_complete", content={"text": wf.final_text})
-            await finalize_response_async(
-                ctx,
-                model_hierarchy=self.MODEL_HIERARCHY,
-                orchestrator_cls=ChatOrchestrator,
-            )
-            for ev in self._iter_modal_request_stream_events(ctx):
-                yield ev
-            return
-
-        # 💎 STREAM-SWITCH: Video-Listen → Block-Response für stabile Markdown-Links
-        _wf_check = ctx.workflow
-        if intent_engine.should_disable_streaming(getattr(_wf_check, "user_text", "") or ""):
-            logger.info("💎 STREAM-SWITCH: Video-List-Intent erkannt → Block-Response für stabile Links")
-            ctx = await self._build_memory_context(ctx)
-            ctx = await self._execute_generation(ctx)
-            result = await self._finalize_response(ctx)
-            wf = ctx.workflow
-
-            # Extract text from result
-            if isinstance(result, ExecutionResponse):
-                block_text = str(result.text or "")
-            elif isinstance(result, dict):
-                block_text = str(result.get("text") or result.get("message") or "")
-            else:
-                block_text = str(result)
-
-            # 💎 Extract video-list metadata from tool results for frontend cards
-            _video_meta = None
-            _all_tr = []
-            if isinstance(result, ExecutionResponse):
-                _all_tr = result.all_tool_results or []
-            elif isinstance(result, dict):
-                _all_tr = result.get("all_tool_results") or []
-            for _tr in _all_tr:
-                if not isinstance(_tr, dict):
-                    continue
-                _raw = _tr.get("_raw_content") or _tr.get("content", "{}")
-                try:
-                    _parsed = json.loads(_raw) if isinstance(_raw, str) else dict(_raw or {})
-                except Exception:
-                    continue
-                if isinstance(_parsed, dict) and _parsed.get("status") == "ok":
-                    _data = _parsed.get("data") if isinstance(_parsed.get("data"), dict) else {}
-                    if str(_data.get("mode") or "").strip().lower() == "list" and isinstance(_data.get("videos"), list):
-                        _video_meta = {
-                            "videos": _data["videos"],
-                            "count": _data.get("count", 0),
-                            "mode": "list",
-                            "query": _data.get("query"),
-                        }
-                        break
-
-            if _video_meta:
-                yield StreamEvent(
-                    type="metadata",
-                    content=_video_meta,
-                    metadata={"source": "video.search.list_mode"},
-                )
-                logger.info("💎 STREAM-SWITCH: Sent %d videos metadata to frontend", len(_video_meta.get("videos", [])))
-
-            yield StreamEvent(type="stream_complete", content={"text": block_text})
-            for ev in self._iter_modal_request_stream_events(ctx):
-                yield ev
-            return
-
-        ctx = await self._build_memory_context(ctx)
-        ctx = await execute_generation_prepare_gateway(
-            ctx,
-            db=self.db,
-            context_manager=self.context_manager,
-            orchestrator_context_manager=self.orchestrator_context,
-            skill_selector=self.skill_selector,
-            prompt_role_from_db_role=self._prompt_role_from_db_role,
-            user_budget_info=getattr(self, "_user_budget_info", None),
-        )
-        wf = ctx.workflow
-        req = ctx.request
-
-        self.db.commit()
-        self.db.expunge_all()
-
-        wf.executor = ToolExecutor(
-            self.db,
-            wf.api_key,
-            req.provider,
-            wf.chosen_model,
-            additional_context={
-                "chat_id": req.chat_id,
-                "trace_id": getattr(wf, "request_trace_id", str(uuid.uuid4())),
-                "original_user_text": wf.user_text,
-            },
-        )
-        if getattr(wf, "gateway_kwargs", None):
-            wf.gateway_kwargs["db"] = self.db
-            wf.gateway_kwargs["tool_executor"] = wf.executor
-            wf.gateway_kwargs["chat_history"] = wf.messages
-            wf.gateway_kwargs["_workflow"] = wf
-
-        if wf.skip_llm_generation:
-            wf.final_text = wf.final_text or wf.final_text_to_generate
-            if not isinstance(getattr(wf, "response", None), dict):
+        try:
+            ctx = self._classify_request(request, background_tasks)
+            early = await self._try_early_exit(ctx)
+            if early is not None:
+                wf = ctx.workflow
+                if isinstance(early, ExecutionResponse):
+                    wf.final_text = str(early.text or "")
+                    wf.execution_for_api = early
+                elif isinstance(early, dict):
+                    wf.final_text = str(early.get("text") or early.get("message") or "")
+                else:
+                    wf.final_text = str(early)
+                wf.run_tool_loop_result = None
                 wf.response = {}
-            yield StreamEvent(type="stream_complete", content={"text": wf.final_text})
+                yield StreamEvent(type="stream_complete", content={"text": wf.final_text})
+                await finalize_response_async(
+                    ctx,
+                    model_hierarchy=self.MODEL_HIERARCHY,
+                    orchestrator_cls=ChatOrchestrator,
+                )
+                for ev in self._iter_modal_request_stream_events(ctx):
+                    yield ev
+                return
+
+            # 💎 STREAM-SWITCH: Video-Listen → Block-Response für stabile Markdown-Links
+            _wf_check = ctx.workflow
+            if intent_engine.should_disable_streaming(getattr(_wf_check, "user_text", "") or ""):
+                logger.info("💎 STREAM-SWITCH: Video-List-Intent erkannt → Block-Response für stabile Links")
+                ctx = await self._build_memory_context(ctx)
+                ctx = await self._execute_generation(ctx)
+                result = await self._finalize_response(ctx)
+                wf = ctx.workflow
+
+                # Extract text from result
+                if isinstance(result, ExecutionResponse):
+                    block_text = str(result.text or "")
+                elif isinstance(result, dict):
+                    block_text = str(result.get("text") or result.get("message") or "")
+                else:
+                    block_text = str(result)
+
+                # 💎 Extract video-list metadata from tool results for frontend cards
+                _video_meta = None
+                _all_tr = []
+                if isinstance(result, ExecutionResponse):
+                    _all_tr = result.all_tool_results or []
+                elif isinstance(result, dict):
+                    _all_tr = result.get("all_tool_results") or []
+                for _tr in _all_tr:
+                    if not isinstance(_tr, dict):
+                        continue
+                    _raw = _tr.get("_raw_content") or _tr.get("content", "{}")
+                    try:
+                        _parsed = json.loads(_raw) if isinstance(_raw, str) else dict(_raw or {})
+                    except Exception:
+                        continue
+                    if isinstance(_parsed, dict) and _parsed.get("status") == "ok":
+                        _data = _parsed.get("data") if isinstance(_parsed.get("data"), dict) else {}
+                        if str(_data.get("mode") or "").strip().lower() == "list" and isinstance(_data.get("videos"), list):
+                            _video_meta = {
+                                "videos": _data["videos"],
+                                "count": _data.get("count", 0),
+                                "mode": "list",
+                                "query": _data.get("query"),
+                            }
+                            break
+
+                if _video_meta:
+                    yield StreamEvent(
+                        type="metadata",
+                        content=_video_meta,
+                        metadata={"source": "video.search.list_mode"},
+                    )
+                    logger.info("💎 STREAM-SWITCH: Sent %d videos metadata to frontend", len(_video_meta.get("videos", [])))
+
+                yield StreamEvent(type="stream_complete", content={"text": block_text})
+                for ev in self._iter_modal_request_stream_events(ctx):
+                    yield ev
+                return
+
+            ctx = await self._build_memory_context(ctx)
+            ctx = await execute_generation_prepare_gateway(
+                ctx,
+                db=self.db,
+                context_manager=self.context_manager,
+                orchestrator_context_manager=self.orchestrator_context,
+                skill_selector=self.skill_selector,
+                prompt_role_from_db_role=self._prompt_role_from_db_role,
+                user_budget_info=getattr(self, "_user_budget_info", None),
+            )
+            wf = ctx.workflow
+            req = ctx.request
+
+            self.db.commit()
+            self.db.expunge_all()
+
+            wf.executor = ToolExecutor(
+                self.db,
+                wf.api_key,
+                req.provider,
+                wf.chosen_model,
+                additional_context={
+                    "chat_id": req.chat_id,
+                    "trace_id": getattr(wf, "request_trace_id", str(uuid.uuid4())),
+                    "original_user_text": wf.user_text,
+                },
+            )
+            if getattr(wf, "gateway_kwargs", None):
+                wf.gateway_kwargs["db"] = self.db
+                wf.gateway_kwargs["tool_executor"] = wf.executor
+                wf.gateway_kwargs["chat_history"] = wf.messages
+                wf.gateway_kwargs["_workflow"] = wf
+
+            if wf.skip_llm_generation:
+                wf.final_text = wf.final_text or wf.final_text_to_generate
+                if not isinstance(getattr(wf, "response", None), dict):
+                    wf.response = {}
+                yield StreamEvent(type="stream_complete", content={"text": wf.final_text})
+                apply_post_generation_tail(ctx)
+                ctx.final_response = str(wf.final_text or "")
+                await finalize_response_async(
+                    ctx,
+                    model_hierarchy=self.MODEL_HIERARCHY,
+                    orchestrator_cls=ChatOrchestrator,
+                )
+                for ev in self._iter_modal_request_stream_events(ctx):
+                    yield ev
+                return
+
+            result_holder: Dict[str, Any] = {}
+            async for ev in self.execution_engine.run_tool_loop_stream(
+                orchestrator_context=wf.orchestrator_context,
+                tool_executor=wf.executor,
+                gateway_kwargs=wf.gateway_kwargs,
+                fallback_summary=wf.fallback_summary,
+                current_limit=wf.current_limit,
+                bypass_policy_this_turn=wf.bypass_policy_this_turn,
+                set_policy_pending=self._set_policy_pending_data,
+                chat_id=req.chat_id,
+                agent_flow_error=wf.agent_flow_error,
+                result_holder=result_holder,
+            ):
+                yield ev
+
+            wf.run_tool_loop_result = result_holder.get("execution_result")
+            apply_run_tool_loop_result_to_workflow(ctx)
             apply_post_generation_tail(ctx)
             ctx.final_response = str(wf.final_text or "")
             await finalize_response_async(
@@ -1913,34 +1960,30 @@ class ChatOrchestrator:
             )
             for ev in self._iter_modal_request_stream_events(ctx):
                 yield ev
-            return
-
-        result_holder: Dict[str, Any] = {}
-        async for ev in self.execution_engine.run_tool_loop_stream(
-            orchestrator_context=wf.orchestrator_context,
-            tool_executor=wf.executor,
-            gateway_kwargs=wf.gateway_kwargs,
-            fallback_summary=wf.fallback_summary,
-            current_limit=wf.current_limit,
-            bypass_policy_this_turn=wf.bypass_policy_this_turn,
-            set_policy_pending=self._set_policy_pending_data,
-            chat_id=req.chat_id,
-            agent_flow_error=wf.agent_flow_error,
-            result_holder=result_holder,
-        ):
-            yield ev
-
-        wf.run_tool_loop_result = result_holder.get("execution_result")
-        apply_run_tool_loop_result_to_workflow(ctx)
-        apply_post_generation_tail(ctx)
-        ctx.final_response = str(wf.final_text or "")
-        await finalize_response_async(
-            ctx,
-            model_hierarchy=self.MODEL_HIERARCHY,
-            orchestrator_cls=ChatOrchestrator,
-        )
-        for ev in self._iter_modal_request_stream_events(ctx):
-            yield ev
+        except Exception as exc:
+            # Log error event to Supabase
+            try:
+                from backend.services.logging.logger_core import log_event
+                from backend.data.schemas_logging import LogEventCreate
+                
+                await log_event(LogEventCreate(
+                    session_id=str(request.chat_id or ""),
+                    provider=str(request.provider or "").lower(),
+                    model=str(request.model or ""),
+                    event_type="error",
+                    status="error",
+                    payload={"error": str(exc), "request_type": "chat_request_stream"}
+                ))
+            except Exception as log_exc:
+                logger.error(f"Failed to log error event: {log_exc}")
+            
+            # Yield error event to stream
+            yield StreamEvent(
+                type="error",
+                content={"error": str(exc)},
+                metadata={"error_type": "exception"}
+            )
+            raise
 
     def _trigger_fact_extraction(
         self,
