@@ -100,8 +100,7 @@ async def log_event(event: LogEventCreate) -> None:
         event.trace_id = get_trace_id()
     
     # Generate unique ID for UPSERT idempotency
-    # LogEventCreate doesn't have an id field, so we add it dynamically
-    if not hasattr(event, 'id') or event.id is None:
+    if event.id is None:
         event.id = str(uuid4())
     
     # Validate payload if present
@@ -314,6 +313,7 @@ async def _batch_upload_worker() -> None:
             if batch and not _shutdown_requested:
                 success = False
                 retry_count = 0
+                backoff_delay = 1.0  # Initial backoff delay
                 
                 # Exponential backoff retry logic
                 while retry_count < MAX_RETRIES and not success:
@@ -321,15 +321,14 @@ async def _batch_upload_worker() -> None:
                     
                     if not success:
                         retry_count += 1
-                        backoff_time = min(2 ** retry_count, 60)  # Max 60 seconds
+                        backoff_delay = min(2 ** retry_count, 60)  # Max 60 seconds
                         logger.warning(
                             "Upload failed (attempt %d/%d). Retrying in %d seconds...",
-                            retry_count + 1, MAX_RETRIES, backoff_time
+                            retry_count + 1, MAX_RETRIES, backoff_delay
                         )
-                        await asyncio.sleep(backoff_time)
+                        await asyncio.sleep(backoff_delay)
                         global _total_retries
                         _total_retries += 1
-                    retry_count += 1
                     
                     if retry_count < MAX_RETRIES and not _shutdown_requested:
                         await asyncio.sleep(backoff_delay)

@@ -38,7 +38,7 @@ class LogEventCreate(LogEventBase):
     Model for creating a new log event.
     All fields are optional except event_type.
     """
-    pass
+    id: Optional[str] = Field(default=None, description="Unique event identifier for UPSERT idempotency")
 
 
 class LogEvent(LogEventBase):
