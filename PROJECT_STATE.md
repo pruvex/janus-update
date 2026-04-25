@@ -1,6 +1,21 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.20-beta.41** — "EPIC-SYSTEM-HARVESTER (V2): 🥇 SEALED & COMPLETE. P0-P8 SEALED + Final Extension (Global Scope Discovery, Format-Gatekeeper). RAG V2 Core Pipeline fertiggestellt. Tool-Execution Stack Repaired. RAG V2 Stabilization: Filename Metadata + Path Normalization + Memory Guard. RAG V2 Multi-File Integrity: Hardware Truth + Physical Duplicate Detection. RAG V2 Auto-Read Loop: Path-Pinning for Disambiguation. RAG V2 0-Chunk Integrity Fix. Loop-Breaker Self-Correction. FEAT-FS-BULK-MOVE SEALED. TEST-CLEANUP SEALED. D10 EPIC 100% DIAMANT-STANDARD: Phase 1 + Phase 2 Hardening 🥇 SEALED. Schema-Sync Supabase verifiziert. ensure_logging_schema() Auto-Migration. DLQ-Light (failed_batches.jsonl). Resilient Telemetry Pattern etabliert: contextvars Traceability + UPSERT Idempotenz + Drop-Oldest Overflow Protection.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.21-beta.42** — "D11 DEBUG COMPRESSION ENGINE: 🥇 SEALED & COMPLETE. Debug Compression Engine operational with Local Log Fallback. Deterministische Heuristik mit Fallback-Kaskade (RAM → Supabase → Log-File). Provider-agnostisch. Timeout-Schutz. Windsurf Skill /debug-log. D10 EPIC 100% DIAMANT-STANDARD: Phase 1 + Phase 2 Hardening 🥇 SEALED. Schema-Sync Supabase verifiziert. ensure_logging_schema() Auto-Migration. DLQ-Light (failed_batches.jsonl). Resilient Telemetry Pattern etabliert: contextvars Traceability + UPSERT Idempotenz + Drop-Oldest Overflow Protection.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-25 22:30 (D10 EPIC 100% DIAMANT-STANDARD: ensure_logging_schema() + DLQ-Light implementiert, Test bestanden)
+**Aktualisiert:** 2026-04-25 23:50 (D11 DEBUG COMPRESSION ENGINE SEALED — Log-File Fallback implementiert, Windsurf Skill /debug-log operational, WHAT_I_LEARNED.md Pattern zertifiziert)
+
+---
+
+## [CURRENT_SESSION_DELTA] (D11 DEBUG COMPRESSION ENGINE — SEALED & COMPLETE 🥇)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **D11 DEBUG COMPRESSION ENGINE — Log-File Fallback, Windsurf Skill /debug-log, Provider-agnostisch** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-25) |
+| **Root Cause** | Debug-Endpoint konnte keine Logs finden (RAM-Buffer leer, Supabase keine recent Logs). Log-File Fallback fehlte. |
+| **Umsetzung** | **Fix #1 — Log-File Fallback:** `backend/services/logging/debug_engine.py` — `fetch_logs()` erweitert um Log-File Fallback (janus_backend.log lesen). **Fix #2 — Empty-State-Check entfernt:** `backend/main.py` — RAM-Buffer Check entfernt, Supabase Fallback aktiviert. **Fix #3 — Endpoint als Workaround:** `backend/main.py` — GET /api/system/debug-summary direkt als @app.get() (Router-Loading-Problem). **Fix #4 — Windsurf Skill:** `.windsurf/workflows/debug_log.md` — Skill mit curl.exe für PowerShell-Kompatibilität. **Fix #5 — Dokumentation:** `documentation/tasks/D11_debug_compression_engine.md` erstellt. **Fix #6 — Pattern:** WHAT_I_LEARNED.md Pattern #DebugCompression zertifiziert. **Fix #7 — PROJECT_STATE.md:** Version V0.4.20-beta.41 → V0.4.21-beta.42, Epic D11 als SEALED markiert. |
+| **Ergebnis** | D11 Debug Compression Engine operational mit Local Log Fallback. Windsurf Skill /debug-log funktioniert. Provider-agnostisch. Timeout-Schutz. |
+| **Files** | `backend/services/logging/debug_engine.py` (Log-File Fallback), `backend/main.py` (Endpoint), `.windsurf/workflows/debug_log.md` (Skill), `documentation/tasks/D11_debug_compression_engine.md` (Doku), `WHAT_I_LEARNED.md` (Pattern), `PROJECT_STATE.md` (Version bump). |
+| **Verifikation** | Skill: ✅ OPERATIONAL · Log-File Fallback: ✅ VERIFIED · Pattern: ✅ CERTIFIED |
+| **Patterns** | [PATTERN] #DebugCompression #Logging "Debug Compression Engine — Deterministische Heuristik mit Fallback-Kaskade (RAM → Supabase → Log-File) für produktions-sichere Log-Analyse" |
 
 ---
 

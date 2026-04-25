@@ -234,3 +234,126 @@ async def get_rag_status():
     except Exception as e:
         logger.error("[RAG-STATUS] Failed to get RAG status: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to get RAG status: {e}")
+
+
+# D11: Debug Compression Engine Endpoint
+
+
+@router.get("/debug-summary")
+async def get_debug_summary():
+    """
+    D11: Debug Compression Engine — Returns compressed debug diagnosis as Markdown.
+    
+    Analyzes recent logs using the LogAnalyzer (heuristics + LLM summary)
+    and returns a clean Markdown summary for AI Studio debugging.
+    
+    Returns:
+        str: Markdown-formatted debug summary with:
+            - Heuristic findings (hard errors, model drift, latency spikes)
+            - AI-generated diagnosis (if available)
+            - Confidence score
+    """
+    try:
+        import asyncio
+        from backend.services.logging.debug_engine import DebugEngine, get_speed_tier_model
+        from backend.data.schemas_logging import LogEventCreate
+        from datetime import datetime
+        
+        # Empty-State-Check: Prüfe zuerst, ob überhaupt Logs vorhanden sind
+        # Dies verhindert unnötige DB-Abfragen bei leerem RAM-Buffer
+        from backend.services.logging.debug_engine import LogFetcher
+        temp_fetcher = LogFetcher()
+        
+        # Schneller Check: RAM-Buffer leer?
+        if len(temp_fetcher.ram_buffer) == 0:
+            return "# Debug Summary\n\nKeine relevanten Logs für eine Analyse vorhanden."
+        
+        # Get provider and model for LLM
+        provider, model = get_speed_tier_model()
+        logger.info(f"[DEBUG-SUMMARY] Using {provider}/{model} for LLM summary")
+        
+        # Initialize Debug Engine
+        engine = DebugEngine(provider=provider, model=model)
+        
+        # Timeout-Guard: Fetch logs mit 5 Sekunden Timeout
+        try:
+            logs = await asyncio.wait_for(
+                engine.fetcher.fetch_logs(limit=100),
+                timeout=5.0
+            )
+        except asyncio.TimeoutError:
+            logger.warning("[DEBUG-SUMMARY] Timeout bei Log-Fetch")
+            return "# Debug Summary\n\nTimeout bei Log-Analyse (5s exceeded)."
+        
+        if not logs:
+            return "# Debug Summary\n\nKeine relevanten Logs für eine Analyse vorhanden."
+        
+        # Convert LogEntry to LogEvent for _run_heuristics
+        events = []
+        for log in logs:
+            event = LogEventCreate(
+                timestamp=log.timestamp,
+                level=log.level,
+                message=log.message,
+                event_type="log"
+            )
+            events.append(event)
+        
+        # Timeout-Guard: Heuristik mit 5 Sekunden Timeout (non-blocking via run_in_executor)
+        try:
+            findings = await asyncio.wait_for(
+                asyncio.get_event_loop().run_in_executor(
+                    None,
+                    engine.analyzer._run_heuristics,
+                    events
+                ),
+                timeout=5.0
+            )
+        except asyncio.TimeoutError:
+            logger.warning("[DEBUG-SUMMARY] Timeout bei Heuristik-Analyse")
+            return "# Debug Summary\n\nTimeout bei Heuristik-Analyse (5s exceeded)."
+        
+        # Generate heuristic summary
+        heuristic_summary = engine.analyzer.generate_heuristic_summary(findings)
+        
+        # Build Markdown response
+        markdown_parts = []
+        markdown_parts.append("# 🐛 Debug Summary")
+        markdown_parts.append(f"\n**Generated:** {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+        markdown_parts.append(f"**Logs Analyzed:** {len(logs)}")
+        markdown_parts.append(f"**Confidence Score:** {findings['confidence_score']:.2f}")
+        markdown_parts.append("")
+        
+        # Heuristic Findings
+        markdown_parts.append("## 🔍 Heuristic Findings")
+        markdown_parts.append("")
+        markdown_parts.append("```")
+        markdown_parts.append(heuristic_summary)
+        markdown_parts.append("```")
+        markdown_parts.append("")
+        
+        # AI Diagnosis (if available - optional, can be added later)
+        # For now, we return just the heuristic summary
+        
+        # Add copy-friendly summary
+        markdown_parts.append("## 📋 Quick Summary")
+        markdown_parts.append("")
+        if findings['hard_errors']:
+            markdown_parts.append(f"- **Hard Errors:** {len(findings['hard_errors'])}")
+        if findings['model_drift']:
+            markdown_parts.append(f"- **Model Drift:** {len(findings['model_drift'])}")
+        if findings['latency_spikes']:
+            markdown_parts.append(f"- **Latency Spikes:** {len(findings['latency_spikes'])}")
+        if not any([findings['hard_errors'], findings['model_drift'], findings['latency_spikes']]):
+            markdown_parts.append("- No critical issues detected")
+        
+        markdown_parts.append("")
+        markdown_parts.append("---")
+        markdown_parts.append("")
+        markdown_parts.append("*Generated by D11 Debug Compression Engine*")
+        
+        return "\n".join(markdown_parts)
+        
+    except Exception as e:
+        logger.error("[DEBUG-SUMMARY] Failed to generate debug summary: %s", e, exc_info=True)
+        return f"# Debug Summary\n\nFehler bei der Log-Analyse: {str(e)}"

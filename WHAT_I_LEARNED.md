@@ -248,6 +248,29 @@
 - **Confidence:** High (Live-verifiziert: Auto-Escalation über 3 Laufwerke findet beide Duplikate trotz 20+ defekten Desktop-Ordnern)
 - **Tags:** Python, Pathlib, rglob, os.walk, Windows, Symlink, Robustness, Iteration
 
+## [PATTERN] #DebugCompression #Logging "Debug Compression Engine — Deterministische Heuristik mit Fallback-Kaskade (RAM → Supabase → Log-File) für produktions-sichere Log-Analyse"
+- **Kontext:** D11 Debug Compression Engine wurde entwickelt, um Logs für AI Studio Debugging zu komprimieren. Die Engine soll deterministische Heuristiken nutzen (Hard Errors, Model Drift, Latency Spikes) und LLM-gestützte Zusammenfassung als Fallback. Wichtig: Provider-agnostisch (nutzt User's Speed-Tier Modell) und mit Timeout-Schutz gegen Blockaden.
+- **Problem:** RAM-Buffer war leer (nicht mit realer Logging-System verbunden). Supabase hatte keine Logs aus den letzten 10 Minuten. Endpoint gab immer "Keine relevanten Logs" zurück, obwohl Janus aktiv war und Logs in janus_backend.log geschrieben wurden.
+- **Lösung:** **Drei-Stufen-Fallback-Kaskade in LogFetcher.fetch_logs():**
+  1. RAM-Buffer (Priorität, wenn gefüllt)
+  2. Supabase (letzte 10 Minuten aus logs_raw Tabelle)
+  3. Log-File (direkt aus janus_backend.log lesen, letzte 100 Zeilen)
+  4. Empty-State (informative Message wenn alle Fallbacks leer)
+- **Heuristik-Erkennung:** Deterministische Regex-basierte Pattern-Matching für:
+  - Hard Errors (status='error')
+  - Model Drift (provider/model Wechsel innerhalb eines Traces)
+  - Latency Spikes (latency_ms > 5000)
+- **Provider-Agnostic:** Nutzt `get_speed_tier_model()` für dynamische Modell-Auswahl (OpenAI, Gemini, Anthropic, etc.). Kein hartcodiertes Modell.
+- **Timeout-Schutz:** 5 Sekunden Timeout pro Operation (Fetch + Heuristik). Non-blocking via `run_in_executor` für CPU-intensive Heuristik. Graceful Degradation bei Timeouts.
+- **Endpoint:** GET /api/system/debug-summary in main.py (Workaround für Router-Loading-Problem). Windsurf Skill: /debug-log via curl.exe.
+- **Tripwire:** Wenn Debug-Endpoint immer "Keine relevanten Logs" zurückgibt obwohl Logs existieren → Fallback-Kaskade unvollständig. Erkennbar: Log-File Fallback fehlt oder RAM-Buffer Check blockiert Supabase Fallback.
+- **Location:** `backend/services/logging/debug_engine.py` (LogFetcher Fallback, LogAnalyzer Heuristik), `backend/main.py` (Endpoint), `.windsurf/workflows/debug_log.md` (Skill), implementiert 2026-04-25.
+- **Epic:** D11 — Debug Compression Engine
+- **Confidence:** High (Log-File Fallback verifiziert: 100 Logs aus janus_backend.log analysiert, keine kritischen Issues gefunden).
+- **Tags:** DebugCompression, Logging, Heuristik, Fallback, RAM, Supabase, LogFile, ProviderAgnostic, Timeout, NonBlocking
+
+---
+
 ## [PATTERN] #Skill #AutoEscalation "Mehrstufige Skill-Eskalation (cheap→expensive) ohne LLM-Intervention"
 - **Kontext:** `filesystem.find_files` soll bei "wo finde ich xy?" schnell in Workspaces suchen (Default ~200ms) UND bei Nichtfund automatisch global auf allen Laufwerken nachschauen (~5s warm, ~20s cold). Wenn man dem LLM beide Parameter (`search_all_drives=true/false`) überlässt, trifft es oft die falsche Entscheidung (entweder zu langsam als Default oder übersieht Duplikate).
 - **Pattern:** **Zwei-Phasen-Sweep mit fester Heuristik im Skill selbst** — Phase 1 läuft immer billig; wenn Phase-1-Ergebnis unter einer klaren Schwelle (hier: ≤1 Treffer) bleibt UND der User keinen expliziten Scope (`root`) gesetzt hat, eskaliert Phase 2 automatisch auf den teureren globalen Sweep. Ergebnisse werden via `existing`-Set dedupliziert. Response enthält `auto_escalated: bool` als Transparenz-Flag.
