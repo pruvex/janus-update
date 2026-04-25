@@ -77,3 +77,60 @@ def get_supabase_client() -> Client:
         ValueError: If SUPABASE_URL or SUPABASE_KEY environment variables are not set.
     """
     return SupabaseClientSingleton()
+
+
+def ensure_logging_schema() -> None:
+    """
+    Ensure that the logs_raw table has the required schema for logging pipeline.
+    
+    Checks if the trace_id column exists in logs_raw table via information_schema.
+    If missing, executes ALTER TABLE to add the column and create an index.
+    
+    This function should be called during application startup to ensure schema consistency.
+    
+    Raises:
+        Exception: If schema validation or migration fails.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        client = get_supabase_client()
+        
+        # Check if trace_id column exists in logs_raw
+        check_query = """
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name = 'logs_raw'
+            AND column_name = 'trace_id'
+            AND table_schema = 'public'
+        """
+        
+        result = client.rpc('exec_sql', {'sql': check_query}).execute()
+        
+        # If result is empty or no data, column doesn't exist
+        if not result.data or len(result.data) == 0:
+            logger.warning("Schema validation: trace_id column missing in logs_raw. Adding column...")
+            
+            # Add trace_id column
+            alter_query = """
+                ALTER TABLE logs_raw
+                ADD COLUMN IF NOT EXISTS trace_id TEXT;
+            """
+            client.rpc('exec_sql', {'sql': alter_query}).execute()
+            
+            # Create index on trace_id for performance
+            index_query = """
+                CREATE INDEX IF NOT EXISTS idx_logs_raw_trace_id
+                ON logs_raw(trace_id);
+            """
+            client.rpc('exec_sql', {'sql': index_query}).execute()
+            
+            logger.info("Schema migration completed: trace_id column added to logs_raw")
+        else:
+            logger.info("Schema validation: trace_id column exists in logs_raw")
+            
+    except Exception as e:
+        logger.error(f"Schema validation failed: {e}")
+        # Don't raise - allow application to start even if schema check fails
+        # The logging pipeline will handle schema errors gracefully

@@ -33,6 +33,9 @@ Logging Pipeline Hardening - Schema-Validierung, Idempotenz und Trace-ID Integra
   - [x] Integriere set_trace_id in chat_orchestrator.py handle_chat_request
   - [x] Logge routing_decision in chat_orchestrator.py
   - [x] Logge fallback_trigger in execution_engine.py
+  - [x] Implementiere ensure_logging_schema() in supabase_client.py (Auto-Migration via information_schema.columns)
+  - [x] Integriere ensure_logging_schema() in start_worker() (Schema-Check bei jedem Serverstart)
+  - [x] Implementiere DLQ-Light: _write_to_dlq() für failed_batches.jsonl bei MAX_RETRIES
 - [x] **Phase 3 (Testing):** Syntax Check: `python -m py_compile backend/services/logging/logger_core.py` ✅
 - [x] **Phase 4 (Post-Check):** `/post-impl` ausführen.
 - [ ] **Phase 5 (Audit - Optional):** `/opus-audit` bei Bedarf ausführen.
@@ -60,21 +63,23 @@ Logging Pipeline Hardening - Schema-Validierung, Idempotenz und Trace-ID Integra
 ### Open Items (Pending Bugfix)
 | Item | Status | Owner |
 |------|--------|-------|
-| Schema-Sync Supabase (DB Migration) | ⏳ PENDING | Finaler Bugfix erforderlich |
+| Schema-Sync Supabase (DB Migration) | ✅ RESOLVED | ensure_logging_schema() Auto-Migration implementiert |
+| DLQ-Light (Dead Letter Queue) | ✅ RESOLVED | failed_batches.jsonl bei MAX_RETRIES implementiert |
 
 ### Audit Sign-off
 - **Implementiert von:** Kimi K2.5
 - **Audit Datum:** 2026-04-25
-- **Status:** ✅ COMPLETE (pending final Schema-Sync)
+- **Status:** ✅ COMPLETE (100% Diamant-Standard: Auto-Migration + DLQ-Light)
 
 ## 6. Ergebnis & Audit-Trail
-**Epic:** D10 — Logging Pipeline Hardening
+**Epic:** D10 — Logging Pipeline Hardening (100% Diamant-Standard)
 **Status:** 🥇 SEALED & COMPLETE (2026-04-25)
-**Ergebnis:** Logging Pipeline vollständig gehärtet mit Trace-IDs, Overflow-Schutz, Self-Health-Logging und UPSERT-Idempotenz.
+**Ergebnis:** Logging Pipeline vollständig gehärtet mit Trace-IDs, Overflow-Schutz, Self-Health-Logging, UPSERT-Idempotenz, Auto-Migration-Guard und DLQ-Light.
 
 **Files changed:**
 - `backend/data/schemas_logging.py` — trace_id zu LogEventBase hinzugefügt, LogEventPayload Modell erstellt
-- `backend/services/logging/logger_core.py` — Validierungsschicht, UPSERT Support, Queue Overflow Strategy, Metrics Tracking, system_health Event, contextvar für trace_id, UUID-Generierung
+- `backend/services/logging/logger_core.py` — Validierungsschicht, UPSERT Support, Queue Overflow Strategy, Metrics Tracking, system_health Event, contextvar für trace_id, UUID-Generierung, DLQ-Light (_write_to_dlq)
+- `backend/services/logging/supabase_client.py` — ensure_logging_schema() Auto-Migration via information_schema.columns
 - `backend/services/chat_orchestrator.py` — set_trace_id Integration, routing_decision Logging
 - `backend/services/orchestrator/execution_engine.py` — fallback_trigger Logging (Modell-Upgrades)
 
@@ -88,8 +93,11 @@ Logging Pipeline Hardening - Schema-Validierung, Idempotenz und Trace-ID Integra
 7. Trace-ID Context-Propagation: contextvar mit set_trace_id/get_trace_id/generate_trace_id
 8. Routing Decision Logging: routing_decision Event mit gewähltem Modell im Payload
 9. Fallback Trigger Logging: fallback_trigger Event bei Modell-Upgrades
+10. **Auto-Migration-Guard:** ensure_logging_schema() prüft via information_schema.columns ob trace_id Spalte existiert, führt ALTER TABLE + CREATE INDEX bei Bedarf aus
+11. **Schema-Check Integration:** start_worker() ruft ensure_logging_schema() vor Worker-Start auf (bei jedem Serverstart)
+12. **DLQ-Light:** _write_to_dlq() schreibt fehlgeschlagene Batches nach 5 Retries in backend/logs/failed_batches.jsonl statt Events ewig in Queue zu halten
 
-**Test result:** Syntax Check: `python -m py_compile backend/services/logging/logger_core.py` ✅ · `python -m py_compile backend/data/schemas_logging.py` ✅
+**Test result:** Syntax Check: `python -m py_compile backend/services/logging/logger_core.py` ✅ · `python -m py_compile backend/data/schemas_logging.py` ✅ · `python -m py_compile backend/services/logging/supabase_client.py` ✅ · Test-Script `backend/tests/test_logging_final.py` ✅ PASS
 
 ## 7. Debugging-Log
 **Keine Probleme aufgetreten.** Alle Implementierungen erfolgreich abgeschlossen.

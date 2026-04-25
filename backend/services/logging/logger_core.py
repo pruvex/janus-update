@@ -8,6 +8,8 @@ from contextvars import ContextVar
 from datetime import datetime
 from typing import Optional, List
 from uuid import uuid4
+import json
+from pathlib import Path
 
 from backend.data.schemas_logging import LogEventCreate, LogEvent, LogEventPayload
 from backend.services.logging.supabase_client import get_supabase_client
@@ -169,11 +171,49 @@ def get_queue_size() -> int:
 def is_queue_empty() -> bool:
     """
     Check if the queue is empty.
-    
+
     Returns:
         bool: True if queue has no events, False otherwise.
     """
     return _log_queue.empty()
+
+
+def _write_to_dlq(events: List[LogEventCreate], error: str) -> None:
+    """
+    Write failed events to Dead Letter Queue (DLQ) file.
+
+    This is a lightweight DLQ implementation that writes failed batches
+    to a JSONL file for manual inspection and recovery.
+
+    Args:
+        events: List of failed log events.
+        error: Error message describing why the batch failed.
+    """
+    try:
+        # Ensure logs directory exists
+        logs_dir = Path(__file__).parent.parent.parent / "backend" / "logs"
+        logs_dir.mkdir(parents=True, exist_ok=True)
+
+        dlq_path = logs_dir / "failed_batches.jsonl"
+
+        # Write each event as a JSON line with error context
+        with open(dlq_path, "a", encoding="utf-8") as f:
+            for event in events:
+                dlq_entry = {
+                    "event": event.model_dump(mode="json"),
+                    "error": error,
+                    "failed_at": datetime.utcnow().isoformat(),
+                }
+                f.write(json.dumps(dlq_entry) + "\n")
+
+        logger.warning(
+            "DLQ: Wrote %d failed events to %s (error: %s)",
+            len(events),
+            dlq_path,
+            error[:100],
+        )
+    except Exception as e:
+        logger.error("DLQ: Failed to write to dead letter queue: %s", e)
 
 
 async def get_next_event() -> LogEventCreate:
@@ -362,7 +402,8 @@ async def _batch_upload_worker() -> None:
             
             if retry_count >= MAX_RETRIES:
                 logger.error("Max retries (%d) exceeded for batch of %d events", MAX_RETRIES, len(batch))
-                # Events are already back in queue
+                # Write to DLQ instead of keeping in queue forever
+                _write_to_dlq(batch, f"Max retries ({MAX_RETRIES}) exceeded")
                 
         except asyncio.CancelledError:
             logger.info("Worker cancelled, shutting down gracefully")
@@ -428,6 +469,15 @@ async def flush_log_queue() -> None:
 async def start_worker() -> None:
     """Start the batch upload worker as a background task."""
     global _worker_task, _shutdown_requested
+
+    # Ensure logging schema is valid before starting worker
+    try:
+        from backend.services.logging.supabase_client import ensure_logging_schema
+        ensure_logging_schema()
+        logger.info("Logging schema validation completed")
+    except Exception as e:
+        logger.warning(f"Schema validation failed (continuing anyway): {e}")
+
     _shutdown_requested = False
     _worker_task = asyncio.create_task(_batch_upload_worker())
     logger.info("Batch upload worker task started")

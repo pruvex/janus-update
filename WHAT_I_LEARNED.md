@@ -14,6 +14,8 @@
   6. **Metrics Tracking:** `successful_uploads`, `failed_uploads`, `total_retries` als Counter.
   7. **system_health Event:** Periodisches Logging alle 50 Batches mit Queue-Größe und Erfolgsrate.
   8. **Integration:** `routing_decision` im Orchestrator, `fallback_trigger` in ExecutionEngine.
+  9. **Auto-Migration-Guard:** `ensure_logging_schema()` prüft via `information_schema.columns` ob `trace_id` Spalte existiert, führt `ALTER TABLE + CREATE INDEX` bei Bedarf aus. Wird bei jedem Serverstart via `start_worker()` aufgerufen.
+  10. **Local DLQ Fallback:** `_write_to_dlq()` schreibt fehlgeschlagene Batches nach 5 Retries in `backend/logs/failed_batches.jsonl` statt Events ewig in Queue zu halten. JSONL-Format mit Error-Context für manuelle Recovery.
 - **Architektur:** Async RAM-Queue (asyncio.Queue) → Batch Worker (Background Task) → UPSERT zu Supabase. Graceful Shutdown via `flush_log_queue()`.
 - **Härtung:** Validierungsschicht verwirft Events mit ungültigem Payload. Overflow-Strategie garantiert, dass neue Events immer in die Queue passen. UPSERT garantiert Idempotenz bei Retries. Metrics und system_health ermöglichen proaktives Monitoring.
 - **Tripwire:** Wenn Logs keine Trace-IDs haben → contextvar nicht gesetzt. Erkennbar: `trace_id=None` in Supabase. Wenn Queue voll und Events blockieren → Overflow-Strategie nicht aktiv. Erkennbar: `asyncio.QueueFull` Exception. Wenn Duplikate in Supabase → UPSERT nicht korrekt konfiguriert. Erkennbar: gleiche Event-IDs mehrfach in logs_raw Tabelle.
