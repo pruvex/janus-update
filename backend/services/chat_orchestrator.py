@@ -1721,6 +1721,26 @@ class ChatOrchestrator:
             getattr(ctx.request, "provider", None),
             getattr(ctx.request, "model", None),
         )
+        
+        # Log routing decision with selected model in payload
+        from backend.services.logging.logger_core import log_event
+        from backend.data.schemas_logging import LogEventCreate
+        try:
+            await log_event(LogEventCreate(
+                session_id=str(getattr(ctx.request, "chat_id", "") or ""),
+                provider=str(getattr(ctx.request, "provider", "") or "").lower(),
+                model=str(getattr(ctx.request, "model", "") or "").lower(),
+                event_type="routing_decision",
+                status="success",
+                payload={
+                    "input_hash": str(hash(str(getattr(ctx.request, "prompt", "") or ""))),
+                    "output_summary": f"Routed to provider={ctx.request.provider}, model={ctx.request.model}",
+                    "error_code": None
+                }
+            ))
+        except Exception as log_exc:
+            logger.error(f"Failed to log routing_decision: {log_exc}")
+        
         return await execute_generation(
             ctx,
             db=self.db,
@@ -1746,6 +1766,11 @@ class ChatOrchestrator:
         )
 
     async def handle_chat_request(self, request: schemas.ChatRequest, background_tasks: Any = None) -> Dict:
+        # Set trace_id for this request context
+        from backend.services.logging.logger_core import set_trace_id, generate_trace_id
+        trace_id = str(request.chat_id) if request.chat_id else generate_trace_id()
+        set_trace_id(trace_id)
+        
         try:
             ctx = self._classify_request(request, background_tasks)
             early = await self._try_early_exit(ctx)

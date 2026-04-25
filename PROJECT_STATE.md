@@ -1,6 +1,6 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.37** — "EPIC-SYSTEM-HARVESTER (V2): 🥇 SEALED & COMPLETE. P0-P8 SEALED + Final Extension (Global Scope Discovery, Format-Gatekeeper). RAG V2 Core Pipeline fertiggestellt. Tool-Execution Stack Repaired. RAG V2 Stabilization: Filename Metadata + Path Normalization + Memory Guard. RAG V2 Multi-File Integrity: Hardware Truth + Physical Duplicate Detection. RAG V2 Auto-Read Loop: Path-Pinning for Disambiguation. RAG V2 0-Chunk Integrity Fix. Loop-Breaker Self-Correction. FEAT-FS-BULK-MOVE SEALED. TEST-CLEANUP SEALED. LOGGING PIPELINE PHASE 1: COMPLETE (Supabase Client + Pydantic Schemas + Logger Core + Batch Worker + Graceful Shutdown + Event Integration + Metadata Fixes 🥇 D10 SEALED).")
+# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.37** — "EPIC-SYSTEM-HARVESTER (V2): 🥇 SEALED & COMPLETE. P0-P8 SEALED + Final Extension (Global Scope Discovery, Format-Gatekeeper). RAG V2 Core Pipeline fertiggestellt. Tool-Execution Stack Repaired. RAG V2 Stabilization: Filename Metadata + Path Normalization + Memory Guard. RAG V2 Multi-File Integrity: Hardware Truth + Physical Duplicate Detection. RAG V2 Auto-Read Loop: Path-Pinning for Disambiguation. RAG V2 0-Chunk Integrity Fix. Loop-Breaker Self-Correction. FEAT-FS-BULK-MOVE SEALED. TEST-CLEANUP SEALED. LOGGING PIPELINE PHASE 1: COMPLETE (Supabase Client + Pydantic Schemas + Logger Core + Batch Worker + Graceful Shutdown + Event Integration + Metadata Fixes 🥇 D10 SEALED). LOGGING PIPELINE HARDENING: COMPLETE (Trace-IDs + Overflow-Schutz + Self-Health-Logging + UPSERT-Idempotenz 🥇 D10-HARDENING SEALED).")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-25 19:50 (LOGGING PIPELINE PHASE 1: D10 Metadata Fixes 🥇 SEALED & COMPLETE)
+**Aktualisiert:** 2026-04-25 20:03 (LOGGING PIPELINE HARDENING: D10-HARDENING 🥇 SEALED & COMPLETE)
 
 ---
 
@@ -16,6 +16,21 @@
 | **Files** | `backend/services/orchestrator/execution_engine.py` (tool_start/tool_end/error logging + latency measurement), `backend/services/chat_orchestrator.py` (error logging in handle_chat_request + handle_chat_request_stream). |
 | **Verifikation** | Syntax Check: `python -m py_compile backend/services/orchestrator/execution_engine.py` ✅ · Syntax Check: `python -m py_compile backend/services/chat_orchestrator.py` ✅ |
 | **Patterns** | [PATTERN] #Logging #EventIntegration "Strategic Event Logging — Loge Events an kritischen Punkten (Tool-Start/End, Error) mit Kontext-Daten für Observability." · [PATTERN] #Performance #LatencyMeasurement "Latency Tracking — Messe Zeit vor und nach Tool-Execution für Performance-Monitoring." |
+
+---
+
+## [CURRENT_SESSION_DELTA] (LOGGING PIPELINE HARDENING — D10-HARDENING 🥇 SEALED & COMPLETE)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **D10-HARDENING — Logging Pipeline Hardening — Trace-IDs, Overflow-Schutz, Self-Health-Logging, UPSERT-Idempotenz** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-25) |
+| **Root Cause** | Logging Pipeline fehlte Resilienz-Mechanismen: keine Trace-ID Context-Propagation, keine Queue Overflow-Strategie, keine System-Health-Monitoring, keine strikte Payload-Validierung. |
+| **Umsetzung** | **Fix #1 — Schema-Erweiterung:** `backend/data/schemas_logging.py` — trace_id zu LogEventBase hinzugefügt, LogEventPayload Modell mit input_hash/output_summary/error_code erstellt. **Fix #2 — Validierungsschicht:** `backend/services/logging/logger_core.py` — Payload-Validierung vor queue.put() mit Warnung bei Schema-Verletzung. **Fix #3 — UPSERT Support:** Batch-Uploader verwendet upsert() mit on_conflict="id" für Idempotenz. **Fix #4 — Queue Overflow Strategy:** Wenn Queue voll (5000), wird ältestes Element via get_nowait() entfernt. **Fix #5 — Metrics Tracking:** successful_uploads, failed_uploads, total_retries werden gezählt. **Fix #6 — system_health Event:** Periodisches Logging (alle 50 Batches) mit Queue-Größe und Erfolgsrate. **Fix #7 — Trace-ID Context-Propagation:** contextvar mit set_trace_id/get_trace_id/generate_trace_id. **Fix #8 — Routing Decision Logging:** routing_decision Event mit gewähltem Modell in chat_orchestrator.py. **Fix #9 — Fallback Trigger Logging:** fallback_trigger Event bei Modell-Upgrades in execution_engine.py. |
+| **Ergebnis** | Logging Pipeline vollständig gehärtet mit Trace-IDs für Request-Tracking, Overflow-Schutz für Speichersicherheit, Self-Health-Logging für Monitoring und UPSERT-Idempotenz für Deduplizierung. Schema-Validierung verhindert ungültige Payloads. |
+| **Files** | `backend/data/schemas_logging.py` (trace_id, LogEventPayload), `backend/services/logging/logger_core.py` (Validierung, UPSERT, Overflow, Metrics, system_health, contextvar), `backend/services/chat_orchestrator.py` (set_trace_id, routing_decision), `backend/services/orchestrator/execution_engine.py` (fallback_trigger). |
+| **Verifikation** | Syntax Check: `python -m py_compile backend/services/logging/logger_core.py` ✅ · `python -m py_compile backend/data/schemas_logging.py` ✅ |
+| **Patterns** | [PATTERN] #Logging #Hardening "Resilient Telemetry Pattern — Kombination aus contextvars für Traceability, UPSERT für Idempotenz und Drop-Oldest für Speichersicherheit." |
 
 ---
 

@@ -735,6 +735,23 @@ class OrchestratorExecutionEngine:
                     "MODEL-TIER-OVERRIDE: Skill '%s' upgrades tier '%s' -> '%s' (provider: %s)",
                     skill_id, user_tier, optimal_tier_norm, provider_key
                 )
+                
+                # Log fallback_trigger for model upgrade
+                from backend.services.logging.logger_core import log_event
+                from backend.data.schemas_logging import LogEventCreate
+                try:
+                    await log_event(LogEventCreate(
+                        event_type="fallback_trigger",
+                        status="success",
+                        payload={
+                            "input_hash": str(hash(skill_id)),
+                            "output_summary": f"Model tier upgraded from {user_tier} to {optimal_tier_norm}",
+                            "error_code": None
+                        }
+                    ))
+                except Exception as log_exc:
+                    logger.error(f"Failed to log fallback_trigger: {log_exc}")
+                
                 return resolved_model
             logger.info(
                 "MODEL-TIER-OVERRIDE: Skill '%s' requests tier '%s' but user tier '%s' is equal/higher; keep model '%s' (provider: %s)",
@@ -1183,6 +1200,23 @@ class OrchestratorExecutionEngine:
                                 "TOOL-LOOP: Model upgraded for skill '%s' from '%s' to '%s'",
                                 resolved_skill, requested_model, optimal_model
                             )
+                            
+                            # Log fallback_trigger for tool-loop model upgrade
+                            from backend.services.logging.logger_core import log_event
+                            from backend.data.schemas_logging import LogEventCreate
+                            try:
+                                await log_event(LogEventCreate(
+                                    event_type="fallback_trigger",
+                                    status="success",
+                                    payload={
+                                        "input_hash": str(hash(resolved_skill)),
+                                        "output_summary": f"Model upgraded from {requested_model} to {optimal_model}",
+                                        "error_code": None
+                                    }
+                                ))
+                            except Exception as log_exc:
+                                logger.error(f"Failed to log fallback_trigger: {log_exc}")
+                            
                             break  # Only upgrade once based on first skill
             
             if not tool_calls:

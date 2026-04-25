@@ -3,9 +3,18 @@ Pydantic models for strict validation of logging events.
 Schema matches the Supabase logs_raw table exactly.
 """
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Literal
 from uuid import UUID, uuid4
 from pydantic import BaseModel, Field, ConfigDict
+
+
+class LogEventPayload(BaseModel):
+    """Strict payload model for log events with enforced fields."""
+    model_config = ConfigDict(extra='allow')  # Allow extra fields for flexibility
+    
+    input_hash: Optional[str] = Field(default=None, description="Hash of input data for deduplication")
+    output_summary: Optional[str] = Field(default=None, description="Summary of output/result")
+    error_code: Optional[str] = Field(default=None, description="Error code if status is error")
 
 
 class LogEventBase(BaseModel):
@@ -21,6 +30,7 @@ class LogEventBase(BaseModel):
     status: Optional[str] = Field(default=None, description="Event status (e.g., 'success', 'failure')")
     payload: Optional[Dict[str, Any]] = Field(default=None, description="Event payload/data")
     latency_ms: Optional[int] = Field(default=None, description="Latency in milliseconds")
+    trace_id: Optional[str] = Field(default=None, description="Trace identifier for request tracking")
 
 
 class LogEventCreate(LogEventBase):

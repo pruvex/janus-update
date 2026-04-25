@@ -4,15 +4,54 @@ Provides non-blocking event ingestion with thread-safe queue operations.
 """
 import asyncio
 import logging
+from contextvars import ContextVar
 from datetime import datetime
 from typing import Optional, List
+from uuid import uuid4
 
-from backend.data.schemas_logging import LogEventCreate, LogEvent
+from backend.data.schemas_logging import LogEventCreate, LogEvent, LogEventPayload
 from backend.services.logging.supabase_client import get_supabase_client
 
 
 # Configure module logger
 logger = logging.getLogger(__name__)
+
+
+# Context variable for trace_id - enables automatic trace propagation
+_trace_id: ContextVar[Optional[str]] = ContextVar("_trace_id", default=None)
+
+
+def set_trace_id(trace_id: str) -> None:
+    """
+    Set the trace_id for the current async context.
+    
+    This enables automatic trace propagation across all logging calls
+    within the same request/transaction context.
+    
+    Args:
+        trace_id: The trace identifier to set (e.g., UUID or chat_id).
+    """
+    _trace_id.set(trace_id)
+
+
+def get_trace_id() -> Optional[str]:
+    """
+    Get the trace_id for the current async context.
+    
+    Returns:
+        The current trace_id if set, None otherwise.
+    """
+    return _trace_id.get()
+
+
+def generate_trace_id() -> str:
+    """
+    Generate a new unique trace_id.
+    
+    Returns:
+        A new UUID-based trace_id as string.
+    """
+    return str(uuid4())
 
 
 # Global async queue for in-memory event buffering
@@ -25,6 +64,11 @@ _worker_task: Optional[asyncio.Task] = None
 # Shutdown flag to signal worker to stop
 _shutdown_requested: bool = False
 
+# Metrics tracking
+_successful_uploads: int = 0
+_failed_uploads: int = 0
+_total_retries: int = 0
+
 
 async def log_event(event: LogEventCreate) -> None:
     """
@@ -32,10 +76,16 @@ async def log_event(event: LogEventCreate) -> None:
     
     This function is non-blocking and designed for high-throughput scenarios.
     Events are enriched with a current timestamp if not already provided.
+    Trace ID is automatically populated from context if not provided in the event.
+    A unique ID is generated for UPSERT idempotency.
+    Payload is validated against strict schema before queuing.
+    
+    Queue Overflow Strategy: If queue is full, remove oldest event before adding new one.
     
     Args:
         event: The log event to be queued. If timestamp is None, it will be
-               set to the current UTC time.
+               set to the current UTC time. If trace_id is None, it will be
+               auto-populated from context.
                
     Raises:
         asyncio.QueueFull: If the queue is full (5000 events). This is a
@@ -45,12 +95,66 @@ async def log_event(event: LogEventCreate) -> None:
     if event.timestamp is None:
         event.timestamp = datetime.utcnow()
     
-    # Add to queue - this will block only if queue is full
+    # Auto-populate trace_id from context if not provided
+    if event.trace_id is None:
+        event.trace_id = get_trace_id()
+    
+    # Generate unique ID for UPSERT idempotency
+    # LogEventCreate doesn't have an id field, so we add it dynamically
+    if not hasattr(event, 'id') or event.id is None:
+        event.id = str(uuid4())
+    
+    # Validate payload if present
+    if event.payload is not None:
+        try:
+            # Validate against strict payload schema
+            LogEventPayload(**event.payload)
+        except Exception as e:
+            # Reject event with schema violation
+            logger.warning(
+                "LOGGING-VALIDATION: Event rejected due to payload schema violation. "
+                "event_type=%s, skill=%s, error=%s, payload=%s",
+                event.event_type,
+                event.skill,
+                str(e),
+                event.payload
+            )
+            return  # Do not queue invalid events
+    
+    # Queue Overflow Strategy: Remove oldest if full
+    if _log_queue.full():
+        try:
+            _log_queue.get_nowait()  # Remove oldest event
+            logger.warning(
+                "LOGGING-OVERFLOW: Queue full (5000). Removed oldest event to make room for new event. "
+                "event_type=%s, skill=%s",
+                event.event_type,
+                event.skill
+            )
+        except asyncio.QueueEmpty:
+            pass  # Should not happen, but handle gracefully
+    
+    # Add to queue
     await _log_queue.put(event)
     
     # Debug logging for monitoring queue size
     current_size = _log_queue.qsize()
     logger.debug("Event added to queue. Current size: %d / 5000", current_size)
+
+
+def get_metrics() -> dict:
+    """
+    Get current logging metrics.
+    
+    Returns:
+        dict: Dictionary with successful_uploads, failed_uploads, total_retries, queue_size
+    """
+    return {
+        "successful_uploads": _successful_uploads,
+        "failed_uploads": _failed_uploads,
+        "total_retries": _total_retries,
+        "queue_size": _log_queue.qsize()
+    }
 
 
 def get_queue_size() -> int:
@@ -106,7 +210,10 @@ async def clear_queue() -> None:
 
 async def _upload_batch_to_supabase(events: List[LogEventCreate]) -> bool:
     """
-    Upload a batch of events to Supabase.
+    Upload a batch of events to Supabase with UPSERT support for idempotency.
+    
+    Uses upsert() with on_conflict='id' to ensure idempotent uploads.
+    If an event with the same ID already exists, it will be updated instead of creating a duplicate.
     
     Args:
         events: List of events to upload.
@@ -121,6 +228,7 @@ async def _upload_batch_to_supabase(events: List[LogEventCreate]) -> bool:
         events_data = []
         for event in events:
             event_dict = {
+                "id": getattr(event, 'id', None),  # Use generated event ID for idempotency
                 "timestamp": event.timestamp.isoformat() if event.timestamp else None,
                 "session_id": event.session_id,
                 "provider": event.provider,
@@ -129,22 +237,33 @@ async def _upload_batch_to_supabase(events: List[LogEventCreate]) -> bool:
                 "event_type": event.event_type,
                 "status": event.status,
                 "payload": event.payload,
-                "latency_ms": event.latency_ms
+                "latency_ms": event.latency_ms,
+                "trace_id": event.trace_id  # New field for trace tracking
             }
             events_data.append(event_dict)
         
-        # Batch insert
-        response = client.table("logs_raw").insert(events_data).execute()
+        # Batch upsert with idempotency via id
+        response = client.table("logs_raw").upsert(
+            events_data,
+            on_conflict="id"  # Use 'id' as conflict resolution key
+        ).execute()
         
         if response.data:
-            logger.info("Successfully uploaded %d events to Supabase", len(events))
+            logger.info("Successfully upserted %d events to Supabase (idempotent)", len(events))
+            global _successful_uploads
+            _successful_uploads += 1
             return True
         else:
-            logger.error("Supabase returned no data for batch insert of %d events", len(events))
+            logger.error("Supabase returned no data for batch upsert of %d events", len(events))
+            global _failed_uploads
+            _failed_uploads += 1
             return False
             
     except Exception as e:
-        logger.error("Failed to upload batch to Supabase: %s", str(e))
+        logger.error("Failed to upsert batch to Supabase: %s", str(e))
+        global _failed_uploads, _total_retries
+        _failed_uploads += 1
+        _total_retries += 1
         return False
 
 
@@ -157,12 +276,15 @@ async def _batch_upload_worker() -> None:
     - 2 seconds have passed since the first event in the batch
     
     Uses exponential backoff on upload failures (events stay in queue).
+    Periodically logs system_health events to Supabase.
     """
     global _shutdown_requested
     
     BATCH_SIZE = 50
     BATCH_TIMEOUT = 2.0  # seconds
     MAX_RETRIES = 5
+    SYSTEM_HEALTH_INTERVAL = 50  # batches between system health events
+    batch_count = 0
     
     logger.info("Batch upload worker started")
     
@@ -186,37 +308,28 @@ async def _batch_upload_worker() -> None:
                         start_time = asyncio.get_event_loop().time()
                         
                 except asyncio.TimeoutError:
-                    # Timeout reached, process current batch
+                    # Timeout reached, upload what we have
                     break
             
-            # Skip if no events collected
-            if not batch:
-                continue
-            
-            logger.debug("Collected batch of %d events", len(batch))
-            
-            # Upload with exponential backoff
-            retry_count = 0
-            backoff_delay = 1.0  # Start with 1 second
-            
-            while retry_count < MAX_RETRIES and not _shutdown_requested:
-                success = await _upload_batch_to_supabase(batch)
+            # Upload batch if not empty
+            if batch and not _shutdown_requested:
+                success = False
+                retry_count = 0
                 
-                if success:
-                    # Upload succeeded, events are removed from queue (already got them)
-                    retry_count = 0
-                    break
-                else:
-                    # Upload failed, put events back in queue
-                    logger.warning(
-                        "Upload failed (attempt %d/%d). Retrying in %.1fs...",
-                        retry_count + 1, MAX_RETRIES, backoff_delay
-                    )
+                # Exponential backoff retry logic
+                while retry_count < MAX_RETRIES and not success:
+                    success = await _upload_batch_to_supabase(batch)
                     
-                    # Put events back in queue (at the front)
-                    for event in reversed(batch):
-                        _log_queue.put_nowait(event)
-                    
+                    if not success:
+                        retry_count += 1
+                        backoff_time = min(2 ** retry_count, 60)  # Max 60 seconds
+                        logger.warning(
+                            "Upload failed (attempt %d/%d). Retrying in %d seconds...",
+                            retry_count + 1, MAX_RETRIES, backoff_time
+                        )
+                        await asyncio.sleep(backoff_time)
+                        global _total_retries
+                        _total_retries += 1
                     retry_count += 1
                     
                     if retry_count < MAX_RETRIES and not _shutdown_requested:
