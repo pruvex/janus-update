@@ -737,10 +737,11 @@ class OrchestratorExecutionEngine:
                 )
                 
                 # Log fallback_trigger for model upgrade
+                import asyncio
                 from backend.services.logging.logger_core import log_event
                 from backend.data.schemas_logging import LogEventCreate
                 try:
-                    await log_event(LogEventCreate(
+                    asyncio.create_task(log_event(LogEventCreate(
                         event_type="fallback_trigger",
                         status="success",
                         payload={
@@ -748,7 +749,7 @@ class OrchestratorExecutionEngine:
                             "output_summary": f"Model tier upgraded from {user_tier} to {optimal_tier_norm}",
                             "error_code": None
                         }
-                    ))
+                    )))
                 except Exception as log_exc:
                     logger.error(f"Failed to log fallback_trigger: {log_exc}")
                 
@@ -1202,10 +1203,11 @@ class OrchestratorExecutionEngine:
                             )
                             
                             # Log fallback_trigger for tool-loop model upgrade
+                            import asyncio
                             from backend.services.logging.logger_core import log_event
                             from backend.data.schemas_logging import LogEventCreate
                             try:
-                                await log_event(LogEventCreate(
+                                asyncio.create_task(log_event(LogEventCreate(
                                     event_type="fallback_trigger",
                                     status="success",
                                     payload={
@@ -1213,7 +1215,7 @@ class OrchestratorExecutionEngine:
                                         "output_summary": f"Model upgraded from {requested_model} to {optimal_model}",
                                         "error_code": None
                                     }
-                                ))
+                                )))
                             except Exception as log_exc:
                                 logger.error(f"Failed to log fallback_trigger: {log_exc}")
                             
