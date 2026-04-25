@@ -1,6 +1,21 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.34** — "EPIC-SYSTEM-HARVESTER (V2): 🥇 SEALED & COMPLETE. P0-P8 SEALED + Final Extension (Global Scope Discovery, Format-Gatekeeper). RAG V2 Core Pipeline fertiggestellt. Tool-Execution Stack Repaired. RAG V2 Stabilization: Filename Metadata + Path Normalization + Memory Guard. RAG V2 Multi-File Integrity: Hardware Truth + Physical Duplicate Detection. RAG V2 Auto-Read Loop: Path-Pinning for Disambiguation. RAG V2 0-Chunk Integrity Fix. Loop-Breaker Self-Correction. FEAT-FS-BULK-MOVE SEALED. TEST-CLEANUP SEALED. LOGGING PIPELINE PHASE 1: Supabase Client + Pydantic Schemas.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.16-beta.35** — "EPIC-SYSTEM-HARVESTER (V2): 🥇 SEALED & COMPLETE. P0-P8 SEALED + Final Extension (Global Scope Discovery, Format-Gatekeeper). RAG V2 Core Pipeline fertiggestellt. Tool-Execution Stack Repaired. RAG V2 Stabilization: Filename Metadata + Path Normalization + Memory Guard. RAG V2 Multi-File Integrity: Hardware Truth + Physical Duplicate Detection. RAG V2 Auto-Read Loop: Path-Pinning for Disambiguation. RAG V2 0-Chunk Integrity Fix. Loop-Breaker Self-Correction. FEAT-FS-BULK-MOVE SEALED. TEST-CLEANUP SEALED. LOGGING PIPELINE PHASE 1: Supabase Client + Pydantic Schemas + Logger Core.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-25 16:59 (LOGGING PIPELINE PHASE 1: Supabase Client + Pydantic Schemas 🥇 SEALED)
+**Aktualisiert:** 2026-04-25 17:03 (LOGGING PIPELINE PHASE 1: Logger Core (Async RAM-Queue) 🥇 SEALED)
+
+---
+
+## [CURRENT_SESSION_DELTA] (LOGGING PIPELINE PHASE 1 — Logger Core (Async RAM-Queue) 🥇 SEALED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **LOGGING PIPELINE PHASE 1: Logger Core — Async RAM-Queue mit Non-Blocking Ingestion** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-25) |
+| **Root Cause** | Keine zentrale Event-Ingestion-Logik vorhanden. Blocking I/O würde die Performance des Orchestrators beeinträchtigen. |
+| **Umsetzung** | **Fix #1 — Async Queue:** `@c:\KI\Janus-Projekt\backend\services\logging\logger_core.py` — Globale `asyncio.Queue[LogEventCreate]` mit maxsize=5000 (Backpressure-Schutz). **Fix #2 — log_event():** Asynchrone Funktion mit Timestamp-Enrichment (wenn None). Non-blocking `await queue.put(event)`. Debug-Logging mit Queue-Size-Monitoring. **Fix #3 — Helper-Funktionen:** `get_queue_size()`, `is_queue_empty()`, `get_next_event()` (für Consumer), `clear_queue()` (für Testing/Emergency). |
+| **Ergebnis** | Non-blocking Event-Ingestion bereit. RAM-Queue puffert Events bis zu 5000 Einträge. Backpressure-Schutz aktiv bei Volllauf. Logger Core bereit für Phase 2 (Consumer/Worker Task). |
+| **Files** | `backend/services/logging/logger_core.py` (Async Queue + log_event + Helpers). |
+| **Verifikation** | Syntax Check: `python -m py_compile backend/services/logging/logger_core.py` ✅ |
+| **Patterns** | [PATTERN] #Async #Queue "Async RAM-Queue Pattern — Nutze asyncio.Queue mit maxsize für Backpressure-Schutz bei High-Throughput Logging." · [PATTERN] #Performance #NonBlocking "Non-Blocking I/O — Event-Ingestion muss async sein, um Orchestrator-Performance nicht zu beeinträchtigen." |
 
 ---
 
