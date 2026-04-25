@@ -38,8 +38,34 @@ Logging Pipeline Hardening - Schema-Validierung, Idempotenz und Trace-ID Integra
 - [ ] **Phase 5 (Audit - Optional):** `/opus-audit` bei Bedarf ausführen.
 
 ## 5. Test-Vorgaben
-- [ ] Regression: `python -m pytest backend/tests -q`
-- [ ] Targeted: Test Schema-Validierung mit ungültigen payload-Strukturen, Test UPSERT mit doppelten Event-IDs
+- [x] Regression: `python -m pytest backend/tests -q`
+- [x] Targeted: Test Schema-Validierung mit ungültigen payload-Strukturen, Test UPSERT mit doppelten Event-IDs
+
+## 5.1 Post-Implementation-Audit (Phase 2 Completion Check)
+
+### Implementation Verification Checklist
+| Check | Status | Notes |
+|-------|--------|-------|
+| Schema-Erweiterung `trace_id` | ✅ PASS | `LogEventBase` enthält `trace_id: Optional[str]` |
+| LogEventPayload Modell | ✅ PASS | Striktes Pydantic-Modell mit `input_hash`, `output_summary`, `error_code` |
+| Validierungsschicht | ✅ PASS | `log_event()` validiert Payload vor `queue.put()` mit Warn-Logging |
+| UPSERT Idempotenz | ✅ PASS | `upsert()` mit `on_conflict="id"` implementiert |
+| Queue Overflow Strategy | ✅ PASS | Drop-Oldest bei Queue voll (maxsize=5000) |
+| Metrics Tracking | ✅ PASS | `successful_uploads`, `failed_uploads`, `total_retries` gezählt |
+| system_health Event | ✅ PASS | Periodisches Logging alle 50 Batches |
+| contextvar Trace-ID | ✅ PASS | `set_trace_id()`, `get_trace_id()`, `generate_trace_id()` implementiert |
+| Routing Decision Logging | ✅ PASS | `routing_decision` Event in `chat_orchestrator.py` |
+| Fallback Trigger Logging | ✅ PASS | `fallback_trigger` Event in `execution_engine.py` |
+
+### Open Items (Pending Bugfix)
+| Item | Status | Owner |
+|------|--------|-------|
+| Schema-Sync Supabase (DB Migration) | ⏳ PENDING | Finaler Bugfix erforderlich |
+
+### Audit Sign-off
+- **Implementiert von:** Kimi K2.5
+- **Audit Datum:** 2026-04-25
+- **Status:** ✅ COMPLETE (pending final Schema-Sync)
 
 ## 6. Ergebnis & Audit-Trail
 **Epic:** D10 — Logging Pipeline Hardening

@@ -259,7 +259,20 @@ async def _upload_batch_to_supabase(events: List[LogEventCreate]) -> bool:
             return False
             
     except Exception as e:
-        logger.error("Failed to upsert batch to Supabase: %s", str(e))
+        error_msg = str(e)
+        # Log PGRST204 (missing column) errors VERY clearly
+        if "PGRST204" in error_msg or "column" in error_msg.lower():
+            logger.error(
+                "=== DATABASE SCHEMA MISMATCH DETECTED ===\n"
+                "Error: %s\n"
+                "This indicates a missing column in the Supabase logs_raw table.\n"
+                "Please verify that the database schema matches the LogEventCreate model in schemas_logging.py.\n"
+                "Required columns: id, timestamp, session_id, provider, model, skill, event_type, status, payload, latency_ms, trace_id\n"
+                "==========================================",
+                error_msg
+            )
+        else:
+            logger.error("Failed to upsert batch to Supabase: %s", error_msg)
         _failed_uploads += 1
         _total_retries += 1
         return False
@@ -285,6 +298,8 @@ async def _batch_upload_worker() -> None:
     batch_count = 0
     
     logger.info("Batch upload worker started")
+    
+    retry_count = 0  # Initialize retry_count at the beginning of the loop
     
     while not _shutdown_requested:
         try:
@@ -312,14 +327,16 @@ async def _batch_upload_worker() -> None:
             # Upload batch if not empty
             if batch and not _shutdown_requested:
                 success = False
-                retry_count = 0
+                retry_count = 0  # Reset retry_count for new batch
                 backoff_delay = 1.0  # Initial backoff delay
                 
                 # Exponential backoff retry logic
                 while retry_count < MAX_RETRIES and not success:
                     success = await _upload_batch_to_supabase(batch)
                     
-                    if not success:
+                    if success:
+                        retry_count = 0  # Reset retry_count on successful upload
+                    else:
                         retry_count += 1
                         backoff_delay = min(2 ** retry_count, 60)  # Max 60 seconds
                         logger.warning(

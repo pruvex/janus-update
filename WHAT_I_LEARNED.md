@@ -3,14 +3,24 @@
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
 ## [PATTERN] #Logging #Hardening "Resilient Telemetry Pattern — Kombination aus contextvars für Traceability, UPSERT für Idempotenz und Drop-Oldest für Speichersicherheit"
-- **Kontext:** Logging Pipeline fehlte Resilienz-Mechanismen: keine Trace-ID Context-Propagation, keine Queue Overflow-Strategie, keine System-Health-Monitoring, keine strikte Payload-Validierung. Bei hohem Throughput konnte die Queue volllaufen und Events verloren gehen. Doppelte Uploads bei Retries führten zu Duplikaten in Supabase.
+- **Kontext:** Logging Pipeline Phase 1 (reines Sammeln) wurde auf Phase 2 (analytische Härtung) gehoben. Die Infrastruktur fehlte Resilienz-Mechanismen: keine Trace-ID Context-Propagation, keine Queue Overflow-Strategie, keine System-Health-Monitoring, keine strikte Payload-Validierung. Bei hohem Throughput konnte die Queue volllaufen und Events verloren gehen. Doppelte Uploads bei Retries führten zu Duplikaten in Supabase.
 - **Problem:** Ohne Trace-ID war Request-Tracking unmöglich (keine End-to-End Tracing). Ohne Overflow-Strategie würde die Queue blockieren bei volllauf (5000 Events). Ohne UPSERT-Idempotenz führten Retries zu Duplikaten in Supabase. Ohne Schema-Validierung konnten ungültige Payloads die Queue verunreinigen.
-- **Lösung:** **Trace-ID Context-Propagation:** contextvar (`_trace_id: ContextVar`) mit `set_trace_id()`, `get_trace_id()`, `generate_trace_id()`. Auto-Population in `log_event()` wenn nicht gesetzt. **Queue Overflow Strategy:** Wenn Queue voll, wird ältestes Element via `get_nowait()` entfernt (Drop-Oldest). **UPSERT Idempotenz:** UUID wird in `log_event()` generiert und als `event.id` dynamisch hinzugefügt. Batch-Uploader verwendet `upsert()` mit `on_conflict="id"`. **Metrics Tracking:** `successful_uploads`, `failed_uploads`, `total_retries` werden gezählt. **system_health Event:** Periodisches Logging (alle 50 Batches) mit Queue-Größe und Erfolgsrate. **Schema-Validierung:** `LogEventPayload` Modell mit `input_hash`, `output_summary`, `error_code`. Validierung vor `queue.put()` mit Warnung bei Schema-Verletzung.
-- **Härtung:** Validierungsschicht verwirft Events mit ungültigem Payload (kein Datenverlust durch ungültige Events). Overflow-Strategie garantiert, dass neue Events immer in die Queue passen (älteste werden verworfen). UPSERT garantiert Idempotenz bei Retries (keine Duplikate). Metrics und system_health ermöglichen proaktives Monitoring.
-- **Tripwire:** Wenn Logs keine Trace-IDs haben → contextvar nicht gesetzt. Erkennbar im Log: `trace_id=None` in Supabase. Wenn Queue voll und Events blockieren → Overflow-Strategie nicht aktiv. Erkennbar im Log: `asyncio.QueueFull` Exception. Wenn Duplikate in Supabase → UPSERT nicht korrekt konfiguriert. Erkennbar: gleiche Event-IDs mehrfach in logs_raw Tabelle.
+- **Lösung (Phase 2 Hardening):**
+  1. **Schema-Erweiterung:** `LogEventBase` um `trace_id` (UUID/String) erweitert. `LogEventPayload` als striktes Pydantic-Modell mit `input_hash`, `output_summary`, `error_code`.
+  2. **Trace-ID Context-Propagation:** `contextvar.ContextVar('_trace_id')` mit `set_trace_id()`, `get_trace_id()`, `generate_trace_id()`. Auto-Population in `log_event()` wenn nicht gesetzt.
+  3. **Validierungsschicht:** Schema-Validierung vor `queue.put()` mit Warn-Logging bei Verletzung.
+  4. **Queue Overflow Strategy:** Drop-Oldest bei voller Queue (maxsize=5000) via `get_nowait()`.
+  5. **UPSERT Idempotenz:** UUID-Generierung in `log_event()`, Batch-Uploader nutzt `upsert()` mit `on_conflict="id"`.
+  6. **Metrics Tracking:** `successful_uploads`, `failed_uploads`, `total_retries` als Counter.
+  7. **system_health Event:** Periodisches Logging alle 50 Batches mit Queue-Größe und Erfolgsrate.
+  8. **Integration:** `routing_decision` im Orchestrator, `fallback_trigger` in ExecutionEngine.
+- **Architektur:** Async RAM-Queue (asyncio.Queue) → Batch Worker (Background Task) → UPSERT zu Supabase. Graceful Shutdown via `flush_log_queue()`.
+- **Härtung:** Validierungsschicht verwirft Events mit ungültigem Payload. Overflow-Strategie garantiert, dass neue Events immer in die Queue passen. UPSERT garantiert Idempotenz bei Retries. Metrics und system_health ermöglichen proaktives Monitoring.
+- **Tripwire:** Wenn Logs keine Trace-IDs haben → contextvar nicht gesetzt. Erkennbar: `trace_id=None` in Supabase. Wenn Queue voll und Events blockieren → Overflow-Strategie nicht aktiv. Erkennbar: `asyncio.QueueFull` Exception. Wenn Duplikate in Supabase → UPSERT nicht korrekt konfiguriert. Erkennbar: gleiche Event-IDs mehrfach in logs_raw Tabelle.
 - **Location:** `backend/services/logging/logger_core.py` (contextvar, Overflow, Metrics, system_health, Validierung), `backend/data/schemas_logging.py` (trace_id, LogEventPayload), `backend/services/chat_orchestrator.py` (set_trace_id, routing_decision), `backend/services/orchestrator/execution_engine.py` (fallback_trigger), implementiert 2026-04-25.
+- **Epic:** D10-HARDENING — Phase 2 der Logging Pipeline (Phase 1: D10 Logging Pipeline Phase 1)
 - **Confidence:** High (Kombination aus contextvars, Drop-Oldest und UPSERT bietet maximale Resilienz für Logging-Pipeline).
-- **Tags:** Logging, Hardening, ResilientTelemetry, ContextVar, Traceability, UPSERT, Idempotency, DropOldest, OverflowProtection, Metrics, SystemHealth, SchemaValidation
+- **Tags:** Logging, Hardening, ResilientTelemetry, ContextVar, Traceability, UPSERT, Idempotency, DropOldest, OverflowProtection, Metrics, SystemHealth, SchemaValidation, Phase2
 
 ---
 
