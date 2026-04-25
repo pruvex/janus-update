@@ -221,6 +221,8 @@ async def _upload_batch_to_supabase(events: List[LogEventCreate]) -> bool:
     Returns:
         bool: True if upload succeeded, False otherwise.
     """
+    global _successful_uploads, _failed_uploads, _total_retries
+    
     try:
         client = get_supabase_client()
         
@@ -250,18 +252,15 @@ async def _upload_batch_to_supabase(events: List[LogEventCreate]) -> bool:
         
         if response.data:
             logger.info("Successfully upserted %d events to Supabase (idempotent)", len(events))
-            global _successful_uploads
             _successful_uploads += 1
             return True
         else:
             logger.error("Supabase returned no data for batch upsert of %d events", len(events))
-            global _failed_uploads
             _failed_uploads += 1
             return False
             
     except Exception as e:
         logger.error("Failed to upsert batch to Supabase: %s", str(e))
-        global _failed_uploads, _total_retries
         _failed_uploads += 1
         _total_retries += 1
         return False
