@@ -130,7 +130,11 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
     if last_msg:
         query = last_msg.lower()
         # Harte Erkennung für den Sortier-Auftrag
-        if 'sortiere' in query and ('pdf' in query or 'dateien' in query):
+        is_sort_intent = 'sortiere' in query and ('pdf' in query or 'dateien' in query)
+        # Harte Erkennung für RAG-Intents (Suche Datei X, Lies Datei Y)
+        is_rag_intent = any(keyword in query for keyword in ['suche', 'lies', 'datei', 'dokument', 'pdf']) and any(keyword in query for keyword in ['datei', 'dokument', 'pdf', 'inhalt', 'text'])
+
+        if is_sort_intent or is_rag_intent:
             # Nutze die zentrale Hierarchie-Logik
             from backend.llm_providers.shared.moa import MOA_MODEL_HIERARCHY
             # Wir erzwingen das 'logic' Modell (Standard)
@@ -140,16 +144,18 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
             logic_model = provider_tiers.get('logic') if provider_tiers else None
 
             if logic_model and wf.chosen_model != logic_model:
-                logger.info(f"🔥 [INTENT-OVERRIDE] Sortier-Auftrag erkannt. Erbitte logic-Tier Upgrade: {wf.chosen_model} -> {logic_model}")
+                intent_type = "Sortier-Auftrag" if is_sort_intent else "RAG-Intent"
+                logger.info(f"🔥 [INTENT-OVERRIDE] {intent_type} erkannt. Erbitte logic-Tier Upgrade: {wf.chosen_model} -> {logic_model}")
                 wf.chosen_model = logic_model
 
-            # Knowledge-Skills für Sortier-Intent hinzufügen
+            # Knowledge-Skills für Sortier-Intent und RAG-Intent hinzufügen
             if hasattr(wf, 'relevant_skill_ids'):
                 knowledge_skills = {'knowledge.query', 'knowledge.read_full_text'}
                 for skill in knowledge_skills:
                     if skill not in wf.relevant_skill_ids:
                         wf.relevant_skill_ids.append(skill)
-                        logger.info(f"[INTENT-GUARD] Added {skill} to relevant_skill_ids for sort intent")
+                        intent_type = "sort" if is_sort_intent else "RAG"
+                        logger.info(f"[INTENT-GUARD] Added {skill} to relevant_skill_ids for {intent_type} intent")
     # --- End of Intent-based Model Escalation ---
 
 

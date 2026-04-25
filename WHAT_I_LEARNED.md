@@ -266,6 +266,47 @@
 
 ## [LESSON] #FastAPI #StaticFiles #MountOrder "Silent Mount-Prefix Shadowing"
 - **Kontext:** Janus-Backend mountet in `backend/main.py` sowohl Backend-Preview-Bilder (`/assets` → `backend/assets/`) als auch Frontend-Bundles (`/` → `frontend/dist/`, mit `html=True`). Vite-Production-Builds emittieren gehashte JS/CSS nach `frontend/dist/assets/index-*.{js,css}`, d.h. Asset-URLs auf dem Client lauten `/assets/index-*.js`.
+
+---
+
+## [LESSON] #ThreadSafety #Python #Pathlib "Thread-Scope NameError — Importiere pathlib explizit in daemon-threads, um NameError zu vermeiden"
+- **Kontext:** In `backend/services/tool_executor.py` wurde `from pathlib import Path` importiert, aber später im Code wurde auch `import pathlib` verwendet. In daemon-threads führte dies zu `NameError: name 'pathlib' is not defined`, da der Import-Scope nicht korrekt übernommen wurde. Der Fehler trat nur in daemon-threads auf, nicht im Haupt-Thread.
+- **Problem:** Python-Imports in daemon-threads haben einen anderen Scope als im Haupt-Thread. Wenn ein Modul sowohl mit `from pathlib import Path` als auch mit `import pathlib` importiert wird, kann der Name `pathlib` in daemon-threads nicht aufgelöst werden, selbst wenn `Path` verfügbar ist. Dies führt zu `NameError` zur Laufzeit.
+- **Lösung:** Verwende konsistent nur eine Import-Form. Wenn `from pathlib import Path` verwendet wird, importiere auch explizit `import pathlib` wenn der Modul-Name benötigt wird, oder nutze ausschließlich `import pathlib` und referenziere dann `pathlib.Path`.
+  ```python
+  # Korrekt: Beide Importe, wenn beide Formen benötigt werden
+  from pathlib import Path
+  import pathlib
+  ```
+- **Härtung:** Vermeide gemischte Import-Formen für dasselbe Modul. Wähle eine Form und bleibe dabei konsequent. In daemon-threads ist dies besonders kritisch.
+- **Tripwire:** Wenn `NameError: name 'pathlib' is not defined` in daemon-threads auftritt, obwohl `from pathlib import Path` importiert wurde → gemischte Import-Formen.
+- **Location:** `backend/services/tool_executor.py` (Z. 7: import pathlib hinzugefügt), gefixt 2026-04-25.
+- **Confidence:** High (NameError in daemon-threads behoben durch konsistente Import-Form).
+- **Tags:** ThreadSafety, Python, Pathlib, DaemonThreads, ImportScope, NameError
+
+---
+
+## [PATTERN] #Harvester #PathPolicy #GlobalScan "Harvester-Pattern — Nutze globalen _global_scan_mode Flag in PathPolicy, um allowed_roots für systemweite Scans zu bypassen"
+- **Kontext:** Der Global-Scan soll alle lokalen Laufwerke enumerieren und indizieren, aber die PathPolicy-Validierung (`validate()`) prüft strikt, ob Pfade innerhalb der `allowed_roots` liegen. Dies führte zu "Outside allowed roots" Fehlern beim systemweiten Scan, obwohl der Scan explizit aktiviert wurde.
+- **Problem:** PathPolicy ist standardmäßig auf Workspace-Isolation ausgelegt (Sicherheits-Feature). Für einen systemweiten Harvester-Scan muss diese Isolation temporär deaktiviert werden, ohne die Sicherheits-Mechanismen für normale Workspace-Scans zu kompromittieren.
+- **Pattern:** **Global-Scan-Mode Flag mit Bypass-Logik.** Ein modul-weites `_global_scan_mode: bool` Flag in `path_policy.py` steuert, ob die PathPolicy-Validierung aktiv ist. `enable_global_scan_mode()` setzt das Flag auf `True`, `validate()` und `is_allowed()` prüfen das Flag und bypassen die allowed_roots-Prüfung wenn aktiv.
+  ```python
+  _global_scan_mode: bool = False
+
+  def enable_global_scan_mode() -> None:
+      global _global_scan_mode
+      _global_scan_mode = True
+
+  def validate(self, file_path: Path) -> None:
+      if _global_scan_mode:
+          return  # Bypass validation
+      # Normal validation logic...
+  ```
+- **Warum Global Flag:** Modul-weites Flag ist Thread-sicher (Python GIL garantiert atomare Reads/Writes für einfache Bool-Variablen) und wirkt für alle Threads, die PathPolicy verwenden. Keine Notwendigkeit für Thread-Local Storage oder komplexere Synchronisation.
+- **Trigger-Kriterien für Global-Scan-Mode:** (1) Datenbank ist leer (Initial-Scan). (2) Systemweiter Scan explizit angefordert. (3) Scan läuft in daemon-thread (Hintergrund-Indizierung).
+- **Location:** `backend/services/rag/path_policy.py` (_global_scan_mode, enable_global_scan_mode, validate/is_allowed Bypass), `backend/main.py` (enable_global_scan_mode() Aufruf vor Thread-Start), implementiert 2026-04-25.
+- **Confidence:** High (Global-Scan-Mode ist deterministisch, Bypass-Logik ist in validate() und is_allowed() implementiert, Thread-sicherheit durch GIL garantiert).
+- **Tags:** Harvester, PathPolicy, GlobalScan, Bypass, ThreadSafety, PathNormalization
 - **Problem:** Das frühere `/assets`-Mount fängt ALLES unterhalb seines Präfixes ab — inklusive `/assets/index-*.js` — und gibt 404, weil die Dateien nicht in `backend/assets/` liegen. Im packaged Build (Electron lädt aus `http://127.0.0.1:8001/`) werden CSS/JS dadurch unsichtbar geshadowed → UI rendert komplett ohne Styles. In Dev unsichtbar, weil Vite-Dev-Server (Port 5173) das Backend-Mount-Layout nicht verwendet.
 - **Lösung:** Kollidierende Präfixe zwischen Backend-Previews und Vite-Build-Assets eliminieren. Entweder Backend-Previews auf einen eigenen Pfad (z.B. `/backend_assets/` oder `/previews/`) verschieben, oder den Vite-Output in ein anderes Verzeichnis (`build.assetsDir`) umleiten. In dieser Codebase: `/assets`-Mount entfernt (war Duplikat zu `/backend_assets`).
   ```python

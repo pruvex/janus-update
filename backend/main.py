@@ -469,7 +469,7 @@ async def lifespan(app: FastAPI):
             logger.error(f"[FINAL] Global discovery failed: {e}", exc_info=True)
 
     # HOTFIX: RAG_V2_AUTO_INGEST environment check to speed up boot for testing
-    if os.environ.get("RAG_V2_AUTO_INGEST", "true").lower() == "true":
+    if os.environ.get("RAG_V2_AUTO_INGEST", "false").lower() == "true":
         try:
             from backend.services.rag.path_policy import enable_global_scan_mode
             # Enable global scan mode BEFORE starting the thread (global for all threads)
