@@ -75,6 +75,7 @@
 | **D10 — Logging Pipeline Phase 1** | 🥇 **SEALED & COMPLETE** (2026-04-25) | **Metadata Injection Pattern — Provider/Model in additional_context** | `documentation/tasks/D10_logging_pipeline_phase_1.md` |
 | **D16 — Deterministic Quality System** | 🥇 **SEALED & COMPLETE** (2026-04-26) | **Test Generator, Validation Engine, Model Routing, Escalation, Async-Integrity** | `documentation/tasks/D16_deterministic_quality_system.md` |
 | **D17 — Skill Health Matrix & Decision Interface** | 🥇 **SEALED & COMPLETE** (2026-04-26) | **Batch Runner, Health Matrix, Problem Classification, Decision Report** | `documentation/tasks/D17_skill_health_matrix.md` |
+| **D18 — Real Skill Performance Audit** | 🟡 **IN PROGRESS** (2026-04-26) | **Real Tool-Executor Bridge, Budget Guard (3 skills), Safety Mode (real_run=False)** | `documentation/tasks/D18_real_skill_audit.md` |
 
 > **Turbo-Flow (B5) Detail:** `documentation/tasks/task_019_turbo_flow_epic.md` — 🟡 B5 Phase-1 hot-path DONE; offen: D11 Prompt-Cache, Tool-Response-Store; Blocker: `OllamaCompiler` bei vollem `pytest backend/tests`.
 

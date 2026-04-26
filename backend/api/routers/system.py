@@ -708,48 +708,94 @@ async def get_integrity_check():
 
 
 @router.get("/system/run-batch-tests")
-async def run_batch_tests(background_tasks: BackgroundTasks):
+async def run_batch_tests(
+    background_tasks: BackgroundTasks,
+    real_run: bool = False,
+    max_skills: int = None
+):
     """
-    D17: Batch Skill Tests — Run automated tests for ALL discovered skills (async).
+    D18: Real Skill Performance Audit — Run automated tests for discovered skills (async).
     
     Discovers all skills from backend/skills/ and executes test blueprints in background.
     Returns immediately with status to avoid timeout.
     
     Args:
         background_tasks: FastAPI BackgroundTasks for async execution
+        real_run: If True, uses real tool_executor for actual API calls (default: False for safety)
+        max_skills: Budget guard - limits to N random skills (default: None for all skills)
     
     Returns:
-        {"status": "started", "skills_to_test": <count>}
+        {"status": "started", "skills_to_test": <count>, "real_run": <bool>}
     """
     try:
+        import random
         from backend.services.testing.test_generator import TestGenerator
         from backend.services.testing.test_runner import TestRunner, discover_skills
+        from backend.services.tool_executor import ToolExecutor
+        from backend.data.database import get_db
+        import keyring
         
         # Discover all skills (triggers forensic logging)
         skill_ids = discover_skills()
-        logger.info(f"[D17-BATCH-TEST] Discovered {len(skill_ids)} skills")
+        logger.info(f"[D18-BATCH-TEST] Discovered {len(skill_ids)} skills")
+        
+        # Budget guard: limit to max_skills if specified
+        if max_skills is not None and max_skills > 0:
+            skill_ids = random.sample(skill_ids, min(max_skills, len(skill_ids)))
+            logger.info(f"[D18-BATCH-TEST] Budget guard active: testing {len(skill_ids)} random skills")
         
         # Background task function
         async def run_batch_background():
             try:
-                logger.info("[D17-BATCH-TEST] Starting background batch test run")
+                logger.info(f"[D18-BATCH-TEST] Starting background batch test run (real_run={real_run})")
                 
                 test_runner = TestRunner()
                 
-                # Mock tool_call_fn for testing (no actual execution)
-                async def mock_tool_call_fn(provider: str, model: str, **kwargs):
-                    return {"status": "mock_success", "provider": provider, "model": model}
+                # Tool call function based on real_run flag
+                if real_run:
+                    # Real tool executor - makes actual API calls
+                    logger.warning("[D18-BATCH-TEST] REAL RUN ACTIVE - API calls will be made")
+                    
+                    # Manual session for background task (not using next(get_db()))
+                    from backend.data.database import SessionLocal
+                    db = SessionLocal()
+                    
+                    try:
+                        api_key = keyring.get_password("janus", "api_key")
+                        
+                        tool_executor = ToolExecutor(
+                            db=db,
+                            api_key=api_key,
+                            provider="openai",
+                            model="gpt-4o-mini"
+                        )
+                        
+                        async def real_tool_call_fn(provider: str, model: str, **kwargs):
+                            # Execute real tool calls via ToolExecutor
+                            tool_calls = kwargs.get("tool_calls", [])
+                            results = await tool_executor.execute_tool_calls(tool_calls)
+                            return results
+                    finally:
+                        db.close()
+                else:
+                    # Mock tool_call_fn for testing (no actual execution)
+                    logger.info("[D18-BATCH-TEST] MOCK MODE - no API calls")
+                    async def mock_tool_call_fn(provider: str, model: str, **kwargs):
+                        return {"status": "mock_success", "provider": provider, "model": model}
+                
+                # Select appropriate tool call function
+                tool_call_fn = real_tool_call_fn if real_run else mock_tool_call_fn
                 
                 # Run batch tests
                 batch_summary = await test_runner.run_batch_tests(
-                    tool_call_fn=mock_tool_call_fn,
+                    tool_call_fn=tool_call_fn,
                     skill_ids=skill_ids
                 )
                 
-                logger.info(f"[D17-BATCH-TEST] Background batch test complete: {batch_summary.get('skills_tested', 0)} skills tested")
+                logger.info(f"[D18-BATCH-TEST] Background batch test complete: {batch_summary.get('skills_tested', 0)} skills tested")
                 
             except Exception as e:
-                logger.error(f"[D17-BATCH-TEST] Background batch test failed: {e}", exc_info=True)
+                logger.error(f"[D18-BATCH-TEST] Background batch test failed: {e}", exc_info=True)
         
         # Add background task
         background_tasks.add_task(run_batch_background)
@@ -758,13 +804,15 @@ async def run_batch_tests(background_tasks: BackgroundTasks):
         return {
             "status": "started",
             "skills_to_test": len(skill_ids),
+            "real_run": real_run,
+            "budget_guard": f"{max_skills} skills" if max_skills else "disabled",
             "message": "Batch tests running in background. Check logs for progress."
         }
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("[D17-BATCH-TEST] Failed to start batch tests: %s", e, exc_info=True)
+        logger.error("[D18-BATCH-TEST] Failed to start batch tests: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Batch test start failed: {str(e)}")
 
 
