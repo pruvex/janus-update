@@ -38,6 +38,25 @@
 
 ---
 
+## [PATTERN] #DeterministicProblemClassification #DecisionLoop "Escalation-Tier-Signal als Root-Cause-Indikator — Nutzung von final_tier, attempts_count und latency_ms zur automatischen Kategorisierung von Skill-Defekten ohne KI-Interpretation"
+- **Kontext:** D17 Skill Health Matrix & Decision Interface baut auf D16 (Skill Stability System) und D13 (Optimization Engine) auf. Nach dem Testlauf liefert die Eskalationskette strukturierte Daten (final_tier, attempts_count, status, latency_ms), die als deterministisches Signal für die Root-Cause-Analyse dienen. Die Herausforderung: Aus diesen Daten die richtige Maßnahme ableiten, ohne auf KI-Interpretation zurückzugreifen.
+- **Problem:** Generische "pass/fail" Metriken geben keinen Aufschluss über die Art des Fehlers. Ein Skill, der auf Primary scheitert aber auf Fallback läuft, hat ein anderes Problem als ein Skill, der auf allen Tiers scheitert. Ohne Klassifikation bleibt die Maßnahme unklar.
+- **Lösung (4 Kategorien, strikt deterministisch):**
+  1. **MODEL_WEAKNESS:** `status == "passed"` AND `final_tier NOT IN ("primary", "")` → Primary-Modell ist zu schwach, aber stärkere Modelle bestehen. Maßnahme: Fallback zu Primary promoten (manuell in model_routing.json).
+  2. **PROMPT_ISSUE:** `status IN ("failed", "error")` AND `attempts_count >= 2` → Skill scheitert über ALLE Tiers. Der Befehl ist unklar oder das Tool-Schema fehlerhaft. Maßnahme: Prompt/Schema Review.
+  3. **VALIDATION_FAIL:** `status == "failed"` AND `attempts_count <= 1` → Primary führt aus, Ergebnis kommt zurück, aber ValidationEngine (Regex/Contains) schlägt Alarm. Modell halluziniert das Output-Format. Maßnahme: Prompt verschärfen oder Validierung lockern.
+  4. **TIMEOUT:** `status == "passed"` AND `latency_ms > 3000ms` → Test besteht, aber Latenz über Schwellenwert. Maßnahme: Schnelleres Modell oder Response-Caching.
+- **Confidence Score:** Frequency-basiert (`category_count / total_runs`). Keine probabilistische Schätzung, rein auf Frequenzdaten.
+- **Integration:** `ProblemClassifier` in `optimization_engine.py` aggregiert D10 `skill_test` Events pro Skill. `generate_decision_report()` emittiert pro degraded Skill: Health-Metriken-Tabelle, Problem-Klassifikation-Tabelle (Dominant Category, Confidence, Breakdown), `[PROVISIONAL]` Root-Cause-Empfehlung. Summary enthält Category Distribution.
+- **Härtung:** D10 Payload um `final_tier` und `attempts_count` erweitert (`_log_to_d10`). Alle Recommendations tragen `[PROVISIONAL]` Prefix (D15 Compliance). `model_routing.json` wird NICHT vom Code geändert (Zero Mutability Guardrail).
+- **Tripwire:** Wenn `final_tier` fehlt in D10 Payload → `_log_to_d10` nicht aktualisiert. Wenn alle Skills "HEALTHY" aber pass_rate < 0.9 → Klassifikationslogik defekt. Wenn Recommendations ohne `[PROVISIONAL]` → D15 Compliance verletzt.
+- **Location:** `backend/services/logging/optimization_engine.py` (ProblemClassifier, classify_test_event, _build_recommendation), `backend/services/testing/test_runner.py` (_log_to_d10 payload), `backend/api/routers/system.py` (GET /api/system/decision-report), implementiert 2026-04-26.
+- **Epic:** D17 — Skill Health Matrix & Decision Interface
+- **Confidence:** High (Deterministisch, 4 klar abgegrenzte Kategorien, frequency-basierter Confidence Score, keine KI-Interpretation).
+- **Tags:** DeterministicProblemClassification, DecisionLoop, EscalationSignal, HealthMatrix, D13Integration, D16Integration
+
+---
+
 ## [PATTERN] #Logging #Hardening "Resilient Telemetry Pattern — Kombination aus contextvars für Traceability, UPSERT für Idempotenz und Drop-Oldest für Speichersicherheit"
 - **Kontext:** Logging Pipeline Phase 1 (reines Sammeln) wurde auf Phase 2 (analytische Härtung) gehoben. Die Infrastruktur fehlte Resilienz-Mechanismen: keine Trace-ID Context-Propagation, keine Queue Overflow-Strategie, keine System-Health-Monitoring, keine strikte Payload-Validierung. Bei hohem Throughput konnte die Queue volllaufen und Events verloren gehen. Doppelte Uploads bei Retries führten zu Duplikaten in Supabase.
 - **Problem:** Ohne Trace-ID war Request-Tracking unmöglich (keine End-to-End Tracing). Ohne Overflow-Strategie würde die Queue blockieren bei volllauf (5000 Events). Ohne UPSERT-Idempotenz führten Retries zu Duplikaten in Supabase. Ohne Schema-Validierung konnten ungültige Payloads die Queue verunreinigen.

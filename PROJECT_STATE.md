@@ -1,6 +1,6 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.28-beta.50** — "🥇 D16 DETERMINISTIC QUALITY SYSTEM: Skill Stability System with Test Generator, Validation Engine, Model Router, Escalation Engine, Test Runner, D10 Integration. Deterministic testing without AI validation. Async-Integrity in escalation chain. GET /api/system/run-skill-tests/{skill_id}. D15 INTEGRITY ENGINE: 5-Stage Observability & Integrity Stack (D10-D15) fully operational. D15 CONTRACT REGISTRY: Diamond Contract Specs for D10-D14. Descriptive-Only Guard (D12). Allowed-Actions Guard (D13). KPI-Drift Guard (D14). Decision-Gate Guard ([PROVISIONAL]). IntegrityReport with integrity_score. GET /api/system/integrity-check. 19/19 tests green. D14: 🥇 DIAMOND HARMONIZED. D13: 🥇 DIAMOND HARMONIZED. D12: 🥇 DIAMOND HARMONIZED. D11: 🥇 SEALED. D10: 🥇 SEALED.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.29-beta.51** — "🥇 D17 SKILL HEALTH MATRIX & DECISION LOOP: Batch Runner, Health Matrix (pass_rate, escalation_rate), Problem Classification (MODEL_WEAKNESS, PROMPT_ISSUE, VALIDATION_FAIL, TIMEOUT) with confidence scores, D13 Decision Report. GET /api/system/health-matrix, GET /api/system/decision-report. D16: 🥇 SEALED. D15: 🥇 SEALED. D14: 🥇 DIAMOND HARMONIZED. D13: 🥇 DIAMOND HARMONIZED. D12: 🥇 DIAMOND HARMONIZED. D11: 🥇 SEALED. D10: 🥇 SEALED.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-26 19:23 (🥇 D16 DETERMINISTIC QUALITY SYSTEM: Skill Stability System — Deterministic Testing, Async-Integrity, D10 Integration)
+**Aktualisiert:** 2026-04-26 20:06 (🥇 D17 SKILL HEALTH MATRIX & DECISION LOOP: Batch Runner, Health Matrix, Problem Classification, Decision Report)
 
 ---
 
@@ -8,16 +8,31 @@
 
 | Feld | Wert |
 |------|------|
-| **Chapter** | **Observability, Evolution & Integrity (D10-D16)** |
+| **Chapter** | **Observability, Evolution, Integrity & Quality (D10-D17)** |
 | **Status** | **🥇 DIAMOND VERIFIED** (2026-04-26) |
-| **Components** | D10 Resilient Telemetry, D11 Debug Compression Engine, D12 Insight Engine, D13 Optimization Engine, D14 Weekly Learning Engine, D15 Integrity Engine, D16 Deterministic Quality System |
-| **Verification** | All components operational, skill_id contract harmonized, KPI Registry implemented, Decision-Gate active, D15 Contract Registry validating, D16 Skill Stability System with deterministic testing |
-| **Integration** | D11 → D13 (suggest_d13 Flag), D12 → D13 (logs_insights → logs_actions), D12 → D14 (logs_insights → logs_learning), D12+D13+D14 → D15 (CONTRACT_SPECS validation), D16 → D10 (skill_test events), Windsurf Skills (/debug-log, /optimization-report, /learning-report, /test_skill) |
-| **Test Coverage** | D10: Schema-Sync verified, D11: Heuristics verified, D12: 4/4 tests passed, D13: 7/7 tests passed, D14: regression_score verified, D15: 8/8 tests passed, D16: Deterministic testing without AI validation |
+| **Components** | D10 Resilient Telemetry, D11 Debug Compression Engine, D12 Insight Engine, D13 Optimization Engine, D14 Weekly Learning Engine, D15 Integrity Engine, D16 Deterministic Quality System, D17 Skill Health Matrix & Decision Loop |
+| **Verification** | All components operational, skill_id contract harmonized, KPI Registry implemented, Decision-Gate active, D15 Contract Registry validating, D16 Skill Stability System, D17 Problem Classification with confidence scores |
+| **Integration** | D11 → D13 (suggest_d13 Flag), D12 → D13 (logs_insights → logs_actions), D12 → D14 (logs_insights → logs_learning), D12+D13+D14 → D15 (CONTRACT_SPECS validation), D16 → D10 (skill_test events), D17 → D13 (problem_profiles → decision_report), Windsurf Skills (/debug-log, /optimization-report, /learning-report, /test_skill) |
+| **Test Coverage** | D10: Schema-Sync verified, D11: Heuristics verified, D12: 4/4 tests passed, D13: 7/7 tests passed, D14: regression_score verified, D15: 8/8 tests passed, D16: Deterministic testing, D17: Classification deterministic (4 categories) |
 | **Database** | logs_raw, logs_insights, logs_actions, logs_learning tables operational |
-| **Documentation** | D10, D11, D12, D13, D14, D15, D16 task documents complete with component links |
-| **Patterns** | #ResilientTelemetry, #ProductionWrapper, #GlobalInsightAggregation, #OptimizationRuleEngine, #SystemEvolutionLayer, #DomainSeparation, #ContractRegistry, #DeterministicSkillTesting, #AsyncIntegrity (all in WHAT_I_LEARNED.md) |
-| **Sign-off** | 6-Stage Observability & Integrity Stack is fully operational with D15 Contract Registry preventing schema drift and D16 Deterministic Quality System for skill stability. |
+| **Documentation** | D10, D11, D12, D13, D14, D15, D16, D17 task documents complete with component links |
+| **Patterns** | #ResilientTelemetry, #ProductionWrapper, #GlobalInsightAggregation, #OptimizationRuleEngine, #SystemEvolutionLayer, #DomainSeparation, #ContractRegistry, #DeterministicSkillTesting, #AsyncIntegrity, #DeterministicProblemClassification (all in WHAT_I_LEARNED.md) |
+| **Sign-off** | 8-Stage Observability & Quality Stack is fully operational. D15 Contract Registry preventing schema drift. D16 Deterministic Quality System for skill stability. D17 Problem Classification for root-cause analysis and decision support. |
+
+---
+
+## [CURRENT_SESSION_DELTA] (D17 SKILL HEALTH MATRIX & DECISION LOOP — 🥇 SEALED & COMPLETE)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **D17 SKILL HEALTH MATRIX & DECISION LOOP — Batch Runner, Health Matrix, Problem Classification, Decision Report** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-26) |
+| **Root Cause** | Keine Batch-Test-Fähigkeit über alle Skills. Keine Health Matrix (pass_rate, escalation_rate) pro Skill. Keine Root-Cause-Analyse bei Fehlern (MODEL_WEAKNESS vs PROMPT_ISSUE vs VALIDATION_FAIL vs TIMEOUT). Kein D13-kompatibles Decision Interface. |
+| **Umsetzung** | **Phase 1 — Batch Runner:** `discover_skills()` in test_runner.py iteriert über backend/skills/ (53 Skills in 5 Namespaces). `run_batch_tests()` generiert Blueprints on-the-fly und führt Tests aus. **Phase 2 — Health Matrix:** `InsightEngine.generate_health_matrix()` aggregiert D10 skill_test Events. Berechnet pass_rate, escalation_rate, avg_latency, health_status pro Skill. GET /api/system/health-matrix. **Phase 2b — Decision Report:** `OptimizationEngine.generate_decision_report()` Markdown-Formatter für degraded Skills (< 0.9 pass_rate). GET /api/system/decision-report. **Phase 3 — Problem Classification:** `ProblemCategory` Enum (MODEL_WEAKNESS, PROMPT_ISSUE, VALIDATION_FAIL, TIMEOUT, HEALTHY). `classify_test_event()` deterministisch auf final_tier, status, attempts_count, latency_ms. `ProblemClassifier` aggregiert pro Skill mit frequency-basiertem Confidence Score. `_build_recommendation()` mit [PROVISIONAL] Prefix. D10 Payload erweitert um final_tier + attempts_count. Decision Report integriert Classification Table + Root-Cause Recommendations + Category Distribution Summary. |
+| **Ergebnis** | D17 Decision Loop operational. Batch Runner für alle Skills. Health Matrix mit pass_rate + escalation_rate. 4 Problem-Kategorien deterministisch klassifiziert. Confidence Score frequency-basiert. Decision Report mit Classification Tables. Alle Recommendations [PROVISIONAL] (D15 Compliance). model_routing.json NICHT mutiert (Zero Mutability). |
+| **Files** | `backend/services/testing/test_runner.py` (discover_skills, run_batch_tests, _log_to_d10 enhanced), `backend/services/logging/insight_engine.py` (generate_health_matrix), `backend/services/logging/optimization_engine.py` (ProblemCategory, SkillProblemProfile, ProblemClassifier, classify_test_event, _build_recommendation, generate_decision_report enhanced), `backend/api/routers/system.py` (GET /health-matrix, GET /decision-report enhanced), `documentation/tasks/D17_skill_health_matrix.md` (Task Doc), `WHAT_I_LEARNED.md` (Pattern). |
+| **Verifikation** | Batch Runner: ✅ 53 SKILLS · Health Matrix: ✅ pass_rate + escalation_rate · Classification: ✅ 4 CATEGORIES DETERMINISTIC · Confidence: ✅ FREQUENCY-BASED · Decision Report: ✅ CLASSIFICATION TABLES · Recommendations: ✅ [PROVISIONAL] · Zero Mutability: ✅ model_routing.json UNTOUCHED · Pattern: ✅ CERTIFIED |
+| **Patterns** | [PATTERN] #DeterministicProblemClassification #DecisionLoop "Escalation-Tier-Signal als Root-Cause-Indikator — Nutzung von final_tier, attempts_count und latency_ms zur automatischen Kategorisierung" |
 
 ---
 
