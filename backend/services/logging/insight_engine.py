@@ -242,3 +242,115 @@ class InsightEngine:
         results.sort(key=lambda r: r.confidence, reverse=True)
         
         return results
+    
+    def generate_health_matrix(self) -> Dict[str, Any]:
+        """
+        Generate Skill Health Matrix from D10 skill_test events.
+        
+        Aggregates skill_test events and calculates:
+        - pass_rate = passed / total_runs
+        - escalation_rate = escalation_attempts / total_runs
+        
+        Returns:
+            Health Matrix dict with skill-level metrics
+        """
+        try:
+            cutoff = datetime.utcnow() - timedelta(hours=self.hours)
+            
+            # Fetch skill_test events from logs_raw
+            response = (
+                self.supabase
+                .table("logs_raw")
+                .select("*")
+                .eq("event_type", "skill_test")
+                .gte("timestamp", cutoff.isoformat())
+                .execute()
+            )
+            
+            test_logs = response.data if response.data else []
+            
+            if not test_logs:
+                return {
+                    "skills_analyzed": 0,
+                    "matrix": {},
+                    "generated_at": datetime.utcnow().isoformat()
+                }
+            
+            # Aggregate by skill_id
+            skill_metrics = defaultdict(lambda: {
+                "total_runs": 0,
+                "passed": 0,
+                "failed": 0,
+                "error": 0,
+                "total_escalation_attempts": 0,
+                "total_latency_ms": 0
+            })
+            
+            for log in test_logs:
+                skill_id = log.get("skill") or "unknown"
+                status = log.get("status") or "unknown"
+                payload = log.get("payload", {}) or {}
+                latency_ms = log.get("latency_ms", 0) or 0
+                
+                metrics = skill_metrics[skill_id]
+                metrics["total_runs"] += 1
+                
+                if status == "passed":
+                    metrics["passed"] += 1
+                elif status == "failed":
+                    metrics["failed"] += 1
+                elif status == "error":
+                    metrics["error"] += 1
+                
+                # Extract escalation attempts from test results if available
+                # For now, we use a simple heuristic: if latency > 200ms, count as potential escalation
+                if latency_ms > 200:
+                    metrics["total_escalation_attempts"] += 1
+                
+                metrics["total_latency_ms"] += latency_ms
+            
+            # Calculate health matrix
+            matrix = {}
+            for skill_id, metrics in skill_metrics.items():
+                total_runs = metrics["total_runs"]
+                passed = metrics["passed"]
+                escalation_attempts = metrics["total_escalation_attempts"]
+                total_latency = metrics["total_latency_ms"]
+                
+                pass_rate = passed / total_runs if total_runs > 0 else 0.0
+                escalation_rate = escalation_attempts / total_runs if total_runs > 0 else 0.0
+                avg_latency = total_latency / total_runs if total_runs > 0 else 0.0
+                
+                # Determine health status
+                if pass_rate >= 0.9:
+                    health_status = "healthy"
+                elif pass_rate >= 0.7:
+                    health_status = "degraded"
+                else:
+                    health_status = "unhealthy"
+                
+                matrix[skill_id] = {
+                    "pass_rate": round(pass_rate, 4),
+                    "escalation_rate": round(escalation_rate, 4),
+                    "total_runs": total_runs,
+                    "passed": passed,
+                    "failed": metrics["failed"],
+                    "error": metrics["error"],
+                    "avg_latency_ms": round(avg_latency, 2),
+                    "health_status": health_status
+                }
+            
+            return {
+                "skills_analyzed": len(matrix),
+                "matrix": matrix,
+                "generated_at": datetime.utcnow().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"[InsightEngine] Error generating health matrix: {e}", exc_info=True)
+            return {
+                "error": str(e),
+                "skills_analyzed": 0,
+                "matrix": {},
+                "generated_at": datetime.utcnow().isoformat()
+            }

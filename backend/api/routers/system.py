@@ -792,6 +792,79 @@ async def run_skill_tests(skill_id: str, skill_type: str = "tool"):
         raise HTTPException(status_code=500, detail=f"Skill test execution failed: {str(e)}")
 
 
+@router.get("/system/health-matrix")
+async def get_health_matrix(hours: int = 1):
+    """
+    D17: Skill Health Matrix — Get health metrics for all skills.
+    
+    Aggregates skill_test events from D10 telemetry and calculates:
+    - pass_rate = passed / total_runs
+    - escalation_rate = escalation_attempts / total_runs
+    
+    Args:
+        hours: Time window in hours for analysis (default: 1)
+    
+    Returns:
+        Health Matrix dict with skill-level metrics
+    """
+    try:
+        from backend.services.logging.insight_engine import InsightEngine
+        
+        logger.info(f"[D17-HEALTH-MATRIX] Generating health matrix for last {hours} hour(s)")
+        
+        insight_engine = InsightEngine(hours=hours)
+        health_matrix = insight_engine.generate_health_matrix()
+        
+        logger.info(f"[D17-HEALTH-MATRIX] Generated matrix for {health_matrix.get('skills_analyzed', 0)} skills")
+        
+        return health_matrix
+        
+    except Exception as e:
+        logger.error("[D17-HEALTH-MATRIX] Failed to generate health matrix: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Health matrix generation failed: {str(e)}")
+
+
+@router.get("/system/decision-report")
+async def get_decision_report(hours: int = 1):
+    """
+    D17: Decision Report — Get D13 decision recommendations for degraded skills.
+    
+    Generates a Markdown report for each degraded skill (< 0.9 pass_rate)
+    with decision blocks and recommendations.
+    
+    Args:
+        hours: Time window in hours for analysis (default: 1)
+    
+    Returns:
+        Markdown-formatted decision report
+    """
+    try:
+        from backend.services.logging.insight_engine import InsightEngine
+        from backend.services.logging.optimization_engine import OptimizationEngine
+        
+        logger.info(f"[D17-DECISION-REPORT] Generating decision report for last {hours} hour(s)")
+        
+        # Get health matrix
+        insight_engine = InsightEngine(hours=hours)
+        health_matrix = insight_engine.generate_health_matrix()
+        
+        # Generate decision report
+        optimization_engine = OptimizationEngine(hours=hours)
+        decision_report = optimization_engine.generate_decision_report(health_matrix)
+        
+        logger.info(f"[D17-DECISION-REPORT] Generated decision report")
+        
+        return {
+            "report": decision_report,
+            "health_matrix": health_matrix,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error("[D17-DECISION-REPORT] Failed to generate decision report: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Decision report generation failed: {str(e)}")
+
+
 def format_optimization_report(actions: List[Dict[str, Any]]) -> str:
     """
     Format actions as Markdown report for AI Studio.

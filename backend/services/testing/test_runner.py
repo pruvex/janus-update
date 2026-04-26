@@ -22,6 +22,38 @@ from backend.services.logging.logger_core import log_event
 from backend.data.schemas_logging import LogEventCreate
 
 
+def discover_skills(skills_dir: str = "backend/skills") -> List[str]:
+    """
+    Discover all skills from the skills directory.
+    
+    Args:
+        skills_dir: Path to the skills directory
+    
+    Returns:
+        List of skill_ids in format "namespace.action"
+    """
+    skills_path = Path(skills_dir)
+    skill_ids = []
+    
+    if not skills_path.exists():
+        return skill_ids
+    
+    # Iterate over namespace directories
+    for namespace_dir in skills_path.iterdir():
+        if not namespace_dir.is_dir():
+            continue
+        
+        namespace = namespace_dir.name
+        
+        # Iterate over skill JSON files
+        for skill_file in namespace_dir.glob("*.json"):
+            skill_name = skill_file.stem
+            skill_id = f"{namespace}.{skill_name}"
+            skill_ids.append(skill_id)
+    
+    return skill_ids
+
+
 class TestRunner:
     """Runs skill tests with escalation and D10 telemetry integration."""
     
@@ -280,6 +312,83 @@ class TestRunner:
             "total_escalation_attempts": total_attempts,
             "generated_at": datetime.utcnow().isoformat(),
             "status": "healthy" if health_score >= 0.8 else "degraded" if health_score >= 0.5 else "unhealthy"
+        }
+    
+    async def run_batch_tests(
+        self,
+        tool_call_fn: Callable,
+        skill_ids: Optional[List[str]] = None,
+        skills_dir: str = "backend/skills",
+        session_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Run tests for multiple skills in batch.
+        
+        Args:
+            tool_call_fn: Function to execute (should accept provider, model, **kwargs)
+            skill_ids: Optional list of skill_ids to test. If None, discovers all skills.
+            skills_dir: Path to the skills directory (for auto-discovery)
+            session_id: Optional session identifier for D10 logging
+        
+        Returns:
+            Batch test summary with all results and health metrics
+        """
+        # Discover skills if not provided
+        if skill_ids is None:
+            skill_ids = discover_skills(skills_dir)
+        
+        if not skill_ids:
+            return {
+                "error": "No skills found for batch testing",
+                "skills_tested": 0,
+                "results": []
+            }
+        
+        # Initialize test generator
+        test_generator = TestGenerator()
+        
+        # Run tests for each skill
+        batch_results = []
+        total_passed = 0
+        total_failed = 0
+        
+        for skill_id in skill_ids:
+            try:
+                # Generate testset if not exists
+                skill_type = skill_id.split('.')[0] if '.' in skill_id else "tool"
+                test_generator.generate_testset(skill_id, skill_type)
+                
+                # Run testset
+                test_summary = await self.run_testset(
+                    skill_id=skill_id,
+                    tool_call_fn=tool_call_fn,
+                    session_id=session_id
+                )
+                
+                batch_results.append(test_summary)
+                total_passed += test_summary.get("passed_count", 0)
+                total_failed += test_summary.get("test_count", 0) - test_summary.get("passed_count", 0)
+                
+            except Exception as e:
+                batch_results.append({
+                    "skill_id": skill_id,
+                    "error": str(e),
+                    "test_count": 0,
+                    "passed_count": 0
+                })
+        
+        # Calculate batch health metrics
+        total_tests_run = sum(r.get("test_count", 0) for r in batch_results)
+        overall_pass_rate = total_passed / total_tests_run if total_tests_run > 0 else 0.0
+        
+        return {
+            "skills_tested": len(batch_results),
+            "total_tests_run": total_tests_run,
+            "total_passed": total_passed,
+            "total_failed": total_failed,
+            "overall_pass_rate": round(overall_pass_rate, 4),
+            "results": batch_results,
+            "generated_at": datetime.utcnow().isoformat()
         }
 
 

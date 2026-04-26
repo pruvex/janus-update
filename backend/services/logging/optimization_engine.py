@@ -248,3 +248,109 @@ class OptimizationEngine:
         logger.info(f"[OptimizationEngine] Generated {len(actions)} actions from {len(insights)} insights")
         
         return actions
+    
+    def generate_decision_report(self, health_matrix: Dict[str, Any]) -> str:
+        """
+        Generate D13 Decision Report from Health Matrix.
+        
+        Creates a Markdown report for each degraded skill (< 0.9 pass_rate)
+        with the decision block format (Phase 4).
+        
+        Args:
+            health_matrix: Health Matrix from insight_engine.generate_health_matrix()
+        
+        Returns:
+            Markdown-formatted decision report
+        """
+        matrix = health_matrix.get("matrix", {})
+        generated_at = health_matrix.get("generated_at", datetime.utcnow().isoformat())
+        
+        # Filter degraded skills (< 0.9 pass_rate)
+        degraded_skills = {
+            skill_id: metrics
+            for skill_id, metrics in matrix.items()
+            if metrics.get("pass_rate", 1.0) < 0.9
+        }
+        
+        if not degraded_skills:
+            return f"""# 🎯 D13 Decision Report
+
+**Generated:** {generated_at}
+**Status:** All skills healthy (pass_rate >= 0.9)
+
+No degraded skills detected. No action required.
+"""
+        
+        report_lines = [
+            "# 🎯 D13 Decision Report",
+            "",
+            f"**Generated:** {generated_at}",
+            f"**Skills Analyzed:** {len(matrix)}",
+            f"**Degraded Skills:** {len(degraded_skills)}",
+            ""
+        ]
+        
+        # Generate decision blocks for each degraded skill
+        for skill_id, metrics in sorted(degraded_skills.items()):
+            pass_rate = metrics.get("pass_rate", 0.0)
+            escalation_rate = metrics.get("escalation_rate", 0.0)
+            total_runs = metrics.get("total_runs", 0)
+            avg_latency = metrics.get("avg_latency_ms", 0.0)
+            health_status = metrics.get("health_status", "unknown")
+            
+            # Determine priority based on pass_rate
+            if pass_rate < 0.5:
+                priority = "CRITICAL"
+                action = "MODEL_SWITCH"
+            elif pass_rate < 0.7:
+                priority = "HIGH"
+                action = "SCALE_UP or MODEL_SWITCH"
+            else:
+                priority = "MEDIUM"
+                action = "MONITOR"
+            
+            # Generate decision block
+            decision_block = f"""## 🚨 {skill_id}
+
+**Health Status:** {health_status.upper()}
+**Pass Rate:** {pass_rate:.2%}
+**Escalation Rate:** {escalation_rate:.2%}
+**Total Runs:** {total_runs}
+**Avg Latency:** {avg_latency:.0f}ms
+
+### [PROVISIONAL] Decision Block
+
+**Priority:** {priority}
+**Action:** {action}
+
+**Reason:**
+- Pass rate is {pass_rate:.2%} (threshold: 0.9)
+- Escalation rate is {escalation_rate:.2%}
+- System is {health_status}
+
+**Recommendation:**
+[PROVISIONAL] Consider {action} for {skill_id}. Current pass rate of {pass_rate:.2%} is below the 0.9 threshold. Investigate root cause and implement corrective action.
+
+---
+
+"""
+            report_lines.append(decision_block)
+        
+        # Summary section
+        report_lines.append("## Summary")
+        report_lines.append("")
+        report_lines.append(f"- **Total Skills Analyzed:** {len(matrix)}")
+        report_lines.append(f"- **Healthy Skills:** {len(matrix) - len(degraded_skills)}")
+        report_lines.append(f"- **Degraded Skills:** {len(degraded_skills)}")
+        report_lines.append("")
+        report_lines.append("### Priority Breakdown")
+        
+        critical_count = sum(1 for m in degraded_skills.values() if m.get("pass_rate", 1.0) < 0.5)
+        high_count = sum(1 for m in degraded_skills.values() if 0.5 <= m.get("pass_rate", 1.0) < 0.7)
+        medium_count = sum(1 for m in degraded_skills.values() if 0.7 <= m.get("pass_rate", 1.0) < 0.9)
+        
+        report_lines.append(f"- **CRITICAL:** {critical_count}")
+        report_lines.append(f"- **HIGH:** {high_count}")
+        report_lines.append(f"- **MEDIUM:** {medium_count}")
+        
+        return "\n".join(report_lines)

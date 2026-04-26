@@ -73,7 +73,8 @@
 | **Stability Arc (Tasks 037-045)** | 🥇 **SEALED & COMPLETE** (2026-04-18) | **Upload-Audit, Forced Tool-Calls, Naming-Shims, Workspace-Unification** | `PROJECT_STATE.md`, `WHAT_I_LEARNED.md` |
 | **BUG-ORCH-002 — Audit-Loop Forced-Tool-Args** | 🥇 **SEALED & COMPLETE** (2026-04-18) | **Pre-filled Tool Injection, Initial-Loop-State Pattern, OpenAI 400 Fix** | `documentation/tasks/task_BUG-ORCH-002_audit_loop_forced_tool_args.md` |
 | **D10 — Logging Pipeline Phase 1** | 🥇 **SEALED & COMPLETE** (2026-04-25) | **Metadata Injection Pattern — Provider/Model in additional_context** | `documentation/tasks/D10_logging_pipeline_phase_1.md` |
-| **D16 — Deterministic Quality System** | 🔄 **IN PROGRESS** (2026-04-26) | **Test Generator, Validation Engine, Model Routing, Escalation** | `documentation/tasks/D16_deterministic_quality_system.md` |
+| **D16 — Deterministic Quality System** | 🥇 **SEALED & COMPLETE** (2026-04-26) | **Test Generator, Validation Engine, Model Routing, Escalation, Async-Integrity** | `documentation/tasks/D16_deterministic_quality_system.md` |
+| **D17 — Skill Health Matrix & Decision Interface** | 🔄 **IN PROGRESS** (2026-04-26) | **Batch Runner, Health Matrix, D13 Decision Loop** | `documentation/tasks/D17_skill_health_matrix.md` |
 
 > **Turbo-Flow (B5) Detail:** `documentation/tasks/task_019_turbo_flow_epic.md` — 🟡 B5 Phase-1 hot-path DONE; offen: D11 Prompt-Cache, Tool-Response-Store; Blocker: `OllamaCompiler` bei vollem `pytest backend/tests`.
 
