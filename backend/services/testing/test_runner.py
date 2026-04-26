@@ -7,6 +7,8 @@ Generates AI Studio compatible health reports.
 
 import json
 import asyncio
+import os
+import logging
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Callable
 from datetime import datetime
@@ -21,25 +23,42 @@ from ..routing.model_router import ModelRouter
 from backend.services.logging.logger_core import log_event
 from backend.data.schemas_logging import LogEventCreate
 
+logger = logging.getLogger("janus_backend")
+
 
 def discover_skills(skills_dir: str = "backend/skills") -> List[str]:
     """
     Discover all skills from the skills directory (recursive).
     
+    Uses module-based absolute paths to work regardless of CWD.
     Uses Path.rglob to find every *.json file at any nesting depth.
     The namespace is derived from the first directory component relative
     to skills_dir (e.g. backend/skills/filesystem/read_file.json → filesystem.read_file).
     
     Args:
-        skills_dir: Path to the skills directory
+        skills_dir: Path to the skills directory (relative to project root)
     
     Returns:
         Sorted list of skill_ids in format "namespace.action"
     """
-    skills_path = Path(skills_dir)
+    # Module-based absolute path resolution
+    # __file__ = backend/services/testing/test_runner.py
+    module_dir = os.path.dirname(os.path.abspath(__file__))
+    # module_dir = backend/services/testing/
+    services_dir = os.path.dirname(module_dir)
+    # services_dir = backend/services/
+    backend_dir = os.path.dirname(services_dir)
+    # backend_dir = backend/
+    project_root = os.path.dirname(backend_dir)
+    # project_root = project root
+    
+    skills_path = Path(project_root) / skills_dir
     skill_ids = []
     
+    logger.info(f"[discover_skills] Scanning skills from: {skills_path.absolute()}")
+    
     if not skills_path.exists():
+        logger.warning(f"[discover_skills] Skills directory does not exist: {skills_path.absolute()}")
         return skill_ids
     
     for skill_file in skills_path.rglob("*.json"):
@@ -57,6 +76,7 @@ def discover_skills(skills_dir: str = "backend/skills") -> List[str]:
         skill_ids.append(skill_id)
     
     skill_ids.sort()
+    logger.info(f"[discover_skills] Discovered {len(skill_ids)} skills")
     return skill_ids
 
 
