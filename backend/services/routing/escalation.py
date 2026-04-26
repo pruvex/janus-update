@@ -5,6 +5,7 @@ Implements execute_with_escalation: Primary -> Fallback -> Escalation chain.
 Tracks costs and provides circuit breaker protection.
 """
 
+import asyncio
 import time
 from typing import Dict, Any, Callable, Optional
 from dataclasses import dataclass, field
@@ -43,7 +44,7 @@ class EscalationEngine:
         self.router = router or ModelRouter()
         self.circuit_breaker_tripped = False
     
-    def execute_with_escalation(
+    async def execute_with_escalation(
         self,
         skill_id: str,
         tool_call_fn: Callable,
@@ -82,7 +83,7 @@ class EscalationEngine:
             if not model_config:
                 continue
             
-            result = self._execute_at_tier(
+            result = await self._execute_at_tier(
                 tier=tier,
                 model_config=model_config,
                 tool_call_fn=tool_call_fn,
@@ -117,7 +118,7 @@ class EscalationEngine:
             final_tier="escalation_exhausted"
         )
     
-    def _execute_at_tier(
+    async def _execute_at_tier(
         self,
         tier: str,
         model_config: Dict[str, str],
@@ -146,6 +147,10 @@ class EscalationEngine:
         try:
             # Execute tool call with model configuration
             result = tool_call_fn(provider=provider, model=model, **kwargs)
+            
+            # Await if result is a coroutine
+            if asyncio.iscoroutine(result):
+                result = await result
             
             latency_ms = (time.time() - start_time) * 1000
             
@@ -213,7 +218,7 @@ class EscalationEngine:
         self.circuit_breaker_tripped = False
 
 
-def execute_with_escalation(
+async def execute_with_escalation(
     skill_id: str,
     tool_call_fn: Callable,
     validation_fn: Optional[Callable] = None,
@@ -232,4 +237,4 @@ def execute_with_escalation(
         EscalationSummary
     """
     engine = EscalationEngine()
-    return engine.execute_with_escalation(skill_id, tool_call_fn, validation_fn, **kwargs)
+    return await engine.execute_with_escalation(skill_id, tool_call_fn, validation_fn, **kwargs)

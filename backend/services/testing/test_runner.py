@@ -116,7 +116,7 @@ class TestRunner:
         
         try:
             # Execute with escalation
-            escalation_summary = self.escalation_engine.execute_with_escalation(
+            escalation_summary = await self.escalation_engine.execute_with_escalation(
                 skill_id=skill_id,
                 tool_call_fn=tool_call_fn,
                 validation_fn=lambda r: self._validate_result(r, test_spec.get("validation")),
