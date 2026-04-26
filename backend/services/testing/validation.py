@@ -16,6 +16,7 @@ class ValidationResult:
     passed: bool
     validator_type: str
     message: str
+    severity: str = "PASS"  # "PASS", "WARNING", "CRITICAL_FAIL"
     details: Optional[Dict[str, Any]] = None
 
 
@@ -52,6 +53,12 @@ class ValidationEngine:
         
         if validator_type == "contains":
             return self._validate_contains(result, validation_spec)
+        elif validator_type == "fuzzy_contains":
+            return self._validate_fuzzy_contains(result, validation_spec)
+        elif validator_type == "key_exists":
+            return self._validate_key_exists(result, validation_spec)
+        elif validator_type == "type_match":
+            return self._validate_type_match(result, validation_spec)
         elif validator_type == "not_contains":
             return self._validate_not_contains(result, validation_spec)
         elif validator_type == "regex":
@@ -62,7 +69,8 @@ class ValidationEngine:
             return ValidationResult(
                 passed=False,
                 validator_type="unknown",
-                message=f"Unknown validator type: {validator_type}"
+                message=f"Unknown validator type: {validator_type}",
+                severity="CRITICAL_FAIL"
             )
     
     def _validate_contains(self, result: Dict[str, Any], spec: Dict[str, Any]) -> ValidationResult:
@@ -94,6 +102,7 @@ class ValidationEngine:
                 passed=False,
                 validator_type="contains",
                 message=f"Field '{field}' is None or empty, expected '{expected_value}'",
+                severity="CRITICAL_FAIL",
                 details={"field": field, "expected": expected_value, "actual": actual_value}
             )
         
@@ -102,6 +111,7 @@ class ValidationEngine:
                 passed=True,
                 validator_type="contains",
                 message=f"Field '{field}' contains expected value '{expected_value}'",
+                severity="PASS",
                 details={"field": field, "expected": expected_value, "actual": actual_value}
             )
         else:
@@ -109,6 +119,7 @@ class ValidationEngine:
                 passed=False,
                 validator_type="contains",
                 message=f"Field '{field}' does not contain expected value. Expected: '{expected_value}', Actual: '{actual_value}'",
+                severity="CRITICAL_FAIL",
                 details={"field": field, "expected": expected_value, "actual": actual_value}
             )
     
@@ -249,6 +260,173 @@ class ValidationEngine:
             message="No crash indicators detected",
             details={"result_snippet": result_str[:200]}
         )
+
+
+    def _validate_fuzzy_contains(self, result: Dict[str, Any], spec: Dict[str, Any]) -> ValidationResult:
+        """
+        Fuzzy substring match: case-insensitive, whitespace-tolerant.
+        Passes if expected value is a substring of the actual field value.
+        
+        Args:
+            result: Test result
+            spec: Validation spec with 'field' and 'value'
+        
+        Returns:
+            ValidationResult with WARNING severity on mismatch (not CRITICAL)
+        """
+        field = spec.get("field")
+        expected_value = spec.get("value", "")
+        
+        if not field:
+            return ValidationResult(
+                passed=False,
+                validator_type="fuzzy_contains",
+                message="Missing 'field' in validation spec",
+                severity="CRITICAL_FAIL"
+            )
+        
+        actual_value = result.get(field)
+        
+        if actual_value is None:
+            return ValidationResult(
+                passed=False,
+                validator_type="fuzzy_contains",
+                message=f"Field '{field}' is None",
+                severity="WARNING",
+                details={"field": field, "expected_substring": expected_value, "actual": actual_value}
+            )
+        
+        # Normalize: lowercase + strip whitespace
+        actual_str = str(actual_value).lower().strip()
+        expected_str = str(expected_value).lower().strip()
+        
+        if expected_str in actual_str:
+            return ValidationResult(
+                passed=True,
+                validator_type="fuzzy_contains",
+                message=f"Field '{field}' fuzzy-matches '{expected_value}'",
+                severity="PASS",
+                details={"field": field, "expected_substring": expected_value, "actual": actual_value}
+            )
+        else:
+            return ValidationResult(
+                passed=False,
+                validator_type="fuzzy_contains",
+                message=f"Field '{field}' does not fuzzy-match '{expected_value}'. Actual: '{actual_value}'",
+                severity="WARNING",
+                details={"field": field, "expected_substring": expected_value, "actual": actual_value}
+            )
+    
+    def _validate_key_exists(self, result: Dict[str, Any], spec: Dict[str, Any]) -> ValidationResult:
+        """
+        Check that a key exists in the result dict, regardless of its value.
+        Used for dynamic data (e.g., weather, search results) where value is unpredictable.
+        
+        Args:
+            result: Test result
+            spec: Validation spec with 'field' (key name to check)
+        
+        Returns:
+            ValidationResult — CRITICAL_FAIL if key missing, PASS if present
+        """
+        field = spec.get("field")
+        
+        if not field:
+            return ValidationResult(
+                passed=False,
+                validator_type="key_exists",
+                message="Missing 'field' in validation spec",
+                severity="CRITICAL_FAIL"
+            )
+        
+        if field in result:
+            actual_value = result[field]
+            return ValidationResult(
+                passed=True,
+                validator_type="key_exists",
+                message=f"Key '{field}' exists in result",
+                severity="PASS",
+                details={"field": field, "actual": actual_value}
+            )
+        else:
+            return ValidationResult(
+                passed=False,
+                validator_type="key_exists",
+                message=f"Key '{field}' is missing from result",
+                severity="CRITICAL_FAIL",
+                details={"field": field, "available_keys": list(result.keys())}
+            )
+    
+    def _validate_type_match(self, result: Dict[str, Any], spec: Dict[str, Any]) -> ValidationResult:
+        """
+        Validate that a field's value matches an expected Python type.
+        
+        Supported type strings: 'str', 'int', 'float', 'list', 'dict', 'bool'
+        
+        Args:
+            result: Test result
+            spec: Validation spec with 'field' and 'expected_type'
+        
+        Returns:
+            ValidationResult — WARNING severity on type mismatch (not CRITICAL)
+        """
+        field = spec.get("field")
+        expected_type_str = spec.get("expected_type", "str")
+        
+        type_map = {
+            "str": str,
+            "int": int,
+            "float": float,
+            "list": list,
+            "dict": dict,
+            "bool": bool,
+        }
+        
+        if not field:
+            return ValidationResult(
+                passed=False,
+                validator_type="type_match",
+                message="Missing 'field' in validation spec",
+                severity="CRITICAL_FAIL"
+            )
+        
+        expected_type = type_map.get(expected_type_str)
+        if expected_type is None:
+            return ValidationResult(
+                passed=False,
+                validator_type="type_match",
+                message=f"Unknown expected_type: '{expected_type_str}'. Use: {list(type_map.keys())}",
+                severity="CRITICAL_FAIL"
+            )
+        
+        if field not in result:
+            return ValidationResult(
+                passed=False,
+                validator_type="type_match",
+                message=f"Key '{field}' is missing from result",
+                severity="CRITICAL_FAIL",
+                details={"field": field, "available_keys": list(result.keys())}
+            )
+        
+        actual_value = result[field]
+        actual_type = type(actual_value).__name__
+        
+        if isinstance(actual_value, expected_type):
+            return ValidationResult(
+                passed=True,
+                validator_type="type_match",
+                message=f"Field '{field}' is of expected type '{expected_type_str}'",
+                severity="PASS",
+                details={"field": field, "expected_type": expected_type_str, "actual_type": actual_type}
+            )
+        else:
+            return ValidationResult(
+                passed=False,
+                validator_type="type_match",
+                message=f"Field '{field}' type mismatch. Expected: '{expected_type_str}', Actual: '{actual_type}'",
+                severity="WARNING",
+                details={"field": field, "expected_type": expected_type_str, "actual_type": actual_type, "value": str(actual_value)[:100]}
+            )
 
 
 def validate_result(result: Dict[str, Any], validation_spec: Dict[str, Any]) -> ValidationResult:
