@@ -284,6 +284,24 @@
 - **Tags:** GlobalInsightAggregation, MacroAnalytics, SystemHealth, PatternDetection, SkillModelAggregation, ConfidenceModel, D12
 
 ---
+
+## [PATTERN] #OptimizationRuleEngine #ActionFirst "Deterministische Bewertung von System-Insights zur Priorisierung von Entwicklungs-Maßnahmen (Action-First Integration)"
+- **Kontext:** D12 Insight Engine liefert Metriken (error_rate, latency), aber keine konkreten Handlungsempfehlungen. Für Action-First Integration (Entwickler soll direkt wissen, was zu tun ist) ist eine Regel-Engine erforderlich, die Insights in priorisierte Actions umwandelt. Keine KI im Backend-Core, nur reine Logik mit Schwellenwerten.
+- **Problem:** Keine automatische Generierung von System-Actions basierend auf Insights. Keine Priorisierung von Maßnahmen (CRITICAL > HIGH > MEDIUM > LOW). Keine Integration in AI Studio Workflow (Entwickler muss manuell aus Daten ableiten, was zu tun ist).
+- **Lösung:** **Janus Optimization Engine (D13) — Rule-Based System Optimization.**
+  1. **Rule Engine:** `evaluate_insight()` mit deterministischen Schwellenwerten: error_rate > 0.5 → CRITICAL MODEL_SWITCH, error_rate > 0.3 → HIGH SCALE_UP, latency > 5000ms → HIGH MODEL_SWITCH, latency > 3000ms → HIGH TIMEOUT_ADJUST, error_rate=0 & latency<1000 → LOW MONITOR.
+  2. **Action Types:** MODEL_SWITCH (Model wechseln), SCALE_UP (Ressourcen hochskalieren), TIMEOUT_ADJUST (Timeout erhöhen), MONITOR (Nur überwachen).
+  3. **Priority Levels:** CRITICAL (sofort), HIGH (empfohlen), MEDIUM (in Betracht ziehen), LOW (nur Monitoring).
+  4. **Persistence:** `store_action()` speichert Actions in logs_actions Tabelle mit JSON-Serialisierung (`model_dump(mode='json')` für datetime).
+  5. **GET Endpoint:** `/api/system/optimization-report` lädt neueste Actions und formatiert als Markdown-Report für AI Studio Integration (CRITICAL > HIGH > MEDIUM > LOW Sortierung).
+  6. **Schema:** `ActionCreate` und `Action` Pydantic-Modelle für logs_actions Tabelle.
+- **Härtung:** Keine KI im Backend-Core (wie gefordert). Deterministische Regeln ohne probabilistische Modelle. Test-Suite mit 7 Test-Cases (High Error Rate, Critical Error Rate, High Latency, Critical Latency, Stable System, Moderate Metrics, Action Serialization).
+- **Tripwire:** Wenn Actions bei überschrittenen Schwellenwerten nicht generiert werden → Rule Engine Logik ist fehlerhaft. Wenn DateTime Serialization Fehler auftreten → `model_dump(mode='json')` vergessen. Wenn Markdown-Report nicht AI-Studio-Ready ist → Formatierung prüfen.
+- **Location:** `backend/services/logging/optimization_engine.py` (neu), `backend/api/routers/system.py` (GET Endpoint), `backend/data/schemas_logging.py` (Schema), `backend/tests/test_optimization_engine.py` (Test-Suite), implementiert 2026-04-26.
+- **Confidence:** High (Test-Suite 7/7 passed, deterministische Regeln verifiziert, GET Endpoint operational, Markdown-Formatierung AI-Studio-Ready).
+- **Tags:** OptimizationRuleEngine, ActionFirst, SystemOptimization, RuleEngine, PriorityLevels, MarkdownReport, D13
+
+---
 - **Kontext:** D11 Debug Compression Engine wurde entwickelt, um Logs für AI Studio Debugging zu komprimieren. Die Engine soll deterministische Heuristiken nutzen (Hard Errors, Model Drift, Latency Spikes) und LLM-gestützte Zusammenfassung als Fallback. Wichtig: Provider-agnostisch (nutzt User's Speed-Tier Modell) und mit Timeout-Schutz gegen Blockaden.
 - **Problem:** RAM-Buffer war leer (nicht mit realer Logging-System verbunden). Supabase hatte keine Logs aus den letzten 10 Minuten. Endpoint gab immer "Keine relevanten Logs" zurück, obwohl Janus aktiv war und Logs in janus_backend.log geschrieben wurden.
 - **Lösung:** **Drei-Stufen-Fallback-Kaskade in LogFetcher.fetch_logs():**

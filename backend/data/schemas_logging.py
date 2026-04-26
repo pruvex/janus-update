@@ -95,3 +95,31 @@ class Insight(InsightCreate):
     id: str = Field(..., description="Unique insight identifier")
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ActionCreate(BaseModel):
+    """
+    Model for creating a new action record.
+    Schema matches the Supabase logs_actions table.
+    """
+    id: Optional[str] = Field(default_factory=lambda: str(uuid4()), description="Unique action identifier")
+    skill: str = Field(..., description="Skill name")
+    model: str = Field(..., description="Model name")
+    action_type: str = Field(..., description="Type of action (SCALE_UP, MODEL_SWITCH, etc.)")
+    priority: str = Field(..., description="Priority level (LOW, MEDIUM, HIGH, CRITICAL)")
+    reason: str = Field(..., description="Reason for action")
+    current_value: float = Field(..., description="Current metric value")
+    threshold: float = Field(..., description="Threshold that triggered action")
+    recommendation: str = Field(..., description="Specific recommendation")
+    generated_at: datetime = Field(default_factory=datetime.utcnow, description="Timestamp of action generation")
+    time_window_hours: int = Field(default=1, description="Time window in hours used for analysis")
+
+
+class Action(ActionCreate):
+    """
+    Complete action model with database ID.
+    Represents a row in the logs_actions table.
+    """
+    id: str = Field(..., description="Unique action identifier")
+
+    model_config = ConfigDict(from_attributes=True)
