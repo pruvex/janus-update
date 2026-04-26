@@ -1,5 +1,5 @@
 ---
-description: Debug Log Analysis — Windsurf IDE Skill
+description: DRbug Log Analysis — Windsurf IDE Skill
 ---
 # Port 8001: Janus Backend Production Port
 
