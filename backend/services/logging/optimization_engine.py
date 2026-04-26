@@ -6,6 +6,7 @@ Keine KI im Backend-Core. Nur reine Logik mit Schwellenwerten.
 """
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
+from collections import defaultdict
 from enum import Enum
 from pydantic import BaseModel, Field, ConfigDict
 import logging
@@ -13,6 +14,218 @@ import logging
 from backend.services.logging.supabase_client import get_supabase_client
 
 logger = logging.getLogger("janus_backend")
+
+
+# ─── Problem Classification (D17-PHASE-3) ────────────────────────────────────
+
+TIMEOUT_THRESHOLD_MS = 3000
+
+
+class ProblemCategory(str, Enum):
+    """Classification categories for skill test problems."""
+    MODEL_WEAKNESS = "MODEL_WEAKNESS"
+    PROMPT_ISSUE = "PROMPT_ISSUE"
+    VALIDATION_FAIL = "VALIDATION_FAIL"
+    TIMEOUT = "TIMEOUT"
+    HEALTHY = "HEALTHY"
+    UNKNOWN = "UNKNOWN"
+
+
+class SkillProblemProfile(BaseModel):
+    """Aggregated problem profile for a skill."""
+    skill_id: str
+    total_runs: int
+    dominant_category: ProblemCategory
+    category_counts: Dict[str, int]
+    category_rates: Dict[str, float]
+    confidence: float
+    recommendation: str
+    generated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+def classify_test_event(log: Dict[str, Any]) -> ProblemCategory:
+    """
+    Classify a single skill_test D10 event into a ProblemCategory.
+    
+    Rules (deterministic — NO AI, based on final_tier, status, attempts_count):
+    - TIMEOUT:          status == "passed" AND latency_ms > TIMEOUT_THRESHOLD_MS
+    - MODEL_WEAKNESS:   status == "passed" AND final_tier NOT in {primary, ""}
+    - PROMPT_ISSUE:     status in {failed, error} AND attempts_count >= 2
+    - VALIDATION_FAIL:  status == "failed" AND attempts_count <= 1
+    - HEALTHY:          status == "passed" AND final_tier in {primary, ""}
+    
+    Args:
+        log: D10 skill_test event dict
+    
+    Returns:
+        ProblemCategory enum value
+    """
+    status = log.get("status", "unknown")
+    latency_ms = log.get("latency_ms", 0) or 0
+    payload = log.get("payload", {}) or {}
+    final_tier = payload.get("final_tier", "primary") or "primary"
+    attempts_count = payload.get("attempts_count", 1) or 1
+
+    # TIMEOUT: passed but exceeded latency threshold
+    if status == "passed" and latency_ms > TIMEOUT_THRESHOLD_MS:
+        return ProblemCategory.TIMEOUT
+
+    # MODEL_WEAKNESS: succeeded only after escalating beyond primary
+    if status == "passed" and final_tier not in ("primary", "", "none"):
+        return ProblemCategory.MODEL_WEAKNESS
+
+    # PROMPT_ISSUE: all tiers tried and still failed
+    if status in ("failed", "error") and attempts_count >= 2:
+        return ProblemCategory.PROMPT_ISSUE
+
+    # VALIDATION_FAIL: primary executed OK but validation caught a format issue
+    if status == "failed" and attempts_count <= 1:
+        return ProblemCategory.VALIDATION_FAIL
+
+    # HEALTHY: passed on primary
+    if status == "passed":
+        return ProblemCategory.HEALTHY
+
+    return ProblemCategory.UNKNOWN
+
+
+class ProblemClassifier:
+    """
+    D17 Problem Classifier — Aggregates D10 skill_test events per skill and
+    classifies the dominant failure pattern with a confidence score.
+    
+    Classification is strictly deterministic:
+    - Based on: final_tier (payload), status, attempts_count (payload), latency_ms
+    - Confidence: category_count / total_runs (frequency-based)
+    """
+
+    def __init__(self, hours: int = 24):
+        self.hours = hours
+        self.supabase = get_supabase_client()
+
+    def fetch_test_events(self) -> List[Dict[str, Any]]:
+        """Fetch skill_test events from D10 within the time window."""
+        try:
+            cutoff = datetime.utcnow() - timedelta(hours=self.hours)
+            response = (
+                self.supabase
+                .table("logs_raw")
+                .select("*")
+                .eq("event_type", "skill_test")
+                .gte("timestamp", cutoff.isoformat())
+                .execute()
+            )
+            return response.data if response.data else []
+        except Exception as e:
+            logger.error(f"[ProblemClassifier] Error fetching test events: {e}", exc_info=True)
+            return []
+
+    def classify_skills(self) -> Dict[str, SkillProblemProfile]:
+        """
+        Classify all skills based on their D10 test event history.
+        
+        Returns:
+            Dict mapping skill_id -> SkillProblemProfile
+        """
+        events = self.fetch_test_events()
+
+        if not events:
+            return {}
+
+        # Group events by skill_id
+        by_skill: Dict[str, List[Dict]] = defaultdict(list)
+        for event in events:
+            skill_id = event.get("skill") or "unknown"
+            by_skill[skill_id].append(event)
+
+        profiles: Dict[str, SkillProblemProfile] = {}
+
+        for skill_id, skill_events in by_skill.items():
+            total_runs = len(skill_events)
+
+            # Count each category
+            category_counts: Dict[str, int] = defaultdict(int)
+            for event in skill_events:
+                cat = classify_test_event(event)
+                category_counts[cat.value] += 1
+
+            # Calculate rates
+            category_rates = {
+                cat: round(count / total_runs, 4)
+                for cat, count in category_counts.items()
+            }
+
+            # Dominant category (most frequent non-HEALTHY, or HEALTHY if all good)
+            non_healthy = {
+                cat: count for cat, count in category_counts.items()
+                if cat != ProblemCategory.HEALTHY.value
+            }
+
+            if non_healthy:
+                dominant_cat_str = max(non_healthy, key=non_healthy.__getitem__)
+                dominant_count = non_healthy[dominant_cat_str]
+            else:
+                dominant_cat_str = ProblemCategory.HEALTHY.value
+                dominant_count = category_counts.get(ProblemCategory.HEALTHY.value, 0)
+
+            dominant_category = ProblemCategory(dominant_cat_str)
+
+            # Confidence = dominant_count / total_runs (frequency-based)
+            confidence = round(dominant_count / total_runs, 4) if total_runs > 0 else 0.0
+
+            # Generate recommendation
+            recommendation = _build_recommendation(skill_id, dominant_category, category_rates, confidence)
+
+            profiles[skill_id] = SkillProblemProfile(
+                skill_id=skill_id,
+                total_runs=total_runs,
+                dominant_category=dominant_category,
+                category_counts=dict(category_counts),
+                category_rates=category_rates,
+                confidence=confidence,
+                recommendation=recommendation
+            )
+
+        return profiles
+
+
+def _build_recommendation(
+    skill_id: str,
+    category: ProblemCategory,
+    rates: Dict[str, float],
+    confidence: float
+) -> str:
+    """Build a [PROVISIONAL] recommendation string for a given problem category."""
+    pct = f"{confidence:.0%}"
+
+    if category == ProblemCategory.MODEL_WEAKNESS:
+        return (
+            f"[PROVISIONAL] PRIMARY MODEL SWAP for {skill_id}. "
+            f"Primary model fails {pct} of the time but escalated models succeed. "
+            "Consider promoting the fallback model to primary in model_routing.json (manual change required)."
+        )
+    if category == ProblemCategory.PROMPT_ISSUE:
+        return (
+            f"[PROVISIONAL] PROMPT/SCHEMA REVIEW for {skill_id}. "
+            f"Skill fails across ALL tiers in {pct} of runs. "
+            "The tool schema or prompt template is likely malformed. Review the skill JSON and input contract."
+        )
+    if category == ProblemCategory.VALIDATION_FAIL:
+        return (
+            f"[PROVISIONAL] VALIDATION RULE REVIEW for {skill_id}. "
+            f"Primary model executes but fails validation in {pct} of runs. "
+            "The model likely hallucinates the output format. Tighten the prompt or relax the validation regex."
+        )
+    if category == ProblemCategory.TIMEOUT:
+        return (
+            f"[PROVISIONAL] LATENCY OPTIMIZATION for {skill_id}. "
+            f"Tests pass but exceed {TIMEOUT_THRESHOLD_MS}ms in {pct} of runs. "
+            "Consider switching to a faster model tier or enabling response caching."
+        )
+    if category == ProblemCategory.HEALTHY:
+        return f"[PROVISIONAL] CONTINUE MONITORING {skill_id}. System is healthy — no action required."
+
+    return f"[PROVISIONAL] INVESTIGATE {skill_id}. Unknown failure pattern detected."
 
 
 class ActionPriority(str, Enum):
@@ -249,38 +462,45 @@ class OptimizationEngine:
         
         return actions
     
-    def generate_decision_report(self, health_matrix: Dict[str, Any]) -> str:
+    def generate_decision_report(
+        self,
+        health_matrix: Dict[str, Any],
+        problem_profiles: Optional[Dict[str, Any]] = None
+    ) -> str:
         """
-        Generate D13 Decision Report from Health Matrix.
+        Generate D13 Decision Report from Health Matrix + Problem Classifications.
         
-        Creates a Markdown report for each degraded skill (< 0.9 pass_rate)
-        with the decision block format (Phase 4).
+        For each degraded skill (< 0.9 pass_rate) emits a full decision block:
+        - Health metrics (pass_rate, escalation_rate, latency)
+        - Problem classification (MODEL_WEAKNESS / PROMPT_ISSUE / VALIDATION_FAIL / TIMEOUT)
+        - Confidence score (frequency-based)
+        - [PROVISIONAL] recommendation
         
         Args:
-            health_matrix: Health Matrix from insight_engine.generate_health_matrix()
+            health_matrix: From insight_engine.generate_health_matrix()
+            problem_profiles: Optional dict skill_id -> SkillProblemProfile from ProblemClassifier
         
         Returns:
             Markdown-formatted decision report
         """
         matrix = health_matrix.get("matrix", {})
         generated_at = health_matrix.get("generated_at", datetime.utcnow().isoformat())
-        
+
         # Filter degraded skills (< 0.9 pass_rate)
         degraded_skills = {
             skill_id: metrics
             for skill_id, metrics in matrix.items()
             if metrics.get("pass_rate", 1.0) < 0.9
         }
-        
+
         if not degraded_skills:
-            return f"""# 🎯 D13 Decision Report
+            return (
+                f"# 🎯 D13 Decision Report\n\n"
+                f"**Generated:** {generated_at}\n"
+                f"**Status:** All skills healthy (pass_rate >= 0.9)\n\n"
+                "No degraded skills detected. No action required.\n"
+            )
 
-**Generated:** {generated_at}
-**Status:** All skills healthy (pass_rate >= 0.9)
-
-No degraded skills detected. No action required.
-"""
-        
         report_lines = [
             "# 🎯 D13 Decision Report",
             "",
@@ -289,7 +509,17 @@ No degraded skills detected. No action required.
             f"**Degraded Skills:** {len(degraded_skills)}",
             ""
         ]
-        
+
+        # Category icons
+        _icons = {
+            "MODEL_WEAKNESS":  "🔁",
+            "PROMPT_ISSUE":    "📋",
+            "VALIDATION_FAIL": "🔍",
+            "TIMEOUT":         "⏱️",
+            "HEALTHY":         "✅",
+            "UNKNOWN":         "❓",
+        }
+
         # Generate decision blocks for each degraded skill
         for skill_id, metrics in sorted(degraded_skills.items()):
             pass_rate = metrics.get("pass_rate", 0.0)
@@ -297,60 +527,96 @@ No degraded skills detected. No action required.
             total_runs = metrics.get("total_runs", 0)
             avg_latency = metrics.get("avg_latency_ms", 0.0)
             health_status = metrics.get("health_status", "unknown")
-            
-            # Determine priority based on pass_rate
+
+            # Priority from pass_rate
             if pass_rate < 0.5:
                 priority = "CRITICAL"
-                action = "MODEL_SWITCH"
             elif pass_rate < 0.7:
                 priority = "HIGH"
-                action = "SCALE_UP or MODEL_SWITCH"
             else:
                 priority = "MEDIUM"
-                action = "MONITOR"
-            
-            # Generate decision block
-            decision_block = f"""## 🚨 {skill_id}
 
-**Health Status:** {health_status.upper()}
-**Pass Rate:** {pass_rate:.2%}
-**Escalation Rate:** {escalation_rate:.2%}
-**Total Runs:** {total_runs}
-**Avg Latency:** {avg_latency:.0f}ms
+            # Problem classification block
+            profile = (problem_profiles or {}).get(skill_id)
+            if profile:
+                # Accept both SkillProblemProfile objects and plain dicts
+                if hasattr(profile, "dominant_category"):
+                    dominant_cat = profile.dominant_category.value if hasattr(profile.dominant_category, "value") else str(profile.dominant_category)
+                    confidence = profile.confidence
+                    cat_rates = profile.category_rates
+                    recommendation = profile.recommendation
+                else:
+                    dominant_cat = profile.get("dominant_category", "UNKNOWN")
+                    confidence = profile.get("confidence", 0.0)
+                    cat_rates = profile.get("category_rates", {})
+                    recommendation = profile.get("recommendation", "[PROVISIONAL] No recommendation available.")
 
-### [PROVISIONAL] Decision Block
+                icon = _icons.get(dominant_cat, "❓")
+                cat_breakdown = "  ".join(
+                    f"`{cat}`: {rate:.0%}"
+                    for cat, rate in sorted(cat_rates.items(), key=lambda x: x[1], reverse=True)
+                )
+                classification_section = (
+                    f"#### {icon} Problem Classification\n\n"
+                    f"| Field | Value |\n"
+                    f"|-------|-------|\n"
+                    f"| **Dominant Category** | `{dominant_cat}` |\n"
+                    f"| **Confidence** | {confidence:.0%} (frequency-based) |\n"
+                    f"| **Category Breakdown** | {cat_breakdown} |\n\n"
+                    f"**Root-Cause Recommendation:**\n\n"
+                    f"> {recommendation}\n"
+                )
+            else:
+                classification_section = (
+                    "#### ❓ Problem Classification\n\n"
+                    "*No D10 classification data available yet. Run batch tests to populate.*\n"
+                )
 
-**Priority:** {priority}
-**Action:** {action}
+            report_lines.append(f"## 🚨 [{priority}] {skill_id}\n")
+            report_lines.append(
+                f"| Metric | Value |\n"
+                f"|--------|-------|\n"
+                f"| **Health Status** | `{health_status.upper()}` |\n"
+                f"| **Pass Rate** | {pass_rate:.2%} |\n"
+                f"| **Escalation Rate** | {escalation_rate:.2%} |\n"
+                f"| **Total Runs** | {total_runs} |\n"
+                f"| **Avg Latency** | {avg_latency:.0f} ms |\n"
+            )
+            report_lines.append("")
+            report_lines.append(classification_section)
+            report_lines.append("---\n")
 
-**Reason:**
-- Pass rate is {pass_rate:.2%} (threshold: 0.9)
-- Escalation rate is {escalation_rate:.2%}
-- System is {health_status}
-
-**Recommendation:**
-[PROVISIONAL] Consider {action} for {skill_id}. Current pass rate of {pass_rate:.2%} is below the 0.9 threshold. Investigate root cause and implement corrective action.
-
----
-
-"""
-            report_lines.append(decision_block)
-        
-        # Summary section
-        report_lines.append("## Summary")
-        report_lines.append("")
-        report_lines.append(f"- **Total Skills Analyzed:** {len(matrix)}")
-        report_lines.append(f"- **Healthy Skills:** {len(matrix) - len(degraded_skills)}")
-        report_lines.append(f"- **Degraded Skills:** {len(degraded_skills)}")
-        report_lines.append("")
-        report_lines.append("### Priority Breakdown")
-        
+        # Summary
         critical_count = sum(1 for m in degraded_skills.values() if m.get("pass_rate", 1.0) < 0.5)
         high_count = sum(1 for m in degraded_skills.values() if 0.5 <= m.get("pass_rate", 1.0) < 0.7)
         medium_count = sum(1 for m in degraded_skills.values() if 0.7 <= m.get("pass_rate", 1.0) < 0.9)
-        
-        report_lines.append(f"- **CRITICAL:** {critical_count}")
-        report_lines.append(f"- **HIGH:** {high_count}")
-        report_lines.append(f"- **MEDIUM:** {medium_count}")
-        
+
+        # Category summary from profiles
+        cat_summary: Dict[str, int] = defaultdict(int)
+        for p in (problem_profiles or {}).values():
+            if hasattr(p, "dominant_category"):
+                cat_summary[p.dominant_category.value if hasattr(p.dominant_category, "value") else str(p.dominant_category)] += 1
+            elif isinstance(p, dict):
+                cat_summary[p.get("dominant_category", "UNKNOWN")] += 1
+
+        report_lines += [
+            "## 📊 Summary",
+            "",
+            f"- **Total Skills Analyzed:** {len(matrix)}",
+            f"- **Healthy Skills:** {len(matrix) - len(degraded_skills)}",
+            f"- **Degraded Skills:** {len(degraded_skills)}",
+            "",
+            "### Priority Breakdown",
+            f"- **CRITICAL:** {critical_count}",
+            f"- **HIGH:** {high_count}",
+            f"- **MEDIUM:** {medium_count}",
+            "",
+        ]
+
+        if cat_summary:
+            report_lines.append("### Problem Category Distribution")
+            for cat, count in sorted(cat_summary.items(), key=lambda x: x[1], reverse=True):
+                icon = _icons.get(cat, "❓")
+                report_lines.append(f"- {icon} **{cat}:** {count} skill(s)")
+
         return "\n".join(report_lines)

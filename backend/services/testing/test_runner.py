@@ -180,7 +180,9 @@ class TestRunner:
                 latency_ms=escalation_summary.total_latency_ms,
                 trace_id=trace_id,
                 session_id=session_id,
-                errors=[final_attempt.error] if final_attempt and final_attempt.error else []
+                errors=[final_attempt.error] if final_attempt and final_attempt.error else [],
+                final_tier=escalation_summary.final_tier,
+                attempts_count=len(escalation_summary.attempts)
             )
             
             return {
@@ -238,7 +240,9 @@ class TestRunner:
         latency_ms: float,
         trace_id: str,
         session_id: Optional[str],
-        errors: List[str]
+        errors: List[str],
+        final_tier: str = "primary",
+        attempts_count: int = 1
     ) -> None:
         """
         Log test result to D10 telemetry system.
@@ -265,7 +269,9 @@ class TestRunner:
             session_id=session_id,
             payload={
                 "test_type": test_type,
-                "errors": errors
+                "errors": errors,
+                "final_tier": final_tier,
+                "attempts_count": attempts_count
             }
         )
         

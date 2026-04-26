@@ -825,38 +825,59 @@ async def get_health_matrix(hours: int = 1):
 
 
 @router.get("/system/decision-report")
-async def get_decision_report(hours: int = 1):
+async def get_decision_report(hours: int = 1, classification_hours: int = 24):
     """
-    D17: Decision Report — Get D13 decision recommendations for degraded skills.
+    D17: Decision Report — D13 decision recommendations with problem classification.
     
-    Generates a Markdown report for each degraded skill (< 0.9 pass_rate)
-    with decision blocks and recommendations.
+    Combines Health Matrix (pass_rate, escalation_rate) with Problem Classification
+    (MODEL_WEAKNESS / PROMPT_ISSUE / VALIDATION_FAIL / TIMEOUT) and confidence scores.
     
     Args:
-        hours: Time window in hours for analysis (default: 1)
+        hours: Time window for health matrix aggregation (default: 1)
+        classification_hours: Time window for problem classification from D10 history (default: 24)
     
     Returns:
-        Markdown-formatted decision report
+        Markdown report + health_matrix + problem_profiles
     """
     try:
         from backend.services.logging.insight_engine import InsightEngine
-        from backend.services.logging.optimization_engine import OptimizationEngine
+        from backend.services.logging.optimization_engine import OptimizationEngine, ProblemClassifier
         
-        logger.info(f"[D17-DECISION-REPORT] Generating decision report for last {hours} hour(s)")
+        logger.info(
+            f"[D17-DECISION-REPORT] Generating report — matrix_hours={hours}, classify_hours={classification_hours}"
+        )
         
-        # Get health matrix
+        # 1. Health Matrix
         insight_engine = InsightEngine(hours=hours)
         health_matrix = insight_engine.generate_health_matrix()
         
-        # Generate decision report
-        optimization_engine = OptimizationEngine(hours=hours)
-        decision_report = optimization_engine.generate_decision_report(health_matrix)
+        # 2. Problem Classification from D10 history
+        classifier = ProblemClassifier(hours=classification_hours)
+        problem_profiles_raw = classifier.classify_skills()
         
-        logger.info(f"[D17-DECISION-REPORT] Generated decision report")
+        # Serialize profiles to plain dicts for JSON response
+        problem_profiles_serialized = {
+            skill_id: profile.model_dump(mode="json")
+            for skill_id, profile in problem_profiles_raw.items()
+        }
+        
+        # 3. Generate enriched decision report
+        optimization_engine = OptimizationEngine(hours=hours)
+        decision_report = optimization_engine.generate_decision_report(
+            health_matrix,
+            problem_profiles=problem_profiles_raw
+        )
+        
+        logger.info(
+            f"[D17-DECISION-REPORT] Report generated — "
+            f"{health_matrix.get('skills_analyzed', 0)} skills in matrix, "
+            f"{len(problem_profiles_raw)} classified"
+        )
         
         return {
             "report": decision_report,
             "health_matrix": health_matrix,
+            "problem_profiles": problem_profiles_serialized,
             "generated_at": datetime.utcnow().isoformat()
         }
         
