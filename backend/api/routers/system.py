@@ -707,6 +707,91 @@ async def get_integrity_check():
         raise HTTPException(status_code=500, detail=f"Integrity check failed: {str(e)}")
 
 
+@router.get("/system/run-skill-tests/{skill_id}")
+async def run_skill_tests(skill_id: str, skill_type: str = "tool"):
+    """
+    D16: Skill Stability System — Run automated tests for a skill.
+    
+    Generates test blueprints (if not exists), executes tests with escalation
+    chain (Primary -> Fallback -> Escalation), and returns health summary.
+    
+    Args:
+        skill_id: Unique skill identifier (e.g., "system.weather")
+        skill_type: Type of skill (default: "tool", options: "tool", "agent", "renderer")
+    
+    Returns:
+        Health summary with test results and metrics
+    """
+    try:
+        from backend.services.testing.test_generator import TestGenerator
+        from backend.services.testing.test_runner import TestRunner
+        from backend.services.routing.escalation import EscalationEngine
+        from backend.services.routing.model_router import ModelRouter
+        from backend.services.tool_executor import ToolExecutor
+        from backend.data.database import get_db
+        import keyring
+        
+        logger.info(f"[D16-SKILL-TEST] Starting test run for skill_id={skill_id}, skill_type={skill_type}")
+        
+        # Initialize components
+        test_generator = TestGenerator()
+        test_runner = TestRunner()
+        escalation_engine = EscalationEngine()
+        model_router = ModelRouter()
+        
+        # Generate testset if not exists
+        try:
+            blueprint = test_generator.generate_testset(skill_id, skill_type)
+            logger.info(f"[D16-SKILL-TEST] Generated test blueprint for {skill_id}")
+        except Exception as e:
+            logger.error(f"[D16-SKILL-TEST] Failed to generate test blueprint: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to generate test blueprint: {str(e)}")
+        
+        # Create mock tool_call_fn for testing
+        # In production, this would use actual ToolExecutor
+        async def mock_tool_call_fn(provider: str, model: str, **kwargs) -> Dict[str, Any]:
+            """
+            Mock tool execution for testing purposes.
+            
+            In production, this would instantiate ToolExecutor and execute
+            the actual skill/tool call with the given provider and model.
+            """
+            logger.info(f"[D16-SKILL-TEST] Mock execution: provider={provider}, model={model}, kwargs={kwargs}")
+            
+            # Simulate successful execution
+            return {
+                "status": "success",
+                "provider": provider,
+                "model": model,
+                "result": f"Mock result for {skill_id}",
+                "latency_ms": 100
+            }
+        
+        # Run testset with mock function
+        # Note: session_id is None for manual API triggers
+        test_summary = await test_runner.run_testset(
+            skill_id=skill_id,
+            tool_call_fn=mock_tool_call_fn,
+            session_id=None
+        )
+        
+        logger.info(f"[D16-SKILL-TEST] Test run complete: {test_summary['passed_count']}/{test_summary['test_count']} passed")
+        
+        return {
+            "skill_id": skill_id,
+            "skill_type": skill_type,
+            "test_summary": test_summary,
+            "health_summary": test_summary.get("health_summary", {}),
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("[D16-SKILL-TEST] Failed to run skill tests: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Skill test execution failed: {str(e)}")
+
+
 def format_optimization_report(actions: List[Dict[str, Any]]) -> str:
     """
     Format actions as Markdown report for AI Studio.

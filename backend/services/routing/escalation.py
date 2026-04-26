@@ -33,6 +33,7 @@ class EscalationSummary:
     total_latency_ms: float = 0.0
     total_cost_estimate: float = 0.0
     final_tier: str = "none"
+    error: Optional[str] = None
 
 
 class EscalationEngine:

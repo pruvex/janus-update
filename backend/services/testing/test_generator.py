@@ -109,7 +109,7 @@ class TestGenerator:
         templates = {
             "tool": {"parameters": None},  # Missing parameters
             "agent": {"message": 12345},  # Wrong type
-            "renderer": {"content": "invalid"} * 1000  # Too large
+            "renderer": {"content": "invalid" * 1000}  # Too large
         }
         return templates.get(skill_type, {"input": "failure input"})
 

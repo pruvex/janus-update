@@ -33,6 +33,21 @@ class ValidationEngine:
         Returns:
             ValidationResult with pass/fail status
         """
+        # Guard against None or empty result
+        if result is None:
+            return ValidationResult(
+                passed=False,
+                validator_type="none_guard",
+                message="Result is None - cannot validate"
+            )
+        
+        if not isinstance(result, dict):
+            return ValidationResult(
+                passed=False,
+                validator_type="type_guard",
+                message=f"Result must be a dict, got {type(result).__name__}"
+            )
+        
         validator_type = validation_spec.get("type")
         
         if validator_type == "contains":
@@ -73,6 +88,15 @@ class ValidationEngine:
         
         actual_value = result.get(field)
         
+        # Handle None or empty actual_value
+        if actual_value is None or actual_value == "":
+            return ValidationResult(
+                passed=False,
+                validator_type="contains",
+                message=f"Field '{field}' is None or empty, expected '{expected_value}'",
+                details={"field": field, "expected": expected_value, "actual": actual_value}
+            )
+        
         if actual_value == expected_value:
             return ValidationResult(
                 passed=True,
@@ -111,6 +135,15 @@ class ValidationEngine:
         
         actual_value = result.get(field)
         
+        # Handle None or empty actual_value
+        if actual_value is None or actual_value == "":
+            return ValidationResult(
+                passed=True,
+                validator_type="not_contains",
+                message=f"Field '{field}' is None or empty, which is not forbidden value '{forbidden_value}'",
+                details={"field": field, "forbidden": forbidden_value, "actual": actual_value}
+            )
+        
         if actual_value != forbidden_value:
             return ValidationResult(
                 passed=True,
@@ -147,7 +180,12 @@ class ValidationEngine:
                 message="Missing 'field' or 'pattern' in validation spec"
             )
         
-        actual_value = str(result.get(field, ""))
+        actual_value = result.get(field)
+        
+        # Handle None or empty actual_value
+        if actual_value is None:
+            actual_value = ""
+        actual_value = str(actual_value)
         
         try:
             if re.search(pattern, actual_value):
@@ -183,6 +221,15 @@ class ValidationEngine:
         Returns:
             ValidationResult
         """
+        # Handle None result
+        if result is None:
+            return ValidationResult(
+                passed=False,
+                validator_type="not_crash",
+                message="Result is None - potential crash",
+                details={"result_snippet": "None"}
+            )
+        
         # Check for crash indicators
         crash_indicators = ["error", "exception", "crash", "panic", "fatal"]
         result_str = str(result).lower()

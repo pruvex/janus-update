@@ -128,9 +128,13 @@ class TestRunner:
             final_model = final_attempt.model if final_attempt else "unknown"
             final_provider = final_attempt.provider if final_attempt else "unknown"
             
-            # Validate result
+            # Validate result with None guard
+            result_to_validate = final_attempt.result if final_attempt else {}
+            if result_to_validate is None:
+                result_to_validate = {"status": "error", "message": "Result was None"}
+            
             validation_result = self._validate_result(
-                final_attempt.result if final_attempt else {},
+                result_to_validate,
                 test_spec.get("validation")
             )
             

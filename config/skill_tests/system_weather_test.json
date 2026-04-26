@@ -1,0 +1,46 @@
+{
+  "skill_id": "system.weather",
+  "skill_type": "tool",
+  "generated_at": "2026-04-26T17:11:37.796360",
+  "tests": {
+    "happy_path": {
+      "name": "happy_path",
+      "description": "Standard successful execution",
+      "input": {
+        "parameters": {
+          "query": "test query"
+        }
+      },
+      "validation": {
+        "type": "contains",
+        "field": "status",
+        "value": "success"
+      }
+    },
+    "edge_case": {
+      "name": "edge_case",
+      "description": "Boundary condition or unusual input",
+      "input": {
+        "parameters": {
+          "query": ""
+        }
+      },
+      "validation": {
+        "type": "not_crash",
+        "description": "Should not crash on edge input"
+      }
+    },
+    "failure_case": {
+      "name": "failure_case",
+      "description": "Invalid input or error condition",
+      "input": {
+        "parameters": null
+      },
+      "validation": {
+        "type": "contains",
+        "field": "status",
+        "value": "error"
+      }
+    }
+  }
+}
