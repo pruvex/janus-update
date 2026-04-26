@@ -10,7 +10,7 @@ from backend.services.telemetry_service import submit_feedback_async
 from backend.utils.config_loader import initialize_file_from_template, load_model_catalog
 from backend.utils.paths import get_app_data_dir, resource_path
 from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from backend.data.database import get_db
 
@@ -476,3 +476,70 @@ async def debug_log_skill(request: DebugLogRequest):
     except Exception as e:
         logger.error("[DEBUG-LOG-SKILL] Failed to generate debug report: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Debug analysis failed: {str(e)}")
+
+
+class InsightRequest(BaseModel):
+    """Request model for insights endpoint."""
+    hours: int = Field(default=1, description="Time window in hours (default: 1)")
+
+
+@router.post("/system/insights")
+async def generate_insights(request: InsightRequest):
+    """
+    D12: Janus Insight Engine — Globale Log-Aggregation für System-Health Monitoring.
+    
+    Aggregiert Logs aus Supabase nach Skill und Model,
+    berechnet Metriken (calls, error_rate, avg_latency),
+    detektiert Patterns und speichert Ergebnisse in logs_insights Tabelle.
+    """
+    try:
+        from backend.services.logging.insight_engine import InsightEngine
+        from backend.services.logging.supabase_client import get_supabase_client
+        from backend.data.schemas_logging import InsightCreate
+        
+        logger.info(f"[INSIGHT-ENGINE] Generating insights for last {request.hours} hour(s)")
+        
+        engine = InsightEngine(hours=request.hours)
+        results = engine.analyze()
+        
+        if not results:
+            return {"message": "No logs found for the specified time window", "insights": []}
+        
+        # Store insights in Supabase
+        supabase = get_supabase_client()
+        stored_insights = []
+        
+        for result in results:
+            insight_data = InsightCreate(
+                skill=result.skill,
+                model=result.model,
+                calls=result.calls,
+                error_rate=result.error_rate,
+                avg_latency_ms=result.avg_latency_ms,
+                patterns=result.patterns,
+                confidence=result.confidence,
+                generated_at=result.generated_at,
+                time_window_hours=request.hours
+            )
+            
+            try:
+                response = (
+                    supabase
+                    .table("logs_insights")
+                    .insert(insight_data.model_dump())
+                    .execute()
+                )
+                stored_insights.append(insight_data.model_dump())
+            except Exception as e:
+                logger.error(f"[INSIGHT-ENGINE] Failed to store insight for {result.skill}/{result.model}: {e}")
+        
+        logger.info(f"[INSIGHT-ENGINE] Generated and stored {len(stored_insights)} insights")
+        
+        return {
+            "message": f"Generated {len(stored_insights)} insights",
+            "insights": stored_insights
+        }
+        
+    except Exception as e:
+        logger.error("[INSIGHT-ENGINE] Failed to generate insights: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Insight generation failed: {str(e)}")

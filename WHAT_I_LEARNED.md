@@ -265,6 +265,25 @@
 - **Tags:** ProductionWrapper, DebugCompression, Formatter, AIStudio, TokenEfficient, StructuredFormat, POSTEndpoint, Asyncio, HardTimeout
 
 ---
+
+## [PATTERN] #GlobalInsightAggregation #MacroAnalytics "Trennung von Mikro-Debugging (Session) und Makro-Analyse (Global) zur Identifikation systemweiter Architekturschwächen"
+- **Kontext:** D11 Debug Compression Engine liefert Session-level Debugging (trace_id-basiert, letzte 10 Minuten). Für System-Health Monitoring ist eine globale Analyse aller Logs erforderlich, um systemische Muster über Skills und Models hinweg zu identifizieren. Mikro-Debugging ist gut für spezifische Fehler, Makro-Analyse ist notwendig für Architektur-Optimierung.
+- **Problem:** Keine globale Aggregation von Logs nach Skill und Model. Keine systemweite Pattern-Detection (z.B. "skill X hat auf allen Models hohe Fehlerquote"). Keine persistenten Insights für Trend-Analyse. Keine Trennung zwischen Session-Debugging und System-Monitoring.
+- **Lösung:** **Janus Insight Engine (D12) — Globale Log-Aggregation.**
+  1. **Fetcher:** `fetch_logs()` holt Logs aus Supabase für konfigurierbares Zeitfenster (default: 1 Stunde, optional 24h).
+  2. **Aggregator:** `aggregate_logs()` gruppiert Logs nach Skill und Model, berechnet calls, errors, total_latency.
+  3. **Metrics Calculator:** `calculate_metrics()` berechnet error_rate (errors/calls) und avg_latency_ms (total_latency/latency_count).
+  4. **Pattern Detection:** `detect_patterns()` mit deterministischen Regeln: error_rate > 0.2 → "high_error_rate", avg_latency_ms > 2000 → "latency_spike", calls > 50 & error_rate == 0 → "stable".
+  5. **Confidence Model:** `calculate_confidence()` mit Volumen-basiertem Scoring: base = min(1.0, calls/100), reduziert um 20% bei error_rate > 0.5.
+  6. **POST Endpoint:** `/api/system/insights` mit `{"hours": 1}` Parameter. Speichert Ergebnisse persistent in `logs_insights` Tabelle.
+  7. **Schema:** `InsightCreate` und `Insight` Pydantic-Modelle für logs_insights Tabelle.
+- **Härtung:** Keine Physics-Engine, keine Reality-Scores (wie gefordert). Deterministische Aggregation ohne probabilistische Modelle. Test-Suite mit 4 Test-Cases (Faulty Skill, Stable Skill, Performance Problem, Multiple Skills/Models).
+- **Tripwire:** Wenn globale Muster nicht erkannt werden (z.B. skill mit 50% error_rate wird als "stable" markiert) → Pattern-Detection-Regeln sind inkorrekt implementiert. Wenn Confidence bei vielen Calls nicht 1.0 erreicht → Confidence-Formel hat Fehler.
+- **Location:** `backend/services/logging/insight_engine.py` (neu), `backend/api/routers/system.py` (POST Endpoint), `backend/data/schemas_logging.py` (Schema), `backend/tests/test_insight_engine.py` (Test-Suite), implementiert 2026-04-26.
+- **Confidence:** High (Test-Suite 4/4 passed, deterministische Aggregation verifiziert, POST Endpoint operational).
+- **Tags:** GlobalInsightAggregation, MacroAnalytics, SystemHealth, PatternDetection, SkillModelAggregation, ConfidenceModel, D12
+
+---
 - **Kontext:** D11 Debug Compression Engine wurde entwickelt, um Logs für AI Studio Debugging zu komprimieren. Die Engine soll deterministische Heuristiken nutzen (Hard Errors, Model Drift, Latency Spikes) und LLM-gestützte Zusammenfassung als Fallback. Wichtig: Provider-agnostisch (nutzt User's Speed-Tier Modell) und mit Timeout-Schutz gegen Blockaden.
 - **Problem:** RAM-Buffer war leer (nicht mit realer Logging-System verbunden). Supabase hatte keine Logs aus den letzten 10 Minuten. Endpoint gab immer "Keine relevanten Logs" zurück, obwohl Janus aktiv war und Logs in janus_backend.log geschrieben wurden.
 - **Lösung:** **Drei-Stufen-Fallback-Kaskade in LogFetcher.fetch_logs():**

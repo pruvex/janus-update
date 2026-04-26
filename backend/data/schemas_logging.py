@@ -3,7 +3,7 @@ Pydantic models for strict validation of logging events.
 Schema matches the Supabase logs_raw table exactly.
 """
 from datetime import datetime
-from typing import Optional, Dict, Any, Literal
+from typing import Optional, Dict, Any, Literal, List
 from uuid import UUID, uuid4
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -68,3 +68,30 @@ class LogEventBatch(BaseModel):
     def size(self) -> int:
         """Get the number of events in the batch."""
         return len(self.events)
+
+
+class InsightCreate(BaseModel):
+    """
+    Model for creating a new insight record.
+    Schema matches the Supabase logs_insights table.
+    """
+    id: Optional[str] = Field(default_factory=lambda: str(uuid4()), description="Unique insight identifier")
+    skill: str = Field(..., description="Skill name")
+    model: str = Field(..., description="Model name")
+    calls: int = Field(..., description="Total number of calls")
+    error_rate: float = Field(..., description="Error rate (0.0 to 1.0)")
+    avg_latency_ms: float = Field(..., description="Average latency in milliseconds")
+    patterns: List[str] = Field(default_factory=list, description="Detected patterns")
+    confidence: float = Field(..., description="Confidence score (0.0 to 1.0)")
+    generated_at: datetime = Field(default_factory=datetime.utcnow, description="Timestamp of analysis")
+    time_window_hours: int = Field(default=1, description="Time window in hours used for analysis")
+
+
+class Insight(InsightCreate):
+    """
+    Complete insight model with database ID.
+    Represents a row in the logs_insights table.
+    """
+    id: str = Field(..., description="Unique insight identifier")
+
+    model_config = ConfigDict(from_attributes=True)
