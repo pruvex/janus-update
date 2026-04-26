@@ -89,9 +89,9 @@ class LearningEngine:
             return {"trends": [], "summary": "No data available for trend analysis"}
         
         # Split data into Week N (current, last 7 days) and Week N-1 (baseline, previous 7 days)
-        week_n_cutoff = datetime.utcnow() - timedelta(days=7)
-        week_n = [i for i in insights if datetime.fromisoformat(i.get('generated_at', '')) >= week_n_cutoff]
-        week_n_minus_1 = [i for i in insights if datetime.fromisoformat(i.get('generated_at', '')) < week_n_cutoff]
+        week_n_cutoff = (datetime.utcnow() - timedelta(days=7)).replace(tzinfo=None)
+        week_n = [i for i in insights if datetime.fromisoformat(i.get('generated_at', '')).replace(tzinfo=None) >= week_n_cutoff]
+        week_n_minus_1 = [i for i in insights if datetime.fromisoformat(i.get('generated_at', '')).replace(tzinfo=None) < week_n_cutoff]
         
         # Guardrail: If baseline data is missing, return stable trend
         if not week_n_minus_1:
