@@ -2,6 +2,42 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [PATTERN] #DeterministicSkillTesting #QualitySystem "Deterministic Quality System — Entkopplung von Test-Generierung und -Ausführung, strikte Ablehnung von KI in der Validierung"
+- **Kontext:** D16 Skill Stability System implementiert ein deterministisches Qualitätssystem für Janus-Skills, weg von "probabilistischer Hoffnung" hin zu "gemessener Stabilität". Das System besteht aus Test Generator (Blueprint-Generierung), Validation Engine (deterministische Regeln), Model Router (Skill-zu-Modell Mappings), Escalation Engine (Primary → Fallback → Escalation) und Test Runner (Ausführung mit D10 Telemetrie).
+- **Problem:** Ohne deterministisches Testsystem basiert Skill-Stabilität auf probabilistischen Annahmen. KI-basierte Validierung führt zu inkonsistenten Ergebnissen und schwer reproduzierbaren Fehlern. Fehlende Eskalations-Logik führt zu Single-Point-of-Failure bei Modellproblemen.
+- **Lösung:**
+  1. **Test Generator:** Rule-basierte Blueprint-Generierung (happy_path, edge_case, failure_case) ohne KI-Beteiligung. JSON-Blueprints werden in `config/skill_tests/` persistiert.
+  2. **Validation Engine:** Deterministische Validatoren (contains, not_contains, regex, not_crash). STRICTLY FORBIDDEN: KI-basierte Validierung. None/Empty-Guards für robuste Fehlerbehandlung.
+  3. **Model Router:** Skill-zu-Modell Mappings aus `model_routing.json` mit Fallback auf Global Defaults. Tiers: Primary, Fallback, Escalation.
+  4. **Escalation Engine:** Automatische Eskalation bei Fehlern (Primary → Fallback → Escalation). Circuit Breaker bei vollständiger Eskalations-Erschöpfung. Kosten-Tracking pro Tier.
+  5. **Test Runner:** Async-Ausführung mit D10 Integration (`log_event()`). AI Studio kompatible Health Reports (health_score, status, avg_latency_ms).
+  6. **API Endpoint:** `GET /api/system/run-skill-tests/{skill_id}` für manuelle Triggerung aus AI Studio.
+- **Härtung:** Async-Integrity Pattern (konsistentes Awaiten in Eskalationskette). None-Guards für alle Validierungsmethoden. Type-Guards für Result-Validierung.
+- **Tripwire:** Wenn Tests inkonsistente Ergebnisse liefern → KI-basierte Validierung aktiv. Wenn latency_ms = 0.0 → Async-Await fehlt. Wenn Circuit Breaker nicht triggert → Eskalations-Logik defekt.
+- **Location:** `backend/services/testing/test_generator.py`, `backend/services/testing/validation.py`, `backend/services/routing/model_router.py`, `backend/services/routing/escalation.py`, `backend/services/testing/test_runner.py`, `backend/api/routers/system.py`, implementiert 2026-04-26.
+- **Epic:** D16 — Deterministic Quality System
+- **Confidence:** High (Deterministische Regeln, strikte KI-Ablehnung in Validierung, konsistente Async-Handling).
+- **Tags:** DeterministicSkillTesting, QualitySystem, Validation, Escalation, ModelRouting, D10Integration, AsyncIntegrity
+
+---
+
+## [LESSON] #AsyncIntegrity #Escalation "Coroutine-Vampir bei Tool-Calls — Konsistentes Awaiten in der Eskalationskette für korrekte Latenz-Messung"
+- **Kontext:** Die EscalationEngine führte tool_call_fn auf, aber ohne await wenn das Ergebnis eine Coroutine war. Dies führte zu latency_ms = 0.0 und korrupten Zeitmessungen. Der Mock-Tool-Call im API Router war async, aber der Aufruf wurde nicht konsistent awaited.
+- **Problem:** Wenn tool_call_fn eine Coroutine zurückgibt (async function), aber nicht awaited wird, wird das Coroutine-Objekt selbst als Ergebnis behandelt. Dies führt zu: (1) Falsche latency_ms (0.0 statt echter Ausführungszeit), (2) AttributeError bei Zugriff auf Coroutine-Attribute, (3) Unvorhersehbares Verhalten bei Validierung.
+- **Lösung:** **Konsistentes Async-Handling in der Eskalationskette:**
+  1. `execute_with_escalation()` zu async machen.
+  2. `_execute_at_tier()` zu async machen.
+  3. `asyncio.iscoroutine(result)` Check nach tool_call_fn.
+  4. Wenn Coroutine: `result = await result`.
+  5. Alle Aufrufe in der Kette mit await versehen.
+- **Härtung:** Async-Check mit `asyncio.iscoroutine()` für maximale Robustheit. Convenience-Funktionen ebenfalls async machen.
+- **Tripwire:** Wenn latency_ms = 0.0 in Test-Reports → Async-Await fehlt in Escalation Engine. Wenn AttributeError bei Result-Attributen → Coroutine nicht awaited.
+- **Location:** `backend/services/routing/escalation.py` (execute_with_escalation, _execute_at_tier), `backend/services/testing/test_runner.py` (escalation call), gefixt 2026-04-26.
+- **Confidence:** High (Latency-Messung zeigt jetzt echte Werte, keine AttributeErrors mehr).
+- **Tags:** AsyncIntegrity, Escalation, Coroutine, Latency, Await, ToolCall
+
+---
+
 ## [PATTERN] #Logging #Hardening "Resilient Telemetry Pattern — Kombination aus contextvars für Traceability, UPSERT für Idempotenz und Drop-Oldest für Speichersicherheit"
 - **Kontext:** Logging Pipeline Phase 1 (reines Sammeln) wurde auf Phase 2 (analytische Härtung) gehoben. Die Infrastruktur fehlte Resilienz-Mechanismen: keine Trace-ID Context-Propagation, keine Queue Overflow-Strategie, keine System-Health-Monitoring, keine strikte Payload-Validierung. Bei hohem Throughput konnte die Queue volllaufen und Events verloren gehen. Doppelte Uploads bei Retries führten zu Duplikaten in Supabase.
 - **Problem:** Ohne Trace-ID war Request-Tracking unmöglich (keine End-to-End Tracing). Ohne Overflow-Strategie würde die Queue blockieren bei volllauf (5000 Events). Ohne UPSERT-Idempotenz führten Retries zu Duplikaten in Supabase. Ohne Schema-Validierung konnten ungültige Payloads die Queue verunreinigen.
