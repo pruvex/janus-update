@@ -1,0 +1,17 @@
+{
+  "default_tiers": {
+    "primary": {
+      "provider": "openai",
+      "model": "gpt-4o-mini"
+    },
+    "fallback": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    },
+    "escalation": {
+      "provider": "openai",
+      "model": "gpt-4-turbo"
+    }
+  },
+  "skill_mappings": {}
+}
