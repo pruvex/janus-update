@@ -616,6 +616,33 @@ async def get_optimization_report(skill: Optional[str] = None):
         raise HTTPException(status_code=500, detail=f"Report generation failed: {str(e)}")
 
 
+@router.get("/system/learning-report")
+async def get_learning_report(days: int = 7):
+    """
+    D14: Weekly Learning Engine — System Performance Trend Analysis.
+    
+    Analyzes historical insights to identify trends and generate
+    system improvement recommendations.
+    
+    Args:
+        days: Number of days to analyze (default: 7)
+    """
+    try:
+        from backend.services.logging.learning_engine import LearningEngine
+        
+        logger.info(f"[LEARNING-ENGINE] Generating learning report for last {days} days")
+        
+        engine = LearningEngine()
+        report = await engine.generate_weekly_report(days=days)
+        
+        logger.info(f"[LEARNING-ENGINE] Generated report with {len(report.get('improvements', []))} improvements")
+        return report
+        
+    except Exception as e:
+        logger.error("[LEARNING-ENGINE] Failed to generate learning report: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Learning report generation failed: {str(e)}")
+
+
 def format_optimization_report(actions: List[Dict[str, Any]]) -> str:
     """
     Format actions as Markdown report for AI Studio.

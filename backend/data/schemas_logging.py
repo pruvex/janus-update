@@ -123,3 +123,29 @@ class Action(ActionCreate):
     id: str = Field(..., description="Unique action identifier")
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# D14: Weekly Learning Engine Schemas
+class SystemImprovement(BaseModel):
+    """
+    Model for a system improvement recommendation.
+    """
+    scope: str = Field(..., description="Scope of improvement (e.g., 'skill:websearch', 'model:gpt-4o')")
+    issue: str = Field(..., description="Issue description")
+    trend: str = Field(..., description="Trend direction: rising, falling, or stable")
+    recommendation: str = Field(..., description="Specific recommendation")
+
+
+class LearningReport(BaseModel):
+    """
+    Model for weekly learning report.
+    Aggregates insights and identifies trends over time.
+    """
+    report_type: str = Field(default="weekly", description="Report type (weekly, monthly, etc.)")
+    period_start: datetime = Field(..., description="Start of analysis period")
+    period_end: datetime = Field(..., description="End of analysis period")
+    global_summary: str = Field(..., description="High-level summary of system state")
+    insights: List[Dict[str, Any]] = Field(default_factory=list, description="List of insights analyzed")
+    improvements: List[SystemImprovement] = Field(default_factory=list, description="System improvement recommendations")
+    generated_at: datetime = Field(default_factory=datetime.utcnow, description="Timestamp of report generation")
+
