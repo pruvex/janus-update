@@ -707,6 +707,51 @@ async def get_integrity_check():
         raise HTTPException(status_code=500, detail=f"Integrity check failed: {str(e)}")
 
 
+@router.get("/system/run-batch-tests")
+async def run_batch_tests():
+    """
+    D17: Batch Skill Tests — Run automated tests for ALL discovered skills.
+    
+    Discovers all skills from backend/skills/ and executes test blueprints.
+    Triggers forensic logging for path resolution debugging.
+    
+    Returns:
+        Batch test summary with all results and health metrics
+    """
+    try:
+        from backend.services.testing.test_generator import TestGenerator
+        from backend.services.testing.test_runner import TestRunner, discover_skills
+        
+        logger.info("[D17-BATCH-TEST] Starting batch test run for all skills")
+        
+        # Discover all skills (triggers forensic logging)
+        skill_ids = discover_skills()
+        logger.info(f"[D17-BATCH-TEST] Discovered {len(skill_ids)} skills")
+        
+        # Initialize test runner
+        test_runner = TestRunner()
+        
+        # Mock tool_call_fn for testing (no actual execution)
+        async def mock_tool_call_fn(provider: str, model: str, **kwargs):
+            return {"status": "mock_success", "provider": provider, "model": model}
+        
+        # Run batch tests
+        batch_summary = await test_runner.run_batch_tests(
+            tool_call_fn=mock_tool_call_fn,
+            skill_ids=skill_ids
+        )
+        
+        logger.info(f"[D17-BATCH-TEST] Batch test complete: {batch_summary.get('skills_tested', 0)} skills tested")
+        
+        return batch_summary
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("[D17-BATCH-TEST] Failed to run batch tests: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Batch test execution failed: {str(e)}")
+
+
 @router.get("/system/run-skill-tests/{skill_id}")
 async def run_skill_tests(skill_id: str, skill_type: str = "tool"):
     """

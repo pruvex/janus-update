@@ -1,7 +1,7 @@
 {
-  "skill_id": "system.weather",
-  "skill_type": "system",
-  "generated_at": "2026-04-26T18:31:58.988748",
+  "skill_id": "knowledge.query",
+  "skill_type": "knowledge",
+  "generated_at": "2026-04-26T18:31:58.826576",
   "tests": {
     "happy_path": {
       "name": "happy_path",

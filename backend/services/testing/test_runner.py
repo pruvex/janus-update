@@ -41,18 +41,39 @@ def discover_skills(skills_dir: str = "backend/skills") -> List[str]:
     Returns:
         Sorted list of skill_ids in format "namespace.action"
     """
+    # FORENSIC LOGGING
+    print(f"[FORENSIC] __file__ = {__file__}")
+    
     # Module-based absolute path resolution
     # __file__ = backend/services/testing/test_runner.py
     module_dir = os.path.dirname(os.path.abspath(__file__))
+    print(f"[FORENSIC] module_dir = {module_dir}")
+    
     # module_dir = backend/services/testing/
     services_dir = os.path.dirname(module_dir)
+    print(f"[FORENSIC] services_dir = {services_dir}")
+    
     # services_dir = backend/services/
     backend_dir = os.path.dirname(services_dir)
+    print(f"[FORENSIC] backend_dir = {backend_dir}")
+    
     # backend_dir = backend/
     project_root = os.path.dirname(backend_dir)
-    # project_root = project root
+    print(f"[FORENSIC] project_root = {project_root}")
     
     skills_path = Path(project_root) / skills_dir
+    print(f"[FORENSIC] skills_path = {skills_path}")
+    print(f"[FORENSIC] skills_path.exists() = {skills_path.exists()}")
+    
+    # Log parent directory contents
+    parent_dir = str(skills_path.parent)
+    print(f"[FORENSIC] parent_dir = {parent_dir}")
+    try:
+        parent_contents = os.listdir(parent_dir)
+        print(f"[FORENSIC] parent_dir contents = {parent_contents}")
+    except Exception as e:
+        print(f"[FORENSIC] ERROR listing parent_dir: {e}")
+    
     skill_ids = []
     
     logger.info(f"[discover_skills] Scanning skills from: {skills_path.absolute()}")
@@ -77,6 +98,7 @@ def discover_skills(skills_dir: str = "backend/skills") -> List[str]:
     
     skill_ids.sort()
     logger.info(f"[discover_skills] Discovered {len(skill_ids)} skills")
+    print(f"[FORENSIC] Final skill_ids count = {len(skill_ids)}")
     return skill_ids
 
 
