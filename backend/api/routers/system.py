@@ -526,10 +526,10 @@ async def generate_insights(request: InsightRequest):
                 response = (
                     supabase
                     .table("logs_insights")
-                    .insert(insight_data.model_dump())
+                    .insert(insight_data.model_dump(mode='json'))
                     .execute()
                 )
-                stored_insights.append(insight_data.model_dump())
+                stored_insights.append(insight_data.model_dump(mode='json'))
             except Exception as e:
                 logger.error(f"[INSIGHT-ENGINE] Failed to store insight for {result.skill}/{result.model}: {e}")
         

@@ -9,8 +9,11 @@ from typing import List, Dict, Any, Optional, Tuple
 from collections import defaultdict
 from pydantic import BaseModel, Field
 import statistics
+import logging
 
 from backend.services.logging.supabase_client import get_supabase_client
+
+logger = logging.getLogger("janus_backend")
 
 
 class InsightResult(BaseModel):
@@ -65,7 +68,7 @@ class InsightEngine:
             logs = response.data if response.data else []
             return logs
         except Exception as e:
-            print(f"[InsightEngine] Error fetching logs: {e}")
+            logger.error(f"[InsightEngine] Error fetching logs: {e}", exc_info=True)
             return []
     
     def aggregate_logs(self, logs: List[Dict[str, Any]]) -> Dict[Tuple[str, str], Dict[str, Any]]:
