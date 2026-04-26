@@ -248,7 +248,23 @@
 - **Confidence:** High (Live-verifiziert: Auto-Escalation über 3 Laufwerke findet beide Duplikate trotz 20+ defekten Desktop-Ordnern)
 - **Tags:** Python, Pathlib, rglob, os.walk, Windows, Symlink, Robustness, Iteration
 
-## [PATTERN] #DebugCompression #Logging "Debug Compression Engine — Deterministische Heuristik mit Fallback-Kaskade (RAM → Supabase → Log-File) für produktions-sichere Log-Analyse"
+## [PATTERN] #ProductionWrapper #DebugCompression "Production Wrapper Pattern — Formatiere komplexe Telemetrie-Rohdaten in Token-effizientes AI-Studio-Format (Summary, Cause, Fix) für maximale Iterationsgeschwindigkeit"
+- **Kontext:** D11 Debug Compression Engine liefert rohe Heuristik-Daten (Hard Errors, Model Drift, Latency Spikes, Confidence Score). Für AI Studio Debugging ist ein strukturiertes, Token-effizientes Format erforderlich, das LLMs schnell verarbeiten können ohne Context-Overhead.
+- **Problem:** Rohdaten aus dem Debug Engine sind unstrukturiert und benötigen manuelle Interpretation. Kein dedizierter POST-Endpunkt für AI Studio Integration. Kein standardisiertes Format für Debug-Reports.
+- **Lösung:** **Production Wrapper mit Formatter + POST Endpoint.**
+  1. **Formatter (`debug_formatter.py`):** `format_debug_report(summary_data: dict) -> str` generiert strukturiertes Markdown mit Standard-Sections: SUMMARY (High-level Überblick), ROOT CAUSE (Technische Ursachenanalyse), FINDINGS (Detaillierte Heuristik-Ergebnisse), CONFIDENCE (Score + Interpretation), RECOMMENDED ACTION (Konkrete Handlungsempfehlungen).
+  2. **POST Endpoint (`/api/skills/debug-log`):** Akzeptiert `{"trace_id": "optional", "mode": "fast|full"}`. Ruft D11 Debug Engine auf, leitet Ergebnisse durch Formatter, gibt strukturiertes Markdown zurück.
+  3. **Timeout-Schutz:** 3.0s Hard Timeout auf Log-Fetch und Heuristik-Analyse via `asyncio.wait_for()`. HTTP 504 auf Timeout, HTTP 500 auf Errors.
+  4. **Asyncio Anti-Pattern Fix:** `fetch_logs()` ist async → direkt mit `await` aufrufen (nicht in `run_in_executor`). `_run_heuristics()` ist sync CPU-gebunden → in `run_in_executor` ausführen.
+  5. **LogEntry Attribute Mapping:** LogEntry-Objekte (timestamp, level, message, metadata) werden zu Objekten mit Attributen konvertiert, die `_run_heuristics` erwartet (status, skill, latency_ms, trace_id, payload).
+  6. **Windsurf Skill:** `.windsurf/workflows/debug_log.md` mit curl.exe-Befehl für PowerShell-Kompatibilität.
+- **Härtung:** Typing-Imports (`Optional, List, Dict, Any`) hinzugefügt um NameError bei Server-Start zu vermeiden. Confidence Scoring Fix: Log-Count als positives Signal, keine Fehler = hohe Confidence (0.9 für 100 Logs).
+- **Tripwire:** Wenn /api/skills/debug-log hängt oder NameError bei Server-Start → Asyncio Anti-Pattern oder fehlende Typing imports.
+- **Location:** `backend/services/logging/debug_formatter.py` (neu), `backend/api/routers/system.py` (POST Endpoint), `.windsurf/workflows/debug_log.md` (Skill), implementiert 2026-04-26.
+- **Confidence:** High (Endpoint operational, Formatter getestet, Windsurf Skill funktioniert).
+- **Tags:** ProductionWrapper, DebugCompression, Formatter, AIStudio, TokenEfficient, StructuredFormat, POSTEndpoint, Asyncio, HardTimeout
+
+---
 - **Kontext:** D11 Debug Compression Engine wurde entwickelt, um Logs für AI Studio Debugging zu komprimieren. Die Engine soll deterministische Heuristiken nutzen (Hard Errors, Model Drift, Latency Spikes) und LLM-gestützte Zusammenfassung als Fallback. Wichtig: Provider-agnostisch (nutzt User's Speed-Tier Modell) und mit Timeout-Schutz gegen Blockaden.
 - **Problem:** RAM-Buffer war leer (nicht mit realer Logging-System verbunden). Supabase hatte keine Logs aus den letzten 10 Minuten. Endpoint gab immer "Keine relevanten Logs" zurück, obwohl Janus aktiv war und Logs in janus_backend.log geschrieben wurden.
 - **Lösung:** **Drei-Stufen-Fallback-Kaskade in LogFetcher.fetch_logs():**

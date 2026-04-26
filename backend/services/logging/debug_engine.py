@@ -56,12 +56,16 @@ def get_speed_tier_model() -> tuple[str, str]:
 
 class DebugReport(BaseModel):
     """
-    Strukturierter Debug-Report mit strikter Schema-Validierung.
+    Strukturierter Debug-Report mit strikter Schema-Validierung (V3).
     Production-Safe Design: Alle Felder sind required und haben klare Typen.
+    Enhanced with detailed sections for comprehensive analysis.
     """
-    problem: str = Field(..., description="Präzise Benennung des Problems")
-    cause: str = Field(..., description="Technische Ursache des Problems")
-    fix: str = Field(..., description="Konkrete Handlungsempfehlung zur Lösung")
+    problem: str = Field(..., description="Präzise Benennung des Problems (minimum 150 chars)")
+    root_cause: str = Field(..., description="Technische Ursache des Problems")
+    patterns: str = Field(..., description="Erkannte Patterns in den Logs")
+    anomalies: str = Field(..., description="Ungewöhnliches Verhalten oder Ausreißer")
+    impact: str = Field(..., description="Business- oder System-Impact Assessment")
+    recommended_fix: str = Field(..., description="Konkrete Handlungsempfehlung zur Lösung")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Sicherheit der Diagnose (0.0 - 1.0)")
     
     class Config:
@@ -344,15 +348,23 @@ class LogAnalyzer:
                     "latency_ms": event.latency_ms
                 })
         
-        # 4. Confidence Score basierend auf Schwere der Funde
-        severity_score = 0
-        severity_score += len(findings["hard_errors"]) * 3  # Hard Errors sind schwerwiegend
-        severity_score += len(findings["model_drift"]) * 2  # Model Drift ist wichtig
-        severity_score += len(findings["latency_spikes"]) * 1  # Latency Spikes sind moderat
-        
-        # Normalisieren auf 0.0 - 1.0
-        max_severity = len(events) * 3 if events else 1
-        findings["confidence_score"] = min(severity_score / max_severity, 1.0)
+        # 4. Confidence Score basierend auf Log-Count und Fehler-Präsenz
+        # Healthy logs (no errors) MUST produce high confidence
+        if not events:
+            findings["confidence_score"] = 0.0
+        else:
+            # Base confidence from log count (positive signal)
+            log_count = len(events)
+            base_confidence = min(log_count / 100.0, 1.0) * 0.9  # Max 0.9 for healthy logs
+            
+            # Penalty for errors (negative signal)
+            error_penalty = 0.0
+            error_penalty += len(findings["hard_errors"]) * 0.3  # Hard Errors: -0.3 each
+            error_penalty += len(findings["model_drift"]) * 0.2   # Model Drift: -0.2 each
+            error_penalty += len(findings["latency_spikes"]) * 0.1  # Latency Spikes: -0.1 each
+            
+            # Final confidence: base - penalty, bounded to [0.0, 1.0]
+            findings["confidence_score"] = max(0.0, min(base_confidence - error_penalty, 1.0))
         
         logger.info(f"LogAnalyzer._run_heuristics: {len(findings['hard_errors'])} errors, {len(findings['model_drift'])} drift, {len(findings['latency_spikes'])} spikes, confidence={findings['confidence_score']:.2f}")
         return findings
@@ -495,21 +507,29 @@ class DebugReportGenerator:
             for h in heuristics
         ])
         
-        # Provider-agnostischer System-Prompt
+        # Provider-agnostischer System-Prompt (V3 - Enhanced with Sections)
         prompt = f"""Analyze the following log pattern heuristics and generate a structured debug report.
 
 Heuristics:
 {heuristics_text}
 
+CRITICAL: For CRITICAL signals (e.g., 500 errors, hard failures), DO NOT reduce information aggressively. Preserve all relevant details.
+
 Generate a JSON response with the following structure:
 {{
-  "problem": "Precise problem name",
-  "cause": "Technical root cause",
-  "fix": "Concrete action recommendation",
+  "problem": "Precise problem name (minimum 150 chars for full description)",
+  "root_cause": "Technical root cause analysis",
+  "patterns": "Detected patterns in the logs",
+  "anomalies": "Unusual behavior or outliers",
+  "impact": "Business or system impact assessment",
+  "recommended_fix": "Concrete action recommendation",
   "confidence": 0.0 to 1.0
 }}
 
-Focus on the most frequent pattern. Keep the response concise and actionable."""
+Required sections: ROOT CAUSE, PATTERNS, ANOMALIES, IMPACT, RECOMMENDED FIX.
+Minimum total length: 150 characters.
+For CRITICAL signals: Preserve full error details, stack traces, and context.
+Focus on the most frequent pattern but ensure comprehensive coverage."""
         
         try:
             # LLM-Aufruf via llm_gateway (Provider-Agnostic)
@@ -565,22 +585,30 @@ Focus on the most frequent pattern. Keep the response concise and actionable."""
         return DebugReport(**report_data)
     
     def _is_incomplete_report(self, report: DebugReport) -> bool:
-        """Prüft, ob der Report vollständig ist."""
+        """Prüft, ob der Report vollständig ist (V3)."""
         # Confidence zu niedrig
         if report.confidence < 0.3:
             return True
-        # Felder zu kurz oder leer
-        if len(report.problem) < 5 or len(report.cause) < 10 or len(report.fix) < 10:
+        # Felder zu kurz oder leer (V3: Alle Felder prüfen)
+        if len(report.problem) < 150:
+            return True
+        if len(report.root_cause) < 10 or len(report.patterns) < 10 or len(report.anomalies) < 10:
+            return True
+        if len(report.impact) < 10 or len(report.recommended_fix) < 10:
             return True
         return False
     
     def _generate_fallback_from_heuristics(self, heuristics: List[HeuristicResult]) -> DebugReport:
-        """Generiert einen Fallback-Report direkt aus Heuristik-Daten."""
+        """Generiert einen Fallback-Report direkt aus Heuristik-Daten (V3)."""
         top_pattern = heuristics[0]
+        problem_desc = f"Detected {top_pattern.pattern_type} pattern in logs. This pattern occurred {top_pattern.count} times with confidence {top_pattern.confidence}. Sample messages: {', '.join(top_pattern.sample_messages[:3])}"
         return DebugReport(
-            problem=f"Detected {top_pattern.pattern_type} pattern",
-            cause=f"Logs contain {top_pattern.count} occurrences of {top_pattern.pattern_type}",
-            fix=f"Investigate {top_pattern.pattern_type} in the application logs",
+            problem=problem_desc,
+            root_cause=f"Logs contain {top_pattern.count} occurrences of {top_pattern.pattern_type}. Pattern detected: {top_pattern.pattern_match}",
+            patterns=f"Primary pattern: {top_pattern.pattern_type} (count: {top_pattern.count}). Confidence: {top_pattern.confidence}",
+            anomalies="No specific anomalies detected in heuristic analysis",
+            impact=f"System performance or reliability may be affected by {top_pattern.pattern_type} pattern",
+            recommended_fix=f"Investigate {top_pattern.pattern_type} in the application logs. Review sample messages: {', '.join(top_pattern.sample_messages[:2])}",
             confidence=top_pattern.confidence
         )
 
@@ -622,9 +650,12 @@ class DebugEngine:
         if not logs:
             logger.warning("DebugEngine: No logs available for analysis")
             return DebugReport(
-                problem="No logs available",
-                cause="No logs found in RAM-Buffer or Supabase",
-                fix="Check logging pipeline and ensure logs are being generated",
+                problem="No logs available for analysis. The system could not retrieve any log entries from the RAM-Buffer, Supabase, or local log file. This indicates a potential issue with the logging pipeline or that no logs have been generated yet.",
+                root_cause="No logs found in RAM-Buffer, Supabase, or local log file (janus_backend.log). The log fetching cascade returned empty results.",
+                patterns="No patterns detected - no log data available",
+                anomalies="No anomalies detected - no log data available",
+                impact="Debug analysis cannot be performed without log data. System monitoring and troubleshooting capabilities are unavailable.",
+                recommended_fix="Check logging pipeline configuration, ensure logs are being generated, verify Supabase connection, and check local log file permissions.",
                 confidence=0.0
             )
         

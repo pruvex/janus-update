@@ -15,50 +15,66 @@ Der Workflow ruft automatisch den Debug-Endpunkt auf und zeigt das Ergebnis im C
 ## Ausführung
 
 ```bash
-curl.exe -s http://localhost:8000/api/system/debug-summary
+curl.exe -s -X POST http://localhost:8000/api/skills/debug-log -H "Content-Type: application/json" -d "{\"mode\": \"fast\"}"
 ```
 
+Optionale Parameter:
+- `trace_id`: Filter logs by specific trace ID
+- `mode`: "fast" (100 logs, default) or "full" (500 logs)
+
 ## Rückgabe
-Die Engine analysiert die letzten 10 Minuten Logs und gibt eine Markdown-Zusammenfassung zurück mit:
-- Heuristic Findings (Hard Errors, Model Drift, Latency Spikes)
-- Confidence Score
-- Quick Summary für schnellen Überblick
+Die Engine analysiert die letzten 10 Minuten Logs und gibt eine strukturierte Markdown-Zusammenfassung zurück mit:
+- SUMMARY: High-level Überblick
+- ROOT CAUSE: Technische Ursachenanalyse
+- FINDINGS: Detaillierte Heuristik-Ergebnisse (Hard Errors, Model Drift, Latency Spikes)
+- CONFIDENCE: Confidence Score mit Interpretation
+- RECOMMENDED ACTION: Konkrete Handlungsempfehlungen
 
 ## Beispiel-Output
 
 ```markdown
-# 🐛 Debug Summary
+# 🐛 Debug Report
 
-**Generated:** 2026-04-25 21:02:03 UTC
-**Logs Analyzed:** 42
-**Confidence Score:** 0.73
+**Generated:** 2026-04-26 00:15:30 UTC
+**Logs Analyzed:** 100
 
-## 🔍 Heuristic Findings
+## 📊 SUMMARY
 
-```
-=== HEURISTIC SUMMARY ===
-Confidence Score: 0.73
+- **Critical Issues:** 2 hard error(s) detected
+- **Model Drift:** 1 drift event(s) detected
+- **Performance:** 3 latency spike(s) detected
 
-Hard Errors (2):
-  - 2026-04-25 21:01:45.123456 | Skill: knowledge.query | Error: TIMEOUT_ERROR
-  - 2026-04-25 21:02:01.789012 | Skill: websearch | Error: CONNECTION_ERROR
+## 🔍 ROOT CAUSE
 
-Model Drift (1):
-  - Trace trace-456: Provider drift: ['openai', 'gemini']
+Primary root cause analysis:
+- **knowledge.query:** TIMEOUT_ERROR at 2026-04-26 00:15:25
+- **websearch:** CONNECTION_ERROR at 2026-04-26 00:15:28
 
-Latency Spikes (3):
-  - 2026-04-25 21:01:30.456789 | Skill: websearch | Latency: 6500ms
-  - 2026-04-25 21:01:55.234567 | Skill: knowledge.query | Latency: 7200ms
-  - 2026-04-25 21:02:10.987654 | Skill: filesystem.find_files | Latency: 5800ms
+## 📋 FINDINGS
 
-=== END HEURISTIC SUMMARY ===
-```
+### Hard Errors
+- `2026-04-26 00:15:25` | Skill: `knowledge.query` | Error: `TIMEOUT_ERROR`
+- `2026-04-26 00:15:28` | Skill: `websearch` | Error: `CONNECTION_ERROR`
 
-## 📋 Quick Summary
+### Model Drift
+- Trace `trace-456`: Provider drift → ['openai', 'gemini']
 
-- **Hard Errors:** 2
-- **Model Drift:** 1
-- **Latency Spikes:** 3
+### Latency Spikes
+- `2026-04-26 00:15:20` | Skill: `websearch` | Latency: `6500ms`
+- `2026-04-26 00:15:22` | Skill: `knowledge.query` | Latency: `7200ms`
+- `2026-04-26 00:15:26` | Skill: `filesystem.find_files` | Latency: `5800ms`
+
+## 🎯 CONFIDENCE
+
+**Confidence Score:** 0.65
+
+**Interpretation:** Moderate confidence. Some uncertainty in diagnosis due to limited data or mixed signals.
+
+## ✅ RECOMMENDED ACTION
+
+1. **Immediate:** Investigate hard errors listed in Findings section
+2. **Priority:** Address error codes and check for upstream dependencies
+3. **Monitor:** Watch for recurring error patterns
 
 ---
 

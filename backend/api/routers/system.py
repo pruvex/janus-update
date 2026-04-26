@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from datetime import datetime
+from typing import Optional, List, Dict, Any
 
 import keyring
 from backend.data import crud
@@ -357,3 +358,121 @@ async def get_debug_summary():
     except Exception as e:
         logger.error("[DEBUG-SUMMARY] Failed to generate debug summary: %s", e, exc_info=True)
         return f"# Debug Summary\n\nFehler bei der Log-Analyse: {str(e)}"
+
+
+# D11: Debug-Log Skill Endpoint (Final Production Wrapper)
+
+
+class DebugLogRequest(BaseModel):
+    """Request schema for /api/skills/debug-log endpoint."""
+    trace_id: Optional[str] = None
+    mode: str = "fast"  # "fast" or "full"
+
+
+@router.post("/skills/debug-log")
+async def debug_log_skill(request: DebugLogRequest):
+    """
+    D11: Debug-Log Skill — Final Production Wrapper for AI-Studio.
+    
+    Accepts trace_id and mode parameters, runs D11 analysis, and returns
+    formatted debug report with standard sections for AI-Studio integration.
+    
+    CRITICAL: All blocking I/O operations run in executor to prevent server freeze.
+    Hard timeout of 3.0s on entire operation to prevent deadlocks.
+    
+    Args:
+        request: DebugLogRequest with optional trace_id and mode (fast|full)
+    
+    Returns:
+        str: Formatted markdown report with sections:
+            - SUMMARY
+            - ROOT CAUSE
+            - FINDINGS
+            - CONFIDENCE
+            - RECOMMENDED ACTION
+    """
+    try:
+        import asyncio
+        from backend.services.logging.debug_engine import DebugEngine, get_speed_tier_model, LogFetcher
+        from backend.services.logging.debug_formatter import format_debug_report
+        from backend.data.schemas_logging import LogEventCreate
+        from datetime import datetime
+        from fastapi import HTTPException
+        
+        # Get provider and model for LLM (if needed)
+        provider, model = get_speed_tier_model()
+        logger.info(f"[DEBUG-LOG-SKILL] Using {provider}/{model}, mode={request.mode}, trace_id={request.trace_id}")
+        
+        # Initialize Debug Engine
+        engine = DebugEngine(provider=provider, model=model)
+        
+        # Timeout-Guard: Fetch logs mit 3.0 Sekunden Hard Timeout
+        # engine.fetcher.fetch_logs is already async - call directly with await
+        try:
+            logs = await asyncio.wait_for(
+                engine.fetcher.fetch_logs(limit=100 if request.mode == "fast" else 500),
+                timeout=3.0
+            )
+        except asyncio.TimeoutError:
+            logger.warning("[DEBUG-LOG-SKILL] CRITICAL TIMEOUT: Log-Fetch exceeded 3.0s")
+            raise HTTPException(status_code=504, detail="Debug analysis timeout: Log fetch exceeded 3.0 seconds")
+        
+        if not logs:
+            return "# Debug Report\n\nKeine relevanten Logs für eine Analyse vorhanden."
+        
+        # Convert LogEntry to objects with attributes expected by _run_heuristics
+        # _run_heuristics expects: status, skill, latency_ms, trace_id
+        events = []
+        for log in logs:
+            # Create simple object with required attributes
+            event = type('Event', (), {
+                'timestamp': log.timestamp,
+                'status': log.metadata.get('status') if log.metadata else None,
+                'skill': log.metadata.get('skill') if log.metadata else None,
+                'latency_ms': log.metadata.get('latency_ms') if log.metadata else None,
+                'trace_id': log.metadata.get('trace_id') if log.metadata else None,
+                'payload': log.metadata.get('payload') if log.metadata else None
+            })()
+            events.append(event)
+        
+        # Filter by trace_id if provided (non-blocking, in-memory)
+        if request.trace_id:
+            events = [e for e in events if hasattr(e, 'trace_id') and e.trace_id == request.trace_id]
+            if not events:
+                return f"# Debug Report\n\nKeine Logs für trace_id '{request.trace_id}' gefunden."
+        
+        # Timeout-Guard: Heuristik mit 3.0 Sekunden Hard Timeout (already in executor)
+        try:
+            findings = await asyncio.wait_for(
+                asyncio.get_event_loop().run_in_executor(
+                    None,
+                    engine.analyzer._run_heuristics,
+                    events
+                ),
+                timeout=3.0
+            )
+        except asyncio.TimeoutError:
+            logger.warning("[DEBUG-LOG-SKILL] CRITICAL TIMEOUT: Heuristik exceeded 3.0s")
+            raise HTTPException(status_code=504, detail="Debug analysis timeout: Heuristic analysis exceeded 3.0 seconds")
+        
+        # Build summary data for formatter (non-blocking, in-memory)
+        summary_data = {
+            "generated_at": datetime.utcnow().isoformat(),
+            "logs_analyzed": len(events),
+            "confidence_score": findings['confidence_score'],
+            "hard_errors": findings['hard_errors'],
+            "model_drift": findings['model_drift'],
+            "latency_spikes": findings['latency_spikes']
+        }
+        
+        # Format using debug_formatter (non-blocking, in-memory)
+        formatted_report = format_debug_report(summary_data)
+        
+        logger.info(f"[DEBUG-LOG-SKILL] Generated report for {len(events)} logs, confidence={findings['confidence_score']:.2f}")
+        return formatted_report
+        
+    except HTTPException:
+        raise  # Re-raise HTTPException as-is
+    except Exception as e:
+        logger.error("[DEBUG-LOG-SKILL] Failed to generate debug report: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Debug analysis failed: {str(e)}")

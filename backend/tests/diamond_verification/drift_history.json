@@ -1,0 +1,9 @@
+[
+  {
+    "scheduler_mean_us": 0.85,
+    "io_write_mean_ms": 4.00416,
+    "engine_stdev_ns": 51027.2899122565,
+    "engine_spread_ms": 0.1845,
+    "timestamp": 1777160280.6882112
+  }
+]
