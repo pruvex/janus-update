@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 
 import keyring
@@ -465,11 +465,32 @@ async def debug_log_skill(request: DebugLogRequest):
             "latency_spikes": findings['latency_spikes']
         }
         
+        # Calculate suggest_d13 flag: True if hard_errors > 2 or latency_spikes > 1 or model_drift == True
+        suggest_d13 = (
+            len(findings['hard_errors']) > 2 or
+            len(findings['latency_spikes']) > 1 or
+            len(findings['model_drift']) > 0
+        )
+        
         # Format using debug_formatter (non-blocking, in-memory)
         formatted_report = format_debug_report(summary_data)
         
-        logger.info(f"[DEBUG-LOG-SKILL] Generated report for {len(events)} logs, confidence={findings['confidence_score']:.2f}")
-        return formatted_report
+        # Return JSON response with d11_debug_report spec
+        json_response = {
+            "d11_debug_report": {
+                "generated_at": summary_data["generated_at"],
+                "logs_analyzed": summary_data["logs_analyzed"],
+                "confidence_score": summary_data["confidence_score"],
+                "hard_errors": summary_data["hard_errors"],
+                "model_drift": summary_data["model_drift"],
+                "latency_spikes": summary_data["latency_spikes"],
+                "suggest_d13": suggest_d13,
+                "markdown_report": formatted_report
+            }
+        }
+        
+        logger.info(f"[DEBUG-LOG-SKILL] Generated report for {len(events)} logs, confidence={findings['confidence_score']:.2f}, suggest_d13={suggest_d13}")
+        return json_response
         
     except HTTPException:
         raise  # Re-raise HTTPException as-is
@@ -546,33 +567,42 @@ async def generate_insights(request: InsightRequest):
 
 
 @router.get("/system/optimization-report")
-async def get_optimization_report():
+async def get_optimization_report(skill: Optional[str] = None):
     """
     D13: Janus Optimization Engine — Rule-Based System Optimization Report.
     
     Loads latest actions from logs_actions table and formats as Markdown report
     for AI Studio integration.
+    
+    Args:
+        skill: Optional skill name to filter the report on a specific tool
     """
     try:
         from backend.services.logging.supabase_client import get_supabase_client
         
-        logger.info("[OPTIMIZATION-ENGINE] Generating optimization report")
+        logger.info(f"[OPTIMIZATION-ENGINE] Generating optimization report (skill filter: {skill})")
         
         supabase = get_supabase_client()
         
         # Fetch latest actions (last 24 hours, sorted by priority)
-        response = (
+        query = (
             supabase
             .table("logs_actions")
             .select("*")
             .gte("generated_at", (datetime.utcnow() - timedelta(hours=24)).isoformat())
-            .order("priority", desc=True)
-            .execute()
         )
+        
+        # Apply skill filter if provided
+        if skill:
+            query = query.eq("skill", skill)
+        
+        response = query.order("priority", desc=True).execute()
         
         actions = response.data if response.data else []
         
         if not actions:
+            if skill:
+                return f"# Optimization Report\n\nNo actions generated for skill '{skill}' in the last 24 hours. System is operating normally."
             return "# Optimization Report\n\nNo actions generated in the last 24 hours. System is operating normally."
         
         # Format as Markdown

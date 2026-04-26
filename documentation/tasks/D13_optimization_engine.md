@@ -175,6 +175,58 @@ CREATE TABLE logs_actions (
 | Format | JSON für System-Monitoring | Markdown für AI Studio |
 | AI | Keine KI | Keine KI (nur reine Logik) |
 
+## 3-Stage Observability & Optimization Stack (D10-D13)
+
+Die Janus Observability & Optimization Architektur besteht aus drei aufeinander aufbauenden Komponenten:
+
+### D10: Resilient Telemetry
+- **Dokumentation:** `documentation/tasks/D10_resilient_telemetry.md`
+- **Ziel:** Resilientes Logging mit contextvars Traceability, UPSERT Idempotenz, Drop-Oldest Overflow Protection
+- **Komponenten:** Supabase Integration, Schema-Sync, DLQ-Light
+- **Status:** 🥇 SEALED & COMPLETE
+
+### D11: Debug Compression Engine
+- **Dokumentation:** `documentation/tasks/D11_debug_compression_engine.md`
+- **Ziel:** Session-level Debugging mit deterministischen Heuristiken (Hard Errors, Model Drift, Latency Spikes)
+- **Komponenten:** DebugEngine, LogFetcher, DebugFormatter, POST Endpoint `/api/skills/debug-log`
+- **Status:** 🥇 SEALED & COMPLETE
+
+### D12: Insight Engine
+- **Dokumentation:** `documentation/tasks/D12_insight_engine.md`
+- **Ziel:** Globale Log-Aggregation für System-Health Monitoring (Makro-Analyse)
+- **Komponenten:** InsightEngine, POST Endpoint `/api/system/insights`, logs_insights Tabelle
+- **Status:** 🥇 SEALED & COMPLETE
+
+### D13: Optimization Engine
+- **Dokumentation:** `documentation/tasks/D13_optimization_engine.md` (dieses Dokument)
+- **Ziel:** Rule-Based System Optimization mit Action-First Integration
+- **Komponenten:** OptimizationEngine, GET Endpoint `/api/system/optimization-report`, logs_actions Tabelle
+- **Status:** 🥇 SEALED & COMPLETE
+
+### Signal-Flow
+
+```
+Logs (logs_raw) → D11 (Session Debug) → D12 (Global Insights) → D13 (Actions)
+                      ↓                      ↓                      ↓
+                suggest_d13 Flag      logs_insights      logs_actions
+                      ↓                      ↓                      ↓
+              /debug-log Skill      /api/system/insights  /optimization-report Skill
+```
+
+### Windsurf Skills
+
+- **/debug-log:** Session-level Debugging mit D11 (POST, JSON-Response mit suggest_d13 Flag)
+- **/optimization-report:** System-Health Monitoring mit D13 (GET, Markdown-Response mit Skill-Filter)
+
+### Integration Points
+
+| Integration | Endpoint | Purpose |
+|-------------|----------|---------|
+| D11 → D13 | suggest_d13 Flag | Signalisiert, ob systemische Probleme vorliegen (hard_errors > 2, latency_spikes > 1, model_drift) |
+| D12 → D13 | logs_insights → logs_actions | Insights werden von D13 in Actions umgewandelt |
+| Windsurf → D11 | POST /api/skills/debug-log | Session-Debugging für spezifische Fehler |
+| Windsurf → D13 | GET /api/system/optimization-report | System-Optimization für globale Probleme |
+
 ## Nutzung
 
 ### Curl Beispiel
