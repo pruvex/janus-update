@@ -1,23 +1,38 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.26-beta.48** — "🥇 DIAMOND HARMONIZED: 4-Stage Observability & Evolution Stack (D10-D14) fully harmonized. skill_id (namespace.action) contract across D12-D14. D14 KPI Registry: regression_score (60/40 weighted delta). Decision-Gate: [PROVISIONAL] markers on all D13/D14 outputs. 11/11 tests green. D14 WEEKLY LEARNING ENGINE: 🥇 DIAMOND HARMONIZED. D13 JANUS OPTIMIZATION ENGINE: 🥇 DIAMOND HARMONIZED. D12 JANUS INSIGHT ENGINE: 🥇 DIAMOND HARMONIZED. D11 DEBUG COMPRESSION ENGINE: 🥇 SEALED. D10 RESILIENT TELEMETRY: 🥇 SEALED.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.27-beta.49** — "🥇 D15 INTEGRITY ENGINE: 5-Stage Observability & Integrity Stack (D10-D15) fully operational. D15 CONTRACT REGISTRY: Diamond Contract Specs for D10-D14. Descriptive-Only Guard (D12). Allowed-Actions Guard (D13). KPI-Drift Guard (D14). Decision-Gate Guard ([PROVISIONAL]). IntegrityReport with integrity_score. GET /api/system/integrity-check. 19/19 tests green. D14: 🥇 DIAMOND HARMONIZED. D13: 🥇 DIAMOND HARMONIZED. D12: 🥇 DIAMOND HARMONIZED. D11: 🥇 SEALED. D10: 🥇 SEALED.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-26 18:30 (🥇 DIAMOND HARMONIZED: D10-D14 Stack Harmonized — skill_id contract, KPI Registry, Decision-Gate)
+**Aktualisiert:** 2026-04-26 18:45 (🥇 D15 INTEGRITY ENGINE: Diamond Contract Registry & Stack Validation — Fail-Fast Schema Drift Prevention)
 
 ---
 
-## [OBSERVABILITY & OPTIMIZATION STACK — 🥇 DIAMOND HARMONIZED]
+## [OBSERVABILITY & INTEGRITY STACK — 🥇 DIAMOND VERIFIED]
 
 | Feld | Wert |
 |------|------|
-| **Chapter** | **Observability & Evolution (D10-D14)** |
-| **Status** | **🥇 DIAMOND HARMONIZED** (2026-04-26) |
-| **Components** | D10 Resilient Telemetry, D11 Debug Compression Engine, D12 Insight Engine, D13 Optimization Engine, D14 Weekly Learning Engine |
-| **Verification** | All components operational, skill_id contract harmonized, KPI Registry implemented, Decision-Gate active |
-| **Integration** | D11 → D13 (suggest_d13 Flag), D12 → D13 (logs_insights → logs_actions), D12 → D14 (logs_insights → logs_learning), Windsurf Skills (/debug-log, /optimization-report, /learning-report) |
-| **Test Coverage** | D10: Schema-Sync verified, D11: Heuristics verified, D12: 4/4 tests passed, D13: 7/7 tests passed, D14: regression_score + delta formula verified |
+| **Chapter** | **Observability, Evolution & Integrity (D10-D15)** |
+| **Status** | **🥇 DIAMOND VERIFIED** (2026-04-26) |
+| **Components** | D10 Resilient Telemetry, D11 Debug Compression Engine, D12 Insight Engine, D13 Optimization Engine, D14 Weekly Learning Engine, D15 Integrity Engine |
+| **Verification** | All components operational, skill_id contract harmonized, KPI Registry implemented, Decision-Gate active, D15 Contract Registry validating |
+| **Integration** | D11 → D13 (suggest_d13 Flag), D12 → D13 (logs_insights → logs_actions), D12 → D14 (logs_insights → logs_learning), D12+D13+D14 → D15 (CONTRACT_SPECS validation), Windsurf Skills (/debug-log, /optimization-report, /learning-report) |
+| **Test Coverage** | D10: Schema-Sync verified, D11: Heuristics verified, D12: 4/4 tests passed, D13: 7/7 tests passed, D14: regression_score verified, D15: 8/8 tests passed |
 | **Database** | logs_raw, logs_insights, logs_actions, logs_learning tables operational |
-| **Documentation** | D10, D11, D12, D13, D14 task documents complete with component links |
-| **Patterns** | #ResilientTelemetry, #ProductionWrapper, #GlobalInsightAggregation, #OptimizationRuleEngine, #SystemEvolutionLayer, #DomainSeparation (all in WHAT_I_LEARNED.md) |
-| **Sign-off** | 4-Stage Observability & Evolution Stack is fully harmonized with skill_id contract, KPI Registry, and Decision-Gate. |
+| **Documentation** | D10, D11, D12, D13, D14, D15 task documents complete with component links |
+| **Patterns** | #ResilientTelemetry, #ProductionWrapper, #GlobalInsightAggregation, #OptimizationRuleEngine, #SystemEvolutionLayer, #DomainSeparation, #ContractRegistry (all in WHAT_I_LEARNED.md) |
+| **Sign-off** | 5-Stage Observability & Integrity Stack is fully operational with D15 Contract Registry preventing schema drift. |
+
+---
+
+## [CURRENT_SESSION_DELTA] (D15 INTEGRITY ENGINE — 🥇 SEALED & COMPLETE)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **D15 INTEGRITY ENGINE — Diamond Contract Registry & Stack Validation** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-26) |
+| **Root Cause** | Kein automatisierter Mechanismus zur Erkennung von Schema-Drift zwischen D10-D14 Layern. Keine Validierung, dass D12 rein deskriptiv bleibt. Keine Prüfung, ob D13 nur erlaubte Actions emittiert. Kein Gate für [PROVISIONAL] Decision-Marker. |
+| **Umsetzung** | **Fix #1 — CONTRACT_SPECS Registry:** `backend/services/logging/integrity_engine.py` — `LayerContract` Pydantic-Modell mit required_fields, forbidden_fields, allowed_actions, requires_provisional pro Layer (D10-D14). **Fix #2 — Descriptive-Only Guard (D12):** `validate_d12_descriptive_only()` blockiert D12 Outputs mit forbidden fields (recommendation, action_type, priority). **Fix #3 — Allowed-Actions Guard (D13):** `validate_d13_allowed_actions()` prüft action_type gegen ALLOWED_ACTIONS (MODEL_SWITCH, SCALE_UP, SCALE_DOWN, TIMEOUT_ADJUST, CACHE_ENABLE, LOAD_BALANCE, RETRY_CONFIG, MONITOR). **Fix #4 — KPI-Drift Guard (D14):** `validate_d14_kpi_drift()` prüft required KPI fields und allowed action_types. **Fix #5 — Decision-Gate Guard:** `validate_decision_gate()` prüft [PROVISIONAL] Marker auf D13/D14 Empfehlungen. **Fix #6 — IntegrityReport:** Pydantic-Modell mit integrity_score (0.0-1.0), status (PASS/FAIL), violations[]. Scoring: CRITICAL=-0.3, HIGH=-0.15, MEDIUM=-0.05. **Fix #7 — Live Check:** `run_live_check()` fetcht D12/D13/D14 Daten aus Supabase und validiert gegen CONTRACT_SPECS. **Fix #8 — GET Endpoint:** `backend/api/routers/system.py` — `/api/system/integrity-check`. **Fix #9 — Test-Suite:** 8 Test-Cases (Clean D12, Forbidden Recommendation, Invalid Action, Missing Provisional, KPI Drift, Full Clean Stack, Mixed Violations, Contract Completeness). |
+| **Ergebnis** | D15 Integrity Engine operational mit Diamond Contract Registry. Fail-Fast Schema Drift Prevention. IntegrityReport mit integrity_score. 8/8 Tests passed. 19/19 Gesamttests (D12+D13+D15) green. |
+| **Files** | `backend/services/logging/integrity_engine.py` (neu), `backend/api/routers/system.py` (GET Endpoint), `backend/tests/test_integrity_engine.py` (Test-Suite), `documentation/tasks/D15_integrity_engine.md` (Doku). |
+| **Verifikation** | CONTRACT_SPECS: ✅ 5 LAYERS · D12 Guard: ✅ DESCRIPTIVE-ONLY · D13 Guard: ✅ ALLOWED-ACTIONS · D14 Guard: ✅ KPI-DRIFT · Decision-Gate: ✅ PROVISIONAL · Test-Suite: ✅ 8/8 PASSED · Endpoint: ✅ OPERATIONAL |
+| **Patterns** | [PATTERN] #ContractRegistry #IntegrityEngine "Diamond Contract Registry — Pydantic-basierte Blueprints pro Layer mit Fail-Fast Schema Drift Prevention und IntegrityReport Scoring" |
 
 ---
 

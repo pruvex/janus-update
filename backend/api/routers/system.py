@@ -682,6 +682,31 @@ async def trigger_learning_report(days: int = 14, persist: bool = True):
         raise HTTPException(status_code=500, detail=f"Learning report trigger failed: {str(e)}")
 
 
+@router.get("/system/integrity-check")
+async def get_integrity_check():
+    """
+    D15: Integrity Engine — Diamond Contract Registry & Stack Validation.
+    
+    Fetches recent D12, D13, D14 outputs from Supabase and validates
+    them against CONTRACT_SPECS. Returns IntegrityReport with score,
+    status, and violations.
+    """
+    try:
+        from backend.services.logging.integrity_engine import IntegrityEngine
+        
+        logger.info("[INTEGRITY-ENGINE] Running integrity check via API")
+        
+        engine = IntegrityEngine()
+        report = await engine.run_live_check()
+        
+        logger.info(f"[INTEGRITY-ENGINE] Check complete: {report.status} (score={report.integrity_score})")
+        return report.model_dump(mode='json')
+        
+    except Exception as e:
+        logger.error("[INTEGRITY-ENGINE] Failed to run integrity check: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Integrity check failed: {str(e)}")
+
+
 def format_optimization_report(actions: List[Dict[str, Any]]) -> str:
     """
     Format actions as Markdown report for AI Studio.

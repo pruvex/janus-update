@@ -344,6 +344,26 @@
 - **Tags:** DomainSeparation, DecisionGate, skill_id, KPIRegistry, regression_score, delta, deterministic, harmonization, D12, D13, D14
 
 ---
+
+## [PATTERN] #ContractRegistry #IntegrityEngine "Diamond Contract Registry — Pydantic-basierte Blueprints pro Layer mit Fail-Fast Schema Drift Prevention und IntegrityReport Scoring"
+- **Kontext:** D15 Integrity Engine als finale Kontrollinstanz über D10-D14. Der Diamond-Stack wächst über mehrere Sessions und Layer hinweg. Ohne automatisierte Schema-Validierung kann Schema-Drift unbemerkt eintreten: D12 könnte ungewollt Recommendations emittieren, D13 könnte ungültige action_types generieren, D14 könnte KPI-Felder verlieren.
+- **Problem:** Kein automatisierter Mechanismus zur Erkennung von Schema-Drift. Keine Validierung der Layer-Verantwortlichkeiten (D12=deskriptiv, D13=rule-basiert, D14=trend-analytisch). Kein Gate für [PROVISIONAL] Decision-Marker-Konsistenz. Keine Scoring-Metrik für Stack-Integrität.
+- **Lösung:** **Diamond Contract Registry mit Fail-Fast Validation:**
+  1. **CONTRACT_SPECS:** `Dict[str, LayerContract]` mit Pydantic-basierten Blueprints pro Layer. Jeder LayerContract definiert: `required_fields`, `forbidden_fields`, `allowed_actions`, `requires_provisional`.
+  2. **Descriptive-Only Guard (D12):** `validate_d12_descriptive_only()` blockiert D12 Outputs mit forbidden fields (`recommendation`, `action_type`, `priority`). Severity: CRITICAL.
+  3. **Allowed-Actions Guard (D13):** `validate_d13_allowed_actions()` prüft `action_type` gegen erlaubte Liste (MODEL_SWITCH, SCALE_UP, SCALE_DOWN, TIMEOUT_ADJUST, CACHE_ENABLE, LOAD_BALANCE, RETRY_CONFIG, MONITOR). Severity: CRITICAL.
+  4. **KPI-Drift Guard (D14):** `validate_d14_kpi_drift()` prüft required KPI fields und allowed action_types. Severity: HIGH.
+  5. **Decision-Gate Guard:** `validate_decision_gate()` prüft `[PROVISIONAL]` Marker auf D13/D14 Empfehlungen. Severity: CRITICAL.
+  6. **IntegrityReport:** `integrity_score` (0.0-1.0) mit Scoring: CRITICAL=-0.3, HIGH=-0.15, MEDIUM=-0.05. Status: FAIL wenn CRITICAL>0 oder score<0.7.
+  7. **Live Check:** `run_live_check()` fetcht D12/D13/D14 Daten aus Supabase und validiert gegen CONTRACT_SPECS.
+- **Härtung:** Keine KI-Interpretation — nur strikte Code-Validierung. Fail-Fast bei CRITICAL Violations. schema_fix Feld benennt exakten Fix. Violations enthalten layer, rule, severity, message, schema_fix, field.
+- **Tripwire:** Wenn IntegrityReport.status == "FAIL" → Schema-Drift detektiert. Erkennbar: violations[] enthält exakte Beschreibung und Fix. Wenn D12 plötzlich recommendations emittiert → DESCRIPTIVE_ONLY_GUARD feuert. Wenn D13 neue action_types einführt → INVALID_ACTION_TYPE feuert (Contract erweitern oder Action korrigieren).
+- **Location:** `backend/services/logging/integrity_engine.py` (IntegrityEngine + CONTRACT_SPECS), `backend/api/routers/system.py` (GET /integrity-check), `backend/tests/test_integrity_engine.py` (8 Test-Cases), implementiert 2026-04-26.
+- **Epic:** D15 — Integrity Engine (Diamond Contract Registry)
+- **Confidence:** High (8/8 Tests passed, 19/19 Gesamttests green. CONTRACT_SPECS deckt alle 5 Layer ab. Fail-Fast Scoring verifiziert).
+- **Tags:** ContractRegistry, IntegrityEngine, SchemaDrift, FailFast, Validation, Pydantic, D15, D12Guard, D13Guard, D14Guard, DecisionGate
+
+---
 - **Kontext:** D11 Debug Compression Engine wurde entwickelt, um Logs für AI Studio Debugging zu komprimieren. Die Engine soll deterministische Heuristiken nutzen (Hard Errors, Model Drift, Latency Spikes) und LLM-gestützte Zusammenfassung als Fallback. Wichtig: Provider-agnostisch (nutzt User's Speed-Tier Modell) und mit Timeout-Schutz gegen Blockaden.
 - **Problem:** RAM-Buffer war leer (nicht mit realer Logging-System verbunden). Supabase hatte keine Logs aus den letzten 10 Minuten. Endpoint gab immer "Keine relevanten Logs" zurück, obwohl Janus aktiv war und Logs in janus_backend.log geschrieben wurden.
 - **Lösung:** **Drei-Stufen-Fallback-Kaskade in LogFetcher.fetch_logs():**
