@@ -1,0 +1,299 @@
+"""
+Test Runner for Janus-Skills Quality System.
+
+Executes test blueprints with escalation and logs results to D10 telemetry.
+Generates AI Studio compatible health reports.
+"""
+
+import json
+import asyncio
+from pathlib import Path
+from typing import Dict, Any, List, Optional, Callable
+from datetime import datetime
+from uuid import uuid4
+
+from .test_generator import TestGenerator
+from .validation import ValidationEngine, ValidationResult
+from ..routing.escalation import EscalationEngine, EscalationSummary
+from ..routing.model_router import ModelRouter
+
+# Import D10 logging
+from backend.services.logging.logger_core import log_event
+from backend.data.schemas_logging import LogEventCreate
+
+
+class TestRunner:
+    """Runs skill tests with escalation and D10 telemetry integration."""
+    
+    def __init__(self, test_dir: str = "config/skill_tests"):
+        self.test_dir = Path(test_dir)
+        self.validation_engine = ValidationEngine()
+        self.escalation_engine = EscalationEngine()
+        self.model_router = ModelRouter()
+        self.test_results: List[Dict[str, Any]] = []
+    
+    async def run_testset(
+        self,
+        skill_id: str,
+        tool_call_fn: Callable,
+        session_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Run all tests for a skill with escalation and D10 logging.
+        
+        Args:
+            skill_id: Unique skill identifier
+            tool_call_fn: Function to execute (should accept provider, model, **kwargs)
+            session_id: Optional session identifier for D10 logging
+        
+        Returns:
+            Test summary with all results and health metrics
+        """
+        # Load test blueprint
+        blueprint = self._load_blueprint(skill_id)
+        if not blueprint:
+            return {"error": f"No test blueprint found for skill_id: {skill_id}"}
+        
+        # Run each test
+        test_results = []
+        tests = blueprint.get("tests", {})
+        
+        for test_type, test_spec in tests.items():
+            result = await self._run_single_test(
+                skill_id=skill_id,
+                test_type=test_type,
+                test_spec=test_spec,
+                tool_call_fn=tool_call_fn,
+                session_id=session_id
+            )
+            test_results.append(result)
+        
+        # Generate health summary
+        health_summary = self.generate_health_summary(skill_id, test_results)
+        
+        return {
+            "skill_id": skill_id,
+            "test_count": len(test_results),
+            "passed_count": sum(1 for r in test_results if r.get("passed")),
+            "results": test_results,
+            "health_summary": health_summary
+        }
+    
+    def _load_blueprint(self, skill_id: str) -> Optional[Dict[str, Any]]:
+        """Load test blueprint from file."""
+        filename = f"{skill_id.replace('.', '_')}_test.json"
+        filepath = self.test_dir / filename
+        
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return None
+    
+    async def _run_single_test(
+        self,
+        skill_id: str,
+        test_type: str,
+        test_spec: Dict[str, Any],
+        tool_call_fn: Callable,
+        session_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Run a single test with escalation and D10 logging.
+        
+        Args:
+            skill_id: Unique skill identifier
+            test_type: Type of test (happy_path, edge_case, failure_case)
+            test_spec: Test specification with input and validation
+            tool_call_fn: Function to execute
+            session_id: Optional session identifier
+        
+        Returns:
+            Test result dict
+        """
+        trace_id = str(uuid4())
+        start_time = datetime.utcnow()
+        
+        try:
+            # Execute with escalation
+            escalation_summary = self.escalation_engine.execute_with_escalation(
+                skill_id=skill_id,
+                tool_call_fn=tool_call_fn,
+                validation_fn=lambda r: self._validate_result(r, test_spec.get("validation")),
+                **test_spec.get("input", {})
+            )
+            
+            # Get final result
+            final_attempt = escalation_summary.attempts[-1] if escalation_summary.attempts else None
+            final_model = final_attempt.model if final_attempt else "unknown"
+            final_provider = final_attempt.provider if final_attempt else "unknown"
+            
+            # Validate result
+            validation_result = self._validate_result(
+                final_attempt.result if final_attempt else {},
+                test_spec.get("validation")
+            )
+            
+            # Log to D10
+            await self._log_to_d10(
+                skill_id=skill_id,
+                test_type=test_type,
+                status="passed" if validation_result.passed else "failed",
+                model=final_model,
+                provider=final_provider,
+                latency_ms=escalation_summary.total_latency_ms,
+                trace_id=trace_id,
+                session_id=session_id,
+                errors=[final_attempt.error] if final_attempt and final_attempt.error else []
+            )
+            
+            return {
+                "test_type": test_type,
+                "passed": validation_result.passed,
+                "validation": validation_result,
+                "escalation_summary": {
+                    "final_success": escalation_summary.final_success,
+                    "final_tier": escalation_summary.final_tier,
+                    "attempts_count": len(escalation_summary.attempts),
+                    "total_latency_ms": escalation_summary.total_latency_ms
+                },
+                "trace_id": trace_id
+            }
+        
+        except Exception as e:
+            # Log error to D10
+            await self._log_to_d10(
+                skill_id=skill_id,
+                test_type=test_type,
+                status="error",
+                model="unknown",
+                provider="unknown",
+                latency_ms=0,
+                trace_id=trace_id,
+                session_id=session_id,
+                errors=[str(e)]
+            )
+            
+            return {
+                "test_type": test_type,
+                "passed": False,
+                "error": str(e),
+                "trace_id": trace_id
+            }
+    
+    def _validate_result(self, result: Any, validation_spec: Optional[Dict[str, Any]]) -> ValidationResult:
+        """Validate a result against its specification."""
+        if not validation_spec:
+            return ValidationResult(
+                passed=True,
+                validator_type="none",
+                message="No validation specified"
+            )
+        
+        return self.validation_engine.validate(result, validation_spec)
+    
+    async def _log_to_d10(
+        self,
+        skill_id: str,
+        test_type: str,
+        status: str,
+        model: str,
+        provider: str,
+        latency_ms: float,
+        trace_id: str,
+        session_id: Optional[str],
+        errors: List[str]
+    ) -> None:
+        """
+        Log test result to D10 telemetry system.
+        
+        Args:
+            skill_id: Unique skill identifier
+            test_type: Type of test
+            status: Test status (passed, failed, error)
+            model: Model used
+            provider: Provider used
+            latency_ms: Latency in milliseconds
+            trace_id: Trace identifier
+            session_id: Session identifier
+            errors: List of errors if any
+        """
+        event = LogEventCreate(
+            event_type="skill_test",
+            skill=skill_id,
+            status=status,
+            provider=provider,
+            model=model,
+            latency_ms=int(latency_ms),
+            trace_id=trace_id,
+            session_id=session_id,
+            payload={
+                "test_type": test_type,
+                "errors": errors
+            }
+        )
+        
+        await log_event(event)
+    
+    def generate_health_summary(self, skill_id: str, test_results: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Generate AI Studio compatible health summary.
+        
+        Args:
+            skill_id: Unique skill identifier
+            test_results: List of test results
+        
+        Returns:
+            Health summary dict
+        """
+        total_tests = len(test_results)
+        passed_tests = sum(1 for r in test_results if r.get("passed"))
+        failed_tests = total_tests - passed_tests
+        
+        # Calculate average latency
+        latencies = [
+            r.get("escalation_summary", {}).get("total_latency_ms", 0)
+            for r in test_results
+        ]
+        avg_latency = sum(latencies) / len(latencies) if latencies else 0
+        
+        # Count escalation attempts
+        total_attempts = sum(
+            r.get("escalation_summary", {}).get("attempts_count", 0)
+            for r in test_results
+        )
+        
+        # Calculate health score (0.0 to 1.0)
+        health_score = passed_tests / total_tests if total_tests > 0 else 0.0
+        
+        return {
+            "skill_id": skill_id,
+            "health_score": health_score,
+            "total_tests": total_tests,
+            "passed_tests": passed_tests,
+            "failed_tests": failed_tests,
+            "avg_latency_ms": round(avg_latency, 2),
+            "total_escalation_attempts": total_attempts,
+            "generated_at": datetime.utcnow().isoformat(),
+            "status": "healthy" if health_score >= 0.8 else "degraded" if health_score >= 0.5 else "unhealthy"
+        }
+
+
+async def run_testset(
+    skill_id: str,
+    tool_call_fn: Callable,
+    session_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Convenience function to run a testset.
+    
+    Args:
+        skill_id: Unique skill identifier
+        tool_call_fn: Function to execute
+        session_id: Optional session identifier
+    
+    Returns:
+        Test summary with health metrics
+    """
+    runner = TestRunner()
+    return await runner.run_testset(skill_id, tool_call_fn, session_id)

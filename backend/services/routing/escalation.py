@@ -1,0 +1,234 @@
+"""
+Escalation Logic for Janus-Skills Quality System.
+
+Implements execute_with_escalation: Primary -> Fallback -> Escalation chain.
+Tracks costs and provides circuit breaker protection.
+"""
+
+import time
+from typing import Dict, Any, Callable, Optional
+from dataclasses import dataclass, field
+
+from .model_router import ModelRouter
+
+
+@dataclass
+class EscalationResult:
+    """Result of an escalation attempt."""
+    success: bool
+    tier_used: str
+    model: str
+    provider: str
+    result: Any
+    latency_ms: float
+    cost_estimate: float = 0.0
+    error: Optional[str] = None
+
+
+@dataclass
+class EscalationSummary:
+    """Summary of full escalation chain execution."""
+    final_success: bool
+    attempts: list[EscalationResult] = field(default_factory=list)
+    total_latency_ms: float = 0.0
+    total_cost_estimate: float = 0.0
+    final_tier: str = "none"
+
+
+class EscalationEngine:
+    """Engine for executing tool calls with automatic escalation."""
+    
+    def __init__(self, router: Optional[ModelRouter] = None):
+        self.router = router or ModelRouter()
+        self.circuit_breaker_tripped = False
+    
+    def execute_with_escalation(
+        self,
+        skill_id: str,
+        tool_call_fn: Callable,
+        validation_fn: Optional[Callable] = None,
+        **kwargs
+    ) -> EscalationSummary:
+        """
+        Execute tool call with automatic escalation chain.
+        
+        Args:
+            skill_id: Unique skill identifier
+            tool_call_fn: Function to execute (should accept model/provider kwargs)
+            validation_fn: Optional validation function (returns bool)
+            **kwargs: Additional arguments for tool_call_fn
+        
+        Returns:
+            EscalationSummary with all attempt results
+        """
+        if self.circuit_breaker_tripped:
+            return EscalationSummary(
+                final_success=False,
+                final_tier="circuit_breaker",
+                attempts=[],
+                error="Circuit breaker tripped - no attempts made"
+            )
+        
+        # Get routing configuration
+        routing_config = self.router.get_routing_config(skill_id)
+        
+        # Try Primary -> Fallback -> Escalation
+        tiers = ["primary", "fallback", "escalation"]
+        attempts = []
+        
+        for tier in tiers:
+            model_config = routing_config.get(tier)
+            if not model_config:
+                continue
+            
+            result = self._execute_at_tier(
+                tier=tier,
+                model_config=model_config,
+                tool_call_fn=tool_call_fn,
+                validation_fn=validation_fn,
+                **kwargs
+            )
+            
+            attempts.append(result)
+            
+            # If successful, stop escalation
+            if result.success:
+                return EscalationSummary(
+                    final_success=True,
+                    attempts=attempts,
+                    total_latency_ms=sum(r.latency_ms for r in attempts),
+                    total_cost_estimate=sum(r.cost_estimate for r in attempts),
+                    final_tier=tier
+                )
+        
+        # All tiers failed
+        total_latency = sum(r.latency_ms for r in attempts)
+        total_cost = sum(r.cost_estimate for r in attempts)
+        
+        # Circuit breaker: if all tiers failed, trip the breaker
+        self.circuit_breaker_tripped = True
+        
+        return EscalationSummary(
+            final_success=False,
+            attempts=attempts,
+            total_latency_ms=total_latency,
+            total_cost_estimate=total_cost,
+            final_tier="escalation_exhausted"
+        )
+    
+    def _execute_at_tier(
+        self,
+        tier: str,
+        model_config: Dict[str, str],
+        tool_call_fn: Callable,
+        validation_fn: Optional[Callable],
+        **kwargs
+    ) -> EscalationResult:
+        """
+        Execute tool call at a specific tier.
+        
+        Args:
+            tier: Tier name (primary, fallback, escalation)
+            model_config: Model configuration (provider, model)
+            tool_call_fn: Function to execute
+            validation_fn: Optional validation function
+            **kwargs: Additional arguments
+        
+        Returns:
+            EscalationResult
+        """
+        provider = model_config.get("provider", "unknown")
+        model = model_config.get("model", "unknown")
+        
+        start_time = time.time()
+        
+        try:
+            # Execute tool call with model configuration
+            result = tool_call_fn(provider=provider, model=model, **kwargs)
+            
+            latency_ms = (time.time() - start_time) * 1000
+            
+            # Check validation if provided
+            validation_passed = True
+            if validation_fn:
+                validation_passed = validation_fn(result)
+            
+            # Check for explicit error status
+            if isinstance(result, dict):
+                status = result.get("status", "unknown")
+                success = status == "ok" or status == "success"
+            else:
+                success = validation_passed
+            
+            # Estimate cost (simplified - actual cost depends on token usage)
+            cost_estimate = self._estimate_cost(provider, model, result)
+            
+            return EscalationResult(
+                success=success,
+                tier_used=tier,
+                model=model,
+                provider=provider,
+                result=result,
+                latency_ms=latency_ms,
+                cost_estimate=cost_estimate
+            )
+        
+        except Exception as e:
+            latency_ms = (time.time() - start_time) * 1000
+            
+            return EscalationResult(
+                success=False,
+                tier_used=tier,
+                model=model,
+                provider=provider,
+                result=None,
+                latency_ms=latency_ms,
+                error=str(e)
+            )
+    
+    def _estimate_cost(self, provider: str, model: str, result: Any) -> float:
+        """
+        Estimate cost for a model execution.
+        
+        Args:
+            provider: Model provider
+            model: Model name
+            result: Execution result
+        
+        Returns:
+            Estimated cost in USD
+        """
+        # Simplified cost estimation (actual implementation would count tokens)
+        cost_map = {
+            "gpt-4o-mini": 0.0001,
+            "gpt-4o": 0.001,
+            "gpt-4-turbo": 0.005
+        }
+        
+        return cost_map.get(model, 0.001)
+    
+    def reset_circuit_breaker(self) -> None:
+        """Reset the circuit breaker to allow new attempts."""
+        self.circuit_breaker_tripped = False
+
+
+def execute_with_escalation(
+    skill_id: str,
+    tool_call_fn: Callable,
+    validation_fn: Optional[Callable] = None,
+    **kwargs
+) -> EscalationSummary:
+    """
+    Convenience function to execute with escalation.
+    
+    Args:
+        skill_id: Unique skill identifier
+        tool_call_fn: Function to execute
+        validation_fn: Optional validation function
+        **kwargs: Additional arguments
+    
+    Returns:
+        EscalationSummary
+    """
+    engine = EscalationEngine()
+    return engine.execute_with_escalation(skill_id, tool_call_fn, validation_fn, **kwargs)
