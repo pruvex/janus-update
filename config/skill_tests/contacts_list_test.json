@@ -1,7 +1,7 @@
 {
   "skill_id": "contacts.list",
   "skill_type": "contacts",
-  "generated_at": "2026-04-26T18:31:58.659687",
+  "generated_at": "2026-04-26T19:03:54.759575",
   "tests": {
     "happy_path": {
       "name": "happy_path",

@@ -9,7 +9,7 @@ from backend.data import crud
 from backend.services.telemetry_service import submit_feedback_async
 from backend.utils.config_loader import initialize_file_from_template, load_model_catalog
 from backend.utils.paths import get_app_data_dir, resource_path
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from backend.data.database import get_db
@@ -708,48 +708,64 @@ async def get_integrity_check():
 
 
 @router.get("/system/run-batch-tests")
-async def run_batch_tests():
+async def run_batch_tests(background_tasks: BackgroundTasks):
     """
-    D17: Batch Skill Tests — Run automated tests for ALL discovered skills.
+    D17: Batch Skill Tests — Run automated tests for ALL discovered skills (async).
     
-    Discovers all skills from backend/skills/ and executes test blueprints.
-    Triggers forensic logging for path resolution debugging.
+    Discovers all skills from backend/skills/ and executes test blueprints in background.
+    Returns immediately with status to avoid timeout.
+    
+    Args:
+        background_tasks: FastAPI BackgroundTasks for async execution
     
     Returns:
-        Batch test summary with all results and health metrics
+        {"status": "started", "skills_to_test": <count>}
     """
     try:
         from backend.services.testing.test_generator import TestGenerator
         from backend.services.testing.test_runner import TestRunner, discover_skills
         
-        logger.info("[D17-BATCH-TEST] Starting batch test run for all skills")
-        
         # Discover all skills (triggers forensic logging)
         skill_ids = discover_skills()
         logger.info(f"[D17-BATCH-TEST] Discovered {len(skill_ids)} skills")
         
-        # Initialize test runner
-        test_runner = TestRunner()
+        # Background task function
+        async def run_batch_background():
+            try:
+                logger.info("[D17-BATCH-TEST] Starting background batch test run")
+                
+                test_runner = TestRunner()
+                
+                # Mock tool_call_fn for testing (no actual execution)
+                async def mock_tool_call_fn(provider: str, model: str, **kwargs):
+                    return {"status": "mock_success", "provider": provider, "model": model}
+                
+                # Run batch tests
+                batch_summary = await test_runner.run_batch_tests(
+                    tool_call_fn=mock_tool_call_fn,
+                    skill_ids=skill_ids
+                )
+                
+                logger.info(f"[D17-BATCH-TEST] Background batch test complete: {batch_summary.get('skills_tested', 0)} skills tested")
+                
+            except Exception as e:
+                logger.error(f"[D17-BATCH-TEST] Background batch test failed: {e}", exc_info=True)
         
-        # Mock tool_call_fn for testing (no actual execution)
-        async def mock_tool_call_fn(provider: str, model: str, **kwargs):
-            return {"status": "mock_success", "provider": provider, "model": model}
+        # Add background task
+        background_tasks.add_task(run_batch_background)
         
-        # Run batch tests
-        batch_summary = await test_runner.run_batch_tests(
-            tool_call_fn=mock_tool_call_fn,
-            skill_ids=skill_ids
-        )
-        
-        logger.info(f"[D17-BATCH-TEST] Batch test complete: {batch_summary.get('skills_tested', 0)} skills tested")
-        
-        return batch_summary
+        # Return immediately
+        return {
+            "status": "started",
+            "skills_to_test": len(skill_ids),
+            "message": "Batch tests running in background. Check logs for progress."
+        }
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("[D17-BATCH-TEST] Failed to run batch tests: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Batch test execution failed: {str(e)}")
+        logger.error("[D17-BATCH-TEST] Failed to start batch tests: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Batch test start failed: {str(e)}")
 
 
 @router.get("/system/run-skill-tests/{skill_id}")
