@@ -6,6 +6,7 @@ generate system improvement recommendations.
 """
 
 import logging
+import uuid
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 from enum import Enum
@@ -377,12 +378,51 @@ class LearningEngine:
         
         return "\n".join(lines)
     
-    async def generate_weekly_report(self, days: int = 14) -> Dict[str, Any]:
+    async def persist_report(self, report: Dict[str, Any]) -> bool:
+        """
+        Persist the learning report to logs_learning table.
+        
+        Args:
+            report: Complete learning report from generate_weekly_report()
+        
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            from backend.services.logging.supabase_client import get_supabase_client
+            
+            supabase = get_supabase_client()
+            
+            # Prepare record for persistence
+            record = {
+                "id": str(uuid.uuid4()),
+                "report_type": report.get("report_type", "weekly"),
+                "period_start": report.get("period_start"),
+                "period_end": report.get("period_end"),
+                "global_summary": report.get("global_summary", ""),
+                "trend_summary": report.get("trend_analysis", {}).get("summary", ""),
+                "improvements_count": len(report.get("improvements", [])),
+                "report_data": report,
+                "generated_at": report.get("generated_at", datetime.utcnow().isoformat())
+            }
+            
+            # Insert into logs_learning table
+            response = supabase.table("logs_learning").insert(record).execute()
+            
+            logger.info(f"[LEARNING-ENGINE] Persisted learning report to logs_learning table")
+            return True
+            
+        except Exception as e:
+            logger.error("[LEARNING-ENGINE] Failed to persist report: %s", e, exc_info=True)
+            return False
+    
+    async def generate_weekly_report(self, days: int = 14, persist: bool = False) -> Dict[str, Any]:
         """
         Generate a complete weekly learning report.
         
         Args:
             days: Number of days to analyze (default: 14 for 2-week comparison)
+            persist: Whether to persist the report to database (default: False)
         
         Returns:
             Complete learning report with trends and improvements
@@ -412,4 +452,9 @@ class LearningEngine:
         }
         
         logger.info(f"[LEARNING-ENGINE] Generated weekly report with {len(improvements)} improvements")
+        
+        # Persist to database if requested
+        if persist:
+            await self.persist_report(report)
+        
         return report

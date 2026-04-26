@@ -650,6 +650,39 @@ async def get_learning_report(days: int = 14, format: str = "json"):
         raise HTTPException(status_code=500, detail=f"Learning report generation failed: {str(e)}")
 
 
+@router.post("/system/learning-trigger")
+async def trigger_learning_report(days: int = 14, persist: bool = True):
+    """
+    D14: Manual trigger for weekly learning report generation.
+    
+    Allows immediate execution of the learning job without waiting
+    for the 7-day cycle. Useful for testing and manual audits.
+    
+    Args:
+        days: Number of days to analyze (default: 14)
+        persist: Whether to persist the report to database (default: True)
+    """
+    try:
+        from backend.services.logging.learning_engine import LearningEngine
+        
+        logger.info(f"[LEARNING-ENGINE] Manual trigger: generating learning report for last {days} days, persist={persist}")
+        
+        engine = LearningEngine()
+        report = await engine.generate_weekly_report(days=days, persist=persist)
+        
+        logger.info(f"[LEARNING-ENGINE] Manual trigger completed with {len(report.get('improvements', []))} improvements")
+        
+        return {
+            "status": "success",
+            "message": "Learning report generated successfully",
+            "report": report
+        }
+        
+    except Exception as e:
+        logger.error("[LEARNING-ENGINE] Manual trigger failed: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Learning report trigger failed: {str(e)}")
+
+
 def format_optimization_report(actions: List[Dict[str, Any]]) -> str:
     """
     Format actions as Markdown report for AI Studio.

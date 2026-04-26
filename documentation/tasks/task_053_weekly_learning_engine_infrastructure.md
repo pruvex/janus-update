@@ -14,15 +14,25 @@ Aufbau der Daten-Infrastruktur für die Weekly Learning Engine (D14) zur systema
 - backend/api/routers/system.py
 
 ## 4. Umsetzungsschritte (Diamond-Flow)
-- [ ] **Phase 1 (Pre-Check):** `/pre-check` ausführen.
-- [ ] **Phase 2 (Implementierung):**
-  - Erweitere schemas_logging.py um LearningReport und SystemImprovement Modelle
-  - Implementiere learning_engine.py mit LearningEngine Klasse
-  - Implementiere fetch_historical_data(days=7) Methode
-  - Implementiere calculate_trends() Methode
-  - Erweitere system.py um GET /api/system/learning-report Endpoint
-- [ ] **Phase 3 (Testing):** Test der LearningEngine mit Dummy-Daten
-- [ ] **Phase 4 (Post-Check):** `/post-impl` ausführen.
+- [x] **Phase 1 (Pre-Check):** `/pre-check` ausführen.
+- [x] **Phase 2 (Implementierung):**
+  - [x] Erweitere schemas_logging.py um LearningReport und SystemImprovement Modelle
+  - [x] Implementiere learning_engine.py mit LearningEngine Klasse
+  - [x] Implementiere fetch_historical_data(days=7) Methode
+  - [x] Implementiere calculate_trends() Methode
+  - [x] Erweitere system.py um GET /api/system/learning-report Endpoint
+  - [x] **Phase 2.1 (D14-B):** Mathematische Delta-Logik und Empfehlungs-Engine
+    - [x] Woche N vs Woche N-1 Vergleich
+    - [x] Regression-Trigger (ErrorRate_diff > 0.05, Latency_diff > 20%)
+    - [x] Deterministische Regeln (MODEL_SWITCH, TIMEOUT_ADJUST, COST_OPTIMIZE)
+    - [x] Markdown-Formatter für AI Studio
+  - [x] **Phase 2.2 (D14-D):** Lifecycle Integration
+    - [x] Persistence Schema für logs_learning Tabelle
+    - [x] Background Scheduler in backend/main.py lifespan
+    - [x] POST /api/system/learning-trigger Manual-Endpoint
+    - [x] Guardrails für Non-Blocking und Error-Handling
+- [x] **Phase 3 (Testing):** 38/38 Audit-Checks passed (D14_post_impl_audit.md)
+- [x] **Phase 4 (Post-Check):** `/post-impl` ausgeführt — 🥇 SEALED
 - [ ] **Phase 5 (Audit - Optional):** `/opus-audit` bei Bedarf ausführen.
 
 ## 5. Test-Vorgaben

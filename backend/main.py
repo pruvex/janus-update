@@ -377,6 +377,38 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"[P8] Failed to start RAG Watchdog: {e}")
 
+    # 7. D14: Weekly Learning Engine Background Scheduler
+    learning_task = None
+    try:
+        async def weekly_learning_scheduler():
+            """Background scheduler for weekly learning reports."""
+            import asyncio
+            from datetime import timedelta
+            from backend.services.logging.learning_engine import LearningEngine
+            
+            logger.info("[LEARNING-SCHEDULER] Starting weekly learning scheduler")
+            
+            while True:
+                try:
+                    # Sleep for 7 days (604800 seconds)
+                    await asyncio.sleep(604800)  # 7 days
+                    
+                    # Generate and persist weekly report
+                    logger.info("[LEARNING-SCHEDULER] Generating weekly learning report")
+                    engine = LearningEngine()
+                    await engine.generate_weekly_report(days=14, persist=True)
+                    logger.info("[LEARNING-SCHEDULER] Weekly learning report generated and persisted")
+                    
+                except Exception as e:
+                    logger.error(f"[LEARNING-SCHEDULER] Error in weekly learning job: {e}", exc_info=True)
+                    # Continue the loop even if there's an error (don't crash the server)
+        
+        # Start the background scheduler (non-blocking)
+        learning_task = asyncio.create_task(weekly_learning_scheduler())
+        logger.info("[LEARNING-SCHEDULER] Started background weekly learning scheduler")
+    except Exception as e:
+        logger.error(f"[LEARNING-SCHEDULER] Failed to start weekly learning scheduler: {e}")
+
     # 6. FINAL: Global Scope Discovery (Async indexing of all drives)
     def run_global_discovery():
         """Run background discovery of all local drives."""
@@ -515,7 +547,18 @@ async def lifespan(app: FastAPI):
         except asyncio.CancelledError:
             logger.info("Memory cleanup task cancelled successfully.")
         except Exception as e:
-            logger.warning(f"Error during cleanup task cancellation: {e}")
+            logger.error(f"Error cancelling memory cleanup task: {e}")
+    
+    # GRACEFUL SHUTDOWN: Cancel learning scheduler task
+    if learning_task:
+        logger.info("Shutting down: Cancelling weekly learning scheduler...")
+        learning_task.cancel()
+        try:
+            await learning_task
+        except asyncio.CancelledError:
+            logger.info("Weekly learning scheduler cancelled successfully.")
+        except Exception as e:
+            logger.error(f"Error cancelling weekly learning scheduler: {e}")
 
     # P8: Stop RAG Watchdog
     if rag_watcher:

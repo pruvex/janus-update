@@ -149,3 +149,18 @@ class LearningReport(BaseModel):
     improvements: List[SystemImprovement] = Field(default_factory=list, description="System improvement recommendations")
     generated_at: datetime = Field(default_factory=datetime.utcnow, description="Timestamp of report generation")
 
+
+class LearningReportCreate(BaseModel):
+    """
+    Model for creating a learning report record in logs_learning table.
+    """
+    id: Optional[str] = Field(default_factory=lambda: str(uuid4()), description="Unique report identifier")
+    report_type: str = Field(default="weekly", description="Report type")
+    period_start: datetime = Field(..., description="Start of analysis period")
+    period_end: datetime = Field(..., description="End of analysis period")
+    global_summary: str = Field(..., description="High-level summary")
+    trend_summary: str = Field(..., description="Trend analysis summary")
+    improvements_count: int = Field(default=0, description="Number of improvements generated")
+    report_data: Dict[str, Any] = Field(..., description="Full report JSON data")
+    generated_at: datetime = Field(default_factory=datetime.utcnow, description="Timestamp of report generation")
+

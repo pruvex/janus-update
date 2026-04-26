@@ -302,6 +302,29 @@
 - **Tags:** OptimizationRuleEngine, ActionFirst, SystemOptimization, RuleEngine, PriorityLevels, MarkdownReport, D13
 
 ---
+
+## [PATTERN] #SystemEvolutionLayer #WeeklyLearning "Deterministische Trend-Analyse über Zeitfenster — Woche N vs Woche N-1 Delta-Vergleich mit automatisierter Empfehlungs-Generierung"
+- **Kontext:** D14 Weekly Learning Engine analysiert historische D12 Insights über einen 14-Tage-Zeitraum, gesplittet in Woche N (aktuell) und Woche N-1 (Baseline). Das Ziel: Erkennen, ob sich das System verbessert oder verschlechtert — ohne KI, rein über deterministische Schwellenwerte.
+- **Problem:** Ohne Trend-Analyse über Zeit waren Verschlechterungen nur per manuellem Vergleich erkennbar. Keine automatische Eskalation bei steigenden Fehlerraten. Kein Cost-Optimization-Signal bei stabilen Skills mit hohem Volumen. Kein Persistence-Layer für die Lern-Historie des Systems.
+- **Lösung:** **D14 Weekly Learning Engine — Deterministic Trend Analysis & Recommendation Engine.**
+  1. **Fetch:** `fetch_historical_data(days=14)` holt D12 Insights aus logs_insights für 2-Wochen-Vergleich.
+  2. **Split:** Woche N (letzte 7 Tage) vs Woche N-1 (vorherige 7 Tage) per `datetime.utcnow() - timedelta(days=7)`.
+  3. **Group:** Insights werden per `skill_model` Key gruppiert für paarweisen Vergleich.
+  4. **Delta:** `error_rate_diff = avg_current - avg_baseline`, `latency_diff_pct = ((current - baseline) / baseline * 100)`.
+  5. **Regression-Trigger:** ErrorRate_diff > 0.05 ODER Latency_diff > 20% → Trend "worsening". ErrorRate_diff < -0.05 ODER Latency_diff < -20% → Trend "improving".
+  6. **Recommendation Engine:** Deterministische Regeln: ErrorRate > 0.3 + worsening → MODEL_SWITCH (HIGH). Latency > 3000ms + worsening → TIMEOUT_ADJUST (MEDIUM). Calls > 100 + ErrorRate == 0 → COST_OPTIMIZE (LOW).
+  7. **Persistence:** `persist_report()` speichert Reports in logs_learning Tabelle. System behält Historie seiner eigenen Evolution.
+  8. **Lifecycle:** `weekly_learning_scheduler` als asyncio Background-Task im FastAPI lifespan. 7-Tage Sleep-Loop. Non-blocking, crash-geschützt.
+  9. **Manual Trigger:** POST `/api/system/learning-trigger` für sofortige Ausführung (Tests und Audits).
+  10. **Markdown Formatter:** `format_report_to_markdown()` für AI Studio Integration (Summary, Trends, Recommendations).
+- **Guardrails:** (a) Missing Baseline → stable statt crash. (b) < 2 Datenpunkte pro Gruppe → skip. (c) Division-by-zero Guard auf baseline_latency. (d) Top-level try-except im Scheduler-Loop. (e) Keine probabilistischen Modelle.
+- **Tripwire:** Wenn Trends immer "stable" zeigen obwohl Fehlerraten steigen → delta threshold (0.05) prüfen. Wenn Scheduler nicht feuert → asyncio.create_task in lifespan prüfen. Wenn Persistence fehlschlägt → logs_learning Tabelle in Supabase prüfen.
+- **Location:** `backend/services/logging/learning_engine.py`, `backend/api/routers/system.py` (GET + POST Endpoints), `backend/data/schemas_logging.py` (Schema), `backend/main.py` (Lifecycle), implementiert 2026-04-26.
+- **Epic:** D14 — Weekly Learning Engine (System Evolution Layer)
+- **Confidence:** High (38/38 Audit-Checks bestanden, deterministische Logik verifiziert, Lifecycle-Integration crash-geschützt, Persistence operational).
+- **Tags:** SystemEvolutionLayer, WeeklyLearning, TrendAnalysis, DeltaComparison, DeterministicRules, RecommendationEngine, Lifecycle, D14
+
+---
 - **Kontext:** D11 Debug Compression Engine wurde entwickelt, um Logs für AI Studio Debugging zu komprimieren. Die Engine soll deterministische Heuristiken nutzen (Hard Errors, Model Drift, Latency Spikes) und LLM-gestützte Zusammenfassung als Fallback. Wichtig: Provider-agnostisch (nutzt User's Speed-Tier Modell) und mit Timeout-Schutz gegen Blockaden.
 - **Problem:** RAM-Buffer war leer (nicht mit realer Logging-System verbunden). Supabase hatte keine Logs aus den letzten 10 Minuten. Endpoint gab immer "Keine relevanten Logs" zurück, obwohl Janus aktiv war und Logs in janus_backend.log geschrieben wurden.
 - **Lösung:** **Drei-Stufen-Fallback-Kaskade in LogFetcher.fetch_logs():**
