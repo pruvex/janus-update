@@ -24,13 +24,17 @@ from backend.data.schemas_logging import LogEventCreate
 
 def discover_skills(skills_dir: str = "backend/skills") -> List[str]:
     """
-    Discover all skills from the skills directory.
+    Discover all skills from the skills directory (recursive).
+    
+    Uses Path.rglob to find every *.json file at any nesting depth.
+    The namespace is derived from the first directory component relative
+    to skills_dir (e.g. backend/skills/filesystem/read_file.json → filesystem.read_file).
     
     Args:
         skills_dir: Path to the skills directory
     
     Returns:
-        List of skill_ids in format "namespace.action"
+        Sorted list of skill_ids in format "namespace.action"
     """
     skills_path = Path(skills_dir)
     skill_ids = []
@@ -38,19 +42,21 @@ def discover_skills(skills_dir: str = "backend/skills") -> List[str]:
     if not skills_path.exists():
         return skill_ids
     
-    # Iterate over namespace directories
-    for namespace_dir in skills_path.iterdir():
-        if not namespace_dir.is_dir():
+    for skill_file in skills_path.rglob("*.json"):
+        # Relative path from skills root, e.g. filesystem/read_file.json
+        rel = skill_file.relative_to(skills_path)
+        parts = rel.parts  # ('filesystem', 'read_file.json') or deeper
+        
+        if len(parts) < 2:
+            # JSON directly in skills root — skip (no namespace)
             continue
         
-        namespace = namespace_dir.name
-        
-        # Iterate over skill JSON files
-        for skill_file in namespace_dir.glob("*.json"):
-            skill_name = skill_file.stem
-            skill_id = f"{namespace}.{skill_name}"
-            skill_ids.append(skill_id)
+        namespace = parts[0]
+        skill_name = skill_file.stem
+        skill_id = f"{namespace}.{skill_name}"
+        skill_ids.append(skill_id)
     
+    skill_ids.sort()
     return skill_ids
 
 
