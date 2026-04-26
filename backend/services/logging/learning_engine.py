@@ -137,9 +137,15 @@ class LearningEngine:
             avg_current_latency = sum(current_latencies) / len(current_latencies) if current_latencies else 0
             avg_baseline_latency = sum(baseline_latencies) / len(baseline_latencies) if baseline_latencies else 0
             
-            # Calculate deltas
+            # Calculate deltas using deterministic formula: delta = (current - baseline) / baseline
             error_rate_diff = avg_current_error - avg_baseline_error
-            latency_diff_pct = ((avg_current_latency - avg_baseline_latency) / avg_baseline_latency * 100) if avg_baseline_latency > 0 else 0
+            error_rate_delta = (avg_current_error - avg_baseline_error) / avg_baseline_error if avg_baseline_error > 0 else 0
+            latency_delta = (avg_current_latency - avg_baseline_latency) / avg_baseline_latency if avg_baseline_latency > 0 else 0
+            latency_diff_pct = latency_delta * 100
+            
+            # KPI: regression_score = weighted sum of week-to-week deltas
+            # Weight: error_rate_delta * 0.6 + latency_delta * 0.4
+            regression_score = (error_rate_delta * 0.6) + (latency_delta * 0.4)
             
             # Determine trend direction using regression triggers
             if error_rate_diff > 0.05 or latency_diff_pct > 20:
@@ -149,18 +155,21 @@ class LearningEngine:
             else:
                 trend = TrendDirection.STABLE
             
-            skill, model = key.split('_', 1)
+            skill_id, model = key.split('_', 1)
             
             trends.append({
-                "scope": f"skill:{skill}",
+                "scope": f"skill:{skill_id}",
                 "model": model,
                 "metric": "error_rate",
                 "current_avg": avg_current_error,
                 "baseline_avg": avg_baseline_error,
                 "error_rate_diff": error_rate_diff,
+                "error_rate_delta": error_rate_delta,
                 "current_latency": avg_current_latency,
                 "baseline_latency": avg_baseline_latency,
                 "latency_diff_pct": latency_diff_pct,
+                "latency_delta": latency_delta,
+                "regression_score": regression_score,
                 "current_calls": current_calls,
                 "baseline_calls": baseline_calls,
                 "trend": trend.value,
@@ -215,7 +224,7 @@ class LearningEngine:
                     "model": model,
                     "issue": f"Error rate worsening ({current_error:.2f}) above threshold (0.3)",
                     "trend": "worsening",
-                    "recommendation": f"MODEL_SWITCH: Escalate to stronger model for {model}. Current error rate is {current_error:.2f}.",
+                    "recommendation": f"[PROVISIONAL] MODEL_SWITCH: Escalate to stronger model for {model}. Current error rate is {current_error:.2f}.",
                     "action_type": "MODEL_SWITCH",
                     "priority": "HIGH",
                     "metric_value": current_error,
@@ -229,7 +238,7 @@ class LearningEngine:
                     "model": model,
                     "issue": f"Latency worsening ({current_latency:.0f}ms) above threshold (3000ms)",
                     "trend": "worsening",
-                    "recommendation": f"TIMEOUT_ADJUST: Increase timeout settings for {scope}. Current latency is {current_latency:.0f}ms.",
+                    "recommendation": f"[PROVISIONAL] TIMEOUT_ADJUST: Increase timeout settings for {scope}. Current latency is {current_latency:.0f}ms.",
                     "action_type": "TIMEOUT_ADJUST",
                     "priority": "MEDIUM",
                     "metric_value": current_latency,
@@ -243,7 +252,7 @@ class LearningEngine:
                     "model": model,
                     "issue": f"High call volume ({current_calls}) with zero error rate - potential for cost optimization",
                     "trend": "stable",
-                    "recommendation": f"COST_OPTIMIZE: Consider downgrade to Speed-Tier model for {scope}. High volume ({current_calls} calls) with perfect reliability suggests cost savings possible.",
+                    "recommendation": f"[PROVISIONAL] COST_OPTIMIZE: Consider downgrade to Speed-Tier model for {scope}. High volume ({current_calls} calls) with perfect reliability suggests cost savings possible.",
                     "action_type": "COST_OPTIMIZE",
                     "priority": "LOW",
                     "metric_value": current_calls,
@@ -257,7 +266,7 @@ class LearningEngine:
                     "model": model,
                     "issue": f"System improving (error rate: {current_error:.2f}, latency: {current_latency:.0f}ms)",
                     "trend": "improving",
-                    "recommendation": f"MAINTAIN: Current configuration working well for {model}. Continue monitoring trends.",
+                    "recommendation": f"[PROVISIONAL] MAINTAIN: Current configuration working well for {model}. Continue monitoring trends.",
                     "action_type": "MONITOR",
                     "priority": "LOW",
                     "metric_value": current_error,
@@ -309,6 +318,7 @@ class LearningEngine:
                     lines.append(f"**{trend['scope']} / {trend['model']}**")
                     lines.append(f"- Error Rate: {trend['current_avg']:.3f} (Δ {trend['error_rate_diff']:+.3f})")
                     lines.append(f"- Latency: {trend['current_latency']:.0f}ms (Δ {trend['latency_diff_pct']:+.1f}%)")
+                    lines.append(f"- Regression Score: {trend.get('regression_score', 0):.3f}")
                     lines.append(f"- Trigger: {trend['trend_trigger']}")
                     lines.append("")
             
@@ -319,6 +329,7 @@ class LearningEngine:
                     lines.append(f"**{trend['scope']} / {trend['model']}**")
                     lines.append(f"- Error Rate: {trend['current_avg']:.3f} (Δ {trend['error_rate_diff']:+.3f})")
                     lines.append(f"- Latency: {trend['current_latency']:.0f}ms (Δ {trend['latency_diff_pct']:+.1f}%)")
+                    lines.append(f"- Regression Score: {trend.get('regression_score', 0):.3f}")
                     lines.append("")
             
             if stable:
@@ -328,6 +339,7 @@ class LearningEngine:
                     lines.append(f"**{trend['scope']} / {trend['model']}**")
                     lines.append(f"- Error Rate: {trend['current_avg']:.3f} (Δ {trend['error_rate_diff']:+.3f})")
                     lines.append(f"- Latency: {trend['current_latency']:.0f}ms (Δ {trend['latency_diff_pct']:+.1f}%)")
+                    lines.append(f"- Regression Score: {trend.get('regression_score', 0):.3f}")
                     lines.append("")
         
         # Recommendations

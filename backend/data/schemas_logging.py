@@ -74,9 +74,12 @@ class InsightCreate(BaseModel):
     """
     Model for creating a new insight record.
     Schema matches the Supabase logs_insights table.
+    skill_id maps to DB column 'skill' via alias for backward compatibility.
     """
+    model_config = ConfigDict(populate_by_name=True)
+
     id: Optional[str] = Field(default_factory=lambda: str(uuid4()), description="Unique insight identifier")
-    skill: str = Field(..., description="Skill name")
+    skill_id: str = Field(..., alias="skill", description="Skill identifier (namespace.action format, e.g. 'system.websearch')")
     model: str = Field(..., description="Model name")
     calls: int = Field(..., description="Total number of calls")
     error_rate: float = Field(..., description="Error rate (0.0 to 1.0)")
@@ -94,23 +97,26 @@ class Insight(InsightCreate):
     """
     id: str = Field(..., description="Unique insight identifier")
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class ActionCreate(BaseModel):
     """
     Model for creating a new action record.
     Schema matches the Supabase logs_actions table.
+    skill_id maps to DB column 'skill' via alias for backward compatibility.
     """
+    model_config = ConfigDict(populate_by_name=True)
+
     id: Optional[str] = Field(default_factory=lambda: str(uuid4()), description="Unique action identifier")
-    skill: str = Field(..., description="Skill name")
+    skill_id: str = Field(..., alias="skill", description="Skill identifier (namespace.action format)")
     model: str = Field(..., description="Model name")
     action_type: str = Field(..., description="Type of action (SCALE_UP, MODEL_SWITCH, etc.)")
     priority: str = Field(..., description="Priority level (LOW, MEDIUM, HIGH, CRITICAL)")
     reason: str = Field(..., description="Reason for action")
     current_value: float = Field(..., description="Current metric value")
     threshold: float = Field(..., description="Threshold that triggered action")
-    recommendation: str = Field(..., description="Specific recommendation")
+    recommendation: str = Field(..., description="Specific recommendation [PROVISIONAL]")
     generated_at: datetime = Field(default_factory=datetime.utcnow, description="Timestamp of action generation")
     time_window_hours: int = Field(default=1, description="Time window in hours used for analysis")
 
@@ -122,7 +128,7 @@ class Action(ActionCreate):
     """
     id: str = Field(..., description="Unique action identifier")
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 # D14: Weekly Learning Engine Schemas

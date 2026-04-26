@@ -18,7 +18,7 @@ logger = logging.getLogger("janus_backend")
 
 class InsightResult(BaseModel):
     """Ergebnis der Insight-Analyse für einen Skill/Model-Kombination."""
-    skill: str = Field(..., description="Skill name")
+    skill_id: str = Field(..., description="Skill identifier (namespace.action format)")
     model: str = Field(..., description="Model name")
     calls: int = Field(..., description="Total number of calls")
     error_rate: float = Field(..., description="Error rate (0.0 to 1.0)")
@@ -95,9 +95,9 @@ class InsightEngine:
         })
         
         for log in logs:
-            skill = log.get("skill") or "unknown"
+            skill_id = log.get("skill") or "unknown"
             model = log.get("model") or "unknown"
-            key = (skill, model)
+            key = (skill_id, model)
             
             grouped[key]["calls"] += 1
             
@@ -127,7 +127,7 @@ class InsightEngine:
         """
         metrics = []
         
-        for (skill, model), data in grouped.items():
+        for (skill_id, model), data in grouped.items():
             calls = data["calls"]
             errors = data["errors"]
             total_latency = data["total_latency"]
@@ -137,7 +137,7 @@ class InsightEngine:
             avg_latency = total_latency / latency_count if latency_count > 0 else 0.0
             
             metrics.append({
-                "skill": skill,
+                "skill_id": skill_id,
                 "model": model,
                 "calls": calls,
                 "errors": errors,
@@ -228,7 +228,7 @@ class InsightEngine:
             confidence = self.calculate_confidence(metrics)
             
             result = InsightResult(
-                skill=metrics["skill"],
+                skill_id=metrics["skill_id"],
                 model=metrics["model"],
                 calls=metrics["calls"],
                 error_rate=metrics["error_rate"],

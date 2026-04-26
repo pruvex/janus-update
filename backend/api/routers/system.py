@@ -532,7 +532,7 @@ async def generate_insights(request: InsightRequest):
         
         for result in results:
             insight_data = InsightCreate(
-                skill=result.skill,
+                skill_id=result.skill_id,
                 model=result.model,
                 calls=result.calls,
                 error_rate=result.error_rate,
@@ -547,12 +547,11 @@ async def generate_insights(request: InsightRequest):
                 response = (
                     supabase
                     .table("logs_insights")
-                    .insert(insight_data.model_dump(mode='json'))
-                    .execute()
-                )
-                stored_insights.append(insight_data.model_dump(mode='json'))
+                    .insert(insight_data.model_dump(mode='json', by_alias=True))
+                ).execute()
+                stored_insights.append(insight_data.model_dump(mode='json', by_alias=True))
             except Exception as e:
-                logger.error(f"[INSIGHT-ENGINE] Failed to store insight for {result.skill}/{result.model}: {e}")
+                logger.error(f"[INSIGHT-ENGINE] Failed to store insight for {result.skill_id}/{result.model}: {e}")
         
         logger.info(f"[INSIGHT-ENGINE] Generated and stored {len(stored_insights)} insights")
         
@@ -567,7 +566,7 @@ async def generate_insights(request: InsightRequest):
 
 
 @router.get("/system/optimization-report")
-async def get_optimization_report(skill: Optional[str] = None):
+async def get_optimization_report(skill_id: Optional[str] = None):
     """
     D13: Janus Optimization Engine — Rule-Based System Optimization Report.
     
@@ -580,7 +579,7 @@ async def get_optimization_report(skill: Optional[str] = None):
     try:
         from backend.services.logging.supabase_client import get_supabase_client
         
-        logger.info(f"[OPTIMIZATION-ENGINE] Generating optimization report (skill filter: {skill})")
+        logger.info(f"[OPTIMIZATION-ENGINE] Generating optimization report (skill_id filter: {skill_id})")
         
         supabase = get_supabase_client()
         
@@ -593,16 +592,16 @@ async def get_optimization_report(skill: Optional[str] = None):
         )
         
         # Apply skill filter if provided
-        if skill:
-            query = query.eq("skill", skill)
+        if skill_id:
+            query = query.eq("skill", skill_id)
         
         response = query.order("priority", desc=True).execute()
         
         actions = response.data if response.data else []
         
         if not actions:
-            if skill:
-                return f"# Optimization Report\n\nNo actions generated for skill '{skill}' in the last 24 hours. System is operating normally."
+            if skill_id:
+                return f"# Optimization Report\n\nNo actions generated for skill_id '{skill_id}' in the last 24 hours. System is operating normally."
             return "# Optimization Report\n\nNo actions generated in the last 24 hours. System is operating normally."
         
         # Format as Markdown

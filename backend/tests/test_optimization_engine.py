@@ -40,7 +40,7 @@ def test_high_error_rate_generates_high_priority_action():
     action = engine.evaluate_insight(insight)
     
     assert action is not None, "Action should be generated for high error rate"
-    assert action.skill == "knowledge.query"
+    assert action.skill_id == "knowledge.query"
     assert action.model == "gpt-4o-mini"
     assert action.priority == ActionPriority.HIGH, f"Expected HIGH priority, got {action.priority}"
     assert action.action_type == ActionType.SCALE_UP, f"Expected SCALE_UP action, got {action.action_type}"
@@ -72,7 +72,7 @@ def test_critical_error_rate_generates_critical_priority_action():
     action = engine.evaluate_insight(insight)
     
     assert action is not None, "Action should be generated for critical error rate"
-    assert action.skill == "websearch"
+    assert action.skill_id == "websearch"
     assert action.model == "gpt-4o-mini"
     assert action.priority == ActionPriority.CRITICAL, f"Expected CRITICAL priority, got {action.priority}"
     assert action.action_type == ActionType.MODEL_SWITCH, f"Expected MODEL_SWITCH action, got {action.action_type}"
@@ -104,7 +104,7 @@ def test_high_latency_generates_high_priority_action():
     action = engine.evaluate_insight(insight)
     
     assert action is not None, "Action should be generated for high latency"
-    assert action.skill == "filesystem.find_files"
+    assert action.skill_id == "filesystem.find_files"
     assert action.model == "gpt-4o-mini"
     assert action.priority == ActionPriority.HIGH, f"Expected HIGH priority, got {action.priority}"
     assert action.action_type == ActionType.TIMEOUT_ADJUST, f"Expected TIMEOUT_ADJUST action, got {action.action_type}"
@@ -136,7 +136,7 @@ def test_critical_latency_generates_high_priority_action():
     action = engine.evaluate_insight(insight)
     
     assert action is not None, "Action should be generated for critical latency"
-    assert action.skill == "video.understand"
+    assert action.skill_id == "video.understand"
     assert action.model == "gpt-4o"
     assert action.priority == ActionPriority.HIGH, f"Expected HIGH priority, got {action.priority}"
     assert action.action_type == ActionType.MODEL_SWITCH, f"Expected MODEL_SWITCH action, got {action.action_type}"
@@ -168,7 +168,7 @@ def test_stable_system_generates_low_priority_monitor_action():
     action = engine.evaluate_insight(insight)
     
     assert action is not None, "Action should be generated for stable system"
-    assert action.skill == "system.websearch"
+    assert action.skill_id == "system.websearch"
     assert action.model == "gpt-4o-mini"
     assert action.priority == ActionPriority.LOW, f"Expected LOW priority, got {action.priority}"
     assert action.action_type == ActionType.MONITOR, f"Expected MONITOR action, got {action.action_type}"
@@ -211,7 +211,7 @@ def test_action_serialization():
     Scenario: Verify that SystemAction can be serialized with model_dump(mode='json').
     """
     action = SystemAction(
-        skill="test.skill",
+        skill_id="test.skill",
         model="test-model",
         action_type=ActionType.SCALE_UP,
         priority=ActionPriority.HIGH,
@@ -225,7 +225,7 @@ def test_action_serialization():
     # Test serialization
     action_dict = action.model_dump(mode='json')
     
-    assert action_dict["skill"] == "test.skill"
+    assert action_dict.get("skill", action_dict.get("skill_id")) == "test.skill"
     assert action_dict["model"] == "test-model"
     assert action_dict["action_type"] == "SCALE_UP"
     assert action_dict["priority"] == "HIGH"

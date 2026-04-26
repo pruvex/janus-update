@@ -42,7 +42,7 @@ def test_faulty_skill_high_error_rate():
     assert len(metrics_list) == 1, "Should have one skill/model combination"
     
     metrics = metrics_list[0]
-    assert metrics["skill"] == "faulty_skill"
+    assert metrics["skill_id"] == "faulty_skill"
     assert metrics["model"] == "gpt-4o-mini"
     assert metrics["calls"] == 10
     assert metrics["errors"] == 4
@@ -89,7 +89,7 @@ def test_stable_skill():
     assert len(metrics_list) == 1, "Should have one skill/model combination"
     
     metrics = metrics_list[0]
-    assert metrics["skill"] == "stable_skill"
+    assert metrics["skill_id"] == "stable_skill"
     assert metrics["model"] == "gpt-4o-mini"
     assert metrics["calls"] == 60
     assert metrics["errors"] == 0
@@ -134,7 +134,7 @@ def test_performance_problem():
     assert len(metrics_list) == 1, "Should have one skill/model combination"
     
     metrics = metrics_list[0]
-    assert metrics["skill"] == "slow_skill"
+    assert metrics["skill_id"] == "slow_skill"
     assert metrics["model"] == "gpt-4o-mini"
     assert metrics["calls"] == 5
     assert metrics["errors"] == 0
@@ -181,18 +181,18 @@ def test_multiple_skills_and_models():
     assert len(metrics_list) == 3, "Should have three skill/model combinations"
     
     # Verify skill_a/gpt-4o-mini
-    skill_a_mini = next(m for m in metrics_list if m["skill"] == "skill_a" and m["model"] == "gpt-4o-mini")
+    skill_a_mini = next(m for m in metrics_list if m["skill_id"] == "skill_a" and m["model"] == "gpt-4o-mini")
     assert skill_a_mini["calls"] == 3
     assert skill_a_mini["errors"] == 1
     assert skill_a_mini["error_rate"] == pytest.approx(0.333, rel=0.01)
     
     # Verify skill_a/gpt-4
-    skill_a_4 = next(m for m in metrics_list if m["skill"] == "skill_a" and m["model"] == "gpt-4")
+    skill_a_4 = next(m for m in metrics_list if m["skill_id"] == "skill_a" and m["model"] == "gpt-4")
     assert skill_a_4["calls"] == 2
     assert skill_a_4["errors"] == 0
     
     # Verify skill_b/gpt-4o-mini
-    skill_b = next(m for m in metrics_list if m["skill"] == "skill_b" and m["model"] == "gpt-4o-mini")
+    skill_b = next(m for m in metrics_list if m["skill_id"] == "skill_b" and m["model"] == "gpt-4o-mini")
     assert skill_b["calls"] == 2
     assert skill_b["errors"] == 0
     
