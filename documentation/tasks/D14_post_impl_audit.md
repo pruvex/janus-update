@@ -1,8 +1,8 @@
 # D14: Weekly Learning Engine — Post-Implementation Audit
 
-**Status:** 🥇 SEALED & COMPLETE (2026-04-26)
+**Status:** 🥇 DIAMOND HARMONIZED (2026-04-26)
 **Epic:** D14 Weekly Learning Engine
-**Version:** V0.4.25-beta.47
+**Version:** V0.4.26-beta.48
 **Auditor:** Frontier Audit (CU-8)
 
 ---
@@ -97,12 +97,24 @@
 
 ---
 
+## Phase 11: Stack Harmonization (V0.4.26)
+
+| # | Check | Status |
+|---|-------|--------|
+| 39 | KPI Registry: `regression_score` implemented | ✅ PASS — `regression_score = error_rate_delta * 0.6 + latency_delta * 0.4` |
+| 40 | Delta formula: deterministic `(current - baseline) / baseline` | ✅ PASS — Consistent for error_rate and latency |
+| 41 | skill_id contract: namespace.action format | ✅ PASS — Reads `skill` from DB via alias (DB column remains `skill`) |
+| 42 | Decision-Gate: `[PROVISIONAL]` markers on all recommendations | ✅ PASS — All recommendation strings prefixed with `[PROVISIONAL]` |
+| 43 | Markdown formatter shows `regression_score` | ✅ PASS — Added to all trend sections (Worsening, Improving, Stable) |
+
+---
+
 ## Audit Summary
 
 | Metric | Value |
 |--------|-------|
-| **Total Checks** | 38 |
-| **Passed** | 38 |
+| **Total Checks** | 43 |
+| **Passed** | 43 |
 | **Failed** | 0 |
 | **Pass Rate** | 100% |
 
@@ -115,7 +127,7 @@
 
 ## Sign-off
 
-D14 Weekly Learning Engine is fully implemented and production-ready. The engine provides deterministic trend analysis over time windows (Week N vs Week N-1), generates prioritized system improvement recommendations, and persists its own evolution history. The 7-day automated cycle runs non-blocking in the server lifespan with full crash protection.
+D14 Weekly Learning Engine is fully implemented, production-ready, and diamond-harmonized with the D10-D14 stack. The engine provides deterministic trend analysis over time windows (Week N vs Week N-1), generates prioritized system improvement recommendations with KPI Registry (regression_score 60/40 weighting), and persists its own evolution history. The skill_id contract (namespace.action) is harmonized across D12-D14 with DB backward compatibility via alias. Decision-Gate `[PROVISIONAL]` markers ensure AI Studio validation before action execution. The 7-day automated cycle runs non-blocking in the server lifespan with full crash protection.
 
-**Status:** 🥇 SEALED & COMPLETE
-**Version:** V0.4.25-beta.47
+**Status:** 🥇 DIAMOND HARMONIZED
+**Version:** V0.4.26-beta.48

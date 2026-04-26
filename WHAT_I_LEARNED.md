@@ -325,6 +325,25 @@
 - **Tags:** SystemEvolutionLayer, WeeklyLearning, TrendAnalysis, DeltaComparison, DeterministicRules, RecommendationEngine, Lifecycle, D14
 
 ---
+
+## [PATTERN] #DomainSeparation #DecisionGate "D12 (deskriptiv) → D13 (rule-basiert) → D14 (trend-analytisch) mit Decision-Gate [PROVISIONAL] als AI Studio Validierungs-Layer"
+- **Kontext:** Diamond-Stack Harmonisierung (D10-D14) erfordert klare Trennung der Verantwortlichkeiten: D12 liefert deskriptive Metriken, D13 generiert rule-basierte Aktionen aus D12-Aggregaten, D14 analysiert Trends über Zeitfenster. Alle D13/D14 Outputs müssen als "Provisional" markiert werden, da AI Studio der einzige Validierungs-Gatekeeper ist.
+- **Problem:** Inkonsistente Feldnamen (`skill` vs `skill_id`) über die Layer. Keine KPI-Registry in D14 (regression_score). Delta-Formel inkonsistent (absolute vs relative). Kein Decision-Gate Marker für AI Studio Validierung. D12 enthielt implizit Empfehlungs-Logik (detect_patterns) obwohl D13 dafür zuständig ist.
+- **Lösung:** **Diamond-Stack Harmonisierung mit skill_id Contract und Decision-Gate:**
+  1. **skill_id Contract:** `skill_id` (namespace.action format) als kanonisches Feld in D12-D14 Schemas mit `alias="skill"` für DB-Kompatibilität (Supabase Spalte bleibt `skill`). `ConfigDict(populate_by_name=True)` für bidirektionale Kompatibilität.
+  2. **D12 Insight Engine (deskriptiv):** `InsightResult.skill_id` statt `skill`. `detect_patterns()` liefert nur deskriptive Labels (`high_error_rate`, `latency_spike`, `stable`) — keine Empfehlungs-Logik.
+  3. **D13 Optimization Engine (rule-basiert):** `SystemAction.skill_id` mit alias. `evaluate_insight()` liest strikt aus `logs_insights` (D12-Aggregates). Alle Empfehlungs-Strings mit `[PROVISIONAL]` Decision-Gate Marker. `store_action()` nutzt `by_alias=True` für DB-Serialisierung.
+  4. **D14 KPI Registry:** `regression_score = error_rate_delta * 0.6 + latency_delta * 0.4` (gewichtete Summe Woche-zu-Woche Deltas). Deterministische Delta-Formel: `delta = (current - baseline) / baseline` (konsistent für error_rate und latency). Markdown-Formatter zeigt `regression_score` in allen Trend-Sections.
+  5. **D14 Decision-Gate:** Alle Empfehlungs-Strings in `generate_improvements()` mit `[PROVISIONAL]` Marker.
+  6. **Endpoints:** D12 Endpoint nutzt `skill_id` und `by_alias=True`. D13 Endpoint Parameter `skill_id` (mapped to DB column `skill`).
+- **Härtung:** D12 bleibt rein deskriptiv (keine Empfehlungs-Logik). D13 arbeitet strikt auf D12-Aggregaten. D14 verwendet deterministische Delta-Formel. AI Studio ist der einzige Validierungs-Gatekeeper (alle Outputs sind `[PROVISIONAL]`).
+- **Tripwire:** Wenn D12 Empfehlungen generiert → Domain-Separation verletzt. Erkennbar: `detect_patterns()` gibt action_type statt pattern zurück. Wenn skill_id in DB nicht alias-kompatibel → Schema-Migration fehlt. Erkennbar: `sqlalchemy.exc.ProgrammingError: column "skill_id" does not exist`. Wenn D13/D14 Outputs ohne `[PROVISIONAL]` → Decision-Gate fehlt. Erkennbar: Empfehlungs-Strings ohne Marker.
+- **Location:** `backend/data/schemas_logging.py` (skill_id + alias), `backend/services/logging/insight_engine.py` (skill_id), `backend/services/logging/optimization_engine.py` (skill_id + PROVISIONAL), `backend/services/logging/learning_engine.py` (regression_score + delta + PROVISIONAL), `backend/api/routers/system.py` (endpoints), implementiert 2026-04-26.
+- **Epic:** D10-D14 STACK HARMONIZATION
+- **Confidence:** High (skill_id contract mit DB-Rückwärtskompatibilität via alias. KPI Registry mit deterministischer Delta-Formel. Decision-Gate aktiv auf allen D13/D14 Outputs. 11/11 Tests passed).
+- **Tags:** DomainSeparation, DecisionGate, skill_id, KPIRegistry, regression_score, delta, deterministic, harmonization, D12, D13, D14
+
+---
 - **Kontext:** D11 Debug Compression Engine wurde entwickelt, um Logs für AI Studio Debugging zu komprimieren. Die Engine soll deterministische Heuristiken nutzen (Hard Errors, Model Drift, Latency Spikes) und LLM-gestützte Zusammenfassung als Fallback. Wichtig: Provider-agnostisch (nutzt User's Speed-Tier Modell) und mit Timeout-Schutz gegen Blockaden.
 - **Problem:** RAM-Buffer war leer (nicht mit realer Logging-System verbunden). Supabase hatte keine Logs aus den letzten 10 Minuten. Endpoint gab immer "Keine relevanten Logs" zurück, obwohl Janus aktiv war und Logs in janus_backend.log geschrieben wurden.
 - **Lösung:** **Drei-Stufen-Fallback-Kaskade in LogFetcher.fetch_logs():**

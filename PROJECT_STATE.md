@@ -1,32 +1,47 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.25-beta.47** — "🥇 D14 SEALED: 4-Stage Observability & Evolution Stack (D10-D14) fully operational. D14 WEEKLY LEARNING ENGINE: 🥇 SEALED & COMPLETE. Deterministic Trend Analysis (Week N vs Week N-1 Delta). Recommendation Engine (MODEL_SWITCH, TIMEOUT_ADJUST, COST_OPTIMIZE). Automated 7-Day Lifecycle Scheduler. Persistence in logs_learning. POST /api/system/learning-trigger + GET /api/system/learning-report. 38/38 Audit-Checks passed. D13 JANUS OPTIMIZATION ENGINE: 🥇 SEALED. D12 JANUS INSIGHT ENGINE: 🥇 SEALED. D11 DEBUG COMPRESSION ENGINE: 🥇 SEALED. D10 RESILIENT TELEMETRY: 🥇 SEALED.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.26-beta.48** — "🥇 DIAMOND HARMONIZED: 4-Stage Observability & Evolution Stack (D10-D14) fully harmonized. skill_id (namespace.action) contract across D12-D14. D14 KPI Registry: regression_score (60/40 weighted delta). Decision-Gate: [PROVISIONAL] markers on all D13/D14 outputs. 11/11 tests green. D14 WEEKLY LEARNING ENGINE: 🥇 DIAMOND HARMONIZED. D13 JANUS OPTIMIZATION ENGINE: 🥇 DIAMOND HARMONIZED. D12 JANUS INSIGHT ENGINE: 🥇 DIAMOND HARMONIZED. D11 DEBUG COMPRESSION ENGINE: 🥇 SEALED. D10 RESILIENT TELEMETRY: 🥇 SEALED.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-26 17:40 (🥇 D14 SEALED: Weekly Learning Engine — System Evolution Layer complete)
+**Aktualisiert:** 2026-04-26 18:30 (🥇 DIAMOND HARMONIZED: D10-D14 Stack Harmonized — skill_id contract, KPI Registry, Decision-Gate)
 
 ---
 
-## [OBSERVABILITY & OPTIMIZATION STACK — 🥇 DIAMOND VERIFIED]
+## [OBSERVABILITY & OPTIMIZATION STACK — 🥇 DIAMOND HARMONIZED]
 
 | Feld | Wert |
 |------|------|
-| **Chapter** | **Observability & Optimization (D10-D13)** |
-| **Status** | **🥇 DIAMOND VERIFIED** (2026-04-26) |
-| **Components** | D10 Resilient Telemetry, D11 Debug Compression Engine, D12 Insight Engine, D13 Optimization Engine |
-| **Verification** | All components operational, Windsurf Skills functional, 3-Stage Signal-Flow verified |
-| **Integration** | D11 → D13 (suggest_d13 Flag), D12 → D13 (logs_insights → logs_actions), Windsurf Skills (/debug-log, /optimization-report) |
-| **Test Coverage** | D10: Schema-Sync verified, D11: Heuristics verified, D12: 4/4 tests passed, D13: 7/7 tests passed |
-| **Database** | logs_raw, logs_insights, logs_actions tables operational |
-| **Documentation** | D10, D11, D12, D13 task documents complete with component links |
-| **Patterns** | #ResilientTelemetry, #ProductionWrapper, #GlobalInsightAggregation, #OptimizationRuleEngine (all in WHAT_I_LEARNED.md) |
-| **Sign-off** | 3-Stage Observability & Optimization Stack is fully operational, verified, and production-ready. |
+| **Chapter** | **Observability & Evolution (D10-D14)** |
+| **Status** | **🥇 DIAMOND HARMONIZED** (2026-04-26) |
+| **Components** | D10 Resilient Telemetry, D11 Debug Compression Engine, D12 Insight Engine, D13 Optimization Engine, D14 Weekly Learning Engine |
+| **Verification** | All components operational, skill_id contract harmonized, KPI Registry implemented, Decision-Gate active |
+| **Integration** | D11 → D13 (suggest_d13 Flag), D12 → D13 (logs_insights → logs_actions), D12 → D14 (logs_insights → logs_learning), Windsurf Skills (/debug-log, /optimization-report, /learning-report) |
+| **Test Coverage** | D10: Schema-Sync verified, D11: Heuristics verified, D12: 4/4 tests passed, D13: 7/7 tests passed, D14: regression_score + delta formula verified |
+| **Database** | logs_raw, logs_insights, logs_actions, logs_learning tables operational |
+| **Documentation** | D10, D11, D12, D13, D14 task documents complete with component links |
+| **Patterns** | #ResilientTelemetry, #ProductionWrapper, #GlobalInsightAggregation, #OptimizationRuleEngine, #SystemEvolutionLayer, #DomainSeparation (all in WHAT_I_LEARNED.md) |
+| **Sign-off** | 4-Stage Observability & Evolution Stack is fully harmonized with skill_id contract, KPI Registry, and Decision-Gate. |
 
 ---
 
-## [CURRENT_SESSION_DELTA] (D13 JANUS OPTIMIZATION ENGINE — SEALED & COMPLETE 🥇)
+## [CURRENT_SESSION_DELTA] (D10-D14 STACK HARMONIZATION — 🥇 DIAMOND HARMONIZED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **D10-D14 STACK HARMONIZATION — skill_id Contract, KPI Registry, Decision-Gate** |
+| **Status** | **🥇 DIAMOND HARMONIZED** (2026-04-26) |
+| **Root Cause** | Inkonsistente Feldnamen (`skill` vs `skill_id`) über D12-D14. Fehlende KPI-Registry in D14 (regression_score). Delta-Formel inkonsistent (absolute vs relative). Kein Decision-Gate Marker für AI Studio Validierung. |
+| **Umsetzung** | **Fix #1 — Schema Harmonisierung:** `backend/data/schemas_logging.py` — `InsightCreate.skill_id` mit `alias="skill"` für DB-Kompatibilität (Supabase Spalte bleibt `skill`). `ActionCreate.skill_id` analog. `ConfigDict(populate_by_name=True)` für bidirektionale Kompatibilität. **Fix #2 — D12 Insight Engine:** `backend/services/logging/insight_engine.py` — `InsightResult.skill` → `skill_id`, `aggregate_logs()` und `calculate_metrics()` verwenden `skill_id`. `detect_patterns()` bleibt rein deskriptiv (keine Empfehlungs-Logik, bereits clean). **Fix #3 — D13 Optimization Engine:** `backend/services/logging/optimization_engine.py` — `SystemAction.skill_id` mit `alias="skill"`, `ConfigDict(populate_by_name=True)`. `evaluate_insight()` liest strikt aus `logs_insights` (D12-Aggregates). Alle Empfehlungs-Strings mit `[PROVISIONAL]` Decision-Gate Marker. `store_action()` nutzt `by_alias=True` für DB-Serialisierung. **Fix #4 — D14 KPI Registry:** `backend/services/logging/learning_engine.py` — `regression_score = error_rate_delta * 0.6 + latency_delta * 0.4` (gewichtete Summe Woche-zu-Woche Deltas). Deterministische Delta-Formel: `delta = (current - baseline) / baseline` (konsistent für error_rate und latency). Markdown-Formatter zeigt `regression_score` in allen Trend-Sections. **Fix #5 — D14 Decision-Gate:** Alle Empfehlungs-Strings in `generate_improvements()` mit `[PROVISIONAL]` Marker. **Fix #6 — Endpoints:** `backend/api/routers/system.py` — D12 Endpoint nutzt `skill_id` und `by_alias=True`. D13 Endpoint Parameter `skill_id` (mapped to DB column `skill`). **Fix #7 — Tests:** `backend/tests/test_insight_engine.py` — Assertions von `metrics["skill"]` → `metrics["skill_id"]`. `backend/tests/test_optimization_engine.py` — Assertions von `action.skill` → `action.skill_id`. 11/11 tests green. **Fix #8 — Commit:** Git commit "STACK-HARMONIZATION: skill→skill_id, KPI regression_score, Decision-Gate [PROVISIONAL], 11/11 tests green" pushed to backup/develop. |
+| **Ergebnis** | skill_id (namespace.action) Contract harmonisiert über D12-D14 mit DB-Rückwärtskompatibilität via alias. D14 KPI Registry mit regression_score (60/40 Gewichtung) und deterministischer Delta-Formel. Decision-Gate `[PROVISIONAL]` Marker auf allen D13/D14 Outputs. 11/11 Tests passed. |
+| **Files** | `backend/data/schemas_logging.py` (skill_id + alias), `backend/services/logging/insight_engine.py` (skill_id), `backend/services/logging/optimization_engine.py` (skill_id + PROVISIONAL), `backend/services/logging/learning_engine.py` (regression_score + delta + PROVISIONAL), `backend/api/routers/system.py` (endpoints), `backend/tests/test_insight_engine.py` (tests), `backend/tests/test_optimization_engine.py` (tests). |
+| **Verifikation** | Schema: ✅ ALIAS COMPAT · D12: ✅ skill_id · D13: ✅ skill_id + PROVISIONAL · D14: ✅ regression_score + delta + PROVISIONAL · Tests: ✅ 11/11 PASSED · Commit: ✅ PUSHED |
+| **Patterns** | [PATTERN] #DomainSeparation #DecisionGate "D12 (deskriptiv) → D13 (rule-basiert) → D14 (trend-analytisch) mit Decision-Gate [PROVISIONAL] als AI Studio Validierungs-Layer" |
+
+---
+
+## [CURRENT_SESSION_DELTA] (D13 JANUS OPTIMIZATION ENGINE — 🥇 DIAMOND HARMONIZED)
 
 | Feld | Wert |
 |------|------|
 | **Epic / Task** | **D13 JANUS OPTIMIZATION ENGINE — Rule-Based System Optimization mit Action-First Integration** |
-| **Status** | **🥇 SEALED & COMPLETE** (2026-04-26) |
+| **Status** | **🥇 DIAMOND HARMONIZED** (2026-04-26) |
 | **Root Cause** | Keine automatische Generierung von System-Actions basierend auf Insights. Keine Priorisierung von Maßnahmen (CRITICAL > HIGH > MEDIUM > LOW). Keine Integration in AI Studio Workflow (Entwickler muss manuell aus Daten ableiten, was zu tun ist). |
 | **Umsetzung** | **Fix #1 — OptimizationEngine:** `backend/services/logging/optimization_engine.py` — Klasse mit Rule Engine, Persistence, Analysis Pipeline. **Fix #2 — Rule Engine:** `evaluate_insight()` mit deterministischen Schwellenwerten: error_rate > 0.5 → CRITICAL MODEL_SWITCH, error_rate > 0.3 → HIGH SCALE_UP, latency > 5000ms → HIGH MODEL_SWITCH, latency > 3000ms → HIGH TIMEOUT_ADJUST, error_rate=0 & latency<1000 → LOW MONITOR. **Fix #3 — Action Types:** MODEL_SWITCH, SCALE_UP, TIMEOUT_ADJUST, MONITOR. **Fix #4 — Priority Levels:** CRITICAL, HIGH, MEDIUM, LOW. **Fix #5 — Persistence:** `store_action()` speichert Actions in logs_actions Tabelle mit JSON-Serialisierung (`model_dump(mode='json')` für datetime). **Fix #6 — GET Endpoint:** `backend/api/routers/system.py` — `/api/system/optimization-report` lädt neueste Actions und formatiert als Markdown-Report für AI Studio Integration (CRITICAL > HIGH > MEDIUM > LOW Sortierung). **Fix #7 — Schema:** `backend/data/schemas_logging.py` — `ActionCreate` und `Action` Pydantic-Modelle für logs_actions Tabelle. **Fix #8 — Test-Suite:** `backend/tests/test_optimization_engine.py` — 7 Test-Cases (High Error Rate, Critical Error Rate, High Latency, Critical Latency, Stable System, Moderate Metrics, Action Serialization). **Fix #9 — Dokumentation:** `documentation/tasks/D13_optimization_engine.md` erstellt mit Schwellenwerten und Endpoint-Dokumentation. **Fix #10 — Pattern:** WHAT_I_LEARNED.md Pattern #OptimizationRuleEngine zertifiziert. **Fix #11 — PROJECT_STATE.md:** Version V0.4.23-beta.45 → V0.4.24-beta.46, Epic D13 als SEALED markiert. |
 | **Ergebnis** | D13 Janus Optimization Engine operational mit deterministischer Rule Engine. Action-First Integration mit Priority Levels. GET Endpoint `/api/system/optimization-report` mit Markdown-Formatierung für AI Studio. Test-Suite 7/7 passed. Keine KI im Backend-Core (wie gefordert). |
@@ -36,18 +51,33 @@
 
 ---
 
-## [CURRENT_SESSION_DELTA] (D12 JANUS INSIGHT ENGINE — SEALED & COMPLETE 🥇)
+## [CURRENT_SESSION_DELTA] (D12 JANUS INSIGHT ENGINE — 🥇 DIAMOND HARMONIZED)
 
 | Feld | Wert |
 |------|------|
 | **Epic / Task** | **D12 JANUS INSIGHT ENGINE — Globale Log-Aggregation für System-Health Monitoring** |
-| **Status** | **🥇 SEALED & COMPLETE** (2026-04-26) |
+| **Status** | **🥇 DIAMOND HARMONIZED** (2026-04-26) |
 | **Root Cause** | Keine globale Aggregation von Logs nach Skill und Model. Keine systemweite Pattern-Detection. Keine Trennung zwischen Session-Debugging (D11) und System-Monitoring (D12). DateTime Serialization Error bei Supabase-Insert. |
 | **Umsetzung** | **Fix #1 — InsightEngine:** `backend/services/logging/insight_engine.py` — Klasse mit Fetcher, Aggregator, Metrics Calculator, Pattern Detection, Confidence Model. **Fix #2 — Pattern Detection:** `detect_patterns()` mit deterministischen Regeln: error_rate > 0.2 → "high_error_rate", avg_latency_ms > 2000 → "latency_spike", calls > 50 & error_rate == 0 → "stable". **Fix #3 — Confidence Model:** `calculate_confidence()` mit Volumen-basiertem Scoring: base = min(1.0, calls/100), reduziert um 20% bei error_rate > 0.5. **Fix #4 — POST Endpoint:** `backend/api/routers/system.py` — `/api/system/insights` mit `{"hours": 1}` Parameter. Speichert Ergebnisse persistent in `logs_insights` Tabelle. **Fix #5 — Schema:** `backend/data/schemas_logging.py` — `InsightCreate` und `Insight` Pydantic-Modelle für logs_insights Tabelle. **Fix #6 — Test-Suite:** `backend/tests/test_insight_engine.py` — 4 Test-Cases (Faulty Skill, Stable Skill, Performance Problem, Multiple Skills/Models). **Fix #7 — Dokumentation:** `documentation/tasks/D12_insight_engine.md` erstellt mit Architektur und Endpoint-Dokumentation. **Fix #8 — Pattern:** WHAT_I_LEARNED.md Pattern #GlobalInsightAggregation zertifiziert. **Fix #9 — DateTime Serialization Fix:** `model_dump(mode='json')` statt `model_dump()` in system.py (wandelt datetime zu ISO-Strings). **Fix #10 — Debug Cleanup:** Debug-Logger-Prints aus fetch_logs entfernt (Log-Rauschen minimiert). **Fix #11 — PROJECT_STATE.md:** Version V0.4.22-beta.44 → V0.4.23-beta.45, Epic D12 als SEALED markiert. |
 | **Ergebnis** | D12 Janus Insight Engine operational mit globaler Log-Aggregation. Deterministische Pattern Detection (High Error Rate, Latency Spike, Stable). POST Endpoint `/api/system/insights` operational. Persistent Storage in logs_insights. DateTime Serialization behoben. Test-Suite 4/4 passed. Keine Physics-Engine, keine Reality-Scores (wie gefordert). |
 | **Files** | `backend/services/logging/insight_engine.py` (neu), `backend/api/routers/system.py` (POST Endpoint + DateTime Fix), `backend/data/schemas_logging.py` (Schema), `backend/tests/test_insight_engine.py` (Test-Suite), `documentation/tasks/D12_insight_engine.md` (Doku), `WHAT_I_LEARNED.md` (Pattern), `PROJECT_STATE.md` (Version bump). |
 | **Verifikation** | InsightEngine: ✅ IMPLEMENTED · Endpoint: ✅ OPERATIONAL · Schema: ✅ CREATED · Test-Suite: ✅ 4/4 PASSED · Pattern: ✅ CERTIFIED · DateTime: ✅ FIXED · Cleanup: ✅ DONE |
 | **Patterns** | [PATTERN] #GlobalInsightAggregation #MacroAnalytics "Trennung von Mikro-Debugging (Session) und Makro-Analyse (Global) zur Identifikation systemweiter Architekturschwächen" |
+
+---
+
+## [CURRENT_SESSION_DELTA] (D14 WEEKLY LEARNING ENGINE — 🥇 DIAMOND HARMONIZED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **D14 WEEKLY LEARNING ENGINE — System Evolution Layer mit KPI Registry** |
+| **Status** | **🥇 DIAMOND HARMONIZED** (2026-04-26) |
+| **Root Cause** | Fehlende KPI-Registry (regression_score). Delta-Formel inkonsistent (absolute vs relative). Kein Decision-Gate Marker für AI Studio Validierung. skill_id Contract fehlte. |
+| **Umsetzung** | **Fix #1 — KPI Registry:** `backend/services/logging/learning_engine.py` — `regression_score = error_rate_delta * 0.6 + latency_delta * 0.4` (gewichtete Summe Woche-zu-Woche Deltas). **Fix #2 — Delta-Formel:** Deterministische Formel `delta = (current - baseline) / baseline` konsistent für error_rate und latency. **Fix #3 — skill_id Contract:** `group_by_skill_model()` liest `skill` aus DB (alias-kompatibel). Markdown-Formatter zeigt `regression_score` in allen Trend-Sections. **Fix #4 — Decision-Gate:** Alle Empfehlungs-Strings in `generate_improvements()` mit `[PROVISIONAL]` Marker. **Fix #5 — Windsurf Skill:** `.windsurf/workflows/learning_report.md` mit curl.exe auf Port 8001. |
+| **Ergebnis** | D14 Weekly Learning Engine mit KPI Registry (regression_score 60/40 Gewichtung). Deterministische Delta-Formel. Decision-Gate `[PROVISIONAL]` Marker. skill_id Contract harmonisiert. |
+| **Files** | `backend/services/logging/learning_engine.py` (regression_score + delta + PROVISIONAL), `.windsurf/workflows/learning_report.md` (Skill). |
+| **Verifikation** | KPI: ✅ REGRESSION_SCORE · Delta: ✅ DETERMINISTIC · Decision-Gate: ✅ PROVISIONAL · skill_id: ✅ HARMONIZED |
+| **Patterns** | [PATTERN] #SystemEvolutionLayer #WeeklyLearning "Deterministische Trend-Analyse über Zeitfenster — Woche N vs Woche N-1 Delta-Vergleich mit KPI Registry und Decision-Gate" |
 
 ---
 
