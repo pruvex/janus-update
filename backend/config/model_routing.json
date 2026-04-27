@@ -2,34 +2,116 @@
   "default_tiers": {
     "primary": {
       "provider": "openai",
-      "model": "gpt-4o-mini"
+      "model": "gpt-5.4-mini"
     },
     "fallback": {
       "provider": "openai",
-      "model": "gpt-4o"
+      "model": "gpt-5.4"
     },
     "escalation": {
       "provider": "openai",
-      "model": "gpt-4-turbo"
+      "model": "gpt-5.4"
     }
   },
   "skill_mappings": {
+    "system.weather": {
+      "primary": {
+        "provider": "openai",
+        "model": "gpt-5.4-mini"
+      },
+      "escalation": {
+        "provider": "openai",
+        "model": "gpt-5.4"
+      }
+    },
+    "filesystem.list_directory": {
+      "primary": {
+        "provider": "openai",
+        "model": "gpt-5.4-mini"
+      },
+      "escalation": {
+        "provider": "openai",
+        "model": "gpt-5.4"
+      }
+    },
     "calendar.create_event": {
       "primary": {
         "provider": "openai",
         "model": "gpt-5.4-mini"
+      },
+      "escalation": {
+        "provider": "openai",
+        "model": "gpt-5.4"
       }
     },
     "system.country_info": {
       "primary": {
         "provider": "openai",
         "model": "gpt-5.4-mini"
+      },
+      "escalation": {
+        "provider": "openai",
+        "model": "gpt-5.4"
+      }
+    },
+    "communication.send_email": {
+      "primary": {
+        "provider": "openai",
+        "model": "gpt-5.4-mini"
+      },
+      "escalation": {
+        "provider": "openai",
+        "model": "gpt-5.4"
       }
     },
     "system.video_understanding": {
       "primary": {
-        "provider": "gemini",
-        "model": "gemini-3.1-pro"
+        "provider": "openai",
+        "model": "gpt-5.4"
+      },
+      "escalation": {
+        "provider": "openai",
+        "model": "gpt-5.4"
+      }
+    },
+    "system.websearch": {
+      "primary": {
+        "provider": "openai",
+        "model": "gpt-5.4-mini"
+      },
+      "escalation": {
+        "provider": "openai",
+        "model": "gpt-5.4"
+      }
+    },
+    "knowledge.list_documents": {
+      "primary": {
+        "provider": "openai",
+        "model": "gpt-5.4-mini"
+      },
+      "escalation": {
+        "provider": "openai",
+        "model": "gpt-5.4"
+      }
+    },
+    "system.price_comparison": {
+      "primary": {
+        "provider": "openai",
+        "model": "gpt-5.4-mini"
+      },
+      "escalation": {
+        "provider": "openai",
+        "model": "gpt-5.4"
+      }
+    },
+    "system.rss_news": {
+      "primary": {
+        "provider": "openai",
+        "model": "gpt-5.4-mini"
+      },
+      "escalation": {
+        "provider": "openai",
+        "model": "gpt-5.4"
       }
     }
   }

@@ -886,7 +886,7 @@ async def run_batch_tests(
                                 return await tool_call_fn(provider=provider, model=model_override, **kwargs)
                             
                             batch_summary = await test_runner.run_batch_tests(
-                                tool_call_fn=lambda p, m, **k: tool_call_fn(provider=p, model=model, **k),
+                                tool_call_fn=lambda provider, model, **kwargs: real_tool_call_fn(provider=provider, model=model, **kwargs),
                                 skill_ids=skill_ids_to_test,
                                 trace_id=trace_id
                             )
