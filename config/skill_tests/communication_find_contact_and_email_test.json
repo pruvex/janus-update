@@ -1,7 +1,7 @@
 {
   "skill_id": "communication.find_contact_and_email",
   "skill_type": "communication",
-  "generated_at": "2026-04-27T14:37:20.823787",
+  "generated_at": "2026-04-27T16:20:49.589717",
   "tests": {
     "happy_path": {
       "name": "happy_path",
@@ -21,7 +21,8 @@
         "input": "edge input"
       },
       "validation": [
-        "type_match:dict"
+        "type_match:dict",
+        "key_exists:status"
       ]
     },
     "failure_case": {
@@ -31,7 +32,8 @@
         "input": "failure input"
       },
       "validation": [
-        "type_match:dict"
+        "type_match:dict",
+        "key_exists:status"
       ]
     }
   }

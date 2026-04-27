@@ -20,6 +20,7 @@
   "deterministic_renderer": true,
   "max_calls_per_turn": 2,
   "depends_on": [],
+  "synthesis_directives": "Antworte IMMER im ToolResultV1 Format. Das Feld 'status' ist PFLICHT. Bei unbekannten Orten (NOT_FOUND Fehler): Gib eine klare Fehlermeldung zurück mit Vorschlägen für ähnliche Städte oder bitte den Nutzer, den Ort genauer zu spezifizieren. Bei Datum außerhalb des Bereichs (DATE_OUT_OF_RANGE): Informiere den Nutzer, dass nur die nächsten 10 Tage verfügbar sind.",
   "examples": [
     {
       "input": {
