@@ -782,9 +782,27 @@ async def run_batch_tests(
                         model="gpt-4o-mini"
                     )
                     
+                    # Helper function to derive provider from model name
+                    def get_provider_from_model(model_name: str) -> str:
+                        """Derive provider from model name prefix."""
+                        if model_name.startswith("gpt-"):
+                            return "openai"
+                        elif model_name.startswith("gemini-"):
+                            return "gemini"
+                        elif model_name.startswith("claude-"):
+                            return "anthropic"
+                        else:
+                            # Default fallback
+                            return "openai"
+                    
                     async def real_tool_call_fn(provider: str, model: str, **kwargs):
                         print(f"[REAL-TOOL-CALL-FN] CALLED! provider={provider}, model={model}, kwargs keys={list(kwargs.keys())}")
                         from backend.services import llm_gateway
+                        
+                        # Derive correct provider from model name (override escalation engine if needed)
+                        derived_provider = get_provider_from_model(model)
+                        print(f"[D21-PROVIDER-FIX] Derived provider from model '{model}': {derived_provider} (was: {provider})")
+                        provider = derived_provider
                         
                         tool_calls = kwargs.get("tool_calls", [])
                         print(f"[REAL-TOOL-CALL-FN] tool_calls={len(tool_calls)} items")
