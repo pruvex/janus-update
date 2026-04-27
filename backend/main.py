@@ -1226,6 +1226,9 @@ if __name__ == "__main__":
     import uvicorn
     import sys
 
+    # Ghost-Process detection log
+    print("💎 DIAMOND-OS BACKEND STARTING ON PORT 8001...")
+
     try:
         # Server starten (Produktionsversion ohne Reload)
         uvicorn.run(app, host="127.0.0.1", port=8001)

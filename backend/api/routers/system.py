@@ -802,6 +802,11 @@ async def run_batch_tests(
                             import keyring
                             api_key = keyring.get_password("Janus-Projekt", provider)
                             
+                            # API key validation
+                            if not api_key:
+                                print(f"⚠️ CRITICAL: No API Key found for {provider}")
+                                return {"status": "error", "message": f"No API key found for provider {provider}"}
+                            
                             # Call LLM to generate response with tool calling
                             messages = [{"role": "user", "content": str(input_value)}]
                             
@@ -809,13 +814,14 @@ async def run_batch_tests(
                             tools = tool_manager.get_all_tools()
                             skill_tools = [t for t in tools if t.get("name") == tool_name] if tools else []
                             
-                            # Call LLM with tools enabled
+                            # Call LLM with tools enabled and force tool choice
                             llm_response = await llm_gateway.call_llm(
                                 provider=provider,
                                 model_id=model,
                                 api_key=api_key,
                                 messages=messages,
-                                tools=skill_tools if skill_tools else None
+                                tools=skill_tools if skill_tools else None,
+                                tool_choice="required" if provider == "openai" else None
                             )
                             
                             # Check if LLM called the tool
