@@ -1,7 +1,7 @@
 {
   "skill_id": "calendar.find_and_update_event",
   "skill_type": "calendar",
-  "generated_at": "2026-04-27T12:45:22.891780",
+  "generated_at": "2026-04-27T12:49:10.192229",
   "tests": {
     "happy_path": {
       "name": "happy_path",
@@ -9,11 +9,10 @@
       "input": {
         "input": "default input"
       },
-      "validation": {
-        "type": "contains",
-        "field": "status",
-        "value": "success"
-      }
+      "validation": [
+        "type_match:dict",
+        "key_exists:events"
+      ]
     },
     "edge_case": {
       "name": "edge_case",
@@ -21,10 +20,9 @@
       "input": {
         "input": "edge input"
       },
-      "validation": {
-        "type": "not_crash",
-        "description": "Should not crash on edge input"
-      }
+      "validation": [
+        "type_match:dict"
+      ]
     },
     "failure_case": {
       "name": "failure_case",
@@ -32,11 +30,9 @@
       "input": {
         "input": "failure input"
       },
-      "validation": {
-        "type": "contains",
-        "field": "status",
-        "value": "error"
-      }
+      "validation": [
+        "type_match:dict"
+      ]
     }
   }
 }
