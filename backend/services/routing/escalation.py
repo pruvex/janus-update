@@ -94,6 +94,9 @@ class EscalationEngine:
             
             attempts.append(result)
             
+            # Debug logging
+            print(f"[DEBUG-ESCALATION] Tier {tier} result: {result.success}, valid: {result.validation_passed}")
+            
             # If successful AND validation passed, stop escalation
             if result.success and result.validation_passed:
                 return EscalationSummary(
