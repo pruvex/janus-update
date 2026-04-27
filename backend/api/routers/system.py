@@ -828,6 +828,11 @@ async def run_batch_tests(
                         from backend.services.tool_manager import tool_manager
                         skill_tools = tool_manager.get_tool_definitions(allowed_skill_ids=[tool_name])
                         
+                        # Guard: Abort if tool_definitions is empty
+                        if not skill_tools:
+                            logger.error(f"[D21-GUARD] No tool_definitions found for skill_id: {tool_name}. Aborting LLM call to prevent loop.")
+                            return {"status": "error", "message": f"No tool_definitions found for skill_id: {tool_name}. Check tool_manager registry."}
+                        
                         llm_response = await llm_gateway.call_llm(
                             provider=provider,
                             model_id=model,

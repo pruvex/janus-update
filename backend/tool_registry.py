@@ -350,9 +350,9 @@ def register_all_tools():
     tool_manager.register_tool(
         video_understanding_tool,
         VideoUnderstandingInput,
-        name="video.understand",
+        name="system.video_understanding",
     )
-    tool_manager.set_output_schema("video.understand", VideoUnderstandingOutput)
+    tool_manager.set_output_schema("system.video_understanding", VideoUnderstandingOutput)
 
     # 1. Info
     tool_manager.register_tool(
