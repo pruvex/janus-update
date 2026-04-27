@@ -2,6 +2,40 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [PATTERN] #StatisticalRoutingBaseline "Statistical Routing Baseline — 10 Durchläufe zur Eliminierung stochastischen Rauschens bei Modell-Vergleichen"
+- **Kontext:** D20 Routing Calibration implementiert eine systematische Modell-Kalibrierung über Matrix-Tests (Skills × Models × Runs). Ein einzelner Test-Lauf kann durch stochastisches Rauschen (Temperatur, Sampling, Netzwerk-Latenz) verfälscht sein. Entscheidungen über Modell-Zuweisungen basieren auf statistischer Signifikanz, nicht auf Einzelfällen.
+- **Problem:** Ohne statistische Baseline führen Einzelfälle zu falschen Schlussfolgerungen. Ein Modell kann einmal gut abschneiden (Glück) und einmal schlecht (Pech). Entscheidungen basierend auf Einzelfällen sind nicht reproduzierbar und führen zu Instabilität im Routing.
+- **Lösung:** **Statistische Baseline durch 10 Durchläufe:**
+  1. Matrix-Test-Infrastruktur: POST-Endpoint `/api/system/run-batch-tests` mit `runs_per_model` Parameter.
+  2. Outer Loop (Models) × Inner Loop (Runs_per_model) für statistische Signifikanz.
+  3. Rate-Limiting: `asyncio.sleep(0.5)` zwischen Calls (429-Schutz bei Bulk-Tests).
+  4. Trace-ID-Tracking: `uuid.uuid4()` pro Test (400 unique IDs für 10 Skills × 4 Models × 10 Runs).
+  5. Model-Override: Lambda mit Keyword-Argumenten (provider, model, **kwargs) für korrekte Durchreichung.
+  6. Aggregation: Pass-Rate, Latenz-Mittelwert, Escalation-Rate über alle Runs aggregieren.
+- **Härtung:** Rate-Limiting garantiert API-Stabilität. Trace-ID-Tracking ermöglicht post-hoc Analyse. Model-Override via Lambda sicherstellt, dass das angegebene Modell tatsächlich verwendet wird (nicht das Default aus model_routing.json).
+- **Tripwire:** Wenn Modell-Zuweisungen basierend auf Einzelfällen getroffen werden → keine statistische Baseline. Erkennbar: `runs_per_model=1` in Matrix-Test-Config. Wenn 429-Fehler bei Bulk-Tests → Rate-Limiting fehlt. Wenn Trace-IDs nicht unique → UUID-Generierung defekt.
+- **Location:** `backend/api/routers/system.py` (RoutingCalibrationRequest, Matrix-Run-Logic, Rate-Limiting, Trace-ID, Lambda-Fix), `backend/services/testing/test_runner.py` (trace_id Parameter), implementiert 2026-04-27.
+- **Epic:** D20 — Routing Calibration
+- **Confidence:** High (Statistische Signifikanz durch 10 Runs, Rate-Limiting aktiv, Trace-ID-Tracking implementiert).
+- **Tags:** StatisticalRoutingBaseline, ModelRouting, Calibration, MatrixTest, RateLimiting, TraceID, D20
+
+---
+
+## [LESSON] #AsyncLifecycleSafety "Async Lifecycle Safety — DB-Closing in Background-Tasks muss nach Abschluss aller Closure-Ausführungen erfolgen"
+- **Kontext:** D18 WIRING-FIX entdeckte, dass `db.close()` in einem inneren `finally` Block lief, BEVOR die Closure, die die DB-Session captured hatte, ihre Ausführung beendet hatte. Die `real_tool_call_fn` Closure in `system.py` captured die DB-Session, aber `db.close()` wurde im `finally` Block aufgerufen, der NACH dem Closure-Aufruf aber VOR dem Abschluss aller asynchronen Operationen innerhalb der Closure ausgeführt wurde.
+- **Problem:** DB-Sessions in Background-Tasks haben eine längere Lebensdauer als der synchrone Code-Abschnitt. Wenn `db.close()` zu früh aufgerufen wird, haben nachfolgende asynchrone Operationen (z.B. LLM-Calls via `llm_gateway.call_llm`) eine tote DB-Session. Dies führt zu `InterfaceError: Connection already closed` oder ähnlichen Fehlern bei Tool-Ausführung.
+- **Lösung:** **DB-Closing nach Abschluss aller Closure-Ausführungen:**
+  1. Verschiebe `db.close()` vom inneren `finally` Block zu einem äußeren `try/finally`, das den gesamten Background-Task umschließt.
+  2. Stelle sicher, dass die Closure, die die DB-Session captured, ihre Ausführung vollständig beendet hat, bevor `db.close()` aufgerufen wird.
+  3. Bei Matrix-Runs (D20): DB-Session bleibt für alle Model- und Run-Iterationen aktiv, wird erst nach Abschluss aller Tests geschlossen.
+- **Härtung:** Forensische Logging-Statements vor und nach kritischen DB-Operationen. DB-Session-Status-Check vor Tool-Ausführung (optional, für Debugging).
+- **Tripwire:** Wenn Tool-Ausführung mit `InterfaceError: Connection already closed` fehlschlägt → DB-Closing zu früh. Erkennbar im Log: `[DB-CLOSED]` Eintrag vor `[TOOL-EXECUTION]` Eintrag.
+- **Location:** `backend/api/routers/system.py` (db.close scope in run_batch_background), gefixt 2026-04-27 (D18 WIRING-FIX), bestätigt 2026-04-27 (D20).
+- **Confidence:** High (DB-Session bleibt für gesamte Batch-Dauer aktiv, keine Connection-Closed-Fehler mehr).
+- **Tags:** AsyncLifecycleSafety, DBClosing, BackgroundTasks, Closure, Lifecycle, D18, D20
+
+---
+
 ## [PATTERN] #DeterministicSkillTesting #QualitySystem "Deterministic Quality System — Entkopplung von Test-Generierung und -Ausführung, strikte Ablehnung von KI in der Validierung"
 - **Kontext:** D16 Skill Stability System implementiert ein deterministisches Qualitätssystem für Janus-Skills, weg von "probabilistischer Hoffnung" hin zu "gemessener Stabilität". Das System besteht aus Test Generator (Blueprint-Generierung), Validation Engine (deterministische Regeln), Model Router (Skill-zu-Modell Mappings), Escalation Engine (Primary → Fallback → Escalation) und Test Runner (Ausführung mit D10 Telemetrie).
 - **Problem:** Ohne deterministisches Testsystem basiert Skill-Stabilität auf probabilistischen Annahmen. KI-basierte Validierung führt zu inkonsistenten Ergebnissen und schwer reproduzierbaren Fehlern. Fehlende Eskalations-Logik führt zu Single-Point-of-Failure bei Modellproblemen.

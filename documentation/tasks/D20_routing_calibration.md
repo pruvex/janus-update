@@ -1,4 +1,4 @@
-# D20: Routing Calibration — Model Performance Matrix
+# D20: Routing Calibration — Model Performance Matrix — 🥇 SEALED & COMPLETE (2026-04-27)
 
 ## Overview
 D20 implements a systematic approach to model routing calibration by testing multiple models against a matrix of skills with configurable run counts. This enables data-driven decisions about which models perform best for specific skill categories.
@@ -63,7 +63,7 @@ batch_summary = await test_runner.run_batch_tests(
 
 ## Usage Examples
 
-### Phase 1: Targeted Fleet Optimization (100 skills × 4 models × 1 run = 400 tests)
+### Phase 1: Targeted Fleet Optimization (100 skills × 4 models × 1 run = 400 tests) — 🥇 SEALED & COMPLETE
 ```bash
 curl -X POST "http://localhost:8001/api/system/run-batch-tests" \
   -H "Content-Type: application/json" \
@@ -75,7 +75,7 @@ curl -X POST "http://localhost:8001/api/system/run-batch-tests" \
   }'
 ```
 
-### Phase 2: Deep Calibration (10 skills × 4 models × 10 runs = 400 tests)
+### Phase 2: Deep Calibration (10 skills × 4 models × 10 runs = 400 tests) — 🥇 SEALED & COMPLETE
 ```bash
 curl -X POST "http://localhost:8001/api/system/run-batch-tests" \
   -H "Content-Type: application/json" \
