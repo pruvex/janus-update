@@ -1,7 +1,7 @@
 {
   "skill_id": "system.memory_history",
   "skill_type": "system",
-  "generated_at": "2026-04-27T13:06:10.069159",
+  "generated_at": "2026-04-27T14:37:21.148595",
   "tests": {
     "happy_path": {
       "name": "happy_path",
@@ -11,7 +11,8 @@
       },
       "validation": [
         "type_match:dict",
-        "key_exists:status"
+        "key_exists:status",
+        "key_exists:data"
       ]
     },
     "edge_case": {
