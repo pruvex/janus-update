@@ -440,9 +440,15 @@ class TestRunner:
             # Map skill ID to appropriate argument name
             arguments = _map_input_to_args(skill_id, input_value)
             
+            # Guard: Replace None or empty skill_id with safe default for Gemini compatibility
+            # Gemini requires alphanumeric (a-z, A-Z, 0-9) or underscores (_) in tool names
+            safe_tool_name = skill_id if skill_id and isinstance(skill_id, str) else "matrix_test_skill"
+            if skill_id != safe_tool_name:
+                logger.warning(f"[D21-TOOL-NAME-GUARD] Invalid tool_name '{skill_id}' replaced with '{safe_tool_name}' for Gemini compatibility")
+            
             # Format as tool_calls structure expected by ToolExecutor
             tool_calls = [{
-                "name": skill_id,
+                "name": safe_tool_name,
                 "arguments": arguments
             }]
             
