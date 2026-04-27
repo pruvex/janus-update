@@ -160,6 +160,7 @@ class EscalationEngine:
             if asyncio.iscoroutine(result):
                 result = await result
             
+            # Calculate latency after await completes
             latency_ms = (time.time() - start_time) * 1000
             
             # Check validation if provided

@@ -795,9 +795,12 @@ async def run_batch_tests(
                             # Extract the actual value (could be "query", "path", "location", etc.)
                             input_value = list(tool_args.values())[0] if tool_args else ""
                             
-                            # Get API key from environment or config
-                            import os
-                            api_key = os.getenv("OPENAI_API_KEY", "")
+                            # Debug logging
+                            print(f"[LLM-AUDIT] Starting real call for {tool_name}...")
+                            
+                            # Get API key from keyring (Janus standard)
+                            import keyring
+                            api_key = keyring.get_password("Janus-Projekt", provider)
                             
                             # Call LLM to generate response with tool calling
                             messages = [{"role": "user", "content": str(input_value)}]
