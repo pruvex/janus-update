@@ -26,6 +26,215 @@ from backend.data.schemas_logging import LogEventCreate
 logger = logging.getLogger("janus_backend")
 
 
+class BudgetGuard:
+    """
+    Budget Guard for D21 Full Fleet Calibration.
+    
+    Tracks API costs and error counts to prevent runaway spending.
+    Stops execution when thresholds are exceeded.
+    """
+    
+    def __init__(self, max_cost_eur: float = 5.0, max_api_errors: int = 20):
+        self.max_cost_eur = max_cost_eur
+        self.max_api_errors = max_api_errors
+        self.total_cost_eur = 0.0
+        self.api_error_count = 0
+        self.test_count = 0
+        
+    def record_api_call(self, cost_eur: float = 0.0, success: bool = True) -> bool:
+        """
+        Record an API call and check if budget is exceeded.
+        
+        Args:
+            cost_eur: Cost of the API call in EUR (estimated or actual)
+            success: Whether the API call was successful
+            
+        Returns:
+            True if budget is still within limits, False if exceeded
+        """
+        self.total_cost_eur += cost_eur
+        if not success:
+            self.api_error_count += 1
+        self.test_count += 1
+        
+        # Check budget limits
+        if self.total_cost_eur >= self.max_cost_eur:
+            logger.error(f"[BUDGETGUARD] Cost threshold exceeded: {self.total_cost_eur:.2f}€ >= {self.max_cost_eur:.2f}€")
+            return False
+        
+        if self.api_error_count >= self.max_api_errors:
+            logger.error(f"[BUDGETGUARD] API error threshold exceeded: {self.api_error_count} >= {self.max_api_errors}")
+            return False
+        
+        return True
+    
+    def get_status(self) -> Dict[str, Any]:
+        """Get current budget guard status."""
+        return {
+            "total_cost_eur": round(self.total_cost_eur, 4),
+            "api_error_count": self.api_error_count,
+            "test_count": self.test_count,
+            "cost_remaining_eur": round(self.max_cost_eur - self.total_cost_eur, 4),
+            "errors_remaining": self.max_api_errors - self.api_error_count,
+            "budget_exceeded": self.total_cost_eur >= self.max_cost_eur or self.api_error_count >= self.max_api_errors
+        }
+
+
+class CalibrationWinner:
+    """
+    Winner-Logic for D21 Full Fleet Calibration.
+    
+    Analyzes test results to determine optimal model assignments per skill.
+    Primary: Highest pass-rate (from 10 runs).
+    Secondary: Lowest latency.
+    Cross-Provider: If Primary=OpenAI, then Fallback=Google (and vice versa).
+    """
+    
+    def __init__(self):
+        self.model_provider_map = {
+            "gpt-5.4-mini": "openai",
+            "gpt-5.4": "openai",
+            "gpt-4o-mini": "openai",
+            "gpt-4o": "openai",
+            "gemini-3-flash": "gemini",
+            "gemini-3-pro": "gemini",
+            "gemini-3.1-pro": "gemini"
+        }
+    
+    def analyze_calibration_results(
+        self, 
+        calibration_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Analyze calibration results to determine optimal model assignments.
+        
+        Args:
+            calibration_data: Dictionary with skill_id -> model -> results mapping
+            
+        Returns:
+            Dictionary with optimal model assignments per skill
+        """
+        optimal_assignments = {}
+        
+        for skill_id, model_results in calibration_data.items():
+            if not model_results:
+                continue
+            
+            # Calculate metrics for each model
+            model_metrics = {}
+            for model, results in model_results.items():
+                if not results:
+                    continue
+                
+                # Aggregate metrics across all runs
+                total_tests = sum(r.get("test_count", 0) for r in results)
+                total_passed = sum(r.get("passed_count", 0) for r in results)
+                total_latency = sum(r.get("avg_latency_ms", 0) for r in results if r.get("avg_latency_ms"))
+                run_count = len(results)
+                
+                pass_rate = total_passed / total_tests if total_tests > 0 else 0.0
+                avg_latency = total_latency / run_count if run_count > 0 else 0.0
+                
+                model_metrics[model] = {
+                    "pass_rate": pass_rate,
+                    "avg_latency_ms": avg_latency,
+                    "run_count": run_count
+                }
+            
+            if not model_metrics:
+                continue
+            
+            # Select winner: highest pass-rate, then lowest latency
+            winner_model = max(
+                model_metrics.keys(),
+                key=lambda m: (model_metrics[m]["pass_rate"], -model_metrics[m]["avg_latency_ms"])
+            )
+            
+            winner_provider = self.model_provider_map.get(winner_model, "openai")
+            
+            # Select fallback: cross-provider if possible
+            fallback_model = None
+            fallback_provider = None
+            for model, metrics in sorted(model_metrics.items(), key=lambda x: (-x[1]["pass_rate"], x[1]["avg_latency_ms"])):
+                provider = self.model_provider_map.get(model, "openai")
+                if provider != winner_provider:
+                    fallback_model = model
+                    fallback_provider = provider
+                    break
+            
+            # Select escalation: best model regardless of provider
+            escalation_model = max(
+                model_metrics.keys(),
+                key=lambda m: (model_metrics[m]["pass_rate"], -model_metrics[m]["avg_latency_ms"])
+            )
+            escalation_provider = self.model_provider_map.get(escalation_model, "openai")
+            
+            optimal_assignments[skill_id] = {
+                "primary": {
+                    "provider": winner_provider,
+                    "model": winner_model
+                },
+                "fallback": {
+                    "provider": fallback_provider,
+                    "model": fallback_model
+                } if fallback_model else None,
+                "escalation": {
+                    "provider": escalation_provider,
+                    "model": escalation_model
+                },
+                "metrics": model_metrics
+            }
+        
+        return optimal_assignments
+    
+    def generate_model_routing_json(
+        self,
+        optimal_assignments: Dict[str, Any],
+        default_tiers: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Generate model_routing.json from optimal assignments.
+        
+        Args:
+            optimal_assignments: Dictionary with optimal model assignments per skill
+            default_tiers: Optional default tiers to include
+            
+        Returns:
+            Complete model_routing.json structure
+        """
+        routing_config = {
+            "default_tiers": default_tiers or {
+                "primary": {
+                    "provider": "openai",
+                    "model": "gpt-5.4-mini"
+                },
+                "fallback": {
+                    "provider": "openai",
+                    "model": "gpt-5.4"
+                },
+                "escalation": {
+                    "provider": "openai",
+                    "model": "gpt-5.4"
+                }
+            },
+            "skill_mappings": {}
+        }
+        
+        for skill_id, assignment in optimal_assignments.items():
+            skill_mapping = {
+                "primary": assignment["primary"]
+            }
+            
+            if assignment["fallback"]:
+                skill_mapping["fallback"] = assignment["fallback"]
+            
+            skill_mapping["escalation"] = assignment["escalation"]
+            
+            routing_config["skill_mappings"][skill_id] = skill_mapping
+        
+        return routing_config
+
+
 def _map_input_to_args(skill_id: str, input_value: Any) -> Dict[str, Any]:
     """
     Map skill ID to appropriate argument name for tool execution.
@@ -124,12 +333,13 @@ def discover_skills(skills_dir: str = "backend/skills") -> List[str]:
 class TestRunner:
     """Runs skill tests with escalation and D10 telemetry integration."""
     
-    def __init__(self, test_dir: str = "config/skill_tests"):
+    def __init__(self, test_dir: str = "config/skill_tests", budget_guard: Optional[BudgetGuard] = None):
         self.test_dir = Path(test_dir)
         self.validation_engine = ValidationEngine()
         self.escalation_engine = EscalationEngine()
         self.model_router = ModelRouter()
         self.test_results: List[Dict[str, Any]] = []
+        self.budget_guard = budget_guard
     
     async def run_testset(
         self,
@@ -470,6 +680,11 @@ class TestRunner:
         total_failed = 0
         
         for skill_id in skill_ids:
+            # Check budget guard before running each skill
+            if self.budget_guard and self.budget_guard.get_status()["budget_exceeded"]:
+                logger.warning(f"[BUDGETGUARD] Budget exceeded, stopping batch test. Status: {self.budget_guard.get_status()}")
+                break
+            
             try:
                 # Generate testset if not exists
                 skill_type = skill_id.split('.')[0] if '.' in skill_id else "tool"

@@ -741,7 +741,7 @@ async def run_batch_tests(
     try:
         import asyncio
         import uuid
-        from backend.services.testing.test_runner import TestRunner, discover_skills
+        from backend.services.testing.test_runner import TestRunner, discover_skills, BudgetGuard, CalibrationWinner
         from backend.services.tool_executor import ToolExecutor
         import keyring
         
@@ -759,7 +759,12 @@ async def run_batch_tests(
             try:
                 logger.info(f"[D20-MATRIX-RUN] Starting background matrix run (real_run={real_run})")
                 
-                test_runner = TestRunner()
+                # Initialize BudgetGuard for D21
+                budget_guard = BudgetGuard(max_cost_eur=5.0, max_api_errors=20) if real_run else None
+                test_runner = TestRunner(budget_guard=budget_guard)
+                
+                # Calibration data collection: skill_id -> model -> [results]
+                calibration_data = {}
                 
                 # Tool call function based on real_run flag
                 if real_run:
@@ -874,8 +879,16 @@ async def run_batch_tests(
                     for model_idx, model in enumerate(models_to_test):
                         logger.info(f"[D20-MATRIX-RUN] Starting model {model_idx + 1}/{len(models_to_test)}: {model}")
                         
+                        # Initialize calibration data for this model
+                        calibration_data[model] = []
+                        
                         for run_idx in range(runs_per_model):
                             logger.info(f"[D20-MATRIX-RUN] Run {run_idx + 1}/{runs_per_model} for model {model}")
+                            
+                            # Check budget guard before each run
+                            if budget_guard and budget_guard.get_status()["budget_exceeded"]:
+                                logger.warning(f"[D21-BUDGETGUARD] Budget exceeded, stopping matrix run. Status: {budget_guard.get_status()}")
+                                break
                             
                             # Generate unique trace_id for this run
                             trace_id = str(uuid.uuid4())
@@ -891,6 +904,9 @@ async def run_batch_tests(
                                 trace_id=trace_id
                             )
                             
+                            # Collect calibration data for this run
+                            calibration_data[model].append(batch_summary)
+                            
                             logger.info(f"[D20-MATRIX-RUN] Run {run_idx + 1}/{runs_per_model} complete for model {model}: {batch_summary.get('skills_tested', 0)} skills tested")
                             
                             # Rate limiting between runs
@@ -902,6 +918,40 @@ async def run_batch_tests(
                             await asyncio.sleep(0.5)
                     
                     logger.info(f"[D20-MATRIX-RUN] Matrix run complete: {total_tests} total tests executed")
+                    
+                    # Generate model_routing.json if real_run and calibration data available
+                    if real_run and calibration_data:
+                        logger.info("[D21-CALIBRATION] Analyzing calibration results and generating model_routing.json")
+                        
+                        # Reorganize calibration data for CalibrationWinner: skill_id -> model -> [results]
+                        skill_calibration_data = {}
+                        for model, run_results in calibration_data.items():
+                            for batch_summary in run_results:
+                                for skill_result in batch_summary.get("results", []):
+                                    skill_id = skill_result.get("skill_id")
+                                    if skill_id:
+                                        if skill_id not in skill_calibration_data:
+                                            skill_calibration_data[skill_id] = {}
+                                        if model not in skill_calibration_data[skill_id]:
+                                            skill_calibration_data[skill_id][model] = []
+                                        skill_calibration_data[skill_id][model].append(skill_result)
+                        
+                        # Analyze calibration results
+                        winner = CalibrationWinner()
+                        optimal_assignments = winner.analyze_calibration_results(skill_calibration_data)
+                        
+                        # Generate model_routing.json
+                        routing_config = winner.generate_model_routing_json(optimal_assignments)
+                        
+                        # Write to file
+                        from pathlib import Path
+                        routing_file = Path(__file__).parent.parent / "backend/config/model_routing.json"
+                        import json
+                        with open(routing_file, 'w', encoding='utf-8') as f:
+                            json.dump(routing_config, f, indent=2)
+                        
+                        logger.info(f"[D21-CALIBRATION] model_routing.json generated at {routing_file}")
+                        logger.info(f"[D21-CALIBRATION] Budget guard final status: {budget_guard.get_status() if budget_guard else 'N/A'}")
                 finally:
                     if db is not None:
                         db.close()
