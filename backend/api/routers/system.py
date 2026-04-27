@@ -17,6 +17,14 @@ from backend.data.database import get_db
 router = APIRouter()
 logger = logging.getLogger("janus_backend")
 
+
+class RoutingCalibrationRequest(BaseModel):
+    """D20: Routing Calibration Matrix Run Request"""
+    skill_ids: List[str] = Field(default_factory=list, description="List of skill IDs to test")
+    models: List[str] = Field(default=["gpt-5.4-mini"], description="List of models to test (e.g., gpt-5.4-mini, gpt-5.4, gemini-3-flash, gemini-3-pro)")
+    runs_per_model: int = Field(default=1, ge=1, le=10, description="Number of runs per model")
+    real_run: bool = Field(default=False, description="If True, makes actual API calls")
+
 # --- Config Helpers (lokal in diesem Modul genutzt) ---
 DATA_DIR = get_app_data_dir()
 CONFIG_FILE = os.path.join(DATA_DIR, "config.json")
@@ -707,64 +715,56 @@ async def get_integrity_check():
         raise HTTPException(status_code=500, detail=f"Integrity check failed: {str(e)}")
 
 
-@router.get("/system/run-batch-tests")
+@router.post("/system/run-batch-tests")
 async def run_batch_tests(
-    background_tasks: BackgroundTasks,
-    real_run: bool = False,
-    max_skills: int = None,
-    skill_ids: str = None
+    request: RoutingCalibrationRequest,
+    background_tasks: BackgroundTasks
 ):
     """
-    D18: Real Skill Performance Audit — Run automated tests for discovered skills (async).
+    D20: Routing Calibration Matrix Run — Test multiple models against skills.
     
-    Discovers all skills from backend/skills/ and executes test blueprints in background.
-    Returns immediately with status to avoid timeout.
+    Accepts POST with JSON body containing:
+    - skill_ids: list of skill IDs to test
+    - models: list of models to test (e.g., gpt-5.4-mini, gpt-5.4, gemini-3-flash, gemini-3-pro)
+    - runs_per_model: number of runs per model
+    - real_run: if True, makes actual API calls
+    
+    Returns immediately with status. Tests run in background with rate limiting.
     
     Args:
+        request: RoutingCalibrationRequest with skill_ids, models, runs_per_model, real_run
         background_tasks: FastAPI BackgroundTasks for async execution
-        real_run: If True, uses real tool_executor for actual API calls (default: False for safety)
-        max_skills: Budget guard - limits to N random skills (default: None for all skills)
-        skill_ids: Comma-separated list of specific skill IDs to test (overrides max_skills)
     
     Returns:
-        {"status": "started", "skills_to_test": <count>, "real_run": <bool>}
+        {"status": "started", "total_tests": <count>, "config": {...}}
     """
     try:
-        import random
-        from backend.services.testing.test_generator import TestGenerator
+        import asyncio
+        import uuid
         from backend.services.testing.test_runner import TestRunner, discover_skills
         from backend.services.tool_executor import ToolExecutor
-        from backend.data.database import get_db
         import keyring
         
-        # Discover all skills (triggers forensic logging)
-        all_skill_ids = discover_skills()
-        logger.info(f"[D18-BATCH-TEST] Discovered {len(all_skill_ids)} skills")
+        # Use provided skill_ids, or discover all if empty
+        skill_ids_to_test = request.skill_ids if request.skill_ids else discover_skills()
+        models_to_test = request.models if request.models else ["gpt-5.4-mini"]
+        runs_per_model = request.runs_per_model
+        real_run = request.real_run
         
-        # Use specific skill IDs if provided, otherwise use all with budget guard
-        if skill_ids:
-            skill_ids = [s.strip() for s in skill_ids.split(",")]
-            logger.info(f"[D18-BATCH-TEST] Using specific skill IDs: {skill_ids}")
-        else:
-            skill_ids = all_skill_ids
-            # Budget guard: limit to max_skills if specified
-            if max_skills is not None and max_skills > 0:
-                skill_ids = random.sample(skill_ids, min(max_skills, len(skill_ids)))
-                logger.info(f"[D18-BATCH-TEST] Budget guard active: testing {len(skill_ids)} random skills")
+        total_tests = len(skill_ids_to_test) * len(models_to_test) * runs_per_model
+        logger.info(f"[D20-MATRIX-RUN] Starting matrix run: {len(skill_ids_to_test)} skills × {len(models_to_test)} models × {runs_per_model} runs = {total_tests} total tests")
         
         # Background task function
-        async def run_batch_background():
+        async def run_matrix_background():
             try:
-                logger.info(f"[D18-BATCH-TEST] Starting background batch test run (real_run={real_run})")
+                logger.info(f"[D20-MATRIX-RUN] Starting background matrix run (real_run={real_run})")
                 
                 test_runner = TestRunner()
                 
                 # Tool call function based on real_run flag
                 if real_run:
-                    # Real tool executor - makes actual API calls
-                    logger.warning("[D18-BATCH-TEST] REAL RUN ACTIVE - API calls will be made")
+                    logger.warning("[D20-MATRIX-RUN] REAL RUN ACTIVE - API calls will be made")
                     
-                    # Manual session for background task (not using next(get_db()))
                     from backend.data.database import SessionLocal
                     db = SessionLocal()
                     
@@ -781,40 +781,29 @@ async def run_batch_tests(
                         print(f"[REAL-TOOL-CALL-FN] CALLED! provider={provider}, model={model}, kwargs keys={list(kwargs.keys())}")
                         from backend.services import llm_gateway
                         
-                        # Extract tool_calls and input
                         tool_calls = kwargs.get("tool_calls", [])
                         print(f"[REAL-TOOL-CALL-FN] tool_calls={len(tool_calls)} items")
                         if not tool_calls:
                             print(f"[REAL-TOOL-CALL-FN] ERROR: No tool_calls provided")
                             return {"status": "error", "message": "No tool_calls provided"}
                         
-                        # Extract input from tool_calls (first tool call)
                         first_call = tool_calls[0]
                         tool_name = first_call.get("name", "")
                         tool_args = first_call.get("arguments", {})
-                        
-                        # Build user prompt from tool arguments
-                        # Extract the actual value (could be "query", "path", "location", etc.)
                         input_value = list(tool_args.values())[0] if tool_args else ""
                         
-                        # Debug logging
                         print(f"[LLM-AUDIT] Starting real call for {tool_name}...")
                         
-                        # Get API key with fallback chain
-                        import keyring
                         import os
                         from pathlib import Path
                         
-                        # 1. Try keyring (Janus standard)
                         api_key = keyring.get_password("Janus-Projekt", provider)
                         key_source = "keyring"
                         
-                        # 2. Fallback to environment variable
                         if not api_key:
                             api_key = os.environ.get(f"{provider.upper()}_API_KEY")
                             key_source = "environment"
                         
-                        # 3. Fallback to backend/.env file
                         if not api_key:
                             env_file = Path(__file__).parent.parent / ".env"
                             if env_file.exists():
@@ -823,22 +812,17 @@ async def run_batch_tests(
                                 api_key = os.environ.get(f"{provider.upper()}_API_KEY")
                                 key_source = "backend/.env"
                         
-                        # Visual confirmation
                         print(f"🔑 AUTH-CHECK: Key found for {provider}: {'Yes' if api_key else 'No'} (source: {key_source if api_key else 'none'})")
                         
-                        # API key validation
                         if not api_key:
-                            print(f"⚠️ CRITICAL: No API Key found for {provider} (tried keyring, env, .env)")
+                            print(f"⚠️ CRITICAL: No API Key found for {provider}")
                             return {"status": "error", "message": f"No API key found for provider {provider}"}
                         
-                        # Call LLM to generate response with tool calling
                         messages = [{"role": "user", "content": str(input_value)}]
                         
-                        # Get tool definitions for the skill (OpenAI format)
                         from backend.services.tool_manager import tool_manager
                         skill_tools = tool_manager.get_tool_definitions(allowed_skill_ids=[tool_name])
                         
-                        # Call LLM with tools enabled and force tool choice
                         llm_response = await llm_gateway.call_llm(
                             provider=provider,
                             model_id=model,
@@ -848,19 +832,15 @@ async def run_batch_tests(
                             tool_choice="required" if provider == "openai" else None
                         )
                         
-                        # Check if LLM called the tool
                         llm_tool_calls = llm_response.get("tool_calls", [])
                         if llm_tool_calls:
-                            # Execute the tool calls from LLM
                             results = await tool_executor.execute_tool_calls(llm_tool_calls)
                             
-                            # Handle list-to-single conversion
                             if isinstance(results, list) and len(results) > 0:
                                 result = results[0]
                             else:
                                 result = results
                             
-                            # Parse JSON string results if needed
                             import json
                             if isinstance(result, str):
                                 try:
@@ -868,7 +848,6 @@ async def run_batch_tests(
                                 except json.JSONDecodeError:
                                     result = {"status": "error", "message": "Unparseable string", "data": result}
                             
-                            # Ensure ToolResultV1 structure
                             if isinstance(result, dict):
                                 if "status" not in result:
                                     result = {
@@ -881,53 +860,77 @@ async def run_batch_tests(
                             print(f"[ORCH-BRIDGE-DEBUG] LLM called tool, returning: {result}")
                             return result
                         else:
-                            # LLM did not call the tool
                             return {"status": "error", "message": "LLM did not call the tool", "llm_response": llm_response}
-                    # DO NOT close db here — real_tool_call_fn closure needs it alive!
                 else:
-                    db = None  # No DB needed for mock mode
-                    # Mock tool_call_fn for testing (no actual execution)
-                    logger.info("[D18-BATCH-TEST] MOCK MODE - no API calls")
+                    db = None
+                    logger.info("[D20-MATRIX-RUN] MOCK MODE - no API calls")
                     async def mock_tool_call_fn(provider: str, model: str, **kwargs):
                         return {"status": "mock_success", "provider": provider, "model": model}
                 
-                # Select appropriate tool call function
                 tool_call_fn = real_tool_call_fn if real_run else mock_tool_call_fn
                 
                 try:
-                    # Run batch tests
-                    batch_summary = await test_runner.run_batch_tests(
-                        tool_call_fn=tool_call_fn,
-                        skill_ids=skill_ids
-                    )
+                    # Matrix run: loop over models and runs
+                    for model_idx, model in enumerate(models_to_test):
+                        logger.info(f"[D20-MATRIX-RUN] Starting model {model_idx + 1}/{len(models_to_test)}: {model}")
+                        
+                        for run_idx in range(runs_per_model):
+                            logger.info(f"[D20-MATRIX-RUN] Run {run_idx + 1}/{runs_per_model} for model {model}")
+                            
+                            # Generate unique trace_id for this run
+                            trace_id = str(uuid.uuid4())
+                            
+                            # Override model in tool_call_fn by passing it in kwargs
+                            async def model_aware_tool_call_fn(provider: str, model_override: str, **kwargs):
+                                kwargs["model"] = model_override
+                                return await tool_call_fn(provider=provider, model=model_override, **kwargs)
+                            
+                            batch_summary = await test_runner.run_batch_tests(
+                                tool_call_fn=lambda p, m, **k: tool_call_fn(provider=p, model=model, **k),
+                                skill_ids=skill_ids_to_test,
+                                trace_id=trace_id
+                            )
+                            
+                            logger.info(f"[D20-MATRIX-RUN] Run {run_idx + 1}/{runs_per_model} complete for model {model}: {batch_summary.get('skills_tested', 0)} skills tested")
+                            
+                            # Rate limiting between runs
+                            if run_idx < runs_per_model - 1:
+                                await asyncio.sleep(0.5)
+                        
+                        # Rate limiting between models
+                        if model_idx < len(models_to_test) - 1:
+                            await asyncio.sleep(0.5)
                     
-                    logger.info(f"[D18-BATCH-TEST] Background batch test complete: {batch_summary.get('skills_tested', 0)} skills tested")
+                    logger.info(f"[D20-MATRIX-RUN] Matrix run complete: {total_tests} total tests executed")
                 finally:
-                    # Close DB session AFTER all tests are done
                     if db is not None:
                         db.close()
-                        logger.info("[D18-BATCH-TEST] DB session closed after batch tests")
+                        logger.info("[D20-MATRIX-RUN] DB session closed after matrix run")
                 
             except Exception as e:
-                logger.error(f"[D18-BATCH-TEST] Background batch test failed: {e}", exc_info=True)
+                logger.error(f"[D20-MATRIX-RUN] Matrix run failed: {e}", exc_info=True)
         
         # Add background task
-        background_tasks.add_task(run_batch_background)
+        background_tasks.add_task(run_matrix_background)
         
         # Return immediately
         return {
             "status": "started",
-            "skills_to_test": len(skill_ids),
-            "real_run": real_run,
-            "budget_guard": f"{max_skills} skills" if max_skills else "disabled",
-            "message": "Batch tests running in background. Check logs for progress."
+            "total_tests": total_tests,
+            "config": {
+                "skills": len(skill_ids_to_test),
+                "models": len(models_to_test),
+                "runs_per_model": runs_per_model,
+                "real_run": real_run
+            },
+            "message": "Matrix run started in background. Check logs for progress."
         }
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("[D18-BATCH-TEST] Failed to start batch tests: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Batch test start failed: {str(e)}")
+        logger.error("[D20-MATRIX-RUN] Failed to start matrix run: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Matrix run start failed: {str(e)}")
 
 
 @router.get("/system/run-skill-tests/{skill_id}")

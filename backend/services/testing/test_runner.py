@@ -135,7 +135,8 @@ class TestRunner:
         self,
         skill_id: str,
         tool_call_fn: Callable,
-        session_id: Optional[str] = None
+        session_id: Optional[str] = None,
+        trace_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Run all tests for a skill with escalation and D10 logging.
@@ -144,6 +145,7 @@ class TestRunner:
             skill_id: Unique skill identifier
             tool_call_fn: Function to execute (should accept provider, model, **kwargs)
             session_id: Optional session identifier for D10 logging
+            trace_id: Optional trace identifier for individual test tracking (D20)
         
         Returns:
             Test summary with all results and health metrics
@@ -432,7 +434,8 @@ class TestRunner:
         tool_call_fn: Callable,
         skill_ids: Optional[List[str]] = None,
         skills_dir: str = "backend/skills",
-        session_id: Optional[str] = None
+        session_id: Optional[str] = None,
+        trace_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Run tests for multiple skills in batch.
@@ -442,6 +445,7 @@ class TestRunner:
             skill_ids: Optional list of skill_ids to test. If None, discovers all skills.
             skills_dir: Path to the skills directory (for auto-discovery)
             session_id: Optional session identifier for D10 logging
+            trace_id: Optional trace identifier for individual test tracking (D20)
         
         Returns:
             Batch test summary with all results and health metrics
@@ -475,7 +479,8 @@ class TestRunner:
                 test_summary = await self.run_testset(
                     skill_id=skill_id,
                     tool_call_fn=tool_call_fn,
-                    session_id=session_id
+                    session_id=session_id,
+                    trace_id=trace_id
                 )
                 
                 batch_results.append(test_summary)
@@ -508,7 +513,8 @@ class TestRunner:
 async def run_testset(
     skill_id: str,
     tool_call_fn: Callable,
-    session_id: Optional[str] = None
+    session_id: Optional[str] = None,
+    trace_id: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Convenience function to run a testset.
@@ -517,9 +523,10 @@ async def run_testset(
         skill_id: Unique skill identifier
         tool_call_fn: Function to execute
         session_id: Optional session identifier
+        trace_id: Optional trace identifier for individual test tracking (D20)
     
     Returns:
         Test summary with health metrics
     """
     runner = TestRunner()
-    return await runner.run_testset(skill_id, tool_call_fn, session_id)
+    return await runner.run_testset(skill_id, tool_call_fn, session_id, trace_id)
