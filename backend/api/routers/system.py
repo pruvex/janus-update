@@ -798,13 +798,35 @@ async def run_batch_tests(
                             # Debug logging
                             print(f"[LLM-AUDIT] Starting real call for {tool_name}...")
                             
-                            # Get API key from keyring (Janus standard)
+                            # Get API key with fallback chain
                             import keyring
+                            import os
+                            from pathlib import Path
+                            
+                            # 1. Try keyring (Janus standard)
                             api_key = keyring.get_password("Janus-Projekt", provider)
+                            key_source = "keyring"
+                            
+                            # 2. Fallback to environment variable
+                            if not api_key:
+                                api_key = os.environ.get(f"{provider.upper()}_API_KEY")
+                                key_source = "environment"
+                            
+                            # 3. Fallback to backend/.env file
+                            if not api_key:
+                                env_file = Path(__file__).parent.parent / ".env"
+                                if env_file.exists():
+                                    from dotenv import load_dotenv
+                                    load_dotenv(env_file)
+                                    api_key = os.environ.get(f"{provider.upper()}_API_KEY")
+                                    key_source = "backend/.env"
+                            
+                            # Visual confirmation
+                            print(f"🔑 AUTH-CHECK: Key found for {provider}: {'Yes' if api_key else 'No'} (source: {key_source if api_key else 'none'})")
                             
                             # API key validation
                             if not api_key:
-                                print(f"⚠️ CRITICAL: No API Key found for {provider}")
+                                print(f"⚠️ CRITICAL: No API Key found for {provider} (tried keyring, env, .env)")
                                 return {"status": "error", "message": f"No API key found for provider {provider}"}
                             
                             # Call LLM to generate response with tool calling
