@@ -82,25 +82,39 @@ class BudgetGuard:
 
 class CalibrationWinner:
     """
-    Winner-Logic for D21 Full Fleet Calibration (Provider-Silos).
+    Winner-Logic for D21 Full Fleet Calibration (Strict Provider-Silos).
     
     Analyzes test results to determine optimal model assignments per skill per provider.
-    Provider-Silos: Each provider (openai, gemini) has its own independent chain.
+    STRICT SILO RULES:
+    - OpenAI Silo: ONLY gpt-5.4-nano, gpt-5.4-mini, gpt-5.4 (standard). Pro is FORBIDDEN.
+    - Gemini Silo: ONLY gemini-3-flash-preview, gemini-3.1-pro-preview.
+    - NO Provider-Mixing: Data from one provider never influences the other.
+    
     Primary: Highest pass-rate (from 10 runs).
     Secondary: Lowest latency.
-    Fallback: Best alternative model WITHIN THE SAME PROVIDER (never cross-provider).
-    Escalation: Best model WITHIN THE SAME PROVIDER.
+    Fallback: Best alternative model WITHIN THE SAME SILO.
+    Escalation: Best model WITHIN THE SAME SILO.
     """
     
     def __init__(self):
         self.model_provider_map = {
+            "gpt-5.4-nano": "openai",
             "gpt-5.4-mini": "openai",
             "gpt-5.4": "openai",
+            "gpt-5.4-pro": "openai",
             "gpt-4o-mini": "openai",
             "gpt-4o": "openai",
-            "gemini-3-flash": "gemini",
+            "gemini-3-flash-preview": "gemini",
+            "gemini-3.1-pro-preview": "gemini",
+            "gemini-3-pro-preview": "gemini",
             "gemini-3-pro": "gemini",
             "gemini-3.1-pro": "gemini"
+        }
+        
+        # STRICT SILO: Only these models are allowed per provider
+        self.silo_allowed_models = {
+            "openai": {"gpt-5.4-nano", "gpt-5.4-mini", "gpt-5.4"},  # Pro is FORBIDDEN
+            "gemini": {"gemini-3-flash-preview", "gemini-3.1-pro-preview"}
         }
     
     def analyze_calibration_results(
@@ -137,15 +151,27 @@ class CalibrationWinner:
                     provider_skill_data[provider][skill_id] = {}
                 provider_skill_data[provider][skill_id][model] = results
         
-        # Step 2: For each provider, determine best chain per skill
+        # Step 2: For each provider, determine best chain per skill (STRICT SILO)
         for provider, skill_data in provider_skill_data.items():
+            # Get allowed models for this provider
+            allowed_models = self.silo_allowed_models.get(provider, set())
+            
             for skill_id, model_results in skill_data.items():
                 if not model_results:
                     continue
                 
-                # Calculate metrics for each model within this provider
+                # Filter to ONLY allowed models for this silo
+                filtered_model_results = {
+                    model: results for model, results in model_results.items()
+                    if model in allowed_models
+                }
+                
+                if not filtered_model_results:
+                    continue
+                
+                # Calculate metrics for each allowed model within this provider
                 model_metrics = {}
-                for model, results in model_results.items():
+                for model, results in filtered_model_results.items():
                     if not results:
                         continue
                     
@@ -216,14 +242,14 @@ class CalibrationWinner:
         routing_config = {
             "default_tiers": default_tiers or {
                 "openai": {
-                    "primary": {"model": "gpt-5.4-mini"},
-                    "fallback": {"model": "gpt-5.4"},
+                    "primary": {"model": "gpt-5.4-nano"},
+                    "fallback": {"model": "gpt-5.4-mini"},
                     "escalation": {"model": "gpt-5.4"}
                 },
                 "gemini": {
-                    "primary": {"model": "gemini-3-flash"},
-                    "fallback": {"model": "gemini-3-pro"},
-                    "escalation": {"model": "gemini-3-pro"}
+                    "primary": {"model": "gemini-3-flash-preview"},
+                    "fallback": {"model": "gemini-3.1-pro-preview"},
+                    "escalation": {"model": "gemini-3.1-pro-preview"}
                 }
             },
             "skill_mappings": {}

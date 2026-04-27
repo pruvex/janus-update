@@ -22,18 +22,18 @@ class ModelRouter:
             with open(self.config_path, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except FileNotFoundError:
-            # Return default config if file doesn't exist (Provider-Silo structure)
+            # Return default config if file doesn't exist (Strict Provider-Silo structure)
             return {
                 "default_tiers": {
                     "openai": {
-                        "primary": {"model": "gpt-4o-mini"},
-                        "fallback": {"model": "gpt-4o"},
-                        "escalation": {"model": "gpt-4-turbo"}
+                        "primary": {"model": "gpt-5.4-nano"},
+                        "fallback": {"model": "gpt-5.4-mini"},
+                        "escalation": {"model": "gpt-5.4"}
                     },
                     "gemini": {
-                        "primary": {"model": "gemini-3-flash"},
-                        "fallback": {"model": "gemini-3-pro"},
-                        "escalation": {"model": "gemini-3-pro"}
+                        "primary": {"model": "gemini-3-flash-preview"},
+                        "fallback": {"model": "gemini-3.1-pro-preview"},
+                        "escalation": {"model": "gemini-3.1-pro-preview"}
                     }
                 },
                 "skill_mappings": {}
