@@ -893,13 +893,11 @@ async def run_batch_tests(
                             # Generate unique trace_id for this run
                             trace_id = str(uuid.uuid4())
                             
-                            # Override model in tool_call_fn by passing it in kwargs
-                            async def model_aware_tool_call_fn(provider: str, model_override: str, **kwargs):
-                                kwargs["model"] = model_override
-                                return await tool_call_fn(provider=provider, model=model_override, **kwargs)
+                            # Capture the current loop model to override escalation engine's model selection
+                            _forced_model = model
                             
                             batch_summary = await test_runner.run_batch_tests(
-                                tool_call_fn=lambda provider, model, **kwargs: real_tool_call_fn(provider=provider, model=model, **kwargs),
+                                tool_call_fn=lambda provider, model=None, _fn=tool_call_fn, _m=_forced_model, **kwargs: _fn(provider=provider, model=_m, **kwargs),
                                 skill_ids=skill_ids_to_test,
                                 trace_id=trace_id
                             )
@@ -920,7 +918,7 @@ async def run_batch_tests(
                     logger.info(f"[D20-MATRIX-RUN] Matrix run complete: {total_tests} total tests executed")
                     
                     # Generate model_routing.json if real_run and calibration data available
-                    if real_run and calibration_data:
+                    if calibration_data:
                         logger.info("[D21-CALIBRATION] Analyzing calibration results and generating model_routing.json")
                         
                         # Reorganize calibration data for CalibrationWinner: skill_id -> model -> [results]
@@ -945,7 +943,7 @@ async def run_batch_tests(
                         
                         # Write to file
                         from pathlib import Path
-                        routing_file = Path(__file__).parent.parent / "backend/config/model_routing.json"
+                        routing_file = Path(__file__).parent.parent.parent / "config/model_routing.json"
                         import json
                         with open(routing_file, 'w', encoding='utf-8') as f:
                             json.dump(routing_config, f, indent=2)
