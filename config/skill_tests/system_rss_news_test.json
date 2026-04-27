@@ -1,7 +1,7 @@
 {
   "skill_id": "system.rss_news",
   "skill_type": "system",
-  "generated_at": "2026-04-27T21:10:44.236330",
+  "generated_at": "2026-04-27T22:33:43.803444",
   "tests": {
     "happy_path": {
       "name": "happy_path",
