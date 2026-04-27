@@ -790,6 +790,21 @@ async def run_batch_tests(
                                     results = json.loads(results)
                                 except json.JSONDecodeError:
                                     results = {"status": "error", "message": "Unparseable string", "data": results}
+                            
+                            # Ensure ToolResultV1 structure (status, data, error)
+                            if isinstance(results, dict):
+                                if "status" not in results:
+                                    # Tool executor returned data without ToolResultV1 wrapper
+                                    # Wrap it in ToolResultV1 structure
+                                    results = {
+                                        "status": "ok",
+                                        "data": results,
+                                        "message": "Tool executed successfully",
+                                        "error": None
+                                    }
+                            
+                            # Debug logging
+                            print(f"[ORCH-BRIDGE-DEBUG] Returning to runner: {results}")
                             return results
                     finally:
                         db.close()
