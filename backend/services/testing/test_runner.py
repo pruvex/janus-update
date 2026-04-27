@@ -82,12 +82,14 @@ class BudgetGuard:
 
 class CalibrationWinner:
     """
-    Winner-Logic for D21 Full Fleet Calibration.
+    Winner-Logic for D21 Full Fleet Calibration (Provider-Silos).
     
-    Analyzes test results to determine optimal model assignments per skill.
+    Analyzes test results to determine optimal model assignments per skill per provider.
+    Provider-Silos: Each provider (openai, gemini) has its own independent chain.
     Primary: Highest pass-rate (from 10 runs).
     Secondary: Lowest latency.
-    Cross-Provider: If Primary=OpenAI, then Fallback=Google (and vice versa).
+    Fallback: Best alternative model WITHIN THE SAME PROVIDER (never cross-provider).
+    Escalation: Best model WITHIN THE SAME PROVIDER.
     """
     
     def __init__(self):
@@ -106,84 +108,92 @@ class CalibrationWinner:
         calibration_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
-        Analyze calibration results to determine optimal model assignments.
+        Analyze calibration results to determine optimal model assignments per provider-silo.
         
         Args:
             calibration_data: Dictionary with skill_id -> model -> results mapping
             
         Returns:
-            Dictionary with optimal model assignments per skill
+            Dictionary with optimal model assignments per skill per provider
+            Structure: {skill_id: {provider: {primary: {...}, fallback: {...}, escalation: {...}}}}
         """
         optimal_assignments = {}
+        
+        # Step 1: Group results by provider, then by skill
+        provider_skill_data = {}  # {provider: {skill_id: {model: results}}}
         
         for skill_id, model_results in calibration_data.items():
             if not model_results:
                 continue
             
-            # Calculate metrics for each model
-            model_metrics = {}
             for model, results in model_results.items():
                 if not results:
                     continue
                 
-                # Aggregate metrics across all runs
-                total_tests = sum(r.get("test_count", 0) for r in results)
-                total_passed = sum(r.get("passed_count", 0) for r in results)
-                total_latency = sum(r.get("avg_latency_ms", 0) for r in results if r.get("avg_latency_ms"))
-                run_count = len(results)
-                
-                pass_rate = total_passed / total_tests if total_tests > 0 else 0.0
-                avg_latency = total_latency / run_count if run_count > 0 else 0.0
-                
-                model_metrics[model] = {
-                    "pass_rate": pass_rate,
-                    "avg_latency_ms": avg_latency,
-                    "run_count": run_count
-                }
-            
-            if not model_metrics:
-                continue
-            
-            # Select winner: highest pass-rate, then lowest latency
-            winner_model = max(
-                model_metrics.keys(),
-                key=lambda m: (model_metrics[m]["pass_rate"], -model_metrics[m]["avg_latency_ms"])
-            )
-            
-            winner_provider = self.model_provider_map.get(winner_model, "openai")
-            
-            # Select fallback: cross-provider if possible
-            fallback_model = None
-            fallback_provider = None
-            for model, metrics in sorted(model_metrics.items(), key=lambda x: (-x[1]["pass_rate"], x[1]["avg_latency_ms"])):
                 provider = self.model_provider_map.get(model, "openai")
-                if provider != winner_provider:
-                    fallback_model = model
-                    fallback_provider = provider
-                    break
-            
-            # Select escalation: best model regardless of provider
-            escalation_model = max(
-                model_metrics.keys(),
-                key=lambda m: (model_metrics[m]["pass_rate"], -model_metrics[m]["avg_latency_ms"])
-            )
-            escalation_provider = self.model_provider_map.get(escalation_model, "openai")
-            
-            optimal_assignments[skill_id] = {
-                "primary": {
-                    "provider": winner_provider,
-                    "model": winner_model
-                },
-                "fallback": {
-                    "provider": fallback_provider,
-                    "model": fallback_model
-                } if fallback_model else None,
-                "escalation": {
-                    "provider": escalation_provider,
-                    "model": escalation_model
-                },
-                "metrics": model_metrics
-            }
+                if provider not in provider_skill_data:
+                    provider_skill_data[provider] = {}
+                if skill_id not in provider_skill_data[provider]:
+                    provider_skill_data[provider][skill_id] = {}
+                provider_skill_data[provider][skill_id][model] = results
+        
+        # Step 2: For each provider, determine best chain per skill
+        for provider, skill_data in provider_skill_data.items():
+            for skill_id, model_results in skill_data.items():
+                if not model_results:
+                    continue
+                
+                # Calculate metrics for each model within this provider
+                model_metrics = {}
+                for model, results in model_results.items():
+                    if not results:
+                        continue
+                    
+                    # Aggregate metrics across all runs
+                    total_tests = sum(r.get("test_count", 0) for r in results)
+                    total_passed = sum(r.get("passed_count", 0) for r in results)
+                    total_latency = sum(r.get("avg_latency_ms", 0) for r in results if r.get("avg_latency_ms"))
+                    run_count = len(results)
+                    
+                    pass_rate = total_passed / total_tests if total_tests > 0 else 0.0
+                    avg_latency = total_latency / run_count if run_count > 0 else 0.0
+                    
+                    model_metrics[model] = {
+                        "pass_rate": pass_rate,
+                        "avg_latency_ms": avg_latency,
+                        "run_count": run_count
+                    }
+                
+                if not model_metrics:
+                    continue
+                
+                # Sort models by (pass_rate, -latency) to determine chain
+                sorted_models = sorted(
+                    model_metrics.items(),
+                    key=lambda x: (x[1]["pass_rate"], -x[1]["avg_latency_ms"]),
+                    reverse=True
+                )
+                
+                # Select primary: best model
+                primary_model = sorted_models[0][0]
+                
+                # Select fallback: second best model (within same provider)
+                fallback_model = sorted_models[1][0] if len(sorted_models) > 1 else primary_model
+                
+                # Select escalation: best model (same as primary for now)
+                escalation_model = primary_model
+                
+                # Initialize skill entry if needed
+                if skill_id not in optimal_assignments:
+                    optimal_assignments[skill_id] = {}
+                
+                # Assign provider-specific chain
+                optimal_assignments[skill_id][provider] = {
+                    "primary": {"model": primary_model},
+                    "fallback": {"model": fallback_model},
+                    "escalation": {"model": escalation_model},
+                    "metrics": model_metrics
+                }
         
         return optimal_assignments
     
@@ -193,42 +203,41 @@ class CalibrationWinner:
         default_tiers: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
-        Generate model_routing.json from optimal assignments.
+        Generate model_routing.json from optimal assignments (Provider-Silo structure).
         
         Args:
-            optimal_assignments: Dictionary with optimal model assignments per skill
+            optimal_assignments: Dictionary with optimal model assignments per skill per provider
+                Structure: {skill_id: {provider: {primary: {...}, fallback: {...}, escalation: {...}}}}
             default_tiers: Optional default tiers to include
             
         Returns:
-            Complete model_routing.json structure
+            Complete model_routing.json structure with nested provider keys
         """
         routing_config = {
             "default_tiers": default_tiers or {
-                "primary": {
-                    "provider": "openai",
-                    "model": "gpt-5.4-mini"
+                "openai": {
+                    "primary": {"model": "gpt-5.4-mini"},
+                    "fallback": {"model": "gpt-5.4"},
+                    "escalation": {"model": "gpt-5.4"}
                 },
-                "fallback": {
-                    "provider": "openai",
-                    "model": "gpt-5.4"
-                },
-                "escalation": {
-                    "provider": "openai",
-                    "model": "gpt-5.4"
+                "gemini": {
+                    "primary": {"model": "gemini-3-flash"},
+                    "fallback": {"model": "gemini-3-pro"},
+                    "escalation": {"model": "gemini-3-pro"}
                 }
             },
             "skill_mappings": {}
         }
         
-        for skill_id, assignment in optimal_assignments.items():
-            skill_mapping = {
-                "primary": assignment["primary"]
-            }
+        for skill_id, provider_assignments in optimal_assignments.items():
+            skill_mapping = {}
             
-            if assignment["fallback"]:
-                skill_mapping["fallback"] = assignment["fallback"]
-            
-            skill_mapping["escalation"] = assignment["escalation"]
+            for provider, assignment in provider_assignments.items():
+                skill_mapping[provider] = {
+                    "primary": assignment["primary"],
+                    "fallback": assignment["fallback"],
+                    "escalation": assignment["escalation"]
+                }
             
             routing_config["skill_mappings"][skill_id] = skill_mapping
         

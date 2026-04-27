@@ -53,15 +53,17 @@ class EscalationEngine:
         skill_id: str,
         tool_call_fn: Callable,
         validation_fn: Optional[Callable] = None,
+        provider: str = "openai",
         **kwargs
     ) -> EscalationSummary:
         """
-        Execute tool call with automatic escalation chain.
+        Execute tool call with automatic escalation chain (Provider-Silo).
         
         Args:
             skill_id: Unique skill identifier
             tool_call_fn: Function to execute (should accept model/provider kwargs)
             validation_fn: Optional validation function (returns bool)
+            provider: Provider key (\"openai\" or \"gemini\")
             **kwargs: Additional arguments for tool_call_fn
         
         Returns:
@@ -75,8 +77,8 @@ class EscalationEngine:
                 error="Circuit breaker tripped - no attempts made"
             )
         
-        # Get routing configuration
-        routing_config = self.router.get_routing_config(skill_id)
+        # Get routing configuration for the provider
+        routing_config = self.router.get_routing_config(skill_id, provider)
         
         # Try Primary -> Fallback -> Escalation
         tiers = ["primary", "fallback", "escalation"]
@@ -93,6 +95,7 @@ class EscalationEngine:
                 model_config=model_config,
                 tool_call_fn=tool_call_fn,
                 validation_fn=validation_fn,
+                provider=provider,
                 **kwargs
             )
             
@@ -137,22 +140,23 @@ class EscalationEngine:
         model_config: Dict[str, str],
         tool_call_fn: Callable,
         validation_fn: Optional[Callable],
+        provider: str,
         **kwargs
     ) -> EscalationResult:
         """
-        Execute tool call at a specific tier.
+        Execute tool call at a specific tier (Provider-Silo).
         
         Args:
             tier: Tier name (primary, fallback, escalation)
-            model_config: Model configuration (provider, model)
+            model_config: Model configuration (model only, provider is separate)
             tool_call_fn: Function to execute
             validation_fn: Optional validation function
+            provider: Provider key (\"openai\" or \"gemini\")
             **kwargs: Additional arguments
         
         Returns:
             EscalationResult
         """
-        provider = model_config.get("provider", "unknown")
         model = model_config.get("model", "unknown")
         
         # Debug log to verify tool_calls is passed
@@ -249,19 +253,21 @@ async def execute_with_escalation(
     skill_id: str,
     tool_call_fn: Callable,
     validation_fn: Optional[Callable] = None,
+    provider: str = "openai",
     **kwargs
 ) -> EscalationSummary:
     """
-    Convenience function to execute with escalation.
+    Convenience function to execute with escalation (Provider-Silo).
     
     Args:
         skill_id: Unique skill identifier
         tool_call_fn: Function to execute
         validation_fn: Optional validation function
+        provider: Provider key (\"openai\" or \"gemini\")
         **kwargs: Additional arguments
     
     Returns:
         EscalationSummary
     """
     engine = EscalationEngine()
-    return await engine.execute_with_escalation(skill_id, tool_call_fn, validation_fn, **kwargs)
+    return await engine.execute_with_escalation(skill_id, tool_call_fn, validation_fn, provider, **kwargs)
