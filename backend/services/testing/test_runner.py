@@ -213,6 +213,9 @@ class TestRunner:
         trace_id = str(uuid4())
         start_time = datetime.utcnow()
         
+        # Debug log to track tool_call_fn binding
+        print(f"[TEST-RUNNER-DEBUG] Running test for {skill_id} - tool_call_fn type: {type(tool_call_fn).__name__}, id: {id(tool_call_fn)}")
+        
         try:
             # Generate tool_calls payload for ToolExecutor
             test_input = test_spec.get("input", {})

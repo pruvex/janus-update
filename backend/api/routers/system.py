@@ -779,11 +779,14 @@ async def run_batch_tests(
                         )
                         
                         async def real_tool_call_fn(provider: str, model: str, **kwargs):
+                            print(f"[REAL-TOOL-CALL-FN] CALLED! provider={provider}, model={model}, kwargs keys={list(kwargs.keys())}")
                             from backend.services import llm_gateway
                             
                             # Extract tool_calls and input
                             tool_calls = kwargs.get("tool_calls", [])
+                            print(f"[REAL-TOOL-CALL-FN] tool_calls={len(tool_calls)} items")
                             if not tool_calls:
+                                print(f"[REAL-TOOL-CALL-FN] ERROR: No tool_calls provided")
                                 return {"status": "error", "message": "No tool_calls provided"}
                             
                             # Extract input from tool_calls (first tool call)

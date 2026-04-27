@@ -152,6 +152,10 @@ class EscalationEngine:
         provider = model_config.get("provider", "unknown")
         model = model_config.get("model", "unknown")
         
+        # Debug log to verify tool_calls is passed
+        tool_calls = kwargs.get("tool_calls", [])
+        print(f"[ESCALATION-DEBUG] {skill_id} - Calling tool_call_fn with provider={provider}, model={model}, tool_calls={len(tool_calls)} items")
+        
         try:
             # Execute tool call with model configuration
             result = tool_call_fn(provider=provider, model=model, **kwargs)
