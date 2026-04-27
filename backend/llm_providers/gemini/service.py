@@ -187,25 +187,39 @@ class GeminiServiceProvider(BaseLLMProvider):
             return [self._recursive_remove_additional_properties(item) for item in schema]
         return schema
 
+    @staticmethod
+    def _sanitize_gemini_name(name: str) -> str:
+        """Sanitize a tool/function name for Gemini API compatibility.
+        Gemini requires: alphanumeric (a-z, A-Z, 0-9) or underscores (_) only."""
+        if not name or not isinstance(name, str) or name == "None":
+            return "unknown_tool"
+        safe = name.replace(".", "_").replace("-", "_")
+        # Strip any remaining non-alphanumeric/underscore chars
+        safe = re.sub(r'[^a-zA-Z0-9_]', '_', safe)
+        return safe or "unknown_tool"
+
     def _convert_tools_to_gemini_format(self, tools: List[Any]) -> List[Any]:
         gemini_tools = []
         seen_names = set()  # Track seen function names to prevent duplicates
         for tool in tools:
             try:
-                name = getattr(tool, "name", tool.get("name") if isinstance(tool, dict) else "unknown")
+                # Unwrap OpenAI-format dicts: {"type": "function", "function": {"name": ..., ...}}
+                func_def = None
+                if isinstance(tool, dict) and "function" in tool and isinstance(tool["function"], dict):
+                    func_def = tool["function"]
                 
-                # Skip duplicate tool names to prevent Gemini ValueError
-                if name in seen_names:
-                    logger.debug("Gemini: Skipping duplicate tool name '%s'", name)
-                    continue
-                seen_names.add(name)
+                if func_def:
+                    name = func_def.get("name")
+                    desc = func_def.get("description", "")
+                    raw_schema = func_def.get("parameters", {"type": "object", "properties": {}})
+                else:
+                    name = getattr(tool, "name", tool.get("name") if isinstance(tool, dict) else "unknown")
+                    desc = getattr(tool, "description", tool.get("description") if isinstance(tool, dict) else "")
+                    raw_schema = {"type": "object", "properties": {}}
+                    if isinstance(tool, dict) and isinstance(tool.get("parameters"), dict):
+                        raw_schema = tool.get("parameters")
                 
-                desc = getattr(tool, "description", tool.get("description") if isinstance(tool, dict) else "")
-                args_schema_model = getattr(tool, "args_schema", None)
-                
-                raw_schema = {"type": "object", "properties": {}}
-                if isinstance(tool, dict) and isinstance(tool.get("parameters"), dict):
-                    raw_schema = tool.get("parameters")
+                args_schema_model = getattr(tool, "args_schema", None) if not func_def else None
                 if args_schema_model:
                     if hasattr(args_schema_model, "model_json_schema"):
                         try:
@@ -215,26 +229,41 @@ class GeminiServiceProvider(BaseLLMProvider):
                     elif hasattr(args_schema_model, "schema"):
                         raw_schema = args_schema_model.schema()
 
+                # Sanitize name for Gemini (dots/hyphens -> underscores)
+                safe_name = self._sanitize_gemini_name(name)
+                if name != safe_name:
+                    logger.info("[GEMINI-SANITIZE] Tool name '%s' -> '%s'", name, safe_name)
+                
+                # Sanitize description
+                if not desc or not isinstance(desc, str) or desc == "None":
+                    desc = f"Tool {safe_name}"
+                
+                # Skip duplicate tool names to prevent Gemini ValueError
+                if safe_name in seen_names:
+                    logger.debug("Gemini: Skipping duplicate tool name '%s'", safe_name)
+                    continue
+                seen_names.add(safe_name)
+
                 raw_schema_clean = self._recursive_remove_additional_properties(raw_schema)
                 try:
                     final_schema = self._sanitize_tool_schema(raw_schema_clean)
                 except Exception as schema_exc:
                     logger.warning(
                         "Gemini schema sanitization failed for tool '%s': %s. Falling back to empty object schema.",
-                        name,
+                        safe_name,
                         schema_exc,
                     )
                     final_schema = {"type": "object", "properties": {}}
 
                 gemini_tools.append({
                     "function_declarations": [{
-                        "name": name,
+                        "name": safe_name,
                         "description": desc,
                         "parameters": final_schema
                     }]
                 })
             except Exception as e:
-                logger.error(f"Gemini Konvertierungs-Fehler für {name}: {e}")
+                logger.error(f"Gemini Konvertierungs-Fehler: {e}")
                 continue
         return gemini_tools
 
@@ -274,10 +303,11 @@ class GeminiServiceProvider(BaseLLMProvider):
             if gemini_tools:
                 model_kwargs["tools"] = gemini_tools
                 if force_tool_name:
+                    safe_force_name = self._sanitize_gemini_name(force_tool_name)
                     model_kwargs["tool_config"] = to_tool_config({
                         "function_calling_config": {
-                            "mode": "ANY", # oder "REQUIRED" wenn nur dieses Tool erlaubt ist
-                            "allowed_function_names": [force_tool_name]
+                            "mode": "ANY",
+                            "allowed_function_names": [safe_force_name]
                         }
                     })
                 else:
@@ -358,8 +388,9 @@ class GeminiServiceProvider(BaseLLMProvider):
                         args = json.loads(tc["function"]["arguments"])
                     except:
                         args = {}
+                    tc_name = self._sanitize_gemini_name(tc["function"]["name"])
                     tool_calls_proto.append(
-                        protos.Part(function_call=protos.FunctionCall(name=tc["function"]["name"], args=args))
+                        protos.Part(function_call=protos.FunctionCall(name=tc_name, args=args))
                     )
                 gemini_history_for_api.append({"role": "model", "parts": tool_calls_proto})
 
@@ -378,7 +409,7 @@ class GeminiServiceProvider(BaseLLMProvider):
                                     break
                         if function_name: break
                 
-                final_name = function_name or "unknown_function"
+                final_name = self._sanitize_gemini_name(function_name or "unknown_function")
 
                 # Gemini expects ``function_response.response`` to be a structured
                 # dict. Parse the JSON envelope so Gemini sees the real payload and
@@ -500,10 +531,22 @@ class GeminiServiceProvider(BaseLLMProvider):
                     fc = part.function_call
                     tool_args = _proto_to_dict(fc.args) or {}
                     
+                    # Reverse-map: underscores back to dots for ToolExecutor
+                    original_name = fc.name.replace("_", ".", fc.name.count("_")) if fc.name else fc.name
+                    # Only restore dots for known namespace patterns (e.g. system_weather -> system.weather)
+                    restored_name = fc.name
+                    if "_" in fc.name:
+                        parts = fc.name.split("_", 1)
+                        candidate = f"{parts[0]}.{parts[1]}" if len(parts) == 2 else fc.name
+                        # Check if dot-notation version is a known skill
+                        from backend.services.tool_manager import tool_manager as _tm
+                        if _tm.get_tool(candidate):
+                            restored_name = candidate
+                    
                     all_gateway_tool_calls.append({
                         "id": f"call_{fc.name}_{datetime.datetime.now().timestamp()}",
                         "type": "function",
-                        "function": {"name": fc.name, "arguments": json.dumps(tool_args)}
+                        "function": {"name": restored_name, "arguments": json.dumps(tool_args)}
                     })
                 elif hasattr(part, "text") and part.text:
                     # Wenn es reiner Text ist und kein Funktionsaufruf, akkumuliere ihn
@@ -606,10 +649,11 @@ class GeminiServiceProvider(BaseLLMProvider):
             if gemini_tools:
                 model_kwargs["tools"] = gemini_tools
                 if force_tool_name:
+                    safe_force_name = self._sanitize_gemini_name(force_tool_name)
                     model_kwargs["tool_config"] = to_tool_config({
                         "function_calling_config": {
                             "mode": "ANY",
-                            "allowed_function_names": [force_tool_name],
+                            "allowed_function_names": [safe_force_name],
                         }
                     })
                 else:
@@ -683,8 +727,9 @@ class GeminiServiceProvider(BaseLLMProvider):
                         args = json.loads(tc["function"]["arguments"])
                     except Exception:
                         args = {}
+                    tc_name = self._sanitize_gemini_name(tc["function"]["name"])
                     tool_calls_proto.append(
-                        protos.Part(function_call=protos.FunctionCall(name=tc["function"]["name"], args=args))
+                        protos.Part(function_call=protos.FunctionCall(name=tc_name, args=args))
                     )
                 gemini_history_for_api.append({"role": "model", "parts": tool_calls_proto})
 
@@ -702,7 +747,7 @@ class GeminiServiceProvider(BaseLLMProvider):
                         if function_name:
                             break
 
-                final_name = function_name or "unknown_function"
+                final_name = self._sanitize_gemini_name(function_name or "unknown_function")
 
                 # Gemini expects ``function_response.response`` to be a structured dict.
                 # Passing a raw JSON-string under {"content": "..."} prevents Gemini from
@@ -805,9 +850,17 @@ class GeminiServiceProvider(BaseLLMProvider):
                         if hasattr(part, "function_call") and part.function_call:
                             fc = part.function_call
                             tool_args = _proto_to_dict(fc.args) if fc.args else {}
+                            # Reverse-map: underscores back to dots for ToolExecutor
+                            stream_restored_name = fc.name
+                            if fc.name and "_" in fc.name:
+                                _parts = fc.name.split("_", 1)
+                                _candidate = f"{_parts[0]}.{_parts[1]}" if len(_parts) == 2 else fc.name
+                                from backend.services.tool_manager import tool_manager as _tm2
+                                if _tm2.get_tool(_candidate):
+                                    stream_restored_name = _candidate
                             yield StreamEvent(
                                 type="tool_delta",
-                                content={"name": fc.name, "arguments": tool_args},
+                                content={"name": stream_restored_name, "arguments": tool_args},
                                 metadata={},
                             )
                 um = getattr(chunk, "usage_metadata", None)
