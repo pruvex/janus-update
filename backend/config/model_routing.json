@@ -16,22 +16,12 @@
   "skill_mappings": {
     "system.weather": {
       "primary": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+        "provider": "gemini",
+        "model": "gemini-3-flash"
       },
       "escalation": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
-      }
-    },
-    "filesystem.list_directory": {
-      "primary": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
-      },
-      "escalation": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+        "provider": "gemini",
+        "model": "gemini-3-flash"
       }
     }
   }
