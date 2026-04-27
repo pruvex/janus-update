@@ -26,6 +26,25 @@ from backend.data.schemas_logging import LogEventCreate
 logger = logging.getLogger("janus_backend")
 
 
+def _map_input_to_args(skill_id: str, input_value: Any) -> Dict[str, Any]:
+    """
+    Map skill ID to appropriate argument name for tool execution.
+    
+    Args:
+        skill_id: The skill identifier (e.g., "filesystem.list_directory")
+        input_value: The input value from the test blueprint
+    
+    Returns:
+        Dictionary with the appropriate argument name and value
+    """
+    if skill_id.startswith("filesystem."):
+        return {"path": input_value}
+    if skill_id == "system.weather":
+        return {"location": input_value}
+    # Fallback for all other skills
+    return {"query": input_value}
+
+
 def discover_skills(skills_dir: str = "backend/skills") -> List[str]:
     """
     Discover all skills from the skills directory (recursive).
@@ -200,10 +219,13 @@ class TestRunner:
             # Extract the actual input value (could be nested in "input" key or direct)
             input_value = test_input.get("input", test_input) if isinstance(test_input, dict) else test_input
             
+            # Map skill ID to appropriate argument name
+            arguments = _map_input_to_args(skill_id, input_value)
+            
             # Format as tool_calls structure expected by ToolExecutor
             tool_calls = [{
                 "name": skill_id,
-                "arguments": {"query": input_value}
+                "arguments": arguments
             }]
             
             # Execute with escalation
