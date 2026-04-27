@@ -85,6 +85,7 @@ class EscalationEngine:
                 continue
             
             result = await self._execute_at_tier(
+                skill_id=skill_id,
                 tier=tier,
                 model_config=model_config,
                 tool_call_fn=tool_call_fn,
@@ -128,6 +129,7 @@ class EscalationEngine:
     
     async def _execute_at_tier(
         self,
+        skill_id: str,
         tier: str,
         model_config: Dict[str, str],
         tool_call_fn: Callable,
@@ -150,18 +152,21 @@ class EscalationEngine:
         provider = model_config.get("provider", "unknown")
         model = model_config.get("model", "unknown")
         
-        start_time = time.time()
-        
         try:
             # Execute tool call with model configuration
             result = tool_call_fn(provider=provider, model=model, **kwargs)
             
-            # Await if result is a coroutine
+            # Await if result is a coroutine - measure actual LLM call latency
             if asyncio.iscoroutine(result):
+                start_time = time.time()  # Start time immediately before await
                 result = await result
-            
-            # Calculate latency after await completes
-            latency_ms = (time.time() - start_time) * 1000
+                latency_ms = (time.time() - start_time) * 1000  # End time immediately after await
+                print(f"[LATENCY-AUDIT] {skill_id} LLM call latency: {latency_ms:.2f}ms (provider={provider}, model={model})")
+            else:
+                # Synchronous execution - measure total time
+                start_time = time.time()
+                latency_ms = (time.time() - start_time) * 1000
+                print(f"[LATENCY-AUDIT] {skill_id} sync execution latency: {latency_ms:.2f}ms")
             
             # Check validation if provided
             validation_passed = True
