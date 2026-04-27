@@ -24,6 +24,7 @@ class EscalationResult:
     latency_ms: float
     cost_estimate: float = 0.0
     error: Optional[str] = None
+    validation_passed: bool = True  # Track validation status separately
 
 
 @dataclass
@@ -93,8 +94,8 @@ class EscalationEngine:
             
             attempts.append(result)
             
-            # If successful, stop escalation
-            if result.success:
+            # If successful AND validation passed, stop escalation
+            if result.success and result.validation_passed:
                 return EscalationSummary(
                     final_success=True,
                     attempts=attempts,
@@ -102,6 +103,10 @@ class EscalationEngine:
                     total_cost_estimate=sum(r.cost_estimate for r in attempts),
                     final_tier=tier
                 )
+            
+            # Log validation failure and continue escalation
+            if not result.validation_passed:
+                logger.warning(f"[ESCALATION] Validation failed for tier={tier}, model={model}. Escalating to next tier...")
         
         # All tiers failed
         total_latency = sum(r.latency_ms for r in attempts)
@@ -176,7 +181,9 @@ class EscalationEngine:
                 provider=provider,
                 result=result,
                 latency_ms=latency_ms,
-                cost_estimate=cost_estimate
+                cost_estimate=cost_estimate,
+                error=None,
+                validation_passed=validation_passed
             )
         
         except Exception as e:
@@ -189,7 +196,8 @@ class EscalationEngine:
                 provider=provider,
                 result=None,
                 latency_ms=latency_ms,
-                error=str(e)
+                error=str(e),
+                validation_passed=False  # Validation fails on exception
             )
     
     def _estimate_cost(self, provider: str, model: str, result: Any) -> float:
