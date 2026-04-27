@@ -783,29 +783,35 @@ async def run_batch_tests(
                             tool_calls = kwargs.get("tool_calls", [])
                             results = await tool_executor.execute_tool_calls(tool_calls)
                             
+                            # Handle list-to-single conversion (execute_tool_calls returns a list)
+                            if isinstance(results, list) and len(results) > 0:
+                                result = results[0]  # Take the first (and usually only) result
+                            else:
+                                result = results
+                            
                             # Parse JSON string results if needed
                             import json
-                            if isinstance(results, str):
+                            if isinstance(result, str):
                                 try:
-                                    results = json.loads(results)
+                                    result = json.loads(result)
                                 except json.JSONDecodeError:
-                                    results = {"status": "error", "message": "Unparseable string", "data": results}
+                                    result = {"status": "error", "message": "Unparseable string", "data": result}
                             
                             # Ensure ToolResultV1 structure (status, data, error)
-                            if isinstance(results, dict):
-                                if "status" not in results:
+                            if isinstance(result, dict):
+                                if "status" not in result:
                                     # Tool executor returned data without ToolResultV1 wrapper
                                     # Wrap it in ToolResultV1 structure
-                                    results = {
+                                    result = {
                                         "status": "ok",
-                                        "data": results,
+                                        "data": result,
                                         "message": "Tool executed successfully",
                                         "error": None
                                     }
                             
                             # Debug logging
-                            print(f"[ORCH-BRIDGE-DEBUG] Returning to runner: {results}")
-                            return results
+                            print(f"[ORCH-BRIDGE-DEBUG] Returning to runner: {result}")
+                            return result
                     finally:
                         db.close()
                 else:
