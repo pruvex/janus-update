@@ -267,7 +267,7 @@ class OpenAIServiceProvider(BaseLLMProvider):
                     api_call_params["tools"] = converted_tools
                     if force_tool_name:
                         api_call_params["tool_choice"] = {"type": "function", "function": {"name": force_tool_name}}
-                    else:
+                    elif "tool_choice" not in api_call_params:
                         api_call_params["tool_choice"] = "auto"
 
             # MUSS-FIX: Parameter-Umbenennung für neue Modelle (o1, o3, gpt-5-nano)

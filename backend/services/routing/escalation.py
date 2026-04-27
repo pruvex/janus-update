@@ -6,11 +6,14 @@ Tracks costs and provides circuit breaker protection.
 """
 
 import asyncio
+import logging
 import time
 from typing import Dict, Any, Callable, Optional
 from dataclasses import dataclass, field
 
 from .model_router import ModelRouter
+
+logger = logging.getLogger("janus_backend")
 
 
 @dataclass
@@ -110,7 +113,7 @@ class EscalationEngine:
             
             # Log validation failure and continue escalation
             if not result.validation_passed:
-                logger.warning(f"[ESCALATION] Validation failed for tier={tier}, model={model}. Escalating to next tier...")
+                logger.warning(f"[ESCALATION] Validation failed for tier={tier}, model={result.model}. Escalating to next tier...")
         
         # All tiers failed
         total_latency = sum(r.latency_ms for r in attempts)
@@ -156,6 +159,7 @@ class EscalationEngine:
         tool_calls = kwargs.get("tool_calls", [])
         print(f"[ESCALATION-DEBUG] {skill_id} - Calling tool_call_fn with provider={provider}, model={model}, tool_calls={len(tool_calls)} items")
         
+        start_time = time.time()  # Initialize before try so except handler always has it
         try:
             # Execute tool call with model configuration
             result = tool_call_fn(provider=provider, model=model, **kwargs)
@@ -172,10 +176,11 @@ class EscalationEngine:
                 latency_ms = (time.time() - start_time) * 1000
                 print(f"[LATENCY-AUDIT] {skill_id} sync execution latency: {latency_ms:.2f}ms")
             
-            # Check validation if provided
+            # Check validation if provided — must be bool, not ValidationResult object
             validation_passed = True
             if validation_fn:
-                validation_passed = validation_fn(result)
+                vr = validation_fn(result)
+                validation_passed = bool(getattr(vr, 'passed', vr))
             
             # Check for explicit error status
             if isinstance(result, dict):
@@ -201,6 +206,7 @@ class EscalationEngine:
         
         except Exception as e:
             latency_ms = (time.time() - start_time) * 1000
+            logger.error(f"[ESCALATION-EXCEPTION] {skill_id} tier={tier} model={model} EXCEPTION: {e}", exc_info=True)
             
             return EscalationResult(
                 success=False,

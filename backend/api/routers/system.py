@@ -768,125 +768,124 @@ async def run_batch_tests(
                     from backend.data.database import SessionLocal
                     db = SessionLocal()
                     
-                    try:
-                        api_key = keyring.get_password("janus", "api_key")
+                    api_key = keyring.get_password("janus", "api_key")
+                    
+                    tool_executor = ToolExecutor(
+                        db=db,
+                        api_key=api_key,
+                        provider="openai",
+                        model="gpt-4o-mini"
+                    )
+                    
+                    async def real_tool_call_fn(provider: str, model: str, **kwargs):
+                        print(f"[REAL-TOOL-CALL-FN] CALLED! provider={provider}, model={model}, kwargs keys={list(kwargs.keys())}")
+                        from backend.services import llm_gateway
                         
-                        tool_executor = ToolExecutor(
-                            db=db,
+                        # Extract tool_calls and input
+                        tool_calls = kwargs.get("tool_calls", [])
+                        print(f"[REAL-TOOL-CALL-FN] tool_calls={len(tool_calls)} items")
+                        if not tool_calls:
+                            print(f"[REAL-TOOL-CALL-FN] ERROR: No tool_calls provided")
+                            return {"status": "error", "message": "No tool_calls provided"}
+                        
+                        # Extract input from tool_calls (first tool call)
+                        first_call = tool_calls[0]
+                        tool_name = first_call.get("name", "")
+                        tool_args = first_call.get("arguments", {})
+                        
+                        # Build user prompt from tool arguments
+                        # Extract the actual value (could be "query", "path", "location", etc.)
+                        input_value = list(tool_args.values())[0] if tool_args else ""
+                        
+                        # Debug logging
+                        print(f"[LLM-AUDIT] Starting real call for {tool_name}...")
+                        
+                        # Get API key with fallback chain
+                        import keyring
+                        import os
+                        from pathlib import Path
+                        
+                        # 1. Try keyring (Janus standard)
+                        api_key = keyring.get_password("Janus-Projekt", provider)
+                        key_source = "keyring"
+                        
+                        # 2. Fallback to environment variable
+                        if not api_key:
+                            api_key = os.environ.get(f"{provider.upper()}_API_KEY")
+                            key_source = "environment"
+                        
+                        # 3. Fallback to backend/.env file
+                        if not api_key:
+                            env_file = Path(__file__).parent.parent / ".env"
+                            if env_file.exists():
+                                from dotenv import load_dotenv
+                                load_dotenv(env_file)
+                                api_key = os.environ.get(f"{provider.upper()}_API_KEY")
+                                key_source = "backend/.env"
+                        
+                        # Visual confirmation
+                        print(f"🔑 AUTH-CHECK: Key found for {provider}: {'Yes' if api_key else 'No'} (source: {key_source if api_key else 'none'})")
+                        
+                        # API key validation
+                        if not api_key:
+                            print(f"⚠️ CRITICAL: No API Key found for {provider} (tried keyring, env, .env)")
+                            return {"status": "error", "message": f"No API key found for provider {provider}"}
+                        
+                        # Call LLM to generate response with tool calling
+                        messages = [{"role": "user", "content": str(input_value)}]
+                        
+                        # Get tool definitions for the skill (OpenAI format)
+                        from backend.services.tool_manager import tool_manager
+                        skill_tools = tool_manager.get_tool_definitions(allowed_skill_ids=[tool_name])
+                        
+                        # Call LLM with tools enabled and force tool choice
+                        llm_response = await llm_gateway.call_llm(
+                            provider=provider,
+                            model_id=model,
                             api_key=api_key,
-                            provider="openai",
-                            model="gpt-4o-mini"
+                            messages=messages,
+                            tools=skill_tools if skill_tools else None,
+                            tool_choice="required" if provider == "openai" else None
                         )
                         
-                        async def real_tool_call_fn(provider: str, model: str, **kwargs):
-                            print(f"[REAL-TOOL-CALL-FN] CALLED! provider={provider}, model={model}, kwargs keys={list(kwargs.keys())}")
-                            from backend.services import llm_gateway
+                        # Check if LLM called the tool
+                        llm_tool_calls = llm_response.get("tool_calls", [])
+                        if llm_tool_calls:
+                            # Execute the tool calls from LLM
+                            results = await tool_executor.execute_tool_calls(llm_tool_calls)
                             
-                            # Extract tool_calls and input
-                            tool_calls = kwargs.get("tool_calls", [])
-                            print(f"[REAL-TOOL-CALL-FN] tool_calls={len(tool_calls)} items")
-                            if not tool_calls:
-                                print(f"[REAL-TOOL-CALL-FN] ERROR: No tool_calls provided")
-                                return {"status": "error", "message": "No tool_calls provided"}
-                            
-                            # Extract input from tool_calls (first tool call)
-                            first_call = tool_calls[0]
-                            tool_name = first_call.get("name", "")
-                            tool_args = first_call.get("arguments", {})
-                            
-                            # Build user prompt from tool arguments
-                            # Extract the actual value (could be "query", "path", "location", etc.)
-                            input_value = list(tool_args.values())[0] if tool_args else ""
-                            
-                            # Debug logging
-                            print(f"[LLM-AUDIT] Starting real call for {tool_name}...")
-                            
-                            # Get API key with fallback chain
-                            import keyring
-                            import os
-                            from pathlib import Path
-                            
-                            # 1. Try keyring (Janus standard)
-                            api_key = keyring.get_password("Janus-Projekt", provider)
-                            key_source = "keyring"
-                            
-                            # 2. Fallback to environment variable
-                            if not api_key:
-                                api_key = os.environ.get(f"{provider.upper()}_API_KEY")
-                                key_source = "environment"
-                            
-                            # 3. Fallback to backend/.env file
-                            if not api_key:
-                                env_file = Path(__file__).parent.parent / ".env"
-                                if env_file.exists():
-                                    from dotenv import load_dotenv
-                                    load_dotenv(env_file)
-                                    api_key = os.environ.get(f"{provider.upper()}_API_KEY")
-                                    key_source = "backend/.env"
-                            
-                            # Visual confirmation
-                            print(f"🔑 AUTH-CHECK: Key found for {provider}: {'Yes' if api_key else 'No'} (source: {key_source if api_key else 'none'})")
-                            
-                            # API key validation
-                            if not api_key:
-                                print(f"⚠️ CRITICAL: No API Key found for {provider} (tried keyring, env, .env)")
-                                return {"status": "error", "message": f"No API key found for provider {provider}"}
-                            
-                            # Call LLM to generate response with tool calling
-                            messages = [{"role": "user", "content": str(input_value)}]
-                            
-                            # Get tool definitions for the skill
-                            tools = tool_manager.get_all_tools()
-                            skill_tools = [t for t in tools if t.get("name") == tool_name] if tools else []
-                            
-                            # Call LLM with tools enabled and force tool choice
-                            llm_response = await llm_gateway.call_llm(
-                                provider=provider,
-                                model_id=model,
-                                api_key=api_key,
-                                messages=messages,
-                                tools=skill_tools if skill_tools else None,
-                                tool_choice="required" if provider == "openai" else None
-                            )
-                            
-                            # Check if LLM called the tool
-                            llm_tool_calls = llm_response.get("tool_calls", [])
-                            if llm_tool_calls:
-                                # Execute the tool calls from LLM
-                                results = await tool_executor.execute_tool_calls(llm_tool_calls)
-                                
-                                # Handle list-to-single conversion
-                                if isinstance(results, list) and len(results) > 0:
-                                    result = results[0]
-                                else:
-                                    result = results
-                                
-                                # Parse JSON string results if needed
-                                import json
-                                if isinstance(result, str):
-                                    try:
-                                        result = json.loads(result)
-                                    except json.JSONDecodeError:
-                                        result = {"status": "error", "message": "Unparseable string", "data": result}
-                                
-                                # Ensure ToolResultV1 structure
-                                if isinstance(result, dict):
-                                    if "status" not in result:
-                                        result = {
-                                            "status": "ok",
-                                            "data": result,
-                                            "message": "Tool executed successfully",
-                                            "error": None
-                                        }
-                                
-                                print(f"[ORCH-BRIDGE-DEBUG] LLM called tool, returning: {result}")
-                                return result
+                            # Handle list-to-single conversion
+                            if isinstance(results, list) and len(results) > 0:
+                                result = results[0]
                             else:
-                                # LLM did not call the tool
-                                return {"status": "error", "message": "LLM did not call the tool", "llm_response": llm_response}
-                    finally:
-                        db.close()
+                                result = results
+                            
+                            # Parse JSON string results if needed
+                            import json
+                            if isinstance(result, str):
+                                try:
+                                    result = json.loads(result)
+                                except json.JSONDecodeError:
+                                    result = {"status": "error", "message": "Unparseable string", "data": result}
+                            
+                            # Ensure ToolResultV1 structure
+                            if isinstance(result, dict):
+                                if "status" not in result:
+                                    result = {
+                                        "status": "ok",
+                                        "data": result,
+                                        "message": "Tool executed successfully",
+                                        "error": None
+                                    }
+                            
+                            print(f"[ORCH-BRIDGE-DEBUG] LLM called tool, returning: {result}")
+                            return result
+                        else:
+                            # LLM did not call the tool
+                            return {"status": "error", "message": "LLM did not call the tool", "llm_response": llm_response}
+                    # DO NOT close db here — real_tool_call_fn closure needs it alive!
                 else:
+                    db = None  # No DB needed for mock mode
                     # Mock tool_call_fn for testing (no actual execution)
                     logger.info("[D18-BATCH-TEST] MOCK MODE - no API calls")
                     async def mock_tool_call_fn(provider: str, model: str, **kwargs):
@@ -895,13 +894,19 @@ async def run_batch_tests(
                 # Select appropriate tool call function
                 tool_call_fn = real_tool_call_fn if real_run else mock_tool_call_fn
                 
-                # Run batch tests
-                batch_summary = await test_runner.run_batch_tests(
-                    tool_call_fn=tool_call_fn,
-                    skill_ids=skill_ids
-                )
-                
-                logger.info(f"[D18-BATCH-TEST] Background batch test complete: {batch_summary.get('skills_tested', 0)} skills tested")
+                try:
+                    # Run batch tests
+                    batch_summary = await test_runner.run_batch_tests(
+                        tool_call_fn=tool_call_fn,
+                        skill_ids=skill_ids
+                    )
+                    
+                    logger.info(f"[D18-BATCH-TEST] Background batch test complete: {batch_summary.get('skills_tested', 0)} skills tested")
+                finally:
+                    # Close DB session AFTER all tests are done
+                    if db is not None:
+                        db.close()
+                        logger.info("[D18-BATCH-TEST] DB session closed after batch tests")
                 
             except Exception as e:
                 logger.error(f"[D18-BATCH-TEST] Background batch test failed: {e}", exc_info=True)

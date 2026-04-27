@@ -148,6 +148,9 @@ class TestRunner:
         Returns:
             Test summary with all results and health metrics
         """
+        # Reset circuit breaker for each skill — batch tests are independent
+        self.escalation_engine.reset_circuit_breaker()
+        
         # Load test blueprint
         blueprint = self._load_blueprint(skill_id)
         if not blueprint:
@@ -235,7 +238,7 @@ class TestRunner:
             escalation_summary = await self.escalation_engine.execute_with_escalation(
                 skill_id=skill_id,
                 tool_call_fn=tool_call_fn,
-                validation_fn=lambda r: self._validate_result(r, test_spec.get("validation")),
+                validation_fn=lambda r: self._validate_result(r, test_spec.get("validation")).passed,
                 tool_calls=tool_calls
             )
             
