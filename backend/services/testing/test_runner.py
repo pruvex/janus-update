@@ -277,7 +277,16 @@ class TestRunner:
                 message="No validation specified"
             )
         
-        return self.validation_engine.validate(result, validation_spec)
+        # Parse JSON string results before validation
+        import json
+        parsed_result = result
+        if isinstance(result, str):
+            try:
+                parsed_result = json.loads(result)
+            except json.JSONDecodeError:
+                pass  # Leave as string, validation engine will mark as error
+        
+        return self.validation_engine.validate(parsed_result, validation_spec)
     
     async def _log_to_d10(
         self,
