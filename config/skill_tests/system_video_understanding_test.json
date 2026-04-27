@@ -1,7 +1,7 @@
 {
   "skill_id": "system.video_understanding",
   "skill_type": "system",
-  "generated_at": "2026-04-27T20:16:35.096949",
+  "generated_at": "2026-04-27T20:48:53.820131",
   "tests": {
     "happy_path": {
       "name": "happy_path",
