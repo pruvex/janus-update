@@ -711,7 +711,8 @@ async def get_integrity_check():
 async def run_batch_tests(
     background_tasks: BackgroundTasks,
     real_run: bool = False,
-    max_skills: int = None
+    max_skills: int = None,
+    skill_ids: str = None
 ):
     """
     D18: Real Skill Performance Audit — Run automated tests for discovered skills (async).
@@ -723,6 +724,7 @@ async def run_batch_tests(
         background_tasks: FastAPI BackgroundTasks for async execution
         real_run: If True, uses real tool_executor for actual API calls (default: False for safety)
         max_skills: Budget guard - limits to N random skills (default: None for all skills)
+        skill_ids: Comma-separated list of specific skill IDs to test (overrides max_skills)
     
     Returns:
         {"status": "started", "skills_to_test": <count>, "real_run": <bool>}
@@ -736,13 +738,19 @@ async def run_batch_tests(
         import keyring
         
         # Discover all skills (triggers forensic logging)
-        skill_ids = discover_skills()
-        logger.info(f"[D18-BATCH-TEST] Discovered {len(skill_ids)} skills")
+        all_skill_ids = discover_skills()
+        logger.info(f"[D18-BATCH-TEST] Discovered {len(all_skill_ids)} skills")
         
-        # Budget guard: limit to max_skills if specified
-        if max_skills is not None and max_skills > 0:
-            skill_ids = random.sample(skill_ids, min(max_skills, len(skill_ids)))
-            logger.info(f"[D18-BATCH-TEST] Budget guard active: testing {len(skill_ids)} random skills")
+        # Use specific skill IDs if provided, otherwise use all with budget guard
+        if skill_ids:
+            skill_ids = [s.strip() for s in skill_ids.split(",")]
+            logger.info(f"[D18-BATCH-TEST] Using specific skill IDs: {skill_ids}")
+        else:
+            skill_ids = all_skill_ids
+            # Budget guard: limit to max_skills if specified
+            if max_skills is not None and max_skills > 0:
+                skill_ids = random.sample(skill_ids, min(max_skills, len(skill_ids)))
+                logger.info(f"[D18-BATCH-TEST] Budget guard active: testing {len(skill_ids)} random skills")
         
         # Background task function
         async def run_batch_background():
@@ -774,6 +782,14 @@ async def run_batch_tests(
                             # Execute real tool calls via ToolExecutor
                             tool_calls = kwargs.get("tool_calls", [])
                             results = await tool_executor.execute_tool_calls(tool_calls)
+                            
+                            # Parse JSON string results if needed
+                            import json
+                            if isinstance(results, str):
+                                try:
+                                    results = json.loads(results)
+                                except json.JSONDecodeError:
+                                    results = {"status": "error", "message": "Unparseable string", "data": results}
                             return results
                     finally:
                         db.close()

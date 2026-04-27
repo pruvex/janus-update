@@ -1,7 +1,7 @@
 {
   "skill_id": "contacts.delete",
   "skill_type": "contacts",
-  "generated_at": "2026-04-26T19:03:54.752866",
+  "generated_at": "2026-04-26T20:30:08.816845",
   "tests": {
     "happy_path": {
       "name": "happy_path",
@@ -10,9 +10,9 @@
         "input": "default input"
       },
       "validation": {
-        "type": "key_exists",
+        "type": "contains",
         "field": "status",
-        "description": "Response must contain a status key"
+        "value": "success"
       }
     },
     "edge_case": {
@@ -33,8 +33,9 @@
         "input": "failure input"
       },
       "validation": {
-        "type": "not_crash",
-        "description": "Should handle failure input without crashing"
+        "type": "contains",
+        "field": "status",
+        "value": "error"
       }
     }
   }

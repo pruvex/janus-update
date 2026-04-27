@@ -230,7 +230,8 @@ class TestRunner:
                 session_id=session_id,
                 errors=[final_attempt.error] if final_attempt and final_attempt.error else [],
                 final_tier=escalation_summary.final_tier,
-                attempts_count=len(escalation_summary.attempts)
+                attempts_count=len(escalation_summary.attempts),
+                result_data=result_to_validate
             )
             
             return {
@@ -290,7 +291,8 @@ class TestRunner:
         session_id: Optional[str],
         errors: List[str],
         final_tier: str = "primary",
-        attempts_count: int = 1
+        attempts_count: int = 1,
+        result_data: Optional[Dict[str, Any]] = None
     ) -> None:
         """
         Log test result to D10 telemetry system.
@@ -305,7 +307,21 @@ class TestRunner:
             trace_id: Trace identifier
             session_id: Session identifier
             errors: List of errors if any
+            result_data: Actual tool execution result for forensic analysis
         """
+        payload = {
+            "test_type": test_type,
+            "errors": errors,
+            "final_tier": final_tier,
+            "attempts_count": attempts_count
+        }
+        
+        # Include result data for forensic analysis if provided
+        if result_data:
+            payload["result_data"] = result_data
+            # Map to output_summary for D10 logging visibility (first 500 chars)
+            payload["output_summary"] = str(result_data)[:500]
+        
         event = LogEventCreate(
             event_type="skill_test",
             skill=skill_id,
@@ -315,12 +331,7 @@ class TestRunner:
             latency_ms=int(latency_ms),
             trace_id=trace_id,
             session_id=session_id,
-            payload={
-                "test_type": test_type,
-                "errors": errors,
-                "final_tier": final_tier,
-                "attempts_count": attempts_count
-            }
+            payload=payload
         )
         
         await log_event(event)
