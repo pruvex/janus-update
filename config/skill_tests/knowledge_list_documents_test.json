@@ -1,7 +1,7 @@
 {
   "skill_id": "knowledge.list_documents",
   "skill_type": "knowledge",
-  "generated_at": "2026-04-26T20:30:08.991017",
+  "generated_at": "2026-04-27T12:45:23.145100",
   "tests": {
     "happy_path": {
       "name": "happy_path",

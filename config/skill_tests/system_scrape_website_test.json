@@ -1,7 +1,7 @@
 {
   "skill_id": "system.scrape_website",
   "skill_type": "system",
-  "generated_at": "2026-04-26T20:30:09.187981",
+  "generated_at": "2026-04-27T12:45:23.326573",
   "tests": {
     "happy_path": {
       "name": "happy_path",

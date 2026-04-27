@@ -18,6 +18,79 @@ class TestGenerator:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
     
+    def get_validation_rules(self, skill_type: str, test_type: str) -> List[str]:
+        """
+        Get validation rules based on skill type and test type using profiles.
+        
+        Args:
+            skill_type: Type of skill (tool, agent, renderer, filesystem, knowledge, system, communication, calendar, contacts)
+            test_type: Type of test (happy_path, edge_case, failure_case)
+        
+        Returns:
+            List of validation rule strings in shorthand notation (e.g., ["type_match:dict", "key_exists:status"])
+        """
+        # Profile-based validation rules from Dossier
+        profiles = {
+            # Tool profile: Always returns dict, check structure
+            "tool": {
+                "happy_path": ["type_match:dict", "key_exists:status"],
+                "edge_case": ["type_match:dict"],
+                "failure_case": ["type_match:dict", "key_exists:error"]
+            },
+            # Agent profile: Returns dict with response
+            "agent": {
+                "happy_path": ["type_match:dict", "key_exists:response"],
+                "edge_case": ["type_match:dict"],
+                "failure_case": ["type_match:dict"]
+            },
+            # Renderer profile: Returns dict with rendered content
+            "renderer": {
+                "happy_path": ["type_match:dict", "key_exists:content"],
+                "edge_case": ["type_match:dict"],
+                "failure_case": ["type_match:dict"]
+            },
+            # Filesystem profile: Returns dict with file operations
+            "filesystem": {
+                "happy_path": ["type_match:dict", "key_exists:status"],
+                "edge_case": ["type_match:dict"],
+                "failure_case": ["type_match:dict"]
+            },
+            # Knowledge profile: Returns dict with query results
+            "knowledge": {
+                "happy_path": ["type_match:dict", "key_exists:results"],
+                "edge_case": ["type_match:dict"],
+                "failure_case": ["type_match:dict"]
+            },
+            # System profile: Returns dict with system info
+            "system": {
+                "happy_path": ["type_match:dict", "key_exists:status"],
+                "edge_case": ["type_match:dict"],
+                "failure_case": ["type_match:dict"]
+            },
+            # Communication profile: Returns dict with message operations
+            "communication": {
+                "happy_path": ["type_match:dict", "key_exists:status"],
+                "edge_case": ["type_match:dict"],
+                "failure_case": ["type_match:dict"]
+            },
+            # Calendar profile: Returns dict with calendar operations
+            "calendar": {
+                "happy_path": ["type_match:dict", "key_exists:events"],
+                "edge_case": ["type_match:dict"],
+                "failure_case": ["type_match:dict"]
+            },
+            # Contacts profile: Returns dict with contact operations
+            "contacts": {
+                "happy_path": ["type_match:dict", "key_exists:contacts"],
+                "edge_case": ["type_match:dict"],
+                "failure_case": ["type_match:dict"]
+            }
+        }
+        
+        # Get rules for skill_type, fallback to tool profile
+        skill_profile = profiles.get(skill_type, profiles["tool"])
+        return skill_profile.get(test_type, ["type_match:dict"])
+    
     def generate_testset(self, skill_id: str, skill_type: str) -> Dict[str, Any]:
         """
         Generate a test blueprint for a given skill.
@@ -54,11 +127,7 @@ class TestGenerator:
             "name": "happy_path",
             "description": "Standard successful execution",
             "input": self._get_standard_input(skill_type),
-            "validation": {
-                "type": "contains",
-                "field": "status",
-                "value": "success"
-            }
+            "validation": self.get_validation_rules(skill_type, "happy_path")
         }
     
     def _generate_edge_case(self, skill_id: str, skill_type: str) -> Dict[str, Any]:
@@ -67,10 +136,7 @@ class TestGenerator:
             "name": "edge_case",
             "description": "Boundary condition or unusual input",
             "input": self._get_edge_input(skill_type),
-            "validation": {
-                "type": "not_crash",
-                "description": "Should not crash on edge input"
-            }
+            "validation": self.get_validation_rules(skill_type, "edge_case")
         }
     
     def _generate_failure_case(self, skill_id: str, skill_type: str) -> Dict[str, Any]:
@@ -79,11 +145,7 @@ class TestGenerator:
             "name": "failure_case",
             "description": "Invalid input or error condition",
             "input": self._get_failure_input(skill_type),
-            "validation": {
-                "type": "contains",
-                "field": "status",
-                "value": "error"
-            }
+            "validation": self.get_validation_rules(skill_type, "failure_case")
         }
     
     def _get_standard_input(self, skill_type: str) -> Dict[str, Any]:
