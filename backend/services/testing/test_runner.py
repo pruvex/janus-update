@@ -195,12 +195,23 @@ class TestRunner:
         start_time = datetime.utcnow()
         
         try:
+            # Generate tool_calls payload for ToolExecutor
+            test_input = test_spec.get("input", {})
+            # Extract the actual input value (could be nested in "input" key or direct)
+            input_value = test_input.get("input", test_input) if isinstance(test_input, dict) else test_input
+            
+            # Format as tool_calls structure expected by ToolExecutor
+            tool_calls = [{
+                "name": skill_id,
+                "arguments": {"query": input_value}
+            }]
+            
             # Execute with escalation
             escalation_summary = await self.escalation_engine.execute_with_escalation(
                 skill_id=skill_id,
                 tool_call_fn=tool_call_fn,
                 validation_fn=lambda r: self._validate_result(r, test_spec.get("validation")),
-                **test_spec.get("input", {})
+                tool_calls=tool_calls
             )
             
             # Get final result
