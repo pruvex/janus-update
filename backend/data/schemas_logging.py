@@ -15,6 +15,9 @@ class LogEventPayload(BaseModel):
     input_hash: Optional[str] = Field(default=None, description="Hash of input data for deduplication")
     output_summary: Optional[str] = Field(default=None, description="Summary of output/result")
     error_code: Optional[str] = Field(default=None, description="Error code if status is error")
+    test_type: Optional[str] = Field(default=None, description="Type of test (e.g., happy_path, edge_case)")
+    final_tier: Optional[str] = Field(default=None, description="Final escalation tier used")
+    attempts_count: Optional[int] = Field(default=None, description="Number of attempts made")
 
 
 class LogEventBase(BaseModel):
