@@ -779,39 +779,77 @@ async def run_batch_tests(
                         )
                         
                         async def real_tool_call_fn(provider: str, model: str, **kwargs):
-                            # Execute real tool calls via ToolExecutor
+                            from backend.services import llm_gateway
+                            
+                            # Extract tool_calls and input
                             tool_calls = kwargs.get("tool_calls", [])
-                            results = await tool_executor.execute_tool_calls(tool_calls)
+                            if not tool_calls:
+                                return {"status": "error", "message": "No tool_calls provided"}
                             
-                            # Handle list-to-single conversion (execute_tool_calls returns a list)
-                            if isinstance(results, list) and len(results) > 0:
-                                result = results[0]  # Take the first (and usually only) result
+                            # Extract input from tool_calls (first tool call)
+                            first_call = tool_calls[0]
+                            tool_name = first_call.get("name", "")
+                            tool_args = first_call.get("arguments", {})
+                            
+                            # Build user prompt from tool arguments
+                            # Extract the actual value (could be "query", "path", "location", etc.)
+                            input_value = list(tool_args.values())[0] if tool_args else ""
+                            
+                            # Get API key from environment or config
+                            import os
+                            api_key = os.getenv("OPENAI_API_KEY", "")
+                            
+                            # Call LLM to generate response with tool calling
+                            messages = [{"role": "user", "content": str(input_value)}]
+                            
+                            # Get tool definitions for the skill
+                            tools = tool_manager.get_all_tools()
+                            skill_tools = [t for t in tools if t.get("name") == tool_name] if tools else []
+                            
+                            # Call LLM with tools enabled
+                            llm_response = await llm_gateway.call_llm(
+                                provider=provider,
+                                model_id=model,
+                                api_key=api_key,
+                                messages=messages,
+                                tools=skill_tools if skill_tools else None
+                            )
+                            
+                            # Check if LLM called the tool
+                            llm_tool_calls = llm_response.get("tool_calls", [])
+                            if llm_tool_calls:
+                                # Execute the tool calls from LLM
+                                results = await tool_executor.execute_tool_calls(llm_tool_calls)
+                                
+                                # Handle list-to-single conversion
+                                if isinstance(results, list) and len(results) > 0:
+                                    result = results[0]
+                                else:
+                                    result = results
+                                
+                                # Parse JSON string results if needed
+                                import json
+                                if isinstance(result, str):
+                                    try:
+                                        result = json.loads(result)
+                                    except json.JSONDecodeError:
+                                        result = {"status": "error", "message": "Unparseable string", "data": result}
+                                
+                                # Ensure ToolResultV1 structure
+                                if isinstance(result, dict):
+                                    if "status" not in result:
+                                        result = {
+                                            "status": "ok",
+                                            "data": result,
+                                            "message": "Tool executed successfully",
+                                            "error": None
+                                        }
+                                
+                                print(f"[ORCH-BRIDGE-DEBUG] LLM called tool, returning: {result}")
+                                return result
                             else:
-                                result = results
-                            
-                            # Parse JSON string results if needed
-                            import json
-                            if isinstance(result, str):
-                                try:
-                                    result = json.loads(result)
-                                except json.JSONDecodeError:
-                                    result = {"status": "error", "message": "Unparseable string", "data": result}
-                            
-                            # Ensure ToolResultV1 structure (status, data, error)
-                            if isinstance(result, dict):
-                                if "status" not in result:
-                                    # Tool executor returned data without ToolResultV1 wrapper
-                                    # Wrap it in ToolResultV1 structure
-                                    result = {
-                                        "status": "ok",
-                                        "data": result,
-                                        "message": "Tool executed successfully",
-                                        "error": None
-                                    }
-                            
-                            # Debug logging
-                            print(f"[ORCH-BRIDGE-DEBUG] Returning to runner: {result}")
-                            return result
+                                # LLM did not call the tool
+                                return {"status": "error", "message": "LLM did not call the tool", "llm_response": llm_response}
                     finally:
                         db.close()
                 else:
