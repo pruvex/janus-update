@@ -1,7 +1,7 @@
 {
   "skill_id": "system.create_pdf",
   "skill_type": "system",
-  "generated_at": "2026-04-27T12:49:10.478094",
+  "generated_at": "2026-04-27T13:06:10.027801",
   "tests": {
     "happy_path": {
       "name": "happy_path",

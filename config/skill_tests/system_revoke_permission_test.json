@@ -1,7 +1,7 @@
 {
   "skill_id": "system.revoke_permission",
   "skill_type": "system",
-  "generated_at": "2026-04-27T12:49:10.558232",
+  "generated_at": "2026-04-27T13:06:10.108544",
   "tests": {
     "happy_path": {
       "name": "happy_path",

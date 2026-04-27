@@ -1,7 +1,7 @@
 {
   "skill_id": "knowledge.read_full_text",
   "skill_type": "knowledge",
-  "generated_at": "2026-04-27T12:49:10.460706",
+  "generated_at": "2026-04-27T13:06:10.013764",
   "tests": {
     "happy_path": {
       "name": "happy_path",

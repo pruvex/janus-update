@@ -31,9 +31,9 @@ class TestGenerator:
         """
         # Profile-based validation rules from Dossier
         profiles = {
-            # Tool profile: Always returns dict, check structure
+            # Tool profile: Always returns dict, check structure (Minimal Contract)
             "tool": {
-                "happy_path": ["type_match:dict", "key_exists:status"],
+                "happy_path": ["type_match:dict", "key_exists:status", "key_exists:data"],
                 "edge_case": ["type_match:dict"],
                 "failure_case": ["type_match:dict", "key_exists:error"]
             },
@@ -49,9 +49,9 @@ class TestGenerator:
                 "edge_case": ["type_match:dict"],
                 "failure_case": ["type_match:dict"]
             },
-            # Filesystem profile: Returns dict with file operations
+            # Filesystem profile: Returns dict with file operations (Minimal Contract)
             "filesystem": {
-                "happy_path": ["type_match:dict", "key_exists:status"],
+                "happy_path": ["type_match:dict", "key_exists:status", "key_exists:data"],
                 "edge_case": ["type_match:dict"],
                 "failure_case": ["type_match:dict"]
             },
@@ -61,9 +61,9 @@ class TestGenerator:
                 "edge_case": ["type_match:dict"],
                 "failure_case": ["type_match:dict"]
             },
-            # System profile: Returns dict with system info
+            # System profile: Returns dict with system info (Minimal Contract)
             "system": {
-                "happy_path": ["type_match:dict", "key_exists:status"],
+                "happy_path": ["type_match:dict", "key_exists:status", "key_exists:data"],
                 "edge_case": ["type_match:dict"],
                 "failure_case": ["type_match:dict"]
             },

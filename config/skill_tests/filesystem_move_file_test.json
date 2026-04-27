@@ -1,7 +1,7 @@
 {
   "skill_id": "filesystem.move_file",
   "skill_type": "filesystem",
-  "generated_at": "2026-04-27T12:49:10.369421",
+  "generated_at": "2026-04-27T13:06:09.913253",
   "tests": {
     "happy_path": {
       "name": "happy_path",
