@@ -1,157 +1,267 @@
 {
   "default_tiers": {
-    "primary": {
-      "provider": "openai",
-      "model": "gpt-5.4-mini"
+    "openai": {
+      "primary": {
+        "model": "gpt-5.4-nano"
+      },
+      "fallback": {
+        "model": "gpt-5.4-mini"
+      },
+      "escalation": {
+        "model": "gpt-5.4"
+      }
     },
-    "fallback": {
-      "provider": "openai",
-      "model": "gpt-5.4"
-    },
-    "escalation": {
-      "provider": "openai",
-      "model": "gpt-5.4"
+    "gemini": {
+      "primary": {
+        "model": "gemini-3-flash-preview"
+      },
+      "fallback": {
+        "model": "gemini-3.1-pro-preview"
+      },
+      "escalation": {
+        "model": "gemini-3.1-pro-preview"
+      }
     }
   },
   "skill_mappings": {
     "system.weather": {
-      "primary": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "openai": {
+        "primary": {
+          "model": "gpt-5.4-nano"
+        },
+        "fallback": {
+          "model": "gpt-5.4-mini"
+        },
+        "escalation": {
+          "model": "gpt-5.4-nano"
+        }
       },
-      "fallback": {
-        "provider": "gemini",
-        "model": "gemini-3-flash"
-      },
-      "escalation": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "gemini": {
+        "primary": {
+          "model": "gemini-3-flash-preview"
+        },
+        "fallback": {
+          "model": "gemini-3.1-pro-preview"
+        },
+        "escalation": {
+          "model": "gemini-3-flash-preview"
+        }
       }
     },
     "filesystem.list_directory": {
-      "primary": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "openai": {
+        "primary": {
+          "model": "gpt-5.4-nano"
+        },
+        "fallback": {
+          "model": "gpt-5.4-mini"
+        },
+        "escalation": {
+          "model": "gpt-5.4-nano"
+        }
       },
-      "fallback": {
-        "provider": "gemini",
-        "model": "gemini-3-flash"
-      },
-      "escalation": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "gemini": {
+        "primary": {
+          "model": "gemini-3-flash-preview"
+        },
+        "fallback": {
+          "model": "gemini-3.1-pro-preview"
+        },
+        "escalation": {
+          "model": "gemini-3-flash-preview"
+        }
       }
     },
     "calendar.create_event": {
-      "primary": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "openai": {
+        "primary": {
+          "model": "gpt-5.4-nano"
+        },
+        "fallback": {
+          "model": "gpt-5.4-mini"
+        },
+        "escalation": {
+          "model": "gpt-5.4-nano"
+        }
       },
-      "fallback": {
-        "provider": "gemini",
-        "model": "gemini-3-flash"
-      },
-      "escalation": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "gemini": {
+        "primary": {
+          "model": "gemini-3-flash-preview"
+        },
+        "fallback": {
+          "model": "gemini-3.1-pro-preview"
+        },
+        "escalation": {
+          "model": "gemini-3-flash-preview"
+        }
       }
     },
     "system.country_info": {
-      "primary": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "openai": {
+        "primary": {
+          "model": "gpt-5.4-nano"
+        },
+        "fallback": {
+          "model": "gpt-5.4-mini"
+        },
+        "escalation": {
+          "model": "gpt-5.4-nano"
+        }
       },
-      "fallback": {
-        "provider": "gemini",
-        "model": "gemini-3-flash"
-      },
-      "escalation": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "gemini": {
+        "primary": {
+          "model": "gemini-3.1-pro-preview"
+        },
+        "fallback": {
+          "model": "gemini-3-flash-preview"
+        },
+        "escalation": {
+          "model": "gemini-3.1-pro-preview"
+        }
       }
     },
     "communication.send_email": {
-      "primary": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "openai": {
+        "primary": {
+          "model": "gpt-5.4-nano"
+        },
+        "fallback": {
+          "model": "gpt-5.4-mini"
+        },
+        "escalation": {
+          "model": "gpt-5.4-nano"
+        }
       },
-      "fallback": {
-        "provider": "gemini",
-        "model": "gemini-3-flash"
-      },
-      "escalation": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "gemini": {
+        "primary": {
+          "model": "gemini-3-flash-preview"
+        },
+        "fallback": {
+          "model": "gemini-3.1-pro-preview"
+        },
+        "escalation": {
+          "model": "gemini-3-flash-preview"
+        }
       }
     },
     "system.video_understanding": {
-      "primary": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "openai": {
+        "primary": {
+          "model": "gpt-5.4-nano"
+        },
+        "fallback": {
+          "model": "gpt-5.4-mini"
+        },
+        "escalation": {
+          "model": "gpt-5.4-nano"
+        }
       },
-      "fallback": {
-        "provider": "gemini",
-        "model": "gemini-3-flash"
-      },
-      "escalation": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "gemini": {
+        "primary": {
+          "model": "gemini-3-flash-preview"
+        },
+        "fallback": {
+          "model": "gemini-3.1-pro-preview"
+        },
+        "escalation": {
+          "model": "gemini-3-flash-preview"
+        }
       }
     },
     "system.websearch": {
-      "primary": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "openai": {
+        "primary": {
+          "model": "gpt-5.4-nano"
+        },
+        "fallback": {
+          "model": "gpt-5.4-mini"
+        },
+        "escalation": {
+          "model": "gpt-5.4-nano"
+        }
       },
-      "fallback": {
-        "provider": "gemini",
-        "model": "gemini-3-flash"
-      },
-      "escalation": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "gemini": {
+        "primary": {
+          "model": "gemini-3-flash-preview"
+        },
+        "fallback": {
+          "model": "gemini-3.1-pro-preview"
+        },
+        "escalation": {
+          "model": "gemini-3-flash-preview"
+        }
       }
     },
     "knowledge.list_documents": {
-      "primary": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "openai": {
+        "primary": {
+          "model": "gpt-5.4-nano"
+        },
+        "fallback": {
+          "model": "gpt-5.4-mini"
+        },
+        "escalation": {
+          "model": "gpt-5.4-nano"
+        }
       },
-      "fallback": {
-        "provider": "gemini",
-        "model": "gemini-3-flash"
-      },
-      "escalation": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "gemini": {
+        "primary": {
+          "model": "gemini-3-flash-preview"
+        },
+        "fallback": {
+          "model": "gemini-3.1-pro-preview"
+        },
+        "escalation": {
+          "model": "gemini-3-flash-preview"
+        }
       }
     },
     "system.price_comparison": {
-      "primary": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "openai": {
+        "primary": {
+          "model": "gpt-5.4-nano"
+        },
+        "fallback": {
+          "model": "gpt-5.4-mini"
+        },
+        "escalation": {
+          "model": "gpt-5.4-nano"
+        }
       },
-      "fallback": {
-        "provider": "gemini",
-        "model": "gemini-3-flash"
-      },
-      "escalation": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "gemini": {
+        "primary": {
+          "model": "gemini-3-flash-preview"
+        },
+        "fallback": {
+          "model": "gemini-3.1-pro-preview"
+        },
+        "escalation": {
+          "model": "gemini-3-flash-preview"
+        }
       }
     },
     "system.rss_news": {
-      "primary": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "openai": {
+        "primary": {
+          "model": "gpt-5.4-nano"
+        },
+        "fallback": {
+          "model": "gpt-5.4-mini"
+        },
+        "escalation": {
+          "model": "gpt-5.4-nano"
+        }
       },
-      "fallback": {
-        "provider": "gemini",
-        "model": "gemini-3-flash"
-      },
-      "escalation": {
-        "provider": "openai",
-        "model": "gpt-5.4-mini"
+      "gemini": {
+        "primary": {
+          "model": "gemini-3-flash-preview"
+        },
+        "fallback": {
+          "model": "gemini-3.1-pro-preview"
+        },
+        "escalation": {
+          "model": "gemini-3-flash-preview"
+        }
       }
     }
   }

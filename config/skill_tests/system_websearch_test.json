@@ -1,7 +1,7 @@
 {
   "skill_id": "system.websearch",
   "skill_type": "system",
-  "generated_at": "2026-04-27T22:33:42.394762",
+  "generated_at": "2026-04-28T00:05:50.632735",
   "tests": {
     "happy_path": {
       "name": "happy_path",
