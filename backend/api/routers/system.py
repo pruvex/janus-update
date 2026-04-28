@@ -948,6 +948,15 @@ async def run_batch_tests(
                         db.close()
                         logger.info("[D20-MATRIX-RUN] DB session closed after matrix run")
                 
+                # D24 HOOK: Auto-trigger self-heal check after batch run completes
+                try:
+                    from backend.services.testing.self_heal_trigger import auto_trigger_self_heal
+                    logger.info("[D24-HOOK] Post-batch auto self-heal check triggered")
+                    trigger_result = auto_trigger_self_heal(dry_run=False)
+                    logger.info(f"[D24-HOOK] Auto self-heal result: status={trigger_result.get('status')}, details={trigger_result.get('details')}")
+                except Exception as trigger_err:
+                    logger.error(f"[D24-HOOK] Auto self-heal hook failed (non-fatal): {trigger_err}", exc_info=True)
+                
             except Exception as e:
                 logger.error(f"[D20-MATRIX-RUN] Matrix run failed: {e}", exc_info=True)
         
@@ -1022,6 +1031,47 @@ async def trigger_self_heal(
     except Exception as e:
         logger.error("[D22-SELF-HEAL] Failed to start self-heal cycle: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Self-heal cycle start failed: {str(e)}")
+
+
+# D24: Self-Heal Trigger Layer
+
+@router.post("/system/self-heal/auto")
+async def auto_self_heal(
+    background_tasks: BackgroundTasks,
+    dry_run: bool = False
+):
+    """
+    D24: Auto Self-Heal Trigger — Observes health and fires D22 only when needed.
+
+    Evaluates 3 gates before triggering:
+    1. Min Threshold: >= 1 degraded or critical skill
+    2. Cooldown: D22 cooldown must have elapsed
+    3. Sanity: global_sanity_check must pass
+
+    Query Parameters:
+        dry_run: If True, simulates without writing to model_routing.json
+
+    Returns:
+        {"status": "triggered"|"skipped_*"|"failed", "details": "..."}
+    """
+    try:
+        from backend.services.testing.self_heal_trigger import auto_trigger_self_heal
+
+        logger.info(f"[D24-AUTO] Auto self-heal requested (dry_run={dry_run})")
+
+        background_tasks.add_task(lambda: auto_trigger_self_heal(dry_run=dry_run))
+
+        return {
+            "status": "evaluating",
+            "dry_run": dry_run,
+            "message": "Auto self-heal trigger running in background. Check logs for gate evaluation."
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("[D24-AUTO] Failed to start auto self-heal: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Auto self-heal start failed: {str(e)}")
 
 
 # D23: Observability API - Read-Only System State Endpoints
