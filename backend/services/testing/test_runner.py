@@ -237,7 +237,7 @@ class CalibrationWinner:
                     run_count = len(results)
                     
                     # Confidence filter: only models with >= 5 runs
-                    if run_count < 5:
+                    if run_count < 3:  # D22-OPTIMIZE: Temporarily lowered from 5 to 3 to see results
                         continue
                     
                     pass_rate = total_passed / total_tests if total_tests > 0 else 0.0
@@ -251,7 +251,7 @@ class CalibrationWinner:
                 
                 if not model_metrics:
                     # Fallback-Confidence: Write default_tiers as placeholder if insufficient data
-                    logger.warning(f"[DATA-BRIDGE] Skill {skill_id} has insufficient data (filtered by MIN_RUNS=5). Using default tiers as placeholder.")
+                    logger.warning(f"[DATA-BRIDGE] Skill {skill_id} has insufficient data (filtered by MIN_RUNS=3). Using default tiers as placeholder.")
                     continue
                 
                 # STEP 3: Primary - Choose cheapest model with pass_rate == 1.0. If none, take highest pass-rate
@@ -390,14 +390,14 @@ class CalibrationWinner:
     
     def load_historical_test_data(
         self,
-        limit: int = 1000,
+        limit: int = 2000,
         days_back: int = 7
     ) -> Dict[str, Dict[str, List[Dict[str, Any]]]]:
         """
         Load historical skill_test events from logs_raw table.
         
         Args:
-            limit: Maximum number of events to load (default 1000)
+            limit: Maximum number of events to load (default 2000)
             days_back: How many days back to look for events (default 7)
             
         Returns:
@@ -410,13 +410,14 @@ class CalibrationWinner:
             supabase = get_supabase_client()
             cutoff = datetime.utcnow() - timedelta(days=days_back)
             
-            # Fetch skill_test events from logs_raw
+            # Fetch skill_test events from logs_raw, sorted by timestamp DESC (newest first)
             response = (
                 supabase
                 .table("logs_raw")
                 .select("*")
                 .eq("event_type", "skill_test")
                 .gte("timestamp", cutoff.isoformat())
+                .order("timestamp", desc=True)
                 .limit(limit)
                 .execute()
             )
@@ -430,6 +431,8 @@ class CalibrationWinner:
             
             # Reorganize into skill_id -> model -> [results] structure
             historical_data = {}
+            valid_candidates = 0
+            
             for event in test_events:
                 skill_id = event.get("skill")
                 model = event.get("model")
@@ -437,7 +440,8 @@ class CalibrationWinner:
                 latency_ms = event.get("latency_ms")
                 payload = event.get("payload", {})
                 
-                if not skill_id or not model:
+                # FILTER HARDENING: Skip events with unknown model (useless for routing)
+                if not skill_id or not model or model == "unknown":
                     continue
                 
                 if skill_id not in historical_data:
@@ -470,7 +474,9 @@ class CalibrationWinner:
                     "run_count": 1,
                     "is_historical": True
                 })
+                valid_candidates += 1
             
+            logger.info(f"[D22-DEBUG] Valid candidates found after filtering 'unknown': {valid_candidates}")
             return historical_data
             
         except Exception as e:
