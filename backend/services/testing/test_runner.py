@@ -82,7 +82,7 @@ class BudgetGuard:
 
 class CalibrationWinner:
     """
-    Winner-Logic for D21 Full Fleet Calibration (Diamond-Stability Reform).
+    Winner-Logic for D21.1 Diamond Routing Engine Upgrade (Minimal Perfect Model).
     
     Analyzes test results to determine optimal model assignments per skill per provider.
     STRICT SILO RULES:
@@ -90,12 +90,14 @@ class CalibrationWinner:
     - Gemini Silo: ONLY gemini-3-flash-preview, gemini-3.1-pro-preview.
     - NO Provider-Mixing: Data from one provider never influences the other.
     
-    DIAMOND-STABILITY RULES:
-    - Pass-Rate Priority: Primary only models with absolute highest pass-rate.
-    - Nano-Guard: Forbid gpt-5.4-nano as Primary for skills with <100% success.
-    - Strict Hierarchy: fallback must be stronger than primary.
-    - No-Loop Rule: Prevent same model twice in chain.
-    - Escalation: Always strongest model of silo (gpt-5.4 or gemini-3.1-pro-preview).
+    DIAMOND ROUTING RULES (7 Steps):
+    1. Confidence: Only evaluate models with total_runs >= 5.
+    2. Silos: Create separate decisions for openai and gemini.
+    3. Primary: Choose cheapest model with pass_rate == 1.0. If none, take highest pass-rate.
+    4. Fallback: Choose next stronger model in silo (Nano < Mini/Flash < Standard/Pro).
+    5. Escalation: Choose smallest model stronger than primary AND guarantees stability.
+    6. No-Loop: Enforce primary != fallback != escalation.
+    7. Competition: Calculate provider_score. Stability > Cost > Latency. Best provider = winner.
     """
     
     def __init__(self):
@@ -125,25 +127,43 @@ class CalibrationWinner:
             "gemini": ["gemini-3-flash-preview", "gemini-3.1-pro-preview"]
         }
         
+        # COST MAPPING (for competition scoring)
+        self.cost_scores = {
+            "gpt-5.4-nano": 1,
+            "gpt-5.4-mini": 2,
+            "gpt-5.4": 3,
+            "gemini-3-flash-preview": 2,
+            "gemini-3.1-pro-preview": 3
+        }
+        
         # STRONGEST MODELS per silo for escalation
         self.strongest_models = {
             "openai": "gpt-5.4",
             "gemini": "gemini-3.1-pro-preview"
         }
     
-    def analyze_calibration_results(
-        self, 
+    def build_diamond_routing(
+        self,
         calibration_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
-        Analyze calibration results to determine optimal model assignments per provider-silo.
+        Build Diamond Routing configuration using Minimal Perfect Model principle.
+        
+        7 Steps:
+        1. Confidence: Only evaluate models with total_runs >= 5
+        2. Silos: Create separate decisions for openai and gemini
+        3. Primary: Choose cheapest model with pass_rate == 1.0. If none, take highest pass-rate
+        4. Fallback: Choose next stronger model in silo
+        5. Escalation: Choose smallest model stronger than primary AND guarantees stability
+        6. No-Loop: Enforce primary != fallback != escalation
+        7. Competition: Calculate provider_score. Stability > Cost > Latency. Best provider = winner
         
         Args:
             calibration_data: Dictionary with skill_id -> model -> results mapping
             
         Returns:
             Dictionary with optimal model assignments per skill per provider
-            Structure: {skill_id: {provider: {primary: {...}, fallback: {...}, escalation: {...}}}}
+            Structure: {skill_id: {winner, active, openai, gemini}}
         """
         optimal_assignments = {}
         
@@ -165,10 +185,10 @@ class CalibrationWinner:
                     provider_skill_data[provider][skill_id] = {}
                 provider_skill_data[provider][skill_id][model] = results
         
-        # Step 2: For each provider, determine best chain per skill (STRICT SILO)
+        # STEP 2: For each provider, determine best chain per skill (DIAMOND ROUTING)
         for provider, skill_data in provider_skill_data.items():
-            # Get allowed models for this provider
             allowed_models = self.silo_allowed_models.get(provider, set())
+            strength_order = self.model_strength.get(provider, [])
             
             for skill_id, model_results in skill_data.items():
                 if not model_results:
@@ -183,17 +203,20 @@ class CalibrationWinner:
                 if not filtered_model_results:
                     continue
                 
-                # Calculate metrics for each allowed model within this provider
+                # STEP 1: Confidence - Only evaluate models with total_runs >= 5
                 model_metrics = {}
                 for model, results in filtered_model_results.items():
                     if not results:
                         continue
                     
-                    # Aggregate metrics across all runs
                     total_tests = sum(r.get("test_count", 0) for r in results)
                     total_passed = sum(r.get("passed_count", 0) for r in results)
                     total_latency = sum(r.get("avg_latency_ms", 0) for r in results if r.get("avg_latency_ms"))
                     run_count = len(results)
+                    
+                    # Confidence filter: only models with >= 5 runs
+                    if run_count < 5:
+                        continue
                     
                     pass_rate = total_passed / total_tests if total_tests > 0 else 0.0
                     avg_latency = total_latency / run_count if run_count > 0 else 0.0
@@ -207,65 +230,92 @@ class CalibrationWinner:
                 if not model_metrics:
                     continue
                 
-                # RULE 1: Pass-Rate Priority - Find highest pass-rate
-                max_pass_rate = max(m["pass_rate"] for m in model_metrics.values())
+                # STEP 3: Primary - Choose cheapest model with pass_rate == 1.0. If none, take highest pass-rate
+                perfect_models = [m for m, metrics in model_metrics.items() if metrics["pass_rate"] >= 1.0]
                 
-                # RULE 2: Nano-Guard - If <100% success, forbid nano as primary
-                skill_has_perfect_success = max_pass_rate >= 1.0
+                if perfect_models:
+                    # Choose cheapest perfect model (by cost score)
+                    perfect_models_sorted = sorted(
+                        perfect_models,
+                        key=lambda m: self.cost_scores.get(m, 999)
+                    )
+                    primary_model = perfect_models_sorted[0]
+                else:
+                    # No perfect model, take highest pass-rate
+                    max_pass_rate = max(m["pass_rate"] for m in model_metrics.values())
+                    best_models = [
+                        (m, metrics) for m, metrics in model_metrics.items()
+                        if metrics["pass_rate"] >= max_pass_rate - 0.01
+                    ]
+                    best_models_sorted = sorted(
+                        best_models,
+                        key=lambda x: self.cost_scores.get(x[0], 999)
+                    )
+                    primary_model = best_models_sorted[0][0]
                 
-                # Filter models with highest pass-rate
-                best_pass_rate_models = [
-                    (model, metrics) for model, metrics in model_metrics.items()
-                    if metrics["pass_rate"] >= max_pass_rate - 0.01  # Allow small tolerance
-                ]
+                # STEP 4: Fallback - Choose next stronger model in silo
+                primary_idx = strength_order.index(primary_model) if primary_model in strength_order else 0
+                stronger_models = [m for m in strength_order if strength_order.index(m) > primary_idx]
                 
-                # Sort best models by latency (faster first)
-                best_models_sorted = sorted(
-                    best_pass_rate_models,
-                    key=lambda x: x[1]["avg_latency_ms"]
-                )
+                if stronger_models:
+                    fallback_model = stronger_models[0]  # Next stronger
+                else:
+                    fallback_model = primary_model  # No stronger available
                 
-                # Select primary: fastest model with highest pass-rate
-                primary_model = best_models_sorted[0][0]
+                # STEP 5: Escalation - Choose smallest model stronger than primary AND guarantees stability
+                if stronger_models:
+                    escalation_model = stronger_models[-1]  # Strongest available
+                else:
+                    escalation_model = primary_model
                 
-                # Nano-Guard: If not perfect success and primary is nano, upgrade to mini
-                if not skill_has_perfect_success and primary_model == "gpt-5.4-nano":
-                    # Find next best model that's not nano
-                    for model, _ in best_models_sorted:
-                        if model != "gpt-5.4-nano":
-                            primary_model = model
-                            break
-                
-                # RULE 3: Strict Hierarchy - fallback must be stronger than primary
-                strength_order = self.model_strength.get(provider, [])
-                primary_strength_idx = strength_order.index(primary_model) if primary_model in strength_order else 0
-                
-                # Find stronger models for fallback
-                stronger_models = [m for m in strength_order if strength_order.index(m) > primary_strength_idx]
-                
-                # Select fallback: strongest available model (or primary if no stronger)
-                fallback_model = stronger_models[-1] if stronger_models else primary_model
-                
-                # RULE 4: No-Loop Rule - ensure fallback != primary
-                if fallback_model == primary_model and len(stronger_models) > 0:
-                    fallback_model = stronger_models[0]  # Use next stronger
-                
-                # RULE 5: Escalation - always strongest model of silo
-                escalation_model = self.strongest_models.get(provider, primary_model)
+                # STEP 6: No-Loop - Enforce primary != fallback != escalation
+                if fallback_model == primary_model and len(stronger_models) > 1:
+                    fallback_model = stronger_models[1]
+                if escalation_model == fallback_model and len(stronger_models) > 1:
+                    escalation_model = stronger_models[-1]
                 
                 # Initialize skill entry if needed
                 if skill_id not in optimal_assignments:
-                    optimal_assignments[skill_id] = {}
+                    optimal_assignments[skill_id] = {
+                        "openai": None,
+                        "gemini": None,
+                        "winner": None,
+                        "active": None
+                    }
                 
                 # Assign provider-specific chain
                 optimal_assignments[skill_id][provider] = {
                     "primary": {"model": primary_model},
                     "fallback": {"model": fallback_model},
                     "escalation": {"model": escalation_model},
-                    "metrics": model_metrics,
-                    "max_pass_rate": max_pass_rate,
-                    "perfect_success": skill_has_perfect_success
+                    "metrics": model_metrics
                 }
+        
+        # STEP 7: Competition - Calculate provider_score. Stability > Cost > Latency
+        for skill_id, skill_data in optimal_assignments.items():
+            provider_scores = {}
+            
+            for provider in ["openai", "gemini"]:
+                provider_data = skill_data.get(provider)
+                if not provider_data:
+                    continue
+                
+                metrics = provider_data.get("metrics", {})
+                primary_model = provider_data["primary"]["model"]
+                
+                # Calculate scores
+                stability_score = max(m["pass_rate"] for m in metrics.values()) if metrics else 0.0
+                cost_score = self.cost_scores.get(primary_model, 999)
+                latency_score = metrics[primary_model]["avg_latency_ms"] if primary_model in metrics else 999999
+                
+                # Provider score: Stability (higher is better) > Cost (lower is better) > Latency (lower is better)
+                provider_scores[provider] = (stability_score, -cost_score, -latency_score)
+            
+            # Determine winner (highest provider_score)
+            if provider_scores:
+                winner = max(provider_scores.keys(), key=lambda p: provider_scores[p])
+                skill_data["winner"] = winner
+                skill_data["active"] = skill_data[winner]
         
         return optimal_assignments
     
@@ -275,15 +325,15 @@ class CalibrationWinner:
         default_tiers: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
-        Generate model_routing.json from optimal assignments (Provider-Silo structure).
+        Generate model_routing.json from optimal assignments (Diamond Routing format).
         
         Args:
             optimal_assignments: Dictionary with optimal model assignments per skill per provider
-                Structure: {skill_id: {provider: {primary: {...}, fallback: {...}, escalation: {...}}}}
+                Structure: {skill_id: {winner, active, openai, gemini}}
             default_tiers: Optional default tiers to include
             
         Returns:
-            Complete model_routing.json structure with nested provider keys
+            Complete model_routing.json structure with winner/active keys
         """
         routing_config = {
             "default_tiers": default_tiers or {
@@ -301,21 +351,13 @@ class CalibrationWinner:
             "skill_mappings": {}
         }
         
-        # STRONGEST MODELS per silo for escalation (safety net, independent of test results)
-        strongest_models = {
-            "openai": {"model": "gpt-5.4"},
-            "gemini": {"model": "gemini-3.1-pro-preview"}
-        }
-        
-        for skill_id, provider_assignments in optimal_assignments.items():
-            skill_mapping = {}
-            
-            for provider, assignment in provider_assignments.items():
-                skill_mapping[provider] = {
-                    "primary": assignment["primary"],
-                    "fallback": assignment["fallback"],
-                    "escalation": strongest_models.get(provider, assignment["escalation"])  # Force strongest model
-                }
+        for skill_id, skill_data in optimal_assignments.items():
+            skill_mapping = {
+                "winner": skill_data.get("winner", "openai"),
+                "active": skill_data.get("active"),
+                "openai": skill_data.get("openai"),
+                "gemini": skill_data.get("gemini")
+            }
             
             routing_config["skill_mappings"][skill_id] = skill_mapping
         
