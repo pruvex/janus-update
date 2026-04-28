@@ -1,6 +1,6 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.30-beta.52** — "D20 MODEL ROUTING SEAL: 10 Skills calibrated with verified model assignments. Tier 2 (gpt-5.4-mini) + Tier 3 (gpt-5.4) escalation. D19: 🥇 SEALED. D18: 🥇 SEALED. D17: 🥇 SEALED. D16: 🥇 SEALED. D15: 🥇 SEALED. D14: 🥇 DIAMOND HARMONIZED. D13: 🥇 DIAMOND HARMONIZED. D12: 🥇 DIAMOND HARMONIZED. D11: 🥇 SEALED. D10: 🥇 SEALED.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.30-beta.53** — "D27 SEALED: Diamond Skill Engineering & Diagnosis. D27: 🥇 SEALED. D26: 🥇 SEALED. D25: 🥇 SEALED. D24: 🥇 SEALED. D23: 🥇 SEALED. D22: 🥇 SEALED. D21: 🥇 SEALED. D20: 🥇 SEALED. D19: 🥇 SEALED. D18: 🥇 SEALED. D17: 🥇 SEALED. D16: 🥇 SEALED. D15: 🥇 SEALED. D14: 🥇 DIAMOND HARMONIZED. D13: 🥇 DIAMOND HARMONIZED. D12: 🥇 DIAMOND HARMONIZED. D11: 🥇 SEALED. D10: 🥇 SEALED.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-27 21:24 (D20 MODEL ROUTING SEAL: 10 Skills calibrated — verified model assignments sealed)
+**Aktualisiert:** 2026-04-28 20:02 (D27 SEALED: Diamond Skill Engineering & Diagnosis)
 
 ---
 
@@ -8,16 +8,122 @@
 
 | Feld | Wert |
 |------|------|
-| **Chapter** | **Observability, Evolution, Integrity & Quality (D10-D17)** |
-| **Status** | **🥇 DIAMOND VERIFIED** (2026-04-26) |
-| **Components** | D10 Resilient Telemetry, D11 Debug Compression Engine, D12 Insight Engine, D13 Optimization Engine, D14 Weekly Learning Engine, D15 Integrity Engine, D16 Deterministic Quality System, D17 Skill Health Matrix & Decision Loop |
-| **Verification** | All components operational, skill_id contract harmonized, KPI Registry implemented, Decision-Gate active, D15 Contract Registry validating, D16 Skill Stability System, D17 Problem Classification with confidence scores |
-| **Integration** | D11 → D13 (suggest_d13 Flag), D12 → D13 (logs_insights → logs_actions), D12 → D14 (logs_insights → logs_learning), D12+D13+D14 → D15 (CONTRACT_SPECS validation), D16 → D10 (skill_test events), D17 → D13 (problem_profiles → decision_report), Windsurf Skills (/debug-log, /optimization-report, /learning-report, /test_skill) |
-| **Test Coverage** | D10: Schema-Sync verified, D11: Heuristics verified, D12: 4/4 tests passed, D13: 7/7 tests passed, D14: regression_score verified, D15: 8/8 tests passed, D16: Deterministic testing, D17: Classification deterministic (4 categories) |
+| **Chapter** | **Observability, Evolution, Integrity, Quality, Self-Heal & Diamond Skill Engineering (D10-D27)** |
+| **Status** | **🥇 DIAMOND VERIFIED** (2026-04-28) |
+| **Components** | D10 Resilient Telemetry, D11 Debug Compression Engine, D12 Insight Engine, D13 Optimization Engine, D14 Weekly Learning Engine, D15 Integrity Engine, D16 Deterministic Quality System, D17 Skill Health Matrix & Decision Loop, D18 Wiring-Fix, D19 Escalation Engine, D20 Model Routing Calibration, D21 Diamond Routing Builder, D22 Self-Heal Cycle, D23 FIFO History Logging, D24 Auto-Self-Heal Trigger, D25 Monitoring Aggregator, D26 System Sealing, D27 Diamond Skill Engineering & Diagnosis |
+| **Verification** | All components operational, skill_id contract harmonized, KPI Registry implemented, Decision-Gate active, D15 Contract Registry validating, D16 Skill Stability System, D17 Problem Classification with confidence scores, D18 Escalation pipeline functional, D19 Diamond-tier escalation, D20 Statistical calibration sealed, D21 Confidence-based routing, D22 Self-healing cycle operational, D23 FIFO history logging, D24 Auto-trigger with gates, D25 Central monitoring hub, D26 System Sealing complete, D27 Diamond Skill Contract established |
+| **Integration** | D11 → D13 (suggest_d13 Flag), D12 → D13 (logs_insights → logs_actions), D12 → D14 (logs_insights → logs_learning), D12+D13+D14 → D15 (CONTRACT_SPECS validation), D16 → D10 (skill_test events), D17 → D13 (problem_profiles → decision_report), D18 → D19 (escalation pipeline), D19 → D20 (tier assignments), D20 → D21 (baseline data), D21 → D22 (diamond routing), D22 → D23 (history logging), D22 → D24 (cooldown state), D24 → D22 (auto-trigger), D23 → D25 (history aggregation), D27 → V3.0 Constitution (Contract, Diagnose-Engine), Windsurf Skills (/debug-log, /optimization-report, /learning-report, /test_skill, /janus-maintenance) |
+| **Test Coverage** | D10: Schema-Sync verified, D11: Heuristics verified, D12: 4/4 tests passed, D13: 7/7 tests passed, D14: regression_score verified, D15: 8/8 tests passed, D16: Deterministic testing, D17: Classification deterministic (4 categories), D18: 15 tool calls verified, D19: Escalation functional, D20: 10 Skills calibrated, D21: Diamond routing verified, D22: Self-heal cycle tested, D23: FIFO history verified, D24: Gates tested, D25: Endpoint operational, D27: Contract & Diagnose-Engine documented |
 | **Database** | logs_raw, logs_insights, logs_actions, logs_learning tables operational |
-| **Documentation** | D10, D11, D12, D13, D14, D15, D16, D17 task documents complete with component links |
-| **Patterns** | #ResilientTelemetry, #ProductionWrapper, #GlobalInsightAggregation, #OptimizationRuleEngine, #SystemEvolutionLayer, #DomainSeparation, #ContractRegistry, #DeterministicSkillTesting, #AsyncIntegrity, #DeterministicProblemClassification (all in WHAT_I_LEARNED.md) |
-| **Sign-off** | 8-Stage Observability & Quality Stack is fully operational. D15 Contract Registry preventing schema drift. D16 Deterministic Quality System for skill stability. D17 Problem Classification for root-cause analysis and decision support. |
+| **Documentation** | D10-D27 task documents complete with component links, JANUS_IMMUNE_SYSTEM.md (SSOT), 02_SKILL_DEVELOPMENT.md V3.0 |
+| **Patterns** | #ResilientTelemetry, #ProductionWrapper, #GlobalInsightAggregation, #OptimizationRuleEngine, #SystemEvolutionLayer, #DomainSeparation, #ContractRegistry, #DeterministicSkillTesting, #AsyncIntegrity, #DeterministicProblemClassification, #DiamondRouting, #SelfHealingCycle, #FIFOHistory, #AutoTrigger, #MonitoringAggregator, #DiamondSkillContract, #ModellVsSkillDiagnose (all in WHAT_I_LEARNED.md) |
+| **Sign-off** | 17-Stage Observability, Quality, Self-Heal & Diamond Skill Engineering Stack is fully operational. D15 Contract Registry preventing schema drift. D16 Deterministic Quality System for skill stability. D17 Problem Classification for root-cause analysis. D18 Escalation pipeline functional. D19 Diamond-tier escalation. D20 Statistical calibration sealed. D21 Confidence-based routing. D22 Self-healing cycle operational. D23 FIFO history logging. D24 Auto-trigger with gates. D25 Central monitoring hub. D26 System Sealing complete. D27 Diamond Skill Contract established with Diagnose-Engine. |
+
+---
+
+## [CURRENT_SESSION_DELTA] (D25 MONITORING AGGREGATOR — 🥇 SEALED & COMPLETE)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **D25 MONITORING AGGREGATOR — Central Health & Status Summary Endpoint** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-28) |
+| **Root Cause** | Verstreute Status-Daten (Health, History, Cooldown) nicht zentralisiert. Kein zentraler Monitoring-Hub für das Immunsystem. |
+| **Umsetzung** | **Fix #1 — Endpoint:** `backend/api/routers/system.py` — GET `/api/system/monitoring/summary` aggregiert Health Snapshot (model_routing.json), Self-Heal Status (self_heal_state.json), Recent Activity (routing_history.json). **Fix #2 — Health Snapshot:** Berechnet Skill-Status-Verteilung (healthy ≥0.95, degraded ≥0.5, critical <0.5). **Fix #3 — Self-Heal Status:** Lädt Cooldown-Status, berechnet `cooldown_active` und `remaining_minutes`. **Fix #4 — Recent Activity:** Lädt letzte 5 Einträge aus routing_history.json. **Fix #5 — System Status:** Berechnet Gesamtsystemstatus (`optimal | attention_required | critical`). **Fix #6 — Robustheit:** Alle Datei-Operationen mit try/except, fehlende Dateien führen zu Warnungen, nicht zu Fehlern. **Fix #7 — Path Fix:** Absolute Pfade zu backend/config/ verwendet. |
+| **Ergebnis** | D25 Monitoring Aggregator operational mit zentralem Health & Status Hub. Endpoint liefert alle Sektionen (Health, Self-Heal, History) mit Daten. Robustheit gegen fehlende Dateien implementiert. |
+| **Files** | `backend/api/routers/system.py` (GET Endpoint, Aggregation Logic, Robustheit), `backend/config/model_routing.json`, `backend/config/self_heal_state.json`, `backend/config/routing_history.json`, `documentation/tasks/task_054_monitoring_aggregator.md` (Task Doc). |
+| **Verifikation** | Endpoint: ✅ OPERATIONAL · Health: ✅ AGGREGATED · Self-Heal: ✅ STATUS · History: ✅ RECENT UPDATES · Robustheit: ✅ ERROR HANDLING |
+| **Patterns** | [PATTERN] #MonitoringAggregator "Zentraler Monitoring-Hub — Aggregation verstreuter Status-Daten in einem Endpoint mit Robustheit gegen fehlende Dateien" |
+
+---
+
+## [CURRENT_SESSION_DELTA] (D24 AUTO-SELF-HEAL TRIGGER — 🥇 SEALED & COMPLETE)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **D24 AUTO-SELF-HEAL TRIGGER — Automated Self-Healing Cycle Trigger** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-28) |
+| **Root Cause** | Kein automatischer Trigger für Self-Healing Cycle. Self-Heal musste manuell ausgelöst werden. Keine Gates gegen übermäßige Trigger. |
+| **Umsetzung** | **Fix #1 — Auto-Trigger Endpoint:** `backend/api/routers/system.py` — POST `/api/system/self-heal/auto` mit Gates (Cooldown, Lock, Health-Threshold). **Fix #2 — Cooldown Gate:** 6h Cooldown zwischen Triggers, persistent in `self_heal_state.json`. **Fix #3 — Lock Gate:** `SELF_HEAL_LOCK` verhindert parallele Cycles. **Fix #4 — Health-Threshold Gate:** Trigger nur wenn Skills degraded/critical. **Fix #5 — State Persistence:** `self_heal_state.json` mit `last_self_heal_at` und `updated_at`. **Fix #6 — Cooldown Update:** `_update_cooldown()` aufgerufen nach erfolgreichem Self-Heal. |
+| **Ergebnis** | D24 Auto-Trigger operational mit Gates. Cooldown, Lock, Health-Threshold verhindern übermäßige Trigger. State persistent. |
+| **Files** | `backend/api/routers/system.py` (POST Endpoint, Gates, State Persistence), `backend/services/testing/test_runner.py` (_update_cooldown), `backend/config/self_heal_state.json` (State File). |
+| **Verifikation** | Endpoint: ✅ OPERATIONAL · Cooldown: ✅ 6h GATE · Lock: ✅ PARALLEL PREVENTION · Health: ✅ THRESHOLD · State: ✅ PERSISTENT |
+| **Patterns** | [PATTERN] #AutoTrigger #Gates "Automatischer Self-Heal Trigger mit Gates — Cooldown, Lock, Health-Threshold verhindern übermäßige Trigger" |
+
+---
+
+## [CURRENT_SESSION_DELTA] (D23 FIFO HISTORY LOGGING — 🥇 SEALED & COMPLETE)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **D23 FIFO HISTORY LOGGING — Routing Update History with FIFO Limit** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-28) |
+| **Root Cause** | Keine History-Log für Routing-Updates. Keine FIFO-Limitierung. Keine Audit-Trail für Modell-Promotions. |
+| **Umsetzung** | **Fix #1 — History Logging:** `backend/services/testing/test_runner.py` — `_log_routing_history()` schreibt Updates in `routing_history.json` mit FIFO-Limit (max 100 Einträge). **Fix #2 — History Schema:** skill_id, winner, pass_rate, latency_ms, timestamp, primary_model, fallback_model, escalation_model. **Fix #3 — FIFO Logic:** Neue Einträge am Anfang, älteste Einträge am Ende gelöscht bei Limit-Überschreitung. **Fix #4 — Integration:** Aufgerufen in `apply_routing_update()` nach erfolgreichem Update. |
+| **Ergebnis** | D23 FIFO History Logging operational. Routing-Updates werden geloggt mit Audit-Trail. FIFO-Limit verhindert unendliches Wachstum. |
+| **Files** | `backend/services/testing/test_runner.py` (_log_routing_history, FIFO Logic), `backend/config/routing_history.json` (History File). |
+| **Verifikation** | Logging: ✅ OPERATIONAL · FIFO: ✅ 100 LIMIT · Schema: ✅ COMPLETE · Audit: ✅ TRAIL |
+| **Patterns** | [PATTERN] #FIFOHistory #AuditTrail "Routing Update History mit FIFO-Limit — Audit-Trail für Modell-Promotions mit begrenztem Speicher" |
+
+---
+
+## [CURRENT_SESSION_DELTA] (D22 SELF-HEAL CYCLE — 🥇 SEALED & COMPLETE)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **D22 SELF-HEAL CYCLE — Automated Model Routing Updates** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-28) |
+| **Root Cause** | Kein automatischer Self-Healing Cycle für Model Routing. Routing-Updates mussten manuell durchgeführt werden. Keine Diamond Routing Logic. |
+| **Umsetzung** | **Fix #1 — Diamond Routing Builder:** `backend/services/testing/test_runner.py` — `build_diamond_routing()` aggregiert historische Daten, berechnet Confidence-Bonus, wählt Primary/Fallback/Escalation basierend auf pass_rate und latency. **Fix #2 — Self-Heal Cycle:** `run_self_healing_cycle()` führt Diamond Routing für alle Skills aus, wendet Updates über `apply_routing_update()`. **Fix #3 — Confidence Bonus:** Mehr Runs = stabiler Decision (niedrigerer Bonus = besser). **Fix #4 — Primary Selection:** Günstigstes Modell mit pass_rate ≥ 0.95. **Fix #5 — Fallback/Escalation:** Basierend auf pass_rate und latency. **Fix #6 — Shield Rules:** Never-Degrade (neue pass_rate ≥ alte), Hysteresis (pass_rate +5% OR latency -20%). |
+| **Ergebnis** | D22 Self-Heal Cycle operational mit Diamond Routing Logic. Automatische Modell-Promotions basierend auf historischen Daten. Shield Rules verhindern Downgrades. |
+| **Files** | `backend/services/testing/test_runner.py` (build_diamond_routing, run_self_healing_cycle, apply_routing_update), `backend/config/model_routing.json` (Routing Config). |
+| **Verifikation** | Cycle: ✅ OPERATIONAL · Diamond Routing: ✅ CONFIDENCE-BASED · Primary: ✅ OPTIMAL · Shield: ✅ RULES |
+| **Patterns** | [PATTERN] #DiamondRouting #SelfHealingCycle "Automatischer Self-Healing Cycle mit Diamond Routing Logic — Confidence-basierte Modell-Promotions mit Shield Rules" |
+
+---
+
+## [CURRENT_SESSION_DELTA] (D21 DIAMOND ROUTING BUILDER — 🥇 SEALED & COMPLETE)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **D21 DIAMOND ROUTING BUILDER — Confidence-Based Model Selection** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-28) |
+| **Root Cause** | Keine Confidence-basierte Modell-Selection. Routing basierte auf statischen Assignments ohne historische Daten. |
+| **Umsetzung** | **Fix #1 — Confidence Bonus:** `backend/services/testing/test_runner.py` — Confidence-Bonus basierend auf run_count (mehr Runs = stabiler Decision). **Fix #2 — Primary Selection:** Günstigstes Modell mit pass_rate ≥ 0.95, sortiert nach (pass_rate * -1 + latency_ms * 0.001 + confidence_bonus). **Fix #3 — Fallback/Escalation:** Basierend auf pass_rate und latency mit Confidence-Bonus. **Fix #4 — Data Bridge:** `build_diamond_routing()` aggregiert historische Daten aus D10 logs_raw. **Fix #5 — MIN_RUNS Filter:** Nur Modelle mit ≥ 3 Runs berücksichtigt. |
+| **Ergebnis** | D21 Diamond Routing Builder operational mit Confidence-basierter Modell-Selection. Data Bridge zu D10 logs_raw. MIN_RUNS Filter für Qualität. |
+| **Files** | `backend/services/testing/test_runner.py` (build_diamond_routing, Confidence Logic, Data Bridge). |
+| **Verifikation** | Confidence: ✅ BONUS · Primary: ✅ OPTIMAL · Data Bridge: ✅ D10 · Filter: ✅ MIN_RUNS |
+| **Patterns** | [PATTERN] #DiamondRouting #Confidence "Confidence-basierte Modell-Selection — Historische Daten + Confidence-Bonus für stabile Routing-Entscheidungen" |
+
+---
+
+## [CURRENT_SESSION_DELTA] (D26 SYSTEM SEALING — 🥇 SEALED & COMPLETE)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **D26 SYSTEM SEALING — Cleanup & Final Validation of Observability & Self-Heal Stack** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-28) |
+| **Root Cause** | Kein Cleanup nach D20-D25 Implementierung. Legacy-Artefakte könnten verblieben sein. Integrität der neuen Datenstruktur nicht validiert. |
+| **Umsetzung** | **Fix #1 — Legacy-Entfernung:** Suche nach harvest_baseline.py und temporären Test-Runnern — keine gefunden (bereits clean). **Fix #2 — Config-Konsistenz:** Prüfung von backend/config/ — model_routing.json, self_heal_state.json, routing_history.json alle vorhanden und strukturell korrekt. **Fix #3 — Code-Audit:** Prüfung von Monitoring-Endpoints in system.py — 8 Endpoints konsistent benannt (/health, /routing, /self-heal/state, /monitoring/summary, etc.). **Fix #4 — Integritäts-Check:** Backend gestartet, /api/system/monitoring/summary aufgerufen — alle Sektionen (Health, Self-Heal, History) liefern Daten. **Fix #5 — Dokumentation:** PROJECT_STATE.md aktualisiert — Header und Observability & Integrity Stack auf D10-D25 erweitert, D21-D25 CURRENT_SESSION_DELTA Sections hinzugefügt. |
+| **Ergebnis** | D26 System Sealing abgeschlossen. Keine Legacy-Artefakte gefunden. Config-Dateien konsistent. Monitoring-Endpoints konsistent. Integritäts-Check bestanden. Dokumentation aktualisiert. D20-D25 auf SEALED gesetzt. |
+| **Files** | `backend/config/model_routing.json`, `backend/config/self_heal_state.json`, `backend/config/routing_history.json`, `backend/api/routers/system.py`, `PROJECT_STATE.md`, `documentation/tasks/task_055_system_sealing.md` (Task Doc). |
+| **Verifikation** | Legacy: ✅ NONE FOUND · Config: ✅ CONSISTENT · Endpoints: ✅ 8 CONSISTENT · Integrity: ✅ ALL SECTIONS · Documentation: ✅ UPDATED |
+| **Patterns** | [PATTERN] #SystemSealing #Cleanup "System Sealing — Cleanup von Legacy-Artefakten und finale Validierung der neuen Datenstruktur" |
+
+---
+
+## [CURRENT_SESSION_DELTA] (D27 DIAMOND SKILL ENGINEERING & DIAGNOSIS — 🥇 SEALED & COMPLETE)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **D27 DIAMOND SKILL ENGINEERING & DIAGNOSIS — Contract established, Diagnose-Engine defined** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-28) |
+| **Root Cause** | Fehlender unverletzlicher Kontrakt für Skill-Outputs. Unklare Unterscheidung zwischen Modell- und Skill-Fehlern. Manuelle Änderungen an model_routing.json untergraben das Immunsystem. |
+| **Umsetzung** | **Fix #1 — Diamond Skill Contract:** Etablierung des dreiteiligen JSON-Outputs {status, data, error} als unverletzliches Gesetz. Global Default Validator in validation.py prüft Kontrakt-Einhaltung. **Fix #2 — Modell vs. Skill Diagnose:** Klare Unterscheidung: Pass-Rate < 0.5 + Latenz OK = Skill-Problem (Code-Fix nötig), Pass-Rate < 0.5 + Latenz hoch = Modell-Problem (Routing-Wechsel automatisch). **Fix #3 — Verbot manuelle Änderungen:** STRIKTES VERBOT manueller Änderungen an model_routing.json. Routing nur über Immunsystem (D20-D26). **Fix #4 — V3.0 Constitution:** Update von 02_SKILL_DEVELOPMENT.md auf V3.0 — Immune-System Compatible. Integration von DIAMOND SKILL CONTRACT und DIAGNOSE-ENGINE. **Fix #5 — Patterns:** WHAT_I_LEARNED.md erweitert mit #DiamondSkillContract und #ModellVsSkillDiagnose. **Fix #6 — Workflows:** janus_maintenance.md für wöchentliche Kalibrierung erstellt, learning_report.md für Trend-Analyse aktualisiert. |
+| **Ergebnis** | D27 Diamond Skill Engineering sealed. Unverletzlicher Kontrakt {status, data, error} etabliert. Diagnose-Engine für Modell vs. Skill definiert. Manuelle Routing-Änderungen streng verboten. Skill-Entwicklungs-Doku V3.0 released. Patterns in WHAT_I_LEARNED.md dokumentiert. |
+| **Files** | `documentation/02_SKILL_DEVELOPMENT.md` (V3.0, Contract, Diagnose-Engine), `documentation/architecture/JANUS_IMMUNE_SYSTEM.md` (SSOT), `.windsurf/workflows/janus_maintenance.md` (Maintenance Workflow), `.windsurf/workflows/learning_report.md` (Trend-Analyse), `WHAT_I_LEARNED.md` (#DiamondSkillContract, #ModellVsSkillDiagnose), `PROJECT_STATE.md` (D27 aktualisiert). |
+| **Verifikation** | Contract: ✅ UNVERLETZLICH · Diagnose-Engine: ✅ DEFINIERT · Manuelle Änderungen: ✅ VERBOTEN · V3.0 Constitution: ✅ RELEASED · Patterns: ✅ DOKUMENTIERT · Workflows: ✅ REGISTRIERT |
+| **Patterns** | [PATTERN] #DiamondSkillContract "Zwang zum dreiteiligen JSON-Output {status, data, error} für autonomes Immunsystem-Routing" |
+| **Patterns** | [PATTERN] #ModellVsSkillDiagnose "'Stärkeres Modell fixiert es -> Routing-Problem | Nichts fixiert es -> Skill-Problem'" |
 
 ---
 

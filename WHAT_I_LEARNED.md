@@ -1956,3 +1956,51 @@
 - **Lösung:** Wenn eine Ressource (z.B. eine Datei) im User-Text klar identifizierbar ist, darf der Orchestrator (Dispatcher) nicht darauf hoffen, dass das LLM dies korrekt mappt. Er muss die Information selbst extrahieren (Regex) und den Tool-Call mit diesen Argumenten hart erzwingen.
 - **Vorteil:** Erhöht die System-Stabilität von "probabilistisch" (LLM-Laune) auf "deterministisch" (Code-Integrität).
 - **Location:** `backend/services/orchestrator/execution_dispatcher.py` (F16 FINAL LOCKDOWN).
+
+---
+
+## [PATTERN] #DiamondSkillContract "Diamond Skill Contract — Zwang zum dreiteiligen JSON-Output {status, data, error} für autonomes Immunsystem-Routing"
+- **Kontext:** D27 Diamond Skill Engineering etabliert einen unverletzlichen Kontrakt für alle Skill-Outputs. Das autonome Immunsystem (D20-D26) benötigt ein standardisiertes Format, um Skill-Ergebnisse zu validieren, zu loggen und Routing-Entscheidungen zu treffen. Ohne diesen Kontrakt kann das System nicht deterministisch unterscheiden zwischen Erfolg und Fehler.
+- **Problem:** Unterschiedliche Output-Formate erschweren die automatische Validierung und erschweren die Root-Cause-Analyse. Einige Skills returnieren Rohdaten, andere Error-Strings, andere wiederum komplexe Objekte ohne klaren Status. Dies führt zu: (1) Fehlende Einheitlichkeit in D10 Telemetrie, (2) Unklare Pass/Fail Entscheidung in der ValidationEngine, (3) Unzuverlässige Routing-Entscheidungen im Self-Heal Cycle.
+- **Lösung (Dreiteiliger Kontrakt):**
+  1. **`status` (obligatorisch):** Entweder `"success"` oder `"error"`. Keine gemischten States wie "partial_success".
+  2. **`data` (bei success):** Enthält die eigentlichen Ergebnis-Daten. MUSS bei `status: "success"` vorhanden sein.
+  3. **`error` (bei error):** Enthält Fehler-Details (message, code, details). MUSS bei `status: "error"` vorhanden sein.
+- **Regeln:**
+  - `status` ist immer String und immer "success" oder "error"
+  - Bei `status: "success"`: `data` MUSS enthalten sein, `error` MUSS fehlen oder null sein
+  - Bei `status: "error"`: `error` MUSS enthalten sein, `data` KANN fehlen oder null sein
+  - Keine alternativen Status-Werte (keine "pending", "partial", "warning")
+- **Härtung:** Global Default Validator in `validation.py` prüft Kontrakt-Einhaltung. ValidationEngine mit `ValidationResult` (passed, validator_type, message, severity, details). Multi-Rule-Validierung: Alle Regeln müssen bestehen.
+- **Tripwire:** Wenn Skill gibt Rohdaten zurück statt `{status, data}` → Kontrakt verletzt. Wenn `status` fehlt oder nicht "success"/"error" → Validation schlägt fehl. Wenn `data` und `error` beide vorhanden → Ambiguität, Validation schlägt fehl.
+- **Location:** `backend/services/testing/validation.py` (ValidationEngine, ValidationResult), `documentation/02_SKILL_DEVELOPMENT.md` (V3.0), implementiert 2026-04-28 (D27).
+- **Epic:** D27 — Diamond Skill Engineering & Diagnosis
+- **Confidence:** High (Unverletzlicher Kontrakt, Global Default Validator, strikte Regeln).
+- **Tags:** DiamondSkillContract, SkillOutput, Validation, Contract, D27, Immunsystem
+
+---
+
+## [PATTERN] #ModellVsSkillDiagnose "Modell vs. Skill Diagnose — 'Stärkeres Modell fixiert es -> Routing-Problem | Nichts fixiert es -> Skill-Problem'"
+- **Kontext:** D27 Diagnose-Engine etabliert eine klare Unterscheidung zwischen zwei Fehler-Quellen im System: Modell-Fehler (Routing-Problem) und Skill-Fehler (Code-Problem). Diese Unterscheidung ist kritisch für das autonome Immunsystem, um die richtige Maßnahme zu ergreifen: automatischer Modell-Wechsel vs. manuelles Code-Refactoring.
+- **Problem:** Wenn ein Skill degradiert ist (pass_rate < 0.5), ist unklar ob das Problem beim Modell (z.B. Overload, Rate Limit, Latenz) oder beim Skill-Code (z.B. Halluzination, Logik-Fehler, Format-Breach) liegt. Ohne diese Unterscheidung greift das Immunsystem möglicherweise falsch: Es versucht ein Routing-Update für einen defekten Skill, oder es fordert manuelle Eingriffe bei einem transienten Modell-Problem.
+- **Lösung (Diagnose-Regeln):**
+  1. **Pass-Rate < 0.5 + Latenz OK (nicht-timeout):** Skill-Problem (Code-Fix nötig)
+     - Logik: Der Skill scheitert trotz funktionierendem Modell → Handler-Code oder Validation-Logic defekt
+     - Maßnahme: Manuelles Skill-Refactoring (Entwickler-Arbeit)
+  2. **Pass-Rate < 0.5 + Latenz hoch (timeout/429/500):** Modell-Problem (Routing-Wechsel)
+     - Logik: Das Modell ist überlastet oder nicht verfügbar → Skill-Code ist korrekt, Infrastruktur defekt
+     - Maßnahme: Diamond Routing → Automatischer Modell-Wechsel (D21-D22)
+  3. **Pass-Rate ≥ 0.5:** System stabil (kein Eingriff nötig)
+     - Logik: Skill funktioniert mit aktuellem Modell
+     - Maßnahme: Monitoring fortsetzen, keine Änderungen
+- **Erweiterte Diagnose (mit Escalation Data):**
+  - `final_tier` = "escalation" → Alle Tiers ausprobiert, nichts funktioniert → Skill-Problem
+  - `final_tier` = "primary" aber `pass_rate` niedrig → Validation-Fail (Format-Breach)
+  - `attempts_count` ≥ 2 aber `status` = "failed" → Skill scheitert über alle Tiers → Skill-Problem
+  - `latency_ms` > 3000ms aber `status` = "passed" → Timeout-Problem → Schnelleres Modell oder Caching
+- **Härtung:** Monitoring Aggregator (D25) zeigt Health Snapshot mit pass_rate und Latenz. Self-Heal Cycle (D22) triggert nur bei Modell-Problemen. Skill-Entwickler-Doku (V3.0) definiert klare Diagnose-Workflow.
+- **Tripwire:** Wenn Pass-Rate < 0.5 aber Routing-Wechsel wird versucht → Skill-Problem als Modell-Problem fehlklassifiziert. Wenn Pass-Rate < 0.5 aber kein Alert → Monitoring defekt. Wenn Latenz immer 0.0 → Async-Await fehlt (D18 Pattern).
+- **Location:** `documentation/02_SKILL_DEVELOPMENT.md` (V3.0, TEIL 1.3), `documentation/architecture/JANUS_IMMUNE_SYSTEM.md` (Diagnose-Workflow), implementiert 2026-04-28 (D27).
+- **Epic:** D27 — Diamond Skill Engineering & Diagnosis
+- **Confidence:** High (Klare Unterscheidung, deterministische Regeln, integriert in Immunsystem).
+- **Tags:** ModellVsSkillDiagnose, DiagnoseEngine, RootCauseAnalysis, RoutingProblem, SkillProblem, D27

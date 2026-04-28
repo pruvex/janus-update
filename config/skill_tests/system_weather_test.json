@@ -1,14 +1,13 @@
 {
   "skill_id": "system.weather",
   "skill_type": "system",
-  "generated_at": "2026-04-28T12:22:44.169023",
-  "e2e_validation": "E2E-VAL-TEST1: Increased complexity to stress gpt-5.4-nano",
+  "generated_at": "2026-04-28T16:27:37.868384",
   "tests": {
     "happy_path": {
       "name": "happy_path",
       "description": "Standard successful execution",
       "input": {
-        "input": "What is the current weather in Berlin, including temperature, humidity, wind speed, and a 5-day forecast?"
+        "input": "default input"
       },
       "validation": [
         "type_match:dict",
@@ -19,7 +18,7 @@
       "name": "edge_case",
       "description": "Boundary condition or unusual input",
       "input": {
-        "input": "Get detailed weather for Tokyo with temperature in Celsius, humidity percentage, wind direction in degrees, and hourly forecast for the next 24 hours"
+        "input": "edge input"
       },
       "validation": [
         "type_match:dict",

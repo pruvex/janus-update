@@ -371,13 +371,14 @@ class CalibrationWinner:
             # Determine winner (highest provider_score)
             if provider_scores:
                 winner = max(provider_scores.keys(), key=lambda p: provider_scores[p])
-                skill_data["winner"] = winner
                 skill_data["active"] = skill_data[winner]
                 
                 # Decision-Metrics: Add metrics for primary model of winner
                 winner_data = skill_data[winner]
                 if winner_data:
                     primary_model = winner_data["primary"]["model"]
+                    # Bug 1 Fix: Set winner to MODEL ID, not provider string
+                    skill_data["winner"] = primary_model
                     winner_metrics = winner_data.get("metrics", {})
                     primary_metrics = winner_metrics.get(primary_model, {})
                     skill_data["decision_metrics"] = {
@@ -832,6 +833,10 @@ class CalibrationWinner:
             cycle_result["end_time"] = datetime.now().isoformat()
             
             logger.info(f"[D22-SELF-HEAL] Cycle completed. Processed {cycle_result['skills_processed']} skills, updated {cycle_result['skills_updated']}, skipped {cycle_result['skills_skipped']}")
+            
+            # Bug 2 Fix: Update cooldown state after successful cycle
+            if not dry_run and cycle_result["status"] == "completed":
+                self._update_cooldown()
             
         except Exception as e:
             logger.error(f"[D22-SELF-HEAL] Cycle failed: {e}", exc_info=True)
