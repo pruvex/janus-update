@@ -421,6 +421,10 @@ class CalibrationWinner:
             test_events = response.data if response.data else []
             logger.info(f"[DATA-BRIDGE] Loaded {len(test_events)} historical skill_test events from logs_raw")
             
+            # Debug log: Show first raw event
+            if test_events:
+                logger.debug(f"[D21-DEBUG] Raw DB Event: {test_events[0]}")
+            
             # Reorganize into skill_id -> model -> [results] structure
             historical_data = {}
             for event in test_events:
@@ -439,8 +443,21 @@ class CalibrationWinner:
                     historical_data[skill_id][model] = []
                 
                 # Convert event to test result format
+                # Check payload for status (historical events have payload: {"status": "passed", ...})
+                # Also check event-level status as fallback
+                payload_status = payload.get("status") or payload.get("passed")
+                if payload_status:
+                    # Normalize payload status to boolean
+                    passed = payload_status == "passed" or payload_status == True or payload_status == "success"
+                elif status:
+                    # Fallback to event-level status
+                    passed = status == "success" or status == "passed"
+                else:
+                    # Default to failed if no status found
+                    passed = False
+                
                 test_count = 1  # Each event represents one test run
-                passed_count = 1 if status == "success" else 0
+                passed_count = 1 if passed else 0
                 avg_latency_ms = latency_ms if latency_ms else 0
                 
                 historical_data[skill_id][model].append({
