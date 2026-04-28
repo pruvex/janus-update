@@ -73,10 +73,25 @@ def calculate_cost(model_id: str, usage_data: dict = None, custom_prompt: str = 
         output_tokens = get_val(usage_data, ['completion_tokens', 'output_tokens'])
 
         input_cost_per_token = model_info.get("cost_per_token_input", 0)
+        cached_cost_per_token = model_info.get("cost_per_token_cached", 0)
         output_cost_per_token = model_info.get("cost_per_token_output", 0)
-        
-        cost_usd = (input_tokens * input_cost_per_token) + (output_tokens * output_cost_per_token)
+
+        # Prüfe auf Cached Tokens (von API zurückgegeben)
+        cached_tokens = get_val(usage_data, ['cached_tokens', 'prompt_tokens_cached'], 0)
+
+        # Berechne Kosten: Cached Tokens (billiger) + Nicht-Cached Input + Output
+        if cached_tokens > 0 and cached_cost_per_token > 0:
+            non_cached_input = max(0, input_tokens - cached_tokens)
+            input_cost = (cached_tokens * cached_cost_per_token) + (non_cached_input * input_cost_per_token)
+        else:
+            input_cost = input_tokens * input_cost_per_token
+
+        output_cost = output_tokens * output_cost_per_token
+        cost_usd = input_cost + output_cost
+
         usage = {"input_tokens": input_tokens, "output_tokens": output_tokens}
+        if cached_tokens > 0:
+            usage["cached_tokens"] = cached_tokens
 
     # --- FALL B: BILD GENERIERUNG ---
     elif model_type == "image":

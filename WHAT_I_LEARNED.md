@@ -2,6 +2,23 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [PATTERN] #UIDeduplication "UI Deduplication — Parallele Rendering-Flags und DOM-Clearing mit Delay"
+- **Kontext:** UI Model Management in Janus zeigte doppelte Buttons und Modelle in den Einstellungen, besonders bei schnellen User-Interaktionen oder parallelen Render-Aufrufen.
+- **Problem:** Doppelte Event-Listener, parallele `renderSettingsView()` Aufrufe, und Race Conditions beim DOM-Manipulation führten zu duplizierten UI-Elementen. Einfaches `innerHTML = ""` war nicht ausreichend.
+- **Lösung:**
+  1. **Rendering Flags:** `isSettingsViewRendering` und `isModelViewLoading` Flags verhindern parallele Ausführung.
+  2. **DOM-Clearing mit Delay:** `innerHTML = ""`, dann `await new Promise(resolve => setTimeout(resolve, 0))`, dann nochmal `innerHTML = ""` für sicheres Entschlacken.
+  3. **Set-Deduplication:** `renderedModelIds` Set verhindert doppelte Modelle in der Liste.
+  4. **Spezifischer Event Listener:** `e.target.closest("button.model-manage-btn")` statt generischem `tagName === "BUTTON"`.
+  5. **Button-Disabling:** Button wird während des Ladens deaktiviert und zeigt "Lade...".
+- **Härtung:** Flags garantieren Single-Execution. DOM-Delay gibt Browser Zeit für Reflow. Set garantiert eindeutige IDs.
+- **Tripwire:** Wenn Buttons/Modelle doppelt erscheinen → parallele Rendering-Flags fehlen. Wenn Event Listener auf falsche Elemente triggert → `closest()` Selector zu generisch.
+- **Location:** `frontend/js/settings.js` (renderSettingsView, renderModelManagementView, Event Listener), gefixt 2026-04-28.
+- **Confidence:** High (Keine doppelten Elemente mehr bei schnellen Klicks).
+- **Tags:** UIDeduplication, RaceCondition, DOM, Rendering, JavaScript
+
+---
+
 ## [PATTERN] #StatisticalRoutingBaseline "Statistical Routing Baseline — 10 Durchläufe zur Eliminierung stochastischen Rauschens bei Modell-Vergleichen"
 - **Kontext:** D20 Routing Calibration implementiert eine systematische Modell-Kalibrierung über Matrix-Tests (Skills × Models × Runs). Ein einzelner Test-Lauf kann durch stochastisches Rauschen (Temperatur, Sampling, Netzwerk-Latenz) verfälscht sein. Entscheidungen über Modell-Zuweisungen basieren auf statistischer Signifikanz, nicht auf Einzelfällen.
 - **Problem:** Ohne statistische Baseline führen Einzelfälle zu falschen Schlussfolgerungen. Ein Modell kann einmal gut abschneiden (Glück) und einmal schlecht (Pech). Entscheidungen basierend auf Einzelfällen sind nicht reproduzierbar und führen zu Instabilität im Routing.

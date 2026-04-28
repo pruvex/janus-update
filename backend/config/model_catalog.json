@@ -40,6 +40,27 @@
         "capabilities": ["chat", "tool_calling", "complex_reasoning", "deep_research_synthesis", "memory_query"]
     },
     {
+        "id": "gpt-5.5",
+        "name": "GPT-5.5",
+        "provider": "openai",
+        "type": "text",
+        "cost_per_token_input": 0.00000500,
+        "cost_per_token_cached": 0.00000050,
+        "cost_per_token_output": 0.00003000,
+        "desc": "Neues leistungsstarkes Modell mit optimaler Balance aus Kosten und Leistung für Standard-Aufgaben.",
+        "capabilities": ["chat", "tool_calling", "list_synthesis", "complex_reasoning", "memory_query"]
+    },
+    {
+        "id": "gpt-5.5-pro",
+        "name": "GPT-5.5 Pro",
+        "provider": "openai",
+        "type": "text",
+        "cost_per_token_input": 0.00003000,
+        "cost_per_token_output": 0.00018000,
+        "desc": "Das absolute Premium-Modell mit maximalem Reasoning und Kontext-Verarbeitung für hochkomplexe Aufgaben.",
+        "capabilities": ["chat", "tool_calling", "complex_reasoning", "deep_research_synthesis", "memory_query"]
+    },
+    {
         "id": "gpt-image-1.5",
         "name": "GPT Image 1.5",
         "provider": "openai",

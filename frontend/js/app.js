@@ -505,8 +505,14 @@ function fillModelOptionsIntoSelect(selectEl, targetProvider) {
   selectEl.innerHTML = "";
   let allowedModels = appState.user_selections[targetProvider] || [];
 
-  if (allowedModels.length === 0 && appState.model_catalog[targetProvider]) {
-    allowedModels = appState.model_catalog[targetProvider].map((model) => model.id);
+  // Wenn keine Modelle ausgewählt sind, zeige keine an (nicht alle als Fallback)
+  if (allowedModels.length === 0) {
+    console.warn(`[fillModelOptionsIntoSelect] No models selected for provider: ${targetProvider}`);
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "-- Keine Modelle ausgewählt --";
+    selectEl.appendChild(option);
+    return;
   }
 
   if (!appState.model_catalog[targetProvider]) {
@@ -1795,15 +1801,36 @@ function geminiSidebarModelRank(m) {
 }
 
 function sortSidebarModelsForProvider(provider, models) {
-  if (provider !== "gemini" || !Array.isArray(models)) {
-    return models;
+  if (!Array.isArray(models)) return models;
+
+  // OpenAI: Definierte Reihenfolge (kleinstes zuerst)
+  if (provider === "openai") {
+    const openaiRank = {
+      "gpt-5.4-nano": 1,
+      "gpt-5.4-mini": 2,
+      "gpt-5.4": 3,
+      "gpt-5.4-pro": 4,
+      "gpt-5.5": 5,
+      "gpt-5.5-pro": 6
+    };
+    return [...models].sort((a, b) => {
+      const ra = openaiRank[a.id] || 999;
+      const rb = openaiRank[b.id] || 999;
+      return ra - rb;
+    });
   }
-  return [...models].sort((a, b) => {
-    const ra = geminiSidebarModelRank(a);
-    const rb = geminiSidebarModelRank(b);
-    if (ra !== rb) return ra - rb;
-    return String(a.id).localeCompare(String(b.id));
-  });
+
+  // Gemini: Bestehende Sortierung
+  if (provider === "gemini") {
+    return [...models].sort((a, b) => {
+      const ra = geminiSidebarModelRank(a);
+      const rb = geminiSidebarModelRank(b);
+      if (ra !== rb) return ra - rb;
+      return String(a.id).localeCompare(String(b.id));
+    });
+  }
+
+  return models;
 }
 
 function findFirstAvailableModel(provider) {
@@ -1813,10 +1840,11 @@ function findFirstAvailableModel(provider) {
     return null;
   }
 
-  // Holt die vom User erlaubten Modelle oder nimmt alle als Fallback.
+  // Holt die vom User erlaubten Modelle. Kein Fallback auf alle Modelle.
   let allowedModels = appState.user_selections[provider] || [];
   if (allowedModels.length === 0) {
-      allowedModels = appState.model_catalog[provider].map(m => m.id);
+    console.warn(`[findFirstAvailableModel] No models selected for provider: ${provider}`);
+    return null;
   }
   
   // Filtert die Modelle (z.B. um reine TTS-Modelle auszublenden).

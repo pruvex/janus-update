@@ -355,26 +355,50 @@ async function loadApiKeys() {
   }
 }
 
-async function renderSettingsView(targetSection = "api-key-section") {
-  setActiveSettingsSection(targetSection);
-  await loadApiKeys();
+// Flag für renderSettingsView um parallele Ausführung zu verhindern
+let isSettingsViewRendering = false;
 
-  modelManagementButtons.innerHTML = "";
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/keys`);
-    const data = await response.json();
-    for (const provider in data.api_keys) {
-      const manageModelsBtn = document.createElement("button");
-      manageModelsBtn.textContent = `Modelle für ${provider} verwalten`;
-      manageModelsBtn.dataset.provider = provider;
-      modelManagementButtons.appendChild(manageModelsBtn);
-    }
-  } catch (error) {
-    console.error("Error loading providers for model management buttons:", error);
+async function renderSettingsView(targetSection = "api-key-section") {
+  // Verhindere parallele Ausführung
+  if (isSettingsViewRendering) {
+    console.log("[renderSettingsView] Bereits am Rendern, überspringe...");
+    return;
   }
-  await updateImageGenStatus();
-  if (targetSection === "assistenz-section") {
-    await loadSuggestionModeSettings();
+  isSettingsViewRendering = true;
+
+  try {
+    setActiveSettingsSection(targetSection);
+    await loadApiKeys();
+
+    // Sicherstellen, dass Buttons komplett neu aufgebaut werden
+    modelManagementButtons.innerHTML = "";
+    // Kurzer Delay um DOM zu entschlacken
+    await new Promise(resolve => setTimeout(resolve, 0));
+    modelManagementButtons.innerHTML = "";
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/keys`);
+      const data = await response.json();
+      // Tracken welche Provider bereits hinzugefügt wurden (Schutz gegen Duplikate)
+      const addedProviders = new Set();
+      for (const provider in data.api_keys) {
+        if (addedProviders.has(provider)) continue;
+        addedProviders.add(provider);
+        const manageModelsBtn = document.createElement("button");
+        manageModelsBtn.textContent = `Modelle für ${provider} verwalten`;
+        manageModelsBtn.dataset.provider = provider;
+        manageModelsBtn.classList.add('model-manage-btn');
+        modelManagementButtons.appendChild(manageModelsBtn);
+      }
+    } catch (error) {
+      console.error("Error loading providers for model management buttons:", error);
+    }
+    await updateImageGenStatus();
+    if (targetSection === "assistenz-section") {
+      await loadSuggestionModeSettings();
+    }
+  } finally {
+    isSettingsViewRendering = false;
   }
 }
 
@@ -382,7 +406,15 @@ async function renderModelManagementView(provider) {
   setActiveSettingsSection("model-management-section");
   document.querySelector("#model-management-section h3").textContent =
     `Modelle für ${provider} verwalten`;
+
+  // Liste KOMPLETT leeren - zweimal für Sicherheit
   modelList.innerHTML = "";
+  // Kleiner Delay um DOM zu entschlacken
+  await new Promise(resolve => setTimeout(resolve, 0));
+  modelList.innerHTML = "";
+
+  // Sicherstellen, dass wir mit einer frischen ID-Liste arbeiten (Schutz gegen Duplikate)
+  const renderedModelIds = new Set();
 
   let selectedModels = [];
   try {
@@ -402,16 +434,80 @@ async function renderModelManagementView(provider) {
     "gemini-2.5-flash-image",
     "gemini-pro-vision"
   ];
-  
+
+  // Für OpenAI nur GPT-5.4 und GPT-5.5 Modelle anzeigen - in definierter Reihenfolge
+  const openaiAllowedModels = [
+    "gpt-5.4-nano",
+    "gpt-5.4-mini",
+    "gpt-5.4",
+    "gpt-5.4-pro",
+    "gpt-5.5",
+    "gpt-5.5-pro"
+  ];
+
+  // Hilfsfunktion zur Formatierung der Kosten
+  function formatModelCost(model) {
+    if (!model.cost_per_token_input && !model.cost_per_token_output) return "";
+    const inputCost = model.cost_per_token_input ? (model.cost_per_token_input * 1000000).toFixed(2) : "0";
+    const cachedCost = model.cost_per_token_cached ? (model.cost_per_token_cached * 1000000).toFixed(2) : null;
+    const outputCost = model.cost_per_token_output ? (model.cost_per_token_output * 1000000).toFixed(2) : "0";
+
+    if (cachedCost) {
+      return `$${inputCost}/Mio (Input) | $${cachedCost}/Mio (Cached) | $${outputCost}/Mio (Output)`;
+    }
+    return `$${inputCost}/Mio (Input) | $${outputCost}/Mio (Output)`;
+  }
+
   const modelsForProvider = appState.model_catalog[provider];
   if (modelsForProvider && Array.isArray(modelsForProvider)) {
-      modelsForProvider.forEach((model) => {
-        if (excludedModels.includes(model.id)) return;
-        const listItem = document.createElement("li");
-        const isChecked = selectedModels.includes(model.id) ? "checked" : "";
-        listItem.innerHTML = `<input type="checkbox" id="${model.id}" value="${model.id}" ${isChecked}> <label for="${model.id}">${model.name}</label>`;
-        modelList.appendChild(listItem);
-      });
+    // Erstelle Map für schnellen Zugriff
+    const modelMap = new Map(modelsForProvider.map(m => [m.id, m]));
+
+    // Definiere Reihenfolge je nach Provider
+    let modelOrder;
+    if (provider === "openai") {
+      modelOrder = openaiAllowedModels;
+    } else if (provider === "gemini") {
+      // Nur die beiden gewünschten Gemini-Modelle
+      modelOrder = [
+        "gemini-3-flash-preview",
+        "gemini-3.1-pro-preview"
+      ];
+    } else {
+      // Für andere Provider: Alle verfügbaren Modelle verwenden
+      modelOrder = modelsForProvider.map(m => m.id);
+    }
+
+    // Gehe in definierter Reihenfolge durch die Modelle
+    modelOrder.forEach((modelId) => {
+      const model = modelMap.get(modelId);
+      if (!model) return;
+      // Für OpenAI: Nur erlaubte Modelle
+      if (provider === "openai" && !openaiAllowedModels.includes(model.id)) return;
+      if (excludedModels.includes(model.id)) return;
+
+      // Schutz gegen doppelte Modelle in der Liste
+      if (renderedModelIds.has(model.id)) return;
+      renderedModelIds.add(model.id);
+
+      const isChecked = selectedModels.includes(model.id) ? "checked" : "";
+      const costInfo = formatModelCost(model);
+      const description = model.desc || "";
+
+      const listItem = document.createElement("li");
+      listItem.style.cssText = "margin-bottom: 12px; padding: 8px; border-bottom: 1px solid #333;";
+      listItem.innerHTML = `
+        <div style="display: flex; align-items: flex-start; gap: 10px;">
+          <input type="checkbox" id="${model.id}" value="${model.id}" ${isChecked} style="margin-top: 4px;">
+          <div style="flex: 1;">
+            <label for="${model.id}" style="font-weight: bold; font-size: 14px; cursor: pointer;">${model.name}</label>
+            <div style="font-size: 11px; color: #888; margin-top: 2px;">${costInfo}</div>
+            <div style="font-size: 12px; color: #aaa; margin-top: 4px; line-height: 1.3;">${description}</div>
+          </div>
+        </div>
+      `;
+      modelList.appendChild(listItem);
+    });
   } else {
     console.warn(`[renderModelManagementView] No models found for provider '${provider}' or data not loaded yet.`);
     modelList.innerHTML = `<li>Keine Modelle für ${provider} gefunden oder der Katalog wird noch geladen.</li>`;
@@ -1035,13 +1131,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // Model Management
+  // Model Management - Flag um parallele Ausführung zu verhindern
+  let isModelViewLoading = false;
   modelManagementButtons.addEventListener("click", async (e) => {
-    if (e.target.tagName === "BUTTON") {
-      const provider = e.target.dataset.provider;
+    const btn = e.target.closest("button.model-manage-btn");
+    if (!btn || isModelViewLoading) return;
+
+    const provider = btn.dataset.provider;
+    isModelViewLoading = true;
+    btn.disabled = true;
+    btn.textContent = "Lade...";
+
+    try {
       // Sicherstellen, dass der Katalog geladen ist, bevor die Ansicht gerendert wird.
       await loadModelCatalogForSettings();
-      renderModelManagementView(provider);
+      await renderModelManagementView(provider);
+    } finally {
+      isModelViewLoading = false;
+      btn.disabled = false;
+      btn.textContent = `Modelle für ${provider} verwalten`;
     }
   });
 

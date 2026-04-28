@@ -1,6 +1,21 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.30-beta.53** — "D27 SEALED: Diamond Skill Engineering & Diagnosis. D27: 🥇 SEALED. D26: 🥇 SEALED. D25: 🥇 SEALED. D24: 🥇 SEALED. D23: 🥇 SEALED. D22: 🥇 SEALED. D21: 🥇 SEALED. D20: 🥇 SEALED. D19: 🥇 SEALED. D18: 🥇 SEALED. D17: 🥇 SEALED. D16: 🥇 SEALED. D15: 🥇 SEALED. D14: 🥇 DIAMOND HARMONIZED. D13: 🥇 DIAMOND HARMONIZED. D12: 🥇 DIAMOND HARMONIZED. D11: 🥇 SEALED. D10: 🥇 SEALED.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.30-beta.54** — "UI Model Management: Deduplication, GPT-5.5, Sortierung. D27: 🥇 SEALED. D26: 🥇 SEALED. D25: 🥇 SEALED. D24: 🥇 SEALED. D23: 🥇 SEALED. D22: 🥇 SEALED. D21: 🥇 SEALED. D20: 🥇 SEALED. D19: 🥇 SEALED. D18: 🥇 SEALED. D17: 🥇 SEALED. D16: 🥇 SEALED. D15: 🥇 SEALED. D14: 🥇 DIAMOND HARMONIZED. D13: 🥇 DIAMOND HARMONIZED. D12: 🥇 DIAMOND HARMONIZED. D11: 🥇 SEALED. D10: 🥇 SEALED.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-28 20:02 (D27 SEALED: Diamond Skill Engineering & Diagnosis)
+**Aktualisiert:** 2026-04-28 22:30 (UI Model Management: Deduplication, GPT-5.5, Sortierung)
+
+---
+
+## [CURRENT_SESSION_DELTA] (UI MODEL MANAGEMENT — ✅ IMPLEMENTED)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **UI Model Management: Deduplication, GPT-5.5 Integration, Sortierung** |
+| **Status** | **✅ IMPLEMENTED** (2026-04-28) |
+| **Root Cause** | Doppelte Buttons/Modelle in Settings, GPT-5.5 Modelle fehlten, keine konsistente Sortierung, Sidebar zeigte alle Modelle statt nur ausgewählte. |
+| **Umsetzung** | **Fix #1 — Deduplication:** `frontend/js/settings.js` — `isSettingsViewRendering` Flag, `isModelViewLoading` Flag, `innerHTML = ""` mit Delay, `Set` für renderedModelIds, Event Listener mit `closest("button.model-manage-btn")`. **Fix #2 — GPT-5.5 Modelle:** `backend/config/model_catalog.json` — GPT-5.5 ($5/Mio Input, $0.50/Mio Cached, $30/Mio Output) und GPT-5.5 Pro ($30/Mio Input, $180/Mio Output) hinzugefügt. **Fix #3 — Cost Calculator:** `backend/services/cost_calculator.py` — `cost_per_token_cached` und `cached_tokens` Support für GPT-5.5. **Fix #4 — Sortierung:** `frontend/js/settings.js` und `frontend/js/app.js` — Definierte Reihenfolge für OpenAI (Nano→Mini→Standard→Pro→5.5→5.5 Pro) und Gemini (3 Flash→3.1 Pro). **Fix #5 — Sidebar Filter:** `frontend/js/app.js` — Kein Fallback auf alle Modelle, nur `user_selections`. **Fix #6 — Gemini Filter:** Nur 2 Modelle (3 Flash Preview, 3.1 Pro Preview). |
+| **Ergebnis** | Keine doppelten UI-Elemente mehr. GPT-5.5 Modelle mit korrekter Cost-Berechnung. Konsistente Sortierung (kleinstes zuerst) in Settings und Sidebar. Sidebar zeigt nur ausgewählte Modelle. |
+| **Files** | `frontend/js/settings.js` (Deduplication Flags, Sortierung, Gemini Filter), `frontend/js/app.js` (Sidebar Filter, Sortierung), `backend/config/model_catalog.json` (GPT-5.5), `backend/services/cost_calculator.py` (Cached Tokens). |
+| **Verifikation** | Deduplication: ✅ KEINE DOPPELTEN ELEMENTE · GPT-5.5: ✅ IN LISTE · Sortierung: ✅ KLEINSTES ZUERST · Sidebar: ✅ NUR AUSGEWÄHLTE · Gemini: ✅ 2 MODELLE |
+| **Patterns** | [PATTERN] #UIDeduplication "Parallele Rendering-Flags und DOM-Clearing mit Delay — Schutz gegen doppelte UI-Elemente bei schnellen User-Interaktionen" |
 
 ---
 
