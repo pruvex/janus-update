@@ -1005,6 +1005,12 @@ async def trigger_self_heal(
         # Initialize CalibrationWinner with self-healing capabilities
         winner = CalibrationWinner()
         
+        # D22-FATAL-DEBUG: Runtime signature inspection
+        import inspect
+        sig = inspect.signature(winner.run_self_healing_cycle)
+        logger.info(f"[D22-FATAL-DEBUG] Actual Signature in RAM: {sig}")
+        logger.info(f"[D22-FATAL-DEBUG] Class File Source: {inspect.getfile(winner.__class__)}")
+        
         # Add background task with lambda to preserve self-binding
         background_tasks.add_task(lambda: winner.run_self_healing_cycle(
             dry_run=dry_run,
