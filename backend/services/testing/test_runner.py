@@ -234,10 +234,10 @@ class CalibrationWinner:
                 perfect_models = [m for m, metrics in model_metrics.items() if metrics["pass_rate"] >= 1.0]
                 
                 if perfect_models:
-                    # Choose cheapest perfect model (by cost score)
+                    # Confidence Bonus: More runs = more stable decision (lower bonus = better)
                     perfect_models_sorted = sorted(
                         perfect_models,
-                        key=lambda m: self.cost_scores.get(m, 999)
+                        key=lambda m: (self.cost_scores.get(m, 999), model_metrics[m]["run_count"])
                     )
                     primary_model = perfect_models_sorted[0]
                 else:
@@ -247,24 +247,53 @@ class CalibrationWinner:
                         (m, metrics) for m, metrics in model_metrics.items()
                         if metrics["pass_rate"] >= max_pass_rate - 0.01
                     ]
+                    # Confidence Bonus: More runs = more stable decision
                     best_models_sorted = sorted(
                         best_models,
-                        key=lambda x: self.cost_scores.get(x[0], 999)
+                        key=lambda x: (self.cost_scores.get(x[0], 999), x[1]["run_count"])
                     )
                     primary_model = best_models_sorted[0][0]
                 
-                # STEP 4: Fallback - Choose next stronger model in silo
+                primary_pass_rate = model_metrics[primary_model]["pass_rate"]
+                
+                # STEP 4: Fallback-Hardening - Must reach at least primary pass-rate (preferably 100%)
                 primary_idx = strength_order.index(primary_model) if primary_model in strength_order else 0
                 stronger_models = [m for m in strength_order if strength_order.index(m) > primary_idx]
                 
                 if stronger_models:
-                    fallback_model = stronger_models[0]  # Next stronger
+                    # Filter stronger models that meet primary pass-rate
+                    fallback_candidates = [
+                        m for m in stronger_models
+                        if m in model_metrics and model_metrics[m]["pass_rate"] >= primary_pass_rate - 0.01
+                    ]
+                    if fallback_candidates:
+                        # Choose cheapest among candidates (with confidence bonus)
+                        fallback_model = min(
+                            fallback_candidates,
+                            key=lambda m: (self.cost_scores.get(m, 999), model_metrics[m]["run_count"])
+                        )
+                    else:
+                        # No model meets pass-rate, take next stronger
+                        fallback_model = stronger_models[0]
                 else:
                     fallback_model = primary_model  # No stronger available
                 
-                # STEP 5: Escalation - Choose smallest model stronger than primary AND guarantees stability
+                # STEP 5: Escalation-Hardening - Smallest model with 100% pass-rate AND stronger than primary
+                # If no such model, take absolute strongest of silo
+                stronger_models = [m for m in strength_order if strength_order.index(m) > primary_idx]
+                
                 if stronger_models:
-                    escalation_model = stronger_models[-1]  # Strongest available
+                    # Find perfect models (100% pass-rate) that are stronger than primary
+                    perfect_stronger = [
+                        m for m in stronger_models
+                        if m in model_metrics and model_metrics[m]["pass_rate"] >= 1.0
+                    ]
+                    if perfect_stronger:
+                        # Choose smallest (weakest) among perfect stronger models
+                        escalation_model = perfect_stronger[0]  # Smallest in strength order
+                    else:
+                        # No perfect model, take absolute strongest of silo
+                        escalation_model = stronger_models[-1]
                 else:
                     escalation_model = primary_model
                 
@@ -308,8 +337,12 @@ class CalibrationWinner:
                 cost_score = self.cost_scores.get(primary_model, 999)
                 latency_score = metrics[primary_model]["avg_latency_ms"] if primary_model in metrics else 999999
                 
-                # Provider score: Stability (higher is better) > Cost (lower is better) > Latency (lower is better)
-                provider_scores[provider] = (stability_score, -cost_score, -latency_score)
+                # Provider-Gate: 100% pass-rate as binary gate (pass_rate != 1.0 as primary sorting criterion)
+                # Perfect stability (1.0) gets priority over imperfect stability
+                stability_gate = 1 if stability_score >= 1.0 else 0
+                
+                # Provider score: Stability Gate (higher is better) > Stability (higher is better) > Cost (lower is better) > Latency (lower is better)
+                provider_scores[provider] = (stability_gate, stability_score, -cost_score, -latency_score)
             
             # Determine winner (highest provider_score)
             if provider_scores:
@@ -362,6 +395,53 @@ class CalibrationWinner:
             routing_config["skill_mappings"][skill_id] = skill_mapping
         
         return routing_config
+    
+    def apply_routing_update(
+        self,
+        skill_id: str,
+        new_config: Dict[str, Any],
+        config_path: str = "backend/config/model_routing.json"
+    ) -> bool:
+        """
+        Auto-Write Engine: Apply routing update only if config really differs.
+        
+        Args:
+            skill_id: Skill identifier
+            new_config: New routing configuration for the skill
+            config_path: Path to model_routing.json
+            
+        Returns:
+            True if update was applied, False if no change detected
+        """
+        try:
+            # Load current config
+            with open(config_path, 'r', encoding='utf-8') as f:
+                current_config = json.load(f)
+            
+            # Get existing config for skill
+            existing_config = current_config.get("skill_mappings", {}).get(skill_id)
+            
+            # Check if config really differs
+            if existing_config == new_config:
+                return False  # No change needed
+            
+            # Apply update
+            if "skill_mappings" not in current_config:
+                current_config["skill_mappings"] = {}
+            current_config["skill_mappings"][skill_id] = new_config
+            
+            # Write to file
+            with open(config_path, 'w', encoding='utf-8') as f:
+                json.dump(current_config, f, indent=2)
+            
+            # Emit log
+            winner = new_config.get("winner", "unknown")
+            logger.info(f"[ROUTING-UPDATE] Skill {skill_id} updated to {winner} strategy")
+            
+            return True
+        except Exception as e:
+            logger.error(f"[ROUTING-UPDATE] Failed to update skill {skill_id}: {e}", exc_info=True)
+            return False
 
 
 def _map_input_to_args(skill_id: str, input_value: Any) -> Dict[str, Any]:
