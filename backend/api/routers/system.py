@@ -959,7 +959,7 @@ async def run_batch_tests(
                         
                         # Analyze calibration results
                         winner = CalibrationWinner()
-                        optimal_assignments = winner.analyze_calibration_results(skill_calibration_data)
+                        optimal_assignments = winner.build_diamond_routing(skill_calibration_data)
                         
                         # Generate model_routing.json
                         routing_config = winner.generate_model_routing_json(optimal_assignments)
