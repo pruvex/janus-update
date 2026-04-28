@@ -976,8 +976,8 @@ async def run_batch_tests(
 
 @router.post("/system/self-heal")
 async def trigger_self_heal(
-    dry_run: bool = False,
-    background_tasks: BackgroundTasks
+    background_tasks: BackgroundTasks,
+    dry_run: bool = False
 ):
     """
     D22: Self-Healing Loop — Autonomous model routing optimization.
@@ -991,8 +991,8 @@ async def trigger_self_heal(
     Returns immediately with status. Self-heal cycle runs in background.
     
     Args:
-        dry_run: If True, simulate updates without writing to file
         background_tasks: FastAPI BackgroundTasks for async execution
+        dry_run: If True, simulate updates without writing to file
     
     Returns:
         {"status": "started", "dry_run": bool, "message": "..."}
