@@ -144,27 +144,46 @@ class CalibrationWinner:
     
     def build_diamond_routing(
         self,
-        calibration_data: Dict[str, Any]
+        calibration_data: Dict[str, Any],
+        load_historical: bool = True,
+        historical_limit: int = 1000
     ) -> Dict[str, Any]:
         """
-        Build Diamond Routing configuration using Minimal Perfect Model principle.
+        Build Diamond Routing decision based on calibration results.
         
-        7 Steps:
+        Implements the 7-Step Diamond Routing Logic:
         1. Confidence: Only evaluate models with total_runs >= 5
-        2. Silos: Create separate decisions for openai and gemini
-        3. Primary: Choose cheapest model with pass_rate == 1.0. If none, take highest pass-rate
-        4. Fallback: Choose next stronger model in silo
-        5. Escalation: Choose smallest model stronger than primary AND guarantees stability
-        6. No-Loop: Enforce primary != fallback != escalation
-        7. Competition: Calculate provider_score. Stability > Cost > Latency. Best provider = winner
+        2. Silos: Separate decisions for OpenAI and Gemini
+        3. Primary: Cheapest perfect pass-rate model or highest pass-rate otherwise
+        4. Fallback: Next stronger model in silo
+        5. Escalation: Smallest stronger model guaranteeing stability
+        6. No-Loop: Enforce distinct models in chain
+        7. Competition: Score providers and pick winner
         
         Args:
-            calibration_data: Dictionary with skill_id -> model -> results mapping
-            
+            calibration_data: Dictionary with calibration results
+                Structure: {skill_id: {model: [results]}}
+                Each result has: test_count, passed_count, avg_latency_ms
+            load_historical: If True, load historical test data from database
+            historical_limit: Maximum number of historical events to load
+                
         Returns:
-            Dictionary with optimal model assignments per skill per provider
-            Structure: {skill_id: {winner, active, openai, gemini}}
+            Dictionary with optimal assignments per skill
+                Structure: {skill_id: {winner, active, openai, gemini, decision_metrics}}
         """
+        # DATA-BRIDGE: Load historical test data from database
+        if load_historical:
+            historical_data = self.load_historical_test_data(limit=historical_limit)
+            # Merge historical data with current calibration data
+            for skill_id, model_results in historical_data.items():
+                if skill_id not in calibration_data:
+                    calibration_data[skill_id] = {}
+                for model, results in model_results.items():
+                    if model not in calibration_data[skill_id]:
+                        calibration_data[skill_id][model] = []
+                    calibration_data[skill_id][model].extend(results)
+            logger.info(f"[DATA-BRIDGE] Merged historical data for {len(historical_data)} skills")
+        
         optimal_assignments = {}
         
         # Step 1: Group results by provider, then by skill
@@ -228,6 +247,8 @@ class CalibrationWinner:
                     }
                 
                 if not model_metrics:
+                    # Fallback-Confidence: Write default_tiers as placeholder if insufficient data
+                    logger.warning(f"[DATA-BRIDGE] Skill {skill_id} has insufficient data (filtered by MIN_RUNS=5). Using default tiers as placeholder.")
                     continue
                 
                 # STEP 3: Primary - Choose cheapest model with pass_rate == 1.0. If none, take highest pass-rate
@@ -364,10 +385,83 @@ class CalibrationWinner:
         
         return optimal_assignments
     
+    def load_historical_test_data(
+        self,
+        limit: int = 1000,
+        days_back: int = 7
+    ) -> Dict[str, Dict[str, List[Dict[str, Any]]]]:
+        """
+        Load historical skill_test events from logs_raw table.
+        
+        Args:
+            limit: Maximum number of events to load (default 1000)
+            days_back: How many days back to look for events (default 7)
+            
+        Returns:
+            Dictionary with structure: {skill_id: {model: [results]}}
+        """
+        try:
+            from backend.services.logging.supabase_client import get_supabase_client
+            from datetime import datetime, timedelta
+            
+            supabase = get_supabase_client()
+            cutoff = datetime.utcnow() - timedelta(days=days_back)
+            
+            # Fetch skill_test events from logs_raw
+            response = (
+                supabase
+                .table("logs_raw")
+                .select("*")
+                .eq("event_type", "skill_test")
+                .gte("timestamp", cutoff.isoformat())
+                .limit(limit)
+                .execute()
+            )
+            
+            test_events = response.data if response.data else []
+            logger.info(f"[DATA-BRIDGE] Loaded {len(test_events)} historical skill_test events from logs_raw")
+            
+            # Reorganize into skill_id -> model -> [results] structure
+            historical_data = {}
+            for event in test_events:
+                skill_id = event.get("skill")
+                model = event.get("model")
+                status = event.get("status")
+                latency_ms = event.get("latency_ms")
+                payload = event.get("payload", {})
+                
+                if not skill_id or not model:
+                    continue
+                
+                if skill_id not in historical_data:
+                    historical_data[skill_id] = {}
+                if model not in historical_data[skill_id]:
+                    historical_data[skill_id][model] = []
+                
+                # Convert event to test result format
+                test_count = 1  # Each event represents one test run
+                passed_count = 1 if status == "success" else 0
+                avg_latency_ms = latency_ms if latency_ms else 0
+                
+                historical_data[skill_id][model].append({
+                    "test_count": test_count,
+                    "passed_count": passed_count,
+                    "avg_latency_ms": avg_latency_ms,
+                    "run_count": 1,
+                    "is_historical": True
+                })
+            
+            return historical_data
+            
+        except Exception as e:
+            logger.error(f"[DATA-BRIDGE] Failed to load historical test data: {e}", exc_info=True)
+            return {}
+    
     def generate_model_routing_json(
         self,
         optimal_assignments: Dict[str, Any],
-        default_tiers: Optional[Dict[str, Any]] = None
+        default_tiers: Optional[Dict[str, Any]] = None,
+        all_skill_ids: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Generate model_routing.json from optimal assignments (Diamond Routing format).
@@ -376,6 +470,7 @@ class CalibrationWinner:
             optimal_assignments: Dictionary with optimal model assignments per skill per provider
                 Structure: {skill_id: {winner, active, openai, gemini}}
             default_tiers: Optional default tiers to include
+            all_skill_ids: List of all skill IDs to include (for fallback placeholders)
             
         Returns:
             Complete model_routing.json structure with winner/active keys
@@ -396,6 +491,7 @@ class CalibrationWinner:
             "skill_mappings": {}
         }
         
+        # Add optimal assignments
         for skill_id, skill_data in optimal_assignments.items():
             skill_mapping = {
                 "winner": skill_data.get("winner", "openai"),
@@ -405,6 +501,18 @@ class CalibrationWinner:
             }
             
             routing_config["skill_mappings"][skill_id] = skill_mapping
+        
+        # Fallback-Confidence: Add default tiers for skills without optimal assignments
+        if all_skill_ids:
+            for skill_id in all_skill_ids:
+                if skill_id not in routing_config["skill_mappings"]:
+                    logger.warning(f"[DATA-BRIDGE] Skill {skill_id} has no optimal assignment, using default tiers as placeholder.")
+                    routing_config["skill_mappings"][skill_id] = {
+                        "winner": "openai",
+                        "active": routing_config["default_tiers"]["openai"],
+                        "openai": routing_config["default_tiers"]["openai"],
+                        "gemini": routing_config["default_tiers"]["gemini"]
+                    }
         
         return routing_config
     
