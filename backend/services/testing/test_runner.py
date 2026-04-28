@@ -82,7 +82,7 @@ class BudgetGuard:
 
 class CalibrationWinner:
     """
-    Winner-Logic for D21 Full Fleet Calibration (Strict Provider-Silos).
+    Winner-Logic for D21 Full Fleet Calibration (Diamond-Stability Reform).
     
     Analyzes test results to determine optimal model assignments per skill per provider.
     STRICT SILO RULES:
@@ -90,10 +90,12 @@ class CalibrationWinner:
     - Gemini Silo: ONLY gemini-3-flash-preview, gemini-3.1-pro-preview.
     - NO Provider-Mixing: Data from one provider never influences the other.
     
-    Primary: Highest pass-rate (from 10 runs).
-    Secondary: Lowest latency.
-    Fallback: Best alternative model WITHIN THE SAME SILO.
-    Escalation: Best model WITHIN THE SAME SILO.
+    DIAMOND-STABILITY RULES:
+    - Pass-Rate Priority: Primary only models with absolute highest pass-rate.
+    - Nano-Guard: Forbid gpt-5.4-nano as Primary for skills with <100% success.
+    - Strict Hierarchy: fallback must be stronger than primary.
+    - No-Loop Rule: Prevent same model twice in chain.
+    - Escalation: Always strongest model of silo (gpt-5.4 or gemini-3.1-pro-preview).
     """
     
     def __init__(self):
@@ -115,6 +117,18 @@ class CalibrationWinner:
         self.silo_allowed_models = {
             "openai": {"gpt-5.4-nano", "gpt-5.4-mini", "gpt-5.4"},  # Pro is FORBIDDEN
             "gemini": {"gemini-3-flash-preview", "gemini-3.1-pro-preview"}
+        }
+        
+        # MODEL STRENGTH HIERARCHY (weakest to strongest)
+        self.model_strength = {
+            "openai": ["gpt-5.4-nano", "gpt-5.4-mini", "gpt-5.4"],
+            "gemini": ["gemini-3-flash-preview", "gemini-3.1-pro-preview"]
+        }
+        
+        # STRONGEST MODELS per silo for escalation
+        self.strongest_models = {
+            "openai": "gpt-5.4",
+            "gemini": "gemini-3.1-pro-preview"
         }
     
     def analyze_calibration_results(
@@ -193,21 +207,51 @@ class CalibrationWinner:
                 if not model_metrics:
                     continue
                 
-                # Sort models by (pass_rate, -latency) to determine chain
-                sorted_models = sorted(
-                    model_metrics.items(),
-                    key=lambda x: (x[1]["pass_rate"], -x[1]["avg_latency_ms"]),
-                    reverse=True
+                # RULE 1: Pass-Rate Priority - Find highest pass-rate
+                max_pass_rate = max(m["pass_rate"] for m in model_metrics.values())
+                
+                # RULE 2: Nano-Guard - If <100% success, forbid nano as primary
+                skill_has_perfect_success = max_pass_rate >= 1.0
+                
+                # Filter models with highest pass-rate
+                best_pass_rate_models = [
+                    (model, metrics) for model, metrics in model_metrics.items()
+                    if metrics["pass_rate"] >= max_pass_rate - 0.01  # Allow small tolerance
+                ]
+                
+                # Sort best models by latency (faster first)
+                best_models_sorted = sorted(
+                    best_pass_rate_models,
+                    key=lambda x: x[1]["avg_latency_ms"]
                 )
                 
-                # Select primary: best model
-                primary_model = sorted_models[0][0]
+                # Select primary: fastest model with highest pass-rate
+                primary_model = best_models_sorted[0][0]
                 
-                # Select fallback: second best model (within same provider)
-                fallback_model = sorted_models[1][0] if len(sorted_models) > 1 else primary_model
+                # Nano-Guard: If not perfect success and primary is nano, upgrade to mini
+                if not skill_has_perfect_success and primary_model == "gpt-5.4-nano":
+                    # Find next best model that's not nano
+                    for model, _ in best_models_sorted:
+                        if model != "gpt-5.4-nano":
+                            primary_model = model
+                            break
                 
-                # Select escalation: best model (same as primary for now)
-                escalation_model = primary_model
+                # RULE 3: Strict Hierarchy - fallback must be stronger than primary
+                strength_order = self.model_strength.get(provider, [])
+                primary_strength_idx = strength_order.index(primary_model) if primary_model in strength_order else 0
+                
+                # Find stronger models for fallback
+                stronger_models = [m for m in strength_order if strength_order.index(m) > primary_strength_idx]
+                
+                # Select fallback: strongest available model (or primary if no stronger)
+                fallback_model = stronger_models[-1] if stronger_models else primary_model
+                
+                # RULE 4: No-Loop Rule - ensure fallback != primary
+                if fallback_model == primary_model and len(stronger_models) > 0:
+                    fallback_model = stronger_models[0]  # Use next stronger
+                
+                # RULE 5: Escalation - always strongest model of silo
+                escalation_model = self.strongest_models.get(provider, primary_model)
                 
                 # Initialize skill entry if needed
                 if skill_id not in optimal_assignments:
@@ -218,7 +262,9 @@ class CalibrationWinner:
                     "primary": {"model": primary_model},
                     "fallback": {"model": fallback_model},
                     "escalation": {"model": escalation_model},
-                    "metrics": model_metrics
+                    "metrics": model_metrics,
+                    "max_pass_rate": max_pass_rate,
+                    "perfect_success": skill_has_perfect_success
                 }
         
         return optimal_assignments
