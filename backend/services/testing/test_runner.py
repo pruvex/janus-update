@@ -539,6 +539,7 @@ class CalibrationWinner:
         new_config: Dict[str, Any],
         new_pass_rate: float,
         new_latency_ms: float,
+        dry_run: bool = False,
         config_path: str = "backend/config/model_routing.json"
     ) -> bool:
         """
@@ -553,10 +554,11 @@ class CalibrationWinner:
             new_config: New routing configuration for the skill
             new_pass_rate: Pass-rate of new primary model
             new_latency_ms: Latency of new primary model
+            dry_run: If True, simulate update without writing to file
             config_path: Path to model_routing.json
             
         Returns:
-            True if update was applied, False if rejected by shield
+            True if update was applied (or would be applied in dry_run), False if rejected by shield
         """
         try:
             # Load current config
@@ -594,6 +596,11 @@ class CalibrationWinner:
                 "updated_at": datetime.datetime.now().isoformat()
             }
             
+            # Dry run: Return True without writing to file
+            if dry_run:
+                logger.info(f"[ROUTING-SHIELD] Dry run: Would apply update for {skill_id} to {new_config.get('winner', 'unknown')} strategy (pass-rate: {new_pass_rate:.2f}, latency: {new_latency_ms:.0f}ms)")
+                return True
+            
             # Apply update
             if "skill_mappings" not in current_config:
                 current_config["skill_mappings"] = {}
@@ -605,7 +612,7 @@ class CalibrationWinner:
             
             # Emit log
             winner = new_config.get("winner", "unknown")
-            logger.info(f"[ROUTING-UPDATE] Skill {skill_id} updated to {winner} strategy (pass-rate: {new_pass_rate:.2f}, latency: {new_latency_ms:.0f}ms)")
+            logger.info(f"[ROUTING-SHIELD] Applied update for {skill_id} to {winner} strategy (pass-rate: {new_pass_rate:.2f}, latency: {new_latency_ms:.0f}ms)")
             
             return True
         except Exception as e:
@@ -662,6 +669,110 @@ class CalibrationWinner:
         
         logger.info(f"[ROUTING-SHIELD] Global Sanity Check PASSED: {total_skills - zero_pass_rate_skills}/{total_skills} skills have >0% pass-rate")
         return True, "Batch passed global sanity check"
+    
+    # D22: Global Mutex-Lock for Self-Healing
+    SELF_HEAL_LOCK = False
+    
+    async def run_self_healing_cycle(
+        self,
+        dry_run: bool = False,
+        historical_limit: int = 1000
+    ) -> Dict[str, Any]:
+        """
+        D22 Master-Function: Orchestrate complete self-healing cycle.
+        
+        Steps:
+        1. Acquire SELF_HEAL_LOCK (mutex)
+        2. Load ALL historical test data from DB
+        3. Build Diamond Routing for all historical skills
+        4. Apply routing updates for each skill with D21.3 safety checks
+        
+        Args:
+            dry_run: If True, simulate updates without writing to file
+            historical_limit: Maximum number of historical events to load
+            
+        Returns:
+            Dictionary with cycle results
+        """
+        global SELF_HEAL_LOCK
+        
+        cycle_result = {
+            "status": "started",
+            "start_time": datetime.datetime.now().isoformat(),
+            "dry_run": dry_run,
+            "skills_processed": 0,
+            "skills_updated": 0,
+            "skills_skipped": 0,
+            "errors": []
+        }
+        
+        # Check if lock is already held
+        if SELF_HEAL_LOCK:
+            cycle_result["status"] = "aborted_lock"
+            cycle_result["errors"].append("Self-heal cycle already in progress")
+            logger.warning("[D22-SELF-HEAL] Cycle aborted: SELF_HEAL_LOCK already held")
+            return cycle_result
+        
+        try:
+            # Acquire lock
+            SELF_HEAL_LOCK = True
+            logger.info(f"[D22-SELF-HEAL] Starting self-healing cycle (dry_run={dry_run})")
+            
+            # Step 1: Load ALL historical test data from DB
+            historical_data = self.load_historical_test_data(limit=historical_limit)
+            logger.info(f"[D22-SELF-HEAL] Loaded historical data for {len(historical_data)} skills")
+            
+            if not historical_data:
+                cycle_result["status"] = "no_data"
+                cycle_result["errors"].append("No historical data found")
+                logger.warning("[D22-SELF-HEAL] No historical data found")
+                return cycle_result
+            
+            # Step 2: Build Diamond Routing for all historical skills
+            optimal_assignments = self.build_diamond_routing(historical_data, load_historical=False)
+            logger.info(f"[D22-SELF-HEAL] Built Diamond Routing for {len(optimal_assignments)} skills")
+            
+            # Step 3: Apply routing updates for each skill
+            for skill_id, skill_data in optimal_assignments.items():
+                cycle_result["skills_processed"] += 1
+                
+                decision_metrics = skill_data.get("decision_metrics", {})
+                new_config = {
+                    "winner": skill_data.get("winner"),
+                    "active": skill_data.get("active"),
+                    "openai": skill_data.get("openai"),
+                    "gemini": skill_data.get("gemini")
+                }
+                
+                updated = self.apply_routing_update(
+                    skill_id=skill_id,
+                    new_config=new_config,
+                    new_pass_rate=decision_metrics.get("pass_rate", 0.0),
+                    new_latency_ms=decision_metrics.get("latency_ms", 0.0),
+                    dry_run=dry_run
+                )
+                
+                if updated:
+                    cycle_result["skills_updated"] += 1
+                else:
+                    cycle_result["skills_skipped"] += 1
+            
+            cycle_result["status"] = "completed"
+            cycle_result["end_time"] = datetime.datetime.now().isoformat()
+            
+            logger.info(f"[D22-SELF-HEAL] Cycle completed. Processed {cycle_result['skills_processed']} skills, updated {cycle_result['skills_updated']}, skipped {cycle_result['skills_skipped']}")
+            
+        except Exception as e:
+            logger.error(f"[D22-SELF-HEAL] Cycle failed: {e}", exc_info=True)
+            cycle_result["status"] = "failed"
+            cycle_result["errors"].append(str(e))
+        finally:
+            # Release lock
+            SELF_HEAL_LOCK = False
+            logger.info("[D22-SELF-HEAL] SELF_HEAL_LOCK released")
+        
+        return cycle_result
+
     
     def _check_cooldown(self, cooldown_hours: int = 6, state_path: str = "backend/config/self_heal_state.json") -> Tuple[bool, str]:
         """

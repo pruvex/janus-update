@@ -940,39 +940,9 @@ async def run_batch_tests(
                     
                     logger.info(f"[D20-MATRIX-RUN] Matrix run complete: {total_tests} total tests executed")
                     
-                    # Generate model_routing.json if real_run and calibration data available
-                    if calibration_data:
-                        logger.info("[D21-CALIBRATION] Analyzing calibration results and generating model_routing.json")
-                        
-                        # Reorganize calibration data for CalibrationWinner: skill_id -> model -> [results]
-                        skill_calibration_data = {}
-                        for model, run_results in calibration_data.items():
-                            for batch_summary in run_results:
-                                for skill_result in batch_summary.get("results", []):
-                                    skill_id = skill_result.get("skill_id")
-                                    if skill_id:
-                                        if skill_id not in skill_calibration_data:
-                                            skill_calibration_data[skill_id] = {}
-                                        if model not in skill_calibration_data[skill_id]:
-                                            skill_calibration_data[skill_id][model] = []
-                                        skill_calibration_data[skill_id][model].append(skill_result)
-                        
-                        # Analyze calibration results
-                        winner = CalibrationWinner()
-                        optimal_assignments = winner.build_diamond_routing(skill_calibration_data)
-                        
-                        # Generate model_routing.json
-                        routing_config = winner.generate_model_routing_json(optimal_assignments)
-                        
-                        # Write to file
-                        from pathlib import Path
-                        routing_file = Path(__file__).parent.parent.parent / "config/model_routing.json"
-                        import json
-                        with open(routing_file, 'w', encoding='utf-8') as f:
-                            json.dump(routing_config, f, indent=2)
-                        
-                        logger.info(f"[D21-CALIBRATION] model_routing.json generated at {routing_file}")
-                        logger.info(f"[D21-CALIBRATION] Budget guard final status: {budget_guard.get_status() if budget_guard else 'N/A'}")
+                    # D22 DECOUPLING: Test-run only tests and writes to DB. No automatic JSON generation.
+                    # Use D22 Self-Healing API endpoint for routing updates.
+                    logger.info("[D20-MATRIX-RUN] Calibration data stored in DB. Use /api/system/self-heal for routing updates.")
                 finally:
                     if db is not None:
                         db.close()
@@ -1006,50 +976,44 @@ async def run_batch_tests(
 
 @router.post("/system/self-heal")
 async def trigger_self_heal(
-    request: RoutingCalibrationRequest,
+    dry_run: bool = False,
     background_tasks: BackgroundTasks
 ):
     """
     D22: Self-Healing Loop — Autonomous model routing optimization.
     
-    Orchestrates complete self-healing flow from batch-start to shielded-update.
-    Includes 6-hour cooldown guard, Diamond Safety Layer, and autonomous routing updates.
+    Orchestrates complete self-healing flow from DB to shielded-update.
+    Includes SELF_HEAL_LOCK, Diamond Safety Layer, and autonomous routing updates.
     
-    Accepts POST with JSON body containing:
-    - skill_ids: list of skill IDs to test (optional, None = all skills)
-    - models: list of models to test (optional, None = all models in silo)
-    - runs_per_model: number of runs per model (default 10)
-    - real_run: if True, makes actual API calls (default False)
+    Query Parameters:
+    - dry_run: If True, simulate updates without writing to file (default False)
     
     Returns immediately with status. Self-heal cycle runs in background.
     
     Args:
-        request: RoutingCalibrationRequest with skill_ids, models, runs_per_model, real_run
+        dry_run: If True, simulate updates without writing to file
         background_tasks: FastAPI BackgroundTasks for async execution
     
     Returns:
-        {"status": "started", "cooldown_check": {...}, "message": "..."}
+        {"status": "started", "dry_run": bool, "message": "..."}
     """
     try:
         from backend.services.testing.test_runner import CalibrationWinner
         
-        logger.info("[D22-SELF-HEAL] Self-heal cycle requested")
+        logger.info(f"[D22-SELF-HEAL] Self-heal cycle requested (dry_run={dry_run})")
         
         # Background task function
         async def run_self_heal_background():
             try:
-                logger.info("[D22-SELF-HEAL] Starting background self-heal cycle")
+                logger.info(f"[D22-SELF-HEAL] Starting background self-heal cycle (dry_run={dry_run})")
                 
                 # Initialize CalibrationWinner with self-healing capabilities
                 winner = CalibrationWinner()
                 
                 # Run self-healing cycle
                 cycle_result = await winner.run_self_healing_cycle(
-                    real_run=request.real_run,
-                    skill_ids=request.skill_ids if request.skill_ids else None,
-                    models_to_test=request.models if request.models else None,
-                    runs_per_model=request.runs_per_model if request.runs_per_model else 10,
-                    cooldown_hours=6
+                    dry_run=dry_run,
+                    historical_limit=1000
                 )
                 
                 logger.info(f"[D22-SELF-HEAL] Self-heal cycle completed: {cycle_result['status']}")
@@ -1060,13 +1024,9 @@ async def trigger_self_heal(
         # Add background task
         background_tasks.add_task(run_self_heal_background)
         
-        # Return immediately with cooldown check result
-        winner = CalibrationWinner()
-        is_allowed, cooldown_reason = winner._check_cooldown()
-        
         return {
             "status": "started",
-            "cooldown_check": {"allowed": is_allowed, "reason": cooldown_reason},
+            "dry_run": dry_run,
             "message": "Self-heal cycle started in background. Check logs for progress."
         }
         
