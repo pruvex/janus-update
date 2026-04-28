@@ -593,7 +593,7 @@ class CalibrationWinner:
             new_config["metadata"] = {
                 "pass_rate": new_pass_rate,
                 "latency_ms": new_latency_ms,
-                "updated_at": datetime.datetime.now().isoformat()
+                "updated_at": datetime.now().isoformat()
             }
             
             # Dry run: Return True without writing to file
@@ -698,7 +698,7 @@ class CalibrationWinner:
         
         cycle_result = {
             "status": "started",
-            "start_time": datetime.datetime.now().isoformat(),
+            "start_time": datetime.now().isoformat(),
             "dry_run": dry_run,
             "skills_processed": 0,
             "skills_updated": 0,
@@ -758,7 +758,7 @@ class CalibrationWinner:
                     cycle_result["skills_skipped"] += 1
             
             cycle_result["status"] = "completed"
-            cycle_result["end_time"] = datetime.datetime.now().isoformat()
+            cycle_result["end_time"] = datetime.now().isoformat()
             
             logger.info(f"[D22-SELF-HEAL] Cycle completed. Processed {cycle_result['skills_processed']} skills, updated {cycle_result['skills_updated']}, skipped {cycle_result['skills_skipped']}")
             
@@ -797,12 +797,13 @@ class CalibrationWinner:
             if not last_heal_str:
                 return True, "No timestamp in state, cooldown not applicable"
             
-            last_heal = datetime.datetime.fromisoformat(last_heal_str)
-            now = datetime.datetime.now()
+            from datetime import timedelta
+            last_heal = datetime.fromisoformat(last_heal_str)
+            now = datetime.now()
             elapsed = now - last_heal
             
-            if elapsed < datetime.timedelta(hours=cooldown_hours):
-                remaining = datetime.timedelta(hours=cooldown_hours) - elapsed
+            if elapsed < timedelta(hours=cooldown_hours):
+                remaining = timedelta(hours=cooldown_hours) - elapsed
                 return False, f"Cooldown active. Remaining: {remaining}"
             
             return True, "Cooldown elapsed, self-heal allowed"
@@ -822,8 +823,8 @@ class CalibrationWinner:
             state_file.parent.mkdir(parents=True, exist_ok=True)
             
             state = {
-                "last_self_heal_at": datetime.datetime.now().isoformat(),
-                "updated_at": datetime.datetime.now().isoformat()
+                "last_self_heal_at": datetime.now().isoformat(),
+                "updated_at": datetime.now().isoformat()
             }
             
             with open(state_file, 'w', encoding='utf-8') as f:
