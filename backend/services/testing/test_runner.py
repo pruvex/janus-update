@@ -25,6 +25,9 @@ from backend.data.schemas_logging import LogEventCreate
 
 logger = logging.getLogger("janus_backend")
 
+# D22: Module-level Mutex-Lock for Self-Healing
+SELF_HEAL_LOCK = False
+
 
 class BudgetGuard:
     """
@@ -669,9 +672,6 @@ class CalibrationWinner:
         
         logger.info(f"[ROUTING-SHIELD] Global Sanity Check PASSED: {total_skills - zero_pass_rate_skills}/{total_skills} skills have >0% pass-rate")
         return True, "Batch passed global sanity check"
-    
-    # D22: Global Mutex-Lock for Self-Healing
-    SELF_HEAL_LOCK = False
     
     def run_self_healing_cycle(
         self,
