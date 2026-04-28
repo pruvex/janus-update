@@ -1,7 +1,7 @@
 {
   "skill_id": "system.weather",
   "skill_type": "system",
-  "generated_at": "2026-04-28T00:04:39.134412",
+  "generated_at": "2026-04-28T00:41:56.338678",
   "tests": {
     "happy_path": {
       "name": "happy_path",

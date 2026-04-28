@@ -1,7 +1,7 @@
 {
   "skill_id": "filesystem.list_directory",
   "skill_type": "filesystem",
-  "generated_at": "2026-04-28T00:04:50.884625",
+  "generated_at": "2026-04-28T00:41:59.680708",
   "tests": {
     "happy_path": {
       "name": "happy_path",
