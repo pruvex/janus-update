@@ -1002,27 +1002,14 @@ async def trigger_self_heal(
         
         logger.info(f"[D22-SELF-HEAL] Self-heal cycle requested (dry_run={dry_run})")
         
-        # Background task function
-        async def run_self_heal_background():
-            try:
-                logger.info(f"[D22-SELF-HEAL] Starting background self-heal cycle (dry_run={dry_run})")
-                
-                # Initialize CalibrationWinner with self-healing capabilities
-                winner = CalibrationWinner()
-                
-                # Run self-healing cycle
-                cycle_result = winner.run_self_healing_cycle(
-                    dry_run=dry_run,
-                    historical_limit=1000
-                )
-                
-                logger.info(f"[D22-SELF-HEAL] Self-heal cycle completed: {cycle_result['status']}")
-                
-            except Exception as e:
-                logger.error(f"[D22-SELF-HEAL] Self-heal cycle failed: {e}", exc_info=True)
+        # Initialize CalibrationWinner with self-healing capabilities
+        winner = CalibrationWinner()
         
-        # Add background task
-        background_tasks.add_task(run_self_heal_background)
+        # Add background task with lambda to preserve self-binding
+        background_tasks.add_task(lambda: winner.run_self_healing_cycle(
+            dry_run=dry_run,
+            historical_limit=1000
+        ))
         
         return {
             "status": "started",
