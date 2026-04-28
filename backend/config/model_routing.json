@@ -38,7 +38,7 @@
         },
         "metrics": {
           "gpt-5.4-nano": {
-            "pass_rate": 1.0,
+            "pass_rate": 0.5,
             "avg_latency_ms": 1091.5208333333333,
             "run_count": 48
           }
@@ -56,7 +56,7 @@
         },
         "metrics": {
           "gpt-5.4-nano": {
-            "pass_rate": 1.0,
+            "pass_rate": 0.5,
             "avg_latency_ms": 1091.5208333333333,
             "run_count": 48
           }
@@ -64,9 +64,10 @@
       },
       "gemini": null,
       "metadata": {
-        "pass_rate": 1.0,
+        "pass_rate": 0.5,
         "latency_ms": 1091.5208333333333,
-        "updated_at": "2026-04-28T16:48:49.677035"
+        "updated_at": "2026-04-28T16:48:49.677035",
+        "e2e_validation": "E2E-VAL-TEST1: Artificially degraded to 0.5 to trigger self-heal"
       }
     },
     "filesystem.list_directory": {
