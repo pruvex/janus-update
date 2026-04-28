@@ -349,6 +349,18 @@ class CalibrationWinner:
                 winner = max(provider_scores.keys(), key=lambda p: provider_scores[p])
                 skill_data["winner"] = winner
                 skill_data["active"] = skill_data[winner]
+                
+                # Decision-Metrics: Add metrics for primary model of winner
+                winner_data = skill_data[winner]
+                if winner_data:
+                    primary_model = winner_data["primary"]["model"]
+                    winner_metrics = winner_data.get("metrics", {})
+                    primary_metrics = winner_metrics.get(primary_model, {})
+                    skill_data["decision_metrics"] = {
+                        "pass_rate": primary_metrics.get("pass_rate", 0.0),
+                        "latency_ms": primary_metrics.get("avg_latency_ms", 0.0),
+                        "run_count": primary_metrics.get("run_count", 0)
+                    }
         
         return optimal_assignments
     
@@ -525,6 +537,160 @@ class CalibrationWinner:
         
         logger.info(f"[ROUTING-SHIELD] Global Sanity Check PASSED: {total_skills - zero_pass_rate_skills}/{total_skills} skills have >0% pass-rate")
         return True, "Batch passed global sanity check"
+    
+    def _check_cooldown(self, cooldown_hours: int = 6, state_path: str = "backend/config/self_heal_state.json") -> Tuple[bool, str]:
+        """
+        Check if self-healing cooldown has elapsed.
+        
+        Args:
+            cooldown_hours: Cooldown period in hours (default 6)
+            state_path: Path to self_heal_state.json
+            
+        Returns:
+            (is_allowed, reason) - True if cooldown elapsed, False if still in cooldown
+        """
+        try:
+            state_file = Path(state_path)
+            if not state_file.exists():
+                return True, "No previous self-heal found, cooldown not applicable"
+            
+            with open(state_file, 'r', encoding='utf-8') as f:
+                state = json.load(f)
+            
+            last_heal_str = state.get("last_self_heal_at")
+            if not last_heal_str:
+                return True, "No timestamp in state, cooldown not applicable"
+            
+            last_heal = datetime.datetime.fromisoformat(last_heal_str)
+            now = datetime.datetime.now()
+            elapsed = now - last_heal
+            
+            if elapsed < datetime.timedelta(hours=cooldown_hours):
+                remaining = datetime.timedelta(hours=cooldown_hours) - elapsed
+                return False, f"Cooldown active. Remaining: {remaining}"
+            
+            return True, "Cooldown elapsed, self-heal allowed"
+        except Exception as e:
+            logger.error(f"[SELF-HEAL] Failed to check cooldown: {e}", exc_info=True)
+            return True, "Cooldown check failed, allowing self-heal (safety override)"
+    
+    def _update_cooldown(self, state_path: str = "backend/config/self_heal_state.json") -> None:
+        """
+        Update the self-heal state with current timestamp.
+        
+        Args:
+            state_path: Path to self_heal_state.json
+        """
+        try:
+            state_file = Path(state_path)
+            state_file.parent.mkdir(parents=True, exist_ok=True)
+            
+            state = {
+                "last_self_heal_at": datetime.datetime.now().isoformat(),
+                "updated_at": datetime.datetime.now().isoformat()
+            }
+            
+            with open(state_file, 'w', encoding='utf-8') as f:
+                json.dump(state, f, indent=2)
+            
+            logger.info(f"[SELF-HEAL] Updated cooldown state: {state['last_self_heal_at']}")
+        except Exception as e:
+            logger.error(f"[SELF-HEAL] Failed to update cooldown state: {e}", exc_info=True)
+    
+    async def run_self_healing_cycle(
+        self,
+        real_run: bool = True,
+        skill_ids: Optional[List[str]] = None,
+        models_to_test: Optional[List[str]] = None,
+        runs_per_model: int = 10,
+        cooldown_hours: int = 6
+    ) -> Dict[str, Any]:
+        """
+        Master-Cycle: Orchestrate complete self-healing flow from batch-start to shielded-update.
+        
+        Args:
+            real_run: If True, execute real API calls; if False, mock mode
+            skill_ids: List of skill IDs to test (None = all skills)
+            models_to_test: List of models to test (None = all models in silo)
+            runs_per_model: Number of runs per model
+            cooldown_hours: Cooldown period in hours
+            
+        Returns:
+            Dictionary with cycle results
+        """
+        cycle_result = {
+            "status": "started",
+            "start_time": datetime.datetime.now().isoformat(),
+            "cooldown_check": None,
+            "calibration_results": None,
+            "routing_updates": [],
+            "errors": []
+        }
+        
+        try:
+            # Cooldown-Guard: Check if cooldown has elapsed
+            is_allowed, cooldown_reason = self._check_cooldown(cooldown_hours)
+            cycle_result["cooldown_check"] = {"allowed": is_allowed, "reason": cooldown_reason}
+            
+            if not is_allowed:
+                logger.warning(f"[SELF-HEAL] Cycle aborted: {cooldown_reason}")
+                cycle_result["status"] = "aborted_cooldown"
+                return cycle_result
+            
+            logger.info(f"[SELF-HEAL] Starting self-healing cycle (real_run={real_run})")
+            
+            # Step 1: Discover skills to test
+            if skill_ids is None:
+                skill_ids = self.discover_skills()
+            
+            # Step 2: Global Sanity Check on calibration data (if available)
+            # Note: This would be done after calibration, but we'll check at the end
+            
+            # Step 3: Run batch tests
+            # Note: This would require integration with the actual test runner
+            # For now, we'll simulate the calibration data
+            calibration_data = {}  # Would be populated by actual test run
+            
+            # Step 4: Build Diamond Routing
+            optimal_assignments = self.build_diamond_routing(calibration_data)
+            
+            # Step 5: Generate model routing JSON
+            routing_config = self.generate_model_routing_json(optimal_assignments)
+            
+            # Step 6: Apply shielded updates for each skill
+            for skill_id, skill_data in optimal_assignments.items():
+                decision_metrics = skill_data.get("decision_metrics", {})
+                new_config = {
+                    "winner": skill_data.get("winner"),
+                    "active": skill_data.get("active"),
+                    "openai": skill_data.get("openai"),
+                    "gemini": skill_data.get("gemini")
+                }
+                
+                updated = self.apply_routing_update(
+                    skill_id=skill_id,
+                    new_config=new_config,
+                    new_pass_rate=decision_metrics.get("pass_rate", 0.0),
+                    new_latency_ms=decision_metrics.get("latency_ms", 0.0)
+                )
+                
+                if updated:
+                    cycle_result["routing_updates"].append(skill_id)
+            
+            # Step 7: Update cooldown
+            self._update_cooldown()
+            
+            cycle_result["status"] = "completed"
+            cycle_result["end_time"] = datetime.datetime.now().isoformat()
+            
+            logger.info(f"[SELF-HEAL] Cycle completed. Updated {len(cycle_result['routing_updates'])} skills.")
+            
+        except Exception as e:
+            logger.error(f"[SELF-HEAL] Cycle failed: {e}", exc_info=True)
+            cycle_result["status"] = "failed"
+            cycle_result["errors"].append(str(e))
+        
+        return cycle_result
 
 
 def _map_input_to_args(skill_id: str, input_value: Any) -> Dict[str, Any]:

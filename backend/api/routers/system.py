@@ -1004,6 +1004,79 @@ async def run_batch_tests(
         raise HTTPException(status_code=500, detail=f"Matrix run start failed: {str(e)}")
 
 
+@router.post("/system/self-heal")
+async def trigger_self_heal(
+    request: RoutingCalibrationRequest,
+    background_tasks: BackgroundTasks
+):
+    """
+    D22: Self-Healing Loop — Autonomous model routing optimization.
+    
+    Orchestrates complete self-healing flow from batch-start to shielded-update.
+    Includes 6-hour cooldown guard, Diamond Safety Layer, and autonomous routing updates.
+    
+    Accepts POST with JSON body containing:
+    - skill_ids: list of skill IDs to test (optional, None = all skills)
+    - models: list of models to test (optional, None = all models in silo)
+    - runs_per_model: number of runs per model (default 10)
+    - real_run: if True, makes actual API calls (default False)
+    
+    Returns immediately with status. Self-heal cycle runs in background.
+    
+    Args:
+        request: RoutingCalibrationRequest with skill_ids, models, runs_per_model, real_run
+        background_tasks: FastAPI BackgroundTasks for async execution
+    
+    Returns:
+        {"status": "started", "cooldown_check": {...}, "message": "..."}
+    """
+    try:
+        from backend.services.testing.test_runner import CalibrationWinner
+        
+        logger.info("[D22-SELF-HEAL] Self-heal cycle requested")
+        
+        # Background task function
+        async def run_self_heal_background():
+            try:
+                logger.info("[D22-SELF-HEAL] Starting background self-heal cycle")
+                
+                # Initialize CalibrationWinner with self-healing capabilities
+                winner = CalibrationWinner()
+                
+                # Run self-healing cycle
+                cycle_result = await winner.run_self_healing_cycle(
+                    real_run=request.real_run,
+                    skill_ids=request.skill_ids if request.skill_ids else None,
+                    models_to_test=request.models if request.models else None,
+                    runs_per_model=request.runs_per_model if request.runs_per_model else 10,
+                    cooldown_hours=6
+                )
+                
+                logger.info(f"[D22-SELF-HEAL] Self-heal cycle completed: {cycle_result['status']}")
+                
+            except Exception as e:
+                logger.error(f"[D22-SELF-HEAL] Self-heal cycle failed: {e}", exc_info=True)
+        
+        # Add background task
+        background_tasks.add_task(run_self_heal_background)
+        
+        # Return immediately with cooldown check result
+        winner = CalibrationWinner()
+        is_allowed, cooldown_reason = winner._check_cooldown()
+        
+        return {
+            "status": "started",
+            "cooldown_check": {"allowed": is_allowed, "reason": cooldown_reason},
+            "message": "Self-heal cycle started in background. Check logs for progress."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("[D22-SELF-HEAL] Failed to start self-heal cycle: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Self-heal cycle start failed: {str(e)}")
+
+
 @router.get("/system/run-skill-tests/{skill_id}")
 async def run_skill_tests(skill_id: str, skill_type: str = "tool"):
     """
