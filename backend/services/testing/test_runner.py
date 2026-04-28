@@ -673,7 +673,7 @@ class CalibrationWinner:
     # D22: Global Mutex-Lock for Self-Healing
     SELF_HEAL_LOCK = False
     
-    async def run_self_healing_cycle(
+    def run_self_healing_cycle(
         self,
         dry_run: bool = False,
         historical_limit: int = 1000

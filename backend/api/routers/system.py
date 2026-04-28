@@ -1011,7 +1011,7 @@ async def trigger_self_heal(
                 winner = CalibrationWinner()
                 
                 # Run self-healing cycle
-                cycle_result = await winner.run_self_healing_cycle(
+                cycle_result = winner.run_self_healing_cycle(
                     dry_run=dry_run,
                     historical_limit=1000
                 )
