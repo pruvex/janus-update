@@ -255,6 +255,12 @@ class CalibrationWinner:
             "skill_mappings": {}
         }
         
+        # STRONGEST MODELS per silo for escalation (safety net, independent of test results)
+        strongest_models = {
+            "openai": {"model": "gpt-5.4"},
+            "gemini": {"model": "gemini-3.1-pro-preview"}
+        }
+        
         for skill_id, provider_assignments in optimal_assignments.items():
             skill_mapping = {}
             
@@ -262,7 +268,7 @@ class CalibrationWinner:
                 skill_mapping[provider] = {
                     "primary": assignment["primary"],
                     "fallback": assignment["fallback"],
-                    "escalation": assignment["escalation"]
+                    "escalation": strongest_models.get(provider, assignment["escalation"])  # Force strongest model
                 }
             
             routing_config["skill_mappings"][skill_id] = skill_mapping
