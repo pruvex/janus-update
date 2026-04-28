@@ -10,7 +10,7 @@ import asyncio
 import os
 import logging
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Callable
+from typing import Dict, Any, List, Optional, Callable, Tuple
 from datetime import datetime
 from uuid import uuid4
 
@@ -400,18 +400,26 @@ class CalibrationWinner:
         self,
         skill_id: str,
         new_config: Dict[str, Any],
+        new_pass_rate: float,
+        new_latency_ms: float,
         config_path: str = "backend/config/model_routing.json"
     ) -> bool:
         """
-        Auto-Write Engine: Apply routing update only if config really differs.
+        Diamond Safety Layer: Apply routing update with safety checks.
+        
+        Safety Rules:
+        - Never-Degrade: Skip if new pass-rate < existing
+        - Hysteresis: Update only if pass-rate +5% OR latency -20%
         
         Args:
             skill_id: Skill identifier
             new_config: New routing configuration for the skill
+            new_pass_rate: Pass-rate of new primary model
+            new_latency_ms: Latency of new primary model
             config_path: Path to model_routing.json
             
         Returns:
-            True if update was applied, False if no change detected
+            True if update was applied, False if rejected by shield
         """
         try:
             # Load current config
@@ -425,6 +433,30 @@ class CalibrationWinner:
             if existing_config == new_config:
                 return False  # No change needed
             
+            # DIAMOND SHIELD: Never-Degrade Rule
+            existing_pass_rate = existing_config.get("metadata", {}).get("pass_rate", 0.0) if existing_config else 0.0
+            if new_pass_rate < existing_pass_rate:
+                logger.warning(f"[ROUTING-SHIELD] Rejected update for {skill_id}: New pass-rate {new_pass_rate:.2f} < existing {existing_pass_rate:.2f}")
+                return False
+            
+            # DIAMOND SHIELD: Hysteresis Threshold
+            # Update only if pass-rate increases by at least 5% OR latency decreases by at least 20%
+            existing_latency_ms = existing_config.get("metadata", {}).get("latency_ms", 999999) if existing_config else 999999
+            pass_rate_improvement = new_pass_rate - existing_pass_rate
+            latency_improvement = existing_latency_ms - new_latency_ms if existing_latency_ms > 0 else 0
+            latency_improvement_pct = (latency_improvement / existing_latency_ms) if existing_latency_ms > 0 else 0
+            
+            if pass_rate_improvement < 0.05 and latency_improvement_pct < 0.20:
+                logger.warning(f"[ROUTING-SHIELD] Ignored minor improvement for {skill_id} (pass-rate +{pass_rate_improvement:.2f}, latency -{latency_improvement_pct:.2f} - below 5%/20% threshold)")
+                return False
+            
+            # Add metadata to new config
+            new_config["metadata"] = {
+                "pass_rate": new_pass_rate,
+                "latency_ms": new_latency_ms,
+                "updated_at": datetime.datetime.now().isoformat()
+            }
+            
             # Apply update
             if "skill_mappings" not in current_config:
                 current_config["skill_mappings"] = {}
@@ -436,12 +468,63 @@ class CalibrationWinner:
             
             # Emit log
             winner = new_config.get("winner", "unknown")
-            logger.info(f"[ROUTING-UPDATE] Skill {skill_id} updated to {winner} strategy")
+            logger.info(f"[ROUTING-UPDATE] Skill {skill_id} updated to {winner} strategy (pass-rate: {new_pass_rate:.2f}, latency: {new_latency_ms:.0f}ms)")
             
             return True
         except Exception as e:
             logger.error(f"[ROUTING-UPDATE] Failed to update skill {skill_id}: {e}", exc_info=True)
             return False
+    
+    def global_sanity_check(
+        self,
+        calibration_data: Dict[str, Any],
+        zero_pass_rate_threshold: float = 0.30
+    ) -> Tuple[bool, str]:
+        """
+        Global Sanity Check: Discard batch if too many skills have 0% pass-rate.
+        
+        Args:
+            calibration_data: Calibration results data
+            zero_pass_rate_threshold: Threshold for zero pass-rate skills (default 30%)
+            
+        Returns:
+            (is_valid, reason) - True if batch is valid, False if should be discarded
+        """
+        total_skills = len(calibration_data)
+        if total_skills == 0:
+            return False, "No skills in calibration data"
+        
+        zero_pass_rate_skills = 0
+        for skill_id, model_results in calibration_data.items():
+            if not model_results:
+                zero_pass_rate_skills += 1
+                continue
+            
+            # Check if all models for this skill have 0% pass-rate
+            all_zero = True
+            for model, results in model_results.items():
+                if not results:
+                    continue
+                for r in results:
+                    pass_rate = r.get("passed_count", 0) / max(r.get("test_count", 1), 1)
+                    if pass_rate > 0:
+                        all_zero = False
+                        break
+                if not all_zero:
+                    break
+            
+            if all_zero:
+                zero_pass_rate_skills += 1
+        
+        zero_pass_rate_pct = zero_pass_rate_skills / total_skills
+        
+        if zero_pass_rate_pct > zero_pass_rate_threshold:
+            reason = f"Global Sanity Check FAILED: {zero_pass_rate_skills}/{total_skills} skills ({zero_pass_rate_pct:.1%}) have 0% pass-rate (suspected network/API failure)"
+            logger.error(f"[ROUTING-SHIELD] {reason}")
+            return False, reason
+        
+        logger.info(f"[ROUTING-SHIELD] Global Sanity Check PASSED: {total_skills - zero_pass_rate_skills}/{total_skills} skills have >0% pass-rate")
+        return True, "Batch passed global sanity check"
 
 
 def _map_input_to_args(skill_id: str, input_value: Any) -> Dict[str, Any]:
