@@ -619,6 +619,9 @@ class CalibrationWinner:
             with open(config_path, 'w', encoding='utf-8') as f:
                 json.dump(current_config, f, indent=2)
             
+            # D23: FIFO History Logging - Write update to routing_history.json
+            self._log_routing_history(skill_id, new_config, new_pass_rate, new_latency_ms)
+            
             # Emit log
             winner = new_config.get("winner", "unknown")
             logger.info(f"[ROUTING-SHIELD] Applied update for {skill_id} to {winner} strategy (pass-rate: {new_pass_rate:.2f}, latency: {new_latency_ms:.0f}ms)")
@@ -627,6 +630,68 @@ class CalibrationWinner:
         except Exception as e:
             logger.error(f"[ROUTING-UPDATE] Failed to update skill {skill_id}: {e}", exc_info=True)
             return False
+    
+    def _log_routing_history(
+        self,
+        skill_id: str,
+        new_config: Dict[str, Any],
+        new_pass_rate: float,
+        new_latency_ms: float,
+        history_path: str = "backend/config/routing_history.json",
+        max_entries: int = 100
+    ) -> None:
+        """
+        D23: FIFO History Logging - Write routing update to history file.
+        
+        Args:
+            skill_id: Skill identifier
+            new_config: New routing configuration
+            new_pass_rate: Pass-rate of new primary model
+            new_latency_ms: Latency of new primary model
+            history_path: Path to routing_history.json
+            max_entries: Maximum number of entries to keep (FIFO)
+        """
+        try:
+            from pathlib import Path
+            
+            history_file = Path(history_path)
+            history_file.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Load existing history
+            if history_file.exists():
+                with open(history_file, 'r', encoding='utf-8') as f:
+                    history = json.load(f)
+            else:
+                history = {"entries": []}
+            
+            # Create new entry
+            entry = {
+                "skill_id": skill_id,
+                "winner": new_config.get("winner", "unknown"),
+                "pass_rate": new_pass_rate,
+                "latency_ms": new_latency_ms,
+                "timestamp": datetime.now().isoformat(),
+                "primary_model": new_config.get("active", {}).get("primary", {}).get("model", "unknown"),
+                "fallback_model": new_config.get("active", {}).get("fallback", {}).get("model", "unknown"),
+                "escalation_model": new_config.get("active", {}).get("escalation", {}).get("model", "unknown")
+            }
+            
+            # Add new entry to beginning (newest first)
+            history["entries"].insert(0, entry)
+            
+            # Keep only max_entries (FIFO)
+            if len(history["entries"]) > max_entries:
+                history["entries"] = history["entries"][:max_entries]
+            
+            # Write back to file
+            with open(history_file, 'w', encoding='utf-8') as f:
+                json.dump(history, f, indent=2)
+            
+            logger.debug(f"[D23-HISTORY] Logged routing update for {skill_id} to history")
+            
+        except Exception as e:
+            logger.error(f"[D23-HISTORY] Failed to log routing update: {e}", exc_info=True)
+            # Don't fail the update if history logging fails
     
     def global_sanity_check(
         self,

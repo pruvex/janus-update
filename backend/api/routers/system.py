@@ -1024,6 +1024,188 @@ async def trigger_self_heal(
         raise HTTPException(status_code=500, detail=f"Self-heal cycle start failed: {str(e)}")
 
 
+# D23: Observability API - Read-Only System State Endpoints
+
+@router.get("/system/health")
+async def get_system_health():
+    """
+    D23: System Health Snapshot - Aggregated health status of all skills.
+    
+    Reads model_routing.json and calculates health status per skill:
+    - pass_rate >= 0.95 -> healthy
+    - pass_rate >= 0.7 -> degraded
+    - pass_rate < 0.7 -> critical
+    
+    Returns:
+        Aggregated snapshot with total, healthy, degraded, critical counts
+    """
+    try:
+        from pathlib import Path
+        
+        routing_file = Path(__file__).parent.parent.parent / "config/model_routing.json"
+        
+        if not routing_file.exists():
+            return {"error": "state_unavailable", "detail": "model_routing.json not found"}
+        
+        with open(routing_file, 'r', encoding='utf-8') as f:
+            routing_config = json.load(f)
+        
+        skill_mappings = routing_config.get("skill_mappings", {})
+        
+        healthy = 0
+        degraded = 0
+        critical = 0
+        total = len(skill_mappings)
+        
+        for skill_id, skill_data in skill_mappings.items():
+            metadata = skill_data.get("metadata", {})
+            pass_rate = metadata.get("pass_rate", 0.0)
+            
+            if pass_rate >= 0.95:
+                healthy += 1
+            elif pass_rate >= 0.7:
+                degraded += 1
+            else:
+                critical += 1
+        
+        return {
+            "total": total,
+            "healthy": healthy,
+            "degraded": degraded,
+            "critical": critical,
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error("[D23-HEALTH] Failed to get system health: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get system health: {str(e)}")
+
+
+@router.get("/system/routing")
+async def get_routing_config():
+    """
+    D23: Active Routing Configuration - Direct export of routing decisions.
+    
+    Reads model_routing.json and returns the complete routing configuration
+    including default_tiers and skill_mappings.
+    
+    Returns:
+        Complete routing configuration from model_routing.json
+    """
+    try:
+        from pathlib import Path
+        
+        routing_file = Path(__file__).parent.parent.parent / "config/model_routing.json"
+        
+        if not routing_file.exists():
+            return {"error": "state_unavailable", "detail": "model_routing.json not found"}
+        
+        with open(routing_file, 'r', encoding='utf-8') as f:
+            routing_config = json.load(f)
+        
+        return routing_config
+        
+    except Exception as e:
+        logger.error("[D23-ROUTING] Failed to get routing config: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get routing config: {str(e)}")
+
+
+@router.get("/system/self-heal/state")
+async def get_self_heal_state():
+    """
+    D23: Self-Heal State - Cooldown status and last run info.
+    
+    Reads self_heal_state.json and calculates cooldown_remaining_minutes.
+    Cooldown period: 180 minutes (3 hours) from last_run.
+    
+    Returns:
+        Self-heal state with cooldown status and remaining minutes
+    """
+    try:
+        from pathlib import Path
+        from datetime import datetime, timedelta
+        
+        state_file = Path(__file__).parent.parent.parent / "config/self_heal_state.json"
+        
+        if not state_file.exists():
+            return {"error": "state_unavailable", "detail": "self_heal_state.json not found"}
+        
+        with open(state_file, 'r', encoding='utf-8') as f:
+            state = json.load(f)
+        
+        last_heal_str = state.get("last_self_heal_at")
+        
+        if not last_heal_str:
+            return {
+                "status": "never_run",
+                "cooldown_remaining_minutes": 0,
+                "last_run": None
+            }
+        
+        last_heal = datetime.fromisoformat(last_heal_str)
+        now = datetime.now()
+        elapsed = now - last_heal
+        
+        cooldown_minutes = 180
+        cooldown_remaining = max(0, cooldown_minutes - elapsed.total_seconds() / 60)
+        
+        if cooldown_remaining > 0:
+            status = "in_cooldown"
+        else:
+            status = "ready"
+        
+        return {
+            "status": status,
+            "cooldown_remaining_minutes": int(cooldown_remaining),
+            "last_run": last_heal_str,
+            "elapsed_minutes": int(elapsed.total_seconds() / 60)
+        }
+        
+    except Exception as e:
+        logger.error("[D23-SELF-HEAL] Failed to get self-heal state: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get self-heal state: {str(e)}")
+
+
+@router.get("/system/routing/last-updates")
+async def get_routing_history():
+    """
+    D23: Routing Update History - Last 100 routing changes with timestamps.
+    
+    Reads routing_history.json and returns the FIFO history of routing updates.
+    History is maintained by apply_routing_update hook (max 100 entries).
+    
+    Returns:
+        List of routing update entries with timestamps
+    """
+    try:
+        from pathlib import Path
+        
+        history_file = Path(__file__).parent.parent.parent / "config/routing_history.json"
+        
+        if not history_file.exists():
+            # Return empty history if file doesn't exist yet
+            return {
+                "entries": [],
+                "total": 0,
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+        
+        with open(history_file, 'r', encoding='utf-8') as f:
+            history = json.load(f)
+        
+        entries = history.get("entries", [])
+        
+        return {
+            "entries": entries,
+            "total": len(entries),
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error("[D23-ROUTING-HISTORY] Failed to get routing history: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get routing history: {str(e)}")
+
+
 @router.get("/system/run-skill-tests/{skill_id}")
 async def run_skill_tests(skill_id: str, skill_type: str = "tool"):
     """
