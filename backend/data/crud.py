@@ -732,6 +732,8 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
         "total_input_tokens": 0, 
         "total_output_tokens": 0, 
         "image_count": 0,
+        "total_tokens_saved": 0,
+        "total_cost_saved": 0.0,
         "image_details": defaultdict(lambda: {"count": 0, "cost": 0.0}),
         "context_breakdown": defaultdict(lambda: {"count": 0, "cost": 0.0, "input_tokens": 0, "output_tokens": 0})
     })
@@ -754,6 +756,8 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
         summary[key]["total_cost"] += cost.total_cost
         summary[key]["total_input_tokens"] += cost.input_tokens
         summary[key]["total_output_tokens"] += cost.output_tokens
+        summary[key]["total_tokens_saved"] += int(cost.tokens_saved or 0)
+        summary[key]["total_cost_saved"] += float(cost.cost_saved or 0.0)
         context_key = ctx or "conversation"
         summary[key]["context_breakdown"][context_key]["count"] += 1
         summary[key]["context_breakdown"][context_key]["cost"] += cost.total_cost
@@ -798,6 +802,8 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
             "total_input_tokens": data["total_input_tokens"],
             "total_output_tokens": data["total_output_tokens"],
             "image_count": data["image_count"],
+            "total_tokens_saved": data["total_tokens_saved"],
+            "total_cost_saved": data["total_cost_saved"],
             "image_details": image_details_list,
             "context_breakdown": context_breakdown_list,
             "search_count": 0,  # Model entries don't have search count

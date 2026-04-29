@@ -21,6 +21,7 @@ from backend.services.tool_executor import ToolExecutor
 from backend.services.tool_manager import tool_manager
 from backend.services.orchestrator.schemas import ExecutionResponse, OrchestratorContext
 from backend.services.orchestrator.stream_protocol import StreamEvent
+from backend.services.prompt_cache import clone_decision_for_route, decision_from_gateway_kwargs, merge_decision_into_usage
 from backend.utils.config_loader import load_config_data, load_model_catalog
 from backend.utils.link_sanitizer import force_sanitize_links
 
@@ -122,11 +123,14 @@ async def _async_iter_llm_stream(
     model = gateway_kwargs.get("model") or ""
     messages = list(gateway_kwargs.get("chat_history") or [])
     max_tok = gateway_kwargs.get("max_tokens")
+    prompt_cache_decision = decision_from_gateway_kwargs(gateway_kwargs)
     extra: Dict[str, Any] = {}
     if provider == "ollama" and gateway_kwargs.get("format"):
         extra["format"] = gateway_kwargs["format"]
 
     logger.info("💎 VIDEO-FORCE (_async_iter_llm_stream): Received force_tool_name=%s for provider=%s", force_tool_name, provider)
+    if prompt_cache_decision is not None:
+        yield StreamEvent(type="cache_metrics", content=prompt_cache_decision.to_dict(), metadata={})
 
     # NOTE: Previous implementation injected a synthetic assistant message with
     # `tool_calls` into `messages` when `forced_tool_args` was present.
@@ -1032,6 +1036,13 @@ class OrchestratorExecutionEngine:
                 model=current_call_model,
                 fallback_model=user_selected_model,
             )
+            prompt_cache_decision = clone_decision_for_route(
+                decision_from_gateway_kwargs(gateway_kwargs),
+                provider=current_call_provider,
+                model=current_call_model or user_selected_model,
+            )
+            if prompt_cache_decision is not None:
+                gateway_kwargs["_prompt_cache_decision"] = prompt_cache_decision
             # 🔐 AUTH-ISOLATION: Bei Provider-Switch frischen API-Key laden
             original_provider = str(gateway_kwargs.get("provider") or "").strip().lower()
             if current_call_provider and original_provider and current_call_provider != original_provider:
@@ -1102,6 +1113,7 @@ class OrchestratorExecutionEngine:
                 call_kwargs.pop("force_tool_name", None)
                 call_kwargs.pop("forced_tool", None)
                 call_kwargs.pop("forced_tool_args", None)
+                call_kwargs.pop("_prompt_cache_decision", None)
                 try:
                     response = await reason_and_respond_fn(**call_kwargs)
                 except Exception:
@@ -1125,6 +1137,9 @@ class OrchestratorExecutionEngine:
 
             # 💎 COST-AGGREGATION FIX: Extrahiere und addiere Usage/Cost aus jeder Iteration
             if isinstance(response, dict):
+                prompt_cache_decision = decision_from_gateway_kwargs(gateway_kwargs)
+                if prompt_cache_decision is not None:
+                    response["usage"] = merge_decision_into_usage(response.get("usage") or {}, prompt_cache_decision)
                 usage_data = response.get("usage") or {}
                 cost_data = response.get("cost") or {}
                 
@@ -1148,6 +1163,9 @@ class OrchestratorExecutionEngine:
                         from backend.services.cost_service import create_cost_entry
                         _iter_model = current_call_model or user_selected_model or "unknown"
                         _iter_provider = current_call_provider or gateway_kwargs.get("provider") or "unknown"
+                        _iter_tokens_saved = int(
+                            (prompt_cache_decision.estimated_tokens_saved if prompt_cache_decision is not None else 0) or 0
+                        )
                         create_cost_entry(
                             db=self.db,
                             amount=float(total_cost),
@@ -1156,10 +1174,11 @@ class OrchestratorExecutionEngine:
                             source_type="conversation",
                             input_tokens=int(input_tokens),
                             output_tokens=int(output_tokens),
+                            tokens_saved=_iter_tokens_saved,
                         )
                         logger.info(
-                            "COST-PERSIST: Iteration %d saved %.6f€ for model '%s'",
-                            current_iteration, total_cost, _iter_model
+                            "COST-PERSIST: Iteration %d saved %.6f€ for model '%s' (tokens_saved=%d)",
+                            current_iteration, total_cost, _iter_model, _iter_tokens_saved
                         )
                     except Exception:
                         logger.warning("COST-PERSIST: Failed to save iteration cost", exc_info=True)
@@ -2053,6 +2072,13 @@ class OrchestratorExecutionEngine:
                 model=current_call_model,
                 fallback_model=user_selected_model,
             )
+            prompt_cache_decision = clone_decision_for_route(
+                decision_from_gateway_kwargs(gateway_kwargs),
+                provider=current_call_provider,
+                model=current_call_model or user_selected_model,
+            )
+            if prompt_cache_decision is not None:
+                gateway_kwargs["_prompt_cache_decision"] = prompt_cache_decision
             # 🔐 AUTH-ISOLATION (stream loop): Key-Refresh bei Provider-Switch
             _stream_orig_provider = str(gateway_kwargs.get("provider") or "").strip().lower()
             if current_call_provider and _stream_orig_provider and current_call_provider != _stream_orig_provider:
@@ -2157,6 +2183,14 @@ class OrchestratorExecutionEngine:
                                 frag = ev.content if isinstance(ev.content, dict) else {}
                                 _stream_merge_openai_tool_delta(openai_acc, frag)
                         elif ev.type == "usage":
+                            prompt_cache_decision = decision_from_gateway_kwargs(gateway_kwargs)
+                            if prompt_cache_decision is not None and isinstance(ev.content, dict):
+                                u_blob_for_cache = dict(ev.content)
+                                u_blob_for_cache["usage"] = merge_decision_into_usage(
+                                    u_blob_for_cache.get("usage") or {},
+                                    prompt_cache_decision,
+                                )
+                                ev = StreamEvent(type=ev.type, content=u_blob_for_cache, metadata=ev.metadata)
                             yield ev
                             u_blob = ev.content if isinstance(ev.content, dict) else {}
                             u = u_blob.get("usage") or {}
@@ -2167,7 +2201,9 @@ class OrchestratorExecutionEngine:
                             if float(cst.get("total_cost") or 0) > 0 and self.db is not None:
                                 try:
                                     from backend.services.cost_service import create_cost_entry
-
+                                    _stream_tokens_saved = int(
+                                        (prompt_cache_decision.estimated_tokens_saved if prompt_cache_decision is not None else 0) or 0
+                                    )
                                     create_cost_entry(
                                         db=self.db,
                                         amount=float(cst.get("total_cost") or 0.0),
@@ -2176,6 +2212,7 @@ class OrchestratorExecutionEngine:
                                         source_type="conversation",
                                         input_tokens=int(u.get("input_tokens") or u.get("prompt_tokens") or 0),
                                         output_tokens=int(u.get("output_tokens") or u.get("completion_tokens") or 0),
+                                        tokens_saved=_stream_tokens_saved,
                                     )
                                 except Exception:
                                     logger.warning("COST-PERSIST (stream): iteration save failed", exc_info=True)

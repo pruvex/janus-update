@@ -119,6 +119,17 @@ def _ensure_sqlite_schema_migrations() -> None:
                     )
                 logger.info("Migration: memories.source_type added (default='text').")
 
+        if insp.has_table("costs"):
+            cost_cols = {c["name"] for c in insp.get_columns("costs")}
+            if "tokens_saved" not in cost_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE costs ADD COLUMN tokens_saved INTEGER NOT NULL DEFAULT 0"))
+                logger.info("Migration: costs.tokens_saved added (default=0).")
+            if "cost_saved" not in cost_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE costs ADD COLUMN cost_saved REAL NOT NULL DEFAULT 0.0"))
+                logger.info("Migration: costs.cost_saved added (default=0.0).")
+
         # Path Sentinel: Create path_permissions table if it doesn't exist
         if not insp.has_table("path_permissions"):
             from backend.data.models import PathPermission

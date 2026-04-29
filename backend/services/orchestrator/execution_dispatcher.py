@@ -14,6 +14,7 @@ from backend.services import llm_gateway
 from backend.services.chat_orchestrator import RequestContext
 from backend.services.orchestrator.prompt_registry import apply_verbosity_control, prompt_registry
 from backend.services.orchestrator.suggestion_engine import SuggestionEngine
+from backend.services.prompt_cache import decide_prompt_cache
 from backend.services.tool_executor import ToolExecutor
 from backend.services.tool_manager import tool_manager
 from backend.utils import intent_classifier
@@ -291,6 +292,7 @@ async def execute_generation_prepare_gateway(
                 wf.final_system_prompt += '\n\n### SKILL-DIRECTIVES (PFLICHT):\n' + '\n'.join(wf._skill_directive_parts)
                 logger.info('SKILL-DIRECTIVE INJECTION: %d Direktiven für Skills %s injiziert.', len(wf._skill_directive_parts), wf.relevant_skill_ids)
         wf._system_prompt_base_for_suggestions = wf.final_system_prompt
+        wf._prompt_cache_base_prompt = str(getattr(wf, "system_prompt_for_llm", "") or "")
         raw_mode = getattr(wf, "suggestion_mode", 1)
         suggestion_mode = 1 if raw_mode is None else int(raw_mode)
         _suggestion_suffix = SuggestionEngine.build_suggestion_directive(
@@ -334,6 +336,28 @@ async def execute_generation_prepare_gateway(
         wf.messages.append({'role': 'user', 'content': _user_turn_content})
         if wf.policy_injection_message:
             wf.messages.append({'role': 'system', 'content': wf.policy_injection_message})
+        wf.prompt_cache_decision = decide_prompt_cache(
+            provider=request.provider,
+            model=wf.chosen_model,
+            raw_segments={
+                "clock_line": getattr(wf, "_clock_line", ""),
+                "identity_anchor": getattr(wf, "_anchor", ""),
+                "identity_directive": getattr(wf, "_id_directive", ""),
+                "base_prompt": getattr(wf, "_prompt_cache_base_prompt", ""),
+                "directive": "\n\n".join(
+                    str(getattr(_directive, "directive_text", "") or "")
+                    for _directive in getattr(wf, "_active_directives", [])
+                ),
+                "skill_directive": "\n".join(getattr(wf, "_skill_directive_parts", [])),
+                "capability_guidance": getattr(wf, "capability_guidance", ""),
+                "suggestion_suffix": _suggestion_suffix or "",
+                "fact_coupons": _formatted_coupons_block,
+                "user_input": _user_turn_content,
+                "policy_injection": getattr(wf, "policy_injection_message", ""),
+            },
+            user_scope=str(getattr(wf._identity, "name", "") or "") or None,
+            chat_scope=str(request.chat_id or "") if getattr(request, "chat_id", None) is not None else None,
+        )
         wf.tools_override = None
         wf.is_smalltalk_turn = False
         if str(request.provider or '').lower() == 'ollama':
@@ -349,7 +373,7 @@ async def execute_generation_prepare_gateway(
         wf.kpi_retry_paths: set[str] = set()
         wf.kpi_tool_status: dict[str, str] = {}  # cache_key -> status (für Self-Correction bei Error)
         wf._normalize_tool_args_fn = _normalize_tool_args
-        wf.gateway_kwargs = {'provider': request.provider, 'model': wf.chosen_model, 'api_key': wf.api_key, 'chat_history': wf.messages, 'context_manager': context_manager, 'db': db, 'user_prompt': wf.user_text, 'chat_id': request.chat_id, 'tool_executor': wf.executor, 'disable_tools': wf.disable_tools, 'allowed_skill_ids': wf.relevant_skill_ids, 'requested_skills': wf.relevant_skill_ids, 'tools_override': wf.tools_override, 'bypass_policy': wf.bypass_policy_this_turn, 'reason_and_respond_fn': _reason_and_respond_with_provider_fixes, '_kpi_retry_paths': wf.kpi_retry_paths, '_kpi_tool_status': wf.kpi_tool_status, '_normalize_tool_args_fn': wf._normalize_tool_args_fn, '_suggestion_context': {'base_system': getattr(wf, '_system_prompt_base_for_suggestions', wf.final_system_prompt), 'mode': suggestion_mode, 'memory_context': str(wf.memory_context_string or ''), 'user_text': str(wf.user_text or '')}}
+        wf.gateway_kwargs = {'provider': request.provider, 'model': wf.chosen_model, 'api_key': wf.api_key, 'chat_history': wf.messages, 'context_manager': context_manager, 'db': db, 'user_prompt': wf.user_text, 'chat_id': request.chat_id, 'tool_executor': wf.executor, 'disable_tools': wf.disable_tools, 'allowed_skill_ids': wf.relevant_skill_ids, 'requested_skills': wf.relevant_skill_ids, 'tools_override': wf.tools_override, 'bypass_policy': wf.bypass_policy_this_turn, 'reason_and_respond_fn': _reason_and_respond_with_provider_fixes, '_kpi_retry_paths': wf.kpi_retry_paths, '_kpi_tool_status': wf.kpi_tool_status, '_normalize_tool_args_fn': wf._normalize_tool_args_fn, '_prompt_cache_decision': wf.prompt_cache_decision, '_suggestion_context': {'base_system': getattr(wf, '_system_prompt_base_for_suggestions', wf.final_system_prompt), 'mode': suggestion_mode, 'memory_context': str(wf.memory_context_string or ''), 'user_text': str(wf.user_text or '')}}
         # P0 control-flow gate: MOA router may run only after smalltalk gating and only for likely tool turns.
         wf.gateway_kwargs["_allow_moa_hard_lock"] = bool(
             (not wf.is_smalltalk_turn)

@@ -14,6 +14,26 @@
 
 ---
 
+## [PATTERN] #SavingsVisualizer "Monetäre Ersparnis-Visualisierung — tokens_saved + cost_saved in DB, UI berechnet Effizienz-Quote"
+- **Kontext:** Einführung von Prompt Caching zur Kostenreduktion. Token-Einsparungen sind für Nutzer abstrakt. Ersparnis muss monetär und prozentual greifbar sein.
+- **Problem:** Ohne monetäre Darstellung bleibt der Wert von Prompt Caching für Nutzer unsichtbar. Reine Token-Zahlen sind schwer zu interpretieren. Keine direkte Sichtbarkeit des finanziellen Mehrwerts von Janus-Optimierungen.
+- **Lösung:** **Speicherung von `tokens_saved` und `cost_saved` in der `costs` Tabelle:**
+  1. **DB-Schema:** `backend/data/models.py` — `tokens_saved` (INT, default=0), `cost_saved` (FLOAT, default=0.0) Spalten.
+  2. **Auto-Migration:** `backend/data/database.py` — `_ensure_sqlite_schema_migrations()` führt `ALTER TABLE` für beide Spalten aus.
+  3. **Berechnung:** `backend/services/cost_service.py` — `_calculate_cost_saved()` multipliziert `tokens_saved` mit `input_cost_per_token * USD_TO_EUR_CONVERSION_RATE` aus Model-Catalog.
+  4. **Übergabe:** `backend/services/orchestrator/execution_engine.py` — `estimated_tokens_saved` aus `prompt_cache_decision` an `create_cost_entry()` übergeben (Non-Stream + Stream).
+  5. **Aggregation:** `backend/data/crud.py` — `get_monthly_cost_summary_by_model()` aggregiert `total_tokens_saved` und `total_cost_saved` pro Modell.
+  6. **UI-Visualisierung:** `frontend/js/cost-visualizer.js` — Deep-Dive-Modal zeigt pro Modell: `(Janus Caching: -X.XXXX € | Y% gespart)`. Footer zeigt Gesamtersparnis. Toggle-Button wechselt zwischen Modell- und Kosten-Sortierung.
+  7. **Effizienz-Quote:** `efficiencyPct = (cost_saved / (total_cost + cost_saved)) * 100` — korrekte Definition als Anteil an den Gesamtprompt-Kosten.
+- **Härtung:** Auto-Migration garantiert, dass neue Spalten in existierenden Datenbanken hinzugefügt werden. Historische Einträge erhalten automatisch `0` / `0.0`. UI zeigt Ersparnis nur wenn `cost_saved > 0`.
+- **Tripwire:** Wenn Ersparnis im Modal nicht angezeigt wird → `total_cost_saved` nicht in API-Response enthalten. Erkennbar im Network-Tab: `/api/costs/summary-by-model` Response prüfen. Wenn Ersparnis immer 0.00€ → `tokens_saved` wird nicht an `create_cost_entry()` übergeben oder Berechnung fehlerhaft.
+- **Location:** `backend/data/models.py` (Spalten), `backend/data/database.py` (Migration), `backend/services/cost_service.py` (Berechnung), `backend/services/orchestrator/execution_engine.py` (Übergabe), `backend/data/crud.py` (Aggregation), `frontend/js/cost-visualizer.js` (Visualisierung), implementiert 2026-04-29.
+- **Epic:** TASK-056 — Prompt Caching System (Phase 4: Savings Engine)
+- **Confidence:** High (DB-Migration funktioniert, API liefert Daten, UI zeigt Ersparnis korrekt).
+- **Tags:** SavingsVisualizer, CostTracking, PromptCaching, UI, Database, TASK056
+
+---
+
 ## [PATTERN] #UIDeduplication "UI Deduplication — Parallele Rendering-Flags und DOM-Clearing mit Delay"
 - **Kontext:** UI Model Management in Janus zeigte doppelte Buttons und Modelle in den Einstellungen, besonders bei schnellen User-Interaktionen oder parallelen Render-Aufrufen.
 - **Problem:** Doppelte Event-Listener, parallele `renderSettingsView()` Aufrufe, und Race Conditions beim DOM-Manipulation führten zu duplizierten UI-Elementen. Einfaches `innerHTML = ""` war nicht ausreichend.

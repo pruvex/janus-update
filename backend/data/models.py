@@ -196,6 +196,8 @@ class Cost(Base):
     output_tokens = Column(Integer, default=0)
     total_cost = Column(Float, default=0.0)
     context = Column(String, nullable=True)
+    tokens_saved = Column(Integer, default=0)
+    cost_saved = Column(Float, default=0.0)
 
 
 class SkillTelemetry(Base):
