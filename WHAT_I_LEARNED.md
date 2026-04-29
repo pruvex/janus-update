@@ -2,6 +2,18 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [LESSON] #PromptCachingClockLine "System-Prompt Clock-Line invalidiert Cache jede Minute — Sub-Segment-Zerlegung statt monolithischem Hash"
+- **Kontext:** TASK-056 Prompt Caching Blueprint analysierte den realen System-Prompt-Aufbau in `execution_dispatcher.py`. Der Plan nahm an, der System-Prompt sei stabil/cachebar. Die Realität: `wf._clock_line` wird mit `datetime.now()` gebaut und jede Minute aktualisiert, dann am Prefix prepended.
+- **Problem:** OpenAI's automatisches Prefix-Caching funktioniert nur bei stabilem Prefix. Die Clock-Line am Anfang invalidiert den gesamten System-Prompt-Hash 1440 Mal pro Tag, selbst wenn alle anderen Teile stabil wären. Ein monolithischer Hash über den fertigen `wf.final_system_prompt` ist wirkungslos.
+- **Lösung:** **Sub-Segment-Zerlegung des System-Prompts:** Der Segmenter muss die einzelnen `wf.*`-Felder (clock_line, identity_anchor, identity_directive, base_prompt, ui_guidance, research_guidance, tool_protocol, small_talk_guard, capability_guidance, suggestion_suffix, skill_directives, coupons) **vor** der Konkatenation analysieren. Dynamische Segmente (clock_line, suggestion_suffix, capability_guidance, coupons) werden als nicht-cachebar klassifiziert. Stabile Segmente werden separat gecached. Integrationspunkt muss **vor** Zeile 314 (`wf.messages = [...]`) liegen.
+- **Härtung:** Clock-Line ans Ende verschieben oder als separates System-Message senden, um OpenAI Prefix-Stability zu maximieren. Cache-Key enthält `segment_type` zur Unterscheidung. Feature-Flag für Segmenter, aber Telemetrie läuft auch bei `disabled` (cache_bypassed=N).
+- **Tripwire:** Wenn Cache-Hit-Rate < 10% trotz stabilem System-Prompt → Clock-Line oder andere dynamische Injections nicht als Sub-Segmente behandelt. Erkennbar im Log: Clock-Line ändert sich jede Minute, aber Cache-Key bleibt gleich.
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py` (Zeilen 279-280, 296-307, 218-236, 316-319), dokumentiert 2026-04-29 in TASK-056 Cascade Review.
+- **Confidence:** High (Code-Analyse bestätigt Clock-Line-Killer, Sub-Segment-Zerlegung ist Lösung).
+- **Tags:** PromptCaching, ClockLine, SystemPrompt, SubSegment, OpenAICache, TASK056
+
+---
+
 ## [PATTERN] #UIDeduplication "UI Deduplication — Parallele Rendering-Flags und DOM-Clearing mit Delay"
 - **Kontext:** UI Model Management in Janus zeigte doppelte Buttons und Modelle in den Einstellungen, besonders bei schnellen User-Interaktionen oder parallelen Render-Aufrufen.
 - **Problem:** Doppelte Event-Listener, parallele `renderSettingsView()` Aufrufe, und Race Conditions beim DOM-Manipulation führten zu duplizierten UI-Elementen. Einfaches `innerHTML = ""` war nicht ausreichend.
