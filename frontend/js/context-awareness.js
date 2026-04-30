@@ -522,13 +522,10 @@ function removeCompressionLoadingModal() {
  */
 async function fetchCompressionProposal(targetModel) {
   try {
-    // Sammle Messages aus allen Fenstern
-    const messages = [];
-    WINDOW_IDS.forEach((wid) => {
-      messages.push(...collectVisibleMessages(wid));
-    });
-
+    // 💎 FIX: Sammle nur Messages vom aktiven Fenster (A), nicht von allen Fenstern
+    // Bug: Vorher wurden Messages aus allen Fenstern gesammelt, aber nur chat_id von Fenster A gesendet
     const chatId = getActiveChatIdForWindow("A"); // Primäres Fenster
+    const messages = collectVisibleMessages("A");
 
     const response = await fetch(`${API_BASE_URL}/api/context/compression/propose`, {
       method: "POST",
