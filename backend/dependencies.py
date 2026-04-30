@@ -83,7 +83,7 @@ def _get_or_generate_jwt_secret() -> str:
 
 SECRET_KEY = _get_or_generate_jwt_secret()
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 💎 FIX-AUTH-068: Erhöht auf 24h (1440 Minuten)
 
 # This is a simple user store for demo purposes
 # In a real application, you would query a database here

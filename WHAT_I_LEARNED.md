@@ -2,6 +2,57 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [PATTERN] #PureTextSummaryMode "Skill-Stripping bei Zusammenfassungs-Intents zur Qualitätssteigerung — relevant_skill_ids cleared, tools disabled, proactive guidance suppressed"
+- **Kontext:** TASK-057 Context Awareness System erforderte einen Pure-Text Summary Mode, der alle Skills und Tools deaktiviert, wenn der Nutzer eine Zusammenfassung anfordert. Ohne diesen Modus könnten Skills unerwünscht in den Zusammenfassungs-Prozess eingreifen.
+- **Problem:** Wenn ein Nutzer "fasse zusammen" oder "erstelle eine Zusammenfassung" eingibt, könnten proactive Skills oder forced tools den rein textuellen Zusammenfassungs-Prozess stören. Der Intent ist klar: reine Textverarbeitung ohne Skill-Intervention.
+- **Lösung:** **Global Veto System für Summary Intents:**
+  1. **Intent Engine:** `apply_global_veto()` in `intent_engine.py` erkennt Zusammenfassungs-Keywords ("fass zusammen", "zusammenfassen", "summarize", etc.) und gibt `vetoed=True` mit `veto_reason="summary"` zurück.
+  2. **Execution Dispatcher:** Bei `vetoed` werden `wf.relevant_skill_ids = []`, `wf.force_tool_name = None`, `wf.proactive_guidance = ""`, `wf.has_tool_trigger = False` gesetzt.
+  3. **Gateway Kwargs:** `tool_choice = "none"` erzwingt reine Textverarbeitung ohne Tool-Calls.
+  4. **Meta-Agent:** `chat_orchestrator.py` prüft Veto vor Meta-Agent-Run und blockiert Meta-Agent bei Summary-Veto.
+- **Härtung:** Veto-Logik ist deterministisch basierend auf Keyword-Matching. Keine probabilistische Klassifikation. Skills können bei Bedarf explizit erlaubt werden, wenn der Veto nicht auslösen soll.
+- **Tripwire:** Wenn Tools bei Zusammenfassungs-Anfragen aktiv werden → Veto-Logik nicht implementiert oder Keywords fehlen. Erkennbar im Log: `[SKILL-TRIGGER]` trotz Summary-Request.
+- **Location:** `backend/services/orchestrator/intent_engine.py` (apply_global_veto), `backend/services/orchestrator/execution_dispatcher.py` (Pure-Text gating), `backend/services/chat_orchestrator.py` (Meta-Agent Veto-Check), implementiert 2026-05-01.
+- **Epic:** TASK-057 — Context Awareness System (Pure-Text Summary Mode)
+- **Confidence:** High (Deterministische Keyword-Erkennung, klare Gating-Logik, keine Skill-Intervention bei Summary-Intents).
+- **Tags:** PureTextSummaryMode, IntentEngine, GlobalVeto, SkillStripping, ToolDisabling, ContextAwareness, TASK057
+
+---
+
+## [PATTERN] #SelfHealingAuth "Stiller Re-Login bei 401-Fehlern zur Aufrechterhaltung der Persistenz — Token-Refresh + Retry ohne User-Feedback"
+- **Kontext:** Frontend-401-Fehler beim Modellwechsel durch 30-Minuten Token-TTL. Nutzer mussten manuell neu einloggen oder sahen Fehlermeldungen. Das Ziel: Transparente Token-Erneuerung ohne Nutzer-Unterbrechung.
+- **Problem:** 30-Minuten Token-TTL führt zu 401-Fehlern bei längeren Sessions. `updateLastUsedModelInBackend()` schlägt fehl, `last_used_provider` wird nicht persistiert, Modellwechsel ist unvollständig.
+- **Lösung:** **Auth Self-Healing mit Silent Login:**
+  1. **Token TTL Extension:** `backend/dependencies.py` — `ACCESS_TOKEN_EXPIRE_MINUTES` von 30 auf 1440 (24h) erhöht.
+  2. **Frontend Retry-Mechanismus:** `frontend/js/app.js` — Bei `response.status === 401` wird `attemptSilentLogin()` aufgerufen.
+  3. **Silent Login:** Nutzt `/api/auth/token` mit bestehenden Credentials für neuen Token.
+  4. **Retry:** Nach erfolgreichem Refresh wird der ursprüngliche Request mit neuem Token wiederholt.
+  5. **No User Feedback:** Bei erfolgreichem Retry sieht der Nutzer keine Fehlermeldung. Nur bei fehlgeschlagenem Refresh wird Error geloggt.
+- **Härtung:** Token-TTL auf 24h reduziert Häufigkeit von 401-Fehlern. Retry-Mechanismus fängt verbleibende Fälle ab. `attemptSilentLogin()` ist idempotent und sicher.
+- **Tripwire:** Wenn 401-Fehler sichtbar werden → Silent Login nicht implementiert oder Refresh fehlgeschlagen. Erkennbar im Log: `[AUTH] 401 error without retry` oder ähnliche Warnungen.
+- **Location:** `backend/dependencies.py` (ACCESS_TOKEN_EXPIRE_MINUTES), `frontend/js/app.js` (updateLastUsedModelInBackend retry logic), implementiert 2026-05-01.
+- **Epic:** TASK-057 — Context Awareness System (Auth Self-Healing)
+- **Confidence:** High (Token-TTL erhöht, Retry-Mechanismus implementiert, Silent Login funktioniert).
+- **Tags:** SelfHealingAuth, SilentLogin, TokenRefresh, RetryMechanism, 401Handling, ContextAwareness, TASK057
+
+---
+
+## [PATTERN] #BackgroundCostCommit "Zwang zum db.commit() in asynchronen oder verzweigten Engine-Pfaden zur zuverlässigen Cost-Persistenz"
+- **Kontext:** Cost-Entries wurden in `execution_engine.py` erstellt, aber nicht persistiert, weil `db.commit()` fehlte. Asynchrone Pfade (Non-Stream und Stream) hatten unterschiedliche DB-Handling-Logik.
+- **Problem:** `create_cost_entry()` wurde aufgerufen, aber ohne `db.commit()` wurden die Einträge nicht in die SQLite-Datenbank geschrieben. Bei Neustart des Servers waren alle Cost-Entries verloren.
+- **Lösung:** **Explizite db.commit() nach Cost-Eintrag:**
+  1. **Non-Stream Pfad:** `execution_engine.py` — Nach `create_cost_entry()` explizites `db.commit()`.
+  2. **Stream Pfad:** `execution_engine.py` — Nach `create_cost_entry()` im Stream-Handler ebenfalls `db.commit()`.
+  3. **Konsistenz:** Beide Pfade (iterative und streaming) haben identische Commit-Logik.
+- **Härtung:** Explizites Commit garantiert Persistenz auch bei späteren Fehlern im Request-Cycle. DB-Session bleibt offen für weitere Operationen.
+- **Tripwire:** Wenn Cost-Entries nach Neustart fehlen → `db.commit()` fehlt. Erkennbar in DB: `costs` Tabelle leer obwohl Requests verarbeitet wurden.
+- **Location:** `backend/services/orchestrator/execution_engine.py` (run_agent_factory Non-Stream + Stream Pfade), implementiert 2026-05-01.
+- **Epic:** TASK-057 — Context Awareness System (FinOps Cost Commit Fix)
+- **Confidence:** High (Expliziter Commit implementiert, Cost-Entries werden persistiert).
+- **Tags:** BackgroundCostCommit, DBCommit, CostPersistence, AsyncPath, StreamPath, FinOps, TASK057
+
+---
+
 ## [LESSON] #PromptCachingClockLine "System-Prompt Clock-Line invalidiert Cache jede Minute — Sub-Segment-Zerlegung statt monolithischem Hash"
 - **Kontext:** TASK-056 Prompt Caching Blueprint analysierte den realen System-Prompt-Aufbau in `execution_dispatcher.py`. Der Plan nahm an, der System-Prompt sei stabil/cachebar. Die Realität: `wf._clock_line` wird mit `datetime.now()` gebaut und jede Minute aktualisiert, dann am Prefix prepended.
 - **Problem:** OpenAI's automatisches Prefix-Caching funktioniert nur bei stabilem Prefix. Die Clock-Line am Anfang invalidiert den gesamten System-Prompt-Hash 1440 Mal pro Tag, selbst wenn alle anderen Teile stabil wären. Ein monolithischer Hash über den fertigen `wf.final_system_prompt` ist wirkungslos.

@@ -489,6 +489,33 @@ window.updateLastUsedModelInBackend = async function updateLastUsedModelInBacken
         model: appState.last_active.model,
       }),
     });
+    
+    // 💎 FIX-AUTH-068: Retry-Mechanismus für 401-Fehler
+    if (response.status === 401) {
+      console.warn("Token expired (401), attempting silent login and retry...");
+      const refreshSuccess = await attemptSilentLogin();
+      if (refreshSuccess) {
+        console.log("Token refreshed successfully, retrying request...");
+        const newToken = localStorage.getItem('auth_token');
+        const retryResponse = await fetch(`${API_BASE_URL}/api/last-used-model`, {
+          method: "PUT",
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${newToken}`
+          },
+          body: JSON.stringify({
+            provider: appState.last_active.provider,
+            model: appState.last_active.model,
+          }),
+        });
+        if (retryResponse.ok) {
+          console.log("Last used model updated in backend after token refresh:", appState.last_active.provider, appState.last_active.model);
+          return;
+        }
+      }
+      // Wenn Refresh fehlschlägt, falle durch zum normalen Error-Handling
+    }
+    
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || "Failed to update last used model in backend.");
