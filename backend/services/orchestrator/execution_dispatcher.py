@@ -14,6 +14,7 @@ from backend.services import llm_gateway
 from backend.services.chat_orchestrator import RequestContext
 from backend.services.orchestrator.prompt_registry import apply_verbosity_control, prompt_registry
 from backend.services.orchestrator.suggestion_engine import SuggestionEngine
+from backend.services.orchestrator.intent_engine import intent_engine
 from backend.services.prompt_cache import decide_prompt_cache
 from backend.services.tool_executor import ToolExecutor
 from backend.services.tool_manager import tool_manager
@@ -175,6 +176,23 @@ async def execute_generation_prepare_gateway(
     request = ctx.request
     # Apply pre-resolution guards (intent-based model escalation, etc.)
     _apply_pre_resolution_guards(wf, request)
+    
+    # 💎 PURE-TEXT SUMMARY MODE: Wenn Global Veto für Zusammenfassungen aktiv ist
+    # Entferne alle Skills, deaktiviere Tool-Zwang, deaktiviere proaktive Vorschläge
+    vetoed, veto_reason = intent_engine.apply_global_veto(wf.user_text, "summary")
+    if vetoed:
+        logger.warning("[PURE-TEXT MODE] Summary intent detected via global veto: %s. Disabling all skills and proactive suggestions.", veto_reason)
+        wf.relevant_skill_ids = []  # Entferne alle Werkzeuge
+        wf.force_tool_name = None  # Deaktiviere Video/Image-Zwang
+        wf.proactive_guidance = ""  # Deaktiviere proaktive Vorschläge
+        wf.has_tool_trigger = False  # Kein Tool-Trigger für Zusammenfassungen
+        # Setze gateway_kwargs für pure-text mode
+        if not hasattr(wf, 'gateway_kwargs'):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"  # Kein Tool-Choice erzwingen
+        
     background_tasks = ctx.background_tasks
     if wf.skip_llm_generation:
         if not wf.final_text:
