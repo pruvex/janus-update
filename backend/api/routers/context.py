@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from backend.data import crud
 from backend.data.database import get_db
+from backend.data.models import Chat
 from backend.services.context.context_compressor import (
     CompressionProposal,
     propose_compression,
@@ -373,6 +374,7 @@ async def apply_compression_endpoint(
                         for _, _, msg in message_ids_to_compress
                     ],
                     summary_text=payload.summary_text,
+                    db=db,
                 )
                 pdf_backup_created = pdf_result.get("success", False)
                 pdf_path = pdf_result.get("pdf_path")
@@ -524,6 +526,7 @@ async def _create_compression_pdf_backup(
     compression_id: int,
     messages_data: list[dict],
     summary_text: str,
+    db: Session,
 ) -> dict:
     """
     Erstellt ein PDF-Backup der komprimierten Nachrichten.
@@ -533,6 +536,7 @@ async def _create_compression_pdf_backup(
         compression_id: ID der Compression
         messages_data: Liste der archivierten Nachrichten (role, content, created_at)
         summary_text: Die Zusammenfassung
+        db: Database session für Chat-Title-Abfrage
 
     Returns:
         dict mit {"success": bool, "pdf_path": str | None}
@@ -540,6 +544,21 @@ async def _create_compression_pdf_backup(
     try:
         from backend.tools.pdf_generator import create_pdf_from_markdown
         from backend.utils.paths import get_app_data_dir
+        import re
+
+        # 💎 OPTIMIERUNG: Chat-Title abfragen für Keywords
+        chat = db.query(Chat).filter(Chat.id == chat_id).first()
+        chat_title = chat.title if chat and chat.title else "archiv"
+
+        # 💎 KEYWORDS: Extrahiere erste 3 relevante Wörter, lowercase, Sonderzeichen entfernt
+        words = re.findall(r'\b[a-zA-ZäöüÄÖÜß]+\b', chat_title.lower())
+        keywords = '_'.join(words[:3]) if len(words) >= 3 else '_'.join(words) if words else "archiv"
+
+        # 💎 DATUMSFORMAT: DD-MM-YYYY
+        date_str = datetime.now().strftime("%d-%m-%Y")
+
+        # 💎 NEUER DATEINAME: Archiv_[Datum]_[Keywords].pdf
+        filename = f"Archiv_{date_str}_{keywords}.pdf"
 
         # Erstelle Markdown-Content
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -579,15 +598,11 @@ async def _create_compression_pdf_backup(
 
         markdown_content = "\n".join(md_lines)
 
-        # Dateiname: Chat_Archiv_{chat_id}_{timestamp}.pdf
-        ts_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"Chat_Archiv_{chat_id}_{ts_str}.pdf"
-
         # PDF erstellen
         result = create_pdf_from_markdown(
             content=markdown_content,
             filename=filename,
-            location="JanusPDFs",  # Speichert in Documents/JanusPDFs
+            location="documents",  # 💎 FIX: Nutze get_secure_absolute_path("documents") für ~/Documents/JanusPDFs
             font_size=11,
             layout_profile="bericht",
         )
@@ -601,10 +616,11 @@ async def _create_compression_pdf_backup(
             # Extrahiere Dateipfad aus dem ToolResult
             file_path = result.get("file_path") or result.get("path")
             if file_path:
-                return {"success": True, "pdf_path": file_path}
+                # 💎 UI-REFRESH: Sende ui_action für Wissensdatenbank-Refresh
+                return {"success": True, "pdf_path": file_path, "ui_action": "refresh_documents"}
 
         # Fallback: Annahme dass es funktioniert hat
-        return {"success": True, "pdf_path": f"JanusPDFs/{filename}"}
+        return {"success": True, "pdf_path": f"JanusPDFs/{filename}", "ui_action": "refresh_documents"}
 
     except Exception as e:
         logger.error("[COMPRESSOR] PDF backup creation error: %s", e, exc_info=True)

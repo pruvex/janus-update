@@ -672,11 +672,9 @@ function showCompressionReviewModal(proposal, targetModel) {
           target_model: targetModel,
         });
 
-        // Refresh Chat-View
+        // 💎 SILENT COMPRESSION: Refresh nur Pane A, nicht Pane B
+        // Verhindert automatisches Öffnen von Pane B nach Kompression
         await refreshChatMessages("A");
-        if (getActiveChatIdForWindow("B")) {
-          await refreshChatMessages("B");
-        }
 
         // Zeige Erfolgs-Toast
         showCompressionSuccessToast(result);
@@ -793,11 +791,9 @@ export async function restoreCompression(compressionId) {
         messages_restored: result.messages_restored,
       });
 
-      // Refresh Chat-Views
+      // 💎 SILENT COMPRESSION: Refresh nur Pane A, nicht Pane B
+      // Verhindert automatisches Öffnen von Pane B nach Wiederherstellung
       await refreshChatMessages("A");
-      if (getActiveChatIdForWindow("B")) {
-        await refreshChatMessages("B");
-      }
     }
 
     return result;

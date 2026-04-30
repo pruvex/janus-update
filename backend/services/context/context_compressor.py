@@ -330,18 +330,19 @@ Zusammenfassung:"""
         """
         Ruft das Speed-Tier Modell für die Zusammenfassung auf.
 
-        💎 CU-3: Nutzt dynamisch das günstigste Speed-Tier Modell des Providers
-        des aktuellen Nutzer-Modells (target_model).
+        💎 PROVIDER-AGNOSTIK: Nutzt dynamisch das günstigste Speed-Tier Modell des Providers
+        des aktuellen Nutzer-Modells (target_model). Bei lokalen Modellen (Ollama) wird der
+        letzte aktive Cloud-Provider aus der Config verwendet.
         """
         try:
             from backend.services.llm_gateway import call_llm
-            from backend.utils.config_loader import load_model_catalog
+            from backend.utils.config_loader import load_model_catalog, load_config_data
 
             prompt = self.SUMMARY_PROMPT.format(messages=candidate_content)
 
-            # 💎 CU-3: Bestimme Provider und Speed-Tier Modell dynamisch
-            provider = "gemini"  # Default
-            model_id = self.SPEED_TIER_MODELS["gemini"]  # Default Speed-Tier
+            # 💎 PROVIDER-AGNOSTIK: Bestimme Provider und Speed-Tier Modell dynamisch
+            provider = None
+            model_id = None
 
             if model:
                 # Prüfe Model-Katalog für Provider-Zuordnung
@@ -349,27 +350,60 @@ Zusammenfassung:"""
                     catalog = load_model_catalog()
                     if model in catalog:
                         model_info = catalog[model]
-                        detected_provider = model_info.get("provider", "gemini").lower()
+                        detected_provider = model_info.get("provider", "").lower()
 
                         if detected_provider == "openai":
                             provider = "openai"
                             model_id = self.SPEED_TIER_MODELS["openai"]
                             logger.debug("[COMPRESSOR] Using OpenAI Speed-Tier: %s", model_id)
                         elif detected_provider == "ollama":
-                            # 💎 CU-3: Für Ollama nutze das aktuell ausgewählte Modell
-                            provider = "ollama"
-                            model_id = model
-                            logger.debug("[COMPRESSOR] Using Ollama model: %s", model_id)
-                        else:
-                            # Gemini oder andere -> Gemini Flash
+                            # 💎 PROVIDER-AGNOSTIK: Für Ollama nutze den letzten Cloud-Provider aus Config
+                            config = load_config_data()
+                            last_cloud_provider = config.get("last_used_provider", "openai").lower()
+                            
+                            # Verwende nur Cloud-Provider (OpenAI oder Gemini), nicht Ollama
+                            if last_cloud_provider in ["openai", "gemini"]:
+                                provider = last_cloud_provider
+                                model_id = self.SPEED_TIER_MODELS.get(last_cloud_provider)
+                                logger.debug("[COMPRESSOR] Ollama detected, using last cloud provider: %s with %s", provider, model_id)
+                            else:
+                                # Fallback auf OpenAI wenn Config keinen gültigen Cloud-Provider hat
+                                provider = "openai"
+                                model_id = self.SPEED_TIER_MODELS["openai"]
+                                logger.warning("[COMPRESSOR] Invalid last_used_provider '%s', falling back to OpenAI", last_cloud_provider)
+                        elif detected_provider == "gemini":
                             provider = "gemini"
                             model_id = self.SPEED_TIER_MODELS["gemini"]
                             logger.debug("[COMPRESSOR] Using Gemini Speed-Tier: %s", model_id)
+                        else:
+                            # Unbekannter Provider -> Nutze last_used_provider aus Config
+                            config = load_config_data()
+                            last_provider = config.get("last_used_provider", "openai").lower()
+                            provider = last_provider if last_provider in self.SPEED_TIER_MODELS else "openai"
+                            model_id = self.SPEED_TIER_MODELS.get(provider, self.SPEED_TIER_MODELS["openai"])
+                            logger.warning("[COMPRESSOR] Unknown provider '%s', using last_used_provider: %s", detected_provider, provider)
                     else:
-                        # Modell nicht im Katalog -> Fallback auf Gemini
-                        logger.warning("[COMPRESSOR] Model %s not in catalog, falling back to Gemini", model)
+                        # Modell nicht im Katalog -> Nutze last_used_provider aus Config (Provider-Agnostik)
+                        config = load_config_data()
+                        last_provider = config.get("last_used_provider", "openai").lower()
+                        provider = last_provider if last_provider in self.SPEED_TIER_MODELS else "openai"
+                        model_id = self.SPEED_TIER_MODELS.get(provider, self.SPEED_TIER_MODELS["openai"])
+                        logger.warning("[COMPRESSOR] Model %s not in catalog, using last_used_provider: %s", model, provider)
                 except Exception as catalog_err:
                     logger.warning("[COMPRESSOR] Could not lookup model catalog: %s", catalog_err)
+                    # Fallback auf last_used_provider aus Config
+                    config = load_config_data()
+                    last_provider = config.get("last_used_provider", "openai").lower()
+                    provider = last_provider if last_provider in self.SPEED_TIER_MODELS else "openai"
+                    model_id = self.SPEED_TIER_MODELS.get(provider, self.SPEED_TIER_MODELS["openai"])
+
+            # Fallback falls kein Provider bestimmt wurde
+            if not provider or not model_id:
+                config = load_config_data()
+                last_provider = config.get("last_used_provider", "openai").lower()
+                provider = last_provider if last_provider in self.SPEED_TIER_MODELS else "openai"
+                model_id = self.SPEED_TIER_MODELS.get(provider, self.SPEED_TIER_MODELS["openai"])
+                logger.warning("[COMPRESSOR] No provider determined, using last_used_provider fallback: %s", provider)
 
             logger.info("[COMPRESSOR] Generating summary with provider=%s model=%s", provider, model_id)
 
