@@ -196,6 +196,37 @@ STORYBOOK_NEGATIVE_KEYWORDS: Tuple[str, ...] = (
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# GLOBAL VETO SYSTEM - Striktes Ausschlusskriterien-System für alle Intents
+# ═══════════════════════════════════════════════════════════════════════════════
+
+GENERAL_NEGATIVE_KEYWORDS: Tuple[str, ...] = (
+    # Globale Ausschlusskriterien - diese Keywords blockieren ALLE Intents
+    # Analyse/Zusammenfassung - darf keine kreativen Workflows auslösen
+    "fass zusammen",
+    "fasse zusammen",
+    "zusammenfassen",
+    "zusammenfassung",
+    "analysiere",
+    "analysieren",
+    "gib mir eine übersicht",
+    "gib mir eine uebersicht",
+    "übersicht",
+    "uebersicht",
+    "zusammenfassung des textes",
+    "zusammenfassung dieses textes",
+    # Debugging/Testing - darf keine Produktions-Workflows auslösen
+    "debug",
+    "debugging",
+    "test",
+    "testen",
+    # System-Commands - darf keine Workflows auslösen
+    "system check",
+    "system prüfung",
+    "diagnose",
+)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # META AGENT KEYWORDS
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -392,11 +423,51 @@ class IntentEngine:
         # 💎 CU-2: Storybook Intent Keywords
         self.storybook_positive_keywords = STORYBOOK_POSITIVE_KEYWORDS
         self.storybook_negative_keywords = STORYBOOK_NEGATIVE_KEYWORDS
+        # 💎 Global Veto System - Striktes Ausschlusskriterien-System für alle Intents
+        self.general_negative_keywords = GENERAL_NEGATIVE_KEYWORDS
     
+    # ─────────────────────────────────────────────────────────────────────────
+    # Global Veto System
+    # ─────────────────────────────────────────────────────────────────────────
+
+    def apply_global_veto(self, user_text: str, intent_name: str = "unknown") -> tuple[bool, str]:
+        """
+        Apply global veto system to check for negative keywords that should block all intents.
+
+        This is a strict veto system - if ANY negative keyword is present, the intent is vetoed
+        regardless of positive keywords. This prevents false-positives across all workflows.
+
+        Args:
+            user_text: The user's prompt text
+            intent_name: Name of the intent being checked (for logging)
+
+        Returns:
+            Tuple of (vetoed: bool, reason: str)
+            - vetoed: True if veto should be applied (negative keyword found)
+            - reason: String explaining why veto was applied
+        """
+        if not user_text:
+            return False, ""
+
+        text_lower = user_text.lower()
+
+        # Check for global negative keywords
+        for kw in self.general_negative_keywords:
+            if kw in text_lower:
+                logger.warning(
+                    "[GLOBAL VETO] Intent '%s' blocked by negative keyword: '%s' in text: '%s'",
+                    intent_name,
+                    kw,
+                    user_text[:100] + "..." if len(user_text) > 100 else user_text
+                )
+                return True, f"Negative keyword '{kw}' detected"
+
+        return False, ""
+
     # ─────────────────────────────────────────────────────────────────────────
     # Shopping Intent
     # ─────────────────────────────────────────────────────────────────────────
-    
+
     def detect_shopping_intent(self, user_text: str) -> bool:
         """Return True if the user text looks like shopping/price research (keywords + price context)."""
         if not user_text:
@@ -476,6 +547,7 @@ class IntentEngine:
         Return True if the user wants a children's book with illustrations (Storybook Macro).
 
         CU-2: Fixed false-positive by adding exclusion criteria for analysis/summarization requests.
+        Global Veto: Applies strict veto system across all intents to prevent false-positives.
 
         Args:
             user_text: The user's prompt text
@@ -488,10 +560,16 @@ class IntentEngine:
             return False
         text_lower = user_text.lower()
 
+        # 💎 GLOBAL VETO: Striktes Veto-System - prüft globale negative Keywords
+        vetoed, veto_reason = self.apply_global_veto(user_text, "storybook")
+        if vetoed:
+            logger.warning("[GLOBAL VETO] Storybook intent blocked: %s", veto_reason)
+            return False
+
         # 💎 CU-2: Negative Bedingungen (Ausschlusskriterien) - Analyse/Zusammenfassung darf NICHT auslösen
         has_negative = any(kw in text_lower for kw in self.storybook_negative_keywords)
         if has_negative:
-            logger.debug("[CU-2] Storybook intent blocked by negative keyword")
+            logger.debug("[CU-2] Storybook intent blocked by storybook-specific negative keyword")
             return False
 
         # Positive Bedingungen - kreative Aufforderungen müssen vorhanden sein
