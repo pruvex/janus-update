@@ -1308,6 +1308,13 @@ class ChatOrchestrator:
         request = ctx.request
         apply_image_intent_skill_guardrails(wf)
         if wf.is_meta_agent_candidate:
+            # 💎 GLOBAL VETO: Prüfe globale negative Keywords vor Meta-Agent-Start
+            vetoed, veto_reason = intent_engine.apply_global_veto(wf.user_text, "meta_agent")
+            if vetoed:
+                logger.warning("[GLOBAL VETO] Meta-Agent blocked by negative keyword: %s. Skipping meta_agent_run.", veto_reason)
+                wf.is_meta_agent_run = False
+                wf.is_meta_agent_candidate = False
+                return ctx
             wf.is_meta_agent_run = True
             wf.meta_profile = self._get_meta_provider_profile(request.provider)
             wf.meta_fast_path = self._is_large_local_model(request.model)

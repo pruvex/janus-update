@@ -1176,6 +1176,9 @@ class OrchestratorExecutionEngine:
                             output_tokens=int(output_tokens),
                             tokens_saved=_iter_tokens_saved,
                         )
+                        # 💎 COST-PERSISTENCE FIX: Explizites db.commit() nach create_cost_entry
+                        # Dies stellt sicher, dass Kosten auch im Meta-Agent-Kontext persistieren
+                        self.db.commit()
                         logger.info(
                             "COST-PERSIST: Iteration %d saved %.6f€ for model '%s' (tokens_saved=%d)",
                             current_iteration, total_cost, _iter_model, _iter_tokens_saved
@@ -2221,6 +2224,8 @@ class OrchestratorExecutionEngine:
                                         output_tokens=int(u.get("output_tokens") or u.get("completion_tokens") or 0),
                                         tokens_saved=_stream_tokens_saved,
                                     )
+                                    # 💎 COST-PERSISTENCE FIX: Explizites db.commit() nach create_cost_entry (Streaming)
+                                    self.db.commit()
                                 except Exception:
                                     logger.warning("COST-PERSIST (stream): iteration save failed", exc_info=True)
                         elif ev.type == "error":
