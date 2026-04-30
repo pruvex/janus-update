@@ -1021,14 +1021,24 @@ export async function updateActivePersonalityDisplay() {
   if (!activePersonalityDisplay) return;
 
   try {
+    const token = localStorage.getItem('auth_token');
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
     // Get active personality ID
-    const activeResponse = await fetch(`${API_BASE_URL}/api/personalities/active`);
+    const activeResponse = await fetch(`${API_BASE_URL}/api/personalities/active`, { headers });
     const activeData = await activeResponse.json();
     const activePersonalityId = activeData.active_personality_id;
 
     // Get all personalities to find the name
-    const allPersonalitiesResponse = await fetch(`${API_BASE_URL}/api/personalities`);
+    const allPersonalitiesResponse = await fetch(`${API_BASE_URL}/api/personalities`, { headers });
     const allPersonalities = await allPersonalitiesResponse.json();
+
+    // 💎 CU-3: Null-Safety - verhindert Totalabsturz bei API-Fehler
+    if (!Array.isArray(allPersonalities)) {
+      console.warn("[SETTINGS] allPersonalities is not an array:", allPersonalities);
+      activePersonalityDisplay.textContent = "";
+      return;
+    }
 
     const activePersonality = allPersonalities.find((p) => p.id === activePersonalityId);
 
@@ -1045,22 +1055,35 @@ export async function updateActivePersonalityDisplay() {
 
 // --- Event Listeners ---
 
-document.addEventListener("DOMContentLoaded", async () => {
-  const versionDisplay = document.getElementById('app-version-display');
-  if (versionDisplay) {
-    versionDisplay.textContent = `Version ${import.meta.env.APP_VERSION || '0.1.0-beta.1'}`;
+// 💎 CU-3: Entferne parallelen DOMContentLoaded Listener - wird jetzt über app.js gesteuert
+// Das verhindert Race-Conditions mit der Auth-Initialisierung
+// Settings werden jetzt in app.js::initializeApp() nach Auth geladen
+
+// Chat-Modell (#model-select) wird hier nicht gesetzt — das übernimmt app.js::render().
+document.addEventListener("show-settings", (event) => {
+  const targetSection = event?.detail?.target || "api-key-section";
+  renderSettingsView(targetSection);
+});
+
+// Exportiere Initialisierungsfunktion für app.js
+export async function initializeSettings() {
+  try {
+    const versionDisplay = document.getElementById('app-version-display');
+    if (versionDisplay) {
+      versionDisplay.textContent = `Version ${import.meta.env.APP_VERSION || '0.1.0-beta.1'}`;
+    }
+
+    await loadModelCatalogForSettings();
+    renderSettingsView();
+    updateActivePersonalityDisplay(); // Initial call to display active personality
+  } catch (error) {
+    console.error("[SETTINGS] Initialization error:", error);
   }
+}
 
-  await loadModelCatalogForSettings();
-
-  // Chat-Modell (#model-select) wird hier nicht gesetzt — das übernimmt app.js::render().
-  document.addEventListener("show-settings", (event) => {
-    const targetSection = event?.detail?.target || "api-key-section";
-    renderSettingsView(targetSection);
-  });
-
-  renderSettingsView();
-  updateActivePersonalityDisplay(); // Initial call to display active personality
+// 💎 CU-3: Event-Listener werden jetzt direkt nach DOMContentLoaded registriert
+// aber ohne API-Calls, die erst nach Auth ausgeführt werden
+document.addEventListener("DOMContentLoaded", () => {
 
   const suggestionModeSlider = document.getElementById("suggestion-mode-slider");
   if (suggestionModeSlider) {
@@ -1747,8 +1770,4 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.showSettingsSection = (targetSection = "api-key-section") => {
     dispatchShowSettingsEvent(targetSection);
   };
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  updateImageGenStatus();
 });

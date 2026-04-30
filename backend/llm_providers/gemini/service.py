@@ -13,6 +13,7 @@ from google.generativeai.types import (
     HarmCategory,
 )
 from google.generativeai.types.content_types import to_tool_config
+from google.api_core.exceptions import InvalidArgument, PermissionDenied, ClientError
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from backend.llm_providers.shared.base_provider import BaseLLMProvider
@@ -613,6 +614,27 @@ class GeminiServiceProvider(BaseLLMProvider):
                     "grounding_metadata": grounding_metadata  # 💎 Für LinkRenderer
                 }
 
+        except InvalidArgument as e:
+            # 💎 CU-2: API Key Expired oder andere 400er Fehler
+            error_msg = str(e).lower()
+            if "api key" in error_msg or "expired" in error_msg or "invalid" in error_msg:
+                logger.warning("[GEMINI] API Key Error (400): %s", e)
+                return {
+                    "type": "error",
+                    "error_code": "API_KEY_EXPIRED",
+                    "message": "Gemini API Key ist ungültig oder abgelaufen. Bitte erneuere deinen API Key.",
+                    "provider": "gemini",
+                }
+            logger.error(f"Gemini InvalidArgument: {e}")
+            return {"type": "error", "error_code": "INVALID_ARGUMENT", "message": f"Fehler: {str(e)}"}
+        except PermissionDenied as e:
+            logger.warning("[GEMINI] Permission Denied: %s", e)
+            return {
+                "type": "error",
+                "error_code": "PERMISSION_DENIED",
+                "message": "Gemini API Zugriff verweigert. Bitte prüfe deine API Key Berechtigungen.",
+                "provider": "gemini",
+            }
         except Exception as e:
             logger.error(f"Gemini Exception: {e}", exc_info=True)
             return {"type": "error", "message": f"Fehler: {str(e)}"}

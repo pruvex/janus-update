@@ -113,6 +113,7 @@ log_startup_time("Importiere Router...")
 from backend.api.routers import (
     chat,
     contacts,
+    context,
     media,
     memory,
     rag,
@@ -864,10 +865,11 @@ async def debug_memory_system():
 
 # 5. Include Routers
 # Hier wird die modulare Struktur eingebunden
-from backend.api.routers import chat, contacts, memory, media, rag, system, local_llm, styles, image_engine, projects, images, users, tasks
+from backend.api.routers import chat, contacts, context, memory, media, rag, system, local_llm, styles, image_engine, projects, images, users, tasks
 
 app.include_router(chat.router, prefix="/api", tags=["Chat"], dependencies=[Depends(api_key_auth)])
 app.include_router(contacts.router, prefix="/api", tags=["Contacts"], dependencies=[Depends(api_key_auth)])
+app.include_router(context.router, prefix="/api", tags=["Context"], dependencies=[Depends(api_key_auth)])
 app.include_router(memory.router, prefix="/api", tags=["Memory"], dependencies=[Depends(api_key_auth)])
 app.include_router(media.router, prefix="/api", tags=["Media"], dependencies=[Depends(api_key_auth)])
 # FIX: router already defines /rag so mount just under /api

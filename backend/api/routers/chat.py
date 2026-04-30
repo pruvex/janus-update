@@ -98,6 +98,11 @@ def _stream_event_to_frontend_sse_line(ev: StreamEvent) -> Optional[str]:
             payload["name"] = ev.metadata.get("name")
             payload["tool_call_id"] = ev.metadata.get("tool_call_id")
         return f"data: {json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
+    if t == "status_update":
+        # 💎 CU-4: Status-Update für UI-Feedback bei langen Anfragen
+        blob = ev.content if isinstance(ev.content, dict) else {}
+        payload = {"type": "status_update", "status": blob.get("status")}
+        return f"data: {json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
     # tool_start / tool_end / provider finish / done: omit for legacy UI (or use StreamEvent.to_sse() in a debug client)
     return None
 

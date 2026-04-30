@@ -1939,3 +1939,312 @@ body[data-janus-active-window="B"] #chat-list .chat-item.chat-item--active-focus
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   💎 CU-2: Context Compression UI Styles
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Summary Block im Chat */
+.compression-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.compression-count {
+  font-size: 13px;
+  color: #888;
+}
+
+.show-compression-details {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.show-compression-details:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+/* Compression Details Modal */
+.compression-details-modal .context-modal-content {
+  max-width: 700px;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.compression-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05));
+}
+
+.compression-details-title {
+  margin: 0;
+  font-size: 18px;
+  color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compression-details-close {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.compression-details-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.compression-details-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.compression-details-footer {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Meta Info */
+.compression-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.compression-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.compression-meta-label {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.compression-meta-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #3b82f6;
+}
+
+.compression-restored-badge {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Summary Box */
+.compression-summary-box {
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.compression-summary-box-title {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.compression-summary-text {
+  line-height: 1.6;
+  color: #d0d0d0;
+  white-space: pre-wrap;
+}
+
+/* Archives Accordion */
+.compression-archives-accordion {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.compression-archives-summary {
+  padding: 14px 16px;
+  background: rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  font-weight: 500;
+  color: #e0e0e0;
+  user-select: none;
+  transition: background 0.2s;
+}
+
+.compression-archives-summary:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.compression-archives-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.compression-archive-item {
+  padding: 12px;
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border-left: 3px solid #3b82f6;
+}
+
+.compression-archive-item:last-child {
+  margin-bottom: 0;
+}
+
+.compression-archive-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.compression-archive-role {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.compression-archive-role.user {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.compression-archive-role.assistant {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.compression-archive-role.system {
+  background: rgba(168, 85, 247, 0.2);
+  color: #a855f7;
+}
+
+.compression-archive-index {
+  font-size: 11px;
+  color: #666;
+}
+
+.compression-archive-content {
+  font-size: 13px;
+  color: #b0b0b0;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* Loading & Error States */
+.compression-loading {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+}
+
+.compression-error {
+  padding: 20px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.compression-error-details {
+  font-size: 12px;
+  color: #888;
+  margin-top: 8px;
+}
+
+/* 💎 CU-3: PDF Backup Option im Review Modal */
+.compression-pdf-option {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+}
+
+.compression-pdf-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.compression-pdf-label input[type="checkbox"] {
+  margin-top: 2px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+.compression-pdf-text {
+  font-size: 14px;
+  color: #e0e0e0;
+  line-height: 1.4;
+}
+
+/* Toast PDF Info */
+.context-toast-pdf-info {
+  display: block;
+  font-size: 12px;
+  color: #22c55e;
+  margin: 4px 0;
+  padding: 4px 8px;
+  background: rgba(34, 197, 94, 0.1);
+  border-radius: 4px;
+}

@@ -1987,6 +1987,13 @@ class OrchestratorExecutionEngine:
         result_holder: Optional[Dict[str, Any]] = None,
     ) -> AsyncIterator[StreamEvent]:
         """Stream provider chunks: text_delta/usage sofort; tool_delta gepuffert; tool_start/tool_end bei Ausführung."""
+        # 💎 CU-4: Sende pending status_update Event (wenn vorhanden)
+        # Dies wurde im chat_orchestrator._execute_generation gesetzt
+        pending_status_update = gateway_kwargs.get("_pending_status_update")
+        if pending_status_update:
+            logger.info("[CU-4] Yielding pending status_update event")
+            yield pending_status_update
+
         current_iteration = 0
         response: Any = None
         latest_ui_command = None

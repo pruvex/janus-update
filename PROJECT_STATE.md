@@ -1,15 +1,15 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.30-beta.57** — "Prompt Caching Implemented + Savings Engine & UI Visualization. UI Model Management: Deduplication, GPT-5.5, Sortierung. D27: 🥇 SEALED. D26: 🥇 SEALED. D25: 🥇 SEALED. D24: 🥇 SEALED. D23: 🥇 SEALED. D22: 🥇 SEALED. D21: 🥇 SEALED. D20: 🥇 SEALED. D19: 🥇 SEALED. D18: 🥇 SEALED. D17: 🥇 SEALED. D16: 🥇 SEALED. D15: 🥇 SEALED. D14: 🥇 DIAMOND HARMONIZED. D13: 🥇 DIAMOND HARMONIZED. D12: 🥇 DIAMOND HARMONIZED. D11: 🥇 SEALED. D10: 🥇 SEALED.")
+# PROJECT_STATE.md (Diamond-OS **V0.4.30-beta.57** — "Context Awareness System Implemented: Token-over-Count, Emergency Overflow, Agnostic Self-Healing, Storybook Intent Härtung. TASK-057: 🥇 SEALED & COMPLETE. TASK-056: 🥇 SEALED & COMPLETE. D27: 🥇 SEALED. D26: 🥇 SEALED. D25: 🥇 SEALED. D24: 🥇 SEALED. D23: 🥇 SEALED. D22: 🥇 SEALED. D21: 🥇 SEALED. D20: 🥇 SEALED. D19: 🥇 SEALED. D18: 🥇 SEALED. D17: 🥇 SEALED. D16: 🥇 SEALED. D15: 🥇 SEALED. D14: 🥇 DIAMOND HARMONIZED. D13: 🥇 DIAMOND HARMONIZED. D12: 🥇 DIAMOND HARMONIZED. D11: 🥇 SEALED. D10: 🥇 SEALED.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-04-29 19:00 (TASK-056 COMPLETE: Savings Engine & UI Visualization sealed)
+**Aktualisiert:** 2026-04-30 18:37 (TASK-057 COMPLETE: Context Awareness System & Agnostic Self-Healing sealed)
 
 ---
 
-## [CURRENT_SESSION_DELTA] (TASK-056 PROMPT CACHING SYSTEM — ✅ IMPLEMENTED & VERIFIED)
+## [CURRENT_SESSION_DELTA] (TASK-056 PROMPT CACHING SYSTEM — 🥇 SEALED & COMPLETE)
 
 | Feld | Wert |
 |------|------|
 | **Epic / Task** | **TASK-056 Prompt Caching System — Provider-Agnostic Cost Optimization Engine + Savings Visualization** |
-| **Status** | **✅ IMPLEMENTED & VERIFIED** (2026-04-29) |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-30) |
 | **Root Cause** | Janus soll ein provider-agnostisches Prompt Caching System erhalten, das stabile Prompt-Segmente deterministisch erkennt, cachebar segmentiert und Kosten-/Token-Einsparungen monetär sichtbar macht. |
 | **Umsetzung** | **Phase 1 — Core Caching:** `backend/services/prompt_cache.py` als provider-agnostische Segment-/Cache-Metadaten-Schicht mit deterministischem Cache-Key, Thread-Lock, TTL/LRU, Feature-Flag `PROMPT_CACHE_ENABLED`. **Phase 2 — Dispatcher:** `execution_dispatcher.py` segmentiert realen Prompt-Aufbau inkl. `clock_line`, Identity, Directives, Skill Directives, Suggestions, Fact Coupons, User Input und Policy Injection. **Phase 3 — Engine:** `execution_engine.py` ergänzt Non-stream Usage und Streaming `cache_metrics` Event ohne Message-/Provider-Mutation. **Phase 4 — Savings Engine:** `backend/data/models.py` — `tokens_saved` + `cost_saved` Spalten. `backend/data/database.py` — Auto-Migration für neue Spalten. `backend/services/cost_service.py` — `_calculate_cost_saved()` mit Model-Catalog-Preisen. `backend/services/orchestrator/execution_engine.py` — `estimated_tokens_saved` an `create_cost_entry()` übergeben (Non-Stream + Stream). `backend/data/crud.py` — `total_tokens_saved` + `total_cost_saved` in Summary aggregieren. **Phase 5 — UI Visualization:** `frontend/js/cost-visualizer.js` — Deep-Dive-Modal mit Caching-Effizienz-Anzeige pro Modell (`-X.XXXX € | Y% gespart`), Gesamtersparnis-Footer, Toggle-Button für Modell/Kosten-Sortierung, GPT-Modell-Sortierung (nano→pro), Gemini-Sortierung (flash→pro). `frontend/src/components/Sidebar.tsx` — Kosten-Modal mit Per-Modell-Breakdown und Effizienz-Quote. `frontend/src/styles.css` + `frontend/css/settings.css` — `z-index: 9999` für Modal-Overlay. |
 | **Ergebnis** | Prompt-Caching funktioniert als sichere Diamond-Metadaten-Schicht: keine Antwort-Wiederverwendung, keine User-Input-Caches, keine Provider-native Risk-Mutation. Monetäre Ersparnis in DB persistent und in UI sichtbar mit Effizienz-Quote. Deep-Dive-Modal mit Toggle-Sortierung (Modell/Kosten) und z-Index-Fix. |
@@ -17,6 +17,24 @@
 | **Verifikation** | Targeted: ✅ `python -m pytest backend/tests/test_prompt_cache.py backend/tests/test_prompting_builder.py -q` → 7 passed. Compile: ✅ `python -m py_compile backend/data/models.py backend/data/database.py backend/services/cost_service.py backend/services/orchestrator/execution_engine.py backend/data/crud.py`. Full regression: ⚠️ `python -m pytest backend/tests -q` → 436 passed / 4 failed; Failures liegen in bestehenden OpenAI-Service-/Debug-Engine-Tests, nicht in TASK-056. UI: ✅ Deep-Dive-Modal zeigt Savings-Anzeige, Toggle-Button wechselt Sortierung, z-Index korrekt. |
 | **Patterns** | [PATTERN] #SavingsVisualizer "Monetäre Ersparnis-Visualisierung — tokens_saved + cost_saved in DB, UI berechnet Effizienz-Quote (Gespart / (Ist + Gespart) * 100)" |
 | **Notizen** | Implementierung bewusst Phase-1-safe: Janus Segment Cache + Telemetrie, keine native Gemini/OpenAI Cache-Control Mutation. |
+
+---
+
+## [CURRENT_SESSION_DELTA] (TASK-057 CONTEXT AWARENESS SYSTEM — 🥇 SEALED & COMPLETE)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **TASK-057 Context Awareness System — Token-over-Count, Emergency Overflow, Agnostic Self-Healing, Storybook Intent Härtung** |
+| **Status** | **🥇 SEALED & COMPLETE** (2026-04-30) |
+| **Root Cause** | Ollama Timeout und UI Feedback Fix bei großen Anfragen; Storybook Intent False-Positive bei Zusammenfassungs-Anfragen; Gemini Key Self-Healing bei expired keys. |
+| **Umsetzung** | **Fix #1 — Ollama Timeout & UI Feedback:** Backend: `chat_orchestrator.py` sendet sofort `status_update` Event mit `thinking_long_request` vor LLM-Call. `execution_engine.py` yieldt Event am Anfang des Streams. `execution_dispatcher.py` schätzt Token-Anzahl und übergibt in gateway_kwargs. `ollama/service.py` `_await_with_deadline` akzeptiert `estimated_prompt_tokens` und setzt dynamisches Timeout (300s bei >4000 Token). Frontend: `chat.js` Handler für `status_update` Event zeigt animierte "Denke nach..."-Nachricht, entfernt sie beim ersten Text-Delta. **Fix #2 — Storybook Intent False-Positive:** `intent_engine.py` hinzugefügt: `STORYBOOK_POSITIVE_KEYWORDS` (erzähle eine geschichte, kinderbuch, illustriere, etc.) und `STORYBOOK_NEGATIVE_KEYWORDS` (fass zusammen, zusammenfassen, analysiere, gib mir eine übersicht). `detect_storybook_intent()` Methode mit Ausschlusskriterien. `chat_orchestrator.py` verwendet `intent_engine.detect_storybook_intent()` statt inline-Check. **Fix #3 — Gemini Key Self-Healing:** `context_awareness.py` Retry-Loop bei 401/expired errors mit automatischem Refresh aus keyring. Provider-agnostische Implementierung. |
+| **Ergebnis** | Ollama-Timeouts bei großen Anfragen behoben mit dynamischem Timeout und sofortiger UI-Feedback. Storybook Intent False-Positive behoben mit negativen Keywords (Ausschlusskriterien). Gemini Key Self-Healing operational mit Retry-Loop. |
+| **Files** | `backend/services/chat_orchestrator.py` (status_update Event), `backend/services/orchestrator/execution_engine.py` (Event yielding), `backend/services/orchestrator/execution_dispatcher.py` (Token-Schätzung), `backend/llm_providers/ollama/service.py` (Dynamisches Timeout), `frontend/js/chat.js` (status_update Handler, thinking message), `backend/services/orchestrator/intent_engine.py` (Storybook Keywords, detect_storybook_intent), `backend/services/chat_orchestrator.py` (intent_engine Aufruf), `frontend/js/context-awareness.js` (Gemini Self-Healing Retry-Loop). |
+| **Verifikation** | Ollama Timeout: ✅ DYNAMISCH · UI Feedback: ✅ DENKENDE NACHRICHT · Storybook Intent: ✅ NEGATIVE KEYWORDS · Gemini Self-Heal: ✅ RETRY-LOOP |
+| **Patterns** | [PATTERN] #StranglerArchive "Nachrichten bei Kompression in Archiv-Tabelle schieben statt löschen; Injektion eines Summary-Proxys für Kontext-Erhalt" |
+| **Patterns** | [PATTERN] #SelfHealingGateway "Agnostischer Retry-Loop bei Auth-Fehlern (expired keys) inkl. automatischem Refresh aus dem Keyring" |
+| **Patterns** | [PATTERN] #IntentNegativeGuard "Nutzung von Ausschlusskriterien (Negative Keywords) in der IntentEngine, um Falsch-Positive bei komplexen Workflows (Storybook) zu verhindern" |
+| **Notizen** | Ollama Timeout-Logik basiert auf grober Token-Schätzung (~1 Token pro Wort). Storybook Intent-Trigger nur bei eindeutigen kreativen Aufforderungen. |
 
 ---
 

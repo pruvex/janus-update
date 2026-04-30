@@ -7,6 +7,8 @@
         "cost_per_token_input": 0.00000020,
         "cost_per_token_output": 0.00000125,
         "desc": "Extrem schnell und kostengünstig. Ideal für einfache Aufgaben und schnelle Antworten.",
+        "max_context_tokens": 128000,
+        "output_reserve": 16384,
         "capabilities": ["chat", "tool_calling", "simple_tools", "memory_query"]
     },
     {
@@ -17,6 +19,8 @@
         "cost_per_token_input": 0.00000075,
         "cost_per_token_output": 0.00000450,
         "desc": "Der Allrounder. Eine exzellente Balance aus Geschwindigkeit, Kosten und Intelligenz.",
+        "max_context_tokens": 128000,
+        "output_reserve": 16384,
         "capabilities": ["chat", "tool_calling", "list_synthesis", "memory_query"]
     },
     {
@@ -27,6 +31,8 @@
         "cost_per_token_input": 0.00000250,
         "cost_per_token_output": 0.00001500,
         "desc": "Leistungsstarkes Standardmodell für komplexe Anfragen und kreatives Schreiben.",
+        "max_context_tokens": 128000,
+        "output_reserve": 16384,
         "capabilities": ["chat", "tool_calling", "list_synthesis", "complex_reasoning", "memory_query"]
     },
     {
@@ -37,6 +43,8 @@
         "cost_per_token_input": 0.00003000,
         "cost_per_token_output": 0.00018000,
         "desc": "Das absolute Spitzenmodell. Maximale Leistung für kritische und hochkomplexe Aufgaben.",
+        "max_context_tokens": 128000,
+        "output_reserve": 32768,
         "capabilities": ["chat", "tool_calling", "complex_reasoning", "deep_research_synthesis", "memory_query"]
     },
     {
@@ -48,6 +56,8 @@
         "cost_per_token_cached": 0.00000050,
         "cost_per_token_output": 0.00003000,
         "desc": "Neues leistungsstarkes Modell mit optimaler Balance aus Kosten und Leistung für Standard-Aufgaben.",
+        "max_context_tokens": 128000,
+        "output_reserve": 16384,
         "capabilities": ["chat", "tool_calling", "list_synthesis", "complex_reasoning", "memory_query"]
     },
     {
@@ -58,6 +68,8 @@
         "cost_per_token_input": 0.00003000,
         "cost_per_token_output": 0.00018000,
         "desc": "Das absolute Premium-Modell mit maximalem Reasoning und Kontext-Verarbeitung für hochkomplexe Aufgaben.",
+        "max_context_tokens": 128000,
+        "output_reserve": 32768,
         "capabilities": ["chat", "tool_calling", "complex_reasoning", "deep_research_synthesis", "memory_query"]
     },
     {
@@ -98,6 +110,8 @@
         "cost_per_token_input": 0.0000025,
         "cost_per_token_output": 0.000010,
         "desc": "High-intelligence flagship model used for Vision tasks.",
+        "max_context_tokens": 128000,
+        "output_reserve": 16384,
         "capabilities": ["chat", "vision"]
     },
     {
@@ -118,6 +132,8 @@
         "cost_per_token_input": 0.000002,
         "cost_per_token_output": 0.000012,
         "desc": "Höchste Qualität und Reasoning-Tiefe für komplexe Aufgaben, lange Kontexte und anspruchsvolle Tool-Nutzung (Preview).",
+        "max_context_tokens": 1000000,
+        "output_reserve": 65536,
         "image_generation_model": "gemini-2.5-flash-image-preview",
         "capabilities": ["chat", "tool_calling", "memory_query"]
     },
@@ -129,6 +145,8 @@
         "cost_per_token_input": 0.00000050,
         "cost_per_token_output": 0.000003,
         "desc": "Schnelles und kostengünstiges Gemini 3 Modell (Preview).",
+        "max_context_tokens": 1000000,
+        "output_reserve": 65536,
         "image_generation_model": "gemini-2.5-flash-image-preview",
         "capabilities": ["chat", "tool_calling", "memory_query"]
     },
@@ -170,6 +188,8 @@
         "cost_per_token_input": 0.000000125,
         "cost_per_token_output": 0.000000375,
         "desc": "Gemini-Modell für multimodale Eingaben (Text und Bild).",
+        "max_context_tokens": 32768,
+        "output_reserve": 8192,
         "capabilities": ["chat", "image_generation"]
     },
     {
@@ -178,6 +198,8 @@
         "provider": "ollama",
         "type": "text",
         "desc": "Reasoning-starker Allrounder fuer Agentic-Tasks mit stabilem Tool-Use.",
+        "max_context_tokens": 128000,
+        "output_reserve": 8192,
         "capabilities": ["chat", "tool_calling", "memory_query"],
         "reasoning_capability": "high"
     },
@@ -187,6 +209,8 @@
         "provider": "ollama",
         "type": "text",
         "desc": "Exzellentes Tool-Parsing und robuste mehrstufige Agenten-Reasoning-Leistung.",
+        "max_context_tokens": 32768,
+        "output_reserve": 8192,
         "capabilities": ["chat", "tool_calling", "memory_query"],
         "reasoning_capability": "high"
     },
@@ -196,6 +220,8 @@
         "provider": "ollama",
         "type": "text",
         "desc": "Sehr starkes High-End-Reasoning fuer komplexe Tool-Ketten auf leistungsfaehigen Nodes.",
+        "max_context_tokens": 8192,
+        "output_reserve": 4096,
         "capabilities": ["chat", "tool_calling", "memory_query"],
         "reasoning_capability": "high"
     },

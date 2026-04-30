@@ -259,6 +259,58 @@
 - **Confidence:** High (Audit + Code-Review bestätigt Asymmetrie).
 - **Tags:** Orchestration, ToolManager, SkillID, LegacyRouting, StoreKey, Asymmetry
 
+---
+
+## [PATTERN] #StranglerArchive "Strangler Archive Pattern — Nachrichten bei Kompression in Archiv-Tabelle schieben statt löschen; Injektion eines Summary-Proxys für Kontext-Erhalt"
+- **Kontext:** TASK-057 Context Awareness System implementierte Token-over-Count und Emergency Overflow Selection. Bei Kompression von Nachrichten (z.B. wenn Token-Limit erreicht wird) wurden alte Nachrichten gelöscht, was zu Kontextverlust führte. Das Strangler Pattern bietet eine Alternative: Komprimierte Nachrichten werden in eine Archiv-Tabelle verschoben und ein Summary-Proxy injiziert, um Kontext zu erhalten.
+- **Problem:** Löschen von Nachrichten bei Kompression führt zu unwiederbringlichem Kontextverlust. Historische Informationen gehen verloren, was die Qualität von nachfolgenden Antworten beeinträchtigt. Keine Möglichkeit, archivierte Nachrichten wiederherzustellen.
+- **Lösung:**
+  1. **Archiv-Tabelle:** Neue Tabelle `messages_archive` mit Spalten für Original-Nachricht, Kompressions-Metadaten und Summary-Proxy.
+  2. **Kompressions-Logik:** Wenn Token-Limit erreicht wird, werden älteste Nachrichten in `messages_archive` verschoben statt gelöscht.
+  3. **Summary-Proxy:** Für jede archivierte Nachricht wird ein kurzes Summary generiert und als Proxy-Nachricht injiziert.
+  4. **Wiederherstellung:** API-Endpoint ermöglicht Wiederherstellung archivierter Nachrichten bei Bedarf.
+- **Härtung:** Summary-Proxy garantiert, dass wesentliche Informationen erhalten bleiben. Archiv-Tabelle ermöglicht Audit-Trail und Wiederherstellung.
+- **Tripwire:** Wenn Kontext nach Kompression verloren geht → Summary-Proxy nicht injiziert. Erkennbar: Antworten beziehen sich nicht mehr auf archivierte Informationen.
+- **Location:** TASK-057 Context Awareness System (Token-over-Count, Emergency Overflow), implementiert 2026-04-30.
+- **Confidence:** High (Archiv-Muster bewährt sich in großen Systemen für Kontext-Erhalt).
+- **Tags:** StranglerArchive, Compression, ContextRetention, ArchiveTable, SummaryProxy, TASK057
+
+---
+
+## [PATTERN] #SelfHealingGateway "Self-Healing Gateway Pattern — Agnostischer Retry-Loop bei Auth-Fehlern (expired keys) inkl. automatischem Refresh aus dem Keyring"
+- **Kontext:** TASK-057 Context Awareness System implementierte Gemini Key Self-Healing bei expired keys. API-Calls können mit 401/expired Fehlern fehlschlagen, wenn API-Keys ablaufen. Der Retry-Loop muss provider-agnostisch sein und automatisch Keys aus dem Keyring refreshen.
+- **Problem:** 401/expired Fehler führen zu Abbruch ohne Wiederholung. Manuelle Key-Updates sind zeitaufwendig. Provider-spezifische Retry-Logik führt zu Code-Duplikation. Keine automatische Wiederherstellung bei temporären Auth-Fehlern.
+- **Lösung:**
+  1. **Retry-Loop:** Wrapper-Funktion um API-Calls mit Retry-Logik bei 401/expired Fehlern.
+  2. **Keyring-Refresh:** Bei 401 wird automatisch ein neuer Key aus dem Keyring geladen (via `keyring.get_password()`).
+  3. **Provider-Agnostisch:** Retry-Logik funktioniert für alle Provider (OpenAI, Gemini, Ollama).
+  4. **Max-Retries:** Begrenzung auf 3 Retries um Endlos-Loops zu vermeiden.
+  5. **Logging:** Detailliertes Logging für jeden Retry-Versuch mit Fehler-Context.
+- **Härtung:** Retry-Loop garantiert Robustheit bei temporären Auth-Fehlern. Keyring-Refresh ist sicher (verschlüsselte Speicherung). Max-Retries verhindert Endlos-Loops.
+- **Tripwire:** Wenn API-Calls bei 401 abbrechen ohne Retry → Retry-Loop nicht aktiv. Erkennbar im Log: Fehlender `[RETRY]` Eintrag bei 401-Fehler.
+- **Location:** `frontend/js/context-awareness.js` (Gemini Self-Healing Retry-Loop), implementiert 2026-04-30.
+- **Confidence:** High (Retry-Loop funktioniert provider-agnostisch, Keyring-Refresh sicher).
+- **Tags:** SelfHealingGateway, RetryLoop, AuthError, Keyring, ProviderAgnostic, TASK057
+
+---
+
+## [PATTERN] #IntentNegativeGuard "Intent Negative Guard Pattern — Nutzung von Ausschlusskriterien (Negative Keywords) in der IntentEngine, um Falsch-Positive bei komplexen Workflows (Storybook) zu verhindern"
+- **Kontext:** TASK-057 Context Awareness System implementierte Storybook Intent Härtung. Eine allgemeine Aufforderung zur Zusammenfassung eines langen Textes wurde vom `intent_engine` fälschlicherweise als "Storybook-Intent" klassifiziert, was den falschen Workflow auslöste (Bilderstellung statt Text-Zusammenfassung).
+- **Problem:** Positive Keywords allein führen zu Falsch-Positiven bei komplexen Workflows. Zusammenfassungs-Anfragen mit "fass zusammen" triggerten Storybook-Workflow, obwohl sie kreative Aufforderungen erfordern. Keine Möglichkeit, bestimmte Intents explizit auszuschließen.
+- **Lösung:**
+  1. **Negative Keywords:** `STORYBOOK_NEGATIVE_KEYWORDS` (fass zusammen, zusammenfassen, analysiere, gib mir eine übersicht) definieren Ausschlusskriterien.
+  2. **Positive Keywords:** `STORYBOOK_POSITIVE_KEYWORDS` (erzähle eine geschichte, kinderbuch, illustriere, mit den charakteren) definieren explizite Trigger.
+  3. **Detect-Methode:** `detect_storybook_intent()` prüft zuerst Negative-Keywords (Ausschluss), dann Positive-Keywords (Einschluss).
+  4. **Logik:** Intent nur wenn Positive-Keywords vorhanden UND Negative-Keywords NICHT vorhanden.
+  5. **Frontend-Integration:** `chat_orchestrator.py` verwendet `intent_engine.detect_storybook_intent()` statt inline-Check.
+- **Härtung:** Negative-Keywords verhindern Falsch-Positive bei Analyse/Zusammenfassungs-Anfragen. Positive-Keywords schärfen Trigger auf kreative Aufforderungen.
+- **Tripwire:** Wenn Zusammenfassungs-Anfrage Storybook-Workflow auslöst → Negative-Keywords fehlen oder sind zu restriktiv. Erkennbar im Log: `[CU-2] Storybook intent blocked by negative keyword` fehlt.
+- **Location:** `backend/services/orchestrator/intent_engine.py` (STORYBOOK_POSITIVE_KEYWORDS, STORYBOOK_NEGATIVE_KEYWORDS, detect_storybook_intent), `backend/services/chat_orchestrator.py` (intent_engine Aufruf), implementiert 2026-04-30.
+- **Confidence:** High (Negative-Keywords verhindern Falsch-Positive, Positive-Keywords schärfen Trigger).
+- **Tags:** IntentNegativeGuard, StorybookIntent, FalsePositive, NegativeKeywords, IntentEngine, TASK057
+
+---
+
 ## [LESSON] #Pydantic #SchemaDrift "The Parameter Trinity — Manifest (JSON), Schema (Pydantic) und Decorator (Python) müssen denselben Parameter-Namen verwenden"
 - **Kontext:** Filesystem-Skills hatten einen Drei-Ebenen-Drift: Skill-JSON (`read_file.json`) definierte `"file_path"`, Pydantic-Schema (`ReadFileArgs`) deklarierte `path: str`, und Python-Decorator (`@requires_path_auth`) erwartete `path_arg="file_path"`. Das JSON-`input_schema` wurde vom System komplett ignoriert.
 - **Problem:** Pydantic-Validation akzeptierte `{"path": "..."}`, aber der Decorator las `kwargs["file_path"]` → KeyError/Auth-Fehler trotz erfolgreicher Schema-Validierung. Die gecachte Modell-Instanz (`ToolDefinition.args_schema`) war der "Zombie", der das LLM mit falschem Schema fütterte. Skill-JSON-Schemas waren toter Code (nie gelesen).

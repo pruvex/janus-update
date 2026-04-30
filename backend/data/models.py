@@ -320,3 +320,38 @@ class PathPermission(Base):
     path_raw = Column(String, nullable=False)  # Normalized path
     op = Column(String, nullable=False)  # read/write/delete
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ============================================
+# PHASE 4: Context Compression & Archive
+# ============================================
+
+class ContextCompression(Base):
+    """Speichert Metadaten einer durchgeführten Kontext-Kompression."""
+    __tablename__ = "context_compressions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    chat_id = Column(Integer, ForeignKey("chats.id"), nullable=False, index=True)
+    summary_text = Column(Text, nullable=False)  # Die generierte Zusammenfassung
+    tokens_saved = Column(Integer, default=0)  # Geschätzte eingesparte Tokens
+    original_message_count = Column(Integer, default=0)  # Anzahl komprimierter Nachrichten
+    compression_ratio = Column(Float, default=0.0)  # Verhältnis (0-1)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    is_restored = Column(Boolean, default=False)  # Wurde die Kompression rückgängig gemacht?
+    restored_at = Column(DateTime, nullable=True)
+
+    chat = relationship("Chat", backref="compressions")
+    archives = relationship("ContextArchive", back_populates="compression", cascade="all, delete-orphan")
+
+
+class ContextArchive(Base):
+    """Archivierte Original-Nachrichten vor der Kompression."""
+    __tablename__ = "context_archives"
+
+    id = Column(Integer, primary_key=True, index=True)
+    compression_id = Column(Integer, ForeignKey("context_compressions.id"), nullable=False, index=True)
+    original_message_json = Column(JSON, nullable=False)  # Vollständige Original-Message als JSON
+    order_index = Column(Integer, nullable=False)  # Original-Position im Chat
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    compression = relationship("ContextCompression", back_populates="archives")

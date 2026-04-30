@@ -135,6 +135,17 @@ def _ensure_sqlite_schema_migrations() -> None:
             from backend.data.models import PathPermission
             PathPermission.__table__.create(bind=engine)
             logger.info("Migration: path_permissions table created.")
+
+        # Phase 4: Context Compression Tables
+        if not insp.has_table("context_compressions"):
+            from backend.data.models import ContextCompression
+            ContextCompression.__table__.create(bind=engine)
+            logger.info("Migration: context_compressions table created.")
+
+        if not insp.has_table("context_archives"):
+            from backend.data.models import ContextArchive
+            ContextArchive.__table__.create(bind=engine)
+            logger.info("Migration: context_archives table created.")
     except Exception:
         logger.warning(
             "SQLite schema migration skipped or failed (non-fatal).",

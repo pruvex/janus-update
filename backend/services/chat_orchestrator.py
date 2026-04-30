@@ -953,7 +953,8 @@ class ChatOrchestrator:
                 logger.info('[IDENTITY REALTIME] Name %r detected in current message — overriding identity slot', wf._realtime_name)
         wf.requested_pdf_filename = self._extract_requested_pdf_filename(wf.user_text)
         wf.user_text_clean = wf.user_text.strip().lower()
-        wf.is_storybook_macro = any((kw in wf.user_text_clean for kw in ['kinderbuch', 'geschichte', 'märchen', 'maerchen'])) and any((kw in wf.user_text_clean for kw in ['bild', 'illustration', 'zeichn'])) and ('pdf' in wf.user_text_clean)
+        # 💎 CU-2: Verwende intent_engine.detect_storybook_intent mit Ausschlusskriterien
+        wf.is_storybook_macro = intent_engine.detect_storybook_intent(wf.user_text_clean)
         wf.decision_tokens = ['1', '2', '3', '1.', '2.', '3.']
         wf.factcheck_tokens = ['1', '2', '1.', '2.']
         wf.policy_injection_message = None
@@ -1740,7 +1741,24 @@ class ChatOrchestrator:
             ))
         except Exception as log_exc:
             logger.error(f"Failed to log routing_decision: {log_exc}")
-        
+
+        # 💎 CU-4: Sende status_update Event für UI-Feedback bei langen Anfragen
+        from backend.services.orchestrator.stream_protocol import StreamEvent
+        # Schätze Token-Anzahl für Entscheidung
+        prompt_text = str(getattr(ctx.request, "prompt", "") or "")
+        estimated_tokens = len(prompt_text.split())  # Grobe Schätzung: ~1 Token pro Wort
+        is_long_request = estimated_tokens > 1000  # >1000 Wörter = lange Anfrage
+
+        if is_long_request:
+            logger.info(f"[CU-4] Long request detected ({estimated_tokens} tokens), sending thinking_long_request status")
+            # Sende Event über den Generator (wird im execution_dispatcher verarbeitet)
+            status_event = StreamEvent(
+                type="status_update",
+                content={"status": "thinking_long_request"}
+            )
+            # Speichere im ctx, damit execution_dispatcher es in gateway_kwargs übergeben kann
+            ctx._pending_status_update = status_event
+
         return await execute_generation(
             ctx,
             db=self.db,

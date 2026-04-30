@@ -161,6 +161,41 @@ _VIDEO_UNDERSTANDING_MARKERS: Tuple[str, ...] = (
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# STORYBOOK INTENT KEYWORDS (CU-2: False-Positive Fix)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+STORYBOOK_POSITIVE_KEYWORDS: Tuple[str, ...] = (
+    "erzähle eine geschichte",
+    "erzaehle eine geschichte",
+    "kinderbuch",
+    "illustriere",
+    "illustriere",
+    "mit den charakteren",
+    "schreibe ein abenteuer",
+    "schreib ein abenteuer",
+    "märchen",
+    "maerchen",
+    "geschichte",
+)
+
+STORYBOOK_NEGATIVE_KEYWORDS: Tuple[str, ...] = (
+    # Analyse/Zusammenfassung Keywords - diese dürfen Storybook-Intent NICHT auslösen
+    "fass zusammen",
+    "fasse zusammen",
+    "zusammenfassen",
+    "zusammenfassung",
+    "analysiere",
+    "analysieren",
+    "gib mir eine übersicht",
+    "gib mir eine uebersicht",
+    "übersicht",
+    "uebersicht",
+    "zusammenfassung des textes",
+    "zusammenfassung dieses textes",
+)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # META AGENT KEYWORDS
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -354,6 +389,9 @@ class IntentEngine:
         self.policy_prompt_tokens = POLICY_PROMPT_TOKENS
         self.fact_telling_patterns = _FACT_TELLING_PATTERNS
         self.self_ref_regex = SELF_REF_REGEX
+        # 💎 CU-2: Storybook Intent Keywords
+        self.storybook_positive_keywords = STORYBOOK_POSITIVE_KEYWORDS
+        self.storybook_negative_keywords = STORYBOOK_NEGATIVE_KEYWORDS
     
     # ─────────────────────────────────────────────────────────────────────────
     # Shopping Intent
@@ -428,6 +466,48 @@ class IntentEngine:
             return False
         text_lower = user_text.lower()
         return any(kw in text_lower for kw in self.image_intent_keywords)
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Storybook Intent (CU-2: False-Positive Fix)
+    # ─────────────────────────────────────────────────────────────────────────
+
+    def detect_storybook_intent(self, user_text: str, has_pdf: bool = False) -> bool:
+        """
+        Return True if the user wants a children's book with illustrations (Storybook Macro).
+
+        CU-2: Fixed false-positive by adding exclusion criteria for analysis/summarization requests.
+
+        Args:
+            user_text: The user's prompt text
+            has_pdf: Whether the prompt mentions PDF (required for Storybook Macro)
+
+        Returns:
+            True only if positive keywords are present AND no negative keywords are present AND pdf is mentioned.
+        """
+        if not user_text:
+            return False
+        text_lower = user_text.lower()
+
+        # 💎 CU-2: Negative Bedingungen (Ausschlusskriterien) - Analyse/Zusammenfassung darf NICHT auslösen
+        has_negative = any(kw in text_lower for kw in self.storybook_negative_keywords)
+        if has_negative:
+            logger.debug("[CU-2] Storybook intent blocked by negative keyword")
+            return False
+
+        # Positive Bedingungen - kreative Aufforderungen müssen vorhanden sein
+        has_positive = any(kw in text_lower for kw in self.storybook_positive_keywords)
+
+        # Bild/Illustration muss erwähnt werden
+        has_image = any(kw in text_lower for kw in ['bild', 'illustration', 'zeichn', 'illustrier'])
+
+        # PDF muss erwähnt werden (für Storybook Macro)
+        has_pdf_kw = 'pdf' in text_lower
+
+        # Storybook-Intent nur bei allen Bedingungen: Positive + Bild + PDF
+        result = has_positive and has_image and has_pdf_kw
+        if result:
+            logger.info("[CU-2] Storybook intent detected (positive=%s, image=%s, pdf=%s)", has_positive, has_image, has_pdf_kw)
+        return result
 
     def detect_named_channel_video_intent(self, user_text: str) -> bool:
         """True wenn der Nutzer einen konkreten Kanal nennt (von X, Kanal X, …) — sofort Channel-Lock / video.search."""

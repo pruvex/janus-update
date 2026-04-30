@@ -10,7 +10,12 @@ const BASE_URL = getBackendBaseUrl();
  */
 async function fetchData(endpoint) {
     try {
-        const response = await fetch(`${BASE_URL}${endpoint}`);
+        const token = localStorage.getItem('auth_token');
+        const headers = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        const response = await fetch(`${BASE_URL}${endpoint}`, { headers });
         if (!response.ok) {
             // Versuche, eine detailliertere Fehlermeldung vom Backend zu erhalten
             let errorDetails = `HTTP-Fehler ${response.status}`;

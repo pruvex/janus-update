@@ -639,6 +639,17 @@ async def execute_generation(
         user_budget_info=user_budget_info,
     )
     wf = ctx.workflow
+
+    # 💎 CU-4: Übergebe pending_status_update in gateway_kwargs
+    if hasattr(ctx, "_pending_status_update"):
+        wf.gateway_kwargs["_pending_status_update"] = ctx._pending_status_update
+
+    # 💎 CU-4: Token-Schätzung für dynamisches Timeout
+    prompt_text = str(getattr(ctx.request, "prompt", "") or "")
+    estimated_tokens = len(prompt_text.split())  # Grobe Schätzung: ~1 Token pro Wort
+    wf.gateway_kwargs["_estimated_prompt_tokens"] = estimated_tokens
+    logger.info(f"[CU-4] Estimated prompt tokens: {estimated_tokens}")
+
     request = ctx.request
     background_tasks = ctx.background_tasks
     if not wf.skip_llm_generation:

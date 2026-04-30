@@ -184,7 +184,11 @@ async def call_llm(*args: Any, **kwargs: Any) -> Dict[str, Any]:
     - Nur Keyword: ``provider``, ``model_id``/``model``, ``api_key``, ``messages=``, …
     - Positional (Legacy): ``call_llm(provider, model, api_key, messages=[...])``
     - ``chat_history`` als Alias für ``messages`` (context_manager)
+
+    💎 CU-2: #SelfHealingIdentity - API-Key wird frisch aus keyring geladen
     """
+    import keyring
+
     kw = dict(kwargs)
     if len(args) >= 3:
         kw.setdefault("provider", args[0])
@@ -209,15 +213,49 @@ async def call_llm(*args: Any, **kwargs: Any) -> Dict[str, Any]:
     tools = kw.pop("tools", None)
     force_no_tools = bool(kw.pop("force_no_tools", False))
 
+    # 💎 CU-2: #SelfHealingIdentity - Frischer Key aus keyring wenn nicht übergeben
+    if not api_key and provider:
+        try:
+            fresh_key = keyring.get_password('Janus-Projekt', provider)
+            if fresh_key:
+                api_key = fresh_key
+                logger.debug("[call_llm] Loaded fresh API key from keyring for provider=%s", provider)
+        except Exception as ke:
+            logger.warning("[call_llm] Failed to load API key from keyring: %s", ke)
+
     svc = get_provider(provider)
-    return await svc.generate_response(
-        api_key=api_key,
-        model=model_id,
-        messages=messages,
-        tools=tools,
-        force_no_tools=force_no_tools,
-        **kw,
-    )
+
+    # 💎 CU-2: Retry-Loop mit Key-Refresh bei API_KEY_EXPIRED
+    max_retries = 2
+    for attempt in range(max_retries):
+        result = await svc.generate_response(
+            api_key=api_key,
+            model=model_id,
+            messages=messages,
+            tools=tools,
+            force_no_tools=force_no_tools,
+            **kw,
+        )
+
+        # Prüfe auf API_KEY_EXPIRED und versuche Refresh
+        if result.get("error_code") == "API_KEY_EXPIRED" and attempt < max_retries - 1:
+            logger.warning("[call_llm] API_KEY_EXPIRED detected, attempting key refresh (attempt %d)", attempt + 1)
+            try:
+                fresh_key = keyring.get_password('Janus-Projekt', provider)
+                if fresh_key and fresh_key != api_key:
+                    api_key = fresh_key
+                    logger.info("[call_llm] Refreshed API key from keyring, retrying...")
+                    continue
+                else:
+                    logger.error("[call_llm] No new API key available in keyring")
+                    break
+            except Exception as ke:
+                logger.error("[call_llm] Key refresh failed: %s", ke)
+                break
+        else:
+            return result
+
+    return result
 
 
 async def get_active_image_generation_model(provider: str) -> Optional[str]:

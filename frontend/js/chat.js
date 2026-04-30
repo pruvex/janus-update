@@ -14,6 +14,7 @@ import {
   getDockModuleState,
 } from "./window-state.js";
 import { sanitizeChatHtml, sanitizeErrorHtml } from "./dompurify-config.js";
+import { scheduleContextRefresh } from "./context-awareness.js";
 
 // Globaler Debugger für die Bridge
 window.addEventListener("open-knowledge-center", (e) => {
@@ -705,6 +706,7 @@ export async function sendMessage(fromWindowId) {
 
   // 1. Append user message to UI
   appendMessage("user", { text: promptText }, { windowId });
+  scheduleContextRefresh(windowId);
   chatInputEl.value = "";
   resetUserInputHeight(windowId);
 
@@ -761,6 +763,11 @@ export async function sendMessage(fromWindowId) {
         }
         
         if (data.type === "text") {
+          // 💎 CU-4: Entferne thinking_message beim ersten Text-Delta
+          if (window._removeThinkingMessage) {
+            window._removeThinkingMessage();
+            window._removeThinkingMessage = null;
+          }
           chatText = data.partial ? chatText + data.content : data.content;
           // Heilt nackte URLs vom Modell
           const healedText = chatText.replace(/Video ansehen\s*\((https?:\/\/[^\s)]+)\)/g, '[Video ansehen]($1)');
@@ -790,6 +797,31 @@ export async function sendMessage(fromWindowId) {
           streamModalRequest = data.modal_request ?? null;
           stripInlineAssistantVideoLinks(loadingMessageElement);
           ensureVideoReopenLinkForStreamMessage(loadingMessageElement, streamModalRequest);
+        } else if (data.type === "status_update") {
+          // 💎 CU-4: Handler für status_update Event (z.B. thinking_long_request)
+          if (data.status === "thinking_long_request") {
+            console.log("[CU-4] Long request detected, showing thinking message");
+            // Zeige eine temporäre "Denke nach..."-Nachricht an
+            const thinkingMessage = document.createElement("div");
+            thinkingMessage.className = "thinking-message";
+            thinkingMessage.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(137, 180, 250, 0.1); border-radius: 8px; margin-bottom: 8px;">
+                <div class="spinner" style="width: 16px; height: 16px; border: 2px solid rgba(205, 214, 244, 0.3); border-radius: 50%; border-top-color: #89b4fa; animation: spin 1s ease-in-out infinite;"></div>
+                <span style="color: #cdd6f4; font-size: 14px;">🤖 Ich analysiere deinen Text, das kann bei lokalen Modellen einen Moment dauern...</span>
+              </div>
+              <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+            `;
+            loadingMessageElement.appendChild(thinkingMessage);
+            scrollChatToBottom({ behavior: "auto", windowId });
+            // Entferne die Nachricht nach dem ersten Text-Delta
+            const removeThinkingMessage = () => {
+              if (thinkingMessage.parentNode) {
+                thinkingMessage.remove();
+              }
+            };
+            // Speichere die Funktion zum späteren Aufruf
+            window._removeThinkingMessage = removeThinkingMessage;
+          }
         } else if (data.type === "tool_result") {
           // Handle tool results including permission_required from Path Sentinel
           let result = data.result;
@@ -840,6 +872,7 @@ export async function sendMessage(fromWindowId) {
     scrollChatToBottom({ behavior: "auto", windowId });
 
     applyBotModalRequestFromData({ text: chatText, modal_request: streamModalRequest });
+    scheduleContextRefresh(windowId);
 
     // 💎 VIDEO-LIST-POST-STREAM: Deaktiviert - wir nutzen nur noch Markdown-Links
     // if (lastVideoListMetadata && lastVideoListMetadata.mode === "list" && lastVideoListMetadata.videos && Array.isArray(lastVideoListMetadata.videos)) {
@@ -863,6 +896,7 @@ export async function sendMessage(fromWindowId) {
       chatMessagesEl.removeChild(_msgContainer);
     }
     appendMessage("bot", { text: error.message || "Fehler beim Senden der Nachricht." }, { windowId });
+    scheduleContextRefresh(windowId);
   }
 }
 
@@ -1510,6 +1544,7 @@ export function appendMessage(sender, data, appendOpts = {}) {
   messageContainer.appendChild(timestamp);
 
   chatMessages.appendChild(messageContainer);
+  scheduleContextRefresh(windowId);
 
   if (sender === "bot") {
     // Single-Mode: Normales Verhalten (Auto-Modal bei modal_request)

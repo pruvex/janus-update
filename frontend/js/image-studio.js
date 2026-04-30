@@ -11,16 +11,58 @@ import { appState } from './modules/image-studio/state.js';
 import { getBackendBaseUrl, extractFilenameFromUrl } from './modules/image-studio/utils.js';
 import { fetchPricingData, generateImageApi } from './modules/image-studio/api.js';
 import { initExportModule, openExportModal } from './modules/image-studio/export.js';
-import { 
-    initPresetsModule, 
-    updatePresetVisibility, 
-    restorePresetSettings, 
+import {
+    initPresetsModule,
+    updatePresetVisibility,
+    restorePresetSettings,
     updateStylePreviewImage,
     togglePresetForEditUI,
     togglePresetForRefineUI,
     getSelectedPresetValues
 } from './modules/image-studio/presets.js';
 import { initInpaintingModule, toggleInpaintingUI, getMaskData, initCanvasSize } from './modules/image-studio/inpainting.js';
+
+// 💎 CU-3: Top-Level Variablen für initializeStudio Zugriff
+let costDisplay, providerSelect;
+
+// 💎 CU-3: loadPricingData an Top-Level für initializeStudio Zugriff
+async function loadPricingData() {
+  try {
+    appState.pricingData = await fetchPricingData();
+    populateProviderSelect();
+  } catch (error) {
+    console.error(error);
+    if (costDisplay) costDisplay.textContent = 'Fehler';
+  }
+}
+
+function populateProviderSelect() {
+  if (!providerSelect) return;
+  providerSelect.innerHTML = '';
+  if (!appState.pricingData) return;
+  const availableProviders = Object.keys(appState.pricingData);
+  if (availableProviders.length === 0) return;
+  availableProviders.forEach(provider => {
+    const option = document.createElement('option');
+    option.value = provider;
+    option.textContent = provider;
+    providerSelect.appendChild(option);
+  });
+  if (!providerSelect.value || !appState.pricingData[providerSelect.value]) providerSelect.value = availableProviders[0];
+  providerSelect.dispatchEvent(new Event('change'));
+}
+
+// 💎 CU-3: Exportierte Initialisierungsfunktion für app.js
+// Wird nach Auth-Initialisierung aufgerufen
+export async function initializeStudio() {
+  await loadPricingData();
+  initPresetsModule();
+  initExportModule();
+  initInpaintingModule();
+}
+
+// Lokale Referenz für internen Gebrauch
+const _initializeStudio = initializeStudio;
 
 document.addEventListener('DOMContentLoaded', () => {
   let isInternalChange = false; // Sicherheits-Riegel gegen Endlosschleifen
@@ -108,13 +150,14 @@ document.addEventListener('DOMContentLoaded', () => {
   subscribeWindowState(() => syncImageStudioFromDockState());
   syncImageStudioFromDockState();
 
-  const providerSelect = document.getElementById('is-provider-select');
+  // 💎 CU-3: Weise Top-Level-Variablen zu
+  providerSelect = document.getElementById('is-provider-select');
   const modelSelect = document.getElementById('is-model-select');
   const dynamicParamsContainer = document.getElementById('is-dynamic-params');
   const isResolutionSelect = document.getElementById('is-resolution-select');
   const isResolutionControlGroup = document.getElementById('is-resolution-control-group');
   const promptInput = document.getElementById('is-prompt');
-  const costDisplay = document.getElementById('is-estimated-cost');
+  costDisplay = document.getElementById('is-estimated-cost');
   const generateBtn = document.getElementById('is-generate-btn');
   const previewContainer = document.getElementById('is-preview-container');
   const generatedGallery = document.getElementById('is-gallery-generated');
@@ -152,23 +195,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- FUNKTIONEN (UI, LOGIK, ETC.) ---
 
-
-
-  async function loadPricingData() {
-    try {
-      appState.pricingData = await fetchPricingData();
-      populateProviderSelect();    
-    } catch (error) {
-      console.error(error);
-      costDisplay.textContent = 'Fehler';
-    }
-  }
-
+  // 💎 CU-3: loadPricingData und populateProviderSelect sind jetzt an Top-Level
   async function loadAllLocalImages() {
     if (!allImagesGallery) return;
     allImagesGallery.innerHTML = '<div class="is-empty-hint">Lade Historie...</div>';
     try {
-        const response = await fetch(`${getBackendBaseUrl()}/api/images/list_all`);
+        const token = localStorage.getItem('auth_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const response = await fetch(`${getBackendBaseUrl()}/api/images/list_all`, { headers });
         if (!response.ok) throw new Error(`Status: ${response.status}`);
         const images = await response.json();
         if (images.length === 0) {
@@ -195,21 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function populateProviderSelect() {
-    providerSelect.innerHTML = '';
-    if (!appState.pricingData) return;
-    const availableProviders = Object.keys(appState.pricingData);
-    if (availableProviders.length === 0) return;
-    availableProviders.forEach(provider => {
-        const option = document.createElement('option');
-        option.value = provider;
-        option.textContent = provider;
-        providerSelect.appendChild(option);
-    });
-    if (!providerSelect.value || !appState.pricingData[providerSelect.value]) providerSelect.value = availableProviders[0];
-    providerSelect.dispatchEvent(new Event('change'));
-  }
-
+  // 💎 CU-3: populateProviderSelect ist jetzt an Top-Level
   function populateModelSelect() {
     modelSelect.innerHTML = '';
     const selectedProvider = providerSelect.value;
@@ -1118,13 +1138,9 @@ function updateExclusiveModes(activeModeId) {
           }
       });
   }
-  async function initializeStudio() {
-    await loadPricingData();
-    // Initialize the presets module
-    initPresetsModule();
-    initExportModule();
-    initInpaintingModule();
-  }
+
+  // 💎 CU-3: initializeStudio wird nicht mehr hier aufgerufen - jetzt in app.js nach Auth
+  // Der parallele Aufruf wurde entfernt, um Race-Conditions zu vermeiden
 
   // --- Drag & Drop für Preview Container ---
   if (previewContainer) {
@@ -1309,8 +1325,9 @@ function updateExclusiveModes(activeModeId) {
 
   // --- END: GALLERY CONTEXT MENU LOGIC ---
 
+// 💎 CU-3: Parallele Initialisierung entfernt - jetzt in app.js nach Auth
 // Initialisierungs-Aufrufe
-  updateCapabilityUI(); 
+  updateCapabilityUI();
   // Die Preset-UI wird jetzt durch updateExclusiveModes gesteuert, das beim Start läuft
-  initializeStudio();
+  // initializeStudio(); // Entfernt - wird jetzt in app.js nach Auth aufgerufen
 });

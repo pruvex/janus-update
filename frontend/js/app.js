@@ -1,4 +1,6 @@
 import { sanitizeReleaseNotes, sanitizeTemplateHtml } from "./dompurify-config.js";
+import { initializeSettings } from "./settings.js";
+import { initializeStudio } from "./image-studio.js";
 
 // ================= WRAPPER FÜR FETCH (API KEY) =================
 (() => {
@@ -108,6 +110,7 @@ import {
 } from "./window-state.js";
 import { openProjectModal, showProjectModalView, initProjectModalAfterListLoad } from "./projects.js";
 import { openModal } from "./modal-api.js";
+import { scheduleContextRefresh, setupContextAwareness } from "./context-awareness.js";
 
 /** Scroll main chat (#chat-messages) to the end; delegates to chat.js (same role as scrollToBottom in autoResize docs). */
 export function scrollToBottom(options) {
@@ -466,7 +469,8 @@ async function validateToken() {
 }
 
 // NEU: Funktion zum Speichern des zuletzt verwendeten Modells und Providers im Backend
-async function updateLastUsedModelInBackend() {
+// Global verfügbar machen für context-awareness.js
+window.updateLastUsedModelInBackend = async function updateLastUsedModelInBackend() {
   const token = localStorage.getItem('auth_token');
   if (!token) {
     console.warn("Cannot update last used model: No auth token found.");
@@ -493,7 +497,7 @@ async function updateLastUsedModelInBackend() {
   } catch (error) {
     console.error("Error updating last used model in backend:", error);
   }
-}
+};
 
 /**
  * Füllt ein beliebiges Modell-Dropdown mit derselben Logik wie die Sidebar (Katalog + User-Selection + Filter).
@@ -642,10 +646,12 @@ function setupChatHeaderLlmListeners() {
         }
       }
       syncChatWindowHeaderLlm();
+      scheduleContextRefresh(wid);
     });
 
     hm.addEventListener("change", () => {
       setWindowModel(wid, hm.value === "" ? null : hm.value);
+      scheduleContextRefresh(wid);
     });
   }
 }
@@ -909,14 +915,23 @@ async function initializeApp() {
       
       console.log("--> [3.3] Loading last used model...");
       await loadLastUsedModel();
-      
+
       console.log("--> [3.4] Loading projects...");
       await loadProjects();
+
+      // 💎 CU-3: Initialisiere Settings NACH Auth (verhindert Race-Condition)
+      console.log("--> [3.4.5] Initializing settings...");
+      await initializeSettings();
+
+      // 💎 CU-3: Initialisiere Image Studio NACH Auth (verhindert Race-Condition)
+      console.log("--> [3.4.6] Initializing image studio...");
+      await initializeStudio();
 
       // RENDERE die UI und MACHE sie INTERAKTIV
       console.log("--> [3.5] Rendering UI and setting up event listeners...");
       render();
       setupEventListeners();
+      setupContextAwareness();
 
       // Lade die Chat-Liste als letzten Schritt
       console.log("--> [3.6] Loading chat list...");
@@ -1088,6 +1103,7 @@ function setupEventListeners() {
 
       // Sync window headers in 'Wie Sidebar' mode
       syncChatWindowHeaderLlm(); 
+      WINDOW_IDS.forEach((wid) => scheduleContextRefresh(wid));
     });
   }
 
@@ -1102,6 +1118,7 @@ function setupEventListeners() {
       await updateLastUsedModelInBackend();
       // Sync window headers in 'Wie Sidebar' mode
       syncChatWindowHeaderLlm();
+      WINDOW_IDS.forEach((wid) => scheduleContextRefresh(wid));
     });
   }
   
@@ -1672,6 +1689,19 @@ async function loadModelCatalog() {
       catalogByProvider[model.provider].push(model);
     });
     appState.model_catalog = catalogByProvider;
+
+    // Auto-select all local Ollama models so they appear in the dropdown
+    if (localModels.length > 0) {
+      const ollamaModelIds = localModels.map((m) => m.id);
+      if (!appState.user_selections) {
+        appState.user_selections = {};
+      }
+      // Merge with existing selections (don't overwrite if already set)
+      const existingSelections = appState.user_selections.ollama || [];
+      const allOllamaIds = new Set([...existingSelections, ...ollamaModelIds]);
+      appState.user_selections.ollama = Array.from(allOllamaIds);
+      console.log("[loadModelCatalog] Auto-selected Ollama models:", appState.user_selections.ollama);
+    }
   } catch (error) {
     console.error("Failed to load model catalog:", error);
     // Set empty object to prevent crashes in dependent code
@@ -1761,10 +1791,23 @@ async function loadUserSelections() {
         }
         // -------------------------
         
-        appState.user_selections[provider] = data.selected_models;
+        // For Ollama, merge with existing selections (to keep locally installed models)
+        // For other providers, use server selections
+        if (provider === "ollama") {
+          const existingSelections = appState.user_selections[provider] || [];
+          const serverSelections = data.selected_models || [];
+          const merged = new Set([...existingSelections, ...serverSelections]);
+          appState.user_selections[provider] = Array.from(merged);
+        } else {
+          appState.user_selections[provider] = data.selected_models;
+        }
       } catch (error) {
         console.error(`Failed to load models for ${provider}:`, error);
-        appState.user_selections[provider] = []; // Default to empty on error
+        // For Ollama, don't clear existing selections (keep locally discovered models)
+        // For other providers, default to empty on error
+        if (provider !== "ollama" || !appState.user_selections[provider]) {
+          appState.user_selections[provider] = [];
+        }
       }
     });
 
@@ -2242,4 +2285,7 @@ setTimeout(() => {
 
     console.log("Feedback modal initialized successfully");
 }, 500); // Execute after DOM is ready
+
+// 💎 CU-3: Exportiere appState global für context-awareness.js
+window.appState = appState;
 // ============================================================
