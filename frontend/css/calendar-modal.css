@@ -1871,6 +1871,88 @@
   font-size: 12px;
 }
 
+/* Tooltip System */
+.calendar-tooltip-trigger {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  cursor: help;
+  position: relative;
+}
+
+.calendar-help-icon {
+  color: #6b7280;
+  opacity: 0.7;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.calendar-tooltip-trigger:hover .calendar-help-icon {
+  opacity: 1;
+  color: #3b82f6;
+}
+
+.calendar-tooltip-trigger::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background-color: #1f2937;
+  color: #f3f4f6;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+  max-width: 280px;
+  white-space: normal;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  border: 1px solid #374151;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.calendar-tooltip-trigger:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.calendar-tooltip-trigger::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #374151;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  z-index: 1000;
+}
+
+.calendar-tooltip-trigger:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Wide tooltip variant for longer structured text */
+.calendar-tooltip-wide::after {
+  max-width: 320px;
+  white-space: pre-line;
+  text-align: left;
+  line-height: 1.5;
+  padding: 10px 14px;
+}
+
+.calendar-tooltip-wide:hover::after {
+  transform: translateX(-50%) translateY(0);
+}
+
 .calendar-ai-side-card p {
   margin: 0;
   color: #cbd5e1;

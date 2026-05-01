@@ -2,11 +2,11 @@
 
 ---
 task_id: 20260501-058
-status: SEALED
+status: DONE
 assigned_to: AI-STUDIO-ORCHESTRATED / KIMI-FIRST / SWE-REVIEW
 confidence_level: HIGH
 created_at: 2026-05-01 01:20
-updated_at: 2026-05-01 16:37
+updated_at: 2026-05-01 23:37
 source_dossier: documentation/Planned Features/JANUS CALENDAR MODAL.md
 cu_total: 18
 completion_gate:
@@ -931,3 +931,54 @@ Calendar Modal MVP vollständig implementiert (Phases 1-4). Backend: REST-API f�
 - Detail-Panel Inline-Editing für Zeit/Ort/Beschreibung/Teilnehmer funktioniert
 - Duration-Buttons mit Sticky Duration und 1h Default aktiv
 - All-Day-Checkbox mit Datums-Format-Umschaltung funktioniert
+- Tooltip-System für AUFGABEN und KI-ASSISTENT aktiv mit deutschen Erklärungstexten
+- User Guide (janus_calendar_pro_tips.md) erstellt mit Time-Blocking und Deep Work Strategien
+- AI-Engine Prompt erweitert mit Kalender-Nutzungsstrategien
+
+---
+
+# 23 Lessons Learned
+
+## Google Calendar Sync Reliability (PATCH-Verify-Fallback)
+
+**Problem:** Google Calendar API hat spezifische Eigenheiten, die zu Datenverlust oder unsichtbaren Sync-Fehlern führen können:
+- maxResults=25 paginiert nur 25 Events → Termine abgeschnitten
+- PUT events.update kann Output-Only-Felder zurückspielen und Metadaten-Änderungen "schlucken"
+- conferenceDataVersion=0 führt bei Meet-Terminen zu unzuverlässigen Konferenz-Metadaten
+- organizer.self=false kann auf eingeladene Konten hinweisen
+
+**Lösung:**
+- Pagination-Loop: maxResults=250 mit pageToken-Loop für vollständige Event-Listen
+- PATCH-first für Metadaten: Minimales Body nur für geänderte Felder
+- PATCH-Verifikation: GET nach PATCH mit CRLF-normalisiertem Textvergleich
+- Fallback-Update: events.update mit Output-Only-Key-Filterung bei Mismatch
+- conferenceDataVersion-Logik: =1 für Meet-Termine, Retry auf 0 bei 400-Fehlern
+- Forensische Logging-Signale: organizer.self=false (Info), verify-mismatch (Warning)
+
+**Pattern:** #GoogleCalendarSyncReliability in WHAT_I_LEARNED.md dokumentiert
+
+## Adaptive Rendering (Black-Box Tile Strategy)
+
+**Problem:** Kurze Termine (<30min) werden durch min-height-Constraints (28px) visuell verzerrt → Timeline zeigt falsche Dauer an. Lange Beschreibungen sprengen das Layout bei kompakten Events.
+
+**Lösung:**
+- Entfernung von min-height-Constraints in CSS
+- Adaptive CSS-Klassen: ultra-short (<20min), short (<45min), normal
+- Black-Box-Strategy: Ruhe = kompakte Karte nur Titel, Hover = volle Details
+- CSS-Variable --cal-hour-height (60px/hour) als Source-of-Truth für Raster
+- JS getCalHourHeightPx() synchronisiert mit CSS für pixel-perfect rendering
+
+**Result:** Event-Height ist exakt proportional zur Dauer. UI bleibt sauber bei langen Texten.
+
+## Onboarding & User Guidance
+
+**Problem:** Nutzer verstehen Dashboard-Funktionen (Prioritäten, Fokusblöcke, KI-Optimierung) nicht intuitiv. Hemmschwelle für "Tag optimieren" wegen Unsicherheit über KI-Kontrolle.
+
+**Lösung:**
+- Tooltip-System mit help-circle Icons (14px) für alle Dashboard-Actions
+- Strukturierte Tooltip-Texte mit Bulletpoints (pre-line whitespace)
+- Breite Tooltips (320px) für detaillierte Erklärungen ohne Layout-Break
+- User Guide (janus_calendar_pro_tips.md) mit Time-Blocking und Deep Work Strategien
+- AI-Engine Prompt erweitert mit Kalender-Nutzungsstrategien für proaktive Tipps
+
+**Result:** Dashboard erklärt sich selbst. User weiß, dass er finale Kontrolle behält (Diff-View vor Apply).

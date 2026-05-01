@@ -1200,14 +1200,57 @@
               <section class="calendar-insight-card">
                 <div class="calendar-insight-kicker">Aufgaben</div>
                 <div class="calendar-task-list">
-                  <label><input type="checkbox" /> Prioritäten prüfen</label>
-                  <label><input type="checkbox" /> Fokusblock schützen</label>
-                  <label><input type="checkbox" /> Offene Termine bestätigen</label>
+                  <label>
+                    <input type="checkbox" />
+                    Prioritäten prüfen
+                    <span class="calendar-tooltip-trigger" data-tooltip="Prüft, ob deine Termine heute mit deinen langfristigen Projekten/Zielen in Janus übereinstimmen.">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="calendar-help-icon">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                      </svg>
+                    </span>
+                  </label>
+                  <label>
+                    <input type="checkbox" />
+                    Fokusblock schützen
+                    <span class="calendar-tooltip-trigger" data-tooltip="Reserviert 2-4 Stunden am Stück für konzentrierte Arbeit ohne Termine. Die KI erkennt Lücken automatisch.">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="calendar-help-icon">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                      </svg>
+                    </span>
+                  </label>
+                  <label>
+                    <input type="checkbox" />
+                    Offene Termine bestätigen
+                    <span class="calendar-tooltip-trigger" data-tooltip="Zeigt Termine an, bei denen der Status noch 'tentative' ist oder Klärungsbedarf besteht.">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="calendar-help-icon">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                      </svg>
+                    </span>
+                  </label>
                 </div>
               </section>
 
               <section class="calendar-insight-card calendar-ai-side-card">
-                <div class="calendar-insight-kicker">KI-Assistent</div>
+                <div class="calendar-insight-kicker">
+                  KI-Assistent
+                  <span class="calendar-tooltip-trigger calendar-tooltip-wide" data-tooltip="Tag optimieren:
+• Analysiert alle Termine des aktuellen Tages.
+• Findet ungenutzte Lücken für Deep Work.
+• Schlägt das Zusammenlegen von kurzen Meetings vor.
+• Wichtig: Die KI erstellt erst einen unverbindlichen Plan-Entwurf. Du siehst alle Änderungen in einer Vergleichsansicht (Diff) und musst sie explizit bestätigen, bevor dein Google-Kalender geändert wird.">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="calendar-help-icon">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                  </span>
+                </div>
                 <p>Ich helfe dir, deinen Tag optimal zu planen.</p>
                 <button type="button" class="calendar-ai-quick-btn calendar-ai-side-action" data-ai-quick="optimize_day">
                   Tag optimieren
