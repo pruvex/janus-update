@@ -7,6 +7,9 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+### Added
+- **TASK-058: Calendar Modal Backend Phase 1** — REST-API für Calendar-Operationen: `GET/POST/PUT/DELETE /api/calendar/events`, Event-Normalisierung von Google Calendar zu JanusCalendarEvent, Konflikterkennung, Service Layer wrappt bestehende `calendar_tools.py`. Neue Schemas in `backend/data/schemas_calendar.py`, Service in `backend/services/calendar/`, Router in `backend/api/routers/calendar.py`, Tests in `backend/tests/test_calendar_modal.py`.
+
 ### Changed
 - **Bulk File Move Feature** - Parameter-Upgrade (pattern → file_names), Intent-basierte Modell-Eskalation (MOA-Hierarchie), RAG-Sort-Policy, PDF-Indizierungs-Markierung in list_directory, Rate-Limits erhöht. Task FEAT-FS-BULK-MOVE.
 - **Logging Pipeline Phase 1: Metadata Fixes** - Provider und Model werden jetzt konsistent an additional_context übergeben bei allen ToolExecutor-Instanziierungen. Logging zeigt korrekte Werte (nicht mehr "unknown"). ChatRequest-Attribut-Fix: req.chosen_model → req.model. Task D10.

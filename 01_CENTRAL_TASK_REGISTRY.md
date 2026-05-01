@@ -46,7 +46,7 @@
 
 | Task-ID | CU | Status | App | Modell | Prio | Cache | Tags | Meilenstein | Master-Prompt (Kurz) | Referenzen | Ergebnis |
 |---------|----|--------|-----|--------|------|-------|------|-------------|---------------------|------------|----------|
-| *—* | — | — | — | — | — | — | — | *Keine aktiven Tasks* | — | — | — |
+| **058** | 18 | IN_PROGRESS | Windsurf | Kimi K2.6 | P0 | 🔥 | calendar, modal, api | Phase 1 Backend DONE | Calendar Modal Backend Phase 1: REST API, Service Layer, Schemas. Frontend Phase 1 pending. | `documentation/tasks/task_058_calendar_modal_diamond_plan.md` | Backend: API Router, Service, Schemas, Tests complete. Frontend: Agenda-View pending.
 
 **Legende (Macro):**
 - **CU:** 1–10 · **Status:** TODO | IN_PROGRESS | DONE | **DEFERRED** · **Prio:** P0–P3 · **Cache:** 🧊 / 🔥

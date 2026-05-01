@@ -14,6 +14,7 @@
 
 ## 🚀 3. IN PROGRESS
 - [ ] **Migration:** Initialisierung des Diamond-OS (Finaler Sync).
+- [ ] **2026-05-01:** **TASK-058 Calendar Modal:** Backend Phase 1 COMPLETE - Calendar API Router, Service Layer, Schemas, Tests. Frontend Phase 1 pending.
 
 ## ✅ 4. DONE
 - [x] 2026-04-24: **Task FEAT-FS-BULK-MOVE:** Bulk File Move Feature - Parameter-Upgrade (pattern → file_names), Intent-basierte Modell-Eskalation (MOA-Hierarchie), RAG-Sort-Policy, PDF-Indizierungs-Markierung in list_directory, Rate-Limits erhöht. Status: 🥇 SEALED & COMPLETE.
