@@ -255,6 +255,9 @@ class CalendarService:
                 end_time_str=end_time_str,
                 location=update_data.get("location"),
                 description=update_data.get("description"),
+                attendees=(
+                    request.attendees if request.attendees is not None else None
+                ),
             )
             
             if not _tool_result_ok(result):

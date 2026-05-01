@@ -9,7 +9,7 @@ import os.path
 import re
 import time
 from datetime import date
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 import dateparser
 import keyring
@@ -182,19 +182,31 @@ async def get_calendar_events(
             time_min = dt.datetime.now(BERLIN_TZ).isoformat()
             time_max = (dt.datetime.now(BERLIN_TZ) + dt.timedelta(days=days_in_future)).isoformat()
 
-        events_result = await asyncio.to_thread(
-            service.events()
-            .list(
-                calendarId="primary",
-                timeMin=time_min,
-                timeMax=time_max,
-                maxResults=25,
-                singleEvents=True,
-                orderBy="startTime",
-            )
-            .execute
-        )
-        events = events_result.get("items", [])
+        def _list_all_in_range() -> List[Dict[str, Any]]:
+            """Google maxResults ist pro Seite gedeckelt — bei >25 Terminen sonst Datenverlust für Janus/UI."""
+            acc: List[Dict[str, Any]] = []
+            page_token: Optional[str] = None
+            while True:
+                resp = (
+                    service.events()
+                    .list(
+                        calendarId="primary",
+                        timeMin=time_min,
+                        timeMax=time_max,
+                        maxResults=250,
+                        singleEvents=True,
+                        orderBy="startTime",
+                        pageToken=page_token,
+                    )
+                    .execute()
+                )
+                acc.extend(resp.get("items", []))
+                page_token = resp.get("nextPageToken")
+                if not page_token:
+                    break
+            return acc
+
+        events = await asyncio.to_thread(_list_all_in_range)
         if not events:
             return _cal_ok(
                 {"events": [], "listing_text": "", "event_count": 0},
@@ -254,6 +266,7 @@ async def get_calendar_events(
 async def create_calendar_event(
     summary: str,
     start_time_str: str,
+    duration_minutes: Optional[int] = None,
     location: Optional[str] = None,
     description: Optional[str] = None,
     end_time_str: Optional[str] = None,
@@ -339,7 +352,9 @@ async def create_calendar_event(
                     suggest_follow_up=False,
                 )
 
-        if end_time_str:
+        if duration_minutes is not None:
+            end_dt = start_dt + dt.timedelta(minutes=duration_minutes)
+        elif end_time_str:
             normalized_end_str = (
                 end_time_str.lower().replace("am ", "").replace("um ", "").replace("den ", "")
             )
@@ -446,6 +461,44 @@ async def delete_calendar_event(event_id: str) -> ToolResultV1:
         )
 
 
+# Aus events.get, nicht unverändert mit PUT zurücksenden (siehe „Events resource“ read-only Hinweise).
+_GOOGLE_CAL_EVENT_OUTPUT_ONLY_KEYS = frozenset(
+    {
+        "kind",
+        "etag",
+        "htmlLink",
+        "created",
+        "updated",
+        "hangoutLink",
+        # Bei events.update zurückgegeben/abgeleitet von Google — nicht zurückspielen:
+        "creator",
+    }
+)
+
+
+def _cal_text_normalized(s: Optional[str]) -> str:
+    """Öffentliche Vergleiche (CRLF/Textarea) ohne False-Negatives beim Verify."""
+    return ("" if s is None else str(s)).replace("\r\n", "\n").replace("\r", "\n").strip()
+
+
+def _body_for_calendar_events_put(event: Dict[str, Any]) -> Dict[str, Any]:
+    body = dict(event)
+    for k in _GOOGLE_CAL_EVENT_OUTPUT_ONLY_KEYS:
+        body.pop(k, None)
+    return body
+
+
+def _conference_data_version_for_put(event: Dict[str, Any]) -> int:
+    """
+    Google: Bei Meet/Video-Konferenz conferenceDataVersion=1 setzen (API-Doku).
+    Viele Termine haben hangoutLink ohne vollständiges conferenceData — dann trotzdem 1,
+    sonst können Metadaten-Updates bei zukünftigen Meet-Terminen unzuverlässig sein.
+    """
+    if event.get("conferenceData") or event.get("hangoutLink"):
+        return 1
+    return 0
+
+
 async def update_calendar_event(
     event_id: str,
     summary: Optional[str] = None,
@@ -453,25 +506,216 @@ async def update_calendar_event(
     end_time_str: Optional[str] = None,
     location: Optional[str] = None,
     description: Optional[str] = None,
+    attendees: Optional[List[str]] = None,
 ) -> ToolResultV1:
     t0 = time.perf_counter()
     try:
         service = _get_calendar_service()
-        event = await asyncio.to_thread(
-            service.events().get(calendarId="primary", eventId=event_id).execute
-        )
 
         if start_time_str and "uhr" in start_time_str.lower() and ":" not in start_time_str:
             start_time_str = re.sub(r"(\d+)\s*uhr", r"\1:00", start_time_str, flags=re.IGNORECASE)
         if end_time_str and "uhr" in end_time_str.lower() and ":" not in end_time_str:
             end_time_str = re.sub(r"(\d+)\s*uhr", r"\1:00", end_time_str, flags=re.IGNORECASE)
 
+        # Nur Metadaten (Ort/Beschreibung/… ohne Start/Ende):
+        # PATCH mit minimalem Body (nur gesetzte Felder) ist für Ort/Beschreibung zuverlässiger als
+        # PUT events.update mit komplettem Resource-JSON — letzteres kann Meet/Reminder/Optionalfelder
+        # falsch zurückspielen und Änderungen in der Web-Ansicht „schlucken“. Siehe Events: patch.
+        if not start_time_str and not end_time_str:
+            patch_body: Dict[str, Any] = {}
+            if summary:
+                patch_body["summary"] = summary
+            if location is not None:
+                patch_body["location"] = location
+            if description is not None:
+                patch_body["description"] = description
+            if attendees is not None:
+                clean_att = [
+                    x.strip()
+                    for x in attendees
+                    if isinstance(x, str) and x.strip()
+                ]
+                patch_body["attendees"] = [{"email": e} for e in clean_att]
+
+            if not patch_body:
+                return _cal_err(
+                    "CALENDAR_PATCH_EMPTY",
+                    "Keine Felder zum Aktualisieren (Ohne neue Start-/Endzeit).",
+                    started_at=t0,
+                )
+
+            fetched = await asyncio.to_thread(
+                service.events().get(calendarId="primary", eventId=event_id).execute
+            )
+            write_id = str(fetched.get("id") or event_id)
+            event_type = fetched.get("eventType") or "default"
+
+            if event_type in ("workingLocation", "focusTime", "outOfOffice"):
+                logger.info(
+                    "Kalender PATCH: eventType=%s — klassische Felder Ort/Beschreibung werden evtl. in der UI "
+                    "anders verwendet ( strukturierte properties ). event_id=%s",
+                    event_type,
+                    write_id,
+                )
+
+            # conferenceDataVersion=1 wenn Konferenz/Meet erkennbar (sonst weiter 0 wie API-Default).
+            cdv_patch = _conference_data_version_for_put(fetched)
+            send_upd = "none"
+
+            def _patch_metadata(version: int) -> Dict[str, Any]:
+                return (
+                    service.events()
+                    .patch(
+                        calendarId="primary",
+                        eventId=write_id,
+                        body=patch_body,
+                        conferenceDataVersion=version,
+                        sendUpdates=send_upd,
+                    )
+                    .execute()
+                )
+
+            try:
+                await asyncio.to_thread(_patch_metadata, cdv_patch)
+            except Exception as e:
+                err_s = str(e).lower()
+                if cdv_patch == 1 and ("conference" in err_s or "400" in err_s):
+                    logger.warning(
+                        "Kalender PATCH mit conferenceDataVersion=1 fehlgeschlagen, Retry mit 0: %s", e
+                    )
+                    await asyncio.to_thread(_patch_metadata, 0)
+                else:
+                    raise
+
+            verified = await asyncio.to_thread(
+                service.events().get(calendarId="primary", eventId=write_id).execute
+            )
+
+            org = fetched.get("organizer") or verified.get("organizer") or {}
+            if isinstance(org, dict) and org.get("self") is False:
+                logger.info(
+                    "Kalender UPDATE: Organizer ist nicht dasselbe Konto (organizer.self=false, %s). "
+                    "Änderungen gelten nach API für diesen eingeladenen Kopf auf primary — im Browser bitte dasselbe Google-Konto prüfen.",
+                    org.get("email"),
+                    extra={"event_id": write_id},
+                )
+
+            mismatch_loc = False
+            mismatch_desc = False
+            mismatch_summary = False
+            if location is not None:
+                mismatch_loc = _cal_text_normalized(verified.get("location")) != _cal_text_normalized(
+                    location
+                )
+            if description is not None:
+                mismatch_desc = _cal_text_normalized(verified.get("description")) != (
+                    _cal_text_normalized(description)
+                )
+            if patch_body.get("summary"):
+                mismatch_summary = _cal_text_normalized(verified.get("summary")) != _cal_text_normalized(
+                    patch_body.get("summary")
+                )
+
+            if mismatch_loc:
+                logger.warning(
+                    "Kalender PATCH: gewünschter Ort != GET danach (%r vs %r) event_id=%s eventType=%s",
+                    location[:120] if isinstance(location, str) else repr(location),
+                    (verified.get("location") or "")[:120],
+                    write_id,
+                    event_type,
+                )
+            if mismatch_desc:
+                wd = description or ""
+                logger.warning(
+                    "Kalender PATCH: gewünschte Beschreibung != GET danach (event_id=%s, want_len=%s got_len=%s)",
+                    write_id,
+                    len(wd),
+                    len(_cal_text_normalized(verified.get("description"))),
+                )
+
+            # PATCH liefert 200, Daten sind aber sporadisch ohne Wirkung in der Web‑UI oder das GET gleicht nicht.
+            # Einmaliges vollständiges events.update vom frischen GET mit gemergten gewünschten Feldern hilft dort, wo PATCH „leer“ wirkt.
+            if mismatch_loc or mismatch_desc or mismatch_summary:
+                merged: Dict[str, Any] = {**verified}
+                merged.update(patch_body)
+                cdv_fb = _conference_data_version_for_put(merged)
+
+                def _update_after_patch_mismatch() -> Dict[str, Any]:
+                    return (
+                        service.events()
+                        .update(
+                            calendarId="primary",
+                            eventId=write_id,
+                            body=_body_for_calendar_events_put(dict(merged)),
+                            conferenceDataVersion=cdv_fb,
+                            sendUpdates=send_upd,
+                        )
+                        .execute()
+                    )
+
+                logger.warning(
+                    "Kalender: PATCH-Verifikation weicht ab — Fallback events.update (event_id=%s cdv=%s)",
+                    write_id,
+                    cdv_fb,
+                )
+                try:
+                    verified = await asyncio.to_thread(_update_after_patch_mismatch)
+                except Exception as e:
+                    err_s = str(e).lower()
+                    if cdv_fb == 1 and ("conference" in err_s or "400" in err_s):
+
+                        def _update_fb_retry0() -> Dict[str, Any]:
+                            return (
+                                service.events()
+                                .update(
+                                    calendarId="primary",
+                                    eventId=write_id,
+                                    body=_body_for_calendar_events_put(dict(merged)),
+                                    conferenceDataVersion=0,
+                                    sendUpdates=send_upd,
+                                )
+                                .execute()
+                            )
+
+                        logger.warning(
+                            "Kalender Fallback-UPDATE mit cdv=%s fehlgeschlagen (cdv=1→0 retry): %s",
+                            cdv_fb,
+                            e,
+                        )
+                        verified = await asyncio.to_thread(_update_fb_retry0)
+                    else:
+                        raise
+
+            summary_out = verified.get("summary") or fetched.get("summary")
+            return _cal_ok(
+                {
+                    "event_id": write_id,
+                    "summary": summary_out,
+                    "updated_event": verified,
+                },
+                message=(f"Termin '{summary_out}' wurde erfolgreich aktualisiert."),
+                started_at=t0,
+                primary_entity_id=write_id,
+            )
+
+        event = await asyncio.to_thread(
+            service.events().get(calendarId="primary", eventId=event_id).execute
+        )
+
         if summary:
             event["summary"] = summary
-        if location:
+        if location is not None:
             event["location"] = location
         if description is not None:
             event["description"] = description
+
+        if attendees is not None:
+            clean = [
+                x.strip()
+                for x in attendees
+                if isinstance(x, str) and x.strip()
+            ]
+            event["attendees"] = [{"email": e} for e in clean]
 
         if start_time_str:
             parsed_start_dt = dateparser.parse(
@@ -539,9 +783,23 @@ async def update_calendar_event(
             else:
                 event["end"] = {"dateTime": parsed_end_dt.isoformat(), "timeZone": "Europe/Berlin"}
 
-        updated_event = await asyncio.to_thread(
-            service.events().update(calendarId="primary", eventId=event["id"], body=event).execute
-        )
+        body_put = _body_for_calendar_events_put(event)
+        cdv = _conference_data_version_for_put(event)
+
+        def _put_timed():
+            return (
+                service.events()
+                .update(
+                    calendarId="primary",
+                    eventId=event["id"],
+                    body=body_put,
+                    conferenceDataVersion=cdv,
+                    sendUpdates="none",
+                )
+                .execute()
+            )
+
+        updated_event = await asyncio.to_thread(_put_timed)
         return _cal_ok(
             {
                 "event_id": updated_event.get("id"),

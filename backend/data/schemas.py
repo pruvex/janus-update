@@ -966,6 +966,10 @@ class CreateCalendarEventArgs(BaseModel):
         ...,
         description=f"Start des Termins. {_CAL_DATETIME_HINT} Für ganztägige Termine nur das Datum angeben.",
     )
+    duration_minutes: Optional[int] = Field(
+        default=None,
+        description="Dauer des Termins in Minuten (z.B. 30 für 30 Minuten, 60 für 1 Stunde). WICHTIG: Immer angeben für korrekte Endzeit-Berechnung.",
+    )
     location: Optional[str] = Field(
         default=None,
         description="Optional: Ort/Adresse im Format **Straße Hausnummer, PLZ Stadt, Land** wenn bekannt.",

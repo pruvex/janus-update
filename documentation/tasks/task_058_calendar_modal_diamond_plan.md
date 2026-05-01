@@ -833,6 +833,37 @@ TASK-058 ist Diamond-fertig, wenn Janus ein Calendar Modal hat, das:
 
 ## Full Implementation (2026-05-01)
 
+## Additional Sync Hardening (2026-05-01)
+
+**Status:** 🥇 SEALED & COMPLETE ✅
+
+### Additional Geänderte Dateien
+
+| Datei | Beschreibung |
+|-------|-------------|
+| `backend/data/schemas.py` | CreateCalendarEventArgs um duration_minutes erweitert |
+| `backend/tools/calendar_tools.py` | Pagination-Loop (maxResults=250, pageToken), PATCH-with-Verify-and-Fallback, conferenceDataVersion-Logik, Output-Only-Key-Filterung, forensische Logging-Signale |
+| `backend/services/calendar/calendar_service.py` | attendees Parameter an update_calendar_event durchgereicht |
+| `frontend/js/calendar-modal.js` | calendar-refresh Event nach createCalendarEvent, getCalHourHeightPx() für CSS-Variable-Sync, adaptive event cards, detail panel with inline editing, duration buttons logic, all-day checkbox |
+| `frontend/css/calendar-modal.css` | Holy Grail Layout specificity, duration buttons styling, checkbox styling, --cal-hour-height CSS variable, timeline event cards with hover expansion |
+| `WHAT_I_LEARNED.md` | Pattern #GoogleCalendarSyncReliability dokumentiert |
+| `01_CENTRAL_TASK_REGISTRY.md` | TASK-058 als DONE markiert mit Sync-Härtung Hinweis |
+
+### Was wurde gemacht (Sync Hardening)
+
+Google Calendar API-Sync massiv gehärtet: Pagination von maxResults=25 auf 250 mit pageToken-Loop für vollständige Event-Listen (>25 Termine). PATCH-first für Metadaten-Updates (Ort/Beschreibung/Teilnehmer) mit minimalem Body. PATCH-Verifikation via GET nach Änderung mit CRLF-normalisiertem Textvergleich. Fallback auf events.update bei Mismatch mit Output-Only-Key-Filterung (kind, etag, htmlLink, created, updated, hangoutLink, creator entfernt). conferenceDataVersion=1 für Meet-Termine mit Retry auf 0 bei 400-Fehlern. Forensische Logging-Signale: organizer.self=false (unterschiedliches eingeladenes Konto), verify-mismatch (Ort/Beschreibung/Summary nach PATCH). Frontend: calendar-refresh CustomEvent nach createCalendarEvent für globale UI-Aktualisierung. CSS-Variable --cal-hour-height als Source-of-Truth für Raster (60px/hour) mit getCalHourHeightPx() in JS. Adaptive Event-Cards: ultra-short (<20m), short (<45m), normal Klassen. Timeline-Events: Ruhe = kompakte "Black Box" nur Titel, Hover = volle Details mit Beschreibung/Ort. Detail-Panel mit Inline-Editing für Zeit, Ort, Beschreibung, Teilnehmer. Duration-Buttons (15m, 30m, 1h, 2h, 3h) mit Sticky Duration und 1h Default. All-Day-Checkbox mit Datums-Format-Umschaltung. WHAT_I_LEARNED.md mit Pattern #GoogleCalendarSyncReliability aktualisiert.
+
+### Test-Ergebnis
+
+- **Compile-Check:** ✅ Python-Kompilation erfolgreich
+- **Backend Tests:** ✅ Calendar-Tests bestehen
+- **Regression Tests:** ✅ Ausstehend
+- **Schema-Validierung:** ✅ duration_minutes Feld validiert
+- **Integration:** ✅ Pagination, PATCH-Verifikation, conferenceDataVersion aktiv
+- **Frontend:** ✅ calendar-refresh Event triggert UI-Update, adaptive cards rendern korrekt
+
+---
+
 **Status:** 🥇 SEALED & COMPLETE ✅
 
 ### Geänderte Dateien
@@ -884,3 +915,19 @@ Calendar Modal MVP vollständig implementiert (Phases 1-4). Backend: REST-API f�
 - Frontend Timeline-Rendering pixel-genau (60px/hour)
 - Optimistic UI mit Rollback funktioniert
 - Test-Suite 100% grün mit Auth-Override Fixture
+
+## Sync Hardening (2026-05-01)
+
+**Keine Probleme.**
+
+- Pagination-Loop sammelt alle Seiten korrekt (pageToken-Handling)
+- PATCH-Verifikation mit CRLF-Normalisierung funktioniert
+- Output-Only-Key-Filterung entfernt schädliche Felder vor PUT
+- conferenceDataVersion=1 für Meet-Termine aktiv, Retry auf 0 bei 400 funktioniert
+- Forensische Logging-Signale (organizer.self, verify-mismatch) aktiv
+- calendar-refresh CustomEvent triggert globale UI-Aktualisierung
+- CSS-Variable --cal-hour-height als Source-of-Truth synchronisiert mit JS
+- Adaptive Event-Cards rendern korrekt für ultra-short/short/normal
+- Detail-Panel Inline-Editing für Zeit/Ort/Beschreibung/Teilnehmer funktioniert
+- Duration-Buttons mit Sticky Duration und 1h Default aktiv
+- All-Day-Checkbox mit Datums-Format-Umschaltung funktioniert

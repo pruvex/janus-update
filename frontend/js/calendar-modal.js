@@ -21,21 +21,38 @@ let localConflicts = [];
 let conflictIds = new Set();
 /** @type {string | null} */
 let editingEventId = null;
+/** Rechtes Detail-Panel — zuletzt geöffneter Termin (für Re-Sync nach renderCalendar). */
+let detailPanelEventId = null;
+/** AbortController für Panel-Listeners beim Schließen/Neuöffnen. */
+let detailPanelAbort = null;
 let filterPreset = "week"; // today | week | month | custom
 /** ISO date strings YYYY-MM-DD for custom preset */
 let customRangeStartStr = "";
 let customRangeEndStr = "";
-/** @type {"agenda" | "day" | "week"} */
-let calendarViewMode = "agenda";
+/** @type {"day" | "week" | "month"} */
+let calendarViewMode = "week";
 /** Ankerdatum (lokaler Tagesbeginn) für Tag-/Wochenansicht */
 let calendarViewAnchor = new Date();
+let calendarMiniMonthAnchor = new Date();
+let calendarSearchTerm = "";
 let calendarPollTimer = null;
 /** @type {Promise<Array<Record<string, unknown>>> | null} */
 let calendarLoadInFlight = null;
 let lastCalendarLoadAt = 0;
 let syncFromDockStateRunning = false;
 
-const PX_PER_HOUR = 60;
+/**
+ * Liest die CSS-Variable :root `--cal-hour-height` (gleiche Source of Truth wie das Raster).
+ * @returns {number}
+ */
+function getCalHourHeightPx() {
+  const raw =
+    typeof document !== "undefined"
+      ? getComputedStyle(document.documentElement).getPropertyValue("--cal-hour-height").trim()
+      : "";
+  const n = Number.parseFloat(raw.replace("px", ""));
+  return Number.isFinite(n) && n > 0 ? n : 60;
+}
 
 function isCalendarPanelVisible() {
   const m = getDockModuleState(MODULE_ID);
@@ -114,6 +131,21 @@ function endOfMonth(d) {
 
 function getFilterRange() {
   const now = new Date();
+  if (filterPreset === "custom" && customRangeStartStr && customRangeEndStr) {
+    const a = startOfDay(new Date(customRangeStartStr + "T12:00:00"));
+    const b = endOfDay(new Date(customRangeEndStr + "T12:00:00"));
+    if (a > b) return { start: b, end: a };
+    return { start: a, end: b };
+  }
+  if (calendarViewMode === "day") {
+    return { start: startOfDay(calendarViewAnchor), end: endOfDay(calendarViewAnchor) };
+  }
+  if (calendarViewMode === "week") {
+    return { start: mondayOfWeek(calendarViewAnchor), end: sundayOfWeek(calendarViewAnchor) };
+  }
+  if (calendarViewMode === "month") {
+    return { start: startOfMonth(calendarViewAnchor), end: endOfMonth(calendarViewAnchor) };
+  }
   if (filterPreset === "today") {
     return { start: startOfDay(now), end: endOfDay(now) };
   }
@@ -122,12 +154,6 @@ function getFilterRange() {
   }
   if (filterPreset === "month") {
     return { start: startOfMonth(now), end: endOfMonth(now) };
-  }
-  if (filterPreset === "custom" && customRangeStartStr && customRangeEndStr) {
-    const a = startOfDay(new Date(customRangeStartStr + "T12:00:00"));
-    const b = endOfDay(new Date(customRangeEndStr + "T12:00:00"));
-    if (a > b) return { start: b, end: a };
-    return { start: a, end: b };
   }
   const end = new Date(now);
   end.setDate(end.getDate() + 7);
@@ -181,7 +207,50 @@ function sourceGoogleEnabled() {
 
 function eventsForDisplay() {
   if (!sourceGoogleEnabled()) return [];
-  return localEvents;
+  const events = localEvents;
+  const q = calendarSearchTerm.trim().toLowerCase();
+  if (!q) return events;
+  return events.filter((event) => {
+    const ev = normEvent(event);
+    return [ev.title, ev.location, ev.description]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(q));
+  });
+}
+
+function isSameLocalDate(a, b) {
+  return (
+    a instanceof Date &&
+    b instanceof Date &&
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+function eventDurationMinutes(ev) {
+  const s = new Date(String(ev.start));
+  const e = new Date(String(ev.end));
+  if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return 0;
+  return Math.max(0, Math.round((e.getTime() - s.getTime()) / 60000));
+}
+
+/** @param {ReturnType<typeof normEvent>} ev */
+function eventAdaptiveDurationClass(ev) {
+  if (ev.is_all_day) return "cal-event--normal";
+  const mins = eventDurationMinutes(ev);
+  if (mins < 20) return "cal-event--ultra-short";
+  if (mins < 45) return "cal-event--short";
+  return "cal-event--normal";
+}
+
+function eventTone(ev) {
+  const title = String(ev.title || "").toLowerCase();
+  if (title.includes("focus") || title.includes("fokus")) return "focus";
+  if (title.includes("projekt") || title.includes("project")) return "project";
+  if (title.includes("call") || title.includes("zoom") || title.includes("meeting")) return "meeting";
+  if (title.includes("sport") || title.includes("pause") || title.includes("essen")) return "personal";
+  return "default";
 }
 
 function formatTime(isoString) {
@@ -246,10 +315,14 @@ function timedEventGeom(ev, bounds) {
   const oe = Math.min(e.getTime(), bounds.endExclusive.getTime());
   if (oe <= os) return null;
 
+  const hourHeight = getCalHourHeightPx();
   const minsFromMidnight = (os - bounds.start.getTime()) / 60000;
   const durMin = (oe - os) / 60000;
-  const top = (minsFromMidnight / 60) * PX_PER_HOUR;
-  const height = Math.max(28, (durMin / 60) * PX_PER_HOUR);
+
+  /** top = (Stunden + Minuten/60) * hourHeight; height wie gefordert */
+  const fracHoursStart = minsFromMidnight / 60;
+  const top = fracHoursStart * hourHeight;
+  const height = (durMin / 60) * hourHeight;
   return { top, height };
 }
 
@@ -269,6 +342,7 @@ function overlapAllDay(ev, bounds) {
 function buildEventCardElement(event) {
   const card = document.createElement("div");
   card.className = "calendar-event-card";
+  card.classList.add(`calendar-event-card--${eventTone(event)}`);
   if (conflictIds.has(event.id)) card.classList.add("calendar-event-card--conflict");
   card.dataset.eventId = event.id;
 
@@ -286,34 +360,49 @@ function buildEventCardElement(event) {
           <button class="event-delete-btn" type="button" data-action="delete" title="Termin löschen">×</button>
         `;
   } else {
+    card.classList.add(eventAdaptiveDurationClass(event));
     card.innerHTML = `
-          <div class="event-title-row">
-            <div class="event-title event-title--editable" data-edit-trigger="title">${escapeHtml(event.title)}</div>
+          <div class="event-card-primary">
+            <div class="event-title-row">
+              <div class="event-title event-title--editable" data-edit-trigger="title">${escapeHtml(event.title)}</div>
+            </div>
+            <div class="event-time event-time--editable" data-edit-trigger="time">${formatTime(event.start)} – ${formatTime(event.end)}</div>
           </div>
-          <div class="event-time event-time--editable" data-edit-trigger="time">${formatTime(event.start)} - ${formatTime(event.end)}</div>
           ${
             event.location
               ? `<div class="event-location">${escapeHtml(String(event.location))}</div>`
               : ""
           }
-          <div class="event-card-actions">
-            <button type="button" class="event-more-btn" data-action="detail">Mehr Info</button>
-          </div>
+          ${
+            event.description
+              ? `<div class="event-description">${escapeHtml(String(event.description))}</div>`
+              : ""
+          }
           <button class="event-delete-btn" type="button" data-action="delete" title="Termin löschen">×</button>
         `;
   }
   return card;
 }
 
-function bindEventCardListeners(card, eventId) {
-  card.querySelector('[data-edit-trigger="title"]')?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    toggleEditMode(eventId);
-  });
-  card.querySelector('[data-edit-trigger="time"]')?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    toggleEditMode(eventId);
-  });
+/**
+ * Inline-Bearbeitung per Klick nur in der Agenda-Liste; Timeline öffnet per Kachel-Klick immer das Detail-Panel.
+ * @param {{ timeline?: boolean }} [opts]
+ */
+function bindEventCardListeners(card, eventId, opts = {}) {
+  const isTimelineTile = !!opts.timeline;
+
+  bindOpenDetailPanelOnCard(card, eventId);
+
+  if (!isTimelineTile) {
+    card.querySelector('[data-edit-trigger="title"]')?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleEditMode(eventId);
+    });
+    card.querySelector('[data-edit-trigger="time"]')?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleEditMode(eventId);
+    });
+  }
   card.querySelector('[data-action="save"]')?.addEventListener("click", (e) => {
     e.stopPropagation();
     saveInlineEdit(eventId);
@@ -326,45 +415,29 @@ function bindEventCardListeners(card, eventId) {
     e.stopPropagation();
     deleteCalendarEvent(eventId);
   });
-  card.querySelector('[data-action="detail"]')?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const ev = mergeEvents(localEvents).find((x) => x.id === eventId);
-    if (ev) openDetailPanel(ev);
-  });
 }
 
 /** @returns {HTMLElement} */
 function buildHourLabelsRail() {
+  const hh = getCalHourHeightPx();
   const rail = document.createElement("div");
   rail.className = "calendar-hours-rail";
   for (let h = 0; h < 24; h += 1) {
     const label = document.createElement("div");
     label.className = "calendar-hour-label";
-    label.style.top = `${h * PX_PER_HOUR}px`;
+    label.style.top = `${h * hh}px`;
     label.textContent = `${String(h).padStart(2, "0")}:00`;
     rail.appendChild(label);
   }
   return rail;
 }
 
-/** @returns {HTMLElement} */
-function buildGridLinesOverlay() {
-  const wrap = document.createElement("div");
-  wrap.className = "calendar-grid-lines";
-  for (let h = 0; h < 24; h += 1) {
-    const line = document.createElement("div");
-    line.className = "calendar-hour-line";
-    line.style.top = `${h * PX_PER_HOUR}px`;
-    wrap.appendChild(line);
-  }
-  return wrap;
-}
-
 function renderTimedColumn(events, bounds) {
   const surface = document.createElement("div");
   surface.className = "calendar-grid-surface";
 
-  surface.appendChild(buildGridLinesOverlay());
+  const gridContent = document.createElement("div");
+  gridContent.className = "calendar-grid-content";
 
   const layer = document.createElement("div");
   layer.className = "calendar-events-abs-layer";
@@ -379,11 +452,12 @@ function renderTimedColumn(events, bounds) {
     slot.style.height = `${geom.height}px`;
 
     slot.appendChild(buildEventCardElement(event));
-    bindEventCardListeners(slot.querySelector(".calendar-event-card"), event.id);
+    bindEventCardListeners(slot.querySelector(".calendar-event-card"), event.id, { timeline: true });
     layer.appendChild(slot);
   });
 
-  surface.appendChild(layer);
+  gridContent.appendChild(layer);
+  surface.appendChild(gridContent);
   return surface;
 }
 
@@ -430,18 +504,136 @@ function setSyncStatus(mode) {
   }
 }
 
+function dashboardEvents() {
+  return sourceGoogleEnabled() ? mergeEvents(localEvents) : [];
+}
+
+function eventsForDay(events, day) {
+  const bounds = columnDayBounds(day);
+  return events.filter((ev) => {
+    const s = new Date(String(ev.start));
+    const e = new Date(String(ev.end));
+    return !Number.isNaN(s.getTime()) && !Number.isNaN(e.getTime()) && e > bounds.start && s < bounds.endExclusive;
+  });
+}
+
+function formatHourAmount(minutes) {
+  if (minutes <= 0) return "0h";
+  const hours = minutes / 60;
+  return hours >= 1 ? `${hours.toLocaleString("de-DE", { maximumFractionDigits: 1 })}h` : `${minutes}m`;
+}
+
+function updatePeriodLabel() {
+  const el = document.getElementById("calendar-period-label");
+  if (!el) return;
+  if (calendarViewMode === "day") {
+    el.textContent = calendarViewAnchor.toLocaleDateString("de-DE", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    return;
+  }
+  if (calendarViewMode === "month") {
+    el.textContent = calendarViewAnchor.toLocaleDateString("de-DE", {
+      month: "long",
+      year: "numeric",
+    });
+    return;
+  }
+  const start = mondayOfWeek(calendarViewAnchor);
+  const end = sundayOfWeek(calendarViewAnchor);
+  el.textContent = `${start.toLocaleDateString("de-DE", { day: "numeric", month: "short" })} - ${end.toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" })}`;
+}
+
+function renderMiniMonth() {
+  const grid = document.getElementById("calendar-mini-month");
+  const label = document.getElementById("calendar-mini-month-label");
+  if (!grid) return;
+
+  const monthStart = startOfMonth(calendarMiniMonthAnchor);
+  if (label) {
+    label.textContent = monthStart.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+  }
+
+  grid.innerHTML = "";
+  ["M", "D", "M", "D", "F", "S", "S"].forEach((day) => {
+    const el = document.createElement("span");
+    el.className = "calendar-mini-dow";
+    el.textContent = day;
+    grid.appendChild(el);
+  });
+
+  const first = mondayOfWeek(monthStart);
+  const today = startOfDay(new Date());
+  for (let i = 0; i < 42; i += 1) {
+    const d = new Date(first);
+    d.setDate(first.getDate() + i);
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "calendar-mini-day";
+    btn.textContent = String(d.getDate());
+    btn.classList.toggle("calendar-mini-day--muted", d.getMonth() !== monthStart.getMonth());
+    btn.classList.toggle("calendar-mini-day--today", isSameLocalDate(d, today));
+    btn.classList.toggle("calendar-mini-day--selected", isSameLocalDate(d, calendarViewAnchor));
+    btn.addEventListener("click", () => {
+      calendarViewAnchor = startOfDay(d);
+      if (calendarViewMode === "month") filterPreset = "month";
+      syncFilterUi();
+      loadCalendarEvents();
+    });
+    grid.appendChild(btn);
+  }
+}
+
+function updatePlanningSidebar(events) {
+  const all = mergeEvents(events || []);
+  const todayEvents = eventsForDay(all, new Date()).sort((a, b) => new Date(String(a.start)) - new Date(String(b.start)));
+  const focusMinutes = todayEvents
+    .filter((ev) => eventTone(ev) === "focus")
+    .reduce((sum, ev) => sum + eventDurationMinutes(ev), 0);
+  const busyMinutes = todayEvents.reduce((sum, ev) => sum + eventDurationMinutes(ev), 0);
+  const load = Math.min(100, Math.round((busyMinutes / (8 * 60)) * 100));
+
+  const eventsEl = document.getElementById("calendar-stat-events");
+  const focusEl = document.getElementById("calendar-stat-focus");
+  const loadEl = document.getElementById("calendar-stat-load");
+  const meterEl = document.getElementById("calendar-load-meter-fill");
+  if (eventsEl) eventsEl.textContent = String(todayEvents.length);
+  if (focusEl) focusEl.textContent = formatHourAmount(focusMinutes);
+  if (loadEl) loadEl.textContent = `${load}%`;
+  if (meterEl) meterEl.style.width = `${load}%`;
+
+  const nextEl = document.getElementById("calendar-next-event-card");
+  if (nextEl) {
+    const now = new Date();
+    const next = all
+      .filter((ev) => new Date(String(ev.end)) >= now)
+      .sort((a, b) => new Date(String(a.start)) - new Date(String(b.start)))[0];
+    if (!next) {
+      nextEl.innerHTML = '<div class="calendar-muted">Kein kommender Termin</div>';
+    } else {
+      nextEl.innerHTML = `
+        <div class="calendar-next-event-dot calendar-next-event-dot--${eventTone(next)}"></div>
+        <div class="calendar-next-event-title">${escapeHtml(next.title)}</div>
+        <div class="calendar-next-event-time">${formatTime(next.start)} - ${formatTime(next.end)}</div>
+        ${next.location ? `<div class="calendar-next-event-location">${escapeHtml(String(next.location))}</div>` : ""}
+        <button type="button" class="calendar-next-event-action" data-event-id="${escapeAttr(next.id)}">Details öffnen</button>
+      `;
+      nextEl.querySelector(".calendar-next-event-action")?.addEventListener("click", () => openDetailPanel(next));
+    }
+  }
+}
+
 function renderCalendar() {
   const events = eventsForDisplay();
+  updatePeriodLabel();
+  renderMiniMonth();
+  updatePlanningSidebar(dashboardEvents());
 
   const container = document.getElementById("calendar-agenda");
   if (!container) return;
-
-  if (calendarViewMode === "agenda") {
-    container.className = "";
-    container.classList.add("calendar-agenda-pane");
-    renderAgendaBody(container, events);
-    return;
-  }
 
   container.className = "";
 
@@ -452,17 +644,25 @@ function renderCalendar() {
     const formRef = stashCreateForm();
     container.innerHTML = `<div class="calendar-empty">Quelle "Google" ist deaktiviert</div>`;
     if (formRef) container.prepend(formRef);
+    syncCalendarDetailPanelIfOpen();
     return;
   }
 
   if (calendarViewMode === "day") {
     renderDayViewBody(container, evs);
-  } else {
+  } else if (calendarViewMode === "week") {
     renderWeekViewBody(container, evs);
+  } else {
+    container.classList.add("calendar-agenda-pane", "calendar-month-planning-pane");
+    renderAgendaBody(container, evs);
   }
+  syncCalendarDetailPanelIfOpen();
 }
 
 function hideEventDetails() {
+  detailPanelAbort?.abort();
+  detailPanelAbort = null;
+  detailPanelEventId = null;
   const panel = document.getElementById("calendar-detail-panel");
   if (panel) panel.hidden = true;
   document.getElementById("calendar-modal")?.classList.remove("calendar-detail-open");
@@ -487,62 +687,14 @@ function handleDetailCloseClick(event) {
 
 function openDetailPanel(ev) {
   const panel = document.getElementById("calendar-detail-panel");
-  const titleEl = document.getElementById("calendar-detail-title");
   const bodyEl = document.getElementById("calendar-detail-body");
-  if (!panel || !titleEl || !bodyEl) return;
+  if (!panel || !bodyEl) return;
 
-  titleEl.textContent = ev.title;
-  bodyEl.textContent = "";
-
-  const dl = document.createElement("dl");
-
-  function addPair(label, node) {
-    const dt = document.createElement("dt");
-    dt.textContent = label;
-    const dd = document.createElement("dd");
-    dd.appendChild(node);
-    dl.appendChild(dt);
-    dl.appendChild(dd);
-  }
-
-  const when = document.createDocumentFragment();
-  when.appendChild(
-    document.createTextNode(`${formatDate(ev.start)}, ${formatTime(ev.start)} – ${formatTime(ev.end)}`)
-  );
-  addPair("Zeitraum", when);
-
-  const loc = document.createElement("span");
-  loc.textContent = ev.location ? String(ev.location) : "(Kein Ort)";
-  addPair("Ort", loc);
-
-  const desc = document.createElement("pre");
-  desc.style.whiteSpace = "pre-wrap";
-  desc.style.margin = "0";
-  desc.style.fontFamily = "inherit";
-  desc.textContent = ev.description ? String(ev.description) : "(Keine Beschreibung)";
-  addPair("Beschreibung", desc);
-
-  if (Array.isArray(ev.attendees) && ev.attendees.length > 0) {
-    const ul = document.createElement("ul");
-    ev.attendees.forEach((a) => {
-      const li = document.createElement("li");
-      li.textContent = String(a);
-      ul.appendChild(li);
-    });
-    addPair("Teilnehmer", ul);
-  } else {
-    const em = document.createElement("em");
-    em.textContent = "Keine Teilnehmerliste";
-    addPair("Teilnehmer", em);
-  }
-
-  if (ev.recurrence_rule) {
-    const code = document.createElement("code");
-    code.textContent = String(ev.recurrence_rule);
-    addPair("Wiederholung", code);
-  }
-
-  bodyEl.appendChild(dl);
+  const ne = normEvent(ev);
+  detailPanelAbort?.abort();
+  detailPanelAbort = new AbortController();
+  detailPanelEventId = ne.id;
+  populateCalendarDetailPanel(ne);
   document.getElementById("calendar-modal")?.classList.add("calendar-detail-open");
   panel.hidden = false;
 }
@@ -658,6 +810,7 @@ function renderDayViewBody(container, events) {
 
   const root = document.createElement("div");
   root.className = "calendar-time-root";
+  if (isSameLocalDate(bounds.start, new Date())) root.classList.add("calendar-time-root--today");
 
   const title = document.createElement("div");
   title.className = "calendar-week-title";
@@ -718,9 +871,11 @@ function renderWeekViewBody(container, events) {
 
   const dowRow = document.createElement("div");
   dowRow.className = "calendar-week-top";
+  const today = startOfDay(new Date());
   columns.forEach((col) => {
     const dow = document.createElement("div");
     dow.className = "calendar-week-dow";
+    if (isSameLocalDate(col.bounds.start, today)) dow.classList.add("calendar-week-dow--today");
     dow.textContent = col.bounds.start.toLocaleDateString("de-DE", { weekday: "short", day: "numeric" });
     dowRow.appendChild(dow);
   });
@@ -751,6 +906,7 @@ function renderWeekViewBody(container, events) {
   columns.forEach((col) => {
     const c = document.createElement("div");
     c.className = "calendar-week-col";
+    if (isSameLocalDate(col.bounds.start, today)) c.classList.add("calendar-week-col--today");
     c.appendChild(renderTimedColumn(events, col.bounds));
     colsWrap.appendChild(c);
   });
@@ -792,6 +948,599 @@ function escapeCssAttr(s) {
   return typeof CSS !== "undefined" && typeof CSS.escape === "function" ? CSS.escape(id) : id.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
+function calendarDetailPanelFieldEditingActive() {
+  return !!document.querySelector("#calendar-detail-body .calendar-detail-field--active");
+}
+
+function formatCalendarDetailPanelWhenRead(ev) {
+  const e = normEvent(ev);
+  if (e.is_all_day) return `${formatDate(e.start)} — ganztägig`;
+  return `${formatDate(e.start)}, ${formatTime(e.start)} – ${formatTime(e.end)}`;
+}
+
+/** @returns {string[]} */
+function parseCalendarDetailParticipantInput(text) {
+  const chunks = String(text ?? "")
+    .split(/[,;\s\n\r]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return [...new Set(chunks)];
+}
+
+function deactivateOtherCalendarDetailFields(bodyRoot, /** @type {HTMLElement} */ keep) {
+  bodyRoot.querySelectorAll(".calendar-detail-field--active").forEach((node) => {
+    if (!(node instanceof HTMLElement)) return;
+    if (node === keep) return;
+    node.classList.remove("calendar-detail-field--active");
+    node.querySelectorAll(".calendar-detail-read").forEach((r) => {
+      if (r instanceof HTMLElement) r.hidden = false;
+    });
+    node.querySelectorAll(".calendar-detail-edit").forEach((el) => {
+      if (el instanceof HTMLElement) el.hidden = true;
+    });
+    const inp = /** @type {HTMLInputElement | HTMLTextAreaElement | null} */ (
+      node.querySelector("input, textarea")
+    );
+    if (inp?.dataset.detailBaseline !== undefined) {
+      inp.value = inp.dataset.detailBaseline ?? "";
+    }
+    const readWhen = /** @type {HTMLElement | null} */ (node.querySelector(".calendar-detail-field--when .calendar-detail-read"));
+    if (readWhen instanceof HTMLElement && node.dataset.detailWhenBaseline !== undefined) {
+      readWhen.textContent = node.dataset.detailWhenBaseline ?? "";
+    }
+    const inpS = /** @type {HTMLInputElement | null} */ (node.querySelector("[data-datetime=start]"));
+    const inpE = /** @type {HTMLInputElement | null} */ (node.querySelector("[data-datetime=end]"));
+    if (
+      inpS &&
+      inpE &&
+      inpS.dataset.detailBaseline !== undefined &&
+      inpE.dataset.detailBaseline !== undefined
+    ) {
+      inpS.value = inpS.dataset.detailBaseline ?? "";
+      inpE.value = inpE.dataset.detailBaseline ?? "";
+    }
+  });
+}
+
+/**
+ * Aktualisiert den geöffneten Detail‑Inhalt ohne laufende Inline‑Bearbeitung zu zerstören.
+ */
+function syncCalendarDetailPanelIfOpen() {
+  const panel = document.getElementById("calendar-detail-panel");
+  const bodyEl = document.getElementById("calendar-detail-body");
+  if (!panel || !bodyEl || panel.hidden || !detailPanelEventId) return;
+  if (calendarDetailPanelFieldEditingActive()) return;
+  if (!sourceGoogleEnabled()) return;
+  const raw = mergeEvents(localEvents).find((e) => e.id === detailPanelEventId);
+  const titleEl = document.getElementById("calendar-detail-title");
+  if (!raw) {
+    hideEventDetails();
+    return;
+  }
+  const ne = normEvent(raw);
+  if (titleEl) titleEl.textContent = ne.title;
+  detailPanelAbort?.abort();
+  detailPanelAbort = new AbortController();
+  populateCalendarDetailPanel(ne);
+}
+
+function populateCalendarDetailPanel(ev) {
+  const titleEl = document.getElementById("calendar-detail-title");
+  const bodyEl = document.getElementById("calendar-detail-body");
+  const ac = detailPanelAbort;
+  if (!bodyEl || !ac) return;
+  if (titleEl) titleEl.textContent = normEvent(ev).title;
+  buildAndWireCalendarDetailBody(bodyEl, normEvent(ev), ac.signal);
+}
+
+/**
+ * PUT mit Teilfeldern; lokaler Optimismus + Refresh wie Agenda‑Inline‑Speichern.
+ * @param {string} eventId
+ * @param {Record<string, unknown>} patch
+ */
+async function patchCalendarEventFromDetail(eventId, patch) {
+  const prev = mergeEvents(localEvents).map((e) => ({ ...e }));
+  const optimistic = mergeEvents(localEvents).map((e) => {
+    if (e.id !== eventId) return e;
+    return normEvent({ ...e, ...patch });
+  });
+  localEvents = optimistic;
+  renderCalendar();
+  try {
+    const updated = await apiFetchCalendar("PUT", `/events/${encodeURIComponent(eventId)}`, patch);
+    localEvents = mergeEvents(localEvents).map((e) => (e.id === eventId ? normEvent(updated) : e));
+    renderCalendar();
+    showToast("Gespeichert", "success");
+    await loadCalendarEvents({ preserveScroll: true });
+  } catch (err) {
+    localEvents = prev;
+    renderCalendar();
+    console.error("patchCalendarEventFromDetail:", err);
+    showToast("Speichern fehlgeschlagen", "error");
+  }
+}
+
+/**
+ * @param {HTMLElement} bodyEl
+ * @param {CalEventNorm} ev
+ * @param {AbortSignal} signal
+ */
+function buildAndWireCalendarDetailBody(bodyEl, ev, signal) {
+  bodyEl.textContent = "";
+  const dl = document.createElement("dl");
+  dl.className = "calendar-detail-dl";
+
+  dl.appendChild(buildCalendarDetailWhenRow(ev, signal));
+
+  dl.appendChild(
+    buildCalendarDetailBlurRow(ev, "location", {
+      signal,
+      placeholder: "Ort hinzufügen …",
+      emptyRead: "(Kein Ort)",
+    })
+  );
+
+  dl.appendChild(
+    buildCalendarDetailBlurRow(ev, "description", {
+      signal,
+      multiline: true,
+      placeholder: "Beschreibung …",
+      emptyRead: "(Keine Beschreibung)",
+    })
+  );
+
+  dl.appendChild(buildCalendarDetailParticipantsRow(ev, signal));
+
+  if (ev.recurrence_rule) {
+    const wrap = document.createElement("div");
+    wrap.className = "calendar-detail-field calendar-detail-field--static";
+    const dt = document.createElement("dt");
+    dt.textContent = "Wiederholung";
+    const dd = document.createElement("dd");
+    const code = document.createElement("code");
+    code.textContent = String(ev.recurrence_rule);
+    dd.appendChild(code);
+    wrap.append(dt, dd);
+    dl.appendChild(wrap);
+  }
+
+  bodyEl.appendChild(dl);
+}
+
+/**
+ * @param {CalEventNorm} ev
+ * @param {AbortSignal} signal
+ */
+function buildCalendarDetailWhenRow(ev, signal) {
+  const wrap = document.createElement("div");
+  wrap.className = "calendar-detail-field calendar-detail-field--when";
+  wrap.dataset.field = "when";
+
+  const dt = document.createElement("dt");
+  dt.textContent = "Zeitraum";
+
+  const dd = document.createElement("dd");
+
+  const read = document.createElement("button");
+  read.type = "button";
+  read.className = "calendar-detail-read";
+  read.textContent = formatCalendarDetailPanelWhenRead(ev);
+  read.title = ev.is_all_day
+    ? "Ganztägige Termine bitte direkt im Google Kalender verschieben."
+    : "Klicken zum Bearbeiten";
+
+  const edit = document.createElement("div");
+  edit.className = "calendar-detail-edit";
+  edit.hidden = true;
+
+  const startInp = document.createElement("input");
+  startInp.type = "datetime-local";
+  startInp.dataset.datetime = "start";
+  startInp.className = "calendar-detail-input";
+  startInp.value = toDatetimeLocalValue(ev.start);
+
+  const endInp = document.createElement("input");
+  endInp.type = "datetime-local";
+  endInp.dataset.datetime = "end";
+  endInp.className = "calendar-detail-input";
+  endInp.value = toDatetimeLocalValue(ev.end);
+
+  wrap.dataset.detailWhenBaseline = read.textContent;
+  startInp.dataset.detailBaseline = startInp.value;
+  endInp.dataset.detailBaseline = endInp.value;
+
+  if (ev.is_all_day) {
+    read.disabled = true;
+    read.classList.add("calendar-detail-read--disabled");
+  }
+
+  const actions = document.createElement("div");
+  actions.className = "calendar-detail-inline-actions";
+
+  const saveBtn = document.createElement("button");
+  saveBtn.type = "button";
+  saveBtn.className = "calendar-detail-inline-btn calendar-detail-inline-btn--primary";
+  saveBtn.textContent = "Übernehmen";
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.className = "calendar-detail-inline-btn";
+  cancelBtn.textContent = "Abbrechen";
+
+  actions.append(saveBtn, cancelBtn);
+  edit.append(startInp, endInp, actions);
+
+  dd.append(read, edit);
+  wrap.append(dt, dd);
+
+  if (!ev.is_all_day) {
+    /** @returns {Promise<void>} */
+    async function commitWhen() {
+      const sv = startInp.value;
+      const vv = endInp.value;
+      if (!sv || !vv) {
+        showToast("Start und Ende ausfüllen", "error");
+        return;
+      }
+      const sIso = new Date(sv).toISOString();
+      const eIso = new Date(vv).toISOString();
+      if (new Date(eIso) <= new Date(sIso)) {
+        showToast("Ende muss nach Start liegen", "error");
+        return;
+      }
+      if (
+        sIso === new Date(String(ev.start)).toISOString() &&
+        eIso === new Date(String(ev.end)).toISOString()
+      ) {
+        wrap.classList.remove("calendar-detail-field--active");
+        read.hidden = false;
+        edit.hidden = true;
+        return;
+      }
+      await patchCalendarEventFromDetail(ev.id, { start: sIso, end: eIso });
+    }
+
+    function closeEdit() {
+      wrap.classList.remove("calendar-detail-field--active");
+      read.hidden = false;
+      edit.hidden = true;
+      startInp.value = startInp.dataset.detailBaseline ?? "";
+      endInp.value = endInp.dataset.detailBaseline ?? "";
+      read.textContent = wrap.dataset.detailWhenBaseline ?? read.textContent;
+    }
+
+    read.addEventListener(
+      "click",
+      () => {
+        deactivateOtherCalendarDetailFields(document.getElementById("calendar-detail-body") ?? dd, wrap);
+        wrap.classList.add("calendar-detail-field--active");
+        read.hidden = true;
+        edit.hidden = false;
+        startInp.focus();
+      },
+      { signal }
+    );
+
+    cancelBtn.addEventListener("click", () => closeEdit(), { signal });
+    saveBtn.addEventListener("click", () => void commitWhen(), { signal });
+
+    /** @param {KeyboardEvent} e */
+    function onKeyStart(e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeEdit();
+      }
+    }
+    startInp.addEventListener("keydown", onKeyStart, { signal });
+    endInp.addEventListener("keydown", onKeyStart, { signal });
+    endInp.addEventListener(
+      "keydown",
+      (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          void commitWhen();
+        }
+      },
+      { signal }
+    );
+  }
+
+  return wrap;
+}
+
+/**
+ * @param {CalEventNorm} ev
+ * @param {"location"|"description"} field
+ */
+function buildCalendarDetailBlurRow(ev, field, { signal, placeholder, emptyRead, multiline = false }) {
+  const wrap = document.createElement("div");
+  wrap.className = "calendar-detail-field";
+  wrap.dataset.field = field;
+
+  const baseline = field === "location" ? (ev.location ? String(ev.location) : "") : (ev.description ? String(ev.description) : "");
+
+  const dt = document.createElement("dt");
+  dt.textContent = field === "location" ? "Ort" : "Beschreibung";
+
+  const dd = document.createElement("dd");
+
+  const read = multiline
+    ? Object.assign(document.createElement("div"), {
+        tabIndex: 0,
+      })
+    : document.createElement("button");
+
+  if (!(read instanceof HTMLButtonElement)) {
+    read.role = "button";
+  } else read.type = "button";
+
+  read.className =
+    multiline ?
+      `calendar-detail-read calendar-detail-read--block ${field === "description" ? "calendar-detail-read--pre" : ""}`
+    : `calendar-detail-read calendar-detail-read--block`;
+
+  const displayText = baseline.trim().length === 0 ? emptyRead : baseline;
+  if (multiline) read.textContent = displayText;
+  else read.textContent = displayText;
+  read.title = "Klicken zum Bearbeiten";
+
+  const edit = document.createElement("div");
+  edit.className = "calendar-detail-edit";
+  edit.hidden = true;
+
+  const inp =
+    multiline ?
+      document.createElement("textarea")
+    : document.createElement("input");
+  if (inp instanceof HTMLInputElement) {
+    inp.type = "text";
+  }
+  inp.className =
+    multiline ? "calendar-detail-textarea calendar-detail-input" : "calendar-detail-input";
+  inp.placeholder = placeholder;
+  inp.value = baseline;
+  inp.dataset.detailBaseline = baseline;
+
+  const hint = document.createElement("span");
+  hint.className = "calendar-detail-save-hint";
+  hint.hidden = multiline === false;
+  hint.textContent = "Strg+Enter speichern · Escape schließen";
+
+  edit.append(inp, hint);
+
+  dd.append(read, edit);
+  wrap.append(dt, dd);
+
+  const bodyRoot = /** @returns {HTMLElement} */ () =>
+    document.getElementById("calendar-detail-body") ?? document.body;
+
+  /** @returns {Promise<void>} */
+  async function commit() {
+    const raw = inp.value.trim();
+    const unchanged = raw === baseline;
+    if (unchanged) {
+      wrap.classList.remove("calendar-detail-field--active");
+      read.hidden = false;
+      edit.hidden = true;
+      return;
+    }
+    if (field === "location") {
+      await patchCalendarEventFromDetail(ev.id, { location: raw === "" ? "" : raw });
+    } else {
+      await patchCalendarEventFromDetail(ev.id, { description: raw });
+    }
+  }
+
+  function closeEditRollback() {
+    wrap.classList.remove("calendar-detail-field--active");
+    read.hidden = false;
+    edit.hidden = true;
+    inp.value = inp.dataset.detailBaseline ?? "";
+    const lbl = inp.value.trim().length === 0 ? emptyRead : inp.value;
+    read.textContent = lbl;
+  }
+
+  const openEditor = () => {
+    deactivateOtherCalendarDetailFields(bodyRoot(), wrap);
+    wrap.classList.add("calendar-detail-field--active");
+    read.hidden = true;
+    edit.hidden = false;
+    inp.focus();
+    if ("select" in inp && typeof inp.select === "function") inp.select();
+  };
+
+  read.addEventListener("click", () => openEditor(), { signal });
+  read.addEventListener(
+    "keydown",
+    (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openEditor();
+      }
+    },
+    { signal }
+  );
+
+  inp.addEventListener(
+    "keydown",
+    (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeEditRollback();
+      }
+      if (multiline ? e.ctrlKey && e.key === "Enter" : e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        void commit();
+      }
+    },
+    { signal }
+  );
+
+  inp.addEventListener(
+    "blur",
+    () => {
+      setTimeout(() => {
+        if (!wrap.classList.contains("calendar-detail-field--active")) return;
+        const active =
+          typeof document.activeElement?.closest === "function" ?
+            /** @type {HTMLElement | null} */ (
+              document.activeElement?.closest(".calendar-detail-field")
+            )
+          : null;
+        if (active === wrap) return;
+        if (wrap.contains(document.activeElement)) return;
+        void commit();
+      }, 170);
+    },
+    { signal }
+  );
+
+  return wrap;
+}
+
+/**
+ * @param {CalEventNorm} ev
+ * @param {AbortSignal} signal
+ */
+function buildCalendarDetailParticipantsRow(ev, signal) {
+  const wrap = document.createElement("div");
+  wrap.className = "calendar-detail-field calendar-detail-field--attendees";
+  wrap.dataset.field = "attendees";
+
+  const baselineList = Array.isArray(ev.attendees) ? [...ev.attendees].map(String) : [];
+  const baselineText = baselineList.join("\n");
+
+  const dt = document.createElement("dt");
+  dt.textContent = "Teilnehmer";
+
+  const dd = document.createElement("dd");
+
+  const read = document.createElement("button");
+  read.type = "button";
+  read.className = `calendar-detail-read calendar-detail-read--block`;
+  read.textContent =
+    baselineList.length === 0 ? "Keine Teilnehmer — hier klicken" : baselineList.join(", ");
+  read.title = "Teilnehmer bearbeiten (E‑Mails, eine pro Zeile)";
+
+  const edit = document.createElement("div");
+  edit.className = "calendar-detail-edit";
+  edit.hidden = true;
+
+  const ta = document.createElement("textarea");
+  ta.className = "calendar-detail-textarea calendar-detail-input";
+  ta.rows = 5;
+  ta.placeholder = "E‑Mail-Adressen, durch Zeilenumbruch oder Komma getrennt";
+  ta.value = baselineText;
+  ta.dataset.detailBaseline = baselineText;
+
+  const hint = document.createElement("span");
+  hint.className = "calendar-detail-save-hint";
+  hint.textContent = "Übernehmen speichern · Escape bricht ohne Speichern ab";
+
+  const actions = document.createElement("div");
+  actions.className = "calendar-detail-inline-actions";
+
+  const saveBtn = document.createElement("button");
+  saveBtn.type = "button";
+  saveBtn.className = "calendar-detail-inline-btn calendar-detail-inline-btn--primary";
+  saveBtn.textContent = "Übernehmen";
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.className = "calendar-detail-inline-btn";
+  cancelBtn.textContent = "Abbrechen";
+
+  actions.append(saveBtn, cancelBtn);
+  edit.append(ta, hint, actions);
+
+  dd.append(read, edit);
+  wrap.append(dt, dd);
+
+  const bodyRoot = () => document.getElementById("calendar-detail-body") ?? document.body;
+
+  /** @returns {boolean} */
+  function arraySeqEq(/** @type {string[]} */ a, /** @type {string[]} */ b) {
+    return a.length === b.length && a.every((v, i) => v === b[i]);
+  }
+
+  /** @returns {Promise<void>} */
+  async function commit() {
+    const next = parseCalendarDetailParticipantInput(ta.value);
+    if (arraySeqEq(next, baselineList)) {
+      wrap.classList.remove("calendar-detail-field--active");
+      read.hidden = false;
+      edit.hidden = true;
+      return;
+    }
+    await patchCalendarEventFromDetail(ev.id, { attendees: next });
+  }
+
+  function closeEditRollback() {
+    wrap.classList.remove("calendar-detail-field--active");
+    read.hidden = false;
+    edit.hidden = true;
+    ta.value = ta.dataset.detailBaseline ?? "";
+    read.textContent =
+      baselineList.length === 0 ? "Keine Teilnehmer — hier klicken" : baselineList.join(", ");
+  }
+
+  function openEditor() {
+    deactivateOtherCalendarDetailFields(bodyRoot(), wrap);
+    wrap.classList.add("calendar-detail-field--active");
+    read.hidden = true;
+    edit.hidden = false;
+    ta.focus();
+  }
+
+  read.addEventListener("click", () => openEditor(), { signal });
+  ta.addEventListener(
+    "keydown",
+    (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeEditRollback();
+      }
+      if (e.ctrlKey && e.key === "Enter") {
+        e.preventDefault();
+        void commit();
+      }
+    },
+    { signal }
+  );
+  ta.addEventListener(
+    "blur",
+    () => {
+      setTimeout(() => {
+        if (!wrap.classList.contains("calendar-detail-field--active")) return;
+        if (wrap.contains(document.activeElement)) return;
+        void commit();
+      }, 170);
+    },
+    { signal }
+  );
+  cancelBtn.addEventListener("click", () => closeEditRollback(), { signal });
+  saveBtn.addEventListener("click", () => void commit(), { signal });
+
+  return wrap;
+}
+
+/**
+ * Detail-Öffnung per Kachel-Klick — Inline nur per Doppelklick (Titel/Zeit), damit Detail-Panel der Standard ist.
+ */
+function bindOpenDetailPanelOnCard(card, eventId) {
+  card.addEventListener("click", (e) => {
+    const target = e.target instanceof Element ? e.target : null;
+    if (!target) return;
+    if (target.closest(".event-delete-btn")) return;
+    if (target.closest("button")) return;
+    if (target.closest("input") || target.closest("textarea")) return;
+    if (editingEventId === eventId) return;
+
+    const ev = mergeEvents(localEvents).find((x) => x.id === eventId);
+    if (ev) openDetailPanel(ev);
+  });
+}
+
 /** @typedef {{ summary: string, actions: Array<{ type: string, event_id?: string | null, payload?: Record<string, unknown> }>, risk_level: string }} CalendarAIPlanData */
 
 /** @type {CalendarAIPlanData | null} */
@@ -812,10 +1561,7 @@ function localYYYYMMDD(d = new Date()) {
 }
 
 function aiPlanReferenceDate() {
-  if (calendarViewMode === "day" || calendarViewMode === "week") {
-    return localYYYYMMDD(calendarViewAnchor);
-  }
-  return localYYYYMMDD(new Date());
+  return localYYYYMMDD(calendarViewAnchor || new Date());
 }
 
 function eventSnapshotLine(ev) {
@@ -1039,6 +1785,7 @@ async function loadCalendarEvents(options = {}) {
     if (!isCalendarPanelVisible()) return localEvents;
     if (!calendarModalVisibleDom()) return localEvents;
     if (editingEventId !== null) return localEvents;
+    if (calendarDetailPanelFieldEditingActive()) return localEvents;
     const now = Date.now();
     if (now - lastCalendarLoadAt < 5000) return localEvents;
   }
@@ -1048,7 +1795,9 @@ async function loadCalendarEvents(options = {}) {
   }
 
   /** @type {HTMLElement | null} */
-  const scrollEl = preserveScroll ? document.getElementById("calendar-agenda") : null;
+  const scrollEl = preserveScroll
+    ? document.querySelector(".calendar-content-pane")
+    : null;
   const prevScrollTop = scrollEl ? scrollEl.scrollTop : 0;
 
   setSyncStatus("syncing");
@@ -1173,7 +1922,19 @@ function initCalendarFilters() {
       const preset = btn.getAttribute("data-filter");
       if (!preset) return;
       filterPreset = preset;
+      if (preset === "today") {
+        calendarViewMode = "day";
+        calendarViewAnchor = startOfDay(new Date());
+      } else if (preset === "week") {
+        calendarViewMode = "week";
+        calendarViewAnchor = startOfDay(new Date());
+      } else if (preset === "month") {
+        calendarViewMode = "month";
+        calendarViewAnchor = startOfDay(new Date());
+        calendarMiniMonthAnchor = startOfMonth(calendarViewAnchor);
+      }
       syncFilterUi();
+      syncCalendarViewToggleUi();
       loadCalendarEvents();
     });
   });
@@ -1196,16 +1957,71 @@ function initCalendarFilters() {
     renderCalendar();
   });
 
+  document.querySelectorAll(".calendar-quick-nav-btn[data-filter]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const preset = btn.getAttribute("data-filter");
+      if (!preset) return;
+      filterPreset = preset;
+      calendarViewMode = preset === "today" ? "day" : preset === "month" ? "month" : "week";
+      calendarViewAnchor = startOfDay(new Date());
+      syncFilterUi();
+      syncCalendarViewToggleUi();
+      loadCalendarEvents();
+    });
+  });
+
   syncCalendarViewToggleUi();
 
   document.querySelectorAll(".calendar-view-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const v = btn.getAttribute("data-view");
-      if (v !== "agenda" && v !== "day" && v !== "week") return;
+      if (v !== "day" && v !== "week" && v !== "month") return;
       calendarViewMode = v;
+      filterPreset = v === "day" ? "today" : v;
       syncCalendarViewToggleUi();
-      renderCalendar();
+      syncFilterUi();
+      loadCalendarEvents();
     });
+  });
+
+  document.getElementById("calendar-search-input")?.addEventListener("input", (event) => {
+    const target = event.target;
+    calendarSearchTerm = target instanceof HTMLInputElement ? target.value : "";
+    renderCalendar();
+  });
+
+  document.getElementById("calendar-prev-btn")?.addEventListener("click", () => {
+    if (calendarViewMode === "day") calendarViewAnchor.setDate(calendarViewAnchor.getDate() - 1);
+    else if (calendarViewMode === "week") calendarViewAnchor.setDate(calendarViewAnchor.getDate() - 7);
+    else calendarViewAnchor.setMonth(calendarViewAnchor.getMonth() - 1);
+    calendarViewAnchor = startOfDay(calendarViewAnchor);
+    if (calendarViewMode === "month") calendarMiniMonthAnchor = startOfMonth(calendarViewAnchor);
+    loadCalendarEvents();
+  });
+
+  document.getElementById("calendar-next-btn")?.addEventListener("click", () => {
+    if (calendarViewMode === "day") calendarViewAnchor.setDate(calendarViewAnchor.getDate() + 1);
+    else if (calendarViewMode === "week") calendarViewAnchor.setDate(calendarViewAnchor.getDate() + 7);
+    else calendarViewAnchor.setMonth(calendarViewAnchor.getMonth() + 1);
+    calendarViewAnchor = startOfDay(calendarViewAnchor);
+    if (calendarViewMode === "month") calendarMiniMonthAnchor = startOfMonth(calendarViewAnchor);
+    loadCalendarEvents();
+  });
+
+  document.getElementById("calendar-today-btn")?.addEventListener("click", () => {
+    calendarViewAnchor = startOfDay(new Date());
+    calendarMiniMonthAnchor = startOfMonth(calendarViewAnchor);
+    loadCalendarEvents();
+  });
+
+  document.getElementById("calendar-mini-prev-btn")?.addEventListener("click", () => {
+    calendarMiniMonthAnchor.setMonth(calendarMiniMonthAnchor.getMonth() - 1);
+    renderMiniMonth();
+  });
+
+  document.getElementById("calendar-mini-next-btn")?.addEventListener("click", () => {
+    calendarMiniMonthAnchor.setMonth(calendarMiniMonthAnchor.getMonth() + 1);
+    renderMiniMonth();
   });
 
   const t = new Date();
@@ -1221,6 +2037,8 @@ function initCalendarFilters() {
   }
 
   syncFilterUi();
+  renderMiniMonth();
+  updatePeriodLabel();
 }
 
 function showCreateEventForm() {
@@ -1246,6 +2064,19 @@ function showCreateEventForm() {
           <div class="form-group">
             <label for="calendar-create-start">Startzeit</label>
             <input type="datetime-local" id="calendar-create-start" required>
+            <div class="calendar-duration-buttons">
+              <button type="button" class="duration-btn" data-minutes="15">15m</button>
+              <button type="button" class="duration-btn" data-minutes="30">30m</button>
+              <button type="button" class="duration-btn" data-minutes="60">1h</button>
+              <button type="button" class="duration-btn" data-minutes="120">2h</button>
+              <button type="button" class="duration-btn" data-minutes="180">3h</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="event-is-all-day" class="checkbox-label">
+              <input type="checkbox" id="event-is-all-day">
+              <span>Ganztägig</span>
+            </label>
           </div>
           <div class="form-group">
             <label for="calendar-create-end">Endzeit</label>
@@ -1284,9 +2115,69 @@ function showCreateEventForm() {
   const startEl = overlay.querySelector("#calendar-create-start");
   /** @type {HTMLInputElement | null} */
   const endEl = overlay.querySelector("#calendar-create-end");
+  /** @type {HTMLInputElement | null} */
+  const allDayEl = overlay.querySelector("#event-is-all-day");
+  const durationButtonsEl = overlay.querySelector(".calendar-duration-buttons");
   if (startEl) startEl.value = now.toISOString().slice(0, 16);
   const endTime = new Date(now.getTime() + 60 * 60 * 1000);
   if (endEl) endEl.value = endTime.toISOString().slice(0, 16);
+
+  const toLocalISOString = (date) => {
+    const offset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+  };
+
+  let selectedDurationMinutes = 60;
+
+  const updateEndTime = () => {
+    if (!startEl || !endEl || selectedDurationMinutes === null) return;
+    const startValue = startEl.value;
+    if (!startValue) return;
+    const startDate = new Date(startValue);
+    if (Number.isNaN(startDate.getTime())) return;
+    const endDate = new Date(startDate.getTime() + selectedDurationMinutes * 60000);
+    endEl.value = toLocalISOString(endDate);
+  };
+
+  overlay.querySelectorAll(".duration-btn").forEach((btn) => {
+    if (parseInt(btn.getAttribute("data-minutes") || "0", 10) === 60) {
+      btn.classList.add("active");
+    }
+    btn.addEventListener("click", () => {
+      const minutes = parseInt(btn.getAttribute("data-minutes") || "0", 10);
+      selectedDurationMinutes = minutes;
+      overlay.querySelectorAll(".duration-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      updateEndTime();
+    });
+  });
+
+  startEl?.addEventListener("change", updateEndTime);
+  startEl?.addEventListener("input", updateEndTime);
+
+  const toggleAllDay = () => {
+    if (!allDayEl || !startEl || !endEl || !durationButtonsEl) return;
+    const isAllDay = allDayEl.checked;
+    if (isAllDay) {
+      const startDateValue = startEl.value;
+      const endDateValue = endEl.value;
+      startEl.type = "date";
+      endEl.type = "date";
+      if (startDateValue) startEl.value = startDateValue.slice(0, 10);
+      if (endDateValue) endEl.value = endDateValue.slice(0, 10);
+      durationButtonsEl.style.display = "none";
+    } else {
+      const startDateValue = startEl.value;
+      const endDateValue = endEl.value;
+      startEl.type = "datetime-local";
+      endEl.type = "datetime-local";
+      if (startDateValue) startEl.value = startDateValue + "T09:00";
+      if (endDateValue) endEl.value = endDateValue + "T10:00";
+      durationButtonsEl.style.display = "flex";
+    }
+  };
+
+  allDayEl?.addEventListener("change", toggleAllDay);
 
   overlay.querySelector("#calendar-create-event-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -1297,6 +2188,7 @@ function showCreateEventForm() {
     const description =
       /** @type {HTMLTextAreaElement | null} */ (overlay.querySelector("#calendar-create-description"))?.value || "";
 
+    const isAllDay = overlay.querySelector("#event-is-all-day")?.checked || false;
     const eventPayload = {
       title: summary.trim(),
       start: new Date(startTime).toISOString(),
@@ -1304,10 +2196,12 @@ function showCreateEventForm() {
       timezone: "Europe/Berlin",
       location: location?.trim() || null,
       description: description?.trim() || null,
+      is_all_day: isAllDay,
     };
 
     try {
       await createCalendarEvent(eventPayload);
+      window.dispatchEvent(new CustomEvent('calendar-refresh'));
       closeDialog();
     } catch {
       /* Fehler bereits behandelt */
@@ -1396,7 +2290,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (header && calendarHost) {
     header.addEventListener("mousedown", (e) => {
-      if (e.target.closest("button")) return;
+      if (e.target instanceof Element && e.target.closest("button, input, textarea, select, label")) return;
       bringToFront(MODULE_ID);
       isDragging = true;
       offsetX = e.clientX - calendarHost.offsetLeft;
@@ -1426,4 +2320,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Exklusiv setzen: ersetzt potenziell alte/inkonsistente Listener.
     detailCloseBtn.onclick = handleDetailCloseClick;
   }
+
+  window.addEventListener('calendar-refresh', () => {
+    loadCalendarEvents();
+  });
 });

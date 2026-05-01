@@ -14,5 +14,6 @@
   "is_agent_ready": true,
   "max_calls_per_turn": 3,
   "depends_on": [],
+  "synthesis_directives": "WICHTIG: Gib die Dauer des Termins IMMER als duration_minutes Parameter an (Integer in Minuten, z.B. 30 für 30 Minuten, 60 für 1 Stunde). NIE die Dauer nur im Text beschreiben. Die Endzeit wird automatisch aus Startzeit + duration_minutes berechnet.",
   "examples": []
 }

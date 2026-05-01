@@ -1065,115 +1065,166 @@
 
       <div id="calendar-view" class="view" style="display: none">
         <div id="calendar-modal" class="resizable draggable">
-          <div id="calendar-header" class="chat-header-dual dock-panel-header">
-            <div class="chat-header-row chat-header-row--top">
-              <button
-                type="button"
-                class="chat-window-reset-btn"
-                id="calendar-reset-btn"
-                title="Position und Größe zurücksetzen"
-                aria-label="Kalenderfenster zurücksetzen"
-              >
-                ↺
-              </button>
-              <div class="chat-header-drag-strip">
-                <span>Janus Kalender</span>
-              </div>
-              <div class="calendar-header-meta" aria-label="Kalender Sync und Ansicht">
-                <span id="calendar-sync-status" class="calendar-sync-status" role="status"
-                  >Synchronisiert</span
-                >
-                <div class="calendar-view-toggle" role="tablist" aria-label="Kalenderansicht">
-                  <button
-                    type="button"
-                    class="calendar-view-btn calendar-view-btn--active"
-                    data-view="agenda"
-                    aria-selected="true"
-                  >
-                    Agenda
-                  </button>
-                  <button type="button" class="calendar-view-btn" data-view="day" aria-selected="false">
-                    Tag
-                  </button>
-                  <button type="button" class="calendar-view-btn" data-view="week" aria-selected="false">
-                    Woche
-                  </button>
-                </div>
-              </div>
-              <div class="chat-header-actions">
-                <button
-                  type="button"
-                  id="calendar-minimize-btn"
-                  class="chat-window-minimize-btn"
-                  title="Kalender minimieren (Taskleiste)"
-                  aria-label="Kalender minimieren"
-                >
-                  _
-                </button>
-                <button
-                  type="button"
-                  id="close-calendar-btn"
-                  class="chat-window-close-btn"
-                  title="Kalender schließen"
-                  aria-label="Kalender schließen"
-                >
-                  ×
-                </button>
+
+          <header id="calendar-header" class="calendar-hg-header">
+            <div class="cal-hg-left" id="calendar-drag-handle">
+              <button type="button" class="chat-window-reset-btn cal-icon-btn" id="calendar-reset-btn"
+                title="Position und Größe zurücksetzen" aria-label="Kalenderfenster zurücksetzen">↺</button>
+              <span class="cal-app-title">Janus Kalender</span>
+              <div class="calendar-date-nav" aria-label="Datumsnavigation">
+                <button type="button" id="calendar-prev-btn" class="cal-nav-btn" aria-label="Vorheriger Zeitraum">‹</button>
+                <button type="button" id="calendar-today-btn" class="cal-nav-btn">Heute</button>
+                <button type="button" id="calendar-next-btn" class="cal-nav-btn" aria-label="Nächster Zeitraum">›</button>
               </div>
             </div>
-          </div>
-          <div class="calendar-modal-body">
-            <div class="calendar-modal-layout">
-              <aside class="calendar-modal-sidebar" aria-label="Kalenderfilter">
-                <div class="calendar-sidebar-section">
-                  <div class="calendar-sidebar-label">Zeitraum</div>
-                  <div class="calendar-filter-pills" role="group" aria-label="Zeitraumfilter">
-                    <button type="button" class="calendar-filter-btn" data-filter="today">Heute</button>
-                    <button type="button" class="calendar-filter-btn calendar-filter-btn--active" data-filter="week">Woche</button>
-                    <button type="button" class="calendar-filter-btn" data-filter="month">Monat</button>
-                    <button type="button" class="calendar-filter-btn" data-filter="custom">Benutzerdefiniert</button>
+
+            <div class="cal-hg-center">
+              <div id="calendar-period-label" class="calendar-period-label">Diese Woche</div>
+              <span id="calendar-sync-status" class="calendar-sync-status" role="status">Synchronisiert</span>
+            </div>
+
+            <div class="cal-hg-right">
+              <div class="calendar-view-toggle" role="tablist" aria-label="Kalenderansicht">
+                <button type="button" class="calendar-view-btn" data-view="day" aria-selected="false">Tag</button>
+                <button type="button" class="calendar-view-btn calendar-view-btn--active" data-view="week" aria-selected="true">Woche</button>
+                <button type="button" class="calendar-view-btn" data-view="month" aria-selected="false">Monat</button>
+              </div>
+              <label class="calendar-search-shell" for="calendar-search-input">
+                <span aria-hidden="true">⌕</span>
+                <input id="calendar-search-input" type="search" placeholder="Suche" autocomplete="off" />
+              </label>
+              <button type="button" id="calendar-minimize-btn" class="chat-window-minimize-btn cal-icon-btn" title="Minimieren" aria-label="Kalender minimieren">_</button>
+              <button type="button" id="close-calendar-btn" class="chat-window-close-btn cal-icon-btn" title="Schließen" aria-label="Kalender schließen">×</button>
+            </div>
+          </header>
+
+          <!-- ── HOLY-GRAIL BODY: Sidebar | Content-Pane ──────────────────── -->
+          <div class="calendar-hg-body">
+
+            <!-- LINKE SIDEBAR: Filter (scrollt NICHT mit Content) -->
+            <aside class="calendar-modal-sidebar" aria-label="Kalenderfilter">
+              <button type="button" id="create-event-btn" class="cal-new-event-btn calendar-sidebar-create">+ Neuer Termin</button>
+              <div class="calendar-sidebar-section calendar-mini-month-section">
+                <div class="calendar-sidebar-heading">
+                  <span id="calendar-mini-month-label">Monat</span>
+                  <div class="calendar-mini-month-nav" aria-label="Minikalender Navigation">
+                    <button type="button" id="calendar-mini-prev-btn" class="cal-nav-btn" aria-label="Vorheriger Monat">‹</button>
+                    <button type="button" id="calendar-mini-next-btn" class="cal-nav-btn" aria-label="Nächster Monat">›</button>
                   </div>
-                  <div id="calendar-custom-range" class="calendar-custom-range" hidden>
-                    <label class="calendar-sidebar-label" for="calendar-range-start">Von</label>
-                    <input type="date" id="calendar-range-start" class="calendar-sidebar-input" />
-                    <label class="calendar-sidebar-label" for="calendar-range-end">Bis</label>
-                    <input type="date" id="calendar-range-end" class="calendar-sidebar-input" />
-                    <button type="button" id="calendar-apply-custom-range" class="calendar-sidebar-apply">
-                      Anwenden
-                    </button>
-                  </div>
                 </div>
-                <div class="calendar-sidebar-section">
-                  <div class="calendar-sidebar-label">Quellen</div>
-                  <label class="calendar-source-row">
-                    <input type="checkbox" id="calendar-source-google" checked />
-                    <span>Google</span>
-                  </label>
+                <div id="calendar-mini-month" class="calendar-mini-month" aria-label="Minikalender"></div>
+              </div>
+              <div class="calendar-sidebar-section">
+                <div class="calendar-sidebar-label">Zeitraum</div>
+                <div class="calendar-filter-pills" role="group" aria-label="Zeitraumfilter">
+                  <button type="button" class="calendar-filter-btn" data-filter="today">Heute</button>
+                  <button type="button" class="calendar-filter-btn calendar-filter-btn--active" data-filter="week">Woche</button>
+                  <button type="button" class="calendar-filter-btn" data-filter="month">Monat</button>
+                  <button type="button" class="calendar-filter-btn" data-filter="custom">Benutzerdefiniert</button>
                 </div>
-              </aside>
-              <div class="calendar-modal-main">
-                <div class="calendar-toolbar">
-                  <button type="button" id="create-event-btn">Neuer Termin</button>
-                </div>
-                <div id="calendar-agenda">
-                  <div class="calendar-empty">Lade Termine...</div>
+                <div id="calendar-custom-range" class="calendar-custom-range" hidden>
+                  <label class="calendar-sidebar-label" for="calendar-range-start">Von</label>
+                  <input type="date" id="calendar-range-start" class="calendar-sidebar-input" />
+                  <label class="calendar-sidebar-label" for="calendar-range-end">Bis</label>
+                  <input type="date" id="calendar-range-end" class="calendar-sidebar-input" />
+                  <button type="button" id="calendar-apply-custom-range" class="calendar-sidebar-apply">Anwenden</button>
                 </div>
               </div>
+              <div class="calendar-sidebar-section">
+                <div class="calendar-sidebar-label">Kalender</div>
+                <label class="calendar-category-row calendar-category-row--personal">
+                  <input type="checkbox" checked />
+                  <span>Persönlich</span>
+                </label>
+                <label class="calendar-category-row calendar-category-row--work">
+                  <input type="checkbox" checked />
+                  <span>Arbeit</span>
+                </label>
+                <label class="calendar-category-row calendar-category-row--project">
+                  <input type="checkbox" checked />
+                  <span>Projekte</span>
+                </label>
+                <label class="calendar-category-row calendar-category-row--birthday">
+                  <input type="checkbox" checked />
+                  <span>Geburtstage</span>
+                </label>
+                <label class="calendar-source-row">
+                  <input type="checkbox" id="calendar-source-google" checked />
+                  <span>Google Sync</span>
+                </label>
+              </div>
+              <div class="calendar-sidebar-section">
+                <div class="calendar-sidebar-label">Schnellzugriff</div>
+                <button type="button" class="calendar-quick-nav-btn" data-filter="today">Meine Termine</button>
+                <button type="button" class="calendar-quick-nav-btn" data-ai-quick="focus_block">Fokuszeit</button>
+                <button type="button" class="calendar-quick-nav-btn" data-ai-quick="optimize_day">Wöchentliche Planung</button>
+              </div>
+            </aside>
+
+            <!-- CONTENT-PANE: einziger scrollbarer Bereich -->
+            <div class="calendar-content-pane">
+              <div id="calendar-agenda">
+                <div class="calendar-empty">Lade Termine...</div>
+              </div>
             </div>
-            <aside
-              id="calendar-detail-panel"
-              class="calendar-detail-panel"
-              hidden
-              aria-label="Termindetails"
-            >
+
+            <aside class="calendar-right-sidebar" aria-label="Planungsübersicht">
+              <section class="calendar-insight-card calendar-daily-stats-card">
+                <div class="calendar-insight-kicker">Heute</div>
+                <div class="calendar-daily-stats-grid">
+                  <div>
+                    <strong id="calendar-stat-events">0</strong>
+                    <span>Termine</span>
+                  </div>
+                  <div>
+                    <strong id="calendar-stat-focus">0h</strong>
+                    <span>Fokuszeit</span>
+                  </div>
+                  <div>
+                    <strong id="calendar-stat-load">0%</strong>
+                    <span>Auslastung</span>
+                  </div>
+                </div>
+                <div class="calendar-load-meter" aria-hidden="true">
+                  <span id="calendar-load-meter-fill"></span>
+                </div>
+              </section>
+
+              <section class="calendar-insight-card">
+                <div class="calendar-insight-kicker">Nächster Termin</div>
+                <div id="calendar-next-event-card" class="calendar-next-event-card">
+                  <div class="calendar-muted">Kein kommender Termin</div>
+                </div>
+              </section>
+
+              <section class="calendar-insight-card">
+                <div class="calendar-insight-kicker">Aufgaben</div>
+                <div class="calendar-task-list">
+                  <label><input type="checkbox" /> Prioritäten prüfen</label>
+                  <label><input type="checkbox" /> Fokusblock schützen</label>
+                  <label><input type="checkbox" /> Offene Termine bestätigen</label>
+                </div>
+              </section>
+
+              <section class="calendar-insight-card calendar-ai-side-card">
+                <div class="calendar-insight-kicker">KI-Assistent</div>
+                <p>Ich helfe dir, deinen Tag optimal zu planen.</p>
+                <button type="button" class="calendar-ai-quick-btn calendar-ai-side-action" data-ai-quick="optimize_day">
+                  Tag optimieren
+                </button>
+              </section>
+            </aside>
+
+            <!-- DETAIL-PANEL: slide-in rechts über Content-Pane -->
+            <aside id="calendar-detail-panel" class="calendar-detail-panel" hidden aria-label="Termindetails">
               <div class="calendar-detail-header">
                 <h3 class="calendar-detail-title" id="calendar-detail-title"></h3>
-                <button type="button" id="calendar-detail-close-btn" class="calendar-detail-close" aria-label="Details schließen">
-                  ×
-                </button>
+                <button type="button" id="calendar-detail-close-btn" class="calendar-detail-close" aria-label="Details schließen">×</button>
               </div>
               <div class="calendar-detail-body" id="calendar-detail-body"></div>
             </aside>
+
+            <!-- KI-PLAN OVERLAY -->
             <div id="calendar-ai-overlay" class="calendar-ai-overlay" hidden aria-modal="true" role="dialog" aria-labelledby="calendar-ai-overlay-title">
               <div id="calendar-ai-overlay-backdrop" class="calendar-ai-overlay-backdrop" aria-hidden="true"></div>
               <div class="calendar-ai-overlay-panel">
@@ -1187,27 +1238,27 @@
                 </div>
               </div>
             </div>
-            <footer class="calendar-ai-footer" aria-label="Kalender KI und Schnellaktionen">
-              <div class="calendar-ai-footer-label">KI‑Kommando</div>
+
+          </div><!-- /calendar-hg-body -->
+
+          <!-- ── FOOTER: KI-Kommando (scrollt NIE mit) ─────────────────────── -->
+          <footer class="calendar-ai-footer" aria-label="Kalender KI und Schnellaktionen">
+            <div class="calendar-ai-footer-inner">
               <div class="calendar-ai-quick-row">
+                <span class="calendar-ai-footer-label">KI:</span>
                 <button type="button" class="calendar-ai-quick-btn" data-ai-quick="optimize_day">Tag optimieren</button>
                 <button type="button" class="calendar-ai-quick-btn" data-ai-quick="focus_block">Fokuszeit blocken</button>
               </div>
               <div class="calendar-ai-input-row">
                 <label for="calendar-ai-command" class="visually-hidden">AI Command Input</label>
-                <textarea
-                  id="calendar-ai-command"
-                  class="calendar-ai-command"
-                  rows="2"
-                  placeholder="z. B. Plane Fokuszeit und räume Überlappungen auf…"
-                ></textarea>
+                <textarea id="calendar-ai-command" class="calendar-ai-command" rows="1" placeholder="KI-Befehl eingeben…"></textarea>
                 <button type="button" id="calendar-ai-plan-btn" class="btn-primary calendar-ai-plan-trigger">Plan erstellen</button>
               </div>
-            </footer>
-          </div>
-        </div>
-      </div>
+            </div>
+          </footer>
 
+        </div><!-- /calendar-modal -->
+      </div>
       <div id="knowledge-center-modal" class="dock-panel dock-panel--knowledge">
         <div class="dock-panel-content knowledge-center-content">
           <div class="chat-header-dual dock-panel-header">

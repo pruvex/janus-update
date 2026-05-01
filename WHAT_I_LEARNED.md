@@ -256,6 +256,26 @@
 
 ---
 
+## [PATTERN] #GoogleCalendarSyncReliability "PATCH-with-Verify-and-Fallback — Selbstreparierender Google-Kalender-Sync mit Pagination, conferenceDataVersion und Output-Only-Key-Filterung"
+- **Kontext:** Google Calendar API hat spezifische Eigenheiten, die zu Datenverlust oder unsichtbaren Sync-Fehlern führen können: (1) maxResults=25 paginiert nur 25 Events, (2) PUT events.update kann Output-Only-Felder zurückspielen und Metadaten-Änderungen "schlucken", (3) conferenceDataVersion=0 führt bei Meet-Terminen zu unzuverlässigen Konferenz-Metadaten, (4) organizer.self=false kann auf eingeladene Konten hinweisen. Ohne diese Kenntnisse erscheint Sync als "funktionierend" obwohl Änderungen nicht in der Google Web-UI sichtbar werden.
+- **Problem:** (1) Bei >25 Terminen pro Zeitraum werden Termine abgeschnitten → Janus sieht nicht alle Events. (2) PATCH/UPDATE ohne Verifikation kann "leere" Änderungen sein → UI zeigt gespeichert, Google hat nichts geändert. (3) Fehlende conferenceDataVersion führt zu Meet-Link-Verlust bei Updates. (4) Output-Only-Felder (kind, etag, htmlLink, created, updated, hangoutLink, creator) bei PUT zurückgespielt können API-Defaults überschreiben und Updates invalidieren.
+- **Lösung:** **PATCH-with-Verify-and-Fallback + Pagination:**
+  1. **Pagination-Loop:** `get_calendar_events` nutzt `pageToken` und `maxResults=250` statt statischem `maxResults=25`. Loop sammelt alle Seiten bis `nextPageToken` fehlt.
+  2. **Output-Only-Key-Filter:** `_GOOGLE_CAL_EVENT_OUTPUT_ONLY_KEYS` (frozenset mit kind, etag, htmlLink, created, updated, hangoutLink, creator) wird vor PUT aus dem Body entfernt. `_body_for_calendar_events_put()` filtert diese Schlüssel.
+  3. **conferenceDataVersion-Logik:** `_conference_data_version_for_put()` prüft auf `conferenceData` oder `hangoutLink` und setzt `conferenceDataVersion=1` für Meet-Termine. Fallback auf 0 bei 400-Fehlern.
+  4. **PATCH-first für Metadaten:** Bei reinen Metadaten-Updates (Ort/Beschreibung/Teilnehmer ohne Start/Ende) wird zuerst `events.patch` mit minimalem Body verwendet. Nur gesetzte Felder werden gesendet.
+  5. **PATCH-Verifikation:** Nach PATCH wird GET ausgeführt und Felder verglichen (`_cal_text_normalized` für CRLF-Normalisierung). Bei Mismatch (mismatch_loc, mismatch_desc, mismatch_summary) wird Fallback `events.update` mit gemergem Body ausgeführt.
+  6. **Fallback-Update:** Bei PATCH-Verifikations-Fehlern wird `events.update` mit `_body_for_calendar_events_put()` und korrekter `conferenceDataVersion` aufgerufen. Retry mit cdv=0 bei 400-Fehlern.
+  7. **Forensische Logging-Signale:** `organizer.self=false` wird als Info geloggt (unterschiedliches eingeladenes Konto). `verify-mismatch` (Ort/Beschreibung/Summary) wird als Warning geloggt mit event_id, eventType und Diff-Details.
+- **Härtung:** Pagination garantiert vollständige Event-Liste. Output-Only-Filterung verhindert "Rückspiel-Effekte". conferenceDataVersion schützt Meet-Metadaten. PATCH-Verifikation garantiert, dass Änderungen wirklich in Google ankommen. Fallback-Update deckt PATCH-Fälle ab, wo Google "leer" wirkt.
+- **Tripwire:** Wenn >25 Terminen im Zeitraum fehlen → Pagination nicht aktiv. Wenn Metadaten-Updates in Web-UI nicht sichtbar → PATCH-Verifikation fehlt oder Output-Only-Keys nicht gefiltert. Wenn Meet-Links nach Updates verschwinden → conferenceDataVersion nicht gesetzt. Wenn Logs keine organizer.self/verify-mismatch zeigen → Forensische Logging-Signale nicht aktiv.
+- **Location:** `backend/tools/calendar_tools.py` (Pagination-Loop, Output-Only-Filter, conferenceDataVersion, PATCH-Verifikation, Fallback-Update, Forensische Logs), implementiert 2026-05-01.
+- **Epic:** TASK-058 — Calendar UX Refinement (Google Sync Hardening)
+- **Confidence:** High (Pagination garantiert Vollständigkeit, PATCH-Verifikation mit Fallback deckt API-Eigenheiten ab, forensische Logs für Debugging).
+- **Tags:** GoogleCalendarSyncReliability, Pagination, ConferenceDataVersion, OutputOnlyKeys, PATCHVerifyFallback, ForensicLogging, TASK058
+
+---
+
 ## [LESSON] #RAG #WindowsPaths "The Slash-Trap — Normalisiere Pfade immer auf Forwardslashes vor Vektor-Filtern"
 - **Kontext:** RAG V2 Vektorsuche (ChromaDB) speichert Metadaten-Pfade mit Backslashes (`C:\Users\...\aegypten.pdf`). Der Filename-Filter im `hybrid_retriever.py` verglich User-Input (`aegypten`) direkt mit diesen DB-Pfaden. Auf Windows führte der Slash-Mismatch dazu, dass die Vektorsuche 0 Treffer lieferte obwohl die Datei physisch im Index existierte. Das System fiel dann auf globale Suche zurück → Halluzinationen (z.B. "aegypten.pdf enthält Skandinavien-Analyse").
 - **Problem:** Path-String-Vergleich ohne Normalisierung ist auf Windows nicht deterministisch. `C:\foo\bar.pdf` vs `C:/foo/bar.pdf` vs `C:\FOO\BAR.PDF` sind für String-Endswith-Vergleiche unterschiedliche Werte, obwohl sie dieselbe Datei referenzieren. ChromaDB-Metadaten speichern Pfade wie sie beim Ingest eingehen (meist mit Backslashes), während User-Input variieren kann (Forward-Slashes, Lower/Upper-Case, mit/ohne Extension).

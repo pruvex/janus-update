@@ -211,6 +211,95 @@ async def test_update_calendar_event_invalid_date_format(mock_calendar_service):
     assert "Konnte Startdatum 'falsches datum' nicht parsen." in result["error"]["message"]
 
 
+@pytest.mark.asyncio
+async def test_update_calendar_event_metadata_only_uses_patch(mock_calendar_service):
+    """Ort ohne Zeiten: PATCH (nur geänderte Felder) + zweites GET zur Verifikation."""
+    event_id = "test_id"
+    fetched = {
+        "summary": "Alter Termin",
+        "id": event_id,
+        "start": {"dateTime": "2025-11-12T10:00:00+01:00", "timeZone": "Europe/Berlin"},
+        "end": {"dateTime": "2025-11-12T11:00:00+01:00", "timeZone": "Europe/Berlin"},
+        "etag": '"abc"',
+        "kind": "calendar#event",
+        "htmlLink": "https://www.google.com/calendar/event",
+    }
+    verified = {**fetched, "location": "Zu Hause"}
+    mock_calendar_service.return_value.events.return_value.get.return_value.execute.side_effect = [
+        fetched,
+        verified,
+    ]
+    mock_calendar_service.return_value.events.return_value.patch.return_value.execute.return_value = (
+        verified
+    )
+    result = _md(await calendar_tools.update_calendar_event(event_id=event_id, location="Zu Hause"))
+
+    assert result["status"] == "ok"
+    assert mock_calendar_service.return_value.events.return_value.get.call_count == 2
+    mock_calendar_service.return_value.events.return_value.patch.assert_called_once()
+    mock_calendar_service.return_value.events.return_value.update.assert_not_called()
+    pc = mock_calendar_service.return_value.events.return_value.patch.call_args.kwargs
+    assert pc["calendarId"] == "primary"
+    assert pc["eventId"] == event_id
+    assert pc["body"] == {"location": "Zu Hause"}
+    assert pc["conferenceDataVersion"] == 0
+    assert pc["sendUpdates"] == "none"
+
+
+@pytest.mark.asyncio
+async def test_update_calendar_event_metadata_patch_meet_uses_cdv1(mock_calendar_service):
+    """Mit hangoutLink soll PATCH conferenceDataVersion=1 nutzen."""
+    event_id = "test_id"
+    fetched = {
+        "summary": "Meet Termin",
+        "id": event_id,
+        "hangoutLink": "https://meet.google.com/xxx",
+        "start": {"dateTime": "2025-11-12T10:00:00+01:00", "timeZone": "Europe/Berlin"},
+        "end": {"dateTime": "2025-11-12T11:00:00+01:00", "timeZone": "Europe/Berlin"},
+    }
+    verified = {**fetched, "description": "Hinweis"}
+    mock_calendar_service.return_value.events.return_value.get.return_value.execute.side_effect = [
+        fetched,
+        verified,
+    ]
+    mock_calendar_service.return_value.events.return_value.patch.return_value.execute.return_value = (
+        verified
+    )
+    result = _md(await calendar_tools.update_calendar_event(event_id=event_id, description="Hinweis"))
+    assert result["status"] == "ok"
+    pc = mock_calendar_service.return_value.events.return_value.patch.call_args.kwargs
+    assert pc["conferenceDataVersion"] == 1
+    assert pc["body"] == {"description": "Hinweis"}
+
+
+@pytest.mark.asyncio
+async def test_update_calendar_event_metadata_fallback_update_when_verify_mismatch(mock_calendar_service):
+    """GET nach PATCH ohne gewünschten Ort → einmal events.update mit gemergtem Body."""
+    event_id = "test_id"
+    fetched = {
+        "summary": "Alter Termin",
+        "id": event_id,
+        "start": {"dateTime": "2025-11-12T10:00:00+01:00", "timeZone": "Europe/Berlin"},
+        "end": {"dateTime": "2025-11-12T11:00:00+01:00", "timeZone": "Europe/Berlin"},
+        "organizer": {"email": "me@test", "self": True},
+    }
+    bad_verify = dict(fetched)
+    after_full_update = {**bad_verify, "location": "Büro"}
+    mock_calendar_service.return_value.events.return_value.get.return_value.execute.side_effect = [
+        fetched,
+        bad_verify,
+    ]
+    mock_calendar_service.return_value.events.return_value.patch.return_value.execute.return_value = (
+        bad_verify
+    )
+    mock_calendar_service.return_value.events.return_value.update.return_value.execute.return_value = (
+        after_full_update
+    )
+    result = _md(await calendar_tools.update_calendar_event(event_id=event_id, location="Büro"))
+    assert result["status"] == "ok"
+    mock_calendar_service.return_value.events.return_value.update.assert_called_once()
+
+
 # Test für get_calendar_events
 @pytest.mark.asyncio
 async def test_get_calendar_events_with_natural_language_dates(mock_calendar_service):

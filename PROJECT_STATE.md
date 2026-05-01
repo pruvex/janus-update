@@ -1,6 +1,6 @@
-# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.60)
-**Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.  
-**Aktualisiert:** 2026-05-01 16:42 (TASK-058 Stabilisierung: Polling-Guard + UI-Polish + Doku-Cleanup)
+# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.61)
+**Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
+**Aktualisiert:** 2026-05-01 17:05 (TASK-058 SEALED: Google Sync Hardening + Dashboard UI + Doku-Update)
 
 ---
 
@@ -8,7 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
-| TASK-058 Janus Kalender | 🥇 ACTIVE / HARDENED | Phase 1-4 umgesetzt; Frontend-Polling gegen Fetch-Spam gehaertet, Day/Week/Agenda + AI Plan Preview/Apply aktiv. |
+| TASK-058 Janus Kalender | 🥇 SEALED | Phase 1-4 COMPLETE + Sync Hardening: Pagination (maxResults=250), PATCH-Verify-Fallback, conferenceDataVersion=1, Output-Only-Key-Filterung, forensische Logs. Frontend: calendar-refresh Event, adaptive event cards, detail panel, duration buttons, all-day checkbox, --cal-hour-height CSS variable. |
 | TASK-057 Context Awareness | 🥇 SEALED | Kontext-/Intent-Haertung abgeschlossen; Provider-agnostische Self-Healing- und Summary-Veto-Logik stabil. |
 | TASK-056 Prompt Caching | 🥇 SEALED | Provider-agnostisches Prompt-Caching inkl. Savings-Metriken und UI-Visualisierung abgeschlossen. |
 | D27 Diamond Skill Engineering | 🥇 SEALED | Skill-Contract `{status,data,error}` und Modell-vs-Skill-Diagnose verbindlich definiert. |
@@ -34,9 +34,9 @@
 
 ## TASK-058 Janus Kalender (Neu, knackig)
 
-**Zielbild:** Ein zentrales Kalender-Modal mit Agenda/Tag/Woche, Inline-CRUD, AI-Planvorschau und expliziter User-Bestaetigung vor Mutationen.  
-**Aktueller Stand:** Backend-Router + Service + AI-Engine produktiv; Frontend mit View-Toggle, Timeline-Rendering, Diff-Overlay und Batch-Apply implementiert.  
-**Stabilisierung 2026-05-01:** Fetch-Spam im Modal durch Reentrancy-/In-Flight-Guards und robustes Polling gestoppt; Event-Karten visuell komprimiert.
+**Zielbild:** Ein zentrales Kalender-Modal mit Agenda/Tag/Woche, Inline-CRUD, AI-Planvorschau und expliziter User-Bestaetigung vor Mutationen.
+**Aktueller Stand:** SEALED & COMPLETE. Backend-Router + Service + AI-Engine produktiv; Frontend mit View-Toggle, Timeline-Rendering, Diff-Overlay und Batch-Apply implementiert.
+**Sync Hardening 2026-05-01:** Pagination (maxResults=250, pageToken-Loop), PATCH-Verify-Fallback, conferenceDataVersion=1, Output-Only-Key-Filterung, forensische Logging-Signale (organizer.self, verify-mismatch). Frontend: calendar-refresh Event, adaptive event cards, detail panel, duration buttons, all-day checkbox, --cal-hour-height CSS variable.
 
 **Kern-Dateien:**
 - `backend/api/routers/calendar.py`
@@ -46,6 +46,8 @@
 - `frontend/css/calendar-modal.css`
 - `frontend/index.html`
 - `backend/tests/test_calendar_modal.py`
+- `backend/tools/calendar_tools.py` (Sync Hardening)
+- `backend/data/schemas.py` (duration_minutes)
 
 ---
 
