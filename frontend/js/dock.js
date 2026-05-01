@@ -213,6 +213,7 @@ function initDock() {
   setDockModuleExists("image-studio", true);
   setDockModuleExists("gallery", true);
   setDockModuleExists("video-player", true);
+  setDockModuleExists("calendar", true);
   ensureKnowledgePanelGeometry();
   bindDockEvents();
   subscribeWindowState((state) => {

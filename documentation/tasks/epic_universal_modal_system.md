@@ -1,4 +1,4 @@
-# Epic: Universal Modal System (Task 029-034)
+# Epic: Universal Modal System (Task 029-034, 058)
 
 **Status:** TODO (Geplant)  
 **Dossier:** `UNIVERSAL_MODAL_SYSTEM_DIAMOND_DOSSIER.md`  
@@ -19,7 +19,7 @@ Das **Universal Modal System** vereint 4 Legacy-Patterns zu einem zustandslosen 
 
 ---
 
-## Tasks (029 bis 034)
+## Tasks (029 bis 034, 058)
 
 ## Diamond Task-Checkliste (Orchestrator UI)
 
@@ -29,6 +29,7 @@ Das **Universal Modal System** vereint 4 Legacy-Patterns zu einem zustandslosen 
 - [x] 4. `task_032_mcl_knowledge_center.md` (Knowledge Center Single Source of Truth) 🟡 **IN PROGRESS**
 - [x] 5. `task_033_mcl_video_player.md`
 - [x] 6. `task_034_mcl_gallery.md`
+- [ ] 7. `task_058_calendar_modal_diamond_plan.md` (Janus Kalender — Agenda/Week/Day Views; siehe auch Kurzname `task_058_calendar_modal.md`)
 
 ### Task 029: MCL-Core Contract Definition
 | Feld | Wert |
@@ -78,6 +79,14 @@ Das **Universal Modal System** vereint 4 Legacy-Patterns zu einem zustandslosen 
 | **Dateien** | `frontend/js/gallery.js`, `frontend/js/modals/gallery-modal.js` |
 | **Key Deliverables** | Gallery als MCL-Carousel, Thumbnail-Navigation, Bulk-Actions, Performance-Optimierung |
 
+### Task 058: Janus Calendar Modal (MCL + Dock)
+| Feld | Wert |
+|------|------|
+| **Ziel** | Janus Kalender als MCL-Dock-Modul: zentrale UI über Google Calendar (Agenda/Week/Day), REST-Service-Layer, AI-Planung mit User-Bestätigung |
+| **Phase** | M6 (Calendar / Scheduling Intelligence) |
+| **Dateien** | `documentation/tasks/task_058_calendar_modal_diamond_plan.md`, `frontend/js/calendar-modal.js`, `frontend/js/modal-api.js` (Renderer `calendar`), `frontend/js/window-state.js` (Dock-Modul `calendar`), `backend/api/routers/calendar.py` (geplant), `backend/services/calendar/` (geplant) |
+| **Key Deliverables** | Sidebar + optional Dock-Einstieg, `openModal({ type: "calendar" })` / `window.dockOpen("calendar")`, leeres bis MVP-gefülltes `#calendar-modal`, keine Duplikation der Logik aus `backend/tools/calendar_tools.py` (Wrap statt Fork) |
+
 ---
 
 ## Meilensteine
@@ -89,6 +98,7 @@ Das **Universal Modal System** vereint 4 Legacy-Patterns zu einem zustandslosen 
 | **M3** | 032 | Knowledge Center Single-Source-of-Truth |
 | **M4** | 033 | Video-Player + Backend `modal_request` |
 | **M5** | 034 | Gallery Migration + Polish |
+| **M6** | 058 | Janus Calendar Modal (MCL, API, AI-Steuerung) |
 
 ---
 
@@ -121,5 +131,5 @@ Das **Universal Modal System** vereint 4 Legacy-Patterns zu einem zustandslosen 
 
 ---
 
-*Letzte Aktualisierung: 2026-04-13*  
+*Letzte Aktualisierung: 2026-05-01*  
 *Epic erstellt durch: G17 (Doku/Struktur)*

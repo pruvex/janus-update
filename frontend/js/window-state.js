@@ -91,6 +91,9 @@ function createInitialState() {
         "video-player": dockModuleShape({
           exists: false,
         }),
+        calendar: dockModuleShape({
+          exists: true,
+        }),
       },
     },
   };
