@@ -15,8 +15,11 @@
 
 #calendar-modal {
   --color-error: #e53935;
-  width: min(980px, 92vw);
-  height: min(720px, 78vh);
+  width: clamp(1000px, 94vw, 1100px);
+  min-width: 1000px;
+  max-width: 1100px;
+  height: min(760px, 86vh);
+  min-height: 750px;
   background-color: #252529;
   border: 1px solid #444;
   border-radius: 8px;
@@ -251,11 +254,12 @@
 .calendar-event-card {
   background: #2a2a2e;
   border-left: 4px solid #4285f4; /* Google Blue */
-  padding: 12px;
-  margin: 8px 0;
+  padding: 7px 8px;
+  margin: 4px 0;
   border-radius: 4px;
   position: relative;
   transition: background-color 0.2s ease;
+  line-height: 1.2;
 }
 
 .calendar-event-card:hover {
@@ -276,8 +280,8 @@
 
 .event-title {
   font-weight: 600;
-  margin-bottom: 4px;
-  font-size: 14px;
+  margin-bottom: 2px;
+  font-size: 12px;
   color: #c8cdd4;
 }
 
@@ -335,10 +339,10 @@
 }
 
 .event-card-actions {
-  margin-top: 8px;
+  margin-top: 4px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
 }
 
@@ -346,10 +350,11 @@
   background: transparent;
   border: 1px solid #555;
   color: #a8b0bc;
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 4px;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 3px;
   cursor: pointer;
+  line-height: 1.2;
 }
 
 .event-more-btn:hover {
@@ -375,6 +380,11 @@
   z-index: 5;
   display: flex;
   flex-direction: column;
+}
+
+/* Wichtig: darf nicht von .calendar-detail-panel { display:flex } überstimmt werden */
+.calendar-detail-panel[hidden] {
+  display: none !important;
 }
 
 .calendar-detail-header {
@@ -437,29 +447,29 @@
 }
 
 .event-time {
-  font-size: 12px;
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 2px;
+}
+
+.event-location {
+  font-size: 11px;
   color: #888;
   margin-bottom: 4px;
 }
 
-.event-location {
-  font-size: 12px;
-  color: #888;
-  margin-bottom: 8px;
-}
-
 .event-delete-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 5px;
+  right: 5px;
   background: #dc3545;
   color: white;
   border: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 12px;
   line-height: 1;
   display: flex;
   align-items: center;
@@ -507,6 +517,35 @@
   padding: 20px;
   margin: 16px 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.calendar-create-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+}
+
+.calendar-create-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 8, 12, 0.66);
+  backdrop-filter: blur(1px);
+}
+
+.calendar-create-dialog-window {
+  position: relative;
+  z-index: 1;
+  width: min(560px, 92vw);
+  max-height: min(84vh, 700px);
+  overflow: auto;
+}
+
+.calendar-create-dialog-window .calendar-create-form {
+  margin: 0;
 }
 
 .form-header {
@@ -677,20 +716,36 @@
    ============================================================================ */
 
 #calendar-header .chat-header-row--top {
-  flex-wrap: wrap;
-  row-gap: 6px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
   align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
+#calendar-header .chat-header-drag-strip {
+  flex: 1 1 auto;
+  min-width: 180px;
+}
+
+#calendar-header .chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .calendar-header-meta {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-width: 0;
   justify-content: flex-end;
-  margin-left: auto;
-  margin-right: 8px;
+  margin-left: 8px;
+  margin-right: 4px;
 }
 
 .calendar-sync-status {
@@ -715,6 +770,7 @@
   border-radius: 6px;
   padding: 2px;
   background: #1a1a1f;
+  flex-shrink: 0;
 }
 
 .calendar-view-btn {
@@ -956,6 +1012,10 @@
   z-index: 4;
 }
 
+#calendar-modal.calendar-detail-open .calendar-ai-footer {
+  padding-right: calc(12px + min(340px, 92%));
+}
+
 .calendar-ai-footer-label {
   font-size: 11px;
   font-weight: 600;
@@ -989,6 +1049,7 @@
 
 .calendar-ai-input-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: flex-end;
 }
@@ -1009,7 +1070,9 @@
 }
 
 .calendar-ai-plan-trigger {
-  flex-shrink: 0;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  align-self: stretch;
 }
 
 .calendar-ai-plan-trigger[disabled] {

@@ -30,6 +30,10 @@ let calendarViewMode = "agenda";
 /** Ankerdatum (lokaler Tagesbeginn) für Tag-/Wochenansicht */
 let calendarViewAnchor = new Date();
 let calendarPollTimer = null;
+/** @type {Promise<Array<Record<string, unknown>>> | null} */
+let calendarLoadInFlight = null;
+let lastCalendarLoadAt = 0;
+let syncFromDockStateRunning = false;
 
 const PX_PER_HOUR = 60;
 
@@ -396,7 +400,10 @@ function syncCalendarViewToggleUi() {
 }
 
 function startCalendarPoll() {
-  if (calendarPollTimer !== null) return;
+  if (calendarPollTimer !== null) {
+    clearInterval(calendarPollTimer);
+    calendarPollTimer = null;
+  }
   calendarPollTimer = setInterval(() => loadCalendarEvents({ silentPolling: true }), 60000);
 }
 
@@ -455,9 +462,27 @@ function renderCalendar() {
   }
 }
 
-function closeDetailPanel() {
+function hideEventDetails() {
   const panel = document.getElementById("calendar-detail-panel");
   if (panel) panel.hidden = true;
+  document.getElementById("calendar-modal")?.classList.remove("calendar-detail-open");
+}
+
+function closeDetailPanel() {
+  hideEventDetails();
+}
+
+/**
+ * Stoppt Event-Bubbling, damit keine fremden Click-Listener feuern.
+ * @param {MouseEvent} event
+ */
+function handleDetailCloseClick(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  if (typeof event.stopImmediatePropagation === "function") {
+    event.stopImmediatePropagation();
+  }
+  hideEventDetails();
 }
 
 function openDetailPanel(ev) {
@@ -518,6 +543,7 @@ function openDetailPanel(ev) {
   }
 
   bodyEl.appendChild(dl);
+  document.getElementById("calendar-modal")?.classList.add("calendar-detail-open");
   panel.hidden = false;
 }
 
@@ -1013,6 +1039,12 @@ async function loadCalendarEvents(options = {}) {
     if (!isCalendarPanelVisible()) return localEvents;
     if (!calendarModalVisibleDom()) return localEvents;
     if (editingEventId !== null) return localEvents;
+    const now = Date.now();
+    if (now - lastCalendarLoadAt < 5000) return localEvents;
+  }
+
+  if (calendarLoadInFlight) {
+    return calendarLoadInFlight;
   }
 
   /** @type {HTMLElement | null} */
@@ -1021,13 +1053,14 @@ async function loadCalendarEvents(options = {}) {
 
   setSyncStatus("syncing");
 
-  try {
+  const run = (async () => {
     const q = buildEventsQuery();
     const data = await apiFetchCalendar("GET", `/events${q}`);
     localEvents = mergeEvents(data.events || []);
     applyConflicts(data.conflicts || []);
     renderCalendar();
     setSyncStatus("synced");
+    lastCalendarLoadAt = Date.now();
 
     if (preserveScroll && scrollEl) {
       requestAnimationFrame(() => {
@@ -1036,14 +1069,18 @@ async function loadCalendarEvents(options = {}) {
     }
 
     return localEvents;
-  } catch (error) {
+  })().catch((error) => {
     console.error("Failed to load calendar events:", error);
     setSyncStatus("error");
     if (!silentPolling) {
       showToast("Fehler beim Laden der Termine", "error");
     }
     return [];
-  }
+  }).finally(() => {
+    calendarLoadInFlight = null;
+  });
+  calendarLoadInFlight = run;
+  return run;
 }
 
 async function createCalendarEvent(eventPayload) {
@@ -1159,8 +1196,6 @@ function initCalendarFilters() {
     renderCalendar();
   });
 
-  document.getElementById("calendar-detail-close")?.addEventListener("click", closeDetailPanel);
-
   syncCalendarViewToggleUi();
 
   document.querySelectorAll(".calendar-view-btn").forEach((btn) => {
@@ -1189,69 +1224,78 @@ function initCalendarFilters() {
 }
 
 function showCreateEventForm() {
-  const container = document.getElementById("calendar-agenda");
-  if (!container) return;
+  if (document.getElementById("calendar-create-dialog-overlay")) return;
 
-  if (document.getElementById("create-event-form")) return;
-
-  const form = document.createElement("div");
-  form.id = "create-event-form";
-  form.className = "calendar-create-form";
-  form.innerHTML = `
-    <div class="form-header">
-      <h3>Neuer Termin</h3>
-      <button type="button" class="form-close-btn">×</button>
+  const host = document.body;
+  const overlay = document.createElement("div");
+  overlay.id = "calendar-create-dialog-overlay";
+  overlay.className = "calendar-create-dialog-overlay";
+  overlay.innerHTML = `
+    <div class="calendar-create-dialog-backdrop" data-close="backdrop"></div>
+    <div class="calendar-create-dialog-window" role="dialog" aria-modal="true" aria-label="Neuen Termin erstellen">
+      <div class="calendar-create-form">
+        <div class="form-header">
+          <h3>Neuer Termin</h3>
+          <button type="button" class="form-close-btn" data-close="x">×</button>
+        </div>
+        <form id="calendar-create-event-form">
+          <div class="form-group">
+            <label for="calendar-create-summary">Titel</label>
+            <input type="text" id="calendar-create-summary" required placeholder="Termin-Titel">
+          </div>
+          <div class="form-group">
+            <label for="calendar-create-start">Startzeit</label>
+            <input type="datetime-local" id="calendar-create-start" required>
+          </div>
+          <div class="form-group">
+            <label for="calendar-create-end">Endzeit</label>
+            <input type="datetime-local" id="calendar-create-end" required>
+          </div>
+          <div class="form-group">
+            <label for="calendar-create-location">Ort (optional)</label>
+            <input type="text" id="calendar-create-location" placeholder="Ort">
+          </div>
+          <div class="form-group">
+            <label for="calendar-create-description">Beschreibung (optional)</label>
+            <textarea id="calendar-create-description" rows="3" placeholder="Beschreibung"></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Termin erstellen</button>
+            <button type="button" class="btn-secondary" data-close="cancel">Abbrechen</button>
+          </div>
+        </form>
+      </div>
     </div>
-    <form id="event-form">
-      <div class="form-group">
-        <label for="event-summary">Titel</label>
-        <input type="text" id="event-summary" required placeholder="Termin-Titel">
-      </div>
-      <div class="form-group">
-        <label for="event-start">Startzeit</label>
-        <input type="datetime-local" id="event-start" required>
-      </div>
-      <div class="form-group">
-        <label for="event-end">Endzeit</label>
-        <input type="datetime-local" id="event-end" required>
-      </div>
-      <div class="form-group">
-        <label for="event-location">Ort (optional)</label>
-        <input type="text" id="event-location" placeholder="Ort">
-      </div>
-      <div class="form-group">
-        <label for="event-description">Beschreibung (optional)</label>
-        <textarea id="event-description" rows="3" placeholder="Beschreibung"></textarea>
-      </div>
-      <div class="form-actions">
-        <button type="submit" class="btn-primary">Termin erstellen</button>
-        <button type="button" class="btn-secondary cancel-btn">Abbrechen</button>
-      </div>
-    </form>
   `;
+  host.appendChild(overlay);
 
-  container.prepend(form);
+  const closeDialog = () => overlay.remove();
+  overlay.querySelectorAll("[data-close]").forEach((el) => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeDialog();
+    });
+  });
 
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
   /** @type {HTMLInputElement | null} */
-  const startEl = document.getElementById("event-start");
+  const startEl = overlay.querySelector("#calendar-create-start");
   /** @type {HTMLInputElement | null} */
-  const endEl = document.getElementById("event-end");
+  const endEl = overlay.querySelector("#calendar-create-end");
   if (startEl) startEl.value = now.toISOString().slice(0, 16);
   const endTime = new Date(now.getTime() + 60 * 60 * 1000);
   if (endEl) endEl.value = endTime.toISOString().slice(0, 16);
 
-  form.querySelector(".form-close-btn")?.addEventListener("click", () => form.remove());
-  form.querySelector(".cancel-btn")?.addEventListener("click", () => form.remove());
-
-  document.getElementById("event-form")?.addEventListener("submit", async (e) => {
+  overlay.querySelector("#calendar-create-event-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const summary = /** @type {HTMLInputElement} */ (document.getElementById("event-summary")).value;
-    const startTime = /** @type {HTMLInputElement} */ (document.getElementById("event-start")).value;
-    const endTimeVal = /** @type {HTMLInputElement} */ (document.getElementById("event-end")).value;
-    const location = /** @type {HTMLInputElement} */ (document.getElementById("event-location")).value;
-    const description = /** @type {HTMLTextAreaElement} */ (document.getElementById("event-description")).value;
+    const summary = /** @type {HTMLInputElement | null} */ (overlay.querySelector("#calendar-create-summary"))?.value || "";
+    const startTime = /** @type {HTMLInputElement | null} */ (overlay.querySelector("#calendar-create-start"))?.value || "";
+    const endTimeVal = /** @type {HTMLInputElement | null} */ (overlay.querySelector("#calendar-create-end"))?.value || "";
+    const location = /** @type {HTMLInputElement | null} */ (overlay.querySelector("#calendar-create-location"))?.value || "";
+    const description =
+      /** @type {HTMLTextAreaElement | null} */ (overlay.querySelector("#calendar-create-description"))?.value || "";
 
     const eventPayload = {
       title: summary.trim(),
@@ -1264,7 +1308,7 @@ function showCreateEventForm() {
 
     try {
       await createCalendarEvent(eventPayload);
-      form.remove();
+      closeDialog();
     } catch {
       /* Fehler bereits behandelt */
     }
@@ -1294,13 +1338,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function syncFromDockState() {
+    if (syncFromDockStateRunning) return;
+    syncFromDockStateRunning = true;
+    try {
     const visible = isCalendarPanelVisible();
     if (calendarView) {
       calendarView.style.display = visible ? "flex" : "none";
     }
     if (visible && !prevVisible && calendarHost) {
+      prevVisible = true;
       try {
-        bringToFront(MODULE_ID);
         loadCalendarEvents();
         startCalendarPoll();
       } catch {
@@ -1314,6 +1361,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     prevVisible = visible;
     syncNavActive();
+    } finally {
+      syncFromDockStateRunning = false;
+    }
   }
 
   subscribeWindowState(() => syncFromDockState());
@@ -1370,4 +1420,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("mouseup", () => {
     isDragging = false;
   });
+
+  const detailCloseBtn = document.getElementById("calendar-detail-close-btn");
+  if (detailCloseBtn instanceof HTMLButtonElement) {
+    // Exklusiv setzen: ersetzt potenziell alte/inkonsistente Listener.
+    detailCloseBtn.onclick = handleDetailCloseClick;
+  }
 });
