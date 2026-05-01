@@ -1102,15 +1102,12 @@
             </div>
           </div>
           <div class="calendar-modal-body">
-            <p class="calendar-modal-placeholder-title">Kalender (TASK-058)</p>
-            <p>
-              Platzhalter: Agenda-, Wochen- und Tagesansicht sowie API-Anbindung folgen laut
-              <code>documentation/tasks/task_058_calendar_modal_diamond_plan.md</code>.
-            </p>
-            <p>
-              Sidebar-Button nutzt <code>window.dockOpen(&quot;calendar&quot;)</code> (MCL inkl. Z-Stack; zweiter Klick
-              minimiert).
-            </p>
+            <div class="calendar-toolbar">
+              <button id="create-event-btn">Neuer Termin</button>
+            </div>
+            <div id="calendar-agenda">
+              <div class="calendar-empty">Lade Termine...</div>
+            </div>
           </div>
         </div>
       </div>
