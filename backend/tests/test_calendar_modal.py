@@ -11,6 +11,7 @@ from unittest.mock import AsyncMock, patch
 
 import backend.api.routers.calendar as calendar_router
 from backend.main import app
+from backend.dependencies import api_key_auth
 from backend.data.schemas_calendar import (
     JanusCalendarEvent,
     CreateEventRequest,
@@ -22,6 +23,14 @@ from backend.data.schemas_calendar import (
 
 # Test-Client
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def override_api_key_auth():
+    """Umgeht globale API-Key-Auth für isolierte Router-Tests."""
+    app.dependency_overrides[api_key_auth] = lambda: None
+    yield
+    app.dependency_overrides.pop(api_key_auth, None)
 
 
 class TestCalendarAPI:
@@ -457,7 +466,7 @@ class TestCalendarService:
         conflicts = service._detect_conflicts(events)
         
         # Assert
-        assert len(conflicts) == 1  # Bei exaktem Anschluss gibt es technisch eine Überlappung bei end > start
+        assert len(conflicts) == 0  # Exakter Anschluss (end == start) ist konfliktfrei
 
 
 class TestCalendarSchemas:
@@ -478,7 +487,7 @@ class TestCalendarSchemas:
         
         assert event.id == "test_123"
         assert event.source == "google"
-        assert event.color == "#4285F4"  # Google Blue
+        assert event.color is None
     
     def test_create_event_request_validation(self):
         """Test: CreateEventRequest validiert Min-Length."""

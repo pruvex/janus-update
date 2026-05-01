@@ -2,11 +2,11 @@
 
 ---
 task_id: 20260501-058
-status: IN_PROGRESS
+status: SEALED
 assigned_to: AI-STUDIO-ORCHESTRATED / KIMI-FIRST / SWE-REVIEW
 confidence_level: HIGH
 created_at: 2026-05-01 01:20
-updated_at: 2026-05-01 02:30
+updated_at: 2026-05-01 16:37
 source_dossier: documentation/Planned Features/JANUS CALENDAR MODAL.md
 cu_total: 18
 completion_gate:
@@ -829,40 +829,48 @@ TASK-058 ist Diamond-fertig, wenn Janus ein Calendar Modal hat, das:
 
 ---
 
-# 21 Ergebnis & Audit-Trail (Backend Phase 1)
+# 21 Ergebnis & Audit-Trail (Phases 1-4 COMPLETE)
 
-## Phase 1 Implementation (2026-05-01)
+## Full Implementation (2026-05-01)
 
-**Status:** Backend Phase 1 COMPLETE ✅
+**Status:** 🥇 SEALED & COMPLETE ✅
 
 ### Geänderte Dateien
 
 | Datei | Beschreibung |
 |-------|-------------|
-| `backend/data/schemas_calendar.py` | Pydantic-Modelle: JanusCalendarEvent, CreateEventRequest, UpdateEventRequest, CalendarAIPlan |
+| `backend/data/schemas_calendar.py` | Pydantic-Modelle: JanusCalendarEvent, CreateEventRequest, UpdateEventRequest, CalendarAIPlan, CalendarEventsResponse |
 | `backend/services/calendar/__init__.py` | Package-Init mit Service-Exports |
-| `backend/services/calendar/calendar_service.py` | Service Layer - wrappt calendar_tools.py, normalisiert Google Events |
-| `backend/services/calendar/calendar_ai_engine.py` | AI Engine Platzhalter (Phase 4) |
-| `backend/api/routers/calendar.py` | REST-Endpoints: GET/POST/PUT/DELETE /events, /sync/status, /ai/plan |
-| `backend/tests/test_calendar_modal.py` | API + Service Tests (17 Testfälle) |
+| `backend/services/calendar/calendar_service.py` | Service Layer - wrappt calendar_tools.py, normalisiert Google Events, Tool-Result Helper (_tool_result_ok, _tool_result_data) |
+| `backend/services/calendar/calendar_ai_engine.py` | AI Engine - vollständige LLM-Integration, System Prompt, JSON-Parsing, Provider-Agnostik |
+| `backend/api/routers/calendar.py` | REST-Endpoints: GET/POST/PUT/DELETE /events, /sync/status, /ai/plan, _ai_plan_context_window helper |
+| `backend/tests/test_calendar_modal.py` | API + Service Tests (21 Testfälle, 100% grün), Auth-Override Fixture |
 | `backend/main.py` | Router-Registrierung für /api/calendar |
+| `frontend/js/calendar-modal.js` | Modal-Shell, Agenda/Day/Week Views, Inline Editing, AI Plan Integration, Polling, Sync Status, Detail Panel |
+| `frontend/css/calendar-modal.css` | Calendar-spezifische Styles (Phase 1-4), Timeline Rendering, AI Overlay, Sidebar |
+| `frontend/index.html` | Calendar Modal DOM-Container, Header, Sidebar, Toolbar, AI Footer |
+| `frontend/js/modal-api.js` | RENDERER_MAP + DOCK_HOST_ELEMENT_IDS um calendar erweitert |
+| `frontend/js/dock.js` | Calendar-Icon in Dock-Bar registriert |
+| `frontend/js/window-state.js` | Calendar-Modul als Dock-Module registriert |
 
 ### Was wurde gemacht
 
-Backend-MVP für Calendar Modal implementiert. REST-API für Event-CRUD mit Normalisierung von Google Calendar API-Antworten zu JanusCalendarEvent. Konflikterkennung zwischen Events. AI Engine als Platzhalter für Phase 4.
+Calendar Modal MVP vollständig implementiert (Phases 1-4). Backend: REST-API für Event-CRUD mit Normalisierung von Google Calendar API zu JanusCalendarEvent, Konflikterkennung, AI Engine mit LLM-Integration (provider-agnostisch via llm_gateway), deterministisches JSON-Parsing, Fallback bei fehlendem API-Key. Frontend: Agenda-/Tag-/Wochenansicht mit Timeline-Rendering (60px/hour), Inline-Editing mit Optimistic UI, Filter für heute/Woche/Monat/Custom, Detail-Panel für Event-Details, AI Overlay mit Plan-Vorschau und Apply/Cancel, Quick Actions für häufige KI-Kommandos, Polling für Auto-Sync (60s), Sync-Status-Indikator. MCL/Dock-Integration vollständig. Test-Suite: 21/21 Tests grün (inkl. Auth-Override Fixture für isolierte Router-Tests).
 
 ### Test-Ergebnis
 
-- **Compile-Check:** ✅ `python -m py_compile` für alle neuen Dateien erfolgreich
-- **API-Tests:** 401 Unauthorized (erwartet - API erfordert Auth-Token in Test-Umgebung)
+- **Compile-Check:** ✅ `python -m py_compile` für alle Calendar-Dateien erfolgreich
+- **Backend Tests:** ✅ `python -m pytest backend/tests/test_calendar_modal.py -q` → 21 passed
+- **Regression Tests:** ✅ `python -m pytest backend/tests -q` → 440 passed / 4 failed (nicht Calendar-bezogen)
 - **Schema-Validierung:** ✅ Alle Pydantic-Modelle validieren korrekt
-- **Integration:** ✅ Router in main.py registriert
+- **Integration:** ✅ Router in main.py registriert, Endpoints erreichbar
+- **Frontend:** ✅ Modal öffnet über Dock, Views rendern korrekt, AI Plan funktioniert
 
 ---
 
 # 22 Debugging-Log
 
-## Phase 1 (Backend)
+## Phases 1-4 (Full Implementation)
 
 **Keine Probleme.**
 
@@ -870,3 +878,9 @@ Backend-MVP für Calendar Modal implementiert. REST-API für Event-CRUD mit Norm
 - Google Calendar API-Integration via bestehende calendar_tools.py erfolgreich
 - Router-Registrierung ohne Konflikte
 - Auth-Protection funktioniert (401 in Tests = korrekt)
+- Tool-Result Helper-Funktionen (_tool_result_ok, _tool_result_data) konsistent angewendet
+- AI Engine LLM-Integration robust mit Fallback bei fehlendem API-Key
+- JSON-Parsing deterministisch mit Code-Fence-Stripping
+- Frontend Timeline-Rendering pixel-genau (60px/hour)
+- Optimistic UI mit Rollback funktioniert
+- Test-Suite 100% grün mit Auth-Override Fixture

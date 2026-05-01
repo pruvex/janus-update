@@ -8,7 +8,7 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 ## [Unreleased]
 
 ### Added
-- **TASK-058: Calendar Modal Backend Phase 1** — REST-API für Calendar-Operationen: `GET/POST/PUT/DELETE /api/calendar/events`, Event-Normalisierung von Google Calendar zu JanusCalendarEvent, Konflikterkennung, Service Layer wrappt bestehende `calendar_tools.py`. Neue Schemas in `backend/data/schemas_calendar.py`, Service in `backend/services/calendar/`, Router in `backend/api/routers/calendar.py`, Tests in `backend/tests/test_calendar_modal.py`.
+- **TASK-058: Calendar Modal (Phases 1-4 COMPLETE)** — Calendar Modal mit Agenda/Day/Week Views, Inline Editing, AI Engine mit LLM-Integration, Delta-Sync, MCL/Dock Integration. Backend: REST-API (`GET/POST/PUT/DELETE /api/calendar/events`, `POST /api/calendar/ai/plan`), Service Layer mit Tool-Result Helper-Funktionen, AI Engine (provider-agnostisch via llm_gateway), deterministisches JSON-Parsing. Frontend: Timeline-Rendering (60px/hour), Optimistic UI mit Rollback, Filter (heute/Woche/Monat/Custom), Detail-Panel, AI Overlay mit Plan-Vorschau, Quick Actions, Polling (60s), Sync-Status-Indikator. 21/21 Tests grün.
 
 ### Changed
 - **Bulk File Move Feature** - Parameter-Upgrade (pattern → file_names), Intent-basierte Modell-Eskalation (MOA-Hierarchie), RAG-Sort-Policy, PDF-Indizierungs-Markierung in list_directory, Rate-Limits erhöht. Task FEAT-FS-BULK-MOVE.
