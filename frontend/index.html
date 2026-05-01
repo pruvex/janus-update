@@ -1079,6 +1079,27 @@
               <div class="chat-header-drag-strip">
                 <span>Janus Kalender</span>
               </div>
+              <div class="calendar-header-meta" aria-label="Kalender Sync und Ansicht">
+                <span id="calendar-sync-status" class="calendar-sync-status" role="status"
+                  >Synchronisiert</span
+                >
+                <div class="calendar-view-toggle" role="tablist" aria-label="Kalenderansicht">
+                  <button
+                    type="button"
+                    class="calendar-view-btn calendar-view-btn--active"
+                    data-view="agenda"
+                    aria-selected="true"
+                  >
+                    Agenda
+                  </button>
+                  <button type="button" class="calendar-view-btn" data-view="day" aria-selected="false">
+                    Tag
+                  </button>
+                  <button type="button" class="calendar-view-btn" data-view="week" aria-selected="false">
+                    Woche
+                  </button>
+                </div>
+              </div>
               <div class="chat-header-actions">
                 <button
                   type="button"
@@ -1153,6 +1174,36 @@
               </div>
               <div class="calendar-detail-body" id="calendar-detail-body"></div>
             </aside>
+            <div id="calendar-ai-overlay" class="calendar-ai-overlay" hidden aria-modal="true" role="dialog" aria-labelledby="calendar-ai-overlay-title">
+              <div id="calendar-ai-overlay-backdrop" class="calendar-ai-overlay-backdrop" aria-hidden="true"></div>
+              <div class="calendar-ai-overlay-panel">
+                <h3 id="calendar-ai-overlay-title" class="calendar-ai-overlay-title">KI‑Plan (Vorschau)</h3>
+                <p id="calendar-ai-plan-summary" class="calendar-ai-plan-summary"></p>
+                <p id="calendar-ai-plan-risk" class="calendar-ai-plan-risk" role="status"></p>
+                <ul id="calendar-ai-plan-actions" class="calendar-ai-plan-actions"></ul>
+                <div class="calendar-ai-overlay-footer">
+                  <button type="button" id="calendar-ai-plan-apply" class="btn-primary">Anwenden</button>
+                  <button type="button" id="calendar-ai-plan-cancel" class="btn-secondary">Abbrechen</button>
+                </div>
+              </div>
+            </div>
+            <footer class="calendar-ai-footer" aria-label="Kalender KI und Schnellaktionen">
+              <div class="calendar-ai-footer-label">KI‑Kommando</div>
+              <div class="calendar-ai-quick-row">
+                <button type="button" class="calendar-ai-quick-btn" data-ai-quick="optimize_day">Tag optimieren</button>
+                <button type="button" class="calendar-ai-quick-btn" data-ai-quick="focus_block">Fokuszeit blocken</button>
+              </div>
+              <div class="calendar-ai-input-row">
+                <label for="calendar-ai-command" class="visually-hidden">AI Command Input</label>
+                <textarea
+                  id="calendar-ai-command"
+                  class="calendar-ai-command"
+                  rows="2"
+                  placeholder="z. B. Plane Fokuszeit und räume Überlappungen auf…"
+                ></textarea>
+                <button type="button" id="calendar-ai-plan-btn" class="btn-primary calendar-ai-plan-trigger">Plan erstellen</button>
+              </div>
+            </footer>
           </div>
         </div>
       </div>

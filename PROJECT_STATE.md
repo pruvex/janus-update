@@ -1,9 +1,9 @@
-# PROJECT_STATE.md (Diamond-OS **V0.4.30-beta.58** — "Calendar Modal Backend Phase 1 Complete.
-TASK-058: 🚀 Backend Phase 1 COMPLETE.
+# PROJECT_STATE.md (Diamond-OS **V0.4.30-beta.59** — "Calendar Modal Phase 4 COMPLETE — AI Engine + Phase 2-3 Frontend.
+TASK-058: 🥇 PHASE 4 COMPLETE.
 TASK-057: 🥇 SEALED & COMPLETE.
 TASK-056: 🥇 SEALED & COMPLETE. D27: 🥇 SEALED. D26: 🥇 SEALED. D25: 🥇 SEALED. D24: 🥇 SEALED. D23: 🥇 SEALED. D22: 🥇 SEALED. D21: 🥇 SEALED. D20: 🥇 SEALED. D19: 🥇 SEALED. D18: 🥇 SEALED. D17: 🥇 SEALED. D16: 🥇 SEALED. D15: 🥇 SEALED. D14: 🥇 DIAMOND HARMONIZED. D13: 🥇 DIAMOND HARMONIZED. D12: 🥇 DIAMOND HARMONIZED. D11: 🥇 SEALED. D10: 🥇 SEALED.")
 **Zweck:** Einzige Datei fuer AI Studio Triage-Guard. Kopiere diese komplette Datei in AI Studio.
-**Aktualisiert:** 2026-05-01 02:30 (TASK-058 Backend Phase 1: Calendar API Router, Service, Schemas, Tests complete)
+**Aktualisiert:** 2026-05-01 16:23 (TASK-058 Phase 4: AI Engine with LLM integration, Phase 2-3 Frontend complete)
 
 ---
 
@@ -41,6 +41,25 @@ TASK-056: 🥇 SEALED & COMPLETE. D27: 🥇 SEALED. D26: 🥇 SEALED. D25: 🥇 
 | **Patterns** | [PATTERN] #SelfHealingAuth "Stiller Re-Login bei 401-Fehlern zur Aufrechterhaltung der Persistenz — Token-Refresh + Retry ohne User-Feedback" |
 | **Patterns** | [PATTERN] #BackgroundCostCommit "Zwang zum db.commit() in asynchronen oder verzweigten Engine-Pfaden zur zuverlässigen Cost-Persistenz" |
 | **Notizen** | Ollama Timeout-Logik basiert auf grober Token-Schätzung (~1 Token pro Wort). Storybook Intent-Trigger nur bei eindeutigen kreativen Aufforderungen. Pure-Text Summary Mode verhindert Skill-Intervention bei Zusammenfassungs-Anfragen. Compressor nutzt last_used_provider aus Config für Provider-Agnostik. |
+
+---
+
+## [CURRENT_SESSION_DELTA] (TASK-058 CALENDAR MODAL — Phase 4 COMPLETE)
+
+| Feld | Wert |
+|------|------|
+| **Epic / Task** | **TASK-058 Calendar Modal — Phase 4: AI Engine + Phase 2-3 Frontend (Inline Editing, Day/Week Views, Filters, Detail Panel)** |
+| **Status** | **🥇 PHASE 4 COMPLETE** (2026-05-01) |
+| **Root Cause** | Calendar Modal benötigt AI-Planung für natürlichsprachliche Kalender-Optimierung, Inline-Editing für schnelle Änderungen, Tag-/Wochenansicht für bessere Übersicht, Filter für flexible Zeiträume, Detail-Panel für vollständige Event-Informationen. |
+| **Umsetzung** | **Backend Phase 4:** `calendar_service.py` — Helper-Funktionen `_tool_result_ok()` und `_tool_result_data()` für konsistente Tool-Result-Verarbeitung (ToolResultV1, dict, None). Alle Calendar-Service-Methoden aktualisiert (get_events, create_event, update_event, delete_event). `calendar_ai_engine.py` — Vollständige LLM-Integration: System Prompt (Produktions-Grade), `_strip_code_fences()`, `_extract_json_object_fragment()`, `_extract_text_from_llm_result()`, `_resolve_provider_model_key()` (keyring + model_catalog), `_parse_calendar_plan()`. `generate_plan()` ruft LLM Gateway mit Events-Kontext, optionaler extra_context, Fehlerbehandlung ohne API-Key, Parse-Fallback. `suggest_optimization()` und `resolve_conflict()` delegieren zu `generate_plan()`. `calendar.py` Router — `_ai_plan_context_window()` erweitert Fenster um target_date (±7/+14 Tage). POST /ai/plan nutzt erweitertes Fenster. `test_calendar_modal.py` — Test aktualisiert mit Mock für AI Engine, erweitertes Kontext-Fenster verifiziert. **Frontend Phase 2-3:** `index.html` — Header mit Sync-Status und View Toggle (Agenda/Day/Week), Sidebar mit Filter-Pills (today/week/month/custom), Custom Range Inputs, Source Checkbox (Google), Detail Panel (slide-in), AI Overlay (backdrop + panel), AI Footer mit Quick Actions (Tag optimieren, Fokuszeit blocken) und Command Textarea. `calendar-modal.css` — Extensive Styles: Sidebar, Filter Pills, Detail Panel, Timeline Views (60px/hour), Day/Week Grid, All-Day Chips, AI Overlay, Footer. `calendar-modal.js` — Massive Rewrite: State Management (localEvents, localConflicts, conflictIds, editingEventId, filterPreset, calendarViewMode, calendarViewAnchor), Helper-Funktionen (normEvent, mergeEvents, startOfDay, mondayOfWeek, getFilterRange), API-Fetch mit Auth-Refresh, Inline Editing (toggleEditMode, saveInlineEdit), Day/Week Timeline Rendering (timedEventGeom, overlapAllDay, renderDayViewBody, renderWeekViewBody), Detail Panel (openDetailPanel, closeDetailPanel), AI Plan Integration (requestCalendarAiPlan, renderAiPlanOverlay, executePendingAiPlan, CALENDAR_AI_QUICK_COMMANDS), Filter UI (initCalendarFilters), Polling (startCalendarPoll, stopCalendarPoll), Sync Status (setSyncStatus). |
+| **Ergebnis** | AI Engine voll funktionsfähig mit LLM-Integration (provider-agnostisch via llm_gateway), deterministisches JSON-Parsing, Fallback bei fehlendem API-Key. Frontend Phase 2-3 komplett: Inline-Editing mit Optimistic UI, Tag-/Wochenansicht mit Timeline-Rendering (60px/hour), Filter für heute/Woche/Monat/Custom, Detail-Panel für Event-Details, AI Overlay mit Plan-Vorschau und Apply/Cancel, Quick Actions für häufige KI-Kommandos, Polling für Auto-Sync (60s), Sync-Status-Indikator. |
+| **Files** | `backend/services/calendar/calendar_service.py` (_tool_result_ok, _tool_result_data, updated all methods), `backend/services/calendar/calendar_ai_engine.py` (full LLM integration, 200+ lines), `backend/api/routers/calendar.py` (_ai_plan_context_window, updated /ai/plan), `backend/tests/test_calendar_modal.py` (updated AI test), `frontend/index.html` (header, sidebar, detail panel, AI overlay, footer), `frontend/css/calendar-modal.css` (Phase 2-3 styles, 460+ lines), `frontend/js/calendar-modal.js` (massive rewrite, 1100+ lines). |
+| **Verifikation** | Backend Compile: ✅ `python -m py_compile` für alle Calendar-Dateien. AI Engine: ✅ LLM-Integration mit llm_gateway, JSON-Parsing robust. Frontend: ✅ Inline Editing funktioniert, Day/Week Views rendern korrekt, Filter wechseln Zeitraum, Detail Panel öffnet/schließt, AI Overlay zeigt Plan, Quick Actions füllen Command-Input. Integration: ✅ POST /ai/plan liefert strukturierten Plan, Apply führt Aktionen aus. |
+| **Patterns** | [PATTERN] #ToolResultNormalization "Konsistente Helper-Funktionen für Tool-Result-Verarbeitung (_tool_result_ok, _tool_result_data) — abstrahiert ToolResultV1, dict, None in einheitliche API" |
+| **Patterns** | [PATTERN] #DeterministicJsonParsing "Stripping von Code-Fences, Brute-Force JSON-Objekt-Extraktion via Depth-Tracking — robust gegen LLM-Artefakte" |
+| **Patterns** | [PATTERN] #CalendarTimelineRendering "Pixel-basierte Zeitachse (60px/hour) mit absoluter Positionierung für Tag-/Wochenansicht — deterministische Visualisierung von Events" |
+| **Patterns** | [PATTERN] #OptimisticInlineEditing "Lokale State-Änderung vor API-Call mit Rollback bei Fehler — schnelle UI-Feedback ohne Latenz" |
+| **Notizen** | AI Engine nutzt llm_gateway für Provider-Agnostik. Timeline-Rendering basiert auf lokalem Tagesbeginn (Europe/Berlin). Polling stoppt bei geschlossenem Modal oder aktivem Edit-Mode. |
 
 ---
 

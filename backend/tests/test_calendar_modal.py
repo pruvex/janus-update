@@ -9,12 +9,14 @@ from datetime import datetime, timedelta
 from fastapi.testclient import TestClient
 from unittest.mock import AsyncMock, patch
 
+import backend.api.routers.calendar as calendar_router
 from backend.main import app
 from backend.data.schemas_calendar import (
     JanusCalendarEvent,
     CreateEventRequest,
     UpdateEventRequest,
     CalendarEventsResponse,
+    CalendarAIPlan,
 )
 
 
@@ -301,29 +303,40 @@ class TestCalendarAPI:
     # ─────────────────────────────────────────────────────────
     
     def test_generate_ai_plan(self, mock_service):
-        """Test: AI-Plan generieren (Phase 1 Platzhalter)."""
-        # Arrange
+        """Test: POST /ai/plan lädt Events-Kontext und liefert einen KI-Plan (LLM gemockt)."""
         mock_service.get_events = AsyncMock(return_value=CalendarEventsResponse(
             events=[],
             conflicts=[],
             sync_status="synced",
             total_count=0,
         ))
-        
+        expected = CalendarAIPlan(
+            summary="Vorschlag: 2h Fokusblock am Nachmittag.",
+            actions=[],
+            risk_level="low",
+        )
+
         payload = {
             "command": "Optimiere meinen Tag",
             "date": "2026-05-02",
         }
-        
-        # Act
-        response = client.post("/api/calendar/ai/plan", json=payload)
-        
-        # Assert
+
+        with patch.object(
+            calendar_router._calendar_ai_engine,
+            "generate_plan",
+            new=AsyncMock(return_value=expected),
+        ):
+            response = client.post("/api/calendar/ai/plan", json=payload)
+
         assert response.status_code == 200
         data = response.json()
-        assert "not implemented" in data["summary"].lower() or "Phase 1" in data["summary"]
+        assert data["summary"] == expected.summary
         assert data["actions"] == []
         assert data["risk_level"] == "low"
+        mock_service.get_events.assert_called_once()
+        call_kwargs = mock_service.get_events.call_args.kwargs
+        assert call_kwargs["start_date"] == "2026-04-25"
+        assert call_kwargs["end_date"] == "2026-05-16"
 
 
 class TestCalendarService:

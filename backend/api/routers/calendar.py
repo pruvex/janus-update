@@ -6,7 +6,7 @@ REST-Endpoints für Event-CRUD und Sync-Operationen.
 
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Dict, Optional, Tuple
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -31,6 +31,20 @@ router = APIRouter(prefix="/calendar", tags=["calendar"])
 # Singleton-Instanzen
 _calendar_service = CalendarService()
 _calendar_ai_engine = CalendarAIEngine()
+
+
+def _ai_plan_context_window(target_date: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
+    """Erweitertes Fenster um target_date (YYYY-MM-DD) für LLM-Kontext."""
+    if not target_date or not str(target_date).strip():
+        return None, None
+    ds = str(target_date).strip()
+    try:
+        d = datetime.strptime(ds, "%Y-%m-%d")
+    except ValueError:
+        return None, None
+    start = (d - timedelta(days=7)).strftime("%Y-%m-%d")
+    end = (d + timedelta(days=14)).strftime("%Y-%m-%d")
+    return start, end
 
 
 @router.get("/events", response_model=CalendarEventsResponse)
@@ -230,19 +244,19 @@ async def generate_ai_plan(
     """
     try:
         logger.info(f"POST /ai/plan - command={request.command[:50]}...")
-        
-        # Hole aktuelle Events als Kontext
+        start_d, end_d = _ai_plan_context_window(request.date)
         events_response = await _calendar_service.get_events(
-            days_in_future=7,
-            start_date=request.date if request.date else None,
+            start_date=start_d or (request.date if request.date else None),
+            end_date=end_d,
+            days_in_future=21 if not request.date else 30,
         )
-        
+        extra: Dict[str, Any] = dict(request.context) if isinstance(request.context, dict) else {}
         plan = await _calendar_ai_engine.generate_plan(
             command=request.command,
             events=events_response.events,
             date=request.date,
+            extra_context=extra,
         )
-        
         return plan
         
     except Exception as e:
