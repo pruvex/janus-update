@@ -1102,12 +1102,57 @@
             </div>
           </div>
           <div class="calendar-modal-body">
-            <div class="calendar-toolbar">
-              <button id="create-event-btn">Neuer Termin</button>
+            <div class="calendar-modal-layout">
+              <aside class="calendar-modal-sidebar" aria-label="Kalenderfilter">
+                <div class="calendar-sidebar-section">
+                  <div class="calendar-sidebar-label">Zeitraum</div>
+                  <div class="calendar-filter-pills" role="group" aria-label="Zeitraumfilter">
+                    <button type="button" class="calendar-filter-btn" data-filter="today">Heute</button>
+                    <button type="button" class="calendar-filter-btn calendar-filter-btn--active" data-filter="week">Woche</button>
+                    <button type="button" class="calendar-filter-btn" data-filter="month">Monat</button>
+                    <button type="button" class="calendar-filter-btn" data-filter="custom">Benutzerdefiniert</button>
+                  </div>
+                  <div id="calendar-custom-range" class="calendar-custom-range" hidden>
+                    <label class="calendar-sidebar-label" for="calendar-range-start">Von</label>
+                    <input type="date" id="calendar-range-start" class="calendar-sidebar-input" />
+                    <label class="calendar-sidebar-label" for="calendar-range-end">Bis</label>
+                    <input type="date" id="calendar-range-end" class="calendar-sidebar-input" />
+                    <button type="button" id="calendar-apply-custom-range" class="calendar-sidebar-apply">
+                      Anwenden
+                    </button>
+                  </div>
+                </div>
+                <div class="calendar-sidebar-section">
+                  <div class="calendar-sidebar-label">Quellen</div>
+                  <label class="calendar-source-row">
+                    <input type="checkbox" id="calendar-source-google" checked />
+                    <span>Google</span>
+                  </label>
+                </div>
+              </aside>
+              <div class="calendar-modal-main">
+                <div class="calendar-toolbar">
+                  <button type="button" id="create-event-btn">Neuer Termin</button>
+                </div>
+                <div id="calendar-agenda">
+                  <div class="calendar-empty">Lade Termine...</div>
+                </div>
+              </div>
             </div>
-            <div id="calendar-agenda">
-              <div class="calendar-empty">Lade Termine...</div>
-            </div>
+            <aside
+              id="calendar-detail-panel"
+              class="calendar-detail-panel"
+              hidden
+              aria-label="Termindetails"
+            >
+              <div class="calendar-detail-header">
+                <h3 class="calendar-detail-title" id="calendar-detail-title"></h3>
+                <button type="button" id="calendar-detail-close" class="calendar-detail-close" aria-label="Details schließen">
+                  ×
+                </button>
+              </div>
+              <div class="calendar-detail-body" id="calendar-detail-body"></div>
+            </aside>
           </div>
         </div>
       </div>

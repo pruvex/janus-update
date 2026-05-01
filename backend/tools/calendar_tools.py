@@ -256,6 +256,7 @@ async def create_calendar_event(
     start_time_str: str,
     location: Optional[str] = None,
     description: Optional[str] = None,
+    end_time_str: Optional[str] = None,
     # Dependency Injection Argumente (werden vom Executor gefüllt):
     db: Session = None,
     api_key: str = None,
@@ -338,7 +339,27 @@ async def create_calendar_event(
                     suggest_follow_up=False,
                 )
 
-        end_dt = start_dt + dt.timedelta(hours=1)
+        if end_time_str:
+            normalized_end_str = (
+                end_time_str.lower().replace("am ", "").replace("um ", "").replace("den ", "")
+            )
+            end_dt = dateparser.parse(
+                normalized_end_str,
+                languages=["de", "en"],
+                settings={
+                    "TIMEZONE": "Europe/Berlin",
+                    "RETURN_AS_TIMEZONE_AWARE": True,
+                    "PREFER_DATES_FROM": "future",
+                },
+            )
+            if end_dt is None:
+                return _cal_err(
+                    "DATE_PARSE_FAILED",
+                    f"Konnte Endzeit '{end_time_str}' nicht parsen.",
+                    started_at=t0,
+                )
+        else:
+            end_dt = start_dt + dt.timedelta(hours=1)
         has_time = bool(
             re.search(r"(\d{1,2}:\d{2}|\d{1,2}\s*uhr)", start_time_str.lower())
         ) or not (start_dt.hour == 0 and start_dt.minute == 0)
@@ -522,7 +543,11 @@ async def update_calendar_event(
             service.events().update(calendarId="primary", eventId=event["id"], body=event).execute
         )
         return _cal_ok(
-            {"event_id": updated_event.get("id"), "summary": updated_event.get("summary")},
+            {
+                "event_id": updated_event.get("id"),
+                "summary": updated_event.get("summary"),
+                "updated_event": updated_event,
+            },
             message=f"Termin '{updated_event.get('summary')}' wurde erfolgreich aktualisiert.",
             started_at=t0,
             primary_entity_id=str(updated_event.get("id")) if updated_event.get("id") else None,

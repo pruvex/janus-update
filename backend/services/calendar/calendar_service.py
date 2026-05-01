@@ -26,6 +26,28 @@ from backend.tools.calendar_tools import (
 logger = logging.getLogger("janus_backend.calendar_service")
 
 
+def _tool_result_ok(result: Any) -> bool:
+    if result is None:
+        return False
+    st = getattr(result, "status", None)
+    if st is not None:
+        return st == "ok"
+    if isinstance(result, dict):
+        return result.get("status") == "ok" or result.get("ok") is True
+    return False
+
+
+def _tool_result_data(result: Any) -> Dict[str, Any]:
+    if result is None:
+        return {}
+    data = getattr(result, "data", None)
+    if data is not None:
+        return data if isinstance(data, dict) else {}
+    if isinstance(result, dict):
+        return result.get("data") or {}
+    return {}
+
+
 class CalendarService:
     """Service Layer für Calendar-Operationen. Wrappt calendar_tools.py."""
     
@@ -64,8 +86,10 @@ class CalendarService:
                 end_date=end_date,
             )
             
-            if not result or not result.get("ok"):
-                error_msg = result.get("message", "Unknown error") if result else "No response"
+            if not _tool_result_ok(result):
+                error_msg = getattr(result, "message", None) or (
+                    result.get("message", "Unknown error") if isinstance(result, dict) else "No response"
+                )
                 logger.error(f"Failed to get calendar events: {error_msg}")
                 return CalendarEventsResponse(
                     events=[],
@@ -73,7 +97,7 @@ class CalendarService:
                     total_count=0,
                 )
             
-            data = result.get("data", {})
+            data = _tool_result_data(result)
             raw_events = data.get("events", [])
             
             # Normalisiere Google Events zu JanusCalendarEvent
@@ -122,21 +146,24 @@ class CalendarService:
             start_str = request.start.strftime("%Y-%m-%d %H:%M")
             
             # Rufe bestehende Funktion
+            end_str = request.end.strftime("%Y-%m-%d %H:%M")
             result = await create_calendar_event(
                 summary=request.title,
                 start_time_str=start_str,
                 location=request.location,
                 description=request.description,
-                duration_minutes=self._calculate_duration_minutes(request.start, request.end),
+                end_time_str=end_str,
             )
             
-            if not result or not result.get("ok"):
-                error_msg = result.get("message", "Unknown error") if result else "No response"
+            if not _tool_result_ok(result):
+                error_msg = getattr(result, "message", None) or (
+                    result.get("message", "Unknown error") if isinstance(result, dict) else "No response"
+                )
                 logger.error(f"Failed to create event: {error_msg}")
                 return None
             
             # Extrahiere erstelltes Event aus Response
-            data = result.get("data", {})
+            data = _tool_result_data(result)
             created_event_data = data.get("created_event")
             
             if created_event_data:
@@ -175,11 +202,13 @@ class CalendarService:
         try:
             result = await delete_calendar_event(event_id)
             
-            if result and result.get("ok"):
+            if _tool_result_ok(result):
                 logger.info(f"Event {event_id} deleted successfully")
                 return True
             else:
-                error_msg = result.get("message", "Unknown error") if result else "No response"
+                error_msg = getattr(result, "message", None) or (
+                    result.get("message", "Unknown error") if isinstance(result, dict) else "No response"
+                )
                 logger.error(f"Failed to delete event {event_id}: {error_msg}")
                 return False
                 
@@ -212,33 +241,30 @@ class CalendarService:
             if request.description is not None:
                 update_data["description"] = request.description
             
-            # Zeit-Felder
             start_time_str = None
+            end_time_str = None
             if request.start is not None:
                 start_time_str = request.start.strftime("%Y-%m-%d %H:%M")
-            
-            duration = None
-            if request.start is not None and request.end is not None:
-                duration = self._calculate_duration_minutes(request.start, request.end)
-            elif request.is_all_day is not None:
-                duration = 1440 if request.is_all_day else None
+            if request.end is not None:
+                end_time_str = request.end.strftime("%Y-%m-%d %H:%M")
             
             result = await update_calendar_event(
                 event_id=event_id,
                 summary=update_data.get("summary"),
                 start_time_str=start_time_str,
-                duration_minutes=duration,
+                end_time_str=end_time_str,
                 location=update_data.get("location"),
                 description=update_data.get("description"),
             )
             
-            if not result or not result.get("ok"):
-                error_msg = result.get("message", "Unknown error") if result else "No response"
+            if not _tool_result_ok(result):
+                error_msg = getattr(result, "message", None) or (
+                    result.get("message", "Unknown error") if isinstance(result, dict) else "No response"
+                )
                 logger.error(f"Failed to update event {event_id}: {error_msg}")
                 return None
             
-            # Hole aktualisiertes Event
-            data = result.get("data", {})
+            data = _tool_result_data(result)
             updated_event_data = data.get("updated_event")
             
             if updated_event_data:
