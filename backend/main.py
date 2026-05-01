@@ -865,7 +865,7 @@ async def debug_memory_system():
 
 # 5. Include Routers
 # Hier wird die modulare Struktur eingebunden
-from backend.api.routers import chat, contacts, context, memory, media, rag, system, local_llm, styles, image_engine, projects, images, users, tasks
+from backend.api.routers import chat, contacts, context, memory, media, rag, system, local_llm, styles, image_engine, projects, images, users, tasks, calendar
 
 app.include_router(chat.router, prefix="/api", tags=["Chat"], dependencies=[Depends(api_key_auth)])
 app.include_router(contacts.router, prefix="/api", tags=["Contacts"], dependencies=[Depends(api_key_auth)])
@@ -884,6 +884,7 @@ app.include_router(projects.router, prefix="/api", tags=["Projects"], dependenci
 app.include_router(images.router, prefix="/api", tags=["Images"], dependencies=[Depends(api_key_auth)])
 app.include_router(users.router, prefix="/api", tags=["Users"], dependencies=[Depends(api_key_auth)])
 app.include_router(tasks.router, prefix="/api", tags=["Tasks"], dependencies=[Depends(api_key_auth)])
+app.include_router(calendar.router, prefix="/api", tags=["Calendar"], dependencies=[Depends(api_key_auth)])
 app.include_router(consent.router, prefix="/api/consent", tags=["Consent"])
 
 
