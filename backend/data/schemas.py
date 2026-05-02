@@ -1272,7 +1272,12 @@ class SaveCoreMemoryToolArgs(BaseModel):
 class FindAndUpdateCalendarEventArgs(BaseModel):
     event_title_query: str = Field(
         ...,
-        description="Suchtext für den Termintitel (Fuzzy-Match); sollte den Termin eindeutig genug treffen.",
+        description=(
+            "Suchtext für den Termintitel (Fuzzy-Match). "
+            "KRITISCH: Dieser Parameter heißt zwingend 'event_title_query' — "
+            "NICHT 'query', NICHT 'title', NICHT 'event_name'. "
+            "Beispiel: 'event_title_query': 'Aldi'"
+        ),
     )
     new_summary: Optional[str] = Field(None, description="Neuer Kalendertitel (optional).")
     new_start_time: Optional[str] = Field(

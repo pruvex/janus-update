@@ -215,6 +215,18 @@ CALENDAR_COMMAND_MARKERS: Tuple[str, ...] = (
     "ergänzen",
     "hinzufügen",
     "mit",
+    # Mutation / reminder triggers (TASK-062-b)
+    "vergessen",
+    "denk an",
+    "denke an",
+    "erinnere",
+    "notier",
+    "notiere",
+    "notiere das",
+    "notier das",
+    "trag ein",
+    "nicht vergessen",
+    "auf die liste",
 )
 
 CALENDAR_OBJECT_MARKERS: Tuple[str, ...] = (

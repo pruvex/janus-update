@@ -1,9 +1,10 @@
 {
   "legacy_name": "find_and_update_calendar_event",
   "skill": "calendar.find_and_update_event",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "sandbox_level": "unrestricted",
   "latency_class": "normal",
+  "description": "Sucht einen bestehenden Kalender-Termin per Fuzzy-Titel-Match und aktualisiert Zeit, Ort oder Beschreibung. Zum Verschieben, Umbenennen, Notizen hinzufügen oder Absagen.",
   "tags": [
     "calendar"
   ],
@@ -14,5 +15,29 @@
   "is_agent_ready": true,
   "max_calls_per_turn": 3,
   "depends_on": [],
-  "examples": []
+  "parameter_hints": {
+    "event_title_query": {
+      "description": "Suchtext für den Termintitel. KRITISCH: Nutze zwingend diesen Parameter-Namen 'event_title_query', NICHT 'query', NICHT 'title', NICHT 'event_name'! Beispiel: 'event_title_query': 'Aldi'",
+      "example": "Aldi Süd"
+    },
+    "new_start_time": {
+      "description": "Neuer Startzeitpunkt als ISO-8601-String. Beispiel: '2026-05-03T20:00:00+02:00'. NICHT 'start_time'!"
+    },
+    "new_end_time": {
+      "description": "Neues Ende als ISO-8601-String. NICHT 'end_time'!"
+    },
+    "new_description": {
+      "description": "Neue oder ergänzte Notiz/Beschreibung für den Termin."
+    }
+  },
+  "examples": [
+    {
+      "user": "Verschiebe meinen Aldi-Termin auf 20 Uhr",
+      "tool_call": {"event_title_query": "Aldi", "new_start_time": "2026-05-03T20:00:00+02:00"}
+    },
+    {
+      "user": "Trage beim Aldi-Termin ein: Milch nicht vergessen",
+      "tool_call": {"event_title_query": "Aldi", "new_description": "Milch nicht vergessen"}
+    }
+  ]
 }
