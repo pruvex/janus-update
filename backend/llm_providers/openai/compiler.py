@@ -35,6 +35,9 @@ class OpenAICompiler(BasePromptCompiler):
             rules += "</grounding_rules>"
             return rules
 
+        elif b_type in {"intent_contract", "capability_scope", "negative_constraints", "tool_rules"}:
+            return f"<{b_type}>\n{content}\n</{b_type}>"
+
         elif b_type == "output_contract":
             output_format = str(getattr(content, "format", "") or "").strip().lower()
             if is_mini_or_nano and output_format == "json":

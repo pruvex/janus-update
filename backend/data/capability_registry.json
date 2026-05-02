@@ -586,6 +586,209 @@
         }
       }
     },
+    "shopping": {
+      "display_name": {
+        "de": "Shopping & Preise",
+        "en": "Shopping & Prices"
+      },
+      "icon": "€",
+      "description": {
+        "de": "Live-Preisvergleiche und Kaufberatung mit verifizierbaren Quellen",
+        "en": "Live price comparisons and shopping assistance with verifiable sources"
+      },
+      "abilities": [
+        {
+          "id": "shopping.price_compare",
+          "label": {
+            "de": "Preise vergleichen",
+            "en": "Compare Prices"
+          },
+          "skill_refs": ["system.price_comparison"],
+          "how_to": {
+            "de": "Frage: 'Was kostet...' oder 'Finde den besten Preis für...'",
+            "en": "Ask: 'What does ... cost?' or 'Find the best price for...'"
+          }
+        }
+      ],
+      "ui_locations": {}
+    },
+    "geo_routing": {
+      "display_name": {
+        "de": "Orte & Routen",
+        "en": "Places & Routes"
+      },
+      "icon": "map",
+      "description": {
+        "de": "Länderinformationen, Routen, Distanzen und lokale Geschäfte",
+        "en": "Country facts, routes, distances, and local businesses"
+      },
+      "abilities": [
+        {
+          "id": "geo.country_info",
+          "label": {
+            "de": "Länderinformationen",
+            "en": "Country Info"
+          },
+          "skill_refs": ["system.country_info"],
+          "how_to": {
+            "de": "Frage: 'Wie viele Einwohner hat Japan?' oder 'Welche Währung hat Schweden?'",
+            "en": "Ask: 'How many people live in Japan?' or 'What currency does Sweden use?'"
+          }
+        },
+        {
+          "id": "geo.route",
+          "label": {
+            "de": "Route berechnen",
+            "en": "Calculate Route"
+          },
+          "skill_refs": ["system.routing"],
+          "how_to": {
+            "de": "Frage: 'Wie weit ist es von Tokio nach Kyoto?'",
+            "en": "Ask: 'How far is Tokyo from Kyoto?'"
+          }
+        },
+        {
+          "id": "geo.local_business",
+          "label": {
+            "de": "Lokale Geschäfte finden",
+            "en": "Find Local Businesses"
+          },
+          "skill_refs": ["system.local_business"],
+          "how_to": {
+            "de": "Frage: 'Finde eine Apotheke in meiner Nähe.'",
+            "en": "Ask: 'Find a pharmacy nearby.'"
+          }
+        }
+      ],
+      "ui_locations": {}
+    },
+    "web_research": {
+      "display_name": {
+        "de": "Web-Recherche",
+        "en": "Web Research"
+      },
+      "icon": "web",
+      "description": {
+        "de": "Aktuelle Webinformationen, Nachrichten und Wikipedia-Zusammenfassungen",
+        "en": "Current web information, news, and Wikipedia summaries"
+      },
+      "abilities": [
+        {
+          "id": "web.search",
+          "label": {
+            "de": "Websuche",
+            "en": "Web Search"
+          },
+          "skill_refs": ["system.websearch", "system.rss_news", "system.wikipedia_summary"],
+          "how_to": {
+            "de": "Frage nach aktuellen Fakten, Nachrichten oder Hintergrundwissen.",
+            "en": "Ask for current facts, news, or background information."
+          }
+        }
+      ],
+      "ui_locations": {}
+    },
+    "document_generation": {
+      "display_name": {
+        "de": "Dokument-Erstellung",
+        "en": "Document Generation"
+      },
+      "icon": "doc",
+      "description": {
+        "de": "PDFs und Dokumente aus explizit angefordertem Inhalt erzeugen",
+        "en": "Create PDFs and documents from explicitly requested content"
+      },
+      "abilities": [
+        {
+          "id": "document.create_pdf",
+          "label": {
+            "de": "PDF erstellen",
+            "en": "Create PDF"
+          },
+          "skill_refs": ["system.create_pdf"],
+          "how_to": {
+            "de": "Sag ausdrücklich: 'Erstelle ein PDF mit folgendem Inhalt...'",
+            "en": "Say explicitly: 'Create a PDF with this content...'"
+          }
+        }
+      ],
+      "ui_locations": {}
+    },
+    "calendar": {
+      "display_name": {
+        "de": "Kalender & Termine",
+        "en": "Calendar & Appointments"
+      },
+      "icon": "📅",
+      "description": {
+        "de": "Kalendertermine lesen, erstellen, ändern und löschen (Google Calendar)",
+        "en": "Read, create, modify, and delete calendar events (Google Calendar)"
+      },
+      "abilities": [
+        {
+          "id": "calendar.read",
+          "label": {
+            "de": "Termine abrufen",
+            "en": "Fetch Events"
+          },
+          "skill_refs": ["calendar.list_events", "calendar.find_slots"],
+          "how_to": {
+            "de": "Frage: 'Was habe ich nächste Woche?' oder 'Welche Termine habe ich am Mittwoch?'",
+            "en": "Ask: 'What do I have next week?' or 'What appointments do I have on Wednesday?'"
+          }
+        },
+        {
+          "id": "calendar.create",
+          "label": {
+            "de": "Termin erstellen",
+            "en": "Create Event"
+          },
+          "skill_refs": ["calendar.create_event"],
+          "how_to": {
+            "de": "Sag: 'Erstelle einen Termin für Montag 10 Uhr: Arzt.' oder 'Füge Besprechung am Dienstag um 14:00 hinzu.'",
+            "en": "Say: 'Create an appointment for Monday at 10am: Doctor.' or 'Add meeting Tuesday at 2pm.'"
+          }
+        },
+        {
+          "id": "calendar.update",
+          "label": {
+            "de": "Termin ändern",
+            "en": "Update Event"
+          },
+          "skill_refs": ["calendar.update_event", "calendar.find_and_update_event", "calendar.update_event_description", "calendar.find_address_and_update_event"],
+          "how_to": {
+            "de": "Sag: 'Verschiebe meinen Arzttermin auf Mittwoch.' oder 'Aktualisiere die Adresse des Meetings.'",
+            "en": "Say: 'Move my doctor appointment to Wednesday.' or 'Update the meeting address.'"
+          }
+        },
+        {
+          "id": "calendar.delete",
+          "label": {
+            "de": "Termin löschen",
+            "en": "Delete Event"
+          },
+          "skill_refs": ["calendar.delete_event"],
+          "how_to": {
+            "de": "Sag: 'Lösche den Zahnarzttermin am Freitag.' oder 'Entferne das Meeting am Donnerstag.'",
+            "en": "Say: 'Delete the dentist appointment on Friday.' or 'Remove Thursday's meeting.'"
+          }
+        }
+      ],
+      "ui_locations": {
+        "calendar": {
+          "label": {
+            "de": "Kalender",
+            "en": "Calendar"
+          },
+          "action": {
+            "type": "open_module",
+            "payload": {
+              "module": "calendar"
+            }
+          }
+        }
+      }
+    },
     "video_system": {
       "display_name": {
         "de": "Video-System",

@@ -122,6 +122,27 @@ async def _reason_and_respond_with_provider_fixes(**kwargs: Any) -> Dict[str, An
     return await llm_gateway.reason_and_respond(**kwargs)
 
 
+_CALENDAR_QUERY_TOKENS = frozenset([
+    "termin", "termine", "kalender", "kalendereintr", "kalendereintrag",
+    "verabredung", "verabredungen", "appointment", "schedule", "zeitplan",
+    "meeting", "treffen", "treffe", "wann habe ich", "was habe ich",
+    "welche termine", "nächsten mittwoch", "nächste woche", "diese woche",
+    "freie zeit", "freier slot", "wann bin ich", "bin ich verfügbar",
+])
+
+_CALENDAR_INCOMPATIBLE_SKILLS = frozenset([
+    "system.create_pdf",
+    "create_pdf_from_markdown",
+    "system.generate_image",
+    "knowledge.edit_pdf",
+])
+
+
+def _is_calendar_query(query: str) -> bool:
+    q = query.lower()
+    return any(tok in q for tok in _CALENDAR_QUERY_TOKENS)
+
+
 def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
     """Apply intent-based model escalation for complex tasks before resolution."""
     # --- Intent-based Model Escalation ---
@@ -130,6 +151,21 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
         last_msg = wf.user_text
     if last_msg:
         query = last_msg.lower()
+
+        # Calendar guard: purge PDF/image skills when user is asking about appointments.
+        if _is_calendar_query(query) and hasattr(wf, 'relevant_skill_ids'):
+            before = list(wf.relevant_skill_ids)
+            wf.relevant_skill_ids = [
+                sid for sid in wf.relevant_skill_ids
+                if sid not in _CALENDAR_INCOMPATIBLE_SKILLS
+            ]
+            removed = [s for s in before if s not in wf.relevant_skill_ids]
+            if removed:
+                logger.warning(
+                    "[CALENDAR-GUARD] Kalenderanfrage erkannt. Entferne inkompatible Skills aus relevant_skill_ids: %s",
+                    removed,
+                )
+
         # Harte Erkennung für den Sortier-Auftrag
         is_sort_intent = 'sortiere' in query and ('pdf' in query or 'dateien' in query)
         # Harte Erkennung für RAG-Intents (Suche Datei X, Lies Datei Y)
@@ -294,7 +330,23 @@ async def execute_generation_prepare_gateway(
         wf._GERMAN_DAYS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
         wf._now_local = datetime.now()
         wf._day_name = wf._GERMAN_DAYS[wf._now_local.weekday()]
-        wf._clock_line = f"AKTUELLES DATUM/UHRZEIT: {wf._day_name}, {wf._now_local.strftime('%d.%m.%Y, %H:%M')} Uhr\n\n"
+        # Build a 14-day weekday→date map so the model never guesses weekdays.
+        _weekday_rows = []
+        for _delta in range(14):
+            from datetime import timedelta as _td
+            _d = wf._now_local.date() + _td(days=_delta)
+            _label = "(heute)" if _delta == 0 else ("(morgen)" if _delta == 1 else "")
+            _weekday_rows.append(
+                f"  {wf._GERMAN_DAYS[_d.weekday()]}: {_d.strftime('%d.%m.%Y')}{' ' + _label if _label else ''}"
+            )
+        _weekday_calendar = "\n".join(_weekday_rows)
+        wf._clock_line = (
+            f"AKTUELLES DATUM/UHRZEIT: {wf._day_name}, {wf._now_local.strftime('%d.%m.%Y, %H:%M')} Uhr\n"
+            f"WOCHENTAG-KALENDER (VERBINDLICH — NIEMALS DAVON ABWEICHEN):\n"
+            f"{_weekday_calendar}\n"
+            f"REGEL: Wenn der Nutzer 'nächsten [Wochentag]' sagt, schlage im obigen Kalender nach. "
+            f"NIEMALS Wochentage erraten oder aus dem Gedächtnis ableiten.\n\n"
+        )
         wf.final_system_prompt = wf._clock_line + wf.final_system_prompt
         if wf.relevant_skill_ids:
             wf._skill_directive_parts = []

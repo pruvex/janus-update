@@ -313,7 +313,14 @@ class ChatOrchestrator:
         self.context_builder = ContextBuilder(db)
         self.orchestrator_context = OrchestratorContextManager(db)
         self.status_sync = OrchestratorStatusSync(db)
-        self.skill_selector = SkillSelector()
+        # Help System + CapabilityRegistry (FEAT-HELP-001) — vor SkillSelector, damit
+        # get_relevant_skills nur Registry-validierte Skill-Refs sieht (keine DOMAIN_KEYWORDS).
+        registry_path = get_resource_path("backend/data/capability_registry.json")
+        skills_dir = get_resource_path("backend/skills")
+        self.capability_registry = CapabilityRegistry(registry_path, skills_dir)
+        self.capability_registry.load()
+        self.help_skill = create_help_skill(self.capability_registry)
+        self.skill_selector = SkillSelector(capability_registry=self.capability_registry)
         self.agent_planner = AgentPlanner(model_hierarchy=self.MODEL_HIERARCHY)
         self.agent_runtime = AgentRuntime(db=db, context_manager=context_manager)
         self.execution_engine = OrchestratorExecutionEngine(
@@ -323,15 +330,9 @@ class ChatOrchestrator:
             agent_planner=self.agent_planner,
             agent_runtime=self.agent_runtime,
             skill_selector=self.skill_selector,
+            capability_registry=self.capability_registry,
         )
         self._policy_pending_data: Dict[int, Optional[Dict[str, Any]]] = {}
-        # Help System (FEAT-HELP-001)
-        # Use get_resource_path for PyInstaller compatibility (.exe vs script)
-        registry_path = get_resource_path("backend/data/capability_registry.json")
-        skills_dir = get_resource_path("backend/skills")
-        self.capability_registry = CapabilityRegistry(registry_path, skills_dir)
-        self.capability_registry.load()
-        self.help_skill = create_help_skill(self.capability_registry)
 
     def _get_policy_pending_data(self, chat_id: Optional[int]) -> Optional[Dict[str, Any]]:
         if chat_id is None:
@@ -1339,7 +1340,7 @@ class ChatOrchestrator:
                 ctx.workflow.mark_retry_path('meta_phase1_forced')
                 wf.phase1_execution = await self._run_meta_agent_research_fallback(user_text=wf.user_text, request=request, api_key=wf.api_key or '', skip_final_synthesis=True, meta_profile=wf.meta_profile)
             else:
-                wf.phase1_execution = await self.execution_engine.run_agent_factory(enabled=True, chat_id=request.chat_id, user_text=self._build_meta_research_prompt(wf.user_text, wf.meta_profile.get('phase1_max_tokens')), relevant_skill_ids=wf.dynamic_skills, provider=request.provider, model=request.model, api_key=wf.api_key or '')
+                wf.phase1_execution = await self.execution_engine.run_agent_factory(enabled=True, chat_id=request.chat_id, user_text=self._build_meta_research_prompt(wf.user_text, wf.meta_profile.get('phase1_max_tokens')), relevant_skill_ids=wf.dynamic_skills, provider=request.provider, model=request.model, api_key=wf.api_key or '', intent_result=wf.intent_detection_result)
             if wf.kpi_phase1_started_at is not None:
                 wf.kpi_phase1_research_ms = round((time.perf_counter() - wf.kpi_phase1_started_at) * 1000.0, 2)
             if wf.phase1_execution.is_agent_flow:
@@ -1358,7 +1359,7 @@ class ChatOrchestrator:
                         wf.phase2_prompt = prompt_registry.get_directive("meta_phase2_mandatory_pdf").format(
                             fname=wf.fname, phase1_context=wf.phase1_context
                         )
-                    wf.phase2_execution = await self.execution_engine.run_agent_factory(enabled=True, chat_id=request.chat_id, user_text=wf.phase2_prompt, relevant_skill_ids=wf.pdf_only_skill, provider=request.provider, model=request.model, api_key=wf.api_key or '')
+                    wf.phase2_execution = await self.execution_engine.run_agent_factory(enabled=True, chat_id=request.chat_id, user_text=wf.phase2_prompt, relevant_skill_ids=wf.pdf_only_skill, provider=request.provider, model=request.model, api_key=wf.api_key or '', intent_result=wf.intent_detection_result)
                 if wf.phase2_execution.is_agent_flow:
                     wf.agent_response_payload = wf.phase2_execution.agent_payload
                     wf.final_text_to_generate = self._build_meta_pdf_success_message(phase1_context=wf.phase1_context, phase2_text=str(wf.phase2_execution.text or ''))
@@ -1378,7 +1379,7 @@ class ChatOrchestrator:
                 wf.kpi_error_code = 'META_AGENT_PHASE1_FAILED'
                 logger.warning('META-AGENT PHASE 1 fehlgeschlagen, fallback auf Standard-Agent-Flow.')
         if wf.use_agent_factory:
-            wf.agent_execution = await self.execution_engine.run_agent_factory(enabled=True, chat_id=request.chat_id, user_text=wf.user_text, relevant_skill_ids=wf.relevant_skill_ids, provider=request.provider, model=request.model, api_key=wf.api_key or '')
+            wf.agent_execution = await self.execution_engine.run_agent_factory(enabled=True, chat_id=request.chat_id, user_text=wf.user_text, relevant_skill_ids=wf.relevant_skill_ids, provider=request.provider, model=request.model, api_key=wf.api_key or '', intent_result=wf.intent_detection_result)
             if wf.agent_execution.is_agent_flow:
                 wf.agent_response_payload = wf.agent_execution.agent_payload
                 wf.final_text_to_generate = str(wf.agent_execution.text or 'Agent-Ausführung abgeschlossen.')

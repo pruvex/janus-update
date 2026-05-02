@@ -78,6 +78,12 @@ class GeminiCompiler(BasePromptCompiler):
             constraints.extend([str(b.content).strip() for b in blocks_by_type["grounding_rules"]])
         if "tool_rules" in blocks_by_type:
             constraints.extend([str(b.content).strip() for b in blocks_by_type["tool_rules"]])
+        if "intent_contract" in blocks_by_type:
+            constraints.extend([str(b.content).strip() for b in blocks_by_type["intent_contract"]])
+        if "capability_scope" in blocks_by_type:
+            constraints.extend([str(b.content).strip() for b in blocks_by_type["capability_scope"]])
+        if "negative_constraints" in blocks_by_type:
+            constraints.extend([str(b.content).strip() for b in blocks_by_type["negative_constraints"]])
 
         # is_list_query wurde bereits oben berechnet
         if is_list_query:

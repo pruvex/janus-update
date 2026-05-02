@@ -419,6 +419,34 @@ class AgentSpec(BaseModel):
     max_iterations: int = Field(default=5, ge=1)
 
 
+class PlannerProviderProfile(BaseModel):
+    """Runtime profile for planner prompting and deterministic planning."""
+
+    provider: str
+    requested_model: Optional[str] = None
+    planner_model: str
+    model_class: Literal["nano", "mini", "standard", "logic", "local"] = "standard"
+    is_local: bool = False
+    max_iterations_cap: int = Field(default=8, ge=1, le=12)
+    allow_llm_planning: bool = True
+
+
+class PlannerContext(BaseModel):
+    """Structured handoff from Intent Engine and orchestrator into AgentPlanner."""
+
+    original_user_text: str = ""
+    allowed_skill_ids: List[str] = Field(default_factory=list)
+    required_skill_ids: List[str] = Field(default_factory=list)
+    priority_skill_ids: List[str] = Field(default_factory=list)
+    forbidden_skill_ids: List[str] = Field(default_factory=list)
+    negative_constraints: List[str] = Field(default_factory=list)
+    completed_skills: List[str] = Field(default_factory=list)
+    failed_steps: List[str] = Field(default_factory=list)
+    round_idx: int = Field(default=1, ge=1)
+    lockdown_after_pdf: bool = False
+    deterministic_planning_allowed: bool = True
+
+
 # --- Message Schemas ---
 class MessageBase(BaseModel):
     sender: str

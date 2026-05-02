@@ -297,6 +297,55 @@ class CapabilityRegistry:
         """Return list of all category IDs."""
         return list(self._registry.get("categories", {}).keys())
 
+    def get_capability_groups(
+        self,
+        allowed_skill_ids: Optional[List[str]] = None,
+    ) -> Dict[str, List[str]]:
+        """Return planner-facing capability groups from the static registry only."""
+        allowed = {
+            str(skill_id).strip()
+            for skill_id in (allowed_skill_ids or [])
+            if str(skill_id).strip()
+        }
+        groups: Dict[str, List[str]] = {}
+        categories = self._registry.get("categories", {})
+        for category_id, category in categories.items():
+            skill_refs: List[str] = []
+            for ability in category.get("abilities", []):
+                for skill_id in ability.get("skill_refs", []):
+                    sid = str(skill_id or "").strip()
+                    if not sid:
+                        continue
+                    if sid not in self._available_skills:
+                        continue
+                    if allowed and sid not in allowed:
+                        continue
+                    if sid not in skill_refs:
+                        skill_refs.append(sid)
+            if skill_refs:
+                groups[str(category_id)] = skill_refs
+        return groups
+
+    def get_planner_scope(
+        self,
+        intent_result: Any,
+        allowed_skill_ids: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """Build a registry-only skill scope for the Agent Planner."""
+        groups = self.get_capability_groups(allowed_skill_ids=allowed_skill_ids)
+        allowed = sorted({
+            skill
+            for skills in groups.values()
+            for skill in skills
+            if str(skill or "").strip()
+        })
+        primary_intent = str(getattr(intent_result, "primary_intent", "") or "").strip()
+        return {
+            "primary_intent": primary_intent,
+            "capability_groups": groups,
+            "allowed_skill_ids": allowed,
+        }
+
     def get_provider_details(self, provider_id: str, language: str = "de") -> Optional[Dict[str, Any]]:
         """Get provider details by ID.
 

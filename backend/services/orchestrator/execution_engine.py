@@ -9,7 +9,7 @@ from typing import Any, AsyncIterator, Dict, List, Optional, cast
 
 import keyring
 
-from backend.data.schemas import AgentSpec
+from backend.data.schemas import AgentSpec, PlannerContext, PlannerProviderProfile
 from backend.data.schemas_logging import LogEventCreate
 from backend.services.logging.logger_core import log_event
 from backend.llm_providers.gemini.service import GeminiServiceProvider
@@ -21,6 +21,7 @@ from backend.services.tool_executor import ToolExecutor
 from backend.services.tool_manager import tool_manager
 from backend.services.orchestrator.schemas import ExecutionResponse, OrchestratorContext
 from backend.services.orchestrator.stream_protocol import StreamEvent
+from backend.services.orchestrator.intent_engine import IntentDetectionResult
 from backend.services.prompt_cache import clone_decision_for_route, decision_from_gateway_kwargs, merge_decision_into_usage
 from backend.utils.config_loader import load_config_data, load_model_catalog
 from backend.utils.link_sanitizer import force_sanitize_links
@@ -207,13 +208,14 @@ _IRON_GATE_TRUSTED_DOMAINS = ("idealo.de", "geizhals.de")
 class OrchestratorExecutionEngine:
     """Executes agent and gateway tool-loop flows for the orchestrator facade."""
 
-    def __init__(self, db, context_manager, model_hierarchy, agent_planner, agent_runtime, skill_selector):
+    def __init__(self, db, context_manager, model_hierarchy, agent_planner, agent_runtime, skill_selector, capability_registry=None):
         self.db = db
         self.context_manager = context_manager
         self.model_hierarchy = model_hierarchy
         self.agent_planner = agent_planner
         self.agent_runtime = agent_runtime
         self.skill_selector = skill_selector
+        self.capability_registry = capability_registry
 
     # ------------------------------------------------------------------
     # IRON-GATE: Output-Auditor for price_comparison responses
@@ -356,6 +358,91 @@ class OrchestratorExecutionEngine:
             }
         return None
 
+    def _build_planner_capability_groups(self, *, allowed_skill_ids: List[str]) -> Dict[str, List[str]]:
+        if self.capability_registry is not None and hasattr(self.capability_registry, "get_capability_groups"):
+            groups = self.capability_registry.get_capability_groups(allowed_skill_ids=allowed_skill_ids)
+            if groups:
+                return groups
+        return self.skill_selector.filter_capability_groups(
+            tool_manager.get_capability_groups(),
+            allowed_skill_ids,
+        )
+
+    def _build_planner_context(
+        self,
+        *,
+        user_text: str,
+        relevant_skill_ids: List[str],
+        intent_result: IntentDetectionResult,
+    ) -> PlannerContext:
+        allowed = [
+            str(skill_id).strip()
+            for skill_id in (relevant_skill_ids or [])
+            if str(skill_id).strip()
+        ]
+        forbidden: List[str] = []
+        negative_constraints: List[str] = []
+        primary_intent = str(getattr(intent_result, "primary_intent", "") or "")
+
+        if getattr(intent_result, "is_calendar_intent", False) or primary_intent == "calendar":
+            forbidden.extend(["system.create_pdf", "knowledge.edit_pdf", "system.generate_image"])
+            negative_constraints.append(
+                "Kalender-Turn: PDF-, Bild- und Nicht-Kalender-Tools sind verboten. Nutze Kalender-Skills."
+            )
+        if getattr(intent_result, "is_personal_recall", False) or primary_intent == "personal_recall":
+            forbidden.extend(["system.websearch", "system.rss_news"])
+            negative_constraints.append(
+                "Personal-Recall-Turn: Websuche ist verboten; nutze Memory-/Kontext-Skills."
+            )
+        if getattr(intent_result, "is_shopping_intent", False) or primary_intent == "shopping":
+            negative_constraints.append(
+                "Shopping-Turn: system.price_comparison ist Pflicht; system.websearch darf nicht als Ersatz geplant werden."
+            )
+
+        forbidden_set = {s for s in forbidden if s}
+        return PlannerContext(
+            original_user_text=str(user_text or ""),
+            allowed_skill_ids=[s for s in allowed if s not in forbidden_set],
+            forbidden_skill_ids=sorted(forbidden_set),
+            negative_constraints=negative_constraints,
+        )
+
+    def _build_planner_provider_profile(
+        self,
+        *,
+        provider: str,
+        requested_model: Optional[str],
+        planner_model: str,
+    ) -> PlannerProviderProfile:
+        model_id = str(planner_model or requested_model or "").strip()
+        model_l = model_id.lower()
+        provider_key = str(provider or "").strip().lower()
+        is_local = provider_key == "ollama" or ":" in model_l
+        if is_local:
+            model_class = "local"
+            cap = 4
+        elif "nano" in model_l:
+            model_class = "nano"
+            cap = 4
+        elif "mini" in model_l or "flash" in model_l:
+            model_class = "mini"
+            cap = 6
+        elif "pro" in model_l or "logic" in model_l or "gpt-5" in model_l:
+            model_class = "logic"
+            cap = 8
+        else:
+            model_class = "standard"
+            cap = 6
+        return PlannerProviderProfile(
+            provider=provider_key,
+            requested_model=str(requested_model or ""),
+            planner_model=model_id,
+            model_class=model_class,
+            is_local=is_local,
+            max_iterations_cap=cap,
+            allow_llm_planning=True,
+        )
+
     async def run_agent_factory(
         self,
         *,
@@ -366,15 +453,25 @@ class OrchestratorExecutionEngine:
         provider: str,
         model: Optional[str],
         api_key: str,
+        intent_result: IntentDetectionResult,
     ) -> ExecutionResponse:
         if not enabled:
             return ExecutionResponse(text="", agent_payload=None, tool_calls=[], is_agent_flow=False)
 
         try:
             planner_model = self._resolve_planner_model(provider=provider, requested_model=model)
-            capability_groups = self.skill_selector.filter_capability_groups(
-                tool_manager.get_capability_groups(),
-                relevant_skill_ids,
+            provider_profile = self._build_planner_provider_profile(
+                provider=provider,
+                requested_model=model,
+                planner_model=planner_model,
+            )
+            planner_context = self._build_planner_context(
+                user_text=user_text,
+                relevant_skill_ids=relevant_skill_ids,
+                intent_result=intent_result,
+            )
+            capability_groups = self._build_planner_capability_groups(
+                allowed_skill_ids=planner_context.allowed_skill_ids,
             )
             completed_skills: List[str] = []
             step_outputs: List[str] = []
@@ -395,6 +492,17 @@ class OrchestratorExecutionEngine:
                     )
                 agent_spec = await self.agent_planner.plan(
                     user_prompt=planner_prompt,
+                    intent_result=intent_result,
+                    planner_context=planner_context.model_copy(
+                        update={
+                            "completed_skills": list(completed_skills),
+                            "failed_steps": list(failed_steps),
+                            "round_idx": round_idx,
+                            "lockdown_after_pdf": planner_lockdown_after_pdf,
+                        }
+                    ),
+                    provider_profile=provider_profile,
+                    capability_registry=self.capability_registry,
                     capability_groups=capability_groups,
                     relevant_skill_ids=relevant_skill_ids,
                     provider=provider,
