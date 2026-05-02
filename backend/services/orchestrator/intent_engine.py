@@ -145,6 +145,14 @@ CALENDAR_COMMAND_MARKERS: Tuple[str, ...] = (
     "lösche den termin",
     "loesche den termin",
     "erinnere mich",
+    "habe ich",
+    "was habe ich",
+    "was steht an",
+    "steht an",
+    "meine termine",
+    "meine termine",
+    "meinen termin",
+    "meinen terminen",
 )
 
 CALENDAR_OBJECT_MARKERS: Tuple[str, ...] = (
