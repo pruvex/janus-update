@@ -518,10 +518,14 @@ async def execute_generation_prepare_gateway(
                     from backend.services.orchestrator.entity_resolver import (
                         ContextualEntityResolver,
                     )
+                    # Get last 2 turns for deictic fallback
+                    _recent_messages = getattr(wf, "messages", [])[-4:] if hasattr(wf, "messages") else []
                     _resolver_result = ContextualEntityResolver().resolve(
                         query=_mutation_target,
                         snapshot=_snapshot,
                         operation_type="MUTATION",
+                        recent_messages=_recent_messages,
+                        is_calendar_mutation=_is_cal_mutation,
                     )
                     logger.info(
                         "[ENTITY-RESOLVER] status=%s hint=%s delta=%.1f reason=%s",

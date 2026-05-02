@@ -214,6 +214,54 @@ class ResolutionResult:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Context Fallback Helpers
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _extract_event_mentions_from_context(
+    messages: List[Dict[str, Any]],
+    snapshot_events: List[Dict[str, Any]],
+) -> List[str]:
+    """Extract unique event IDs mentioned in recent messages.
+
+    Looks for event mentions by matching message content against event titles
+    from the snapshot. Returns a list of unique event IDs in chronological order.
+    """
+    if not messages or not snapshot_events:
+        return []
+
+    # Build title -> event_id mapping from snapshot
+    title_to_ids: Dict[str, List[str]] = {}
+    for ev in snapshot_events:
+        ev_id = str(ev.get("id") or ev.get("event_id") or "")
+        title = str(ev.get("title") or "")
+        if ev_id and title:
+            title_norm = _normalize_text(title)
+            title_to_ids.setdefault(title_norm, []).append(ev_id)
+
+    mentioned_ids: List[str] = []
+    seen_ids = set()
+
+    # Scan messages in reverse (most recent first)
+    for msg in reversed(messages):
+        content = str(msg.get("content") or "")
+        if not content:
+            continue
+
+        content_norm = _normalize_text(content)
+
+        # Check if any event title is mentioned in this message
+        for title_norm, ev_ids in title_to_ids.items():
+            if title_norm in content_norm:
+                for ev_id in ev_ids:
+                    if ev_id not in seen_ids:
+                        mentioned_ids.append(ev_id)
+                        seen_ids.add(ev_id)
+
+    # Return in chronological order (reverse the reverse)
+    return list(reversed(mentioned_ids))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Main resolver
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -227,6 +275,8 @@ class ContextualEntityResolver:
         operation_type: OperationType = "MUTATION",
         *,
         today: Optional[date] = None,
+        recent_messages: Optional[List[Dict[str, Any]]] = None,
+        is_calendar_mutation: bool = False,
     ) -> ResolutionResult:
         """Resolve *query* against the calendar *snapshot*.
 
@@ -235,6 +285,8 @@ class ContextualEntityResolver:
             snapshot: ``wf.calendar_snapshot`` dict with an ``"events"`` list.
             operation_type: "MUTATION" (conservative) or "READ" (permissive).
             today: Override today's date (for testing). Defaults to date.today().
+            recent_messages: List of recent chat messages (last 2 turns) for deictic fallback.
+            is_calendar_mutation: True if the user intent is calendar mutation (enables context fallback).
         """
         today = today or date.today()
 
@@ -428,5 +480,47 @@ class ContextualEntityResolver:
             result.dispatcher_hint = (
                 "FALLBACK_TO_LIST" if operation_type == "READ" else "CLARIFY_USER"
             )
+
+        # ── Context Fallback: Deictic References ──────────────────────────────
+        # If no match found but we're in a mutation context, check if exactly one
+        # calendar event was mentioned in the last 2 turns (deictic reference).
+        if (
+            result.status == "NOT_FOUND"
+            and is_calendar_mutation
+            and recent_messages
+            and operation_type == "MUTATION"
+        ):
+            mentioned_ids = _extract_event_mentions_from_context(recent_messages, valid_events)
+            if len(mentioned_ids) == 1:
+                # Single event in context → deictic resolution
+                context_id = mentioned_ids[0]
+                # Find the event in the snapshot
+                context_event = next(
+                    (ev for ev in valid_events
+                     if str(ev.get("id") or ev.get("event_id") or "") == context_id),
+                    None,
+                )
+                if context_event:
+                    ev_id = str(context_event.get("id") or context_event.get("event_id") or "")
+                    title_raw = str(context_event.get("title") or "")
+                    start_time = str(context_event.get("start") or "")
+                    result.status = "RESOLVED"
+                    result.reason = "deictic_context_fallback"
+                    result.resolved_event = CandidateResult(
+                        rank=1,
+                        event_id=ev_id,
+                        original_title=title_raw,
+                        start_time=start_time,
+                        score_final=100.0,  # High confidence from context
+                        score_tsr=100.0,
+                        score_pr=100.0,
+                        score_loc_bonus=0.0,
+                    )
+                    result.dispatcher_hint = "PROCEED"
+                    result.low_confidence = False
+                    logger.info(
+                        "[ENTITY-RESOLVER] Deictic fallback: resolved to single context event %r",
+                        title_raw,
+                    )
 
         return result
