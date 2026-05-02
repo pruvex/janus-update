@@ -240,7 +240,72 @@ async def test_provider_generate_response_with_tool_call(
     args_dict = json.loads(first_call["function"]["arguments"])
     assert args_dict == {"query": "cats"}
 
+    raw_assistant = result["raw_assistant_response"]
+    assert raw_assistant["parts"][0] is mock_part
+    assert raw_assistant["_gemini_raw_model_parts"][0] is mock_part
+
     assert result["usage"] == {"input_tokens": 10, "output_tokens": 5}
+
+
+def test_gemini_name_mapping_resolves_provider_safe_names_to_canonical_skill():
+    provider = GeminiServiceProvider()
+
+    with patch("backend.services.skill_router.skill_router.resolve_tool_name", return_value="calendar.create_event"), \
+         patch("backend.services.tool_manager.tool_manager.get_skill_id", return_value="calendar.create_event"):
+        assert provider._resolve_gemini_response_tool_name("calendar_create_event") == "calendar.create_event"
+        assert provider._gemini_api_function_name_for_history("calendar.create_event") == "calendar_create_event"
+
+
+@patch("google.generativeai.GenerativeModel")
+@patch("google.generativeai.configure")
+def test_gemini_stream_build_request_reuses_signed_raw_parts(
+    _mock_configure,
+    mock_gen_model,
+):
+    provider = GeminiServiceProvider()
+    signed_part = MagicMock()
+    signed_part.text = ""
+    signed_part.thought_signature = b"signed"
+    function_call = MagicMock()
+    function_call.name = "calendar_create_event"
+    function_call.args = {"summary": "Termin"}
+    signed_part.function_call = function_call
+
+    messages = [
+        {"role": "user", "content": "Plane einen Termin"},
+        {
+            "role": "assistant",
+            "content": None,
+            "tool_calls": [
+                {
+                    "id": "call_1",
+                    "type": "function",
+                    "function": {"name": "calendar.create_event", "arguments": "{\"summary\":\"Termin\"}"},
+                }
+            ],
+            "_gemini_raw_model_parts": [signed_part],
+        },
+        {
+            "role": "tool",
+            "tool_call_id": "call_1",
+            "name": "calendar.create_event",
+            "content": "{\"status\":\"ok\"}",
+        },
+    ]
+
+    _model, contents, _kwargs, _request_options = provider._gemini_stream_build_request(
+        api_key="test_key",
+        model="gemini-3-flash-preview",
+        messages=messages,
+        tools=None,
+        image_data=None,
+        force_no_tools=False,
+        force_tool_name=None,
+    )
+
+    mock_gen_model.assert_called_once_with(model_name="gemini-3-flash-preview", system_instruction=None)
+    assert contents[1]["parts"][0] is signed_part
+    assert contents[2]["parts"][0].function_response.name == "calendar_create_event"
 
 
 @pytest.mark.asyncio

@@ -22,6 +22,7 @@ from backend.tools.calendar_tools import (
     delete_calendar_event,
     update_calendar_event,
 )
+from backend.services.calendar.calendar_memory import invalidate_calendar_snapshot
 
 logger = logging.getLogger("janus_backend.calendar_service")
 
@@ -167,9 +168,23 @@ class CalendarService:
             created_event_data = data.get("created_event")
             
             if created_event_data:
+                # 💎 Invalidate calendar snapshot after successful creation
+                from backend.data.database import SessionLocal
+                db = SessionLocal()
+                try:
+                    invalidate_calendar_snapshot(db)
+                finally:
+                    db.close()
                 return self._normalize_google_event(created_event_data)
             
             # Fallback: Baue aus Request
+            # 💎 Invalidate calendar snapshot after successful creation
+            from backend.data.database import SessionLocal
+            db = SessionLocal()
+            try:
+                invalidate_calendar_snapshot(db)
+            finally:
+                db.close()
             return JanusCalendarEvent(
                 id=data.get("event_id", "unknown"),
                 title=request.title,
@@ -204,6 +219,13 @@ class CalendarService:
             
             if _tool_result_ok(result):
                 logger.info(f"Event {event_id} deleted successfully")
+                # 💎 Invalidate calendar snapshot after successful deletion
+                from backend.data.database import SessionLocal
+                db = SessionLocal()
+                try:
+                    invalidate_calendar_snapshot(db)
+                finally:
+                    db.close()
                 return True
             else:
                 error_msg = getattr(result, "message", None) or (
@@ -271,6 +293,13 @@ class CalendarService:
             updated_event_data = data.get("updated_event")
             
             if updated_event_data:
+                # 💎 Invalidate calendar snapshot after successful update
+                from backend.data.database import SessionLocal
+                db = SessionLocal()
+                try:
+                    invalidate_calendar_snapshot(db)
+                finally:
+                    db.close()
                 return self._normalize_google_event(updated_event_data)
             
             return None

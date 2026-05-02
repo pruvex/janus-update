@@ -616,6 +616,39 @@ class ToolExecutor:
             "get_distance_and_route_tool": "system.routing",
         }
 
+    @staticmethod
+    def _requested_name_alternates(requested_name: str) -> List[str]:
+        raw = str(requested_name or "").strip()
+        candidates = [raw]
+        if raw:
+            candidates.append(raw.replace(".", "_"))
+            candidates.append(raw.replace("_", "."))
+            for delimiter in (".", "_"):
+                if delimiter in raw:
+                    suffix = raw.split(delimiter, 1)[1]
+                    candidates.append(suffix)
+                    candidates.append(suffix.replace(".", "_"))
+                    candidates.append(suffix.replace("_", "."))
+        seen = set()
+        return [item for item in candidates if item and not (item in seen or seen.add(item))]
+
+    def _resolve_tool_name_with_alternates(self, requested_name: str) -> str:
+        last_error: Optional[SkillNotFoundError] = None
+        for candidate in self._requested_name_alternates(requested_name):
+            try:
+                resolved = skill_router.resolve_tool_name(candidate)
+                if candidate != requested_name or resolved != requested_name:
+                    logger.info(
+                        "EXECUTOR-NAME-NORMALIZE: requested='%s' candidate='%s' resolved='%s'",
+                        requested_name,
+                        candidate,
+                        resolved,
+                    )
+                return resolved
+            except SkillNotFoundError as exc:
+                last_error = exc
+        raise last_error or SkillNotFoundError(requested_name)
+
     async def execute_tool_call(
         self,
         tool_name: str,
@@ -1095,7 +1128,7 @@ class ToolExecutor:
 
             resolved_name = func_name
             try:
-                resolved_name = skill_router.resolve_tool_name(func_name)
+                resolved_name = self._resolve_tool_name_with_alternates(func_name)
             except SkillNotFoundError as exc:
                 error_payload = SkillResponse(
                     status="error",

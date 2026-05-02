@@ -2,11 +2,11 @@
 
 ---
 task_id: 20260501-058
-status: DONE
+status: 🥇 SEALED & COMPLETE
 assigned_to: AI-STUDIO-ORCHESTRATED / KIMI-FIRST / SWE-REVIEW
 confidence_level: HIGH
 created_at: 2026-05-01 01:20
-updated_at: 2026-05-01 23:37
+updated_at: 2026-05-02 17:11
 source_dossier: documentation/Planned Features/JANUS CALENDAR MODAL.md
 cu_total: 18
 completion_gate:
@@ -982,3 +982,37 @@ Calendar Modal MVP vollständig implementiert (Phases 1-4). Backend: REST-API f�
 - AI-Engine Prompt erweitert mit Kalender-Nutzungsstrategien für proaktive Tipps
 
 **Result:** Dashboard erklärt sich selbst. User weiß, dass er finale Kontrolle behält (Diff-View vor Apply).
+
+## Gemini V3 Protocol Hardening (thought_signature Preservation)
+
+**Problem:** Gemini V3 API liefert Raw-Parts in tool_call-Antworten zurück, die für thought_signature-Tracking benötigt werden. Standard-Response-Parser kann diese Metadaten verlieren.
+
+**Lösung:**
+- Erhalt der Raw-Parts in execution_engine.py (_gemini_tool_delta_to_call)
+- thought_signature wird aus den Metadaten extrahiert und durchgereicht
+- Provider-Name (_gemini_provider_name) wird für Reverse-Mapping zwischen dot-notation und underscore-notation gespeichert
+
+**Pattern:** #GeminiV3Protocol in WHAT_I_LEARNED.md dokumentiert
+
+## Tool Naming Aliasing (Dot vs Underscore Tolerance)
+
+**Problem:** Janus verwendet dot-notation für Tool-Namen (system.weather), Gemini V3 erfordert nur alphanumerisch + underscores (system_weather). Ohne Sanitization führt dies zu 400-Fehlern.
+
+**Lösung:**
+- _sanitize_gemini_name() in service.py ersetzt dots/hyphens mit underscores
+- Reverse-Mapping: Wenn Gemini system_weather zurückgibt, wird auf system.weather in tool_manager gemapped
+- Sanitization an 6 Orstellen angewendet: _convert_tools_to_gemini_format, force_tool_name (sync+stream), history tool_calls (beide Pfade), history tool results (beide Pfade)
+
+**Pattern:** #GeminiNameSanitization in WHAT_I_LEARNED.md dokumentiert
+
+## Calendar Snapshot Integrity (Invalidation After Mutations)
+
+**Problem:** Nach Kalender-Mutationen (create/update/delete) verlässt sich GPT auf den veralteten KALENDER-SNAPSHOT im Memory-Snapshot statt Live-Daten abzurufen → neu erstellte Termine werden nicht gefunden.
+
+**Lösung:**
+- invalidate_calendar_snapshot() Funktion in calendar_memory.py löscht Snapshot nach erfolgreicher Mutation
+- Aufruf nach create_event, update_event, delete_event in calendar_service.py
+- calendar_read_priority Directive in prompt_registry.py zwingt GPT, calendar.list_events Tool aufzurufen
+- CALENDAR-LIVE-TRUTH Forced Tool-Call in execution_dispatcher.py bei is_calendar_intent
+
+**Pattern:** #CalendarSnapshotIntegrity in WHAT_I_LEARNED.md dokumentiert

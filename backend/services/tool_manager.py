@@ -325,16 +325,56 @@ class ToolManager:
         tool = ToolDefinition(func, args_schema, description, skill_metadata=skill_metadata, name=tool_name)
         skill_id = self.get_skill_id(tool_name)
         self.tools[skill_id] = tool  # Registrierung unter Skill-ID (z.B. knowledge.query)
-        if tool_name != skill_id:
-            self.tools[tool_name] = tool  # Alias unter Legacy-Name (z.B. query_knowledge_base)
+        for alias in self._tool_name_aliases(tool_name, skill_id):
+            self.tools[alias] = tool
         self._tool_definitions_cache.clear()
         if tool.name not in self._skill_mapping:
             logger.warning("SKILL-SYSTEM: Kein Mapping für Tool '%s'.", tool.name)
 
+    @staticmethod
+    def _dot_underscore_variants(name: str) -> List[str]:
+        raw = str(name or "").strip()
+        candidates = [raw]
+        if raw:
+            candidates.append(raw.replace(".", "_"))
+            candidates.append(raw.replace("_", "."))
+        seen = set()
+        return [item for item in candidates if item and not (item in seen or seen.add(item))]
+
+    def _legacy_suffix_candidates(self, name: str) -> List[str]:
+        raw = str(name or "").strip()
+        candidates: List[str] = []
+        for delimiter in (".", "_"):
+            if delimiter in raw:
+                suffix = raw.split(delimiter, 1)[1]
+                candidates.extend(self._dot_underscore_variants(suffix))
+        seen = set()
+        return [item for item in candidates if item and not (item in seen or seen.add(item))]
+
+    def _tool_name_aliases(self, tool_name: str, skill_id: str) -> List[str]:
+        aliases: List[str] = []
+        for name in (tool_name, skill_id):
+            aliases.extend(self._dot_underscore_variants(name))
+        seen = set()
+        return [item for item in aliases if item and not (item in seen or seen.add(item))]
+
     def get_skill_id(self, name: str) -> str:
-        candidate = str(name or "")
-        if candidate in self._skill_mapping:
-            return self._skill_mapping[candidate]
+        candidate = str(name or "").strip()
+        for variant in self._dot_underscore_variants(candidate):
+            if variant in self._skill_mapping:
+                return self._skill_mapping[variant]
+        for suffix in self._legacy_suffix_candidates(candidate):
+            if suffix in self._skill_mapping:
+                mapped = self._skill_mapping[suffix]
+                if mapped != candidate:
+                    logger.info("SKILL-ALIAS: Gemischter Toolname '%s' auf Skill '%s' aufgeloest.", candidate, mapped)
+                return mapped
+        safe_candidate = candidate.replace(".", "_")
+        known_skill_ids = set(self._skill_mapping.values()) | set(self._skill_metadata.keys())
+        for skill_id in known_skill_ids:
+            skill_id_str = str(skill_id or "").strip()
+            if skill_id_str and skill_id_str.replace(".", "_") == safe_candidate:
+                return skill_id_str
         return candidate
 
     def get_skill_metadata(self, name: str) -> SkillMetadata:
@@ -379,32 +419,36 @@ class ToolManager:
 
     def get_tool(self, name: str, warn_if_legacy: bool = False) -> Optional[ToolDefinition]:
         """Holt ein Tool anhand des Namens und löst Legacy-Aliase transparent auf."""
-        tool_name = str(name or "")
+        tool_name = str(name or "").strip()
 
-        if self.is_legacy_name(tool_name):
-            actual_skill_id = self.get_skill_name_for_legacy(tool_name)
-            tool = self.tools.get(actual_skill_id)
+        lookup_names: List[str] = []
+        lookup_names.extend(self._dot_underscore_variants(tool_name))
+        resolved_skill_id = self.get_skill_id(tool_name)
+        lookup_names.extend(self._dot_underscore_variants(resolved_skill_id))
+        lookup_names.extend(self._legacy_suffix_candidates(tool_name))
+
+        seen = set()
+        lookup_names = [item for item in lookup_names if item and not (item in seen or seen.add(item))]
+
+        for lookup_name in lookup_names:
+            if self.is_legacy_name(lookup_name):
+                actual_skill_id = self.get_skill_name_for_legacy(lookup_name)
+                tool = self.tools.get(actual_skill_id) or self.tools.get(str(actual_skill_id or "").replace(".", "_"))
+                if tool:
+                    if warn_if_legacy:
+                        logger.info(
+                            "SKILL-ALIAS: Toolname '%s' wurde ueber Legacy-Alias '%s' auf '%s' aufgeloest.",
+                            tool_name,
+                            lookup_name,
+                            actual_skill_id,
+                        )
+                    return tool
+
+            tool = self.tools.get(lookup_name)
             if tool:
                 return tool
 
-        tool = self.tools.get(tool_name)
-
-        if tool and warn_if_legacy and self.is_legacy_name(tool_name):
-            skill_name = self.get_skill_name_for_legacy(tool_name)
-            if str(skill_name or "") in {"system.routing", "system.websearch"}:
-                logger.debug(
-                    "SKILL-ALIAS: Legacy-Toolname '%s' wird stillschweigend auf '%s' aufgeloest.",
-                    tool_name,
-                    skill_name,
-                )
-            else:
-                logger.warning(
-                    "SKILL-DEPRECATION: Legacy-Toolname '%s' wurde aufgerufen. Bitte auf Skill '%s' umstellen.",
-                    tool_name,
-                    skill_name,
-                )
-
-        return tool
+        return None
 
     def get_timeout_seconds(self, name: str) -> Optional[float]:
         """Liefert den Timeout in Sekunden aus den Skill-Metadaten. None = kein Timeout."""

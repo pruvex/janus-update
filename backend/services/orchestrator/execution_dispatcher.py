@@ -404,6 +404,15 @@ async def execute_generation_prepare_gateway(
             }
             wf.gateway_kwargs["force_tool_name"] = "video.search"
             logger.info("💎 VIDEO-FORCE: Forcing video.search tool_choice for provider=%s", request.provider)
+        # 💎 CALENDAR-LIVE-TRUTH: Bei erkanntem Calendar-Intent erzwinge calendar.list_events Tool-Call
+        # um veralteten KALENDER-SNAPSHOT (Memory) zu umgehen und Live-Daten zu holen
+        if bool(getattr(wf, "is_calendar_intent", False)):
+            wf.gateway_kwargs["forced_tool"] = {
+                "skill_id": "calendar.list_events",
+                "provider_tool_name": "calendar.list_events",
+            }
+            wf.gateway_kwargs["force_tool_name"] = "calendar.list_events"
+            logger.info("💎 CALENDAR-LIVE-TRUTH: Forcing calendar.list_events tool_choice for provider=%s", request.provider)
         # 💎 ANTI-HALLUCINATION: Force knowledge.query tool when audit_file marker is present
         if getattr(request, "audit_file", None):
             wf.gateway_kwargs["forced_tool"] = {

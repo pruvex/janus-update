@@ -199,6 +199,124 @@ class GeminiServiceProvider(BaseLLMProvider):
         safe = re.sub(r'[^a-zA-Z0-9_]', '_', safe)
         return safe or "unknown_tool"
 
+    @staticmethod
+    def _gemini_function_call(part: Any) -> Any:
+        fc = getattr(part, "function_call", None)
+        return fc if fc else None
+
+    @staticmethod
+    def _gemini_part_has_thought_signature(part: Any) -> bool:
+        signature = getattr(part, "thought_signature", None)
+        if signature is None:
+            signature = getattr(part, "thoughtSignature", None)
+        if type(signature).__module__.startswith("unittest.mock"):
+            return False
+        try:
+            return bool(signature)
+        except Exception:
+            return signature is not None
+
+    def _gemini_part_fingerprint(self, part: Any) -> Tuple[str, str]:
+        fc = self._gemini_function_call(part)
+        if fc:
+            args = _proto_to_dict(getattr(fc, "args", {}) or {})
+            try:
+                args_blob = json.dumps(args, sort_keys=True, ensure_ascii=False)
+            except Exception:
+                args_blob = str(args)
+            signature = getattr(part, "thought_signature", None) or getattr(part, "thoughtSignature", None)
+            if type(signature).__module__.startswith("unittest.mock"):
+                signature = None
+            return ("function_call", f"{getattr(fc, 'name', '')}:{args_blob}:{repr(signature)}")
+        text = getattr(part, "text", None)
+        if text:
+            return ("text", str(text))
+        return ("part", repr(part))
+
+    def _merge_gemini_model_parts_buffer(self, buffer: List[Any], new_parts: List[Any]) -> None:
+        seen = {self._gemini_part_fingerprint(part) for part in buffer}
+        for part in new_parts or []:
+            fingerprint = self._gemini_part_fingerprint(part)
+            if fingerprint in seen:
+                continue
+            buffer.append(part)
+            seen.add(fingerprint)
+
+    def _log_gemini_parts_lifecycle(self, stage: str, parts: List[Any]) -> None:
+        summary = []
+        for idx, part in enumerate(parts or []):
+            fc = self._gemini_function_call(part)
+            if fc:
+                kind = "function_call"
+                name = getattr(fc, "name", "")
+            elif getattr(part, "text", None):
+                kind = "text"
+                name = ""
+            else:
+                kind = type(part).__name__
+                name = ""
+            summary.append(
+                {
+                    "idx": idx,
+                    "kind": kind,
+                    "name": name,
+                    "thought_signature": self._gemini_part_has_thought_signature(part),
+                }
+            )
+        logger.info(
+            "GEMINI-THOUGHT-SIGNATURE: %s parts=%d details=%s",
+            stage,
+            len(parts or []),
+            summary,
+        )
+
+    def _resolve_gemini_response_tool_name(self, gemini_name: str) -> str:
+        """Map Gemini's provider-safe function name back to Janus' canonical skill id."""
+        requested = str(gemini_name or "").strip()
+        if not requested:
+            return requested
+        try:
+            from backend.services.skill_router import skill_router
+            from backend.services.tool_manager import tool_manager as _tm
+
+            resolved_name = skill_router.resolve_tool_name(requested)
+            canonical_name = _tm.get_skill_id(resolved_name)
+            if canonical_name and canonical_name != requested:
+                logger.info(
+                    "GEMINI-NAME-MAP: provider='%s' -> resolved='%s' -> canonical='%s'",
+                    requested,
+                    resolved_name,
+                    canonical_name,
+                )
+            return canonical_name or resolved_name or requested
+        except Exception as exc:
+            logger.warning(
+                "GEMINI-NAME-MAP: could not resolve provider name '%s'; using raw name. reason=%s",
+                requested,
+                exc,
+            )
+            return requested
+
+    def _gemini_api_function_name_for_history(self, tool_name: str) -> str:
+        """Return the exact provider-safe function name Gemini expects in history."""
+        requested = str(tool_name or "").strip()
+        try:
+            from backend.services.skill_router import skill_router
+            from backend.services.tool_manager import tool_manager as _tm
+
+            resolved_name = skill_router.resolve_tool_name(requested)
+            canonical_name = _tm.get_skill_id(resolved_name)
+            api_name = self._sanitize_gemini_name(canonical_name or resolved_name or requested)
+            logger.debug(
+                "GEMINI-NAME-MAP: history tool='%s' -> resolved='%s' -> api='%s'",
+                requested,
+                resolved_name,
+                api_name,
+            )
+            return api_name
+        except Exception:
+            return self._sanitize_gemini_name(requested or "unknown_function")
+
     def _convert_tools_to_gemini_format(self, tools: List[Any]) -> List[Any]:
         gemini_tools = []
         seen_names = set()  # Track seen function names to prevent duplicates
@@ -365,7 +483,7 @@ class GeminiServiceProvider(BaseLLMProvider):
 
             # 2. Assistant Tool Calls (Historie)
             elif message["role"] in ["assistant", "model"] and "tool_calls" in message:
-                raw_parts = message.get("_gemini_raw_model_parts")
+                raw_parts = message.get("_gemini_raw_model_parts") or message.get("parts")
                 n_tc = len(message.get("tool_calls") or [])
                 if (
                     isinstance(raw_parts, list)
@@ -375,6 +493,7 @@ class GeminiServiceProvider(BaseLLMProvider):
                 ):
                     try:
                         gemini_history_for_api.append({"role": "model", "parts": list(raw_parts)})
+                        self._log_gemini_parts_lifecycle("history.sync.raw_model_parts.reused", raw_parts)
                         logger.info(
                             "GEMINI-HISTORY (sync): Stream-Model-Parts übernommen (%d parts, %d tool_calls).",
                             len(raw_parts),
@@ -389,7 +508,12 @@ class GeminiServiceProvider(BaseLLMProvider):
                         args = json.loads(tc["function"]["arguments"])
                     except:
                         args = {}
-                    tc_name = self._sanitize_gemini_name(tc["function"]["name"])
+                    tc_name = self._gemini_api_function_name_for_history(tc["function"]["name"])
+                    logger.warning(
+                        "GEMINI-THOUGHT-SIGNATURE: history.sync.synthetic_function_call fallback for '%s' "
+                        "(thought_signature missing; raw provider parts unavailable).",
+                        tc_name,
+                    )
                     tool_calls_proto.append(
                         protos.Part(function_call=protos.FunctionCall(name=tc_name, args=args))
                     )
@@ -406,11 +530,18 @@ class GeminiServiceProvider(BaseLLMProvider):
                         if "tool_calls" in past_msg:
                             for tc in past_msg["tool_calls"]:
                                 if tc.get("id") == tool_call_id:
-                                    function_name = tc["function"]["name"]
+                                    fn = tc.get("function") or {}
+                                    function_name = (
+                                        fn.get("_gemini_provider_name")
+                                        or tc.get("_gemini_provider_name")
+                                        or fn.get("name")
+                                    )
                                     break
                         if function_name: break
                 
-                final_name = self._sanitize_gemini_name(function_name or "unknown_function")
+                final_name = str(function_name or "").strip()
+                if not final_name or "." in final_name or "-" in final_name:
+                    final_name = self._gemini_api_function_name_for_history(final_name or "unknown_function")
 
                 # Gemini expects ``function_response.response`` to be a structured
                 # dict. Parse the JSON envelope so Gemini sees the real payload and
@@ -526,28 +657,25 @@ class GeminiServiceProvider(BaseLLMProvider):
             if not first_candidate.content.parts:
                  return {"type": "text", "text": "Leere Antwort erhalten (Fehler bei Verarbeitung)."}
 
-            for part in first_candidate.content.parts:
-                if hasattr(part, "function_call") and part.function_call:
+            original_model_parts = list(first_candidate.content.parts or [])
+            self._log_gemini_parts_lifecycle("response.sync.model_parts.captured", original_model_parts)
+
+            for part in original_model_parts:
+                if self._gemini_function_call(part):
                     # Wenn es ein Funktionsaufruf ist, behandle ihn
-                    fc = part.function_call
+                    fc = self._gemini_function_call(part)
                     tool_args = _proto_to_dict(fc.args) or {}
-                    
-                    # Reverse-map: underscores back to dots for ToolExecutor
-                    original_name = fc.name.replace("_", ".", fc.name.count("_")) if fc.name else fc.name
-                    # Only restore dots for known namespace patterns (e.g. system_weather -> system.weather)
-                    restored_name = fc.name
-                    if "_" in fc.name:
-                        parts = fc.name.split("_", 1)
-                        candidate = f"{parts[0]}.{parts[1]}" if len(parts) == 2 else fc.name
-                        # Check if dot-notation version is a known skill
-                        from backend.services.tool_manager import tool_manager as _tm
-                        if _tm.get_tool(candidate):
-                            restored_name = candidate
+                    restored_name = self._resolve_gemini_response_tool_name(fc.name)
                     
                     all_gateway_tool_calls.append({
                         "id": f"call_{fc.name}_{datetime.datetime.now().timestamp()}",
                         "type": "function",
-                        "function": {"name": restored_name, "arguments": json.dumps(tool_args)}
+                        "_gemini_provider_name": fc.name,
+                        "function": {
+                            "name": restored_name,
+                            "arguments": json.dumps(tool_args),
+                            "_gemini_provider_name": fc.name,
+                        }
                     })
                 elif hasattr(part, "text") and part.text:
                     # Wenn es reiner Text ist und kein Funktionsaufruf, akkumuliere ihn
@@ -575,18 +703,8 @@ class GeminiServiceProvider(BaseLLMProvider):
             )
 
             if all_gateway_tool_calls:
-                parts_for_raw_assistant = []
-                # Füge immer einen Text-Part hinzu, auch wenn er leer ist, um thought_signature zu erfüllen
-                parts_for_raw_assistant.append(protos.Part(text=text_accumulated if text_accumulated else ""))
-                
-                # Füge die Tool Calls hinzu
-                for tc in all_gateway_tool_calls:
-                    parts_for_raw_assistant.append(
-                        protos.Part(function_call=protos.FunctionCall(
-                            name=tc["function"]["name"], 
-                            args=json.loads(tc["function"]["arguments"]) # args muss als Dict übergeben werden
-                        ))
-                    )
+                parts_for_raw_assistant = list(original_model_parts)
+                self._log_gemini_parts_lifecycle("response.sync.raw_model_parts.stored", parts_for_raw_assistant)
 
                 # 💎 METADATA EXTRACTION: Grounding Metadata für LinkRenderer
                 grounding_metadata = self._extract_grounding_metadata(response)
@@ -599,7 +717,9 @@ class GeminiServiceProvider(BaseLLMProvider):
                     "grounding_metadata": grounding_metadata,  # 💎 Für LinkRenderer
                     "raw_assistant_response": {
                         "role": "model", # Wichtig: "model" statt "assistant" hier
-                        "parts": parts_for_raw_assistant # Verwende die neue Struktur
+                        "parts": parts_for_raw_assistant, # Originale signierte Provider-Parts
+                        "_gemini_raw_model_parts": parts_for_raw_assistant,
+                        "tool_calls": all_gateway_tool_calls,
                     }
                 }
             else:
@@ -725,7 +845,7 @@ class GeminiServiceProvider(BaseLLMProvider):
                     gemini_history_for_api.append({"role": role, "parts": parts})
 
             elif message["role"] in ["assistant", "model"] and "tool_calls" in message:
-                raw_parts = message.get("_gemini_raw_model_parts")
+                raw_parts = message.get("_gemini_raw_model_parts") or message.get("parts")
                 n_tc = len(message.get("tool_calls") or [])
                 if (
                     isinstance(raw_parts, list)
@@ -735,6 +855,7 @@ class GeminiServiceProvider(BaseLLMProvider):
                 ):
                     try:
                         gemini_history_for_api.append({"role": "model", "parts": list(raw_parts)})
+                        self._log_gemini_parts_lifecycle("history.stream.raw_model_parts.reused", raw_parts)
                         logger.info(
                             "GEMINI-HISTORY: Stream-Model-Parts übernommen (%d parts, %d tool_calls) — thought_signature-Pfad aktiv.",
                             len(raw_parts),
@@ -749,7 +870,12 @@ class GeminiServiceProvider(BaseLLMProvider):
                         args = json.loads(tc["function"]["arguments"])
                     except Exception:
                         args = {}
-                    tc_name = self._sanitize_gemini_name(tc["function"]["name"])
+                    tc_name = self._gemini_api_function_name_for_history(tc["function"]["name"])
+                    logger.warning(
+                        "GEMINI-THOUGHT-SIGNATURE: history.stream.synthetic_function_call fallback for '%s' "
+                        "(thought_signature missing; raw provider parts unavailable).",
+                        tc_name,
+                    )
                     tool_calls_proto.append(
                         protos.Part(function_call=protos.FunctionCall(name=tc_name, args=args))
                     )
@@ -764,12 +890,19 @@ class GeminiServiceProvider(BaseLLMProvider):
                         if "tool_calls" in past_msg:
                             for tc in past_msg["tool_calls"]:
                                 if tc.get("id") == tool_call_id:
-                                    function_name = tc["function"]["name"]
+                                    fn = tc.get("function") or {}
+                                    function_name = (
+                                        fn.get("_gemini_provider_name")
+                                        or tc.get("_gemini_provider_name")
+                                        or fn.get("name")
+                                    )
                                     break
                         if function_name:
                             break
 
-                final_name = self._sanitize_gemini_name(function_name or "unknown_function")
+                final_name = str(function_name or "").strip()
+                if not final_name or "." in final_name or "-" in final_name:
+                    final_name = self._gemini_api_function_name_for_history(final_name or "unknown_function")
 
                 # Gemini expects ``function_response.response`` to be a structured dict.
                 # Passing a raw JSON-string under {"content": "..."} prevents Gemini from
@@ -846,6 +979,7 @@ class GeminiServiceProvider(BaseLLMProvider):
                 **model_kwargs,
             )
             last_usage: Any = None
+            stream_model_parts_buffer: List[Any] = []
             async for chunk in stream_iter:
                 if hasattr(chunk, "prompt_feedback") and chunk.prompt_feedback:
                     br = getattr(chunk.prompt_feedback, "block_reason", None)
@@ -861,28 +995,32 @@ class GeminiServiceProvider(BaseLLMProvider):
                 cand = chunk.candidates[0]
                 content_obj = getattr(cand, "content", None)
                 if content_obj and getattr(content_obj, "parts", None):
+                    chunk_parts = list(content_obj.parts)
+                    self._log_gemini_parts_lifecycle("response.stream.chunk_model_parts.captured", chunk_parts)
+                    self._merge_gemini_model_parts_buffer(stream_model_parts_buffer, chunk_parts)
                     if stream_workflow_ref is not None:
                         try:
-                            stream_workflow_ref.gemini_stream_raw_model_parts = list(content_obj.parts)
+                            stream_workflow_ref.gemini_stream_raw_model_parts = list(stream_model_parts_buffer)
+                            self._log_gemini_parts_lifecycle(
+                                "response.stream.workflow_raw_model_parts.updated",
+                                stream_workflow_ref.gemini_stream_raw_model_parts,
+                            )
                         except Exception as buf_exc:
                             logger.debug("GEMINI-STREAM: Konnte model parts nicht puffern: %s", buf_exc)
-                    for part in content_obj.parts:
+                    for part in chunk_parts:
                         if hasattr(part, "text") and part.text:
                             yield StreamEvent(type="text_delta", content=part.text, metadata={})
-                        if hasattr(part, "function_call") and part.function_call:
-                            fc = part.function_call
+                        if self._gemini_function_call(part):
+                            fc = self._gemini_function_call(part)
                             tool_args = _proto_to_dict(fc.args) if fc.args else {}
-                            # Reverse-map: underscores back to dots for ToolExecutor
-                            stream_restored_name = fc.name
-                            if fc.name and "_" in fc.name:
-                                _parts = fc.name.split("_", 1)
-                                _candidate = f"{_parts[0]}.{_parts[1]}" if len(_parts) == 2 else fc.name
-                                from backend.services.tool_manager import tool_manager as _tm2
-                                if _tm2.get_tool(_candidate):
-                                    stream_restored_name = _candidate
+                            stream_restored_name = self._resolve_gemini_response_tool_name(fc.name)
                             yield StreamEvent(
                                 type="tool_delta",
-                                content={"name": stream_restored_name, "arguments": tool_args},
+                                content={
+                                    "name": stream_restored_name,
+                                    "arguments": tool_args,
+                                    "_gemini_provider_name": fc.name,
+                                },
                                 metadata={},
                             )
                 um = getattr(chunk, "usage_metadata", None)

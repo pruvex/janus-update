@@ -354,6 +354,37 @@ def load_calendar_snapshot(db: Session) -> Optional[Dict[str, Any]]:
     return data if isinstance(data, dict) and data.get("v") == SNAPSHOT_VERSION else None
 
 
+def invalidate_calendar_snapshot(db: Session) -> bool:
+    """Delete the calendar snapshot from Memory to force fresh data fetch on next query.
+    
+    This should be called after successful create_event, update_event, or delete_event
+    operations to ensure the LLM doesn't rely on stale snapshot data.
+    
+    Returns:
+        True if snapshot was deleted or didn't exist, False on error
+    """
+    if not calendar_mirror_enabled():
+        return True
+    try:
+        memory = (
+            db.query(models.Memory)
+            .filter(models.Memory.category == CALENDAR_SNAPSHOT_CATEGORY)
+            .filter(models.Memory.canonical_key == CALENDAR_SNAPSHOT_KEY)
+            .first()
+        )
+        if memory:
+            db.delete(memory)
+            db.commit()
+            logger.info("[CALENDAR-MEMORY] Snapshot invalidated (deleted) after calendar mutation")
+        else:
+            logger.debug("[CALENDAR-MEMORY] No snapshot to invalidate")
+        return True
+    except Exception:
+        db.rollback()
+        logger.warning("[CALENDAR-MEMORY] Snapshot invalidation failed", exc_info=True)
+        return False
+
+
 def snapshot_is_stale(snapshot: Dict[str, Any], *, now: Optional[datetime] = None) -> bool:
     generated = _as_datetime(snapshot.get("generated_at"))
     if generated is None:

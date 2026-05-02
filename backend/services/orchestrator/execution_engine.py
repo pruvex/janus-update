@@ -100,16 +100,23 @@ def _stream_finalize_openai_tool_slots(acc: Dict[int, Dict[str, Any]]) -> List[D
 
 def _gemini_tool_delta_to_call(content: Dict[str, Any]) -> Dict[str, Any]:
     name = str(content.get("name") or "").strip()
+    provider_name = str(content.get("_gemini_provider_name") or "").strip()
     args = content.get("arguments")
     if isinstance(args, dict):
         args_str = json.dumps(args, ensure_ascii=False)
     else:
         args_str = str(args or "{}")
-    return {
+    function = {"name": name, "arguments": args_str}
+    if provider_name:
+        function["_gemini_provider_name"] = provider_name
+    call = {
         "id": f"gemini_{uuid.uuid4().hex[:16]}",
         "type": "function",
-        "function": {"name": name, "arguments": args_str},
+        "function": function,
     }
+    if provider_name:
+        call["_gemini_provider_name"] = provider_name
+    return call
 
 
 async def _async_iter_llm_stream(

@@ -1,6 +1,6 @@
-# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.67)
+# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.68)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-02 16:33 (PRE-REFACTOR: Gemini V3 Protocol Hardening)
+**Aktualisiert:** 2026-05-02 17:11 (TASK-058 FINAL SEAL: Calendar Dashboard & Google-Sync Reliability Hardened)
 
 ---
 
@@ -9,7 +9,7 @@
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
 | TASK-059 Kalender-Memory-Mirror | ✅ V1 IMPLEMENTED | Kompakter Kalender-Snapshot in Memory (`category=calendar_snapshot`) mit Enrichment, Derived Summary, gefilterter Chat-Injection und Proaktiv-Hinweisen hinter `JANUS_CALENDAR_PROACTIVE_HINTS`. |
-| TASK-058 Janus Kalender | 🥇 SEALED | Phase 1-4 COMPLETE + Sync Hardening: Pagination (maxResults=250), PATCH-Verify-Fallback, conferenceDataVersion=1, Output-Only-Key-Filterung, forensische Logs. Frontend: calendar-refresh Event, adaptive event cards, detail panel, duration buttons, all-day checkbox, --cal-hour-height CSS variable. |
+| TASK-058 Janus Kalender | 🥇 SEALED | Phase 1-4 COMPLETE + Sync Hardening + Protocol Hardening: Pagination (maxResults=250), PATCH-Verify-Fallback, conferenceDataVersion=1, Output-Only-Key-Filterung, forensische Logs. Frontend: calendar-refresh Event, adaptive event cards, detail panel, duration buttons, all-day checkbox, --cal-hour-height CSS variable. Patterns: #GeminiV3Protocol (thought_signature), #GeminiNameSanitization (dot/underscore tolerance), #CalendarSnapshotIntegrity (invalidation after mutations). |
 | TASK-057 Context Awareness | 🥇 SEALED | Kontext-/Intent-Haertung abgeschlossen; Provider-agnostische Self-Healing- und Summary-Veto-Logik stabil. |
 | TASK-056 Prompt Caching | 🥇 SEALED | Provider-agnostisches Prompt-Caching inkl. Savings-Metriken und UI-Visualisierung abgeschlossen. |
 | D27 Diamond Skill Engineering | 🥇 SEALED | Skill-Contract `{status,data,error}` und Modell-vs-Skill-Diagnose verbindlich definiert. |

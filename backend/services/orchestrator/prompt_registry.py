@@ -77,6 +77,14 @@ _DIRECTIVES: Dict[str, str] = {
         "Das Gedächtnis dient NUR als Orientierung. Du darfst NIEMALS einen Pfad aus der Erinnerung nennen, ohne ihn in EXAKT DIESEM Turn durch einen Tool-Call validiert zu haben. "
         "Eine Antwort ohne Live-Tool-Call bei Suchanfragen gilt als schwerer Systemfehler."
     ),
+    "calendar_read_priority": (
+        "\n\n!!! KALENDER-LIVE-TRUTH-REGEL !!!\n"
+        "Wenn der Nutzer nach Terminen, Kalender-Einträgen oder freien Zeitfenstern fragt, hat das Live-Werkzeug 'calendar.list_events' ABSOLUTE Priorität vor dem KALENDER-SNAPSHOT (Memory). "
+        "Das KALENDER-SNAPSHOT ist nur ein Spiegel und kann veraltet sein. "
+        "Wenn der User nach Terminen fragt, die jünger sind als der Zeitstempel des KALENDER-SNAPSHOTS, oder wenn der User gerade erst Termine hinzugefügt hat, MUSST du zwingend das Tool 'calendar.list_events' aufrufen. "
+        "Vertraue dem Snapshot niemals blind nach einer Änderung. "
+        "Eine Antwort ohne Live-Tool-Call bei Kalender-Fragen nach Änderungen gilt als schwerer Systemfehler."
+    ),
     "rag_sort_policy": (
         "!!! SORTIER-VETRAG !!! Wenn Dateien in der Liste als [INDIZIERT] markiert sind, verfügst du über deren Volltext. "
         "Es ist ein schwerer Logikfehler zu behaupten, sie seien nicht lesbar. Du MUSST 'knowledge.query' nutzen, um die Themen dieser Dateien einzeln oder im Batch zu bestimmen. "
@@ -214,6 +222,7 @@ def apply_verbosity_control(prompt_text: str) -> str:
         "no_meta_talk",
         "file_system_guard",
         "search_command_priority",
+        "calendar_read_priority",
         "rag_sort_policy",
     ):
         rule = prompt_registry.get_directive(rule_key)

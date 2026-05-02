@@ -203,7 +203,7 @@ class GeminiWebSearchProvider(BaseWebSearchProvider):
         logger.info(f"Using Gemini's native web search for query: {query} with model: {model}")
 
         raw_model = getattr(model, "id", None) or str(model or "").strip()
-        model_name = raw_model or "gemini-2.5-flash"
+        model_name = raw_model or "gemini-3-flash-preview"
 
         # --- NEU: Narrensicherer Fallback ---
         if not model_name.lower().startswith("gemini"):
