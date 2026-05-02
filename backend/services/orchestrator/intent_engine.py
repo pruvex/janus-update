@@ -6,36 +6,179 @@ Keine harten Strings mehr im Orchestrator - nur noch saubere Service-Calls.
 
 import re
 import logging
-from typing import List, Dict, Any, Tuple, Optional
-from dataclasses import dataclass
+from typing import List, Dict, Any, Tuple, Optional, Union
+from dataclasses import dataclass, field
 
 logger = logging.getLogger("janus_backend")
 
-
 # ═══════════════════════════════════════════════════════════════════════════════
-# SHOPPING INTENT KEYWORDS
+# Intent Engine V2 — Normalisierung, Wortgrenzen, Shopping/Calendar-Signale
 # ═══════════════════════════════════════════════════════════════════════════════
 
-SHOPPING_INTENT_KEYWORDS: List[str] = [
-    'preis', 'kostet', 'kosten', 'teuer', 'günstig', 'günstiger', 'billig',
-    'kaufen', 'kaufe', 'kauf', 'bestellen', 'bestelle', 'shoppen', 'shopping',
-    'angebot', 'angebote', 'deal', 'deals', 'schnäppchen', 'rabatt', 'reduziert',
-    'geschenk', 'geschenke', 'schenken', 'schenke', 'modell', 'modelle',
-    'variante', 'varianten', 'version', 'spezifikation', 'spezifikationen',
-    'vergleich', 'vergleichen', 'empfehlung', 'empfehlungen', 'welches', 'welcher',
-    'soll ich', 'welches soll', 'rat', 'beratung', 'beraten'
-]
+_WORD_BOUNDARY_CACHE: Dict[str, re.Pattern] = {}
 
-SHOPPING_CONTEXT_MARKERS: List[str] = [
-    '€', 'euro', 'eur', '$', 'usd', '£', 'gbp', 'amazon', 'ebay', 'otto',
-    'zalando', 'idealo', 'geizhals', 'billiger.de', 'apple', 'samsung', 'sony',
-    'nintendo', 'microsoft', 'dell', 'hp', 'lenovo', 'iphone', 'ipad', 'macbook',
-    'galaxy', 'playstation', 'xbox', 'switch', 'airpods', 'headset', 'kopfhörer',
-    'laptop', 'notebook', 'tablet', 'smartphone', 'uhr', 'watch', 'fernseher',
-    'tv', 'monitor', 'kamera', 'konsol', 'was kostet', 'wie viel', 'wie teuer',
-    'gibt es günstiger', 'wo gibt es', 'wo finde ich', 'wer bietet', 'wer hat',
-    'wer verkauft'
-]
+
+def _normalize_text(value: str) -> str:
+    text = str(value or "").casefold()
+    text = re.sub(r"[^\w\s€$£.-]+", " ", text, flags=re.UNICODE)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _contains_phrase(text_norm: str, phrase: str) -> bool:
+    phrase_norm = _normalize_text(phrase)
+    if not phrase_norm:
+        return False
+    pattern = _WORD_BOUNDARY_CACHE.get(phrase_norm)
+    if pattern is None:
+        pattern = re.compile(rf"(?<!\w){re.escape(phrase_norm)}(?!\w)", re.IGNORECASE)
+        _WORD_BOUNDARY_CACHE[phrase_norm] = pattern
+    return bool(pattern.search(text_norm))
+
+
+def _contains_any_phrase(text_norm: str, phrases: Union[Tuple[str, ...], List[str]]) -> bool:
+    return any(_contains_phrase(text_norm, phrase) for phrase in phrases)
+
+
+_PRICE_RE = re.compile(
+    r"(?:\b\d{1,6}(?:[.,]\d{1,2})?\s*(?:€|euro|eur|\$|usd|£|gbp)\b|"
+    r"(?:was kostet|wie viel kostet|wie teuer|preis(?:vergleich)?))",
+    re.IGNORECASE,
+)
+_CALENDAR_TIME_RE = re.compile(
+    r"(?:\bum\s*)?\b\d{1,2}(?::|\.|\s+uhr\b)(?:\d{2})?\b|\b\d{1,2}\s*uhr\b",
+    re.IGNORECASE,
+)
+_RELEASE_TERMIN_RE = re.compile(
+    r"\b(?:erscheinungstermin|release[- ]?termin|veröffentlichungstermin|veroeffentlichungstermin)\b",
+    re.IGNORECASE,
+)
+
+SHOPPING_ACTION_MARKERS: Tuple[str, ...] = (
+    "kaufen",
+    "kaufe",
+    "einkaufen",
+    "einkauf",
+    "bestellen",
+    "bestelle",
+    "shoppen",
+    "shopping",
+    "offers",
+    "günstige",
+    "guenstige",
+    "kaufberatung",
+    "preisvergleich",
+    "angebot",
+    "angebote",
+    "deal",
+    "deals",
+    "rabatt",
+)
+
+SHOPPING_PRODUCT_MARKERS: Tuple[str, ...] = (
+    "iphone",
+    "ipad",
+    "macbook",
+    "galaxy",
+    "playstation",
+    "xbox",
+    "switch",
+    "airpods",
+    "headset",
+    "kopfhörer",
+    "kopfhoerer",
+    "laptop",
+    "notebook",
+    "tablet",
+    "smartphone",
+    "fernseher",
+    "tv",
+    "monitor",
+    "kamera",
+    "konsole",
+    "konsolen",
+    "armbanduhr",
+    "smartwatch",
+    "watch",
+)
+
+SHOPPING_VENDOR_MARKERS: Tuple[str, ...] = (
+    "amazon",
+    "ebay",
+    "otto",
+    "zalando",
+    "idealo",
+    "geizhals",
+    "billiger.de",
+    "netto",
+    "aldi",
+    "lidl",
+    "rewe",
+    "edeka",
+    "kaufland",
+    "dm",
+)
+
+CALENDAR_COMMAND_MARKERS: Tuple[str, ...] = (
+    "termin erstellen",
+    "termin anlegen",
+    "termin hinzufügen",
+    "termin hinzufuegen",
+    "trage ein",
+    "eintragen",
+    "einplanen",
+    "in den kalender",
+    "kalender eintrag",
+    "kalendereintrag",
+    "meeting planen",
+    "plane",
+    "planen bitte",
+    "verschiebe",
+    "absagen",
+    "lösche den termin",
+    "loesche den termin",
+    "erinnere mich",
+)
+
+CALENDAR_OBJECT_MARKERS: Tuple[str, ...] = (
+    "termin",
+    "meeting",
+    "kalender",
+    "kalendereintrag",
+    "verabredung",
+)
+
+CALENDAR_DATE_MARKERS: Tuple[str, ...] = (
+    "heute",
+    "morgen",
+    "übermorgen",
+    "uebermorgen",
+    "montag",
+    "dienstag",
+    "mittwoch",
+    "donnerstag",
+    "freitag",
+    "samstag",
+    "sonntag",
+    "nächste woche",
+    "naechste woche",
+)
+
+CALENDAR_ACTIVITY_MARKERS: Tuple[str, ...] = (
+    "einkaufen",
+    "einkauf",
+    "besorgen",
+    "holen gehen",
+)
+
+
+def _has_uhr_product_signal(text_norm: str) -> bool:
+    """`uhr` als Produkt-/Beratungssignal, aber nicht nach Uhrzeit (z.B. `14 uhr`)."""
+    for m in re.finditer(r"\buhr\b", text_norm, flags=re.IGNORECASE):
+        prefix = text_norm[max(0, m.start() - 14) : m.start()]
+        if re.search(r"(?:^|\s)\d{1,2}\s*$", prefix):
+            continue
+        return True
+    return False
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -200,8 +343,8 @@ STORYBOOK_NEGATIVE_KEYWORDS: Tuple[str, ...] = (
 # ═══════════════════════════════════════════════════════════════════════════════
 
 GENERAL_NEGATIVE_KEYWORDS: Tuple[str, ...] = (
-    # Globale Ausschlusskriterien - diese Keywords blockieren ALLE Intents
-    # Analyse/Zusammenfassung - darf keine kreativen Workflows auslösen
+    # Siehe apply_global_veto: nur für veto_eligible_intents wirksam.
+    # Analyse/Zusammenfassung - darf kreative Workflows nicht auslösen
     "fass zusammen",
     "fasse zusammen",
     "zusammenfassen",
@@ -210,15 +353,11 @@ GENERAL_NEGATIVE_KEYWORDS: Tuple[str, ...] = (
     "analysieren",
     "gib mir eine übersicht",
     "gib mir eine uebersicht",
-    "übersicht",
-    "uebersicht",
     "zusammenfassung des textes",
     "zusammenfassung dieses textes",
     # Debugging/Testing - darf keine Produktions-Workflows auslösen
     "debug",
     "debugging",
-    "test",
-    "testen",
     # System-Commands - darf keine Workflows auslösen
     "system check",
     "system prüfung",
@@ -297,7 +436,8 @@ HELP_NAVIGATION_PATTERNS: Tuple[re.Pattern, ...] = (
 )
 
 MODEL_INTROSPECTION_PATTERNS: Tuple[re.Pattern, ...] = (
-    re.compile(r'welches?\s+modell', re.IGNORECASE),
+    re.compile(r'\bwelches?\s+(?:ki[- ]?)?modell\b', re.IGNORECASE),
+    re.compile(r'\bmit\s+welchem\s+modell\s+(?:schreibe|arbeite|redest|chatte|nutze)\b', re.IGNORECASE),
     re.compile(r'welcher?\s+ki', re.IGNORECASE),
     re.compile(r'wer\s+bist\s+du\s+gerade', re.IGNORECASE),
     re.compile(r'mit\s+wem\s+schreibe\s+ich', re.IGNORECASE),
@@ -306,8 +446,6 @@ MODEL_INTROSPECTION_PATTERNS: Tuple[re.Pattern, ...] = (
     re.compile(r'welcher?\s+provider', re.IGNORECASE),
     re.compile(r'welche?\s+stärke', re.IGNORECASE),
     re.compile(r'deine?\s+stärke', re.IGNORECASE),
-    re.compile(r'\bmodell\b', re.IGNORECASE),
-    re.compile(r'\bgerade\b', re.IGNORECASE),
     re.compile(r'wer\s+bist\s+du', re.IGNORECASE),
     re.compile(r'identität', re.IGNORECASE),
 )
@@ -371,6 +509,7 @@ POLICY_PROMPT_TOKENS: List[str] = [
 class IntentDetectionResult:
     """Ergebnis einer Intent-Erkennung."""
     is_shopping_intent: bool = False
+    is_calendar_intent: bool = False
     is_local_business_intent: bool = False
     is_personal_recall: bool = False
     is_image_intent: bool = False
@@ -393,6 +532,9 @@ class IntentDetectionResult:
     # Model Introspection (FEAT-HELP-002)
     is_model_query: bool = False
 
+    primary_intent: Optional[str] = None
+    vetoed_intents: Dict[str, str] = field(default_factory=dict)
+
 
 class IntentEngine:
     """Central intent detection for the chat orchestrator (keyword lists and light NLP).
@@ -403,8 +545,6 @@ class IntentEngine:
 
     def __init__(self) -> None:
         """Wire keyword lists and compiled patterns used by detection methods."""
-        self.shopping_keywords = SHOPPING_INTENT_KEYWORDS
-        self.shopping_context_markers = SHOPPING_CONTEXT_MARKERS
         self.ollama_tool_triggers = OLLAMA_TOOL_TRIGGERS
         self.ollama_smalltalk_phrases = OLLAMA_SMALLTALK_PHRASES
         self.local_business_keywords = LOCAL_BUSINESS_KEYWORDS
@@ -425,28 +565,51 @@ class IntentEngine:
         self.storybook_negative_keywords = STORYBOOK_NEGATIVE_KEYWORDS
         # 💎 Global Veto System - Striktes Ausschlusskriterien-System für alle Intents
         self.general_negative_keywords = GENERAL_NEGATIVE_KEYWORDS
-    
+
+    def _has_price_signal(self, text_norm: str) -> bool:
+        return bool(_PRICE_RE.search(text_norm))
+
+    def _has_strong_shopping_signal(self, text_norm: str) -> bool:
+        has_price = self._has_price_signal(text_norm)
+        has_action = _contains_any_phrase(text_norm, SHOPPING_ACTION_MARKERS)
+        has_product = _contains_any_phrase(text_norm, SHOPPING_PRODUCT_MARKERS)
+        has_vendor = _contains_any_phrase(text_norm, SHOPPING_VENDOR_MARKERS)
+        has_uhr_product = _has_uhr_product_signal(text_norm)
+        productish = bool(has_product or has_vendor or has_uhr_product)
+        return bool(
+            ((has_action or has_price) and productish)
+            or (has_price and has_action)
+        )
+
+    def _has_calendar_command_signal(self, text_norm: str) -> bool:
+        has_command = _contains_any_phrase(text_norm, CALENDAR_COMMAND_MARKERS)
+        has_object = _contains_any_phrase(text_norm, CALENDAR_OBJECT_MARKERS)
+        has_date = _contains_any_phrase(text_norm, CALENDAR_DATE_MARKERS)
+        has_time = bool(_CALENDAR_TIME_RE.search(text_norm))
+        has_when = bool(has_date or has_time)
+        has_activity_for_slot = bool(
+            has_when and _contains_any_phrase(text_norm, CALENDAR_ACTIVITY_MARKERS),
+        )
+        return bool(
+            has_command
+            or (has_object and has_when)
+            or has_activity_for_slot
+        )
+
     # ─────────────────────────────────────────────────────────────────────────
     # Global Veto System
     # ─────────────────────────────────────────────────────────────────────────
 
     def apply_global_veto(self, user_text: str, intent_name: str = "unknown") -> tuple[bool, str]:
-        """
-        Apply global veto system to check for negative keywords that should block all intents.
-
-        This is a strict veto system - if ANY negative keyword is present, the intent is vetoed
-        regardless of positive keywords. This prevents false-positives across all workflows.
-
-        Args:
-            user_text: The user's prompt text
-            intent_name: Name of the intent being checked (for logging)
-
-        Returns:
-            Tuple of (vetoed: bool, reason: str)
-            - vetoed: True if veto should be applied (negative keyword found)
-            - reason: String explaining why veto was applied
-        """
+        """Negative Keywords nur für ausgewählte kreative/workflows (Whitelist), nicht global für jeden Caller."""
         if not user_text:
+            return False, ""
+
+        intent_slug = str(intent_name or "unknown").lower().strip()
+        veto_eligible_intents = frozenset(
+            {"storybook", "meta_agent", "summary", "image", "complex_document"},
+        )
+        if intent_slug not in veto_eligible_intents:
             return False, ""
 
         text_lower = user_text.lower()
@@ -469,49 +632,30 @@ class IntentEngine:
     # ─────────────────────────────────────────────────────────────────────────
 
     def detect_shopping_intent(self, user_text: str) -> bool:
-        """Return True if the user text looks like shopping/price research (keywords + price context).
-        
-        Veto: If calendar keywords are present (termin, uhr, dauer, morgen, montag, etc.),
-        this cannot be an exclusive shopping intent unless it's primarily about prices ("was kostet").
-        """
+        """True nur bei kommerzieller Produkt-/Preis-Recherche — Kalender/scheduling hat Vorrang."""
         if not user_text:
             return False
-        text_lower = user_text.lower()
-        has_shopping_kw = any(kw in text_lower for kw in self.shopping_keywords)
-        has_context_marker = any(marker in text_lower for marker in self.shopping_context_markers)
-        
-        # Calendar intent veto - if calendar keywords are present, block shopping intent
-        # unless it's primarily about price queries
-        calendar_keywords = ['termin', 'uhr', 'dauer', 'morgen', 'montag', 'dienstag', 'mittwoch', 
-                           'donnerstag', 'freitag', 'samstag', 'sonntag', 'woche', 'tag', 
-                           'eintragen', 'trage ein', 'planen', 'termin', 'meeting']
-        has_calendar_kw = any(kw in text_lower for kw in calendar_keywords)
-        
-        # Price-focused queries override the calendar veto
-        price_focused = any(kw in text_lower for kw in ['was kostet', 'wie viel', 'wie teuer', 'preis'])
-        
-        if has_calendar_kw and not price_focused:
-            logger.debug("[SHOPPING-VETO] Calendar keywords detected, blocking shopping intent")
+        text_norm = _normalize_text(user_text)
+        if not text_norm:
             return False
-        
-        return has_shopping_kw and has_context_marker
-    
-    # ─────────────────────────────────────────────────────────────────────────
-    # Calendar Intent
-    # ─────────────────────────────────────────────────────────────────────────
-    
+        if self._has_calendar_command_signal(text_norm):
+            logger.debug("[SHOPPING-VETO] Calendar/scheduling detected — commerce intent suppressed.")
+            return False
+        return self._has_strong_shopping_signal(text_norm)
+
     def detect_calendar_intent(self, user_text: str) -> bool:
-        """Return True if the user text looks like a calendar/appointment request."""
+        """True bei Scheduling/Kalender, nicht durch lose Zeitwörter allein."""
         if not user_text:
             return False
-        text_lower = user_text.lower()
-        calendar_keywords = [
-            'termin', 'uhr', 'dauer', 'morgen', 'montag', 'dienstag', 'mittwoch',
-            'donnerstag', 'freitag', 'samstag', 'sonntag', 'woche', 'tag',
-            'eintragen', 'trage ein', 'planen', 'meeting', 'termin', 'kalender',
-            'termin erstellen', 'termin anlegen', 'termin hinzufügen'
-        ]
-        return any(kw in text_lower for kw in calendar_keywords)
+        text_norm = _normalize_text(user_text)
+        if not text_norm:
+            return False
+        if _RELEASE_TERMIN_RE.search(text_norm):
+            return False
+        if self._has_strong_shopping_signal(text_norm) and not self._has_calendar_command_signal(text_norm):
+            logger.debug("[CALENDAR-VETO] Strong commerce signal without calendar scheduling cues.")
+            return False
+        return self._has_calendar_command_signal(text_norm)
     
     # ─────────────────────────────────────────────────────────────────────────
     # Local Business Intent
@@ -884,11 +1028,24 @@ class IntentEngine:
     # ─────────────────────────────────────────────────────────────────────────
     
     def detect_all_intents(self, user_text: str) -> IntentDetectionResult:
-        """Run the full intent battery once and return a structured :class:`IntentDetectionResult`."""
+        """Run the full intent battery once; hierarchische Auflösung Shopping vs. Kalender."""
         text_clean = user_text.strip().lower() if user_text else ""
+        calendar_on = self.detect_calendar_intent(user_text)
+        shopping_on = self.detect_shopping_intent(user_text)
+        vetoed: Dict[str, str] = {}
+        text_norm = _normalize_text(user_text) if user_text else ""
 
-        return IntentDetectionResult(
-            is_shopping_intent=self.detect_shopping_intent(user_text),
+        if calendar_on and shopping_on:
+            if self._has_calendar_command_signal(text_norm):
+                shopping_on = False
+                vetoed["shopping"] = "calendar_command"
+            else:
+                calendar_on = False
+                vetoed["calendar"] = "strong_shopping_signal"
+
+        result = IntentDetectionResult(
+            is_shopping_intent=shopping_on,
+            is_calendar_intent=calendar_on,
             is_local_business_intent=self.detect_local_business_intent(user_text),
             is_personal_recall=self.detect_personal_recall(user_text),
             is_image_intent=self.detect_image_intent(user_text),
@@ -904,13 +1061,32 @@ class IntentEngine:
             is_video_intent=self.detect_video_intent(user_text),
             is_video_list_intent=self.detect_video_list_intent(user_text),
             is_video_understanding_intent=self.detect_video_understanding_intent(user_text),
-            # Help System Intents (FEAT-HELP-001)
             is_capability_overview=self.detect_capability_overview(user_text),
             is_how_to=self.detect_how_to(user_text),
             is_navigation_query=self.detect_navigation(user_text),
-            # Model Introspection (FEAT-HELP-002)
-            is_model_query=self.detect_model_introspektion(user_text)
+            is_model_query=self.detect_model_introspektion(user_text),
+            vetoed_intents=vetoed,
         )
+
+        precedence = (
+            ("policy_consent", result.is_policy_consent),
+            ("video_understanding", result.is_video_understanding_intent),
+            ("multitask_image_pdf", result.is_multitask_image_pdf),
+            ("image", result.is_image_intent),
+            ("calendar", result.is_calendar_intent),
+            ("local_business", result.is_local_business_intent),
+            ("shopping", result.is_shopping_intent),
+            ("video_list", result.is_video_list_intent),
+            ("video", result.is_video_intent),
+            ("personal_recall", result.is_personal_recall),
+            ("model_query", result.is_model_query),
+            ("capability_overview", result.is_capability_overview),
+            ("how_to", result.is_how_to),
+            ("navigation", result.is_navigation_query),
+            ("complex_document", result.is_complex_document_request),
+        )
+        result.primary_intent = next((name for name, active in precedence if active), None)
+        return result
 
 
 # Singleton-Instanz für globalen Zugriff
