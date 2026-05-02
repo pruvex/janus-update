@@ -724,6 +724,11 @@
         "de": "Kalendertermine lesen, erstellen, ändern und löschen (Google Calendar)",
         "en": "Read, create, modify, and delete calendar events (Google Calendar)"
       },
+      "mandatory_skills": [
+        "calendar.list_events",
+        "calendar.create_event",
+        "calendar.find_and_update_event"
+      ],
       "abilities": [
         {
           "id": "calendar.read",

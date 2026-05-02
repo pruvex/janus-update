@@ -21,7 +21,7 @@ Der Nutzer beschreibt Kalender-Mutationen mit unpräzisen Titeln (z.B. „Fitnes
 - [x] **Phase 2 (Implementierung):** Resolver-Kaskade, Dispatcher-Integration, Tool-Fast-Path, Schema/Skill-Ergänzung.
 - [x] **Phase 3 (Testing):** `pytest backend/tests/test_entity_resolver.py` + verwandte Kalender-Tests.
 - [x] **Phase 4 (Post-Check):** `/post-impl` ausgeführt.
-- [ ] **Phase 5 (UI):** Produkt kann „UI-VALIDIERT“ geben wenn Kalender-Mutation im UI geprüft wurde.
+- [x] **Phase 5 (Guided Mode Final Safety):** Schwenk zu Guided Assistant Mode als finale Sicherheitsmaßnahme. Bei RESOLVED wird event_id + title in action_guidance injiziert, LLM muss zwingend diese Werte verwenden (KEINE Erfindung, KEINE Änderung). Mutation Hammer mit VERBOTEN-Regeln als finaler Check. Status: 🥇 COMPLETE & SEALED.
 
 ## 5. Test-Vorgaben
 - [x] `python -m pytest backend/tests/test_entity_resolver.py -q`

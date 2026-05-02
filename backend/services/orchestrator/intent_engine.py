@@ -71,6 +71,17 @@ _CALENDAR_SNAPSHOT_STOPWORDS = frozenset({
     "termin", "termine", "kalender",
     # Generic time/preposition tokens that make bad mutation targets:
     "uhr", "auf", "nach", "mit", "bis", "dann", "gleich", "halt",
+    # Action verbs — never a mutation target (TASK-065 extension):
+    "nehmen", "nehme", "nimm",
+    "bringen", "bringe", "bring",
+    "tun", "tue", "mach", "machen", "mache",
+    "denken", "denke", "denk",
+    "gehen", "gehe", "geh",
+    "holen", "hole", "hol",
+    "legen", "lege", "leg",
+    "stellen", "stelle", "stell",
+    "kaufen", "kaufe", "kauf",
+    "vergessen", "vergesse", "vergiss",
 })
 
 
@@ -292,6 +303,45 @@ _MUTATION_STRIP_PREFIXES: Tuple[str, ...] = (
     "den termin",
     "die termin",
     "das termin",
+)
+
+_CALENDAR_CREATION_MARKERS: Tuple[str, ...] = (
+    # Explicit creation verbs
+    "erstelle einen termin",
+    "erstell einen termin",
+    "erstelle termin",
+    "erstell termin",
+    "neuen termin erstellen",
+    "termin erstellen",
+    "termin anlegen",
+    "termin hinzufügen",
+    "termin hinzufuegen",
+    # Plan / schedule
+    "plan mir ein",
+    "plan mir einen",
+    "plane mir ein",
+    "plane mir einen",
+    "plane einen termin",
+    "plane ein meeting",
+    "plan ein meeting",
+    "einplanen",
+    "in den kalender eintragen",
+    "in den kalender einplanen",
+    "kalender eintrag erstellen",
+    "kalendereintrag erstellen",
+    # Set / schedule markers
+    "setz einen termin",
+    "setze einen termin",
+    "setz termin",
+    "trage ein",
+    "trag ein",
+    "füge einen termin hinzu",
+    "fuege einen termin hinzu",
+    # English fallbacks (used in mixed-language queries)
+    "create event",
+    "add event",
+    "schedule event",
+    "schedule meeting",
 )
 
 _MUTATION_VERBS_AND_TRIGGERS: Tuple[str, ...] = (
@@ -690,6 +740,7 @@ class IntentDetectionResult:
     is_shopping_intent: bool = False
     is_calendar_intent: bool = False
     is_calendar_mutation: bool = False
+    is_calendar_creation: bool = False
     mutation_target: Optional[str] = None   # Extrahiertes Subjekt der Mutation (z.B. "Sport", "Aldi")
     is_local_business_intent: bool = False
     is_personal_recall: bool = False
@@ -1215,6 +1266,17 @@ class IntentEngine:
         text_norm = _normalize_text(user_text)
         return _contains_any_phrase(text_norm, _MUTATION_VERBS_AND_TRIGGERS)
 
+    def detect_calendar_creation_intent(self, user_text: str) -> bool:
+        """True wenn der User einen *neuen* Kalender-Termin anlegen will.
+
+        Wird VOR der Mutations-Erkennung geprüft, damit explizite Erstellungs-
+        Phrasen nicht fälschlicherweise als Mutation klassifiziert werden.
+        """
+        if not user_text:
+            return False
+        text_norm = _normalize_text(user_text)
+        return _contains_any_phrase(text_norm, _CALENDAR_CREATION_MARKERS)
+
     # ─────────────────────────────────────────────────────────────────────────
     # Combined Detection
     # ─────────────────────────────────────────────────────────────────────────
@@ -1265,7 +1327,17 @@ class IntentEngine:
                 calendar_on = False
                 vetoed["calendar"] = "strong_shopping_signal"
 
-        _is_mutation = bool(calendar_on and self.detect_calendar_mutation_intent(user_text))
+        _is_creation = bool(calendar_on and self.detect_calendar_creation_intent(user_text))
+        if _is_creation:
+            logger.info("[CAL-CREATION] Kalender-Erstellungsabsicht erkannt.")
+
+        # Mutation check: creation takes precedence — an explicit "erstelle Termin" phrase
+        # must never also trigger is_calendar_mutation.
+        _is_mutation = bool(
+            calendar_on
+            and not _is_creation
+            and self.detect_calendar_mutation_intent(user_text)
+        )
         _mutation_target = _extract_mutation_target(user_text) if _is_mutation else None
         if _is_mutation:
             logger.info(
@@ -1277,6 +1349,7 @@ class IntentEngine:
             is_shopping_intent=shopping_on,
             is_calendar_intent=calendar_on,
             is_calendar_mutation=_is_mutation,
+            is_calendar_creation=_is_creation,
             mutation_target=_mutation_target,
             is_local_business_intent=self.detect_local_business_intent(user_text),
             is_personal_recall=self.detect_personal_recall(user_text),

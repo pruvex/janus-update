@@ -2,6 +2,40 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [PATTERN] #ContextualEntityResolution "Contextual Entity Resolver — Fuzzy + Temporal Disambiguation against calendar_snapshot before forced find_and_update_event"
+- **Kontext:** TASK-065 Contextual Entity Resolver. Ziel: Vermeidung von falschen Mutationen durch unscharfe Titel-Matches. Das System muss vor dem Aufruf von `calendar.find_and_update_event` prüfen, ob der Nutzer-Text eindeutig auf einen bestehenden Kalender-Eintrag verweist.
+- **Problem:** Ohne Entity Resolution könnte "Aldi" auf den falschen Aldi-Termin treffen (z.B. Aldi Nord statt Aldi Süd). Das Modell könnte versehentlich den falschen Termin mutieren. Fuzzy-Suche allein reicht nicht aus bei identischen Titeln an unterschiedlichen Daten.
+- **Lösung:** **Contextual Entity Resolver mit Dispatcher Hints:**
+  1. **Resolver Input:** `query` (Nutzer-Text), `snapshot` (calendar_snapshot aus Memory), `operation_type` ("MUTATION").
+  2. **Resolution Strategy:** Rapidfuzz-Kaskade (token_set_ratio → partial_ratio → WRatio) + Temporal-Pre-Pass bei identischen Titeln (nächstes Datum gewinnt).
+  3. **Dispatcher Hints:** `PROCEED` (resolved, pre-filled event_id), `FALLBACK_TO_LIST` (ambiguous/weak, force list_events), `CLARIFY_USER` (not_found, no tool call).
+  4. **Guided Assistant Mode:** Bei PROCEED wird `event_id` und `title` in action_guidance injiziert. Das Modell muss zwingend diese Werte verwenden (KEINE Erfindung, KEINE Änderung).
+  5. **Execution Dispatcher Integration:** Resolver wird in execution_dispatcher.py aufgerufen wenn `is_calendar_mutation` und `mutation_target` vorhanden sind. Result steuert `forced_tool` und `action_guidance`.
+  6. **Fallback to API:** Wenn `event_id` vom Resolver geliefert wird, nutzt `find_and_update_event` direkten API-GET (Google Calendar API) statt Fuzzy-Suche (Performance + Genauigkeit).
+- **Härtung:** Temporal-Pre-Pass löst Konflikte bei identischen Titeln deterministisch. Dispatcher Hints garantieren korrektes Tool-Choice. Guided Assistant Mode verhindert ID-Erfindung durch LLM.
+- **Tripwire:** Wenn falscher Termin mutiert wird → Resolver nicht aufgerufen oder temporal logic fehlt. Wenn LLM eigene event_id erfindet → Guided Assistant Guidance fehlt oder wird ignoriert.
+- **Location:** `backend/services/orchestrator/entity_resolver.py` (ContextualEntityResolver), `backend/services/orchestrator/execution_dispatcher.py` (Resolver integration), `backend/tools/calendar_tools.py` (event_id fast path), implementiert 2026-05-02.
+- **Epic:** TASK-065 — Contextual Entity Resolver
+- **Confidence:** High (Temporal-Pre-Pass deterministisch, Dispatcher Hints klare Steuerung, Guided Assistant Mode verhindert Halluzination).
+- **Tags:** ContextualEntityResolution, EntityResolver, CalendarSnapshot, FuzzySearch, TemporalDisambiguation, DispatcherHints, GuidedAssistant, TASK065
+
+## [PATTERN] #GuidedAssistantMutation "Guided Assistant Mode for Calendar Mutations — Pre-filled event_id + Title in action_guidance, LLM forced to use exact values"
+- **Kontext:** TASK-065 Contextual Entity Resolver + TASK-067 Guided Assistant Mode. Ziel: Verhinderung von ID-Erfindung und falschen Mutationen durch das LLM. Das Modell muss die vom Entity Resolver aufgelösten Werte zwingend verwenden.
+- **Problem:** Ohne Guided Assistant könnte das LLM eine eigene `event_id` erfinden oder den falschen Titel verwenden, was zu falschen Mutationen führt. Das Modell könnte auch versuchen, `calendar.list_events` aufzurufen statt direkt zu mutieren.
+- **Lösung:** **Guided Assistant Mode mit Strict Constraints:**
+  1. **Resolver Result Injection:** Wenn Resolver `PROCEED` zurückgibt, werden `event_id` und `original_title` in `action_guidance` injiziert.
+  2. **Strict Instruction Block:** Guidance enthält klare Anweisung: "DEINE PFLICHT: 1. Rufe calendar.find_and_update_event auf. 2. Setze ZWINGEND event_title_query = X und event_id = Y — KEINE andere ID, KEIN anderer Titel."
+  3. **Mutation Hammer:** `calendar_mutation_hammer` Directive wird angehängt mit zusätzlichen Sicherheitsregeln (VERBOTEN: event_id ignorieren, erfinden, ändern).
+  4. **Schema Hint:** `event_title_query` Parameter-Name ist zwingend (NICHT 'query', 'title', 'event_name'). Schema-Description in schemas.py klärt dies.
+  5. **Tool-Choice Enforcement:** `forced_tool = calendar.find_and_update_event` wird gesetzt, LLM hat keine Wahl.
+  6. **Payload Freedom:** LLM darf die Mutations-Payload frei ausfüllen (new_description, new_start_time, etc.), aber `event_title_query` und `event_id` sind fix.
+- **Härtung:** Strict Instruction Block mit klaren VERBOTEN-Regeln. Mutation Hammer als finaler Sicherheits-Check. Schema Hint verhindert Parameter-Namen-Konflikte.
+- **Tripwire:** Wenn LLM eigene event_id verwendet → Guidance nicht injiziert oder wird ignoriert. Wenn LLM list_events aufruft → forced_tool nicht korrekt gesetzt. Wenn Parameter-Name falsch → Schema Hint fehlt.
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py` (Guided Assistant injection), `backend/services/orchestrator/prompt_registry.py` (calendar_mutation_hammer), `backend/data/schemas.py` (event_title_query hint), implementiert 2026-05-02.
+- **Epic:** TASK-065 + TASK-067 — Contextual Entity Resolver + Guided Assistant Mode
+- **Confidence:** High (Strict Constraints, Mutation Hammer, forced_tool enforcement).
+- **Tags:** GuidedAssistantMutation, GuidedAssistant, StrictConstraints, MutationHammer, SchemaHint, ToolChoiceEnforcement, TASK065, TASK067
+
 ## [PATTERN] #IntentEngineV2 "Wortgrenzen-Cache + Single Dispatch Contract — Vermeidung von Substring-Kollisionen und hierarchische Intent-Auflösung"
 - **Kontext:** Intent Engine V2 Härtung nach 8/10 Architektur-Audit. Ziel: Vermeidung von False-Positives durch Substring-Matching (z.B. "uhr" in "kaufen" vs "14 uhr") und Konsolidierung von Intent-Checks auf einen einzigen Dispatch pro Request.
 - **Problem:** (1) Substring-Kollisionen: `in`-Operator matched "uhr" in "kaufen" als Produkt-Signal obwohl es Uhrzeit ist. (2) Redundante Checks: Orchestrator rief mehrfach `detect_*_intent()` auf (shopping, calendar, local_business, etc.) → ineffizient und inkonsistent. (3) Shopping vs. Calendar Konflikt: "um 14 uhr einkaufen beim netto" wurde als Shopping-Intent klassifiziert, Kalender-Tools entfernt.

@@ -169,7 +169,7 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
         # Safety net: Inject calendar.list_events if intent is detected but selector returned empty
         intent_result = getattr(wf, 'intent_detection_result', None)
         if intent_result and getattr(intent_result, 'is_calendar_intent', False):
-            _cal_mandatory = ("calendar.list_events", "calendar.find_and_update_event")
+            _cal_mandatory = ("calendar.list_events", "calendar.find_and_update_event", "calendar.create_event")
             if hasattr(wf, 'relevant_skill_ids'):
                 for sid in _cal_mandatory:
                     if sid not in wf.relevant_skill_ids:
@@ -479,10 +479,25 @@ async def execute_generation_prepare_gateway(
         #    wenn mutation_target bekannt ist.
         _is_cal_intent = bool(getattr(wf, "is_calendar_intent", False))
         _is_cal_mutation = bool(getattr(wf, "is_calendar_mutation", False))
+        _is_cal_creation = bool(getattr(wf, "is_calendar_creation", False))
         _idr = getattr(wf, "intent_detection_result", None)
         _mutation_target = str(getattr(_idr, "mutation_target", "") or "").strip() if _idr else ""
 
-        if _is_cal_intent and not _is_cal_mutation:
+        if _is_cal_creation:
+            # ── CALENDAR-CREATE: Full model freedom — do NOT force any tool.
+            # The LLM must call calendar.create_event with its own argument filling.
+            # Removing any prior forced_tool from video/audit paths that may have been
+            # set earlier in the same turn is safe here because creation intent is
+            # mutually exclusive with those paths.
+            wf.gateway_kwargs.pop("forced_tool", None)
+            wf.gateway_kwargs.pop("force_tool_name", None)
+            wf.gateway_kwargs.pop("forced_tool_args", None)
+            logger.info(
+                "💎 CALENDAR-CREATE: Creation intent — no forced_tool, full model freedom for provider=%s",
+                request.provider,
+            )
+
+        elif _is_cal_intent and not _is_cal_mutation:
             wf.gateway_kwargs["forced_tool"] = {
                 "skill_id": "calendar.list_events",
                 "provider_tool_name": "calendar.list_events",
@@ -522,30 +537,47 @@ async def execute_generation_prepare_gateway(
                     _resolver_result = None
 
             if _resolver_result is not None and _resolver_result.dispatcher_hint == "PROCEED":
-                # ── RESOLVED: Force find_and_update_event with pre-resolved event_id ──
+                # ── RESOLVED: Guided-Assistant mode ──────────────────────────
+                # Do NOT pre-fill forced_tool_args — the LLM must supply the
+                # actual mutation payload (new_description, new_start_time, …).
+                # Instead, inject a precise action_guidance that locks in the
+                # resolved title + event_id and tells the model exactly what
+                # to do.  The mutation hammer is appended after for protocol.
                 _rev = _resolver_result.resolved_event
                 wf.gateway_kwargs["forced_tool"] = {
                     "skill_id": "calendar.find_and_update_event",
                     "provider_tool_name": "calendar.find_and_update_event",
                 }
                 wf.gateway_kwargs["force_tool_name"] = "calendar.find_and_update_event"
-                wf.gateway_kwargs["forced_tool_args"] = {
-                    "event_title_query": _rev.original_title,
-                    "event_id": _rev.event_id,
-                }
+                wf.gateway_kwargs.pop("forced_tool_args", None)  # full LLM freedom for payload
                 logger.info(
-                    "💎 ENTITY-RESOLVER PROCEED: find_and_update_event provider=%s"
-                    " event_id=%r title=%r score=%.1f",
+                    "💎 ENTITY-RESOLVER GUIDED: find_and_update_event provider=%s"
+                    " event_id=%r title=%r score=%.1f — LLM fills mutation payload",
                     request.provider,
                     _rev.event_id,
                     _rev.original_title,
                     _rev.score_final,
                 )
-                # Inject mutation hammer
+                # Build Guided-Assistant instruction block
+                _guided = (
+                    f"\n\n!!! KALENDER-ZIEL EINDEUTIG AUFGELÖST (Entity-Resolver) !!!\n"
+                    f"Der Termin wurde mit hoher Konfidenz identifiziert:\n"
+                    f"  • Titel: '{_rev.original_title}'\n"
+                    f"  • Event-ID: '{_rev.event_id}'\n"
+                    f"DEINE PFLICHT:\n"
+                    f"  1. Rufe 'calendar.find_and_update_event' auf.\n"
+                    f"  2. Setze ZWINGEND 'event_title_query' = '{_rev.original_title}' "
+                    f"und 'event_id' = '{_rev.event_id}' — KEINE andere ID, KEIN anderer Titel.\n"
+                    f"  3. Füge die vom Nutzer gewünschten Änderungen hinzu "
+                    f"(z.B. 'new_description', 'new_start_time', 'new_summary', 'cancel_event').\n"
+                    f"VERBOTEN: Die event_id zu ignorieren, zu erfinden oder durch eine andere zu ersetzen.\n"
+                )
+                existing = str(getattr(wf, "action_guidance", "") or "")
+                wf.action_guidance = (existing + _guided).strip() if existing else _guided.strip()
+                # Append mutation hammer for tool-protocol compliance
                 _hammer = prompt_registry.get_directive("calendar_mutation_hammer")
                 if _hammer:
-                    existing = str(getattr(wf, "action_guidance", "") or "")
-                    wf.action_guidance = (existing + "\n" + _hammer).strip() if existing else _hammer
+                    wf.action_guidance = wf.action_guidance + "\n" + _hammer
 
             elif _resolver_result is not None and _resolver_result.dispatcher_hint == "FALLBACK_TO_LIST":
                 # ── AMBIGUOUS / WEAK: Suppress mutation — list events instead ──
