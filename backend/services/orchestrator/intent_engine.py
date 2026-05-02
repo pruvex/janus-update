@@ -588,6 +588,7 @@ class IntentDetectionResult:
     """Ergebnis einer Intent-Erkennung."""
     is_shopping_intent: bool = False
     is_calendar_intent: bool = False
+    is_calendar_mutation: bool = False
     is_local_business_intent: bool = False
     is_personal_recall: bool = False
     is_image_intent: bool = False
@@ -1105,6 +1106,15 @@ class IntentEngine:
             return False
         return any(pattern.search(user_text) for pattern in MODEL_INTROSPECTION_PATTERNS)
 
+    def detect_calendar_mutation_intent(self, user_text: str) -> bool:
+        """Detect if user wants to mutate/modify an existing calendar event."""
+        if not user_text:
+            return False
+        text_norm = _normalize_text(user_text)
+        # Mutation keywords: bring, ergänze, ergänzen, hinzufügen, mit
+        mutation_keywords = ("bring", "ergänze", "ergänzen", "hinzufügen", "mit")
+        return any(keyword in text_norm for keyword in mutation_keywords)
+
     # ─────────────────────────────────────────────────────────────────────────
     # Combined Detection
     # ─────────────────────────────────────────────────────────────────────────
@@ -1158,6 +1168,7 @@ class IntentEngine:
         result = IntentDetectionResult(
             is_shopping_intent=shopping_on,
             is_calendar_intent=calendar_on,
+            is_calendar_mutation=self.detect_calendar_mutation_intent(user_text) if calendar_on else False,
             is_local_business_intent=self.detect_local_business_intent(user_text),
             is_personal_recall=self.detect_personal_recall(user_text),
             is_image_intent=self.detect_image_intent(user_text),
