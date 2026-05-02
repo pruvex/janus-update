@@ -53,6 +53,14 @@ Reserviert 2-4 Stunden am Stück für konzentrierte Arbeit ohne Termine. Die KI 
 ### Offene Termine bestätigen
 Zeigt Termine an, bei denen der Status noch 'tentative' ist oder Klärungsbedarf besteht.
 
+## Installierte App vs. Entwicklungsserver
+
+- **Entwicklung:** Die Oberfläche kommt vom Vite-Server (typisch `http://localhost:5173/`).
+- **Installierte / gepackte App:** Die Oberfläche wird aus **`frontend/dist`** geladen (FastAPI mountet dieses Verzeichnis unter `/`; siehe auch Electron-Lade-URL in `main.electron.cjs`).
+- Nach Änderungen am HTML/JS/CSS immer **`npm run build`** ausführen, bevor du ein Release oder einen Installer testest — sonst siehst du einen veralteten Stand. Der Build enthält eine kurze Prüfung (`verify-frontend-dist`), dass das Tages-Panel im Bundle steckt.
+
+Details: `documentation/tasks/task_calendar_day_widget_rail_diamond.md`.
+
 ## Weiterführende Tipps
 
 - **Wochenplanung**: Nutze die Wochenansicht für strategisches Time-Blocking.

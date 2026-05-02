@@ -6,7 +6,8 @@
   "main": "main.electron.cjs",
   "scripts": {
     "start": "vite",
-    "build": "npm run write-version && python tools/generate_release_notes.py && vite build",
+    "build": "npm run write-version && python tools/generate_release_notes.py && vite build && node scripts/verify-frontend-dist.cjs",
+    "verify:frontend-dist": "node scripts/verify-frontend-dist.cjs",
     "preview": "vite preview",
     "write-version": "node -e \"require('fs').writeFileSync('backend/version.py', 'APP_VERSION = \\\"' + require('./package.json').version + '\\\"')\"",
     "start-backend": "cross-env PYTHONIOENCODING=UTF-8 C:\\KI\\Janus-Projekt\\backend\\venv\\Scripts\\python.exe -m uvicorn backend.main:app --reload --port 8001 --host localhost",

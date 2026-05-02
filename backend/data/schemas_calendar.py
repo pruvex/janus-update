@@ -34,6 +34,8 @@ class JanusCalendarEvent(BaseModel):
     last_modified: datetime = Field(default_factory=datetime.utcnow, description="Letzte Änderung")
     is_all_day: bool = Field(False, description="Ganztägiges Event")
     color: Optional[str] = Field(None, description="Farb-Code für UI")
+    html_link: Optional[str] = Field(None, description="Google Calendar HTML-Link zum Termin")
+    hangout_link: Optional[str] = Field(None, description="Google Meet / Hangout-Link (falls vorhanden)")
     
     model_config = {"from_attributes": True}
 

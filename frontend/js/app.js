@@ -1254,11 +1254,15 @@ function injectKnowledgeButton() {
   console.log("Legacy sidebar now exposes the Wissensdatenbank button.");
 }
 
-/** Drag/Resize-Grenzen für #chat-window-A|B: im Chat #chat-view, in der Projektansicht #project-chat-host */
+/** Drag/Resize-Grenzen für #chat-window-A|B: im Chat nur #main-content (ohne Diamond-Tages-Rail), sonst #project-chat-host */
 function getChatWindowBoundsEl(target) {
   if (target.id !== "chat-window-A" && target.id !== "chat-window-B") return null;
   const projectHost = target.closest("#project-chat-host");
   if (projectHost) return projectHost;
+  if (target.closest("#chat-view")) {
+    const main = document.getElementById("main-content");
+    if (main) return main;
+  }
   return document.getElementById("chat-view");
 }
 

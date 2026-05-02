@@ -75,6 +75,9 @@ class ChatRequestWorkflowState:
     budget: Any = None
     bypass_policy_this_turn: bool = False
     candidate_url: Any = None
+    calendar_context_string: str = ""
+    calendar_proactive_guidance: str = ""
+    calendar_snapshot: Any = None
     capability_groups: Dict[str, Any] = field(default_factory=dict)
     capability_guidance: Any = None
     chat_row: Any = None  # Chat ORM row

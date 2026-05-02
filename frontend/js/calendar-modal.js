@@ -10,6 +10,12 @@ import {
 } from "./window-state.js";
 import { bringToFront } from "./modal-api.js";
 import { API_BASE_URL } from "./config.js";
+import {
+  computePlanningStatsForDay,
+  eventDurationMinutes,
+  eventTone,
+  formatHourAmount,
+} from "./calendar-day-stats.js";
 
 const MODULE_ID = "calendar";
 
@@ -228,13 +234,6 @@ function isSameLocalDate(a, b) {
   );
 }
 
-function eventDurationMinutes(ev) {
-  const s = new Date(String(ev.start));
-  const e = new Date(String(ev.end));
-  if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return 0;
-  return Math.max(0, Math.round((e.getTime() - s.getTime()) / 60000));
-}
-
 /** @param {ReturnType<typeof normEvent>} ev */
 function eventAdaptiveDurationClass(ev) {
   if (ev.is_all_day) return "cal-event--normal";
@@ -242,15 +241,6 @@ function eventAdaptiveDurationClass(ev) {
   if (mins < 20) return "cal-event--ultra-short";
   if (mins < 45) return "cal-event--short";
   return "cal-event--normal";
-}
-
-function eventTone(ev) {
-  const title = String(ev.title || "").toLowerCase();
-  if (title.includes("focus") || title.includes("fokus")) return "focus";
-  if (title.includes("projekt") || title.includes("project")) return "project";
-  if (title.includes("call") || title.includes("zoom") || title.includes("meeting")) return "meeting";
-  if (title.includes("sport") || title.includes("pause") || title.includes("essen")) return "personal";
-  return "default";
 }
 
 function formatTime(isoString) {
@@ -508,21 +498,6 @@ function dashboardEvents() {
   return sourceGoogleEnabled() ? mergeEvents(localEvents) : [];
 }
 
-function eventsForDay(events, day) {
-  const bounds = columnDayBounds(day);
-  return events.filter((ev) => {
-    const s = new Date(String(ev.start));
-    const e = new Date(String(ev.end));
-    return !Number.isNaN(s.getTime()) && !Number.isNaN(e.getTime()) && e > bounds.start && s < bounds.endExclusive;
-  });
-}
-
-function formatHourAmount(minutes) {
-  if (minutes <= 0) return "0h";
-  const hours = minutes / 60;
-  return hours >= 1 ? `${hours.toLocaleString("de-DE", { maximumFractionDigits: 1 })}h` : `${minutes}m`;
-}
-
 function updatePeriodLabel() {
   const el = document.getElementById("calendar-period-label");
   if (!el) return;
@@ -589,21 +564,16 @@ function renderMiniMonth() {
 
 function updatePlanningSidebar(events) {
   const all = mergeEvents(events || []);
-  const todayEvents = eventsForDay(all, new Date()).sort((a, b) => new Date(String(a.start)) - new Date(String(b.start)));
-  const focusMinutes = todayEvents
-    .filter((ev) => eventTone(ev) === "focus")
-    .reduce((sum, ev) => sum + eventDurationMinutes(ev), 0);
-  const busyMinutes = todayEvents.reduce((sum, ev) => sum + eventDurationMinutes(ev), 0);
-  const load = Math.min(100, Math.round((busyMinutes / (8 * 60)) * 100));
+  const { eventCount, focusMinutes, loadPercent } = computePlanningStatsForDay(all, new Date());
 
   const eventsEl = document.getElementById("calendar-stat-events");
   const focusEl = document.getElementById("calendar-stat-focus");
   const loadEl = document.getElementById("calendar-stat-load");
   const meterEl = document.getElementById("calendar-load-meter-fill");
-  if (eventsEl) eventsEl.textContent = String(todayEvents.length);
+  if (eventsEl) eventsEl.textContent = String(eventCount);
   if (focusEl) focusEl.textContent = formatHourAmount(focusMinutes);
-  if (loadEl) loadEl.textContent = `${load}%`;
-  if (meterEl) meterEl.style.width = `${load}%`;
+  if (loadEl) loadEl.textContent = `${loadPercent}%`;
+  if (meterEl) meterEl.style.width = `${loadPercent}%`;
 
   const nextEl = document.getElementById("calendar-next-event-card");
   if (nextEl) {
@@ -2207,6 +2177,34 @@ function showCreateEventForm() {
       /* Fehler bereits behandelt */
     }
   });
+}
+
+/** Aufruf aus dem Diamond-Tages-Panel — gleicher Dialog wie „Neuer Termin“ im Kalender. */
+export function openCalendarQuickCreateDialog() {
+  showCreateEventForm();
+}
+
+/**
+ * Öffnet den Kalender und startet die bestehende KI‑Plan‑Pipeline (Overlay im Kalender).
+ * @param {string} command
+ */
+export async function runCalendarAiPlanFromQuickEntry(command) {
+  const trimmed = String(command || "").trim();
+  if (!trimmed) return null;
+  if (typeof window.dockOpen === "function") window.dockOpen("calendar");
+  return await requestCalendarAiPlan(trimmed);
+}
+
+/**
+ * Schnellaktion wie im Kalender‑Footer (z. B. Fokuszeit blocken).
+ * @param {"optimize_day" | "focus_block"} key
+ */
+export async function triggerCalendarAiQuickFromRail(key) {
+  const cmd = CALENDAR_AI_QUICK_COMMANDS[key];
+  if (!cmd) return;
+  if (typeof window.dockOpen === "function") window.dockOpen("calendar");
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  await requestCalendarAiPlan(cmd);
 }
 
 document.addEventListener("DOMContentLoaded", () => {

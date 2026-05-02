@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="src/styles.css" />
     <link rel="stylesheet" href="css/sidebar.css" />
     <link rel="stylesheet" href="css/calendar-modal.css" />
+    <link rel="stylesheet" href="css/calendar-day-widget.css" />
     <link rel="stylesheet" href="css/settings.css" />
     <link rel="stylesheet" href="css/gallery.css" />
     <link rel="stylesheet" href="css/image-studio.css" />
@@ -232,6 +233,35 @@
               </span>
               <span class="sidebar-nav-label">Janus Kalender</span>
             </button>
+            <button
+              type="button"
+              class="sidebar-nav-item"
+              id="sidebar-nav-day-panel"
+              aria-pressed="false"
+              aria-label="Tages-Panel ein- oder ausblenden"
+              title="Tages-Panel"
+            >
+              <span class="sidebar-nav-icon icon-day-panel" aria-hidden="true">
+                <svg
+                  class="janus-nav-icon-svg"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect width="7" height="9" x="3" y="3" rx="1" />
+                  <rect width="7" height="5" x="14" y="3" rx="1" />
+                  <rect width="7" height="9" x="14" y="12" rx="1" />
+                  <rect width="7" height="5" x="3" y="16" rx="1" />
+                </svg>
+              </span>
+              <span class="sidebar-nav-label">Tages-Panel</span>
+            </button>
           </nav>
         </div>
 
@@ -305,7 +335,8 @@
         <footer id="sidebar-version" class="sidebar-footer"></footer>
       </div>
       <main id="chat-view" class="view">
-        <div id="main-content" class="dual-chat-workspace">
+        <div id="chat-workspace-wrap" class="chat-workspace-wrap">
+          <div id="main-content" class="dual-chat-workspace">
           <div id="chat-window-host-A" class="chat-window-host" data-window="A">
             <div
               id="chat-window-A"
@@ -489,6 +520,69 @@
               </div>
             </div>
           </div>
+          </div>
+          <aside
+            id="calendar-day-widget-rail"
+            class="calendar-day-widget-rail"
+            hidden
+            aria-label="Janus Tages-Panel"
+            aria-hidden="true"
+          >
+            <div class="calendar-day-widget-inner">
+              <header class="calendar-day-widget-header">
+                <h2 class="calendar-day-widget-title">Tages-Panel</h2>
+                <button
+                  type="button"
+                  class="calendar-day-widget-dismiss"
+                  id="calendar-day-widget-close"
+                  title="Ausblenden"
+                  aria-label="Tages-Panel ausblenden"
+                  onclick="if(typeof window.janusCloseDayPanel==='function')window.janusCloseDayPanel(event)"
+                >
+                  ×
+                </button>
+              </header>
+              <p class="calendar-day-widget-lede">
+                Heute auf einen Blick — gleiche Kennzahlen wie die Kalender-Rechtsrail. Schnellaktionen, „Jetzt“-Marker im Tagesplan und KI‑Plan über den Vollkalender.
+              </p>
+              <div class="calendar-day-widget-placeholder" id="calendar-day-widget-body" role="region" aria-live="polite">
+                <p class="calendar-day-widget-muted">Wird geladen …</p>
+              </div>
+              <div class="calendar-day-widget-extras" id="calendar-day-widget-extras">
+                <div class="calendar-day-widget-quick-actions" aria-label="Schnellaktionen">
+                  <div class="calendar-day-widget-kicker">Schnellaktionen</div>
+                  <div class="calendar-day-widget-quick-grid">
+                    <button type="button" class="cdw-quick-btn" id="cdw-quick-create">+ Termin</button>
+                    <button type="button" class="cdw-quick-btn" id="cdw-quick-focus" title="Kalender öffnen und Fokuszeit vorschlagen">
+                      Fokuszeit
+                    </button>
+                    <button type="button" class="cdw-quick-btn" id="cdw-quick-calendar">Kalender</button>
+                  </div>
+                </div>
+                <div class="calendar-day-widget-ai" aria-label="KI für heute">
+                  <div class="calendar-day-widget-kicker">KI für heute</div>
+                  <div class="calendar-day-widget-ai-row">
+                    <label for="calendar-day-widget-ai-input" class="visually-hidden">KI‑Befehl für den Kalender</label>
+                    <input
+                      type="text"
+                      id="calendar-day-widget-ai-input"
+                      class="calendar-day-widget-ai-input"
+                      placeholder="z. B. Nachmittag freihalten für Deep Work …"
+                      maxlength="1000"
+                      autocomplete="off"
+                    />
+                    <button type="button" class="calendar-day-widget-ai-send" id="calendar-day-widget-ai-send">Plan</button>
+                  </div>
+                  <p class="calendar-day-widget-ai-hint" id="calendar-day-widget-ai-out" hidden></p>
+                </div>
+              </div>
+              <div class="calendar-day-widget-actions">
+                <button type="button" class="calendar-day-widget-btn" id="calendar-day-widget-open-calendar">
+                  Vollständigen Kalender öffnen
+                </button>
+              </div>
+            </div>
+          </aside>
         </div>
       </main>
       <div id="dock-bar" aria-label="Taskleiste">
@@ -1365,6 +1459,7 @@
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/window-state.js"></script>
     <script type="module" src="js/modal-api.js"></script>
+    <script type="module" src="js/calendar-day-widget.js"></script>
     <script type="module" src="js/calendar-modal.js"></script>
     <script type="module" src="js/video-player.js"></script>
     <script type="module" src="js/app.js"></script>

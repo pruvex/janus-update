@@ -1628,6 +1628,39 @@ class ChatOrchestrator:
                         logger.info('[FAMILY-CONTEXT-021] Family relations detected in memory context')
                     else:
                         logger.info('%s Negative preferences found in memory context', _directive.log_tag)
+            try:
+                from backend.services.calendar.calendar_memory import (
+                    load_calendar_snapshot,
+                    render_calendar_context,
+                    render_proactive_calendar_guidance,
+                )
+                wf.calendar_snapshot = load_calendar_snapshot(self.db)
+                wf.calendar_context_string = render_calendar_context(
+                    wf.calendar_snapshot,
+                    wf.user_text,
+                    now=wf._now_local,
+                )
+                wf.calendar_proactive_guidance = render_proactive_calendar_guidance(
+                    wf.calendar_snapshot,
+                    wf.user_text,
+                    now=wf._now_local,
+                )
+                if wf.calendar_context_string:
+                    wf.memory_context_string = (
+                        f"{wf.memory_context_string}\n\n{wf.calendar_context_string}"
+                        if wf.memory_context_string
+                        else wf.calendar_context_string
+                    )
+                    logger.info(
+                        "[CALENDAR-MEMORY] Injected calendar snapshot context (%d chars)",
+                        len(wf.calendar_context_string),
+                    )
+            except Exception as calendar_ctx_err:
+                logger.warning(
+                    "[CALENDAR-MEMORY] Context injection skipped: %s",
+                    calendar_ctx_err,
+                    exc_info=True,
+                )
             wf.stripped_input = wf.user_text.strip()
             wf.is_menu_selection = (wf.stripped_input in ['1', '2', '3'] or wf.stripped_input in ['1.', '2.', '3.']) and (not wf.is_factcheck_decision) and (not wf.is_policy_question)
             wf.llm_payload = ''
@@ -1649,6 +1682,8 @@ class ChatOrchestrator:
                     if wf._has_negative_preferences:
                         wf._memory_recall_block += 'NEGATIV-PRÄFERENZEN ERKANNT: Im Kontext stehen Dinge, die der User HASST oder NICHT MAG. Bei Fragen nach Vorlieben/Gewohnheiten MÜSSEN diese Abneigungen EXPLIZIT und VOLLSTÄNDIG genannt werden — positive UND negative!\n'
                     wf._memory_recall_block += '[TEMPORAL-RECALL] Jede Erinnerung im KONTEXT-WISSEN enthält Metadaten: \'GESPEICHERT AM\' (Zeitstempel) und \'IM CHAT\' (Chat-Name). Wenn der User fragt WANN er dir etwas erzählt hat oder IN WELCHEM GESPRÄCH, gib diese Metadaten exakt wieder. Beispiel: \'Das hast du mir am 3. März 2026 im Chat "Kennenlern-Gespräch" erzählt.\'\nFOKUS AUF URSPRUNG: Nenne primär den Zeitpunkt der ERSTEN Erwähnung eines Fakts. Wiederholte Bestätigungen desselben Fakts sind NICHT separat aufzulisten. Erwähne sie nur, wenn sie neue Details enthalten oder der User explizit nach allen Erwähnungen fragt.\n!!! DYNAMISCHE KONSISTENZ-PFLICHT !!!: Die Chat-Titel im folgenden KONTEXT-WISSEN sind die EINZIGE \'Single Source of Truth\'. Wenn sich ein Chat-Name gegenüber früher im Gesprächsverlauf geändert hat, MUSST du zwingend den NEUEN Namen aus dem KONTEXT-WISSEN verwenden. Ignoriere veraltete Chat-Namen aus dem bisherigen Gesprächsverlauf — sie sind OBSOLET.\n'
+                    if wf.calendar_proactive_guidance:
+                        wf._memory_recall_block += wf.calendar_proactive_guidance + '\n'
                     wf._memory_recall_block += '\n'
                 wf.llm_payload = f"ACHTUNG: Die folgenden Daten enthalten 'Dauerhafte Merkmale' und 'Einmalige Beobachtungen'. NUTZE FÜR BESCHREIBUNGEN NUR DIE DAUERHAFTEN MERKMALE (Physis). IGNORIERE FOLGENDES BEI BESCHREIBUNGEN VON PERSONEN: 'Mantel', 'Jacke', 'Schal', 'T-Shirt', 'Anzug', 'Krawatte', 'Kleid', 'Hose', 'Rock', 'Schuhe'. AKZENTUIERE HINGEGEN: 'Brille', 'Sonnenbrille', 'Kopfhörer', 'Headset', 'Smartwatch', 'Piercing', 'auffällige Kette'.\n{wf._memory_recall_block}KONTEXT-WISSEN (AUS DB):\n{wf.memory_context_string}\n\nUSER-ANFRAGE: {wf.user_text}\n\nAUFGABE: Bestätige kurz, wenn der User eine Information ergänzt. Erstelle ein Porträt nur bei expliziter Anfrage des Users. Wenn der User nach spezifischen Accessoires fragt (z.B. 'Trägt er Kopfhörer?'), durchsuche die Kategorie 'Aussehen_Situativ'. Wenn der User nur 'Beschreibe ihn' fragt, ignoriere diese Kategorie."
             if not wf.skip_llm_generation:

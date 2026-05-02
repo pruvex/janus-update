@@ -358,6 +358,8 @@ class CalendarService:
             last_modified=last_modified,
             is_all_day=is_all_day,
             color=self.SOURCE_COLORS["google"],
+            html_link=google_event.get("htmlLink"),
+            hangout_link=google_event.get("hangoutLink"),
         )
     
     def _detect_conflicts(self, events: List[JanusCalendarEvent]) -> List[Dict[str, Any]]:

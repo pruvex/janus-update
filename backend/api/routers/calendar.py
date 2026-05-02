@@ -4,6 +4,7 @@ Calendar API Router für Janus Calendar Modal.
 REST-Endpoints für Event-CRUD und Sync-Operationen.
 """
 
+import inspect
 import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional, Tuple
@@ -22,6 +23,7 @@ from backend.data.schemas_calendar import (
     CalendarSyncStatus,
 )
 from backend.services.calendar import CalendarService, CalendarAIEngine
+from backend.services.calendar.calendar_memory import SNAPSHOT_DAYS, upsert_calendar_snapshot
 
 logger = logging.getLogger("janus_backend.calendar_router")
 
@@ -47,6 +49,19 @@ def _ai_plan_context_window(target_date: Optional[str]) -> Tuple[Optional[str], 
     return start, end
 
 
+async def _refresh_calendar_memory_snapshot(db: Session) -> Dict[str, Any]:
+    """Refresh the compact calendar snapshot without changing API response shapes."""
+    result = _calendar_service.get_events(days_in_future=SNAPSHOT_DAYS)
+    if inspect.isawaitable(result):
+        result = await result
+    else:
+        logger.debug("Calendar memory refresh skipped: get_events mock/result is not awaitable.")
+        return {}
+    if getattr(result, "sync_status", None) != "synced":
+        return {}
+    return upsert_calendar_snapshot(db, getattr(result, "events", []) or [])
+
+
 @router.get("/events", response_model=CalendarEventsResponse)
 async def get_events(
     start: Optional[str] = Query(None, description="Startdatum (ISO 8601 oder natürliche Sprache)"),
@@ -68,6 +83,8 @@ async def get_events(
             end_date=end,
             days_in_future=days,
         )
+        if response.sync_status == "synced":
+            upsert_calendar_snapshot(db, response.events)
         
         return response
         
@@ -110,6 +127,7 @@ async def create_event(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create calendar event",
             )
+        await _refresh_calendar_memory_snapshot(db)
         
         return result
         
@@ -144,6 +162,7 @@ async def delete_event(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to delete calendar event",
             )
+        await _refresh_calendar_memory_snapshot(db)
         
         # 204 No Content - kein Body
         return None
@@ -192,6 +211,7 @@ async def update_event(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to update calendar event",
             )
+        await _refresh_calendar_memory_snapshot(db)
         
         return result
         
@@ -228,6 +248,38 @@ async def get_sync_status(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get sync status: {str(e)}",
+        )
+
+
+@router.post("/sync/memory")
+async def refresh_memory_snapshot(
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    """
+    Erzwingt einen Full-Replace des Kalender-Memory-Spiegels.
+
+    Der Live-Kalender bleibt die Quelle der Wahrheit; dieser Endpoint aktualisiert
+    nur den kompakten Kontext-Cache für Chat-Antworten.
+    """
+    try:
+        snapshot = await _refresh_calendar_memory_snapshot(db)
+        if not snapshot:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Calendar snapshot could not be refreshed",
+            )
+        return {
+            "status": "ok",
+            "event_count": len(snapshot.get("events", [])),
+            "generated_at": snapshot.get("generated_at"),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in refresh_memory_snapshot: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to refresh calendar memory snapshot: {str(e)}",
         )
 
 
