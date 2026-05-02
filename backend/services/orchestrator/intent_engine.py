@@ -6,7 +6,7 @@ Keine harten Strings mehr im Orchestrator - nur noch saubere Service-Calls.
 
 import re
 import logging
-from typing import List, Dict, Any, Tuple, Optional, Union
+from typing import List, Dict, Any, Tuple, Optional, Union, Set
 from dataclasses import dataclass, field
 
 logger = logging.getLogger("janus_backend")
@@ -57,6 +57,63 @@ _RELEASE_TERMIN_RE = re.compile(
     r"\b(?:erscheinungstermin|release[- ]?termin|veröffentlichungstermin|veroeffentlichungstermin)\b",
     re.IGNORECASE,
 )
+
+# Contextual Intent Boost (TASK-062): Keywords im User-Treffer gegen Kalender-Snapshot (Titel/Location).
+_CALENDAR_SNAPSHOT_STOPWORDS = frozenset({
+    "der", "die", "das", "den", "dem", "des", "ein", "eine", "einer", "eines", "einem",
+    "und", "oder", "aber", "mit", "bei", "zum", "zur", "von", "vom", "zu", "im", "in", "an", "am", "auf",
+    "ist", "sind", "war", "waren", "hat", "haben", "hast", "habe",
+    "kann", "kannst", "können", "koennen", "muss", "musst", "müssen", "muessen", "soll", "sollte",
+    "nicht", "noch", "nur", "wie", "was", "wer", "wo", "wann", "warum",
+    "mal", "bitte", "mir", "mich", "ich", "du", "dir", "dich", "uns", "euch", "ihr", "sie",
+    "morgen", "heute", "gestern", "jetzt", "schon", "auch", "dann", "wenn",
+    "mein", "meine", "meinen", "dein", "deine",
+    "termin", "termine", "kalender", "meeting",
+})
+
+
+def _calendar_snapshot_anchor_tokens(text_norm: str) -> Set[str]:
+    """Nutzer-/Event-Zeichenkette nach Normalisierung in bedeutsame Tokens (min. Länge, ohne Stoppwörter)."""
+    tokens: Set[str] = set()
+    if not text_norm:
+        return tokens
+    for raw in text_norm.split():
+        w = raw.strip("-_.").strip()
+        if len(w) < 3 or w.isdigit():
+            continue
+        if w in _CALENDAR_SNAPSHOT_STOPWORDS:
+            continue
+        tokens.add(w)
+    return tokens
+
+
+def calendar_user_text_overlap_snapshot(user_text: str, calendar_snapshot: Any) -> bool:
+    """True wenn mind. ein Anchor-Token des Users im kombinierten Titel/Ort eines Snapshot-Events vorkommt."""
+    if not user_text or not calendar_snapshot:
+        return False
+    events = calendar_snapshot.get("events") if isinstance(calendar_snapshot, dict) else None
+    if not isinstance(events, list) or not events:
+        return False
+    text_norm = _normalize_text(user_text)
+    if not text_norm or _RELEASE_TERMIN_RE.search(text_norm):
+        return False
+    utoks = _calendar_snapshot_anchor_tokens(text_norm)
+    if not utoks:
+        return False
+    for event in events:
+        if not isinstance(event, dict):
+            continue
+        title = event.get("title") or ""
+        loc = event.get("location") or ""
+        hay = _normalize_text(f"{title} {loc}")
+        if not hay:
+            continue
+        etoks = _calendar_snapshot_anchor_tokens(hay)
+        if utoks & etoks:
+            return True
+        if 10 <= len(hay) <= 120 and _contains_phrase(text_norm, hay):
+            return True
+    return False
 
 SHOPPING_ACTION_MARKERS: Tuple[str, ...] = (
     "kaufen",
@@ -1052,22 +1109,48 @@ class IntentEngine:
     # Combined Detection
     # ─────────────────────────────────────────────────────────────────────────
     
-    def detect_all_intents(self, user_text: str) -> IntentDetectionResult:
+    def detect_all_intents(
+        self,
+        user_text: str,
+        *,
+        calendar_snapshot: Optional[Dict[str, Any]] = None,
+    ) -> IntentDetectionResult:
         """Run the full intent battery once; hierarchische Auflösung Shopping vs. Kalender."""
         text_clean = user_text.strip().lower() if user_text else ""
         summary_global_veto, _ = self.apply_global_veto(user_text, "summary")
         meta_agent_global_veto, _ = self.apply_global_veto(user_text, "meta_agent")
         named_channel_video = bool(self.detect_named_channel_video_intent(user_text))
 
-        calendar_on = self.detect_calendar_intent(user_text)
+        calendar_lex = self.detect_calendar_intent(user_text)
         shopping_on = self.detect_shopping_intent(user_text)
         vetoed: Dict[str, str] = {}
         text_norm = _normalize_text(user_text) if user_text else ""
+
+        snapshot_overlap = calendar_user_text_overlap_snapshot(user_text, calendar_snapshot)
+
+        commerce_blocks_snapshot_calendar = (
+            self._has_strong_shopping_signal(text_norm)
+            and not self._has_calendar_command_signal(text_norm)
+        )
+        snapshot_calendar_on = (
+            snapshot_overlap
+            and not commerce_blocks_snapshot_calendar
+        )
+
+        if snapshot_calendar_on:
+            logger.info(
+                "[CAL-SNAPSHOT-INTENT] Calendar intent boosted: User-Text overlappt Snapshot-Ereignis (Titel/Ort).",
+            )
+
+        calendar_on = bool(calendar_lex or snapshot_calendar_on)
 
         if calendar_on and shopping_on:
             if self._has_calendar_command_signal(text_norm):
                 shopping_on = False
                 vetoed["shopping"] = "calendar_command"
+            elif snapshot_calendar_on:
+                shopping_on = False
+                vetoed["shopping"] = "calendar_snapshot_anchor"
             else:
                 calendar_on = False
                 vetoed["calendar"] = "strong_shopping_signal"

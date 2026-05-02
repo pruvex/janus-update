@@ -16,7 +16,7 @@ class AgentPlanner:
 
     _DETERMINISTIC_SKILL_CANDIDATES: Dict[str, List[str]] = {
         "shopping": ["system.price_comparison"],
-        "calendar": ["calendar.list_events", "calendar.find_slots"],
+        "calendar": ["calendar.list_events", "calendar.find_slots", "calendar.find_and_update_event"],
         "local_business": ["system.local_business"],
         "video_understanding": ["video.understand", "system.video_understanding"],
         "video_list": ["video.search", "system.video_search"],

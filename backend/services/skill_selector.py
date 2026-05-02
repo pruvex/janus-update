@@ -137,7 +137,7 @@ class SkillSelector:
         mandatory: List[str] = []
         forbidden: List[str] = []
         if getattr(intent_result, "is_calendar_intent", False) or primary == "calendar":
-            mandatory = ["calendar.list_events", "calendar.find_slots"]
+            mandatory = ["calendar.list_events", "calendar.find_slots", "calendar.find_and_update_event"]
             forbidden = ["system.create_pdf"]
         elif getattr(intent_result, "is_shopping_intent", False) or primary == "shopping":
             mandatory = ["system.price_comparison"]

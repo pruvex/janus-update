@@ -1011,9 +1011,19 @@ class ChatOrchestrator:
         wf.system_prompt_for_llm = apply_verbosity_control(wf.base_system_prompt)
         wf.user_text_for_prompt = (wf.user_text or '').strip().lower()
         wf.user_prompt_lower = (wf.user_text or '').strip().lower()
+        # Kalender-Snapshot vor Intent: Contextual Boost (TASK-062) gegen Event-Titel/Ort.
+        try:
+            from backend.services.calendar.calendar_memory import load_calendar_snapshot
+            wf.calendar_snapshot = load_calendar_snapshot(self.db)
+        except Exception as _cal_early_err:
+            logger.debug("[CAL-SNAPSHOT] Vorab-Ladefehler (Intent): %s", _cal_early_err)
+            wf.calendar_snapshot = getattr(wf, "calendar_snapshot", None)
         # 💎 Single Dispatch Contract: genau eine Intent-Erkennung pro User-Turn
-        wf.intent_detection_result = intent_engine.detect_all_intents(wf.user_text)
+        wf.intent_detection_result = intent_engine.detect_all_intents(
+            wf.user_text, calendar_snapshot=wf.calendar_snapshot
+        )
         inc = wf.intent_detection_result
+        wf.is_calendar_intent = bool(getattr(inc, "is_calendar_intent", False))
         wf.is_multitask_image_pdf = inc.is_multitask_image_pdf
         wf.is_shopping_intent_early = inc.is_shopping_intent
         self._is_shopping_intent_flag = wf.is_shopping_intent_early
@@ -1644,7 +1654,8 @@ class ChatOrchestrator:
                     render_calendar_context,
                     render_proactive_calendar_guidance,
                 )
-                wf.calendar_snapshot = load_calendar_snapshot(self.db)
+                if getattr(wf, "calendar_snapshot", None) is None:
+                    wf.calendar_snapshot = load_calendar_snapshot(self.db)
                 wf.calendar_context_string = render_calendar_context(
                     wf.calendar_snapshot,
                     wf.user_text,

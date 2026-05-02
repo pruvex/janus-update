@@ -1,7 +1,10 @@
 """Test calendar routing fix - shopping guardrail bypass for calendar intents."""
 
 import pytest
-from backend.services.orchestrator.intent_engine import IntentEngine
+from backend.services.orchestrator.intent_engine import (
+    IntentEngine,
+    calendar_user_text_overlap_snapshot,
+)
 
 
 class TestCalendarRoutingFix:
@@ -38,6 +41,47 @@ class TestCalendarRoutingFix:
         assert intent_engine.detect_shopping_intent("kaufen bei amazon")
         assert intent_engine.detect_shopping_intent("was kostet das bei otto")
         assert intent_engine.detect_shopping_intent("günstige offers bei zalando")
+
+
+# --- TASK-062: contextual intent boost vs. Kalender-Snapshot ----------------------------
+
+ALD_SNAPSHOT = {
+    "events": [
+        {
+            "title": "Einkauf Aldi Süd",
+            "location": "",
+            "start": "2026-05-03T18:30:00+02:00",
+            "end": "2026-05-03T19:30:00+02:00",
+        }
+    ]
+}
+
+
+class TestCalendarSnapshotIntentBoost:
+    def test_overlap_helper_detects_shared_token_with_title(self):
+        assert calendar_user_text_overlap_snapshot(
+            "Kannst du Aldi nächsten Samstag später legen?",
+            ALD_SNAPSHOT,
+        )
+
+    def test_detect_all_intents_boosts_calendar_from_snapshot_without_calendar_lexemes(self):
+        engine = IntentEngine()
+        text = "Kannst du Aldi nächsten Samstag später legen?"
+        assert calendar_user_text_overlap_snapshot(text, ALD_SNAPSHOT)
+        base = engine.detect_all_intents(text, calendar_snapshot=None)
+        boosted = engine.detect_all_intents(text, calendar_snapshot=ALD_SNAPSHOT)
+        assert not base.is_calendar_intent
+        assert boosted.is_calendar_intent
+        assert boosted.primary_intent == "calendar"
+
+    def test_snapshot_boost_suppressed_when_strong_price_shopping_signal(self):
+        engine = IntentEngine()
+        result = engine.detect_all_intents(
+            "Was kostet Milch bei Aldi?",
+            calendar_snapshot=ALD_SNAPSHOT,
+        )
+        assert result.is_shopping_intent
+        assert not result.is_calendar_intent
 
 
 if __name__ == "__main__":

@@ -169,17 +169,19 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
         # Safety net: Inject calendar.list_events if intent is detected but selector returned empty
         intent_result = getattr(wf, 'intent_detection_result', None)
         if intent_result and getattr(intent_result, 'is_calendar_intent', False):
+            _cal_mandatory = ("calendar.list_events", "calendar.find_and_update_event")
             if hasattr(wf, 'relevant_skill_ids'):
-                if 'calendar.list_events' not in wf.relevant_skill_ids:
-                    logger.warning(
-                        "[CALENDAR-SAFETY-NET] Calendar intent detected but calendar.list_events not in relevant_skill_ids. Injecting mandatory calendar skill."
-                    )
-                    wf.relevant_skill_ids.append('calendar.list_events')
+                for sid in _cal_mandatory:
+                    if sid not in wf.relevant_skill_ids:
+                        logger.warning(
+                            "[CALENDAR-SAFETY-NET] Calendar intent ohne %s — injiziert.", sid,
+                        )
+                        wf.relevant_skill_ids.append(sid)
             else:
                 logger.warning(
-                    "[CALENDAR-SAFETY-NET] Calendar intent detected but relevant_skill_ids missing. Initializing with calendar.list_events."
+                    "[CALENDAR-SAFETY-NET] Calendar intent ohne relevant_skill_ids — initialisiere Pflicht-Kalenderskills."
                 )
-                wf.relevant_skill_ids = ['calendar.list_events']
+                wf.relevant_skill_ids = list(_cal_mandatory)
 
         # Harte Erkennung für den Sortier-Auftrag
         is_sort_intent = 'sortiere' in query and ('pdf' in query or 'dateien' in query)
