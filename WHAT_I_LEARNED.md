@@ -2,6 +2,24 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [PATTERN] #IntentEngineV2 "Wortgrenzen-Cache + Single Dispatch Contract — Vermeidung von Substring-Kollisionen und hierarchische Intent-Auflösung"
+- **Kontext:** Intent Engine V2 Härtung nach 8/10 Architektur-Audit. Ziel: Vermeidung von False-Positives durch Substring-Matching (z.B. "uhr" in "kaufen" vs "14 uhr") und Konsolidierung von Intent-Checks auf einen einzigen Dispatch pro Request.
+- **Problem:** (1) Substring-Kollisionen: `in`-Operator matched "uhr" in "kaufen" als Produkt-Signal obwohl es Uhrzeit ist. (2) Redundante Checks: Orchestrator rief mehrfach `detect_*_intent()` auf (shopping, calendar, local_business, etc.) → ineffizient und inkonsistent. (3) Shopping vs. Calendar Konflikt: "um 14 uhr einkaufen beim netto" wurde als Shopping-Intent klassifiziert, Kalender-Tools entfernt.
+- **Lösung:** **_WORD_BOUNDARY_CACHE + Single Dispatch Contract:**
+  1. **_WORD_BOUNDARY_CACHE:** Regex-Pattern `(?<!\w){phrase}(?!\w)` mit Cache (`_WORD_BOUNDARY_CACHE: Dict[str, re.Pattern]`) für wortgrenzentreues Matching. `_contains_phrase(text_norm, phrase)` cached Pattern pro Phrase.
+  2. **Single Dispatch Contract:** Orchestrator ruft nur noch `intent_engine.detect_all_intents(user_text)` einmal pro Request. Ergebnis ist `IntentDetectionResult` mit allen Intent-Flags (`is_shopping_intent`, `is_calendar_intent`, etc.).
+  3. **Shopping vs. Calendar Hierarchie:** `detect_all_intents()` löst Konflikte hierarchisch: Wenn beide Intents aktiv, gewinnt Calendar wenn `_has_calendar_command_signal()` → Shopping wird vetoed (`vetoed["shopping"] = "calendar_command"`). Umgekehrt gewinnt Shopping wenn starkes Commerce-Signal ohne Calendar-Kommando.
+  4. **Signal-Methoden:** `_has_strong_shopping_signal()` (price + action/vendor/product), `_has_calendar_command_signal()` (command/object + date/time), `_has_uhr_product_signal()` (uhr als Produkt, nicht Uhrzeit via Prefix-Check auf Zahlen).
+  5. **Global Veto Whitelist:** `apply_global_veto()` wirkt nur noch auf `veto_eligible_intents` (storybook, meta_agent, summary, image, complex_document), nicht mehr global für jeden Caller.
+  6. **IntentDetectionResult Erweiterung:** `primary_intent` (Precedence-Chain), `vetoed_intents` (Veto-Tracking), `summary_global_veto`, `meta_agent_global_veto`, `named_channel_video`.
+- **Härtung:** Regex mit Lookbehind/Lookahead garantiert Wortgrenzen. Pattern-Cache vermeidet redundante Kompilierung. Single Dispatch garantiert Konsistenz. Veto-Tracking macht Entscheidungen transparent.
+- **Future Work für Diamond Standard (10/10):** Umstellung aller verbleibenden Intents (Image, Recall) auf Boundary-Cache und vollständige Eliminierung von Einzel-Checks wie Storybook. Ziel: Alle Intent-Detektion nutzen `_contains_phrase()` und `_WORD_BOUNDARY_CACHE` für konsistente Wortgrenzen-Erkennung.
+- **Tripwire:** Wenn "uhr" in "14 uhr" als Produkt erkannt → `_has_uhr_product_signal()` Prefix-Check fehlt. Wenn Calendar vs. Shopping nicht aufgelöst → Hierarchie-Logik in `detect_all_intents()` fehlt. Wenn Orchestrator noch Einzel-Checks → Single Dispatch nicht implementiert.
+- **Location:** `backend/services/orchestrator/intent_engine.py` (_WORD_BOUNDARY_CACHE, _contains_phrase, detect_shopping_intent, detect_calendar_intent, detect_all_intents, apply_global_veto), `backend/services/chat_orchestrator.py` (Single Dispatch via intent_detection_result), `backend/services/orchestrator/execution_dispatcher.py` (summary_global_veto via IntentDetectionResult), implementiert 2026-05-02.
+- **Epic:** Intent Engine V2 Härtung (Calendar Routing Fix + Architektur-Refactor)
+- **Confidence:** High (Wortgrenzen-Cache verhindert Substring-Kollisionen, Single Dispatch konsolidiert Checks, Hierarchie löst Shopping/Calendar-Konflikte deterministisch).
+- **Tags:** IntentEngineV2, WordBoundaryCache, SingleDispatch, ShoppingCalendarHierarchy, IntentDetectionResult, VetoTracking, GlobalVetoWhitelist
+
 ## [PATTERN] #PureTextSummaryMode "Skill-Stripping bei Zusammenfassungs-Intents zur Qualitätssteigerung — relevant_skill_ids cleared, tools disabled, proactive guidance suppressed"
 - **Kontext:** TASK-057 Context Awareness System erforderte einen Pure-Text Summary Mode, der alle Skills und Tools deaktiviert, wenn der Nutzer eine Zusammenfassung anfordert. Ohne diesen Modus könnten Skills unerwünscht in den Zusammenfassungs-Prozess eingreifen.
 - **Problem:** Wenn ein Nutzer "fasse zusammen" oder "erstelle eine Zusammenfassung" eingibt, könnten proactive Skills oder forced tools den rein textuellen Zusammenfassungs-Prozess stören. Der Intent ist klar: reine Textverarbeitung ohne Skill-Intervention.

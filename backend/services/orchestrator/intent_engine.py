@@ -45,7 +45,12 @@ _PRICE_RE = re.compile(
     re.IGNORECASE,
 )
 _CALENDAR_TIME_RE = re.compile(
-    r"(?:\bum\s*)?\b\d{1,2}(?::|\.|\s+uhr\b)(?:\d{2})?\b|\b\d{1,2}\s*uhr\b",
+    r"(?:"
+    r"(?:\bum\s*)?\b\d{1,2}(?::|\.|\s+uhr\b)(?:\d{2})?\b|\b\d{1,2}\s*uhr\b"
+    r"|\b\d{1,2}-\s*uhr\b|\b\d{1,2}-uhr\b"
+    r"|\b\d{1,2}\s*h\b"
+    r"|\b\d{1,2}:\d{2}\s*h\b|\b\d{1,2}:\d{2}\b"
+    r")",
     re.IGNORECASE,
 )
 _RELEASE_TERMIN_RE = re.compile(
@@ -123,6 +128,10 @@ CALENDAR_COMMAND_MARKERS: Tuple[str, ...] = (
     "termin anlegen",
     "termin hinzufügen",
     "termin hinzufuegen",
+    "termin plane ich",
+    "plane einen termin",
+    "plane mir einen termin",
+    "plan einen termin",
     "trage ein",
     "eintragen",
     "einplanen",
@@ -130,7 +139,6 @@ CALENDAR_COMMAND_MARKERS: Tuple[str, ...] = (
     "kalender eintrag",
     "kalendereintrag",
     "meeting planen",
-    "plane",
     "planen bitte",
     "verschiebe",
     "absagen",
@@ -172,10 +180,10 @@ CALENDAR_ACTIVITY_MARKERS: Tuple[str, ...] = (
 
 
 def _has_uhr_product_signal(text_norm: str) -> bool:
-    """`uhr` als Produkt-/Beratungssignal, aber nicht nach Uhrzeit (z.B. `14 uhr`)."""
+    """`uhr` als Produkt-/Beratungssignal, aber nicht nach Uhrzeit (z.B. `14 uhr`, `14-uhr`)."""
     for m in re.finditer(r"\buhr\b", text_norm, flags=re.IGNORECASE):
         prefix = text_norm[max(0, m.start() - 14) : m.start()]
-        if re.search(r"(?:^|\s)\d{1,2}\s*$", prefix):
+        if re.search(r"(?:^|\s)\d{1,2}\s*-?\s*$", prefix):
             continue
         return True
     return False
@@ -535,6 +543,10 @@ class IntentDetectionResult:
     primary_intent: Optional[str] = None
     vetoed_intents: Dict[str, str] = field(default_factory=dict)
 
+    summary_global_veto: bool = False
+    meta_agent_global_veto: bool = False
+    named_channel_video: bool = False
+
 
 class IntentEngine:
     """Central intent detection for the chat orchestrator (keyword lists and light NLP).
@@ -612,11 +624,11 @@ class IntentEngine:
         if intent_slug not in veto_eligible_intents:
             return False, ""
 
-        text_lower = user_text.lower()
+        text_norm = _normalize_text(user_text)
 
-        # Check for global negative keywords
+        # Check for global negative keywords (wortgrenzentreu via _contains_phrase)
         for kw in self.general_negative_keywords:
-            if kw in text_lower:
+            if _contains_phrase(text_norm, kw):
                 logger.warning(
                     "[GLOBAL VETO] Intent '%s' blocked by negative keyword: '%s' in text: '%s'",
                     intent_name,
@@ -1030,6 +1042,10 @@ class IntentEngine:
     def detect_all_intents(self, user_text: str) -> IntentDetectionResult:
         """Run the full intent battery once; hierarchische Auflösung Shopping vs. Kalender."""
         text_clean = user_text.strip().lower() if user_text else ""
+        summary_global_veto, _ = self.apply_global_veto(user_text, "summary")
+        meta_agent_global_veto, _ = self.apply_global_veto(user_text, "meta_agent")
+        named_channel_video = bool(self.detect_named_channel_video_intent(user_text))
+
         calendar_on = self.detect_calendar_intent(user_text)
         shopping_on = self.detect_shopping_intent(user_text)
         vetoed: Dict[str, str] = {}
@@ -1066,6 +1082,9 @@ class IntentEngine:
             is_navigation_query=self.detect_navigation(user_text),
             is_model_query=self.detect_model_introspektion(user_text),
             vetoed_intents=vetoed,
+            summary_global_veto=summary_global_veto,
+            meta_agent_global_veto=meta_agent_global_veto,
+            named_channel_video=named_channel_video,
         )
 
         precedence = (

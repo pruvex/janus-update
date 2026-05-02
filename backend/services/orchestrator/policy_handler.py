@@ -19,6 +19,20 @@ if TYPE_CHECKING:
 logger = logging.getLogger("janus_backend")
 
 
+def _intent_is_policy_consent(wf: Any) -> bool:
+    inc = getattr(wf, "intent_detection_result", None)
+    if inc is not None:
+        return bool(inc.is_policy_consent)
+    return intent_engine.is_policy_consent_choice(wf.user_text_clean)
+
+
+def _intent_is_one_time_policy(wf: Any) -> bool:
+    inc = getattr(wf, "intent_detection_result", None)
+    if inc is not None:
+        return bool(inc.is_one_time_policy)
+    return intent_engine.is_one_time_policy_choice(wf.user_text_clean)
+
+
 async def handle_policy_consent_phase(
     orchestrator: "ChatOrchestrator",
     ctx: "RequestContext",
@@ -36,7 +50,7 @@ async def handle_policy_consent_phase(
         logger.info("[POLICY] STATE (DB): Pending-Status für Chat %s verbraucht.", request.chat_id)
         wf.blocked_skill_id = str((wf.policy_pending_data or {}).get("blocked_skill_id") or "").strip()
         wf.blocked_arguments = (wf.policy_pending_data or {}).get("blocked_arguments") or {}
-        if wf.blocked_skill_id and intent_engine.is_policy_consent_choice(wf.user_text_clean):
+        if wf.blocked_skill_id and _intent_is_policy_consent(wf):
             wf.request_trace_id = str(uuid.uuid4())
             wf.executor = ToolExecutor(
                 orchestrator.db,
@@ -45,7 +59,7 @@ async def handle_policy_consent_phase(
                 request.model,
                 additional_context={"chat_id": request.chat_id, "trace_id": wf.request_trace_id, "provider": request.provider, "model": request.model},
             )
-            if intent_engine.is_one_time_policy_choice(wf.user_text_clean):
+            if _intent_is_one_time_policy(wf):
                 wf.resume_results = await wf.executor.execute_tool_calls(
                     [
                         {
@@ -129,12 +143,12 @@ async def handle_policy_consent_phase(
                 orchestrator.status_sync.persist_assistant_message(request.chat_id, wf.execution_for_api)
                 return orchestrator.status_sync.build_api_response(execution_response=wf.execution_for_api)
         orchestrator._set_policy_pending(request.chat_id, False)
-        if intent_engine.is_one_time_policy_choice(wf.user_text_clean):
+        if _intent_is_one_time_policy(wf):
             wf.bypass_policy_this_turn = True
             logger.info("[POLICY] BYPASS: Einmalige Freigabe für diesen Turn AKTIV.")
             wf.policy_injection_message = prompt_registry.get_directive("policy_injection_one_time")
             wf.user_text = f"{wf.user_text}{prompt_registry.get_directive('policy_user_text_suffix')}"
-        elif intent_engine.is_policy_consent_choice(wf.user_text_clean):
+        elif _intent_is_policy_consent(wf):
             logger.info("[POLICY] STATE (DB): Pending-Status für Chat %s zurückgesetzt.", request.chat_id)
 
     if request.chat_id is not None:
@@ -147,10 +161,10 @@ async def handle_policy_consent_phase(
             .first()
         )
         wf.last_model_text = (wf.last_model_message.content or "" if wf.last_model_message else "").lower()
-        if not wf.is_policy_response and intent_engine.is_policy_consent_choice(wf.user_text_clean) and intent_engine.is_policy_prompt_text(wf.last_model_text):
+        if not wf.is_policy_response and _intent_is_policy_consent(wf) and intent_engine.is_policy_prompt_text(wf.last_model_text):
             wf.is_policy_response = True
             logger.warning("[POLICY] STATE FALLBACK: Consent-Antwort erkannt ohne DB-Pending-Flag (Chat %s).", request.chat_id)
-            if intent_engine.is_one_time_policy_choice(wf.user_text_clean):
+            if _intent_is_one_time_policy(wf):
                 wf.bypass_policy_this_turn = True
                 logger.info("[POLICY] BYPASS: Einmalige Freigabe (Fallback) für diesen Turn AKTIV.")
                 wf.policy_injection_message = prompt_registry.get_directive("policy_injection_one_time")

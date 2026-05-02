@@ -1009,25 +1009,25 @@ class ChatOrchestrator:
         )
         wf.system_prompt_for_llm = apply_verbosity_control(wf.base_system_prompt)
         wf.user_text_for_prompt = (wf.user_text or '').strip().lower()
-        # Diamond: Intent Detection via IntentEngine
-        wf.is_multitask_image_pdf = intent_engine.detect_multitask_image_pdf(wf.user_text_for_prompt)
-        wf.is_shopping_intent_early = intent_engine.detect_shopping_intent(wf.user_text_for_prompt)
+        wf.user_prompt_lower = (wf.user_text or '').strip().lower()
+        # 💎 Single Dispatch Contract: genau eine Intent-Erkennung pro User-Turn
+        wf.intent_detection_result = intent_engine.detect_all_intents(wf.user_text)
+        inc = wf.intent_detection_result
+        wf.is_multitask_image_pdf = inc.is_multitask_image_pdf
+        wf.is_shopping_intent_early = inc.is_shopping_intent
         self._is_shopping_intent_flag = wf.is_shopping_intent_early
         wf.dialog_mode = 'DEFAULT'
         wf.v_profile = openai_profile if request.provider == 'openai' else gemini_profile
         wf.has_image = False
         wf.base64_image = ''
         wf.image_data = None
-        wf.user_prompt_lower = (wf.user_text or '').strip().lower()
-        wf.has_tool_trigger = intent_engine.has_ollama_tool_trigger(wf.user_prompt_lower)
+        wf.has_tool_trigger = inc.has_tool_trigger
         wf.is_large_ollama_model = str(request.provider or '').lower() == 'ollama' and self._is_large_local_model(getattr(request, 'model', ''))
-        wf.is_ollama_vague_smalltalk = intent_engine.is_ollama_vague_smalltalk(wf.user_prompt_lower)
-        wf.is_simple_document_check_prompt = intent_engine.is_simple_document_check(wf.user_prompt_lower)
+        wf.is_ollama_vague_smalltalk = inc.is_ollama_vague_smalltalk
+        wf.is_simple_document_check_prompt = inc.is_simple_document_check
         wf.is_local_planner_early_exit = False
-        
-        # Help System (FEAT-HELP-001): Detect help intents before use_agent_factory
-        wf.help_intents = intent_engine.detect_all_intents(wf.user_text)
-        wf.help_intent_type = self._resolve_help_intent(wf.help_intents)
+
+        wf.help_intent_type = self._resolve_help_intent(inc)
         
         # Help Fast-Path: Skip LLM for help queries (§4.3)
         if wf.help_intent_type and not wf.has_image and not wf.is_policy_response:
@@ -1076,20 +1076,20 @@ class ChatOrchestrator:
             wf.skip_llm_generation = True
             wf.use_agent_factory = False
         else:
-            wf.use_agent_factory = not wf.has_image and (not wf.is_policy_response) and (not wf.is_policy_question) and (not wf.is_audit_request) and (not wf.is_factcheck_decision) and (not intent_classifier.is_greeting(wf.user_text)) and (not intent_classifier.is_identity_query(wf.user_text)) and (not intent_classifier.is_opinion_query(wf.user_text)) and (not wf.is_ollama_vague_smalltalk) and (not wf.is_simple_document_check_prompt) and (not wf.is_local_planner_early_exit) and (wf.planner_prefers_agent or self.is_complex_document_request(wf.user_text))
-        wf._is_personal_recall = intent_engine.is_self_referential_query(wf.user_text)
+            wf.use_agent_factory = not wf.has_image and (not wf.is_policy_response) and (not wf.is_policy_question) and (not wf.is_audit_request) and (not wf.is_factcheck_decision) and (not intent_classifier.is_greeting(wf.user_text)) and (not intent_classifier.is_identity_query(wf.user_text)) and (not intent_classifier.is_opinion_query(wf.user_text)) and (not wf.is_ollama_vague_smalltalk) and (not wf.is_simple_document_check_prompt) and (not wf.is_local_planner_early_exit) and (wf.planner_prefers_agent or inc.is_complex_document_request)
+        wf._is_personal_recall = inc.is_self_referential
         wf.user_text_lower = str(wf.user_text or '').lower()
-        wf.is_local_business_intent = intent_engine.detect_local_business_intent(wf.user_text_lower)
+        wf.is_local_business_intent = inc.is_local_business_intent
         wf.is_shopping_intent = getattr(self, '_is_shopping_intent_flag', False)
-        wf.is_video_intent = intent_engine.detect_video_intent(wf.user_text or "")
-        wf.is_video_understanding_intent = intent_engine.detect_video_understanding_intent(wf.user_text or "")
-        if intent_engine.detect_named_channel_video_intent(wf.user_text or ""):
+        wf.is_video_intent = inc.is_video_intent
+        wf.is_video_understanding_intent = inc.is_video_understanding_intent
+        if inc.named_channel_video:
             logger.info(
                 "💎 CHANNEL-LOCK-INTENT: Kanalbezug erkannt (von/Kanal/…) — video.search mit Channel-Resolve priorisieren.",
             )
-        wf.is_personal_recall = intent_engine.detect_personal_recall(wf.user_text_lower)
-        # Diamond: Meta-Agent und Image Intent via IntentEngine
-        wf.is_meta_agent_candidate = intent_engine.detect_complex_document_request(wf.user_text) and (not wf.has_image) and (not wf.is_policy_response) and (not wf.is_policy_question) and (not wf.is_audit_request) and (not wf.is_factcheck_decision)
+        wf.is_personal_recall = inc.is_personal_recall
+        # Diamond: Meta-Agent und Image Intent via IntentDetectionResult (Single Dispatch Contract)
+        wf.is_meta_agent_candidate = inc.is_complex_document_request and (not wf.has_image) and (not wf.is_policy_response) and (not wf.is_policy_question) and (not wf.is_audit_request) and (not wf.is_factcheck_decision)
         wf.image_intent_keywords = list(intent_engine.image_intent_keywords)
         wf.image_name_hint = ''
         wf.chat_title = ''
@@ -1283,15 +1283,14 @@ class ChatOrchestrator:
         if wf.is_local_business_intent:
             logger.info("DIAMOND GUARDRAIL: Lokale Suche erkannt. Forciere 'system.local_business' und blockiere allgemeine Textantworten ohne Tool.")
             wf.relevant_skill_ids = ['system.local_business']
-        # Shopping guardrail with calendar intent bypass
         if wf.is_shopping_intent and (not wf.is_personal_recall):
-            # Bypass shopping guardrail if calendar intent is detected (e.g., "um 14 uhr einkaufen beim netto")
-            is_calendar_intent = intent_engine.detect_calendar_intent(wf.user_text)
-            if is_calendar_intent:
-                logger.info("SHOPPING-GUARDRAIL-BYPASS: Calendar intent detected, skipping shopping guardrail (text: '%s')", wf.user_text[:80])
-            else:
-                logger.info("SHOPPING-GUARDRAIL: Kaufberatung erkannt (Intent=%s, Recall=%s). Forciere 'system.price_comparison'.", wf.is_shopping_intent, wf.is_personal_recall)
-                wf.relevant_skill_ids = ['system.price_comparison']
+            logger.info(
+                "SHOPPING-GUARDRAIL: Kaufberatung erkannt (Intent=%s, Recall=%s, primary=%s). Forciere 'system.price_comparison'.",
+                wf.is_shopping_intent,
+                wf.is_personal_recall,
+                getattr(wf.intent_detection_result, "primary_intent", None),
+            )
+            wf.relevant_skill_ids = ['system.price_comparison']
         elif wf.is_video_intent and (not wf.is_local_business_intent):
             logger.info(
                 "VIDEO-GUARDRAIL: Video-/YouTube-Intent — priorisiere 'video.search' und halte 'system.websearch' als Fallback.",
@@ -1315,8 +1314,8 @@ class ChatOrchestrator:
         apply_image_intent_skill_guardrails(wf)
         if wf.is_meta_agent_candidate:
             # 💎 GLOBAL VETO: Prüfe globale negative Keywords vor Meta-Agent-Start
-            vetoed, veto_reason = intent_engine.apply_global_veto(wf.user_text, "meta_agent")
-            if vetoed:
+            if wf.intent_detection_result and wf.intent_detection_result.meta_agent_global_veto:
+                veto_reason = "meta_agent_global_veto"
                 logger.warning("[GLOBAL VETO] Meta-Agent blocked by negative keyword: %s. Skipping meta_agent_run.", veto_reason)
                 wf.is_meta_agent_run = False
                 wf.is_meta_agent_candidate = False
@@ -1924,7 +1923,8 @@ class ChatOrchestrator:
 
             # 💎 STREAM-SWITCH: Video-Listen → Block-Response für stabile Markdown-Links
             _wf_check = ctx.workflow
-            if intent_engine.should_disable_streaming(getattr(_wf_check, "user_text", "") or ""):
+            _idr = getattr(_wf_check, "intent_detection_result", None)
+            if _idr is not None and _idr.is_video_list_intent:
                 logger.info("💎 STREAM-SWITCH: Video-List-Intent erkannt → Block-Response für stabile Links")
                 ctx = await self._build_memory_context(ctx)
                 ctx = await self._execute_generation(ctx)

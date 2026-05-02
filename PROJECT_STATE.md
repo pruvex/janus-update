@@ -1,6 +1,6 @@
-# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.65)
+# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.66)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-02 15:48 (PRE-HARDENING: Intent Engine 10/10)
+**Aktualisiert:** 2026-05-02 16:19 (FIX: Tool-Deduplication & Token Leak)
 
 ---
 

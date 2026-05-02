@@ -15,6 +15,7 @@ from re import Match, Pattern
 from typing import Any, Callable, Dict, List, Optional
 
 from backend.services.memory_identity import IdentitySlot
+from backend.services.orchestrator.intent_engine import IntentDetectionResult
 from backend.services.orchestrator.schemas import AuditContext, ExecutionResponse, OrchestratorContext
 
 
@@ -141,6 +142,7 @@ class ChatRequestWorkflowState:
     gate_prompt: Any = None
     gateway_kwargs: Dict[str, Any] = field(default_factory=dict)
     gemini_stream_raw_model_parts: List[Any] = field(default_factory=list)
+    intent_detection_result: Optional[IntentDetectionResult] = None
     grant_payload: Any = None
     grant_results: Any = None
     hair_conflict_tokens: Any = None

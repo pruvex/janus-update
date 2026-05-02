@@ -14,7 +14,6 @@ from backend.services import llm_gateway
 from backend.services.chat_orchestrator import RequestContext
 from backend.services.orchestrator.prompt_registry import apply_verbosity_control, prompt_registry
 from backend.services.orchestrator.suggestion_engine import SuggestionEngine
-from backend.services.orchestrator.intent_engine import intent_engine
 from backend.services.prompt_cache import decide_prompt_cache
 from backend.services.tool_executor import ToolExecutor
 from backend.services.tool_manager import tool_manager
@@ -179,9 +178,9 @@ async def execute_generation_prepare_gateway(
     
     # 💎 PURE-TEXT SUMMARY MODE: Wenn Global Veto für Zusammenfassungen aktiv ist
     # Entferne alle Skills, deaktiviere Tool-Zwang, deaktiviere proaktive Vorschläge
-    vetoed, veto_reason = intent_engine.apply_global_veto(wf.user_text, "summary")
-    if vetoed:
-        logger.warning("[PURE-TEXT MODE] Summary intent detected via global veto: %s. Disabling all skills and proactive suggestions.", veto_reason)
+    inc = getattr(wf, "intent_detection_result", None)
+    if inc is not None and inc.summary_global_veto:
+        logger.warning("[PURE-TEXT MODE] Summary global veto aktiv (IntentDetectionResult). Disabling all skills and proactive suggestions.")
         wf.relevant_skill_ids = []  # Entferne alle Werkzeuge
         wf.force_tool_name = None  # Deaktiviere Video/Image-Zwang
         wf.proactive_guidance = ""  # Deaktiviere proaktive Vorschläge
