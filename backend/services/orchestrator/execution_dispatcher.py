@@ -302,9 +302,7 @@ async def execute_generation_prepare_gateway(
                 wf._sd = tool_manager.get_synthesis_directives(_sid)
                 if wf._sd:
                     wf._skill_directive_parts.append(f'[SKILL-DIRECTIVE {_sid}]: {wf._sd}')
-                wf._osh = tool_manager.get_output_schema_hint(_sid)
-                if wf._osh:
-                    wf._skill_directive_parts.append(f'[OUTPUT-SCHEMA {_sid}]: Deine Antwort MUSS diesem JSON-Schema entsprechen: {json.dumps(wf._osh, ensure_ascii=False)}')
+                # OUTPUT-SCHEMA bewusst nicht injizieren — Struktur steht bereits in tool.parameters (provider tools-Array).
             if wf._skill_directive_parts:
                 wf.final_system_prompt += '\n\n### SKILL-DIRECTIVES (PFLICHT):\n' + '\n'.join(wf._skill_directive_parts)
                 logger.info('SKILL-DIRECTIVE INJECTION: %d Direktiven für Skills %s injiziert.', len(wf._skill_directive_parts), wf.relevant_skill_ids)

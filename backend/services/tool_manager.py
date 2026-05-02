@@ -456,6 +456,17 @@ class ToolManager:
         """Gibt alle registrierten Tool-Objekte zurück."""
         return self.tools
 
+    def _candidate_names_for_tool(self, tool: ToolDefinition) -> Set[str]:
+        """Alle Namen (kanonischer Skill-ID, Registrierungsname, Legacy-Aliase), unter denen dieses Tool erreichbar ist."""
+        canon = self.get_skill_id(tool.name)
+        candidates: Set[str] = {canon, str(tool.name or "").strip()}
+        candidates.discard("")
+        for legacy, sid in self._skill_mapping.items():
+            if sid == canon:
+                candidates.add(str(legacy).strip())
+        candidates.discard("")
+        return candidates
+
     @staticmethod
     def _tool_definitions_cache_key(allowed_skill_ids: Optional[List[str]]) -> Tuple[bool, frozenset]:
         """
@@ -476,25 +487,29 @@ class ToolManager:
             return list(cached)
 
         definitions: List[Dict[str, Any]] = []
-        for name, tool in self.tools.items():
-            # Diamond-Fallback: Wenn allowed_skill_ids da sind, MUSS das Tool rein, wenn Name oder Skill-ID passt
-            if allowed_skill_ids:
-                skill_id = getattr(tool.skill_metadata, 'skill', None)
-                if name not in allowed_skill_ids and skill_id not in allowed_skill_ids:
+        unique_tools = {id(tool): tool for tool in self.tools.values()}
+        allowed_set: Optional[Set[str]] = (
+            {str(s).strip() for s in allowed_skill_ids if str(s).strip()} if allowed_skill_ids else None
+        )
+
+        for tool in unique_tools.values():
+            if allowed_set is not None:
+                if self._candidate_names_for_tool(tool).isdisjoint(allowed_set):
                     continue
 
+            canonical_name = self.get_skill_id(tool.name)
             # Guard: Sanitize tool name and description for Gemini compatibility
             # Gemini requires alphanumeric (a-z, A-Z, 0-9) or underscores (_) in tool names
-            safe_name = name if name and isinstance(name, str) else "unknown_tool"
+            safe_name = canonical_name if canonical_name and isinstance(canonical_name, str) else "unknown_tool"
             # Replace dots with underscores to ensure alphanumeric compliance
             safe_name = safe_name.replace(".", "_").replace("-", "_")
             if not safe_name or not safe_name.replace("_", "").isalnum():
                 safe_name = f"tool_{len(definitions)}"
             
             safe_description = tool.description if tool.description and isinstance(tool.description, str) else "No description available"
-            
-            if name != safe_name:
-                logger.warning(f"[D21-TOOL-DEF-GUARD] Tool name '{name}' sanitized to '{safe_name}' for Gemini compatibility")
+
+            if canonical_name != safe_name:
+                logger.warning(f"[D21-TOOL-DEF-GUARD] Tool name '{canonical_name}' sanitized to '{safe_name}' for Gemini compatibility")
 
             definitions.append({
                 "type": "function",
