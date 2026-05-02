@@ -343,7 +343,7 @@ class CapabilityRegistry:
         primary = str(getattr(intent_result, "primary_intent", "") or "")
 
         if _flag("is_calendar_intent") or primary == "calendar":
-            mandatory += ["calendar.list_events", "calendar.find_slots"]
+            mandatory += ["calendar.list_events", "calendar.find_slots", "calendar.find_and_update_event"]
             forbidden += ["system.create_pdf", "knowledge.edit_pdf", "system.generate_image"]
 
         if _flag("is_shopping_intent") or primary == "shopping":

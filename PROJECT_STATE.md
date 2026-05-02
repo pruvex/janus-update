@@ -1,6 +1,6 @@
-# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.71)
+# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.72)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-02 19:14 (TASK-062 SEALED: Fixing Intent-to-Selector gap)
+**Aktualisiert:** 2026-05-02 19:37 (TASK-063 SEALED: Proactive Calendar Updates)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| TASK-063 Proactive Calendar Updates | 🥇 SEALED | Proactive Calendar Updates implementation. Sharpened calendar update keywords in IntentEngineV2 ("bring", "ergänze", "ergänzen", "hinzufügen", "mit"). Added calendar.find_and_update_event as mandatory skill for calendar intents in CapabilityRegistry. Added proactive calendar mutation rule in prompt_registry.py to prioritize calendar updates over pure memory logging. Files: intent_engine.py, capability_registry.py, prompt_registry.py. |
 | TASK-062 Intent-to-Selector Gap Fix | 🥇 SEALED | Fixed Intent-to-Selector gap. Sharpened calendar keywords in IntentEngineV2 ("habe ich", "was habe ich", "was steht an", "steht an", "meine termine", "meinen termin", "meinen terminen"). Verified CapabilityRegistry returns calendar.list_events as mandatory for calendar intents. Added safety net in ExecutionDispatcher to inject calendar.list_events if is_calendar_intent is true but selector returned empty. Files: intent_engine.py, execution_dispatcher.py. |
 | TASK-061 SkillSelector Intent-Aware | 🥇 SEALED | SkillSelector is now Intent-Aware & Policy-Driven. Integration of IntentEngineV2 detection results into SkillSelector.get_relevant_skills() for intent-based skill filtering. File: chat_orchestrator.py (lines 1238, 1328). |
 | TASK-060 Agent Planner Overhaul | 🥇 SEALED | Harmonisierung von AgentPlanner und SkillSelector mit IntentEngineV2 und CapabilityRegistry. Einführung von PlannerContext/PlannerProviderProfile, Kalender-Guard (forbidden_skill_ids), 14-Tage Wochentag-Kalender, capability_registry Integration. Files: prompt_registry.py, execution_dispatcher.py, schemas.py, execution_engine.py, chat_orchestrator.py. |

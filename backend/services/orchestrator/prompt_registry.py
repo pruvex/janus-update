@@ -96,7 +96,14 @@ _DIRECTIVES: Dict[str, str] = {
         "Vertraue ihm NIEMALS ohne Live-Abfrage.\n"
         "FATALER FEHLER: 'system.create_pdf', 'system.generate_image' oder ein anderes "
         "Nicht-Kalender-Werkzeug bei Fragen nach Terminen, Zeitplänen oder freien Slots "
-        "aufzurufen, gilt als kritischer Systemfehler und darf unter keinen Umständen geschehen."
+        "aufzurufen, gilt als kritischer Systemfehler und darf unter keinen Umständen geschehen.\n\n"
+        "!!! PROAKTIVE KALENDER-MUTATIONS-REGEL (ABSOLUT, KEINE AUSNAHME) !!!\n"
+        "KERNREGEL: Wenn der Nutzer Informationen zu einem bestehenden Termin hinzufügt "
+        "(z.B. 'Bring Dosentomaten mit', 'Ergänze: Besorg das', 'Hole das'), "
+        "HABEN ÄNDERUNGEN AM KALENDER ABSOLUTEN VORRANG VOR REINEM MEMORY-LOGGING.\n"
+        "PFLICHT-SEQUENZ: Ergänzung erkannt → 'calendar.find_and_update_event' aufrufen → "
+        "Kalender-Eintrag aktualisieren → Erst danach Memory-Logging.\n"
+        "VERBOTEN: Nur im Memory zu speichern, ohne den Kalender zu aktualisieren."
     ),
     "rag_sort_policy": (
         "!!! SORTIER-VETRAG !!! Wenn Dateien in der Liste als [INDIZIERT] markiert sind, verfügst du über deren Volltext. "

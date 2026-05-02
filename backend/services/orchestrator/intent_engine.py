@@ -153,6 +153,11 @@ CALENDAR_COMMAND_MARKERS: Tuple[str, ...] = (
     "meine termine",
     "meinen termin",
     "meinen terminen",
+    "bring",
+    "ergänze",
+    "ergänzen",
+    "hinzufügen",
+    "mit",
 )
 
 CALENDAR_OBJECT_MARKERS: Tuple[str, ...] = (
