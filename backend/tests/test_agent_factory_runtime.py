@@ -1,4 +1,5 @@
 import json
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -7,6 +8,7 @@ from backend.data.schemas import PlannerContext, PlannerProviderProfile
 from backend.services.agent_planner import AgentPlanner
 from backend.services.agent_runtime import AgentRuntime
 from backend.services.orchestrator.intent_engine import IntentDetectionResult
+from backend.services.skill_selector import SkillSelector
 
 
 def _planner_profile(provider="openai", model="gpt-5.4-nano"):
@@ -619,3 +621,93 @@ async def test_agent_runtime_uses_phase_summary_when_final_synthesis_is_generic(
 
     assert result["phase_outputs"] == ["[system.country_info] Japan: Hauptstadt Tokio, Einwohner 124.5 Mio."]
     assert result["text"] == "[system.country_info] Japan: Hauptstadt Tokio, Einwohner 124.5 Mio."
+
+
+# ---------------------------------------------------------------------------
+# TASK-061 — Intent-Driven Skill Bootstrapping
+# ---------------------------------------------------------------------------
+
+def _make_registry_with_calendar():
+    """Return a lightweight CapabilityRegistry mock that exposes calendar skills."""
+    reg = MagicMock()
+    reg.get_capability_groups.return_value = {
+        "calendar": ["calendar.list_events", "calendar.find_slots", "calendar.create_event"],
+        "document_generation": ["system.create_pdf"],
+    }
+    reg.get_intent_skill_policy.return_value = {
+        "mandatory": ["calendar.list_events", "calendar.find_slots"],
+        "boosted": [],
+        "forbidden": ["system.create_pdf"],
+    }
+    return reg
+
+
+def test_skill_selector_calendar_intent_mandatory_injection_with_empty_chroma(monkeypatch):
+    """TASK-061 criterion: Chroma returns empty list but calendar.list_events is still delivered."""
+    registry = _make_registry_with_calendar()
+    selector = SkillSelector(capability_registry=registry)
+
+    # Force semantic search to return nothing (simulates Chroma miss or model loading).
+    monkeypatch.setattr(selector, "_semantic_search", lambda **_: [])
+
+    intent = IntentDetectionResult(is_calendar_intent=True, primary_intent="calendar")
+    result = selector.get_relevant_skills("Zeige meine Termine heute", intent_result=intent)
+
+    assert "calendar.list_events" in result, (
+        "calendar.list_events must be present even when Chroma returns nothing"
+    )
+    assert "system.create_pdf" not in result, (
+        "system.create_pdf must be excluded for calendar intents"
+    )
+    # Mandatory skills must appear before any other skills.
+    assert result.index("calendar.list_events") == 0, (
+        "calendar.list_events must be the first returned skill"
+    )
+
+
+def test_skill_selector_shopping_intent_forces_price_comparison(monkeypatch):
+    """Shopping intent must surface system.price_comparison even on empty Chroma."""
+    reg = MagicMock()
+    reg.get_capability_groups.return_value = {
+        "shopping": ["system.price_comparison"],
+        "web": ["system.websearch"],
+    }
+    reg.get_intent_skill_policy.return_value = {
+        "mandatory": ["system.price_comparison"],
+        "boosted": [],
+        "forbidden": ["system.websearch"],
+    }
+    selector = SkillSelector(capability_registry=reg)
+    monkeypatch.setattr(selector, "_semantic_search", lambda **_: [])
+
+    intent = IntentDetectionResult(is_shopping_intent=True, primary_intent="shopping")
+    result = selector.get_relevant_skills("Preis für Samsung Galaxy", intent_result=intent)
+
+    assert "system.price_comparison" in result
+    assert "system.websearch" not in result
+
+
+def test_skill_selector_no_duplication_when_chroma_and_mandatory_overlap(monkeypatch):
+    """If Chroma returns a mandatory skill, it must not appear twice."""
+    registry = _make_registry_with_calendar()
+    selector = SkillSelector(capability_registry=registry)
+
+    # Chroma also returns calendar.list_events — overlap case.
+    monkeypatch.setattr(selector, "_semantic_search", lambda **_: ["calendar.list_events", "calendar.create_event"])
+
+    intent = IntentDetectionResult(is_calendar_intent=True, primary_intent="calendar")
+    result = selector.get_relevant_skills("Neuer Termin morgen", intent_result=intent)
+
+    assert result.count("calendar.list_events") == 1, "No duplicates allowed"
+
+
+def test_skill_selector_no_intent_falls_back_to_chroma(monkeypatch):
+    """When intent_result is None the selector behaves as pure semantic search."""
+    registry = _make_registry_with_calendar()
+    selector = SkillSelector(capability_registry=registry)
+
+    monkeypatch.setattr(selector, "_semantic_search", lambda **_: ["system.create_pdf"])
+
+    result = selector.get_relevant_skills("Erstelle ein Dokument", intent_result=None)
+
+    assert "system.create_pdf" in result

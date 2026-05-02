@@ -326,6 +326,69 @@ class CapabilityRegistry:
                 groups[str(category_id)] = skill_refs
         return groups
 
+    def get_intent_skill_policy(self, intent_result: Any) -> Dict[str, List[str]]:
+        """Return {mandatory, boosted, forbidden} skill lists derived from IntentDetectionResult.
+
+        Mandatory skills are inserted at the front of the selector output regardless of vector
+        scores. Forbidden skills are removed from the candidate list. Boosted skills are
+        promoted over semantic hits but not guaranteed.
+        """
+        mandatory: List[str] = []
+        boosted: List[str] = []
+        forbidden: List[str] = []
+
+        def _flag(name: str) -> bool:
+            return bool(getattr(intent_result, name, False))
+
+        primary = str(getattr(intent_result, "primary_intent", "") or "")
+
+        if _flag("is_calendar_intent") or primary == "calendar":
+            mandatory += ["calendar.list_events", "calendar.find_slots"]
+            forbidden += ["system.create_pdf", "knowledge.edit_pdf", "system.generate_image"]
+
+        if _flag("is_shopping_intent") or primary == "shopping":
+            mandatory += ["system.price_comparison"]
+            forbidden += ["system.websearch"]
+
+        if _flag("is_local_business_intent") or primary == "local_business":
+            mandatory += ["system.local_business"]
+
+        if _flag("is_video_understanding_intent") or primary == "video_understanding":
+            mandatory += ["video.understand", "system.video_understanding"]
+
+        if _flag("is_video_list_intent") or primary == "video_list":
+            mandatory += ["video.search", "system.video_search"]
+        elif _flag("is_video_intent") or primary == "video":
+            mandatory += ["video.search", "system.video_search"]
+            boosted += ["system.websearch"]
+
+        if _flag("is_image_intent") and not _flag("is_multitask_image_pdf"):
+            mandatory += ["system.generate_image"]
+
+        if _flag("is_multitask_image_pdf"):
+            mandatory += ["system.generate_image", "system.create_pdf"]
+
+        if _flag("is_personal_recall") or _flag("is_self_referential"):
+            mandatory += ["system.memory_read", "memory.read"]
+            forbidden += ["system.websearch", "system.rss_news"]
+
+        # Canonicalise: keep first occurrence, drop dupes, filter against available skills.
+        def _unique(lst: List[str]) -> List[str]:
+            seen: set = set()
+            result = []
+            for s in lst:
+                sid = str(s or "").strip()
+                if sid and sid not in seen:
+                    seen.add(sid)
+                    result.append(sid)
+            return result
+
+        return {
+            "mandatory": _unique(mandatory),
+            "boosted": _unique(boosted),
+            "forbidden": _unique(forbidden),
+        }
+
     def get_planner_scope(
         self,
         intent_result: Any,

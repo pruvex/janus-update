@@ -1,6 +1,6 @@
-# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.69)
+# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.70)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-02 18:34 (TASK-060 FINAL SEAL: AgentPlanner & SkillSelector Harmonized)
+**Aktualisiert:** 2026-05-02 19:01 (TASK-061 SEALED: SkillSelector is now Intent-Aware & Policy-Driven)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| TASK-061 SkillSelector Intent-Aware | 🥇 SEALED | SkillSelector is now Intent-Aware & Policy-Driven. Integration of IntentEngineV2 detection results into SkillSelector.get_relevant_skills() for intent-based skill filtering. File: chat_orchestrator.py (lines 1238, 1328). |
 | TASK-060 Agent Planner Overhaul | 🥇 SEALED | Harmonisierung von AgentPlanner und SkillSelector mit IntentEngineV2 und CapabilityRegistry. Einführung von PlannerContext/PlannerProviderProfile, Kalender-Guard (forbidden_skill_ids), 14-Tage Wochentag-Kalender, capability_registry Integration. Files: prompt_registry.py, execution_dispatcher.py, schemas.py, execution_engine.py, chat_orchestrator.py. |
 | TASK-059 Kalender-Memory-Mirror | ✅ V1 IMPLEMENTED | Kompakter Kalender-Snapshot in Memory (`category=calendar_snapshot`) mit Enrichment, Derived Summary, gefilterter Chat-Injection und Proaktiv-Hinweisen hinter `JANUS_CALENDAR_PROACTIVE_HINTS`. |
 | TASK-058 Janus Kalender | 🥇 SEALED | Phase 1-4 COMPLETE + Sync Hardening + Protocol Hardening: Pagination (maxResults=250), PATCH-Verify-Fallback, conferenceDataVersion=1, Output-Only-Key-Filterung, forensische Logs. Frontend: calendar-refresh Event, adaptive event cards, detail panel, duration buttons, all-day checkbox, --cal-hour-height CSS variable. Patterns: #GeminiV3Protocol (thought_signature), #GeminiNameSanitization (dot/underscore tolerance), #CalendarSnapshotIntegrity (invalidation after mutations). |

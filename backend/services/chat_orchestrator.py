@@ -1238,7 +1238,9 @@ class ChatOrchestrator:
             wf.disable_tools = True
             logger.info('SMALLTALK FAST-PATH aktiv (ollama): Meinungsklärung ohne LLM-Call.')
         try:
-            wf.relevant_skill_ids = self.skill_selector.get_relevant_skills(wf.user_text)
+            wf.relevant_skill_ids = self.skill_selector.get_relevant_skills(
+                wf.user_text, intent_result=wf.intent_detection_result
+            )
         except Exception as exc:
             logger.debug('SkillSelector fallback (keine Filterung): %s', exc)
             wf.relevant_skill_ids = []
@@ -1326,7 +1328,9 @@ class ChatOrchestrator:
             wf.meta_fast_path = self._is_large_local_model(request.model)
             logger.info('META-AGENT PHASE 1 START (Recherche)')
             wf.kpi_phase1_started_at = time.perf_counter()
-            wf.all_dynamic_skills = self.skill_selector.get_relevant_skills(wf.user_text)
+            wf.all_dynamic_skills = self.skill_selector.get_relevant_skills(
+                wf.user_text, intent_result=wf.intent_detection_result
+            )
             wf.is_small = any((m in str(request.model or '').lower() for m in ['nano', 'mini']))
             if wf.is_small:
                 wf.dynamic_skills = ['system.websearch']
