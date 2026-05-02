@@ -60,6 +60,31 @@ _TEMPORAL_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Deictic / anaphoric expressions that signal "I mean the thing we just talked about"
+# Includes personal pronouns, demonstratives, and implicit reference phrases.
+_DEICTIC_RE = re.compile(
+    r"\b(da(?:rauf|bei|zu|für|hin|nach|von)?|dort|"
+    r"den|dem|das|die|ihn|ihm|ihr|es|sie|"
+    r"diesen?|diesem|dieser|jenen?|jenem|jener|"
+    r"dazu|dabei|daf[uü]r|dort(?:hin)?|"
+    r"den termin|diesen termin|den appointment|"
+    r"ihn|mitzubringen|mitbringen|mitnehmen)\b",
+    re.IGNORECASE,
+)
+
+
+def _has_deictic_reference(text: str) -> bool:
+    """Return True if the raw query contains a deictic / anaphoric reference.
+
+    Deictic words signal that the user is pointing to something previously
+    discussed, not naming a calendar event explicitly.  Examples:
+    - "da Handtuch nicht vergessen"           → "da"
+    - "den bitte absagen"                     → "den"
+    - "Handtuch mitzubringen"                 → "mitzubringen" (implicit carry-along)
+    - "ihn auf 15 Uhr verschieben"            → "ihn"
+    """
+    return bool(_DEICTIC_RE.search(text))
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage N helpers
@@ -400,101 +425,110 @@ class ContextualEntityResolver:
             result.dispatcher_hint = (
                 "FALLBACK_TO_LIST" if operation_type == "READ" else "CLARIFY_USER"
             )
-            return result
-
-        top = scored[0]
-        second = scored[1] if len(scored) > 1 else None
-        delta = (top.score_final - second.score_final) if second else top.score_final
-        result.delta_top2 = round(delta, 2)
-
-        # ── Identical-title gate + Temporal override ────────────────────────
-        top_title_norm = _normalize_text(top.original_title)
-        identical_group = title_groups.get(top_title_norm, [])
-        has_identical_title_collision = len(identical_group) > 1
-
-        if has_identical_title_collision:
-            if temporal_date is not None:
-                # Attempt temporal resolution
-                aligned = [
-                    ev for ev in identical_group
-                    if _event_start_date(ev) == temporal_date
-                ]
-                if len(aligned) == 1:
-                    # Temporal anchor resolves the collision
-                    winner = aligned[0]
-                    ev_id = str(winner.get("id") or winner.get("event_id") or "")
-                    matching_candidate = next(
-                        (c for c in scored if c.event_id == ev_id), None
-                    )
-                    if matching_candidate:
-                        result.status = "RESOLVED"
-                        result.reason = "identical_titles_resolved_by_temporal_anchor"
-                        result.resolved_event = matching_candidate
-                        result.dispatcher_hint = "PROCEED"
-                        result.low_confidence = False
-                        return result
-                # 0 or 2+ aligned — still ambiguous
-            result.status = "AMBIGUOUS"
-            result.reason = "identical_titles"
-            result.dispatcher_hint = (
-                "PROCEED" if operation_type == "READ" else "FALLBACK_TO_LIST"
-            )
-            result.low_confidence = True
-            return result
-
-        # ── Classify by tier and delta ──────────────────────────────────────
-        above_medium = [c for c in scored if c.score_final >= _TIER_MEDIUM]
-
-        if top.score_final >= _TIER_HIGH and delta > _DELTA_RESOLVED_MIN:
-            result.status = "RESOLVED"
-            result.reason = "single_high_confidence"
-            result.resolved_event = top
-            result.dispatcher_hint = "PROCEED"
-            result.low_confidence = False
-
-        elif top.score_final >= _TIER_MEDIUM and (len(above_medium) >= 2 or delta <= _DELTA_RESOLVED_MIN):
-            result.status = "AMBIGUOUS"
-            result.reason = "multiple_candidates" if len(above_medium) >= 2 else "delta_too_small"
-            if operation_type == "MUTATION":
-                result.dispatcher_hint = "FALLBACK_TO_LIST"
-                result.low_confidence = False
-            else:
-                # READ: sub-classify by confidence
-                is_strong = top.score_final >= _TIER_HIGH and delta > 10.0
-                result.dispatcher_hint = "PROCEED"
-                result.low_confidence = not is_strong
-
-        elif top.score_final >= _TIER_WEAK:
-            result.status = "WEAK_MATCH"
-            result.reason = "below_threshold"
-            if operation_type == "MUTATION":
-                result.dispatcher_hint = "FALLBACK_TO_LIST"
-                result.low_confidence = False
-            else:
-                result.dispatcher_hint = "PROCEED"
-                result.low_confidence = True
-
+            # Fall through to the deictic context fallback (no early return here).
+            # The block below may promote NOT_FOUND → RESOLVED when a deictic
+            # reference and a single context event are both present.
         else:
-            result.status = "NOT_FOUND"
-            result.reason = "below_threshold"
-            result.dispatcher_hint = (
-                "FALLBACK_TO_LIST" if operation_type == "READ" else "CLARIFY_USER"
-            )
+            top = scored[0]
+            second = scored[1] if len(scored) > 1 else None
+            delta = (top.score_final - second.score_final) if second else top.score_final
+            result.delta_top2 = round(delta, 2)
 
-        # ── Context Fallback: Deictic References ──────────────────────────────
-        # If no match found but we're in a mutation context, check if exactly one
-        # calendar event was mentioned in the last 2 turns (deictic reference).
+            # ── Identical-title gate + Temporal override ─────────────────────
+            top_title_norm = _normalize_text(top.original_title)
+            identical_group = title_groups.get(top_title_norm, [])
+            has_identical_title_collision = len(identical_group) > 1
+
+            if has_identical_title_collision:
+                if temporal_date is not None:
+                    # Attempt temporal resolution
+                    aligned = [
+                        ev for ev in identical_group
+                        if _event_start_date(ev) == temporal_date
+                    ]
+                    if len(aligned) == 1:
+                        # Temporal anchor resolves the collision
+                        winner = aligned[0]
+                        ev_id = str(winner.get("id") or winner.get("event_id") or "")
+                        matching_candidate = next(
+                            (c for c in scored if c.event_id == ev_id), None
+                        )
+                        if matching_candidate:
+                            result.status = "RESOLVED"
+                            result.reason = "identical_titles_resolved_by_temporal_anchor"
+                            result.resolved_event = matching_candidate
+                            result.dispatcher_hint = "PROCEED"
+                            result.low_confidence = False
+                            return result
+                    # 0 or 2+ aligned — still ambiguous
+                result.status = "AMBIGUOUS"
+                result.reason = "identical_titles"
+                result.dispatcher_hint = (
+                    "PROCEED" if operation_type == "READ" else "FALLBACK_TO_LIST"
+                )
+                result.low_confidence = True
+                return result
+
+            # ── Classify by tier and delta ───────────────────────────────────
+            above_medium = [c for c in scored if c.score_final >= _TIER_MEDIUM]
+
+            if top.score_final >= _TIER_HIGH and delta > _DELTA_RESOLVED_MIN:
+                result.status = "RESOLVED"
+                result.reason = "single_high_confidence"
+                result.resolved_event = top
+                result.dispatcher_hint = "PROCEED"
+                result.low_confidence = False
+
+            elif top.score_final >= _TIER_MEDIUM and (len(above_medium) >= 2 or delta <= _DELTA_RESOLVED_MIN):
+                result.status = "AMBIGUOUS"
+                result.reason = "multiple_candidates" if len(above_medium) >= 2 else "delta_too_small"
+                if operation_type == "MUTATION":
+                    result.dispatcher_hint = "FALLBACK_TO_LIST"
+                    result.low_confidence = False
+                else:
+                    # READ: sub-classify by confidence
+                    is_strong = top.score_final >= _TIER_HIGH and delta > 10.0
+                    result.dispatcher_hint = "PROCEED"
+                    result.low_confidence = not is_strong
+
+            elif top.score_final >= _TIER_WEAK:
+                result.status = "WEAK_MATCH"
+                result.reason = "below_threshold"
+                if operation_type == "MUTATION":
+                    result.dispatcher_hint = "FALLBACK_TO_LIST"
+                    result.low_confidence = False
+                else:
+                    result.dispatcher_hint = "PROCEED"
+                    result.low_confidence = True
+
+            else:
+                result.status = "NOT_FOUND"
+                result.reason = "below_threshold"
+                result.dispatcher_hint = (
+                    "FALLBACK_TO_LIST" if operation_type == "READ" else "CLARIFY_USER"
+                )
+
+        # ── Context Fallback: Deictic / Anaphoric References ─────────────────
+        # Conditions to activate:
+        #   • MUTATION operation only (READ never needs this — it already PROCEEDs)
+        #   • Status is NOT_FOUND  OR  WEAK_MATCH (score too low for direct resolution)
+        #   • is_calendar_mutation flag is set (orchestrator confirmed mutation intent)
+        #   • Exactly one calendar event is mentioned in recent chat history
+        #   • The raw query contains a deictic marker OR the query is very short
+        #     (≤ 2 meaningful tokens) — both signal implicit reference.
+        _is_unresolved = result.status in ("NOT_FOUND", "WEAK_MATCH")
+        _query_tokens_count = len(_resolver_tokenize(q_norm))
+        _is_implicit_ref = _has_deictic_reference(query) or _query_tokens_count <= 2
         if (
-            result.status == "NOT_FOUND"
+            _is_unresolved
             and is_calendar_mutation
-            and recent_messages
             and operation_type == "MUTATION"
+            and recent_messages
+            and _is_implicit_ref
         ):
             mentioned_ids = _extract_event_mentions_from_context(recent_messages, valid_events)
             if len(mentioned_ids) == 1:
-                # Single event in context → deictic resolution
                 context_id = mentioned_ids[0]
-                # Find the event in the snapshot
                 context_event = next(
                     (ev for ev in valid_events
                      if str(ev.get("id") or ev.get("event_id") or "") == context_id),
@@ -511,16 +545,25 @@ class ContextualEntityResolver:
                         event_id=ev_id,
                         original_title=title_raw,
                         start_time=start_time,
-                        score_final=100.0,  # High confidence from context
-                        score_tsr=100.0,
-                        score_pr=100.0,
+                        score_final=75.0,  # Honest score — context inference, not fuzzy match
+                        score_tsr=0.0,
+                        score_pr=0.0,
                         score_loc_bonus=0.0,
                     )
                     result.dispatcher_hint = "PROCEED"
                     result.low_confidence = False
                     logger.info(
-                        "[ENTITY-RESOLVER] Deictic fallback: resolved to single context event %r",
+                        "[ENTITY-RESOLVER] Deictic fallback: resolved to context event %r "
+                        "(deictic=%s, tokens=%d, prev_status=%s)",
                         title_raw,
+                        _has_deictic_reference(query),
+                        _query_tokens_count,
+                        _is_unresolved,
                     )
+            elif len(mentioned_ids) > 1:
+                logger.debug(
+                    "[ENTITY-RESOLVER] Deictic fallback skipped: %d events in context (ambiguous)",
+                    len(mentioned_ids),
+                )
 
         return result

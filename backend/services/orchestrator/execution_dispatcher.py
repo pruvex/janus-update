@@ -518,8 +518,13 @@ async def execute_generation_prepare_gateway(
                     from backend.services.orchestrator.entity_resolver import (
                         ContextualEntityResolver,
                     )
-                    # Get last 2 turns for deictic fallback
-                    _recent_messages = getattr(wf, "messages", [])[-4:] if hasattr(wf, "messages") else []
+                    # Get last 4 messages of chat history (excludes system prompt).
+                    # orchestrator_context.history is the clean turn list; wf.messages
+                    # starts with the injected system prompt and is less reliable here.
+                    _oc_history = getattr(
+                        getattr(wf, "orchestrator_context", None), "history", None
+                    ) or []
+                    _recent_messages = _oc_history[-4:]
                     _resolver_result = ContextualEntityResolver().resolve(
                         query=_mutation_target,
                         snapshot=_snapshot,

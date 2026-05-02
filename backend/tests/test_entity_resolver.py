@@ -127,6 +127,145 @@ class TestEntityResolverMutation:
         assert r.resolved_event.event_id == "e_morgen"
 
 
+class TestDeicticContextFallback:
+    """Context fallback fires when: deictic/implicit ref + single event in history."""
+
+    _GYM_SNAP = {
+        "events": [
+            {
+                "id": "ev_gym",
+                "title": "Sport im Fitnessstudio",
+                "location": "Fitness X Berlin",
+                "start": "2026-05-03T18:00:00+02:00",
+                "end": "2026-05-03T19:00:00+02:00",
+            }
+        ]
+    }
+
+    _HISTORY_WITH_GYM = [
+        {
+            "role": "assistant",
+            "content": (
+                "Dein nächster Termin ist 'Sport im Fitnessstudio' am Sonntag um 18 Uhr."
+            ),
+        },
+        {
+            "role": "user",
+            "content": "Handtuch nicht vergessen",
+        },
+    ]
+
+    def test_deictic_word_triggers_context_fallback(self, resolver):
+        """'ihn verschieben' → deictic 'ihn' → resolver falls back to context event."""
+        history = [
+            {
+                "role": "assistant",
+                "content": "Ich habe den Termin 'Sport im Fitnessstudio' gefunden.",
+            },
+            {"role": "user", "content": "ihn auf 20 Uhr verschieben"},
+        ]
+        r = resolver.resolve(
+            "ihn",
+            self._GYM_SNAP,
+            "MUTATION",
+            recent_messages=history,
+            is_calendar_mutation=True,
+        )
+        assert r.status == "RESOLVED"
+        assert r.reason == "deictic_context_fallback"
+        assert r.dispatcher_hint == "PROCEED"
+        assert r.resolved_event is not None
+        assert r.resolved_event.event_id == "ev_gym"
+
+    def test_implicit_short_query_triggers_context_fallback(self, resolver):
+        """Short query 'Handtuch' (1 token) + assistant mentioned event → context fallback."""
+        r = resolver.resolve(
+            "Handtuch",
+            self._GYM_SNAP,
+            "MUTATION",
+            recent_messages=self._HISTORY_WITH_GYM,
+            is_calendar_mutation=True,
+        )
+        assert r.status == "RESOLVED"
+        assert r.reason == "deictic_context_fallback"
+        assert r.resolved_event is not None
+        assert r.resolved_event.event_id == "ev_gym"
+
+    def test_no_context_fallback_without_deictic_or_short_query(self, resolver):
+        """Multi-token query with no deictic → context fallback must NOT fire."""
+        history = [
+            {
+                "role": "assistant",
+                "content": "Dein nächster Termin ist 'Sport im Fitnessstudio'.",
+            },
+        ]
+        r = resolver.resolve(
+            "Einkaufen Liste fertig machen",  # 4 tokens, no deictic
+            self._GYM_SNAP,
+            "MUTATION",
+            recent_messages=history,
+            is_calendar_mutation=True,
+        )
+        # Should NOT resolve to gym via context — NOT_FOUND or WEAK
+        assert r.status in ("NOT_FOUND", "WEAK_MATCH")
+
+    def test_no_context_fallback_without_mutation_flag(self, resolver):
+        """Context fallback requires is_calendar_mutation=True."""
+        history = [
+            {
+                "role": "assistant",
+                "content": "Dein nächster Termin ist 'Sport im Fitnessstudio'.",
+            },
+        ]
+        r = resolver.resolve(
+            "ihn",
+            self._GYM_SNAP,
+            "MUTATION",
+            recent_messages=history,
+            is_calendar_mutation=False,  # flag off
+        )
+        assert r.status != "RESOLVED" or r.reason != "deictic_context_fallback"
+
+    def test_no_context_fallback_with_multiple_context_events(self, resolver):
+        """If 2 events mentioned in history → context is ambiguous → no fallback."""
+        snap = {
+            "events": [
+                {
+                    "id": "ev_gym",
+                    "title": "Sport im Fitnessstudio",
+                    "location": "",
+                    "start": "2026-05-03T18:00:00+02:00",
+                    "end": "2026-05-03T19:00:00+02:00",
+                },
+                {
+                    "id": "ev_yoga",
+                    "title": "Yoga",
+                    "location": "",
+                    "start": "2026-05-04T09:00:00+02:00",
+                    "end": "2026-05-04T10:00:00+02:00",
+                },
+            ]
+        }
+        history = [
+            {
+                "role": "assistant",
+                "content": (
+                    "Du hast heute 'Sport im Fitnessstudio' und morgen 'Yoga'."
+                ),
+            },
+            {"role": "user", "content": "den absagen"},
+        ]
+        r = resolver.resolve(
+            "den",
+            snap,
+            "MUTATION",
+            recent_messages=history,
+            is_calendar_mutation=True,
+        )
+        # Two events in context → ambiguous → must NOT resolve via deictic fallback
+        assert r.reason != "deictic_context_fallback"
+
+
 class TestEntityResolverRead:
     def test_ambiguous_read_proceed_with_low_confidence(self, resolver):
         """Two similar titles close in score → READ may still PROCEED but low_confidence."""
