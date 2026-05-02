@@ -469,13 +469,49 @@ class IntentEngine:
     # ─────────────────────────────────────────────────────────────────────────
 
     def detect_shopping_intent(self, user_text: str) -> bool:
-        """Return True if the user text looks like shopping/price research (keywords + price context)."""
+        """Return True if the user text looks like shopping/price research (keywords + price context).
+        
+        Veto: If calendar keywords are present (termin, uhr, dauer, morgen, montag, etc.),
+        this cannot be an exclusive shopping intent unless it's primarily about prices ("was kostet").
+        """
         if not user_text:
             return False
         text_lower = user_text.lower()
         has_shopping_kw = any(kw in text_lower for kw in self.shopping_keywords)
         has_context_marker = any(marker in text_lower for marker in self.shopping_context_markers)
+        
+        # Calendar intent veto - if calendar keywords are present, block shopping intent
+        # unless it's primarily about price queries
+        calendar_keywords = ['termin', 'uhr', 'dauer', 'morgen', 'montag', 'dienstag', 'mittwoch', 
+                           'donnerstag', 'freitag', 'samstag', 'sonntag', 'woche', 'tag', 
+                           'eintragen', 'trage ein', 'planen', 'termin', 'meeting']
+        has_calendar_kw = any(kw in text_lower for kw in calendar_keywords)
+        
+        # Price-focused queries override the calendar veto
+        price_focused = any(kw in text_lower for kw in ['was kostet', 'wie viel', 'wie teuer', 'preis'])
+        
+        if has_calendar_kw and not price_focused:
+            logger.debug("[SHOPPING-VETO] Calendar keywords detected, blocking shopping intent")
+            return False
+        
         return has_shopping_kw and has_context_marker
+    
+    # ─────────────────────────────────────────────────────────────────────────
+    # Calendar Intent
+    # ─────────────────────────────────────────────────────────────────────────
+    
+    def detect_calendar_intent(self, user_text: str) -> bool:
+        """Return True if the user text looks like a calendar/appointment request."""
+        if not user_text:
+            return False
+        text_lower = user_text.lower()
+        calendar_keywords = [
+            'termin', 'uhr', 'dauer', 'morgen', 'montag', 'dienstag', 'mittwoch',
+            'donnerstag', 'freitag', 'samstag', 'sonntag', 'woche', 'tag',
+            'eintragen', 'trage ein', 'planen', 'meeting', 'termin', 'kalender',
+            'termin erstellen', 'termin anlegen', 'termin hinzufügen'
+        ]
+        return any(kw in text_lower for kw in calendar_keywords)
     
     # ─────────────────────────────────────────────────────────────────────────
     # Local Business Intent

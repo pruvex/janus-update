@@ -1283,9 +1283,15 @@ class ChatOrchestrator:
         if wf.is_local_business_intent:
             logger.info("DIAMOND GUARDRAIL: Lokale Suche erkannt. Forciere 'system.local_business' und blockiere allgemeine Textantworten ohne Tool.")
             wf.relevant_skill_ids = ['system.local_business']
+        # Shopping guardrail with calendar intent bypass
         if wf.is_shopping_intent and (not wf.is_personal_recall):
-            logger.info("SHOPPING-GUARDRAIL: Kaufberatung erkannt (Intent=%s, Recall=%s). Forciere 'system.price_comparison'.", wf.is_shopping_intent, wf.is_personal_recall)
-            wf.relevant_skill_ids = ['system.price_comparison']
+            # Bypass shopping guardrail if calendar intent is detected (e.g., "um 14 uhr einkaufen beim netto")
+            is_calendar_intent = intent_engine.detect_calendar_intent(wf.user_text)
+            if is_calendar_intent:
+                logger.info("SHOPPING-GUARDRAIL-BYPASS: Calendar intent detected, skipping shopping guardrail (text: '%s')", wf.user_text[:80])
+            else:
+                logger.info("SHOPPING-GUARDRAIL: Kaufberatung erkannt (Intent=%s, Recall=%s). Forciere 'system.price_comparison'.", wf.is_shopping_intent, wf.is_personal_recall)
+                wf.relevant_skill_ids = ['system.price_comparison']
         elif wf.is_video_intent and (not wf.is_local_business_intent):
             logger.info(
                 "VIDEO-GUARDRAIL: Video-/YouTube-Intent — priorisiere 'video.search' und halte 'system.websearch' als Fallback.",
