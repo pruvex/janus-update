@@ -68,7 +68,9 @@ _CALENDAR_SNAPSHOT_STOPWORDS = frozenset({
     "mal", "bitte", "mir", "mich", "ich", "du", "dir", "dich", "uns", "euch", "ihr", "sie",
     "morgen", "heute", "gestern", "jetzt", "schon", "auch", "dann", "wenn",
     "mein", "meine", "meinen", "dein", "deine",
-    "termin", "termine", "kalender", "meeting",
+    "termin", "termine", "kalender",
+    # Generic time/preposition tokens that make bad mutation targets:
+    "uhr", "auf", "nach", "mit", "bis", "dann", "gleich", "halt",
 })
 
 
@@ -227,6 +229,11 @@ CALENDAR_COMMAND_MARKERS: Tuple[str, ...] = (
     "trag ein",
     "nicht vergessen",
     "auf die liste",
+    # ASCII-Umlaut-Fallbacks (für Eingaben ohne Umlaute)
+    "ergaenze",
+    "ergaenzen",
+    "hinzufuegen",
+    "loesche den termin",
 )
 
 CALENDAR_OBJECT_MARKERS: Tuple[str, ...] = (
@@ -259,6 +266,88 @@ CALENDAR_ACTIVITY_MARKERS: Tuple[str, ...] = (
     "besorgen",
     "holen gehen",
 )
+
+
+_MUTATION_PREP_RE = re.compile(
+    r"\b(?:beim?|an\s+(?:den?|die|das)?\s*|am|zum?|zur|für|bei|nach|vor|im|den?\s+|die\s+|das\s+)\s*",
+    re.IGNORECASE,
+)
+
+_MUTATION_STRIP_PREFIXES: Tuple[str, ...] = (
+    "beim",
+    "bei dem",
+    "bei der",
+    "bei",
+    "beim sport",
+    "am",
+    "zum",
+    "zur",
+    "für",
+    "nach",
+    "vor",
+    "im",
+    "für den",
+    "für die",
+    "für das",
+    "den termin",
+    "die termin",
+    "das termin",
+)
+
+_MUTATION_VERBS_AND_TRIGGERS: Tuple[str, ...] = (
+    "vergessen", "denk an", "denke an", "erinnere", "erinnere mich",
+    "notier", "notiere", "notiere das", "notier das",
+    "nicht vergessen", "auf die liste",
+    "trag ein", "trage ein", "eintragen",
+    "bring", "ergänze", "ergänzen", "hinzufügen",
+    # ASCII-Umlaut-Fallbacks für Eingaben ohne Umlaute
+    "ergaenze", "ergaenzen", "hinzufuegen",
+    "verschiebe", "absagen", "loesche", "lösche",
+)
+
+
+def _extract_mutation_target(user_text: str) -> Optional[str]:
+    """Extrahiere das Kalender-Subjekt aus einem Mutations-Satz.
+
+    Strategie:
+    1. Suche nach Präpositional-Phrase nach Präpositionen (beim X, am X, für X).
+    2. Falle auf den letzten bedeutsamen Nominal-Chunk zurück.
+
+    Beispiele:
+        "Handtuch vergessen beim Sport"    → "Sport"
+        "Denk an den Aldi-Termin morgen"   → "Aldi"
+        "Ergänze beim Zahnarzt: Röntgen"   → "Zahnarzt"
+        "Erinnere mich an das Meeting"     → "Meeting"
+    """
+    if not user_text:
+        return None
+    text = str(user_text).strip()
+
+    # 1. Suche nach "beim/am/zum/für/an … [Wort]"
+    for m in _MUTATION_PREP_RE.finditer(text):
+        rest = text[m.end():].strip()
+        first_word = rest.split()[0] if rest.split() else None
+        if first_word:
+            # Strip trailing punctuation; split compound words on "-" and take first part
+            first_word = re.sub(r"[^\wäöüÄÖÜß\-]", "", first_word)
+            first_word = first_word.split("-")[0].strip()
+            if len(first_word) >= 2 and first_word.lower() not in _CALENDAR_SNAPSHOT_STOPWORDS:
+                return first_word.capitalize()
+
+    # 2. Fallback: entferne Trigger-Wörter, nimm letzten Nominal-Chunk ≥3 Zeichen
+    text_lower = text.lower()
+    for trigger in sorted(_MUTATION_VERBS_AND_TRIGGERS, key=len, reverse=True):
+        text_lower = text_lower.replace(trigger, " ")
+    tokens = [
+        t.strip(".,!?:;-").strip()
+        for t in text_lower.split()
+        if len(t.strip(".,!?:;-").strip()) >= 3
+        and t.strip(".,!?:;-").strip() not in _CALENDAR_SNAPSHOT_STOPWORDS
+    ]
+    if tokens:
+        return tokens[-1].capitalize()
+
+    return None
 
 
 def _has_uhr_product_signal(text_norm: str) -> bool:
@@ -601,6 +690,7 @@ class IntentDetectionResult:
     is_shopping_intent: bool = False
     is_calendar_intent: bool = False
     is_calendar_mutation: bool = False
+    mutation_target: Optional[str] = None   # Extrahiertes Subjekt der Mutation (z.B. "Sport", "Aldi")
     is_local_business_intent: bool = False
     is_personal_recall: bool = False
     is_image_intent: bool = False
@@ -1119,13 +1209,11 @@ class IntentEngine:
         return any(pattern.search(user_text) for pattern in MODEL_INTROSPECTION_PATTERNS)
 
     def detect_calendar_mutation_intent(self, user_text: str) -> bool:
-        """Detect if user wants to mutate/modify an existing calendar event."""
+        """True wenn der User einen bestehenden Kalender-Eintrag mutieren will."""
         if not user_text:
             return False
         text_norm = _normalize_text(user_text)
-        # Mutation keywords: bring, ergänze, ergänzen, hinzufügen, mit
-        mutation_keywords = ("bring", "ergänze", "ergänzen", "hinzufügen", "mit")
-        return any(keyword in text_norm for keyword in mutation_keywords)
+        return _contains_any_phrase(text_norm, _MUTATION_VERBS_AND_TRIGGERS)
 
     # ─────────────────────────────────────────────────────────────────────────
     # Combined Detection
@@ -1177,10 +1265,19 @@ class IntentEngine:
                 calendar_on = False
                 vetoed["calendar"] = "strong_shopping_signal"
 
+        _is_mutation = bool(calendar_on and self.detect_calendar_mutation_intent(user_text))
+        _mutation_target = _extract_mutation_target(user_text) if _is_mutation else None
+        if _is_mutation:
+            logger.info(
+                "[CAL-MUTATION] Kalender-Mutation erkannt — Subjekt: %r",
+                _mutation_target,
+            )
+
         result = IntentDetectionResult(
             is_shopping_intent=shopping_on,
             is_calendar_intent=calendar_on,
-            is_calendar_mutation=self.detect_calendar_mutation_intent(user_text) if calendar_on else False,
+            is_calendar_mutation=_is_mutation,
+            mutation_target=_mutation_target,
             is_local_business_intent=self.detect_local_business_intent(user_text),
             is_personal_recall=self.detect_personal_recall(user_text),
             is_image_intent=self.detect_image_intent(user_text),

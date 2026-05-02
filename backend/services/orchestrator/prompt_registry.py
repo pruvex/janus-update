@@ -105,6 +105,21 @@ _DIRECTIVES: Dict[str, str] = {
         "Kalender-Eintrag aktualisieren → Erst danach Memory-Logging.\n"
         "VERBOTEN: Nur im Memory zu speichern, ohne den Kalender zu aktualisieren."
     ),
+    "calendar_mutation_hammer": (
+        "\n\n!!! KALENDER-MUTATIONS-HAMMER (ABSOLUTER BEFEHL) !!!\n"
+        "Der System hat eine KALENDER-MUTATION erkannt: Der User will einen bestehenden Termin ändern, "
+        "verschieben, ergänzen, absagen oder eine Notiz hinzufügen.\n"
+        "PFLICHT-SEQUENZ (KEINE AUSNAHME):\n"
+        "  1. Rufe SOFORT 'calendar.find_and_update_event' auf.\n"
+        "  2. Pflichtparameter: 'event_title_query' = Suchtext für den Termintitel (z.B. 'Aldi', 'Sport', 'Zahnarzt').\n"
+        "  3. Übergib die gewünschte Änderung als 'new_description', 'new_start_time', 'new_end_time', 'new_summary' oder 'cancel_event'.\n"
+        "VERBOTEN:\n"
+        "  • 'calendar.list_events' aufzurufen statt zu mutieren.\n"
+        "  • Nur im Memory zu speichern ohne den Kalender zu aktualisieren.\n"
+        "  • Rückfragen zu stellen oder zu zögern.\n"
+        "KRITISCHER SCHEMA-HINWEIS: Der Parameter heißt ZWINGEND 'event_title_query' — NICHT 'query', "
+        "'title' oder 'event_name'. Jeder andere Parameter-Name wird abgelehnt.\n"
+    ),
     "rag_sort_policy": (
         "!!! SORTIER-VETRAG !!! Wenn Dateien in der Liste als [INDIZIERT] markiert sind, verfügst du über deren Volltext. "
         "Es ist ein schwerer Logikfehler zu behaupten, sie seien nicht lesbar. Du MUSST 'knowledge.query' nutzen, um die Themen dieser Dateien einzeln oder im Batch zu bestimmen. "

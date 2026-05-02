@@ -473,19 +473,50 @@ async def execute_generation_prepare_gateway(
             }
             wf.gateway_kwargs["force_tool_name"] = "video.search"
             logger.info("💎 VIDEO-FORCE: Forcing video.search tool_choice for provider=%s", request.provider)
-        # 💎 CALENDAR-LIVE-TRUTH: Bei erkanntem Calendar-Intent erzwinge calendar.list_events Tool-Call
-        # um veralteten KALENDER-SNAPSHOT (Memory) zu umgehen und Live-Daten zu holen
-        # AUSNAHME: Bei Mutationen (is_calendar_mutation=True) wird NICHT erzwungt,
-        # damit das Modell calendar.find_and_update_event erreichen kann.
-        if bool(getattr(wf, "is_calendar_intent", False)) and not bool(getattr(wf, "is_calendar_mutation", False)):
+        # 💎 CALENDAR-LIVE-TRUTH: Bei Kalender-Lesabsicht → calendar.list_events erzwingen.
+        # 💎 CALENDAR-MUTATION-HAMMER: Bei Mutations-Absicht → calendar.find_and_update_event
+        #    direkt erzwingen; Mutation-Hammer-Prompt injizieren; event_title_query vorbelegen
+        #    wenn mutation_target bekannt ist.
+        _is_cal_intent = bool(getattr(wf, "is_calendar_intent", False))
+        _is_cal_mutation = bool(getattr(wf, "is_calendar_mutation", False))
+        _idr = getattr(wf, "intent_detection_result", None)
+        _mutation_target = str(getattr(_idr, "mutation_target", "") or "").strip() if _idr else ""
+
+        if _is_cal_intent and not _is_cal_mutation:
             wf.gateway_kwargs["forced_tool"] = {
                 "skill_id": "calendar.list_events",
                 "provider_tool_name": "calendar.list_events",
             }
             wf.gateway_kwargs["force_tool_name"] = "calendar.list_events"
-            logger.info("💎 CALENDAR-LIVE-TRUTH: Forcing calendar.list_events tool_choice for provider=%s", request.provider)
-        elif bool(getattr(wf, "is_calendar_mutation", False)):
-            logger.info("💎 CALENDAR-MUTATION: Skipping calendar.list_events force to allow calendar.find_and_update_event for provider=%s", request.provider)
+            logger.info("💎 CALENDAR-LIVE-TRUTH: Forcing calendar.list_events for provider=%s", request.provider)
+
+        elif _is_cal_mutation:
+            wf.gateway_kwargs["forced_tool"] = {
+                "skill_id": "calendar.find_and_update_event",
+                "provider_tool_name": "calendar.find_and_update_event",
+            }
+            wf.gateway_kwargs["force_tool_name"] = "calendar.find_and_update_event"
+            if _mutation_target:
+                wf.gateway_kwargs["forced_tool_args"] = {
+                    "event_title_query": _mutation_target,
+                }
+                logger.info(
+                    "💎 CALENDAR-MUTATION-HAMMER: Forcing find_and_update_event for provider=%s"
+                    " — mutation_target=%r (pre-filled event_title_query)",
+                    request.provider,
+                    _mutation_target,
+                )
+            else:
+                logger.info(
+                    "💎 CALENDAR-MUTATION-HAMMER: Forcing find_and_update_event for provider=%s"
+                    " — no mutation_target extracted, LLM must supply event_title_query",
+                    request.provider,
+                )
+            # Inject mutation hammer prompt into system prompt via action_guidance
+            _hammer = prompt_registry.get_directive("calendar_mutation_hammer")
+            if _hammer:
+                existing = str(getattr(wf, "action_guidance", "") or "")
+                wf.action_guidance = (existing + "\n" + _hammer).strip() if existing else _hammer
         # 💎 ANTI-HALLUCINATION: Force knowledge.query tool when audit_file marker is present
         if getattr(request, "audit_file", None):
             wf.gateway_kwargs["forced_tool"] = {
