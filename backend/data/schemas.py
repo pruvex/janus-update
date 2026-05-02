@@ -1293,6 +1293,13 @@ class FindAndUpdateCalendarEventArgs(BaseModel):
         description="Neuer Ort (optional), Format **Straße, PLZ Stadt, Land** wenn möglich.",
     )
     new_description: Optional[str] = Field(None, description="Neue volle oder ergänzte Beschreibung (optional).")
+    event_id: Optional[str] = Field(
+        None,
+        description=(
+            "Optional: Google Event-ID wenn bereits durch den Contextual Entity Resolver "
+            "(TASK-065) aus dem Kalender-Snapshot aufgelöst — dann ohne Fuzzy-Suche direkt PATCH."
+        ),
+    )
     cancel_event: Optional[bool] = Field(
         default=False,
         description="Wenn true: Termin löschen statt aktualisieren.",

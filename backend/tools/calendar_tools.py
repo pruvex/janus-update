@@ -1028,32 +1028,64 @@ async def find_and_update_calendar_event(
     new_location: Optional[str] = None,
     new_description: Optional[str] = None,
     cancel_event: Optional[bool] = False,
+    event_id: Optional[str] = None,
 ) -> ToolResultV1:
+    """Find a calendar event by title (fuzzy) and apply updates.
+
+    When ``event_id`` is supplied by the Contextual Entity Resolver (TASK-065)
+    the fuzzy-search loop is skipped entirely, guaranteeing the correct event
+    is targeted without re-running a second match cycle.
+    """
     t0 = time.perf_counter()
     try:
-        calendar_data = await get_calendar_events(days_in_future=90)
-        if calendar_data.status != "ok":
-            return calendar_data
+        found_event: Optional[Dict[str, Any]] = None
 
-        events = calendar_data.data.get("events", [])
-
-        best_match = None
-        highest_score = 0
-        for event in events:
-            summary = event.get("summary", "")
-            score = fuzz.token_set_ratio(event_title_query.lower(), summary.lower())
-            if score > highest_score:
-                highest_score = score
-                best_match = event
-
-        if not best_match or highest_score < 75:
-            return _cal_err(
-                "NOT_FOUND",
-                f"Ich konnte keinen Termin finden, der eindeutig auf '{event_title_query}' passt.",
-                started_at=t0,
+        if event_id:
+            # Fast path: pre-resolved ID from the EntityResolver — skip fuzzy search.
+            logger.info(
+                "[FIND-AND-UPDATE] Pre-resolved event_id=%r supplied — skipping fuzzy search.",
+                event_id,
             )
+            try:
+                _service = _get_calendar_service()
+                found_event = await asyncio.to_thread(
+                    _service.events().get(calendarId="primary", eventId=event_id).execute
+                )
+            except Exception as _fetch_err:
+                logger.warning(
+                    "[FIND-AND-UPDATE] Pre-resolved event_id=%r fetch failed (%s)."
+                    " Falling back to fuzzy search.",
+                    event_id,
+                    _fetch_err,
+                )
+                found_event = None
 
-        found_event = best_match
+        if found_event is None:
+            # Fuzzy search path (legacy or stale-ID recovery).
+            calendar_data = await get_calendar_events(days_in_future=90)
+            if calendar_data.status != "ok":
+                return calendar_data
+
+            events = calendar_data.data.get("events", [])
+
+            best_match = None
+            highest_score = 0
+            for event in events:
+                summary = event.get("summary", "")
+                score = fuzz.token_set_ratio(event_title_query.lower(), summary.lower())
+                if score > highest_score:
+                    highest_score = score
+                    best_match = event
+
+            if not best_match or highest_score < 75:
+                return _cal_err(
+                    "NOT_FOUND",
+                    f"Ich konnte keinen Termin finden, der eindeutig auf '{event_title_query}' passt.",
+                    started_at=t0,
+                )
+
+            found_event = best_match
+
         event_id = found_event["id"]
 
         if cancel_event:

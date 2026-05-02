@@ -491,32 +491,132 @@ async def execute_generation_prepare_gateway(
             logger.info("💎 CALENDAR-LIVE-TRUTH: Forcing calendar.list_events for provider=%s", request.provider)
 
         elif _is_cal_mutation:
-            wf.gateway_kwargs["forced_tool"] = {
-                "skill_id": "calendar.find_and_update_event",
-                "provider_tool_name": "calendar.find_and_update_event",
-            }
-            wf.gateway_kwargs["force_tool_name"] = "calendar.find_and_update_event"
-            if _mutation_target:
+            # ── TASK-065: Contextual Entity Resolver ─────────────────────────
+            # Run the resolver when both a mutation_target and a calendar snapshot
+            # are available. The resolver returns a dispatcher_hint that controls
+            # which tool (or no tool) the LLM is forced to call.
+            _snapshot = getattr(wf, "calendar_snapshot", None)
+            _resolver_result = None
+
+            if _mutation_target and _snapshot:
+                try:
+                    from backend.services.orchestrator.entity_resolver import (
+                        ContextualEntityResolver,
+                    )
+                    _resolver_result = ContextualEntityResolver().resolve(
+                        query=_mutation_target,
+                        snapshot=_snapshot,
+                        operation_type="MUTATION",
+                    )
+                    logger.info(
+                        "[ENTITY-RESOLVER] status=%s hint=%s delta=%.1f reason=%s",
+                        _resolver_result.status,
+                        _resolver_result.dispatcher_hint,
+                        _resolver_result.delta_top2,
+                        _resolver_result.reason,
+                    )
+                except Exception as _re_err:
+                    logger.warning(
+                        "[ENTITY-RESOLVER] Resolver failed — falling back to legacy: %s", _re_err
+                    )
+                    _resolver_result = None
+
+            if _resolver_result is not None and _resolver_result.dispatcher_hint == "PROCEED":
+                # ── RESOLVED: Force find_and_update_event with pre-resolved event_id ──
+                _rev = _resolver_result.resolved_event
+                wf.gateway_kwargs["forced_tool"] = {
+                    "skill_id": "calendar.find_and_update_event",
+                    "provider_tool_name": "calendar.find_and_update_event",
+                }
+                wf.gateway_kwargs["force_tool_name"] = "calendar.find_and_update_event"
                 wf.gateway_kwargs["forced_tool_args"] = {
-                    "event_title_query": _mutation_target,
+                    "event_title_query": _rev.original_title,
+                    "event_id": _rev.event_id,
                 }
                 logger.info(
-                    "💎 CALENDAR-MUTATION-HAMMER: Forcing find_and_update_event for provider=%s"
-                    " — mutation_target=%r (pre-filled event_title_query)",
+                    "💎 ENTITY-RESOLVER PROCEED: find_and_update_event provider=%s"
+                    " event_id=%r title=%r score=%.1f",
                     request.provider,
-                    _mutation_target,
+                    _rev.event_id,
+                    _rev.original_title,
+                    _rev.score_final,
                 )
-            else:
+                # Inject mutation hammer
+                _hammer = prompt_registry.get_directive("calendar_mutation_hammer")
+                if _hammer:
+                    existing = str(getattr(wf, "action_guidance", "") or "")
+                    wf.action_guidance = (existing + "\n" + _hammer).strip() if existing else _hammer
+
+            elif _resolver_result is not None and _resolver_result.dispatcher_hint == "FALLBACK_TO_LIST":
+                # ── AMBIGUOUS / WEAK: Suppress mutation — list events instead ──
+                wf.gateway_kwargs["forced_tool"] = {
+                    "skill_id": "calendar.list_events",
+                    "provider_tool_name": "calendar.list_events",
+                }
+                wf.gateway_kwargs["force_tool_name"] = "calendar.list_events"
+                wf.gateway_kwargs.pop("forced_tool_args", None)
                 logger.info(
-                    "💎 CALENDAR-MUTATION-HAMMER: Forcing find_and_update_event for provider=%s"
-                    " — no mutation_target extracted, LLM must supply event_title_query",
+                    "💎 ENTITY-RESOLVER FALLBACK_TO_LIST: mutation target %r is %s (%s)."
+                    " Forcing list_events for provider=%s",
+                    _mutation_target,
+                    _resolver_result.status,
+                    _resolver_result.reason,
                     request.provider,
                 )
-            # Inject mutation hammer prompt into system prompt via action_guidance
-            _hammer = prompt_registry.get_directive("calendar_mutation_hammer")
-            if _hammer:
+                # Build disambiguation guidance so the LLM presents candidates
+                _candidates_text = "; ".join(
+                    f"'{c.original_title}' ({c.start_time[:10]})"
+                    for c in _resolver_result.candidates[:3]
+                )
+                _disambig = (
+                    f"ENTITY-RESOLVER: Für '{_mutation_target}' wurden mehrere mögliche Termine "
+                    f"gefunden: {_candidates_text if _candidates_text else 'keine eindeutigen Treffer'}. "
+                    f"Zeige dem Nutzer die Optionen und frage, welchen er meint, "
+                    f"BEVOR du eine Änderung vornimmst."
+                )
                 existing = str(getattr(wf, "action_guidance", "") or "")
-                wf.action_guidance = (existing + "\n" + _hammer).strip() if existing else _hammer
+                wf.action_guidance = "\n".join(filter(None, [existing, _disambig])).strip()
+
+            elif _resolver_result is not None and _resolver_result.dispatcher_hint == "CLARIFY_USER":
+                # ── NOT_FOUND: No tool call — LLM must ask the user to clarify ──
+                wf.gateway_kwargs.pop("forced_tool", None)
+                wf.gateway_kwargs.pop("force_tool_name", None)
+                wf.gateway_kwargs.pop("forced_tool_args", None)
+                logger.info(
+                    "💎 ENTITY-RESOLVER CLARIFY_USER: No calendar match for %r."
+                    " Suppressing calendar tools for provider=%s",
+                    _mutation_target,
+                    request.provider,
+                )
+
+            else:
+                # ── Legacy fallback: resolver unavailable or no mutation_target ──
+                wf.gateway_kwargs["forced_tool"] = {
+                    "skill_id": "calendar.find_and_update_event",
+                    "provider_tool_name": "calendar.find_and_update_event",
+                }
+                wf.gateway_kwargs["force_tool_name"] = "calendar.find_and_update_event"
+                if _mutation_target:
+                    wf.gateway_kwargs["forced_tool_args"] = {
+                        "event_title_query": _mutation_target,
+                    }
+                    logger.info(
+                        "💎 CALENDAR-MUTATION-HAMMER (legacy): Forcing find_and_update_event"
+                        " for provider=%s — mutation_target=%r (pre-filled event_title_query)",
+                        request.provider,
+                        _mutation_target,
+                    )
+                else:
+                    logger.info(
+                        "💎 CALENDAR-MUTATION-HAMMER (legacy): Forcing find_and_update_event"
+                        " for provider=%s — no mutation_target, LLM must supply event_title_query",
+                        request.provider,
+                    )
+                # Inject mutation hammer
+                _hammer = prompt_registry.get_directive("calendar_mutation_hammer")
+                if _hammer:
+                    existing = str(getattr(wf, "action_guidance", "") or "")
+                    wf.action_guidance = (existing + "\n" + _hammer).strip() if existing else _hammer
         # 💎 ANTI-HALLUCINATION: Force knowledge.query tool when audit_file marker is present
         if getattr(request, "audit_file", None):
             wf.gateway_kwargs["forced_tool"] = {

@@ -1,6 +1,6 @@
-# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.73)
+# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.74)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-02 20:01 (TASK-064 SEALED: Breaking the Calendar Listing Prison)
+**Aktualisiert:** 2026-05-02 (TASK-065 SEALED: Smart Entity Resolver for Calendar Mutations)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| TASK-065 Contextual Entity Resolver | 🥇 SEALED | Smart Entity Resolver: fuzzy + temporal disambiguation against `calendar_snapshot` before forced `find_and_update_event`. RESOLVED → pre-filled `event_id` + title (API get, skip fuzzy). AMBIGUOUS/WEAK → force `list_events`. NOT_FOUND/short query → no calendar tool (LLM clarification). Files: entity_resolver.py, execution_dispatcher.py, calendar_tools.py, schemas.py, find_and_update_event.json. Tests: test_entity_resolver.py (8/8). |
 | TASK-064 Calendar Mutation Detection | 🥇 SEALED | Breaking the Calendar Listing Prison. Added is_calendar_mutation detection to IntentEngineV2 to distinguish between pure calendar queries (listing) and calendar mutations (updates). When is_calendar_mutation is true, the system no longer forces calendar.list_events tool_choice, allowing the model to reach calendar.find_and_update_event for mutation operations. Files: intent_engine.py, execution_dispatcher.py. |
 | TASK-063 Proactive Calendar Updates | 🥇 SEALED | Proactive Calendar Updates implementation. Sharpened calendar update keywords in IntentEngineV2 ("bring", "ergänze", "ergänzen", "hinzufügen", "mit"). Added calendar.find_and_update_event as mandatory skill for calendar intents in CapabilityRegistry. Added proactive calendar mutation rule in prompt_registry.py to prioritize calendar updates over pure memory logging. Files: intent_engine.py, capability_registry.py, prompt_registry.py. |
 | TASK-062 Intent-to-Selector Gap Fix | 🥇 SEALED | Fixed Intent-to-Selector gap. Sharpened calendar keywords in IntentEngineV2 ("habe ich", "was habe ich", "was steht an", "steht an", "meine termine", "meinen termin", "meinen terminen"). Verified CapabilityRegistry returns calendar.list_events as mandatory for calendar intents. Added safety net in ExecutionDispatcher to inject calendar.list_events if is_calendar_intent is true but selector returned empty. Files: intent_engine.py, execution_dispatcher.py. |
