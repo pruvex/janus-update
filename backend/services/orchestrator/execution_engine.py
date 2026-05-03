@@ -2675,6 +2675,14 @@ class OrchestratorExecutionEngine:
                         tool_result["content"] = force_sanitize_links(content)
                 gateway_kwargs["chat_history"].append(tool_result)
 
+            # 💎 GEMINI-RESPONSE-TRIGGER: Force Gemini to generate text after tool execution
+            # Gemini unlike OpenAI often stops after tool calls without generating summary text
+            if provider_key in ("gemini", "google"):
+                gateway_kwargs["chat_history"].append({
+                    "role": "system",
+                    "content": "[System-Instruction]: The tool execution was successful. You MUST now provide a final, natural language response to the user summarizing this result."
+                })
+
             _sctx = gateway_kwargs.get("_suggestion_context")
             if isinstance(_sctx, dict) and isinstance(gateway_kwargs.get("chat_history"), list):
                 from backend.services.orchestrator.suggestion_engine import (
@@ -2703,6 +2711,29 @@ class OrchestratorExecutionEngine:
             text_value = str(response.get("text") or fallback_summary)
         else:
             text_value = str(response or fallback_summary)
+        
+        # 💎 GEMINI-FALLBACK: If text is still empty/whitespace after tool execution,
+        # try to extract meaningful text from successful tool results
+        if not text_value or not text_value.strip() or text_value == fallback_summary:
+            if had_tool_round and results_buffer:
+                # Look for successful tool results to construct a meaningful response
+                successful_results = []
+                for tr in results_buffer:
+                    if not isinstance(tr, dict):
+                        continue
+                    try:
+                        raw = tr.get("_raw_content") or tr.get("content", "{}")
+                        parsed = json.loads(raw) if isinstance(raw, str) else dict(raw or {})
+                        if isinstance(parsed, dict) and parsed.get("status") == "ok":
+                            msg = parsed.get("message") or parsed.get("output")
+                            if msg:
+                                successful_results.append(str(msg))
+                    except Exception:
+                        continue
+                if successful_results:
+                    text_value = "\n\n".join(successful_results)
+                    logger.info("💎 GEMINI-FALLBACK: Constructed response from %d tool results", len(successful_results))
+        
         text_value = force_sanitize_links(text_value)
 
         if country_not_found_detected and isinstance(response, dict):
