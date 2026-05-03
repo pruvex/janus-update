@@ -1021,7 +1021,7 @@ async def update_calendar_event_description(
 
 
 async def find_and_update_calendar_event(
-    event_title_query: str,
+    event_title_query: Optional[str] = None,
     new_start_time: Optional[str] = None,
     new_end_time: Optional[str] = None,
     new_summary: Optional[str] = None,
@@ -1035,7 +1035,18 @@ async def find_and_update_calendar_event(
     When ``event_id`` is supplied by the Contextual Entity Resolver (TASK-065)
     the fuzzy-search loop is skipped entirely, guaranteeing the correct event
     is targeted without re-running a second match cycle.
+
+    Args:
+        event_title_query: Search text for fuzzy matching (optional if event_id provided).
+        event_id: Direct Google Calendar event ID (optional, skips fuzzy search if provided).
+
+    Raises:
+        ValueError: If both event_id and event_title_query are missing.
     """
+    # Guided Mode: At least one identifier must be provided
+    if not event_id and not event_title_query:
+        raise ValueError("Entweder event_id oder event_title_query muss angegeben werden.")
+
     t0 = time.perf_counter()
     try:
         found_event: Optional[Dict[str, Any]] = None
