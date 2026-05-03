@@ -17,6 +17,9 @@ completion_gate:
   regression_green: true
 ---
 
+# 2️⃣ Impact-Analyse & Abhängigkeiten
+**Beeinflusst:** Memory-Retrieval-System → Modified by task_066: Threshold-Tuning für Kontext-Relevanz (Priority 0.50 → 0.65)
+
 # 1️⃣ Task Description
 
 Janus soll ein Context Awareness System erhalten, das die Auslastung des aktuellen Kontextfensters jederzeit sichtbar macht, modellabhängig korrekt bewertet und dem Nutzer rechtzeitig kontrollierte Optimierungsmaßnahmen anbietet.
