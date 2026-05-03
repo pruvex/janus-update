@@ -21,7 +21,8 @@ Breaking the Calendar Listing Prison. Das System erzwingt calendar.list_events a
   - tool_choice Logik in execution_dispatcher.py anpassen (Force nur bei reinen Queries, nicht bei Mutationen)
 - [x] **Phase 3 (Testing):** Regression-Tests laufen lassen
 - [x] **Phase 4 (Post-Check):** `/post-impl` ausführen.
-- [ ] **Phase 5 (Audit - Optional):** `/opus-audit` bei Bedarf ausführen.
+- [x] **Phase 5 (BUG-SYS-019 Guard Extension):** Guard in detect_all_intents implementiert, um zu verhindern dass BUG-SYS-019 fact-telling pattern ("mein/meine") calendar mutation intent zu personal_recall override. Calendar mutation hat absolute Priorität über fact-telling. Status: 🥇 COMPLETE & SEALED.
+- [ ] **Phase 6 (Audit - Optional):** `/opus-audit` bei Bedarf ausführen.
 
 ## 5. Test-Vorgaben
 - [x] Regression: `python -m pytest backend/tests -q`

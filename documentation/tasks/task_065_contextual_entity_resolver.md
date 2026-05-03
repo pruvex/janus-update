@@ -22,6 +22,7 @@ Der Nutzer beschreibt Kalender-Mutationen mit unpräzisen Titeln (z.B. „Fitnes
 - [x] **Phase 3 (Testing):** `pytest backend/tests/test_entity_resolver.py` + verwandte Kalender-Tests.
 - [x] **Phase 4 (Post-Check):** `/post-impl` ausgeführt.
 - [x] **Phase 5 (Guided Mode Final Safety):** Schwenk zu Guided Assistant Mode als finale Sicherheitsmaßnahme. Bei RESOLVED wird event_id + title in action_guidance injiziert, LLM muss zwingend diese Werte verwenden (KEINE Erfindung, KEINE Änderung). Mutation Hammer mit VERBOTEN-Regeln als finaler Check. Status: 🥇 COMPLETE & SEALED.
+- [x] **Phase 6 (Deictic Fallback Extension):** Erweiterung um deiktische Referenzen (Pronomen: "ihn", "den", "da"). full_user_text Parameter für vollständige User-Nachricht, orchestrator_context.history für saubere Chat-Historie. Fallback aktiv bei deiktischen Markern ODER sehr kurzen Queries (≤ 2 tokens). Honest Scoring (75.0 statt 100.0). Status: 🥇 COMPLETE & SEALED.
 
 ## 5. Test-Vorgaben
 - [x] `python -m pytest backend/tests/test_entity_resolver.py -q`

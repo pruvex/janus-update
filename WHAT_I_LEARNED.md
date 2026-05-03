@@ -36,6 +36,58 @@
 - **Confidence:** High (Strict Constraints, Mutation Hammer, forced_tool enforcement).
 - **Tags:** GuidedAssistantMutation, GuidedAssistant, StrictConstraints, MutationHammer, SchemaHint, ToolChoiceEnforcement, TASK065, TASK067
 
+## [PATTERN] #DeicticFallback "Deictic Context Fallback — Pronoun Detection via full_user_text + orchestrator_context.history for Calendar Mutation Autonomy"
+- **Kontext:** TASK-065 Contextual Entity Resolver Extension. Ziel: Vermeidung von "Vermerkt"-Antworten ohne Aktion bei deiktischen Bezügen ("ihn absagen", "da Handtuch nicht vergessen"). Das System muss implizite Referenzen auf kurzzeitig besprochene Kalender-Ereignisse auflösen können.
+- **Problem:** Ohne Deictic-Fallback könnte "ihn absagen" als NOT_FOUND klassifiziert werden, wenn "ihn" keinem Ereignistitel entspricht. Das LLM würde nur "Vermerkt" antworten statt die Mutation auszuführen. Pronomen werden oft von _extract_mutation_target entfernt oder sind zu kurz für Fuzzy-Match.
+- **Lösung:** **Deictic Context Fallback mit Multi-Source Detection:**
+  1. **full_user_text Parameter:** `resolve()` erhält `full_user_text` (komplette User-Nachricht) zusätzlich zu `query` (extrahiertes mutation_target). Deiktische Marker ("ihn", "den", "da", "dort", "mitzubringen") werden im vollen Text gesucht, nicht nur im extrahierten Target.
+  2. **orchestrator_context.history:** Statt `wf.messages` wird `wf.orchestrator_context.history[-4:]` verwendet für saubere Chat-Historie ohne System-Prompt-Injection.
+  3. **_DEICTIC_RE Regex:** Pattern erkennt deiktische/anaphorische Ausdrücke: "ihn", "den", "da", "dort", "dazu", "dafür", "dort(hin)", "den termin", "mitzubringen", "mitnehmen".
+  4. **Fallback Conditions:** Aktiviert wenn (a) MUTATION operation, (b) NOT_FOUND oder WEAK_MATCH status, (c) is_calendar_mutation=True, (d) recent_messages vorhanden, (e) deiktischer Marker im full_user_text ODER query ist sehr kurz (≤ 2 tokens).
+  5. **Single-Event-Check:** Prüft ob genau ein Kalender-Ereignis in den letzten 2 Turns erwähnt wurde. Falls ja, wird dieses Ereignis als RESOLVED mit dispatcher_hint="PROCEED" zurückgegeben.
+  6. **Short-Query Guard Bypass:** Wenn `_full_text_has_deictic=True` ist, wird der Short-Query-Guard (query_too_short) umgangen, da deiktische Bezüge gültige Intentionen signalisieren.
+  7. **Honest Scoring:** Context-Fallback setzt score_final=75.0 (statt 100.0) um zu reflektieren, dass es sich um Kontext-Inferenz statt Fuzzy-Match handelt.
+- **Härtung:** Multi-Source-Detection (full_user_text + orchestrator_context.history) garantiert robuste Deiktik-Erkennung. Single-Event-Check verhindert Ambiguität. Honest Scoring verhindert Überbewertung.
+- **Tripwire:** Wenn "ihn absagen" als NOT_FOUND klassifiziert → Deictic-Fallback nicht aktiv oder History leer. Wenn falsches Ereignis gewählt → Single-Event-Check fehlt. Wenn Orchestrator-History mit System-Prompt verunreinigt → wf.orchestrator_context.history nicht verwendet.
+- **Location:** `backend/services/orchestrator/entity_resolver.py` (_DEICTIC_RE, _has_deictic_reference, resolve with full_user_text, context fallback logic), `backend/services/orchestrator/execution_dispatcher.py` (orchestrator_context.history source), implementiert 2026-05-03.
+- **Epic:** TASK-065 — Contextual Entity Resolver Extension
+- **Confidence:** High (Deiktik-Regex deckt gängige Pronomen ab, Single-Event-Check deterministisch, Honest Scoring transparent).
+- **Tags:** DeicticFallback, PronounDetection, ContextInference, CalendarMutationAutonomy, OrchestratorContext, TASK065
+
+## [PATTERN] #GuidedModeSchema "Optional event_title_query for Direct ID-Patching in Guided Mode — No Artificial Search Strings Required"
+- **Kontext:** TASK-067 Guided Assistant Mode Extension. Ziel: Erlauben von Modellen, direkt per ID zu patchen wenn Guided Mode aktiv ist, ohne künstlich Suchstrings erfinden zu müssen.
+- **Problem:** Ohne optionales event_title_query müsste das LLM immer einen Suchstring (event_title_query) angeben, selbst wenn es bereits die event_id vom Entity Resolver hat. Das führt zu unnötigen Erfindungen oder redundanten Fuzzy-Suchen.
+- **Lösung:** **Optional event_title_query mit ID-Priority:**
+  1. **Schema Change:** `FindAndUpdateCalendarEventArgs` in `schemas.py`: `event_title_query` von `str` zu `Optional[str] = None`. Description ergänzt: "Optional wenn event_id angegeben wird."
+  2. **Function Signature:** `find_and_update_calendar_event()` in `calendar_tools.py`: `event_title_query` Parameter zu `Optional[str] = None`.
+  3. **ValueError Guard:** Zu Beginn der Funktion: Wenn `not event_id and not event_title_query`, raise `ValueError("Entweder event_id oder event_title_query muss angegeben werden.")`.
+  4. **Fast Path Preservation:** Wenn `event_id` vorhanden ist, wird der Fuzzy-Suche-Pfad komplett übersprungen (API-GET direkt). Keine Notwendigkeit für event_title_query.
+  5. **Guided Mode Integration:** Wenn Entity Resolver `PROCEED` zurückgibt, wird nur `event_id` in action_guidance injiziert. LLM kann direkt patchen ohne event_title_query.
+  6. **Backward Compatibility:** Fuzzy-Suche funktioniert weiterhin wenn event_title_query angegeben wird. Kein Breaking Change für bestehende Code-Pfade.
+- **Härtung:** ValueError Guard verhindert leere Calls. Fast Path bleibt erhalten. Backward Compatibility garantiert.
+- **Tripwire:** Wenn LLM trotzdem event_title_query erfindet → Guidance nicht korrekt oder LLM ignoriert Optional-Flag. Wenn ValueError ausgelöst → Beide Parameter fehlen. Wenn Fuzzy-Suche trotz ID ausgeführt → Fast Path Logik beschädigt.
+- **Location:** `backend/data/schemas.py` (FindAndUpdateCalendarEventArgs), `backend/tools/calendar_tools.py` (find_and_update_calendar_event), implementiert 2026-05-03.
+- **Epic:** TASK-067 — Guided Assistant Mode Extension
+- **Confidence:** High (ValueError Guard klar, Fast Path erhalten, Backward Compatible).
+- **Tags:** GuidedModeSchema, OptionalParameters, IDPatching, DirectMutation, SchemaExtension, TASK067
+
+## [PATTERN] #IntentEngineGuard "BUG-SYS-019 Guard — Calendar Mutation Beats Fact-Telling Pattern to Prevent Tool Override"
+- **Kontext:** C7 (Code-Fix Pipeline) — Intent Engine Overlap Fix. Ziel: Verhindern dass BUG-SYS-019 fact-telling pattern ("mein/meine") calendar mutation intent zu personal_recall override und calendar.find_and_update_event aus der Skill-Liste entfernt.
+- **Problem:** BUG-SYS-019 erkennt persönliche Fakten ("mein Hund heißt...") und setzt is_fact_telling=True. Dies kann calendar mutation intent ("ergänze meinen Termin") überschreiben, weil fact-telling Vorrang hat. Das LLM erhält dann keine calendar Tools, obwohl eine Mutation angefordert wurde.
+- **Lösung:** **Calendar Mutation Priority Guard:**
+  1. **Fact-Telling Detection:** `is_fact_telling_pattern()` in `intent_engine.py` prüft Regex-Patterns wie `(mein|meine)\s+`, `(ich habe)\s+`, etc.
+  2. **Guard Logic:** In `detect_all_intents()` wird `_is_fact_telling = self.is_fact_telling_pattern(user_text)` berechnet.
+  3. **Override Check:** Wenn `_is_mutation` (is_calendar_mutation) AND `_is_fact_telling` beide True sind, wird `_is_fact_telling = False` gesetzt.
+  4. **Logging:** Bei Override wird geloggt: "[INTENT-ENGINE] Calendar mutation detected — overriding fact-telling pattern (BUG-SYS-019 guard: mutation beats personal_recall)".
+  5. **Result Injection:** `IntentDetectionResult.is_fact_telling` wird mit dem korrigierten `_is_fact_telling` Wert belegt.
+  6. **Tool Loading:** Da is_fact_telling=False, werden calendar Tools (inkl. find_and_update_event) korrekt geladen, selbst wenn "mein/meine" im User-Text steht.
+- **Härtung:** Guard ist deterministisch basierend auf boolean flags. Logging macht Override transparent. Calendar mutation hat absolute Priorität über fact-telling.
+- **Tripwire:** Wenn "ergänze meinen Termin" keine calendar Tools lädt → Guard nicht implementiert oder is_calendar_mutation nicht erkannt. Wenn fact-telling trotz calendar mutation aktiv → Guard Logik fehlt oder Reihenfolge falsch.
+- **Location:** `backend/services/orchestrator/intent_engine.py` (detect_all_intents guard), implementiert 2026-05-03.
+- **Epic:** C7 — Intent Engine Overlap Fix
+- **Confidence:** High (Deterministische boolean Logik, klare Priorisierung, Logging vorhanden).
+- **Tags:** IntentEngineGuard, BUGSYS019, CalendarMutationPriority, FactTellingOverride, IntentPrecedence, C7
+
 ## [PATTERN] #IntentEngineV2 "Wortgrenzen-Cache + Single Dispatch Contract — Vermeidung von Substring-Kollisionen und hierarchische Intent-Auflösung"
 - **Kontext:** Intent Engine V2 Härtung nach 8/10 Architektur-Audit. Ziel: Vermeidung von False-Positives durch Substring-Matching (z.B. "uhr" in "kaufen" vs "14 uhr") und Konsolidierung von Intent-Checks auf einen einzigen Dispatch pro Request.
 - **Problem:** (1) Substring-Kollisionen: `in`-Operator matched "uhr" in "kaufen" als Produkt-Signal obwohl es Uhrzeit ist. (2) Redundante Checks: Orchestrator rief mehrfach `detect_*_intent()` auf (shopping, calendar, local_business, etc.) → ineffizient und inkonsistent. (3) Shopping vs. Calendar Konflikt: "um 14 uhr einkaufen beim netto" wurde als Shopping-Intent klassifiziert, Kalender-Tools entfernt.
