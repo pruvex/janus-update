@@ -1345,6 +1345,20 @@ class IntentEngine:
                 _mutation_target,
             )
 
+        # Fact-telling detection (BUG-SYS-019)
+        _is_fact_telling = self.is_fact_telling_pattern(user_text)
+        
+        # Guard: Calendar mutation beats fact-telling
+        # If calendar mutation is detected, fact-telling pattern should not override
+        # the intent to personal_recall. Calendar tools must be loaded even when
+        # "mein/meine" is present in the user's text.
+        if _is_mutation and _is_fact_telling:
+            logger.info(
+                "[INTENT-ENGINE] Calendar mutation detected — overriding fact-telling pattern "
+                "(BUG-SYS-019 guard: mutation beats personal_recall)"
+            )
+            _is_fact_telling = False
+
         result = IntentDetectionResult(
             is_shopping_intent=shopping_on,
             is_calendar_intent=calendar_on,
@@ -1357,7 +1371,7 @@ class IntentEngine:
             is_multitask_image_pdf=self.detect_multitask_image_pdf(user_text),
             has_tool_trigger=self.has_ollama_tool_trigger(user_text),
             is_ollama_vague_smalltalk=self.is_ollama_vague_smalltalk(user_text),
-            is_fact_telling=self.is_fact_telling_pattern(user_text),
+            is_fact_telling=_is_fact_telling,
             is_self_referential=self.is_self_referential_query(user_text),
             is_policy_consent=self.is_policy_consent_choice(text_clean),
             is_one_time_policy=self.is_one_time_policy_choice(text_clean),
