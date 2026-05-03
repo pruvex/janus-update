@@ -513,24 +513,28 @@ async def execute_generation_prepare_gateway(
             _snapshot = getattr(wf, "calendar_snapshot", None)
             _resolver_result = None
 
-            if _mutation_target and _snapshot:
+            # Run resolver if we have a snapshot.  mutation_target may be empty
+            # when the user expressed the intent with only a pronoun ("ihn", "da")
+            # — the resolver's deictic fallback handles that via full_user_text.
+            if _snapshot:
                 try:
                     from backend.services.orchestrator.entity_resolver import (
                         ContextualEntityResolver,
                     )
-                    # Get last 4 messages of chat history (excludes system prompt).
-                    # orchestrator_context.history is the clean turn list; wf.messages
-                    # starts with the injected system prompt and is less reliable here.
+                    # Clean chat history only (no system prompt injection).
+                    # orchestrator_context is reassembled at line ~399 above, so
+                    # it is guaranteed to be populated before this block runs.
                     _oc_history = getattr(
                         getattr(wf, "orchestrator_context", None), "history", None
                     ) or []
                     _recent_messages = _oc_history[-4:]
                     _resolver_result = ContextualEntityResolver().resolve(
-                        query=_mutation_target,
+                        query=_mutation_target,          # may be "" — handled inside
                         snapshot=_snapshot,
                         operation_type="MUTATION",
                         recent_messages=_recent_messages,
                         is_calendar_mutation=_is_cal_mutation,
+                        full_user_text=wf.user_text,    # ← deictic detection source
                     )
                     logger.info(
                         "[ENTITY-RESOLVER] status=%s hint=%s delta=%.1f reason=%s",

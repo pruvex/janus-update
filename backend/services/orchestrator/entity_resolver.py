@@ -302,18 +302,30 @@ class ContextualEntityResolver:
         today: Optional[date] = None,
         recent_messages: Optional[List[Dict[str, Any]]] = None,
         is_calendar_mutation: bool = False,
+        full_user_text: Optional[str] = None,
     ) -> ResolutionResult:
         """Resolve *query* against the calendar *snapshot*.
 
         Args:
-            query: Raw user query fragment, e.g. "Fitnesstudio".
+            query: Extracted mutation target (e.g. "Fitnesstudio", "Sport").
+                   May be empty when the user phrased the request with only a
+                   pronoun (e.g. "ihn absagen") — the deictic fallback handles
+                   this case via *full_user_text*.
             snapshot: ``wf.calendar_snapshot`` dict with an ``"events"`` list.
             operation_type: "MUTATION" (conservative) or "READ" (permissive).
             today: Override today's date (for testing). Defaults to date.today().
-            recent_messages: List of recent chat messages (last 2 turns) for deictic fallback.
-            is_calendar_mutation: True if the user intent is calendar mutation (enables context fallback).
+            recent_messages: Clean chat history (no system prompt) for deictic
+                             fallback — use ``orchestrator_context.history[-4:]``.
+            is_calendar_mutation: True if orchestrator confirmed mutation intent.
+            full_user_text: The complete raw user message.  Used exclusively for
+                            deictic detection; never scored against event titles.
         """
         today = today or date.today()
+
+        # Canonical deictic text: prefer the full sentence over mutation_target,
+        # because deictic words ("da", "ihn", "den") are stripped or missed by
+        # _extract_mutation_target and won't appear in *query*.
+        _deictic_src = full_user_text or query
 
         result = ResolutionResult(
             query_raw=query,
@@ -324,9 +336,13 @@ class ContextualEntityResolver:
         q_norm = _normalize_text(query)
         result.query_normalized = q_norm
 
-        # Short-query guard: no usable tokens AND very short string
+        # Short-query guard: no usable tokens AND very short string.
+        # Exception: if the full user text contains a deictic reference the
+        # guard is bypassed — the deictic fallback can still resolve the event
+        # without needing a meaningful fuzzy query.
         q_tokens = _resolver_tokenize(q_norm)
-        if not q_tokens and len(q_norm) < 3:
+        _full_text_has_deictic = _has_deictic_reference(_deictic_src)
+        if not q_tokens and len(q_norm) < 3 and not _full_text_has_deictic:
             result.status = "NOT_FOUND"
             result.reason = "query_too_short"
             result.dispatcher_hint = "CLARIFY_USER"
@@ -510,15 +526,22 @@ class ContextualEntityResolver:
 
         # ── Context Fallback: Deictic / Anaphoric References ─────────────────
         # Conditions to activate:
-        #   • MUTATION operation only (READ never needs this — it already PROCEEDs)
+        #   • MUTATION operation only (READ already PROCEEDs with low_confidence)
         #   • Status is NOT_FOUND  OR  WEAK_MATCH (score too low for direct resolution)
         #   • is_calendar_mutation flag is set (orchestrator confirmed mutation intent)
         #   • Exactly one calendar event is mentioned in recent chat history
-        #   • The raw query contains a deictic marker OR the query is very short
-        #     (≤ 2 meaningful tokens) — both signal implicit reference.
+        #   • One of two implicit-reference signals is present:
+        #     A) full_user_text (or query) contains a deictic word ("da", "ihn", …)
+        #     B) mutation_target is a very short pronoun-like token (≤ 4 chars, 1 token)
+        #        e.g. "ihn", "da", "den" when it survived extraction
+        #
+        # NOTE: _query_tokens_count <= 2 was deliberately NOT used as the gate —
+        # a single-token compound like "Zahnarzttermin" (1 token, 14 chars) should
+        # NOT trigger a context fallback just because the score was low.
         _is_unresolved = result.status in ("NOT_FOUND", "WEAK_MATCH")
         _query_tokens_count = len(_resolver_tokenize(q_norm))
-        _is_implicit_ref = _has_deictic_reference(query) or _query_tokens_count <= 2
+        _is_short_pronoun = _query_tokens_count == 1 and len(q_norm) <= 4
+        _is_implicit_ref = _full_text_has_deictic or _is_short_pronoun
         if (
             _is_unresolved
             and is_calendar_mutation
@@ -554,11 +577,11 @@ class ContextualEntityResolver:
                     result.low_confidence = False
                     logger.info(
                         "[ENTITY-RESOLVER] Deictic fallback: resolved to context event %r "
-                        "(deictic=%s, tokens=%d, prev_status=%s)",
+                        "(deictic_in_src=%s, short_pronoun=%s, tokens=%d)",
                         title_raw,
-                        _has_deictic_reference(query),
+                        _full_text_has_deictic,
+                        _is_short_pronoun,
                         _query_tokens_count,
-                        _is_unresolved,
                     )
             elif len(mentioned_ids) > 1:
                 logger.debug(

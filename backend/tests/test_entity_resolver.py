@@ -155,21 +155,26 @@ class TestDeicticContextFallback:
         },
     ]
 
-    def test_deictic_word_triggers_context_fallback(self, resolver):
-        """'ihn verschieben' → deictic 'ihn' → resolver falls back to context event."""
+    def test_deictic_word_in_full_user_text_triggers_fallback(self, resolver):
+        """Deictic 'ihn' is in full_user_text but NOT in mutation_target.
+
+        This is the canonical failure mode: _extract_mutation_target strips
+        pronouns, so query='Termin' or '' — yet 'ihn' in the sentence must
+        still trigger the context fallback.
+        """
         history = [
             {
                 "role": "assistant",
                 "content": "Ich habe den Termin 'Sport im Fitnessstudio' gefunden.",
             },
-            {"role": "user", "content": "ihn auf 20 Uhr verschieben"},
         ]
         r = resolver.resolve(
-            "ihn",
+            "Termin",                           # mutation_target — no deictic here
             self._GYM_SNAP,
             "MUTATION",
             recent_messages=history,
             is_calendar_mutation=True,
+            full_user_text="ihn auf 20 Uhr verschieben",   # deictic in user text ✓
         )
         assert r.status == "RESOLVED"
         assert r.reason == "deictic_context_fallback"
@@ -177,13 +182,19 @@ class TestDeicticContextFallback:
         assert r.resolved_event is not None
         assert r.resolved_event.event_id == "ev_gym"
 
-    def test_implicit_short_query_triggers_context_fallback(self, resolver):
-        """Short query 'Handtuch' (1 token) + assistant mentioned event → context fallback."""
+    def test_short_pronoun_mutation_target_triggers_fallback(self, resolver):
+        """mutation_target='ihn' (1 token, ≤4 chars) → short-pronoun gate → fallback."""
+        history = [
+            {
+                "role": "assistant",
+                "content": "Ich habe den Termin 'Sport im Fitnessstudio' gefunden.",
+            },
+        ]
         r = resolver.resolve(
-            "Handtuch",
+            "ihn",                              # short-pronoun mutation_target
             self._GYM_SNAP,
             "MUTATION",
-            recent_messages=self._HISTORY_WITH_GYM,
+            recent_messages=history,
             is_calendar_mutation=True,
         )
         assert r.status == "RESOLVED"
@@ -191,8 +202,38 @@ class TestDeicticContextFallback:
         assert r.resolved_event is not None
         assert r.resolved_event.event_id == "ev_gym"
 
-    def test_no_context_fallback_without_deictic_or_short_query(self, resolver):
-        """Multi-token query with no deictic → context fallback must NOT fire."""
+    def test_deictic_da_in_full_user_text_triggers_fallback(self, resolver):
+        """'da Handtuch nicht vergessen' — 'da' is the deictic; mutation_target='Handtuch'."""
+        r = resolver.resolve(
+            "Handtuch",
+            self._GYM_SNAP,
+            "MUTATION",
+            recent_messages=self._HISTORY_WITH_GYM,
+            is_calendar_mutation=True,
+            full_user_text="da Handtuch nicht vergessen",
+        )
+        assert r.status == "RESOLVED"
+        assert r.reason == "deictic_context_fallback"
+        assert r.resolved_event is not None
+        assert r.resolved_event.event_id == "ev_gym"
+
+    def test_long_compound_without_deictic_does_not_trigger_fallback(self, resolver):
+        """'Zahnarzttermin' is 1 token but NOT a deictic — fallback must not fire.
+
+        The ≤4-char short-pronoun guard prevents single-token compounds (≥5 chars)
+        from accidentally activating context fallback when their fuzzy score is low.
+        """
+        snap = {
+            "events": [
+                {
+                    "id": "ev_gym",
+                    "title": "Sport im Fitnessstudio",
+                    "location": "",
+                    "start": "2026-05-03T18:00:00+02:00",
+                    "end": "2026-05-03T19:00:00+02:00",
+                }
+            ]
+        }
         history = [
             {
                 "role": "assistant",
@@ -200,13 +241,31 @@ class TestDeicticContextFallback:
             },
         ]
         r = resolver.resolve(
-            "Einkaufen Liste fertig machen",  # 4 tokens, no deictic
+            "Zahnarzttermin",       # long compound, 1 token, >4 chars
+            snap,
+            "MUTATION",
+            recent_messages=history,
+            is_calendar_mutation=True,
+            # No full_user_text with deictic
+        )
+        # Fuzzy miss AND no deictic → must NOT resolve via context fallback
+        assert r.reason != "deictic_context_fallback"
+
+    def test_no_context_fallback_without_deictic_or_short_pronoun(self, resolver):
+        """Multi-token query + no deictic → fallback must NOT fire."""
+        history = [
+            {
+                "role": "assistant",
+                "content": "Dein nächster Termin ist 'Sport im Fitnessstudio'.",
+            },
+        ]
+        r = resolver.resolve(
+            "Einkaufen Liste fertig",   # 3 tokens, no deictic
             self._GYM_SNAP,
             "MUTATION",
             recent_messages=history,
             is_calendar_mutation=True,
         )
-        # Should NOT resolve to gym via context — NOT_FOUND or WEAK
         assert r.status in ("NOT_FOUND", "WEAK_MATCH")
 
     def test_no_context_fallback_without_mutation_flag(self, resolver):
@@ -222,7 +281,8 @@ class TestDeicticContextFallback:
             self._GYM_SNAP,
             "MUTATION",
             recent_messages=history,
-            is_calendar_mutation=False,  # flag off
+            is_calendar_mutation=False,
+            full_user_text="ihn absagen",
         )
         assert r.status != "RESOLVED" or r.reason != "deictic_context_fallback"
 
@@ -261,6 +321,7 @@ class TestDeicticContextFallback:
             "MUTATION",
             recent_messages=history,
             is_calendar_mutation=True,
+            full_user_text="den absagen",
         )
         # Two events in context → ambiguous → must NOT resolve via deictic fallback
         assert r.reason != "deictic_context_fallback"
