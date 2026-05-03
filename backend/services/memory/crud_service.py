@@ -142,8 +142,8 @@ def save_memory_snippet(
             db.refresh(db_memory)
             
             # CACHE INTEGRATION: Legacy-Put - Convert core_priority to priority for cache
-            # core_priority=2 → priority=0.95, core_priority=1 → priority=0.75, else 0.50
-            legacy_priority = 0.95 if resolved_core_priority == 2 else (0.75 if resolved_core_priority == 1 else 0.50)
+            # core_priority=2 → priority=0.95, core_priority=1 → priority=0.75, else 0.65
+            legacy_priority = 0.95 if resolved_core_priority == 2 else (0.75 if resolved_core_priority == 1 else 0.65)
             if legacy_priority >= memory_cache.PRIORITY_THRESHOLD:
                 cached = CachedMemory(
                     id=db_memory.id,
@@ -279,7 +279,7 @@ def save_memory_snippet(
     # ═══════════════════════════════════════════════════════════════════════════
     # PRIORITY GUARD (Opus V2.1) - Cappt Priority basierend auf Quelle
     # ═══════════════════════════════════════════════════════════════════════════
-    enriched_priority = fact_object.get("priority", 0.50)
+    enriched_priority = fact_object.get("priority", 0.65)
     source_skill = fact_object.get("source_skill", "system.extractor")
     guarded_priority = apply_priority_guard(enriched_priority, source_skill)
     
