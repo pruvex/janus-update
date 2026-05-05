@@ -1,7 +1,7 @@
 {
   "skill_id": "calendar.find_slots",
   "skill_type": "calendar",
-  "generated_at": "2026-04-27T16:20:38.217567",
+  "generated_at": "2026-05-03T21:36:55.787685",
   "tests": {
     "happy_path": {
       "name": "happy_path",

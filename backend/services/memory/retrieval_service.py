@@ -34,6 +34,7 @@ MAX_CORE_ALWAYS_TOKENS = 400
 MAX_CORE_QUERY_TOKENS = 600
 MAX_STM_TOKENS = 1500
 SIMILARITY_THRESHOLD = 0.35
+VECTOR_KNAPSACK_SIMILARITY_THRESHOLD = 0.65
 # Health-Injector: gleiche Schwelle wie Knapsack-Dubletten (memory_budget)
 _HEALTH_JACCARD_DEDUP_THRESHOLD = 0.70
 
@@ -493,7 +494,7 @@ def retrieve_diamond_slots(
     if global_candidates:
         candidate_embeddings = [parse_embedding(m.embedding_json) for m in global_candidates]
         indices = vector_service.find_most_similar_indices_precomputed(
-            query_embedding, candidate_embeddings, top_k=10, threshold=0.25
+            query_embedding, candidate_embeddings, top_k=10, threshold=VECTOR_KNAPSACK_SIMILARITY_THRESHOLD
         )
 
         for idx in indices:
@@ -518,7 +519,7 @@ def retrieve_diamond_slots(
     if active_candidates:
         emb_active = [parse_embedding(m.embedding_json) for m in active_candidates]
         idx_active = vector_service.find_most_similar_indices_precomputed(
-            query_embedding, emb_active, top_k=5, threshold=0.2
+            query_embedding, emb_active, top_k=5, threshold=VECTOR_KNAPSACK_SIMILARITY_THRESHOLD
         )
 
         for idx in idx_active:
@@ -541,7 +542,7 @@ def retrieve_diamond_slots(
     if stm_candidates:
         emb_stm = [parse_embedding(m.embedding_json) for m in stm_candidates]
         idx_stm = vector_service.find_most_similar_indices_precomputed(
-            query_embedding, emb_stm, top_k=10, threshold=similarity_threshold
+            query_embedding, emb_stm, top_k=10, threshold=max(similarity_threshold, VECTOR_KNAPSACK_SIMILARITY_THRESHOLD)
         )
 
         for idx in idx_stm:

@@ -634,13 +634,13 @@ META_TOPIC_INSTRUCTION_MAP: Dict[str, Dict[str, Any]] = {
 # HELP SYSTEM KEYWORDS (FEAT-HELP-001)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-HELP_CAPABILITY_OVERVIEW_PATTERNS: Tuple[re.Pattern, ...] = (
-    re.compile(r'was\s+kannst\s+du', re.IGNORECASE),
-    re.compile(r'was\s+kann\s+janus', re.IGNORECASE),
-    re.compile(r'deine?\s+fähigkeiten', re.IGNORECASE),
-    re.compile(r'deine?\s+features', re.IGNORECASE),
-    re.compile(r'was\s+kann\s+das\s+system', re.IGNORECASE),
-    re.compile(r'show\s+capabilities', re.IGNORECASE),
+# Exact triggers for capability overview (TASK-069.1)
+# Normalized: lowercase, trimmed, whitespace collapsed, terminal ? removed
+HELP_CAPABILITY_OVERVIEW_TRIGGERS: Tuple[str, ...] = (
+    "was kannst du",
+    "welche fähigkeiten hast du",
+    "zeig mir deine fähigkeiten",
+    "zeige mir deine fähigkeiten",
 )
 
 HELP_HOW_TO_PATTERNS: Tuple[re.Pattern, ...] = (
@@ -1210,11 +1210,33 @@ class IntentEngine:
     # Help System Intents (FEAT-HELP-001)
     # ─────────────────────────────────────────────────────────────────────────
 
+    @staticmethod
+    def _normalize_intent_text(text: str) -> str:
+        """Normalize user text for exact intent matching.
+
+        Rules (TASK-069.1 / TASK-069.14):
+        - casefold (robust lowercase for international characters)
+        - trim leading/trailing whitespace
+        - collapse multiple whitespace to single space
+        - strip trailing punctuation (?, !, ., spaces) — handles multiple marks
+        """
+        if not text:
+            return ""
+        text = text.casefold().strip()
+        text = re.sub(r"\s+", " ", text)
+        # Strip trailing punctuation marks and spaces (TASK-069.14)
+        text = text.rstrip("?!. ")
+        return text
+
     def detect_capability_overview(self, user_text: str) -> bool:
-        """Return True for capability overview queries ("Was kannst du?", "Features")."""
+        """Return True for capability overview queries ("Was kannst du?", "Features").
+
+        TASK-069.1: Exact trigger list with normalization — no regex substring matching.
+        """
         if not user_text:
             return False
-        return any(pattern.search(user_text) for pattern in HELP_CAPABILITY_OVERVIEW_PATTERNS)
+        normalized = self._normalize_intent_text(user_text)
+        return normalized in HELP_CAPABILITY_OVERVIEW_TRIGGERS
 
     def detect_how_to(self, user_text: str) -> bool:
         """Return True for how-to instructions requests ("Wie kann ich...", "Anleitung für")."""

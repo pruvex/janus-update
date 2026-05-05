@@ -21,9 +21,10 @@
    ============================================================================ */
 #calendar-modal {
   --color-error: #e53935;
-  width: clamp(1000px, 94vw, 1120px);
-  min-width: 1000px;
-  max-width: 1120px;
+  /* TASK UI: +100px Innenbreite für 7-Tage-Zeile (So. voll sichtbar) */
+  width: clamp(1100px, 94vw, 1220px);
+  min-width: 1100px;
+  max-width: 1220px;
   height: min(780px, 90vh);
   min-height: 600px;
   background-color: #252529;
@@ -136,9 +137,9 @@
   position: relative;
 }
 
-/* Left sidebar — fixed width, does NOT scroll with content */
+/* Left sidebar — fixed width, does NOT scroll with content (TASK-068: +25px vs. rechtem Dashboard) */
 #calendar-modal .calendar-modal-sidebar {
-  flex: 0 0 190px;
+  flex: 0 0 215px;
   padding: 14px;
   border-right: 1px solid #3a3a40;
   background: #1e1e22;
@@ -238,7 +239,7 @@
   flex: 1 1 auto;
   min-width: 0;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -252,12 +253,16 @@
 }
 
 /* ============================================================================
-   Calendar Agenda Container (inside content-pane, no own scrollbar)
+   Calendar Agenda Container (inside content-pane)
+   min-height:0 + column flex: Höhe begrenzt → .calendar-week-scroll / .calendar-day-scroll scrollen intern (Start-Scroll JS).
    ============================================================================ */
 
 #calendar-agenda {
   padding: 16px;
   flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .calendar-content-pane::-webkit-scrollbar {
@@ -999,16 +1004,19 @@
   border-right: 1px solid #35353b;
 }
 
+/* Nur Textzeile, keine volle Stundenhöhe — vermeidet „leere Band“ unter der Uhrzeit bei Start-Scroll */
 .calendar-hour-label {
   position: absolute;
   left: 0;
   right: 6px;
-  height: var(--cal-hour-height);
+  height: auto;
+  min-height: 0;
   font-size: 10px;
   color: #6f7c88;
   text-align: right;
   padding-right: 2px;
-  transform: translateY(-6px);
+  padding-top: 2px;
+  line-height: 1.2;
   box-sizing: border-box;
 }
 
@@ -1214,15 +1222,17 @@
 }
 
 .calendar-week-top {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   flex-shrink: 0;
   border-bottom: 1px solid #3a3a40;
   padding-left: 44px;
+  box-sizing: border-box;
   background: #1e1e22;
 }
 
 .calendar-week-dow {
-  flex: 1;
+  min-width: 0;
   text-align: center;
   padding: 6px 4px;
   border-left: 1px solid #35353b;
@@ -1249,14 +1259,14 @@
 }
 
 .calendar-week-columns {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   flex: 1;
   min-width: 0;
 }
 
 .calendar-week-col {
-  flex: 1 1 14.28%;
-  min-width: 72px;
+  min-width: 0;
   border-left: 1px solid #35353b;
   position: relative;
   box-sizing: border-box;
@@ -1267,9 +1277,11 @@
 }
 
 .calendar-week-alldays {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   flex-shrink: 0;
   padding-left: 44px;
+  box-sizing: border-box;
   border-bottom: 1px solid #3a3a40;
   background: #1c1c21;
 }
@@ -1501,9 +1513,10 @@
   --cal-radius-xl: 24px;
   --cal-radius-lg: 18px;
   --cal-shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.34);
-  width: clamp(1180px, 96vw, 1440px);
-  max-width: 1440px;
-  min-width: 1100px;
+  /* +100px vs. TASK-058 Skin — Platz für alle 7 Wochentagsspalten */
+  width: clamp(1280px, 96vw, 1540px);
+  max-width: 1540px;
+  min-width: 1200px;
   height: min(860px, 92vh);
   min-height: 720px;
   background:
@@ -1624,7 +1637,7 @@
 }
 
 #calendar-modal .calendar-modal-sidebar {
-  flex-basis: 260px;
+  flex: 0 0 285px;
   padding: 18px;
   background: rgba(12, 18, 31, 0.86);
   border-right: 1px solid var(--cal-border);
@@ -1739,16 +1752,23 @@
 
 #calendar-modal .calendar-content-pane {
   background: rgba(15, 23, 42, 0.32);
+  overflow-x: auto;
 }
 
 #calendar-agenda {
   padding: 18px 20px 22px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
+/* TASK-068: −25px gegenüber Sidebar (+25); Summe feste Spalten unverändert → Mitte unverändert */
 #calendar-modal .calendar-right-sidebar {
-  flex: 0 0 320px;
+  flex: 0 0 295px;
+  min-width: 260px;
   padding: 18px;
   overflow-y: auto;
+  overflow-x: auto;
   border-left: 1px solid var(--cal-border);
   background: rgba(12, 18, 31, 0.86);
 }
@@ -1967,16 +1987,21 @@
 }
 
 #calendar-modal .calendar-week-top {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(96px, 1fr));
   padding-left: 58px;
   background: transparent;
   border-bottom: 1px solid var(--cal-border);
 }
 
 #calendar-modal .calendar-week-dow {
-  padding: 11px 8px;
+  min-width: 0;
+  padding: 11px 6px;
   border-left: 1px solid rgba(148, 163, 184, 0.08);
   color: #94a3b8;
   font-size: 11px;
+  white-space: nowrap;
+  overflow: visible;
 }
 
 #calendar-modal .calendar-week-dow--today {
@@ -1986,6 +2011,8 @@
 }
 
 #calendar-modal .calendar-week-alldays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(96px, 1fr));
   padding-left: 58px;
   background: rgba(15, 23, 42, 0.28);
   border-bottom: 1px solid rgba(148, 163, 184, 0.08);
@@ -2005,10 +2032,21 @@
   color: #64748b;
   font-size: 11px;
   padding-right: 10px;
+  padding-top: 2px;
+  line-height: 1.2;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
+#calendar-modal .calendar-week-columns {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(96px, 1fr));
+  min-width: min-content;
 }
 
 #calendar-modal .calendar-week-col {
-  min-width: 112px;
+  min-width: 0;
   border-left: 1px solid rgba(148, 163, 184, 0.08);
 }
 

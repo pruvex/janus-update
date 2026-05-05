@@ -30,6 +30,9 @@ logger = logging.getLogger("janus_backend")
 
 # Tool wall-clock limits: ToolExecutor uses asyncio.wait_for with each skill's ``timeout_ms``
 # (see backend/skills/). Example: system.local_business is 45s so geo/OSM + enrichment can finish.
+#
+# TASK-067: Pending calendar mutations (MutationProposal) live in
+# ``backend.services.calendar.mutation_guard_store`` — confirmed via ChatOrchestrator, not here.
 
 MAPS_LINK_REGEX = re.compile(r'"maps_link"\s*:\s*"([^"]+)"')
 

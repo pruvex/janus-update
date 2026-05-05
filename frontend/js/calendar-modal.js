@@ -19,6 +19,9 @@ import {
 
 const MODULE_ID = "calendar";
 
+/** Erste sichtbare Stunde im Tag-/Wochen-Raster (0–23); 00:00–(START_HOUR−1) bleiben per Scroll nach oben erreichbar. */
+const START_HOUR = 6;
+
 /** @type {Array<Record<string, unknown>>} */
 let localEvents = [];
 /** @type {Array<{event_a?: string, event_b?: string}>} */
@@ -52,12 +55,84 @@ let syncFromDockStateRunning = false;
  * @returns {number}
  */
 function getCalHourHeightPx() {
-  const raw =
-    typeof document !== "undefined"
-      ? getComputedStyle(document.documentElement).getPropertyValue("--cal-hour-height").trim()
-      : "";
-  const n = Number.parseFloat(raw.replace("px", ""));
-  return Number.isFinite(n) && n > 0 ? n : 60;
+  try {
+    const el =
+      typeof document !== "undefined"
+        ? document.getElementById("calendar-modal") ?? document.documentElement
+        : null;
+    const raw = el ? getComputedStyle(el).getPropertyValue("--cal-hour-height").trim() : "";
+    const n = Number.parseFloat(raw.replace("px", ""));
+    return Number.isFinite(n) && n > 0 ? n : 60;
+  } catch {
+    return 60;
+  }
+}
+
+/**
+ * Gemessene Stundenhöhe aus dem gerenderten Rail (aligniert Scroll mit Raster, falls ≠ CSS-Var).
+ * @returns {number}
+ */
+function getTimelineHourStepPx() {
+  try {
+    const modal = document.getElementById("calendar-modal");
+    const rail = modal?.querySelector(".calendar-hours-rail") ?? null;
+    if (rail) {
+      const labels = rail.querySelectorAll(".calendar-hour-label");
+      if (labels.length >= 2) {
+        const a = labels[0];
+        const b = labels[1];
+        if (a instanceof HTMLElement && b instanceof HTMLElement) {
+          const delta = b.offsetTop - a.offsetTop;
+          if (Number.isFinite(delta) && delta > 1) return Math.round(delta);
+        }
+      }
+      const railH = rail.getBoundingClientRect().height;
+      if (Number.isFinite(railH) && railH > 24) return railH / 24;
+    }
+  } catch {
+    /* ignore */
+  }
+  return getCalHourHeightPx();
+}
+
+/**
+ * Setzt scrollTop auf `.calendar-week-scroll` / `.calendar-day-scroll` (Ziel: START_HOUR oben).
+ * Synchron; mehrfach aufrufen, bis scrollHeight stabil ist.
+ */
+function applyCalendarTimelineScrollToStartHour() {
+  try {
+    const modal = document.getElementById("calendar-modal");
+    if (!modal) return;
+    const hourHeight = getTimelineHourStepPx();
+    const scrollPos = START_HOUR * hourHeight;
+    const els = modal.querySelectorAll(".calendar-week-scroll, .calendar-day-scroll");
+    if (!els.length) return;
+    els.forEach((node) => {
+      if (!(node instanceof HTMLElement)) return;
+      const max = Math.max(0, node.scrollHeight - node.clientHeight);
+      node.scrollTop = Math.min(scrollPos, max);
+    });
+  } catch {
+    /* Scroll ist optional — darf Kalender nicht blockieren */
+  }
+}
+
+/**
+ * Queued Scroll nach finalem Grid-Layout: rAF-Kette + Timeouts (kein DOM-MutationObserver; nur UI).
+ */
+function queueCalendarTimelineScrollToStartHour() {
+  const run = () => applyCalendarTimelineScrollToStartHour();
+
+  requestAnimationFrame(() => {
+    run();
+    requestAnimationFrame(() => {
+      run();
+      setTimeout(run, 50);
+    });
+  });
+  setTimeout(run, 0);
+  setTimeout(run, 120);
+  setTimeout(run, 280);
 }
 
 function isCalendarPanelVisible() {
@@ -305,7 +380,7 @@ function timedEventGeom(ev, bounds) {
   const oe = Math.min(e.getTime(), bounds.endExclusive.getTime());
   if (oe <= os) return null;
 
-  const hourHeight = getCalHourHeightPx();
+  const hourHeight = getTimelineHourStepPx();
   const minsFromMidnight = (os - bounds.start.getTime()) / 60000;
   const durMin = (oe - os) / 60000;
 
@@ -416,6 +491,9 @@ function buildHourLabelsRail() {
     const label = document.createElement("div");
     label.className = "calendar-hour-label";
     label.style.top = `${h * hh}px`;
+    label.style.height = "auto";
+    label.style.minHeight = "0";
+    label.style.maxHeight = "none";
     label.textContent = `${String(h).padStart(2, "0")}:00`;
     rail.appendChild(label);
   }
@@ -620,8 +698,10 @@ function renderCalendar() {
 
   if (calendarViewMode === "day") {
     renderDayViewBody(container, evs);
+    queueCalendarTimelineScrollToStartHour();
   } else if (calendarViewMode === "week") {
     renderWeekViewBody(container, evs);
+    queueCalendarTimelineScrollToStartHour();
   } else {
     container.classList.add("calendar-agenda-pane", "calendar-month-planning-pane");
     renderAgendaBody(container, evs);
@@ -2238,7 +2318,6 @@ document.addEventListener("DOMContentLoaded", () => {
       calendarView.style.display = visible ? "flex" : "none";
     }
     if (visible && !prevVisible && calendarHost) {
-      prevVisible = true;
       try {
         loadCalendarEvents();
         startCalendarPoll();

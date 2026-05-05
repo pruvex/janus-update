@@ -1,7 +1,7 @@
 {
   "skill_id": "calendar.create_event",
   "skill_type": "calendar",
-  "generated_at": "2026-04-28T00:05:05.310073",
+  "generated_at": "2026-05-03T21:36:36.169969",
   "tests": {
     "happy_path": {
       "name": "happy_path",

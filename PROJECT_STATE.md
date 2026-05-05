@@ -1,6 +1,6 @@
-# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.77)
+# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-03 (🥇 SEALED: The Calendar Intelligence Trilogy + Deictic Fallback + Guided Mode)
+**Aktualisiert:** 2026-05-05 (TASK-069 Capability Overview & Auto-Update Gold-Standard — Beta.10 Bridge Release)
 
 ---
 
@@ -8,6 +8,9 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **TASK-069 Capability Overview & Auto-Update Gold-Standard** | 🥇 SEALED | Implemented deterministic capability response (Fast-Path) with hardened normalization. Resolved systemic auto-update failures (ReferenceError, SHA-Mismatch). Engineered an atomic "Golden Build" pipeline using js-yaml for single-source-of-truth hashes and Octokit for controlled GitHub publishing. Bridge update verified: Automatic transition from beta.9 to beta.10 successful. Version: 0.4.17-beta.10. |
+| **TASK-068 Auto Update System** | 🥇 SEALED | Deterministic Auto Update System for Electron with state machine persistence, SHA256 manifest validation, secure IPC bridge, and state-driven UI. T1-T8 complete. Files: electron/update-state.cjs, electron/update-security.cjs, electron/update-manager.cjs, main.electron.cjs, frontend/preload.js, frontend/js/update-ui.js, frontend/js/app.js, frontend/css/update-ui.css, frontend/index.html, scripts/generate_update_manifest.cjs. Tests: Node unit tests (16 passed), Playwright E2E (7 passed). Version: 0.4.17-beta.3. Audit: PASS WITH FIXES. |
+| **Command Dispatch Integrity Fix** | 🥇 SEALED | Implemented memory.delete skill and /tools command interceptor, but hard-disabled dispatcher (Task-066 safety brake). /tools commands now bypass LLM and dispatch directly to ToolExecutor, but the interceptor is disabled for stability. memory.delete skill remains implemented but registration commented out in tool_registry.py to prevent hallucination loops. Files: memory_tools.py (handle_memory_delete, MemoryDeleteArgs, memory_delete_tool), schemas.py (MemoryDeleteArgs), tool_registry.py (commented out), tool_executor.py (aliases added), chat_orchestrator.py (_try_tools_command with safety brake). |
 | **TASK-066 Memory Context Bleed Prevention** | 🥇 SEALED | Threshold-Tuning: Minimum-Priority für Memory-Retrieval von 0.50 auf 0.65 angehoben. Reduziert Context Bleed (irrelevante alte Einträge im Prompt) und verbessert Antwortqualität bei kleinen Modellen wie Gemini Flash. Files: memory_budget.py (default priority), crud_service.py (legacy_priority, enriched_priority). Tests: 28/28 passed. |
 | **Gemini Tool-Loop Fix** | 🥇 SEALED | Fixed Gemini V3 response generation gap: After successful tool execution, Gemini often returned no text (empty `round_text`). Solution: (1) System-Instruction trigger after tool results forcing text generation; (2) Fallback extracting `message`/`output` from successful tool results. Files: execution_engine.py (run_tool_loop_stream). No DB schema changes. Chat history remains clean. |
 | **The Calendar Intelligence Trilogy** | 🥇 SEALED | TASK-065 (Contextual Entity Resolver), TASK-066 (Calendar Creation Detection), TASK-067 (Guided Assistant Mode) — Complete calendar mutation stack with entity resolution, creation/mutation disambiguation, and guided assistant mode for safe mutations. |
@@ -40,6 +43,20 @@
 | D12 Insight Engine | 🥇 HARMONIZED | Globale Log-Aggregation, Mustererkennung und Confidence-Metriken aktiv. |
 | D11 Production Wrapper | 🥇 SEALED | Debug/Formatter-Endpoints und Diagnose-Workflows robust in Betrieb. |
 | D10 Telemetry Foundation | 🥇 SEALED | Logging-Pipeline mit Schema-Sync, Queueing und DLQ-Light finalisiert. |
+
+---
+
+## SECTION 2 — SESSION_LOG (kurz)
+
+| Timestamp | Task / Feature | Editor | Result | Audit | Version | Validation / Notes |
+|---|---|---|---|---|---|---|
+| 2026-05-05 | TASK-069 Beta.10 Bridge Release | SWE 1.6 | PUBLISHED | N/A | 0.4.17-beta.10 | Final bridge release with hardened multi-hash validation and atomic pipeline sync. Disabled differential downloads. Published to GitHub. |
+| 2026-05-05 | TASK-069 Beta.9 Golden Release | SWE 1.6 | PUBLISHED | N/A | 0.4.17-beta.9 | Hardened build pipeline with full rebuild, differential downloads disabled. Publish script updated for optional blockmap. Published to GitHub. |
+| 2026-05-05 | TASK-069 Beta.8 Validator Fix | SWE 1.6 | PUBLISHED | N/A | 0.4.17-beta.8 | Fixed critical client-side validation bug (multi-hash aware). Published to GitHub. |
+| 2026-05-05 | TASK-069 Beta.6 Clean Slate | Cursor / SWE | DONE | N/A | 0.4.17-beta.6 | Version bump after Beta.5 production release. |
+| 2026-05-05 | TASK-069 Beta.5 Production Release | Cursor / SWE | PUBLISHED | N/A | 0.4.17-beta.5 | Release published to GitHub. Manifest integrity verified. |
+| 2026-05-05 | TASK-069 Beta.5 Production Build Prep | Cursor / SWE | DONE | N/A | 0.4.17-beta.5 | DevTools: development-only (NODE_ENV check). Final Auto-Update Verification Run. |
+| 2026-05-05 | TASK-069 `task_069_capability_overview_response_diamond_plan.md` | Cursor / SWE | DONE | PASS WITH FIXES | 0.4.17-beta.4 | pytest registry+help 21 ok; Playwright capability-overview 2 ok; JSON registry ok |
 
 ---
 

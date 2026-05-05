@@ -9,10 +9,11 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional, Tuple
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from backend.data.database import get_db
+from backend.data.schemas import MutationProposal
 from backend.data.schemas_calendar import (
     CalendarEventsResponse,
     CreateEventRequest,
@@ -317,3 +318,48 @@ async def generate_ai_plan(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate AI plan: {str(e)}",
         )
+
+
+# ── TASK-067: In-memory MutationProposal (human-in-the-loop) — API-Hooks ───
+
+
+@router.get(
+    "/mutation-proposals/pending/{chat_id}",
+    response_model=None,
+    responses={404: {"description": "No pending proposal for this chat"}},
+)
+async def get_pending_mutation_proposal_api(chat_id: int) -> Dict[str, Any]:
+    """Debug/Admin: Pending-Kalendermutation für einen Chat auslesen."""
+    from backend.services.calendar import mutation_guard_store as mgs
+
+    p = mgs.get_pending_mutation_proposal(chat_id)
+    if p is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No pending mutation proposal for this chat",
+        )
+    return p.model_dump(mode="json")
+
+
+@router.delete("/mutation-proposals/pending/{chat_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_pending_mutation_proposal_api(chat_id: int) -> Response:
+    """Debug/Admin: Ausstehendes Proposal verwerfen (kein Google PATCH)."""
+    from backend.services.calendar import mutation_guard_store as mgs
+
+    mgs.clear_pending_mutation_proposal(chat_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/mutation-proposals/stage", response_model=MutationProposal)
+async def stage_mutation_proposal_api(proposal: MutationProposal) -> MutationProposal:
+    """Modal-/Test-Client: Proposal in denselben Store legen wie der Chat-Tool-Guard."""
+    from backend.services.calendar import mutation_guard_store as mgs
+
+    cid = int(proposal.chat_id)
+    mgs.set_pending_mutation_proposal(cid, proposal)
+    mgs.log_proposal_created(
+        proposal.proposal_id,
+        chat_id=cid,
+        event_id=str(proposal.event_id),
+    )
+    return proposal

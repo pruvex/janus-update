@@ -1,6 +1,7 @@
 import { sanitizeReleaseNotes, sanitizeTemplateHtml } from "./dompurify-config.js";
 import { initializeSettings } from "./settings.js";
 import { initializeStudio } from "./image-studio.js";
+import { initUpdateUI } from "./update-ui.js";
 
 // ================= WRAPPER FÜR FETCH (API KEY) =================
 (() => {
@@ -870,6 +871,14 @@ async function attemptSilentLogin() {
 // The single entry point of the application
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("--> [1] DOM fully loaded. Starting application initialization...");
+
+  // Initialize state-driven update UI (independent of authentication)
+  try {
+      initUpdateUI();
+  } catch (err) {
+      console.error('[UpdateUI] Failed to initialize update UI:', err);
+  }
+
   await initializeApp();
 });
 
@@ -1001,7 +1010,7 @@ async function initializeApp() {
         appContainer.style.display = '';
       }
       hideLoginScreen();
-      
+
       console.log("--> [4] Initialization complete. Janus is ready.");
     } catch (error) {
       console.error("--> [ERROR] Failed to initialize application after successful authentication:", error);
@@ -1999,137 +2008,8 @@ function forceOpenSettings() {
 }
 
 // ============================================================
-// AUTO-UPDATE UI MANAGER (NEUE VERSION)
+// AUTO-UPDATE UI MANAGER (REMOVED - now using state-driven update-ui.js)
 // ============================================================
-if (window.electron && typeof window.electron.on === 'function') {
-    // Hilfsfunktion, um sicherzustellen, dass das Modal existiert und bereit ist
-    function ensureUpdateModal() {
-        if (document.getElementById('update-modal')) return document.getElementById('update-modal');
-
-        const modal = document.createElement('div');
-        modal.id = 'update-modal';
-        modal.className = 'modal';
-        // ... (Der restliche HTML-Code für das Modal bleibt identisch)
-        modal.innerHTML = `
-            <div class="modal-content" style="background: #1e1e2e; border-radius: 8px; padding: 1.5rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; color: #cdd6f4;">
-                <h3 id="update-modal-title" style="margin-top: 0; color: #89b4fa;">Update-Information</h3>
-                <div id="update-modal-body" style="margin: 1rem 0; line-height: 1.6; text-align: left;">
-                    <p id="update-modal-text">Prüfe auf Updates...</p>
-                    
-                    <div id="progress-container" style="display: none; margin: 1rem 0;">
-                        <progress id="update-progress-bar" value="0" max="100" style="width: 100%; height: 10px; border-radius: 5px; overflow: hidden;"></progress>
-                        <div id="progress-text" style="font-size: 0.8em; color: #a6adc8; text-align: right; margin-top: 5px;">0%</div>
-                    </div>
-                    
-                    <div id="changelog-container" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(0, 0, 0, 0.3); border-radius: 6px; max-height: 300px; overflow-y: auto;">
-                        <h4 style="margin-top: 0; color: #a6adc8;">Änderungen in dieser Version:</h4>
-                        <div id="changelog-content" style="font-size: 0.9rem; line-height: 1.5;">Lade Änderungsliste...</div>
-                    </div>
-                </div>
-                <div id="update-modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
-                    <button id="restart-app-btn" class="primary-button" style="display: none;">
-                        Jetzt neu starten & installieren
-                    </button>
-                    <span id="download-progress-text" style="display: none; align-items: center; color: #a6adc8; font-size: 0.9rem;">
-                        <span class="spinner" style="display: inline-block; width: 1rem; height: 1rem; border: 2px solid rgba(205, 214, 244, 0.3); border-radius: 50%; border-top-color: #89b4fa; animation: spin 1s ease-in-out infinite; margin-right: 0.5rem;"></span>
-                        <span id="download-status">Update wird vorbereitet...</span>
-                    </span>
-                </div>
-            </div>
-            <style> @keyframes spin { to { transform: rotate(360deg); } } .primary-button { background: #89b4fa; color: #1e1e2e; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: 500; } .primary-button:hover { opacity: 0.9; } </style>
-        `;
-        document.body.appendChild(modal);
-
-        const restartBtn = document.getElementById('restart-app-btn');
-        if (restartBtn) {
-            restartBtn.addEventListener('click', () => {
-                if (window.electron && typeof window.electron.send === 'function') {
-                    window.electron.send('restart-app-for-update');
-                }
-            });
-        }
-        return modal;
-    }
-
-    // Event 1: Ein Update wurde gefunden
-    window.electron.on('update-available', (data) => {
-        console.log('EVENT: update-available', data);
-        const modal = ensureUpdateModal();
-        modal.style.display = 'flex';
-        
-        // UI zurücksetzen und vorbereiten
-        document.getElementById('update-modal-title').textContent = `Update auf Version ${data.version} verfügbar!`;
-        document.getElementById('update-modal-text').textContent = "Eine neue Version von Janus wird jetzt heruntergeladen.";
-        
-        // Ladebalken und Changelog anzeigen
-        document.getElementById('progress-container').style.display = 'block';
-        document.getElementById('changelog-container').style.display = 'block';
-        document.getElementById('download-progress-text').style.display = 'flex';
-        
-        // Changelog füllen
-        const changelogContent = document.getElementById('changelog-content');
-        if (window.marked) {
-            changelogContent.innerHTML = sanitizeReleaseNotes(window.marked.parse(data.releaseNotes || 'Keine Änderungsnotizen verfügbar.'));
-        } else {
-            changelogContent.textContent = data.releaseNotes || 'Keine Änderungsnotizen verfügbar.';
-        }
-    });
-
-    // Event 2: Download-Fortschritt
-    window.electron.on('download-progress', (progress) => {
-        // Dieser Event kommt sehr oft, daher kein console.log
-        const progressBar = document.getElementById('update-progress-bar');
-        const progressText = document.getElementById('progress-text');
-
-        if (progressBar && progressText) {
-            const percent = Math.round(progress.percent);
-            progressBar.value = percent;
-            
-            const downloadedMB = (progress.transferred / (1024 * 1024)).toFixed(1);
-            const totalMB = (progress.total / (1024 * 1024)).toFixed(1);
-            
-            progressText.textContent = `${percent}% (${downloadedMB}MB / ${totalMB}MB)`;
-        }
-    });
-
-    // Event 3: Download ist fertig
-    window.electron.on('update-downloaded', () => {
-        console.log('EVENT: update-downloaded');
-        const modal = ensureUpdateModal(); // Sicherstellen, dass das Modal da ist
-        modal.style.display = 'flex';
-
-        // UI auf "Fertig" setzen
-        document.getElementById('update-modal-title').textContent = 'Update bereit zur Installation!';
-        document.getElementById('update-modal-text').textContent = 'Der Download ist abgeschlossen. Starten Sie die App neu, um das Update zu installieren.';
-        
-        // Fortschrittsanzeigen ausblenden
-        document.getElementById('progress-container').style.display = 'none';
-        document.getElementById('download-progress-text').style.display = 'none';
-        
-        // Neustart-Button anzeigen
-        document.getElementById('restart-app-btn').style.display = 'block';
-    });
-
-    // Event 4: Fehler
-    window.electron.on('update-error', (error) => {
-        console.error('EVENT: update-error', error);
-        const modal = ensureUpdateModal();
-        modal.style.display = 'flex';
-        
-        // UI auf Fehler setzen
-        document.getElementById('update-modal-title').textContent = 'Update-Fehler';
-        document.getElementById('update-modal-body').innerHTML = sanitizeTemplateHtml(`
-            <p>Beim Herunterladen des Updates ist ein Fehler aufgetreten:</p>
-            <div style="background: rgba(243, 139, 168, 0.2); color: #f38ba8; padding: 0.75rem; border-radius: 4px; margin-top: 1rem; font-size: 0.9rem;">
-                ${error || 'Unbekannter Fehler'}
-            </div>
-            <p style="margin-top: 1rem;">Bitte überprüfen Sie Ihre Internetverbindung.</p>
-        `);
-        document.getElementById('update-modal-footer').innerHTML = sanitizeTemplateHtml(`
-            <button onclick="document.getElementById('update-modal').style.display='none'" class="primary-button">Schließen</button>
-        `);
-    });
-}
 
 // 2. Event-Listener neu setzen (mit kurzer Verzögerung, um sicherzugehen, dass DOM da ist)
 setTimeout(() => {

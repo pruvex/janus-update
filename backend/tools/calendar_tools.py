@@ -5,6 +5,7 @@ import calendar
 import datetime as dt
 import json
 import logging
+import uuid
 import os.path
 import re
 import time
@@ -22,6 +23,7 @@ from sqlalchemy.orm import Session
 from thefuzz import fuzz
 
 from backend.data.schemas_tools import ToolResultV1
+from backend.services.calendar_mutation_intent import classify_calendar_mutation_intent
 from backend.tools.tool_contract_v1 import tool_err_v1, tool_ok_v1
 
 # WICHTIG: Kein Top-Level Import von contact_manager, um Zirkelbezüge zu vermeiden!
@@ -42,6 +44,18 @@ BERLIN_TZ = pytz.timezone("Europe/Berlin")
 _CAL_TAGS = ["calendar", "appointment"]
 
 
+def _slim_google_event_for_guard(ev: Dict[str, Any]) -> Dict[str, Any]:
+    """TASK-067: Minimal serializable snapshot for MutationProposal.original_event."""
+    return {
+        "id": ev.get("id"),
+        "summary": ev.get("summary"),
+        "start": ev.get("start"),
+        "end": ev.get("end"),
+        "location": ev.get("location"),
+        "description": ev.get("description"),
+    }
+
+
 def _cal_ok(
     data: dict,
     *,
@@ -49,6 +63,7 @@ def _cal_ok(
     started_at: float,
     suggest_follow_up: bool = True,
     primary_entity_id: Optional[str] = None,
+    is_final_response: bool = False,
 ) -> ToolResultV1:
     return tool_ok_v1(
         data,
@@ -57,6 +72,7 @@ def _cal_ok(
         started_at=started_at,
         suggest_follow_up=suggest_follow_up,
         primary_entity_id=primary_entity_id,
+        is_final_response=is_final_response,
     )
 
 
@@ -1029,6 +1045,8 @@ async def find_and_update_calendar_event(
     new_description: Optional[str] = None,
     cancel_event: Optional[bool] = False,
     event_id: Optional[str] = None,
+    skip_mutation_confirmation: bool = False,
+    chat_id: Optional[int] = None,
 ) -> ToolResultV1:
     """Find a calendar event by title (fuzzy) and apply updates.
 
@@ -1036,9 +1054,15 @@ async def find_and_update_calendar_event(
     the fuzzy-search loop is skipped entirely, guaranteeing the correct event
     is targeted without re-running a second match cycle.
 
+    TASK-067 / 067-B: Unless ``skip_mutation_confirmation`` is True (internal confirm path),
+    **TIME_MUTATION** (Start/Ende oder ``cancel_event``) is staged as a MutationProposal
+    when ``chat_id`` is set. **DATA_MUTATION** (Titel/Ort/Beschreibung nur) PATCHt direkt.
+
     Args:
         event_title_query: Search text for fuzzy matching (optional if event_id provided).
         event_id: Direct Google Calendar event ID (optional, skips fuzzy search if provided).
+        skip_mutation_confirmation: Internal only — set by ToolExecutor context after Ja.
+        chat_id: Chat session id (injected); required for the confirmation guard.
 
     Raises:
         ValueError: If both event_id and event_title_query are missing.
@@ -1098,6 +1122,82 @@ async def find_and_update_calendar_event(
             found_event = best_match
 
         event_id = found_event["id"]
+
+        # ── TASK-067 / 067-B: Guard nur TIME_MUTATION (Zeit+Löschen), DATA direkt ──
+        _mutation_kind = classify_calendar_mutation_intent(
+            cancel_event=cancel_event,
+            new_start_time=new_start_time,
+            new_end_time=new_end_time,
+            new_summary=new_summary,
+            new_location=new_location,
+            new_description=new_description,
+        )
+        _needs_confirm = _mutation_kind == "TIME_MUTATION"
+        if (
+            _needs_confirm
+            and not skip_mutation_confirmation
+            and chat_id is None
+        ):
+            logger.warning(
+                "[MUTATION-GUARD] TIME_MUTATION ohne chat_id — PATCH läuft OHNE Bestätigungs-Guard "
+                "(Chat-Flow sollte immer chat_id setzen)."
+            )
+        elif _mutation_kind == "DATA_MUTATION":
+            logger.info(
+                "[MUTATION-GUARD] TASK-067-B DATA_MUTATION — direkte Ausführung (kein Confirmation-Guard)"
+            )
+
+        _guard_applies = (
+            _needs_confirm
+            and not skip_mutation_confirmation
+            and chat_id is not None
+        )
+        if _guard_applies:
+            from backend.data.schemas import MutationProposal
+            from backend.services.calendar import mutation_guard_store as _mgs
+
+            proposed_changes: Dict[str, Any] = {}
+            if event_title_query:
+                proposed_changes["event_title_query"] = event_title_query
+            if new_start_time:
+                proposed_changes["new_start_time"] = new_start_time
+            if new_end_time:
+                proposed_changes["new_end_time"] = new_end_time
+            if new_summary:
+                proposed_changes["new_summary"] = new_summary
+            if new_location:
+                proposed_changes["new_location"] = new_location
+            if new_description:
+                proposed_changes["new_description"] = new_description
+            if cancel_event:
+                proposed_changes["cancel_event"] = True
+
+            proposal_id = str(uuid.uuid4())
+            proposal = MutationProposal(
+                proposal_id=proposal_id,
+                chat_id=int(chat_id),
+                event_id=str(event_id),
+                proposed_changes=proposed_changes,
+                original_event=_slim_google_event_for_guard(found_event),
+                status="pending",
+            )
+            _mgs.set_pending_mutation_proposal(int(chat_id), proposal)
+            _mgs.log_proposal_created(
+                proposal_id, chat_id=int(chat_id), event_id=str(event_id)
+            )
+            preview = _mgs.build_confirmation_prompt_message(proposal)
+            return _cal_ok(
+                {
+                    "mutation_guard_pending": True,
+                    "proposal_id": proposal_id,
+                    "event_id": str(event_id),
+                    "proposed_changes": proposed_changes,
+                },
+                message=preview,
+                started_at=t0,
+                primary_entity_id=str(event_id),
+                is_final_response=True,
+            )
 
         if cancel_event:
             delete_result = await delete_calendar_event(event_id=event_id)

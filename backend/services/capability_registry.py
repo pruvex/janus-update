@@ -51,6 +51,21 @@ class CapabilityRegistry:
         _available_skills: Set of discovered skill IDs from skills_dir.
     """
 
+    # Known categories for UX display; unknowns are folded into "Sonstiges" (TASK-069.10)
+    ALLOWED_CATEGORIES = {
+        "Kommunikation & Chat",
+        "Wissen & Recherche",
+        "Aufgaben & Produktivität",
+        "Kalender & Termine",
+        "Dateien & Dokumente",
+        "Bilder & Medien",
+        "Analyse & Auswertung",
+        "Entwicklung & Automatisierung",
+        "Einstellungen & System",
+        "Updates & Installation",
+        "Sonstiges",
+    }
+
     def __init__(self, registry_path: str, skills_dir: str) -> None:
         """Initialize the registry with paths.
         
@@ -169,6 +184,74 @@ class CapabilityRegistry:
             if field:
                 return next(iter(field.values()))
         return ""
+
+    def get_verified_capabilities_for_overview(self, language: str = "de") -> List[Dict]:
+        """Get a filtered, mapped, and deduplicated list of verified capabilities for the overview.
+
+        TASK-069.2: Provides a flat list of validated capabilities for UX display.
+
+        Args:
+            language: The language for localized strings.
+
+        Returns:
+            A list of dictionaries, each representing a verified capability.
+            Each dict contains: id, name, description, category, status, confidence.
+        """
+        verified_capabilities = []
+        seen_ids = set()
+
+        if not self._registry or "categories" not in self._registry:
+            return []
+
+        for cat_id, cat_data in self._registry["categories"].items():
+            category_name = self._get_i18n_value(cat_data.get("display_name"), language, "de")
+            if not category_name:
+                category_name = "Sonstiges"
+            # Normalize unknown categories to "Sonstiges" (TASK-069.10)
+            if category_name not in self.ALLOWED_CATEGORIES:
+                category_name = "Sonstiges"
+
+            for ability_data in cat_data.get("abilities", []):
+                capability_id = ability_data.get("id")
+                capability_name = self._get_i18n_value(ability_data.get("label"), language, "de")
+                capability_description = self._get_i18n_value(ability_data.get("how_to"), language, "de")
+                status = ability_data.get("status")
+                confidence = ability_data.get("confidence")
+
+                # Validate required fields (TASK-069.2)
+                if not all([capability_id, capability_name, capability_description, status is not None, confidence is not None]):
+                    logger.warning(
+                        "[CAPABILITY-REGISTRY] Skipping capability '%s' due to missing required fields.",
+                        capability_id or "UNKNOWN",
+                    )
+                    continue
+
+                # Filter by status and confidence (TASK-069.2)
+                if status != "verified" or not isinstance(confidence, (int, float)) or confidence < 0.7:
+                    logger.debug(
+                        "[CAPABILITY-REGISTRY] Skipping capability '%s' due to status '%s' or confidence '%.2f'.",
+                        capability_id, status, confidence,
+                    )
+                    continue
+
+                # Deduplication (TASK-069.2)
+                if capability_id in seen_ids:
+                    logger.debug(
+                        "[CAPABILITY-REGISTRY] Skipping duplicate capability ID '%s'.", capability_id
+                    )
+                    continue
+
+                seen_ids.add(capability_id)
+
+                verified_capabilities.append({
+                    "id": capability_id,
+                    "name": capability_name,
+                    "description": capability_description,
+                    "category": category_name,
+                    "status": status,
+                    "confidence": confidence,
+                })
+        return verified_capabilities
 
     def get_overview(self, language: str = "de") -> Dict[str, Any]:
         """Get capability overview for all categories.

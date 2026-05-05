@@ -2,6 +2,28 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [PATTERN] #RealModuleE2E "E2E tests must import real UI modules — never duplicate production UI logic inside tests"
+- **Kontext:** TASK-068 Auto Update System. `/2_final-audit` found that the first Playwright E2E test for the update UI duplicated renderer logic inline instead of exercising the real `frontend/js/update-ui.js` implementation. This created a false-positive risk for the Electron auto-update UI.
+- **Problem:** If an E2E test reimplements UI behavior inside `page.addInitScript()` or a test-local helper, the test validates the duplicate, not production code. Production imports, exports, DOM wiring, lifecycle order, and IPC bindings can be broken while tests still pass.
+- **Lösung:** UI E2E tests must load or import the real production module and mock only external boundaries such as Electron IPC. For update UI tests, use real `update-ui.js`, expose a controlled `window.electron` mock, wait for listener registration/state propagation, and verify rendered DOM plus IPC calls.
+- **Härtung:** Audit Playwright specs for inline copies of production UI logic. Syntax-check imported modules (`node -c frontend/js/update-ui.js`, `node -c frontend/js/app.js`) and run the real E2E spec (`npx playwright test tests/e2e/auto-update.spec.js`). Keep Playwright `testMatch` aligned to the canonical `.spec.js` file and remove temporary duplicate `.spec.cjs` patterns.
+- **Tripwire:** Tests pass while the app fails to import a module, UI selectors do not exist in production, or production button clicks do not call IPC. Another tripwire is a large `page.addInitScript()` block that recreates rendering functions instead of importing the real module.
+- **Location:** `frontend/js/update-ui.js`, `frontend/js/app.js`, `tests/e2e/auto-update.spec.js`, `playwright.config.js`, implementiert 2026-05-04.
+- **Epic:** TASK-068 — Auto Update System
+- **Confidence:** High
+- **Tags:** RealModuleE2E, MockOverMock, FalsePositiveTests, Playwright, ElectronIPC, AutoUpdate, TASK068
+
+## [PATTERN] #BrowserE2EInternalApiKey "Vite + Playwright gegen echtes Backend: X-Janus-Internal-Key nachziehen"
+- **Kontext:** TASK-069 Capability Overview E2E. FastAPI schützt `/api/*` mit `api_key_auth` (`X-Janus-Internal-Key`). Im Electron-App-Pack injiziert `frontend/js/app.js` den Schlüssel über `window.electron.getApiKey()` in jeden Backend-`fetch`. Im reinen Vite-Browser (Playwright gegen `localhost:5173`) gibt es keinen Electron-Bridge → **kein** Header auf `/api/chats` und `/api/chat/stream`.
+- **Problem:** JWT allein genügt nicht; `/api/users/me` schlägt ebenfalls fehl ohne Internal Key (Router-Dependency). Symptom: leeres Chat-UI, Textarea wird nicht geleert (`ensureChatForWindow` scheitert still), keine `.message.assistant`.
+- **Lösung:** In Playwright vor `page.goto` eine Route registrieren (`http://127.0.0.1:8001/api/**` und `http://localhost:8001/api/**`), die denselben Key wie das Backend aus `%APPDATA%\Janus Projekt\config.json` (`api_key`) als Header durchreicht. Zusätzlich echten Produktpfad nutzen: `await import('/js/chat.js').sendMessage('A')` statt frágilen Button-Klicks (Taskleiste `#dock-bar` fängt Pointer ab).
+- **Härtung:** Vor „Neuer Chat“ Region „Chat-Fenster A“ fokussieren (`getActiveWindowId`); auf erfolgreiches `POST /api/chats` warten; bei gemeinsamer SQLite-E2E-DB `test.describe.configure({ mode: 'serial' })` gegen parallele Worker.
+- **Tripwire:** E2E „hängt“ in `sendMessage` oder findet keine Assistant-Message trotz gültigem JWT.
+- **Location:** `tests/e2e/capability-overview.spec.js`, `frontend/js/app.js` (fetch-Wrapper), `backend/dependencies.py`, `backend/main.py`, implementiert 2026-05-04.
+- **Epic:** TASK-069 — Capability Overview Response
+- **Confidence:** High
+- **Tags:** Playwright, FastAPI, api_key_auth, Vite, RealModuleE2E, TASK069, DockBar
+
 ## [PATTERN] #ContextualEntityResolution "Contextual Entity Resolver — Fuzzy + Temporal Disambiguation against calendar_snapshot before forced find_and_update_event"
 - **Kontext:** TASK-065 Contextual Entity Resolver. Ziel: Vermeidung von falschen Mutationen durch unscharfe Titel-Matches. Das System muss vor dem Aufruf von `calendar.find_and_update_event` prüfen, ob der Nutzer-Text eindeutig auf einen bestehenden Kalender-Eintrag verweist.
 - **Problem:** Ohne Entity Resolution könnte "Aldi" auf den falschen Aldi-Termin treffen (z.B. Aldi Nord statt Aldi Süd). Das Modell könnte versehentlich den falschen Termin mutieren. Fuzzy-Suche allein reicht nicht aus bei identischen Titeln an unterschiedlichen Daten.

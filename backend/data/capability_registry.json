@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "last_updated": "2026-04-18",
+  "last_updated": "2026-05-04",
   "provider_details": {
     "openai": {
       "display_name": {
@@ -301,7 +301,9 @@
           "how_to": {
             "de": "Sage: 'Finde die Datei Rechnung.pdf' oder 'Wo ist mein Dokument?'.",
             "en": "Say: 'Find the file invoice.pdf' or 'Where is my document?'"
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
         }
       ],
       "ui_locations": {
@@ -340,7 +342,9 @@
           "how_to": {
             "de": "Frage: 'Wie heißt der Hund von Max?' oder 'Was weiß ich über...?'",
             "en": "Ask: 'What is Max's dog called?' or 'What do I know about...?'"
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
         },
         {
           "id": "memory.save_person",
@@ -352,7 +356,9 @@
           "how_to": {
             "de": "Sag: 'Merke dir: Max hat einen Hund namens Bello.'",
             "en": "Say: 'Remember: Max has a dog named Bello.'"
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
         }
       ],
       "ui_locations": {
@@ -714,6 +720,62 @@
       ],
       "ui_locations": {}
     },
+    "productivity": {
+      "display_name": {
+        "de": "Aufgaben & Produktivität",
+        "en": "Tasks & Productivity"
+      },
+      "icon": "✅",
+      "description": {
+        "de": "Aufgaben erstellen, verwalten und verfolgen",
+        "en": "Create, manage, and track tasks"
+      },
+      "abilities": [
+        {
+          "id": "tasks.create",
+          "label": {
+            "de": "Aufgabe erstellen",
+            "en": "Create Task"
+          },
+          "skill_refs": [],
+          "how_to": {
+            "de": "Sag: 'Erstelle eine Aufgabe: Projektbericht bis Freitag fertigstellen.'",
+            "en": "Say: 'Create a task: Finish project report by Friday.'"
+          },
+          "status": "verified",
+          "confidence": 1.0
+        }
+      ],
+      "ui_locations": {}
+    },
+    "release_deployment": {
+      "display_name": {
+        "de": "Updates & Installation",
+        "en": "Updates & Installation"
+      },
+      "icon": "🚀",
+      "description": {
+        "de": "Janus installieren, aktualisieren und neue Versionen sicher beziehen",
+        "en": "Install, update, and safely receive new Janus versions"
+      },
+      "abilities": [
+        {
+          "id": "release.auto_update",
+          "label": {
+            "de": "Janus aktualisieren",
+            "en": "Update Janus"
+          },
+          "skill_refs": [],
+          "how_to": {
+            "de": "Wenn eine neue Version verfügbar ist, zeigt Janus dir einen Aktualisierungshinweis und führt dich durch die Installation.",
+            "en": "When a new version is available, Janus shows an update notice and guides you through the installation."
+          },
+          "status": "verified",
+          "confidence": 1.0
+        }
+      ],
+      "ui_locations": {}
+    },
     "calendar": {
       "display_name": {
         "de": "Kalender & Termine",
@@ -740,7 +802,9 @@
           "how_to": {
             "de": "Frage: 'Was habe ich nächste Woche?' oder 'Welche Termine habe ich am Mittwoch?'",
             "en": "Ask: 'What do I have next week?' or 'What appointments do I have on Wednesday?'"
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
         },
         {
           "id": "calendar.create",
@@ -752,7 +816,9 @@
           "how_to": {
             "de": "Sag: 'Erstelle einen Termin für Montag 10 Uhr: Arzt.' oder 'Füge Besprechung am Dienstag um 14:00 hinzu.'",
             "en": "Say: 'Create an appointment for Monday at 10am: Doctor.' or 'Add meeting Tuesday at 2pm.'"
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
         },
         {
           "id": "calendar.update",
@@ -764,7 +830,9 @@
           "how_to": {
             "de": "Sag: 'Verschiebe meinen Arzttermin auf Mittwoch.' oder 'Aktualisiere die Adresse des Meetings.'",
             "en": "Say: 'Move my doctor appointment to Wednesday.' or 'Update the meeting address.'"
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
         },
         {
           "id": "calendar.delete",
@@ -776,7 +844,9 @@
           "how_to": {
             "de": "Sag: 'Lösche den Zahnarzttermin am Freitag.' oder 'Entferne das Meeting am Donnerstag.'",
             "en": "Say: 'Delete the dentist appointment on Friday.' or 'Remove Thursday's meeting.'"
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
         }
       ],
       "ui_locations": {
@@ -789,6 +859,47 @@
             "type": "open_module",
             "payload": {
               "module": "calendar"
+            }
+          }
+        }
+      }
+    },
+    "system": {
+      "display_name": {
+        "de": "Einstellungen & System",
+        "en": "Settings & System"
+      },
+      "icon": "⚙️",
+      "description": {
+        "de": "System-Status, Einstellungen und technische Informationen",
+        "en": "System status, settings and technical information"
+      },
+      "abilities": [
+        {
+          "id": "system.status",
+          "label": {
+            "de": "System-Status prüfen",
+            "en": "Check System Status"
+          },
+          "skill_refs": ["system.routing"],
+          "how_to": {
+            "de": "Frage: 'Wie ist dein System-Status?' oder 'Läuft alles stabil?'",
+            "en": "Ask: 'What is your system status?' or 'Is everything running smoothly?'"
+          },
+          "status": "verified",
+          "confidence": 1.0
+        }
+      ],
+      "ui_locations": {
+        "settings": {
+          "label": {
+            "de": "Einstellungen",
+            "en": "Settings"
+          },
+          "action": {
+            "type": "open_settings",
+            "payload": {
+              "section": "system"
             }
           }
         }

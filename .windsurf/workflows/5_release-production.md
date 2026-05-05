@@ -1,0 +1,367 @@
+---
+description: SWE 1.6 Finaler Build und Release auf Github.
+---
+
+# Production Release Workflow (JANUS – AFTER /post-impl)
+
+Use this workflow only after:
+
+```text
+/1_Feature-erstellen
+→ implementation of generated tasks
+→ /2_final-audit
+→ version bump decision if required
+→ /post-impl
+→ /release-production
+```
+
+Goal:
+- Build frontend and backend release artifacts.
+- Build the Electron installer.
+- Generate and validate the auto-update manifest.
+- Publish the release only after explicit user approval.
+- Verify the published GitHub release and release assets.
+
+This workflow mutates external state only in the publish phase. Do not publish without explicit approval.
+
+---
+
+## Hard Rules
+
+- Do not run production publish if `/2_final-audit` was not `PASS` or `PASS WITH FIXES`.
+- Do not run production publish if `/post-impl` was not completed.
+- Do not publish with a missing or inconsistent version.
+- Do not publish with a missing installer artifact.
+- Do not publish with a missing or invalid `janus-update-manifest.json`.
+- Do not publish without explicit user approval after showing version, artifact, manifest hash, and target repository.
+- Do not bump versions in this workflow. Version bump belongs to `/2_final-audit`.
+- Do not silently ignore build or validation failures.
+- Stop on first blocking failure and report the exact failed phase.
+
+Allowed safe actions:
+- Run pre-build verification.
+- Run builds.
+- Generate release notes.
+- Generate update manifest.
+- Validate local artifacts.
+- Publish only after explicit user approval.
+- Open GitHub release page for manual verification.
+
+Forbidden actions:
+- Feature implementation changes.
+- Architecture changes.
+- Version bump.
+- Publishing with failed validation.
+- Publishing to a different repository than configured without explicit user approval.
+
+---
+
+## Required Inputs
+
+Ask for or infer:
+
+1. Final `/2_final-audit` result.
+2. `/post-impl` completion result.
+3. Target version from root `package.json`.
+4. Whether this is a real production publish or a dry-run/build-only release rehearsal.
+
+If the audit/post-impl evidence is unavailable, stop and ask for it.
+
+---
+
+## Phase 0.5: WHAT_I_LEARNED Lookup on Failure Only (LOW-COST)
+
+Purpose: keep release runs cheap while still reusing known release/build fixes when needed.
+
+Rules:
+- Do not read `WHAT_I_LEARNED.md` during a normal successful release path.
+- Do not read `WHAT_I_LEARNED.md` fully by default.
+- If a gate/build/publish/manifest step fails, extract targeted lookup keys from the failure output.
+- Search `WHAT_I_LEARNED.md` only for those keys/tags.
+- Read only directly matching pattern blocks.
+- Apply a learning only if it directly explains the current failure.
+
+Typical release lookup keys:
+- `electron-builder`
+- `manifest`
+- `package-lock`
+- `version`
+- `PyInstaller`
+- `GH_TOKEN`
+- `release asset`
+- exact error text from the failed command
+
+---
+
+## Phase 0: Release Preconditions Gate
+
+Verify:
+
+- `/2_final-audit`: `PASS` or `PASS WITH FIXES`
+- `/post-impl`: complete
+- Version bump decision: complete or explicitly deferred
+- `CHANGELOG.md`: updated for the feature/release
+- Task file: contains post-implementation audit trail or equivalent
+
+If any required precondition is missing, stop:
+
+```markdown
+# RELEASE BLOCKED
+
+## Failed Gate
+- [gate name]
+
+## Required Action
+- [what to do before rerunning /release-production]
+```
+
+---
+
+## Phase 1: Version & Metadata Consistency Gate
+
+Inspect:
+
+- Root `package.json`
+- Root `package-lock.json`
+- `backend/version.py`
+- `frontend/package.json` only if it is explicitly part of release versioning
+- `CHANGELOG.md`
+- `release_notes.md` / generated release notes output, if present
+
+Required checks:
+
+- Root `package.json.version` exists.
+- Root `package-lock.json.version` matches root version.
+- Root package entry inside `package-lock.json.packages[\"\"].version` matches root version.
+- `backend/version.py` matches root version.
+- `frontend/package.json` may have independent version if documented; do not force-sync unless project convention says so.
+- `CHANGELOG.md` contains a relevant `[Unreleased]` entry.
+
+Recommended command:
+
+```powershell
+node -e \"const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json','utf8')); const lock=JSON.parse(fs.readFileSync('package-lock.json','utf8')); const backend=fs.readFileSync('backend/version.py','utf8'); console.log({root:pkg.version, lock:lock.version, lockRoot:lock.packages[''].version, backend}); if(lock.version!==pkg.version || lock.packages[''].version!==pkg.version || !backend.includes(pkg.version)) process.exit(1);\"
+```
+
+Stop if versions are inconsistent.
+
+---
+
+## Phase 2: Pre-Build Verification
+
+// turbo
+1. Run pre-build verification suite:
+
+```powershell
+python tools/pre_build_check.py
+```
+
+If this fails, stop. This check catches syntax errors, missing dependencies, version mismatches, and path issues before the expensive build starts.
+
+Also run targeted validations from `/2_final-audit` if they are cheap and release-critical.
+
+For Electron/update features, recommended:
+
+```powershell
+node --test tests/electron/update-state.test.cjs tests/electron/update-security.test.cjs tests/electron/update-manager.test.cjs
+npx playwright test tests/e2e/auto-update.spec.js
+```
+
+---
+
+## Phase 3: Release Notes Generation
+
+// turbo
+2. Generate release notes from `CHANGELOG.md`:
+
+```powershell
+python tools/generate_release_notes.py
+```
+
+Confirm generated release notes include the current feature/release summary.
+
+---
+
+## Phase 4: Build Pipeline
+
+// turbo
+3. Build frontend + sync version:
+
+```powershell
+npm run build
+```
+
+If this fails, stop and report frontend/build output.
+
+// turbo
+4. Package backend executable:
+
+```powershell
+python -m PyInstaller janus_backend.spec --clean --noconfirm
+```
+
+If this fails, stop and report PyInstaller output.
+
+5. Build Electron installer without publishing first if supported:
+
+```powershell
+npm run build-installer -- --publish never
+```
+
+If the project cannot build without publishing, stop and ask the user whether to continue with direct publish mode.
+
+---
+
+## Phase 5: Auto-Update Manifest Generation & Validation
+
+6. Generate update manifest:
+
+```powershell
+npm run generate:update-manifest
+```
+
+Validate `release/janus-update-manifest.json`.
+
+Required manifest checks:
+
+- File exists.
+- `version` matches root `package.json.version`.
+- `assetName` exists in `release/`.
+- `sha256` is exactly 64 lowercase hex characters.
+- `critical` is a boolean.
+- `createdAt` is a valid ISO timestamp.
+
+Recommended command:
+
+```powershell
+node -e \"const fs=require('fs'); const path=require('path'); const pkg=JSON.parse(fs.readFileSync('package.json','utf8')); const m=JSON.parse(fs.readFileSync('release/janus-update-manifest.json','utf8')); if(m.version!==pkg.version) throw new Error('manifest version mismatch'); if(!fs.existsSync(path.join('release',m.assetName))) throw new Error('manifest asset missing'); if(!/^[a-f0-9]{64}$/.test(m.sha256)) throw new Error('invalid sha256'); if(typeof m.critical!=='boolean') throw new Error('critical must be boolean'); if(Number.isNaN(Date.parse(m.createdAt))) throw new Error('invalid createdAt'); console.log('manifest OK', m);\"
+```
+
+If manifest validation fails, stop.
+
+---
+
+## Phase 6: Publish Approval Gate
+
+Before publishing, present:
+
+```markdown
+# PUBLISH APPROVAL REQUIRED
+
+## Target
+- **Repository:** [configured GitHub repo]
+- **Version:** [package.json version]
+
+## Artifacts
+- **Installer:** [release/*.exe]
+- **Manifest:** release/janus-update-manifest.json
+- **SHA256:** [manifest sha256]
+- **Release notes:** [release_notes.md or generated output]
+
+## Validation Summary
+- **Pre-build:** PASS
+- **Build frontend:** PASS
+- **PyInstaller:** PASS
+- **Installer build:** PASS
+- **Manifest validation:** PASS
+
+## Required Answer
+- `Publish: YES`
+- or `Publish: NO`
+```
+
+Stop and wait for the user.
+
+If the user answers `Publish: NO`, stop with `RELEASE NOT PUBLISHED`.
+
+---
+
+## Phase 7: Publish Release
+
+After explicit approval, publish.
+
+Preferred publish command if artifacts were already built:
+
+```powershell
+npm run build-installer -- --publish always
+```
+
+Important:
+- Confirm whether `janus-update-manifest.json` is included as a release asset by `electron-builder`.
+- If not included automatically, upload it manually or report a blocking release risk.
+- Do not claim auto-update readiness unless the manifest is available as a release asset.
+
+If publish fails, stop and report likely causes:
+
+- missing `GH_TOKEN`
+- GitHub repo access
+- duplicate version/tag
+- network failure
+- electron-builder config issue
+
+---
+
+## Phase 8: Post-Publish Verification
+
+// turbo
+Open GitHub releases page:
+
+```powershell
+start https://github.com/pruvex/janus-update/releases
+```
+
+Verify:
+
+- Release/tag exists for current version.
+- Installer asset exists.
+- Manifest asset exists.
+- Release notes are correct.
+- Manifest `assetName` matches uploaded installer.
+- Manifest SHA256 matches local installer hash.
+
+If any item is missing, report `RELEASE PUBLISHED WITH RISK`.
+
+---
+
+## Final Report
+
+Return:
+
+```markdown
+# RELEASE RESULT: SUCCESS | RELEASE NOT PUBLISHED | RELEASE BLOCKED | RELEASE PUBLISHED WITH RISK
+
+## Version
+- **Version:** [version]
+
+## Gates
+- **/2_final-audit:** PASS | PASS WITH FIXES | missing
+- **/post-impl:** complete | missing
+- **Version consistency:** PASS | FAIL
+- **Pre-build:** PASS | FAIL
+- **Build:** PASS | FAIL
+- **Manifest:** PASS | FAIL
+- **Publish approval:** YES | NO
+
+## Artifacts
+- **Installer:** [path]
+- **Manifest:** [path]
+- **SHA256:** [hash]
+
+## Published
+- **GitHub release:** [url or not published]
+- **Manifest asset:** present | missing | unknown
+
+## Remaining Risks
+- **[risk]:** [impact]
+- None
+
+## Next Step
+- **Recommended:** [manual verification / rollback / announce release / fix issue]
+```
+
+## Expected Outcome
+
+- `SUCCESS`: All gates pass, artifacts are built, manifest is valid, release is published and verified.
+- `RELEASE NOT PUBLISHED`: User declined publish approval.
+- `RELEASE BLOCKED`: A pre-publish gate failed.
+- `RELEASE PUBLISHED WITH RISK`: Publish happened but post-publish verification found missing or uncertain release assets.

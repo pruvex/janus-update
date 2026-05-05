@@ -76,6 +76,7 @@ SKILL_FUNCTION_MAP = {
     "memory.write": "backend.tools.memory_tools:memory_write_tool",
     "memory.read": "backend.tools.memory_tools:memory_read_tool",
     "memory.update": "backend.tools.memory_tools:memory_update_tool",
+    "memory.delete": "backend.tools.memory_tools:memory_delete_tool",
     "memory.history": "backend.tools.memory_tools:memory_history_tool",
 }
 

@@ -39,6 +39,7 @@ def tool_ok_v1(
     started_at: float,
     suggest_follow_up: bool = True,
     primary_entity_id: Optional[str] = None,
+    is_final_response: bool = False,
 ) -> ToolResultV1:
     return ToolResultV1(
         status="ok",
@@ -50,6 +51,7 @@ def tool_ok_v1(
             suggest_follow_up=suggest_follow_up,
             primary_entity_id=primary_entity_id,
         ),
+        is_final_response=is_final_response,
     )
 
 

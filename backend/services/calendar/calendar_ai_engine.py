@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import logging
+import uuid as _uuid_mod
 from typing import Any, Dict, List, Optional, Tuple
 
 import keyring
@@ -17,9 +18,17 @@ from backend.data.schemas_calendar import (
     JanusCalendarEvent,
 )
 from backend.services import llm_gateway
+from backend.services.calendar_mutation_intent import (
+    CalendarMutationIntent,
+    classify_calendar_mutation_intent,
+)
 from backend.utils.config_loader import load_config_data
 
 logger = logging.getLogger("janus_backend.calendar_ai")
+
+# TASK-067: Chat mutations are staged in calendar_tools + mutation_guard_store.
+# This hook lets the Calendar AI / Modal flow register the same Proposal shape.
+
 
 # §10 task_058_calendar_modal_diamond_plan.md — System Prompt (Production Grade)
 CALENDAR_AI_SYSTEM_PROMPT = """You are Janus Calendar AI, a deterministic scheduling engine.
@@ -241,6 +250,26 @@ class CalendarAIEngine:
         )
         return plan
 
+    def classify_calendar_tool_mutation_from_payload(
+        self,
+        *,
+        cancel_event: Optional[bool] = None,
+        new_start_time: Optional[str] = None,
+        new_end_time: Optional[str] = None,
+        new_summary: Optional[str] = None,
+        new_location: Optional[str] = None,
+        new_description: Optional[str] = None,
+    ) -> CalendarMutationIntent:
+        """TASK-067-B — delegiert an ``calendar_mutation_intent``."""
+        return classify_calendar_mutation_intent(
+            cancel_event=cancel_event,
+            new_start_time=new_start_time,
+            new_end_time=new_end_time,
+            new_summary=new_summary,
+            new_location=new_location,
+            new_description=new_description,
+        )
+
     async def suggest_optimization(
         self,
         events: List[JanusCalendarEvent],
@@ -265,3 +294,31 @@ class CalendarAIEngine:
             },
         )
         return plan.actions[0] if plan.actions else None
+
+    def stage_mutation_proposal(
+        self,
+        *,
+        chat_id: int,
+        event_id: str,
+        original_event: Dict[str, Any],
+        proposed_changes: Dict[str, Any],
+    ) -> str:
+        """TASK-067: Merkt eine Kalender-Mutation ein (ohne Google PATCH).
+
+        Gibt ``proposal_id`` zurück; Bestätigung erfolgt im Chat (Ja/Nein).
+        """
+        from backend.data.schemas import MutationProposal
+        from backend.services.calendar import mutation_guard_store as mgs
+
+        pid = str(_uuid_mod.uuid4())
+        prop = MutationProposal(
+            proposal_id=pid,
+            chat_id=int(chat_id),
+            event_id=str(event_id),
+            proposed_changes=dict(proposed_changes or {}),
+            original_event=dict(original_event or {}),
+            status="pending",
+        )
+        mgs.set_pending_mutation_proposal(int(chat_id), prop)
+        mgs.log_proposal_created(pid, chat_id=int(chat_id), event_id=str(event_id))
+        return pid

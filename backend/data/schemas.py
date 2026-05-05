@@ -1216,6 +1216,11 @@ class MemoryUpdateArgs(BaseModel):
     new_priority: Optional[float] = Field(None, ge=0.0, le=1.0, description="Neue Priority. Wird ggf. durch Guard gekappt.")
 
 
+class MemoryDeleteArgs(BaseModel):
+    """Arguments for memory_delete tool - deletes a memory by ID."""
+    memory_id: int = Field(..., description="ID der zu löschenden Memory (von memory_read).")
+
+
 class MemoryHistoryArgs(BaseModel):
     """Arguments for memory_history tool - shows audit trail of a memory."""
     memory_id: int = Field(..., description="ID der Memory (von memory_read).")
@@ -1242,6 +1247,34 @@ class SendEmailArgs(BaseModel):
     subject: str = Field(..., description="Betreff.")
     body: str = Field(..., description="Inhalt.")
     attachment_path: Optional[str] = Field(None, description="Anhang Pfad.")
+
+
+MutationProposalStatus = Literal["pending", "confirmed", "rejected", "applied"]
+
+
+class MutationProposal(BaseModel):
+    """TASK-067: Pending calendar change awaiting user confirmation.
+
+    Stored in memory (per chat_id) until the user answers Ja/Nein or the
+    proposal is cleared. ``proposed_changes`` mirrors the tool kwargs for
+    ``find_and_update_calendar_event`` (excluding internal bypass flags).
+    """
+
+    proposal_id: str = Field(..., description="UUID für dieses Proposal.")
+    chat_id: int = Field(..., description="Zugehöriger Chat (Session-Schlüssel).")
+    event_id: str = Field(..., description="Google Calendar event_id (truth source).")
+    proposed_changes: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Geplante Tool-Parameter (new_start_time, new_description, cancel_event, …).",
+    )
+    original_event: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Kompakte Kopie des Events vor der Mutation (für Anzeige/Revert-Metadaten).",
+    )
+    status: MutationProposalStatus = Field(
+        default="pending",
+        description="Lebenszyklus: pending bis Bestätigung oder Verwerfen.",
+    )
 
 
 class FindFreeTimeSlotsArgs(BaseModel):

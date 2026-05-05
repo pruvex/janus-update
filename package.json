@@ -1,6 +1,6 @@
 {
   "name": "janus-projekt",
-  "version": "0.4.16-beta.11",
+  "version": "0.4.17-beta.10",
   "description": "",
   "type": "module",
   "main": "main.electron.cjs",
@@ -27,10 +27,12 @@
     "test:vision:openworld": "python backend/tests/tools/vision_evaluator.py --matrix-dir backend/tests/vision_matrix/OpenWorldStandard --e2e --kpi-gate --max-contradiction-rate 0.0 --min-source-map-coverage 0.95",
     "prebuild-installer": "echo 'Vision-Tests deaktiviert für schnelle Builds'",
     "prebuild-all": "npm run test:vision:stresstest:kpi && npm run test:vision:openworld",
-    "build-installer": "electron-builder",
+    "build-installer": "electron-builder --publish never && npm run generate:update-manifest && npm run verify:update-artifacts",
     "build-all": "npm run build && python -m PyInstaller janus_backend.spec --clean --noconfirm && npm run build-installer",
     "release:guard": "node scripts/release-gate.js",
-    "release": "npm run release:guard && npm run build-all && electron-builder --publish always"
+    "release": "npm run build-all && node scripts/publish_to_github.cjs",
+    "generate:update-manifest": "node scripts/generate_update_manifest.cjs",
+    "verify:update-artifacts": "node scripts/verify_update_artifacts.cjs"
   },
   "keywords": [],
   "author": "",
@@ -44,6 +46,7 @@
     "electron": "^31.0.2",
     "electron-builder": "^26.0.12",
     "eslint": "^9.33.0",
+    "js-yaml": "^4.1.1",
     "vite": "^5.3.1",
     "wait-on": "^8.0.4"
   },
@@ -52,7 +55,9 @@
     "dompurify": "^3.4.0",
     "electron-log": "^5.4.3",
     "electron-updater": "^6.7.3",
-    "node-fetch": "^2.7.0"
+    "formdata-node": "^6.0.3",
+    "node-fetch": "^2.7.0",
+    "octokit": "^5.0.5"
   },
   "build": {
     "appId": "de.pruvex.janus",
@@ -79,14 +84,15 @@
       "oneClick": false,
       "perMachine": true,
       "allowToChangeInstallationDirectory": true,
-      "differentialPackage": true
+      "differentialPackage": false
     },
     "files": [
       "frontend/dist/",
       "main.electron.cjs",
       "frontend/preload.js",
       "package.json",
-      "splash.html"
+      "splash.html",
+      "electron/**/*"
     ],
     "extraResources": [
       {

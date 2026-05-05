@@ -17,6 +17,7 @@ from backend.tools.memory_tools import (
     memory_write_tool,
     memory_read_tool,
     memory_update_tool,
+    memory_delete_tool,
     memory_history_tool,
 )
 from backend.services.permission_service import grant_permission, revoke_permission
@@ -457,6 +458,13 @@ def register_all_tools():
         name="memory.update",
         description="Aktualisiert oder korrigiert eine bestehende Erinnerung. Nur für user_editable=true Memories.",
     )
+    # DISABLED (Task-066): memory.delete is unstable and causes hallucination loops
+    # tool_manager.register_tool(
+    #     memory_delete_tool,
+    #     schemas.MemoryDeleteArgs,
+    #     name="memory.delete",
+    #     description="Löscht eine Erinnerung dauerhaft anhand ihrer ID. Nur für user_editable=true Memories.",
+    # )
     tool_manager.register_tool(
         memory_history_tool,
         schemas.MemoryHistoryArgs,

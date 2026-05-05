@@ -1171,9 +1171,225 @@ class ChatOrchestrator:
         ctx.identity_fact = wf._identity
         return ctx
 
+    _TOOLS_CMD_RE = re.compile(
+        r"^/tools\s+(?P<skill>[a-zA-Z_][a-zA-Z0-9_.]*)"
+        r"(?P<rest>.*)$",
+        re.DOTALL,
+    )
+
+    async def _try_tools_command(self, ctx: RequestContext) -> Optional[Dict]:
+        # --- SICHERHEITS-NOTBREMSE (Task-066 / Dispatcher-Bug) ---
+        # Deaktiviert den experimentellen Tool-Dispatcher als Vorsichtsmaßnahme.
+        # ToolExecutor-Wiring ist korrekt (wird direkt in Methode instanziiert),
+        # aber der Dispatcher bleibt deaktiviert bis er vollständig getestet ist.
+        return None
+        # --------------------------------------------------------
+        """Intercept `/tools <skill> --key value` commands and dispatch directly."""
+        wf = ctx.workflow
+        user_text = (wf.user_text or "").strip()
+        m = self._TOOLS_CMD_RE.match(user_text)
+        if not m:
+            return None
+
+        skill_name = m.group("skill").strip()
+        rest = (m.group("rest") or "").strip()
+
+        logger.info("[TOOLS-CMD] Intercepted: skill='%s', args_raw='%s'", skill_name, rest)
+
+        from backend.services.tool_manager import tool_manager
+        tool_def = tool_manager.get_tool(skill_name, warn_if_legacy=True)
+        if not tool_def:
+            try:
+                from backend.services.skill_router import skill_router
+                tool_def = skill_router.get_tool_definition(skill_name)
+            except Exception:
+                tool_def = None
+
+        if not tool_def:
+            error_text = (
+                f"**Fehler:** Skill `{skill_name}` nicht gefunden.\n\n"
+                f"Verfügbare Memory-Skills: `memory.write`, `memory.read`, "
+                f"`memory.update`, `memory.delete`, `memory.history`"
+            )
+            logger.warning("[TOOLS-CMD] Skill '%s' not found", skill_name)
+            from backend.services.orchestrator.schemas import ExecutionResponse
+            wf.execution_for_api = ExecutionResponse(text=error_text)
+            wf.skip_llm_generation = True
+            self.status_sync.persist_assistant_message(ctx.request.chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        tool_args: Dict[str, Any] = {}
+        if rest:
+            import shlex
+            try:
+                tokens = shlex.split(rest)
+            except ValueError:
+                tokens = rest.split()
+            i = 0
+            while i < len(tokens):
+                token = tokens[i]
+                if token.startswith("--") and len(token) > 2:
+                    key = token[2:]
+                    if i + 1 < len(tokens) and not tokens[i + 1].startswith("--"):
+                        raw_val = tokens[i + 1]
+                        try:
+                            tool_args[key] = int(raw_val)
+                        except ValueError:
+                            try:
+                                tool_args[key] = float(raw_val)
+                            except ValueError:
+                                tool_args[key] = raw_val
+                        i += 2
+                    else:
+                        tool_args[key] = True
+                        i += 1
+                else:
+                    i += 1
+
+        logger.info("[TOOLS-CMD] Dispatching skill='%s' with args=%s", skill_name, tool_args)
+        try:
+            executor = ToolExecutor(
+                self.db,
+                wf.api_key,
+                request.provider,
+                request.model,
+                additional_context={
+                    "chat_id": request.chat_id,
+                    "trace_id": str(uuid.uuid4()),
+                    "provider": request.provider,
+                    "model": request.model,
+                },
+            )
+            result = await executor.execute_tool_call(
+                tool_name=skill_name,
+                tool_args=tool_args,
+                is_internal_call=False,
+            )
+            result_content = result.get("content") or result.get("_raw_content") or str(result)
+            if isinstance(result_content, str):
+                try:
+                    parsed = json.loads(result_content)
+                    if isinstance(parsed, dict):
+                        status = parsed.get("status", "")
+                        if status == "ok":
+                            data = parsed.get("data", {})
+                            response_text = f"**{skill_name}** erfolgreich ausgeführt.\n\n```json\n{json.dumps(data, indent=2, ensure_ascii=False)}\n```"
+                        else:
+                            error = parsed.get("error", {})
+                            response_text = f"**Fehler bei {skill_name}:** {error.get('message', str(parsed))}"
+                    else:
+                        response_text = f"```json\n{json.dumps(parsed, indent=2, ensure_ascii=False)}\n```"
+                except (json.JSONDecodeError, TypeError):
+                    response_text = str(result_content)
+            else:
+                response_text = str(result_content)
+        except Exception as exc:
+            logger.error("[TOOLS-CMD] Execution failed: %s", exc, exc_info=True)
+            response_text = f"**Fehler bei {skill_name}:** {exc}"
+
+        from backend.services.orchestrator.schemas import ExecutionResponse
+        wf.execution_for_api = ExecutionResponse(text=response_text)
+        wf.skip_llm_generation = True
+        self.status_sync.persist_assistant_message(ctx.request.chat_id, wf.execution_for_api)
+        return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+    async def _try_mutation_guard_confirmation(self, ctx: RequestContext) -> Optional[Dict]:
+        """TASK-067: Human-in-the-loop für Pending-Proposals (**nur TIME_MUTATION** / Löschen).
+
+        Reine Beschreibungs-/Titel-/Ort-Mutationen (**DATA_MUTATION**, TASK-067-B) erzeugen
+        kein Proposal — dieser Pfad steht ihnen nicht im Weg.
+        """
+        from backend.services.calendar import mutation_guard_store as mgs
+        from backend.services.orchestrator.schemas import ExecutionResponse
+        from backend.tools.calendar_tools import find_and_update_calendar_event
+
+        request = ctx.request
+        wf = ctx.workflow
+        chat_id = request.chat_id
+        if chat_id is None:
+            return None
+
+        pending = mgs.get_pending_mutation_proposal(chat_id)
+        if pending is None:
+            return None
+
+        verdict = mgs.classify_confirmation_reply(wf.user_text or "")
+        if verdict is None:
+            return None
+
+        if verdict == "reject":
+            mgs.log_rejection_received(pending.proposal_id, chat_id=int(chat_id))
+            mgs.pop_pending_mutation_proposal(chat_id)
+            wf.execution_for_api = ExecutionResponse(
+                text=(
+                    "Alles klar — ich habe die geplante Kalender-Änderung **verworfen**. "
+                    "Der Termin bei Google Calendar wurde **nicht** verändert (es lag nur eine Vorschau vor)."
+                )
+            )
+            wf.skip_llm_generation = True
+            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        # confirm
+        mgs.log_confirmation_received(pending.proposal_id, chat_id=int(chat_id))
+        prop = mgs.pop_pending_mutation_proposal(chat_id)
+        if prop is None:
+            return None
+
+        tool_args = mgs.tool_args_from_proposal(prop)
+        logger.info(
+            "[MUTATION-GUARD] Applying confirmed mutation event_id=%r chat_id=%s",
+            prop.event_id,
+            chat_id,
+        )
+        try:
+            cal_result = await find_and_update_calendar_event(
+                **tool_args,
+                skip_mutation_confirmation=True,
+                chat_id=int(chat_id),
+            )
+        except Exception as exc:
+            logger.error("[MUTATION-GUARD] Confirmed execution failed: %s", exc, exc_info=True)
+            msg = (
+                f"Die Kalender-Änderung konnte **nicht** gespeichert werden: {exc}\n\n"
+                f"Du kannst die Änderung gern noch einmal anstoßen."
+            )
+            wf.execution_for_api = ExecutionResponse(text=msg)
+            wf.skip_llm_generation = True
+            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        if str(cal_result.status) == "ok":
+            reply = (
+                cal_result.message
+                or "Die Kalender-Änderung wurde **gespeichert**."
+            )
+        else:
+            err_txt = ""
+            if cal_result.error is not None:
+                err_txt = str(getattr(cal_result.error, "message", "") or cal_result.error or "")
+            reply = (
+                "Die Kalender-Änderung konnte **nicht** gespeichert werden."
+                + (f" Details: {err_txt}" if err_txt else "")
+            )
+
+        wf.execution_for_api = ExecutionResponse(text=str(reply))
+        wf.skip_llm_generation = True
+        self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+        return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
     async def _try_early_exit(self, ctx: RequestContext) -> Optional[Dict]:
         wf = ctx.workflow
         request = ctx.request
+
+        tools_cmd_result = await self._try_tools_command(ctx)
+        if tools_cmd_result is not None:
+            return tools_cmd_result
+
+        mutation_guard_result = await self._try_mutation_guard_confirmation(ctx)
+        if mutation_guard_result is not None:
+            return mutation_guard_result
+
         policy_response = await handle_policy_consent_phase(self, ctx)
         if policy_response is not None:
             return policy_response

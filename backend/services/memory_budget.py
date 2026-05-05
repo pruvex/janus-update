@@ -178,9 +178,9 @@ def memory_to_slot(memory: models.Memory, tier: str, chat_title: str = "") -> Me
     elif hasattr(memory, 'core_priority') and memory.core_priority:
         # Legacy mapping
         priority_map = {2: 0.95, 1: 0.75, 0: 0.50}
-        priority = priority_map.get(memory.core_priority, 0.65)
+        priority = priority_map.get(memory.core_priority, 0.50)
     else:
-        priority = 0.65
+        priority = 0.50
 
     # Tags aus V2-Feldern oder leer
     tags = []

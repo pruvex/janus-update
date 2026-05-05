@@ -33,6 +33,7 @@ from backend.tools.tool_contract_v1 import tool_err_v1, tool_ok_v1
 logger = logging.getLogger("janus_backend")
 
 _MEMORY_TAGS = ["memory", "recall"]
+MEMORY_READ_SIMILARITY_THRESHOLD = 0.65
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -77,6 +78,10 @@ class MemoryUpdateArgs(BaseModel):
     memory_id: int = Field(..., description="ID der zu aktualisierenden Memory")
     new_fact: str = Field(..., min_length=1, description="Neuer/korrigierter Fakt-Text")
     new_priority: Optional[float] = Field(None, ge=0.0, le=1.0, description="Neue Priority")
+
+
+class MemoryDeleteArgs(BaseModel):
+    memory_id: int = Field(..., description="ID der zu löschenden Memory")
 
 
 class MemoryHistoryArgs(BaseModel):
@@ -240,7 +245,7 @@ async def handle_memory_read(
                 args.query,
                 candidate_embeddings,
                 top_k=min(args.limit, 50),
-                threshold=0.25
+                threshold=MEMORY_READ_SIMILARITY_THRESHOLD
             )
             results = [valid_memories[i] for i in indices]
         else:
@@ -412,6 +417,74 @@ async def handle_memory_update(
     except Exception as e:
         logger.error(f"[TOOL UPDATE] Error: {e}", exc_info=True)
         return tool_err_v1("UPDATE_ERROR", str(e), tags=_MEMORY_TAGS, started_at=t0)
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# HANDLER: memory_delete
+# ═══════════════════════════════════════════════════════════════════════════
+
+async def handle_memory_delete(
+    params: Dict[str, Any],
+    db: Session,
+    source_skill: str = "system.memory_delete"
+) -> ToolResultV1:
+    """
+    FLOW:
+    1. Lade Memory by ID
+    2. CHECK user_editable (SECURITY CRITICAL)
+    3. Delete from DB
+    4. Invalidate cache
+    5. Return: {status: "deleted", memory_id}
+    """
+    t0 = time.perf_counter()
+    try:
+        args = MemoryDeleteArgs(**params)
+
+        memory = db.query(models.Memory).filter(models.Memory.id == args.memory_id).first()
+        if not memory:
+            return tool_err_v1(
+                "NOT_FOUND",
+                f"Memory {args.memory_id} not found",
+                tags=_MEMORY_TAGS,
+                started_at=t0,
+            )
+
+        if not memory.user_editable:
+            logger.warning(
+                f"[TOOL DELETE] BLOCKED: ID={args.memory_id}, user_editable=False, "
+                f"source={source_skill}"
+            )
+            return tool_err_v1(
+                "NOT_EDITABLE",
+                "This memory is not deletable (user_editable=false)",
+                tags=_MEMORY_TAGS,
+                started_at=t0,
+            )
+
+        snippet_preview = str(memory.snippet or "")[:80]
+        db.delete(memory)
+        db.commit()
+
+        memory_cache.invalidate(args.memory_id)
+
+        logger.info(
+            f"[TOOL DELETE] ID={args.memory_id}, source={source_skill}, "
+            f"preview='{snippet_preview}'"
+        )
+
+        return tool_ok_v1(
+            {
+                "operation": "deleted",
+                "memory_id": args.memory_id,
+            },
+            tags=_MEMORY_TAGS,
+            started_at=t0,
+            primary_entity_id=str(args.memory_id),
+        )
+
+    except Exception as e:
+        logger.error(f"[TOOL DELETE] Error: {e}", exc_info=True)
+        return tool_err_v1("DELETE_ERROR", str(e), tags=_MEMORY_TAGS, started_at=t0)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -596,6 +669,25 @@ def memory_update_tool(db: Session, **kwargs) -> ToolResultV1:
 async def memory_history_tool_async(params: Dict[str, Any], db: Session) -> ToolResultV1:
     """Async wrapper for handle_memory_history."""
     return await handle_memory_history(params, db)
+
+
+def memory_delete_tool(db: Session, **kwargs) -> ToolResultV1:
+    """Sync wrapper for handle_memory_delete.
+
+    Args:
+        db: Database session (injected by ToolExecutor)
+        **kwargs: Tool arguments (memory_id)
+    """
+    import asyncio
+
+    params = {k: v for k, v in kwargs.items() if v is not None}
+
+    try:
+        loop = asyncio.get_running_loop()
+        future = asyncio.run_coroutine_threadsafe(handle_memory_delete(params, db), loop)
+        return future.result(timeout=30)
+    except RuntimeError:
+        return asyncio.run(handle_memory_delete(params, db))
 
 
 def memory_history_tool(db: Session, **kwargs) -> ToolResultV1:

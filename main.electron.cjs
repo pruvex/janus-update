@@ -14,6 +14,8 @@ const http = require('http'); // For health check
 const { spawn } = require('child_process');
 const { autoUpdater } = require('electron-updater');
 const axios = require('axios');
+const { initJanusUpdateManager } = require('./electron/update-manager.cjs');
+const { readUpdateState, transitionUpdateState } = require('./electron/update-state.cjs');
 
 // ============================================================
 // YOUTUBE ORIGIN FIX: Register custom scheme as privileged
@@ -42,6 +44,8 @@ protocol.registerSchemesAsPrivileged([
 
 autoUpdater.allowPrerelease = true; 
 autoUpdater.allowDowngrade = false;
+autoUpdater.disableDifferentialDownload = true;
+autoUpdater.disableWebInstaller = true;
 
 // KORREKTUR: Wir laden das Log-Modul hier direkt. 
 // So ist es egal, wo 'const log' im Rest der Datei steht.
@@ -691,13 +695,16 @@ function createWindow() {
       // Dev mode keeps Vite's hot-reload server at http://localhost:5173/.
       const loadPromise = app.isPackaged
         ? (() => {
-            // Keep DevTools open during beta to observe runtime behaviour.
-            mainWindow.webContents.openDevTools({ mode: 'detach' });
+            if (process.env.NODE_ENV === 'development') {
+                mainWindow.webContents.openDevTools({ mode: 'detach' });
+            }
             console.log('[LOAD] Using HTTP origin: http://127.0.0.1:8001/');
             return mainWindow.loadURL('http://127.0.0.1:8001/');
           })()
         : (() => {
-            mainWindow.webContents.openDevTools();
+            if (process.env.NODE_ENV === 'development') {
+                mainWindow.webContents.openDevTools();
+            }
             return mainWindow.loadURL('http://localhost:5173/');
           })();
 
@@ -858,88 +865,6 @@ const log = require('electron-log');
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 
-function initAutoUpdater(window) {
-    log.info('[AutoUpdater] initAutoUpdater called. app.isPackaged:', app.isPackaged);
-    if (!app.isPackaged) {
-        log.info('[AutoUpdater] Skipping update check (Development Mode)');
-        return;
-    }
-
-    log.info('[AutoUpdater] Initializing...');
-
-    // Einstellungen für den Workflow wie im Screenshot
-    autoUpdater.autoDownload = true; // Lädt sofort, damit der Balken sich bewegt
-    autoUpdater.autoInstallOnAppQuit = false; // WICHTIG: Damit wir den "Neu starten"-Button nutzen können
-    autoUpdater.requestHeaders = { 'User-Agent': 'Janus-Project' }; // GitHub API要求
-    autoUpdater.fullChangelog = true; // Vollständige Changelog-Informationen
-
-    // Events an das Frontend senden
-    autoUpdater.on('checking-for-update', () => {
-        log.info('[AutoUpdater] Checking for update...');
-        if (splashWindow && !splashWindow.isDestroyed()) {
-            splashWindow.webContents.send('update-status', 'Prüfe auf Updates...');
-        }
-    });
-
-    autoUpdater.on('update-available', (info) => {
-        log.info(`[AutoUpdater] Update available: ${info.version}`);
-        if (splashWindow && !splashWindow.isDestroyed()) {
-            splashWindow.webContents.send('update-status', `Update gefunden: ${info.version}`);
-            splashWindow.webContents.send('update-progress', 'Lade Update herunter...');
-        }
-        if (window && !window.isDestroyed()) {
-            // Sendet das Event, das dein React-Modal öffnet
-            window.webContents.send('update-available', {
-                version: info.version,
-                releaseNotes: info.releaseNotes || 'Siehe GitHub für Details.'
-            });
-        }
-    });
-
-    autoUpdater.on('download-progress', (progressObj) => {
-        // Sendet den Fortschritt an deinen Balken im Screenshot
-        if (window && !window.isDestroyed()) {
-            window.webContents.send('download-progress', progressObj);
-        }
-        if (splashWindow && !splashWindow.isDestroyed()) {
-            const percent = Math.round(progressObj.percent);
-            splashWindow.webContents.send('update-progress', `Lade Update... ${percent}%`);
-        }
-    });
-
-    autoUpdater.on('update-downloaded', (info) => {
-        log.info('[AutoUpdater] Update downloaded.');
-        if (splashWindow && !splashWindow.isDestroyed()) {
-            splashWindow.webContents.send('update-complete');
-        }
-        if (window && !window.isDestroyed()) {
-            window.webContents.send('update-downloaded');
-        }
-    });
-    
-    autoUpdater.on('error', (err) => {
-        log.error('[AutoUpdater] Error:', err);
-        if (splashWindow && !splashWindow.isDestroyed()) {
-            splashWindow.webContents.send('update-status', 'Update-Check fehlgeschlagen, starte App...');
-        }
-    });
-
-    // SOFORTIGER CHECK OHNE NOTIFICATION (Das UI macht die Anzeige)
-    // Timeout nach 10 Sekunden, falls GitHub API nicht antwortet
-    const updateCheckTimeout = setTimeout(() => {
-        log.warn('[AutoUpdater] Update check timeout - starting app anyway');
-        if (splashWindow && !splashWindow.isDestroyed()) {
-            splashWindow.webContents.send('update-status', 'Update-Check timeout, starte App...');
-        }
-    }, 10000);
-
-    autoUpdater.checkForUpdates().then(() => {
-        clearTimeout(updateCheckTimeout);
-    }).catch((err) => {
-        clearTimeout(updateCheckTimeout);
-        log.error('[AutoUpdater] Check failed:', err);
-    });
-}
 
 // ===================================================================
 //  FOLDER SELECTION HANDLER
@@ -1184,14 +1109,49 @@ app.whenReady().then(async () => {
     // 3. WICHTIG: Update SOFORT prüfen (vor Backend-Start)
     // Dadurch kann sich die App auch bei kritischen Fehlern selbst updaten
     setTimeout(() => {
-        initAutoUpdater(win);
+        initJanusUpdateManager({ app, autoUpdater, mainWindow: win, log });
     }, 1000);
+});
 
-    // 4. Globaler Listener für den Neustart-Button im Frontend
-    ipcMain.on('restart-app-for-update', () => {
-        log.info('[AutoUpdater] Restarting app to install update...');
+// ===================================================================
+//  UPDATE IPC HANDLERS
+// ===================================================================
+
+ipcMain.handle('update:get-state', () => {
+    return readUpdateState(app);
+});
+
+ipcMain.on('update:install-now', () => {
+    const state = readUpdateState(app);
+    if (state.status === 'ready_to_install') {
+        log.info('[UpdateIPC] Installing update...');
         autoUpdater.quitAndInstall();
-    });
+    }
+});
+
+ipcMain.on('update:retry', () => {
+    const state = readUpdateState(app);
+    if (state.status === 'download_failed' || state.status === 'validation_failed' || state.status === 'install_failed') {
+        log.info(`[UpdateIPC] Retrying update from state: ${state.status}`);
+        const newState = transitionUpdateState(app, {
+            status: 'checking',
+            retryCount: 0,
+            errorCode: null,
+            errorMessage: null,
+        });
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('update-state-changed', newState);
+        }
+        autoUpdater.checkForUpdates();
+    }
+});
+
+ipcMain.on('update:dismiss-normal', () => {
+    const state = readUpdateState(app);
+    if (state.status === 'ready_to_install' && state.isCritical === false) {
+        log.info('[UpdateIPC] Dismissing normal update');
+        transitionUpdateState(app, { status: 'idle' });
+    }
 });
 
 app.on('will-quit', stopBackend);

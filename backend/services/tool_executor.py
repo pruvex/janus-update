@@ -605,6 +605,15 @@ class ToolExecutor:
             "memory.modify": "memory_update",
             "memory.update": "memory_update",
             # ═══════════════════════════════════════════════════════════════════════════
+            # MEMORY DELETE ALIASE - Legacy -> memory_delete (V2.1 Gold Standard)
+            # ═══════════════════════════════════════════════════════════════════════════
+            "delete_memory": "memory_delete",
+            "remove_memory": "memory_delete",
+            "erase_memory": "memory_delete",
+            "memory.remove": "memory_delete",
+            "memory.erase": "memory_delete",
+            "memory.delete": "memory_delete",
+            # ═══════════════════════════════════════════════════════════════════════════
             # Contact Aliase
             "add_contact": "create_or_update_contact_tool",
             "update_contact": "create_or_update_contact_tool",

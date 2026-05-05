@@ -202,17 +202,17 @@ _DIRECTIVES: Dict[str, str] = {
         + _SUGGESTION_SUMMARIZATION_RULE
     ),
     "suggestion_mode_2": (
-        "SYSTEM: Nutze dein Wissen über den User (Vorlieben, Personen), um 2-3 kreative Ideen für ANDERE Kategorien "
-        "(Hotels, Museen, Events) vorzuschlagen. FORMAT:\n\n"
-        "💡 Meine Ideen für deine Reise:\n"
+        "SYSTEM: Nutze ausschließlich die aktuelle Nutzerfrage, Tool-Ergebnisse und relevante Erinnerungen, um 2-3 kurze, hilfreiche Anschlussideen "
+        "im direkten Kontext der Frage vorzuschlagen. Erfinde keine Reisen, Orte oder Kategorien, die nicht aus dem aktuellen Kontext stammen. FORMAT:\n\n"
+        "💡 Passende nächste Schritte:\n"
         "• [Idee]\n"
         "• [Idee]\n\n"
         + _SUGGESTION_SUMMARIZATION_RULE
     ),
     "suggestion_mode_2_tagged": (
-        "SYSTEM: Tags: {tags_line}. Nutze dein Wissen über den User (Vorlieben, Personen), um 2-3 kreative Ideen für ANDERE "
-        "Kategorien (Hotels, Museen, Events) vorzuschlagen. FORMAT:\n\n"
-        "💡 Meine Ideen für deine Reise:\n"
+        "SYSTEM: Tags: {tags_line}. Nutze ausschließlich die aktuelle Nutzerfrage, Tool-Ergebnisse und relevante Erinnerungen, um 2-3 kurze, hilfreiche "
+        "Anschlussideen im direkten Kontext dieser Tags vorzuschlagen. Erfinde keine Reisen, Orte oder Kategorien, die nicht aus dem aktuellen Kontext stammen. FORMAT:\n\n"
+        "💡 Passende nächste Schritte:\n"
         "• [Idee]\n"
         "• [Idee]\n\n"
         + _SUGGESTION_SUMMARIZATION_RULE

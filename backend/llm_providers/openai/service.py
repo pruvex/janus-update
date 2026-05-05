@@ -605,7 +605,7 @@ class OpenAIServiceProvider(BaseLLMProvider):
                 schema = {"type": "object", "properties": {}}
                 if isinstance(tool, dict) and isinstance(tool.get("parameters"), dict):
                     schema = tool.get("parameters")
-                
+
                 if args_schema_model:
                     if hasattr(args_schema_model, "model_json_schema"):
                         schema = args_schema_model.model_json_schema()
@@ -626,6 +626,12 @@ class OpenAIServiceProvider(BaseLLMProvider):
             except Exception as e:
                 logger.error(f"Überspringe Tool {getattr(tool, 'name', 'unknown')} wegen Konvertierungsfehler: {e}")
                 continue
+
+        # 💎 OPENAI_LIMIT: Max 128 tools (API hard limit)
+        if len(openai_tools) > 128:
+            logger.warning(f"[OPENAI_LIMIT] Truncating {len(openai_tools)} tools to 128 (OpenAI API limit)")
+            openai_tools = openai_tools[:128]
+
         return openai_tools
 
         

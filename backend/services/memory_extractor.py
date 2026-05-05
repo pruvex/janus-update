@@ -353,6 +353,13 @@ def should_skip_extraction_from_messages(user_msg: str, assistant_msg: str) -> b
     return False
 
 
+def _strip_assistant_suggestion_block(assistant_msg: str) -> str:
+    assistant_text = str(assistant_msg or "")
+    if not assistant_text.strip():
+        return ""
+    return re.split(r"(?im)^\s*💡\s", assistant_text, maxsplit=1)[0].strip()
+
+
 async def _generate_fact_extraction_items_with_self_healing(
     provider_instance: BaseLLMProvider,
     *,
@@ -910,7 +917,9 @@ async def extract_and_save_fact_from_interaction(
         return []
 
     try:
-        if should_skip_extraction_from_messages(user_msg, assistant_msg):
+        extraction_assistant_msg = _strip_assistant_suggestion_block(assistant_msg)
+
+        if should_skip_extraction_from_messages(user_msg, extraction_assistant_msg):
             logger.warning("Memory extraction failed - skipping due to validation error.")
             return []
 
@@ -926,7 +935,7 @@ async def extract_and_save_fact_from_interaction(
 
         # 2. Kurze Bestätigungen prüfen (Subjekt-Anker)
         is_short_confirmation = re.match(r'^(ja|genau|richtig|korrekt|yes|stimmt|hast recht)\b', user_msg.lower())
-        assistant_anchor_name = _get_subject_from_assistant_query(assistant_msg)
+        assistant_anchor_name = _get_subject_from_assistant_query(extraction_assistant_msg)
         
         if is_short_confirmation and assistant_anchor_name:
             subject_name_to_use = assistant_anchor_name
@@ -979,7 +988,7 @@ async def extract_and_save_fact_from_interaction(
         # Der KI-Aufruf muss die Ergebnisse in diese Variablen schreiben:
         messages = [
             {"role": "system", "content": current_system_prompt},
-            {"role": "user", "content": f"USER: {user_msg}\nASSISTANT: {assistant_msg}"}
+            {"role": "user", "content": f"USER: {user_msg}\nASSISTANT: {extraction_assistant_msg}"}
         ]
 
         request_messages = messages[-2:] if str(provider or "").strip().lower() == "ollama" else messages
@@ -1283,7 +1292,7 @@ async def extract_and_save_fact_from_interaction(
                     break # Nur eine Korrektur pro Fakt
             # --- IDENTITY GUARD ENDE ---
 
-            s_type = "vision" if "[VISION ANALYSE]" in assistant_msg else "text"
+            s_type = "vision" if "[VISION ANALYSE]" in extraction_assistant_msg else "text"
 
             if memory_manager.save_memory_snippet(
                 db=db, 
