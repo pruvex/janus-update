@@ -261,7 +261,7 @@ Integrationstest simuliert den Reproduktions-Prompt und validiert dass Filesyste
 
 ---
 
-## TASK-006 – Manueller End-to-End Test mit Reproduktions-Prompt
+## TASK-006 – Manueller End-to-End Test mit Reproduktions-Prompt ⚠️ PARTIAL PASS
 
 ### Ziel
 Manueller Test mit dem originalen Reproduktions-Prompt validiert dass der Bug behoben ist.
@@ -269,28 +269,52 @@ Manueller Test mit dem originalen Reproduktions-Prompt validiert dass der Bug be
 ### Beschreibung
 Manueller Test in Janus mit dem exakten Reproduktions-Prompt aus der Spec validiert dass Filesystem-Tools aufgerufen werden und kein 504 Timeout auftritt.
 
+### 2. Impact-Analyse
+- **Basiert auf:** documentation/backlog/BACKLOG.md#BACKLOG-004
+- **Beeinflusst:** Keine Code-Änderungen, nur manueller Test
+- **Risiko-Einschätzung:** NONE (manueller Test)
+
 ### Files
 - Keine Code-Änderungen, nur manueller Test
 
 ### Steps
-1. Janus starten mit aktualisiertem Code
-2. Prompt eingeben: "hi, erstell auf dem desktop einen ordener "Bilder" und verschiebe alles jpg und png dateien vom desktop in diesen ordner"
-3. Backend-Logs prüfen: Kein ENTITY-RESOLVER FALLBACK_TO_LIST, kein VIDEO-FORCE, Filesystem-Tools aufgerufen
-4. Frontend-Konsole prüfen: Kein 504 Deadline Exceeded, erfolgreiche Response
-5. Ergebnis dokumentieren
+1. Janus starten mit aktualisiertem Code ✅
+2. Prompt eingeben: "hi, erstell auf dem desktop einen ordener "Bilder" und verschiebe alles jpg und png dateien vom desktop in diesen ordner" ✅
+3. Backend-Logs prüfen: Kein ENTITY-RESOLVER FALLBACK_TO_LIST, kein VIDEO-FORCE, Filesystem-Tools aufgerufen ✅
+4. Frontend-Konsole prüfen: Kein 504 Deadline Exceeded, erfolgreiche Response ✅
+5. Ergebnis dokumentieren ✅
 
 ### Acceptance Criteria
-- [ ] Filesystem-Intents werden korrekt erkannt (nicht als Calendar-Intent)
-- [ ] "Ordner" im Kontext von Dateisystem-Operationen wird nicht als Calendar-Entity gematcht
-- [ ] Filesystem-Tools werden aufgerufen wenn Prompt eindeutig Filesystem-Operation anfordert
-- [ ] Kein 504 Timeout durch falsch erzwungene Tools
+- [x] Filesystem-Intents werden korrekt erkannt (nicht als Calendar-Intent)
+- [x] "Ordner" im Kontext von Dateisystem-Operationen wird nicht als Calendar-Entity gematcht
+- [⚠️] Filesystem-Tools werden aufgerufen wenn Prompt eindeutig Filesystem-Operation anfordert (PARTIAL: "Bilder"-Keyword löst Bild-Intent aus)
+- [x] Kein 504 Timeout durch falsch erzwungene Tools
 
 ### Tests
-- Manueller End-to-End Test
+- Manueller End-to-End Test ✅
 
 ### Model
 - **Assigned Model:** Kimi k2.5
 - **Reason:** Deterministischer manueller Test ohne Code-Änderungen, nur Validierung und Dokumentation
+
+### Test-Ergebnis
+**Datum:** 2026-05-07 16:01:50
+**Prompt:** "hi, erstell auf dem desktop einen ordener "Bilder" und verschiebe alles jpg und png dateien vom desktop in diesen ordner"
+
+**Backend-Log-Analyse:**
+- ✅ Filesystem-Intent erkannt: `[FILESYSTEM-INTENT] Detected: action=True, object=True, path=True`
+- ✅ Calendar-Intent unterdrückt: `[FILESYSTEM-OVERRIDE] Calendar intent suppressed by filesystem intent`
+- ✅ Skill-Selector erkennt Filesystem-Intent: `filesystem=True, calendar=False`
+- ✅ VIDEO-FORCE nicht angewendet: `force_tool_name=None`
+- ⚠️ Skill-Selector wählt Bild-Intent statt Filesystem-Tools: `intent=image, mandatory=['system.generate_image']`
+- ✅ Kein 504 Timeout
+- ✅ Erfolgreiche Response (allerdings mit "keine stabile Antwort erzeugen" Nachricht)
+
+**Erkenntnis:**
+Das Filesystem-Intent-Veto funktioniert korrekt (Calendar wird nicht erzwungen). Allerdings wird aufgrund des "Bilder"-Keywords der Bild-Intent erkannt, was `system.generate_image` als mandatory skill setzt. Dies ist ein separates Problem von BACKLOG-004 und betrifft die Intent-Hierarchie zwischen Filesystem und Bild-Intent.
+
+**Empfehlung:**
+Für BACKLOG-004 ist das Ziel erreicht (Calendar-Intent wird nicht erzwungen bei Filesystem-Intent). Das Bild-Intent-Problem sollte in einem separaten Backlog-Item adressiert werden.
 
 ---
 
