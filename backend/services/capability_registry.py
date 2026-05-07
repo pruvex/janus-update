@@ -425,6 +425,23 @@ class CapabilityRegistry:
 
         primary = str(getattr(intent_result, "primary_intent", "") or "")
 
+        # Diamond: PDF nur noch bei explizitem Wunsch, Bild+PDF-Pipeline oder komplexem Dokument-Metaflow.
+        pdf_allowed = (
+            _flag("is_multitask_image_pdf")
+            or _flag("is_complex_document_request")
+            or _flag("is_explicit_pdf_intent")
+        )
+        if not pdf_allowed:
+            forbidden += ["system.create_pdf"]
+
+        if _flag("is_routing_geo_intent") or primary == "routing_geo":
+            boosted += ["system.routing"]
+
+        if _flag("is_weather_intent") or primary == "weather":
+            # Mandatory: SkillSelector universe comes from registry skill_refs; weather must stay
+            # available even when boosted-only skills would otherwise be dropped from the tool list.
+            mandatory += ["system.weather"]
+
         if _flag("is_calendar_intent") or primary == "calendar":
             mandatory += ["calendar.list_events", "calendar.find_slots", "calendar.find_and_update_event"]
             forbidden += ["system.create_pdf", "knowledge.edit_pdf", "system.generate_image"]
@@ -445,7 +462,15 @@ class CapabilityRegistry:
             mandatory += ["video.search", "system.video_search"]
             boosted += ["system.websearch"]
 
-        if _flag("is_image_intent") and not _flag("is_multitask_image_pdf"):
+        # 💎 TASK-005: BACKLOG-005 - Filesystem-Intent hat Vorrang vor Bild-Intent
+        # Wenn Filesystem-Intent erkannt wurde, hat er Vorrang vor Bild-Intent
+        is_filesystem = _flag("is_filesystem_intent") or primary == "filesystem"
+        is_image = _flag("is_image_intent") or primary == "image"
+        if is_filesystem and is_image:
+            # Filesystem-Intent hat Vorrang, Bild-Intent wird ignoriert
+            is_image = False
+
+        if is_image and not _flag("is_multitask_image_pdf"):
             mandatory += ["system.generate_image"]
 
         if _flag("is_multitask_image_pdf"):

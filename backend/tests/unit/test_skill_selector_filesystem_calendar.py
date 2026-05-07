@@ -197,3 +197,40 @@ class TestSkillSelectorFilesystemCalendar:
             "Filesystem-Intent overrides Image-Intent" in record.message
             for record in caplog.records
         )
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Registry-based Tests (TASK-005: BACKLOG-005)
+    # ─────────────────────────────────────────────────────────────────────────
+
+    def test_registry_filesystem_intent_overrides_image_intent(self):
+        """Test: Registry get_intent_skill_policy: Filesystem-Intent überschreibt Bild-Intent."""
+        from backend.services.capability_registry import CapabilityRegistry
+
+        # Registry mit minimalem Setup erstellen
+        registry = CapabilityRegistry(registry_path="/dev/null", skills_dir="/dev/null")
+
+        intent_result = IntentDetectionResult(
+            is_filesystem_intent=True,
+            is_image_intent=True,
+            primary_intent="filesystem"
+        )
+        policy = registry.get_intent_skill_policy(intent_result)
+
+        # Bild-Intent sollte nicht als mandatory gesetzt werden
+        assert "system.generate_image" not in policy["mandatory"]
+
+    def test_registry_image_intent_without_filesystem_context(self):
+        """Test: Registry get_intent_skill_policy: Reiner Bild-Kontext wird weiterhin als Bild-Intent erkannt."""
+        from backend.services.capability_registry import CapabilityRegistry
+
+        registry = CapabilityRegistry(registry_path="/dev/null", skills_dir="/dev/null")
+
+        intent_result = IntentDetectionResult(
+            is_filesystem_intent=False,
+            is_image_intent=True,
+            primary_intent="image"
+        )
+        policy = registry.get_intent_skill_policy(intent_result)
+
+        # Bild-Intent sollte als mandatory gesetzt werden
+        assert "system.generate_image" in policy["mandatory"]
