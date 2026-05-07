@@ -558,10 +558,12 @@ def move_files(source_directory: str, destination_directory: str, file_names: li
 
         moved_count = 0
         errors: list[str] = []
+        moved_files: list[str] = []
         for file_path in files_to_move:
             try:
                 shutil.move(str(file_path), str(safe_dest_dir))
                 moved_count += 1
+                moved_files.append(str(file_path))
             except Exception as e:
                 errors.append(f"Konnte '{file_path.name}' nicht verschieben: {e}")
 
@@ -576,9 +578,12 @@ def move_files(source_directory: str, destination_directory: str, file_names: li
                 f"{error_details}"
             )
         else:
+            # 💎 TASK-005: BACKLOG-005 - Detaillierte Ausgabe für verschobene Dateien
+            # Zeige die verschobenen Dateien mit ihren Pfaden an
+            moved_files_output = "\n".join(moved_files)
             output = (
                 f"Alle {moved_count} Dateien wurden erfolgreich nach "
-                f"'{destination_directory}' verschoben."
+                f"'{destination_directory}' verschoben:\n{moved_files_output}"
             )
 
         return _fs_ok(
