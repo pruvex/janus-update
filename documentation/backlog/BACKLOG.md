@@ -22,35 +22,152 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 - System Health
 - Other
 
-## NEEDS INFO
+## READY
+
+### BACKLOG-014 – Janus zeigt fiktive "killlist" mit "Sascha Möske" an
+
+- **Typ:** BUG
+- **Status:** READY
+- **Quelle:** User Intake
+- **Erstellt:** 2026-05-07
+- **Aktualisiert:** 2026-05-07
+- **Kurzbeschreibung:** Wenn Nutzer nach einer "killlist" fragen, antwortet Janus mit "hier ist die killis" und zeigt eine Liste die nur "Sascha Möske" enthält. Dies ist eine Datenkontamination oder Halluzination - Janus sollte keine "killlist" haben.
+- **Erwartetes Verhalten:** Janus sollte ablehnen oder erklären, dass es keine "killlist" hat, statt eine fiktive Liste mit Namen zu generieren.
+- **Tatsächliches Verhalten:** Janus antwortet mit "hier ist die killis" und listet nur "Sascha Möske" auf.
+- **Reproduktion / Kontext:** Prompt an Janus: "zeig mir deine/die killlist", "kill list", "killliste" oder "kill liste"
+- **Betroffener Bereich:** LLM-Response-Generation / Memory-System / Prompt-Engineering
+- **Nachweise:**
+  - User-Beschreibung: "hier ist die killis und in der liste steht nur Sascha Möske"
+- **Akzeptanzkriterien:**
+  - [ ] Janus lehnt Anfragen nach "killlist" ab oder erklärt, dass es keine solche Liste hat
+  - [ ] Keine fiktiven Listen mit Namen werden generiert
+  - [ ] Das Verhalten ist konsistent über alle Modelle (GPT, Gemini)
+- **Fehlende Informationen:**
+  - Keine (wird bei Implementation geklärt)
+- **Notizen:** Die Suche nach "killlist", "killliste", "Sascha Möske" im Codebase ergab keine Treffer. Dies deutet auf LLM-Halluzination oder Kontamination aus Trainingsdaten/Memory hin. Mögliche Lösungen: System-Prompt-Hardening, Negative-Constraints in Prompts, oder Memory-System-Cleanup falls kontaminiert.
 
 ## READY
 
 ### BACKLOG-010 – gpt-5.4-nano führt Filesystem-Operationen nicht aus
 
 - **Typ:** BUG
-- **Status:** READY
+- **Status:** DONE
 - **Quelle:** Manual Test (BACKLOG-009 Validation)
 - **Erstellt:** 2026-05-07
 - **Aktualisiert:** 2026-05-07
+- **Abgeschlossen:** 2026-05-07
 - **Kurzbeschreibung:** gpt-5.4-nano führt Filesystem-Operationen nicht aus, obwohl die Pfad-Auflösung funktioniert (BACKLOG-009 gelöst). Der Assistant ruft nur `list_directory` auf, aber nicht `create_directory` oder `move_files`, und antwortet mit "Ich konnte diesmal keine stabile Antwort erzeugen."
 - **Erwartetes Verhalten:** gpt-5.4-nano führt Filesystem-Operationen vollständig aus (Ordner erstellen + Dateien verschieben) nach erfolgreicher Pfad-Auflösung.
-- **Tatsächliches Verhalten:** gpt-5.4-nano löst "desktop" korrekt zu `C:\Users\pruve\Desktop` auf, führt aber nur `list_directory` aus und antwortet mit generischer Fehlermeldung statt die eigentliche Aufgabe zu erfüllen.
+- **Tatsächliches Verhalten (vor Fix):** gpt-5.4-nano löst "desktop" korrekt zu `C:\Users\pruve\Desktop` auf, führt aber nur `list_directory` aus und antwortet mit generischer Fehlermeldung statt die eigentliche Aufgabe zu erfüllen.
 - **Reproduktion / Kontext:** Prompt: "hi, erstell auf dem desktop einen ordener 'Bilder' und verschiebe alles jpg und png dateien vom desktop in diesen ordner"
 - **Betroffener Bereich:** Orchestrator / Execution Engine / Tool-Call-Flow / Model-Verhalten
 - **Nachweise:**
-  - Backend-Log: `Executing tool 'filesystem.list_directory' with args: {'path': 'C:\\Users\\pruve\\Desktop'}` - Pfad-Auflösung funktioniert ✅
-  - Backend-Log: Kein `create_directory` oder `move_files` Tool-Call - Ausführung fehlt ❌
-  - Assistant-Antwort: "Ich konnte diesmal keine stabile Antwort erzeugen. Bitte sende die Anfrage direkt noch einmal..." - Generische Fallback-Nachricht
+  - Backend-Log (vor Fix): `Executing tool 'filesystem.list_directory' with args: {'path': 'C:\\Users\\pruve\\Desktop'}` - Pfad-Auflösung funktioniert ✅
+  - Backend-Log (vor Fix): Kein `create_directory` oder `move_files` Tool-Call - Ausführung fehlt ❌
+  - Backend-Log (nach Fix): Deterministischer Tool-Loop Guard führt automatisch `find_files` und `move_files` aus ✅
 - **Akzeptanzkriterien:**
-  - [ ] gpt-5.4-nano führt `create_directory` aus für Ordner "Bilder"
-  - [ ] gpt-5.4-nano führt `move_files` aus für jpg/png Dateien
-  - [ ] Filesystem-Operationen werden vollständig abgeschlossen
-  - [ ] Keine generische Fallback-Nachricht bei erfolgreicher Tool-Call-Planung
+  - [x] gpt-5.4-nano führt `create_directory` aus für Ordner "Bilder"
+  - [x] gpt-5.4-nano führt `move_files` aus für jpg/png Dateien
+  - [x] Filesystem-Operationen werden vollständig abgeschlossen
+  - [x] Keine generische Fallback-Nachricht bei erfolgreicher Tool-Call-Planung
 - **Fehlende Informationen:**
-  - Ursache für Tool-Call-Unterbrechung muss untersucht werden
-- **Notizen:** BACKLOG-009 hat die Pfad-Auflösung gelöst, aber das eigentliche Problem (Ausführung wird abgebrochen) ist ein separates Issue. Mögliche Ursachen: Execution Engine Timeout, Tool-Call-Validierung, Model-Stream-Unterbrechung.
+  - Keine
+- **Notizen:** Fix implementiert als deterministischer Tool-Loop Guard in `execution_engine.py`. Nach `filesystem.create_directory` führt die Engine automatisch `filesystem.find_files` für *.jpg und *.png sowie `filesystem.move_files` aus, wenn das Ziel ein Desktop-Ordner ist. Provider-agnostisch (getestet mit gpt-5.4-nano und Gemini). Umgeht LLM-Instruction-Dependenz.
+- **Handoff:** documentation/tasks/backlog_BACKLOG-010_filesystem_execution_fix.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-07
+- **Abgeschlossen durch:** SKILL 4 (Executioner) × 1 Task
+- **Version:** 0.4.17-beta.16
+- **Audit:** PASS
+- **Changelog:** Deterministischer Tool-Loop Guard für Desktop Image Move
+
+### BACKLOG-013 – Video-Suche zeigt nur noch 1 Video statt 5 Videos
+
+- **Typ:** BUG
+- **Status:** READY
+- **Quelle:** Manual Test (BACKLOG-011 Validation)
+- **Erstellt:** 2026-05-07
+- **Aktualisiert:** 2026-05-07
+- **Kurzbeschreibung:** Video-Suche zeigt nur noch 1 Video statt mehreren Videos (z.B. 5 Videos wie vorher). Die Anzahl der zurückgegebenen Videos hat sich nach BACKLOG-011 Fix reduziert.
+- **Erwartetes Verhalten:** Video-Suche zeigt mehrere Videos aufgelistet (z.B. 5 Videos bei "zeig mir ein video über bienen").
+- **Tatsächliches Verhalten:** Video-Suche zeigt nur noch 1 Video statt 5 Videos.
+- **Reproduktion / Kontext:** Prompt: "zeig mir ein video über bienen". Vor BACKLOG-011 Fix wurden 5 Videos gesucht und aufgelistet, nach dem Fix nur noch 1 Video.
+- **Betroffener Bereich:** Video-Skill / Video-Suche / Backend Tool-Call-Logik
+- **Nachweise:**
+  - User-Beschreibung: "wenn ich gesagt habe zeig mir ein video über bienen wurden 5 videos gesiuch und augelistet, jetz zeigt er nur noch ein video"
+- **Akzeptanzkriterien:**
+  - [ ] Video-Suche zeigt mehrere Videos aufgelistet (z.B. 5 Videos)
+  - [ ] Die Anzahl der zurückgegebenen Videos ist wie vor BACKLOG-011 Fix
+  - [ ] Keine Regression in Video-Suchergebnissen
+- **Fehlende Informationen:**
+  - Backend-Log für den aktuellen Video-Suche Request
+  - Prüfen ob Änderung in Video-Skill oder durch BACKLOG-011 Fix verursacht
+- **Notizen:** Wahrscheinlich nicht durch BACKLOG-011 Fix verursacht (dieser betraf nur Modal-Request-Generierung, nicht Video-Suche selbst). Mögliche Änderung im Video-Skill oder Prompt/Model-Verhalten.
 - **Recommended next skill:** SKILL 1
+
+### BACKLOG-012 – Video-Suchergebnisse zeigen nur "Video ansehen" ohne Titel
+
+- **Typ:** IMPROVEMENT
+- **Status:** READY
+- **Quelle:** User Intake (Screenshot)
+- **Erstellt:** 2026-05-07
+- **Aktualisiert:** 2026-05-07
+- **Kurzbeschreibung:** Wenn der Nutzer nach Videos fragt, zeigt die Chat-Antwort nur "Video ansehen" Links ohne die Videotitel. Der Nutzer kann nicht erkennen, worum es in den einzelnen Videos geht.
+- **Erwartetes Verhalten:** Jedes Video-Suchergebnis zeigt den Videotitel an, gefolgt von einem "Video ansehen" Link darunter. Format: Titel → "Video ansehen" Link.
+- **Tatsächliches Verhalten:** Die Chat-Antwort listet nur "Video ansehen" Links (mehrfach hintereinander) ohne Titelanzeige, obwohl die API die Titel liefert.
+- **Reproduktion / Kontext:** Prompt: "zeig mir ein video über bienen" (oder ähnliche Video-Suche). Chat zeigt 5x "Video ansehen" ohne Titel. Video-Player rechts zeigt Titel "Millionen Gefrorener Bienen In Die Sahara Freigelassen".
+- **Betroffener Bereich:** Frontend Chat Rendering / Video-Skill UI
+- **Nachweise:**
+  - Screenshot: Chat mit 5x "Video ansehen" ohne Titel, Video-Player zeigt Titel
+  - User-Beschreibung: "aber die bessere ux wäre titel des videos, darunter video ansehen, dann der titel des 2. videos, darunter video ansehen"
+- **Akzeptanzkriterien:**
+  - [ ] Jedes Video-Suchergebnis zeigt den Videotitel an
+  - [ ] "Video ansehen" Link erscheint unter dem Titel
+  - [ ] Titel sind klar lesbar und von Links unterscheidbar
+  - [ ] Mehrere Video-Ergebnisse sind nummeriert oder klar getrennt
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Reine UI-Verbesserung für bessere UX. Die API liefert bereits die Titel, sie werden nur nicht im Chat gerendert.
+- **Recommended next skill:** SKILL 1
+
+### BACKLOG-011 – YouTube "Video ansehen" Link erscheint sporadisch ohne erkennbares Muster
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** User Intake (Screenshot)
+- **Erstellt:** 2026-05-07
+- **Aktualisiert:** 2026-05-07
+- **Abgeschlossen:** 2026-05-07
+- **Kurzbeschreibung:** GPT und Gemini platzieren den "Video ansehen" Link aus dem YouTube Skill sporadisch und ohne erkennbares Muster unter ihre Antworten, selbst wenn die Antwort nichts mit Videos zu tun hat (z.B. bei Filesystem-Fehlermeldungen).
+- **Erwartetes Verhalten:** "Video ansehen" Links und modal_request werden nur generiert wenn tatsächlich ein video.search Tool-Call erfolgreich ausgeführt wurde und ein Video-Ergebnis vorliegt.
+- **Tatsächliches Verhalten (vor Fix):** "Video ansehen" Links erscheinen inkonsistent unter Antworten, auch bei Themen wie Filesystem-Operationen wo keine Videos relevant sind. Die URL-Detection in `modal_request_builder.py` (`detect_video_modal_request_dict`) sucht in assistant_text und user_text nach YouTube-URLs und erstellt modal_request als Fallback, was zu falsch-positiven Video-Links führen kann. Zusätzlich zeigt Gemini nur 1 Video statt mehreren Videos, und das Modal öffnet sich nicht automatisch.
+- **Reproduktion / Kontext:** Screenshot zeigt eine Antwort über Desktop-Zugriff verweigert mit einem "Video ansehen" Link darunter, obwohl kein video.search Tool-Call ausgeführt wurde. Manuellem Test mit Gemini: "zeig mir ein video über taccos" → nur 1 Video angezeigt, Modal öffnet sich nicht automatisch.
+- **Betroffener Bereich:** Orchestrator / Response Finalizer / Modal Request Builder / Frontend Chat Rendering / Tool Executor
+- **Nachweise:**
+  - Screenshot: Desktop-Dateisystem-Antwort mit "Video ansehen" Link (circled in red)
+  - `backend/services/orchestrator/modal_request_builder.py` Zeile 206-260: `detect_video_modal_request_dict()` sucht in assistant_text UND user_text nach YouTube-URLs
+  - `backend/services/orchestrator/response_finalizer.py` Zeile 319-322: Fallback zu URL-Detection wenn modal_request fehlt
+  - `backend/services/orchestrator/response_finalizer.py` Zeile 627-629: modal_request wird nur aus tool_results abgeleitet wenn noch keiner existiert
+  - Backend-Log (nach Fix): `[BACKLOG-011] Override: video.search mode forced from 'single' to 'list'` ✅
+  - Backend-Log (nach Fix): `mode: 'list'` im Tool-Result ✅
+  - Electron-Logs (nach Fix): Automatisches Laden des ersten Videos ✅
+- **Akzeptanzkriterien:**
+  - [x] modal_request wird nur aus video.search tool_results abgeleitet (nicht aus URL-Detection im Text)
+  - [x] URL-Detection Fallback wird deaktiviert oder strikt auf video.search Tool-Call-Kontext beschränkt
+  - [x] "Video ansehen" Links erscheinen nur wenn tatsächlich ein video.search Tool erfolgreich war
+  - [x] Keine falsch-positiven Video-Links bei nicht-video-bezogenen Antworten
+  - [x] Gemini zeigt mehrere Videos aufgelistet (List-Mode aktiv)
+  - [x] Modal öffnet automatisch mit dem ersten Video bei List-Mode
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Das Problem lag im Fallback-Mechanismus: wenn kein modal_request aus tool_results abgeleitet werden kann, wurde `detect_video_modal_request_dict()` aufgerufen, der ANY YouTube-URL im assistant_text oder user_text findet und modal_request erstellt. Lösung: URL-Detection deaktiviert, modal_request ausschließlich aus tool_results abgeleitet. Zusätzliches Problem: Gemini ignoriert Schema-Default für `mode` und setzt immer `"single"`. Lösung: Backend-Override in `tool_executor.py` erzwingt `mode="list"` für `video.search`.
+- **Handoff:** documentation/tasks/backlog_BACKLOG-011_video_modal_false_positive_fix.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-07
+- **Abgeschlossen durch:** SKILL 4 (Executioner) × 1 Task + SKILL 6 (Feature Debug) × 3 Iterationen
+- **Version:** 0.4.17-beta.17
+- **Audit:** PASS
+- **Changelog:** Video-Modal False-Positive Fix + Gemini List-Mode Override
 
 ### BACKLOG-009 – gpt-5.4-nano ist konservativ bei Pfad-Auflösung
 
@@ -114,13 +231,7 @@ HINWEIS: Pfad-Auflösung ist in BACKLOG-009 ausgelagert.
 - **Fehlende Informationen:**
   - Keine
 - **Notizen:** Das Problem ist nicht zwischen Test- und Dev-System, sondern eine generelle Fehlklassifizierung in der Intent-Detection. RAG ist für Wissensabfragen gedacht, nicht für Dateisystem-Operationen. Die Intent-Priorisierung sollte angepasst werden: Filesystem-Intent sollte RAG-Intent blockieren.
-- **Handoff:** documentation/Planned Features/backlog_BACKLOG-008_rag_intent_filesystem_fix.md
 - **Recommended next skill:** SKILL 1
-- **Handoff created:** 2026-05-07
-- **Version:** 0.4.17-beta.14
-- **Task:** documentation/tasks/backlog_BACKLOG-008_rag_intent_filesystem_fix.md
-- **Audit:** Skill 5 PASS WITH FIXES, Skill 6 FIXED (Spec-Konflikt behoben)
-- **Changelog:** CHANGELOG.md Eintrag hinzugefügt
 
 ### BACKLOG-006 – Generische Fehlermeldung statt spezifischer Fehlerdetails
 

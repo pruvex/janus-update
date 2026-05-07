@@ -7,6 +7,11 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+## [0.4.17-beta.17] - 2026-05-07
+
+### Fixed
+- **BACKLOG-011:** Video-Modal False-Positive Fix + Gemini List-Mode Override. URL-Detection Fallback in `response_finalizer.py` deaktiviert, modal_request wird ausschließlich aus video.search tool_results abgeleitet. Zusätzlich Backend-Override in `tool_executor.py` erzwingt `mode="list"` für `video.search`, da Gemini den Schema-Default ignoriert und immer `"single"` setzt. Gemini zeigt jetzt mehrere Videos aufgelistet und das Modal öffnet automatisch mit dem ersten Video.
+
 ## [0.4.17-beta.16] - 2026-05-07
 
 ### Fixed
