@@ -1,7 +1,7 @@
 {
   "legacy_name": "move_files",
   "skill": "filesystem.move_files",
-  "description": "WICHTIG: Nutze DIESES Tool für das Verschieben mehrerer Dateien. Wenn du Dateien in verschiedene Themen-Ordner sortierst, rufe dieses Tool mehrfach auf (genau 1x pro Zielordner) und übergib die jeweilige Liste an Dateinamen.",
+  "description": "WICHTIG: Nutze DIESES Tool für das Verschieben mehrerer Dateien. Wenn du Dateien in verschiedene Themen-Ordner sortierst, rufe dieses Tool mehrfach auf (genau 1x pro Zielordner) und übergib die jeweilige Liste an Dateinamen. WICHTIG: Wenn du zuvor 'filesystem.find_files' aufgerufen hast, um Dateien zu finden, MUSST du dieses Tool aufrufen, um die gefundenen Dateien tatsächlich zu verschieben. Extrahiere die Dateinamen aus der Ausgabe von 'find_files' und übergib sie als 'file_names' Liste.",
   "version": "1.0.0",
   "sandbox_level": "full",
   "latency_class": "fast",
