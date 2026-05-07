@@ -26,6 +26,65 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 
 ## READY
 
+### BACKLOG-005 – Bild-Intent hat Vorrang vor Filesystem-Intent bei gemischten Keywords
+
+- **Typ:** BUG
+- **Status:** READY
+- **Quelle:** Manual Test (TASK-006 von BACKLOG-004)
+- **Erstellt:** 2026-05-07
+- **Aktualisiert:** 2026-05-07
+- **Kurzbeschreibung:** Bei Prompts mit sowohl Filesystem- als auch Bild-Keywords (z.B. "Bilder" im Kontext eines Ordners) wird der Bild-Intent erkannt und system.generate_image als mandatory skill gesetzt, statt Filesystem-Tools aufzurufen.
+- **Erwartetes Verhalten:** Prompt "erstell auf dem desktop einen ordner 'Bilder' und verschiebe jpg/png dateien" wird als Filesystem-Intent erkannt und filesystem.create_directory / filesystem.move_files aufgerufen (nicht system.generate_image).
+- **Tatsächliches Verhalten:** Skill-Selector erkennt `intent=image` und setzt `mandatory=['system.generate_image']`, obwohl Filesystem-Intent auch erkannt wird (`filesystem=True, calendar=False`).
+- **Reproduktion / Kontext:** Prompt an Gemini: "hi, erstell auf dem desktop einen ordener "Bilder" und verschiebe alles jpg und png dateien vom desktop in diesen ordner"
+- **Betroffener Bereich:** Intent-Engine / Skill-Selector / Intent-Hierarchie
+- **Nachweise:**
+  - Backend-Log: `[SKILL-SELECTOR] Selected 3 skills (intent=image, filesystem=True, calendar=False): mandatory=['system.generate_image']`
+  - Backend-Log: `[FILESYSTEM-INTENT] Detected: action=True, object=True, path=True`
+  - Backend-Log: `[FILESYSTEM-OVERRIDE] Calendar intent suppressed by filesystem intent`
+- **Akzeptanzkriterien:**
+  - [ ] Filesystem-Intent hat Vorrang vor Bild-Intent bei gemischten Keywords
+  - [ ] "Bilder" im Kontext von Dateisystem-Operationen wird nicht als Bild-Intent interpretiert
+  - [ ] Filesystem-Tools werden aufgerufen bei eindeutigem Filesystem-Kontext
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Dies ist ein separates Problem von BACKLOG-004. BACKLOG-004 hat das Calendar-Intent-Problem gelöst, aber die Intent-Hierarchie zwischen Filesystem und Bild muss angepasst werden. Filesystem sollte Vorrang haben wenn der Kontext eindeutig Dateisystem-Operation ist.
+- **Recommended next skill:** SKILL 1
+
+### BACKLOG-004 – Intent-Resolver erkennt Filesystem-Befehle fälschlich als Calendar-Intent
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-05-07
+- **Aktualisiert:** 2026-05-07
+- **Abgeschlossen:** 2026-05-07
+- **Kurzbeschreibung:** Filesystem-Befehle werden vom Intent-Resolver fälschlich als Calendar-Intent erkannt, was dazu führt, dass calendar.list_events erzwungen wird statt Filesystem-Tools aufzurufen. Result: 504 Deadline Exceeded.
+- **Erwartetes Verhalten:** Prompt "erstell auf dem desktop einen ordner 'Bilder' und verschiebe jpg/png dateien" wird als Filesystem-Intent erkannt und filesystem.create_directory / filesystem.move_files aufgerufen.
+- **Tatsächliches Verhalten (vor Fix):** Entity-Resolver erkennt "Ordner" als WEAK_MATCH, zwingt calendar.list_events (VIDEO-FORCE), Filesystem-Tools werden nie aufgerufen, Request endet mit 504 Deadline Exceeded.
+- **Reproduktion / Kontext:** Prompt an Gemini: "hi, erstell auf dem desktop einen ordener "Bilder" und verschiebe alles jpg und png dateien vom desktop in diesen ordner"
+- **Betroffener Bereich:** Intent-Resolver / Entity-Resolver / Orchestrator / Skill-Selector
+- **Nachweise:**
+  - Backend-Log: `💎 ENTITY-RESOLVER FALLBACK_TO_LIST: mutation target 'Ordner' is WEAK_MATCH (below_threshold). Forcing list_events for provider=gemini`
+  - Backend-Log: `💎 VIDEO-FORCE (stream): Forcing tool_choice=calendar.list_events on iteration 0`
+  - Frontend-Konsole: `[SSE] Error chunk: 504 Deadline Exceeded`
+  - Massive GEMINI-THOUGHT-SIGNATURE Loop logs (calendar_list_events wird wiederholt aufgerufen)
+- **Akzeptanzkriterien:**
+  - [x] Filesystem-Intents werden korrekt erkannt (nicht als Calendar-Intent)
+  - [x] "Ordner" im Kontext von Dateisystem-Operationen wird nicht als Calendar-Entity gematcht
+  - [x] Filesystem-Tools werden aufgerufen wenn Prompt eindeutig Filesystem-Operation anfordert
+  - [x] Kein 504 Timeout durch falsch erzwungene Tools
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Root Cause: Intent-Resolver hat falsche Priorisierung - Calendar-Safety-Net und Entity-Resolver greifen zu aggressiv bei Wörtern wie "Ordner". Filesystem-Keywords sollten Calendar-Keywords überschreiben wenn der Kontext eindeutig Dateisystem-Operation ist.
+- **Handoff:** documentation/Planned Features/backlog_BACKLOG-004_intent_resolver_filesystem_calendar_fix.md
+- **Recommended next skill:** SKILL 1
+- **Handoff created:** 2026-05-07
+- **Abgeschlossen durch:** SKILL 4 (Executioner) × 6 Tasks
+- **Version:** 0.4.17-beta.12
+- **Audit:** PARTIAL PASS (Hauptziel erreicht, Bild-Intent-Hierarchie-Problem separat in BACKLOG-005)
+- **Changelog:** Filesystem-Intent-Priorisierung, Entity-Resolver WEAK_MATCH-Fallback, Orchestrator VIDEO-FORCE Guard, Skill-Selector Filesystem-vs-Calendar-Erkennung
+
 ## IN PROGRESS
 
 ## DONE
