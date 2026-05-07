@@ -26,10 +26,65 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 
 ## READY
 
+### BACKLOG-006 – Generische Fehlermeldung statt spezifischer Fehlerdetails
+
+- **Typ:** IMPROVEMENT
+- **Status:** READY
+- **Quelle:** User Intake
+- **Erstellt:** 2026-05-07
+- **Aktualisiert:** 2026-05-07
+- **Kurzbeschreibung:** Wenn etwas nicht funktioniert, geben die Modelle oft eine generische Fehlermeldung "Ich konnte diesmal keine stabile Antwort erzeugen. Bitte sende die Anfrage direkt noch einmal; ich versuche es dann mit einem robusten Neuaufbau." statt genau zu sagen, wo das Problem liegt.
+- **Erwartetes Verhalten:** Fehlermeldungen enthalten spezifische Details über den tatsächlichen Fehler: welches Tool fehlgeschlagen ist, welcher Fehlercode aufgetreten ist, welche Exception geworfen wurde, welcher Provider/Model betroffen ist.
+- **Tatsächliches Verhalten:** Generische Fallback-Nachricht in `execution_dispatcher.py` Zeile 822 wird ohne Fehlerdetails verwendet. Der `fallback_summary` wird an `execution_engine.run_tool_loop()` übergeben und als Fallback bei Exceptions (Zeile 1238-1254), Stream-Crashes (Zeile 2363-2365), leeren Tool-Round-Ergebnissen (Zeile 2400) und leeren Text-Ergebnissen (Zeile 2723) verwendet.
+- **Reproduktion / Kontext:** Wenn ein LLM-Aufruf oder Tool-Aufruf fehlschlägt, wird der statische `fallback_summary` zurückgegeben ohne Informationen über den tatsächlichen Fehler.
+- **Betroffener Bereich:** Orchestrator / Execution Engine / Error Handling / User Experience
+- **Nachweise:**
+  - `backend/services/orchestrator/execution_dispatcher.py` Zeile 822: `wf.fallback_summary = 'Ich konnte diesmal keine stabile Antwort erzeugen...'`
+  - `backend/services/orchestrator/execution_engine.py` Zeile 1238-1254: Exception-Handler verwendet `fallback_summary` ohne Fehlerdetails
+  - `backend/services/orchestrator/execution_engine.py` Zeile 2363-2365: Stream-Crash-Handler verwendet `fallback_summary` ohne Fehlerdetails
+  - `backend/services/orchestrator/execution_engine.py` Zeile 1750-1779: Tool-Fehler werden bereits mit `error_code` und `error_message` extrahiert, aber nicht an den Fallback übergeben
+- **Akzeptanzkriterien:**
+  - [ ] `fallback_summary` wird dynamisch basierend auf dem tatsächlichen Fehler generiert
+  - [ ] Fehlermeldungen enthalten: Fehlercode, Fehlermeldung, betroffenes Tool (falls zutreffend), Provider/Model (falls zutreffend)
+  - [ ] Backend-Logs enthalten weiterhin die vollständigen Exception-Details für Debugging
+  - [ ] User erhält hilfreiche, spezifische Fehlerinformationen statt generischer Nachricht
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Das Problem ist nicht, dass Fehler auftreten, sondern dass die Fehlermeldung für den User nicht hilfreich ist. Die Execution-Engine extrahiert bereits Fehlerdetails aus Tool-Ergebnissen (Zeile 1750-1779), diese sollten auch an den Fallback übergeben werden.
+- **Recommended next skill:** SKILL 1
+
+### BACKLOG-007 – Performance-Optimierung für Filesystem-Tool-Calls
+
+- **Typ:** IMPROVEMENT
+- **Status:** READY
+- **Quelle:** Manual Test (TASK-005)
+- **Erstellt:** 2026-05-07
+- **Aktualisiert:** 2026-05-07
+- **Kurzbeschreibung:** Gemini-3-pro-preview ist deutlich langsamer als GPT-5.4 bei Filesystem-Tasks (~102s vs ~11s für das Erstellen eines Ordners und Verschieben von 5 Dateien).
+- **Erwartetes Verhalten:** Filesystem-Tasks sollten in ähnlicher Zeit bei beiden Modellen ausgeführt werden.
+- **Tatsächliches Verhalten:** Gemini benötigt ~102 Sekunden für einen Task, den GPT in ~11 Sekunden erledigt. Gemini führt unnötige Tool-Aufrufe durch (z.B. list_directory mit falschem Pfad "Desktop" statt vollständigen Pfad).
+- **Reproduktion / Kontext:** Prompt: "hi, erstell auf dem desktop einen ordener 'Bilder' und verschiebe alles jpg und png dateien vom desktop in diesen ordner"
+- **Betroffener Bereich:** Performance / Tool-Call-Effizienz / Model-Selection
+- **Nachweise:**
+  - Gemini-Log: 17:28:55 - 17:30:37 (~102s), Tool-Aufrufe: create_directory, list_directory (fehlerhaft), move_files
+  - GPT-Log: 17:32:57 - 17:33:08 (~11s), direkte Antwort ohne sichtbare unnötige Tool-Aufrufe
+  - Gemini Logic-Tier Upgrade: gemini-3-flash-preview → gemini-3-pro-preview (für RAG-Intent)
+  - GPT Logic-Tier Upgrade: gpt-5.4-nano → gpt-5.4 (für RAG-Intent)
+- **Akzeptanzkriterien:**
+  - [ ] Unnötige Tool-Aufrufe werden vermieden (z.B. list_directory mit falschem Pfad)
+  - [ ] Tool-Call-Effizienz ist verbessert (weniger redundante Aufrufe)
+  - [ ] Model-Selection für einfache Tasks ist optimiert (schnellere Modelle für einfache Tasks)
+  - [ ] Prompt-Cache-Effizienz ist verbessert
+  - [ ] Performance-Unterschied zwischen Modellen ist reduziert (<2x Faktor für ähnliche Tasks)
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Die Performance-Unterschiede sind nicht kritisch für die Funktionalität, aber beeinflussen die UX. Das Logic-Tier Upgrade für RAG-Intent könnte ein Faktor sein. Tool-Call-Patterns sollten analysiert und optimiert werden.
+- **Recommended next skill:** SKILL 1
+
 ### BACKLOG-005 – Bild-Intent hat Vorrang vor Filesystem-Intent bei gemischten Keywords
 
 - **Typ:** BUG
-- **Status:** READY
+- **Status:** IN PROGRESS
 - **Quelle:** Manual Test (TASK-006 von BACKLOG-004)
 - **Erstellt:** 2026-05-07
 - **Aktualisiert:** 2026-05-07
@@ -49,7 +104,9 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 - **Fehlende Informationen:**
   - Keine
 - **Notizen:** Dies ist ein separates Problem von BACKLOG-004. BACKLOG-004 hat das Calendar-Intent-Problem gelöst, aber die Intent-Hierarchie zwischen Filesystem und Bild muss angepasst werden. Filesystem sollte Vorrang haben wenn der Kontext eindeutig Dateisystem-Operation ist.
-- **Recommended next skill:** SKILL 1
+- **Handoff:** documentation/tasks/backlog_BACKLOG-005_image_intent_hierarchy.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-07
 
 ### BACKLOG-004 – Intent-Resolver erkennt Filesystem-Befehle fälschlich als Calendar-Intent
 
