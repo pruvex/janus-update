@@ -153,3 +153,47 @@ class TestSkillSelectorFilesystemCalendar:
         policy = skill_selector._intent_policy(intent_result)
         # Filesystem-Intent sollte keine Calendar-Tools erzwingen
         assert "calendar.list_events" not in policy["mandatory"]
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Image-Intent Hierarchy Tests (TASK-005: BACKLOG-005)
+    # ─────────────────────────────────────────────────────────────────────────
+
+    def test_filesystem_intent_overrides_image_intent(self, skill_selector):
+        """Test: Filesystem-Intent hat Vorrang vor Bild-Intent bei gemischten Keywords."""
+        intent_result = IntentDetectionResult(
+            is_filesystem_intent=True,
+            is_image_intent=True,
+            primary_intent="filesystem"
+        )
+        policy = skill_selector._intent_policy(intent_result)
+        # Bild-Intent sollte nicht als mandatory gesetzt werden
+        assert "system.generate_image" not in policy["mandatory"]
+
+    def test_image_intent_without_filesystem_context(self, skill_selector):
+        """Test: Reiner Bild-Kontext wird weiterhin als Bild-Intent erkannt."""
+        intent_result = IntentDetectionResult(
+            is_filesystem_intent=False,
+            is_image_intent=True,
+            primary_intent="image"
+        )
+        policy = skill_selector._intent_policy(intent_result)
+        # Bild-Intent sollte als mandatory gesetzt werden
+        assert "system.generate_image" in policy["mandatory"]
+
+    def test_filesystem_intent_logging_with_image_override(self, skill_selector, caplog):
+        """Test: Logging für Intent-Hierarchie-Entscheidung (Filesystem überschreibt Bild)."""
+        import logging
+        caplog.set_level(logging.INFO)
+
+        intent_result = IntentDetectionResult(
+            is_filesystem_intent=True,
+            is_image_intent=True,
+            primary_intent="filesystem"
+        )
+        skill_selector._intent_policy(intent_result)
+
+        # Prüfe ob Logging-Meldung für Intent-Hierarchie-Entscheidung vorhanden
+        assert any(
+            "Filesystem-Intent overrides Image-Intent" in record.message
+            for record in caplog.records
+        )

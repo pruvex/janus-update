@@ -160,14 +160,29 @@ class SkillSelector:
             boosted_fb.append("system.routing")
         if bool(getattr(intent_result, "is_weather_intent", False)) or primary == "weather":
             boosted_fb.append("system.weather")
+        # 💎 TASK-005: BACKLOG-005 - Filesystem-Intent hat Vorrang vor Bild-Intent
+        # Wenn Filesystem-Intent erkannt wurde, hat er Vorrang vor Bild-Intent
+        is_filesystem = getattr(intent_result, "is_filesystem_intent", False) or primary == "filesystem"
+        is_image = getattr(intent_result, "is_image_intent", False) or primary == "image"
+        if is_filesystem and is_image:
+            logger.info(
+                "[SKILL-SELECTOR] Filesystem-Intent overrides Image-Intent (filesystem=%s, image=%s)",
+                is_filesystem,
+                is_image
+            )
+            # Filesystem-Intent hat Vorrang, Bild-Intent wird ignoriert
+            is_image = False
         # 💎 TASK-004: BACKLOG-004 - Filesystem-Intent zu Filesystem-Tools mappen
-        if getattr(intent_result, "is_filesystem_intent", False) or primary == "filesystem":
+        if is_filesystem:
             # Filesystem-Intents sollten Filesystem-Tools bevorzugen
             # (Hinweis: Aktuell gibt es keine Filesystem-Tools im Fallback,
             #  aber die Registry könnte sie bereitstellen)
             logger.debug(
                 "[SKILL-SELECTOR] Filesystem intent detected, relying on registry for filesystem tools"
             )
+        elif is_image:
+            # Bild-Intent nur wenn nicht durch Filesystem-Intent überschrieben
+            mandatory = ["system.generate_image"]
         elif getattr(intent_result, "is_calendar_intent", False) or primary == "calendar":
             mandatory = ["calendar.list_events", "calendar.find_slots", "calendar.find_and_update_event"]
             forbidden.append("system.create_pdf")
