@@ -34,6 +34,16 @@ def apply_image_intent_skill_guardrails(wf: Any) -> None:
     kws: List[str] = list(wf.image_intent_keywords) if getattr(wf, "image_intent_keywords", None) else list(intent_engine.image_intent_keywords)
     if not any((kw in wf.user_prompt_lower for kw in kws)):
         return
+
+    # 💎 TASK-005: BACKLOG-005 - Filesystem-Intent hat Vorrang vor Bild-Intent
+    # Wenn Filesystem-Intent erkannt wurde, hat er Vorrang vor Bild-Intent
+    is_filesystem = bool(getattr(wf, "is_filesystem_intent", False))
+    if is_filesystem:
+        logger.info(
+            "[INTERCEPT] DIAMOND GUARDRAIL: Filesystem-Intent hat Vorrang vor Bild-Intent. Keine Bild-Skill-Forcierung."
+        )
+        return
+
     wf.pdf_requested = "pdf" in wf.user_prompt_lower
     if wf.pdf_requested:
         logger.info(
