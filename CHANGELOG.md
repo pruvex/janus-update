@@ -7,6 +7,16 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+## [0.4.17-beta.15] - 2026-05-07
+
+### Fixed
+- **BACKLOG-009 (Partial):** Neue `path_resolution_hint` Direktive in `prompt_registry.py` hilft gpt-5.4-nano bei der Auflösung häufiger Windows-Pfade (desktop, documents, downloads, pictures). Pfad-Auflösung funktioniert jetzt ohne Rückfragen. Vollständige Ausführung der Filesystem-Operationen bleibt ein separates Problem (BACKLOG-010).
+
+## [0.4.17-beta.14] - 2026-05-07
+
+### Fixed
+- **BACKLOG-008:** Filesystem-Intent blockiert jetzt RAG-Intent, um unnötige Logic-Tier-Upgrades bei reinen Dateisystem-Operationen zu verhindern. Filesystem-Operationen werden mit gpt-5.4-nano ausgeführt, ohne Upgrade auf gpt-5.4. Pfad-Auflösungs-Problem als separates BACKLOG-009 ausgelagert.
+
 ## [0.4.17-beta.13] - 2026-05-07
 
 ### Fixed

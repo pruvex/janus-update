@@ -26,13 +26,73 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 
 ## READY
 
+### BACKLOG-010 – gpt-5.4-nano führt Filesystem-Operationen nicht aus
+
+- **Typ:** BUG
+- **Status:** READY
+- **Quelle:** Manual Test (BACKLOG-009 Validation)
+- **Erstellt:** 2026-05-07
+- **Aktualisiert:** 2026-05-07
+- **Kurzbeschreibung:** gpt-5.4-nano führt Filesystem-Operationen nicht aus, obwohl die Pfad-Auflösung funktioniert (BACKLOG-009 gelöst). Der Assistant ruft nur `list_directory` auf, aber nicht `create_directory` oder `move_files`, und antwortet mit "Ich konnte diesmal keine stabile Antwort erzeugen."
+- **Erwartetes Verhalten:** gpt-5.4-nano führt Filesystem-Operationen vollständig aus (Ordner erstellen + Dateien verschieben) nach erfolgreicher Pfad-Auflösung.
+- **Tatsächliches Verhalten:** gpt-5.4-nano löst "desktop" korrekt zu `C:\Users\pruve\Desktop` auf, führt aber nur `list_directory` aus und antwortet mit generischer Fehlermeldung statt die eigentliche Aufgabe zu erfüllen.
+- **Reproduktion / Kontext:** Prompt: "hi, erstell auf dem desktop einen ordener 'Bilder' und verschiebe alles jpg und png dateien vom desktop in diesen ordner"
+- **Betroffener Bereich:** Orchestrator / Execution Engine / Tool-Call-Flow / Model-Verhalten
+- **Nachweise:**
+  - Backend-Log: `Executing tool 'filesystem.list_directory' with args: {'path': 'C:\\Users\\pruve\\Desktop'}` - Pfad-Auflösung funktioniert ✅
+  - Backend-Log: Kein `create_directory` oder `move_files` Tool-Call - Ausführung fehlt ❌
+  - Assistant-Antwort: "Ich konnte diesmal keine stabile Antwort erzeugen. Bitte sende die Anfrage direkt noch einmal..." - Generische Fallback-Nachricht
+- **Akzeptanzkriterien:**
+  - [ ] gpt-5.4-nano führt `create_directory` aus für Ordner "Bilder"
+  - [ ] gpt-5.4-nano führt `move_files` aus für jpg/png Dateien
+  - [ ] Filesystem-Operationen werden vollständig abgeschlossen
+  - [ ] Keine generische Fallback-Nachricht bei erfolgreicher Tool-Call-Planung
+- **Fehlende Informationen:**
+  - Ursache für Tool-Call-Unterbrechung muss untersucht werden
+- **Notizen:** BACKLOG-009 hat die Pfad-Auflösung gelöst, aber das eigentliche Problem (Ausführung wird abgebrochen) ist ein separates Issue. Mögliche Ursachen: Execution Engine Timeout, Tool-Call-Validierung, Model-Stream-Unterbrechung.
+- **Recommended next skill:** SKILL 1
+
+### BACKLOG-009 – gpt-5.4-nano ist konservativ bei Pfad-Auflösung
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** Skill 6 Debug (BACKLOG-008 Manual Test)
+- **Erstellt:** 2026-05-07
+- **Aktualisiert:** 2026-05-07
+- **Abgeschlossen:** 2026-05-07
+- **Kurzbeschreibung:** gpt-5.4-nano ist konservativ bei Pfad-Auflösung und fragt nach dem konkreten Pfad statt ihn direkt aufzulösen (z.B. "desktop" → "C:\Users\<username>\Desktop"). Dies führt dazu, dass Filesystem-Operationen nicht ohne explizite Pfadangabe ausgeführt werden können.
+- **Erwartetes Verhalten:** Pfad-Auflösung ("desktop" → "C:\Users\<username>\Desktop") funktioniert direkt ohne Nachfragen.
+- **Tatsächliches Verhalten:** gpt-5.4-nano antwortet mit: "Ich kann den Desktop in dieser Umgebung gerade nicht erreichen (Pfadzugriff blockiert). Bitte sag mir kurz, welchen konkreten Pfad ich verwenden soll" und führt keine Tool-Calls aus.
+- **Reproduktion / Kontext:** Prompt: "hi, erstell auf dem desktop einen ordener 'Bilder' und verschiebe alles jpg und png dateien vom desktop in diesen ordner"
+- **Betroffener Bereich:** Prompt-Engineering / Path-Resolution / Model-Verhalten
+- **Nachweise:**
+  - Backend-Log (Skill 6 Test): `[FILESYSTEM-OVERRIDE] RAG intent suppressed by filesystem intent` - BACKLOG-008 funktioniert ✅
+  - Backend-Log (Skill 6 Test): gpt-5.4-nano wurde verwendet (kein Upgrade) ✅
+  - LLM-Antwort: "Ich kann den Desktop in dieser Umgebung gerade nicht erreichen (Pfadzugriff blockiert)..." - KEINE Tool-Calls ausgeführt ❌
+  - Backend-Log (nach Fix): `Executing tool 'filesystem.list_directory' with args: {'path': 'C:\\Users\\pruve\\Desktop'}` - Pfad-Auflösung funktioniert ✅
+- **Akzeptanzkriterien:**
+  - [x] Pfad-Auflösung ("desktop" → "C:\Users\<username>\Desktop") funktioniert direkt ohne Nachfragen
+  - [ ] gpt-5.4-nano führt Filesystem-Tool-Calls aus ohne explizite Pfadangabe (PARTIAL - siehe BACKLOG-010)
+  - [ ] Filesystem-Operationen werden vollständig ausgeführt (Ordner erstellen + Dateien verschieben) (PARTIAL - siehe BACKLOG-010)
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** PARTIAL COMPLETION: Die Pfad-Auflösung wurde erfolgreich durch eine neue `path_resolution_hint` Direktive in `prompt_registry.py` gelöst. Die eigentliche Ausführung der Filesystem-Operationen bleibt ein separates Problem (BACKLOG-010). BACKLOG-008 hat RAG-Intent-Blockade implementiert, BACKLOG-009 hat Pfad-Auflösung gelöst, BACKLOG-010 muss das Ausführungsproblem lösen.
+- **Handoff:** documentation/tasks/backlog_BACKLOG-009_path_resolution_fix.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-07
+- **Abgeschlossen durch:** SKILL 4 (Executioner) × 1 Task
+- **Version:** 0.4.17-beta.14
+- **Audit:** PARTIAL PASS (Pfad-Auflösung gelöst, Ausführung in BACKLOG-010 ausgelagert)
+- **Changelog:** path_resolution_hint Direktive für gpt-5.4-nano
+
 ### BACKLOG-008 – Filesystem-Operationen triggern fälschlicherweise RAG-Intent
 
 - **Typ:** BUG
-- **Status:** IN PROGRESS
+- **Status:** DONE
 - **Quelle:** Log-Analyse (User Intake)
 - **Erstellt:** 2026-05-07
 - **Aktualisiert:** 2026-05-07
+- **Abgeschlossen:** 2026-05-07
 - **Kurzbeschreibung:** Filesystem-Operationen (z.B. "erstell Ordner auf Desktop") triggern fälschlicherweise RAG-Intent, was zu einem unnötigen Upgrade von gpt-5.4-nano auf gpt-5.4 führt. RAG sollte nur für Wissensabfragen aus der Wissensdatenbank (PDFs, Dokumente) getriggert werden.
 - **Erwartetes Verhalten:** Filesystem-Operationen werden als Filesystem-Intent erkannt und mit gpt-5.4-nano ausgeführt, ohne RAG-Intent-Eskalation.
 - **Tatsächliches Verhalten:** Prompt "erstell auf dem desktop einen ordener 'Bilder' und verschiebe alles jpg und png dateien" triggert RAG-Intent-Upgrade zu gpt-5.4, obwohl es sich um eine reine Filesystem-Operation handelt. gpt-5.4 ist konservativer bei Pfad-Auflösung und fragt nach dem konkreten Desktop-Pfad statt ihn direkt aufzulösen.
@@ -43,17 +103,24 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
   - Backend-Log (Dev-System): `[INTENT-OVERRIDE] RAG-Intent erkannt. Erbitte logic-Tier Upgrade: gpt-5.4-nano -> gpt-5.4`
   - Beide Systeme zeigen dasselbe Verhalten: unnötige Eskalation auf gpt-5.4 bei Filesystem-Operationen
   - Assistent-Antwort: "Ich habe den Ordner Bilder erstellt, aber der angegebene Pfad Desktop wurde für die Dateisuche nicht gefunden." (gpt-5.4 fragt nach konkretem Pfad)
+  - Backend-Log (nach Fix): `[FILESYSTEM-OVERRIDE] RAG intent suppressed by filesystem intent` - RAG-Intent wurde unterdrückt ✅
+  - Backend-Log (nach Fix): gpt-5.4-nano wurde verwendet (kein Upgrade) ✅
 - **Akzeptanzkriterien:**
-  - [ ] Filesystem-Intent blockiert RAG-Intent (ähnlich wie BACKLOG-005 Filesystem-Intent blockiert Bild-Intent)
-  - [ ] Filesystem-Operationen werden mit gpt-5.4-nano ausgeführt ohne unnötiges Upgrade
-  - [ ] RAG-Intent wird nur bei tatsächlichen Wissensabfragen getriggert (PDFs, Dokumente)
-  - [ ] Pfad-Auflösung ("desktop" → "C:\Users\<username>\Desktop") funktioniert direkt ohne Nachfragen
+  - [x] Filesystem-Intent blockiert RAG-Intent (ähnlich wie BACKLOG-005 Filesystem-Intent blockiert Bild-Intent)
+  - [x] Filesystem-Operationen werden mit gpt-5.4-nano ausgeführt ohne unnötiges Upgrade
+  - [x] RAG-Intent wird nur bei tatsächlichen Wissensabfragen getriggert (PDFs, Dokumente)
+
+HINWEIS: Pfad-Auflösung ist in BACKLOG-009 ausgelagert.
 - **Fehlende Informationen:**
   - Keine
 - **Notizen:** Das Problem ist nicht zwischen Test- und Dev-System, sondern eine generelle Fehlklassifizierung in der Intent-Detection. RAG ist für Wissensabfragen gedacht, nicht für Dateisystem-Operationen. Die Intent-Priorisierung sollte angepasst werden: Filesystem-Intent sollte RAG-Intent blockieren.
 - **Handoff:** documentation/Planned Features/backlog_BACKLOG-008_rag_intent_filesystem_fix.md
 - **Recommended next skill:** SKILL 1
 - **Handoff created:** 2026-05-07
+- **Version:** 0.4.17-beta.14
+- **Task:** documentation/tasks/backlog_BACKLOG-008_rag_intent_filesystem_fix.md
+- **Audit:** Skill 5 PASS WITH FIXES, Skill 6 FIXED (Spec-Konflikt behoben)
+- **Changelog:** CHANGELOG.md Eintrag hinzugefügt
 
 ### BACKLOG-006 – Generische Fehlermeldung statt spezifischer Fehlerdetails
 
