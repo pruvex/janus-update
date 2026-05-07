@@ -128,6 +128,37 @@ def calendar_user_text_overlap_snapshot(user_text: str, calendar_snapshot: Any) 
             return True
     return False
 
+
+# Diamond: Entfernung/Route zwischen Orten darf nicht durch reinen Snapshot-Worttreffer
+# als Kalender-Intent „hochgezogen“ werden (False Positives z.B. Stadtnamen in Events).
+_ROUTING_GEO_MARKERS = re.compile(
+    r"(wie\s+weit|wie\s+lange\s+(?:dauert\s+(?:die\s+fahrt|es|die\s+autofahrt)|"
+    r"braucht\s+man(?:\s+dafür)?|brauchst\s+du)|entfernung|reichweite|luftlinie|"
+    r"fahrzeit|fahrstrecke|fahrdauer|reisezeit|reisedauer|distanz|"
+    r"kilometer\b|\bkm\b|wie\s+viele\s+kilometer|routen?\b|"
+    r"(?:auto|fahr|geh|zu\s+fuß|zu\s+fuss)(?:strecke|weg|zeit)\b|"
+    r"driving\s+time|driving\s+distance|how\s+far|how\s+long\s+(?:to\s+drive|does\s+it\s+take))",
+    re.IGNORECASE,
+)
+_ROUTING_VON_NACH_DE = re.compile(r"\bvon\s+[^\n,?\.!]{1,52}\s+nach\b", re.IGNORECASE)
+_ROUTING_FROM_TO_EN = re.compile(r"\bfrom\s+[^\n,?\.!]{1,52}\s+to\b", re.IGNORECASE)
+_ROUTING_ZWISCHEN_UND = re.compile(
+    r"\bzwischen\s+[^\n,?\.!]{1,52}\s+und\b",
+    re.IGNORECASE,
+)
+
+_EXPLICIT_PDF_INTENT = re.compile(
+    r"(?:"
+    r"\bals\s+pdf\b|\bzu\s+pdf\b|\bpdf\s+(?:datei|file|erstell|erzeug|generier|export)\w*\b|"
+    r"\bexport(?:iere|ieren)?\s+(?:als\s+)?pdf\b|\bcreate\s+(?:a\s+)?pdf\b|"
+    r"\bsave\s+as\s+pdf\b|\bprint(?:able)?\s+pdf\b|"
+    r"\b(?:erstell|generier|exportier|mach(?:\s+mir)?|schreib)\w*.{0,48}\bpdf\b|"
+    r"\bpdf\b.{0,24}\b(?:bitte|dafür|davon|hier(?:für)?)\b|"
+    r"\bdruckfassung\s+als\s+pdf\b|\bspeichern\s+als\s+pdf\b"
+    r")",
+    re.IGNORECASE,
+)
+
 SHOPPING_ACTION_MARKERS: Tuple[str, ...] = (
     "kaufen",
     "kaufe",
@@ -458,6 +489,75 @@ PERSONAL_RECALL_KEYWORDS: List[str] = [
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# FILESYSTEM INTENT KEYWORDS (TASK-001: BACKLOG-004)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Filesystem-spezifische Keywords die Calendar-Keywords überschreiben sollen
+FILESYSTEM_ACTION_MARKERS: Tuple[str, ...] = (
+    "erstell",
+    "erstellen",
+    "erstelle",
+    "erzeuge",
+    "erzeugen",
+    "erzeuge einen",
+    "erstellen einen",
+    "erstelle einen",
+    "erstell",
+    "verschiebe",
+    "verschieben",
+    "verschieb",
+    "bewege",
+    "bewegen",
+    "kopiere",
+    "kopieren",
+    "kopier",
+    "lösche",
+    "loesche",
+    "löschen",
+    "loesch",
+    "entferne",
+    "entfernen",
+    "umbenenne",
+    "umbenennen",
+    "erstellen ordner",
+    "erstelle ordner",
+    "erstell ordner",
+    "erzeuge ordner",
+    "ordner erstellen",
+    "ordner erzeugen",
+    "dateien verschieben",
+    "dateien verschiebe",
+    "datei verschieben",
+    "datei verschiebe",
+)
+
+FILESYSTEM_OBJECT_MARKERS: Tuple[str, ...] = (
+    "desktop",
+    "ordner",
+    "datei",
+    "dateien",
+    "verzeichnis",
+    "verzeichnisse",
+    "ordnern",
+    "bilder",
+    "dokumente",
+    "downloads",
+    "schreibtisch",
+)
+
+FILESYSTEM_PATH_MARKERS: Tuple[str, ...] = (
+    "auf dem desktop",
+    "in ordner",
+    "in den ordner",
+    "ins verzeichnis",
+    "in das verzeichnis",
+    "vom desktop",
+    "vom ordner",
+    "aus dem ordner",
+)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # IMAGE INTENT KEYWORDS
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -763,6 +863,12 @@ class IntentDetectionResult:
     is_navigation_query: bool = False
     # Model Introspection (FEAT-HELP-002)
     is_model_query: bool = False
+    # Routing / Entfernung (Diamond: vs. Kalender-Snapshot-Boost)
+    is_routing_geo_intent: bool = False
+    # Wetter / Temperatur (Diamond: vs. Kalender-Snapshot-Boost bei Ortsnamen)
+    is_weather_intent: bool = False
+    # PDF nur bei explizitem Wunsch (Diamond: kein proaktives create_pdf)
+    is_explicit_pdf_intent: bool = False
 
     primary_intent: Optional[str] = None
     vetoed_intents: Dict[str, str] = field(default_factory=dict)
@@ -801,6 +907,10 @@ class IntentEngine:
         self.storybook_negative_keywords = STORYBOOK_NEGATIVE_KEYWORDS
         # 💎 Global Veto System - Striktes Ausschlusskriterien-System für alle Intents
         self.general_negative_keywords = GENERAL_NEGATIVE_KEYWORDS
+        # 💎 TASK-001: BACKLOG-004 - Filesystem Intent Keywords
+        self.filesystem_action_markers = FILESYSTEM_ACTION_MARKERS
+        self.filesystem_object_markers = FILESYSTEM_OBJECT_MARKERS
+        self.filesystem_path_markers = FILESYSTEM_PATH_MARKERS
 
     def _has_price_signal(self, text_norm: str) -> bool:
         return bool(_PRICE_RE.search(text_norm))
@@ -891,8 +1001,61 @@ class IntentEngine:
         if self._has_strong_shopping_signal(text_norm) and not self._has_calendar_command_signal(text_norm):
             logger.debug("[CALENDAR-VETO] Strong commerce signal without calendar scheduling cues.")
             return False
+        # 💎 TASK-001: BACKLOG-004 - Filesystem-Intent Veto
+        # Wenn Filesystem-Intent stark ist, Calendar-Intent unterdrücken
+        if self.detect_filesystem_intent(user_text):
+            logger.info(
+                "[FILESYSTEM-OVERRIDE] Calendar intent suppressed by filesystem intent in text: '%s'",
+                user_text[:100] + "..." if len(user_text) > 100 else user_text
+            )
+            return False
         return self._has_calendar_command_signal(text_norm)
-    
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Filesystem Intent (TASK-001: BACKLOG-004)
+    # ─────────────────────────────────────────────────────────────────────────
+
+    def detect_filesystem_intent(self, user_text: str) -> bool:
+        """True bei Dateisystem-Operationen (Ordner erstellen, Dateien verschieben, etc.).
+
+        Filesystem-Keywords haben Vorrang vor Calendar-Keywords um Fehlklassifikationen
+        zu vermeiden (z.B. "Ordner erstellen" sollte nicht als Calendar-Intent erkannt werden).
+
+        Ausnahme: Calendar-spezifische Objekte wie "termin", "meeting" haben Vorrang.
+        """
+        if not user_text:
+            return False
+        text_norm = _normalize_text(user_text)
+        if not text_norm:
+            return False
+
+        # 💎 TASK-001: Calendar-spezifische Objekte haben Vorrang vor Filesystem
+        # Wenn Calendar-Objekte wie "termin", "meeting" vorhanden sind, ist es kein Filesystem-Intent
+        calendar_object_keywords = ("termin", "meeting", "kalendereintrag", "verabredung")
+        has_calendar_object = _contains_any_phrase(text_norm, calendar_object_keywords)
+        if has_calendar_object:
+            logger.debug(
+                "[FILESYSTEM-INTENT] Skipped: calendar object detected in text: '%s'",
+                user_text[:100] + "..." if len(user_text) > 100 else user_text
+            )
+            return False
+
+        has_action = _contains_any_phrase(text_norm, self.filesystem_action_markers)
+        has_object = _contains_any_phrase(text_norm, self.filesystem_object_markers)
+        has_path = _contains_any_phrase(text_norm, self.filesystem_path_markers)
+
+        # Filesystem-Intent wenn: Action + Object ODER Action + Path
+        is_filesystem = (has_action and has_object) or (has_action and has_path)
+
+        if is_filesystem:
+            logger.debug(
+                "[FILESYSTEM-INTENT] Detected: action=%s, object=%s, path=%s in text: '%s'",
+                has_action, has_object, has_path,
+                user_text[:100] + "..." if len(user_text) > 100 else user_text
+            )
+
+        return is_filesystem
+
     # ─────────────────────────────────────────────────────────────────────────
     # Local Business Intent
     # ─────────────────────────────────────────────────────────────────────────
@@ -1244,6 +1407,64 @@ class IntentEngine:
             return False
         return any(pattern.search(user_text) for pattern in HELP_HOW_TO_PATTERNS)
 
+    @staticmethod
+    def detect_routing_geo_intent(user_text: str) -> bool:
+        """True bei Entfernungs-/Routenfragen zwischen Orten (nicht Kalender-Inhalt).
+
+        Unterdrückt fälschlichen Kalender-Snapshot-Boost, wenn nur Stadtnamen
+        zufällig mit Event-Titeln überlappen.
+        """
+        if not user_text or not user_text.strip():
+            return False
+        t = user_text.strip()
+        if not _ROUTING_GEO_MARKERS.search(t):
+            return False
+        return bool(
+            _ROUTING_VON_NACH_DE.search(t)
+            or _ROUTING_FROM_TO_EN.search(t)
+            or _ROUTING_ZWISCHEN_UND.search(t)
+        )
+
+    @staticmethod
+    def detect_weather_intent(user_text: str) -> bool:
+        """True bei Wetter-, Temperatur- oder Vorhersagefragen.
+
+        Unterdrückt fälschlichen Kalender-Snapshot-Boost (z. B. „München“ im Event
+        und gleichzeitige Wetterfrage zu München).
+        """
+        if not user_text or not user_text.strip():
+            return False
+        t = user_text.casefold()
+        if re.search(r"\bwie\s+(?:ist|wird)\s+(?:das\s+)?wetter\b", t):
+            return True
+        if "wettervorhersage" in t:
+            return True
+        if re.search(r"\bwetterlage\b", t):
+            return True
+        if re.search(r"\bwetter\s+(?:in|für|bei|von|heute|morgen|übermorgen|aktuell|jetzt|gerade)\b", t):
+            return True
+        if re.search(r"\btemperatur\s+(?:in|für|bei|von|heute|morgen)\b", t):
+            return True
+        if re.search(
+            r"\b(?:regen|regnet|niederschlag|gewitter|sturm|schnee|bewölkung|bewoelkung|sonne|kalt|warm)\b",
+            t,
+        ) and re.search(r"\b(?:in|für|bei)\b", t):
+            return True
+        if re.search(r"\bhow(?:'s|\s+is)\s+(?:the\s+)?weather\b", t):
+            return True
+        if re.search(r"\bweather\s+(?:forecast|in|for|today|tomorrow)\b", t):
+            return True
+        if re.search(r"\btemperature\b", t) and re.search(r"\b(?:in|for|at)\b", t):
+            return True
+        return False
+
+    @staticmethod
+    def detect_explicit_pdf_intent(user_text: str) -> bool:
+        """True, wenn der Nutzer ausdrücklich ein PDF-/Export-Ziel fordert."""
+        if not user_text or not user_text.strip():
+            return False
+        return bool(_EXPLICIT_PDF_INTENT.search(user_text))
+
     def detect_navigation(self, user_text: str) -> bool:
         """Return True for navigation queries ("Wo finde ich...", "Wo ist...").
 
@@ -1320,6 +1541,8 @@ class IntentEngine:
         vetoed: Dict[str, str] = {}
         text_norm = _normalize_text(user_text) if user_text else ""
 
+        routing_geo_on = self.detect_routing_geo_intent(user_text)
+        weather_on = self.detect_weather_intent(user_text)
         snapshot_overlap = calendar_user_text_overlap_snapshot(user_text, calendar_snapshot)
 
         commerce_blocks_snapshot_calendar = (
@@ -1329,11 +1552,21 @@ class IntentEngine:
         snapshot_calendar_on = (
             snapshot_overlap
             and not commerce_blocks_snapshot_calendar
+            and not routing_geo_on
+            and not weather_on
         )
 
         if snapshot_calendar_on:
             logger.info(
                 "[CAL-SNAPSHOT-INTENT] Calendar intent boosted: User-Text overlappt Snapshot-Ereignis (Titel/Ort).",
+            )
+        elif snapshot_overlap and routing_geo_on:
+            logger.info(
+                "[CAL-SNAPSHOT-INTENT] Snapshot-Overlap verworfen — Routing-/Entfernungsfrage (routing_geo).",
+            )
+        elif snapshot_overlap and weather_on:
+            logger.info(
+                "[CAL-SNAPSHOT-INTENT] Snapshot-Overlap verworfen — Wetterfrage (weather).",
             )
 
         calendar_on = bool(calendar_lex or snapshot_calendar_on)
@@ -1406,6 +1639,9 @@ class IntentEngine:
             is_how_to=self.detect_how_to(user_text),
             is_navigation_query=self.detect_navigation(user_text),
             is_model_query=self.detect_model_introspektion(user_text),
+            is_routing_geo_intent=routing_geo_on,
+            is_weather_intent=weather_on,
+            is_explicit_pdf_intent=self.detect_explicit_pdf_intent(user_text),
             vetoed_intents=vetoed,
             summary_global_veto=summary_global_veto,
             meta_agent_global_veto=meta_agent_global_veto,
@@ -1420,6 +1656,8 @@ class IntentEngine:
             ("calendar", result.is_calendar_intent),
             ("local_business", result.is_local_business_intent),
             ("shopping", result.is_shopping_intent),
+            ("routing_geo", result.is_routing_geo_intent),
+            ("weather", result.is_weather_intent),
             ("video_list", result.is_video_list_intent),
             ("video", result.is_video_intent),
             ("personal_recall", result.is_personal_recall),
