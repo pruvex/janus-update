@@ -470,6 +470,24 @@ class CapabilityRegistry:
             # Filesystem-Intent hat Vorrang, Bild-Intent wird ignoriert
             is_image = False
 
+        # 💎 TASK-005: BACKLOG-005 - Filesystem-Intent fügt Filesystem-Tools hinzu
+        # Wenn Filesystem-Intent erkannt wurde, füge Filesystem-Tools als mandatory hinzu
+        if is_filesystem:
+            # Filesystem-Tools als mandatory hinzufügen
+            boosted += [
+                "filesystem.create_directory",
+                "filesystem.create_file",
+                "filesystem.delete_directory",
+                "filesystem.delete_file",
+                "filesystem.find_files",
+                "filesystem.list_directory",
+                "filesystem.list_workspaces",
+                "filesystem.move_file",
+                "filesystem.move_files",
+                "filesystem.read_file",
+                "filesystem.rename_file",
+            ]
+
         if is_image and not _flag("is_multitask_image_pdf"):
             mandatory += ["system.generate_image"]
 
