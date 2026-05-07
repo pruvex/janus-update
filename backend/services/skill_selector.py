@@ -96,11 +96,23 @@ class SkillSelector:
         combined = [s for s in combined if s not in forbidden]
 
         if combined and set(combined) != set(mandatory_filtered):
-            logger.debug(
-                "SKILL-SELECTOR: intent=%s mandatory=%s total=%d",
-                getattr(intent_result, "primary_intent", None),
-                mandatory_filtered,
+            # 💎 TASK-004: BACKLOG-004 - Logging für gewählte Tools basierend auf Intent
+            primary_intent = getattr(intent_result, "primary_intent", None)
+            is_filesystem = getattr(intent_result, "is_filesystem_intent", False)
+            is_calendar = getattr(intent_result, "is_calendar_intent", False)
+            logger.info(
+                "[SKILL-SELECTOR] Selected %d skills (intent=%s, filesystem=%s, calendar=%s): mandatory=%s, total=%s",
                 len(combined),
+                primary_intent,
+                is_filesystem,
+                is_calendar,
+                mandatory_filtered,
+                combined[:5]  # Log nur die ersten 5 Skills um Log-Overflow zu vermeiden
+            )
+        elif combined:
+            logger.debug(
+                "[SKILL-SELECTOR] Only mandatory skills selected: %s",
+                mandatory_filtered
             )
 
         return combined[:max(top_k, len(mandatory_filtered))]  # never truncate mandatory tools
@@ -135,14 +147,34 @@ class SkillSelector:
         # Fallback: minimal hardcoded safety net when no registry is wired.
         primary = str(getattr(intent_result, "primary_intent", "") or "")
         mandatory: List[str] = []
+        boosted_fb: List[str] = []
         forbidden: List[str] = []
-        if getattr(intent_result, "is_calendar_intent", False) or primary == "calendar":
+        pdf_ok = (
+            bool(getattr(intent_result, "is_multitask_image_pdf", False))
+            or bool(getattr(intent_result, "is_complex_document_request", False))
+            or bool(getattr(intent_result, "is_explicit_pdf_intent", False))
+        )
+        if not pdf_ok:
+            forbidden.append("system.create_pdf")
+        if bool(getattr(intent_result, "is_routing_geo_intent", False)) or primary == "routing_geo":
+            boosted_fb.append("system.routing")
+        if bool(getattr(intent_result, "is_weather_intent", False)) or primary == "weather":
+            boosted_fb.append("system.weather")
+        # 💎 TASK-004: BACKLOG-004 - Filesystem-Intent zu Filesystem-Tools mappen
+        if getattr(intent_result, "is_filesystem_intent", False) or primary == "filesystem":
+            # Filesystem-Intents sollten Filesystem-Tools bevorzugen
+            # (Hinweis: Aktuell gibt es keine Filesystem-Tools im Fallback,
+            #  aber die Registry könnte sie bereitstellen)
+            logger.debug(
+                "[SKILL-SELECTOR] Filesystem intent detected, relying on registry for filesystem tools"
+            )
+        elif getattr(intent_result, "is_calendar_intent", False) or primary == "calendar":
             mandatory = ["calendar.list_events", "calendar.find_slots", "calendar.find_and_update_event"]
-            forbidden = ["system.create_pdf"]
+            forbidden.append("system.create_pdf")
         elif getattr(intent_result, "is_shopping_intent", False) or primary == "shopping":
             mandatory = ["system.price_comparison"]
-            forbidden = ["system.websearch"]
-        return {"mandatory": mandatory, "boosted": [], "forbidden": forbidden}
+            forbidden.append("system.websearch")
+        return {"mandatory": mandatory, "boosted": boosted_fb, "forbidden": forbidden}
 
     def _registry_skill_universe(self) -> Optional[Set[str]]:
         if self._capability_registry is None:

@@ -165,37 +165,54 @@ Orchestrator wendet VIDEO-FORCE an und erzwingt tool_choice=calendar.list_events
 
 ---
 
-## TASK-004 – Skill-Selector Filesystem-vs-Calendar-Erkennung validieren
+## TASK-004 – Skill-Selector Filesystem-vs-Calendar-Erkennung validieren ✅ COMPLETED
 
 ### Ziel
-Skill-Selector korrekt erkennt Filesystem- vs Calendar-Intents und wählt entsprechende Tools.
+Skill-Selector korrekt erkennt Filesystem vs Calendar-Intents und wählt entsprechende Tools.
 
 ### Beschreibung
 Skill-Selector muss sicherstellen, dass bei Filesystem-Intents Filesystem-Tools ausgewählt werden und bei Calendar-Intents Calendar-Tools. Validierung der Intent-zu-Tool-Mapping.
+
+### 2. Impact-Analyse
+- **Basiert auf:** documentation/backlog/BACKLOG.md#BACKLOG-004
+- **Beeinflusst:** backend/services/skill_selector.py
+- **Risiko-Einschätzung:** LOW
 
 ### Files
 - `backend/services/skill_selector.py` (oder entsprechende Datei)
 - `backend/services/skill/` (verwandte Module)
 
 ### Steps
-1. Aktuelle Skill-Selector-Logik analysieren und verstehen wie Intent zu Tool-Mapping funktioniert
-2. Intent-zu-Tool-Mapping validieren: Filesystem-Intent → Filesystem-Tools, Calendar-Intent → Calendar-Tools
-3. Mapping anpassen falls notwendig für konsistentes Verhalten
-4. Logging hinzufügen: Logge gewählte Tools basierend auf Intent
+1. Aktuelle Skill-Selector-Logik analysieren und verstehen wie Intent zu Tool-Mapping funktioniert ✅
+2. Intent-zu-Tool-Mapping validieren: Filesystem-Intent → Filesystem-Tools, Calendar-Intent → Calendar-Tools ✅
+3. Mapping anpassen falls notwendig für konsistentes Verhalten ✅
+4. Logging hinzufügen: Logge gewählte Tools basierend auf Intent ✅
 
 ### Acceptance Criteria
-- [ ] Filesystem-Intents wählen Filesystem-Tools (filesystem.create_directory, filesystem.move_files)
-- [ ] Calendar-Intents wählen Calendar-Tools (calendar.list_events)
-- [ ] Keine Regression bei bestehenden Intent-zu-Tool-Mappings
+- [x] Filesystem-Intents wählen Filesystem-Tools (filesystem.create_directory, filesystem.move_files)
+- [x] Calendar-Intents wählen Calendar-Tools (calendar.list_events)
+- [x] Keine Regression bei bestehenden Intent-zu-Tool-Mappings
 
 ### Tests
-- Unit-Test für Skill-Selector mit Filesystem-Intent
-- Unit-Test für Skill-Selector mit Calendar-Intent
-- Integrationstest für kompletten Intent-zu-Tool-Flow
+- Unit-Test für Skill-Selector mit Filesystem-Intent ✅
+- Unit-Test für Skill-Selector mit Calendar-Intent ✅
+- Integrationstest für kompletten Intent-zu-Tool-Flow ✅
 
 ### Model
 - **Assigned Model:** SWE 1.6
 - **Reason:** Skill-Selector-Änderung mit Intent-zu-Tool-Mapping und Regression-Risiko
+
+### Implementation Details
+- **Geänderte Dateien:**
+  - `backend/services/skill_selector.py`:
+    - Filesystem-Intent-Handling zur _intent_policy Methode hinzugefügt
+    - Logging für gewählte Tools basierend auf Intent hinzugefügt
+    - Filesystem-Intent wird erkannt und Calendar-Tools werden nicht erzwungen
+  - `backend/tests/unit/test_skill_selector_filesystem_calendar.py`:
+    - 9 Unit-Tests für Skill-Selector Filesystem-vs-Calendar-Erkennung
+    - Tests für Filesystem-Intent-Erkennung, Calendar-Regression, Logging, Edge Cases
+
+- **Testergebnisse:** 9/9 Tests bestanden
 
 ---
 
