@@ -302,6 +302,7 @@ class ContextualEntityResolver:
         today: Optional[date] = None,
         recent_messages: Optional[List[Dict[str, Any]]] = None,
         is_calendar_mutation: bool = False,
+        is_filesystem_intent: bool = False,
         full_user_text: Optional[str] = None,
     ) -> ResolutionResult:
         """Resolve *query* against the calendar *snapshot*.
@@ -317,6 +318,7 @@ class ContextualEntityResolver:
             recent_messages: Clean chat history (no system prompt) for deictic
                              fallback — use ``orchestrator_context.history[-4:]``.
             is_calendar_mutation: True if orchestrator confirmed mutation intent.
+            is_filesystem_intent: True if orchestrator confirmed filesystem intent (TASK-001: BACKLOG-004).
             full_user_text: The complete raw user message.  Used exclusively for
                             deictic detection; never scored against event titles.
         """
@@ -370,7 +372,12 @@ class ContextualEntityResolver:
         if not valid_events:
             result.status = "NOT_FOUND"
             result.reason = "empty_snapshot"
-            result.dispatcher_hint = "FALLBACK_TO_LIST"
+            # 💎 TASK-002: BACKLOG-004 - Filesystem-Intent Veto
+            # Bei Filesystem-Intent nicht zu Calendar-List-Events zwingen
+            if is_filesystem_intent:
+                result.dispatcher_hint = "CLARIFY_USER"
+            else:
+                result.dispatcher_hint = "FALLBACK_TO_LIST"
             return result
 
         # ── Stage T: Temporal Context Layer ────────────────────────────────
@@ -511,8 +518,18 @@ class ContextualEntityResolver:
                 result.status = "WEAK_MATCH"
                 result.reason = "below_threshold"
                 if operation_type == "MUTATION":
-                    result.dispatcher_hint = "FALLBACK_TO_LIST"
-                    result.low_confidence = False
+                    # 💎 TASK-002: BACKLOG-004 - Filesystem-Intent Veto
+                    # Wenn Filesystem-Intent erkannt wurde, nicht zu Calendar-List-Events zwingen
+                    if is_filesystem_intent:
+                        result.dispatcher_hint = "CLARIFY_USER"
+                        result.low_confidence = False
+                        logger.info(
+                            "[ENTITY-RESOLVER] WEAK_MATCH skipped for filesystem intent: query=%r",
+                            query[:100] + "..." if len(query) > 100 else query
+                        )
+                    else:
+                        result.dispatcher_hint = "FALLBACK_TO_LIST"
+                        result.low_confidence = False
                 else:
                     result.dispatcher_hint = "PROCEED"
                     result.low_confidence = True

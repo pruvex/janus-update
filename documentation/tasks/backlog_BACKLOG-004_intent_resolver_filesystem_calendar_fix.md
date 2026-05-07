@@ -59,7 +59,7 @@ Der Intent-Resolver erkennt derzeit Filesystem-Befehle fälschlich als Calendar-
 
 ---
 
-## TASK-002 – Entity-Resolver WEAK_MATCH-Fallback korrigieren
+## TASK-002 – Entity-Resolver WEAK_MATCH-Fallback korrigieren ✅ COMPLETED
 
 ### Ziel
 Entity-Resolver darf keine WEAK_MATCH Calendar-Entities erzwingen wenn Filesystem-Tools verfügbar sind und der Prompt Filesystem-Operationen anfordert.
@@ -67,28 +67,46 @@ Entity-Resolver darf keine WEAK_MATCH Calendar-Entities erzwingen wenn Filesyste
 ### Beschreibung
 Entity-Resolver erkennt "Ordner" als WEAK_MATCH und erzwingt calendar.list_events (VIDEO-FORCE) auch wenn Filesystem-Tools verfügbar sind. Dies muss durch Kontext-Prüfung verhindert werden.
 
+### 2. Impact-Analyse
+- **Basiert auf:** documentation/backlog/BACKLOG.md#BACKLOG-004
+- **Beeinflusst:** backend/services/orchestrator/entity_resolver.py
+- **Risiko-Einschätzung:** MEDIUM
+
 ### Files
 - `backend/services/intent/entity_resolver.py` (oder entsprechende Datei)
 - `backend/services/intent/` (verwandte Module)
 
 ### Steps
-1. Aktuelle Entity-Resolver-Logik analysieren und verstehen wie WEAK_MATCH und VIDEO-FORCE ausgelöst werden
-2. Kontext-Prüfung implementieren: Wenn Intent-Resolver Filesystem-Intent erkannt hat, dann WEAK_MATCH Calendar-Entities nicht erzwingen
-3. Fallback-Logik anpassen: Bei Filesystem-Intents Filesystem-Tools bevorzugen statt Calendar-List-Events
-4. Logging anpassen: ENTITY-RESOLVER FALLBACK_TO_LIST nur loggen wenn tatsächlich notwendig
+1. Aktuelle Entity-Resolver-Logik analysieren und verstehen wie WEAK_MATCH und VIDEO-FORCE ausgelöst werden ✅
+2. Kontext-Prüfung implementieren: Wenn Intent-Resolver Filesystem-Intent erkannt hat, dann WEAK_MATCH Calendar-Entities nicht erzwingen ✅
+3. Fallback-Logik anpassen: Bei Filesystem-Intents Filesystem-Tools bevorzugen statt Calendar-List-Events ✅
+4. Logging anpassen: ENTITY-RESOLVER FALLBACK_TO_LIST nur loggen wenn tatsächlich notwendig ✅
 
 ### Acceptance Criteria
-- [ ] "Ordner" im Kontext von Dateisystem-Operationen wird nicht als Calendar-Entity gematcht
-- [ ] Backend-Log zeigt kein ENTITY-RESOLVER FALLBACK_TO_LIST bei Filesystem-Intents
-- [ ] Keine Regression bei Calendar-Intents mit echten WEAK_MATCH Calendar-Entities
+- [x] "Ordner" im Kontext von Dateisystem-Operationen wird nicht als Calendar-Entity gematcht
+- [x] Backend-Log zeigt kein ENTITY-RESOLVER FALLBACK_TO_LIST bei Filesystem-Intents
+- [x] Keine Regression bei Calendar-Intents mit echten WEAK_MATCH Calendar-Entities
 
 ### Tests
-- Unit-Test für Entity-Resolver mit Filesystem-Intent und "Ordner"-Keyword
-- Unit-Test für Entity-Resolver mit Calendar-Intent und WEAK_MATCH (Regressionstest)
+- Unit-Test für Entity-Resolver mit Filesystem-Intent und "Ordner"-Keyword ✅
+- Unit-Test für Entity-Resolver mit Calendar-Intent und WEAK_MATCH (Regressionstest) ✅
 
 ### Model
 - **Assigned Model:** SWE 1.6
 - **Reason:** Multi-file Entity-Resolver-Änderung mit komplexer Fallback-Logik und Regression-Risiko
+
+### Implementation Details
+- **Geänderte Dateien:**
+  - `backend/services/orchestrator/entity_resolver.py`:
+    - `is_filesystem_intent` Parameter zur `resolve()` Methode hinzugefügt
+    - WEAK_MATCH Logik angepasst: Bei Filesystem-Intent wird `CLARIFY_USER` statt `FALLBACK_TO_LIST` zurückgegeben
+    - Leerer Snapshot Logik angepasst: Bei Filesystem-Intent wird `CLARIFY_USER` statt `FALLBACK_TO_LIST` zurückgegeben
+    - Logging für Filesystem-Intent Veto hinzugefügt
+  - `backend/tests/unit/test_entity_resolver_filesystem_veto.py`:
+    - 8 Unit-Tests für Entity-Resolver Filesystem-Intent Veto
+    - Tests für WEAK_MATCH Veto, Regression, RESOLVED-Matches, leere Snapshots
+
+- **Testergebnisse:** 8/8 Tests bestanden
 
 ---
 
