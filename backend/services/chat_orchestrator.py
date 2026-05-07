@@ -1026,6 +1026,7 @@ class ChatOrchestrator:
         wf.is_calendar_intent = bool(getattr(inc, "is_calendar_intent", False))
         wf.is_calendar_mutation = bool(getattr(inc, "is_calendar_mutation", False))
         wf.is_calendar_creation = bool(getattr(inc, "is_calendar_creation", False))
+        wf.is_filesystem_intent = bool(getattr(inc, "is_filesystem_intent", False))
         wf.is_multitask_image_pdf = inc.is_multitask_image_pdf
         wf.is_shopping_intent_early = inc.is_shopping_intent
         self._is_shopping_intent_flag = wf.is_shopping_intent_early

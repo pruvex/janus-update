@@ -869,6 +869,8 @@ class IntentDetectionResult:
     is_weather_intent: bool = False
     # PDF nur bei explizitem Wunsch (Diamond: kein proaktives create_pdf)
     is_explicit_pdf_intent: bool = False
+    # Filesystem Intent (TASK-001: BACKLOG-004)
+    is_filesystem_intent: bool = False
 
     primary_intent: Optional[str] = None
     vetoed_intents: Dict[str, str] = field(default_factory=dict)
@@ -1642,6 +1644,7 @@ class IntentEngine:
             is_routing_geo_intent=routing_geo_on,
             is_weather_intent=weather_on,
             is_explicit_pdf_intent=self.detect_explicit_pdf_intent(user_text),
+            is_filesystem_intent=self.detect_filesystem_intent(user_text),
             vetoed_intents=vetoed,
             summary_global_veto=summary_global_veto,
             meta_agent_global_veto=meta_agent_global_veto,

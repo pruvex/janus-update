@@ -480,8 +480,11 @@ async def execute_generation_prepare_gateway(
         _is_cal_intent = bool(getattr(wf, "is_calendar_intent", False))
         _is_cal_mutation = bool(getattr(wf, "is_calendar_mutation", False))
         _is_cal_creation = bool(getattr(wf, "is_calendar_creation", False))
+        _is_filesystem_intent = bool(getattr(wf, "is_filesystem_intent", False))
         _idr = getattr(wf, "intent_detection_result", None)
         _mutation_target = str(getattr(_idr, "mutation_target", "") or "").strip() if _idr else ""
+        _routing_geo = bool(getattr(_idr, "is_routing_geo_intent", False)) if _idr else False
+        _weather = bool(getattr(_idr, "is_weather_intent", False)) if _idr else False
 
         if _is_cal_creation:
             # ── CALENDAR-CREATE: Full model freedom — do NOT force any tool.
@@ -497,13 +500,42 @@ async def execute_generation_prepare_gateway(
                 request.provider,
             )
 
-        elif _is_cal_intent and not _is_cal_mutation:
-            wf.gateway_kwargs["forced_tool"] = {
-                "skill_id": "calendar.list_events",
-                "provider_tool_name": "calendar.list_events",
-            }
-            wf.gateway_kwargs["force_tool_name"] = "calendar.list_events"
-            logger.info("💎 CALENDAR-LIVE-TRUTH: Forcing calendar.list_events for provider=%s", request.provider)
+        elif _is_cal_intent and not _is_cal_mutation and not _routing_geo and not _weather:
+            # 💎 TASK-003: BACKLOG-004 - Filesystem-Intent Veto
+            # VIDEO-FORCE nicht bei Filesystem-Intents anwenden
+            if _is_filesystem_intent:
+                logger.info(
+                    "💎 VIDEO-FORCE SKIPPED: Filesystem intent detected, not forcing calendar.list_events for provider=%s",
+                    request.provider
+                )
+                # Kein forced_tool bei Filesystem-Intent
+                wf.gateway_kwargs.pop("forced_tool", None)
+                wf.gateway_kwargs.pop("force_tool_name", None)
+            else:
+                wf.gateway_kwargs["forced_tool"] = {
+                    "skill_id": "calendar.list_events",
+                    "provider_tool_name": "calendar.list_events",
+                }
+                wf.gateway_kwargs["force_tool_name"] = "calendar.list_events"
+                logger.info("💎 CALENDAR-LIVE-TRUTH: Forcing calendar.list_events for provider=%s", request.provider)
+
+        elif _is_cal_intent and not _is_cal_mutation and (_routing_geo or _weather):
+            # Nur Kalender-Liste entfernen — andere Forces (z.B. video.search) unangetastet lassen.
+            _ftn_cal = str(wf.gateway_kwargs.get("force_tool_name") or "").replace("_", ".").lower()
+            if _ftn_cal == "calendar.list_events":
+                wf.gateway_kwargs.pop("forced_tool", None)
+                wf.gateway_kwargs.pop("force_tool_name", None)
+                wf.gateway_kwargs.pop("forced_tool_args", None)
+            _skip = []
+            if _routing_geo:
+                _skip.append("routing_geo")
+            if _weather:
+                _skip.append("weather")
+            logger.info(
+                "💎 CALENDAR-LIVE-TRUTH: Kein list_events-Zwang — %s (provider=%s)",
+                "+".join(_skip) or "non_cal",
+                request.provider,
+            )
 
         elif _is_cal_mutation:
             # ── TASK-067: Block neue Mutationen solange Proposal pending ─────
@@ -670,6 +702,31 @@ async def execute_generation_prepare_gateway(
                     if _hammer:
                         existing = str(getattr(wf, "action_guidance", "") or "")
                         wf.action_guidance = (existing + "\n" + _hammer).strip() if existing else _hammer
+
+        if _routing_geo:
+            _rg_block = (
+                "\n\n!!! ROUTING-/ENTFERNUNGS-FRAGE (DIAMOND) !!!\n"
+                "Der Nutzer fragt nach Entfernung, Route oder Fahrzeit zwischen Orten.\n"
+                "PFLICHT: Rufe `system.routing` mit sinnvollem Ursprung und Ziel auf.\n"
+                "VERBOTEN in diesem Turn: `calendar.list_events` — keine Kalender-Live-Abfrage, "
+                "solange es sich um eine reine Entfernungs-/Routenfrage handelt.\n"
+            )
+            _ag_rg = str(getattr(wf, "action_guidance", "") or "").strip()
+            wf.action_guidance = f"{_ag_rg}\n{_rg_block.strip()}".strip() if _ag_rg else _rg_block.strip()
+            logger.info("💎 ROUTING-GEO: action_guidance — Routing vor Kalender-Tools.")
+
+        if _weather and not _is_cal_intent:
+            _w_block = (
+                "\n\n!!! WETTER-FRAGE (DIAMOND) !!!\n"
+                "Der Nutzer fragt nach Wetter, Temperatur oder Vorhersage.\n"
+                "PFLICHT: Rufe `system.weather` mit dem genannten Ort (oder Kontext).\n"
+                "VERBOTEN in diesem Turn: `calendar.list_events`, `calendar.find_slots` — "
+                "bei reiner Wetterfrage keine Kalender-Tools verwenden.\n"
+            )
+            _ag_w = str(getattr(wf, "action_guidance", "") or "").strip()
+            wf.action_guidance = f"{_ag_w}\n{_w_block.strip()}".strip() if _ag_w else _w_block.strip()
+            logger.info("💎 WEATHER-INTENT: action_guidance — system.weather vor Kalender-Tools.")
+
         # 💎 ANTI-HALLUCINATION: Force knowledge.query tool when audit_file marker is present
         if getattr(request, "audit_file", None):
             wf.gateway_kwargs["forced_tool"] = {

@@ -110,7 +110,7 @@ Entity-Resolver erkennt "Ordner" als WEAK_MATCH und erzwingt calendar.list_event
 
 ---
 
-## TASK-003 – Orchestrator VIDEO-FORCE bei Filesystem-Intents verhindern
+## TASK-003 – Orchestrator VIDEO-FORCE bei Filesystem-Intents verhindern ✅ COMPLETED
 
 ### Ziel
 VIDEO-FORCE darf nicht bei Filesystem-Intents angewendet werden.
@@ -118,28 +118,50 @@ VIDEO-FORCE darf nicht bei Filesystem-Intents angewendet werden.
 ### Beschreibung
 Orchestrator wendet VIDEO-FORCE an und erzwingt tool_choice=calendar.list_events auch bei Filesystem-Intents. Dies muss durch Intent-basierte Guard verhindert werden.
 
+### 2. Impact-Analyse
+- **Basiert auf:** documentation/backlog/BACKLOG.md#BACKLOG-004
+- **Beeinflusst:** backend/services/orchestrator/orchestrator.py
+- **Risiko-Einschätzung:** MEDIUM
+
 ### Files
 - `backend/services/orchestrator/orchestrator.py` (oder entsprechende Datei)
 - `backend/services/orchestrator/` (verwandte Module)
 
 ### Steps
-1. Aktuelle Orchestrator-Logik analysieren und verstehen wie VIDEO-FORCE ausgelöst wird
-2. Intent-basierte Guard implementieren: VIDEO-FORCE nur anwenden wenn Intent Calendar ist, nicht bei Filesystem-Intent
-3. Tool-Choice-Logik anpassen: Bei Filesystem-Intents Filesystem-Tools bevorzugen
-4. Logging anpassen: VIDEO-FORCE nur loggen wenn tatsächlich angewendet
+1. Aktuelle Orchestrator-Logik analysieren und verstehen wie VIDEO-FORCE ausgelöst wird ✅
+2. Intent-basierte Guard implementieren: VIDEO-FORCE nur anwenden wenn Intent Calendar ist, nicht bei Filesystem-Intent ✅
+3. Tool-Choice-Logik anpassen: Bei Filesystem-Intents Filesystem-Tools bevorzugen ✅
+4. Logging anpassen: VIDEO-FORCE nur loggen wenn tatsächlich angewendet ✅
 
 ### Acceptance Criteria
-- [ ] VIDEO-FORCE wird nicht bei Filesystem-Intents angewendet
-- [ ] Backend-Log zeigt kein VIDEO-FORCE bei Filesystem-Intents
-- [ ] Keine Regression bei Calendar-Intents die VIDEO-FORCE benötigen
+- [x] VIDEO-FORCE wird nicht bei Filesystem-Intents angewendet
+- [x] Backend-Log zeigt kein VIDEO-FORCE bei Filesystem-Intents
+- [x] Keine Regression bei Calendar-Intents die VIDEO-FORCE benötigen
 
 ### Tests
-- Unit-Test für Orchestrator mit Filesystem-Intent
-- Unit-Test für Orchestrator mit Calendar-Intent (Regressionstest)
+- Unit-Test für Orchestrator mit Filesystem-Intent ✅
+- Unit-Test für Orchestrator mit Calendar-Intent (Regressionstest) ✅
 
 ### Model
 - **Assigned Model:** SWE 1.6
 - **Reason:** Orchestrator-Änderung mit komplexer Tool-Choice-Logik und Regression-Risiko
+
+### Implementation Details
+- **Geänderte Dateien:**
+  - `backend/services/orchestrator/intent_engine.py`:
+    - `is_filesystem_intent` zur IntentDetectionResult-Klasse hinzugefügt
+    - Filesystem-Intent-Erkennung zur detect_intents Methode hinzugefügt
+  - `backend/services/orchestrator/execution_dispatcher.py`:
+    - `_is_filesystem_intent` Variable hinzugefügt
+    - Guard implementiert: VIDEO-FORCE wird übersprungen bei Filesystem-Intent
+    - Logging für VIDEO-FORCE SKIP hinzugefügt
+  - `backend/services/chat_orchestrator.py`:
+    - `is_filesystem_intent` zum Workflow hinzugefügt (aus Intent-Ergebnis)
+  - `backend/tests/unit/test_video_force_filesystem_veto.py`:
+    - 10 Unit-Tests für VIDEO-FORCE Filesystem-Intent Veto
+    - Tests für Filesystem-Intent-Detection, Calendar-Regression, gemischte Prompts
+
+- **Testergebnisse:** 10/10 Tests bestanden
 
 ---
 
