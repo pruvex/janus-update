@@ -77,6 +77,19 @@ _DIRECTIVES: Dict[str, str] = {
         "Das Gedächtnis dient NUR als Orientierung. Du darfst NIEMALS einen Pfad aus der Erinnerung nennen, ohne ihn in EXAKT DIESEM Turn durch einen Tool-Call validiert zu haben. "
         "Eine Antwort ohne Live-Tool-Call bei Suchanfragen gilt als schwerer Systemfehler."
     ),
+    "path_resolution_hint": (
+        "\n\n!!! PFAD-AUFLÖSUNGS-HINWEIS (für gpt-5.4-nano) !!!\n"
+        "Wenn der Nutzer häufige Windows-Pfade wie 'desktop', 'documents', 'downloads' oder 'pictures' nennt, "
+        "solltest du diese direkt auflösen können, ohne nach dem konkreten Pfad zu fragen.\n"
+        "Typische Auflösungen:\n"
+        "  • 'desktop' → 'C:\\Users\\<username>\\Desktop'\n"
+        "  • 'documents' → 'C:\\Users\\<username>\\Documents'\n"
+        "  • 'downloads' → 'C:\\Users\\<username>\\Downloads'\n"
+        "  • 'pictures' → 'C:\\Users\\<username>\\Pictures'\n"
+        "Verwende diese Auflösungen proaktiv, um Filesystem-Operationen direkt auszuführen.\n"
+        "Wenn du unsicher bist, kannst du den Pfad mit 'filesystem.list_directory' validieren, "
+        "aber vermeide Rückfragen an den Nutzer für diese häufigen Standardpfade.\n"
+    ),
     "calendar_read_priority": (
         "\n\n!!! KALENDER-LIVE-TRUTH-REGEL (ABSOLUT, KEINE AUSNAHME) !!!\n"
         "KERNREGEL: Jede Nutzeranfrage über Termine, Kalender-Einträge oder freie Zeitfenster — "
@@ -262,6 +275,7 @@ def apply_verbosity_control(prompt_text: str) -> str:
         "verbosity_control",
         "no_meta_talk",
         "file_system_guard",
+        "path_resolution_hint",
         "search_command_priority",
         "calendar_read_priority",
         "rag_sort_policy",
