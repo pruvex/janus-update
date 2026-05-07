@@ -341,6 +341,7 @@ def find_files(
     root: Optional[str] = None,
     max_results: int = 20,
     search_all_drives: bool = False,
+    recursive: bool = True,
 ) -> ToolResultV1:
     """Rekursive Dateisuche über alle freigegebenen Workspaces (oder einen spezifischen Root).
 
@@ -352,6 +353,8 @@ def find_files(
         search_all_drives: Wenn True, werden ALLE lokalen Windows-Laufwerke (C:\\, D:\\, ...) durchsucht
                            — unabhängig von Workspaces. Dauert länger, findet aber Duplikate überall.
                            System-/Noise-Ordner (Windows, Program Files, node_modules, .git, ...) werden übersprungen.
+        recursive: Wenn False, wird nur das angegebene Verzeichnis durchsucht, nicht die Unterordner.
+                   (Default True für Kompatibilität mit bestehendem Verhalten).
 
     Returns:
         ToolResultV1 mit data.matches (Liste von absoluten Pfaden) und data.count.
@@ -386,8 +389,8 @@ def find_files(
         def _walk_onerror(err: OSError) -> None:
             logger.debug("find_files: Überspringe unerreichbaren Pfad (%s)", err)
 
-        def _sweep(sweep_roots: list[Path], apply_exclude: bool, current_matches: list[str]) -> bool:
-            """Durchsucht sweep_roots rekursiv, appendet an current_matches. Returns True wenn truncated."""
+        def _sweep(sweep_roots: list[Path], apply_exclude: bool, current_matches: list[str], recursive: bool = True) -> bool:
+            """Durchsucht sweep_roots rekursiv oder nicht-rekursiv, appendet an current_matches. Returns True wenn truncated."""
             existing = set(current_matches)
             for ws_root in sweep_roots:
                 if not ws_root.is_dir():
@@ -397,6 +400,10 @@ def find_files(
                 for dirpath, dirnames, filenames in _os.walk(str(ws_root), onerror=_walk_onerror):
                     if apply_exclude:
                         dirnames[:] = [d for d in dirnames if d.lower() not in _ALL_DRIVES_EXCLUDE_DIRS]
+                    # 💎 TASK-005: BACKLOG-005 - Nicht-rekursive Suche
+                    # Wenn recursive=False, leere dirnames, um Unterordner zu überspringen
+                    if not recursive:
+                        dirnames[:] = []
                     for fname in fnmatch.filter(filenames, effective_pattern):
                         full = _os.path.join(dirpath, fname)
                         if full in existing:
@@ -413,17 +420,24 @@ def find_files(
         explicit_root = bool(root and str(root).strip() and str(root).strip() not in (".", "/"))
         explicit_all_drives = bool(search_all_drives)
 
+        # 💎 TASK-005: BACKLOG-005 - Heuristik für nicht-rekursive Suche
+        # Wenn ein expliziter Root angegeben ist, setze recursive=False standardmäßig
+        # um unnötige Unterordner-Scans zu vermeiden (z.B. "vom Desktop", "in diesem Ordner")
+        if explicit_root and recursive:
+            recursive = False
+            logger.info(f"[find_files] Expliziter Root '{root}' erkannt, deaktiviere rekursive Suche für Performance.")
+
         # --- Phase 1: primärer Sweep ---
         if explicit_root:
             primary_roots = [_resolve_and_validate_path(str(root), must_exist=True)]
-            truncated = _sweep(primary_roots, apply_exclude=False, current_matches=matches)
+            truncated = _sweep(primary_roots, apply_exclude=False, current_matches=matches, recursive=recursive)
         elif explicit_all_drives:
             primary_roots = _enumerate_local_drives()
-            truncated = _sweep(primary_roots, apply_exclude=True, current_matches=matches)
+            truncated = _sweep(primary_roots, apply_exclude=True, current_matches=matches, recursive=recursive)
         else:
             # Default: Workspaces
             primary_roots = _get_allowed_workspaces()
-            truncated = _sweep(primary_roots, apply_exclude=False, current_matches=matches)
+            truncated = _sweep(primary_roots, apply_exclude=False, current_matches=matches, recursive=recursive)
 
             # --- Phase 2: Auto-Escalation bei ≤1 Treffer ---
             # Wenn Workspace-Suche wenig Erfolg hatte, erweitere auf alle Laufwerke,
@@ -434,7 +448,7 @@ def find_files(
                 # Laufwerke skippen, deren Workspace-Roots schon gescannt wurden?
                 # Nein — wir müssen andere Pfade auf demselben Drive auch abdecken.
                 # Dedupe läuft über existing-Set in _sweep.
-                truncated = _sweep(all_drives, apply_exclude=True, current_matches=matches)
+                truncated = _sweep(all_drives, apply_exclude=True, current_matches=matches, recursive=recursive)
 
         if matches:
             preview = "\n".join(matches[:25])
