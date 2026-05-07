@@ -50,6 +50,7 @@
 
 | Timestamp | Task / Feature | Editor | Result | Audit | Version | Validation / Notes |
 |---|---|---|---|---|---|---|
+| 2026-05-07 | BACKLOG-010 Image Move Regression Fix | SWE 1.6 | DONE | PASS | 0.4.17-beta.16 | Deterministischer Tool-Loop Guard für Desktop Image Move. Provider-agnostisch (gpt-5.4-nano + Gemini PASS). execution_engine.py erweitert. |
 | 2026-05-05 | TASK-069 Beta.11 Native Diamond Release | SWE 1.6 | PUBLISHED | N/A | 0.4.17-beta.11 | First native Diamond release with optimized update UI. Real-time progress indicators, 0%-rule implementation, sidebar polish. |
 | 2026-05-05 | TASK-069.36 Update UI Polish | KIMI-FIRST | DONE | N/A | 0.4.17-beta.11 | Optimized sidebar footer messages, implemented 0%-rule, added min-height to prevent jumping. |
 | 2026-05-05 | TASK-069 Beta.10 Bridge Release | SWE 1.6 | PUBLISHED | N/A | 0.4.17-beta.10 | Final bridge release with hardened multi-hash validation and atomic pipeline sync. Disabled differential downloads. Published to GitHub. |

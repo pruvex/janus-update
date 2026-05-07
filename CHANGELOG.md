@@ -7,6 +7,11 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+## [0.4.17-beta.16] - 2026-05-07
+
+### Fixed
+- **BACKLOG-010:** Deterministischer Tool-Loop Guard für Desktop Image Move. Nach `filesystem.create_directory` führt die Engine automatisch `filesystem.find_files` für *.jpg und *.png sowie `filesystem.move_files` aus, wenn das Ziel ein Desktop-Ordner ist. Provider-agnostisch (getestet mit gpt-5.4-nano und Gemini). Umgeht LLM-Instruction-Dependenz.
+
 ## [0.4.17-beta.15] - 2026-05-07
 
 ### Fixed

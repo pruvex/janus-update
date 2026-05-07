@@ -4,6 +4,7 @@ import os
 import re
 import time
 import uuid
+from pathlib import Path
 from urllib.parse import urlparse
 from typing import Any, AsyncIterator, Dict, List, Optional, cast
 
@@ -361,6 +362,193 @@ class OrchestratorExecutionEngine:
                 "options": {"auto_open": True, "pinnable": True},
             }
         return None
+
+    @staticmethod
+    def _parse_tool_result_payload(tool_result: Dict[str, Any]) -> Dict[str, Any]:
+        raw_content = tool_result.get("_raw_content") or tool_result.get("content") or "{}"
+        try:
+            parsed = json.loads(raw_content) if isinstance(raw_content, str) else dict(raw_content or {})
+        except Exception:
+            return {}
+        return parsed if isinstance(parsed, dict) else {}
+
+    @staticmethod
+    def _tool_result_skill_name(tool_result: Dict[str, Any]) -> str:
+        raw_name = str(
+            tool_result.get("skill_id")
+            or tool_result.get("_skill_id")
+            or tool_result.get("name")
+            or ""
+        ).strip()
+        return str(tool_manager.get_skill_id(raw_name) or raw_name).strip().lower()
+
+    @staticmethod
+    def _make_tool_call(name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "id": f"call_{uuid.uuid4().hex[:16]}",
+            "type": "function",
+            "function": {
+                "name": name,
+                "arguments": json.dumps(arguments, ensure_ascii=False),
+            },
+        }
+
+    @staticmethod
+    def _image_move_patterns_from_prompt(user_prompt: str) -> List[str]:
+        lowered = str(user_prompt or "").lower()
+        patterns: List[str] = []
+        if re.search(r"(?<![a-z0-9])jpe?g(?![a-z0-9])|\.jpe?g", lowered):
+            patterns.append("*.jpg")
+        if re.search(r"(?<![a-z0-9])png(?![a-z0-9])|\.png", lowered):
+            patterns.append("*.png")
+        return patterns
+
+    def _should_complete_filesystem_image_move(self, user_prompt: str, results_buffer: List[Dict[str, Any]]) -> bool:
+        lowered = str(user_prompt or "").lower()
+        if "desktop" not in lowered:
+            return False
+        if not any(token in lowered for token in ("verschieb", "verschiebe", "verschieben", "move")):
+            return False
+        if not self._image_move_patterns_from_prompt(user_prompt):
+            return False
+        skill_names = {
+            self._tool_result_skill_name(result)
+            for result in (results_buffer or [])
+            if isinstance(result, dict)
+        }
+        return "filesystem.create_directory" in skill_names and "filesystem.move_files" not in skill_names
+
+    def _created_directory_from_results(self, results_buffer: List[Dict[str, Any]]) -> str:
+        for result in reversed(results_buffer or []):
+            if not isinstance(result, dict):
+                continue
+            if self._tool_result_skill_name(result) != "filesystem.create_directory":
+                continue
+            payload = self._parse_tool_result_payload(result)
+            data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+            error = payload.get("error") if isinstance(payload.get("error"), dict) else {}
+            arguments = result.get("_arguments_json") if isinstance(result.get("_arguments_json"), dict) else {}
+            path = str(data.get("path") or arguments.get("path") or "").strip()
+            if payload.get("status") != "ok" and str(error.get("code") or "") != "ALREADY_EXISTS":
+                continue
+            if path:
+                return path
+        return ""
+
+    def _matches_from_find_results(self, results_buffer: List[Dict[str, Any]], source_directory: str) -> List[str]:
+        source_path = Path(source_directory)
+        matches: List[str] = []
+        seen: set[str] = set()
+        for result in results_buffer or []:
+            if not isinstance(result, dict):
+                continue
+            if self._tool_result_skill_name(result) != "filesystem.find_files":
+                continue
+            payload = self._parse_tool_result_payload(result)
+            data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+            for raw_match in data.get("matches") or []:
+                match_path = Path(str(raw_match))
+                try:
+                    if match_path.parent.resolve() != source_path.resolve():
+                        continue
+                except Exception:
+                    if str(match_path.parent).lower() != str(source_path).lower():
+                        continue
+                name = match_path.name
+                if name and name not in seen:
+                    seen.add(name)
+                    matches.append(name)
+        return matches
+
+    def _success_messages_from_tool_results(self, results_buffer: List[Dict[str, Any]]) -> List[str]:
+        messages: List[str] = []
+        for result in results_buffer or []:
+            if not isinstance(result, dict):
+                continue
+            payload = self._parse_tool_result_payload(result)
+            if payload.get("status") != "ok":
+                continue
+            message = str(payload.get("message") or payload.get("output") or "").strip()
+            if not message:
+                data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+                message = str(data.get("output") or "").strip()
+            if message:
+                messages.append(message)
+        return messages
+
+    async def _complete_pending_filesystem_image_move(
+        self,
+        *,
+        user_prompt: str,
+        tool_executor,
+        results_buffer: List[Dict[str, Any]],
+        bypass_policy: bool,
+    ) -> List[Dict[str, Any]]:
+        if not self._should_complete_filesystem_image_move(user_prompt, results_buffer):
+            return []
+
+        destination_directory = self._created_directory_from_results(results_buffer)
+        if not destination_directory:
+            return []
+
+        source_directory = str(Path(destination_directory).parent)
+        patterns = self._image_move_patterns_from_prompt(user_prompt)
+        existing_patterns: set[str] = set()
+        for result in results_buffer or []:
+            if not isinstance(result, dict):
+                continue
+            if self._tool_result_skill_name(result) != "filesystem.find_files":
+                continue
+            payload = self._parse_tool_result_payload(result)
+            data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+            pattern = str(data.get("pattern") or "").strip()
+            if pattern:
+                existing_patterns.add(pattern)
+
+        generated_results: List[Dict[str, Any]] = []
+        find_calls = [
+            self._make_tool_call(
+                "filesystem.find_files",
+                {
+                    "pattern": pattern,
+                    "root": source_directory,
+                    "max_results": 100,
+                    "recursive": False,
+                },
+            )
+            for pattern in patterns
+            if pattern not in existing_patterns
+        ]
+        if find_calls:
+            logger.info(
+                "FILESYSTEM-AUTO-COMPLETE: Running %d missing image search call(s) after directory creation.",
+                len(find_calls),
+            )
+            generated_results.extend(
+                await tool_executor.execute_tool_calls(find_calls, bypass_policy=bypass_policy)
+            )
+
+        all_find_results = list(results_buffer) + generated_results
+        file_names = self._matches_from_find_results(all_find_results, source_directory)
+        if not file_names:
+            return generated_results
+
+        move_call = self._make_tool_call(
+            "filesystem.move_files",
+            {
+                "source_directory": source_directory,
+                "destination_directory": destination_directory,
+                "file_names": file_names,
+            },
+        )
+        logger.info(
+            "FILESYSTEM-AUTO-COMPLETE: Moving %d image file(s) after deterministic search completion.",
+            len(file_names),
+        )
+        generated_results.extend(
+            await tool_executor.execute_tool_calls([move_call], bypass_policy=bypass_policy)
+        )
+        return generated_results
 
     def _build_planner_capability_groups(self, *, allowed_skill_ids: List[str]) -> Dict[str, List[str]]:
         if self.capability_registry is not None and hasattr(self.capability_registry, "get_capability_groups"):
@@ -1609,6 +1797,22 @@ class OrchestratorExecutionEngine:
                     if isinstance(tr, dict):
                         results_buffer.append(tr)
 
+            auto_completed_results = await self._complete_pending_filesystem_image_move(
+                user_prompt=str(gateway_kwargs.get("user_prompt") or ""),
+                tool_executor=tool_executor,
+                results_buffer=results_buffer,
+                bypass_policy=bypass_policy_this_turn,
+            )
+            if auto_completed_results:
+                for tr in auto_completed_results:
+                    if isinstance(tr, dict):
+                        results_buffer.append(tr)
+                        _skill_name = str(tr.get("name") or "").strip()
+                        if _skill_name and _skill_name not in all_used_skills:
+                            all_used_skills.append(_skill_name)
+                response = {"text": "\n\n".join(self._success_messages_from_tool_results(results_buffer)), "tool_calls": []}
+                break
+
             # 💎 REDUNDANT SYNTHESIS LOOP FIX: Check if any tool result is final response
             # If is_final_response=True, skip synthesis and use tool message directly
             if tool_results:
@@ -2640,6 +2844,22 @@ class OrchestratorExecutionEngine:
                             except Exception:
                                 logger.warning("💎 VIDEO-LIST-METADATA: Failed to extract video list data", exc_info=True)
 
+            auto_completed_results = await self._complete_pending_filesystem_image_move(
+                user_prompt=str(gateway_kwargs.get("user_prompt") or ""),
+                tool_executor=tool_executor,
+                results_buffer=results_buffer,
+                bypass_policy=bypass_policy_this_turn,
+            )
+            if auto_completed_results:
+                for tr in auto_completed_results:
+                    if isinstance(tr, dict):
+                        results_buffer.append(tr)
+                        _sn = str(tr.get("name") or "").strip()
+                        if _sn and _sn not in all_used_skills:
+                            all_used_skills.append(_sn)
+                response = {"text": "\n\n".join(self._success_messages_from_tool_results(results_buffer)), "tool_calls": []}
+                break
+
             if tool_results:
                 for tool_result in tool_results:
                     try:
@@ -2687,6 +2907,14 @@ class OrchestratorExecutionEngine:
                 gateway_kwargs["chat_history"].append({
                     "role": "system",
                     "content": "[System-Instruction]: The tool execution was successful. You MUST now provide a final, natural language response to the user summarizing this result."
+                })
+            # 💎 BACKLOG-010 FIX: Force OpenAI/gpt-5.4-nano to continue tool execution
+            # gpt-5.4-nano may stop after the first tool call without planning further tools
+            # This instruction ensures the model continues to evaluate if more tools are needed
+            elif provider_key in ("openai",):
+                gateway_kwargs["chat_history"].append({
+                    "role": "system",
+                    "content": "[System-Instruction]: The tool execution was successful. You MUST evaluate if the user's request is fully satisfied. If not, continue with additional tool calls to complete the task. Do not stop prematurely.\n\n!!! KRITISCH: MULTI-STEP FILESYSTEM-OPERATIONEN !!!\nWenn der User mehrere Dateitypen nennt (z.B. 'jpg und png', 'pdf und docx'), MUSST du für jeden Dateityp eine separate Suche durchführen und alle gefundenen Dateien verschieben.\nVERBOTEN: Nur einen Dateityp zu suchen und die anderen zu ignorieren - das ist ein Systemfehler.\nPFLICHT: Wenn die User-Anfrage 'jpg und png' enthält, MUSST du zuerst nach '*.jpg' suchen, dann nach '*.png' suchen, dann alle gefundenen Dateien verschieben.\n\n!!! KRITISCH: NACH DATEISUCHE MUSS VERSCHIEBEN FOLGEN !!!\nWenn du 'filesystem.find_files' aufgerufen hast und Dateien gefunden hast, MUSST du danach 'filesystem.move_files' aufrufen, um diese Dateien zu verschieben.\nVERBOTEN: Nur die gefundenen Dateien aufzulisten, ohne sie zu verschieben - das ist ein Systemfehler.\nPFLICHT: Extrahiere die Dateinamen aus dem 'find_files' Ergebnis und rufe 'filesystem.move_files' mit diesen Dateinamen auf.\n\n!!! KRITISCH: KEINE GENERISCHEN FEHLERMELDUNGEN !!!\nVERBOTEN: Generische Nachrichten wie 'Ich konnte keine stabile Antwort erzeugen', 'Ich kann das nicht ausführen' oder ähnliche.\nPFLICHT: Bei Filesystem-Intents (Ordner erstellen, Dateien verschieben, etc.) MUSST du die entsprechenden Tools (filesystem.create_directory, filesystem.move_files, etc.) AUFRUFEN. Wenn ein Tool einen Fehler zurückgibt, melde den konkreten Fehler und fordere den Nutzer auf, den Berechtigungs-Dialog zu bestätigen oder den Pfad zu korrigieren."
                 })
 
             _sctx = gateway_kwargs.get("_suggestion_context")
