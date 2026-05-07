@@ -216,7 +216,7 @@ Skill-Selector muss sicherstellen, dass bei Filesystem-Intents Filesystem-Tools 
 
 ---
 
-## TASK-005 – Integrationstest für Filesystem-Intent-Flow schreiben
+## TASK-005 – Integrationstest für Filesystem-Intent-Flow schreiben ✅ COMPLETED
 
 ### Ziel
 Integrationstest validiert den kompletten Flow von Prompt über Intent-Resolver zu Tool-Aufruf für Filesystem-Operationen.
@@ -224,27 +224,40 @@ Integrationstest validiert den kompletten Flow von Prompt über Intent-Resolver 
 ### Beschreibung
 Integrationstest simuliert den Reproduktions-Prompt und validiert dass Filesystem-Tools korrekt aufgerufen werden ohne 504 Timeout.
 
+### 2. Impact-Analyse
+- **Basiert auf:** documentation/backlog/BACKLOG.md#BACKLOG-004
+- **Beeinflusst:** tests/integration/ (neue Test-Datei)
+- **Risiko-Einschätzung:** LOW
+
 ### Files
 - `tests/integration/test_intent_resolver_filesystem.py` (neu)
 - `tests/integration/` (verwandte Test-Dateien)
 
 ### Steps
-1. Integrationstest-Datei erstellen für Filesystem-Intent-Flow
-2. Testfall implementieren: Prompt "erstell auf dem desktop einen ordner 'Bilder' und verschiebe jpg/png dateien"
-3. Validierungen implementieren: Intent ist Filesystem, Entity-Resolver erzwingt keine Calendar-Entities, VIDEO-FORCE nicht angewendet, Filesystem-Tools aufgerufen
-4. Test ausführen und grün machen
+1. Integrationstest-Datei erstellen für Filesystem-Intent-Flow ✅
+2. Testfall implementieren: Prompt "erstell auf dem desktop einen ordner 'Bilder' und verschiebe jpg/png dateien" ✅
+3. Validierungen implementieren: Intent ist Filesystem, Entity-Resolver erzwingt keine Calendar-Entities, VIDEO-FORCE nicht angewendet, Filesystem-Tools aufgerufen ✅
+4. Test ausführen und grün machen ✅
 
 ### Acceptance Criteria
-- [ ] Integrationstest existiert und läuft erfolgreich
-- [ ] Test validiert kompletten Flow von Prompt zu Tool-Aufruf
-- [ ] Kein 504 Timeout im Test
+- [x] Integrationstest existiert und läuft erfolgreich
+- [x] Test validiert kompletten Flow von Prompt zu Tool-Aufruf
+- [x] Kein 504 Timeout im Test
 
 ### Tests
-- Integrationstest selbst ist der Test
+- Integrationstest selbst ist der Test ✅
 
 ### Model
 - **Assigned Model:** SWE 1.6
 - **Reason:** Integrationstest mit mehreren Modulen und komplexem Flow
+
+### Implementation Details
+- **Geänderte Dateien:**
+  - `backend/tests/integration/test_intent_resolver_filesystem.py`:
+    - 10 Integrationstests für Filesystem-Intent-Flow
+    - Tests für Reproduktions-Prompt, Intent-Flow, Calendar-Regression, Filesystem-Keywords, Edge Cases
+
+- **Testergebnisse:** 10/10 Tests bestanden
 
 ---
 
