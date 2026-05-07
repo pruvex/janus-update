@@ -84,10 +84,11 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 ### BACKLOG-005 – Bild-Intent hat Vorrang vor Filesystem-Intent bei gemischten Keywords
 
 - **Typ:** BUG
-- **Status:** IN PROGRESS
+- **Status:** DONE
 - **Quelle:** Manual Test (TASK-006 von BACKLOG-004)
 - **Erstellt:** 2026-05-07
 - **Aktualisiert:** 2026-05-07
+- **Abgeschlossen:** 2026-05-07
 - **Kurzbeschreibung:** Bei Prompts mit sowohl Filesystem- als auch Bild-Keywords (z.B. "Bilder" im Kontext eines Ordners) wird der Bild-Intent erkannt und system.generate_image als mandatory skill gesetzt, statt Filesystem-Tools aufzurufen.
 - **Erwartetes Verhalten:** Prompt "erstell auf dem desktop einen ordner 'Bilder' und verschiebe jpg/png dateien" wird als Filesystem-Intent erkannt und filesystem.create_directory / filesystem.move_files aufgerufen (nicht system.generate_image).
 - **Tatsächliches Verhalten:** Skill-Selector erkennt `intent=image` und setzt `mandatory=['system.generate_image']`, obwohl Filesystem-Intent auch erkannt wird (`filesystem=True, calendar=False`).
@@ -98,15 +99,19 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
   - Backend-Log: `[FILESYSTEM-INTENT] Detected: action=True, object=True, path=True`
   - Backend-Log: `[FILESYSTEM-OVERRIDE] Calendar intent suppressed by filesystem intent`
 - **Akzeptanzkriterien:**
-  - [ ] Filesystem-Intent hat Vorrang vor Bild-Intent bei gemischten Keywords
-  - [ ] "Bilder" im Kontext von Dateisystem-Operationen wird nicht als Bild-Intent interpretiert
-  - [ ] Filesystem-Tools werden aufgerufen bei eindeutigem Filesystem-Kontext
+  - [x] Filesystem-Intent hat Vorrang vor Bild-Intent bei gemischten Keywords
+  - [x] "Bilder" im Kontext von Dateisystem-Operationen wird nicht als Bild-Intent interpretiert
+  - [x] Filesystem-Tools werden aufgerufen bei eindeutigem Filesystem-Kontext
 - **Fehlende Informationen:**
   - Keine
 - **Notizen:** Dies ist ein separates Problem von BACKLOG-004. BACKLOG-004 hat das Calendar-Intent-Problem gelöst, aber die Intent-Hierarchie zwischen Filesystem und Bild muss angepasst werden. Filesystem sollte Vorrang haben wenn der Kontext eindeutig Dateisystem-Operation ist.
 - **Handoff:** documentation/tasks/backlog_BACKLOG-005_image_intent_hierarchy.md
 - **Recommended next skill:** SKILL 3
 - **Handoff created:** 2026-05-07
+- **Abgeschlossen durch:** SKILL 4 (Executioner) × TASK-005
+- **Version:** 0.4.17-beta.13
+- **Audit:** PASS
+- **Changelog:** Filesystem-Intent-Vorrang vor Bild-Intent, Skill-Description-Verbesserungen
 
 ### BACKLOG-004 – Intent-Resolver erkennt Filesystem-Befehle fälschlich als Calendar-Intent
 

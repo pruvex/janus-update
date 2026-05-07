@@ -7,6 +7,9 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+### Fixed
+- **BACKLOG-005:** Filesystem-Intent hat jetzt Vorrang vor Bild-Intent bei gemischten Keywords. "Bilder" im Kontext von Dateisystem-Operationen wird korrekt als Filesystem-Intent erkannt, nicht als Bild-Intent. Skill-Descriptions für find_files und move_files verbessert für bessere Tool-Call-Effizienz.
+
 ## [0.4.17-beta.12] - 2026-05-07
 
 ### Fixed
