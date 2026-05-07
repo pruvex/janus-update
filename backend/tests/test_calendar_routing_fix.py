@@ -1,7 +1,9 @@
 """Test calendar routing fix - shopping guardrail bypass for calendar intents."""
 
 import pytest
+from backend.services.capability_registry import CapabilityRegistry
 from backend.services.orchestrator.intent_engine import (
+    IntentDetectionResult,
     IntentEngine,
     calendar_user_text_overlap_snapshot,
 )
@@ -82,6 +84,85 @@ class TestCalendarSnapshotIntentBoost:
         )
         assert result.is_shopping_intent
         assert not result.is_calendar_intent
+
+    def test_routing_geo_suppresses_calendar_snapshot_boost(self):
+        """Entfernungsfrage: kein Kalender trotz Überlappung mit Event-Ort/-titel."""
+        engine = IntentEngine()
+        snap = {
+            "events": [
+                {
+                    "title": "Meeting München",
+                    "location": "Köln",
+                    "start": "2026-05-10T10:00:00+02:00",
+                    "end": "2026-05-10T11:00:00+02:00",
+                }
+            ]
+        }
+        text = "wie weit ist es von köln nach münchen?"
+        assert calendar_user_text_overlap_snapshot(text, snap)
+        result = engine.detect_all_intents(text, calendar_snapshot=snap)
+        assert result.is_routing_geo_intent
+        assert not result.is_calendar_intent
+        assert result.primary_intent == "routing_geo"
+
+
+class TestWeatherSnapshotIntentSuppress:
+    """Wetterfragen: kein Kalender-Snapshot-Boost bei Orts-Overlap (Parität zu routing_geo)."""
+
+    def test_weather_suppresses_calendar_snapshot_boost(self):
+        engine = IntentEngine()
+        snap = {
+            "events": [
+                {
+                    "title": "Meeting München",
+                    "location": "Köln",
+                    "start": "2026-05-10T10:00:00+02:00",
+                    "end": "2026-05-10T11:00:00+02:00",
+                }
+            ]
+        }
+        text = "und wie ist das wetter in münchen?"
+        assert calendar_user_text_overlap_snapshot(text, snap)
+        result = engine.detect_all_intents(text, calendar_snapshot=snap)
+        assert result.is_weather_intent
+        assert not result.is_calendar_intent
+        assert result.primary_intent == "weather"
+
+
+class TestDiamondPdfToolPolicy:
+    """create_pdf nur bei explizitem Wunsch / Meta-Flow (CapabilityRegistry)."""
+
+    @pytest.fixture
+    def registry(self):
+        return CapabilityRegistry(registry_path="/dev/null", skills_dir="/dev/null")
+
+    def test_create_pdf_forbidden_by_default(self, registry):
+        pol = registry.get_intent_skill_policy(IntentDetectionResult())
+        assert "system.create_pdf" in pol["forbidden"]
+
+    def test_create_pdf_allowed_when_explicit(self, registry):
+        pol = registry.get_intent_skill_policy(
+            IntentDetectionResult(is_explicit_pdf_intent=True)
+        )
+        assert "system.create_pdf" not in pol["forbidden"]
+
+    def test_create_pdf_allowed_for_multitask_image_pdf(self, registry):
+        pol = registry.get_intent_skill_policy(
+            IntentDetectionResult(is_multitask_image_pdf=True)
+        )
+        assert "system.create_pdf" not in pol["forbidden"]
+
+    def test_routing_geo_boosts_system_routing(self, registry):
+        pol = registry.get_intent_skill_policy(
+            IntentDetectionResult(is_routing_geo_intent=True, primary_intent="routing_geo")
+        )
+        assert "system.routing" in pol["boosted"]
+
+    def test_weather_mandates_system_weather(self, registry):
+        pol = registry.get_intent_skill_policy(
+            IntentDetectionResult(is_weather_intent=True, primary_intent="weather")
+        )
+        assert "system.weather" in pol["mandatory"]
 
 
 if __name__ == "__main__":

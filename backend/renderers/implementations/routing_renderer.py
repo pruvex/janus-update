@@ -4,6 +4,7 @@ Converts routing tool-result data into a human-readable Markdown answer
 including origin, destination, distance, duration, and Google Maps link.
 """
 
+from backend.renderers.attribution import ROUTING_SOURCE_LABEL, append_quelle_line
 from backend.renderers.base import BaseRenderer
 from backend.renderers.registry import register_renderer
 
@@ -32,7 +33,8 @@ class RoutingRenderer(BaseRenderer):
         if maps_link:
             lines.append(f"- **Google Maps:** [Route anzeigen]({maps_link})")
 
-        return "\n".join(lines)
+        body = "\n".join(lines)
+        return append_quelle_line(body, ROUTING_SOURCE_LABEL)
 
 
 # Auto-register on import

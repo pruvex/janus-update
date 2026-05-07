@@ -1,18 +1,18 @@
----
+﻿---
 description: SWE 1.6 Finaler Build und Release auf Github.
 ---
 
-# Production Release Workflow (JANUS – AFTER /post-impl)
+# Skill 8 â€“ Build Release (JANUS â€“ AFTER SKILL 7 AND /save)
 
 Use this workflow only after:
 
 ```text
 /1_Feature-erstellen
-→ implementation of generated tasks
-→ /2_final-audit
-→ version bump decision if required
-→ /post-impl
-→ /release-production
+â†’ implementation of generated tasks
+â†’ SKILL 5 â€“ DIAMANTSTANDARD FINAL AUDIT
+â†’ Skill 7 /SKILL 7 â€“ DOKUMENTATIONSUPDATE with automatic version bump
+â†’ /save
+â†’ /SKILL 8 â€“ BUILD RELEASE
 ```
 
 Goal:
@@ -28,13 +28,14 @@ This workflow mutates external state only in the publish phase. Do not publish w
 
 ## Hard Rules
 
-- Do not run production publish if `/2_final-audit` was not `PASS` or `PASS WITH FIXES`.
-- Do not run production publish if `/post-impl` was not completed.
+- Do not run production publish if SKILL 5 was not `PASS` or `PASS WITH FIXES`.
+- Do not run production publish if Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE` was not completed.
+- Do not run production publish if `/save` was not completed after Skill 7.
 - Do not publish with a missing or inconsistent version.
 - Do not publish with a missing installer artifact.
 - Do not publish with a missing or invalid `janus-update-manifest.json`.
 - Do not publish without explicit user approval after showing version, artifact, manifest hash, and target repository.
-- Do not bump versions in this workflow. Version bump belongs to `/2_final-audit`.
+- Do not bump versions in this workflow. Version bump belongs to Skill 7.
 - Do not silently ignore build or validation failures.
 - Stop on first blocking failure and report the exact failed phase.
 
@@ -60,12 +61,13 @@ Forbidden actions:
 
 Ask for or infer:
 
-1. Final `/2_final-audit` result.
-2. `/post-impl` completion result.
+1. Final SKILL 5 result.
+2. Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE` completion result including version bump report.
 3. Target version from root `package.json`.
-4. Whether this is a real production publish or a dry-run/build-only release rehearsal.
+4. `/save` completion evidence after Skill 7.
+5. Whether this is a real production publish or a dry-run/build-only release rehearsal.
 
-If the audit/post-impl evidence is unavailable, stop and ask for it.
+If the audit/Skill-7/save evidence is unavailable, stop and ask for it.
 
 ---
 
@@ -97,9 +99,10 @@ Typical release lookup keys:
 
 Verify:
 
-- `/2_final-audit`: `PASS` or `PASS WITH FIXES`
-- `/post-impl`: complete
-- Version bump decision: complete or explicitly deferred
+- SKILL 5: `PASS` or `PASS WITH FIXES`
+- Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE`: complete
+- `/save`: complete after Skill 7
+- Skill 7 automatic version bump: complete and validated
 - `CHANGELOG.md`: updated for the feature/release
 - Task file: contains post-implementation audit trail or equivalent
 
@@ -112,7 +115,7 @@ If any required precondition is missing, stop:
 - [gate name]
 
 ## Required Action
-- [what to do before rerunning /release-production]
+- [what to do before rerunning /SKILL 8 â€“ BUILD RELEASE]
 ```
 
 ---
@@ -158,7 +161,7 @@ python tools/pre_build_check.py
 
 If this fails, stop. This check catches syntax errors, missing dependencies, version mismatches, and path issues before the expensive build starts.
 
-Also run targeted validations from `/2_final-audit` if they are cheap and release-critical.
+Also run targeted validations from `/2_final-audit` or Skill 5 if they are cheap and release-critical.
 
 For Electron/update features, recommended:
 
@@ -334,8 +337,10 @@ Return:
 - **Version:** [version]
 
 ## Gates
-- **/2_final-audit:** PASS | PASS WITH FIXES | missing
-- **/post-impl:** complete | missing
+- **/2_final-audit or Skill 5:** PASS | PASS WITH FIXES | missing
+- **Skill 7 /SKILL 7 â€“ DOKUMENTATIONSUPDATE:** complete | missing
+- **Skill 7 automatic version bump:** PASS | FAIL
+- **/save after Skill 7:** complete | missing
 - **Version consistency:** PASS | FAIL
 - **Pre-build:** PASS | FAIL
 - **Build:** PASS | FAIL
@@ -365,3 +370,4 @@ Return:
 - `RELEASE NOT PUBLISHED`: User declined publish approval.
 - `RELEASE BLOCKED`: A pre-publish gate failed.
 - `RELEASE PUBLISHED WITH RISK`: Publish happened but post-publish verification found missing or uncertain release assets.
+

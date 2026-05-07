@@ -1,7 +1,7 @@
 import { sanitizeReleaseNotes, sanitizeTemplateHtml } from "./dompurify-config.js";
 import { initializeSettings } from "./settings.js";
 import { initializeStudio } from "./image-studio.js";
-import { initUpdateUI } from "./update-ui.js";
+import { initUpdateUI, setSidebarVersionBase } from "./update-ui.js";
 
 // ================= WRAPPER FÜR FETCH (API KEY) =================
 (() => {
@@ -994,10 +994,8 @@ async function initializeApp() {
           currentVersion = __APP_VERSION__;
       }
 
-      const sidebarVersionEl = document.getElementById('sidebar-version');
-      if (sidebarVersionEl) {
-          sidebarVersionEl.textContent = `v${currentVersion}`;
-      }
+      const sidebarLabel = `v${currentVersion}`;
+      setSidebarVersionBase(sidebarLabel);
       
       const settingsVersionEl = document.getElementById('app-version-display');
       if (settingsVersionEl) {

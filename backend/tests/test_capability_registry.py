@@ -407,3 +407,17 @@ class TestCapabilityRegistryEdgeCases:
         reg.load()
 
         assert "knowledge.deep.search" in reg._available_skills
+
+
+class TestRealCapabilityRegistrySkillRefs:
+    """Sanity: shipped registry lists skills the SkillSelector universe must include."""
+
+    def test_system_weather_is_in_planner_universe(self):
+        backend_root = Path(__file__).resolve().parent.parent
+        registry_path = backend_root / "data" / "capability_registry.json"
+        skills_dir = backend_root / "skills"
+        reg = CapabilityRegistry(str(registry_path), str(skills_dir))
+        reg.load()
+        groups = reg.get_capability_groups(allowed_skill_ids=None)
+        universe = {sid for skills in groups.values() for sid in skills}
+        assert "system.weather" in universe

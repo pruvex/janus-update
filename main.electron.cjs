@@ -1138,6 +1138,7 @@ ipcMain.on('update:retry', () => {
             retryCount: 0,
             errorCode: null,
             errorMessage: null,
+            downloadProgress: null,
         });
         if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send('update-state-changed', newState);
@@ -1150,7 +1151,7 @@ ipcMain.on('update:dismiss-normal', () => {
     const state = readUpdateState(app);
     if (state.status === 'ready_to_install' && state.isCritical === false) {
         log.info('[UpdateIPC] Dismissing normal update');
-        transitionUpdateState(app, { status: 'idle' });
+        transitionUpdateState(app, { status: 'idle', downloadProgress: null });
     }
 });
 

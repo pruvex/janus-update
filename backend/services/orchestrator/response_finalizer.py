@@ -20,6 +20,7 @@ from backend.services.orchestrator.identity_manager import identity_manager
 from backend.services.orchestrator.modal_request_builder import resolve_modal_request_for_execution
 from backend.services.orchestrator.schemas import AuditContext, ExecutionResponse
 from backend.utils import intent_classifier
+from backend.renderers.attribution import append_tool_attributions_from_tools
 
 logger = logging.getLogger("janus_backend")
 
@@ -626,6 +627,7 @@ async def finalize_response(
         wf.video_list_metadata = _derive_video_list_metadata_from_tool_results(wf.tool_results)
         if not getattr(wf, "modal_request", None):
             wf.modal_request = _derive_video_modal_request_from_tool_results(wf.tool_results)
+    wf.final_text = append_tool_attributions_from_tools(wf.final_text, getattr(wf, "tool_results", []) or [])
     # MCL: modal_request / Video-URL-Erkennung erst nach finalem assistant-Text (alle Backfills, Platzhalter, Audit-Kürzungen).
     wf_modal = resolve_modal_request_for_execution(wf)
     wf.execution_for_persist = ExecutionResponse(

@@ -88,17 +88,31 @@ class TestRoutingRenderer:
         [
             pytest.param(
                 _ROUTING_FULL,
-                ["Berlin → Hamburg", "289.0 km", "3 Std. 15 Min.", "google.com/maps"],
+                [
+                    "Berlin → Hamburg",
+                    "289.0 km",
+                    "3 Std. 15 Min.",
+                    "google.com/maps",
+                    "Quelle:",
+                    "OSRM",
+                    "Nominatim",
+                ],
                 id="full-data",
             ),
             pytest.param(
                 _ROUTING_PARTIAL,
-                ["München → Wien", "Distanz unbekannt", "Dauer unbekannt"],
+                [
+                    "München → Wien",
+                    "Distanz unbekannt",
+                    "Dauer unbekannt",
+                    "Quelle:",
+                    "OSRM",
+                ],
                 id="partial-data",
             ),
             pytest.param(
                 _ROUTING_EMPTY,
-                ["Unbekannt → Unbekannt", "Distanz unbekannt"],
+                ["Unbekannt → Unbekannt", "Distanz unbekannt", "Quelle:", "OSRM"],
                 id="empty-data",
             ),
         ],
@@ -163,17 +177,33 @@ class TestWeatherRenderer:
         [
             pytest.param(
                 _WEATHER_FULL,
-                ["Berlin", "Wettervorhersage", "12°C", "open-meteo"],
+                [
+                    "Berlin",
+                    "Wettervorhersage",
+                    "12°C",
+                    "Quelle:",
+                    "Open-Meteo",
+                    "Nominatim",
+                ],
                 id="full-data",
             ),
             pytest.param(
                 _WEATHER_WTTR_FALLBACK,
-                ["Berlin", "wttr.in"],
+                ["Berlin", "Quelle:", "wttr.in"],
                 id="wttr-fallback",
             ),
             pytest.param(
                 _WEATHER_STRUCTURED_ONLY,
-                ["Hamburg", "Regen", "9°C", "3°C", "60%", "40 km/h"],
+                [
+                    "Hamburg",
+                    "Regen",
+                    "9°C",
+                    "3°C",
+                    "60%",
+                    "40 km/h",
+                    "Quelle:",
+                    "Open-Meteo",
+                ],
                 id="structured-no-forecast",
             ),
             pytest.param(
@@ -195,7 +225,8 @@ class TestWeatherRenderer:
 
     def test_source_attribution_present(self):
         result = self.renderer.render(_WEATHER_FULL)
-        assert "open-meteo" in result
+        assert "Quelle:" in result
+        assert "Open-Meteo" in result
 
 
 # ---------------------------------------------------------------------------
@@ -227,17 +258,32 @@ class TestCountryInfoRenderer:
         [
             pytest.param(
                 _COUNTRY_FULL,
-                ["Japan", "Tokio", "125.1 Mio.", "Asia", "Japanischer Yen", "Japanisch"],
+                [
+                    "Japan",
+                    "Tokio",
+                    "125.1 Mio.",
+                    "Asia",
+                    "Japanischer Yen",
+                    "Japanisch",
+                    "Quelle:",
+                    "REST Countries API",
+                ],
                 id="full-data",
             ),
             pytest.param(
                 _COUNTRY_PARTIAL,
-                ["Atlantis", "Poseidonia", "Unbekannt"],
+                [
+                    "Atlantis",
+                    "Poseidonia",
+                    "Unbekannt",
+                    "Quelle:",
+                    "REST Countries API",
+                ],
                 id="partial-data",
             ),
             pytest.param(
                 _COUNTRY_EMPTY,
-                ["Unbekannt"],
+                ["Unbekannt", "Quelle:", "REST Countries API"],
                 id="empty-data",
             ),
         ],
@@ -675,7 +721,7 @@ class TestWebsearchRenderer:
         [
             pytest.param(
                 _WEBSEARCH_FULL,
-                ["Executive Summary: Websuche bereit", "duckduckgo", "2", "https://example.com"],
+                ["Suchergebnisse mit mehreren Quellen"],
                 id="full-data",
             ),
             pytest.param(

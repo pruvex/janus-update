@@ -831,6 +831,26 @@ class WebsearchArgsV2(BaseModel):
             "'iPhone 16 Pro Testbericht'). Mindestens 2 Zeichen; konkret formulieren, damit der Provider passende Treffer liefert."
         ),
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _coerce_queries_alias(cls, data: Any) -> Any:
+        """Some models emit ``queries`` (list/str); normalize to ``query``."""
+        if not isinstance(data, dict):
+            return data
+        if data.get("query") not in (None, ""):
+            return data
+        raw = data.get("queries")
+        if raw is None:
+            return data
+        if isinstance(raw, list):
+            parts = [str(p).strip() for p in raw if str(p or "").strip()]
+            if parts:
+                return {**data, "query": parts[0] if len(parts) == 1 else " ".join(parts)}
+            return data
+        if isinstance(raw, str) and raw.strip():
+            return {**data, "query": raw.strip()}
+        return data
     provider: Optional[str] = Field(
         None,
         description=(

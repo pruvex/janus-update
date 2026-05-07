@@ -120,8 +120,14 @@ class HelpSkill:
         capabilities = self.registry.get_verified_capabilities_for_overview(language)
 
         if not capabilities:
+            empty_state_text = (
+                "Aktuell kann ich meine Fähigkeiten leider nicht anzeigen. "
+                "Dies liegt daran, dass die Capability-Daten entweder nicht geladen, "
+                "nicht initialisiert oder nicht verfügbar sind. "
+                "Dieser Zustand kann temporär sein – bitte versuche deine Anfrage später erneut."
+            )
             return HelpOutput(
-                answer="Ich kann meine Fähigkeiten aktuell nicht zuverlässig anzeigen. Bitte versuche es später erneut.",
+                answer=empty_state_text,
                 suggestions=[],
                 actions=[],
                 source_category="capability_overview",

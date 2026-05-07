@@ -5,8 +5,82 @@
 let updateToast = null;
 let updateModal = null;
 let updateErrorBanner = null;
+/** @type {string | null} */
+let sidebarVersionBase = null;
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** @param {{ status?: string, downloadProgress?: number | null }} state */
+function renderSidebarUpdateFooter(state) {
+  const el = document.getElementById('sidebar-version');
+  if (!el || !sidebarVersionBase) return;
+
+  const status = state?.status;
+  const pct = state?.downloadProgress;
+
+  if (status === 'downloading' && typeof pct === 'number' && Number.isFinite(pct)) {
+    // 0%-rule: Only show percentage when progress > 0
+    if (pct > 0) {
+      el.innerHTML = `
+        <span class="sidebar-footer-version">${escapeHtml(sidebarVersionBase)}</span>
+        <span class="sidebar-footer-update-msg" aria-live="polite">Lade Update: ${pct}%</span>
+      `;
+    } else {
+      el.innerHTML = `
+        <span class="sidebar-footer-version">${escapeHtml(sidebarVersionBase)}</span>
+        <span class="sidebar-footer-update-msg" aria-live="polite">Update lädt...</span>
+      `;
+    }
+    return;
+  }
+
+  if (status === 'update_available') {
+    el.innerHTML = `
+      <span class="sidebar-footer-version">${escapeHtml(sidebarVersionBase)}</span>
+      <span class="sidebar-footer-update-msg" aria-live="polite">Update lädt...</span>
+    `;
+    return;
+  }
+
+  if (status === 'validating') {
+    el.innerHTML = `
+      <span class="sidebar-footer-version">${escapeHtml(sidebarVersionBase)}</span>
+      <span class="sidebar-footer-update-msg" aria-live="polite">Prüfe Datei...</span>
+    `;
+    return;
+  }
+
+  el.textContent = sidebarVersionBase;
+}
+
+/**
+ * Basis-Version wie im Build (z. B. „v0.4.17-beta.10“). Wird beim App-Login gesetzt.
+ * @param {string} label
+ */
+function setSidebarVersionBase(label) {
+  sidebarVersionBase = label;
+  if (!window.electron?.getUpdateState) {
+    const el = document.getElementById('sidebar-version');
+    if (el) el.textContent = label;
+    return;
+  }
+  window.electron
+    .getUpdateState()
+    .then((state) => renderSidebarUpdateFooter(state))
+    .catch(() => {
+      const el = document.getElementById('sidebar-version');
+      if (el) el.textContent = label;
+    });
+}
 
 function renderUpdateUI(state) {
+    renderSidebarUpdateFooter(state);
     // Remove all existing update UI elements
     removeUpdateUI();
 
@@ -145,9 +219,4 @@ function initUpdateUI() {
     }
 }
 
-export { initUpdateUI };
-
-// Export for module usage
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { initUpdateUI };
-}
+export { initUpdateUI, setSidebarVersionBase };

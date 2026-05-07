@@ -1,8 +1,8 @@
-# Janus Projekt 0.4.17-beta.10
-**Released:** 2026-05-05 20:09
+# Janus Projekt 0.4.17-beta.13
+**Released:** 2026-05-07 18:00
 
 ### Fixed
-- **Auto-Update:** Final bridge release with hardened multi-hash validation and atomic pipeline sync. This version is required for all future automatic updates.
+- **BACKLOG-005:** Filesystem-Intent hat jetzt Vorrang vor Bild-Intent bei gemischten Keywords. "Bilder" im Kontext von Dateisystem-Operationen wird korrekt als Filesystem-Intent erkannt, nicht als Bild-Intent. Skill-Descriptions für find_files und move_files verbessert für bessere Tool-Call-Effizienz.
 ## 📦 Installation
 Download the installer from the GitHub releases page.
 

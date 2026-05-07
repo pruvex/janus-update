@@ -4,6 +4,7 @@ Converts weather tool-result data into a human-readable Markdown answer
 including city, date, temperature range, precipitation, wind, and source.
 """
 
+from backend.renderers.attribution import append_quelle_line, weather_source_label
 from backend.renderers.base import BaseRenderer
 from backend.renderers.registry import register_renderer
 
@@ -24,9 +25,12 @@ class WeatherRenderer(BaseRenderer):
         # enriched with source attribution.
         if forecast and len(forecast) > 20:
             lines = [f"**Wetter in {city}**", "", forecast]
-            if source:
-                lines.append(f"\n_Quelle: {source}_")
-            return "\n".join(lines)
+            body = "\n".join(lines)
+            q = weather_source_label(source)
+            # Tool payload already appends „Quelle:“ (weather_service) — nicht doppeln.
+            if q and "quelle:" not in forecast.lower():
+                return append_quelle_line(body, q)
+            return body
 
         # Fallback: build from structured fields if forecast string is missing
         date = data.get("date", "heute")
@@ -48,10 +52,9 @@ class WeatherRenderer(BaseRenderer):
             lines.append(f"- **Niederschlag:** {precipitation}%")
         if wind_speed is not None:
             lines.append(f"- **Windböen:** bis {wind_speed} km/h")
-        if source:
-            lines.append(f"\n_Quelle: {source}_")
-
-        return "\n".join(lines)
+        body = "\n".join(lines)
+        q = weather_source_label(source)
+        return append_quelle_line(body, q) if q else body
 
 
 # Auto-register on import

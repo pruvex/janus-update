@@ -25,6 +25,7 @@ from thefuzz import fuzz
 from backend.data.schemas_tools import ToolResultV1
 from backend.services.calendar_mutation_intent import classify_calendar_mutation_intent
 from backend.tools.tool_contract_v1 import tool_err_v1, tool_ok_v1
+from backend.tools.weather_service import get_full_weather_forecast
 
 # WICHTIG: Kein Top-Level Import von contact_manager, um Zirkelbezüge zu vermeiden!
 
@@ -863,11 +864,12 @@ async def find_free_time_slots(
         free_days_info = []
         weather_forecast = {}
         if location_for_weather:
-            # Optional Wetter-Anreicherung (Modul kann fehlen — dann still weglassen)
             try:
-                from .weather_tools import get_full_weather_forecast  # type: ignore
-
-                forecast_data = get_full_weather_forecast(location_for_weather, days=16)
+                forecast_data = await asyncio.to_thread(
+                    get_full_weather_forecast,
+                    str(location_for_weather).strip(),
+                    16,
+                )
                 wf = forecast_data.get("forecast") if isinstance(forecast_data, dict) else {}
                 if wf:
                     weather_forecast = wf

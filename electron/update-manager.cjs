@@ -5,6 +5,8 @@ const { validateDownloadedAsset } = require('./update-security.cjs');
 function initJanusUpdateManager({ app, autoUpdater, mainWindow, log }) {
   log.info('[JanusUpdateManager] Initializing...');
 
+  let lastBroadcastDownloadPercent = -1;
+
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = false;
   // Reliability first: avoid brittle differential update path handling on Windows.
@@ -19,10 +21,12 @@ function initJanusUpdateManager({ app, autoUpdater, mainWindow, log }) {
   autoUpdater.on('checking-for-update', () => {
     log.info('[JanusUpdateManager] Checking for update...');
     try {
+      lastBroadcastDownloadPercent = -1;
       const state = transitionUpdateState(app, {
         status: 'checking',
         errorCode: null,
         errorMessage: null,
+        downloadProgress: null,
       });
       broadcast(state);
     } catch (err) {
@@ -33,11 +37,13 @@ function initJanusUpdateManager({ app, autoUpdater, mainWindow, log }) {
   autoUpdater.on('update-available', (info) => {
     log.info(`[JanusUpdateManager] Update available: ${info.version}`);
     try {
+      lastBroadcastDownloadPercent = -1;
       const state = transitionUpdateState(app, {
         status: 'update_available',
         targetVersion: info.version,
         releaseNotes: info.releaseNotes || null,
         isCritical: info.critical === true,
+        downloadProgress: null,
       });
       broadcast(state);
     } catch (err) {
@@ -47,8 +53,15 @@ function initJanusUpdateManager({ app, autoUpdater, mainWindow, log }) {
 
   autoUpdater.on('download-progress', (progressObj) => {
     try {
+      const raw = typeof progressObj?.percent === 'number' ? progressObj.percent : 0;
+      const pct = Math.round(Math.min(100, Math.max(0, raw)));
+      if (pct === lastBroadcastDownloadPercent) {
+        return;
+      }
+      lastBroadcastDownloadPercent = pct;
       const state = transitionUpdateState(app, {
         status: 'downloading',
+        downloadProgress: pct,
       });
       broadcast(state);
     } catch (err) {
@@ -61,6 +74,7 @@ function initJanusUpdateManager({ app, autoUpdater, mainWindow, log }) {
     try {
       const state = transitionUpdateState(app, {
         status: 'validating',
+        downloadProgress: null,
       });
       broadcast(state);
 
@@ -76,6 +90,7 @@ function initJanusUpdateManager({ app, autoUpdater, mainWindow, log }) {
           status: 'ready_to_install',
           assetPath: info.downloadedFile,
           downloadedHash: result.actualSha256,
+          downloadProgress: null,
         });
         broadcast(readyState);
       } else {
@@ -85,6 +100,7 @@ function initJanusUpdateManager({ app, autoUpdater, mainWindow, log }) {
           status: 'validation_failed',
           errorCode: result.errorCode,
           errorMessage: `SHA256 validation failed: ${result.errorCode}`,
+          downloadProgress: null,
         });
         broadcast(failedState);
       }
@@ -113,18 +129,21 @@ function initJanusUpdateManager({ app, autoUpdater, mainWindow, log }) {
           newState = transitionUpdateState(app, {
             status: 'download_failed',
             errorMessage: err.message,
+            downloadProgress: null,
           });
         }
       } else if (currentState.status === 'installing' || currentState.status === 'ready_to_install') {
         newState = transitionUpdateState(app, {
           status: 'install_failed',
           errorMessage: err.message,
+          downloadProgress: null,
         });
       } else {
         newState = transitionUpdateState(app, {
           status: 'idle',
           errorCode: 'CHECK_ERROR',
           errorMessage: err.message,
+          downloadProgress: null,
         });
       }
 

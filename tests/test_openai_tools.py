@@ -3,18 +3,14 @@ import asyncio
 import openai
 import os
 
-# HINWEIS: Fügen Sie hier Ihren OpenAI-API-Schlüssel ein, bevor Sie das Skript ausführen.
-os.environ["OPENAI_API_KEY"] = "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"
-# Stellen Sie sicher, dass der Schlüssel NICHT im Code eingecheckt wird.
-# Am besten laden Sie ihn aus einer Umgebungsvariable.
-if "OPENAI_API_KEY" not in os.environ:
-    print("Fehler: Bitte setzen Sie die Umgebungsvariable OPENAI_API_KEY.")
-    exit()
-
 async def test_openai_tool_call():
     """
     Testet die Tool-Nutzung mit einem minimalen Setup für ein OpenAI-Modell.
     """
+    if "OPENAI_API_KEY" not in os.environ:
+        print("SKIP: Bitte setzen Sie die Umgebungsvariable OPENAI_API_KEY.")
+        return
+
     client = openai.AsyncOpenAI()
 
     # 1. Ein einfacher, direkter System-Prompt, der die Tool-Nutzung fördert

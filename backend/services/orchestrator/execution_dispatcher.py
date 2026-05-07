@@ -188,6 +188,19 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
         # Harte Erkennung für RAG-Intents (Suche Datei X, Lies Datei Y)
         is_rag_intent = any(keyword in query for keyword in ['suche', 'lies', 'datei', 'dokument', 'pdf']) and any(keyword in query for keyword in ['datei', 'dokument', 'pdf', 'inhalt', 'text'])
 
+        # 💎 TASK-001: BACKLOG-008 - Filesystem-Intent Veto für RAG-Intent
+        # Wenn Filesystem-Intent stark ist, RAG-Intent unterdrücken
+        # Filesystem-Operationen sollten kein unnötiges Logic-Tier-Upgrade triggern
+        if is_rag_intent:
+            from backend.services.orchestrator.intent_engine import IntentEngine
+            intent_engine = IntentEngine()
+            if intent_engine.detect_filesystem_intent(query):
+                logger.info(
+                    "[FILESYSTEM-OVERRIDE] RAG intent suppressed by filesystem intent in text: '%s'",
+                    query[:100] + "..." if len(query) > 100 else query
+                )
+                is_rag_intent = False
+
         if is_sort_intent or is_rag_intent:
             # Nutze die zentrale Hierarchie-Logik
             from backend.llm_providers.shared.moa import MOA_MODEL_HIERARCHY

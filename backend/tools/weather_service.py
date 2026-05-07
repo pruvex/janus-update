@@ -1,7 +1,7 @@
 import logging
 import time
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import dateparser
 import requests
@@ -11,6 +11,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 from backend.data.schemas_tools import ToolErrorDetails, ToolResultV1
+from backend.renderers.attribution import append_quelle_line, weather_source_label
 
 logger = logging.getLogger("janus_backend")
 
@@ -123,11 +124,14 @@ def get_weather_from_api_tool(
                 fallback_response = requests.get(
                     f"https://wttr.in/{target_city}?format=3", timeout=10
                 )
+                fc_raw = fallback_response.text.strip()
+                q_lbl = weather_source_label("wttr.in")
+                fc_body = append_quelle_line(fc_raw, q_lbl) if q_lbl else fc_raw
                 logger.info("skill=%s status=ok source=wttr.in city=%s ms=%s", skill_name, target_city, _elapsed_ms())
                 return ToolResultV1(
                     status="ok",
                     data={
-                        "forecast": fallback_response.text.strip(),
+                        "forecast": fc_body,
                         "source": "wttr.in",
                         "city": target_city,
                     },
@@ -240,11 +244,13 @@ def get_weather_from_api_tool(
             f"Es wird {weather_desc.lower()} erwartet. Höchsttemperatur: {temp_max}°C, Tiefsttemperatur: {temp_min}°C. "
             f"Niederschlagswahrscheinlichkeit: {prec_prob}%. Windböen bis zu {wind_speed_max} km/h."
         )
+        om_lbl = weather_source_label("open-meteo")
+        forecast_text = append_quelle_line(output, om_lbl) if om_lbl else output
         logger.info("skill=%s status=ok city=%s ms=%s", skill_name, target_city, _elapsed_ms())
         return ToolResultV1(
             status="ok",
             data={
-                "forecast": output,
+                "forecast": forecast_text,
                 "city": display_city,
                 "date": date_output,
                 "temp_max": temp_max,
@@ -273,3 +279,55 @@ def get_weather_from_api_tool(
             ),
             metadata={"execution_time_ms": _elapsed_ms()},
         )
+
+
+def get_full_weather_forecast(location: str, days: int = 16) -> Dict[str, Any]:
+    """Tagesraster mit Niederschlagswahrscheinlichkeit für optionale Kalender-Anreicherung.
+
+    Open-Meteo (gleiche Ebene wie ``get_weather_from_api_tool``). Bei leerem Ort oder
+    API-/Geocode-Fehler: ``{\"forecast\": {}}`` — kein Raise.
+
+    Vertrag für ``calendar.find_slots``: unter ``forecast`` je ISO-Datum ein Dict mit
+    ``precipitation_probability_max`` (0–100).
+    """
+    forecast: Dict[str, Dict[str, int]] = {}
+    loc_query = str(location or "").strip()
+    if not loc_query:
+        return {"forecast": {}}
+
+    cap = max(1, min(int(days), 16))
+
+    try:
+        geolocator = Nominatim(user_agent="janus_projekt_weather_tool", timeout=15)
+        geo = geolocator.geocode(loc_query)
+        if not geo:
+            return {"forecast": {}}
+
+        lat, lon = geo.latitude, geo.longitude
+        api_url = (
+            f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
+            "&daily=precipitation_probability_max"
+            "&timezone=Europe%2FBerlin"
+            f"&forecast_days={cap}"
+        )
+        session = _get_retry_session()
+        headers = {"User-Agent": "JanusAI/1.0 (janus.projekt@example.com)"}
+        resp = session.get(api_url, headers=headers, timeout=10)
+        resp.raise_for_status()
+        payload = resp.json()
+        daily = payload.get("daily") or {}
+        times = daily.get("time") or []
+        probs = daily.get("precipitation_probability_max") or []
+        for i, day in enumerate(times):
+            if i >= len(probs) or probs[i] is None:
+                continue
+            try:
+                p = int(probs[i])
+            except (TypeError, ValueError):
+                continue
+            forecast[str(day)] = {"precipitation_probability_max": p}
+    except Exception as exc:
+        logger.debug("get_full_weather_forecast: skipped (%s)", exc)
+        return {"forecast": {}}
+
+    return {"forecast": forecast}

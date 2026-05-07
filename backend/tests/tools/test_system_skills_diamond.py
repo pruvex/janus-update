@@ -111,6 +111,10 @@ class TestSchemaValidation:
         args = WebsearchArgsV2(query="Test query")
         assert args.query == "Test query"
 
+    def test_websearch_schema_coerces_queries_list(self):
+        args = WebsearchArgsV2(queries=["Wetter in München"])
+        assert args.query == "Wetter in München"
+
     def test_scrape_schema_rejects_short_url(self):
         with pytest.raises(Exception):
             ScrapeWebsiteArgs(url="x")
@@ -177,6 +181,8 @@ class TestWeatherService:
         assert result["status"] == "ok"
         assert result["data"]["city"] == "Berlin"
         assert result["data"]["source"] == "open-meteo"
+        assert "Quelle:" in result["data"]["forecast"]
+        assert "Open-Meteo" in result["data"]["forecast"]
         assert _execution_time_ms(result) is not None
 
     def test_weather_missing_city(self):
@@ -222,6 +228,40 @@ class TestWeatherService:
             result = _validate_skill_response(result)
             assert result["status"] == "error"
             assert result["error"]["code"] == "API_UNAVAILABLE"
+
+    def test_get_full_weather_forecast_empty_location(self):
+        from backend.tools.weather_service import get_full_weather_forecast
+
+        assert get_full_weather_forecast("", days=5) == {"forecast": {}}
+
+    @patch("backend.tools.weather_service.Nominatim")
+    def test_get_full_weather_forecast_returns_daily_precip_map(self, mock_nominatim_cls):
+        from backend.tools.weather_service import get_full_weather_forecast
+
+        mock_geo = Mock()
+        mock_geo.latitude = 48.1
+        mock_geo.longitude = 11.5
+        mock_nominatim = Mock()
+        mock_nominatim.geocode.return_value = mock_geo
+        mock_nominatim_cls.return_value = mock_nominatim
+
+        mock_response = Mock()
+        mock_response.raise_for_status = Mock()
+        mock_response.json.return_value = {
+            "daily": {
+                "time": ["2026-05-05", "2026-05-06"],
+                "precipitation_probability_max": [15, 72],
+            }
+        }
+        with patch("backend.tools.weather_service._get_retry_session") as mock_session_factory:
+            mock_session = Mock()
+            mock_session.get.return_value = mock_response
+            mock_session_factory.return_value = mock_session
+
+            out = get_full_weather_forecast("München", days=7)
+
+        assert out["forecast"]["2026-05-05"]["precipitation_probability_max"] == 15
+        assert out["forecast"]["2026-05-06"]["precipitation_probability_max"] == 72
 
 
 # ===========================================================================

@@ -24,6 +24,7 @@ from backend.services.orchestrator.stream_protocol import StreamEvent
 from backend.services.orchestrator.intent_engine import IntentDetectionResult
 from backend.services.prompt_cache import clone_decision_for_route, decision_from_gateway_kwargs, merge_decision_into_usage
 from backend.utils.config_loader import load_config_data, load_model_catalog
+from backend.renderers.attribution import append_tool_attributions_from_tools
 from backend.utils.link_sanitizer import force_sanitize_links
 
 logger = logging.getLogger("janus_backend")
@@ -2073,6 +2074,8 @@ class OrchestratorExecutionEngine:
         if all_used_skills:
             logger.info("TOOL_LOOP: Skills executed in legacy path: %s", all_used_skills)
 
+        text_value = append_tool_attributions_from_tools(text_value, results_buffer)
+
         return ExecutionResponse(
             text=text_value,
             agent_payload=tool_loop_agent_payload,
@@ -2738,6 +2741,7 @@ class OrchestratorExecutionEngine:
                     logger.info("💎 GEMINI-FALLBACK: Constructed response from %d tool results", len(successful_results))
         
         text_value = force_sanitize_links(text_value)
+        text_value = append_tool_attributions_from_tools(text_value, results_buffer)
 
         if country_not_found_detected and isinstance(response, dict):
             response["skip_fact_extraction"] = True

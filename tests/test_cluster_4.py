@@ -4,7 +4,7 @@ Schneller Test für nur Cluster 4 mit Debug-Logs
 """
 import sys
 import os
-sys.path.append('.')
+sys.path.append('..')
 
 from backend.tests.vision_evaluator import VisionEvaluator
 from pathlib import Path

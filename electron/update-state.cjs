@@ -23,6 +23,7 @@ const DEFAULT_UPDATE_STATE = {
   assetPath: null,
   manifestHash: null,
   downloadedHash: null,
+  downloadProgress: null,
   errorCode: null,
   errorMessage: null,
   updatedAt: null,

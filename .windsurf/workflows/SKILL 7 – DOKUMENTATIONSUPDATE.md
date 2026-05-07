@@ -1,17 +1,19 @@
----
-description: SWE 1.6 sorgt dafür, dass nach der technischen Umsetzung alles im Diamond-OS sauber dokumentiert ist
+﻿---
+description: Skill 7 â€“ SWE 1.6 synchronisiert Dokumentation nach Skill-5-Audit und abgeschlossenem Skill-6-Debug-Gate
 ---
 
-# Post-Implementation Workflow (JANUS – AFTER FINAL AUDIT)
+# Skill 7 â€“ Dokumentationsupdate (JANUS â€“ AFTER FINAL AUDIT AND DEBUG GATE)
 
 Use this workflow only after:
 
 ```text
 /1_Feature-erstellen
-→ implementation of generated tasks
-→ /2_final-audit
-→ version bump decision if required
-→ /post-impl
+â†’ implementation of generated tasks
+â†’ /2_final-audit or Skill 5 â€“ Diamantstandard Final Audit
+â†’ manual Janus test from Skill 5 passed or explicitly deferred with reason
+â†’ /SKILL 6 â€“ FEATURE DEBUG completed if Skill 4, Skill 5, or manual Janus test found a failure
+â†’ Skill 7 automatic version bump
+â†’ /SKILL 7 â€“ DOKUMENTATIONSUPDATE
 ```
 
 Goal:
@@ -20,7 +22,8 @@ Goal:
 - Persist reusable implementation/audit learnings in `WHAT_I_LEARNED.md`.
 - Sync the Janus Capability Registry and UX capability view from validated post-implementation results.
 - Preserve validation evidence and version bump details.
-- Prepare the repository for `/release-production`.
+- Prepare the repository for `/SKILL 8 – BUILD RELEASE`.
+- Trigger `/save` after successful documentation sync before release.
 
 This workflow is a documentation and registry sync step. It is not an implementation phase.
 
@@ -28,12 +31,17 @@ This workflow is a documentation and registry sync step. It is not an implementa
 
 ## Hard Rules
 
-- Do not run `/post-impl` if `/2_final-audit` returned `BLOCKED`.
+- Do not run Skill 7 if `/2_final-audit` or Skill 5 returned `BLOCKED`.
+- Do not run Skill 7 if the manual Janus test failed and Skill 6 has not resolved it.
+- Do not run Skill 7 if Skill 5 requested re-run of Skill 4.
+- Do not run Skill 7 if Skill 6 returned `ESCALATION REQUIRED`, `BLOCKED`, or `OUT OF SCOPE`.
 - Do not make feature implementation changes.
 - Do not redesign architecture.
 - Do not silently ignore failed validation.
 - Do not overwrite user-authored documentation outside the required sections.
 - Do not run production release commands.
+- Do not ask the user to manually choose a version unless version files are inconsistent or not parseable.
+- Do not leave release-relevant version files unsynchronized.
 - Prefer appending structured audit sections over rewriting existing task content.
 - If required documentation files are missing, create a clear `BLOCKED` report instead of guessing.
 
@@ -46,7 +54,9 @@ Allowed safe edits:
 - Add project state session log row.
 - Add or update inventory entry.
 - Add backward-reference notes.
-- Record version bump details from `/2_final-audit`.
+- Compute and apply the Skill-7 automatic version bump.
+- Record Skill-7 version bump details.
+- Move completed Backlog items from `IN PROGRESS` to `DONE` when the implementation originated from `BACKLOG-XXX`.
 
 ---
 
@@ -56,18 +66,23 @@ Ask for or infer:
 
 1. Feature task file path, usually `documentation/tasks/task_<NR>_*.md`.
 2. Implemented task range, e.g. `T1-T8`.
-3. `/2_final-audit` final result block.
-4. Version bump decision/result, if any.
-5. Validation commands and pass/fail evidence from `/2_final-audit`.
-6. Existing capability registry path, default `backend/data/capability_registry.json`.
+3. `/2_final-audit` or Skill 5 final result block.
+4. Manual Janus test status from Skill 5: `PASS`, `FAIL`, `N/A`, or `DEFERRED WITH REASON`.
+5. Skill 6 result, if Skill 4/Skill 5/manual Janus test found a failure.
+6. Current release/version state from root `package.json`.
+7. Validation commands and pass/fail evidence from `/2_final-audit` or Skill 5.
+8. Existing capability registry path, default `backend/data/capability_registry.json`.
+9. Optional Backlog ID, e.g. `BACKLOG-004`, if the task originated from `BACKLOG SKILL 3 – EXECUTION HANDOFF`.
 
-If the user provides no audit block, search recent conversation/context and task files. If still unavailable, ask for the `/2_final-audit` report before proceeding.
+If the user provides no audit block, search recent conversation/context and task files. If still unavailable, ask for the `/2_final-audit` or Skill 5 report before proceeding.
+
+If the task file contains a `BACKLOG-XXX` reference, treat `documentation/backlog/BACKLOG.md` as a required sync artifact for Phase 9.5.
 
 ---
 
 ## Phase 1: Final Audit Gate
 
-Read or reconstruct the `/2_final-audit` result.
+Read or reconstruct the `/2_final-audit` or Skill 5 result.
 
 Required accepted statuses:
 
@@ -80,15 +95,107 @@ If status is `BLOCKED`, stop and return:
 # POST-IMPL BLOCKED
 
 ## Reason
-- `/2_final-audit` is BLOCKED.
+- `/2_final-audit` or Skill 5 is BLOCKED.
 
 ## Required Action
 - Resolve audit blockers.
-- Re-run `/2_final-audit`.
-- Then run `/post-impl`.
+- Re-run `/2_final-audit` or Skill 5.
+- Then run `/SKILL 7 â€“ DOKUMENTATIONSUPDATE`.
 ```
 
 Do not update registries or changelog when audit is blocked.
+
+Validate the manual Janus test gate:
+
+- `PASS`: continue.
+- `N/A`: continue only if Skill 5 explicitly explained why no product-level test is meaningful and provided a smoke-test alternative.
+- `DEFERRED WITH REASON`: continue only if the reason is explicit and non-blocking.
+- `FAIL`: stop unless Skill 6 returned `SKILL 6 DEBUG RESULT: FIXED` and the user retest passed.
+
+If manual test or debug gate is not satisfied, stop and return:
+
+```markdown
+# POST-IMPL BLOCKED
+
+## Reason
+- Manual Janus test or Skill 6 gate is not satisfied.
+
+## Required Action
+- Run `/SKILL 6 â€“ FEATURE DEBUG` with the actual output, expected result, and backend log.
+- Re-run the manual Janus test after any Skill-6 fix.
+- Then run `/SKILL 7 â€“ DOKUMENTATIONSUPDATE` again.
+```
+
+---
+
+## Phase 1.5: Automatic Version Bump Gate
+
+Skill 7 owns the final release-relevant version bump.
+
+Purpose:
+- Ensure `/SKILL 8 – BUILD RELEASE` never has to bump versions.
+- Keep root package, lockfile, backend version, changelog, and task audit trail consistent.
+- Avoid manual version decisions during the normal feature pipeline.
+
+Required version files:
+- `package.json`
+- `package-lock.json`
+- `backend/version.py`
+
+Optional version file:
+- `frontend/package.json` only if it is explicitly part of the release/version contract or already matches the root version.
+
+Deterministic default:
+
+```text
+Patch prerelease bump
+```
+
+Computation rules:
+
+1. If root version is `X.Y.Z-beta.N`, bump to `X.Y.Z-beta.(N+1)`.
+2. If root version is stable `X.Y.Z`, bump to `X.Y.(Z+1)-beta.1`.
+3. If root version has another semver prerelease suffix, stop and report `VERSION BUMP BLOCKED â€“ UNSUPPORTED VERSION FORMAT`.
+4. If `package-lock.json` is inconsistent before the bump, stop and report `VERSION BUMP BLOCKED â€“ VERSION FILES INCONSISTENT`.
+5. If `backend/version.py` is inconsistent before the bump, stop and report `VERSION BUMP BLOCKED â€“ VERSION FILES INCONSISTENT`.
+
+Apply the new version to:
+
+- root `package.json`
+- root `package-lock.json` top-level `version`
+- root `package-lock.json.packages[""].version`
+- `backend/version.py`
+- `frontend/package.json` only if it matched the old root version or project convention explicitly requires sync
+
+Validation:
+
+- Parse both JSON files after writing.
+- Re-read all changed version files.
+- Confirm every synchronized file contains the new version.
+
+If blocked:
+
+```markdown
+# SKILL 7 BLOCKED
+
+## Reason
+- VERSION BUMP BLOCKED â€“ [specific reason]
+
+## Required Action
+- Fix version file inconsistency or provide an explicit version override.
+- Re-run Skill 7.
+```
+
+Record in task audit trail and final report:
+
+```markdown
+## Skill 7 Version Bump
+- **Old version:** [old]
+- **New version:** [new]
+- **Mode:** automatic patch prerelease bump
+- **Files changed:** [list]
+- **Validation:** PASS | FAIL
+```
 
 ---
 
@@ -122,7 +229,9 @@ If those sections do not exist, append:
 [1-3 sentence summary]
 
 ### Validation Evidence
-- **[command]:** PASS | FAIL | SKIPPED — [evidence]
+- **[command]:** PASS | FAIL | SKIPPED â€” [evidence]
+- **Manual Janus test:** PASS | FAIL | N/A | DEFERRED â€” [evidence/reason]
+- **Skill 6:** FIXED | NEEDS RETEST | ESCALATION REQUIRED | BLOCKED | OUT OF SCOPE | N/A â€” [evidence]
 
 ### Final Audit Fixes
 - **[path]:** [fix summary]
@@ -164,7 +273,7 @@ For each referenced task file:
 2. Add a short note under its reference/dependency section:
 
 ```markdown
-→ Modified by [task file / task id]: [short description]
+â†’ Modified by [task file / task id]: [short description]
 ```
 
 If no referenced tasks exist, record:
@@ -287,8 +396,8 @@ Use this format:
 ## [PATTERN] #[PatternName] "[short title]"
 - **Kontext:** [feature/task and why this matters]
 - **Problem:** [what failed or could fail]
-- **Lösung:** [deterministic fix or rule]
-- **Härtung:** [guardrails, tests, validation]
+- **LÃ¶sung:** [deterministic fix or rule]
+- **HÃ¤rtung:** [guardrails, tests, validation]
 - **Tripwire:** [symptom that means this pattern was violated]
 - **Location:** [files/modules], implementiert [date]
 - **Epic:** [task/feature]
@@ -299,14 +408,14 @@ Use this format:
 If no reusable learning exists, record in the final report:
 
 ```markdown
-- **WHAT_I_LEARNED:** skipped — no reusable pattern/root cause identified
+- **WHAT_I_LEARNED:** skipped â€” no reusable pattern/root cause identified
 ```
 
 ---
 
 ## Phase 9: Capability Sync
 
-Run this phase only if `/2_final-audit` is `PASS` or `PASS WITH FIXES`.
+Run this phase only if `/2_final-audit` or Skill 5 is `PASS` or `PASS WITH FIXES`.
 
 Purpose:
 - Keep Janus' "Was kannst du?" answer aligned with the latest validated system state.
@@ -315,7 +424,7 @@ Purpose:
 
 Inputs:
 - Feature task file and post-implementation audit trail.
-- `/2_final-audit` result and applied fixes.
+- `/2_final-audit` or Skill 5 result and applied fixes.
 - CHANGELOG entry for the implemented feature.
 - Existing `backend/data/capability_registry.json`.
 
@@ -404,21 +513,58 @@ Final report must include:
 If no user-visible capability changed, record:
 
 ```markdown
-- **Capability Registry:** skipped — no new or changed user-visible capability identified
+- **Capability Registry:** skipped â€” no new or changed user-visible capability identified
+```
+
+---
+
+## Phase 9.5: Backlog Sync
+
+Run this phase only if the implemented task or spec references a `BACKLOG-XXX` item.
+
+Purpose:
+- Keep `documentation/backlog/BACKLOG.md` current after successful implementation.
+- Remove completed work from the active backlog view without losing audit history.
+- Link the completed Backlog item to the task file, changelog entry, validation evidence, and version.
+
+Rules:
+- Only run after Skill 5 is `PASS` or `PASS WITH FIXES` and the manual Janus test gate is `PASS`, `N/A`, or `DEFERRED WITH REASON`.
+- Do not mark Backlog items as `DONE` if Skill 6 is still open, blocked, or awaiting retest.
+- Do not delete Backlog items permanently.
+- Move completed items from `IN PROGRESS` to `DONE`.
+- If the item is still in `READY` but the task was completed, move it to `DONE` and record that the `IN PROGRESS` transition was skipped.
+- If the Backlog item cannot be found, record `Backlog Sync: skipped — item not found` in the final report.
+
+Update the item with:
+
+```markdown
+- **Completed in version:** <new version>
+- **Completed by task:** <task file path>
+- **Completed at:** YYYY-MM-DD
+- **Final audit:** PASS | PASS WITH FIXES
+- **Validation evidence:** <commands/results>
+- **Changelog:** <entry or section>
+```
+
+Final report must include:
+
+```markdown
+- **Backlog:** updated | skipped + reason
+- **Backlog ID:** BACKLOG-XXX | none
 ```
 
 ---
 
 ## Phase 10: Validation Handling
 
-Primary validation source is `/2_final-audit`.
+Primary validation source is `/2_final-audit` or Skill 5.
 
 Record all audit commands and results.
 
 Only run additional regression if:
 
 - the task file explicitly requires it,
-- `/2_final-audit` requested it,
+- `/2_final-audit` or Skill 5 requested it,
 - or the user asks for release-level confidence.
 
 Recommended validation selection:
@@ -426,7 +572,7 @@ Recommended validation selection:
 - Backend-only feature: `python -m pytest backend/tests -q`
 - Electron/update feature: Node tests + Playwright tests from audit
 - Frontend feature: relevant Playwright/Vitest/UI tests
-- Full release: defer to `/release-production`
+- Full release: defer to `/SKILL 8 – BUILD RELEASE`
 - Capability sync: validate `backend/data/capability_registry.json` JSON syntax and, if capability entries changed, run focused Help/Capability tests when practical.
 
 Do not automatically run `python -m pytest backend/tests -q` for every feature if it is unrelated or known to be expensive/flaky.
@@ -455,7 +601,9 @@ Return:
 - **Capability Registry:** [updated / skipped + reason]
 - **Capability UX View:** [validated / skipped + reason]
 - **Derived capabilities:** [user-visible abilities added/merged or none]
+- **Backlog:** [updated / skipped + reason]
 - **Backward refs:** [updated / none / skipped + reason]
+- **Skill 6:** [not needed / fixed + retest pass / skipped + reason]
 
 ## Version
 - **Old version:** [old]
@@ -469,6 +617,22 @@ Return:
 - None
 
 ## Next Step
-- **Recommended:** `/release-production` | additional regression | no release yet
+- **Recommended:** `/save` before `/SKILL 8 – BUILD RELEASE` | additional regression | no release yet
 - **Reason:** [short reason]
 ```
+
+---
+
+## Phase 12: Atomic Save Handoff
+
+If Skill 7 completed successfully, instruct the user to run:
+
+```text
+/save
+```
+
+Rules:
+- `/save` is mandatory before `/SKILL 8 – BUILD RELEASE`.
+- `/save` commits the documented final state to `backup develop`.
+- Do not proceed to release if `/save` fails.
+
