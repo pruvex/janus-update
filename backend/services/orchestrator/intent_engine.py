@@ -1655,6 +1655,8 @@ class IntentEngine:
             ("policy_consent", result.is_policy_consent),
             ("video_understanding", result.is_video_understanding_intent),
             ("multitask_image_pdf", result.is_multitask_image_pdf),
+            # 💎 TASK-005: BACKLOG-005 - Filesystem-Intent hat Vorrang vor Bild-Intent
+            ("filesystem", result.is_filesystem_intent),
             ("image", result.is_image_intent),
             ("calendar", result.is_calendar_intent),
             ("local_business", result.is_local_business_intent),
