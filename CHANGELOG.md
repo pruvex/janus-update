@@ -7,14 +7,12 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
-### Fixed
-- **BACKLOG-003:** Alte Release-Installer aus release/ entfernt (janus-setup-0.4.17-beta.4.exe, janus-setup-0.4.17-beta.9.exe, janus-setup-0.4.17-beta.10.exe). Nur janus-setup-0.4.17-beta.11.exe verbleibt. ~1.46 GB Speicherplatz freigegeben.
-
 ## [0.4.17-beta.12] - 2026-05-07
 
 ### Fixed
 - **BACKLOG-001:** Test-Dateien aus Projekt-Root nach tests/ verschoben (test_cluster_4.py, test_geometrie_check.py, test_logging_fix.py, test_openai_tools.py, test_face_root.jpg, test_personalities_root.json).
 - **Security:** Hardcoded OpenAI API-Key aus tests/test_openai_tools.py entfernt. Test überspringt jetzt sauber, wenn OPENAI_API_KEY nicht gesetzt ist.
+- **BACKLOG-003:** Alte Release-Installer aus release/ entfernt (janus-setup-0.4.17-beta.4.exe, janus-setup-0.4.17-beta.9.exe, janus-setup-0.4.17-beta.10.exe). Nur janus-setup-0.4.17-beta.11.exe verbleibt. ~1.46 GB Speicherplatz freigegeben.
 
 ## [0.4.17-beta.11] - 2026-05-05
 
