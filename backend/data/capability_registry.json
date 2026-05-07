@@ -304,6 +304,62 @@
           },
           "status": "verified",
           "confidence": 1.0
+        },
+        {
+          "id": "filesystem.create_directory",
+          "label": {
+            "de": "Ordner erstellen",
+            "en": "Create Directory"
+          },
+          "skill_refs": ["filesystem.create_directory"],
+          "how_to": {
+            "de": "Sage: 'Erstelle einen Ordner Bilder auf dem Desktop'.",
+            "en": "Say: 'Create a folder Pictures on the Desktop'."
+          },
+          "status": "verified",
+          "confidence": 1.0
+        },
+        {
+          "id": "filesystem.move_files",
+          "label": {
+            "de": "Dateien verschieben",
+            "en": "Move Files"
+          },
+          "skill_refs": ["filesystem.move_files"],
+          "how_to": {
+            "de": "Sage: 'Verschiebe alle JPG-Dateien in den Bilder-Ordner'.",
+            "en": "Say: 'Move all JPG files to the Pictures folder'."
+          },
+          "status": "verified",
+          "confidence": 1.0
+        },
+        {
+          "id": "filesystem.find_files",
+          "label": {
+            "de": "Dateien finden",
+            "en": "Find Files"
+          },
+          "skill_refs": ["filesystem.find_files"],
+          "how_to": {
+            "de": "Sage: 'Finde alle PNG-Dateien auf dem Desktop'.",
+            "en": "Say: 'Find all PNG files on the Desktop'."
+          },
+          "status": "verified",
+          "confidence": 1.0
+        },
+        {
+          "id": "filesystem.list_directory",
+          "label": {
+            "de": "Ordnerinhalt anzeigen",
+            "en": "List Directory"
+          },
+          "skill_refs": ["filesystem.list_directory"],
+          "how_to": {
+            "de": "Sage: 'Zeige den Inhalt des Desktops'.",
+            "en": "Say: 'Show the contents of the Desktop'."
+          },
+          "status": "verified",
+          "confidence": 1.0
         }
       ],
       "ui_locations": {
@@ -625,8 +681,8 @@
       },
       "icon": "map",
       "description": {
-        "de": "Länderinformationen, Routen, Distanzen und lokale Geschäfte",
-        "en": "Country facts, routes, distances, and local businesses"
+        "de": "Länderinformationen, Wetter, Routen, Distanzen und lokale Geschäfte",
+        "en": "Country facts, weather, routes, distances, and local businesses"
       },
       "abilities": [
         {
@@ -639,6 +695,18 @@
           "how_to": {
             "de": "Frage: 'Wie viele Einwohner hat Japan?' oder 'Welche Währung hat Schweden?'",
             "en": "Ask: 'How many people live in Japan?' or 'What currency does Sweden use?'"
+          }
+        },
+        {
+          "id": "geo.weather",
+          "label": {
+            "de": "Wetter abfragen",
+            "en": "Weather Lookup"
+          },
+          "skill_refs": ["system.weather"],
+          "how_to": {
+            "de": "Frage: 'Wie wird das Wetter in München?' oder 'Regnet es morgen in Berlin?'",
+            "en": "Ask: 'What's the weather in Munich?' or 'Will it rain tomorrow in Berlin?'"
           }
         },
         {
