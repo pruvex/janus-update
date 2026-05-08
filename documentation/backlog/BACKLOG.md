@@ -22,7 +22,65 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 - System Health
 - Other
 
-## NEEDS INFO
+## READY
+
+### BACKLOG-017 – ChromaDB-Module fehlen im PyInstaller-Bundle
+
+- **Typ:** BUG
+- **Status:** READY
+- **Quelle:** Log (User Intake - Tester)
+- **Erstellt:** 2026-05-08
+- **Aktualisiert:** 2026-05-08
+- **Kurzbeschreibung:** Im gebauten janus-setup-0.4.17-beta.16.exe fehlen ChromaDB-Module im PyInstaller-Bundle. Backend-Log zeigt `No module named 'chromadb.telemetry.product.posthog'` und `No module named 'chromadb.api.rust'`. Dies führt zu Fehlern im Vektor-Service und Skill-Router beim Start.
+- **Erwartetes Verhalten:** Alle ChromaDB-Module sind vollständig im PyInstaller-Bundle enthalten. Vektor-Service und Skill-Router starten ohne Module-Import-Fehler.
+- **Tatsächliches Verhalten:** Vektor-Service meldet kritischen Fehler beim Start wegen fehlendem `chromadb.telemetry.product.posthog`. Skill-Router kann Index nicht aufbauen wegen fehlendem `chromadb.api.rust`.
+- **Reproduktion / Kontext:** Frische Installation von janus-setup-0.4.17-beta.16.exe auf Testsystem. Backend-Log zeigt Import-Fehler beim Start.
+- **Betroffener Bereich:** Packaging / PyInstaller / ChromaDB / Vektor-Service / Skill-Router
+- **Nachweise:**
+  - main.log Zeile 19: `Vektor-Service: Kritischer Fehler beim Start: No module named 'chromadb.telemetry.product.posthog'`
+  - main.log Zeile 21: `SKILL-ROUTER: Skill-Index konnte nicht aufgebaut werden: No module named 'chromadb.api.rust'`
+- **Akzeptanzkriterien:**
+  - [ ] ChromaDB-Module sind vollständig im PyInstaller-Bundle enthalten (inkl. `chromadb.telemetry.product.posthog`, `chromadb.api.rust`)
+  - [ ] Vektor-Service startet ohne ChromaDB-Import-Fehler
+  - [ ] Skill-Router baut Index erfolgreich auf ohne ChromaDB-Import-Fehler
+  - [ ] Memory-Funktionen arbeiten korrekt nach Installation
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Packaging-Problem: PyInstaller spec muss ChromaDB-Submodule explizit einschließen. Beeinflusst Memory/Vektor-Funktionen. Unabhängig vom CLIP-Download-Problem (BACKLOG-018).
+
+### BACKLOG-018 – CLIP-Model-Download blockiert First-Start
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** Log (User Intake - Tester)
+- **Erstellt:** 2026-05-08
+- **Aktualisiert:** 2026-05-09
+- **Abgeschlossen:** 2026-05-09
+- **Completed in version:** 0.4.17-beta.21
+- **Completed by task:** documentation/tasks/backlog_BACKLOG-018_clip_lazy_loading_tasks.md
+- **Final audit:** PASS
+- **Validation evidence:** Manual Janus test PASS — App startet sofort, CLIP-Model wird lazy-loaded
+- **Kurzbeschreibung:** Janus startet gar nicht beim ersten Launch. Der Splashscreen bleibt hängen, nach 120 Sekunden zeigt Windows eine Fehlermeldung. Ursache: Der VISION-SERVICE lädt das CLIP-Model (ViT-B-32.pt, 338MB) synchron vor dem App-Start. Bei langsamer Internetverbindung oder langsamen Servern dauert der Download länger als das Windows-Process-Timeout.
+- **Erwartetes Verhalten:** Janus startet sofort beim ersten Launch. Das CLIP-Model wird im Hintergrund nach dem Start lazy-loaded. Vision-Funktionen sind erst verfügbar nachdem das Model geladen ist, aber der Rest der App ist sofort nutzbar.
+- **Tatsächliches Verhalten:** App startet nicht. Splashscreen bleibt hängen, Windows tötet den Process nach 120 Sekunden mit Fehlermeldung "siehe Log". Backend-Log zeigt synchronen CLIP-Model-Download (ViT-B-32.pt, 338MB) ab Zeile 47.
+- **Reproduktion / Kontext:** Frische Installation von janus-setup-0.4.17-beta.16.exe auf Testsystem. Erster Start: Splashscreen bleibt hängen, nach 120s Windows-Fehlermeldung. Problem tritt unabhängig von Internetgeschwindigkeit auf (auch bei schnellem Internet kann der Download langsam sein).
+- **Betroffener Bereich:** Backend / VISION-SERVICE / First-Start Experience / Lazy-Loading
+- **Nachweise:**
+  - main.log Zeile 47+: CLIP-Model-Download startet synchron bei 23:25:27
+  - User-Beschreibung: "janus startet doch gar nicht, nach den 120 sekunden splashscreen kommt eine windows fehlermeldung"
+  - User-Requirement: "wir brauchen eine lösung, damit janus auf alles systemen startet und nicht nur auf welchen mit schnellem internet"
+- **Akzeptanzkriterien:**
+  - [ ] CLIP-Model wird lazy-loaded im Hintergrund nach App-Start (nicht synchron vor dem Start)
+  - [ ] App startet sofort, Splashscreen verschwindet nach normalem Start
+  - [ ] Vision-Funktionen sind deaktiviert oder zeigen "Loading..." bis CLIP-Model geladen ist
+  - [ ] Kein Windows-Process-Timeout durch Model-Downloads
+  - [ ] Lösung funktioniert auf allen Systemen unabhängig von Internetgeschwindigkeit
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Root Cause: VISION-SERVICE lädt CLIP-Model synchron im `__init__` oder bei Service-Initialisierung. Lösung: Lazy-Loading Pattern - App startet zuerst, CLIP-Model wird im Hintergrund asynchron geladen. Vision-Requests vor Fertigstellung des Downloads werden entweder queued oder mit "Vision noch nicht bereit" beantwortet. Unabhängig vom ChromaDB-Packaging-Problem (BACKLOG-017).
+- **Handoff:** documentation/Planned Features/backlog_BACKLOG-018_clip_lazy_loading.md
+- **Recommended next skill:** SKILL 1
+- **Handoff created:** 2026-05-09
 
 ## READY
 

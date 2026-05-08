@@ -1,6 +1,6 @@
 # PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-05 (TASK-069 Capability Overview & Auto-Update Gold-Standard — Beta.10 Bridge Release)
+**Aktualisiert:** 2026-05-09 (BACKLOG-018 CLIP Lazy Loading — 0.4.17-beta.21)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **BACKLOG-018 CLIP Lazy Loading** | 🥇 SEALED | CLIP-Model-Download blockiert nicht mehr First-Start. Lazy-Loading Pattern implementiert: Daemon-Thread im FastAPI-Lifespan, Status-Tracking im Vision-Service, `is_ready()` Guard vor CLIP-Inference. Files: backend/services/vision/model_loader.py (NEU), backend/services/vision_service.py (MODIFIZIERT), backend/main.py (MODIFIZIERT). Manual Janus Test PASS. Version: 0.4.17-beta.21. |
 | **TASK-030 Video List System - Chat-Wechsel Persistenz-Fix** | 🥇 SEALED | Video-Liste Persistenz nach Chat-Wechsel behoben. Sender-Bedingung erweitert auf "bot" || "model", appendVideoReopenLink Parameter videoListMetadata hinzugefügt, wireVideoReopenLink übergibt videoListMetadata an appendVideoReopenLink, appendMessage generiert Markdown mit Header (wie SSE-Stream) beim Chat-Reload. Backend-Logging hinzugefügt zur Verfolgung von video_list_metadata. max_results=3 → max_results=payload.max_results in video_tools.py. Manueller Test bestanden. Version: 0.4.17-beta.19. |
 | **TASK-069 Capability Overview & Auto-Update Gold-Standard** | 🥇 SEALED | Implemented deterministic capability response (Fast-Path) with hardened normalization. Resolved systemic auto-update failures (ReferenceError, SHA-Mismatch). Engineered an atomic "Golden Build" pipeline using js-yaml for single-source-of-truth hashes and Octokit for controlled GitHub publishing. Bridge update verified: Automatic transition from beta.9 to beta.10 successful. Version: 0.4.17-beta.10. |
 | **TASK-068 Auto Update System** | 🥇 SEALED | Deterministic Auto Update System for Electron with state machine persistence, SHA256 manifest validation, secure IPC bridge, and state-driven UI. T1-T8 complete. Files: electron/update-state.cjs, electron/update-security.cjs, electron/update-manager.cjs, main.electron.cjs, frontend/preload.js, frontend/js/update-ui.js, frontend/js/app.js, frontend/css/update-ui.css, frontend/index.html, scripts/generate_update_manifest.cjs. Tests: Node unit tests (16 passed), Playwright E2E (7 passed). Version: 0.4.17-beta.3. Audit: PASS WITH FIXES. |

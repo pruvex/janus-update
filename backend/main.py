@@ -149,6 +149,10 @@ log_startup_time("Importiere Konfigurations-Loader...")
 from backend.utils.config_loader import load_config_data, save_config_data
 log_startup_time("Konfigurations-Loader importiert")
 
+log_startup_time("Importiere CLIP Model Loader...")
+from backend.services.vision.model_loader import start_clip_model_download
+log_startup_time("CLIP Model Loader importiert")
+
 # --- Sentry Initialisierung (Fehler-Tracking für Beta-Phase) ---
 log_startup_time("Importiere Sentry...")
 import sentry_sdk
@@ -335,6 +339,14 @@ async def lifespan(app: FastAPI):
         logger.info("Started FFmpeg download in background.")
     except Exception as e:
         logger.error(f"Failed to start FFmpeg download: {e}")
+
+    # 3.5. Start CLIP Model download in background (NON-BLOCKING!)
+    # Lazy-Loading: Download nach App-Start im Hintergrund
+    try:
+        start_clip_model_download()
+        logger.info("Started CLIP Model download in background (Lazy-Loading).")
+    except Exception as e:
+        logger.error(f"Failed to start CLIP Model download: {e}")
 
     # 4. Memory Maintenance Tasks (with cleanup task tracking)
     cleanup_task = None

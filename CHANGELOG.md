@@ -7,6 +7,11 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+## [0.4.17-beta.21] - 2026-05-09
+
+### Fixed
+- **BACKLOG-018:** CLIP-Model-Download blockiert nicht mehr First-Start. Lazy-Loading Pattern implementiert: CLIP-Model (338MB, ViT-B-32.pt) wird asynchron im Hintergrund nach App-Start geladen via Daemon-Thread in FastAPI-Lifespan. Vision-Service prüft `model_loader.is_ready()` vor CLIP-Inference und überspringt bei `False`. App startet sofort auf allen Systemen unabhängig von Internetgeschwindigkeit. Files: `backend/services/vision/model_loader.py` (NEU), `backend/services/vision_service.py` (MODIFIZIERT), `backend/main.py` (MODIFIZIERT). Manual Janus Test PASS.
+
 ## [0.4.17-beta.20] - 2026-05-08
 
 ### Fixed
