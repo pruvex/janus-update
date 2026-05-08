@@ -119,27 +119,42 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 ### BACKLOG-012 – Video-Suchergebnisse zeigen nur "Video ansehen" ohne Titel
 
 - **Typ:** IMPROVEMENT
-- **Status:** READY
+- **Status:** DONE
 - **Quelle:** User Intake (Screenshot)
 - **Erstellt:** 2026-05-07
-- **Aktualisiert:** 2026-05-07
-- **Kurzbeschreibung:** Wenn der Nutzer nach Videos fragt, zeigt die Chat-Antwort nur "Video ansehen" Links ohne die Videotitel. Der Nutzer kann nicht erkennen, worum es in den einzelnen Videos geht.
-- **Erwartetes Verhalten:** Jedes Video-Suchergebnis zeigt den Videotitel an, gefolgt von einem "Video ansehen" Link darunter. Format: Titel → "Video ansehen" Link.
-- **Tatsächliches Verhalten:** Die Chat-Antwort listet nur "Video ansehen" Links (mehrfach hintereinander) ohne Titelanzeige, obwohl die API die Titel liefert.
-- **Reproduktion / Kontext:** Prompt: "zeig mir ein video über bienen" (oder ähnliche Video-Suche). Chat zeigt 5x "Video ansehen" ohne Titel. Video-Player rechts zeigt Titel "Millionen Gefrorener Bienen In Die Sahara Freigelassen".
-- **Betroffener Bereich:** Frontend Chat Rendering / Video-Skill UI
+- **Aktualisiert:** 2026-05-08
+- **Abgeschlossen:** 2026-05-08
+- **Completed in version:** 0.4.17-beta.19
+- **Completed by task:** documentation/tasks/task_030_video_list_system.md
+- **Final audit:** PASS
+- **Validation evidence:** Manual Janus test PASS — Video-Liste mit Header und Details wird nach Chat-Wechsel korrekt gerendert
+- **Kurzbeschreibung:** Wenn der Nutzer nach Videos fragt, zeigt die Chat-Antwort bei GPT nur "Video ansehen" Links ohne die Videotitel. Bei Gemini ist die Ausgabe perfekt mit Titel, Kanal, Aufrufen, Upload-Datum und "Video ansehen" Link. Zusätzlich verschwinden die Video-Details nach einem Chat-Wechsel.
+- **Erwartetes Verhalten:** Jedes Video-Suchergebnis zeigt den Videotitel, Kanal, Aufrufe, Upload-Datum an, gefolgt von einem "Video ansehen" Link darunter. Format soll bei GPT und Gemini konsistent sein. Nach einem Chat-Wechsel müssen die Video-Details erhalten bleiben.
+- **Tatsächliches Verhalten (vor Fix):** Die Chat-Antwort bei GPT listet nur "Video ansehen" Links (mehrfach hintereinander) ohne Titelanzeige. Bei Gemini ist die Ausgabe perfekt mit vollständigen Details. Nach einem Chat-Wechsel verschwinden die Video-Details.
+- **Tatsächliches Verhalten (nach Fix):** Video-Liste wird mit Header "🎬 Gefundene Videos (5)" und formatierter Liste (Titel, Kanal, Aufrufe, Upload-Datum, "Video ansehen" Link) gerendert. Nach einem Chat-Wechsel bleibt das Layout erhalten.
+- **Reproduktion / Kontext:** Prompt: "zeig mir ein video über eulen" (oder ähnliche Video-Suche). GPT zeigt nur "Video ansehen" Links ohne Titel. Gemini zeigt Titel, Kanal, Aufrufe, Upload-Datum und "Video ansehen" Link. Nach Chat-Wechsel verschwinden die Details.
+- **Betroffener Bereich:** Frontend Chat Rendering / Video-Skill UI / Response Formatter / Chat-Reload Persistenz
 - **Nachweise:**
-  - Screenshot: Chat mit 5x "Video ansehen" ohne Titel, Video-Player zeigt Titel
-  - User-Beschreibung: "aber die bessere ux wäre titel des videos, darunter video ansehen, dann der titel des 2. videos, darunter video ansehen"
+  - Screenshot: Gemini-Ausgabe mit perfekter Formatierung (Titel, Kanal, Aufrufe, Upload-Datum, "Video ansehen")
+  - Screenshot: GPT-Ausgabe mit nur "Video ansehen" Links ohne Titel
+  - User-Beschreibung: "wenn ich mit gemini videos suche, dann ist die ausgabe perfekt... ich möchte dass es mit gpt genau so ordentlich aussieht wie mit gemini"
+  - User-Beschreibung nach Fix: "jetzt ist es perfekt"
 - **Akzeptanzkriterien:**
-  - [ ] Jedes Video-Suchergebnis zeigt den Videotitel an
-  - [ ] "Video ansehen" Link erscheint unter dem Titel
-  - [ ] Titel sind klar lesbar und von Links unterscheidbar
-  - [ ] Mehrere Video-Ergebnisse sind nummeriert oder klar getrennt
+  - [x] Video-Suchergebnisse zeigen den Videotitel an
+  - [x] "Video ansehen" Link erscheint unter dem Titel
+  - [x] Kanalname wird angezeigt
+  - [x] Aufrufe werden angezeigt (falls verfügbar)
+  - [x] Upload-Datum wird angezeigt (falls verfügbar)
+  - [x] Titel sind klar lesbar und von Links unterscheidbar
+  - [x] Mehrere Video-Ergebnisse sind nummeriert oder klar getrennt
+  - [x] Formatierung ist bei GPT und Gemini konsistent
+  - [x] Video-Details bleiben nach einem Chat-Wechsel erhalten
 - **Fehlende Informationen:**
   - Keine
-- **Notizen:** Reine UI-Verbesserung für bessere UX. Die API liefert bereits die Titel, sie werden nur nicht im Chat gerendert.
-- **Recommended next skill:** SKILL 1
+- **Notizen:** Reine UI-Verbesserung für bessere UX. Die API liefert bereits die Titel, sie werden bei GPT nur nicht im Chat gerendert. Bei Gemini funktioniert die Formatierung bereits perfekt. Zusätzliches Problem: Persistenz nach Chat-Wechsel behoben durch Sender-Bedingungserweiterung ("bot" || "model") und Metadata-Parameter für appendVideoReopenLink.
+- **Handoff:** documentation/tasks/task_030_video_list_system.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-08
 
 ### BACKLOG-011 – YouTube "Video ansehen" Link erscheint sporadisch ohne erkennbares Muster
 

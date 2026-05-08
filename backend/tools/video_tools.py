@@ -1328,12 +1328,13 @@ async def video_search_tool(args: VideoSearchInput) -> ToolResultV1:
                 if uploads_pl_id:
                     # Index 0 = physikalisch neuestes Video
                     playlist_video_ids = await _playlist_items_get_videos(
-                        session, api_key, uploads_pl_id, max_results=3
+                        session, api_key, uploads_pl_id, max_results=payload.max_results
                     )
                     if playlist_video_ids:
                         logger.info(
-                            "💎 FEED-AUTHORITY: %d Videos aus Upload-Playlist (Top-3)",
+                            "💎 FEED-AUTHORITY: %d Videos aus Upload-Playlist (Top-%d)",
                             len(playlist_video_ids),
+                            payload.max_results,
                         )
                         feed_details = await _fetch_details_for_ids(playlist_video_ids)
                         # Pick first public, non-upcoming, non-short video

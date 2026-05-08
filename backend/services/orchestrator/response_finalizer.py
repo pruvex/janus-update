@@ -232,30 +232,40 @@ def _derive_video_modal_request_from_tool_results(tool_results: List[Dict[str, A
 
 def _derive_video_list_metadata_from_tool_results(tool_results: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
     """Persistable metadata for video list mode so reload can restore cards."""
+    logger.info("💎 VIDEO-LIST-METADATA: _derive_video_list_metadata_from_tool_results called with %d tool results", len(tool_results or []))
     for tr in (tool_results or []):
         if not isinstance(tr, dict):
             continue
         name = str(tr.get("name") or "").strip().lower()
+        logger.info("💎 VIDEO-LIST-METADATA: Checking tool result: name=%s", name)
         if name not in {"video.search"}:
             continue
         raw_payload = tr.get("_raw_content") or tr.get("content") or "{}"
         try:
             parsed = json.loads(raw_payload) if isinstance(raw_payload, str) else dict(raw_payload or {})
         except Exception:
+            logger.warning("💎 VIDEO-LIST-METADATA: Failed to parse payload for video.search")
             continue
         if not isinstance(parsed, dict) or str(parsed.get("status") or "").strip().lower() != "ok":
+            logger.warning("💎 VIDEO-LIST-METADATA: video.search status not ok: %s", parsed.get("status"))
             continue
         data = parsed.get("data") if isinstance(parsed.get("data"), dict) else {}
+        metadata = parsed.get("metadata") if isinstance(parsed.get("metadata"), dict) else {}
         videos = data.get("videos")
-        mode = str(data.get("mode") or "").strip().lower()
+        mode = str(metadata.get("mode") or data.get("mode") or "").strip().lower()
+        logger.info("💎 VIDEO-LIST-METADATA: video.search: mode=%s, videos=%s", mode, type(videos))
         if mode != "list" or not isinstance(videos, list):
+            logger.warning("💎 VIDEO-LIST-METADATA: mode != 'list' or videos not a list")
             continue
-        return {
+        result = {
             "videos": videos,
             "count": int(data.get("count") or len(videos)),
             "mode": "list",
             "query": str(data.get("query") or "").strip(),
         }
+        logger.info("💎 VIDEO-LIST-METADATA: Returning metadata with %d videos", len(videos))
+        return result
+    logger.warning("💎 VIDEO-LIST-METADATA: No valid video.search list mode found in tool results")
     return None
 
 
@@ -659,7 +669,7 @@ async def finalize_response(
                 wf.total_search_cost,
                 wf.aggregated_cost["total_cost"],
             )
-        wf.video_list_metadata = _derive_video_list_metadata_from_tool_results(wf.tool_results)
+        wf.video_list_metadata = _derive_video_list_metadata_from_tool_results(getattr(wf, "tool_results", []) or [])
         if not getattr(wf, "modal_request", None):
             wf.modal_request = _derive_video_modal_request_from_tool_results(wf.tool_results)
     wf.final_text = append_tool_attributions_from_tools(wf.final_text, getattr(wf, "tool_results", []) or [])
@@ -674,6 +684,7 @@ async def finalize_response(
         usage=wf.aggregated_usage,
         cost=wf.aggregated_cost,
         modal_request=wf_modal,
+        all_tool_results=getattr(wf, "tool_results", []) or [],
     )
     wf.execution_for_api = wf.execution_for_persist
     status_sync.persist_assistant_message(
@@ -697,6 +708,7 @@ async def finalize_response(
                         usage=wf.aggregated_usage,
                         cost=wf.aggregated_cost,
                         modal_request=wf_modal,
+                        all_tool_results=getattr(wf, "tool_results", []) or [],
                     )
                     logger.info("DIAMOND: Websearch-Renderer erfolgreich angewendet")
     except Exception as e:

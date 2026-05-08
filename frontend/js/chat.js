@@ -689,6 +689,7 @@ export async function sendMessage(fromWindowId) {
   if (!chatInputEl || !chatMessagesEl) return;
   const promptText = chatInputEl.value.trim();
   if (!promptText) return;
+  lastVideoListMetadata = null;
 
   const { provider, model } = effectiveProviderModelForWindow(windowId);
   let chat_id = getActiveChatIdForWindow(windowId);
@@ -853,6 +854,10 @@ export async function sendMessage(fromWindowId) {
               });
             }
           }
+
+          // 💎 BACKLOG-012: Display formatted video list message from tool result
+          // (Removed - tool_result handler not being called reliably)
+          // Alternative approach: Use VIDEO-LIST-METADATA in final render
         } else if (data.type === "done") {
           break;
         } else if (data.type === "error") {
@@ -864,6 +869,28 @@ export async function sendMessage(fromWindowId) {
     }
     
     // Final render
+    // 💎 BACKLOG-012: Use VIDEO-LIST-METADATA to render formatted video list
+    if (lastVideoListMetadata && lastVideoListMetadata.videos && Array.isArray(lastVideoListMetadata.videos)) {
+      const videos = lastVideoListMetadata.videos;
+      let formattedList = `### 🎬 Gefundene Videos (${videos.length})\n\n`;
+      videos.forEach((video, index) => {
+        const title = video.title || "Unbekannter Titel";
+        const channel = video.channel || video.channel_title || "";
+        const rawViews = video.views ?? video.view_count;
+        const views = rawViews ? `${Number(rawViews).toLocaleString("de-DE")} Aufrufe` : "";
+        const rawUploadDate = video.published_date_human || video.upload_date || video.published_at || "";
+        const uploadDate = rawUploadDate ? `(Hochgeladen am ${rawUploadDate})` : "";
+        const watchUrl = video.watch_url || video.embed_url || "";
+        
+        formattedList += `**${index + 1}. ${title}**\n`;
+        if (channel) formattedList += `${channel} • `;
+        if (views) formattedList += `${views} • `;
+        if (uploadDate) formattedList += `${uploadDate}\n`;
+        if (watchUrl) formattedList += `[Video ansehen](${watchUrl})\n\n`;
+      });
+      chatText = formattedList;
+    }
+    
     // Heilt nackte URLs vom Modell
     const healedText = chatText.replace(/Video ansehen\s*\((https?:\/\/[^\s)]+)\)/g, '[Video ansehen]($1)');
     loadingMessageElement.innerHTML = sanitizeChatHtml(marked.parse(healedText));
@@ -1182,24 +1209,49 @@ function renderVideoListCards(messageEl, payload) {
 
   const container = document.createElement("div");
   container.className = "video-list-cards";
-  container.style.cssText = "display: flex; flex-direction: column; gap: 4px; margin-top: 10px;";
+  container.style.cssText = "display: flex; flex-direction: column; gap: 8px; margin-top: 10px;";
 
-  for (const video of payload.videos) {
-    if (!video || typeof video !== "object") continue;
+  payload.videos.forEach((video, index) => {
+    if (!video || typeof video !== "object") return;
 
     const card = document.createElement("div");
     card.className = "video-list-card";
-    card.style.cssText = "background: none; border: none; padding: 0; color: var(--accent-color); text-decoration: underline; cursor: pointer; font-size: 0.9rem; text-align: left;";
+    card.style.cssText = "background: rgba(137, 180, 250, 0.05); border: 1px solid rgba(137, 180, 250, 0.2); padding: 12px; border-radius: 8px;";
 
-    const title = video.title || "Video";
+    const title = video.title || "Unbekannter Titel";
+    const channel = video.channel || video.channel_title || "";
+    const rawViews = video.views ?? video.view_count;
+    const views = rawViews ? `${Number(rawViews).toLocaleString("de-DE")} Aufrufe` : "";
+    const rawUploadDate = video.published_date_human || video.upload_date || video.published_at || "";
+    const uploadDate = rawUploadDate ? `(Hochgeladen am ${rawUploadDate})` : "";
     const isEmbeddable = video.is_embeddable !== false;
     const videoId = video.video_id || "";
     const watchUrl = video.watch_url || (videoId ? `https://www.youtube.com/watch?v=${videoId}` : "");
     const embedUrl = video.embed_url || (videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : "");
 
-    card.innerHTML = `<span>▶ Video ansehen: ${title}</span>`;
+    const titleEl = document.createElement("div");
+    titleEl.style.cssText = "font-weight: bold; color: #cdd6f4; margin-bottom: 4px;";
+    titleEl.textContent = `${index + 1}. ${title}`;
+    card.appendChild(titleEl);
 
-    card.addEventListener("click", () => {
+    if (channel || views || uploadDate) {
+      const metaEl = document.createElement("div");
+      metaEl.style.cssText = "font-size: 0.85rem; color: #a6adc8; margin-bottom: 8px;";
+      const metaParts = [];
+      if (channel) metaParts.push(channel);
+      if (views) metaParts.push(views);
+      if (uploadDate) metaParts.push(uploadDate);
+      metaEl.textContent = metaParts.join(" • ");
+      card.appendChild(metaEl);
+    }
+
+    const link = document.createElement("a");
+    link.href = "#";
+    link.style.cssText = "color: #89b4fa; text-decoration: none; font-size: 0.9rem; cursor: pointer;";
+    link.textContent = "Video ansehen";
+
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
       openModal({
         type: "video",
         payload: {
@@ -1213,16 +1265,53 @@ function renderVideoListCards(messageEl, payload) {
       });
     });
 
-    card.addEventListener("mouseenter", () => { card.style.transform = "scale(1.02)"; });
+    card.addEventListener("mouseenter", () => { card.style.transform = "scale(1.01)"; });
     card.addEventListener("mouseleave", () => { card.style.transform = "scale(1)"; });
 
+    card.appendChild(link);
     container.appendChild(card);
-  }
+  });
 
   if (container.childElementCount === 0) return false;
 
   messageEl.appendChild(container);
   return true;
+}
+
+function enhanceVideoLinks(textNode, videoListMetadata) {
+  if (!textNode || !videoListMetadata || !Array.isArray(videoListMetadata.videos)) return;
+  
+  const videos = videoListMetadata.videos;
+  const anchors = textNode.querySelectorAll("a");
+  let videoIndex = 0;
+  
+  anchors.forEach((a) => {
+    const href = String(a.getAttribute("href") || "").trim();
+    if (!isVideoUrl(href) || videoIndex >= videos.length) return;
+    
+    const video = videos[videoIndex];
+    videoIndex++;
+    
+    const title = video.title || "";
+    const channel = video.channel || video.channel_title || "";
+    const rawViews = video.views ?? video.view_count;
+    const views = rawViews ? `${Number(rawViews).toLocaleString("de-DE")} Aufrufe` : "";
+    const rawUploadDate = video.published_date_human || video.upload_date || video.published_at || "";
+    const uploadDate = rawUploadDate ? `(Hochgeladen am ${rawUploadDate})` : "";
+    
+    if (title || channel || views || uploadDate) {
+      const detailsDiv = document.createElement("div");
+      detailsDiv.style.cssText = "font-size: 0.85rem; color: #a6adc8; margin-top: 4px;";
+      const parts = [];
+      if (title) parts.push(title);
+      if (channel) parts.push(channel);
+      if (views) parts.push(views);
+      if (uploadDate) parts.push(uploadDate);
+      detailsDiv.textContent = parts.join(" • ");
+      
+      a.parentNode.insertBefore(detailsDiv, a.nextSibling);
+    }
+  });
 }
 
 function extractFirstVideoUrlFromElement(rootElement) {
@@ -1241,6 +1330,7 @@ function wireVideoReopenLink(rootElement, apiPayload) {
   const type = String(mr?.type || "").trim().toLowerCase();
   if (type !== "video") return;
   const modalUrl = canonicalWatchUrlFromModalRequest(mr);
+  const videoListMetadata = apiPayload.video_list_metadata || null;
   const anchors = rootElement.querySelectorAll("a");
   anchors.forEach((a) => {
     const label = String(a.textContent || "").trim().toLowerCase();
@@ -1259,11 +1349,11 @@ function wireVideoReopenLink(rootElement, apiPayload) {
   });
   const hasReopenLink = rootElement.querySelector('a[data-janus-action="reopen-video-modal"]');
   if (!hasReopenLink) {
-    appendVideoReopenLink(rootElement, modalUrl);
+    appendVideoReopenLink(rootElement, modalUrl, videoListMetadata);
   }
 }
 
-function appendVideoReopenLink(rootElement, fallbackVideoUrl = "") {
+function appendVideoReopenLink(rootElement, fallbackVideoUrl = "", videoListMetadata = null) {
   if (!rootElement || typeof rootElement.querySelector !== "function") return;
   const existing = rootElement.querySelector('a[data-janus-action="reopen-video-modal"]');
   const canon = String(fallbackVideoUrl || "").trim();
@@ -1276,6 +1366,80 @@ function appendVideoReopenLink(rootElement, fallbackVideoUrl = "") {
     }
     return;
   }
+
+  // 💎 BACKLOG-012: Use VIDEO-LIST-METADATA to render videos with full details
+  const metadataToUse = videoListMetadata || lastVideoListMetadata;
+  if (metadataToUse && metadataToUse.videos && Array.isArray(metadataToUse.videos)) {
+    const videos = metadataToUse.videos;
+    const container = document.createElement("div");
+    container.className = "video-list-container";
+    container.style.marginTop = "1rem";
+    container.style.padding = "1rem";
+    container.style.backgroundColor = "rgba(137, 180, 250, 0.1)";
+    container.style.borderRadius = "8px";
+    container.style.border = "1px solid rgba(137, 180, 250, 0.3)";
+
+    const header = document.createElement("div");
+    header.style.marginBottom = "1rem";
+    header.style.fontWeight = "bold";
+    header.style.color = "#cdd6f4";
+    header.textContent = `Gefundene Videos (${videos.length})`;
+    container.appendChild(header);
+
+    videos.forEach((video, index) => {
+      const videoItem = document.createElement("div");
+      videoItem.style.marginBottom = "1rem";
+      videoItem.style.paddingBottom = "1rem";
+      videoItem.style.borderBottom = index < videos.length - 1 ? "1px solid rgba(137, 180, 250, 0.2)" : "none";
+
+      const title = document.createElement("div");
+      title.style.fontWeight = "bold";
+      title.style.color = "#cdd6f4";
+      title.style.marginBottom = "0.25rem";
+      title.textContent = `${index + 1}. ${video.title || "Unbekannter Titel"}`;
+      videoItem.appendChild(title);
+
+      const channel = document.createElement("div");
+      channel.style.fontSize = "0.9rem";
+      channel.style.color = "#a6adc8";
+      channel.style.marginBottom = "0.25rem";
+      channel.textContent = video.channel || "";
+      videoItem.appendChild(channel);
+
+      const meta = document.createElement("div");
+      meta.style.fontSize = "0.85rem";
+      meta.style.color = "#9399b2";
+      meta.style.marginBottom = "0.5rem";
+      const metaParts = [];
+      if (video.view_count) metaParts.push(video.view_count + " Aufrufe");
+      if (video.upload_date) metaParts.push(`(Hochgeladen am ${video.upload_date})`);
+      meta.textContent = metaParts.join(" • ");
+      videoItem.appendChild(meta);
+
+      const a = document.createElement("a");
+      a.href = "#";
+      a.dataset.janusAction = "reopen-video-modal";
+      a.dataset.videoUrl = video.watch_url || video.embed_url || "";
+      a.textContent = "Video ansehen";
+      a.style.color = "#89b4fa";
+      a.style.textDecoration = "none";
+      a.style.fontSize = "0.9rem";
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (a.dataset.videoUrl) {
+          openModal({ type: "video", payload: { url: a.dataset.videoUrl } });
+        }
+      });
+      videoItem.appendChild(a);
+
+      container.appendChild(videoItem);
+    });
+
+    rootElement.appendChild(container);
+    return;
+  }
+
+  // Fallback: Simple "Video ansehen" link (original behavior)
   const p = document.createElement("p");
   const a = document.createElement("a");
   a.href = "#";
@@ -1436,15 +1600,44 @@ export function appendMessage(sender, data, appendOpts = {}) {
     ) {
       stripInlineAssistantVideoLinks(textNode);
     }
-    wireVideoReopenLink(textNode, apiPayload);
-    ensureVideoReopenLinkForRenderedMessage(textNode, apiPayload);
+    console.log("💎 VIDEO-LIST-METADATA: appendMessage check", {
+      sender,
+      hasVideoListMetadata: !!apiPayload?.video_list_metadata,
+      mode: apiPayload?.video_list_metadata?.mode,
+      videosCount: apiPayload?.video_list_metadata?.videos?.length,
+    });
     if (
-      sender === "bot" &&
+      (sender === "bot" || sender === "model") &&
       apiPayload?.video_list_metadata &&
       apiPayload.video_list_metadata.mode === "list" &&
       Array.isArray(apiPayload.video_list_metadata.videos)
     ) {
-      renderVideoListCards(textNode, apiPayload.video_list_metadata);
+      console.log("💎 VIDEO-LIST-METADATA: Rendering formatted markdown with header", apiPayload.video_list_metadata.videos.length, "videos");
+      // Generate formatted markdown with header (same format as SSE stream)
+      const videos = apiPayload.video_list_metadata.videos;
+      let formattedList = `### 🎬 Gefundene Videos (${videos.length})\n\n`;
+      videos.forEach((video, index) => {
+        const title = video.title || "Unbekannter Titel";
+        const channel = video.channel || video.channel_title || "";
+        const rawViews = video.views ?? video.view_count;
+        const views = rawViews ? `${Number(rawViews).toLocaleString("de-DE")} Aufrufe` : "";
+        const rawUploadDate = video.published_date_human || video.upload_date || video.published_at || "";
+        const uploadDate = rawUploadDate ? `(Hochgeladen am ${rawUploadDate})` : "";
+        const watchUrl = video.watch_url || video.embed_url || "";
+
+        formattedList += `**${index + 1}. ${title}**\n`;
+        if (channel) formattedList += `${channel} • `;
+        if (views) formattedList += `${views} • `;
+        if (uploadDate) formattedList += `${uploadDate}\n`;
+        if (watchUrl) formattedList += `[Video ansehen](${watchUrl})\n\n`;
+      });
+      // Replace the original text with the formatted list
+      textNode.innerHTML = sanitizeChatHtml(marked.parse(formattedList));
+      normalizeLinksAndImages(textNode);
+      wireVideoReopenLink(textNode, apiPayload);
+    } else {
+      wireVideoReopenLink(textNode, apiPayload);
+      ensureVideoReopenLinkForRenderedMessage(textNode, apiPayload);
     }
     bubble.appendChild(textNode);
 

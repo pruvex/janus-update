@@ -75,6 +75,10 @@ class OrchestratorStatusSync:
             modal_request = None
         if not text and not image_path:
             return SyncResult(status="skipped", message_id=None, success=False)
+        logger.info("💎 VIDEO-LIST-METADATA: persist_assistant_message: extra_metadata keys=%s", list(extra_metadata.keys()) if extra_metadata else None)
+        if extra_metadata and "video_list_metadata" in extra_metadata:
+            vlm = extra_metadata["video_list_metadata"]
+            logger.info("💎 VIDEO-LIST-METADATA: persist_assistant_message: video_list_metadata has %d videos", len(vlm.get("videos", [])) if isinstance(vlm, dict) else 0)
         db_message = crud.create_message(
             self.db,
             chat_id,
