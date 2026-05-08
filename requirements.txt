@@ -184,3 +184,15 @@ diffusers
 pymupdf
 psutil
 supabase
+benchmark_runner
+chaos_injector
+contextvars
+docx
+log_generator
+report_validator
+tree-sitter
+tree-sitter-javascript
+tree-sitter-python
+tree-sitter-typescript
+watchdog
+zoneinfo
