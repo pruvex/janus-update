@@ -1,6 +1,6 @@
 # PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-09 (BACKLOG-018 CLIP Lazy Loading — 0.4.17-beta.21)
+**Aktualisiert:** 2026-05-09 (BACKLOG-017 ChromaDB PyInstaller Fix — 0.4.17-beta.22)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **BACKLOG-017 ChromaDB PyInstaller Fix** | 🥇 SEALED | ChromaDB-Module vollständig im PyInstaller-Bundle eingeschlossen. PyInstaller spec um ChromaDB-Submodule erweitert: `collect_data_files('chromadb')`, `collect_data_files('chromadb', include_py_files=True)`, `hiddenimports=['chromadb.telemetry.product.posthog', 'chromadb.api.rust']`. Vektor-Service und Skill-Router starten ohne ChromaDB-Import-Fehler. Manual Janus Test PASS. Files: janus_backend.spec. Version: 0.4.17-beta.22. |
 | **BACKLOG-018 CLIP Lazy Loading** | 🥇 SEALED | CLIP-Model-Download blockiert nicht mehr First-Start. Lazy-Loading Pattern implementiert: Daemon-Thread im FastAPI-Lifespan, Status-Tracking im Vision-Service, `is_ready()` Guard vor CLIP-Inference. Files: backend/services/vision/model_loader.py (NEU), backend/services/vision_service.py (MODIFIZIERT), backend/main.py (MODIFIZIERT). Manual Janus Test PASS. Version: 0.4.17-beta.21. |
 | **TASK-030 Video List System - Chat-Wechsel Persistenz-Fix** | 🥇 SEALED | Video-Liste Persistenz nach Chat-Wechsel behoben. Sender-Bedingung erweitert auf "bot" || "model", appendVideoReopenLink Parameter videoListMetadata hinzugefügt, wireVideoReopenLink übergibt videoListMetadata an appendVideoReopenLink, appendMessage generiert Markdown mit Header (wie SSE-Stream) beim Chat-Reload. Backend-Logging hinzugefügt zur Verfolgung von video_list_metadata. max_results=3 → max_results=payload.max_results in video_tools.py. Manueller Test bestanden. Version: 0.4.17-beta.19. |
 | **TASK-069 Capability Overview & Auto-Update Gold-Standard** | 🥇 SEALED | Implemented deterministic capability response (Fast-Path) with hardened normalization. Resolved systemic auto-update failures (ReferenceError, SHA-Mismatch). Engineered an atomic "Golden Build" pipeline using js-yaml for single-source-of-truth hashes and Octokit for controlled GitHub publishing. Bridge update verified: Automatic transition from beta.9 to beta.10 successful. Version: 0.4.17-beta.10. |
@@ -52,6 +53,7 @@
 
 | Timestamp | Task / Feature | Editor | Result | Audit | Version | Validation / Notes |
 |---|---|---|---|---|---|---|
+| 2026-05-09 | BACKLOG-017 ChromaDB PyInstaller Fix | SWE 1.6 | DONE | PASS | 0.4.17-beta.22 | PyInstaller spec um ChromaDB-Submodule erweitert: collect_data_files('chromadb'), collect_data_files('chromadb', include_py_files=True), hiddenimports=['chromadb.telemetry.product.posthog', 'chromadb.api.rust']. Vektor-Service und Skill-Router starten ohne ChromaDB-Import-Fehler. Manual Janus Test PASS. |
 | 2026-05-08 | BACKLOG-016 Video Links Chat-Wechsel Fix | SWE 1.6 | DONE | PASS WITH FIXES | 0.4.17-beta.20 | IndentationError in backend/data/crud.py behoben. video_list_metadata wird jetzt korrekt in metadata_json persistiert. Persistenzpfad vollständig: Backend CRUD → Schemas → Frontend Reload → Rendering. Manual Janus Test PASS. |
 | 2026-05-07 | BACKLOG-011 Video Modal False-Positive Fix | SWE 1.6 | DONE | PASS | 0.4.17-beta.17 | URL-Detection Fallback deaktiviert, modal_request ausschließlich aus video.search tool_results. Backend-Override erzwingt mode="list" für Gemini. response_finalizer.py + tool_executor.py + video_search.json. Skill 6 Debug (3 Iterationen). |
 | 2026-05-07 | BACKLOG-010 Image Move Regression Fix | SWE 1.6 | DONE | PASS | 0.4.17-beta.16 | Deterministischer Tool-Loop Guard für Desktop Image Move. Provider-agnostisch (gpt-5.4-nano + Gemini PASS). execution_engine.py erweitert. |

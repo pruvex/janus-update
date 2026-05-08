@@ -27,10 +27,15 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 ### BACKLOG-017 – ChromaDB-Module fehlen im PyInstaller-Bundle
 
 - **Typ:** BUG
-- **Status:** IN PROGRESS
+- **Status:** DONE
 - **Quelle:** Log (User Intake - Tester)
 - **Erstellt:** 2026-05-08
 - **Aktualisiert:** 2026-05-09
+- **Abgeschlossen:** 2026-05-09
+- **Completed in version:** 0.4.17-beta.22
+- **Completed by task:** documentation/tasks/backlog_BACKLOG-017_chromadb_pyinstaller_fix.md
+- **Final audit:** PASS
+- **Validation evidence:** Manual Janus test PASS — ChromaDB-Module vollständig im PyInstaller-Bundle, Vektor-Service und Skill-Router starten ohne Import-Fehler
 - **Kurzbeschreibung:** Im gebauten janus-setup-0.4.17-beta.16.exe fehlen ChromaDB-Module im PyInstaller-Bundle. Backend-Log zeigt `No module named 'chromadb.telemetry.product.posthog'` und `No module named 'chromadb.api.rust'`. Dies führt zu Fehlern im Vektor-Service und Skill-Router beim Start.
 - **Erwartetes Verhalten:** Alle ChromaDB-Module sind vollständig im PyInstaller-Bundle enthalten. Vektor-Service und Skill-Router starten ohne Module-Import-Fehler.
 - **Tatsächliches Verhalten:** Vektor-Service meldet kritischen Fehler beim Start wegen fehlendem `chromadb.telemetry.product.posthog`. Skill-Router kann Index nicht aufbauen wegen fehlendem `chromadb.api.rust`.
