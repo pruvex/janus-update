@@ -748,40 +748,95 @@ function render() {
       sidebarModelSelect.value = targetModel;
     } else if (availableOptions.length > 0) {
       // Fall B: Das gespeicherte Modell existiert nicht mehr (z.B. gpt-4o-mini).
-      // Selbstheilung: Wir wählen automatisch das erste verfügbare Modell.
-      const fallbackModel = availableOptions[0];
-      console.log(`--> [Render] Gespeichertes Modell '${targetModel}' nicht verfügbar. Wechsele zu Fallback: '${fallbackModel}'`);
-      
-      sidebarModelSelect.value = fallbackModel;
-      
-      // Wir aktualisieren auch gleich den State, damit beim nächsten Mal alles stimmt.
-      appState.last_active.model = fallbackModel;
-      updateLastUsedModelInBackend(); // Speichern im Hintergrund
-      
-      // Optional: Benachrichtigung an den Benutzer (kann entfernt werden, wenn nicht gewünscht)
-      const notification = document.createElement('div');
-      notification.className = 'notification is-warning is-light';
-      notification.style.position = 'fixed';
-      notification.style.top = '1rem';
-      notification.style.right = '1rem';
-      notification.style.zIndex = '1000';
-      notification.innerHTML = `
-        <button class="delete"></button>
-        Modell '${targetModel}' ist nicht verfügbar. Verwende stattdessen '${fallbackModel}'.
-      `;
-      document.body.appendChild(notification);
-      
-      // Schließen-Button für die Benachrichtigung
-      notification.querySelector('.delete').addEventListener('click', () => {
-        notification.remove();
-      });
-      
-      // Automatisches Ausblenden nach 5 Sekunden
-      setTimeout(() => {
-        if (notification.parentNode) {
-          notification.remove();
+      // 💎 FIX: Überspringe die Fallback-Logik beim Provider-Wechsel, da das Modell bereits korrekt gesetzt wurde
+      if (appState.providerSwitchInProgress) {
+        console.log(`--> [Render] Provider-Wechsel läuft, verwende bereits gesetztes Modell aus State`);
+        // Verwende das bereits gesetzte Modell aus dem State (nicht targetModel, das das alte Modell sein kann)
+        const currentModel = appState.last_active.model;
+        if (currentModel && availableOptions.includes(currentModel)) {
+          sidebarModelSelect.value = currentModel;
+          console.log(`--> [Render] Modell '${currentModel}' aus State ausgewählt`);
+        } else {
+          // Fallback: erstes verfügbares Modell
+          const fallbackModel = availableOptions[0];
+          sidebarModelSelect.value = fallbackModel;
+          appState.last_active.model = fallbackModel;
+          console.log(`--> [Render] Fallback auf '${fallbackModel}' (State-Modell nicht verfügbar)`);
         }
-      }, 5000);
+      } else {
+        // Selbstheilung: Wir wählen automatisch das erste verfügbare Modell.
+        const fallbackModel = availableOptions[0];
+        console.log(`--> [Render] Gespeichertes Modell '${targetModel}' nicht verfügbar. Wechsele zu Fallback: '${fallbackModel}'`);
+
+        sidebarModelSelect.value = fallbackModel;
+
+        // Wir aktualisieren auch gleich den State, damit beim nächsten Mal alles stimmt.
+        appState.last_active.model = fallbackModel;
+        updateLastUsedModelInBackend(); // Speichern im Hintergrund
+
+        // Optional: Benachrichtigung an den Benutzer (verbessert gemäß BACKLOG-015)
+        const notification = document.createElement('div');
+        notification.className = 'notification is-warning is-light model-unavailable-notification';
+        notification.style.position = 'fixed';
+        notification.style.top = '1rem';
+        notification.style.right = '1rem';
+        notification.style.zIndex = '1000';
+        notification.style.maxWidth = '400px';
+        notification.style.padding = '1rem';
+        notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        notification.style.borderRadius = '8px';
+        notification.style.border = '1px solid #ffdd57';
+        notification.style.backgroundColor = '#fffdf5';
+        notification.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+            <strong style="color: #9a7d0a; font-size: 0.95rem;">⚠️ Modell nicht verfügbar</strong>
+            <button class="delete" style="margin-left: 0.5rem; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #9a7d0a;">×</button>
+          </div>
+          <div style="color: #4a4a4a; font-size: 0.9rem; margin-bottom: 0.75rem; line-height: 1.4;">
+            Das Modell <strong>'${targetModel}'</strong> ist nicht mehr verfügbar.<br>
+            Janus hat automatisch zu <strong>'${fallbackModel}'</strong> gewechselt.
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="model-keep-fallback" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border: 1px solid #9a7d0a; background: #ffdd57; color: #4a4a4a; border-radius: 4px; cursor: pointer;">
+              Fallback behalten
+            </button>
+            <button class="model-open-settings" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border: 1px solid #dbdbdb; background: white; color: #4a4a4a; border-radius: 4px; cursor: pointer;">
+              Modell wählen
+            </button>
+          </div>
+        `;
+        document.body.appendChild(notification);
+
+        // Schließen-Button für die Benachrichtigung
+        notification.querySelector('.delete').addEventListener('click', () => {
+          notification.remove();
+        });
+
+        // "Fallback behalten" Button - schließt nur die Benachrichtigung
+        notification.querySelector('.model-keep-fallback').addEventListener('click', () => {
+          notification.remove();
+        });
+
+        // "Modell wählen" Button - öffnet Einstellungen für Modell-Auswahl
+        notification.querySelector('.model-open-settings').addEventListener('click', () => {
+          notification.remove();
+          // Öffne Einstellungen und wechsle zum API-Key/Modell-Tab
+          if (typeof window.switchView === 'function') {
+            window.switchView('settings-view');
+            setTimeout(() => {
+              const apiKeyLink = document.querySelector('[data-target="api-key-section"]');
+              if (apiKeyLink) apiKeyLink.click();
+            }, 100);
+          }
+        });
+
+        // Automatisches Ausblenden nach 10 Sekunden (erhöht für bessere Lesbarkeit)
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.remove();
+          }
+        }, 10000);
+      }
     } else {
       // Fall C: Keine Modelle verfügbar
       console.error('--> [Render] Keine Modelle für den ausgewählten Provider verfügbar!');
@@ -1099,13 +1154,13 @@ function setupEventListeners() {
       const newProvider = sidebarProviderSelect.value;
       appState.last_active.provider = newProvider;
       console.log(`--> [Event] New provider set in state: ${newProvider}`);
-      
+
       // --- SENTRY DIAMANT-STANDARD: TAGS ---
       // Wir markieren den aktuellen Zustand für alle zukünftigen Fehler
       if (window.Sentry) {
           Sentry.setTag("active_provider", newProvider);
           console.log(`[Sentry] Tag gesetzt: active_provider=${newProvider}`);
-          
+
           // Wenn wir bereits ein Modell haben, setzen wir es auch
           if (appState.last_active.model) {
               Sentry.setTag("active_model", appState.last_active.model);
@@ -1132,11 +1187,15 @@ function setupEventListeners() {
       await updateLastUsedModelInBackend();
 
       // 4. Die UI komplett neu zeichnen, um die Änderungen anzuzeigen
+      // 💎 FIX: Setze ein Flag, um zu verhindern, dass render() die Fallback-Logik auslöst
+      // Beim Provider-Wechsel wurde das Modell bereits korrekt gesetzt
+      appState.providerSwitchInProgress = true;
       console.log("--> [Event] Calling render() to update the UI...");
       render();
+      appState.providerSwitchInProgress = false;
 
       // Sync window headers in 'Wie Sidebar' mode
-      syncChatWindowHeaderLlm(); 
+      syncChatWindowHeaderLlm();
       WINDOW_IDS.forEach((wid) => scheduleContextRefresh(wid));
     });
   }
