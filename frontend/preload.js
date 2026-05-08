@@ -29,6 +29,7 @@ contextBridge.exposeInMainWorld("electron", {
   createProject: (projectData) => ipcRenderer.invoke("create-project", projectData),
   getApiKey: () => ipcRenderer.invoke('get-api-key'),
   readClipboard: () => ipcRenderer.invoke('read-clipboard'),
+  writeFrontendDebugLog: (payload) => ipcRenderer.invoke('debug:write-frontend-log', payload),
 
   // === UPDATE IPC CONTRACTS ===
   getUpdateState: () => ipcRenderer.invoke('update:get-state'),

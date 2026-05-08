@@ -22,7 +22,43 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 - System Health
 - Other
 
+## NEEDS INFO
+
 ## READY
+
+### BACKLOG-016 – Video-Links funktionieren nicht nach Chat-Wechsel
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** User Intake (Folgebug von BACKLOG-012)
+- **Erstellt:** 2026-05-08
+- **Aktualisiert:** 2026-05-08
+- **Abgeschlossen:** 2026-05-08
+- **Completed in version:** 0.4.17-beta.20
+- **Completed by task:** documentation/tasks/backlog_BACKLOG-016_video_links_after_chat_switch.md
+- **Final audit:** PASS WITH FIXES
+- **Validation evidence:** Manual Janus test PASS — Video-Links funktionieren nach Chat-Wechsel
+- **Kurzbeschreibung:** Folgebug von BACKLOG-012 – Video-Suchergebnisse ohne Titel. Die Video-Formatierung ist jetzt perfekt (5 Videos von beiden Providern, Titel, Kanal, Aufrufe, Upload-Datum) und bleibt nach Chat-Wechsel erhalten. ABER: Die "Video ansehen" Links funktionieren direkt nach der Suche, aber nicht mehr wenn man den Chat gewechselt hat und wieder zurück kommt. Das Video-Modal öffnet sich nicht mehr und das Video wird nicht gestartet.
+- **Erwartetes Verhalten:** Video-Links ("Video ansehen") funktionieren auch nach einem Chat-Wechsel und öffnen das Video-Modal mit dem entsprechenden Video.
+- **Tatsächliches Verhalten:** Video-Links funktionieren direkt nach der Suche (Modal öffnet, Video startet). Nach einem Chat-Wechsel und Rückkehr zum Chat sehen die Links korrekt aus, aber öffnen das Modal nicht mehr und starten das Video nicht.
+- **Reproduktion / Kontext:** Prompt: "zeig mir ein video über eulen" (oder ähnliche Video-Suche). Beide Provider zeigen 5 Videos mit perfekter Formatierung. Links funktionieren direkt. Chat wechseln → zurück zum Chat → Links funktionieren nicht mehr.
+- **Betroffener Bereich:** Frontend Chat Rendering / Video Modal / Chat-Reload / Event Handler Wiring
+- **Nachweise:**
+  - User-Beschreibung: "es werden jetzt wie gewünscht von beiden providern 5 videos gefunden, die formatierung im chat ist perfekt und bleibt auch erhalten, nachdem an den chat gewechselt hat und zurück zu chat kehrt. ABER! die video links (Video ansehen) funktionieren nach der suche, aber nicht mehr wenn man den chat gewechselt hat und wieder zu rück in den chat kommt"
+  - Frontend-Konsole-Logs: `chat.js:1615 💎 VIDEO-LIST-METADATA: Rendering formatted markdown with header 5 videos`
+  - Version: 0.4.17-beta.19 (Folgebug von BACKLOG-012 Fix)
+- **Akzeptanzkriterien:**
+  - [ ] Video-Links funktionieren direkt nach der Suche
+  - [ ] Video-Links funktionieren auch nach Chat-Wechsel und Rückkehr
+  - [ ] Video-Modal öffnet sich korrekt nach Chat-Wechsel
+  - [ ] Video wird gestartet nach Chat-Wechsel
+  - [ ] Keine Regression in Video-Formatierung oder Persistenz
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Dies ist ein Folgebug von BACKLOG-012. Der Fix hat die Formatierung und Persistenz gelöst, aber hat die Event-Handler-Wiring für die Video-Links nach Chat-Reload beschädigt. Vermutung: `wireVideoReopenLink` prüft auf `modal_request.type === "video"`, aber beim Markdown-Rendering aus `video_list_metadata` gibt es keine `modal_request`. Daher werden die Event-Handler nicht gebunden. Label-Erkennung prüft auf "hier ansehen", aber Markdown-Link heißt "video ansehen".
+- **Handoff:** documentation/tasks/backlog_BACKLOG-016_video_links_after_chat_switch.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-08
 
 ### BACKLOG-015 – Modell-Wechsel-Benachrichtigung bei nicht verfügbarem Modell
 

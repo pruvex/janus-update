@@ -1012,6 +1012,31 @@ ipcMain.handle('clipboard:read', () => {
   }
 });
 
+ipcMain.handle('debug:write-frontend-log', async (event, payload = {}) => {
+  try {
+    const content = typeof payload.content === 'string' ? payload.content : '';
+    if (!content.trim()) {
+      return { success: false, error: 'Frontend debug log content is empty' };
+    }
+
+    const isDev = process.env.NODE_ENV === 'development';
+    const debugDir = isDev
+      ? path.join(process.cwd(), 'debug_logs')
+      : path.join(app.getPath('userData'), 'debug_logs');
+    await fs.promises.mkdir(debugDir, { recursive: true });
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filePath = path.join(debugDir, `frontend_log_${timestamp}.md`);
+    await fs.promises.writeFile(filePath, content, 'utf8');
+
+    log.info(`[DebugLog] Frontend debug log exported: ${filePath}`);
+    return { success: true, path: filePath };
+  } catch (error) {
+    log.error('[DebugLog] Failed to export frontend debug log:', error);
+    return { success: false, error: error.message };
+  }
+});
+
 // ===================================================================
 //  APP INITIALIZATION
 // ===================================================================

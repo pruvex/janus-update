@@ -12,6 +12,7 @@ import {
   setWindowMinimized,
   WINDOW_IDS,
   getDockModuleState,
+  dockClose,
 } from "./window-state.js";
 import { sanitizeChatHtml, sanitizeErrorHtml } from "./dompurify-config.js";
 import { scheduleContextRefresh } from "./context-awareness.js";
@@ -330,18 +331,18 @@ WINDOW_IDS.forEach((wid) => {
     const target = event.target;
     const link = target?.closest?.("a");
     if (!link) return;
-    // 💎 MCL: Handle "Video ansehen" links from LLM synthesis
-    if (link.textContent.includes("Video ansehen")) {
-      event.preventDefault();
-      const url = String(link.getAttribute("href") || "").trim();
-      if (url && isVideoUrl(url)) {
-        openModal({ type: "video", payload: { url } });
-      }
-      return;
-    }
+    // 💎 BACKLOG-016: Check for reopen-video-modal FIRST, before "Video ansehen" handler
+    // This ensures video-specific URLs from metadata are used
     if (link.dataset?.janusAction === "reopen-video-modal") {
       event.preventDefault();
       const fallbackVideoUrl = String(link.dataset.videoUrl || "").trim();
+      // 💎 BACKLOG-016: Update lastVideoModalRequest with the new URL before reopening
+      // This ensures the video is switched when the modal is already open
+      if (fallbackVideoUrl && isVideoUrl(fallbackVideoUrl)) {
+        lastVideoModalRequest = { type: "video", payload: { url: fallbackVideoUrl } };
+        const activeChatId = getActiveChatIdForWindow(getActiveWindowId());
+        persistVideoModalForChat(activeChatId, lastVideoModalRequest);
+      }
       if (lastVideoModalRequest && lastVideoModalRequest.type === "video") {
         reopenLastVideoModal();
       } else {
@@ -353,6 +354,15 @@ WINDOW_IDS.forEach((wid) => {
         } else if (fallbackVideoUrl && isVideoUrl(fallbackVideoUrl)) {
           openModal({ type: "video", payload: { url: fallbackVideoUrl } });
         }
+      }
+      return;
+    }
+    // 💎 MCL: Handle "Video ansehen" links from LLM synthesis (fallback if no reopen-video-modal)
+    if (link.textContent.includes("Video ansehen")) {
+      event.preventDefault();
+      const url = String(link.getAttribute("href") || "").trim();
+      if (url && isVideoUrl(url)) {
+        openModal({ type: "video", payload: { url } });
       }
       return;
     }
@@ -532,7 +542,6 @@ Wähle eine Aktion (Antworte mit 1, 2 oder 3):
                 mode: data.mode,
                 query: data.query
               };
-              console.log("💎 VIDEO-LIST-METADATA: Stored video list data:", lastVideoListMetadata);
             }
           } else if (data.type === "done") {
             break;
@@ -788,11 +797,9 @@ export async function sendMessage(fromWindowId) {
           if (data.videos && Array.isArray(data.videos) && data.mode === "list") {
             lastVideoListMetadata = {
               videos: data.videos,
-              count: data.count,
               mode: data.mode,
               query: data.query
             };
-            console.log("💎 VIDEO-LIST-METADATA: Stored video list data:", lastVideoListMetadata);
           }
         } else if (data.type === "modal_request") {
           streamModalRequest = data.modal_request ?? null;
@@ -1189,7 +1196,16 @@ function reopenLastVideoModal() {
   if (!lastVideoModalRequest || lastVideoModalRequest.type !== "video") return;
   const current = getDockModuleState("video-player");
   if (current?.isOpen && !current?.minimized) {
-    bringToFront("video-player");
+    // 💎 BACKLOG-016: If modal is already open, close and reopen to switch video
+    // This ensures the video is switched when clicking on different video links
+    dockClose("video-player");
+    setTimeout(() => {
+      openModal({
+        type: "video",
+        payload: { ...(lastVideoModalRequest.payload || {}) },
+        options: { ...(lastVideoModalRequest.options || {}) },
+      });
+    }, 100);
     return;
   }
   openModal({
@@ -1328,23 +1344,39 @@ function wireVideoReopenLink(rootElement, apiPayload) {
   if (!rootElement || !apiPayload || typeof apiPayload !== "object") return;
   const mr = apiPayload.modal_request;
   const type = String(mr?.type || "").trim().toLowerCase();
-  if (type !== "video") return;
-  const modalUrl = canonicalWatchUrlFromModalRequest(mr);
   const videoListMetadata = apiPayload.video_list_metadata || null;
+  // Allow processing even if modal_request.type !== "video" when video_list_metadata exists
+  // This fixes BACKLOG-016: Video links from video_list_metadata should work after chat reload
+  if (type !== "video" && !videoListMetadata) return;
+  const modalUrl = canonicalWatchUrlFromModalRequest(mr);
   const anchors = rootElement.querySelectorAll("a");
   anchors.forEach((a) => {
     const label = String(a.textContent || "").trim().toLowerCase();
     const href = String(a.getAttribute("href") || "").trim().toLowerCase();
     const looksLikeVideoLink =
       label.includes("hier ansehen") ||
+      label.includes("video ansehen") ||
       href.includes("youtube.com") ||
       href.includes("youtu.be") ||
       href.includes("vimeo.com");
     if (!looksLikeVideoLink) return;
     a.setAttribute("href", "#");
     a.dataset.janusAction = "reopen-video-modal";
-    if (modalUrl) {
-      a.dataset.videoUrl = modalUrl;
+    // Use video-specific URL from videoListMetadata if available, otherwise fall back to modalUrl
+    let videoUrl = modalUrl;
+    if (videoListMetadata && Array.isArray(videoListMetadata.videos)) {
+      // Extract video ID from href and find matching video in metadata
+      const videoIdMatch = href.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+      if (videoIdMatch) {
+        const videoId = videoIdMatch[1];
+        const matchingVideo = videoListMetadata.videos.find(v => v.video_id?.toLowerCase() === videoId.toLowerCase() || v.watch_url?.toLowerCase().includes(videoId.toLowerCase()));
+        if (matchingVideo && matchingVideo.watch_url) {
+          videoUrl = matchingVideo.watch_url;
+        }
+      }
+    }
+    if (videoUrl) {
+      a.dataset.videoUrl = videoUrl;
     }
   });
   const hasReopenLink = rootElement.querySelector('a[data-janus-action="reopen-video-modal"]');
@@ -1452,12 +1484,16 @@ function appendVideoReopenLink(rootElement, fallbackVideoUrl = "", videoListMeta
   rootElement.appendChild(p);
 }
 
-function ensureVideoReopenLinkForStreamMessage(messageElement, modalRequest) {
-  if (!messageElement || !modalRequest || typeof modalRequest !== "object") return;
-  const mrType = String(modalRequest.type || "").trim().toLowerCase();
-  if (mrType !== "video") return;
-  const candidateUrl = canonicalWatchUrlFromModalRequest(modalRequest);
-  appendVideoReopenLink(messageElement, candidateUrl);
+function ensureVideoReopenLinkForStreamMessage(messageElement, apiPayload) {
+  if (!messageElement || !apiPayload || typeof apiPayload !== "object") return;
+  const mr = apiPayload.modal_request;
+  const type = String(mr?.type || "").trim().toLowerCase();
+  const videoListMetadata = apiPayload.video_list_metadata || null;
+  // Allow processing even if modal_request.type !== "video" when video_list_metadata exists
+  // This fixes BACKLOG-016: Video links from video_list_metadata should work after chat reload
+  if (type !== "video" && !videoListMetadata) return;
+  const modalUrl = canonicalWatchUrlFromModalRequest(mr);
+  appendVideoReopenLink(messageElement, modalUrl);
 }
 
 function ensureVideoReopenLinkForRenderedMessage(messageElement, apiPayload) {
@@ -1600,19 +1636,12 @@ export function appendMessage(sender, data, appendOpts = {}) {
     ) {
       stripInlineAssistantVideoLinks(textNode);
     }
-    console.log("💎 VIDEO-LIST-METADATA: appendMessage check", {
-      sender,
-      hasVideoListMetadata: !!apiPayload?.video_list_metadata,
-      mode: apiPayload?.video_list_metadata?.mode,
-      videosCount: apiPayload?.video_list_metadata?.videos?.length,
-    });
     if (
       (sender === "bot" || sender === "model") &&
       apiPayload?.video_list_metadata &&
       apiPayload.video_list_metadata.mode === "list" &&
       Array.isArray(apiPayload.video_list_metadata.videos)
     ) {
-      console.log("💎 VIDEO-LIST-METADATA: Rendering formatted markdown with header", apiPayload.video_list_metadata.videos.length, "videos");
       // Generate formatted markdown with header (same format as SSE stream)
       const videos = apiPayload.video_list_metadata.videos;
       let formattedList = `### 🎬 Gefundene Videos (${videos.length})\n\n`;

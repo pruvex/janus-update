@@ -7,6 +7,11 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+## [0.4.17-beta.20] - 2026-05-08
+
+### Fixed
+- **BACKLOG-016:** Video-Links funktionieren jetzt nach Chat-Wechsel. IndentationError in `backend/data/crud.py` behoben (Zeile 111-112). `video_list_metadata` wird jetzt korrekt in `metadata_json` persistiert. Persistenzpfad vollständig: Backend CRUD → Schemas → Frontend Reload → Rendering. `frontend/js/chat-manager.js` reicht `video_list_metadata` beim Chat-Reload durch. `frontend/js/chat.js` rendert Video-Links aus `video_list_metadata` nach Chat-Wechsel. Manual Janus Test PASS.
+
 ## [0.4.17-beta.19] - 2026-05-08
 
 ### Fixed

@@ -71,6 +71,9 @@ Manueller Janus-Test:
 Backend Log:
 <relevanter Auszug oder Pfad/Datei>
 
+Frontend Log:
+<N/A | Pfad zu gefilterter Frontend-Log-Datei, z. B. frontend_log.md>
+
 Changed Files:
 - <Datei 1>
 - <Datei 2>
@@ -103,6 +106,42 @@ Action:
 â†’ Keine CodeÃ¤nderung ohne reproduzierbaren Ist/Soll-Konflikt.
 ```
 
+**Frontend-Log-Anforderung statt Konsolen-Copy:**
+- Wenn der Fehler UI, Renderer, Browser-Konsole, DOM, Frontend-State, IPC, Streaming-Anzeige, Toast/Modal, Model-Switch-UI, Video-/Bild-Rendering oder Client-seitige API-Aufrufe betrifft, MUSS Skill 6 gezielt ein Frontend-Log-Artefakt anfordern.
+- Der User soll NICHT das komplette Frontend-Console-Log in den Chat kopieren.
+- Wenn der automatische Frontend-Log-Exporter verfügbar ist, MUSS Skill 6 den User auffordern, nach dem gezielten Repro-Test in Janus `Ctrl+Shift+L` zu drücken und den angezeigten Pfad zur erzeugten Markdown-Datei bereitzustellen.
+- Wenn der automatische Frontend-Log-Exporter nicht verfügbar ist, MUSS Skill 6 den User auffordern, nach dem gezielten Repro-Test eine Datei mit relevantem Auszug bereitzustellen, bevorzugt:
+
+```text
+frontend_log.md
+```
+
+- Das Frontend-Log-Artefakt soll nur debuggingrelevante Informationen enthalten:
+  - Zeitfenster des Repro-Tests
+  - `error` / `warn`
+  - fehlgeschlagene Netzwerk/API-Aufrufe
+  - IPC-Events und IPC-Fehler
+  - betroffene UI-Aktion
+  - Stacktraces
+  - relevante Console-Meldungen mit Prefix/Quelle
+  - explizit ausgelassener Noise, falls bekannt
+- Skill 6 MUSS dem User einen konkreten Repro-Auftrag geben, bevor es das Frontend-Log verlangt.
+- Format:
+
+```text
+FRONTEND LOG REQUIRED
+
+Bitte führe genau diesen Test aus:
+1. <konkreter Klickpfad oder Prompt>
+2. <erwarteter sichtbarer Zustand>
+3. <abweichenden Zustand nicht korrigieren, App offen lassen>
+
+Danach bitte bereitstellen:
+- Datei: per `Ctrl+Shift+L` erzeugter Pfad oder `frontend_log.md`
+- Inhalt: nur Logs aus dem Test-Zeitfenster, bevorzugt error/warn/API/IPC/Stacktrace
+- Kein vollständiges DevTools-Console-Copy
+```
+
 ## Hard Rules
 
 - Keine neuen Features.
@@ -112,11 +151,13 @@ Action:
 - Nicht denselben Fix zweimal wiederholen.
 - Maximal drei Skill-6-Iterationen mit SWE 1.6 pro Fehlerkette.
 - Jede Iteration muss eine neue Nutzerbeschreibung, ein neues tatsÃ¤chliches Testergebnis oder ein aktualisiertes Backendlog enthalten.
+- Bei frontendnahen Fehlern gilt ein neues oder aktualisiertes `frontend_log.md` als gültiges aktualisiertes Debug-Artefakt.
 - Nach jeder Fix-Iteration muss Skill 6 den User auffordern, den manuellen Janus-Test erneut auszufÃ¼hren.
 - Wenn es nach der dritten Iteration nicht wie gewünscht funktioniert: `SKILL 6 ESCALATION REQUIRED` melden und ein kompaktes GPT-5.5-Handover ausgeben.
 - **Proaktive GPT-5.5-Empfehlung:** Bei Iteration 3 (oder wenn der Retest nach Iteration 3 fehlschlägt) MUSS Skill 6 proaktiv empfehlen, zu GPT-5.5 zu wechseln, und dabei angeben, ob ein neuer Chat zum Kostensparen sinnvoll ist.
 - Debugging lÃ¤uft gegen Spec, Task, Pre-Check, Skill-5-Audit und tatsÃ¤chlichen Output.
 - Chatverlauf ist nicht bindend; Artefakte sind bindend.
+- **FRONTEND-LOG-DISZIPLIN:** Skill 6 darf bei frontendnahen Electron-/Renderer-Problemen nicht pauschal "komplette Console kopieren" verlangen. Stattdessen muss Skill 6 einen gezielten Repro-Test und ein kompaktes Frontend-Log-Artefakt (`frontend_log.md` oder konkreter Pfad) anfordern. Große Rohlogs müssen zusammengefasst oder gefiltert werden.
 - **AUTOMATISCHE FIX-IMPLEMENTIERUNG:** Wenn Root Cause und Fixplan eindeutig sind (LOW oder MEDIUM Risiko), MUSS Skill 6 den Fix SOFORT implementieren, nicht nur einen Plan vorschlagen. Nur bei HIGH Risiko oder mehrdeutigen Root Causes darf Skill 6 nur einen Plan vorschlagen.
 - **KEINE SCHEINFIXES:** Skill 6 darf niemals behaupten, Fixes seien umgesetzt, wenn keine Dateiänderung durchgeführt wurde. Ein Fix gilt nur als umgesetzt, wenn Skill 6 im selben Lauf ein Edit-Tool verwendet, die geänderten Dateien nennt und die Änderung im Output als Implementierungsnachweis zusammenfasst.
 - **KEIN "AUF NACHFRAGE":** Wenn ein eindeutiger LOW/MEDIUM-Fix möglich ist, darf Skill 6 nicht zuerst nur einen Vorschlag ausgeben und auf eine spätere Nachfrage warten. Der Fix muss im aktuellen Skill-6-Lauf umgesetzt werden.
@@ -133,6 +174,29 @@ PrÃ¼fe:
 - Was war der tatsÃ¤chliche Zustand?
 - Ist der Fehler reproduzierbar?
 - Betrifft der Fehler den validierten Task-Scope?
+- Ist der Fehler frontendnah und benötigt Renderer-/Frontend-Evidenz?
+
+Wenn der Fehler frontendnah ist und kein `Frontend Log` vorliegt:
+
+```text
+FRONTEND LOG REQUIRED
+
+Reason:
+- Der Ist/Soll-Konflikt betrifft Frontend/Renderer/UI/IPC/Client-State und kann ohne Frontend-Log nicht deterministisch eingegrenzt werden.
+
+Bitte führe genau diesen Test aus:
+1. <konkreter Prompt/Klickpfad aus dem manuellen Janus-Test>
+2. <erwartetes Ergebnis>
+3. <tatsächliche Abweichung beobachten>
+
+Danach bitte bereitstellen:
+- Frontend Log: nach dem Repro in Janus `Ctrl+Shift+L` drücken und den angezeigten Pfad zur automatisch erzeugten Frontend-Log-Datei angeben
+- Inhalt: nur Test-Zeitfenster, error/warn, API/IPC-Fehler, Stacktraces und relevante Console-Meldungen
+- Nicht nötig: vollständiges DevTools-Console-Log
+
+Action:
+→ Keine Codeänderung, bis das frontendnahe Debug-Artefakt vorliegt oder der Fehler anderweitig deterministisch belegbar ist.
+```
 
 Wenn der Fehler nicht reproduzierbar ist:
 
@@ -288,6 +352,13 @@ Backend Log Compression:
 - Repeated Symptoms: <Muster>
 - Excluded Noise: <was bewusst nicht relevant ist>
 
+Frontend Log Compression:
+- Frontend Log File: <Pfad oder N/A>
+- Time Window: <Zeitfenster>
+- Hard Errors: <Console/API/IPC/Stacktrace-Auszüge>
+- Repeated Symptoms: <Muster>
+- Excluded Noise: <was bewusst nicht relevant ist>
+
 Changed Files:
 - <Datei>: <kurzer Grund>
 
@@ -342,11 +413,17 @@ Implementierungsnachweis:
 Tests:
 - <Test>: PASS | FAIL | N/A
 
+Frontend Log:
+- Benötigt: JA | NEIN
+- Datei: <frontend_log.md | Pfad | N/A>
+- Status: VORHANDEN | ANGEFORDERT | N/A
+
 Manueller Janus-Retest:
 1. Ã–ffne Janus.
 2. FÃ¼hre aus: <Prompt/Klickpfad>
 3. Erwartetes Ergebnis: <Soll>
 4. Wenn abweichend: tatsÃ¤chlichen Output und Backendlog erneut an Skill 6 geben.
+5. Wenn frontendnah: danach `frontend_log.md` oder den konkreten Frontend-Log-Pfad bereitstellen; keine komplette DevTools-Konsole kopieren.
 
 NÃ¤chster Schritt:
 - Wenn FIXED und Retest PASS und Skill 6 Code geändert hat: zuerst `/save` ausführen, dann Skill 7 Dokumentationsupdate.

@@ -106,6 +106,8 @@ def create_message(
         metadata_payload["image_path"] = image_path
     if isinstance(modal_request, dict):
         metadata_payload["modal_request"] = modal_request
+    if isinstance(metadata, dict) and "video_list_metadata" in metadata:
+        metadata_payload["video_list_metadata"] = metadata["video_list_metadata"]
     if metadata_payload:
         db_message.metadata_json = json.dumps(metadata_payload, ensure_ascii=False)
 
