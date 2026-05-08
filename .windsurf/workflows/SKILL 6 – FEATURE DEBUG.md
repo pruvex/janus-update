@@ -40,7 +40,7 @@ nur wenn die Ursache nicht deterministisch eingrenzbar ist oder mehrere plausibl
 Der User MUSS pro Iteration ein kompaktes Debug-Paket liefern:
 
 ```text
-/SKILL 6 â€“ FEATURE DEBUG
+/SKILL 6 – FEATURE DEBUG
 
 Skill 6 Debug Package:
 
@@ -48,7 +48,7 @@ Feature:
 <Feature-Name>
 
 Iteration:
-1 | 2 | 3
+1 | 2 | 3 | (optional – Skill 6 zählt automatisch, wenn nicht angegeben)
 
 Task:
 <task file / task id>
@@ -65,7 +65,7 @@ Final Audit / Skill 5:
 Manueller Janus-Test:
 - Prompt/Klickpfad: <was wurde getan>
 - Erwartetes Ergebnis: <Soll>
-- TatsÃ¤chliches Ergebnis: <Ist>
+- Tatsächliches Ergebnis: <Ist>
 - Screenshot/Log/Output: <falls vorhanden>
 
 Backend Log:
@@ -81,6 +81,14 @@ Test Results:
 Known Risks:
 - <falls vorhanden>
 ```
+
+**Automatische Iterationszählung:**
+- Wenn der User keine Iterationsnummer angibt, zählt Skill 6 die Iterationen basierend auf der Anzahl der Debug-Pakete im aktuellen Chat.
+- Skill 6 speichert die Iterationsnummer im Output-Format und verwendet sie für die nächste Iteration.
+- Zähle nur Iterationen derselben Fehlerkette, d. h. gleiches Feature, gleicher Task und gleicher Ist/Soll-Konflikt.
+- Wenn eine frühere Skill-6-Ausgabe im aktuellen Chat `Iteration: N` für dieselbe Fehlerkette enthält, ist die nächste Iteration `N+1`.
+- Eine vom User angegebene Iteration darf nur übernommen werden, wenn sie zur bisherigen Fehlerkette passt; bei Widerspruch muss Skill 6 die erkannte Zählung offen melden.
+- Iteration 1-3 sind SWE-1.6-Debug-Iterationen. Nach einem fehlgeschlagenen Retest der dritten Iteration darf keine vierte SWE-1.6-Fixrunde gestartet werden.
 
 Wenn Pflichtdaten fehlen:
 
@@ -105,9 +113,15 @@ Action:
 - Maximal drei Skill-6-Iterationen mit SWE 1.6 pro Fehlerkette.
 - Jede Iteration muss eine neue Nutzerbeschreibung, ein neues tatsÃ¤chliches Testergebnis oder ein aktualisiertes Backendlog enthalten.
 - Nach jeder Fix-Iteration muss Skill 6 den User auffordern, den manuellen Janus-Test erneut auszufÃ¼hren.
-- Wenn es nach der dritten Iteration nicht wie gewÃ¼nscht funktioniert: `SKILL 6 ESCALATION REQUIRED` melden und ein kompaktes GPT-5.5-Handover ausgeben.
+- Wenn es nach der dritten Iteration nicht wie gewünscht funktioniert: `SKILL 6 ESCALATION REQUIRED` melden und ein kompaktes GPT-5.5-Handover ausgeben.
+- **Proaktive GPT-5.5-Empfehlung:** Bei Iteration 3 (oder wenn der Retest nach Iteration 3 fehlschlägt) MUSS Skill 6 proaktiv empfehlen, zu GPT-5.5 zu wechseln, und dabei angeben, ob ein neuer Chat zum Kostensparen sinnvoll ist.
 - Debugging lÃ¤uft gegen Spec, Task, Pre-Check, Skill-5-Audit und tatsÃ¤chlichen Output.
 - Chatverlauf ist nicht bindend; Artefakte sind bindend.
+- **AUTOMATISCHE FIX-IMPLEMENTIERUNG:** Wenn Root Cause und Fixplan eindeutig sind (LOW oder MEDIUM Risiko), MUSS Skill 6 den Fix SOFORT implementieren, nicht nur einen Plan vorschlagen. Nur bei HIGH Risiko oder mehrdeutigen Root Causes darf Skill 6 nur einen Plan vorschlagen.
+- **KEINE SCHEINFIXES:** Skill 6 darf niemals behaupten, Fixes seien umgesetzt, wenn keine Dateiänderung durchgeführt wurde. Ein Fix gilt nur als umgesetzt, wenn Skill 6 im selben Lauf ein Edit-Tool verwendet, die geänderten Dateien nennt und die Änderung im Output als Implementierungsnachweis zusammenfasst.
+- **KEIN "AUF NACHFRAGE":** Wenn ein eindeutiger LOW/MEDIUM-Fix möglich ist, darf Skill 6 nicht zuerst nur einen Vorschlag ausgeben und auf eine spätere Nachfrage warten. Der Fix muss im aktuellen Skill-6-Lauf umgesetzt werden.
+- **PLAN-ONLY IST KEIN FIX:** Wenn Skill 6 wegen HIGH Risiko, unklarer Root Cause oder fehlenden Artefakten nicht editiert, muss der Status `BLOCKED`, `OUT OF SCOPE` oder `ESCALATION REQUIRED` lauten. `FIXED` oder `NEEDS RETEST` sind dann verboten.
+- **TEMPORÄRE ESKALATIONSDATEI:** Nach fehlgeschlagenem Retest der dritten SWE-1.6-Iteration muss Skill 6 eine temporäre Markdown-Datei unter `.windsurf/tmp/skill6_escalation_<feature-or-task>_<YYYYMMDD-HHMM>.md` erstellen. Diese Datei enthält das kompakte GPT-5.5-Handover und ersetzt das lange Backendlog.
 
 ## Ablauf
 
@@ -182,7 +196,22 @@ Debug Fix Plan:
 
 ### 5. Iteration und Fix-AusfÃ¼hrung
 
-Implementiere nur, wenn Root Cause und Fixplan eindeutig sind.
+Implementiere SOFORT mit den verfÃ¼gbaren Tools (edit, multi_edit, write_to_file), wenn Root Cause und Fixplan eindeutig sind.
+
+**AUSNAHMEN (nur Plan vorschlagen, nicht implementieren):**
+- Risiko = HIGH
+- Mehrdeutige Root Causes (mehrere gleich plausible Ursachen)
+- Root Cause nicht deterministisch eingrenzbar
+
+**IMPLEMENTIERUNGS-PFLICHT:**
+- Wenn Risiko = LOW oder MEDIUM und Root Cause eindeutig: MUSST du den Fix SOFORT implementieren, nicht nur einen Plan vorschlagen.
+- Nutze die verfÃ¼gbaren Tools: edit, multi_edit, write_to_file.
+- Keine manuelle Eingabe durch den User erforderlich.
+- Vor dem finalen Skill-6-Output muss ein Implementierungsnachweis vorliegen:
+  - geänderte Datei(en)
+  - konkrete Änderung in 1-3 Sätzen
+  - ausgeführte oder begründet übersprungene gezielte Tests
+- Wenn kein Edit-Tool verwendet wurde, darf `Geänderte Dateien` nicht so klingen, als seien Änderungen umgesetzt worden. Verwende dann `Keine — Plan-only, nicht umgesetzt` und melde keinen `FIXED`/`NEEDS RETEST`-Status.
 
 Nach Fix:
 
@@ -194,7 +223,7 @@ Nach Fix:
 
 ### 6. Eskalationsgrenze
 
-Wenn Iteration 3 nicht zum gewÃ¼nschten Verhalten fÃ¼hrt:
+Wenn der Retest nach Iteration 3 nicht zum gewÃ¼nschten Verhalten fÃ¼hrt:
 
 ```text
 SKILL 6 ESCALATION REQUIRED
@@ -203,12 +232,31 @@ Reason:
 - Drei SWE-1.6-Debug-Iterationen konnten das erwartete Janus-Verhalten nicht herstellen.
 
 Action:
-â†’ Skill 6 in neuem Chat mit GPT-5.5 ausfÃ¼hren.
-â†’ Kein vollstÃ¤ndiges Backendlog Ã¼bergeben.
-â†’ Nur das komprimierte Eskalationshandover verwenden.
+→ Erstelle eine temporäre Eskalationsdatei unter `.windsurf/tmp/skill6_escalation_<feature-or-task>_<YYYYMMDD-HHMM>.md`.
+→ Öffne GPT-5.5 in einem neuen Chatfenster, um Tokens zu sparen.
+→ Übergib GPT-5.5 kein vollständiges Backendlog.
+→ Verwende nur die temporäre Eskalationsdatei und den Copy-Paste-Handover unten.
 ```
 
-Das Handover MUSS kompakt sein und groÃŸe Logs zusammenfassen.
+**Kostenoptimierung bei GPT-5.5-Wechsel:**
+- Nach dem fehlgeschlagenen Retest der dritten SWE-1.6-Iteration MUSS Skill 6 immer einen neuen GPT-5.5-Chat empfehlen.
+- Der neue Chat nutzt nur die temporäre Eskalationsdatei als kompakten Kontext.
+- Diese Empfehlung MUSS im Output Format unter "Nächster Schritt" enthalten sein.
+
+Die temporäre Datei MUSS kompakt sein und große Logs zusammenfassen.
+
+Temporäre Datei:
+
+```text
+Pfad:
+.windsurf/tmp/skill6_escalation_<feature-or-task>_<YYYYMMDD-HHMM>.md
+
+Regeln:
+- Datei nur bei `SKILL 6 ESCALATION REQUIRED` erstellen.
+- Keine vollständigen Backendlogs einfügen.
+- Nur harte Fehler, Trace IDs, Zeitfenster, wiederholte Symptome, ausgeschlossenen Noise und geänderte Dateien zusammenfassen.
+- Am Ende vermerken: "Diese Datei ist temporär und muss von Skill 7 nach abgeschlossenem Debug-/Dokumentations-Gate gelöscht werden."
+```
 
 Format:
 
@@ -250,6 +298,26 @@ Open Question for GPT-5.5:
 <eine prÃ¤zise Frage, die SWE 1.6 nicht deterministisch lÃ¶sen konnte>
 ```
 
+Zusätzlich muss Skill 6 dem User diesen Copy-Paste-Handover für den neuen GPT-5.5-Chat ausgeben:
+
+```text
+BEGIN COPY FOR NEW GPT-5.5 CHAT
+/SKILL 6 – FEATURE DEBUG
+
+Modell: GPT-5.5
+
+Bitte lies zuerst diese temporäre Eskalationsdatei:
+<Pfad zu .windsurf/tmp/skill6_escalation_...md>
+
+Führe Skill 6 auf Basis dieser Datei aus.
+Wichtig:
+- Verwende die temporäre Datei als kompaktes Debug-Handover.
+- Fordere nicht das vollständige Backendlog an, außer die Datei enthält eine klar benannte fehlende Evidenz.
+- Debugge nur die dort beschriebene Fehlerkette.
+- Wenn du einen eindeutigen LOW/MEDIUM-Fix findest, implementiere ihn direkt und behaupte keine Umsetzung ohne tatsächliche Dateiänderung.
+END COPY FOR NEW GPT-5.5 CHAT
+```
+
 ## Output Format
 
 ```text
@@ -265,6 +333,12 @@ Zusammenfassung:
 GeÃ¤nderte Dateien:
 - <Datei>
 
+Implementierungsnachweis:
+- Edit-Tool verwendet: JA | NEIN
+- Tatsächlich geänderte Dateien: <Liste oder Keine>
+- Änderung umgesetzt: JA | NEIN
+- Wenn NEIN: Status darf nicht FIXED oder NEEDS RETEST sein.
+
 Tests:
 - <Test>: PASS | FAIL | N/A
 
@@ -275,16 +349,19 @@ Manueller Janus-Retest:
 4. Wenn abweichend: tatsÃ¤chlichen Output und Backendlog erneut an Skill 6 geben.
 
 NÃ¤chster Schritt:
-- Wenn FIXED und Retest PASS und Skill 6 Code geÃ¤ndert hat: zuerst `/save` ausfÃ¼hren, dann Skill 7 Dokumentationsupdate.
-- Wenn FIXED und Retest PASS und Skill 6 keinen Code geÃ¤ndert hat: Skill 7 Dokumentationsupdate ausfÃ¼hren.
-- Wenn NEEDS RETEST: manuellen Janus-Test erneut ausfÃ¼hren.
-- Wenn Retest FAIL und Iteration < 3: Skill 6 erneut mit SWE 1.6, neuer Fehlerbeschreibung und Backendlog ausfÃ¼hren.
-- Wenn Retest FAIL und Iteration = 3: Skill 6 mit GPT-5.5 und kompaktem Eskalationshandover ausfÃ¼hren.
+- Wenn FIXED und Retest PASS und Skill 6 Code geändert hat: zuerst `/save` ausführen, dann Skill 7 Dokumentationsupdate.
+- Wenn FIXED und Retest PASS und Skill 6 keinen Code geändert hat: Skill 7 Dokumentationsupdate ausführen.
+- Wenn NEEDS RETEST: manuellen Janus-Test erneut ausführen.
+- Wenn Retest FAIL und Iteration < 3: Skill 6 erneut mit SWE 1.6, neuer Fehlerbeschreibung und Backendlog ausführen.
+- Wenn Retest FAIL und Iteration = 3:
+  - **Proaktive Empfehlung:** Wechsle zu GPT-5.5, da drei SWE-1.6-Iterationen nicht zum Ziel geführt haben.
+  - **Kostenoptimierung:** Starte immer einen neuen GPT-5.5-Chat und verwende nur die temporäre Eskalationsdatei statt des langen Logs.
+  - **Temporäre Datei:** `.windsurf/tmp/skill6_escalation_<feature-or-task>_<YYYYMMDD-HHMM>.md` wurde erstellt.
+  - **Copy-Paste-Handover:** Gib dem User den vollständigen `BEGIN COPY FOR NEW GPT-5.5 CHAT` Block aus.
 - Wenn BLOCKED: Skill 2 Re-Evaluation oder GPT-5.5 Eskalation.
-- Wenn OUT OF SCOPE: neues Feature/Bugfix-Task Ã¼ber Skill 1/2 starten.
+- Wenn OUT OF SCOPE: neues Feature/Bugfix-Task über Skill 1/2 starten.
 
 Atomic Save Gate:
-- `/save` ist Pflicht nach einem erfolgreichen Skill-6-Fix mit CodeÃ¤nderung und bestandenem Janus-Retest.
-- `/save` darf nicht ausgefÃ¼hrt werden, solange Skill 6 `NEEDS RETEST`, `ESCALATION REQUIRED`, `BLOCKED` oder `OUT OF SCOPE` meldet.
+- `/save` ist Pflicht nach einem erfolgreichen Skill-6-Fix mit Codeänderung und bestandenem Janus-Retest.
+- `/save` darf nicht ausgeführt werden, solange Skill 6 `NEEDS RETEST`, `ESCALATION REQUIRED`, `BLOCKED` oder `OUT OF SCOPE` meldet.
 ```
-

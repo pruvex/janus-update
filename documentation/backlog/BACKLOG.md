@@ -24,27 +24,38 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 
 ## READY
 
-### BACKLOG-014 – Janus zeigt fiktive "killlist" mit "Sascha Möske" an
+### BACKLOG-015 – Modell-Wechsel-Benachrichtigung bei nicht verfügbarem Modell
 
-- **Typ:** BUG
-- **Status:** READY
-- **Quelle:** User Intake
-- **Erstellt:** 2026-05-07
-- **Aktualisiert:** 2026-05-07
-- **Kurzbeschreibung:** Wenn Nutzer nach einer "killlist" fragen, antwortet Janus mit "hier ist die killis" und zeigt eine Liste die nur "Sascha Möske" enthält. Dies ist eine Datenkontamination oder Halluzination - Janus sollte keine "killlist" haben.
-- **Erwartetes Verhalten:** Janus sollte ablehnen oder erklären, dass es keine "killlist" hat, statt eine fiktive Liste mit Namen zu generieren.
-- **Tatsächliches Verhalten:** Janus antwortet mit "hier ist die killis" und listet nur "Sascha Möske" auf.
-- **Reproduktion / Kontext:** Prompt an Janus: "zeig mir deine/die killlist", "kill list", "killliste" oder "kill liste"
-- **Betroffener Bereich:** LLM-Response-Generation / Memory-System / Prompt-Engineering
+- **Typ:** IMPROVEMENT
+- **Status:** DONE
+- **Quelle:** User Intake (Screenshot)
+- **Erstellt:** 2026-05-08
+- **Aktualisiert:** 2026-05-08
+- **Abgeschlossen:** 2026-05-08
+- **Completed in version:** 0.4.17-beta.18
+- **Completed by task:** documentation/tasks/backlog_BACKLOG-015_model_switch_notification_improvement.md
+- **Final audit:** PASS
+- **Validation evidence:** Manual Janus test PASS — Provider-Wechsel funktioniert ohne falsche Fehlermeldungen, verbesserte Benachrichtigung getestet
+- **Kurzbeschreibung:** Wenn ein nicht verfügbares Modell ausgewählt wird, zeigt Janus kurz eine rote Benachrichtigung oben rechts an, dass das Modell nicht verfügbar ist und stattdessen ein anderes verwendet wird. Dies geschieht automatisch ohne explizite Benutzerinteraktion oder klare Erklärung, warum das ursprüngliche Modell nicht verfügbar ist.
+- **Erwartetes Verhalten:** Janus sollte entweder:
+  1. Den Benutzer proaktiv informieren, wenn ein ausgewähltes Modell nicht verfügbar ist, bevor es automatisch ersetzt wird, und dem Benutzer die Möglichkeit geben, ein alternatives Modell zu wählen oder den Vorgang abzubrechen.
+  2. Eine klarere und persistentere Benachrichtigung anzeigen, die erklärt, warum das Modell nicht verfügbar ist (z.B. API-Fehler, Lizenzproblem, etc.).
+  3. Das nicht verfügbare Modell aus der Auswahl entfernen oder als inaktiv kennzeichnen.
+- **Tatsächliches Verhalten:** Janus zeigt eine temporäre rote Benachrichtigung oben rechts an und wechselt automatisch zu einem anderen Modell, ohne weitere Interaktion oder Erklärung.
+- **Reproduktion / Kontext:** Provider-Wechsel im UI wählt ein nicht verfügbares Modell (z.B. `gemini-3-flash-preview`), Janus zeigt kurz: "Modell '[nicht verfügbares Modell]' ist nicht verfügbar. Verwende stattdessen '[verfügbares Modell]'."
+- **Betroffener Bereich:** UI / Modell-Auswahl / Fehlermeldungen / Frontend
 - **Nachweise:**
-  - User-Beschreibung: "hier ist die killis und in der liste steht nur Sascha Möske"
+  - Screenshot: Rote Benachrichtigung oben rechts mit "Modell 'gemini-3-flash-preview' ist nicht verfügbar. Verwende stattdessen 'gpt-5.4-nano'."
 - **Akzeptanzkriterien:**
-  - [ ] Janus lehnt Anfragen nach "killlist" ab oder erklärt, dass es keine solche Liste hat
-  - [ ] Keine fiktiven Listen mit Namen werden generiert
-  - [ ] Das Verhalten ist konsistent über alle Modelle (GPT, Gemini)
+  - [x] Die Benachrichtigung über nicht verfügbare Modelle ist klar, verständlich und bietet dem Benutzer Handlungsoptionen.
+  - [x] Der automatische Modellwechsel wird transparent kommuniziert oder vermieden.
+  - [x] Der Benutzer hat mehr Kontrolle über die Auswahl des Modells, wenn das bevorzugte Modell nicht verfügbar ist.
 - **Fehlende Informationen:**
-  - Keine (wird bei Implementation geklärt)
-- **Notizen:** Die Suche nach "killlist", "killliste", "Sascha Möske" im Codebase ergab keine Treffer. Dies deutet auf LLM-Halluzination oder Kontamination aus Trainingsdaten/Memory hin. Mögliche Lösungen: System-Prompt-Hardening, Negative-Constraints in Prompts, oder Memory-System-Cleanup falls kontaminiert.
+  - Keine
+- **Notizen:** Die aktuelle Implementierung ist funktional, aber die UX konnte durch mehr Transparenz und Kontrolle verbessert werden. Provider-Wechsel-Probleme wurden ebenfalls behoben (keine falschen Fehlermeldungen mehr, Dropdown nicht mehr leer).
+- **Handoff:** documentation/tasks/backlog_BACKLOG-015_model_switch_notification_improvement.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-08
 
 ## READY
 
@@ -84,26 +95,26 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 ### BACKLOG-013 – Video-Suche zeigt nur noch 1 Video statt 5 Videos
 
 - **Typ:** BUG
-- **Status:** READY
+- **Status:** DONE
 - **Quelle:** Manual Test (BACKLOG-011 Validation)
 - **Erstellt:** 2026-05-07
-- **Aktualisiert:** 2026-05-07
-- **Kurzbeschreibung:** Video-Suche zeigt nur noch 1 Video statt mehreren Videos (z.B. 5 Videos wie vorher). Die Anzahl der zurückgegebenen Videos hat sich nach BACKLOG-011 Fix reduziert.
+- **Aktualisiert:** 2026-05-08
+- **Abgeschlossen:** 2026-05-08
+- **Kurzbeschreibung:** Video-Suche zeigte nur noch 1 Video statt mehreren Videos (z.B. 5 Videos wie vorher). Die Anzahl der zurückgegebenen Videos hatte sich nach BACKLOG-011 Fix reduziert.
 - **Erwartetes Verhalten:** Video-Suche zeigt mehrere Videos aufgelistet (z.B. 5 Videos bei "zeig mir ein video über bienen").
-- **Tatsächliches Verhalten:** Video-Suche zeigt nur noch 1 Video statt 5 Videos.
-- **Reproduktion / Kontext:** Prompt: "zeig mir ein video über bienen". Vor BACKLOG-011 Fix wurden 5 Videos gesucht und aufgelistet, nach dem Fix nur noch 1 Video.
+- **Tatsächliches Verhalten (vor Fix):** Video-Suche zeigte nur noch 1 Video statt 5 Videos.
+- **Tatsächliches Verhalten (nach Fix):** Beide Provider (GPT, Gemini) zeigen sauber 5 Videos an.
+- **Reproduktion / Kontext:** Prompt: "zeig mir ein video über bienen". Vor BACKLOG-011 Fix wurden 5 Videos gesucht und aufgelistet, nach dem Fix nur noch 1 Video. Jetzt wieder 5 Videos.
 - **Betroffener Bereich:** Video-Skill / Video-Suche / Backend Tool-Call-Logik
 - **Nachweise:**
-  - User-Beschreibung: "wenn ich gesagt habe zeig mir ein video über bienen wurden 5 videos gesiuch und augelistet, jetz zeigt er nur noch ein video"
+  - User-Beschreibung: "BACKLOG-013 ist erledigt, es werden von beiden providern sauber 5 videos gefunden"
 - **Akzeptanzkriterien:**
-  - [ ] Video-Suche zeigt mehrere Videos aufgelistet (z.B. 5 Videos)
-  - [ ] Die Anzahl der zurückgegebenen Videos ist wie vor BACKLOG-011 Fix
-  - [ ] Keine Regression in Video-Suchergebnissen
+  - [x] Video-Suche zeigt mehrere Videos aufgelistet (z.B. 5 Videos)
+  - [x] Die Anzahl der zurückgegebenen Videos ist wie vor BACKLOG-011 Fix
+  - [x] Keine Regression in Video-Suchergebnissen
 - **Fehlende Informationen:**
-  - Backend-Log für den aktuellen Video-Suche Request
-  - Prüfen ob Änderung in Video-Skill oder durch BACKLOG-011 Fix verursacht
-- **Notizen:** Wahrscheinlich nicht durch BACKLOG-011 Fix verursacht (dieser betraf nur Modal-Request-Generierung, nicht Video-Suche selbst). Mögliche Änderung im Video-Skill oder Prompt/Model-Verhalten.
-- **Recommended next skill:** SKILL 1
+  - Keine
+- **Notizen:** Problem hat sich selbst gelöst, möglicherweise durch Provider-Änderungen oder Model-Update. Kein Code-Change nötig.
 
 ### BACKLOG-012 – Video-Suchergebnisse zeigen nur "Video ansehen" ohne Titel
 
@@ -387,27 +398,28 @@ HINWEIS: Pfad-Auflösung ist in BACKLOG-009 ausgelagert.
 - **Audit:** PASS
 - **Changelog:** Alte Release-Installer entfernt, ~1.46 GB freigegeben
 
-## READY
+## DONE
 
 ### BACKLOG-002 – Unrelated Asthma/ Android-Projekt entfernen oder verschieben
 
 - **Typ:** TECH_DEBT
-- **Status:** READY
+- **Status:** DONE
 - **Quelle:** System Health
 - **Erstellt:** 2026-05-07
-- **Aktualisiert:** 2026-05-07
+- **Aktualisiert:** 2026-05-08
+- **Abgeschlossen:** 2026-05-08
 - **Kurzbeschreibung:** Healthcheck hat erkannt, dass ein vollständiges Android-Projekt (Asthma/) mit großen temporären Dateien (~430MB) im Janus-Projekt liegt. Dies scheint nicht zu Janus zu gehören.
 - **Erwartetes Verhalten:** Asthma/ Ordner ist außerhalb des Janus-Projekts oder in einem separaten archiv/ Bereich.
-- **Tatsächliches Verhalten:** Asthma/ Ordner liegt im Projekt-Root mit gradle-Dateien, tmp-android-cmdline.zip (147MB), tmp-cmdline-tools.zip (97MB), tmp-jdk17.zip (190MB), tools/jdk-17.0.18+8/.
+- **Tatsächliches Verhalten:** Asthma/ Ordner lag im Projekt-Root mit gradle-Dateien, tmp-android-cmdline.zip (147MB), tmp-cmdline-tools.zip (97MB), tmp-jdk17.zip (190MB), tools/jdk-17.0.18+8/.
 - **Reproduktion / Kontext:** SYSTEM HEALTH – HYGIENE CHECK, Mode: WEEKLY
 - **Betroffener Bereich:** Projektstruktur / Root
 - **Nachweise:** Asthma/ Ordner mit Android-Gradle-Projekt-Struktur und großen temporären Dateien
 - **Akzeptanzkriterien:**
-  - [ ] Asthma/ Ordner ist aus dem Janus-Projekt entfernt oder in archiv/ verschoben.
-  - [ ] Keine Auswirkung auf Janus-Funktionalität.
+  - [x] Asthma/ Ordner ist aus dem Janus-Projekt entfernt oder in archiv/ verschoben.
+  - [x] Keine Auswirkung auf Janus-Funktionalität.
 - **Fehlende Informationen:**
   - Keine
-- **Notizen:** Fremdes Projekt belegt ~430MB Platz. Sollte mit Nutzer geklärt werden ob benötigt oder gelöscht werden kann.
+- **Notizen:** Fremdes Projekt wurde manuell aus dem Projekt-Root entfernt. Belegte ~430MB Platz.
 
 ## DONE
 

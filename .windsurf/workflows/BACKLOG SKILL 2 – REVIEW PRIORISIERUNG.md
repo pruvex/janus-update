@@ -89,12 +89,34 @@ Empfehlung: DO NOW | SCHEDULE | NEEDS INFO FIRST | DEFER | DO NOT START
 
 ## Sortierung
 
-Zeige zuerst:
+Zeige offene Items in der ausführlichen Anzeige nach Kategorien gruppiert:
+
+1. `BUG`
+2. `CHANGE`
+3. `ENHANCEMENT`
+4. `IMPROVEMENT`
+5. `TECH_DEBT`
+6. `UNCLEAR`
+
+Innerhalb jeder Kategorie sortiere:
 
 1. `CRITICAL` und `HIGH` mit `READY`
 2. kleine risikoarme `READY` Items
 3. wichtige `NEEDS INFO` Items mit konkreten fehlenden Informationen
 4. `BLOCKED` Items
+
+Wenn eine Kategorie keine offenen Items enthält, darf sie ausgelassen werden.
+
+Nach der ausführlichen kategorisierten Anzeige MUSS eine kompakte Zusammenfassung folgen, ebenfalls nach Kategorien gruppiert.
+
+Die kompakte Zusammenfassung MUSS je Item enthalten:
+
+- Ampel: `🔴` kritisch/sofort, `🟠` hoch, `🟡` mittel, `🟢` niedrig
+- ID und Titel
+- Status
+- Kurzempfehlung: `DO NOW`, `SCHEDULE`, `NEEDS INFO FIRST`, `DEFER`, `DO NOT START`
+
+Abschließend MUSS eine klare Empfehlung stehen, welches konkrete Backlog-Item als Nächstes angegangen werden sollte.
 
 ---
 
@@ -109,9 +131,11 @@ Zeige zuerst:
 - **Blocked:** <n>
 - **Empfohlener nächster Punkt:** BACKLOG-XXX – <Titel>
 
-## Priorisierte offene Punkte
+## Priorisierte offene Punkte nach Kategorien
 
-### 1. BACKLOG-XXX – <Titel>
+### BUG
+
+#### 1. BACKLOG-XXX – <Titel>
 - **Typ:** BUG | CHANGE | ENHANCEMENT | IMPROVEMENT | TECH_DEBT | UNCLEAR
 - **Status:** READY | NEEDS INFO | BLOCKED
 - **Wichtigkeit:** LOW | MEDIUM | HIGH | CRITICAL
@@ -121,6 +145,31 @@ Zeige zuerst:
 - **Empfehlung:** DO NOW | SCHEDULE | NEEDS INFO FIRST | DEFER | DO NOT START
 - **Begründung:** <kurz und konkret>
 - **Fehlt noch:** <falls relevant>
+
+### IMPROVEMENT
+
+#### 2. BACKLOG-XXX – <Titel>
+- **Typ:** BUG | CHANGE | ENHANCEMENT | IMPROVEMENT | TECH_DEBT | UNCLEAR
+- **Status:** READY | NEEDS INFO | BLOCKED
+- **Wichtigkeit:** LOW | MEDIUM | HIGH | CRITICAL
+- **Umsetzungsrisiko:** LOW | MEDIUM | HIGH
+- **Aufwand:** XS | S | M | L | XL
+- **Umsetzungsreife:** READY | NEEDS INFO | BLOCKED
+- **Empfehlung:** DO NOW | SCHEDULE | NEEDS INFO FIRST | DEFER | DO NOT START
+- **Begründung:** <kurz und konkret>
+- **Fehlt noch:** <falls relevant>
+
+## Kompakte Übersicht nach Kategorien
+
+### BUG
+- **🔴 BACKLOG-XXX – <Titel>:** Status `<READY|NEEDS INFO|BLOCKED>`, Wichtigkeit `<LOW|MEDIUM|HIGH|CRITICAL>`, Empfehlung `<DO NOW|SCHEDULE|NEEDS INFO FIRST|DEFER|DO NOT START>`
+
+### IMPROVEMENT
+- **🟡 BACKLOG-XXX – <Titel>:** Status `<READY|NEEDS INFO|BLOCKED>`, Wichtigkeit `<LOW|MEDIUM|HIGH|CRITICAL>`, Empfehlung `<DO NOW|SCHEDULE|NEEDS INFO FIRST|DEFER|DO NOT START>`
+
+## Empfehlung
+- **Nächster sinnvoller Punkt:** BACKLOG-XXX – <Titel>
+- **Warum:** <kurze Begründung mit Wichtigkeit, Risiko, Aufwand und Umsetzungsreife>
 
 ## Auswahl-Handoff
 Wenn du diesen Punkt umsetzen willst, nutze:

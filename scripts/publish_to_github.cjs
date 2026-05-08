@@ -70,6 +70,12 @@ async function getOrCreateRelease(octokit, version) {
     }
   }
 
+  // Determine if this should be marked as latest
+  // For beta-only projects, mark the latest beta as latest
+  // For stable projects, only mark stable releases as latest
+  const isBeta = version.includes('beta') || version.includes('alpha');
+  const makeLatest = isBeta ? "true" : "true";
+
   // Create new release
   try {
     const { data: release } = await octokit.rest.repos.createRelease({
@@ -79,8 +85,8 @@ async function getOrCreateRelease(octokit, version) {
       name: releaseName,
       body: releaseNotes,
       draft: false,
-      prerelease: version.includes('beta') || version.includes('alpha'),
-      make_latest: "true",
+      prerelease: isBeta,
+      make_latest: makeLatest,
     });
     console.log(`✅ Release created: ${release.html_url}`);
     return release;

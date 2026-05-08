@@ -1159,6 +1159,13 @@ class ToolExecutor:
                 result_slots[idx] = result
                 continue
 
+            # BACKLOG-011 FIX: Override mode="single" to mode="list" for video.search
+            # Gemini ignores the schema default and always sets mode="single"
+            # This ensures list mode is used for auto-open modal behavior
+            if resolved_name in ("video.search", "video_search") and func_args.get("mode") == "single":
+                func_args["mode"] = "list"
+                logger.info("[BACKLOG-011] Override: video.search mode forced from 'single' to 'list'")
+
             skill_id = self.tool_manager.get_skill_id(resolved_name)
             allowed_skill_ids = self.additional_context.get("allowed_skill_ids")
             if isinstance(allowed_skill_ids, (list, set, tuple)):

@@ -154,13 +154,48 @@ def _derive_video_modal_request_from_tool_results(tool_results: List[Dict[str, A
             continue
         if not isinstance(parsed, dict) or str(parsed.get("status") or "").strip().lower() != "ok":
             continue
-        # LIST-MODE GUARD: Kein Auto-Modal bei Video-Listen
         metadata = parsed.get("metadata") if isinstance(parsed.get("metadata"), dict) else {}
-        if str(metadata.get("mode") or "").strip().lower() == "list":
-            return None  # Kein Modal für Listen
         data = parsed.get("data") if isinstance(parsed.get("data"), dict) else {}
+        mode = str(metadata.get("mode") or "").strip().lower()
+        # LIST-MODE: Bei Listen automatisch das erste Video als modal_request generieren (BACKLOG-011 Debug)
+        if mode == "list" and isinstance(data.get("videos"), list) and len(data.get("videos", [])) > 0:
+            first_video = data["videos"][0]
+            video_id = str(first_video.get("video_id") or "").strip()
+            title = str(first_video.get("title") or "").strip()
+            watch_url = str(first_video.get("watch_url") or "").strip()
+            embed_url = str(first_video.get("embed_url") or "").strip()
+            is_embeddable = bool(first_video.get("is_embeddable", True))
+            if not watch_url and len(video_id) == 11:
+                watch_url = f"https://www.youtube.com/watch?v={video_id}"
+            if not embed_url and len(video_id) == 11:
+                embed_url = f"https://www.youtube.com/embed/{video_id}?rel=0"
+            if not watch_url and not embed_url:
+                continue
+            canonical_url = watch_url or embed_url
+            return {
+                "type": "video",
+                "data": {
+                    "video_id": video_id,
+                    "title": title or "Video",
+                    "url": canonical_url,
+                },
+                "payload": {
+                    "source": "youtube",
+                    "url": canonical_url,
+                    "title": title or "Video",
+                    "embed_url": embed_url if is_embeddable else "",
+                    "is_embeddable": is_embeddable,
+                    "external_only": (not is_embeddable),
+                    "external_hint": "Nur direkt auf YouTube verfügbar.",
+                },
+                "options": {"auto_open": True, "pinnable": True},
+            }
+        # LIST-MODE GUARD: Kein Modal bei leeren Listen
+        if mode == "list" and isinstance(data.get("videos"), list) and len(data.get("videos", [])) == 0:
+            return None
+        # SINGLE-VIDEO MODE: Kein Modal wenn kein selected_video vorhanden
         if isinstance(data.get("videos"), list) and "selected_video" not in data:
-            return None  # List-Response → kein Modal
+            return None  # List-Response ohne selected_video → kein Modal
         selected = data.get("selected_video") if isinstance(data.get("selected_video"), dict) else {}
         video_id = str(selected.get("video_id") or "").strip()
         title = str(selected.get("title") or "").strip()

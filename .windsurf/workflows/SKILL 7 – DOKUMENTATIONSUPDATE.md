@@ -22,6 +22,7 @@ Goal:
 - Persist reusable implementation/audit learnings in `WHAT_I_LEARNED.md`.
 - Sync the Janus Capability Registry and UX capability view from validated post-implementation results.
 - Preserve validation evidence and version bump details.
+- Clean up temporary Skill-6 GPT-5.5 escalation handover files after the debug gate is resolved.
 - Prepare the repository for `/SKILL 8 – BUILD RELEASE`.
 - Trigger `/save` after successful documentation sync before release.
 
@@ -57,6 +58,7 @@ Allowed safe edits:
 - Compute and apply the Skill-7 automatic version bump.
 - Record Skill-7 version bump details.
 - Move completed Backlog items from `IN PROGRESS` to `DONE` when the implementation originated from `BACKLOG-XXX`.
+- Delete resolved temporary Skill-6 escalation handover files matching `.windsurf/tmp/skill6_escalation_*.md`.
 
 ---
 
@@ -73,10 +75,13 @@ Ask for or infer:
 7. Validation commands and pass/fail evidence from `/2_final-audit` or Skill 5.
 8. Existing capability registry path, default `backend/data/capability_registry.json`.
 9. Optional Backlog ID, e.g. `BACKLOG-004`, if the task originated from `BACKLOG SKILL 3 – EXECUTION HANDOFF`.
+10. Optional temporary Skill-6 escalation handover file path, default pattern `.windsurf/tmp/skill6_escalation_*.md`, if Skill 6 escalated to GPT-5.5.
 
 If the user provides no audit block, search recent conversation/context and task files. If still unavailable, ask for the `/2_final-audit` or Skill 5 report before proceeding.
 
 If the task file contains a `BACKLOG-XXX` reference, treat `documentation/backlog/BACKLOG.md` as a required sync artifact for Phase 9.5.
+
+If Skill 6 produced a temporary GPT-5.5 escalation handover file, treat it as a cleanup artifact, not as documentation source of truth. Use the Skill-6/GPT-5.5 final result and retest evidence as the source of truth.
 
 ---
 
@@ -579,7 +584,42 @@ Do not automatically run `python -m pytest backend/tests -q` for every feature i
 
 ---
 
-## Phase 11: Final Report
+## Phase 11: Temporary Skill-6 Escalation File Cleanup
+
+Run this phase after:
+
+- Final audit gate is satisfied.
+- Manual Janus test gate is `PASS`, `N/A`, or `DEFERRED WITH REASON`.
+- If Skill 6 was needed, Skill 6/GPT-5.5 returned `FIXED` and the user retest passed.
+
+Purpose:
+- Keep the project clean after token-saving GPT-5.5 escalation.
+- Remove temporary handover files that only exist to avoid sending long backend logs.
+
+Target files:
+
+```text
+.windsurf/tmp/skill6_escalation_*.md
+```
+
+Rules:
+- Delete only files that clearly match the Skill-6 temporary escalation naming pattern.
+- If the user provided an explicit temporary file path, delete only that file unless other matching files clearly belong to the same resolved feature/task.
+- Do not delete arbitrary files in `.windsurf/tmp`.
+- Do not delete the temporary file if Skill 6 is still `ESCALATION REQUIRED`, `NEEDS RETEST`, `BLOCKED`, or `OUT OF SCOPE`.
+- If deletion fails, report it as a cleanup warning, not as a feature failure, unless the file contains sensitive log data.
+
+Final report must include:
+
+```markdown
+- **Skill 6 temp cleanup:** deleted | skipped | warning
+- **Deleted files:** [list or none]
+- **Cleanup reason:** [resolved debug gate / no temp file found / blocked because debug gate unresolved / deletion failed]
+```
+
+---
+
+## Phase 12: Final Report
 
 Return:
 
@@ -604,6 +644,7 @@ Return:
 - **Backlog:** [updated / skipped + reason]
 - **Backward refs:** [updated / none / skipped + reason]
 - **Skill 6:** [not needed / fixed + retest pass / skipped + reason]
+- **Skill 6 temp cleanup:** [deleted / skipped / warning + reason]
 
 ## Version
 - **Old version:** [old]
@@ -623,7 +664,7 @@ Return:
 
 ---
 
-## Phase 12: Atomic Save Handoff
+## Phase 13: Atomic Save Handoff
 
 If Skill 7 completed successfully, instruct the user to run:
 

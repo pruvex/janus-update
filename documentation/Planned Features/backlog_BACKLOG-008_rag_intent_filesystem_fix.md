@@ -9,10 +9,12 @@
 Filesystem-Operationen (z.B. "erstell Ordner auf Desktop") triggern fälschlicherweise RAG-Intent, was zu einem unnötigen Upgrade von gpt-5.4-nano auf gpt-5.4 führt. RAG sollte nur für Wissensabfragen aus der Wissensdatenbank (PDFs, Dokumente) getriggert werden.
 
 ## 3. Expected Behavior
-Filesystem-Operationen werden als Filesystem-Intent erkannt und mit gpt-5.4-nano ausgeführt, ohne RAG-Intent-Eskalation. Pfad-Auflösung ("desktop" → "C:\Users\<username>\Desktop") funktioniert direkt ohne Nachfragen.
+Filesystem-Operationen werden als Filesystem-Intent erkannt und mit gpt-5.4-nano ausgeführt, ohne RAG-Intent-Eskalation.
+
+HINWEIS: Pfad-Auflösung ("desktop" → "C:\Users\<username>\Desktop") ist ein separates UX-Problem und wird in BACKLOG-009 gelöst.
 
 ## 4. Current Behavior
-Prompt "erstell auf dem desktop einen ordener 'Bilder' und verschiebe alles jpg und png dateien" triggert RAG-Intent-Upgrade zu gpt-5.4, obwohl es sich um eine reine Filesystem-Operation handelt. gpt-5.4 ist konservativer bei Pfad-Auflösung und fragt nach dem konkreten Desktop-Pfad statt ihn direkt aufzulösen.
+Prompt "erstell auf dem desktop einen ordener 'Bilder' und verschiebe alles jpg und png dateien" triggert RAG-Intent-Upgrade zu gpt-5.4, obwohl es sich um eine reine Filesystem-Operation handelt.
 
 Backend-Log zeigt: `[INTENT-OVERRIDE] RAG-Intent erkannt. Erbitte logic-Tier Upgrade: gpt-5.4-nano -> gpt-5.4`
 
@@ -36,12 +38,14 @@ Backend-Log zeigt: `[INTENT-OVERRIDE] RAG-Intent erkannt. Erbitte logic-Tier Upg
 - [ ] Filesystem-Intent blockiert RAG-Intent
 - [ ] Filesystem-Operationen werden mit gpt-5.4-nano ausgeführt ohne unnötiges Upgrade
 - [ ] RAG-Intent wird nur bei tatsächlichen Wissensabfragen getriggert (PDFs, Dokumente)
-- [ ] Pfad-Auflösung ("desktop" → "C:\Users\<username>\Desktop") funktioniert direkt ohne Nachfragen
+
+HINWEIS: Pfad-Auflösung ist in BACKLOG-009 ausgelagert.
 
 ## 8. Evidence
 - Backend-Log (Testsystem): `[INTENT-OVERRIDE] RAG-Intent erkannt. Erbitte logic-Tier Upgrade: gpt-5.4-nano -> gpt-5.4`
 - Backend-Log (Dev-System): `[INTENT-OVERRIDE] RAG-Intent erkannt. Erbitte logic-Tier Upgrade: gpt-5.4-nano -> gpt-5.4`
-- Assistent-Antwort: "Ich habe den Ordner Bilder erstellt, aber der angegebene Pfad Desktop wurde für die Dateisuche nicht gefunden." (gpt-5.4 fragt nach konkretem Pfad)
+- Backend-Log (nach Fix): `[FILESYSTEM-OVERRIDE] RAG intent suppressed by filesystem intent` - RAG-Intent wurde unterdrückt ✅
+- Backend-Log (nach Fix): gpt-5.4-nano wurde verwendet (kein Upgrade) ✅
 
 ## 9. Risks
 - Intent-Priorisierung könnte andere Intents unbeabsichtigt beeinflussen
@@ -51,7 +55,8 @@ Backend-Log zeigt: `[INTENT-OVERRIDE] RAG-Intent erkannt. Erbitte logic-Tier Upg
 - Filesystem-Intent blockiert RAG-Intent → Test mit Filesystem-Prompt ohne RAG-Keywords, prüfe dass kein Upgrade erfolgt
 - Filesystem-Operationen mit gpt-5.4-nano → Log-Check auf Model-Selection
 - RAG-Intent nur bei Wissensabfragen → Test mit explizitem Dokumenten-Request, prüfe dass RAG-Intent getriggert wird
-- Pfad-Auflösung ohne Nachfragen → Manuellem Test mit Desktop-Ordner-Operation
+
+HINWEIS: Pfad-Auflösungs-Test ist in BACKLOG-009 ausgelagert.
 
 ## 12.1 BLOCKING QUESTIONS
 Keine blockierenden Fragen offen.

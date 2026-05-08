@@ -7,6 +7,11 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+## [0.4.17-beta.18] - 2026-05-08
+
+### Fixed
+- **BACKLOG-015:** Modell-Wechsel-Benachrichtigung verbessert. Klarere Kommunikation mit Titel "⚠️ Modell nicht verfügbar", Erklärung warum das Modell nicht verfügbar ist und dass automatisch gewechselt wurde. Handlungsoptionen: "Fallback behalten" und "Modell wählen" (öffnet Einstellungen). Verbessertes Design mit max-width, padding, border-radius, box-shadow. Längere Anzeigezeit (10 Sekunden). Provider-Wechsel-Probleme behoben: Keine falschen Fehlermeldungen mehr beim Provider-Wechsel, Dropdown nicht mehr leer. UX-Entscheidung: Kleinstes Modell beim Provider-Wechsel auswählen (sicherer, verhindert versehentliche Nutzung teurer Modelle).
+
 ## [0.4.17-beta.17] - 2026-05-07
 
 ### Fixed
