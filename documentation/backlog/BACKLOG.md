@@ -27,10 +27,10 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 ### BACKLOG-017 – ChromaDB-Module fehlen im PyInstaller-Bundle
 
 - **Typ:** BUG
-- **Status:** READY
+- **Status:** IN PROGRESS
 - **Quelle:** Log (User Intake - Tester)
 - **Erstellt:** 2026-05-08
-- **Aktualisiert:** 2026-05-08
+- **Aktualisiert:** 2026-05-09
 - **Kurzbeschreibung:** Im gebauten janus-setup-0.4.17-beta.16.exe fehlen ChromaDB-Module im PyInstaller-Bundle. Backend-Log zeigt `No module named 'chromadb.telemetry.product.posthog'` und `No module named 'chromadb.api.rust'`. Dies führt zu Fehlern im Vektor-Service und Skill-Router beim Start.
 - **Erwartetes Verhalten:** Alle ChromaDB-Module sind vollständig im PyInstaller-Bundle enthalten. Vektor-Service und Skill-Router starten ohne Module-Import-Fehler.
 - **Tatsächliches Verhalten:** Vektor-Service meldet kritischen Fehler beim Start wegen fehlendem `chromadb.telemetry.product.posthog`. Skill-Router kann Index nicht aufbauen wegen fehlendem `chromadb.api.rust`.
@@ -47,6 +47,9 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 - **Fehlende Informationen:**
   - Keine
 - **Notizen:** Packaging-Problem: PyInstaller spec muss ChromaDB-Submodule explizit einschließen. Beeinflusst Memory/Vektor-Funktionen. Unabhängig vom CLIP-Download-Problem (BACKLOG-018).
+- **Handoff:** documentation/tasks/backlog_BACKLOG-017_chromadb_pyinstaller_fix.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-09
 
 ### BACKLOG-018 – CLIP-Model-Download blockiert First-Start
 
