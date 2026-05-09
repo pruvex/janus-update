@@ -137,12 +137,13 @@ def _extract_text_from_llm_result(result: Any) -> str:
 def _resolve_provider_model_key() -> Tuple[str, str, str]:
     config = load_config_data()
     catalog = llm_gateway.get_cached_model_catalog()
-    model_id = str(config.get("last_used_model") or "").strip() or "gpt-5-mini"
+    model_id = str(config.get("last_used_model") or "").strip() or llm_gateway.get_first_available_text_model()
     if model_id in catalog:
         provider = str(catalog[model_id].get("provider") or "openai").lower()
     else:
-        provider = "openai"
-        model_id = "gpt-5-mini"
+        provider, model_id = llm_gateway.get_first_available_text_model_with_provider()
+        if not provider:
+            provider = "openai"
     api_key = (keyring.get_password("Janus-Projekt", provider) or "").strip()
     return provider, model_id, api_key
 

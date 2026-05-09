@@ -19,7 +19,7 @@ KEINE IMPLEMENTATION. KEIN CODE. KEINE PLANUNG.
 - TASK-ID oder TASK-Datei aus `documentation/tasks/`
 - vollstÃ¤ndiger Task-Inhalt
 - optional: Feature Spec als Referenz
-- optional: Backlog-Referenz aus `documentation/backlog/BACKLOG.md`, wenn die Task-Datei durch `BACKLOG SKILL 3 – EXECUTION HANDOFF` erzeugt wurde
+- optional: Backlog-Referenz aus `documentation/backlog/BACKLOG.md`, wenn die Task-Datei durch `BACKLOG SKILL 3 – SELECTED_HANDOFF` erzeugt wurde
 - bei Task-Dateien mit mehreren Tasks: exakt eine Target Task ID
 
 ---
@@ -49,7 +49,7 @@ Spec: documentation/Planned Features/<FEATURE_NAME>.md
 Task: documentation/tasks/<TASK_FILE>.md
 ```
 
-Wenn eine Datei nicht lesbar ist, der Task nicht eindeutig aus Skill 2 oder `BACKLOG SKILL 3 – EXECUTION HANDOFF` stammt oder bei mehreren Tasks keine Target Task ID genannt wurde:
+Wenn eine Datei nicht lesbar ist, der Task nicht eindeutig aus Skill 2 oder `BACKLOG SKILL 3 – SELECTED_HANDOFF` stammt oder bei mehreren Tasks keine Target Task ID genannt wurde:
 
 ```text
 PRE-CHECK ARTIFACTS INVALID
@@ -58,7 +58,7 @@ Issue:
 - <konkretes Problem>
 
 Action:
-â†’ korrekte Artefakte angeben, Skill 2 erneut artefaktbasiert ausfÃ¼hren oder `BACKLOG SKILL 3 – EXECUTION HANDOFF` erneut ausfÃ¼hren
+â†’ korrekte Artefakte angeben, Skill 2 erneut artefaktbasiert ausfÃ¼hren oder `BACKLOG SKILL 3 – EXECUTION HANDOFF` mit `Mode: SELECTED_HANDOFF` erneut ausfÃ¼hren
 ```
 
 ---

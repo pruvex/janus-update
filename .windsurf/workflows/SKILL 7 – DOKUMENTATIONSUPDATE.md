@@ -57,7 +57,8 @@ Allowed safe edits:
 - Add backward-reference notes.
 - Compute and apply the Skill-7 automatic version bump.
 - Record Skill-7 version bump details.
-- Move completed Backlog items from `IN PROGRESS` to `DONE` when the implementation originated from `BACKLOG-XXX`.
+- Move completed Backlog items from `IN PROGRESS` to `DONE` when the implementation originated from `BACKLOG-XXX`, preserving dashboard-readable lifecycle fields.
+- Keep Backlog status sections canonical when moving items: one `## NEEDS INFO`, one `## READY`, one `## IN PROGRESS`, one `## DONE`, one `## BLOCKED`; item section must match its `Status` field.
 - Delete resolved temporary Skill-6 escalation handover files matching `.windsurf/tmp/skill6_escalation_*.md`.
 
 ---
@@ -74,7 +75,7 @@ Ask for or infer:
 6. Current release/version state from root `package.json`.
 7. Validation commands and pass/fail evidence from `/2_final-audit` or Skill 5.
 8. Existing capability registry path, default `backend/data/capability_registry.json`.
-9. Optional Backlog ID, e.g. `BACKLOG-004`, if the task originated from `BACKLOG SKILL 3 – EXECUTION HANDOFF`.
+9. Optional Backlog ID, e.g. `BACKLOG-004`, if the task originated from `BACKLOG SKILL 3 – SELECTED_HANDOFF` or references a `BACKLOG-XXX` item.
 10. Optional temporary Skill-6 escalation handover file path, default pattern `.windsurf/tmp/skill6_escalation_*.md`, if Skill 6 escalated to GPT-5.5.
 
 If the user provides no audit block, search recent conversation/context and task files. If still unavailable, ask for the `/2_final-audit` or Skill 5 report before proceeding.
@@ -539,6 +540,10 @@ Rules:
 - Move completed items from `IN PROGRESS` to `DONE`.
 - If the item is still in `READY` but the task was completed, move it to `DONE` and record that the `IN PROGRESS` transition was skipped.
 - If the Backlog item cannot be found, record `Backlog Sync: skipped — item not found` in the final report.
+- Preserve existing `Entry Point`, `Routing reason`, `Routing confidence`, `Handoff`, and `Recommended next skill` fields for dashboard history.
+- Do not delete completed items or remove their handoff references.
+- When marking an item `DONE`, move the complete `### BACKLOG-XXX` block under the single canonical `## DONE` heading; do not only edit the `Status` field.
+- After Backlog Sync, verify there are no duplicate status headings and no section/status mismatch for any `BACKLOG-XXX` item.
 
 Update the item with:
 
@@ -556,6 +561,7 @@ Final report must include:
 ```markdown
 - **Backlog:** updated | skipped + reason
 - **Backlog ID:** BACKLOG-XXX | none
+- **Backlog section consistency:** PASS | FAIL | skipped + reason
 ```
 
 ---

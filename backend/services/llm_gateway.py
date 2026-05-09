@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from functools import lru_cache
 import asyncio
 
@@ -318,3 +318,30 @@ def get_model_details(model_id: str) -> Dict:
     """
     catalog = get_cached_model_catalog()
     return catalog.get(model_id, {})
+
+
+def get_first_available_text_model() -> str:
+    """
+    Wählt das erste verfügbare text-Modell aus dem Model-Katalog.
+    Robust gegen leere Kataloge: gibt leeren String zurück, wenn kein text-Modell gefunden wird.
+    """
+    catalog = get_cached_model_catalog()
+    for model_id, model_info in catalog.items():
+        if model_info.get("type") == "text":
+            return str(model_id)
+    logger.warning("No text model found in model catalog")
+    return ""
+
+
+def get_first_available_text_model_with_provider() -> Tuple[str, str]:
+    """
+    Wählt das erste verfügbare text-Modell aus dem Model-Katalog und gibt (provider, model_id) zurück.
+    Robust gegen leere Kataloge: gibt ("", "") zurück, wenn kein text-Modell gefunden wird.
+    """
+    catalog = get_cached_model_catalog()
+    for model_id, model_info in catalog.items():
+        if model_info.get("type") == "text":
+            provider = str(model_info.get("provider") or "").lower()
+            return provider, str(model_id)
+    logger.warning("No text model found in model catalog")
+    return "", ""

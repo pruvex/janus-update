@@ -125,6 +125,7 @@ from backend.api.routers import (
     local_llm,
     image_engine,
     consent,
+    backlog,
 )
 log_startup_time("Router importiert")
 
@@ -650,8 +651,11 @@ def bootstrap_app_data():
                 new_key = secrets.token_hex(32)
                 config["api_key"] = new_key
                 # Defaults setzen falls fehlend
-                if "last_used_provider" not in config: config["last_used_provider"] = "openai"
-                if "last_used_model" not in config: config["last_used_model"] = "gpt-5-mini"
+                if "last_used_provider" not in config or "last_used_model" not in config:
+                    from backend.services.llm_gateway import get_first_available_text_model_with_provider
+                    default_provider, default_model = get_first_available_text_model_with_provider()
+                    config["last_used_provider"] = default_provider if default_provider else "openai"
+                    config["last_used_model"] = default_model if default_model else ""
                 save_config_data(config)
                 logger.info("Generated and saved new API key.")
     except Exception as e:
@@ -877,7 +881,7 @@ async def debug_memory_system():
 
 # 5. Include Routers
 # Hier wird die modulare Struktur eingebunden
-from backend.api.routers import chat, contacts, context, memory, media, rag, system, local_llm, styles, image_engine, projects, images, users, tasks, calendar
+from backend.api.routers import chat, contacts, context, memory, media, rag, system, local_llm, styles, image_engine, projects, images, users, tasks, calendar, backlog
 
 app.include_router(chat.router, prefix="/api", tags=["Chat"], dependencies=[Depends(api_key_auth)])
 app.include_router(contacts.router, prefix="/api", tags=["Contacts"], dependencies=[Depends(api_key_auth)])
@@ -897,6 +901,7 @@ app.include_router(images.router, prefix="/api", tags=["Images"], dependencies=[
 app.include_router(users.router, prefix="/api", tags=["Users"], dependencies=[Depends(api_key_auth)])
 app.include_router(tasks.router, prefix="/api", tags=["Tasks"], dependencies=[Depends(api_key_auth)])
 app.include_router(calendar.router, prefix="/api", tags=["Calendar"], dependencies=[Depends(api_key_auth)])
+app.include_router(backlog.router, prefix="/api", tags=["Backlog"], dependencies=[Depends(api_key_auth)])
 app.include_router(consent.router, prefix="/api/consent", tags=["Consent"])
 
 

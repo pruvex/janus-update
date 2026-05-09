@@ -1,0 +1,25 @@
+{
+  "name": "janus-dashboard",
+  "version": "1.0.0",
+  "description": "Standalone Janus Backlog Dashboard Desktop App",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "shared/*"
+  ],
+  "scripts": {
+    "dev": "tsx scripts/start-all.ts",
+    "sync:backlog": "python scripts/sync-backlog-snapshot.py",
+    "build": "npm run build --workspaces",
+    "start": "start-dashboard.bat"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "fastify": "^5.0.0"
+  }
+}

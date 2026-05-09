@@ -1,0 +1,263 @@
+import { useState } from 'react'
+import type { BacklogItem } from '@shared/types'
+import { Copy } from 'lucide-react'
+
+interface KanbanCardProps {
+  item: BacklogItem
+}
+
+const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
+  'BUG': { bg: 'bg-orange-500/20', text: 'text-orange-400' },
+  'CHANGE': { bg: 'bg-blue-500/20', text: 'text-blue-400' },
+  'ENHANCEMENT': { bg: 'bg-green-500/20', text: 'text-green-400' },
+  'IMPROVEMENT': { bg: 'bg-teal-500/20', text: 'text-teal-400' },
+  'TECH_DEBT': { bg: 'bg-gray-500/20', text: 'text-gray-400' },
+  'UNCLEAR': { bg: 'bg-purple-500/20', text: 'text-purple-400' },
+  'SPEC FEATURE': { bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
+}
+
+const IMPORTANCE_COLORS: Record<string, string> = {
+  'CRITICAL': 'text-red-400',
+  'HIGH': 'text-orange-400',
+  'MEDIUM': 'text-yellow-400',
+  'LOW': 'text-gray-400',
+}
+
+const isPresent = (value: string | null | undefined): value is string => {
+  return Boolean(value && value.trim() && value.trim().toLowerCase() !== 'none' && value.trim().toLowerCase() !== 'null')
+}
+
+const valueOrFallback = (value: string | null | undefined, fallback = 'nicht angegeben') => {
+  return isPresent(value) ? value.trim() : fallback
+}
+
+const buildBacklogContext = (task: BacklogItem): string => {
+  return `Backlog-Kontext:
+- Backlog Item: ${task.id}
+- Titel: ${task.title}
+- Typ: ${valueOrFallback(task.type)}
+- Status: ${valueOrFallback(task.status)}
+- Wichtigkeit: ${valueOrFallback(task.importance)}
+- Umsetzungsrisiko: ${valueOrFallback(task.implementation_risk)}
+- Aufwand: ${valueOrFallback(task.effort)}
+- Umsetzungsreife: ${valueOrFallback(task.readiness)}
+- Empfehlung: ${valueOrFallback(task.recommendation)}
+- Entry Point: ${valueOrFallback(task.entry_point)}
+- Routing reason: ${valueOrFallback(task.routing_reason)}
+- Routing confidence: ${valueOrFallback(task.routing_confidence)}
+- Handoff: ${valueOrFallback(task.handoff)}
+- Recommended next skill: ${valueOrFallback(task.recommended_next_skill)}
+- Target Task: ${valueOrFallback(task.target_task)}
+- Precheck artifact: ${valueOrFallback(task.precheck_artifact)}`
+}
+
+const buildBlockedPrompt = (task: BacklogItem, reason: string): string => {
+  return `BACKLOG HANDOFF NICHT PIPELINE-BEREIT
+
+Grund:
+- ${reason}
+
+${buildBacklogContext(task)}
+
+Nächster Schritt:
+@[/BACKLOG SKILL 3 – EXECUTION HANDOFF] mit folgendem Backlog Item erneut ausführen:
+Mode: SELECTED_HANDOFF
+Backlog Item: ${task.id}
+
+Ziel:
+- Korrektes Entry-Point-Routing validieren
+- Handoff-Artefakt erzeugen oder reparieren
+- Recommended next skill eindeutig setzen`
+}
+
+const buildSkill1Prompt = (task: BacklogItem): string => {
+  if (!isPresent(task.handoff)) {
+    return buildBlockedPrompt(task, 'Entry Point verlangt Skill 1, aber es ist kein Spec-Handoff gesetzt.')
+  }
+
+  return `@[/SKILL 1 – SPEC TO TASK COMPILER] mit folgender Spec-Datei:
+Spec: ${task.handoff.trim()}
+
+${buildBacklogContext(task)}
+
+Arbeitsregel:
+- Nutze die genannte Spec-Datei als verbindliche Single Source of Truth.
+- Ignoriere widersprüchliche oder zusätzliche Chat-Kontexte.
+- Erzeuge daraus pipeline-fähige atomare Tasks.
+
+Nächster erwarteter Output:
+- Skill-1 Task-Datei
+- eindeutiger Next Step zu Skill 2 mit Spec- und Task-Artefakt`
+}
+
+const buildSkill2Prompt = (task: BacklogItem): string => {
+  if (!isPresent(task.handoff)) {
+    return buildBlockedPrompt(task, 'Entry Point verlangt Skill 2, aber es ist kein Task-/Spec-Handoff gesetzt.')
+  }
+
+  return `@[/SKILL 2 – TASK BREAKDOWN ENGINE] mit folgenden Artefakten:
+Spec: ${valueOrFallback(task.raw_fields?.Spec)}
+Tasks: ${task.handoff.trim()}
+
+${buildBacklogContext(task)}
+
+Arbeitsregel:
+- Nutze ausschließlich die genannten Artefakte als Requirements-Quellen.
+- Validiere/refine Tasks gegen Spec und Backlog-Kontext.
+- Gib genau den nächsten Target Task mit Assigned Model frei.
+
+Falls Spec fehlt:
+- Nicht raten.
+- Mit TASK ARTIFACTS INVALID oder konkreter Artefakt-Anforderung blockieren.`
+}
+
+const buildSkill3Prompt = (task: BacklogItem): string => {
+  if (!isPresent(task.handoff)) {
+    return buildBlockedPrompt(task, 'Entry Point verlangt Skill 3, aber es ist kein Task-Handoff gesetzt.')
+  }
+
+  const targetTaskLine = isPresent(task.target_task) ? `Target Task: ${task.target_task.trim()}\n` : ''
+
+  return `@[/SKILL 3 – PRE-IMPLEMENTATION VERIFICATION] mit folgenden Artefakten:
+${targetTaskLine}Task: ${task.handoff.trim()}
+Backlog Item: ${task.id}
+
+${buildBacklogContext(task)}
+
+Arbeitsregel:
+- Validiere ausschließlich diesen Handoff-Task.
+- Nutze die Backlog-Referenz nur zur Konsistenzprüfung.
+- Keine Implementierung, keine Codeänderung, keine Scope-Erweiterung.
+- Wenn mehrere Tasks in der Datei stehen und Target Task fehlt: PRE-CHECK ARTIFACTS INVALID.
+
+Erwarteter nächster Output:
+- PRE-CHECK PASSED oder blockierender Befund
+- Copy-Paste-Prompt für Skill 4 mit Assigned Model`
+}
+
+const buildSkill4Prompt = (task: BacklogItem): string => {
+  if (!isPresent(task.handoff)) {
+    return buildBlockedPrompt(task, 'Entry Point verlangt Skill 4, aber es ist kein Task-Handoff gesetzt.')
+  }
+
+  if (!isPresent(task.precheck_artifact)) {
+    return buildBlockedPrompt(task, 'Execution-ready Handoff ist unvollständig, weil kein Precheck-Artefakt gesetzt ist.')
+  }
+
+  return `@[/SKILL 4 – EXECUTIONER] mit folgenden Artefakten:
+Target Task: ${valueOrFallback(task.target_task)}
+Task: ${task.handoff.trim()}
+Pre-Check: ${task.precheck_artifact.trim()}
+Backlog Item: ${task.id}
+
+${buildBacklogContext(task)}
+
+Arbeitsregel:
+- Implementiere ausschließlich den genannten Target Task.
+- Führe keine späteren Tasks im selben Lauf aus.
+- Verwende das im Task/Pre-Check festgelegte Assigned Model.
+
+Erwarteter nächster Output:
+- Implementierungsnachweis
+- Tests/Validierung
+- Compact Audit Handover für Skill 5`
+}
+
+const buildPipelineHandoverPrompt = (task: BacklogItem): string => {
+  const recommendedSkill = valueOrFallback(task.recommended_next_skill, '').toUpperCase()
+  const entryPoint = valueOrFallback(task.entry_point, '').toUpperCase()
+
+  if (entryPoint === 'ROUTING_BLOCKED') {
+    return buildBlockedPrompt(task, valueOrFallback(task.routing_blocker, 'Routing wurde von Backlog Skill 3 blockiert.'))
+  }
+
+  if (recommendedSkill === 'SKILL 1' || entryPoint === 'SPEC_PIPELINE_START') {
+    return buildSkill1Prompt(task)
+  }
+
+  if (recommendedSkill === 'SKILL 2' || entryPoint === 'TASK_BREAKDOWN') {
+    return buildSkill2Prompt(task)
+  }
+
+  if (recommendedSkill === 'SKILL 3' || entryPoint === 'PRE_IMPLEMENTATION_VERIFICATION') {
+    return buildSkill3Prompt(task)
+  }
+
+  if (recommendedSkill === 'SKILL 4' || entryPoint === 'EXECUTION_READY') {
+    return buildSkill4Prompt(task)
+  }
+
+  return buildBlockedPrompt(task, 'Kein eindeutiger Entry Point oder Recommended next skill vorhanden.')
+}
+
+export function KanbanCard({ item }: KanbanCardProps) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopyHandover = async () => {
+    const markdown = buildPipelineHandoverPrompt(item)
+    try {
+      await navigator.clipboard.writeText(markdown)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err)
+    }
+  }
+
+  const typeColor = TYPE_COLORS[item.type] || TYPE_COLORS['UNCLEAR']
+  const importanceColor = IMPORTANCE_COLORS[item.importance] || IMPORTANCE_COLORS['LOW']
+
+  return (
+    <div className="bg-card border border-border rounded-lg p-3 hover:border-accent transition-colors w-full min-w-0">
+      {/* Top row: ID and Type Badge */}
+      <div className="flex items-start justify-between mb-2">
+        <span className="text-[10px] font-mono text-muted-foreground break-all">#{item.id}</span>
+        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${typeColor.bg} ${typeColor.text} flex-shrink-0`}>
+          {item.type}
+        </span>
+      </div>
+
+      {/* Title */}
+      <h3 className="font-semibold text-foreground text-xs mb-2 line-clamp-3 leading-tight break-words overflow-wrap-anywhere">
+        {item.title}
+      </h3>
+
+      {/* Metrics grid */}
+      <div className="grid grid-cols-2 gap-1.5 mb-2">
+        <div>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Importance</p>
+          <p className={`text-[10px] font-medium ${importanceColor}`}>{item.importance}</p>
+        </div>
+        <div>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Effort</p>
+          <p className="text-[10px] font-medium text-foreground">{item.effort}</p>
+        </div>
+        <div>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Risk</p>
+          <p className="text-[10px] font-medium text-foreground">{item.implementation_risk}</p>
+        </div>
+        <div>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Status</p>
+          <p className="text-[10px] font-medium text-foreground">{item.status}</p>
+        </div>
+      </div>
+
+      {/* Routing info */}
+      {item.entry_point && (
+        <div className="mb-2">
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Entry Point</p>
+          <p className="text-[10px] text-muted-foreground truncate break-all">{item.entry_point}</p>
+        </div>
+      )}
+
+      {/* Edit Handover Button */}
+      <button
+        onClick={handleCopyHandover}
+        className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded bg-accent hover:bg-accent/80 text-accent-foreground text-[10px] font-medium transition-colors"
+      >
+        <Copy className="w-3 h-3" />
+        {copied ? 'Copied!' : 'Edit Handover'}
+      </button>
+    </div>
+  )
+}

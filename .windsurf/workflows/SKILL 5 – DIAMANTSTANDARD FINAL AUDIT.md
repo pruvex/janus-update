@@ -1,5 +1,5 @@
 ﻿---
-description: GPT 5.5 Diamantstandard Phase 5 â€“ Final Audit & Release Gate. PrÃ¼ft vollstÃ¤ndige Implementierung aus Skill 4 gegen Task-Spec und Skill-3-Prechecks. Entscheidet Release-FÃ¤higkeit (PASS / PASS WITH FIXES / BLOCKED).
+description: Diamantstandard Phase 5 â€“ Final Audit & Release Gate mit risikobasiertem Audit-Modell. PrÃ¼ft vollstÃ¤ndige Implementierung aus Skill 4 gegen Task-Spec und Skill-3-Prechecks. Entscheidet Release-FÃ¤higkeit (PASS / PASS WITH FIXES / BLOCKED).
 ---
 
 ## ðŸŽ¯ PURPOSE
@@ -20,11 +20,41 @@ KEINE IMPLEMENTATION. KEIN CODE.
 ## ðŸ¤– MODEL RULE
 
 DEFAULT MODEL:
-- GPT-5.5 (mandatory)
+- Risikobasiert gemÃ¤ÃŸ `Audit Model Gate` aus Skill 4.
+- GPT-5.5 bleibt Pflicht bei `Audit Risk: HIGH`, `Audit Risk: CRITICAL` oder unklarer Risikoklasse.
+
+ALLOWED AUDIT MODELS:
+- `Kimi k2.5` nur fÃ¼r LOW-Risk Audits mit deterministischem, lokalem Scope.
+- `SWE 1.6` fÃ¼r LOW oder MEDIUM Risk Audits mit eindeutigem Scope und PASS-Validierung.
+- `GPT-5.5` fÃ¼r HIGH, CRITICAL, unklare, widersprÃ¼chliche oder releasekritische Audits.
+
+AUDIT MODEL GATE:
+- Skill 5 MUSS zu Beginn das `Audit Model Gate` aus dem Compact Audit Package prÃ¼fen.
+- Wenn kein `Audit Model Gate` enthalten ist, MUSS Skill 5 konservativ selbst klassifizieren.
+- Wenn die Klassifizierung nicht eindeutig LOW oder MEDIUM ist, MUSS GPT-5.5 verwendet werden.
+- Wenn das aktive Modell schwÃ¤cher ist als das erforderliche Audit-Modell, MUSS Skill 5 stoppen und den Modellwechsel verlangen.
+
+RISK RULES:
+- LOW:
+  - reine Doku-/Text-/Workflow-Ã„nderung
+  - kleine lokale UI-/CSS-/Label-Ã„nderung
+  - einzelne deterministische Test-/Config-ErgÃ¤nzung
+  - keine Backend-/Persistenz-/IPC-/Security-/Release-Ã„nderung
+  - alle Validierungen PASS
+  - erlaubt: `Kimi k2.5` oder `SWE 1.6`
+- MEDIUM:
+  - kleine bis mittlere mehrdateiige Ã„nderung
+  - UI/API-Kopplung ohne Persistenz/Security/Release
+  - Tests PASS und Scope eindeutig
+  - erlaubt: `SWE 1.6`
+- HIGH oder CRITICAL:
+  - Backend-Kernlogik, Persistenz, DB, Migration, Auth/Security, Electron/IPC, Release/Packaging/Auto-Update, Model Routing, Provider, Tool Calls, Memory, Context, RAG oder mehrere Subsysteme
+  - fehlende/fehlgeschlagene Tests, `PARTIAL`, Known Risks, Fix-Loop, unklare Akzeptanz oder mÃ¶gliche Regression
+  - Pflicht: `GPT-5.5`
 
 CHAT RULE:
 - Skill 5 SOLL in einem neuen Chat gestartet werden.
-- Der Nutzer soll explizit aufgefordert werden, einen neuen GPT-5.5-Chat zu öffnen und nur das Compact Audit Handover aus Skill 4 einzufügen.
+- Der Nutzer soll explizit aufgefordert werden, einen neuen Audit-Chat mit dem empfohlenen Audit-Modell zu öffnen und nur das Compact Audit Handover aus Skill 4 einzufügen.
 - Wenn Skill 5 im selben langen Implementierungs-Chat gestartet wird, MUSS der Skill trotzdem ausschließlich das Compact Audit Package verwenden und den übrigen Chatverlauf ignorieren.
 - Kein vollständiger Chatverlauf, keine Debug-Diskussionen und keine nicht genannten Dateien als Audit-Grundlage verwenden.
 
@@ -36,12 +66,13 @@ Wenn eine der folgenden Bedingungen erfÃ¼llt ist:
 - widersprÃ¼chliche Task-Spec oder Skill-3 Output
 - fehlende Deterministik in Bewertung mÃ¶glich
 - mehrere plausible Interpretationen eines Fehlers
+- Audit Risk ist HIGH/CRITICAL/unklar und aktives Modell ist nicht GPT-5.5
 
 âž¡ï¸ STOP EXECUTION
 
 OUTPUT:
 
-MODEL SWITCH REQUIRED: GPT-5.5 â†’ SWE 1.6 oder Kimi k2.5  
+MODEL SWITCH REQUIRED: <aktuelles Modell> â†’ <erforderliches Audit-Modell>  
 Reason: <kurze technische BegrÃ¼ndung>  
 
 FOLLOW-UP:
@@ -62,11 +93,11 @@ FOLLOW-UP:
 
 ## ðŸ“Œ COMPACT AUDIT PACKAGE MODE
 
-Skill 5 MUSS mit GPT-5.5 kostenbewusst arbeiten und darf keinen vollstÃ¤ndigen Chatverlauf als Audit-Grundlage verlangen.
+Skill 5 MUSS kostenbewusst arbeiten und darf keinen vollstÃ¤ndigen Chatverlauf als Audit-Grundlage verlangen. Das Modell richtet sich nach dem `Audit Model Gate`; GPT-5.5 bleibt Pflicht fÃ¼r HIGH/CRITICAL/unklare Audits.
 
 Empfohlener Ablauf:
 1. Neuen Chat öffnen.
-2. GPT-5.5 auswählen.
+2. Das im Skill-4-Handover empfohlene Audit-Modell auswählen.
 3. Das von Skill 4 erzeugte `BEGIN COPY` / `END COPY` Compact Audit Handover einfügen.
 4. Audit nur gegen diese Artefakte durchführen.
 
@@ -88,9 +119,15 @@ Minimaler gÃ¼ltiger User-Aufruf:
 ```text
 /Skill 5 â€“ Diamantstandard Final Audit mit kompaktem Audit-Paket:
 WICHTIG:
-- Neuer Chat mit GPT-5.5.
+- Neuer Chat mit dem empfohlenen Audit-Modell aus Skill 4.
 - Nur dieses Paket als Audit-Grundlage verwenden.
 - Früheren Chatverlauf ignorieren.
+- Wenn Audit Risk HIGH/CRITICAL/unklar ist: GPT-5.5 verwenden.
+
+Audit Model Gate:
+- Audit Risk: <LOW | MEDIUM | HIGH | CRITICAL>
+- Recommended Audit Model: <Kimi k2.5 | SWE 1.6 | GPT-5.5>
+- Reason: <kurze BegrÃ¼ndung>
 
 Spec: documentation/Planned Features/<FEATURE_NAME>.md
 Tasks: documentation/tasks/<TASK_FILE>.md

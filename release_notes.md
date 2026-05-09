@@ -1,8 +1,8 @@
-# Janus Projekt 0.4.17-beta.19
-**Released:** 2026-05-08 20:02
+# Janus Projekt 0.4.17-beta.22
+**Released:** 2026-05-09 01:08
 
 ### Fixed
-- **Task 030:** Video-Liste Chat-Wechsel Persistenz-Fix. Video-Details (Titel, Kanal, Views, Upload-Datum) werden jetzt korrekt nach einem Chat-Wechsel beibehalten. Sender-Bedingung erweitert auf "bot" || "model", appendVideoReopenLink Parameter videoListMetadata hinzugefügt, wireVideoReopenLink übergibt videoListMetadata an appendVideoReopenLink, appendMessage generiert Markdown mit Header (wie SSE-Stream) beim Chat-Reload. Backend-Logging hinzugefügt zur Verfolgung von video_list_metadata. max_results=3 → max_results=payload.max_results in video_tools.py.
+- **BACKLOG-017:** ChromaDB-Module fehlen im PyInstaller-Bundle. PyInstaller spec um ChromaDB-Submodule erweitert: `collect_data_files('chromadb')`, `collect_data_files('chromadb', include_py_files=True)`, `hiddenimports=['chromadb.telemetry.product.posthog', 'chromadb.api.rust']`. Vektor-Service und Skill-Router starten ohne ChromaDB-Import-Fehler. Manual Janus Test PASS. Files: `janus_backend.spec`. Version: 0.4.17-beta.22.
 ## 📦 Installation
 Download the installer from the GitHub releases page.
 

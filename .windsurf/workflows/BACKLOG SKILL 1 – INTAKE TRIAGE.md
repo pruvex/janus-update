@@ -35,7 +35,7 @@ documentation/backlog/BACKLOG.md
 - Keine Architekturentscheidungen.
 - Keine direkte Übergabe an Skill 1–8 ohne Backlog-Eintrag.
 - Keine Priorisierung mehrerer Items; das ist Backlog Skill 2.
-- Keine Handoff-Datei für die Diamond-Pipeline; das ist Backlog Skill 3.
+- Keine Handoff-Datei für die Diamond-Pipeline; das ist Backlog Skill 3 im Modus `SELECTED_HANDOFF`.
 - Fehlende Informationen aktiv und konkret beim Nutzer anfordern.
 - Backlog-Einträge müssen artefaktbasiert und später nachvollziehbar sein.
 - Wenn die Anfrage mehrere unabhängige Themen enthält, in mehrere Backlog-Items aufteilen oder den Nutzer um Auswahl bitten.
@@ -165,8 +165,8 @@ BLOCKED
 ```
 
 - **NEEDS INFO:** Pflichtinformationen fehlen.
-- **READY:** Ausreichend beschrieben für Backlog Skill 2.
-- **IN PROGRESS:** Bereits an Diamond-Pipeline übergeben.
+- **READY:** Ausreichend beschrieben für Backlog Skill 2 und optionales Routing-Enrichment.
+- **IN PROGRESS:** Bereits durch Backlog Skill 3 im Modus `SELECTED_HANDOFF` an die Diamond-Pipeline übergeben.
 - **DONE:** Durch Skill 7 abgeschlossen.
 - **BLOCKED:** Nicht umsetzbar ohne externe Entscheidung oder Abhängigkeit.
 

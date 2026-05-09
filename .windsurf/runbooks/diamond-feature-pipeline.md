@@ -99,8 +99,9 @@ Nutze diese Vorstufe, wenn kein vollständiger Feature-Spec vorliegt und der Nut
 ```text
 BACKLOG SKILL 1 – INTAKE TRIAGE
 → BACKLOG SKILL 2 – REVIEW PRIORISIERUNG
-→ BACKLOG SKILL 3 – EXECUTION HANDOFF
-→ SKILL 1, SKILL 2 oder SKILL 3 je nach Handoff
+→ BACKLOG SKILL 3 – ROUTING_ENRICHMENT
+→ BACKLOG SKILL 3 – SELECTED_HANDOFF für genau ein ausgewähltes Item
+→ SKILL 1, SKILL 2, SKILL 3 oder SKILL 4 je nach Entry Point und Handoff
 ```
 
 Backlog-Artefakte:
@@ -114,8 +115,9 @@ documentation/tasks/backlog_BACKLOG-XXX_<slug>.md
 Regeln:
 - Backlog Skill 1 sammelt und klassifiziert.
 - Backlog Skill 2 bewertet und priorisiert.
-- Backlog Skill 3 erzeugt den Diamond-Handoff.
-- Skill 7 schließt erledigte Backlog-Items ab und verschiebt sie nach `DONE`.
+- Backlog Skill 3 ergänzt im Default-Modus `ROUTING_ENRICHMENT` fehlende `Entry Point` Metadaten für Dashboard und Pipeline-Steuerung.
+- Backlog Skill 3 erzeugt nur im expliziten Modus `SELECTED_HANDOFF` den Diamond-Handoff für genau ein ausgewähltes Item und verschiebt es nach `IN PROGRESS`.
+- Skill 7 schließt erledigte Backlog-Items ab, verschiebt sie nach `DONE` und bewahrt Routing-/Handoff-Felder für die Dashboard-Historie.
 
 ---
 

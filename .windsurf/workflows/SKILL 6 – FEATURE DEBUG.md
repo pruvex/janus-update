@@ -153,6 +153,7 @@ Danach bitte bereitstellen:
 - Jede Iteration muss eine neue Nutzerbeschreibung, ein neues tatsÃ¤chliches Testergebnis oder ein aktualisiertes Backendlog enthalten.
 - Bei frontendnahen Fehlern gilt ein neues oder aktualisiertes `frontend_log.md` als gültiges aktualisiertes Debug-Artefakt.
 - Nach jeder Fix-Iteration muss Skill 6 den User auffordern, den manuellen Janus-Test erneut auszufÃ¼hren.
+- Nach `FIXED` und manuellem Retest `PASS` MUSS Skill 6 vor Skill 7 ein kompaktes Skill-5-Re-Audit-Handover mit `Audit Model Gate` ausgeben.
 - Wenn es nach der dritten Iteration nicht wie gewünscht funktioniert: `SKILL 6 ESCALATION REQUIRED` melden und ein kompaktes GPT-5.5-Handover ausgeben.
 - **Proaktive GPT-5.5-Empfehlung:** Bei Iteration 3 (oder wenn der Retest nach Iteration 3 fehlschlägt) MUSS Skill 6 proaktiv empfehlen, zu GPT-5.5 zu wechseln, und dabei angeben, ob ein neuer Chat zum Kostensparen sinnvoll ist.
 - Debugging lÃ¤uft gegen Spec, Task, Pre-Check, Skill-5-Audit und tatsÃ¤chlichen Output.
@@ -282,7 +283,7 @@ Nach Fix:
 - gezielte Tests ausfÃ¼hren
 - den User ausdrÃ¼cklich auffordern, den manuellen Janus-Test erneut auszufÃ¼hren
 - Ergebnis gegen erwartetes Verhalten prÃ¼fen
-- wenn erfolgreich: zu Skill 7 Dokumentation Ã¼bergeben
+- wenn erfolgreich: nicht direkt zu Skill 7 springen, sondern zuerst ein kompaktes Skill-5-Re-Audit-Handover mit risikobasierter Audit-Modell-Empfehlung ausgeben
 - wenn nicht erfolgreich: nÃ¤chste Skill-6-Iteration mit neuer Fehlerbeschreibung und Backendlog starten
 
 ### 6. Eskalationsgrenze
@@ -389,6 +390,113 @@ Wichtig:
 END COPY FOR NEW GPT-5.5 CHAT
 ```
 
+### 7. Re-Audit-Handover nach erfolgreichem Debug-Fix
+
+Wenn Skill 6 einen Fix umgesetzt hat und der manuelle Janus-Retest PASS ist, MUSS Skill 6 vor Skill 7 ein kompaktes Re-Audit-Handover fÃ¼r Skill 5 ausgeben.
+
+Ziel:
+- maximale Audit-QualitÃ¤t bei minimal nÃ¶tigen Modellkosten
+- kein voller Skill-6-Chatverlauf im Audit
+- Audit nur gegen Spec, Task, ursprÃ¼ngliches Skill-5-Finding, Debug-Fix, Diff, Tests und Retest-Ergebnis
+
+Audit Model Gate:
+- Skill 6 MUSS eine konservative Audit-Modell-Empfehlung ausgeben.
+- Format:
+  - `Audit Risk: LOW | MEDIUM | HIGH | CRITICAL`
+  - `Recommended Audit Model: Kimi k2.5 | SWE 1.6 | GPT-5.5`
+  - `Reason: <kurze BegrÃ¼ndung anhand Debug-Fix, geÃ¤nderter Dateien, Tests, Retest, Risiken>`
+- LOW:
+  - reiner Text-/Doku-/Workflow-Fix
+  - kleine lokale UI-/CSS-/Label-Korrektur
+  - einzelne deterministische Test-/Config-Korrektur
+  - keine Backend-/Persistenz-/IPC-/Security-/Release-Ã„nderung
+  - gezielte Tests PASS und manueller Retest PASS
+  - Empfehlung: `Kimi k2.5` oder `SWE 1.6`
+- MEDIUM:
+  - kleiner bis mittlerer Debug-Fix in mehreren Dateien
+  - UI/API-Kopplung ohne Persistenz/Security/Release
+  - Root Cause eindeutig, Tests PASS, manueller Retest PASS
+  - Empfehlung: `SWE 1.6`
+- HIGH oder CRITICAL:
+  - Backend-Kernlogik, Persistenz, DB, Migration, Auth/Security, Electron/IPC, Release/Packaging/Auto-Update, Model Routing, Provider, Tool Calls, Memory, Context, RAG oder mehrere Subsysteme
+  - ursprÃ¼ngliches Skill-5-Resultat `BLOCKED`
+  - fehlende/fehlgeschlagene Tests, Known Risks, Iteration 3, Eskalationsfix, unklare Akzeptanz oder mÃ¶gliche Regression
+  - Empfehlung/Pflicht: `GPT-5.5`
+- Unsicherheitsregel:
+  - Wenn Skill 6 die Audit-Risikoklasse nicht eindeutig niedrig oder mittel begrÃ¼nden kann, MUSS `GPT-5.5` empfohlen werden.
+
+Skill-5-Re-Audit-Chat-Regel:
+â†’ Skill 5 SOLL in einem neuen Audit-Chat mit dem empfohlenen Audit-Modell ausgefÃ¼hrt werden.
+â†’ Bei `Audit Risk: HIGH` oder `Audit Risk: CRITICAL` MUSS GPT-5.5 verwendet werden.
+â†’ Der Skill-6-Debug-Chat darf nicht als Audit-Kontext verwendet werden.
+â†’ Skill 5 darf nur aus dem kompakten Re-Audit-Paket auditieren.
+â†’ Kein vollstÃ¤ndiger Chatverlauf, keine Rohlogs, keine Debug-Diskussionen kopieren.
+
+Copy-Paste-Prompt fÃ¼r neuen Skill-5-Re-Audit-Chat:
+
+```text
+BEGIN COPY FOR SKILL 5 RE-AUDIT
+/Skill 5 â€“ Diamantstandard Final Audit
+
+WICHTIG:
+- Dies ist ein neuer Re-Audit-Chat mit dem von Skill 6 empfohlenen Audit-Modell.
+- Nutze ausschlieÃŸlich dieses kompakte Re-Audit-Paket.
+- Ignoriere frÃ¼heren Chatverlauf, Debug-Diskussionen, Rohlogs und nicht genannte Dateien.
+- Wenn das Audit Model Gate HIGH/CRITICAL oder unklar ergibt, verwende GPT-5.5.
+
+Audit Model Gate:
+- Audit Risk: <LOW | MEDIUM | HIGH | CRITICAL>
+- Recommended Audit Model: <Kimi k2.5 | SWE 1.6 | GPT-5.5>
+- Reason: <kurze BegrÃ¼ndung>
+
+Re-Audit Package:
+
+Feature:
+<Feature-Name>
+
+Spec:
+<source spec file>
+
+Task:
+<task file / task id>
+
+Original Skill-5 Finding:
+<PASS WITH FIXES | BLOCKED | konkretes Finding>
+
+Skill-6 Debug Result:
+- Iteration: <1 | 2 | 3>
+- Root Cause: <konkret>
+- Fix Summary: <kurz>
+
+Changed Files:
+- <Datei 1>
+- <Datei 2>
+
+Relevant Diff / Excerpts:
+- <Datei 1>:
+  - <kurze relevante Ã„nderung>
+- <Datei 2>:
+  - <kurze relevante Ã„nderung>
+
+Test Results:
+- <Testtyp>: <PASS | FAIL | N/A>
+- <konkrete Testnamen und Ergebnisse>
+
+Manual Janus Retest:
+- Prompt/Klickpfad: <was wurde getestet>
+- Expected: <Soll>
+- Actual: <Ist>
+- Result: PASS
+
+Known Risks:
+- <bekannte Risiken oder Keine>
+
+Audit Scope:
+Bitte prÃ¼fe nur, ob das ursprÃ¼ngliche Skill-5-Finding durch den Skill-6-Fix behoben wurde, ob Spec/Task weiterhin erfÃ¼llt sind und ob der Fix Regressionen oder Scope Drift erzeugt.
+Alle anderen Workspace-Ã„nderungen sind out of scope.
+END COPY FOR SKILL 5 RE-AUDIT
+```
+
 ## Output Format
 
 ```text
@@ -418,6 +526,13 @@ Frontend Log:
 - Datei: <frontend_log.md | Pfad | N/A>
 - Status: VORHANDEN | ANGEFORDERT | N/A
 
+Skill 5 Re-Audit Handover:
+- Benötigt: JA bei FIXED + Retest PASS | NEIN bei NEEDS RETEST/BLOCKED/OUT OF SCOPE/ESCALATION REQUIRED
+- Audit Risk: LOW | MEDIUM | HIGH | CRITICAL | N/A
+- Recommended Audit Model: Kimi k2.5 | SWE 1.6 | GPT-5.5 | N/A
+- Reason: <kurze BegrÃ¼ndung oder N/A>
+- Copy-Paste-Handover: `BEGIN COPY FOR SKILL 5 RE-AUDIT` Block ausgeben, wenn benötigt
+
 Manueller Janus-Retest:
 1. Ã–ffne Janus.
 2. FÃ¼hre aus: <Prompt/Klickpfad>
@@ -426,8 +541,9 @@ Manueller Janus-Retest:
 5. Wenn frontendnah: danach `frontend_log.md` oder den konkreten Frontend-Log-Pfad bereitstellen; keine komplette DevTools-Konsole kopieren.
 
 NÃ¤chster Schritt:
-- Wenn FIXED und Retest PASS und Skill 6 Code geändert hat: zuerst `/save` ausführen, dann Skill 7 Dokumentationsupdate.
-- Wenn FIXED und Retest PASS und Skill 6 keinen Code geändert hat: Skill 7 Dokumentationsupdate ausführen.
+- Wenn FIXED und Retest PASS und Skill 6 Code geändert hat: zuerst `/save` ausführen, dann Skill 5 Re-Audit mit dem empfohlenen Audit-Modell starten.
+- Wenn FIXED und Retest PASS und Skill 6 keinen Code geändert hat: Skill 5 Re-Audit mit dem empfohlenen Audit-Modell starten.
+- Nach Skill 5 Re-Audit `PASS` oder `PASS WITH FIXES` und bestandenem/abgedecktem manuellem Gate: Skill 7 Dokumentationsupdate ausführen.
 - Wenn NEEDS RETEST: manuellen Janus-Test erneut ausführen.
 - Wenn Retest FAIL und Iteration < 3: Skill 6 erneut mit SWE 1.6, neuer Fehlerbeschreibung und Backendlog ausführen.
 - Wenn Retest FAIL und Iteration = 3:

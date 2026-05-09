@@ -2360,3 +2360,18 @@
  -   * * C o n f i d e n c e : * *   H i g h   ( V a l i d i e r u n g :   P y I n s t a l l e r   B u i l d   P A S S ,   E X E   S t a r t u p   P A S S ,   T o o l M a n a g e r   P A S S ,   C L I P   M o d e l   P A S S ,   S e r v i c e s   P A S S ) . 
  -   * * T a g s : * *   P y I n s t a l l e r ,   C h r o m a D B ,   c o l l e c t _ d a t a _ f i l e s ,   h i d d e n i m p o r t s ,   P a c k a g i n g ,   R u s t E x t e n s i o n s  
  
+## Dynamic Model Selection with Provider Consistency
+
+- **Context:** BACKLOG-019 Fix - Hardcoded gpt-5-mini caused fallback warnings. System now selects first available text model from catalog dynamically.
+- **Problem:** When selecting models dynamically from catalog, provider must be set consistently to avoid Provider/Model-Mismatch. Hardcoded provider="openai" with dynamic model selection caused mismatch when first available model was from different provider (gemini, ollama).
+- **Solution:** Helper function get_first_available_text_model_with_provider() returns (provider, model_id) tuple from catalog. Both main.py and calendar_ai_engine.py use this function to set provider and model consistently. Fallback path also uses provider from catalog, not hardcoded "openai".
+- **Pattern:**
+  ```python
+  from backend.services.llm_gateway import get_first_available_text_model_with_provider
+  provider, model_id = get_first_available_text_model_with_provider()
+  config["last_used_provider"] = provider if provider else "openai"
+  config["last_used_model"] = model_id if model_id else ""
+  ```
+- **Location:** backend/services/llm_gateway.py (get_first_available_text_model_with_provider), backend/main.py (bootstrap), backend/services/calendar/calendar_ai_engine.py (_resolve_provider_model_key). Fixed 2026-05-09.
+- **Confidence:** High (Validation: Syntax-Check PASS, Manual Janus Test PASS, no hardcoded model IDs remain, provider/model consistency guaranteed).
+- **Tags:** dynamic_model_selection, provider_consistency, model_catalog, hardcoded_models, backlog_019
