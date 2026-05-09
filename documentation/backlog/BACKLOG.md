@@ -7,10 +7,62 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 ## Status-Regeln
 
 - **NEEDS INFO:** Pflichtinformationen fehlen.
-- **READY:** Ausreichend beschrieben für `BACKLOG SKILL 2 – REVIEW PRIORISIERUNG`.
-- **IN PROGRESS:** Durch `BACKLOG SKILL 3 – EXECUTION HANDOFF` an die Diamond-Pipeline übergeben.
+- **READY:** Ausreichend beschrieben für `BACKLOG SKILL 2 – REVIEW PRIORISIERUNG` und optionales `BACKLOG SKILL 3 – ROUTING_ENRICHMENT`.
+- **IN PROGRESS:** Durch `BACKLOG SKILL 3 – SELECTED_HANDOFF` explizit an die Diamond-Pipeline übergeben.
 - **DONE:** Durch `SKILL 7 – DOKUMENTATIONSUPDATE` nach erfolgreicher Umsetzung abgeschlossen.
 - **BLOCKED:** Nicht umsetzbar ohne externe Entscheidung oder Abhängigkeit.
+
+## Dashboard-Datenvertrag
+
+Das spätere Dashboard liest diese Datei als primäre Backlog-State-Quelle.
+
+Pflichtfelder pro Item:
+
+```markdown
+- **Typ:** BUG | CHANGE | ENHANCEMENT | IMPROVEMENT | TECH_DEBT | UNCLEAR
+- **Status:** NEEDS INFO | READY | IN PROGRESS | DONE | BLOCKED
+- **Kurzbeschreibung:** <Text>
+- **Betroffener Bereich:** <Text>
+```
+
+Optionale Bewertungsfelder aus `BACKLOG SKILL 2 – REVIEW PRIORISIERUNG`:
+
+```markdown
+- **Wichtigkeit:** LOW | MEDIUM | HIGH | CRITICAL
+- **Umsetzungsrisiko:** LOW | MEDIUM | HIGH
+- **Aufwand:** XS | S | M | L | XL
+- **Umsetzungsreife:** READY | NEEDS INFO | BLOCKED
+- **Empfehlung:** DO NOW | SCHEDULE | NEEDS INFO FIRST | DEFER | DO NOT START
+```
+
+Optionale Routing-Felder aus `BACKLOG SKILL 3 – ROUTING_ENRICHMENT`:
+
+```markdown
+- **Entry Point:** SPEC_PIPELINE_START | TASK_BREAKDOWN | PRE_IMPLEMENTATION_VERIFICATION | EXECUTION_READY | ROUTING_BLOCKED
+- **Routing reason:** <ein kurzer Satz>
+- **Routing confidence:** HIGH | MEDIUM | LOW
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** YYYY-MM-DD
+```
+
+Optionale Handoff-/Completion-Felder:
+
+```markdown
+- **Handoff:** <path> | none
+- **Recommended next skill:** SKILL 1 | SKILL 2 | SKILL 3 | SKILL 4 | none
+- **Handoff created:** YYYY-MM-DD | none
+- **Completed in version:** <version>
+- **Completed by task:** <path>
+- **Final audit:** PASS | PASS WITH FIXES
+- **Validation evidence:** <Text>
+```
+
+Dashboard-Regeln:
+
+- `Status != DONE` → Active View.
+- `Status == DONE` → History View.
+- Dashboard darf keine Backlog-Daten ändern.
+- Dashboard darf Copy-Paste-Prompts aus `Entry Point`, `Handoff`, `Recommended next skill` und `Completed by task` ableiten, aber keine Artefakte erzeugen.
 
 ## Erlaubte Quellen
 
@@ -22,7 +74,124 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 - System Health
 - Other
 
+## NEEDS INFO
+
 ## READY
+
+### BACKLOG-020 – Chatfenster-Resize-Problem: Vertikales Resizen blockiert nach Größenänderung
+
+- **Typ:** BUG
+- **Status:** READY
+- **Quelle:** Screenshot (User Intake - Beta Test)
+- **Erstellt:** 2026-05-09
+- **Aktualisiert:** 2026-05-09
+- **Kurzbeschreibung:** Wenn man versucht, das Chatfenster an der unteren rechten Ecke zu greifen und zu vergrößern, verkleinert es sich auf eine bestimmte Größe und kann dann nur noch horizontal vergrößert werden. Vertikales Resizen oder Resizen über die Ecke ist nicht mehr möglich. Ein Klick auf den Button oben links im Header stellt die ursprüngliche Größe wieder her. Das Problem tritt bei beiden Chatfenstern auf.
+- **Erwartetes Verhalten:** Das Chatfenster sollte frei von der unteren rechten Ecke resizbar sein, sowohl horizontal als auch vertikal.
+- **Tatsächliches Verhalten:** Nach dem ersten Resize-Versuch springt das Fenster auf eine bestimmte Größe und lässt sich danach nur noch horizontal vergrößern. Vertikales Resizen und Resizen über die Ecke sind blockiert.
+- **Reproduktion / Kontext:** Chatfenster öffnen (z.B. "Videos über Fische" oder "Zweites Fenster") → An der unteren rechten Ecke greifen und ziehen → Fenster springt auf bestimmte Größe → Nur noch horizontales Resizen möglich. Das Problem passiert jedes Mal, wenn man das Fenster in der Original/Initialgröße versucht zu vergrößern. Beim Starten von Janus haben die Chatfenster immer eine feste Initialgröße (dies ist gewünscht).
+- **Betroffener Bereich:** Frontend / UI / Chat Window / Resize Handler
+- **Nachweise:**
+  - Screenshot: Chatfenster in verkleinertem Zustand
+  - User-Beschreibung: "wenn ich versuche das chatfenster an der unteren, rechten ecke zu greifen und zu vergrößer, verkleinert es sich auf diese größe wie im bild und dann kann ich das fenter nur noch nach rechts vergrößern, aber nicht mehr nach unten oder mit ziehen an der rechten unteren ecke"
+  - Frontend-Konsole: Keine Fehlermeldungen
+- **Akzeptanzkriterien:**
+  - [ ] Chatfenster lässt sich frei von der unteren rechten Ecke resizen (horizontal + vertikal)
+  - [ ] Kein automatischer Sprung auf eine bestimmte Größe beim Resize
+  - [ ] Resize-Verhalten ist stabil und reproduzierbar
+  - [ ] Reset-Button oben links funktioniert weiterhin wie erwartet
+  - [ ] Feste Initialgröße beim Start bleibt erhalten (gewünschtes Verhalten)
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Das Problem tritt bei beiden Chatfenstern auf ("Videos über Fische" und "Zweites Fenster"). Es passiert reproduzierbar jedes Mal beim ersten Resize-Versuch aus der Initialgröße. Im Frontend kommen keine Fehler. Vermutung: Resize-Handler oder CSS-Constraints blockieren vertikales Resizen nach dem ersten Resize-Versuch.
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Kleiner klarer UI-Bugfix mit einem Ziel, klaren Akzeptanzkriterien und begrenztem Scope (Frontend Resize Handler/CSS)
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-05-09
+
+### BACKLOG-006 – Generische Fehlermeldung statt spezifischer Fehlerdetails
+
+- **Typ:** IMPROVEMENT
+- **Status:** READY
+- **Quelle:** User Intake
+- **Erstellt:** 2026-05-07
+- **Aktualisiert:** 2026-05-07
+- **Kurzbeschreibung:** Wenn etwas nicht funktioniert, geben die Modelle oft eine generische Fehlermeldung "Ich konnte diesmal keine stabile Antwort erzeugen. Bitte sende die Anfrage direkt noch einmal; ich versuche es dann mit einem robusten Neuaufbau." statt genau zu sagen, wo das Problem liegt.
+- **Erwartetes Verhalten:** Fehlermeldungen enthalten spezifische Details über den tatsächlichen Fehler: welches Tool fehlgeschlagen ist, welcher Fehlercode aufgetreten ist, welche Exception geworfen wurde, welcher Provider/Model betroffen ist.
+- **Tatsächliches Verhalten:** Generische Fallback-Nachricht in `execution_dispatcher.py` Zeile 822 wird ohne Fehlerdetails verwendet. Der `fallback_summary` wird an `execution_engine.run_tool_loop()` übergeben und als Fallback bei Exceptions (Zeile 1238-1254), Stream-Crashes (Zeile 2363-2365), leeren Tool-Round-Ergebnissen (Zeile 2400) und leeren Text-Ergebnissen (Zeile 2723) verwendet.
+- **Reproduktion / Kontext:** Wenn ein LLM-Aufruf oder Tool-Aufruf fehlschlägt, wird der statische `fallback_summary` zurückgegeben ohne Informationen über den tatsächlichen Fehler.
+- **Betroffener Bereich:** Orchestrator / Execution Engine / Error Handling / User Experience
+- **Nachweise:**
+  - `backend/services/orchestrator/execution_dispatcher.py` Zeile 822: `wf.fallback_summary = 'Ich konnte diesmal keine stabile Antwort erzeugen...'`
+  - `backend/services/orchestrator/execution_engine.py` Zeile 1238-1254: Exception-Handler verwendet `fallback_summary` ohne Fehlerdetails
+  - `backend/services/orchestrator/execution_engine.py` Zeile 2363-2365: Stream-Crash-Handler verwendet `fallback_summary` ohne Fehlerdetails
+  - `backend/services/orchestrator/execution_engine.py` Zeile 1750-1779: Tool-Fehler werden bereits mit `error_code` und `error_message` extrahiert, aber nicht an den Fallback übergeben
+- **Akzeptanzkriterien:**
+  - [ ] `fallback_summary` wird dynamisch basierend auf dem tatsächlichen Fehler generiert
+  - [ ] Fehlermeldungen enthalten: Fehlercode, Fehlermeldung, betroffenes Tool (falls zutreffend), Provider/Model (falls zutreffend)
+  - [ ] Backend-Logs enthalten weiterhin die vollständigen Exception-Details für Debugging
+  - [ ] User erhält hilfreiche, spezifische Fehlerinformationen statt generischer Nachricht
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Das Problem ist nicht, dass Fehler auftreten, sondern dass die Fehlermeldung für den User nicht hilfreich ist. Die Execution-Engine extrahiert bereits Fehlerdetails aus Tool-Ergebnissen (Zeile 1750-1779), diese sollten auch an den Fallback übergeben werden.
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** SCHEDULE
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Kleine lokale Änderung in Orchestrator/Execution Engine mit einem Ziel, klaren Akzeptanzkriterien und begrenztem Scope (Error Handling)
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-05-09
+- **Recommended next skill:** SKILL 1
+
+### BACKLOG-007 – Performance-Optimierung für Filesystem-Tool-Calls
+
+- **Typ:** IMPROVEMENT
+- **Status:** READY
+- **Quelle:** Manual Test (TASK-005)
+- **Erstellt:** 2026-05-07
+- **Aktualisiert:** 2026-05-07
+- **Kurzbeschreibung:** Gemini-3-pro-preview ist deutlich langsamer als GPT-5.4 bei Filesystem-Tasks (~102s vs ~11s für das Erstellen eines Ordners und Verschieben von 5 Dateien).
+- **Erwartetes Verhalten:** Filesystem-Tasks sollten in ähnlicher Zeit bei beiden Modellen ausgeführt werden.
+- **Tatsächliches Verhalten:** Gemini benötigt ~102 Sekunden für einen Task, den GPT in ~11 Sekunden erledigt. Gemini führt unnötige Tool-Aufrufe durch (z.B. list_directory mit falschem Pfad "Desktop" statt vollständigen Pfad).
+- **Reproduktion / Kontext:** Prompt: "hi, erstell auf dem desktop einen ordener 'Bilder' und verschiebe alles jpg und png dateien vom desktop in diesen ordner"
+- **Betroffener Bereich:** Performance / Tool-Call-Effizienz / Model-Selection
+- **Nachweise:**
+  - Gemini-Log: 17:28:55 - 17:30:37 (~102s), Tool-Aufrufe: create_directory, list_directory (fehlerhaft), move_files
+  - GPT-Log: 17:32:57 - 17:33:08 (~11s), direkte Antwort ohne sichtbare unnötige Tool-Aufrufe
+  - Gemini Logic-Tier Upgrade: gemini-3-flash-preview → gemini-3-pro-preview (für RAG-Intent)
+  - GPT Logic-Tier Upgrade: gpt-5.4-nano → gpt-5.4 (für RAG-Intent)
+- **Akzeptanzkriterien:**
+  - [ ] Unnötige Tool-Aufrufe werden vermieden (z.B. list_directory mit falschem Pfad)
+  - [ ] Tool-Call-Effizienz ist verbessert (weniger redundante Aufrufe)
+  - [ ] Model-Selection für einfache Tasks ist optimiert (schnellere Modelle für einfache Tasks)
+  - [ ] Prompt-Cache-Effizienz ist verbessert
+  - [ ] Performance-Unterschied zwischen Modellen ist reduziert (<2x Faktor für ähnliche Tasks)
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Die Performance-Unterschiede sind nicht kritisch für die Funktionalität, aber beeinflussen die UX. Das Logic-Tier Upgrade für RAG-Intent könnte ein Faktor sein. Tool-Call-Patterns sollten analysiert und optimiert werden.
+- **Wichtigkeit:** MEDIUM
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** SCHEDULE
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Kleine lokale Performance-Verbesserung mit einem Ziel, klaren Akzeptanzkriterien und begrenztem Scope (Tool-Call-Effizienz/Model-Selection)
+- **Routing confidence:** MEDIUM
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-05-09
+- **Recommended next skill:** SKILL 1
+
+## IN PROGRESS
+
+## DONE
 
 ### BACKLOG-017 – ChromaDB-Module fehlen im PyInstaller-Bundle
 
@@ -89,8 +258,6 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 - **Handoff:** documentation/Planned Features/backlog_BACKLOG-018_clip_lazy_loading.md
 - **Recommended next skill:** SKILL 1
 - **Handoff created:** 2026-05-09
-
-## READY
 
 ### BACKLOG-016 – Video-Links funktionieren nicht nach Chat-Wechsel
 
@@ -159,7 +326,40 @@ Healthcheck-Findings aus `SYSTEM HEALTH – HYGIENE CHECK` dürfen hier als `Que
 - **Recommended next skill:** SKILL 3
 - **Handoff created:** 2026-05-08
 
-## READY
+### BACKLOG-019 – Hardcoded gpt-5-mini verursacht Fallback-Warnung nach OpenAI-Key-Eingabe
+
+- **Typ:** TECH_DEBT
+- **Status:** DONE
+- **Quelle:** Screenshot (User Intake - Beta Test)
+- **Erstellt:** 2026-05-09
+- **Aktualisiert:** 2026-05-09
+- **Abgeschlossen:** 2026-05-09
+- **Kurzbeschreibung:** Nach Eingabe des OpenAI-Keys erscheint eine Warnung "Das Modell 'gpt-5-mini' ist nicht mehr verfügbar. Janus hat automatisch zu '' gewechselt." Das Modell gpt-5-mini ist hardcoded in `backend/main.py` und `backend/services/calendar/calendar_ai_engine.py` als Fallback/Default, obwohl es nicht mehr im Model-Katalog existiert.
+- **Erwartetes Verhalten:** Keine Modelle sind hardcoded. Das System wählt dynamisch das erste verfügbare Modell aus dem Model-Katalog oder fordert den Benutzer auf, ein Modell auszuwählen, wenn keine Konfiguration existiert.
+- **Tatsächliches Verhalten:** gpt-5-mini ist hardcoded als Default in `main.py:654` und als Fallback in `calendar_ai_engine.py:140,145`. Wenn dieses Modell nicht im Katalog existiert, fällt das System auf ein leeres Modell zurück und zeigt eine Warnung.
+- **Reproduktion / Kontext:** Frische Installation oder Config-Reset → OpenAI-Key eingeben → Warnung erscheint mit leerem Fallback-Modell.
+- **Betroffener Bereich:** Backend / Config / Model-Selection / Calendar AI Engine
+- **Nachweise:**
+  - Screenshot: Warnung "Modell nicht verfügbar" mit gpt-5-mini und leerem Fallback
+  - `backend/main.py:654`: `if "last_used_model" not in config: config["last_used_model"] = "gpt-5-mini"`
+  - `backend/services/calendar/calendar_ai_engine.py:140,145`: `model_id = ... or "gpt-5-mini"` und Fallback `model_id = "gpt-5-mini"`
+- **Akzeptanzkriterien:**
+  - [x] Keine hardcoded Modell-IDs im Code (außer in Tests oder dokumentierten Ausnahmen)
+  - [x] System wählt dynamisch das erste verfügbare Modell aus dem Model-Katalog wenn keine Konfiguration existiert
+  - [x] Calendar AI Engine wählt dynamisch aus dem Katalog statt hardcoded Fallback
+  - [x] Keine Warnung über nicht verfügbare Modelle nach Key-Eingabe
+  - [x] Lösung ist robust gegen Katalog-Updates (keine neuen hardcoded Referenzen)
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Der Benutzer wünscht explizit keine hardcoded Modelle, da dies zu Problemen führt wenn der Katalog aktualisiert wird. Die Lösung sollte vollständig dynamisch aus dem Model-Katalog lesen. gpt-4o-mini ist ebenfalls möglicherweise nicht mehr im Katalog oder nur für Vision, daher ist auch dieses kein sicherer Default.
+- **Handoff:** documentation/tasks/backlog_BACKLOG-019_hardcoded_gpt5mini_fix.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-09
+- **Version:** 0.4.17-beta.23
+- **Task:** documentation/tasks/backlog_BACKLOG-019_hardcoded_gpt5mini_fix.md
+- **Audit:** FINAL AUDIT RESULT: PASS (Skill 5 mit GPT-5.5)
+- **Skill 6:** FIXED (Provider/Model-Mismatch behoben)
+- **Manual Test:** PASS
 
 ### BACKLOG-010 – gpt-5.4-nano führt Filesystem-Operationen nicht aus
 
@@ -361,61 +561,6 @@ HINWEIS: Pfad-Auflösung ist in BACKLOG-009 ausgelagert.
 - **Notizen:** Das Problem ist nicht zwischen Test- und Dev-System, sondern eine generelle Fehlklassifizierung in der Intent-Detection. RAG ist für Wissensabfragen gedacht, nicht für Dateisystem-Operationen. Die Intent-Priorisierung sollte angepasst werden: Filesystem-Intent sollte RAG-Intent blockieren.
 - **Recommended next skill:** SKILL 1
 
-### BACKLOG-006 – Generische Fehlermeldung statt spezifischer Fehlerdetails
-
-- **Typ:** IMPROVEMENT
-- **Status:** READY
-- **Quelle:** User Intake
-- **Erstellt:** 2026-05-07
-- **Aktualisiert:** 2026-05-07
-- **Kurzbeschreibung:** Wenn etwas nicht funktioniert, geben die Modelle oft eine generische Fehlermeldung "Ich konnte diesmal keine stabile Antwort erzeugen. Bitte sende die Anfrage direkt noch einmal; ich versuche es dann mit einem robusten Neuaufbau." statt genau zu sagen, wo das Problem liegt.
-- **Erwartetes Verhalten:** Fehlermeldungen enthalten spezifische Details über den tatsächlichen Fehler: welches Tool fehlgeschlagen ist, welcher Fehlercode aufgetreten ist, welche Exception geworfen wurde, welcher Provider/Model betroffen ist.
-- **Tatsächliches Verhalten:** Generische Fallback-Nachricht in `execution_dispatcher.py` Zeile 822 wird ohne Fehlerdetails verwendet. Der `fallback_summary` wird an `execution_engine.run_tool_loop()` übergeben und als Fallback bei Exceptions (Zeile 1238-1254), Stream-Crashes (Zeile 2363-2365), leeren Tool-Round-Ergebnissen (Zeile 2400) und leeren Text-Ergebnissen (Zeile 2723) verwendet.
-- **Reproduktion / Kontext:** Wenn ein LLM-Aufruf oder Tool-Aufruf fehlschlägt, wird der statische `fallback_summary` zurückgegeben ohne Informationen über den tatsächlichen Fehler.
-- **Betroffener Bereich:** Orchestrator / Execution Engine / Error Handling / User Experience
-- **Nachweise:**
-  - `backend/services/orchestrator/execution_dispatcher.py` Zeile 822: `wf.fallback_summary = 'Ich konnte diesmal keine stabile Antwort erzeugen...'`
-  - `backend/services/orchestrator/execution_engine.py` Zeile 1238-1254: Exception-Handler verwendet `fallback_summary` ohne Fehlerdetails
-  - `backend/services/orchestrator/execution_engine.py` Zeile 2363-2365: Stream-Crash-Handler verwendet `fallback_summary` ohne Fehlerdetails
-  - `backend/services/orchestrator/execution_engine.py` Zeile 1750-1779: Tool-Fehler werden bereits mit `error_code` und `error_message` extrahiert, aber nicht an den Fallback übergeben
-- **Akzeptanzkriterien:**
-  - [ ] `fallback_summary` wird dynamisch basierend auf dem tatsächlichen Fehler generiert
-  - [ ] Fehlermeldungen enthalten: Fehlercode, Fehlermeldung, betroffenes Tool (falls zutreffend), Provider/Model (falls zutreffend)
-  - [ ] Backend-Logs enthalten weiterhin die vollständigen Exception-Details für Debugging
-  - [ ] User erhält hilfreiche, spezifische Fehlerinformationen statt generischer Nachricht
-- **Fehlende Informationen:**
-  - Keine
-- **Notizen:** Das Problem ist nicht, dass Fehler auftreten, sondern dass die Fehlermeldung für den User nicht hilfreich ist. Die Execution-Engine extrahiert bereits Fehlerdetails aus Tool-Ergebnissen (Zeile 1750-1779), diese sollten auch an den Fallback übergeben werden.
-- **Recommended next skill:** SKILL 1
-
-### BACKLOG-007 – Performance-Optimierung für Filesystem-Tool-Calls
-
-- **Typ:** IMPROVEMENT
-- **Status:** READY
-- **Quelle:** Manual Test (TASK-005)
-- **Erstellt:** 2026-05-07
-- **Aktualisiert:** 2026-05-07
-- **Kurzbeschreibung:** Gemini-3-pro-preview ist deutlich langsamer als GPT-5.4 bei Filesystem-Tasks (~102s vs ~11s für das Erstellen eines Ordners und Verschieben von 5 Dateien).
-- **Erwartetes Verhalten:** Filesystem-Tasks sollten in ähnlicher Zeit bei beiden Modellen ausgeführt werden.
-- **Tatsächliches Verhalten:** Gemini benötigt ~102 Sekunden für einen Task, den GPT in ~11 Sekunden erledigt. Gemini führt unnötige Tool-Aufrufe durch (z.B. list_directory mit falschem Pfad "Desktop" statt vollständigen Pfad).
-- **Reproduktion / Kontext:** Prompt: "hi, erstell auf dem desktop einen ordener 'Bilder' und verschiebe alles jpg und png dateien vom desktop in diesen ordner"
-- **Betroffener Bereich:** Performance / Tool-Call-Effizienz / Model-Selection
-- **Nachweise:**
-  - Gemini-Log: 17:28:55 - 17:30:37 (~102s), Tool-Aufrufe: create_directory, list_directory (fehlerhaft), move_files
-  - GPT-Log: 17:32:57 - 17:33:08 (~11s), direkte Antwort ohne sichtbare unnötige Tool-Aufrufe
-  - Gemini Logic-Tier Upgrade: gemini-3-flash-preview → gemini-3-pro-preview (für RAG-Intent)
-  - GPT Logic-Tier Upgrade: gpt-5.4-nano → gpt-5.4 (für RAG-Intent)
-- **Akzeptanzkriterien:**
-  - [ ] Unnötige Tool-Aufrufe werden vermieden (z.B. list_directory mit falschem Pfad)
-  - [ ] Tool-Call-Effizienz ist verbessert (weniger redundante Aufrufe)
-  - [ ] Model-Selection für einfache Tasks ist optimiert (schnellere Modelle für einfache Tasks)
-  - [ ] Prompt-Cache-Effizienz ist verbessert
-  - [ ] Performance-Unterschied zwischen Modellen ist reduziert (<2x Faktor für ähnliche Tasks)
-- **Fehlende Informationen:**
-  - Keine
-- **Notizen:** Die Performance-Unterschiede sind nicht kritisch für die Funktionalität, aber beeinflussen die UX. Das Logic-Tier Upgrade für RAG-Intent könnte ein Faktor sein. Tool-Call-Patterns sollten analysiert und optimiert werden.
-- **Recommended next skill:** SKILL 1
-
 ### BACKLOG-005 – Bild-Intent hat Vorrang vor Filesystem-Intent bei gemischten Keywords
 
 - **Typ:** BUG
@@ -482,10 +627,6 @@ HINWEIS: Pfad-Auflösung ist in BACKLOG-009 ausgelagert.
 - **Audit:** PARTIAL PASS (Hauptziel erreicht, Bild-Intent-Hierarchie-Problem separat in BACKLOG-005)
 - **Changelog:** Filesystem-Intent-Priorisierung, Entity-Resolver WEAK_MATCH-Fallback, Orchestrator VIDEO-FORCE Guard, Skill-Selector Filesystem-vs-Calendar-Erkennung
 
-## IN PROGRESS
-
-## DONE
-
 ### BACKLOG-003 – Alte Release-Installer in release/ aufräumen
 
 - **Typ:** TECH_DEBT
@@ -515,8 +656,6 @@ HINWEIS: Pfad-Auflösung ist in BACKLOG-009 ausgelagert.
 - **Audit:** PASS
 - **Changelog:** Alte Release-Installer entfernt, ~1.46 GB freigegeben
 
-## DONE
-
 ### BACKLOG-002 – Unrelated Asthma/ Android-Projekt entfernen oder verschieben
 
 - **Typ:** TECH_DEBT
@@ -537,8 +676,6 @@ HINWEIS: Pfad-Auflösung ist in BACKLOG-009 ausgelagert.
 - **Fehlende Informationen:**
   - Keine
 - **Notizen:** Fremdes Projekt wurde manuell aus dem Projekt-Root entfernt. Belegte ~430MB Platz.
-
-## DONE
 
 ### BACKLOG-001 – Test-Dateien in Root-Verzeichnis aufräumen
 
