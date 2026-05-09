@@ -78,42 +78,6 @@ Dashboard-Regeln:
 
 ## READY
 
-### BACKLOG-020 – Chatfenster-Resize-Problem: Vertikales Resizen blockiert nach Größenänderung
-
-- **Typ:** BUG
-- **Status:** READY
-- **Quelle:** Screenshot (User Intake - Beta Test)
-- **Erstellt:** 2026-05-09
-- **Aktualisiert:** 2026-05-09
-- **Kurzbeschreibung:** Wenn man versucht, das Chatfenster an der unteren rechten Ecke zu greifen und zu vergrößern, verkleinert es sich auf eine bestimmte Größe und kann dann nur noch horizontal vergrößert werden. Vertikales Resizen oder Resizen über die Ecke ist nicht mehr möglich. Ein Klick auf den Button oben links im Header stellt die ursprüngliche Größe wieder her. Das Problem tritt bei beiden Chatfenstern auf.
-- **Erwartetes Verhalten:** Das Chatfenster sollte frei von der unteren rechten Ecke resizbar sein, sowohl horizontal als auch vertikal.
-- **Tatsächliches Verhalten:** Nach dem ersten Resize-Versuch springt das Fenster auf eine bestimmte Größe und lässt sich danach nur noch horizontal vergrößern. Vertikales Resizen und Resizen über die Ecke sind blockiert.
-- **Reproduktion / Kontext:** Chatfenster öffnen (z.B. "Videos über Fische" oder "Zweites Fenster") → An der unteren rechten Ecke greifen und ziehen → Fenster springt auf bestimmte Größe → Nur noch horizontales Resizen möglich. Das Problem passiert jedes Mal, wenn man das Fenster in der Original/Initialgröße versucht zu vergrößern. Beim Starten von Janus haben die Chatfenster immer eine feste Initialgröße (dies ist gewünscht).
-- **Betroffener Bereich:** Frontend / UI / Chat Window / Resize Handler
-- **Nachweise:**
-  - Screenshot: Chatfenster in verkleinertem Zustand
-  - User-Beschreibung: "wenn ich versuche das chatfenster an der unteren, rechten ecke zu greifen und zu vergrößer, verkleinert es sich auf diese größe wie im bild und dann kann ich das fenter nur noch nach rechts vergrößern, aber nicht mehr nach unten oder mit ziehen an der rechten unteren ecke"
-  - Frontend-Konsole: Keine Fehlermeldungen
-- **Akzeptanzkriterien:**
-  - [ ] Chatfenster lässt sich frei von der unteren rechten Ecke resizen (horizontal + vertikal)
-  - [ ] Kein automatischer Sprung auf eine bestimmte Größe beim Resize
-  - [ ] Resize-Verhalten ist stabil und reproduzierbar
-  - [ ] Reset-Button oben links funktioniert weiterhin wie erwartet
-  - [ ] Feste Initialgröße beim Start bleibt erhalten (gewünschtes Verhalten)
-- **Fehlende Informationen:**
-  - Keine
-- **Notizen:** Das Problem tritt bei beiden Chatfenstern auf ("Videos über Fische" und "Zweites Fenster"). Es passiert reproduzierbar jedes Mal beim ersten Resize-Versuch aus der Initialgröße. Im Frontend kommen keine Fehler. Vermutung: Resize-Handler oder CSS-Constraints blockieren vertikales Resizen nach dem ersten Resize-Versuch.
-- **Wichtigkeit:** HIGH
-- **Umsetzungsrisiko:** MEDIUM
-- **Aufwand:** S
-- **Umsetzungsreife:** READY
-- **Empfehlung:** DO NOW
-- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
-- **Routing reason:** Kleiner klarer UI-Bugfix mit einem Ziel, klaren Akzeptanzkriterien und begrenztem Scope (Frontend Resize Handler/CSS)
-- **Routing confidence:** HIGH
-- **Routing decided by:** BACKLOG SKILL 3
-- **Routing decided at:** 2026-05-09
-
 ### BACKLOG-006 – Generische Fehlermeldung statt spezifischer Fehlerdetails
 
 - **Typ:** IMPROVEMENT
@@ -149,7 +113,9 @@ Dashboard-Regeln:
 - **Routing confidence:** HIGH
 - **Routing decided by:** BACKLOG SKILL 3
 - **Routing decided at:** 2026-05-09
-- **Recommended next skill:** SKILL 1
+- **Handoff:** documentation/tasks/backlog_BACKLOG-006_specific_error_messages.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-10
 
 ### BACKLOG-007 – Performance-Optimierung für Filesystem-Tool-Calls
 
@@ -187,11 +153,57 @@ Dashboard-Regeln:
 - **Routing confidence:** MEDIUM
 - **Routing decided by:** BACKLOG SKILL 3
 - **Routing decided at:** 2026-05-09
-- **Recommended next skill:** SKILL 1
+- **Handoff:** documentation/tasks/backlog_BACKLOG-007_filesystem_performance.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-10
 
 ## IN PROGRESS
 
 ## DONE
+
+### BACKLOG-020 – Chatfenster-Resize-Problem: Vertikales Resizen blockiert nach Größenänderung
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** Screenshot (User Intake - Beta Test)
+- **Erstellt:** 2026-05-09
+- **Aktualisiert:** 2026-05-10
+- **Abgeschlossen:** 2026-05-10
+- **Kurzbeschreibung:** Wenn man versucht, das Chatfenster an der unteren rechten Ecke zu greifen und zu vergrößern, verkleinert es sich auf eine bestimmte Größe und kann dann nur noch horizontal vergrößert werden. Vertikales Resizen oder Resizen über die Ecke ist nicht mehr möglich. Ein Klick auf den Button oben links im Header stellt die ursprüngliche Größe wieder her. Das Problem tritt bei beiden Chatfenstern auf.
+- **Erwartetes Verhalten:** Das Chatfenster sollte frei von der unteren rechten Ecke resizbar sein, sowohl horizontal als auch vertikal.
+- **Tatsächliches Verhalten:** Nach dem ersten Resize-Versuch springt das Fenster auf eine bestimmte Größe und lässt sich danach nur noch horizontal vergrößern. Vertikales Resizen und Resizen über die Ecke sind blockiert.
+- **Reproduktion / Kontext:** Chatfenster öffnen (z.B. "Videos über Fische" oder "Zweites Fenster") → An der unteren rechten Ecke greifen und ziehen → Fenster springt auf bestimmte Größe → Nur noch horizontales Resizen möglich. Das Problem passiert jedes Mal, wenn man das Fenster in der Original/Initialgröße versucht zu vergrößern. Beim Starten von Janus haben die Chatfenster immer eine feste Initialgröße (dies ist gewünscht).
+- **Betroffener Bereich:** Frontend / UI / Chat Window / Resize Handler
+- **Nachweise:**
+  - Screenshot: Chatfenster in verkleinertem Zustand
+  - User-Beschreibung: "wenn ich versuche das chatfenster an der unteren, rechten ecke zu greifen und zu vergrößer, verkleinert es sich auf diese größe wie im bild und dann kann ich das fenter nur noch nach rechts vergrößern, aber nicht mehr nach unten oder mit ziehen an der rechten unteren ecke"
+  - Frontend-Konsole: Keine Fehlermeldungen
+- **Akzeptanzkriterien:**
+  - [x] Chatfenster lässt sich frei von der unteren rechten Ecke resizen (horizontal + vertikal)
+  - [x] Kein automatischer Sprung auf eine bestimmte Größe beim Resize
+  - [x] Resize-Verhalten ist stabil und reproduzierbar
+  - [x] Reset-Button oben links funktioniert weiterhin wie erwartet
+  - [x] Feste Initialgröße beim Start bleibt erhalten (gewünschtes Verhalten)
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Das Problem tritt bei beiden Chatfenstern auf ("Videos über Fische" und "Zweites Fenster"). Es passiert reproduzierbar jedes Mal beim ersten Resize-Versuch aus der Initialgröße. Im Frontend kommen keine Fehler. Vermutung: Resize-Handler oder CSS-Constraints blockieren vertikales Resizen nach dem ersten Resize-Versuch.
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Kleiner klarer UI-Bugfix mit einem Ziel, klaren Akzeptanzkriterien und begrenztem Scope (Frontend Resize Handler/CSS)
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-05-09
+- **Handoff:** documentation/tasks/backlog_BACKLOG-020_chatfenster_resize_fix.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-10
+- **Completed in version:** TBD
+- **Completed by task:** backlog_BACKLOG-020_chatfenster_resize_fix.md
+- **Final audit:** PASS (Re-Audit nach Skill 6)
+- **Validation evidence:** Manueller Retest PASS - freies Resizen funktioniert wie gewünscht
 
 ### BACKLOG-017 – ChromaDB-Module fehlen im PyInstaller-Bundle
 

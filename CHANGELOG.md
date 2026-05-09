@@ -7,6 +7,9 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+### Fixed
+- **BACKLOG-020:** Chatfenster-Resize-Problem behoben. Vertikales Resizen blockierte nach erstem Resize-Versuch. Root Cause: CSS `max-height` constraint und JavaScript `resizeListener` height/position constraints blockierten vertikales Resizen. Fix: `max-height: calc(100dvh - 16px)` aus `frontend/css/style.css` entfernt. `maxH` und `maxY` constraints aus `resizeListener` in `frontend/js/app.js` entfernt. Chatfenster lässt sich jetzt frei von der unteren rechten Ecke resizen (horizontal + vertikal) ohne Blockade. Reset-Button und Initialgröße bleiben erhalten. Manual Janus Test PASS. Files: `frontend/css/style.css`, `frontend/js/app.js`.
+
 ## [0.4.17-beta.23] - 2026-05-09
 
 ### Fixed

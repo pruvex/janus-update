@@ -1522,14 +1522,12 @@ function initializeDraggableElements() {
 
     if (host) {
       const maxW = Math.max(300, host.clientWidth - x);
-      const maxH = Math.max(200, host.clientHeight - y);
       w = Math.min(w, maxW);
-      h = Math.min(h, maxH);
+      // Keine maxH-Beschränkung: erlaubt freies vertikales Resizen
+      // maxY constraint entfernt für freie vertikale Positionierung
 
       const maxX = Math.max(0, host.clientWidth - w);
-      const maxY = Math.max(0, host.clientHeight - h);
       x = Math.max(0, Math.min(x, maxX));
-      y = Math.max(0, Math.min(y, maxY));
     }
 
     Object.assign(event.target.style, {

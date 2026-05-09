@@ -259,11 +259,10 @@
   z-index: 2;
   width: var(--dual-chat-host-width);
   height: var(--dual-chat-host-height);
-  /* Kein max-height auf 700px: sonst blockiert das CSS das vertikale Vergrößern per Resize (interact setzt height per inline) */
+  /* Kein max-height: sonst blockiert das CSS das vertikale Vergrößern per Resize (interact setzt height per inline) */
   min-width: 300px;
   min-height: 200px;
   max-width: none;
-  max-height: calc(100dvh - 16px);
   border-radius: 8px;
   box-sizing: border-box;
   background-color: var(--background-secondary, #1e1e1e);
