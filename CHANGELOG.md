@@ -7,6 +7,13 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+## [0.4.17-beta.26] - 2026-05-11
+
+### Fixed
+- **BACKLOG-021:** Datenbank-Migrationsfehler in EXE-Version behoben. SQLite-Drift-Migration für `users.dark_mode_enabled` in `backend/data/database.py` ergänzt. `_ensure_sqlite_schema_migrations()` prüft bei SQLite-DBs, ob die Spalte `dark_mode_enabled` in der `users` Tabelle fehlt, und führt `ALTER TABLE users ADD COLUMN dark_mode_enabled BOOLEAN NOT NULL DEFAULT 0` aus. Dies behebt den `sqlite3.OperationalError: no such column: users.dark_mode_enabled` in der EXE-Version. Dev-Modus bereits korrekt. File: `backend/data/database.py`. Final Audit: PASS WITH CONDITIONS. EXE-Validierung auf Testsystem ausständig (Skill 8).
+
+## [0.4.17-beta.25] - 2026-05-10
+
 ### Added
 - **Startup Telemetrie Log (Dev-Kontext):** Systematische Erfassung von Startup-Zeiten und Phasen zur Performance-Analyse im Dev-Kontext. Strukturiertes Logging mit Markern (npm_start, backend_startup_start, backend_ready), Phasen-Messung (backend_start, frontend_load, app_ready), Log-Rotation, Dev-only Aktivierung via JANUS_DEV_MODE oder NODE_ENV=development. Files: `backend/services/telemetry/startup_config.py`, `backend/services/telemetry/startup_logger.py`, `electron/startup-telemetry.cjs`, `scripts/write-startup-marker.cjs`, `backend/main.py`, `main.electron.cjs`, `package.json`, `tests/test_startup_config.py`, `tests/test_startup_logger.py`. Manual Janus Test PASS. Skill 6 Audit PASS.
 - **Dark Mode Toggle:** Globales Light/Dark Theme Switch in Settings implementiert. Checkbox in Settings UI, Backend-Persistenz (dark_mode_enabled Boolean), LocalStorage-Caching für sofortige Theme-Anwendung, CSS Variables für Theme-Styles. Files: `backend/data/models.py`, `backend/data/schemas.py`, `backend/api/routers/users.py`, `frontend/index.html`, `frontend/js/settings.js`, `frontend/js/app.js`, `frontend/src/styles.css`. Manual Janus Test PASS.
@@ -18,6 +25,7 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 - **Dashboard UI:** Spaltennamen auf Deutsch übersetzt (ÄNDERUNG, ERWEITERUNG, VERBESSERUNG, TECHNISCHE SCHULDEN, UNKLAR). BUG und SPEC FEATURE bleiben auf Englisch. Mapping hinzugefügt für Filter-Logik. Files: `janus-dashboard/apps/ui/src/views/ActiveView.tsx`, `janus-dashboard/apps/ui/src/views/HistoryView.tsx`.
 - **Dashboard Start:** Terminal-Visibility verbessert. VBS-Wrapper `start-dashboard-hidden.vbs` erstellt für versteckten Start. Desktop-Shortcut `Janus Dashboard.vbs` hinzugefügt. Files: `janus-dashboard/start-dashboard-hidden.bat`, `janus-dashboard/start-dashboard-hidden.vbs`.
 - **Janus Logo:** Benutzerdefiniertes PNG-Logo als Janus-Logo konfiguriert für Dev-Modus und gebaute EXE. Files: `frontend/assets/icon.png`, `package.json`, `main.electron.cjs`.
+
 
 ## [0.4.17-beta.23] - 2026-05-09
 

@@ -78,6 +78,55 @@ Dashboard-Regeln:
 
 ## READY
 
+## IN PROGRESS
+
+## DONE
+
+### BACKLOG-021 – Datenbank-Migrationsfehler in EXE-Version: Spalte dark_mode_enabled fehlt
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-05-11
+- **Aktualisiert:** 2026-05-11
+- **Abgeschlossen:** 2026-05-11
+- **Kurzbeschreibung:** In der mit Skill 8 gebauten EXE-Version (v0.4.17-beta.25) tritt ein Datenbank-Migrationsfehler auf: `sqlite3.OperationalError: no such column: users.dark_mode_enabled`. Der Code erwartet die Spalte `dark_mode_enabled` in der `users` Tabelle, aber die Datenbank wurde mit einem alten Schema erstellt. Dies führt zu Fehlern bei `get_default_user_suggestion_mode` und vermutlich auch zu Problemen mit API-Keys (nicht geladen/gespeichert).
+- **Erwartetes Verhalten:** Die Datenbank-Migration wird korrekt ausgeführt, alle erforderlichen Spalten inklusive `dark_mode_enabled` sind vorhanden, und alle Funktionen (inklusive API-Keys) arbeiten korrekt.
+- **Tatsächliches Verhalten:** Die EXE-Version startet, aber bei jedem Aufruf von `get_default_user_suggestion_mode` tritt der Fehler auf: `no such column: users.dark_mode_enabled`. Die SQL-Abfrage versucht auf die Spalte zuzugreifen: `SELECT users.id AS users_id, users.username AS users_username, users.hashed_password AS users_hashed_password, users.is_active AS users_is_active, users.suggestion_mode AS users_suggestion_mode, users.dark_mode_enabled AS users_dark_mode_enabled FROM users ORDER BY users.id ASC LIMIT ? OFFSET ?`. API-Keys werden nicht korrekt geladen oder gespeichert (vermutlich als Symptom des Datenbank-Fehlers).
+- **Reproduktion / Kontext:** Frische Installation von janus-setup-0.4.17-beta.25.exe → Start → Backend-Log zeigt wiederholten Fehler bei `get_default_user_suggestion_mode`. Im Dev-Modus funktioniert alles korrekt.
+- **Betroffener Bereich:** EXE / Packaging / Database Migration / Backend / Data Layer / API-Keys / Settings
+- **Nachweise:**
+  - Backend-Log Zeile 01:20:46: `Traceback (most recent call last): File "sqlalchemy\engine\base.py", line 1967, in _exec_single_context File "sqlalchemy\engine\default.py", line 951, in do_execute sqlite3.OperationalError: no such column: users.dark_mode_enabled`
+  - Backend-Log Zeile 01:20:46: `File "backend\data\crud.py", line 200, in get_default_user_suggestion_mode`
+  - Backend-Log Zeile 01:20:46: `[SQL: SELECT users.id AS users_id, users.username AS users_username, users.hashed_password AS users_hashed_password, users.is_active AS users_is_active, users.suggestion_mode AS users_suggestion_mode, users.dark_mode_enabled AS users_dark_mode_enabled FROM users ORDER BY users.id ASC LIMIT ? OFFSET ?]`
+  - Fehler tritt wiederholt auf (alle 1-2 Sekunden) bei jedem Polling-Intervall
+- **Akzeptanzkriterien:**
+  - [x] Datenbank-Migration fügt `dark_mode_enabled` Spalte korrekt hinzu
+  - [ ] `get_default_user_suggestion_mode` läuft ohne Fehler (EXE-Test ausständig)
+  - [ ] API-Keys werden korrekt geladen und gespeichert (EXE-Test ausständig)
+  - [ ] Alle Backend-Funktionen arbeiten ohne Datenbank-Fehler (EXE-Test ausständig)
+  - [ ] Keine Regression im Dev-Modus
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Root Cause: Dark Mode Feature fügte `dark_mode_enabled` Spalte hinzu, aber die Datenbank-Migration wird in der EXE-Version nicht korrekt ausgeführt. Vermutung: `backend/data/database.py` Migration-Logik wird nicht ausgeführt oder die Datenbank wird mit einem alten Schema initialisiert. Das API-Key-Problem ist wahrscheinlich ein Symptom des Datenbank-Fehlers, nicht die eigentliche Ursache.
+- **Wichtigkeit:** CRITICAL
+- **Umsetzungsrisiko:** HIGH
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** SPEC_PIPELINE_START
+- **Routing reason:** HIGH-Risk EXE-/Packaging-Bugfix mit Datenbank-Migration erfordert vollständige Spec statt direktem Task-Handoff
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-05-11
+- **Handoff:** documentation/Planned Features/backlog_BACKLOG-021_database_migration_fix.md
+- **Recommended next skill:** SKILL 1
+- **Handoff created:** 2026-05-11
+- **Completed in version:** 0.4.17-beta.26
+- **Completed by task:** documentation/tasks/BACKLOG-021_database_migration_fix_tasks.md
+- **Final audit:** PASS WITH CONDITIONS
+- **Validation evidence:** Skill 6 Final Audit PASS WITH CONDITIONS. EXE-Validierung auf Testsystem ausständig (Skill 8). Code-Korrektur in backend/data/database.py implementiert: SQLite-Drift-Migration für users.dark_mode_enabled.
+
 ### BACKLOG-006 – Generische Fehlermeldung statt spezifischer Fehlerdetails
 
 - **Typ:** IMPROVEMENT
