@@ -10,6 +10,11 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 ### Fixed
 - **BACKLOG-020:** Chatfenster-Resize-Problem behoben. Vertikales Resizen blockierte nach erstem Resize-Versuch. Root Cause: CSS `max-height` constraint und JavaScript `resizeListener` height/position constraints blockierten vertikales Resizen. Fix: `max-height: calc(100dvh - 16px)` aus `frontend/css/style.css` entfernt. `maxH` und `maxY` constraints aus `resizeListener` in `frontend/js/app.js` entfernt. Chatfenster lässt sich jetzt frei von der unteren rechten Ecke resizen (horizontal + vertikal) ohne Blockade. Reset-Button und Initialgröße bleiben erhalten. Manual Janus Test PASS. Files: `frontend/css/style.css`, `frontend/js/app.js`.
 
+### Changed
+- **Dashboard UI:** Spaltennamen auf Deutsch übersetzt (ÄNDERUNG, ERWEITERUNG, VERBESSERUNG, TECHNISCHE SCHULDEN, UNKLAR). BUG und SPEC FEATURE bleiben auf Englisch. Mapping hinzugefügt für Filter-Logik. Files: `janus-dashboard/apps/ui/src/views/ActiveView.tsx`, `janus-dashboard/apps/ui/src/views/HistoryView.tsx`.
+- **Dashboard Start:** Terminal-Visibility verbessert. VBS-Wrapper `start-dashboard-hidden.vbs` erstellt für versteckten Start. Desktop-Shortcut `Janus Dashboard.vbs` hinzugefügt. Files: `janus-dashboard/start-dashboard-hidden.bat`, `janus-dashboard/start-dashboard-hidden.vbs`.
+- **Janus Logo:** Benutzerdefiniertes PNG-Logo als Janus-Logo konfiguriert für Dev-Modus und gebaute EXE. Files: `frontend/assets/icon.png`, `package.json`, `main.electron.cjs`.
+
 ## [0.4.17-beta.23] - 2026-05-09
 
 ### Fixed

@@ -551,6 +551,7 @@ function createWindow() {
     height: 800,
     autoHideMenuBar: true,
     show: false, // Initially hidden
+    icon: path.join(__dirname, 'frontend/assets/icon.png'),
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,

@@ -4,6 +4,7 @@ import { Copy } from 'lucide-react'
 
 interface KanbanCardProps {
   item: BacklogItem
+  viewType?: 'active' | 'history'
 }
 
 const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
@@ -190,7 +191,7 @@ const buildPipelineHandoverPrompt = (task: BacklogItem): string => {
   return buildBlockedPrompt(task, 'Kein eindeutiger Entry Point oder Recommended next skill vorhanden.')
 }
 
-export function KanbanCard({ item }: KanbanCardProps) {
+export function KanbanCard({ item, viewType = 'active' }: KanbanCardProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopyHandover = async () => {
@@ -206,6 +207,31 @@ export function KanbanCard({ item }: KanbanCardProps) {
 
   const typeColor = TYPE_COLORS[item.type] || TYPE_COLORS['UNCLEAR']
   const importanceColor = IMPORTANCE_COLORS[item.importance] || IMPORTANCE_COLORS['LOW']
+
+  // Determine which date to display
+  const getDateDisplay = () => {
+    if (viewType === 'history' && item.completed_at) {
+      const date = new Date(item.completed_at)
+      return {
+        label: 'Bearbeitet',
+        date: date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      }
+    }
+    if (viewType === 'active') {
+      // For active items, use routing_decided_at or handoff_created as creation date
+      const dateStr = item.routing_decided_at || item.handoff_created
+      if (dateStr) {
+        const date = new Date(dateStr)
+        return {
+          label: 'Erstellt',
+          date: date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        }
+      }
+    }
+    return null
+  }
+
+  const dateDisplay = getDateDisplay()
 
   return (
     <div className="bg-card border border-border rounded-lg p-3 hover:border-accent transition-colors w-full min-w-0">
@@ -250,14 +276,24 @@ export function KanbanCard({ item }: KanbanCardProps) {
         </div>
       )}
 
+      {/* Date display */}
+      {dateDisplay && (
+        <div className="mb-2">
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{dateDisplay.label}</p>
+          <p className="text-[10px] text-muted-foreground">{dateDisplay.date}</p>
+        </div>
+      )}
+
       {/* Edit Handover Button */}
-      <button
-        onClick={handleCopyHandover}
-        className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded bg-accent hover:bg-accent/80 text-accent-foreground text-[10px] font-medium transition-colors"
-      >
-        <Copy className="w-3 h-3" />
-        {copied ? 'Copied!' : 'Edit Handover'}
-      </button>
+      {viewType !== 'history' && (
+        <button
+          onClick={handleCopyHandover}
+          className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded bg-accent hover:bg-accent/80 text-accent-foreground text-[10px] font-medium transition-colors"
+        >
+          <Copy className="w-3 h-3" />
+          {copied ? 'Copied!' : 'Edit Handover'}
+        </button>
+      )}
     </div>
   )
 }

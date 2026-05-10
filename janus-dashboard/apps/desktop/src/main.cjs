@@ -36,7 +36,7 @@ function createWindow() {
 }
 
 function loadWithRetry() {
-  const url = 'http://127.0.0.1:5173'
+  const url = 'http://127.0.0.1:5174'
   
   mainWindow.loadURL(url).catch((err) => {
     console.error(`Failed to load UI (attempt ${retryCount + 1}/${MAX_RETRIES}):`, err.message)
@@ -46,7 +46,7 @@ function loadWithRetry() {
       console.log(`Retrying in ${RETRY_DELAY / 1000} seconds...`)
       setTimeout(() => loadWithRetry(), RETRY_DELAY)
     } else {
-      console.error('Max retries reached. Please ensure the UI dev server is running on http://127.0.0.1:5173')
+      console.error('Max retries reached. Please ensure the UI dev server is running on http://127.0.0.1:5174')
       app.quit()
     }
   })

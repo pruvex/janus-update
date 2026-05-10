@@ -39,6 +39,7 @@ documentation/backlog/BACKLOG.md
 - Fehlende Informationen aktiv und konkret beim Nutzer anfordern.
 - Backlog-Einträge müssen artefaktbasiert und später nachvollziehbar sein.
 - Wenn die Anfrage mehrere unabhängige Themen enthält, in mehrere Backlog-Items aufteilen oder den Nutzer um Auswahl bitten.
+- DONE-Items werden nicht reaktiviert; spätere Probleme, Änderungen oder Regressionen zu erledigten Items werden immer als neues Backlog-Item aufgenommen.
 
 ---
 
@@ -149,6 +150,29 @@ BACKLOG-003
 ```
 
 Wenn vorhandene IDs existieren, verwende die nächste freie Nummer.
+
+---
+
+## Follow-up-Regel für DONE-Items
+
+Prüfe bei jeder neuen Eingabe, ob das beschriebene Problem, die Änderung oder Ergänzung ein Follow-up zu einem vorhandenen `DONE` Item ist.
+
+Wenn ein Follow-up zu einem `DONE` Item erkannt wird:
+
+- Erstelle trotzdem immer ein neues Backlog-Item mit neuer ID.
+- Verschiebe das ursprüngliche `DONE` Item nicht zurück nach `READY` oder `IN PROGRESS`.
+- Ergänze im neuen Item einen Verweis:
+  - `- **Follow-up zu:** BACKLOG-XXX – <Titel des erledigten Items>`
+- Ergänze im ursprünglichen `DONE` Item einen reinen Rückverweis, ohne den Status zu ändern:
+  - `- **Follow-ups:**`
+  - `  - YYYY-MM-DD – BACKLOG-YYY – <Titel des neuen Follow-up Items>`
+- Setze `Aktualisiert` beim ursprünglichen `DONE` Item auf das Datum des Rückverweises.
+
+Wenn die Follow-up-Zuordnung unsicher ist:
+
+- Erstelle das neue Item ohne Rückverweis.
+- Vermerke die mögliche Beziehung unter `Notizen`.
+- Frage nicht mehrere alte History-Items ab, außer der Nutzer nennt explizit ein konkretes Ursprungsthema.
 
 ---
 

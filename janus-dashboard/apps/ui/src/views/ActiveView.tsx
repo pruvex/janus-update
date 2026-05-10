@@ -6,13 +6,23 @@ import { Loader2, AlertTriangle, Info, CheckCircle, XCircle } from 'lucide-react
 
 const COLUMNS = [
   'BUG',
-  'CHANGE',
-  'ENHANCEMENT',
-  'IMPROVEMENT',
-  'TECH_DEBT',
-  'UNCLEAR',
+  'ÄNDERUNG',
+  'ERWEITERUNG',
+  'VERBESSERUNG',
+  'TECHNISCHE SCHULDEN',
+  'UNKLAR',
   'SPEC FEATURE'
 ] as const
+
+const COLUMN_TYPE_MAPPING: Record<string, string> = {
+  'BUG': 'BUG',
+  'ÄNDERUNG': 'CHANGE',
+  'ERWEITERUNG': 'ENHANCEMENT',
+  'VERBESSERUNG': 'IMPROVEMENT',
+  'TECHNISCHE SCHULDEN': 'TECH_DEBT',
+  'UNKLAR': 'UNCLEAR',
+  'SPEC FEATURE': 'SPEC FEATURE'
+}
 
 const IMPORTANCE_WEIGHTS: Record<string, number> = {
   'CRITICAL': 4,
@@ -90,8 +100,9 @@ export function ActiveView() {
   }
 
   const getColumnItems = (columnType: string) => {
+    const englishType = COLUMN_TYPE_MAPPING[columnType] || columnType
     return items
-      .filter(item => item.type === columnType)
+      .filter(item => item.type === englishType)
       .sort((a, b) => calculatePriorityScore(b) - calculatePriorityScore(a))
   }
 
@@ -183,7 +194,7 @@ export function ActiveView() {
                 </div>
                 <div className="flex-1 overflow-y-auto p-2 space-y-2">
                   {columnItems.map((item) => (
-                    <KanbanCard key={item.id} item={item} />
+                    <KanbanCard key={item.id} item={item} viewType="active" />
                   ))}
                   {columnItems.length === 0 && (
                     <div className="text-center text-muted-foreground text-xs py-6">

@@ -119,7 +119,7 @@ setTimeout(() => {
       
       // Force kill by port to ensure no orphans are left
       if (platform() === 'win32') {
-        forceKillPortWindows(5173) // Vite
+        forceKillPortWindows(5174) // Vite (Dashboard UI)
         forceKillPortWindows(3001) // Local API
       }
       
@@ -143,7 +143,7 @@ setTimeout(() => {
       
       // Force kill by port to ensure no orphans are left
       if (platform() === 'win32') {
-        forceKillPortWindows(5173) // Vite
+        forceKillPortWindows(5174) // Vite (Dashboard UI)
         forceKillPortWindows(3001) // Local API
       }
       
