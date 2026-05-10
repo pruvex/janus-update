@@ -8,6 +8,7 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 ## [Unreleased]
 
 ### Added
+- **Startup Telemetrie Log (Dev-Kontext):** Systematische Erfassung von Startup-Zeiten und Phasen zur Performance-Analyse im Dev-Kontext. Strukturiertes Logging mit Markern (npm_start, backend_startup_start, backend_ready), Phasen-Messung (backend_start, frontend_load, app_ready), Log-Rotation, Dev-only Aktivierung via JANUS_DEV_MODE oder NODE_ENV=development. Files: `backend/services/telemetry/startup_config.py`, `backend/services/telemetry/startup_logger.py`, `electron/startup-telemetry.cjs`, `scripts/write-startup-marker.cjs`, `backend/main.py`, `main.electron.cjs`, `package.json`, `tests/test_startup_config.py`, `tests/test_startup_logger.py`. Manual Janus Test PASS. Skill 6 Audit PASS.
 - **Dark Mode Toggle:** Globales Light/Dark Theme Switch in Settings implementiert. Checkbox in Settings UI, Backend-Persistenz (dark_mode_enabled Boolean), LocalStorage-Caching für sofortige Theme-Anwendung, CSS Variables für Theme-Styles. Files: `backend/data/models.py`, `backend/data/schemas.py`, `backend/api/routers/users.py`, `frontend/index.html`, `frontend/js/settings.js`, `frontend/js/app.js`, `frontend/src/styles.css`. Manual Janus Test PASS.
 
 ### Fixed

@@ -18,6 +18,18 @@ const { initJanusUpdateManager } = require('./electron/update-manager.cjs');
 const { readUpdateState, transitionUpdateState } = require('./electron/update-state.cjs');
 
 // ============================================================
+// STARTUP TELEMETRY (Dev Context Only)
+// ============================================================
+const { getStartupTelemetryConfig, StartupTelemetryLogger } = require('./electron/startup-telemetry.cjs');
+const telemetryConfig = getStartupTelemetryConfig();
+const telemetryLogger = new StartupTelemetryLogger({
+  enabled: telemetryConfig.enabled,
+  logFilePath: telemetryConfig.log_file_path,
+  maxFileSizeBytes: telemetryConfig.max_file_size_bytes,
+  maxBackupFiles: telemetryConfig.max_backup_files
+});
+
+// ============================================================
 // YOUTUBE ORIGIN FIX: Register custom scheme as privileged
 // ============================================================
 protocol.registerSchemesAsPrivileged([
@@ -749,46 +761,83 @@ function createWindow() {
   // Start the backend and wait for it to be ready
   const startApp = async () => {
     try {
+      // STARTUP TELEMETRY: Backend start phase (measure before startRun)
+      const backendStart = Date.now();
+      let backendStartDuration = 0;
       if (app.isPackaged) {
         await startBackend();
+        backendStartDuration = Date.now() - backendStart;
+      } else {
+        // In dev mode, backend might already be running or started separately
+        backendStartDuration = 0;
       }
-      
+
       // Wait for backend to be ready
       let attempts = 0;
       const maxAttempts = 120; // 120 seconds (2 minutes) max
-      
+      let telemetryStarted = false;
+
       while (attempts < maxAttempts) {
         const isReady = await checkBackendReady();
         if (isReady) {
           console.log('[Electron Main] Backend ready, loading app...');
+
+          // STARTUP TELEMETRY: Start run on first successful backend health check
+          if (!telemetryStarted) {
+            telemetryLogger.startRun();
+            telemetryStarted = true;
+
+            // Log backend_start phase after startRun
+            if (app.isPackaged) {
+              telemetryLogger.logPhase('backend_start', backendStartDuration);
+            } else {
+              telemetryLogger.logPhase('backend_start', 0, { note: 'Dev mode - backend not started by Electron' });
+            }
+          }
+
+          // STARTUP TELEMETRY: Frontend load phase
+          const frontendStart = Date.now();
           await loadApp();
+          telemetryLogger.logPhase('frontend_load', Date.now() - frontendStart);
+
+          // STARTUP TELEMETRY: App ready phase (window shown, Janus is usable)
+          const appReadyStart = Date.now();
           mainWindow.show();
           if (splashWindow) {
             splashWindow.close();
             splashWindow = null;
           }
+          telemetryLogger.logPhase('app_ready', Date.now() - appReadyStart);
+
+          // STARTUP TELEMETRY: End run when Janus is actually usable
+          telemetryLogger.endRun(success=true);
+
           return;
         }
-        
+
         // Update splash screen status with more informative message
         if (splashWindow) {
           // Better user message
-          const status = (attempts < 15) 
-            ? `Starte Dienste... (${attempts + 1})` 
+          const status = (attempts < 15)
+            ? `Starte Dienste... (${attempts + 1})`
             : `Lade Modelle (kann dauern)... (${attempts + 1})`;
-            
+
           splashWindow.webContents.executeJavaScript(`
             document.querySelector('.status').textContent = '${status}';
           `);
         }
-        
+
         await new Promise(resolve => setTimeout(resolve, 1000));
         attempts++;
       }
-      
+
       throw new Error('Backend did not start in time');
     } catch (err) {
       console.error('Failed to start app:', err);
+      
+      // STARTUP TELEMETRY: Log startup failure
+      telemetryLogger.endRun(success=false, errorMessage=err.message);
+      
       if (splashWindow) {
         splashWindow.close();
       }
@@ -1042,6 +1091,9 @@ ipcMain.handle('debug:write-frontend-log', async (event, payload = {}) => {
 //  APP INITIALIZATION
 // ===================================================================
 app.whenReady().then(async () => {
+    // STARTUP TELEMETRY: Start run will be triggered on first successful backend health check
+    // (not here, to ensure we capture time from "backend ready" to "Janus usable")
+
     // YOUTUBE ORIGIN FIX: Mask Janus as real Chrome browser globally (set here to avoid startup race conditions).
     // Note: command-line switches like disable-features are set at the top of the script (before app init).
     app.userAgentFallback = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
@@ -1137,6 +1189,9 @@ app.whenReady().then(async () => {
     setTimeout(() => {
         initJanusUpdateManager({ app, autoUpdater, mainWindow: win, log });
     }, 1000);
+
+    // NOTE: Telemetry starts on first successful backend health check in startApp()
+    // Phases before that (splash, window, update) are not logged
 });
 
 // ===================================================================

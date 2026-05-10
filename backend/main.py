@@ -3,12 +3,34 @@ import sys
 import os
 
 # Ersetze diesen Pfad mit dem, den du gerade kopiert hast!
-VENV_SITE_PACKAGES = r"C:\python311\Lib\site-packages" 
+VENV_SITE_PACKAGES = r"C:\python311\Lib\site-packages"
 
 if VENV_SITE_PACKAGES not in sys.path:
     print(f"!!! VENV WORKAROUND: Füge {VENV_SITE_PACKAGES} zum Systempfad hinzu.")
     sys.path.insert(0, VENV_SITE_PACKAGES)
 # ----------------------------------------
+
+# STARTUP TELEMETRY: Write backend startup start marker (at module import time)
+try:
+    import json
+    from datetime import datetime
+
+    # Only write in dev context
+    if os.environ.get("JANUS_DEV_MODE") == "true" or os.environ.get("NODE_ENV") == "development":
+        log_dir = r"C:\KI\Janus-Projekt\documentation\Startup log"
+        os.makedirs(log_dir, exist_ok=True)
+        log_file = os.path.join(log_dir, "janus_startup_telemetry.log")
+        marker = {
+            "marker": "backend_startup_start",
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "metadata": {"port": 8001}
+        }
+        with open(log_file, "a", encoding="utf-8") as f:
+            f.write(json.dumps(marker, ensure_ascii=False) + "\n")
+        print(f"[Startup Telemetry] Wrote backend_startup_start marker at module import")
+except Exception as e:
+    print(f"[Startup Telemetry] Failed to write backend startup marker: {e}")
+
 import sys
 import os
 import io
@@ -550,6 +572,27 @@ async def lifespan(app: FastAPI):
 
     # Let the application start even if some non-critical components failed
     # The health check will report the actual status
+
+    # STARTUP TELEMETRY: Write backend ready marker
+    try:
+        # Only write in dev context
+        if os.environ.get("JANUS_DEV_MODE") == "true" or os.environ.get("NODE_ENV") == "development":
+            import json
+            from datetime import datetime
+            log_dir = r"C:\KI\Janus-Projekt\documentation\Startup log"
+            os.makedirs(log_dir, exist_ok=True)
+            log_file = os.path.join(log_dir, "janus_startup_telemetry.log")
+            marker = {
+                "marker": "backend_ready",
+                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "metadata": {"port": 8001}
+            }
+            with open(log_file, "a", encoding="utf-8") as f:
+                f.write(json.dumps(marker, ensure_ascii=False) + "\n")
+            print(f"[Startup Telemetry] Wrote backend_ready marker")
+    except Exception as e:
+        print(f"[Startup Telemetry] Failed to write backend ready marker: {e}")
+
     yield
     
     # GRACEFUL SHUTDOWN: Cancel memory cleanup task

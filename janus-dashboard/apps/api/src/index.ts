@@ -18,6 +18,7 @@ const ITEM_HEADING_PATTERN = /^###\s+(BACKLOG-\d+)\s+[–-]\s+(.+?)\s*$/
 const SECTION_PATTERN = /^##\s+(.+?)\s*$/
 const FIELD_PATTERN = /^-\s+\*\*(.+?):\*\*\s*(.*)$/
 const SPEC_REVIEW_METADATA_HEADING = /^##\s+SPEC REVIEW METADATA\s*$/i
+const SPEC_IMPLEMENTATION_METADATA_HEADING = /^##\s+SPEC IMPLEMENTATION METADATA\s*$/i
 const SPEC_REVIEW_EXECUTION_ROUTING_HEADING = /^(?:##\s+)?[^\w#]*\s*SPEC REVIEW EXECUTION ROUTING\s*$/i
 
 const FIELD_ALIASES: Record<string, keyof BacklogItem> = {
@@ -98,34 +99,44 @@ function createBacklogItem(id: string, title: string): BacklogItem {
 
 function createSpecItem(filePath: string, relativePath: string, text: string): BacklogItem {
   const metadata = parseSpecReviewMetadata(text)
+  const implementationMetadata = parseSpecImplementationMetadata(text)
   const executionRouting = parseSpecExecutionRouting(text)
   const reviewStatus = (metadata['Review Status'] || '').toUpperCase()
   const skillReady = (metadata['Skill-1 Ready'] || '').toUpperCase()
+  const implementationStatus = (implementationMetadata['Implementation Status'] || '').toUpperCase()
+  const finalAudit = (implementationMetadata['Final Audit'] || '').toUpperCase()
   const executionMode = normalizeSpecExecutionMode(executionRouting.execution_mode)
   const routingComplexityScore = normalizeSpecComplexityScore(executionRouting.complexity_score)
   const dashboardHint = normalizeSpecDashboardHint(executionRouting.dashboard_hint)
   const routingConfidence = normalizeSpecConfidence(executionRouting.confidence)
   const isSkillReady = skillReady === 'YES' && (reviewStatus === 'APPROVED' || reviewStatus === 'APPROVED_WITH_NOTES')
+  const isImplementationDone = implementationStatus === 'DONE' && (finalAudit === 'PASS' || finalAudit === 'PASS WITH FIXES')
   const item = createBacklogItem(`SPEC-${slugifySpecId(relativePath)}`, extractSpecTitle(text, relativePath))
   const fileStat = statSync(filePath)
 
   item.type = 'SPEC FEATURE'
-  item.status = isSkillReady ? 'READY' : 'TO REVIEW'
+  item.status = isImplementationDone ? 'DONE' : isSkillReady ? 'READY' : 'TO REVIEW'
   item.importance = 'MEDIUM'
   item.implementation_risk = isSkillReady ? normalizeSpecRisk(metadata.Risk) : normalizeSpecRisk(dashboardHint)
   item.effort = normalizeSpecEffort(metadata['Complexity Score'] || routingComplexityScore)
-  item.readiness = isSkillReady ? 'READY' : 'NEEDS REVIEW'
-  item.recommendation = isSkillReady ? 'DO NOW' : `SPEC REVIEW AUSFÜHREN MIT ${formatSpecExecutionMode(executionMode)}`
-  item.entry_point = isSkillReady ? 'SPEC_PIPELINE_START' : 'SPEC_REVIEW_GATE'
-  item.routing_reason = isSkillReady
+  item.readiness = isImplementationDone ? 'COMPLETED' : isSkillReady ? 'READY' : 'NEEDS REVIEW'
+  item.recommendation = isImplementationDone ? 'COMPLETED' : isSkillReady ? 'DO NOW' : `SPEC REVIEW AUSFÜHREN MIT ${formatSpecExecutionMode(executionMode)}`
+  item.entry_point = isImplementationDone ? 'COMPLETED' : isSkillReady ? 'SPEC_PIPELINE_START' : 'SPEC_REVIEW_GATE'
+  item.routing_reason = isImplementationDone
+    ? 'Spec wurde nach erfolgreichem Skill-6-Final-Audit abgeschlossen.'
+    : isSkillReady
     ? 'Spec wurde durch SPEC SKILL 1 geprüft und ist Skill-1-ready.'
     : executionRouting.reason || 'Spec liegt in documentation/SPEC, aber der SPEC SKILL 1 Review ist noch nicht abgeschlossen.'
   item.routing_confidence = isSkillReady ? normalizeSpecConfidence(metadata['Review Confidence']) : routingConfidence
   item.routing_decided_by = 'janus-dashboard spec scanner'
   item.routing_decided_at = formatDate(fileStat.mtime)
   item.handoff = normalizePathForPrompt(relativePath)
-  item.recommended_next_skill = isSkillReady ? 'SKILL 1' : 'SPEC SKILL 1'
+  item.recommended_next_skill = isImplementationDone ? '' : isSkillReady ? 'SKILL 1' : 'SPEC SKILL 1'
   item.handoff_created = formatDate(fileStat.mtime)
+  item.completed_at = isImplementationDone ? implementationMetadata['Completed At'] || formatDate(fileStat.mtime) : null
+  item.completed_by_task = isImplementationDone ? implementationMetadata['Completed By'] || 'SKILL 6 – DIAMANTSTANDARD FINAL AUDIT' : null
+  item.final_audit = isImplementationDone ? finalAudit : null
+  item.validation_evidence = isImplementationDone ? implementationMetadata['Validation Evidence'] || null : null
   item.raw_fields = {
     Spec: normalizePathForPrompt(relativePath),
     'Review Status': reviewStatus || 'TO REVIEW',
@@ -141,6 +152,11 @@ function createSpecItem(filePath: string, relativePath: string, text: string): B
     'Spec Review Dashboard Hint': dashboardHint,
     'Spec Review Confidence': routingConfidence,
     'Spec Review Reason': executionRouting.reason || '',
+    'Implementation Status': implementationStatus || '',
+    'Final Audit': finalAudit || '',
+    'Completed At': implementationMetadata['Completed At'] || '',
+    'Completed By': implementationMetadata['Completed By'] || '',
+    'Validation Evidence': implementationMetadata['Validation Evidence'] || '',
   }
 
   return item
@@ -148,6 +164,10 @@ function createSpecItem(filePath: string, relativePath: string, text: string): B
 
 function parseSpecReviewMetadata(text: string): Record<string, string> {
   return parseSpecKeyValueBlock(text, SPEC_REVIEW_METADATA_HEADING)
+}
+
+function parseSpecImplementationMetadata(text: string): Record<string, string> {
+  return parseSpecKeyValueBlock(text, SPEC_IMPLEMENTATION_METADATA_HEADING)
 }
 
 function parseSpecExecutionRouting(text: string): Record<string, string> {
@@ -240,7 +260,19 @@ function findNextSpecBlockValue(lines: string[], startIndex: number): string {
 function extractSpecTitle(text: string, relativePath: string): string {
   const heading = text.split(/\r?\n/).find((line) => /^#\s+/.test(line.trim()))
   if (heading) {
-    return heading.replace(/^#\s+/, '').trim()
+    const title = heading.replace(/^#\s+/, '').trim()
+    if (!/^JANUS FEATURE SPEC\s+[–-]\s+DIAMANTSTANDARD/i.test(title)) {
+      return title
+    }
+  }
+
+  const featureName = text
+    .split(/\r?\n/)
+    .map((line) => /^-\s+\*?\*?Feature Name\*?\*?:\s*(.+?)\s*$/.exec(line.trim()))
+    .find((match): match is RegExpExecArray => Boolean(match))?.[1]
+
+  if (featureName) {
+    return featureName.trim()
   }
 
   return relativePath.split(/[\\/]/).pop()?.replace(/\.md$/i, '').replace(/[-_]+/g, ' ') || relativePath

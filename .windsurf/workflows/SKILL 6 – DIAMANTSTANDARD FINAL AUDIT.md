@@ -13,13 +13,14 @@ Er entscheidet:
 - Gibt es Regressionen oder Scope Drift?
 - Darf Dokumentation/Release nach kompletter Umsetzung erfolgen?
 
-KEINE IMPLEMENTATION. KEIN CODE.
+KEINE PRODUKTIMPLEMENTATION. KEIN CODE. Erlaubt ist nur der Abschluss-Metadatenblock in der Spec-Datei bei erfolgreichem Audit.
 
 WICHTIG:
 - Skill 6 ist nur das finale Audit nach kompletter Spec-Umsetzung.
 - Skill 6 darf nicht nach jedem Subtask verwendet werden.
 - Skill 6 darf nur fortfahren, wenn das Audit-Paket `Remaining Tasks: keine` und `Spec Implementation Complete: YES` enthÃ¤lt.
 - Solange weitere Tasks offen sind, muss der User zurÃ¼ck zu Skill 4 fÃ¼r den nÃ¤chsten Target Task.
+- Nach `FINAL AUDIT RESULT: PASS` oder `FINAL AUDIT RESULT: PASS WITH FIXES` MUSS Skill 6 die Spec-Datei mit einem `SPEC IMPLEMENTATION METADATA`-Block als abgeschlossen markieren und danach nach `documentation/SPEC/Spec Done/` verschieben, damit das Janus-Dashboard die Spec nach Refresh in History verschiebt.
 
 ---
 
@@ -345,7 +346,7 @@ Wenn ein manueller Produkttest fÃ¼r das Feature nicht sinnvoll mÃ¶glich ist,
 
 ## ðŸ“¤ OUTPUT FORMAT
 
-```text id="skill5_output"
+```text id="skill6_output"
 FINAL AUDIT RESULT: PASS | PASS WITH FIXES | BLOCKED
 
 Zusammenfassung:
@@ -386,7 +387,7 @@ Finaler Janus-Smoke-Test:
 - Startpunkt: <wo im Produkt>
 - Aktion: <konkrete Schritte>
 - Erwartetes Ergebnis: <sichtbarer Soll-Zustand>
-- Wenn Ergebnis abweicht: <Skill-6-Handoff an SWE 1.6 mit tatsÃ¤chlichem Output und Backendlog>
+- Wenn Ergebnis abweicht: <Skill-5-Debug-Handoff an SWE 1.6 mit tatsÃ¤chlichem Output und Backendlog>
 
 NÃ¤chster Schritt:
 - Wenn Final Audit PASS oder PASS WITH FIXES ist: Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE` ausfÃ¼hren.
@@ -396,6 +397,16 @@ Pipeline Completion Status:
 - Completed Tasks: <Liste>
 - Remaining Tasks: keine
 - Spec Implementation Complete: YES
+
+Dashboard Completion Metadata:
+- Spec-Datei aktualisiert: JA | NEIN
+- Spec-Datei verschoben: JA | NEIN
+- Neuer Spec-Pfad: documentation/SPEC/Spec Done/<SPEC_DATEI>.md | N/A
+- Metadata Block: `SPEC IMPLEMENTATION METADATA`
+- Implementation Status: DONE | N/A
+- Final Audit: PASS | PASS WITH FIXES | N/A
+- Completed By: SKILL 6 – DIAMANTSTANDARD FINAL AUDIT
+- Completed At: <YYYY-MM-DD>
 
 Copy-Paste-Prompt fÃ¼r Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE`:
 
@@ -457,6 +468,40 @@ keine ArchitekturÃ¤nderungen
 keine Task-Neudefinition
 keine Scope-Erweiterung
 keine â€žVerbesserungsideenâ€œ
+
+## ðŸ“Œ DASHBOARD HISTORY COMPLETION MARKER
+
+Wenn `FINAL AUDIT RESULT: PASS` oder `FINAL AUDIT RESULT: PASS WITH FIXES` ist:
+
+- Skill 6 MUSS die im Audit-Paket genannte Spec-Datei aktualisieren.
+- Skill 6 MUSS einen bestehenden `## SPEC IMPLEMENTATION METADATA`-Block ersetzen oder, falls keiner existiert, am Ende der Spec ergÃ¤nzen.
+- Nach erfolgreichem Schreiben des Metadata-Blocks MUSS Skill 6 die Spec-Datei nach `documentation/SPEC/Spec Done/<original-filename>.md` verschieben.
+- Wenn `documentation/SPEC/Spec Done/` nicht existiert, MUSS Skill 6 den Ordner erstellen.
+- Wenn am Ziel bereits eine Datei mit gleichem Namen existiert, MUSS Skill 6 stoppen und `BLOCKED: SPEC DONE TARGET EXISTS` melden, statt eine Datei zu Ã¼berschreiben.
+- Dieser Block ist der verbindliche Marker fÃ¼r den Dashboard-Spec-Scanner.
+- Nach Dashboard-Refresh MUSS die Spec dadurch `Status: DONE` erhalten und in History erscheinen.
+- Skill 6 darf diesen Marker NICHT setzen, wenn das Audit `BLOCKED`, `FINAL AUDIT PACKAGE INCOMPLETE` oder `MODEL SWITCH REQUIRED` ist.
+
+Pflichtformat:
+
+```markdown
+## SPEC IMPLEMENTATION METADATA
+
+- **Implementation Status:** DONE
+- **Final Audit:** <PASS | PASS WITH FIXES>
+- **Completed At:** <YYYY-MM-DD>
+- **Completed By:** SKILL 6 – DIAMANTSTANDARD FINAL AUDIT
+- **Validation Evidence:** Skill 6 Final Audit PASS after Skill 4 automatic validation and manual Janus test evidence
+```
+
+Regeln:
+- `Final Audit` MUSS exakt `PASS` oder `PASS WITH FIXES` sein.
+- `Implementation Status` MUSS exakt `DONE` sein.
+- `Completed At` MUSS das aktuelle Datum im Format `YYYY-MM-DD` sein.
+- Wenn der Skill-6-Lauf ein Re-Audit nach Skill 5 Debug war, muss `Validation Evidence` zusÃ¤tzlich `Skill 5 FIXED + manual retest PASS` nennen.
+- Skill 6 MUSS im Output den neuen Spec-Pfad unter `documentation/SPEC/Spec Done/` nennen.
+- Alle Folge-Handover, insbesondere Skill 7, MÃœSSEN den neuen Spec-Pfad verwenden.
+
 ðŸ§  ERROR HANDLING
 
 Wenn Task oder Code nicht eindeutig prÃ¼fbar:
