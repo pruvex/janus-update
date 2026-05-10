@@ -927,6 +927,13 @@ async function attemptSilentLogin() {
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("--> [1] DOM fully loaded. Starting application initialization...");
 
+  // Apply Dark Mode immediately from localStorage cache (before async operations)
+  const cachedDarkMode = localStorage.getItem("dark_mode_enabled");
+  if (cachedDarkMode !== null) {
+    applyDarkMode(cachedDarkMode === "true");
+    console.log("[Dark Mode] Applied from localStorage cache:", cachedDarkMode === "true");
+  }
+
   // Initialize state-driven update UI (independent of authentication)
   try {
       initUpdateUI();
@@ -936,6 +943,54 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   await initializeApp();
 });
+
+// Dark Mode Theme Functions
+function applyDarkMode(darkModeEnabled) {
+  if (darkModeEnabled === true) {
+    document.body.classList.add('dark-mode');
+    console.log("[Dark Mode] Applied dark mode");
+  } else {
+    document.body.classList.remove('dark-mode');
+    console.log("[Dark Mode] Applied light mode");
+  }
+}
+
+function authHeadersJson() {
+  const token = localStorage.getItem("auth_token");
+  const headers = { "Content-Type": "application/json" };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+async function loadAndApplyDarkModeOnStartup() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+      headers: authHeadersJson(),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      const darkModeEnabled = Boolean(data.dark_mode_enabled);
+      // Update localStorage cache
+      localStorage.setItem("dark_mode_enabled", darkModeEnabled.toString());
+      // Apply theme
+      applyDarkMode(darkModeEnabled);
+      // Update checkbox if it exists
+      const checkbox = document.getElementById("dark-mode-checkbox");
+      if (checkbox) {
+        checkbox.checked = darkModeEnabled;
+      }
+      console.log("[Dark Mode] Loaded and applied dark_mode_enabled:", darkModeEnabled);
+    } else {
+      console.warn("[Dark Mode] Failed to load dark mode setting, defaulting to light mode");
+      applyDarkMode(false);
+    }
+  } catch (error) {
+    console.error("[Dark Mode] Error loading dark mode setting:", error);
+    applyDarkMode(false);
+  }
+}
 
 // The central initialization function that controls the entire startup process
 async function initializeApp() {
@@ -1014,8 +1069,12 @@ async function initializeApp() {
       console.log("--> [3.4.5] Initializing settings...");
       await initializeSettings();
 
+      // Dark Mode: Load and apply theme setting
+      console.log("--> [3.4.6] Loading dark mode setting...");
+      await loadAndApplyDarkModeOnStartup();
+
       // 💎 CU-3: Initialisiere Image Studio NACH Auth (verhindert Race-Condition)
-      console.log("--> [3.4.6] Initializing image studio...");
+      console.log("--> [3.4.7] Initializing image studio...");
       await initializeStudio();
 
       // RENDERE die UI und MACHE sie INTERAKTIV

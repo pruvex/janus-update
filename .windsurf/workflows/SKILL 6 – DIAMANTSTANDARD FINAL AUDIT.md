@@ -8,12 +8,18 @@ Dieser Skill ist das **finale QualitÃ¤ts- und Release-Gate** im Janus Diamants
 
 Er entscheidet:
 
-- Ist das Feature wirklich fertig?
+- Ist die gesamte Spec nach allen Subtasks wirklich fertig?
 - Entspricht alles der Spec?
 - Gibt es Regressionen oder Scope Drift?
-- Darf ein Release erfolgen?
+- Darf Dokumentation/Release nach kompletter Umsetzung erfolgen?
 
 KEINE IMPLEMENTATION. KEIN CODE.
+
+WICHTIG:
+- Skill 6 ist nur das finale Audit nach kompletter Spec-Umsetzung.
+- Skill 6 darf nicht nach jedem Subtask verwendet werden.
+- Skill 6 darf nur fortfahren, wenn das Audit-Paket `Remaining Tasks: keine` und `Spec Implementation Complete: YES` enthÃ¤lt.
+- Solange weitere Tasks offen sind, muss der User zurÃ¼ck zu Skill 4 fÃ¼r den nÃ¤chsten Target Task.
 
 ---
 
@@ -29,10 +35,10 @@ ALLOWED AUDIT MODELS:
 - `GPT-5.5` fÃ¼r HIGH, CRITICAL, unklare, widersprÃ¼chliche oder releasekritische Audits.
 
 AUDIT MODEL GATE:
-- Skill 5 MUSS zu Beginn das `Audit Model Gate` aus dem Compact Audit Package prÃ¼fen.
-- Wenn kein `Audit Model Gate` enthalten ist, MUSS Skill 5 konservativ selbst klassifizieren.
+- Skill 6 MUSS zu Beginn das `Audit Model Gate` aus dem Compact Audit Package prÃ¼fen.
+- Wenn kein `Audit Model Gate` enthalten ist, MUSS Skill 6 konservativ selbst klassifizieren.
 - Wenn die Klassifizierung nicht eindeutig LOW oder MEDIUM ist, MUSS GPT-5.5 verwendet werden.
-- Wenn das aktive Modell schwÃ¤cher ist als das erforderliche Audit-Modell, MUSS Skill 5 stoppen und den Modellwechsel verlangen.
+- Wenn das aktive Modell schwÃ¤cher ist als das erforderliche Audit-Modell, MUSS Skill 6 stoppen und den Modellwechsel verlangen.
 
 RISK RULES:
 - LOW:
@@ -53,9 +59,9 @@ RISK RULES:
   - Pflicht: `GPT-5.5`
 
 CHAT RULE:
-- Skill 5 SOLL in einem neuen Chat gestartet werden.
+- Skill 6 SOLL in einem neuen Chat gestartet werden.
 - Der Nutzer soll explizit aufgefordert werden, einen neuen Audit-Chat mit dem empfohlenen Audit-Modell zu öffnen und nur das Compact Audit Handover aus Skill 4 einzufügen.
-- Wenn Skill 5 im selben langen Implementierungs-Chat gestartet wird, MUSS der Skill trotzdem ausschließlich das Compact Audit Package verwenden und den übrigen Chatverlauf ignorieren.
+- Wenn Skill 6 im selben langen Implementierungs-Chat gestartet wird, MUSS der Skill trotzdem ausschließlich das Compact Audit Package verwenden und den übrigen Chatverlauf ignorieren.
 - Kein vollständiger Chatverlauf, keine Debug-Diskussionen und keine nicht genannten Dateien als Audit-Grundlage verwenden.
 
 ESCALATION RULE:
@@ -77,7 +83,7 @@ Reason: <kurze technische BegrÃ¼ndung>
 
 FOLLOW-UP:
 â†’ neuer Chat erforderlich
-â†’ Skill 5 erneut ausfÃ¼hren mit gewÃ¤hltem Modell
+â†’ Skill 6 erneut ausfÃ¼hren mit gewÃ¤hltem Modell
 
 ---
 
@@ -88,12 +94,13 @@ FOLLOW-UP:
 - Pre-Check Ergebnisse (Skill 3)
 - Repo-State / Codebase Snapshot
 - Test Results (Unit / Integration / E2E)
+- Pipeline Status mit `Completed Tasks = alle`, `Remaining Tasks = keine` und `Spec Implementation Complete: YES`
 
 ---
 
 ## ðŸ“Œ COMPACT AUDIT PACKAGE MODE
 
-Skill 5 MUSS kostenbewusst arbeiten und darf keinen vollstÃ¤ndigen Chatverlauf als Audit-Grundlage verlangen. Das Modell richtet sich nach dem `Audit Model Gate`; GPT-5.5 bleibt Pflicht fÃ¼r HIGH/CRITICAL/unklare Audits.
+Skill 6 MUSS kostenbewusst arbeiten und darf keinen vollstÃ¤ndigen Chatverlauf als Audit-Grundlage verlangen. Das Modell richtet sich nach dem `Audit Model Gate`; GPT-5.5 bleibt Pflicht fÃ¼r HIGH/CRITICAL/unklare Audits.
 
 Empfohlener Ablauf:
 1. Neuen Chat öffnen.
@@ -117,7 +124,7 @@ Der Skill MUSS dann:
 Minimaler gÃ¼ltiger User-Aufruf:
 
 ```text
-/Skill 5 â€“ Diamantstandard Final Audit mit kompaktem Audit-Paket:
+/Skill 6 â€“ Diamantstandard Final Audit mit kompaktem Audit-Paket:
 WICHTIG:
 - Neuer Chat mit dem empfohlenen Audit-Modell aus Skill 4.
 - Nur dieses Paket als Audit-Grundlage verwenden.
@@ -131,11 +138,16 @@ Audit Model Gate:
 
 Spec: documentation/Planned Features/<FEATURE_NAME>.md
 Tasks: documentation/tasks/<TASK_FILE>.md
+Target Task: ALL COMPLETED
 Pre-Check: <PRE-CHECK Ergebnis oder Datei>
 Changed Files: <Liste>
 Diff: <Git Diff oder relevante AuszÃ¼ge>
 Tests: <Unit/Integration/E2E Ergebnisse>
 Known Risks: <falls vorhanden>
+Pipeline Status:
+- Completed Tasks: <Liste>
+- Remaining Tasks: keine
+- Spec Implementation Complete: YES
 ```
 
 Wenn das Audit-Paket unvollstÃ¤ndig ist:
@@ -253,36 +265,81 @@ Wenn:
 
 ---
 
-### 7. MANUAL JANUS TEST GUIDE (HARD REQUIREMENT)
+### 6.1 FINAL-SPEC COMPLETION GATE (HARD REQUIREMENT)
 
-Bei `PASS` oder `PASS WITH FIXES` MUSS Skill 5 eine konkrete manuelle Testanleitung fÃ¼r Janus ausgeben.
+Skill 6 MUSS vor dem Audit prÃ¼fen, ob die komplette Spec-Umsetzung abgeschlossen ist.
 
-Die Anleitung MUSS enthalten:
+Skill 6 darf nur fortfahren, wenn gilt:
+
+- `Remaining Tasks: keine`
+- `Spec Implementation Complete: YES`
+- Skill 4 hat eine automatische Gesamtvalidierung ausgefÃ¼hrt.
+- Skill 4 hat einen erfolgreichen manuellen Janus-Gesamttest als Evidence geliefert.
+
+Wenn noch Tasks offen sind:
+
+```text
+FINAL AUDIT BLOCKED: SPEC NOT COMPLETE
+
+Reason:
+- Es sind noch offene Tasks vorhanden.
+
+Action:
+â†’ Starte Skill 4 mit dem nÃ¤chsten offenen Target Task.
+â†’ Final Audit erst nach Abschluss aller Tasks ausfÃ¼hren.
+```
+
+Pflichtstatus im Audit:
+
+```text
+Pipeline Completion Status:
+- Completed Tasks: <Liste>
+- Remaining Tasks: keine
+- Spec Implementation Complete: YES
+```
+
+Bei `Spec Implementation Complete: NO` ist Skill 6 BLOCKED und Skill 7 verboten.
+
+---
+
+### 7. MANUAL JANUS TEST EVIDENCE CHECK (HARD REQUIREMENT)
+
+Skill 6 MUSS prÃ¼fen, ob Skill 4 nach automatischer Validierung einen realen manuellen Janus-Test durch den User eingefordert und als erfolgreich bestÃ¤tigt bekommen hat.
+
+Wenn ein manueller Janus-Test bereits im Skill-4-Audit-Paket enthalten ist:
+
+- Skill 6 darf keinen zweiten identischen manuellen Test verlangen.
+- Skill 6 MUSS die Test-Evidence im Audit berÃ¼cksichtigen.
+- Skill 6 MUSS bei Abweichungen `BLOCKED` oder Skill-5-Debug empfehlen.
+
+Wenn kein manueller Janus-Test im Skill-4-Audit-Paket enthalten ist:
+
+- Skill 6 darf nicht `READY FOR RELEASE` melden.
+- Skill 6 MUSS `FINAL AUDIT PACKAGE INCOMPLETE` oder `BLOCKED: MANUAL JANUS TEST MISSING` ausgeben.
+- Skill 6 MUSS den User zurÃ¼ck zum Manual-Janus-Test-Gate aus Skill 4 schicken.
+
+Nur wenn `Spec Implementation Complete: YES` ist, darf Skill 6 zusÃ¤tzlich einen finalen Smoke-Test fÃ¼r die gesamte Feature-Spec empfehlen.
+
+Dieser finale Smoke-Test MUSS enthalten:
 
 - Startpunkt im Produkt
 - konkrete User-Aktion
-- konkreter Prompt oder Klickpfad
-- erwartetes Ergebnis
-- explizite Abweichungsregel
-- Debug-Handoff, falls Ergebnis nicht passt
-
-Die Anleitung MUSS nutzerorientiert sein, z. B.:
+- erwartetes Gesamtergebnis
+- Abweichungsregel zu Skill 5
 
 ```text
-Manueller Janus-Test:
+Finaler Janus-Smoke-Test, nur nach letztem Task:
 1. Ã–ffne Janus.
 2. Stelle sicher, dass <relevanter Zustand> aktiv ist.
-3. Gib folgenden Prompt ein:
-   "<Prompt>"
+3. FÃ¼hre den vollstÃ¤ndigen Feature-Flow aus:
+   <Klickpfad/Prompt>
 4. Erwartetes Ergebnis:
-   <konkrete sichtbare Antwort / UI-Zustand>
+   <konkreter sichtbarer Gesamtzustand>
 5. Falls das Ergebnis abweicht:
-   - Kopiere den tatsÃ¤chlichen Janus-Output.
-   - Starte SWE 1.6 mit TASK-ID, erwartetem Ergebnis und tatsÃ¤chlichem Output.
-   - Beginne Debugging nicht mit neuen Feature-Ideen, sondern gegen Spec/Task/Audit.
+   - Starte Skill 5 mit Fehlerbeschreibung und relevanten Logs.
 ```
 
-Wenn ein manueller Produkttest fÃ¼r das Feature nicht sinnvoll mÃ¶glich ist, MUSS Skill 5 das explizit begrÃ¼nden und stattdessen den besten verifizierbaren Smoke-Test nennen.
+Wenn ein manueller Produkttest fÃ¼r das Feature nicht sinnvoll mÃ¶glich ist, MUSS Skill 6 das explizit begrÃ¼nden und stattdessen die beste verifizierbare Evidence nennen.
 
 ---
 
@@ -319,22 +376,33 @@ Risiko-Level:
 Empfehlung:
 - READY FOR RELEASE | NEEDS FIXES | DO NOT RELEASE
 
-Manueller Janus-Test:
+Manual Janus Test Evidence:
+- Status: PRESENT | MISSING | N/A WITH REASON
+- Source: Skill 4 Manual Janus Validation Gate
+- Ergebnis: PASS | FAIL | N/A
+
+Finaler Janus-Smoke-Test:
+- Nur wenn Spec Implementation Complete: YES
 - Startpunkt: <wo im Produkt>
 - Aktion: <konkrete Schritte>
-- Prompt/Klickpfad: <konkret>
 - Erwartetes Ergebnis: <sichtbarer Soll-Zustand>
 - Wenn Ergebnis abweicht: <Skill-6-Handoff an SWE 1.6 mit tatsÃ¤chlichem Output und Backendlog>
 
 NÃ¤chster Schritt:
-- Manuellen Janus-Test ausfÃ¼hren.
-- Wenn der Test wie erwartet funktioniert: Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE` ausfÃ¼hren.
-- Wenn der Test nicht wie erwartet funktioniert: Skill 6 `/SKILL 6 â€“ FEATURE DEBUG` mit SWE 1.6, Fehlerbeschreibung und Backendlog ausfÃ¼hren.
-- Wenn Skill 5 BLOCKED ist: keine Dokumentation, kein Release.
+- Wenn Final Audit PASS oder PASS WITH FIXES ist: Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE` ausfÃ¼hren.
+- Wenn Skill 6 BLOCKED ist: keine Dokumentation, kein Release.
+
+Pipeline Completion Status:
+- Completed Tasks: <Liste>
+- Remaining Tasks: keine
+- Spec Implementation Complete: YES
 
 Copy-Paste-Prompt fÃ¼r Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE`:
-BEGIN COPY
-/SKILL 7 â€“ DOKUMENTATIONSUPDATE
+
+Nur ausgeben, wenn `Spec Implementation Complete: YES` und Final Audit `PASS` oder `PASS WITH FIXES` ist.
+
+```text
+@[/SKILL 7 – DOKUMENTATIONSUPDATE]
 
 Post-Implementation Package:
 
@@ -364,10 +432,10 @@ Version:
 
 Manueller Janus-Test:
 - Status: <noch auszufÃ¼hren | PASS | FAIL>
-- Anleitung: <kurze Testanleitung aus Skill 5>
-- Falls FAIL: Skill 7 stoppen und Skill 6 `/SKILL 6 â€“ FEATURE DEBUG` mit SWE 1.6 starten.
+- Anleitung: <kurze Testanleitung aus Skill 6>
+- Falls FAIL: Skill 7 stoppen und Skill 5 `/SKILL 5 â€“ FEATURE DEBUG` mit SWE 1.6 starten.
 
-Skill 6:
+Skill 5:
 - Status: <not needed | FIXED + retest PASS | required>
 - Falls required: Skill 7 nicht ausfÃ¼hren.
 
@@ -382,7 +450,7 @@ WHAT_I_LEARNED:
 
 Scope:
 Nur validierte Ã„nderungen aus diesem Final Audit dokumentieren.
-END COPY
+```
 ðŸš« RESTRICTIONS
 keine neuen Features
 keine ArchitekturÃ¤nderungen

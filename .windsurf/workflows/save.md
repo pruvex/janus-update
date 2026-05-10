@@ -36,7 +36,7 @@ git push backup develop
 `/save` ist zulässig:
 
 - nach erfolgreichem `SKILL 4 – EXECUTIONER` mit PASS-Validierung vor dem nächsten Task
-- nach `SKILL 6 – FEATURE DEBUG`, wenn Code geändert wurde und der manuelle Janus-Retest PASS ist
+- nach `SKILL 5 – FEATURE DEBUG`, wenn Code geändert wurde und der manuelle Janus-Retest PASS ist
 - nach erfolgreichem `SKILL 7 – DOKUMENTATIONSUPDATE`
 - nach einem explizit stabilen Arbeitsstand, wenn der Nutzer `/save` ausdrücklich anfordert und keine Blocker vorliegen
 

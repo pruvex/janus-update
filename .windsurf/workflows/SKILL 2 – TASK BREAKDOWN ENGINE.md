@@ -215,6 +215,47 @@ Stop Rule:
 â†’ Do not validate or execute TASK-XXX.(Y+1) in the same run.
 ```
 
+COPY-PASTE HANDOVER FÃœR SKILL 3 (PFLICHT):
+
+Am Ende der Antwort MUSS zusÃ¤tzlich ein einzelner grauer Copy-Block ausgegeben werden.
+Dieser Block MUSS direkt kopierbar sein und darf keine ErklÃ¤rung auÃŸerhalb des Blocks benÃ¶tigen.
+
+```text
+@[/SKILL 3 – PRE-IMPLEMENTATION VERIFICATION] mit folgendem Target Task:
+Spec: <source spec file>
+Tasks: <task file>
+Target Task: <TASK-XXX.Y>
+Mode: SINGLE_TASK_PRECHECK
+Execution Model: <SWE 1.6 | Kimi k2.5>
+
+Kontext:
+- Skill-2 Ergebnis: TASK DESIGN COMPLETE
+- Readiness: READY FOR SKILL 3 SINGLE-TASK PRE-CHECK
+- Target Task: <TASK-XXX.Y>
+- Assigned Model: <SWE 1.6 | Kimi k2.5>
+- Source Spec File: <source spec file>
+- Task File: <task file>
+
+Arbeitsregel:
+- Nutze die genannte Spec-Datei und Task-Datei als verbindliche Artefakte.
+- Validere ausschlieÃŸlich den genannten Target Task.
+- Ignoriere widersprÃ¼chliche oder zusÃ¤tzliche Chat-Kontexte.
+- Erzeuge keine Implementation.
+- Validere Pre-Implementation-Readiness, Scope, Dateien, Tests und Risiken fÃ¼r genau diesen Task.
+- Gib keine Freigabe fÃ¼r spÃ¤tere Tasks.
+
+Stop Rule:
+- Nur dieser Target Task darf validiert werden.
+- SpÃ¤tere Tasks benÃ¶tigen einen separaten user-triggered Handover.
+
+NÃ¤chster erwarteter Output:
+- Pre-Implementation Verification fÃ¼r genau diesen Target Task
+- Eindeutiger Handover zu SKILL 4 – EXECUTIONER bei PASS
+- BLOCKED oder MODEL SWITCH REQUIRED bei fehlender AusfÃ¼hrungsreife
+```
+
+Der Copy-Block ist PFLICHT, auch wenn davor bereits eine normale Zusammenfassung ausgegeben wurde.
+
 ---
 
 ## ðŸš¨ MODEL SWITCH RULE (HARD PROTOCOL)
@@ -269,6 +310,47 @@ Next Step:
 Stop Rule:
 â†’ Only this Target Task may be validated next.
 â†’ Later tasks require a separate user-triggered handoff.
+
+COPY-PASTE HANDOVER FÃœR SKILL 3 (PFLICHT):
+
+Am Ende der Antwort MUSS zusÃ¤tzlich ein einzelner grauer Copy-Block ausgegeben werden.
+Dieser Block MUSS direkt kopierbar sein und darf keine ErklÃ¤rung auÃŸerhalb des Blocks benÃ¶tigen.
+
+```text
+@[/SKILL 3 – PRE-IMPLEMENTATION VERIFICATION] mit folgendem Target Task:
+Spec: <source spec file>
+Tasks: <task file>
+Target Task: <TASK-XXX.Y>
+Mode: SINGLE_TASK_PRECHECK
+Execution Model: <SWE 1.6 | Kimi k2.5>
+
+Kontext:
+- Skill-2 Ergebnis: TASK DESIGN COMPLETE
+- Readiness: READY FOR SKILL 3 SINGLE-TASK PRE-CHECK
+- Target Task: <TASK-XXX.Y>
+- Assigned Model: <SWE 1.6 | Kimi k2.5>
+- Source Spec File: <source spec file>
+- Task File: <task file>
+
+Arbeitsregel:
+- Nutze die genannte Spec-Datei und Task-Datei als verbindliche Artefakte.
+- Validere ausschlieÃŸlich den genannten Target Task.
+- Ignoriere widersprÃ¼chliche oder zusÃ¤tzliche Chat-Kontexte.
+- Erzeuge keine Implementation.
+- Validere Pre-Implementation-Readiness, Scope, Dateien, Tests und Risiken fÃ¼r genau diesen Task.
+- Gib keine Freigabe fÃ¼r spÃ¤tere Tasks.
+
+Stop Rule:
+- Nur dieser Target Task darf validiert werden.
+- SpÃ¤tere Tasks benÃ¶tigen einen separaten user-triggered Handover.
+
+NÃ¤chster erwarteter Output:
+- Pre-Implementation Verification fÃ¼r genau diesen Target Task
+- Eindeutiger Handover zu SKILL 4 – EXECUTIONER bei PASS
+- BLOCKED oder MODEL SWITCH REQUIRED bei fehlender AusfÃ¼hrungsreife
+```
+
+Der Copy-Block ist PFLICHT, auch wenn davor bereits eine normale Zusammenfassung ausgegeben wurde.
 ðŸš« RESTRICTIONS
 KEINE Codegenerierung
 KEINE ArchitekturÃ¤nderungen

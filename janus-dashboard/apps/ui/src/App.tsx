@@ -3,7 +3,7 @@ import { Sidebar } from './components/Sidebar'
 import { ActiveView } from './views/ActiveView'
 import { HistoryView } from './views/HistoryView'
 import { KPIView } from './views/KPIView'
-import { RoutingHealthView } from './views/RoutingHealthView'
+import { ErrorHistoryView } from './views/ErrorHistoryView'
 
 function App() {
   const handleRefresh = () => {
@@ -20,7 +20,7 @@ function App() {
             <Route path="/active" element={<ActiveView />} />
             <Route path="/history" element={<HistoryView />} />
             <Route path="/kpi" element={<KPIView />} />
-            <Route path="/routing" element={<RoutingHealthView />} />
+            <Route path="/error-history" element={<ErrorHistoryView />} />
           </Routes>
         </main>
       </div>

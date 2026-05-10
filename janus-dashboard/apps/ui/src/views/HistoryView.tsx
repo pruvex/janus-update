@@ -111,7 +111,7 @@ export function HistoryView() {
       </div>
 
       {/* Kanban Board */}
-      <div className="flex-1 overflow-hidden p-4">
+      <div className="flex-1 overflow-y-auto p-4">
         <div className="h-full w-full grid grid-cols-7 gap-3">
           {COLUMNS.map((column) => {
             const columnItems = getColumnItems(column)

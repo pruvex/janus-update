@@ -231,6 +231,42 @@ Wichtig:
 â†’ Starte Skill 2 NICHT mit Kimi k2.5, nur weil ein erzeugter Task Kimi zugewiesen ist.
 â†’ Skill 2 ist das Task-Refinement-Gate und lÃ¤uft immer mit SWE 1.6, auÃŸer ein MODEL SWITCH zu GPT-5.5 ist explizit erforderlich.
 â†’ Skill 2 gibt spÃ¤ter exakt einen Target Task mit dessen zugewiesenem AusfÃ¼hrungsmodell frei.
+
+COPY-PASTE HANDOVER FÃœR SKILL 2 (PFLICHT):
+
+Am Ende der Antwort MUSS zusÃ¤tzlich ein einzelner grauer Copy-Block ausgegeben werden.
+Dieser Block MUSS direkt kopierbar sein und darf keine ErklÃ¤rung auÃŸerhalb des Blocks benÃ¶tigen.
+
+```text
+@[/SKILL 2 – TASK BREAKDOWN ENGINE] mit folgenden Artefakten:
+Spec: <source spec file>
+Tasks: <generated task file>
+Mode: TASK_REFINEMENT
+Execution Model: SWE 1.6
+
+Kontext:
+- Feature: <Name>
+- Skill-1 Ergebnis: SPEC COMPILATION COMPLETE
+- Generated Task File: <generated task file>
+- Source Spec File: <source spec file>
+- Zugewiesene Task-Execution-Modelle:
+  - SWE 1.6: <tasks oder "keine">
+  - Kimi k2.5: <tasks oder "keine">
+
+Arbeitsregel:
+- Nutze die genannte Spec-Datei und Task-Datei als verbindliche Artefakte.
+- Ignoriere widersprÃ¼chliche oder zusÃ¤tzliche Chat-Kontexte.
+- Skill 2 lÃ¤uft mit SWE 1.6, unabhÃ¤ngig davon, ob einzelne erzeugte Tasks spÃ¤ter Kimi k2.5 als Execution Model tragen.
+- Erzeuge keine Implementation.
+- Verfeinere die Tasks deterministisch und gib exakt einen Target Task fÃ¼r Skill 3 frei.
+
+NÃ¤chster erwarteter Output:
+- Ãœberarbeitete/validierte Task-Struktur
+- Exakt ein freigegebener Target Task
+- Eindeutiger Handover zu SKILL 3 – PRE-IMPLEMENTATION VERIFICATION
+```
+
+Der Copy-Block ist PFLICHT, auch wenn davor bereits eine normale Zusammenfassung ausgegeben wurde.
 ðŸš« RESTRICTIONS
 KEINE Implementation
 KEINE Codegenerierung

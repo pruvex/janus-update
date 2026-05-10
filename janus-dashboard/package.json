@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "tsx scripts/start-all.ts",
     "sync:backlog": "python scripts/sync-backlog-snapshot.py",
+    "record:task-execution": "node scripts/record-task-execution.mjs",
     "build": "npm run build --workspaces",
     "start": "start-dashboard.bat"
   },

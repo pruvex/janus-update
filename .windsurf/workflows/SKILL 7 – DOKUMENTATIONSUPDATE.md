@@ -1,5 +1,5 @@
-﻿---
-description: Skill 7 â€“ SWE 1.6 synchronisiert Dokumentation nach Skill-5-Audit und abgeschlossenem Skill-6-Debug-Gate
+---
+description: Skill 7 â€“ SWE 1.6 synchronisiert Dokumentation nach Skill-6-Audit und abgeschlossenem Skill-5-Debug-Gate
 ---
 
 # Skill 7 â€“ Dokumentationsupdate (JANUS â€“ AFTER FINAL AUDIT AND DEBUG GATE)
@@ -9,9 +9,9 @@ Use this workflow only after:
 ```text
 /1_Feature-erstellen
 â†’ implementation of generated tasks
-â†’ /2_final-audit or Skill 5 â€“ Diamantstandard Final Audit
-â†’ manual Janus test from Skill 5 passed or explicitly deferred with reason
-â†’ /SKILL 6 â€“ FEATURE DEBUG completed if Skill 4, Skill 5, or manual Janus test found a failure
+â†’ /2_final-audit or Skill 6 â€“ Diamantstandard Final Audit
+â†’ manual Janus test evidence from Skill 4 / Skill 6 passed or explicitly deferred with reason
+â†’ /SKILL 5 â€“ FEATURE DEBUG completed if Skill 4, Skill 6, or manual Janus test found a failure
 â†’ Skill 7 automatic version bump
 â†’ /SKILL 7 â€“ DOKUMENTATIONSUPDATE
 ```
@@ -22,7 +22,7 @@ Goal:
 - Persist reusable implementation/audit learnings in `WHAT_I_LEARNED.md`.
 - Sync the Janus Capability Registry and UX capability view from validated post-implementation results.
 - Preserve validation evidence and version bump details.
-- Clean up temporary Skill-6 GPT-5.5 escalation handover files after the debug gate is resolved.
+- Clean up temporary Skill-5 GPT-5.5 escalation handover files after the debug gate is resolved.
 - Prepare the repository for `/SKILL 8 – BUILD RELEASE`.
 - Trigger `/save` after successful documentation sync before release.
 
@@ -32,10 +32,10 @@ This workflow is a documentation and registry sync step. It is not an implementa
 
 ## Hard Rules
 
-- Do not run Skill 7 if `/2_final-audit` or Skill 5 returned `BLOCKED`.
-- Do not run Skill 7 if the manual Janus test failed and Skill 6 has not resolved it.
-- Do not run Skill 7 if Skill 5 requested re-run of Skill 4.
-- Do not run Skill 7 if Skill 6 returned `ESCALATION REQUIRED`, `BLOCKED`, or `OUT OF SCOPE`.
+- Do not run Skill 7 if `/2_final-audit` or Skill 6 returned `BLOCKED`.
+- Do not run Skill 7 if the manual Janus test failed and Skill 5 has not resolved it.
+- Do not run Skill 7 if Skill 6 requested re-run of Skill 4.
+- Do not run Skill 7 if Skill 5 returned `ESCALATION REQUIRED`, `BLOCKED`, or `OUT OF SCOPE`.
 - Do not make feature implementation changes.
 - Do not redesign architecture.
 - Do not silently ignore failed validation.
@@ -59,7 +59,7 @@ Allowed safe edits:
 - Record Skill-7 version bump details.
 - Move completed Backlog items from `IN PROGRESS` to `DONE` when the implementation originated from `BACKLOG-XXX`, preserving dashboard-readable lifecycle fields.
 - Keep Backlog status sections canonical when moving items: one `## NEEDS INFO`, one `## READY`, one `## IN PROGRESS`, one `## DONE`, one `## BLOCKED`; item section must match its `Status` field.
-- Delete resolved temporary Skill-6 escalation handover files matching `.windsurf/tmp/skill6_escalation_*.md`.
+- Delete resolved temporary Skill-5 escalation handover files matching `.windsurf/tmp/skill5_escalation_*.md`.
 
 ---
 
@@ -69,26 +69,26 @@ Ask for or infer:
 
 1. Feature task file path, usually `documentation/tasks/task_<NR>_*.md`.
 2. Implemented task range, e.g. `T1-T8`.
-3. `/2_final-audit` or Skill 5 final result block.
-4. Manual Janus test status from Skill 5: `PASS`, `FAIL`, `N/A`, or `DEFERRED WITH REASON`.
-5. Skill 6 result, if Skill 4/Skill 5/manual Janus test found a failure.
+3. `/2_final-audit` or Skill 6 final result block.
+4. Manual Janus test status from Skill 4 / Skill 6: `PASS`, `FAIL`, `N/A`, or `DEFERRED WITH REASON`.
+5. Skill 5 result, if Skill 4/Skill 6/manual Janus test found a failure.
 6. Current release/version state from root `package.json`.
-7. Validation commands and pass/fail evidence from `/2_final-audit` or Skill 5.
+7. Validation commands and pass/fail evidence from `/2_final-audit` or Skill 6.
 8. Existing capability registry path, default `backend/data/capability_registry.json`.
 9. Optional Backlog ID, e.g. `BACKLOG-004`, if the task originated from `BACKLOG SKILL 3 – SELECTED_HANDOFF` or references a `BACKLOG-XXX` item.
-10. Optional temporary Skill-6 escalation handover file path, default pattern `.windsurf/tmp/skill6_escalation_*.md`, if Skill 6 escalated to GPT-5.5.
+10. Optional temporary Skill-5 escalation handover file path, default pattern `.windsurf/tmp/skill5_escalation_*.md`, if Skill 5 escalated to GPT-5.5.
 
-If the user provides no audit block, search recent conversation/context and task files. If still unavailable, ask for the `/2_final-audit` or Skill 5 report before proceeding.
+If the user provides no audit block, search recent conversation/context and task files. If still unavailable, ask for the `/2_final-audit` or Skill 6 report before proceeding.
 
 If the task file contains a `BACKLOG-XXX` reference, treat `documentation/backlog/BACKLOG.md` as a required sync artifact for Phase 9.5.
 
-If Skill 6 produced a temporary GPT-5.5 escalation handover file, treat it as a cleanup artifact, not as documentation source of truth. Use the Skill-6/GPT-5.5 final result and retest evidence as the source of truth.
+If Skill 5 produced a temporary GPT-5.5 escalation handover file, treat it as a cleanup artifact, not as documentation source of truth. Use the Skill-5/GPT-5.5 final result and retest evidence as the source of truth.
 
 ---
 
 ## Phase 1: Final Audit Gate
 
-Read or reconstruct the `/2_final-audit` or Skill 5 result.
+Read or reconstruct the `/2_final-audit` or Skill 6 result.
 
 Required accepted statuses:
 
@@ -101,11 +101,11 @@ If status is `BLOCKED`, stop and return:
 # POST-IMPL BLOCKED
 
 ## Reason
-- `/2_final-audit` or Skill 5 is BLOCKED.
+- `/2_final-audit` or Skill 6 is BLOCKED.
 
 ## Required Action
 - Resolve audit blockers.
-- Re-run `/2_final-audit` or Skill 5.
+- Re-run `/2_final-audit` or Skill 6.
 - Then run `/SKILL 7 â€“ DOKUMENTATIONSUPDATE`.
 ```
 
@@ -114,9 +114,9 @@ Do not update registries or changelog when audit is blocked.
 Validate the manual Janus test gate:
 
 - `PASS`: continue.
-- `N/A`: continue only if Skill 5 explicitly explained why no product-level test is meaningful and provided a smoke-test alternative.
+- `N/A`: continue only if Skill 6 explicitly explained why no product-level test is meaningful and provided a smoke-test alternative.
 - `DEFERRED WITH REASON`: continue only if the reason is explicit and non-blocking.
-- `FAIL`: stop unless Skill 6 returned `SKILL 6 DEBUG RESULT: FIXED` and the user retest passed.
+- `FAIL`: stop unless Skill 5 returned `SKILL 5 DEBUG RESULT: FIXED` and the user retest passed.
 
 If manual test or debug gate is not satisfied, stop and return:
 
@@ -124,11 +124,11 @@ If manual test or debug gate is not satisfied, stop and return:
 # POST-IMPL BLOCKED
 
 ## Reason
-- Manual Janus test or Skill 6 gate is not satisfied.
+- Manual Janus test or Skill 5 gate is not satisfied.
 
 ## Required Action
-- Run `/SKILL 6 â€“ FEATURE DEBUG` with the actual output, expected result, and backend log.
-- Re-run the manual Janus test after any Skill-6 fix.
+- Run `/SKILL 5 â€“ FEATURE DEBUG` with the actual output, expected result, and backend log.
+- Re-run the manual Janus test after any Skill-5 fix.
 - Then run `/SKILL 7 â€“ DOKUMENTATIONSUPDATE` again.
 ```
 
@@ -237,7 +237,7 @@ If those sections do not exist, append:
 ### Validation Evidence
 - **[command]:** PASS | FAIL | SKIPPED â€” [evidence]
 - **Manual Janus test:** PASS | FAIL | N/A | DEFERRED â€” [evidence/reason]
-- **Skill 6:** FIXED | NEEDS RETEST | ESCALATION REQUIRED | BLOCKED | OUT OF SCOPE | N/A â€” [evidence]
+- **Skill 5:** FIXED | NEEDS RETEST | ESCALATION REQUIRED | BLOCKED | OUT OF SCOPE | N/A â€” [evidence]
 
 ### Final Audit Fixes
 - **[path]:** [fix summary]
@@ -421,7 +421,7 @@ If no reusable learning exists, record in the final report:
 
 ## Phase 9: Capability Sync
 
-Run this phase only if `/2_final-audit` or Skill 5 is `PASS` or `PASS WITH FIXES`.
+Run this phase only if `/2_final-audit` or Skill 6 is `PASS` or `PASS WITH FIXES`.
 
 Purpose:
 - Keep Janus' "Was kannst du?" answer aligned with the latest validated system state.
@@ -430,7 +430,7 @@ Purpose:
 
 Inputs:
 - Feature task file and post-implementation audit trail.
-- `/2_final-audit` or Skill 5 result and applied fixes.
+- `/2_final-audit` or Skill 6 result and applied fixes.
 - CHANGELOG entry for the implemented feature.
 - Existing `backend/data/capability_registry.json`.
 
@@ -534,8 +534,8 @@ Purpose:
 - Link the completed Backlog item to the task file, changelog entry, validation evidence, and version.
 
 Rules:
-- Only run after Skill 5 is `PASS` or `PASS WITH FIXES` and the manual Janus test gate is `PASS`, `N/A`, or `DEFERRED WITH REASON`.
-- Do not mark Backlog items as `DONE` if Skill 6 is still open, blocked, or awaiting retest.
+- Only run after Skill 6 final audit is `PASS` or `PASS WITH FIXES` and the manual Janus test gate is `PASS`, `N/A`, or `DEFERRED WITH REASON`.
+- Do not mark Backlog items as `DONE` if Skill 5 debug is still open, blocked, or awaiting retest.
 - Do not delete Backlog items permanently.
 - Move completed items from `IN PROGRESS` to `DONE`.
 - If the item is still in `READY` but the task was completed, move it to `DONE` and record that the `IN PROGRESS` transition was skipped.
@@ -605,7 +605,7 @@ Purpose:
 Target files:
 
 ```text
-.windsurf/tmp/skill6_escalation_*.md
+.windsurf/tmp/skill5_escalation_*.md
 ```
 
 Rules:

@@ -244,6 +244,8 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     # Suggestion-engine preference (1 = default on); reserved for future UI modes
     suggestion_mode = Column(Integer, default=1, nullable=False)
+    # Dark Mode preference (false = Light Mode, true = Dark Mode)
+    dark_mode_enabled = Column(Boolean, default=False, nullable=False)
 
 class APIKey(Base):
     __tablename__ = "api_keys"

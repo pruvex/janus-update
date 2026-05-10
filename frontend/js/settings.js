@@ -100,6 +100,39 @@ async function loadSuggestionModeSettings() {
   }
 }
 
+async function loadDarkModeSettings() {
+  const checkbox = document.getElementById("dark-mode-checkbox");
+  const statusEl = document.getElementById("dark-mode-status");
+  if (!checkbox) return;
+  if (statusEl) {
+    statusEl.textContent = "";
+    statusEl.classList.remove("is-error");
+  }
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+      headers: authHeadersJson(),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    const darkModeEnabled = Boolean(data.dark_mode_enabled);
+    checkbox.checked = darkModeEnabled;
+    // Update localStorage cache
+    localStorage.setItem("dark_mode_enabled", darkModeEnabled.toString());
+    console.log("[Dark Mode] Loaded dark_mode_enabled:", darkModeEnabled);
+  } catch (error) {
+    console.error("loadDarkModeSettings:", error);
+    checkbox.checked = false;
+    if (statusEl) {
+      statusEl.style.display = "block";
+      statusEl.classList.add("is-error");
+      statusEl.textContent =
+        "Konnte die Einstellung nicht laden. Bitte anmelden oder später erneut versuchen.";
+    }
+  }
+}
+
 async function saveSuggestionModeFromSlider() {
   const slider = document.getElementById("suggestion-mode-slider");
   const statusEl = document.getElementById("suggestion-mode-status");
@@ -140,6 +173,61 @@ async function saveSuggestionModeFromSlider() {
       statusEl.classList.add("is-error");
       statusEl.textContent = "Speichern fehlgeschlagen.";
     }
+  }
+}
+
+async function saveDarkModeFromCheckbox() {
+  const checkbox = document.getElementById("dark-mode-checkbox");
+  const statusEl = document.getElementById("dark-mode-status");
+  if (!checkbox) return;
+  const darkModeEnabled = checkbox.checked;
+  if (statusEl) {
+    statusEl.textContent = "Speichere…";
+  }
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+      method: "PATCH",
+      headers: authHeadersJson(),
+      body: JSON.stringify({ dark_mode_enabled: darkModeEnabled }),
+    });
+    if (!response.ok) {
+      let detail = `HTTP ${response.status}`;
+      try {
+        const errData = await response.json();
+        if (errData.detail) detail = errData.detail;
+      } catch (e) {}
+      throw new Error(detail);
+    }
+    // Update localStorage cache
+    localStorage.setItem("dark_mode_enabled", darkModeEnabled.toString());
+    // Apply theme immediately
+    applyDarkMode(darkModeEnabled);
+    if (statusEl) {
+      statusEl.textContent = "";
+      statusEl.classList.remove("is-error");
+    }
+    console.log("[Dark Mode] Saved dark_mode_enabled:", darkModeEnabled);
+  } catch (error) {
+    console.error("[Dark Mode] saveDarkModeFromCheckbox:", error);
+    if (statusEl) {
+      statusEl.style.display = "block";
+      statusEl.classList.add("is-error");
+      statusEl.textContent =
+        "Konnte die Einstellung nicht speichern. Bitte erneut versuchen.";
+    }
+  }
+  // Theme trotzdem basierend auf Checkbox-Status anwenden
+  applyDarkMode(darkModeEnabled);
+}
+
+// Dark Mode Theme Utility Function (wird auch in app.js verwendet)
+function applyDarkMode(darkModeEnabled) {
+  if (darkModeEnabled === true) {
+    document.body.classList.add('dark-mode');
+    console.log("[Dark Mode] Applied dark mode");
+  } else {
+    document.body.classList.remove('dark-mode');
+    console.log("[Dark Mode] Applied light mode");
   }
 }
 
@@ -396,6 +484,9 @@ async function renderSettingsView(targetSection = "api-key-section") {
     await updateImageGenStatus();
     if (targetSection === "assistenz-section") {
       await loadSuggestionModeSettings();
+    }
+    if (targetSection === "display-options-section") {
+      await loadDarkModeSettings();
     }
   } finally {
     isSettingsViewRendering = false;
@@ -1094,6 +1185,13 @@ document.addEventListener("DOMContentLoaded", () => {
       saveSuggestionModeFromSlider();
     });
     updateSuggestionModeDescription(suggestionModeSlider.value);
+  }
+
+  const darkModeCheckbox = document.getElementById("dark-mode-checkbox");
+  if (darkModeCheckbox) {
+    darkModeCheckbox.addEventListener("change", () => {
+      saveDarkModeFromCheckbox();
+    });
   }
 
   // Navigation

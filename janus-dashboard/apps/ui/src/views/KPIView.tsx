@@ -1,24 +1,33 @@
 import { useEffect, useState } from 'react'
+import { Loader2 } from 'lucide-react'
+import { RepairCard } from '../components/RepairCard'
+import { TypeKanbanBoard } from '../components/TypeKanbanBoard'
 import { fetchBacklogItems } from '../lib/api'
-import type { BacklogCounts } from '@shared/types'
-import { Loader2, LayoutDashboard, CheckCircle, AlertCircle, Clock, Ban } from 'lucide-react'
+import type { RepairIssueType, RepairIssue } from '../lib/repairIssues'
+import { getRepairIssues } from '../lib/repairIssues'
+
+const ALL_REPAIR_ISSUES: RepairIssueType[] = ['ROUTING_MISSING', 'ROUTING_BLOCKED', 'NEEDS_INFO', 'BLOCKED']
 
 export function KPIView() {
-  const [counts, setCounts] = useState<BacklogCounts | null>(null)
+  const [issues, setIssues] = useState<RepairIssue[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    loadCounts()
+    loadIssues()
   }, [])
 
-  const loadCounts = async () => {
+  const loadIssues = async () => {
     try {
       setLoading(true)
       const response = await fetchBacklogItems()
-      setCounts(response.counts)
+      const allIssues: RepairIssue[] = []
+      ALL_REPAIR_ISSUES.forEach((issueType) => {
+        allIssues.push(...getRepairIssues(response.items, issueType))
+      })
+      setIssues(allIssues)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load counts')
+      setError(err instanceof Error ? err.message : 'Failed to load repair issues')
     } finally {
       setLoading(false)
     }
@@ -40,95 +49,41 @@ export function KPIView() {
     )
   }
 
-  if (!counts) {
-    return null
-  }
-
-  const kpiCards = [
-    {
-      label: 'Total Items',
-      value: counts.total,
-      icon: LayoutDashboard,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10',
-    },
-    {
-      label: 'Active',
-      value: counts.active,
-      icon: Clock,
-      color: 'text-yellow-500',
-      bgColor: 'bg-yellow-500/10',
-    },
-    {
-      label: 'Done',
-      value: counts.done,
-      icon: CheckCircle,
-      color: 'text-green-500',
-      bgColor: 'bg-green-500/10',
-    },
-    {
-      label: 'Needs Info',
-      value: counts.needs_info,
-      icon: AlertCircle,
-      color: 'text-orange-500',
-      bgColor: 'bg-orange-500/10',
-    },
-    {
-      label: 'Blocked',
-      value: counts.blocked,
-      icon: Ban,
-      color: 'text-red-500',
-      bgColor: 'bg-red-500/10',
-    },
-  ]
+  const affectedItems = new Set(issues.map((issue) => issue.item.id)).size
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-foreground">KPI Overview</h2>
-        <p className="text-muted-foreground mt-2">Backlog metrics and statistics</p>
+    <div className="h-full flex flex-col">
+      <div className="p-4 border-b border-border">
+        <h2 className="text-xl font-bold text-foreground">Error Overview</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Operational repair board derived from backlog.snapshot.json. No manual completion state is stored in the dashboard.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {kpiCards.map((kpi) => {
-          const Icon = kpi.icon
-          return (
-            <div key={kpi.label} className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-lg ${kpi.bgColor}`}>
-                  <Icon className={`w-6 h-6 ${kpi.color}`} />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{kpi.label}</p>
-                  <p className="text-3xl font-bold text-foreground">{kpi.value}</p>
-                </div>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      <div className="mt-8 bg-card border border-border rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Additional Metrics</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Ready</p>
-            <p className="text-2xl font-bold text-foreground">{counts.ready}</p>
+      <div className="p-4 border-b border-border bg-muted/30">
+        <div className="grid grid-cols-3 gap-2 max-w-3xl">
+          <div className="bg-card border border-border rounded-lg p-2">
+            <span className="text-[10px] text-muted-foreground">Repair Cards</span>
+            <p className="text-lg font-bold text-foreground mt-0.5">{issues.length}</p>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">In Progress</p>
-            <p className="text-2xl font-bold text-foreground">{counts.in_progress}</p>
+          <div className="bg-card border border-border rounded-lg p-2">
+            <span className="text-[10px] text-muted-foreground">Affected Items</span>
+            <p className="text-lg font-bold text-foreground mt-0.5">{affectedItems}</p>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Routing Missing</p>
-            <p className="text-2xl font-bold text-foreground">{counts.routing_missing}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Routing Blocked</p>
-            <p className="text-2xl font-bold text-foreground">{counts.routing_blocked}</p>
+          <div className="bg-card border border-border rounded-lg p-2">
+            <span className="text-[10px] text-muted-foreground">Repair Mode</span>
+            <p className="text-lg font-bold text-foreground mt-0.5">Read-only</p>
           </div>
         </div>
       </div>
+
+      <TypeKanbanBoard<RepairIssue>
+        items={issues}
+        getItemType={(issue) => issue.item.type}
+        getItemKey={(issue) => issue.id}
+        renderItem={(issue) => <RepairCard issue={issue} />}
+        emptyText="No repair issues"
+      />
     </div>
   )
 }

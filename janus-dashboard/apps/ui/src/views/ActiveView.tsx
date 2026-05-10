@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { fetchBacklogItems } from '../lib/api'
-import type { BacklogItem } from '@shared/types'
+import { fetchBacklogItems, fetchTaskExecutionHistory } from '../lib/api'
+import type { BacklogItem, TaskExecutionRecord } from '@shared/types'
 import { KanbanCard } from '../components/KanbanCard'
+import { estimateTaskTime } from '../lib/executionAnalytics'
 import { Loader2, AlertTriangle, Info, CheckCircle, XCircle } from 'lucide-react'
 
 const COLUMNS = [
@@ -63,6 +64,7 @@ function calculatePriorityScore(item: BacklogItem): number {
 
 export function ActiveView() {
   const [items, setItems] = useState<BacklogItem[]>([])
+  const [executionRecords, setExecutionRecords] = useState<TaskExecutionRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -73,9 +75,13 @@ export function ActiveView() {
   const loadItems = async () => {
     try {
       setLoading(true)
-      const response = await fetchBacklogItems()
+      const [response, history] = await Promise.all([
+        fetchBacklogItems(),
+        fetchTaskExecutionHistory().catch(() => null),
+      ])
       const activeItems = response.items.filter(item => item.status !== 'DONE')
       setItems(activeItems)
+      setExecutionRecords(history?.records || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load items')
     } finally {
@@ -141,6 +147,13 @@ export function ActiveView() {
           </div>
           <div className="bg-card border border-border rounded-lg p-2">
             <div className="flex items-center gap-1.5">
+              <CheckCircle className="w-3 h-3 text-emerald-400" />
+              <span className="text-[10px] text-muted-foreground">Done</span>
+            </div>
+            <p className="text-lg font-bold text-foreground mt-0.5">{done}</p>
+          </div>
+          <div className="bg-card border border-border rounded-lg p-2">
+            <div className="flex items-center gap-1.5">
               <AlertTriangle className="w-3 h-3 text-yellow-400" />
               <span className="text-[10px] text-muted-foreground">Needs Info</span>
             </div>
@@ -152,13 +165,6 @@ export function ActiveView() {
               <span className="text-[10px] text-muted-foreground">Blocked</span>
             </div>
             <p className="text-lg font-bold text-foreground mt-0.5">{blocked}</p>
-          </div>
-          <div className="bg-card border border-border rounded-lg p-2">
-            <div className="flex items-center gap-1.5">
-              <CheckCircle className="w-3 h-3 text-emerald-400" />
-              <span className="text-[10px] text-muted-foreground">Done</span>
-            </div>
-            <p className="text-lg font-bold text-foreground mt-0.5">{done}</p>
           </div>
           <div className="bg-card border border-border rounded-lg p-2">
             <div className="flex items-center gap-1.5">
@@ -178,7 +184,7 @@ export function ActiveView() {
       </div>
 
       {/* Kanban Board */}
-      <div className="flex-1 overflow-hidden p-4">
+      <div className="flex-1 overflow-y-auto p-4">
         <div className="h-full w-full grid grid-cols-7 gap-3">
           {COLUMNS.map((column) => {
             const columnItems = getColumnItems(column)
@@ -194,7 +200,7 @@ export function ActiveView() {
                 </div>
                 <div className="flex-1 overflow-y-auto p-2 space-y-2">
                   {columnItems.map((item) => (
-                    <KanbanCard key={item.id} item={item} viewType="active" />
+                    <KanbanCard key={item.id} item={item} viewType="active" estimatedTime={estimateTaskTime(item, executionRecords)} />
                   ))}
                   {columnItems.length === 0 && (
                     <div className="text-center text-muted-foreground text-xs py-6">

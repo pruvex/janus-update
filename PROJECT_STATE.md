@@ -1,6 +1,6 @@
 # PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-09 (BACKLOG-017 ChromaDB PyInstaller Fix — 0.4.17-beta.22)
+**Aktualisiert:** 2026-05-10 (Dark Mode Toggle — 0.4.17-beta.24)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **Dark Mode Toggle** | 🥇 SEALED | Globales Light/Dark Theme Switch in Settings implementiert. Checkbox in Settings UI, Backend-Persistenz (dark_mode_enabled Boolean mit default=False), LocalStorage-Caching für sofortige Theme-Anwendung, CSS Variables für Theme-Styles. Fix: default=True → default=False gemäß Spec. Files: backend/data/models.py, backend/data/schemas.py, backend/api/routers/users.py, frontend/index.html, frontend/js/settings.js, frontend/js/app.js, frontend/src/styles.css. Manual Janus Test PASS. Version: 0.4.17-beta.24. |
 | **BACKLOG-017 ChromaDB PyInstaller Fix** | 🥇 SEALED | ChromaDB-Module vollständig im PyInstaller-Bundle eingeschlossen. PyInstaller spec um ChromaDB-Submodule erweitert: `collect_data_files('chromadb')`, `collect_data_files('chromadb', include_py_files=True)`, `hiddenimports=['chromadb.telemetry.product.posthog', 'chromadb.api.rust']`. Vektor-Service und Skill-Router starten ohne ChromaDB-Import-Fehler. Manual Janus Test PASS. Files: janus_backend.spec. Version: 0.4.17-beta.22. |
 | **BACKLOG-018 CLIP Lazy Loading** | 🥇 SEALED | CLIP-Model-Download blockiert nicht mehr First-Start. Lazy-Loading Pattern implementiert: Daemon-Thread im FastAPI-Lifespan, Status-Tracking im Vision-Service, `is_ready()` Guard vor CLIP-Inference. Files: backend/services/vision/model_loader.py (NEU), backend/services/vision_service.py (MODIFIZIERT), backend/main.py (MODIFIZIERT). Manual Janus Test PASS. Version: 0.4.17-beta.21. |
 | **TASK-030 Video List System - Chat-Wechsel Persistenz-Fix** | 🥇 SEALED | Video-Liste Persistenz nach Chat-Wechsel behoben. Sender-Bedingung erweitert auf "bot" || "model", appendVideoReopenLink Parameter videoListMetadata hinzugefügt, wireVideoReopenLink übergibt videoListMetadata an appendVideoReopenLink, appendMessage generiert Markdown mit Header (wie SSE-Stream) beim Chat-Reload. Backend-Logging hinzugefügt zur Verfolgung von video_list_metadata. max_results=3 → max_results=payload.max_results in video_tools.py. Manueller Test bestanden. Version: 0.4.17-beta.19. |

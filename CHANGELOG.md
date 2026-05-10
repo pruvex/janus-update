@@ -7,6 +7,9 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+### Added
+- **Dark Mode Toggle:** Globales Light/Dark Theme Switch in Settings implementiert. Checkbox in Settings UI, Backend-Persistenz (dark_mode_enabled Boolean), LocalStorage-Caching für sofortige Theme-Anwendung, CSS Variables für Theme-Styles. Files: `backend/data/models.py`, `backend/data/schemas.py`, `backend/api/routers/users.py`, `frontend/index.html`, `frontend/js/settings.js`, `frontend/js/app.js`, `frontend/src/styles.css`. Manual Janus Test PASS.
+
 ### Fixed
 - **BACKLOG-020:** Chatfenster-Resize-Problem behoben. Vertikales Resizen blockierte nach erstem Resize-Versuch. Root Cause: CSS `max-height` constraint und JavaScript `resizeListener` height/position constraints blockierten vertikales Resizen. Fix: `max-height: calc(100dvh - 16px)` aus `frontend/css/style.css` entfernt. `maxH` und `maxY` constraints aus `resizeListener` in `frontend/js/app.js` entfernt. Chatfenster lässt sich jetzt frei von der unteren rechten Ecke resizen (horizontal + vertikal) ohne Blockade. Reset-Button und Initialgröße bleiben erhalten. Manual Janus Test PASS. Files: `frontend/css/style.css`, `frontend/js/app.js`.
 

@@ -1,5 +1,5 @@
 ﻿---
-description: Kostenoptimierte 10/10 Diamond-Feature-Pipeline von ChatGPT-Spec bis Skill 5 Final Audit
+description: Kostenoptimierte 10/10 Diamond-Feature-Pipeline von ChatGPT-Spec bis Skill 6 Final Audit
 ---
 
 # Diamond Feature Pipeline â€“ Cost-Optimized 10/10 Flow
@@ -24,8 +24,8 @@ Skill 1: SWE 1.6
 Skill 2: SWE 1.6
 Skill 3: SWE 1.6
 Skill 4: SWE 1.6 or Kimi k2.5 only if explicitly assigned in the task
-Skill 5: GPT-5.5
-Skill 6: SWE 1.6
+Skill 5: SWE 1.6
+Skill 6: GPT-5.5
 Skill 7: SWE 1.6
 Skill 8: SWE 1.6
 
@@ -38,7 +38,7 @@ System Health: SWE 1.6, escalate to GPT-5.5 if required
 
 Rules:
 - GPT-5.5 is not a regular execution model.
-- GPT-5.5 is used for Skill 5 Final Audit and explicit escalation only.
+- GPT-5.5 is used for Skill 6 Final Audit and explicit escalation only.
 - Kimi k2.5 is only for deterministic single-file, data, string, or test tasks.
 - SWE 1.6 is default for integration, multi-file, security, persistence, Electron/IPC, and codebase reasoning.
 
@@ -53,10 +53,11 @@ Diese Regeln gelten fÃ¼r die komplette Pipeline:
 - Jeder Handoff muss einen Copy-Paste-Prompt fÃ¼r den nÃ¤chsten Skill enthalten.
 - Skill 2 darf immer nur genau einen nÃ¤chsten Target Task freigeben.
 - Skill 3 validiert genau einen Target Task und liefert einen Copy-Paste-Prompt fÃ¼r Skill 4.
-- Skill 4 implementiert genau einen Target Task, stoppt danach und liefert Dateiliste plus Copy-Paste-Prompt fÃ¼r einen neuen GPT-5.5-Skill-5-Chat.
-- Skill 5 lÃ¤uft mit GPT-5.5 in einem neuen Chat, nutzt nur das Compact Audit Package, liefert eine manuelle Janus-Testanleitung und danach einen Copy-Paste-Prompt fÃ¼r `/SKILL 7 â€“ DOKUMENTATIONSUPDATE`.
-- Skill 6 ist der iterative Debug-Gate nach Skill 5 und manuellem Janus-Test.
-- Skill 6 lÃ¤uft mit SWE 1.6 fÃ¼r maximal drei Iterationen; danach gibt Skill 6 ein kompaktes GPT-5.5-Eskalationshandover aus.
+- Skill 4 implementiert genau einen Target Task, testet automatisch und liefert bei offenen Tasks einen Copy-Paste-Prompt fÃ¼r den nÃ¤chsten Skill-4-Lauf.
+- Skill 4 liefert den Skill-6-Final-Audit-Handover erst nach Abschluss aller Tasks, automatischer Gesamtvalidierung und erfolgreichem manuellem Janus-Gesamttest.
+- Skill 5 ist der iterative Debug-Gate, wenn Skill 4/Skill 6 blockiert oder der manuelle Janus-Gesamttest fehlschlÃ¤gt.
+- Skill 5 lÃ¤uft mit SWE 1.6 fÃ¼r maximal drei Iterationen; danach gibt Skill 5 ein kompaktes GPT-5.5-Eskalationshandover aus.
+- Skill 6 lÃ¤uft mit GPT-5.5 in einem neuen Chat, nutzt nur das finale Compact Audit Package und liefert danach einen Copy-Paste-Prompt fÃ¼r `/SKILL 7 â€“ DOKUMENTATIONSUPDATE`.
 - Skill 7 ist das Dokumentationsupdate und darf erst nach erfolgreichem Skill-5-/Skill-6-Gate laufen.
 - Wenn eine Umsetzung aus einem `BACKLOG-XXX` Item stammt, aktualisiert Skill 7 das Backlog und verschiebt erledigte Items nach `DONE`.
 - System Health prüft Hygiene, Struktur und technische Qualität; größere Findings gehen ins Backlog und werden danach über Backlog Skill 2/3 verarbeitet.
@@ -288,8 +289,8 @@ Expected result:
 - no new features
 - Skill 4 stoppt nach genau diesem Task
 - nach erfolgreichem Task mit PASS-Tests: `/save` ausfÃ¼hren, bevor der nÃ¤chste Skill gestartet wird
-- wenn weitere Tasks existieren: nÃ¤chster manueller Skill-3-Handoff
-- wenn keine weiteren Tasks existieren: Skill-5-Dateiliste und Copy-Paste-Prompt fÃ¼r einen neuen GPT-5.5 Final-Audit-Chat
+- wenn weitere Tasks existieren: Copy-Paste-Prompt fÃ¼r den nÃ¤chsten Skill-4-Lauf mit dem nÃ¤chsten Target Task
+- wenn keine weiteren Tasks existieren: automatische Gesamtvalidierung, manueller Janus-Gesamttest und erst danach Skill-6-Dateiliste plus Copy-Paste-Prompt fÃ¼r einen neuen GPT-5.5 Final-Audit-Chat
 
 Stop if Skill 4 returns:
 
@@ -307,27 +308,32 @@ Fix loop rule:
 
 ---
 
-## 7. Repeat Skill 3/4 Per Task
+## 7. Repeat Skill 4 Per Task
 
 For each task:
 
 ```text
-Skill 3 Pre-Check
-â†’ Skill 4 Execution
+Skill 4 Execution
 â†’ task validation evidence
 â†’ /save
+â†’ next Skill-4 Copy-Handover if tasks remain
 ```
 
-Proceed to Skill 5 only after all required tasks are completed or explicitly deferred by Spec/Task scope.
+Proceed to Skill 6 only after:
+- all required tasks are completed
+- `Remaining Tasks: keine`
+- Skill 4 completed automatic Gesamtvalidierung
+- user confirmed the manual Janus-Gesamttest
 
 Wichtig:
-- Nie mehrere Tasks in einem Skill-3-/Skill-4-Lauf validieren oder implementieren.
+- Nie mehrere Tasks in einem Skill-4-Lauf implementieren.
 - Bei gemischten Modellen nach jedem Task stoppen und mit dem zugewiesenen Modell des nÃ¤chsten Tasks neu starten.
 - Der User lÃ¶st jeden nÃ¤chsten Task bewusst aus.
+- Skill 6 ist kein Subtask-Audit, sondern nur das finale Spec-Audit nach vollstÃ¤ndiger Umsetzung.
 
 ---
 
-## 8. Prepare Compact Skill 5 Audit Package
+## 8. Prepare Compact Skill 6 Audit Package
 
 Do not use full chat history.
 
@@ -342,23 +348,30 @@ Prepare:
 ```text
 Spec: documentation/Planned Features/<FEATURE_NAME>.md
 Tasks: documentation/tasks/<TASK_FILE>.md
+Target Task: ALL COMPLETED
 Pre-Check: <PRE-CHECK results>
 Changed Files: <list>
 Diff: <git diff or relevant excerpts>
 Tests: <Unit/Integration/E2E results>
+Gesamt-Test Results: <Build/Unit/Integration/E2E/Smoke results>
+Manual Janus Test Evidence: PASS
 Known Risks: <if any>
+Pipeline Status:
+- Completed Tasks: <alle>
+- Remaining Tasks: keine
+- Spec Implementation Complete: YES
 ```
 
 ---
 
-## 9. Run Skill 5 â€“ Final Audit with GPT-5.5
+## 9. Run Skill 6 â€“ Final Audit with GPT-5.5
 
-Skill 5 should be started in a new GPT-5.5 chat.
+Skill 6 should be started in a new GPT-5.5 chat.
 
 Minimal invocation:
 
 ```text
-/Skill 5 â€“ Diamantstandard Final Audit mit kompaktem Audit-Paket:
+/Skill 6 â€“ Diamantstandard Final Audit mit kompaktem Audit-Paket:
 WICHTIG:
 - Neuer Chat mit GPT-5.5.
 - Nur dieses Compact Audit Package verwenden.
@@ -366,11 +379,18 @@ WICHTIG:
 
 Spec: documentation/Planned Features/<FEATURE_NAME>.md
 Tasks: documentation/tasks/<TASK_FILE>.md
+Target Task: ALL COMPLETED
 Pre-Check: <PRE-CHECK Ergebnis oder Datei>
 Changed Files: <Liste>
 Diff: <Git Diff oder relevante AuszÃ¼ge>
 Tests: <Unit/Integration/E2E Ergebnisse>
+Gesamt-Test Results: <Gesamtvalidierung>
+Manual Janus Test Evidence: PASS
 Known Risks: <falls vorhanden>
+Pipeline Status:
+- Completed Tasks: <alle>
+- Remaining Tasks: keine
+- Spec Implementation Complete: YES
 ```
 
 Allowed final states:
@@ -386,37 +406,36 @@ Rules:
 - PASS WITH FIXES: apply only listed fixes, then targeted re-audit if needed.
 - BLOCKED: no documentation finalization and no release.
 
-Skill 5 muss zusÃ¤tzlich ausgeben:
-- manuelle Janus-Testanleitung mit Prompt/Klickpfad
-- erwartetes Ergebnis
-- Debug-Handoff an SWE 1.6 bei Abweichung
+Skill 6 muss zusÃ¤tzlich ausgeben:
+- BestÃ¤tigung, dass die manuelle Janus-Test-Evidence aus Skill 4 vorhanden ist
+- finale Audit-Entscheidung fÃ¼r die komplette Spec
 - Copy-Paste-Prompt fÃ¼r `/SKILL 7 â€“ DOKUMENTATIONSUPDATE`
 
 ---
 
-## 10. Run Skill 6 â€“ Feature Debug Gate
+## 10. Run Skill 5 â€“ Feature Debug Gate
 
-Nach Skill 5 fÃ¼hrt der User die manuelle Janus-Testanleitung aus.
+Der manuelle Janus-Gesamttest findet nach dem letzten Skill-4-Task und vor Skill 6 statt.
 
-Wenn der manuelle Janus-Test wie erwartet funktioniert:
+Wenn der manuelle Janus-Gesamttest wie erwartet funktioniert:
 
 ```text
-â†’ Skill 6 wird Ã¼bersprungen.
-â†’ Weiter mit Skill 7 Dokumentationsupdate.
+â†’ Skill 5 wird Ã¼bersprungen.
+â†’ Weiter mit Skill 6 Final Audit.
 ```
 
-Wenn der manuelle Janus-Test NICHT wie erwartet funktioniert, oder Skill 4/5 Debug verlangt:
+Wenn der manuelle Janus-Gesamttest NICHT wie erwartet funktioniert, oder Skill 4/6 Debug verlangt:
 
 - Skill 4 returns `TASK EXECUTION FAILED`
 - Skill 4 returns `FIX LOOP LIMIT REACHED`
-- Skill 5 returns `BLOCKED`
-- Skill 5 returns non-trivial `PASS WITH FIXES`
-- the manual Janus test from Skill 5 does not match the expected result
+- Skill 6 returns `BLOCKED`
+- Skill 6 returns non-trivial `PASS WITH FIXES`
+- the manual Janus-Gesamttest from Skill 4 does not match the expected result
 
 Use:
 
 ```text
-/SKILL 6 â€“ FEATURE DEBUG
+/SKILL 5 â€“ FEATURE DEBUG
 ```
 
 Required package:
@@ -428,7 +447,7 @@ Iteration: 1 | 2 | 3
 Task: <task file / task id>
 Spec: <source spec file>
 Pre-Check: <PRE-CHECK result>
-Final Audit / Skill 5: <result/findings>
+Final Audit / Skill 6: <result/findings>
 Manueller Janus-Test:
 - Prompt/Klickpfad: <was wurde getan>
 - Erwartetes Ergebnis: <Soll>
@@ -440,26 +459,26 @@ Known Risks: <falls vorhanden>
 ```
 
 Rules:
-- Skill 6 is not a normal happy-path implementation step; it is a manual-test/debug gate.
-- Skill 6 always runs before Skill 7.
-- Skill 6 uses SWE 1.6 by default.
-- After each Skill-6 fix, Skill 6 must ask the user to rerun the Janus manual test.
-- If the retest passes and Skill 6 changed code, run `/save`, then proceed to Skill 7.
-- If the retest fails and iteration is below 3, rerun Skill 6 with updated actual behavior and backend log.
-- If the retest fails after iteration 3, Skill 6 must output `SKILL 6 ESCALATION REQUIRED` plus compact GPT-5.5 handover.
-- Do not give GPT-5.5 the full backend log; use Skill 6's compressed escalation handover.
+- Skill 5 is not a normal happy-path implementation step; it is a manual-test/debug gate.
+- Skill 5 always runs before Skill 7 when debug is required.
+- Skill 5 uses SWE 1.6 by default.
+- After each Skill-5 fix, Skill 5 must ask the user to rerun the Janus manual test.
+- If the retest passes and Skill 5 changed code, run `/save`, then proceed to Skill 6 Re-Audit.
+- If the retest fails and iteration is below 3, rerun Skill 5 with updated actual behavior and backend log.
+- If the retest fails after iteration 3, Skill 5 must output `SKILL 5 ESCALATION REQUIRED` plus compact GPT-5.5 handover.
+- Do not give GPT-5.5 the full backend log; use Skill 5's compressed escalation handover.
 
 ---
 
 ## 11. Run Skill 7 â€“ Dokumentationsupdate with Automatic Version Bump
 
-Run only if Skill 5 or `/2_final-audit` returned `PASS` or `PASS WITH FIXES`.
+Run only if Skill 6 or `/2_final-audit` returned `PASS` or `PASS WITH FIXES`.
 
 Additionally, one of these must be true:
 
-- manual Janus test passed and Skill 6 was not needed
-- Skill 6 returned `SKILL 6 DEBUG RESULT: FIXED` and the user retest passed
-- manual Janus test was explicitly marked `N/A` or deferred by Skill 5 with a non-blocking reason
+- manual Janus test passed and Skill 5 was not needed
+- Skill 5 returned `SKILL 5 DEBUG RESULT: FIXED` and the user retest passed
+- manual Janus test was explicitly marked `N/A` or deferred by Skill 6 with a non-blocking reason
 
 After Skill 7 completed successfully:
 
@@ -475,7 +494,7 @@ Use:
 /SKILL 7 â€“ DOKUMENTATIONSUPDATE
 ```
 
-Use the Copy-Paste-Prompt from Skill 5. It must include:
+Use the Copy-Paste-Prompt from Skill 6. It must include:
 - Final Audit result
 - Spec
 - Task
@@ -489,10 +508,10 @@ Use the Copy-Paste-Prompt from Skill 5. It must include:
 Stop if final audit is `BLOCKED`.
 
 Also stop if:
-- manual Janus test failed and Skill 6 has not resolved it
-- Skill 5 requested re-run of Skill 4
+- manual Janus test failed and Skill 5 has not resolved it
+- Skill 6 requested re-run of Skill 4
 - there is no clear final audit package
-- Skill 6 returned `ESCALATION REQUIRED`, `BLOCKED`, or `OUT OF SCOPE`
+- Skill 5 returned `ESCALATION REQUIRED`, `BLOCKED`, or `OUT OF SCOPE`
 
 ---
 
@@ -522,8 +541,8 @@ Never continue if:
 - Skill 2 reports ambiguous task.
 - Skill 3 does not pass Pre-Check.
 - Skill 4 reaches fix loop limit.
-- Skill 5 returns BLOCKED.
-- Skill 6 needs escalation, is blocked, or still needs retest.
+- Skill 6 returns BLOCKED.
+- Skill 5 needs escalation, is blocked, or still needs retest.
 - Skill 7 version bump is blocked or version files are inconsistent.
 - Skill 7 completed but `/save` did not complete.
 - Required release artifacts are missing.
@@ -534,7 +553,7 @@ Never continue if:
 
 - Do not paste full chat history into any skill.
 - Use artifact files as handoff boundaries.
-- Use GPT-5.5 only for Skill 5 or explicit escalation.
+- Use GPT-5.5 only for Skill 6 or explicit escalation.
 - Prefer re-generating a better Spec over expensive implementation fixes.
 - Use targeted diffs and test outputs for audits.
 - Do not read `WHAT_I_LEARNED.md` fully; search targeted patterns only when needed.

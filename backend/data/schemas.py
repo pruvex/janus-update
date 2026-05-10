@@ -1572,6 +1572,8 @@ class UserMeResponse(BaseModel):
     status: str
     user: str
     suggestion_mode: int = Field(default=1, ge=0, le=2)
+    # Dark Mode preference (false = Light Mode, true = Dark Mode)
+    dark_mode_enabled: bool = Field(default=False)
     # Mirrors persisted chat defaults (same source as GET /api/last-used-model).
     last_used_provider: Optional[str] = None
     last_used_model: Optional[str] = None
@@ -1581,3 +1583,10 @@ class UserSuggestionModeUpdate(BaseModel):
     """PATCH /api/users/me — update proactive suggestion tier."""
 
     suggestion_mode: int = Field(ge=0, le=2)
+
+
+class UserSettingsUpdate(BaseModel):
+    """PATCH /api/users/me — update user settings (suggestion_mode and dark_mode_enabled)."""
+
+    suggestion_mode: Optional[int] = Field(None, ge=0, le=2)
+    dark_mode_enabled: Optional[bool] = None

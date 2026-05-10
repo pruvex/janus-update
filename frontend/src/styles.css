@@ -1,19 +1,35 @@
 :root {
   --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Light Mode (Default) */
+  --background-primary: #FFFFFF;
+  --background-secondary: #F5F5F5;
+  --surface-color: #FFFFFF;
+  --accent-color: #00A3FF;
+  --janus-blue: #00a3ff;
+  /* Dual-pane chrome (Sidebar Chips, Header-Streifen, Fokus-Glow) — klar von Button-Blau getrennt */
+  --color-pane-a: #9b59b6;
+  --color-pane-b: #00f2ff;
+  --sidebar-carbon: #F0F0F0;
+  --sidebar-border: #E0E0E0;
+  --text-primary: #1A1A1A;
+  --text-secondary: #666666;
+  --border-radius-main: 8px;
+  --transition-speed: 0.3s;
+}
+
+/* Dark Mode */
+body.dark-mode {
   --background-primary: #121212;
   --background-secondary: #1E1E1E;
   --surface-color: #2A2A2A;
   --accent-color: #00A3FF;
   --janus-blue: #00a3ff;
-  /* Dual-pane chrome (Sidebar Chips, Header-Streifen, Fokus-Glow) — klar von Button-Blau getrennt */
   --color-pane-a: #9b59b6;
   --color-pane-b: #00f2ff;
   --sidebar-carbon: #141414;
   --sidebar-border: #222222;
   --text-primary: #EAEAEA;
   --text-secondary: #B3B3B3;
-  --border-radius-main: 8px;
-  --transition-speed: 0.3s;
 }
 
 html, body {
@@ -24,6 +40,7 @@ html, body {
     background-color: var(--background-primary);
     color: var(--text-primary);
     font-size: 14px; /* Global base font size */
+    transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
 /* Markdown styling within chat bubbles */
@@ -363,7 +380,7 @@ html, body {
   margin: 0;
   padding: 8px 10px;
   font-size: 0.82rem;
-  background-color: #1a1a1a !important;
+  background-color: var(--surface-color) !important;
   border: 1px solid var(--sidebar-border) !important;
   border-radius: 6px !important;
   color: var(--text-primary) !important;
@@ -1439,15 +1456,15 @@ button:hover {
 .control-group label { display: block; margin-bottom: 6px; font-weight: bold; color: var(--text-primary); }
 
 /* Hier war der Fehler: Styles für Inputs waren verloren gegangen */
-.control-group input, 
-.control-group select, 
+.control-group input,
+.control-group select,
 .control-group textarea {
-    width: 100%; 
+    width: 100%;
     padding: 10px;
-    border: 1px solid #444;
+    border: 1px solid var(--sidebar-border);
     border-radius: 4px;
-    background-color: #121212 !important; /* Erzwingt Dunkel */
-    color: #EAEAEA !important;
+    background-color: var(--surface-color) !important;
+    color: var(--text-primary) !important;
     font-family: inherit;
     box-sizing: border-box;
 }

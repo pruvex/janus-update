@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import type { BacklogItem } from '@shared/types'
+import type { EstimatedTimeInsight } from '../lib/executionAnalytics'
 import { Copy } from 'lucide-react'
 
 interface KanbanCardProps {
   item: BacklogItem
   viewType?: 'active' | 'history'
+  estimatedTime?: EstimatedTimeInsight | null
 }
 
 const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
@@ -32,6 +34,40 @@ const valueOrFallback = (value: string | null | undefined, fallback = 'nicht ang
   return isPresent(value) ? value.trim() : fallback
 }
 
+const formatSpecReviewExecutionMode = (value: string | null | undefined) => {
+  const mode = valueOrFallback(value, '').toUpperCase()
+  if (mode === 'SWE_1_6') {
+    return 'SWE 1.6'
+  }
+  if (mode === 'GPT_5_5') {
+    return 'GPT-5.5'
+  }
+  return 'Modell fehlt'
+}
+
+const getSpecReviewButtonLabel = (item: BacklogItem) => {
+  if (item.type === 'SPEC FEATURE' && item.entry_point === 'SPEC_REVIEW_GATE') {
+    return `Spec Review ausführen mit ${formatSpecReviewExecutionMode(item.raw_fields?.['Spec Review Execution Mode'])}`
+  }
+  return 'Edit Handover'
+}
+
+const getTypeColor = (item: BacklogItem) => {
+  if (item.type === 'SPEC FEATURE' && item.entry_point === 'SPEC_REVIEW_GATE') {
+    const hint = valueOrFallback(item.raw_fields?.['Spec Review Dashboard Hint'], '').toUpperCase()
+    if (hint === 'CRITICAL') {
+      return { bg: 'bg-red-500/20', text: 'text-red-400' }
+    }
+    if (hint === 'CAUTION') {
+      return { bg: 'bg-yellow-500/20', text: 'text-yellow-400' }
+    }
+    if (hint === 'SAFE') {
+      return { bg: 'bg-green-500/20', text: 'text-green-400' }
+    }
+  }
+  return TYPE_COLORS[item.type] || TYPE_COLORS['UNCLEAR']
+}
+
 const buildBacklogContext = (task: BacklogItem): string => {
   return `Backlog-Kontext:
 - Backlog Item: ${task.id}
@@ -50,6 +86,23 @@ const buildBacklogContext = (task: BacklogItem): string => {
 - Recommended next skill: ${valueOrFallback(task.recommended_next_skill)}
 - Target Task: ${valueOrFallback(task.target_task)}
 - Precheck artifact: ${valueOrFallback(task.precheck_artifact)}`
+}
+
+const buildExecutionTelemetryContract = (task: BacklogItem): string => {
+  return `Execution-Telemetrie:
+- Schreibe KEINEN Pending-/Start-Record beim Kopieren dieses Handovers.
+- Wenn die Task-Ausführung nach realer Skill-Ausführung, Validierung und erfolgreichem Abschluss completed ist, persistiere genau einen completed-only Record.
+- Ziel: janus-dashboard/data/task-execution-history.json
+- Script: npm run record:task-execution -- --input <completed-execution-record.json>
+- source: skill_lifecycle
+- task_id: ${task.id}
+- task_title: ${task.title}
+- task_type: ${valueOrFallback(task.type)}
+- importance: ${valueOrFallback(task.importance)}
+- effort: ${valueOrFallback(task.effort)}
+- risk: ${valueOrFallback(task.implementation_risk)}
+- routing_confidence_before: ${valueOrFallback(task.routing_confidence)}
+- Forbidden: UI-Timer, Clipboard-Zeit, manuelle Dauer-Schätzung oder Dashboard-only Completion.`
 }
 
 const buildBlockedPrompt = (task: BacklogItem, reason: string): string => {
@@ -81,6 +134,8 @@ Spec: ${task.handoff.trim()}
 
 ${buildBacklogContext(task)}
 
+${buildExecutionTelemetryContract(task)}
+
 Arbeitsregel:
 - Nutze die genannte Spec-Datei als verbindliche Single Source of Truth.
 - Ignoriere widersprüchliche oder zusätzliche Chat-Kontexte.
@@ -89,6 +144,45 @@ Arbeitsregel:
 Nächster erwarteter Output:
 - Skill-1 Task-Datei
 - eindeutiger Next Step zu Skill 2 mit Spec- und Task-Artefakt`
+}
+
+const buildSpecReviewPrompt = (task: BacklogItem): string => {
+  if (!isPresent(task.handoff)) {
+    return buildBlockedPrompt(task, 'Spec Review verlangt eine Spec-Datei, aber es ist kein Spec-Handoff gesetzt.')
+  }
+
+  const executionMode = formatSpecReviewExecutionMode(task.raw_fields?.['Spec Review Execution Mode'])
+
+  return `@[/SPEC SKILL 1 – REVIEW GATE] mit folgender Spec-Datei:
+Spec: ${task.handoff.trim()}
+Mode: REVIEW_ONLY
+Execution Model: ${executionMode}
+
+Spec-Kontext:
+- Spec Item: ${task.id}
+- Titel: ${task.title}
+- Status: ${valueOrFallback(task.status)}
+- Review Status: ${valueOrFallback(task.raw_fields?.['Review Status'])}
+- Spec Review Execution Mode: ${valueOrFallback(task.raw_fields?.['Spec Review Execution Mode'])}
+- Spec Review Complexity Score: ${valueOrFallback(task.raw_fields?.['Spec Review Complexity Score'])}
+- Spec Review Dashboard Hint: ${valueOrFallback(task.raw_fields?.['Spec Review Dashboard Hint'])}
+- Spec Review Confidence: ${valueOrFallback(task.raw_fields?.['Spec Review Confidence'])}
+- Spec Review Reason: ${valueOrFallback(task.raw_fields?.['Spec Review Reason'])}
+- Skill-1 Ready: ${valueOrFallback(task.raw_fields?.['Skill-1 Ready'])}
+- Complexity Score: ${valueOrFallback(task.raw_fields?.['Complexity Score'])}
+- Risk: ${valueOrFallback(task.raw_fields?.Risk)}
+
+Arbeitsregel:
+- Nutze die genannte Spec-Datei als verbindliche Single Source of Truth.
+- Ignoriere widersprüchliche oder zusätzliche Chat-Kontexte.
+- Nutze für den Review das Modell aus "Execution Model"; nicht selbst ableiten.
+- Erzeuge keine Tasks und keine Implementation.
+- Prüfe die Spec diamantstandard-konform und schreibe/aktualisiere den Block "SPEC REVIEW METADATA" am Ende der Spec-Datei.
+
+Erwarteter erfolgreicher Zustand:
+- Wenn die Spec Skill-1-ready ist: Review Status APPROVED oder APPROVED_WITH_NOTES und Skill-1 Ready YES.
+- Danach Dashboard aktualisieren und denselben Kartenbutton erneut verwenden, um den Handover an SKILL 1 zu kopieren.
+- Wenn nicht ready: konkrete Refinements, Blocking Question oder Split Recommendation ausgeben.`
 }
 
 const buildSkill2Prompt = (task: BacklogItem): string => {
@@ -101,6 +195,8 @@ Spec: ${valueOrFallback(task.raw_fields?.Spec)}
 Tasks: ${task.handoff.trim()}
 
 ${buildBacklogContext(task)}
+
+${buildExecutionTelemetryContract(task)}
 
 Arbeitsregel:
 - Nutze ausschließlich die genannten Artefakte als Requirements-Quellen.
@@ -124,6 +220,8 @@ ${targetTaskLine}Task: ${task.handoff.trim()}
 Backlog Item: ${task.id}
 
 ${buildBacklogContext(task)}
+
+${buildExecutionTelemetryContract(task)}
 
 Arbeitsregel:
 - Validiere ausschließlich diesen Handoff-Task.
@@ -153,6 +251,8 @@ Backlog Item: ${task.id}
 
 ${buildBacklogContext(task)}
 
+${buildExecutionTelemetryContract(task)}
+
 Arbeitsregel:
 - Implementiere ausschließlich den genannten Target Task.
 - Führe keine späteren Tasks im selben Lauf aus.
@@ -161,7 +261,7 @@ Arbeitsregel:
 Erwarteter nächster Output:
 - Implementierungsnachweis
 - Tests/Validierung
-- Compact Audit Handover für Skill 5`
+- Compact Audit Handover für Skill 6 nach Abschluss aller Tasks`
 }
 
 const buildPipelineHandoverPrompt = (task: BacklogItem): string => {
@@ -170,6 +270,10 @@ const buildPipelineHandoverPrompt = (task: BacklogItem): string => {
 
   if (entryPoint === 'ROUTING_BLOCKED') {
     return buildBlockedPrompt(task, valueOrFallback(task.routing_blocker, 'Routing wurde von Backlog Skill 3 blockiert.'))
+  }
+
+  if (recommendedSkill === 'SPEC SKILL 1' || entryPoint === 'SPEC_REVIEW_GATE') {
+    return buildSpecReviewPrompt(task)
   }
 
   if (recommendedSkill === 'SKILL 1' || entryPoint === 'SPEC_PIPELINE_START') {
@@ -191,7 +295,7 @@ const buildPipelineHandoverPrompt = (task: BacklogItem): string => {
   return buildBlockedPrompt(task, 'Kein eindeutiger Entry Point oder Recommended next skill vorhanden.')
 }
 
-export function KanbanCard({ item, viewType = 'active' }: KanbanCardProps) {
+export function KanbanCard({ item, viewType = 'active', estimatedTime = null }: KanbanCardProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopyHandover = async () => {
@@ -205,8 +309,10 @@ export function KanbanCard({ item, viewType = 'active' }: KanbanCardProps) {
     }
   }
 
-  const typeColor = TYPE_COLORS[item.type] || TYPE_COLORS['UNCLEAR']
+  const typeColor = getTypeColor(item)
   const importanceColor = IMPORTANCE_COLORS[item.importance] || IMPORTANCE_COLORS['LOW']
+  const handoverButtonLabel = getSpecReviewButtonLabel(item)
+  const showSpecReviewRouting = item.type === 'SPEC FEATURE' && item.entry_point === 'SPEC_REVIEW_GATE'
 
   // Determine which date to display
   const getDateDisplay = () => {
@@ -276,6 +382,30 @@ export function KanbanCard({ item, viewType = 'active' }: KanbanCardProps) {
         </div>
       )}
 
+      {showSpecReviewRouting && (
+        <div className="mb-2 grid grid-cols-3 gap-1.5">
+          <div>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Review Model</p>
+            <p className="text-[10px] font-medium text-foreground">{formatSpecReviewExecutionMode(item.raw_fields?.['Spec Review Execution Mode'])}</p>
+          </div>
+          <div>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Spec Score</p>
+            <p className="text-[10px] font-medium text-foreground">{valueOrFallback(item.raw_fields?.['Spec Review Complexity Score'])}</p>
+          </div>
+          <div>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Hint</p>
+            <p className="text-[10px] font-medium text-foreground">{valueOrFallback(item.raw_fields?.['Spec Review Dashboard Hint'])}</p>
+          </div>
+        </div>
+      )}
+
+      {estimatedTime && (
+        <div className="mb-2">
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Estimated Time</p>
+          <p className="text-[10px] font-medium text-foreground">{estimatedTime.label}</p>
+        </div>
+      )}
+
       {/* Date display */}
       {dateDisplay && (
         <div className="mb-2">
@@ -291,7 +421,7 @@ export function KanbanCard({ item, viewType = 'active' }: KanbanCardProps) {
           className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded bg-accent hover:bg-accent/80 text-accent-foreground text-[10px] font-medium transition-colors"
         >
           <Copy className="w-3 h-3" />
-          {copied ? 'Copied!' : 'Edit Handover'}
+          {copied ? 'Copied!' : handoverButtonLabel}
         </button>
       )}
     </div>

@@ -9,7 +9,7 @@ Use this workflow only after:
 ```text
 /1_Feature-erstellen
 â†’ implementation of generated tasks
-â†’ SKILL 5 â€“ DIAMANTSTANDARD FINAL AUDIT
+â†’ SKILL 6 â€“ DIAMANTSTANDARD FINAL AUDIT
 â†’ Skill 7 /SKILL 7 â€“ DOKUMENTATIONSUPDATE with automatic version bump
 â†’ /save
 â†’ /SKILL 8 â€“ BUILD RELEASE
@@ -28,7 +28,7 @@ This workflow mutates external state only in the publish phase. Do not publish w
 
 ## Hard Rules
 
-- Do not run production publish if SKILL 5 was not `PASS` or `PASS WITH FIXES`.
+- Do not run production publish if SKILL 6 was not `PASS` or `PASS WITH FIXES`.
 - Do not run production publish if Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE` was not completed.
 - Do not run production publish if `/save` was not completed after Skill 7.
 - Do not publish with a missing or inconsistent version.
@@ -38,6 +38,8 @@ This workflow mutates external state only in the publish phase. Do not publish w
 - Do not bump versions in this workflow. Version bump belongs to Skill 7.
 - Do not silently ignore build or validation failures.
 - Stop on first blocking failure and report the exact failed phase.
+- Do not run Vision tests, Vision evaluation matrices, Vision KPI gates, or OpenWorld/Stresstest Vision suites as part of this workflow by default.
+- Treat Vision validation as out of scope for build/release unless the current release explicitly changes Vision behavior and the user explicitly approves the Vision test command before it is run.
 
 Allowed safe actions:
 - Run pre-build verification.
@@ -52,6 +54,7 @@ Forbidden actions:
 - Feature implementation changes.
 - Architecture changes.
 - Version bump.
+- Vision test execution without explicit user approval for a Vision-relevant release.
 - Publishing with failed validation.
 - Publishing to a different repository than configured without explicit user approval.
 
@@ -61,7 +64,7 @@ Forbidden actions:
 
 Ask for or infer:
 
-1. Final SKILL 5 result.
+1. Final SKILL 6 result.
 2. Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE` completion result including version bump report.
 3. Target version from root `package.json`.
 4. `/save` completion evidence after Skill 7.
@@ -99,7 +102,7 @@ Typical release lookup keys:
 
 Verify:
 
-- SKILL 5: `PASS` or `PASS WITH FIXES`
+- SKILL 6: `PASS` or `PASS WITH FIXES`
 - Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE`: complete
 - `/save`: complete after Skill 7
 - Skill 7 automatic version bump: complete and validated
@@ -161,7 +164,14 @@ python tools/pre_build_check.py
 
 If this fails, stop. This check catches syntax errors, missing dependencies, version mismatches, and path issues before the expensive build starts.
 
-Also run targeted validations from `/2_final-audit` or Skill 5 if they are cheap and release-critical.
+Also run targeted validations from `/2_final-audit` or Skill 6 only if they are cheap, release-critical, and directly required for the release being built.
+
+Vision test exclusion:
+- Do not run `npm run test:vision:*`, `backend/tests/tools/vision_evaluator.py`, Vision matrix tests, OpenWorld Vision tests, Stresstest Vision tests, or Vision KPI gates during normal Skill 8 release builds.
+- Do not infer Vision tests from broad phrases like "targeted validations", "non-regression", "quality gate", or "pre-build verification".
+- If Skill 6 mentions Vision tests but the release is not Vision-related, record `Vision validation: skipped as out of scope for Skill 8`.
+- If the release is Vision-related, stop before running any Vision command and ask for explicit approval with the exact command, estimated duration/cost, and reason.
+- If the user does not explicitly approve, skip Vision tests and continue only with the build/release gates that are actually required for packaging and publishing.
 
 For Electron/update features, recommended:
 
@@ -337,12 +347,13 @@ Return:
 - **Version:** [version]
 
 ## Gates
-- **/2_final-audit or Skill 5:** PASS | PASS WITH FIXES | missing
+- **/2_final-audit or Skill 6:** PASS | PASS WITH FIXES | missing
 - **Skill 7 /SKILL 7 â€“ DOKUMENTATIONSUPDATE:** complete | missing
 - **Skill 7 automatic version bump:** PASS | FAIL
 - **/save after Skill 7:** complete | missing
 - **Version consistency:** PASS | FAIL
 - **Pre-build:** PASS | FAIL
+- **Vision validation:** skipped | explicitly approved | not applicable
 - **Build:** PASS | FAIL
 - **Manifest:** PASS | FAIL
 - **Publish approval:** YES | NO

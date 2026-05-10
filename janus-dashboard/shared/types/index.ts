@@ -51,3 +51,34 @@ export interface BacklogResponse {
   items: BacklogItem[]
   counts: BacklogCounts
 }
+
+export interface TaskExecutionRecord {
+  execution_id: string
+  task_id: string
+  task_title?: string
+  task_type: string
+  skill_used: string
+  skill_chain?: string[]
+  importance: string
+  effort: string
+  risk: string
+  started_at: string
+  finished_at: string
+  duration_minutes: number
+  successful: boolean
+  reopened: boolean
+  retry_count?: number
+  routing_confidence_before?: number | null
+  routing_confidence_after?: number | null
+  completed_in_version?: string | null
+  completed_by_task?: string | null
+  validation_evidence?: string | null
+  source: 'skill_lifecycle' | 'backlog_sync' | 'manual_skill_update_with_evidence'
+}
+
+export interface TaskExecutionHistoryResponse {
+  schema: string
+  updated_at: string | null
+  source: string
+  records: TaskExecutionRecord[]
+}
