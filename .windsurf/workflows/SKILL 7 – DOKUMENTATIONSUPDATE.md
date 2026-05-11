@@ -57,6 +57,8 @@ Allowed safe edits:
 - Add backward-reference notes.
 - Compute and apply the Skill-7 automatic version bump.
 - Record Skill-7 version bump details.
+- Verify and, if necessary, repair the completed Spec dashboard marker after successful Skill-6 audit.
+- Move completed Spec files to `documentation/SPEC/Spec Done/` if Skill 6 did not already move them.
 - Move completed Backlog items from `IN PROGRESS` to `DONE` when the implementation originated from `BACKLOG-XXX`, preserving dashboard-readable lifecycle fields.
 - Keep Backlog status sections canonical when moving items: one `## NEEDS INFO`, one `## READY`, one `## IN PROGRESS`, one `## DONE`, one `## BLOCKED`; item section must match its `Status` field.
 - Delete resolved temporary Skill-5 escalation handover files matching `.windsurf/tmp/skill5_escalation_*.md`.
@@ -77,6 +79,7 @@ Ask for or infer:
 8. Existing capability registry path, default `backend/data/capability_registry.json`.
 9. Optional Backlog ID, e.g. `BACKLOG-004`, if the task originated from `BACKLOG SKILL 3 – SELECTED_HANDOFF` or references a `BACKLOG-XXX` item.
 10. Optional temporary Skill-5 escalation handover file path, default pattern `.windsurf/tmp/skill5_escalation_*.md`, if Skill 5 escalated to GPT-5.5.
+11. Optional Spec file path, including already moved paths under `documentation/SPEC/Spec Done/`, if the implementation originated from a Spec pipeline.
 
 If the user provides no audit block, search recent conversation/context and task files. If still unavailable, ask for the `/2_final-audit` or Skill 6 report before proceeding.
 
@@ -131,6 +134,69 @@ If manual test or debug gate is not satisfied, stop and return:
 - Re-run the manual Janus test after any Skill-5 fix.
 - Then run `/SKILL 7 â€“ DOKUMENTATIONSUPDATE` again.
 ```
+
+---
+
+## Phase 1.2: Spec Dashboard Completion Sync Gate
+
+Run this phase when the implementation originated from a Spec file under `documentation/SPEC` or when the Skill-6 package contains a `Spec:` path.
+
+Purpose:
+- Ensure Spec cards reliably move to Dashboard History even if Skill 6 wrote a non-canonical completion block.
+- Ensure completed Specs live under `documentation/SPEC/Spec Done/`.
+
+Required behavior after Skill 6 `PASS` or `PASS WITH FIXES`:
+
+1. Resolve the Spec file path:
+   - Prefer the `Spec:` path from the Skill-6 final audit package.
+   - If that path no longer exists, check `documentation/SPEC/Spec Done/<original-filename>.md`.
+   - If neither exists, stop with `SKILL 7 BLOCKED – SPEC FILE NOT FOUND`.
+
+2. Ensure the Spec file contains the canonical dashboard marker:
+
+```markdown
+## SPEC IMPLEMENTATION METADATA
+
+- **Implementation Status:** DONE
+- **Final Audit:** <PASS | PASS WITH FIXES>
+- **Completed At:** <YYYY-MM-DD>
+- **Completed By:** SKILL 6 – DIAMANTSTANDARD FINAL AUDIT
+- **Validation Evidence:** <Skill 6 validation/manual retest evidence>
+```
+
+3. If the Spec contains legacy or non-canonical fields, normalize them:
+   - `Implementation Status: COMPLETE` -> `- **Implementation Status:** DONE`
+   - `Audit Result: PASS` -> `- **Final Audit:** PASS`
+   - `Audit Date` or `Implementation Date` -> `- **Completed At:** <date>`
+
+4. Ensure the Spec file is located under:
+
+```text
+documentation/SPEC/Spec Done/<original-filename>.md
+```
+
+5. If the Spec file is still directly under `documentation/SPEC/`, move it to `documentation/SPEC/Spec Done/`.
+
+6. If the target file already exists, stop with:
+
+```text
+SKILL 7 BLOCKED – SPEC DONE TARGET EXISTS
+```
+
+and do not overwrite either file.
+
+7. In the final Skill-7 report, include:
+
+```markdown
+## Spec Dashboard Completion Sync
+- **Spec file:** <old path>
+- **Final Spec path:** documentation/SPEC/Spec Done/<file>.md
+- **Metadata normalized:** YES | NO
+- **Moved to Spec Done:** YES | NO
+- **Dashboard History marker:** PASS | FAIL
+```
+
+Do not continue to release preparation if this phase fails for a Spec-originated implementation.
 
 ---
 
@@ -647,6 +713,7 @@ Return:
 - **Capability Registry:** [updated / skipped + reason]
 - **Capability UX View:** [validated / skipped + reason]
 - **Derived capabilities:** [user-visible abilities added/merged or none]
+- **Spec Dashboard Completion Sync:** [updated / normalized / already valid / skipped + reason]
 - **Backlog:** [updated / skipped + reason]
 - **Backward refs:** [updated / none / skipped + reason]
 - **Skill 6:** [not needed / fixed + retest pass / skipped + reason]

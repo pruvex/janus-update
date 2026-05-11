@@ -16,8 +16,8 @@ depends_on = None
 
 
 def upgrade():
-    # Add dark_mode_enabled Boolean column with default False
-    op.add_column('users', sa.Column('dark_mode_enabled', sa.Boolean, nullable=False, server_default='0'))
+    # Add dark_mode_enabled Boolean column with default True (Dark Mode)
+    op.add_column('users', sa.Column('dark_mode_enabled', sa.Boolean, nullable=False, server_default='1'))
 
 
 def downgrade():

@@ -378,6 +378,8 @@ pytest==8.4.1
     #   pytest-asyncio
 pytest-asyncio==1.1.0
     # via -r c:/KI/Janus-Projekt/backend/requirements.in
+pytest-mock==3.15.1
+    # via -r c:/KI/Janus-Projekt/backend/requirements.in
 python-dateutil==2.9.0.post0
     # via
     #   dateparser

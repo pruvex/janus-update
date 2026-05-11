@@ -1,27 +1,41 @@
-import logging
-from typing import Any, Dict, List, Optional, Tuple
-from functools import lru_cache
-import asyncio
+from __future__ import annotations
 
-from backend.llm_providers.gemini.gateway import GeminiGateway
-from backend.llm_providers.openai.gateway import OpenAIGateway
-from backend.llm_providers.ollama.gateway import OllamaGateway
-from backend.services.tool_executor import ToolExecutor
-from backend.services.skill_selector import SkillSelector
+import asyncio
+import logging
+import threading
+from functools import lru_cache
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+
 from backend.services.tool_manager import tool_manager
 from backend.utils.config_loader import load_model_catalog
 
+if TYPE_CHECKING:
+    from backend.services.tool_executor import ToolExecutor
+
 logger = logging.getLogger("janus_backend")
 
-# Process-weite Gateway-Silos (zustandslose Orchestrierer; keine Re-Instanziierung pro Request)
-_GEMINI_GATEWAY = GeminiGateway()
-_OPENAI_GATEWAY = OpenAIGateway()
-_OLLAMA_GATEWAY = OllamaGateway()
-_GATEWAY_SILOS: Dict[str, Any] = {
-    "gemini": _GEMINI_GATEWAY,
-    "openai": _OPENAI_GATEWAY,
-    "ollama": _OLLAMA_GATEWAY,
-}
+# Provider-Gateway-Silos: schwere Module (Gemini/OpenAI/Ollama Gateway) erst beim ersten Chat-Aufruf laden.
+_gateway_silos: Optional[Dict[str, Any]] = None
+_gateway_lock = threading.Lock()
+
+
+def _ensure_gateway_silos() -> Dict[str, Any]:
+    global _gateway_silos
+    if _gateway_silos is not None:
+        return _gateway_silos
+    with _gateway_lock:
+        if _gateway_silos is not None:
+            return _gateway_silos
+        from backend.llm_providers.gemini.gateway import GeminiGateway
+        from backend.llm_providers.openai.gateway import OpenAIGateway
+        from backend.llm_providers.ollama.gateway import OllamaGateway
+
+        _gateway_silos = {
+            "gemini": GeminiGateway(),
+            "openai": OpenAIGateway(),
+            "ollama": OllamaGateway(),
+        }
+        return _gateway_silos
 
 # --- CACHING FÜR MODELLKATALOG ---
 @lru_cache(maxsize=1)
@@ -48,7 +62,7 @@ async def reason_and_respond(
 
     # 1. Bestimme das Silo
     provider_key = str(provider).lower()
-    selected_silo = _GATEWAY_SILOS.get(provider_key)
+    selected_silo = _ensure_gateway_silos().get(provider_key)
     if not selected_silo:
         logger.error(f"Provider {provider_key} nicht unterstützt.")
         raise ValueError(f"Provider {provider_key} nicht unterstützt.")
@@ -58,6 +72,8 @@ async def reason_and_respond(
     if allowed_skill_ids is not None:
         effective_allowed_skill_ids = [str(s).strip() for s in (allowed_skill_ids or []) if str(s).strip()]
     elif not disable_tools and str(user_prompt or "").strip():
+        from backend.services.skill_selector import SkillSelector
+
         selector = SkillSelector()
         selected_skills = selector.get_relevant_skills(user_prompt, top_k=5)
         available_skill_ids = {

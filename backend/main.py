@@ -125,10 +125,7 @@ resource_path = get_resource_path
 log_startup_time("Pfad-Hilfsfunktionen importiert")
 # -------------------------------------
 
-# --- Service Imports ---
-log_startup_time("Importiere memory_extractor...")
-from backend.services.memory_extractor import notification_manager
-log_startup_time("memory_extractor importiert")
+# memory_extractor / notification_manager: lazy in /api/events – vermeidet schweren Import vor den Routern
 
 # --- Router Imports ---
 log_startup_time("Importiere Router...")
@@ -981,6 +978,8 @@ async def set_last_used_model(
 @app.get("/api/events")
 async def sse_endpoint():
     """Streams events (like 'refresh') to the client."""
+    from backend.services.memory_extractor import notification_manager
+
     async def event_generator():
         queue = await notification_manager.connect()
         try:

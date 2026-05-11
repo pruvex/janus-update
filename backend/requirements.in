@@ -8,6 +8,7 @@ Pillow
 google-generativeai
 pytest
 pytest-asyncio
+pytest-mock
 sentence-transformers
 tiktoken
 pyinstaller

@@ -84,10 +84,10 @@ def _ensure_sqlite_schema_migrations() -> None:
                 with engine.begin() as conn:
                     conn.execute(
                         text(
-                            "ALTER TABLE users ADD COLUMN dark_mode_enabled BOOLEAN NOT NULL DEFAULT 0"
+                            "ALTER TABLE users ADD COLUMN dark_mode_enabled BOOLEAN NOT NULL DEFAULT 1"
                         )
                     )
-                logger.info("Migration: users.dark_mode_enabled added (default=0).")
+                logger.info("Migration: users.dark_mode_enabled added (default=1).")
 
         if insp.has_table("chats"):
             chat_cols = {c["name"] for c in insp.get_columns("chats")}

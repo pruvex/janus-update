@@ -104,13 +104,14 @@ function createSpecItem(filePath: string, relativePath: string, text: string): B
   const reviewStatus = (metadata['Review Status'] || '').toUpperCase()
   const skillReady = (metadata['Skill-1 Ready'] || '').toUpperCase()
   const implementationStatus = (implementationMetadata['Implementation Status'] || '').toUpperCase()
-  const finalAudit = (implementationMetadata['Final Audit'] || '').toUpperCase()
+  const finalAudit = (implementationMetadata['Final Audit'] || implementationMetadata['Audit Result'] || '').toUpperCase()
   const executionMode = normalizeSpecExecutionMode(executionRouting.execution_mode)
   const routingComplexityScore = normalizeSpecComplexityScore(executionRouting.complexity_score)
   const dashboardHint = normalizeSpecDashboardHint(executionRouting.dashboard_hint)
   const routingConfidence = normalizeSpecConfidence(executionRouting.confidence)
   const isSkillReady = skillReady === 'YES' && (reviewStatus === 'APPROVED' || reviewStatus === 'APPROVED_WITH_NOTES')
-  const isImplementationDone = implementationStatus === 'DONE' && (finalAudit === 'PASS' || finalAudit === 'PASS WITH FIXES')
+  const isImplementationComplete = implementationStatus === 'DONE' || implementationStatus === 'COMPLETE'
+  const isImplementationDone = isImplementationComplete && (finalAudit === 'PASS' || finalAudit === 'PASS WITH FIXES')
   const item = createBacklogItem(`SPEC-${slugifySpecId(relativePath)}`, extractSpecTitle(text, relativePath))
   const fileStat = statSync(filePath)
 
@@ -133,7 +134,7 @@ function createSpecItem(filePath: string, relativePath: string, text: string): B
   item.handoff = normalizePathForPrompt(relativePath)
   item.recommended_next_skill = isImplementationDone ? '' : isSkillReady ? 'SKILL 1' : 'SPEC SKILL 1'
   item.handoff_created = formatDate(fileStat.mtime)
-  item.completed_at = isImplementationDone ? implementationMetadata['Completed At'] || formatDate(fileStat.mtime) : null
+  item.completed_at = isImplementationDone ? implementationMetadata['Completed At'] || implementationMetadata['Implementation Date'] || implementationMetadata['Audit Date'] || formatDate(fileStat.mtime) : null
   item.completed_by_task = isImplementationDone ? implementationMetadata['Completed By'] || 'SKILL 6 – DIAMANTSTANDARD FINAL AUDIT' : null
   item.final_audit = isImplementationDone ? finalAudit : null
   item.validation_evidence = isImplementationDone ? implementationMetadata['Validation Evidence'] || null : null
@@ -152,9 +153,9 @@ function createSpecItem(filePath: string, relativePath: string, text: string): B
     'Spec Review Dashboard Hint': dashboardHint,
     'Spec Review Confidence': routingConfidence,
     'Spec Review Reason': executionRouting.reason || '',
-    'Implementation Status': implementationStatus || '',
+    'Implementation Status': isImplementationDone ? 'DONE' : implementationStatus || '',
     'Final Audit': finalAudit || '',
-    'Completed At': implementationMetadata['Completed At'] || '',
+    'Completed At': implementationMetadata['Completed At'] || implementationMetadata['Implementation Date'] || implementationMetadata['Audit Date'] || '',
     'Completed By': implementationMetadata['Completed By'] || '',
     'Validation Evidence': implementationMetadata['Validation Evidence'] || '',
   }
