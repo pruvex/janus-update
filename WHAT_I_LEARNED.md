@@ -2,6 +2,16 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [PATTERN] #DynamicFallbackErrorDetails "Dynamic fallback with specific error details instead of generic messages"
+- **Kontext:** BACKLOG-006 Generische Fehlermeldung statt spezifischer Fehlerdetails. Wenn ein Tool-Aufruf fehlschlägt, zeigten alle Provider (GPT, Gemini) eine generische Fallback-Nachricht "Ich konnte diesmal keine stabile Antwort erzeugen..." statt spezifischen Fehlerdetails.
+- **Problem:** Statischer `fallback_summary` in execution_dispatcher.py ohne Fehlerdetails. Exception-Handler in execution_engine.py verwenden denselben statischen Fallback ohne Kontext. User erhält keine hilfreichen Informationen über den tatsächlichen Fehler (Tool-Name, Fehlercode, Fehlermeldung, Provider, Model).
+- **Lösung:** Dynamische Fallback-Zusammenfassung implementieren: (1) `_build_dynamic_fallback_summary()` Helper-Funktion erstellen, die Tool-Name, Fehlercode, Fehlermeldung, Provider und Model in eine spezifische Fehlermeldung formatiert. (2) Tool-Fehler-Tracking mit `_last_tool_error` Variable in `run_tool_loop()` und `run_tool_loop_stream()`. (3) Error-Details aus Tool-Ergebnissen extrahieren (error_code, error_message). (4) Alle Fallback-Verwendungen mit dynamischem Fallback aktualisieren (Exception, Stream-Crash, leere Tool-Round, leeres Text-Ergebnis). (5) Backend-Logs behalten vollständige Exception-Details mit `exc_info=True`.
+- **Härtung:** Audit muss prüfen, ob alle Fallback-Verwendungen dynamischen Fallback verwenden, wenn `_last_tool_error` verfügbar ist. Tripwire: Generische Fallback-Nachricht trotz verfügbarer Error-Details.
+- **Location:** `backend/services/orchestrator/execution_engine.py`, `backend/services/orchestrator/execution_dispatcher.py`.
+- **Epic:** BACKLOG-006 — Dynamic Error Messages — 2026-05-11.
+- **Confidence:** High
+- **Tags:** DynamicFallback, ErrorHandling, ToolErrors, FallbackSummary, BACKLOG006
+
 ## [PATTERN] #DefaultValueConsistency "Spec and task default values must match implementation"
 - **Kontext:** TASK-001 Dark Mode Toggle. Final audit found default=True in code but spec/task required default=False (Light Mode as standard).
 - **Problem:** Database model and Pydantic schema default values must exactly match spec requirements. Mismatch causes user-facing behavior to diverge from documented behavior.

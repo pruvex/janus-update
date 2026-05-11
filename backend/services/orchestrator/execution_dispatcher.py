@@ -20,6 +20,8 @@ from backend.services.tool_manager import tool_manager
 from backend.utils import intent_classifier
 # Der Model-Katalog ist ein Service, der die JSON-Config lädt und verarbeitet.
 from backend.services.model_catalog import get_models_by_provider
+# 💎 BACKLOG-006: Dynamic fallback summary helper
+from backend.services.orchestrator.execution_engine import _build_dynamic_fallback_summary
 
 logger = logging.getLogger("janus_backend")
 
@@ -829,10 +831,13 @@ async def execute_generation_prepare_gateway(
             )
             return False  # Not a duplicate
         wf.gateway_kwargs['_track_tool_call_fn'] = _track_tool_call
-        if wf.is_audit_request or wf.is_audit_decision or wf.is_factcheck_yes:
-            wf.fallback_summary = 'Der Audit-Bericht wurde erstellt, aber die Zusammenfassung konnte aufgrund der Größe nicht generiert werden. Bitte prüfen Sie die erstellte PDF.'
-        else:
-            wf.fallback_summary = 'Ich konnte diesmal keine stabile Antwort erzeugen. Bitte sende die Anfrage direkt noch einmal; ich versuche es dann mit einem robusten Neuaufbau.'
+        # 💎 BACKLOG-006: Dynamic fallback summary based on error details
+        # Initially use static fallback - will be updated with error context during execution
+        wf.fallback_summary = _build_dynamic_fallback_summary(
+            is_audit_request=wf.is_audit_request,
+            is_audit_decision=wf.is_audit_decision,
+            is_factcheck_yes=wf.is_factcheck_yes,
+        )
         wf.response = {}
         wf.latest_ui_command = None
         wf.font_fallback_notice = None

@@ -7,6 +7,11 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+## [0.4.17-beta.28] - 2026-05-11
+
+### Fixed
+- **BACKLOG-006:** Generische Fehlermeldung durch spezifische Fehlerdetails ersetzt. Dynamische Fallback-Zusammenfassung basierend auf tatsächlichen Fehlerdetails (Tool-Name, Fehlercode, Fehlermeldung, Provider, Model) implementiert. `_build_dynamic_fallback_summary()` Helper-Funktion in execution_engine.py hinzugefügt. Tool-Fehler-Tracking mit `_last_tool_error` Variable in `run_tool_loop()` und `run_tool_loop_stream()`. Error-Extraktion aus Tool-Ergebnissen (error_code, error_message). Dynamic Fallback Verwendungen in allen Fallback-Szenarien (Exception, Stream-Crash, leere Tool-Round, leeres Text-Ergebnis). Backend-Logs behalten vollständige Exception-Details mit `exc_info=True`. Files: `backend/services/orchestrator/execution_engine.py`, `backend/services/orchestrator/execution_dispatcher.py`. Manual Janus Test PASS (GPT + Gemini). Skill 6 Audit PASS.
+
 ## [0.4.17-beta.27] - 2026-05-11
 
 ### Changed

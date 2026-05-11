@@ -39,6 +39,69 @@ logger = logging.getLogger("janus_backend")
 MAPS_LINK_REGEX = re.compile(r'"maps_link"\s*:\s*"([^"]+)"')
 
 
+def _build_dynamic_fallback_summary(
+    *,
+    is_audit_request: bool = False,
+    is_audit_decision: bool = False,
+    is_factcheck_yes: bool = False,
+    exception: Optional[Exception] = None,
+    tool_name: Optional[str] = None,
+    error_code: Optional[str] = None,
+    error_message: Optional[str] = None,
+    provider: Optional[str] = None,
+    model: Optional[str] = None,
+) -> str:
+    """
+    Baut eine dynamische Fallback-Zusammenfassung basierend auf tatsächlichen Fehlerdetails.
+    
+    Args:
+        is_audit_request: Ob es sich um einen Audit-Request handelt
+        is_audit_decision: Ob es sich um eine Audit-Entscheidung handelt
+        is_factcheck_yes: Ob Factcheck aktiv ist
+        exception: Die aufgetretene Exception (für vollständige Details im Backend-Log)
+        tool_name: Name des fehlgeschlagenen Tools
+        error_code: Fehlercode aus dem Tool-Ergebnis
+        error_message: Fehlermeldung aus dem Tool-Ergebnis
+        provider: Der verwendete Provider
+        model: Das verwendete Modell
+    
+    Returns:
+        Eine spezifische Fehlermeldung für den User
+    """
+    # Audit-spezifische Fallbacks
+    if is_audit_request or is_audit_decision or is_factcheck_yes:
+        return 'Der Audit-Bericht wurde erstellt, aber die Zusammenfassung konnte aufgrund der Größe nicht generiert werden. Bitte prüfen Sie die erstellte PDF.'
+    
+    # Baue dynamische Fehlermeldung mit spezifischen Details
+    error_parts = []
+    
+    if tool_name:
+        error_parts.append(f"Tool: {tool_name}")
+    
+    if error_code:
+        error_parts.append(f"Fehlercode: {error_code}")
+    
+    if error_message:
+        # Kürze sehr lange Fehlermeldungen für den User
+        if len(error_message) > 200:
+            error_message = error_message[:197] + "..."
+        error_parts.append(f"Fehler: {error_message}")
+    
+    if provider:
+        error_parts.append(f"Provider: {provider}")
+    
+    if model:
+        error_parts.append(f"Modell: {model}")
+    
+    # Wenn wir spezifische Details haben, zeige sie dem User
+    if error_parts:
+        details_str = " | ".join(error_parts)
+        return f"Es ist ein Fehler aufgetreten: {details_str}. Bitte sende die Anfrage direkt noch einmal; ich versuche es dann mit einem robusten Neuaufbau."
+    
+    # Fallback zur generischen Nachricht wenn keine Details verfügbar
+    return 'Ich konnte diesmal keine stabile Antwort erzeugen. Bitte sende die Anfrage direkt noch einmal; ich versuche es dann mit einem robusten Neuaufbau.'
+
+
 def _reload_api_key_for_provider(provider: str) -> str:
     """
     Lädt den API-Key für den angegebenen Provider frisch aus dem Keyring.
@@ -1243,6 +1306,9 @@ class OrchestratorExecutionEngine:
         chat_id: Optional[int],
         agent_flow_error: Optional[Dict[str, Any]] = None,
     ) -> ExecutionResponse:
+        # 💎 BACKLOG-006: Extract provider/model for dynamic fallback
+        provider = gateway_kwargs.get("provider") if isinstance(gateway_kwargs, dict) else None
+        model = gateway_kwargs.get("model") if isinstance(gateway_kwargs, dict) else None
         current_iteration = 0
         response = None
         latest_ui_command = None
@@ -1423,18 +1489,24 @@ class OrchestratorExecutionEngine:
                 call_kwargs.pop("_prompt_cache_decision", None)
                 try:
                     response = await reason_and_respond_fn(**call_kwargs)
-                except Exception:
+                except Exception as exc:
                     logger.error("Error in orchestrator.execution_engine.run_tool_loop: synthesis crash", exc_info=True)
+                    # 💎 BACKLOG-006: Build dynamic fallback summary with error details
+                    dynamic_fallback = _build_dynamic_fallback_summary(
+                        exception=exc,
+                        provider=provider,
+                        model=model,
+                    )
                     # 💎 AUDIT-LOOP-FALLBACK-SHAPE: build a complete LLM-response shape
                     # so downstream logic (cost aggregation, fact extraction trigger,
                     # response finalizer) never dereferences missing fields.
                     response = {
                         "type": "text",
-                        "text": fallback_summary,
+                        "text": dynamic_fallback,
                         "tool_calls": [],
                         "raw_assistant_response": {
                             "role": "assistant",
-                            "content": fallback_summary,
+                            "content": dynamic_fallback,
                         },
                         "usage": {},
                         "cost": {},
@@ -1708,7 +1780,21 @@ class OrchestratorExecutionEngine:
             except Exception as exc:
                 latency_ms = int((time.time() - start_time) * 1000)
                 logger.error("Error in orchestrator.execution_engine.run_tool_loop: tool execution crash", exc_info=True)
-                response = {"text": f"Die Korrektur ist fehlgeschlagen. Grund: {exc}"}
+                # 💎 BACKLOG-006: Build dynamic fallback summary with error details
+                # Extract tool name from the first tool call for context
+                tool_name = None
+                if tool_calls and isinstance(tool_calls, list) and len(tool_calls) > 0:
+                    first_tc = tool_calls[0]
+                    if isinstance(first_tc, dict):
+                        fn = first_tc.get("function") or {}
+                        tool_name = str(fn.get("name") or "").strip()
+                dynamic_fallback = _build_dynamic_fallback_summary(
+                    exception=exc,
+                    tool_name=tool_name,
+                    provider=provider,
+                    model=model,
+                )
+                response = {"text": dynamic_fallback}
                 
                 # Log tool end events with error status
                 for tc in tool_calls:
@@ -1752,6 +1838,8 @@ class OrchestratorExecutionEngine:
             # 💎 SELF-CORRECTION TRACKER: Speichere Tool-Status für Retry-Logik
             _kpi_tool_status = gateway_kwargs.get("_kpi_tool_status", {})
             _normalize_tool_args_fn = gateway_kwargs.get("_normalize_tool_args_fn")
+            # 💎 BACKLOG-006: Track tool error details for dynamic fallback
+            _last_tool_error = None  # (tool_name, error_code, error_message)
             for _tr in (tool_results or []):
                 logger.error("💎 TOOL CALL RESULT: %s", _tr)
                 if isinstance(_tr, dict):
@@ -1775,6 +1863,11 @@ class OrchestratorExecutionEngine:
                                     "Storing for potential retry.",
                                     _skill_name, _status
                                 )
+                            # 💎 BACKLOG-006: Extract error details for dynamic fallback
+                            _error_code = str(_parsed.get("error_code", "")).strip()
+                            _error_message = str(_parsed.get("error_message", "")).strip()
+                            if _error_code or _error_message:
+                                _last_tool_error = (_skill_name, _error_code, _error_message)
                     except Exception:
                         pass
                     # Prüfe auf erfolgreiches PDF
@@ -2162,17 +2255,41 @@ class OrchestratorExecutionEngine:
                     logger.warning("WEBSEARCH-COST-PERSIST: Failed to save websearch costs", exc_info=True)
 
         if response is None:
-            response = {"text": fallback_summary}
+            # 💎 BACKLOG-006: Use dynamic fallback with tool error details if available
+            if _last_tool_error:
+                tool_name, error_code, error_message = _last_tool_error
+                dynamic_fallback = _build_dynamic_fallback_summary(
+                    tool_name=tool_name,
+                    error_code=error_code,
+                    error_message=error_message,
+                    provider=provider,
+                    model=model,
+                )
+                response = {"text": dynamic_fallback}
+            else:
+                response = {"text": fallback_summary}
         if isinstance(response, dict) and not response.get("modal_request"):
             derived_modal = self._build_video_modal_request_from_tool_results(results_buffer)
             if derived_modal:
                 response["modal_request"] = derived_modal
 
-        text_value = fallback_summary
-        if isinstance(response, dict):
-            text_value = str(response.get("text") or fallback_summary)
+        # 💎 BACKLOG-006: Use dynamic fallback with tool error details if available
+        if _last_tool_error:
+            tool_name, error_code, error_message = _last_tool_error
+            dynamic_fallback = _build_dynamic_fallback_summary(
+                tool_name=tool_name,
+                error_code=error_code,
+                error_message=error_message,
+                provider=provider,
+                model=model,
+            )
+            text_value = dynamic_fallback
         else:
-            text_value = str(response or fallback_summary)
+            text_value = fallback_summary
+        if isinstance(response, dict):
+            text_value = str(response.get("text") or text_value)
+        else:
+            text_value = str(response or text_value)
 
         text_value = force_sanitize_links(text_value)
 
@@ -2315,6 +2432,9 @@ class OrchestratorExecutionEngine:
         result_holder: Optional[Dict[str, Any]] = None,
     ) -> AsyncIterator[StreamEvent]:
         """Stream provider chunks: text_delta/usage sofort; tool_delta gepuffert; tool_start/tool_end bei Ausführung."""
+        # 💎 BACKLOG-006: Extract provider/model for dynamic fallback
+        provider = gateway_kwargs.get("provider") if isinstance(gateway_kwargs, dict) else None
+        model = gateway_kwargs.get("model") if isinstance(gateway_kwargs, dict) else None
         # 💎 CU-4: Sende pending status_update Event (wenn vorhanden)
         # Dies wurde im chat_orchestrator._execute_generation gesetzt
         pending_status_update = gateway_kwargs.get("_pending_status_update")
@@ -2554,8 +2674,13 @@ class OrchestratorExecutionEngine:
                                 except Exception:
                                     logger.warning("COST-PERSIST (stream): iteration save failed", exc_info=True)
                         elif ev.type == "error":
-                            yield ev
-                            response = {"text": fallback_summary}
+                            # 💎 BACKLOG-006: Build dynamic fallback summary with error details
+                            dynamic_fallback = _build_dynamic_fallback_summary(
+                                provider=provider,
+                                model=model,
+                            )
+                            yield StreamEvent(type="error", content=dynamic_fallback, metadata={"fatal": True})
+                            response = {"text": dynamic_fallback}
                             stream_fatal = True
                             break
                         elif ev.type in ("finish", "done"):
@@ -2563,10 +2688,16 @@ class OrchestratorExecutionEngine:
                                 pass
                     if stream_fatal:
                         break
-                except Exception:
+                except Exception as exc:
                     logger.error("run_tool_loop_stream: provider stream crashed", exc_info=True)
-                    yield StreamEvent(type="error", content=fallback_summary, metadata={"fatal": True})
-                    response = {"text": fallback_summary}
+                    # 💎 BACKLOG-006: Build dynamic fallback summary with error details
+                    dynamic_fallback = _build_dynamic_fallback_summary(
+                        exception=exc,
+                        provider=provider,
+                        model=model,
+                    )
+                    yield StreamEvent(type="error", content=dynamic_fallback, metadata={"fatal": True})
+                    response = {"text": dynamic_fallback}
                     break
 
             if _forced_tool_calls_stream is not None:
@@ -2601,7 +2732,19 @@ class OrchestratorExecutionEngine:
             latest_tool_calls = list(tool_calls) if isinstance(tool_calls, list) else []
 
             if not tool_calls:
-                text_value = round_text if round_text.strip() else fallback_summary
+                # 💎 BACKLOG-006: Use dynamic fallback with tool error details if available
+                if _last_tool_error:
+                    tool_name, error_code, error_message = _last_tool_error
+                    dynamic_fallback = _build_dynamic_fallback_summary(
+                        tool_name=tool_name,
+                        error_code=error_code,
+                        error_message=error_message,
+                        provider=provider,
+                        model=model,
+                    )
+                    text_value = round_text if round_text.strip() else dynamic_fallback
+                else:
+                    text_value = round_text if round_text.strip() else fallback_summary
                 text_value = force_sanitize_links(text_value)
                 response = {"text": text_value, "usage": {}, "cost": {}}
                 break
@@ -2783,6 +2926,8 @@ class OrchestratorExecutionEngine:
                 # 💎 SELF-CORRECTION TRACKER: Speichere Tool-Status für Retry-Logik (Stream)
                 _kpi_tool_status = gateway_kwargs.get("_kpi_tool_status", {})
                 _normalize_tool_args_fn = gateway_kwargs.get("_normalize_tool_args_fn")
+                # 💎 BACKLOG-006: Track tool error details for dynamic fallback (Stream)
+                _last_tool_error = None  # (tool_name, error_code, error_message)
                 for tr in tool_results:
                     logger.error("💎 TOOL CALL RESULT: %s", tr)
                     if isinstance(tr, dict):
@@ -2807,6 +2952,11 @@ class OrchestratorExecutionEngine:
                                         "Storing for potential retry.",
                                         _sn, _status
                                     )
+                                # 💎 BACKLOG-006: Extract error details for dynamic fallback
+                                _error_code = str(_parsed.get("error_code", "")).strip()
+                                _error_message = str(_parsed.get("error_message", "")).strip()
+                                if _error_code or _error_message:
+                                    _last_tool_error = (_sn, _error_code, _error_message)
                         except Exception:
                             pass
                         # 💎 PATH-SENTINEL: Emit permission_required to frontend so consent modal opens
@@ -2934,17 +3084,41 @@ class OrchestratorExecutionEngine:
             current_iteration += 1
 
         if response is None:
-            response = {"text": fallback_summary}
+            # 💎 BACKLOG-006: Use dynamic fallback with tool error details if available
+            if _last_tool_error:
+                tool_name, error_code, error_message = _last_tool_error
+                dynamic_fallback = _build_dynamic_fallback_summary(
+                    tool_name=tool_name,
+                    error_code=error_code,
+                    error_message=error_message,
+                    provider=provider,
+                    model=model,
+                )
+                response = {"text": dynamic_fallback}
+            else:
+                response = {"text": fallback_summary}
         if isinstance(response, dict) and not response.get("modal_request"):
             derived_modal = self._build_video_modal_request_from_tool_results(results_buffer)
             if derived_modal:
                 response["modal_request"] = derived_modal
 
-        text_value = fallback_summary
-        if isinstance(response, dict):
-            text_value = str(response.get("text") or fallback_summary)
+        # 💎 BACKLOG-006: Use dynamic fallback with tool error details if available
+        if _last_tool_error:
+            tool_name, error_code, error_message = _last_tool_error
+            dynamic_fallback = _build_dynamic_fallback_summary(
+                tool_name=tool_name,
+                error_code=error_code,
+                error_message=error_message,
+                provider=provider,
+                model=model,
+            )
+            text_value = dynamic_fallback
         else:
-            text_value = str(response or fallback_summary)
+            text_value = fallback_summary
+        if isinstance(response, dict):
+            text_value = str(response.get("text") or text_value)
+        else:
+            text_value = str(response or text_value)
         
         # 💎 GEMINI-FALLBACK: If text is still empty/whitespace after tool execution,
         # try to extract meaningful text from successful tool results

@@ -78,6 +78,45 @@ Dashboard-Regeln:
 
 ## READY
 
+### BACKLOG-022 – Gemini Performance Investigation
+
+- **Typ:** IMPROVEMENT
+- **Status:** READY
+- **Quelle:** User Intake
+- **Erstellt:** 2026-05-11
+- **Aktualisiert:** 2026-05-11
+- **Kurzbeschreibung:** Gemini (gemini-3-pro-preview) takes significantly longer to respond than GPT (gpt-5.4) for the same request.
+- **Erwartetes Verhalten:** Gemini response time is comparable to GPT (within 2-3x, not 20x).
+- **Tatsächliches Verhalten:** Gemini: ~20 seconds response time, GPT: ~1 second response time. 20x slower for Gemini.
+- **Reproduktion / Kontext:** Test prompt: "Lies die Datei C:\this\path\does\not\exist\test123.txt"
+- **Betroffener Bereich:** Performance / Tool-Call-Effizienz / Model-Selection / Gemini
+- **Nachweise:**
+  - GPT test: ~1 second response time (02:59:37 → 02:59:38)
+  - Gemini test: ~20 seconds response time (02:59:46 → 03:00:06)
+  - 20x slower for Gemini
+  - Extensive duplicate tool sanitization for Gemini (30+ duplicates being filtered)
+  - Tool list contains duplicate entries (filesystem.list_directory 5x, filesystem.create_directory 5x, etc.)
+- **Akzeptanzkriterien:**
+  - [ ] Gemini response time is comparable to GPT (within 2-3x, not 20x)
+  - [ ] Tool list contains no duplicate entries
+  - [ ] Tool sanitization overhead is minimal
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Potential cause identified: Tool list construction creates duplicate entries. This causes extensive duplicate tool sanitization overhead for Gemini. Investigation needed to identify where duplicates originate (skill selector, skill-directive injection, or tool list construction logic).
+- **Wichtigkeit:** MEDIUM
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** SCHEDULE
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Performance-Untersuchung mit klarem Ziel und begrenztem Scope (Tool-List-Konstruktion/Duplicate-Sanitization)
+- **Routing confidence:** MEDIUM
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-05-11
+- **Handoff:** documentation/tasks/backlog_BACKLOG-022_gemini_performance_investigation.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-11
+
 ## IN PROGRESS
 
 ## DONE
@@ -130,10 +169,11 @@ Dashboard-Regeln:
 ### BACKLOG-006 – Generische Fehlermeldung statt spezifischer Fehlerdetails
 
 - **Typ:** IMPROVEMENT
-- **Status:** READY
+- **Status:** DONE
 - **Quelle:** User Intake
 - **Erstellt:** 2026-05-07
-- **Aktualisiert:** 2026-05-07
+- **Aktualisiert:** 2026-05-11
+- **Abgeschlossen:** 2026-05-11
 - **Kurzbeschreibung:** Wenn etwas nicht funktioniert, geben die Modelle oft eine generische Fehlermeldung "Ich konnte diesmal keine stabile Antwort erzeugen. Bitte sende die Anfrage direkt noch einmal; ich versuche es dann mit einem robusten Neuaufbau." statt genau zu sagen, wo das Problem liegt.
 - **Erwartetes Verhalten:** Fehlermeldungen enthalten spezifische Details über den tatsächlichen Fehler: welches Tool fehlgeschlagen ist, welcher Fehlercode aufgetreten ist, welche Exception geworfen wurde, welcher Provider/Model betroffen ist.
 - **Tatsächliches Verhalten:** Generische Fallback-Nachricht in `execution_dispatcher.py` Zeile 822 wird ohne Fehlerdetails verwendet. Der `fallback_summary` wird an `execution_engine.run_tool_loop()` übergeben und als Fallback bei Exceptions (Zeile 1238-1254), Stream-Crashes (Zeile 2363-2365), leeren Tool-Round-Ergebnissen (Zeile 2400) und leeren Text-Ergebnissen (Zeile 2723) verwendet.
@@ -145,10 +185,10 @@ Dashboard-Regeln:
   - `backend/services/orchestrator/execution_engine.py` Zeile 2363-2365: Stream-Crash-Handler verwendet `fallback_summary` ohne Fehlerdetails
   - `backend/services/orchestrator/execution_engine.py` Zeile 1750-1779: Tool-Fehler werden bereits mit `error_code` und `error_message` extrahiert, aber nicht an den Fallback übergeben
 - **Akzeptanzkriterien:**
-  - [ ] `fallback_summary` wird dynamisch basierend auf dem tatsächlichen Fehler generiert
-  - [ ] Fehlermeldungen enthalten: Fehlercode, Fehlermeldung, betroffenes Tool (falls zutreffend), Provider/Model (falls zutreffend)
-  - [ ] Backend-Logs enthalten weiterhin die vollständigen Exception-Details für Debugging
-  - [ ] User erhält hilfreiche, spezifische Fehlerinformationen statt generischer Nachricht
+  - [x] `fallback_summary` wird dynamisch basierend auf dem tatsächlichen Fehler generiert
+  - [x] Fehlermeldungen enthalten: Fehlercode, Fehlermeldung, betroffenes Tool (falls zutreffend), Provider/Model (falls zutreffend)
+  - [x] Backend-Logs enthalten weiterhin die vollständigen Exception-Details für Debugging
+  - [x] User erhält hilfreiche, spezifische Fehlerinformationen statt generischer Nachricht
 - **Fehlende Informationen:**
   - Keine
 - **Notizen:** Das Problem ist nicht, dass Fehler auftreten, sondern dass die Fehlermeldung für den User nicht hilfreich ist. Die Execution-Engine extrahiert bereits Fehlerdetails aus Tool-Ergebnissen (Zeile 1750-1779), diese sollten auch an den Fallback übergeben werden.
@@ -165,6 +205,10 @@ Dashboard-Regeln:
 - **Handoff:** documentation/tasks/backlog_BACKLOG-006_specific_error_messages.md
 - **Recommended next skill:** SKILL 3
 - **Handoff created:** 2026-05-10
+- **Completed in version:** 0.4.17-beta.28
+- **Completed by task:** documentation/tasks/backlog_BACKLOG-006_specific_error_messages.md
+- **Final audit:** PASS
+- **Validation evidence:** Skill 6 Final Audit PASS. Manual Janus Test PASS (GPT + Gemini). Python compile check bestanden. Alle Acceptance Criteria erfüllt.
 
 ### BACKLOG-007 – Performance-Optimierung für Filesystem-Tool-Calls
 
