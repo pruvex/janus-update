@@ -172,6 +172,77 @@ AUTOMATISCHE TESTPFLICHT:
 - Skill 4 darf `TASK COMPLETE` oder `READY FOR FINAL AUDIT` erst melden, wenn die erforderlichen automatischen Tests PASS sind oder nachvollziehbar N/A sind.
 - Wenn automatische Tests fehlschlagen, MUSS Skill 4 gezielt fixen oder mit `TASK EXECUTION FAILED` / `FIX LOOP LIMIT REACHED` stoppen.
 
+AUTO-GENERATED VERIFICATION RULE (PFLICHT nach jedem funktionalen Fix):
+
+Nach jedem funktionalen Fix (Code-Aenderung, die einen User-spuerbaren Code-Pfad beruehrt) MUSS Skill 4 einen aufgaben-spezifischen Playwright-Verifikationslauf erzeugen und ausfuehren, BEVOR das Manual Janus Validation Gate erscheint.
+
+Schritt 1 - Mini-TestPlan erzeugen:
+
+- Skill 4 erstellt eine Datei unter `documentation/test-runs/<task_id>_verify.json` (z. B. `documentation/test-runs/TASK-XXX_verify.json` oder bei mehrteiligen Tasks `TASK-001.1_verify.json`).
+- Die Datei MUSS dem JSON-Schema in `tests/e2e/generator/test-plan.schema.json` entsprechen (Single Source of Truth - siehe Skill 1).
+- Pflichtfelder im Mini-TestPlan:
+  - `testRunId`: Form `TASK-XXX-VERIFY-YYYY-MM-DD-NNN`
+  - `title`: kurzer Fix-Titel
+  - `executionMode`: `LIVE_VISUAL`
+  - `target`: `JANUS_CHAT`
+  - `chatWindow`: `A` (Default)
+  - `baseUrl`, `backendHealthUrl`, `timeouts`, `strategies` gemaess Schema
+  - `tests`: mindestens **ein** TestCase, der den vom Fix betroffenen Code-Pfad mit konkretem Prompt + `expected.containsAny`/`mustNotContain` deterministisch absichert
+- Skill 4 darf den Mini-TestPlan NICHT als Markdown anlegen, sondern ausschliesslich als reine JSON-Datei (siehe Skill-1-JSON-Regel).
+- Skill 4 darf keine Strategy-IDs erfinden - nur die in `tests/e2e/generator/strategy-registry.json` registrierten Strategien sind erlaubt.
+
+Schritt 2 - Generator-Service aufrufen (PFLICHT):
+
+```text
+node tests/e2e/generator/generate-live-runner.mjs --plan documentation/test-runs/<task_id>_verify.json --out tests/e2e/generated/<task_id>_verify.live.spec.js
+```
+
+- Bei Generator-Fehler: Verifikation gilt als `FAIL`, Skill 4 fixt den TestPlan und startet neu - kein Manual Gate.
+
+Schritt 3 - Validator-Service aufrufen (PFLICHT):
+
+```text
+node tests/e2e/generator/validate-runner.mjs --plan documentation/test-runs/<task_id>_verify.json --runner tests/e2e/generated/<task_id>_verify.live.spec.js
+```
+
+- Bei Validator-Fehler: Verifikation gilt als `FAIL`.
+
+Schritt 4 - Runner ausfuehren (PFLICHT):
+
+```text
+npx playwright test tests/e2e/generated/<task_id>_verify.live.spec.js --headed --workers=1
+```
+
+- `--headed --workers=1` ist der harte Default fuer den Verifikationslauf, damit der User parallel visuell mitverfolgen kann.
+
+Schritt 5 - Ergebnis aufbereiten:
+
+- Skill 4 fasst das Ergebnis im finalen Output als `Auto-Verification: PASS | FAIL | N/A mit Begruendung` zusammen.
+- Bei `PASS` werden die geprueften TestCase-IDs, die verwendeten Provider/Models, der Runner-Spec-Pfad und der Playwright-Report-Pfad genannt.
+- Bei `FAIL` werden Failure Code (gemaess Generator Failure Taxonomy aus Skill 3, z. B. `RUNNER_STREAM_TIMEOUT`, `BACKEND_HEALTH_FAIL`, `ASSERTION_MISMATCH`), kurzer Fehlerauszug und der vollstaendige Runner-Output-Pfad genannt.
+
+Gate-Reihenfolge (verbindlich):
+
+1. AUTOMATISCHE TESTPFLICHT laeuft erfolgreich (Build/Unit/Integration/E2E).
+2. AUTO-GENERATED VERIFICATION laeuft mit Resultat `PASS`.
+3. Erst dann erscheint das Manual Janus Validation Gate.
+4. Wenn die Auto-Verification `FAIL` ist, darf Skill 4 das Manual Janus Validation Gate NICHT ausgeben - stattdessen Fix-Loop oder `FIX LOOP LIMIT REACHED`.
+
+AUSNAHME-REGEL (Auto-Verification N/A):
+
+Fuer rein optische CSS-Aenderungen oder reine Dokumentations-/Workflow-Tasks kann die Playwright-Automation als `Auto-Verification: N/A` uebersprungen werden. In diesem Fall MUSS Skill 4:
+
+- die Begruendung explizit nennen (z. B. `N/A - rein visuelle CSS-Aenderung an .bubble-radius`, `N/A - reine Markdown-Doku-Aenderung in documentation/`, `N/A - Workflow-Datei in .windsurf/workflows/`),
+- die geaenderten Dateien auflisten und bestaetigen, dass keine JS-/TS-/Backend-/Routing-Logik beruehrt wurde,
+- trotzdem die UX-TRANSLATION RULE einhalten und im Manual Gate einen alternativen UX-Check angeben (siehe Edge-Case-Klausel der UX-TRANSLATION RULE: `Test-Prompt: N/A - interne Aenderung ohne Chat-Pfad`).
+
+Verbote:
+
+- `Auto-Verification: N/A` ohne explizite Begruendung ist verboten.
+- `Auto-Verification: N/A` fuer Aenderungen, die Backend-Code, Frontend-JS/TS, Tools, Routing, IPC, Persistenz, Auth oder Stream-Pipelines beruehren, ist verboten - in diesem Fall MUSS die Playwright-Verifikation laufen.
+- `Auto-Verification: PASS` ohne tatsaechlich generierten und ausgefuehrten Spec ist verboten.
+- Wiederverwendung eines fremden, nicht task-spezifischen Specs als Verifikation ist verboten - der Mini-TestPlan MUSS task-spezifisch sein.
+
 INVESTIGATION-INCONCLUSIVE GATE:
 
 - Wenn ein Task als Debug/Investigation/Handoff aus Backlog oder Test-Pipeline kommt und Skill 4 keine Ursache isolieren oder keinen Fix implementieren kann, darf Skill 4 NICHT einfach `TASK COMPLETE` mit nur einer Empfehlung ausgeben.
@@ -205,11 +276,13 @@ Danach:
 PIPELINE CONTINUATION GATE:
 
 - Nach erfolgreicher automatischer Validierung MUSS Skill 4 prÃ¼fen, ob weitere Tasks aus derselben Task-Datei offen sind.
+- Pro Task MUSS Skill 4 nach erfolgreicher AUTOMATISCHE TESTPFLICHT auch die AUTO-GENERATED VERIFICATION (Mini-TestPlan + Generator + Validator + Runner) ausfuehren, sofern die Aenderung nicht unter die N/A-Ausnahme faellt.
 - Wenn weitere Tasks offen sind, MUSS Skill 4 stoppen und einen einzelnen grauen Copy-Block fÃ¼r den nÃ¤chsten Skill-4-Lauf mit dem nÃ¤chsten Target Task ausgeben.
 - Wenn weitere Tasks offen sind, darf Skill 4 noch KEINEN Final-Audit-Handover ausgeben.
 - Wenn weitere Tasks offen sind, ist ein manueller Gesamt-Janus-Test optional, aber NICHT das Final-Gate.
 - Erst wenn keine weiteren Tasks offen sind, MUSS Skill 4 einen automatischen Gesamttest/Regressionstest fÃ¼r die gesamte Spec ausfÃ¼hren.
-- Erst nach erfolgreichem Gesamttest darf Skill 4 das Manual Janus Validation Gate ausgeben.
+- Vor dem Manual Janus Validation Gate MUSS das Ergebnis der AUTO-GENERATED VERIFICATION (PASS/FAIL/N/A) im Output sichtbar stehen. Bei `FAIL` ist das Manual Gate verboten.
+- Erst nach erfolgreichem Gesamttest **und** `Auto-Verification: PASS` (oder ausnahmsweise begruendetem `N/A`) darf Skill 4 das Manual Janus Validation Gate ausgeben.
 - Nach dem letzten Task und erfolgreicher Gesamtvalidierung MUSS Skill 4 STOPPEN und nur das Manual Janus Validation Gate ausgeben.
 - Skill 4 darf im selben Output wie `TASK COMPLETE` / `ALL TASKS COMPLETE` keinen Skill-6-Final-Audit-Copyblock ausgeben.
 - Der Skill-6-Final-Audit-Copyblock darf ausschlieÃŸlich in einer separaten Antwort nach der User-Antwort `Manueller Test erfolgreich.` erzeugt werden.
@@ -219,12 +292,31 @@ MANUAL JANUS VALIDATION GATE NUR NACH LETZTEM TASK:
 - Nach erfolgreicher automatischer Gesamtvalidierung MUSS Skill 4 den User auffordern, das vollstÃ¤ndig umgesetzte Feature real in Janus manuell zu testen.
 - Skill 4 darf nicht direkt zum Final Audit weiterleiten, bevor der User den realen Janus-Gesamttest bestÃ¤tigt hat.
 - Verboten: `BEGIN COPY @[/SKILL 6 – DIAMANTSTANDARD FINAL AUDIT]` vor der User-BestÃ¤tigung `Manueller Test erfolgreich.`
-- Skill 4 MUSS dem User genau zwei Optionen geben:
+- Skill 4 MUSS dem User genau zwei Optionen geben.
+
+UX-TRANSLATION RULE (PFLICHT - gilt fuer jedes Manual-Janus-Test-Gate):
+
+- Skill 4 darf in keinem Test-Gate rein technische Anweisungen geben (z. B. "Pruefe die Initialisierung der Variable X", "Verifiziere den State-Reducer", "Validiere den SSE-Buffer-Flush").
+- Skill 4 MUSS den technischen Fix in eine menschliche, produktnahe Handlung uebersetzen.
+- PFLICHT 1 - Beispiel-Prompt: Skill 4 nennt mindestens einen konkreten, kopierbaren Beispiel-Prompt, der den vom Fix betroffenen Code-Pfad in der Janus-Chat-UI sicher triggert. Generische Formulierungen wie "Stelle eine Frage" oder "Teste die Funktion" sind verboten.
+- PFLICHT 2 - Erwartete Reaktion: Skill 4 beschreibt in Produktsprache, was Janus konkret tun soll (Antwort streamt fluessig, Tool-Call wird sichtbar, Modal oeffnet sich, Bild erscheint im Chat, Fehlermeldung verschwindet).
+- PFLICHT 3 - UX-Erfolgskriterium: Skill 4 nennt mindestens ein klares visuelles Erfolgskriterium aus User-Sicht (z. B. "Kein Haengenbleiben bei `...`", "Die `win is not defined`-Bubble erscheint nicht mehr", "Der Antwortstrom bricht nicht ab"). Reine Backend-/Log-Pruefungen (z. B. "Keine Exception in `backend.log`") sind hier verboten - diese gehoeren in die automatische Gesamtvalidierung, nicht ins User-Gate.
+- Diese drei Punkte werden im Output als nummerierter Block `MANUELLER UX-CHECK ERFORDERLICH` ausgegeben (siehe Templates). Der Block steht IMMER VOR der Option-1/Option-2-Auswahl.
+- Wenn Skill 4 zu einem Fix keinen konkreten Beispiel-Prompt formulieren kann (z. B. weil die Aenderung rein interne Doku/Workflows betraf), MUSS der Block explizit `Test-Prompt: N/A - interne Aenderung ohne Chat-Pfad` enthalten plus eine alternative UX-Bestaetigung (z. B. "Oeffne Settings -> Sprache und pruefe das neue Label").
+- Verboten: Manual-Janus-Test-Gate ohne `MANUELLER UX-CHECK ERFORDERLICH`-Block.
+
+Nach dem UX-Check-Block folgt der Auswahl-Block mit genau zwei Optionen:
 
 ```text
 MANUELLER JANUS-TEST ERFORDERLICH
 
 Bitte teste jetzt das vollstÃ¤ndig umgesetzte Feature direkt in Janus.
+
+### MANUELLER UX-CHECK ERFORDERLICH
+
+1. **Test-Prompt:** "[Hier konkreten Prompt einfuegen, der den vom Fix betroffenen Code-Pfad triggert]"
+2. **Erwartete Reaktion:** "[Was Janus in Produktsprache tun soll - z. B. Antwort streamt fluessig, Tool-Call wird sichtbar, Bild erscheint im Chat]"
+3. **UX-Erfolgskriterium:** "[Woran du erkennst, dass es geklappt hat - z. B. Kein Haengenbleiben bei `...`, keine `win is not defined`-Bubble, Antwortstrom bricht nicht ab]"
 
 Option 1:
 Manueller Test erfolgreich.
@@ -318,6 +410,13 @@ Tests:
 - Integration: PASS | FAIL
 - E2E: PASS | FAIL
 
+Auto-Verification:
+- Status: PASS | FAIL | N/A (mit Begruendung)
+- Mini-TestPlan: documentation/test-runs/<task_id>_verify.json
+- Generated Runner: tests/e2e/generated/<task_id>_verify.live.spec.js
+- Runner Command: npx playwright test tests/e2e/generated/<task_id>_verify.live.spec.js --headed --workers=1
+- Result Summary: <PASS-IDs | Failure Code + kurzer Auszug bei FAIL | N/A-Begruendung>
+
 Notes:
 - nur technische Hinweise
 - keine neuen Ideen
@@ -408,9 +507,24 @@ Spec Implementation Complete: YES
 Gesamt-Test Results:
 - <Build/Unit/Integration/E2E/Smoke>: PASS | N/A mit BegrÃ¼ndung
 
+Auto-Verification (Playwright):
+- Status: PASS | N/A (mit Begruendung) -- FAIL ist hier verboten, sonst kein Manual Gate
+- Mini-TestPlan: documentation/test-runs/<task_id>_verify.json
+- Generated Runner: tests/e2e/generated/<task_id>_verify.live.spec.js
+- Runner Command: npx playwright test tests/e2e/generated/<task_id>_verify.live.spec.js --headed --workers=1
+- Per-Task-Verification-Results:
+  - <task_id_1>: PASS | N/A mit Begruendung
+  - <task_id_n>: PASS | N/A mit Begruendung
+
 MANUELLER JANUS-GESAMTTEST ERFORDERLICH
 
 Bitte teste jetzt das vollstÃ¤ndig umgesetzte Feature direkt in Janus.
+
+### MANUELLER UX-CHECK ERFORDERLICH
+
+1. **Test-Prompt:** "[Hier konkreten Prompt einfuegen, der den vom Fix betroffenen Code-Pfad triggert]"
+2. **Erwartete Reaktion:** "[Was Janus in Produktsprache tun soll - z. B. Antwort streamt fluessig, Tool-Call wird sichtbar, Bild erscheint im Chat]"
+3. **UX-Erfolgskriterium:** "[Woran du erkennst, dass es geklappt hat - z. B. Kein Haengenbleiben bei `...`, keine `win is not defined`-Bubble, Antwortstrom bricht nicht ab]"
 
 Option 1:
 Manueller Test erfolgreich.
@@ -447,6 +561,7 @@ Compact Audit Package fÃ¼r Skill 6:
 - Relevant Diff / Excerpts: <kurze relevante AuszÃ¼ge oder Diff-Zusammenfassung>
 - Test Results: <ausgefÃ¼hrte Tests und Ergebnis>
 - Gesamt-Test Results: <ausgefÃ¼hrte Gesamtvalidierung und Ergebnis>
+- Auto-Verification: <PASS | N/A mit Begruendung> + Mini-TestPlan-Pfad + Generated-Runner-Pfad
 - Manual Janus Test Evidence: <User-bestÃ¤tigter manueller Janus-Gesamttest nach Skill 4>
 - Known Risks: <bekannte Risiken, Scope-Hinweise, unrelated Workspace Changes>
 - Pipeline Status: <Completed Tasks = alle, Remaining Tasks = keine>
@@ -494,6 +609,12 @@ Manual Janus Test Gate:
 MANUELLER JANUS-TEST ERFORDERLICH
 
 Bitte teste jetzt die Ã„nderung direkt in Janus.
+
+### MANUELLER UX-CHECK ERFORDERLICH
+
+1. **Test-Prompt:** "[Hier konkreten Prompt einfuegen, der den vom Fix betroffenen Code-Pfad triggert]"
+2. **Erwartete Reaktion:** "[Was Janus in Produktsprache tun soll - z. B. Antwort streamt fluessig, Tool-Call wird sichtbar, Bild erscheint im Chat]"
+3. **UX-Erfolgskriterium:** "[Woran du erkennst, dass es geklappt hat - z. B. Kein Haengenbleiben bei `...`, keine `win is not defined`-Bubble, Antwortstrom bricht nicht ab]"
 
 Option 1:
 Manueller Test erfolgreich.

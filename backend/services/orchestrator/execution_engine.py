@@ -2923,12 +2923,12 @@ class OrchestratorExecutionEngine:
                     except Exception as log_exc:
                         logger.error(f"Failed to log tool_end event: {log_exc}")
 
+            # 💎 BACKLOG-006: Track tool error details for dynamic fallback (Stream)
+            _last_tool_error = None  # (tool_name, error_code, error_message)
             if tool_results:
                 # 💎 SELF-CORRECTION TRACKER: Speichere Tool-Status für Retry-Logik (Stream)
                 _kpi_tool_status = gateway_kwargs.get("_kpi_tool_status", {})
                 _normalize_tool_args_fn = gateway_kwargs.get("_normalize_tool_args_fn")
-                # 💎 BACKLOG-006: Track tool error details for dynamic fallback (Stream)
-                _last_tool_error = None  # (tool_name, error_code, error_message)
                 for tr in tool_results:
                     logger.error("💎 TOOL CALL RESULT: %s", tr)
                     if isinstance(tr, dict):

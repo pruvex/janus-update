@@ -8,6 +8,7 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 ## [Unreleased]
 
 ### Fixed
+- **BACKLOG-024:** UnboundLocalError in execution_engine.py behoben. Variable `_last_tool_error` wurde nur innerhalb `if tool_results:` initialisiert, aber auch in `if not tool_calls:` verwendet, was zu UnboundLocalError führte. Fix: Initialisierung von `_last_tool_error = None` vor beide Bedingungen verschoben (line 2927). Chat-Stream verarbeitet Tool-Loops jetzt ohne UnboundLocalError. File: `backend/services/orchestrator/execution_engine.py`. Manual Janus Test PASS.
 - **BACKLOG-025:** Frontend Rendering Failure "win is not defined" JavaScript Error behoben. Template literal `${win}` in Kommentar zu literal `{windowId}` geändert in `frontend/js/chat.js` (line 747). Der Fehler wurde von JavaScript-Parsern evaluiert, obwohl er in einem Kommentar stand. Manual Janus Test PASS. Skill 6 Audit PASS.
 
 ## [0.4.17-beta.28] - 2026-05-11
