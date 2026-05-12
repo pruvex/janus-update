@@ -7,6 +7,9 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+### Fixed
+- **BACKLOG-025:** Frontend Rendering Failure "win is not defined" JavaScript Error behoben. Template literal `${win}` in Kommentar zu literal `{windowId}` geändert in `frontend/js/chat.js` (line 747). Der Fehler wurde von JavaScript-Parsern evaluiert, obwohl er in einem Kommentar stand. Manual Janus Test PASS. Skill 6 Audit PASS.
+
 ## [0.4.17-beta.28] - 2026-05-11
 
 ### Fixed

@@ -2,6 +2,17 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [PATTERN] #TemplateLiteralInComments "Template literals in comments can be evaluated by JavaScript parsers causing reference errors"
+- **Kontext:** BACKLOG-025 Frontend Rendering Failure. JavaScript-Fehler "win is not defined" blockierte das Rendering von Assistant-Nachrichten nach SSE-Stream-Initiierung. Der Fehler trat in `frontend/js/chat.js` auf.
+- **Problem:** Template literals in Kommentaren (z.B. `${win}`) werden von einigen JavaScript-Parsern/Build-Tools evaluiert, obwohl sie in Kommentaren stehen. Wenn die referenzierte Variable nicht im Scope existiert, wird ein ReferenceError geworfen ("win is not defined"), der den Code-Block invalidiert.
+- **Lösung:** Template literals in Kommentaren zu literalen Strings ändern (z.B. `${win}` → `{windowId}`). Keine Template-Literal-Syntax in Kommentaren verwenden, es sei denn sie sind explizit als Platzhalter für Dokumentationszwecke gedacht und werden nicht evaluiert.
+- **Härtung:** Code-Review-Check: Prüfe ob `${...}` in Kommentaren verwendet wird. Linting-Regel: ESLint-Regel für template-literal-in-comments implementieren. Build-Process: Prüfe ob Parser Kommentare evaluiert und deaktiviere dies wenn möglich.
+- **Tripwire:** "is not defined" Fehler in Kommentaren mit Template-Literal-Syntax. Build schlägt fehl mit ReferenceError obwohl Code syntaktisch korrekt ist.
+- **Location:** `frontend/js/chat.js` (line 747), implementiert 2026-05-12.
+- **Epic:** BACKLOG-025 — Frontend Rendering Failure
+- **Confidence:** High
+- **Tags:** TemplateLiteral, Comments, JavaScriptParser, ReferenceError, BACKLOG025
+
 ## [PATTERN] #DynamicFallbackErrorDetails "Dynamic fallback with specific error details instead of generic messages"
 - **Kontext:** BACKLOG-006 Generische Fehlermeldung statt spezifischer Fehlerdetails. Wenn ein Tool-Aufruf fehlschlägt, zeigten alle Provider (GPT, Gemini) eine generische Fallback-Nachricht "Ich konnte diesmal keine stabile Antwort erzeugen..." statt spezifischen Fehlerdetails.
 - **Problem:** Statischer `fallback_summary` in execution_dispatcher.py ohne Fehlerdetails. Exception-Handler in execution_engine.py verwenden denselben statischen Fallback ohne Kontext. User erhält keine hilfreichen Informationen über den tatsächlichen Fehler (Tool-Name, Fehlercode, Fehlermeldung, Provider, Model).
