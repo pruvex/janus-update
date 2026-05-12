@@ -20,9 +20,9 @@ const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
 }
 
 const ISSUE_COLORS: Record<string, string> = {
-  ROUTING_MISSING: 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10',
+  ROUTING_MISSING: 'text-orange-400 border-orange-500/30 bg-orange-500/10',
   ROUTING_BLOCKED: 'text-purple-400 border-purple-500/30 bg-purple-500/10',
-  NEEDS_INFO: 'text-blue-400 border-blue-500/30 bg-blue-500/10',
+  NEEDS_INFO: 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10',
   BLOCKED: 'text-red-400 border-red-500/30 bg-red-500/10',
 }
 

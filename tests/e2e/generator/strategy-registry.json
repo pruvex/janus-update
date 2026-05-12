@@ -1,0 +1,84 @@
+{
+  "version": "2.0.0",
+  "description": "Deterministic strategy registry for Janus Playwright live runner generator. Each strategy maps to a hardcoded template in the generator script.",
+  "strategies": {
+    "send": {
+      "chat_window_scoped_send_v1": {
+        "description": "Focuses chat window, fills input, registers stream listener before Enter submit, avoids blocking await sendMessage('A')",
+        "requiredPlanFields": ["chatWindow"],
+        "supportsWindows": ["A", "B", "C", "D"]
+      },
+      "chat_button_click_send_v1": {
+        "description": "Promise.all race-free send: pressSequentially fills the input keystroke-by-keystroke (triggers frontend send-button enable logic), then Promise.all attaches waitForResponse(/api/chat/stream) BEFORE the #send-button-${win} click({force:true}) fires, eliminating the race window. Patient toPass polling waits for real content (not '...') in the assistant bubble.",
+        "requiredPlanFields": ["chatWindow"],
+        "supportsWindows": ["A", "B", "C", "D"]
+      },
+      "form_request_submit_v1": {
+        "description": "Direct form.submit() or requestSubmit() bypassing button overlay issues",
+        "requiredPlanFields": ["chatWindow"],
+        "supportsWindows": ["A", "B", "C", "D"]
+      }
+    },
+    "wait": {
+      "assistant_stream_complete_v1": {
+        "description": "Waits for assistant bubble visibility, non-empty content, classifies timeout/SSE errors",
+        "requiredPlanFields": [],
+        "timeoutField": "assistantResponseMs"
+      },
+      "assistant_text_present_v1": {
+        "description": "Waits for any non-empty assistant text without requiring stream completion",
+        "requiredPlanFields": [],
+        "timeoutField": "assistantResponseMs"
+      },
+      "error_toast_v1": {
+        "description": "Waits for visible error toast or system message",
+        "requiredPlanFields": [],
+        "timeoutField": "assistantResponseMs"
+      }
+    },
+    "evidence": {
+      "capture_network_v1": {
+        "description": "Collects network events, stream requests, request failures",
+        "requiredPlanFields": [],
+        "producesArtifacts": ["network_events", "stream_events"]
+      },
+      "capture_console_v1": {
+        "description": "Collects console logs, errors, warnings, page errors",
+        "requiredPlanFields": [],
+        "producesArtifacts": ["console_logs", "page_errors"]
+      },
+      "capture_ui_state_v1": {
+        "description": "Captures page snapshot and visible UI state at failure time",
+        "requiredPlanFields": [],
+        "producesArtifacts": ["ui_snapshot"]
+      }
+    },
+    "evaluate": {
+      "contains_any_v1": {
+        "description": "Evaluates response text against containsAny list",
+        "requiredPlanFields": ["tests[].expected"],
+        "resultValues": ["PASS", "FAIL", "BLOCKED"]
+      },
+      "must_not_contain_v1": {
+        "description": "Evaluates response text against mustNotContain list",
+        "requiredPlanFields": ["tests[].expected"],
+        "resultValues": ["PASS", "FAIL", "BLOCKED"]
+      },
+      "tool_call_detected_v1": {
+        "description": "Verifies that a specific tool call was executed",
+        "requiredPlanFields": ["tests[].expected.toolCallExpected"],
+        "resultValues": ["PASS", "FAIL", "BLOCKED"]
+      }
+    }
+  },
+  "errorClassification": {
+    "RUNNER_SELECTOR_FAILURE": "Playwright could not find expected DOM element",
+    "RUNNER_WAIT_FAILURE": "Wait condition (selector, response, function) did not resolve",
+    "RUNNER_STREAM_TIMEOUT": "Stream request was not observed within timeout",
+    "FRONTEND_NOT_READY": "Frontend DOM or dev server not available",
+    "BACKEND_HEALTH_FAIL": "Backend /api/health did not respond",
+    "PROVIDER_TIMEOUT": "LLM provider did not respond within expected time",
+    "TOOL_ROUTING_FAILURE": "Wrong or no tool was called for the prompt",
+    "ASSERTION_MISMATCH": "Response text did not match expected assertions"
+  }
+}

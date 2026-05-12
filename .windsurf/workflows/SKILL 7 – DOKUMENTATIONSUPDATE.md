@@ -61,7 +61,7 @@ Allowed safe edits:
 - Move completed Spec files to `documentation/SPEC/Spec Done/` if Skill 6 did not already move them.
 - Move completed Backlog items from `IN PROGRESS` to `DONE` when the implementation originated from `BACKLOG-XXX`, preserving dashboard-readable lifecycle fields.
 - Keep Backlog status sections canonical when moving items: one `## NEEDS INFO`, one `## READY`, one `## IN PROGRESS`, one `## DONE`, one `## BLOCKED`; item section must match its `Status` field.
-- Delete resolved temporary Skill-5 escalation handover files matching `.windsurf/tmp/skill5_escalation_*.md`.
+- Delete resolved temporary Skill-5 and Skill-6 handover/escalation/re-audit files matching `.windsurf/tmp/skill5_*.md` and `.windsurf/tmp/skill6_*.md`, but only if their names clearly indicate a temporary handover (contain `escalation`, `handover`, `re_audit`, a timestamp, or a task/backlog reference).
 
 ---
 
@@ -656,7 +656,7 @@ Do not automatically run `python -m pytest backend/tests -q` for every feature i
 
 ---
 
-## Phase 11: Temporary Skill-6 Escalation File Cleanup
+## Phase 11: Temporary Skill Handover File Cleanup
 
 Run this phase after:
 
@@ -665,20 +665,24 @@ Run this phase after:
 - If Skill 6 was needed, Skill 6/GPT-5.5 returned `FIXED` and the user retest passed.
 
 Purpose:
-- Keep the project clean after token-saving GPT-5.5 escalation.
-- Remove temporary handover files that only exist to avoid sending long backend logs.
+- Keep the project clean after resolved Skill-5 or Skill-6 handovers, escalations, and re-audits.
+- Remove temporary handover files that only exist to avoid sending long backend logs or to coordinate between skills.
 
 Target files:
 
 ```text
-.windsurf/tmp/skill5_escalation_*.md
+.windsurf/tmp/skill5_*.md
+.windsurf/tmp/skill6_*.md
 ```
 
+Safety: Only delete files whose names clearly indicate a temporary handover, such as those containing `escalation`, `handover`, `re_audit`, a timestamp (e.g., `20260508-2339`), or a task/backlog reference.
+
 Rules:
-- Delete only files that clearly match the Skill-6 temporary escalation naming pattern.
+- Delete only files that clearly match a temporary Skill-5 or Skill-6 handover/escalation/re-audit naming pattern.
 - If the user provided an explicit temporary file path, delete only that file unless other matching files clearly belong to the same resolved feature/task.
 - Do not delete arbitrary files in `.windsurf/tmp`.
-- Do not delete the temporary file if Skill 6 is still `ESCALATION REQUIRED`, `NEEDS RETEST`, `BLOCKED`, or `OUT OF SCOPE`.
+- Do not delete temporary files if Skill 5 or Skill 6 is still `ESCALATION REQUIRED`, `NEEDS RETEST`, `BLOCKED`, or `OUT OF SCOPE`.
+- If a filename lacks clear temporary indicators (no `escalation`/`handover`/`re_audit`, no timestamp, no task reference), skip it and report as a warning.
 - If deletion fails, report it as a cleanup warning, not as a feature failure, unless the file contains sensitive log data.
 
 Final report must include:
@@ -716,8 +720,8 @@ Return:
 - **Spec Dashboard Completion Sync:** [updated / normalized / already valid / skipped + reason]
 - **Backlog:** [updated / skipped + reason]
 - **Backward refs:** [updated / none / skipped + reason]
-- **Skill 6:** [not needed / fixed + retest pass / skipped + reason]
-- **Skill 6 temp cleanup:** [deleted / skipped / warning + reason]
+- **Skill 5/6:** [not needed / fixed + retest pass / skipped + reason]
+- **Skill 5/6 temp cleanup:** [deleted / skipped / warning + reason]
 
 ## Version
 - **Old version:** [old]

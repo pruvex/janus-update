@@ -101,3 +101,28 @@ export function getParentTaskReference(item: BacklogItem): string {
   const value = rawFields.Parent || rawFields['Parent Task'] || rawFields['Parent task'] || rawFields['Parent Backlog'] || item.completed_by_task
   return typeof value === 'string' && hasValue(value) ? value : 'nicht angegeben'
 }
+
+export function getRepairIssueType(item: BacklogItem): RepairIssueType | null {
+  if (item.status === 'DONE') return null
+  if (isNeedsInfo(item)) return 'NEEDS_INFO'
+  if (isBlocked(item)) return 'BLOCKED'
+  if (isRoutingBlocked(item)) return 'ROUTING_BLOCKED'
+  if (isRoutingMissing(item)) return 'ROUTING_MISSING'
+  return null
+}
+
+export function getRepairIssueBorderColor(issueType: RepairIssueType | null): string {
+  if (!issueType) return ''
+  switch (issueType) {
+    case 'NEEDS_INFO':
+      return 'border-yellow-500'
+    case 'BLOCKED':
+      return 'border-red-500'
+    case 'ROUTING_MISSING':
+      return 'border-orange-500'
+    case 'ROUTING_BLOCKED':
+      return 'border-purple-500'
+    default:
+      return ''
+  }
+}

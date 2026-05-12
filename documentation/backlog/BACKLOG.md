@@ -76,7 +76,30 @@ Dashboard-Regeln:
 
 ## NEEDS INFO
 
+
 ## READY
+
+### BACKLOG-026 – Textstreaming-Geschwindigkeit im Chat: GPT vs Gemini
+
+- **Typ:** IMPROVEMENT
+- **Status:** READY
+- **Quelle:** User Intake
+- **Erstellt:** 2026-05-12
+- **Aktualisiert:** 2026-05-12
+- **Kurzbeschreibung:** GPT-5.4-nano und gemini-3-flash streamen Text im Chat mit sehr unterschiedlicher Geschwindigkeit. GPT streamt so schnell, dass es kaum sichtbar ist (fast wie Block-Antwort). Gemini ist deutlich langsamer, aber immer noch etwas zu schnell. Ziel: Beide etwas langsamer als Gemini aktuell, dann uniform für beide Provider.
+- **Erwartetes Verhalten:** Beide Provider streamen mit gleichmäßiger, etwas langsamerer Geschwindigkeit als Gemini aktuell (nicht so schnell wie GPT aktuell, sondern etwas langsamer als Gemini). Streaming sollte sichtbar und angenehm sein, nicht "block-artig" bei GPT.
+- **Tatsächliches Verhalten:** GPT-5.4-nano streamt so schnell, dass der Text fast in einem Block erscheint (kaum sichtbares Streaming). Gemini-3-flash ist deutlich langsamer als GPT, aber immer noch etwas zu schnell für angenehmes Lesen.
+- **Reproduktion / Kontext:** Chat-Streaming mit gpt-5.4-nano vs gemini-3-flash bei beliebigen Prompts
+- **Betroffener Bereich:** Frontend / Chat Rendering / Streaming / UX
+- **Nachweise:** User-Beobachtung im Live-Chat
+- **Akzeptanzkriterien:**
+  - [ ] GPT-5.4-nano streamt etwas langsamer als aktuell (nicht mehr block-artig)
+  - [ ] Gemini-3-flash streamt etwas langsamer als aktuell (angenehmes Lesetempo)
+  - [ ] Beide Provider streamen mit ähnlicher Geschwindigkeit (uniforme UX)
+  - [ ] Streaming ist sichtbar und angenehm für den User
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Es geht nicht um Antwortzeit (response time), sondern um Textstreaming im Chat (wie der Text Zeichen für Zeichen erscheint). Betroffener Bereich ist Frontend/Chat Rendering, nicht Backend-Performance. Lösung könnte ein konfigurierbarer Streaming-Delay oder Token-Rate-Limiter im Frontend sein.
 
 ### BACKLOG-022 – Gemini Performance Investigation
 
@@ -117,9 +140,128 @@ Dashboard-Regeln:
 - **Recommended next skill:** SKILL 3
 - **Handoff created:** 2026-05-11
 
+### BACKLOG-023 – Intermittierender Backend Timeout bei Janus Live-Chat Retest
+
+- **Typ:** BUG
+- **Status:** READY
+- **Quelle:** TestRun
+- **Erstellt:** 2026-05-11
+- **Aktualisiert:** 2026-05-11
+- **Kurzbeschreibung:** Janus beantwortet aufeinanderfolgende Live-Chat-Anfragen im automatisierten Retest nicht zuverlässig; TC-001 besteht, TC-002 läuft in einen Backend-/Chat-Timeout.
+- **Erwartetes Verhalten:** Janus verarbeitet aufeinanderfolgende Chat-/Intent-Anfragen stabil oder liefert einen kontrollierten Timeout-/Fallback-Hinweis.
+- **Tatsächliches Verhalten:** Nach erfolgreichem Config-Fix und Backend-Neustart schlägt TC-002 durch Backend-/Chat-Timeout fehl; 15 weitere TestCases wurden nicht ausgeführt.
+- **Reproduktion / Kontext:** TEST-RUN-2026-05-11-005-RETEST-002; TC-001 PASS nach 23.9s; TC-002 FAIL nach 50.5s; Runner: tests/e2e/generated/TEST-RUN-2026-05-11-005.live.spec.js
+- **Betroffener Bereich:** Backend Chat Processing / Intent Routing / Runtime Stability / Test Infrastructure
+- **Nachweise:** documentation/test-results/TEST-RUN-2026-05-11-005-RETEST-002_results.md; Backend-/Network-Evidence noch zu ergänzen
+- **Akzeptanzkriterien:**
+  - [ ] Janus verarbeitet aufeinanderfolgende Chat-Anfragen stabil ohne Timeout
+  - [ ] Backend-Logs zeigen keine Fehler bei aufeinanderfolgenden Anfragen
+  - [ ] Rate-Limit oder Connection-Pool-Probleme sind behoben
+  - [ ] Live-Test-Pipeline kann alle 17 TestCases erfolgreich ausführen
+- **Fehlende Informationen:**
+  - Backend-/Network-Evidence noch zu ergänzen
+- **Notizen:** Config-Fix und Backend-Neustart verbesserten die Situation (TC-001 PASS), aber intermittierendes Timeout besteht weiterhin (TC-002 FAIL). Ursache könnte Rate-Limit, Connection-Pool-Problem oder Backend-Resource-Issue sein.
+- **Wichtigkeit:** MEDIUM
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Wiederholtes/intermittierendes Timeout blockiert die Live-Test-Pipeline; Debug muss Ursache zwischen Backend Runtime, Chat Processing, API-Key/Auth, Provider-/Rate-Limit und Test-Infrastruktur isolieren.
+- **Routing confidence:** MEDIUM
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-05-11
+- **Handoff:** documentation/tasks/backlog_BACKLOG-023_intermittent_backend_timeout.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-11
+
+### BACKLOG-024 – UnboundLocalError in execution_engine.py: _last_tool_error nicht initialisiert
+
+- **Typ:** BUG
+- **Status:** READY
+- **Quelle:** Live Backend Logs
+- **Erstellt:** 2026-05-11
+- **Aktualisiert:** 2026-05-11
+- **Kurzbeschreibung:** Chat-Stream bricht mit UnboundLocalError ab: Variable '_last_tool_error' wird in execution_engine.py verwendet ohne Initialisierung.
+- **Erwartetes Verhalten:** Chat-Stream verarbeitet Tool-Loops ohne Fehler, alle lokalen Variablen sind korrekt initialisiert vor Gebrauch.
+- **Tatsächliches Verhalten:** Chat-Request schlägt fehl mit `UnboundLocalError: cannot access local variable '_last_tool_error' where it is not associated with a value` in execution_engine.py:2736.
+- **Reproduktion / Kontext:** Live Chat-Session nach Backend-Start, Chat-Request bei 21:54:52, Error bei 21:54:54. Traceback: backend/services/orchestrator/execution_engine.py:2736 in run_tool_loop_stream: `if _last_tool_error:`
+- **Betroffener Bereich:** Backend / Chat Orchestrator / Execution Engine / Tool Loop Processing
+- **Nachweise:**
+  - Backend-Log: `2026-05-11 21:54:54 - janus_backend - [ERROR] - Error in chat stream: cannot access local variable '_last_tool_error' where it is not associated with a value`
+  - Traceback: File "backend/services/orchestrator/execution_engine.py", line 2736, in run_tool_loop_stream
+  - Fehler tritt während Tool-Loop-Stream-Processing auf
+- **Akzeptanzkriterien:**
+  - [ ] Variable '_last_tool_error' wird korrekt initialisiert vor Gebrauch
+  - [ ] Chat-Stream verarbeitet Tool-Loops ohne UnboundLocalError
+  - [ ] Regression-Test für Tool-Loop-Error-Handling
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Python UnboundLocalError tritt auf, wenn eine lokale Variable referenziert wird bevor sie zugewiesen wurde. In execution_engine.py:2736 wird `_last_tool_error` in einem `if`-Statement verwendet, aber möglicherweise nicht in allen Code-Pfaden initialisiert. Fix: Variable zu Beginn der Funktion mit Default-Wert initialisieren oder sicherstellen, dass alle Code-Pfade die Variable setzen.
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Klarer Python-Bug mit einfacher Fix (Variable initialisieren), LOW-Risk, sofort behebbar
+- **Routing confidence:** HIGH
+- **Routing decided by:** TEST SKILL 4
+- **Routing decided at:** 2026-05-11
+- **Handoff:** documentation/tasks/backlog_BACKLOG-024_unboundlocal_error_fix.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-11
+
 ## IN PROGRESS
 
+
 ## DONE
+
+### BACKLOG-025 – Frontend Rendering Failure: "win is not defined" JavaScript Error
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** TestRun
+- **TestRun:** TEST-RUN-2026-05-12-001
+- **Erstellt:** 2026-05-12
+- **Aktualisiert:** 2026-05-12
+- **Abgeschlossen:** 2026-05-12
+- **Kurzbeschreibung:** Frontend JavaScript Fehler "win is not defined" verhindert das Rendern von Assistant-Nachrichten nach SSE-Stream-Initiierung
+- **Erwartetes Verhalten:** Assistant-Nachrichten werden nach erfolgreicher SSE-Stream-Initiierung korrekt im Chat-Fenster gerendert
+- **Tatsächliches Verhalten:** SSE-Stream wird erfolgreich initiiert (Backend antwortet), aber Assistant-Bubble bleibt leer oder enthält nur "..." mit Zeitstempel; DOM zeigt leere Message-Container (containerChildCount: 0, messageCount: 0)
+- **Reproduktion / Kontext:** TEST-RUN-2026-05-12-001; TC-001: Weather inference; Runner: tests/e2e/generated/TEST-RUN-2026-05-12-001.live.spec.js; Fehler tritt im Frontend Stream-Render-Pipeline auf
+- **Betroffener Bereich:** Frontend / Stream-Render-Pipeline / JavaScript / Chat-Rendering
+- **Nachweise:**
+  - documentation/test-results/TEST-RUN-2026-05-12-001_results.md
+  - DOM eval: {"found":true,"containerChildCount":0,"messageCount":0,"messages":[],"containerHTMLLen":0,"containerHTMLSample":""}
+  - DOM message texts: "ERR: win is not defined"
+  - Playwright Screenshot: test-results\tests-e2e-generated-TEST-R-26a7e--München-einen-Regenschirm--janus-chromium\test-failed-1.png
+  - Playwright Video: test-results\tests-e2e-generated-TEST-R-26a7e--München-einen-Regenschirm--janus-chromium\video.webm
+- **Akzeptanzkriterien:**
+  - [x] "win is not defined" JavaScript Fehler ist behoben
+  - [x] Assistant-Nachrichten werden nach SSE-Stream korrekt gerendert
+  - [ ] Live-Test-Pipeline kann alle TestCases erfolgreich ausführen
+  - [x] DOM zeigt korrekte messageCount und gerenderte Inhalte
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Dies ist ein Frontend-Produktbug, kein Test-Infrastruktur-Problem. Der Fehler "win is not defined" deutet auf eine fehlende Variablenreferenz im Frontend-Rendering-Code hin, wahrscheinlich im Stream-Render- oder Message-Display-Logik. Blockiert alle Live-E2E-Tests.
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Klarer lokaler Frontend-Bug mit spezifischem JavaScript-Fehler ("win is not defined"); direkter Debug/Fix möglich ohne umfangreiche Spec-Arbeit
+- **Routing confidence:** HIGH
+- **Routing decided by:** TEST SKILL 4
+- **Routing decided at:** 2026-05-12
+- **Handoff:** documentation/tasks/backlog_BACKLOG-025_frontend_rendering_failure.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-12
+- **Completed in version:** TBD
+- **Completed by task:** documentation/tasks/backlog_BACKLOG-025_frontend_rendering_failure.md
+- **Final audit:** PASS
+- **Validation evidence:** Manueller Janus Test PASS - "win is not defined" Fehler behoben, Assistant-Nachrichten werden korrekt gerendert
 
 ### BACKLOG-021 – Datenbank-Migrationsfehler in EXE-Version: Spalte dark_mode_enabled fehlt
 
@@ -249,8 +391,6 @@ Dashboard-Regeln:
 - **Handoff:** documentation/tasks/backlog_BACKLOG-007_filesystem_performance.md
 - **Recommended next skill:** SKILL 3
 - **Handoff created:** 2026-05-10
-
-## IN PROGRESS
 
 ## DONE
 

@@ -2454,6 +2454,7 @@ class OrchestratorExecutionEngine:
         aggregated_tokens_output = 0
         aggregated_total_cost = 0.0
         country_not_found_detected = False
+        _last_tool_error = None  # (tool_name, error_code, error_message) - 💎 BACKLOG-024
 
         gateway_kwargs = dict(gateway_kwargs)
         gateway_kwargs.pop("reason_and_respond_fn", None)

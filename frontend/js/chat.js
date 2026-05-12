@@ -728,9 +728,44 @@ export async function sendMessage(fromWindowId) {
     chat_id,
   };
 
-  // 3. Show loading indicator
+  // 3. Show loading indicator. Use lastElementChild (not lastChild) to ignore
+  // stray whitespace text nodes. The newly appended bot bubble is the last
+  // <div class="message assistant"> child.
   appendMessage("bot", "...", { windowId });
-  const loadingMessageElement = chatMessagesEl.lastChild?.querySelector('.bubble') || chatMessagesEl.lastChild;
+  let loadingMessageContainer = chatMessagesEl.lastElementChild;
+  let loadingMessageElement = loadingMessageContainer?.querySelector('.bubble') ?? null;
+
+  console.log("[SSE-INIT]", {
+    windowId,
+    chatMessagesChildren: chatMessagesEl.childElementCount,
+    containerClass: loadingMessageContainer?.className ?? null,
+    bubbleFound: !!loadingMessageElement,
+    bubbleInitialText: loadingMessageElement?.textContent?.slice(0, 40) ?? null,
+  });
+
+  // DOM-RESILIENCE: If anything else (e.g. a late-arriving loadChat() restore from
+  // the chat sidebar boot path) wipes #chat-messages-{windowId} after we have already
+  // appended the loading bubble, our `loadingMessageElement` reference becomes a
+  // detached node and any further innerHTML writes are invisible to the user.
+  // This helper re-creates the bubble in the current DOM with the text accumulated
+  // so far, so streaming continues into a visible, attached element.
+  let reanchorCount = 0;
+  function reanchorBubbleIfDetached(currentText) {
+    if (loadingMessageElement?.isConnected) return;
+    reanchorCount++;
+    console.warn("[SSE-REANCHOR]", {
+      reanchorCount,
+      currentTextLen: (currentText ?? "").length,
+      currentTextSample: (currentText ?? "").slice(0, 60),
+      chatMessagesChildren: chatMessagesEl.childElementCount,
+    });
+    // Re-attach an assistant container with the text we have so far. Use the raw
+    // text here; the caller will overwrite innerHTML with the markdown-parsed
+    // version immediately after this returns.
+    appendMessage("bot", currentText || "...", { windowId, skipScroll: true });
+    loadingMessageContainer = chatMessagesEl.lastElementChild;
+    loadingMessageElement = loadingMessageContainer?.querySelector('.bubble') ?? null;
+  }
 
   try {
     // Kein PUT mit Erstsatz — verhindert auto_generated=false und blockiert Smart Chat Naming.
@@ -751,39 +786,69 @@ export async function sendMessage(fromWindowId) {
     let buffer = "";
     let chatText = "";
     let streamModalRequest = null;
+    let chunkIndex = 0;
+    let textChunkIndex = 0;
+    let firstTextRendered = false;
 
     while (true) {
       const { done, value } = await reader.read();
-      if (done) break;
-      
+      if (done) {
+        console.log("[SSE-DONE]", { chunkIndex, textChunkIndex, finalLen: chatText.length, bufferRemaining: buffer.length });
+        break;
+      }
+
       buffer += decoder.decode(value, { stream: true });
-      let lines = buffer.split("\n\n");
-      buffer = lines.pop(); // Keep incomplete chunk
-      
-      for (const line of lines) {
-        if (!line.startsWith("data: ")) continue;
-        
-        const jsonStr = line.slice(6);
+      // SSE events are separated by a blank line (\n\n). Anything after the last
+      // separator is a (potentially) incomplete event and must stay in the buffer.
+      const events = buffer.split("\n\n");
+      buffer = events.pop() ?? "";
+
+      for (const rawEvent of events) {
+        if (!rawEvent) continue;
+        // An SSE event can span multiple lines (id:, event:, retry:, data:).
+        // Per spec, multiple "data:" lines within one event are concatenated with "\n".
+        const dataLines = rawEvent.split("\n").filter((l) => l.startsWith("data:"));
+        if (dataLines.length === 0) continue;
+        const jsonStr = dataLines.map((l) => l.replace(/^data:\s?/, "")).join("\n");
+
         let data;
         try {
           data = JSON.parse(jsonStr);
         } catch (e) {
-          console.warn("[SSE] JSON parse error, skipping chunk");
+          console.warn("[SSE] JSON parse error, raw fragment:", jsonStr.slice(0, 240));
           continue;
         }
-        
+
+        chunkIndex++;
+
         if (data.type === "text") {
+          textChunkIndex++;
           // 💎 CU-4: Entferne thinking_message beim ersten Text-Delta
           if (window._removeThinkingMessage) {
             window._removeThinkingMessage();
             window._removeThinkingMessage = null;
           }
-          chatText = data.partial ? chatText + data.content : data.content;
-          // Heilt nackte URLs vom Modell
-          const healedText = chatText.replace(/Video ansehen\s*\((https?:\/\/[^\s)]+)\)/g, '[Video ansehen]($1)');
-          loadingMessageElement.innerHTML = sanitizeChatHtml(marked.parse(healedText));
-          normalizeLinksAndImages(loadingMessageElement);
-          scrollChatToBottom({ behavior: "auto", windowId });
+          // Backend semantics:
+          //   partial:true  -> incremental delta, append to accumulated text
+          //   partial:false -> final/full content, replace accumulated text
+          const content = typeof data.content === "string" ? data.content : "";
+          chatText = data.partial ? chatText + content : content;
+
+          // Guard against late-arriving DOM wipes (loadChat race etc.)
+          reanchorBubbleIfDetached(chatText);
+
+          if (loadingMessageElement) {
+            const healedText = chatText.replace(/Video ansehen\s*\((https?:\/\/[^\s)]+)\)/g, '[Video ansehen]($1)');
+            loadingMessageElement.innerHTML = sanitizeChatHtml(marked.parse(healedText));
+            normalizeLinksAndImages(loadingMessageElement);
+            if (!firstTextRendered) {
+              firstTextRendered = true;
+              console.log("[SSE-FIRST-TEXT]", { partial: !!data.partial, contentLen: content.length, chatTextLen: chatText.length, bubbleNowLen: loadingMessageElement.textContent.length, isConnected: loadingMessageElement.isConnected });
+            }
+            scrollChatToBottom({ behavior: "auto", windowId });
+          } else {
+            console.error("[SSE-LOST-CHUNK] text frame received but loadingMessageElement is null. textChunk#", textChunkIndex, "contentLen=", content.length);
+          }
         } else if (data.type === "metadata") {
           // DISPATCH CUSTOM EVENT for sidebar update
           window.dispatchEvent(new CustomEvent("janus:metadata", {
@@ -869,8 +934,10 @@ export async function sendMessage(fromWindowId) {
           break;
         } else if (data.type === "error") {
           console.error("[SSE] Error chunk:", data.message);
-          loadingMessageElement.innerHTML = sanitizeErrorHtml(`<span style="color:red">[Stream Error] ${data.message}</span>`);
-          scrollChatToBottom({ behavior: "auto", windowId });
+          if (loadingMessageElement) {
+            loadingMessageElement.innerHTML = sanitizeErrorHtml(`<span style="color:red">[Stream Error] ${data.message}</span>`);
+            scrollChatToBottom({ behavior: "auto", windowId });
+          }
         }
       }
     }
@@ -900,8 +967,16 @@ export async function sendMessage(fromWindowId) {
     
     // Heilt nackte URLs vom Modell
     const healedText = chatText.replace(/Video ansehen\s*\((https?:\/\/[^\s)]+)\)/g, '[Video ansehen]($1)');
-    loadingMessageElement.innerHTML = sanitizeChatHtml(marked.parse(healedText));
-    normalizeLinksAndImages(loadingMessageElement);
+    // Final guard: if the bubble was wiped between the last text-chunk and the
+    // post-stream render, re-create it so the user always sees the full reply.
+    reanchorBubbleIfDetached(chatText);
+    if (loadingMessageElement) {
+      loadingMessageElement.innerHTML = sanitizeChatHtml(marked.parse(healedText));
+      normalizeLinksAndImages(loadingMessageElement);
+      console.log("[SSE-FINAL]", { chatTextLen: chatText.length, bubbleFinalLen: loadingMessageElement.textContent.length, isConnected: loadingMessageElement.isConnected, reanchorCount });
+    } else {
+      console.error("[SSE-FINAL-LOST] loadingMessageElement is null at final render. chatTextLen=", chatText.length);
+    }
     // Keine weiteren Hydration-Calls hier nötig, da der Window-Listener alles abfängt!
     scrollChatToBottom({ behavior: "auto", windowId });
 

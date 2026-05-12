@@ -172,6 +172,36 @@ AUTOMATISCHE TESTPFLICHT:
 - Skill 4 darf `TASK COMPLETE` oder `READY FOR FINAL AUDIT` erst melden, wenn die erforderlichen automatischen Tests PASS sind oder nachvollziehbar N/A sind.
 - Wenn automatische Tests fehlschlagen, MUSS Skill 4 gezielt fixen oder mit `TASK EXECUTION FAILED` / `FIX LOOP LIMIT REACHED` stoppen.
 
+INVESTIGATION-INCONCLUSIVE GATE:
+
+- Wenn ein Task als Debug/Investigation/Handoff aus Backlog oder Test-Pipeline kommt und Skill 4 keine Ursache isolieren oder keinen Fix implementieren kann, darf Skill 4 NICHT einfach `TASK COMPLETE` mit nur einer Empfehlung ausgeben.
+- `TASK COMPLETE` ist nur erlaubt, wenn ein konkretes Ziel des Investigation-Tasks erreicht wurde: Ursache isoliert, Fix umgesetzt, Test/Logging-Hardening umgesetzt, oder eindeutige Nicht-Reproduzierbarkeit mit Evidence belegt.
+- Wenn Backend-Logs, Network-Logs, Provider-Logs oder andere Pflicht-Evidence fehlen, muss Skill 4 `TASK NEEDS EVIDENCE` ausgeben.
+- `TASK NEEDS EVIDENCE` muss dem User genau sagen, welche Evidence gebraucht wird, wo sie herkommt, und was danach zu tun ist.
+- Wenn die fehlende Evidence in einem User-Terminal liegt, muss Skill 4 den User um genau diese Logs bitten und darf nicht spekulativ abschliessen.
+- Wenn der Fehler ohne weitere Evidence nicht isolierbar ist, aber wiederholt/reproduzierbar die Pipeline blockiert, muss Skill 4 einen Copy-Handover zu `SKILL 5 – FEATURE DEBUG` oder zum passenden Backlog-/Debug-Folgeprozess ausgeben.
+
+```text
+TASK NEEDS EVIDENCE: <TASK-ID>
+
+Status: BLOCKED_BY_MISSING_EVIDENCE
+
+Was wurde festgestellt:
+- <kurze Evidence-Zusammenfassung>
+
+Fehlende Evidence:
+- <konkreter Log/Evidence-Punkt>
+
+User-Aktion erforderlich:
+1. <konkreter Schritt>
+2. <konkreter Schritt>
+3. Antworte danach mit: EVIDENCE READY
+
+Danach:
+- Skill 4 setzt die Investigation mit der neuen Evidence fort
+- oder gibt einen Copy-Handover zu SKILL 5 – FEATURE DEBUG aus, wenn ein Debug-Fix noetig ist
+```
+
 PIPELINE CONTINUATION GATE:
 
 - Nach erfolgreicher automatischer Validierung MUSS Skill 4 prÃ¼fen, ob weitere Tasks aus derselben Task-Datei offen sind.
@@ -243,6 +273,34 @@ Action:
 ---
 
 ## OUTPUT FORMAT
+
+NO-ORPHAN-OUTPUT RULE:
+
+Skill 4 darf den User niemals ohne eindeutige naechste Aktion zuruecklassen.
+
+Jeder finale Output MUSS genau einen der folgenden Abschluss-Typen enthalten:
+
+- `TASK COMPLETE` plus Pipeline Continuation Status und entweder `/save`-Gate, naechster Skill-4-Copy-Handover oder finales Manual-Janus-Test-Gate.
+- `ALL TASKS COMPLETE` plus Manual-Janus-Test-Gate mit exakt zwei Antwortoptionen.
+- `TASK NEEDS EVIDENCE` plus konkrete User-Aktion und Copy-Handover oder Fortsetzungsantwort-Trigger.
+- `TASK EXECUTION FAILED` oder `FIX LOOP LIMIT REACHED` plus Copy-Handover zu `@[/SKILL 5 – FEATURE DEBUG]`, `@[/SKILL 3 – PRE-IMPLEMENTATION VERIFICATION]` oder GPT-5.5-Eskalation.
+- `EXECUTION ARTIFACTS INVALID` oder `EXECUTION MODEL MISMATCH` plus konkrete Re-Run-Anweisung.
+
+Verboten sind finale Abschluesse wie:
+
+- `SKILL 4 abgeschlossen`
+- `TASK COMPLETE mit Empfehlung zur weiteren Untersuchung`
+- `Test konnte nicht vollstaendig ausgefuehrt werden`
+- `Naechster Schritt: Skill 5 – PRE-IMPLEMENTATION VERIFICATION`
+
+Wenn der naechste Schritt ein anderer Skill ist, MUSS am Ende ein einzelner grauer Copy-Paste-Block mit `@[/... ]` stehen. Eine reine Prosa-Empfehlung ist ungueltig.
+
+Self-Check vor finaler Antwort:
+
+- Gibt es einen eindeutigen naechsten Skill oder eine eindeutige User-Aktion?
+- Falls naechster Skill: ist ein kopierbarer `@[/... ]`-Block vorhanden?
+- Falls User-Aktion: steht exakt da, was der User antworten soll?
+- Falls Tests/Live-Retest offen sind: wurde NICHT `TASK COMPLETE` als finaler Erfolg ohne Retest-/Evidence-Gate ausgegeben?
 
 ```text id="skill4_output"
 TASK COMPLETE: TASK-XXX

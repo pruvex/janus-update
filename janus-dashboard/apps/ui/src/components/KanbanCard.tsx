@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { BacklogItem } from '@shared/types'
 import type { EstimatedTimeInsight } from '../lib/executionAnalytics'
 import { Copy } from 'lucide-react'
+import { getRepairIssueType, getRepairIssueBorderColor } from '../lib/repairIssues'
 
 interface KanbanCardProps {
   item: BacklogItem
@@ -314,6 +315,11 @@ export function KanbanCard({ item, viewType = 'active', estimatedTime = null }: 
   const handoverButtonLabel = getSpecReviewButtonLabel(item)
   const showSpecReviewRouting = item.type === 'SPEC FEATURE' && item.entry_point === 'SPEC_REVIEW_GATE'
 
+  // Get repair issue border color for active view
+  const repairIssueType = viewType === 'active' ? getRepairIssueType(item) : null
+  const repairBorderColor = getRepairIssueBorderColor(repairIssueType)
+  const hasRepairIssue = repairIssueType !== null
+
   // Determine which date to display
   const getDateDisplay = () => {
     if (viewType === 'history' && item.completed_at) {
@@ -340,7 +346,7 @@ export function KanbanCard({ item, viewType = 'active', estimatedTime = null }: 
   const dateDisplay = getDateDisplay()
 
   return (
-    <div className="bg-card border border-border rounded-lg p-3 hover:border-accent transition-colors w-full min-w-0">
+    <div className={`bg-card border rounded-lg p-3 hover:border-accent transition-colors w-full min-w-0 ${hasRepairIssue ? repairBorderColor : 'border-border'}`}>
       {/* Top row: ID and Type Badge */}
       <div className="flex items-start justify-between mb-2">
         <span className="text-[10px] font-mono text-muted-foreground break-all">#{item.id}</span>

@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JanusLiveTestPlan",
+  "description": "Machine-readable test plan for deterministic Playwright live runner generation",
+  "type": "object",
+  "required": ["testRunId", "title", "executionMode", "target", "chatWindow", "baseUrl", "backendHealthUrl", "timeouts", "strategies", "tests"],
+  "properties": {
+    "testRunId": { "type": "string", "pattern": "^TEST-RUN-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{3}$" },
+    "title": { "type": "string", "minLength": 1 },
+    "executionMode": { "type": "string", "enum": ["LIVE_VISUAL", "HEADLESS", "LIVE_RETEST"] },
+    "target": { "type": "string", "enum": ["JANUS_CHAT", "JANUS_DASHBOARD", "JANUS_ELECTRON"] },
+    "chatWindow": { "type": "string", "enum": ["A", "B", "C", "D"] },
+    "baseUrl": { "type": "string", "format": "uri" },
+    "backendHealthUrl": { "type": "string", "format": "uri" },
+    "timeouts": {
+      "type": "object",
+      "required": ["testCaseMs", "assistantResponseMs", "streamRequestMs"],
+      "properties": {
+        "testCaseMs": { "type": "integer", "minimum": 1000 },
+        "assistantResponseMs": { "type": "integer", "minimum": 1000 },
+        "streamRequestMs": { "type": "integer", "minimum": 1000 }
+      }
+    },
+    "strategies": {
+      "type": "object",
+      "required": ["send", "wait", "evidence", "evaluate"],
+      "properties": {
+        "send": { "type": "string", "enum": ["chat_window_scoped_send_v1", "chat_button_click_send_v1"] },
+        "wait": { "type": "string", "enum": ["assistant_stream_complete_v1", "assistant_text_present_v1", "error_toast_v1"] },
+        "evidence": { "type": "string", "enum": ["capture_network_v1", "capture_console_v1", "capture_ui_state_v1"] },
+        "evaluate": { "type": "string", "enum": ["contains_any_v1", "must_not_contain_v1", "tool_call_detected_v1"] }
+      }
+    },
+    "tests": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "type", "provider", "model", "prompt", "expected"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "type": { "type": "string", "enum": ["functional", "intent_routing", "ux", "security", "prompt_injection", "cost_token", "manual_gate"] },
+          "provider": { "type": "string", "enum": ["GPT", "Gemini", "Any"] },
+          "model": { "type": "string" },
+          "prompt": { "type": "string", "minLength": 1 },
+          "expected": {
+            "type": "object",
+            "properties": {
+              "containsAny": { "type": "array", "items": { "type": "string" } },
+              "mustNotContain": { "type": "array", "items": { "type": "string" } },
+              "responseTimeMsMax": { "type": "integer" },
+              "requiresConfirmation": { "type": "boolean" },
+              "toolCallExpected": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

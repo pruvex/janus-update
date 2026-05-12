@@ -43,5 +43,5 @@ Wikipedia-API
 dateparser
 thefuzz
 
-# Diamond Task Orchestrator UI (tools/orchestrator_ui — START_DASHBOARD.bat)
+# Diamond Task Orchestrator UI (tools/orchestrator_ui — scripts/START_DASHBOARD.bat)
 streamlit>=1.28.0
