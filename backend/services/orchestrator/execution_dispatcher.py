@@ -24,6 +24,8 @@ from backend.services.model_catalog import get_models_by_provider
 from backend.services.orchestrator.execution_engine import _build_dynamic_fallback_summary
 # 💎 BACKLOG-035: Prompt Injection Detection
 from backend.services.security.injection_detector import detect_injection, get_injection_type
+from backend.services.logging.logger_core import log_event
+from backend.data.schemas_logging import LogEventCreate
 
 logger = logging.getLogger("janus_backend")
 
@@ -256,8 +258,6 @@ async def execute_generation_prepare_gateway(
             f"🚨 PROMPT INJECTION BLOCKED: type={injection_type}, query='{user_query[:100]}...'"
         )
         # Telemetry event for prompt_injection_blocked
-        from backend.services.logging.logger_core import log_event
-        from backend.data.schemas_logging import LogEventCreate
         await log_event(LogEventCreate(
             event_type="prompt_injection_blocked",
             skill="orchestrator.execution_dispatcher",

@@ -13,6 +13,7 @@ import keyring
 
 from backend.data.schemas import AgentSpec, PlannerContext, PlannerProviderProfile
 from backend.data.schemas_logging import LogEventCreate
+from backend.services.logging.logger_core import log_event
 from backend.llm_providers.gemini.service import GeminiServiceProvider
 from backend.llm_providers.ollama.service import OllamaServiceProvider
 from backend.llm_providers.openai.service import OpenAIServiceProvider
@@ -342,7 +343,7 @@ class OrchestratorExecutionEngine:
                 status="blocked",
                 payload={
                     "injection_type": injection_type or "unknown",
-                    "pattern_preview": user_text[:200] if user_text else "",
+                    "pattern_preview": text_to_check[:200] if text_to_check else "",
                     "guard_location": "execution_engine_early",
                 },
             )))
