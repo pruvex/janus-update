@@ -14,6 +14,60 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("janus_backend")
 
+
+def _guard_llm_provider_silo(provider: str, model_id: str) -> Optional[Dict[str, Any]]:
+    """
+    BYOK: block cross-cloud LLM calls while a chat silo is active; block obvious
+    provider/model catalog mismatches for openai/gemini.
+    """
+    from backend.services.llm_silo_context import get_active_llm_silo, normalize_llm_silo_provider
+
+    req = normalize_llm_silo_provider(provider)
+    raw = str(provider or "").strip().lower()
+    if not raw:
+        return {
+            "content": "",
+            "text": "",
+            "error": "Unsupported or empty LLM provider",
+            "error_code": "UNSUPPORTED_PROVIDER",
+        }
+    # Unknown / future provider keys: skip openai↔gemini silo rules only.
+    if req is None:
+        return None
+
+    active = get_active_llm_silo()
+    if active in ("openai", "gemini") and req in ("openai", "gemini") and active != req:
+        msg = (
+            f"PROVIDER-SILO: active chat provider is {active!r}, blocked LLM call for "
+            f"provider={req!r} (model={model_id!r})."
+        )
+        logger.error(msg)
+        return {
+            "content": "",
+            "text": "",
+            "error": msg,
+            "error_code": "PROVIDER_SILO_VIOLATION",
+        }
+
+    if model_id and req in ("openai", "gemini"):
+        catalog = get_cached_model_catalog()
+        info = catalog.get(str(model_id))
+        if isinstance(info, dict):
+            mp = normalize_llm_silo_provider(info.get("provider"))
+            if mp in ("openai", "gemini") and mp != req:
+                msg = (
+                    f"PROVIDER-SILO: call_llm provider={req!r} does not match catalog provider={mp!r} "
+                    f"for model={model_id!r}."
+                )
+                logger.error(msg)
+                return {
+                    "content": "",
+                    "text": "",
+                    "error": msg,
+                    "error_code": "PROVIDER_MODEL_MISMATCH",
+                }
+    return None
+
 # Provider-Gateway-Silos: schwere Module (Gemini/OpenAI/Ollama Gateway) erst beim ersten Chat-Aufruf laden.
 _gateway_silos: Optional[Dict[str, Any]] = None
 _gateway_lock = threading.Lock()
@@ -75,7 +129,7 @@ async def reason_and_respond(
         from backend.services.skill_selector import SkillSelector
 
         selector = SkillSelector()
-        selected_skills = selector.get_relevant_skills(user_prompt, top_k=5)
+        selected_skills = selector.get_relevant_skills(user_prompt, top_k=10)  # 💎 BACKLOG-034: Erhöhe top_k auf 10 um system.routing nicht zu filtern
         available_skill_ids = {
             str(tool_manager.get_skill_id(getattr(tool, "name", "") or "") or "").strip()
             for tool in tool_manager.get_all_tools().values()
@@ -85,8 +139,8 @@ async def reason_and_respond(
             if str(s).strip() and str(s).strip() in available_skill_ids
         ]
         if normalized_selected:
-            effective_allowed_skill_ids = normalized_selected[:5]
-            if "system.websearch" in available_skill_ids and "system.websearch" not in effective_allowed_skill_ids and len(effective_allowed_skill_ids) < 5:
+            effective_allowed_skill_ids = normalized_selected[:10]  # 💎 BACKLOG-034: Erhöhe Limit auf 10
+            if "system.websearch" in available_skill_ids and "system.websearch" not in effective_allowed_skill_ids and len(effective_allowed_skill_ids) < 10:
                 effective_allowed_skill_ids.append("system.websearch")
         else:
             effective_allowed_skill_ids = ["system.websearch"]
@@ -163,6 +217,10 @@ async def reason_and_respond(
     if forced_tool is not None:
         silo_args["forced_tool"] = forced_tool
 
+    force_tool_name = kwargs.get("force_tool_name")
+    if force_tool_name is not None and provider_key in {"openai", "gemini", "google"}:
+        silo_args["force_tool_name"] = force_tool_name
+
     all_tool_definitions = kwargs.get("all_tool_definitions")
     if all_tool_definitions is not None:
         silo_args["all_tool_definitions"] = all_tool_definitions
@@ -228,6 +286,11 @@ async def call_llm(*args: Any, **kwargs: Any) -> Dict[str, Any]:
 
     tools = kw.pop("tools", None)
     force_no_tools = bool(kw.pop("force_no_tools", False))
+
+    if provider:
+        blocked = _guard_llm_provider_silo(provider, model_id)
+        if blocked is not None:
+            return blocked
 
     # 💎 CU-2: #SelfHealingIdentity - Frischer Key aus keyring wenn nicht übergeben
     if not api_key and provider:
@@ -306,6 +369,9 @@ async def simple_llm_generate_content(provider: str, model: str, api_key: str, p
     """
     Vereinfachte Generierung (nur für interne Hilfszwecke).
     """
+    blocked = _guard_llm_provider_silo(str(provider), str(model))
+    if blocked is not None:
+        return blocked
     # Da wir call_llm entfernt haben, delegieren wir hier auch an reason_and_respond oder ein Silo
     # Für Einfachheit nutzen wir hier direkt das Silo-Konzept
     provider_key = str(provider).lower()

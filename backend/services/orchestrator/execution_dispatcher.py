@@ -500,6 +500,8 @@ async def execute_generation_prepare_gateway(
         _mutation_target = str(getattr(_idr, "mutation_target", "") or "").strip() if _idr else ""
         _routing_geo = bool(getattr(_idr, "is_routing_geo_intent", False)) if _idr else False
         _weather = bool(getattr(_idr, "is_weather_intent", False)) if _idr else False
+        _wikipedia = bool(getattr(_idr, "is_wikipedia_intent", False)) if _idr else False
+        _news = bool(getattr(_idr, "is_news_intent", False)) if _idr else False
 
         if _is_cal_creation:
             # ── CALENDAR-CREATE: Full model freedom — do NOT force any tool.
@@ -533,6 +535,22 @@ async def execute_generation_prepare_gateway(
                 }
                 wf.gateway_kwargs["force_tool_name"] = "calendar.list_events"
                 logger.info("💎 CALENDAR-LIVE-TRUTH: Forcing calendar.list_events for provider=%s", request.provider)
+
+        elif _wikipedia:
+            wf.gateway_kwargs["forced_tool"] = {
+                "skill_id": "system.wikipedia_summary",
+                "provider_tool_name": "system.wikipedia_summary",
+            }
+            wf.gateway_kwargs["force_tool_name"] = "system.wikipedia_summary"
+            logger.info("💎 SOURCE-ROUTING: Forcing system.wikipedia_summary for provider=%s", request.provider)
+
+        elif _news:
+            wf.gateway_kwargs["forced_tool"] = {
+                "skill_id": "system.rss_news",
+                "provider_tool_name": "system.rss_news",
+            }
+            wf.gateway_kwargs["force_tool_name"] = "system.rss_news"
+            logger.info("💎 SOURCE-ROUTING: Forcing system.rss_news for provider=%s", request.provider)
 
         elif _is_cal_intent and not _is_cal_mutation and (_routing_geo or _weather):
             # Nur Kalender-Liste entfernen — andere Forces (z.B. video.search) unangetastet lassen.
@@ -831,6 +849,9 @@ async def execute_generation_prepare_gateway(
             )
             return False  # Not a duplicate
         wf.gateway_kwargs['_track_tool_call_fn'] = _track_tool_call
+        # 💎 BACKLOG-034: Copy relevant_skill_ids to allowed_skill_ids for tool filter
+        if hasattr(wf, 'relevant_skill_ids') and wf.relevant_skill_ids:
+            wf.gateway_kwargs['allowed_skill_ids'] = list(wf.relevant_skill_ids)
         # 💎 BACKLOG-006: Dynamic fallback summary based on error details
         # Initially use static fallback - will be updated with error context during execution
         wf.fallback_summary = _build_dynamic_fallback_summary(

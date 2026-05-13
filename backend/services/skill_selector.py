@@ -157,9 +157,17 @@ class SkillSelector:
         if not pdf_ok:
             forbidden.append("system.create_pdf")
         if bool(getattr(intent_result, "is_routing_geo_intent", False)) or primary == "routing_geo":
-            boosted_fb.append("system.routing")
+            # BACKLOG-029: Routing-Intent must be mandatory to force tool call instead of LLM knowledge
+            mandatory.append("system.routing")
         if bool(getattr(intent_result, "is_weather_intent", False)) or primary == "weather":
-            boosted_fb.append("system.weather")
+            # BACKLOG-029: Weather-Intent must be mandatory to force tool call instead of LLM knowledge
+            mandatory.append("system.weather")
+        if bool(getattr(intent_result, "is_wikipedia_intent", False)) or primary == "wikipedia":
+            # BACKLOG-031: Wikipedia-Intent must be mandatory to force tool call instead of LLM knowledge
+            mandatory.append("system.wikipedia_summary")
+        if bool(getattr(intent_result, "is_news_intent", False)) or primary == "news":
+            # BACKLOG-031: News-Intent must be mandatory to force tool call instead of LLM knowledge
+            mandatory.append("system.rss_news")
         # 💎 TASK-005: BACKLOG-005 - Filesystem-Intent hat Vorrang vor Bild-Intent
         # Wenn Filesystem-Intent erkannt wurde, hat er Vorrang vor Bild-Intent
         is_filesystem = getattr(intent_result, "is_filesystem_intent", False) or primary == "filesystem"
