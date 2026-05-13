@@ -140,6 +140,9 @@ def _normalize_items(items: list[BacklogItem]) -> None:
             item.routing_confidence = item.routing_confidence.upper()
         if item.recommended_next_skill:
             item.recommended_next_skill = item.recommended_next_skill.upper()
+        # Mark items from TestRun as test blockers
+        if item.source and item.source.upper() == "TESTRUN":
+            item.is_test_blocker = True
 
 
 def _build_counts(items: list[BacklogItem]) -> BacklogCounts:

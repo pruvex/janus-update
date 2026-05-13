@@ -20,6 +20,8 @@ const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
   'SPEC FEATURE': { bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
 }
 
+const TEST_BLOCKER_COLOR = { bg: 'bg-red-600/20', text: 'text-red-500' }
+
 const IMPORTANCE_COLORS: Record<string, string> = {
   'CRITICAL': 'text-red-400',
   'HIGH': 'text-orange-400',
@@ -350,9 +352,16 @@ export function KanbanCard({ item, viewType = 'active', estimatedTime = null }: 
       {/* Top row: ID and Type Badge */}
       <div className="flex items-start justify-between mb-2">
         <span className="text-[10px] font-mono text-muted-foreground break-all">#{item.id}</span>
-        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${typeColor.bg} ${typeColor.text} flex-shrink-0`}>
-          {item.type}
-        </span>
+        <div className="flex gap-1 flex-shrink-0">
+          <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${typeColor.bg} ${typeColor.text}`}>
+            {item.type}
+          </span>
+          {item.is_test_blocker && (
+            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${TEST_BLOCKER_COLOR.bg} ${TEST_BLOCKER_COLOR.text}`}>
+              TestBlocker
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Title */}

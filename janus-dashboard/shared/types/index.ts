@@ -25,6 +25,7 @@ export interface BacklogItem {
   final_audit: string | null
   validation_evidence: string | null
   changelog: string | null
+  is_test_blocker: boolean
   raw_fields: Record<string, any>
 }
 

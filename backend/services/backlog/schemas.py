@@ -41,6 +41,7 @@ class BacklogItem(BaseModel):
     final_audit: str | None = None
     validation_evidence: str | None = None
     changelog: str | None = None
+    is_test_blocker: bool = False
     raw_fields: dict[str, str] = Field(default_factory=dict)
 
 
