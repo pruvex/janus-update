@@ -2,6 +2,16 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [PATTERN] #EarlySecurityGuard "Security guards must be placed BEFORE any provider request in the request lifecycle to prevent malicious inputs from reaching LLM providers"
+- **Kontext:** BACKLOG-035 Prompt Injection Defense. Prompt Injection wurde erkannt, aber die legitime Query wurde trotzdem verarbeitet. Die malicious Anweisung wurde ignoriert (gut), aber die legitime Query wurde ausgeführt (riskant).
+- **Problem:** Security-Checks die nach Provider-Aufruf oder in späten Phasen des Request-Lifecycle stattfinden, können malicious Inputs nicht zuverlässig blockieren. Ein Angreifer könnte legitime Queries mit malicious Anweisungen kombinieren, um die Defense zu umgehen.
+- **Lösung:** Implementiere Early Guard im `run_tool_loop_stream()` BEFORE any provider request. Guard prüft user_input auf Injection-Patterns (ignore, delete, override, bypass, forget) und blockiert die gesamte Query-Verarbeitung mit Error-Response, wenn Injection erkannt wird. Provider-agnostisch (funktioniert für GPT und Gemini). Telemetrie-Event `prompt_injection_blocked` wird gefeuert mit injection_type und pattern.
+- **Härtung:** Audit muss prüfen: (1) Security-Guards sind im frühesten Punkt des Request-Lifecycle (vor Tool-Execution, vor Provider-Aufruf). (2) Guard blockiert die gesamte Query-Verarbeitung (COMPLETE BLOCK). (3) Provider-agnostisch (funktioniert für alle Provider). (4) Telemetrie-Event wird gefeuert. Tripwire: Malicious Inputs erreichen Provider trotz Security-Check.
+- **Location:** `backend/services/orchestrator/execution_engine.py` (lines 2501-2513), implementiert 2026-05-13.
+- **Epic:** BACKLOG-035 — Prompt Injection Defense
+- **Confidence:** High
+- **Tags:** EarlySecurityGuard, PromptInjection, ProviderAgnostic, Security, BACKLOG035
+
 ## [PATTERN] #AsyncTelemetryGuard "Async-Funktionen wie log_event() müssen in synchronen Kontexten via asyncio.create_task() mit korrekten globalen Imports aufgerufen werden, um silent failures zu vermeiden"
 - **Kontext:** BACKLOG-035 Prompt Injection Defense. Telemetrie-Events für `prompt_injection_blocked` landeten nie in der Queue, weil `log_event()` eine `async` Funktion ist, aber synchron ohne `await` oder `create_task` aufgerufen wurde. Zusätzlich war `log_event` nicht global importiert, was zu `NameError` führte.
 - **Problem:** `log_event()` ist eine `async` Funktion, die Events in eine in-memory Queue schreibt. Wenn sie synchron aufgerufen wird (ohne `await` oder `create_task`), wird das Coroutine-Objekt erstellt aber nie ausgeführt → silent failure. Lokale Imports innerhalb von Funktionen verdecken fehlende globale Imports und führen zu `NameError` zur Laufzeit.

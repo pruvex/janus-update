@@ -1,6 +1,6 @@
 # PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-10 (Dark Mode Toggle — 0.4.17-beta.24)
+**Aktualisiert:** 2026-05-13 (Prompt Injection Defense — 0.4.17-beta.29)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **BACKLOG-035 Prompt Injection Defense** | 🥇 SEALED | Prompt Injection Defense implementiert. Guard in `backend/services/orchestrator/execution_engine.py` erkennt Prompt Injection vor Provider-Aufruf und blockiert die gesamte Query-Verarbeitung. Provider-agnostisch (funktioniert für GPT und Gemini). Test PINJ-001 mit beiden Provider PASS. Diamond Confidence Score: 9.5/10, Production Confidence: 95%. Files: `backend/services/orchestrator/execution_engine.py` (lines 2501-2513). Version: 0.4.17-beta.29. |
 | **Dark Mode Toggle** | 🥇 SEALED | Globales Light/Dark Theme Switch in Settings implementiert. Checkbox in Settings UI, Backend-Persistenz (dark_mode_enabled Boolean mit default=False), LocalStorage-Caching für sofortige Theme-Anwendung, CSS Variables für Theme-Styles. Fix: default=True → default=False gemäß Spec. Files: backend/data/models.py, backend/data/schemas.py, backend/api/routers/users.py, frontend/index.html, frontend/js/settings.js, frontend/js/app.js, frontend/src/styles.css. Manual Janus Test PASS. Version: 0.4.17-beta.24. |
 | **BACKLOG-017 ChromaDB PyInstaller Fix** | 🥇 SEALED | ChromaDB-Module vollständig im PyInstaller-Bundle eingeschlossen. PyInstaller spec um ChromaDB-Submodule erweitert: `collect_data_files('chromadb')`, `collect_data_files('chromadb', include_py_files=True)`, `hiddenimports=['chromadb.telemetry.product.posthog', 'chromadb.api.rust']`. Vektor-Service und Skill-Router starten ohne ChromaDB-Import-Fehler. Manual Janus Test PASS. Files: janus_backend.spec. Version: 0.4.17-beta.22. |
 | **BACKLOG-018 CLIP Lazy Loading** | 🥇 SEALED | CLIP-Model-Download blockiert nicht mehr First-Start. Lazy-Loading Pattern implementiert: Daemon-Thread im FastAPI-Lifespan, Status-Tracking im Vision-Service, `is_ready()` Guard vor CLIP-Inference. Files: backend/services/vision/model_loader.py (NEU), backend/services/vision_service.py (MODIFIZIERT), backend/main.py (MODIFIZIERT). Manual Janus Test PASS. Version: 0.4.17-beta.21. |

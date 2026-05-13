@@ -1057,10 +1057,10 @@
             "de": "Sicherheits-Gate gegen Prompt Injections",
             "en": "Security Gate against Prompt Injections"
           },
-          "skill_refs": ["injection_detector"],
+          "skill_refs": ["execution_engine"],
           "how_to": {
-            "de": "Janus verfügt über einen integrierten Schutz gegen manipulative Anweisungen (Injection Defense). Verdächtige Anfragen werden automatisch blockiert, um die System-Integrität zu schützen.",
-            "en": "Janus has built-in protection against manipulative instructions (Injection Defense). Suspicious requests are automatically blocked to protect system integrity."
+            "de": "Janus verfügt über einen integrierten Schutz gegen manipulative Anweisungen (Injection Defense). Der Guard wird vor jedem Provider-Aufruf ausgeführt und erkennt Injection-Patterns (ignore, delete, override, bypass, forget). Bei erkannter Injection wird die gesamte Query-Verarbeitung blockiert. Provider-agnostisch (funktioniert für GPT und Gemini).",
+            "en": "Janus has built-in protection against manipulative instructions (Injection Defense). The guard runs before any provider request and detects injection patterns (ignore, delete, override, bypass, forget). When injection is detected, the entire query processing is blocked. Provider-agnostic (works for GPT and Gemini)."
           },
           "status": "verified",
           "confidence": 0.95
