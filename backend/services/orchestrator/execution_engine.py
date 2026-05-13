@@ -23,10 +23,13 @@ from backend.services.tool_manager import tool_manager
 from backend.services.orchestrator.schemas import ExecutionResponse, OrchestratorContext
 from backend.services.orchestrator.stream_protocol import StreamEvent
 from backend.services.orchestrator.intent_engine import IntentDetectionResult
+from backend.services.llm_silo_context import normalize_llm_silo_provider
 from backend.services.prompt_cache import clone_decision_for_route, decision_from_gateway_kwargs, merge_decision_into_usage
 from backend.utils.config_loader import load_config_data, load_model_catalog
 from backend.renderers.attribution import append_tool_attributions_from_tools
 from backend.utils.link_sanitizer import force_sanitize_links
+from backend.services.security.injection_detector import detect_injection, get_injection_type
+from backend.data.schemas_logging import LogEventCreate
 
 logger = logging.getLogger("janus_backend")
 
@@ -37,6 +40,27 @@ logger = logging.getLogger("janus_backend")
 # ``backend.services.calendar.mutation_guard_store`` — confirmed via ChatOrchestrator, not here.
 
 MAPS_LINK_REGEX = re.compile(r'"maps_link"\s*:\s*"([^"]+)"')
+
+
+def _extract_user_text_from_history(history: List[Dict[str, str]]) -> str:
+    """
+    Extract the latest user message from chat history.
+    
+    Args:
+        history: Chat history list of message dicts with 'role' and 'content'
+        
+    Returns:
+        The content of the last user message, or empty string if not found
+    """
+    if not history or not isinstance(history, list):
+        return ""
+    
+    # Find the last user message (most recent)
+    for msg in reversed(history):
+        if isinstance(msg, dict) and msg.get("role") == "user":
+            return str(msg.get("content") or "")
+    
+    return ""
 
 
 def _build_dynamic_fallback_summary(
@@ -284,6 +308,47 @@ class OrchestratorExecutionEngine:
         self.agent_runtime = agent_runtime
         self.skill_selector = skill_selector
         self.capability_registry = capability_registry
+
+    @staticmethod
+    def _check_prompt_injection_early(
+        history: List[Dict[str, str]],
+        chat_id: Optional[int] = None,
+    ) -> Optional[ExecutionResponse]:
+        """
+        🔐 TASK-035-02: Early Prompt Injection Guard - MUST be called BEFORE any processing.
+        This is a defense-in-depth check that complements the guard in execution_dispatcher.py.
+        Returns an error response if injection is detected, None otherwise.
+        """
+        user_text = _extract_user_text_from_history(history)
+        if detect_injection(user_text):
+            injection_type = get_injection_type(user_text)
+            logger.warning(
+                f"🚨 PROMPT INJECTION BLOCKED (EARLY GUARD): type={injection_type}, user_text_preview={user_text[:100]}..."
+            )
+            # Telemetry event
+            log_event(LogEventCreate(
+                event_type="prompt_injection_blocked",
+                skill="orchestrator.execution_engine",
+                status="blocked",
+                payload={
+                    "injection_type": injection_type or "unknown",
+                    "pattern_preview": user_text[:200] if user_text else "",
+                    "guard_location": "execution_engine_early",
+                },
+            ))
+            # Return error response immediately - no tool execution
+            return ExecutionResponse(
+                text="⚠️ Ihre Anfrage wurde aufgrund von verdächtigem Inhalt blockiert (Prompt Injection Detection).",
+                error={
+                    "code": "PROMPT_INJECTION_BLOCKED",
+                    "message": "Prompt injection detected",
+                    "injection_type": injection_type,
+                },
+                tool_calls=[],
+                usage={},
+                cost={},
+            )
+        return None
 
     # ------------------------------------------------------------------
     # IRON-GATE: Output-Auditor for price_comparison responses
@@ -1169,8 +1234,9 @@ class OrchestratorExecutionEngine:
     ) -> tuple[str, str]:
         """
         Keep provider/model consistent across MoA upgrades.
-        If model belongs to another known provider, switch provider too.
-        If model is empty, use provider fallback.
+        If model belongs to another known provider, align model to the session
+        provider (BYOK: no silent OpenAI↔Gemini migration). If model is empty,
+        refill from the session provider's tier map before using fallback.
         """
         prov = str(provider or "").strip().lower()
         mdl = str(model or "").strip()
@@ -1181,22 +1247,59 @@ class OrchestratorExecutionEngine:
         if not prov:
             return "", mdl or fallback
 
+        prov_norm = normalize_llm_silo_provider(prov) or prov
+
         owner = self._find_provider_for_model(mdl) if mdl else ""
         if owner and owner != prov:
-            logger.warning(
-                "PROVIDER-MODEL-MISMATCH: model '%s' belongs to provider '%s' (active '%s') — switching provider.",
-                mdl,
-                owner,
-                prov,
-            )
-            prov = owner
+            owner_norm = normalize_llm_silo_provider(owner)
+            # BYOK: never silently migrate between OpenAI and Gemini/Google silos.
+            if (
+                owner_norm in ("openai", "gemini")
+                and prov_norm in ("openai", "gemini")
+                and owner_norm != prov_norm
+            ):
+                logger.error(
+                    "PROVIDER-MODEL-MISMATCH (BYOK): model %r is catalog-owned by %r but "
+                    "session provider is %r — refusing cross-cloud switch; clearing model "
+                    "to refill within the session provider.",
+                    mdl,
+                    owner_norm,
+                    prov_norm,
+                )
+                mdl = ""
+            else:
+                logger.warning(
+                    "PROVIDER-MODEL-MISMATCH: model '%s' belongs to provider '%s' (active '%s') — switching provider.",
+                    mdl,
+                    owner,
+                    prov,
+                )
+                prov = owner
+                prov_norm = normalize_llm_silo_provider(prov) or prov
 
         if not mdl:
             provider_map = self.model_hierarchy.get(prov) if isinstance(self.model_hierarchy, dict) else {}
             if isinstance(provider_map, dict):
-                mdl = str(provider_map.get("logic") or provider_map.get("balanced") or provider_map.get("speed") or "")
-            if not mdl:
-                mdl = fallback
+                for _k in ("logic", "balanced", "speed", "vision", "fast"):
+                    cand = str(provider_map.get(_k) or "").strip()
+                    if cand:
+                        mdl = cand
+                        break
+            if not mdl and fallback:
+                fb_owner = normalize_llm_silo_provider(self._find_provider_for_model(fallback))
+                if (
+                    prov_norm in ("openai", "gemini")
+                    and fb_owner in ("openai", "gemini")
+                    and fb_owner != prov_norm
+                ):
+                    logger.warning(
+                        "BYOK: ignoring cross-cloud fallback_model %r (owner=%r) for session provider %r",
+                        fallback,
+                        fb_owner,
+                        prov_norm,
+                    )
+                else:
+                    mdl = fallback
 
         return prov, mdl
 
@@ -1306,6 +1409,11 @@ class OrchestratorExecutionEngine:
         chat_id: Optional[int],
         agent_flow_error: Optional[Dict[str, Any]] = None,
     ) -> ExecutionResponse:
+        # 🔐 TASK-035-02: Early Prompt Injection Guard - Check BEFORE any processing
+        early_block = self._check_prompt_injection_early(orchestrator_context.history, chat_id)
+        if early_block:
+            return early_block
+        
         # 💎 BACKLOG-006: Extract provider/model for dynamic fallback
         provider = gateway_kwargs.get("provider") if isinstance(gateway_kwargs, dict) else None
         model = gateway_kwargs.get("model") if isinstance(gateway_kwargs, dict) else None
@@ -1324,7 +1432,6 @@ class OrchestratorExecutionEngine:
         aggregated_tokens_input = 0
         aggregated_tokens_output = 0
         aggregated_total_cost = 0.0
-        websearch_fallback_attempted = False
 
         gateway_kwargs = dict(gateway_kwargs)
         reason_and_respond_fn = gateway_kwargs.pop("reason_and_respond_fn", None)
@@ -1483,7 +1590,6 @@ class OrchestratorExecutionEngine:
                 call_kwargs["model"] = current_call_model or user_selected_model
                 # 💎 VIDEO-FIX: Filter out unsupported parameters for non-stream gateways
                 # force_tool_name is only supported in streaming path, not in reason_and_respond
-                call_kwargs.pop("force_tool_name", None)
                 call_kwargs.pop("forced_tool", None)
                 call_kwargs.pop("forced_tool_args", None)
                 call_kwargs.pop("_prompt_cache_decision", None)
@@ -2141,69 +2247,16 @@ class OrchestratorExecutionEngine:
                                 "VIDEO-SEARCH-FALLBACK: system.websearch returned %d result(s). Continuing loop.",
                                 len(fallback_results),
                             )
-                if (
-                    not websearch_fallback_attempted
-                    and websearch_failure_detected
-                    and str(gateway_kwargs.get("provider") or "").strip().lower() == "openai"
-                ):
-                    websearch_fallback_attempted = True
-                    logger.error(
-                        "WEBSEARCH-FALLBACK: OpenAI websearch failed (%s). Retrying tool call via Gemini.",
+                if websearch_failure_detected and str(
+                    gateway_kwargs.get("provider") or ""
+                ).strip().lower() == "openai":
+                    # Policy: never silently retry websearch on another provider (was Gemini).
+                    # Users expect the selected chat provider/model for all billable LLM paths.
+                    logger.warning(
+                        "WEBSEARCH-CROSS-PROVIDER-DISABLED: OpenAI native websearch failed (%s). "
+                        "No automatic retry on another provider.",
                         websearch_failure_text or "unknown error",
                     )
-                    fallback_tool_calls: List[Dict[str, Any]] = []
-                    for _tc in (tool_calls or []):
-                        _fn = _tc.get("function") if isinstance(_tc, dict) else {}
-                        _name = str((_fn or {}).get("name") or "").strip().lower()
-                        if _name not in {"system.websearch", "websearch_wrapper"}:
-                            continue
-                        _args_raw = (_fn or {}).get("arguments") or "{}"
-                        try:
-                            _args = json.loads(_args_raw) if isinstance(_args_raw, str) else dict(_args_raw or {})
-                        except Exception:
-                            _args = {}
-                        _args["provider"] = "gemini"
-                        _args["model"] = "gemini-3-flash-preview"
-                        _tc_copy = dict(_tc)
-                        _fn_copy = dict(_fn or {})
-                        _fn_copy["arguments"] = json.dumps(_args, ensure_ascii=False)
-                        _tc_copy["function"] = _fn_copy
-                        fallback_tool_calls.append(_tc_copy)
-
-                    if fallback_tool_calls:
-                        prev_force_provider = tool_executor.additional_context.get("websearch_fallback_provider")
-                        tool_executor.additional_context["websearch_fallback_provider"] = "gemini"
-                        try:
-                            fallback_results = await tool_executor.execute_tool_calls(
-                                fallback_tool_calls,
-                                bypass_policy=bypass_policy_this_turn,
-                            )
-                        except Exception:
-                            logger.error(
-                                "WEBSEARCH-FALLBACK: Gemini retry crashed during tool execution.",
-                                exc_info=True,
-                            )
-                            fallback_results = []
-                        finally:
-                            if prev_force_provider is None:
-                                tool_executor.additional_context.pop("websearch_fallback_provider", None)
-                            else:
-                                tool_executor.additional_context["websearch_fallback_provider"] = prev_force_provider
-
-                        if fallback_results:
-                            # Replace failed websearch entries with fallback results.
-                            non_websearch_results = [
-                                tr
-                                for tr in (tool_results or [])
-                                if str(tr.get("name") or "").strip().lower()
-                                not in {"system.websearch", "websearch_wrapper"}
-                            ]
-                            tool_results = non_websearch_results + [tr for tr in fallback_results if isinstance(tr, dict)]
-                            tool_failure_message = None
-                            logger.error(
-                                "WEBSEARCH-FALLBACK: Gemini retry returned %d result(s). Continuing loop.",
-                                len(fallback_results),
-                            )
 
                 if tool_failure_message:
                     _err = tool_failure_message
@@ -2432,6 +2485,20 @@ class OrchestratorExecutionEngine:
         result_holder: Optional[Dict[str, Any]] = None,
     ) -> AsyncIterator[StreamEvent]:
         """Stream provider chunks: text_delta/usage sofort; tool_delta gepuffert; tool_start/tool_end bei Ausführung."""
+        # 🔐 TASK-035-02: Early Prompt Injection Guard - Check BEFORE any processing
+        early_block = self._check_prompt_injection_early(orchestrator_context.history, chat_id)
+        if early_block:
+            # Yield error event and stop streaming - no tool execution
+            yield StreamEvent(
+                type="error",
+                content=early_block.text,
+                metadata={
+                    "error_code": early_block.error.get("code") if early_block.error else "PROMPT_INJECTION_BLOCKED",
+                    "injection_type": early_block.error.get("injection_type") if early_block.error else "unknown",
+                },
+            )
+            return
+        
         # 💎 BACKLOG-006: Extract provider/model for dynamic fallback
         provider = gateway_kwargs.get("provider") if isinstance(gateway_kwargs, dict) else None
         model = gateway_kwargs.get("model") if isinstance(gateway_kwargs, dict) else None

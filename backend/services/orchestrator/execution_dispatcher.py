@@ -22,6 +22,8 @@ from backend.utils import intent_classifier
 from backend.services.model_catalog import get_models_by_provider
 # 💎 BACKLOG-006: Dynamic fallback summary helper
 from backend.services.orchestrator.execution_engine import _build_dynamic_fallback_summary
+# 💎 BACKLOG-035: Prompt Injection Detection
+from backend.services.security.injection_detector import detect_injection, get_injection_type
 
 logger = logging.getLogger("janus_backend")
 
@@ -243,6 +245,44 @@ async def execute_generation_prepare_gateway(
     request = ctx.request
     # Apply pre-resolution guards (intent-based model escalation, etc.)
     _apply_pre_resolution_guards(wf, request)
+    
+    # 💎 BACKLOG-035: Prompt Injection Guard - COMPLETE BLOCK
+    # Check for injection BEFORE any tool forcing (SOURCE-ROUTING, etc.)
+    user_query = str(wf.user_text or "").strip()
+    injection_detected = detect_injection(user_query)
+    if injection_detected:
+        injection_type = get_injection_type(user_query) or "unknown"
+        logger.warning(
+            f"🚨 PROMPT INJECTION BLOCKED: type={injection_type}, query='{user_query[:100]}...'"
+        )
+        # Telemetry event for prompt_injection_blocked
+        from backend.services.logging.logger_core import log_event
+        from backend.data.schemas_logging import LogEventCreate
+        log_event(LogEventCreate(
+            event_type="prompt_injection_blocked",
+            skill="orchestrator.execution_dispatcher",
+            status="blocked",
+            payload={
+                "injection_type": injection_type,
+                "query_preview": user_query[:200],
+                "guard_location": "execution_dispatcher",
+            },
+        ))
+        # COMPLETE BLOCK: Disable all tool forcing and clear skills
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        if not hasattr(wf, 'gateway_kwargs'):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        # Set error response for user notification
+        wf.final_text = "⚠️ Ihre Anfrage wurde aufgrund von verdächtigem Inhalt blockiert (Prompt Injection Detection)."
+        wf.skip_llm_generation = True  # Skip LLM generation
+        # Return early - no further processing
+        return ctx
     
     # 💎 PURE-TEXT SUMMARY MODE: Wenn Global Veto für Zusammenfassungen aktiv ist
     # Entferne alle Skills, deaktiviere Tool-Zwang, deaktiviere proaktive Vorschläge
@@ -852,6 +892,14 @@ async def execute_generation_prepare_gateway(
         # 💎 BACKLOG-034: Copy relevant_skill_ids to allowed_skill_ids for tool filter
         if hasattr(wf, 'relevant_skill_ids') and wf.relevant_skill_ids:
             wf.gateway_kwargs['allowed_skill_ids'] = list(wf.relevant_skill_ids)
+            # 💎 DIAMOND-CORE-ROUTING-FORCE: Force tool_choice for critical mandatory skills
+            # If routing intent was detected (by skill_selector), force OpenAI to use system.routing
+            # This prevents GPT from ignoring mandatory tools and responding from knowledge context
+            # Check intent_detection_result instead of list length because memory skills can enlarge the list
+            intent_result = getattr(wf, 'intent_detection_result', None)
+            if intent_result and "routing" in str(getattr(intent_result, 'primary_intent', '')).lower():
+                wf.gateway_kwargs['force_tool_name'] = "system.routing"
+                logger.info("💎 DIAMOND-CORE-ROUTING-FORCE: Routing intent detected. Forcing tool_choice for system.routing to prevent knowledge-context response")
         # 💎 BACKLOG-006: Dynamic fallback summary based on error details
         # Initially use static fallback - will be updated with error context during execution
         wf.fallback_summary = _build_dynamic_fallback_summary(
