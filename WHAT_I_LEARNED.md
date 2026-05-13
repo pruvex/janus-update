@@ -2,6 +2,16 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [PATTERN] #AsyncTelemetryGuard "Async-Funktionen wie log_event() müssen in synchronen Kontexten via asyncio.create_task() mit korrekten globalen Imports aufgerufen werden, um silent failures zu vermeiden"
+- **Kontext:** BACKLOG-035 Prompt Injection Defense. Telemetrie-Events für `prompt_injection_blocked` landeten nie in der Queue, weil `log_event()` eine `async` Funktion ist, aber synchron ohne `await` oder `create_task` aufgerufen wurde. Zusätzlich war `log_event` nicht global importiert, was zu `NameError` führte.
+- **Problem:** `log_event()` ist eine `async` Funktion, die Events in eine in-memory Queue schreibt. Wenn sie synchron aufgerufen wird (ohne `await` oder `create_task`), wird das Coroutine-Objekt erstellt aber nie ausgeführt → silent failure. Lokale Imports innerhalb von Funktionen verdecken fehlende globale Imports und führen zu `NameError` zur Laufzeit.
+- **Lösung:** (1) `log_event` global importieren am Anfang der Datei (`from backend.services.logging.logger_core import log_event`). (2) In async-Kontexten mit `await log_event(...)` aufrufen. (3) In synchronen Kontexten (z.B. `@staticmethod`) mit `asyncio.create_task(log_event(...))` aufrufen. (4) Lokale redundante Imports entfernen und alle Imports am Dateianfang konsolidieren. (5) Telemetrie-Payload-Variablen korrigieren (z.B. `text_to_check` statt `user_text`).
+- **Härtung:** Audit muss prüfen: (1) Alle `log_event`-Aufrufe sind entweder `await` oder `asyncio.create_task`. (2) `log_event` ist global importiert, keine lokalen Imports in Funktionen. (3) Telemetrie-Payload-Variablen referenzieren korrekte lokale Variablen. Tripwire: Telemetrie-Events landen nicht in der Queue oder `NameError: name 'log_event' is not defined`.
+- **Location:** `backend/services/orchestrator/execution_engine.py`, `backend/services/orchestrator/execution_dispatcher.py`, implementiert 2026-05-13.
+- **Epic:** BACKLOG-035 — Prompt Injection Defense
+- **Confidence:** High
+- **Tags:** AsyncTelemetryGuard, log_event, asyncio.create_task, GlobalImports, SilentFailure, BACKLOG035
+
 ## [PATTERN] #TemplateLiteralInComments "Template literals in comments can be evaluated by JavaScript parsers causing reference errors"
 - **Kontext:** BACKLOG-025 Frontend Rendering Failure. JavaScript-Fehler "win is not defined" blockierte das Rendering von Assistant-Nachrichten nach SSE-Stream-Initiierung. Der Fehler trat in `frontend/js/chat.js` auf.
 - **Problem:** Template literals in Kommentaren (z.B. `${win}`) werden von einigen JavaScript-Parsern/Build-Tools evaluiert, obwohl sie in Kommentaren stehen. Wenn die referenzierte Variable nicht im Scope existiert, wird ein ReferenceError geworfen ("win is not defined"), der den Code-Block invalidiert.
@@ -106,6 +116,22 @@
 - **Epic:** TASK-065 — Contextual Entity Resolver Extension
 - **Confidence:** High (Deiktik-Regex deckt gängige Pronomen ab, Single-Event-Check deterministisch, Honest Scoring transparent).
 - **Tags:** DeicticFallback, PronounDetection, ContextInference, CalendarMutationAutonomy, OrchestratorContext, TASK065
+
+## [PATTERN] #OpenAIToolChoiceNormalization "OpenAI tool_choice requires underscore normalization and deterministic forced fallback when model ignores enforcement"
+- **Kontext:** BACKLOG-031 Tool Routing Failures. Wikipedia/News tools were not invoked despite mandatory skill selection and forced tool_choice. OpenAI API ignored forced tool_choice parameter and model answered with text instead of invoking tools.
+- **Problem:** Three root causes: (1) Wikipedia/News intents missing from IntentDetectionResult precedence list causing primary_intent=None. (2) Tool schema duplication from alias-expanded tool lists (system_rss_news appeared 5x). (3) OpenAI tool_choice parameter ignored due to name mismatch (Janus canonical dot names like "system.wikipedia_summary" vs OpenAI-safe underscore names like "system_wikipedia_summary") and model returning text despite forced tool_choice on first round.
+- **Lösung:** **Multi-Layer Tool Choice Enforcement:**
+  1. **Intent Precedence:** Add `("wikipedia", result.is_wikipedia_intent)` and `("news", result.is_news_intent)` to IntentDetectionResult precedence tuple in intent_engine.py.
+  2. **Tool Schema Deduplication:** Dedupe tools by object id/canonical skill id in backend/llm_providers/shared/utils.py to prevent duplicate schemas from alias expansion.
+  3. **force_tool_name Forwarding:** Forward force_tool_name through llm_gateway.py only for OpenAI/Gemini/Google providers (not stripped by sync tool loop).
+  4. **OpenAI Normalization:** In backend/llm_providers/openai/service.py, normalize forced tool_choice names with dot→underscore in both sync and stream params. Dedupe converted OpenAI tool schemas by safe function name.
+  5. **Deterministic Forced Fallback:** In backend/llm_providers/openai/gateway.py, if round 1 returns text despite force_tool_name, execute deterministic forced fallback for supported source tools: system.wikipedia_summary extracts German lemma query (e.g., "Nikola Tesla" → {"query":"Nikola Tesla","lang":"de"}), system.rss_news extracts known RSS source (e.g., "Heise" → {"source":"heise"}). Continue synthesis with tool evidence.
+- **Härtung:** py_compile validation for all changed OpenAI files. Deterministic checks: verify duplicate RSS schemas collapse, forced OpenAI tool_choice becomes system_wikipedia_summary, Tesla fallback args become {"query":"Nikola Tesla","lang":"de"}, Heise fallback args become {"source":"heise"}.
+- **Tripwire:** If Wikipedia/News queries still don't invoke tools → intent precedence missing or tool_choice normalization broken. If tool schema has duplicates → deduplication logic not applied. If forced fallback executes with wrong args → extraction logic fails for query/source patterns.
+- **Location:** backend/services/orchestrator/intent_engine.py (precedence), backend/llm_providers/shared/utils.py (deduplication), backend/services/llm_gateway.py (force_tool_name forwarding), backend/llm_providers/openai/service.py (normalization), backend/llm_providers/openai/gateway.py (deterministic fallback), implementiert 2026-05-13.
+- **Epic:** BACKLOG-031 — Tool Routing Failures: Wikipedia/News Tool Invocation
+- **Confidence:** High (Multi-layer enforcement, deterministic fallback, validation passed).
+- **Tags:** OpenAIToolChoiceNormalization, ToolChoiceEnforcement, IntentPrecedence, ToolSchemaDeduplication, DeterministicFallback, WikipediaNewsRouting, BACKLOG031
 
 ## [PATTERN] #GuidedModeSchema "Optional event_title_query for Direct ID-Patching in Guided Mode — No Artificial Search Strings Required"
 - **Kontext:** TASK-067 Guided Assistant Mode Extension. Ziel: Erlauben von Modellen, direkt per ID zu patchen wenn Guided Mode aktiv ist, ohne künstlich Suchstrings erfinden zu müssen.
@@ -2428,3 +2454,33 @@
 - **Location:** backend/services/llm_gateway.py (get_first_available_text_model_with_provider), backend/main.py (bootstrap), backend/services/calendar/calendar_ai_engine.py (_resolve_provider_model_key). Fixed 2026-05-09.
 - **Confidence:** High (Validation: Syntax-Check PASS, Manual Janus Test PASS, no hardcoded model IDs remain, provider/model consistency guaranteed).
 - **Tags:** dynamic_model_selection, provider_consistency, model_catalog, hardcoded_models, backlog_019
+
+## [PATTERN] #LoggerImportInRenderers "Renderer modules must import logging and initialize logger before use"
+- **Kontext:** BACKLOG-032/034 Geo-Routing Attribution. backend/renderers/attribution.py used logger.info() without importing logging or initializing logger variable, causing NameError at runtime.
+- **Problem:** Renderer modules (attribution.py) used logger.info() calls without importing logging module or initializing logger variable. This caused NameError: name 'logger' is not defined when the attribution renderer was called after tool execution.
+- **Lösung:** Add `import logging` at the top of renderer modules and initialize logger with `logger = logging.getLogger(__name__)` before any logger calls. Use try/except block for logger calls if logger scope is uncertain to provide fallback to logging.getLogger() directly.
+- **Härtung:** Audit all renderer modules for logger usage without import. Tripwire: NameError for logger at runtime when renderer is called.
+- **Location:** backend/renderers/attribution.py (line 4, 8), implementiert 2026-05-13.
+- **Epic:** BACKLOG-032/034 — Geo-Routing Attribution Hardening
+- **Confidence:** High
+- **Tags:** LoggerImport, Renderer, Attribution, NameError, BACKLOG032, BACKLOG034
+
+## [PATTERN] #ForceToolChoiceForMandatorySkills "OpenAI GPT-Nano ignores mandatory tools and responds from knowledge context"
+- **Kontext:** BACKLOG-032/034 Geo-Routing Attribution. GPT-5.4-nano ignored mandatory system.routing tool and responded from knowledge context, causing attribution (Quelle: OSRM) to be missing.
+- **Problem:** OpenAI GPT-Nano models can ignore mandatory tools when tool_choice is set to "auto" and respond from knowledge context instead of calling the tool. This breaks attribution and data freshness requirements.
+- **Lösung:** Force tool_choice for critical mandatory skills by checking intent_detection_result instead of list length. If routing intent is detected (primary_intent contains "routing"), set force_tool_name in gateway_kwargs to "system.routing". This forces OpenAI to call the specific tool instead of choosing from knowledge. Check intent instead of list length because memory skills can enlarge the relevant_skill_ids list.
+- **Härtung:** Audit all critical mandatory skills (system.routing, system.weather, system.wikipedia_summary, system.rss_news) for force_tool_choice logic. Tripwire: Mandatory tool not called despite being in allowed_skill_ids, attribution missing, or knowledge-context response when tool should be mandatory.
+- **Location:** backend/services/orchestrator/execution_dispatcher.py (line 855-862), backend/services/skill_selector.py (line 94-110), implementiert 2026-05-13.
+- **Epic:** BACKLOG-032/034 — Geo-Routing Attribution Hardening
+- **Confidence:** High
+- **Tags:** ForceToolChoice, MandatorySkills, OpenAI, GPTNano, KnowledgeContext, Attribution, BACKLOG032, BACKLOG034
+
+## [PATTERN] #IntentBasedForceLogic "Use intent detection result instead of list length for tool forcing"
+- **Kontext:** BACKLOG-032/034 Geo-Routing Attribution. Initial force logic checked `len(wf.relevant_skill_ids) == 1` which was too strict because memory skills can enlarge the list, allowing GPT to ignore routing tool.
+- **Problem:** List-based conditions for forcing tools are fragile because other skills (memory, capability groups) can enlarge the list, breaking the condition. GPT uses this loophole to ignore mandatory tools.
+- **Lösung:** Use intent-based forcing instead of list-length checking. Check intent_detection_result.primary_intent for routing intent (contains "routing") and force tool_choice unconditionally. This is more robust because intent detection is independent of other skill additions.
+- **Härtung:** Audit all force-tool conditions for list-length checks and replace with intent-based checks where possible. Tripwire: Force logic fails when list length changes due to non-mandatory skills.
+- **Location:** backend/services/orchestrator/execution_dispatcher.py (line 859-862), implementiert 2026-05-13.
+- **Epic:** BACKLOG-032/034 — Geo-Routing Attribution Hardening
+- **Confidence:** High
+- **Tags:** IntentBased, ForceLogic, ListLength, MemorySkills, Robustness, BACKLOG032, BACKLOG034

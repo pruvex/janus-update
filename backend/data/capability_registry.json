@@ -746,6 +746,10 @@
         "de": "Aktuelle Webinformationen, Nachrichten und Wikipedia-Zusammenfassungen",
         "en": "Current web information, news, and Wikipedia summaries"
       },
+      "mandatory_skills": [
+        "system.wikipedia_summary",
+        "system.rss_news"
+      ],
       "abilities": [
         {
           "id": "web.search",
@@ -1035,6 +1039,34 @@
           }
         }
       }
+    },
+    "security": {
+      "display_name": {
+        "de": "Sicherheit & Schutz",
+        "en": "Security & Protection"
+      },
+      "icon": "🛡️",
+      "description": {
+        "de": "Sicherheitsmechanismen und Schutz vor manipulativen Anweisungen",
+        "en": "Security mechanisms and protection against manipulative instructions"
+      },
+      "abilities": [
+        {
+          "id": "security.prompt_injection_defense",
+          "label": {
+            "de": "Sicherheits-Gate gegen Prompt Injections",
+            "en": "Security Gate against Prompt Injections"
+          },
+          "skill_refs": ["injection_detector"],
+          "how_to": {
+            "de": "Janus verfügt über einen integrierten Schutz gegen manipulative Anweisungen (Injection Defense). Verdächtige Anfragen werden automatisch blockiert, um die System-Integrität zu schützen.",
+            "en": "Janus has built-in protection against manipulative instructions (Injection Defense). Suspicious requests are automatically blocked to protect system integrity."
+          },
+          "status": "verified",
+          "confidence": 0.95
+        }
+      ],
+      "ui_locations": {}
     }
   }
 }
