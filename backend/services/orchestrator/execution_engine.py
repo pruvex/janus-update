@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import os
@@ -12,7 +13,6 @@ import keyring
 
 from backend.data.schemas import AgentSpec, PlannerContext, PlannerProviderProfile
 from backend.data.schemas_logging import LogEventCreate
-from backend.services.logging.logger_core import log_event
 from backend.llm_providers.gemini.service import GeminiServiceProvider
 from backend.llm_providers.ollama.service import OllamaServiceProvider
 from backend.llm_providers.openai.service import OpenAIServiceProvider
@@ -29,7 +29,6 @@ from backend.utils.config_loader import load_config_data, load_model_catalog
 from backend.renderers.attribution import append_tool_attributions_from_tools
 from backend.utils.link_sanitizer import force_sanitize_links
 from backend.services.security.injection_detector import detect_injection, get_injection_type
-from backend.data.schemas_logging import LogEventCreate
 
 logger = logging.getLogger("janus_backend")
 
@@ -312,21 +311,32 @@ class OrchestratorExecutionEngine:
     @staticmethod
     def _check_prompt_injection_early(
         history: List[Dict[str, str]],
+        user_text: Optional[str] = None,
         chat_id: Optional[int] = None,
     ) -> Optional[ExecutionResponse]:
         """
         🔐 TASK-035-02: Early Prompt Injection Guard - MUST be called BEFORE any processing.
         This is a defense-in-depth check that complements the guard in execution_dispatcher.py.
         Returns an error response if injection is detected, None otherwise.
+
+        Args:
+            history: Chat history for historical context
+            user_text: Current user input (takes precedence over history extraction)
+            chat_id: Chat identifier for logging
         """
-        user_text = _extract_user_text_from_history(history)
-        if detect_injection(user_text):
-            injection_type = get_injection_type(user_text)
+        # Prefer explicit user_text over history extraction for current input
+        if user_text:
+            text_to_check = str(user_text or "").strip()
+        else:
+            text_to_check = _extract_user_text_from_history(history)
+
+        if detect_injection(text_to_check):
+            injection_type = get_injection_type(text_to_check)
             logger.warning(
-                f"🚨 PROMPT INJECTION BLOCKED (EARLY GUARD): type={injection_type}, user_text_preview={user_text[:100]}..."
+                f"🚨 PROMPT INJECTION BLOCKED (EARLY GUARD): type={injection_type}, user_text_preview={text_to_check[:100]}..."
             )
             # Telemetry event
-            log_event(LogEventCreate(
+            asyncio.create_task(log_event(LogEventCreate(
                 event_type="prompt_injection_blocked",
                 skill="orchestrator.execution_engine",
                 status="blocked",
@@ -335,7 +345,7 @@ class OrchestratorExecutionEngine:
                     "pattern_preview": user_text[:200] if user_text else "",
                     "guard_location": "execution_engine_early",
                 },
-            ))
+            )))
             # Return error response immediately - no tool execution
             return ExecutionResponse(
                 text="⚠️ Ihre Anfrage wurde aufgrund von verdächtigem Inhalt blockiert (Prompt Injection Detection).",
@@ -1407,10 +1417,11 @@ class OrchestratorExecutionEngine:
         bypass_policy_this_turn: bool,
         set_policy_pending,
         chat_id: Optional[int],
+        user_text: Optional[str] = None,
         agent_flow_error: Optional[Dict[str, Any]] = None,
     ) -> ExecutionResponse:
         # 🔐 TASK-035-02: Early Prompt Injection Guard - Check BEFORE any processing
-        early_block = self._check_prompt_injection_early(orchestrator_context.history, chat_id)
+        early_block = self._check_prompt_injection_early(orchestrator_context.history, user_text, chat_id)
         if early_block:
             return early_block
         
@@ -2481,12 +2492,13 @@ class OrchestratorExecutionEngine:
         bypass_policy_this_turn: bool,
         set_policy_pending,
         chat_id: Optional[int],
+        user_text: Optional[str] = None,
         agent_flow_error: Optional[Dict[str, Any]] = None,
         result_holder: Optional[Dict[str, Any]] = None,
     ) -> AsyncIterator[StreamEvent]:
         """Stream provider chunks: text_delta/usage sofort; tool_delta gepuffert; tool_start/tool_end bei Ausführung."""
         # 🔐 TASK-035-02: Early Prompt Injection Guard - Check BEFORE any processing
-        early_block = self._check_prompt_injection_early(orchestrator_context.history, chat_id)
+        early_block = self._check_prompt_injection_early(orchestrator_context.history, user_text, chat_id)
         if early_block:
             # Yield error event and stop streaming - no tool execution
             yield StreamEvent(

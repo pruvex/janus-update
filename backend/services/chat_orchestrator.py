@@ -69,7 +69,13 @@ from backend.services.orchestrator.identity_manager import identity_manager
 from backend.data.schemas import ExtractedFact
 from backend.services.vision.utils import fuse_vision_results, clean_for_chat
 from backend.utils import intent_classifier
-from backend.utils.config_loader import initialize_file_from_template, load_config_data, save_config_data
+from backend.utils.config_loader import (
+    initialize_file_from_template,
+    load_config_data,
+    load_model_catalog,
+    save_config_data,
+)
+from backend.services.llm_silo_context import normalize_llm_silo_provider
 
 logger = logging.getLogger("janus_backend")
 
@@ -289,6 +295,61 @@ class ChatOrchestrator:
         ("Finnland", "Helsinki"),
         ("Island", "Reykjavik"),
     ]
+
+    @staticmethod
+    def _hierarchy_provider_key(provider: Optional[str]) -> str:
+        p = str(provider or "").strip().lower()
+        if p == "google":
+            return "gemini"
+        return p
+
+    def _coerce_model_to_session_provider(self, provider: Optional[str], model: Optional[str]) -> str:
+        """BYOK: keep chat ``model`` aligned with session cloud provider (no gpt-* on gemini silo)."""
+        pkey = self._hierarchy_provider_key(provider)
+        tiers = self.MODEL_HIERARCHY.get(pkey) or {}
+        default_model = str(
+            tiers.get("speed") or tiers.get("balanced") or tiers.get("logic") or ""
+        ).strip()
+        m = str(model or "").strip()
+        if not m:
+            return default_model
+        if pkey not in ("openai", "gemini"):
+            return m
+        prov_norm = normalize_llm_silo_provider(pkey) or pkey
+        try:
+            cat = load_model_catalog() or {}
+            info = cat.get(m) if isinstance(cat, dict) else None
+            if isinstance(info, dict):
+                raw_owner = str(info.get("provider") or "").strip().lower()
+                owner_norm = normalize_llm_silo_provider(raw_owner) or raw_owner
+                if owner_norm in ("openai", "gemini") and owner_norm != prov_norm and default_model:
+                    logger.warning(
+                        "CHAT-MODEL-COERCION (BYOK): model %r (catalog owner=%r) incompatible with "
+                        "session provider %r — using default %r.",
+                        m,
+                        owner_norm,
+                        prov_norm,
+                        default_model,
+                    )
+                    return default_model
+        except Exception as exc:
+            logger.debug("CHAT-MODEL-COERCION: catalog lookup skipped (%s)", exc)
+        ml = m.lower()
+        inferred: Optional[str] = None
+        if ml.startswith("gpt-") or ml.startswith("ft:gpt") or ml.startswith("o1") or ml.startswith("o3") or ml.startswith("o4"):
+            inferred = "openai"
+        elif ml.startswith("gemini-"):
+            inferred = "gemini"
+        if inferred and inferred != prov_norm and default_model:
+            logger.warning(
+                "CHAT-MODEL-COERCION (BYOK, heuristic): model %r looks like %r but session is %r — using %r.",
+                m,
+                inferred,
+                prov_norm,
+                default_model,
+            )
+            return default_model
+        return m
 
     def __init__(
         self,
@@ -1724,10 +1785,11 @@ class ChatOrchestrator:
                 wf.event_data['name'] = wf.match.group(1).capitalize()
                 logger.info("LERN-TRIGGER AKTIVIERT: Versuche Name '%s' an Gesichtsbild zu binden.", wf.event_data['name'])
         crud.create_message(self.db, request.chat_id, 'user', (wf.vision_data.get('markdown', '') if wf.vision_data else '') + wf.user_text)
+        _hkey = self._hierarchy_provider_key(request.provider)
         if not wf.user_selected_model:
-            wf.chosen_model = self.MODEL_HIERARCHY[request.provider]['speed']
+            wf.chosen_model = self.MODEL_HIERARCHY[_hkey]["speed"]
         else:
-            wf.chosen_model = wf.user_selected_model
+            wf.chosen_model = self._coerce_model_to_session_provider(request.provider, wf.user_selected_model)
         logger.info(
             "MoA-Routing aktiv: Basis-Modell=%r, Skill-Tier hat Vorrang wenn verfügbar.",
             wf.chosen_model,
@@ -2076,9 +2138,21 @@ class ChatOrchestrator:
             early = await self._try_early_exit(ctx)
             if early is not None:
                 return early
-            ctx = await self._build_memory_context(ctx)
-            ctx = await self._execute_generation(ctx)
-            return await self._finalize_response(ctx)
+            from backend.services.llm_silo_context import (
+                normalize_llm_silo_provider,
+                push_active_llm_silo,
+                reset_active_llm_silo,
+            )
+
+            _janus_silo_tok = push_active_llm_silo(
+                normalize_llm_silo_provider(getattr(ctx.request, "provider", None))
+            )
+            try:
+                ctx = await self._build_memory_context(ctx)
+                ctx = await self._execute_generation(ctx)
+                return await self._finalize_response(ctx)
+            finally:
+                reset_active_llm_silo(_janus_silo_tok)
         except Exception as exc:
             # Log error event to Supabase
             try:
@@ -2135,123 +2209,161 @@ class ChatOrchestrator:
         try:
             ctx = self._classify_request(request, background_tasks)
             early = await self._try_early_exit(ctx)
-            if early is not None:
-                wf = ctx.workflow
-                if isinstance(early, ExecutionResponse):
-                    wf.final_text = str(early.text or "")
-                    wf.execution_for_api = early
-                elif isinstance(early, dict):
-                    wf.final_text = str(early.get("text") or early.get("message") or "")
-                else:
-                    wf.final_text = str(early)
-                wf.run_tool_loop_result = None
-                wf.response = {}
-                yield StreamEvent(type="stream_complete", content={"text": wf.final_text})
-                await finalize_response_async(
-                    ctx,
-                    model_hierarchy=self.MODEL_HIERARCHY,
-                    orchestrator_cls=ChatOrchestrator,
-                )
-                for ev in self._iter_modal_request_stream_events(ctx):
-                    yield ev
-                return
-
-            # 💎 STREAM-SWITCH: Video-Listen → Block-Response für stabile Markdown-Links
-            _wf_check = ctx.workflow
-            _idr = getattr(_wf_check, "intent_detection_result", None)
-            if _idr is not None and _idr.is_video_list_intent:
-                logger.info("💎 STREAM-SWITCH: Video-List-Intent erkannt → Block-Response für stabile Links")
-                ctx = await self._build_memory_context(ctx)
-                ctx = await self._execute_generation(ctx)
-                result = await self._finalize_response(ctx)
-                wf = ctx.workflow
-
-                # Extract text from result
-                if isinstance(result, ExecutionResponse):
-                    block_text = str(result.text or "")
-                elif isinstance(result, dict):
-                    block_text = str(result.get("text") or result.get("message") or "")
-                else:
-                    block_text = str(result)
-
-                # 💎 Extract video-list metadata from tool results for frontend cards
-                _video_meta = None
-                _all_tr = []
-                if isinstance(result, ExecutionResponse):
-                    _all_tr = result.all_tool_results or []
-                elif isinstance(result, dict):
-                    _all_tr = result.get("all_tool_results") or []
-                for _tr in _all_tr:
-                    if not isinstance(_tr, dict):
-                        continue
-                    _raw = _tr.get("_raw_content") or _tr.get("content", "{}")
-                    try:
-                        _parsed = json.loads(_raw) if isinstance(_raw, str) else dict(_raw or {})
-                    except Exception:
-                        continue
-                    if isinstance(_parsed, dict) and _parsed.get("status") == "ok":
-                        _data = _parsed.get("data") if isinstance(_parsed.get("data"), dict) else {}
-                        if str(_data.get("mode") or "").strip().lower() == "list" and isinstance(_data.get("videos"), list):
-                            _video_meta = {
-                                "videos": _data["videos"],
-                                "count": _data.get("count", 0),
-                                "mode": "list",
-                                "query": _data.get("query"),
-                            }
-                            break
-
-                if _video_meta:
-                    yield StreamEvent(
-                        type="metadata",
-                        content=_video_meta,
-                        metadata={"source": "video.search.list_mode"},
-                    )
-                    logger.info("💎 STREAM-SWITCH: Sent %d videos metadata to frontend", len(_video_meta.get("videos", [])))
-
-                yield StreamEvent(type="stream_complete", content={"text": block_text})
-                for ev in self._iter_modal_request_stream_events(ctx):
-                    yield ev
-                return
-
-            ctx = await self._build_memory_context(ctx)
-            ctx = await execute_generation_prepare_gateway(
-                ctx,
-                db=self.db,
-                context_manager=self.context_manager,
-                orchestrator_context_manager=self.orchestrator_context,
-                skill_selector=self.skill_selector,
-                prompt_role_from_db_role=self._prompt_role_from_db_role,
-                user_budget_info=getattr(self, "_user_budget_info", None),
+            from backend.services.llm_silo_context import (
+                normalize_llm_silo_provider,
+                push_active_llm_silo,
+                reset_active_llm_silo,
             )
-            wf = ctx.workflow
-            req = ctx.request
-
-            self.db.commit()
-            self.db.expunge_all()
-            wf.executor = ToolExecutor(
-                self.db,
-                wf.api_key,
-                req.provider,
-                req.model,
-                additional_context={
-                    "chat_id": req.chat_id,
-                    "trace_id": getattr(wf, "request_trace_id", str(uuid.uuid4())),
-                    "original_user_text": wf.user_text,
-                    "provider": req.provider,
-                    "model": req.model,
-                },
+            _janus_silo_tok = push_active_llm_silo(
+                normalize_llm_silo_provider(getattr(ctx.request, 'provider', None))
             )
-            if getattr(wf, "gateway_kwargs", None):
-                wf.gateway_kwargs["db"] = self.db
-                wf.gateway_kwargs["tool_executor"] = wf.executor
-                wf.gateway_kwargs["chat_history"] = wf.messages
-                wf.gateway_kwargs["_workflow"] = wf
-
-            if wf.skip_llm_generation:
-                wf.final_text = wf.final_text or wf.final_text_to_generate
-                if not isinstance(getattr(wf, "response", None), dict):
+            try:
+                if early is not None:
+                    wf = ctx.workflow
+                    if isinstance(early, ExecutionResponse):
+                        wf.final_text = str(early.text or "")
+                        wf.execution_for_api = early
+                    elif isinstance(early, dict):
+                        wf.final_text = str(early.get("text") or early.get("message") or "")
+                    else:
+                        wf.final_text = str(early)
+                    wf.run_tool_loop_result = None
                     wf.response = {}
-                yield StreamEvent(type="stream_complete", content={"text": wf.final_text})
+                    yield StreamEvent(type="stream_complete", content={"text": wf.final_text})
+                    await finalize_response_async(
+                        ctx,
+                        model_hierarchy=self.MODEL_HIERARCHY,
+                        orchestrator_cls=ChatOrchestrator,
+                    )
+                    for ev in self._iter_modal_request_stream_events(ctx):
+                        yield ev
+                    return
+
+                # 💎 STREAM-SWITCH: Video-Listen → Block-Response für stabile Markdown-Links
+                _wf_check = ctx.workflow
+                _idr = getattr(_wf_check, "intent_detection_result", None)
+                if _idr is not None and _idr.is_video_list_intent:
+                    logger.info("💎 STREAM-SWITCH: Video-List-Intent erkannt → Block-Response für stabile Links")
+                    ctx = await self._build_memory_context(ctx)
+                    ctx = await self._execute_generation(ctx)
+                    result = await self._finalize_response(ctx)
+                    wf = ctx.workflow
+
+                    # Extract text from result
+                    if isinstance(result, ExecutionResponse):
+                        block_text = str(result.text or "")
+                    elif isinstance(result, dict):
+                        block_text = str(result.get("text") or result.get("message") or "")
+                    else:
+                        block_text = str(result)
+
+                    # 💎 Extract video-list metadata from tool results for frontend cards
+                    _video_meta = None
+                    _all_tr = []
+                    if isinstance(result, ExecutionResponse):
+                        _all_tr = result.all_tool_results or []
+                    elif isinstance(result, dict):
+                        _all_tr = result.get("all_tool_results") or []
+                    for _tr in _all_tr:
+                        if not isinstance(_tr, dict):
+                            continue
+                        _raw = _tr.get("_raw_content") or _tr.get("content", "{}")
+                        try:
+                            _parsed = json.loads(_raw) if isinstance(_raw, str) else dict(_raw or {})
+                        except Exception:
+                            continue
+                        if isinstance(_parsed, dict) and _parsed.get("status") == "ok":
+                            _data = _parsed.get("data") if isinstance(_parsed.get("data"), dict) else {}
+                            if str(_data.get("mode") or "").strip().lower() == "list" and isinstance(_data.get("videos"), list):
+                                _video_meta = {
+                                    "videos": _data["videos"],
+                                    "count": _data.get("count", 0),
+                                    "mode": "list",
+                                    "query": _data.get("query"),
+                                }
+                                break
+
+                    if _video_meta:
+                        yield StreamEvent(
+                            type="metadata",
+                            content=_video_meta,
+                            metadata={"source": "video.search.list_mode"},
+                        )
+                        logger.info("💎 STREAM-SWITCH: Sent %d videos metadata to frontend", len(_video_meta.get("videos", [])))
+
+                    yield StreamEvent(type="stream_complete", content={"text": block_text})
+                    for ev in self._iter_modal_request_stream_events(ctx):
+                        yield ev
+                    return
+
+                ctx = await self._build_memory_context(ctx)
+                ctx = await execute_generation_prepare_gateway(
+                    ctx,
+                    db=self.db,
+                    context_manager=self.context_manager,
+                    orchestrator_context_manager=self.orchestrator_context,
+                    skill_selector=self.skill_selector,
+                    prompt_role_from_db_role=self._prompt_role_from_db_role,
+                    user_budget_info=getattr(self, "_user_budget_info", None),
+                )
+                wf = ctx.workflow
+                req = ctx.request
+
+                self.db.commit()
+                self.db.expunge_all()
+                wf.executor = ToolExecutor(
+                    self.db,
+                    wf.api_key,
+                    req.provider,
+                    req.model,
+                    additional_context={
+                        "chat_id": req.chat_id,
+                        "trace_id": getattr(wf, "request_trace_id", str(uuid.uuid4())),
+                        "original_user_text": wf.user_text,
+                        "provider": req.provider,
+                        "model": req.model,
+                    },
+                )
+                if getattr(wf, "gateway_kwargs", None):
+                    wf.gateway_kwargs["db"] = self.db
+                    wf.gateway_kwargs["tool_executor"] = wf.executor
+                    wf.gateway_kwargs["chat_history"] = wf.messages
+                    wf.gateway_kwargs["_workflow"] = wf
+
+                if wf.skip_llm_generation:
+                    wf.final_text = wf.final_text or wf.final_text_to_generate
+                    if not isinstance(getattr(wf, "response", None), dict):
+                        wf.response = {}
+                    yield StreamEvent(type="stream_complete", content={"text": wf.final_text})
+                    apply_post_generation_tail(ctx)
+                    ctx.final_response = str(wf.final_text or "")
+                    await finalize_response_async(
+                        ctx,
+                        model_hierarchy=self.MODEL_HIERARCHY,
+                        orchestrator_cls=ChatOrchestrator,
+                    )
+                    for ev in self._iter_modal_request_stream_events(ctx):
+                        yield ev
+                    return
+
+                result_holder: Dict[str, Any] = {}
+                async for ev in self.execution_engine.run_tool_loop_stream(
+                    orchestrator_context=wf.orchestrator_context,
+                    tool_executor=wf.executor,
+                    gateway_kwargs=wf.gateway_kwargs,
+                    fallback_summary=wf.fallback_summary,
+                    current_limit=wf.current_limit,
+                    bypass_policy_this_turn=wf.bypass_policy_this_turn,
+                    set_policy_pending=self._set_policy_pending_data,
+                    chat_id=req.chat_id,
+                    user_text=wf.user_text,
+                    agent_flow_error=wf.agent_flow_error,
+                    result_holder=result_holder,
+                ):
+                    yield ev
+
+                wf.run_tool_loop_result = result_holder.get("execution_result")
+                apply_run_tool_loop_result_to_workflow(ctx)
                 apply_post_generation_tail(ctx)
                 ctx.final_response = str(wf.final_text or "")
                 await finalize_response_async(
@@ -2261,34 +2373,8 @@ class ChatOrchestrator:
                 )
                 for ev in self._iter_modal_request_stream_events(ctx):
                     yield ev
-                return
-
-            result_holder: Dict[str, Any] = {}
-            async for ev in self.execution_engine.run_tool_loop_stream(
-                orchestrator_context=wf.orchestrator_context,
-                tool_executor=wf.executor,
-                gateway_kwargs=wf.gateway_kwargs,
-                fallback_summary=wf.fallback_summary,
-                current_limit=wf.current_limit,
-                bypass_policy_this_turn=wf.bypass_policy_this_turn,
-                set_policy_pending=self._set_policy_pending_data,
-                chat_id=req.chat_id,
-                agent_flow_error=wf.agent_flow_error,
-                result_holder=result_holder,
-            ):
-                yield ev
-
-            wf.run_tool_loop_result = result_holder.get("execution_result")
-            apply_run_tool_loop_result_to_workflow(ctx)
-            apply_post_generation_tail(ctx)
-            ctx.final_response = str(wf.final_text or "")
-            await finalize_response_async(
-                ctx,
-                model_hierarchy=self.MODEL_HIERARCHY,
-                orchestrator_cls=ChatOrchestrator,
-            )
-            for ev in self._iter_modal_request_stream_events(ctx):
-                yield ev
+            finally:
+                reset_active_llm_silo(_janus_silo_tok)
         except Exception as exc:
             # Log error event to Supabase
             try:

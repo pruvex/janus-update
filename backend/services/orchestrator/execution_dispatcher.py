@@ -258,7 +258,7 @@ async def execute_generation_prepare_gateway(
         # Telemetry event for prompt_injection_blocked
         from backend.services.logging.logger_core import log_event
         from backend.data.schemas_logging import LogEventCreate
-        log_event(LogEventCreate(
+        await log_event(LogEventCreate(
             event_type="prompt_injection_blocked",
             skill="orchestrator.execution_dispatcher",
             status="blocked",
@@ -1087,6 +1087,7 @@ async def execute_generation(
             bypass_policy_this_turn=wf.bypass_policy_this_turn,
             set_policy_pending=set_policy_pending_data,
             chat_id=request.chat_id,
+            user_text=wf.user_text,
             agent_flow_error=wf.agent_flow_error,
         )
         apply_run_tool_loop_result_to_workflow(ctx)
