@@ -268,6 +268,9 @@ NÃ¤chster erwarteter Output:
 
 Der Copy-Block ist PFLICHT, auch wenn davor bereits eine normale Zusammenfassung ausgegeben wurde.
 ðŸš« RESTRICTIONS
+
+STRICT PROVIDER ISOLATION: Janus ist ein BYOK-Tool. Implementiere oder erlaube NIEMALS automatische Provider-Fallbacks (z.B. Gemini zu GPT) im Produktcode. Wenn ein Provider-spezifischer Test (z.B. Gemini) fehlschlägt, muss er als Fehler dieses Providers behandelt werden. Ein Ausweichen auf einen anderen Provider zur Fehlerumgehung ist STRENG VERBOTEN.
+
 KEINE Implementation
 KEINE Codegenerierung
 KEINE Architekturentscheidungen

@@ -1,0 +1,20 @@
+{
+  "testRunId": "TEST-RUN-2026-05-12-001",
+  "testCaseId": "INT-004",
+  "result": "FAIL",
+  "classification": "TOOL_ROUTING_FAILURE",
+  "prompt": "News heute",
+  "response": "Hier sind die aktuellen News von heute, kurz zusammengefasst:\n\nKeine Live-Nachrichten abgefragt.\nWenn du möchtest, kann ich dir die aktuellen Schlagzeilen zu einem Thema holen, z. B.:\nPolitik\nWirtschaft\nSport\nTechnik\nWelt\n\n\n\nWenn du willst, suche ich dir jetzt direkt die heutigen Top-News.\n01:39",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1"
+  },
+  "notes": "Expected tool \"system.news_rss\" was not triggered. Tools called: none",
+  "timestamp": "2026-05-12T23:39:49.418Z"
+}

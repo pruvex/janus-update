@@ -91,6 +91,24 @@ class SkillSelector:
         mandatory_filtered = self._within_universe(mandatory, universe) or mandatory  # keep even if not in universe
         boosted_filtered = self._within_universe(boosted, universe)
 
+        # 💎 DIAMOND-CORE-ROUTING-FIX
+        # Wir prüfen sowohl Objekt-Attribute als auch Dictionary-Keys für maximale Robustheit
+        intent_name = ""
+        if hasattr(intent_result, "primary_intent"):
+            intent_name = str(intent_result.primary_intent)
+        elif isinstance(intent_result, dict):
+            intent_name = str(intent_result.get("primary_intent", ""))
+
+        if "routing" in intent_name.lower() or primary == "routing_geo":
+            if "system.routing" not in mandatory:
+                mandatory.append("system.routing")
+                # Use module-level logger directly
+                try:
+                    logger.info(f"!!! DIAMOND-FIX-TRIGGERED !!! Routing forced. Intent: {intent_name}")
+                except NameError:
+                    # Fallback if logger is not in scope
+                    logging.getLogger("janus_backend").info(f"!!! DIAMOND-FIX-TRIGGERED !!! Routing forced. Intent: {intent_name}")
+
         combined = mandatory_filtered + boosted_filtered + semantic_hits
         combined = self._deduplicate(combined)
         combined = [s for s in combined if s not in forbidden]
@@ -156,9 +174,10 @@ class SkillSelector:
         )
         if not pdf_ok:
             forbidden.append("system.create_pdf")
-        if bool(getattr(intent_result, "is_routing_geo_intent", False)) or primary == "routing_geo":
+        if bool(getattr(intent_result, "is_routing_geo_intent", False)) or primary in ["routing_geo", "routing", "geo"] or "routing" in primary:
             # BACKLOG-029: Routing-Intent must be mandatory to force tool call instead of LLM knowledge
             mandatory.append("system.routing")
+            logger.info(f"DEBUG-MANDATORY: Added system.routing to mandatory list. Current list: {mandatory}")
         if bool(getattr(intent_result, "is_weather_intent", False)) or primary == "weather":
             # BACKLOG-029: Weather-Intent must be mandatory to force tool call instead of LLM knowledge
             mandatory.append("system.weather")

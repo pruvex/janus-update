@@ -463,6 +463,9 @@ Scope:
 Nur validierte Ã„nderungen aus diesem Final Audit dokumentieren.
 ```
 ðŸš« RESTRICTIONS
+
+STRICT PROVIDER ISOLATION: Janus ist ein BYOK-Tool. Implementiere oder erlaube NIEMALS automatische Provider-Fallbacks (z.B. Gemini zu GPT) im Produktcode. Wenn ein Provider-spezifischer Test (z.B. Gemini) fehlschlägt, muss er als Fehler dieses Providers behandelt werden. Ein Ausweichen auf einen anderen Provider zur Fehlerumgehung ist STRENG VERBOTEN.
+
 keine neuen Features
 keine ArchitekturÃ¤nderungen
 keine Task-Neudefinition

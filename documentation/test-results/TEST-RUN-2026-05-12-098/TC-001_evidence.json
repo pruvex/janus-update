@@ -1,0 +1,20 @@
+{
+  "testRunId": "TEST-RUN-2026-05-12-098",
+  "testCaseId": "TC-001",
+  "result": "FAIL",
+  "classification": "TOOL_ROUTING_FAILURE",
+  "prompt": "Brauche ich morgen in München einen Regenschirm?",
+  "response": "Ja — nimm morgen in München einen Regenschirm mit.\n💡 Vorschlag:• Soll ich dir zusätzlich eine kurze Faustregel geben, woran du vor Ort erkennst, ob er sich wirklich lohnt?\n00:19",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1"
+  },
+  "notes": "Expected tool \"system.weather\" was not triggered. Tools called: none",
+  "timestamp": "2026-05-12T22:19:57.692Z"
+}

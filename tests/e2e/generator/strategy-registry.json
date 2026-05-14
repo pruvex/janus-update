@@ -9,7 +9,7 @@
         "supportsWindows": ["A", "B", "C", "D"]
       },
       "chat_button_click_send_v1": {
-        "description": "Promise.all race-free send: pressSequentially fills the input keystroke-by-keystroke (triggers frontend send-button enable logic), then Promise.all attaches waitForResponse(/api/chat/stream) BEFORE the #send-button-${win} click({force:true}) fires, eliminating the race window. Patient toPass polling waits for real content (not '...') in the assistant bubble.",
+        "description": "Promise.all race-free send: pressSequentially fills the input keystroke-by-keystroke (triggers frontend send-button enable logic), then Promise.all attaches waitForResponse(/api/chat/stream) BEFORE the #send-button-<chatWindow> click({force:true}) fires, eliminating the race window. Patient toPass polling waits for real content (not '...') in the assistant bubble.",
         "requiredPlanFields": ["chatWindow"],
         "supportsWindows": ["A", "B", "C", "D"]
       },
@@ -65,10 +65,16 @@
         "resultValues": ["PASS", "FAIL", "BLOCKED"]
       },
       "tool_call_detected_v1": {
-        "description": "Verifies that a specific tool call was executed",
-        "requiredPlanFields": ["tests[].expected.toolCallExpected"],
+        "description": "Verifies that a specific tool call was executed. Captures POST /api/chat/stream response bodies, parses SSE tool_result/tool_call/tool_start frames, and matches the observed tool name (normalized: '.' <-> '_') against the expected name. Accepts expected.tool (preferred) or expected.toolCallExpected (legacy).",
+        "requiredPlanFields": ["tests[].expected.tool|tests[].expected.toolCallExpected"],
         "resultValues": ["PASS", "FAIL", "BLOCKED"]
       }
+    }
+  },
+  "modelSelection": {
+    "model_selection_v1": {
+      "description": "Per-test: set chat-header-provider/model for the plan chatWindow to tests[].provider/tests[].model, then wait until #send-button-<window> is enabled.",
+      "requiredPlanFields": ["tests[].model", "tests[].provider", "chatWindow"]
     }
   },
   "errorClassification": {
@@ -77,6 +83,7 @@
     "RUNNER_STREAM_TIMEOUT": "Stream request was not observed within timeout",
     "FRONTEND_NOT_READY": "Frontend DOM or dev server not available",
     "BACKEND_HEALTH_FAIL": "Backend /api/health did not respond",
+    "INFRASTRUCTURE_OFFLINE": "Connection refused or unreachable (ERR_CONNECTION_REFUSED); start Janus with npm run start-dev",
     "PROVIDER_TIMEOUT": "LLM provider did not respond within expected time",
     "TOOL_ROUTING_FAILURE": "Wrong or no tool was called for the prompt",
     "ASSERTION_MISMATCH": "Response text did not match expected assertions"

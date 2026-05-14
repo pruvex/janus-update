@@ -1,5 +1,5 @@
 ---
-description: SWE 1.6 Test Pipeline Phase 1 – TestSpec zu TestPlan Compiler. Liest eine TestSpec und erzeugt einen deterministischen TestPlan unter documentation/test-runs/. Keine Code-Implementation.
+description: SWE 1.6 Test Pipeline Phase 1 – TestSpec zu TestPlan Compiler. Liest eine TestSpec und erzeugt einen deterministischen TestPlan unter documentation/test-runs/. Funktionale TCs werden pro Required-Provider aus der Modell-Matrix dupliziert (Provider-Paritaet, ID-Suffix -GPT / -GEMINI). Keine Code-Implementation.
 ---
 
 # TEST SKILL 1 – TESTSPEC TO TEST PLAN
@@ -258,6 +258,17 @@ Action:
 
 ### 3. TEST PLAN GENERATION
 
+#### Janus Port Sanity Rule (Pflicht — Default-Ports)
+
+Wenn die TestSpec **keine** abweichenden URLs/Ports für Janus-Frontend oder -Backend vorschreibt, MUSS Skill 1 im TestPlan-JSON **exakt** diese Defaults setzen:
+
+- **`baseUrl`:** `http://localhost:5173/` (Trailing Slash wie Schema/E2E üblich)
+- **`backendHealthUrl`:** `http://localhost:8001/api/health`
+
+**Verbot:** Port **8000** für Frontend oder Backend darf **nicht** verwendet werden — **es sei denn**, die TestSpec nennt Port 8000 **ausdrücklich** als gültiges Ziel (z. B. dokumentierter Sonder-Stack). Raten, ableiten aus Chat oder „typische Proxy-Ports“ sind unzulässig.
+
+**Wenn die TestSpec andere Ports/Hosts nennt:** exakt die Spec übernehmen; in der Ausgabe `TEST PLAN CREATED` kurz vermerken: `Ports: per TestSpec (non-default)`.
+
 Skill 1 erzeugt den TestPlan ausschliesslich als **maschinenlesbare JSON-Datei** unter:
 
 ```text
@@ -281,6 +292,14 @@ tests/e2e/generator/test-plan.schema.json
 - Nach dem Schreiben MUSS Skill 1 deterministisch validieren:
   - JSON-Syntaxpruefung: `node -e "JSON.parse(require('fs').readFileSync('documentation/test-runs/<test_run_id>_plan.json', 'utf8'))"`
   - Bei Syntaxfehler MUSS Skill 1 den Plan neu erzeugen, bevor `TEST PLAN CREATED` ausgegeben wird.
+
+**PROVIDER PARITY RULE (Pflicht, automatische Provider-Paritaet)**:
+
+- Fuer jeden **funktionalen** Testfall (`tests[].type` = `functional` und in der TestSpec als **TC-XXX** / Kern-Testfall gefuehrt) MUSS Skill 1 pruefen, **wie viele Provider** in der **Modell-Matrix** der TestSpec als **Required** (oder gleichwertig: explizit fuer die Ausfuehrung vorgeschrieben, z. B. „Pflicht“, „must cover“, „beide Clouds“) markiert sind.
+- Der Skill MUSS fuer **jeden dieser Required-Provider** einen **eigenen** Eintrag im JSON-Array `tests[]` erzeugen — gleicher fachlicher Kern (Prompt, erwartete Tool-/Text-Signale), aber **angepasster** `provider`- und `model`-Wert gemaess Janus-Katalog und Matrix.
+- **ID-Konvention**: Haenge das **Provider-Kuerzel** an die TC-ID an, z. B. `TC-001-GPT`, `TC-001-GEMINI` (kein zufaelliger Einzel-Provider pro TC; Paritaet vor Eindeutigkeit der IDs).
+- Nicht-funktionale Eintraege (z. B. `security`, `prompt_injection`, `manual_gate`) bleiben **eine** Zeile pro Spezifikation, sofern die TestSpec nicht ausdruecklich Provider-Paritaet auch dafuer fordert.
+- **Validierung nach Erzeugung**: Ist die Matrix z. B. **GPT + Gemini** als Required gesetzt, MUSS die Anzahl der `tests[]`-Eintraege fuer funktionale TCs etwa **Faktor 2** gegenueber einem Ein-Provider-Plan sein (typisch **ca. 20–26** Eintraege bei **~10–13** Kern-TCs und zwei Cloud-Providern); weicht das massiv ab, Plan neu erzeugen oder Matrix in der TestSpec klaeren.
 
 **Verbindliches JSON-Schema (Pflicht-Form)**:
 
@@ -306,11 +325,23 @@ tests/e2e/generator/test-plan.schema.json
   },
   "tests": [
     {
-      "id": "TC-001",
+      "id": "TC-001-GPT",
       "name": "Scenario Name",
       "type": "functional",
       "provider": "GPT",
       "model": "gpt-5.4-nano",
+      "prompt": "User Prompt",
+      "expected": {
+        "containsAny": ["Term1"],
+        "mustNotContain": ["ErrorTerm"]
+      }
+    },
+    {
+      "id": "TC-001-GEMINI",
+      "name": "Scenario Name",
+      "type": "functional",
+      "provider": "Gemini",
+      "model": "gemini-3-flash-preview",
       "prompt": "User Prompt",
       "expected": {
         "containsAny": ["Term1"],
@@ -327,6 +358,7 @@ tests/e2e/generator/test-plan.schema.json
 - `executionMode`: einer von `LIVE_VISUAL` | `HEADLESS` | `LIVE_RETEST`.
 - `target`: einer von `JANUS_CHAT` | `JANUS_DASHBOARD` | `JANUS_ELECTRON`.
 - `chatWindow`: einer von `A` | `B` | `C` | `D`.
+- `baseUrl` / `backendHealthUrl`: **Janus Port Sanity Rule** (Abschnitt „### 3. TEST PLAN GENERATION“) — ohne abweichende TestSpec-Vorgabe exakt `http://localhost:5173/` bzw. `http://localhost:8001/api/health`; Port **8000** verboten, sofern die TestSpec ihn nicht ausdrücklich fordert.
 - `strategies.send`: `chat_window_scoped_send_v1` | `chat_button_click_send_v1`.
 - `strategies.wait`: `assistant_stream_complete_v1` | `assistant_text_present_v1` | `error_toast_v1`.
 - `strategies.evidence`: `capture_network_v1` | `capture_console_v1` | `capture_ui_state_v1`.
@@ -334,15 +366,15 @@ tests/e2e/generator/test-plan.schema.json
 - `tests[].type`: `functional` | `intent_routing` | `ux` | `security` | `prompt_injection` | `cost_token` | `manual_gate`.
 - `tests[].provider`: `GPT` | `Gemini` | `Any`.
 - `tests[].model`: smallest-viable laut Janus-Katalog (siehe Section 1).
-- `tests[].expected`: erlaubte Schluessel `containsAny`, `mustNotContain`, `responseTimeMsMax`, `requiresConfirmation`, `toolCallExpected`.
+- `tests[].expected`: erlaubte Schluessel `containsAny`, `mustNotContain`, `responseTimeMsMax`, `requiresConfirmation`, `tool` (bevorzugt), `toolCallExpected` (legacy-Alias). `tool` und `toolCallExpected` triggern beide die Tool-Routing-Verifikation (BACKLOG-028); bei beidem vorhanden gewinnt `tool`.
 
 **Inhaltliche Mindestabdeckung aus der TestSpec (kein Markdown-Output, sondern als `tests[]`-Eintraege abgebildet)**:
 
 - Testdaten/Sandbox MUSS in den `prompt`-Werten reflektiert sein, keine produktiven Userdaten.
-- Provider-/Model-Matrix: pro Provider mindestens ein TestCase mit smallest-viable Modell.
+- Provider-/Model-Matrix: **PROVIDER PARITY RULE** (oben) — fuer jeden Required-Provider in der Matrix **eigenes** `tests[]`-Objekt pro funktionalem TC; `model` jeweils smallest-viable laut Katalog fuer diesen Provider.
 - Model-Katalog-Hard-Gate: keine verbotenen alten Textmodelle in `tests[].model`.
 - Security-/Prompt-Injection-/UX-/Intent-Routing-/Cost-Token-Faelle MUeSSEN als separate `tests[]`-Eintraege mit passendem `type` existieren, sofern die TestSpec sie fordert.
-- Akzeptanzkriterien werden pro Test ueber `expected.containsAny`, `expected.mustNotContain`, `expected.toolCallExpected` etc. codiert; pauschale Prosa-Kriterien sind verboten.
+- Akzeptanzkriterien werden pro Test ueber `expected.containsAny`, `expected.mustNotContain`, `expected.tool` (oder `expected.toolCallExpected`) etc. codiert; pauschale Prosa-Kriterien sind verboten.
 - Stop/Block-Regeln, die nicht maschinenlesbar in `expected` ausdrueckbar sind, gehoeren NICHT in den TestPlan, sondern bleiben in der TestSpec und werden in Skill 2/3 zur Triage genutzt.
 
 Verbotene Outputs von Skill 1:
@@ -392,7 +424,7 @@ TestPlan:
 - Format: JSON (machine-readable, schema-validated)
 - Schema Source: tests/e2e/generator/test-plan.schema.json
 - JSON Syntax Check: PASSED | FAILED
-- Test Cases: <Anzahl>
+- Test Cases: <Anzahl> (bei Required GPT+Gemini in der Matrix: funktionale TCs doppelt, IDs `TC-XXX-GPT` / `TC-XXX-GEMINI`; Gesamtzahl typisch ca. 20–26 bei ~10–13 Kern-TCs)
 - Provider/Model Tests: <Anzahl>
 - Security Tests: <Anzahl>
 - Prompt Injection Tests: <Anzahl>
@@ -562,6 +594,8 @@ VERBOTEN: Inline Playwright-Snippets oder JavaScript-Logik im TestPlan
 PFLICHT: TestPlan-Output ausschliesslich als `documentation/test-runs/<test_run_id>_plan.json`
 PFLICHT: JSON-Syntaxpruefung nach Erzeugung via `node -e "JSON.parse(require('fs').readFileSync('<plan_path>', 'utf8'))"`
 PFLICHT: Schema-Konformitaet — die Datei MUSS vom Generator unter `tests/e2e/generator/generate-live-runner.mjs --plan <plan_path>` ohne Schema-Validation-Error verarbeitbar sein
+
+**Generator Failure Taxonomy (Referenz für Evidence / Skill 3–4):** Der Live-Runner kann u. a. folgende Codes setzen (vollständige Liste: `tests/e2e/generator/generate-live-runner.mjs`, `strategy-registry.json`). Skill 1 plant Tests so, dass erreichbare `baseUrl`/`backendHealthUrl` verwendet werden; bei Offline-Stack liefert der Runner **`INFRASTRUCTURE_OFFLINE`** (z. B. nach `ERR_CONNECTION_REFUSED` beim Laden von `baseUrl`) mit Hinweis **`npm run start-dev`**.
 
 ---
 

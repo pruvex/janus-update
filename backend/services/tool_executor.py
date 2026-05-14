@@ -869,21 +869,27 @@ class ToolExecutor:
                     self.additional_context.get("websearch_fallback_provider") or ""
                 ).strip().lower()
 
-                # Diamond rule: when Janus itself runs on OpenAI, the native
-                # OpenAI websearch provider must be used, regardless of what the
-                # LLM tried to pass in the tool arguments. This prevents
-                # accidental downgrades to legacy wrappers or DDG fallbacks.
+                # HARD POLICY: never honor a forced websearch provider that differs from the
+                # chat session provider (cross-provider fallback is forbidden).
                 if forced_websearch_provider in {"openai", "gemini", "ollama"}:
-                    tool_args["provider"] = forced_websearch_provider
-                    if forced_websearch_provider == "gemini":
-                        tool_args["model"] = "gemini-3-flash-preview"
-                    elif request_model and not str(tool_args.get("model") or "").strip():
-                        tool_args["model"] = request_model
-                    logger.warning(
-                        "WEBSEARCH-EXECUTOR: forced provider fallback active -> provider='%s' model='%s'",
-                        tool_args.get("provider"),
-                        tool_args.get("model") or "<missing>",
-                    )
+                    if forced_websearch_provider != request_provider:
+                        logger.warning(
+                            "WEBSEARCH-EXECUTOR: ignoring cross-provider forced provider '%s' "
+                            "(chat session provider is '%s').",
+                            forced_websearch_provider,
+                            request_provider,
+                        )
+                    else:
+                        tool_args["provider"] = forced_websearch_provider
+                        if forced_websearch_provider == "gemini":
+                            tool_args["model"] = "gemini-3-flash-preview"
+                        elif request_model and not str(tool_args.get("model") or "").strip():
+                            tool_args["model"] = request_model
+                        logger.warning(
+                            "WEBSEARCH-EXECUTOR: forced provider active -> provider='%s' model='%s'",
+                            tool_args.get("provider"),
+                            tool_args.get("model") or "<missing>",
+                        )
                 elif request_provider == "openai":
                     tool_args["provider"] = "openai"
                     if request_model:

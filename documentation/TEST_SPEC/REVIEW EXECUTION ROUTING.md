@@ -64,7 +64,7 @@ Validate that Janus correctly interprets user intents, routes to appropriate too
 |-----------|-------------|-----------------|------------------|------------------------|----------------------|
 | INT-001 | "Wird es regnen morgen?" | Weather Intent | weather_service | N/A | Correct API call |
 | INT-002 | "Erzähl mir über Einstein" | Knowledge Query | wikipedia_service | N/A | Correct summary |
-| INT-003 | "Wie weit ist es?" | Geo Distance | geo_service | YES | Clarification asked |
+| INT-003 | "Wie weit ist es?" | Geo Distance | geo_service | YES | Clarification asked | "Worauf genau beziehst du dich?" oder ähnliche Klärungsfrage |
 | INT-004 | "News heute" | RSS News | rss_service | N/A | News returned |
 
 ## PROVIDER AND MODEL TEST MATRIX

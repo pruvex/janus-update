@@ -442,6 +442,14 @@ class CapabilityRegistry:
             # available even when boosted-only skills would otherwise be dropped from the tool list.
             mandatory += ["system.weather"]
 
+        if _flag("is_wikipedia_intent") or primary == "wikipedia":
+            # BACKLOG-031: Wikipedia-Intent must be mandatory to force tool call instead of LLM knowledge
+            mandatory += ["system.wikipedia_summary"]
+
+        if _flag("is_news_intent") or primary == "news":
+            # BACKLOG-031: News-Intent must be mandatory to force tool call instead of LLM knowledge
+            mandatory += ["system.rss_news"]
+
         if _flag("is_calendar_intent") or primary == "calendar":
             mandatory += ["calendar.list_events", "calendar.find_slots", "calendar.find_and_update_event"]
             forbidden += ["system.create_pdf", "knowledge.edit_pdf", "system.generate_image"]

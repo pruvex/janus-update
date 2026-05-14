@@ -60,7 +60,7 @@ Minimaler gueltiger User-Aufruf:
 ```text
 /TEST SKILL 3 – LIVE JANUS TEST EXECUTION mit folgenden Artefakten:
 TestSpec: documentation/TEST_SPEC/<TESTSPEC>.md
-TestPlan: documentation/test-runs/<TEST_RUN_ID>_plan.md
+TestPlan: documentation/test-runs/<TEST_RUN_ID>_plan.json
 Precheck: READY FOR LIVE TEST
 ```
 
@@ -103,19 +103,20 @@ Default ist:
 2. TestPlan gegen Schema/Strategy Registry pruefen.
 3. Playwright-Live-Runner ausschliesslich ueber den Generator Service erzeugen.
 4. Generierten Runner statisch validieren.
-5. User um Start-OK bitten.
-6. Janus automatisch oeffnen oder vorhandene Testinstanz transparent nutzen.
-7. Generierten Runner ausfuehren.
-8. Antworten, API/Network-Evidence, UI-State, Screenshots/Trace und Logs sammeln.
-9. Bei manuellem Gate klar stoppen: was der User tun muss, woran PASS/FAIL erkannt wird, wie er OK gibt.
-10. Nach OK automatisch fortsetzen.
-11. TestResult aus maschineller Evidence erzeugen.
+5. **Connectivity-Guard:** `baseUrl` (optional `backendHealthUrl`) aus TestPlan prüfen — bei Fehlschlag `LIVE TEST BLOCKED — INFRASTRUCTURE OFFLINE` (kein User-OK).
+6. User um Start-OK bitten (`OK START LIVE TEST` — nur wenn Schritt 5 PASS).
+7. Janus automatisch oeffnen oder vorhandene Testinstanz transparent nutzen.
+8. Generierten Runner ausfuehren.
+9. Antworten, API/Network-Evidence, UI-State, Screenshots/Trace und Logs sammeln.
+10. Bei manuellem Gate klar stoppen: was der User tun muss, woran PASS/FAIL erkannt wird, wie er OK gibt.
+11. Nach OK automatisch fortsetzen.
+12. TestResult aus maschineller Evidence erzeugen.
 
 ---
 
 ## ⚡ AUTO-PILOT MODE (SOFORTAUSFUEHRUNG)
 
-Skill 3 ist im Auto-Pilot-Modus optimiert. Manuelle Zwischenstopps zwischen Skill-Aufruf und User-OK sind verboten.
+Skill 3 ist im Auto-Pilot-Modus optimiert. Manuelle Zwischenstopps zwischen Skill-Aufruf und User-OK sind verboten — **ausgenommen** der automatisierte **Connectivity-Guard** (keine Rückfrage, kein „JA“ vor Prüfung).
 
 **Sofort-Aktionen beim Skill-Aufruf (ohne Rueckfrage)**:
 
@@ -131,39 +132,48 @@ Skill 3 ist im Auto-Pilot-Modus optimiert. Manuelle Zwischenstopps zwischen Skil
    node tests/e2e/generator/validate-runner.mjs --plan <plan_path> --runner <spec_path>
    ```
 
-3. **Erst danach** den kompakten Auto-Pilot-Output gemaess Section `USER-OK LIVE GATE` ausgeben und auf `OK START LIVE TEST` warten.
+3. **Phase 3C Connectivity-Guard** — unmittelbar nach erfolgreichem Validator-Lauf: Erreichbarkeit von `baseUrl` (optional `backendHealthUrl`) aus dem TestPlan prüfen (siehe Section `Connectivity-Guard` oben). Bei FAIL: Block-Output `LIVE TEST BLOCKED — INFRASTRUCTURE OFFLINE` — **kein** `USER-OK LIVE GATE`.
+4. **Erst danach** den kompakten Auto-Pilot-Output gemaess Section `USER-OK LIVE GATE` ausgeben und auf `OK START LIVE TEST` warten.
 
 **Auto-Pilot Default-Einstellungen** (werden ohne jede User-Rueckfrage gesetzt — stillschweigend):
 
 - `Live Visual Mode` = `LIVE_VISUAL` (Default — Browserfenster sichtbar)
 - `Watch target` = `PLAYWRIGHT_BROWSER` (Default — sichtbares Chromium-Fenster)
-- `Start command` = Playwright `webServer` auto-start via `playwright.config.js` (kein manueller `npm run start-dev` noetig)
+- `Start command` = Playwright `webServer` auto-start via `playwright.config.js`, sofern der Stack erreichbar ist; bei Offline-Stack zuerst **`npm run start-dev`** (siehe Connectivity-Guard).
 - `Runner command` = `npx playwright test <spec_path> --headed --workers=1` — **immer**, ausser der User hat im laufenden Auftrag explizit etwas anderes verlangt
-- `Janus Status` = `ASSUMED_RUNNING` — Skill 3 fragt NICHT nach Janus-Status, NICHT nach Backend-Health, NICHT nach `JANUS TEST INSTANCE RUNNING`
+- `Janus Status` = **Connectivity-Guard PASS** vor READY-Block, danach `ASSUMED_STABLE_FOR_RUN` — Skill 3 fragt **nicht** nach `JANUS TEST INSTANCE RUNNING` im Default-Browserpfad
 
-**Auto-Assume Janus-Online-Regel**:
+**Connectivity-Guard (Pflicht — nach Phase 3B, vor USER-OK LIVE GATE):**
 
-Skill 3 geht davon aus, dass Janus laeuft. Wenn Backend/Frontend nicht erreichbar sind, schlaegt der Runner waehrend des Live-Tests fehl; dieser Fehler wird als `Failure Code: BACKEND_HEALTH_FAIL` (oder `FRONTEND_NOT_READY`) in der Evidence dokumentiert und als regulaeres `FAIL`-TestResult berichtet. **Kein** Pre-Flight-Ping, **keine** vorgelagerte Status-Frage.
+1. Lese `baseUrl` und `backendHealthUrl` aus dem gebundenen TestPlan-JSON (Single Source of Truth).
+2. Führe **eine** kurze Erreichbarkeitsprüfung aus (z. B. `curl` mit Timeout oder `node -e` mit `fetch`/`http.get`) gegen **`baseUrl`** — **bevor** du `LIVE JANUS AUTOMATION READY` ausgibst oder `Antworte mit: OK START LIVE TEST` forderst.
+3. **Optional:** wenn `backendHealthUrl` gesetzt ist, gleiches gegen diese URL (kurzer Timeout).
+4. **Bei Verbindung abgelehnt** (`ERR_CONNECTION_REFUSED`, `ECONNREFUSED`, `net::ERR_CONNECTION_REFUSED`, gleichwertig) oder **keine TCP-Antwort** bis Timeout: **kein** User-OK-Trigger. Sofort:
 
-**BLIND-RUN-REGEL (Fire and Forget) — UNVERHANDELBAR**:
+```text
+LIVE TEST BLOCKED — INFRASTRUCTURE OFFLINE
 
-Es ist der KI **STRENG VERBOTEN**, vor der Testausfuehrung die URLs `http://localhost:5173` oder `http://localhost:8001` (oder `http://localhost:8001/api/health`) selbststaendig zu pruefen. Verboten sind insbesondere:
+Blocker: Janus läuft nicht. Keine Verbindung zu <baseUrl> (aus TestPlan).
+Bitte starte aus dem Repository-Root: npm run start-dev
 
-- jeder `fetch`, `curl`, `Invoke-WebRequest`, `wget`, `ping`, `Test-NetConnection` oder `Test-Connection` gegen Frontend- oder Backend-URL
-- jeder Tool-Call, der nur dazu dient, Erreichbarkeit/Health zu pruefen (auch nicht "kurz zur Sicherheit")
-- jede Backend-/Frontend-Probe, jedes `/api/health`-Lesen, jedes Portscanning
-- jeder Versuch, in `terminals/*.txt`, `package.json`-Scripts oder Logs nach laufenden Janus-Prozessen zu suchen, um daraus eine Start-Entscheidung abzuleiten
-- jedes "Soll ich Janus automatisch starten?", "Laeuft Janus schon?", "Ist das Backend hochgefahren?", "Soll ich `npm run start-dev` ausfuehren?", "Pruefen wir vorher die Health-URL?" — diese und sinnverwandte Fragen sind **verboten**
-- jede Verweigerung des Starts mit der Begruendung, dass die Dienste aktuell nicht antworten
+Connectivity-Guard fehlgeschlagen — kein OK START LIVE TEST.
+```
 
-Die KI darf den Start **nicht** verweigern, **nicht** verschieben und **nicht** mit Rueckfragen umkleiden, nur weil Backend oder Frontend gerade nicht antworten koennten. Verbindungsfehler sind ausschliesslich Aufgabe des Playwright-Runners (siehe `Auto-Assume Janus-Online-Regel` oben).
+5. **Danach** erst den kompakten Ready-Block mit `Antworte mit: OK START LIVE TEST` ausgeben.
 
-Wenn der User explizit Electron-Desktop-Beobachtung (`ELECTRON_DESKTOP`) oder Headless-Evidence (`HEADLESS_EVIDENCE`) im laufenden Auftrag fordert, werden die entsprechenden Defaults ueberschrieben — aber auch dann ohne neue Frage an den User und ohne Health-Check.
+**Janus Port Sanity (Konsistenz mit TEST SKILL 1):** Wenn der TestPlan abweichende Ports enthält, den Guard gegen **genau** diese URLs fahren — nicht raten. Default-Erwartung ohne Spec-Bruch: Frontend **`5173`**, Backend-Health **`8001`** — **niemals `8000`**, es sei denn, die TestSpec/TestPlan nennt 8000 ausdrücklich.
+
+**Nach erfolgreichem Connectivity-Guard** gilt für den anschließenden Playwright-Lauf: Laufzeitfehler werden weiterhin mit den Taxonomie-Codes des Runners dokumentiert (`FRONTEND_NOT_READY`, `BACKEND_HEALTH_FAIL`, **`INFRASTRUCTURE_OFFLINE`** bei Refused nach Start, siehe Generator).
+
+**Verboten (weiterhin):** zusätzliche Health-Spiralen, Port-Scans, „läuft Janus schon?“-Dialoge **nach** dem Guard **und parallel** zum READY-Block; mehrfache nervöse Re-Pings ohne neuen Blocker.
+
+Wenn der User explizit Electron-Desktop-Beobachtung (`ELECTRON_DESKTOP`) oder Headless-Evidence (`HEADLESS_EVIDENCE`) im laufenden Auftrag fordert, werden die entsprechenden Defaults ueberschrieben — der Connectivity-Guard gegen die URLs aus dem TestPlan bleibt **Pflicht** vor dem READY-Block.
 
 **Auto-Pilot-Stopper (Sofort-Block, nicht auf User-OK warten)**:
 
 - Generator-Fehler -> `LIVE TEST AUTOMATION BLOCKED` mit `Block Reason: GENERATOR_NOT_READY` oder `TESTPLAN_STRATEGY_INVALID`
 - Validator-Fehler -> `LIVE TEST AUTOMATION BLOCKED` mit `Block Reason: GENERATOR_VALIDATION_FAILED`
+- **Connectivity-Guard FAIL** (Refused/Timeout auf `baseUrl` oder `backendHealthUrl`) -> `LIVE TEST BLOCKED — INFRASTRUCTURE OFFLINE` (siehe Connectivity-Guard-Template; kein `OK START LIVE TEST`)
 - Verbotene Modelle im TestPlan -> `LIVE TEST BLOCKED: Provider-/Model-Matrix verwendet veraltete Textmodelle`
 - Fehlende lokale E2E-Config -> `LIVE TEST AUTOMATION BLOCKED` mit `Block Reason: JANUS_CONFIG_OR_AUTH_MISSING` (Auto-Fix-Pfad anbieten)
 
@@ -258,22 +268,22 @@ Automation-Minimum:
 
 ## ✅ USER-OK LIVE GATE
 
-Nachdem der Preflight (Phase 3A Generator und Phase 3B Validator) erfolgreich durchgelaufen ist, gibt Skill 3 **ausschliesslich** eine einzige, schlanke Ready-Meldung aus und wartet auf genau ein Kommando: `OK START LIVE TEST`.
+Nachdem der Preflight (Phase 3A Generator und Phase 3B Validator) **und** der **Connectivity-Guard** (Phase 3C) erfolgreich durchgelaufen sind, gibt Skill 3 **ausschliesslich** eine einzige, schlanke Ready-Meldung aus und wartet auf genau ein Kommando: `OK START LIVE TEST`.
 
 **ABSOLUTE REGEL — STRENG VERBOTEN**:
 
-- Verboten: Nachfrage nach `JANUS TEST INSTANCE RUNNING`, Backend-Health, Frontend-Status oder ob Janus laeuft.
+- Verboten: Nachfrage nach `JANUS TEST INSTANCE RUNNING`, Backend-Health, Frontend-Status oder ob Janus laeuft — **im Default-Browserpfad** (der Guard hat bereits geantwortet).
 - Verboten: Nachfrage nach `LIVE_VISUAL` vs. `HEADLESS_EVIDENCE` oder Visual-Mode-Bestaetigung.
 - Verboten: Nachfrage nach `Watch target` (Electron vs. Browser).
-- Verboten: Frage "Soll ich Janus automatisch starten?" und alle Synonyme dieser Frage (z. B. "Laeuft Janus schon?", "Soll ich das Backend starten?", "Pruefen wir vorher Health?").
+- Verboten: Frage "Soll ich Janus automatisch starten?" und alle Synonyme **zwischen** Guard-PASS und `OK START LIVE TEST` (Hinweis `npm run start-dev` nur im **INFRASTRUCTURE OFFLINE**-Block, nicht als Rückfrage).
 - Verboten: Listen mit "Erforderlichen Bestaetigungen" oder "User action required".
-- Verboten: jede zusaetzliche Frage zwischen Preflight-Erfolg und dem `OK START LIVE TEST`-Trigger.
-- Verboten: jeder selbststaendige Health-/Reachability-Check gegen `http://localhost:5173` oder `http://localhost:8001` (siehe `BLIND-RUN-REGEL` in `AUTO-PILOT MODE`).
+- Verboten: jede zusaetzliche Frage zwischen Preflight+Guard-Erfolg und dem `OK START LIVE TEST`-Trigger.
+- Verboten: **zusätzliche** Health-/Reachability-Checks jenseits des **einmaligen** Connectivity-Guards gegen die URLs aus dem TestPlan (keine Doppel-Pings, kein Raten von Ports).
 - Default-Annahmen werden stillschweigend gesetzt (siehe `Auto-Assume Defaults` unten); der User bekommt sie als kurze Statuszeile zu sehen, aber **nicht als Frage**.
 
-**BLIND-READY-KLAUSEL**:
+**READY-KLAUSEL (nach Connectivity-Guard PASS):**
 
-Selbst wenn die KI vermutet, dass Janus offline ist, MUSS sie den Ready-Block ausgeben und mit `Antworte mit: OK START LIVE TEST` enden. Das Risiko eines Verbindungsfehlers liegt allein beim Playwright-Runner, nicht bei der KI-Logik. Die KI darf weder eine Vorab-Probe ausfuehren noch den Ready-Block durch eine Warnung, Rueckfrage oder einen Alternativvorschlag ersetzen.
+Wenn der Connectivity-Guard **PASS** ist, MUSS Skill 3 den Ready-Block ausgeben und mit `Antworte mit: OK START LIVE TEST` enden. War der Guard **FAIL**, ist der Ready-Block **verboten** — stattdessen nur den **INFRASTRUCTURE OFFLINE**-Block (siehe AUTO-PILOT MODE).
 
 **Pflichtausgabe (Single-Trigger Form — exakt diese Struktur)**:
 
@@ -282,6 +292,7 @@ LIVE JANUS AUTOMATION READY
 
 TestRun: <TEST-RUN-ID>
 Generator: SUCCESS | Validator: PASSED
+Connectivity-Guard: PASS
 
 Scope:
 | TestCase-ID | Type | Provider/Model | Status |
@@ -302,15 +313,14 @@ Der Block MUSS mit `Antworte mit: OK START LIVE TEST` als letzter Zeile enden. K
 - `Watch target = PLAYWRIGHT_BROWSER`
 - `Runner Command = npx playwright test <spec_path> --headed --workers=1`
 - `Test Instance = Playwright webServer auto-start via playwright.config.js`
-- `Janus Status = ASSUMED_RUNNING` — wird nicht gepingt, nicht bestaetigt, nicht hinterfragt
+- `Janus Status = CONNECTIVITY_GUARD_PASS` — vor Ready-Block verifiziert; danach kann der Runner bei Laufzeitfehlern weiterhin `FRONTEND_NOT_READY` / `BACKEND_HEALTH_FAIL` / `INFRASTRUCTURE_OFFLINE` melden
 - Diese Defaults gelten **immer**, ausser der User hat im laufenden Auftrag explizit etwas anderes verlangt (z. B. ein User-Prompt enthielt explizit `HEADLESS_EVIDENCE`, `ELECTRON_DESKTOP` oder `npm run start-dev` als Anweisung). In dem Fall wird der entsprechende Default ueberschrieben — aber immer noch ohne neue Frage an den User.
 
-**Auto-Assume bei Backend-/Frontend-Ausfall**:
+**Laufzeit vs. Guard:**
 
-- Skill 3 fragt den User **nicht** vorab, ob Janus laeuft.
-- Wenn Frontend (`http://localhost:5173/`) oder Backend (`http://localhost:8001/api/health`) nicht erreichbar sind, wirft Playwright im Runner einen entsprechenden Fehler.
-- Dieser Fehler MUSS in der Evidence als `Failure Code: BACKEND_HEALTH_FAIL` (oder `FRONTEND_NOT_READY`) dokumentiert und im TestResult als `FAIL` aufgenommen werden.
-- KEINE Pre-Flight-Health-Checks, KEIN vorzeitiger Stopp wegen vermuteter Offline-Instanz.
+- Der **Connectivity-Guard** fängt typische **ERR_CONNECTION_REFUSED**-Fälle vor dem User-OK ab (`LIVE TEST BLOCKED — INFRASTRUCTURE OFFLINE`).
+- **Nach** `OK START LIVE TEST` können weiterhin `BACKEND_HEALTH_FAIL`, `FRONTEND_NOT_READY` oder **`INFRASTRUCTURE_OFFLINE`** (vom generierten Runner, z. B. `page.goto` während des Laufs) im TestResult als `FAIL` landen — dann Evidence 1:1 an Skill 4.
+- Keine redundanten Health-Loops **nach** erfolgreichem Guard und **vor** Runner-Start.
 
 **Verhalten nach OK** (Dauerlauf-Regel — siehe auch Section 4):
 
@@ -326,6 +336,7 @@ Pruefpunkte (Default-Werte fett markiert):
 
 - `Generator Status`: GENERATED | REUSED_AFTER_VALIDATION | BLOCKED
 - `Validator Status`: PASSED | FAILED | NOT RUN WITH REASON
+- **`Connectivity-Guard`**: **PASS** | FAIL (FAIL -> kein READY-Block, nur INFRASTRUCTURE OFFLINE)
 - `Generated Runner manually edited`: **NEIN** (UNKNOWN -> BLOCKED)
 - `Source TestRun` vs. `Automation TestRun`: identisch | mit Begruendung
 - Provider/Model Matrix: smallest-viable je Provider vorhanden, `Forbidden models found` MUSS **NO** sein
@@ -348,7 +359,7 @@ Harte Regeln (Verletzung -> `LIVE TEST AUTOMATION BLOCKED`):
 - `npm run start-backend-only` darf NICHT als Startbefehl fuer Electron-Beobachtung ausgegeben werden.
 - `LIVE JANUS AUTOMATION READY` darf nur ausgegeben werden, wenn alle internen Pruefpunkte gruen sind.
 
-Wenn die Compliance-Checkliste fehlschlaegt, ist die Ausgabe nicht der kompakte Ready-Block, sondern ein vollstaendiger `LIVE TEST AUTOMATION BLOCKED`-Block mit konkretem Block Reason gemaess Section 2 (`GENERATOR_NOT_READY` | `GENERATOR_VALIDATION_FAILED` | `TESTPLAN_STRATEGY_INVALID` | `JANUS_CONFIG_OR_AUTH_MISSING` | sonstige) plus Copy-Handover.
+Wenn die Compliance-Checkliste fehlschlaegt, ist die Ausgabe nicht der kompakte Ready-Block, sondern ein vollstaendiger `LIVE TEST AUTOMATION BLOCKED`-Block mit konkretem Block Reason gemaess Section 2 (`GENERATOR_NOT_READY` | `GENERATOR_VALIDATION_FAILED` | `TESTPLAN_STRATEGY_INVALID` | `JANUS_CONFIG_OR_AUTH_MISSING` | **`INFRASTRUCTURE_OFFLINE` (Connectivity-Guard)** | sonstige) plus Copy-Handover.
 
 Ohne explizites `OK START LIVE TEST` darf kein Live-Test gestartet werden.
 
@@ -360,12 +371,13 @@ Reihenfolge im Auto-Pilot-Modus (Default):
 
 1. **LOAD ARTIFACTS** — sofort beim Skill-Aufruf
 2. **GENERATE OR VALIDATE PLAYWRIGHT LIVE-RUNNER** (Phase 3A+3B) — sofort und ohne Rueckfrage nach Schritt 1
-3. **USER-OK GATE** — kompakte LIVE_VISUAL-Ready-Ausgabe, warte ausschliesslich auf `OK START LIVE TEST`
-4. **RUN PLAYWRIGHT LIVE EXECUTION** — Dauerlauf nach OK, keine weiteren Stopps
-5. **EVIDENCE AGGREGATION AND TESTRESULT PACKAGING** — automatisch nach Runner-Exit
-6. **Skill-4-Copy-Handover** — automatisch nach TestResult
+3. **CONNECTIVITY-GUARD** — Erreichbarkeit `baseUrl` / optional `backendHealthUrl` aus TestPlan; bei FAIL: Block, kein Schritt 4
+4. **USER-OK GATE** — kompakte LIVE_VISUAL-Ready-Ausgabe, warte ausschliesslich auf `OK START LIVE TEST`
+5. **RUN PLAYWRIGHT LIVE EXECUTION** — Dauerlauf nach OK, keine weiteren Stopps
+6. **EVIDENCE AGGREGATION AND TESTRESULT PACKAGING** — automatisch nach Runner-Exit
+7. **Skill-4-Copy-Handover** — automatisch nach TestResult
 
-Schritte 1–2 laufen ohne User-Interaktion ab. Schritt 3 ist der einzige reguläre Stopp-Punkt. Schritte 4–6 laufen wieder ohne User-Interaktion ab, ausgenommen explizit `MANUAL_GATE_REQUIRED`-markierte TestCases.
+Schritte 1–3 laufen ohne User-Interaktion ab. Schritt 4 ist der einzige reguläre Stopp-Punkt. Schritte 5–7 laufen wieder ohne User-Interaktion ab, ausgenommen explizit `MANUAL_GATE_REQUIRED`-markierte TestCases.
 
 ---
 
@@ -380,7 +392,7 @@ Schritte 1–2 laufen ohne User-Interaktion ab. Schritt 3 ist der einzige regul�
 
 ### 2. GENERATE OR VALIDATE PLAYWRIGHT LIVE-RUNNER
 
-**Auto-Pilot-Pflicht**: Skill 3 fuehrt Generierung (Phase 3A) und Validierung (Phase 3B) **SOFORT nach Skill-Aufruf ohne Rueckfrage** aus. Erst nach erfolgreichem Generator+Validator-Lauf darf der USER-OK-Gate-Block (Section USER-OK LIVE GATE) ausgegeben werden.
+**Auto-Pilot-Pflicht**: Skill 3 fuehrt Generierung (Phase 3A) und Validierung (Phase 3B) **SOFORT nach Skill-Aufruf ohne Rueckfrage** aus. Anschließend **Connectivity-Guard** (Phase 3C). Erst wenn Generator **und** Validator **und** Guard **PASS** sind, darf der USER-OK-Gate-Block (Section USER-OK LIVE GATE) ausgegeben werden.
 
 Skill 3 Phase 3A ist ausschliesslich Orchestrierung der drei versionierten Test-Services. Der Skill ist KEIN Playwright-Code-Autor.
 
@@ -640,13 +652,13 @@ Arbeitsregel:
 
 ### 3. USER-OK GATE
 
-Im Auto-Pilot-Modus sind Phase 3A (Generator) und Phase 3B (Validator) hier bereits abgeschlossen.
+Im Auto-Pilot-Modus sind Phase 3A (Generator), Phase 3B (Validator) und Phase 3C (**Connectivity-Guard**) hier bereits abgeschlossen.
 
 - Interne Compliance-Checkliste aus Section `USER-OK LIVE GATE` MUSS gruen sein, sonst statt Ready-Block einen `LIVE TEST AUTOMATION BLOCKED`-Block ausgeben.
-- Bei gruener Checkliste den **einzigen** zugelassenen Ready-Block ausgeben: Scope-Tabelle + `Generator: SUCCESS | Validator: PASSED` + `Alle <N> Tests validiert. Bereit fuer LIVE_VISUAL Dauerlauf.` + `Antworte mit: OK START LIVE TEST`.
+- Bei gruener Checkliste den **einzigen** zugelassenen Ready-Block ausgeben: Scope-Tabelle + `Generator: SUCCESS | Validator: PASSED` + **`Connectivity-Guard: PASS`** + `Alle <N> Tests validiert. Bereit fuer LIVE_VISUAL Dauerlauf.` + `Antworte mit: OK START LIVE TEST`.
 - Keine Scope-Teile stillschweigend entfernen.
-- **STRENG VERBOTEN**: jede Nachfrage nach Janus-Status, Backend-Health, Visual Mode, Watch target oder sonstigen Default-Parametern. Es gibt genau ein Trigger-Kommando: `OK START LIVE TEST`.
-- Auto-Assume: Janus laeuft. Wenn nicht, faellt der Runner mit `BACKEND_HEALTH_FAIL`/`FRONTEND_NOT_READY` aus, was als regulaeres `FAIL`-Evidence-Element behandelt wird.
+- **STRENG VERBOTEN**: jede Nachfrage nach Janus-Status, Backend-Health, Visual Mode, Watch target oder sonstigen Default-Parametern **nach** bestandenem Guard. Es gibt genau ein Trigger-Kommando: `OK START LIVE TEST`.
+- **Nach** Guard-PASS: Laufzeit-Ausfälle werden vom Runner klassifiziert (`BACKEND_HEALTH_FAIL` / `FRONTEND_NOT_READY` / **`INFRASTRUCTURE_OFFLINE`**).
 - Auf explizites `OK START LIVE TEST` warten.
 - Keine Live-Ausfuehrung vor OK.
 
@@ -708,13 +720,13 @@ npx playwright test tests/e2e/generated/<test_run_id>.live.spec.js --headed --wo
   npm run test:e2e -- tests/e2e/generated/<test_run_id>.live.spec.js --headed --workers=1 --reporter=list
   ```
 
-**Test-Instance-Start (Auto-Assume, Blind Run)**:
+**Test-Instance-Start (nach Connectivity-Guard PASS)**:
 
-Skill 3 nimmt im Default-Pfad an, dass Janus laeuft. Playwright startet Frontend (`http://localhost:5173/`) und Backend (`http://localhost:8001/api/health`) im Zweifel selbst via `playwright.config.js` (`webServer.reuseExistingServer: true`). Skill 3 verlangt **keine** `JANUS TEST INSTANCE RUNNING`-Bestaetigung, fuehrt **keinen** Pre-Flight-Health-Check aus, sendet **keinen** `fetch`/`curl`/`ping`/`Invoke-WebRequest` gegen `localhost:5173` oder `localhost:8001` und stellt **keine** Frage zum Server-Status. Die `BLIND-RUN-REGEL` aus `AUTO-PILOT MODE` ist hier verbindlich.
+Nach bestandenem Guard nimmt Skill 3 an, dass die im TestPlan genannten Endpunkte für den **Playwright-Lauf** erreichbar bleiben. Playwright kann Frontend/Backend im Zweifel via `playwright.config.js` (`webServer.reuseExistingServer: true`) starten. **Keine** weiteren Ad-hoc-`curl`/`fetch`-Proben gegen `localhost` zwischen Guard-PASS und `OK START LIVE TEST`. Skill 3 verlangt im Default-Browserpfad **keine** `JANUS TEST INSTANCE RUNNING`-Bestätigung.
 
-Wenn Backend oder Frontend nicht erreichbar sind, schlaegt der Runner fehl. Der Skill MUSS in diesem Fall:
+Wenn Backend oder Frontend **während** des Laufs nicht erreichbar sind, schlaegt der Runner fehl. Der Skill MUSS in diesem Fall:
 
-- den Failure Code `BACKEND_HEALTH_FAIL` (bei `/api/health`-Failure) bzw. `FRONTEND_NOT_READY` (bei `http://localhost:5173/`-Failure) in die Evidence schreiben,
+- den Failure Code `BACKEND_HEALTH_FAIL` (bei `/api/health`-Failure) bzw. `FRONTEND_NOT_READY` (Frontend-Load/webServer) bzw. **`INFRASTRUCTURE_OFFLINE`** (vom Runner bei `ERR_CONNECTION_REFUSED` auf `page.goto`/`baseUrl`, siehe Generator) in die Evidence schreiben,
 - den betroffenen TestCase im TestResult als `FAIL` markieren,
 - den Original-Fehlertext aus dem Runner-Output in `Console/Network Evidence` uebernehmen,
 - die Triage `Infrastructure / Environment` an Skill 4 weiterreichen.
@@ -751,6 +763,7 @@ Quelle der Wahrheit ist `tests/e2e/generator/generate-live-runner.mjs` (Failure-
 | `RUNNER_STREAM_TIMEOUT` (Variante B: `bubble empty or only contains "..."`) | toPass-Polling | Stream-Request lief, aber Assistant-Bubble bleibt leer/`...`. Mögliche Ursachen: Detached-Bubble (Ghost), SSE-Renderer-Bug, Backend liefert keinen Content. | Frontend SSE Rendering / Ghost-Bubble |
 | `FRONTEND_NOT_READY` | playwright.config.js webServer | Frontend-Dev-Server unter `http://localhost:5173/` ist nicht erreichbar. | Infrastructure / Environment |
 | `BACKEND_HEALTH_FAIL` | playwright.config.js webServer | Backend `/api/health` antwortet nicht. | Infrastructure / Environment |
+| `INFRASTRUCTURE_OFFLINE` | `beforeEach` / `page.goto(baseUrl)` | TCP-Verbindung abgelehnt (`ERR_CONNECTION_REFUSED` / `ECONNREFUSED` / `net::ERR_CONNECTION_REFUSED`) — Janus-Stack nicht erreichbar. **Notes/Evidence** MUSS Hinweis enthalten: Repository-Root **`npm run start-dev`**. | Infrastructure / Environment |
 | `PROVIDER_TIMEOUT` | Runner-Catch + sichtbare Error-Bubble | LLM-Provider antwortet nicht oder Janus rendert sichtbare Error-Bubble. | Backend / Provider / Cost |
 | `TOOL_ROUTING_FAILURE` | Evaluator | Erwartetes Tool/Intent wurde nicht aufgerufen. | Intent / Tool Routing |
 | `ASSERTION_MISMATCH` | Evaluator | Antwort-Text matched die TestPlan-Expectations nicht. | Capability Behavior / Spec Drift |
@@ -772,9 +785,9 @@ Evidence-Gate (verbindlich):
 
 ### 5. EVIDENCE AGGREGATION AND TESTRESULT PACKAGING
 
-Vor fachlicher Auswertung MUSS Skill 3 Phase 3C abschliessen.
+Vor fachlicher Auswertung MUSS Skill 3 die **Evidence-Aggregations-Phase** abschliessen.
 
-Skill 3 Phase 3C ist Evidence Aggregation und TestResult Packaging.
+Skill 3 **Evidence-Aggregation** ist Evidence Aggregation und TestResult Packaging.
 
 Input:
 
@@ -1044,7 +1057,7 @@ Automation Provenance:
 Detected Failure Codes:
 - <TestCase-ID>: <Failure Code aus Generator-Taxonomy> | NONE
 - <TestCase-ID>: <Failure Code aus Generator-Taxonomy> | NONE
-- Erlaubte Codes: RUNNER_PRECLICK_EMPTY | RUNNER_PRECLICK_DOM_BROKEN | RUNNER_SELECTOR_FAILURE | RUNNER_WAIT_FAILURE | RUNNER_STREAM_TIMEOUT | FRONTEND_NOT_READY | BACKEND_HEALTH_FAIL | PROVIDER_TIMEOUT | TOOL_ROUTING_FAILURE | ASSERTION_MISMATCH | NONE
+- Erlaubte Codes: RUNNER_PRECLICK_EMPTY | RUNNER_PRECLICK_DOM_BROKEN | RUNNER_SELECTOR_FAILURE | RUNNER_WAIT_FAILURE | RUNNER_STREAM_TIMEOUT | FRONTEND_NOT_READY | BACKEND_HEALTH_FAIL | INFRASTRUCTURE_OFFLINE | PROVIDER_TIMEOUT | TOOL_ROUTING_FAILURE | ASSERTION_MISMATCH | NONE
 - Hinweis-Codes (nicht vom Generator emittiert, aus Console-Evidence abgeleitet): GHOST_BUBBLE_DETECTED
 
 Suggested Triage Buckets (laut Generator Failure Taxonomy in Skill 3 Section 4A):

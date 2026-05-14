@@ -1,6 +1,6 @@
 {
   "skill": "system.websearch",
-  "description": "Allgemeine Websuche mit strukturierter Ergebnis-Synthese. Preise sind erlaubt, gelten aber als unverifiziert und müssen entsprechend markiert werden.",
+  "description": "Allgemeine Websuche mit strukturierter Ergebnis-Synthese. Preise sind erlaubt, gelten aber als unverifiziert und müssen entsprechend markiert werden. Verwende dieses Tool NICHT für reine Wetteranfragen, wenn das spezialisierte Wetter-Tool (system.weather) zur Verfügung steht — auch nicht für indirekte Wetterfragen wie 'Brauche ich morgen einen Regenschirm?' oder 'Soll ich Sonnencreme einpacken?'. Solche Bedarfsfragen sind Wetterfragen und gehören zu system.weather. Diese Websuche ist hingegen das richtige Tool für Kauf-, Bestell-, Reparatur- oder Recherchefragen (z. B. 'Wo kaufe ich einen guten Regenschirm?', 'Welcher Sonnenschutz ist Testsieger 2026?').",
   "version": "3.0.0",
   "optimal_model_tier": {
     "openai": "balanced",

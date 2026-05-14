@@ -694,7 +694,10 @@ export async function sendMessage(fromWindowId) {
   const windowId = fromWindowId ?? getActiveWindowId();
   setActiveWindow(windowId);
   const chatInputEl = document.getElementById(paneId("user-input", windowId));
-  const chatMessagesEl = document.getElementById(paneId("chat-messages", windowId));
+  // BACKLOG-026: `chatMessagesEl` is `let` (not `const`) so the SSE-stream wipe-guard
+  // can re-resolve the container by ID if loadChat() or another async path replaces
+  // the entire chat-messages pane while we are mid-stream.
+  let chatMessagesEl = document.getElementById(paneId("chat-messages", windowId));
   if (!chatInputEl || !chatMessagesEl) return;
   const promptText = chatInputEl.value.trim();
   if (!promptText) return;
@@ -743,28 +746,81 @@ export async function sendMessage(fromWindowId) {
     bubbleInitialText: loadingMessageElement?.textContent?.slice(0, 40) ?? null,
   });
 
-  // DOM-RESILIENCE: If anything else (e.g. a late-arriving loadChat() restore from
-  // the chat sidebar boot path) wipes #chat-messages-{windowId} after we have already
-  // appended the loading bubble, our `loadingMessageElement` reference becomes a
-  // detached node and any further innerHTML writes are invisible to the user.
-  // This helper re-creates the bubble in the current DOM with the text accumulated
-  // so far, so streaming continues into a visible, attached element.
+  // BACKLOG-026 DOM-RESILIENCE + PERSISTENCE-LOCK:
+  // The SSE stream can race against asynchronous DOM rewrites — e.g. a late-arriving
+  // loadChat() restore from the chat-sidebar boot path that wipes
+  // #chat-messages-{windowId} after we have already appended the loading bubble.
+  // When that happens, our `loadingMessageElement` reference becomes a detached
+  // node and any further innerHTML writes are invisible to the user.
+  //
+  // The wipe-guard below detects ALL of these conditions on every chunk:
+  //   (a) bubble was detached (loadingMessageElement.isConnected === false)
+  //   (b) container reference is stale (the live #chat-messages-<win> element was
+  //       replaced by a different DOM node entirely)
+  //   (c) live container exists but has been emptied (childElementCount === 0)
+  //   (d) bubble is connected but no longer inside the live container (re-parented)
+  //
+  // If any of these are true, we re-resolve the container by ID, sync the local
+  // reference, and re-append the bubble with the FULL accumulated `chatText` (the
+  // persistence anchor that survives DOM wipes). This guarantees no text loss
+  // regardless of how many wipes happen mid-stream.
   let reanchorCount = 0;
   function reanchorBubbleIfDetached(currentText) {
-    if (loadingMessageElement?.isConnected) return;
+    const liveContainer = document.getElementById(paneId("chat-messages", windowId));
+
+    const bubbleConnected = !!loadingMessageElement?.isConnected;
+    const containerLive = !!liveContainer;
+    const containerStale = containerLive && liveContainer !== chatMessagesEl;
+    const containerEmpty = containerLive && liveContainer.childElementCount === 0;
+    const bubbleInsideLive = bubbleConnected && containerLive && liveContainer.contains(loadingMessageElement);
+
+    // Healthy state: bubble connected, container reference fresh, bubble lives
+    // inside the current live container.
+    if (bubbleConnected && containerLive && !containerStale && !containerEmpty && bubbleInsideLive) {
+      return;
+    }
+
     reanchorCount++;
     console.warn("[SSE-REANCHOR]", {
       reanchorCount,
+      reason: {
+        bubbleConnected,
+        containerLive,
+        containerStale,
+        containerEmpty,
+        bubbleInsideLive,
+      },
       currentTextLen: (currentText ?? "").length,
-      currentTextSample: (currentText ?? "").slice(0, 60),
-      chatMessagesChildren: chatMessagesEl.childElementCount,
+      currentTextSample: (currentText ?? "").slice(0, 80),
+      liveContainerChildren: liveContainer?.childElementCount ?? null,
+      staleContainerStillInDoc: !!chatMessagesEl?.isConnected,
     });
-    // Re-attach an assistant container with the text we have so far. Use the raw
-    // text here; the caller will overwrite innerHTML with the markdown-parsed
-    // version immediately after this returns.
+
+    if (!containerLive) {
+      // Fatal: the entire chat-messages pane is gone. We cannot re-anchor and
+      // any further writes will be lost. Loud-log so this surfaces in evidence.
+      console.error("[SSE-REANCHOR-FATAL] live container missing for windowId=" + windowId);
+      return;
+    }
+
+    // Sync the local container reference BEFORE re-appending so appendMessage and
+    // subsequent lastElementChild reads target the live DOM, not the detached one.
+    chatMessagesEl = liveContainer;
+
+    // Re-attach an assistant container with the FULL accumulated text. This is
+    // the wipe-guard: the persisted `chatText` survives any number of DOM wipes
+    // and is re-rendered into a fresh bubble each time. The caller will overwrite
+    // innerHTML with the markdown-parsed version immediately after this returns.
     appendMessage("bot", currentText || "...", { windowId, skipScroll: true });
     loadingMessageContainer = chatMessagesEl.lastElementChild;
     loadingMessageElement = loadingMessageContainer?.querySelector('.bubble') ?? null;
+
+    console.log("[SSE-REANCHOR-DONE]", {
+      reanchorCount,
+      bubbleReconnected: !!loadingMessageElement?.isConnected,
+      bubbleTextLen: loadingMessageElement?.textContent?.length ?? 0,
+      newContainerChildren: chatMessagesEl?.childElementCount ?? null,
+    });
   }
 
   try {
@@ -934,6 +990,9 @@ export async function sendMessage(fromWindowId) {
           break;
         } else if (data.type === "error") {
           console.error("[SSE] Error chunk:", data.message);
+          // BACKLOG-026: Re-anchor before writing error HTML so the user always
+          // sees the error message even if the bubble was wiped mid-stream.
+          reanchorBubbleIfDetached(chatText);
           if (loadingMessageElement) {
             loadingMessageElement.innerHTML = sanitizeErrorHtml(`<span style="color:red">[Stream Error] ${data.message}</span>`);
             scrollChatToBottom({ behavior: "auto", windowId });

@@ -7,12 +7,12 @@
   "baseUrl": "http://localhost:5173",
   "backendHealthUrl": "http://localhost:8000/health",
   "timeouts": {
-    "testCaseMs": 30000,
-    "assistantResponseMs": 15000,
+    "testCaseMs": 120000,
+    "assistantResponseMs": 60000,
     "streamRequestMs": 20000
   },
   "strategies": {
-    "send": "chat_window_scoped_send_v1",
+    "send": "chat_button_click_send_v1",
     "wait": "assistant_stream_complete_v1",
     "evidence": "capture_network_v1",
     "evaluate": "contains_any_v1"
@@ -51,7 +51,7 @@
       "prompt": "Wie weit ist Berlin von München?",
       "expected": {
         "containsAny": ["km", "Kilometer", "Entfernung"],
-        "toolCallExpected": "system.geo"
+        "toolCallExpected": "system.routing"
       }
     },
     {

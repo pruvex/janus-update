@@ -1,0 +1,20 @@
+{
+  "testRunId": "TEST-RUN-2026-05-13-001",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "FAIL",
+  "classification": "TOOL_ROUTING_FAILURE",
+  "prompt": "Wie weit ist Berlin von München?",
+  "response": "Berlin ist ungefähr 585 km von München entfernt (mit dem Auto ca. 5 Std. 55 Min.).\nQuelle: OSRM\n💡 Vorschlag:• Wenn du willst, sag mir bitte das Verkehrsmittel (Auto, Bahn, Flugzeug) und ich gebe dir die passende Entfernung/Fahrzeit.\n18:57",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_text_present_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1"
+  },
+  "notes": "Expected tool \"country_info\" was not triggered. Tools called: system_routing",
+  "timestamp": "2026-05-13T16:57:13.532Z"
+}

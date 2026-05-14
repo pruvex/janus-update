@@ -36,15 +36,15 @@ def get_db_url():
 SQLALCHEMY_DATABASE_URL = get_db_url()
 
 
-# Wir erhöhen den Timeout auf 30 Sekunden (verhindert 'database is locked')
+# Wir erhöhen den Timeout auf 60 Sekunden (verhindert 'database is locked' bei aufeinanderfolgenden Writes)
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, 
-    connect_args={"check_same_thread": False, "timeout": 30},
+    connect_args={"check_same_thread": False, "timeout": 60},
     pool_pre_ping=True,
     pool_recycle=1800,
     pool_size=10,
     max_overflow=20,
-    pool_timeout=30,
+    pool_timeout=60,
     pool_reset_on_return="rollback",
 )
 

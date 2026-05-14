@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-13-002",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "FAIL",
+  "classification": "TOOL_ROUTING_FAILURE",
+  "prompt": "Wie weit ist Berlin von München?",
+  "response": "Berlin ist etwa 585 km von München entfernt. Die Fahrzeit mit dem Auto beträgt ungefähr 5 Stunden und 55 Minuten.\n💡 Vorschlag:• Soll ich dir eine detaillierte Route mit aktuellen Verkehrsinformationen für diese Strecke erstellen?\n23:19",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "tool_call_detected_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expected tool \"system.routing\" was not triggered. Tools called: none",
+  "timestamp": "2026-05-13T21:19:19.384Z"
+}

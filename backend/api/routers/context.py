@@ -70,6 +70,10 @@ class CompressionProposeInput(BaseModel):
     chat_id: str | int | None = None
     messages: list[dict[str, Any]] = Field(default_factory=list)
     include_persisted_messages: bool = True
+    provider: str | None = Field(
+        default=None,
+        description="Aktiver Chat-Provider (openai/gemini); steuert Summary-LLM bei Katalog-Fallbacks",
+    )
     target_model: str | None = Field(
         default=None,
         description="Ziel-Modell für Kontext-Limit-Check",
@@ -177,7 +181,22 @@ async def propose_compression_endpoint(
         )
 
     # Generiere Proposal (mit target_model für Overflow-Detection)
-    proposal = await propose_compression(messages, payload.chat_id, payload.target_model)
+    from backend.services.llm_silo_context import (
+        normalize_llm_silo_provider,
+        push_active_llm_silo,
+        reset_active_llm_silo,
+    )
+
+    _comp_silo_tok = push_active_llm_silo(normalize_llm_silo_provider(payload.provider))
+    try:
+        proposal = await propose_compression(
+            messages,
+            payload.chat_id,
+            payload.target_model,
+            session_provider=payload.provider,
+        )
+    finally:
+        reset_active_llm_silo(_comp_silo_tok)
 
     if not proposal:
         return CompressionProposalOutput(

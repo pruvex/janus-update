@@ -275,6 +275,35 @@ class GeminiServiceProvider(BaseLLMProvider):
         requested = str(gemini_name or "").strip()
         if not requested:
             return requested
+
+        # Manual mapping for provider-safe names that skill_router cannot resolve
+        # Gemini replaces dots with underscores for API compliance
+        manual_mapping = {
+            "system_routing": "system.routing",
+            "system_local_business": "system.local_business",
+            "system_country_info": "system.country_info",
+            "system_websearch": "system.websearch",
+            "system_wikipedia_summary": "system.wikipedia_summary",
+            "system_price_comparison": "system.price_comparison",
+            "system_create_pdf": "system.create_pdf",
+            "system_generate_image": "system.generate_image",
+            "system_grant_permission": "system.grant_permission",
+            "system_revoke_permission": "system.revoke_permission",
+            "system_weather": "system.weather",
+            "system_scrape_website": "system.scrape_website",
+            "system_save_mp3": "system.save_mp3",
+            "system_rss_news": "system.rss_news",
+        }
+
+        if requested in manual_mapping:
+            mapped = manual_mapping[requested]
+            logger.info(
+                "GEMINI-NAME-MAP: manual override '%s' -> '%s'",
+                requested,
+                mapped,
+            )
+            return mapped
+
         try:
             from backend.services.skill_router import skill_router
             from backend.services.tool_manager import tool_manager as _tm

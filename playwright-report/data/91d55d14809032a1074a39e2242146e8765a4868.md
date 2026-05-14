@@ -1,0 +1,786 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - banner [ref=e5]:
+          - generic [ref=e6]:
+            - heading "Janus" [level=2] [ref=e7]
+            - generic [ref=e8]: (KI Assistent)
+            - button "Einstellungen" [ref=e9]:
+              - img [ref=e10]
+            - button "Fehler melden / Feedback geben" [ref=e13]:
+              - img [ref=e14]
+          - button "Sidebar einklappen" [expanded] [ref=e16] [cursor=pointer]:
+            - img [ref=e17]
+        - generic [ref=e19] [cursor=pointer]:
+          - paragraph [ref=e20]: "Letzte Anfrage: 0,0103 €"
+          - paragraph [ref=e21]: "Tokens: 22494 In / 55 Out"
+        - generic [ref=e24]:
+          - combobox "Provider" [ref=e25]:
+            - option "OpenAI"
+            - option "Gemini" [selected]
+            - option "Ollama (Lokal)"
+          - combobox "Modell" [ref=e26]:
+            - option "Gemini 3 Flash (Preview) (0.50€/Mio. in / 3.00€/Mio. out) - Schnelles und kostengünstiges Gemini 3 Modell (Preview)." [selected]
+        - navigation "Hauptnavigation" [ref=e27]:
+          - button "Projekte" [ref=e28] [cursor=pointer]:
+            - img [ref=e30]
+            - generic [ref=e32]: Projekte
+          - button "Wissensdatenbank" [ref=e33] [cursor=pointer]:
+            - img [ref=e35]
+            - generic [ref=e38]: Wissensdatenbank
+          - button "Image Studio" [ref=e39] [cursor=pointer]:
+            - img [ref=e41]
+            - generic [ref=e44]: Image Studio
+          - button "Bildgalerie ein- oder ausblenden" [ref=e45] [cursor=pointer]:
+            - img [ref=e47]
+            - generic [ref=e52]: Bildgalerie
+          - button "Janus Kalender ein- oder ausblenden" [ref=e53] [cursor=pointer]:
+            - img [ref=e55]
+            - generic [ref=e57]: Janus Kalender
+          - button "Tages-Panel ein- oder ausblenden" [ref=e58] [cursor=pointer]:
+            - img [ref=e60]
+            - generic [ref=e65]: Tages-Panel
+      - generic [ref=e66]:
+        - group "Aktive Chats in Fenster A und B" [ref=e67]:
+          - generic [ref=e68]: Aktive Chats
+          - generic [ref=e69]:
+            - button "Neuer Chat" [ref=e70] [cursor=pointer]:
+              - generic [ref=e71]: A
+              - generic [ref=e72]: Neuer Chat
+            - button "—" [ref=e73] [cursor=pointer]:
+              - generic [ref=e74]: B
+              - generic [ref=e75]: —
+        - button "Neuer Chat" [ref=e76]:
+          - generic [ref=e77]: +
+          - generic [ref=e78]: Neuer Chat
+        - generic "Chat-Verlauf" [ref=e79]:
+          - generic [ref=e80]:
+            - generic [ref=e81]: Chats sortieren
+            - combobox "Sortierung der Chatliste" [ref=e82] [cursor=pointer]:
+              - option "Chronologisch (Neu oben)" [selected]
+              - option "Kategorien (AI)"
+              - option "Alphabetisch (A–Z)"
+            - generic [ref=e83]: Chats durchsuchen
+            - searchbox "Chats durchsuchen" [ref=e84]
+            - paragraph [ref=e85]: "Für KI-Ordner: neuen Chat starten und z. B. zu Kochen oder Programmieren schreiben — nach automatischer Titel- und Kategorisierung erscheint der Eintrag im passenden Ordner (nicht nur unter General)."
+          - generic [ref=e86]:
+            - generic [ref=e87]:
+              - generic [ref=e89] [cursor=pointer]: Neuer Chat
+              - generic [ref=e90] [cursor=pointer]: ...
+            - generic [ref=e91]:
+              - generic [ref=e93] [cursor=pointer]: Entfernung Berlin München
+              - generic [ref=e94] [cursor=pointer]: ...
+            - generic [ref=e95]:
+              - generic [ref=e97] [cursor=pointer]: Nikola Tesla
+              - generic [ref=e98] [cursor=pointer]: ...
+            - generic [ref=e99]:
+              - generic [ref=e101] [cursor=pointer]: Wer ist Nikola Tesla
+              - generic [ref=e102] [cursor=pointer]: ...
+            - generic [ref=e103]:
+              - generic [ref=e105] [cursor=pointer]: Regenschirm in München morgen
+              - generic [ref=e106] [cursor=pointer]: ...
+            - generic [ref=e107]:
+              - generic [ref=e109] [cursor=pointer]: Regenschirm in München
+              - generic [ref=e110] [cursor=pointer]: ...
+            - generic [ref=e111]:
+              - generic [ref=e113] [cursor=pointer]: Neuer Chat
+              - generic [ref=e114] [cursor=pointer]: ...
+            - generic [ref=e115]:
+              - generic [ref=e117] [cursor=pointer]: Neuer Chat
+              - generic [ref=e118] [cursor=pointer]: ...
+            - generic [ref=e119]:
+              - generic [ref=e121] [cursor=pointer]: Neuer Chat
+              - generic [ref=e122] [cursor=pointer]: ...
+            - generic [ref=e123]:
+              - generic [ref=e125] [cursor=pointer]: Neuer Chat
+              - generic [ref=e126] [cursor=pointer]: ...
+            - generic [ref=e127]:
+              - generic [ref=e129] [cursor=pointer]: Neuer Chat
+              - generic [ref=e130] [cursor=pointer]: ...
+            - generic [ref=e131]:
+              - generic [ref=e133] [cursor=pointer]: Neuer Chat
+              - generic [ref=e134] [cursor=pointer]: ...
+            - generic [ref=e135]:
+              - generic [ref=e137] [cursor=pointer]: Neuer Chat
+              - generic [ref=e138] [cursor=pointer]: ...
+            - generic [ref=e139]:
+              - generic [ref=e141] [cursor=pointer]: Neuer Chat
+              - generic [ref=e142] [cursor=pointer]: ...
+            - generic [ref=e143]:
+              - generic [ref=e145] [cursor=pointer]: Neuer Chat
+              - generic [ref=e146] [cursor=pointer]: ...
+            - generic [ref=e147]:
+              - generic [ref=e149] [cursor=pointer]: Neuer Chat
+              - generic [ref=e150] [cursor=pointer]: ...
+            - generic [ref=e151]:
+              - generic [ref=e153] [cursor=pointer]: Neuer Chat
+              - generic [ref=e154] [cursor=pointer]: ...
+            - generic [ref=e155]:
+              - generic [ref=e157] [cursor=pointer]: Neuer Chat
+              - generic [ref=e158] [cursor=pointer]: ...
+            - generic [ref=e159]:
+              - generic [ref=e161] [cursor=pointer]: Neuer Chat
+              - generic [ref=e162] [cursor=pointer]: ...
+            - generic [ref=e163]:
+              - generic [ref=e165] [cursor=pointer]: Neuer Chat
+              - generic [ref=e166] [cursor=pointer]: ...
+            - generic [ref=e167]:
+              - generic [ref=e169] [cursor=pointer]: Neuer Chat
+              - generic [ref=e170] [cursor=pointer]: ...
+            - generic [ref=e171]:
+              - generic [ref=e173] [cursor=pointer]: Neuer Chat
+              - generic [ref=e174] [cursor=pointer]: ...
+            - generic [ref=e175]:
+              - generic [ref=e177] [cursor=pointer]: Neuer Chat
+              - generic [ref=e178] [cursor=pointer]: ...
+            - generic [ref=e179]:
+              - generic [ref=e181] [cursor=pointer]: Neuer Chat
+              - generic [ref=e182] [cursor=pointer]: ...
+            - generic [ref=e183]:
+              - generic [ref=e185] [cursor=pointer]: Neuer Chat
+              - generic [ref=e186] [cursor=pointer]: ...
+            - generic [ref=e187]:
+              - generic [ref=e189] [cursor=pointer]: Neuer Chat
+              - generic [ref=e190] [cursor=pointer]: ...
+            - generic [ref=e191]:
+              - generic [ref=e193] [cursor=pointer]: Neuer Chat
+              - generic [ref=e194] [cursor=pointer]: ...
+            - generic [ref=e195]:
+              - generic [ref=e197] [cursor=pointer]: Neuer Chat
+              - generic [ref=e198] [cursor=pointer]: ...
+            - generic [ref=e199]:
+              - generic [ref=e201] [cursor=pointer]: Neuer Chat
+              - generic [ref=e202] [cursor=pointer]: ...
+            - generic [ref=e203]:
+              - generic [ref=e205] [cursor=pointer]: Neuer Chat
+              - generic [ref=e206] [cursor=pointer]: ...
+            - generic [ref=e207]:
+              - generic [ref=e209] [cursor=pointer]: Neuer Chat
+              - generic [ref=e210] [cursor=pointer]: ...
+            - generic [ref=e211]:
+              - generic [ref=e213] [cursor=pointer]: Neuer Chat
+              - generic [ref=e214] [cursor=pointer]: ...
+            - generic [ref=e215]:
+              - generic [ref=e217] [cursor=pointer]: Neuer Chat
+              - generic [ref=e218] [cursor=pointer]: ...
+            - generic [ref=e219]:
+              - generic [ref=e221] [cursor=pointer]: Neuer Chat
+              - generic [ref=e222] [cursor=pointer]: ...
+            - generic [ref=e223]:
+              - generic [ref=e225] [cursor=pointer]: Neuer Chat
+              - generic [ref=e226] [cursor=pointer]: ...
+            - generic [ref=e227]:
+              - generic [ref=e229] [cursor=pointer]: Neuer Chat
+              - generic [ref=e230] [cursor=pointer]: ...
+            - generic [ref=e231]:
+              - generic [ref=e233] [cursor=pointer]: Neuer Chat
+              - generic [ref=e234] [cursor=pointer]: ...
+            - generic [ref=e235]:
+              - generic [ref=e237] [cursor=pointer]: Neuer Chat
+              - generic [ref=e238] [cursor=pointer]: ...
+            - generic [ref=e239]:
+              - generic [ref=e241] [cursor=pointer]: Neuer Chat
+              - generic [ref=e242] [cursor=pointer]: ...
+            - generic [ref=e243]:
+              - generic [ref=e245] [cursor=pointer]: Neuer Chat
+              - generic [ref=e246] [cursor=pointer]: ...
+            - generic [ref=e247]:
+              - generic [ref=e249] [cursor=pointer]: Heise Top-Schlagzeilen
+              - generic [ref=e250] [cursor=pointer]: ...
+            - generic [ref=e251]:
+              - generic [ref=e253] [cursor=pointer]: Neuer Chat
+              - generic [ref=e254] [cursor=pointer]: ...
+            - generic [ref=e255]:
+              - generic [ref=e257] [cursor=pointer]: Dateien löschen lassen
+              - generic [ref=e258] [cursor=pointer]: ...
+            - generic [ref=e259]:
+              - generic [ref=e261] [cursor=pointer]: Neuer Chat
+              - generic [ref=e262] [cursor=pointer]: ...
+            - generic [ref=e263]:
+              - generic [ref=e265] [cursor=pointer]: Wetterinfos München
+              - generic [ref=e266] [cursor=pointer]: ...
+            - generic [ref=e267]:
+              - generic [ref=e269] [cursor=pointer]: Neuer Chat
+              - generic [ref=e270] [cursor=pointer]: ...
+            - generic [ref=e271]:
+              - generic [ref=e273] [cursor=pointer]: Heise News Überblick
+              - generic [ref=e274] [cursor=pointer]: ...
+            - generic [ref=e275]:
+              - generic [ref=e277] [cursor=pointer]: Neuer Chat
+              - generic [ref=e278] [cursor=pointer]: ...
+            - generic [ref=e279]:
+              - generic [ref=e281] [cursor=pointer]: Heise Top-Schlagzeilen
+              - generic [ref=e282] [cursor=pointer]: ...
+            - generic [ref=e283]:
+              - generic [ref=e285] [cursor=pointer]: Neuer Chat
+              - generic [ref=e286] [cursor=pointer]: ...
+            - generic [ref=e287]:
+              - generic [ref=e289] [cursor=pointer]: Entfernung Berlin München
+              - generic [ref=e290] [cursor=pointer]: ...
+            - generic [ref=e291]:
+              - generic [ref=e293] [cursor=pointer]: Neuer Chat
+              - generic [ref=e294] [cursor=pointer]: ...
+            - generic [ref=e295]:
+              - generic [ref=e297] [cursor=pointer]: Entfernung Berlin München
+              - generic [ref=e298] [cursor=pointer]: ...
+            - generic [ref=e299]:
+              - generic [ref=e301] [cursor=pointer]: Neuer Chat
+              - generic [ref=e302] [cursor=pointer]: ...
+            - generic [ref=e303]:
+              - generic [ref=e305] [cursor=pointer]: Nikola Tesla
+              - generic [ref=e306] [cursor=pointer]: ...
+            - generic [ref=e307]:
+              - generic [ref=e309] [cursor=pointer]: Neuer Chat
+              - generic [ref=e310] [cursor=pointer]: ...
+            - generic [ref=e311]:
+              - generic [ref=e313] [cursor=pointer]: Wer war Nikola Tesla
+              - generic [ref=e314] [cursor=pointer]: ...
+            - generic [ref=e315]:
+              - generic [ref=e317] [cursor=pointer]: Neuer Chat
+              - generic [ref=e318] [cursor=pointer]: ...
+            - generic [ref=e319]:
+              - generic [ref=e321] [cursor=pointer]: Regenschirm in München
+              - generic [ref=e322] [cursor=pointer]: ...
+            - generic [ref=e323]:
+              - generic [ref=e325] [cursor=pointer]: Neuer Chat
+              - generic [ref=e326] [cursor=pointer]: ...
+            - generic [ref=e327]:
+              - generic [ref=e329] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e330] [cursor=pointer]: ...
+            - generic [ref=e331]:
+              - generic [ref=e333] [cursor=pointer]: Heise News
+              - generic [ref=e334] [cursor=pointer]: ...
+            - generic [ref=e335]:
+              - generic [ref=e337] [cursor=pointer]: Neuer Chat
+              - generic [ref=e338] [cursor=pointer]: ...
+            - generic [ref=e339]:
+              - generic [ref=e341] [cursor=pointer]: Dateien löschen verweigert
+              - generic [ref=e342] [cursor=pointer]: ...
+            - generic [ref=e343]:
+              - generic [ref=e345] [cursor=pointer]: Neuer Chat
+              - generic [ref=e346] [cursor=pointer]: ...
+            - generic [ref=e347]:
+              - generic [ref=e349] [cursor=pointer]: Infos finden
+              - generic [ref=e350] [cursor=pointer]: ...
+            - generic [ref=e351]:
+              - generic [ref=e353] [cursor=pointer]: Neuer Chat
+              - generic [ref=e354] [cursor=pointer]: ...
+            - generic [ref=e355]:
+              - generic [ref=e357] [cursor=pointer]: Heise News Suche
+              - generic [ref=e358] [cursor=pointer]: ...
+            - generic [ref=e359]:
+              - generic [ref=e361] [cursor=pointer]: Neuer Chat
+              - generic [ref=e362] [cursor=pointer]: ...
+            - generic [ref=e363]:
+              - generic [ref=e365] [cursor=pointer]: Heise News Zusammenfassung
+              - generic [ref=e366] [cursor=pointer]: ...
+            - generic [ref=e367]:
+              - generic [ref=e369] [cursor=pointer]: Neuer Chat
+              - generic [ref=e370] [cursor=pointer]: ...
+            - generic [ref=e371]:
+              - generic [ref=e373] [cursor=pointer]: Entfernung Berlin München
+              - generic [ref=e374] [cursor=pointer]: ...
+            - generic [ref=e375]:
+              - generic [ref=e377] [cursor=pointer]: Neuer Chat
+              - generic [ref=e378] [cursor=pointer]: ...
+            - generic [ref=e379]:
+              - generic [ref=e381] [cursor=pointer]: Entfernung Berlin München
+              - generic [ref=e382] [cursor=pointer]: ...
+            - generic [ref=e383]:
+              - generic [ref=e385] [cursor=pointer]: Neuer Chat
+              - generic [ref=e386] [cursor=pointer]: ...
+            - generic [ref=e387]:
+              - generic [ref=e389] [cursor=pointer]: Nikola Tesla
+              - generic [ref=e390] [cursor=pointer]: ...
+            - generic [ref=e391]:
+              - generic [ref=e393] [cursor=pointer]: Neuer Chat
+              - generic [ref=e394] [cursor=pointer]: ...
+            - generic [ref=e395]:
+              - generic [ref=e397] [cursor=pointer]: Nikola Tesla
+              - generic [ref=e398] [cursor=pointer]: ...
+            - generic [ref=e399]:
+              - generic [ref=e401] [cursor=pointer]: Neuer Chat
+              - generic [ref=e402] [cursor=pointer]: ...
+            - generic [ref=e403]:
+              - generic [ref=e405] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e406] [cursor=pointer]: ...
+            - generic [ref=e407]:
+              - generic [ref=e409] [cursor=pointer]: Neuer Chat
+              - generic [ref=e410] [cursor=pointer]: ...
+            - generic [ref=e411]:
+              - generic [ref=e413] [cursor=pointer]: Regenschirm in München
+              - generic [ref=e414] [cursor=pointer]: ...
+            - generic [ref=e415]:
+              - generic [ref=e417] [cursor=pointer]: Neuer Chat
+              - generic [ref=e418] [cursor=pointer]: ...
+            - generic [ref=e419]:
+              - generic [ref=e421] [cursor=pointer]: Heise Top-Schlagzeilen
+              - generic [ref=e422] [cursor=pointer]: ...
+            - generic [ref=e423]:
+              - generic [ref=e425] [cursor=pointer]: Heise RSS Feed auswerten
+              - generic [ref=e426] [cursor=pointer]: ...
+            - generic [ref=e427]:
+              - generic [ref=e429] [cursor=pointer]: Infos finden
+              - generic [ref=e430] [cursor=pointer]: ...
+            - generic [ref=e431]:
+              - generic [ref=e433] [cursor=pointer]: Neuer Chat
+              - generic [ref=e434] [cursor=pointer]: ...
+            - generic [ref=e435]:
+              - generic [ref=e437] [cursor=pointer]: Tagesnews
+              - generic [ref=e438] [cursor=pointer]: ...
+            - generic [ref=e439]:
+              - generic [ref=e441] [cursor=pointer]: Neuer Chat
+              - generic [ref=e442] [cursor=pointer]: ...
+            - generic [ref=e443]:
+              - generic [ref=e445] [cursor=pointer]: Wie weit ist es
+              - generic [ref=e446] [cursor=pointer]: ...
+            - generic [ref=e447]:
+              - generic [ref=e449] [cursor=pointer]: Neuer Chat
+              - generic [ref=e450] [cursor=pointer]: ...
+            - generic [ref=e451]:
+              - generic [ref=e453] [cursor=pointer]: Erzähl mir über Einstein
+              - generic [ref=e454] [cursor=pointer]: ...
+            - generic [ref=e455]:
+              - generic [ref=e457] [cursor=pointer]: Neuer Chat
+              - generic [ref=e458] [cursor=pointer]: ...
+            - generic [ref=e459]:
+              - generic [ref=e461] [cursor=pointer]: Regenvorhersage München
+              - generic [ref=e462] [cursor=pointer]: ...
+            - generic [ref=e463]:
+              - generic [ref=e465] [cursor=pointer]: Neuer Chat
+              - generic [ref=e466] [cursor=pointer]: ...
+            - generic [ref=e467]:
+              - generic [ref=e469] [cursor=pointer]: Infos anfordern
+              - generic [ref=e470] [cursor=pointer]: ...
+            - generic [ref=e471]:
+              - generic [ref=e473] [cursor=pointer]: Neuer Chat
+              - generic [ref=e474] [cursor=pointer]: ...
+            - generic [ref=e475]:
+              - generic [ref=e477] [cursor=pointer]: Wetter in Berlin
+              - generic [ref=e478] [cursor=pointer]: ...
+            - generic [ref=e479]:
+              - generic [ref=e481] [cursor=pointer]: Neuer Chat
+              - generic [ref=e482] [cursor=pointer]: ...
+            - generic [ref=e483]:
+              - generic [ref=e485] [cursor=pointer]: Heise News Zusammenfassung
+              - generic [ref=e486] [cursor=pointer]: ...
+            - generic [ref=e487]:
+              - generic [ref=e489] [cursor=pointer]: Neuer Chat
+              - generic [ref=e490] [cursor=pointer]: ...
+            - generic [ref=e491]:
+              - generic [ref=e493] [cursor=pointer]: Entfernung Berlin München
+              - generic [ref=e494] [cursor=pointer]: ...
+            - generic [ref=e495]:
+              - generic [ref=e497] [cursor=pointer]: Neuer Chat
+              - generic [ref=e498] [cursor=pointer]: ...
+            - generic [ref=e499]:
+              - generic [ref=e501] [cursor=pointer]: Nikola Tesla
+              - generic [ref=e502] [cursor=pointer]: ...
+            - generic [ref=e503]:
+              - generic [ref=e505] [cursor=pointer]: Neuer Chat
+              - generic [ref=e506] [cursor=pointer]: ...
+            - generic [ref=e507]:
+              - generic [ref=e509] [cursor=pointer]: Regenschirm in München
+              - generic [ref=e510] [cursor=pointer]: ...
+            - generic [ref=e511]:
+              - generic [ref=e513] [cursor=pointer]: Neuer Chat
+              - generic [ref=e514] [cursor=pointer]: ...
+            - generic [ref=e515]:
+              - generic [ref=e517] [cursor=pointer]: Nikola Tesla
+              - generic [ref=e518] [cursor=pointer]: ...
+            - generic [ref=e519]:
+              - generic [ref=e521] [cursor=pointer]: Neuer Chat
+              - generic [ref=e522] [cursor=pointer]: ...
+            - generic [ref=e523]:
+              - generic [ref=e525] [cursor=pointer]: Regenschirm in München
+              - generic [ref=e526] [cursor=pointer]: ...
+            - generic [ref=e527]:
+              - generic [ref=e529] [cursor=pointer]: Neuer Chat
+              - generic [ref=e530] [cursor=pointer]: ...
+            - generic [ref=e531]:
+              - generic [ref=e533] [cursor=pointer]: Wer ist Nikola Tesla
+              - generic [ref=e534] [cursor=pointer]: ...
+            - generic [ref=e535]:
+              - generic [ref=e537] [cursor=pointer]: Neuer Chat
+              - generic [ref=e538] [cursor=pointer]: ...
+            - generic [ref=e539]:
+              - generic [ref=e541] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e542] [cursor=pointer]: ...
+            - generic [ref=e543]:
+              - generic [ref=e545] [cursor=pointer]: Neuer Chat
+              - generic [ref=e546] [cursor=pointer]: ...
+            - generic [ref=e547]:
+              - generic [ref=e549] [cursor=pointer]: Neuer Chat
+              - generic [ref=e550] [cursor=pointer]: ...
+            - generic [ref=e551]:
+              - generic [ref=e553] [cursor=pointer]: Neuer Chat
+              - generic [ref=e554] [cursor=pointer]: ...
+            - generic [ref=e555]:
+              - generic [ref=e557] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e558] [cursor=pointer]: ...
+            - generic [ref=e559]:
+              - generic [ref=e561] [cursor=pointer]: Neuer Chat
+              - generic [ref=e562] [cursor=pointer]: ...
+            - generic [ref=e563]:
+              - generic [ref=e565] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e566] [cursor=pointer]: ...
+            - generic [ref=e567]:
+              - generic [ref=e569] [cursor=pointer]: Regenschirm in München
+              - generic [ref=e570] [cursor=pointer]: ...
+            - generic [ref=e571]:
+              - generic [ref=e573] [cursor=pointer]: Neuer Chat
+              - generic [ref=e574] [cursor=pointer]: ...
+            - generic [ref=e575]:
+              - generic [ref=e577] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e578] [cursor=pointer]: ...
+            - generic [ref=e579]:
+              - generic [ref=e581] [cursor=pointer]: Neuer Chat
+              - generic [ref=e582] [cursor=pointer]: ...
+            - generic [ref=e583]:
+              - generic [ref=e585] [cursor=pointer]: Regenschirm in München
+              - generic [ref=e586] [cursor=pointer]: ...
+            - generic [ref=e587]:
+              - generic [ref=e589] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e590] [cursor=pointer]: ...
+            - generic [ref=e591]:
+              - generic [ref=e593] [cursor=pointer]: Neuer Chat
+              - generic [ref=e594] [cursor=pointer]: ...
+            - generic [ref=e595]:
+              - generic [ref=e597] [cursor=pointer]: Regenschirm in München
+              - generic [ref=e598] [cursor=pointer]: ...
+            - generic [ref=e599]:
+              - generic [ref=e601] [cursor=pointer]: Neuer Chat
+              - generic [ref=e602] [cursor=pointer]: ...
+            - generic [ref=e603]:
+              - generic [ref=e605] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e606] [cursor=pointer]: ...
+            - generic [ref=e607]:
+              - generic [ref=e609] [cursor=pointer]: Neuer Chat
+              - generic [ref=e610] [cursor=pointer]: ...
+            - generic [ref=e611]:
+              - generic [ref=e613] [cursor=pointer]: Neuer Chat
+              - generic [ref=e614] [cursor=pointer]: ...
+            - generic [ref=e615]:
+              - generic [ref=e617] [cursor=pointer]: Neuer Chat
+              - generic [ref=e618] [cursor=pointer]: ...
+            - generic [ref=e619]:
+              - generic [ref=e621] [cursor=pointer]: Neuer Chat
+              - generic [ref=e622] [cursor=pointer]: ...
+            - generic [ref=e623]:
+              - generic [ref=e625] [cursor=pointer]: Neuer Chat
+              - generic [ref=e626] [cursor=pointer]: ...
+            - generic [ref=e627]:
+              - generic [ref=e629] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e630] [cursor=pointer]: ...
+            - generic [ref=e631]:
+              - generic [ref=e633] [cursor=pointer]: Neuer Chat
+              - generic [ref=e634] [cursor=pointer]: ...
+            - generic [ref=e635]:
+              - generic [ref=e637] [cursor=pointer]: Neuer Chat
+              - generic [ref=e638] [cursor=pointer]: ...
+            - generic [ref=e639]:
+              - generic [ref=e641] [cursor=pointer]: Neuer Chat
+              - generic [ref=e642] [cursor=pointer]: ...
+            - generic [ref=e643]:
+              - generic [ref=e645] [cursor=pointer]: Neuer Chat
+              - generic [ref=e646] [cursor=pointer]: ...
+            - generic [ref=e647]:
+              - generic [ref=e649] [cursor=pointer]: Neuer Chat
+              - generic [ref=e650] [cursor=pointer]: ...
+            - generic [ref=e651]:
+              - generic [ref=e653] [cursor=pointer]: Neuer Chat
+              - generic [ref=e654] [cursor=pointer]: ...
+            - generic [ref=e655]:
+              - generic [ref=e657] [cursor=pointer]: Neuer Chat
+              - generic [ref=e658] [cursor=pointer]: ...
+            - generic [ref=e659]:
+              - generic [ref=e661] [cursor=pointer]: Neuer Chat
+              - generic [ref=e662] [cursor=pointer]: ...
+            - generic [ref=e663]:
+              - generic [ref=e665] [cursor=pointer]: Neuer Chat
+              - generic [ref=e666] [cursor=pointer]: ...
+            - generic [ref=e667]:
+              - generic [ref=e669] [cursor=pointer]: Neuer Chat
+              - generic [ref=e670] [cursor=pointer]: ...
+            - generic [ref=e671]:
+              - generic [ref=e673] [cursor=pointer]: Neuer Chat
+              - generic [ref=e674] [cursor=pointer]: ...
+            - generic [ref=e675]:
+              - generic [ref=e677] [cursor=pointer]: Neuer Chat
+              - generic [ref=e678] [cursor=pointer]: ...
+            - generic [ref=e679]:
+              - generic [ref=e681] [cursor=pointer]: Neuer Chat
+              - generic [ref=e682] [cursor=pointer]: ...
+            - generic [ref=e683]:
+              - generic [ref=e685] [cursor=pointer]: Neuer Chat
+              - generic [ref=e686] [cursor=pointer]: ...
+            - generic [ref=e687]:
+              - generic [ref=e689] [cursor=pointer]: Neuer Chat
+              - generic [ref=e690] [cursor=pointer]: ...
+            - generic [ref=e691]:
+              - generic [ref=e693] [cursor=pointer]: Neuer Chat
+              - generic [ref=e694] [cursor=pointer]: ...
+            - generic [ref=e695]:
+              - generic [ref=e697] [cursor=pointer]: Neuer Chat
+              - generic [ref=e698] [cursor=pointer]: ...
+            - generic [ref=e699]:
+              - generic [ref=e701] [cursor=pointer]: Neuer Chat
+              - generic [ref=e702] [cursor=pointer]: ...
+            - generic [ref=e703]:
+              - generic [ref=e705] [cursor=pointer]: Neuer Chat
+              - generic [ref=e706] [cursor=pointer]: ...
+            - generic [ref=e707]:
+              - generic [ref=e709] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e710] [cursor=pointer]: ...
+            - generic [ref=e711]:
+              - generic [ref=e713] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e714] [cursor=pointer]: ...
+            - generic [ref=e715]:
+              - generic [ref=e717] [cursor=pointer]: Neuer Chat
+              - generic [ref=e718] [cursor=pointer]: ...
+            - generic [ref=e719]:
+              - generic [ref=e721] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e722] [cursor=pointer]: ...
+            - generic [ref=e723]:
+              - generic [ref=e725] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e726] [cursor=pointer]: ...
+            - generic [ref=e727]:
+              - generic [ref=e729] [cursor=pointer]: Neuer Chat
+              - generic [ref=e730] [cursor=pointer]: ...
+            - generic [ref=e731]:
+              - generic [ref=e733] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e734] [cursor=pointer]: ...
+            - generic [ref=e735]:
+              - generic [ref=e737] [cursor=pointer]: Neuer Chat
+              - generic [ref=e738] [cursor=pointer]: ...
+            - generic [ref=e739]:
+              - generic [ref=e741] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e742] [cursor=pointer]: ...
+            - generic [ref=e743]:
+              - generic [ref=e745] [cursor=pointer]: Neuer Chat
+              - generic [ref=e746] [cursor=pointer]: ...
+            - generic [ref=e747]:
+              - generic [ref=e749] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e750] [cursor=pointer]: ...
+            - generic [ref=e751]:
+              - generic [ref=e753] [cursor=pointer]: Neuer Chat
+              - generic [ref=e754] [cursor=pointer]: ...
+            - generic [ref=e755]:
+              - generic [ref=e757] [cursor=pointer]: Neuer Chat
+              - generic [ref=e758] [cursor=pointer]: ...
+            - generic [ref=e759]:
+              - generic [ref=e761] [cursor=pointer]: Neuer Chat
+              - generic [ref=e762] [cursor=pointer]: ...
+            - generic [ref=e763]:
+              - generic [ref=e765] [cursor=pointer]: Neuer Chat
+              - generic [ref=e766] [cursor=pointer]: ...
+            - generic [ref=e767]:
+              - generic [ref=e769] [cursor=pointer]: Neuer Chat
+              - generic [ref=e770] [cursor=pointer]: ...
+            - generic [ref=e771]:
+              - generic [ref=e773] [cursor=pointer]: Neuer Chat
+              - generic [ref=e774] [cursor=pointer]: ...
+            - generic [ref=e775]:
+              - generic [ref=e777] [cursor=pointer]: Neuer Chat
+              - generic [ref=e778] [cursor=pointer]: ...
+            - generic [ref=e779]:
+              - generic [ref=e781] [cursor=pointer]: Neuer Chat
+              - generic [ref=e782] [cursor=pointer]: ...
+            - generic [ref=e783]:
+              - generic [ref=e785] [cursor=pointer]: Regenschirm für München
+              - generic [ref=e786] [cursor=pointer]: ...
+            - generic [ref=e787]:
+              - generic [ref=e789] [cursor=pointer]: Neuer Chat
+              - generic [ref=e790] [cursor=pointer]: ...
+            - generic [ref=e791]:
+              - generic [ref=e793] [cursor=pointer]: Regenschirm in München
+              - generic [ref=e794] [cursor=pointer]: ...
+            - generic [ref=e795]:
+              - generic [ref=e797] [cursor=pointer]: Neuer Chat
+              - generic [ref=e798] [cursor=pointer]: ...
+            - generic [ref=e799]:
+              - generic [ref=e801] [cursor=pointer]: Neuer Chat
+              - generic [ref=e802] [cursor=pointer]: ...
+            - generic [ref=e803]:
+              - generic [ref=e805] [cursor=pointer]: Neuer Chat
+              - generic [ref=e806] [cursor=pointer]: ...
+            - generic [ref=e807]:
+              - generic [ref=e809] [cursor=pointer]: Neuer Chat
+              - generic [ref=e810] [cursor=pointer]: ...
+            - generic [ref=e811]:
+              - generic [ref=e813] [cursor=pointer]: Neuer Chat
+              - generic [ref=e814] [cursor=pointer]: ...
+            - generic [ref=e815]:
+              - generic [ref=e817] [cursor=pointer]: Neuer Chat
+              - generic [ref=e818] [cursor=pointer]: ...
+            - generic [ref=e819]:
+              - generic [ref=e821] [cursor=pointer]: Neuer Chat
+              - generic [ref=e822] [cursor=pointer]: ...
+            - generic [ref=e823]:
+              - generic [ref=e825] [cursor=pointer]: Neuer Chat
+              - generic [ref=e826] [cursor=pointer]: ...
+            - generic [ref=e827]:
+              - generic [ref=e829] [cursor=pointer]: Neuer Chat
+              - generic [ref=e830] [cursor=pointer]: ...
+            - generic [ref=e831]:
+              - generic [ref=e833] [cursor=pointer]: Neuer Chat
+              - generic [ref=e834] [cursor=pointer]: ...
+            - generic [ref=e835]:
+              - generic [ref=e837] [cursor=pointer]: Neuer Chat
+              - generic [ref=e838] [cursor=pointer]: ...
+            - generic [ref=e839]:
+              - generic [ref=e841] [cursor=pointer]: Neuer Chat
+              - generic [ref=e842] [cursor=pointer]: ...
+            - generic [ref=e843]:
+              - generic [ref=e845] [cursor=pointer]: Regenschirm in München
+              - generic [ref=e846] [cursor=pointer]: ...
+            - generic [ref=e847]:
+              - generic [ref=e849] [cursor=pointer]: Neuer Chat
+              - generic [ref=e850] [cursor=pointer]: ...
+            - generic [ref=e851]:
+              - generic [ref=e853] [cursor=pointer]: Neuer Chat
+              - generic [ref=e854] [cursor=pointer]: ...
+            - generic [ref=e855]:
+              - generic [ref=e857] [cursor=pointer]: Neuer Chat
+              - generic [ref=e858] [cursor=pointer]: ...
+            - generic [ref=e859]:
+              - generic [ref=e861] [cursor=pointer]: Neuer Chat
+              - generic [ref=e862] [cursor=pointer]: ...
+            - generic [ref=e863]:
+              - generic [ref=e865] [cursor=pointer]: Neuer Chat
+              - generic [ref=e866] [cursor=pointer]: ...
+            - generic [ref=e867]:
+              - generic [ref=e869] [cursor=pointer]: Neuer Chat
+              - generic [ref=e870] [cursor=pointer]: ...
+            - generic [ref=e871]:
+              - generic [ref=e873] [cursor=pointer]: Neuer Chat
+              - generic [ref=e874] [cursor=pointer]: ...
+            - generic [ref=e875]:
+              - generic [ref=e877] [cursor=pointer]: Neuer Chat
+              - generic [ref=e878] [cursor=pointer]: ...
+            - generic [ref=e879]:
+              - generic [ref=e881] [cursor=pointer]: Chat Funktionen Überblick
+              - generic [ref=e882] [cursor=pointer]: ...
+            - generic [ref=e883]:
+              - generic [ref=e885] [cursor=pointer]: Neuer Chat
+              - generic [ref=e886] [cursor=pointer]: ...
+            - generic [ref=e887]:
+              - generic [ref=e889] [cursor=pointer]: Neuer Chat
+              - generic [ref=e890] [cursor=pointer]: ...
+            - generic [ref=e891]:
+              - generic [ref=e893] [cursor=pointer]: Neuer Chat
+              - generic [ref=e894] [cursor=pointer]: ...
+            - generic [ref=e895]:
+              - generic [ref=e897] [cursor=pointer]: Neuer Chat
+              - generic [ref=e898] [cursor=pointer]: ...
+            - generic [ref=e899]:
+              - generic [ref=e901] [cursor=pointer]: Neuer Chat
+              - generic [ref=e902] [cursor=pointer]: ...
+            - generic [ref=e903]:
+              - generic [ref=e905] [cursor=pointer]: Neuer Chat
+              - generic [ref=e906] [cursor=pointer]: ...
+            - generic [ref=e907]:
+              - generic [ref=e909] [cursor=pointer]: Neuer Chat
+              - generic [ref=e910] [cursor=pointer]: ...
+            - generic [ref=e911]:
+              - generic [ref=e913] [cursor=pointer]: Assistenten-Funktionen Übersicht
+              - generic [ref=e914] [cursor=pointer]: ...
+            - generic [ref=e915]:
+              - generic [ref=e917] [cursor=pointer]: Neuer Chat
+              - generic [ref=e918] [cursor=pointer]: ...
+            - generic [ref=e919]:
+              - generic [ref=e921] [cursor=pointer]: Neuer Chat
+              - generic [ref=e922] [cursor=pointer]: ...
+            - generic [ref=e923]:
+              - generic [ref=e925] [cursor=pointer]: Neuer Chat
+              - generic [ref=e926] [cursor=pointer]: ...
+            - generic [ref=e927]:
+              - generic [ref=e929] [cursor=pointer]: Neuer Chat
+              - generic [ref=e930] [cursor=pointer]: ...
+            - generic [ref=e931]:
+              - generic [ref=e933] [cursor=pointer]: Neuer Chat
+              - generic [ref=e934] [cursor=pointer]: ...
+            - generic [ref=e935]:
+              - generic [ref=e937] [cursor=pointer]: Neuer Chat
+              - generic [ref=e938] [cursor=pointer]: ...
+            - generic [ref=e939]:
+              - generic [ref=e941] [cursor=pointer]: Neuer Chat
+              - generic [ref=e942] [cursor=pointer]: ...
+      - contentinfo [ref=e943]: v0.4.17-beta.31
+    - main [ref=e944]:
+      - generic:
+        - generic:
+          - region "Chat-Fenster A" [ref=e946]:
+            - generic [ref=e947]:
+              - generic [ref=e948]:
+                - button "Position und Größe zurücksetzen" [ref=e949] [cursor=pointer]: ⟲
+                - generic [ref=e951]: Neuer Chat
+                - button "Fenster A minimieren" [ref=e953] [cursor=pointer]: _
+              - group "Provider und Modell für Fenster A" [ref=e954]:
+                - generic [ref=e955]: Provider
+                - combobox "Provider Fenster A" [ref=e956] [cursor=pointer]:
+                  - option "↳ Wie Sidebar (Gemini)"
+                  - option "OpenAI"
+                  - option "Gemini" [selected]
+                  - option "Ollama (Lokal)"
+                - generic [ref=e957]: Modell
+                - combobox "Modell Fenster A" [ref=e958] [cursor=pointer]:
+                  - option "Gemini 3 Flash (Preview) (0.50€/Mio. in / 3.00€/Mio. out) - Schnelles und kostengünstiges Gemini 3 Modell (Preview)." [selected]
+              - 'generic "14 / 934.464 Tokens · 934.450 verbleibend · Modell: gemini-3-flash-preview" [ref=e959]':
+                - generic [ref=e961]: Kontext
+                - generic [ref=e962]: 0%
+            - generic [ref=e963]:
+              - generic [ref=e964]:
+                - paragraph [ref=e966]:
+                  - paragraph [ref=e967]: Wie weit ist Berlin von München?
+                - generic [ref=e968]: 23:19
+              - generic [ref=e969]:
+                - generic [ref=e970]:
+                  - paragraph [ref=e971]: Berlin ist etwa 585 km von München entfernt. Die Fahrzeit mit dem Auto beträgt ungefähr 5 Stunden und 55 Minuten.
+                  - paragraph [ref=e972]:
+                    - text: "💡 Vorschlag:"
+                    - text: • Soll ich dir eine detaillierte Route mit aktuellen Verkehrsinformationen für diese Strecke erstellen?
+                - generic [ref=e973]: 23:19
+            - generic [ref=e976]:
+              - button "Datei anhängen" [ref=e977] [cursor=pointer]: 📎
+              - textbox "Nachricht an Janus senden..." [active] [ref=e979]
+              - generic [ref=e980]:
+                - button "Spracheingabe" [ref=e981] [cursor=pointer]: 🎤
+                - button "TTS" [ref=e982] [cursor=pointer]: 🔊
+                - button "Senden" [ref=e983]
+          - region "Chat-Fenster B" [ref=e985]:
+            - generic [ref=e986]:
+              - generic [ref=e987]:
+                - button "Position und Größe zurücksetzen" [ref=e988] [cursor=pointer]: ⟲
+                - generic [ref=e990]: Neuer Chat
+                - generic [ref=e991]:
+                  - button "Fenster B minimieren" [ref=e992] [cursor=pointer]: _
+                  - button "Zweites Fenster ausblenden" [ref=e993] [cursor=pointer]: ×
+              - group "Provider und Modell für Fenster B" [ref=e994]:
+                - generic [ref=e995]: Provider
+                - combobox "Provider Fenster B" [ref=e996] [cursor=pointer]:
+                  - option "↳ Wie Sidebar (Gemini)" [selected]
+                  - option "OpenAI"
+                  - option "Gemini"
+                  - option "Ollama (Lokal)"
+                - generic [ref=e997]: Modell
+                - combobox "Modell Fenster B" [ref=e998] [cursor=pointer]:
+                  - option "Gemini 3 Flash (Preview) (0.50€/Mio. in / 3.00€/Mio. out) - Schnelles und kostengünstiges Gemini 3 Modell (Preview)." [selected]
+              - 'generic "0 / 934.464 Tokens · 934.464 verbleibend · Modell: gemini-3-flash-preview" [ref=e999]':
+                - generic [ref=e1001]: Kontext
+                - generic [ref=e1002]: 0%
+            - generic [ref=e1006]:
+              - button "Datei anhängen" [ref=e1007] [cursor=pointer]: 📎
+              - textbox "Nachricht an Janus senden..." [ref=e1009]
+              - generic [ref=e1010]:
+                - button "Spracheingabe" [ref=e1011] [cursor=pointer]: 🎤
+                - button "TTS" [ref=e1012] [cursor=pointer]: 🔊
+                - button "Senden" [ref=e1013]
+    - generic "Taskleiste" [ref=e1014]
+    - text: ✓
+  - text: ↗ ⚠
+```

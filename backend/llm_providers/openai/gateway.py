@@ -92,6 +92,7 @@ class OpenAIGateway(BaseProviderGateway):
         tool_limit_reached: bool = False,
         allow_pdf_enrichment: bool = False,
         provider_service: Optional[OpenAIServiceProvider] = None,
+        force_tool_name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Zentraler Einstiegspunkt für das OpenAI-Silo.
@@ -111,6 +112,7 @@ class OpenAIGateway(BaseProviderGateway):
                 max_tool_rounds=max_tool_rounds,
                 image_data=image_data,
                 db=db,
+                force_tool_name=force_tool_name,
             )
 
         # 2. Wenn tool_results vorhanden -> Bestehende Synthese-Logik
@@ -272,6 +274,48 @@ class OpenAIGateway(BaseProviderGateway):
             _loop_output_tokens += int(_r_usage.get("output_tokens", 0))
 
             if response.get("type") != "tool_code":
+                if _round_force and current_round == 1:
+                    forced_tool_call = self.build_forced_fallback_tool_call(
+                        {
+                            "skill_id": _round_force,
+                            "provider_tool_name": _round_force,
+                        },
+                        user_prompt=user_prompt,
+                        chat_history=current_chat_history,
+                        fallback_text=str(response.get("text") or ""),
+                    )
+                    if forced_tool_call:
+                        forced_preflight = _prevalidate_tool_calls([forced_tool_call], user_prompt=user_prompt)
+                        forced_validated_calls = forced_preflight["valid_calls"]
+                        if forced_validated_calls:
+                            logger.warning(
+                                "OPENAI-FORCED-TOOL-FALLBACK: Model returned text despite forced tool '%s'; executing deterministic fallback.",
+                                _round_force,
+                            )
+                            executor_results = await tool_executor.execute_tool_calls(forced_validated_calls)
+                            for _tr in (executor_results or []):
+                                if isinstance(_tr, dict):
+                                    _all_tool_results.append(_tr)
+                            raw_forced_assistant_response = {
+                                "role": "assistant",
+                                "content": None,
+                                "tool_calls": [
+                                    {
+                                        "id": forced_tool_call.get("id"),
+                                        "type": "function",
+                                        "function": {
+                                            "name": str(forced_tool_call.get("function", {}).get("name") or "").replace(".", "_"),
+                                            "arguments": forced_tool_call.get("function", {}).get("arguments", "{}"),
+                                        },
+                                    }
+                                ],
+                            }
+                            current_chat_history = self.service.prepare_history_for_second_call(
+                                chat_history=current_chat_history,
+                                raw_assistant_response=raw_forced_assistant_response,
+                                tool_results=executor_results,
+                            )
+                            continue
                 # 💎 MoA-Rücksprung: Wenn Tool-Modell != User-Modell,
                 # verwerfe den Text des Tool-Modells und synthetisiere mit dem User-Basismodell.
                 if moa_active:
@@ -489,6 +533,39 @@ class OpenAIGateway(BaseProviderGateway):
                 },
             }
 
+        if skill_id == "system.wikipedia_summary":
+            query = cls._extract_wikipedia_fallback_query(user_prompt)
+            if not query:
+                return None
+            args = {
+                "query": query,
+                "lang": "de",
+            }
+            return {
+                "id": "fallback_forced_wikipedia_summary",
+                "type": "function",
+                "function": {
+                    "name": provider_tool_name,
+                    "arguments": json.dumps(args, ensure_ascii=False),
+                },
+            }
+
+        if skill_id == "system.rss_news":
+            source = cls._extract_rss_fallback_source(user_prompt)
+            if not source:
+                return None
+            args = {
+                "source": source,
+            }
+            return {
+                "id": "fallback_forced_rss_news",
+                "type": "function",
+                "function": {
+                    "name": provider_tool_name,
+                    "arguments": json.dumps(args, ensure_ascii=False),
+                },
+            }
+
         if skill_id == "system.generate_image":
             title = re.sub(
                 r"\.pdf$",
@@ -574,6 +651,37 @@ class OpenAIGateway(BaseProviderGateway):
                 },
             }
 
+        return None
+
+    @staticmethod
+    def _extract_wikipedia_fallback_query(user_prompt: str) -> str:
+        query = re.sub(r"\s+", " ", str(user_prompt or "")).strip(" ?!.,:;\"'")
+        query = re.sub(
+            r"^(wer|was)\s+(ist|war|sind|waren)\s+",
+            "",
+            query,
+            flags=re.IGNORECASE,
+        )
+        query = re.sub(
+            r"^(erkläre|erklaere|beschreibe|definiere)\s+",
+            "",
+            query,
+            flags=re.IGNORECASE,
+        )
+        query = re.sub(
+            r"^(gib mir|zeige mir|such[e]?\s+mir)\s+(eine\s+)?(wikipedia[- ]?)?(zusammenfassung\s+)?(zu|über|ueber)\s+",
+            "",
+            query,
+            flags=re.IGNORECASE,
+        )
+        return query.strip(" ?!.,:;\"'")
+
+    @staticmethod
+    def _extract_rss_fallback_source(user_prompt: str) -> Optional[str]:
+        lowered = str(user_prompt or "").lower()
+        for source in ("spiegel", "gamestar", "tagesschau", "zeit", "heise", "reuters", "bbc"):
+            if source in lowered:
+                return source
         return None
 
     @classmethod

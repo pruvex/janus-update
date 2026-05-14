@@ -1,0 +1,20 @@
+{
+  "testRunId": "TEST-RUN-2026-05-12-001",
+  "testCaseId": "TC-001",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Brauche ich morgen in München einen Regenschirm?",
+  "response": "Ja — nimm morgen in München auf jeden Fall einen Regenschirm mit. Es wird leichter Regen erwartet, mit 68% Niederschlagswahrscheinlichkeit.\nQuelle: Open-Meteo\n💡 Vorschlag:• Wenn du willst, sag mir dein Stadtteil/nahegelegenen Punkt in München, dann prüfe ich es noch genauer.\n01:35",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-12T23:35:26.076Z"
+}

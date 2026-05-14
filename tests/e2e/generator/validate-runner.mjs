@@ -76,11 +76,24 @@ function main() {
   }
 
   // 7. Must contain error classifications
-  const requiredClassifications = ['RUNNER_SELECTOR_FAILURE', 'RUNNER_WAIT_FAILURE', 'RUNNER_STREAM_TIMEOUT', 'FRONTEND_NOT_READY', 'BACKEND_HEALTH_FAIL', 'PROVIDER_TIMEOUT', 'TOOL_ROUTING_FAILURE', 'ASSERTION_MISMATCH'];
+  const requiredClassifications = ['RUNNER_SELECTOR_FAILURE', 'RUNNER_WAIT_FAILURE', 'RUNNER_STREAM_TIMEOUT', 'FRONTEND_NOT_READY', 'BACKEND_HEALTH_FAIL', 'INFRASTRUCTURE_OFFLINE', 'PROVIDER_TIMEOUT', 'TOOL_ROUTING_FAILURE', 'ASSERTION_MISMATCH'];
   for (const cls of requiredClassifications) {
     if (!runnerSrc.includes(cls)) {
       errors.push(`Runner missing error classification: ${cls}`);
     }
+  }
+
+  if (!runnerSrc.includes('async function selectModel')) {
+    errors.push('Runner missing selectModel helper');
+  }
+  if (!runnerSrc.includes('async function waitSendButtonReady')) {
+    errors.push('Runner missing waitSendButtonReady helper');
+  }
+  if (!runnerSrc.includes('MODEL_PLAN_MAP')) {
+    errors.push('Runner missing MODEL_PLAN_MAP');
+  }
+  if (!runnerSrc.includes(plan.strategies.modelSelection || 'model_selection_v1')) {
+    errors.push(`Runner missing ${plan.strategies.modelSelection || 'model_selection_v1'} (evidence strategyVersions or registry marker)`);
   }
 
   // 8. Must contain stream request observation

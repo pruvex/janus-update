@@ -237,7 +237,11 @@ def _derive_video_list_metadata_from_tool_results(tool_results: List[Dict[str, A
         if not isinstance(tr, dict):
             continue
         name = str(tr.get("name") or "").strip().lower()
-        logger.info("💎 VIDEO-LIST-METADATA: Checking tool result: name=%s", name)
+        # DEBUG: sonst wirkt jedes Tool (z.B. system.weather) wie ein „Gemini-Wetter“-Marker in Logs.
+        if name == "video.search":
+            logger.info("💎 VIDEO-LIST-METADATA: Inspecting video.search tool result")
+        else:
+            logger.debug("💎 VIDEO-LIST-METADATA: Skipping non-video tool name=%s", name)
         if name not in {"video.search"}:
             continue
         raw_payload = tr.get("_raw_content") or tr.get("content") or "{}"

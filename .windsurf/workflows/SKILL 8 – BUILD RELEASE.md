@@ -28,6 +28,8 @@ This workflow mutates external state only in the publish phase. Do not publish w
 
 ## Hard Rules
 
+STRICT PROVIDER ISOLATION: Janus ist ein BYOK-Tool. Implementiere oder erlaube NIEMALS automatische Provider-Fallbacks (z.B. Gemini zu GPT) im Produktcode. Wenn ein Provider-spezifischer Test (z.B. Gemini) fehlschlägt, muss er als Fehler dieses Providers behandelt werden. Ein Ausweichen auf einen anderen Provider zur Fehlerumgehung ist STRENG VERBOTEN.
+
 - Do not run production publish if SKILL 6 was not `PASS` or `PASS WITH FIXES`.
 - Do not run production publish if Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE` was not completed.
 - Do not run production publish if `/save` was not completed after Skill 7.

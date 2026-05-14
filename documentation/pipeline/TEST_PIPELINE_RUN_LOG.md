@@ -167,6 +167,58 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
   - Production Confidence: 39%
   - Gesamtergebnis: PARTIAL (nur TC-001 verifiziert, unzureichende Coverage)
 
+### TEST-RUN-2026-05-13-001 – Intent Recognition & Tool Routing Engine – Parity Test
+
+- **TestRun-ID**: TEST-RUN-2026-05-13-001
+- **Datum**: 2026-05-13
+- **Quelle**: TestSpec
+- **Artefakte**: `documentation/TEST_SPEC/REVIEW EXECUTION ROUTING.md`, `documentation/test-runs/TEST-RUN-2026-05-13-PARITY_plan.json`, `documentation/test-results/TEST-RUN-2026-05-13-001_results.md`
+- **Getestete Faehigkeit**: Intent Recognition & Tool Routing Engine
+- **Pipeline-Route**: TEST SKILL 1 -> TEST SKILL 2 -> TEST SKILL 3 -> TEST SKILL 4 -> TEST SKILL 5
+- **Skill-Ergebnisse**:
+  - TEST SKILL 1: PASS
+  - TEST SKILL 2: PASS
+  - TEST SKILL 3: PASS
+  - TEST SKILL 4: PASS
+  - TEST SKILL 5: RETEST REQUIRED
+  - SKILL 7: N/A
+- **Security Gate**:
+  - Userdaten sicher: JA
+  - Destruktive Aktionen isoliert: JA
+  - Prompt-Injection-Risiko geprueft: JA
+  - Prompt-Injection-Befund: MEDIUM (Partial Pass - malicious commands blocked but legitimate query portion processed)
+  - Sensitive Daten in Logs vermieden: JA
+  - Persistenzrisiko geprueft: N/A
+  - Security-Gesamtergebnis: PASS WITH WATCHPOINTS
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: gpt-5.4-nano – PARTIAL (weather PASS, wiki_fact FAIL, country_info FAIL, news_rss FAIL)
+  - GPT Default/Quality, falls noetig: N/A
+  - Gemini Smallest Viable: gemini-3-flash-preview – PARTIAL (weather PASS, wiki_fact FAIL, country_info FAIL, news_rss FAIL)
+  - Gemini Default/Quality, falls noetig: N/A
+  - GPT-5.5 nur falls Eskalation: N/A
+- **UX-Ergebnis**: Clarification request funktioniert aber Phrasierung weicht von Erwartung ab
+- **Intent-/Skill-Routing-Ergebnis**: 6/8 Functional Tests FAIL - wiki_fact, country_info, news_rss nicht korrekt geroutet, stattdessen system_routing/system_price_comparison
+- **Kosten-/Token-Ergebnis**: Nicht erfasst
+- **Capability-Erklaerfaehigkeit**: N/A (nicht getestet)
+- **Findings**:
+  - BACKLOG-028: Tool Routing Failures (HIGH) - wiki_fact, country_info, news_rss nicht getriggert
+  - Provider Parity Issues (MEDIUM) - Gemini zeigt anderes Verhalten als GPT
+  - Prompt Injection Potential Vulnerability (MEDIUM) - legitimer Query-Teil trotz Injection verarbeitet
+  - Ambiguous Request Handling (LOW) - Clarification-Phrasierung abweichend
+- **Sofortfixes**:
+  - Keine
+- **Backlog-Follow-ups**:
+  - BACKLOG-028: Intent Engine nutzt LLM-Wissen statt system.weather Tool für Wetter-Anfragen (REOPENED)
+  - BACKLOG-025: Frontend Rendering Failure: "win is not defined" JavaScript Error (REOPENED)
+- **Nebenbefunde ausserhalb TestScope**:
+  - Keine
+- **Optimierungspotential fuer Testpipeline**:
+  - Keine
+- **Abschluss**:
+  - Diamond Confidence Score: 4.8/10
+  - Production Confidence: 48%
+  - Gesamtergebnis: RETEST REQUIRED
+
 ## Auswertungsbereich
 
 Dieser Bereich wird nach mehreren echten TestRuns gepflegt, z. B. nach 5-10 Runs oder nach einigen Arbeitstagen.

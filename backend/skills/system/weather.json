@@ -1,7 +1,7 @@
 {
   "legacy_name": "get_weather_from_api_tool",
   "skill": "system.weather",
-  "description": "Liefert die Wettervorhersage für eine Stadt via Open-Meteo API. Unterstützt Datumsangaben bis 10 Tage in die Zukunft. Fallback auf wttr.in bei fehlendem API-Key.",
+  "description": "Liefert die Wettervorhersage für eine Stadt via Open-Meteo API. Unterstützt Datumsangaben bis 10 Tage in die Zukunft. Fallback auf wttr.in bei fehlendem API-Key. Ideal für Fragen nach dem Bedarf von Regenschirmen, Sonnenschutz oder Kleidungswahl basierend auf der Vorhersage (z. B. 'Brauche ich morgen einen Regenschirm in Berlin?', 'Wie soll ich mich anziehen?', 'Ist es heiß genug für Sonnencreme?'). Diese indirekten Bedarfsfragen sind reine Wetterfragen und gehören zu diesem Tool, nicht zur Websuche.",
   "version": "1.1.0",
   "sandbox_level": "unrestricted",
   "latency_class": "normal",

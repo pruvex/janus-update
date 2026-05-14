@@ -32,6 +32,8 @@ This workflow is a documentation and registry sync step. It is not an implementa
 
 ## Hard Rules
 
+STRICT PROVIDER ISOLATION: Janus ist ein BYOK-Tool. Implementiere oder erlaube NIEMALS automatische Provider-Fallbacks (z.B. Gemini zu GPT) im Produktcode. Wenn ein Provider-spezifischer Test (z.B. Gemini) fehlschlägt, muss er als Fehler dieses Providers behandelt werden. Ein Ausweichen auf einen anderen Provider zur Fehlerumgehung ist STRENG VERBOTEN.
+
 - Do not run Skill 7 if `/2_final-audit` or Skill 6 returned `BLOCKED`.
 - Do not run Skill 7 if the manual Janus test failed and Skill 5 has not resolved it.
 - Do not run Skill 7 if Skill 6 requested re-run of Skill 4.
@@ -59,8 +61,11 @@ Allowed safe edits:
 - Record Skill-7 version bump details.
 - Verify and, if necessary, repair the completed Spec dashboard marker after successful Skill-6 audit.
 - Move completed Spec files to `documentation/SPEC/Spec Done/` if Skill 6 did not already move them.
-- Move completed Backlog items from `IN PROGRESS` to `DONE` when the implementation originated from `BACKLOG-XXX`, preserving dashboard-readable lifecycle fields.
-- Keep Backlog status sections canonical when moving items: one `## NEEDS INFO`, one `## READY`, one `## IN PROGRESS`, one `## DONE`, one `## BLOCKED`; item section must match its `Status` field.
+- Move completed Backlog items to `## DONE` when the implementation originated from `BACKLOG-XXX`, preserving dashboard-readable lifecycle fields (not only `IN PROGRESS` — items may sit in `## READY` while work completes).
+- **MOVE-not-COPY (Active → History):** Each `### BACKLOG-XXX` block must appear **exactly once** in `documentation/backlog/BACKLOG.md`. When closing an item, **remove the entire `### BACKLOG-XXX` block from every active section** (`## READY`, `## NEEDS INFO`, `## IN PROGRESS`, `## BLOCKED`), then place the **single** canonical block under `## DONE`. Never leave a duplicate under `## READY` (or any active section) while also adding a copy under `## DONE` — the dashboard Kanban treats non-`DONE` sections as **Active**; duplicates keep the card stuck there after refresh.
+- Keep Backlog status sections canonical: one `## NEEDS INFO`, one `## READY`, one `## IN PROGRESS`, one `## DONE`, one `## BLOCKED`; the item's `**Status:**` line must match the `##` section it lives under.
+- After changing `BACKLOG.md`, refresh the dashboard data: from `janus-dashboard/`, run `npm run sync:backlog` (regenerates `janus-dashboard/data/backlog.snapshot.json` from the parser). If the command cannot run, state that in the report; the API may still parse live `BACKLOG.md` when the snapshot file is older, but the committed snapshot must not stay stale in the repo after Skill 7.
+- Before finishing Backlog Sync, verify: for each closed `BACKLOG-XXX`, a repo search shows **one** `### BACKLOG-XXX` heading and it appears only under `## DONE`.
 - Delete resolved temporary Skill-5 and Skill-6 handover/escalation/re-audit files matching `.windsurf/tmp/skill5_*.md` and `.windsurf/tmp/skill6_*.md`, but only if their names clearly indicate a temporary handover (contain `escalation`, `handover`, `re_audit`, a timestamp, or a task/backlog reference).
 
 ---
@@ -603,13 +608,14 @@ Rules:
 - Only run after Skill 6 final audit is `PASS` or `PASS WITH FIXES` and the manual Janus test gate is `PASS`, `N/A`, or `DEFERRED WITH REASON`.
 - Do not mark Backlog items as `DONE` if Skill 5 debug is still open, blocked, or awaiting retest.
 - Do not delete Backlog items permanently.
-- Move completed items from `IN PROGRESS` to `DONE`.
-- If the item is still in `READY` but the task was completed, move it to `DONE` and record that the `IN PROGRESS` transition was skipped.
+- Move completed items to `DONE` from `IN PROGRESS`, or directly from `READY` / `NEEDS INFO` when implementation finished without an `IN PROGRESS` row (record if the `IN PROGRESS` step was skipped).
+- **Active purge (mandatory):** After writing the `DONE` entry, search `BACKLOG.md` for `### BACKLOG-XXX` for that same id. If more than one block exists, delete every duplicate outside `## DONE` in full (do not strip only the `Status` line). Skill 7 is not complete until the id is unique.
 - If the Backlog item cannot be found, record `Backlog Sync: skipped — item not found` in the final report.
 - Preserve existing `Entry Point`, `Routing reason`, `Routing confidence`, `Handoff`, and `Recommended next skill` fields for dashboard history.
 - Do not delete completed items or remove their handoff references.
 - When marking an item `DONE`, move the complete `### BACKLOG-XXX` block under the single canonical `## DONE` heading; do not only edit the `Status` field.
-- After Backlog Sync, verify there are no duplicate status headings and no section/status mismatch for any `BACKLOG-XXX` item.
+- After Backlog Sync, verify there are no duplicate `### BACKLOG-XXX` headings for the same id, no duplicate `## READY`/`## DONE` section pairs for one id, and no section/`Status` mismatch.
+- Run `npm run sync:backlog` inside `janus-dashboard/` after `BACKLOG.md` edits so the checked-in snapshot matches; note pass/fail in the final report.
 
 Update the item with:
 
@@ -628,6 +634,8 @@ Final report must include:
 - **Backlog:** updated | skipped + reason
 - **Backlog ID:** BACKLOG-XXX | none
 - **Backlog section consistency:** PASS | FAIL | skipped + reason
+- **Backlog id uniqueness (no READY+DONE duplicate):** PASS | FAIL | skipped + reason
+- **Backlog dashboard snapshot (`janus-dashboard/data/backlog.snapshot.json`):** synced | skipped + reason
 ```
 
 ---
@@ -719,6 +727,8 @@ Return:
 - **Derived capabilities:** [user-visible abilities added/merged or none]
 - **Spec Dashboard Completion Sync:** [updated / normalized / already valid / skipped + reason]
 - **Backlog:** [updated / skipped + reason]
+- **Backlog id uniqueness:** [PASS / FAIL — must PASS if any BACKLOG-XXX was closed]
+- **Backlog dashboard snapshot:** [synced via `npm run sync:backlog` / skipped + reason]
 - **Backward refs:** [updated / none / skipped + reason]
 - **Skill 5/6:** [not needed / fixed + retest pass / skipped + reason]
 - **Skill 5/6 temp cleanup:** [deleted / skipped / warning + reason]

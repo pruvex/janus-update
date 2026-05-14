@@ -871,6 +871,10 @@ class IntentDetectionResult:
     is_explicit_pdf_intent: bool = False
     # Filesystem Intent (TASK-001: BACKLOG-004)
     is_filesystem_intent: bool = False
+    # Wikipedia / Knowledge (BACKLOG-031: mandatory tool routing)
+    is_wikipedia_intent: bool = False
+    # News / RSS (BACKLOG-031: mandatory tool routing)
+    is_news_intent: bool = False
 
     primary_intent: Optional[str] = None
     vetoed_intents: Dict[str, str] = field(default_factory=dict)
@@ -1461,6 +1465,55 @@ class IntentEngine:
         return False
 
     @staticmethod
+    def detect_wikipedia_intent(user_text: str) -> bool:
+        """True bei Wikipedia-/Wissensfragen über Personen, Konzepte, Ereignisse.
+        
+        BACKLOG-031: Erkennt Anfragen für system.wikipedia_summary Tool.
+        """
+        if not user_text or not user_text.strip():
+            return False
+        t = user_text.casefold()
+        # Explizite Wikipedia-Marker
+        if "wikipedia" in t:
+            return True
+        # Person- und Konzept-Fragen
+        if re.search(r"\b(?:wer ist|wer war|was ist|was war|erzähl mir über|erzähle mir über|sag mir über|info über|informationen über)\b", t):
+            return True
+        # Biografie-Marker
+        if re.search(r"\b(?:biografie|biographie|leben|geboren|gestorben)\b", t):
+            return True
+        # Wissensfragen
+        if re.search(r"\b(?:was weißt du über|was weisst du über|erklär mir|erkläre mir)\b", t):
+            return True
+        # Historische Ereignisse
+        if re.search(r"\b(?:wann geschah|wann passierte|historie|geschichte)\b", t):
+            return True
+        return False
+
+    @staticmethod
+    def detect_news_intent(user_text: str) -> bool:
+        """True bei Nachrichten-/News-Abfragen.
+        
+        BACKLOG-031: Erkennt Anfragen für system.rss_news Tool.
+        """
+        if not user_text or not user_text.strip():
+            return False
+        t = user_text.casefold()
+        # Explizite News-Marker
+        if re.search(r"\b(?:news|nachrichten|neuigkeiten|schlagzeilen|aktuell|neueste|latest news)\b", t):
+            return True
+        # Was gibt es Neues-Muster
+        if re.search(r"\bwas gibt es neues\b", t):
+            return True
+        # Heise/Tagesschau-spezifisch
+        if re.search(r"\b(?:heise|tagesschau|spiegel|zeit)\b", t):
+            return True
+        # Tagesaktuelle Fragen
+        if re.search(r"\b(?:heute|morgen|gestern)\s+.*\b(?:news|nachrichten)\b", t):
+            return True
+        return False
+
+    @staticmethod
     def detect_explicit_pdf_intent(user_text: str) -> bool:
         """True, wenn der Nutzer ausdrücklich ein PDF-/Export-Ziel fordert."""
         if not user_text or not user_text.strip():
@@ -1545,6 +1598,8 @@ class IntentEngine:
 
         routing_geo_on = self.detect_routing_geo_intent(user_text)
         weather_on = self.detect_weather_intent(user_text)
+        wikipedia_on = self.detect_wikipedia_intent(user_text)
+        news_on = self.detect_news_intent(user_text)
         snapshot_overlap = calendar_user_text_overlap_snapshot(user_text, calendar_snapshot)
 
         commerce_blocks_snapshot_calendar = (
@@ -1643,6 +1698,8 @@ class IntentEngine:
             is_model_query=self.detect_model_introspektion(user_text),
             is_routing_geo_intent=routing_geo_on,
             is_weather_intent=weather_on,
+            is_wikipedia_intent=wikipedia_on,
+            is_news_intent=news_on,
             is_explicit_pdf_intent=self.detect_explicit_pdf_intent(user_text),
             is_filesystem_intent=self.detect_filesystem_intent(user_text),
             vetoed_intents=vetoed,
@@ -1663,6 +1720,8 @@ class IntentEngine:
             ("shopping", result.is_shopping_intent),
             ("routing_geo", result.is_routing_geo_intent),
             ("weather", result.is_weather_intent),
+            ("wikipedia", result.is_wikipedia_intent),
+            ("news", result.is_news_intent),
             ("video_list", result.is_video_list_intent),
             ("video", result.is_video_intent),
             ("personal_recall", result.is_personal_recall),

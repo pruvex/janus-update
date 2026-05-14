@@ -153,6 +153,7 @@ Task MUSS erfÃ¼llen:
 - klare Acceptance Criteria
 - keine offenen Architekturfragen
 - deterministisch ausfÃ¼hrbar
+- **PROVIDER SEPARATION CHECK:** Prüft der Task die Funktionalität isoliert pro Provider? Ist sichergestellt, dass die Validierung nicht durch einen stillschweigenden Provider-Wechsel verfälscht wird?
 
 ---
 
@@ -259,6 +260,9 @@ Reason:
 
 No safe execution path available.
 ðŸš« RESTRICTIONS
+
+STRICT PROVIDER ISOLATION: Janus ist ein BYOK-Tool. Implementiere oder erlaube NIEMALS automatische Provider-Fallbacks (z.B. Gemini zu GPT) im Produktcode. Wenn ein Provider-spezifischer Test (z.B. Gemini) fehlschlägt, muss er als Fehler dieses Providers behandelt werden. Ein Ausweichen auf einen anderen Provider zur Fehlerumgehung ist STRENG VERBOTEN.
+
 KEINE CodeausfÃ¼hrung
 KEINE Implementation
 KEINE Architekturentscheidungen

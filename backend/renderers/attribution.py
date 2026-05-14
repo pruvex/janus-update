@@ -1,8 +1,11 @@
 """Kurze Quellenzeilen für deterministische Renderer (nur Text, keine URLs)."""
 
 import json
+import logging
 import re
 from typing import Any, Dict, List
+
+logger = logging.getLogger(__name__)
 
 # Vorschlagsblöcke („💡 Vorschlag“ / „Passende nächste Schritte“); optional * fürs Markdown-Bold
 _SUGGESTION_BLOCK_START = re.compile(r"(?im)^[\*\s]*💡\s")
@@ -99,12 +102,17 @@ def append_routing_attribution_from_tools(final_text: str, tool_results: List[Di
     if not text or not tool_results:
         return str(final_text or "")
 
+    logger.info(f"ATTRIBUTION-CHECK: tool_results count={len(tool_results)}, results={tool_results}")
+
     for tr in reversed(tool_results):
         if not isinstance(tr, dict):
             continue
         name = str(tr.get("name") or "").strip().lower()
         skill_id = str(tr.get("_skill_id") or "").strip().lower()
-        if name != "system.routing" and skill_id != "system.routing":
+        logger.debug(f"[ATTRIBUTION-DEBUG] Checking tool result: name='{name}', skill_id='{skill_id}'")
+        # Check both canonical name (system.routing) and provider-safe variant (system_routing)
+        if name not in ("system.routing", "system_routing") and skill_id not in ("system.routing", "system_routing"):
+            logger.debug(f"[ATTRIBUTION-DEBUG] Skipping tool result: name='{name}', skill_id='{skill_id}' (not system.routing)")
             continue
         raw = tr.get("_raw_content") or tr.get("content") or "{}"
         try:
@@ -125,8 +133,10 @@ def append_routing_attribution_from_tools(final_text: str, tool_results: List[Di
         if needle in text:
             return str(final_text or "")
         out = insert_quelle_line_before_suggestion_block(text, label)
+        logger.info(f"ATTRIBUTION-SUCCESS: Added 'Quelle: {label}' to text")
         return out
 
+    logger.info(f"ATTRIBUTION-FAIL: No matching routing tool result found")
     return str(final_text or "")
 
 

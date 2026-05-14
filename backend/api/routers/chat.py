@@ -103,7 +103,24 @@ def _stream_event_to_frontend_sse_line(ev: StreamEvent) -> Optional[str]:
         blob = ev.content if isinstance(ev.content, dict) else {}
         payload = {"type": "status_update", "status": blob.get("status")}
         return f"data: {json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
-    # tool_start / tool_end / provider finish / done: omit for legacy UI (or use StreamEvent.to_sse() in a debug client)
+    if t == "tool_end":
+        # BACKLOG-031: surface successful tool executions to the SSE stream so the
+        # Playwright runner (and any future UI tool indicator) can observe which
+        # tool was triggered. We map tool_end -> tool_result with result=None so
+        # the frontend's existing permission_required handler does not fire on
+        # this telemetry frame (it explicitly requires result.status === 'permission_required').
+        md = ev.metadata if isinstance(ev.metadata, dict) else {}
+        name = md.get("name")
+        if not name:
+            return None
+        payload = {
+            "type": "tool_result",
+            "result": None,
+            "name": name,
+            "tool_call_id": md.get("id") or md.get("tool_call_id"),
+        }
+        return f"data: {json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
+    # tool_start / provider finish / done: omit for legacy UI (or use StreamEvent.to_sse() in a debug client)
     return None
 
 

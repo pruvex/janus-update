@@ -75,11 +75,11 @@ function ensureMeterElement(windowId) {
   meter.addEventListener("click", () => {
     const status = meter.dataset.status;
     if (status && status !== "green") {
-      const { model } = getEffectiveProviderModel(windowId);
+      const { model, provider } = getEffectiveProviderModel(windowId);
       if (model && model !== "unknown") {
-        logContextEvent("context_meter_clicked", { window_id: windowId, status, model });
+        logContextEvent("context_meter_clicked", { window_id: windowId, status, model, provider });
         showCompressionLoadingModal(model);
-        fetchCompressionProposal(model).then((proposal) => {
+        fetchCompressionProposal(model, provider).then((proposal) => {
           removeCompressionLoadingModal();
           if (proposal && proposal.can_compress) {
             showCompressionReviewModal(proposal, model);
@@ -441,14 +441,17 @@ function handleModelSwitchDecision(action, targetModel, modal) {
       // Phase 3: Starte Proposal Flow
       logContextEvent("context_compression_started", { target_model: targetModel, source: "model_switch_modal" });
       showCompressionLoadingModal(targetModel);
-      fetchCompressionProposal(targetModel).then((proposal) => {
-        removeCompressionLoadingModal();
-        if (proposal && proposal.can_compress) {
-          showCompressionReviewModal(proposal, targetModel);
-        } else {
-          showCompressionErrorModal(proposal?.message || "Keine Kompression möglich.");
-        }
-      });
+      {
+        const prov = providerSelect?.value;
+        fetchCompressionProposal(targetModel, prov).then((proposal) => {
+          removeCompressionLoadingModal();
+          if (proposal && proposal.can_compress) {
+            showCompressionReviewModal(proposal, targetModel);
+          } else {
+            showCompressionErrorModal(proposal?.message || "Keine Kompression möglich.");
+          }
+        });
+      }
       break;
   }
 
@@ -520,12 +523,19 @@ function removeCompressionLoadingModal() {
 /**
  * Fetcht Compression Proposal vom Backend
  */
-async function fetchCompressionProposal(targetModel) {
+async function fetchCompressionProposal(targetModel, targetProvider = null) {
   try {
     // 💎 FIX: Sammle nur Messages vom aktiven Fenster (A), nicht von allen Fenstern
     // Bug: Vorher wurden Messages aus allen Fenstern gesammelt, aber nur chat_id von Fenster A gesendet
     const chatId = getActiveChatIdForWindow("A"); // Primäres Fenster
     const messages = collectVisibleMessages("A");
+
+    const fromSidebar = getEffectiveProviderModel("A").provider;
+    const resolvedProviderRaw =
+      (targetProvider && String(targetProvider).trim() && targetProvider !== "unknown"
+        ? String(targetProvider).trim()
+        : null) ||
+      (fromSidebar && fromSidebar !== "unknown" ? fromSidebar : null);
 
     const response = await fetch(`${API_BASE_URL}/api/context/compression/propose`, {
       method: "POST",
@@ -535,6 +545,7 @@ async function fetchCompressionProposal(targetModel) {
         messages: messages.length > 0 ? messages : undefined,
         include_persisted_messages: messages.length === 0,
         target_model: targetModel,
+        provider: resolvedProviderRaw,
       }),
     });
 

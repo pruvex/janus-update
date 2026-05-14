@@ -230,6 +230,7 @@ Zusammenfassung:"""
         messages: list[dict[str, Any]],
         chat_id: str | int | None = None,
         model: str | None = None,
+        session_provider: str | None = None,
     ) -> CompressionProposal | None:
         """
         Generiert einen Kompressions-Vorschlag für die gegebenen Messages.
@@ -238,6 +239,7 @@ Zusammenfassung:"""
             messages: Vollständige Message-History
             chat_id: Optional für Logging/Telemetrie
             model: Ziel-Modell für Context-State-Berechnung (Overflow-Detection)
+            session_provider: Aktiver Chat-Provider (openai/gemini/…); steuert Summary-LLM bei Fallbacks
 
         Returns:
             CompressionProposal oder None wenn keine Kandidaten
@@ -273,7 +275,9 @@ Zusammenfassung:"""
 
         # Schritt 3: Summary generieren (nur für Kandidaten)
         candidate_content = self._format_candidate_messages(candidates, messages)
-        summary = await self._generate_summary(candidate_content, model)
+        summary = await self._generate_summary(
+            candidate_content, model, session_provider=session_provider
+        )
 
         # Schritt 4: Schätzung der Einsparung
         # Summary ist typischerweise ~20% der Original-Tokens
@@ -326,7 +330,33 @@ Zusammenfassung:"""
         "ollama": None,  # Wird dynamisch aus target_model bestimmt
     }
 
-    async def _generate_summary(self, candidate_content: str, model: str | None = None) -> str:
+    def _normalize_session_cloud_provider(self, session_provider: str | None) -> str | None:
+        """Maps UI / API provider string to a cloud LLM family for compression summaries."""
+        raw = str(session_provider or "").strip().lower()
+        if raw in ("openai", "gemini"):
+            return raw
+        if raw in ("google",):
+            return "gemini"
+        return None
+
+    def _cloud_speed_tier_for_compression(self, session_cloud: str | None) -> tuple[str, str]:
+        """Prefer the active chat's cloud provider over global last_used_provider (avoids accidental cross-provider)."""
+        if session_cloud in ("openai", "gemini"):
+            return session_cloud, self.SPEED_TIER_MODELS[session_cloud]
+        from backend.utils.config_loader import load_config_data
+
+        cfg = load_config_data()
+        last = str(cfg.get("last_used_provider") or "openai").strip().lower()
+        if last not in ("openai", "gemini"):
+            last = "openai"
+        return last, self.SPEED_TIER_MODELS[last]
+
+    async def _generate_summary(
+        self,
+        candidate_content: str,
+        model: str | None = None,
+        session_provider: str | None = None,
+    ) -> str:
         """
         Ruft das Speed-Tier Modell für die Zusammenfassung auf.
 
@@ -343,6 +373,7 @@ Zusammenfassung:"""
             # 💎 PROVIDER-AGNOSTIK: Bestimme Provider und Speed-Tier Modell dynamisch
             provider = None
             model_id = None
+            session_cloud = self._normalize_session_cloud_provider(session_provider)
 
             if model:
                 # Prüfe Model-Katalog für Provider-Zuordnung
@@ -357,53 +388,57 @@ Zusammenfassung:"""
                             model_id = self.SPEED_TIER_MODELS["openai"]
                             logger.debug("[COMPRESSOR] Using OpenAI Speed-Tier: %s", model_id)
                         elif detected_provider == "ollama":
-                            # 💎 PROVIDER-AGNOSTIK: Für Ollama nutze den letzten Cloud-Provider aus Config
-                            config = load_config_data()
-                            last_cloud_provider = config.get("last_used_provider", "openai").lower()
-                            
-                            # Verwende nur Cloud-Provider (OpenAI oder Gemini), nicht Ollama
-                            if last_cloud_provider in ["openai", "gemini"]:
-                                provider = last_cloud_provider
-                                model_id = self.SPEED_TIER_MODELS.get(last_cloud_provider)
-                                logger.debug("[COMPRESSOR] Ollama detected, using last cloud provider: %s with %s", provider, model_id)
-                            else:
-                                # Fallback auf OpenAI wenn Config keinen gültigen Cloud-Provider hat
-                                provider = "openai"
-                                model_id = self.SPEED_TIER_MODELS["openai"]
-                                logger.warning("[COMPRESSOR] Invalid last_used_provider '%s', falling back to OpenAI", last_cloud_provider)
+                            # 💎 Ollama: Cloud-Summary — bevorzugt expliziten Chat-Provider, sonst last_used aus Config
+                            cloud = session_cloud
+                            if cloud not in ("openai", "gemini"):
+                                config = load_config_data()
+                                last_cloud_provider = str(
+                                    config.get("last_used_provider") or "openai"
+                                ).strip().lower()
+                                cloud = (
+                                    last_cloud_provider
+                                    if last_cloud_provider in ("openai", "gemini")
+                                    else "openai"
+                                )
+                                if last_cloud_provider not in ("openai", "gemini"):
+                                    logger.warning(
+                                        "[COMPRESSOR] Invalid last_used_provider %r for Ollama summary, using %s",
+                                        last_cloud_provider,
+                                        cloud,
+                                    )
+                            provider = cloud
+                            model_id = self.SPEED_TIER_MODELS[cloud]
+                            logger.debug(
+                                "[COMPRESSOR] Ollama target model: cloud summary via %s (%s)",
+                                provider,
+                                model_id,
+                            )
                         elif detected_provider == "gemini":
                             provider = "gemini"
                             model_id = self.SPEED_TIER_MODELS["gemini"]
                             logger.debug("[COMPRESSOR] Using Gemini Speed-Tier: %s", model_id)
                         else:
-                            # Unbekannter Provider -> Nutze last_used_provider aus Config
-                            config = load_config_data()
-                            last_provider = config.get("last_used_provider", "openai").lower()
-                            provider = last_provider if last_provider in self.SPEED_TIER_MODELS else "openai"
-                            model_id = self.SPEED_TIER_MODELS.get(provider, self.SPEED_TIER_MODELS["openai"])
-                            logger.warning("[COMPRESSOR] Unknown provider '%s', using last_used_provider: %s", detected_provider, provider)
+                            provider, model_id = self._cloud_speed_tier_for_compression(session_cloud)
+                            logger.warning(
+                                "[COMPRESSOR] Unknown catalog provider %r, using cloud fallback: %s",
+                                detected_provider,
+                                provider,
+                            )
                     else:
-                        # Modell nicht im Katalog -> Nutze last_used_provider aus Config (Provider-Agnostik)
-                        config = load_config_data()
-                        last_provider = config.get("last_used_provider", "openai").lower()
-                        provider = last_provider if last_provider in self.SPEED_TIER_MODELS else "openai"
-                        model_id = self.SPEED_TIER_MODELS.get(provider, self.SPEED_TIER_MODELS["openai"])
-                        logger.warning("[COMPRESSOR] Model %s not in catalog, using last_used_provider: %s", model, provider)
+                        provider, model_id = self._cloud_speed_tier_for_compression(session_cloud)
+                        logger.warning(
+                            "[COMPRESSOR] Model %s not in catalog, using cloud fallback provider: %s",
+                            model,
+                            provider,
+                        )
                 except Exception as catalog_err:
                     logger.warning("[COMPRESSOR] Could not lookup model catalog: %s", catalog_err)
-                    # Fallback auf last_used_provider aus Config
-                    config = load_config_data()
-                    last_provider = config.get("last_used_provider", "openai").lower()
-                    provider = last_provider if last_provider in self.SPEED_TIER_MODELS else "openai"
-                    model_id = self.SPEED_TIER_MODELS.get(provider, self.SPEED_TIER_MODELS["openai"])
+                    provider, model_id = self._cloud_speed_tier_for_compression(session_cloud)
 
             # Fallback falls kein Provider bestimmt wurde
             if not provider or not model_id:
-                config = load_config_data()
-                last_provider = config.get("last_used_provider", "openai").lower()
-                provider = last_provider if last_provider in self.SPEED_TIER_MODELS else "openai"
-                model_id = self.SPEED_TIER_MODELS.get(provider, self.SPEED_TIER_MODELS["openai"])
-                logger.warning("[COMPRESSOR] No provider determined, using last_used_provider fallback: %s", provider)
+                provider, model_id = self._cloud_speed_tier_for_compression(session_cloud)
+                logger.warning("[COMPRESSOR] No provider determined, using cloud fallback: %s", provider)
 
             logger.info("[COMPRESSOR] Generating summary with provider=%s model=%s", provider, model_id)
 
@@ -462,6 +497,7 @@ async def propose_compression(
     messages: list[dict[str, Any]],
     chat_id: str | int | None = None,
     model: str | None = None,
+    session_provider: str | None = None,
 ) -> CompressionProposal | None:
     """
     Öffentliche API für Kompressions-Vorschläge.
@@ -470,9 +506,12 @@ async def propose_compression(
         messages: Die zu komprimierenden Messages
         chat_id: Optional für Logging/Telemetrie
         model: Ziel-Modell für Context-State-Berechnung (Overflow-Detection)
+        session_provider: Aktiver Chat-Provider für Summary-Fallbacks (kein stiller Wechsel zu last_used)
 
     Returns:
         CompressionProposal oder None
     """
     generator = get_proposal_generator()
-    return await generator.generate_proposal(messages, chat_id, model)
+    return await generator.generate_proposal(
+        messages, chat_id, model, session_provider=session_provider
+    )
