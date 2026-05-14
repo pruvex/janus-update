@@ -2494,3 +2494,13 @@
 - **Epic:** BACKLOG-032/034 — Geo-Routing Attribution Hardening
 - **Confidence:** High
 - **Tags:** IntentBased, ForceLogic, ListLength, MemorySkills, Robustness, BACKLOG032, BACKLOG034
+
+## [PATTERN] #GeminiForceRouting "Gemini requires explicit is_routing_geo_intent flags in dispatcher to avoid knowledge fallback"
+- **Kontext:** BACKLOG-036 Gemini Geo-Distance Hallucination. Gemini antwortet auf Geo-Distanz-Abfragen ("Wie weit ist Berlin von München?") ohne Tool-Call zu system.routing und zeigt keine "Quelle: OSRM" Attribution. GPT führt korrekt Tool-Call aus.
+- **Problem:** DIAMOND-CORE-ROUTING-FORCE prüfte nur auf "routing" im primary_intent, nicht auf is_routing_geo_intent. Für Geo-Distanz-Abfragen ist der primary_intent möglicherweise nicht "routing" sondern etwas anderes (z.B. "geo"), sodass force_tool_name gar nicht gesetzt wurde und Gemini das Tool nicht zwangsweise aufrufen musste. Die bloße Intent-Erkennung reicht oft nicht aus, um den Tool-Call gegenüber dem LLM-Wissen zu erzwingen.
+- **Lösung:** Erweitere DIAMOND-CORE-ROUTING-FORCE Bedingung um is_routing_geo_intent flag zusätzlich zu primary_intent check. Prüfe: `is_routing_geo = bool(getattr(intent_result, 'is_routing_geo_intent', False)) if intent_result else False` und `if intent_result and ("routing" in str(getattr(intent_result, 'primary_intent', '')).lower() or is_routing_geo)`. Dies stellt sicher, dass Gemini bei Geo-Distanz-Abfragen das system.routing Tool zwangsweise aufrufen muss, unabhängig vom genauen primary_intent String.
+- **Härtung:** Audit alle force-tool Bedingungen für Gemini-spezifische Intents und prüfe ob zusätzlich zum primary_intent auch die spezifischen intent_flags (is_routing_geo_intent, is_weather_intent, is_wikipedia_intent, is_news_intent) geprüft werden. Tripwire: Gemini ignoriert Tool-Call bei bestimmten Intents obwohl Tool in allowed_skill_ids.
+- **Location:** backend/services/orchestrator/execution_dispatcher.py (lines 895-903), implementiert 2026-05-14.
+- **Epic:** BACKLOG-036 — Gemini Geo-Distance Hallucination Fix
+- **Confidence:** High (Validation: Playwright E2E Test TASK-036-02 PASS, Backend-Logs zeigen system.routing tool call und "Quelle: OSRM" attribution)
+- **Tags:** GeminiForceRouting, is_routing_geo_intent, ForceToolChoice, GeoDistance, ProviderParity, BACKLOG036

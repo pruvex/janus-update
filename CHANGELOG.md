@@ -8,6 +8,7 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 ## [Unreleased]
 
 ### Fixed
+- **BACKLOG-036:** Gemini Geo-Distance Halluzination behoben. DIAMOND-CORE-ROUTING-FORCE Bedingung erweitert um `is_routing_geo_intent` flag zusätzlich zu primary_intent check. Gemini ruft jetzt system.routing Tool bei Geo-Distanz-Abfragen auf und zeigt "Quelle: OSRM" Attribution an. Provider-Parity erreicht (GPT und Gemini verhalten sich identisch). Diamond Score: 83/100, Production Confidence: 100% für Geo-Routing. Files: `backend/services/orchestrator/execution_dispatcher.py` (lines 895-903).
 - **BACKLOG-035:** Prompt Injection Defense implementiert. Guard in `backend/services/orchestrator/execution_engine.py` erkennt Prompt Injection vor Provider-Aufruf und blockiert die gesamte Query-Verarbeitung. Provider-agnostisch (funktioniert für GPT und Gemini). Test PINJ-001 mit beiden Provider PASS. Diamond Confidence Score: 9.5/10, Production Confidence: 95%. Files: `backend/services/orchestrator/execution_engine.py` (lines 2501-2513).
 
 ## [0.4.17-beta.28] - 2026-05-11

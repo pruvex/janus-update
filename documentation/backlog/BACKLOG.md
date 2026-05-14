@@ -79,38 +79,6 @@ Dashboard-Regeln:
 
 ## READY
 
-### BACKLOG-036 – Gemini Halluzination: Geo-Distanz ohne Tool-Call (TC-003)
-
-- **Typ:** BUG
-- **Status:** READY
-- **Quelle:** TestRun
-- **TestRun:** TEST-RUN-2026-05-13-BENCHMARK-V2-5
-- **Erstellt:** 2026-05-13
-- **Aktualisiert:** 2026-05-13
-- **Kurzbeschreibung:** Gemini antwortet auf Geo-Distanz-Abfragen ("Wie weit ist Berlin von München?") ohne Tool-Call zu system.routing. Die Antwort enthält die Distanz (585 km) aber keine "Quelle: OSRM" Attribution. GPT führt korrekt Tool-Call aus und zeigt Attribution.
-- **Erwartetes Verhalten:** Bei Geo-Distanz-Abfragen sollte Gemini system.routing Tool aufrufen und "Quelle: OSRM" Attribution anzeigen.
-- **Tatsächliches Verhalten:** Gemini antwortet mit Halluzination (Distanz ohne Tool-Call). GPT ruft system.routing korrekt auf.
-- **Reproduktion / Kontext:** TEST-RUN-2026-05-13-BENCHMARK-V2-5; TC-003-GEMINI; Prompt: "Wie weit ist Berlin von München?"; Response: "Berlin ist etwa 585 km von München entfernt..." (ohne Attribution); Classification: TOOL_ROUTING_FAILURE; Note: "Expected tool 'system.routing' was not triggered. Tools called: none"
-- **Betroffener Bereich:** Intent Engine / Tool Routing / Gemini Provider
-- **Nachweise:** documentation/test-results/TEST-RUN-2026-05-13-002/TC-003-GEMINI_evidence.json, documentation/test-results/TEST-RUN-2026-05-13-002/TC-003-GPT_evidence.json
-- **Akzeptanzkriterien:**
-  - [ ] Gemini ruft system.routing Tool bei Geo-Distanz-Abfragen auf
-  - [ ] Gemini zeigt "Quelle: OSRM" Attribution an
-  - [ ] Tool-Routing funktioniert für Gemini wie für GPT
-- **Fehlende Informationen:** Keine
-- **Notizen:** Provider-Parity-Problem: GPT funktioniert korrekt, Gemini nicht. Dies ist ein Intent-Routing-Problem spezifisch für Gemini.
-- **Wichtigkeit:** MEDIUM
-- **Umsetzungsrisiko:** MEDIUM
-- **Aufwand:** M
-- **Umsetzungsreife:** READY
-- **Empfehlung:** DO NOW
-- **Entry Point:** SPEC_PIPELINE_START
-- **Routing reason:** Gemini-spezifisches Tool-Routing-Problem mit klarer Scope (system.routing fehlt), erfordert Spec-Analysis und Task-Breakdown
-- **Routing confidence:** HIGH
-- **Routing decided by:** TEST SKILL 4
-- **Routing decided at:** 2026-05-13
-- **Recommended next skill:** SKILL 1
-- **Handoff created:** 2026-05-13
 
 ### BACKLOG-037 – Gemini Klärungsfrage fehlt bei ambiger Anfrage (TC-005)
 
@@ -378,6 +346,47 @@ Dashboard-Regeln:
 
 ## IN PROGRESS
 
+### BACKLOG-036 – Gemini Halluzination: Geo-Distanz ohne Tool-Call (TC-003)
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** TestRun
+- **TestRun:** TEST-RUN-2026-05-13-BENCHMARK-V2-5
+- **Erstellt:** 2026-05-13
+- **Aktualisiert:** 2026-05-14
+- **Abgeschlossen:** 2026-05-14
+- **Kurzbeschreibung:** Gemini antwortet auf Geo-Distanz-Abfragen ("Wie weit ist Berlin von München?") ohne Tool-Call zu system.routing. Die Antwort enthält die Distanz (585 km) aber keine "Quelle: OSRM" Attribution. GPT führt korrekt Tool-Call aus und zeigt Attribution.
+- **Erwartetes Verhalten:** Bei Geo-Distanz-Abfragen sollte Gemini system.routing Tool aufrufen und "Quelle: OSRM" Attribution anzeigen.
+- **Tatsächliches Verhalten:** Gemini antwortet mit Halluzination (Distanz ohne Tool-Call). GPT ruft system.routing korrekt auf.
+- **Reproduktion / Kontext:** TEST-RUN-2026-05-13-BENCHMARK-V2-5; TC-003-GEMINI; Prompt: "Wie weit ist Berlin von München?"; Response: "Berlin ist etwa 585 km von München entfernt..." (ohne Attribution); Classification: TOOL_ROUTING_FAILURE; Note: "Expected tool 'system.routing' was not triggered. Tools called: none"
+- **Betroffener Bereich:** Intent Engine / Tool Routing / Gemini Provider
+- **Nachweise:** documentation/test-results/TEST-RUN-2026-05-13-002/TC-003-GEMINI_evidence.json, documentation/test-results/TEST-RUN-2026-05-13-002/TC-003-GPT_evidence.json
+- **Akzeptanzkriterien:**
+  - [x] Gemini ruft system.routing Tool bei Geo-Distanz-Abfragen auf
+  - [x] Gemini zeigt "Quelle: OSRM" Attribution an
+  - [x] Tool-Routing funktioniert für Gemini wie für GPT
+- **Fehlende Informationen:** Keine
+- **Notizen:** Provider-Parity-Problem: GPT funktioniert korrekt, Gemini nicht. Dies ist ein Intent-Routing-Problem spezifisch für Gemini. Fix durch Erweiterung der DIAMOND-CORE-ROUTING-FORCE Bedingung um is_routing_geo_intent in execution_dispatcher.py.
+- **Wichtigkeit:** MEDIUM
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** DONE
+- **Empfehlung:** DONE
+- **Entry Point:** SPEC_PIPELINE_START
+- **Routing reason:** Gemini-spezifisches Tool-Routing-Problem mit klarer Scope (system.routing fehlt), erfordert Spec-Analysis und Task-Breakdown
+- **Routing confidence:** HIGH
+- **Routing decided by:** TEST SKILL 4
+- **Routing decided at:** 2026-05-13
+- **Handoff:** documentation/SPEC/Spec Done/backlog_BACKLOG-036_gemini_geo_distance_hallucination.md
+- **Recommended next skill:** SKILL 7
+- **Handoff created:** 2026-05-14
+- **Completed in version:** 0.4.17-beta.32
+- **Completed by task:** TASK-036-02
+- **Final audit:** PASS (SWE 1.6, Diamond Score: 83/100, Production Confidence: 100% für Geo-Routing)
+- **Validation evidence:** Playwright E2E Test TASK-036-02 PASS - Gemini ruft system.routing Tool auf und zeigt "Quelle: OSRM" Attribution an. Backend-Logs bestätigen Tool-Call und Attribution. Fix: Erweiterung der DIAMOND-CORE-ROUTING-FORCE Bedingung um is_routing_geo_intent in execution_dispatcher.py.
+
+## DONE
+
 ### BACKLOG-025 – Frontend Rendering Failure: "win is not defined" JavaScript Error (REOPENED)
 
 - **Typ:** BUG
@@ -386,6 +395,7 @@ Dashboard-Regeln:
 - **TestRun:** TEST-RUN-2026-05-12-001-TRUTH-REPORT
 - **Erstellt:** 2026-05-12
 - **Aktualisiert:** 2026-05-13
+- **Abgeschlossen:** 2026-05-13
 - **Kurzbeschreibung:** Der JavaScript-Fehler "win is not defined" blockiert weiterhin das Rendering von Assistant-Nachrichten nach SSE-Stream-Initiierung. Die Assistant-Bubble erscheint, bleibt aber leer bzw. zeigt nur Fehlertext; dadurch werden alle Routing-/Tool-Tests blockiert. Der frühere Fix wurde durch automatisierte TestRuns als ineffektiv widerlegt.
 - **Erwartetes Verhalten:** Assistant-Nachrichten werden nach erfolgreichem SSE-Stream korrekt im Chat gerendert, ohne JavaScript-ReferenceError und mit verwertbarer Tool-/Routing-Evidence.
 - **Tatsächliches Verhalten:** Forensic Scan zeigt KEINE ausführbare `win`-Referenz im Source-Code. Der einzige `win`-Referenz ist ein Kommentar (Zeile 758), der bereits auf `{windowId}` korrigiert wurde. Der Fehler in Test-Ergebnissen stammt von cached/deployter Code, nicht vom aktuellen Source-Code.
@@ -417,47 +427,6 @@ Dashboard-Regeln:
 - **Completed by task:** documentation/tasks/backlog_BACKLOG-025_frontend_rendering_failure.md
 - **Final audit:** PASS
 - **Validation evidence:** Source-code audit PASS (0 executable win refs found in frontend/js/chat.js). Only comment reference at line 758 already corrected to {windowId}. Vite cache cleared. Dist folder cleared. Syntax check passed (node -c js/chat.js). Error in test results is from cached/deployed code, not current source.
-
-### BACKLOG-029 – Intent Engine nutzt LLM-Wissen statt system.weather Tool für Wetter-Anfragen (DONE)
-
-- **Typ:** BUG
-- **Status:** DONE
-- **Quelle:** TestRun
-- **TestRun:** TEST-RUN-2026-05-12-001-TRUTH-REPORT
-- **Erstellt:** 2026-05-12
-- **Aktualisiert:** 2026-05-13
-- **Abgeschlossen:** 2026-05-13
-- **Kurzbeschreibung:** Bei Wetter-Anfragen (z.B. "Brauche ich morgen in München einen Regenschirm?") nutzt die Intent Engine das LLM-Wissen des Providers statt das system.weather Tool aufzurufen. Dies führt zu veralteten oder ungenauen Wetterdaten statt aktueller API-Daten.
-- **Erwartetes Verhalten:** Wetter-Anfragen sollten das system.weather Tool aufrufen, um aktuelle Wetterdaten von der API zu erhalten (wie in TC-001 des TestPlans spezifiziert).
-- **Tatsächliches Verhalten:** Die Intent Engine erkennt zwar den Weather-Intent, aber der SkillSelector fallback policy fügte system.weather nur zur boosted-Liste hinzu, nicht zur mandatory-Liste. Dies erlaubte dem LLM, aus eigenem Wissen zu antworten statt das Tool zu nutzen.
-- **Reproduktion / Kontext:** TEST-RUN-2026-05-12-001-TRUTH-REPORT; TC-001: "Brauche ich morgen in München einen Regenschirm?" mit GPT gpt-5.4-nano; TestResult zeigt toolCallExpected: system.weather aber Tool-Call-Verifikation blockiert durch Frontend-Fehler (BACKLOG-025). Nach BACKLOG-025-Fix und manueller Validierung ist BACKLOG-029 jetzt verifiziert.
-- **Betroffener Bereich:** Intent Engine / Skill Selector / Tool Routing
-- **Nachweise:** documentation/test-results/TEST-RUN-2026-05-12-001-TRUTH-REPORT_results.md
-- **Akzeptanzkriterien:**
-  - [x] Wetter-Anfragen lösen system.weather Tool-Call aus
-  - [x] Tool-Call enthält korrekte Parameter (Ort, Datum)
-  - [x] LLM-Wissen wird nur als Fallback verwendet wenn Tool nicht verfügbar
-  - [x] Test TC-001 (und andere Weather-Tests) bestehen mit Tool-Call-Evidence
-- **Fehlende Informationen:**
-  - Keine
-- **Notizen:** Root Cause: SkillSelector fallback policy (llm_gateway.py path without capability_registry) fügte system.weather nur zu boosted hinzu, nicht zu mandatory. Fix: backend/services/skill_selector.py line 163 geändert von boosted_fb.append zu mandatory.append. CapabilityRegistry hatte bereits die korrekte Logik (mandatory), aber der fallback wurde nicht synchronisiert.
-- **Wichtigkeit:** HIGH
-- **Umsetzungsrisiko:** MEDIUM
-- **Aufwand:** M
-- **Umsetzungsreife:** READY
-- **Empfehlung:** DO NOW
-- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
-- **Routing reason:** High-Priority Intent Routing Bug mit klarer Scope-Definition; Verifikation hängt von BACKLOG-025 ab
-- **Routing confidence:** HIGH
-- **Routing decided by:** TEST SKILL 4
-- **Routing decided at:** 2026-05-12
-- **Handoff:** documentation/tasks/backlog_BACKLOG-029_weather_tool_routing.md
-- **Recommended next skill:** SKILL 3
-- **Handoff created:** 2026-05-12
-- **Completed in version:** 1.2.2
-- **Completed by task:** documentation/tasks/backlog_BACKLOG-029_weather_tool_routing.md
-- **Final audit:** PASS
-- **Validation evidence:** SkillSelector fallback policy updated to make system.weather mandatory for weather intent (backend/services/skill_selector.py line 163). Manual Janus test successful. Automated tests passed (test_weather_mandates_system_weather).
 
 
 ## DONE

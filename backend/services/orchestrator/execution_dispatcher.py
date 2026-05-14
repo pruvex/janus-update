@@ -897,7 +897,8 @@ async def execute_generation_prepare_gateway(
             # This prevents GPT from ignoring mandatory tools and responding from knowledge context
             # Check intent_detection_result instead of list length because memory skills can enlarge the list
             intent_result = getattr(wf, 'intent_detection_result', None)
-            if intent_result and "routing" in str(getattr(intent_result, 'primary_intent', '')).lower():
+            is_routing_geo = bool(getattr(intent_result, 'is_routing_geo_intent', False)) if intent_result else False
+            if intent_result and ("routing" in str(getattr(intent_result, 'primary_intent', '')).lower() or is_routing_geo):
                 wf.gateway_kwargs['force_tool_name'] = "system.routing"
                 logger.info("💎 DIAMOND-CORE-ROUTING-FORCE: Routing intent detected. Forcing tool_choice for system.routing to prevent knowledge-context response")
         # 💎 BACKLOG-006: Dynamic fallback summary based on error details
