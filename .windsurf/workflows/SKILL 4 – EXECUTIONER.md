@@ -206,6 +206,7 @@ Gate-Reihenfolge (Kurzfassung — Details im genannten Abschnitt):
 
 INVESTIGATION-INCONCLUSIVE GATE:
 
+- Der Status `TASK NEEDS EVIDENCE` ist für Chat-Antworten UNZULÄSSIG. Playwright-Evidence ist die einzig akzeptierte Quelle für Chat-Fixes.
 - Wenn ein Task als Debug/Investigation/Handoff aus Backlog oder Test-Pipeline kommt und Skill 4 keine Ursache isolieren oder keinen Fix implementieren kann, darf Skill 4 NICHT einfach `TASK COMPLETE` mit nur einer Empfehlung ausgeben.
 - `TASK COMPLETE` ist nur erlaubt, wenn ein konkretes Ziel des Investigation-Tasks erreicht wurde **und** die **PASS-only-Regel** für `TASK COMPLETE` (Output Format) erfüllt ist: Ursache isoliert, Fix umgesetzt, Test/Logging-Hardening umgesetzt, oder eindeutige Nicht-Reproduzierbarkeit mit Evidence belegt — sonst `TASK NEEDS EVIDENCE` / `N/A-SCOPE CLOSURE` statt `TASK COMPLETE`.
 - Wenn Backend-Logs, Network-Logs, Provider-Logs oder andere Pflicht-Evidence fehlen, muss Skill 4 `TASK NEEDS EVIDENCE` ausgeben.
@@ -254,6 +255,10 @@ PIPELINE CONTINUATION GATE:
 
 Dieser Abschnitt ist das **verbindliche** Janus-Live-Verifikations-Gate. Der fruehere Schwerpunkt auf ausschliesslich manuellem Janus-Test ohne vorherigen generierten Playwright-Lauf entfaellt. Stattdessen: **zuerst** Mini-TestPlan + Generator + Validator + Runner (Skill 4 fuehrt die Shell-Befehle selbst aus und protokolliert). **Danach** erst das **USER SIGN-OFF GATE** (Produktnahe Bestaetigung + Skill-6/5-Routing).
 
+**LÜGEN-DETEKTOR (HART):** Es ist verboten zu behaupten, ein Provider sei nicht automatisierbar, wenn in der `config.json` ein gültiger API-Key hinterlegt ist. Der Agent MUSS die Keys prüfen, bevor er ein Manual-Fallback fordert.
+
+**AUTOMATION-PARITY:** Provider (wie Gemini), die im Benchmark `TEST-RUN-2026-05-13-BENCHMARK-V2-5` erfolgreich gesteuert wurden, sind für IMMER als 'Voll-Automatisierbar' eingestuft. Ein Ausweichen auf manuelle Tests für diese Provider ist ein PROTOKOLL-VERSTOẞ.
+
 ### Ausloesung und Pflicht
 
 Nach jedem funktionalen Fix (Code-Aenderung, die einen User-spuerbaren Code-Pfad beruehrt) und vor jedem **USER SIGN-OFF GATE** MUSS Skill 4 die folgenden Schritte ausfuehren — ausser bei zulaessigem `Auto-Verification: N/A` (siehe unten).
@@ -279,7 +284,7 @@ Nach jedem funktionalen Fix (Code-Aenderung, die einen User-spuerbaren Code-Pfad
 node tests/e2e/generator/generate-live-runner.mjs --plan documentation/test-runs/<task_id>_verify.json --out tests/e2e/generated/<task_id>_verify.live.spec.js
 ```
 
-- Bei Generator-Fehler: `Auto-Verification: FAIL`; Skill 4 korrigiert den TestPlan und wiederholt — **kein** USER SIGN-OFF GATE.
+- Bei Generator/Validator-Fehler: Analysiere den Output, korrigiere den Mini-TestPlan (`_verify.json`) und wiederhole den Prozess. Das Ausweichen auf N/A oder manuelles Testen ist VERBOTEN.
 
 ### Schritt 3 — Validator (Pflicht)
 
@@ -344,6 +349,12 @@ Quelle der Wahrheit: `tests/e2e/generator/generate-live-runner.mjs` (Failure-Tax
 ### AUSNAHME-REGEL (Auto-Verification N/A)
 
 Fuer rein optische CSS-, reine Doku- oder reine `.windsurf/workflows/`-Aenderungen darf Playwright als `Auto-Verification: N/A` entfallen, wenn explizit begruendet und keine JS/TS/Backend/Routing/Tool/Stream-Logik beruehrt wurde. UX-TRANSLATION RULE gilt trotzdem im USER SIGN-OFF GATE (`Test-Prompt: N/A - interne Aenderung ohne Chat-Pfad`).
+
+**HARTE REGELN (Anti-Evasion):**
+
+- Es ist ein SCHWERER PROTOKOLL-VERSTOẞ, `N/A` zu verwenden, nur weil der Generator, Validator oder Playwright einen Fehler wirft.
+- Fehler bei der TestPlan-Generierung (z.B. Schema-Mismatches, fehlende Strategies) MÜSSEN von Skill 4 analysiert und im JSON selbst repariert werden. Tool-Fehler berechtigen NIEMALS zum manuellen Fallback.
+- `N/A` ist AUSSCHLIESSLICH erlaubt für Datei-Typen ohne Logik (.css, .md, .yml). Bei Änderungen an `.py`, `.js` oder `.ts` ist `N/A` STRENG VERBOTEN.
 
 ### Verbote (Auto-Verification)
 

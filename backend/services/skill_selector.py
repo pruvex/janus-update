@@ -99,15 +99,17 @@ class SkillSelector:
         elif isinstance(intent_result, dict):
             intent_name = str(intent_result.get("primary_intent", ""))
 
-        if "routing" in intent_name.lower() or primary == "routing_geo":
+        # BACKLOG-036: Prüfe auf routing_geo Intent und Geo-Distanz-Marker
+        is_routing_geo = bool(getattr(intent_result, "is_routing_geo_intent", False))
+        if "routing" in intent_name.lower() or is_routing_geo or intent_name in ["routing_geo", "routing", "geo"]:
             if "system.routing" not in mandatory:
                 mandatory.append("system.routing")
                 # Use module-level logger directly
                 try:
-                    logger.info(f"!!! DIAMOND-FIX-TRIGGERED !!! Routing forced. Intent: {intent_name}")
+                    logger.info(f"!!! DIAMOND-FIX-TRIGGERED !!! Routing forced. Intent: {intent_name}, is_routing_geo: {is_routing_geo}")
                 except NameError:
                     # Fallback if logger is not in scope
-                    logging.getLogger("janus_backend").info(f"!!! DIAMOND-FIX-TRIGGERED !!! Routing forced. Intent: {intent_name}")
+                    logging.getLogger("janus_backend").info(f"!!! DIAMOND-FIX-TRIGGERED !!! Routing forced. Intent: {intent_name}, is_routing_geo: {is_routing_geo}")
 
         combined = mandatory_filtered + boosted_filtered + semantic_hits
         combined = self._deduplicate(combined)

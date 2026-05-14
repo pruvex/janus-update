@@ -1,0 +1,21 @@
+{
+  "skill_id": "system.routing",
+  "skill_type": "system",
+  "provider": "gemini",
+  "generated_at": "2026-05-14T14:17:00.000000",
+  "tests": {
+    "gemini_geo_distance_happy_path": {
+      "name": "gemini_geo_distance_happy_path",
+      "description": "Gemini ruft system.routing Tool bei Geo-Distanz-Abfrage auf und zeigt OSRM Attribution",
+      "input": {
+        "prompt": "Wie weit ist Berlin von München?",
+        "provider": "gemini",
+        "model": "gemini-3.1-pro-preview"
+      },
+      "validation": [
+        "tool_called:system.routing",
+        "contains_any:Quelle: OSRM"
+      ]
+    }
+  }
+}

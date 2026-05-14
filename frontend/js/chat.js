@@ -755,7 +755,7 @@ export async function sendMessage(fromWindowId) {
   //
   // The wipe-guard below detects ALL of these conditions on every chunk:
   //   (a) bubble was detached (loadingMessageElement.isConnected === false)
-  //   (b) container reference is stale (the live #chat-messages-<win> element was
+  //   (b) container reference is stale (the live #chat-messages-{windowId} element was
   //       replaced by a different DOM node entirely)
   //   (c) live container exists but has been emptied (childElementCount === 0)
   //   (d) bubble is connected but no longer inside the live container (re-parented)

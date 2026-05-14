@@ -55,6 +55,7 @@
 
 | Timestamp | Task / Feature | Editor | Result | Audit | Version | Validation / Notes |
 |---|---|---|---|---|---|---|
+| 2026-05-14 | Frontend Rendering Integrity Fix (SKILL 5 Debug) | SWE 1.6 | DONE | PASS | 0.4.17-beta.33 | ReferenceError "win is not defined" behoben durch Korrektur des Kommentars in frontend/js/chat.js Zeile 758 von `<win>` zu `{windowId}`. Playwright-Verify-Test PASS - 0 console errors. BACKLOG-038, 025, 029, 030 als DONE markiert. dist/ Ordner gelöscht. |
 | 2026-05-09 | BACKLOG-017 ChromaDB PyInstaller Fix | SWE 1.6 | DONE | PASS | 0.4.17-beta.22 | PyInstaller spec um ChromaDB-Submodule erweitert: collect_data_files('chromadb'), collect_data_files('chromadb', include_py_files=True), hiddenimports=['chromadb.telemetry.product.posthog', 'chromadb.api.rust']. Vektor-Service und Skill-Router starten ohne ChromaDB-Import-Fehler. Manual Janus Test PASS. |
 | 2026-05-08 | BACKLOG-016 Video Links Chat-Wechsel Fix | SWE 1.6 | DONE | PASS WITH FIXES | 0.4.17-beta.20 | IndentationError in backend/data/crud.py behoben. video_list_metadata wird jetzt korrekt in metadata_json persistiert. Persistenzpfad vollständig: Backend CRUD → Schemas → Frontend Reload → Rendering. Manual Janus Test PASS. |
 | 2026-05-07 | BACKLOG-011 Video Modal False-Positive Fix | SWE 1.6 | DONE | PASS | 0.4.17-beta.17 | URL-Detection Fallback deaktiviert, modal_request ausschließlich aus video.search tool_results. Backend-Override erzwingt mode="list" für Gemini. response_finalizer.py + tool_executor.py + video_search.json. Skill 6 Debug (3 Iterationen). |

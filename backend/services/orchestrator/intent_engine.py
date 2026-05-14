@@ -875,6 +875,9 @@ class IntentDetectionResult:
     is_wikipedia_intent: bool = False
     # News / RSS (BACKLOG-031: mandatory tool routing)
     is_news_intent: bool = False
+    # 💎 BACKLOG-037: Ambiguity-Detection für Gemini
+    is_ambiguous: bool = False
+    ambiguity_confidence: float = 0.0  # 0.0-1.0, höher = ambiger
 
     primary_intent: Optional[str] = None
     vetoed_intents: Dict[str, str] = field(default_factory=dict)
@@ -1419,16 +1422,20 @@ class IntentEngine:
 
         Unterdrückt fälschlichen Kalender-Snapshot-Boost, wenn nur Stadtnamen
         zufällig mit Event-Titeln überlappen.
+        
+        BACKLOG-036: Erweitert um einfache "von X" Muster ohne "nach" (z.B. "Wie weit ist Berlin von München?")
         """
         if not user_text or not user_text.strip():
             return False
         t = user_text.strip()
         if not _ROUTING_GEO_MARKERS.search(t):
             return False
+        # BACKLOG-036: Prüfe auf "von X nach", "from X to", "zwischen X und" ODER einfaches "von X"
         return bool(
             _ROUTING_VON_NACH_DE.search(t)
             or _ROUTING_FROM_TO_EN.search(t)
             or _ROUTING_ZWISCHEN_UND.search(t)
+            or re.search(r"\bvon\s+[^\n,?\.!]{1,52}\b", t)  # BACKLOG-036: Einfaches "von X" Muster
         )
 
     @staticmethod
@@ -1660,6 +1667,15 @@ class IntentEngine:
         # Fact-telling detection (BUG-SYS-019)
         _is_fact_telling = self.is_fact_telling_pattern(user_text)
         
+        # 💎 BACKLOG-037: Ambiguity-Detection für Gemini
+        _is_ambiguous, _ambiguity_confidence = detect_ambiguity_in_query(user_text)
+        if _is_ambiguous:
+            logger.info(
+                "[AMBIGUITY-DETECTION] Ambige Anfrage erkannt: confidence=%.2f, query=%r",
+                _ambiguity_confidence,
+                user_text[:50],
+            )
+        
         # Guard: Calendar mutation beats fact-telling
         # If calendar mutation is detected, fact-telling pattern should not override
         # the intent to personal_recall. Calendar tools must be loaded even when
@@ -1702,6 +1718,8 @@ class IntentEngine:
             is_news_intent=news_on,
             is_explicit_pdf_intent=self.detect_explicit_pdf_intent(user_text),
             is_filesystem_intent=self.detect_filesystem_intent(user_text),
+            is_ambiguous=_is_ambiguous,
+            ambiguity_confidence=_ambiguity_confidence,
             vetoed_intents=vetoed,
             summary_global_veto=summary_global_veto,
             meta_agent_global_veto=meta_agent_global_veto,
@@ -1733,6 +1751,61 @@ class IntentEngine:
         )
         result.primary_intent = next((name for name, active in precedence if active), None)
         return result
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Gemini-spezifische Ambiguity-Detection (BACKLOG-037)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Deiktische Referenzen die auf Ambiguity hindeuten
+_AMBIGUITY_DEICTIC_MARKERS = frozenset({
+    "dazu", "das", "dies", "diese", "jener", "jenem", "welche", "welcher", "welchen",
+    "etwas", "irgendwas", "irgendwo", "irgendwie"
+})
+
+# Sehr kurze Anfragen die oft ambig sind
+_AMBIGUITY_SHORT_QUERY_THRESHOLD = 4  # Wörter oder weniger
+
+
+def detect_ambiguity_in_query(query: str) -> tuple[bool, float]:
+    """
+    Erkennt ambige Anfragen basierend auf deiktischen Markern und Länge.
+    
+    Returns:
+        (is_ambiguous, confidence_score) wobei confidence_score 0.0-1.0 ist
+        (1.0 = sehr ambig, 0.0 = nicht ambig)
+    """
+    if not query:
+        return True, 1.0
+    
+    query_norm = _normalize_text(query)
+    query_lower = query_norm.lower()
+    words = query_lower.split()
+    
+    # Check 1: Deiktische Marker (stärkste Ambiguity-Indikation - zuerst prüfen)
+    has_deictic = any(marker in query_lower for marker in _AMBIGUITY_DEICTIC_MARKERS)
+    if has_deictic:
+        # Deiktische Marker erhöhen Ambiguity
+        deictic_count = sum(1 for marker in _AMBIGUITY_DEICTIC_MARKERS if marker in query_lower)
+        confidence = min(0.9, 0.7 + (deictic_count * 0.1))
+        return True, confidence
+    
+    # Check 2: Sehr kurze Anfragen
+    if len(words) <= _AMBIGUITY_SHORT_QUERY_THRESHOLD:
+        # Je kürzer, desto ambiger
+        confidence = 1.0 - ((len(words) - 1) / _AMBIGUITY_SHORT_QUERY_THRESHOLD)
+        return True, confidence
+    
+    # Check 3: Anfragen ohne klare Intent-Keywords
+    # (keine Verben wie "suche", "finde", "erstelle", etc.)
+    intent_verbs = {"suche", "finde", "erstell", "mach", "gib", "zeig", "sag", "schreib", "erstelle"}
+    has_intent_verb = any(verb in query_lower for verb in intent_verbs)
+    
+    if not has_intent_verb and len(words) <= 6:
+        # Kurze Anfrage ohne Intent-Verb = potentiell ambig
+        return True, 0.7
+    
+    return False, 0.0
 
 
 # Singleton-Instanz für globalen Zugriff

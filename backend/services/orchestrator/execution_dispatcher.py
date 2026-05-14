@@ -155,8 +155,14 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
     last_msg = wf.get_last_user_message_content() if hasattr(wf, 'get_last_user_message_content') else None
     if not last_msg and hasattr(wf, 'user_text'):
         last_msg = wf.user_text
-    if last_msg:
-        query = last_msg.lower()
+    
+    # 💎 BACKLOG-037: Gemini Ambiguity-Detection und Tool-Blockade
+    # Diese Logik MUSS immer ausgeführt werden, auch wenn last_msg None ist
+    # Fallback auf wf.user_text wenn verfügbar
+    query_for_ambiguity = last_msg or (wf.user_text if hasattr(wf, 'user_text') else None)
+    
+    if query_for_ambiguity:
+        query = query_for_ambiguity.lower()
 
         # Calendar guard: purge PDF/image skills when user is asking about appointments.
         if _is_calendar_query(query) and hasattr(wf, 'relevant_skill_ids'):
@@ -188,6 +194,69 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
                     "[CALENDAR-SAFETY-NET] Calendar intent ohne relevant_skill_ids — initialisiere Pflicht-Kalenderskills."
                 )
                 wf.relevant_skill_ids = list(_cal_mandatory)
+
+        # 💎 BACKLOG-037: Gemini Ambiguity-Detection und Tool-Blockade
+        # Bei ambigen Anfragen mit geringer Confidence für Gemini: Tool-Ausführung blockieren
+        current_provider = str(wf.provider or request.provider or "").strip().lower()
+        is_gemini = current_provider in {"gemini", "google"}
+        
+        logger.info("[GEMINI-AMBIGUITY-DEBUG] Provider check: current_provider=%s, is_gemini=%s, intent_result=%s", current_provider, is_gemini, type(intent_result).__name__ if intent_result else None)
+        
+        if is_gemini and intent_result:
+            is_ambiguous = getattr(intent_result, 'is_ambiguous', False)
+            ambiguity_confidence = getattr(intent_result, 'ambiguity_confidence', 0.0)
+            # Threshold: 0.6 (kann über Konfiguration angepasst werden)
+            ambiguity_threshold = 0.6
+            
+            logger.info(
+                "[GEMINI-AMBIGUITY-DEBUG] Ambiguity values: is_ambiguous=%s, ambiguity_confidence=%.2f, threshold=%.2f",
+                is_ambiguous,
+                ambiguity_confidence,
+                ambiguity_threshold,
+            )
+            
+            if is_ambiguous and ambiguity_confidence >= ambiguity_threshold:
+                logger.info(
+                    "[GEMINI-AMBIGUITY-BLOCK] Ambige Anfrage für Gemini erkannt (confidence=%.2f >= %.2f). "
+                    "Tool-Ausführung blockiert, Klärungsfrage wird erzwungen. Query: %r",
+                    ambiguity_confidence,
+                    ambiguity_threshold,
+                    query_for_ambiguity[:50] if query_for_ambiguity else "",
+                )
+                # Tool-Ausführung blockieren
+                wf.disable_tools = True
+                wf.requires_clarification = True
+                wf.ambiguity_confidence = ambiguity_confidence
+                wf.context_isolation_mode = "gemini_ambiguity_clarification"
+                wf.force_tool_name = None
+                wf.has_tool_trigger = False
+                wf.proactive_guidance = ""
+                if hasattr(wf, "relevant_skill_ids"):
+                    wf.relevant_skill_ids = []
+                # Auch gateway_kwargs setzen, da die Tool-Ausführung dort prüft
+                if hasattr(wf, 'gateway_kwargs'):
+                    wf.gateway_kwargs['disable_tools'] = True
+                # System-Prompt für Klärungsfrage setzen
+                from backend.services.chat.context_builder import ContextBuilder
+                from backend.data import crud
+                context_builder = ContextBuilder(db=wf.db if hasattr(wf, 'db') else None)
+                # Generiere Klärungsfrage-Prompt
+                planner_prompt = context_builder.build_planner_prompt(
+                    candidates=[{"tool_name": "unknown", "confidence": ambiguity_confidence}]
+                )
+                # Füge zum System-Prompt hinzu
+                if hasattr(wf, 'system_prompt_for_llm'):
+                    logger.info("[GEMINI-AMBIGUITY-DEBUG] Adding clarification prompt to system_prompt_for_llm")
+                    wf.system_prompt_for_llm += "\n\n" + planner_prompt
+                else:
+                    logger.warning("[GEMINI-AMBIGUITY-DEBUG] wf.system_prompt_for_llm not found")
+                # Markiere als Klärungs erforderlich für Logging
+                if hasattr(wf, 'gateway_kwargs'):
+                    wf.gateway_kwargs['requires_clarification'] = True
+                    wf.gateway_kwargs['ambiguity_confidence'] = ambiguity_confidence
+                    logger.info("[GEMINI-AMBIGUITY-DEBUG] gateway_kwargs updated: disable_tools=%s, requires_clarification=%s", wf.gateway_kwargs.get('disable_tools'), wf.gateway_kwargs.get('requires_clarification'))
+                else:
+                    logger.warning("[GEMINI-AMBIGUITY-DEBUG] wf.gateway_kwargs not found")
 
         # Harte Erkennung für den Sortier-Auftrag
         is_sort_intent = 'sortiere' in query and ('pdf' in query or 'dateien' in query)
@@ -307,6 +376,11 @@ async def execute_generation_prepare_gateway(
     else:
         wf.final_text = wf.final_text_to_generate
     if not wf.skip_llm_generation:
+        clarification_mode = bool(
+            getattr(wf, "requires_clarification", False)
+            and str(request.provider or "").strip().lower() in {"gemini", "google"}
+            and str(getattr(wf, "context_isolation_mode", "") or "") == "gemini_ambiguity_clarification"
+        )
         wf.ui_guidance = "⚠️ REGEL FÜR PDF-DOKUMENTE IN DER WISSENSDATENBANK:\n1. Wenn der User nach PDF-Dokumenten aus der Wissensdatenbank fragt (ohne konkreten Pfad): Nutze 'list_knowledge_documents'.\n2. Um eine PDF aus der Wissensdatenbank zu öffnen: Nutze 'open_knowledge_document'.\n3. AUSNAHME: Wenn der User einen konkreten Dateisystempfad nennt (z.B. C:\\, D:\\, /home/), MUSST du filesystem.list_directory oder filesystem.read_file verwenden - auch für PDFs.\n4. WENN DER USER EIN BILD WILL: Nutze IMMER UND AUSSCHLIESSLICH 'system.generate_image'."
         wf.research_guidance = '🚨 SYSTEM-DIREKTIVE (STRIKTE KASKADE):\n1. PFAD-VORRANG: Wenn die User-Anfrage einen konkreten Dateisystempfad enthält (z.B. "C:\\...", "D:\\...", "/home/..."), MUSST du ZUERST filesystem.list_directory oder filesystem.read_file verwenden - NIEMALS query_knowledge_base.\n2. PRIORITÄT (für Wissensfragen OHNE Pfad): Nutze ZUERST `query_knowledge_base`.\n3. STOPP-REGEL: Sobald die PDF-Ergebnisse die Frage beantworten, ist jede weitere Suche (Wikipedia/Web) STRENGSTENS UNTERSAGT.\n4. AUSNAHME: Nur wenn `query_knowledge_base` 0 Ergebnisse liefert, darf Wikipedia genutzt werden.\nVERHALTENS-KODEX: Redundante Wikipedia-Suchen bei vorhandenem PDF-Wissen gelten als schwerer Logik-Fehler.\n'
         wf.proactive_guidance = ""
@@ -362,6 +436,24 @@ async def execute_generation_prepare_gateway(
                 wf.final_system_prompt += f'\n\n{wf.capability_guidance}'
         else:
             wf.final_system_prompt = apply_verbosity_control(wf.system_prompt_for_llm)
+        if clarification_mode:
+            wf.memory_context_string = ""
+            wf._formatted_coupons = ""
+            wf._fact_coupons = []
+            wf._active_directives = []
+            wf._active_directive_names = set()
+            wf._has_negative_preferences = False
+            wf.final_text_to_generate = str(wf.user_text or "")
+            wf.final_system_prompt += (
+                "\n\n!!! GEMINI-KLÄRUNGSFRAGE-CONTEXT-ISOLATION !!!\n"
+                "Die aktuelle Nutzeranfrage ist ambig. Vorheriger Chat-Verlauf, Memory-Kontext, "
+                "Kalender-/Wetter-Kontext und Tool-Wissen sind für diesen Turn absichtlich nicht verfügbar. "
+                "Antworte nicht aus Kontext oder Erinnerung. Stelle genau eine kurze Klärungsfrage dazu, "
+                "worauf sich die Anfrage bezieht."
+            )
+            logger.info(
+                "[GEMINI-AMBIGUITY-CONTEXT] Context isolation active: memory/fact coupons/directives cleared."
+            )
         if wf._identity.name and (not wf.is_eval_reporting) and (not wf.is_audit_request):
             wf._name_recall_re = re.compile('wie\\s+hei[ßs]|mein(?:em?)?\\s+name|wie\\s+ich\\s+hei[ßs]|was\\s+ist\\s+mein\\s+name|kennst\\s+du\\s+mein(?:en)?\\s+name|wei[sß]t\\s+du\\s+(?:noch\\s+)?(?:wie|meinen?)\\s+name', re.IGNORECASE)
             wf._is_name_recall = bool(wf._name_recall_re.search(wf.user_text))
@@ -433,8 +525,8 @@ async def execute_generation_prepare_gateway(
         wf._system_prompt_base_for_suggestions = wf.final_system_prompt
         wf._prompt_cache_base_prompt = str(getattr(wf, "system_prompt_for_llm", "") or "")
         raw_mode = getattr(wf, "suggestion_mode", 1)
-        suggestion_mode = 1 if raw_mode is None else int(raw_mode)
-        _suggestion_suffix = SuggestionEngine.build_suggestion_directive(
+        suggestion_mode = 0 if clarification_mode else (1 if raw_mode is None else int(raw_mode))
+        _suggestion_suffix = None if clarification_mode else SuggestionEngine.build_suggestion_directive(
             suggestion_mode,
             [],
             str(wf.memory_context_string or ""),
@@ -448,7 +540,7 @@ async def execute_generation_prepare_gateway(
             wf.final_system_prompt = f"{wf._system_prompt_base_for_suggestions}\n\n{_suggestion_suffix}"
         wf.is_ollama_provider = str(request.provider or '').lower() == 'ollama'
         wf.is_basic_conversation = intent_classifier.is_greeting(wf.user_text) or wf.is_identity_turn or intent_classifier.is_opinion_query(wf.user_text)
-        wf.history_limit = 3 if wf.is_ollama_provider and wf.is_basic_conversation else 8
+        wf.history_limit = 0 if clarification_mode else (3 if wf.is_ollama_provider and wf.is_basic_conversation else 8)
         if wf.is_ollama_provider and wf.is_identity_turn:
             wf.history_limit = 2
         wf.orchestrator_context = orchestrator_context_manager.assemble_history(chat_id=request.chat_id, role_mapper=prompt_role_from_db_role, limit=wf.history_limit)
@@ -513,6 +605,13 @@ async def execute_generation_prepare_gateway(
         wf.kpi_tool_status: dict[str, str] = {}  # cache_key -> status (für Self-Correction bei Error)
         wf._normalize_tool_args_fn = _normalize_tool_args
         wf.gateway_kwargs = {'provider': request.provider, 'model': wf.chosen_model, 'api_key': wf.api_key, 'chat_history': wf.messages, 'context_manager': context_manager, 'db': db, 'user_prompt': wf.user_text, 'chat_id': request.chat_id, 'tool_executor': wf.executor, 'disable_tools': wf.disable_tools, 'allowed_skill_ids': wf.relevant_skill_ids, 'requested_skills': wf.relevant_skill_ids, 'tools_override': wf.tools_override, 'bypass_policy': wf.bypass_policy_this_turn, 'reason_and_respond_fn': _reason_and_respond_with_provider_fixes, '_kpi_retry_paths': wf.kpi_retry_paths, '_kpi_tool_status': wf.kpi_tool_status, '_normalize_tool_args_fn': wf._normalize_tool_args_fn, '_prompt_cache_decision': wf.prompt_cache_decision, '_suggestion_context': {'base_system': getattr(wf, '_system_prompt_base_for_suggestions', wf.final_system_prompt), 'mode': suggestion_mode, 'memory_context': str(wf.memory_context_string or ''), 'user_text': str(wf.user_text or '')}}
+        if clarification_mode:
+            wf.gateway_kwargs["disable_tools"] = True
+            wf.gateway_kwargs["requires_clarification"] = True
+            wf.gateway_kwargs["ambiguity_confidence"] = getattr(wf, "ambiguity_confidence", 0.0)
+            wf.gateway_kwargs["context_isolation_mode"] = "gemini_ambiguity_clarification"
+            wf.gateway_kwargs["allowed_skill_ids"] = []
+            wf.gateway_kwargs["requested_skills"] = []
         # P0 control-flow gate: MOA router may run only after smalltalk gating and only for likely tool turns.
         wf.gateway_kwargs["_allow_moa_hard_lock"] = bool(
             (not wf.is_smalltalk_turn)
@@ -838,6 +937,16 @@ async def execute_generation_prepare_gateway(
                 wf.gateway_kwargs["forced_tool_args"] = {
                     "filename": _detected_filename,
                 }
+        if clarification_mode:
+            wf.gateway_kwargs.pop("forced_tool", None)
+            wf.gateway_kwargs.pop("force_tool_name", None)
+            wf.gateway_kwargs.pop("forced_tool_args", None)
+            wf.gateway_kwargs["allowed_skill_ids"] = []
+            wf.gateway_kwargs["requested_skills"] = []
+            wf.gateway_kwargs["tools_override"] = []
+            wf.gateway_kwargs["disable_tools"] = True
+            wf.gateway_kwargs["_allow_moa_hard_lock"] = False
+            logger.info("[GEMINI-AMBIGUITY-CONTEXT] Forced tools and history-dependent routing cleared.")
         if user_budget_info:
             wf.gateway_kwargs['_user_budget_info'] = user_budget_info
         if background_tasks is not None:

@@ -1,0 +1,42 @@
+{
+  "testRunId": "TEST-RUN-2026-05-14-001",
+  "title": "Gemini Geo-Distance Routing Verification",
+  "executionMode": "LIVE_VISUAL",
+  "target": "JANUS_CHAT",
+  "chatWindow": "A",
+  "baseUrl": "http://localhost:5173",
+  "backendHealthUrl": "http://localhost:8000/api/health",
+  "timeouts": {
+    "pageLoad": 30000,
+    "testCaseMs": 120000,
+    "assistantResponseMs": 120000,
+    "streamRequestMs": 60000
+  },
+  "strategies": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "tool_call_detected_v1",
+    "modelSelection": "model_selection_v2_5"
+  },
+  "tests": [
+    {
+      "id": "TC-036-01-GEMINI",
+      "name": "Gemini ruft system.routing bei Geo-Distanz-Abfrage auf",
+      "type": "functional",
+      "provider": "gemini",
+      "model": "gemini-3.1-pro-preview",
+      "prompt": "Wie weit ist Berlin von München?",
+      "expected": {
+        "containsAny": [
+          "Quelle: OSRM",
+          "system.routing"
+        ],
+        "mustNotContain": [
+          "585 km"
+        ],
+        "tool": "system.routing"
+      }
+    }
+  ]
+}

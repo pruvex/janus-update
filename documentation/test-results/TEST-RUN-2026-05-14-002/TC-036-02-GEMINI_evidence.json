@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-14-002",
+  "testCaseId": "TC-036-02-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Wie weit ist Berlin von München?",
+  "response": "Berlin ist etwa 585 Kilometer von München entfernt. Mit dem Auto beträgt die reine Fahrzeit ungefähr 5 Stunden und 55 Minuten.\nQuelle: OSRM\n💡 Vorschlag:• Soll ich dir die Route für ein anderes Verkehrsmittel berechnen oder nach Hotels in München suchen?\n14:49",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "tool_call_detected_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-14T12:49:37.805Z"
+}
