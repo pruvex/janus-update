@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-023",
+  "testCaseId": "SEC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Newlines/JSON-breaking input in user text",
+  "response": "Worauf genau bezieht sich die Erwähnung von Newlines und JSON-breaking input?\n23:19",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T21:19:55.658Z"
+}

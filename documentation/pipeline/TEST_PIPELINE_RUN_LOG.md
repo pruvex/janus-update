@@ -807,6 +807,29 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 - **Backlog Closure**: N/A; reusable TestSpec validation completed.
 - **Abschluss**: Gesamtergebnis PASS.
 
+## TEST-RUN-2026-05-20-023 - Janus Observability Privacy Boundary
+
+- **Datum**: 2026-05-20
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/08_logging_telemetry_and_audit_privacy.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-20-023_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-20-023_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-20-023_results.json`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-20-023_final_audit.md`
+- **Privacy Scan**: `documentation/test-runs/TEST-RUN-2026-05-20-023_privacy_scan.md`
+- **Status**: PASS
+- **Total Tests**: 28
+- **Passed**: 28
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT 100.00% (14/14), Gemini 100.00% (14/14)
+- **Type Pass Rates**: functional 100.00% (10/10), prompt_injection 100.00% (6/6), security 100.00% (12/12)
+- **Security Gate**: PASS - log disclosure, overbroad debug, secret persistence, provider-payload, audit-fraud, and log-access prompts stayed inside the privacy boundary; final artifacts and runtime log passed strict leak scans.
+- **Findings**: Resolved embedded webhook fallback, third-party provider/header debug logging, telemetry/log attachment redaction, logging DLQ/debug-read redaction, and historical local log sanitation.
+- **Backlog Closure**: N/A; reusable TestSpec validation completed.
+- **Abschluss**: Gesamtergebnis PASS.
+
 ## Auswertungsbereich
 
 Dieser Bereich wird nach mehreren echten TestRuns gepflegt, z. B. nach 5-10 Runs oder nach einigen Arbeitstagen.

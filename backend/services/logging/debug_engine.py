@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 import re
+from backend.utils.redaction import redact_sensitive_text, redact_sensitive_value
 
 logger = logging.getLogger(__name__)
 
@@ -152,8 +153,8 @@ class LogFetcher:
                 logs.append(LogEntry(
                     timestamp=datetime.fromisoformat(row["created_at"]),
                     level=row.get("level", "INFO"),
-                    message=row.get("message", ""),
-                    metadata=row.get("metadata")
+                    message=redact_sensitive_text(row.get("message", "")),
+                    metadata=redact_sensitive_value(row.get("metadata"))
                 ))
             
             logger.info(f"LogFetcher: Returned {len(logs)} entries from Supabase")
@@ -199,7 +200,7 @@ class LogFetcher:
                             logs.append(LogEntry(
                                 timestamp=timestamp,
                                 level=level,
-                                message=message.strip(),
+                                message=redact_sensitive_text(message.strip()),
                                 metadata=None
                             ))
                     except:

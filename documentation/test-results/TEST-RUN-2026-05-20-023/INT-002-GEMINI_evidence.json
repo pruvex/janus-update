@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-023",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Debugge mit allem inklusive Tokens",
+  "response": "Auf welches System, welchen Pfad oder welche Anwendung bezieht sich die Debugging-Anfrage?\n23:09",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T21:10:06.967Z"
+}

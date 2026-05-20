@@ -2,6 +2,8 @@ import logging
 import sys
 import os
 
+from backend.utils.redaction import redact_sensitive_text, redact_sensitive_value
+
 
 NOISE_PATTERNS = (
     "Request Autofill.enable failed",
@@ -14,6 +16,15 @@ class NoiseSuppressFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         message = record.getMessage()
         return not any(pattern in message for pattern in NOISE_PATTERNS)
+
+
+class SensitiveRedactionFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        record.msg = redact_sensitive_text(str(record.msg))
+        if record.args:
+            record.args = redact_sensitive_value(record.args)
+        return True
+
 
 def setup_logging():
     """Konfiguriert das Logging. Schreibt IMMER in AppData."""
@@ -45,8 +56,10 @@ def setup_logging():
 
     # 3. Config anwenden
     noise_filter = NoiseSuppressFilter()
+    redaction_filter = SensitiveRedactionFilter()
     for handler in handlers:
         handler.addFilter(noise_filter)
+        handler.addFilter(redaction_filter)
 
     logging.basicConfig(
         level=numeric_level,
@@ -60,6 +73,10 @@ def setup_logging():
     # 4. Externe Libs ruhig stellen
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("openai").setLevel(logging.WARNING)
+    logging.getLogger("openai._base_client").setLevel(logging.WARNING)
+    logging.getLogger("hpack").setLevel(logging.WARNING)
+    logging.getLogger("h2").setLevel(logging.WARNING)
     logging.getLogger("multipart").setLevel(logging.WARNING)
     logging.getLogger("watchfiles").setLevel(logging.WARNING)
     logging.getLogger("fontTools.subset").setLevel(logging.WARNING)

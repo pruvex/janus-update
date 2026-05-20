@@ -13,6 +13,7 @@ from pathlib import Path
 
 from backend.data.schemas_logging import LogEventCreate, LogEvent, LogEventPayload
 from backend.services.logging.supabase_client import get_supabase_client
+from backend.utils.redaction import redact_sensitive_value
 
 
 # Configure module logger
@@ -118,7 +119,7 @@ async def log_event(event: LogEventCreate) -> None:
                 event.event_type,
                 event.skill,
                 str(e),
-                event.payload
+                redact_sensitive_value(event.payload)
             )
             return  # Do not queue invalid events
     
@@ -200,7 +201,7 @@ def _write_to_dlq(events: List[LogEventCreate], error: str) -> None:
         with open(dlq_path, "a", encoding="utf-8") as f:
             for event in events:
                 dlq_entry = {
-                    "event": event.model_dump(mode="json"),
+                    "event": redact_sensitive_value(event.model_dump(mode="json")),
                     "error": error,
                     "failed_at": datetime.utcnow().isoformat(),
                 }

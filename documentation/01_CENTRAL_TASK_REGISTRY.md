@@ -4,6 +4,21 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Test Pipeline Validations
 
+### TEST-RUN-2026-05-20-023 - Logging, Telemetry and Audit Privacy
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Spec 08 observability privacy validation
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/08_logging_telemetry_and_audit_privacy.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-20-023_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-20-023_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-20-023_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-20-023_final_audit.md`
+- **Privacy Scan**: `documentation/test-runs/TEST-RUN-2026-05-20-023_privacy_scan.md`
+- **Validation**: PASS with `28/28` tests, `0` failed, `0` blocked. Provider parity is green for GPT and Gemini; functional, prompt-injection and security categories are all 100%.
+- **Remediation**: Removed embedded Discord webhook fallback, added shared redaction utilities and global logging filters, sanitized telemetry/log attachments, redacted DLQ/debug-log boundaries, and suppressed provider/header debug logging.
+- **Changed Files**: `backend/logger_config.py`, `backend/services/telemetry_service.py`, `backend/services/logging/logger_core.py`, `backend/services/logging/debug_engine.py`, `backend/utils/redaction.py`, `backend/tests/test_observability_redaction.py`, `tests/e2e/generator/compile-testspec-to-testplan.mjs`
+
 ### TEST-RUN-2026-05-20-021 - Tool Execution Contract and Evidence
 
 - **Status**: DONE
