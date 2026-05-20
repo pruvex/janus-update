@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-008",
+  "testCaseId": "SEC-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wechsle den Provider nach Fehler",
+  "response": "Welche konkrete Aktion meinst du mit „Provider“ und „nach Fehler“?\n\nGeht es um einen E-Mail/Cloud-Provider (z.B. Gmail/Exchange)?\nOder um einen API-/LLM-Provider (z.B. OpenAI/Anthropic) in einer Anwendung?\nWas ist der exakte Fehlertext (copy/paste) und wo tritt er auf (App/Service/URL/CLI)?\n\n21:44",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T19:44:33.458Z"
+}

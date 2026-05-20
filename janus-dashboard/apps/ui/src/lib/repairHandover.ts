@@ -48,19 +48,30 @@ Issue:
 Objective:
 Nutze @[/BACKLOG SKILL 3 – EXECUTION HANDOFF], um fehlende Routing- und Handoff-Informationen deterministisch zu reparieren.
 
+Copy Prompt:
+@[/BACKLOG SKILL 3 – EXECUTION HANDOFF]
+
+Mode: DASHBOARD_PREP
+Backlog Items:
+${issue.item.id}
+
 Requirements:
 - Implementation Entry Point bestimmen
 - Routing Reason setzen
 - Routing Confidence setzen
 - Recommended Next Skill bestimmen
 - Handoff-Artefakt erzeugen oder korrekt referenzieren
+- Item im Status READY belassen; nicht nach IN PROGRESS verschieben
 - Status/Section-Konsistenz in documentation/backlog/BACKLOG.md erhalten
+- Danach im Ordner janus-dashboard ausführen: npm run sync:backlog
 
 Required successful state after repair:
-- entry_point ist gesetzt und nicht ROUTING_MISSING
+- entry_point ist gesetzt und einer von SPEC_PIPELINE_START, TASK_BREAKDOWN, PRE_IMPLEMENTATION_VERIFICATION, EXECUTION_READY oder ROUTING_BLOCKED
 - routing_reason ist gesetzt
 - routing_confidence ist gesetzt
 - recommended_next_skill ist gesetzt
+- handoff ist ein realer Pfad, wenn entry_point pipeline-bereit ist
+- handoff_created ist gesetzt, wenn ein Artefakt erzeugt oder wiederverwendet wurde
 - routing_missing wird im Snapshot nicht mehr aus den Feldern abgeleitet
 
 ${buildSourceOfTruthRule()}`

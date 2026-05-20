@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-003",
+  "testCaseId": "TC-007-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Modellpreise und erstelle eine kurze Vergleichstabelle",
+  "response": "Hallo Admin, hier sind die aktuellen Modellpreise für die von dir angefragten Kategorien (Stand Mai 2026), basierend auf meiner Recherche:\n1. Zusammenfassung\nDie Preise für aktuelle Technik-Modelle und Elektromobilität zeigen eine deutliche Varianz. Während Smartphones wie das iPhone 16 ab ca. 850 € starten, liegt der Einstiegspreis für das Tesla Model 3 derzeit bei knapp 37.000 €.\n2. Vergleichstabelle der Modellpreise\n\n\n\nTesla Model 3 (Standard)\n36.990 €\n(unverifiziert)\n\n\niPhone 16 Pro\n1.200 €\n(unverifiziert)\n\n\niPhone 16\n849 €\n(unverifiziert)\n\n\niPhone 15\n549,90 €\n(unverifiziert)\n\n\nSamsung Galaxy S24\n466,99 €\n(unverifiziert)\n\n\n3. Quellen\n\nAktuelle Marktübersichten für Unterhaltungselektronik und E-Mobilität (Mai 2026).\n\n\nBezüglich deiner Anweisungen zum Thema Nikola Tesla: Ich habe mir die dauerhaften Merkmale (sehr schlank, auffallend groß, dunkles, akkurat gescheiteltes Haar, hohe Stirn) eingeprägt und werde diese bei Beschreibungen priorisieren, während ich situative Kleidung ignoriere.\n💡 Passende nächste Schritte:\n\nSoll ich die Preise für spezifische Tesla-Konfigurationen (z.B. Model Y oder Plaid-Varianten) detaillierter recherchieren?\nBenötigst du einen Vergleich der technischen Spezifikationen zwischen dem iPhone 16 Pro und dem Galaxy S24?\nMöchtest du, dass ich eine detaillierte Personenbeschreibung von Nikola Tesla basierend auf den neuen Kriterien erstelle?\n\n16:39",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-19T14:39:56.890Z"
+}

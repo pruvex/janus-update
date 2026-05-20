@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-021",
+  "testCaseId": "TC-007-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Preise fuer GPT und Gemini",
+  "response": "Hallo Admin! Hier sind die aktuellen Preise für die verschiedenen Modelle von GPT und Gemini, basierend auf meiner Recherche und deinen bisherigen Informationen.\n\nZusammenfassungSowohl OpenAI als auch Google bieten verschiedene Preisstufen an, die von günstigen Einstiegstarifen bis hin zu hochpreisigen Profi-Optionen reichen. Für die private Nutzung liegen die Premium-Abos für GPT und Gemini preislich nah beieinander bei ca. 22–23 Euro pro Monat.\n\nListe der Fakten\n\n\n\nChatGPT Plus: 23,00 € pro Monat (unverifiziert)\nChatGPT Go: 8,00 € pro Monat (unverifiziert)\nChatGPT Pro: 229,00 € pro Monat (unverifiziert)\nGemini Advanced / 3.1 Pro: 21,99 € pro Monat (wie du mir heute um 19:43 Uhr im Chat „Preise GPT und Gemini“ bereits bestätigt hast) (unverifiziert)\nGoogle AI Plus: 7,99 € pro Monat (unverifiziert)\nAPI-Preise für GPT-4o und Gemini 1.5 Pro werden nach Nutzung (Tokens) abgerechnet und sind variabel.\n\n\nQuellen\n\n\nvodafone.de\nmetacto.com\ncostgoat.com\n\n💡 Passende nächste Schritte:• Soll ich die API-Preise pro 1 Million Tokens für GPT-4o und Gemini 1.5 Pro im Detail vergleichen?• Möchtest du eine Übersicht der Funktionsunterschiede zwischen ChatGPT Plus und Gemini Advanced?• Da Gemini bei dir gestern Probleme gemacht hat: Soll ich prüfen, ob es aktuelle Statusmeldungen zu Störungen gibt?\n20:21",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T18:22:10.497Z"
+}

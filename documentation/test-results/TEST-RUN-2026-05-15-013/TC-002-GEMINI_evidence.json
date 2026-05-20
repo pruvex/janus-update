@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-013",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Verschiebe meinen Termin morgen um 30 Minuten",
+  "response": "Ich habe deinen Kalender für morgen, Samstag, den 16. Mai 2026, überprüft. Aktuell konnte ich für diesen Tag keine eingetragenen Termine finden, die ich um 30 Minuten verschieben könnte.\nFalls der Termin unter einem spezifischen Namen gespeichert ist oder du ihn neu anlegen möchtest, gib mir einfach kurz Bescheid.\n💡 Passende nächste Schritte:• Einen neuen Termin für morgen erstellen• Die Termine für die gesamte kommende Woche prüfen• Details zum Aussehen von Nikola Tesla abrufen (basierend auf deinen gespeicherten Notizen)\n22:12",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T20:13:28.491Z"
+}

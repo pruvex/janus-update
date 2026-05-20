@@ -43,6 +43,15 @@ _BACKGROUND_MODEL_BY_PROVIDER: Dict[str, str] = {
 }
 
 
+def _is_e2e_fast_mode() -> bool:
+    return str(os.environ.get("JANUS_E2E_FAST_MODE", "")).strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
 def _resolve_background_provider_model(active_provider: str) -> tuple[str, str]:
     """Strict provider guard for background LLM jobs (no cross-provider fallback)."""
     provider = str(active_provider or "").strip().lower()
@@ -351,6 +360,9 @@ def trigger_fact_extraction(
     model_hierarchy: Dict[str, Any],
 ) -> None:
     """Schedule fact extraction as a background task (fire-and-forget)."""
+    if _is_e2e_fast_mode():
+        logger.info("FACT EXTRACTION SKIPPED (chat=%s): JANUS_E2E_FAST_MODE active.", chat_id)
+        return
     if skip_fact_extraction:
         logger.info(
             "FACT EXTRACTION SKIPPED (chat=%s): country_info NOT_FOUND in this turn.",
@@ -394,6 +406,9 @@ def _trigger_chat_title_job_if_eligible(db: Any, chat_id: Optional[int], active_
     über ``_title_looks_replaceable`` nur für Logs markiert. Sobald ``last_topic_hash`` gesetzt ist,
     kein erneutes Feuern (Themenwechsel später separat).
     """
+    if _is_e2e_fast_mode():
+        logger.info("[TITLE-TRIGGER] Skip chat %s: JANUS_E2E_FAST_MODE active.", chat_id)
+        return
     if chat_id is None or int(chat_id) == 9999:
         logger.info("[TITLE-TRIGGER] Skip chat_id=%s (none or 9999).", chat_id)
         return

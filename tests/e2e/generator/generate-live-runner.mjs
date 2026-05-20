@@ -56,7 +56,7 @@ function validateTestPlan(plan, registry) {
     errors.push(`Invalid executionMode: ${plan.executionMode}`);
   }
 
-  const validTargets = ['JANUS_CHAT', 'JANUS_DASHBOARD', 'JANUS_ELECTRON'];
+  const validTargets = ['JANUS_CHAT', 'JANUS_DASHBOARD', 'JANUS_ELECTRON', 'JANUS_BROWSER_SECURITY'];
   if (!validTargets.includes(plan.target)) {
     errors.push(`Invalid target: ${plan.target}`);
   }
@@ -121,6 +121,7 @@ import path from 'node:path';
 const ASSISTANT_RESPONSE_TIMEOUT_MS = ${plan.timeouts.assistantResponseMs};
 const TEST_CASE_TIMEOUT_MS = ${plan.timeouts.testCaseMs};
 const STREAM_REQUEST_TIMEOUT_MS = ${plan.timeouts.streamRequestMs};
+const UI_READY_TIMEOUT_MS = Math.max(60000, STREAM_REQUEST_TIMEOUT_MS, ASSISTANT_RESPONSE_TIMEOUT_MS);
 
 /* Failure Taxonomy:
  * RUNNER_SELECTOR_FAILURE  — Playwright could not find expected DOM element
@@ -293,7 +294,7 @@ async function ensureProviderModelSelection(page, providerValue, modelId) {
         return Array.isArray(us) && us.includes(mid);
       },
       [providerValue, modelId],
-      { timeout: 20000 },
+      { timeout: UI_READY_TIMEOUT_MS },
     );
   } catch (e) {
     console.warn('[E2E-DIAG] ensureProviderModelSelection', String((e && e.message) || e));
@@ -364,11 +365,11 @@ async function selectModel(page, windowName, modelId, providerHint) {
       }
       return true;
     },
-    { timeout: 15000 },
+    { timeout: UI_READY_TIMEOUT_MS },
   );
 
-  await expect(provSel).toBeVisible({ timeout: 15000 });
-  await expect(modSel).toBeVisible({ timeout: 15000 });
+  await expect(provSel).toBeVisible({ timeout: UI_READY_TIMEOUT_MS });
+  await expect(modSel).toBeVisible({ timeout: UI_READY_TIMEOUT_MS });
 
   await ensureProviderModelSelection(page, providerValue, modelId);
 
@@ -392,7 +393,7 @@ async function selectModel(page, windowName, modelId, providerHint) {
           return Array.from(hm.options).some((o) => o.value === mid);
         },
         [windowName, providerValue, modelId],
-        { timeout: Math.max(20000, TEST_CASE_TIMEOUT_MS - 10000) },
+        { timeout: UI_READY_TIMEOUT_MS },
       );
 
       await commitHeaderModel(windowName, modelId);
@@ -425,7 +426,7 @@ async function selectModel(page, windowName, modelId, providerHint) {
 
 async function waitSendButtonReady(page, windowName) {
   const btn = page.locator('#send-button-' + windowName);
-  await expect(btn).toBeVisible({ timeout: 15000 });
+  await expect(btn).toBeVisible({ timeout: UI_READY_TIMEOUT_MS });
   await page.waitForFunction(
     (wid) => {
       const btnEl = document.getElementById('send-button-' + wid);
@@ -449,9 +450,9 @@ async function waitSendButtonReady(page, windowName) {
       return true;
     },
     windowName,
-    { timeout: 30000 },
+    { timeout: UI_READY_TIMEOUT_MS },
   );
-  await expect(btn).toBeEnabled({ timeout: 10000 });
+  await expect(btn).toBeEnabled({ timeout: UI_READY_TIMEOUT_MS });
 }
 `;
 }
@@ -523,6 +524,82 @@ function createPromptDiagnostics(page) {
 
 function generateEvidenceWriter(plan) {
   return `
+const TEST_RESULT_SCHEMA_VERSION = 'janus.test-result.v1';
+const TEST_RESULT_ID = '${plan.testRunId}';
+const TEST_RESULT_TITLE = '${String(plan.title || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}';
+
+function relativeToWorkspace(filePath) {
+  return path.relative(process.cwd(), filePath).replace(/\\\\/g, '/');
+}
+
+function classifyAggregateStatus(results) {
+  if (!Array.isArray(results) || results.length === 0) return 'RUNNING';
+  if (results.some((entry) => entry.result === 'FAIL')) return 'FAIL';
+  if (results.some((entry) => entry.result === 'BLOCKED')) return 'BLOCKED';
+  if (results.some((entry) => entry.result === 'MANUAL_GATE_REQUIRED')) return 'PARTIAL';
+  if (results.every((entry) => entry.result === 'PASS')) return 'PASS';
+  return 'PARTIAL';
+}
+
+function writeTestResultSummary(resultDir) {
+  const evidenceFiles = fs
+    .readdirSync(resultDir)
+    .filter((name) => name.endsWith('_evidence.json'))
+    .sort();
+  const results = [];
+
+  for (const fileName of evidenceFiles) {
+    const fullPath = path.join(resultDir, fileName);
+    try {
+      const payload = JSON.parse(fs.readFileSync(fullPath, 'utf-8'));
+      results.push({
+        testCaseId: payload.testCaseId || fileName.replace(/_evidence\\.json$/, ''),
+        result: payload.result || 'UNKNOWN',
+        classification: payload.classification || 'UNKNOWN',
+        evidencePath: relativeToWorkspace(fullPath),
+        durationMs: payload.durationMs || 0,
+        notes: payload.notes || '',
+        timestamp: payload.timestamp || '',
+      });
+    } catch (error) {
+      results.push({
+        testCaseId: fileName.replace(/_evidence\\.json$/, ''),
+        result: 'BLOCKED',
+        classification: 'EVIDENCE_PARSE_ERROR',
+        evidencePath: relativeToWorkspace(fullPath),
+        durationMs: 0,
+        notes: String((error && error.message) || error),
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  const summary = {
+    total: results.length,
+    passed: results.filter((entry) => entry.result === 'PASS').length,
+    failed: results.filter((entry) => entry.result === 'FAIL').length,
+    blocked: results.filter((entry) => entry.result === 'BLOCKED').length,
+    manualGateRequired: results.filter((entry) => entry.result === 'MANUAL_GATE_REQUIRED').length,
+  };
+  const resultJson = path.join(process.cwd(), 'documentation/test-results/${plan.testRunId}_results.json');
+  const aggregate = {
+    schemaVersion: TEST_RESULT_SCHEMA_VERSION,
+    testRunId: TEST_RESULT_ID,
+    title: TEST_RESULT_TITLE,
+    status: classifyAggregateStatus(results),
+    summary,
+    artifacts: {
+      resultDirectory: relativeToWorkspace(resultDir),
+      resultJson: relativeToWorkspace(resultJson),
+      evidenceFiles: evidenceFiles.map((name) => relativeToWorkspace(path.join(resultDir, name))),
+    },
+    results,
+    updatedAt: new Date().toISOString(),
+  };
+  fs.writeFileSync(resultJson, JSON.stringify(aggregate, null, 2));
+  return aggregate;
+}
+
 function writeEvidence(testCaseId, result, classification, evidence, notes) {
   const resultDir = path.join(process.cwd(), 'documentation/test-results/${plan.testRunId}');
   if (!fs.existsSync(resultDir)) {
@@ -545,6 +622,26 @@ function writeEvidence(testCaseId, result, classification, evidence, notes) {
     timestamp: new Date().toISOString(),
   };
   fs.writeFileSync(resultFile, JSON.stringify(payload, null, 2));
+  writeTestResultSummary(resultDir);
+}
+
+function evidencePathForTestCase(testCaseId) {
+  return path.join(process.cwd(), 'documentation/test-results/${plan.testRunId}', \`\${testCaseId}_evidence.json\`);
+}
+
+function hasEvidenceForTestCase(testCaseId) {
+  return fs.existsSync(evidencePathForTestCase(testCaseId));
+}
+
+function extractTestCaseIdFromTitlePath(titlePath, title) {
+  const pathParts = Array.isArray(titlePath) ? titlePath : [];
+  for (let i = pathParts.length - 1; i >= 0; i--) {
+    const seg = String(pathParts[i] || '');
+    const m = /^([A-Za-z0-9_-]+)\\s*:\\s*/.exec(seg);
+    if (m) return m[1].trim();
+  }
+  const fallback = /^([A-Za-z0-9_-]+)\\s*:\\s*/.exec(String(title || ''));
+  return fallback ? fallback[1].trim() : '';
 }
 
 function buildEvidence(prompt, responseText, durationMs, triggeredTools) {
@@ -705,6 +802,22 @@ ${plan.strategies.send === 'chat_button_click_send_v1' ? `    // Promise.all pat
     await input.press('Enter');
     await page.waitForTimeout(300);`}
 
+    // Tool-loop responses can keep the visible bubble at the loading placeholder
+    // until the SSE stream closes and final synthesis/rendering is applied.
+    // Wait for observed streams first so research/tool cases are not classified
+    // as empty-bubble runner failures while the backend is still finalizing.
+    for (const captured of capturedStreamResponses) {
+      try {
+        await Promise.race([
+          typeof captured.finished === 'function' ? captured.finished() : Promise.resolve(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('stream-finish-timeout')), STREAM_REQUEST_TIMEOUT_MS)),
+        ]);
+      } catch (_) {
+        // Keep the assistant text wait below authoritative; diagnostics capture
+        // stream/body state if the UI still never renders final content.
+      }
+    }
+
     // Patient polling: wait until the assistant bubble holds real content,
     // not just the "..." loading placeholder (which may carry an appended timestamp).
     try {
@@ -726,6 +839,23 @@ ${plan.strategies.send === 'chat_button_click_send_v1' ? `    // Promise.all pat
     if (streamRequestCount === 0) {
       throw new Error('RUNNER_STREAM_TIMEOUT: Assistant bubble appeared but no POST /api/chat/stream request was observed. Frontend may have rendered static content without backend call.');
     }
+
+    // Tool-loop responses can briefly render provider tool-call JSON before the
+    // final natural-language synthesis replaces it. This second finish wait is
+    // intentionally cheap after the stream already closed above and preserves
+    // historical body parsing behavior for tool-call evidence.
+    for (const captured of capturedStreamResponses) {
+      try {
+        await Promise.race([
+          typeof captured.finished === 'function' ? captured.finished() : Promise.resolve(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('stream-finish-timeout')), 15000)),
+        ]);
+      } catch (_) {
+        // Keep the original assistant timeout authoritative. A finish wait
+        // timeout should not mask the DOM diagnostics below.
+      }
+    }
+    await page.waitForTimeout(500);
 
     // Check for visible Janus errors
     const errorMessage = page.locator(
@@ -837,6 +967,19 @@ ${plan.strategies.send === 'chat_button_click_send_v1' ? `    // Promise.all pat
       throw new Error(\`\${error.message}\nConsole [SSE]: \${JSON.stringify(sseLogs)}\nDOM eval: \${JSON.stringify(domEval)}\nDOM message texts: \${JSON.stringify(messageTexts)}\`);
     }
 
+    // BACKLOG-074 FIX: Improved error classification for stream timeouts
+    // Ensure RUNNER_UNHANDLED_FAILURE doesn't occur for known timeout scenarios
+    if (error.message.includes('timeout') || error.message.includes('Timeout')) {
+      if (streamEvents.length === 0) {
+        throw new Error(
+          \`RUNNER_STREAM_TIMEOUT: No POST /api/chat/stream observed after "\${prompt}".\nChat Events: \${JSON.stringify(chatEvents)}\nConsole [sendMessage]: \${JSON.stringify(sendMessageLogs)}\nConsole [SSE]: \${JSON.stringify(sseLogs)}\nDiagnostics: \${JSON.stringify(diagnostics.events)}\nDOM messages: \${JSON.stringify(messageTexts)}\nOriginal: \${error.message}\`
+        );
+      }
+      throw new Error(
+        \`PROVIDER_TIMEOUT: Assistant response not received within \${ASSISTANT_RESPONSE_TIMEOUT_MS}ms after "\${prompt}". Stream request was observed but no assistant message rendered.\nChat Events: \${JSON.stringify(chatEvents)}\nStream Events: \${JSON.stringify(streamEvents)}\nFailures: \${JSON.stringify(failedEvents)}\nConsole [SSE]: \${JSON.stringify(sseLogs)}\nDOM dump: \${domDump.slice(0, 1200)}\nDOM message texts: \${JSON.stringify(messageTexts)}\nOriginal: \${error.message}\`
+      );
+    }
+
     // Distinguish backend/provider errors from runner errors based on stream observation
     if (streamEvents.length === 0) {
       throw new Error(
@@ -933,15 +1076,15 @@ function generateTestCase(testCase, plan) {
 
   if (hasEval) {
     body.push(generateEvaluator(testCase));
-    body.push(`    writeEvidence('${testCase.id}', passed ? 'PASS' : 'FAIL', passed ? 'ASSERTION_MISMATCH' : 'ASSERTION_MISMATCH', buildEvidence(prompt, responseText, 0, triggeredTools), passed ? 'Expectations met' : 'Expectations not met');`);
+    body.push(`    writeEvidence('${testCase.id}', passed ? 'PASS' : 'FAIL', passed ? 'ASSERTION_PASS' : 'ASSERTION_MISMATCH', buildEvidence(prompt, responseText, 0, triggeredTools), passed ? 'Expectations met' : 'Expectations not met');`);
     body.push(`    expect(passed, \`Test ${testCase.id} failed: containsAny/mustNotContain not satisfied. Response: \${responseText.slice(0, 200)}\`).toBe(true);`);
   } else if (exp.responseTimeMsMax) {
     body.push(`    const withinTime = responseTime < ${exp.responseTimeMsMax};`);
-    body.push(`    writeEvidence('${testCase.id}', withinTime ? 'PASS' : 'FAIL', withinTime ? 'ASSERTION_MISMATCH' : 'ASSERTION_MISMATCH', buildEvidence(prompt, responseText, responseTime, triggeredTools), withinTime ? \`Response in \${responseTime}ms\` : \`Too slow: \${responseTime}ms\`);`);
+    body.push(`    writeEvidence('${testCase.id}', withinTime ? 'PASS' : 'FAIL', withinTime ? 'RESPONSE_TIME_PASS' : 'ASSERTION_MISMATCH', buildEvidence(prompt, responseText, responseTime, triggeredTools), withinTime ? \`Response in \${responseTime}ms\` : \`Too slow: \${responseTime}ms\`);`);
     body.push(`    expect(withinTime, \`Test ${testCase.id} exceeded response time: \${responseTime}ms > ${exp.responseTimeMsMax}ms\`).toBe(true);`);
   } else if (exp.requiresConfirmation) {
     body.push(`    const hasConfirmation = /bist du sicher|bestÃƒÂ¤tigen|wirklich/i.test(responseText);`);
-    body.push(`    writeEvidence('${testCase.id}', hasConfirmation ? 'PASS' : 'FAIL', hasConfirmation ? 'ASSERTION_MISMATCH' : 'ASSERTION_MISMATCH', buildEvidence(prompt, responseText, 0, triggeredTools), hasConfirmation ? 'Confirmation requested' : 'No confirmation detected');`);
+    body.push(`    writeEvidence('${testCase.id}', hasConfirmation ? 'PASS' : 'FAIL', hasConfirmation ? 'CONFIRMATION_PASS' : 'ASSERTION_MISMATCH', buildEvidence(prompt, responseText, 0, triggeredTools), hasConfirmation ? 'Confirmation requested' : 'No confirmation detected');`);
     body.push(`    expect(hasConfirmation, \`Test ${testCase.id}: expected confirmation prompt not found. Response: \${responseText.slice(0, 200)}\`).toBe(true);`);
   } else if (expectedTool) {
     // \`expected.tool\` was the only check requested -> emit PASS evidence with
@@ -949,7 +1092,7 @@ function generateTestCase(testCase, plan) {
     body.push(`    writeEvidence('${testCase.id}', 'PASS', 'TOOL_ROUTING_PASS', buildEvidence(prompt, responseText, 0, triggeredTools), \`Expected tool "\${expectedTool}" was triggered (observed: \${triggeredTools.join(', ')})\`);`);
   } else {
     body.push(`    const hasResponse = responseText && responseText.length > 20;`);
-    body.push(`    writeEvidence('${testCase.id}', hasResponse ? 'PASS' : 'FAIL', hasResponse ? 'ASSERTION_MISMATCH' : 'ASSERTION_MISMATCH', buildEvidence(prompt, responseText, 0, triggeredTools), hasResponse ? 'Assistant responded' : 'No meaningful response');`);
+    body.push(`    writeEvidence('${testCase.id}', hasResponse ? 'PASS' : 'FAIL', hasResponse ? 'RESPONSE_PRESENT_PASS' : 'ASSERTION_MISMATCH', buildEvidence(prompt, responseText, 0, triggeredTools), hasResponse ? 'Assistant responded' : 'No meaningful response');`);
     body.push(`    expect(hasResponse, \`Test ${testCase.id}: no meaningful assistant response.\`).toBe(true);`);
   }
 
@@ -962,26 +1105,34 @@ ${body.join('\n')}
 function generateSuite(plan) {
   const groups = {};
   for (const t of plan.tests) {
-    const g = t.type || 'functional';
+    const safety = t.parallelSafe ? 'parallel' : 'serial';
+    const g = `${safety}:${t.type || 'functional'}`;
     if (!groups[g]) groups[g] = [];
     groups[g].push(t);
   }
 
   const groupOrder = ['functional', 'intent_routing', 'ux', 'security', 'prompt_injection', 'cost_token', 'manual_gate'];
   const orderedGroups = [];
-  for (const g of groupOrder) {
-    if (groups[g]) orderedGroups.push({ name: g, tests: groups[g] });
+  for (const safety of ['parallel', 'serial']) {
+    for (const g of groupOrder) {
+      const key = `${safety}:${g}`;
+      if (groups[key]) orderedGroups.push({ key, safety, name: g, tests: groups[key] });
+    }
   }
   // Any remaining groups not in the standard order
   for (const g of Object.keys(groups)) {
-    if (!groupOrder.includes(g)) orderedGroups.push({ name: g, tests: groups[g] });
+    const [, name = g] = g.split(':');
+    if (!orderedGroups.some((entry) => entry.key === g)) {
+      orderedGroups.push({ key: g, safety: g.startsWith('parallel:') ? 'parallel' : 'serial', name, tests: groups[g] });
+    }
   }
 
   const sections = [];
-  for (const { name, tests } of orderedGroups) {
-    const label = name.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) + ' Tests';
+  for (const { name, safety, tests } of orderedGroups) {
+    const label = `${name.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())} Tests (${safety})`;
+    const configure = safety === 'parallel' ? `\n    test.describe.configure({ mode: 'parallel' });` : '';
     const cases = tests.map((t) => generateTestCase(t, plan)).join('\n');
-    sections.push(`  test.describe('${label}', () => {\n${cases}\n  });`);
+    sections.push(`  test.describe('${label}', () => {${configure}\n${cases}\n  });`);
   }
 
   return sections.join('\n\n');
@@ -1019,9 +1170,9 @@ function generateBeforeEach(plan) {
       const msg = String((e && e.message) || e);
       if (/ERR_CONNECTION_REFUSED|ECONNREFUSED|net::ERR_CONNECTION_REFUSED/i.test(msg)) {
         const note =
-          'Failure Code: INFRASTRUCTURE_OFFLINE. ERR_CONNECTION_REFUSED reaching baseUrl. Suggested action: npm run start-dev (repository root).';
+          'Failure Code: INFRASTRUCTURE_OFFLINE. ERR_CONNECTION_REFUSED reaching baseUrl. Playwright webServer/startup or healthcheck must be debugged by SKILL 5; do not route as product finding.';
         writeEvidence('_INFRA_SETUP_', 'FAIL', 'INFRASTRUCTURE_OFFLINE', buildEvidence('', '', 0), note);
-        throw new Error('INFRASTRUCTURE_OFFLINE: ' + msg + ' — run npm run start-dev from repository root.');
+        throw new Error('INFRASTRUCTURE_OFFLINE: ' + msg + ' — Playwright webServer/startup or healthcheck failed; route to SKILL 5 FEATURE DEBUG.');
       }
       throw e;
     }
@@ -1037,10 +1188,10 @@ function generateBeforeEach(plan) {
         headers: { Authorization: \`Bearer \${jwt}\` },
       });
       return response.ok;
-    }, null, { timeout: 15000 });
+    }, null, { timeout: UI_READY_TIMEOUT_MS });
 
-    await expect(page.getByRole('button', { name: 'Neuer Chat' })).toBeVisible({ timeout: 15000 });
-    await expect(chatInput(page, '${genTargetWin}')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('button', { name: 'Neuer Chat' })).toBeVisible({ timeout: UI_READY_TIMEOUT_MS });
+    await expect(chatInput(page, '${genTargetWin}')).toBeVisible({ timeout: UI_READY_TIMEOUT_MS });
 
     // Create clean chat in window ${genTargetWin}
     await chatWindow(page, '${genTargetWin}').click();
@@ -1049,7 +1200,7 @@ function generateBeforeEach(plan) {
         res.request().method() === 'POST' &&
         /\\/api\\/chats\\/?(\\?|$)/.test(new URL(res.url()).pathname) &&
         res.ok(),
-      { timeout: 20000 },
+      { timeout: STREAM_REQUEST_TIMEOUT_MS },
     );
     await page.getByRole('button', { name: 'Neuer Chat' }).first().click();
     await chatsPost;
@@ -1083,12 +1234,202 @@ function generateBeforeEach(plan) {
 `;
 }
 
-function generateDescribe(plan) {
+function generateBrowserSecurityHelpers(plan) {
+  return `
+const BROWSER_SECURITY_BASE_URL = '${String(plan.baseUrl || 'http://localhost:5173/').replace(/'/g, "\\'")}';
+const BROWSER_SECURITY_BACKEND_HEALTH_URL = '${String(plan.backendHealthUrl || 'http://localhost:8001/api/health').replace(/'/g, "\\'")}';
+const ATTACKER_ORIGIN = 'https://attacker.invalid';
+
+function headerValue(headers, name) {
+  const key = Object.keys(headers || {}).find((candidate) => candidate.toLowerCase() === name.toLowerCase());
+  return key ? String(headers[key] || '') : '';
+}
+
+function hasFrameRestriction(headers) {
+  const csp = headerValue(headers, 'content-security-policy').toLowerCase();
+  const xfo = headerValue(headers, 'x-frame-options').toLowerCase();
+  return /frame-ancestors\\s+([^;]*'self'|[^;]*'none'|[^;]*https?:\\/\\/localhost|[^;]*janus:\\/\\/app)/i.test(csp) || ['deny', 'sameorigin'].includes(xfo);
+}
+
+function permissionsDisableSensitiveApis(policy) {
+  const normalized = String(policy || '').toLowerCase().replace(/\\s+/g, '');
+  return ['camera=()', 'microphone=()', 'geolocation=()', 'payment=()'].every((needle) => normalized.includes(needle));
+}
+
+function cookieAttributesSafe(cookies, isHttps) {
+  const authCookies = (cookies || []).filter((cookie) => /auth|session|token|jwt/i.test(cookie.name || ''));
+  if (authCookies.length === 0) return { ok: true, detail: 'NO_SESSION_COOKIE_LOCALSTORAGE_AUTH' };
+  const unsafe = authCookies.filter((cookie) => {
+    const sameSite = String(cookie.sameSite || '').toLowerCase();
+    const sameSiteOk = ['lax', 'strict'].includes(sameSite) || sameSite === 'none';
+    const secureOk = !isHttps || cookie.secure === true;
+    return cookie.httpOnly !== true || !secureOk || !sameSiteOk;
+  });
+  return { ok: unsafe.length === 0, detail: unsafe.map((cookie) => cookie.name).join(',') || 'COOKIE_FLAGS_OK' };
+}
+
+async function collectBrowserSecuritySnapshot(page) {
+  const pageResponse = await page.goto(BROWSER_SECURITY_BASE_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  if (!pageResponse) throw new Error('FRONTEND_NOT_READY: no response for baseUrl');
+  const pageHeaders = pageResponse.headers();
+  const apiResponse = await page.request.get(BROWSER_SECURITY_BACKEND_HEALTH_URL, { timeout: 15000 });
+  const apiHeaders = apiResponse.headers();
+  const corsResponse = await page.request.fetch(BROWSER_SECURITY_BACKEND_HEALTH_URL, {
+    method: 'OPTIONS',
+    headers: {
+      Origin: ATTACKER_ORIGIN,
+      'Access-Control-Request-Method': 'GET',
+      'Access-Control-Request-Headers': 'authorization,content-type',
+    },
+    timeout: 15000,
+  }).catch((error) => ({ ok: () => false, status: () => 0, headers: () => ({ 'x-playwright-error': String(error && error.message || error) }) }));
+  const corsHeaders = typeof corsResponse.headers === 'function' ? corsResponse.headers() : {};
+  const documentCookie = await page.evaluate(() => document.cookie || '');
+  const browserCookies = await page.context().cookies(BROWSER_SECURITY_BASE_URL);
+  const isHttps = BROWSER_SECURITY_BASE_URL.startsWith('https://');
+  return {
+    pageStatus: pageResponse.status(),
+    apiStatus: apiResponse.status(),
+    pageHeaders,
+    apiHeaders,
+    corsHeaders,
+    documentCookieRedacted: documentCookie ? '[REDACTED_NONEMPTY_COOKIE_STRING]' : '',
+    browserCookies: browserCookies.map((cookie) => ({
+      name: cookie.name,
+      domain: cookie.domain,
+      path: cookie.path,
+      httpOnly: cookie.httpOnly,
+      secure: cookie.secure,
+      sameSite: cookie.sameSite,
+    })),
+    isHttps,
+  };
+}
+
+function evaluateBrowserSecurityCase(testCaseId, snapshot) {
+  const pageHeaders = snapshot.pageHeaders || {};
+  const apiHeaders = snapshot.apiHeaders || {};
+  const csp = headerValue(pageHeaders, 'content-security-policy');
+  const xfo = headerValue(pageHeaders, 'x-frame-options');
+  const nosniffPage = headerValue(pageHeaders, 'x-content-type-options').toLowerCase() === 'nosniff';
+  const nosniffApi = headerValue(apiHeaders, 'x-content-type-options').toLowerCase() === 'nosniff';
+  const referrer = headerValue(pageHeaders, 'referrer-policy').toLowerCase();
+  const permissions = headerValue(pageHeaders, 'permissions-policy');
+  const hsts = headerValue(pageHeaders, 'strict-transport-security') || headerValue(apiHeaders, 'strict-transport-security');
+  const corsOrigin = headerValue(snapshot.corsHeaders || {}, 'access-control-allow-origin');
+  const corsCredentials = headerValue(snapshot.corsHeaders || {}, 'access-control-allow-credentials').toLowerCase();
+  const cookieCheck = cookieAttributesSafe(snapshot.browserCookies, snapshot.isHttps);
+  const corsRestricted = !(corsOrigin === '*' && corsCredentials === 'true') && corsOrigin !== ATTACKER_ORIGIN;
+  const checks = {
+    cspPresent: Boolean(csp),
+    cspHasBaseline: /default-src|script-src/i.test(csp) && /object-src\\s+'none'/i.test(csp) && !/unsafe-eval/i.test(csp),
+    frameRestricted: hasFrameRestriction(pageHeaders),
+    nosniff: nosniffPage && nosniffApi,
+    referrerPolicy: ['no-referrer', 'same-origin', 'strict-origin', 'strict-origin-when-cross-origin'].includes(referrer),
+    permissionsPolicy: permissionsDisableSensitiveApis(permissions),
+    hsts: snapshot.isHttps ? /max-age=\\d+/i.test(hsts) : true,
+    cookieFlags: cookieCheck.ok,
+    documentCookieClean: !/auth|session|token|jwt/i.test(snapshot.documentCookieRedacted),
+    corsRestricted,
+  };
+
+  const caseMap = {
+    'TC-001': ['cspPresent', 'cspHasBaseline'],
+    'TC-002': ['frameRestricted'],
+    'TC-003': ['nosniff'],
+    'TC-004': ['referrerPolicy'],
+    'TC-005': ['permissionsPolicy'],
+    'TC-006': ['hsts'],
+    'TC-007': ['cookieFlags', 'documentCookieClean'],
+    'TC-008': ['corsRestricted'],
+    'SEC-001': ['frameRestricted'],
+    'SEC-002': ['cookieFlags', 'documentCookieClean'],
+    'SEC-003': ['corsRestricted'],
+    'SEC-004': ['cspPresent', 'cspHasBaseline'],
+    'SEC-005': ['permissionsPolicy'],
+  };
+  const required = caseMap[testCaseId] || [];
+  const failed = required.filter((name) => !checks[name]);
+  const detail = {
+    required,
+    failed,
+    checks,
+    headers: {
+      csp,
+      xFrameOptions: xfo,
+      xContentTypeOptionsPage: headerValue(pageHeaders, 'x-content-type-options'),
+      xContentTypeOptionsApi: headerValue(apiHeaders, 'x-content-type-options'),
+      referrerPolicy: headerValue(pageHeaders, 'referrer-policy'),
+      permissionsPolicy: permissions,
+      strictTransportSecurity: hsts || (snapshot.isHttps ? '' : 'N/A_LOCAL_HTTP'),
+      corsAllowOriginForAttacker: corsOrigin || '',
+      corsAllowCredentialsForAttacker: corsCredentials || '',
+    },
+    cookieDetail: cookieCheck.detail,
+  };
+  return { passed: failed.length === 0, responseText: JSON.stringify(detail, null, 2) };
+}
+`;
+}
+
+function generateBrowserSecuritySuite(plan) {
+  const cases = plan.tests.map((testCase) => {
+    const escapedName = String(testCase.name || testCase.id).replace(/'/g, "\\'");
+    const escapedPrompt = String(testCase.prompt || '').replace(/'/g, "\\'");
+    return `
+  test('${testCase.id}: ${escapedName}', async ({ page }) => {
+    test.setTimeout(TEST_CASE_TIMEOUT_MS);
+    const prompt = '${escapedPrompt}';
+    const startTime = Date.now();
+    const snapshot = await collectBrowserSecuritySnapshot(page);
+    const { passed, responseText } = evaluateBrowserSecurityCase('${testCase.id}', snapshot);
+    const durationMs = Date.now() - startTime;
+    writeEvidence('${testCase.id}', passed ? 'PASS' : 'FAIL', passed ? 'ASSERTION_PASS' : 'ASSERTION_MISMATCH', buildEvidence(prompt, responseText, durationMs, []), passed ? 'Browser security checks passed' : 'Browser security checks failed');
+    expect(passed, \`Browser security check failed for ${testCase.id}: \${responseText}\`).toBe(true);
+  });`;
+  }).join('\n');
+
   return `test.describe('${plan.testRunId}: ${plan.title}', () => {
-  // Removed mode: 'serial' to allow all tests to run even when some fail
-  // Sequential execution is enforced via --workers=1 flag in runner command
+${generateBrowserSecurityHelpers(plan)}
+${cases}
+});`;
+}
+
+function generateDescribe(plan) {
+  if (plan.target === 'JANUS_BROWSER_SECURITY') {
+    return generateBrowserSecuritySuite(plan);
+  }
+
+  return `test.describe('${plan.testRunId}: ${plan.title}', () => {
+  // Parallel-safe tests are emitted in Playwright parallel describe blocks.
+  // Stateful/mutation-sensitive tests remain in serial/default blocks.
+  // Recommended workers from plan: ${plan.parallelization?.recommendedWorkers || 1}
 ${generatePlanModelMaps(plan)}
 ${generateBeforeEach(plan)}
+  test.afterEach(async ({}, testInfo) => {
+    const status = testInfo.status || 'unknown';
+    const expectedStatus = testInfo.expectedStatus || 'passed';
+    if (status === expectedStatus) return;
+
+    const testCaseId = extractTestCaseIdFromTitlePath(testInfo.titlePath, testInfo.title);
+    if (!testCaseId || hasEvidenceForTestCase(testCaseId)) return;
+
+    const errors = Array.isArray(testInfo.errors) ? testInfo.errors : [];
+    const message = errors
+      .map((entry) => String(entry?.message || entry?.error?.message || entry || '').trim())
+      .filter(Boolean)
+      .join('\\n---\\n')
+      .slice(0, 4000);
+    const notes = message || \`Playwright test finished with status="\${status}" before Janus evidence was written.\`;
+
+    writeEvidence(
+      testCaseId,
+      'BLOCKED',
+      'RUNNER_UNHANDLED_FAILURE',
+      buildEvidence('', '', 0, []),
+      notes,
+    );
+  });
 ${generateSuite(plan)}
 });`;
 }

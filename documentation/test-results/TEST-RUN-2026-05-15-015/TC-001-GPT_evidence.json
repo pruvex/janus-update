@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-015",
+  "testCaseId": "TC-001-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Erstell mir einen Ordner fuer Projekt Alpha",
+  "response": "Der Ordner „Projekt Alpha“ existiert bereits. Ich muss ihn daher nicht erneut erstellen.\n💡 Passende nächste Schritte:• Soll ich dir die Ordnerstruktur innerhalb von „Projekt Alpha“ anlegen (z.B. 01_Arbeit, 02_Notizen, 03_Dokumente)?• Möchtest du, dass ich Unterordner für bestimmte Themen anlege (z.B. Planung, Entwicklung, Finanzen)?\n23:16",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T21:16:37.963Z"
+}

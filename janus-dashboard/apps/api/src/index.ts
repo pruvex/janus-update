@@ -3,7 +3,7 @@ import cors from '@fastify/cors'
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
-import type { BacklogCounts, BacklogItem, BacklogResponse, TaskExecutionHistoryResponse, TaskExecutionRecord } from '../../../shared/types/index.js'
+import type { BacklogCounts, BacklogItem, BacklogResponse, TaskExecutionHistoryResponse, TaskExecutionRecord, TestResultRecord, TestResultsResponse, TestOverviewResponse, TestSpecOverview, TestSuiteCategory, TestSuiteResponse } from '../../../shared/types/index.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -13,8 +13,11 @@ const DATA_FILE_PATH = join(__dirname, '../../../data/backlog.snapshot.json')
 const TASK_EXECUTION_HISTORY_PATH = join(__dirname, '../../../data/task-execution-history.json')
 const BACKLOG_FILE_PATH = join(__dirname, '../../../../documentation/backlog/BACKLOG.md')
 const SPEC_DIRECTORY_PATH = join(__dirname, '../../../../documentation/SPEC')
+const TEST_SPEC_DIRECTORY_PATH = join(__dirname, '../../../../documentation/TEST_SPEC')
+const TEST_RUNS_DIRECTORY_PATH = join(__dirname, '../../../../documentation/test-runs')
+const TEST_RESULTS_DIRECTORY_PATH = join(__dirname, '../../../../documentation/test-results')
 
-const ITEM_HEADING_PATTERN = /^###\s+(BACKLOG-\d+)\s+[–-]\s+(.+?)\s*$/
+const ITEM_HEADING_PATTERN = /^###\s+(BACKLOG-\d+)\s+(?:–|â€“|-)\s+(.+?)\s*$/
 const SECTION_PATTERN = /^##\s+(.+?)\s*$/
 const FIELD_PATTERN = /^-\s+\*\*(.+?):\*\*\s*(.*)$/
 const SPEC_REVIEW_METADATA_HEADING = /^##\s+SPEC REVIEW METADATA\s*$/i
@@ -69,6 +72,7 @@ function createBacklogItem(id: string, title: string): BacklogItem {
   return {
     id,
     title,
+    section: '',
     type: '',
     status: '',
     importance: '',
@@ -93,6 +97,7 @@ function createBacklogItem(id: string, title: string): BacklogItem {
     final_audit: null,
     validation_evidence: null,
     changelog: null,
+    is_test_blocker: false,
     raw_fields: {},
   }
 }
@@ -418,6 +423,10 @@ function isContinuationLine(line: string): boolean {
 function normalizeItems(items: BacklogItem[]) {
   for (const item of items) {
     item.status = item.status ? item.status.toUpperCase() : ''
+    item.section = item.section ? item.section.toUpperCase() : ''
+    if (COUNT_KEYS[item.status]) {
+      item.section = item.status
+    }
     item.entry_point = item.entry_point ? item.entry_point.toUpperCase() : ''
     item.routing_confidence = item.routing_confidence ? item.routing_confidence.toUpperCase() : ''
     item.recommended_next_skill = item.recommended_next_skill ? item.recommended_next_skill.toUpperCase() : ''
@@ -462,6 +471,7 @@ function buildCounts(items: BacklogItem[]): BacklogCounts {
 
 function parseBacklogText(text: string, source: string): BacklogResponse {
   const items: BacklogItem[] = []
+  let currentSection = ''
   let currentItem: BacklogItem | null = null
   let currentField: keyof BacklogItem | null = null
 
@@ -469,6 +479,7 @@ function parseBacklogText(text: string, source: string): BacklogResponse {
     const line = rawLine.replace(/\s+$/, '')
     const sectionMatch = SECTION_PATTERN.exec(line)
     if (sectionMatch && !line.startsWith('###')) {
+      currentSection = sectionMatch[1].trim()
       currentField = null
       continue
     }
@@ -479,6 +490,7 @@ function parseBacklogText(text: string, source: string): BacklogResponse {
         items.push(currentItem)
       }
       currentItem = createBacklogItem(itemMatch[1].trim(), itemMatch[2].trim())
+      currentItem.section = currentSection
       currentField = null
       continue
     }
@@ -611,6 +623,624 @@ function readTaskExecutionHistory(): TaskExecutionHistoryResponse {
   }
 }
 
+function isTestResultRecord(record: unknown): record is TestResultRecord {
+  if (!record || typeof record !== 'object') {
+    return false
+  }
+
+  const candidate = record as Partial<TestResultRecord>
+  const validStatus = typeof candidate.status === 'string' && ['PASS', 'FAIL', 'PARTIAL', 'BLOCKED', 'RUNNING'].includes(candidate.status)
+  const summary = candidate.summary as Partial<TestResultRecord['summary']> | undefined
+  const artifacts = candidate.artifacts as Partial<TestResultRecord['artifacts']> | undefined
+
+  return (
+    candidate.schemaVersion === 'janus.test-result.v1' &&
+    typeof candidate.testRunId === 'string' &&
+    /^TEST-RUN-\d{4}-\d{2}-\d{2}-\d{3}$/.test(candidate.testRunId) &&
+    validStatus &&
+    typeof summary?.total === 'number' &&
+    typeof summary?.passed === 'number' &&
+    typeof summary?.failed === 'number' &&
+    typeof summary?.blocked === 'number' &&
+    typeof summary?.manualGateRequired === 'number' &&
+    Array.isArray(candidate.results) &&
+    candidate.results.every((result) => (
+      result &&
+      typeof result === 'object' &&
+      typeof result.testCaseId === 'string' &&
+      typeof result.result === 'string' &&
+      typeof result.classification === 'string' &&
+      typeof result.evidencePath === 'string'
+    )) &&
+    typeof artifacts?.resultDirectory === 'string' &&
+    typeof artifacts?.resultJson === 'string' &&
+    Array.isArray(artifacts?.evidenceFiles) &&
+    typeof candidate.updatedAt === 'string'
+  )
+}
+
+function readTestResults(): TestResultsResponse {
+  if (!existsSync(TEST_RESULTS_DIRECTORY_PATH)) {
+    return {
+      schema: 'janus-dashboard.test-results.v1',
+      source: TEST_RESULTS_DIRECTORY_PATH,
+      records: [],
+    }
+  }
+
+  const records: TestResultRecord[] = []
+  const entries = readdirSync(TEST_RESULTS_DIRECTORY_PATH, { withFileTypes: true })
+
+  for (const entry of entries) {
+    if (!entry.isFile() || !entry.name.endsWith('_results.json')) {
+      continue
+    }
+
+    const resultPath = join(TEST_RESULTS_DIRECTORY_PATH, entry.name)
+    try {
+      const parsed = JSON.parse(readFileSync(resultPath, 'utf-8')) as unknown
+      if (isTestResultRecord(parsed)) {
+        records.push(parsed)
+      } else {
+        fastify.log.warn({ resultPath }, 'Ignoring invalid machine-readable test result')
+      }
+    } catch (error) {
+      fastify.log.warn({ error, resultPath }, 'Ignoring unreadable machine-readable test result')
+    }
+  }
+
+  records.sort((left, right) => {
+    const rightTime = Date.parse(right.updatedAt) || 0
+    const leftTime = Date.parse(left.updatedAt) || 0
+    return rightTime - leftTime
+  })
+
+  return {
+    schema: 'janus-dashboard.test-results.v1',
+    source: TEST_RESULTS_DIRECTORY_PATH,
+    records,
+  }
+}
+
+interface TestSpecMetadata {
+  specId: string
+  fileName: string
+  path: string
+  categoryId: string
+  categoryLabel: string
+  categoryOrder: number
+  title: string
+  capability: string
+  description: string
+  reliableBehavior: string
+  matchKeys: string[]
+}
+
+type TestRunPlan = Record<string, any> & {
+  testRunId?: string
+  tests?: Array<{ id?: string; type?: string; provider?: string }>
+}
+
+const TEST_SUITE_CATEGORIES = [
+  {
+    id: '01_core_system',
+    label: 'Core System',
+    description: 'Intent Engine, Routing, Planner und Architekturverhalten.',
+  },
+  {
+    id: '02_security_safety',
+    label: 'Security & Safety',
+    description: 'Security, Privacy, Prompt-Injection und riskante Aktionen.',
+  },
+  {
+    id: '03_tools_skills',
+    label: 'Tools & Skills',
+    description: 'Filesystem, APIs, Skill-Auswahl und Tool-Evidence.',
+  },
+  {
+    id: '04_memory_context',
+    label: 'Memory & Context',
+    description: 'Memory, Kalender, Kontext, Privacy und Personalisierung.',
+  },
+  {
+    id: '05_ux_behavior',
+    label: 'UX & Behavior',
+    description: 'Antwortqualitaet, Help, Evidence Honesty und Nutzerfuehrung.',
+  },
+  {
+    id: '06_efficiency_cost',
+    label: 'Efficiency & Cost',
+    description: 'Latenz, Tokenverbrauch, Caching und Modell-Disziplin.',
+  },
+  {
+    id: '07_regression_suite',
+    label: 'Regression Suite',
+    description: 'Gezielte Nachtests fuer reparierte Bugs und stabile Releases.',
+  },
+] as const
+
+type TestSuiteCategoryDefinition = (typeof TEST_SUITE_CATEGORIES)[number]
+
+function categoryDefinitionFor(relativePath: string): TestSuiteCategoryDefinition {
+  const firstSegment = relativePath.split(/[\\/]/)[0]
+  return TEST_SUITE_CATEGORIES.find((category) => category.id === firstSegment) || TEST_SUITE_CATEGORIES[0]
+}
+
+function collectMarkdownFiles(directoryPath: string): string[] {
+  if (!existsSync(directoryPath)) {
+    return []
+  }
+
+  const files: string[] = []
+  for (const entry of readdirSync(directoryPath, { withFileTypes: true })) {
+    const absolutePath = join(directoryPath, entry.name)
+    if (entry.isDirectory()) {
+      files.push(...collectMarkdownFiles(absolutePath))
+      continue
+    }
+    if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) {
+      files.push(absolutePath)
+    }
+  }
+  return files
+}
+
+function readTestSpecMetadata(): TestSpecMetadata[] {
+  if (!existsSync(TEST_SPEC_DIRECTORY_PATH)) {
+    return []
+  }
+
+  return collectMarkdownFiles(TEST_SPEC_DIRECTORY_PATH)
+    .filter((absolutePath) => {
+      const fileName = absolutePath.split(/[\\/]/).pop() || ''
+      const relativePath = absolutePath.slice(TEST_SPEC_DIRECTORY_PATH.length + 1).replace(/\\/g, '/')
+      const firstSegment = relativePath.split('/')[0]
+      return fileName !== 'TEST_SPEC_OVERVIEW.md' && fileName !== '00_security_tests_overview.md' && firstSegment !== '_archive' && firstSegment !== '_legacy'
+    })
+    .map((absolutePath) => {
+      const fileName = absolutePath.split(/[\\/]/).pop() || ''
+      const relativePath = absolutePath.slice(TEST_SPEC_DIRECTORY_PATH.length + 1).replace(/\\/g, '/')
+      const category = categoryDefinitionFor(relativePath)
+      const text = readFileSync(absolutePath, 'utf-8')
+      const identity = parseTestSpecIdentity(text)
+      const title = identity['TestSpec Name'] || extractSpecTitle(text, fileName)
+      const capability = identity['Capability Name'] || title
+      const primaryGoal = identity['Primary Test Goal'] || ''
+      const userValue = identity['User Value'] || ''
+      const objective = extractMarkdownSectionText(text, 'TEST OBJECTIVE')
+      const successBehavior = extractUserExperienceValue(text, 'Success Behavior')
+      const description = firstNonEmpty(objective, primaryGoal, userValue, 'Keine Beschreibung in der TestSpec hinterlegt.')
+      const reliableBehavior = firstNonEmpty(successBehavior, userValue, primaryGoal, objective)
+      const path = `documentation/TEST_SPEC/${relativePath}`
+
+      return {
+        specId: relativePath.replace(/\.md$/i, '').replace(/[\\/]/g, '__'),
+        fileName,
+        path,
+        categoryId: category.id,
+        categoryLabel: category.label,
+        categoryOrder: TEST_SUITE_CATEGORIES.findIndex((definition) => definition.id === category.id) + 1,
+        title,
+        capability,
+        description: compactWhitespace(description),
+        reliableBehavior: compactWhitespace(reliableBehavior),
+        matchKeys: [fileName, path, relativePath, title, capability].map(normalizeMatchKey).filter(Boolean),
+      }
+    })
+    .sort((left, right) => left.categoryOrder - right.categoryOrder || left.fileName.localeCompare(right.fileName))
+}
+
+function parseTestSpecIdentity(text: string): Record<string, string> {
+  return parseSpecKeyValueBlock(text, /^##\s+TEST IDENTITY\s*$/i)
+}
+
+function extractMarkdownSectionText(text: string, heading: string): string {
+  const lines = text.split(/\r?\n/)
+  const headingPattern = new RegExp(`^##\\s+${escapeRegExp(heading)}\\s*$`, 'i')
+  const startIndex = lines.findIndex((line) => headingPattern.test(line.trim()))
+
+  if (startIndex === -1) {
+    return ''
+  }
+
+  const sectionLines: string[] = []
+  for (let index = startIndex + 1; index < lines.length; index += 1) {
+    const line = lines[index]
+    if (/^##\s+/.test(line.trim())) {
+      break
+    }
+    if (!line.trim() || line.trim().startsWith('|')) {
+      continue
+    }
+    sectionLines.push(line.replace(/^-\s+/, '').trim())
+  }
+
+  return sectionLines.join(' ')
+}
+
+function extractUserExperienceValue(text: string, key: string): string {
+  const section = extractMarkdownSectionText(text, 'USER EXPERIENCE CONTRACT')
+  const match = new RegExp(`${escapeRegExp(key)}:\\s*(.+?)(?:\\s+-\\s+[A-Z][^:]+:|$)`, 'i').exec(section)
+  return match?.[1]?.trim() || ''
+}
+
+function firstNonEmpty(...values: string[]): string {
+  return values.find((value) => value && value.trim())?.trim() || ''
+}
+
+function compactWhitespace(value: string): string {
+  return value.replace(/\s+/g, ' ').trim()
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function normalizeMatchKey(value: string | undefined): string {
+  return (value || '')
+    .toLowerCase()
+    .replace(/\\/g, '/')
+    .replace(/\.md$/i, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+function readTestRunPlans(): Map<string, TestRunPlan> {
+  const plans = new Map<string, TestRunPlan>()
+
+  if (!existsSync(TEST_RUNS_DIRECTORY_PATH)) {
+    return plans
+  }
+
+  for (const entry of readdirSync(TEST_RUNS_DIRECTORY_PATH, { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith('_plan.json')) {
+      continue
+    }
+
+    const planPath = join(TEST_RUNS_DIRECTORY_PATH, entry.name)
+    try {
+      const parsed = JSON.parse(readFileSync(planPath, 'utf-8')) as TestRunPlan
+      const runId = parsed.testRunId || /^(.+?)_plan\.json$/i.exec(entry.name)?.[1]
+      if (runId) {
+        plans.set(runId, parsed)
+      }
+    } catch (error) {
+      fastify.log.warn({ error, planPath }, 'Ignoring unreadable test plan')
+    }
+  }
+
+  return plans
+}
+
+function resolvePlanTestSpecPath(plan: TestRunPlan | undefined): string {
+  if (!plan) {
+    return ''
+  }
+
+  const candidate =
+    plan.testSpecPath ||
+    plan.inputTestSpecPath ||
+    plan.input_testspec_path ||
+    plan.test_spec_path ||
+    plan.testspec_path ||
+    plan.testSpec ||
+    plan.TestSpec
+
+  return typeof candidate === 'string' ? candidate : ''
+}
+
+function findSpecForResult(record: TestResultRecord, plan: TestRunPlan | undefined, specs: TestSpecMetadata[]): TestSpecMetadata | null {
+  const planPath = normalizeMatchKey(resolvePlanTestSpecPath(plan))
+  if (planPath) {
+    const byPath = specs.find((spec) => spec.matchKeys.some((key) => planPath === key || planPath.endsWith(key)))
+    if (byPath) {
+      return byPath
+    }
+  }
+
+  const titleKey = normalizeMatchKey(record.title || plan?.title)
+  if (!titleKey) {
+    return null
+  }
+
+  return specs.find((spec) => spec.matchKeys.some((key) => key === titleKey || key.includes(titleKey) || titleKey.includes(key))) || null
+}
+
+function calculateProviderPassRate(record: TestResultRecord, plan: TestRunPlan | undefined): Record<string, number> {
+  const providerByTestId = new Map<string, string>()
+  for (const test of plan?.tests || []) {
+    if (test.id && test.provider) {
+      providerByTestId.set(test.id, test.provider)
+    }
+  }
+
+  return calculateGroupedPassRate(record, (testCaseId) => providerByTestId.get(testCaseId) || inferProviderFromTestCaseId(testCaseId))
+}
+
+function calculateTypePassRate(record: TestResultRecord, plan: TestRunPlan | undefined): Record<string, number> {
+  const typeByTestId = new Map<string, string>()
+  for (const test of plan?.tests || []) {
+    if (test.id && test.type) {
+      typeByTestId.set(test.id, test.type)
+    }
+  }
+
+  return calculateGroupedPassRate(record, (testCaseId) => typeByTestId.get(testCaseId) || 'unknown')
+}
+
+function inferProviderFromTestCaseId(testCaseId: string): string {
+  if (/-GEMINI$/i.test(testCaseId)) {
+    return 'Gemini'
+  }
+  if (/-GPT$/i.test(testCaseId)) {
+    return 'GPT'
+  }
+  return 'Shared'
+}
+
+function calculateGroupedPassRate(record: TestResultRecord, groupForTestCase: (testCaseId: string) => string): Record<string, number> {
+  const groups = new Map<string, { total: number; passed: number }>()
+
+  for (const result of record.results) {
+    const group = groupForTestCase(result.testCaseId)
+    if (!groups.has(group)) {
+      groups.set(group, { total: 0, passed: 0 })
+    }
+    const aggregate = groups.get(group)!
+    aggregate.total += 1
+    if (result.result === 'PASS') {
+      aggregate.passed += 1
+    }
+  }
+
+  return Object.fromEntries(
+    Array.from(groups.entries())
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([group, aggregate]) => [group, aggregate.total > 0 ? (aggregate.passed / aggregate.total) * 100 : 0]),
+  )
+}
+
+function getPlannedTestCount(plan: TestRunPlan | undefined): number {
+  return Array.isArray(plan?.tests) ? plan.tests.length : 0
+}
+
+function isFullTestRun(record: TestResultRecord, plan: TestRunPlan | undefined): boolean {
+  const plannedTotal = getPlannedTestCount(plan)
+  return plannedTotal === 0 || record.summary.total >= plannedTotal
+}
+
+function calculateImpact(spec: TestSpecMetadata, record: TestResultRecord | null, passRate: number): Pick<TestSpecOverview, 'impactLevel' | 'impactScore' | 'impactReason'> {
+  const categoryBase: Record<string, number> = {
+    '02_security_safety': 95,
+    '01_core_system': 90,
+    '03_tools_skills': 86,
+    '04_memory_context': 84,
+    '05_ux_behavior': 78,
+    '06_efficiency_cost': 68,
+    '07_regression_suite': 72,
+  }
+  const reasons: string[] = []
+  let score = categoryBase[spec.categoryId] || 60
+
+  if (spec.categoryId === '02_security_safety') reasons.push('high safety/privacy impact')
+  if (spec.categoryId === '01_core_system') reasons.push('core routing/architecture coverage')
+  if (spec.categoryId === '03_tools_skills') reasons.push('tool and API reliability coverage')
+  if (spec.categoryId === '04_memory_context') reasons.push('personal context and privacy coverage')
+  if (spec.categoryId === '05_ux_behavior') reasons.push('direct user experience coverage')
+  if (spec.categoryId === '06_efficiency_cost') reasons.push('cost, latency, and token discipline coverage')
+  if (spec.categoryId === '07_regression_suite') reasons.push('bug recurrence protection')
+
+  if (!record) {
+    score += 14
+    reasons.push('not validated yet')
+  } else if (record.status === 'FAIL') {
+    score += 22
+    reasons.push('latest run failed')
+  } else if (record.status === 'BLOCKED' || record.status === 'PARTIAL') {
+    score += 16
+    reasons.push('latest run needs follow-up')
+  } else if (record.status === 'PASS' && passRate === 100) {
+    score -= 12
+    reasons.push('currently green')
+  }
+
+  if (record && record.summary.failed > 0) {
+    score += Math.min(16, record.summary.failed * 2)
+    reasons.push(`${record.summary.failed} open failures`)
+  }
+
+  const normalizedScore = Math.max(0, Math.min(100, Math.round(score)))
+  const impactLevel = normalizedScore >= 90 ? 'critical' : normalizedScore >= 78 ? 'high' : normalizedScore >= 60 ? 'medium' : 'low'
+
+  return {
+    impactLevel,
+    impactScore: normalizedScore,
+    impactReason: reasons.slice(0, 3).join(', ') || 'general suite coverage',
+  }
+}
+
+function buildSpecOverview(spec: TestSpecMetadata, record: TestResultRecord | null, plan: TestRunPlan | undefined): TestSpecOverview {
+  const plannedTotal = getPlannedTestCount(plan)
+  const executedTotal = record?.summary.total || 0
+  const total = Math.max(executedTotal, plannedTotal)
+  const passed = record?.summary.passed || 0
+  const passRate = total > 0 ? (passed / total) * 100 : 0
+  const isPartialRun = Boolean(record && plannedTotal > 0 && executedTotal < plannedTotal)
+  const effectiveStatus = record ? (isPartialRun ? 'PARTIAL' : record.status) : 'NOT_RUN'
+  const impactRecord = record && isPartialRun ? { ...record, status: 'PARTIAL' } : record
+  const impact = calculateImpact(spec, impactRecord, passRate)
+
+  return {
+    specId: spec.specId,
+    fileName: spec.fileName,
+    path: spec.path,
+    categoryId: spec.categoryId,
+    categoryLabel: spec.categoryLabel,
+    categoryOrder: spec.categoryOrder,
+    title: spec.title,
+    capability: spec.capability,
+    description: spec.description,
+    reliableBehavior: spec.reliableBehavior,
+    impactLevel: impact.impactLevel,
+    impactScore: impact.impactScore,
+    impactReason: impact.impactReason,
+    recommendedNext: false,
+    status: effectiveStatus,
+    latestRunId: record?.testRunId || null,
+    latestRunTitle: record?.title || null,
+    latestUpdatedAt: record?.updatedAt || null,
+    passRate,
+    total,
+    plannedTotal,
+    executedTotal,
+    isPartialRun,
+    passed,
+    failed: record?.summary.failed || 0,
+    blocked: record?.summary.blocked || 0,
+    manualGateRequired: record?.summary.manualGateRequired || 0,
+    providerPassRate: record ? calculateProviderPassRate(record, plan) : {},
+    typePassRate: record ? calculateTypePassRate(record, plan) : {},
+    failedTestCases: record ? record.results.filter((result) => result.result === 'FAIL' || result.result === 'BLOCKED').map((result) => result.testCaseId) : [],
+    resultJson: record?.artifacts.resultJson || null,
+  }
+}
+
+function readTestOverview(): TestOverviewResponse {
+  const specs = readTestSpecMetadata()
+  const testResults = readTestResults()
+  const plans = readTestRunPlans()
+  const latestFullBySpec = new Map<string, TestResultRecord>()
+  const latestAnyBySpec = new Map<string, TestResultRecord>()
+
+  for (const record of testResults.records) {
+    const plan = plans.get(record.testRunId)
+    const spec = findSpecForResult(record, plan, specs)
+    if (!spec) {
+      continue
+    }
+
+    const existingAny = latestAnyBySpec.get(spec.path)
+    if (!existingAny || (Date.parse(record.updatedAt) || 0) > (Date.parse(existingAny.updatedAt) || 0)) {
+      latestAnyBySpec.set(spec.path, record)
+    }
+
+    if (isFullTestRun(record, plan)) {
+      const existingFull = latestFullBySpec.get(spec.path)
+      if (!existingFull || (Date.parse(record.updatedAt) || 0) > (Date.parse(existingFull.updatedAt) || 0)) {
+        latestFullBySpec.set(spec.path, record)
+      }
+    }
+  }
+
+  const testSpecs = specs.map((spec) => {
+    const record = latestFullBySpec.get(spec.path) || latestAnyBySpec.get(spec.path) || null
+    return buildSpecOverview(spec, record, record ? plans.get(record.testRunId) : undefined)
+  })
+  const recommendedNext = selectRecommendedNext(testSpecs)
+  if (recommendedNext) {
+    recommendedNext.recommendedNext = true
+  }
+
+  testSpecs.sort((left, right) => {
+    if (left.recommendedNext && !right.recommendedNext) return -1
+    if (right.recommendedNext && !left.recommendedNext) return 1
+    if (left.impactScore !== right.impactScore) return right.impactScore - left.impactScore
+    if (left.status === 'NOT_RUN' && right.status !== 'NOT_RUN') return 1
+    if (right.status === 'NOT_RUN' && left.status !== 'NOT_RUN') return -1
+    if (left.passRate !== right.passRate) return left.passRate - right.passRate
+    return left.fileName.localeCompare(right.fileName)
+  })
+
+  const validatedSpecs = testSpecs.filter((spec) => spec.status !== 'NOT_RUN').length
+  const perfectSpecs = testSpecs.filter((spec) => spec.passRate === 100 && spec.status === 'PASS').length
+  const notRunSpecs = testSpecs.filter((spec) => spec.status === 'NOT_RUN').length
+  const attentionSpecs = testSpecs.length - perfectSpecs - notRunSpecs
+  const totalValidatedCases = testSpecs.reduce((sum, spec) => sum + spec.total, 0)
+  const totalPassedCases = testSpecs.reduce((sum, spec) => sum + spec.passed, 0)
+  const latestUpdatedValues = testSpecs
+    .map((spec) => spec.latestUpdatedAt)
+    .filter((value): value is string => Boolean(value))
+    .sort()
+  const latestUpdatedAt = latestUpdatedValues.length > 0 ? latestUpdatedValues[latestUpdatedValues.length - 1] : null
+
+  return {
+    schema: 'janus-dashboard.testspec-overview.v1',
+    source: TEST_SPEC_DIRECTORY_PATH,
+    summary: {
+      totalTestSpecs: testSpecs.length,
+      validatedSpecs,
+      perfectSpecs,
+      attentionSpecs,
+      notRunSpecs,
+      overallPassRate: totalValidatedCases > 0 ? (totalPassedCases / totalValidatedCases) * 100 : 0,
+      latestUpdatedAt,
+    },
+    testSpecs,
+  }
+}
+
+function selectRecommendedNext(testSpecs: TestSpecOverview[]): TestSpecOverview | null {
+  const candidates = testSpecs.filter((spec) => spec.status !== 'PASS' || spec.passRate < 100)
+  const pool = candidates.length > 0 ? candidates : testSpecs
+
+  return pool
+    .slice()
+    .sort((left, right) => {
+      if (left.impactScore !== right.impactScore) return right.impactScore - left.impactScore
+      if (left.status === 'FAIL' && right.status !== 'FAIL') return -1
+      if (right.status === 'FAIL' && left.status !== 'FAIL') return 1
+      if (left.passRate !== right.passRate) return left.passRate - right.passRate
+      return left.fileName.localeCompare(right.fileName)
+    })[0] || null
+}
+
+function buildTestSuiteCategory(category: TestSuiteCategoryDefinition, testSpecs: TestSpecOverview[]): TestSuiteCategory {
+  const categorySpecs = testSpecs
+    .filter((spec) => spec.categoryId === category.id)
+    .sort((left, right) => {
+      if (left.recommendedNext && !right.recommendedNext) return -1
+      if (right.recommendedNext && !left.recommendedNext) return 1
+      if (left.impactScore !== right.impactScore) return right.impactScore - left.impactScore
+      if (left.status === 'NOT_RUN' && right.status !== 'NOT_RUN') return 1
+      if (right.status === 'NOT_RUN' && left.status !== 'NOT_RUN') return -1
+      if (left.passRate !== right.passRate) return left.passRate - right.passRate
+      return left.fileName.localeCompare(right.fileName)
+    })
+  const validatedSpecs = categorySpecs.filter((spec) => spec.status !== 'NOT_RUN').length
+  const perfectSpecs = categorySpecs.filter((spec) => spec.passRate === 100 && spec.status === 'PASS').length
+  const notRunSpecs = categorySpecs.filter((spec) => spec.status === 'NOT_RUN').length
+  const attentionSpecs = categorySpecs.length - perfectSpecs - notRunSpecs
+  const totalValidatedCases = categorySpecs.reduce((sum, spec) => sum + spec.total, 0)
+  const totalPassedCases = categorySpecs.reduce((sum, spec) => sum + spec.passed, 0)
+
+  return {
+    id: category.id,
+    label: category.label,
+    order: TEST_SUITE_CATEGORIES.findIndex((definition) => definition.id === category.id) + 1,
+    description: category.description,
+    totalTestSpecs: categorySpecs.length,
+    validatedSpecs,
+    perfectSpecs,
+    attentionSpecs,
+    notRunSpecs,
+    overallPassRate: totalValidatedCases > 0 ? (totalPassedCases / totalValidatedCases) * 100 : 0,
+    testSpecs: categorySpecs,
+  }
+}
+
+function readTestSuite(): TestSuiteResponse {
+  const overview = readTestOverview()
+  const recommendedNext = overview.testSpecs.find((spec) => spec.recommendedNext) || null
+
+  return {
+    schema: 'janus-dashboard.testsuite.v1',
+    source: TEST_SPEC_DIRECTORY_PATH,
+    summary: overview.summary,
+    recommendedNext,
+    categories: TEST_SUITE_CATEGORIES.map((category) => buildTestSuiteCategory(category, overview.testSpecs)),
+  }
+}
+
 // Health check endpoint
 fastify.get('/health', async () => {
   return { status: 'ok', timestamp: new Date().toISOString() }
@@ -638,6 +1268,45 @@ fastify.get('/api/task-execution-history', async (request, reply) => {
     return {
       error: 'Failed to read local task execution history',
       message: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+fastify.get('/api/test-results', async (request, reply) => {
+  try {
+    return readTestResults()
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(500)
+    return {
+      error: 'Failed to read local test results',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    }
+  }
+})
+
+fastify.get('/api/test-overview', async (request, reply) => {
+  try {
+    return readTestOverview()
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(500)
+    return {
+      error: 'Failed to read test overview',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    }
+  }
+})
+
+fastify.get('/api/test-suite', async (request, reply) => {
+  try {
+    return readTestSuite()
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(500)
+    return {
+      error: 'Failed to read test suite',
+      message: error instanceof Error ? error.message : 'Unknown error',
     }
   }
 })

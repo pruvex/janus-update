@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-008",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Gib mir 5 Beispiele, wobei du helfen kannst",
+  "response": "Hier sind fünf Beispiele, wie ich dich im Alltag unterstützen kann:\n\nKalender & Terminplanung: Ich verwalte deinen Terminkalender, erstelle neue Ereignisse, finde freie Zeitfenster und aktualisiere bestehende Termine proaktiv.\nDateiverwaltung & Organisation: Ich kann Ordnung auf deinen Festplatten schaffen, indem ich Dateien nach deinen Vorgaben suche, umbenenne, in neue Ordner sortiere oder lösche.\nRecherche & Dokumentenanalyse: Ich durchsuche das Internet nach aktuellen Informationen oder analysiere für dich den Inhalt von PDF-Dokumenten aus deiner Wissensdatenbank, um spezifische Fragen zu beantworten.\nPreisvergleich & Shopping: Wenn du ein Produkt suchst, vergleiche ich die Preise auf verschiedenen Plattformen (z. B. Idealo, Geizhals oder Amazon) und finde für dich das günstigste Angebot, inklusive Refurbished-Optionen.\n**\n\n16:40",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T14:40:44.136Z"
+}

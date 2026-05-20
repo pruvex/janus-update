@@ -31,7 +31,8 @@ Ausnahme:
 
 - TestSpec aus `documentation/TEST_SPEC/`
 - TestPlan aus `documentation/test-runs/`
-- TestResult aus `documentation/test-results/`
+- TestResult-JSON aus `documentation/test-results/<TEST_RUN_ID>_results.json` (primaere Audit-Evidence)
+- TestResult-MD aus `documentation/test-results/<TEST_RUN_ID>_results.md` (Fallback/Lesekontext)
 - Finding Triage Result aus TEST SKILL 4
 - Backlog/Fix-Status
 - Retest Evidence (falls vorhanden)
@@ -41,11 +42,14 @@ Ausnahme:
 
 ## 📌 AUTOMATIC ARTIFACT INPUT MODE
 
-Wenn der Nutzer TestSpec, TestPlan, TestResult und Finding Triage Result nennt, sind diese Artefakte automatisch die verbindlichen Audit-Quellen.
+Wenn der Nutzer TestSpec, TestPlan, TestResult und Finding Triage Result nennt, sind diese Artefakte automatisch die verbindlichen Audit-Quellen. Wenn `TestResultJson` genannt wird oder unter `documentation/test-results/<TEST_RUN_ID>_results.json` existiert, ist diese Datei die primaere Audit-Evidence.
 
 Der Skill MUSS dann:
 
 - die genannten Artefakte vollstaendig lesen
+- `TestResultJson` gegen `tests/e2e/generator/test-result.schema.json` plausibilisieren
+- Status, Summary, TestCase-Ergebnisse, Failure Codes und Evidence-Pfade aus `TestResultJson.results[]` unveraendert uebernehmen
+- TestResult-MD nur als Lesekontext/Fallback verwenden; Markdown darf JSON-Facts nicht ueberschreiben
 - ausschliesslich gegen diese Artefakte auditieren
 - Chatverlauf, fruehere Diskussionen und zusaetzliche muendliche Nebeninformationen ignorieren, sofern sie den Artefakten widersprechen oder ueber sie hinausgehen
 - keine neuen Requirements, Architekturvorschlaege oder Nice-to-have-Ideen ergaenzen
@@ -58,6 +62,7 @@ Minimaler gueltiger User-Aufruf:
 TestSpec: documentation/TEST_SPEC/<TESTSPEC>.md
 TestPlan: documentation/test-runs/<TEST_RUN_ID>_plan.md
 TestResult: documentation/test-results/<TEST_RUN_ID>_results.md
+TestResultJson: documentation/test-results/<TEST_RUN_ID>_results.json
 Triage: <TEST SKILL 4 Ergebnis oder Datei>
 ```
 
@@ -82,6 +87,20 @@ Action:
 
 ### 1. RETEST VALIDATION
 
+Primaerquelle:
+
+```text
+documentation/test-results/<TEST_RUN_ID>_results.json
+```
+
+Pflichtregeln:
+
+- `schemaVersion` muss `janus.test-result.v1` sein.
+- `status` muss `PASS | FAIL | PARTIAL | BLOCKED | RUNNING` sein.
+- `summary.total` muss zur Anzahl von `results[]` passen oder die Abweichung muss als `TEST_RESULT_SUMMARY_DRIFT` blockieren.
+- `FAIL`, `BLOCKED` oder `PARTIAL` im JSON verhindern direkten PASS, ausser TEST SKILL 4 hat jedes Finding nachvollziehbar als nicht blockierend geroutet.
+- Wenn JSON fehlt/ungueltig ist, ist maximal `RETEST AUDIT BLOCKED` erlaubt; kein PASS auf Markdown-only Evidence.
+
 Pruefe:
 
 - Wurden nach relevanten Fixes ein kompletter Retest durchgefuehrt? JA | NEIN | N/A
@@ -98,6 +117,65 @@ Reason:
 
 Action:
 → TEST SKILL 3 erneut mit Retest-Scope ausfuehren.
+```
+
+### 1.1 UPSTREAM ROUTING GUARD (HARD)
+
+TEST SKILL 5 ist ein finales Audit-Gate, kein Ersatz fuer offene Fix- oder TestSpec-Arbeit.
+
+Der Skill MUSS sofort blocken, wenn der Handover oder die Artefakte eines der folgenden Muster enthalten:
+
+- `ResultStatus=FAIL`, `status: FAIL`, `PARTIAL` oder `BLOCKED`
+- `TestOracleFixes=<BACKLOG-ID>:READY`
+- `ProductFixes=<BACKLOG-ID>:DONE` zusammen mit offenen `TestOracleFixes`
+- `PRODUCTION_READY_WITH_TEST_ORACLE_RESERVE`
+- offene Backlog-Items mit `Status: READY` und `Empfehlung: DO NOW`, die aus demselben TestRun oder dessen Retest-Serie stammen
+- verbleibende FAILs, die als `TEST_ORACLE_TOO_NARROW`, `TEST_EXPECTATION_PROBLEM` oder `ASSERTION_MISMATCH` erklaert sind und noch keinen abgeschlossenen Oracle-Fix plus Retest-PASS haben
+
+In diesem Fall ist `DIAMOND RETEST AUDIT COMPLETE`, `PASS` oder `PASS WITH FOLLOW-UP` verboten. Der Skill muss stattdessen ausgeben:
+
+```text
+RETEST AUDIT BLOCKED
+
+Reason:
+- Upstream routing incomplete: offene READY-Fix/TestOracle-Items muessen vor dem finalen Audit bearbeitet werden.
+
+Required Next Step:
+- <passender Copy-Handover zu SKILL 1, SKILL 3 oder BACKLOG SKILL 3>
+```
+
+Wenn ein offenes Item mit gueltigem Handoff bekannt ist, muss der Copyblock direkt auf dieses Item zeigen:
+
+```text
+@[/SKILL 1 - SPEC TO TASK COMPILER]
+Spec: documentation/Planned Features/<file>.md
+Backlog Item: BACKLOG-XXX
+```
+
+oder:
+
+```text
+@[/SKILL 3 - PRE-IMPLEMENTATION VERIFICATION]
+Target Task: BACKLOG-XXX
+Task: documentation/tasks/<file>.md
+Backlog Item: BACKLOG-XXX
+```
+
+Wenn der Handoff fehlt, route zu:
+
+```text
+@[/BACKLOG SKILL 3 - EXECUTION HANDOFF]
+
+Mode: DASHBOARD_PREP
+Execution Model: SWE 1.6
+
+Context:
+- Offenes Backlog-Item ohne gueltigen Handoff: <BACKLOG-XXX>
+
+Arbeitsregel:
+- Erstelle/reuse Handoff-Artefakte.
+- Bewege NICHTS nach IN PROGRESS.
+- Sync Dashboard-Snapshot via npm run sync:backlog.
 ```
 
 ---
@@ -238,6 +316,8 @@ DIAMOND RETEST AUDIT COMPLETE
 
 TestRun: <TEST-RUN-ID>
 Capability: <Name>
+TestResultJson: <path | MISSING>
+Machine Result Status: PASS | FAIL | PARTIAL | BLOCKED | RUNNING
 
 Scoring:
 - Functional Correctness: x/10
@@ -313,6 +393,9 @@ TestPlan:
 TestResult:
 <source test result file>
 
+TestResultJson:
+documentation/test-results/<test_run_id>_results.json
+
 Findings:
 - <Liste offener Findings oder "Keine">
 
@@ -358,6 +441,7 @@ Binding Artifacts:
 - TestSpec: <path>
 - TestPlan: <path>
 - TestResult: <path>
+- TestResultJson: <path>
 - Triage Result: <path or compact excerpt>
 - Retest Evidence: <path or compact excerpt>
 - Backlog/Fix Status: <compact excerpt>

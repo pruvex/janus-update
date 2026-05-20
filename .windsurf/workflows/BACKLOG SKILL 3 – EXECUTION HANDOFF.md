@@ -102,6 +102,33 @@ Im Modus `SELECTED_HANDOFF` und `DASHBOARD_PREP` erzeugt er je nach Fall:
 - Dashboard-relevante Felder müssen maschinenlesbar als einzelne Markdown-Listenfelder geschrieben werden.
 - Wenn ein Backlog-Status geändert wird, muss der komplette `### BACKLOG-XXX` Item-Block physisch unter die passende kanonische Statusüberschrift verschoben werden. Pro Status darf es genau eine Überschrift geben: `## NEEDS INFO`, `## READY`, `## IN PROGRESS`, `## DONE`, `## BLOCKED`.
 
+### Output Completion Gate (HARD)
+
+`BACKLOG SKILL 3 COMPLETE`, `BACKLOG DASHBOARD PREP COMPLETE` oder ein gleichwertiger Erfolgsstatus darf nur ausgegeben werden, wenn der Output am Ende konkrete Copy-Paste-Prompts fuer alle vorbereiteten Items enthaelt.
+
+Pflicht:
+
+- Pro vorbereitetem Item genau ein grauer `text` Copy-Kasten.
+- Jeder Copy-Kasten muss mit dem Ziel-Slash-Skill beginnen.
+- `SPEC_PIPELINE_START` muss einen `@[/SKILL 1 - SPEC TO TASK COMPILER]` Prompt mit `Spec:` unter `documentation/Planned Features/` ausgeben.
+- `PRE_IMPLEMENTATION_VERIFICATION` muss einen `@[/SKILL 3 - PRE-IMPLEMENTATION VERIFICATION]` Prompt mit `Target Task:`, `Task:` und `Backlog Item:` ausgeben.
+- `EXECUTION_READY` muss einen `@[/SKILL 4 - EXECUTIONER]` Prompt mit `Target Task:`, `Task:`, `Pre-Check:` und `Backlog Item:` ausgeben.
+
+Verboten als finaler Output:
+
+- Nur "Naechste Schritte" ohne Copyblock.
+- Nur "BACKLOG-XXX kann mit SKILL X ausgefuehrt werden".
+- `BACKLOG SKILL 3 COMPLETE` ohne `## Next Skill Copy Prompts`.
+- Ein `SKILL 1` Prompt mit einer Datei unter `documentation/tasks/`.
+- Ein `SKILL 3` Prompt mit einer Datei unter `documentation/Planned Features/`.
+
+Wenn die Copy-Prompts nicht vollstaendig erzeugt werden koennen, muss der Skill statt Erfolg ausgeben:
+
+```text
+BACKLOG SKILL 3 BLOCKED: NEXT_SKILL_HANDOVER_MISSING
+Reason: <konkreter fehlender Copy-Prompt oder Artefakt-Mismatch>
+```
+
 ---
 
 ## Input
@@ -169,6 +196,7 @@ Das spätere Dashboard liest den aus `documentation/backlog/BACKLOG.md` generier
 Jedes Backlog-Item kann diese Felder enthalten:
 
 ```markdown
+- **Typ:** BUG | CHANGE | ENHANCEMENT | IMPROVEMENT | TECH_DEBT | UNCLEAR
 - **Entry Point:** SPEC_PIPELINE_START | TASK_BREAKDOWN | PRE_IMPLEMENTATION_VERIFICATION | EXECUTION_READY | ROUTING_BLOCKED
 - **Routing reason:** <ein kurzer Satz>
 - **Routing confidence:** HIGH | MEDIUM | LOW
@@ -181,6 +209,7 @@ Jedes Backlog-Item kann diese Felder enthalten:
 
 Dashboard-Bedeutung:
 
+- `Typ` bestimmt die sichtbare Dashboard-Spalte. Nicht-kanonische Werte werden im Active Board nicht angezeigt.
 - `Entry Point` bestimmt den optimalen Pipeline-Einstieg.
 - `Recommended next skill` bestimmt den anzuzeigenden nächsten Slash-Skill.
 - `Handoff` verweist auf die konkrete Spec-/Task-Datei, falls bereits erzeugt.
@@ -191,6 +220,53 @@ Dashboard-Bedeutung:
 ---
 
 ## Entry-Point-Entscheidungsmatrix
+
+### Konsistenz-Gate (HARD)
+
+`Entry Point`, `Handoff` und `Recommended next skill` muessen zueinander passen.
+
+Gueltige Kombinationen:
+
+```text
+SPEC_PIPELINE_START -> documentation/Planned Features/...md -> SKILL 1
+TASK_BREAKDOWN -> vorhandene Spec/Tasks -> SKILL 2
+PRE_IMPLEMENTATION_VERIFICATION -> documentation/tasks/...md -> SKILL 3
+EXECUTION_READY -> documentation/tasks/...md + Precheck artifact + Target Task -> SKILL 4
+```
+
+Ungueltige Kombinationen:
+
+```text
+SPEC_PIPELINE_START -> documentation/tasks/...md -> SKILL 1
+PRE_IMPLEMENTATION_VERIFICATION -> documentation/Planned Features/...md -> SKILL 3
+documentation/tasks/...md -> SKILL 1
+Task-Datei erzeugt, aber "Spec-Datei zu erstellen" als Next Step
+DASHBOARD_PREP COMPLETE ohne Next Skill Copy Prompt
+```
+
+Wenn `DASHBOARD_PREP` eine Task-Datei unter `documentation/tasks/` erzeugt oder wiederverwendet,
+muss gelten:
+
+```markdown
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Recommended next skill:** SKILL 3
+- **Target Task:** <task id aus Datei>
+```
+
+Wenn `DASHBOARD_PREP` eine Spec-Datei unter `documentation/Planned Features/` erzeugt oder wiederverwendet,
+muss gelten:
+
+```markdown
+- **Entry Point:** SPEC_PIPELINE_START
+- **Recommended next skill:** SKILL 1
+```
+
+Bei einem Widerspruch darf `DASHBOARD_PREP COMPLETE` nicht ausgegeben werden. Stattdessen:
+
+```text
+DASHBOARD_PREP BLOCKED: ROUTING_ARTIFACT_MISMATCH
+Reason: <konkreter Widerspruch zwischen Entry Point, Handoff und Recommended next skill>
+```
 
 ### SPEC_PIPELINE_START
 
@@ -281,6 +357,24 @@ Setze diesen Entry Point, wenn:
 - Risiko/Scope nicht deterministisch einordenbar ist
 - das Item `NEEDS INFO` oder `BLOCKED` ist
 - konkurrierende Entry Points gleich plausibel sind
+
+`ROUTING_BLOCKED` ist kein gueltiger Entry Point fuer Items mit:
+
+- `Status: READY`
+- `Umsetzungsreife: READY`
+- `Empfehlung: DO NOW | NEXT | SCHEDULE`
+- konkretem Problem, Quelle/TestRun und reproduzierbarem Blocker
+
+Wenn ein Item als `READY` angelegt wird und nur groesser ist (z. B. `Aufwand: L`) oder eine
+Test-Infrastruktur-/Backend-Startup-Aenderung braucht, muss Skill 3 einen ausfuehrbaren Entry Point
+waehlen:
+
+- `SPEC_PIPELINE_START`, wenn Analyse/Design/Scope-Schnitt fuer Infra-/Backend-Startup noetig ist.
+- `PRE_IMPLEMENTATION_VERIFICATION`, wenn der Fix atomar genug fuer eine Task-Datei ist.
+
+Ein Output mit `Status: READY` + `Entry Point: ROUTING_BLOCKED` ist ungueltig und muss korrigiert
+werden. Wenn wirklich blockiert, muss der Status `NEEDS INFO` oder `BLOCKED` sein und der konkrete
+fehlende Input genannt werden.
 
 ---
 
@@ -383,16 +477,22 @@ Er wird nach `BACKLOG SKILL 2 – REVIEW PRIORISIERUNG` genutzt, damit das Dashb
 1. Lese `documentation/backlog/BACKLOG.md`.
 2. Ermittle alle Items mit `Status: READY`, sofern keine optionale `Backlog Items` Auswahl angegeben wurde.
 3. Überspringe `DONE`, `IN PROGRESS`, `NEEDS INFO` und `BLOCKED` Items.
-4. Ergänze fehlende Routing-Felder wie in `ROUTING_ENRICHMENT`.
-5. Für jedes `READY` Item mit deterministischem Entry Point:
+4. Pruefe fuer jedes aktive Item den Dashboard-Typ. `Typ` MUSS einer von `BUG`, `CHANGE`, `ENHANCEMENT`, `IMPROVEMENT`, `TECH_DEBT`, `UNCLEAR` sein. Wenn ein nicht-kanonischer Typ gefunden wird, normalisiere ihn deterministisch, bevor der Snapshot synchronisiert wird:
+   - `Security`, `Privacy`, `Prompt-Injection`, `Safety` -> `BUG`
+   - `Cost`, `UX`, `Sonstiges` -> `IMPROVEMENT`, sofern es kein Defekt ist; sonst `BUG`
+   - unklare Werte -> `UNCLEAR`
+5. Ergänze fehlende Routing-Felder wie in `ROUTING_ENRICHMENT`.
+   - Wenn ein Item `Status: READY` und `Entry Point: ROUTING_BLOCKED` hat, korrigiere es deterministisch zu `SPEC_PIPELINE_START` oder `PRE_IMPLEMENTATION_VERIFICATION`, wenn Problem/Quelle/Scope ausreichend beschrieben sind.
+   - Wenn es nicht deterministisch korrigierbar ist, stoppe mit `DASHBOARD_PREP BLOCKED`; lasse kein READY+ROUTING_BLOCKED im Backlog stehen.
+6. Für jedes `READY` Item mit deterministischem Entry Point:
    - Erzeuge fehlendes Handoff-Artefakt.
    - Überspringe Artefakterzeugung, wenn `Handoff` bereits auf eine passende vorhandene Datei zeigt.
    - Setze oder aktualisiere `Handoff`.
    - Setze oder aktualisiere `Recommended next skill`.
    - Setze `Handoff created`.
-6. Belasse jedes vorbereitete Item im Status `READY`.
-7. Verschiebe keine Item-Blöcke nach `IN PROGRESS`.
-8. Synchronisiere anschließend den Dashboard-Snapshot:
+7. Belasse jedes vorbereitete Item im Status `READY`.
+8. Verschiebe keine Item-Blöcke nach `IN PROGRESS`.
+9. Synchronisiere anschließend den Dashboard-Snapshot:
 
 ```powershell
 npm run sync:backlog
@@ -429,9 +529,12 @@ Bei `EXECUTION_READY` zusätzlich nur wenn real vorhanden:
 - Kein Item nach `IN PROGRESS` verschieben.
 - Keine Änderung an `Status`, außer ein Item ist wegen fehlender Pflichtinformationen eindeutig falsch als `READY` markiert; dann STOP und als `DASHBOARD_PREP BLOCKED` melden statt still ändern.
 - Keine Änderung an Priorisierung aus Backlog Skill 2.
+- Keine nicht-kanonischen Dashboard-Typen stehen lassen. Typ-Normalisierung ist erlaubt, wenn sie nur die Dashboard-Sichtbarkeit repariert.
 - Keine Code-Implementation.
 - Keine Final-Audit-, Debug- oder Release-Aktionen.
 - Keine Spekulation über fehlende Informationen.
+- Kein `@[/JANUS DASHBOARD]` als einziger Handoff. Dashboard-Sync ist ein Nebeneffekt, nicht der nächste Pipeline-Skill.
+- Kein `Status: READY` + `Entry Point: ROUTING_BLOCKED` im Erfolgsoutput.
 
 ### Artefakt-Regeln
 
@@ -442,12 +545,20 @@ documentation/Planned Features/backlog_BACKLOG-XXX_<slug>.md
 Recommended next skill: SKILL 1
 ```
 
+Eine Task-Datei unter `documentation/tasks/` ist fuer `SPEC_PIPELINE_START` verboten.
+Wenn nur eine Task-Datei erzeugt wurde, muss der Entry Point `PRE_IMPLEMENTATION_VERIFICATION`
+sein oder die Spec-Datei muss tatsaechlich erzeugt und verlinkt werden.
+
 Für `PRE_IMPLEMENTATION_VERIFICATION`:
 
 ```text
 documentation/tasks/backlog_BACKLOG-XXX_<slug>.md
 Recommended next skill: SKILL 3
 ```
+
+Die Task-Datei muss im Abschnitt `NEXT STEP` einen Copy-Prompt zu
+`@[/SKILL 3 – PRE-IMPLEMENTATION VERIFICATION]` enthalten. Ein NEXT STEP zu Skill 1 ist
+bei einer Task-Datei ungueltig.
 
 Für `TASK_BREAKDOWN`:
 
@@ -490,6 +601,66 @@ Action:
 
 ## Prepared Items
 - **BACKLOG-XXX:** `<Entry Point>` → `<Handoff>` → `<Recommended next skill>`
+
+## Next Skill Copy Prompts
+
+Für jedes vorbereitete Item MUSS ein copy-fähiger Prompt für den nächsten offiziellen Skill ausgegeben werden. Das Dashboard und der User dürfen nach `DASHBOARD_PREP` nicht raten müssen.
+
+Wenn `Prepared Items` nicht leer ist und `## Next Skill Copy Prompts` keinen konkreten
+Copyblock pro vorbereitetem Item enthaelt, ist der Output ungueltig. Ein reines
+"Handoff ist bereit fuer SKILL X" reicht nicht.
+
+Die Copy-Prompts muessen der Artefakt-Identitaet entsprechen. `SKILL 1` akzeptiert nur `Spec:` und keine `Task:` Datei. `SKILL 3` akzeptiert nur `Task:` und keinen `Spec:` Einstieg.
+Der Pfad im Copy-Prompt MUSS exakt dem `Handoff`-Feld in `documentation/backlog/BACKLOG.md`
+entsprechen. Abweichungen wie `BACKLOG_052` statt `BACKLOG-052`, `TaskFile` statt `Task`, oder
+anderer Dateiname sind ungueltig.
+
+Fuer `Recommended next skill: SKILL 3` muss der Copy-Prompt vollstaendig sein. Kurzformen sind verboten:
+
+```text
+@[/SKILL 3 – PRE-IMPLEMENTATION VERIFICATION] Mode=VALIDATION; ExecutionModel=SWE_1_6; TaskFile=<path>; SourceBacklog=<id>; Rules=VALIDATE_TASK_BEFORE_EXECUTION; ExpectedOutput=VALIDATION_RESULT_OR_TASK_REJECTED
+```
+
+Pflichtfelder fuer SKILL-3-Copy-Prompts:
+
+```text
+@[/SKILL 3 – PRE-IMPLEMENTATION VERIFICATION]
+Target Task: <task id>
+Task: <handoff path exactly as in BACKLOG.md>
+Backlog Item: <BACKLOG-XXX>
+Mode: PRE_IMPLEMENTATION_VERIFICATION
+Execution Model: SWE 1.6
+Context: <Quelle/Risiko/Finding kurz>
+Rules: VALIDATE_ONE_TARGET_TASK_NO_IMPLEMENTATION_NO_CODE_CHANGES_RELEASE_SKILL_4_HANDOFF_ONLY_IF_SCOPE_FILES_TESTS_RISKS_ARE_CLEAR
+Expected Output: PRE_CHECK_PASSED_PLUS_SKILL_4_HANDOFF_OR_PRE_CHECK_BLOCKED
+```
+
+### BACKLOG-XXX – <Titel>
+
+```text
+@[/SKILL 1 - SPEC TO TASK COMPILER]
+Spec: documentation/Planned Features/backlog_BACKLOG-XXX_<slug>.md
+Backlog Item: BACKLOG-XXX
+```
+
+oder:
+
+```text
+@[/SKILL 3 - PRE-IMPLEMENTATION VERIFICATION]
+Target Task: BACKLOG-XXX
+Task: documentation/tasks/backlog_BACKLOG-XXX_<slug>.md
+Backlog Item: BACKLOG-XXX
+```
+
+oder:
+
+```text
+@[/SKILL 4 - EXECUTIONER]
+Target Task: <target task id>
+Task: <task file path>
+Pre-Check: <precheck artifact path>
+Backlog Item: BACKLOG-XXX
+```
 
 ## Blocked Items
 - **BACKLOG-YYY:** <konkreter Grund>

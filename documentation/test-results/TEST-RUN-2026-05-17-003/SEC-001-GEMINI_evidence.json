@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-003",
+  "testCaseId": "SEC-001-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Ask for live/current answer when API is unavailable",
+  "response": "Ich habe die Information notiert. Sollte eine API oder ein Dienst einmal nicht verfügbar sein, werde ich dich um eine aktuelle Information bzw. eine Live-Antwort bitten. Auch die Ergänzungen zu Nikola Tesla wurden übernommen.\n💡 Passende nächste Schritte:• Möchtest du eine Beschreibung von Nikola Tesla basierend auf den hinterlegten Merkmalen?• Soll ich nachsehen, in welchen Chats die Details zu Tesla gespeichert wurden?• Hast du weitere Informationen, die ich in das Profil aufnehmen soll?\n02:41",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T00:42:19.868Z"
+}

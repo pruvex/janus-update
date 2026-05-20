@@ -14,7 +14,7 @@ KEINE ARCHITEKTURENTSCHEIDUNGEN. KEIN CODE. KEINE NEUEN FEATURES.
 
 ---
 
-## ðŸ“¥ INPUT
+## ðŸ“ INPUT
 
 - TASK-Liste aus Skill 1
 - Feature Spec (Referenz)
@@ -22,7 +22,7 @@ KEINE ARCHITEKTURENTSCHEIDUNGEN. KEIN CODE. KEINE NEUEN FEATURES.
 
 ---
 
-## ðŸ“Œ AUTOMATIC ARTIFACT INPUT MODE
+## ðŸ“Š AUTOMATIC ARTIFACT INPUT MODE
 
 Wenn der Nutzer eine Task-Datei und eine Spec-Datei nennt, sind diese Dateien automatisch die **einzigen Requirements-Quellen**.
 
@@ -57,7 +57,7 @@ Action:
 
 ---
 
-## âš™ï¸ EXECUTION FLOW
+## ðŸ”„ EXECUTION FLOW
 
 ---
 
@@ -158,6 +158,43 @@ Falls unklar:
 
 ---
 
+### 3.1 TESTSPEC-/ORACLE SOURCE-OF-TRUTH GATE (HARD)
+
+Wenn ein Task eine TestSpec-, Test-Oracle-, Assertion-, `containsAny`-, `mustNotContain`-,
+Response-Format- oder Erwartungswert-Anpassung betrifft, MUSS Skill 2 vor der Freigabe
+pruefen, welches Artefakt die dauerhafte Quelle ist.
+
+Pflichtregeln:
+
+- `documentation/TEST_SPEC/*.md` ist die Source of Truth fuer Test-Oracle-Aenderungen.
+- `documentation/test-runs/*_plan.json` ist ein generiertes Artefakt und darf bei Oracle-Fixes
+  nur als Evidence/Baseline/Referenz verwendet werden.
+- Skill 2 darf keinen Target Task freigeben, dessen einziger `Files`-Scope ein alter
+  `documentation/test-runs/*_plan.json` ist.
+- Wenn die Task-Datei oder Skill-1-Ausgabe nur einen alten TestPlan patchen will, MUSS Skill 2
+  den Task korrigieren: Primary File = passende `documentation/TEST_SPEC/*.md`, alter TestPlan =
+  `Reference/Baseline Plan`.
+- Acceptance Criteria muessen enthalten, dass nach der TestSpec-Aenderung ein frischer TestPlan
+  durch `TEST SKILL 1 - TESTSPEC TO TEST PLAN` erzeugt wird.
+- Skill 2 darf `TEST-RUN-..._plan.json` nicht als alleinige Implementierungsdatei fuer einen
+  Oracle-Fix an Skill 3 weitergeben.
+
+BLOCKED-Ausgabe, wenn die Source-of-Truth-TestSpec nicht sicher bestimmbar ist:
+
+```text
+TASK DESIGN BLOCKED
+
+Reason:
+- Test-Oracle-Fix wuerde nur ein generiertes TestPlan-Artefakt patchen.
+- Source-of-Truth TestSpec ist nicht eindeutig.
+
+Required Fix:
+→ Source TestSpec bestimmen und Task so verfeinern, dass documentation/TEST_SPEC/<...>.md
+  die Primary File ist; alter TestPlan nur als Reference Plan verwenden.
+```
+
+---
+
 ### 4. TEST ENRICHMENT
 
 Falls Tests fehlen:
@@ -220,18 +257,38 @@ COPY-PASTE HANDOVER FÃœR SKILL 3 (PFLICHT):
 Am Ende der Antwort MUSS zusÃ¤tzlich ein einzelner grauer Copy-Block ausgegeben werden.
 Dieser Block MUSS direkt kopierbar sein und darf keine ErklÃ¤rung auÃŸerhalb des Blocks benÃ¶tigen.
 
+Bei Backlog-Tasks oder Subtask-Breakdowns ist ein minimalistischer Skill-3-Handover ungueltig.
+Der Copyblock MUSS enthalten: `Spec`, `Task`, `Backlog Item`, `Target Task`, optional
+`Target Subtask`, `Mode`, `Execution Model`, `Context`, `Rules` und `Expected Output`.
+
+Verboten als finaler Skill-3-Handover:
+
 ```text
-@[/SKILL 3 – PRE-IMPLEMENTATION VERIFICATION] mit folgendem Target Task:
+@[/SKILL 3 – PRE-IMPLEMENTATION VERIFICATION]
+Spec: <path>
+Task: <path>
+Execution Model: SWE 1.6
+Target Subtask: <id>
+```
+
+Ein solcher Kurzblock muss durch den vollstaendigen Copyblock unten ersetzt werden.
+
+```text
+@[/SKILL 3 â€“ PRE-IMPLEMENTATION VERIFICATION] mit folgendem Target Task:
 Spec: <source spec file>
-Tasks: <task file>
+Task: <task file>
+Backlog Item: <BACKLOG-XXX | N/A>
 Target Task: <TASK-XXX.Y>
+Target Subtask: <SUBTASK-XXX-YY | N/A>
 Mode: SINGLE_TASK_PRECHECK
 Execution Model: <SWE 1.6 | Kimi k2.5>
 
 Kontext:
 - Skill-2 Ergebnis: TASK DESIGN COMPLETE
 - Readiness: READY FOR SKILL 3 SINGLE-TASK PRE-CHECK
+- Backlog Item: <BACKLOG-XXX | N/A>
 - Target Task: <TASK-XXX.Y>
+- Target Subtask: <SUBTASK-XXX-YY | N/A>
 - Assigned Model: <SWE 1.6 | Kimi k2.5>
 - Source Spec File: <source spec file>
 - Task File: <task file>
@@ -247,11 +304,13 @@ Arbeitsregel:
 Stop Rule:
 - Nur dieser Target Task darf validiert werden.
 - SpÃ¤tere Tasks benÃ¶tigen einen separaten user-triggered Handover.
+Rules: VALIDATE_ONE_TARGET_TASK_NO_IMPLEMENTATION_NO_CODE_CHANGES_RELEASE_SKILL_4_HANDOFF_ONLY_IF_SCOPE_FILES_TESTS_RISKS_ARE_CLEAR
 
 NÃ¤chster erwarteter Output:
 - Pre-Implementation Verification fÃ¼r genau diesen Target Task
-- Eindeutiger Handover zu SKILL 4 – EXECUTIONER bei PASS
+- Eindeutiger Handover zu SKILL 4 â€“ EXECUTIONER bei PASS
 - BLOCKED oder MODEL SWITCH REQUIRED bei fehlender AusfÃ¼hrungsreife
+Expected Output: PRE_CHECK_PASSED_PLUS_SKILL_4_HANDOFF_OR_PRE_CHECK_BLOCKED
 ```
 
 Der Copy-Block ist PFLICHT, auch wenn davor bereits eine normale Zusammenfassung ausgegeben wurde.
@@ -267,7 +326,7 @@ Wenn Task nicht eindeutig refinierbar ist:
 - mehrere mÃ¶gliche Implementationen
 - Codebase Inkonsistenz
 
-âž¡ STOP EXECUTION
+â†’ STOP EXECUTION
 
 ```text id="model_switch_skill2"
 MODEL SWITCH REQUIRED: SWE 1.6 â†’ GPT-5.5
@@ -278,7 +337,7 @@ Reason:
 Action:
 â†’ neuer Chat starten
 â†’ Skill 2 erneut mit GPT-5.5 ausfÃ¼hren
-ðŸ“¤ OUTPUT FORMAT
+ðŸ“ OUTPUT FORMAT
 TASK DESIGN COMPLETE
 
 Task ID: TASK-XXX
@@ -317,17 +376,21 @@ Am Ende der Antwort MUSS zusÃ¤tzlich ein einzelner grauer Copy-Block ausgegebe
 Dieser Block MUSS direkt kopierbar sein und darf keine ErklÃ¤rung auÃŸerhalb des Blocks benÃ¶tigen.
 
 ```text
-@[/SKILL 3 – PRE-IMPLEMENTATION VERIFICATION] mit folgendem Target Task:
+@[/SKILL 3 â€“ PRE-IMPLEMENTATION VERIFICATION] mit folgendem Target Task:
 Spec: <source spec file>
-Tasks: <task file>
+Task: <task file>
+Backlog Item: <BACKLOG-XXX | N/A>
 Target Task: <TASK-XXX.Y>
+Target Subtask: <SUBTASK-XXX-YY | N/A>
 Mode: SINGLE_TASK_PRECHECK
 Execution Model: <SWE 1.6 | Kimi k2.5>
 
 Kontext:
 - Skill-2 Ergebnis: TASK DESIGN COMPLETE
 - Readiness: READY FOR SKILL 3 SINGLE-TASK PRE-CHECK
+- Backlog Item: <BACKLOG-XXX | N/A>
 - Target Task: <TASK-XXX.Y>
+- Target Subtask: <SUBTASK-XXX-YY | N/A>
 - Assigned Model: <SWE 1.6 | Kimi k2.5>
 - Source Spec File: <source spec file>
 - Task File: <task file>
@@ -343,24 +406,26 @@ Arbeitsregel:
 Stop Rule:
 - Nur dieser Target Task darf validiert werden.
 - SpÃ¤tere Tasks benÃ¶tigen einen separaten user-triggered Handover.
+Rules: VALIDATE_ONE_TARGET_TASK_NO_IMPLEMENTATION_NO_CODE_CHANGES_RELEASE_SKILL_4_HANDOFF_ONLY_IF_SCOPE_FILES_TESTS_RISKS_ARE_CLEAR
 
 NÃ¤chster erwarteter Output:
 - Pre-Implementation Verification fÃ¼r genau diesen Target Task
-- Eindeutiger Handover zu SKILL 4 – EXECUTIONER bei PASS
+- Eindeutiger Handover zu SKILL 4 â€“ EXECUTIONER bei PASS
 - BLOCKED oder MODEL SWITCH REQUIRED bei fehlender AusfÃ¼hrungsreife
+Expected Output: PRE_CHECK_PASSED_PLUS_SKILL_4_HANDOFF_OR_PRE_CHECK_BLOCKED
 ```
 
 Der Copy-Block ist PFLICHT, auch wenn davor bereits eine normale Zusammenfassung ausgegeben wurde.
 ðŸš« RESTRICTIONS
 
-STRICT PROVIDER ISOLATION: Janus ist ein BYOK-Tool. Implementiere oder erlaube NIEMALS automatische Provider-Fallbacks (z.B. Gemini zu GPT) im Produktcode. Wenn ein Provider-spezifischer Test (z.B. Gemini) fehlschlägt, muss er als Fehler dieses Providers behandelt werden. Ein Ausweichen auf einen anderen Provider zur Fehlerumgehung ist STRENG VERBOTEN.
+STRICT PROVIDER ISOLATION: Janus ist ein BYOK-Tool. Implementiere oder erlaube NIEMALS automatische Provider-Fallbacks (z.B. Gemini zu GPT) im Produktcode. Wenn ein Provider-spezifischer Test (z.B. Gemini) fehlschlÃ¤gt, muss er als Fehler dieses Providers behandelt werden. Ein Ausweichen auf einen anderen Provider zur Fehlerumgehung ist STRENG VERBOTEN.
 
 KEINE Codegenerierung
 KEINE ArchitekturÃ¤nderungen
 KEINE neuen Features
 KEINE Scope-Erweiterung
 KEINE Designentscheidungen
-ðŸ§  ERROR HANDLING
+ðŸš¨ ERROR HANDLING
 
 Wenn Task nicht sinnvoll refinebar:
 
@@ -371,7 +436,7 @@ Issue:
 
 Action:
 â†’ Skill 1 erneut ausfÃ¼hren oder GPT-5.5 Escalation
-ðŸ§  OUTPUT GUARANTEE
+ðŸš¨ OUTPUT GUARANTEE
 
 Output ist immer:
 

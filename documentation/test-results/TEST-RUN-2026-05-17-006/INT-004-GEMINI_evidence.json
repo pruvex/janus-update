@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-006",
+  "testCaseId": "INT-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "News von Heise heute",
+  "response": "Hier sind die aktuellen Schlagzeilen von Heise (Stand: 17.05.2026):\n\nLudoSport im Test: Ein Bericht über den Lichtschwertkampf-Sport und das Training wie ein Padawan.\ndata2day 2026: Das heise-Angebot zur Konferenz mit Fokus auf Agentic AI, Datenprodukte und Governance.\nKraftstoffpreise: Diesel ist seit April um rund 45 Cent günstiger geworden.\nIT-Sicherheit: Ein iX-Workshop zum Thema Netzwerkarchitekturen in Proxmox.\nOffice-Alternativen: Ein Video stellt vier Pakete vor, die Microsoft Office ersetzen können.\nVerkehrskonzepte: Eine Analyse, ob Monorails, Magnet- und Seilbahnen sinnvolle Ergänzungen oder nur Gadgets sind.\nSmartphone-Kaufberatung: Die Top 10 der besten kleinen Smartphones bis 6,3 Zoll.\nKI & Finanzen: Über finanzielle Ratschläge von ChatGPT bei Verknüpfung mit dem Bankkonto.\nRessourcenpolitik: Wie Europa die Abhängigkeit von Chinas Seltenen Erden verringern will.\nKI-Forschung: arXiv führt eine Sperre bei ersten Verstößen gegen neue Einreichungsregeln ein.\n\n💡 Passende nächste Schritte:• Möchtest du mehr Details zu einer der Meldungen (z. B. zu den Smartphone-Empfehlungen)?• Soll ich nach weiteren Nachrichten zu einem speziellen Thema wie \"KI\" suchen?• Suchst du gezielt nach weiteren Preisentwicklungen oder Technik-Angeboten?\n14:54",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:54:11.433Z"
+}

@@ -80,6 +80,32 @@ def _validate_glob_pattern(pattern: Optional[str]) -> None:
         )
 
 
+_SENSITIVE_FILE_NAMES = {
+    ".env",
+    ".env.local",
+    ".env.development",
+    ".env.production",
+    "secrets.json",
+    "credentials.json",
+}
+
+
+def _is_sensitive_filesystem_target(value: Optional[str]) -> bool:
+    normalized = str(value or "").strip().replace("\\", "/").lower()
+    if not normalized:
+        return False
+    name = Path(normalized).name
+    if name in _SENSITIVE_FILE_NAMES:
+        return True
+    if name.startswith(".env."):
+        return True
+    if name.endswith(".env") or ".env." in name:
+        return True
+    if any(marker in name for marker in ("secret", "credential", "api_key", "apikey", "token")):
+        return True
+    return False
+
+
 def _fs_err(
     code: str,
     message: str,
@@ -204,6 +230,12 @@ def create_file(path: str, content: str = "", is_binary: bool = False) -> ToolRe
 def read_file(path: str) -> ToolResultV1:
     started = time.perf_counter()
     try:
+        if _is_sensitive_filesystem_target(path):
+            return _fs_err(
+                "SENSITIVE_FILE_BLOCKED",
+                "Fehler: Sicherheitsrelevante Dateien wie .env, Secrets, Tokens oder Credentials duerfen nicht gelesen werden.",
+                started=started,
+            )
         safe_path = _resolve_and_validate_path(path, must_exist=True)
         if safe_path.suffix.lower() == ".pdf":
             msg = (
@@ -365,6 +397,12 @@ def find_files(
             return _fs_err("INVALID_ARGUMENT", "Fehler: 'pattern' darf nicht leer sein.", started=started)
 
         _validate_glob_pattern(pattern)
+        if _is_sensitive_filesystem_target(pattern):
+            return _fs_err(
+                "SENSITIVE_FILE_BLOCKED",
+                "Fehler: Sicherheitsrelevante Dateien wie .env, Secrets, Tokens oder Credentials duerfen nicht gesucht oder aufgelistet werden.",
+                started=started,
+            )
         # Pfadsegmente im Pattern verbieten (Suche nur nach Dateinamen):
         if "/" in pattern or "\\" in pattern:
             return _fs_err(

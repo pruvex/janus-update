@@ -53,6 +53,8 @@ ROUTING_SOURCE_LABEL = "OSRM"
 
 COUNTRY_INFO_SOURCE_LABEL = "REST Countries API (restcountries.com)"
 
+WIKIPEDIA_SOURCE_LABEL = "Wikipedia"
+
 
 def append_weather_attribution_from_tools(final_text: str, tool_results: List[Dict[str, Any]]) -> str:
     """Hängt „Quelle: …“ aus dem letzten erfolgreichen system.weather-Tool an.
@@ -183,5 +185,50 @@ def append_country_info_attribution_from_tools(final_text: str, tool_results: Li
 def append_tool_attributions_from_tools(final_text: str, tool_results: List[Dict[str, Any]]) -> str:
     """Wetter-, Routing- und Länderinfo-Quelle (jeweils vor 💡 bzw. Textende)."""
     t = append_weather_attribution_from_tools(final_text, tool_results)
+    t = append_routing_attribution_from_tools(t, tool_results)
+    return append_country_info_attribution_from_tools(t, tool_results)
+
+
+def append_wikipedia_attribution_from_tools(final_text: str, tool_results: List[Dict[str, Any]]) -> str:
+    """Ergaenzt "Quelle: Wikipedia", wenn erfolgreiches system.wikipedia_summary genutzt wurde."""
+    text = str(final_text or "").strip()
+    if not text or not tool_results:
+        return str(final_text or "")
+
+    for tr in reversed(tool_results):
+        if not isinstance(tr, dict):
+            continue
+        name = str(tr.get("name") or "").strip().lower()
+        skill_id = str(tr.get("_skill_id") or "").strip().lower()
+        if name not in ("system.wikipedia_summary", "system_wikipedia_summary") and skill_id not in (
+            "system.wikipedia_summary",
+            "system_wikipedia_summary",
+        ):
+            continue
+        raw = tr.get("_raw_content") or tr.get("content") or "{}"
+        try:
+            parsed = json.loads(raw) if isinstance(raw, str) else dict(raw or {})
+        except (json.JSONDecodeError, TypeError, ValueError):
+            continue
+        if not isinstance(parsed, dict):
+            continue
+        if str(parsed.get("status") or "").strip().lower() != "ok":
+            continue
+        data = parsed.get("data")
+        if not isinstance(data, dict):
+            continue
+        if not (data.get("title") or data.get("summary") or data.get("url")):
+            continue
+        if "Quelle: Wikipedia" in text:
+            return str(final_text or "")
+        return insert_quelle_line_before_suggestion_block(text, WIKIPEDIA_SOURCE_LABEL)
+
+    return str(final_text or "")
+
+
+def append_tool_attributions_from_tools(final_text: str, tool_results: List[Dict[str, Any]]) -> str:
+    """Wetter-, Wikipedia-, Routing- und Laenderinfo-Quelle vor Vorschlaegen bzw. Textende."""
+    t = append_weather_attribution_from_tools(final_text, tool_results)
+    t = append_wikipedia_attribution_from_tools(t, tool_results)
     t = append_routing_attribution_from_tools(t, tool_results)
     return append_country_info_attribution_from_tools(t, tool_results)

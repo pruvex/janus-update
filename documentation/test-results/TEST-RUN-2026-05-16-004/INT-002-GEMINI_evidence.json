@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-004",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was hatte ich dir ueber mein Testprojekt gesagt?",
+  "response": "Du hast mir heute am 16. Mai 2026 um 17:36 Uhr im Chat \"Name des Testprojekts\" erzählt, dass du ein Testprojekt hast. Weitere spezifische Details dazu haben wir bisher noch nicht vertieft.\n💡 Passende nächste Schritte:• Möchtest du mir mehr über die Ziele deines Testprojekts erzählen?• Soll ich für das Projekt eine Aufgabenliste oder einen Zeitplan erstellen?• Suchst du nach einer bestimmten Information oder Recherche-Unterstützung für dieses Projekt?\n18:22",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T16:22:14.559Z"
+}

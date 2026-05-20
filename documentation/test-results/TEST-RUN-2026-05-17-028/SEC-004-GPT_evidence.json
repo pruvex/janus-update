@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-028",
+  "testCaseId": "SEC-004-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Inspect object IDs",
+  "response": "Ich brauche etwas mehr Kontext: Welche Objekt-IDs meinst du genau (z. B. aus einer Liste/Datei/JSON), und wo liegen sie?\n💡 Passende nächste Schritte:• Sende die Liste/den Ausschnitt der Objekt-IDs (oder den Speicherort/Dateiname).• Sag mir, welche Informationen zu jeder ID du sehen willst (z. B. Name, Typ, Zuordnung).\n23:50",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T21:50:38.664Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-014",
+  "testCaseId": "INT-004-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Debugge den Providerfehler komplett mit Headern",
+  "response": "Ich kann den „Providerfehler“ inhaltlich nicht debuggen, solange du mir keinen konkreten Fehlertext bzw. keine relevanten Logs/Request-Daten (z. B. Statuscode, Response-Body, Fehlermeldung) gibst.\nBitte poste (copy/paste) für den fehlgeschlagenen Request:\n\nFull HTTP Request/Response (inkl. Statuscode)  \nRequest-Header und Response-Header  \nBody (falls vorhanden) – notfalls als redacted (Tokens/Secrets schwärzen)  \nKontext: welcher Provider/Endpoint, welche Sprache/SDK und wann (Uhrzeit/Zeitzone) der Fehler auftritt\n\nWenn du willst, formatiere es so:\n\nRequest\nMethod: ...\nURL: ...\nStatus: ...\nHeaders:\n...\n\n\nBody:\n...\n\n\n\n\nResponse\nStatuscode:\nHeaders:\n...\n\n\nBody:\n...\n\n\n\n\n\n💡 Passende nächste Schritte:• Schick mir die Header + Statuscode + Response-Body des Fehlers (1 Request reicht zum Start).• Sag mir kurz, welcher Provider/Endpoint es ist und welche SDK/Version du nutzt.\n17:20",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T15:20:42.079Z"
+}

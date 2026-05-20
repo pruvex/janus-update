@@ -1,19 +1,19 @@
 ---
-description: Skill 7 â€“ SWE 1.6 synchronisiert Dokumentation nach Skill-6-Audit und abgeschlossenem Skill-5-Debug-Gate
+description: Skill 7 – SWE 1.6 synchronisiert Dokumentation nach Skill-6-Audit und abgeschlossenem Skill-5-Debug-Gate
 ---
 
-# Skill 7 â€“ Dokumentationsupdate (JANUS â€“ AFTER FINAL AUDIT AND DEBUG GATE)
+# Skill 7 – Dokumentationsupdate (JANUS – AFTER FINAL AUDIT AND DEBUG GATE)
 
 Use this workflow only after:
 
 ```text
 /1_Feature-erstellen
-â†’ implementation of generated tasks
-â†’ /2_final-audit or Skill 6 â€“ Diamantstandard Final Audit
-â†’ manual Janus test evidence from Skill 4 / Skill 6 passed or explicitly deferred with reason
-â†’ /SKILL 5 â€“ FEATURE DEBUG completed if Skill 4, Skill 6, or manual Janus test found a failure
-â†’ Skill 7 automatic version bump
-â†’ /SKILL 7 â€“ DOKUMENTATIONSUPDATE
+→ implementation of generated tasks
+→ /2_final-audit or Skill 6 – Diamantstandard Final Audit
+→ manual Janus test evidence from Skill 4 / Skill 6 passed or explicitly deferred with reason
+→ /SKILL 5 – FEATURE DEBUG completed if Skill 4, Skill 6, or manual Janus test found a failure
+→ Skill 7 automatic version bump
+→ /SKILL 7 – DOKUMENTATIONSUPDATE
 ```
 
 Goal:
@@ -34,6 +34,28 @@ This workflow is a documentation and registry sync step. It is not an implementa
 
 STRICT PROVIDER ISOLATION: Janus ist ein BYOK-Tool. Implementiere oder erlaube NIEMALS automatische Provider-Fallbacks (z.B. Gemini zu GPT) im Produktcode. Wenn ein Provider-spezifischer Test (z.B. Gemini) fehlschlägt, muss er als Fehler dieses Providers behandelt werden. Ein Ausweichen auf einen anderen Provider zur Fehlerumgehung ist STRENG VERBOTEN.
 
+ABSOLUTE MODE DISPATCH (HARD):
+
+If the input contains `CompletionAction=RECORD_TEST_PIPELINE_PASS_AND_SYNC_DOCUMENTATION`, Skill 7 MUST immediately enter `Phase 0.5: Test Pipeline Completion Mode`.
+
+This mode overrides the normal feature/backlog/final-audit flow. The skill must not classify the run as "not a feature implementation" to skip documentation. It must not ask for Skill 6, a feature task file, a Backlog item, or a version bump before completing Phase 0.5.
+
+For this mode, these outputs are invalid and must be treated as `SKILL 7 BLOCKED - TEST PIPELINE DOC SYNC INCOMPLETE`:
+
+- `SKILL 7 documentation update bereits abgeschlossen` without a full completion checklist.
+- `PROJECT_STATE: skipped`
+- `Central registry: skipped`
+- `WHAT_I_LEARNED: skipped`
+- `Capability Registry: skipped`
+- `Capability UX View: skipped`
+- `Spec Dashboard Completion Sync: skipped`
+- `Benötigst du eine weitere Aktion?`
+
+The only acceptable terminal states for this mode are:
+
+- `TEST PIPELINE COMPLETE` with all mandatory markers `PASS` or `UPDATED`.
+- `SKILL 7 BLOCKED - TEST PIPELINE DOC SYNC INCOMPLETE` with exact missing markers and a copyable rerun handover.
+
 - Do not run Skill 7 if `/2_final-audit` or Skill 6 returned `BLOCKED`.
 - Do not run Skill 7 if the manual Janus test failed and Skill 5 has not resolved it.
 - Do not run Skill 7 if Skill 6 requested re-run of Skill 4.
@@ -47,6 +69,9 @@ STRICT PROVIDER ISOLATION: Janus ist ein BYOK-Tool. Implementiere oder erlaube N
 - Do not leave release-relevant version files unsynchronized.
 - Prefer appending structured audit sections over rewriting existing task content.
 - If required documentation files are missing, create a clear `BLOCKED` report instead of guessing.
+- Never write placeholder completion versions such as `CURRENT`, `TBD`, `Unreleased`, or `unknown` when `package.json` or `backend/version.py` contains a parseable version. Use the concrete synchronized version string.
+- Do not use free production-status synonyms in the final report. Use `Final Audit: PASS | PASS WITH FIXES` and `Documentation Update: COMPLETE`.
+- Skill 7 must explicitly report whether `CHANGELOG.md` was updated. If skipped, it must provide a concrete reason; silent omission is invalid.
 
 Allowed safe edits:
 - Append post-implementation audit trail to the task file.
@@ -94,6 +119,160 @@ If Skill 5 produced a temporary GPT-5.5 escalation handover file, treat it as a 
 
 ---
 
+## Phase 0.5: Test Pipeline Completion Mode (HARD)
+
+Run this phase when the input contains:
+
+```text
+CompletionAction=RECORD_TEST_PIPELINE_PASS_AND_SYNC_DOCUMENTATION
+```
+
+or when `BacklogItem=N_A`, `Task=N_A`, `ResultStatus=PASS`, `Findings=NONE`, and a valid
+`TestResultJson`/`TestPlan`/`TestSpec` triple is provided.
+
+This is a terminal documentation-sync mode for a green TestSpec validation. It is not a product
+implementation, but it is also not a no-op. Skill 7 MUST persist the fact that the TestSpec is green
+and must update the pipeline/status documentation that downstream dashboards and humans use.
+
+Required validation:
+
+- Load `TestSpec`, `TestPlan`, `TestResultJson`, and `TestResult` if present.
+- Verify `TestResultJson.status == PASS`.
+- Verify `summary.total > 0`, `summary.passed == summary.total`, `summary.failed == 0`,
+  `summary.blocked == 0`, and `summary.manualGateRequired == 0`.
+- Verify `TestPlan.testRunId == TargetTestRun` and `TestResultJson.testRunId == TargetTestRun`.
+- Verify provider/type pass-rate fields are present in the input or derive them from the artifacts.
+- If any check fails, stop with `SKILL 7 BLOCKED - TEST PIPELINE RESULT INVALID`.
+
+Mandatory documentation updates for this mode:
+
+1. `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`
+   - Add or update exactly one entry for `TargetTestRun`.
+   - Include TestSpec, TestPlan, TestResultJson, total/passed/failed/blocked/manual-gate,
+     pass rate, provider pass rates, type pass rates, security gate summary, and final route.
+   - If an entry for the same TestRun already exists, update that entry instead of appending a duplicate.
+
+2. `PROJECT_STATE.md`
+   - Add a compact session-log entry that the TestSpec validation completed with PASS.
+   - Include `TargetTestRun`, TestSpec path, total tests, pass rate, and `Findings=NONE`.
+   - Do not skip this file merely because no product code changed.
+
+3. `documentation/01_CENTRAL_TASK_REGISTRY.md`
+   - Add or update a test-pipeline/status row for the TestSpec if the file has a recognizable table
+     or registry section.
+   - If no safe insertion point exists, append a clearly marked `Test Pipeline Validation` note.
+   - Do not skip silently. If not updated, final report must say `BLOCKED` or give a concrete parser/format reason.
+
+4. `WHAT_I_LEARNED.md`
+   - Add a learning if the run validated a reusable pipeline hardening, oracle rule, runner rule, or
+     completion-routing rule. For this mode, a reusable learning is presumed when the run follows a
+     prior red/green hardening cycle or when the TestSpec contains security/prompt-injection coverage.
+   - If an equivalent learning already exists, update/extend it rather than duplicating.
+   - Do not output `skipped - no reusable pattern identified` when the input includes a freshly green
+     TestSpec after pipeline hardening.
+
+5. `documentation/TEST_SPEC/<spec>.md`
+   - Append or update a small `## Latest Pipeline Validation` section.
+   - Include TargetTestRun, date, result, total/passed/failed/blocked, provider/type pass rates,
+     TestPlan path, TestResultJson path, and `Findings: NONE`.
+   - Preserve the TestSpec content and acceptance criteria; do not rewrite the test cases.
+
+6. Capability registry / UX capability view
+   - If the TestSpec validates a capability overview/help experience, validate the registry/view as
+     documentation evidence and record `validated` with the TestRun path.
+   - Do not invent new user-visible capabilities from a pure validation run.
+   - Final report must say `Capability Registry: validated` or provide a concrete blocking reason.
+
+7. `CHANGELOG.md`
+   - If product behavior or user-visible docs changed in this same Skill-7 run, update `[Unreleased]`.
+   - If this is strictly a validation-only run with no user-visible product/docs change, it may be skipped,
+     but the final report must say `CHANGELOG: skipped - validation-only TestSpec pass, no product/user-facing change`.
+
+8. Dashboard/snapshots
+   - If no Backlog item is present, do not edit `documentation/backlog/BACKLOG.md`.
+   - Still sync or validate any test-pipeline/dashboard data if such a project script exists.
+   - If no such script exists, final report must say `Test dashboard sync: skipped - no test-pipeline dashboard sync script found`.
+
+Forbidden in Test Pipeline Completion Mode:
+
+```text
+PROJECT_STATE: skipped - test pipeline completion, not feature implementation
+Central registry: skipped - test pipeline completion, not feature implementation
+WHAT_I_LEARNED: skipped - no reusable pattern identified
+Capability Registry: skipped - test pipeline completion, no new capabilities
+Capability UX View: skipped - test pipeline completion
+Spec Dashboard Completion Sync: skipped - not a Spec implementation
+```
+
+Allowed skips in this mode:
+
+- `Task file`: only when `Task=N_A`, with reason `no task artifact for validation-only run`.
+- `Backlog`: only when `BacklogItem=N_A`, with reason `no backlog item for validation-only run`.
+- `CHANGELOG`: only with the exact validation-only reason above.
+- `Version bump`: skipped unless the project requires versioning for documentation-only validation.
+
+Final report for this mode must use:
+
+```text
+TEST PIPELINE COMPLETE
+```
+
+and must report these lines as updated or validated, not skipped:
+
+- `TEST_PIPELINE_RUN_LOG`
+- `PROJECT_STATE`
+- `Central registry`
+- `WHAT_I_LEARNED`
+- `TestSpec Latest Pipeline Validation`
+- `Capability Registry`
+- `Capability UX View`
+
+If any mandatory update cannot be performed, Skill 7 must return `SKILL 7 BLOCKED - TEST PIPELINE DOC SYNC INCOMPLETE`
+with the exact missing file/section and a copyable rerun handover.
+
+Idempotency rule (HARD):
+
+Skill 7 may say a Test Pipeline Completion is "already complete" ONLY if every mandatory artifact
+contains a verifiable marker for the same `TargetTestRun`.
+
+Before returning "already complete", Skill 7 MUST read and verify all of:
+
+- `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md` contains `TargetTestRun`
+- `PROJECT_STATE.md` contains `TargetTestRun`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md` contains `TargetTestRun` or the TestSpec path in a test-pipeline validation entry
+- `WHAT_I_LEARNED.md` contains `TargetTestRun` or an explicitly matching pipeline hardening/oracle learning referenced from this run
+- `TestSpec` contains `## Latest Pipeline Validation` and `TargetTestRun`
+- Capability registry / UX validation evidence is recorded in either the TestSpec validation section or the central registry entry
+
+If any marker is missing, the run is NOT complete. Skill 7 must update the missing artifact(s) in the
+same turn. It must not ask "Benötigst du eine weitere Aktion?" and must not stop after updating only
+`TEST_PIPELINE_RUN_LOG.md`.
+
+Completion checklist (MUST be reported):
+
+```markdown
+## Completion Checklist
+- **TEST_PIPELINE_RUN_LOG marker:** PASS | UPDATED | MISSING
+- **PROJECT_STATE marker:** PASS | UPDATED | MISSING
+- **Central registry marker:** PASS | UPDATED | MISSING
+- **WHAT_I_LEARNED marker:** PASS | UPDATED | MISSING
+- **TestSpec Latest Pipeline Validation marker:** PASS | UPDATED | MISSING
+- **Capability validation marker:** PASS | UPDATED | MISSING
+```
+
+`Documentation Update: COMPLETE` is forbidden unless every checklist item is `PASS` or `UPDATED`.
+
+Forbidden responses in this mode:
+
+```text
+SKILL 7 documentation update bereits abgeschlossen
+Benötigst du eine weitere Aktion?
+```
+
+unless the completion checklist is printed and every mandatory marker is PASS.
+
+---
+
 ## Phase 1: Final Audit Gate
 
 Read or reconstruct the `/2_final-audit` or Skill 6 result.
@@ -114,7 +293,7 @@ If status is `BLOCKED`, stop and return:
 ## Required Action
 - Resolve audit blockers.
 - Re-run `/2_final-audit` or Skill 6.
-- Then run `/SKILL 7 â€“ DOKUMENTATIONSUPDATE`.
+- Then run `/SKILL 7 – DOKUMENTATIONSUPDATE`.
 ```
 
 Do not update registries or changelog when audit is blocked.
@@ -135,9 +314,9 @@ If manual test or debug gate is not satisfied, stop and return:
 - Manual Janus test or Skill 5 gate is not satisfied.
 
 ## Required Action
-- Run `/SKILL 5 â€“ FEATURE DEBUG` with the actual output, expected result, and backend log.
+- Run `/SKILL 5 – FEATURE DEBUG` with the actual output, expected result, and backend log.
 - Re-run the manual Janus test after any Skill-5 fix.
-- Then run `/SKILL 7 â€“ DOKUMENTATIONSUPDATE` again.
+- Then run `/SKILL 7 – DOKUMENTATIONSUPDATE` again.
 ```
 
 ---
@@ -232,9 +411,9 @@ Computation rules:
 
 1. If root version is `X.Y.Z-beta.N`, bump to `X.Y.Z-beta.(N+1)`.
 2. If root version is stable `X.Y.Z`, bump to `X.Y.(Z+1)-beta.1`.
-3. If root version has another semver prerelease suffix, stop and report `VERSION BUMP BLOCKED â€“ UNSUPPORTED VERSION FORMAT`.
-4. If `package-lock.json` is inconsistent before the bump, stop and report `VERSION BUMP BLOCKED â€“ VERSION FILES INCONSISTENT`.
-5. If `backend/version.py` is inconsistent before the bump, stop and report `VERSION BUMP BLOCKED â€“ VERSION FILES INCONSISTENT`.
+3. If root version has another semver prerelease suffix, stop and report `VERSION BUMP BLOCKED – UNSUPPORTED VERSION FORMAT`.
+4. If `package-lock.json` is inconsistent before the bump, stop and report `VERSION BUMP BLOCKED – VERSION FILES INCONSISTENT`.
+5. If `backend/version.py` is inconsistent before the bump, stop and report `VERSION BUMP BLOCKED – VERSION FILES INCONSISTENT`.
 
 Apply the new version to:
 
@@ -249,6 +428,7 @@ Validation:
 - Parse both JSON files after writing.
 - Re-read all changed version files.
 - Confirm every synchronized file contains the new version.
+- When closing a Backlog item, write `- **Completed in version:** <new version>` using the concrete version from the synchronized version files. If no bump was applied because this run only documents an already-bumped implementation, use the current concrete version from `package.json` / `backend/version.py`; never write `CURRENT`.
 
 If blocked:
 
@@ -256,7 +436,7 @@ If blocked:
 # SKILL 7 BLOCKED
 
 ## Reason
-- VERSION BUMP BLOCKED â€“ [specific reason]
+- VERSION BUMP BLOCKED – [specific reason]
 
 ## Required Action
 - Fix version file inconsistency or provide an explicit version override.
@@ -306,9 +486,9 @@ If those sections do not exist, append:
 [1-3 sentence summary]
 
 ### Validation Evidence
-- **[command]:** PASS | FAIL | SKIPPED â€” [evidence]
-- **Manual Janus test:** PASS | FAIL | N/A | DEFERRED â€” [evidence/reason]
-- **Skill 5:** FIXED | NEEDS RETEST | ESCALATION REQUIRED | BLOCKED | OUT OF SCOPE | N/A â€” [evidence]
+- **[command]:** PASS | FAIL | SKIPPED — [evidence]
+- **Manual Janus test:** PASS | FAIL | N/A | DEFERRED — [evidence/reason]
+- **Skill 5:** FIXED | NEEDS RETEST | ESCALATION REQUIRED | BLOCKED | OUT OF SCOPE | N/A — [evidence]
 
 ### Final Audit Fixes
 - **[path]:** [fix summary]
@@ -350,7 +530,7 @@ For each referenced task file:
 2. Add a short note under its reference/dependency section:
 
 ```markdown
-â†’ Modified by [task file / task id]: [short description]
+→ Modified by [task file / task id]: [short description]
 ```
 
 If no referenced tasks exist, record:
@@ -436,6 +616,12 @@ Include:
 - Important internal/security/test note if relevant
 - Version bump note if relevant
 
+Completion rule:
+
+- If the implementation changed product behavior or fixed a user-visible bug, `CHANGELOG.md` must be updated under `[Unreleased]`.
+- If no changelog update is needed, the final report must state `CHANGELOG: skipped` with a concrete reason.
+- `CHANGELOG: updated / skipped + reason` placeholders are not allowed in final output.
+
 Example:
 
 ```markdown
@@ -473,8 +659,8 @@ Use this format:
 ## [PATTERN] #[PatternName] "[short title]"
 - **Kontext:** [feature/task and why this matters]
 - **Problem:** [what failed or could fail]
-- **LÃ¶sung:** [deterministic fix or rule]
-- **HÃ¤rtung:** [guardrails, tests, validation]
+- **Lösung:** [deterministic fix or rule]
+- **Härtung:** [guardrails, tests, validation]
 - **Tripwire:** [symptom that means this pattern was violated]
 - **Location:** [files/modules], implementiert [date]
 - **Epic:** [task/feature]
@@ -485,7 +671,7 @@ Use this format:
 If no reusable learning exists, record in the final report:
 
 ```markdown
-- **WHAT_I_LEARNED:** skipped â€” no reusable pattern/root cause identified
+- **WHAT_I_LEARNED:** skipped — no reusable pattern/root cause identified
 ```
 
 ---
@@ -590,7 +776,7 @@ Final report must include:
 If no user-visible capability changed, record:
 
 ```markdown
-- **Capability Registry:** skipped â€” no new or changed user-visible capability identified
+- **Capability Registry:** skipped — no new or changed user-visible capability identified
 ```
 
 ---
@@ -705,6 +891,75 @@ Final report must include:
 
 ## Phase 12: Final Report
 
+For `CompletionAction=RECORD_TEST_PIPELINE_PASS_AND_SYNC_DOCUMENTATION`, return `TEST PIPELINE COMPLETE`
+instead of `POST-IMPL COMPLETE` and use this stricter report shape:
+
+```markdown
+# TEST PIPELINE COMPLETE
+
+## TestRun
+- **TestRun-ID:** <TEST-RUN-ID>
+- **TestSpec:** <path>
+- **TestPlan:** <path>
+- **TestResult:** <path>
+- **TestResultJson:** <path>
+
+## Test Summary
+- **ResultStatus:** PASS
+- **TotalTests:** <n>
+- **Passed:** <n>
+- **Failed:** 0
+- **Blocked:** 0
+- **ManualGate:** 0
+- **PassRatePct:** 100.00
+- **ProviderPassRatePct:** <Provider:100.00,...>
+- **TypePassRatePct:** <type:100.00,...>
+- **Findings:** NONE
+
+## Documentation Updated
+- **TEST_PIPELINE_RUN_LOG:** updated
+- **PROJECT_STATE:** updated
+- **Central registry:** updated
+- **WHAT_I_LEARNED:** updated | already covered and referenced
+- **TestSpec Latest Pipeline Validation:** updated
+- **Capability Registry:** validated
+- **Capability UX View:** validated
+- **CHANGELOG:** updated | skipped - validation-only TestSpec pass, no product/user-facing change
+- **Task file:** skipped - no task artifact for validation-only run
+- **Backlog:** skipped - no backlog item for validation-only run
+
+## Completion Checklist
+- **TEST_PIPELINE_RUN_LOG marker:** PASS | UPDATED
+- **PROJECT_STATE marker:** PASS | UPDATED
+- **Central registry marker:** PASS | UPDATED
+- **WHAT_I_LEARNED marker:** PASS | UPDATED
+- **TestSpec Latest Pipeline Validation marker:** PASS | UPDATED
+- **Capability validation marker:** PASS | UPDATED
+
+## Completion State
+- **Test Pipeline:** COMPLETE
+- **Documentation Update:** COMPLETE
+- **Security Gate:** PASS
+- **Provider-/Model-Matrix:** PASS
+
+## Next Step
+- **Recommended:** no further action required | run next TestSpec
+- **Reason:** TestSpec validation completed successfully with 100% pass rate, no findings.
+```
+
+Forbidden in this report:
+
+```text
+PROJECT_STATE: skipped
+Central registry: skipped
+WHAT_I_LEARNED: skipped
+Capability Registry: skipped
+Capability UX View: skipped
+Spec Dashboard Completion Sync: skipped
+```
+
+unless the output is `SKILL 7 BLOCKED - TEST PIPELINE DOC SYNC INCOMPLETE`.
+
 Return:
 
 ```markdown
@@ -732,6 +987,16 @@ Return:
 - **Backward refs:** [updated / none / skipped + reason]
 - **Skill 5/6:** [not needed / fixed + retest pass / skipped + reason]
 - **Skill 5/6 temp cleanup:** [deleted / skipped / warning + reason]
+
+## Completion State
+- **Final Audit:** PASS | PASS WITH FIXES
+- **Documentation Update:** COMPLETE
+- **Production synonym check:** PASS (no `READY FOR PRODUCTION` / `APPROVED FOR PRODUCTION` status used)
+
+Forbidden final status lines:
+- `APPROVED FOR PRODUCTION`
+- `READY FOR PRODUCTION`
+- `Recommendation: APPROVED FOR PRODUCTION`
 
 ## Version
 - **Old version:** [old]
@@ -763,4 +1028,3 @@ Rules:
 - `/save` is mandatory before `/SKILL 8 – BUILD RELEASE`.
 - `/save` commits the documented final state to `backup develop`.
 - Do not proceed to release if `/save` fails.
-

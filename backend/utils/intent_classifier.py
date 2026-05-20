@@ -135,12 +135,12 @@ def is_thanks(prompt: str) -> bool:
 
 _GREETING_RE = re.compile(
     r"^(?:"
-    r"hi|hallo|hey|moin|servus|grüß dich|gruesse? dich|guten morgen|guten tag|guten abend"
+    r"hi|hallo|hey|moin|servus|na|na du|grüß dich|gruesse? dich|guten morgen|guten tag|guten abend"
     r")(?:\s+(?:janus|assistant|bot|du|ihr))?$"
 )
 
 _GREETING_PREFIX_RE = re.compile(
-    r"^(?:hi|hallo|hey|moin|servus|grüß dich|gruesse? dich|guten morgen|guten tag|guten abend)\b"
+    r"^(?:hi|hallo|hey|moin|servus|na|na du|grüß dich|gruesse? dich|guten morgen|guten tag|guten abend)\b"
 )
 
 _SMALLTALK_FOLLOWUP_RE = re.compile(
@@ -156,6 +156,16 @@ _TASKY_KEYWORDS = {
     "suche",
     "finde",
     "liste",
+    "list",
+    "zeige",
+    "zeig",
+    "gib",
+    "export",
+    "exportier",
+    "exportiere",
+    "dump",
+    "download",
+    "lade",
     "öffne",
     "oeffne",
     "lösche",
@@ -163,6 +173,14 @@ _TASKY_KEYWORDS = {
     "delete",
     "create",
     "run",
+    "wer",
+    "was",
+    "wann",
+    "wo",
+    "warum",
+    "welche",
+    "wie",
+    "kannst",
 }
 
 _OPINION_RE = re.compile(
@@ -173,17 +191,36 @@ def is_greeting(prompt: str) -> bool:
     p = _normalize(prompt)
     if bool(_GREETING_RE.match(p)):
         return True
+    if _SMALLTALK_FOLLOWUP_RE.search(p) or _HOW_ARE_YOU_RE.search(p):
+        return _word_count(p) <= 8
     words = p.split()
     if any(token in _TASKY_KEYWORDS for token in words):
         return False
-
-    if _SMALLTALK_FOLLOWUP_RE.search(p):
-        return _word_count(p) <= 8
 
     if not _GREETING_PREFIX_RE.match(p):
         return False
 
     return _word_count(p) <= 6
+
+
+_HOW_ARE_YOU_RE = re.compile(
+    r"\b(?:wie\s+geht(?:s| es| s)?\s+dir|how\s+are\s+you|alles\s+gut\s+bei\s+dir)\b"
+)
+
+
+def is_how_are_you(prompt: str) -> bool:
+    p = _normalize(prompt)
+    return bool(_HOW_ARE_YOU_RE.search(p) or _SMALLTALK_FOLLOWUP_RE.search(p)) and _word_count(p) <= 8
+
+
+def smalltalk_response(prompt: str) -> str:
+    if is_how_are_you(prompt):
+        return "Mir geht's gut, danke. Ich bin bereit. Was liegt an?"
+    if is_greeting(prompt):
+        if _normalize(prompt).startswith("na"):
+            return "Na du! Schoen, dich zu sehen. Was machen wir?"
+        return "Hey! Schoen, dich zu sehen. Was machen wir als Naechstes?"
+    return ""
 
 
 def is_opinion_query(prompt: str) -> bool:

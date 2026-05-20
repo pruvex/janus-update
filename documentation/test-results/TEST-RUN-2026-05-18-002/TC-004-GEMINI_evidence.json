@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-002",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was gibt es Neues bei Heise?",
+  "response": "Hier sind die aktuellen Schlagzeilen von Heise:\n\nSaugroboter-Test: Der Roborock ist Testsieger in den Top 10, während Dreame durch seine geringere Lautstärke punktet.\nBahn auf Sparkurs: Durch eine massive Verschlankung sollen die Milliardenverluste des Konzerns beendet werden.\nUrheberrecht & KI: Eine Analyse klärt auf, wann Prompting schützt und warum das Kopieren teilweise erlaubt ist.\nTaktrekord: Ein Intel 14900KF erreichte unter Helium-Kühlung beeindruckende 9,2 GHz.\nGarten-Technik: Der Mähroboter Sunseeker X5 Gen2 wurde auf seinen Kantenschnitt getestet.\nDigitalsteuer: Kalifornien plant eine Steuer für Cloud-Software, da der KI-Boom allein nicht ausreicht.\nLichtschwertkampf: Ein Erfahrungsbericht zu „LudoSport“ zeigt, wie man wie ein Padawan trainiert.\nWirtschaft: Seit April ist Diesel um 45 Cent günstiger geworden.\n\n💡 Passende nächste Schritte:• Soll ich zu einem der Themen (z. B. dem KI-Urheberrecht oder dem Saugroboter-Test) weitere Details recherchieren?• Suchst du nach weiteren Nachrichten aus einem speziellen Bereich wie IT-Sicherheit oder Hardware?• Möchtest du, dass ich die Preisentwicklung für Diesel in deiner Region prüfe?\n01:57",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T23:57:58.591Z"
+}

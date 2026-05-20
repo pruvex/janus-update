@@ -33,10 +33,27 @@ logger = logging.getLogger("janus_backend")
 MAX_CORE_ALWAYS_TOKENS = 400
 MAX_CORE_QUERY_TOKENS = 600
 MAX_STM_TOKENS = 1500
-SIMILARITY_THRESHOLD = 0.35
-VECTOR_KNAPSACK_SIMILARITY_THRESHOLD = 0.65
+# BACKLOG-074 FIX: Increased similarity threshold from 0.35 to 0.50 to prevent context bleed
+# (SEC-003-GEMINI: "Simple factual prompt" was returning unrelated Tesla content)
+SIMILARITY_THRESHOLD = 0.50
+VECTOR_KNAPSACK_SIMILARITY_THRESHOLD = 0.70
 # Health-Injector: gleiche Schwelle wie Knapsack-Dubletten (memory_budget)
 _HEALTH_JACCARD_DEDUP_THRESHOLD = 0.70
+
+
+def _is_generic_memory_suppressed_query(query: str) -> bool:
+    """Return True for synthetic or underspecified prompts that must not receive memory context."""
+    normalized = " ".join(str(query or "").strip().lower().split())
+    if not normalized:
+        return True
+    exact_suppressed = {
+        "simple factual prompt",
+        "factual prompt",
+        "erklaer kurz",
+        "erklär kurz",
+        "erkläre kurz",
+    }
+    return normalized in exact_suppressed
 
 
 def _dedupe_health_memories_jaccard(memories: List[Any]) -> List[Any]:
@@ -306,6 +323,13 @@ def retrieve_diamond_slots(
     slots: List[MemorySlot] = []
     seen_ids: set = set()  # Deduplizierung
     now = datetime.datetime.now()
+
+    if _is_generic_memory_suppressed_query(query):
+        logger.info(
+            "[MEMORY SUPPRESS] Generic/underspecified query skips memory injection: %r",
+            str(query or "")[:80],
+        )
+        return slots
 
     # ═══════════════════════════════════════════════════════════════════════════
     # ISSUE 011: Query-Embedding EINMAL berechnen (wiederverwendbar)

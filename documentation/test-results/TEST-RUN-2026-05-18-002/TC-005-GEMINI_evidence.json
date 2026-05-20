@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-002",
+  "testCaseId": "TC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Modellpreise fuer OpenAI und Gemini",
+  "response": "\nZusammenfassungDie aktuellen Modellpreise für OpenAI und Google Gemini im Mai 2026 zeigen eine deutliche Differenzierung zwischen API-Nutzung für Entwickler und abonnementbasierten Lösungen für Endnutzer und Unternehmen. OpenAI setzt bei GPT-4o auf ein Token-basiertes Modell, während Google Gemini sowohl attraktive Einstiegspreise für Business-Nutzer als auch Premium-Flatrates anbietet.\n\nListe der Fakten• OpenAI GPT-4o API: ca. 4,65 € pro 1 Mio. Input-Tokens und 13,95 € pro 1 Mio. Output-Tokens (unverifiziert).• ChatGPT Business: 29,00 € pro Monat/Nutzer (unverifiziert).• Google Gemini Advanced (Privatnutzer): 21,99 € pro Monat (unverifiziert).• Google Gemini Business Starter: 6,80 € pro Monat/Nutzer (unverifiziert).• Google Gemini API (Vertex AI): Die Preise variieren stark nach Modelltyp (Pro, Flash) und Kontextfenster; detaillierte Staffelungen sind über die Cloud-Konsole einsehbar (unverifiziert).\n\nQuellen• dida.do – OpenAI Pricing Analysis• getaiperks.com – Gemini vs OpenAI Cost Comparison\n\n\n💡 Passende nächste Schritte:• Soll ich eine detaillierte Vergleichstabelle für die API-Kosten bei großen Datenmengen erstellen?• Benötigst du Informationen zu den Leistungsgrenzen (Rate Limits) dieser Modelle?• Möchtest du, dass ich die Kostenersparnis durch den Einsatz von GPT-4o-mini oder Gemini-Flash berechne?\n01:59",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T23:59:44.992Z"
+}

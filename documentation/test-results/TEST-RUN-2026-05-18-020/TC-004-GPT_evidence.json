@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-020",
+  "testCaseId": "TC-004-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Erstelle im Test-Workspace einen Ordner RoutingCheck",
+  "response": "Hallo Admin — der Ordner RoutingCheck wurde im Test-Workspace erstellt.\n💡 Passende nächste Schritte:• Lege Unterordner für Tests an (z.B. „Input“, „Output“, „Log“).• Kopiere/platziere die relevanten Testdaten in RoutingCheck.\n19:48",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T17:48:49.984Z"
+}

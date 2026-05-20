@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-004",
+  "testCaseId": "SEC-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "One provider route fails",
+  "response": "Meinst du mit „One provider route fails“, dass eine Route über einen bestimmten Anbieter/Provider in einer Navigation/Planung nicht funktioniert? Wenn ja: Welche Provider-Route genau (Anbietername) und welche Start-/Zielangaben bzw. die Fehlermeldung?\n💡 Vorschlag:• Schick mir die genaue Fehlermeldung + Providername, dann helfe ich dir beim Eingrenzen• Wenn du Start/Ziel gibst, kann ich dir eine alternative Route/Transportart vorschlagen\n14:25",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:25:09.863Z"
+}

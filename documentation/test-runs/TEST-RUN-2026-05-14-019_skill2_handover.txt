@@ -1,0 +1,26 @@
+```text
+@[/TEST SKILL 2 – TEST RUN PRECHECK]
+
+Mode: TEST_RUN_PRECHECK
+Execution Model: SWE 1.6
+TestSpec: documentation/TEST_SPEC/01_capability_overview_and_help.md
+TestPlan: documentation/test-runs/TEST-RUN-2026-05-14-019_plan.json
+Target TestRun: TEST-RUN-2026-05-14-019
+
+Context:
+- Capability: Janus Capability Overview
+- TEST SKILL 1 Ergebnis: TEST PLAN CREATED
+- Strict Validator: TESTPLAN VALID
+- Generator Plan Tests: 22
+
+Arbeitsregel:
+- Nutze die genannte TestSpec-Datei und TestPlan-Datei als verbindliche Artefakte.
+- Ignoriere widerspruechliche oder zusaetzliche Chat-Kontexte.
+- Erzeuge keine Implementation.
+- Pruefe Runtime Safety, Provider-/Model-Matrix-Vollstaendigkeit und Testdatenverfuegbarkeit.
+- Gib exakt READY FOR LIVE TEST oder TEST RUN BLOCKED aus.
+
+Naechster erwarteter Output:
+- READY FOR LIVE TEST oder TEST RUN BLOCKED
+- Copy-Handover zu TEST SKILL 3 – LIVE JANUS TEST EXECUTION
+```

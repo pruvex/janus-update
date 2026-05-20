@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-003",
+  "testCaseId": "TC-002-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Wer ist Nikola Tesla?",
+  "response": "Nikola Tesla (10. Juli 1856 bis 7. Januar 1943) war ein serbisch-amerikanischer Technik-Forscher und Erfinder. Sein Lebenswerk prägte viele Neuerungen in der Elektrotechnik, insbesondere der elektrischen Energietechnik – darunter die Entwicklung des Zweiphasenwechselstrom-Systems zur elektrischen Energieübertragung.  \n💡 Passende nächste Schritte:• Willst du eine kurze Biografie (Stationen seines Lebens) oder eher seine wichtigsten Erfindungen?• Soll ich dir seine bekanntesten Leistungen verständlich in 3–5 Punkten erklären?\n02:25",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T00:25:09.677Z"
+}

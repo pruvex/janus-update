@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-002",
+  "testCaseId": "INT-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Erstell mir einen Ordner",
+  "response": "Sehr gerne. Wie soll der neue Ordner heißen und an welchem Ort (z. B. auf deinem Desktop) soll ich ihn erstellen?\nIch kann ihn für dich direkt unter C:\\Users\\pruve\\Desktop oder an einem anderen Pfad deiner Wahl anlegen.\n💡 Passende nächste Schritte:• Name und Zielpfad für den Ordner nennen• Den Ordner auf dem Desktop erstellen lassen• Dateien suchen, die in den neuen Ordner verschoben werden sollen\n16:46",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T14:46:42.186Z"
+}

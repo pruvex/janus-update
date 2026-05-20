@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-004",
+  "testCaseId": "TC-006-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Verschiebe den Termin morgen",
+  "response": "Ich habe deinen Kalender für morgen, Sonntag, den 17. Mai 2026, geprüft, konnte jedoch keinen Eintrag finden. Auch für den heutigen Samstag sind keine Termine eingetragen.\nIn unserer Erinnerung (vom 15. Mai 2026 aus dem Chat „Termin um 30 Minuten“) hattest du erwähnt, dass du einen Termin um 30 Minuten verschieben möchtest. Da der Kalender aktuell jedoch leer ist, bräuchte ich den Namen oder die Uhrzeit des Termins, um ihn für dich anzulegen oder anzupassen.\nSoll ich einen neuen Termin für morgen eintragen oder suchst du nach einem bestimmten Eintrag?\n💡 Passende nächste Schritte:\n\nEinen neuen Termin für morgen um eine bestimmte Uhrzeit anlegen.\nNach Terminen an einem anderen Tag suchen.\nDetails zu Nikola Tesla abrufen (basierend auf deinen gespeicherten Notizen).\n\n18:19",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T16:19:38.687Z"
+}

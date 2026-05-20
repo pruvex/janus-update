@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-006",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Welche Tools hast du?",
+  "response": "\nKalender & Termine: Termine verwalten, Zeitpläne prüfen und freie Zeitfenster finden.\nDateien & Dokumente: Dateisystem-Operationen (Lesen, Schreiben, Verschieben, Löschen), PDF-Analyse und Dokumentenerstellung.\nWissen & Recherche: Zugriff auf Wissensdatenbanken, Websuche, Website-Scraping und Wikipedia-Recherche.\nKommunikation: E-Mail-Verwaltung (Senden, Lesen) und Kontaktmanagement.\nSystem & Multimedia: Bild- und Audio-Generierung, Videoanalyse, Wetterdaten, Routenplanung und Preisvergleiche.\n\n16:02",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T14:03:02.360Z"
+}

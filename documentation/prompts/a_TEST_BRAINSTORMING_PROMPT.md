@@ -138,6 +138,12 @@ Cost & Token Targets:
 Logs & Telemetry:
 - <Zusammenfassung>
 
+Machine-Readable Test Evidence:
+- Required output artifacts: documentation/test-results/<test_run_id>_results.md and documentation/test-results/<test_run_id>_results.json
+- TestResultJson required: YES
+- Schema target: tests/e2e/generator/test-result.schema.json
+- Dashboard consumption: YES
+
 Natural Language Intents:
 - <Beispiel-Intents>
 
@@ -155,6 +161,8 @@ Binding Decisions:
 ```
 
 Dieser Block ist die EINZIGE verbindliche Input-Quelle fuer den TestSpec-Generator.
+
+Der Summary muss ausreichend konkret sein, damit die spaetere TestSpec ohne Nacharbeit TestResultJson, Playwright-Runden, Retest-Regeln und Dashboard-Auswertung definieren kann.
 
 Direkt nach dem Block MUSST du exakt diesen Satz ausgeben:
 

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-006",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was gibt es Neues bei Heise?",
+  "response": "Hier sind die aktuellen Top-Schlagzeilen von Heise:\n\nheise+ | Lichtschwertkampf LudoSport ausprobiert: Trainieren wie ein Padawan\ndata2day 2026: Heise-Angebot mit Schwerpunkten auf Datenprodukte, Agentic AI und Governance\nKraftstoffpreise: Diesel ist seit April um 45 Cent billiger geworden\niX-Workshop: Netzwerkarchitekturen in Proxmox aufbauen, verwalten und schützen\nSoftware-Alternativen: Video zu vier Office-Paketen als Ersatz für Microsoft Office\nVerkehrstechnik: Monorails, Magnet- und Seilbahnen – Gadgetbahnen oder sinnvolle Systeme?\nKaufberatung: Die Top 10 der besten kleinen Smartphones bis 6,3 Zoll\nKI im Finanzwesen: Finanzielle Ratschläge von ChatGPT durch Verknüpfung mit dem Bankkonto\nRessourcen-Unabhängigkeit: Wie Europa Chinas Griff nach Seltenen Erden brechen kann\nWissenschaft & KI: KI-Papers bei arXiv – Sperre bereits beim ersten Verstoß\n\n💡 Passende nächste Schritte:• Soll ich zu einem der Themen (z. B. den Office-Alternativen oder den Smartphones) mehr Details recherchieren?• Möchtest du wissen, ob es auch bei anderen Portalen wie Spiegel oder Golem ähnliche News gibt?• Suchst du nach einem konkreten Produkt-Preisvergleich für eines der kleinen Smartphones?\n14:45",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:45:37.897Z"
+}

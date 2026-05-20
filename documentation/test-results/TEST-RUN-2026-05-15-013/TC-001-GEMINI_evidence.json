@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-013",
+  "testCaseId": "TC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Erstell mir einen Ordner fuer Projekt Alpha",
+  "response": "Ich habe den Ordner Projekt Alpha unter C:\\Users\\pruve\\Documents\\Projekt Alpha für dich angelegt.\n💡 Passende nächste Schritte:• Möchtest du bestimmte Dateien in den neuen Projektordner verschieben?• Soll ich eine Dokumentation oder Notizen zum Projekt Alpha in diesem Verzeichnis erstellen?• Planen wir ein erstes Meeting oder einen Meilenstein für das Projekt in deinem Kalender ein?\n22:11",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T20:11:49.295Z"
+}

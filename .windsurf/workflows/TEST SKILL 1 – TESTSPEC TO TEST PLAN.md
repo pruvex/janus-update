@@ -110,6 +110,62 @@ Action:
 
 ---
 
+### 0. DETERMINISTIC COMPILER FIRST (HARD REQUIREMENT)
+
+Skill 1 MUSS fuer normale TestSpec-Artefakte zuerst den deterministischen Compiler verwenden:
+
+```text
+node tests/e2e/generator/compile-testspec-to-testplan.mjs --spec <exact user-provided TestSpec path>
+```
+
+Wenn der Compiler `TEST PLAN CREATED` ausgibt, MUSS Skill 1 dessen Output als verbindliches Ergebnis
+verwenden. Der Compiler erzeugt:
+
+- einen freien `TEST-RUN-YYYY-MM-DD-NNN`
+- den Generator-kompatiblen TestPlan
+- den Strict-Validator-Nachweis `TESTPLAN VALID`
+- den generierten Runner
+- eine Handover-Datei `documentation/test-runs/<test_run_id>_skill2_handover.txt`
+- den exakt gueltigen Copy-Handover fuer TEST SKILL 2
+
+Skill 1 DARF danach keinen alternativen TestPlan und keinen frei formulierten Handover erzeugen.
+Skill 1 MUSS den Compiler-stdout unveraendert ausgeben. Insbesondere darf Skill 1 keine eigene
+Sektion `COPY HANDOVER FOR TEST SKILL 2` erstellen und den Handover nicht in ein loses Wort
+`text` oder einen kaputten Markdown-Codeblock umwandeln.
+Wenn der Compiler die Marker-Zeile `COPY HANDOVER FOR TEST SKILL 2 (copy the gray box exactly)`
+ausgibt, MUSS Skill 1 den direkt folgenden grauen Codeblock exakt uebernehmen.
+Der Codeblock MUSS ohne Sprachlabel erzeugt werden: oeffnende Zeile exakt drei Backticks,
+NICHT ```` ```text ````. Der Codeblock MUSS innen genau eine Handover-Zeile enthalten. Diese Zeile MUSS mit
+`@[/TEST SKILL 2 – TEST RUN PRECHECK]` beginnen und alle Felder semikolon-getrennt enthalten.
+Die Handover-Zeile darf nicht umbrochen, eingerueckt, in Listenpunkte verwandelt, dupliziert,
+mit vorherigem Output zusammengeklebt oder umbenannt werden.
+Zusaetzliche harte Regel: Wenn der Compiler `Skill2 Handover Path:` ausgibt, MUSS Skill 1 diese
+Datei lesen und ihren Inhalt byte-for-byte als letzten Chat-Block ausgeben. Die Handover-Datei ist
+fuehrend gegen jede vom Modell rekonstruierte Handover-Fassung.
+
+Ein Skill-1-Output ist UNGUELTIG, wenn nach `TESTPLAN VALID` irgendein Handover ohne diese exakten
+Elemente erscheint:
+
+- grauer Codeblock beginnt mit eigener Zeile ` ``` `
+- die oeffnende Codeblock-Zeile darf kein Sprachlabel wie `text` enthalten
+- direkt danach beginnt die einzige Handover-Zeile mit `@[/TEST SKILL 2 – TEST RUN PRECHECK] Mode=TEST_RUN_PRECHECK;`
+- `ExecutionModel=SWE_1_6`
+- `TestSpec=documentation/TEST_SPEC/...`
+- `TestPlan=documentation/test-runs/..._plan.json`
+- `TargetTestRun=TEST-RUN-...`
+- `StrictValidator=TESTPLAN_VALID`
+- `GeneratorPlanTests=<tests.length>`
+- grauer Codeblock endet mit eigener Zeile ` ``` `
+- der Handover kommt genau einmal vor
+
+In diesem Fall MUSS Skill 1 seine Antwort neu generieren und darf nicht behaupten, der Handover sei fertig.
+
+Wenn der Compiler `TEST PLAN BLOCKED` oder einen non-zero Exit liefert, MUSS Skill 1 blocken und
+den Compiler-Fehler ausgeben. Freie manuelle JSON-Erzeugung ist nur erlaubt, wenn der Compiler
+technisch fehlt oder nicht gestartet werden kann; dann gelten alle nachfolgenden Gates unveraendert.
+
+---
+
 ### 1. TESTSPEC PARSING
 
 Vor der fachlichen Auswertung MUSS Skill 1 ein deterministisches TestSpec Preflight Normalization Gate ausfuehren.
@@ -275,6 +331,15 @@ Skill 1 erzeugt den TestPlan ausschliesslich als **maschinenlesbare JSON-Datei**
 documentation/test-runs/<test_run_id>_plan.json
 ```
 
+**TestRun ID Allocation Rule (Pflicht):**
+
+- Skill 1 MUSS vor dem Schreiben pruefen, ob `documentation/test-runs/<test_run_id>_plan.json` bereits existiert.
+- Existiert die Datei bereits, darf sie NICHT ueberschrieben werden.
+- Skill 1 MUSS die dreistellige Sequenz hochzaehlen und den ersten freien Pfad verwenden.
+- Beispiel: Wenn `001` bis `009` existieren, ist der naechste Pfad `documentation/test-runs/TEST-RUN-YYYY-MM-DD-010_plan.json`.
+- Der Handover MUSS exakt den tatsaechlich geschriebenen und validierten Pfad verwenden.
+- Wenn der geschriebene Pfad und `Target TestRun` nicht zusammenpassen, ist der Handover ungueltig und MUSS neu erzeugt werden.
+
 Die Datei MUSS dem JSON-Schema des Generator Service entsprechen. Single Source of Truth ist:
 
 ```text
@@ -291,7 +356,161 @@ tests/e2e/generator/test-plan.schema.json
 - Provider-/Modellnamen MUeSSEN dem aktuellen Janus-Katalog folgen (siehe Section 1 Model-Katalog).
 - Nach dem Schreiben MUSS Skill 1 deterministisch validieren:
   - JSON-Syntaxpruefung: `node -e "JSON.parse(require('fs').readFileSync('documentation/test-runs/<test_run_id>_plan.json', 'utf8'))"`
-  - Bei Syntaxfehler MUSS Skill 1 den Plan neu erzeugen, bevor `TEST PLAN CREATED` ausgegeben wird.
+  - Strikter TestPlan-Validator: `node tests/e2e/generator/validate-test-plan.mjs --plan documentation/test-runs/<test_run_id>_plan.json`
+  - Generator-Schema-/Runner-Pruefung: `node tests/e2e/generator/generate-live-runner.mjs --plan documentation/test-runs/<test_run_id>_plan.json --out documentation/test-runs/<test_run_id>_generated.spec.js`
+  - Bei Syntaxfehler oder `TESTPLAN INVALID` MUSS Skill 1 den Plan neu erzeugen oder `TEST PLAN BLOCKED` ausgeben. `TEST PLAN CREATED` ist dann verboten.
+  - Die Antwort MUSS die Validator-Evidence als Wortlaut enthalten: `TESTPLAN VALID`. Wenn dieser Wortlaut nicht aus dem Validator kommt, darf kein `TEST PLAN CREATED` ausgegeben werden.
+
+**CREATED OUTPUT TRUTH GATE (Pflicht):**
+
+`TEST PLAN CREATED` darf nur ausgegeben werden, wenn Skill 1 unmittelbar davor den strikten
+Validator ausgefuehrt und dessen Ausgabe `TESTPLAN VALID` erhalten hat. Behauptungen wie
+`JSON created successfully`, `Shape Gate: PASSED`, `Generator Check: PASSED` oder frei formulierte
+Summaries reichen nicht aus.
+
+Wenn der gespeicherte Plan irgendein `TESTPLAN INVALID` erzeugt, MUSS die Antwort beginnen mit:
+
+```text
+TEST PLAN BLOCKED
+
+Issue:
+- Strict validator failed for documentation/test-runs/<test_run_id>_plan.json.
+
+Validator Output:
+- <exakte Fehlermeldungen>
+
+Action:
+→ TestPlan neu erzeugen; keinen Handover zu TEST SKILL 2 ausgeben.
+```
+
+In diesem Fall sind verboten:
+
+- `TEST PLAN CREATED`
+- `BEGIN COPY`
+- Handover zu TEST SKILL 2
+- frei erfundene Test-Counts
+
+**TESTPLAN SHAPE HARD GATE (Pflicht, verhindert Meta-JSON):**
+
+Skill 1 DARF einen TestPlan nur als erstellt melden, wenn die JSON-Datei mindestens diese Top-Level-Felder enthaelt:
+
+- `testRunId`
+- `title`
+- `executionMode`
+- `target`
+- `chatWindow`
+- `baseUrl`
+- `backendHealthUrl`
+- `timeouts`
+- `strategies`
+- `tests`
+
+Verboten als ersetzende Top-Level-Struktur sind reine Analyse-/Meta-Felder wie:
+
+- `test_run_id`
+- `test_spec_path`
+- `test_spec_name`
+- `testspec_path`
+- `testspec_name`
+- `testSpecPath`
+- `testSpecName`
+- `capability_name`
+- `test_objective`
+- `complexity_score`
+- `security_hint`
+- `security_risk`
+- `created_at`
+- `created_by`
+- `execution_model`
+- `$schema`
+- `ports`
+- `janus_config`
+- `outOfScope`
+- `config`
+- `providers`
+- `testCases`
+- `schemaVersion`
+- `providerMatrix`
+- `providerModelMatrix`
+- `functionalTestCases`
+- `functional_test_cases`
+- `securityTestCases`
+- `security_test_cases`
+- `securityScope`
+- `promptInjectionTestCases`
+- `prompt_injection_test_cases`
+- `naturalLanguageIntentCases`
+- `intent_test_cases`
+- `liveJanusTestCases`
+- `live_test_cases`
+- `acceptanceCriteria`
+- `acceptance_criteria`
+- `blockingConditions`
+- `blocking_conditions`
+- `retestRules`
+- `retest_rules`
+- `result_schema_path`
+- `required_result_markdown`
+- `required_result_json`
+- `dashboardConsumption`
+- `metadata`
+- `resultMarkdownPath`
+- `resultJsonPath`
+- `testData`
+- `test_data_and_sandbox`
+- `testDataAndSandbox`
+- `loggingAndTelemetry`
+- `logging_and_telemetry`
+- `loggingAndTelemetryPrivacy`
+- `costAndTokenOptimization`
+- `machine_readable_result_contract`
+- `machineReadableTestResultContract`
+- `cost_and_token_optimization`
+- `skill_tool_routing_checks`
+- `skillToolRoutingChecks`
+- `live_janus_test_cases`
+- `capability_explanation_target`
+- `capabilityExplanationTarget`
+- `userExperienceContract`
+- `internal_complexity_breakdown`
+- `internalTestComplexityBreakdown`
+- `testSpecReviewExecutionRouting`
+- `complexity`
+
+Diese Informationen duerfen nur aus der TestSpec abgeleitet und in `tests[]` sowie in den erlaubten Generator-Feldern verdichtet werden. Wenn ein Plan diese Meta-Felder statt `tests[]` verwendet, ist er **kein** TestPlan fuer TEST SKILL 2/3, sondern ein Zwischenartefakt. Ausgabe dann:
+
+```text
+TEST PLAN BLOCKED
+
+Issue:
+- TestPlan has meta-plan shape and is not generator-compatible.
+
+Action:
+→ TEST SKILL 1 erneut ausfuehren und ausschliesslich das Generator-Schema `tests/e2e/generator/test-plan.schema.json` verwenden.
+```
+
+**CAMELCASE SCHEMA HARD GATE (Pflicht):**
+
+Das Generator-Schema verwendet verbindliche camelCase-Felder. Skill 1 MUSS exakt diese Namen verwenden:
+
+- `testRunId`, NICHT `test_run_id`
+- `backendHealthUrl`, NICHT `backend_health_url`
+- `executionMode`, NICHT `execution_mode`
+- `chatWindow`, NICHT `chat_window`
+- `tests[].id`, NICHT `test_case_id`
+- `tests[].prompt`, NICHT `user_prompt`
+
+Wenn der erzeugte Plan snake_case-Meta-Felder statt Generator-Felder enthaelt, MUSS Skill 1 vor Ausgabe neu erzeugen. Falls das nicht gelingt:
+
+```text
+TEST PLAN BLOCKED
+
+Issue:
+- TestPlan uses snake_case/meta-plan fields instead of generator schema fields.
+
+Action:
+→ Plan strikt nach `tests/e2e/generator/test-plan.schema.json` neu erzeugen.
+```
 
 **PROVIDER PARITY RULE (Pflicht, automatische Provider-Paritaet)**:
 
@@ -302,6 +521,10 @@ tests/e2e/generator/test-plan.schema.json
 - **Validierung nach Erzeugung**: Ist die Matrix z. B. **GPT + Gemini** als Required gesetzt, MUSS die Anzahl der `tests[]`-Eintraege fuer funktionale TCs etwa **Faktor 2** gegenueber einem Ein-Provider-Plan sein (typisch **ca. 20–26** Eintraege bei **~10–13** Kern-TCs und zwei Cloud-Providern); weicht das massiv ab, Plan neu erzeugen oder Matrix in der TestSpec klaeren.
 
 **Verbindliches JSON-Schema (Pflicht-Form)**:
+
+Die erzeugte Datei MUSS diese Form als **direkte Top-Level-Struktur** haben. Felder wie `baseUrl`,
+`backendHealthUrl`, `tests`, `strategies` und `timeouts` duerfen NICHT in Unterobjekte wie
+`janus_ports`, `result_paths`, `provider_model_matrix` oder `testspec_metadata` verschoben werden.
 
 ```json
 {
@@ -351,6 +574,64 @@ tests/e2e/generator/test-plan.schema.json
   ]
 }
 ```
+
+**MINIMALER GUELTIGER PLAN FUER DIESE PLAN-KLASSE (Referenzstruktur):**
+
+Skill 1 MUSS die TestSpec-Inhalte in genau diese Generator-Planstruktur ueberfuehren. Dies ist keine
+Zusammenfassung, sondern die Form der tatsaechlich zu speichernden Datei:
+
+```json
+{
+  "testRunId": "TEST-RUN-2026-05-14-NNN",
+  "title": "Janus Capability Overview",
+  "executionMode": "LIVE_VISUAL",
+  "target": "JANUS_CHAT",
+  "chatWindow": "A",
+  "baseUrl": "http://localhost:5173/",
+  "backendHealthUrl": "http://localhost:8001/api/health",
+  "timeouts": {
+    "testCaseMs": 120000,
+    "assistantResponseMs": 60000,
+    "streamRequestMs": 15000
+  },
+  "strategies": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_text_present_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1"
+  },
+  "tests": [
+    {
+      "id": "TC-001-GPT",
+      "name": "General capability question",
+      "type": "functional",
+      "provider": "GPT",
+      "model": "gpt-5.4-nano",
+      "prompt": "Was kannst du?",
+      "expected": {
+        "containsAny": ["Faehigkeiten", "Dateien", "Hilfe"],
+        "mustNotContain": ["Bankueberweisung", "alles"]
+      }
+    }
+  ]
+}
+```
+
+Wenn Skill 1 eine Datei erzeugt, deren Top-Level-Felder eher so aussehen, ist das ein harter Fehler:
+
+```json
+{
+  "test_run_id": "...",
+  "input_testspec_path": "...",
+  "janus_ports": { "baseUrl": "..." },
+  "provider_model_matrix": [],
+  "functional_test_cases": [],
+  "security_test_cases": []
+}
+```
+
+In diesem Fall MUSS Skill 1 vor der Ausgabe stoppen und `TEST PLAN BLOCKED` melden. Es darf keine
+positive Zusammenfassung wie `TestPlan JSON created successfully` ausgegeben werden.
 
 **Feld-Constraints (aus Schema abgeleitet)**:
 
@@ -423,13 +704,39 @@ TestPlan:
 - Path: documentation/test-runs/<test_run_id>_plan.json
 - Format: JSON (machine-readable, schema-validated)
 - Schema Source: tests/e2e/generator/test-plan.schema.json
+- Shape Gate: PASSED | FAILED
 - JSON Syntax Check: PASSED | FAILED
+- Strict Validator Check: PASSED | FAILED
+- Generator Check: PASSED | FAILED
 - Test Cases: <Anzahl> (bei Required GPT+Gemini in der Matrix: funktionale TCs doppelt, IDs `TC-XXX-GPT` / `TC-XXX-GEMINI`; Gesamtzahl typisch ca. 20–26 bei ~10–13 Kern-TCs)
 - Provider/Model Tests: <Anzahl>
 - Security Tests: <Anzahl>
 - Prompt Injection Tests: <Anzahl>
 - UX Tests: <Anzahl>
 - Intent/Routing Tests: <Anzahl>
+
+**Summary Count Hard Gate (Pflicht):**
+
+Alle Zahlen in der user-facing Summary MUeSSEN aus der gespeicherten JSON-Datei `tests[]`
+berechnet werden, nicht aus TestSpec-Abschnitten oder gedanklicher Addition.
+
+Pflichtberechnung:
+
+- `Test Cases` = `tests.length`
+- `Functional Tests` = Anzahl `tests[].type === "functional"`
+- `Intent/Routing Tests` = Anzahl `tests[].type === "intent_routing"`
+- `Security Tests` = Anzahl `tests[].type === "security"`
+- `Prompt Injection Tests` = Anzahl `tests[].type === "prompt_injection"`
+- `UX Tests` = Anzahl `tests[].type === "ux"`
+- `Manual Gate Tests` = Anzahl `tests[].type === "manual_gate"`
+
+Wichtig: Das Generator-Schema kennt keinen `live`-Typ. Live-Janus-Faelle aus der TestSpec
+MUeSSEN entweder als `functional` oder `manual_gate` codiert werden. Die Summary DARF
+`Live Tests: <n>` nur nennen, wenn sie zusaetzlich klar sagt, in welchem `tests[].type`
+diese Faelle codiert wurden, z. B. `Live Spec Cases: 2 (encoded as functional: LTC-001, LTC-002)`.
+
+Wenn die Summe der ausgegebenen Kategorien nicht exakt `tests.length` ergibt, darf
+`TEST PLAN CREATED` nicht ausgegeben werden.
 
 Akzeptanzkriterien:
 - <Kriterium 1>
@@ -446,29 +753,35 @@ Naechster Schritt:
 
 ## 📋 COPY-PASTE HANDOVER FUER TEST SKILL 2 (PFLICHT)
 
-Am Ende bei TEST PLAN CREATED MUSS ein einzelner grauer Copy-Block ausgegeben werden.
+Am Ende bei TEST PLAN CREATED MUSS ein einzelner direkt kopierbarer Plain-Text-Handover ausgegeben werden.
 
-Der Copy-Block MUSS ein echter fenced `text` Codeblock sein.
+Der Copy-Block MUSS deterministisch durch dieses Script erzeugt werden:
 
-Der Copy-Block MUSS exakt mit einer Zeile beginnen, die nur aus drei Backticks und `text` besteht:
-
-````markdown
 ```text
-````
-
-Der Copy-Block MUSS exakt mit einer Zeile enden, die nur aus drei Backticks besteht:
-
-````markdown
+node tests/e2e/generator/create-test-skill2-handover.mjs --plan documentation/test-runs/<test_run_id>_plan.json --spec <exact user-provided TestSpec path>
 ```
-````
+
+Skill 1 MUSS den stdout dieses Scripts unveraendert als letzten Block der Antwort einfuegen.
+Skill 1 DARF den Handover NICHT frei nachformulieren.
+
+Wenn das Script `HANDOVER INVALID` ausgibt oder non-zero beendet, MUSS Skill 1 `TEST PLAN BLOCKED`
+ausgeben und darf keinen Handover zu TEST SKILL 2 erzeugen.
+
+Der Copy-Block DARF KEIN fenced Markdown-Codeblock sein, weil die UI die oeffnende Fence
+in frueheren Laeufen als loses Wort `text` in den Handover kopiert hat.
+Der Copy-Block MUSS direkt mit `@[/TEST SKILL 2 – TEST RUN PRECHECK]` beginnen.
 
 Verboten im Copy-Block:
 - absolute Windows-Pfade wie `C:\...`
 - abweichende TestSpec-Pfade wie `documentation/test-specs/...`
 - abgeleitete oder geratene TestSpec-Pfade
-- fehlende Backticks vor oder nach dem Block
 - loses Wort `text` ohne Backticks
+- eine einzelne Zeile `text` vor `@[/TEST SKILL 2 – TEST RUN PRECHECK]`
+- eine einzelne Zeile `copy` vor `@[/TEST SKILL 2 – TEST RUN PRECHECK]`
+- Markdown-Fences wie ```` ```text ```` oder ```` ``` ````
 - alternative Feldnamen wie `TestSpec Path:` oder `TestPlan Path:`
+- alternative Feldnamen wie `Input TestSpec Path:` oder `Generated TestPlan Path:`
+- Wrapper-Zeilen wie `BEGIN COPY FOR TEST SKILL 2` oder `END COPY`
 
 Der `TestSpec:` Wert MUSS exakt dem `Input TestSpec Path` entsprechen, den der User in Skill 1 angegeben hat.
 
@@ -479,6 +792,8 @@ Der Handover MUSS die folgenden Feldnamen exakt verwenden:
 - `TestSpec: <exact user-provided TestSpec path>`
 - `TestPlan: documentation/test-runs/<test_run_id>_plan.json`
 - `Target TestRun: <TEST-RUN-ID>`
+- `Strict Validator: TESTPLAN VALID`
+- `Generator Plan Tests: <tests.length>`
 
 Der `TestPlan:` Wert MUSS auf `.json` enden. Ein `.md`-Suffix ist im Copy-Block verboten und MUSS vor Ausgabe automatisch korrigiert oder die Antwort neu generiert werden.
 
@@ -486,15 +801,46 @@ Der Skill DARF NICHT stattdessen ausgeben:
 
 - `TestSpec Path:`
 - `TestPlan Path:`
+- `Input TestSpec Path:`
+- `Generated TestPlan Path:`
+- `Generated Runner:`
+- `Test Run ID:`
 - `TestRun-ID:`
+- `TestRun ID:`
 - `Mode: PRECHECK`
+- `Mode: PRECHECK_ONLY`
+- `PRECHECK PASS`
+- `PRECHECK BLOCKED`
+- loses Wort `text` vor dem Copy-Block
+- loses Wort `copy` vor dem Copy-Block
+- `BEGIN COPY FOR TEST SKILL 2`
+- `BEGIN COPY FOR @[/TEST SKILL 2 – TEST RUN PRECHECK]`
+- `END COPY FOR TEST SKILL 2`
+- `END COPY`
 
 Finaler Self-Check vor Antwort:
+
+OVERRIDE: Die alten fenced-Codeblock-Regeln in diesem Abschnitt sind aufgehoben. Der finale
+Handover MUSS als Plain Text direkt mit `@[/TEST SKILL 2 – TEST RUN PRECHECK]` beginnen.
+Markdown-Fences und eine einzelne Zeile `text` sind im finalen Handover verboten.
 
 - Der letzte Handover-Block beginnt exakt mit einer eigenen Zeile, die nur ` ```text ` ohne Leerzeichen davor enthaelt.
 - Direkt danach folgt `@[/TEST SKILL 2 – TEST RUN PRECHECK]`.
 - Der letzte Handover-Block endet exakt mit einer eigenen Zeile, die nur ` ``` ` ohne Leerzeichen davor enthaelt.
 - Es gibt kein loses Wort `text` vor dem Handover.
+- Es gibt kein loses Wort `copy` vor dem Handover.
+- Falls die Antwort nur `text` oder `copy` als Marker vor `@[/TEST SKILL 2 ...]` enthaelt, ist der Copy-Block kaputt und die Antwort MUSS neu generiert werden.
+- Der Handover enthaelt exakt `Mode: TEST_RUN_PRECHECK`, nicht `Mode: PRECHECK`.
+- Der Handover enthaelt exakt `TestSpec:` und `TestPlan:`, nicht `Input TestSpec Path:` oder `Input TestPlan Path:`.
+- Die normale Zusammenfassung enthaelt `Shape Gate: PASSED`, `Strict Validator Check: PASSED` und `Generator Check: PASSED`; andernfalls darf kein Handover ausgegeben werden.
+- Die normale Zusammenfassung enthaelt die Validator-Evidence `TESTPLAN VALID` oder nennt den Validator-Output direkt; andernfalls darf kein Handover ausgegeben werden.
+- Die normale Zusammenfassung darf bei Required GPT+Gemini nicht `Functional Test Cases: 4` melden, sondern muss die duplizierten funktionalen `tests[]` zaehlen, also hier `8`.
+- Die normale Zusammenfassung darf keine Gesamtzahl nennen, die von `tests.length` abweicht.
+- Der Handover MUSS exakt aus `tests/e2e/generator/create-test-skill2-handover.mjs` stammen.
+- Der Handover MUSS `Strict Validator: TESTPLAN VALID` enthalten.
+- Der Handover MUSS `Generator Plan Tests: <tests.length>` enthalten.
+- Der Handover MUSS `Target TestRun:` enthalten, nicht `TestRun ID:`.
+- Der Handover darf kein Feld `Generated Runner:` enthalten; Runner-Pfad bleibt in der Summary, nicht im Skill-2-Vertrag.
 - Wenn einer dieser Punkte fehlschlaegt, MUSS der Skill die Antwort vor Ausgabe neu generieren.
 
 ```text

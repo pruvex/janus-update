@@ -24,6 +24,37 @@
 
 ---
 
+## TestSpec Validation Registry
+
+**TestSpec-Validierungen für Diamond-Standard Test Pipeline:**
+
+| TestSpec-ID | TestSpec Name | Latest TestRun | Validation Date | Status | Pass Rate | Diamond Confidence | Production Confidence |
+|-------------|---------------|----------------|-----------------|--------|-----------|-------------------|----------------------|
+| **01** | Capability Overview and Help | TEST-RUN-2026-05-15-008 | 2026-05-15 | PASS | 100.00% | 10/10 | 100% |
+| **01.03** | Ambiguity Gate Calibration | TEST-RUN-2026-05-18-003 | 2026-05-18 | PASS | 100.00% | 10/10 | 100% |
+| **02.02** | API Response Privacy and Debug Leakage | TEST-RUN-2026-05-17-028 | 2026-05-18 | PASS | 100.00% | 10/10 | 100% |
+| **03.06** | API Tool Routing and Source Attribution | TEST-RUN-2026-05-18-002 | 2026-05-18 | PASS | 100.00% | 10/10 | 100% |
+
+**Referenzen:**
+- TestSpec: `documentation/TEST_SPEC/01_capability_overview_and_help.md`
+- TestPlan: `documentation/test-runs/TEST-RUN-2026-05-15-008_plan.json`
+- TestResult: `documentation/test-results/TEST-RUN-2026-05-15-008_results.md`
+- TestResultJson: `documentation/test-results/TEST-RUN-2026-05-15-008_results.json`
+- TestSpec 01.03: `documentation/TEST_SPEC/01_core_system/03_ambiguity_gate_calibration.md`
+- TestPlan 01.03: `documentation/test-runs/TEST-RUN-2026-05-18-003_plan.json`
+- TestResultJson 01.03: `documentation/test-results/TEST-RUN-2026-05-18-003_results.json`
+- Final Audit 01.03: `documentation/test-runs/BACKLOG-069_final_audit.md`
+- TestSpec 02.02: `documentation/TEST_SPEC/02_security_safety/02_api_response_privacy_and_debug_leakage.md`
+- TestPlan 02.02: `documentation/test-runs/TEST-RUN-2026-05-17-028_plan.json`
+- TestResultJson 02.02: `documentation/test-results/TEST-RUN-2026-05-17-028_results.json`
+- Final Audit 02.02: `documentation/test-runs/BACKLOG-068_final_audit.md`
+- TestSpec 03.06: `documentation/TEST_SPEC/03_tools_skills/06_api_tool_routing_and_source_attribution.md`
+- TestPlan 03.06: `documentation/test-runs/TEST-RUN-2026-05-18-002_plan.json`
+- TestResultJson 03.06: `documentation/test-results/TEST-RUN-2026-05-18-002_results.json`
+- Final Audit 03.06: `documentation/test-runs/BACKLOG-064_final_audit.md`
+
+---
+
 ## Resource-Status Dashboard (V2.9)
 
 **Quota-Stand vor jeder Task-Zuweisung prüfen:**

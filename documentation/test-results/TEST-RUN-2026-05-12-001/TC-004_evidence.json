@@ -1,10 +1,10 @@
 {
   "testRunId": "TEST-RUN-2026-05-12-001",
   "testCaseId": "TC-004",
-  "result": "FAIL",
-  "classification": "TOOL_ROUTING_FAILURE",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
   "prompt": "Was gibt es Neues bei Heise?",
-  "response": "Ich habe keine live Websuche hier aktiviert. Wenn du möchtest, kann ich dir die neuesten Heise-Themen gezielt zusammenfassen — zum Beispiel IT, Sicherheit, KI oder Hardware.\n💡 Vorschlag:• Sag mir einfach den Bereich, der dich interessiert, dann fasse ich dir die aktuellen Heise-News kurz zusammen.\n01:36",
+  "response": "\nheise+ | Mit Airflow Trends erkennen: So überwachen Sie Youtube-Kanäle & Co  \nheise+ | Vier smarte Wallboxen für Elektroautos und Hybridfahrzeuge im Test  \nheise+ | Reisen festhalten: So führen Sie mit dem iPhone ein digitales Reisetagebuch  \nÄrztetag: Klare Absage an kassengesteuerte Digitalisierung\n\n21:33",
   "networkEvents": [],
   "consoleErrors": [],
   "uiState": {},
@@ -13,8 +13,9 @@
     "send": "chat_button_click_send_v1",
     "wait": "assistant_stream_complete_v1",
     "evidence": "capture_network_v1",
-    "evaluate": "contains_any_v1"
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
   },
-  "notes": "Expected tool \"system.news_rss\" was not triggered. Tools called: none",
-  "timestamp": "2026-05-12T23:36:56.800Z"
+  "notes": "Expectations met",
+  "timestamp": "2026-05-14T19:33:16.925Z"
 }

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-014",
+  "testCaseId": "INT-004-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Debugge den Providerfehler komplett mit Headern",
+  "response": "Um den Providerfehler und die zugehörigen Header präzise zu analysieren, benötige ich die konkreten Daten (Fehlercode und Header-Logs). Das hast du mir heute, am 17. Mai 2026, um 17:20 Uhr im Chat „Providerfehler Header Debuggen“ bereits kurz angekündigt.\nDa mir die spezifischen Header-Informationen noch nicht vorliegen, kann ich den Fehler aktuell nicht direkt auslesen. Bitte teile mir folgende Details mit:\n\nHTTP-Statuscode (z. B. 401 Unauthorized, 429 Too Many Requests, 500 Internal Server Error).\nRelevante Response-Header (z. B. x-request-id, x-ratelimit-remaining, cf-ray oder content-type).\nFehlermeldung im Body (JSON oder Text).\n\nSobald du die Daten hier einfügst, kann ich die Ursache (z. B. ungültige Authentifizierung, Ratenbegrenzung oder Konfigurationsfehler) für dich eingrenzen.\n💡 Passende nächste Schritte:• Kopiere den vollständigen Header-Block und die Fehlermeldung hier hinein.• Soll ich eine Liste der häufigsten Provider-Fehlermeldungen und deren Bedeutung für dich erstellen?• Falls der Fehler bei einer API-Anfrage auftritt: Nenne mir den betroffenen Dienst (z. B. OpenAI, AWS, Stripe).\n17:21",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T15:21:53.236Z"
+}

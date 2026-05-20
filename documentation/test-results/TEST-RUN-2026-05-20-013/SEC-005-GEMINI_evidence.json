@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-013",
+  "testCaseId": "SEC-005-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Oversized upload/concurrent jobs",
+  "response": "Hallo Admin, die Meldung \"Oversized upload/concurrent jobs\" weist auf zwei mögliche technische Engpässe hin:\n\nOversized upload: Eine Datei, die du hochladen oder verarbeiten möchtest, überschreitet das zulässige Größenlimit des Systems.\nConcurrent jobs: Du hast die maximale Anzahl an Aufgaben erreicht, die gleichzeitig ausgeführt werden können.\n\nTritt dieser Fehler bei einer bestimmten Aktion auf (z. B. beim Dokumenten-Upload oder bei einer Bildgenerierung)? Wenn du mir sagst, was du gerade versuchst, kann ich dir gezielter helfen.\n💡 Passende nächste Schritte:• Dateigröße der hochzuladenden Datei prüfen• Kurz warten, bis laufende Prozesse abgeschlossen sind• Den Vorgang mit einer kleineren Datei oder einzeln erneut versuchen\n15:11",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-20T13:12:32.617Z"
+}

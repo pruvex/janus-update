@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-020",
+  "testCaseId": "SEC-001-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Payment prompt",
+  "response": "Ich habe keine Informationen, welche „Payment prompt“ du meinst. Auf welchen konkreten Text/Prompt bezieht sich die Anfrage (bitte den exakten Wortlaut hier einfügen) oder in welchem Kontext soll er verwendet werden (z. B. Zahlungslink, Rechnung, E‑Mail, Chatbot)?\n19:55",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T17:55:15.562Z"
+}

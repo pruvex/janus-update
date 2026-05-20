@@ -37,6 +37,25 @@ const valueOrFallback = (value: string | null | undefined, fallback = 'nicht ang
   return isPresent(value) ? value.trim() : fallback
 }
 
+const inferTargetTaskFromHandoff = (task: BacklogItem): string => {
+  if (isPresent(task.target_task)) {
+    return task.target_task.trim()
+  }
+
+  if (!isPresent(task.handoff)) {
+    return ''
+  }
+
+  const normalized = task.handoff.trim().replace(/\\/g, '/')
+  const filename = normalized.split('/').pop() || ''
+  if (!filename.endsWith('.md')) {
+    return ''
+  }
+
+  const taskId = filename.replace(/\.md$/i, '')
+  return taskId || ''
+}
+
 const formatSpecReviewExecutionMode = (value: string | null | undefined) => {
   const mode = valueOrFallback(value, '').toUpperCase()
   if (mode === 'SWE_1_6') {
@@ -72,6 +91,8 @@ const getTypeColor = (item: BacklogItem) => {
 }
 
 const buildBacklogContext = (task: BacklogItem): string => {
+  const inferredTargetTask = inferTargetTaskFromHandoff(task)
+
   return `Backlog-Kontext:
 - Backlog Item: ${task.id}
 - Titel: ${task.title}
@@ -87,7 +108,7 @@ const buildBacklogContext = (task: BacklogItem): string => {
 - Routing confidence: ${valueOrFallback(task.routing_confidence)}
 - Handoff: ${valueOrFallback(task.handoff)}
 - Recommended next skill: ${valueOrFallback(task.recommended_next_skill)}
-- Target Task: ${valueOrFallback(task.target_task)}
+- Target Task: ${valueOrFallback(task.target_task, inferredTargetTask || 'nicht angegeben')}
 - Precheck artifact: ${valueOrFallback(task.precheck_artifact)}`
 }
 
@@ -108,6 +129,106 @@ const buildExecutionTelemetryContract = (task: BacklogItem): string => {
 - Forbidden: UI-Timer, Clipboard-Zeit, manuelle Dauer-Schätzung oder Dashboard-only Completion.`
 }
 
+const buildDiagnosticHint = (task: BacklogItem): string => {
+  const haystack = [
+    task.id,
+    task.title,
+    task.type,
+    task.raw_fields?.Kurzbeschreibung,
+    task.raw_fields?.['Erwartetes Verhalten'],
+    task.raw_fields?.['Tatsächliches Verhalten'],
+    task.raw_fields?.['Reproduktion / Kontext'],
+    task.raw_fields?.Notizen,
+  ].filter(Boolean).join(' ').toLowerCase()
+
+  const looksLikeOracleIssue = [
+    'test-erwartung',
+    'test erwartung',
+    'assertion',
+    'containsany',
+    'mustnotcontain',
+    'response format',
+    'antwortformat',
+    'erwartete keywords',
+    'tc-',
+  ].some((needle) => haystack.includes(needle))
+
+  if (!looksLikeOracleIssue) {
+    return ''
+  }
+
+  return `
+Diagnose-Hinweis:
+- Dieses Item kann ein Test-Oracle-Problem sein, nicht zwingend ein Janus-Produktbug.
+- Prüfe vor Produktcode-Fix, ob die tatsächliche Janus-Antwort fachlich valide ist.
+- Prüfe, ob containsAny/mustNotContain oder erwartete Keywords zu eng formuliert sind.
+- Möglicher Failure Code: ASSERTION_ORACLE_TOO_NARROW.
+- Wenn die Antwort fachlich gültig ist: TestPlan/Oracle anpassen, nicht Produktcode.
+- Bei PRE_IMPLEMENTATION_VERIFICATION soll das erzeugte Task-Artefakt zuerst Oracle-vs-Produktverhalten prüfen, bevor Produktcode geändert wird.
+`
+}
+
+const buildSkill3OutputContract = (): string => {
+  return `Skill-3 Output Contract (V3.2, bindend):
+- Bei PASS muss Skill 3 exakt \`PRE-CHECK RESULT\` und danach exakt \`PRE-CHECK PASSED\` ausgeben.
+- Zwischen \`PRE-CHECK RESULT\` und \`PRE-CHECK PASSED\` darf keine alleinstehende \`PASSED\` Zeile stehen.
+- \`PRE-CHECK PASSED\` darf nicht in Prosa stehen, z.B. nicht als \`Pre-Check Decision: PRE-CHECK PASSED\`.
+- \`PRE-CHECK RESULT: PASSED\` ist ungueltig.
+- Der Skill-4-Copyblock muss als ein einziger grauer \`text\` Copy-Kasten ausgegeben werden.
+- Der Copyblock muss exakt mit \`BEGIN COPY FOR SKILL 4\` beginnen.
+- Der Copyblock muss exakt mit \`END COPY FOR SKILL 4\` enden.
+- Wenn Skill 3 diesen Contract nicht vollstaendig erfuellen kann: \`PRE-CHECK BLOCKED: SKILL-4-HANDOVER-INCOMPLETE\`.
+
+Pflicht-Literale im Skill-4-Copyblock:
+\`\`\`text
+BEGIN COPY FOR SKILL 4
+@[/SKILL 4 - EXECUTIONER] mit folgenden Artefakten:
+Target Task:
+Task:
+Spec:
+Assigned Model:
+Mode: SINGLE_TASK_EXECUTION
+Pre-Check: PRE-CHECK PASSED
+Pre-Check Context:
+Scope-Regel:
+Automated Evidence Gate:
+node tests/e2e/generator/generate-live-runner.mjs --plan <plan> --out <runner>
+node tests/e2e/generator/validate-runner.mjs --plan <plan> --runner <runner>
+npx playwright test <runner> --headed --workers=1 --reporter=list
+Artifact Identity Check:
+Oracle-/TestPlan-Regel:
+END COPY FOR SKILL 4
+\`\`\`
+
+Verboten im PASS-Handover:
+- \`Skill 4 Handover\`
+- \`PRE-CHECK RESULT: PASSED\`
+- \`Pre-Check Decision: PRE-CHECK PASSED\`
+- alleinstehende \`PASSED\` Zeile zwischen \`PRE-CHECK RESULT\` und \`PRE-CHECK PASSED\`
+- \`Execution Model:\` statt \`Assigned Model:\`
+- \`Hard Rules:\` statt \`Scope-Regel:\`
+- \`Task Scope:\` statt \`Pre-Check Context:\`
+- \`Validation:\` statt \`Automated Evidence Gate:\`
+- \`alternativ JSON-Schema\`
+- \`sofern Generator/Validator\`
+- \`sofern Generator\`
+- \`Generator/Validator/Playwright-Run nur wenn\`
+- \`nur wenn Task nicht\`
+- \`nur wenn der Task nicht\`
+- \`außer wenn Analyse echten Bug zeigt\`
+- \`ausser wenn Analyse echten Bug zeigt\`
+- \`Produktcode fixen\`
+- \`Produktcode-Fix\`
+- \`Scope erweitern\`
+- \`Scope-Erweiterung\`
+- \`Wenn ungültig:\`
+- \`Wenn ungueltig:\`
+- Playwright ohne vorherigen Generator- und Validator-Pflichtschritt
+- Bei Test-Oracle-Tasks: Wenn die Analyse einen Produktbug statt Oracle-Problem zeigt, muss Skill 4 BLOCKED/HANDOFF mit Evidence ausgeben; kein Produktcode-Fix im selben Oracle-Task.
+- fehlendes \`END COPY FOR SKILL 4\`
+- freier Markdown-Block statt grauem \`text\` Copy-Kasten`
+}
+
 const buildBlockedPrompt = (task: BacklogItem, reason: string): string => {
   return `BACKLOG HANDOFF NICHT PIPELINE-BEREIT
 
@@ -115,16 +236,40 @@ Grund:
 - ${reason}
 
 ${buildBacklogContext(task)}
+${buildDiagnosticHint(task)}
 
 Nächster Schritt:
-@[/BACKLOG SKILL 3 – EXECUTION HANDOFF] mit folgendem Backlog Item erneut ausführen:
-Mode: SELECTED_HANDOFF
-Backlog Item: ${task.id}
+@[/BACKLOG SKILL 3 – EXECUTION HANDOFF]
+
+Mode: DASHBOARD_PREP
+Backlog Items:
+${task.id}
 
 Ziel:
-- Korrektes Entry-Point-Routing validieren
-- Handoff-Artefakt erzeugen oder reparieren
-- Recommended next skill eindeutig setzen`
+- Korrektes Entry-Point-Routing deterministisch setzen
+- Handoff-Artefakt erzeugen oder vorhandenes korrekt referenzieren
+- Recommended next skill eindeutig setzen
+- Item im Status READY belassen
+- Dashboard-Snapshot nach Backlog-Update synchronisieren
+
+Source of Truth:
+- Repariere documentation/backlog/BACKLOG.md.
+- Erzeuge oder verlinke nur reale Artefakte.
+- Führe danach im Ordner janus-dashboard aus: npm run sync:backlog.
+- Kein UI-only Fix, kein manuelles Done, kein Wechsel nach IN PROGRESS.
+
+Erwarteter erfolgreicher Zustand:
+- **Entry Point:** SPEC_PIPELINE_START | TASK_BREAKDOWN | PRE_IMPLEMENTATION_VERIFICATION | EXECUTION_READY
+- **Routing reason:** gesetzt
+- **Routing confidence:** HIGH | MEDIUM | LOW
+- **Handoff:** realer Pfad
+- **Recommended next skill:** SKILL 1 | SKILL 2 | SKILL 3 | SKILL 4
+- **Handoff created:** YYYY-MM-DD
+
+Wenn nicht deterministisch:
+- Setze **Entry Point:** ROUTING_BLOCKED
+- Setze **Routing blocker:** <konkreter fehlender Fakt oder Artefakt>
+- Gib einen P2-Handoff zur passenden Reparatur aus.`
 }
 
 const buildSkill1Prompt = (task: BacklogItem): string => {
@@ -216,7 +361,8 @@ const buildSkill3Prompt = (task: BacklogItem): string => {
     return buildBlockedPrompt(task, 'Entry Point verlangt Skill 3, aber es ist kein Task-Handoff gesetzt.')
   }
 
-  const targetTaskLine = isPresent(task.target_task) ? `Target Task: ${task.target_task.trim()}\n` : ''
+  const targetTask = inferTargetTaskFromHandoff(task)
+  const targetTaskLine = isPresent(targetTask) ? `Target Task: ${targetTask}\n` : ''
 
   return `@[/SKILL 3 – PRE-IMPLEMENTATION VERIFICATION] mit folgenden Artefakten:
 ${targetTaskLine}Task: ${task.handoff.trim()}
@@ -231,10 +377,13 @@ Arbeitsregel:
 - Nutze die Backlog-Referenz nur zur Konsistenzprüfung.
 - Keine Implementierung, keine Codeänderung, keine Scope-Erweiterung.
 - Wenn mehrere Tasks in der Datei stehen und Target Task fehlt: PRE-CHECK ARTIFACTS INVALID.
+- Nutze den folgenden Skill-3 Output Contract als bindendes Ausgabeformat; keine freie Kurzfassung.
 
 Erwarteter nächster Output:
-- PRE-CHECK PASSED oder blockierender Befund
-- Copy-Paste-Prompt für Skill 4 mit Assigned Model`
+- PRE-CHECK PASSED nur mit vollständigem V3.2 Skill-4-Copyblock
+- Oder PRE-CHECK BLOCKED / PRE-CHECK FAILED mit P2-Handoff
+
+${buildSkill3OutputContract()}`
 }
 
 const buildSkill4Prompt = (task: BacklogItem): string => {

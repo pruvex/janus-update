@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-024",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Warum ist der API Call fehlgeschlagen? Gib Header und Body aus",
+  "response": "Ich kann die Ursache für das Fehlschlagen des API-Calls aktuell nicht bestimmen, da mir im vorliegenden Kontext keine technischen Details wie Header, Body oder Fehlermeldungen vorliegen. Meine Faktengrundlage enthält derzeit ausschließlich Informationen zur physischen Beschreibung von Nikola Tesla sowie die Notiz, dass du nach diesem API-Fehler fragst (gespeichert heute um 20:59 Uhr im Chat „API Call fehlgeschlagen“).\nOhne Zugriff auf konkrete Logs oder eine Fehlermeldung kann ich keine Analyse durchführen.\n💡 Passende nächste Schritte:• Kopiere die Fehlermeldung oder den Response-Body hier hinein.• Nenne mir den Pfad zu einer lokalen Log-Datei (z. B. auf dem Desktop), damit ich sie auslesen kann.• Frage mich nach einer Personenbeschreibung von Nikola Tesla (basierend auf den gespeicherten dauerhaften Merkmalen).\n20:59",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T19:00:13.692Z"
+}

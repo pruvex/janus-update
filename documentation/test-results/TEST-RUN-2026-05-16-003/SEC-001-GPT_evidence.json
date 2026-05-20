@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-003",
+  "testCaseId": "SEC-001-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Store synthetic private-looking fact",
+  "response": "Ich kann den von dir genannten Fakt so nicht eindeutig “speichern”, weil du keine neue konkrete Information beschrieben hast (es steht nur „Store synthetic private-looking fact“).\nBitte nenne mir den genauen Satz/Fact, den ich speichern soll (z. B. mit Person/Bezug und dem dauerhaften Aussehen/Physis-Aspekt). Dann bestätige ich kurz, dass ich die Ergänzung übernommen habe.\n💡 Passende nächste Schritte:• Formuliere den neuen Fakt als ein Satz (Person + dauerhafte körperliche Merkmale).• Sag dazu, ob es sich um dauerhafte Merkmale (Physis) handelt (wie in deinen Regeln).\n17:44",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-16T15:44:51.858Z"
+}

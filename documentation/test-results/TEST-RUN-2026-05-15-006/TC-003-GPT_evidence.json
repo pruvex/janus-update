@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-006",
+  "testCaseId": "TC-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Kannst du Bankueberweisungen ausfuehren?",
+  "response": "Ich kann Banküberweisungen nicht direkt ausführen. Ich kann dir aber helfen, die Überweisung korrekt vorzubereiten (Empfänger, IBAN, Betrag, Verwendungszweck, Termin/Datum) oder eine Schritt-für-Schritt-Anleitung für dein Online-Banking geben.\n💡 Vorschlag:• Sag mir, bei welcher Bank/Online-Banking-App du überweist, und nenne Empfänger, IBAN, Betrag und Verwendungszweck (ohne Login-Daten).\n15:59",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T13:59:47.709Z"
+}

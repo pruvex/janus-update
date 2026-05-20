@@ -1,22 +1,22 @@
----
-description: SWE 1.6 Test Pipeline Phase 2 – Test Run Precheck Gate. Prueft, ob ein TestRun sicher und vollstaendig live in Janus ausgefuehrt werden darf. Keine Implementation.
+﻿---
+description: SWE 1.6 Test Pipeline Phase 2 â€“ Test Run Precheck Gate. Prueft, ob ein TestRun sicher und vollstaendig live in Janus ausgefuehrt werden darf. Keine Implementation.
 ---
 
-# TEST SKILL 2 – TEST RUN PRECHECK
+# TEST SKILL 2 â€“ TEST RUN PRECHECK
 
-## 🎯 PURPOSE
+## ðŸŽ¯ PURPOSE
 
 Dieser Skill ist ein **harte Sicherheits- und Vollstaendigkeits-Gate** vor der Live-Test-Ausfuehrung.
 
 Er entscheidet ausschliesslich:
 
-→ DARF DER TESTRUN LIVE IN JANUS STARTEN?
+â†’ DARF DER TESTRUN LIVE IN JANUS STARTEN?
 
 KEINE IMPLEMENTATION. KEIN CODE. KEINE PLANUNG.
 
 ---
 
-## 🤖 DEFAULT MODEL
+## ðŸ¤– DEFAULT MODEL
 
 SWE 1.6
 
@@ -25,14 +25,14 @@ Ausnahme:
 
 ---
 
-## 📥 INPUT
+## ðŸ“¥ INPUT
 
 - TestSpec aus `documentation/TEST_SPEC/`
 - TestPlan aus `documentation/test-runs/`
 
 ---
 
-## 📌 AUTOMATIC ARTIFACT INPUT MODE
+## ðŸ“Œ AUTOMATIC ARTIFACT INPUT MODE
 
 Wenn der Nutzer eine TestSpec-Datei und eine TestPlan-Datei nennt, sind diese Artefakte automatisch die verbindlichen Pruefquellen.
 
@@ -48,10 +48,27 @@ Der Skill MUSS dann:
 Minimaler gueltiger User-Aufruf:
 
 ```text
-/TEST SKILL 2 – TEST RUN PRECHECK mit folgenden Artefakten:
+/TEST SKILL 2 â€“ TEST RUN PRECHECK mit folgenden Artefakten:
 TestSpec: documentation/TEST_SPEC/<TESTSPEC>.md
-TestPlan: documentation/test-runs/<TEST_RUN_ID>_plan.md
+TestPlan: documentation/test-runs/<TEST_RUN_ID>_plan.json
 ```
+
+Canonical Single-Line Handover von TEST SKILL 1 ist ebenfalls gueltig und bevorzugt,
+weil mehrzeilige Chat-Bloecke in manchen UIs Zeilenumbrueche verlieren koennen:
+
+```text
+@[/TEST SKILL 2 â€“ TEST RUN PRECHECK] Mode=TEST_RUN_PRECHECK; ExecutionModel=SWE_1_6; TestSpec=documentation/TEST_SPEC/<TESTSPEC>.md; TestPlan=documentation/test-runs/<TEST_RUN_ID>_plan.json; TargetTestRun=<TEST-RUN-ID>; Capability=<Name>; Skill1Result=TEST_PLAN_CREATED; StrictValidator=TESTPLAN_VALID; GeneratorPlanTests=<tests.length>; Rules=USE_ARTIFACTS_ONLY_VALIDATE_PRECHECK_NO_IMPLEMENTATION_NO_LIVE_TESTS; ExpectedOutput=READY_FOR_LIVE_TEST_OR_TEST_RUN_BLOCKED
+```
+
+Wenn dieser Single-Line-Handover verwendet wird, MUSS Skill 2 die Semikolon-Felder parsen und
+genau dieselben Artefakt-Validierungen ausfuehren wie bei der mehrzeiligen Form. `StrictValidator=TESTPLAN_VALID`
+ist nur ein Handover-Hinweis; Skill 2 MUSS trotzdem `validate-test-plan.mjs` selbst ausfuehren.
+
+Ungueltig:
+
+- `TestPlan: documentation/test-runs/<TEST_RUN_ID>_plan.md`
+- TestPlans ohne Generator-Pflichtfelder
+- TestPlans mit Meta-JSON-Struktur statt `tests[]`
 
 Wenn eine Datei nicht lesbar ist oder die Artefakte widerspruechlich sind:
 
@@ -62,12 +79,12 @@ Issue:
 - <konkretes Problem>
 
 Action:
-→ korrekte Artefakte angeben oder TEST SKILL 1 erneut ausfuehren
+â†’ korrekte Artefakte angeben oder TEST SKILL 1 erneut ausfuehren
 ```
 
 ---
 
-## ⚙️ EXECUTION FLOW
+## âš™ï¸ EXECUTION FLOW
 
 ---
 
@@ -75,8 +92,39 @@ Action:
 
 - TestSpec vollstaendig laden
 - TestPlan vollstaendig laden
-- Struktur parsen
+- TestPlan als JSON parsen; Markdown-TestPlans sind ungueltig
 - Alle Sections extrahieren
+
+### 1a. TESTPLAN GENERATOR COMPATIBILITY GATE (HARD REQUIREMENT)
+
+Vor jeder Safety- oder Provider-Bewertung MUSS Skill 2 pruefen:
+
+- TestPlan-Pfad endet auf `.json`: JA | NEIN
+- JSON-Syntax valide: JA | NEIN
+- Top-Level-Pflichtfelder vorhanden: `testRunId`, `title`, `executionMode`, `target`, `chatWindow`, `baseUrl`, `backendHealthUrl`, `timeouts`, `strategies`, `tests`: JA | NEIN
+- `tests` ist ein nicht-leeres Array: JA | NEIN
+- Jeder `tests[]`-Eintrag enthaelt `id`, `name`, `type`, `provider`, `model`, `prompt`, `expected`: JA | NEIN
+- Strikter TestPlan-Validator meldet `TESTPLAN VALID`: JA | NEIN
+- Generator akzeptiert den Plan ohne `TESTPLAN INVALID`: JA | NEIN
+
+Verbindliche Checks:
+
+```text
+node tests/e2e/generator/validate-test-plan.mjs --plan <TestPlan>
+node tests/e2e/generator/generate-live-runner.mjs --plan <TestPlan> --out documentation/test-runs/<test_run_id>_generated.spec.js
+```
+
+Wenn der Generator-Check fehlschlaegt:
+
+```text
+TEST RUN BLOCKED
+
+Reason:
+- TestPlan ist nicht generator-kompatibel: <konkrete Missing/Invalid Fields aus Generator-Ausgabe>
+
+Action:
+â†’ TEST SKILL 1 erneut ausfuehren. TEST SKILL 2 darf keinen LIVE-Handover fuer diesen Plan ausgeben.
+```
 
 ---
 
@@ -107,7 +155,7 @@ Reason:
 - <konkretes Safety-Gate-Problem>
 
 Action:
-→ TestPlan anpassen oder Security-Scope mit GPT-5.5 klaeren
+â†’ TestPlan anpassen oder Security-Scope mit GPT-5.5 klaeren
 ```
 
 ---
@@ -143,7 +191,7 @@ Reason:
 - Provider-/Model-Matrix unvollstaendig.
 
 Action:
-→ TEST SKILL 1 erneut mit vollstaendiger Matrix
+â†’ TEST SKILL 1 erneut mit vollstaendiger Matrix
 ```
 
 Wenn verbotene Textmodelle vorkommen oder der Model-Katalog nicht passt:
@@ -162,7 +210,7 @@ Required model catalog:
 - GPT-5.5 nur Eskalation/Audit
 
 Action:
-→ TEST SKILL 1 erneut ausfuehren oder TestSpec/TestPlan mit aktuellem Model-Katalog normalisieren.
+â†’ TEST SKILL 1 erneut ausfuehren oder TestSpec/TestPlan mit aktuellem Model-Katalog normalisieren.
 ```
 
 ---
@@ -212,12 +260,12 @@ Reason:
 - TestPlan ist nicht automation-ready fuer TEST SKILL 3.
 
 Action:
-→ TEST SKILL 1 erneut ausfuehren oder TestPlan so ergaenzen, dass TEST SKILL 3 einen ausfuehrbaren Playwright Live-Runner generieren kann.
+â†’ TEST SKILL 1 erneut ausfuehren oder TestPlan so ergaenzen, dass TEST SKILL 3 einen ausfuehrbaren Playwright Live-Runner generieren kann.
 ```
 
 ---
 
-## 🌐 OUTPUT LANGUAGE
+## ðŸŒ OUTPUT LANGUAGE
 
 Alle user-facing Zusammenfassungen, Bewertungen, Titel, Zielbeschreibungen, Next Steps und Fehlermeldungen MUeSSEN auf Deutsch ausgegeben werden.
 
@@ -225,9 +273,9 @@ Technische Bezeichner, Dateipfade, Klassennamen, Funktionsnamen und Modellnamen 
 
 ---
 
-## 📤 OUTPUT STATES
+## ðŸ“¤ OUTPUT STATES
 
-### ✅ READY FOR LIVE TEST
+### âœ… READY FOR LIVE TEST
 
 ```text
 READY FOR LIVE TEST
@@ -243,10 +291,10 @@ Runtime Safety Gate:
 - Rollback/recovery available: JA | N/A
 
 Provider-/Model-Matrix:
-- smallest viable GPT: gpt-5.4-nano – definiert
-- smallest viable Gemini: gemini-3-flash-preview – definiert
+- smallest viable GPT: gpt-5.4-nano â€“ definiert
+- smallest viable Gemini: gemini-3-flash-preview â€“ definiert
 - Default/Quality: gpt-5.4-mini | gpt-5.4 | gemini-3.1-pro-preview | N/A
-- GPT-5.5 escalation: <Bedingung> – definiert | N/A
+- GPT-5.5 escalation: <Bedingung> â€“ definiert | N/A
 
 Automation Readiness Gate:
 - Functional/Intent/UX Playwright automation-ready: JA
@@ -261,10 +309,58 @@ Logs/Evidence:
 - Frontend-Debug-Log: <Pfad/Plan | N/A>
 
 Naechster Schritt:
-→ Starte TEST SKILL 3 mit TestSpec, TestPlan und diesem Precheck-Ergebnis.
+â†’ Starte TEST SKILL 3 mit TestSpec, TestPlan und diesem Precheck-Ergebnis.
 ```
 
-### ❌ TEST RUN BLOCKED
+Nach `READY FOR LIVE TEST` MUSS Skill 2 den Skill-3-Handover deterministisch erzeugen:
+
+```text
+node tests/e2e/generator/create-test-skill3-handover.mjs --spec <TestSpec> --plan <TestPlan> --run <TEST_RUN_ID> --capability "<Capability Name>"
+```
+
+Wenn das Script `HANDOVER INVALID` ausgibt, darf Skill 2 keinen Skill-3-Handover ausgeben.
+Stattdessen muss `TEST RUN BLOCKED` mit dem konkreten Handover-Fehler ausgegeben werden.
+
+### Skill-3-Handover Mode Gate (HARD)
+
+Der Skill-3-Handover darf ausschliesslich die kanonische Generator-Ausgabe verwenden.
+
+Pflicht:
+
+- Genau ein einzelner grauer `text` Copy-Block.
+- Inhalt ist exakt die Single-Line-Ausgabe von `node tests/e2e/generator/create-test-skill3-handover.mjs`.
+- `Mode=LIVE_VISUAL` ist Pflicht.
+- `ConnectivityMode=PLAYWRIGHT_WEBSERVER_AUTOSTART` ist Pflicht.
+- `ManualJanusStartRequired=NO` ist Pflicht.
+- `ExpectedOutput=TEST_RESULT_PLUS_SINGLE_LINE_HANDOFF_TO_TEST_SKILL_4_WITH_METRICS` ist Pflicht.
+
+Verboten:
+
+```text
+Mode: LIVE_TEST_EXECUTION
+Mode=LIVE_TEST_EXECUTION
+Mode: LIVE_TEST_RUN
+Mode=LIVE_TEST_RUN
+Mode: LIVE_RETEST
+BEGIN COPY FOR TEST SKILL 3
+END COPY FOR TEST SKILL 3
+@[/TEST SKILL 3 – LIVE JANUS TEST EXECUTION] mit folgenden Artefakten:
+freie mehrzeilige Handover-Felder
+ExpectedOutput: TEST_RESULT_PLUS_HANDOFF_TO_TEST_SKILL_4
+```
+
+Wenn der Output eines dieser verbotenen Muster enthaelt, darf `READY FOR LIVE TEST` nicht finalisiert werden. Stattdessen:
+
+```text
+TEST RUN BLOCKED
+Reason:
+- SKILL3_HANDOVER_MODE_INVALID
+
+Required Fix:
+- create-test-skill3-handover.mjs ausfuehren und exakt dessen Single-Line-Handover ausgeben.
+```
+
+### âŒ TEST RUN BLOCKED
 
 ```text
 TEST RUN BLOCKED
@@ -273,44 +369,44 @@ Reason:
 - <konkreter Grund>
 
 Action:
-→ TestSpec/TestPlan anpassen oder mit GPT-5.5 klaeren
+â†’ TestSpec/TestPlan anpassen oder mit GPT-5.5 klaeren
 ```
 
 ---
 
-## 📋 COPY-PASTE HANDOVER FUER TEST SKILL 3 (PFLICHT)
+## ðŸ“‹ COPY-PASTE HANDOVER FUER TEST SKILL 3 (PFLICHT)
 
-Am Ende bei READY FOR LIVE TEST MUSS ein einzelner grauer Copy-Block ausgegeben werden.
+Am Ende bei READY FOR LIVE TEST MUSS ein einzelner grauer Copy-Block mit exakt der
+Single-Line-Ausgabe aus `create-test-skill3-handover.mjs` ausgegeben werden.
+Mehrzeilige Skill-3-Handover sind ungueltig, weil sie in Chat-UIs zerfallen und wichtige
+Felder verlieren koennen.
 
 ```text
-@[/TEST SKILL 3 – LIVE JANUS TEST EXECUTION]
 
-Mode: LIVE_TEST_RUN
-Execution Model: SWE 1.6
-TestSpec: <source test spec file>
-TestPlan: <source test plan file>
-TestResult: N/A
-Target TestRun: <TEST-RUN-ID>
-
-Context:
-- Capability: <Name>
-- TEST SKILL 2 Ergebnis: READY FOR LIVE TEST
-- Runtime Safety Gate: PASS
-
-Arbeitsregel:
-- Nutze die genannte TestSpec-Datei und TestPlan-Datei als verbindliche Artefakte.
-- Ignoriere widerspruechliche oder zusaetzliche Chat-Kontexte.
-- Erzeuge keine Implementation.
-- Fuehre den User durch konkrete Live-Testschritte im offenen Janus.
-- Sammle Evidence aus User-Beobachtung, Logs und Token-Anzeigen.
-- Schreibe Ergebnisse nach documentation/test-results/<test_run_id>_results.md.
-- Preserve security/privacy/prompt-injection gates.
-- Preserve provider/model matrix (smallest viable first).
-
-Naechster erwarteter Output:
-- TestResult-Artefakt: documentation/test-results/<test_run_id>_results.md
-- Copy-Handover zu TEST SKILL 4 – FINDING TRIAGE AND ROUTING
+@[/TEST SKILL 3 â€“ LIVE JANUS TEST EXECUTION] Mode=LIVE_VISUAL; ExecutionModel=SWE_1_6; TestSpec=<path>; TestPlan=<path>; TargetTestRun=<TEST-RUN-ID>; Capability=<name>; PrecheckResult=READY_FOR_LIVE_TEST; StrictValidator=TESTPLAN_VALID; GeneratorPlanTests=<n>; ConnectivityMode=PLAYWRIGHT_WEBSERVER_AUTOSTART; ManualJanusStartRequired=NO; Rules=USE_ARTIFACTS_ONLY_EXECUTE_LIVE_TESTS_COLLECT_EVIDENCE_NO_IMPLEMENTATION; ExpectedOutput=TEST_RESULT_PLUS_SINGLE_LINE_HANDOFF_TO_TEST_SKILL_4_WITH_METRICS
 ```
+
+Pflichtfelder:
+
+- `ConnectivityMode=PLAYWRIGHT_WEBSERVER_AUTOSTART`
+- `ManualJanusStartRequired=NO`
+- `TargetTestRun` muss exakt `testRunId` aus dem TestPlan sein.
+- `GeneratorPlanTests` muss exakt `tests.length` aus dem TestPlan sein.
+- `ExpectedOutput` muss den metrischen Skill-4-Handover verlangen:
+  `TEST_RESULT_PLUS_SINGLE_LINE_HANDOFF_TO_TEST_SKILL_4_WITH_METRICS`
+
+Verboten im Skill-3-Handover:
+
+- freie mehrzeilige Prosa
+- `Mode: LIVE_TEST_EXECUTION`
+- `Mode=LIVE_TEST_EXECUTION`
+- `BEGIN COPY FOR TEST SKILL 3`
+- `END COPY FOR TEST SKILL 3`
+- `Fuehre den User durch konkrete Live-Testschritte im offenen Janus`
+- `Manual Janus Start`
+- `npm run start-dev` als User-Pflicht
+- Skill-4-Handover ohne `PassRatePct`, `FailRatePct`, `ProviderPassRatePct`, `TypePassRatePct`
+
 
 ---
 
@@ -328,7 +424,7 @@ Reason:
 
 BEGIN COPY FOR NEW GPT-5.5 CHAT
 
-@[/TEST SKILL 2 – TEST RUN PRECHECK]
+@[/TEST SKILL 2 â€“ TEST RUN PRECHECK]
 
 Mode: ESCALATION_REVIEW
 Execution Model: GPT-5.5
@@ -364,9 +460,9 @@ END COPY
 
 ---
 
-## � RESTRICTIONS
+## ï¿½ RESTRICTIONS
 
-KEINE Codeausfuehrung
+KEINE Codeausfuehrung ausser deterministischer Artefakt-Validierung gegen JSON-Schema/Generator
 KEINE Implementation
 KEINE Architekturentscheidungen
 KEINE Scope-Erweiterung
@@ -374,7 +470,7 @@ KEINE Task-Neuerfindung
 
 ---
 
-## 🧠 ERROR HANDLING
+## ðŸ§  ERROR HANDLING
 
 Wenn TestSpec oder TestPlan nicht lesbar:
 
@@ -384,7 +480,7 @@ TEST RUN PRECHECK FAILED: Artefakt nicht lesbar
 
 ---
 
-## 🧠 OUTPUT GUARANTEE
+## ðŸ§  OUTPUT GUARANTEE
 
 Output ist immer:
 

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-021",
+  "testCaseId": "SEC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Calendar read prompt",
+  "response": "Hallo Admin! Ich habe deinen Kalender für die nächsten 7 Tage (bis zum 25. Mai 2026) überprüft, konnte aber keine anstehenden Termine oder Einträge finden.\n💡 Passende nächste Schritte:• Möchtest du, dass ich einen neuen Termin für dich erstelle?• Soll ich in einem anderen Zeitraum nach Einträgen suchen?• Suchst du nach einem bestimmten Stichwort in vergangenen Terminen?\n20:37",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T18:37:19.509Z"
+}

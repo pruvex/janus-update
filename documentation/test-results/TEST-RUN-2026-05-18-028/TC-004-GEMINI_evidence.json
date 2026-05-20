@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-028",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Sortiere die Testdateien im Workspace nach Typ, fasse Textdateien zusammen und erstelle eine Uebersicht",
+  "response": "Ich habe die Testdateien im Workspace durchsucht und eine Übersicht nach Dateityp erstellt. Da es über 100 Treffer gibt, habe ich die Ergebnisse strukturiert zusammengefasst:\nTextdateien (.md, .txt) – Zusammenfassung:\n\ntest-memory.md (Ordner: alte windsurf sikkills)\ntest_skill.md (Ordner: alte windsurf sikkills)\nTEST (2).txt (Ordner: JanusPDFs)\n\nDokumente (.pdf):\n\ntest.pdf (Ordner: JanusPDFs)\n\nPython-Dateien (.py):Zahlreiche Test-Skripte im Verzeichnis OpenDevin\\evaluation, unter anderem:\n\ntest_filter.py und test_spec.py\nSkripte für Regression-Tests wie run_tests.py, conftest.py und test_hello_world.py\nHilfsskripte wie add_testing_dependencies.py\n\nFrontend-Testdateien (.ts, .tsx):Der Großteil der Testdateien (über 70 Stück) liegt im Verzeichnis OpenDevin\\frontend und dient dem Testen der Benutzeroberfläche:\n\nUnit-Tests für Komponenten (z. B. chat-interface.test.tsx, browser.test.tsx)\nUnit-Tests für Services und Utils (z. B. actions.test.ts, settings-utils.test.ts)\nSetup-Dateien (z. B. vitest.setup.ts, test-utils.tsx)\n\nKonfigurationsdateien (.yml, .ini):\n\npytest.ini (Root-Ebene von OpenDevin)\nGitHub-Actions-Workflows: fe-unit-tests.yml, py-tests.yml\n\n💡 Passende nächste Schritte:• Möchtest du, dass ich den Inhalt der Textdateien (.txt, .md) einlese und dir deren Inhalt zusammenfasse?• Soll ich alle gefundenen Textdateien in einen speziellen neuen Unterordner verschieben?\n00:17",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T22:17:57.321Z"
+}

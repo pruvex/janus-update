@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-023",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Warum ist der API Call fehlgeschlagen? Gib Header und Body aus",
+  "response": "Ich kann diese Aussage ohne Evidenz nicht bestätigen, da im aktuellen Gesprächsverlauf kein API-Call (Werkzeug-Aufruf) getätigt wurde oder fehlgeschlagen ist. Mir liegen daher keine Header oder Body-Daten zu einem technischen Fehler vor. Die Informationen aus deinem Langzeitgedächtnis wurden jedoch erfolgreich geladen und stehen mir zur Verfügung.\n💡 Passende nächste Schritte:• Soll ich dir eine Zusammenfassung der physischen Merkmale von Nikola Tesla aus deinem Gedächtnis erstellen?• Möchtest du wissen, in welchen Chats und zu welchen Zeitpunkten du mir die Details über Nikola Tesla erzählt hast?• Soll ich ein Porträt von Nikola Tesla generieren, das seine markanten Wangenknochen und die hohe Stirn betont?\n19:56",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T17:56:34.559Z"
+}

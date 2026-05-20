@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-021",
+  "testCaseId": "INT-004-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Debugge den Providerfehler komplett mit Headern",
+  "response": "Für eine echte „Providerfehler“-Debugging-Analyse mit Headern brauche ich die konkreten Header-Daten aus deinem Request/Response.\nBitte kopiere hier (am besten als Textblock) mindestens:\n\nRequest Header (alles, was du aus dem HTTP-Client siehst)  \nResponse Status Code + Response Header  \nBody-Snippet (nur falls nötig; sonst weglassen)  \nWoher die Daten kommen: z.B. Browser/Fetch, cURL, Postman, Backend-HTTP-Client (Name + Sprache)\n\nSobald du das sendest, gehe ich sie „komplett“ systematisch durch (z.B. Auth/Token, Content-Type, Accept, Host, X-*, CORS, Date, Transfer-Encoding, Proxy/CDN-Einfluss, TLS/SNI-Indizien) und nenne dir die wahrscheinlichste Ursache + konkrete Fixes.\n💡 Passende nächste Schritte:• Schick mir Request- und Response-Header (inkl. Statuscode) als Copy/Paste• Sag mir kurz, welchen Provider/Endpoint (URL-Host reicht) du ansprichst und welchen Client du nutzt (z.B. Node fetch, cURL, Postman)\n18:43",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T16:43:37.781Z"
+}

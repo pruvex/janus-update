@@ -1,491 +1,129 @@
-﻿---
-description: Diamantstandard Phase 5 â€“ Final Audit & Release Gate mit risikobasiertem Audit-Modell. PrÃ¼ft vollstÃ¤ndige Implementierung aus Skill 4 gegen Task-Spec und Skill-3-Prechecks. Entscheidet Release-FÃ¤higkeit (PASS / PASS WITH FIXES / BLOCKED).
+---
+description: Janus V3 — Skill 6 Final Audit. Release-Gate nach vollständiger Spec-Umsetzung; risikobasiertes Audit-Modell; Spec-Metadaten + Verschiebung nach Spec Done; keine Produktimplementation.
 ---
 
-## ðŸŽ¯ PURPOSE
+This skill follows the global rules in `documentation/pipeline/PIPELINE_CONTRACT.md`.
 
-Dieser Skill ist das **finale QualitÃ¤ts- und Release-Gate** im Janus Diamantstandard Workflow.
+## Rolle
 
-Er entscheidet:
+Finales **Qualitäts- und Release-Gate** nach Skill 4 (alle Tasks, Validierung, User-Sign-off laut gebundenem Paket). **Kein Code**, keine neuen Anforderungen aus Chat — nur Bewertung gegen **Artefakte** (Contract: SSOT).
 
-- Ist die gesamte Spec nach allen Subtasks wirklich fertig?
-- Entspricht alles der Spec?
-- Gibt es Regressionen oder Scope Drift?
-- Darf Dokumentation/Release nach kompletter Umsetzung erfolgen?
+## Modell (Audit Model Gate — gestrafft)
 
-KEINE PRODUKTIMPLEMENTATION. KEIN CODE. Erlaubt ist nur der Abschluss-Metadatenblock in der Spec-Datei bei erfolgreichem Audit.
+| Audit Risk | Audit Model To Use |
+|------------|-------------------|
+| LOW | `Kimi k2.5` oder `SWE 1.6` (lokaler, deterministischer Scope) |
+| MEDIUM | `SWE 1.6` |
+| HIGH / CRITICAL | **`GPT-5.5`** (Pflicht) |
+| Unklar / widersprüchlich / fehlende Tests / Known Risks / mehrere Subsysteme | **`GPT-5.5`** |
 
-WICHTIG:
-- Skill 6 ist nur das finale Audit nach kompletter Spec-Umsetzung.
-- Skill 6 darf nicht nach jedem Subtask verwendet werden.
-- Skill 6 darf nur fortfahren, wenn das Audit-Paket `Remaining Tasks: keine` und `Spec Implementation Complete: YES` enthÃ¤lt.
-- Solange weitere Tasks offen sind, muss der User zurÃ¼ck zu Skill 4 fÃ¼r den nÃ¤chsten Target Task.
-- Nach `FINAL AUDIT RESULT: PASS` oder `FINAL AUDIT RESULT: PASS WITH FIXES` MUSS Skill 6 die Spec-Datei mit einem `SPEC IMPLEMENTATION METADATA`-Block als abgeschlossen markieren und danach nach `documentation/SPEC/Spec Done/` verschieben, damit das Janus-Dashboard die Spec nach Refresh in History verschiebt.
+- Gate aus **Compact Audit Package** übernehmen; fehlt es → konservativ klassifizieren (**Unklar → GPT-5.5**).
+- Aktives Modell schwächer als `Audit Model To Use` → **STOP**, neuer Chat mit vorgeschriebenem Modell.
+- Skill 6 **nur** gegen das Paket; kein voller Implementierungs-Chat als Quelle.
 
----
+## Eingabe (Pflicht)
 
-## ðŸ¤– MODEL RULE
+- Spec, Task(s), Pre-Check (Skill 3), geänderte Dateien, Diff, Testergebnisse, Auto-Verification / Evidence
+- **Pipeline:** `Remaining Tasks: keine`, `Spec Implementation Complete: YES`, Gesamtvalidierung aus Skill 4 erledigt
+- **User-Sign-off:** Evidence aus Skill-4-Gate (manueller UX-Check) wie im Audit-Paket dokumentiert; fehlt bindendes Evidence → **BLOCKED** / Paket unvollständig (kein Release)
 
-DEFAULT MODEL:
-- Risikobasiert gemÃ¤ÃŸ `Audit Model Gate` aus Skill 4.
-- GPT-5.5 bleibt Pflicht bei `Audit Risk: HIGH`, `Audit Risk: CRITICAL` oder unklarer Risikoklasse.
-
-ALLOWED AUDIT MODELS:
-- `Kimi k2.5` nur fÃ¼r LOW-Risk Audits mit deterministischem, lokalem Scope.
-- `SWE 1.6` fÃ¼r LOW oder MEDIUM Risk Audits mit eindeutigem Scope und PASS-Validierung.
-- `GPT-5.5` fÃ¼r HIGH, CRITICAL, unklare, widersprÃ¼chliche oder releasekritische Audits.
-
-AUDIT MODEL GATE:
-- Skill 6 MUSS zu Beginn das `Audit Model Gate` aus dem Compact Audit Package prÃ¼fen.
-- Wenn kein `Audit Model Gate` enthalten ist, MUSS Skill 6 konservativ selbst klassifizieren.
-- Wenn die Klassifizierung nicht eindeutig LOW oder MEDIUM ist, MUSS GPT-5.5 verwendet werden.
-- Wenn das aktive Modell schwÃ¤cher ist als das erforderliche Audit-Modell, MUSS Skill 6 stoppen und den Modellwechsel verlangen.
-
-RISK RULES:
-- LOW:
-  - reine Doku-/Text-/Workflow-Ã„nderung
-  - kleine lokale UI-/CSS-/Label-Ã„nderung
-  - einzelne deterministische Test-/Config-ErgÃ¤nzung
-  - keine Backend-/Persistenz-/IPC-/Security-/Release-Ã„nderung
-  - alle Validierungen PASS
-  - erlaubt: `Kimi k2.5` oder `SWE 1.6`
-- MEDIUM:
-  - kleine bis mittlere mehrdateiige Ã„nderung
-  - UI/API-Kopplung ohne Persistenz/Security/Release
-  - Tests PASS und Scope eindeutig
-  - erlaubt: `SWE 1.6`
-- HIGH oder CRITICAL:
-  - Backend-Kernlogik, Persistenz, DB, Migration, Auth/Security, Electron/IPC, Release/Packaging/Auto-Update, Model Routing, Provider, Tool Calls, Memory, Context, RAG oder mehrere Subsysteme
-  - fehlende/fehlgeschlagene Tests, `PARTIAL`, Known Risks, Fix-Loop, unklare Akzeptanz oder mÃ¶gliche Regression
-  - Pflicht: `GPT-5.5`
-
-CHAT RULE:
-- Skill 6 SOLL in einem neuen Chat gestartet werden.
-- Der Nutzer soll explizit aufgefordert werden, einen neuen Audit-Chat mit dem empfohlenen Audit-Modell zu öffnen und nur das Compact Audit Handover aus Skill 4 einzufügen.
-- Wenn Skill 6 im selben langen Implementierungs-Chat gestartet wird, MUSS der Skill trotzdem ausschließlich das Compact Audit Package verwenden und den übrigen Chatverlauf ignorieren.
-- Kein vollständiger Chatverlauf, keine Debug-Diskussionen und keine nicht genannten Dateien als Audit-Grundlage verwenden.
-
-ESCALATION RULE:
-
-Wenn eine der folgenden Bedingungen erfÃ¼llt ist:
-
-- Code / Logs / Tests nicht eindeutig interpretierbar
-- widersprÃ¼chliche Task-Spec oder Skill-3 Output
-- fehlende Deterministik in Bewertung mÃ¶glich
-- mehrere plausible Interpretationen eines Fehlers
-- Audit Risk ist HIGH/CRITICAL/unklar und aktives Modell ist nicht GPT-5.5
-
-âž¡ï¸ STOP EXECUTION
-
-OUTPUT:
-
-MODEL SWITCH REQUIRED: <aktuelles Modell> â†’ <erforderliches Audit-Modell>  
-Reason: <kurze technische BegrÃ¼ndung>  
-
-FOLLOW-UP:
-â†’ neuer Chat erforderlich
-â†’ Skill 6 erneut ausfÃ¼hren mit gewÃ¤hltem Modell
+Minimaler Aufruf: neuer Chat + empfohlenes Modell + kompaktes Paket (Spec-Pfad, Tasks, Pre-Check, Changed Files, Diff, Tests, Pipeline-Status, Manual Janus Evidence).
 
 ---
 
-## ðŸ“¥ INPUT
+## Debug-Paket-Verwechslung (HARD)
 
-- kompletter Task-Set (aus Skill 2)
-- Implementierung (Skill 4 Outputs)
-- Pre-Check Ergebnisse (Skill 3)
-- Repo-State / Codebase Snapshot
-- Test Results (Unit / Integration / E2E)
-- Pipeline Status mit `Completed Tasks = alle`, `Remaining Tasks = keine` und `Spec Implementation Complete: YES`
-
----
-
-## ðŸ“Œ COMPACT AUDIT PACKAGE MODE
-
-Skill 6 MUSS kostenbewusst arbeiten und darf keinen vollstÃ¤ndigen Chatverlauf als Audit-Grundlage verlangen. Das Modell richtet sich nach dem `Audit Model Gate`; GPT-5.5 bleibt Pflicht fÃ¼r HIGH/CRITICAL/unklare Audits.
-
-Empfohlener Ablauf:
-1. Neuen Chat öffnen.
-2. Das im Skill-4-Handover empfohlene Audit-Modell auswählen.
-3. Das von Skill 4 erzeugte `BEGIN COPY` / `END COPY` Compact Audit Handover einfügen.
-4. Audit nur gegen diese Artefakte durchführen.
-
-Wenn der Nutzer Spec, Task-Datei(en), Pre-Check Ergebnis, geÃ¤nderte Dateien, Diff und Testergebnisse nennt, sind diese Artefakte automatisch das verbindliche Audit-Paket.
-
-Der Skill MUSS dann:
-
-- die Feature-Spec als primÃ¤re Release-Anforderung verwenden
-- Task-Datei(en) aus Skill 2 als Umsetzungsvertrag verwenden
-- Pre-Check Ergebnisse als Gate-Nachweis prÃ¼fen
-- Changed-Files-Liste und Diff nur gegen Spec/Tasks bewerten
-- Testergebnisse als Validierungsnachweis verwenden
-- Chatverlauf, frÃ¼here Diskussionen und zusÃ¤tzliche mÃ¼ndliche Nebeninformationen ignorieren, sofern sie den Artefakten widersprechen oder Ã¼ber sie hinausgehen
-- keine neuen Requirements, ArchitekturvorschlÃ¤ge oder Nice-to-have-Ideen ergÃ¤nzen
-- nur release-relevante Findings melden
-
-Minimaler gÃ¼ltiger User-Aufruf:
+Skill 6 darf keine Debug-Pakete, FAIL-/BLOCKED-Pakete oder offenen Auto-Verification-Failures
+auditieren. Wenn der Input einen dieser Hinweise enthaelt, muss Skill 6 sofort blocken und zu
+Skill 5 routen:
 
 ```text
-/Skill 6 â€“ Diamantstandard Final Audit mit kompaktem Audit-Paket:
-WICHTIG:
-- Neuer Chat mit dem empfohlenen Audit-Modell aus Skill 4.
-- Nur dieses Paket als Audit-Grundlage verwenden.
-- Früheren Chatverlauf ignorieren.
-- Wenn Audit Risk HIGH/CRITICAL/unklar ist: GPT-5.5 verwenden.
-
-Audit Model Gate:
-- Audit Risk: <LOW | MEDIUM | HIGH | CRITICAL>
-- Recommended Audit Model: <Kimi k2.5 | SWE 1.6 | GPT-5.5>
-- Reason: <kurze BegrÃ¼ndung>
-
-Spec: documentation/Planned Features/<FEATURE_NAME>.md
-Tasks: documentation/tasks/<TASK_FILE>.md
-Target Task: ALL COMPLETED
-Pre-Check: <PRE-CHECK Ergebnis oder Datei>
-Changed Files: <Liste>
-Diff: <Git Diff oder relevante AuszÃ¼ge>
-Tests: <Unit/Integration/E2E Ergebnisse>
-Known Risks: <falls vorhanden>
-Pipeline Status:
-- Completed Tasks: <Liste>
-- Remaining Tasks: keine
-- Spec Implementation Complete: YES
+FEATURE DEBUG
+TASK EXECUTION BLOCKED
+Auto-Verification FAILED
+Verification Status: FAILED
+LTC-002 FAILED
+TC-005 FAILED
+ASSERTION_MISMATCH
+Context-Leakage
+Provider-specific failure
+Fix Applied
+Issue:
+Investigate
 ```
 
-Wenn das Audit-Paket unvollstÃ¤ndig ist:
+Verboten:
 
 ```text
-FINAL AUDIT PACKAGE INCOMPLETE
+FINAL AUDIT RESULT: PASS
+PASS WITH FIXES
+Spec Done
+```
 
-Missing:
-- <konkrete fehlende Artefakte>
+Pflichtoutput:
 
-Action:
-â†’ fehlende Artefakte nachreichen
-â†’ keinen Release-Entscheid treffen
+```text
+FINAL AUDIT RESULT: BLOCKED
+Reason: Debug/failure package was sent to Skill 6. This is not a final audit package.
+
+NEXT_SKILL_HANDOFF
+Target Skill: SKILL 5 – FEATURE DEBUG
+Required Artifacts: Task, changed files, failed Auto-Verification, generated runner, evidence paths
+Decision: HANDOFF
+Reason: Open failure requires debug before final audit.
+Copy Prompt: @[/SKILL 5 – FEATURE DEBUG] ...
 ```
 
 ---
 
-## âš™ï¸ EXECUTION FLOW
+## Skill-Nummer-Guard (HARD)
 
----
-
-### 1. SPEC ALIGNMENT CHECK
-
-Vergleich:
-
-- Task-Spec vs Implementierung
-- Acceptance Criteria vs tatsÃ¤chliches Verhalten
-- Edge Cases vs Implementierung
-
-PrÃ¼fe:
-
-- nichts fehlt
-- nichts Ã¼berschÃ¼ssig implementiert
-- keine Scope-Erweiterung
-
----
-
-### 2. CODE CONSISTENCY CHECK
-
-PrÃ¼fe:
-
-- keine broken imports
-- keine toten Codepfade
-- keine inkonsistenten Module
-- keine API/IPC mismatchs
-- keine UI/Selector Drift
-
----
-
-### 3. TEST VALIDATION
-
-PrÃ¼fe:
-
-- Unit Tests: PASS
-- Integration Tests: PASS
-- E2E Tests: PASS (falls definiert)
-
-Validiere zusÃ¤tzlich:
-
-- Tests testen echte Logik (kein Fake-Mocking der Kernlogik)
-- Tests entsprechen Spec-Verhalten
-
----
-
-### 4. REGRESSION CHECK
-
-PrÃ¼fe:
-
-- keine bestehenden Features beschÃ¤digt
-- keine globalen Seiteneffekte
-- keine Breaking Changes auÃŸerhalb Scope
-
----
-
-### 5. SKILL 3 PRE-CHECK COMPLIANCE CHECK
-
-Validiere:
-
-- alle Pre-Checks eingehalten
-- keine ignorierten Blocker
-- keine Ã¼bersprungenen Validierungen
-
----
-
-### 6. RELEASE DECISION ENGINE
-
-Entscheidung:
-
-### âœ… PASS
-Wenn:
-
-- alle Tests bestehen
-- Spec vollstÃ¤ndig erfÃ¼llt
-- keine Regressionen
-- keine offenen Blocker
-
----
-
-### âš ï¸ PASS WITH FIXES
-Wenn:
-
-- kleine, sichere Fixes mÃ¶glich
-- keine ArchitekturÃ¤nderung nÃ¶tig
-- keine Scope-Verletzung
-
----
-
-### âŒ BLOCKED
-Wenn:
-
-- Spec nicht erfÃ¼llt
-- Tests kritisch fehlschlagen
-- Regression vorhanden
-- Architekturproblem erkannt
-
----
-
-### 6.1 FINAL-SPEC COMPLETION GATE (HARD REQUIREMENT)
-
-Skill 6 MUSS vor dem Audit prÃ¼fen, ob die komplette Spec-Umsetzung abgeschlossen ist.
-
-Skill 6 darf nur fortfahren, wenn gilt:
-
-- `Remaining Tasks: keine`
-- `Spec Implementation Complete: YES`
-- Skill 4 hat eine automatische Gesamtvalidierung ausgefÃ¼hrt.
-- Skill 4 hat einen erfolgreichen manuellen Janus-Gesamttest als Evidence geliefert.
-
-Wenn noch Tasks offen sind:
+Dieser Skill heisst exakt:
 
 ```text
-FINAL AUDIT BLOCKED: SPEC NOT COMPLETE
-
-Reason:
-- Es sind noch offene Tasks vorhanden.
-
-Action:
-â†’ Starte Skill 4 mit dem nÃ¤chsten offenen Target Task.
-â†’ Final Audit erst nach Abschluss aller Tasks ausfÃ¼hren.
+@[/SKILL 6 – DIAMANTSTANDARD FINAL AUDIT]
 ```
 
-Pflichtstatus im Audit:
+Falsche Alias-/Nummernformen sind ungueltig:
 
 ```text
-Pipeline Completion Status:
-- Completed Tasks: <Liste>
-- Remaining Tasks: keine
-- Spec Implementation Complete: YES
+@[/SKILL 5 – DIAMANTSTANDARD FINAL AUDIT]
+@[/SKILL 6 – FEATURE DEBUG]
+Skill 6 Debug
+Skill 6 Debug Iteration
 ```
 
-Bei `Spec Implementation Complete: NO` ist Skill 6 BLOCKED und Skill 7 verboten.
+Wenn ein Paket fachlich Final Audit verlangt, aber die Slash-Zeile `SKILL 5` nennt, ist das
+kein inhaltlicher Audit-Blocker, sondern ein Handoff-Formatfehler. Korrigiere die Zielzeile
+auf `@[/SKILL 6 – DIAMANTSTANDARD FINAL AUDIT]` oder fordere einen korrigierten Handoff an.
 
 ---
 
-### 7. MANUAL JANUS TEST EVIDENCE CHECK (HARD REQUIREMENT)
+## Audit-Ablauf (Golden Path)
 
-Skill 6 MUSS prÃ¼fen, ob Skill 4 nach automatischer Validierung einen realen manuellen Janus-Test durch den User eingefordert und als erfolgreich bestÃ¤tigt bekommen hat.
-
-Wenn ein manueller Janus-Test bereits im Skill-4-Audit-Paket enthalten ist:
-
-- Skill 6 darf keinen zweiten identischen manuellen Test verlangen.
-- Skill 6 MUSS die Test-Evidence im Audit berÃ¼cksichtigen.
-- Skill 6 MUSS bei Abweichungen `BLOCKED` oder Skill-5-Debug empfehlen.
-
-Wenn kein manueller Janus-Test im Skill-4-Audit-Paket enthalten ist:
-
-- Skill 6 darf nicht `READY FOR RELEASE` melden.
-- Skill 6 MUSS `FINAL AUDIT PACKAGE INCOMPLETE` oder `BLOCKED: MANUAL JANUS TEST MISSING` ausgeben.
-- Skill 6 MUSS den User zurÃ¼ck zum Manual-Janus-Test-Gate aus Skill 4 schicken.
-
-Nur wenn `Spec Implementation Complete: YES` ist, darf Skill 6 zusÃ¤tzlich einen finalen Smoke-Test fÃ¼r die gesamte Feature-Spec empfehlen.
-
-Dieser finale Smoke-Test MUSS enthalten:
-
-- Startpunkt im Produkt
-- konkrete User-Aktion
-- erwartetes Gesamtergebnis
-- Abweichungsregel zu Skill 5
-
-```text
-Finaler Janus-Smoke-Test, nur nach letztem Task:
-1. Ã–ffne Janus.
-2. Stelle sicher, dass <relevanter Zustand> aktiv ist.
-3. FÃ¼hre den vollstÃ¤ndigen Feature-Flow aus:
-   <Klickpfad/Prompt>
-4. Erwartetes Ergebnis:
-   <konkreter sichtbarer Gesamtzustand>
-5. Falls das Ergebnis abweicht:
-   - Starte Skill 5 mit Fehlerbeschreibung und relevanten Logs.
-```
-
-Wenn ein manueller Produkttest fÃ¼r das Feature nicht sinnvoll mÃ¶glich ist, MUSS Skill 6 das explizit begrÃ¼nden und stattdessen die beste verifizierbare Evidence nennen.
+1. **Vollständigkeit** — alle Tasks erledigt? Spec complete? Sonst `FINAL AUDIT BLOCKED: SPEC NOT COMPLETE` → Handoff Skill 4 (nächster Task).
+2. **Spec & AC** — Umsetzung vs. Spec; kein Scope-Drift, nichts Wesentliches fehlend/überschüssig.
+3. **Code-Konsistenz** — Imports, tote Pfade, offensichtliche Brüche (lesend).
+4. **Tests** — Unit/Integration/E2E wie nachgewiesen; keine Fake-Kernlogik-Tests.
+5. **Regression** — keine unzulässigen Breaking Changes außerhalb deklarierten Scopes.
+6. **Pre-Check-Compliance** — Skill-3-Vorgaben eingehalten.
+7. **Entscheidung** — eine von: `PASS` | `PASS WITH FIXES` | `BLOCKED`.
 
 ---
 
-## ðŸ“¤ OUTPUT FORMAT
+## Entscheidungslogik (kurz)
 
-```text id="skill6_output"
-FINAL AUDIT RESULT: PASS | PASS WITH FIXES | BLOCKED
+- **PASS:** Spec erfüllt, Tests grün, keine relevanten Blocker/Regressionen.
+- **PASS WITH FIXES:** kleine, sichere Nachbesserungen möglich **ohne** Architekturbruch und ohne Scope-Verletzung.
+- **BLOCKED:** Spec/Test/Regression/unklare Evidence / nicht deterministisch bewertbar → **kein** Release, **kein** Skill 7.
 
-Zusammenfassung:
-- Feature: <name>
-- Tasks: <IDs>
-- Overall Status: <status>
+---
 
-Spec-Compliance:
-- OK | PARTIAL | FAIL
+## Spec Done & Metadaten (hart)
 
-Testergebnisse:
-- Unit: PASS | FAIL
-- Integration: PASS | FAIL
-- E2E: PASS | FAIL
+Nur bei **`FINAL AUDIT RESULT: PASS`** oder **`PASS WITH FIXES`**:
 
-Findings:
-- <bullet issues>
-
-Angewendete Fixes (falls vorhanden):
-- <list>
-
-RegressionsprÃ¼fung:
-- CLEAN | ISSUES FOUND
-
-Risiko-Level:
-- LOW | MEDIUM | HIGH
-
-Empfehlung:
-- READY FOR RELEASE | NEEDS FIXES | DO NOT RELEASE
-
-Manual Janus Test Evidence:
-- Status: PRESENT | MISSING | N/A WITH REASON
-- Source: Skill 4 Manual Janus Validation Gate
-- Ergebnis: PASS | FAIL | N/A
-
-Finaler Janus-Smoke-Test:
-- Nur wenn Spec Implementation Complete: YES
-- Startpunkt: <wo im Produkt>
-- Aktion: <konkrete Schritte>
-- Erwartetes Ergebnis: <sichtbarer Soll-Zustand>
-- Wenn Ergebnis abweicht: <Skill-5-Debug-Handoff an SWE 1.6 mit tatsÃ¤chlichem Output und Backendlog>
-
-NÃ¤chster Schritt:
-- Wenn Final Audit PASS oder PASS WITH FIXES ist: Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE` ausfÃ¼hren.
-- Wenn Skill 6 BLOCKED ist: keine Dokumentation, kein Release.
-
-Pipeline Completion Status:
-- Completed Tasks: <Liste>
-- Remaining Tasks: keine
-- Spec Implementation Complete: YES
-
-Dashboard Completion Metadata:
-- Spec-Datei aktualisiert: JA | NEIN
-- Spec-Datei verschoben: JA | NEIN
-- Neuer Spec-Pfad: documentation/SPEC/Spec Done/<SPEC_DATEI>.md | N/A
-- Metadata Block: `SPEC IMPLEMENTATION METADATA`
-- Implementation Status: DONE | N/A
-- Final Audit: PASS | PASS WITH FIXES | N/A
-- Completed By: SKILL 6 – DIAMANTSTANDARD FINAL AUDIT
-- Completed At: <YYYY-MM-DD>
-
-Copy-Paste-Prompt fÃ¼r Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE`:
-
-Nur ausgeben, wenn `Spec Implementation Complete: YES` und Final Audit `PASS` oder `PASS WITH FIXES` ist.
-
-```text
-@[/SKILL 7 – DOKUMENTATIONSUPDATE]
-
-Post-Implementation Package:
-
-Feature:
-<Feature-Name>
-
-Final Audit:
-FINAL AUDIT RESULT: <PASS | PASS WITH FIXES>
-Recommendation: <READY FOR RELEASE | NEEDS FIXES>
-
-Spec:
-<source spec file>
-
-Task:
-<task file>
-
-Changed Files:
-- <Datei 1>
-- <Datei 2>
-
-Test Results:
-- <Unit/Integration/E2E Ergebnisse>
-
-Version:
-- Skill 7 soll die Version automatisch erhÃ¶hen.
-- Kein manueller Version-Bump im Release-Skill.
-
-Manueller Janus-Test:
-- Status: <noch auszufÃ¼hren | PASS | FAIL>
-- Anleitung: <kurze Testanleitung aus Skill 6>
-- Falls FAIL: Skill 7 stoppen und Skill 5 `/SKILL 5 â€“ FEATURE DEBUG` mit SWE 1.6 starten.
-
-Skill 5:
-- Status: <not needed | FIXED + retest PASS | required>
-- Falls required: Skill 7 nicht ausfÃ¼hren.
-
-Capability Sync:
-- PrÃ¼fe, ob eine neue user-visible Capability entstanden ist.
-- Falls nein: "Keine neue Capability erforderlich."
-- Falls ja: Produktsprachlich in Capability Registry synchronisieren, ohne Implementierungsdetails.
-
-WHAT_I_LEARNED:
-- Nur ergÃ¤nzen, wenn ein wiederverwendbares technisches Learning entstanden ist.
-- Kein vollstÃ¤ndiges WHAT_I_LEARNED lesen; nur gezielte Duplikats-/Pattern-Suche.
-
-Scope:
-Nur validierte Ã„nderungen aus diesem Final Audit dokumentieren.
-```
-ðŸš« RESTRICTIONS
-
-STRICT PROVIDER ISOLATION: Janus ist ein BYOK-Tool. Implementiere oder erlaube NIEMALS automatische Provider-Fallbacks (z.B. Gemini zu GPT) im Produktcode. Wenn ein Provider-spezifischer Test (z.B. Gemini) fehlschlägt, muss er als Fehler dieses Providers behandelt werden. Ein Ausweichen auf einen anderen Provider zur Fehlerumgehung ist STRENG VERBOTEN.
-
-keine neuen Features
-keine ArchitekturÃ¤nderungen
-keine Task-Neudefinition
-keine Scope-Erweiterung
-keine â€žVerbesserungsideenâ€œ
-
-## ðŸ“Œ DASHBOARD HISTORY COMPLETION MARKER
-
-Wenn `FINAL AUDIT RESULT: PASS` oder `FINAL AUDIT RESULT: PASS WITH FIXES` ist:
-
-- Skill 6 MUSS die im Audit-Paket genannte Spec-Datei aktualisieren.
-- Skill 6 MUSS einen bestehenden `## SPEC IMPLEMENTATION METADATA`-Block ersetzen oder, falls keiner existiert, am Ende der Spec ergÃ¤nzen.
-- Nach erfolgreichem Schreiben des Metadata-Blocks MUSS Skill 6 die Spec-Datei nach `documentation/SPEC/Spec Done/<original-filename>.md` verschieben.
-- Wenn `documentation/SPEC/Spec Done/` nicht existiert, MUSS Skill 6 den Ordner erstellen.
-- Wenn am Ziel bereits eine Datei mit gleichem Namen existiert, MUSS Skill 6 stoppen und `BLOCKED: SPEC DONE TARGET EXISTS` melden, statt eine Datei zu Ã¼berschreiben.
-- Dieser Block ist der verbindliche Marker fÃ¼r den Dashboard-Spec-Scanner.
-- Nach Dashboard-Refresh MUSS die Spec dadurch `Status: DONE` erhalten und in History erscheinen.
-- Skill 6 darf diesen Marker NICHT setzen, wenn das Audit `BLOCKED`, `FINAL AUDIT PACKAGE INCOMPLETE` oder `MODEL SWITCH REQUIRED` ist.
-
-Pflichtformat:
+1. Spec-Datei aus dem Paket aktualisieren: Block **`## SPEC IMPLEMENTATION METADATA`** ersetzen oder am Ende anfügen:
 
 ```markdown
 ## SPEC IMPLEMENTATION METADATA
@@ -494,29 +132,127 @@ Pflichtformat:
 - **Final Audit:** <PASS | PASS WITH FIXES>
 - **Completed At:** <YYYY-MM-DD>
 - **Completed By:** SKILL 6 – DIAMANTSTANDARD FINAL AUDIT
-- **Validation Evidence:** Skill 6 Final Audit PASS after Skill 4 automatic validation and manual Janus test evidence
+- **Validation Evidence:** <Skill 4 Auto-Verification + User-Sign-off; bei Re-Audit nach Skill 5: Skill 5 FIXED + Retest-Evidence>
 ```
 
-Regeln:
-- `Final Audit` MUSS exakt `PASS` oder `PASS WITH FIXES` sein.
-- `Implementation Status` MUSS exakt `DONE` sein.
-- `Completed At` MUSS das aktuelle Datum im Format `YYYY-MM-DD` sein.
-- Wenn der Skill-6-Lauf ein Re-Audit nach Skill 5 Debug war, muss `Validation Evidence` zusÃ¤tzlich `Skill 5 FIXED + manual retest PASS` nennen.
-- Skill 6 MUSS im Output den neuen Spec-Pfad unter `documentation/SPEC/Spec Done/` nennen.
-- Alle Folge-Handover, insbesondere Skill 7, MÃœSSEN den neuen Spec-Pfad verwenden.
+2. Spec nach **`documentation/SPEC/Spec Done/<original-filename>.md`** verschieben (Ordner anlegen falls nötig).
+3. **Kollision:** Zieldatei existiert bereits → **`BLOCKED: SPEC DONE TARGET EXISTS`** (nichts überschreiben).
+4. Output **muss** neuen Spec-Pfad nennen; alle Folge-Handoffs (Skill 7) nutzen **diesen** Pfad.
 
-ðŸ§  ERROR HANDLING
+Bei `BLOCKED` / unvollständigem Paket: **kein** Metadaten-Block, **kein** Verschieben.
 
-Wenn Task oder Code nicht eindeutig prÃ¼fbar:
+---
 
-BLOCKED: NON-DETERMINISTIC AUDIT STATE
+## Output-Skelett
 
-â†’ kein Release mÃ¶glich
+```text
+FINAL AUDIT RESULT: PASS | PASS WITH FIXES | BLOCKED
+Audit Model To Use: <…>
+Zusammenfassung / Findings / Testmatrix / Regression: …
+Manual Janus Test Evidence: PRESENT | MISSING | N/A WITH REASON
+Pipeline Completion Status: Completed Tasks … / Remaining: keine / Spec Implementation Complete: YES
+Spec Done: JA | NEIN (+ neuer Pfad documentation/SPEC/Spec Done/…)
+```
 
-ðŸ§  OUTPUT GUARANTEE
+Freie Status-Synonyme sind verboten:
 
-Dieser Skill liefert immer:
+```text
+STATUS: READY FOR PRODUCTION
+Audit Result: APPROVED
+Recommendation: APPROVE FOR SKILL 7
+READY FOR AUDIT
+```
 
-deterministische Release-Entscheidung
-klare BegrÃ¼ndung
-keine Interpretationsfreiheit
+Stattdessen muss Skill 6 immer einen Contract-State ausgeben:
+
+```text
+FINAL AUDIT RESULT: PASS
+```
+
+oder:
+
+```text
+FINAL AUDIT RESULT: PASS WITH FIXES
+```
+
+oder:
+
+```text
+FINAL AUDIT RESULT: BLOCKED
+```
+
+---
+
+## Handover (P2)
+
+### Skill 7 (nach PASS / PASS WITH FIXES, Spec Done)
+
+```text
+NEXT_SKILL_HANDOFF
+Target Skill: SKILL 7 – DOKUMENTATIONSUPDATE
+Canonical State: HANDOFF
+Required Artifacts: Spec oder N/A WITH REASON, Task, Backlog Item, Final Audit Result, Changed Files, Test Results, Evidence Paths, Manual Janus Evidence-Status, Version/Changelog Scope
+Evidence Paths: <Playwright/Generator/Validator/TestResult/Report-Pfade>
+Failure Code: N/A
+Changed Files: <geänderte Dateien>
+Decision: HANDOFF
+Reason: FINAL AUDIT RESULT PASS | PASS WITH FIXES; Dokumentation/Backlog/Changelog/Version aktualisieren.
+Copy Prompt:
+@[/SKILL 7 – DOKUMENTATIONSUPDATE]
+Task: <task id>
+Backlog Item: <BACKLOG-XXX>
+Final Audit Result: PASS | PASS WITH FIXES
+Changed Files:
+- <file>
+Evidence Paths:
+- <path>
+Documentation Scope:
+- Backlog Status/DONE und Completion-Felder aktualisieren
+- CHANGELOG/WHAT_I_LEARNED/Version prüfen
+- Relevante Spec/Task-Dokumentation aktualisieren
+```
+
+### Skill 5 (Fix nötig / BLOCKED mit reproduzierbarem Bug)
+
+```text
+NEXT_SKILL_HANDOFF
+Target Skill: SKILL 5 – FEATURE DEBUG
+Required Artifacts: Spec, Task, Audit-Findings, Ist/Soll, Logs/Evidence-Pfade
+Decision: HANDOFF
+Reason: BLOCKED oder PASS WITH FIXES mit nicht-trivialen Fixes
+Copy Prompt: @[/SKILL 5 – FEATURE DEBUG] … Debug Package …
+```
+
+### Skill 4 (noch offene Tasks)
+
+```text
+NEXT_SKILL_HANDOFF
+Target Skill: SKILL 4 – EXECUTIONER
+Required Artifacts: Spec, Task-Datei, nächste Target Task ID
+Decision: BLOCKED
+Reason: SPEC NOT COMPLETE — offene Tasks
+Copy Prompt: @[/SKILL 4 – EXECUTIONER] …
+```
+
+### Modellwechsel (Audit)
+
+```text
+NEXT_SKILL_HANDOFF
+Target Skill: SKILL 6 – DIAMANTSTANDARD FINAL AUDIT
+Required Artifacts: gleiches Compact Audit Package
+Decision: NEEDS_INFO
+Reason: MODEL SWITCH REQUIRED — aktives Modell < X > erfüllt Audit Model To Use < Y > nicht
+Copy Prompt: Neuer Chat mit <Y>; Paket erneut einfügen …
+```
+
+---
+
+## Optional: Finaler Smoke-Test-Hinweis
+
+Nur wenn sinnvoll: ein kurzer manueller Gesamtflow (Startpunkt, Aktion, Soll) — **kein** Ersatz für gebundene Test-/Playwright-Evidence. Wenn nicht sinnvoll: `N/A WITH REASON` + beste alternative Evidence.
+
+---
+
+## Final State
+
+Jeder Lauf endet in genau einem Contract-State: **PASS**-Pfad (inkl. Spec Done + P2 Skill 7), **BLOCKED** + P2 Skill 5/4, oder **NEEDS_INFO** / Modellwechsel mit P2.

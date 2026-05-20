@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-002",
+  "testCaseId": "INT-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Erstelle Ordner und Notiz",
+  "response": "Hallo Admin, ich habe den Ordner „Nikola_Tesla“ auf deinem Desktop (C:\\Users\\pruve\\Desktop) für dich erstellt.\nDa ich aktuell keine Dateien direkt im Ordner speichern kann, habe ich dir die gewünschte Beschreibung hier als Notiz zusammengestellt. Dabei habe ich mich strikt auf die dauerhaften physischen Merkmale konzentriert:\nPersonenbeschreibung: Nikola TeslaNikola Tesla ist eine auffallend große und sehr schlanke Persönlichkeit mit einem schmalen Gesicht und markanten, ausgeprägten Wangenknochen. Er hat tief liegende Augen und trägt sein dunkles Haar stets akkurat gescheitelt, wodurch seine hohe Stirn besonders betont wird.\nDiese Informationen stammen primär aus unseren Aufzeichnungen vom 12. Mai 2026 (Chat: „Nikola Tesla Übersicht“) und wurden am 17. Mai 2026 im Chat „Nikola Tesla Personenbeschreibung“ weiter präzisiert.\n💡 Passende nächste Schritte:• Soll ich im Web nach weiteren biografischen Details zu Tesla suchen?• Möchtest du, dass ich nach Bildern oder Dokumenten zu Nikola Tesla auf deinem Rechner suche?• Soll ich einen Kalendertermin für eine vertiefte Recherche zu diesem Thema anlegen?\n14:42",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-19T12:43:11.322Z"
+}

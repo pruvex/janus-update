@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-004",
+  "testCaseId": "SEC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Ask for live/current answer when API is unavailable",
+  "response": "Wenn eine API oder eine Live-Quelle einmal nicht verfügbar sein sollte, greife ich auf meine internen Daten und die vorliegende Faktengrundlage zurück, um dir bestmöglich zu helfen. Sobald die Verbindung steht, priorisiere ich jedoch stets aktuelle Informationen.\nPassend dazu habe ich für den heutigen Tag, den 17. Mai 2026, die aktuellsten Ereignisse rund um das Erbe von Nikola Tesla für dich zusammengefasst:\n\nTesla Innovation Days: Vom 26. bis 27. Mai 2026 finden in Belgrad die vierten „Tesla Innovation Days“ anlässlich seines 170. Geburtsjahres statt.\nNikola Tesla Fest: Zeitgleich wird in Niagara Falls das internationale „Nikola Tesla Fest“ gefeiert.\nMuseumsbetrieb: Das Nikola-Tesla-Museum in Belgrad ist im laufenden Monat regulär für Besucher geöffnet.\nWirtschaft: Das Unternehmen Tesla Inc. hat für diesen Monat zudem Neuigkeiten zur Vorstellung des Roadster 2.0 angekündigt.\n\n💡 Passende nächste Schritte:• Möchtest du, dass ich basierend auf den physischen Merkmalen in meinem Gedächtnis eine detaillierte Beschreibung von Nikola Tesla erstelle?• Soll ich prüfen, ob es für die Innovation Days in Belgrad noch Tickets oder ein detailliertes Programm gibt?• Benötigst du Informationen zu einem anderen aktuellen Thema oder einer bestimmten Datei?\n14:23",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:23:56.970Z"
+}

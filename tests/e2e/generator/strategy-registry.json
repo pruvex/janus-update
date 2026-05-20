@@ -75,6 +75,11 @@
     "model_selection_v1": {
       "description": "Per-test: set chat-header-provider/model for the plan chatWindow to tests[].provider/tests[].model, then wait until #send-button-<window> is enabled.",
       "requiredPlanFields": ["tests[].model", "tests[].provider", "chatWindow"]
+    },
+    "model_selection_v2_5": {
+      "description": "Per-test: commit chat-header-provider/model values via DOM change events, break sidebar inheritance, ensure provider selection exists through /api/models/selection, then wait until #send-button-<window> is enabled.",
+      "requiredPlanFields": ["tests[].model", "tests[].provider", "chatWindow"],
+      "supportsProviderInheritanceBreak": true
     }
   },
   "errorClassification": {
@@ -83,9 +88,17 @@
     "RUNNER_STREAM_TIMEOUT": "Stream request was not observed within timeout",
     "FRONTEND_NOT_READY": "Frontend DOM or dev server not available",
     "BACKEND_HEALTH_FAIL": "Backend /api/health did not respond",
-    "INFRASTRUCTURE_OFFLINE": "Connection refused or unreachable (ERR_CONNECTION_REFUSED); start Janus with npm run start-dev",
+    "INFRASTRUCTURE_OFFLINE": "Connection refused or unreachable (ERR_CONNECTION_REFUSED); route to Skill 5 E2E infra/debug, not finding triage",
     "PROVIDER_TIMEOUT": "LLM provider did not respond within expected time",
     "TOOL_ROUTING_FAILURE": "Wrong or no tool was called for the prompt",
     "ASSERTION_MISMATCH": "Response text did not match expected assertions"
+  },
+  "statusClassification": {
+    "ASSERTION_PASS": "Response text matched expected assertions",
+    "RESPONSE_TIME_PASS": "Response completed within expected time",
+    "CONFIRMATION_PASS": "Expected confirmation prompt was detected",
+    "RESPONSE_PRESENT_PASS": "Assistant returned a meaningful response",
+    "TOOL_ROUTING_PASS": "Expected tool was triggered; success classification for routing-only tests",
+    "MANUAL_GATE_REQUIRED": "TestPlan explicitly requires a manual gate; not a runner failure"
   }
 }

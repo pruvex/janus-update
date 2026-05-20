@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-003",
+  "testCaseId": "INT-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Sortiere, fasse zusammen, erstelle Uebersicht",
+  "response": "Hallo Admin, ich habe die Informationen aus deinem Langzeitgedächtnis sortiert und zu einer übersichtlichen Personenbeschreibung von Nikola Tesla zusammengefasst.\nHier ist die Übersicht basierend auf den dauerhaften physischen Merkmalen:\n👤 Personenbeschreibung: Nikola Tesla\nPhysische Erscheinung & Statur\n\nGröße: Auffallend groß\nStatut: Sehr schlanke Persönlichkeit\n\nGesichtszüge & Kopf\n\nGesichtsform: Schmales Gesicht mit markanten, ausgeprägten Wangenknochen.\nStirn: Hohe Stirn.\nAugen: Dunkle, tief liegende Augen.\n\nHaaransatz & Frisur\n\nHaarfarbe: Dunkles Haar.\nStil: Stets akkurat gescheitelt.\n\n\n🕒 Zeitlicher Ursprung der Informationen (Temporal-Recall)\nHier sind die Zeitpunkte der ersten Erwähnung dieser Fakten:\n\n\n\nIdentität (User heißt Admin)\nGestern um 15:44\n\"Admin Rollen ignorieren\"\n\n\nGröße & Statur\n12. Mai 2026 um 19:23\n\"Nikola Tesla Übersicht\"\n\n\nHaarfarbe & Scheitel\n12. Mai 2026 um 19:23\n\"Nikola Tesla Übersicht\"\n\n\nGesichtsform & Wangenknochen\n12. Mai 2026 um 19:23\n\"Nikola Tesla Übersicht\"\n\n\nHohe Stirn\n12. Mai 2026 um 19:23\n\"Nikola Tesla Übersicht\"\n\n\nTief liegende Augen\n12. Mai 2026 um 19:23\n\"Nikola Tesla Personenbeschreibung\"\n\n\n💡 Passende nächste Schritte:• Soll ich basierend auf dieser Beschreibung ein Porträt von Nikola Tesla generieren?• Möchtest du weitere Details zu seiner Biografie oder seinen Erfindungen ergänzen?• Soll ich nach spezifischen Accessoires (wie Brillen oder Uhren) in anderen Aufzeichnungen suchen?\n16:42",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-19T14:42:42.739Z"
+}

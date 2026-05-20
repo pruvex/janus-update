@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-003",
+  "testCaseId": "TC-006-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Verschieb den Termin morgen um 30 Minuten",
+  "response": "Ich habe deinen Kalender für morgen, Dienstag, den 19. Mai 2026, überprüft, konnte aber keine Einträge finden. Auch für die kommenden sieben Tage sind aktuell keine Termine eingetragen.\nIn unseren früheren Gesprächen (z. B. am 16. Mai im Chat „Phoenix-Termin verschieben“) hattest du einen „Phoenix-Termin“ erwähnt. Da dieser jedoch nicht in deinem Kalender steht, kann ich ihn nicht automatisch verschieben.\nDamit ich dir helfen kann:\n\nMeinst du den Phoenix-Termin oder einen anderen (z. B. den Sport-Termin)?\nUm welche Uhrzeit sollte der ursprüngliche Termin stattfinden?\n\nSobald du mir die Details nennst, trage ich ihn gerne ein oder passe ihn direkt an.\n💡 Passende nächste Schritte:• Phoenix-Termin neu im Kalender anlegen• Nach Terminen in einem anderen Zeitraum suchen• Informationen zu Nikola Tesla abrufen (da wir dazu viele Details gespeichert haben)\n02:49",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T00:50:37.993Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-007",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Kannst du Dateien und Ordner bearbeiten?",
+  "response": "Ja. Fähigkeiten in der Kategorie \"Dateien & Dokumente\":\n\nVerzeichnisse auflisten und erstellen\nDateien suchen, lesen, verschieben und löschen\n\nWelche spezifischen Dateien oder Ordner betreffen diese Anfrage und welche Aktion wird benötigt?\n16:20",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T14:21:07.042Z"
+}

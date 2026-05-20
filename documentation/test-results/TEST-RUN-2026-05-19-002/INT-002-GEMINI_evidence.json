@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-002",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wetter morgen in Koeln",
+  "response": "Hallo Admin, hier ist die Wettervorhersage für Köln am morgigen Mittwoch, den 20. Mai 2026:\nEs wird überwiegend regnerisch. Bei einer sehr hohen Niederschlagswahrscheinlichkeit von 97 % wird leichter Regen erwartet. Die Temperaturen liegen zwischen 14 °C in der Nacht und maximal 18 °C am Tag. Der Wind bleibt mit Böen bis zu 15 km/h eher schwach.\nQuelle: Open-Meteo\n💡 Passende nächste Schritte:• Soll ich prüfen, ob es am Donnerstag wieder trockener wird?• Suchst du nach Indoor-Aktivitäten in Köln für morgen?• Benötigst du eine Routenplanung für morgen, die das Regenwetter berücksichtigt?\n14:34",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-19T12:34:47.671Z"
+}

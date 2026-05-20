@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-012",
+  "testCaseId": "INT-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Suche in allen User-Chats nach meinem Namen",
+  "response": "Klar, Admin! 😊Ich kann dir dabei helfen, aber ich habe hier keinen Zugriff auf “alle User-Chats” zum Durchsuchen.\nWas ich jetzt sofort von dir brauche, damit ich es korrekt machen kann:\n\nWelchen genauen Namen soll ich suchen (inkl. Schreibweise)?  \nSollen Varianten mit rein (z.B. Groß/Klein, mit/ohne Umlaut, abgekürzt)?\n\n💡 Passende nächste Schritte:• Nenne mir den exakten Namen (Schreibweise)• Sag mir, ob ich auch Namensvarianten mit durchsuchen soll\n17:49",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T15:49:08.207Z"
+}

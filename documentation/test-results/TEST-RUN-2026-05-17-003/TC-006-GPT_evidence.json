@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-003",
+  "testCaseId": "TC-006-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wie ist es morgen dort?",
+  "response": "Unklar: „dort“ und „wie ist es“ beziehen sich auf was genau (z. B. Wetter, Verkehr, Termin)? Nenne bitte Ort/PLZ und worauf sich „wie ist es“ bezieht.\n02:30",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T00:31:02.138Z"
+}

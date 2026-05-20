@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-002",
+  "testCaseId": "INT-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wird es morgen regnen?",
+  "response": "Für welchen Ort möchtest du die Wettervorhersage wissen? Da ich in deinem Kalender für morgen keinen Termin mit Ortsangabe gefunden habe, nenne mir bitte die Stadt, für die ich die Regenwahrscheinlichkeit prüfen soll.\n💡 Passende nächste Schritte:• Nenne mir eine Stadt (z. B. Berlin oder New York) für den Wettercheck.• Frag mich nach der Vorhersage für die gesamte nächste Woche.• Erstelle einen neuen Termin für morgen, falls du etwas planst.\n01:38",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T23:38:57.407Z"
+}

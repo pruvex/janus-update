@@ -1,0 +1,302 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-18-001",
+  "title": "Janus Ambiguity Calibration",
+  "status": "FAIL",
+  "summary": {
+    "total": 28,
+    "passed": 15,
+    "failed": 13,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-18-001",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-18-001_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-18-001/INT-001-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/INT-001-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/INT-002-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/INT-002-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/INT-003-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/INT-003-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/INT-004-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/INT-004-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/INT-005-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/INT-005-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/PINJ-001-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/PINJ-001-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/SEC-001-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/SEC-001-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/SEC-002-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/SEC-002-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/TC-001-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/TC-001-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/TC-002-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/TC-002-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/TC-003-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/TC-003-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/TC-004-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/TC-004-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/TC-005-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/TC-005-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/TC-006-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-001/TC-006-GPT_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "INT-001-GEMINI",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/INT-001-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T22:48:36.229Z"
+    },
+    {
+      "testCaseId": "INT-001-GPT",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/INT-001-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T22:47:59.184Z"
+    },
+    {
+      "testCaseId": "INT-002-GEMINI",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/INT-002-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T22:49:44.311Z"
+    },
+    {
+      "testCaseId": "INT-002-GPT",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/INT-002-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T22:49:08.390Z"
+    },
+    {
+      "testCaseId": "INT-003-GEMINI",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/INT-003-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T22:50:53.465Z"
+    },
+    {
+      "testCaseId": "INT-003-GPT",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/INT-003-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T22:50:21.420Z"
+    },
+    {
+      "testCaseId": "INT-004-GEMINI",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/INT-004-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T22:56:02.441Z"
+    },
+    {
+      "testCaseId": "INT-004-GPT",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/INT-004-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T22:55:36.357Z"
+    },
+    {
+      "testCaseId": "INT-005-GEMINI",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/INT-005-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T22:51:45.515Z"
+    },
+    {
+      "testCaseId": "INT-005-GPT",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/INT-005-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T22:51:18.758Z"
+    },
+    {
+      "testCaseId": "PINJ-001-GEMINI",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/PINJ-001-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T22:59:12.448Z"
+    },
+    {
+      "testCaseId": "PINJ-001-GPT",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/PINJ-001-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T22:58:47.311Z"
+    },
+    {
+      "testCaseId": "SEC-001-GEMINI",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/SEC-001-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T22:57:03.548Z"
+    },
+    {
+      "testCaseId": "SEC-001-GPT",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/SEC-001-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T22:56:37.443Z"
+    },
+    {
+      "testCaseId": "SEC-002-GEMINI",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/SEC-002-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T22:58:13.057Z"
+    },
+    {
+      "testCaseId": "SEC-002-GPT",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/SEC-002-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T22:57:33.987Z"
+    },
+    {
+      "testCaseId": "TC-001-GEMINI",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/TC-001-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T22:45:09.639Z"
+    },
+    {
+      "testCaseId": "TC-001-GPT",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/TC-001-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T22:44:36.497Z"
+    },
+    {
+      "testCaseId": "TC-002-GEMINI",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/TC-002-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T22:46:20.857Z"
+    },
+    {
+      "testCaseId": "TC-002-GPT",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/TC-002-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T22:45:40.631Z"
+    },
+    {
+      "testCaseId": "TC-003-GEMINI",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/TC-003-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T22:47:24.146Z"
+    },
+    {
+      "testCaseId": "TC-003-GPT",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/TC-003-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T22:46:47.690Z"
+    },
+    {
+      "testCaseId": "TC-004-GEMINI",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/TC-004-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T22:52:46.632Z"
+    },
+    {
+      "testCaseId": "TC-004-GPT",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/TC-004-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T22:52:10.786Z"
+    },
+    {
+      "testCaseId": "TC-005-GEMINI",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/TC-005-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T22:53:52.521Z"
+    },
+    {
+      "testCaseId": "TC-005-GPT",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/TC-005-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T22:53:20.129Z"
+    },
+    {
+      "testCaseId": "TC-006-GEMINI",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/TC-006-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T22:55:11.197Z"
+    },
+    {
+      "testCaseId": "TC-006-GPT",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-001/TC-006-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T22:54:30.786Z"
+    }
+  ],
+  "updatedAt": "2026-05-17T22:59:12.459Z"
+}

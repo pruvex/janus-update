@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-002",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Was gibt es Neues bei Heise?",
+  "response": "Hier sind die aktuellen Schlagzeilen von Heise:\n\nTop 10: Das sind die aktuell besten kleinen Smartphones bis 6,3 Zoll.\nKI & Finanzen: ChatGPT gibt finanzielle Ratschläge, wenn man sein Bankkonto verknüpft.\nDigitale Souveränität: Strategien, wie Europa die Abhängigkeit von Chinas Seltenen Erden verringern kann.\nKI-Forschung: arXiv führt eine Sperre bei ersten Verstößen gegen Einreichungsregeln für KI-Papers ein.\nHardware-Test: Der Ecovacs Deebot Mini im Test – ein günstiger Saugroboter für kleine Wohnungen.\nGaming: „Doom“ wurde auf die Meta Ray-Ban Smart Glasses portiert und ist dort nun spielbar.\nTechnik-Bildung: Das heise-Angebot „Makey:Lab“ soll helfen, Technik zu verstehen, statt nur Bildschirme zu bedienen.\nRaumfahrt: SpaceX plant eine Kapitalerhöhung von 80 Milliarden US-Dollar im Zuge eines Börsengangs.\nWirtschafts-Analyse: Ein Kommentar zum Ende der „SaaS-Gelddruckmaschine“.\nIT-Sicherheit: iX-Workshop zum richtigen Entscheiden und Kommunizieren nach einem Ransomware-Angriff.\n\n💡 Passende nächste Schritte:• Soll ich zu einem dieser Themen (z. B. SpaceX oder die Smartphone-Bestenliste) nach weiteren Details suchen?• Suchst du nach News zu einem spezifischen Technik-Thema wie \"KI\" oder \"Cybersecurity\"?• Möchtest du wissen, ob es zu einem bestimmten Produkt bereits Preisvergleiche gibt?\n01:32",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-16T23:32:28.070Z"
+}

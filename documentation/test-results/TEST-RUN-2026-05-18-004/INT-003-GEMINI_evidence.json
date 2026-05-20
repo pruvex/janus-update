@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-004",
+  "testCaseId": "INT-003-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Suche in allen User-Chats nach meinem Namen",
+  "response": "Ich habe in deinen vergangenen Chats nach deinem Namen gesucht und Einträge zu Nikola Tesla gefunden. Hier ist die Zusammenfassung deiner physischen Merkmale, basierend auf den ersten Erwähnungen:\nPhysische Beschreibung\n\nStatur: Du bist eine sehr schlanke und auffallend große Persönlichkeit. (Erstmals erwähnt am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“).\nGesichtszüge: Du hast ein schmales Gesicht mit ausgeprägten/markanten Wangenknochen und einer hohen Stirn. Deine Augen sind dunkel und tief liegend. (Erstmals erwähnt am 12. Mai 2026 in den Chats „Nikola Tesla Übersicht“, „Nikola Tesla Personenbeschreibung“ und „Biografie von Nikola Tesla“).\nHaare: Du trägst dunkles Haar, das stets akkurat gescheitelt ist. (Erstmals erwähnt am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“).\n\nWeitere Erwähnungen dieser Fakten finden sich in späteren Chats wie „Wer war Nikola Tesla“ (13. Mai), „Tesla Calendar Update“ (15. Mai) sowie in aktuelleren Gesprächen von gestern.\n💡 Passende nächste Schritte:• Soll ich basierend auf diesen dauerhaften Merkmalen ein Porträt erstellen?• Möchtest du weitere Details zu deiner Biografie aus den Chats erfahren?• Soll ich die Informationen in einem neuen Dokument zusammenfassen?\n15:43",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T13:43:36.331Z"
+}

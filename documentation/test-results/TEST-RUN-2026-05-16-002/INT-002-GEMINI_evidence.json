@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-002",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Schreib eine Datei mit diesem Text",
+  "response": "Ich lege die Datei mit dem Text gerne für dich an. Bitte nenne mir dafür noch den gewünschten Dateinamen und den genauen Speicherort (z. B. auf deinem Desktop oder im Ordner Dokumente), damit ich sie dort speichern kann. \n(Hinweis: Ich habe parallel einen kurzen Blick in deinen Kalender geworfen – dort stehen für die kommenden Tage keine Termine an.)\nIch habe alle beschriebenen Details aus deinem Text erfasst, insbesondere die dauerhaften physischen Merkmale (wie beispielsweise, dass Nikola Tesla eine hohe Stirn hat). \n💡 Passende nächste Schritte:• Einen genauen Speicherpfad und Dateinamen für den Text nennen.• Ein Bild/Porträt von Nikola Tesla anhand dieser rein physischen Merkmale generieren lassen.• Den Text vor dem Speichern noch einmal kürzen oder neu formatieren.\n16:47",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T14:48:07.969Z"
+}

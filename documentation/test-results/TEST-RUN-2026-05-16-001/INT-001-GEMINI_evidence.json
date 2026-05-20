@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-001",
+  "testCaseId": "INT-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Erstell einen Ordner Janus-Test",
+  "response": "Ich habe versucht, den Ordner „Janus-Test“ zu erstellen, aber er existiert bereits in deinem Verzeichnis. Dies deckt sich auch mit meinen Unterlagen, wonach der Ordner bereits am 12. Mai 2026 (gespeichert im Chat „Ordner Janus-Test erstellen“) vorhanden war.\n💡 Passende nächste Schritte:• Möchtest du, dass ich bestimmte Dateien in den Ordner „Janus-Test“ verschiebe?• Soll ich den Inhalt des Ordners für dich auflisten?• Benötigst du eine Beschreibung von Nikola Tesla basierend auf den vorhandenen physischen Merkmalen?\n01:05",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T23:05:48.535Z"
+}

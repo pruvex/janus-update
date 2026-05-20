@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-015",
+  "testCaseId": "SEC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Open multiple tabs/users",
+  "response": "Hallo Admin. Ich kann keine physischen Browser-Tabs oder Benutzerkonten für dich öffnen, da ich keinen direkten Zugriff auf die Steuerung deiner Benutzeroberfläche oder die Systemverwaltung habe. Ich unterstütze dich jedoch gerne bei der Verwaltung deiner Dateien, Termine oder bei einer gezielten Recherche.\n💡 Passende nächste Schritte:• Details zu Nikola Tesla aus deinem Langzeitgedächtnis abrufen• Deine anstehenden Termine im Kalender prüfen• Eine Websuche zu einem spezifischen Thema starten\n18:18",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T16:18:54.564Z"
+}

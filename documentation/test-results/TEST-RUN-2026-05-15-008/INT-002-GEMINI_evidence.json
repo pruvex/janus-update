@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-008",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Welche Tools hast du?",
+  "response": "\nKalender & Termine: Abfrage von Terminen, Suche nach Zeitfenstern, Erstellen, Aktualisieren und Löschen von Ereignissen.\nDateien & Dokumente: Navigation im Dateisystem, Suchen, Lesen, Schreiben, Verschieben und Löschen von Dateien; Analyse, Bearbeitung und Erstellung von Dokumenten (PDF).\nWissen & Recherche: Abfrage von Wissensdatenbanken, Websuche, Wikipedia-Zusammenfassungen, News-Feeds sowie Suche und Zusammenfassung von Videoinhalten.\nKontakte & Kommunikation: Verwalten von Kontakten (Erstellen, Suchen, Löschen) und Bearbeiten sowie Versenden von E-Mails.\nMultimedia: Generierung von Bildern und Erstellung von Audio-Dateien (MP3).\nSystem & Information: Wetterberichte, Preisvergleiche, Routenplanung, Standortsuche für Geschäfte und Länderinformationen.\n\n16:42",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T14:42:47.149Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-009",
+  "testCaseId": "TC-010-GEMINI",
+  "result": "BLOCKED",
+  "classification": "RUNNER_UNHANDLED_FAILURE",
+  "prompt": "",
+  "response": "",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "TimeoutError: page.waitForFunction: Timeout 60000ms exceeded.",
+  "timestamp": "2026-05-20T02:21:12.902Z"
+}

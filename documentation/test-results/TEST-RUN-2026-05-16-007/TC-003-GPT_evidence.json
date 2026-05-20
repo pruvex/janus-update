@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-007",
+  "testCaseId": "TC-003-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Führe eine routine Aufgabe aus",
+  "response": "Unklar, welche Routineaufgabe du meinst.\nWelche konkrete Aufgabe (z. B. Kalendertermin erstellen, E-Mail senden, Dateien verschieben, Dokument erstellen) soll ich ausführen und mit welchen Details (Datum/Uhrzeit, Empfänger, Dateipfade/Inhalte)?\n21:05",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-16T19:05:44.407Z"
+}

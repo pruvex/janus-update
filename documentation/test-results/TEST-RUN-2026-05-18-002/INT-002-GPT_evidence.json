@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-002",
+  "testCaseId": "INT-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wer ist Ada Lovelace?",
+  "response": "Ada Lovelace (eigentlich Augusta Ada King-Noel, Countess of Lovelace) war eine britische Mathematikerin und Gesellschaftsdame (10. Dezember 1815 bis 27. November 1852). Sie arbeitete mit Charles Babbage an der von ihm entwickelten Analytical Engine. Besonders wichtig ist, dass ihre Notizen 1843 ein konkretes Programmbeispiel für die Maschine enthielten (z. B. zur Berechnung der Bernoulli-Zahlen) – deshalb gilt sie manchen Historikern als erste Programmiererin der Welt.\nQuelle: Wikipedia\n💡 Passende nächste Schritte:• Wenn du möchtest: Ich fasse dir Ada Lovelaces Beitrag zur Analytical Engine in 3 Stichpunkten zusammen.• Oder: Ich erkläre kurz, warum sie „visionär“ für die Idee von Computern gilt.\n02:03",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T00:04:02.546Z"
+}

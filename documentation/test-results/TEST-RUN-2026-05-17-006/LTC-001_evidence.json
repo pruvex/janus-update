@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-006",
+  "testCaseId": "LTC-001",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was kannst du?",
+  "response": "Das kann ich aktuell\nIch kann dir aktuell in diesen Bereichen helfen:\nAufgaben & Produktivität\n\nAufgabe erstellen: Sag: 'Erstelle eine Aufgabe: Projektbericht bis Freitag fertigstellen.'\n\nKalender & Termine\n\nTermin erstellen: Sag: 'Erstelle einen Termin für Montag 10 Uhr: Arzt.' oder 'Füge Besprechung am Dienstag um 14:00 hinzu.'\nTermin löschen: Sag: 'Lösche den Zahnarzttermin am Freitag.' oder 'Entferne das Meeting am Donnerstag.'\nTermin ändern: Sag: 'Verschiebe meinen Arzttermin auf Mittwoch.' oder 'Aktualisiere die Adresse des Meetings.'\nTermine abrufen: Frage: 'Was habe ich nächste Woche?' oder 'Welche Termine habe ich am Mittwoch?'\n\nEinstellungen & System\n\nSystem-Status prüfen: Frage: 'Wie ist dein System-Status?' oder 'Läuft alles stabil?'\n\nUpdates & Installation\n\nJanus aktualisieren: Wenn eine neue Version verfügbar ist, zeigt Janus dir einen Aktualisierungshinweis und führt dich durch die Installation.\n\nSonstiges\n\nDateien finden: Sage: 'Finde alle PNG-Dateien auf dem Desktop'.\nDateien suchen: Sage: 'Finde die Datei Rechnung.pdf' oder 'Wo ist mein Dokument?'.\nDateien verschieben: Sage: 'Verschiebe alle JPG-Dateien in den Bilder-Ordner'.\nErinnerungen finden: Frage: 'Wie heißt der Hund von Max?' oder 'Was weiß ich über...?'\nOrdner erstellen: Sage: 'Erstelle einen Ordner Bilder auf dem Desktop'.\nOrdnerinhalt anzeigen: Sage: 'Zeige den Inhalt des Desktops'.\nPersonen merken: Sag: 'Merke dir: Max hat einen Hund namens Bello.'\nSicherheits-Gate gegen Prompt Injections: Janus verfügt über einen integrierten Schutz gegen manipulative Anweisungen (Injection Defense). Der Guard wird vor jedem Provider-Aufruf ausgeführt und erkennt Injection-Patterns (ignore, delete, override, bypass, forget). Bei erkannter Injection wird die gesamte Query-Verarbeitung blockiert. Provider-agnostisch (funktioniert für GPT und Gemini).\n\n14:49",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:49:56.798Z"
+}

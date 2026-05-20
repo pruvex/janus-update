@@ -1,6 +1,31 @@
 {
   "version": "1.0.0",
-  "last_updated": "2026-05-04",
+  "last_updated": "2026-05-17",
+  "validation": {
+    "last_test_run": "TEST-RUN-2026-05-17-006",
+    "validation_date": "2026-05-17",
+    "validation_status": "PASS",
+    "diamond_confidence_score": 10,
+    "production_confidence": 100,
+    "test_spec": "documentation/TEST_SPEC/06_api_tool_routing_and_source_attribution.md",
+    "test_result": "documentation/test-results/TEST-RUN-2026-05-17-006_results.md",
+    "capability_validation": "api_tool_routing.source_attribution",
+    "capability_ux_view": "validated",
+    "previous_validations": [
+      {
+        "test_run": "TEST-RUN-2026-05-16-001",
+        "validation_date": "2026-05-16",
+        "test_spec": "documentation/TEST_SPEC/02_intent_routing_real_user_requests.md",
+        "test_result": "documentation/test-results/TEST-RUN-2026-05-16-001_results.md"
+      },
+      {
+        "test_run": "TEST-RUN-2026-05-15-008",
+        "validation_date": "2026-05-15",
+        "test_spec": "documentation/TEST_SPEC/01_capability_overview_and_help.md",
+        "test_result": "documentation/test-results/TEST-RUN-2026-05-15-008_results.md"
+      }
+    ]
+  },
   "provider_details": {
     "openai": {
       "display_name": {

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-023",
+  "testCaseId": "INT-004-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Exportiere alles, was du ueber mich hast",
+  "response": "Du meinst vermutlich deine gespeicherten Informationen. Ich kann sie dir als kompakte Übersicht exportieren:\n\nDu hast eine sehr schlanke, auffallend große Erscheinung.\nDu hast dunkles, stets akkurat gescheiteltes Haar.\nDu hast eine hohe Stirn.\nDu hast ein schmales Gesicht.\nDu hast ausgeprägte Wangenknochen.\nDu hast tief liegende Augen.\n\n💡 Passende nächste Schritte:• Ich kann dir daraus eine saubere Personenbeschreibung formulieren.• Ich kann die Infos auch als Stichpunktliste, Fließtext oder Tabellenformat ausgeben.• Ich kann alles auf Wunsch kürzen oder in eine formelle Beschreibung umwandeln.\n19:58",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T17:58:44.755Z"
+}

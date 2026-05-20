@@ -2,7 +2,7 @@
 description: SWE 1.6 Diamantstandard Phase 1 â€“ Spec â†’ Task Compiler. Zerlegt eine Feature-Spec deterministisch in ausfÃ¼hrbare, atomare Task-Files fÃ¼r Janus. Keine Architekturentscheidungen, keine Implementation.
 ---
 
-# SKILL 1 – SPEC TO TASK COMPILER
+# SKILL 1 â€“ SPEC TO TASK COMPILER
 
 ## ðŸŽ¯ PURPOSE
 
@@ -15,7 +15,7 @@ KEINE CODE-IMPLEMENTATION. KEINE ARCHITEKTUR. KEINE FREIEN ENTSCHEIDUNGEN.
 
 ---
 
-## ðŸ“¥ INPUT
+## ðŸ“ INPUT
 
 - Feature Spec (MD Datei oder Text)
 - Zielsystem: Janus Codebase Kontext
@@ -23,7 +23,7 @@ KEINE CODE-IMPLEMENTATION. KEINE ARCHITEKTUR. KEINE FREIEN ENTSCHEIDUNGEN.
 
 ---
 
-## ðŸ“Œ AUTOMATIC ARTIFACT INPUT MODE
+## ðŸ“Š AUTOMATIC ARTIFACT INPUT MODE
 
 Wenn der Nutzer eine Spec-Datei nennt, ist diese Datei automatisch die **Single Source of Truth**.
 
@@ -56,7 +56,7 @@ Action:
 
 ---
 
-## âš™ï¸ EXECUTION FLOW
+## ðŸš€ EXECUTION FLOW
 
 ---
 
@@ -81,8 +81,8 @@ Analysiere:
 
 Extrahiere nur explizite Informationen.
 
-âŒ Keine Interpretation
-âŒ Keine ErgÃ¤nzungen
+âš ï¸ Keine Interpretation
+âš ï¸ Keine ErgÃ¤nzungen
 
 ---
 
@@ -184,7 +184,7 @@ keine deterministische Zerlegung mÃ¶glich ist
 mehrere gleich plausible Interpretationen existieren
 Scope nicht sicher abgrenzbar ist
 
-âž¡ STOP EXECUTION
+âš ï¸ STOP EXECUTION
 
 MODEL SWITCH REQUIRED: SWE 1.6 â†’ GPT-5.5
 
@@ -201,7 +201,7 @@ keine SchÃ¤tzung
 keine Spekulation
 keine Architekturentscheidungen
 keine Task-Erfindung
-ðŸ“¤ OUTPUT FORMAT
+ðŸ“ OUTPUT FORMAT
 SPEC COMPILATION COMPLETE
 
 Feature: <Name>
@@ -225,7 +225,7 @@ Modell-Bedeutung:
 NÃ¤chster Schritt:
 â†’ Starte Skill 2 mit SWE 1.6 und beiden Artefakten:
    Spec: <source spec file>
-   Tasks: <generated task file>
+   Task: <generated task file>`nBacklog Item: <BACKLOG-XXX | N/A>`nTarget Task: <task id oder generated task basename>
 
 Wichtig:
 â†’ Starte Skill 2 NICHT mit Kimi k2.5, nur weil ein erzeugter Task Kimi zugewiesen ist.
@@ -237,10 +237,25 @@ COPY-PASTE HANDOVER FÃœR SKILL 2 (PFLICHT):
 Am Ende der Antwort MUSS zusÃ¤tzlich ein einzelner grauer Copy-Block ausgegeben werden.
 Dieser Block MUSS direkt kopierbar sein und darf keine ErklÃ¤rung auÃŸerhalb des Blocks benÃ¶tigen.
 
+Bei Backlog-Specs ist ein minimalistischer Handover ungueltig. Der Copyblock MUSS `Backlog Item`, `Target Task`, `Mode`, `Execution Model`, `Rules` und `Expected Output` enthalten. Wenn die Spec aus `documentation/Planned Features/backlog_BACKLOG-XXX_*.md` kommt, muss `Backlog Item: BACKLOG-XXX` aus dem Pfad oder Spec-Header uebernommen werden.
+
+Verboten als finaler Skill-2-Handover:
+
 ```text
-@[/SKILL 2 – TASK BREAKDOWN ENGINE] mit folgenden Artefakten:
+@[/SKILL 2 – TASK BREAKDOWN ENGINE]
+Spec: <path>
+Task: <path>
+Execution Model: SWE 1.6
+```
+
+Ein solcher Kurzblock muss durch den vollstaendigen Copyblock unten ersetzt werden.
+
+```text
+@[/SKILL 2 â€“ TASK BREAKDOWN ENGINE] mit folgenden Artefakten:
 Spec: <source spec file>
-Tasks: <generated task file>
+Task: <generated task file>
+Backlog Item: <BACKLOG-XXX | N/A>
+Target Task: <task id oder generated task basename>
 Mode: TASK_REFINEMENT
 Execution Model: SWE 1.6
 
@@ -259,24 +274,27 @@ Arbeitsregel:
 - Skill 2 lÃ¤uft mit SWE 1.6, unabhÃ¤ngig davon, ob einzelne erzeugte Tasks spÃ¤ter Kimi k2.5 als Execution Model tragen.
 - Erzeuge keine Implementation.
 - Verfeinere die Tasks deterministisch und gib exakt einen Target Task fÃ¼r Skill 3 frei.
+- Bewahre Backlog-Identitaet, Source Spec und Target Task im Skill-3-Handover.
 
 NÃ¤chster erwarteter Output:
 - Ãœberarbeitete/validierte Task-Struktur
 - Exakt ein freigegebener Target Task
-- Eindeutiger Handover zu SKILL 3 – PRE-IMPLEMENTATION VERIFICATION
+- Eindeutiger Handover zu SKILL 3 â€“ PRE-IMPLEMENTATION VERIFICATION
+Rules: USE_SPEC_AND_TASK_AS_SOURCE_OF_TRUTH_NO_IMPLEMENTATION_RELEASE_ONE_TARGET_TASK
+Expected Output: TASK_REFINED_PLUS_SKILL_3_HANDOFF
 ```
 
 Der Copy-Block ist PFLICHT, auch wenn davor bereits eine normale Zusammenfassung ausgegeben wurde.
 ðŸš« RESTRICTIONS
 
-STRICT PROVIDER ISOLATION: Janus ist ein BYOK-Tool. Implementiere oder erlaube NIEMALS automatische Provider-Fallbacks (z.B. Gemini zu GPT) im Produktcode. Wenn ein Provider-spezifischer Test (z.B. Gemini) fehlschlägt, muss er als Fehler dieses Providers behandelt werden. Ein Ausweichen auf einen anderen Provider zur Fehlerumgehung ist STRENG VERBOTEN.
+STRICT PROVIDER ISOLATION: Janus ist ein BYOK-Tool. Implementiere oder erlaube NIEMALS automatische Provider-Fallbacks (z.B. Gemini zu GPT) im Produktcode. Wenn ein Provider-spezifischer Test (z.B. Gemini) fehlschlÃ¤gt, muss er als Fehler dieses Providers behandelt werden. Ein Ausweichen auf einen anderen Provider zur Fehlerumgehung ist STRENG VERBOTEN.
 
 KEINE Implementation
 KEINE Codegenerierung
 KEINE Architekturentscheidungen
 KEINE Feature-Erweiterung
 KEINE freien Interpretationen
-ðŸ§  ERROR HANDLING
+ðŸš¨ ERROR HANDLING
 
 Wenn Spec unvollstÃ¤ndig:
 
@@ -287,7 +305,7 @@ Missing:
 
 Action:
 â†’ Spec erweitern oder GPT-5.5 verwenden
-ðŸ§  OUTPUT GUARANTEE
+ðŸš¨ OUTPUT GUARANTEE
 
 Output ist immer:
 

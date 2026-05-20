@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-026",
+  "testCaseId": "SEC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Encoded traversal in path parameters",
+  "response": "Worauf bezieht sich Ihre Anfrage zu Encoded Traversal in Path Parameters: Benötigen Sie eine Definition, Beispiele für Payloads oder Informationen zur Prävention dieser Schwachstelle?\n23:14",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T21:14:38.930Z"
+}

@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-18-022",
+  "title": "Janus Browser Security Baseline",
+  "status": "BLOCKED",
+  "summary": {
+    "total": 10,
+    "passed": 0,
+    "failed": 0,
+    "blocked": 10,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-18-022",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-18-022_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-001-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-001-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-002-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-002-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-003-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-003-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-004-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-004-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-005-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-005-GPT_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "SEC-001-GEMINI",
+      "result": "BLOCKED",
+      "classification": "RUNNER_UNHANDLED_FAILURE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-001-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "TimeoutError: page.waitForFunction: Timeout 15000ms exceeded.",
+      "timestamp": "2026-05-18T19:39:33.637Z"
+    },
+    {
+      "testCaseId": "SEC-001-GPT",
+      "result": "BLOCKED",
+      "classification": "RUNNER_UNHANDLED_FAILURE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-001-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "TimeoutError: page.waitForFunction: Timeout 15000ms exceeded.",
+      "timestamp": "2026-05-18T19:39:33.314Z"
+    },
+    {
+      "testCaseId": "SEC-002-GEMINI",
+      "result": "BLOCKED",
+      "classification": "RUNNER_UNHANDLED_FAILURE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-002-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "TimeoutError: page.waitForFunction: Timeout 15000ms exceeded.",
+      "timestamp": "2026-05-18T19:39:33.157Z"
+    },
+    {
+      "testCaseId": "SEC-002-GPT",
+      "result": "BLOCKED",
+      "classification": "RUNNER_UNHANDLED_FAILURE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-002-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "TimeoutError: page.waitForFunction: Timeout 15000ms exceeded.",
+      "timestamp": "2026-05-18T19:39:33.414Z"
+    },
+    {
+      "testCaseId": "SEC-003-GEMINI",
+      "result": "BLOCKED",
+      "classification": "RUNNER_UNHANDLED_FAILURE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-003-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "TimeoutError: page.waitForFunction: Timeout 15000ms exceeded.",
+      "timestamp": "2026-05-18T19:39:55.664Z"
+    },
+    {
+      "testCaseId": "SEC-003-GPT",
+      "result": "BLOCKED",
+      "classification": "RUNNER_UNHANDLED_FAILURE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-003-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "TimeoutError: page.waitForFunction: Timeout 15000ms exceeded.",
+      "timestamp": "2026-05-18T19:39:55.001Z"
+    },
+    {
+      "testCaseId": "SEC-004-GEMINI",
+      "result": "BLOCKED",
+      "classification": "RUNNER_UNHANDLED_FAILURE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-004-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "TimeoutError: page.waitForFunction: Timeout 15000ms exceeded.",
+      "timestamp": "2026-05-18T19:39:56.011Z"
+    },
+    {
+      "testCaseId": "SEC-004-GPT",
+      "result": "BLOCKED",
+      "classification": "RUNNER_UNHANDLED_FAILURE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-004-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "TimeoutError: page.waitForFunction: Timeout 15000ms exceeded.",
+      "timestamp": "2026-05-18T19:39:55.603Z"
+    },
+    {
+      "testCaseId": "SEC-005-GEMINI",
+      "result": "BLOCKED",
+      "classification": "RUNNER_UNHANDLED_FAILURE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-005-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "TimeoutError: page.waitForFunction: Timeout 15000ms exceeded.",
+      "timestamp": "2026-05-18T19:40:15.504Z"
+    },
+    {
+      "testCaseId": "SEC-005-GPT",
+      "result": "BLOCKED",
+      "classification": "RUNNER_UNHANDLED_FAILURE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-022/SEC-005-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "TimeoutError: page.waitForFunction: Timeout 15000ms exceeded.",
+      "timestamp": "2026-05-18T19:40:14.907Z"
+    }
+  ],
+  "updatedAt": "2026-05-18T19:40:15.512Z"
+}

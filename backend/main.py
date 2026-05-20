@@ -1,23 +1,14 @@
-# --- VENV PATH INJECTION (WORKAROUND) ---
-import sys
-import os
-
-# Ersetze diesen Pfad mit dem, den du gerade kopiert hast!
-VENV_SITE_PACKAGES = r"C:\python311\Lib\site-packages"
-
-if VENV_SITE_PACKAGES not in sys.path:
-    print(f"!!! VENV WORKAROUND: Füge {VENV_SITE_PACKAGES} zum Systempfad hinzu.")
-    sys.path.insert(0, VENV_SITE_PACKAGES)
-# ----------------------------------------
-
 # STARTUP TELEMETRY: Write backend startup start marker (at module import time)
 try:
     import json
+    import os
     from datetime import datetime
 
     # Only write in dev context
     if os.environ.get("JANUS_DEV_MODE") == "true" or os.environ.get("NODE_ENV") == "development":
-        log_dir = r"C:\KI\Janus-Projekt\documentation\Startup log"
+        # Portable path: find documentation/Startup log relative to this file
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        log_dir = os.path.join(current_dir, '..', 'documentation', 'Startup log')
         os.makedirs(log_dir, exist_ok=True)
         log_file = os.path.join(log_dir, "janus_startup_telemetry.log")
         marker = {
@@ -351,6 +342,14 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Failed to register tools: {e}")
 
+    # 2.6. Pre-initialize Gateway Silos (verhindert Lazy-Loading Race bei ersten Requests)
+    try:
+        from backend.services.llm_gateway import _ensure_gateway_silos
+        _ensure_gateway_silos()
+        logger.info("Gateway silos pre-initialized successfully.")
+    except Exception as e:
+        logger.error(f"Failed to pre-initialize gateway silos: {e}")
+
     # 3. Start FFmpeg download in background (NON-BLOCKING!)
     # We use a thread so the download doesn't block the server loop
     try:
@@ -576,7 +575,9 @@ async def lifespan(app: FastAPI):
         if os.environ.get("JANUS_DEV_MODE") == "true" or os.environ.get("NODE_ENV") == "development":
             import json
             from datetime import datetime
-            log_dir = r"C:\KI\Janus-Projekt\documentation\Startup log"
+            # Portable path: find documentation/Startup log relative to this file
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            log_dir = os.path.join(current_dir, '..', 'documentation', 'Startup log')
             os.makedirs(log_dir, exist_ok=True)
             log_file = os.path.join(log_dir, "janus_startup_telemetry.log")
             marker = {
@@ -706,6 +707,38 @@ def bootstrap_app_data():
 
 # 3. App Definition
 app = FastAPI(title="Janus Backend", version="1.0.0", lifespan=lifespan)
+
+SECURITY_HEADERS = {
+    "Content-Security-Policy": (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: blob: http://127.0.0.1:8001 http://localhost:8001 janus:; "
+        "font-src 'self' data:; "
+        "connect-src 'self' http://127.0.0.1:8001 http://localhost:8001 http://localhost:11434 "
+        "ws://127.0.0.1:5173 ws://localhost:5173; "
+        "media-src 'self' data: blob: http://127.0.0.1:8001 http://localhost:8001; "
+        "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; "
+        "object-src 'none'; "
+        "base-uri 'self'; "
+        "frame-ancestors 'self' janus:; "
+        "form-action 'self'"
+    ),
+    "X-Frame-Options": "SAMEORIGIN",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+}
+
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    for header, value in SECURITY_HEADERS.items():
+        response.headers[header] = value
+    if request.url.scheme == "https":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
 
 
 # --- FIX: Exception Handler für saubere Logs beim Start ---

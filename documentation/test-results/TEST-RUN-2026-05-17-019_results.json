@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-17-019",
+  "title": "Janus Secret Handling and Client Boundary",
+  "status": "FAIL",
+  "summary": {
+    "total": 3,
+    "passed": 2,
+    "failed": 1,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-17-019",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-17-019_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-17-019/INT-001-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-17-019/INT-001-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-17-019/LTC-001_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "INT-001-GEMINI",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-17-019/INT-001-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T16:19:17.406Z"
+    },
+    {
+      "testCaseId": "INT-001-GPT",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-17-019/INT-001-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T16:18:31.139Z"
+    },
+    {
+      "testCaseId": "LTC-001",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-17-019/LTC-001_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T16:17:18.505Z"
+    }
+  ],
+  "updatedAt": "2026-05-17T16:19:17.418Z"
+}

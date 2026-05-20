@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-002",
+  "testCaseId": "INT-004-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "News von Heise heute",
+  "response": "\nTop 10: Bester Saugroboter im Test – Roborock ist Testsieger, Dreame ist leiser  \nBahn auf Sparkurs: Verschlankung soll Milliardenverluste beenden  \nKI-Bilder im Urheberrecht: Wann Prompting schützt und warum Kopieren erlaubt ist  \nTaktrekord: 9,2 GHz mit Intels 14900KF unter Helium  \nMähroboter Sunseeker X5 Gen2 im Test: Allrad-Mähroboter mit gutem Kantenschnitt  \nKI-Boom reicht nicht: Kalifornien plant Digitalsteuer für Cloud-Software  \nheise+ | Lichtschwertkampf LudoSport ausprobiert: Trainieren wie ein Padawan  \nheise-Angebot: data2day 2026 setzt Schwerpunkte auf Datenprodukte, Agentic AI und Governance  \nDiesel seit April 45 Cent billiger  \nheise-Angebot: iX-Workshop: Netzwerkarchitekturen in Proxmox aufbauen, verwalten und schützen\n\n💡 Passende nächste Schritte:• Sag mir, welche Themen dich am meisten interessieren (z.B. KI, Hardware, Recht, Mobilität) – dann filtere ich gezielter.• Wenn du willst, fasse ich dir 1–3 der Top-Meldungen kurz zusammen.\n02:06",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T00:06:15.207Z"
+}

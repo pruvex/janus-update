@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-003",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was gibt es Neues bei Heise?",
+  "response": "Hier sind die aktuellen Top-Schlagzeilen von Heise:\n\nTop 10: Bestes kleines Smartphone bis 6,3 Zoll – Eine Übersicht kompakter Mobilgeräte.\nFinanzielle Ratschläge von ChatGPT – Neue Möglichkeiten durch die Verknüpfung mit Bankkonten.\nDigitale Souveränität – Europas Bestreben, die Abhängigkeit von Chinas Seltenen Erden zu verringern.\nKI-Papers bei arXiv – Einführung einer Sperre bereits beim ersten Verstoß gegen Richtlinien.\nEcovacs Deebot Mini im Test – Ein kompakter Saugroboter für kleinere Wohnflächen.\n„Doom“ auf Meta Ray-Ban Smart Glasses – Der Spieleklassiker erreicht neue Wearables.\nheise-Angebot: Makey:Lab – Ein Projekt, um Technikverständnis jenseits von Bildschirmen zu fördern.\nSpaceX-Börsengang – Eine geplante Kapitalerhöhung in Höhe von 80 Milliarden US-Dollar.\nKommentar: Das Ende der SaaS-Gelddruckmaschine – Eine Analyse zur aktuellen Lage von Software-as-a-Service.\nFotonews der Woche 20/2026 – Aktuelle Entwicklungen bei Sony, Canon und Nikon.\n\n💡 Passende nächste Schritte:• Soll ich zu einem dieser Themen (z. B. dem SpaceX-Börsengang oder dem Smartphone-Vergleich) weitere Details recherchieren?• Möchtest du wissen, was es aktuell bei anderen Quellen wie dem Spiegel oder der Tagesschau Neues gibt?• Suchst du nach einem Preisvergleich für eines der genannten Produkte, wie den Ecovacs Deebot Mini?\n02:28",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T00:28:20.794Z"
+}

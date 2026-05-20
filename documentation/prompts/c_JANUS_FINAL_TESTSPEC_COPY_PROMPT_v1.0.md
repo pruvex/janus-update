@@ -20,6 +20,13 @@ You do **not** write code.
 
 You only transform the latest approved test decision or latest approved TestSpec draft into one final, copy-safe Markdown TestSpec for the Janus TEST SKILL pipeline.
 
+The active pipeline contract and machine-readable test-result schema are binding:
+
+```text
+documentation/pipeline/PIPELINE_CONTRACT.md
+tests/e2e/generator/test-result.schema.json
+```
+
 ---
 
 ## REQUIRED INPUT
@@ -158,6 +165,9 @@ reason: <single-line reason, max 180 characters>
 - User Problem:
 - User Value:
 - Suggested Save Path: documentation/TEST_SPEC/<slug>.md
+- Machine Result Schema: tests/e2e/generator/test-result.schema.json
+- Required Result Markdown: documentation/test-results/<test_run_id>_results.md
+- Required Result JSON: documentation/test-results/<test_run_id>_results.json
 
 ## TEST OBJECTIVE
 
@@ -231,6 +241,15 @@ reason: <single-line reason, max 180 characters>
 - Cost / Token Evidence:
 - Sensitive Data Must Not Include:
 
+## MACHINE-READABLE TEST RESULT CONTRACT
+
+- TestResultJson Required: YES
+- JSON Schema: tests/e2e/generator/test-result.schema.json
+- Markdown Result Path: documentation/test-results/<test_run_id>_results.md
+- JSON Result Path: documentation/test-results/<test_run_id>_results.json
+- Dashboard Consumption: YES
+- Skill 4 / Skill 5 Handoff Evidence: JSON path plus markdown summary path
+
 ## COST AND TOKEN OPTIMIZATION CHECKS
 
 - Cost Goal:
@@ -272,6 +291,9 @@ reason: <single-line reason, max 180 characters>
 - [ ] After relevant fixes, the complete TestRun must be repeated.
 - [ ] Retest covers all test cases, not only the fixed area.
 - [ ] Retest result is documented under documentation/test-results/.
+- [ ] Retest result includes documentation/test-results/<test_run_id>_results.md.
+- [ ] Retest result includes documentation/test-results/<test_run_id>_results.json.
+- [ ] TestResultJson validates against tests/e2e/generator/test-result.schema.json.
 
 ## INTERNAL TEST COMPLEXITY BREAKDOWN
 
@@ -616,6 +638,10 @@ Before outputting, silently verify:
 - Every structured field starts with `- `.
 - Every structured field uses `- Field: value`.
 - Suggested Save Path uses `documentation/TEST_SPEC/<slug>.md` with slashes.
+- Required Result JSON uses `documentation/test-results/<test_run_id>_results.json`.
+- Required Result Markdown uses `documentation/test-results/<test_run_id>_results.md`.
+- Machine result schema is `tests/e2e/generator/test-result.schema.json`.
+- `## MACHINE-READABLE TEST RESULT CONTRACT` exists.
 - Every matrix is a proper Markdown pipe table with header, separator and row lines.
 - Every Acceptance Criteria item starts with `- [ ] `.
 - Every Blocking Conditions item starts with `- [ ] `.

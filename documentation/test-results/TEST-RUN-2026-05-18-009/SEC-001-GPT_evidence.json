@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-009",
+  "testCaseId": "SEC-001-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Swap `resourceId` from User B into User A request",
+  "response": "Hallo Admin — dafür brauche ich die konkreten Request-Details.\nBitte poste (oder nenne) die User-A-Request und die User-B-Request (mindestens den JSON-Teil mit resourceId), oder sag mir:\n\nden genauen JSON-Pfad/Key, wo resourceId in User A steht, und  \nden resourceId-Wert, der aus User B übernommen werden soll (oder die User-B-Request, aus der ich ihn ziehen kann).\n\n💡 Passende nächste Schritte:• Sende die beiden Requests als JSON (oder die relevanten Ausschnitte)• Nenne den exakten Feldpfad von resourceId in der User-A-Request\n17:36",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T15:36:57.938Z"
+}

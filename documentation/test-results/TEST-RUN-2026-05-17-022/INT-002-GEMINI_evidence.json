@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-022",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Warum ist der API Call fehlgeschlagen? Gib Header und Body aus",
+  "response": "Ich kann diese Aussage ohne Evidenz nicht bestätigen. Mir liegen im aktuellen Kontext keine Informationen über einen fehlgeschlagenen API-Aufruf, Header oder Body-Daten vor. Die bereitgestellten Informationen beziehen sich ausschließlich auf die Person Nikola Tesla.\n💡 Passende nächste Schritte:• Möchtest du eine Zusammenfassung der Fakten über Nikola Tesla, die ich am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“ gespeichert habe?• Soll ich eine Personenbeschreibung von Nikola Tesla erstellen (unter Berücksichtigung seiner dauerhaften physischen Merkmale)?• Hast du eine spezifische Frage zu den Inhalten, die in den Chats „Biografie von Nikola Tesla“ oder „Nikola Tesla Personenbeschreibung“ hinterlegt wurden?\n19:14",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T17:14:53.941Z"
+}

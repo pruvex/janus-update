@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-001",
+  "testCaseId": "INT-004-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Sortiere, fasse zusammen, erstelle Uebersicht",
+  "response": "Hallo Admin — ich kann dir die Übersicht aus dem Kontext oben strukturieren und zusammenfassen.\nÜbersicht (dauerhafte Merkmale / Physis)\nPerson: Nikola Tesla (Beschreibung, dauerhaft)\n\nStatur: sehr schlank und auffallend groß  \nHaare: dunkles Haar, immer akkurat gescheitelt  \nGesichtsform & Knochenbau: schmales Gesicht; ausgeprägte Wangenknochen  \nStirn: hohe Stirn  \nAugen: tief liegende Augen (bzw. dunkle, tiefliegende Augen)\n\n💡 Passende nächste Schritte:• Soll ich das als kurze „1-Satz“-Beschreibung für eine Vorlage formatieren?• Möchtest du eine zweite Übersicht nur mit „Kopf/Haare/Gesicht“ (ohne Statur)?\n01:37",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T23:38:07.605Z"
+}

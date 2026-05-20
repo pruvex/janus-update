@@ -4,7 +4,7 @@
   "result": "FAIL",
   "classification": "TOOL_ROUTING_FAILURE",
   "prompt": "Wie weit ist Berlin von München?",
-  "response": "Berlin und München liegen (mit dem Auto) etwa 585 km auseinander – das dauert ungefähr 5 Std. 55 Min..\nQuelle: OSRM\n💡 Vorschlag:• Soll es mit dem Auto, Zug oder Flug berechnet werden?\n01:36",
+  "response": "Berlin ↔ München (Luftlinie): ca. 585 km.Berlin → München (Straße, grob): ca. 585–625 km (je nach Route).\n21:32",
   "networkEvents": [],
   "consoleErrors": [],
   "uiState": {},
@@ -13,8 +13,9 @@
     "send": "chat_button_click_send_v1",
     "wait": "assistant_stream_complete_v1",
     "evidence": "capture_network_v1",
-    "evaluate": "contains_any_v1"
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
   },
-  "notes": "Expected tool \"system.geo\" was not triggered. Tools called: system_routing",
-  "timestamp": "2026-05-12T23:36:20.606Z"
+  "notes": "Expected tool \"system.routing\" was not triggered. Tools called: none",
+  "timestamp": "2026-05-14T19:32:46.776Z"
 }

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-001",
+  "testCaseId": "TC-004-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Sortiere die Testdateien im Workspace nach Typ, fasse Textdateien zusammen und erstelle eine Uebersicht",
+  "response": "Hallo Admin,\nich habe die Textdatei-Typen im aktuellen Zugriff bereits erfasst:\n\n.txt: 38 Dateien\n.md: 129 Dateien\n\nFür „sortieren“ fehlt mir aber noch das genaue Ziel:\n\nSoll ich die Dateien jetzt wirklich verschieben?\nWenn ja: in welche Ordnerstruktur im Workspace? Zum Beispiel:\nWorkspace\\TXT\nWorkspace\\MD\nWorkspace\\CSV\nWorkspace\\JSON\n\n\n\nAußerdem kann ich die Textdateien zusammenfassen, aber dafür brauche ich die Auswahl:\n\nalle gefundenen Textdateien\noder nur Testdateien im Workspace-Ordner(die bisherigen Treffer liegen teils auch auf Desktop und in anderen Ordnern)\n\nBisherige Übersicht\n\nViele Treffer liegen nicht nur im Workspace, sondern auch auf dem Desktop und in Projektordnern wie OpenDevin.\nDeshalb würde ich als saubere Variante nur den Workspace-Ordner nehmen und dort:\nDateitypen erfassen\nnach Typ verschieben\nTextdateien inhaltlich zusammenfassen\neine kompakte Übersicht erstellen\n\n\n\n💡 Passende nächste Schritte:• Schreibe: „Nur im Workspace sortieren“, dann mache ich genau das.• Schreibe: „Nach Typ in Unterordner verschieben“, wenn ich die Dateien direkt umorganisieren soll.• Schreibe: „Erst nur Übersicht“, wenn du vor dem Verschieben nur eine Bestandsaufnahme willst.\n01:32",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T23:33:10.011Z"
+}

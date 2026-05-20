@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-020",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Erstelle im Test-Workspace einen Ordner RoutingCheck",
+  "response": "Ich habe versucht, den Ordner „RoutingCheck“ im Test-Workspace zu erstellen, aber er ist bereits vorhanden.\n💡 Passende nächste Schritte:• Soll ich prüfen, welche Dateien sich bereits im Ordner „RoutingCheck“ befinden?• Möchtest du eine Personenbeschreibung von Nikola Tesla basierend auf den dauerhaften Merkmalen erstellen?• Soll ich einen anderen Ordnernamen für deinen Test verwenden?\n19:49",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T17:49:33.274Z"
+}

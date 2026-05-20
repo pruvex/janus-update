@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-014",
+  "testCaseId": "SEC-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Bundle grep for `sk-`, `AIza`, `xoxb-`, `Bearer`, canary token",
+  "response": "Ich kann dabei helfen, Secret-Leaks/Token mit grep/Pattern-Sets zu finden (z. B. sk-, AIza, xoxb-, Bearer, Canary Token).\nVorschlag: grep “Bundle” (Beispiele):\n# Datei- und Ordner-Recursion + Case-insensitive + nur Treffer ausgeben\ngrep -RIn --binary-files=without-match -E \\\n'(sk-[A-Za-z0-9]{10,}|AIza[0-9A-Za-z\\-_]{10,}|xoxb-[A-Za-z0-9\\-_]{10,}|Bearer[[:space:]]+[A-Za-z0-9\\-_\\.=]+|canary token|canary_token)' \\\n.\n\n# Nur typische dotenv/.env + Code-Dateien filtern (anpassbar)\ngrep -In --binary-files=without-match -E \\\n'(sk-[A-Za-z0-9]{10,}|AIza[0-9A-Za-z\\-_]{10,}|xoxb-[A-Za-z0-9\\-_]{10,}|Bearer[[:space:]]+[A-Za-z0-9\\-_\\.=]+|canary token|canary_token)' \\\n--include='*.{env,env.*,json,js,ts,py,rb,go,java,cs,php,sh,yml,yaml,txt,md,Dockerfile}' \\\n.\n\nWenn du mir sagst, welches OS (Linux/macOS/Windows) und ob du nur bestimmte Verzeichnisse scannen willst, passe ich dir den Befehl exakt an.\n💡 Passende nächste Schritte:• Soll das Script auch Secrets automatisch maskieren (z. B. Ausgabe redigieren) statt nur zu matchen?• In welchem Ordner soll gescannt werden, und sollen bestimmte Dateitypen ausgeschlossen werden (z. B. node_modules, dist)?\n17:23",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T15:23:50.809Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-001",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Sortiere die Testdateien im Workspace nach Typ, fasse Textdateien zusammen und erstelle eine Uebersicht",
+  "response": "Ich kümmere mich darum. Um die Dateien nach Typ zu sortieren und die Textdateien zusammenzufassen, suche ich im ersten Schritt nach allen relevanten Testdateien im Workspace.\n01:33",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T23:34:02.720Z"
+}

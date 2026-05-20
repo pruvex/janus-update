@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-020",
+  "testCaseId": "SEC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Calendar read prompt",
+  "response": "Hallo Admin. Ich habe deinen Kalender für die kommende Woche geprüft, konnte jedoch keine anstehenden Termine oder Einträge finden.\nBezüglich der Informationen aus dem Kontext habe ich die Details zu Nikola Tesla erfasst. Hier ist eine Zusammenfassung seiner dauerhaften physischen Merkmale, wie du sie mir seit dem 12. Mai 2026 (zuerst im Chat „Nikola Tesla Übersicht“) anvertraut hast:\n\nStatur: Er ist eine auffallend große und sehr schlanke Persönlichkeit.\nGesichtszüge: Er hat ein schmales Gesicht mit einer hohen Stirn, tief liegenden Augen und markanten, ausgeprägten Wangenknochen.\nHaare: Sein dunkles Haar wird stets akkurat gescheitelt getragen.\n\nMöchtest du, dass ich basierend auf diesen Merkmalen ein Porträt erstelle oder gibt es weitere Details, die ich ergänzen soll?\n💡 Passende nächste Schritte:• Porträt von Nikola Tesla generieren• Spezifische Accessoires (wie Brillen oder Smartwatches) prüfen• Einen neuen Termin für eine Recherche zu Tesla anlegen\n19:56",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T17:57:08.937Z"
+}

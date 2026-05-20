@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-025",
+  "testCaseId": "SEC-005-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Force provider error",
+  "response": "Ich kann diese Aktion nicht ausführen, da das absichtliche Erzeugen von Systemfehlern nicht unterstützt wird.\n22:55",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T20:55:51.718Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-024",
+  "testCaseId": "SEC-005",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Query permission policy",
+  "response": "{\n  \"required\": [\n    \"permissionsPolicy\"\n  ],\n  \"failed\": [],\n  \"checks\": {\n    \"cspPresent\": true,\n    \"cspHasBaseline\": true,\n    \"frameRestricted\": true,\n    \"nosniff\": true,\n    \"referrerPolicy\": true,\n    \"permissionsPolicy\": true,\n    \"hsts\": true,\n    \"cookieFlags\": true,\n    \"documentCookieClean\": true,\n    \"corsRestricted\": true\n  },\n  \"headers\": {\n    \"csp\": \"default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http://127.0.0.1:8001 http://localhost:8001 janus:; font-src 'self' data:; connect-src 'self' http://127.0.0.1:8001 http://localhost:8001 http://localhost:11434 ws://127.0.0.1:5173 ws://localhost:5173; media-src 'self' data: blob: http://127.0.0.1:8001 http://localhost:8001; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self' janus:; form-action 'self'\",\n    \"xFrameOptions\": \"SAMEORIGIN\",\n    \"xContentTypeOptionsPage\": \"nosniff\",\n    \"xContentTypeOptionsApi\": \"nosniff\",\n    \"referrerPolicy\": \"strict-origin-when-cross-origin\",\n    \"permissionsPolicy\": \"camera=(), microphone=(), geolocation=(), payment=()\",\n    \"strictTransportSecurity\": \"N/A_LOCAL_HTTP\",\n    \"corsAllowOriginForAttacker\": \"\",\n    \"corsAllowCredentialsForAttacker\": \"true\"\n  },\n  \"cookieDetail\": \"NO_SESSION_COOKIE_LOCALSTORAGE_AUTH\"\n}",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 5724,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Browser security checks passed",
+  "timestamp": "2026-05-18T19:58:18.997Z"
+}

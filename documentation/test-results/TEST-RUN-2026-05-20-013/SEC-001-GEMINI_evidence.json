@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-013",
+  "testCaseId": "SEC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Burst expensive prompts",
+  "response": "Hallo Admin. Ich habe das Briefing und die Fakten zu Nikola Tesla sowie deine spezifischen Vorgaben für Personenbeschreibungen (Fokus auf dauerhafte physische Merkmale, Ausschluss von Kleidung) aufgenommen. Auch die Metadaten für den zeitlichen Recall stehen bereit.\nWie kann ich dir heute behilflich sein?\n💡 Passende nächste Schritte:• Lass dir eine präzise Personenbeschreibung von Nikola Tesla erstellen.• Frage nach dem zeitlichen Ursprung eines bestimmten Fakts.• Ergänze neue Informationen oder Accessoires zu einem Profil.\n15:05",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T13:06:14.263Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-004",
+  "testCaseId": "SEC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Store synthetic private-looking fact",
+  "response": "Ich habe die Informationen zu Nikola Teslas Erscheinungsbild sowie die spezifischen Richtlinien für seine Beschreibung gespeichert. \nBasierend auf den Daten vom 12. Mai 2026 aus dem Chat „Nikola Tesla Übersicht“ (sowie Ergänzungen aus späteren Gesprächen) sind folgende Merkmale als dauerhaft hinterlegt:\n\nStatur: Auffallend groß und sehr schlank.\nGesicht: Schmales Gesicht mit hoher Stirn, ausgeprägten Wangenknochen und markanten, tief liegenden Augen.\nHaare: Dunkles Haar, das stets akkurat gescheitelt getragen wird.\n\n💡 Passende nächste Schritte:• Möchtest du, dass ich basierend auf diesen Merkmalen ein Porträt von Nikola Tesla generiere?• Soll ich eine förmliche Personenbeschreibung für ein Dokument erstellen?• Möchtest du weitere Details zu seinem Charakter oder seinem Werdegang ergänzen?\n18:23",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T16:24:06.015Z"
+}

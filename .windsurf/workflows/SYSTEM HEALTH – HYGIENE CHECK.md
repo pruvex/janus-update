@@ -35,7 +35,19 @@ Er ist kein Feature-, Bugfix-, Release- oder Refactor-Ausführungsskill.
 
 ## Mode Selection Gate
 
-Wenn der Nutzer keinen Modus angibt, stoppe sofort und frage:
+Wenn der Nutzer einen Modus nennt oder eindeutig andeutet, normalisiere ihn ohne Rückfrage:
+
+- `1`, `DAILY`, `dayly`, `daily`, `kurz`, `schnell`, `start`, `tagescheck` -> `DAILY`
+- `2`, `WEEKLY`, `weekly`, `woechentlich`, `wöchentlich`, `weekly check`, `montag` -> `WEEKLY`
+- `3`, `MONTHLY`, `monthly`, `monatlich`, `monatscheck`, `1. des monats` -> `MONTHLY`
+
+Wenn der Nutzer nur allgemein "Healthcheck", "Hygiene Check", "schau ob alles sauber ist" oder ähnlich sagt und keinen Zeitraum nennt, nutze `DAILY` als Default und schreibe im Report:
+
+```text
+Modus automatisch gewählt: DAILY (kurzer Hygiene-Check, weil kein Zeitraum genannt wurde).
+```
+
+Wenn der Nutzer nach dem passenden Modus fragt oder mehrere Modi gleichzeitig andeutet, stoppe und frage:
 
 ```markdown
 # SYSTEM HEALTH MODE REQUIRED
@@ -49,14 +61,14 @@ Welchen Healthcheck möchtest du ausführen?
 Antworte mit: 1, 2, 3, DAILY, WEEKLY oder MONTHLY.
 ```
 
-Keine Prüfung ausführen, bevor der Nutzer einen Modus gewählt hat.
+Keine Prüfung ausführen, wenn der Modus nach diesen Regeln weiterhin unklar ist.
 
 Akzeptierte Eingaben:
 
 ```text
-1 | DAILY | dayly | daily
-2 | WEEKLY | weekly
-3 | MONTHLY | monthly
+1 | DAILY | dayly | daily | kurz | schnell | start | tagescheck
+2 | WEEKLY | weekly | woechentlich | wöchentlich | weekly check | montag
+3 | MONTHLY | monthly | monatlich | monatscheck
 ```
 
 Normalisiere `dayly` zu `DAILY`.
@@ -84,6 +96,12 @@ Auto-Fix-Policy:
 - Nur sichere, mechanische, lokale und reversible Fixes vorschlagen.
 - Auto-Fixes nur nach expliziter Nutzerfreigabe ausführen.
 - Ohne Freigabe nur reporten.
+- Keine Backlog-Items schreiben. DAILY darf Backlog-Kandidaten nur vorschlagen und auf WEEKLY/MONTHLY verweisen.
+
+Output-Policy:
+- DAILY nutzt standardmäßig `Compact Output`.
+- Wenn Auto-Fix-Kandidaten, Backlog-Kandidaten oder Eskalationen gefunden werden, muss DAILY zusätzlich die passenden Gate-/Freigabe-Sektionen aus dem Vollformat ausgeben.
+- Wenn keine Findings gefunden werden, reicht der kompakte Report mit Ampel, Empfehlung und Scan-Abdeckung.
 
 ### 2) WEEKLY – Weekly Structure Check
 
@@ -140,6 +158,14 @@ Performance-Budget:
 ## Scan Performance & Robustness Rules
 
 Alle Modi müssen Scans begrenzen und robuste Fallbacks verwenden.
+
+### Encoding / PowerShell Hinweis
+
+Diese Workflow-Datei ist UTF-8. Wenn PowerShell Umlaute oder Gedankenstriche als Mojibake anzeigt (`PrÃ¼ft`, `GRÃœN`, `â€“`), ist das ein Anzeige-/Encoding-Problem des Lesebefehls, kein inhaltlicher Skill-Fehler.
+
+- Bevorzuge beim Lesen in PowerShell: `Get-Content -Encoding UTF8`.
+- Keine Massen-Rewrites nur zur Encoding-Kosmetik durchführen.
+- Wenn ein echter Encoding-Fix nötig ist, nur die betroffene Datei gezielt und nach Snapshot/Freigabe umkodieren.
 
 ### Excludes für Datei-Scans
 
@@ -935,6 +961,12 @@ Mode: DAILY | WEEKLY | MONTHLY
 
 Wenn ein Health Finding ins Backlog gehört, nutze das bestehende Format aus `documentation/backlog/BACKLOG.md`.
 
+Backlog-Schreibregel nach Modus:
+
+- `DAILY`: keine Backlog-Datei ändern; nur `Backlog-Kandidat` reporten und als empfohlene Folgeaktion `WEEKLY` oder gezielten Backlog-Skill nennen.
+- `WEEKLY`: konkrete, nicht spekulative Struktur-/Hygiene-Findings dürfen ins Backlog geschrieben oder aktualisiert werden.
+- `MONTHLY`: Architektur-/Refactor-Findings dürfen ins Backlog geschrieben werden, sofern keine GPT-5.5-Eskalation erforderlich ist.
+
 Beispiel:
 
 ```markdown
@@ -1002,6 +1034,45 @@ Wenn ein ähnliches Backlog-Item bereits existiert, aktualisiere es statt ein Du
 ---
 
 ## Output Format
+
+### Compact Output für DAILY
+
+DAILY darf dieses kompakte Format verwenden, solange keine Auto-Fix-Kandidaten, Backlog-Kandidaten oder Eskalationen vorliegen.
+
+Wenn DAILY Findings enthält, bleibt der Kopf kompakt, aber die betroffenen Pflichtsektionen aus dem Vollformat müssen ergänzt werden:
+
+- `## Auto-Fix-Kandidaten` plus Gate/Sicherheits-Checkpoint/Freigabe, wenn Auto-Fix-Kandidaten vorhanden sind.
+- `## Backlog-Kandidaten`, wenn ein Finding größer als DAILY ist. DAILY schreibt diese Kandidaten nicht selbst ins Backlog.
+- `## Eskalationen`, wenn eine Bewertung nicht deterministisch möglich ist.
+
+```markdown
+# SYSTEM HEALTH REPORT
+
+## Modus
+- DAILY
+- **Modus automatisch gewählt:** JA | NEIN
+
+## Systemhealth
+- **Score:** <0-100>%
+- **Ampel:** GRÜN | GELB | ROT
+- **Statussatz:** <ein klarer Satz, ob das System heute nutzbar ist>
+
+## Kurzbefund
+- **Findings:** <n>
+- **Auto-Fix-Kandidaten:** <n>
+- **Backlog-Kandidaten:** <n>
+- **Eskalationen:** <n>
+- **Scan-Abdeckung:** vollständig | teilweise, mit kurzer Begründung
+
+## Klare Empfehlung
+- **Empfohlene Aktion:** WEITERMACHEN | WEITERMACHEN MIT VORSICHT | JETZT FIXEN | BLOCKIERT | ESKALIEREN
+- **Jetzt tun:** <ein konkreter nächster Schritt>
+
+## Optionale Folgeaktion
+- <konkreter optionaler Cleanup oder "Keine">
+```
+
+### Vollformat für WEEKLY, MONTHLY und DAILY mit Findings
 
 ```markdown
 # SYSTEM HEALTH REPORT

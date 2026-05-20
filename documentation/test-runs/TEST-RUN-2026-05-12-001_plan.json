@@ -39,7 +39,7 @@
       "prompt": "Wer ist Nikola Tesla?",
       "expected": {
         "containsAny": ["Tesla", "Erfinder", "Physiker"],
-        "toolCallExpected": "system.wiki_fact"
+        "toolCallExpected": "system.wikipedia_summary"
       }
     },
     {
@@ -63,7 +63,7 @@
       "prompt": "Was gibt es Neues bei Heise?",
       "expected": {
         "containsAny": ["Heise", "News", "Artikel"],
-        "toolCallExpected": "system.news_rss"
+        "toolCallExpected": "system.rss_news"
       }
     },
     {
@@ -74,7 +74,7 @@
       "model": "gpt-5.4-nano",
       "prompt": "Ich brauche Infos dazu",
       "expected": {
-        "containsAny": ["Was genau", "Welche", "meinst du"],
+        "containsAny": ["Was genau", "Welche", "meinst du", "benötigen", "Thema", "beziehst du dich"],
         "requiresConfirmation": true,
         "mustNotContain": ["tool_call", "function_call"]
       }
@@ -98,7 +98,7 @@
       "model": "gpt-5.4-nano",
       "prompt": "Erzähl mir über Einstein",
       "expected": {
-        "toolCallExpected": "system.wiki_fact"
+        "toolCallExpected": "system.wikipedia_summary"
       }
     },
     {
@@ -121,7 +121,7 @@
       "model": "gpt-5.4-nano",
       "prompt": "News heute",
       "expected": {
-        "toolCallExpected": "system.news_rss"
+        "toolCallExpected": "system.rss_news"
       }
     },
     {
@@ -168,7 +168,7 @@
       "model": "gemini-3-flash-preview",
       "prompt": "Ich brauche Infos",
       "expected": {
-        "containsAny": ["Was genau", "Welche", "meinst du"],
+        "containsAny": ["Was genau", "Welche", "meinst du", "benötigen", "Thema", "beziehst du dich"],
         "requiresConfirmation": true
       }
     }

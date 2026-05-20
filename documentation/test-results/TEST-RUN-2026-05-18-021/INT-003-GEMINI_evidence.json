@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-021",
+  "testCaseId": "INT-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wetter morgen in Koeln",
+  "response": "Hallo Admin, morgen in Köln wird es leider etwas ungemütlich. Es wird leichter Nieselregen erwartet, bei einer Höchsttemperatur von 16,2 °C und einer Tiefsttemperatur von 8,6 °C. Die Regenwahrscheinlichkeit liegt bei etwa 59 %.\nQuelle: Open-Meteo\n💡 Passende nächste Schritte:• Soll ich prüfen, ob es am Mittwoch wieder trockener wird?• Suchst du nach Indoor-Aktivitäten in Köln für morgen?• Benötigst du eine Routenplanung für einen Termin in Köln?\n20:27",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T18:27:20.135Z"
+}

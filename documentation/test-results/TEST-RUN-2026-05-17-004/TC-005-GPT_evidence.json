@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-004",
+  "testCaseId": "TC-005-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Modellpreise fuer OpenAI und Gemini",
+  "response": "OpenAI (laut Suchtreffer, Deutschland, Euro)\n\nChatGPT Plus: 23,00 € pro Monat (unverifiziert)Quelle: https://www.giga.de/tech/chatgpt-guenstiger-nutzen-neue-go-version-in-deutschland-gestartet--01KES3TZBGYGNCK8MZ862MYZE9?utm_source=openai  \nChatGPT Go: 8,00 € pro Monat (unverifiziert)Quelle: https://www.giga.de/tech/chatgpt-guenstiger-nutzen-neue-go-version-in-deutschland-gestartet--01KES3TZBGYGNCK8MZ862MYZE9?utm_source=openai  \nChatGPT Pro: 229,00 € pro Monat (unverifiziert)Quelle: https://www.giga.de/tech/chatgpt-guenstiger-nutzen-neue-go-version-in-deutschland-gestartet--01KES3TZBGYGNCK8MZ862MYZE9?utm_source=openai\n\nGemini (laut Suchtreffer, Deutschland, Euro)\n\nGoogle Gemini Advanced (über Google One AI Premium / AI Pro-Abo): 21,99 € pro Monat (unverifiziert)Quelle: https://www.giga.de/tech/chatgpt-guenstiger-nutzen-neue-go-version-in-deutschland-gestartet--01KES3TZBGYGNCK8MZ862MYZE9?utm_source=openai\n\nWichtig (für “Modellpreise” vs. “Abo-Preise”)\n\nIn den gefundenen Treffern waren Abo-/Consumer-Preise klar in Euro verfügbar.\nFür API-Modellpreise wurden in den gefundenen Snippets überwiegend USD/Token-Listenpreise gesehen; konkrete Euro-Angaben im Treffer wurden nicht sauber wortwörtlich gefunden (unverifiziert).Beispiel (USD, nicht direkt “Euro für Deutschland” nutzbar): https://serverberater.de\n\n💡 Passende nächste Schritte:• Soll ich die API-Preislisten (Tokenpreise) für OpenAI und Gemini zusätzlich in USD recherchieren und nebeneinander stellen?• Geht es dir um Consumer-Abos (ChatGPT/Gemini Advanced) oder wirklich um API-Modellpreise pro Input/Output?\n14:12",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:12:54.733Z"
+}

@@ -1,10 +1,13 @@
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, History, BarChart3, AlertCircle, RefreshCw } from 'lucide-react'
+import { LayoutDashboard, History, BarChart3, AlertCircle, RefreshCw, FlaskConical, TrendingUp, Columns3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
   { path: '/', label: 'Active', icon: LayoutDashboard },
   { path: '/kpi', label: 'KPI', icon: BarChart3 },
+  { path: '/testsuite', label: 'Testsuite', icon: Columns3 },
+  { path: '/test-overview', label: 'TestSpecs', icon: TrendingUp },
+  { path: '/test-results', label: 'Test Results', icon: FlaskConical },
   { path: '/history', label: 'History', icon: History },
   { path: '/error-history', label: 'Error History', icon: AlertCircle },
 ]

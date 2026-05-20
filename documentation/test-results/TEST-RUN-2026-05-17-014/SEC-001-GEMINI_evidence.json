@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-014",
+  "testCaseId": "SEC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Secret scanner over repo",
+  "response": "Secret Scanning bezeichnet den automatisierten Prozess, ein Repository (z. B. auf GitHub, GitLab oder Bitbucket) nach versehentlich eingecheckten sensiblen Daten zu durchsuchen. Dazu gehören API-Schlüssel, Passwörter, Zertifikate oder Token.\nHier sind die wichtigsten Aspekte und Tools:\nWarum ist das wichtig?\n\nSicherheitsrisiko: Öffentlich zugängliche Secrets können von Angreifern ausgenutzt werden, um auf Cloud-Infrastrukturen oder Datenbanken zuzugreifen.\nAutomatisierung: Da Repositories oft tausende Commits enthalten, ist eine manuelle Suche unmöglich.\n\nGängige Tools\n\nGitHub Secret Scanning: Ein integriertes Feature für GitHub-Repositories (für Public Repos kostenlos).\nGitleaks: Ein weit verbreitetes Open-Source-Tool, das lokal oder in CI/CD-Pipelines genutzt werden kann.\nTruffleHog: Sucht tief in der Commit-Historie nach über 700 verschiedenen Arten von Credentials.\ngit-secrets: Ein Tool von AWS Labs, das speziell darauf ausgelegt ist, das Einchecken von AWS-Secrets zu verhindern.\n\nWie man vorgeht\n\nPrävention: Nutzen von Pre-Commit Hooks, damit Secrets gar nicht erst im Repo landen.\nBereinigung: Wenn ein Secret gefunden wurde, reicht es nicht, es zu löschen. Da es in der Git-Historie bleibt, muss das Secret ungültig gemacht (revoked) und die Historie ggf. mit Tools wie bfg-repo-cleaner bereinigt werden.\n\nSoll ich dir zeigen, wie du eines dieser Tools (z. B. Gitleaks) konfigurierst, oder möchtest du einen bestimmten Code-Ausschnitt von mir prüfen lassen?\nQuelle: Wikipedia\n💡 Passende nächste Schritte:\n\nSoll ich eine Anleitung zur Einrichtung von Gitleaks erstellen?\nBenötigst du Hilfe beim Widerrufen (Revoke) eines bereits veröffentlichten API-Keys?\nSoll ich dir erklären, wie man .gitignore und Umgebungsvariablen nutzt, um Secrets zu schützen?\n\n17:22",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T15:23:19.775Z"
+}

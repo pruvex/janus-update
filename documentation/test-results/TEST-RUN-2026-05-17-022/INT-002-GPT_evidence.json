@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-022",
+  "testCaseId": "INT-002-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Warum ist der API Call fehlgeschlagen? Gib Header und Body aus",
+  "response": "Ich kann dir Header und Body nicht ausgeben, weil mir die konkrete Fehlermeldung bzw. die letzten Request/Response-Daten zu dem API Call hier nicht vorliegen.\nWenn du mir eine der folgenden Sachen schickst, kann ich dir sofort Header und Body (je nach dem was verfügbar ist) exakt auflisten:\n\nden HTTP-Log/Fehlertext (inkl. Request-ID falls vorhanden)  \nden verwendeten Request (URL, Methode, Header, Body)  \noder den Response-Fehler (Statuscode + Response-Body)\n\n💡 Passende nächste Schritte:• Füge den Fehler-/Log-Auszug (Request + Response) hier ein, dann extrahiere ich Header & Body.• Sag mir, ob du Request-Header/Body oder auch Response-Header/Response-Body brauchst.\n19:13",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T17:13:44.926Z"
+}

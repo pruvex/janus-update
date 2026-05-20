@@ -8,6 +8,7 @@ import re
 import logging
 from typing import List, Dict, Any, Tuple, Optional, Union, Set
 from dataclasses import dataclass, field
+from backend.utils import intent_classifier
 
 logger = logging.getLogger("janus_backend")
 
@@ -271,6 +272,14 @@ CALENDAR_COMMAND_MARKERS: Tuple[str, ...] = (
     "trag ein",
     "nicht vergessen",
     "auf die liste",
+    # BACKLOG-050: Calendar update/mutation triggers
+    "update",
+    "aktualisieren",
+    "aktualisiere",
+    "ändern",
+    "aendern",
+    "ändere",
+    "aendere",
     # ASCII-Umlaut-Fallbacks (für Eingaben ohne Umlaute)
     "ergaenze",
     "ergaenzen",
@@ -284,6 +293,8 @@ CALENDAR_OBJECT_MARKERS: Tuple[str, ...] = (
     "kalender",
     "kalendereintrag",
     "verabredung",
+    # BACKLOG-054: English calendar keyword for Gemini provider parity
+    "calendar",
 )
 
 CALENDAR_DATE_MARKERS: Tuple[str, ...] = (
@@ -1414,6 +1425,8 @@ class IntentEngine:
         """Return True for how-to instructions requests ("Wie kann ich...", "Anleitung für")."""
         if not user_text:
             return False
+        if intent_classifier.is_greeting(user_text):
+            return False
         return any(pattern.search(user_text) for pattern in HELP_HOW_TO_PATTERNS)
 
     @staticmethod
@@ -1448,6 +1461,8 @@ class IntentEngine:
         if not user_text or not user_text.strip():
             return False
         t = user_text.casefold()
+        if re.search(r"\b(?:regen|regnen|regnet|niederschlag)\b", t):
+            return True
         if re.search(r"\bwie\s+(?:ist|wird)\s+(?:das\s+)?wetter\b", t):
             return True
         if "wettervorhersage" in t:
@@ -1781,12 +1796,33 @@ def detect_ambiguity_in_query(query: str) -> tuple[bool, float]:
     query_norm = _normalize_text(query)
     query_lower = query_norm.lower()
     words = query_lower.split()
+
+    if re.search(r"\b(?:wetter|regen|regnen|regnet|niederschlag)\b", query_lower) and not re.search(
+        r"\b(?:in|fÃ¼r|fuer|bei|von)\s+[a-zÃ¤Ã¶Ã¼ÃŸ][\wÃ¤Ã¶Ã¼ÃŸ.-]{2,}",
+        query_lower,
+    ):
+        return True, 0.8
+
+    # "das" is an article in explicit weather questions, not a deictic marker.
+    if (
+        re.search(r"\bwie\s+(?:ist|wird)\s+(?:das\s+)?wetter\b", query_lower)
+        or re.search(r"\bwetter\s+(?:in|für|fuer|bei|von|heute|morgen|übermorgen|uebermorgen|aktuell|jetzt|gerade)\b", query_lower)
+        or "wettervorhersage" in query_lower
+    ):
+        return False, 0.0
     
     # Check 1: Deiktische Marker (stärkste Ambiguity-Indikation - zuerst prüfen)
-    has_deictic = any(marker in query_lower for marker in _AMBIGUITY_DEICTIC_MARKERS)
+    has_deictic = any(
+        re.search(rf"\b{re.escape(marker)}\b", query_lower)
+        for marker in _AMBIGUITY_DEICTIC_MARKERS
+    )
     if has_deictic:
         # Deiktische Marker erhöhen Ambiguity
-        deictic_count = sum(1 for marker in _AMBIGUITY_DEICTIC_MARKERS if marker in query_lower)
+        deictic_count = sum(
+            1
+            for marker in _AMBIGUITY_DEICTIC_MARKERS
+            if re.search(rf"\b{re.escape(marker)}\b", query_lower)
+        )
         confidence = min(0.9, 0.7 + (deictic_count * 0.1))
         return True, confidence
     

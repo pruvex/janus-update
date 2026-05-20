@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-028",
+  "testCaseId": "TC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Erklaer mir kurz, was ein API-Key ist",
+  "response": "Hallo Admin, ein API-Key (Application Programming Interface Key) ist im Grunde ein digitaler Ausweis oder ein geheimes Passwort für Software.\nEr wird verwendet, um ein Programm oder einen Entwickler bei einem Online-Dienst (wie z. B. einem Wetterdienst oder einer KI) zu identifizieren und zu authentifizieren. So weiß der Dienst, wer die Anfrage stellt, ob die nötigen Berechtigungen vorliegen und wie viel des Dienstes bereits genutzt wurde.\n💡 Passende nächste Schritte:• Möchtest du wissen, wie man einen API-Key sicher speichert?• Soll ich dir den Unterschied zwischen einem API-Key und OAuth erklären?• Suchst du nach einer Anleitung, wie du einen Key für einen bestimmten Dienst generierst?\n00:07",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T22:07:19.748Z"
+}

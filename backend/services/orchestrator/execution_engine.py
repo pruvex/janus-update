@@ -42,6 +42,90 @@ logger = logging.getLogger("janus_backend")
 MAPS_LINK_REGEX = re.compile(r'"maps_link"\s*:\s*"([^"]+)"')
 
 
+def _extract_pseudo_tool_call_from_text(text: Any) -> Optional[Dict[str, Any]]:
+    """Extract a JSON tool-call intent emitted as plain assistant text.
+
+    Small models sometimes answer with {"tool_name": "...", "arguments": {...}}
+    instead of using native tool_calls. The tool loop should execute that intent
+    rather than rendering raw JSON to the user.
+    """
+    raw = str(text or "").strip()
+    if not raw or not raw.startswith("{"):
+        return None
+    try:
+        payload = json.loads(raw)
+    except Exception:
+        try:
+            payload, _ = json.JSONDecoder().raw_decode(raw)
+        except Exception:
+            return None
+    if not isinstance(payload, dict):
+        return None
+    tool_name = str(payload.get("tool_name") or payload.get("name") or "").strip()
+    arguments = payload.get("arguments")
+    if arguments is None:
+        arguments = payload.get("parameters")
+    if isinstance(arguments, str):
+        try:
+            arguments = json.loads(arguments)
+        except Exception:
+            arguments = {}
+    if not isinstance(arguments, dict):
+        return None
+    if not tool_name and any(
+        key in arguments
+        for key in ("start", "end", "start_iso", "end_iso", "start_datetime", "end_datetime")
+    ):
+        tool_name = "calendar.list_events"
+    if not tool_name:
+        return None
+    if tool_name == "calendar.list_events":
+        arguments = dict(arguments)
+        if "start_datetime" not in arguments:
+            start_value = arguments.get("start_iso") or arguments.get("start")
+            if start_value:
+                arguments["start_datetime"] = start_value
+        if "end_datetime" not in arguments:
+            end_value = arguments.get("end_iso") or arguments.get("end")
+            if end_value:
+                arguments["end_datetime"] = end_value
+        for alias in ("start", "end", "start_iso", "end_iso"):
+            arguments.pop(alias, None)
+    return {
+        "id": f"pseudo_tool_call_{uuid.uuid4().hex[:12]}",
+        "type": "function",
+        "function": {
+            "name": tool_name,
+            "arguments": json.dumps(arguments, ensure_ascii=False),
+        },
+    }
+
+
+def _is_generic_stability_fallback_text(text: Any) -> bool:
+    """Return true for generic model-stability fallback copy, not domain answers.
+    
+    BACKLOG-074 FIX: More restrictive detection to prevent false positives on complex tasks.
+    Only match the exact generic fallback message, not similar phrases.
+    """
+    normalized = str(text or "").casefold()
+    # Exact match for the generic fallback message
+    has_exact_generic_fallback = (
+        "ich konnte diesmal keine stabile antwort erzeugen" in normalized
+        and "bitte sende die anfrage direkt noch einmal" in normalized
+    )
+    has_stability_copy = (
+        "stabile" in normalized
+        and ("modellantwort" in normalized or "antwort" in normalized)
+        and ("neuaufbau" in normalized or "direkt noch einmal" in normalized)
+    )
+    has_dynamic_provider_fallback = (
+        "es ist ein fehler aufgetreten:" in normalized
+        and "provider:" in normalized
+        and ("robusten neuaufbau" in normalized or "direkt noch einmal" in normalized)
+    )
+    return has_exact_generic_fallback or has_dynamic_provider_fallback
+
+
 def _extract_user_text_from_history(history: List[Dict[str, str]]) -> str:
     """
     Extract the latest user message from chat history.
@@ -1607,6 +1691,32 @@ class OrchestratorExecutionEngine:
                 call_kwargs.pop("_prompt_cache_decision", None)
                 try:
                     response = await reason_and_respond_fn(**call_kwargs)
+                    # 💎 BACKLOG-047: Check for provider error response before processing
+                    if response and response.get("type") == "error":
+                        logger.error(
+                            f"Provider returned error response: provider={provider}, model={model}, "
+                            f"error_code={response.get('error_code', 'N/A')}, message={response.get('message', 'N/A')[:100]}"
+                        )
+                        # Build fallback from provider error details
+                        dynamic_fallback = _build_dynamic_fallback_summary(
+                            error_code=response.get("error_code"),
+                            error_message=response.get("message"),
+                            provider=provider,
+                            model=model,
+                        )
+                        response = {
+                            "type": "text",
+                            "text": dynamic_fallback,
+                            "tool_calls": [],
+                            "raw_assistant_response": {
+                                "role": "assistant",
+                                "content": dynamic_fallback,
+                            },
+                            "usage": {},
+                            "cost": {},
+                            "agent_payload": None,
+                        }
+                        break
                 except Exception as exc:
                     logger.error("Error in orchestrator.execution_engine.run_tool_loop: synthesis crash", exc_info=True)
                     # 💎 BACKLOG-006: Build dynamic fallback summary with error details
@@ -1696,6 +1806,22 @@ class OrchestratorExecutionEngine:
                             all_used_skills.append(_skill_name)
             tool_calls = response.get("tool_calls") if isinstance(response, dict) else []
             latest_tool_calls = tool_calls if isinstance(tool_calls, list) else []
+            if not latest_tool_calls and isinstance(response, dict):
+                pseudo_tool_call = _extract_pseudo_tool_call_from_text(response.get("text"))
+                if pseudo_tool_call:
+                    tool_calls = [pseudo_tool_call]
+                    latest_tool_calls = tool_calls
+                    response["tool_calls"] = tool_calls
+                    response["text"] = ""
+                    response["raw_assistant_response"] = {
+                        "role": "assistant",
+                        "content": None,
+                        "tool_calls": tool_calls,
+                    }
+                    logger.info(
+                        "PSEUDO-TOOL-CALL: Converted assistant JSON text into tool call: %s",
+                        pseudo_tool_call.get("function", {}).get("name"),
+                    )
             
             # 💎 MODEL-TIER-OVERRIDE: Check if any tool has optimal_model_tier and upgrade model accordingly
             # This must happen AFTER we get tool_calls from the response and BEFORE we break if empty
@@ -2644,6 +2770,7 @@ class OrchestratorExecutionEngine:
             gateway_kwargs["chat_history"] = messages
 
             round_text_parts: List[str] = []
+            pending_text_events: List[StreamEvent] = []
             openai_acc: Dict[int, Dict[str, Any]] = {}
             gemini_calls: List[Dict[str, Any]] = []
 
@@ -2709,7 +2836,7 @@ class OrchestratorExecutionEngine:
                         if ev.type == "text_delta":
                             if ev.content:
                                 round_text_parts.append(str(ev.content))
-                            yield ev
+                                pending_text_events.append(ev)
                         elif ev.type == "tool_delta":
                             if provider_key in ("gemini", "google"):
                                 c = ev.content if isinstance(ev.content, dict) else {}
@@ -2786,6 +2913,32 @@ class OrchestratorExecutionEngine:
             else:
                 tool_calls = gemini_calls if provider_key in ("gemini", "google") else _stream_finalize_openai_tool_slots(openai_acc)
             round_text = "".join(round_text_parts)
+            pseudo_tool_call_from_text: Optional[Dict[str, Any]] = None
+            if not tool_calls:
+                pseudo_tool_call_from_text = _extract_pseudo_tool_call_from_text(round_text)
+                if pseudo_tool_call_from_text:
+                    tool_calls = [pseudo_tool_call_from_text]
+                    round_text = ""
+                    round_text_parts = []
+                    logger.info(
+                        "PSEUDO-TOOL-CALL-STREAM: Converted assistant JSON text into tool call: %s",
+                        pseudo_tool_call_from_text.get("function", {}).get("name"),
+                    )
+            generic_stability_fallback_from_text = (
+                not tool_calls
+                and had_tool_round
+                and bool(results_buffer)
+                and _is_generic_stability_fallback_text(round_text)
+            )
+            if generic_stability_fallback_from_text:
+                logger.info(
+                    "GEMINI-FALLBACK-STREAM: Suppressing generic stability text after successful tool round"
+                )
+                round_text = ""
+                round_text_parts = []
+            if not pseudo_tool_call_from_text and not generic_stability_fallback_from_text:
+                for pending_text_event in pending_text_events:
+                    yield pending_text_event
 
             if tool_calls and current_iteration == 0:
                 for tool_call in tool_calls:
@@ -3203,7 +3356,12 @@ class OrchestratorExecutionEngine:
         
         # 💎 GEMINI-FALLBACK: If text is still empty/whitespace after tool execution,
         # try to extract meaningful text from successful tool results
-        if not text_value or not text_value.strip() or text_value == fallback_summary:
+        if (
+            not text_value
+            or not text_value.strip()
+            or text_value == fallback_summary
+            or _is_generic_stability_fallback_text(text_value)
+        ):
             if had_tool_round and results_buffer:
                 # Look for successful tool results to construct a meaningful response
                 successful_results = []
@@ -3214,7 +3372,8 @@ class OrchestratorExecutionEngine:
                         raw = tr.get("_raw_content") or tr.get("content", "{}")
                         parsed = json.loads(raw) if isinstance(raw, str) else dict(raw or {})
                         if isinstance(parsed, dict) and parsed.get("status") == "ok":
-                            msg = parsed.get("message") or parsed.get("output")
+                            data = parsed.get("data") if isinstance(parsed.get("data"), dict) else {}
+                            msg = data.get("listing_text") or parsed.get("message") or parsed.get("output")
                             if msg:
                                 successful_results.append(str(msg))
                     except Exception:
@@ -3466,4 +3625,3 @@ class OrchestratorExecutionEngine:
         return ("pdf" in text or "dokument" in text) and any(
             token in text for token in ["erstelle", "create", "generiere", "schreibe"]
         )
-

@@ -10,6 +10,7 @@ Patterns detected:
 - override (rules|security)
 - bypass (security|rules)
 - forget (instructions|rules)
+- secret/env file exfiltration
 """
 
 import re
@@ -19,10 +20,31 @@ from typing import Optional
 # Define injection patterns with their types
 INJECTION_PATTERNS = [
     (r"\bignore\s+(all|rules|instructions|constraints|previous|everything|this)\b", "ignore"),
+    (r"\bdo\s+not\s+cite\s+sources\b", "source_policy_override"),
+    (r"\bdon['’]?t\s+cite\s+sources\b", "source_policy_override"),
+    (r"\b(?:do\s+not|don['’]?t)\s+(?:name|mention|show|include)\s+(?:the\s+)?sources\b", "source_policy_override"),
     (r"\bdelete\s+(all\s+)?(files|data|records|database|everything)\b", "delete"),
     (r"\boverride\s+(rules|security|constraints|everything)\b", "override"),
     (r"\bbypass\s+(security|rules|restrictions|everything)\b", "bypass"),
     (r"\bforget\s+(instructions|rules|constraints|everything)\b", "forget"),
+    (r"\bfile\s+instructs\s+janus\s+to\s+read\s+another\s+workspace\b", "workspace_scope_injection"),
+    (r"\bread\s+another\s+workspace\b", "workspace_scope_injection"),
+    (
+        r"\b(?:read|open|show|print|dump|append|exfiltrate|leak|cat|type|"
+        r"lies|lese|zeige|drucke|gib\s+(?:mir\s+)?aus)\b"
+        r".{0,100}(?:`?\.env`?|\bapi[-_\s]?keys?\b|\bsecret(?:s)?\b|\btoken(?:s)?\b|\bcredential(?:s)?\b)",
+        "secret_exfiltration",
+    ),
+    (
+        r"(?:`?\.env`?|\bapi[-_\s]?keys?\b|\bsecret(?:s)?\b|\btoken(?:s)?\b|\bcredential(?:s)?\b)"
+        r".{0,100}\b(?:read|open|show|print|dump|append|exfiltrate|leak|cat|type|"
+        r"lies|lese|zeige|drucke|gib\s+(?:mir\s+)?aus)\b",
+        "secret_exfiltration",
+    ),
+    (
+        r"\bbefore\s+summari[sz]ing\b.{0,100}(?:`?\.env`?|\bapi[-_\s]?keys?\b|\bsecret(?:s)?\b|\btoken(?:s)?\b)",
+        "indirect_secret_exfiltration",
+    ),
 ]
 
 # Compile regex patterns with case-insensitive flag

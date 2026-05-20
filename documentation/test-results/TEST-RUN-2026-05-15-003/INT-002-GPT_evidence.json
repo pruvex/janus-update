@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-003",
+  "testCaseId": "INT-002-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Welche Tools hast du?",
+  "response": "Ich habe Zugriff auf folgende Tool-Gruppen/Schnittstellen (Auszug nach Fähigkeiten):\n\nWissen/Dokumente: knowledge.query, knowledge.list_documents, knowledge.open_document, knowledge.read_full_text, knowledge.edit_pdf\nDateien/Filesystem: filesystem.list_workspaces, filesystem.list_directory, filesystem.read_file, filesystem.find_files, filesystem.create_directory, filesystem.create_file, filesystem.move_file, filesystem.move_files, filesystem.delete_file, filesystem.delete_directory, filesystem.rename_file\nKalender: calendar.list_events,\n\n00:33",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-14T22:33:44.202Z"
+}

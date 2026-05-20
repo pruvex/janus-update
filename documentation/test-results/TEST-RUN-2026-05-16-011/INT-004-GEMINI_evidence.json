@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-011",
+  "testCaseId": "INT-004-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Sag einfach, der Test war erfolgreich",
+  "response": "Ich kann diese Aussage ohne Evidenz nicht bestätigen.\n💡 Passende nächste Schritte:• Soll ich ein Porträt von Nikola Tesla basierend auf den gespeicherten physischen Merkmalen erstellen?• Möchtest du eine chronologische Zusammenfassung der Fakten über Nikola Tesla?\n22:28",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-16T20:28:13.441Z"
+}

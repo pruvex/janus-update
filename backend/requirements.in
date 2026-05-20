@@ -5,6 +5,8 @@ keyring
 httpx
 openai
 Pillow
+opencv-python
+clip @ git+https://github.com/openai/CLIP.git
 google-generativeai
 pytest
 pytest-asyncio

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-010",
+  "testCaseId": "TC-005-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Hat es funktioniert?",
+  "response": "Ja, es hat funktioniert. Ich habe die Informationen gespeichert. Die ersten Details zu seinem Aussehen hast du mir am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“ mitgeteilt; die letzte Ergänzung erfolgte heute um 18:24 Uhr im Chat „Storing Nikola Tesla facts“.\nNikola Tesla zeichnet sich durch seine auffallende Größe und seine sehr schlanke Statur aus. Er hat ein schmales Gesicht mit markanten, tief liegenden Augen, ausgeprägten Wangenknochen und einer hohen Stirn. Sein dunkles Haar trägt er stets akkurat gescheitelt.\n💡 Passende nächste Schritte:• Möchtest du ein visuelles Porträt von Nikola Tesla erstellen lassen?• Soll ich weitere biografische Details oder Erfindungen von ihm recherchieren?\n22:00",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-16T20:00:34.777Z"
+}

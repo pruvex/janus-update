@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-015",
+  "testCaseId": "TC-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Mach das besser",
+  "response": "Worauf beziehst du „das“ genau (Text, Satz, Datei, Plan oder Aussage) und wie soll die „bessere“ Version aussehen (Ton/Format/Ziel)?\n23:10",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T21:10:50.245Z"
+}

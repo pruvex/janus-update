@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-011",
+  "testCaseId": "TC-005-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Hat es funktioniert?",
+  "response": "Ja, das hat funktioniert. Ich habe die Informationen erfolgreich gespeichert. Die letzte Aktualisierung wurde heute um 18:24 Uhr im Chat „Storing Nikola Tesla facts“ vorgenommen.\nHier ist die Zusammenfassung seiner dauerhaften physischen Merkmale (basierend auf der ersten Erfassung am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“):\n\nStatur: Auffallend groß und sehr schlank.\nGesichtszüge: Schmales Gesicht mit einer hohen Stirn und ausgeprägten Wangenknochen.\nAugen: Markante, tief liegende Augen.\nHaare: Dunkles Haar, das stets akkurat gescheitelt getragen wird.\n\n💡 Passende nächste Schritte:• Soll ich ein Porträt von Nikola Tesla basierend auf diesen Merkmalen generieren?• Möchtest du weitere physische Details oder besondere Kennzeichen ergänzen?• Soll ich die Informationen zu seinen Erfindungen in diesem Profil zusammenführen?\n22:21",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-16T20:21:43.742Z"
+}

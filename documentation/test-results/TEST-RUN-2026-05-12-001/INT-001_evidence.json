@@ -1,10 +1,10 @@
 {
   "testRunId": "TEST-RUN-2026-05-12-001",
   "testCaseId": "INT-001",
-  "result": "PASS",
-  "classification": "TOOL_ROUTING_PASS",
+  "result": "FAIL",
+  "classification": "TOOL_ROUTING_FAILURE",
   "prompt": "Wird es regnen morgen?",
-  "response": "Ja: In München wird es morgen (14.05.2026) leichter regnen erwartet (68% Wahrscheinlichkeit). Höchsttemperatur ca. 12.1°C, Tiefsttemperatur ca. **7.1°C\n01:38",
+  "response": "Ja, morgen wird es in München leicht regnen.  \n💡 Vorschlag:• Wenn du magst, kann ich dir auch die Temperatur für morgen nennen.\n21:34",
   "networkEvents": [],
   "consoleErrors": [],
   "uiState": {},
@@ -13,8 +13,9 @@
     "send": "chat_button_click_send_v1",
     "wait": "assistant_stream_complete_v1",
     "evidence": "capture_network_v1",
-    "evaluate": "contains_any_v1"
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
   },
-  "notes": "Expected tool \"system.weather\" was triggered (observed: system_weather)",
-  "timestamp": "2026-05-12T23:38:30.457Z"
+  "notes": "Expected tool \"system.weather\" was not triggered. Tools called: none",
+  "timestamp": "2026-05-14T19:34:22.315Z"
 }

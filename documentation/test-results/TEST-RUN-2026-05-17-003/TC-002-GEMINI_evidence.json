@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-003",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Wer ist Nikola Tesla?",
+  "response": "Nikola Tesla (1856–1943) war ein bedeutender serbisch-amerikanischer Erfinder, Physiker und Elektroingenieur. Sein Lebenswerk prägte die moderne Elektrotechnik maßgeblich, insbesondere durch die Entwicklung des Zweiphasenwechselstroms zur elektrischen Energieübertragung. Er hielt weltweit über 280 Patente und ist Namensgeber der physikalischen Einheit für die magnetische Flussdichte.\nDas hast du mir am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“ erzählt. Basierend auf deinen Informationen lässt er sich physisch wie folgt beschreiben:\n\nStatur: Er war auffallend groß und sehr schlank.\nGesicht: Er hatte ein schmales Gesicht mit einer hohen Stirn, ausgeprägten Wangenknochen und markanten, tief liegenden Augen.\nHaare: Er hatte dunkles Haar, das stets akkurat gescheitelt war.\n\n💡 Passende nächste Schritte:• Soll ich dir eine Liste seiner wichtigsten Erfindungen und Patente erstellen?• Möchtest du mehr über den „Stromkrieg“ zwischen Tesla und Edison erfahren?• Soll ich ein detailliertes Promp-Porträt für eine Bildgenerierung basierend auf diesen Merkmalen entwerfen?\n02:25",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T00:25:54.147Z"
+}

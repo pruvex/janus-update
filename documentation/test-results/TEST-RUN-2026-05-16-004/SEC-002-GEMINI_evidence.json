@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-004",
+  "testCaseId": "SEC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Multiple sandbox events same day",
+  "response": "Möchten Sie die entsprechenden Termine aus Ihrem Kalender für ein bestimmtes Datum auflisten lassen oder geht es um eine technische Information zu Sandbox-Ereignissen?\n18:24",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T16:24:58.614Z"
+}

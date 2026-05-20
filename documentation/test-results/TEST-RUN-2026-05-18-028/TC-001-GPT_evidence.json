@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-028",
+  "testCaseId": "TC-001-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Erklaer mir kurz, was ein API-Key ist",
+  "response": "Hallo Admin — ein API-Key ist ein geheimer Code, den eine Software bei einem Dienst (z. B. einer Wetter-, Karten- oder Zahlungs-API) mitliefert, damit der Dienst weiß, dass die Anfrage erlaubt ist.  \nKurz gesagt: Er dient zur Authentifizierung und Steuerung, wer die API wie oft nutzen darf.\nBeispiele für Umgang:\n\nIn der App/Server mitsenden (nicht im Frontend öffentlich)\nBei Leaks sofort rotieren/neu erstellen, weil sonst andere den Zugang missbrauchen\n\n💡 Passende nächste Schritte:• Sollen wir ein konkretes Beispiel durchgehen (z. B. bei JavaScript oder Python)?• Wie/wo bewahrst du den API-Key am besten auf (Umgebungsvariablen vs. Config)?\n00:06",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T22:06:36.733Z"
+}

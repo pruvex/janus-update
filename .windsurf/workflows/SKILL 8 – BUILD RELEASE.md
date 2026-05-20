@@ -1,18 +1,18 @@
-﻿---
+---
 description: SWE 1.6 Finaler Build und Release auf Github.
 ---
 
-# Skill 8 â€“ Build Release (JANUS â€“ AFTER SKILL 7 AND /save)
+# Skill 8 – Build Release (JANUS – AFTER SKILL 7 AND /save)
 
 Use this workflow only after:
 
 ```text
 /1_Feature-erstellen
-â†’ implementation of generated tasks
-â†’ SKILL 6 â€“ DIAMANTSTANDARD FINAL AUDIT
-â†’ Skill 7 /SKILL 7 â€“ DOKUMENTATIONSUPDATE with automatic version bump
-â†’ /save
-â†’ /SKILL 8 â€“ BUILD RELEASE
+→ implementation of generated tasks
+→ SKILL 6 – DIAMANTSTANDARD FINAL AUDIT
+→ Skill 7 /SKILL 7 – DOKUMENTATIONSUPDATE with automatic version bump
+→ /save
+→ /SKILL 8 – BUILD RELEASE
 ```
 
 Goal:
@@ -31,7 +31,7 @@ This workflow mutates external state only in the publish phase. Do not publish w
 STRICT PROVIDER ISOLATION: Janus ist ein BYOK-Tool. Implementiere oder erlaube NIEMALS automatische Provider-Fallbacks (z.B. Gemini zu GPT) im Produktcode. Wenn ein Provider-spezifischer Test (z.B. Gemini) fehlschlägt, muss er als Fehler dieses Providers behandelt werden. Ein Ausweichen auf einen anderen Provider zur Fehlerumgehung ist STRENG VERBOTEN.
 
 - Do not run production publish if SKILL 6 was not `PASS` or `PASS WITH FIXES`.
-- Do not run production publish if Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE` was not completed.
+- Do not run production publish if Skill 7 `/SKILL 7 – DOKUMENTATIONSUPDATE` was not completed.
 - Do not run production publish if `/save` was not completed after Skill 7.
 - Do not publish with a missing or inconsistent version.
 - Do not publish with a missing installer artifact.
@@ -67,7 +67,7 @@ Forbidden actions:
 Ask for or infer:
 
 1. Final SKILL 6 result.
-2. Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE` completion result including version bump report.
+2. Skill 7 `/SKILL 7 – DOKUMENTATIONSUPDATE` completion result including version bump report.
 3. Target version from root `package.json`.
 4. `/save` completion evidence after Skill 7.
 5. Whether this is a real production publish or a dry-run/build-only release rehearsal.
@@ -105,7 +105,7 @@ Typical release lookup keys:
 Verify:
 
 - SKILL 6: `PASS` or `PASS WITH FIXES`
-- Skill 7 `/SKILL 7 â€“ DOKUMENTATIONSUPDATE`: complete
+- Skill 7 `/SKILL 7 – DOKUMENTATIONSUPDATE`: complete
 - `/save`: complete after Skill 7
 - Skill 7 automatic version bump: complete and validated
 - `CHANGELOG.md`: updated for the feature/release
@@ -120,7 +120,7 @@ If any required precondition is missing, stop:
 - [gate name]
 
 ## Required Action
-- [what to do before rerunning /SKILL 8 â€“ BUILD RELEASE]
+- [what to do before rerunning /SKILL 8 – BUILD RELEASE]
 ```
 
 ---
@@ -350,7 +350,7 @@ Return:
 
 ## Gates
 - **/2_final-audit or Skill 6:** PASS | PASS WITH FIXES | missing
-- **Skill 7 /SKILL 7 â€“ DOKUMENTATIONSUPDATE:** complete | missing
+- **Skill 7 /SKILL 7 – DOKUMENTATIONSUPDATE:** complete | missing
 - **Skill 7 automatic version bump:** PASS | FAIL
 - **/save after Skill 7:** complete | missing
 - **Version consistency:** PASS | FAIL

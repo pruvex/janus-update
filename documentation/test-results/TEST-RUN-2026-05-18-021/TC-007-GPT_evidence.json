@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-021",
+  "testCaseId": "TC-007-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Recherchiere aktuelle Preise fuer GPT und Gemini",
+  "response": "Bestätige: Du hast hinzugefügt, dass Gemini 3.1 Pro als Abo 21,99 € pro Monat kostet (dauerhaftes Merkmal aus deinem Kontext).\nAktuelle Preise (Deutschland, in € pro Monat, aus gefundenen Quellen; Preise ggf. unverifiziert):\n\nGPT / ChatGPT\n23 € — ChatGPT Plus (unverifiziert): Quelle\n103 € — ChatGPT Pro (unverifiziert): Quelle\n229 € — (als ChatGPT Pro in einer weiteren Fundstelle) (unverifiziert): Quelle\n\n\nGemini / Google\n21,99 € — Google AI Pro (unverifiziert): Quelle\n7,99 € — Google AI Plus (200 GB) (unverifiziert): Quelle\n9,99 € — Google AI Plus (2 TB) (unverifiziert): Quelle\n274,99 € — Google AI Ultra (30 TB) (unverifiziert): Quelle\n\n\n\n💡 Passende nächste Schritte:• Soll ich die Preise zusätzlich jährlich statt monatlich suchen und dir dann eine kurze 1:1 Gegenüberstellung erstellen?• Welche Stufen willst du konkret vergleichen: Plus vs. Pro, oder auch Go/Business/Team/Enterprise und bei Gemini AI Plus vs. AI Pro vs. Ultra?\n20:20",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T18:21:01.977Z"
+}

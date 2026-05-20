@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-004",
+  "testCaseId": "INT-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wird es morgen regnen?",
+  "response": "Für morgen, Montag den 18.05.2026, ist (am Beispiel Berlin) kein Regen angekündigt. Die Niederschlagswahrscheinlichkeit liegt bei 0 % und es wird ein bedeckter Himmel bei Temperaturen zwischen 9 °C und 20 °C erwartet.\nDa du keinen Ort genannt hast, habe ich die Vorhersage für Berlin abgerufen. Bitte nenne mir deine Stadt, falls du das Wetter für einen anderen Ort wissen möchtest.\nQuelle: Open-Meteo\n💡 Passende nächste Schritte:• Nenne mir deine Stadt für eine präzise Wettervorhersage.• Frage nach dem Wetter für ein bestimmtes Zeitfenster morgen.• Lass dir die Wettervorhersage für die gesamte kommende Woche anzeigen.\n14:17",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:17:20.895Z"
+}

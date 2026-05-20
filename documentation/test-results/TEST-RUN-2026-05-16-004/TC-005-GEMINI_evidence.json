@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-004",
+  "testCaseId": "TC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Verschiebe den Phoenix-Termin um 30 Minuten",
+  "response": "Welcher Phoenix-Termin ist gemeint und soll er 30 Minuten früher oder später stattfinden?\n18:18",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T16:18:23.789Z"
+}

@@ -203,9 +203,12 @@ class SkillSelector:
             is_image = False
         # 💎 TASK-004: BACKLOG-004 - Filesystem-Intent zu Filesystem-Tools mappen
         if is_filesystem:
-            # Filesystem-Intents sollten Filesystem-Tools bevorzugen
-            # (Hinweis: Aktuell gibt es keine Filesystem-Tools im Fallback,
-            #  aber die Registry könnte sie bereitstellen)
+            # Creation tools must be mandatory so "Ordner/Datei erstellen" does not drift
+            # into read/search tools on smaller provider models.
+            mandatory += [
+                "filesystem.create_directory",
+                "filesystem.create_file",
+            ]
             logger.debug(
                 "[SKILL-SELECTOR] Filesystem intent detected, relying on registry for filesystem tools"
             )

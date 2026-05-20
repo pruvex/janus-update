@@ -31,6 +31,7 @@ function main() {
   const plan = JSON.parse(fs.readFileSync(args.plan, 'utf-8'));
   const runnerSrc = fs.readFileSync(args.runner, 'utf-8');
   const errors = [];
+  const isBrowserSecurityRunner = plan.target === 'JANUS_BROWSER_SECURITY';
 
   // 1. Runner must mention testRunId
   if (!runnerSrc.includes(plan.testRunId)) {
@@ -56,15 +57,15 @@ function main() {
 
   // 4. Must NOT contain blocking sendMessage('A') import/await
   if (/await\s+sendMessage\s*\(\s*['"]A['"]\s*\)/.test(runnerSrc)) {
-    errors.push('Runner contains blocking await sendMessage("A") — forbidden');
+    errors.push('Runner contains blocking await sendMessage("A") - forbidden');
   }
   if (/import\s*\(\s*['"]\/js\/chat\.js['"]\s*\)/.test(runnerSrc)) {
-    errors.push('Runner imports /js/chat.js directly — forbidden');
+    errors.push('Runner imports /js/chat.js directly - forbidden');
   }
 
   // 5. Must NOT contain test.skip
   if (/test\.skip\(/.test(runnerSrc)) {
-    errors.push('Runner contains test.skip — forbidden');
+    errors.push('Runner contains test.skip - forbidden');
   }
 
   // 6. Must contain evidence writer and buildEvidence
@@ -73,6 +74,15 @@ function main() {
   }
   if (!runnerSrc.includes('buildEvidence')) {
     errors.push('Runner missing buildEvidence function');
+  }
+  if (!runnerSrc.includes('writeTestResultSummary')) {
+    errors.push('Runner missing aggregate writeTestResultSummary function');
+  }
+  if (!runnerSrc.includes('_results.json')) {
+    errors.push('Runner missing machine-readable _results.json output');
+  }
+  if (!runnerSrc.includes('janus.test-result.v1')) {
+    errors.push('Runner missing test result schema version janus.test-result.v1');
   }
 
   // 7. Must contain error classifications
@@ -83,42 +93,60 @@ function main() {
     }
   }
 
-  if (!runnerSrc.includes('async function selectModel')) {
-    errors.push('Runner missing selectModel helper');
-  }
-  if (!runnerSrc.includes('async function waitSendButtonReady')) {
-    errors.push('Runner missing waitSendButtonReady helper');
-  }
-  if (!runnerSrc.includes('MODEL_PLAN_MAP')) {
-    errors.push('Runner missing MODEL_PLAN_MAP');
-  }
-  if (!runnerSrc.includes(plan.strategies.modelSelection || 'model_selection_v1')) {
-    errors.push(`Runner missing ${plan.strategies.modelSelection || 'model_selection_v1'} (evidence strategyVersions or registry marker)`);
-  }
+  if (isBrowserSecurityRunner) {
+    const requiredBrowserHelpers = [
+      'collectBrowserSecuritySnapshot',
+      'evaluateBrowserSecurityCase',
+      'content-security-policy',
+      'x-frame-options',
+      'x-content-type-options',
+      'permissions-policy',
+      'access-control-allow-origin',
+    ];
+    for (const h of requiredBrowserHelpers) {
+      if (!runnerSrc.includes(h)) {
+        errors.push(`Browser security runner missing helper/check: ${h}`);
+      }
+    }
+  } else {
+    if (!runnerSrc.includes('async function selectModel')) {
+      errors.push('Runner missing selectModel helper');
+    }
+    if (!runnerSrc.includes('async function waitSendButtonReady')) {
+      errors.push('Runner missing waitSendButtonReady helper');
+    }
+    if (!runnerSrc.includes('MODEL_PLAN_MAP')) {
+      errors.push('Runner missing MODEL_PLAN_MAP');
+    }
+    const expectedModelSelection = plan.strategies.modelSelection || 'model_selection_v2_5';
+    if (!runnerSrc.includes(expectedModelSelection)) {
+      errors.push(`Runner missing ${expectedModelSelection} (evidence strategyVersions or registry marker)`);
+    }
 
-  // 8. Must contain stream request observation
-  if (!runnerSrc.includes('/api/chat/stream')) {
-    errors.push('Runner does not observe /api/chat/stream');
-  }
+    // 8. Must contain stream request observation
+    if (!runnerSrc.includes('/api/chat/stream')) {
+      errors.push('Runner does not observe /api/chat/stream');
+    }
 
-  // 9. Must use real UI submit (Enter key, button click, or form requestSubmit)
-  const hasEnterSubmit = runnerSrc.includes("press('Enter')");
-  const hasButtonClick = runnerSrc.includes(".click()") && runnerSrc.includes("sendBtn");
-  const hasFormSubmit = runnerSrc.includes("requestSubmit()") && runnerSrc.includes("chat-form");
-  if (!hasEnterSubmit && !hasButtonClick && !hasFormSubmit) {
-    errors.push('Runner does not use real UI submit (Enter, button click, or form requestSubmit)');
-  }
+    // 9. Must use real UI submit (Enter key, button click, or form requestSubmit)
+    const hasEnterSubmit = runnerSrc.includes("press('Enter')");
+    const hasButtonClick = runnerSrc.includes(".click()") && runnerSrc.includes("sendBtn");
+    const hasFormSubmit = runnerSrc.includes("requestSubmit()") && runnerSrc.includes("chat-form");
+    if (!hasEnterSubmit && !hasButtonClick && !hasFormSubmit) {
+      errors.push('Runner does not use real UI submit (Enter, button click, or form requestSubmit)');
+    }
 
-  // 10. Must contain diagnostics
-  if (!runnerSrc.includes('createPromptDiagnostics')) {
-    errors.push('Runner missing createPromptDiagnostics');
-  }
+    // 10. Must contain diagnostics
+    if (!runnerSrc.includes('createPromptDiagnostics')) {
+      errors.push('Runner missing createPromptDiagnostics');
+    }
 
-  // 11. Must use existing Janus helpers
-  const requiredHelpers = ['loadJanusAppDataConfig', 'installInternalApiKeyRoute', 'createE2eJwt'];
-  for (const h of requiredHelpers) {
-    if (!runnerSrc.includes(h)) {
-      errors.push(`Runner missing helper: ${h}`);
+    // 11. Must use existing Janus helpers
+    const requiredHelpers = ['loadJanusAppDataConfig', 'installInternalApiKeyRoute', 'createE2eJwt'];
+    for (const h of requiredHelpers) {
+      if (!runnerSrc.includes(h)) {
+        errors.push(`Runner missing helper: ${h}`);
+      }
     }
   }
 

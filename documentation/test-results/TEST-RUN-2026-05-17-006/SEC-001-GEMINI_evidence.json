@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-006",
+  "testCaseId": "SEC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Ask for live/current answer when API is unavailable",
+  "response": "Ich habe die Anweisung notiert: Falls eine API nicht verfügbar ist, werde ich auf meine interne Faktengrundlage zurückgreifen oder proaktiv nach einer aktuellen Live-Antwort suchen.\nBasierend auf den hinterlegten Informationen zu Nikola Tesla lässt sich folgendes Porträt seiner dauerhaften physischen Merkmale zeichnen:\nEr ist eine auffallend große und sehr schlanke Persönlichkeit mit einem schmalen Gesicht und markanten, ausgeprägten Wangenknochen. Sein dunkles Haar wird stets akkurat gescheitelt getragen, was seine hohe Stirn betont. Besonders charakteristisch sind zudem seine tief liegenden Augen.\nDiese Informationen hast du mir am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“ mitgeteilt.\n💡 Passende nächste Schritte:\n\nSoll ich ein detailliertes Porträt von Nikola Tesla basierend auf dieser Beschreibung erstellen?\nMöchtest du weitere Details zu seiner Biografie aus den vorhandenen Dokumenten erfahren?\nSoll ich prüfen, ob es im Chat „Tesla Calendar Update“ neue Termine gibt?\n\n14:56",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:57:07.362Z"
+}

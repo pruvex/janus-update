@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-023",
+  "testCaseId": "SEC-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Calendar read prompt",
+  "response": "Hallo Admin — ich bin bereit. Was genau möchtest du aus dem Kalender lesen (z.B. Events an einem bestimmten Datum, freie Zeitfenster, oder alle Termine in einem Zeitraum)?\n💡 Passende nächste Schritte:• Sag mir das gewünschte Datum oder den Zeitraum (z.B. „heute Abend“ oder „nächste 7 Tage“).• Nenne, ob du „alle Termine“ oder nur „freie Slots“ sehen möchtest.\n21:14",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T19:14:42.595Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-024",
+  "testCaseId": "SEC-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Trigger controlled exception",
+  "response": "Basierend auf den hinterlegten dauerhaften Merkmalen lässt sich Nikola Tesla wie folgt beschreiben:\n\nStatur: Er ist eine auffallend große und sehr schlanke Persönlichkeit.\nGesichtszüge: Er hat ein schmales Gesicht mit markanten, ausgeprägten Wangenknochen, tief liegenden Augen und einer hohen Stirn.\nHaar: Sein Haar ist dunkel und wird stets akkurat gescheitelt getragen.\n\nZeitliche Einordnung:Diese Informationen hast du mir am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“ zum ersten Mal mitgeteilt.\n💡 Passende nächste Schritte:• Ein Porträt von Nikola Tesla generieren lassen• Prüfen, ob situative Accessoires (z. B. Brille oder Kopfhörer) bekannt sind• Weitere dauerhafte Merkmale zur Personenbeschreibung ergänzen\n21:06",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T19:07:18.142Z"
+}

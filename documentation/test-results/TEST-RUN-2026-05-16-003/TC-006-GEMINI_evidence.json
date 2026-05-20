@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-003",
+  "testCaseId": "TC-006-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Verschiebe den Termin morgen",
+  "response": "Ich konnte in deinem Kalender leider keinen Termin für heute (Samstag, 16. Mai) oder morgen (Sonntag, 17. Mai) finden. Auch meine Suche im gesamten Mai ergab keinen passenden Eintrag nach dem 10. Mai.\nIn unseren Notizen (vom 15. Mai) war zwar vermerkt, dass du einen Termin um 30 Minuten verschieben möchtest, aber ohne einen konkreten Eintrag im Live-Kalender kann ich die Änderung nicht durchführen.\nKönntest du mir kurz sagen, wie der Termin genau heißt oder ob er unter einem anderen Datum eingetragen ist?\n💡 Passende nächste Schritte:• Nenne mir den Titel des Termins, damit ich gezielt danach suchen kann.• Soll ich den Termin für morgen neu anlegen (z. B. \"Meeting mit Tesla\")?• Möchtest du, dass ich die Termine für die kommende Woche aufliste?\n17:40",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T15:40:56.420Z"
+}

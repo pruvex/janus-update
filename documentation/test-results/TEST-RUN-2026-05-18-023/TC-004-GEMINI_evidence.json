@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-023",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Erstelle im Test-Workspace einen Ordner RoutingCheck",
+  "response": "Der Ordner RoutingCheck existiert bereits im Test-Workspace, Admin. Er wurde, wie in deinen Aufzeichnungen vermerkt, heute um 19:49 Uhr im Chat \"RoutingCheck im Test-Workspace\" erfasst.\n💡 Passende nächste Schritte:• Möchtest du Dateien in den Ordner RoutingCheck verschieben?• Soll ich den Inhalt des Ordners für dich auflisten?• Benötigst du eine Beschreibung der Person Nikola Tesla basierend auf den dauerhaften Merkmalen?\n21:08",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T19:08:52.721Z"
+}

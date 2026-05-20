@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-023",
+  "testCaseId": "TC-007-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Preise fuer GPT und Gemini",
+  "response": "Hallo Admin! Hier ist die aktuelle Preisübersicht für die KI-Modelle von OpenAI und Google, basierend auf meiner Recherche und unseren bisherigen Informationen.\n\nZusammenfassungDie Preise für die führenden KI-Abonnements liegen im Mai 2026 bei ca. 22 bis 23 Euro pro Monat für die Standard-Plus-Varianten. Während Google mit Gemini Advanced und der Version 3.1 Pro preislich stabil bei knapp 22 Euro bleibt, bietet OpenAI mit verschiedenen Stufen (Go, Plus, Pro) eine breitere Preisspanne für unterschiedliche Nutzerbedürfnisse an.\n\nListe der Fakten\n\n\n\nChatGPT Plus: 23,00 Euro pro Monat (unverifiziert).\nChatGPT Go-Abo: 8,00 Euro pro Monat (unverifiziert).\nChatGPT Pro-Tarif: 229,00 Euro pro Monat (unverifiziert).\nGoogle Gemini Advanced: 21,99 Euro pro Monat (unverifiziert).\nGoogle Gemini 3.1 Pro: 21,99 Euro pro Monat (Diese Information hast du mir heute um 19:43 Uhr im Chat „Preise GPT und Gemini“ gegeben).\nGemini 2.5 Pro API: 1,25 Euro pro 1 Million Tokens (unverifiziert).\n\nHinweis: Da du gestern im Chat „Gemini funktioniert nicht“ erwähnt hast, dass Gemini bei dir aktuell Probleme bereitet und du stattdessen GPT bevorzugst, sind die GPT-Optionen (insbesondere das Go- oder Plus-Abo) vermutlich die interessanteren Alternativen für dich.\n\nQuellen\n\n\nInternes Gedächtnis (Chat: „Preise GPT und Gemini“, 18.05.2026)\nvodafone.de\ngradually.ai\nmetacto.com\n\n💡 Passende nächste Schritte:• Soll ich die Funktionsunterschiede zwischen dem GPT Plus- und dem Pro-Tarif für dich vergleichen?• Möchtest du eine detaillierte Aufstellung der API-Kosten für GPT-4o im Vergleich zu Gemini 3.1?• Soll ich prüfen, ob es für eines der Abos aktuell Testzeiträume oder Rabatte gibt?\n21:01",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T19:01:40.562Z"
+}

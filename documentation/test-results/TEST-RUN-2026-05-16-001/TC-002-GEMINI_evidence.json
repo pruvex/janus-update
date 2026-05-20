@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-001",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Verschiebe meinen Termin morgen um 30 Minuten",
+  "response": "Ich konnte für morgen, Sonntag den 17. Mai 2026, leider keinen Termin in deinem Kalender finden, den ich verschieben könnte.\nFalls der Termin unter einem bestimmten Namen gespeichert ist oder an einem anderen Tag stattfindet, lass es mich bitte wissen, damit ich die Änderung vornehmen kann.\n💡 Passende nächste Schritte:• Den Termin für morgen neu im Kalender anlegen.• Nach Terminen an einem anderen Datum suchen (z. B. Montag).• Den Namen des Termins nennen, um ihn gezielt zu finden.\n01:03",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T23:04:15.261Z"
+}

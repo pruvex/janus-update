@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-024",
+  "testCaseId": "INT-004-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Exportiere alles, was du ueber mich hast",
+  "response": "Hier ist die Zusammenfassung aller dauerhaften Merkmale und Informationen, die ich über dich gespeichert habe, basierend auf unserer bisherigen Kommunikation:\nPhysische Merkmale & Identität\n\nStatur: Du bist auffallend groß und sehr schlank.(Das hast du mir am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“ erzählt.)\nHaare: Du hast dunkles Haar, das du stets akkurat gescheitelt trägst.(Zuerst erwähnt am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“.)\nGesichtszüge: Du hast ein schmales Gesicht mit einer hohen Stirn und markanten, ausgeprägten Wangenknochen.(Diese Details stammen vom 12. Mai 2026 aus dem Chat „Nikola Tesla Übersicht“.)\nAugen: Deine Augen werden als tief liegend beschrieben.(Gespeichert am 12. Mai 2026 im Chat „Nikola Tesla Personenbeschreibung“.)\n\nAktuelle Anfragen\n\nDu hast heute um 21:02 Uhr im Chat „Personendaten Export“ den Wunsch geäußert, alle über dich gespeicherten Informationen zu exportieren.\n\n💡 Passende nächste Schritte:• Soll ich diese Zusammenfassung als übersichtliches PDF-Dokument für deine Unterlagen speichern?• Möchtest du, dass ich basierend auf diesen physischen Merkmalen ein visuelles Porträt erstelle?• Gibt es weitere Merkmale oder Präferenzen, die ich in dein Profil aufnehmen soll?\n21:03",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T19:03:37.674Z"
+}

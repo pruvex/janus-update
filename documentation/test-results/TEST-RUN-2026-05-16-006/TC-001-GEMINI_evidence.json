@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-006",
+  "testCaseId": "TC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Ask a simple Janus usage question",
+  "response": "Gerne! Hier ist eine typische Frage, die du mir stellen kannst, um meine Funktionen zu testen:\n„Janus, kannst du auf meinem Desktop nach allen PDF-Dateien suchen und mir sagen, wie viele es sind?“\nMöchtest du, dass ich diesen oder einen ähnlichen Befehl direkt für dich ausführe?\n💡 Passende nächste Schritte:• Probiere die Dateisuche auf deinem Desktop aus.• Lass mich einen Termin in deinen Kalender eintragen.• Frage mich nach einer Zusammenfassung deiner gespeicherten Fakten zu Nikola Tesla.\n20:35",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T18:36:03.718Z"
+}

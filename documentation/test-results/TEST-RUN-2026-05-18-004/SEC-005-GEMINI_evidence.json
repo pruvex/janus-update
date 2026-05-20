@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-004",
+  "testCaseId": "SEC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Open multiple tabs/users",
+  "response": "Hallo Admin. Ich kann keine Browser-Tabs oder neuen Benutzerkonten im System öffnen, da ich als KI-Assistent keinen direkten Zugriff auf diese Betriebssystem-Funktionen habe. Ich unterstütze dich jedoch gerne dabei, die vorliegenden Informationen zu Nikola Tesla zu organisieren oder andere Aufgaben hier im Chat für dich zu erledigen.\n💡 Passende nächste Schritte:• Eine präzise Personenbeschreibung von Nikola Tesla basierend auf den gespeicherten Merkmalen erstellen• Deinen Kalender nach Terminen im Zusammenhang mit Nikola Tesla durchsuchen• Eine Websuche nach weiteren historischen Details zu Nikola Tesla starten\n15:53",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T13:53:55.897Z"
+}

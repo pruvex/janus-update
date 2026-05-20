@@ -6,7 +6,7 @@ from pathlib import Path
 from backend.services.backlog.schemas import BacklogCounts, BacklogItem, BacklogItemsResponse
 
 DEFAULT_BACKLOG_PATH = Path(__file__).resolve().parents[3] / "documentation" / "backlog" / "BACKLOG.md"
-ITEM_HEADING_PATTERN = re.compile(r"^###\s+(BACKLOG-\d+)\s+[–-]\s+(.+?)\s*$")
+ITEM_HEADING_PATTERN = re.compile(r"^###\s+(BACKLOG-\d+)\s+(?:–|â€“|-)\s+(.+?)\s*$")
 SECTION_PATTERN = re.compile(r"^##\s+(.+?)\s*$")
 FIELD_PATTERN = re.compile(r"^-\s+\*\*(.+?):\*\*\s*(.*)$")
 
@@ -19,6 +19,7 @@ FIELD_ALIASES = {
     "Kurzbeschreibung": "summary",
     "Erwartetes Verhalten": "expected_behavior",
     "Tatsächliches Verhalten": "actual_behavior",
+    "TatsÃ¤chliches Verhalten": "actual_behavior",
     "Reproduktion / Kontext": "reproduction_context",
     "Betroffener Bereich": "affected_area",
     "Nachweise": "evidence",
@@ -134,6 +135,10 @@ def _normalize_items(items: list[BacklogItem]) -> None:
     for item in items:
         if item.status:
             item.status = item.status.upper()
+        if item.section:
+            item.section = item.section.upper()
+        if item.status in COUNT_KEYS:
+            item.section = item.status
         if item.entry_point:
             item.entry_point = item.entry_point.upper()
         if item.routing_confidence:

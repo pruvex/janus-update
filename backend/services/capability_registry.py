@@ -481,10 +481,13 @@ class CapabilityRegistry:
         # 💎 TASK-005: BACKLOG-005 - Filesystem-Intent fügt Filesystem-Tools hinzu
         # Wenn Filesystem-Intent erkannt wurde, füge Filesystem-Tools als mandatory hinzu
         if is_filesystem:
-            # Filesystem-Tools als mandatory hinzufügen
-            boosted += [
+            # Creation tools must be mandatory so "Ordner/Datei erstellen" does not drift
+            # into read/search tools on smaller provider models.
+            mandatory += [
                 "filesystem.create_directory",
                 "filesystem.create_file",
+            ]
+            boosted += [
                 "filesystem.delete_directory",
                 "filesystem.delete_file",
                 "filesystem.find_files",

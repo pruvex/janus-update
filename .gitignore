@@ -30,3 +30,6 @@ images/debug/
 nathan/
 *.vtt
 *.log
+e2e_janus.db*
+playwright-report/data/
+playwright-report/trace/

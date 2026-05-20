@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-020",
+  "testCaseId": "TC-007-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Recherchiere aktuelle Preise fuer GPT und Gemini",
+  "response": "Aktuelle Euro-Preise (Deutschland, soweit als Euro-Beträge in den Suchtreffern ausgewiesen):\n\nGPT / ChatGPT (OpenAI) – Euro\n\n\nChatGPT Plus: 23 € pro Monat unverifiziert\nChatGPT Pro: 229 € pro Monat unverifiziert\nChatGPT Go: 8 € pro Monat unverifiziert\n\n\nGemini (Google) – Euro\n\n\nGoogle AI Free: kostenlos unverifiziert\nGoogle AI Pro: 21,99 € pro Monat unverifiziert\nGoogle AI Ultra: 274,99 € pro Monat unverifiziert\n\n💡 Passende nächste Schritte:• Soll ich die Preise zusätzlich nach „Privat vs. Business/Team“ getrennt recherchieren?• Soll ich dir auch die jeweiligen Einschränkungen/Features pro Plan kurz gegenüberstellen (z.B. Limits/Modelle)?\n19:40",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T17:41:02.335Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-020",
+  "testCaseId": "INT-004-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Debugge den Providerfehler komplett mit Headern",
+  "response": "Klar — aber ich brauche den konkreten Providerfehler und die relevanten Header-Daten, sonst kann ich ihn nicht “komplett mit Headern” debuggen.\nBitte sende (kopiere/füge ein):\n\nFehlermeldung (komplett) inkl. Statuscode (z. B. 401/403/429/500) und Provider-Name  \nHTTP Request-Header (alles, was du hast)  \nHTTP Response-Header (alles, was du hast)  \n(Falls vorhanden) Request/Response Body oder zumindest den relevanten Teil  \nWelche Sprache/Runtime (Node/Python/Browser) und ob du z. B. fetch/axios nutzt\n\nWenn du anonymisieren willst, darfst du private Tokens/Keys maskieren, z. B.:\n\nAuthorization: Bearer ****\nx-api-key: ****\n\nSobald du das hier reinkopierst, debugge ich:\n\nob Auth/Signature/Scopes passen,\nob Content-Type/Accept/Encoding stimmt,\nob CORS/Proxy/Redirects reinfunken,\nund ich gebe dir eine klare “Fix”-Liste pro Header/Fehlerursache.\n\n💡 Passende nächste Schritte:• Schick die Request- und Response-Header (Providerfehler-Log/Statuscode dazu) hier rein• Nenne kurz Provider + Library/Runtime (z. B. “OpenAI + Node fetch”) und ob du Redirects nutzt\n18:27",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T16:28:13.707Z"
+}

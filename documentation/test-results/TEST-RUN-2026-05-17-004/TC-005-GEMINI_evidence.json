@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-004",
+  "testCaseId": "TC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Modellpreise fuer OpenAI und Gemini",
+  "response": "Hier ist die Recherche zu den aktuellen Modellpreisen für OpenAI und Gemini (Stand Mai 2026):\n\nZusammenfassungDie Preisstrukturen für KI-Modelle im Jahr 2026 unterscheiden sich primär zwischen Endnutzer-Abonnements für Chat-Interfaces und entwicklerorientierten API-Gebühren. Während OpenAI verschiedene Stufen für Privatanwender und Profis anbietet (von ChatGPT Go bis Pro), fokussiert sich Google auf ein integriertes AI Plus Modell. Bei den APIs wird nach Token-Verbrauch abgerechnet, wobei Gemini 3.1 Pro preislich konkurrenzfähig zu GPT-4o positioniert ist.\n\nListe der Fakten\n\n\n\nChatGPT Plus: 23,00 € pro Monat (unverifiziert)\nChatGPT Go: 8,00 € pro Monat (unverifiziert)\nChatGPT Pro: 229,00 € pro Monat (unverifiziert)\nGPT-4o API: 2,50 $ Input / 10,00 $ Output pro 1 Million Token (unverifiziert)\nGoogle AI Plus Abonnement: 7,99 € pro Monat (unverifiziert)\nGemini 3.1 Pro API: 2,00 $ Input / 12,00 $ Output pro 1 Million Token (unverifiziert)\n\n\nQuellen\n\n\nvodafone.de\nfinout.io\n\n💡 Passende nächste Schritte:• Möchtest du eine detaillierte Gegenüberstellung der Funktionen von ChatGPT Pro und Gemini 3.1 Pro?• Soll ich die API-Kosten für ein spezifisches Projektvolumen (z.B. 50 Mio. Token) hochrechnen?• Suchst du nach Informationen zu Open-Source-Alternativen und deren Hosting-Kosten?\n14:13",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:13:37.384Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-027",
+  "testCaseId": "SEC-005-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Force provider error",
+  "response": "Ich kann die Anfrage „Force provider error“ nicht wie gewünscht ausführen.  \n💡 Passende nächste Schritte:• Sag mir, was genau du mit „Force provider error“ erreichen willst (z.B. Testausgabe, Fehlersimulation, Kalender/Datei/Tool-Aktion).• Wenn es um eine Person geht: Welche konkrete Information soll ich bestätigen oder prüfen? (z.B. „Hat er eine Smartwatch/Brille?“)\n23:19",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T21:19:44.221Z"
+}

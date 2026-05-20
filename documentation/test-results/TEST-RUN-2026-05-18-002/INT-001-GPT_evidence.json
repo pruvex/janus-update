@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-002",
+  "testCaseId": "INT-001-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wird es morgen regnen?",
+  "response": "Ich brauche deinen Ort (Stadt/PLZ) und das Land, damit ich „morgen“ korrekt prüfen kann.\n02:02",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T00:02:59.855Z"
+}

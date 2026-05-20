@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-002",
+  "testCaseId": "INT-006-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Wie ist das Wetter dort?",
+  "response": "Für „dort“ brauche ich noch den Ort (Stadt/PLZ). Wo genau soll ich nach dem Wetter schauen?  \n💡 Passende nächste Schritte:• Nenne mir die Stadt oder PLZ (z. B. „Berlin“ oder „10115 Berlin“)• Sag dazu, für heute oder morgen (falls du einen bestimmten Tag meinst)\n01:44",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-16T23:44:15.882Z"
+}

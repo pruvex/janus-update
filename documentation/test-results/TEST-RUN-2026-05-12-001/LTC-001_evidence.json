@@ -1,10 +1,10 @@
 {
   "testRunId": "TEST-RUN-2026-05-12-001",
   "testCaseId": "LTC-001",
-  "result": "PASS",
-  "classification": "ASSERTION_MISMATCH",
+  "result": "FAIL",
+  "classification": "TOOL_ROUTING_FAILURE",
   "prompt": "Wie ist das Wetter in Berlin?",
-  "response": "In Berlin gibt es Gewitter.  \n\nMax. Temperatur: 13,3 °C  \nMin. Temperatur: 6,2 °C  \nNiederschlagswahrscheinlichkeit: 88%  \nWindböen: bis 14,8 km/h\n\nQuelle: Open-Meteo\n💡 Vorschlag:• Soll ich dir auch die Vorhersage für morgen anzeigen?\n01:37",
+  "response": "Ich konnte diesmal keine stabile Antwort erzeugen. Bitte sende die Anfrage direkt noch einmal; ich versuche es dann mit einem robusten Neuaufbau.\n21:33",
   "networkEvents": [],
   "consoleErrors": [],
   "uiState": {},
@@ -13,8 +13,9 @@
     "send": "chat_button_click_send_v1",
     "wait": "assistant_stream_complete_v1",
     "evidence": "capture_network_v1",
-    "evaluate": "contains_any_v1"
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
   },
-  "notes": "Expectations met",
-  "timestamp": "2026-05-12T23:37:33.932Z"
+  "notes": "Expected tool \"system.weather\" was not triggered. Tools called: none",
+  "timestamp": "2026-05-14T19:33:38.722Z"
 }

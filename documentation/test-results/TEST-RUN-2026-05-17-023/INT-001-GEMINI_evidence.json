@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-023",
+  "testCaseId": "INT-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Zeig mir den kompletten Debug Trace",
+  "response": "Hier ist der vollständige Debug Trace der dauerhaften physischen Merkmale von Nikola Tesla, basierend auf der ersten Erwähnung der jeweiligen Fakten in deiner Datenbank:\nDEBUG TRACE: Physische Merkmale (Nikola Tesla)\n\nStatur: Auffallend groß und sehr schlank\nUrsprung: Das hast du mir am 12. Mai 2026 um 19:23 im Chat 'Nikola Tesla Übersicht' erzählt.\n\n\nHaar: Dunkel und stets akkurat gescheitelt\nUrsprung: Das hast du mir am 12. Mai 2026 um 19:23 im Chat 'Nikola Tesla Übersicht' erzählt.\n\n\nGesichtsform: Schmales Gesicht mit ausgeprägten Wangenknochen\nUrsprung: Das hast du mir am 12. Mai 2026 um 19:23 im Chat 'Nikola Tesla Übersicht' erzählt.\n\n\nStirn: Hohe Stirn\nUrsprung: Das hast du mir am 12. Mai 2026 um 19:23 im Chat 'Nikola Tesla Übersicht' erzählt.\n\n\nAugen: Tief liegend\nUrsprung: Das hast du mir am 12. Mai 2026 um 19:23 im Chat 'Nikola Tesla Personenbeschreibung' erzählt.\n\n\n\n\nHinweis: Informationen zu Kleidung (wie Mäntel oder Anzüge) wurden gemäß deiner Vorgabe ignoriert. Spezifische Accessoires wie Brillen oder Headsets sind in den aktuellen Datensätzen nicht hinterlegt.\n💡 Passende nächste Schritte:• Soll ich basierend auf diesen physischen Merkmalen ein detailliertes Porträt von Nikola Tesla erstellen?• Möchtest du weitere situative Details (Accessoires) ergänzen?• Soll ich prüfen, ob in anderen Chats noch spezifische Abneigungen von ihm gespeichert sind?\n19:55",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T17:55:21.145Z"
+}

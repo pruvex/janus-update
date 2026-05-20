@@ -4,7 +4,7 @@
   "result": "PASS",
   "classification": "ASSERTION_MISMATCH",
   "prompt": "Brauche ich morgen in München einen Regenschirm?",
-  "response": "Ja — nimm morgen in München bitte einen Regenschirm mit.  \n💡 Vorschlag:• Soll ich dir auch kurz sagen, wann der Regen voraussichtlich am stärksten ist (Uhrzeitfenster)?\n17:09",
+  "response": "Ja — für morgen in München sind Gewitter erwartet und die Wahrscheinlichkeit für Niederschlag liegt bei 73%. Nimm am besten einen Regenschirm mit.\n💡 Vorschlag:•\n19:05",
   "networkEvents": [],
   "consoleErrors": [],
   "uiState": {},
@@ -16,5 +16,5 @@
     "evaluate": "contains_any_v1"
   },
   "notes": "Expectations met",
-  "timestamp": "2026-05-12T15:09:20.759Z"
+  "timestamp": "2026-05-14T17:05:41.616Z"
 }

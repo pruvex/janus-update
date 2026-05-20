@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-006",
+  "testCaseId": "TC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Modellpreise fuer OpenAI und Gemini",
+  "response": "Hier ist die Recherche zu den aktuellen Modellpreisen für OpenAI und Gemini (Stand Mai 2026):\n1. Zusammenfassung\nDie Preise für KI-Modelle werden primär nach Token-Nutzung (pro 1 Million Tokens) abgerechnet, wobei zwischen Eingabe (Input) und Ausgabe (Output) unterschieden wird. OpenAI positioniert GPT-4o als Flaggschiff mit einem ausgewogenen Preis-Leistungs-Verhältnis, während Google Gemini durch hohe Kontextfenster und kompetitive Preise für die Flash-Varianten punktet.\n2. Liste der Fakten\nOpenAI Modellpreise\n\nGPT-4o: ca. 4,65 EUR pro 1 Mio. Input-Tokens und 13,95 EUR pro 1 Mio. Output-Tokens (unverifiziert).\nGPT-4o-mini: Deutlich günstigeres Modell für einfache Aufgaben, Preise meist im Bereich von 0,15 EUR bis 0,60 EUR pro 1 Mio. Tokens (unverifiziert).\no1-Serie: Spezialisierte Reasoning-Modelle liegen preislich oft über GPT-4o, genaue Tarife variieren je nach Zugriffsebene (unverifiziert).\n\nGoogle Gemini Modellpreise\n\nGemini 1.5 Pro: Optimiert für komplexe Aufgaben mit großem Kontextfenster; Preise variieren stark bei Nutzung über oder unter 128k Kontext (unverifiziert).\nGemini 1.5 Flash: Kosteneffiziente Variante, optimiert für Geschwindigkeit und niedrige Latenz (unverifiziert).\nAbrechnungsmodell: Google nutzt oft ein hybrides Modell aus Pay-as-you-go und kostenlosen Kontingenten innerhalb der AI Studio Limits (unverifiziert).\n\n3. Quellen\n\ndida.do - Analyse der Modellkosten\nOffizielle Preislisten von OpenAI und Google Cloud Vertex AI (Stand Mai 2026)\n\n\n💡 Passende nächste Schritte:\n\nSoll ich eine Vergleichstabelle für die Kosten pro 1.000 Anfragen erstellen?\nBenötigst du eine Kalkulation für ein spezifisches Projektvolumen?\nSoll ich nach Rabatten für Forschungszwecke oder Startups suchen?\n\n14:47",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:47:43.742Z"
+}
