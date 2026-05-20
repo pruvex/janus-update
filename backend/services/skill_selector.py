@@ -193,6 +193,13 @@ class SkillSelector:
         # Wenn Filesystem-Intent erkannt wurde, hat er Vorrang vor Bild-Intent
         is_filesystem = getattr(intent_result, "is_filesystem_intent", False) or primary == "filesystem"
         is_image = getattr(intent_result, "is_image_intent", False) or primary == "image"
+        source_lookup_dominates_calendar = (
+            (
+                bool(getattr(intent_result, "is_weather_intent", False))
+                or bool(getattr(intent_result, "is_routing_geo_intent", False))
+            )
+            and primary != "calendar"
+        )
         if is_filesystem and is_image:
             logger.info(
                 "[SKILL-SELECTOR] Filesystem-Intent overrides Image-Intent (filesystem=%s, image=%s)",
@@ -215,7 +222,9 @@ class SkillSelector:
         elif is_image:
             # Bild-Intent nur wenn nicht durch Filesystem-Intent überschrieben
             mandatory = ["system.generate_image"]
-        elif getattr(intent_result, "is_calendar_intent", False) or primary == "calendar":
+        elif (
+            getattr(intent_result, "is_calendar_intent", False) or primary == "calendar"
+        ) and not source_lookup_dominates_calendar:
             mandatory = ["calendar.list_events", "calendar.find_slots", "calendar.find_and_update_event"]
             forbidden.append("system.create_pdf")
         elif getattr(intent_result, "is_shopping_intent", False) or primary == "shopping":

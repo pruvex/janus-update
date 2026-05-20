@@ -259,7 +259,6 @@ CALENDAR_COMMAND_MARKERS: Tuple[str, ...] = (
     "ergänze",
     "ergänzen",
     "hinzufügen",
-    "mit",
     # Mutation / reminder triggers (TASK-062-b)
     "vergessen",
     "denk an",
@@ -1461,7 +1460,7 @@ class IntentEngine:
         if not user_text or not user_text.strip():
             return False
         t = user_text.casefold()
-        if re.search(r"\b(?:regen|regnen|regnet|niederschlag)\b", t):
+        if re.search(r"\b(?:regen|regnen|regnet|niederschlag|regenschirm)\b", t):
             return True
         if re.search(r"\bwie\s+(?:ist|wird)\s+(?:das\s+)?wetter\b", t):
             return True

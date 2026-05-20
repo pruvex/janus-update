@@ -1722,7 +1722,30 @@ async def execute_generation_prepare_gateway(
             wf.action_guidance = f"{_ag_rg}\n{_rg_block.strip()}".strip() if _ag_rg else _rg_block.strip()
             logger.info("💎 ROUTING-GEO: action_guidance — Routing vor Kalender-Tools.")
 
-        if _weather and not _is_cal_intent:
+        if _weather:
+            if getattr(wf, "relevant_skill_ids", None):
+                _before_weather_skills = list(wf.relevant_skill_ids)
+                wf.relevant_skill_ids = [
+                    sid for sid in wf.relevant_skill_ids if not str(sid).startswith("calendar.")
+                ]
+                if "system.weather" not in wf.relevant_skill_ids:
+                    wf.relevant_skill_ids.append("system.weather")
+                _removed_weather_skills = [
+                    sid for sid in _before_weather_skills if sid not in wf.relevant_skill_ids
+                ]
+                if _removed_weather_skills:
+                    logger.info(
+                        "💎 WEATHER-INTENT: Removed calendar tools from weather turn: %s",
+                        _removed_weather_skills,
+                    )
+            wf.gateway_kwargs["allowed_skill_ids"] = list(getattr(wf, "relevant_skill_ids", []) or ["system.weather"])
+            wf.gateway_kwargs["requested_skills"] = list(getattr(wf, "relevant_skill_ids", []) or ["system.weather"])
+            wf.gateway_kwargs["forced_tool"] = {
+                "skill_id": "system.weather",
+                "provider_tool_name": "system.weather",
+            }
+            wf.gateway_kwargs["force_tool_name"] = "system.weather"
+            wf.gateway_kwargs.pop("forced_tool_args", None)
             _w_block = (
                 "\n\n!!! WETTER-FRAGE (DIAMOND) !!!\n"
                 "Der Nutzer fragt nach Wetter, Temperatur oder Vorhersage.\n"

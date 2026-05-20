@@ -37,6 +37,18 @@ class TestCalendarRoutingFix:
         # Non-calendar queries
         assert not intent_engine.detect_calendar_intent("was kostet das")
         assert not intent_engine.detect_calendar_intent("kaufen bei amazon")
+
+    def test_weather_dog_walk_with_mit_is_not_calendar(self, intent_engine):
+        """Regression: bare 'mit' in a weather walk question must not route to calendar."""
+        text = "brauche ich in 51067 einen regenschirm, wenn ich um halb 9 mit dem hund raus gehe?"
+
+        assert intent_engine.detect_weather_intent(text)
+        assert not intent_engine.detect_calendar_intent(text)
+
+        result = intent_engine.detect_all_intents(text)
+        assert result.is_weather_intent
+        assert not result.is_calendar_intent
+        assert result.primary_intent == "weather"
     
     def test_shopping_intent_without_calendar_keywords(self, intent_engine):
         """Shopping intent should work normally without calendar keywords."""
@@ -163,6 +175,18 @@ class TestDiamondPdfToolPolicy:
             IntentDetectionResult(is_weather_intent=True, primary_intent="weather")
         )
         assert "system.weather" in pol["mandatory"]
+
+    def test_weather_policy_does_not_offer_calendar_tools_on_overlap(self, registry):
+        pol = registry.get_intent_skill_policy(
+            IntentDetectionResult(
+                is_weather_intent=True,
+                is_calendar_intent=True,
+                primary_intent="weather",
+            )
+        )
+
+        assert "system.weather" in pol["mandatory"]
+        assert "calendar.list_events" not in pol["mandatory"]
 
 
 if __name__ == "__main__":

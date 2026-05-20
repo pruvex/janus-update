@@ -450,7 +450,11 @@ class CapabilityRegistry:
             # BACKLOG-031: News-Intent must be mandatory to force tool call instead of LLM knowledge
             mandatory += ["system.rss_news"]
 
-        if _flag("is_calendar_intent") or primary == "calendar":
+        source_lookup_dominates_calendar = (
+            (_flag("is_weather_intent") or _flag("is_routing_geo_intent"))
+            and primary != "calendar"
+        )
+        if (_flag("is_calendar_intent") or primary == "calendar") and not source_lookup_dominates_calendar:
             mandatory += ["calendar.list_events", "calendar.find_slots", "calendar.find_and_update_event"]
             forbidden += ["system.create_pdf", "knowledge.edit_pdf", "system.generate_image"]
 
