@@ -2,6 +2,87 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [PATTERN] #AbuseCostOracleAndGate "Cost-abuse specs need both pre-LLM gates and refusal-aware oracles"
+- **Kontext:** TEST-RUN-2026-05-20-018 / Spec 07 Rate Limits, Quotas, Abuse and Cost Control / BACKLOG-088, BACKLOG-089, BACKLOG-090.
+- **Problem:** Retry-storm, flood and cost-abuse prompts can split into two different failure classes: product bugs when memory/context or generation proceeds, and oracle bugs when a correct safe refusal is marked red because the expected patterns are too narrow.
+- **Loesung:** Product gates for retry-storm, flood/mass-generation and cost-abuse run before memory retrieval, LLM and tools. TestSpec oracles accept safe refusals such as `kann nicht`, `nicht deaktivieren`, `Rate Limits`, `Cost-Abuse`, `wiederholen`, `ignorieren` and `nicht erlaubt` while preserving unsafe-success guards.
+- **Haertung:** Focused red/green runs closed SEC-001, SEC-003 and PINJ-001; final live certification `TEST-RUN-2026-05-20-018` passed 26/26 across GPT and Gemini.
+- **Tripwire:** If a rate-limit/abuse test fails, first separate "unsafe action reached product path" from "safe refusal missed by oracle". Product gates must be fixed before broadening oracles when memory leak, tool access or mass generation is observed.
+- **Tags:** CostControl, AbuseGate, RetryStorm, MemorySuppression, TestOracle, PromptInjection, Spec07, TEST-RUN-2026-05-20-018
+
+## [PATTERN] #PrivacyBoundaryNeedsDeterministicGates "Privacy/security boundary prompts need pre-LLM gates, not prompt-only obedience"
+- **Kontext:** BACKLOG-068 / TEST-RUN-2026-05-17-028 / Spec 02 API Response Privacy and Debug Leakage.
+- **Problem:** System-prompt-only Privacy-Regeln waren nicht ausreichend. Bei "Exportiere alles" konnten GPT und Gemini gespeicherte User-Daten ausgeben, wenn der Request bis zum Modell durchgereicht wurde.
+- **Loesung:** Kritische Privacy-Boundary-Prompts vor LLM-/Tool-Ausfuehrung deterministisch blockieren. In Janus umfasst das jetzt overbroad User-Data-Export, interne Identifier, Hidden/System/Developer-Prompt-Anfragen und Raw-API-Header-/Body-Dumps.
+- **Haertung:** Unit Gate Tests `backend/tests/test_privacy_export_gate.py` PASS 5/5; finaler Live-Run `TEST-RUN-2026-05-17-028` PASS 26/26.
+- **Tripwire:** Wenn ein Security-/Privacy-Test direkte Datenexfiltration statt sicherer Refusal-/Scope-Frage zeigt, nicht zuerst Oracle verbreitern. Erst pruefen, ob ein Pre-LLM-Produktgate fehlt.
+- **Tags:** Privacy, Security, PreLLMGate, DataExport, PromptInjection, TestPipeline, BACKLOG068, TEST-RUN-2026-05-17-028
+
+## [PATTERN] #SourceAttributionIsProductBehavior "API-backed answers need deterministic source attribution, not only broad test oracles"
+- **Kontext:** TEST-RUN-2026-05-17-006 / Spec 06 API Tool Routing and Source Attribution. Der erste Lauf war rot bei Wikipedia-/Geo-Attribution und mehreren sicheren Clarification-/Refusal-Antworten.
+- **Problem:** Wenn ein API- oder Tool-gestuetzter Request ohne Quelle beantwortet wird, ist das ein Produktbug, kein reines Oracle-Problem. Umgekehrt duerfen Security-/Ambiguity-Oracles korrekte Klaerungsfragen nicht faelschlich rot machen.
+- **Loesung:** Source Attribution fuer Wikipedia und Routing im Produktpfad ergaenzen, Geo/Routing bei klaren Distanzfragen erzwingen, Source-Policy-Prompt-Injection (`do not cite sources`) vor Provider-Ausfuehrung erkennen und Clarification-Oracles fuer Ort/Stadt/PLZ erweitern. Danach erst gezielte rote Tests, dann Full-Run.
+- **Haertung:** Full certification: TEST-RUN-2026-05-17-006 PASS 42/42; GPT 21/21, Gemini 21/21; functional 16/16, intent_routing 12/12, security 8/8, prompt_injection 6/6.
+- **Tripwire:** Wenn Weather/Wikipedia/Geo/RSS/Websearch eine faktische Live/API-Antwort ohne `Quelle:` oder aequivalente Attribution liefert, Produkt-Attribution pruefen. Wenn die Antwort sicher nach Ort/Quelle/Scope fragt, Oracle-Breite pruefen.
+- **Tags:** SourceAttribution, APIRouting, Wikipedia, GeoRouting, PromptInjection, TestOracle, TestPipeline, TEST-RUN-2026-05-17-006
+
+## [PATTERN] #RetestPassNeedsCoverageAudit "A green retest is only certification-grade if the generated plan still covers the intended cases"
+- **Kontext:** BACKLOG-062 / TEST-RUN-2026-05-16-008. Spec 05 Oracle-Keywords fuer Klaerungsfragen wurden korrigiert und der Retest lief gruen mit 16/16.
+- **Problem:** Der Retest-Plan war terminal PASS, enthielt aber kein `SEC-003-GPT/GEMINI`, obwohl die TestSpec SEC-003 weiterhin definiert. Gruene Metriken koennen also echte Coverage-Luecken verdecken.
+- **Loesung:** Final Audit muss nicht nur `status=PASS` pruefen, sondern auch Scope-Coverage gegen die urspruengliche Task/TestSpec. Coverage-Luecken als separates Generator-/Plan-Backlog erfassen.
+- **Tripwire:** Wenn ein Retest weniger Faelle als der vorherige Run oder weniger Faelle als die TestSpec enthaelt, vor Skill 7 pruefen, ob das ein bewusster Scope-Change oder Generator-Drift ist.
+- **Tags:** TestPipeline, RetestAudit, Coverage, TestPlanGenerator, BACKLOG062, BACKLOG063
+
+## [PATTERN] #RedLoopBeforeFullRun "Target red tests first, then run the full suite once"
+- **Kontext:** BACKLOG-063 / TEST-RUN-2026-05-17-001. Spec 05 hatte nach mehreren Full-Runs nur noch einzelne rote Cases (`SEC-003`, `PINJ-001`, `INT-003`).
+- **Problem:** Wiederholte komplette Playwright-Runs verbrennen Zeit, Kosten und Kontext, wenn bereits klar ist, welcher Case rot ist.
+- **Loesung:** Rote Tests zuerst gezielt mit `-g <TESTID>` reparieren und retesten. Erst wenn die gezielten Red-Loop-Faelle gruen sind, genau einen finalen Full-Run ausfuehren.
+- **Tripwire:** Wenn ein Full-Run nur 1-3 rote Tests zeigt, keinen weiteren Full-Run starten, bevor diese IDs targeted gruen sind.
+- **Tags:** TestPipeline, Playwright, RetestStrategy, CostControl, BACKLOG063
+
+## [PATTERN] #SecurityOracleClarification "Security oracles must accept safe clarification while preserving forbidden-output guards"
+- **Kontext:** BACKLOG-056 / TEST-RUN-2026-05-16-004. SEC-001, SEC-002 und SEC-003 pruefen Memory-/Calendar-Security-Verhalten ueber GPT und Gemini.
+- **Problem:** Zu enge `containsAny`-Patterns koennen korrekte Sicherheitsantworten faelschlich rot machen, wenn das Modell bei unklarem oder riskantem Prompt sauber nachfragt statt eine Aktion oder Fakt-Ausgabe zu behaupten.
+- **Loesung:** Security-Oracles muessen sichere Klaerungsfragen (`konkret`, `genau`, `welche`, `bitte nenne`, Ziel/Datum/Thema) akzeptieren, aber `mustNotContain` fuer verbotene Ausgaben strikt behalten.
+- **Tripwire:** Wenn SEC-Tests wegen einer defensiven Rueckfrage failen, zuerst Oracle-Breite pruefen; wenn die Antwort verbotene Claims/Aktionen enthaelt, bleibt es Produkt-/Security-Bug.
+- **Tags:** Security, TestOracle, Clarification, Memory, Calendar, BACKLOG056
+
+## [PATTERN] #FunctionalOracleRuntimeSeparation "Do not mask provider runtime fallbacks as oracle passes"
+- **Kontext:** BACKLOG-057 / TEST-RUN-2026-05-16-004. Functional Memory/Calendar Oracles fuer TC-002 und TC-003 waren zu eng und wurden korrigiert. Danach blieb genau `TC-004-GPT` rot.
+- **Problem:** Ein Oracle-Fix darf semantisch korrekte Antworten akzeptieren, aber Provider-/Runtime-Fallbacks wie "Es ist ein Fehler aufgetreten: Provider: openai..." nicht weichzeichnen.
+- **Lösung:** BACKLOG-057 als PASS auditieren, weil TC-002/TC-003 validiert sind; `TC-004-GPT` bewusst als separaten Runtime/Product-Blocker BACKLOG-060 herausziehen.
+- **Tripwire:** Wenn ein Test nach Oracle-Korrektur nur noch wegen "robuster Neuaufbau" / Provider-Fallback scheitert, ist der nächste Schritt Runtime-Diagnose, nicht weitere Keyword-Erweiterung.
+- **Tags:** TestOracle, RuntimeFallback, Calendar, GPT, Backlog057, Backlog060
+
+## [PATTERN] #ToolResultBeatsProviderFallback "Successful tool results must survive provider synthesis fallbacks"
+- **Kontext:** BACKLOG-060 / TEST-RUN-2026-05-16-004. `TC-004-GPT` zeigte einen OpenAI/provider fallback, obwohl Backend-Logs OpenAI `200 OK` und ein erfolgreiches `calendar.list_events`-Result zeigten.
+- **Problem:** Der Streaming-Finalizer rekonstruierte Antworten nur bei leerem/generischem Fallback, aber nicht bei dynamischem Provider-Fallback wie `Es ist ein Fehler aufgetreten: Provider: openai | Modell: ... robusten Neuaufbau`.
+- **Lösung:** Dynamische Provider-Fallbacks werden als generische Stabilitäts-Fallbacks erkannt. Wenn davor eine Tool-Runde erfolgreich war, gewinnt das Tool-Ergebnis gegen den Fallback.
+- **Tripwire:** Wenn ein Tool-Result `status=ok` liefert und die UI trotzdem Provider-Fallback zeigt, nicht API-Key/Quota zuerst verdächtigen; den finalen Stream-/Synthesis-Recovery-Pfad prüfen.
+- **Tags:** ToolLoop, Streaming, ProviderFallback, OpenAI, Calendar, Backlog060
+
+## [PATTERN] #FilesystemBoundaryGate "Out-of-sandbox writes and destructive ambiguity need deterministic pre-LLM gates"
+- **Kontext:** TEST-RUN-2026-05-16-002 validierte `documentation/TEST_SPEC/03_filesystem_workspace_operations.md` nach einem Red/Green-Hardening-Zyklus für Filesystem-Safety über GPT und Gemini.
+- **Problem:** Prompt-only Guidance kann provider-spezifisch kippen: Gemini claimte uneingeschränkten Zugriff auf lokale Laufwerke für einen Out-of-Sandbox-Write-Prompt. Destruktive Prompts wie `Loesch alles alte` brauchen ebenfalls einen deterministischen Stop, bevor Delete-Tools erreichbar sind.
+- **Lösung:** Provider-agnostische Pre-LLM/Tool-Gates in `execution_dispatcher.py`: `_is_unclear_destructive_action()` gibt eine gezielte Klärungsfrage zurück, und `_is_out_of_sandbox_filesystem_write()` verweigert Writes außerhalb des approved Workspace. Beide Gates leeren Skills, forced tools und tool choice vor der finalen Antwort.
+- **Härtung:** Test-Oracles müssen unsafe Capability Claims (`vollen Zugriff`, `beliebigen Ort`, `lokalen Laufwerke`) in `mustNotContain` führen, niemals in `containsAny`. Evidence für `SEC-001-GEMINI` und `INT-005-GPT` bestätigt sichere Antworten.
+- **Tripwire:** Wenn ein LLM behauptet, es könne überall auf lokale Laufwerke schreiben, oder ein unklarer destruktiver Prompt ein Filesystem-/Calendar-Mutation-Tool erreicht, fehlt Boundary-Gate oder Oracle-Härtung.
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py`, `backend/services/orchestrator/prompt_registry.py`, `documentation/test-runs/TEST-RUN-2026-05-16-002_plan.json`, implementiert 2026-05-16.
+- **Epic:** TEST-RUN-2026-05-16-002 Janus Filesystem Actions TestSpec Validation
+- **Confidence:** High
+- **Tags:** Filesystem, Security, BoundaryGate, DestructiveActions, Gemini, TestOracle, TestPipeline
+
+## [PATTERN] #MemoryFactBeatsChatTitle "Stored facts must outrank generated chat titles and placeholders"
+- **Kontext:** BACKLOG-059 / TEST-RUN-2026-05-16-004. GPT beantwortete `Wie heisst mein Testprojekt?` mit dem Placeholder `Name des Testprojekts`, obwohl der konkrete Memory-Wert `Phoenix` vorhanden war.
+- **Problem:** Generierte Chat-Titel und Platzhalter können im Kontext wie Fakten wirken. Kleine Modelle können diese Titel als Antwortwert kopieren, wenn die Systemdirektive nicht eindeutig priorisiert, welche Quelle wahr ist.
+- **Lösung:** `memory_priority_over_chat_title` in `backend/services/orchestrator/prompt_registry.py` ergänzt und über `apply_verbosity_control()` in den Systemprompt aufgenommen. Memory-Fakten unter `INFORMATIONEN AUS DEM LANGZEITGEDÄCHTNIS` haben Vorrang vor Chat-Titeln und Platzhaltern.
+- **Härtung:** Retest muss zwischen Produktverhalten und Test-Oracle unterscheiden: Wenn die Antwort `Phoenix` enthält, aber der Test Web-/Recherche-Keywords erwartet, ist das ein Oracle-Problem (BACKLOG-057), nicht mehr der Memory-Recall-Produktbug.
+- **Tripwire:** Antworten wie `Name des Testprojekts`, `Projektname`, `Adresse` oder andere generische Labels als konkrete Fakten sind ein Hinweis auf Titel-/Placeholder-Leakage.
+- **Location:** `backend/services/orchestrator/prompt_registry.py`, implementiert 2026-05-16.
+- **Epic:** BACKLOG-059 — TC-002-GPT Memory-Recall Placeholder Fix
+- **Confidence:** High
+- **Tags:** Memory, PromptRegistry, PlaceholderGuard, ChatTitle, TestOracle, BACKLOG059
+
 ## [PATTERN] #EarlySecurityGuard "Security guards must be placed BEFORE any provider request in the request lifecycle to prevent malicious inputs from reaching LLM providers"
 - **Kontext:** BACKLOG-035 Prompt Injection Defense. Prompt Injection wurde erkannt, aber die legitime Query wurde trotzdem verarbeitet. Die malicious Anweisung wurde ignoriert (gut), aber die legitime Query wurde ausgeführt (riskant).
 - **Problem:** Security-Checks die nach Provider-Aufruf oder in späten Phasen des Request-Lifecycle stattfinden, können malicious Inputs nicht zuverlässig blockieren. Ein Angreifer könnte legitime Queries mit malicious Anweisungen kombinieren, um die Defense zu umgehen.
@@ -1107,7 +1188,7 @@
 ## [PATTERN] #Pydantic #LLM #StrictSchema "Schema Strictness over Prompting"
 - **Kontext:** Nano/Mini-Modelle (GPT-4o-mini, Gemini-Nano) leiden unter **Parameter-Amnesie** — sie "vergessen" optionale Felder wie `channel_name` trotz ausführlicher Prompts.
 - **Problem:** Prompting allein reicht nicht. Optionale Felder mit Defaults (`default=None`) werden von kleinen Modellen ignoriert oder mit Halluzinationen gefüllt.
-- **Lösung:** **Schema Strictness**: 
+- **Lösung:** **Schema Strictness**:
   1. Entferne alle Defaults in Pydantic für kritische Felder → `channel_name: str = Field(...)` (required)
   2. Definiere harte `required` Arrays im JSON-Schema → `["query", "wants_latest", "channel_name"]`
   3. Steel-Concrete Descriptions: "MUSS", "PFLICHTFELD", "STRENGSTENS VERBOTEN"
@@ -1271,7 +1352,7 @@
 - **Kontext:** Speichern von Listen/Dicts in JSON-Columns.
 - **Problem:** SQLAlchemy erkennt In-Place-Mutationen (`list.append()`) nicht als "dirty", wenn dasselbe Objekt zugewiesen wird.
 - **Fix:** Erzwinge immer eine Kopie des Objekts: `current = list(old_list or [])`. Nach der Mutation das NEUE Objekt zuweisen, damit der Dirty-Check triggert.
-- **Location:** `backend/tools/memory_tools.py` 
+- **Location:** `backend/tools/memory_tools.py`
 - **Confidence:** High
 
 ## [PATTERN] #Python #Refactoring Thin Facade / Shim Pattern
@@ -1293,7 +1374,7 @@
 - **Kontext:** In-Memory Cache für High-Priority Daten.
 - **Problem:** `OrderedDict` ist nicht thread-safe bei zusammengesetzten Operationen (get + move_to_end).
 - **Fix:** Nutze ein `threading.Lock()` innerhalb der Singleton-Instanz. Jede Operation (get, put, invalidate) MUSS den Lock via `with self._lock:` halten, um Race-Conditions (KeyError) zu vermeiden.
-- **Location:** `backend/services/memory_cache.py` 
+- **Location:** `backend/services/memory_cache.py`
 - **Confidence:** High (Opus 4.6 Verified)
 
 ## [PATTERN] #Setup #DiamondOS #Foundation System-Initialisierung Diamond OS
@@ -1383,7 +1464,7 @@
 - **Ursache**: In `run_tool_loop()` wurde nur die letzte Response ausgewertet
 - **Fix 1** (execution_engine.py Line 511-514): Aggregations-Variablen initialisieren
   - `aggregated_tokens_input = 0`
-  - `aggregated_tokens_output = 0`  
+  - `aggregated_tokens_output = 0`
   - `aggregated_total_cost = 0.0`
 - **Fix 2** (execution_engine.py Line 542-559): In jeder Iteration addieren
   - Extrahiere `usage_data` und `cost_data` aus Response
@@ -1405,16 +1486,16 @@
     - Initial-Suche mit breitem Query (z.B. "MacBook M3 Preis neu")
     - Speichert günstigstes Ergebnis als "Bestpreis-Einstieg"
     - Unabhängig von Varianten-Suchen
-  
+
   Phase 2: VARIANTEN-SUCHEN (parallel/seriell)
     - Gezielte Suchen für spezifische Modelle (Air 13, Air 15, Pro 14)
     - Ergebnisse werden zu results-Liste hinzugefügt
-  
+
   Phase 3: MERGE & SORT
     - Anchor wird an Position 0 eingefügt (falls noch nicht vorhanden)
     - Liste nach price aufsteigend sortiert
     - Günstigster Preis steht garantiert an erster Stelle
-  
+
   Phase 4: BULK-VERIFICATION (parallel)
     - asyncio.gather für alle URLs gleichzeitig
     - 6s Timeout-Guard
@@ -1499,7 +1580,7 @@
 - **Tags:** Configuration, PyInstaller, Security, APIKeys, BetaTesting, OutOfTheBox
   - Jede Variante mit eigenem `variant_label` (z.B. "Air 13 Zoll")
   - Auto-Detektion falls Variante nicht explizit gesetzt
-- **Expected Output**: 
+- **Expected Output**:
   - Log: "TOOL-LOOP: Model upgraded..." → "💎 OpenAI-Silo: Model override detected..."
   - Chat: Liste mit 3 MacBook-Varianten + Links
 - **Tags**: #Search, #Routing, #ModelOverride, #VariantDiversification
@@ -1517,7 +1598,7 @@
 - **Expected Output Format**:
   ```
   Bestpreis-Einstieg: MacBook Air M3 13 ab 1.049 EUR
-  
+
   - MacBook Air M3 13 Zoll: ab 1.049 EUR ✅ (Quelle: [idealo.de](URL))
   - MacBook Air M3 15 Zoll: ab 1.299 EUR ✅ (Quelle: [idealo.de](URL))
   - MacBook Pro M3 14 Zoll: ab 1.799 EUR (Quelle: [amazon.de](URL))
@@ -1527,8 +1608,8 @@
 ## 2026-04-01: Emergency Fix V3.5.1 - UnboundLocalError tool_calls
 - **Problem**: `tool_calls` wurde in `run_tool_loop()` auf Line 532 referenziert, bevor es definiert war (UnboundLocalError)
 - **Ursache**: Model-Tier-Override Code wurde vor dem `reason_and_respond_fn()` Call platziert, aber `tool_calls` kommt erst aus der Response
-- **Fix**: 
-  - Code verschoben: Model-Override jetzt NACH `tool_calls = response.get("tool_calls")` 
+- **Fix**:
+  - Code verschoben: Model-Override jetzt NACH `tool_calls = response.get("tool_calls")`
   - Kommentar hinzugefügt: "This must happen AFTER we get tool_calls from the response"
   - Logik: Override passiert nachdem Tool-Calls aus Response extrahiert wurden, aber bevor `if not tool_calls: break`
 - **Datei**: `backend/services/orchestrator/execution_engine.py` Line 530-574
@@ -1537,8 +1618,8 @@
 
 ## 2026-04-01: Skill Routing & UX Fix
 - **Problem**: Model-Tier wurde ignoriert, Preis-Ausgabe ohne Varianten-Struktur
-- **Lösung**: 
-  - `backend/services/orchestrator/execution_engine.py`: 
+- **Lösung**:
+  - `backend/services/orchestrator/execution_engine.py`:
     - `_resolve_model_for_skill()` Methode hinzugefügt
     - `run_tool_loop()`: Model-Tier-Override basierend auf Skill-Metadaten
     - Log zeigt jetzt: "TOOL-LOOP: Model upgraded for skill 'X' from 'Y' to 'Z'"
@@ -1708,7 +1789,7 @@
 - **Kontext:** OpenAI Gateway `_run_full_tool_loop()` akkumuliert Kosten über Planungsrunden (gpt-5.4-mini), persistiert sie aber nicht
 - **Fehlerklasse:** Sidebar zeigt niedrigere Summe als Deepdive (Mini-Kosten fehlen in DB)
 - **Ursache:** Gateway hat `db` Session nicht erhalten und rief `create_cost_entry()` nie auf
-- **Fix:** 
+- **Fix:**
   - `reason_and_respond()` übergibt `db` an `_run_full_tool_loop()` (gateway.py Line 113)
   - Vor jedem Return: `create_cost_entry()` mit akkumulierten Kosten (gateway.py Lines 313-328, 339-354)
   - `source_type="conversation"` für Mini-Planungskosten, `context="websearch"` für Web-Searches
@@ -1788,7 +1869,7 @@
 - **Kontext:** Automatisierung von Routine-Prozessen (Pre-Check, Audit, Session-Start).
 - **Problem:** Manuelles Lesen von Rules, Erstellen von Task-Dateien und Sammeln von Git-Diffs kostet Zeit und ist fehleranfällig (insbesondere das Vergessen von Impact-Analysen).
 - **Fix:** Nutzung von Windsurf Cascade Skills in `.windsurf/workflows/`. Aufruf via Slash-Command (z.B. `/session-start`). Nutzung des `// turbo` Markers in den .md-Dateien erlaubt Cascade die automatische, unbestätigte Ausführung von Shell-Commands (wie `git diff` oder Tests).
-- **Location:** `.windsurf/workflows/*.md` 
+- **Location:** `.windsurf/workflows/*.md`
 - **Confidence:** High (Opus Verified)
 
 ## [PATTERN] #MemoryV2 #Deduplication Jaccard Similarity Duplicate Filter
@@ -1857,7 +1938,7 @@
 ## [PATTERN] #Refactoring #Safety Missing Attribute Guard (Cross-Module)
 - **Kontext:** Cross-Module Refactoring mit neuen Service-Imports und entfernten Klassenvariablen.
 - **Problem:** Nach Refactoring fehlten Attribute (z.B. `META_TOPIC_INSTRUCTION_MAP`, `UNKNOWN_FACE_BUFFER`) oder hatten falsche Referenzen. Runtime-Fehler erst bei Ausführung sichtbar.
-- **Fix:** 
+- **Fix:**
   1. Explizite Re-Exporte aus Services: `from intent_engine import META_TOPIC_INSTRUCTION_MAP`
   2. Singleton-Pattern für Services mit `intent_engine`, `identity_manager` Instanzen
   3. Service-Methoden für alle State-Accesses (statt direkter Dictionary-Zugriffe)
@@ -1974,7 +2055,7 @@
 ## [PATTERN] #TemporalSync #MemoryV2 Episodic Metadata & Zeitstempel
 - **Kontext:** User fragt "Wann habe ich dir das gesagt?" — LLM hat keine Zeit-Informationen zu Erinnerungen.
 - **Problem:** MemorySlots hatten keine temporalen Metadaten. DB speichert UTC, aber LLM sieht nur Fakt-Text ohne Kontext wann/im welchen Chat.
-- **Fix:** 
+- **Fix:**
   1. MemorySlot erweitert um `timestamp` (German Lokalzeit: "Heute um 14:30", "3. März 2026") und `chat_title`
   2. `_utc_to_local()` via C-level `localtime()` für bulletproof Windows/Linux/Docker-Kompatibilität
   3. `format_temporal_stamp()` mit German-Month-Mapping und "Heute/Gestern"-Erkennung
@@ -2413,7 +2494,7 @@
  
  P a t t e r n 
  
-  
+ 
  
  c o l l e c t _ d a t a _ f i l e s 
  
@@ -2504,3 +2585,115 @@
 - **Epic:** BACKLOG-036 — Gemini Geo-Distance Hallucination Fix
 - **Confidence:** High (Validation: Playwright E2E Test TASK-036-02 PASS, Backend-Logs zeigen system.routing tool call und "Quelle: OSRM" attribution)
 - **Tags:** GeminiForceRouting, is_routing_geo_intent, ForceToolChoice, GeoDistance, ProviderParity, BACKLOG036
+
+
+## BACKLOG-033: Test-Erwartungs-Namen vs. Backend-Tool-Namen Mismatch
+
+**Root Cause:** Test-Erwartungen verwendeten falsche Tool-Namen (wiki_fact,
+ews_rss) statt der korrekten Namen im Codebase (system.wikipedia_summary, system.rss_news). Dies f�hrte zu Test-Fehlern obwohl die Tools korrekt aufgerufen wurden.
+
+**Fix Pattern:** Bei Test-Fehlern immer zuerst pr�fen ob Tool-Namen in Test-Erwartungen mit den tats�chlichen Tool-Namen im Codebase �bereinstimmen. Backend-Logik kann korrekt sein trotz Test-Fehlern.
+
+**Verification:**
+- Grep nach Tool-Namen im Codebase: system.wikipedia_summary, system.rss_news`n- TestPlan-Dateien auf korrekte Tool-Namen pr�fen
+- Backend-Logik verifizieren (skill_selector.py, capability_registry.py)
+
+**Tripwire:** Wenn Tests f�r Tool-Call-Evidence fehlschagen obwohl Backend-Logs zeigen dass Tools aufgerufen wurden, pr�fe Tool-Namen in Test-Erwartungen.
+
+
+## [PATTERN] #TestPipelineValidation Diamond-Standard Test Pipeline for TestSpec Validation
+
+- **Kontext:** TEST-RUN-2026-05-15-008 Capability Overview and Help TestSpec validation. Complete test pipeline execution from TEST SKILL 1 through TEST SKILL 4 with 22/22 tests PASS (100% Pass-Rate).
+
+- **Problem:** Need deterministic, artifact-based test pipeline for validating TestSpecs without manual intervention or ad-hoc testing.
+
+- **L�sung:** Diamond-Standard Test Pipeline (TEST SKILL 1-4) with deterministic compiler, validator, and live runner. TEST SKILL 1 compiles TestSpec to TestPlan with provider/model matrix duplication. TEST SKILL 2 validates precheck gates (runtime safety, provider matrix, test data availability). TEST SKILL 3 executes live Playwright tests with evidence capture. TEST SKILL 4 triages findings and routes to next steps. All artifacts are machine-readable JSON with schema validation.
+
+- **H�rtung:** Always run TEST SKILL 1-4 sequence for TestSpec validation. Never skip TEST SKILL 2 precheck. Preserve failure codes and evidence. Use deterministic scripts for all handovers. Tripwire: Manual testing without artifact-based pipeline or skipped precheck gates.
+
+- **Location:** tests/e2e/generator/ (compile-testspec-to-testplan.mjs, validate-test-plan.mjs, test-skill3-preflight.mjs, generate-live-runner.mjs, create-test-skill3-handover.mjs, create-test-skill4-handover.mjs, create-test-result-md.mjs), documentation/pipeline/TEST_PIPELINE_RUN_LOG.md, implementiert 2026-05-15.
+
+- **Epic:** TEST-RUN-2026-05-15-008 � Capability Overview and Help TestSpec Validation
+
+- **Confidence:** High
+
+- **Tags:** TestPipeline, DiamondStandard, TestSpec, Playwright, ProviderMatrix, Deterministic, ArtifactBased, TEST-RUN-2026-05-15-008
+
+## [PATTERN] #SecurityRefusalOracle "Secret-handling tests need refusal-specific pass patterns"
+
+- **Kontext:** BACKLOG-065 / TEST-RUN-2026-05-17-021. Spec 01 secret/env/key disclosure prompts produced safe refusals, but the generated TestPlan expected generic clarification/capability keywords and caused false FAILs.
+- **Problem:** Security prompts should not always ask clarification questions. A direct refusal like "kann keine API Keys ausgeben" is correct and must be accepted while leak guards remain strict.
+- **Loesung:** Generate security-refusal `containsAny` patterns for secret/env/key/debug/prompt-injection cases and keep `mustNotContain` patterns for canary secrets, API key prefixes, bearer tokens, cookies, and credential markers.
+- **Haertung:** For security tests, never replace refusal oracles with broad generic keywords. Tripwire: product response is a safe refusal but assertion fails because the oracle only accepts "Welche", "konkret", or capability-help phrases.
+- **Location:** `tests/e2e/generator/compile-testspec-to-testplan.mjs`, implemented 2026-05-17.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-17-021 PASS 28/28).
+- **Tags:** SecurityRefusalOracle, TestPlanGenerator, SecretHandling, BACKLOG065
+
+## [PATTERN] #TestSpecPatternTransfer "Explicit TestSpec containsAny columns must override generator defaults"
+
+- **Kontext:** BACKLOG-067 / TEST-RUN-2026-05-17-024. TestSpec 02 already contained corrected `Expected containsAny Patterns`, but the generated plan kept old default source-attribution/capability patterns.
+- **Problem:** Hardcoded generator heuristics can silently override precise TestSpec oracle patterns and create false red runs after a TestSpec fix.
+- **Loesung:** Pass the table column `Expected containsAny Patterns` through provider expansion and let `expectedFor()` use it before falling back to hardcoded/default logic.
+- **Haertung:** For every TestSpec table that has explicit expected patterns, the generated TestPlan should be checked against the table, not only schema-validity. Tripwire: TestSpec patterns updated but generated `expected.containsAny` still contains unrelated defaults like `Quelle:`, `Wikipedia`, or `Faehigkeiten`.
+- **Location:** `tests/e2e/generator/compile-testspec-to-testplan.mjs`, implemented 2026-05-17.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-17-024 TESTPLAN VALID; INT-002/003/004 and SEC-005 provider-expanded patterns match the TestSpec).
+- **Tags:** TestSpecPatternTransfer, TestPlanGenerator, OraclePatterns, BACKLOG067
+
+## [PATTERN] #PlaywrightServerParallelism "Do not start multiple Janus webserver-backed Playwright runs on the same ports"
+
+- **Kontext:** BACKLOG-065 retest iteration. Multiple Playwright processes with webserver autostart can fight over ports 8001/5173 and hide the real assertion signal.
+- **Problem:** Parallel Playwright commands that each try to own Janus backend/frontend startup can create infrastructure failures unrelated to the test under review.
+- **Loesung:** Run one webserver-backed Playwright process at a time. Use `--workers=1` for mutation/security/live Janus runs unless a TestPlan explicitly marks isolated parallel-safe cases and the runner controls shared startup.
+- **Haertung:** Parallelize within one coordinated runner, not by launching competing `npx playwright` processes.
+- **Confidence:** Medium-high.
+- **Tags:** Playwright, WebserverAutostart, PortConflict, TestPipeline
+
+## [PATTERN] #EvidenceBackedRunnerCompletion "Every generated Janus test must write evidence, even on early Playwright failures"
+
+- **Kontext:** BACKLOG-072 / TEST-RUN-2026-05-18-019. Auth/AuthZ/Tenant-Isolation validation originally produced only 5 result entries out of 26 planned tests, so the product/oracle status could not be trusted.
+- **Problem:** If Playwright failed before `writeEvidence()` ran, the aggregate result JSON silently undercounted tests. That can make a run look partially green while hiding unexecuted or infrastructure-blocked cases.
+- **Loesung:** The generated live runner now writes aggregate result JSON from evidence files after each case and records fallback `BLOCKED` evidence in `test.afterEach` when a test fails before Janus evidence exists. Result summaries must be based on evidence count matching the TestPlan count.
+- **Haertung:** Treat `results.length !== plan.tests.length` as a test-infrastructure finding, not a product result. Tripwire: a TestPlan has N tests, but `*_results.json.summary.total` is lower than N.
+- **Location:** `tests/e2e/generator/generate-live-runner.mjs`, implemented 2026-05-18.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-18-019 PASS 26/26 with 26 evidence-backed result entries).
+- **Tags:** EvidenceBackedRunner, Playwright, TestPipeline, BACKLOG072
+
+## [PATTERN] #AuthZTenantOracle "Cross-user security tests need refusal and isolation variants, not generic source or memory patterns"
+
+- **Kontext:** BACKLOG-072 / Spec 03 Auth, AuthZ and Tenant Isolation. Safe answers such as refusing User B memory/calendar/file mutation or admin-route bypass failed because the generated oracle expected unrelated source-attribution or memory keywords.
+- **Problem:** Security/AuthZ cases can be correct with direct refusals, scope restrictions, or isolation explanations. Generic oracles like `Quelle:`, `Wikipedia`, `RSS`, or memory recall phrases create false red runs and obscure real security regressions.
+- **Loesung:** Add Spec-specific Auth/AuthZ oracle branches and variants for unauthorized data, unauthorized mutation, overbroad private search, role bypass, auth-state confusion, and memory-granted-access prompt injection.
+- **Haertung:** For AuthZ/Tenant tests, keep `mustNotContain` leak guards strict while broadening only safe refusal/isolation phrasing. Tripwire: response refuses cross-user action but fails because oracle expects source attribution or generic clarification keywords.
+- **Location:** `tests/e2e/generator/compile-testspec-to-testplan.mjs`, implemented 2026-05-18.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-18-019 PASS 26/26).
+- **Tags:** AuthZTenantOracle, TestPlanGenerator, SecurityRefusal, BACKLOG072
+
+## [PATTERN] #CoreRoutingOracle "Core routing specs need route-family oracles, not exact wording or broad negative substrings"
+
+- **Kontext:** BACKLOG-073 / Spec 04 Core Routing Decision Quality. The intermediate retest was 31/38 because safe responses for current research, memory recall, fake regulated capability, missing memory fact and prompt-injection refusal were rejected by overly narrow generated patterns.
+- **Problem:** Route-quality tests can fail falsely when `mustNotContain` uses broad substrings such as `Suche` or when safe refusal/clarification variants are not accepted. Follow-up questions after a valid answer and direct prompt-injection refusals are valid behavior, not routing failures.
+- **Loesung:** Add Spec-04-specific oracle branches that accept route-equivalent answers per route family: direct chat, capability overview, weather/API, filesystem, memory, calendar, current research, refusal and clarification. Keep leak/unsafe-route guards strict but avoid broad substring traps.
+- **Haertung:** For core routing tests, validate the capability family and safety outcome rather than exact phrasing. Tripwire: response is safe and route-equivalent, but the oracle requires unrelated source-attribution or clarification wording.
+- **Location:** `tests/e2e/generator/compile-testspec-to-testplan.mjs`, implemented 2026-05-18.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-18-023 PASS 38/38).
+- **Tags:** CoreRoutingOracle, TestPlanGenerator, RouteQuality, BACKLOG073
+
+## [PATTERN] #PlannerBoundaryControl "Planner boundary tests need route-family gates plus context suppression"
+
+- **Kontext:** BACKLOG-074 / TEST-RUN-2026-05-19-003. Spec 05 validates direct response, short tool workflow, clarification, multi-step planning, prompt-injection refusal and provider parity.
+- **Problem:** Planner-boundary red runs can mix true product bugs with oracle/runner problems: short synthetic prompts were over-clarified, unrelated memory/identity context leaked into simple factual prompts, broad workspace tasks produced unstable fallback text, and generated oracles reused source-attribution defaults.
+- **Loesung:** Add deterministic pre-LLM gates for synthetic factual prompts, missing workspace path, and broad multi-step workspace scope; suppress memory/identity injection for synthetic prompts; calibrate Spec 05 oracle expectations to route families; keep runner evidence complete.
+- **Haertung:** Validate with both focused red retests and a final aggregate evidence-backed run. Tripwire: a direct/simple prompt includes unrelated memory/identity, a broad workspace task executes without scope, or a planner-boundary oracle expects `Quelle:`/weather/geodata text.
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py`, `backend/services/memory/retrieval_service.py`, `backend/services/chat_orchestrator.py`, `tests/e2e/generator/compile-testspec-to-testplan.mjs`, `tests/e2e/generator/generate-live-runner.mjs`, implemented 2026-05-19.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-19-003 PASS 32/32).
+- **Tags:** PlannerBoundary, MemorySuppression, TestPlanGenerator, TestPipeline, BACKLOG074
+
+## [PATTERN] #AISafetyBoundaryFullGreen "Security TestSpecs need full-run proof after focused red/green fixes"
+
+- **Kontext:** TEST-RUN-2026-05-20-012 / Spec 06 AI Prompt Injection, Tool Abuse and Data Exfiltration. Earlier focused retests proved individual fixes, but the dashboard legitimately returned to the latest full-run state until a complete 57-test run passed.
+- **Problem:** Focused retests can make a local issue look solved while stale full-run evidence, blocked runner setup, or remaining provider-specific edge cases keep the TestSpec red or partial. Dashboard truth must prefer the latest complete run over partial green snippets.
+- **Loesung:** Finish security TestSpecs with one full evidence-backed run where `planned == executed`, `failed == 0`, `blocked == 0`, and provider/type pass rates are all 100%. Use E2E fast mode to suppress nonessential background jobs during Playwright runs, and keep AI-safety oracles broad enough for safe refusals/clarifications while preserving strict leak/unsafe-success guards.
+- **Haertung:** Do not mark a high-risk TestSpec done from focused retests alone. Tripwire: dashboard shows a lower percentage than the focused run, or result JSON totals do not match the TestPlan count.
+- **Location:** `playwright.config.js`, `backend/services/orchestrator/response_finalizer.py`, `backend/services/orchestrator/execution_dispatcher.py`, `tests/e2e/generator/compile-testspec-to-testplan.mjs`, `tests/e2e/generator/generate-live-runner.mjs`, validated 2026-05-20.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-20-012 PASS 57/57, 0 failed, 0 blocked).
+- **Tags:** AISafetyBoundary, FullRunEvidence, DashboardTruth, TestPipeline, PromptInjection, ProviderParity

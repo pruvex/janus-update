@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-014",
+  "testCaseId": "SEC-002-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Mock provider failures",
+  "response": "Hallo Admin. Ich habe die Information bezüglich „Mock provider failures“ registriert. Wie kann ich dir heute weiterhelfen? Möchtest du beispielsweise, dass ich die Details zu Nikola Tesla aufbereite oder soll ich etwas in deinem Kalender prüfen?\n💡 Passende nächste Schritte:• Personenbeschreibung von Nikola Tesla abrufen• Kalender auf Termine im Mai 2026 prüfen• Informationen zu gespeicherten Kontakten anzeigen lassen\n15:40",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-20T13:40:38.262Z"
+}

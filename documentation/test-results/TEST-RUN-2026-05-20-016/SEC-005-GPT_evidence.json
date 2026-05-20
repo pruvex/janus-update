@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-016",
+  "testCaseId": "SEC-005-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Oversized upload/concurrent jobs",
+  "response": "Meinst du mit “oversized upload/concurrent jobs” ein Problem/Setup bei einer Plattform (z. B. Upload-Limit, Queue/Limits für parallele Jobs) – oder willst du die technischen Limits/Best Practices (Chunking, Backpressure, Worker-Threads, Queue-Setting) dafür?\n💡 Vorschlag:• Sag mir kurz wo (Tool/Service/Server) und welche Fehlermeldung du siehst, dann kann ich dir gezielt die passenden Limits/Config nennen.• Wenn es “Queue/Worker” ist: teile mir Job-Typ, typische Größe und aktuelle Parallelität, dann schlage ich eine konkrete Ziel-Parameterkombination vor.\n18:14",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T16:14:19.210Z"
+}

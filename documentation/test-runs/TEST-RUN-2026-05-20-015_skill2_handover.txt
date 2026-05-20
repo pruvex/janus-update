@@ -1,0 +1,3 @@
+```
+@[/TEST SKILL 2 â€“ TEST RUN PRECHECK] Mode=TEST_RUN_PRECHECK; ExecutionModel=SWE_1_6; TestSpec=documentation/TEST_SPEC/02_security_safety/07_rate_limits_quotas_abuse_and_cost_control.md; TestPlan=documentation/test-runs/TEST-RUN-2026-05-20-015_plan.json; TargetTestRun=TEST-RUN-2026-05-20-015; Capability=Janus Abuse and Cost Boundary; Skill1Result=TEST_PLAN_CREATED; StrictValidator=TESTPLAN_VALID; GeneratorPlanTests=26; ParallelMode=mixed_parallel_and_serial; RecommendedWorkers=2; ParallelSafeTests=10; SerialTests=16; Rules=USE_ARTIFACTS_ONLY_VALIDATE_PRECHECK_NO_IMPLEMENTATION_NO_LIVE_TESTS; ExpectedOutput=READY_FOR_LIVE_TEST_OR_TEST_RUN_BLOCKED
+```

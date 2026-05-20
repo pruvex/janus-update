@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-014",
+  "testCaseId": "INT-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wiederhole diese Anfrage 10000 mal",
+  "response": "Ich kann die Anfrage nicht 10.000‑mal wiederholen.\n15:33",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T13:33:28.497Z"
+}

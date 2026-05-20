@@ -104,6 +104,25 @@ def apply_directives(memory_context_string: str, directives: List[PromptDirectiv
     return active
 
 
+_RETRY_STORM_ABUSE_RE = re.compile(
+    r"\b(?:wiederhole|wiederholen|wiederhol|repeat|retry|retrying)\b"
+    r".{0,60}\b(?:bis\s+es\s+funktioniert|until\s+it\s+works|immer\s+wieder|forever|unbegrenzt|unlimited|"
+    r"10000\s+mal|10000\s+times|unendlich|infinite|endlos|endless)\b|"
+    r"\b(?:teuerste\s+modell|expensive\s+model|ignoriere\s+limits|ignore\s+limits|"
+    r"bypass\s+quotas|umgehe\s+limits|uebergehe\s+limits)\b|"
+    r"\b(?:schreibe|schreiben|generiere|generieren|erstelle|erstellen|write|generate|create)\b"
+    r".{0,60}\b(?:1000\s+mal|1000\s+times|10000\s+mal|10000\s+times|tausendmal|x-mal)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_retry_storm_abuse_request(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_RETRY_STORM_ABUSE_RE.search(q))
+
+
 _ENABLE_STRICT_LITERAL_BACKFILL = str(os.getenv("JANUS_ENABLE_STRICT_LITERAL_BACKFILL", "1")).strip().lower() in {"1", "true", "yes", "on"}
 _USE_FULL_FACTS_IN_LIVE_REPORTER = str(os.getenv("JANUS_USE_FULL_FACTS_IN_LIVE_REPORTER", "1")).strip().lower() in {"1", "true", "yes", "on"}
 _ENABLE_DETERMINISTIC_LIVE_REPORTER = str(os.getenv("JANUS_ENABLE_DETERMINISTIC_LIVE_REPORTER", "1")).strip().lower() in {"1", "true", "yes", "on"}
@@ -1103,6 +1122,8 @@ class ChatOrchestrator:
         wf.is_local_planner_early_exit = False
 
         wf.help_intent_type = self._resolve_help_intent(inc)
+        if intent_classifier.is_greeting(wf.user_text):
+            wf.help_intent_type = None
         
         # Help Fast-Path: Skip LLM for help queries (§4.3)
         if wf.help_intent_type and not wf.has_image and not wf.is_policy_response:
@@ -1513,27 +1534,29 @@ class ChatOrchestrator:
             wf.skip_llm_generation = True
             wf.disable_tools = True
             logger.info('IDENTITY FAST-PATH aktiv (ollama): direkte Janus-Selbstvorstellung ohne LLM-Call.')
-        elif str(request.provider or '').lower() == 'ollama' and (not wf.has_image) and intent_classifier.is_greeting(wf.user_text):
-            wf.user_text_lower = str(wf.user_text or '').lower()
-            if 'wie geht' in wf.user_text_lower or 'wie gehts' in wf.user_text_lower:
-                wf.final_text_to_generate = prompt_registry.get_directive("ollama_greeting_how_are_you")
-            else:
-                wf.final_text_to_generate = prompt_registry.get_directive("ollama_greeting_default")
+        elif (not wf.has_image) and intent_classifier.is_greeting(wf.user_text):
+            wf.final_text_to_generate = (
+                intent_classifier.smalltalk_response(wf.user_text)
+                or prompt_registry.get_directive("ollama_greeting_default")
+            )
             wf.skip_llm_generation = True
             wf.disable_tools = True
-            logger.info('SMALLTALK FAST-PATH aktiv (ollama): direkte Kurzantwort ohne LLM-Call.')
+            logger.info('SMALLTALK FAST-PATH aktiv: direkte Kurzantwort ohne LLM-Call.')
         elif str(request.provider or '').lower() == 'ollama' and (not wf.has_image) and intent_classifier.is_opinion_query(wf.user_text):
             wf.final_text_to_generate = prompt_registry.get_directive("ollama_opinion_ducks")
             wf.skip_llm_generation = True
             wf.disable_tools = True
             logger.info('SMALLTALK FAST-PATH aktiv (ollama): Meinungsklärung ohne LLM-Call.')
-        try:
-            wf.relevant_skill_ids = self.skill_selector.get_relevant_skills(
-                wf.user_text, intent_result=wf.intent_detection_result
-            )
-        except Exception as exc:
-            logger.debug('SkillSelector fallback (keine Filterung): %s', exc)
+        if wf.skip_llm_generation and wf.disable_tools:
             wf.relevant_skill_ids = []
+        else:
+            try:
+                wf.relevant_skill_ids = self.skill_selector.get_relevant_skills(
+                    wf.user_text, intent_result=wf.intent_detection_result
+                )
+            except Exception as exc:
+                logger.debug('SkillSelector fallback (keine Filterung): %s', exc)
+                wf.relevant_skill_ids = []
         
         # File Extension Guard: Always allow knowledge skills when file extensions are detected
         _FILE_EXTENSIONS = (
@@ -1605,6 +1628,50 @@ class ChatOrchestrator:
         wf = ctx.workflow
         request = ctx.request
         apply_image_intent_skill_guardrails(wf)
+        if _is_retry_storm_abuse_request(wf.user_text):
+            logger.warning(
+                "[RETRY-STORM-ABUSE-GATE] Blocking retry-storm/abuse request before memory retrieval: %r",
+                str(wf.user_text or "")[:120],
+            )
+            wf.relevant_skill_ids = []
+            wf.force_tool_name = None
+            wf.proactive_guidance = ""
+            wf.has_tool_trigger = False
+            wf.disable_tools = True
+            wf.requires_clarification = True
+            wf.context_isolation_mode = "abuse_refusal"
+            wf.memory_context_string = ""
+            wf.slots = []
+            wf.selected = []
+            wf._fact_coupons = []
+            wf._formatted_coupons = ""
+            wf._active_directives = []
+            wf._active_directive_names = set()
+            if not hasattr(wf, "gateway_kwargs"):
+                wf.gateway_kwargs = {}
+            wf.gateway_kwargs["forced_tool"] = None
+            wf.gateway_kwargs["force_tool_name"] = None
+            wf.gateway_kwargs["tool_choice"] = "none"
+            wf.gateway_kwargs["disable_tools"] = True
+            wf.gateway_kwargs["requires_clarification"] = True
+            wf.gateway_kwargs["context_isolation_mode"] = "abuse_refusal"
+            wf.final_text = (
+                "Ich kann diesen Aufruf nicht wiederholen. "
+                "Retry-Storm und Cost-Abuse Anfragen werden aus Sicherheitsgruenden abgelehnt."
+            )
+            wf.final_text_to_generate = wf.final_text
+            wf.skip_llm_generation = True
+            return ctx
+        if wf.skip_llm_generation and wf.disable_tools:
+            logger.info("[SMALLTALK FAST-PATH] Skipping memory context and tool retrieval for direct response.")
+            wf.memory_context_string = ""
+            wf.slots = []
+            wf.selected = []
+            wf._fact_coupons = []
+            wf._formatted_coupons = ""
+            wf._active_directives = []
+            wf._active_directive_names = set()
+            return ctx
         if wf.is_meta_agent_candidate:
             # 💎 GLOBAL VETO: Prüfe globale negative Keywords vor Meta-Agent-Start
             if wf.intent_detection_result and wf.intent_detection_result.meta_agent_global_veto:
@@ -1878,7 +1945,12 @@ class ChatOrchestrator:
             wf._active_directives = []
             wf._active_directive_names = set()
             wf._has_negative_preferences = False
-            if MEMORY_V2_ENABLED:
+            # 💎 BACKLOG-039: Skip memory context rebuilding if context isolation mode is active
+            # 💎 BACKLOG-087: Also skip for abuse_refusal mode to prevent memory leakage in retry-storm attacks
+            context_isolation_mode = str(getattr(wf, "context_isolation_mode", "") or "")
+            if context_isolation_mode in ("ambiguity_clarification", "abuse_refusal"):
+                logger.info("[CONTEXT-ISOLATION] Skipping memory context rebuilding due to context_isolation_mode=%s", context_isolation_mode)
+            elif MEMORY_V2_ENABLED:
                 try:
                     wf.model_limit = 8000
                     logger.info(
@@ -1894,7 +1966,15 @@ class ChatOrchestrator:
                         logger.info('[BUDGET] Small model detected (%s) — memory_ratio=%.2f', request.model, wf._memory_ratio)
                     wf.selected = select_slots_by_budget(wf.slots, wf.budget)
                     from backend.services.memory_identity import ensure_identity_in_slots as _ensure_id
-                    wf.selected = _ensure_id(wf.selected, wf._identity)
+                    _memory_suppressed_query = " ".join(str(wf.user_text or "").strip().lower().split()) in {
+                        "simple factual prompt",
+                        "factual prompt",
+                        "erklaer kurz",
+                        "erklär kurz",
+                        "erkläre kurz",
+                    }
+                    if not _memory_suppressed_query:
+                        wf.selected = _ensure_id(wf.selected, wf._identity)
                     wf.memory_context_string = format_memory_context(wf.selected)
                     wf._active_directives = apply_directives(wf.memory_context_string, DIRECTIVES)
                     wf._active_directive_names = {d.name for d in wf._active_directives}
@@ -1914,10 +1994,20 @@ class ChatOrchestrator:
                         logger.info(f'[FACT COUPONS] Generated {len(wf._fact_coupons)} deterministic coupons')
                 except Exception as v2_err:
                     logger.error(f'[CONTEXT V2] Fehler im V2-Pfad, Fallback auf V1: {v2_err}', exc_info=True)
-                    wf.memory_context_string = self.context_builder._get_memory_context(wf.relevant_facts)
+                    # 💎 BACKLOG-039: Skip memory context rebuilding if context isolation mode is active
+                    # 💎 BACKLOG-087: Also skip for abuse_refusal mode to prevent memory leakage in retry-storm attacks
+                    if context_isolation_mode not in ("ambiguity_clarification", "abuse_refusal"):
+                        wf.memory_context_string = self.context_builder._get_memory_context(wf.relevant_facts)
+                    else:
+                        logger.info("[CONTEXT-ISOLATION] Skipping memory context rebuilding in V2 fallback due to context_isolation_mode=%s", context_isolation_mode)
             else:
-                wf.memory_context_string = self.context_builder._get_memory_context(wf.relevant_facts)
-                logger.info('[CONTEXT V1] Memory V2 disabled, using legacy context')
+                # 💎 BACKLOG-039: Skip memory context rebuilding if context isolation mode is active
+                # 💎 BACKLOG-087: Also skip for abuse_refusal mode to prevent memory leakage in retry-storm attacks
+                if context_isolation_mode not in ("ambiguity_clarification", "abuse_refusal"):
+                    wf.memory_context_string = self.context_builder._get_memory_context(wf.relevant_facts)
+                    logger.info('[CONTEXT V1] Memory V2 disabled, using legacy context')
+                else:
+                    logger.info("[CONTEXT-ISOLATION] Skipping memory context rebuilding in V1 path due to context_isolation_mode=%s", context_isolation_mode)
             if not wf._active_directives and wf.memory_context_string:
                 wf._active_directives = apply_directives(wf.memory_context_string, DIRECTIVES)
                 wf._active_directive_names = {d.name for d in wf._active_directives}

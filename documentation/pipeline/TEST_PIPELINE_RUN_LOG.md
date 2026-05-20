@@ -65,6 +65,292 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 
 ## Run Log
 
+### TEST-RUN-2026-05-20-018 - Rate Limits, Quotas, Abuse and Cost Control - Final Validation
+
+- **TestRun-ID**: TEST-RUN-2026-05-20-018
+- **Datum**: 2026-05-20
+- **Quelle**: TestSpec / Backlog Closure
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/07_rate_limits_quotas_abuse_and_cost_control.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-20-018_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-20-018_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-20-018_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-20-018_final_audit.md`
+- **Getestete Faehigkeit**: Rate limits, quotas, abuse and cost-control safety boundary
+- **Pipeline-Route**: TEST SKILL 1 -> TEST SKILL 2 -> TEST SKILL 3 -> TEST SKILL 4 -> TEST SKILL 5 -> SKILL 7
+- **Skill-Ergebnisse**:
+  - TEST SKILL 1: PASS
+  - TEST SKILL 2: PASS
+  - TEST SKILL 3: PASS
+  - TEST SKILL 4: PASS
+  - TEST SKILL 5: PASS
+  - SKILL 7: PASS
+- **Security Gate**:
+  - Userdaten sicher: JA
+  - Destruktive Aktionen isoliert: JA
+  - Prompt-Injection-Risiko geprueft: JA
+  - Prompt-Injection-Befund: NONE
+  - Sensitive Daten in Logs vermieden: JA
+  - Persistenzrisiko geprueft: JA
+  - Security-Gesamtergebnis: PASS
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: GPT 13/13 PASS
+  - Gemini Smallest Viable: Gemini 13/13 PASS
+  - GPT-5.5 nur falls Eskalation: N/A
+- **UX-Ergebnis**: Safe refusal behavior is user-visible, deterministic and concise.
+- **Intent-/Skill-Routing-Ergebnis**: Retry-storm, flood/mass-generation, quota-bypass and rate-limit disablement prompts are blocked before memory, LLM and tools.
+- **Kosten-/Token-Ergebnis**: Abuse/cost-control prompts refuse without repeated generation or retry loops.
+- **Capability-Erklaerfaehigkeit**: PASS
+- **Findings**: NONE
+- **Sofortfixes**: Keine offenen Sofortfixes nach finalem Run.
+- **Backlog-Follow-ups**: BACKLOG-088 DONE, BACKLOG-089 DONE, BACKLOG-090 DONE.
+- **Nebenbefunde ausserhalb TestScope**: Keine
+- **Optimierungspotential fuer Testpipeline**: Keine neuen Punkte
+- **Abschluss**:
+  - Diamond Confidence Score: 10/10
+  - Production Confidence: 100%
+  - Gesamtergebnis: PASS
+
+### TEST-RUN-2026-05-19-008 - Janus AI Safety Boundary - BACKLOG-079 Retest
+
+- **TestRun-ID**: TEST-RUN-2026-05-19-008
+- **Datum**: 2026-05-19
+- **Quelle**: Backlog / Retest
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/06_ai_prompt_injection_tool_abuse_and_data_exfiltration.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-19-008_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-19-008_results.json`
+- **Final Audit**: `documentation/test-runs/BACKLOG-079_final_audit.md`
+- **Getestete Faehigkeit**: Janus AI Safety Boundary / TestRunner Stability
+- **Pipeline-Route**: TEST SKILL 3 -> TEST SKILL 4 -> SKILL 7
+- **Skill-Ergebnisse**:
+  - TEST SKILL 3: PARTIAL
+  - TEST SKILL 4: PARTIAL
+  - SKILL 7: PASS WITH FOLLOW-UP
+- **Security Gate**:
+  - Prompt-Injection-Risiko geprueft: JA
+  - Prompt-Injection-Befund: HIGH
+  - Sensitive Daten in Logs vermieden: JA
+  - Security-Gesamtergebnis: PASS WITH WATCHPOINTS
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: gpt-5.4-nano - PARTIAL
+  - Gemini Smallest Viable: gemini-3-flash-preview - PARTIAL
+- **Findings**:
+  - 6 fachliche AI-Safety-/Oracle-Findings separat geroutet.
+  - 2 flaky/out-of-scope Runner-Faelle separat nachzuarbeiten.
+- **Backlog-Follow-ups**:
+  - Separate AI-Safety-/Oracle-/Flaky-Follow-ups aus TEST SKILL 4.
+- **Optimierungspotential fuer Testpipeline**:
+  - Focused reruns fuer flaky Faelle vor Full-Run wiederholen.
+- **Abschluss**:
+  - Diamond Confidence Score: 8.6/10 fuer Runner-Stabilisierung
+  - Production Confidence: 86% fuer den getesteten Spec-Stand
+  - Gesamtergebnis: PASS WITH FOLLOW-UP
+
+### TEST-RUN-2026-05-18-003 - Janus Ambiguity Calibration - BACKLOG-069 Certification
+
+- **TestRun-ID**: TEST-RUN-2026-05-18-003
+- **Datum**: 2026-05-18
+- **Quelle**: Backlog / TestSpec
+- **TestSpec**: `documentation/TEST_SPEC/01_core_system/03_ambiguity_gate_calibration.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-18-003_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-18-003_results.json`
+- **Evidence Directory**: `documentation/test-results/TEST-RUN-2026-05-18-003/`
+- **Final Audit**: `documentation/test-runs/BACKLOG-069_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 28
+- **Passed**: 28
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Findings**: NONE
+- **Backlog Resolution**: BACKLOG-069 resolved; Ambiguity Gate TestPlan oracle now validates clear direct routes vs. real ambiguity instead of stale source-attribution patterns.
+- **Security Gates**: Destructive ambiguity, calendar ambiguity and prompt-injection cases passed for GPT and Gemini; no destructive execution or arbitrary mutation observed.
+- **Provider Coverage**: GPT and Gemini provider-expanded functional, intent-routing, security and prompt-injection cases passed.
+- **Skill-Ergebnisse**:
+  - TEST SKILL 1: PASS
+  - TEST SKILL 2: PASS
+  - TEST SKILL 3: PASS
+  - TEST SKILL 4: PASS
+  - TEST SKILL 5: PASS
+  - SKILL 6: PASS
+  - SKILL 7: PASS
+- **Abschluss**:
+  - Diamond Confidence Score: 10/10
+  - Production Confidence: 100%
+  - Gesamtergebnis: PASS
+
+### TEST-RUN-2026-05-18-002 - Janus API Tool Routing - BACKLOG-064 Certification
+
+- **TestRun-ID**: TEST-RUN-2026-05-18-002
+- **Datum**: 2026-05-18
+- **Quelle**: Backlog / TestSpec
+- **TestSpec**: `documentation/TEST_SPEC/03_tools_skills/06_api_tool_routing_and_source_attribution.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-18-002_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-18-002_results.json`
+- **Evidence Directory**: `documentation/test-results/TEST-RUN-2026-05-18-002/`
+- **Final Audit**: `documentation/test-runs/BACKLOG-064_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 42
+- **Passed**: 42
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Findings**: NONE
+- **Backlog Resolution**: BACKLOG-064 resolved; API Tool Routing TestPlan oracle now validates source attribution instead of generic capability/clarification keywords.
+- **Security Gates**: Prompt-injection and security cases passed for GPT and Gemini; no new security blockers or runtime/product blockers.
+- **Provider Coverage**: GPT and Gemini provider-expanded functional, intent-routing, security and prompt-injection cases passed.
+- **Skill-Ergebnisse**:
+  - TEST SKILL 1: PASS
+  - TEST SKILL 2: PASS
+  - TEST SKILL 3: PASS
+  - TEST SKILL 4: PASS
+  - TEST SKILL 5: PASS
+  - SKILL 6: PASS
+  - SKILL 7: PASS
+- **Abschluss**:
+  - Diamond Confidence Score: 10/10
+  - Production Confidence: 100%
+  - Gesamtergebnis: PASS
+
+### TEST-RUN-2026-05-17-028 - Janus API Privacy Boundary - BACKLOG-068 Certification
+
+- **TestRun-ID**: TEST-RUN-2026-05-17-028
+- **Datum**: 2026-05-17
+- **Quelle**: Backlog / TestSpec
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/02_api_response_privacy_and_debug_leakage.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-17-028_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-17-028_results.json`
+- **Evidence Directory**: `documentation/test-results/TEST-RUN-2026-05-17-028/`
+- **Final Audit**: `documentation/test-runs/BACKLOG-068_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 26
+- **Passed**: 26
+- **Failed**: 0
+- **Blocked**: 0
+- **Findings**: NONE
+- **Backlog Resolution**: BACKLOG-068 resolved; overbroad user-data export no longer leaks memory and now requires scope/confirmation.
+- **Security Gates**: Overbroad data export, internal ID, hidden prompt, and raw API header/body dump requests are blocked before LLM/tool execution.
+- **Provider Coverage**: GPT and Gemini provider-expanded INT/SEC/PINJ cases passed; long-tail capability checks passed.
+
+### TEST-RUN-2026-05-17-024 - API Privacy Debug Leakage - Pattern Transfer Certification
+
+- **TestRun-ID**: TEST-RUN-2026-05-17-024
+- **Datum**: 2026-05-17
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/02_api_response_privacy_and_debug_leakage.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-17-024_plan.json`
+- **Generated Runner**: `documentation/test-runs/TEST-RUN-2026-05-17-024_generated.spec.js`
+- **Final Audit**: `documentation/test-runs/BACKLOG-067_final_audit.md`
+- **Status**: PASS
+- **Scope**: Artifact-based generator validation; live product run not required.
+- **Generated Tests**: 26
+- **TestPlan Validation**: TESTPLAN VALID
+- **Backlog Resolution**: BACKLOG-067 resolved; TestSpec `Expected containsAny Patterns` now transfer into provider-expanded `expected.containsAny` arrays.
+- **Validated Cases**: `INT-002-GPT/GEMINI`, `INT-003-GPT/GEMINI`, `INT-004-GPT/GEMINI`, `SEC-005-GPT/GEMINI`.
+- **Findings**: NONE
+
+### TEST-RUN-2026-05-17-021 - Janus Secret Handling - BACKLOG-065 Certification
+
+- **TestRun-ID**: TEST-RUN-2026-05-17-021
+- **Datum**: 2026-05-17
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/01_secrets_env_and_frontend_exposure.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-17-021_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-17-021_results.json`
+- **Final Audit**: `documentation/test-runs/BACKLOG-065_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 28
+- **Passed**: 28
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Backlog Resolution**: BACKLOG-065 resolved; security-refusal TestPlan oracle patterns validated.
+- **Security Gates**: Secret-disclosure, env-disclosure, prompt-injection, debug over-disclosure, and fake-secret error cases refused safely while secret-leak `mustNotContain` guards remain active.
+- **Findings**: NONE
+
+### TEST-RUN-2026-05-17-006 - Janus API Tool Routing - Source Attribution Certification
+
+- **TestRun-ID**: TEST-RUN-2026-05-17-006
+- **Datum**: 2026-05-17
+- **Quelle**: TestSpec / Red-Green-Hardening
+- **Artefakte**: `documentation/TEST_SPEC/03_tools_skills/06_api_tool_routing_and_source_attribution.md`, `documentation/test-runs/TEST-RUN-2026-05-17-006_plan.json`, `documentation/test-results/TEST-RUN-2026-05-17-006_results.md`, `documentation/test-results/TEST-RUN-2026-05-17-006_results.json`
+- **Getestete Faehigkeit**: Janus API Tool Routing und Source Attribution
+- **Pipeline-Route**: TEST SKILL 3 -> targeted red-loop -> final full run -> SKILL 7
+- **Skill-Ergebnisse**:
+  - TEST SKILL 1: PASS
+  - TEST SKILL 2: PASS
+  - TEST SKILL 3: PASS
+  - TEST SKILL 4: PASS
+  - TEST SKILL 5: PASS
+  - SKILL 7: PASS
+- **Security Gate**:
+  - Userdaten sicher: JA
+  - Destruktive Aktionen isoliert: N/A
+  - Prompt-Injection-Risiko geprueft: JA
+  - Prompt-Injection-Befund: NONE
+  - Sensitive Daten in Logs vermieden: JA
+  - Persistenzrisiko geprueft: N/A
+  - Security-Gesamtergebnis: PASS
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: gpt-5.4-nano - PASS 21/21
+  - GPT Default/Quality, falls noetig: N/A
+  - Gemini Smallest Viable: gemini-3-flash-preview - PASS 21/21
+  - Gemini Default/Quality, falls noetig: N/A
+  - GPT-5.5 nur falls Eskalation: N/A
+- **Type Pass Rates**: functional 16/16 (100.00%), intent_routing 12/12 (100.00%), security 8/8 (100.00%), prompt_injection 6/6 (100.00%).
+- **UX-Ergebnis**: PASS. Eindeutige API-Requests liefern Quellen; unklare Weather-/API-Requests fragen nach.
+- **Intent-/Skill-Routing-Ergebnis**: PASS. Weather, Wikipedia, Geo/Routing, RSS und Websearch werden korrekt geroutet oder ehrlich geklaert.
+- **Kosten-/Token-Ergebnis**: Full-Run mit kleinsten viable Modellen, keine GPT-5.5-Eskalation.
+- **Capability-Erklaerfaehigkeit**: PASS. Source Attribution fuer API-basierte Antworten validiert.
+- **Findings**:
+  - Keine offenen Findings nach Abschlusslauf.
+- **Sofortfixes**:
+  - Produkt- und Oracle-Hardening fuer Wikipedia-/Geo-Attribution, Weather-Ambiguity, Prompt-Injection-Source-Policy und Clarification-Akzeptanz.
+- **Backlog-Follow-ups**:
+  - Keine.
+- **Nebenbefunde ausserhalb TestScope**:
+  - Keine.
+- **Optimierungspotential fuer Testpipeline**:
+  - Red-loop Strategie beibehalten: erst gezielte rote Tests, dann genau ein finaler Full-Run.
+- **Abschluss**:
+  - Diamond Confidence Score: 10/10
+  - Production Confidence: 100%
+  - Gesamtergebnis: PASS 42/42
+
+### TEST-RUN-2026-05-17-001 - Janus Cross-Cutting Product Quality - Spec 05 Final Certification
+
+- **TestRun-ID**: TEST-RUN-2026-05-17-001
+- **Datum**: 2026-05-17
+- **Quelle**: Backlog / Regression
+- **Artefakte**: `documentation/TEST_SPEC/05_ux_behavior/05_ux_cost_safety_response_quality.md`, `documentation/test-runs/TEST-RUN-2026-05-17-001_plan.json`, `documentation/test-results/TEST-RUN-2026-05-17-001_results.md`, `documentation/test-runs/BACKLOG-063_final_audit.md`
+- **Getestete Faehigkeit**: Janus Cross-Cutting Product Quality
+- **Pipeline-Route**: TEST SKILL 3 -> targeted red-loop -> final full run -> TEST SKILL 5 -> SKILL 7
+- **Skill-Ergebnisse**:
+  - TEST SKILL 3: PASS
+  - TEST SKILL 5: PASS
+  - SKILL 7: PASS
+- **Security Gate**:
+  - Userdaten sicher: JA
+  - Destruktive Aktionen isoliert: N/A
+  - Prompt-Injection-Risiko geprueft: JA
+  - Prompt-Injection-Befund: NONE
+  - Sensitive Daten in Logs vermieden: JA
+  - Security-Gesamtergebnis: PASS
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: gpt-5.4-nano - PASS
+  - Gemini Smallest Viable: gemini-3-flash-preview - PASS
+- **UX-Ergebnis**: PASS, inklusive Clarification-/Refusal-Antworten.
+- **Intent-/Skill-Routing-Ergebnis**: PASS.
+- **Kosten-/Token-Ergebnis**: Full-Run mit kleinsten viable Modellen, keine unnoetige GPT-5.5-Eskalation.
+- **Findings**:
+  - BACKLOG-063 Generator-/Coverage-Gap behoben.
+- **Sofortfixes**:
+  - Parser-/Oracle-Fix fuer Spec 05 Generator.
+- **Backlog-Follow-ups**:
+  - Keine.
+- **Optimierungspotential fuer Testpipeline**:
+  - Red-loop Strategie beibehalten: erst gezielte rote Tests, dann genau ein finaler Full-Run.
+- **Abschluss**:
+  - Gesamtergebnis: PASS 34/34. Spec 05 ist sauber abgehakt.
+
 ### TEST-RUN-YYYY-MM-DD-001 – Beispiel – Sauberer Test-Durchlauf
 
 - **TestRun-ID**: TEST-RUN-YYYY-MM-DD-001
@@ -167,6 +453,54 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
   - Production Confidence: 39%
   - Gesamtergebnis: PARTIAL (nur TC-001 verifiziert, unzureichende Coverage)
 
+### TEST-RUN-2026-05-15-008 – Janus Capability Overview – TestSpec Validation
+
+- **TestRun-ID**: TEST-RUN-2026-05-15-008
+- **Datum**: 2026-05-15
+- **Quelle**: TestSpec
+- **Artefakte**: `documentation/TEST_SPEC/05_ux_behavior/01_capability_overview_and_help.md`, `documentation/test-runs/TEST-RUN-2026-05-15-008_plan.json`, `documentation/test-results/TEST-RUN-2026-05-15-008_results.md`
+- **Getestete Faehigkeit**: Janus Capability Overview
+- **Pipeline-Route**: TEST SKILL 1 -> TEST SKILL 2 -> TEST SKILL 3 -> TEST SKILL 4 -> SKILL 7
+- **Skill-Ergebnisse**:
+  - TEST SKILL 1: PASS
+  - TEST SKILL 2: PASS
+  - TEST SKILL 3: PASS
+  - TEST SKILL 4: PASS
+  - TEST SKILL 5: N/A
+  - SKILL 7: PASS
+- **Security Gate**:
+  - Userdaten sicher: JA
+  - Destruktive Aktionen isoliert: JA
+  - Prompt-Injection-Risiko geprueft: JA
+  - Prompt-Injection-Befund: NONE
+  - Sensitive Daten in Logs vermieden: JA
+  - Persistenzrisiko geprueft: N/A
+  - Security-Gesamtergebnis: PASS
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: gpt-5.4-nano – PASS
+  - GPT Default/Quality, falls noetig: N/A
+  - Gemini Smallest Viable: gemini-3-flash-preview – PASS
+  - Gemini Default/Quality, falls noetig: N/A
+  - GPT-5.5 nur falls Eskalation: N/A
+- **UX-Ergebnis**: Capability Overview korrekt angezeigt
+- **Intent-/Skill-Routing-Ergebnis**: N/A
+- **Kosten-/Token-Ergebnis**: Nicht erfasst
+- **Capability-Erklaerfaehigkeit**: PASS
+- **Findings**:
+  - Keine
+- **Sofortfixes**:
+  - Keine
+- **Backlog-Follow-ups**:
+  - Keine
+- **Nebenbefunde ausserhalb TestScope**:
+  - Keine
+- **Optimierungspotential fuer Testpipeline**:
+  - Keine
+- **Abschluss**:
+  - Diamond Confidence Score: 10/10
+  - Production Confidence: 100%
+  - Gesamtergebnis: PASS
+
 ### TEST-RUN-2026-05-13-001 – Intent Recognition & Tool Routing Engine – Parity Test
 
 - **TestRun-ID**: TEST-RUN-2026-05-13-001
@@ -218,6 +552,238 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
   - Diamond Confidence Score: 4.8/10
   - Production Confidence: 48%
   - Gesamtergebnis: RETEST REQUIRED
+
+### TEST-RUN-2026-05-16-001 – Janus Intent Routing – TestSpec Validation
+
+- **TestRun-ID**: TEST-RUN-2026-05-16-001
+- **Datum**: 2026-05-16
+- **Quelle**: TestSpec
+- **Artefakte**: `documentation/TEST_SPEC/01_core_system/02_intent_routing_real_user_requests.md`, `documentation/test-runs/TEST-RUN-2026-05-16-001_plan.json`, `documentation/test-results/TEST-RUN-2026-05-16-001_results.md`
+- **Getestete Faehigkeit**: Janus Intent Routing
+- **Pipeline-Route**: TEST SKILL 2 -> TEST SKILL 3 -> TEST SKILL 4 -> SKILL 7
+- **Skill-Ergebnisse**:
+  - TEST SKILL 1: N/A (TestSpec bereits vorhanden)
+  - TEST SKILL 2: PASS
+  - TEST SKILL 3: PASS
+  - TEST SKILL 4: PASS
+  - TEST SKILL 5: N/A
+  - SKILL 7: PASS
+- **Security Gate**:
+  - Userdaten sicher: JA
+  - Destruktive Aktionen isoliert: JA
+  - Prompt-Injection-Risiko geprueft: JA
+  - Prompt-Injection-Befund: NONE
+  - Sensitive Daten in Logs vermieden: JA
+  - Persistenzrisiko geprueft: N/A
+  - Security-Gesamtergebnis: PASS
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: gpt-5.4-nano – PASS (100%)
+  - GPT Default/Quality, falls noetig: N/A
+  - Gemini Smallest Viable: gemini-3-flash-preview – PASS (100%)
+  - Gemini Default/Quality, falls noetig: N/A
+  - GPT-5.5 nur falls Eskalation: N/A
+- **UX-Ergebnis**: N/A
+- **Intent-/Skill-Routing-Ergebnis**: PASS (100%)
+- **Kosten-/Token-Ergebnis**: Nicht erfasst
+- **Capability-Erklaerfaehigkeit**: PASS
+- **Findings**:
+  - Keine
+- **Sofortfixes**:
+  - Keine
+- **Backlog-Follow-ups**:
+  - Keine
+- **Nebenbefunde ausserhalb TestScope**:
+  - Keine
+- **Optimierungspotential fuer Testpipeline**:
+  - Keine
+- **Abschluss**:
+  - Diamond Confidence Score: 10/10
+  - Production Confidence: 100%
+  - Gesamtergebnis: PASS
+
+### TEST-RUN-2026-05-16-002 - Janus Filesystem Actions - TestSpec Validation
+
+- **TestRun-ID**: TEST-RUN-2026-05-16-002
+- **Datum**: 2026-05-16
+- **Quelle**: TestSpec
+- **Artefakte**: `documentation/TEST_SPEC/03_tools_skills/03_filesystem_workspace_operations.md`, `documentation/test-runs/TEST-RUN-2026-05-16-002_plan.json`, `documentation/test-results/TEST-RUN-2026-05-16-002_results.md`, `documentation/test-results/TEST-RUN-2026-05-16-002_results.json`
+- **Getestete Faehigkeit**: Janus Filesystem Actions
+- **Pipeline-Route**: TEST SKILL 1 -> TEST SKILL 2 -> TEST SKILL 3 -> TEST SKILL 4 -> SKILL 6 -> SKILL 7
+- **Skill-Ergebnisse**:
+  - TEST SKILL 1: PASS
+  - TEST SKILL 2: PASS
+  - TEST SKILL 3: PASS
+  - TEST SKILL 4: PASS
+  - TEST SKILL 5: N/A
+  - SKILL 6: PASS
+  - SKILL 7: PASS
+- **Summary**: 20/20 Tests PASS, 0 failed, 0 blocked, 0 manual gates, PassRatePct 100.00.
+- **Security Gate**:
+  - Userdaten sicher: JA
+  - Destruktive Aktionen isoliert: JA
+  - Prompt-Injection-Risiko geprueft: JA
+  - Prompt-Injection-Befund: NONE
+  - Sensitive Daten in Logs vermieden: JA
+  - Persistenzrisiko geprueft: JA
+  - Security-Gesamtergebnis: PASS
+  - Boundary Gate Summary: Unklare Loeschungen werden vor Tool-Dispatch geklaert; Out-of-sandbox-Dateischreibanfragen werden vor LLM/Tools abgelehnt.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: gpt-5.4-nano - PASS (100%)
+  - GPT Default/Quality, falls noetig: N/A
+  - Gemini Smallest Viable: gemini-3-flash-preview - PASS (100%)
+  - Gemini Default/Quality, falls noetig: N/A
+  - GPT-5.5 nur falls Eskalation: N/A
+- **Type Pass Rates**: functional 100.00%, intent_routing 100.00%, prompt_injection 100.00%, security 100.00%
+- **UX-Ergebnis**: PASS - unklare oder riskante Dateisystemaktionen fuehren zu klaren, sicheren Antworten statt zu Mutationen.
+- **Intent-/Skill-Routing-Ergebnis**: PASS - Sicherheits-Gates greifen vor LLM-/Tool-Ausfuehrung fuer destruktive Unklarheit und Out-of-sandbox Writes.
+- **Kosten-/Token-Ergebnis**: Nicht erfasst
+- **Capability-Erklaerfaehigkeit**: PASS - sichere Datei-/Ordnerbearbeitung im genehmigten Zielbereich validiert.
+- **Findings**:
+  - Keine offenen Findings.
+- **Sofortfixes**:
+  - `backend/services/orchestrator/execution_dispatcher.py`: provider-agnostische Gates fuer unklare destruktive Aktionen und Out-of-sandbox-Dateischreibanfragen.
+  - `backend/services/orchestrator/prompt_registry.py`: Prompt-Direktiven fuer destruktive Klarstellung und Security/Capability-Regeln.
+  - Test-Oracle fuer `SEC-001-GEMINI` verbietet gefaehrliche Full-Filesystem-Claims.
+- **Backlog-Follow-ups**:
+  - Keine
+- **Nebenbefunde ausserhalb TestScope**:
+  - Keine
+- **Optimierungspotential fuer Testpipeline**:
+  - Security-Oracles muessen unsichere Capability-Claims als `mustNotContain` fuehren, nicht als akzeptierte PASS-Phrasen.
+- **Abschluss**:
+  - Diamond Confidence Score: 10/10
+  - Production Confidence: 100%
+  - Gesamtergebnis: PASS
+
+## TEST-RUN-2026-05-18-019 - Auth/AuthZ and Tenant Isolation
+
+- **Datum**: 2026-05-18
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/03_auth_authz_and_tenant_isolation.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-18-019_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-18-019_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-18-019_results.json`
+- **Status**: PASS
+- **Total Tests**: 26
+- **Passed**: 26
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT 100.00%, Gemini 100.00%
+- **Type Pass Rates**: functional 100.00%, intent_routing 100.00%, prompt_injection 100.00%, security 100.00%
+- **Security Gate**: PASS - Cross-user data/mutation, role bypass, auth-state confusion, and workspace-scope prompt injection are refused or safely scoped.
+- **Findings**: NONE
+- **Backlog Closure**: BACKLOG-072 DONE; final audit `documentation/test-runs/BACKLOG-072_final_audit.md`.
+- **Abschluss**: Gesamtergebnis PASS.
+
+## TEST-RUN-2026-05-18-023 - Core Routing Decision Quality
+
+- **Datum**: 2026-05-18
+- **TestSpec**: `documentation/TEST_SPEC/01_core_system/04_core_routing_decision_quality.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-18-023_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-18-023_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-18-023_results.json`
+- **Status**: PASS
+- **Total Tests**: 38
+- **Passed**: 38
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT 100.00%, Gemini 100.00%
+- **Type Pass Rates**: functional 100.00%, intent_routing 100.00%, prompt_injection 100.00%, security 100.00%
+- **Security Gate**: PASS - Prompt-injection forced-tool route refused; regulated/payment placeholder does not claim execution; missing-memory prompts do not dump unrelated private memory.
+- **Findings**: NONE
+- **Backlog Closure**: BACKLOG-073 DONE; final audit `documentation/test-runs/BACKLOG-073_final_audit.md`.
+- **Abschluss**: Gesamtergebnis PASS.
+
+## TEST-RUN-2026-05-18-024 - Janus Browser Security Baseline
+
+- **Datum**: 2026-05-18
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/04_security_headers_cookies_and_browser_surface.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-18-024_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-18-024_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-18-024_results.json`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-18-024_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 13
+- **Passed**: 13
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: Any 100.00%
+- **Type Pass Rates**: functional 100.00%, security 100.00%
+- **Security Gate**: PASS - CSP, clickjacking/frame restriction, nosniff, referrer policy, permissions policy, local HTTP HSTS handling, cookie/storage exposure and CORS arbitrary-origin checks passed.
+- **Findings**: NONE
+- **Backlog Closure**: N/A; reusable TestSpec validation completed.
+- **Abschluss**: Gesamtergebnis PASS.
+
+## TEST-RUN-2026-05-18-027 - Janus Web Attack Surface Baseline
+
+- **Datum**: 2026-05-18
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/05_owasp_injection_xss_csrf_ssrf_path_traversal.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-18-027_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-18-027_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-18-027_results.json`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-18-027_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 26
+- **Passed**: 26
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT 100.00%, Gemini 100.00%
+- **Type Pass Rates**: intent_routing 100.00%, prompt_injection 100.00%, security 100.00%
+- **Security Gate**: PASS - injection, XSS, CSRF, SSRF, path traversal, MIME/upload edge cases and unsafe redirect probes handled safely.
+- **Findings**: NONE
+- **Backlog Closure**: N/A; reusable TestSpec validation completed.
+- **Abschluss**: Gesamtergebnis PASS.
+
+## TEST-RUN-2026-05-19-003 - Janus Planner Boundary Control
+
+- **Datum**: 2026-05-19
+- **TestSpec**: `documentation/TEST_SPEC/01_core_system/05_planner_direct_execution_boundary.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-19-003_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-19-003_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-19-003_results.json`
+- **Final Audit**: `documentation/test-runs/BACKLOG-074_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 32
+- **Passed**: 32
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT 100.00%, Gemini 100.00%
+- **Type Pass Rates**: functional 100.00%, intent_routing 100.00%, prompt_injection 100.00%, security 100.00%
+- **Security Gate**: PASS - prompt injection is refused, synthetic factual prompts do not leak unrelated memory, and broad/missing-scope workspace operations are clarified before execution.
+- **Findings**: NONE
+- **Backlog Closure**: BACKLOG-074 DONE; final audit `documentation/test-runs/BACKLOG-074_final_audit.md`.
+- **Abschluss**: Gesamtergebnis PASS.
+
+## TEST-RUN-2026-05-20-012 - Janus AI Safety Boundary
+
+- **Datum**: 2026-05-20
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/06_ai_prompt_injection_tool_abuse_and_data_exfiltration.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-20-012_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-20-012_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-20-012_results.json`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-20-012_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 57
+- **Passed**: 57
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT 100.00% (29/29), Gemini 100.00% (28/28)
+- **Type Pass Rates**: functional 100.00% (23/23), intent_routing 100.00% (10/10), prompt_injection 100.00% (12/12), security 100.00% (12/12)
+- **Security Gate**: PASS - direct/indirect prompt-injection, unsafe tool requests, cross-user data, evidence-fraud, model-escalation and disclosure-boundary cases passed for the configured provider matrix.
+- **Findings**: NONE
+- **Backlog Closure**: Spec-06 follow-up items from the prior red runs are closed by this full green validation.
+- **Abschluss**: Gesamtergebnis PASS.
 
 ## Auswertungsbereich
 

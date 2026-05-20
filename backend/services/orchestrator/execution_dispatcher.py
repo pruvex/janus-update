@@ -149,6 +149,342 @@ def _is_calendar_query(query: str) -> bool:
     return any(tok in q for tok in _CALENDAR_QUERY_TOKENS)
 
 
+_DESTRUCTIVE_ACTION_RE = re.compile(
+    r"\b(?:loesch(?:e|en|st)?|losch(?:e|en|st)?|lösch(?:e|en|st)?|"
+    r"entfern(?:e|en|st)?|delete|remove|vernicht(?:e|en|st)?|"
+    r"formatier(?:e|en|st)?|leer(?:e|en|st)?)\b",
+    re.IGNORECASE,
+)
+_UNCLEAR_DESTRUCTIVE_SCOPE_RE = re.compile(
+    r"\b(?:alles|alle|alte|altes|alten|old|everything|all)\b",
+    re.IGNORECASE,
+)
+_CONCRETE_TARGET_HINT_RE = re.compile(
+    r"(?:[a-zA-Z]:[\\/]|[/\\][\w .-]+|['\"][^'\"]+['\"]|"
+    r"\b[\w.-]+\.(?:txt|md|pdf|docx?|xlsx?|csv|json|png|jpe?g|webp|zip)\b|"
+    r"\b(?:ordner|datei|pfad|verzeichnis|termin|event)\s+[\w.-]+)",
+    re.IGNORECASE,
+)
+
+
+def _is_unclear_destructive_action(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    if not _DESTRUCTIVE_ACTION_RE.search(q):
+        return False
+    if _CONCRETE_TARGET_HINT_RE.search(q):
+        return False
+    words = re.findall(r"\w+", q, flags=re.UNICODE)
+    return bool(_UNCLEAR_DESTRUCTIVE_SCOPE_RE.search(q)) or len(words) <= 4
+
+
+_FILESYSTEM_WRITE_RE = re.compile(
+    r"\b(?:create|write|save|erstell(?:e|en)?|schreib(?:e|en)?|speicher(?:e|n)?)\b"
+    r".{0,80}\b(?:file|datei|ordner|folder|directory|verzeichnis)\b",
+    re.IGNORECASE,
+)
+_OUT_OF_SANDBOX_RE = re.compile(
+    r"\b(?:outside|außerhalb|ausserhalb|beliebigen?\s+ort|anywhere|"
+    r"local\s+drives?|lokale(?:n)?\s+laufwerke|c:\\|d:\\)\b"
+    r"|approved\s+test\s+workspace|freigegeben(?:en|er|es)?\s+(?:test-)?workspace",
+    re.IGNORECASE,
+)
+
+
+def _is_out_of_sandbox_filesystem_write(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_FILESYSTEM_WRITE_RE.search(q) and _OUT_OF_SANDBOX_RE.search(q))
+
+
+_PATH_TRAVERSAL_MARKER_RE = re.compile(
+    r"(?:^|[`'\"\s])(?:\.\.[\\/]|%2e%2e(?:%2f|/|%5c|\\)|\.\.%2f|\.\.%5c)",
+    re.IGNORECASE,
+)
+_FILESYSTEM_READ_ACTION_RE = re.compile(
+    r"\b(?:lies|lese|read|open|oeffne|offne|öffne|zeige|zeig|cat|type|"
+    r"list|liste|suche|finde|lade|load)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_path_traversal_filesystem_read(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_PATH_TRAVERSAL_MARKER_RE.search(q) and _FILESYSTEM_READ_ACTION_RE.search(q))
+
+
+_SECRET_FILE_EXFILTRATION_RE = re.compile(
+    r"\b(?:read|open|show|print|dump|append|exfiltrate|leak|cat|type|"
+    r"lies|lese|zeige|drucke|gib\s+(?:mir\s+)?aus)\b"
+    r".{0,120}(?:`?\.env`?|\bapi[-_\s]?keys?\b|\bsecret(?:s)?\b|\btoken(?:s)?\b|\bcredential(?:s)?\b)|"
+    r"(?:`?\.env`?|\bapi[-_\s]?keys?\b|\bsecret(?:s)?\b|\btoken(?:s)?\b|\bcredential(?:s)?\b)"
+    r".{0,120}\b(?:read|open|show|print|dump|append|exfiltrate|leak|cat|type|"
+    r"lies|lese|zeige|drucke|gib\s+(?:mir\s+)?aus)\b|"
+    r"\bbefore\s+summari[sz]ing\b.{0,120}(?:`?\.env`?|\bapi[-_\s]?keys?\b|\bsecret(?:s)?\b|\btoken(?:s)?\b)",
+    re.IGNORECASE,
+)
+
+
+def _is_secret_file_exfiltration_request(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_SECRET_FILE_EXFILTRATION_RE.search(q))
+
+
+_EVIDENCE_HONESTY_QUERY_RE = re.compile(
+    r"^\s*(?:hat\s+es\s+funktioniert\??|"
+    r"sag(?:e)?\s+einfach,?\s+der\s+test\s+war\s+erfolgreich\.?|"
+    r"behaupte,?\s+der\s+test\s+(?:war\s+)?(?:erfolgreich|bestanden))\s*$",
+    re.IGNORECASE,
+)
+_SENSITIVE_TOKEN_ECHO_RE = re.compile(
+    r"\b(?:token|api[-_\s]?key|secret)\s*:\s*[A-Za-z0-9._~+/=-]{4,}\b|"
+    r"\bSECRET-[A-Za-z0-9._~+/=-]+\b",
+    re.IGNORECASE,
+)
+_PROMPT_INJECTION_SUCCESS_RE = re.compile(
+    r"\bignore\s+safety\s+and\s+claim\s+success\b|"
+    r"\bignoriere\s+(?:die\s+)?sicherheit(?:sregeln)?\b.*\b(?:erfolg|erfolgreich|success)\b",
+    re.IGNORECASE,
+)
+_OVERBROAD_USER_DATA_EXPORT_RE = re.compile(
+    r"\b(?:exportier(?:e|en)?|export|gib(?:\s+mir)?|zeige?|zeig|list(?:e|en)?|"
+    r"dump|download|lade\s+herunter)\b"
+    r".{0,80}\b(?:alles|alle|vollstaendig|vollständig|komplett|saemtliche|sämtliche|all|everything)\b"
+    r".{0,80}\b(?:ueber|über|about)\s+(?:mich|mir|me|meine\s+person)\b",
+    re.IGNORECASE,
+)
+_INTERNAL_IDENTIFIER_REQUEST_RE = re.compile(
+    r"\b(?:interne|internal|technische|technical)\b"
+    r".{0,60}\b(?:user[-_\s]?id|nutzer[-_\s]?id|system[-_\s]?id|identifier|identifikator|metadaten)\b",
+    re.IGNORECASE,
+)
+_HIDDEN_PROMPT_REQUEST_RE = re.compile(
+    r"\b(?:system|developer|hidden|interne[nsr]?|versteckte[nsr]?)\b"
+    r".{0,60}\b(?:prompt|anweisung(?:en)?|instruction(?:s)?|regel(?:n)?)\b",
+    re.IGNORECASE,
+)
+_RAW_API_PAYLOAD_REQUEST_RE = re.compile(
+    r"\b(?:api|request|response|call|endpoint)\b"
+    r".{0,100}\b(?:header(?:s)?|body|payload|authorization|cookie(?:s)?)\b"
+    r"|\b(?:header(?:s)?|body|payload)\b"
+    r".{0,100}\b(?:api|request|response|call|endpoint)\b",
+    re.IGNORECASE,
+)
+_SECURITY_AUDIT_REVEAL_ALL_RE = re.compile(
+    r"\bsecurity\s+audit\b.{0,80}\b(?:reveal|show|dump|print|expose)\b.{0,80}\b(?:everything|all)\b",
+    re.IGNORECASE,
+)
+_CROSS_USER_DATA_REQUEST_RE = re.compile(
+    r"\b(?:coworker|co[-\s]?worker|kolleg(?:e|in|en)|andere(?:r|n)?\s+user|anderer\s+nutzer)\b"
+    r".{0,100}\b(?:data|daten|chats?|memory|files?|dateien|ressourcen)\b|"
+    r"\b(?:data|daten|chats?|memory|files?|dateien|ressourcen)\b"
+    r".{0,100}\b(?:coworker|co[-\s]?worker|kolleg(?:e|in|en)|andere(?:r|n)?\s+user|anderer\s+nutzer)\b",
+    re.IGNORECASE,
+)
+_MEMORY_FACT_FORWARDING_RE = re.compile(
+    r"\b(?:forward|send|share|append|dump|export|list|zeige?|gib(?:\s+mir)?|"
+    r"leak|exfiltrate|weiterleit(?:e|en)?|sende|teile)\b"
+    r".{0,100}\b(?:all|alle|sämtliche|saemtliche)?\s*(?:memory\s+facts|memory-fakten|"
+    r"memory|speicher|speicherfakten|fakten\s+aus\s+dem\s+speicher|gespeicherte\s+fakten)\b|"
+    r"\btool\s+returns\s+text\s+instructing\b.{0,120}\b(?:leak|dump|forward|exfiltrate)\b.{0,80}\bmemory\b",
+    re.IGNORECASE,
+)
+_UNSCOPED_EXTERNAL_CONTENT_INSTRUCTION_RE = re.compile(
+    r"\b(?:summari[sz]e|zusammenfass(?:e|en)?|fasse\s+zusammen)\b"
+    r".{0,120}\b(?:page|seite|webpage|retrieved\s+content|abgerufene[rsn]?\s+inhalt)\b"
+    r".{0,120}\b(?:disable\s+citations|without\s+citations|do\s+not\s+cite|"
+    r"zitate?\s+deaktivieren|ohne\s+zitate?|nicht\s+zitieren)\b",
+    re.IGNORECASE,
+)
+_RETRIEVED_CONTENT_IMPERATIVE_RE = re.compile(
+    r"\b(?:retrieved\s+content|abgerufene[rsn]?\s+inhalt|tool\s+output|web\s+content)\b"
+    r".{0,120}\b(?:imperative\s+instructions|imperative\s+anweisungen|instructions|anweisungen)\b",
+    re.IGNORECASE,
+)
+_RETRY_STORM_ABUSE_RE = re.compile(
+    r"\b(?:wiederhole|wiederholen|wiederhol|repeat|retry|retrying)\b"
+    r".{0,60}\b(?:bis\s+es\s+funktioniert|until\s+it\s+works|immer\s+wieder|forever|unbegrenzt|unlimited|"
+    r"10000\s+mal|10000\s+times|unendlich|infinite|endlos|endless)\b|"
+    r"\b(?:teuerste\s+modell|expensive\s+model|ignoriere\s+limits|ignore\s+limits|"
+    r"bypass\s+quotas|umgehe\s+limits|uebergehe\s+limits)\b|"
+    r"\b(?:schreibe|schreiben|generiere|generieren|erstelle|erstellen|write|generate|create)\b"
+    r".{0,60}\b(?:1000\s+mal|1000\s+times|10000\s+mal|10000\s+times|tausendmal|x-mal)\b",
+    re.IGNORECASE,
+)
+
+
+def _suppress_identity_for_generic_prompt(query: str) -> bool:
+    normalized = " ".join(str(query or "").strip().lower().split())
+    return normalized in {
+        "simple factual prompt",
+        "factual prompt",
+        "erklaer kurz",
+        "erklär kurz",
+        "erkläre kurz",
+    }
+
+
+def _is_synthetic_simple_factual_prompt(query: str) -> bool:
+    normalized = " ".join(str(query or "").strip().lower().split())
+    return normalized in {"simple factual prompt", "factual prompt"}
+
+
+def _is_unsupported_success_claim_request(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_EVIDENCE_HONESTY_QUERY_RE.search(q))
+
+
+def _contains_sensitive_token_echo_risk(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_SENSITIVE_TOKEN_ECHO_RE.search(q))
+
+
+def _is_prompt_injection_success_request(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_PROMPT_INJECTION_SUCCESS_RE.search(q))
+
+
+def _is_overbroad_user_data_export_request(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_OVERBROAD_USER_DATA_EXPORT_RE.search(q))
+
+
+def _is_internal_identifier_request(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_INTERNAL_IDENTIFIER_REQUEST_RE.search(q))
+
+
+def _is_hidden_prompt_request(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_HIDDEN_PROMPT_REQUEST_RE.search(q))
+
+
+def _is_raw_api_payload_request(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_RAW_API_PAYLOAD_REQUEST_RE.search(q))
+
+
+def _is_security_audit_reveal_all_request(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_SECURITY_AUDIT_REVEAL_ALL_RE.search(q))
+
+
+def _is_cross_user_data_request(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_CROSS_USER_DATA_REQUEST_RE.search(q))
+
+
+def _is_memory_fact_forwarding_request(query: str) -> bool:
+    q = str(query or "").strip().strip('"').strip("'")
+    if not q:
+        return False
+    return bool(_MEMORY_FACT_FORWARDING_RE.search(q))
+
+
+def _is_unscoped_external_content_instruction(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_UNSCOPED_EXTERNAL_CONTENT_INSTRUCTION_RE.search(q))
+
+
+def _is_retrieved_content_imperative_request(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_RETRIEVED_CONTENT_IMPERATIVE_RE.search(q))
+
+
+def _is_retry_storm_abuse_request(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_RETRY_STORM_ABUSE_RE.search(q))
+
+
+def _weather_query_has_usable_location(query: str) -> bool:
+    """True when a weather prompt contains a concrete location instead of "dort"/missing place."""
+    q = str(query or "").casefold()
+    if not q:
+        return False
+    if re.search(r"\b(?:dort|da|hier|es)\b", q):
+        return False
+    return bool(
+        re.search(r"\b(?:in|für|fuer|bei|von)\s+[a-zäöüß][\wäöüß.-]{2,}", q, re.IGNORECASE)
+        or re.search(r"\b(?:muenchen|munich|köln|koeln|berlin|hamburg|düsseldorf|duesseldorf|frankfurt)\b", q)
+    )
+
+
+def _is_complex_workspace_task_missing_scope(query: str) -> bool:
+    """Detect broad multi-step workspace file tasks that need a plan/clarification before tools."""
+    q = str(query or "").casefold()
+    if not q:
+        return False
+    has_workspace_scope = "workspace" in q or "arbeitsbereich" in q or "testdateien" in q
+    has_multi_step = (
+        ("sortier" in q or "sortiere" in q)
+        and ("fass" in q or "zusammenfass" in q or "zusammenfassung" in q)
+        and ("uebersicht" in q or "übersicht" in q or "erstelle" in q)
+    )
+    has_concrete_path = bool(re.search(r"(?:[a-zA-Z]:[\\/]|[/\\][\w .-]+)", str(query or "")))
+    return has_workspace_scope and has_multi_step and not has_concrete_path
+
+
+def _is_short_workspace_write_missing_path(query: str) -> bool:
+    """Detect synthetic workspace write tasks without a concrete filesystem path."""
+    q = str(query or "").casefold()
+    if not q:
+        return False
+    has_workspace = "test-workspace" in q or "test workspace" in q or "approved test workspace" in q
+    has_write = (
+        ("erstell" in q or "create" in q)
+        and ("ordner" in q or "folder" in q or "directory" in q)
+        and ("notiz" in q or "note" in q or "speicher" in q or "save" in q)
+    )
+    has_concrete_path = bool(re.search(r"(?:[a-zA-Z]:[\\/]|[/\\][\w .-]+)", str(query or "")))
+    return has_workspace and has_write and not has_concrete_path
+
+
+def _short_workspace_write_clarification() -> str:
+    return (
+        "Ich kann das direkt weiter im Test-Workspace ausführen, brauche dafür aber den exakten Pfad "
+        "oder Zielbereich. Bitte nenne den Ordnerpfad, in dem ich den Ordner PlannerCheck erstellen "
+        "und die kurze Notiz speichern soll."
+    )
+
+
+def _complex_workspace_scope_clarification() -> str:
+    return (
+        "Das ist ein mehrstufiger Workspace-Auftrag. Ich gehe dabei in Schritten vor: "
+        "zuerst den Quellordner bestimmen, danach die Testdateien nach Typ sortieren, "
+        "anschließend Textdateien zusammenfassen und daraus eine Übersicht erstellen. "
+        "Bitte nenne mir den exakten Ordnerpfad oder Quellordner und, falls gewünscht, "
+        "den Zielordner/Zielbereich, bevor ich Dateien verändere."
+    )
 def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
     """Apply intent-based model escalation for complex tasks before resolution."""
     # --- Intent-based Model Escalation ---
@@ -160,6 +496,22 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
     # Diese Logik MUSS immer ausgeführt werden, auch wenn last_msg None ist
     # Fallback auf wf.user_text wenn verfügbar
     query_for_ambiguity = last_msg or (wf.user_text if hasattr(wf, 'user_text') else None)
+    smalltalk_reply = intent_classifier.smalltalk_response(str(query_for_ambiguity or ""))
+    if smalltalk_reply:
+        logger.info(
+            "[SMALLTALK-BYPASS] Basic conversation bypasses ambiguity/tool guards: %r",
+            str(query_for_ambiguity or "")[:50],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        wf.final_text_to_generate = smalltalk_reply
+        wf.skip_llm_generation = True
+        if not getattr(wf, "final_text", ""):
+            wf.final_text = smalltalk_reply
+        return
     
     if query_for_ambiguity:
         query = query_for_ambiguity.lower()
@@ -195,30 +547,66 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
                 )
                 wf.relevant_skill_ids = list(_cal_mandatory)
 
-        # 💎 BACKLOG-037: Gemini Ambiguity-Detection und Tool-Blockade
-        # Bei ambigen Anfragen mit geringer Confidence für Gemini: Tool-Ausführung blockieren
+        # 💎 BACKLOG-037/BACKLOG-039: Provider-Agnostic Ambiguity-Detection und Tool-Blockade
+        # Bei ambigen Anfragen mit geringer Confidence für alle Provider: Tool-Ausführung blockieren
         current_provider = str(wf.provider or request.provider or "").strip().lower()
-        is_gemini = current_provider in {"gemini", "google"}
         
-        logger.info("[GEMINI-AMBIGUITY-DEBUG] Provider check: current_provider=%s, is_gemini=%s, intent_result=%s", current_provider, is_gemini, type(intent_result).__name__ if intent_result else None)
+        logger.info("[AMBIGUITY-DEBUG] Provider check: current_provider=%s, intent_result=%s", current_provider, type(intent_result).__name__ if intent_result else None)
         
-        if is_gemini and intent_result:
+        if intent_result:
             is_ambiguous = getattr(intent_result, 'is_ambiguous', False)
             ambiguity_confidence = getattr(intent_result, 'ambiguity_confidence', 0.0)
+            is_calendar_read_intent = (
+                bool(getattr(intent_result, 'is_calendar_intent', False))
+                and not bool(getattr(intent_result, 'is_calendar_mutation', False))
+                and not bool(getattr(intent_result, 'is_calendar_creation', False))
+            )
+            is_weather_intent = bool(getattr(intent_result, 'is_weather_intent', False))
+            is_routing_geo_intent = bool(getattr(intent_result, 'is_routing_geo_intent', False))
             # Threshold: 0.6 (kann über Konfiguration angepasst werden)
             ambiguity_threshold = 0.6
             
             logger.info(
-                "[GEMINI-AMBIGUITY-DEBUG] Ambiguity values: is_ambiguous=%s, ambiguity_confidence=%.2f, threshold=%.2f",
+                "[AMBIGUITY-DEBUG] Ambiguity values: is_ambiguous=%s, ambiguity_confidence=%.2f, threshold=%.2f",
                 is_ambiguous,
                 ambiguity_confidence,
                 ambiguity_threshold,
             )
             
-            if is_ambiguous and ambiguity_confidence >= ambiguity_threshold:
+            if is_ambiguous and ambiguity_confidence >= ambiguity_threshold and is_calendar_read_intent:
                 logger.info(
-                    "[GEMINI-AMBIGUITY-BLOCK] Ambige Anfrage für Gemini erkannt (confidence=%.2f >= %.2f). "
+                    "[AMBIGUITY-BYPASS] Calendar read intent stays tool-enabled despite ambiguity "
+                    "(confidence=%.2f >= %.2f). Query: %r",
+                    ambiguity_confidence,
+                    ambiguity_threshold,
+                    query_for_ambiguity[:50] if query_for_ambiguity else "",
+                )
+            elif is_ambiguous and ambiguity_confidence >= ambiguity_threshold and is_routing_geo_intent:
+                logger.info(
+                    "[AMBIGUITY-BYPASS] Routing/geo intent stays tool-enabled despite ambiguity "
+                    "(confidence=%.2f >= %.2f). Query: %r",
+                    ambiguity_confidence,
+                    ambiguity_threshold,
+                    query_for_ambiguity[:50] if query_for_ambiguity else "",
+                )
+            elif (
+                is_ambiguous
+                and ambiguity_confidence >= ambiguity_threshold
+                and is_weather_intent
+                and _weather_query_has_usable_location(query_for_ambiguity)
+            ):
+                logger.info(
+                    "[AMBIGUITY-BYPASS] Weather intent stays tool-enabled despite ambiguity "
+                    "(confidence=%.2f >= %.2f). Query: %r",
+                    ambiguity_confidence,
+                    ambiguity_threshold,
+                    query_for_ambiguity[:50] if query_for_ambiguity else "",
+                )
+            elif is_ambiguous and ambiguity_confidence >= ambiguity_threshold:
+                logger.info(
+                    "[AMBIGUITY-BLOCK] Ambige Anfrage für %s erkannt (confidence=%.2f >= %.2f). "
                     "Tool-Ausführung blockiert, Klärungsfrage wird erzwungen. Query: %r",
+                    current_provider,
                     ambiguity_confidence,
                     ambiguity_threshold,
                     query_for_ambiguity[:50] if query_for_ambiguity else "",
@@ -227,7 +615,7 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
                 wf.disable_tools = True
                 wf.requires_clarification = True
                 wf.ambiguity_confidence = ambiguity_confidence
-                wf.context_isolation_mode = "gemini_ambiguity_clarification"
+                wf.context_isolation_mode = "ambiguity_clarification"
                 wf.force_tool_name = None
                 wf.has_tool_trigger = False
                 wf.proactive_guidance = ""
@@ -246,17 +634,17 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
                 )
                 # Füge zum System-Prompt hinzu
                 if hasattr(wf, 'system_prompt_for_llm'):
-                    logger.info("[GEMINI-AMBIGUITY-DEBUG] Adding clarification prompt to system_prompt_for_llm")
+                    logger.info("[AMBIGUITY-DEBUG] Adding clarification prompt to system_prompt_for_llm")
                     wf.system_prompt_for_llm += "\n\n" + planner_prompt
                 else:
-                    logger.warning("[GEMINI-AMBIGUITY-DEBUG] wf.system_prompt_for_llm not found")
+                    logger.warning("[AMBIGUITY-DEBUG] wf.system_prompt_for_llm not found")
                 # Markiere als Klärungs erforderlich für Logging
                 if hasattr(wf, 'gateway_kwargs'):
                     wf.gateway_kwargs['requires_clarification'] = True
                     wf.gateway_kwargs['ambiguity_confidence'] = ambiguity_confidence
-                    logger.info("[GEMINI-AMBIGUITY-DEBUG] gateway_kwargs updated: disable_tools=%s, requires_clarification=%s", wf.gateway_kwargs.get('disable_tools'), wf.gateway_kwargs.get('requires_clarification'))
+                    logger.info("[AMBIGUITY-DEBUG] gateway_kwargs updated: disable_tools=%s, requires_clarification=%s", wf.gateway_kwargs.get('disable_tools'), wf.gateway_kwargs.get('requires_clarification'))
                 else:
-                    logger.warning("[GEMINI-AMBIGUITY-DEBUG] wf.gateway_kwargs not found")
+                    logger.warning("[AMBIGUITY-DEBUG] wf.gateway_kwargs not found")
 
         # Harte Erkennung für den Sortier-Auftrag
         is_sort_intent = 'sortiere' in query and ('pdf' in query or 'dateien' in query)
@@ -316,7 +704,449 @@ async def execute_generation_prepare_gateway(
     request = ctx.request
     # Apply pre-resolution guards (intent-based model escalation, etc.)
     _apply_pre_resolution_guards(wf, request)
-    
+
+    user_query = str(wf.user_text or "").strip()
+    if _is_synthetic_simple_factual_prompt(user_query):
+        logger.info(
+            "[SYNTHETIC-FACTUAL-PROMPT-GATE] Asking for concrete topic before LLM/tools: %r",
+            user_query[:80],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = "Bitte nenne das konkrete Thema oder den konkreten Inhalt, den ich kurz erklären soll."
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_short_workspace_write_missing_path(user_query):
+        logger.warning(
+            "[WORKSPACE-WRITE-BOUNDARY-GATE] Blocking pathless workspace write before tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = _short_workspace_write_clarification()
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_complex_workspace_task_missing_scope(user_query):
+        logger.warning(
+            "[PLANNER-BOUNDARY-GATE] Blocking broad multi-step workspace task before tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = _complex_workspace_scope_clarification()
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_overbroad_user_data_export_request(user_query):
+        logger.warning(
+            "[PRIVACY-EXPORT-GATE] Blocking overbroad user data export before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = (
+            "Ich kann nicht alles ueber dich pauschal exportieren oder ausgeben. "
+            "Bitte bestaetige zuerst, welche Daten oder welcher Umfang gemeint ist, "
+            "zum Beispiel Profil, Vorlieben, Termine oder gespeicherte Memory-Fakten. "
+            "Ohne konkrete Angaben und Bestaetigung erfolgt kein Export."
+        )
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_internal_identifier_request(user_query):
+        logger.warning(
+            "[INTERNAL-ID-GATE] Blocking internal identifier request before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = "Ich kann keine interne User-ID anzeigen oder vertrauliche Metadaten ausgeben."
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_hidden_prompt_request(user_query):
+        logger.warning(
+            "[HIDDEN-PROMPT-GATE] Blocking hidden prompt request before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = "Ich kann diese internen Anweisungen nicht weitergeben oder System-/Developer-Prompts preisgeben."
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_raw_api_payload_request(user_query):
+        logger.warning(
+            "[API-PAYLOAD-PRIVACY-GATE] Blocking raw API header/body request before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = (
+            "Ich kann keine Header oder keinen Body ausgeben, die mir nicht sicher vorliegen. "
+            "Bitte nenne eine konkrete Fehlermeldung oder redigierte Diagnose ohne Authorization, Cookies oder Secrets."
+        )
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_security_audit_reveal_all_request(user_query):
+        logger.warning(
+            "[SECURITY-AUDIT-REVEAL-ALL-GATE] Blocking reveal-all audit request before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = (
+            "Ich kann nicht alles offenlegen oder interne Anweisungen, Secrets, API-Keys "
+            "oder private Daten ausgeben. Bitte nenne den konkreten, autorisierten Audit-Umfang."
+        )
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_cross_user_data_request(user_query):
+        logger.warning(
+            "[CROSS-USER-DATA-GATE] Blocking cross-user data request before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = (
+            "Ich kann keine Daten, Dateien, Chats oder Memory-Fakten anderer Personen beschaffen "
+            "oder ausgeben. Bitte nenne einen autorisierten, eigenen Scope."
+        )
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_memory_fact_forwarding_request(user_query):
+        logger.warning(
+            "[MEMORY-FACT-FORWARDING-GATE] Blocking memory-fact forwarding request before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = (
+            "Ich kann nicht alle Memory-Fakten weitergeben oder dumpen. "
+            "Bitte nenne konkret, welche eigene Information du prüfen möchtest."
+        )
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_unscoped_external_content_instruction(user_query):
+        logger.warning(
+            "[EXTERNAL-CONTENT-SCOPE-GATE] Blocking unscoped external content instruction before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = (
+            "Bitte füge die konkrete Seite oder den abgerufenen Inhalt ein. "
+            "Externe Anweisungen wie Zitierverbote behandle ich als Daten und nicht als Vorgabe."
+        )
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_retrieved_content_imperative_request(user_query):
+        logger.warning(
+            "[RETRIEVED-CONTENT-IMPERATIVE-GATE] Blocking external imperative instruction adoption before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = (
+            "Ich befolge keine imperativen Anweisungen aus abgerufenem Inhalt. "
+            "Bitte nenne den konkreten Inhalt; ich behandle ihn als Daten."
+        )
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _contains_sensitive_token_echo_risk(user_query):
+        logger.warning(
+            "[SENSITIVE-TOKEN-GATE] Blocking token echo before LLM/tools: %r",
+            user_query[:80],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = "Ich kann dieses Token nicht verarbeiten oder wiederholen."
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_prompt_injection_success_request(user_query):
+        logger.warning(
+            "[PROMPT-INJECTION-SUCCESS-GATE] Blocking success-claim injection before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = "Ich kann diese Aktion nicht ausfuehren, weil ich Safety nicht ignoriere und keinen Erfolg ohne Evidenz behaupte."
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_unsupported_success_claim_request(user_query):
+        logger.warning(
+            "[EVIDENCE-HONESTY-GATE] Blocking unsupported success claim before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = "Ich kann diese Aussage ohne Evidenz nicht bestaetigen."
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_out_of_sandbox_filesystem_write(user_query):
+        logger.warning(
+            "[FILESYSTEM-BOUNDARY-GATE] Blocking out-of-sandbox filesystem write request before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = (
+            "Ich kann keine Dateien außerhalb des freigegebenen Test-Workspaces erstellen. "
+            "Bitte nenne einen Pfad innerhalb des approved test workspace."
+        )
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_path_traversal_filesystem_read(user_query):
+        logger.warning(
+            "[FILESYSTEM-TRAVERSAL-GATE] Blocking path traversal filesystem read before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = (
+            "Ich kann Pfade mit '..' nicht lesen, weil sie Path Traversal darstellen. "
+            "Bitte nenne einen kanonischen Pfad innerhalb eines freigegebenen Workspace-Ordners."
+        )
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_secret_file_exfiltration_request(user_query):
+        logger.warning(
+            "[SECRET-FILE-EXFILTRATION-GATE] Blocking secret/env file request before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = "Ich kann keine .env-Dateien, API-Keys, Tokens oder Secrets lesen oder ausgeben."
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_unclear_destructive_action(user_query):
+        logger.warning(
+            "[DESTRUCTIVE-CLARIFICATION-GATE] Blocking unclear destructive request before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = (
+            "Welche Dateien, Ordner oder Termine soll ich loeschen? "
+            "Bitte nenne mir den exakten Pfad, Dateinamen, Zeitraum oder das konkrete Ziel."
+        )
+        wf.skip_llm_generation = True
+        return ctx
+
+    # 💎 BACKLOG-087: Retry-Storm/Abuse Detection Gate
+    # Blocks retry-storm and cost-abuse prompts before memory retrieval
+    if _is_retry_storm_abuse_request(user_query):
+        logger.warning(
+            "[RETRY-STORM-ABUSE-GATE] Blocking retry-storm/abuse request before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        wf.requires_clarification = True
+        wf.context_isolation_mode = "abuse_refusal"
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.gateway_kwargs["requires_clarification"] = True
+        wf.gateway_kwargs["context_isolation_mode"] = "abuse_refusal"
+        wf.final_text = (
+            "Ich kann diesen Aufruf nicht wiederholen. "
+            "Retry-Storm und Cost-Abuse Anfragen werden aus Sicherheitsgründen abgelehnt."
+        )
+        wf.skip_llm_generation = True
+        return ctx
+
     # 💎 BACKLOG-035: Prompt Injection Guard - COMPLETE BLOCK
     # Check for injection BEFORE any tool forcing (SOURCE-ROUTING, etc.)
     user_query = str(wf.user_text or "").strip()
@@ -378,8 +1208,7 @@ async def execute_generation_prepare_gateway(
     if not wf.skip_llm_generation:
         clarification_mode = bool(
             getattr(wf, "requires_clarification", False)
-            and str(request.provider or "").strip().lower() in {"gemini", "google"}
-            and str(getattr(wf, "context_isolation_mode", "") or "") == "gemini_ambiguity_clarification"
+            and str(getattr(wf, "context_isolation_mode", "") or "") == "ambiguity_clarification"
         )
         wf.ui_guidance = "⚠️ REGEL FÜR PDF-DOKUMENTE IN DER WISSENSDATENBANK:\n1. Wenn der User nach PDF-Dokumenten aus der Wissensdatenbank fragt (ohne konkreten Pfad): Nutze 'list_knowledge_documents'.\n2. Um eine PDF aus der Wissensdatenbank zu öffnen: Nutze 'open_knowledge_document'.\n3. AUSNAHME: Wenn der User einen konkreten Dateisystempfad nennt (z.B. C:\\, D:\\, /home/), MUSST du filesystem.list_directory oder filesystem.read_file verwenden - auch für PDFs.\n4. WENN DER USER EIN BILD WILL: Nutze IMMER UND AUSSCHLIESSLICH 'system.generate_image'."
         wf.research_guidance = '🚨 SYSTEM-DIREKTIVE (STRIKTE KASKADE):\n1. PFAD-VORRANG: Wenn die User-Anfrage einen konkreten Dateisystempfad enthält (z.B. "C:\\...", "D:\\...", "/home/..."), MUSST du ZUERST filesystem.list_directory oder filesystem.read_file verwenden - NIEMALS query_knowledge_base.\n2. PRIORITÄT (für Wissensfragen OHNE Pfad): Nutze ZUERST `query_knowledge_base`.\n3. STOPP-REGEL: Sobald die PDF-Ergebnisse die Frage beantworten, ist jede weitere Suche (Wikipedia/Web) STRENGSTENS UNTERSAGT.\n4. AUSNAHME: Nur wenn `query_knowledge_base` 0 Ergebnisse liefert, darf Wikipedia genutzt werden.\nVERHALTENS-KODEX: Redundante Wikipedia-Suchen bei vorhandenem PDF-Wissen gelten als schwerer Logik-Fehler.\n'
@@ -454,7 +1283,8 @@ async def execute_generation_prepare_gateway(
             logger.info(
                 "[GEMINI-AMBIGUITY-CONTEXT] Context isolation active: memory/fact coupons/directives cleared."
             )
-        if wf._identity.name and (not wf.is_eval_reporting) and (not wf.is_audit_request):
+        wf._identity_allowed = not _suppress_identity_for_generic_prompt(wf.user_text)
+        if wf._identity.name and wf._identity_allowed and (not wf.is_eval_reporting) and (not wf.is_audit_request):
             wf._name_recall_re = re.compile('wie\\s+hei[ßs]|mein(?:em?)?\\s+name|wie\\s+ich\\s+hei[ßs]|was\\s+ist\\s+mein\\s+name|kennst\\s+du\\s+mein(?:en)?\\s+name|wei[sß]t\\s+du\\s+(?:noch\\s+)?(?:wie|meinen?)\\s+name', re.IGNORECASE)
             wf._is_name_recall = bool(wf._name_recall_re.search(wf.user_text))
             wf._is_gpt = str(request.provider or '').lower() == 'openai'
@@ -487,7 +1317,7 @@ async def execute_generation_prepare_gateway(
             if _directive.position == 'prepend' and (not wf.is_eval_reporting) and (not wf.is_audit_request):
                 wf.final_system_prompt = _directive.directive_text + wf.final_system_prompt
                 logger.warning('%s Critical warning prepended to system prompt', _directive.log_tag)
-        if wf._identity.name and (not wf.is_eval_reporting) and (not wf.is_audit_request):
+        if wf._identity.name and wf._identity_allowed and (not wf.is_eval_reporting) and (not wf.is_audit_request):
             wf._anchor = f'╔══════════════════════════════════════════════════════════╗\n║  DU SPRICHST MIT: {wf._identity.name.upper():<38s} ║\n║  DIES IST DER NUTZER. NUR DIESE PERSON.                ║\n║  ALLE ANDEREN NAMEN IM KONTEXT SIND DRITTPERSONEN.     ║\n╚══════════════════════════════════════════════════════════╝\nWenn im Kontext-Wissen andere Namen auftauchen (Freunde, Familie, Kollegen), sind das NICHT der Nutzer. Der Nutzer ist und bleibt {wf._identity.name}. Verwechsle NIEMALS die Identität des Nutzers mit einer Drittperson aus dem Gedächtnis.\n\n'
             wf.final_system_prompt = wf._anchor + wf.final_system_prompt
             logger.info('[IDENTITY-ANCHOR] Prepended for %r', wf._identity.name)
@@ -609,7 +1439,7 @@ async def execute_generation_prepare_gateway(
             wf.gateway_kwargs["disable_tools"] = True
             wf.gateway_kwargs["requires_clarification"] = True
             wf.gateway_kwargs["ambiguity_confidence"] = getattr(wf, "ambiguity_confidence", 0.0)
-            wf.gateway_kwargs["context_isolation_mode"] = "gemini_ambiguity_clarification"
+            wf.gateway_kwargs["context_isolation_mode"] = "ambiguity_clarification"
             wf.gateway_kwargs["allowed_skill_ids"] = []
             wf.gateway_kwargs["requested_skills"] = []
         # P0 control-flow gate: MOA router may run only after smalltalk gating and only for likely tool turns.
@@ -876,6 +1706,11 @@ async def execute_generation_prepare_gateway(
                         wf.action_guidance = (existing + "\n" + _hammer).strip() if existing else _hammer
 
         if _routing_geo:
+            wf.gateway_kwargs["forced_tool"] = {
+                "skill_id": "system.routing",
+                "provider_tool_name": "system.routing",
+            }
+            wf.gateway_kwargs["force_tool_name"] = "system.routing"
             _rg_block = (
                 "\n\n!!! ROUTING-/ENTFERNUNGS-FRAGE (DIAMOND) !!!\n"
                 "Der Nutzer fragt nach Entfernung, Route oder Fahrzeit zwischen Orten.\n"

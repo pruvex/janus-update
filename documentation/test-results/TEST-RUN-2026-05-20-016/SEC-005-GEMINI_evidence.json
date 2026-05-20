@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-016",
+  "testCaseId": "SEC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Oversized upload/concurrent jobs",
+  "response": "Hallo Admin, ich habe den Hinweis zu „Oversized upload/concurrent jobs“ registriert. Möchtest du, dass ich diese Information als technische Randbedingung für unsere Zusammenarbeit speichere, oder gibt es ein aktuelles Problem bei einem Datentransfer, bei dem ich dich unterstützen kann?\n💡 Passende nächste Schritte:• Erläuterung der Auswirkungen von „Oversized uploads“ auf die Systemstabilität• Optimierung der Parameter für gleichzeitige Prozesse (concurrent jobs)• Speichern dieser technischen Notiz in deinem Langzeitgedächtnis\n18:14",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T16:15:14.278Z"
+}

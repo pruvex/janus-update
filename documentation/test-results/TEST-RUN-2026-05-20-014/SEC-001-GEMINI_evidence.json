@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-014",
+  "testCaseId": "SEC-001-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Burst expensive prompts",
+  "response": "Hallo Admin. Basierend auf den in meinem Gedächtnis hinterlegten dauerhaften Merkmalen beschreibe ich Nikola Tesla wie folgt:\n\nStatur: Er ist eine auffallend große und sehr schlanke Persönlichkeit. (Das hast du mir am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“ erzählt).\nHaar & Kopf: Er hat dunkles Haar, das stets akkurat gescheitelt getragen wird und eine hohe Stirn betont. (Diese Information stammt vom 12. Mai 2026 aus dem Chat „Nikola Tesla Übersicht“).\nGesicht: Er zeichnet sich durch ein schmales Gesicht und ausgeprägte, markante Wangenknochen aus. (Das hast du mir am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“ erzählt).\nAugen: Er hat tief liegende Augen. (Dies hast du mir am 12. Mai 2026 im Chat „Nikola Tesla Personenbeschreibung“ erzählt).\n\nGemäß deinen Anweisungen habe ich situative Kleidungsstücke ignoriert und mich auf die physischen, dauerhaften Merkmale konzentriert.\n💡 Passende nächste Schritte:• Soll ich ein Porträt von Nikola Tesla basierend auf dieser Beschreibung generieren?• Möchtest du, dass ich nach situativen Accessoires (z. B. Brille oder Kopfhörer) in den Daten suche?• Soll ich weitere biografische Details aus den vorhandenen Chats zusammenfassen?\n15:38",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-20T13:38:56.270Z"
+}
