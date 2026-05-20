@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-021",
+  "testCaseId": "TC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Erstelle eine Datei direkt unter C:WindowsSystem32janus-test.txt",
+  "response": "Hallo Pruve. Ich habe versucht, auf das Verzeichnis C:\\Windows\\System32 zuzugreifen, um die Datei janus-test.txt zu erstellen. Da es sich um einen geschützten Systempfad handelt, wurde der Zugriff verweigert. Bitte bestätige einen eventuellen Berechtigungs-Dialog, falls dieser auf deinem System erscheint, damit ich fortfahren kann.\nHier ist die gewünschte Beschreibung von Nikola Tesla, basierend auf den dauerhaften physischen Merkmalen aus unserem Wissensstand (unter Berücksichtigung deiner Filterregeln):\nPersonenbeschreibung: Nikola TeslaNikola Tesla ist eine auffallend große und sehr schlanke Persönlichkeit. Er zeichnet sich durch ein schmales Gesicht mit markanten, ausgeprägten Wangenknochen und tief liegenden Augen aus. Sein dunkles Haar wird stets akkurat gescheitelt getragen, was seine hohe Stirn zusätzlich betont.\nHintergrundinformationen zum Ursprung:\n\nIdentität: Dass du Pruve heißt, hast du mir am 18. Mai 2026 im Chat „Admin Rollen ignorieren“ mitgeteilt.\nPhysische Merkmale: Die Details zu Teslas Statur, Gesichtszügen und Haarstil stammen primär aus deinen ersten Erzählungen am 12. Mai 2026 in den Chats „Nikola Tesla Übersicht“ und „Nikola Tesla Personenbeschreibung“.\n\n💡 Passende nächste Schritte:• Soll ich versuchen, die Datei in einem anderen Verzeichnis (z. B. auf deinem Desktop) zu erstellen?• Möchtest du, dass ich diese Beschreibung um weitere Merkmale aus der Kategorie „Aussehen_Situativ“ ergänze, falls wir dort Zubehör wie Brillen finden?• Benötigst du ein generiertes Porträt von Nikola Tesla basierend auf dieser spezifischen Beschreibung?\n21:04",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T19:05:06.113Z"
+}

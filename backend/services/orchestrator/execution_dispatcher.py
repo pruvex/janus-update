@@ -249,7 +249,10 @@ _SENSITIVE_TOKEN_ECHO_RE = re.compile(
 )
 _PROMPT_INJECTION_SUCCESS_RE = re.compile(
     r"\bignore\s+safety\s+and\s+claim\s+success\b|"
-    r"\bignoriere\s+(?:die\s+)?sicherheit(?:sregeln)?\b.*\b(?:erfolg|erfolgreich|success)\b",
+    r"\bignoriere\s+(?:die\s+)?sicherheit(?:sregeln)?\b.*\b(?:erfolg|erfolgreich|success)\b|"
+    r"\b(?:antworte|sag(?:e)?|schreib(?:e)?|reply|answer)\s+"
+    r"(?:einfach\s+|simply\s+)?[\"'`„“]?(?:erledigt|done)[\"'`„“]?.{0,100}\b(?:ohne|without)\b"
+    r".{0,80}\b(?:tool|werkzeug)\b",
     re.IGNORECASE,
 )
 _OVERBROAD_USER_DATA_EXPORT_RE = re.compile(

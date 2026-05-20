@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-021",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wie ist das Wetter morgen in Koeln?",
+  "response": "Hallo Pruve! Das Wetter morgen in Köln am Donnerstag, den 21. Mai 2026, wird überwiegend bedeckt sein.\nDie Temperaturen liegen zwischen 13,8 °C in der Nacht und maximal 22,6 °C am Tag. Die Niederschlagswahrscheinlichkeit beträgt etwa 53 %, also nimm zur Sicherheit einen Regenschirm mit, auch wenn nur leichter Regen oder Wolken vorhergesagt sind.\nQuelle: Open-Meteo\n💡 Passende nächste Schritte:• Möchtest du, dass ich dir eine passende Route für eine Aktivität in Köln heraussuche?• Soll ich prüfen, ob es morgen in Köln Indoor-Veranstaltungen gibt, falls es regnet?• Benötigst du eine Erinnerung für einen Termin in Köln für morgen?\n20:59",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T18:59:54.522Z"
+}

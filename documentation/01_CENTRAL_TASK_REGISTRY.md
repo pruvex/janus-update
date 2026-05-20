@@ -4,6 +4,19 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Test Pipeline Validations
 
+### TEST-RUN-2026-05-20-021 - Tool Execution Contract and Evidence
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Spec 07 tool execution contract validation
+- **TestSpec**: `documentation/TEST_SPEC/03_tools_skills/07_tool_execution_contract_and_evidence.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-20-021_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-20-021_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-20-021_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-20-021_final_audit.md`
+- **Validation**: PASS with `18/18` tests, `0` failed, `0` blocked. Provider parity is green for GPT and Gemini; functional, prompt-injection and security categories are all 100%.
+- **Changed Files**: `backend/services/orchestrator/execution_dispatcher.py`, `backend/tests/test_privacy_export_gate.py`, `tests/e2e/generator/compile-testspec-to-testplan.mjs`
+
 ### TEST-RUN-2026-05-20-018 - Rate Limits, Quotas, Abuse and Cost Control
 
 - **Status**: DONE

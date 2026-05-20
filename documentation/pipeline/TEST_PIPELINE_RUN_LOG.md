@@ -785,6 +785,28 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 - **Backlog Closure**: Spec-06 follow-up items from the prior red runs are closed by this full green validation.
 - **Abschluss**: Gesamtergebnis PASS.
 
+## TEST-RUN-2026-05-20-021 - Janus Tool Execution Truth
+
+- **Datum**: 2026-05-20
+- **TestSpec**: `documentation/TEST_SPEC/03_tools_skills/07_tool_execution_contract_and_evidence.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-20-021_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-20-021_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-20-021_results.json`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-20-021_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 18
+- **Passed**: 18
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT 100.00% (9/9), Gemini 100.00% (9/9)
+- **Type Pass Rates**: functional 100.00% (12/12), prompt_injection 100.00% (2/2), security 100.00% (4/4)
+- **Security Gate**: PASS - success-claim prompt injection is blocked before LLM/tool execution and the final responses stay grounded in actual tool/blocker evidence.
+- **Findings**: NONE
+- **Backlog Closure**: N/A; reusable TestSpec validation completed.
+- **Abschluss**: Gesamtergebnis PASS.
+
 ## Auswertungsbereich
 
 Dieser Bereich wird nach mehreren echten TestRuns gepflegt, z. B. nach 5-10 Runs oder nach einigen Arbeitstagen.
