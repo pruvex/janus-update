@@ -4,6 +4,22 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Test Pipeline Validations
 
+### TEST-RUN-2026-05-21-009 - Deployment Headers CORS CSP Cookie Scan
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Security Spec 15 beta/production hardening gate
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/15_deployment_headers_cors_csp_cookie_scan.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-009_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-009_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-009_results.md`
+- **Deployment Policy**: `documentation/test-runs/TEST-RUN-2026-05-21-009_deployment_surface_policy.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-009_final_audit.md`
+- **Validation**: PASS with `10/10` deployment-surface checks, `0` failed, `0` blocked. The gate validates the real packaged-local target at `http://127.0.0.1:8001` for CSP/security headers, CORS allow/deny behavior, cookie posture, debug/source-map exposure and file response headers.
+- **Remediation**: Restricted beta CORS origins/headers/methods/exposed headers; removed `null` origin from packaged beta; disabled public source maps unless explicitly enabled; hardened user-image responses against wildcard CORS and added private cache/nosniff/disposition controls.
+- **Watchpoints**: Hosted beta/staging still requires a separate HTTPS/HSTS/proxy/CDN validation. CSP retains `'unsafe-inline'` for legacy frontend compatibility.
+- **Changed Files**: `backend/main.py`, `vite.config.js`, `tests/e2e/generated/TEST-RUN-2026-05-21-009.*`, `documentation/test-runs/TEST-RUN-2026-05-21-009_*`
+
 ### TEST-RUN-2026-05-21-008 - Beta Telemetry Logging Privacy Hardening
 
 - **Status**: DONE

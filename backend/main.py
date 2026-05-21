@@ -99,7 +99,7 @@ log_startup_time("Standard-Imports abgeschlossen")
 
 log_startup_time("Starte Drittanbieter-Imports...")
 import keyring
-from fastapi import FastAPI, Depends, HTTPException, status, Security, Request
+from fastapi import FastAPI, Depends, HTTPException, status, Security, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
@@ -779,35 +779,41 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 # ----------------------------------------------------------
 
+def _cors_origins() -> list[str]:
+    """Return the allowed browser origins for packaged beta plus explicit dev mode."""
+
+    beta_origins = [
+        "http://127.0.0.1:8001",
+        "http://localhost:8001",
+        "electron://localhost",
+        "janus://app",
+    ]
+    dev_origins = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://localhost:5175",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+    ]
+    if os.getenv("NODE_ENV") == "development" or os.getenv("JANUS_DEV_MODE") == "true":
+        return beta_origins + dev_origins
+    return beta_origins
+
+
 # CORS Configuration
-# Define allowed origins for CORS
-origins = [
-    "http://localhost",
-    "http://localhost:5173",  # Vite Development Server
-    "http://localhost:5174",  # Vite Preview
-    "http://localhost:5175",  # Additional Vite port
-    "http://localhost:8000",  # Common development port
-    "http://127.0.0.1:5173",  # Alternative localhost with Vite
-    "http://127.0.0.1:8000",  # Alternative localhost with port 8000
-    "http://127.0.0.1",       # General 127.0.0.1
-    "electron://localhost",   # Electron app
-    "http://127.0.0.1:8001",  # Common alternative port
-    "http://localhost:3000",  # Common React port
-    "http://127.0.0.1:3000",  # Common React port alternative
-    "http://localhost:8080",  # Common alternative port
-    "http://127.0.0.1:8080",  # Common alternative port
-    "janus://app",            # Custom scheme for packaged Electron (v0.4.16-beta.5)
-    "null",                   # file:// origin serialises to "null" in CORS
-]
+origins = _cors_origins()
 
 # Add CORS middleware with comprehensive settings
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods
-    allow_headers=["*"],  # Allow all headers
-    expose_headers=["*"],  # Expose all headers
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Janus-Internal-Key"],
+    expose_headers=["Content-Disposition"],
     max_age=600,  # Cache preflight request for 10 minutes
 )
 
@@ -888,8 +894,19 @@ async def list_images(_debug_allowed: None = Depends(require_debug_endpoints_ena
 # --- FIX: Manueller Image-Server ---
 # Dieser Endpunkt liefert die Bilder manuell aus, was Probleme mit 
 # Windows-Ordner-Berechtigungen oder OneDrive-Symlinks umgeht.
+def _apply_private_file_headers(response: Response, request: Request) -> Response:
+    origin = request.headers.get("origin")
+    if origin in origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Vary"] = "Origin"
+    response.headers["Cache-Control"] = "private, max-age=3600"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Content-Disposition"] = "inline"
+    return response
+
+
 @app.get("/user_images/{filename}")
-async def serve_user_image(filename: str):
+async def serve_user_image(filename: str, request: Request):
     """Serve user images with security checks and forced CORS."""
     # Security check
     if ".." in filename or "/" in filename or "\\" in filename:
@@ -900,9 +917,7 @@ async def serve_user_image(filename: str):
     # Hilfsfunktion zum Erstellen der Response mit Header
     def make_response(path):
         response = FileResponse(path)
-        # HIER IST DER FIX: Wir zwingen den Header manuell rein
-        response.headers["Access-Control-Allow-Origin"] = "*"
-        return response
+        return _apply_private_file_headers(response, request)
 
     if os.path.exists(file_path):
         return make_response(file_path)
@@ -916,7 +931,7 @@ async def serve_user_image(filename: str):
 
 # --- FIX: Spezifischer Endpunkt für Uploads ---
 @app.get("/user_images/uploads/{filename}")
-async def serve_upload_image(filename: str):
+async def serve_upload_image(filename: str, request: Request):
     """Serve uploaded images with forced CORS."""
     # Security check
     if ".." in filename or "/" in filename or "\\" in filename:
@@ -927,9 +942,7 @@ async def serve_upload_image(filename: str):
     
     if os.path.exists(file_path):
         response = FileResponse(file_path)
-        # HIER IST DER FIX: Wir zwingen den Header manuell rein
-        response.headers["Access-Control-Allow-Origin"] = "*"
-        return response
+        return _apply_private_file_headers(response, request)
     
     raise HTTPException(status_code=404, detail="Upload not found")
 

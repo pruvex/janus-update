@@ -1,0 +1,5 @@
+{
+  "rawSensitiveEvidencePolicy": "headers-and-status-only",
+  "hstsCodePathPresent": true,
+  "localLoopbackExceptionDocumented": true
+}

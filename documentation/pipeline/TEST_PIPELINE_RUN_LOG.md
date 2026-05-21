@@ -65,6 +65,50 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 
 ## Run Log
 
+### TEST-RUN-2026-05-21-009 - Janus Deployment Headers CORS CSP Cookie Scan - Final Validation
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-009
+- **Datum**: 2026-05-21
+- **Quelle**: Dashboard recommendation / Security Spec 15 beta-production hardening
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/15_deployment_headers_cors_csp_cookie_scan.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-009_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-009_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-009_results.md`
+- **Deployment Policy**: `documentation/test-runs/TEST-RUN-2026-05-21-009_deployment_surface_policy.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-009_final_audit.md`
+- **Getestete Faehigkeit**: Packaged-local Electron beta deployment headers/CORS/CSP/cookie/debug/file surface
+- **Pipeline-Route**: TEST SKILL SECURITY -> custom deployment surface runner -> SKILL 7
+- **Skill-Ergebnisse**:
+  - TEST SKILL SECURITY: PASS
+  - Custom Playwright runner: PASS, `10/10`
+  - SKILL 7 / Final Audit: PASS
+- **Security Gate**:
+  - Userdaten sicher: JA
+  - Destruktive Aktionen isoliert: JA
+  - Prompt-Injection-Risiko geprueft: N/A
+  - Prompt-Injection-Befund: NONE
+  - Sensitive Daten in Logs vermieden: JA
+  - Persistenzrisiko geprueft: JA
+  - Security-Gesamtergebnis: PASS
+- **Provider-/Model-Matrix**: N/A; no LLM provider call required for deployment surface gate.
+- **UX-Ergebnis**: N/A; browser/API deployment-surface validation.
+- **Intent-/Skill-Routing-Ergebnis**: N/A.
+- **Kosten-/Token-Ergebnis**: Keine externen LLM-Kosten.
+- **Capability-Erklaerfaehigkeit**: PASS
+- **Findings**:
+  - CORS is now restricted to packaged-local origins unless dev mode is explicit.
+  - Hostile and `null` origins are not granted CORS.
+  - Public beta source maps are disabled by default.
+  - User image/download paths use approved-origin CORS only plus `nosniff`, private cache and inline disposition.
+- **Sofortfixes**: See findings.
+- **Backlog-Follow-ups**: Hosted beta/staging HTTPS/HSTS/proxy/CDN validation if Janus later gets a public endpoint.
+- **Nebenbefunde ausserhalb TestScope**: CSP still allows `'unsafe-inline'` for legacy frontend compatibility.
+- **Optimierungspotential fuer Testpipeline**: Keep deployment-surface gates target-aware so packaged-local and hosted SaaS are not conflated.
+- **Abschluss**:
+  - Diamond Confidence Score: 10/10
+  - Production Confidence: 95% for packaged-local beta deployment surface; hosted deployment remains separately unvalidated.
+  - Gesamtergebnis: PASS
+
 ### TEST-RUN-2026-05-21-008 - Janus Beta Telemetry Logging Privacy Hardening - Final Validation
 
 - **TestRun-ID**: TEST-RUN-2026-05-21-008

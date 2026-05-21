@@ -1,0 +1,5 @@
+{
+  "rawSensitiveEvidencePolicy": "headers-and-status-only",
+  "status": 200,
+  "cspDirectivesChecked": 6
+}

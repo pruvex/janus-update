@@ -45,6 +45,7 @@ try {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, resolve(__dirname, 'frontend'), "");
   const shouldUploadSourcemaps = process.env.JANUS_UPLOAD_SOURCEMAPS === "1" && Boolean(env.SENTRY_AUTH_TOKEN);
+  const shouldEmitSourcemaps = process.env.JANUS_EMIT_SOURCEMAPS === "1" || shouldUploadSourcemaps;
   const plugins = [];
 
   if (shouldUploadSourcemaps) {
@@ -77,7 +78,7 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'dist',
       emptyOutDir: true,
-      sourcemap: true,
+      sourcemap: shouldEmitSourcemaps,
     },
     
     server: {

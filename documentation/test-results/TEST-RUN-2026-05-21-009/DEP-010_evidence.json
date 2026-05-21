@@ -1,0 +1,5 @@
+{
+  "rawSensitiveEvidencePolicy": "headers-and-status-only",
+  "openCriticalHighFindings": 0,
+  "gateDecision": "PASS"
+}

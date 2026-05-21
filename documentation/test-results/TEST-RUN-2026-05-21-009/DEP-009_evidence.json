@@ -1,0 +1,6 @@
+{
+  "rawSensitiveEvidencePolicy": "headers-and-status-only",
+  "approvedStatus": 200,
+  "hostileOriginGranted": false,
+  "mimeCacheHeadersPresent": true
+}
