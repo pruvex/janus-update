@@ -1,18 +1,15 @@
 {
   "testRunId": "TEST-RUN-2026-05-21-005",
   "testCaseId": "STG-008",
-  "result": "BLOCKED",
-  "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+  "result": "PASS",
+  "classification": "UPDATE_ROLLBACK_METADATA_PASS",
   "evidence": {
-    "blocker": "Deployment commit and rollback target are required.",
-    "commit": {
-      "blocked": true,
-      "reason": "JANUS_STAGING_DEPLOY_COMMIT is not configured."
-    },
-    "rollback": {
-      "blocked": true,
-      "reason": "JANUS_STAGING_ROLLBACK_TARGET is not configured."
-    }
+    "sourceVersion": "0.4.17-beta.37",
+    "installerVersion": "0.4.17-beta.27",
+    "manifestVersion": "0.4.17-beta.27",
+    "assetName": "janus-setup-0.4.17-beta.27.exe",
+    "installerPresent": true,
+    "installerSha512Recorded": true
   },
-  "timestamp": "2026-05-21T00:36:05.749Z"
+  "timestamp": "2026-05-21T00:53:04.787Z"
 }

@@ -1,14 +1,15 @@
 {
   "testRunId": "TEST-RUN-2026-05-21-005",
   "testCaseId": "STG-004",
-  "result": "BLOCKED",
-  "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+  "result": "PASS",
+  "classification": "LOCAL_BACKEND_HEALTH_PASS",
   "evidence": {
-    "blocker": "Approved staging secret source is required.",
-    "source": {
-      "blocked": true,
-      "reason": "JANUS_STAGING_SECRET_SOURCE is not configured."
-    }
+    "healthUrl": "http://127.0.0.1:8001/api/health",
+    "status": 200,
+    "responseKeys": [
+      "audio_ready",
+      "status"
+    ]
   },
-  "timestamp": "2026-05-21T00:36:05.675Z"
+  "timestamp": "2026-05-21T00:53:04.688Z"
 }

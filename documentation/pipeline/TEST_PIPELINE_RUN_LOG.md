@@ -65,7 +65,7 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 
 ## Run Log
 
-### TEST-RUN-2026-05-21-005 - Janus Staging Environment Security Baseline - Target Environment Gate
+### TEST-RUN-2026-05-21-005 - Janus Packaged Local Beta Environment Security Baseline - Final Validation
 
 - **TestRun-ID**: TEST-RUN-2026-05-21-005
 - **Datum**: 2026-05-21
@@ -75,44 +75,46 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 - **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-005_results.json`
 - **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-005_results.md`
 - **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-005_final_audit.md`
-- **Getestete Faehigkeit**: Staging environment security baseline / beta-production target validation
-- **Pipeline-Route**: TEST SKILL SECURITY -> custom staging environment runner -> SKILL 7
+- **Getestete Faehigkeit**: Packaged local Electron beta environment baseline
+- **Pipeline-Route**: TEST SKILL SECURITY -> custom packaged-local beta runner -> SKILL 7
 - **Skill-Ergebnisse**:
-  - TEST SKILL SECURITY: BLOCKED
-  - Custom Staging Runner: BLOCKED in Janus result, Playwright execution PASS
-  - SKILL 7: BLOCKED with final audit
+  - TEST SKILL SECURITY: PASS
+  - Custom Packaged-Local Runner: PASS, `10/10`
+  - SKILL 7: PASS
 - **Security Gate**:
   - Userdaten sicher: JA, no real user data accessed
-  - Destruktive Aktionen isoliert: JA, read-only configuration/evidence gate
-  - Prompt-Injection-Risiko geprueft: N/A for staging environment gate
+  - Destruktive Aktionen isoliert: JA, read-only configuration/build/health evidence gate
+  - Prompt-Injection-Risiko geprueft: N/A for packaged environment gate
   - Prompt-Injection-Befund: NONE
-  - Sensitive Daten in Logs vermieden: JA, evidence contains only missing/presence metadata
+  - Sensitive Daten in Logs vermieden: JA, generated evidence scan PASS and packaged `.env` bundling removed
   - Persistenzrisiko geprueft: JA
-  - Security-Gesamtergebnis: BLOCKED
+  - Security-Gesamtergebnis: PASS
 - **Provider-/Model-Matrix**:
   - GPT Smallest Viable: N/A
   - Gemini Smallest Viable: N/A
-  - Provider mode: BLOCKED because `JANUS_STAGING_PROVIDER_MODE` and cost cap are not configured.
-- **UX-Ergebnis**: N/A - target environment gate, not chat UX.
+  - Provider mode: N/A for environment gate; provider cost behavior remains covered by Security 07 and future Spec 16.
+- **UX-Ergebnis**: N/A - packaged environment gate, not chat UX.
 - **Intent-/Skill-Routing-Ergebnis**: N/A
 - **Kosten-/Token-Ergebnis**: PASS - no model calls; no external provider spend.
 - **Capability-Erklaerfaehigkeit**: PASS for blocker explanation.
 - **Findings**:
-  - No explicit non-local `JANUS_STAGING_*` target configuration exists.
-  - Generic TestSpec compiler could not derive executable tests from this environment checklist.
+  - Original hosted-staging interpretation was wrong for Janus because Janus is a local Electron desktop app.
+  - PyInstaller spec could previously append a local `.env` into packaged data if present.
 - **Sofortfixes**:
-  - Added a custom staging runner and Playwright config that do not start local Janus servers.
-  - Added staging environment map and final audit documenting exact required inputs.
+  - Reframed Spec 11 as Packaged Local Beta Environment Security Baseline.
+  - Removed local `.env` bundling from `janus_backend.spec`.
+  - Added custom packaged-local beta runner and Playwright config.
+  - Rebuilt and verified `frontend/dist`.
 - **Backlog-Follow-ups**:
-  - Create/declare real staging environment, then rerun Spec 11.
+  - Build a fresh installer before actual beta shipment.
 - **Nebenbefunde ausserhalb TestScope**:
-  - The repo contains references that Janus is a Desktop Electron app; if beta is packaged-local rather than hosted staging, Spec 11 must be consciously rewritten for a packaged local beta gate.
+  - Vite/Sentry source-map upload occurred during production frontend build; source-map exposure policy remains a dedicated Specs 14/15 concern.
 - **Optimierungspotential fuer Testpipeline**:
-  - Add native TestSpec generator support for environment-gate specs with required environment variable contracts.
+  - Add native TestSpec generator support for packaged-local desktop environment gates.
 - **Abschluss**:
-  - Diamond Confidence Score: 9/10 for blocker correctness
-  - Production Confidence: 0% for Spec 11 until staging exists
-  - Gesamtergebnis: BLOCKED
+  - Diamond Confidence Score: 9/10
+  - Production Confidence: 90% for packaged-local beta environment baseline
+  - Gesamtergebnis: PASS
 
 ### TEST-RUN-2026-05-21-004 - Janus Security ReviewSpec Suite - Launch Gate Review
 

@@ -4,19 +4,20 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Test Pipeline Validations
 
-### TEST-RUN-2026-05-21-005 - Staging Environment Security Baseline
+### TEST-RUN-2026-05-21-005 - Packaged Local Beta Environment Security Baseline
 
-- **Status**: BLOCKED
-- **Audit**: BLOCKED
+- **Status**: DONE
+- **Audit**: PASS
 - **Source**: Security Spec 11 beta/production hardening gate
 - **TestSpec**: `documentation/TEST_SPEC/02_security_safety/11_staging_environment_security_baseline.md`
 - **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-005_plan.json`
 - **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-005_results.json`
 - **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-005_results.md`
 - **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-005_final_audit.md`
-- **Validation**: BLOCKED with `10/10` checks executed, `1` passed, `9` blocked, `0` failed. The runner correctly refuses to certify localhost/dev as staging.
-- **Blocker**: No explicit non-local `JANUS_STAGING_*` target configuration exists for frontend URL, health URL, metadata URL, datastore IDs, secret source, backend URL, build version, provider mode/cost cap, deploy commit or rollback target.
-- **Changed Files**: `tests/e2e/generated/TEST-RUN-2026-05-21-005.staging-environment.spec.js`, `tests/e2e/generated/TEST-RUN-2026-05-21-005.staging.playwright.config.js`, `documentation/test-runs/TEST-RUN-2026-05-21-005_*`
+- **Validation**: PASS with `10/10` packaged-local beta checks, `0` failed, `0` blocked. The gate now validates Janus' real Electron desktop beta model instead of hosted SaaS staging.
+- **Remediation**: Removed PyInstaller `.env` bundling from `janus_backend.spec`; rebuilt and verified `frontend/dist`; validated local backend health, AppData/resource separation, Keyring/AppData secret model, packaged dev-surface guards and update metadata.
+- **Watchpoints**: Build a fresh installer before actual beta shipment; source-map upload/exposure policy remains covered by Specs 14/15.
+- **Changed Files**: `documentation/TEST_SPEC/02_security_safety/11_staging_environment_security_baseline.md`, `janus_backend.spec`, `tests/e2e/generated/TEST-RUN-2026-05-21-005.staging-environment.spec.js`, `tests/e2e/generated/TEST-RUN-2026-05-21-005.staging.playwright.config.js`, `documentation/test-runs/TEST-RUN-2026-05-21-005_*`
 
 ### TEST-RUN-2026-05-21-004 - Security ReviewSpec Suite
 

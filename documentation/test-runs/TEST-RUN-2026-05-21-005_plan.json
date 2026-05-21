@@ -1,44 +1,32 @@
 {
   "schemaVersion": "janus.test-plan.v1",
   "testRunId": "TEST-RUN-2026-05-21-005",
-  "title": "Janus Staging Environment Security Baseline",
+  "title": "Janus Packaged Local Beta Environment Security Baseline",
   "sourceSpec": "documentation/TEST_SPEC/02_security_safety/11_staging_environment_security_baseline.md",
-  "route": "TEST SKILL SECURITY -> custom staging environment runner -> SKILL 7",
-  "compilerStatus": {
-    "status": "BLOCKED",
-    "reason": "No executable tests could be derived from the checklist-style staging environment TestSpec; custom runner validates explicit staging configuration and blocks local/dev substitutes."
+  "route": "TEST SKILL SECURITY -> custom packaged-local beta runner -> SKILL 7",
+  "deploymentModel": {
+    "type": "packaged-local-electron",
+    "hostedStagingRequired": false,
+    "localBackendHealthUrl": "http://127.0.0.1:8001/api/health",
+    "frontendProductionBundle": "frontend/dist",
+    "backendExecutable": "dist/janus_backend.exe",
+    "runtimeStateRoot": "%APPDATA%/Janus Projekt"
   },
-  "targetEnvironment": {
-    "required": true,
-    "localhostAllowed": false,
-    "requiredVariables": [
-      "JANUS_STAGING_FRONTEND_URL",
-      "JANUS_STAGING_HEALTH_URL",
-      "JANUS_STAGING_METADATA_URL",
-      "JANUS_STAGING_ENVIRONMENT_NAME",
-      "JANUS_STAGING_DATASTORE_ID",
-      "JANUS_PRODUCTION_DATASTORE_ID",
-      "JANUS_STAGING_SECRET_SOURCE",
-      "JANUS_STAGING_BACKEND_URL",
-      "JANUS_STAGING_BUILD_VERSION",
-      "JANUS_STAGING_SOURCEMAP_POLICY",
-      "JANUS_STAGING_PROVIDER_MODE",
-      "JANUS_STAGING_PROVIDER_COST_CAP",
-      "JANUS_STAGING_DEPLOY_COMMIT",
-      "JANUS_STAGING_ROLLBACK_TARGET"
-    ]
+  "compilerStatus": {
+    "status": "CUSTOM_RUNNER_REQUIRED",
+    "reason": "Spec 11 validates Janus' packaged local Electron beta deployment model. A custom runner verifies build artifacts, local backend health, AppData isolation, secret handling and update metadata."
   },
   "cases": [
-    { "id": "STG-001", "domain": "Reachability", "expectedEvidence": "Non-local staging frontend URL and health URL reachable" },
-    { "id": "STG-002", "domain": "Environment identity", "expectedEvidence": "Environment metadata proves staging/beta, not dev or production" },
-    { "id": "STG-003", "domain": "Data isolation", "expectedEvidence": "Staging datastore differs from production datastore" },
-    { "id": "STG-004", "domain": "Secret source", "expectedEvidence": "Secrets come from approved deployment secret source" },
-    { "id": "STG-005", "domain": "Debug mode", "expectedEvidence": "Debug/docs/openapi surfaces are denied or unavailable" },
-    { "id": "STG-006", "domain": "Build artifact", "expectedEvidence": "Build version and sourcemap policy are documented" },
-    { "id": "STG-007", "domain": "Provider mode", "expectedEvidence": "Staging provider mode is capped/sandboxed" },
-    { "id": "STG-008", "domain": "Rollback metadata", "expectedEvidence": "Deploy commit and rollback target are documented" },
-    { "id": "STG-009", "domain": "Result hygiene", "expectedEvidence": "Generated evidence contains no raw secret patterns" },
-    { "id": "STG-010", "domain": "Gate decision", "expectedEvidence": "PASS / PASS WITH WATCHPOINTS / BLOCKED decision recorded" }
+    { "id": "STG-001", "domain": "Packaging model", "expectedEvidence": "Electron/package config declares packaged local app with backend executable resource" },
+    { "id": "STG-002", "domain": "Frontend artifact", "expectedEvidence": "Production frontend bundle exists and passes verification markers" },
+    { "id": "STG-003", "domain": "Backend artifact", "expectedEvidence": "Backend executable exists and PyInstaller resources exclude local .env" },
+    { "id": "STG-004", "domain": "Local health", "expectedEvidence": "Local backend health endpoint returns HTTP 200" },
+    { "id": "STG-005", "domain": "State isolation", "expectedEvidence": "AppData runtime state and packaged resource paths are separated" },
+    { "id": "STG-006", "domain": "Secret source", "expectedEvidence": "Runtime credentials use Keyring/AppData/env; no packaged .env" },
+    { "id": "STG-007", "domain": "Dev surface", "expectedEvidence": "Packaged app origin and devtools behavior are gated" },
+    { "id": "STG-008", "domain": "Update/rollback metadata", "expectedEvidence": "latest.yml and update manifest are internally consistent" },
+    { "id": "STG-009", "domain": "Evidence hygiene", "expectedEvidence": "Generated evidence contains no raw secret patterns" },
+    { "id": "STG-010", "domain": "Gate decision", "expectedEvidence": "PASS decision recorded for packaged-local beta model" }
   ],
   "artifacts": {
     "runner": "tests/e2e/generated/TEST-RUN-2026-05-21-005.staging-environment.spec.js",

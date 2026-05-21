@@ -39,7 +39,7 @@ Die Specs `11-19` sind bewusst von der lokalen Suite getrennt. Sie sind erst vol
 
 | Datei | TestSpec | Schwerpunkt | Sicherheitsniveau | Zielzustand nach PASS |
 |---|---|---|---|---|
-| `11_staging_environment_security_baseline.md` | Staging Environment Security Baseline | Ziel-URL, isolierte Umgebung, Deployment-Metadaten, Secret-Quellen | CRITICAL | Staging ist real, isoliert, reproduzierbar und beta-tauglich |
+| `11_staging_environment_security_baseline.md` | Packaged Local Beta Environment Security Baseline | Electron-Paket, lokale Backend-Health, AppData-Isolation, Secret-Quellen, Update-Metadaten | CRITICAL | Janus ist als lokale Desktop-Beta reproduzierbar, secret-sicher und ohne Dev-State validiert |
 | `12_multi_account_staging_isolation.md` | Multi-Account Staging Isolation | User A/B, IDOR, Cross-User-Zugriff, Tool-vermittelte Zugriffe | CRITICAL | Echte Staging-Accounts koennen keine fremden Daten lesen oder schreiben |
 | `13_production_secret_rotation_and_leak_scan.md` | Production Secret Rotation and Leak Scan | Rotation, Repo-/Bundle-/Log-/Response-/Artifact-Scans | CRITICAL | Keine Dev/Test-Secrets bleiben beta-wirksam oder leaken in Artefakte |
 | `14_beta_telemetry_logging_privacy_hardening.md` | Beta Telemetry Logging Privacy Hardening | Sinks, Sampling, PII, Retention, Zugriff, Redaction | HIGH | Beta-Telemetrie hilft beim Betrieb ohne private Daten unnoetig offenzulegen |

@@ -1,18 +1,12 @@
 {
   "testRunId": "TEST-RUN-2026-05-21-005",
   "testCaseId": "STG-007",
-  "result": "BLOCKED",
-  "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+  "result": "PASS",
+  "classification": "PACKAGED_DEV_SURFACE_GATED_PASS",
   "evidence": {
-    "blocker": "Provider mode and cost cap are required.",
-    "mode": {
-      "blocked": true,
-      "reason": "JANUS_STAGING_PROVIDER_MODE is not configured."
-    },
-    "cap": {
-      "blocked": true,
-      "reason": "JANUS_STAGING_PROVIDER_COST_CAP is not configured."
-    }
+    "devToolsGuard": "process.env.NODE_ENV === 'development'",
+    "packagedOrigin": "http://127.0.0.1:8001/",
+    "devOrigin": "http://localhost:5173/"
   },
-  "timestamp": "2026-05-21T00:36:05.733Z"
+  "timestamp": "2026-05-21T00:53:04.761Z"
 }

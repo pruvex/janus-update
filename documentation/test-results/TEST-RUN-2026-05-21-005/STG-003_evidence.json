@@ -1,20 +1,13 @@
 {
   "testRunId": "TEST-RUN-2026-05-21-005",
   "testCaseId": "STG-003",
-  "result": "BLOCKED",
-  "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+  "result": "PASS",
+  "classification": "BACKEND_PACKAGE_ARTIFACT_PASS",
   "evidence": {
-    "blocker": "Redacted staging and production datastore identifiers are required to prove isolation.",
-    "stagingStore": {
-      "blocked": true,
-      "reason": "JANUS_STAGING_DATASTORE_ID is not configured.",
-      "value": "missing"
-    },
-    "productionStore": {
-      "blocked": true,
-      "reason": "JANUS_PRODUCTION_DATASTORE_ID is not configured.",
-      "value": "missing"
-    }
+    "backendExe": "dist/janus_backend.exe",
+    "backendExePresent": true,
+    "backendExeSize": 622144328,
+    "envBundlingAppendFound": false
   },
-  "timestamp": "2026-05-21T00:36:05.657Z"
+  "timestamp": "2026-05-21T00:53:04.622Z"
 }

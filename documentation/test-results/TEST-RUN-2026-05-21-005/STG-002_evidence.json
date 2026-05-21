@@ -1,18 +1,13 @@
 {
   "testRunId": "TEST-RUN-2026-05-21-005",
   "testCaseId": "STG-002",
-  "result": "BLOCKED",
-  "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+  "result": "PASS",
+  "classification": "FRONTEND_DIST_PASS",
   "evidence": {
-    "blocker": "Staging metadata URL and explicit environment name are required.",
-    "metadataUrl": {
-      "blocked": true,
-      "reason": "JANUS_STAGING_METADATA_URL is not configured."
-    },
-    "declared": {
-      "blocked": true,
-      "reason": "JANUS_STAGING_ENVIRONMENT_NAME is not configured."
-    }
+    "distDir": "frontend/dist",
+    "fileCount": 5,
+    "indexHtmlSha256": "d4f42824838b1b0bc5a76cc1f09749c10ac9e9bd9021600486ffda16a70d42e9",
+    "verificationMarkersFound": true
   },
-  "timestamp": "2026-05-21T00:36:05.629Z"
+  "timestamp": "2026-05-21T00:53:04.578Z"
 }

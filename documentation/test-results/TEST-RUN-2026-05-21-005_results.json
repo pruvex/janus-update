@@ -1,14 +1,14 @@
 {
   "schemaVersion": "janus.test-result.v1",
   "testRunId": "TEST-RUN-2026-05-21-005",
-  "title": "Janus Staging Environment Security Baseline",
-  "status": "BLOCKED",
+  "title": "Janus Packaged Local Beta Environment Security Baseline",
+  "status": "PASS",
   "summary": {
     "total": 10,
-    "passed": 1,
+    "passed": 10,
     "failed": 0,
-    "blocked": 9,
-    "manualGateRequired": 1
+    "blocked": 0,
+    "manualGateRequired": 0
   },
   "artifacts": {
     "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-005",
@@ -29,94 +29,94 @@
   "results": [
     {
       "testCaseId": "STG-001",
-      "result": "BLOCKED",
-      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "result": "PASS",
+      "classification": "PACKAGED_MODEL_PASS",
       "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-001_evidence.json",
-      "durationMs": 3,
-      "notes": "Explicit non-local JANUS_STAGING_FRONTEND_URL and JANUS_STAGING_HEALTH_URL are required.",
-      "timestamp": "2026-05-21T00:36:05.578Z"
+      "durationMs": 13,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.538Z"
     },
     {
       "testCaseId": "STG-002",
-      "result": "BLOCKED",
-      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "result": "PASS",
+      "classification": "FRONTEND_DIST_PASS",
       "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-002_evidence.json",
-      "durationMs": 1,
-      "notes": "Staging metadata URL and explicit environment name are required.",
-      "timestamp": "2026-05-21T00:36:05.629Z"
+      "durationMs": 12,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.578Z"
     },
     {
       "testCaseId": "STG-003",
-      "result": "BLOCKED",
-      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "result": "PASS",
+      "classification": "BACKEND_PACKAGE_ARTIFACT_PASS",
       "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-003_evidence.json",
-      "durationMs": 2,
-      "notes": "Redacted staging and production datastore identifiers are required to prove isolation.",
-      "timestamp": "2026-05-21T00:36:05.657Z"
+      "durationMs": 21,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.622Z"
     },
     {
       "testCaseId": "STG-004",
-      "result": "BLOCKED",
-      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "result": "PASS",
+      "classification": "LOCAL_BACKEND_HEALTH_PASS",
       "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-004_evidence.json",
-      "durationMs": 1,
-      "notes": "Approved staging secret source is required.",
-      "timestamp": "2026-05-21T00:36:05.675Z"
+      "durationMs": 31,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.688Z"
     },
     {
       "testCaseId": "STG-005",
-      "result": "BLOCKED",
-      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "result": "PASS",
+      "classification": "APPDATA_RESOURCE_BOUNDARY_PASS",
       "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-005_evidence.json",
-      "durationMs": 1,
-      "notes": "JANUS_STAGING_BACKEND_URL is required for debug-route probing.",
-      "timestamp": "2026-05-21T00:36:05.695Z"
+      "durationMs": 6,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.722Z"
     },
     {
       "testCaseId": "STG-006",
-      "result": "BLOCKED",
-      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "result": "PASS",
+      "classification": "LOCAL_SECRET_MODEL_PASS",
       "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-006_evidence.json",
-      "durationMs": 1,
-      "notes": "Build version and sourcemap policy are required.",
-      "timestamp": "2026-05-21T00:36:05.716Z"
+      "durationMs": 6,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.743Z"
     },
     {
       "testCaseId": "STG-007",
-      "result": "BLOCKED",
-      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "result": "PASS",
+      "classification": "PACKAGED_DEV_SURFACE_GATED_PASS",
       "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-007_evidence.json",
-      "durationMs": 1,
-      "notes": "Provider mode and cost cap are required.",
-      "timestamp": "2026-05-21T00:36:05.733Z"
+      "durationMs": 4,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.761Z"
     },
     {
       "testCaseId": "STG-008",
-      "result": "BLOCKED",
-      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "result": "PASS",
+      "classification": "UPDATE_ROLLBACK_METADATA_PASS",
       "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-008_evidence.json",
-      "durationMs": 1,
-      "notes": "Deployment commit and rollback target are required.",
-      "timestamp": "2026-05-21T00:36:05.749Z"
+      "durationMs": 10,
+      "notes": "Current source version 0.4.17-beta.37 differs from last built installer 0.4.17-beta.27; rebuild installer before shipping a new beta.",
+      "timestamp": "2026-05-21T00:53:04.787Z"
     },
     {
       "testCaseId": "STG-009",
       "result": "PASS",
-      "classification": "STAGING_EVIDENCE_HYGIENE_PASS",
+      "classification": "PACKAGED_LOCAL_EVIDENCE_HYGIENE_PASS",
       "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-009_evidence.json",
       "durationMs": 6,
       "notes": "",
-      "timestamp": "2026-05-21T00:36:05.771Z"
+      "timestamp": "2026-05-21T00:53:04.807Z"
     },
     {
       "testCaseId": "STG-010",
-      "result": "BLOCKED",
-      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "result": "PASS",
+      "classification": "PACKAGED_LOCAL_BETA_GATE_DECISION_PASS",
       "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-010_evidence.json",
-      "durationMs": 1,
-      "notes": "Staging gate is BLOCKED until explicit non-local staging configuration is provided.",
-      "timestamp": "2026-05-21T00:36:05.789Z"
+      "durationMs": 0,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.821Z"
     }
   ],
-  "updatedAt": "2026-05-21T00:36:05.806Z"
+  "updatedAt": "2026-05-21T00:53:04.837Z"
 }

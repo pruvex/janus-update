@@ -1,14 +1,12 @@
 {
   "testRunId": "TEST-RUN-2026-05-21-005",
   "testCaseId": "STG-005",
-  "result": "BLOCKED",
-  "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+  "result": "PASS",
+  "classification": "APPDATA_RESOURCE_BOUNDARY_PASS",
   "evidence": {
-    "blocker": "JANUS_STAGING_BACKEND_URL is required for debug-route probing.",
-    "base": {
-      "blocked": true,
-      "reason": "JANUS_STAGING_BACKEND_URL is not configured."
-    }
+    "appDataFunction": "backend/utils/paths.py:get_app_data_dir",
+    "resourceFunction": "backend/utils/paths.py:get_resource_path",
+    "configFile": "%APPDATA%/Janus Projekt/config.json"
   },
-  "timestamp": "2026-05-21T00:36:05.695Z"
+  "timestamp": "2026-05-21T00:53:04.722Z"
 }
