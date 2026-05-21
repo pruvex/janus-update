@@ -1,0 +1,6 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-private-data-no-tester-payloads",
+  "openCritical": 0,
+  "openHigh": 0,
+  "watchpointsAcceptedAndTracked": true
+}

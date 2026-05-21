@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "janus.test-plan.v1",
+  "testRunId": "TEST-RUN-2026-05-21-013",
+  "title": "Janus Final Beta Launch Gate Review",
+  "sourceSpec": "documentation/TEST_SPEC/02_security_safety/19_final_beta_launch_gate_review.md",
+  "scope": "Final evidence-backed launch gate for controlled external packaged-local Electron beta.",
+  "decisionModel": {
+    "pass": "No open Critical/High, Security 01-18 PASS, required evidence and owners complete.",
+    "passWithWatchpoints": "No open Critical, no unaccepted High, Medium/Low watchpoints accepted and owned.",
+    "fail": "Open Critical, unaccepted High, missing required evidence, or failed retest."
+  },
+  "cases": [
+    { "id": "BLG-001", "title": "Security 01-10 baseline result matrix is fully PASS", "type": "evidence-matrix" },
+    { "id": "BLG-002", "title": "Security 11 packaged-local beta environment evidence exists", "type": "artifact-review" },
+    { "id": "BLG-003", "title": "Security 12 profile isolation evidence exists", "type": "artifact-review" },
+    { "id": "BLG-004", "title": "Security 13 secret rotation and leak scan evidence exists", "type": "artifact-review" },
+    { "id": "BLG-005", "title": "Security 14 telemetry privacy evidence exists", "type": "artifact-review" },
+    { "id": "BLG-006", "title": "Security 15 deployment surface evidence exists", "type": "artifact-review" },
+    { "id": "BLG-007", "title": "Security 16 abuse and cost-control evidence exists", "type": "artifact-review" },
+    { "id": "BLG-008", "title": "Security 17 ops recovery evidence exists", "type": "artifact-review" },
+    { "id": "BLG-009", "title": "Security 18 privacy notice and data-rights evidence exists", "type": "artifact-review" },
+    { "id": "BLG-010", "title": "Final risk register has no open Critical or High findings", "type": "risk-register" },
+    { "id": "BLG-011", "title": "Owner sign-off records beta scope and accountable roles", "type": "signoff" },
+    { "id": "BLG-012", "title": "Final decision is evidence-backed and honest about limits", "type": "audit" }
+  ],
+  "expectedResult": "PASS WITH WATCHPOINTS on audit decision; PASS on executable gate because beta is not blocked."
+}

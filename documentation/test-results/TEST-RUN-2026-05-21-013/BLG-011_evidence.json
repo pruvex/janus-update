@@ -1,0 +1,10 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-private-data-no-tester-payloads",
+  "owners": [
+    "janus-release-owner",
+    "security-review-owner",
+    "operator-on-call",
+    "privacy-contact"
+  ],
+  "scope": "packaged-local beta"
+}
