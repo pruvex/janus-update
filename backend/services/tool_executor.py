@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional
 from backend.data.models import SkillTelemetry
 from backend.data.schemas import SkillResponse
 from backend.data.schemas_tools import ToolResultV1
+from backend.services.ops_kill_switches import tool_access_decision
 from backend.services.policy_engine import PolicyEngine
 from backend.services.skill_router import SkillNotFoundError, skill_router
 from backend.services.tool_argument_sanitizer import sanitize_tool_arguments
@@ -934,6 +935,35 @@ class ToolExecutor:
             )
 
             # 4. Kontextabhängigkeiten injizieren.
+            ops_decision = tool_access_decision(canonical_skill_id or resolved_name or original_name)
+            if ops_decision.disabled:
+                logger.warning(
+                    "OPS-KILL-SWITCH: blocked tool=%s category=%s switch=%s",
+                    canonical_skill_id,
+                    ops_decision.category,
+                    ops_decision.switch,
+                )
+                blocked_payload = SkillResponse(
+                    status="error",
+                    error={
+                        "code": ops_decision.code,
+                        "message": ops_decision.message,
+                        "details": {
+                            "category": ops_decision.category,
+                            "switch": ops_decision.switch,
+                        },
+                    },
+                ).model_dump()
+                return self._finalize_tool_result(
+                    original_name=original_name,
+                    skill_id=canonical_skill_id,
+                    payload=blocked_payload,
+                    started_at=started_at,
+                    trace_id=request_trace_id,
+                    arguments_json=raw_arguments,
+                    call_type="internal" if is_internal_call else "external",
+                )
+
             context_vars = {
                 "db": self.db,
                 "api_key": self.api_key,

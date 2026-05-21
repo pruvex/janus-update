@@ -94,6 +94,12 @@ async def log_event(event: LogEventCreate) -> None:
         asyncio.QueueFull: If the queue is full (5000 events). This is a
                           backpressure signal that the consumer cannot keep up.
     """
+    from backend.services.ops_kill_switches import telemetry_event_ingest_allowed
+
+    if not telemetry_event_ingest_allowed(getattr(event, "event_type", None)):
+        logger.info("Telemetry event dropped by JANUS_TELEMETRY_MODE. event_type=%s", event.event_type)
+        return
+
     # Enrich with current timestamp if not provided
     if event.timestamp is None:
         event.timestamp = datetime.utcnow()
@@ -423,6 +429,13 @@ async def flush_log_queue() -> None:
     This function is called during graceful shutdown to ensure no data loss.
     It processes all remaining events without batching or timeout.
     """
+    from backend.services.ops_kill_switches import telemetry_remote_upload_allowed
+
+    if not telemetry_remote_upload_allowed():
+        await clear_queue()
+        logger.warning("Telemetry remote upload disabled by JANUS_TELEMETRY_MODE; queue discarded during flush.")
+        return
+
     logger.info("Flushing log queue before shutdown...")
     
     remaining_events = []
@@ -470,6 +483,13 @@ async def flush_log_queue() -> None:
 async def start_worker() -> None:
     """Start the batch upload worker as a background task."""
     global _worker_task, _shutdown_requested
+
+    from backend.services.ops_kill_switches import telemetry_remote_upload_allowed
+
+    if not telemetry_remote_upload_allowed():
+        _shutdown_requested = True
+        logger.warning("Telemetry batch upload worker not started because JANUS_TELEMETRY_MODE disables remote upload.")
+        return
 
     # Ensure logging schema is valid before starting worker
     try:

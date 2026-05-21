@@ -1,0 +1,13 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-prompts",
+  "gate": "PASS",
+  "switches": {
+    "providerAccess": true,
+    "externalTools": true,
+    "writeTools": true,
+    "memoryRag": true,
+    "localUserLocked": true,
+    "telemetryMode": "minimal",
+    "telemetryRemoteUploadAllowed": false
+  }
+}

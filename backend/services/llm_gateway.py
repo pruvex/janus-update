@@ -7,6 +7,7 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from backend.services.tool_manager import tool_manager
+from backend.services.ops_kill_switches import provider_access_decision
 from backend.utils.config_loader import load_model_catalog
 
 if TYPE_CHECKING:
@@ -116,6 +117,16 @@ async def reason_and_respond(
 
     # 1. Bestimme das Silo
     provider_key = str(provider).lower()
+    provider_gate = provider_access_decision(provider_key)
+    if provider_gate.disabled:
+        logger.warning("OPS-KILL-SWITCH: provider access blocked for provider=%s", provider_key)
+        return {
+            "content": provider_gate.message,
+            "text": provider_gate.message,
+            "error": provider_gate.message,
+            "error_code": provider_gate.code,
+            "metadata": {"ops_kill_switch": True, "switch": provider_gate.switch},
+        }
     selected_silo = _ensure_gateway_silos().get(provider_key)
     if not selected_silo:
         logger.error(f"Provider {provider_key} nicht unterstützt.")
@@ -237,6 +248,9 @@ def get_provider(provider_name: str):
     Wird primär für Legacy-Kompatibilität (z.B. chat_orchestrator) bereitgestellt.
     """
     provider_key = str(provider_name).lower()
+    provider_gate = provider_access_decision(provider_key)
+    if provider_gate.disabled:
+        raise RuntimeError(provider_gate.message)
     if provider_key == "gemini":
         from backend.llm_providers.gemini.service import GeminiServiceProvider
         return GeminiServiceProvider()
@@ -286,6 +300,17 @@ async def call_llm(*args: Any, **kwargs: Any) -> Dict[str, Any]:
 
     tools = kw.pop("tools", None)
     force_no_tools = bool(kw.pop("force_no_tools", False))
+
+    provider_gate = provider_access_decision(provider)
+    if provider_gate.disabled:
+        logger.warning("OPS-KILL-SWITCH: call_llm provider blocked provider=%s", provider)
+        return {
+            "content": provider_gate.message,
+            "text": provider_gate.message,
+            "error": provider_gate.message,
+            "error_code": provider_gate.code,
+            "metadata": {"ops_kill_switch": True, "switch": provider_gate.switch},
+        }
 
     if provider:
         blocked = _guard_llm_provider_silo(provider, model_id)

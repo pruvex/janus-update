@@ -30,6 +30,11 @@ import logging
 import time
 from collections import defaultdict, deque
 
+if str(os.getenv("JANUS_TELEMETRY_MODE", "")).strip().lower() in {"off", "minimal"}:
+    os.environ.setdefault("ANONYMIZED_TELEMETRY", "False")
+    os.environ.setdefault("CHROMA_TELEMETRY_ENABLED", "False")
+    os.environ.setdefault("DO_NOT_TRACK", "1")
+
 # --- STARTUP PROFILING ---
 START_TIME = time.time()
 
@@ -171,6 +176,7 @@ log_startup_time("Importiere Sentry...")
 import sentry_sdk
 log_startup_time("Sentry importiert")
 from backend.utils.redaction import redact_sensitive_value
+from backend.services.ops_kill_switches import telemetry_remote_upload_allowed
 
 # Lade die App-Version, mit Fallback
 app_version = "unknown"
@@ -191,6 +197,8 @@ log_startup_time("Initialisiere Sentry...")
 try:
     if str(os.getenv("JANUS_DISABLE_SENTRY", "")).strip().lower() in {"1", "true", "yes", "on"}:
         log_startup_time("Sentry deaktiviert per JANUS_DISABLE_SENTRY")
+    elif not telemetry_remote_upload_allowed():
+        log_startup_time("Sentry deaktiviert per JANUS_TELEMETRY_MODE")
     else:
         sentry_environment = "development" if final_app_version == "dev" else "production"
         sentry_dsn = os.getenv(

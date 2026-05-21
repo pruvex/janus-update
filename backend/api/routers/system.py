@@ -13,7 +13,8 @@ from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from backend.data.database import get_db
-from backend.dependencies import require_debug_endpoints_enabled
+from backend.dependencies import api_key_auth, require_debug_endpoints_enabled
+from backend.services.ops_kill_switches import dry_run_inventory
 
 router = APIRouter()
 logger = logging.getLogger("janus_backend")
@@ -81,6 +82,12 @@ class FeedbackRequest(BaseModel):
 
 
 # --- Endpoints ---
+
+
+@router.get("/system/ops/kill-switches", dependencies=[Depends(api_key_auth)])
+async def get_ops_kill_switches():
+    """Authenticated safe dry-run inventory for beta recovery switches."""
+    return dry_run_inventory()
 
 
 @router.get("/keys")

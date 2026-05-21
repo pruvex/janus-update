@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status, Header
+from fastapi import Depends, HTTPException, status, Header, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, SecurityScopes
 from typing import Optional
 import jwt
@@ -9,7 +9,10 @@ import secrets
 from backend.utils.config_loader import load_config_data
 
 
-async def api_key_auth(internal_api_key: str = Header(..., alias="X-Janus-Internal-Key")):
+async def api_key_auth(
+    request: Request,
+    internal_api_key: str = Header(..., alias="X-Janus-Internal-Key"),
+):
     """
     Dependency to authenticate requests via an internal API key in the header.
     """
@@ -34,6 +37,9 @@ async def api_key_auth(internal_api_key: str = Header(..., alias="X-Janus-Intern
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Internal API Key",
         )
+    from backend.services.ops_kill_switches import require_local_user_unlocked
+
+    require_local_user_unlocked(request.url.path)
 
 
 async def require_debug_endpoints_enabled():
@@ -167,6 +173,9 @@ async def get_current_user(
                 detail="User not found",
                 headers={"WWW-Authenticate": authenticate_value},
             )
+        from backend.services.ops_kill_switches import require_local_user_unlocked
+
+        require_local_user_unlocked()
         return username
     except jwt.ExpiredSignatureError:
         raise HTTPException(

@@ -4,17 +4,21 @@ from typing import List
 
 from backend.data import database, schemas
 from backend.services import memory_manager
+from backend.services.ops_kill_switches import require_memory_rag_enabled, require_write_operations_enabled
 
 router = APIRouter()
 
 @router.get("/memory", response_model=List[schemas.MemoryResponse])
 def get_all_memories(db: Session = Depends(database.get_db)):
     """Holt alle Memories für das Frontend, sortiert nach Wichtigkeit (Diamond Standard)."""
+    require_memory_rag_enabled()
     return memory_manager.get_memories_for_management(db)
 
 @router.post("/memory", response_model=schemas.MemoryResponse, status_code=status.HTTP_201_CREATED)
 def create_manual_memory(memory: schemas.MemoryCreate, db: Session = Depends(database.get_db)):
     """Erstellt manuell einen Fakt. Weist ihn dem letzten Chat zu (Workaround für FK)."""
+    require_memory_rag_enabled()
+    require_write_operations_enabled()
     last_chat = db.query(database.Chat).order_by(database.Chat.id.desc()).first()
     chat_id_to_use = last_chat.id if last_chat else 1 
 
@@ -34,6 +38,8 @@ def create_manual_memory(memory: schemas.MemoryCreate, db: Session = Depends(dat
 @router.put("/memory/{memory_id}", response_model=schemas.MemoryResponse)
 def update_memory(memory_id: int, update_data: schemas.MemoryUpdate, db: Session = Depends(database.get_db)):
     """Aktualisiert einen Fakt."""
+    require_memory_rag_enabled()
+    require_write_operations_enabled()
     existing = db.query(database.Memory).filter(database.Memory.id == memory_id).first()
     if not existing:
         raise HTTPException(status_code=404, detail="Memory not found")
@@ -61,6 +67,8 @@ def update_memory(memory_id: int, update_data: schemas.MemoryUpdate, db: Session
 @router.delete("/memory/{memory_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_memory(memory_id: int, db: Session = Depends(database.get_db)):
     """Löscht einen Fakt."""
+    require_memory_rag_enabled()
+    require_write_operations_enabled()
     memory_item = db.query(database.Memory).filter(database.Memory.id == memory_id).first()
     if not memory_item:
         raise HTTPException(status_code=404, detail="Memory not found")

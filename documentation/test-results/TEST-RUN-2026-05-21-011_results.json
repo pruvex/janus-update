@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-011",
+  "title": "Janus Ops Recovery Kill Switches",
+  "status": "PASS",
+  "summary": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-011",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-011_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-004_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-005_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-006_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-007_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-008_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-009_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-010_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "OPS-001",
+      "result": "PASS",
+      "classification": "PROVIDER_KILL_SWITCH_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-001_evidence.json",
+      "durationMs": 26,
+      "notes": "",
+      "timestamp": "2026-05-21T13:26:21.565Z"
+    },
+    {
+      "testCaseId": "OPS-002",
+      "result": "PASS",
+      "classification": "EXTERNAL_TOOLS_KILL_SWITCH_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-002_evidence.json",
+      "durationMs": 15,
+      "notes": "",
+      "timestamp": "2026-05-21T13:26:21.610Z"
+    },
+    {
+      "testCaseId": "OPS-003",
+      "result": "PASS",
+      "classification": "WRITE_TOOLS_KILL_SWITCH_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-003_evidence.json",
+      "durationMs": 11,
+      "notes": "",
+      "timestamp": "2026-05-21T13:26:21.638Z"
+    },
+    {
+      "testCaseId": "OPS-004",
+      "result": "PASS",
+      "classification": "USER_LOCK_KILL_SWITCH_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-004_evidence.json",
+      "durationMs": 12,
+      "notes": "",
+      "timestamp": "2026-05-21T13:26:21.668Z"
+    },
+    {
+      "testCaseId": "OPS-005",
+      "result": "PASS",
+      "classification": "ROTATION_DRY_RUN_DOC_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-005_evidence.json",
+      "durationMs": 5,
+      "notes": "",
+      "timestamp": "2026-05-21T13:26:21.700Z"
+    },
+    {
+      "testCaseId": "OPS-006",
+      "result": "PASS",
+      "classification": "TELEMETRY_MODE_KILL_SWITCH_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-006_evidence.json",
+      "durationMs": 16,
+      "notes": "",
+      "timestamp": "2026-05-21T13:26:21.742Z"
+    },
+    {
+      "testCaseId": "OPS-007",
+      "result": "PASS",
+      "classification": "ROLLBACK_RESTORE_PROCEDURE_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-007_evidence.json",
+      "durationMs": 22,
+      "notes": "",
+      "timestamp": "2026-05-21T13:26:21.794Z"
+    },
+    {
+      "testCaseId": "OPS-008",
+      "result": "PASS",
+      "classification": "BETA_EXPORT_DELETE_DRY_RUN_DOC_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-008_evidence.json",
+      "durationMs": 7,
+      "notes": "",
+      "timestamp": "2026-05-21T13:26:21.825Z"
+    },
+    {
+      "testCaseId": "OPS-009",
+      "result": "PASS",
+      "classification": "INCIDENT_CONTACT_REPORTING_DOC_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-009_evidence.json",
+      "durationMs": 2,
+      "notes": "",
+      "timestamp": "2026-05-21T13:26:21.848Z"
+    },
+    {
+      "testCaseId": "OPS-010",
+      "result": "PASS",
+      "classification": "GATE_DECISION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-011/OPS-010_evidence.json",
+      "durationMs": 10,
+      "notes": "",
+      "timestamp": "2026-05-21T13:26:21.874Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T13:26:21.888Z"
+}

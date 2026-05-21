@@ -4,6 +4,22 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Test Pipeline Validations
 
+### TEST-RUN-2026-05-21-011 - Ops Recovery Kill Switches
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Security Spec 17 beta/production hardening gate
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/17_ops_recovery_kill_switches.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-011_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-011_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-011_results.md`
+- **Runbook**: `documentation/test-results/TEST-RUN-2026-05-21-011/ops_recovery_runbook.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-011_final_audit.md`
+- **Validation**: PASS with `10/10` ops recovery checks, `0` failed, `0` blocked. The gate validates the packaged-local beta backend at `http://127.0.0.1:8001` for provider access, external/current-data tools, write/destructive tools, local beta user lock, telemetry mode, restore procedure, rotation dry-run, beta export/delete dry-run and incident reporting.
+- **Remediation**: Added a central ops kill-switch service, provider gateway enforcement, tool executor enforcement, direct RAG/Memory/Calendar route gates, an authenticated safe dry-run inventory endpoint and telemetry mode enforcement for event ingest, remote upload, feedback webhook, Sentry initialization and dependency telemetry opt-out flags.
+- **Watchpoints**: Env/process-level switches are correct for the current packaged-local Electron beta. A future hosted multi-instance beta should move kill-switch state into a durable operator-controlled config plane.
+- **Changed Files**: `backend/services/ops_kill_switches.py`, `backend/services/llm_gateway.py`, `backend/services/tool_executor.py`, `backend/dependencies.py`, `backend/api/routers/system.py`, `backend/api/routers/rag.py`, `backend/api/routers/memory.py`, `backend/api/routers/calendar.py`, `backend/tests/test_ops_kill_switches.py`, `tests/e2e/generated/TEST-RUN-2026-05-21-011.*`, `documentation/test-runs/TEST-RUN-2026-05-21-011_*`, `documentation/test-results/TEST-RUN-2026-05-21-011*`
+
 ### TEST-RUN-2026-05-21-010 - Beta Abuse Limits and Cost Controls
 
 - **Status**: DONE

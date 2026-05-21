@@ -1,0 +1,23 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-prompts",
+  "fileWrite": {
+    "id": "tool:filesystem.create_file",
+    "disabled": true,
+    "code": "OPS_WRITE_TOOLS_DISABLED",
+    "classification": {
+      "external": false,
+      "write": true,
+      "memory_rag": false
+    }
+  },
+  "calendarWrite": {
+    "id": "tool:calendar.update_event",
+    "disabled": true,
+    "code": "OPS_WRITE_TOOLS_DISABLED",
+    "classification": {
+      "external": false,
+      "write": true,
+      "memory_rag": false
+    }
+  }
+}

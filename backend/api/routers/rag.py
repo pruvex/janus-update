@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from backend.data.database import get_db, SessionLocal
 from backend.data import crud, schemas
 from backend.data.models import Document
+from backend.services.ops_kill_switches import require_memory_rag_enabled, require_write_operations_enabled
 from backend.utils.paths import get_user_docs_dir
 from pydantic import BaseModel
 
@@ -59,6 +60,7 @@ class RagFolderRequest(BaseModel):
 
 @router.get("/collections")
 async def get_rag_collections():
+    require_memory_rag_enabled()
     return {"collections": rag_manager.list_collections()}
 
 
@@ -69,6 +71,8 @@ async def get_indexing_status():
 
 @router.post("/index-folder")
 async def index_folder(request: RagFolderRequest):
+    require_memory_rag_enabled()
+    require_write_operations_enabled()
     if RAG_INDEXING_STATUS["in_progress"]:
         raise HTTPException(status_code=409, detail="Eine Indexierung läuft bereits.")
 
@@ -101,6 +105,8 @@ async def upload_document(
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
+    require_memory_rag_enabled()
+    require_write_operations_enabled()
     if not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Nur PDF-Dateien sind erlaubt.")
     if file.content_type and file.content_type not in ALLOWED_DOCUMENT_UPLOAD_TYPES:
@@ -158,6 +164,7 @@ async def upload_document(
 
 @router.get("/documents", response_model=list[schemas.DocumentResponse])
 async def get_documents(db: Session = Depends(get_db)):
+    require_memory_rag_enabled()
     # 💎 FILE GUARD: Self-cleaning system - remove ghost files from SQL and ChromaDB
     all_docs = db.query(Document).order_by(Document.upload_date.desc()).all()
     existing_docs = []
@@ -190,6 +197,7 @@ async def get_documents(db: Session = Depends(get_db)):
 
 @router.get("/files/{document_id}")
 async def serve_document(document_id: int, db: Session = Depends(get_db)):
+    require_memory_rag_enabled()
     doc = db.query(Document).filter(Document.id == document_id).first()
     if not doc or not os.path.exists(doc.file_path):
         raise HTTPException(status_code=404, detail="Datei nicht gefunden.")
@@ -198,6 +206,7 @@ async def serve_document(document_id: int, db: Session = Depends(get_db)):
 
 @router.get("/search-ids")
 async def search_doc_ids(query: str, db: Session = Depends(get_db)):
+    require_memory_rag_enabled()
     from backend.services.rag_manager import _get_or_create_collection
 
     collection = _get_or_create_collection("janus_global_documents")

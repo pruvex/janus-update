@@ -1,0 +1,23 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-prompts",
+  "websearch": {
+    "id": "tool:system.websearch",
+    "disabled": true,
+    "code": "OPS_EXTERNAL_TOOLS_DISABLED",
+    "classification": {
+      "external": true,
+      "write": false,
+      "memory_rag": false
+    }
+  },
+  "weather": {
+    "id": "tool:system.weather",
+    "disabled": true,
+    "code": "OPS_EXTERNAL_TOOLS_DISABLED",
+    "classification": {
+      "external": true,
+      "write": false,
+      "memory_rag": false
+    }
+  }
+}

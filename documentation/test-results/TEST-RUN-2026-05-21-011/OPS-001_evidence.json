@@ -1,0 +1,20 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-prompts",
+  "probes": [
+    {
+      "id": "provider:openai",
+      "disabled": true,
+      "code": "OPS_PROVIDER_DISABLED"
+    },
+    {
+      "id": "provider:gemini",
+      "disabled": true,
+      "code": "OPS_PROVIDER_DISABLED"
+    },
+    {
+      "id": "provider:ollama",
+      "disabled": false,
+      "code": "OPS_PROVIDER_ALLOWED"
+    }
+  ]
+}

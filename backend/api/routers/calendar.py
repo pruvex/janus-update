@@ -25,6 +25,7 @@ from backend.data.schemas_calendar import (
 )
 from backend.services.calendar import CalendarService, CalendarAIEngine
 from backend.services.calendar.calendar_memory import SNAPSHOT_DAYS, upsert_calendar_snapshot
+from backend.services.ops_kill_switches import require_memory_rag_enabled, require_write_operations_enabled
 
 logger = logging.getLogger("janus_backend.calendar_router")
 
@@ -111,6 +112,7 @@ async def create_event(
     Returns:
         Erstelltes JanusCalendarEvent.
     """
+    require_write_operations_enabled()
     try:
         logger.info(f"POST /events - title={request.title}, start={request.start}")
         
@@ -153,6 +155,7 @@ async def delete_event(
     Args:
         event_id: Google Event-ID
     """
+    require_write_operations_enabled()
     try:
         logger.info(f"DELETE /events/{event_id}")
         
@@ -194,6 +197,7 @@ async def update_event(
     Returns:
         Aktualisiertes JanusCalendarEvent.
     """
+    require_write_operations_enabled()
     try:
         logger.info(f"PUT /events/{event_id}")
         
@@ -262,6 +266,8 @@ async def refresh_memory_snapshot(
     Der Live-Kalender bleibt die Quelle der Wahrheit; dieser Endpoint aktualisiert
     nur den kompakten Kontext-Cache für Chat-Antworten.
     """
+    require_memory_rag_enabled()
+    require_write_operations_enabled()
     try:
         snapshot = await _refresh_calendar_memory_snapshot(db)
         if not snapshot:
@@ -353,6 +359,7 @@ async def delete_pending_mutation_proposal_api(chat_id: int) -> Response:
 @router.post("/mutation-proposals/stage", response_model=MutationProposal)
 async def stage_mutation_proposal_api(proposal: MutationProposal) -> MutationProposal:
     """Modal-/Test-Client: Proposal in denselben Store legen wie der Chat-Tool-Guard."""
+    require_write_operations_enabled()
     from backend.services.calendar import mutation_guard_store as mgs
 
     cid = int(proposal.chat_id)

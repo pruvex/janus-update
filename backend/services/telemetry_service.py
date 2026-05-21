@@ -153,6 +153,15 @@ async def send_feedback(
     Returns:
         Dictionary with success status and message.
     """
+    from backend.services.ops_kill_switches import telemetry_remote_upload_allowed
+
+    if not telemetry_remote_upload_allowed():
+        logger.warning("[TELEMETRY] Feedback submission skipped by JANUS_TELEMETRY_MODE")
+        return {
+            "success": False,
+            "message": "Telemetry remote upload disabled",
+        }
+
     if not FEEDBACK_WEBHOOK_URL:
         logger.warning("[TELEMETRY] FEEDBACK_WEBHOOK_URL not set, skipping feedback submission")
         return {
