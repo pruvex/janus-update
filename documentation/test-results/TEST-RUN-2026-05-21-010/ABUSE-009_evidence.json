@@ -1,0 +1,8 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-prompts",
+  "alertMarkers": [
+    "ABUSE-LIMIT",
+    "RETRY-STORM-ABUSE-GATE"
+  ],
+  "abuseGateRawPromptLoggingRemoved": true
+}

@@ -18,6 +18,30 @@ router = APIRouter(prefix="/rag")
 logger = logging.getLogger("janus_backend")
 
 DOCUMENTS_DIR = get_user_docs_dir()
+DEFAULT_MAX_DOCUMENT_UPLOAD_BYTES = 25 * 1024 * 1024
+ALLOWED_DOCUMENT_UPLOAD_TYPES = {"application/pdf", "application/x-pdf"}
+
+
+async def _write_limited_upload(file: UploadFile, file_path: str) -> int:
+    max_bytes = int(os.getenv("JANUS_MAX_DOCUMENT_UPLOAD_BYTES", str(DEFAULT_MAX_DOCUMENT_UPLOAD_BYTES)))
+    total = 0
+    with open(file_path, "wb") as buffer:
+        while True:
+            chunk = await file.read(1024 * 1024)
+            if not chunk:
+                break
+            total += len(chunk)
+            if total > max_bytes:
+                logger.warning(
+                    "[ABUSE-LIMIT] scope=upload-document filename_len=%s bytes_over_limit=true",
+                    len(file.filename or ""),
+                )
+                raise HTTPException(
+                    status_code=413,
+                    detail="Die PDF-Datei ist zu groß. Bitte lade eine kleinere Datei hoch.",
+                )
+            buffer.write(chunk)
+    return total
 
 RAG_INDEXING_STATUS: Dict[str, Any] = {
     "in_progress": False,
@@ -79,11 +103,13 @@ async def upload_document(
 ):
     if not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Nur PDF-Dateien sind erlaubt.")
+    if file.content_type and file.content_type not in ALLOWED_DOCUMENT_UPLOAD_TYPES:
+        raise HTTPException(status_code=400, detail="Nur PDF-Dateien sind erlaubt.")
 
     from backend.services.rag_manager import process_and_index_single_document
 
     clean_filename = (
-        file.filename.replace(" ", "_")
+        os.path.basename(file.filename).replace(" ", "_")
                      .replace("(", "")
                      .replace(")", "")
     )
@@ -101,9 +127,15 @@ async def upload_document(
     file_path = os.path.join(upload_dir, clean_filename)
 
     try:
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        await _write_limited_upload(file, file_path)
     except Exception as e:
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except OSError:
+                pass
+        if isinstance(e, HTTPException):
+            raise e
         logger.error(f"Fehler beim Speichern der Datei: {e}")
         raise HTTPException(status_code=500, detail="Datei konnte nicht gespeichert werden.")
 

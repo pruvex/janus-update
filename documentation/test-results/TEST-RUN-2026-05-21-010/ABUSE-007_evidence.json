@@ -1,0 +1,6 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-prompts",
+  "status": 413,
+  "safeMessage": "Die Bilddatei ist zu groß. Bitte lade eine kleinere Datei hoch.",
+  "rawApiKeyRecorded": false
+}

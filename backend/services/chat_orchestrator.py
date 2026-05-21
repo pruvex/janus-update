@@ -109,9 +109,13 @@ _RETRY_STORM_ABUSE_RE = re.compile(
     r".{0,60}\b(?:bis\s+es\s+funktioniert|until\s+it\s+works|immer\s+wieder|forever|unbegrenzt|unlimited|"
     r"10000\s+mal|10000\s+times|unendlich|infinite|endlos|endless)\b|"
     r"\b(?:teuerste\s+modell|expensive\s+model|ignoriere\s+limits|ignore\s+limits|"
-    r"bypass\s+quotas|umgehe\s+limits|uebergehe\s+limits)\b|"
+    r"bypass\s+quotas|umgehe\s+limits|uebergehe\s+limits|maximale\s+kosten|max(?:imum)?\s+cost)\b|"
     r"\b(?:schreibe|schreiben|generiere|generieren|erstelle|erstellen|write|generate|create)\b"
-    r".{0,60}\b(?:1000\s+mal|1000\s+times|10000\s+mal|10000\s+times|tausendmal|x-mal)\b",
+    r".{0,60}\b(?:1000\s+mal|1000\s+times|10000\s+mal|10000\s+times|tausendmal|x-mal)\b|"
+    r"\b(?:durchsuche|crawl|crawle|scrape|scrape|websearch|rss|news|suche|search)\b"
+    r".{0,80}\b(?:das\s+ganze\s+web|gesamte[ns]?\s+web|alle\s+webseiten|"
+    r"100\s+(?:seiten|urls|webseiten|tools|aufrufe)|1000\s+(?:seiten|urls|webseiten|tools|aufrufe)|"
+    r"unbegrenzt|unlimited|endlos|forever)\b",
     re.IGNORECASE,
 )
 
@@ -1630,8 +1634,8 @@ class ChatOrchestrator:
         apply_image_intent_skill_guardrails(wf)
         if _is_retry_storm_abuse_request(wf.user_text):
             logger.warning(
-                "[RETRY-STORM-ABUSE-GATE] Blocking retry-storm/abuse request before memory retrieval: %r",
-                str(wf.user_text or "")[:120],
+                "[RETRY-STORM-ABUSE-GATE] Blocking retry-storm/abuse request before memory retrieval: query_len=%s",
+                len(str(wf.user_text or "")),
             )
             wf.relevant_skill_ids = []
             wf.force_tool_name = None

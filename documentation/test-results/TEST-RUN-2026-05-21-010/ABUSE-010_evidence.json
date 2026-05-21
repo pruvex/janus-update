@@ -1,0 +1,6 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-prompts",
+  "gateDecision": "PASS",
+  "criticalFindings": 0,
+  "highFindings": 0
+}

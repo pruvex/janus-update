@@ -25,8 +25,10 @@ except Exception as e:
 import sys
 import os
 import io
+import hashlib
 import logging
 import time
+from collections import defaultdict, deque
 
 # --- STARTUP PROFILING ---
 START_TIME = time.time()
@@ -187,44 +189,47 @@ def _before_send_sentry(event, hint):
 
 log_startup_time("Initialisiere Sentry...")
 try:
-    sentry_environment = "development" if final_app_version == "dev" else "production"
-    sentry_dsn = os.getenv(
-        "JANUS_SENTRY_DSN",
-        "https://5810a37c1b3c7e43faddbff6ec548cdf@o4510659131670528.ingest.de.sentry.io/4510659652943952",
-    )
-    sentry_traces_sample_rate = float(
-        os.getenv(
-            "JANUS_SENTRY_TRACES_SAMPLE_RATE",
-            "1.0" if sentry_environment == "development" else "0.1",
+    if str(os.getenv("JANUS_DISABLE_SENTRY", "")).strip().lower() in {"1", "true", "yes", "on"}:
+        log_startup_time("Sentry deaktiviert per JANUS_DISABLE_SENTRY")
+    else:
+        sentry_environment = "development" if final_app_version == "dev" else "production"
+        sentry_dsn = os.getenv(
+            "JANUS_SENTRY_DSN",
+            "https://5810a37c1b3c7e43faddbff6ec548cdf@o4510659131670528.ingest.de.sentry.io/4510659652943952",
         )
-    )
-    sentry_profiles_sample_rate = float(
-        os.getenv(
-            "JANUS_SENTRY_PROFILES_SAMPLE_RATE",
-            "1.0" if sentry_environment == "development" else "0.0",
+        sentry_traces_sample_rate = float(
+            os.getenv(
+                "JANUS_SENTRY_TRACES_SAMPLE_RATE",
+                "1.0" if sentry_environment == "development" else "0.1",
+            )
         )
-    )
-    sentry_sdk.init(
-        # --- NEUER, KORREKTER DSN ---
-        dsn=sentry_dsn,
-        
-        # Version setzen
-        release=f"janus-projekt@{final_app_version}",
-        
-        # Environment setzen
-        environment=sentry_environment,
-        
-        # Sampling is environment-configurable; production uses conservative defaults.
-        traces_sample_rate=sentry_traces_sample_rate,
-        
-        # Profiling stays disabled by default in production.
-        profiles_sample_rate=sentry_profiles_sample_rate,
-        
-        # Do not send automatically captured user/IP data to Sentry.
-        send_default_pii=False,
-        before_send=_before_send_sentry,
-    )
-    log_startup_time("Sentry erfolgreich initialisiert")
+        sentry_profiles_sample_rate = float(
+            os.getenv(
+                "JANUS_SENTRY_PROFILES_SAMPLE_RATE",
+                "1.0" if sentry_environment == "development" else "0.0",
+            )
+        )
+        sentry_sdk.init(
+            # --- NEUER, KORREKTER DSN ---
+            dsn=sentry_dsn,
+
+            # Version setzen
+            release=f"janus-projekt@{final_app_version}",
+
+            # Environment setzen
+            environment=sentry_environment,
+
+            # Sampling is environment-configurable; production uses conservative defaults.
+            traces_sample_rate=sentry_traces_sample_rate,
+
+            # Profiling stays disabled by default in production.
+            profiles_sample_rate=sentry_profiles_sample_rate,
+
+            # Do not send automatically captured user/IP data to Sentry.
+            send_default_pii=False,
+            before_send=_before_send_sentry,
+        )
+        log_startup_time("Sentry erfolgreich initialisiert")
 except Exception as e:
     log_startup_time(f"FEHLER bei der Sentry-Initialisierung: {str(e)}")
 # --- Ende Sentry Block ---
@@ -730,6 +735,56 @@ def bootstrap_app_data():
 # 3. App Definition
 app = FastAPI(title="Janus Backend", version="1.0.0", lifespan=lifespan)
 
+_BETA_ABUSE_BUCKETS: dict[str, deque[float]] = defaultdict(deque)
+_BETA_ABUSE_MUTATING_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+_BETA_ABUSE_EXEMPT_PATHS = {
+    "/api/health",
+    "/health",
+}
+
+
+def _env_flag(name: str, default: str = "1") -> bool:
+    return str(os.getenv(name, default)).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _env_int(name: str, default: int, minimum: int = 1) -> int:
+    try:
+        return max(minimum, int(os.getenv(name, str(default))))
+    except (TypeError, ValueError):
+        return default
+
+
+def _beta_abuse_identity(request: Request) -> str:
+    if _env_flag("JANUS_E2E_FAST_MODE", "0"):
+        synthetic_user = request.headers.get("X-Janus-Test-User")
+        if synthetic_user:
+            return f"test:{synthetic_user[:64]}"
+    internal_key = request.headers.get("X-Janus-Internal-Key", "")
+    if internal_key:
+        digest = hashlib.sha256(internal_key.encode("utf-8", errors="ignore")).hexdigest()[:16]
+        return f"key:{digest}"
+    return f"host:{request.client.host if request.client else 'unknown'}"
+
+
+def _beta_abuse_scope(request: Request) -> str:
+    if _env_flag("JANUS_E2E_FAST_MODE", "0"):
+        scope = request.headers.get("X-Janus-Abuse-Scope")
+        if scope:
+            return scope[:64]
+    return "default"
+
+
+def _consume_beta_abuse_bucket(bucket_key: str, now: float, window_seconds: int, limit: int) -> tuple[bool, int]:
+    bucket = _BETA_ABUSE_BUCKETS[bucket_key]
+    cutoff = now - window_seconds
+    while bucket and bucket[0] <= cutoff:
+        bucket.popleft()
+    if len(bucket) >= limit:
+        retry_after = max(1, int(window_seconds - (now - bucket[0]))) if bucket else window_seconds
+        return False, retry_after
+    bucket.append(now)
+    return True, 0
+
 SECURITY_HEADERS = {
     "Content-Security-Policy": (
         "default-src 'self'; "
@@ -761,6 +816,56 @@ async def add_security_headers(request: Request, call_next):
     if request.url.scheme == "https":
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
+
+
+@app.middleware("http")
+async def enforce_beta_abuse_limits(request: Request, call_next):
+    if (
+        not _env_flag("JANUS_ENABLE_BETA_ABUSE_LIMITS", "1")
+        or request.method.upper() not in _BETA_ABUSE_MUTATING_METHODS
+        or request.url.path in _BETA_ABUSE_EXEMPT_PATHS
+        or not request.url.path.startswith("/api/")
+    ):
+        return await call_next(request)
+
+    now = time.monotonic()
+    window_seconds = _env_int("JANUS_BETA_ABUSE_WINDOW_SECONDS", 10, 1)
+    user_limit = _env_int("JANUS_BETA_USER_BURST_LIMIT", 30, 1)
+    global_limit = _env_int("JANUS_BETA_GLOBAL_BURST_LIMIT", 180, 1)
+    scope = _beta_abuse_scope(request)
+    identity = _beta_abuse_identity(request)
+    user_ok, user_retry = _consume_beta_abuse_bucket(
+        f"user:{scope}:{identity}",
+        now,
+        window_seconds,
+        user_limit,
+    )
+    global_ok, global_retry = _consume_beta_abuse_bucket(
+        f"global:{scope}",
+        now,
+        window_seconds,
+        global_limit,
+    )
+
+    if not user_ok or not global_ok:
+        limited_scope = "user" if not user_ok else "global"
+        retry_after = user_retry if not user_ok else global_retry
+        logger.warning(
+            "[ABUSE-LIMIT] scope=%s path=%s method=%s retry_after=%s",
+            limited_scope,
+            request.url.path,
+            request.method.upper(),
+            retry_after,
+        )
+        return JSONResponse(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            content={
+                "detail": "Zu viele Anfragen in kurzer Zeit. Bitte warte kurz und versuche es erneut.",
+            },
+            headers={"Retry-After": str(retry_after)},
+        )
+
+    return await call_next(request)
 
 
 # --- FIX: Exception Handler für saubere Logs beim Start ---
