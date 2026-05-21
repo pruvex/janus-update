@@ -1,0 +1,4 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-private-data",
+  "onboarding": "documentation/beta/BETA_TESTER_ONBOARDING_PRIVACY_ACK.md"
+}

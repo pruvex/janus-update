@@ -1,0 +1,13 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-private-data",
+  "notice": "documentation/beta/BETA_PRIVACY_NOTICE.md",
+  "coveredTerms": [
+    "chat",
+    "files",
+    "memory",
+    "rag",
+    "logs",
+    "providers",
+    "telemetry"
+  ]
+}

@@ -4,6 +4,24 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Test Pipeline Validations
 
+### TEST-RUN-2026-05-21-012 - Beta Privacy Notice and Data Rights
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Security Spec 18 beta/production privacy readiness gate
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/18_beta_privacy_notice_and_data_rights.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-012_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-012_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-012_results.md`
+- **Privacy Notice**: `documentation/beta/BETA_PRIVACY_NOTICE.md`
+- **Data Rights Process**: `documentation/beta/BETA_DATA_RIGHTS_PROCESS.md`
+- **Onboarding Ack**: `documentation/beta/BETA_TESTER_ONBOARDING_PRIVACY_ACK.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-012_final_audit.md`
+- **Validation**: PASS with `10/10` beta privacy notice and data-rights checks, `0` failed, `0` blocked. The gate validates packaged-local beta data categories, provider sharing disclosure, sensitive-upload warning, retention/minimization language, deletion/export process owners, incident route, UI acknowledgement recording and privacy artifact secret scanning.
+- **Remediation**: Added beta privacy notice, data-rights process, tester onboarding acknowledgement, frontend privacy acknowledgement modal with local versioned storage, dedicated modal CSS and automated static/UI validation.
+- **Watchpoints**: Formal legal review is still required before public/commercial release. A future hosted SaaS/multi-tenant beta must update the notice for hosted account data, centralized storage, subprocessors and retention SLAs.
+- **Changed Files**: `documentation/beta/*`, `frontend/index.html`, `frontend/js/beta-privacy-notice.js`, `frontend/css/style.css`, `backend/tests/test_beta_privacy_notice.py`, `tests/e2e/generated/TEST-RUN-2026-05-21-012.*`, `documentation/test-runs/TEST-RUN-2026-05-21-012_*`, `documentation/test-results/TEST-RUN-2026-05-21-012*`
+
 ### TEST-RUN-2026-05-21-011 - Ops Recovery Kill Switches
 
 - **Status**: DONE
