@@ -65,6 +65,52 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 
 ## Run Log
 
+### TEST-RUN-2026-05-21-008 - Janus Beta Telemetry Logging Privacy Hardening - Final Validation
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-008
+- **Datum**: 2026-05-21
+- **Quelle**: Dashboard recommendation / Security Spec 14 beta-production hardening
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/14_beta_telemetry_logging_privacy_hardening.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-008_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-008_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-008_results.md`
+- **Sink Inventory**: `documentation/test-runs/TEST-RUN-2026-05-21-008_telemetry_sink_inventory.md`
+- **Access/Retention**: `documentation/test-runs/TEST-RUN-2026-05-21-008_telemetry_access_retention.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-008_final_audit.md`
+- **Getestete Faehigkeit**: Packaged-local Electron beta telemetry/logging privacy hardening
+- **Pipeline-Route**: TEST SKILL SECURITY -> custom telemetry privacy runner -> SKILL 7
+- **Skill-Ergebnisse**:
+  - TEST SKILL SECURITY: PASS
+  - Custom Playwright runner: PASS, `10/10`
+  - SKILL 7 / Final Audit: PASS
+- **Security Gate**:
+  - Userdaten sicher: JA
+  - Destruktive Aktionen isoliert: JA
+  - Prompt-Injection-Risiko geprueft: N/A
+  - Prompt-Injection-Befund: NONE
+  - Sensitive Daten in Logs vermieden: JA
+  - Persistenzrisiko geprueft: JA
+  - Security-Gesamtergebnis: PASS
+- **Provider-/Model-Matrix**: N/A; no LLM provider call required for telemetry privacy gate.
+- **UX-Ergebnis**: N/A; observability/privacy validation.
+- **Intent-/Skill-Routing-Ergebnis**: N/A.
+- **Kosten-/Token-Ergebnis**: Keine externen LLM-Kosten.
+- **Capability-Erklaerfaehigkeit**: PASS
+- **Findings**:
+  - Frontend Sentry Replay disabled for beta and configured with text masking/media blocking.
+  - Frontend Sentry strips user/request/breadcrumb payloads before send.
+  - Backend Sentry now uses shared redaction in `before_send`.
+  - Context telemetry and Supabase logging payloads are redacted before persistence/transmission.
+  - Shared redaction now treats prompt/content/file payload classes as private.
+- **Sofortfixes**: See findings.
+- **Backlog-Follow-ups**: Provider-console retention/access discipline before broad beta.
+- **Nebenbefunde ausserhalb TestScope**: Chroma/PostHog anonymized dependency telemetry remains a release-note watchpoint.
+- **Optimierungspotential fuer Testpipeline**: Keep telemetry evidence redacted-only and continue runtime canary probes for log/privacy gates.
+- **Abschluss**:
+  - Diamond Confidence Score: 10/10
+  - Production Confidence: 95% for packaged-local beta telemetry privacy gate; provider-console retention/access remains owner-operated.
+  - Gesamtergebnis: PASS
+
 ### TEST-RUN-2026-05-21-007 - Janus Production Secret Rotation and Leak Scan - Final Validation
 
 - **TestRun-ID**: TEST-RUN-2026-05-21-007

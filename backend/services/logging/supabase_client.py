@@ -3,6 +3,7 @@ Thread-safe singleton Supabase client for logging pipeline.
 Loads credentials from environment variables.
 """
 import os
+import logging
 from pathlib import Path
 from threading import Lock
 from supabase import create_client, Client
@@ -17,11 +18,12 @@ env_path = base_path / ".env"
 load_dotenv(dotenv_path=env_path)
 
 # PFLICHT-LOGGING FÜR DAS TERMINAL (WICHTIG!)
-print(f"--- LOGGING DEBUG ---")
-print(f"Checking for .env at: {env_path}")
-print(f"File exists: {env_path.exists()}")
-print(f"SUPABASE_URL is set: {'YES' if os.getenv('SUPABASE_URL') else 'NO'}")
-print(f"---------------------")
+logger = logging.getLogger(__name__)
+logger.debug(
+    "Supabase logging config loaded from backend env file: exists=%s url_configured=%s",
+    env_path.exists(),
+    bool(os.getenv("SUPABASE_URL")),
+)
 
 
 class SupabaseClientSingleton:

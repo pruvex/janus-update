@@ -278,7 +278,7 @@ async def _upload_batch_to_supabase(events: List[LogEventCreate]) -> bool:
                 "skill": event.skill,
                 "event_type": event.event_type,
                 "status": event.status,
-                "payload": event.payload,
+                "payload": redact_sensitive_value(event.payload),
                 "latency_ms": event.latency_ms,
                 "trace_id": event.trace_id  # New field for trace tracking
             }

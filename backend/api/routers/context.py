@@ -17,6 +17,7 @@ from backend.services.context.context_compressor import (
     propose_compression,
 )
 from backend.services.context.context_state import ContextStateOutput, calculate_context_state
+from backend.utils.redaction import redacted_json
 
 router = APIRouter()
 logger = logging.getLogger("janus_backend")
@@ -757,7 +758,7 @@ async def log_context_event_endpoint(
             "[CONTEXT-TELEMETRY] event=%s trace_id=%s payload=%s",
             payload.event_type,
             payload.trace_id or "none",
-            json.dumps(payload.payload, default=str),
+            redacted_json(payload.payload),
         )
 
         # Optional: Hier könnte eine Erweiterung an ein Event-System erfolgen

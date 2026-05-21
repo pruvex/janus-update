@@ -168,6 +168,7 @@ log_startup_time("CLIP Model Loader importiert")
 log_startup_time("Importiere Sentry...")
 import sentry_sdk
 log_startup_time("Sentry importiert")
+from backend.utils.redaction import redact_sensitive_value
 
 # Lade die App-Version, mit Fallback
 app_version = "unknown"
@@ -179,6 +180,10 @@ except ImportError:
 
 # Sicherstellen, dass die Version nicht leer ist
 final_app_version = app_version if app_version else "unknown"
+
+
+def _before_send_sentry(event, hint):
+    return redact_sensitive_value(event)
 
 log_startup_time("Initialisiere Sentry...")
 try:
@@ -216,7 +221,8 @@ try:
         profiles_sample_rate=sentry_profiles_sample_rate,
         
         # Do not send automatically captured user/IP data to Sentry.
-        send_default_pii=False
+        send_default_pii=False,
+        before_send=_before_send_sentry,
     )
     log_startup_time("Sentry erfolgreich initialisiert")
 except Exception as e:

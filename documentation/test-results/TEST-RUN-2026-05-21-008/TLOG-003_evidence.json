@@ -1,0 +1,7 @@
+{
+  "rawSensitiveEvidencePolicy": "redacted-only",
+  "rawPrivateCanariesWritten": false,
+  "backendProductionTraceSampleRate": 0.1,
+  "backendProductionProfileSampleRate": 0,
+  "frontendReplaySampling": 0
+}

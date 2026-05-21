@@ -26,7 +26,12 @@ def test_redacts_sensitive_mapping_keys_recursively():
     raw = {
         "provider": "openai",
         "authorization": "Bearer abcdefghijklmnop",
-        "nested": {"client_secret": "SECRET-OBSERVABILITY-123", "status": "ok"},
+        "nested": {
+            "client_secret": "SECRET-OBSERVABILITY-123",
+            "status": "ok",
+            "prompt": "JANUS_PRIVATE_PROMPT_CANARY_20260521",
+            "content": "JANUS_PRIVATE_FILE_CONTENT_CANARY_20260521",
+        },
     }
 
     redacted = redact_sensitive_value(raw)
@@ -35,6 +40,8 @@ def test_redacts_sensitive_mapping_keys_recursively():
     assert redacted["authorization"] == REDACTION_TEXT
     assert redacted["nested"]["client_secret"] == REDACTION_TEXT
     assert redacted["nested"]["status"] == "ok"
+    assert redacted["nested"]["prompt"] == REDACTION_TEXT
+    assert redacted["nested"]["content"] == REDACTION_TEXT
 
 
 def test_logging_filter_redacts_message_and_args():

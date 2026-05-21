@@ -1,0 +1,6 @@
+{
+  "rawSensitiveEvidencePolicy": "redacted-only",
+  "rawPrivateCanariesWritten": false,
+  "auditFieldsPresent": 7,
+  "payloadRedactedBeforeSupabaseUpload": true
+}

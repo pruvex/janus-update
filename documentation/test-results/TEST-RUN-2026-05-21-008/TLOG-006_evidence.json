@@ -1,0 +1,10 @@
+{
+  "rawSensitiveEvidencePolicy": "redacted-only",
+  "rawPrivateCanariesWritten": false,
+  "statuses": [
+    403,
+    404,
+    403
+  ],
+  "noStackTrace": true
+}

@@ -4,6 +4,23 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Test Pipeline Validations
 
+### TEST-RUN-2026-05-21-008 - Beta Telemetry Logging Privacy Hardening
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Security Spec 14 beta/production hardening gate
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/14_beta_telemetry_logging_privacy_hardening.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-008_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-008_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-008_results.md`
+- **Sink Inventory**: `documentation/test-runs/TEST-RUN-2026-05-21-008_telemetry_sink_inventory.md`
+- **Access/Retention**: `documentation/test-runs/TEST-RUN-2026-05-21-008_telemetry_access_retention.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-008_final_audit.md`
+- **Validation**: PASS with `10/10` telemetry privacy checks, `0` failed, `0` blocked. The gate validates local logs, backend/frontend Sentry, Supabase logging, optional feedback webhook handling, runtime error privacy and evidence redaction.
+- **Remediation**: Disabled/masked frontend Sentry Replay; stripped frontend Sentry user/request/breadcrumb data; added backend Sentry `before_send` redaction; redacted context telemetry and Supabase payload uploads; expanded shared redaction for prompt/content/file payload classes.
+- **Watchpoints**: Chroma/PostHog dependency telemetry remains anonymized dependency telemetry watchpoint; provider-side Sentry/Supabase retention/access settings require owner discipline before broad beta.
+- **Changed Files**: `backend/utils/redaction.py`, `backend/main.py`, `backend/api/routers/context.py`, `backend/services/logging/logger_core.py`, `backend/services/logging/supabase_client.py`, `backend/tests/test_observability_redaction.py`, `frontend/js/app.js`, `tests/e2e/generated/TEST-RUN-2026-05-21-008.*`, `documentation/test-runs/TEST-RUN-2026-05-21-008_*`
+
 ### TEST-RUN-2026-05-21-007 - Production Secret Rotation and Leak Scan
 
 - **Status**: DONE

@@ -57,6 +57,7 @@ import * as Sentry from '@sentry/browser';
 Sentry.init({
   dsn: "https://52d089968563a42a98ed367df7723736@o4510659131670528.ingest.de.sentry.io/4510660337533008",
   release: "janus-projekt@" + (import.meta.env.APP_VERSION || "0.0.0-dev"),
+  sendDefaultPii: false,
   integrations: [
     // --- NEU: DISTRIBUTED TRACING AKTIVIEREN ---
     Sentry.browserTracingIntegration({
@@ -65,11 +66,23 @@ Sentry.init({
       tracePropagationTargets: ["localhost", "127.0.0.1"],
     }),
     // -------------------------------------------
-    Sentry.replayIntegration(),
+    Sentry.replayIntegration({
+      maskAllText: true,
+      blockAllMedia: true,
+    }),
   ],
 
   // --- NEU: FEEDBACK-DIALOG BEI FEHLERN ---
   beforeSend(event, hint) {
+    delete event.user;
+    delete event.request;
+    if (event.breadcrumbs) {
+      event.breadcrumbs = event.breadcrumbs.map((breadcrumb) => ({
+        ...breadcrumb,
+        message: breadcrumb.message ? "[REDACTED]" : breadcrumb.message,
+        data: undefined,
+      }));
+    }
     // Wir prüfen, ob es sich um eine echte, unbehandelte Exception handelt.
     // Das verhindert, dass der Dialog bei kleinen Netzwerkfehlern aufploppt.
     if (event.exception && hint.originalException) {
@@ -88,9 +101,9 @@ Sentry.init({
   },
   // ----------------------------------------
 
-  tracesSampleRate: 1.0,
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
+  tracesSampleRate: 0.1,
+  replaysSessionSampleRate: 0.0,
+  replaysOnErrorSampleRate: 0.0,
 });
 
 // ======================== ENDE DER INTEGRATION ========================

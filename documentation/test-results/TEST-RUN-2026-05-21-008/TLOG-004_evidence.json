@@ -1,0 +1,11 @@
+{
+  "rawSensitiveEvidencePolicy": "redacted-only",
+  "rawPrivateCanariesWritten": false,
+  "pythonRedactionProbe": "PASS",
+  "checkedClasses": [
+    "authorization",
+    "prompt",
+    "content",
+    "secret"
+  ]
+}

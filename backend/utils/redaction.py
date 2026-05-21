@@ -13,7 +13,9 @@ REDACTION_TEXT = "[REDACTED]"
 _SENSITIVE_KEY_RE = re.compile(
     r"^(?:authorization|cookie|set-cookie|x-api-key|api[-_]?key|token|access[-_]?token|"
     r"refresh[-_]?token|id[-_]?token|secret|client[-_]?secret|password|passwd|webhook|"
-    r"webhook[-_]?url|provider[-_]?key)$",
+    r"webhook[-_]?url|provider[-_]?key|prompt|user[-_]?prompt|system[-_]?prompt|"
+    r"content|text|message|messages|file|file[-_]?payload|file[-_]?content|"
+    r"attachment|attachments|transcript|description)$",
     re.IGNORECASE,
 )
 
