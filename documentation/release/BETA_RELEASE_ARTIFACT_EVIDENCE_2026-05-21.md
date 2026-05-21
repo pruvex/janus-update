@@ -2,9 +2,9 @@
 
 ## Decision
 
-PRE-PUBLISH PASS.
+PUBLISHED PASS.
 
-The local build, installer, update manifest and packaged smoke test are complete for `0.4.17-beta.37`. GitHub publishing has not been executed in this evidence record because Skill 8 requires an explicit publish approval after presenting the target, version, artifact and hashes.
+The local build, installer, update manifest, packaged smoke test, GitHub publish and post-publish asset verification are complete for `0.4.17-beta.37`.
 
 ## Scope
 
@@ -36,6 +36,8 @@ The local build, installer, update manifest and packaged smoke test are complete
 | Electron installer and manifest | `$env:PYTHONIOENCODING='UTF-8'; npm run build-installer` | PASS |
 | Independent manifest validation | `node -e "...manifest/latest.yml validation..."` | PASS |
 | Packaged smoke test | Start `release\win-unpacked\Janus Projekt.exe`, poll `/api/health`, stop started processes | PASS |
+| GitHub publish | `node scripts\publish_to_github.cjs` after explicit `Publish: YES` approval | PASS |
+| Post-publish verification | GitHub release/asset metadata check with size and SHA256 digest comparison | PASS |
 
 ## Artifact Inventory
 
@@ -72,36 +74,33 @@ Validation result: manifest version matches `package.json`, manifest asset exist
 | Health audio flag | `audio_ready: true` |
 | Smoke-test processes cleaned up | PASS |
 
-## Publish Approval Gate
+## Published Release
 
-Publishing is intentionally pending.
+| Field | Value |
+|---|---|
+| GitHub release | `https://github.com/pruvex/janus-update/releases/tag/v0.4.17-beta.37` |
+| Tag | `v0.4.17-beta.37` |
+| Release name | `Janus Projekt 0.4.17-beta.37` |
+| Prerelease | `true` |
+| Draft | `false` |
 
-Required explicit approval before external mutation:
+## Published Asset Verification
 
-```text
-Publish: YES
-```
+| Asset | GitHub state | GitHub size | Local size | GitHub digest | Local SHA256 | Result |
+|---|---|---:|---:|---|---|---:|
+| `janus-setup-0.4.17-beta.37.exe` | uploaded | 688266935 | 688266935 | `sha256:c7e096ed0cac179ac57bd632f0becc88d4070cdee5db31acb040884c09190b77` | `c7e096ed0cac179ac57bd632f0becc88d4070cdee5db31acb040884c09190b77` | PASS |
+| `latest.yml` | uploaded | 20328 | 20328 | `sha256:cfe90095a4841a7a9665519ef000b6ba4366661a4201db9f3fb151ae500c7a48` | `cfe90095a4841a7a9665519ef000b6ba4366661a4201db9f3fb151ae500c7a48` | PASS |
+| `janus-update-manifest.json` | uploaded | 250 | 250 | `sha256:6e2fcdf98dae028f3ff5a38a4377df7817659a7fa4b70fb35c3968f0323b7104` | `6e2fcdf98dae028f3ff5a38a4377df7817659a7fa4b70fb35c3968f0323b7104` | PASS |
 
-Without that exact approval, do not upload assets or create/update the GitHub release.
-
-## Publish Plan After Approval
-
-Preferred publish command for the already built assets:
-
-```powershell
-node scripts/publish_to_github.cjs
-```
-
-Expected assets in GitHub release `v0.4.17-beta.37`:
+Expected assets in GitHub release `v0.4.17-beta.37` are present:
 
 - `janus-setup-0.4.17-beta.37.exe`
 - `latest.yml`
 - `janus-update-manifest.json`
 
-Post-publish verification must confirm that the published asset names and hashes match this evidence file.
+No unexpected `0.4.17-beta.37` release assets were found.
 
 ## Remaining Risks
 
-- GitHub publish is not yet executed.
 - Formal legal/privacy review remains outside this technical beta release gate.
 - Hosted SaaS or public/commercial production release still requires a deployment-bound rerun of the security launch gate.
