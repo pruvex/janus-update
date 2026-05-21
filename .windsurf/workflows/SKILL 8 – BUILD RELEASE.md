@@ -319,7 +319,15 @@ If publish fails, stop and report likely causes:
 ## Phase 8: Post-Publish Verification
 
 // turbo
-Open GitHub releases page:
+Run the automated published-release verifier:
+
+```powershell
+npm run release:verify-published
+```
+
+This verifies the GitHub release by tag, checks the expected release assets, compares GitHub asset size and SHA256 digest against local release artifacts, and writes machine-readable plus markdown evidence under `documentation/release/`.
+
+Then open GitHub releases page for visual/manual confirmation:
 
 ```powershell
 start https://github.com/pruvex/janus-update/releases
@@ -332,7 +340,8 @@ Verify:
 - Manifest asset exists.
 - Release notes are correct.
 - Manifest `assetName` matches uploaded installer.
-- Manifest SHA256 matches local installer hash.
+- GitHub asset SHA256 digests match local artifact SHA256 hashes.
+- Generated published-release evidence exists under `documentation/release/`.
 
 If any item is missing, report `RELEASE PUBLISHED WITH RISK`.
 
@@ -383,4 +392,3 @@ Return:
 - `RELEASE NOT PUBLISHED`: User declined publish approval.
 - `RELEASE BLOCKED`: A pre-publish gate failed.
 - `RELEASE PUBLISHED WITH RISK`: Publish happened but post-publish verification found missing or uncertain release assets.
-

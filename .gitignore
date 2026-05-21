@@ -20,7 +20,7 @@ __pycache__/
 .env.*
 local_config.json
 # Large build artifacts
-release/
+/release/
 Asthma/
 workspace/temp_audio/
 # PyInstaller builds

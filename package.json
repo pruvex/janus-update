@@ -32,7 +32,8 @@
     "build-installer": "electron-builder --publish never && npm run generate:update-manifest && npm run verify:update-artifacts",
     "build-all": "npm run build && python -m PyInstaller janus_backend.spec --clean --noconfirm && npm run build-installer",
     "release:guard": "node scripts/release-gate.js",
-    "release": "npm run build-all && node scripts/publish_to_github.cjs",
+    "release:verify-published": "node scripts/verify_published_release.cjs --write-evidence",
+    "release": "npm run build-all && node scripts/publish_to_github.cjs && npm run release:verify-published",
     "generate:update-manifest": "node scripts/generate_update_manifest.cjs",
     "verify:update-artifacts": "node scripts/verify_update_artifacts.cjs"
   },
