@@ -919,6 +919,8 @@ function resolvePlanTestSpecPath(plan: TestRunPlan | undefined): string {
 
   const candidate =
     plan.testSpecPath ||
+    plan.sourceSpec ||
+    plan.source_spec ||
     plan.inputTestSpecPath ||
     plan.input_testspec_path ||
     plan.test_spec_path ||
