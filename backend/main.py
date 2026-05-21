@@ -830,7 +830,7 @@ if not os.path.exists(assets_path):
 # "/backend_assets" below is the canonical path for those.
 app.mount("/backend_assets", StaticFiles(directory=assets_path), name="backend_assets")
 
-from backend.dependencies import api_key_auth
+from backend.dependencies import api_key_auth, require_debug_endpoints_enabled
 
 # --- NEUER HEALTH CHECK ENDPUNKT (ungeschützt) ---
 @app.get("/api/health", status_code=200, tags=["System"])
@@ -852,10 +852,10 @@ async def health_check():
 
 
 @app.get("/debug/images")
-async def list_images():
+async def list_images(_debug_allowed: None = Depends(require_debug_endpoints_enabled)):
     """
     Debug endpoint to list contents of the images directory.
-    No authentication required for debugging purposes.
+    Disabled in packaged beta mode unless debug endpoints are explicitly enabled.
     """
     path = get_images_dir()
     if not os.path.exists(path):
@@ -930,9 +930,10 @@ async def serve_upload_image(filename: str):
 
 # --- MEMORY SYSTEM DEBUG ENDPOINT ---
 @app.get("/api/debug/memory")
-async def debug_memory_system():
+async def debug_memory_system(_debug_allowed: None = Depends(require_debug_endpoints_enabled)):
     """
     Debug endpoint for Memory V2 system observability.
+    Disabled in packaged beta mode unless debug endpoints are explicitly enabled.
     Returns cache stats, metrics, embedding cache stats, circuit breaker state,
     and Memory V2 budget system status.
     """
@@ -1223,7 +1224,7 @@ async def get_camera_sound():
 # D11: Debug Compression Engine Endpoint (Workaround für Router-Loading Issue)
 # ==============================================================================
 @app.get("/api/system/debug-summary")
-async def get_debug_summary():
+async def get_debug_summary(_debug_allowed: None = Depends(require_debug_endpoints_enabled)):
     """
     D11: Debug Compression Engine — Returns compressed debug diagnosis as Markdown.
     

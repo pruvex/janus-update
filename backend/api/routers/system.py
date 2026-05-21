@@ -13,6 +13,7 @@ from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from backend.data.database import get_db
+from backend.dependencies import require_debug_endpoints_enabled
 
 router = APIRouter()
 logger = logging.getLogger("janus_backend")
@@ -249,7 +250,7 @@ async def get_rag_status():
 
 
 @router.get("/debug-summary")
-async def get_debug_summary():
+async def get_debug_summary(_debug_allowed: None = Depends(require_debug_endpoints_enabled)):
     """
     D11: Debug Compression Engine — Returns compressed debug diagnosis as Markdown.
     
@@ -378,7 +379,10 @@ class DebugLogRequest(BaseModel):
 
 
 @router.post("/skills/debug-log")
-async def debug_log_skill(request: DebugLogRequest):
+async def debug_log_skill(
+    request: DebugLogRequest,
+    _debug_allowed: None = Depends(require_debug_endpoints_enabled),
+):
     """
     D11: Debug-Log Skill — Final Production Wrapper for AI-Studio.
     

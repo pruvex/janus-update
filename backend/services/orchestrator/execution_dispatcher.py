@@ -284,10 +284,12 @@ _SECURITY_AUDIT_REVEAL_ALL_RE = re.compile(
     re.IGNORECASE,
 )
 _CROSS_USER_DATA_REQUEST_RE = re.compile(
-    r"\b(?:coworker|co[-\s]?worker|kolleg(?:e|in|en)|andere(?:r|n)?\s+user|anderer\s+nutzer)\b"
-    r".{0,100}\b(?:data|daten|chats?|memory|files?|dateien|ressourcen)\b|"
-    r"\b(?:data|daten|chats?|memory|files?|dateien|ressourcen)\b"
-    r".{0,100}\b(?:coworker|co[-\s]?worker|kolleg(?:e|in|en)|andere(?:r|n)?\s+user|anderer\s+nutzer)\b",
+    r"\b(?:coworker|co[-\s]?worker|kolleg(?:e|in|en)|andere(?:r|n)?\s+user|anderer\s+nutzer|"
+    r"anderen\s+user|user\s+[b-z]|profile\s+[b-z]|profil\s+[b-z])\b"
+    r".{0,100}\b(?:data|daten|chats?|memory|files?|dateien|ressourcen|resource[-_\s]?id|token|jwt|cookie(?:s)?)\b|"
+    r"\b(?:data|daten|chats?|memory|files?|dateien|ressourcen|resource[-_\s]?id|token|jwt|cookie(?:s)?)\b"
+    r".{0,100}\b(?:coworker|co[-\s]?worker|kolleg(?:e|in|en)|andere(?:r|n)?\s+user|anderer\s+nutzer|"
+    r"anderen\s+user|user\s+[b-z]|profile\s+[b-z]|profil\s+[b-z])\b",
     re.IGNORECASE,
 )
 _MEMORY_FACT_FORWARDING_RE = re.compile(

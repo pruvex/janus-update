@@ -4,6 +4,22 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Test Pipeline Validations
 
+### TEST-RUN-2026-05-21-006 - Packaged Local Beta Profile Isolation
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Security Spec 12 beta/production hardening gate
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/12_multi_account_staging_isolation.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-006_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-006_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-006_results.md`
+- **Profile Map**: `documentation/test-runs/TEST-RUN-2026-05-21-006_profile_isolation_map.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-006_final_audit.md`
+- **Validation**: PASS with `10/10` packaged-local profile isolation checks, `0` failed, `0` blocked. The gate validates Janus' real local Electron beta model: separate AppData/SQLite/file/artifact roots plus tool/session/debug boundaries.
+- **Remediation**: Added beta-safe debug endpoint gate; expanded cross-user detection for User B/Profile B/resourceId/JWT-cookie reuse prompts; added custom profile-isolation runner and evidence.
+- **Watchpoints**: This is not hosted SaaS tenant certification. If Janus later ships hosted accounts, rerun Spec 12 with real staging identities and server-side tenant IDs.
+- **Changed Files**: `backend/dependencies.py`, `backend/main.py`, `backend/api/routers/system.py`, `backend/services/orchestrator/execution_dispatcher.py`, `documentation/TEST_SPEC/02_security_safety/12_multi_account_staging_isolation.md`, `tests/e2e/generated/TEST-RUN-2026-05-21-006.*`, `documentation/test-runs/TEST-RUN-2026-05-21-006_*`
+
 ### TEST-RUN-2026-05-21-005 - Packaged Local Beta Environment Security Baseline
 
 - **Status**: DONE

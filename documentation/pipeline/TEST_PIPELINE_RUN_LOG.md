@@ -65,6 +65,59 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 
 ## Run Log
 
+### TEST-RUN-2026-05-21-006 - Janus Packaged Local Beta Profile Isolation - Final Validation
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-006
+- **Datum**: 2026-05-21
+- **Quelle**: Dashboard recommendation / Security Spec 12 beta-production hardening
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/12_multi_account_staging_isolation.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-006_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-006_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-006_results.md`
+- **Profile Map**: `documentation/test-runs/TEST-RUN-2026-05-21-006_profile_isolation_map.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-006_final_audit.md`
+- **Getestete Faehigkeit**: Packaged local Electron beta profile isolation
+- **Pipeline-Route**: TEST SKILL SECURITY -> custom packaged-local profile isolation runner -> SKILL 7
+- **Skill-Ergebnisse**:
+  - TEST SKILL SECURITY: PASS
+  - Custom Profile-Isolation Runner: PASS, `10/10`
+  - SKILL 7: PASS
+- **Security Gate**:
+  - Userdaten sicher: JA, synthetic A/B profile canaries do not cross
+  - Destruktive Aktionen isoliert: JA, isolated temp fixture roots only
+  - Prompt-Injection-Risiko geprueft: JA, tool-mediated cross-user prompt gate validated
+  - Prompt-Injection-Befund: NONE after gate calibration
+  - Sensitive Daten in Logs vermieden: JA, synthetic canaries only; no real user data or raw secrets
+  - Persistenzrisiko geprueft: JA, AppData/SQLite/upload/artifact profile roots are isolated
+  - Security-Gesamtergebnis: PASS
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+  - Provider mode: N/A for profile isolation; no model calls required.
+- **UX-Ergebnis**: N/A - profile isolation gate, not chat UX.
+- **Intent-/Skill-Routing-Ergebnis**: PASS - cross-user/tool-mediated access gate disables tools and skips LLM generation.
+- **Kosten-/Token-Ergebnis**: PASS - no provider spend.
+- **Capability-Erklaerfaehigkeit**: PASS for local-vs-hosted deployment boundary.
+- **Findings**:
+  - Janus has no hosted SaaS staging-account model; Spec 12 must be interpreted as local beta profile isolation for the current Electron app.
+  - Cross-user detection was too narrow for User B/Profile B/resourceId/JWT-cookie reuse prompts.
+  - Debug endpoints were reachable without an explicit packaged-beta debug gate.
+- **Sofortfixes**:
+  - Reframed Spec 12 as Packaged Local Beta Profile Isolation while preserving hosted-staging watchpoint.
+  - Added `require_debug_endpoints_enabled` and gated debug endpoints in `backend/main.py` and `backend/api/routers/system.py`.
+  - Expanded cross-user data gate regex in `backend/services/orchestrator/execution_dispatcher.py`.
+  - Added custom Playwright runner with isolated SQLite/file/artifact fixtures and live 403 debug-endpoint assertion.
+- **Backlog-Follow-ups**:
+  - If Janus later ships hosted accounts, rerun Spec 12 with real staging identities and server-side tenant IDs.
+- **Nebenbefunde ausserhalb TestScope**:
+  - Supabase `exec_sql` schema warning still appears during backend startup; tracked as ops/observability watchpoint, not Spec 12 blocker.
+- **Optimierungspotential fuer Testpipeline**:
+  - Add generator-native support for local-desktop profile isolation gates.
+- **Abschluss**:
+  - Diamond Confidence Score: 9/10
+  - Production Confidence: 90% for packaged-local beta profile isolation
+  - Gesamtergebnis: PASS
+
 ### TEST-RUN-2026-05-21-005 - Janus Packaged Local Beta Environment Security Baseline - Final Validation
 
 - **TestRun-ID**: TEST-RUN-2026-05-21-005

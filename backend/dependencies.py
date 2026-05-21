@@ -35,6 +35,20 @@ async def api_key_auth(internal_api_key: str = Header(..., alias="X-Janus-Intern
             detail="Invalid Internal API Key",
         )
 
+
+async def require_debug_endpoints_enabled():
+    """Allow debug-only endpoints only in explicit local development/debug mode."""
+    debug_enabled = (
+        os.getenv("JANUS_ENABLE_DEBUG_ENDPOINTS") == "1"
+        or os.getenv("NODE_ENV") == "development"
+        or os.getenv("JANUS_DEV_MODE") == "true"
+    )
+    if not debug_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Debug endpoints are disabled in packaged beta mode.",
+        )
+
 # JWT Settings (in production, use environment variables and proper secrets management)
 def _get_or_generate_jwt_secret() -> str:
     """

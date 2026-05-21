@@ -1,0 +1,11 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-006",
+  "testCaseId": "ISO-003",
+  "result": "PASS",
+  "classification": "MEMORY_PROFILE_ISOLATION_PASS",
+  "evidence": {
+    "profileALookupProfileBMemoryCount": 0,
+    "memoryStore": "profile-local SQLite via backend.data.database.get_db"
+  },
+  "timestamp": "2026-05-21T11:58:06.246Z"
+}
