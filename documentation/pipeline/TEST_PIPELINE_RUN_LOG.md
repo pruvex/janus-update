@@ -65,6 +65,51 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 
 ## Run Log
 
+### TEST-RUN-2026-05-21-007 - Janus Production Secret Rotation and Leak Scan - Final Validation
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-007
+- **Datum**: 2026-05-21
+- **Quelle**: Dashboard recommendation / Security Spec 13 beta-production hardening
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/13_production_secret_rotation_and_leak_scan.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-007_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-007_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-007_results.md`
+- **Redacted Inventory**: `documentation/test-runs/TEST-RUN-2026-05-21-007_secret_inventory.md`
+- **Rotation Runbook**: `documentation/test-runs/TEST-RUN-2026-05-21-007_secret_rotation_runbook.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-007_final_audit.md`
+- **Getestete Faehigkeit**: Packaged-local Electron beta secret rotation and leak-scan gate
+- **Pipeline-Route**: TEST SKILL SECURITY -> custom secret rotation/leak-scan runner -> SKILL 7
+- **Skill-Ergebnisse**:
+  - TEST SKILL SECURITY: PASS
+  - Custom Playwright runner: PASS, `10/10`
+  - SKILL 7 / Final Audit: PASS
+- **Security Gate**:
+  - Userdaten sicher: JA
+  - Destruktive Aktionen isoliert: JA
+  - Prompt-Injection-Risiko geprueft: N/A
+  - Prompt-Injection-Befund: NONE
+  - Sensitive Daten in Logs vermieden: JA
+  - Persistenzrisiko geprueft: JA
+  - Security-Gesamtergebnis: PASS
+- **Provider-/Model-Matrix**: N/A; no LLM provider call required for the leak-scan gate.
+- **UX-Ergebnis**: N/A; security infrastructure validation.
+- **Intent-/Skill-Routing-Ergebnis**: N/A.
+- **Kosten-/Token-Ergebnis**: Keine externen LLM-Kosten.
+- **Capability-Erklaerfaehigkeit**: PASS
+- **Findings**:
+  - Sentry source-map upload is now explicit release behavior via `JANUS_UPLOAD_SOURCEMAPS=1`.
+  - `.env.*` is ignored.
+  - Hardcoded Supabase material was removed from `tools/check_supabase_logs.py`.
+  - Credential-shaped fake literals were replaced in test/spec documentation.
+- **Sofortfixes**: See findings.
+- **Backlog-Follow-ups**: Provider-console rotation, least-privilege and cost-cap owner certification before broad beta.
+- **Nebenbefunde ausserhalb TestScope**: Recurring Supabase `exec_sql` schema warning remains an ops/observability watchpoint.
+- **Optimierungspotential fuer Testpipeline**: Keep secret-scan evidence redacted with key names, lengths and short fingerprints only.
+- **Abschluss**:
+  - Diamond Confidence Score: 10/10
+  - Production Confidence: 95% for packaged-local beta secret leakage gate; provider-console rotation remains owner-operated.
+  - Gesamtergebnis: PASS
+
 ### TEST-RUN-2026-05-21-006 - Janus Packaged Local Beta Profile Isolation - Final Validation
 
 - **TestRun-ID**: TEST-RUN-2026-05-21-006

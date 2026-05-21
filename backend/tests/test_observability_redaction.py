@@ -9,7 +9,7 @@ def test_redacts_common_secret_shapes():
     raw = (
         "Authorization: Bearer abcdefghijklmnop\n"
         "Cookie: sessionid=supersecret\n"
-        "api_key=AIzaSyA123456789012345678901234567890\n"
+        "api_key=JANUS_FAKE_GOOGLE_KEY_REDACTION_TEST\n"
         "secret=SECRET-OBSERVABILITY-123"
     )
 
@@ -17,7 +17,7 @@ def test_redacts_common_secret_shapes():
 
     assert "abcdefghijklmnop" not in redacted
     assert "sessionid=supersecret" not in redacted
-    assert "AIzaSyA123456789012345678901234567890" not in redacted
+    assert "JANUS_FAKE_GOOGLE_KEY_REDACTION_TEST" not in redacted
     assert "SECRET-OBSERVABILITY-123" not in redacted
     assert REDACTION_TEXT in redacted
 
@@ -63,14 +63,14 @@ def test_logging_filter_redacts_binary_header_tuples():
         __file__,
         1,
         "Adding %r to the header table, sensitive:%s",
-        ((b"apikey", b"sb_publishable_vXa0UAx1erE9Gqni7uNiDA_pMq4q5aQ"), False),
+        ((b"apikey", b"sb_publishable_FAKE_REDACTION_TEST_TOKEN_DO_NOT_USE"), False),
         None,
     )
 
     assert SensitiveRedactionFilter().filter(record)
     rendered = record.getMessage()
 
-    assert "sb_publishable_vXa0UAx1erE9Gqni7uNiDA_pMq4q5aQ" not in rendered
+    assert "sb_publishable_FAKE_REDACTION_TEST_TOKEN_DO_NOT_USE" not in rendered
     assert REDACTION_TEXT in rendered
 
 

@@ -1,0 +1,13 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-007",
+  "testCaseId": "SECROT-005",
+  "result": "PASS",
+  "classification": "LOG_SECRET_SCAN_PASS",
+  "evidence": {
+    "logRoot": "%APPDATA%/Janus Projekt/logs",
+    "scannedFiles": 1,
+    "exactSecretFindings": 0,
+    "credentialPatternFindings": 0
+  },
+  "timestamp": "2026-05-21T12:15:55.754Z"
+}

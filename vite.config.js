@@ -44,6 +44,23 @@ try {
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, resolve(__dirname, 'frontend'), "");
+  const shouldUploadSourcemaps = process.env.JANUS_UPLOAD_SOURCEMAPS === "1" && Boolean(env.SENTRY_AUTH_TOKEN);
+  const plugins = [];
+
+  if (shouldUploadSourcemaps) {
+    plugins.push(
+      sentryVitePlugin({
+        org: "pruvex",
+        project: "javascript-react",
+        authToken: env.SENTRY_AUTH_TOKEN,
+        release: {
+          name: "janus-projekt@" + appVersion,
+          deploy: { env: "production" }
+        },
+        sourcemaps: { assets: "./frontend/dist/**" }
+      })
+    );
+  }
 
   return {
     root: 'frontend',
@@ -55,18 +72,7 @@ export default defineConfig(({ mode }) => {
       __APP_VERSION__: JSON.stringify(appVersion)
     },
 
-    plugins: [
-      sentryVitePlugin({
-        org: "pruvex",
-        project: "javascript-react",
-        authToken: env.SENTRY_AUTH_TOKEN,
-        release: {
-          name: "janus-projekt@" + appVersion,
-          deploy: { env: "production" }
-        },
-        sourcemaps: { assets: "./frontend/dist/**" }
-      }),
-    ],
+    plugins,
     
     build: {
       outDir: 'dist',

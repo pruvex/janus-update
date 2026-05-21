@@ -103,7 +103,7 @@ Cloud IAM review, external vault configuration audit, real production key rotati
 
 ## TEST DATA AND SANDBOX
 
-- Test Data Required: Synthetic canary values: `JANUS_TEST_SECRET_DO_NOT_LEAK_2026`, `sk-test-janus-canary-not-real`, `Bearer JANUS_CANARY_TOKEN`.
+- Test Data Required: Synthetic canary values: `JANUS_TEST_SECRET_DO_NOT_LEAK_2026`, `JANUS_FAKE_OPENAI_CANARY_NOT_REAL`, `Bearer JANUS_CANARY_TOKEN`.
 - Sandbox Required: YES.
 - Real User Data Allowed: NO.
 - Rollback / Recovery: Remove canary env values after run; clear test logs if local policy requires.

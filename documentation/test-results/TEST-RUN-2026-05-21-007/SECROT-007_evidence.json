@@ -1,0 +1,33 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-007",
+  "testCaseId": "SECROT-007",
+  "result": "PASS",
+  "classification": "RUNTIME_RESPONSE_SECRET_SCAN_PASS",
+  "evidence": {
+    "samples": [
+      {
+        "url": "/api/health",
+        "status": 200,
+        "bodyLength": 37
+      },
+      {
+        "url": "/api/debug/memory",
+        "status": 403,
+        "bodyLength": 64
+      },
+      {
+        "url": "/api/users/me",
+        "status": 403,
+        "bodyLength": 30
+      },
+      {
+        "url": "/definitely-missing-secret-test",
+        "status": 404,
+        "bodyLength": 22
+      }
+    ],
+    "rawSecretLeakFound": false,
+    "credentialPatternLeakFound": false
+  },
+  "timestamp": "2026-05-21T12:15:56.860Z"
+}

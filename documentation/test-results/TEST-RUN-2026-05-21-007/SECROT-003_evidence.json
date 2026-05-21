@@ -1,0 +1,12 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-007",
+  "testCaseId": "SECROT-003",
+  "result": "PASS",
+  "classification": "REPO_SECRET_SCAN_PASS",
+  "evidence": {
+    "scannedFiles": 7751,
+    "exactSecretFindings": 0,
+    "credentialPatternFindings": 0
+  },
+  "timestamp": "2026-05-21T12:15:55.691Z"
+}

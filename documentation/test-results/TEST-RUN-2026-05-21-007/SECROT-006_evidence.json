@@ -1,0 +1,13 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-007",
+  "testCaseId": "SECROT-006",
+  "result": "PASS",
+  "classification": "RESULT_ARTIFACT_SECRET_SCAN_PASS",
+  "evidence": {
+    "scannedFiles": 3476,
+    "exactSecretFindings": 0,
+    "credentialPatternFindings": 0,
+    "note": "Historical generated specs may contain placeholder strings; exact local secret values are absent."
+  },
+  "timestamp": "2026-05-21T12:15:56.755Z"
+}

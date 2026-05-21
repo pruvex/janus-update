@@ -1,0 +1,126 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-007",
+  "testCaseId": "SECROT-001",
+  "result": "PASS",
+  "classification": "SECRET_INVENTORY_PASS",
+  "evidence": {
+    "sources": [
+      {
+        "path": "backend/.env",
+        "exists": true,
+        "keyCount": 7,
+        "keys": [
+          "ENCRYPTION_KEY",
+          "GEMINI_API_KEY",
+          "LOG_LEVEL",
+          "OPENAI_API_KEY",
+          "SUPABASE_KEY",
+          "SUPABASE_URL",
+          "YOUTUBE_API_KEY"
+        ]
+      },
+      {
+        "path": "frontend/.env",
+        "exists": true,
+        "keyCount": 1,
+        "keys": [
+          "SENTRY_AUTH_TOKEN"
+        ]
+      },
+      {
+        "path": ".env",
+        "exists": false,
+        "keyCount": 0,
+        "keys": []
+      },
+      {
+        "path": "frontend/.env.production",
+        "exists": false,
+        "keyCount": 0,
+        "keys": []
+      },
+      {
+        "path": "backend/.env.production",
+        "exists": false,
+        "keyCount": 0,
+        "keys": []
+      }
+    ],
+    "secrets": [
+      {
+        "key": "ENCRYPTION_KEY",
+        "sourcePath": "backend/.env",
+        "fingerprint": "81082921b162",
+        "length": 44,
+        "storage": "ignored backend env file",
+        "betaFacing": false,
+        "rotationStatus": "certified-local-current; external provider rotation requires owner action outside repo"
+      },
+      {
+        "key": "OPENAI_API_KEY",
+        "sourcePath": "backend/.env",
+        "fingerprint": "175e020db146",
+        "length": 164,
+        "storage": "ignored backend env file",
+        "betaFacing": true,
+        "rotationStatus": "certified-local-current; external provider rotation requires owner action outside repo"
+      },
+      {
+        "key": "GEMINI_API_KEY",
+        "sourcePath": "backend/.env",
+        "fingerprint": "c6873bfcf2ba",
+        "length": 39,
+        "storage": "ignored backend env file",
+        "betaFacing": true,
+        "rotationStatus": "certified-local-current; external provider rotation requires owner action outside repo"
+      },
+      {
+        "key": "YOUTUBE_API_KEY",
+        "sourcePath": "backend/.env",
+        "fingerprint": "6238bbfc9b7a",
+        "length": 39,
+        "storage": "ignored backend env file",
+        "betaFacing": true,
+        "rotationStatus": "certified-local-current; external provider rotation requires owner action outside repo"
+      },
+      {
+        "key": "LOG_LEVEL",
+        "sourcePath": "backend/.env",
+        "fingerprint": "0ffd43f5886b",
+        "length": 5,
+        "storage": "ignored backend env file",
+        "betaFacing": false,
+        "rotationStatus": "certified-local-current; external provider rotation requires owner action outside repo"
+      },
+      {
+        "key": "SUPABASE_URL",
+        "sourcePath": "backend/.env",
+        "fingerprint": "706de764fe33",
+        "length": 40,
+        "storage": "ignored backend env file",
+        "betaFacing": true,
+        "rotationStatus": "certified-local-current; external provider rotation requires owner action outside repo"
+      },
+      {
+        "key": "SUPABASE_KEY",
+        "sourcePath": "backend/.env",
+        "fingerprint": "11e8a29bf52f",
+        "length": 46,
+        "storage": "ignored backend env file",
+        "betaFacing": true,
+        "rotationStatus": "certified-local-current; external provider rotation requires owner action outside repo"
+      },
+      {
+        "key": "SENTRY_AUTH_TOKEN",
+        "sourcePath": "frontend/.env",
+        "fingerprint": "babb05641cb4",
+        "length": 71,
+        "storage": "ignored frontend env file",
+        "betaFacing": true,
+        "rotationStatus": "certified-local-current; external provider rotation requires owner action outside repo"
+      }
+    ],
+    "rawSecretValuesWritten": false
+  },
+  "timestamp": "2026-05-21T12:15:53.592Z"
+}

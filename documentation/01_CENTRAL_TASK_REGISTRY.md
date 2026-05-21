@@ -4,6 +4,23 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Test Pipeline Validations
 
+### TEST-RUN-2026-05-21-007 - Production Secret Rotation and Leak Scan
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Security Spec 13 beta/production hardening gate
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/13_production_secret_rotation_and_leak_scan.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-007_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-007_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-007_results.md`
+- **Redacted Inventory**: `documentation/test-runs/TEST-RUN-2026-05-21-007_secret_inventory.md`
+- **Rotation Runbook**: `documentation/test-runs/TEST-RUN-2026-05-21-007_secret_rotation_runbook.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-007_final_audit.md`
+- **Validation**: PASS with `10/10` secret rotation and leak-scan checks, `0` failed, `0` blocked. The gate validates Janus' packaged-local Electron beta model across local secret inventory, repo, bundle, logs, runtime responses and evidence artifacts without writing raw secrets.
+- **Remediation**: Made Sentry source-map upload explicit via `JANUS_UPLOAD_SOURCEMAPS=1`; ignored `.env.*`; removed hardcoded Supabase material from `tools/check_supabase_logs.py`; replaced credential-shaped fake literals in tests/spec documentation.
+- **Watchpoints**: Provider-side rotation, least-privilege and cost caps still require owner console action before broad beta distribution.
+- **Changed Files**: `.gitignore`, `vite.config.js`, `tools/check_supabase_logs.py`, `backend/tests/test_observability_redaction.py`, `documentation/TEST_SPEC/02_security_safety/01_secrets_env_and_frontend_exposure.md`, `tests/e2e/generated/TEST-RUN-2026-05-21-007.*`, `documentation/test-runs/TEST-RUN-2026-05-21-007_*`
+
 ### TEST-RUN-2026-05-21-006 - Packaged Local Beta Profile Isolation
 
 - **Status**: DONE

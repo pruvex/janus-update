@@ -1,0 +1,16 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-007",
+  "testCaseId": "SECROT-010",
+  "result": "PASS",
+  "classification": "SECRET_ROTATION_GATE_DECISION_PASS",
+  "evidence": {
+    "decision": "PASS",
+    "openCriticalFindings": 0,
+    "openHighFindings": 0,
+    "watchpoints": [
+      "External provider-side rotation/cost caps must be owner-certified in provider consoles before broad beta.",
+      "Sentry source-map upload is now opt-in via JANUS_UPLOAD_SOURCEMAPS=1."
+    ]
+  },
+  "timestamp": "2026-05-21T12:15:56.910Z"
+}

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "janus.test-plan.v1",
+  "testRunId": "TEST-RUN-2026-05-21-007",
+  "title": "Janus Production Secret Rotation and Leak Scan",
+  "sourceSpec": "documentation/TEST_SPEC/02_security_safety/13_production_secret_rotation_and_leak_scan.md",
+  "route": "TEST SKILL SECURITY -> custom secret rotation/leak scanner -> SKILL 7",
+  "deploymentModel": {
+    "type": "packaged-local-electron",
+    "hostedStagingRequired": false,
+    "secretSources": ["ignored backend/frontend .env files", "OS keyring", "AppData config", "environment variables"],
+    "rawSecretEvidencePolicy": "Never write raw secret values; evidence stores key names, source classes, fingerprints and counts only."
+  },
+  "compilerStatus": {
+    "status": "CUSTOM_RUNNER_REQUIRED",
+    "reason": "Spec 13 requires secret-aware scanning and redacted evidence. A custom runner can inspect local secret sources, scan exact values without writing them, and validate runtime responses."
+  },
+  "cases": [
+    { "id": "SECROT-001", "domain": "Inventory", "expectedEvidence": "Redacted secret source/key inventory" },
+    { "id": "SECROT-002", "domain": "Rotation/certification", "expectedEvidence": "Beta-facing secrets certified; source-map upload explicitly gated" },
+    { "id": "SECROT-003", "domain": "Repo scan", "expectedEvidence": "Tracked and untracked non-ignored files contain no raw secret values or high-confidence credential patterns" },
+    { "id": "SECROT-004", "domain": "Bundle scan", "expectedEvidence": "frontend/dist and sourcemaps contain no raw secrets" },
+    { "id": "SECROT-005", "domain": "Log scan", "expectedEvidence": "Local AppData logs contain no raw secrets or credential patterns" },
+    { "id": "SECROT-006", "domain": "Result scan", "expectedEvidence": "Test artifacts contain no exact local raw secrets" },
+    { "id": "SECROT-007", "domain": "Runtime response scan", "expectedEvidence": "Public/error/auth-failure responses contain no secrets" },
+    { "id": "SECROT-008", "domain": "Key scope/storage", "expectedEvidence": "Keyring/AppData/env storage model and PII-safe telemetry config verified" },
+    { "id": "SECROT-009", "domain": "Emergency rotation", "expectedEvidence": "Dry-run runbook exists and requires no raw secrets in docs" },
+    { "id": "SECROT-010", "domain": "Gate decision", "expectedEvidence": "No open Critical/High secret findings" }
+  ],
+  "artifacts": {
+    "runner": "tests/e2e/generated/TEST-RUN-2026-05-21-007.secret-rotation-leak-scan.spec.js",
+    "playwrightConfig": "tests/e2e/generated/TEST-RUN-2026-05-21-007.secret-rotation.playwright.config.js",
+    "inventory": "documentation/test-runs/TEST-RUN-2026-05-21-007_secret_inventory.md",
+    "runbook": "documentation/test-runs/TEST-RUN-2026-05-21-007_secret_rotation_runbook.md",
+    "finalAudit": "documentation/test-runs/TEST-RUN-2026-05-21-007_final_audit.md"
+  }
+}

@@ -9,9 +9,18 @@ sys.path.insert(0, "c:\\KI\\Janus-Projekt")
 
 from supabase import create_client
 
-# Supabase credentials from .env
-SUPABASE_URL = "https://loyezwlrucjgmemjrrwx.supabase.co"
-SUPABASE_KEY = "sb_publishable_vXa0UAx1erE9Gqni7uNiDA_pMq4q5aQ"
+# Supabase credentials from environment or ignored local .env.
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+if not SUPABASE_URL or not SUPABASE_KEY:
+    from dotenv import load_dotenv
+
+    load_dotenv(os.path.join("backend", ".env"))
+    SUPABASE_URL = os.getenv("SUPABASE_URL")
+    SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise RuntimeError("SUPABASE_URL and SUPABASE_KEY must be set via environment or ignored backend/.env")
 
 # Create Supabase client
 client = create_client(SUPABASE_URL, SUPABASE_KEY)
