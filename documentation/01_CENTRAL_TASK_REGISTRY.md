@@ -4,6 +4,63 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Test Pipeline Validations
 
+### TEST-RUN-2026-05-21-005 - Staging Environment Security Baseline
+
+- **Status**: BLOCKED
+- **Audit**: BLOCKED
+- **Source**: Security Spec 11 beta/production hardening gate
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/11_staging_environment_security_baseline.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-005_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-005_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-005_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-005_final_audit.md`
+- **Validation**: BLOCKED with `10/10` checks executed, `1` passed, `9` blocked, `0` failed. The runner correctly refuses to certify localhost/dev as staging.
+- **Blocker**: No explicit non-local `JANUS_STAGING_*` target configuration exists for frontend URL, health URL, metadata URL, datastore IDs, secret source, backend URL, build version, provider mode/cost cap, deploy commit or rollback target.
+- **Changed Files**: `tests/e2e/generated/TEST-RUN-2026-05-21-005.staging-environment.spec.js`, `tests/e2e/generated/TEST-RUN-2026-05-21-005.staging.playwright.config.js`, `documentation/test-runs/TEST-RUN-2026-05-21-005_*`
+
+### TEST-RUN-2026-05-21-004 - Security ReviewSpec Suite
+
+- **Status**: DONE
+- **Audit**: PASS WITH WATCHPOINTS
+- **Source**: Security ReviewSpec Suite / launch-gate review
+- **ReviewSpec**: `documentation/TEST_SPEC/02_security_safety/10_security_reviewspec_suite.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-004_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-004_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-004_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-004_final_audit.md`
+- **Validation**: PASS with `12/12` review checks, `0` failed, `0` blocked. Review decision is `PASS WITH WATCHPOINTS`.
+- **Remediation**: Fixed telemetry privacy in `backend/main.py`: Sentry now has `send_default_pii=False`, environment-configurable DSN/sampling, production trace default `0.1`, and production profile default `0.0`.
+- **Watchpoint**: Public/staging launch still needs target-environment evidence for real multi-account users, HTTPS/HSTS, domain CORS/CSP/cookies, retention and operations sign-off.
+- **Changed Files**: `backend/main.py`, `tests/e2e/generated/TEST-RUN-2026-05-21-004.security-review.spec.js`, `documentation/test-runs/TEST-RUN-2026-05-21-004_*`
+
+### TEST-RUN-2026-05-21-003 - Security Mini-Prep Review
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Security Spec 09 prep-gate validation
+- **ReviewSpec**: `documentation/TEST_SPEC/02_security_safety/09_mini_prep_security_review.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-003_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-003_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-003_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-003_final_audit.md`
+- **Validation**: PASS with `10/10` preflight checks, `0` failed, `0` blocked. Review decision is `GO WITH WATCHPOINTS`.
+- **Watchpoint**: Local prep validates disposable A/B fixture identities plus existing local E2E auth; true multi-account staging users remain environment-specific for a future launch/staging gate.
+- **Changed Files**: `tests/e2e/generated/TEST-RUN-2026-05-21-003.mini-prep.spec.js`, `documentation/test-runs/TEST-RUN-2026-05-21-003_plan.json`
+
+### TEST-RUN-2026-05-21-002 - API External Tool Fallback Honesty
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Spec 09 tools/skills validation
+- **TestSpec**: `documentation/TEST_SPEC/03_tools_skills/09_api_external_tool_fallback_honesty.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-002_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-002_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-002_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-002_final_audit.md`
+- **Validation**: PASS with `22/22` tests, `0` failed, `0` blocked. Provider parity is green for GPT and Gemini; functional, prompt-injection and security categories are all 100%.
+- **Remediation**: Added honest unavailable/no-source behavior for websearch/current-data, RSS/news fallback, Wikipedia, weather, geo routing, and price/current-data tools; added deterministic blockers for simulated external source failures.
+- **Changed Files**: `backend/tool_registry.py`, `backend/tools/rss_service.py`, `backend/tools/wiki_service.py`, `backend/tools/weather_service.py`, `backend/tools/geo_service.py`, `backend/tools/finance_tools.py`, `backend/services/orchestrator/execution_dispatcher.py`, `backend/tests/tools/test_external_tool_fallback_honesty.py`, `tests/e2e/generator/compile-testspec-to-testplan.mjs`
+
 ### TEST-RUN-2026-05-20-023 - Logging, Telemetry and Audit Privacy
 
 - **Status**: DONE

@@ -1,0 +1,22 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-004",
+  "testCaseId": "RSV-008",
+  "result": "PASS",
+  "classification": "LOGGING_TELEMETRY_REVIEW_PASS",
+  "evidence": {
+    "security08": {
+      "resultPath": "documentation/test-results/TEST-RUN-2026-05-20-023_results.json",
+      "status": "PASS",
+      "total": 28,
+      "passed": 28,
+      "failed": 0,
+      "blocked": 0
+    },
+    "privacyScan": {
+      "path": "documentation/test-runs/TEST-RUN-2026-05-20-023_privacy_scan.md",
+      "bytes": 2498
+    },
+    "sentryPiiDisabled": true
+  },
+  "timestamp": "2026-05-21T00:13:52.535Z"
+}

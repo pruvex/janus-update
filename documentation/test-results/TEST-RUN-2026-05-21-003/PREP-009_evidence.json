@@ -1,0 +1,17 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-003",
+  "testCaseId": "PREP-009",
+  "result": "PASS",
+  "classification": "PREP_ASSERTION_PASS",
+  "evidence": {
+    "realUserDataAllowed": false,
+    "productionSecretsAllowed": false,
+    "syntheticCanariesAllowed": true,
+    "syntheticCanaries": [
+      "SYNTHETIC_CANARY_MINIPREP_ALPHA_DO_NOT_USE (synthetic)",
+      "SYNTHETIC_CANARY_MINIPREP_BETA_DO_NOT_USE (synthetic)"
+    ],
+    "rawProductionSecretsInEvidence": false
+  },
+  "timestamp": "2026-05-20T23:53:14.531Z"
+}

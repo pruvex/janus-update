@@ -1,0 +1,17 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-003",
+  "testCaseId": "PREP-007",
+  "result": "PASS",
+  "classification": "PREP_ASSERTION_PASS",
+  "evidence": {
+    "backendLogDirectory": "%APPDATA%\\Janus Projekt\\logs",
+    "logFiles": [
+      "janus_backend.log",
+      "rag_retrieval.log"
+    ],
+    "frontendBuildArtifact": "frontend/dist",
+    "backendEntryPoint": "backend/main.py",
+    "sourcemapLocationKnown": "frontend/dist (if build emits sourcemaps)"
+  },
+  "timestamp": "2026-05-20T23:53:14.506Z"
+}

@@ -310,7 +310,7 @@
             "de": "Dateien hochladen",
             "en": "Upload Files"
           },
-          "skill_refs": ["filesystem.upload"],
+          "skill_refs": [],
           "how_to": {
             "de": "Ziehe eine Datei per Drag & Drop in den Chat oder nutze das Upload-Symbol.",
             "en": "Drag and drop a file into the chat, or use the upload button."
@@ -378,7 +378,7 @@
             "de": "Ordnerinhalt anzeigen",
             "en": "List Directory"
           },
-          "skill_refs": ["filesystem.list_directory"],
+          "skill_refs": ["filesystem.list_directory", "filesystem.list_workspaces"],
           "how_to": {
             "de": "Sage: 'Zeige den Inhalt des Desktops'.",
             "en": "Say: 'Show the contents of the Desktop'."
@@ -474,7 +474,7 @@
             "de": "Bilder analysieren",
             "en": "Analyze Images"
           },
-          "skill_refs": ["system.video_understanding"],
+          "skill_refs": ["video.understand"],
           "how_to": {
             "de": "Lade ein Bild hoch und frage: 'Was siehst du?' oder 'Beschreibe das Bild.'",
             "en": "Upload an image and ask: 'What do you see?' or 'Describe the image.'"
@@ -529,7 +529,9 @@
           "how_to": {
             "de": "Lade eine PDF hoch und frage: 'Was steht in diesem Dokument?' oder 'Zusammenfasse die wichtigsten Punkte.'",
             "en": "Upload a PDF and ask: 'What's in this document?' or 'Summarize the key points.'"
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
         },
         {
           "id": "knowledge.search_docs",
@@ -541,7 +543,9 @@
           "how_to": {
             "de": "Sage: 'Finde alle Dokumente über...' oder 'Wo steht etwas über...?'",
             "en": "Say: 'Find all documents about...' or 'Where does it mention...?'"
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
         },
         {
           "id": "knowledge.code_search",
@@ -553,7 +557,9 @@
           "how_to": {
             "de": "Sage: 'Wo ist die Funktion X definiert?' oder 'Zeige mir den Code für Y' oder 'Wie funktioniert die Klasse Z?'",
             "en": "Say: 'Where is function X defined?' or 'Show me the code for Y' or 'How does class Z work?'"
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
         }
       ],
       "ui_locations": {
@@ -786,7 +792,9 @@
           "how_to": {
             "de": "Frage nach aktuellen Fakten, Nachrichten oder Hintergrundwissen.",
             "en": "Ask for current facts, news, or background information."
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
         }
       ],
       "ui_locations": {}
@@ -1019,7 +1027,7 @@
             "de": "Videos abspielen",
             "en": "Play Videos"
           },
-          "skill_refs": ["system.video_search"],
+          "skill_refs": ["video.search"],
           "how_to": {
             "de": "Sage: 'Spiele das Video ab' oder 'Zeige mir den Film'. Der MCL Video-Player öffnet sich automatisch.",
             "en": "Say: 'Play the video' or 'Show me the movie'. The MCL Video Player opens automatically."
@@ -1031,7 +1039,7 @@
             "de": "YouTube integrieren",
             "en": "YouTube Integration"
           },
-          "skill_refs": ["system.video_search"],
+          "skill_refs": ["video.search"],
           "how_to": {
             "de": "Sende einen YouTube-Link und ich werde das Video analysieren oder Transkripte erstellen.",
             "en": "Send a YouTube link and I'll analyze the video or create transcripts."
@@ -1043,7 +1051,7 @@
             "de": "KI-Transkripte erstellen",
             "en": "AI Transcripts"
           },
-          "skill_refs": ["system.video_search"],
+          "skill_refs": ["video.search"],
           "how_to": {
             "de": "Lade ein Video hoch und frage: 'Transkribiere das Video' oder 'Fasse den Inhalt zusammen'.",
             "en": "Upload a video and ask: 'Transcribe the video' or 'Summarize the content'."
@@ -1082,7 +1090,7 @@
             "de": "Sicherheits-Gate gegen Prompt Injections",
             "en": "Security Gate against Prompt Injections"
           },
-          "skill_refs": ["execution_engine"],
+          "skill_refs": [],
           "how_to": {
             "de": "Janus verfügt über einen integrierten Schutz gegen manipulative Anweisungen (Injection Defense). Der Guard wird vor jedem Provider-Aufruf ausgeführt und erkennt Injection-Patterns (ignore, delete, override, bypass, forget). Bei erkannter Injection wird die gesamte Query-Verarbeitung blockiert. Provider-agnostisch (funktioniert für GPT und Gemini).",
             "en": "Janus has built-in protection against manipulative instructions (Injection Defense). The guard runs before any provider request and detects injection patterns (ignore, delete, override, bypass, forget). When injection is detected, the entire query processing is blocked. Provider-agnostic (works for GPT and Gemini)."

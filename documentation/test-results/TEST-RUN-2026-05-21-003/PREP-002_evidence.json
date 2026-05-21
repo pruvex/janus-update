@@ -1,0 +1,14 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-003",
+  "testCaseId": "PREP-002",
+  "result": "PASS",
+  "classification": "PREP_ASSERTION_PASS",
+  "evidence": {
+    "environmentName": "local",
+    "backendStartScript": "start-backend-only-without-reload",
+    "frontendStartScript": "start-vite",
+    "playwrightOwnsLifecycle": true,
+    "e2eFastModeConfigured": true
+  },
+  "timestamp": "2026-05-20T23:53:14.418Z"
+}

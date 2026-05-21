@@ -1,0 +1,18 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-005",
+  "testCaseId": "STG-007",
+  "result": "BLOCKED",
+  "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+  "evidence": {
+    "blocker": "Provider mode and cost cap are required.",
+    "mode": {
+      "blocked": true,
+      "reason": "JANUS_STAGING_PROVIDER_MODE is not configured."
+    },
+    "cap": {
+      "blocked": true,
+      "reason": "JANUS_STAGING_PROVIDER_COST_CAP is not configured."
+    }
+  },
+  "timestamp": "2026-05-21T00:36:05.733Z"
+}

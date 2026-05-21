@@ -124,7 +124,10 @@ def get_weather_from_api_tool(
                 fallback_response = requests.get(
                     f"https://wttr.in/{target_city}?format=3", timeout=10
                 )
+                fallback_response.raise_for_status()
                 fc_raw = fallback_response.text.strip()
+                if not fc_raw:
+                    raise requests.RequestException("wttr.in returned an empty response")
                 q_lbl = weather_source_label("wttr.in")
                 fc_body = append_quelle_line(fc_raw, q_lbl) if q_lbl else fc_raw
                 logger.info("skill=%s status=ok source=wttr.in city=%s ms=%s", skill_name, target_city, _elapsed_ms())

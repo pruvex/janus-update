@@ -1,6 +1,6 @@
 # Janus Security TestSpec Overview
 
-Stand: 2026-05-16
+Stand: 2026-05-21
 
 Diese Security-TestSpecs ergaenzen die bestehende Janus-TestSuite um Pre-Launch-Sicherheits-, Privacy- und Abuse-Gates. Sie sind als Regression Guards gedacht: Ein gruener Durchlauf bedeutet nicht, dass ein externes Security Audit ersetzt wurde, aber dass die wichtigsten Launch-Liability-Klassen aktiv getestet und dokumentiert sind.
 
@@ -16,6 +16,7 @@ Die Security-Suite deckt diese Risikofelder ab:
 - AI-spezifischer Missbrauch: Prompt Injection, Tool Abuse, System-Prompt- und Secret-Exfiltration
 - Rate Limits, Quotas, Abuse-Schutz und Kostenkontrolle
 - Logging- und Telemetrie-Privacy
+- Staging-/Beta-Production-Hardening nach lokalem Security-Abschluss
 
 ## Statusuebersicht
 
@@ -29,6 +30,24 @@ Die Security-Suite deckt diese Risikofelder ab:
 | `06_ai_prompt_injection_tool_abuse_and_data_exfiltration.md` | AI Prompt Injection and Tool Abuse | System-Prompt-Leak, Tool Abuse, External Content Injection, Secret Requests | CRITICAL | Janus behandelt untrusted Content als Daten und fuehrt keine feindlichen Instruktionen aus |
 | `07_rate_limits_quotas_abuse_and_cost_control.md` | Rate Limits, Quotas and Cost Control | API-Burn, Request Flooding, Provider-Kosten, Retry Storms | HIGH | Missbrauch wird begrenzt, Kosten bleiben kontrollierbar und Fehler sind nutzerklar |
 | `08_logging_telemetry_and_audit_privacy.md` | Logging, Telemetry and Audit Privacy | Secrets in Logs, Prompt-/Response-Persistenz, PII-Minimierung | HIGH | Logs sind auditierbar, aber enthalten keine Secrets oder unnoetige privaten Daten |
+| `09_mini_prep_security_review.md` | Security Mini-Prep Review | Lokale Review-/Testbereitschaft, Evidence-Pfade, synthetische Fixtures | HIGH | Security-Review kann sicher und reproduzierbar starten |
+| `10_security_reviewspec_suite.md` | Security ReviewSpec Suite | Lokales Launch-Gate, Threat Model, Code/Config Review, Red-Team-Mapping | CRITICAL | Lokaler Security-Scope ist reviewt, auditiert und mit Watchpoints entschieden |
+
+## Beta/Production-Hardening Erweiterung
+
+Die Specs `11-19` sind bewusst von der lokalen Suite getrennt. Sie sind erst voll belastbar, wenn eine echte Staging-/Beta-Zielumgebung, echte Staging-Identitaeten und Ops-/Privacy-Prozesse existieren.
+
+| Datei | TestSpec | Schwerpunkt | Sicherheitsniveau | Zielzustand nach PASS |
+|---|---|---|---|---|
+| `11_staging_environment_security_baseline.md` | Staging Environment Security Baseline | Ziel-URL, isolierte Umgebung, Deployment-Metadaten, Secret-Quellen | CRITICAL | Staging ist real, isoliert, reproduzierbar und beta-tauglich |
+| `12_multi_account_staging_isolation.md` | Multi-Account Staging Isolation | User A/B, IDOR, Cross-User-Zugriff, Tool-vermittelte Zugriffe | CRITICAL | Echte Staging-Accounts koennen keine fremden Daten lesen oder schreiben |
+| `13_production_secret_rotation_and_leak_scan.md` | Production Secret Rotation and Leak Scan | Rotation, Repo-/Bundle-/Log-/Response-/Artifact-Scans | CRITICAL | Keine Dev/Test-Secrets bleiben beta-wirksam oder leaken in Artefakte |
+| `14_beta_telemetry_logging_privacy_hardening.md` | Beta Telemetry Logging Privacy Hardening | Sinks, Sampling, PII, Retention, Zugriff, Redaction | HIGH | Beta-Telemetrie hilft beim Betrieb ohne private Daten unnoetig offenzulegen |
+| `15_deployment_headers_cors_csp_cookie_scan.md` | Deployment Headers CORS CSP Cookie Scan | HTTPS/HSTS, CSP, CORS, Cookies, Sourcemaps, Debug-Routen | CRITICAL | Der reale Browser/API-Deployment-Surface ist sicher konfiguriert |
+| `16_beta_abuse_limits_and_cost_controls.md` | Beta Abuse Limits and Cost Controls | User/global/provider/tool/upload Limits, Retry Storms, Spend Caps | HIGH | Beta-Nutzung kann keine unkontrollierten Kosten oder Ausfaelle erzeugen |
+| `17_ops_recovery_kill_switches.md` | Ops Recovery Kill Switches | Provider-/Tool-/User-Kill-Switches, Rollback, Rotation, Incident-Pfade | HIGH | Betreiber koennen Beta-Vorfaelle schnell eindammen und zurueckrollen |
+| `18_beta_privacy_notice_and_data_rights.md` | Beta Privacy Notice and Data Rights | Privacy Notice, Provider-Hinweise, Loeschung, Export, Incident-Kontakt | HIGH | Betatester wissen, was passiert, und haben klare Datenrechte-/Kontaktwege |
+| `19_final_beta_launch_gate_review.md` | Final Beta Launch Gate Review | Meta-Gate fuer 01-18, Risk Register, Sign-off, finale Beta-Entscheidung | CRITICAL | Kontrollierte externe Beta kann mit belegter Entscheidung starten |
 
 ## Gemeinsame Testregeln
 

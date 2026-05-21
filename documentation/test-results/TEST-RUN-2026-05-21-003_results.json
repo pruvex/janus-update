@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-003",
+  "title": "Janus Security Mini-Prep Review",
+  "status": "PASS",
+  "summary": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-003",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-003_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-004_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-005_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-006_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-007_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-008_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-009_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-010_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "PREP-001",
+      "result": "PASS",
+      "classification": "LIVE_REACHABILITY_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-001_evidence.json",
+      "durationMs": 3506,
+      "notes": "",
+      "timestamp": "2026-05-20T23:53:14.182Z"
+    },
+    {
+      "testCaseId": "PREP-002",
+      "result": "PASS",
+      "classification": "PREP_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-002_evidence.json",
+      "durationMs": 4,
+      "notes": "",
+      "timestamp": "2026-05-20T23:53:14.418Z"
+    },
+    {
+      "testCaseId": "PREP-003",
+      "result": "PASS",
+      "classification": "PREP_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-003_evidence.json",
+      "durationMs": 5,
+      "notes": "",
+      "timestamp": "2026-05-20T23:53:14.436Z"
+    },
+    {
+      "testCaseId": "PREP-004",
+      "result": "PASS",
+      "classification": "PREP_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-004_evidence.json",
+      "durationMs": 5,
+      "notes": "",
+      "timestamp": "2026-05-20T23:53:14.452Z"
+    },
+    {
+      "testCaseId": "PREP-005",
+      "result": "PASS",
+      "classification": "PREP_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-005_evidence.json",
+      "durationMs": 2,
+      "notes": "",
+      "timestamp": "2026-05-20T23:53:14.463Z"
+    },
+    {
+      "testCaseId": "PREP-006",
+      "result": "PASS",
+      "classification": "FIXTURE_RESET_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-006_evidence.json",
+      "durationMs": 15,
+      "notes": "",
+      "timestamp": "2026-05-20T23:53:14.494Z"
+    },
+    {
+      "testCaseId": "PREP-007",
+      "result": "PASS",
+      "classification": "PREP_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-007_evidence.json",
+      "durationMs": 2,
+      "notes": "",
+      "timestamp": "2026-05-20T23:53:14.506Z"
+    },
+    {
+      "testCaseId": "PREP-008",
+      "result": "PASS",
+      "classification": "PREP_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-008_evidence.json",
+      "durationMs": 4,
+      "notes": "",
+      "timestamp": "2026-05-20T23:53:14.518Z"
+    },
+    {
+      "testCaseId": "PREP-009",
+      "result": "PASS",
+      "classification": "PREP_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-009_evidence.json",
+      "durationMs": 4,
+      "notes": "",
+      "timestamp": "2026-05-20T23:53:14.531Z"
+    },
+    {
+      "testCaseId": "PREP-010",
+      "result": "PASS",
+      "classification": "GO_DECISION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-003/PREP-010_evidence.json",
+      "durationMs": 2,
+      "notes": "Review decision: GO WITH WATCHPOINTS. Watchpoint: this prep validates local disposable A/B fixtures and existing local auth method; true multi-account staging fixtures remain environment-specific.",
+      "timestamp": "2026-05-20T23:53:14.545Z"
+    }
+  ],
+  "updatedAt": "2026-05-20T23:53:14.555Z"
+}

@@ -40,6 +40,12 @@
         "type": "string",
         "enum": ["brief", "medium", "detailed"],
         "default": "medium"
+      },
+      "source": {
+        "type": "string",
+        "enum": ["chat", "ui_button"],
+        "default": "chat",
+        "description": "Aufrufquelle. Nur ui_button erlaubt die AusfÃ¼hrung."
       }
     },
     "required": ["video_id", "task"]

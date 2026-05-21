@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-005",
+  "title": "Janus Staging Environment Security Baseline",
+  "status": "BLOCKED",
+  "summary": {
+    "total": 10,
+    "passed": 1,
+    "failed": 0,
+    "blocked": 9,
+    "manualGateRequired": 1
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-005",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-005_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-004_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-005_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-006_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-007_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-008_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-009_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-010_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "STG-001",
+      "result": "BLOCKED",
+      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-001_evidence.json",
+      "durationMs": 3,
+      "notes": "Explicit non-local JANUS_STAGING_FRONTEND_URL and JANUS_STAGING_HEALTH_URL are required.",
+      "timestamp": "2026-05-21T00:36:05.578Z"
+    },
+    {
+      "testCaseId": "STG-002",
+      "result": "BLOCKED",
+      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-002_evidence.json",
+      "durationMs": 1,
+      "notes": "Staging metadata URL and explicit environment name are required.",
+      "timestamp": "2026-05-21T00:36:05.629Z"
+    },
+    {
+      "testCaseId": "STG-003",
+      "result": "BLOCKED",
+      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-003_evidence.json",
+      "durationMs": 2,
+      "notes": "Redacted staging and production datastore identifiers are required to prove isolation.",
+      "timestamp": "2026-05-21T00:36:05.657Z"
+    },
+    {
+      "testCaseId": "STG-004",
+      "result": "BLOCKED",
+      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-004_evidence.json",
+      "durationMs": 1,
+      "notes": "Approved staging secret source is required.",
+      "timestamp": "2026-05-21T00:36:05.675Z"
+    },
+    {
+      "testCaseId": "STG-005",
+      "result": "BLOCKED",
+      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-005_evidence.json",
+      "durationMs": 1,
+      "notes": "JANUS_STAGING_BACKEND_URL is required for debug-route probing.",
+      "timestamp": "2026-05-21T00:36:05.695Z"
+    },
+    {
+      "testCaseId": "STG-006",
+      "result": "BLOCKED",
+      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-006_evidence.json",
+      "durationMs": 1,
+      "notes": "Build version and sourcemap policy are required.",
+      "timestamp": "2026-05-21T00:36:05.716Z"
+    },
+    {
+      "testCaseId": "STG-007",
+      "result": "BLOCKED",
+      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-007_evidence.json",
+      "durationMs": 1,
+      "notes": "Provider mode and cost cap are required.",
+      "timestamp": "2026-05-21T00:36:05.733Z"
+    },
+    {
+      "testCaseId": "STG-008",
+      "result": "BLOCKED",
+      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-008_evidence.json",
+      "durationMs": 1,
+      "notes": "Deployment commit and rollback target are required.",
+      "timestamp": "2026-05-21T00:36:05.749Z"
+    },
+    {
+      "testCaseId": "STG-009",
+      "result": "PASS",
+      "classification": "STAGING_EVIDENCE_HYGIENE_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-009_evidence.json",
+      "durationMs": 6,
+      "notes": "",
+      "timestamp": "2026-05-21T00:36:05.771Z"
+    },
+    {
+      "testCaseId": "STG-010",
+      "result": "BLOCKED",
+      "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-010_evidence.json",
+      "durationMs": 1,
+      "notes": "Staging gate is BLOCKED until explicit non-local staging configuration is provided.",
+      "timestamp": "2026-05-21T00:36:05.789Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T00:36:05.806Z"
+}

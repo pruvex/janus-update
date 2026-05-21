@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-001",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wer ist Nikola Tesla? with knowledge/Wikipedia route unavailable",
+  "response": "Hallo Pruve. Nikola Tesla war ein serbisch-amerikanischer Erfinder, Elektroingenieur und Physiker. Das hast du mir erstmals am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“ erzählt.\nEr wird als eine auffallend große und sehr schlanke Persönlichkeit beschrieben. Sein Gesicht ist schmal mit markanten, ausgeprägten Wangenknochen und einer hohen Stirn. Zudem hat er dunkle, tief liegende Augen und sein dunkles Haar ist stets akkurat gescheitelt.\nQuelle: Wikipedia\n💡 Passende nächste Schritte:• Möchtest du, dass ich ein Porträt von Nikola Tesla basierend auf dieser Beschreibung generiere?• Soll ich dir eine Liste seiner wichtigsten Erfindungen zusammenstellen?• Benötigst du weitere Details aus deiner Biografie-Sammlung zu ihm?\n00:33",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T22:33:55.476Z"
+}

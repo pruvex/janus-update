@@ -1,0 +1,18 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-005",
+  "testCaseId": "STG-006",
+  "result": "BLOCKED",
+  "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+  "evidence": {
+    "blocker": "Build version and sourcemap policy are required.",
+    "build": {
+      "blocked": true,
+      "reason": "JANUS_STAGING_BUILD_VERSION is not configured."
+    },
+    "sourcemapPolicy": {
+      "blocked": true,
+      "reason": "JANUS_STAGING_SOURCEMAP_POLICY is not configured."
+    }
+  },
+  "timestamp": "2026-05-21T00:36:05.716Z"
+}

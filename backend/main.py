@@ -182,25 +182,41 @@ final_app_version = app_version if app_version else "unknown"
 
 log_startup_time("Initialisiere Sentry...")
 try:
+    sentry_environment = "development" if final_app_version == "dev" else "production"
+    sentry_dsn = os.getenv(
+        "JANUS_SENTRY_DSN",
+        "https://5810a37c1b3c7e43faddbff6ec548cdf@o4510659131670528.ingest.de.sentry.io/4510659652943952",
+    )
+    sentry_traces_sample_rate = float(
+        os.getenv(
+            "JANUS_SENTRY_TRACES_SAMPLE_RATE",
+            "1.0" if sentry_environment == "development" else "0.1",
+        )
+    )
+    sentry_profiles_sample_rate = float(
+        os.getenv(
+            "JANUS_SENTRY_PROFILES_SAMPLE_RATE",
+            "1.0" if sentry_environment == "development" else "0.0",
+        )
+    )
     sentry_sdk.init(
         # --- NEUER, KORREKTER DSN ---
-        dsn="https://5810a37c1b3c7e43faddbff6ec548cdf@o4510659131670528.ingest.de.sentry.io/4510659652943952",
+        dsn=sentry_dsn,
         
         # Version setzen
         release=f"janus-projekt@{final_app_version}",
         
         # Environment setzen
-        environment="development" if final_app_version == "dev" else "production",
+        environment=sentry_environment,
         
-        # Erfasst 100% der Transaktionen zur Performance-Analyse.
-        traces_sample_rate=1.0,
+        # Sampling is environment-configurable; production uses conservative defaults.
+        traces_sample_rate=sentry_traces_sample_rate,
         
-        # Aktiviert detailliertes Profiling für die erfassten Transaktionen.
-        profiles_sample_rate=1.0,
+        # Profiling stays disabled by default in production.
+        profiles_sample_rate=sentry_profiles_sample_rate,
         
-        # Sendet User-bezogene Daten (z.B. IP-Adresse), um Fehler
-        # besser zuordnen zu können.
-        send_default_pii=True
+        # Do not send automatically captured user/IP data to Sentry.
+        send_default_pii=False
     )
     log_startup_time("Sentry erfolgreich initialisiert")
 except Exception as e:

@@ -99,7 +99,11 @@ async def get_wikipedia_summary(query: str, lang: str = "de", **kwargs) -> ToolR
             data={},
             error=ToolErrorDetails(
                 code="API_ERROR",
-                message=str(e),
+                message=(
+                    f"Wikipedia konnte fuer '{query}' nicht verlaesslich abgerufen werden. "
+                    "Ohne erreichbare Wikipedia-Quelle gebe ich keine belegte Zusammenfassung aus."
+                ),
+                details={"exception": str(e), "source": f"wikipedia:{lang}"},
             ),
             metadata={"execution_time_ms": _elapsed_ms()},
         )

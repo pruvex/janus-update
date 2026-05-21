@@ -1,0 +1,14 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-005",
+  "testCaseId": "STG-004",
+  "result": "BLOCKED",
+  "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+  "evidence": {
+    "blocker": "Approved staging secret source is required.",
+    "source": {
+      "blocked": true,
+      "reason": "JANUS_STAGING_SECRET_SOURCE is not configured."
+    }
+  },
+  "timestamp": "2026-05-21T00:36:05.675Z"
+}

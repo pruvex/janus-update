@@ -18,11 +18,11 @@
   "input_schema": {
     "type": "object",
     "properties": {
-      "directory_path": {
+      "path": {
         "type": "string",
         "description": "Pfad zum zu löschenden Verzeichnis"
       }
     },
-    "required": ["directory_path"]
+    "required": ["path"]
   }
 }

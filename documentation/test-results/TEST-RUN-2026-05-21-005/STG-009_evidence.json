@@ -1,0 +1,11 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-005",
+  "testCaseId": "STG-009",
+  "result": "PASS",
+  "classification": "STAGING_EVIDENCE_HYGIENE_PASS",
+  "evidence": {
+    "scannedEvidenceFiles": 8,
+    "findings": []
+  },
+  "timestamp": "2026-05-21T00:36:05.771Z"
+}

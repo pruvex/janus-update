@@ -66,6 +66,18 @@ class CapabilityRegistry:
         "Sonstiges",
     }
 
+    CATEGORY_ALIASES = {
+        "Dateiverwaltung": "Dateien & Dokumente",
+        "Wissens-Hub": "Wissen & Recherche",
+        "Web-Recherche": "Wissen & Recherche",
+        "Bildanalyse": "Bilder & Medien",
+        "Bild-Studio": "Bilder & Medien",
+        "Video-System": "Bilder & Medien",
+        "Erinnerungen": "Aufgaben & Produktivität",
+        "Shopping & Preise": "Wissen & Recherche",
+        "Orte & Routen": "Wissen & Recherche",
+    }
+
     def __init__(self, registry_path: str, skills_dir: str) -> None:
         """Initialize the registry with paths.
         
@@ -185,6 +197,13 @@ class CapabilityRegistry:
                 return next(iter(field.values()))
         return ""
 
+    def _normalize_category_name(self, category_name: str) -> str:
+        """Map registry display names to stable, user-facing capability groups."""
+        normalized = self.CATEGORY_ALIASES.get(category_name, category_name)
+        if normalized in self.ALLOWED_CATEGORIES:
+            return normalized
+        return "Sonstiges"
+
     def get_verified_capabilities_for_overview(self, language: str = "de") -> List[Dict]:
         """Get a filtered, mapped, and deduplicated list of verified capabilities for the overview.
 
@@ -207,9 +226,7 @@ class CapabilityRegistry:
             category_name = self._get_i18n_value(cat_data.get("display_name"), language, "de")
             if not category_name:
                 category_name = "Sonstiges"
-            # Normalize unknown categories to "Sonstiges" (TASK-069.10)
-            if category_name not in self.ALLOWED_CATEGORIES:
-                category_name = "Sonstiges"
+            category_name = self._normalize_category_name(category_name)
 
             for ability_data in cat_data.get("abilities", []):
                 capability_id = ability_data.get("id")
@@ -466,12 +483,12 @@ class CapabilityRegistry:
             mandatory += ["system.local_business"]
 
         if _flag("is_video_understanding_intent") or primary == "video_understanding":
-            mandatory += ["video.understand", "system.video_understanding"]
+            mandatory += ["video.understand"]
 
         if _flag("is_video_list_intent") or primary == "video_list":
-            mandatory += ["video.search", "system.video_search"]
+            mandatory += ["video.search"]
         elif _flag("is_video_intent") or primary == "video":
-            mandatory += ["video.search", "system.video_search"]
+            mandatory += ["video.search"]
             boosted += ["system.websearch"]
 
         # 💎 TASK-005: BACKLOG-005 - Filesystem-Intent hat Vorrang vor Bild-Intent
@@ -501,6 +518,12 @@ class CapabilityRegistry:
                 "filesystem.move_files",
                 "filesystem.read_file",
                 "filesystem.rename_file",
+            ]
+            forbidden += [
+                "knowledge.query",
+                "system.rss_news",
+                "system.websearch",
+                "system.wikipedia_summary",
             ]
 
         if is_image and not _flag("is_multitask_image_pdf"):

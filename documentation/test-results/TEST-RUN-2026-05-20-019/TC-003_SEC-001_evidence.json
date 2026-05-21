@@ -1,0 +1,9 @@
+{
+  "testCaseId": "TC-003/SEC-001",
+  "source": "python -m pytest backend\\tests\\test_skill_selector_capability_registry_integrity.py -q",
+  "assertions": [
+    "Capability help overview contains user-facing groups for Dateien & Dokumente, Kalender & Termine and Wissen & Recherche.",
+    "Capability help overview does not expose raw tool ids such as filesystem.list_directory, calendar.list_events or system.websearch."
+  ],
+  "result": "PASS"
+}

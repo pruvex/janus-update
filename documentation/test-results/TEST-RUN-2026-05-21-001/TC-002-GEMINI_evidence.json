@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-001",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Recherchiere aktuelle Modellpreise fuer GPT und Gemini",
+  "response": "Hallo Pruve! Gerne schaue ich für dich nach den aktuellen Preisen. Ich erinnere mich, dass du bereits am 17. Mai 2026 im Chat \"Modellpreise OpenAI Gemini\" Interesse an dieser Recherche hattest – hier ist das aktuelle Update für dich:\n1. Zusammenfassung\nDie Preise teilen sich primär in Endkunden-Abonnements (Flatrates) und API-Nutzungsgebühren (abrechnet nach Token/Datenmenge) auf. Während die Abo-Preise in Euro stabil sind, werden API-Preise meist in USD geführt und hier zur besseren Vergleichbarkeit aufgeführt.\n2. Liste der Fakten\nEndkunden-Abonnements (Monatlich):\n\nChatGPT Plus (OpenAI): ca. 23,00 € (unverifiziert)\nChatGPT Pro (OpenAI): ca. 229,00 € (unverifiziert) – Fokus auf Power-User mit erweiterten Compute-Ressourcen.\nGemini Advanced (Google One AI Premium): ca. 21,99 € (unverifiziert) – inklusive 2 TB Google Drive Speicher.\n\nAPI-Preise (Entwickler, pro 1 Mio. Token):\n\nGPT-4o (OpenAI):\nInput: 5,00 $ (unverifiziert)\nOutput: 15,00 $ (unverifiziert)\n\n\nGPT-4o-mini (OpenAI):\nInput: 0,15 $ (unverifiziert)\nOutput: 0,60 $ (unverifiziert)\n\n\nGemini 1.5 Pro (Google):\nInput: 3,50 $ (unverifiziert)\nOutput: 10,50 $ (unverifiziert)\n\n\nGemini 1.5 Flash (Google):\nInput: 0,075 $ (unverifiziert)\nOutput: 0,30 $ (unverifiziert)\n\n\n\n3. Quellen\n\nVodafone.de: ChatGPT Tarife im Überblick\nKI-Spot.de: Preisvergleich KI-Modelle\nOpenAI Pricing Page\nGoogle Gemini API Pricing\n\n💡 Passende nächste Schritte:• Soll ich für dich eine Kosten-Nutzen-Rechnung für ein spezifisches Projekt erstellen?• Interessiert dich ein Vergleich der Token-Limits (Context Window) dieser Modelle?• Möchtest du wissen, wie sich die Preise im Vergleich zu deinem letzten Check im Mai entwickelt haben?\n00:28",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-20T22:30:25.895Z"
+}

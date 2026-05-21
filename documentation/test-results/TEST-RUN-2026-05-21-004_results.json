@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-004",
+  "title": "Janus Security ReviewSpec Suite",
+  "status": "PASS",
+  "summary": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-004",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-004_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-004_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-005_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-006_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-007_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-008_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-009_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-010_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-011_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-012_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "RSV-001",
+      "result": "PASS",
+      "classification": "ASSET_DATA_FLOW_REVIEW_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-001_evidence.json",
+      "durationMs": 9,
+      "notes": "",
+      "timestamp": "2026-05-21T00:13:52.368Z"
+    },
+    {
+      "testCaseId": "RSV-002",
+      "result": "PASS",
+      "classification": "THREAT_MODEL_REVIEW_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-002_evidence.json",
+      "durationMs": 6,
+      "notes": "",
+      "timestamp": "2026-05-21T00:13:52.392Z"
+    },
+    {
+      "testCaseId": "RSV-003",
+      "result": "PASS",
+      "classification": "AUTHZ_REVIEW_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-003_evidence.json",
+      "durationMs": 12,
+      "notes": "",
+      "timestamp": "2026-05-21T00:13:52.420Z"
+    },
+    {
+      "testCaseId": "RSV-004",
+      "result": "PASS",
+      "classification": "SECRET_REVIEW_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-004_evidence.json",
+      "durationMs": 13,
+      "notes": "",
+      "timestamp": "2026-05-21T00:13:52.443Z"
+    },
+    {
+      "testCaseId": "RSV-005",
+      "result": "PASS",
+      "classification": "API_PRIVACY_REVIEW_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-005_evidence.json",
+      "durationMs": 14,
+      "notes": "",
+      "timestamp": "2026-05-21T00:13:52.469Z"
+    },
+    {
+      "testCaseId": "RSV-006",
+      "result": "PASS",
+      "classification": "AI_TOOLING_REVIEW_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-006_evidence.json",
+      "durationMs": 18,
+      "notes": "",
+      "timestamp": "2026-05-21T00:13:52.496Z"
+    },
+    {
+      "testCaseId": "RSV-007",
+      "result": "PASS",
+      "classification": "OWASP_BROWSER_REVIEW_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-007_evidence.json",
+      "durationMs": 10,
+      "notes": "",
+      "timestamp": "2026-05-21T00:13:52.519Z"
+    },
+    {
+      "testCaseId": "RSV-008",
+      "result": "PASS",
+      "classification": "LOGGING_TELEMETRY_REVIEW_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-008_evidence.json",
+      "durationMs": 7,
+      "notes": "",
+      "timestamp": "2026-05-21T00:13:52.535Z"
+    },
+    {
+      "testCaseId": "RSV-009",
+      "result": "PASS",
+      "classification": "RATE_COST_REVIEW_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-009_evidence.json",
+      "durationMs": 7,
+      "notes": "",
+      "timestamp": "2026-05-21T00:13:52.551Z"
+    },
+    {
+      "testCaseId": "RSV-010",
+      "result": "PASS",
+      "classification": "DEPLOYMENT_REVIEW_PASS_WITH_WATCHPOINTS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-010_evidence.json",
+      "durationMs": 5,
+      "notes": "Production/staging HTTPS, HSTS, domain CORS and account fixtures remain environment-specific watchpoints.",
+      "timestamp": "2026-05-21T00:13:52.564Z"
+    },
+    {
+      "testCaseId": "RSV-011",
+      "result": "PASS",
+      "classification": "RED_TEAM_PLAYBOOK_REVIEW_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-011_evidence.json",
+      "durationMs": 12,
+      "notes": "",
+      "timestamp": "2026-05-21T00:13:52.588Z"
+    },
+    {
+      "testCaseId": "RSV-012",
+      "result": "PASS",
+      "classification": "LAUNCH_GATE_REVIEW_PASS_WITH_WATCHPOINTS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-004/RSV-012_evidence.json",
+      "durationMs": 56,
+      "notes": "No open Critical/High findings remain for the reviewed local scope.",
+      "timestamp": "2026-05-21T00:13:52.655Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T00:13:52.669Z"
+}

@@ -23,6 +23,10 @@
       "path": {
         "type": "string",
         "description": "Pfad zum Verzeichnis"
+      },
+      "pattern": {
+        "type": "string",
+        "description": "Optionales Glob-Muster relativ zum angegebenen Ordner"
       }
     },
     "required": ["path"]

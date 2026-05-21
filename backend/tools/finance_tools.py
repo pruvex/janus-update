@@ -689,6 +689,7 @@ async def _price_comparison_tool_impl(
     
     # 💎 SEARCH-COSTS FIX: Zähle Websuchen für Kostenberechnung (0.01€ pro Suche)
     search_query_count = 0
+    search_failure_count = 0
     SEARCH_COST_PER_QUERY_EUR = 0.01
 
     # --- MULTI-KATEGORIE-EXPLOSION: Vage Anfragen expandieren ---
@@ -734,6 +735,7 @@ async def _price_comparison_tool_impl(
         all_result_lists: List[List[PriceEntry]] = []
         for i, result in enumerate(parallel_results):
             if isinstance(result, Exception):
+                search_failure_count += 1
                 logger.warning("PRICE-COMPARISON: Parallel search %d failed: %s", i, result)
             else:
                 all_result_lists.append(result)
@@ -790,6 +792,7 @@ async def _price_comparison_tool_impl(
                     product_name, price_new, currency, source_new,
                 )
         except Exception as exc:
+            search_failure_count += 1
             logger.warning("PRICE-COMPARISON: ANCHOR-SUCHE fehlgeschlagen für '%s': %s", product_name, exc)
 
     # --- MacBook VARIANTEN-DIVERSIFIZIERUNG ---
@@ -844,6 +847,7 @@ async def _price_comparison_tool_impl(
                             variant['variant_label'], price_variant, currency
                         )
             except Exception as exc:
+                search_failure_count += 1
                 logger.warning("PRICE-COMPARISON: Variante-Suche fehlgeschlagen für '%s': %s", variant['name'], exc)
     
     # --- ANCHOR zu results hinzufügen (wenn gefunden) ---
@@ -891,6 +895,7 @@ async def _price_comparison_tool_impl(
                     product_name, price_new, currency, source_new,
                 )
         except Exception as exc:
+            search_failure_count += 1
             logger.warning("PRICE-COMPARISON: Runde 1 fehlgeschlagen für '%s': %s", product_name, exc)
 
     # --- Runde 2: Refurbished (nur bei condition_filter != 'new') ---
@@ -939,6 +944,7 @@ async def _price_comparison_tool_impl(
                         "PRICE-COMPARISON: Refurbished (%.2f) unter 20%%-Schwelle – nicht angezeigt.", price_refurb
                     )
         except Exception as exc:
+            search_failure_count += 1
             logger.warning("PRICE-COMPARISON: Runde 2 fehlgeschlagen für '%s': %s", product_name, exc)
 
     # --- HARD-SOURCE-POLICY: Post-Search Validierung (DE only) ---
@@ -1008,8 +1014,17 @@ async def _price_comparison_tool_impl(
             status="error",
             data={},
             error=ToolErrorDetails(
-                code="NO_RESULTS_FOUND",
-                message=f"Kein Preis für '{product_name}' gefunden. Bitte präzisiere den Produktnamen.",
+                code="PRICE_SOURCE_UNAVAILABLE" if search_failure_count and search_query_count == 0 else "NO_RESULTS_FOUND",
+                message=(
+                    f"Die Preis-/Websuche fuer '{product_name}' konnte keine verlaesslichen Quellen abrufen. "
+                    "Ohne aktuelle Quellenbelege gebe ich keine Preise aus."
+                    if search_failure_count and search_query_count == 0
+                    else f"Kein belegbarer Preis fuer '{product_name}' gefunden. Bitte praezisiere den Produktnamen."
+                ),
+                details={
+                    "search_query_count": search_query_count,
+                    "search_failure_count": search_failure_count,
+                },
             ),
         )
 

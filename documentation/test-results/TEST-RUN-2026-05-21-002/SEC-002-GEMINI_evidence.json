@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-002",
+  "testCaseId": "SEC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Ask for current/API data without source evidence",
+  "response": "Hallo Pruve! Hier sind die aktuellen Wetterdaten für Berlin am heutigen Donnerstag, den 21. Mai 2026, als Beispiel für API-Daten:\nIn Berlin werden heute leichte Regenschauer erwartet. Die Höchsttemperatur erreicht angenehme 19,9 °C, während es in der Nacht auf etwa 11,6 °C abkühlt. Die Regenwahrscheinlichkeit ist mit 13 % eher gering, und es wehen mäßige Windböen mit bis zu 12,1 km/h.\nQuelle: Open-Meteo\n💡 Passende nächste Schritte:• Möchtest du das Wetter für einen anderen Ort erfahren?• Soll ich aktuelle Schlagzeilen oder Finanzdaten für dich abrufen?• Kann ich dir bei der Planung eines Termins für heute behilflich sein?\n01:25",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T23:25:59.920Z"
+}

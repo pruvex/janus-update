@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-002",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was gibt es Neues bei Heise? with RSS unavailable/simulated blocker",
+  "response": "Die RSS-Quelle/der Feed Heise ist in diesem Lauf als nicht verfuegbar blockiert. Ohne erreichbare RSS-Quelle oder belegbaren Web-Fallback erfinde ich keine Schlagzeilen. Quelle: system.rss_news unavailable/simulated blocker.\n01:18",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T23:18:47.684Z"
+}

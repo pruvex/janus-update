@@ -193,6 +193,15 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
         finally:
             db.close()
 
+    def _is_current_data_query(query: str) -> bool:
+        lowered = str(query or "").casefold()
+        markers = (
+            "aktuell", "aktuelle", "aktueller", "heute", "morgen", "derzeit",
+            "latest", "current", "preis", "preise", "kosten", "kurs",
+            "news", "nachrichten", "release", "verfuegbar", "verfügbar",
+        )
+        return any(marker in lowered for marker in markers)
+
     try:
         payload = schemas.WebsearchArgsV2.model_validate(websearch_args)
         provider = str(payload.provider or "").strip().lower()
@@ -212,9 +221,54 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
         sources = raw.get("sources") if isinstance(raw.get("sources"), list) else []
         meta = raw.get("metadata") if isinstance(raw.get("metadata"), dict) else {}
         source_provider = str(meta.get("provider") or provider or "unknown")
+        raw_status = str(meta.get("status") or "").strip().lower()
 
         # ── Build structured items from sources ────────────────────────────
         items = _sources_to_items(sources)
+
+        if raw_status in {"timeout", "error", "unavailable"}:
+            logger.warning(
+                "skill=%s status=error code=WEBSEARCH_UNAVAILABLE provider=%s raw_status=%s ms=%s",
+                skill_name,
+                source_provider,
+                raw_status,
+                _elapsed_ms(),
+            )
+            return ToolResultV1(
+                status="error",
+                data={},
+                error=ToolErrorDetails(
+                    code="WEBSEARCH_UNAVAILABLE",
+                    message=(
+                        f"Die Websuche ueber '{source_provider}' ist derzeit nicht verlaesslich verfuegbar "
+                        "oder lieferte keine belegbaren Quellen. Ich kann daraus keine aktuellen/live Daten ableiten."
+                    ),
+                    details={"provider": source_provider, "status": raw_status, "query": normalized_query},
+                ),
+                metadata={"execution_time_ms": _elapsed_ms()},
+            )
+
+        if _is_current_data_query(normalized_query) and text.strip() and not sources:
+            logger.warning(
+                "skill=%s status=error code=WEBSEARCH_NO_SOURCES provider=%s query=%s ms=%s",
+                skill_name,
+                source_provider,
+                normalized_query,
+                _elapsed_ms(),
+            )
+            return ToolResultV1(
+                status="error",
+                data={},
+                error=ToolErrorDetails(
+                    code="WEBSEARCH_NO_SOURCES",
+                    message=(
+                        f"Die Websuche ueber '{source_provider}' lieferte fuer diese aktuelle Anfrage "
+                        "keine zitierbaren Quellen. Ohne Quellenbeleg gebe ich keine aktuellen Daten aus."
+                    ),
+                    details={"provider": source_provider, "query": normalized_query},
+                ),
+                metadata={"execution_time_ms": _elapsed_ms()},
+            )
 
         # ── Ebene 5: Smart Global Fallback (Tech/News ohne ausreichend Ergebnisse) ──
         if _detect_global_fallback_needed(normalized_query, items):
@@ -351,9 +405,9 @@ def register_all_tools():
     tool_manager.register_tool(
         video_understanding_tool,
         VideoUnderstandingInput,
-        name="system.video_understanding",
+        name="video.understand",
     )
-    tool_manager.set_output_schema("system.video_understanding", VideoUnderstandingOutput)
+    tool_manager.set_output_schema("video.understand", VideoUnderstandingOutput)
 
     # 1. Info
     tool_manager.register_tool(

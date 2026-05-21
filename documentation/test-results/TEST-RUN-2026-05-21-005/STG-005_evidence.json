@@ -1,0 +1,14 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-005",
+  "testCaseId": "STG-005",
+  "result": "BLOCKED",
+  "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+  "evidence": {
+    "blocker": "JANUS_STAGING_BACKEND_URL is required for debug-route probing.",
+    "base": {
+      "blocked": true,
+      "reason": "JANUS_STAGING_BACKEND_URL is not configured."
+    }
+  },
+  "timestamp": "2026-05-21T00:36:05.695Z"
+}

@@ -55,6 +55,18 @@ def _fetch_rss_content(url: str) -> bytes:
     return resp.content
 
 
+def _websearch_fallback_has_evidence(web_result: dict) -> bool:
+    if not isinstance(web_result, dict):
+        return False
+    metadata = web_result.get("metadata") if isinstance(web_result.get("metadata"), dict) else {}
+    status = str(metadata.get("status") or "").strip().lower()
+    if status in {"timeout", "error", "unavailable"}:
+        return False
+    text = str(web_result.get("text") or "").strip()
+    sources = web_result.get("sources") if isinstance(web_result.get("sources"), list) else []
+    return bool(text or sources)
+
+
 async def get_latest_news_rss(
     source: str,
     query: Optional[str] = None,
@@ -124,6 +136,8 @@ async def get_latest_news_rss(
                 web_result = await execute_websearch_service(
                     query=search_q, api_key=api_key, provider=provider, model=model
                 )
+                if not _websearch_fallback_has_evidence(web_result):
+                    raise RuntimeError("Websearch fallback returned no reliable evidence")
                 logger.info("skill=%s status=ok source=websearch_fallback ms=%s", skill_name, _elapsed_ms())
                 return ToolResultV1(
                     status="ok",
@@ -171,6 +185,8 @@ async def get_latest_news_rss(
                 provider=provider,
                 model=model,
             )
+            if not _websearch_fallback_has_evidence(web_result):
+                raise RuntimeError("Websearch fallback returned no reliable evidence")
             logger.info("skill=%s status=ok source=websearch_fallback ms=%s", skill_name, _elapsed_ms())
             return ToolResultV1(
                 status="ok",
@@ -189,7 +205,10 @@ async def get_latest_news_rss(
                 data={},
                 error=ToolErrorDetails(
                     code="RSS_AND_WEB_FAILED",
-                    message=f"Fehler beim Abrufen der News (RSS & Web): {str(e)} | {str(web_e)}",
+                    message=(
+                        f"RSS-Quelle '{source}' und Websuche konnten keine verlaesslichen News-Belege liefern. "
+                        f"Ich erfinde deshalb keine Schlagzeilen. Details: {str(e)} | {str(web_e)}"
+                    ),
                 ),
                 metadata={"execution_time_ms": _elapsed_ms()},
             )

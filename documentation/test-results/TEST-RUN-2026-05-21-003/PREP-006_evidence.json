@@ -1,0 +1,18 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-003",
+  "testCaseId": "PREP-006",
+  "result": "PASS",
+  "classification": "FIXTURE_RESET_PASS",
+  "evidence": {
+    "syntheticUserA": "synthetic-user-a",
+    "syntheticUserB": "synthetic-user-b",
+    "canaries": [
+      "SYNTHETIC_CANARY_MINIPREP_ALPHA_DO_NOT_USE (synthetic)",
+      "SYNTHETIC_CANARY_MINIPREP_BETA_DO_NOT_USE (synthetic)"
+    ],
+    "separatedFixtureDirectories": true,
+    "resetMethod": "fs.rmSync(fixtureRoot, { recursive: true, force: true })",
+    "resetVerified": true
+  },
+  "timestamp": "2026-05-20T23:53:14.494Z"
+}

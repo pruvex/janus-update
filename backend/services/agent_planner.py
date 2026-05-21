@@ -18,9 +18,9 @@ class AgentPlanner:
         "shopping": ["system.price_comparison"],
         "calendar": ["calendar.list_events", "calendar.find_slots", "calendar.find_and_update_event"],
         "local_business": ["system.local_business"],
-        "video_understanding": ["video.understand", "system.video_understanding"],
-        "video_list": ["video.search", "system.video_search"],
-        "video": ["video.search", "system.video_search"],
+        "video_understanding": ["video.understand"],
+        "video_list": ["video.search"],
+        "video": ["video.search"],
         "image": ["system.generate_image"],
         "multitask_image_pdf": ["system.generate_image", "system.create_pdf"],
     }
@@ -381,10 +381,7 @@ class AgentPlanner:
         selected = self._filter_skills(candidates, available, planner_context)
         if selected:
             return selected[:2]
-        aliases = {
-            "video.search": "system.video_search",
-            "video.understand": "system.video_understanding",
-        }
+        aliases = {}
         aliased = [aliases.get(skill, skill) for skill in candidates]
         return self._filter_skills(aliased, available, planner_context)[:2]
 

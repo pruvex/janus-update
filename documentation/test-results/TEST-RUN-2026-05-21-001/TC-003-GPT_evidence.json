@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-001",
+  "testCaseId": "TC-003-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Was gibt es Neues bei Heise? with RSS unavailable/simulated blocker",
+  "response": "Hallo Pruve — hier sind die aktuellen Heise-Top-Schlagzeilen:\n\nOpenAI strebt flott an die Börse  \nNvidia im KI-Rausch: GeForce verschwindet in der Versenkung  \nMMS in Deutschland vor dem Aus  \nMusk v Altman: Das Gfrett mit Geschworenen  \nFast perfekt für bestehende Balkonkraftwerke: Solarakku bei Lidl für 300 Euro  \nRokid Glasses im Test: Smart Glasses mit KI, Live-Übersetzung & Navigation  \nBrüssel ordnet Algorithmen: EU-Kommission konkretisiert die Hochrisiko-KI  \nJames-Webb-Teleskop enthüllt neue Details des kosmischen Netzes  \nSurface Laptop: Microsoft bricht mit eigener Speicheranforderung  \nheise+ | Wetten auf Kriege, Wahlen und Pandemien: Der Boom der Prognosemärkte\n\n💡 Passende nächste Schritte:• Sag mir 1–2 Themen, die dich interessieren—dann fasse ich sie gezielt zusammen.• Willst du eher IT/Software, Hardware, Recht/Regulierung oder Wissenschaft?\n00:31",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-20T22:31:07.688Z"
+}

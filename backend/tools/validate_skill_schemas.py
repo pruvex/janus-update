@@ -1,23 +1,28 @@
 #!/usr/bin/env python3
-"""
-Skill Schema Validator
+"""Validate skill manifests against Janus ToolManager contracts.
 
-Validates that JSON skill manifests match their corresponding Python function signatures.
+The backend has two distinct skill-manifest shapes:
+
+1. Metadata manifests: describe routing, latency, examples and capabilities.
+   Their runtime argument schema comes from ToolManager registration.
+2. Contract manifests: explicitly declare ``input_schema`` or ``parameters``.
+   These must match the ToolManager LLM-facing args schema.
+
+This validator intentionally compares against ToolManager schemas instead of
+raw Python function signatures. Function signatures often contain injected
+runtime parameters such as ``db``, ``api_key``, ``provider`` or wrapper objects
+that are not visible to the LLM and must not be required in skill JSON files.
 """
 
-import inspect
 import json
-import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
-# Add backend to path
 backend_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_dir.parent))
 
 
-# Mapping from skill names (from JSON "skill" field) to Python functions
 SKILL_FUNCTION_MAP = {
     # Filesystem skills
     "filesystem.read_file": "backend.tools.filesystem_tools:read_file",
@@ -81,158 +86,120 @@ SKILL_FUNCTION_MAP = {
 }
 
 
+def _schema_properties(schema: Any) -> Set[str]:
+    if isinstance(schema, dict) and isinstance(schema.get("properties"), dict):
+        return {str(key) for key in schema["properties"].keys()}
+    return set()
+
+
+def manifest_declares_input_contract(data: Dict[str, Any]) -> bool:
+    return "input_schema" in data or "parameters" in data
+
+
 def extract_json_parameters(json_path: Path) -> Optional[Set[str]]:
-    """Extract parameter names from a skill JSON manifest."""
     try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        
-        # Check for input_schema (new format)
-        if "input_schema" in data and "properties" in data["input_schema"]:
-            return set(data["input_schema"]["properties"].keys())
-        
-        # Check for parameters with properties (common format)
-        if "parameters" in data and isinstance(data["parameters"], dict):
-            if "properties" in data["parameters"]:
-                return set(data["parameters"]["properties"].keys())
-            # If parameters is a dict but doesn't have properties, treat its keys as parameter names
-            return set(data["parameters"].keys())
-        
-        # No parameters defined
+        data = json.loads(json_path.read_text(encoding="utf-8"))
+        if "input_schema" in data:
+            return _schema_properties(data.get("input_schema"))
+        parameters = data.get("parameters")
+        if isinstance(parameters, dict):
+            if "properties" in parameters:
+                return _schema_properties(parameters)
+            return {str(key) for key in parameters.keys()}
         return set()
-    except Exception as e:
-        print(f"Error reading {json_path}: {e}")
+    except Exception as exc:
+        print(f"Error reading {json_path}: {exc}")
         return None
 
 
-def get_python_function_parameters(func_path: str) -> Optional[tuple[Set[str], bool]]:
-    """Get parameter names from a Python function using inspect.
-    
-    Returns:
-        Tuple of (parameter_names, has_var_kwargs) where has_var_kwargs is True
-        if the function accepts **kwargs.
-    """
+def get_registered_tool_parameters(skill_name: str) -> Optional[Set[str]]:
     try:
-        import importlib.util
-        
-        module_path, func_name = func_path.split(":")
-        
-        # Convert module path to file path
-        module_file = module_path.replace(".", "/") + ".py"
-        if not os.path.exists(module_file):
-            # Try adding backend prefix
-            module_file = "backend/" + module_file
-        
-        spec = importlib.util.spec_from_file_location(module_path, module_file)
-        if spec is None or spec.loader is None:
-            raise ImportError(f"Could not load module from {module_file}")
-        
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        
-        func = getattr(module, func_name)
-        
-        sig = inspect.signature(func)
-        has_var_kwargs = any(
-            param.kind == inspect.Parameter.VAR_KEYWORD
-            for param in sig.parameters.values()
-        )
-        # Exclude **kwargs and *args
-        params = {
-            name for name, param in sig.parameters.items()
-            if param.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
-        }
-        return params, has_var_kwargs
-    except Exception as e:
-        print(f"Error inspecting {func_path}: {e}")
+        from backend.services.tool_manager import tool_manager
+        from backend.tool_registry import register_all_tools
+
+        register_all_tools()
+        tool = tool_manager.get_tool(skill_name)
+        if tool is None:
+            return None
+        return _schema_properties(tool.llm_definition.get("parameters"))
+    except Exception as exc:
+        print(f"Error inspecting registered tool '{skill_name}': {exc}")
         return None
 
 
 def validate_skill(json_path: Path) -> List[str]:
-    """Validate a single skill JSON against its Python function."""
-    errors = []
-    
+    errors: List[str] = []
+
     try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        
-        skill_name = data.get("skill")
-        if not skill_name:
-            errors.append(f"No 'skill' field in {json_path}")
-            return errors
-        
-        # Get JSON parameters
-        json_params = extract_json_parameters(json_path)
-        if json_params is None:
-            errors.append(f"Failed to extract JSON parameters from {json_path}")
-            return errors
-        
-        # Find corresponding Python function
-        func_path = SKILL_FUNCTION_MAP.get(skill_name)
-        if not func_path:
-            # Skip if no mapping defined
-            print(f"⚠ No mapping for skill '{skill_name}' in {json_path}")
-            return errors
-        
-        # Get Python parameters
-        result = get_python_function_parameters(func_path)
-        if result is None:
-            errors.append(f"Failed to inspect Python function {func_path}")
-            return errors
-        
-        python_params, has_var_kwargs = result
-        
-        # Compare parameters
-        if has_var_kwargs:
-            # Function accepts **kwargs, so any JSON parameters are valid
-            print(f"✓ {skill_name}: Parameters match (function accepts **kwargs)")
+        data = json.loads(json_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return [f"Error validating {json_path}: {exc}"]
+
+    skill_name = str(data.get("skill") or "").strip()
+    if not skill_name:
+        return [f"No 'skill' field in {json_path}"]
+
+    description = data.get("description")
+    if "description" in data and not isinstance(description, str):
+        errors.append(f"Invalid 'description' field in {json_path}")
+
+    declares_input_contract = manifest_declares_input_contract(data)
+    if not declares_input_contract:
+        print(f"OK {skill_name}: metadata manifest (ToolManager schema is source of truth)")
+        return errors
+
+    json_params = extract_json_parameters(json_path)
+    if json_params is None:
+        return [f"Failed to extract JSON parameters from {json_path}"]
+
+    if skill_name not in SKILL_FUNCTION_MAP:
+        if data.get("is_agent_ready") is True:
+            errors.append(f"No function mapping for agent-ready skill '{skill_name}' in {json_path}")
         else:
-            # Function doesn't accept **kwargs, parameters must match exactly
-            if json_params != python_params:
-                errors.append(
-                    f"Parameter mismatch for '{skill_name}' ({json_path}):\n"
-                    f"  JSON parameters: {sorted(json_params)}\n"
-                    f"  Python parameters: {sorted(python_params)}"
-                )
-            else:
-                print(f"✓ {skill_name}: Parameters match")
-    
-    except Exception as e:
-        errors.append(f"Error validating {json_path}: {e}")
-    
+            print(f"OK {skill_name}: non-agent-ready manifest contract is not ToolManager-routable")
+        return errors
+
+    registered_params = get_registered_tool_parameters(skill_name)
+    if registered_params is None:
+        errors.append(f"No registered ToolManager tool for '{skill_name}'")
+        return errors
+
+    if json_params != registered_params:
+        errors.append(
+            f"Parameter mismatch for '{skill_name}' ({json_path}):\n"
+            f"  Manifest parameters: {sorted(json_params)}\n"
+            f"  Registered ToolManager parameters: {sorted(registered_params)}"
+        )
+    else:
+        print(f"OK {skill_name}: manifest parameters match ToolManager schema")
+
     return errors
 
 
-def main():
-    """Main validation function."""
+def main() -> None:
     skills_dir = Path(__file__).parent.parent / "skills"
-    
+
     if not skills_dir.exists():
         print(f"Skills directory not found: {skills_dir}")
         sys.exit(1)
-    
-    # Find all JSON manifests
-    json_files = list(skills_dir.rglob("*.json"))
-    
+
+    json_files = sorted(skills_dir.rglob("*.json"))
     print(f"Found {len(json_files)} skill JSON files")
     print("=" * 60)
-    
-    all_errors = []
-    
-    for json_path in sorted(json_files):
-        errors = validate_skill(json_path)
-        all_errors.extend(errors)
-    
+
+    all_errors: List[str] = []
+    for json_path in json_files:
+        all_errors.extend(validate_skill(json_path))
+
     print("=" * 60)
-    
     if all_errors:
-        print(f"\n❌ Validation failed with {len(all_errors)} error(s):")
+        print(f"\nX Validation failed with {len(all_errors)} error(s):")
         for error in all_errors:
             print(f"  - {error}")
         sys.exit(1)
-    else:
-        print("\n✓ All validated skills passed!")
-        sys.exit(0)
+
+    print("\nOK All validated skills passed!")
+    sys.exit(0)
 
 
 if __name__ == "__main__":

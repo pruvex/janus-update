@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-002",
+  "testCaseId": "TC-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Modellpreise fuer GPT und Gemini",
+  "response": "\nOpenAI (GPT / ChatGPT) – ChatGPT Plus: 20 USD/Monat (unverifiziert: Preis im Snippet der Suche nicht als Euro auf „site:de“ verifizierbar)Quelle: Was ist ChatGPT Plus? | OpenAI Help Center\n\nGoogle (Gemini) – Google AI Pro: 21,99 € pro Monat (unverifiziert)Quelle: Google Store / Google AI Pro (laut Suchergebnis)\n\n\nWichtiger Hinweis: Für „GPT“ als einzelne Modellpakete (z.B. GPT-4.x/GPT-5.x) habe ich in den gefundenen Preis-Seiten im Snippet keine Euro-Modellpreisliste als direkt verifizierbaren Modellpreis entdeckt—dort werden eher Abo/Features gezeigt.\n💡 Passende nächste Schritte:• Soll ich dir API-Preise pro Token/Modell für OpenAI und Gemini (statt Chat-Abos) heraussuchen?• In welchem Land/Region brauchst du die Preise genau: Deutschland (EUR) oder anderer Markt?\n01:15",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T23:16:26.126Z"
+}

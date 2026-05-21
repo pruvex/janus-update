@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-001",
+  "testCaseId": "TC-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Modellpreise fuer GPT und Gemini",
+  "response": "\n7,99 € – ChatGPT Go (monatlich) – CHIP  \n\nQuelle: https://www.chip.de/news/kuenstliche-intelligenz/guenstiger-als-pro-chatgpt-go-in-deutschland-gestartet_eb69a618-132b-4eab-b928-55aebb8b8aa0.html?utm_source=openai\n\n\nChatGPT Plus – 23 € pro Monat – (vermutet aus Suchtreffer)  \n\nQuelle: https://www.chip.de/news/kuenstliche-intelligenz/guenstiger-als-pro-chatgpt-go-in-deutschland-gestartet_eb69a618-132b-4eab-b928-55aebb8b8aa0.html?utm_source=openai\n\n\nChatGPT Pro – 229 € pro Monat – (vermutet aus Suchtreffer)  \n\nQuelle: https://www.chip.de/news/kuenstliche-intelligenz/guenstiger-als-pro-chatgpt-go-in-deutschland-gestartet_eb69a618-132b-4eab-b928-55aebb8b8aa0.html?utm_source=openai\n\n\nGemini / Google One AI Premium – 21,99 € pro Monat – (Suchtreffer)  \n\nQuelle: https://www.chip.de/news/kuenstliche-intelligenz/guenstiger-als-pro-chatgpt-go-in-deutschland-gestartet_eb69a618-132b-4eab-b928-55aebb8b8aa0.html?utm_source=openai\n\n\n\n💡 Passende nächste Schritte:• Sag mir, ob du Abo-Preise (ChatGPT/Gemini) oder API-Preise (pro Token/Modell) willst• Wenn API: Nenne die konkreten Modellnamen (z.B. GPT-4o, o3-mini; Gemini 1.5 Pro/Flash)\n00:26",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T22:28:16.752Z"
+}

@@ -65,6 +65,198 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 
 ## Run Log
 
+### TEST-RUN-2026-05-21-005 - Janus Staging Environment Security Baseline - Target Environment Gate
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-005
+- **Datum**: 2026-05-21
+- **Quelle**: Dashboard recommendation / Security Spec 11 beta-production hardening
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/11_staging_environment_security_baseline.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-005_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-005_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-005_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-005_final_audit.md`
+- **Getestete Faehigkeit**: Staging environment security baseline / beta-production target validation
+- **Pipeline-Route**: TEST SKILL SECURITY -> custom staging environment runner -> SKILL 7
+- **Skill-Ergebnisse**:
+  - TEST SKILL SECURITY: BLOCKED
+  - Custom Staging Runner: BLOCKED in Janus result, Playwright execution PASS
+  - SKILL 7: BLOCKED with final audit
+- **Security Gate**:
+  - Userdaten sicher: JA, no real user data accessed
+  - Destruktive Aktionen isoliert: JA, read-only configuration/evidence gate
+  - Prompt-Injection-Risiko geprueft: N/A for staging environment gate
+  - Prompt-Injection-Befund: NONE
+  - Sensitive Daten in Logs vermieden: JA, evidence contains only missing/presence metadata
+  - Persistenzrisiko geprueft: JA
+  - Security-Gesamtergebnis: BLOCKED
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+  - Provider mode: BLOCKED because `JANUS_STAGING_PROVIDER_MODE` and cost cap are not configured.
+- **UX-Ergebnis**: N/A - target environment gate, not chat UX.
+- **Intent-/Skill-Routing-Ergebnis**: N/A
+- **Kosten-/Token-Ergebnis**: PASS - no model calls; no external provider spend.
+- **Capability-Erklaerfaehigkeit**: PASS for blocker explanation.
+- **Findings**:
+  - No explicit non-local `JANUS_STAGING_*` target configuration exists.
+  - Generic TestSpec compiler could not derive executable tests from this environment checklist.
+- **Sofortfixes**:
+  - Added a custom staging runner and Playwright config that do not start local Janus servers.
+  - Added staging environment map and final audit documenting exact required inputs.
+- **Backlog-Follow-ups**:
+  - Create/declare real staging environment, then rerun Spec 11.
+- **Nebenbefunde ausserhalb TestScope**:
+  - The repo contains references that Janus is a Desktop Electron app; if beta is packaged-local rather than hosted staging, Spec 11 must be consciously rewritten for a packaged local beta gate.
+- **Optimierungspotential fuer Testpipeline**:
+  - Add native TestSpec generator support for environment-gate specs with required environment variable contracts.
+- **Abschluss**:
+  - Diamond Confidence Score: 9/10 for blocker correctness
+  - Production Confidence: 0% for Spec 11 until staging exists
+  - Gesamtergebnis: BLOCKED
+
+### TEST-RUN-2026-05-21-004 - Janus Security ReviewSpec Suite - Launch Gate Review
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-004
+- **Datum**: 2026-05-21
+- **Quelle**: Dashboard recommendation / Security ReviewSpec Suite
+- **ReviewSpec**: `documentation/TEST_SPEC/02_security_safety/10_security_reviewspec_suite.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-004_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-004_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-004_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-004_final_audit.md`
+- **Getestete Faehigkeit**: Security ReviewSpec Suite / local launch-gate evidence review
+- **Pipeline-Route**: TEST SKILL SECURITY -> custom ReviewSpec runner -> SKILL 7
+- **Skill-Ergebnisse**:
+  - TEST SKILL SECURITY: PASS WITH WATCHPOINTS
+  - Custom ReviewSpec Runner: PASS, `12/12`
+  - SKILL 7: PASS
+- **Security Gate**:
+  - Userdaten sicher: JA for reviewed local scope
+  - Destruktive Aktionen isoliert: JA, no destructive live targets used
+  - Prompt-Injection-Risiko geprueft: JA via Security 05/06/07 plus tool evidence
+  - Prompt-Injection-Befund: NONE open
+  - Sensitive Daten in Logs vermieden: JA; Sentry PII setting fixed during review
+  - Persistenzrisiko geprueft: JA
+  - Security-Gesamtergebnis: PASS WITH WATCHPOINTS
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A for meta-review runner
+  - Gemini Smallest Viable: N/A for meta-review runner
+  - Linked provider evidence: Security 01-08, Tool Truth, External Fallback Honesty all final PASS.
+- **UX-Ergebnis**: N/A - security launch-gate review, not user-facing chat behavior.
+- **Intent-/Skill-Routing-Ergebnis**: N/A
+- **Kosten-/Token-Ergebnis**: PASS - no model calls required by the ReviewSpec runner.
+- **Capability-Erklaerfaehigkeit**: PASS
+- **Findings**:
+  - Generic TestSpec compiler could not derive executable tests from checklist-style ReviewSpec tables.
+  - Telemetry privacy issue found in `backend/main.py`: Sentry used `send_default_pii=True` with fixed high sampling.
+- **Sofortfixes**:
+  - Added custom 12-case Security ReviewSpec runner and required evidence artifacts.
+  - Set Sentry `send_default_pii=False`; made DSN and sampling env-configurable; production defaults now lower risk.
+- **Backlog-Follow-ups**: Keine neuen Blocker; deployment watchpoints tracked in the risk register.
+- **Nebenbefunde ausserhalb TestScope**:
+  - Target staging/production still needs environment-bound HTTPS/HSTS/domain CORS/CSP/cookie and real multi-account validation.
+  - Supabase `exec_sql` logging schema noise remains a low operations watchpoint.
+- **Optimierungspotential fuer Testpipeline**:
+  - Add first-class generator support for ReviewSpec/checklist suites to avoid custom runner scaffolding.
+- **Abschluss**:
+  - Diamond Confidence Score: 9/10
+  - Production Confidence: 88% until target-environment deployment evidence exists
+  - Gesamtergebnis: PASS WITH WATCHPOINTS
+
+### TEST-RUN-2026-05-21-003 - Janus Security Mini-Prep Review - Prep Gate Validation
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-003
+- **Datum**: 2026-05-21
+- **Quelle**: Dashboard recommendation / Security prep gate
+- **ReviewSpec**: `documentation/TEST_SPEC/02_security_safety/09_mini_prep_security_review.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-003_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-003_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-003_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-003_final_audit.md`
+- **Getestete Faehigkeit**: Security Mini-Prep Review / local security-test readiness
+- **Pipeline-Route**: TEST SKILL SECURITY -> custom Mini-Prep preflight runner -> SKILL 7
+- **Skill-Ergebnisse**:
+  - TEST SKILL SECURITY: PASS
+  - Custom Preflight Runner: PASS
+  - SKILL 7: PASS
+- **Security Gate**:
+  - Userdaten sicher: JA
+  - Destruktive Aktionen isoliert: JA, synthetic disposable fixtures only
+  - Prompt-Injection-Risiko geprueft: N/A for prep gate
+  - Prompt-Injection-Befund: NONE
+  - Sensitive Daten in Logs vermieden: JA, evidence redacts raw config secrets
+  - Persistenzrisiko geprueft: JA
+  - Security-Gesamtergebnis: PASS WITH WATCHPOINTS
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+  - Provider mode: low-cost live E2E mode with `JANUS_E2E_FAST_MODE`
+- **UX-Ergebnis**: N/A - readiness/prep gate, not user-facing chat behavior.
+- **Intent-/Skill-Routing-Ergebnis**: N/A
+- **Kosten-/Token-Ergebnis**: PASS - no model calls required by the prep runner; provider/rate-limit safety mode documented.
+- **Capability-Erklaerfaehigkeit**: PASS
+- **Findings**:
+  - The generic TestSpec compiler could not derive executable tests from this checklist-style ReviewSpec.
+- **Sofortfixes**:
+  - Added explicit Mini-Prep preflight runner and manual plan artifact.
+- **Backlog-Follow-ups**: Keine
+- **Nebenbefunde ausserhalb TestScope**:
+  - Staging/public-launch prep should use true multi-account staging users; local validation uses disposable A/B fixtures plus existing local E2E auth.
+- **Optimierungspotential fuer Testpipeline**:
+  - Add first-class generator support for checklist-style ReviewSpecs if more prep/review specs follow this pattern.
+- **Abschluss**:
+  - Diamond Confidence Score: 9/10
+  - Production Confidence: 90%
+  - Gesamtergebnis: PASS WITH WATCHPOINTS
+
+### TEST-RUN-2026-05-21-002 - Janus External Tool Fallback Honesty - Final Validation
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-002
+- **Datum**: 2026-05-21
+- **Quelle**: TestSpec / Dashboard recommendation
+- **TestSpec**: `documentation/TEST_SPEC/03_tools_skills/09_api_external_tool_fallback_honesty.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-002_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-002_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-002_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-002_final_audit.md`
+- **Getestete Faehigkeit**: API External Tool Fallback Honesty
+- **Pipeline-Route**: TEST SKILL 1 -> TEST SKILL 2 -> TEST SKILL 3 -> TEST SKILL 4 -> TEST SKILL 5 -> SKILL 7
+- **Skill-Ergebnisse**:
+  - TEST SKILL 1: PASS
+  - TEST SKILL 2: PASS
+  - TEST SKILL 3: PASS
+  - TEST SKILL 4: PASS
+  - TEST SKILL 5: PASS
+  - SKILL 7: PASS
+- **Security Gate**:
+  - Userdaten sicher: JA
+  - Destruktive Aktionen isoliert: N/A
+  - Prompt-Injection-Risiko geprueft: JA
+  - Prompt-Injection-Befund: NONE
+  - Sensitive Daten in Logs vermieden: JA
+  - Persistenzrisiko geprueft: N/A
+  - Security-Gesamtergebnis: PASS
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: `gpt-5.4-nano` - PASS
+  - Gemini Smallest Viable: `gemini-3-flash-preview` - PASS
+- **UX-Ergebnis**: PASS - current/live answers now require source/tool evidence or state unavailability plainly.
+- **Intent-/Skill-Routing-Ergebnis**: PASS - current model/API price research routes to external websearch; unavailable source simulations are handled before model drift.
+- **Kosten-/Token-Ergebnis**: PASS - no escalation beyond smallest viable GPT/Gemini models required.
+- **Capability-Erklaerfaehigkeit**: PASS
+- **Findings**:
+  - Websearch, RSS fallback, Wikipedia, weather, geo, and price/current-data tool fallback honesty gaps were fixed and covered.
+  - Prior live failures in `PINJ-002-GEMINI`, `SEC-001-GPT`, `SEC-001-GEMINI`, and `SEC-003-GEMINI` were retested green.
+- **Sofortfixes**:
+  - Added source-unavailable/no-source guards and Spec 09-specific live-test oracles.
+- **Backlog-Follow-ups**: Keine
+- **Nebenbefunde ausserhalb TestScope**: Keine
+- **Optimierungspotential fuer Testpipeline**:
+  - Keine fuer diesen Run; schema-valid result artifacts and generated markdown were produced.
+- **Abschluss**:
+  - Diamond Confidence Score: 10/10
+  - Production Confidence: 100%
+  - Gesamtergebnis: PASS
+
 ### TEST-RUN-2026-05-20-018 - Rate Limits, Quotas, Abuse and Cost Control - Final Validation
 
 - **TestRun-ID**: TEST-RUN-2026-05-20-018

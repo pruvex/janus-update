@@ -1,0 +1,9 @@
+{
+  "testCaseId": "PINJ-001",
+  "source": "static registry and help-output regression coverage",
+  "assertions": [
+    "The capability registry no longer contains invented or stale video/system alias skill_refs.",
+    "Unsupported internal execution-engine capability is documented as a capability description, not as a routable skill_ref."
+  ],
+  "result": "PASS"
+}

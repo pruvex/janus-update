@@ -1,0 +1,25 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-005",
+  "testCaseId": "STG-010",
+  "result": "BLOCKED",
+  "classification": "STAGING_ENVIRONMENT_NOT_CONFIGURED",
+  "evidence": {
+    "blocker": "Staging gate is BLOCKED until explicit non-local staging configuration is provided.",
+    "missing": [
+      "JANUS_STAGING_FRONTEND_URL",
+      "JANUS_STAGING_HEALTH_URL",
+      "JANUS_STAGING_ENVIRONMENT_NAME",
+      "JANUS_STAGING_DATASTORE_ID",
+      "JANUS_PRODUCTION_DATASTORE_ID",
+      "JANUS_STAGING_SECRET_SOURCE",
+      "JANUS_STAGING_BACKEND_URL",
+      "JANUS_STAGING_BUILD_VERSION",
+      "JANUS_STAGING_PROVIDER_MODE",
+      "JANUS_STAGING_PROVIDER_COST_CAP",
+      "JANUS_STAGING_DEPLOY_COMMIT",
+      "JANUS_STAGING_ROLLBACK_TARGET"
+    ],
+    "decision": "BLOCKED"
+  },
+  "timestamp": "2026-05-21T00:36:05.789Z"
+}

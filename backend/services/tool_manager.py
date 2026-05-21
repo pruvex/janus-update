@@ -234,8 +234,9 @@ class ToolManager:
 
             if isinstance(data, dict) and "legacy_name" in data:
                 legacy_name = str(data.get("legacy_name") or "").strip()
+                skill_key = str(data.get("skill") or "").strip()
                 if legacy_name:
-                    data = {legacy_name: data}
+                    data = {legacy_name: data, skill_key: data} if skill_key else {legacy_name: data}
                 else:
                     data = {}
             elif isinstance(data, dict) and "skill" in data and "version" in data:
