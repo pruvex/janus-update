@@ -2,7 +2,7 @@
   "schemaVersion": "janus.test-plan.v1",
   "testRunId": "TEST-RUN-2026-05-21-010",
   "title": "Beta Abuse Limits and Cost Controls",
-  "specPath": "documentation/TEST_SPEC/02_security_safety/16_beta_abuse_limits_and_cost_controls.md",
+  "sourceSpec": "documentation/TEST_SPEC/02_security_safety/16_beta_abuse_limits_and_cost_controls.md",
   "createdAt": "2026-05-21T00:00:00+02:00",
   "target": {
     "mode": "packaged-local beta backend",

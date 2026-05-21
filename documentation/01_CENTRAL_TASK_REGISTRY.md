@@ -4,6 +4,22 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Test Pipeline Validations
 
+### TEST-RUN-2026-05-21-010 - Beta Abuse Limits and Cost Controls
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Security Spec 16 beta/production hardening gate
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/16_beta_abuse_limits_and_cost_controls.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-010_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-010_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-010_results.md`
+- **Limit Policy**: `documentation/test-runs/TEST-RUN-2026-05-21-010_beta_abuse_limit_policy.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-010_final_audit.md`
+- **Validation**: PASS with `10/10` beta-abuse and cost-control checks, `0` failed, `0` blocked. The gate validates the packaged-local beta backend at `http://127.0.0.1:8001` for per-user and global API burst limits, provider spend/retry-storm/tool-flood/broad-crawl gates, upload size limits, safe error wording and operator-alert privacy.
+- **Remediation**: Added mutating API abuse middleware with per-key/user and global sliding-window limits; added safe `429`/`413` responses; capped image/PDF uploads; extended retry/cost/tool/crawl abuse detection; removed raw prompt snippets from abuse warning logs; added `JANUS_DISABLE_SENTRY` for capped test runs.
+- **Watchpoints**: The in-process limiter is appropriate for the current packaged-local Electron beta. A future hosted multi-process beta needs durable centralized counters plus provider-side hard spend caps.
+- **Changed Files**: `backend/main.py`, `backend/api/routers/images.py`, `backend/api/routers/rag.py`, `backend/services/chat_orchestrator.py`, `backend/services/orchestrator/execution_dispatcher.py`, `backend/tests/test_beta_abuse_limits.py`, `tests/e2e/generated/TEST-RUN-2026-05-21-010.*`, `documentation/test-runs/TEST-RUN-2026-05-21-010_*`
+
 ### TEST-RUN-2026-05-21-009 - Deployment Headers CORS CSP Cookie Scan
 
 - **Status**: DONE
