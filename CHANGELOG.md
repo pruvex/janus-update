@@ -7,6 +7,8 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+### Fixed
+- **Websearch Provider Parity / Release-List Chat Templates:** Unified Gemini and GPT websearch list output through a deterministic release-list renderer with per-entry title/date, 1-2 sentence description, price line, and `Quelle: ... [Link](...)` source links. Raw Gemini Vertex redirect footers are suppressed, frontend fallback Markdown links now render as clickable `Link`, websearch output is persisted after rendering, and Gemini native search keeps token usage evidence while GPT remains websearch-query based. Validation: focused websearch suite 51/51 PASS; frontend Markdown renderer 4/4 PASS. Files: `backend/renderers/websearch_templates.py`, `backend/renderers/implementations/unified_websearch_renderer.py`, `backend/services/websearch/gemini_provider.py`, `backend/services/websearch/openai_provider.py`, `frontend/js/markdown-renderer.js`.
 ## [0.4.17-beta.37] - 2026-05-21
 
 ### Fixed

@@ -2465,6 +2465,9 @@ class ChatOrchestrator:
                     model_hierarchy=self.MODEL_HIERARCHY,
                     orchestrator_cls=ChatOrchestrator,
                 )
+                _api_text = str(getattr(getattr(wf, "execution_for_api", None), "text", "") or "").strip()
+                if _api_text and _api_text != str(ctx.final_response or "").strip():
+                    yield StreamEvent(type="stream_complete", content={"text": _api_text})
                 for ev in self._iter_modal_request_stream_events(ctx):
                     yield ev
             finally:

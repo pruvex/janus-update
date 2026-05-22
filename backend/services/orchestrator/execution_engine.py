@@ -42,6 +42,17 @@ logger = logging.getLogger("janus_backend")
 MAPS_LINK_REGEX = re.compile(r'"maps_link"\s*:\s*"([^"]+)"')
 
 
+def _has_websearch_tool_result(results: Any) -> bool:
+    for item in results or []:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "").strip().lower()
+        skill_id = str(item.get("_skill_id") or item.get("skill_id") or "").strip().lower()
+        if name in {"system.websearch", "system_websearch", "websearch_wrapper"} or skill_id == "system.websearch":
+            return True
+    return False
+
+
 def _extract_pseudo_tool_call_from_text(text: Any) -> Optional[Dict[str, Any]]:
     """Extract a JSON tool-call intent emitted as plain assistant text.
 
@@ -2936,7 +2947,8 @@ class OrchestratorExecutionEngine:
                 )
                 round_text = ""
                 round_text_parts = []
-            if not pseudo_tool_call_from_text and not generic_stability_fallback_from_text:
+            suppress_raw_websearch_synthesis = had_tool_round and _has_websearch_tool_result(results_buffer)
+            if not pseudo_tool_call_from_text and not generic_stability_fallback_from_text and not suppress_raw_websearch_synthesis:
                 for pending_text_event in pending_text_events:
                     yield pending_text_event
 
@@ -3415,7 +3427,8 @@ class OrchestratorExecutionEngine:
         )
         if result_holder is not None:
             result_holder["execution_result"] = er
-        yield StreamEvent(type="stream_complete", content={"text": er.text}, metadata={})
+        if not _has_websearch_tool_result(results_buffer):
+            yield StreamEvent(type="stream_complete", content={"text": er.text}, metadata={})
 
     @staticmethod
     def _build_atomic_planner_prompt(

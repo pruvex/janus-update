@@ -139,6 +139,8 @@ def _strip_source_appendix(text: str) -> str:
     patterns = (
         r"\n{2,}\*\*Gefundene Quellen:\*\*[\s\S]*$",
         r"\n{2,}\*\*Quellen:\*\*[\s\S]*$",
+        r"\n{2,}#{1,6}\s*\d+\.?\s*Quellen\s*[\s\S]*$",
+        r"\n{2,}\d+\.?\s*Quellen\s*[\s\S]*$",
         r"\n{2,}Quellen:\s*[\s\S]*$",
         r"\n{2,}Sources:\s*[\s\S]*$",
     )
@@ -150,7 +152,9 @@ def _strip_source_appendix(text: str) -> str:
 def _build_gemini_native_websearch_prompt(query: str) -> str:
     cleaned_query = str(query or "").strip()
     lowered = cleaned_query.lower()
-    is_game_release_query = any(token in lowered for token in ("switch", "nintendo", "spiele", "games", "release", "erscheinen", "launch"))
+    game_platform_marker = any(token in lowered for token in ("switch", "nintendo", "playstation", "xbox", "steam", "spiele", "games"))
+    release_marker = any(token in lowered for token in ("release", "releases", "erscheinen", "erscheint", "neuerschein", "kommende", "naechsten monat", "nächsten monat", "next month", "upcoming"))
+    is_game_release_query = game_platform_marker and release_marker
     asks_price = any(token in lowered for token in ("preis", "preise", "uvp", "straßenpreis", "strassenpreis", "street price", "in euro"))
     asks_ranking = any(token in lowered for token in ("top 3", "top3", "ranking", "beliebteste", "beliebtesten", "highlights", "popular"))
     asks_launch = any(token in lowered for token in ("launch", "veröffentlicht", "veroeffentlicht", "release date", "wann wurde"))
@@ -161,6 +165,14 @@ def _build_gemini_native_websearch_prompt(query: str) -> str:
         "Antworte auf Deutsch und liefere ausschließlich Recherchematerial, keine finale Nutzerantwort.",
         "Schreibe KEINE Markdown-Links, KEINE Inline-Zitate und KEIN separates Quellenverzeichnis in den Text.",
         "Der Text dient nur als Rohmaterial für eine nachgelagerte Synthetisierung im Backend.",
+        "Nenne Preise NUR, wenn die Nutzerfrage ausdrücklich nach Preis, Kosten, UVP oder Kauf fragt. "
+        "Bei reinen Release-, Ranking- oder Infofragen lasse Preise komplett weg.",
+        "AUSGABE-STIL: Liefere eine kurze direkte Antwort. Bei Listenfragen wie Top 5, Neuerscheinungen, "
+        "bekannteste Personen, Buecher, Spiele, Filme oder Produkte nutze eine nummerierte Liste. "
+        "Jeder Eintrag muss mehr sein als nur ein Name: Schreibe 1-2 informative Saetze mit Genre/Kontext, "
+        "Inhalt, Einordnung, Entwickler/Publisher oder Relevanz. Die Beschreibung soll natuerlich lesbar sein, "
+        "nicht nur eine Stichwortnotiz. Nenne im Text eine kurze Quellenkennung wie '(Quelle: IGN)' "
+        "oder '(Quelle: NBA)' passend zum jeweiligen Eintrag, aber keine URLs.",
         f"Nutzerfrage: {cleaned_query}",
     ]
     if is_game_release_query:
@@ -168,7 +180,7 @@ def _build_gemini_native_websearch_prompt(query: str) -> str:
             [
                 "Prüfe strikt die Zielplattform und das Zielgebiet; mische keine anderen Konsolen oder falschen Regionen/Jahre hinein.",
                 "Ermittle möglichst vollständig alle relevanten Titel, Release-Termine/Fenster, Plattformangaben und zugehörigen Quellen.",
-                "Strukturiere das Recherchematerial mit klaren Abschnitten für Launch, Preise/UVP, Highlights/Top 3 und verifizierte Release-Liste, sofern diese Aspekte angefragt sind.",
+                "Strukturiere das Recherchematerial als verifizierte Release-Liste. Nenne Launch-, Preis-/UVP- oder Top-3-Abschnitte nur, wenn die Nutzerfrage diese Aspekte explizit verlangt.",
             ]
         )
     if asks_price or asks_ranking or asks_launch:
@@ -243,6 +255,7 @@ class GeminiWebSearchProvider(BaseWebSearchProvider):
 
             text_output = ""
             search_queries_count = 0
+            usage_metadata: dict[str, Any] = result.get("usageMetadata", {}) if isinstance(result.get("usageMetadata"), dict) else {}
             
             if "candidates" in result and result["candidates"]:
                 candidate = result["candidates"][0]
@@ -267,7 +280,17 @@ class GeminiWebSearchProvider(BaseWebSearchProvider):
 
             if search_queries_count > 0:
                 logger.info("Gemini executed %s queries. Extracted %s clean sources.", search_queries_count, len(urls))
-                usage, cost = calculate_cost("websearch_gemini", usage_data={"query_count": search_queries_count})
+                token_usage = {
+                    "input_tokens": usage_metadata.get("promptTokenCount") or usage_metadata.get("input_tokens") or 0,
+                    "output_tokens": usage_metadata.get("candidatesTokenCount") or usage_metadata.get("output_tokens") or 0,
+                    "total_tokens": usage_metadata.get("totalTokenCount") or usage_metadata.get("total_tokens") or 0,
+                    "query_count": search_queries_count,
+                }
+                usage, cost = calculate_cost(model_name, usage_data=token_usage)
+                if not usage:
+                    _, cost = calculate_cost("websearch_gemini", usage_data={"query_count": search_queries_count})
+                    usage = token_usage
+                usage["query_count"] = search_queries_count
             else:
                 usage, cost = {}, {}
 
@@ -303,6 +326,10 @@ class GeminiWebSearchProvider(BaseWebSearchProvider):
                 "sources": sources,
                 "metadata": metadata,
             }
+            if usage:
+                result["usage"] = usage  # type: ignore[typeddict-unknown-key]
+            if cost:
+                result["cost"] = cost  # type: ignore[typeddict-unknown-key]
             
             return result
 

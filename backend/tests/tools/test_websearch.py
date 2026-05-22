@@ -5,9 +5,14 @@ import pytest
 import requests
 
 from backend.data import schemas
+from backend.renderers.attribution import append_tool_attributions_from_tools
+from backend.renderers.implementations.unified_websearch_renderer import UnifiedWebSearchRenderer
+from backend.renderers.websearch_templates import WebSearchTemplateEngine
 from backend.services.websearch.gemini_provider import GeminiWebSearchProvider
 from backend.services.websearch.duckduckgo_provider import DuckDuckGoWebSearchProvider
-from backend.tool_registry import websearch_wrapper
+from backend.services.websearch.openai_provider import coerce_openai_websearch_model
+from backend.tool_registry import _coerce_websearch_model_for_provider, _normalize_websearch_query, websearch_wrapper
+from backend.services.skill_router import is_realtime_search_query
 
 
 @pytest.mark.asyncio
@@ -71,13 +76,138 @@ async def test_websearch_wrapper_persists_cost_entry_for_successful_openai_webse
 
 
 @pytest.mark.asyncio
+async def test_websearch_wrapper_persists_gemini_token_usage_costs():
+    fake_db = Mock()
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
+        "backend.services.websearch.websearch.GEMINI_PROVIDER.search",
+        AsyncMock(
+            return_value={
+                "text": "Release-Liste",
+                "sources": [{"url": "https://example.com/switch2", "title": "GamePro"}],
+                "metadata": {"provider": "gemini"},
+                "usage": {"input_tokens": 1200, "output_tokens": 340, "total_tokens": 1540, "query_count": 2},
+                "cost": {"total_cost": 0.0025},
+            }
+        ),
+    ), patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
+        "backend.services.cost_service.create_cost_entry"
+    ) as create_cost_entry_mock:
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(
+                query="welche spiele erscheinen nächsten monat für die nintendo switch 2",
+                provider="gemini",
+                model="gemini-3-flash-preview",
+            )
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    assert rd["status"] == "ok"
+    create_cost_entry_mock.assert_called_once()
+    kwargs = create_cost_entry_mock.call_args.kwargs
+    assert kwargs["amount"] == 0.0025
+    assert kwargs["provider"] == "gemini"
+    assert kwargs["model"] == "gemini-3-flash-preview"
+    assert kwargs["source_type"] == "websearch"
+    assert kwargs["input_tokens"] == 1200
+    assert kwargs["output_tokens"] == 340
+    assert kwargs["total_tokens"] == 1540
+    assert kwargs["context_details"] == "query_count=2"
+    fake_db.close.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_gemini_provider_costs_native_search_by_tokens_when_usage_metadata_exists():
+    provider = GeminiWebSearchProvider()
+    fake_response = {
+        "usageMetadata": {
+            "promptTokenCount": 111,
+            "candidatesTokenCount": 22,
+            "totalTokenCount": 133,
+        },
+        "candidates": [
+            {
+                "content": {"parts": [{"text": "1. Test Game (3. Juni 2026): Ein Actionspiel. (Quelle: IGN)."}]},
+                "groundingMetadata": {
+                    "webSearchQueries": ["Test Game Switch 2"],
+                    "groundingChunks": [
+                        {"web": {"uri": "https://www.ign.com/test-game", "title": "IGN Test Game"}}
+                    ],
+                    "groundingSupports": [
+                        {"segment": {"text": "Test Game release date"}, "groundingChunkIndices": [0]}
+                    ],
+                },
+            }
+        ],
+    }
+
+    with patch("backend.services.websearch.gemini_provider.asyncio.to_thread", AsyncMock(return_value=fake_response)), patch(
+        "backend.services.websearch.gemini_provider.calculate_cost",
+        return_value=(
+            {"input_tokens": 111, "output_tokens": 22, "total_tokens": 133},
+            {"total_cost": 0.00042},
+        ),
+    ) as calculate_cost_mock:
+        result = await provider.search("gemini-key", "Test Game Switch 2 release", "gemini-3-flash-preview")
+
+    calculate_cost_mock.assert_called_once_with(
+        "gemini-3-flash-preview",
+        usage_data={"input_tokens": 111, "output_tokens": 22, "total_tokens": 133, "query_count": 1},
+    )
+    assert result["usage"]["input_tokens"] == 111
+    assert result["usage"]["output_tokens"] == 22
+    assert result["usage"]["total_tokens"] == 133
+    assert result["usage"]["query_count"] == 1
+    assert result["cost"]["total_cost"] == 0.00042
+
+
+@pytest.mark.asyncio
+async def test_gemini_provider_preserves_token_usage_when_model_price_is_missing():
+    provider = GeminiWebSearchProvider()
+    fake_response = {
+        "usageMetadata": {
+            "promptTokenCount": 222,
+            "candidatesTokenCount": 44,
+            "totalTokenCount": 266,
+        },
+        "candidates": [
+            {
+                "content": {"parts": [{"text": "1. Test Game (3. Juni 2026): Ein Actionspiel. Quelle: IGN."}]},
+                "groundingMetadata": {
+                    "webSearchQueries": ["Test Game Switch 2"],
+                    "groundingChunks": [
+                        {"web": {"uri": "https://www.ign.com/test-game", "title": "IGN Test Game"}}
+                    ],
+                },
+            }
+        ],
+    }
+
+    with patch("backend.services.websearch.gemini_provider.asyncio.to_thread", AsyncMock(return_value=fake_response)), patch(
+        "backend.services.websearch.gemini_provider.calculate_cost",
+        side_effect=[
+            ({}, {}),
+            ({"query_count": 1}, {"total_cost": 0.0}),
+        ],
+    ) as calculate_cost_mock:
+        result = await provider.search("gemini-key", "Test Game Switch 2 release", "gemini-3-flash-preview")
+
+    assert calculate_cost_mock.call_args_list[0].args[0] == "gemini-3-flash-preview"
+    assert calculate_cost_mock.call_args_list[1].args[0] == "websearch_gemini"
+    assert result["usage"]["input_tokens"] == 222
+    assert result["usage"]["output_tokens"] == 44
+    assert result["usage"]["total_tokens"] == 266
+    assert result["usage"]["query_count"] == 1
+
+
+@pytest.mark.asyncio
 async def test_websearch_wrapper_normalizes_current_price_query_for_openai_search():
     with patch("backend.tool_registry.keyring.get_password", return_value="openai-key"), patch(
         "backend.services.websearch.websearch.OPENAI_PROVIDER.search",
         AsyncMock(
             return_value={
                 "text": "ok",
-                "sources": [],
+                "sources": [{"url": "https://example.com/gold", "title": "Goldpreis"}],
                 "metadata": {"provider": "openai"},
                 "usage": {},
                 "cost": {},
@@ -93,7 +223,842 @@ async def test_websearch_wrapper_normalizes_current_price_query_for_openai_searc
     rd = result.model_dump() if hasattr(result, "model_dump") else result
     assert rd["status"] == "ok"
     forwarded_query = openai_search_mock.await_args.kwargs["query"]
-    assert forwarded_query == "aktueller Preis einer Feinunze Gold 2026 in Euro"
+    assert forwarded_query == "aktueller Preis einer Feinunze Gold 2026 in Euro Goldpreis Spotpreis"
+
+
+def test_websearch_query_normalizes_platinum_price_to_eur_spotprice():
+    forwarded_query = _normalize_websearch_query("weiviel kostet eine feinunze platin")
+
+    assert "in Euro" in forwarded_query
+    assert "Platinpreis" in forwarded_query
+    assert "Spotpreis" in forwarded_query
+
+
+def test_release_lookup_query_requires_realtime_websearch_route():
+    assert is_realtime_search_query("welche spiele erscheinen nächsten monat für die nintendo switch 2")
+    assert is_realtime_search_query("Nintendo Switch 2 upcoming games next month")
+
+
+def test_websearch_template_engine_routes_release_lookup_only():
+    assert WebSearchTemplateEngine.is_release_lookup("welche spiele erscheinen nächsten monat für die nintendo switch 2")
+    assert not WebSearchTemplateEngine.is_release_lookup("wie ist das wetter morgen in berlin")
+
+
+def test_websearch_template_engine_release_list_contract():
+    rendered = WebSearchTemplateEngine.render(
+        {
+            "query": "Nintendo Switch 2 Spiele Releases Juni 2026",
+            "sources": [{"title": "IGN", "url": "https://www.ign.com/games/final-fantasy-vii-rebirth"}],
+        },
+        (
+            "1. **Final Fantasy VII Rebirth erscheint am 3. Juni 2026 als Fortsetzung der RPG-Saga um Cloud Strife für die Switch 2 (Quelle**\n"
+            "IGN)."
+        ),
+        "Nintendo Switch 2 Spiele Releases Juni 2026",
+    )
+
+    assert rendered == (
+        "1. **Final Fantasy VII Rebirth (3. Juni 2026)**\n"
+        "Eine Fortsetzung der RPG-Saga um Cloud Strife für die Switch 2.\n"
+        "Preis: online leider nicht verfügbar.\n"
+        "Quelle: IGN. [Link](https://www.ign.com/games/final-fantasy-vii-rebirth)"
+    )
+
+
+def test_release_lookup_renderer_does_not_append_price_comparison_block():
+    renderer = UnifiedWebSearchRenderer()
+    renderer.product_map = {
+        "switch2": {
+            "name": "Nintendo Switch 2",
+            "aliases": ["Nintendo Switch 2"],
+            "links": {"idealo.de": "https://www.idealo.de/preisvergleich/OffersOfProduct/206193300_-switch-2-nintendo.html"},
+        }
+    }
+
+    rendered = renderer.render(
+        {
+            "text": "1. **Mario Kart World**: Rennspiel fuer Nintendo Switch 2. Quelle: Nintendo.",
+            "sources": [{"url": "https://www.nintendo.com/us/gaming-systems/switch-2/games/", "title": "Nintendo"}],
+        },
+        llm_text="Welche Spiele erscheinen naechsten Monat fuer Nintendo Switch 2?\n\n1. **Mario Kart World**: Rennspiel fuer Nintendo Switch 2. Quelle: Nintendo.",
+    )
+
+    assert "Preisvergleich" not in rendered
+    assert "Idealo" not in rendered
+
+
+def test_websearch_renderer_strips_global_research_raw_block():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "text": "1. **Mario Kart World**: Rennspiel fuer Switch 2. Quelle: Nintendo.\n\n[Global Research]\nRohmaterial nicht anzeigen.",
+            "sources": [{"url": "https://www.nintendo.com/us/gaming-systems/switch-2/games/", "title": "Nintendo"}],
+        }
+    )
+
+    assert "Mario Kart World" in rendered
+    assert "Global Research" not in rendered
+    assert "Rohmaterial" not in rendered
+
+
+def test_release_lookup_renderer_formats_list_with_price_and_source_lines_without_vertex_footer():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "Nintendo Switch 2 upcoming games release Juni 2026",
+            "text": (
+                "1. **Final Fantasy VII Rebirth (03.06.2026):** Das JRPG-Epos setzt die Geschichte um Cloud fort "
+                "und kostet laut Suchergebnis 49,99 US-Dollar (Quelle: GameStop).\n"
+                "2. **eFootball Kick-Off! (03.06.2026)**: Konamis Fussball-Simulation erscheint als dedizierte Version (Quelle: VGC)."
+            ),
+            "sources": [{"url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/example", "title": "GameStop"}],
+        }
+    )
+
+    assert "1. **Final Fantasy VII Rebirth (03.06.2026)**\nDas JRPG-Epos" in rendered
+    assert "\n\n2. **eFootball Kick-Off! (03.06.2026)**\nKonamis" in rendered
+    assert "Preis: voraussichtlich 49,99 US-Dollar laut Suchergebnis." in rendered
+    assert "Preis: online leider nicht verfügbar." in rendered
+    assert "Quelle: GameStop." in rendered
+    assert "Quelle: VGC." in rendered
+    assert "Quelle: GameStop. [Link](https://vertexaisearch.cloud.google.com/grounding-api-redirect/example)" in rendered
+    assert "[vertexaisearch.cloud.google.com]" not in rendered
+
+
+def test_release_lookup_renderer_formats_plain_gemini_numbered_entries():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "Nintendo Switch 2 upcoming games release Juni 2026",
+            "text": (
+                "1. Final Fantasy VII Rebirth (3. Juni 2026): Das zweite Kapitel der RPG-Neuauflage erscheint als grafisch optimierte Version\n"
+                "Quelle: IGN.\n"
+                "2. Police Simulator: Patrol Officers (4. Juni 2026): Diese Simulation des Streifendienstes bietet verbesserte Shader\n"
+                "Quelle: YouTube."
+            ),
+            "sources": [{"url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/example", "title": "IGN"}],
+        }
+    )
+
+    assert "1. **Final Fantasy VII Rebirth (3. Juni 2026)**\nDas zweite Kapitel" in rendered
+    assert "Preis: online leider nicht verfügbar." in rendered
+    assert "Quelle: IGN." in rendered
+    assert "\n\n2. **Police Simulator: Patrol Officers (4. Juni 2026)**\nDiese Simulation" in rendered
+    assert "Quelle: YouTube." in rendered
+    assert "1. Final Fantasy VII Rebirth" not in rendered
+    assert "Quelle: IGN. [Link](https://vertexaisearch.cloud.google.com/grounding-api-redirect/example)" in rendered
+    assert "[vertexaisearch.cloud.google.com]" not in rendered
+
+
+def test_release_lookup_renderer_uses_clickable_fallback_links_when_source_labels_do_not_match():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "Nintendo Switch 2 upcoming games release Juni 2026",
+            "text": (
+                "1. Final Fantasy VII Rebirth (3. Juni 2026): Das RPG-Epos erscheint fuer Switch 2\n"
+                "Quelle: GamesRadar.\n"
+                "2. Police Simulator: Patrol Officers (4. Juni 2026): Realistische Polizeisimulation in Brighton\n"
+                "Quelle: YouTube."
+            ),
+            "sources": [
+                {
+                    "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/first",
+                    "title": "nintendolife.com",
+                },
+                {
+                    "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/second",
+                    "title": "example result",
+                },
+            ],
+        }
+    )
+
+    assert "Quelle: GamesRadar. [Link](https://vertexaisearch.cloud.google.com/grounding-api-redirect/first)" in rendered
+    assert "Quelle: YouTube. [Link](https://vertexaisearch.cloud.google.com/grounding-api-redirect/second)" in rendered
+    assert "[vertexaisearch.cloud.google.com]" not in rendered
+
+
+def test_release_lookup_renderer_prefers_item_detail_link_over_release_overview():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "Nintendo Switch 2 Spiele Releases Juni 2026",
+            "text": (
+                "1. Final Fantasy VII Rebirth (3. Juni 2026): Das RPG-Epos erscheint fuer Switch 2\n"
+                "Quelle: IGN."
+            ),
+            "sources": [
+                {
+                    "url": "https://www.ign.com/articles/nintendo-switch-2-games-release-dates-june-2026",
+                    "title": "Nintendo Switch 2 games release dates for June 2026",
+                    "snippet": "A list of all upcoming Switch 2 releases in June.",
+                },
+                {
+                    "url": "https://www.ign.com/games/final-fantasy-vii-rebirth",
+                    "title": "Final Fantasy VII Rebirth - IGN",
+                    "snippet": "Final Fantasy VII Rebirth details, release date and platform information.",
+                },
+            ],
+        }
+    )
+
+    assert "Quelle: IGN. [Link](https://www.ign.com/games/final-fantasy-vii-rebirth)" in rendered
+    assert "games-release-dates-june-2026" not in rendered
+
+
+def test_release_lookup_renderer_normalizes_openai_note_style_release_entries():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "Nintendo Switch 2 Spiele Releases Juni 2026",
+            "text": (
+                "1. eFootball Kick-Off!: — Fußball-Game-Release für Nintendo Switch 2 am 3. Juni 2026. (Quelle\n"
+                "GamePro) (gamepro.de).\n"
+                "2. Final Fantasy VII Rebirth: — JRPG/Action-RPG-Release für Nintendo Switch 2 am 3. Juni 2026. (Quelle\n"
+                "GamePro) (gamepro.de)."
+            ),
+            "sources": [{"title": "GamePro", "url": "https://www.gamepro.de/artikel/switch-2-juni-releases"}],
+        }
+    )
+
+    assert "1. **eFootball Kick-Off! (3. Juni 2026)**\nFußball-Game-Release für Nintendo Switch 2." in rendered
+    assert "2. **Final Fantasy VII Rebirth (3. Juni 2026)**\nJRPG/Action-RPG-Release für Nintendo Switch 2." in rendered
+    assert "Quelle: GamePro. [Link](https://www.gamepro.de/artikel/switch-2-juni-releases)" in rendered
+    assert "nicht eindeutig verfügbar" not in rendered
+    assert "(gamepro.de)" not in rendered
+    assert "—" not in rendered
+
+
+def test_release_lookup_renderer_normalizes_openai_parenthesis_numbering_and_source_lines():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "welche spiele erscheinen nächsten monat für die nintendo switch 2",
+            "text": (
+                "1) Star Fox (Switch 2, Remake) — Release am 25. Juni 2026, Action-Spiel/Schienen-Shooter; "
+                "Nintendo Switch 2-exklusive Neuauflage des N64-Titels.\n"
+                "Quelle: GamePro. (gamepro.de)\n\n"
+                "2) Destroy All Humans! — Release am 23. Juni 2026, Action-/Schießspiel mit Humor "
+                "(Alien-Invasion), für Nintendo Switch und Nintendo Switch 2.\n"
+                "Quelle: GamesWirtschaft.de. (gameswirtschaft.de)"
+            ),
+            "sources": [
+                {"title": "GamePro", "url": "https://www.gamepro.de/artikel/star-fox-switch-2"},
+                {"title": "GamesWirtschaft.de", "url": "https://www.gameswirtschaft.de/release-liste/destroy-all-humans-switch-2"},
+            ],
+        }
+    )
+
+    assert "1. **Star Fox (Switch 2, Remake) (25. Juni 2026)**" in rendered
+    assert "Action-Spiel/Schienen-Shooter; Nintendo Switch 2-exklusive Neuauflage" in rendered
+    assert "Preis: online leider nicht verfügbar." in rendered
+    assert "Quelle: GamePro. [Link](https://www.gamepro.de/artikel/star-fox-switch-2)" in rendered
+    assert "2. **Destroy All Humans! (23. Juni 2026)**" in rendered
+    assert "Quelle: GamesWirtschaft.de. [Link](https://www.gameswirtschaft.de/release-liste/destroy-all-humans-switch-2)" in rendered
+    assert "1)" not in rendered
+    assert "(gamepro.de)" not in rendered
+
+
+def test_release_lookup_renderer_splits_openai_inline_dash_after_dated_title():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "welche spiele erscheinen nächsten monat für die nintendo switch 2",
+            "text": (
+                "1. eFootball Kick-Off! (03. Juni 2026) – Fußball-Simulation; Release-Termin für Nintendo Switch 2 im Juni 2026.\n"
+                "Quelle: GamePro. (gamepro.de)\n\n"
+                "2. Final Fantasy 7 Rebirth (03. Juni 2026) – JRPG-Blockbuster; kommt laut Juni-2026-Übersicht für Nintendo Switch 2.\n"
+                "Quelle: GamePro. (gamepro.de)\n\n"
+                "3. Monopoly (11. Juni 2026)\n"
+                "Star Wars Heroes vs. Villains (11. Juni 2026) – Brettspiel-Umsetzung im Star-Wars-Setting; Nintendo Switch 2 Release.\n"
+                "Quelle: GamePro. (gamepro.de)"
+            ),
+            "sources": [{"title": "GamePro", "url": "https://www.gamepro.de/artikel/switch-2-juni-releases"}],
+        }
+    )
+
+    assert "1. **eFootball Kick-Off! (03. Juni 2026)**\nFußball-Simulation; Release-Termin" in rendered
+    assert "1. **eFootball Kick-Off! (03. Juni 2026) –" not in rendered
+    assert "2. **Final Fantasy 7 Rebirth (03. Juni 2026)**\nJRPG-Blockbuster" in rendered
+    assert "3. **Monopoly: Star Wars Heroes vs. Villains (11. Juni 2026)**" in rendered
+    assert "\nStar Wars Heroes vs. Villains (11. Juni 2026) –" not in rendered
+    assert rendered.count("Preis: online leider nicht verfügbar.") == 3
+    assert rendered.count("Quelle: GamePro. [Link](https://www.gamepro.de/artikel/switch-2-juni-releases)") == 3
+
+
+def test_release_lookup_renderer_repairs_gemini_sentence_fragments_without_layout_regression():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "welche spiele erscheinen nächsten monat für die nintendo switch 2",
+            "text": (
+                "1. Final Fantasy VII Rebirth (3. Juni 2026): die Nintendo Switch 2 und bringt das Rollenspiel-Epos auf die Plattform.\n"
+                "Quelle: IGN.\n\n"
+                "2. Police Simulator: Patrol Officers (4. Juni 2026): veröffentlicht und bietet eine realitätsnahe Simulation des Polizeialltags.\n"
+                "Quelle: GamePro."
+            ),
+            "sources": [
+                {"title": "IGN", "url": "https://www.ign.com/games/final-fantasy-vii-rebirth"},
+                {"title": "GamePro", "url": "https://www.gamepro.de/artikel/police-simulator-switch-2"},
+            ],
+        }
+    )
+
+    assert "1. **Final Fantasy VII Rebirth (3. Juni 2026)**\nErscheint für die Nintendo Switch 2 und bringt" in rendered
+    assert "2. **Police Simulator: Patrol Officers (4. Juni 2026)**\nWird veröffentlicht und bietet" in rendered
+    assert rendered.count("Preis: online leider nicht verfügbar.") == 2
+    assert "Quelle: IGN. [Link](https://www.ign.com/games/final-fantasy-vii-rebirth)" in rendered
+    assert "Quelle: GamePro. [Link](https://www.gamepro.de/artikel/police-simulator-switch-2)" in rendered
+
+
+def test_release_lookup_renderer_moves_openai_hidden_release_dates_from_descriptions():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "welche spiele erscheinen nächsten monat für die nintendo switch 2",
+            "text": (
+                "1. eFootball Kick-Off!\n"
+                "Fußballspiel für Nintendo Switch 2, geplant am 3. Juni 2026.\n"
+                "Quelle: GamePro.\n\n"
+                "2. Final Fantasy 7 Rebirth\n"
+                "Action-/RPG (Square Enix), für den 3. Juni 2026 in der Switch-2-Release-Liste geführt.\n"
+                "Quelle: GamePro."
+            ),
+            "sources": [{"title": "GamePro", "url": "https://www.gamepro.de/artikel/switch-2-juni-releases"}],
+        }
+    )
+
+    assert "1. **eFootball Kick-Off! (3. Juni 2026)**\nFußballspiel für Nintendo Switch 2." in rendered
+    assert "2. **Final Fantasy 7 Rebirth (3. Juni 2026)**\nAction-/RPG (Square Enix)." in rendered
+    assert "geplant am" not in rendered
+    assert "Release-Liste geführt" not in rendered
+    assert rendered.count("Preis: online leider nicht verfügbar.") == 2
+    assert rendered.count("Quelle: GamePro. [Link](https://www.gamepro.de/artikel/switch-2-juni-releases)") == 2
+
+
+def test_release_lookup_renderer_normalizes_openai_dash_date_colon_context_style():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "welche spiele erscheinen nächsten monat für die nintendo switch 2",
+            "text": (
+                "1. eFootball Kick-Off! — 03. Juni 2026: Fußballspiel-Reihe (Kontext\n"
+                "offizielles eFootball-Release).\n"
+                "Quelle: GamePro.\n\n"
+                "2. Final Fantasy 7 Rebirth — 03. Juni 2026: Rollenspiel-Blockbuster (Kontext\n"
+                "Fortsetzung/Remake-Projekt der Final-Fantasy-7-Reihe).\n"
+                "Quelle: GamePro."
+            ),
+            "sources": [{"title": "GamePro", "url": "https://www.gamepro.de/artikel/switch-2-juni-releases"}],
+        }
+    )
+
+    assert "1. **eFootball Kick-Off! (03. Juni 2026)**\nFußballspiel-Reihe (offizielles eFootball-Release)." in rendered
+    assert "2. **Final Fantasy 7 Rebirth (03. Juni 2026)**\nRollenspiel-Blockbuster (Fortsetzung/Remake-Projekt" in rendered
+    assert "Kontext" not in rendered
+    assert "— 03. Juni 2026:" not in rendered
+    assert rendered.count("Preis: online leider nicht verfügbar.") == 2
+    assert rendered.count("Quelle: GamePro. [Link](https://www.gamepro.de/artikel/switch-2-juni-releases)") == 2
+
+
+def test_release_lookup_renderer_merges_body_subtitle_dates_and_removes_calendar_noise():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "welche spiele erscheinen nächsten monat für die nintendo switch 2",
+            "text": (
+                "1. eFootball Kick-Off! (03. Juni 2026)\n"
+                "Fußball-Spiel für die Nintendo Switch 2; als Terminspiel im Juni-Kalender von GamePro gelistet.\n"
+                "Quelle: GamePro.\n\n"
+                "2. Monopoly\n"
+                "Star Wars Heroes vs. Villains (11. Juni 2026) – Monopoly-Edition mit Star-Wars-Thema für die Switch 2; "
+                "GamePro nennt den Release konkret für den 11. Juni.\n"
+                "Quelle: GamePro.\n\n"
+                "3. Denshattack! (17. Juni 2026)\n"
+                "Action-/Arcade-lastiger Titel für die Switch 2; GamePro führt ihn als Juni-Release mit Datum 17. Juni.\n"
+                "Quelle: GamePro.\n\n"
+                "4. The Adventures of Elliot\n"
+                "The Millennium Tales (18. Juni 2026) – Abenteuer-/Story-Game für die Switch 2; "
+                "steht bei GamePro ebenfalls für den 18. Juni im Juni-Kalender.\n"
+                "Quelle: GamePro."
+            ),
+            "sources": [{"title": "GamePro", "url": "https://www.gamepro.de/artikel/switch-2-juni-releases"}],
+        }
+    )
+
+    assert "1. **eFootball Kick-Off! (03. Juni 2026)**\nFußball-Spiel für die Nintendo Switch 2." in rendered
+    assert "2. **Monopoly: Star Wars Heroes vs. Villains (11. Juni 2026)**\nMonopoly-Edition mit Star-Wars-Thema für die Switch 2." in rendered
+    assert "3. **Denshattack! (17. Juni 2026)**\nAction-/Arcade-lastiger Titel für die Switch 2." in rendered
+    assert "4. **The Adventures of Elliot: The Millennium Tales (18. Juni 2026)**\nAbenteuer-/Story-Game für die Switch 2." in rendered
+    assert "Terminspiel" not in rendered
+    assert "Release konkret" not in rendered
+    assert "mit Datum 17. Juni" not in rendered
+    assert "18. Juni im Juni-Kalender" not in rendered
+    assert rendered.count("Preis: online leider nicht verfügbar.") == 4
+
+
+def test_release_lookup_renderer_splits_dated_title_dash_and_drops_additional_context():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "welche spiele erscheinen nächsten monat für die nintendo switch 2",
+            "text": (
+                "1. Denshattack! (17. Juni 2026) – Spielankündigung für die Switch 2 mit Release im Juni 2026; "
+                "genaue Genre- und Entwicklerangaben stehen im Suchsnippet nicht.\n"
+                "Zusätzlich (nicht im Juni-Block, aber im Kontext “kurz davor”): Star Fox (Release: 25. Juni 2026).\n"
+                "Quelle: GamePro."
+            ),
+            "sources": [{"title": "GamePro", "url": "https://www.gamepro.de/artikel/switch-2-juni-releases"}],
+        }
+    )
+
+    assert "1. **Denshattack! (17. Juni 2026)**\nSpielankündigung für die Switch 2" in rendered
+    assert "Denshattack! (17. Juni 2026) –" not in rendered
+    assert "Zusätzlich" not in rendered
+    assert "Star Fox" not in rendered
+    assert "Preis: online leider nicht verfügbar." in rendered
+    assert "Quelle: GamePro. [Link](https://www.gamepro.de/artikel/switch-2-juni-releases)" in rendered
+
+
+def test_release_lookup_renderer_removes_repeated_release_dates_from_description():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "welche spiele erscheinen nächsten monat für die nintendo switch 2",
+            "text": (
+                "1. eFootball Kick-Off! (03. Juni 2026)\n"
+                "Fußballspiel mit Live-Service-Charakter für die Nintendo Switch 2; erscheint am 3. Juni.\n"
+                "Quelle: GamePro.\n\n"
+                "2. Final Fantasy 7 Rebirth (03. Juni 2026)\n"
+                "Action-RPG-Highlight, das laut GamePro ebenfalls am 3. Juni für die Nintendo Switch 2 ankommt.\n"
+                "Quelle: GamePro."
+            ),
+            "sources": [{"title": "GamePro", "url": "https://www.gamepro.de/artikel/switch-2-juni-releases"}],
+        }
+    )
+
+    assert "1. **eFootball Kick-Off! (03. Juni 2026)**\nFußballspiel mit Live-Service-Charakter für die Nintendo Switch 2." in rendered
+    assert "2. **Final Fantasy 7 Rebirth (03. Juni 2026)**\nAction-RPG-Highlight." in rendered
+    assert "erscheint am 3. Juni" not in rendered
+    assert "ebenfalls am 3. Juni" not in rendered
+    assert "laut GamePro" not in rendered
+    assert rendered.count("Preis: online leider nicht verfügbar.") == 2
+
+
+@pytest.mark.parametrize(
+    ("query", "raw_text", "sources", "expected_lines"),
+    [
+        (
+            "welche spiele erscheinen nächsten monat für die nintendo switch 2",
+            (
+                "1. Final Fantasy VII Rebirth (3. Juni 2026): Das Rollenspiel-Epos erscheint technisch optimiert für die Switch 2.\n"
+                "Quelle: IGN.\n"
+                "2. Monopoly\n"
+                "Star Wars Heroes vs. Villains: Eine Brettspiel-Umsetzung im Star-Wars-Universum erscheint am 11. Juni 2026.\n"
+                "Quelle: IGN."
+            ),
+            [{"title": "IGN", "url": "https://www.ign.com/example"}],
+            [
+                "1. **Final Fantasy VII Rebirth (3. Juni 2026)**\nDas Rollenspiel-Epos",
+                "2. **Monopoly: Star Wars Heroes vs. Villains (11. Juni 2026)**\nEine Brettspiel-Umsetzung",
+            ],
+        ),
+        (
+            "welche filme erscheinen nächsten monat im kino",
+            (
+                "1) Echo Valley — Release am 12. Juni 2026, Thriller-Drama über eine Familie und ein verschwundenes Kind.\n"
+                "Quelle: Filmstarts. (filmstarts.de)\n"
+                "2) The Last Frontier — Release am 19. Juni 2026, Actionfilm mit Survival-Elementen und großem Ensemble.\n"
+                "Quelle: Kino.de. (kino.de)"
+            ),
+            [
+                {"title": "Filmstarts", "url": "https://www.filmstarts.de/kritiken/echo-valley"},
+                {"title": "Kino.de", "url": "https://www.kino.de/film/the-last-frontier"},
+            ],
+            [
+                "1. **Echo Valley (12. Juni 2026)**\nThriller-Drama",
+                "2. **The Last Frontier (19. Juni 2026)**\nActionfilm",
+            ],
+        ),
+        (
+            "welche bücher erscheinen nächsten monat",
+            (
+                "1. **The Glass Library**\n"
+                "(5. Juni 2026): Fantasy-Roman über eine verborgene Bibliothek und politische Intrigen.\n"
+                "Quelle: Goodreads.\n"
+                "2. **Mars Papers (18. Juni 2026):** Sachbuch über Raumfahrtpolitik und private Missionen (Quelle: Publishers Weekly)."
+            ),
+            [
+                {"title": "Goodreads", "url": "https://www.goodreads.com/book/show/glass-library"},
+                {"title": "Publishers Weekly", "url": "https://www.publishersweekly.com/mars-papers"},
+            ],
+            [
+                "1. **The Glass Library (5. Juni 2026)**\nFantasy-Roman",
+                "2. **Mars Papers (18. Juni 2026)**\nSachbuch",
+            ],
+        ),
+        (
+            "welche serien starten nächsten monat",
+            (
+                "1. Neon Harbor (8. Juni 2026): Sci-Fi-Serie über Ermittlungen in einer schwimmenden Metropole.\n"
+                "Quelle: Variety.\n"
+                "2. The Orchard (21. Juni 2026): Familiendrama mit Mystery-Elementen und internationalem Cast.\n"
+                "Quelle: Deadline."
+            ),
+            [
+                {"title": "Variety", "url": "https://variety.com/neon-harbor"},
+                {"title": "Deadline", "url": "https://deadline.com/the-orchard"},
+            ],
+            [
+                "1. **Neon Harbor (8. Juni 2026)**\nSci-Fi-Serie",
+                "2. **The Orchard (21. Juni 2026)**\nFamiliendrama",
+            ],
+        ),
+        (
+            "welche steam games erscheinen nächsten monat",
+            (
+                "1. Iron Bloom (4. Juni 2026) – Taktikspiel mit Roguelite-Struktur und Koop-Modus.\n"
+                "Quelle: Steam. (steampowered.com)\n"
+                "2. **Deep Signal erscheint am 27. Juni 2026 als atmosphärisches Horror-Adventure in einer Unterwasserstation (Quelle**\n"
+                "PC Gamer)."
+            ),
+            [
+                {"title": "Steam", "url": "https://store.steampowered.com/app/iron-bloom"},
+                {"title": "PC Gamer", "url": "https://www.pcgamer.com/deep-signal"},
+            ],
+            [
+                "1. **Iron Bloom (4. Juni 2026)**\nTaktikspiel",
+                "2. **Deep Signal (27. Juni 2026)**\nEin atmosphärisches Horror-Adventure",
+            ],
+        ),
+    ],
+)
+def test_release_list_template_contract_across_common_list_queries(query, raw_text, sources, expected_lines):
+    rendered = WebSearchTemplateEngine.render(
+        {"query": query, "text": raw_text, "sources": sources},
+        raw_text,
+        query,
+    )
+
+    assert rendered is not None
+    for expected in expected_lines:
+        assert expected in rendered
+    assert rendered.count("Preis: online leider nicht verfügbar.") == 2
+    assert rendered.count("[Link](") == 2
+    assert "1)" not in rendered
+    assert "Quelle\n" not in rendered
+    assert "(gamepro.de)" not in rendered
+    assert "(filmstarts.de)" not in rendered
+    assert "(steampowered.com)" not in rendered
+    assert "Quelle**" not in rendered
+    assert "[vertexaisearch.cloud.google.com]" not in rendered
+
+
+def test_release_lookup_renderer_moves_leading_date_into_title_line():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "Nintendo Switch 2 Spiele Releases Juni 2026",
+            "text": (
+                "1. **Final Fantasy VII Rebirth**\n"
+                "(03.06.2026): Der zweite Teil des Remake-Projekts erscheint als technisch optimierte Version.\n"
+                "Preis: online leider nicht verfügbar.\n"
+                "Quelle: IGN."
+            ),
+            "sources": [],
+        }
+    )
+
+    assert "1. **Final Fantasy VII Rebirth (03.06.2026)**" in rendered
+    assert "\n(03.06.2026):" not in rendered
+    assert "\nDer zweite Teil des Remake-Projekts" in rendered
+
+
+def test_release_lookup_renderer_repairs_sentence_bold_and_split_source_markup():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "Nintendo Switch 2 Spiele Releases Juni 2026",
+            "text": (
+                "1. **Final Fantasy VII Rebirth erscheint am 3. Juni 2026 als Fortsetzung der RPG-Saga um Cloud Strife für die Switch 2 (Quelle**\n"
+                "IGN).\n"
+                "2. **eFootball Kick-Off! wird am 3. Juni 2026 als Fußball-Simulation mit neuen Online-Modi und Club-Management veröffentlicht (Quelle**\n"
+                "GamesRadar).\n"
+                "3. **Police Simulator**\n"
+                "Patrol Officers startet am 4. Juni 2026 und bietet eine realistische Polizeisimulation in der fiktiven Stadt Brighton.\n"
+                "Quelle: YouTube."
+            ),
+            "sources": [],
+        }
+    )
+
+    assert "1. **Final Fantasy VII Rebirth (3. Juni 2026)**" in rendered
+    assert "Eine Fortsetzung der RPG-Saga um Cloud Strife für die Switch 2." in rendered
+    assert "Quelle: IGN." in rendered
+    assert "2. **eFootball Kick-Off! (3. Juni 2026)**" in rendered
+    assert "Eine Fußball-Simulation mit neuen Online-Modi und Club-Management veröffentlicht." in rendered
+    assert "Quelle: GamesRadar." in rendered
+    assert "3. **Police Simulator: Patrol Officers (4. Juni 2026)**" in rendered
+    assert "realistische Polizeisimulation" in rendered
+    assert "Quelle: YouTube." in rendered
+    assert "Quelle**" not in rendered
+    assert "Quelle: nicht eindeutig verfügbar" not in rendered
+
+
+def test_release_lookup_template_moves_dates_and_subtitles_from_descriptions():
+    rendered = WebSearchTemplateEngine.render(
+        {
+            "query": "Nintendo Switch 2 Spiele Releases Juni 2026",
+            "sources": [
+                {"title": "IGN", "url": "https://www.ign.com/example"},
+                {"title": "YouTube", "url": "https://www.youtube.com/watch?v=abc"},
+                {"title": "Reddit", "url": "https://www.reddit.com/r/example"},
+            ],
+        },
+        (
+            "1. **Final Fantasy VII Rebirth**\n"
+            "Die technisch angepasste Portierung des JRPG-Epos erscheint am 3. Juni 2026 für die Switch 2.\n"
+            "Preis: online leider nicht verfügbar.\n"
+            "Quelle: IGN.\n\n"
+            "2. **Police Simulator**\n"
+            "Patrol Officers: Diese realistische Simulation des Polizeialltags in der Stadt Brighton wird am 4. Juni 2026 veröffentlicht.\n"
+            "Preis: online leider nicht verfügbar.\n"
+            "Quelle: YouTube.\n\n"
+            "3. **Monopoly**\n"
+            "Star Wars Heroes vs. Villains: Die digitale Brettspiel-Adaption im Star-Wars-Universum erscheint am 11. Juni 2026.\n"
+            "Preis: online leider nicht verfügbar.\n"
+            "Quelle: IGN.\n\n"
+            "4. **Denshattack!**\n"
+            "Dieser Titel wird laut aktuellen Release-Planungen für den 17. Juni 2026 auf der neuen Konsole gelistet.\n"
+            "Preis: online leider nicht verfügbar.\n"
+            "Quelle: Reddit.\n\n"
+            "5. **The Adventures of Elliot**\n"
+            "The Millennium Tales: Das am 18. Juni 2026 erscheinende Spiel bietet eine neue Abenteuererfahrung für die Plattform.\n"
+            "Preis: online leider nicht verfügbar.\n"
+            "Quelle: IGN."
+        ),
+        "Nintendo Switch 2 Spiele Releases Juni 2026",
+    )
+
+    assert "1. **Final Fantasy VII Rebirth (3. Juni 2026)**" in rendered
+    assert "Die technisch angepasste Portierung des JRPG-Epos erscheint für die Switch 2." in rendered
+    assert "2. **Police Simulator: Patrol Officers (4. Juni 2026)**" in rendered
+    assert "Diese realistische Simulation des Polizeialltags in der Stadt Brighton wird veröffentlicht." in rendered
+    assert "3. **Monopoly: Star Wars Heroes vs. Villains (11. Juni 2026)**" in rendered
+    assert "4. **Denshattack! (17. Juni 2026)**" in rendered
+    assert "5. **The Adventures of Elliot: The Millennium Tales (18. Juni 2026)**" in rendered
+    assert "Preis: online leider nicht verfügbar." in rendered
+    assert "Quelle: IGN. [Link](https://www.ign.com/example)" in rendered
+    assert "https://www.ign.com/example" in rendered
+
+
+def test_websearch_model_guard_rejects_cross_provider_models():
+    assert _coerce_websearch_model_for_provider("openai", "gemini-3-flash-preview") == "gpt-5.4-nano"
+    assert _coerce_websearch_model_for_provider("gemini", "gpt-5.4-mini") == "gemini-3-flash-preview"
+    assert coerce_openai_websearch_model("gemini-3-flash-preview") == "gpt-5.4-nano"
+
+
+def test_websearch_attribution_adds_clickable_source_before_suggestions():
+    tool_results = [
+        {
+            "role": "tool",
+            "name": "system_websearch",
+            "_skill_id": "system.websearch",
+            "content": json.dumps(
+                {
+                    "status": "ok",
+                    "data": {
+                        "text": "Koeln gewann 2:0.",
+                        "sources": [
+                            {
+                                "url": "https://www.kicker.de/fc-augsburg-gegen-1-fc-koeln",
+                                "title": "Kicker Spielbericht",
+                            }
+                        ],
+                    },
+                }
+            ),
+        }
+    ]
+    text = "Der FC Koeln gewann 2:0.\n\n💡 Passende nächste Schritte:\n• Torschuetzen?"
+
+    rendered = append_tool_attributions_from_tools(text, tool_results)
+
+    assert "Quelle: [Link](https://www.kicker.de/fc-augsburg-gegen-1-fc-koeln) (kicker.de)" in rendered
+    assert "[janus-source-1]:" not in rendered
+    assert rendered.index("Quelle:") < rendered.index("Passende")
+
+
+def test_websearch_attribution_keeps_inline_sources_without_duplicate_footer():
+    tool_results = [
+        {
+            "role": "tool",
+            "name": "system_websearch",
+            "_skill_id": "system.websearch",
+            "content": json.dumps(
+                {
+                    "status": "ok",
+                    "data": {
+                        "sources": [
+                            {
+                                "url": "https://www.ign.com/games/example",
+                                "title": "IGN",
+                            }
+                        ],
+                    },
+                }
+            ),
+        }
+    ]
+    text = (
+        "1. **Example Game** - Ein Action-Adventure mit Fokus auf Erkundung. "
+        "Quelle: [IGN](https://www.ign.com/games/example)"
+    )
+
+    rendered = append_tool_attributions_from_tools(text, tool_results)
+
+    assert rendered == text
+    assert rendered.count("Quelle:") == 1
+
+
+def test_websearch_attribution_does_not_append_vertex_redirect_footer():
+    tool_results = [
+        {
+            "role": "tool",
+            "name": "system_websearch",
+            "_skill_id": "system.websearch",
+            "content": json.dumps(
+                {
+                    "status": "ok",
+                    "data": {
+                        "sources": [
+                            {
+                                "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/example",
+                                "title": "transfermarkt.de - 1. FC Koeln Spielplan",
+                            }
+                        ],
+                    },
+                }
+            ),
+        }
+    ]
+
+    rendered = append_tool_attributions_from_tools("Naechstes Spiel: offen.", tool_results)
+
+    assert rendered == "Naechstes Spiel: offen."
+    assert "[janus-source-1]:" not in rendered
+    assert "vertexaisearch.cloud.google.com" not in rendered
+
+
+def test_websearch_attribution_strips_existing_vertex_redirect_footer():
+    tool_results = [
+        {
+            "role": "tool",
+            "name": "system_websearch",
+            "_skill_id": "system.websearch",
+            "content": json.dumps(
+                {
+                    "status": "ok",
+                    "data": {
+                        "sources": [
+                            {
+                                "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/example",
+                                "title": "ign.com",
+                            }
+                        ],
+                    },
+                }
+            ),
+        }
+    ]
+    text = "Antwort.\n\n**Quelle:** [vertexaisearch.cloud.google.com](https://vertexaisearch.cloud.google.com/grounding-api-redirect/example)"
+
+    rendered = append_tool_attributions_from_tools(text, tool_results)
+
+    assert rendered == "Antwort."
+    assert "vertexaisearch" not in rendered
+
+
+def test_websearch_attribution_prefers_direct_source_link_from_gemini_source_block():
+    tool_results = [
+        {
+            "role": "tool",
+            "name": "system_websearch",
+            "_skill_id": "system.websearch",
+            "content": json.dumps(
+                {
+                    "status": "ok",
+                    "data": {
+                        "sources": [
+                            {
+                                "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/example",
+                                "title": "dfb.de - Spielplan",
+                            }
+                        ],
+                    },
+                }
+            ),
+        }
+    ]
+    text = (
+        "Naechstes Spiel: offen.\n\n"
+        "### 3. Quellen\n"
+        "* [fussballdaten.de](https://www.fussballdaten.de)\n"
+        "* [dfb.de](https://www.dfb.de)\n"
+    )
+
+    rendered = append_tool_attributions_from_tools(text, tool_results)
+
+    assert "### 3. Quellen" not in rendered
+    assert "Quelle: [Link](https://www.fussballdaten.de) (fussballdaten.de)" in rendered
+    assert "[janus-source-1]:" not in rendered
+    assert "vertexaisearch" not in rendered
+
+
+@pytest.mark.asyncio
+async def test_websearch_wrapper_coerces_openai_cross_provider_model_before_search():
+    with patch("backend.tool_registry.keyring.get_password", return_value="openai-key"), patch(
+        "backend.services.websearch.websearch.OPENAI_PROVIDER.search",
+        AsyncMock(
+            return_value={
+                "text": "ok",
+                "sources": [{"url": "https://example.com/platin", "title": "Platinpreis"}],
+                "metadata": {"provider": "openai"},
+                "usage": {},
+                "cost": {},
+            }
+        ),
+    ) as openai_search_mock, patch("backend.tool_registry.SessionLocal", return_value=Mock()), patch(
+        "backend.services.cost_service.create_cost_entry"
+    ):
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(
+                query="weiviel kostet eine feinunze platin",
+                provider="openai",
+                model="gemini-3-flash-preview",
+            )
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    assert rd["status"] == "ok"
+    assert openai_search_mock.await_args.kwargs["model"] == "gpt-5.4-nano"
 
 
 @pytest.mark.asyncio
@@ -103,7 +1068,7 @@ async def test_websearch_wrapper_does_not_append_euro_when_query_already_mention
         AsyncMock(
             return_value={
                 "text": "ok",
-                "sources": [],
+                "sources": [{"url": "https://example.com/gold-usd", "title": "Gold spot price"}],
                 "metadata": {"provider": "openai"},
                 "usage": {},
                 "cost": {},

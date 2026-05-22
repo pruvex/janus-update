@@ -15,7 +15,7 @@ from backend.services.websearch.query_bias import (
 
 logger = logging.getLogger("janus_backend")
 
-_MAX_RETURNED_SOURCES = 1
+_MAX_RETURNED_SOURCES = 5
 _MAX_APPENDED_SOURCE_LINKS = 4
 _MAX_TEXT_CHARS = 3200
 
@@ -64,12 +64,32 @@ _DIAMOND_SEARCH_SYSTEM_PROMPT = (
 )
 
 
+def coerce_openai_websearch_model(model: Optional[str]) -> str:
+    raw_model = getattr(model, "id", None)
+    if not raw_model:
+        raw_model = str(model or "").strip()
+    model_name = raw_model or "gpt-5.4-nano"
+    if model_name.lower() == "none" or model_name.lower().startswith("gemini-"):
+        return "gpt-5.4-nano"
+    return model_name
+
+
 def _build_diamond_search_system_prompt(model_id: str) -> str:
     return (
         "Du bist ein Präzisions-Recherche-Agent für Janus. Deine Aufgabe ist die faktenbasierte Suche.\n\n"
         "DIREKTIVE: Nenne Namen, Teams und Punkte vollständig. "
         "VERBOT: Keine URLs oder Markdown-Links im Text. "
         "PROAKTIVITÄT: Nutze das web_search Tool sofort.\n"
+        + "AUSGABE-STIL: Liefere eine kurze direkte Antwort. Bei Listenfragen wie Top 5, "
+        "Neuerscheinungen, bekannteste Personen, Buecher, Spiele, Filme oder Produkte nutze "
+        "eine nummerierte Liste. Jeder Eintrag muss mehr sein als nur ein Name: Schreibe "
+        "1-2 informative Saetze mit Genre/Kontext, Inhalt, Einordnung, Entwickler/Publisher "
+        "oder Relevanz. Die Beschreibung soll natuerlich lesbar sein, nicht nur eine Stichwortnotiz. "
+        "Wenn du ein Datum im Titel oder am Anfang des Eintrags nennst, wiederhole dieses Datum NICHT in der Beschreibung. "
+        "Vermeide Quellen-/Kalenderprosa wie 'laut GamePro', 'in der Release-Liste', 'ebenfalls am' oder 'kommt am'; "
+        "beschreibe stattdessen Spielinhalt, Genre, Besonderheiten, Entwickler/Publisher oder Plattform-Optimierung. Nenne im "
+        "Text eine kurze Quellenkennung wie '(Quelle: IGN)' oder '(Quelle: NBA)' passend "
+        "zum jeweiligen Eintrag, aber keine URLs.\n"
         + _PRICE_INTEGRITY_RULE + "\n" + _GROUNDING_DIRECTIVE
     )
 
@@ -124,12 +144,7 @@ class OpenAIWebSearchProvider(BaseWebSearchProvider):
         query = biased_query
         openai_client = AsyncOpenAI(api_key=api_key)
 
-        raw_model = getattr(model, "id", None)
-        if not raw_model:
-            raw_model = str(model or "").strip()
-        model_name = raw_model or "gpt-5.4-nano"
-        if model_name.lower() == "none":
-            model_name = "gpt-5.4-nano"
+        model_name = coerce_openai_websearch_model(model)
 
         fallback_model = "gpt-5.4-nano"
 

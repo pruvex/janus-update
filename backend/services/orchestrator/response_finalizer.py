@@ -19,6 +19,7 @@ from backend.services.memory_observability import memory_metrics
 from backend.services.orchestrator.identity_manager import identity_manager
 from backend.services.orchestrator.modal_request_builder import resolve_modal_request_for_execution
 from backend.services.orchestrator.schemas import AuditContext, ExecutionResponse
+from backend.services.skill_router import is_realtime_search_query
 from backend.utils import intent_classifier
 from backend.renderers.attribution import append_tool_attributions_from_tools
 
@@ -74,6 +75,12 @@ def _title_looks_replaceable(title: Any) -> bool:
     return False
 
 
+def _is_websearch_tool_result(msg: Dict[str, Any]) -> bool:
+    name = str(msg.get("name") or "").strip().lower()
+    skill_id = str(msg.get("_skill_id") or msg.get("skill_id") or "").strip().lower()
+    return name in {"system.websearch", "system_websearch"} or skill_id == "system.websearch"
+
+
 def render_websearch_sources(tool_results: List[Dict[str, Any]]) -> str:
     """Extract websearch tool payloads and render via registered skill renderers."""
     if not tool_results:
@@ -83,7 +90,7 @@ def render_websearch_sources(tool_results: List[Dict[str, Any]]) -> str:
     for msg in tool_results:
         if not isinstance(msg, dict):
             continue
-        if msg.get("role") != "tool" or msg.get("name") != "system.websearch":
+        if msg.get("role") != "tool" or not _is_websearch_tool_result(msg):
             continue
         content_str = msg.get("content", "")
         if not content_str or not isinstance(content_str, str):
@@ -146,6 +153,29 @@ def render_websearch_sources(tool_results: List[Dict[str, Any]]) -> str:
     except Exception as exc:
         logger.warning("DIAMOND-RENDER: Renderer-Aufruf fehlgeschlagen (non-critical): %s", exc)
         return ""
+
+
+_MEMORY_REFERENCE_LINE_RE = re.compile(
+    r"(?im)^\s*(?:[-*\u2022]\s*)?(?:Referenzwerte:\s*)?.{0,240}\b"
+    r"(?:Ged\S{0,4}chtnis|Gedaechtnis|Memory|Erinnerung(?:en)?)\b.{0,240}(?:$|\n)"
+)
+_MEMORY_REFERENCE_SENTENCE_RE = re.compile(
+    r"(?i)(?:^|(?<=[.!?])\s+)(?:Referenzwerte:\s*)?[^.!?\n]{0,240}\b"
+    r"(?:Ged\S{0,4}chtnis|Gedaechtnis|Memory|Erinnerung(?:en)?)\b[^.!?\n]{0,240}[.!?]?"
+)
+
+
+def has_websearch_tool(tool_results: List[Dict[str, Any]]) -> bool:
+    return any(isinstance(msg, dict) and msg.get("role") == "tool" and _is_websearch_tool_result(msg) for msg in (tool_results or []))
+
+
+def strip_memory_references_from_live_answer(text: str) -> str:
+    value = str(text or "")
+    if not value:
+        return value
+    value = _MEMORY_REFERENCE_LINE_RE.sub("", value)
+    value = _MEMORY_REFERENCE_SENTENCE_RE.sub("", value)
+    return re.sub(r"\n{3,}", "\n\n", value).strip()
 
 
 def _derive_video_modal_request_from_tool_results(tool_results: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
@@ -691,7 +721,19 @@ async def finalize_response(
         wf.video_list_metadata = _derive_video_list_metadata_from_tool_results(getattr(wf, "tool_results", []) or [])
         if not getattr(wf, "modal_request", None):
             wf.modal_request = _derive_video_modal_request_from_tool_results(wf.tool_results)
+    wf.has_websearch_result = has_websearch_tool(getattr(wf, "tool_results", []) or [])
+    if wf.has_websearch_result:
+        wf.final_text = strip_memory_references_from_live_answer(wf.final_text)
     wf.final_text = append_tool_attributions_from_tools(wf.final_text, getattr(wf, "tool_results", []) or [])
+    try:
+        if wf.has_websearch_result:
+            wf.rendered_websearch = render_websearch_sources(getattr(wf, "tool_results", []) or [])
+            wf.rendered_websearch = strip_memory_references_from_live_answer(wf.rendered_websearch)
+            if wf.rendered_websearch:
+                wf.final_text = wf.rendered_websearch
+                logger.info("DIAMOND: Websearch-Renderer vor Persistierung angewendet")
+    except Exception as e:
+        logger.warning("DIAMOND: Websearch-Renderer Fehler vor Persistierung (non-critical): %s", e)
     # MCL: modal_request / Video-URL-Erkennung erst nach finalem assistant-Text (alle Backfills, Platzhalter, Audit-Kürzungen).
     wf_modal = resolve_modal_request_for_execution(wf)
     wf.execution_for_persist = ExecutionResponse(
@@ -712,26 +754,6 @@ async def finalize_response(
         extra_metadata={"video_list_metadata": wf.video_list_metadata} if getattr(wf, "video_list_metadata", None) else None,
     )
     _trigger_chat_title_job_if_eligible(db, request.chat_id, request.provider)
-    try:
-        if wf.run_tool_loop_result is not None:
-            wf.tool_results = getattr(wf.run_tool_loop_result, "all_tool_results", []) or []
-            if wf.tool_results:
-                wf.rendered_websearch = render_websearch_sources(wf.tool_results)
-                if wf.rendered_websearch:
-                    wf.execution_for_api = ExecutionResponse(
-                        text=wf.rendered_websearch,
-                        image_url=wf.final_image_url,
-                        agent_payload=wf.agent_response_payload,
-                        tool_calls=[],
-                        is_agent_flow=bool(wf.agent_response_payload),
-                        usage=wf.aggregated_usage,
-                        cost=wf.aggregated_cost,
-                        modal_request=wf_modal,
-                        all_tool_results=getattr(wf, "tool_results", []) or [],
-                    )
-                    logger.info("DIAMOND: Websearch-Renderer erfolgreich angewendet")
-    except Exception as e:
-        logger.warning("DIAMOND: Websearch-Renderer Fehler (non-critical): %s", e)
     if wf.event in {"PERSON_IDENTIFIED", "PERSON_NAMED"}:
         identity_manager.clear_unknown_face(request.chat_id)
     if wf.event == "PERSON_NAMED" or wf.event == "PERSON_IDENTIFIED":
@@ -744,7 +766,13 @@ async def finalize_response(
         request.provider,
         wf.chosen_model,
         wf.learned_name,
-        skip_fact_extraction=wf.skip_fact_extraction,
+        skip_fact_extraction=(
+            wf.skip_fact_extraction
+            or (
+                has_websearch_tool(getattr(wf, "tool_results", []) or [])
+                and is_realtime_search_query(wf.user_text)
+            )
+        ),
         model_hierarchy=model_hierarchy,
     )
     identity_manager.clear_unknown_face(request.chat_id)

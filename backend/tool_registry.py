@@ -148,7 +148,28 @@ def _normalize_websearch_query(query: str) -> str:
         return normalized
     lowered = normalized.lower()
     current_markers = ("aktuell", "aktuelle", "heute", "derzeit", "current", "latest")
-    price_markers = ("preis", "preise", "gold", "feinunze", "kosten", "kurs", "wert")
+    price_markers = (
+        "preis",
+        "preise",
+        "gold",
+        "goldpreis",
+        "platin",
+        "platinum",
+        "platinpreis",
+        "silber",
+        "silver",
+        "silberpreis",
+        "palladium",
+        "palladiumpreis",
+        "edelmetall",
+        "feinunze",
+        "troy ounce",
+        "kosten",
+        "kostet",
+        "kurs",
+        "wert",
+        "spotpreis",
+    )
     if any(marker in lowered for marker in current_markers):
         current_year = str(datetime.utcnow().year)
         for year in ("2024", "2025", "2026", "2027"):
@@ -157,7 +178,46 @@ def _normalize_websearch_query(query: str) -> str:
                 lowered = normalized.lower()
     if any(marker in lowered for marker in price_markers) and not any(token in lowered for token in (" euro", " eur", "€", " usd", "dollar")):
         normalized = f"{normalized} in Euro"
+    lowered = normalized.lower()
+    precious_metals = {
+        "platin": "Platinpreis",
+        "platinum": "Platinpreis",
+        "silber": "Silberpreis",
+        "silver": "Silberpreis",
+        "palladium": "Palladiumpreis",
+        "gold": "Goldpreis",
+    }
+    already_canonical = (
+        any(marker in lowered for marker in ("goldpreis", "platinpreis", "silberpreis", "palladiumpreis", "spotpreis"))
+        or ("troy ounce" in lowered and any(marker in lowered for marker in ("price", "spot")))
+    )
+    if not already_canonical and any(marker in lowered for marker in ("feinunze", "troy ounce", "preis", "kosten", "kostet")):
+        for token, canonical in precious_metals.items():
+            if token in lowered and canonical.lower() not in lowered:
+                normalized = f"{normalized} {canonical} Spotpreis"
+                break
     return normalized
+
+
+def _coerce_websearch_model_for_provider(provider: str, model: Optional[str]) -> Optional[str]:
+    provider_key = str(provider or "").strip().lower()
+    model_id = str(model or "").strip()
+    if not model_id:
+        return model
+    model_lower = model_id.lower()
+    if provider_key == "openai" and model_lower.startswith("gemini-"):
+        logger.warning(
+            "WEBSEARCH-MODEL-GUARD: coerced cross-provider model %r for provider=openai to gpt-5.4-nano.",
+            model_id,
+        )
+        return "gpt-5.4-nano"
+    if provider_key == "gemini" and model_lower.startswith("gpt-"):
+        logger.warning(
+            "WEBSEARCH-MODEL-GUARD: coerced cross-provider model %r for provider=gemini to gemini-3-flash-preview.",
+            model_id,
+        )
+        return "gemini-3-flash-preview"
+    return model_id
 
 
 async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResultV1:
@@ -186,9 +246,15 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
                 model=str(model_name or provider_name or "websearch"),
                 provider=str(provider_name or "unknown"),
                 source_type="websearch",
-                input_tokens=int(usage.get("query_count") or 0),
-                output_tokens=0,
-                context_details=f"query_count={int(usage.get('query_count') or 1)}",
+                input_tokens=int(usage.get("input_tokens") or usage.get("query_count") or 0),
+                output_tokens=int(usage.get("output_tokens") or 0),
+                cached_tokens=int(usage.get("cached_tokens") or 0),
+                total_tokens=int(usage.get("total_tokens") or 0),
+                context_details=(
+                    f"query_count={int(usage.get('query_count') or 1)}"
+                    if usage.get("query_count")
+                    else "token_usage=1"
+                ),
             )
         finally:
             db.close()
@@ -206,6 +272,7 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
         payload = schemas.WebsearchArgsV2.model_validate(websearch_args)
         provider = str(payload.provider or "").strip().lower()
         normalized_query = _normalize_websearch_query(payload.query)
+        provider_model = _coerce_websearch_model_for_provider(provider, payload.model)
         key = (keyring.get_password("Janus-Projekt", provider) or "") if provider else ""
 
         # ── Execute primary search ──────────────────────────────────────────
@@ -213,9 +280,9 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
             query=normalized_query,
             api_key=key,
             provider=provider,
-            model=payload.model,
+            model=provider_model,
         )
-        _persist_websearch_cost(raw, provider or "default", payload.model)
+        _persist_websearch_cost(raw, provider or "default", provider_model)
 
         text = str(raw.get("text") or "")
         sources = raw.get("sources") if isinstance(raw.get("sources"), list) else []

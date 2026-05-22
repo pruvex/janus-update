@@ -16,6 +16,26 @@ logger = logging.getLogger("janus_backend")
 REALTIME_SEARCH_TRIGGER_WORDS = ["preis", "kurs", "aktuell", "heute", "gold", "aktie", "währung"]
 REALTIME_BLOCKED_SKILLS = {"system.wikipedia_summary", "system.rss_news"}
 REALTIME_FORCED_SKILLS = ["system.websearch", "system.price_comparison"]
+REALTIME_SEARCH_TRIGGER_WORDS.extend([
+    "platin",
+    "platinum",
+    "silber",
+    "silver",
+    "palladium",
+    "edelmetall",
+    "spielplan",
+    "bundesliga",
+    "release",
+    "releases",
+    "erschein",
+    "erscheint",
+    "erscheinen",
+    "neuerschein",
+    "neue spiele",
+    "kommende spiele",
+    "naechsten monat",
+    "nächsten monat",
+])
 
 
 def _is_price_or_quote_query(query: str) -> bool:
@@ -26,15 +46,95 @@ def _is_price_or_quote_query(query: str) -> bool:
         "kurs",
         "kurse",
         "goldpreis",
+        "platinpreis",
+        "silberpreis",
+        "palladiumpreis",
         "aktienkurs",
         "wechselkurs",
         "währung",
         "waehrung",
         "marktdaten",
         "feinunze",
+        "troy ounce",
         "spotpreis",
+        "edelmetall",
+        "platin",
+        "platinum",
+        "silber",
+        "silver",
+        "palladium",
     ]
     return any(marker in prompt for marker in markers)
+
+
+def _is_sports_schedule_query(query: str) -> bool:
+    prompt = str(query or "").casefold()
+    if not prompt:
+        return False
+    team_markers = (
+        "fc köln",
+        "fc koeln",
+        "1. fc köln",
+        "1. fc koeln",
+        "erster fc köln",
+        "erster fc koeln",
+        "bundesliga",
+    )
+    schedule_markers = (
+        "wann spielt",
+        "nächste mal",
+        "naechste mal",
+        "nächstes spiel",
+        "naechstes spiel",
+        "next match",
+        "next game",
+        "gegen wen",
+        "spielplan",
+        "spieltag",
+        "termin",
+    )
+    return any(marker in prompt for marker in team_markers) and any(
+        marker in prompt for marker in schedule_markers
+    )
+
+
+def _is_release_lookup_query(query: str) -> bool:
+    prompt = str(query or "").casefold()
+    if not prompt:
+        return False
+    product_markers = (
+        "switch",
+        "nintendo",
+        "playstation",
+        "xbox",
+        "steam",
+        "pc",
+        "spiele",
+        "games",
+        "buch",
+        "buecher",
+        "bücher",
+        "film",
+        "serie",
+    )
+    release_markers = (
+        "release",
+        "releases",
+        "erschein",
+        "erscheint",
+        "erscheinen",
+        "neuerschein",
+        "kommt raus",
+        "kommen raus",
+        "kommende",
+        "naechsten monat",
+        "nächsten monat",
+        "next month",
+        "upcoming",
+    )
+    return any(marker in prompt for marker in product_markers) and any(
+        marker in prompt for marker in release_markers
+    )
 
 
 def is_realtime_search_query(query: str) -> bool:
@@ -42,6 +142,10 @@ def is_realtime_search_query(query: str) -> bool:
     if not prompt:
         return False
     if _is_price_or_quote_query(prompt):
+        return True
+    if _is_sports_schedule_query(prompt):
+        return True
+    if _is_release_lookup_query(prompt):
         return True
     return any(trigger in prompt for trigger in REALTIME_SEARCH_TRIGGER_WORDS)
 

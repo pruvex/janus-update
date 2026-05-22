@@ -3,6 +3,17 @@
 This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Test Pipeline Validations
+### WEBSEARCH-PROVIDER-PARITY-2026-05-22 - Release-List Chat Template Hardening
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Direct Websearch UX hardening from Gemini/GPT parity regression.
+- **TestSpec**: `documentation/TEST_SPEC/03_tools_skills/10_websearch_provider_parity_optimization.md`
+- **Final Audit**: `documentation/test-runs/WEBSEARCH_PROVIDER_PARITY_2026-05-22_final_audit.md`
+- **Skill 7 Report**: `documentation/test-runs/WEBSEARCH_PROVIDER_PARITY_2026-05-22_skill7_documentation_update.md`
+- **Validation**: PASS with 51 focused backend websearch/template/cost tests and 4 frontend Markdown-renderer tests.
+- **Provider Parity**: Gemini and GPT release-list answers are normalized to the same per-entry chat template while preserving provider-specific websearch execution and cost evidence.
+- **Changed Files**: `backend/renderers/websearch_templates.py`, `backend/renderers/implementations/unified_websearch_renderer.py`, `backend/renderers/attribution.py`, `backend/services/websearch/gemini_provider.py`, `backend/services/websearch/openai_provider.py`, `backend/tool_registry.py`, `frontend/js/markdown-renderer.js`, `backend/tests/tools/test_websearch.py`, `frontend/tests/markdown-renderer.test.mjs`.
+
 
 ### TEST-RUN-2026-05-21-013 - Final Beta Launch Gate Review
 
