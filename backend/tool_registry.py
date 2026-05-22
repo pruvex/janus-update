@@ -32,6 +32,8 @@ from backend.services.knowledge_composite import hardened_edit_pdf
 from backend.tools.pdf_editor import edit_pdf_text_in_place
 from backend.services.tool_manager import tool_manager
 from backend.services.websearch.websearch import execute_websearch_service
+from backend.services.websearch.query_bias import normalize_source_url
+from backend.renderers.websearch_templates import WebSearchTemplateEngine
 from backend.data.database import SessionLocal
 from backend.tools.calendar_tools import (
     create_calendar_event,
@@ -220,6 +222,248 @@ def _coerce_websearch_model_for_provider(provider: str, model: Optional[str]) ->
     return model_id
 
 
+def _normalize_source_label_for_match(label: str) -> str:
+    value = re.sub(r"\s+", " ", str(label or "")).strip().lower()
+    value = re.sub(r"^www\.", "", value)
+    value = re.sub(r"\.(com|de|net|org|co\.uk|tv)$", "", value)
+    return value
+
+
+def _extract_ranking_list_source_label(text: str) -> str:
+    value = str(text or "")
+    patterns = (
+        r"(?im)^\s*Quelle der Liste:\s*([^.\n]+)\.?",
+        r"(?im)^\s*Quelle:\s*([^.\n]+)\.?",
+        r"\(Quelle:\s*([^)]+)\)",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, value)
+        if match:
+            label = re.sub(r"\s+", " ", match.group(1)).strip(" .:")
+            if label and label.lower() not in {"nicht eindeutig verfügbar", "nicht eindeutig verfuegbar"}:
+                return label
+    return ""
+
+
+def _source_list_has_label_url(sources: List[Dict[str, Any]], label: str) -> bool:
+    normalized = _normalize_source_label_for_match(label)
+    if not normalized:
+        return False
+    for source in sources or []:
+        if not isinstance(source, dict):
+            continue
+        url = normalize_source_url(str(source.get("url") or source.get("source_url") or ""))
+        if not url:
+            continue
+        haystack = " ".join(
+            str(source.get(key) or "")
+            for key in ("title", "name", "source", "domain", "snippet", "text")
+        )
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(url)
+            haystack += f" {parsed.netloc} {parsed.path}"
+        except Exception:
+            pass
+        if normalized in _normalize_source_label_for_match(haystack):
+            return True
+    return False
+
+
+def _candidate_looks_like_ranking_source(source: Dict[str, Any], label: str, query: str) -> bool:
+    url = normalize_source_url(str(source.get("url") or source.get("source_url") or ""))
+    if not url or "wikipedia.org/wiki/" in url.lower():
+        return False
+    haystack = " ".join(
+        str(source.get(key) or "")
+        for key in ("title", "name", "source", "domain", "snippet", "text")
+    ).lower()
+    try:
+        from urllib.parse import urlparse, unquote
+        parsed = urlparse(url)
+        haystack += f" {parsed.netloc.lower()} {unquote(parsed.path).lower()}"
+    except Exception:
+        pass
+    label_norm = _normalize_source_label_for_match(label)
+    ranking_markers = ("ranking", "rangliste", "top", "topliste", "beste", "besten", "aller zeiten", "liste", "galerie")
+    has_label = label_norm and label_norm in _normalize_source_label_for_match(haystack)
+    has_ranking = any(marker in haystack for marker in ranking_markers)
+    query_tokens = [
+        token
+        for token in re.findall(r"[a-z0-9äöüß]+", str(query or "").lower())
+        if len(token) > 4 and token not in {"welche", "wer", "sind", "top", "besten", "berühmtesten", "beruehmtesten"}
+    ]
+    has_query_context = not query_tokens or any(token in haystack for token in query_tokens[:4])
+    return bool(has_label and has_ranking and has_query_context)
+
+
+def _extract_release_source_targets(
+    *,
+    query: str,
+    text: str,
+    sources: List[Dict[str, Any]],
+    limit: int = 4,
+) -> List[Dict[str, str]]:
+    if not WebSearchTemplateEngine.is_release_lookup(query):
+        return []
+    try:
+        items = WebSearchTemplateEngine._parse_release_items(text, data={"sources": []})
+    except Exception as exc:
+        logger.warning("WEBSEARCH-RELEASE-SOURCE-RESOLVE: parse soft-failed: %s", exc)
+        return []
+    targets: List[Dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for item in items:
+        source_match = re.search(r"^Quelle:\s*([^.\n]+)\.", item.source_line, flags=re.IGNORECASE)
+        if not source_match or "[Link](" in item.source_line:
+            continue
+        label = re.sub(r"\s+", " ", source_match.group(1)).strip(" .:")
+        if not label or label.lower() in {"nicht eindeutig verfÃ¼gbar", "nicht eindeutig verfuegbar"}:
+            continue
+        title = re.sub(r"\([^)]*\)", " ", item.title)
+        title = re.sub(r"\s+", " ", title).strip(" :")
+        if not title:
+            continue
+        key = (_normalize_source_label_for_match(label), title.casefold())
+        if key in seen:
+            continue
+        seen.add(key)
+        targets.append({"label": label, "title": title})
+        if len(targets) >= limit:
+            break
+    return targets
+
+
+def _candidate_matches_release_target(source: Dict[str, Any], target: Dict[str, str]) -> bool:
+    url = normalize_source_url(str(source.get("url") or source.get("source_url") or ""))
+    if not url:
+        return False
+    haystack = " ".join(
+        str(source.get(key) or "")
+        for key in ("title", "name", "source", "domain", "snippet", "text")
+    )
+    try:
+        from urllib.parse import urlparse, unquote
+        parsed = urlparse(url)
+        haystack += f" {parsed.netloc} {unquote(parsed.path)}"
+    except Exception:
+        pass
+    haystack_norm = _normalize_source_label_for_match(haystack)
+    label_norm = _normalize_source_label_for_match(target.get("label", ""))
+    title_tokens = [
+        token
+        for token in re.findall(r"[a-z0-9Ã¤Ã¶Ã¼ÃŸ]+", str(target.get("title") or "").lower())
+        if len(token) > 2 and token not in {"the", "and", "for", "eine", "einen", "album", "single", "rock", "ep"}
+    ]
+    if label_norm and label_norm not in haystack_norm:
+        return False
+    if not title_tokens:
+        return False
+    required = min(2, len(title_tokens))
+    matched = sum(1 for token in title_tokens if token in haystack_norm)
+    return matched >= required
+
+
+async def _resolve_missing_release_sources(
+    *,
+    query: str,
+    text: str,
+    sources: List[Dict[str, Any]],
+    provider: str,
+    model: Optional[str],
+    api_key: str,
+    persist_cost,
+) -> List[Dict[str, Any]]:
+    targets = _extract_release_source_targets(query=query, text=text, sources=sources)
+    if not targets:
+        return sources
+    resolve_terms = " OR ".join(f'"{target["title"]}" {target["label"]}' for target in targets)
+    resolve_query = f"{resolve_terms} {query} deutschsprachige Quellen site:de"
+    logger.info(
+        "WEBSEARCH-RELEASE-SOURCE-RESOLVE: resolving missing=%s query=%s",
+        len(targets),
+        resolve_query,
+    )
+    try:
+        raw_resolve = await execute_websearch_service(
+            query=resolve_query,
+            api_key=api_key,
+            provider=provider,
+            model=model,
+        )
+        persist_cost(raw_resolve, provider or "default", model)
+    except Exception as exc:
+        logger.warning("WEBSEARCH-RELEASE-SOURCE-RESOLVE: soft-failed: %s", exc)
+        return sources
+    resolved_sources = raw_resolve.get("sources") if isinstance(raw_resolve.get("sources"), list) else []
+    seen = {normalize_source_url(str(source.get("url") or source.get("source_url") or "")) for source in sources if isinstance(source, dict)}
+    additions: List[Dict[str, Any]] = []
+    for target in targets:
+        for candidate in resolved_sources:
+            if not isinstance(candidate, dict) or not _candidate_matches_release_target(candidate, target):
+                continue
+            url = normalize_source_url(str(candidate.get("url") or candidate.get("source_url") or ""))
+            if not url or url in seen:
+                continue
+            item = dict(candidate)
+            item["url"] = url
+            item.setdefault("title", target["label"])
+            additions.append(item)
+            seen.add(url)
+            break
+    if not additions:
+        return sources
+    return sources + additions
+
+
+async def _resolve_missing_ranking_list_source(
+    *,
+    query: str,
+    text: str,
+    sources: List[Dict[str, Any]],
+    provider: str,
+    model: Optional[str],
+    api_key: str,
+    persist_cost,
+) -> List[Dict[str, Any]]:
+    if not WebSearchTemplateEngine.is_ranking_lookup(query):
+        return sources
+    label = _extract_ranking_list_source_label(text)
+    if not label or _source_list_has_label_url(sources, label):
+        return sources
+    resolve_query = f'{label} {query} Ranking Topliste Liste deutschsprachige Quellen site:de'
+    logger.info("WEBSEARCH-LIST-SOURCE-RESOLVE: resolving label=%s query=%s", label, resolve_query)
+    try:
+        raw_resolve = await execute_websearch_service(
+            query=resolve_query,
+            api_key=api_key,
+            provider=provider,
+            model=model,
+        )
+        persist_cost(raw_resolve, provider or "default", model)
+    except Exception as exc:
+        logger.warning("WEBSEARCH-LIST-SOURCE-RESOLVE: soft-failed for label=%s: %s", label, exc)
+        return sources
+    resolved_sources = raw_resolve.get("sources") if isinstance(raw_resolve.get("sources"), list) else []
+    selected: List[Dict[str, Any]] = []
+    for candidate in resolved_sources:
+        if isinstance(candidate, dict) and _candidate_looks_like_ranking_source(candidate, label, query):
+            selected.append(candidate)
+    if not selected:
+        return sources
+    seen = {normalize_source_url(str(source.get("url") or source.get("source_url") or "")) for source in sources if isinstance(source, dict)}
+    additions = []
+    for source in selected[:2]:
+        url = normalize_source_url(str(source.get("url") or source.get("source_url") or ""))
+        if url and url not in seen:
+            item = dict(source)
+            item["url"] = url
+            item.setdefault("title", label)
+            additions.append(item)
+            seen.add(url)
+    return additions + sources
+
+
 async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResultV1:
     """Websuche V2.0 (Diamond): Strukturierter Output + Smart Global Fallback + Seamless Price Integration."""
     import time as _time
@@ -356,6 +600,26 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
 
         # ── Ebene 8: Seamless Integration – Preis-Signal → interne price_comparison ──
         # TASK 002 (STANDALONE VALIDATION): Deaktiviert — Keine Skill-Kopplung erlaubt.
+        sources = await _resolve_missing_ranking_list_source(
+            query=normalized_query,
+            text=text,
+            sources=sources,
+            provider=provider,
+            model=provider_model,
+            api_key=key,
+            persist_cost=_persist_websearch_cost,
+        )
+        sources = await _resolve_missing_release_sources(
+            query=normalized_query,
+            text=text,
+            sources=sources,
+            provider=provider,
+            model=provider_model,
+            api_key=key,
+            persist_cost=_persist_websearch_cost,
+        )
+        items = _sources_to_items(sources)
+
         price_enrichment = None
         # if _detect_price_query(normalized_query, text):
         #     logger.info("WEBSEARCH-V2: Preis-Signal detektiert → interne price_comparison für '%s'", normalized_query)

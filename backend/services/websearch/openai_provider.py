@@ -10,7 +10,9 @@ from .base_provider import BaseWebSearchProvider, WebSearchResult, WebSearchSour
 from backend.services.cost_calculator import calculate_cost
 from backend.services.websearch.query_bias import (
     augment_query_with_local_bias,
+    build_german_source_preference_hint,
     enforce_german_market_bias,
+    prioritize_german_sources,
 )
 
 logger = logging.getLogger("janus_backend")
@@ -80,6 +82,7 @@ def _build_diamond_search_system_prompt(model_id: str) -> str:
         "DIREKTIVE: Nenne Namen, Teams und Punkte vollständig. "
         "VERBOT: Keine URLs oder Markdown-Links im Text. "
         "PROAKTIVITÄT: Nutze das web_search Tool sofort.\n"
+        + build_german_source_preference_hint() + "\n"
         + "AUSGABE-STIL: Liefere eine kurze direkte Antwort. Bei Listenfragen wie Top 5, "
         "Neuerscheinungen, bekannteste Personen, Buecher, Spiele, Filme oder Produkte nutze "
         "eine nummerierte Liste. Jeder Eintrag muss mehr sein als nur ein Name: Schreibe "
@@ -89,7 +92,12 @@ def _build_diamond_search_system_prompt(model_id: str) -> str:
         "Vermeide Quellen-/Kalenderprosa wie 'laut GamePro', 'in der Release-Liste', 'ebenfalls am' oder 'kommt am'; "
         "beschreibe stattdessen Spielinhalt, Genre, Besonderheiten, Entwickler/Publisher oder Plattform-Optimierung. Nenne im "
         "Text eine kurze Quellenkennung wie '(Quelle: IGN)' oder '(Quelle: NBA)' passend "
-        "zum jeweiligen Eintrag, aber keine URLs.\n"
+        "zum jeweiligen Eintrag, aber keine URLs. "
+        "Bei Ranking-/Top-Listen: Halte dich an die angefragte Anzahl, nenne pro Eintrag zuerst den Namen/Titel "
+        "und schreibe danach 1-2 informative Saetze mit Relevanz, Kontext oder Einordnung. "
+        "Nutze, wenn moeglich, eine echte Ranking-/Toplisten-Seite als Hauptquelle fuer die Auswahl "
+        "und nenne diese Quellenkennung konsistent bei den Eintraegen. "
+        "Keine separate Quellenliste.\n"
         + _PRICE_INTEGRITY_RULE + "\n" + _GROUNDING_DIRECTIVE
     )
 
@@ -232,7 +240,7 @@ class OpenAIWebSearchProvider(BaseWebSearchProvider):
                 seen_urls.add(url)
                 all_source_urls.append(src)
 
-        all_source_urls = all_source_urls[:_MAX_RETURNED_SOURCES]
+        all_source_urls = prioritize_german_sources(all_source_urls, max_items=_MAX_RETURNED_SOURCES)
         urls = [s["url"] for s in all_source_urls if s.get("url")]
 
         raw_text = response.output_text if response.output_text else ""

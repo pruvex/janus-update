@@ -10,6 +10,12 @@ from typing import Dict, Any, Optional
 
 from .base_provider import BaseWebSearchProvider, WebSearchResult, WebSearchSource, WebSearchMetadata
 from backend.services.cost_calculator import calculate_cost
+from backend.services.websearch.query_bias import (
+    augment_query_with_local_bias,
+    build_german_source_preference_hint,
+    enforce_german_market_bias,
+    prioritize_german_sources,
+)
 
 logger = logging.getLogger("janus_backend")
 
@@ -107,10 +113,9 @@ def _extract_clean_sources_from_metadata(grounding_metadata: Dict[str, Any]) -> 
         
         if not fallback_urls and web_queries:
             # Letzter Fallback: Generische Google-Such-URLs für die Queries
-            for query in web_queries[:3]:  # Max 3 Queries
-                if isinstance(query, str) and query.strip():
-                    search_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(query.strip())}"
-                    fallback_urls.add(search_url)
+            logger.warning(
+                "BRUTE-FORCE FALLBACK: Keine echten Ziel-URLs gefunden; Google-Such-URLs werden nicht als Quellen verwendet."
+            )
         
         # Erstelle Sources aus gefundenen URLs
         for url in list(fallback_urls)[:10]:  # Max 10
@@ -156,13 +161,34 @@ def _build_gemini_native_websearch_prompt(query: str) -> str:
     release_marker = any(token in lowered for token in ("release", "releases", "erscheinen", "erscheint", "neuerschein", "kommende", "naechsten monat", "nächsten monat", "next month", "upcoming"))
     is_game_release_query = game_platform_marker and release_marker
     asks_price = any(token in lowered for token in ("preis", "preise", "uvp", "straßenpreis", "strassenpreis", "street price", "in euro"))
-    asks_ranking = any(token in lowered for token in ("top 3", "top3", "ranking", "beliebteste", "beliebtesten", "highlights", "popular"))
+    asks_ranking = bool(re.search(r"\btop\s*\d+\b", lowered)) or any(
+        token in lowered
+        for token in (
+            "ranking",
+            "rangliste",
+            "topliste",
+            "beste",
+            "besten",
+            "beruehmteste",
+            "berühmteste",
+            "bekannteste",
+            "beliebteste",
+            "beliebtesten",
+            "wichtigste",
+            "groesste",
+            "größte",
+            "fuehrende",
+            "führende",
+            "popular",
+        )
+    )
     asks_launch = any(token in lowered for token in ("launch", "veröffentlicht", "veroeffentlicht", "release date", "wann wurde"))
     prompt_parts = [
         "Führe eine gründliche Google-Recherche durch.",
         "Antworte maximal prägnant in 1-2 Sätzen. Keine Einleitung ('Laut meiner Suche...'), sondern direkt die Fakten. Beispiel: 'Die Feinunze Gold kostet aktuell 3.890 Euro (Stand: 25.03.2026).'",
         "Nutze bevorzugt offizielle Seiten, große Fachmedien und verlässliche Handels-/Preisquellen.",
         "Antworte auf Deutsch und liefere ausschließlich Recherchematerial, keine finale Nutzerantwort.",
+        build_german_source_preference_hint(),
         "Schreibe KEINE Markdown-Links, KEINE Inline-Zitate und KEIN separates Quellenverzeichnis in den Text.",
         "Der Text dient nur als Rohmaterial für eine nachgelagerte Synthetisierung im Backend.",
         "Nenne Preise NUR, wenn die Nutzerfrage ausdrücklich nach Preis, Kosten, UVP oder Kauf fragt. "
@@ -193,7 +219,15 @@ def _build_gemini_native_websearch_prompt(query: str) -> str:
             "Wenn kein Preis im Snippet steht, schreibe exakt: 'Preis nur via Link verfügbar'."
         )
     if asks_ranking:
-        prompt_parts.append("Nenne nur die Top 3 Titel, keine Beschreibungen.")
+        prompt_parts.append(
+            "RANKING-LISTEN: Halte dich an die angefragte Anzahl. "
+            "Nutze eine nummerierte Liste, schreibe pro Eintrag den Namen/Titel zuerst "
+            "und danach 1-2 informative Saetze mit Relevanz, Kontext oder Einordnung. "
+            "Nutze, wenn moeglich, eine echte Ranking-/Toplisten-Seite als Hauptquelle fuer die Auswahl "
+            "und nenne diese Quellenkennung konsistent bei den Eintraegen. "
+            "Fuege pro Eintrag eine kurze Quellenkennung wie '(Quelle: NBA)' hinzu. "
+            "Keine separate Quellenliste, keine URLs und keine Preise, ausser die Nutzerfrage verlangt Preise ausdruecklich."
+        )
     if asks_launch:
         prompt_parts.append("Gib nur das deutsche/europäische Release-Datum an.")
     prompt_parts.append("Wenn Informationen fehlen oder widersprüchlich sind, mache die Unsicherheit sichtbar statt zu raten.")
@@ -212,7 +246,11 @@ class GeminiWebSearchProvider(BaseWebSearchProvider):
         Führt eine native Google-Suche via Gemini API durch (Direct REST).
         Nutzt ausschließlich das native `google_search`-Tool für Grounding.
         """
-        logger.info(f"Using Gemini's native web search for query: {query} with model: {model}")
+        normalized_query = str(query or "").strip()
+        biased_query = enforce_german_market_bias(
+            augment_query_with_local_bias(normalized_query)
+        )
+        logger.info(f"Using Gemini's native web search for query: {biased_query} with model: {model}")
 
         raw_model = getattr(model, "id", None) or str(model or "").strip()
         model_name = raw_model or "gemini-3-flash-preview"
@@ -222,7 +260,7 @@ class GeminiWebSearchProvider(BaseWebSearchProvider):
             logger.warning(f"Falsches Modell für Gemini Provider übergeben ({model_name}). Fallback auf gemini-3-flash-preview.")
             model_name = "gemini-3-flash-preview"
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
-        search_prompt = _build_gemini_native_websearch_prompt(query)
+        search_prompt = _build_gemini_native_websearch_prompt(biased_query)
         
         payload = {
             "contents": [{
@@ -270,7 +308,7 @@ class GeminiWebSearchProvider(BaseWebSearchProvider):
                     if "webSearchQueries" in meta:
                         search_queries_count = len(meta["webSearchQueries"])
 
-                clean_sources = await _extract_clean_sources(candidate)
+                clean_sources = prioritize_german_sources(await _extract_clean_sources(candidate), max_items=10)
                 urls = [str(source.get("url") or "").strip() for source in clean_sources if str(source.get("url") or "").strip()]
                 final_text = _strip_source_appendix(text_output)
             else:

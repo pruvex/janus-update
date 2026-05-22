@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import Optional
+import re
+from typing import Any, Optional
+from urllib.parse import parse_qs, unquote, urlparse
 
 _PRICE_KEYWORDS = {
     "preis",
@@ -31,6 +33,24 @@ _NEWS_KEYWORDS = {
     "nachrichten",
     "update",
     "heute",
+}
+_RANKING_LIST_KEYWORDS = {
+    "top",
+    "topliste",
+    "ranking",
+    "rangliste",
+    "beste",
+    "besten",
+    "beruehmteste",
+    "berühmteste",
+    "bekannteste",
+    "beliebteste",
+    "beliebtesten",
+    "wichtigste",
+    "groesste",
+    "größte",
+    "fuehrende",
+    "führende",
 }
 _GAME_RELEASE_KEYWORDS = {
     "release",
@@ -101,6 +121,26 @@ _LOCATION_TOKENS = {
 _RELEASE_SITE_SUFFIX = "(site:nintendo.de OR site:spieletipps.de OR site:gameswirtschaft.de OR site:gamepro.de OR site:de.ign.com OR site:eurogamer.de)"
 _PRICE_SUFFIX = "Deutschland \"in Euro\" site:de"
 _NEWS_SUFFIX = "Deutschland aktuell site:de"
+_GERMAN_SOURCE_SUFFIX = "deutschsprachige Quellen Deutschland site:de"
+_GERMAN_QUERY_MARKERS = {
+    "wer",
+    "was",
+    "wie",
+    "welche",
+    "welcher",
+    "welches",
+    "wann",
+    "warum",
+    "wieso",
+    "wo",
+    "sind",
+    "ist",
+    "gibt",
+    "heute",
+    "aktuell",
+    "deutsch",
+    "deutschland",
+}
 
 
 def _contains_keyword(text: str, keywords: set[str]) -> bool:
@@ -118,6 +158,7 @@ def _normalize_bias_query(query: str) -> str:
     if not normalized:
         return normalized
     normalized = normalized.replace("site:de site:de", "site:de")
+    normalized = normalized.replace("site:de site:deutschsprachige", "site:deutschsprachige")
     normalized = normalized.replace("Deutschland Deutschland", "Deutschland")
     normalized = normalized.replace("Euro Euro", "Euro")
     normalized = normalized.replace('"in Euro" "in Euro"', '"in Euro"')
@@ -157,6 +198,18 @@ def _is_game_release_query(lowered_query: str) -> bool:
     )
 
 
+def _is_ranking_list_query(lowered_query: str) -> bool:
+    if re.search(r"\btop\s*\d+\b", lowered_query):
+        return True
+    return any(re.search(rf"\b{re.escape(keyword)}\b", lowered_query) for keyword in _RANKING_LIST_KEYWORDS)
+
+
+def _is_likely_german_query(lowered_query: str) -> bool:
+    if any(char in lowered_query for char in "äöüß"):
+        return True
+    return any(re.search(rf"\b{re.escape(marker)}\b", lowered_query) for marker in _GERMAN_QUERY_MARKERS)
+
+
 def build_query_suffix(query: str) -> str:
     lowered = (query or "").lower()
     suffix_parts: list[str] = []
@@ -183,6 +236,18 @@ def build_query_suffix(query: str) -> str:
         if not any(site in lowered for site in release_sites):
             _append_unique_part(suffix_parts, _RELEASE_SITE_SUFFIX)
 
+    if (
+        (
+            _is_ranking_list_query(lowered)
+            or _is_likely_german_query(lowered)
+            or _contains_keyword(lowered, _NEWS_KEYWORDS)
+        )
+        and "deutschsprachige" not in lowered
+        and "english sources" not in lowered
+        and "englische quellen" not in lowered
+    ):
+        _append_unique_part(suffix_parts, _GERMAN_SOURCE_SUFFIX)
+
     return _normalize_bias_query(" ".join(part for part in suffix_parts if part))
 
 
@@ -203,6 +268,132 @@ def build_release_hint(query: str) -> Optional[str]:
             "(z.B. spieletipps.de, gameswirtschaft.de), um Release-Daten zu bestätigen."
         )
     return None
+
+
+def build_german_source_preference_hint() -> str:
+    return (
+        "QUELLENSPRACHE: Janus laeuft fuer Nutzer in Deutschland. "
+        "Bevorzuge deutschsprachige Quellen, deutsche/deutschsprachige Fachmedien und deutschsprachige "
+        "Versionen offizieller Seiten. Nutze englische oder internationale Quellen nur, wenn keine "
+        "gleichwertige deutschsprachige Quelle verfuegbar ist oder die offizielle Quelle fachlich klar besser ist."
+    )
+
+
+def normalize_source_url(url: str) -> str:
+    value = str(url or "").strip()
+    if not value:
+        return ""
+    if value.startswith(("data:", "about:", "javascript:")):
+        return ""
+    try:
+        parsed = urlparse(value)
+    except Exception:
+        return value
+    domain = parsed.netloc.casefold().removeprefix("www.")
+    path = parsed.path.casefold()
+    if not parsed.scheme.startswith("http"):
+        return ""
+    if domain == "w3.org" and path.rstrip("/") in {"/2000/svg", "/1999/xhtml"}:
+        return ""
+    if domain.endswith("w3.org") and path.startswith("/2000/svg"):
+        return ""
+    if path.endswith((".svg", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico")):
+        return ""
+    is_google_search_domain = domain in {"google.com", "google.de"} or domain.endswith(".google.com") or domain.endswith(".google.de")
+    is_google_search_path = path.startswith(("/search", "/url"))
+    if is_google_search_domain and is_google_search_path:
+        params = parse_qs(parsed.query)
+        for key in ("url", "q", "u"):
+            for candidate in params.get(key, []):
+                target = unquote(str(candidate or "").strip())
+                if target.startswith(("http://", "https://")):
+                    target_domain = urlparse(target).netloc.casefold().removeprefix("www.")
+                    if not target_domain.endswith(("google.com", "google.de")):
+                        return target
+        return ""
+    return value
+
+
+def is_likely_weak_source(source: dict[str, Any]) -> bool:
+    url = str(source.get("url") or source.get("uri") or source.get("source_url") or "").strip().lower()
+    domain = ""
+    if url:
+        try:
+            domain = urlparse(url).netloc.casefold().removeprefix("www.")
+        except Exception:
+            domain = ""
+    weak_domains = (
+        "imago-images.de",
+        "imago-images.com",
+        "gettyimages.",
+        "alamy.",
+        "shutterstock.",
+        "pinterest.",
+        "youtube.",
+    )
+    return any(marker in domain for marker in weak_domains)
+
+
+def is_likely_german_source(source: dict[str, Any]) -> bool:
+    url = normalize_source_url(str(source.get("url") or source.get("uri") or source.get("source_url") or "").strip()).lower()
+    title = str(source.get("title") or source.get("name") or "").casefold()
+    snippet = str(source.get("snippet") or source.get("text") or "").casefold()
+    domain = ""
+    if url:
+        try:
+            domain = urlparse(url).netloc.casefold().removeprefix("www.")
+        except Exception:
+            domain = ""
+    if domain.endswith((".de", ".at", ".ch")) or domain.startswith("de.") or ".de." in domain:
+        return True
+    combined = f"{title} {snippet}"
+    if any(char in combined for char in "äöüß"):
+        return True
+    german_markers = (
+        "deutschland",
+        "deutsch",
+        "bundesliga",
+        "testbericht",
+        "kaufberatung",
+        "erscheinung",
+        "veröffentlicht",
+        "erscheint",
+        "quelle",
+    )
+    return any(marker in combined for marker in german_markers)
+
+
+def prioritize_german_sources(
+    sources: list[dict[str, Any]],
+    *,
+    max_items: Optional[int] = None,
+) -> list[dict[str, Any]]:
+    """Prefer German-language sources without dropping available fallback links."""
+    valid_sources: list[dict[str, Any]] = []
+    seen_urls: set[str] = set()
+    for source in sources or []:
+        if not isinstance(source, dict):
+            continue
+        cleaned_url = normalize_source_url(str(source.get("url") or source.get("uri") or source.get("source_url") or ""))
+        if not cleaned_url or cleaned_url in seen_urls:
+            continue
+        seen_urls.add(cleaned_url)
+        cleaned_source = dict(source)
+        cleaned_source["url"] = cleaned_url
+        if "uri" in cleaned_source:
+            cleaned_source["uri"] = cleaned_url
+        valid_sources.append(cleaned_source)
+    if not valid_sources:
+        return []
+    target_count = max_items or len(valid_sources)
+    strong_sources = [source for source in valid_sources if not is_likely_weak_source(source)]
+    weak_sources = [source for source in valid_sources if is_likely_weak_source(source)]
+    german_sources = [source for source in strong_sources if is_likely_german_source(source)]
+    non_german_sources = [source for source in strong_sources if not is_likely_german_source(source)]
+    if not german_sources:
+        return (strong_sources + weak_sources)[:target_count]
+
+    return (german_sources + non_german_sources + weak_sources)[:target_count]
 
 
 def enforce_german_market_bias(query: str) -> str:

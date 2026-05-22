@@ -8,9 +8,14 @@ from backend.data import schemas
 from backend.renderers.attribution import append_tool_attributions_from_tools
 from backend.renderers.implementations.unified_websearch_renderer import UnifiedWebSearchRenderer
 from backend.renderers.websearch_templates import WebSearchTemplateEngine
-from backend.services.websearch.gemini_provider import GeminiWebSearchProvider
+from backend.services.websearch.gemini_provider import (
+    GeminiWebSearchProvider,
+    _build_gemini_native_websearch_prompt,
+    _extract_clean_sources_from_metadata,
+)
 from backend.services.websearch.duckduckgo_provider import DuckDuckGoWebSearchProvider
-from backend.services.websearch.openai_provider import coerce_openai_websearch_model
+from backend.services.websearch.openai_provider import coerce_openai_websearch_model, _build_diamond_search_system_prompt
+from backend.services.websearch.query_bias import augment_query_with_local_bias, normalize_source_url, prioritize_german_sources
 from backend.tool_registry import _coerce_websearch_model_for_provider, _normalize_websearch_query, websearch_wrapper
 from backend.services.skill_router import is_realtime_search_query
 
@@ -114,6 +119,235 @@ async def test_websearch_wrapper_persists_gemini_token_usage_costs():
     assert kwargs["total_tokens"] == 1540
     assert kwargs["context_details"] == "query_count=2"
     fake_db.close.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_websearch_wrapper_resolves_missing_ranking_list_source_with_targeted_search():
+    fake_db = Mock()
+
+    primary_result = {
+        "text": (
+            "Die 5 erfolgreichsten Basketballer aller Zeiten sind:\n\n"
+            "Quelle der Liste: IMAGO.\n\n"
+            "1. Michael Jordan\n"
+            "Sechsfacher NBA-Champion."
+        ),
+        "sources": [],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 100, "output_tokens": 40, "total_tokens": 140, "query_count": 1},
+        "cost": {"total_cost": 0.001},
+    }
+    resolver_result = {
+        "text": "IMAGO Ranking",
+        "sources": [
+            {
+                "title": "Die besten Basketballspieler aller Zeiten - IMAGO",
+                "url": "https://blog.imago-images.com/de/beste-basketballspieler-aller-zeiten",
+                "snippet": "Ranking Liste der besten Basketballspieler aller Zeiten.",
+            }
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 80, "output_tokens": 20, "total_tokens": 100, "query_count": 1},
+        "cost": {"total_cost": 0.0008},
+    }
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
+        "backend.tool_registry.execute_websearch_service",
+        AsyncMock(side_effect=[primary_result, resolver_result]),
+    ) as execute_mock, patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
+        "backend.services.cost_service.create_cost_entry"
+    ) as create_cost_entry_mock:
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(
+                query="wer sind die top 5 berühmtesten basketballspieler",
+                provider="gemini",
+                model="gemini-3-flash-preview",
+            )
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    assert rd["status"] == "ok"
+    assert rd["data"]["sources"][0]["url"] == "https://blog.imago-images.com/de/beste-basketballspieler-aller-zeiten"
+    assert execute_mock.await_count == 2
+    resolver_query = execute_mock.await_args_list[1].kwargs["query"]
+    assert "IMAGO" in resolver_query
+    assert "Ranking" in resolver_query
+    assert "site:de" in resolver_query
+    assert create_cost_entry_mock.call_count == 2
+    assert fake_db.close.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_websearch_wrapper_does_not_attach_non_ranking_source_as_list_source():
+    primary_result = {
+        "text": (
+            "Die 5 relevantesten Einträge aus der Suche sind:\n\n"
+            "Quelle der Liste: Der Spiegel.\n\n"
+            "1. Roger Federer\n"
+            "Tennislegende."
+        ),
+        "sources": [],
+        "metadata": {"provider": "openai"},
+        "usage": {"query_count": 1},
+        "cost": {"total_cost": 0.01},
+    }
+    resolver_result = {
+        "text": "Spiegel Tennis Artikel",
+        "sources": [
+            {
+                "title": "Roger Federer im Interview - DER SPIEGEL",
+                "url": "https://www.spiegel.de/sport/roger-federer-interview",
+                "snippet": "Ein Porträt über Roger Federer ohne Rangliste.",
+            }
+        ],
+        "metadata": {"provider": "openai"},
+        "usage": {"query_count": 1},
+        "cost": {"total_cost": 0.01},
+    }
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="openai-key"), patch(
+        "backend.tool_registry.execute_websearch_service",
+        AsyncMock(side_effect=[primary_result, resolver_result]),
+    ), patch("backend.tool_registry.SessionLocal", return_value=Mock()), patch(
+        "backend.services.cost_service.create_cost_entry"
+    ):
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(
+                query="wer sind die top 5 berühmtesten Tennisspieler",
+                provider="openai",
+                model="gpt-5.4-nano",
+            )
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    assert rd["status"] == "ok"
+    assert rd["data"]["sources"] == []
+
+
+@pytest.mark.asyncio
+async def test_websearch_wrapper_rejects_publisher_article_as_ranking_list_source():
+    primary_result = {
+        "text": (
+            "Die 5 relevantesten EintrÃ¤ge aus der Suche sind:\n\n"
+            "Quelle der Liste: Eurosport.\n\n"
+            "1. Roger Federer\n"
+            "Tennislegende."
+        ),
+        "sources": [],
+        "metadata": {"provider": "openai"},
+        "usage": {"query_count": 1},
+        "cost": {"total_cost": 0.01},
+    }
+    resolver_result = {
+        "text": "Eurosport Tennis Artikel",
+        "sources": [
+            {
+                "title": "Historischer Dreikampf: Novak Djokovic Ã¼berholt Rafael Nadal und jagt Roger Federer",
+                "url": "https://www.eurosport.de/tennis/historischer-dreikampf-novak-djokovic-uberholt-rafael-nadal-und-jagt-roger-federer_sto6973488/story.shtml",
+                "snippet": "Ein Artikel Ã¼ber Djokovic, Nadal und Federer, aber keine Bestenliste.",
+                "source": "Eurosport",
+            }
+        ],
+        "metadata": {"provider": "openai"},
+        "usage": {"query_count": 1},
+        "cost": {"total_cost": 0.01},
+    }
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="openai-key"), patch(
+        "backend.tool_registry.execute_websearch_service",
+        AsyncMock(side_effect=[primary_result, resolver_result]),
+    ), patch("backend.tool_registry.SessionLocal", return_value=Mock()), patch(
+        "backend.services.cost_service.create_cost_entry"
+    ):
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(
+                query="wer sind die top 5 berÃ¼hmtesten Tennisspieler",
+                provider="openai",
+                model="gpt-5.4-nano",
+            )
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    assert rd["status"] == "ok"
+    assert rd["data"]["sources"] == []
+
+
+@pytest.mark.asyncio
+async def test_websearch_wrapper_resolves_missing_release_entry_sources_in_one_batch():
+    fake_db = Mock()
+    primary_result = {
+        "text": (
+            "1. Death Cab For Cutie – I Built You A Tower: Die US-amerikanische Indie-Rock-Institution veröffentlicht ein neues Studioalbum am 5. Juni 2026.\n"
+            "Quelle: Musikexpress.\n"
+            "2. The Pretty Reckless – Dear God: Das vierte Studioalbum erscheint Ende Juni 2026.\n"
+            "Quelle: Visions.\n"
+            "3. Hard-Fi – Sweating Someone Else’s Fever: Die britische Indie-Rock-Band kehrt am 19. Juni 2026 mit einem neuen Werk zurück.\n"
+            "Quelle: Musikexpress.\n"
+            "4. Temples – BLISS: Die britische Band führt ihren Psychedelic-Rock auf diesem neuen Longplayer fort.\n"
+            "Quelle: FluxFM."
+        ),
+        "sources": [
+            {
+                "title": "Death Cab For Cutie – I Built You A Tower - Musikexpress",
+                "url": "https://www.musikexpress.de/death-cab-for-cutie-i-built-you-a-tower",
+                "snippet": "Death Cab For Cutie veröffentlichen I Built You A Tower.",
+            }
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 100, "output_tokens": 40, "total_tokens": 140, "query_count": 1},
+        "cost": {"total_cost": 0.001},
+    }
+    resolver_result = {
+        "text": "Release Quellen",
+        "sources": [
+            {
+                "title": "The Pretty Reckless – Dear God - Visions",
+                "url": "https://www.visions.de/news/the-pretty-reckless-dear-god",
+                "snippet": "Visions meldet das neue Album Dear God von The Pretty Reckless.",
+            },
+            {
+                "title": "Hard-Fi – Sweating Someone Else’s Fever - Musikexpress",
+                "url": "https://www.musikexpress.de/hard-fi-sweating-someone-elses-fever",
+                "snippet": "Musikexpress zum neuen Hard-Fi-Album Sweating Someone Else’s Fever.",
+            },
+            {
+                "title": "Temples – BLISS - FluxFM",
+                "url": "https://www.fluxfm.de/temples-bliss",
+                "snippet": "FluxFM berichtet über BLISS von Temples.",
+            },
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 80, "output_tokens": 20, "total_tokens": 100, "query_count": 1},
+        "cost": {"total_cost": 0.0008},
+    }
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
+        "backend.tool_registry.execute_websearch_service",
+        AsyncMock(side_effect=[primary_result, resolver_result]),
+    ) as execute_mock, patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
+        "backend.services.cost_service.create_cost_entry"
+    ) as create_cost_entry_mock:
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(
+                query="welche neuen rockalben erscheinen nächsten monat",
+                provider="gemini",
+                model="gemini-3-flash-preview",
+            )
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    assert rd["status"] == "ok"
+    urls = [source["url"] for source in rd["data"]["sources"]]
+    assert "https://www.visions.de/news/the-pretty-reckless-dear-god" in urls
+    assert "https://www.musikexpress.de/hard-fi-sweating-someone-elses-fever" in urls
+    assert "https://www.fluxfm.de/temples-bliss" in urls
+    assert execute_mock.await_count == 2
+    resolver_query = execute_mock.await_args_list[1].kwargs["query"]
+    assert "The Pretty Reckless" in resolver_query
+    assert "Hard-Fi" in resolver_query
+    assert "Temples" in resolver_query
+    assert create_cost_entry_mock.call_count == 2
+    assert fake_db.close.call_count == 2
 
 
 @pytest.mark.asyncio
@@ -239,9 +473,126 @@ def test_release_lookup_query_requires_realtime_websearch_route():
     assert is_realtime_search_query("Nintendo Switch 2 upcoming games next month")
 
 
+def test_ranking_query_requires_realtime_websearch_route():
+    assert is_realtime_search_query("wer sind die top 5 berühmtesten basketballspieler")
+    assert is_realtime_search_query("was sind im moment die besten bücher")
+    assert is_realtime_search_query("top 5 ki tools für produktivität")
+    assert not is_realtime_search_query("gib mir top 5 ideen für ein gedicht")
+
+
+def test_gemini_ranking_prompt_preserves_requested_count_and_descriptions():
+    prompt = _build_gemini_native_websearch_prompt("wer sind die top 5 berühmtesten basketballspieler")
+
+    assert "Top 3 Titel, keine Beschreibungen" not in prompt
+    assert "Halte dich an die angefragte Anzahl" in prompt
+    assert "1-2 informative Saetze" in prompt
+    assert "Ranking-/Toplisten-Seite als Hauptquelle" in prompt
+    assert "Keine separate Quellenliste" in prompt
+    assert "Bevorzuge deutschsprachige Quellen" in prompt
+
+
+def test_openai_ranking_prompt_matches_diamond_list_contract():
+    prompt = _build_diamond_search_system_prompt("gpt-5.4-nano")
+
+    assert "Halte dich an die angefragte Anzahl" in prompt
+    assert "zuerst den Namen/Titel" in prompt
+    assert "1-2 informative Saetze" in prompt
+    assert "Ranking-/Toplisten-Seite als Hauptquelle" in prompt
+    assert "Keine separate Quellenliste" in prompt
+    assert "Bevorzuge deutschsprachige Quellen" in prompt
+
+
+def test_ranking_queries_get_german_source_bias_without_price_cost_bias():
+    biased = augment_query_with_local_bias("wer sind die top 5 berühmtesten basketballspieler")
+
+    assert "deutschsprachige Quellen Deutschland" in biased
+    assert '"in Euro"' not in biased
+    assert "site:de" in biased
+    purchase_bias = augment_query_with_local_bias("ich möchte gute kopfhörer bestellen")
+    assert "deutschsprachige Quellen Deutschland" in purchase_bias
+    assert "site:de" in purchase_bias
+    assert '"in Euro"' not in purchase_bias
+
+
+def test_german_sources_are_prioritized_without_dropping_fallback_links():
+    sources = [
+        {"title": "ESPN", "url": "https://www.espn.com/nba/story"},
+        {"title": "SVT Sport", "url": "https://www.svt.se/sport/basket"},
+        {"title": "Sport1", "url": "https://www.sport1.de/news/us-sport/nba/michael-jordan"},
+        {"title": "Kicker", "url": "https://www.kicker.de/lebron-james-nba"},
+        {"title": "NBA", "url": "https://www.nba.com/news/lebron-james"},
+    ]
+
+    prioritized = prioritize_german_sources(sources, max_items=5)
+
+    assert [source["title"] for source in prioritized] == ["Sport1", "Kicker", "ESPN", "SVT Sport", "NBA"]
+
+
+def test_source_url_hygiene_unwraps_redirects_and_drops_google_search_pages():
+    assert normalize_source_url("https://www.google.com/search?q=Michael+Jordan+site%3Ade") == ""
+    assert normalize_source_url("http://www.w3.org/2000/svg") == ""
+    assert normalize_source_url("https://example.com/assets/logo.svg") == ""
+    assert normalize_source_url("https://vertexaisearch.cloud.google.com/grounding-api-redirect/example") == (
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/example"
+    )
+    assert normalize_source_url("https://www.google.com/url?q=https%3A%2F%2Fwww.spiegel.de%2Fsport%2Fmichael-jordan") == (
+        "https://www.spiegel.de/sport/michael-jordan"
+    )
+
+
+def test_renderer_drops_svg_namespace_urls_from_ranking_list_sources():
+    rendered = WebSearchTemplateEngine.render(
+        {
+            "query": "wer sind die top 5 berühmtesten basketballspieler",
+            "sources": [{"title": "IMAGO", "url": "http://www.w3.org/2000/svg"}],
+        },
+        (
+            "Die 5 erfolgreichsten Basketballer aller Zeiten sind:\n\n"
+            "Quelle der Liste: IMAGO.\n\n"
+            "1. Michael Jordan\n"
+            "Der sechsfache NBA-Champion gilt als der GOAT."
+        ),
+        "wer sind die top 5 berühmtesten basketballspieler",
+    )
+
+    assert "w3.org/2000/svg" not in rendered
+    assert "Quelle der Liste: IMAGO. [Link]" not in rendered
+
+
+def test_source_prioritization_moves_image_stock_sources_to_the_end():
+    sources = [
+        {"title": "IMAGO", "url": "https://www.imago-images.de/st/009123"},
+        {"title": "SPIEGEL", "url": "https://www.spiegel.de/sport/michael-jordan"},
+        {"title": "Wikipedia", "url": "https://de.wikipedia.org/wiki/LeBron_James"},
+    ]
+
+    prioritized = prioritize_german_sources(sources, max_items=3)
+
+    assert [source["title"] for source in prioritized] == ["SPIEGEL", "Wikipedia", "IMAGO"]
+
+
+def test_gemini_source_extraction_does_not_create_google_search_source_urls():
+    extracted = _extract_clean_sources_from_metadata(
+        {
+            "webSearchQueries": ["Michael Jordan beste Basketballspieler site:de"],
+            "groundingChunks": [],
+            "searchEntryPoint": {"renderedContent": ""},
+        }
+    )
+
+    assert extracted == []
+
+
 def test_websearch_template_engine_routes_release_lookup_only():
     assert WebSearchTemplateEngine.is_release_lookup("welche spiele erscheinen nächsten monat für die nintendo switch 2")
     assert not WebSearchTemplateEngine.is_release_lookup("wie ist das wetter morgen in berlin")
+
+
+def test_websearch_template_engine_routes_ranking_lookup_without_release_collision():
+    assert WebSearchTemplateEngine.is_ranking_lookup("wer sind die top 5 berühmtesten basketballspieler")
+    assert WebSearchTemplateEngine.is_ranking_lookup("was sind im moment die besten bücher")
+    assert not WebSearchTemplateEngine.is_ranking_lookup("welche spiele erscheinen nächsten monat für die nintendo switch 2")
+    assert not WebSearchTemplateEngine.is_ranking_lookup("wie ist das wetter morgen in berlin")
 
 
 def test_websearch_template_engine_release_list_contract():
@@ -263,6 +614,248 @@ def test_websearch_template_engine_release_list_contract():
         "Preis: online leider nicht verfügbar.\n"
         "Quelle: IGN. [Link](https://www.ign.com/games/final-fantasy-vii-rebirth)"
     )
+
+
+def test_websearch_template_engine_ranking_list_contract():
+    rendered = WebSearchTemplateEngine.render(
+        {
+            "query": "wer sind die top 5 berühmtesten basketballspieler",
+            "sources": [{"title": "NBA", "url": "https://www.nba.com/news/history-nba-legend-michael-jordan"}],
+        },
+        (
+            "1. **Michael Jordan:** Sechsfacher NBA-Champion und globale Basketball-Ikone, "
+            "dessen Karriere die moderne NBA-Popkultur geprägt hat. (Quelle: NBA)."
+        ),
+        "wer sind die top 5 berühmtesten basketballspieler",
+    )
+
+    assert rendered == (
+        "Die 1 erfolgreichsten Basketballer aller Zeiten sind:\n\n"
+        "Quelle der Liste: NBA.\n\n"
+        "1. **Michael Jordan**\n"
+        "Sechsfacher NBA-Champion und globale Basketball-Ikone, dessen Karriere die moderne NBA-Popkultur geprägt hat.\n"
+        "Details: [Link](https://de.wikipedia.org/wiki/Michael_Jordan)"
+    )
+    assert "Preis:" not in rendered
+
+
+def test_ranking_template_uses_list_source_and_entry_detail_link_when_both_exist():
+    rendered = WebSearchTemplateEngine.render(
+        {
+            "query": "wer sind die top 5 berühmtesten basketballspieler",
+            "sources": [
+                {
+                    "title": "SPORT1",
+                    "url": "https://www.sport1.de/galerie/nowitzki-jordan-lebron-co-die-besten-nba-spieler-aller-zeiten__40029D8B-0424-11E7-B3CE-F80F41FC6A62",
+                    "snippet": "Ranking der besten Basketballspieler aller Zeiten mit Michael Jordan.",
+                },
+                {
+                    "title": "Michael Jordan - Wikipedia",
+                    "url": "https://de.wikipedia.org/wiki/Michael_Jordan",
+                    "snippet": "Michael Jordan ist ein ehemaliger US-amerikanischer Basketballspieler.",
+                },
+            ],
+        },
+        "1. Michael Jordan: Sechsfacher NBA-Champion und globale Basketball-Ikone. Quelle: SPORT1.",
+        "wer sind die top 5 berühmtesten basketballspieler",
+    )
+
+    assert "Quelle der Liste: SPORT1. [Link](https://www.sport1.de/galerie/nowitzki-jordan-lebron-co-die-besten-nba-spieler-aller-zeiten__40029D8B-0424-11E7-B3CE-F80F41FC6A62)" in rendered
+    assert "Details: [Link](https://de.wikipedia.org/wiki/Michael_Jordan)" in rendered
+
+
+def test_ranking_template_uses_german_wikipedia_detail_fallback_for_person_lists():
+    rendered = WebSearchTemplateEngine.render(
+        {"query": "wer sind die top 5 berühmtesten basketballspieler", "sources": []},
+        "1. Magic Johnson: Revolutionärer Point Guard der Showtime-Lakers. Quelle: Tipico.",
+        "wer sind die top 5 berühmtesten basketballspieler",
+    )
+
+    assert "Quelle der Liste: Tipico." in rendered
+    assert "Details: [Link](https://de.wikipedia.org/wiki/Magic_Johnson)" in rendered
+
+
+def test_ranking_template_generates_intro_when_model_omits_it():
+    rendered = WebSearchTemplateEngine.render(
+        {
+            "query": "wer sind die top 5 berühmtesten basketballspieler",
+            "sources": [{"title": "SPOX", "url": "https://www.spox.com/de/sport/ussport/nba/ranking-beste-spieler"}],
+        },
+        "1. Michael Jordan: Sechsfacher NBA-Champion. Quelle: SPOX.",
+        "wer sind die top 5 berühmtesten basketballspieler",
+    )
+
+    assert rendered.startswith("Die 1 erfolgreichsten Basketballer aller Zeiten sind:\n\n")
+    assert "Quelle der Liste: SPOX. [Link](https://www.spox.com/de/sport/ussport/nba/ranking-beste-spieler)" in rendered
+
+
+def test_ranking_template_splits_person_name_from_sentence_without_colon():
+    rendered = WebSearchTemplateEngine.render(
+        {"query": "wer sind die top 5 berühmtesten basketballspieler", "sources": []},
+        (
+            "1. Michael Jordan gilt dank seiner sechs NBA-Titel mit den Chicago Bulls global als der größte Basketballer der Geschichte\n"
+            "Quelle: Sport1.\n"
+            "2. LeBron James hat als All-Time-Scoring-Leader der NBA neue Maßstäbe gesetzt\n"
+            "Quelle: Sport1."
+        ),
+        "wer sind die top 5 berühmtesten basketballspieler",
+    )
+
+    assert "1. **Michael Jordan**\nGilt dank seiner sechs NBA-Titel" in rendered
+    assert "Details: [Link](https://de.wikipedia.org/wiki/Michael_Jordan)" in rendered
+    assert "2. **LeBron James**\nHat als All-Time-Scoring-Leader" in rendered
+    assert "Details: [Link](https://de.wikipedia.org/wiki/LeBron_James)" in rendered
+    assert "online leider nicht eindeutig" not in rendered
+
+
+def test_ranking_template_repairs_existing_broken_detail_lines_and_relinks_list_source():
+    rendered = WebSearchTemplateEngine.render(
+        {
+            "query": "wer sind die top 5 berühmtesten basketballspieler",
+            "sources": [{"title": "Sport1", "url": "https://www.sport1.de/galerie/nowitzki-jordan-lebron-co-die-besten-nba-spieler-aller-zeiten__40029D8B-0424-11E7-B3CE-F80F41FC6A62"}],
+        },
+        (
+            "Die 5 erfolgreichsten Basketballer aller Zeiten sind:\n\n"
+            "Quelle der Liste: Sport1.\n\n"
+            "1. Michael Jordan gilt dank seiner sechs NBA-Titel global als der größte Basketballer der Geschichte\n"
+            "Details: online leider nicht eindeutig verfügbar.\n\n"
+            "2. LeBron James hat als All-Time-Scoring-Leader neue Maßstäbe gesetzt\n"
+            "Details: online leider nicht eindeutig verfügbar."
+        ),
+        "wer sind die top 5 berühmtesten basketballspieler",
+    )
+
+    assert rendered.startswith("Die 5 erfolgreichsten Basketballer aller Zeiten sind:\n\n")
+    assert "Quelle der Liste: Sport1. [Link](https://www.sport1.de/galerie/nowitzki-jordan-lebron-co-die-besten-nba-spieler-aller-zeiten__40029D8B-0424-11E7-B3CE-F80F41FC6A62)" in rendered
+    assert "1. **Michael Jordan**\nGilt dank seiner sechs NBA-Titel" in rendered
+    assert "Details: [Link](https://de.wikipedia.org/wiki/Michael_Jordan)" in rendered
+    assert "2. **LeBron James**\nHat als All-Time-Scoring-Leader" in rendered
+    assert "Details: online leider nicht eindeutig" not in rendered
+
+
+def test_ranking_template_does_not_fake_list_link_when_source_url_missing():
+    rendered = WebSearchTemplateEngine.render(
+        {"query": "wer sind die top 5 berühmtesten basketballspieler", "sources": []},
+        (
+            "Die 5 erfolgreichsten Basketballer aller Zeiten sind:\n\n"
+            "Quelle der Liste: IMAGO.\n\n"
+            "1. Michael Jordan\n"
+            "Der sechsfache Champion der Chicago Bulls gilt als der Inbegriff des Basketballs.\n"
+            "Details: [Link](https://de.wikipedia.org/wiki/Michael_Jordan)"
+        ),
+        "wer sind die top 5 berühmtesten basketballspieler",
+    )
+
+    assert "Quelle der Liste: IMAGO." in rendered
+    assert "Quelle der Liste: IMAGO. [Link]" not in rendered
+
+
+def test_ranking_template_does_not_hardcode_spiegel_list_link_when_source_url_missing():
+    rendered = WebSearchTemplateEngine.render(
+        {"query": "wer sind die top 5 berühmtesten basketballspieler", "sources": []},
+        (
+            "Die 5 erfolgreichsten Basketballer aller Zeiten sind:\n\n"
+            "Quelle der Liste: Spiegel.\n\n"
+            "1. Michael Jordan\n"
+            "Der sechsfache NBA-Champion gilt als der GOAT.\n"
+            "Details: [Link](https://de.wikipedia.org/wiki/Michael_Jordan)"
+        ),
+        "wer sind die top 5 berühmtesten basketballspieler",
+    )
+
+    assert "Quelle der Liste: Spiegel." in rendered
+    assert "Quelle der Liste: Spiegel. [Link]" not in rendered
+
+
+def test_ranking_template_does_not_link_plain_publisher_article_as_list_source():
+    rendered = WebSearchTemplateEngine.render(
+        {
+            "query": "wer sind die top 5 berÃ¼hmtesten tennisspieler",
+            "sources": [
+                {
+                    "title": "Historischer Dreikampf: Novak Djokovic Ã¼berholt Rafael Nadal und jagt Roger Federer",
+                    "url": "https://www.eurosport.de/tennis/historischer-dreikampf-novak-djokovic-uberholt-rafael-nadal-und-jagt-roger-federer_sto6973488/story.shtml",
+                    "snippet": "Ein Artikel Ã¼ber Djokovic, Nadal und Federer, aber keine Bestenliste.",
+                    "source": "Eurosport",
+                }
+            ],
+        },
+        (
+            "Die 5 relevantesten EintrÃ¤ge aus der Suche sind:\n\n"
+            "Quelle der Liste: Eurosport.\n\n"
+            "1. Roger Federer\n"
+            "Der Schweizer gilt als eine der grÃ¶ÃŸten Figuren der Tennisgeschichte."
+        ),
+        "wer sind die top 5 berÃ¼hmtesten tennisspieler",
+    )
+
+    assert "Quelle der Liste: Eurosport." in rendered
+    assert "Quelle der Liste: Eurosport. [Link]" not in rendered
+    assert "eurosport.de/tennis/historischer-dreikampf" not in rendered
+
+
+def test_ranking_template_does_not_fake_unknown_list_source_link():
+    rendered = WebSearchTemplateEngine.render(
+        {"query": "wer sind die top 5 berühmtesten basketballspieler", "sources": []},
+        "1. Michael Jordan: Sechsfacher NBA-Champion. Quelle: unbekannte Quelle.",
+        "wer sind die top 5 berühmtesten basketballspieler",
+    )
+
+    assert "Quelle der Liste: unbekannte Quelle." in rendered
+    assert "Quelle der Liste: unbekannte Quelle. [Link]" not in rendered
+
+
+def test_ranking_template_prefers_overview_source_for_list_link_over_wikipedia_detail():
+    rendered = WebSearchTemplateEngine.render(
+        {
+            "query": "wer sind die top 5 berühmtesten basketballspieler",
+            "sources": [
+                {"title": "Michael Jordan - Wikipedia", "url": "https://de.wikipedia.org/wiki/Michael_Jordan"},
+                {
+                    "title": "SPOX Ranking beste NBA-Spieler",
+                    "url": "https://www.spox.com/de/sport/ussport/nba/ranking-beste-spieler",
+                    "snippet": "Ranking Liste der besten Basketballspieler aller Zeiten.",
+                },
+            ],
+        },
+        "1. Michael Jordan: Sechsfacher NBA-Champion. Quelle: SPOX.",
+        "wer sind die top 5 berühmtesten basketballspieler",
+    )
+
+    assert "Quelle der Liste: SPOX. [Link](https://www.spox.com/de/sport/ussport/nba/ranking-beste-spieler)" in rendered
+    assert "Quelle der Liste: SPOX. [Link](https://de.wikipedia.org/wiki/Michael_Jordan)" not in rendered
+
+
+def test_ranking_lookup_renderer_formats_entries_without_price_line_or_footer_noise():
+    renderer = UnifiedWebSearchRenderer()
+
+    rendered = renderer.render(
+        {
+            "query": "wer sind die top 5 berühmtesten basketballspieler",
+            "text": (
+                "1) Michael Jordan — Sechsfacher NBA-Champion und globale Basketball-Ikone.\n"
+                "Quelle: NBA. (nba.com)\n\n"
+                "2) LeBron James — All-Time-Scoring-Leader und eine prägende Figur der modernen NBA.\n"
+                "Quelle: Britannica. (britannica.com)\n\n"
+                "### Quellen\n"
+                "* [NBA](https://www.nba.com/news/history-nba-legend-michael-jordan)"
+            ),
+            "sources": [
+                {"title": "NBA", "url": "https://www.nba.com/news/history-nba-legend-michael-jordan"},
+                {"title": "Britannica", "url": "https://www.britannica.com/biography/LeBron-James"},
+            ],
+        }
+    )
+
+    assert "1. **Michael Jordan**\nSechsfacher NBA-Champion" in rendered
+    assert "2. **LeBron James**\nAll-Time-Scoring-Leader" in rendered
+    assert "Preis:" not in rendered
+    assert "1)" not in rendered
+    assert "### Quellen" not in rendered
+    assert "(nba.com)" not in rendered
+    assert "Quelle der Liste: NBA." in rendered
+    assert "Quelle der Liste: NBA. [Link]" not in rendered
+    assert "Details: [Link](https://de.wikipedia.org/wiki/Michael_Jordan)" in rendered
 
 
 def test_release_lookup_renderer_does_not_append_price_comparison_block():
@@ -746,6 +1339,23 @@ def test_release_lookup_renderer_removes_repeated_release_dates_from_description
                 "2. **Deep Signal (27. Juni 2026)**\nEin atmosphärisches Horror-Adventure",
             ],
         ),
+        (
+            "welche neuen rockalben erscheinen nÃ¤chsten monat",
+            (
+                "1. Evergrey â€“ Architects Of A New Weave: Die schwedische Progressive-Metal-Band verÃ¶ffentlicht ihr neues Album am 5. Juni 2026 Ã¼ber das Label Napalm Records\n"
+                "Quelle: Rock Report.\n"
+                "2. Death Cab For Cutie â€“ I Built You A Tower: Die US-amerikanische Indie-Rock-Band bringt ihr neues Werk am 5. Juni 2026 heraus, wobei der Sound EinflÃ¼sse aus Electro und Emorock vereint\n"
+                "Quelle: Musikexpress."
+            ),
+            [
+                {"title": "Rock Report", "url": "https://www.rock-report.de/evergrey-architects-of-a-new-weave"},
+                {"title": "Musikexpress", "url": "https://www.musikexpress.de/death-cab-for-cutie-i-built-you-a-tower"},
+            ],
+            [
+                "1. **Evergrey â€“ Architects Of A New Weave (5. Juni 2026)**\nDie schwedische Progressive-Metal-Band",
+                "2. **Death Cab For Cutie â€“ I Built You A Tower (5. Juni 2026)**\nDie US-amerikanische Indie-Rock-Band bringt ein neues Werk heraus",
+            ],
+        ),
     ],
 )
 def test_release_list_template_contract_across_common_list_queries(query, raw_text, sources, expected_lines):
@@ -765,6 +1375,116 @@ def test_release_list_template_contract_across_common_list_queries(query, raw_te
     assert "(gamepro.de)" not in rendered
     assert "(filmstarts.de)" not in rendered
     assert "(steampowered.com)" not in rendered
+    assert "Quelle**" not in rendered
+    assert "[vertexaisearch.cloud.google.com]" not in rendered
+
+
+@pytest.mark.parametrize(
+    ("query", "raw_text", "sources", "expected_lines"),
+    [
+        (
+            "wer sind die top 5 berühmtesten basketballspieler",
+            (
+                "1) Michael Jordan — Sechsfacher NBA-Champion und globale Basketball-Ikone mit enormem kulturellem Einfluss.\n"
+                "Quelle: NBA. (nba.com)\n"
+                "2) LeBron James — Vierfacher Champion, All-Time-Scoring-Leader und prägende Figur der modernen NBA.\n"
+                "Quelle: Britannica. (britannica.com)"
+            ),
+            [
+                {"title": "NBA", "url": "https://www.nba.com/news/history-nba-legend-michael-jordan"},
+                {"title": "Britannica", "url": "https://www.britannica.com/biography/LeBron-James"},
+            ],
+            [
+                "1. **Michael Jordan**\nSechsfacher NBA-Champion",
+                "2. **LeBron James**\nVierfacher Champion",
+            ],
+        ),
+        (
+            "was sind im moment die top 5 bücher",
+            (
+                "1. **Atomic Habits:** Ein praxisnaher Ratgeber über kleine Gewohnheiten und langfristige Verhaltensänderung (Quelle**\n"
+                "Goodreads).\n"
+                "2. The Women: Historischer Roman über US-Krankenschwestern im Vietnamkrieg und die Rückkehr in eine gespaltene Gesellschaft.\n"
+                "Quelle: Publishers Weekly."
+            ),
+            [
+                {"title": "Goodreads", "url": "https://www.goodreads.com/book/show/atomic-habits"},
+                {"title": "Publishers Weekly", "url": "https://www.publishersweekly.com/the-women"},
+            ],
+            [
+                "1. **Atomic Habits**\nEin praxisnaher Ratgeber",
+                "2. **The Women**\nHistorischer Roman",
+            ],
+        ),
+        (
+            "top 5 ki tools für produktivität",
+            (
+                "1. Notion AI: KI-Assistent für Notizen, Wissensdatenbanken und Team-Dokumentation. Quelle: Notion.\n"
+                "2. Perplexity AI: Recherche-Tool mit Antwortsynthese und Quellenverweisen für schnelle Wissensarbeit. Quelle: Perplexity."
+            ),
+            [
+                {"title": "Notion", "url": "https://www.notion.com/product/ai"},
+                {"title": "Perplexity", "url": "https://www.perplexity.ai/"},
+            ],
+            [
+                "1. **Notion AI**\nKI-Assistent",
+                "2. **Perplexity AI**\nRecherche-Tool",
+            ],
+        ),
+        (
+            "beste serien aktuell top 5",
+            (
+                "1. **Severance**\nMystery-Drama über getrennte Arbeits- und Privatidentitäten mit satirischem Blick auf Bürokratie.\n"
+                "Quelle: Variety.\n"
+                "2. **The Bear**\nDramedy über ein Restaurantteam, Stress, Familie und kreative Arbeit in der Küche.\n"
+                "Quelle: Rotten Tomatoes."
+            ),
+            [
+                {"title": "Variety", "url": "https://variety.com/t/severance/"},
+                {"title": "Rotten Tomatoes", "url": "https://www.rottentomatoes.com/tv/the_bear"},
+            ],
+            [
+                "1. **Severance**\nMystery-Drama",
+                "2. **The Bear**\nDramedy",
+            ],
+        ),
+        (
+            "beste kopfhörer 2026 top 5",
+            (
+                "1. Sony WH-1000XM6 — Over-Ear-Kopfhörer mit starker Geräuschunterdrückung und langer Akkulaufzeit.\n"
+                "Quelle: The Verge. (theverge.com)\n"
+                "2. Bose QuietComfort Ultra — Komfortabler ANC-Kopfhörer mit räumlichem Klang und guter App-Steuerung.\n"
+                "Quelle: CNET. (cnet.com)"
+            ),
+            [
+                {"title": "The Verge", "url": "https://www.theverge.com/sony-wh-1000xm6-review"},
+                {"title": "CNET", "url": "https://www.cnet.com/tech/mobile/bose-quietcomfort-ultra-review/"},
+            ],
+            [
+                "1. **Sony WH-1000XM6**\nOver-Ear-Kopfhörer",
+                "2. **Bose QuietComfort Ultra**\nKomfortabler ANC-Kopfhörer",
+            ],
+        ),
+    ],
+)
+def test_ranking_list_template_contract_across_common_list_queries(query, raw_text, sources, expected_lines):
+    rendered = WebSearchTemplateEngine.render(
+        {"query": query, "text": raw_text, "sources": sources},
+        raw_text,
+        query,
+    )
+
+    assert rendered is not None
+    for expected in expected_lines:
+        assert expected in rendered
+    assert rendered.count("[Link](") >= 2
+    assert "Quelle der Liste:" in rendered
+    assert rendered.count("Details: [Link](") == 2
+    assert "Preis:" not in rendered
+    assert "1)" not in rendered
+    assert "Quelle\n" not in rendered
+    assert "(nba.com)" not in rendered
+    assert "(theverge.com)" not in rendered
     assert "Quelle**" not in rendered
     assert "[vertexaisearch.cloud.google.com]" not in rendered
 
@@ -1233,7 +1953,9 @@ async def test_gemini_provider_search_sends_native_google_search_tool_block():
     assert result["sources"][0]["url"] == "https://example.com"
     assert result["text"] == "Antwort mit Quelle"
     assert captured["body"]["tools"] == [{"google_search": {}}]
-    assert "Nutzerfrage: Neuigkeiten zur EU" in captured["body"]["contents"][0]["parts"][0]["text"]
+    prompt_text = captured["body"]["contents"][0]["parts"][0]["text"]
+    assert "Nutzerfrage: Neuigkeiten zur EU Deutschland aktuell site:de deutschsprachige Quellen Deutschland" in prompt_text
+    assert "site:de" in prompt_text
     assert "gründliche Google-Recherche" in captured["body"]["contents"][0]["parts"][0]["text"]
     assert "KEINE Markdown-Links" in captured["body"]["contents"][0]["parts"][0]["text"]
 

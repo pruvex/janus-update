@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import threading
 import time
 from pathlib import Path
@@ -116,6 +117,13 @@ def _is_release_lookup_query(query: str) -> bool:
         "bücher",
         "film",
         "serie",
+        "album",
+        "alben",
+        "rockalbum",
+        "rockalben",
+        "musik",
+        "ep",
+        "single",
     )
     release_markers = (
         "release",
@@ -137,6 +145,59 @@ def _is_release_lookup_query(query: str) -> bool:
     )
 
 
+def _is_ranking_websearch_query(query: str) -> bool:
+    prompt = str(query or "").casefold()
+    if not prompt:
+        return False
+    ranking_markers = (
+        "top",
+        "topliste",
+        "ranking",
+        "rangliste",
+        "beste",
+        "besten",
+        "beruehmteste",
+        "berühmteste",
+        "bekannteste",
+        "beliebteste",
+        "beliebtesten",
+        "wichtigste",
+        "groesste",
+        "größte",
+        "fuehrende",
+        "führende",
+    )
+    subject_markers = (
+        "buch",
+        "buecher",
+        "bücher",
+        "spieler",
+        "sportler",
+        "basketball",
+        "fussball",
+        "fußball",
+        "film",
+        "filme",
+        "serie",
+        "serien",
+        "produkt",
+        "produkte",
+        "tools",
+        "ki",
+        "ai",
+        "smartphone",
+        "laptop",
+        "kopfhoerer",
+        "kopfhörer",
+        "monitor",
+        "spiele",
+        "games",
+    )
+    has_ranking = any(re.search(rf"\b{re.escape(marker)}\b", prompt) for marker in ranking_markers)
+    has_subject = any(marker in prompt for marker in subject_markers)
+    return has_ranking and has_subject
+
+
 def is_realtime_search_query(query: str) -> bool:
     prompt = str(query or "").strip().lower()
     if not prompt:
@@ -146,6 +207,8 @@ def is_realtime_search_query(query: str) -> bool:
     if _is_sports_schedule_query(prompt):
         return True
     if _is_release_lookup_query(prompt):
+        return True
+    if _is_ranking_websearch_query(prompt):
         return True
     return any(trigger in prompt for trigger in REALTIME_SEARCH_TRIGGER_WORDS)
 
