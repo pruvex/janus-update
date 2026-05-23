@@ -147,6 +147,21 @@ _STOPWORDS = {
     "dem",
 }
 
+_BROAD_LABELS = {
+    "openai",
+    "google",
+    "microsoft",
+    "meta",
+    "apple",
+    "amazon",
+    "nvidia",
+    "tesla",
+}
+
+_PROVIDER_REDIRECT_HOSTS = {
+    "vertexaisearch.cloud.google.com",
+}
+
 
 def source_url(source: Mapping[str, Any] | str) -> str:
     if isinstance(source, str):
@@ -196,7 +211,7 @@ def source_haystack(source: Mapping[str, Any] | str) -> str:
 
 def tokenize_quality_text(value: str) -> list[str]:
     tokens = re.findall(r"[a-z0-9][a-z0-9._-]{2,}", str(value or "").casefold())
-    return [token for token in tokens if token not in _STOPWORDS and len(token) > 2]
+    return [token for token in tokens if token not in _STOPWORDS and not token.isdigit() and len(token) > 2]
 
 
 def normalize_label_for_match(value: str) -> str:
@@ -283,8 +298,12 @@ def score_source_for_intent(
         reasons.append("german_or_official")
 
     if label_norm and label_norm in haystack_norm:
-        score += 20
-        reasons.append("label_match")
+        if label_norm in _BROAD_LABELS:
+            score += 6
+            reasons.append("broad_label_match")
+        else:
+            score += 20
+            reasons.append("label_match")
 
     tokens = tokenize_quality_text(f"{title} {summary}")[:10]
     token_matches = sum(1 for token in tokens if token in haystack)
@@ -293,13 +312,16 @@ def score_source_for_intent(
         reasons.append(f"token_match:{token_matches}")
 
     if link_intent == LinkIntent.NEWS:
+        is_provider_redirect = host in _PROVIDER_REDIRECT_HOSTS
         host_bonus = _HIGH_QUALITY_NEWS_HOSTS.get(host, 0)
         if not host_bonus:
             host_bonus = max((bonus for domain, bonus in _HIGH_QUALITY_NEWS_HOSTS.items() if host.endswith("." + domain)), default=0)
         score += host_bonus
         if host_bonus:
             reasons.append("trusted_news_host")
-        if path and path.strip("/") and not is_generic_news_landing_page(source):
+        if is_provider_redirect:
+            reasons.append("provider_redirect")
+        elif path and path.strip("/") and not is_generic_news_landing_page(source):
             score += 6
             reasons.append("detail_path")
         if is_documentation_page_for_news(source):
@@ -339,6 +361,12 @@ def score_source_for_intent(
             LinkIntent.GENERAL: 1,
         }[link_intent]
     acceptable = score >= threshold and not is_low_value_source(source, link_intent)
+    if link_intent == LinkIntent.NEWS and "resolved_target" not in reasons:
+        min_token_matches = 3 if "provider_redirect" in reasons else 2
+        strong_label = "label_match" in reasons and label_norm not in _BROAD_LABELS
+        if token_matches < min_token_matches and not strong_label:
+            acceptable = False
+            reasons.append("weak_item_binding")
     return SourceQualityScore(score, acceptable, tuple(reasons), url=url, host=host)
 
 

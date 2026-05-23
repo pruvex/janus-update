@@ -1003,6 +1003,66 @@ class TestRssNewsRenderer:
         assert "Aktualisierung auf GPT-5.5 Instant: Seit Mai" not in result
         assert "Seit Mai 2026 ist GPT-5.5 Instant das neue Standardmodell" in result
 
+    def test_response_finalizer_does_not_reuse_sparse_gemini_sources_for_wrong_news_items(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News Mai 2026 Aktuell",
+                                "text": (
+                                    "1. **Geplanter Boersengang im September 2026**: OpenAI bereitet laut Medienberichten "
+                                    "einen vertraulichen Antrag auf Boersenzulassung vor (Quelle: Deutschlandfunk).\n"
+                                    "2. **Erfolg im Rechtsstreit gegen Elon Musk**: Ein kalifornisches Gericht wies am "
+                                    "19. Mai 2026 eine Klage gegen die OpenAI-Fuehrung ab (Quelle: ChannelPartner).\n"
+                                    "3. **Marktfuehrerschaft bei Enterprise Coding Agents**: Gartner ernannte OpenAI im "
+                                    "Mai 2026 zum Branchenfuehrer fuer Programmierassistenten (Quelle: OpenAI).\n"
+                                    "4. **Wissenschaftlicher Durchbruch in der Geometrie**: Ein spezialisiertes KI-Modell "
+                                    "von OpenAI konnte am 20. Mai 2026 eine zentrale Vermutung widerlegen (Quelle: OpenAI)."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner",
+                                        "title": "channelpartner.de",
+                                        "snippet": (
+                                            "2. **Erfolg im Rechtsstreit gegen Elon Musk**: Ein kalifornisches Gericht "
+                                            "wies am 19. Mai 2026 eine Klage gegen die OpenAI-Fuehrung ab "
+                                            "(Quelle: ChannelPartner)."
+                                        ),
+                                    },
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/openai",
+                                        "title": "openai.com",
+                                        "snippet": (
+                                            "4. **Wissenschaftlicher Durchbruch in der Geometrie**: Ein spezialisiertes "
+                                            "KI-Modell von OpenAI konnte am 20."
+                                        ),
+                                    },
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "Quelle: Deutschlandfunk. Link online leider nicht verfuegbar." in result
+        assert (
+            "Quelle: ChannelPartner. [Link](https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner)"
+            in result
+        )
+        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
+        assert (
+            "Quelle: OpenAI. [Link](https://vertexaisearch.cloud.google.com/grounding-api-redirect/openai)"
+            in result
+        )
+
 
 class TestWebsearchLinkQuality:
     def test_openai_docs_are_bad_for_news_but_good_for_api_docs(self):
