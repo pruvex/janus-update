@@ -80,6 +80,10 @@ _GERMAN_SOURCE_HINTS = (
     "tonspion",
     "visions",
     "rockhard",
+    "borncity",
+    "drwindows",
+    "security-insider",
+    "computerbase",
 )
 
 _HIGH_QUALITY_NEWS_HOSTS = {
@@ -96,6 +100,10 @@ _HIGH_QUALITY_NEWS_HOSTS = {
     "netzwelt.de": 10,
     "n-tv.de": 12,
     "ntv.de": 12,
+    "borncity.com": 12,
+    "drwindows.de": 12,
+    "security-insider.de": 13,
+    "computerbase.de": 13,
 }
 
 _HIGH_QUALITY_RELEASE_HOSTS = {
@@ -213,6 +221,8 @@ def _host_is_german_or_official(host: str, label: str = "") -> bool:
     if host_value.endswith((".de", ".at", ".ch")) or host_value.startswith("de.") or ".de." in host_value:
         return True
     if label_norm == "openai" and host_value.endswith("openai.com"):
+        return True
+    if any(hint in host_value for hint in _GERMAN_SOURCE_HINTS):
         return True
     return False
 
@@ -504,8 +514,7 @@ def score_source_for_intent(
         if (
             "provider_redirect" in reasons
             and label_norm not in _BROAD_LABELS
-            and "." in str(label or "")
-            and declared_host.endswith(".com")
+            and declared_host.endswith((".com", ".net", ".org"))
             and not _host_is_german_or_official(declared_host, label_norm)
             and _provider_redirect_has_bare_domain_title(source)
         ):

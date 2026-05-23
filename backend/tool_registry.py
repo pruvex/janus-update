@@ -481,9 +481,19 @@ async def _resolve_news_detail_sources(
     model: Optional[str],
     api_key: str,
     persist_cost,
+    elapsed_ms_fn=None,
+    max_repair_start_ms: int = 22000,
+    max_focused_start_ms: int = 30000,
 ) -> List[Dict[str, Any]]:
     targets = _extract_news_source_targets(query=query, text=text)
     if not _news_sources_need_resolution(text, sources, targets):
+        return sources
+    if elapsed_ms_fn and elapsed_ms_fn() > max_repair_start_ms:
+        logger.info(
+            "WEBSEARCH-NEWS-SOURCE-RESOLVE: skipped elapsed_ms=%s budget_ms=%s",
+            elapsed_ms_fn(),
+            max_repair_start_ms,
+        )
         return sources
     targets_to_resolve = _news_targets_needing_resolution(sources, targets) or targets
     resolve_claims = [_target_to_evidence_claim(target) for target in targets_to_resolve]
@@ -523,6 +533,13 @@ async def _resolve_news_detail_sources(
     )
     focused_limit = 3 if batch_failed else 2
     for claim in unresolved_after_batch[:focused_limit]:
+        if elapsed_ms_fn and elapsed_ms_fn() > max_focused_start_ms:
+            logger.info(
+                "WEBSEARCH-NEWS-SOURCE-REPAIR2: budget-exhausted elapsed_ms=%s budget_ms=%s",
+                elapsed_ms_fn(),
+                max_focused_start_ms,
+            )
+            break
         focused_query = EvidencePipeline.focused_repair_query_for_claim(query, claim)
         logger.info(
             "WEBSEARCH-NEWS-SOURCE-REPAIR2: claim=%s label=%s query=%s",
@@ -765,7 +782,8 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
             )
 
         # ── Ebene 5: Smart Global Fallback (Tech/News ohne ausreichend Ergebnisse) ──
-        if _detect_global_fallback_needed(normalized_query, items):
+        is_news_query = EvidencePipeline.is_news_query(normalized_query)
+        if not is_news_query and _detect_global_fallback_needed(normalized_query, items):
             en_query = f"{normalized_query} latest news"
             logger.info("WEBSEARCH-V2: Smart Global Fallback → '%s'", en_query)
             try:
@@ -809,6 +827,7 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
             model=provider_model,
             api_key=key,
             persist_cost=_persist_websearch_cost,
+            elapsed_ms_fn=_elapsed_ms,
         )
         items = _sources_to_items(sources)
 

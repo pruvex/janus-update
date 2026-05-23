@@ -1472,6 +1472,41 @@ class TestWebsearchLinkQuality:
         assert not quality.acceptable
         assert "bare_non_german_provider_redirect" in quality.reasons
 
+    def test_bare_non_german_net_provider_redirect_is_rejected_for_news(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/notebookcheck",
+            "title": "notebookcheck.net",
+            "snippet": "Vorstellung des Surface Laptop 8: Microsoft nennt neue Business-Geraete. Quelle: Notebookcheck.",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Vorstellung des Surface Laptop 8",
+            summary="Microsoft nennt neue Business-Geraete.",
+            label="Notebookcheck",
+        )
+
+        assert not quality.acceptable
+        assert "bare_non_german_provider_redirect" in quality.reasons
+
+    def test_known_german_com_provider_redirect_is_allowed_for_news(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/borncity",
+            "title": "borncity.com",
+            "snippet": "Preisanpassungen bei Microsoft 365: Neue Preise ab Juli. Quelle: BornCity.",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Preisanpassungen bei Microsoft 365",
+            summary="Neue Preise ab Juli.",
+            label="BornCity",
+        )
+
+        assert quality.acceptable
+
     def test_known_suspicious_news_domain_is_low_value(self):
         source = {
             "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/digioneer",

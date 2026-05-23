@@ -16,7 +16,12 @@ from backend.services.websearch.gemini_provider import (
 from backend.services.websearch.duckduckgo_provider import DuckDuckGoWebSearchProvider
 from backend.services.websearch.openai_provider import coerce_openai_websearch_model, _build_diamond_search_system_prompt
 from backend.services.websearch.query_bias import augment_query_with_local_bias, normalize_source_url, prioritize_german_sources
-from backend.tool_registry import _coerce_websearch_model_for_provider, _normalize_websearch_query, websearch_wrapper
+from backend.tool_registry import (
+    _coerce_websearch_model_for_provider,
+    _normalize_websearch_query,
+    _resolve_news_detail_sources,
+    websearch_wrapper,
+)
 from backend.services.skill_router import (
     get_blocked_skills_for_query,
     is_realtime_search_query,
@@ -498,6 +503,64 @@ async def test_websearch_wrapper_resolves_only_weak_news_targets():
 
 
 @pytest.mark.asyncio
+async def test_websearch_wrapper_skips_global_fallback_for_news_queries():
+    fake_db = Mock()
+    primary_result = {
+        "text": "1. Einstellung des Together-Mode in Teams: Microsoft stellt eine Teams-Ansicht um. Quelle: BornCity.",
+        "sources": [
+            {
+                "title": "borncity.com",
+                "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/borncity",
+                "snippet": "Einstellung des Together-Mode in Teams: Microsoft stellt eine Teams-Ansicht um. Quelle: BornCity.",
+            }
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 100, "output_tokens": 40, "total_tokens": 140, "query_count": 1},
+        "cost": {"total_cost": 0.001},
+    }
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
+        "backend.tool_registry.execute_websearch_service",
+        AsyncMock(return_value=primary_result),
+    ) as execute_mock, patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
+        "backend.services.cost_service.create_cost_entry"
+    ):
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(
+                query="Microsoft News aktuell Mai 2026",
+                provider="gemini",
+                model="gemini-3-flash-preview",
+            )
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    assert rd["status"] == "ok"
+    assert execute_mock.await_count == 1
+    assert "latest news" not in execute_mock.await_args.kwargs["query"]
+
+
+@pytest.mark.asyncio
+async def test_news_source_repair_skips_when_elapsed_budget_is_exhausted():
+    with patch("backend.tool_registry.execute_websearch_service", AsyncMock()) as execute_mock:
+        sources = await _resolve_news_detail_sources(
+            query="Microsoft News aktuell Mai 2026",
+            text=(
+                "1. Sicherheits-Patchday Mai 2026: Microsoft schliesst kritische Luecken. Quelle: Security-Insider.\n"
+                "2. Entwicklerkonferenz Build 2026: Microsoft kuendigt neue Azure-Funktionen an. Quelle: Microsoft."
+            ),
+            sources=[],
+            provider="gemini",
+            model="gemini-3-flash-preview",
+            api_key="gemini-key",
+            persist_cost=lambda *_args, **_kwargs: None,
+            elapsed_ms_fn=lambda: 25001,
+        )
+
+    assert sources == []
+    execute_mock.assert_not_awaited()
+
+
+@pytest.mark.asyncio
 async def test_websearch_wrapper_does_not_reuse_one_provider_redirect_for_multiple_news_items():
     fake_db = Mock()
     primary_result = {
@@ -538,17 +601,9 @@ async def test_websearch_wrapper_does_not_reuse_one_provider_redirect_for_multip
         "usage": {"input_tokens": 80, "output_tokens": 20, "total_tokens": 100, "query_count": 1},
         "cost": {"total_cost": 0.0008},
     }
-    fallback_result = {
-        "text": "",
-        "sources": [],
-        "metadata": {"provider": "gemini"},
-        "usage": {"input_tokens": 20, "output_tokens": 0, "total_tokens": 20, "query_count": 1},
-        "cost": {"total_cost": 0.0001},
-    }
-
     with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
         "backend.tool_registry.execute_websearch_service",
-        AsyncMock(side_effect=[primary_result, fallback_result, resolver_result]),
+        AsyncMock(side_effect=[primary_result, resolver_result]),
     ) as execute_mock, patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
         "backend.services.cost_service.create_cost_entry"
     ):
@@ -564,8 +619,8 @@ async def test_websearch_wrapper_does_not_reuse_one_provider_redirect_for_multip
     urls = [source["url"] for source in rd["data"]["sources"]]
     assert "https://www.borncity.com/blog/2026/05/22/microsoft-copilot-button-office/" in urls
     assert "https://www.borncity.com/blog/2026/05/22/microsoft-yusuf-mehdi-wachstumsziele/" in urls
-    assert execute_mock.await_count == 3
-    resolver_query = execute_mock.await_args_list[2].kwargs["query"]
+    assert execute_mock.await_count == 2
+    resolver_query = execute_mock.await_args_list[1].kwargs["query"]
     assert "Kritische Sicherheits-Patches" not in resolver_query
     assert '"Anpassung der Copilot-Integration" "BornCity" site:de' in resolver_query
     assert '"Fuehrungswechsel und Wachstumsziele" "BornCity" site:de' in resolver_query
@@ -604,13 +659,6 @@ async def test_websearch_wrapper_runs_limited_focused_news_repair_when_batch_rec
         "usage": {"input_tokens": 80, "output_tokens": 20, "total_tokens": 100, "query_count": 1},
         "cost": {"total_cost": 0.0008},
     }
-    fallback_result = {
-        "text": "",
-        "sources": [],
-        "metadata": {"provider": "gemini"},
-        "usage": {"input_tokens": 20, "output_tokens": 0, "total_tokens": 20, "query_count": 1},
-        "cost": {"total_cost": 0.0001},
-    }
     focused_hp = {
         "text": "hp detail",
         "sources": [
@@ -640,7 +688,7 @@ async def test_websearch_wrapper_runs_limited_focused_news_repair_when_batch_rec
 
     with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
         "backend.tool_registry.execute_websearch_service",
-        AsyncMock(side_effect=[primary_result, fallback_result, batch_result, focused_hp, focused_microsoft]),
+        AsyncMock(side_effect=[primary_result, batch_result, focused_hp, focused_microsoft]),
     ) as execute_mock, patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
         "backend.services.cost_service.create_cost_entry"
     ):
@@ -657,9 +705,9 @@ async def test_websearch_wrapper_runs_limited_focused_news_repair_when_batch_rec
     assert "https://www.security-insider.de/microsoft-patchday-mai-2026/" in urls
     assert "https://www.hp.com/de-de/windows-11-recall-datenschutz" in urls
     assert "https://www.microsoft.com/de-de/security/blog/2026/05/fox-tempest/" in urls
-    assert execute_mock.await_count == 5
-    assert '"Windows 11 Recall und Datenschutz" site:hp.com' in execute_mock.await_args_list[3].kwargs["query"]
-    assert '"Fox Tempest" site:microsoft.com' in execute_mock.await_args_list[4].kwargs["query"]
+    assert execute_mock.await_count == 4
+    assert '"Windows 11 Recall und Datenschutz" site:hp.com' in execute_mock.await_args_list[2].kwargs["query"]
+    assert '"Fox Tempest" site:microsoft.com' in execute_mock.await_args_list[3].kwargs["query"]
 
 
 @pytest.mark.asyncio
@@ -705,17 +753,9 @@ async def test_websearch_wrapper_skips_focused_news_repair_when_batch_has_three_
         "usage": {"input_tokens": 80, "output_tokens": 20, "total_tokens": 100, "query_count": 1},
         "cost": {"total_cost": 0.0008},
     }
-    fallback_result = {
-        "text": "",
-        "sources": [],
-        "metadata": {"provider": "gemini"},
-        "usage": {"input_tokens": 20, "output_tokens": 0, "total_tokens": 20, "query_count": 1},
-        "cost": {"total_cost": 0.0001},
-    }
-
     with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
         "backend.tool_registry.execute_websearch_service",
-        AsyncMock(side_effect=[primary_result, fallback_result, batch_result]),
+        AsyncMock(side_effect=[primary_result, batch_result]),
     ) as execute_mock, patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
         "backend.services.cost_service.create_cost_entry"
     ):
@@ -729,7 +769,7 @@ async def test_websearch_wrapper_skips_focused_news_repair_when_batch_has_three_
 
     rd = result.model_dump() if hasattr(result, "model_dump") else result
     assert rd["status"] == "ok"
-    assert execute_mock.await_count == 3
+    assert execute_mock.await_count == 2
 
 
 @pytest.mark.asyncio
@@ -752,13 +792,6 @@ async def test_websearch_wrapper_runs_focused_news_repair_when_batch_repair_fail
         "metadata": {"provider": "gemini"},
         "usage": {"input_tokens": 100, "output_tokens": 40, "total_tokens": 140, "query_count": 1},
         "cost": {"total_cost": 0.001},
-    }
-    fallback_result = {
-        "text": "",
-        "sources": [],
-        "metadata": {"provider": "gemini"},
-        "usage": {"input_tokens": 20, "output_tokens": 0, "total_tokens": 20, "query_count": 1},
-        "cost": {"total_cost": 0.0001},
     }
     computerwoche_detail = {
         "text": "computerwoche detail",
@@ -805,7 +838,6 @@ async def test_websearch_wrapper_runs_focused_news_repair_when_batch_repair_fail
         AsyncMock(
             side_effect=[
                 primary_result,
-                fallback_result,
                 RuntimeError("Native Grounding failed"),
                 computerwoche_detail,
                 microsoft_detail,
@@ -828,15 +860,15 @@ async def test_websearch_wrapper_runs_focused_news_repair_when_batch_repair_fail
     assert "https://www.computerwoche.de/article/microsoft-365-copilot-deutschland.html" in urls
     assert "https://www.microsoft.com/de-de/microsoft-365/blog/2026/05/teams-sharepoint-news/" in urls
     assert "https://www.drwindows.de/news/surface-firmware-update-mai-2026" in urls
-    assert execute_mock.await_count == 6
+    assert execute_mock.await_count == 5
     assert (
         '"Lokale Datenverarbeitung in Deutschland" "Computerwoche" site:de'
-        in execute_mock.await_args_list[3].kwargs["query"]
+        in execute_mock.await_args_list[2].kwargs["query"]
     )
-    assert '"Neues News-Erlebnis in Microsoft Teams" site:microsoft.com' in execute_mock.await_args_list[4].kwargs["query"]
+    assert '"Neues News-Erlebnis in Microsoft Teams" site:microsoft.com' in execute_mock.await_args_list[3].kwargs["query"]
     assert (
         '"Firmware-Aktualisierung fuer Surface-Geraete" "Dr. Windows" site:de'
-        in execute_mock.await_args_list[5].kwargs["query"]
+        in execute_mock.await_args_list[4].kwargs["query"]
     )
 
 
