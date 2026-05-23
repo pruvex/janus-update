@@ -131,7 +131,10 @@ class RssNewsRenderer(BaseRenderer):
             title, summary = self._split_websearch_news_body(body)
             if self._is_current_news_context(f"{query_context} {text}") and self._news_item_is_stale(f"{title} {summary}"):
                 continue
-            url = self._url_for_item(label, title, summary, idx, source_rows)
+            matched_source = self._source_for_item(label, title, summary, idx, source_rows)
+            url = str((matched_source or {}).get("url") or (matched_source or {}).get("source_url") or "").strip()
+            if matched_source:
+                label = self._display_label_for_source(matched_source, fallback=label)
             items.append(
                 {
                     "title": title,
@@ -321,6 +324,10 @@ class RssNewsRenderer(BaseRenderer):
         return items
 
     def _url_for_item(self, label: str, title: str, summary: str, index: int, sources: list) -> str:
+        best_source = self._source_for_item(label, title, summary, index, sources)
+        return str((best_source or {}).get("url") or (best_source or {}).get("source_url") or "").strip()
+
+    def _source_for_item(self, label: str, title: str, summary: str, index: int, sources: list) -> dict:
         best_url, _quality = select_best_source_for_item(
             [source for source in sources if isinstance(source, dict)],
             intent=LinkIntent.NEWS,
@@ -329,7 +336,35 @@ class RssNewsRenderer(BaseRenderer):
             label=label,
             target_index=index,
         )
-        return best_url
+        if not best_url:
+            return {}
+        for source in sources:
+            if not isinstance(source, dict):
+                continue
+            url = str(source.get("url") or source.get("source_url") or "").strip()
+            if url == best_url:
+                return source
+        return {"url": best_url}
+
+    def _display_label_for_source(self, source: dict, fallback: str = "") -> str:
+        explicit = str(source.get("news_source_label") or source.get("source") or source.get("domain") or "").strip()
+        if explicit:
+            return explicit
+        fallback_norm = re.sub(r"[^a-z0-9]+", "", str(fallback or "").casefold())
+        title = str(source.get("title") or source.get("name") or "").strip()
+        if re.fullmatch(r"(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)+", title, flags=re.IGNORECASE):
+            label = self._label_from_url("https://" + title.removeprefix("www."))
+            if fallback_norm and re.sub(r"[^a-z0-9]+", "", label.casefold()) == fallback_norm:
+                return fallback
+            return label
+        url = str(source.get("url") or source.get("source_url") or "").strip()
+        if url:
+            label = self._label_from_url(url)
+            if fallback_norm and re.sub(r"[^a-z0-9]+", "", label.casefold()) == fallback_norm:
+                return fallback
+            if label and label.lower() not in {"vertexaisearch", "google"}:
+                return label
+        return fallback
 
     def _score_source_for_item(self, source: dict, label: str, title: str, summary: str, index: int) -> int:
         quality = score_source_for_intent(
