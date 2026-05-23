@@ -772,9 +772,9 @@ class TestRssNewsRenderer:
             ]
         )
 
-        assert "1. OpenAI fuehrt im Mai 2026 die souveraene Cloud-Loesung OpenAI for Germany ein" in result
-        assert "2. Das Unternehmen betreibt in Muenchen sein erstes deutsches Buero" in result
-        assert "3. In einer strategischen Allianz mit der Deutschen Telekom entwickelt OpenAI" in result
+        assert "OpenAI fuehrt im Mai 2026 die souveraene Cloud-Loesung OpenAI for Germany ein" not in result
+        assert "1. Das Unternehmen betreibt in Muenchen sein erstes deutsches Buero" in result
+        assert "In einer strategischen Allianz mit der Deutschen Telekom entwickelt OpenAI" not in result
         assert "openai.com\n2. Nur ein strukturierter Snippet" not in result
         assert "globaler Zusatz" not in result
 
@@ -855,7 +855,48 @@ class TestRssNewsRenderer:
         )
 
         assert "dentro.de/ai/news" not in result
-        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
+        assert "1. GPT-5.5" not in result
+        assert "keine sauber belegten Meldungen" in result
+
+    def test_response_finalizer_omits_unlinked_websearch_news_but_keeps_linked_items(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. Gerichtssieg gegen Elon Musk: Eine Klage gegen OpenAI wurde abgewiesen. Quelle: FAZ.\n"
+                                    "2. Sora-App: Die eigenstaendige Anwendung wurde eingestellt. Quelle: OpenAI."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner",
+                                        "title": "channelpartner.de",
+                                        "snippet": "Gerichtssieg gegen Elon Musk Klage gegen OpenAI wurde abgewiesen.",
+                                    },
+                                    {
+                                        "url": "https://openai.com/de-DE/news/sora-in-chatgpt",
+                                        "title": "OpenAI Sora in ChatGPT",
+                                        "snippet": "Sora-App eigenstaendige Anwendung wurde eingestellt.",
+                                    },
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "Gerichtssieg gegen Elon Musk" not in result
+        assert "1. Sora-App" in result
+        assert "Quelle: OpenAI. [Link](https://openai.com/de-DE/news/sora-in-chatgpt)" in result
 
     def test_response_finalizer_drops_stale_current_news_item(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources
@@ -928,7 +969,8 @@ class TestRssNewsRenderer:
         )
 
         assert "welt.de" not in result
-        assert "Quelle: WELT. Link online leider nicht verfuegbar." in result
+        assert "1. Boersengang im September" not in result
+        assert "keine sauber belegten Meldungen" in result
 
     def test_response_finalizer_rejects_openai_docs_as_news_link(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources
@@ -965,7 +1007,8 @@ class TestRssNewsRenderer:
         )
 
         assert "platform.openai.com/docs" not in result
-        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
+        assert "1. Neue Realtime-Funktionen" not in result
+        assert "keine sauber belegten Meldungen" in result
 
     def test_response_finalizer_removes_duplicated_news_title_prefix(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources
@@ -1052,12 +1095,12 @@ class TestRssNewsRenderer:
             ]
         )
 
-        assert "Quelle: Deutschlandfunk. Link online leider nicht verfuegbar." in result
+        assert "Geplanter Boersengang" not in result
         assert (
             "Quelle: ChannelPartner. [Link](https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner)"
             in result
         )
-        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
+        assert "Marktfuehrerschaft bei Enterprise Coding Agents" not in result
         assert (
             "Quelle: OpenAI. [Link](https://vertexaisearch.cloud.google.com/grounding-api-redirect/openai)"
             in result
@@ -1099,7 +1142,8 @@ class TestRssNewsRenderer:
 
         assert "buildfastwithai.com" not in result
         assert "grounding-api-redirect/buildfast" not in result
-        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
+        assert "GPT-5.5 Instant als Standard" not in result
+        assert "keine sauber belegten Meldungen" in result
 
     def test_response_finalizer_rejects_link_when_publisher_label_mismatches_host(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources
@@ -1133,7 +1177,8 @@ class TestRssNewsRenderer:
         )
 
         assert "grounding-api-redirect/channelpartner" not in result
-        assert "Quelle: FAZ. Link online leider nicht verfuegbar." in result
+        assert "Gerichtssieg gegen Elon Musk" not in result
+        assert "keine sauber belegten Meldungen" in result
 
 
 class TestWebsearchLinkQuality:

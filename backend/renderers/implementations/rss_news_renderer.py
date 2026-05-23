@@ -60,10 +60,9 @@ class RssNewsRenderer(BaseRenderer):
                 websearch_sources,
                 str(data.get("original_query") or data.get("query") or ""),
             )
-            if fallback_items:
-                patched = dict(data)
-                patched["items"] = fallback_items
-                return self._render_news_items(patched, fallback_items)
+            patched = dict(data)
+            patched["items"] = fallback_items
+            return self._render_news_items(patched, fallback_items)
 
         if data.get("fallback") == "websearch":
             text = str(data.get("websearch_text") or "").strip()
@@ -94,6 +93,16 @@ class RssNewsRenderer(BaseRenderer):
             lines = ["Kurzlage: Aktuelle Meldungen aus kuratierten RSS-Feeds.", ""]
 
         render_items = self._filter_current_news_items(data, items)
+        if used_websearch:
+            render_items = [item for item in render_items if self._websearch_news_item_has_evidence(item)]
+        if used_websearch and not render_items:
+            return (
+                f"Kurzlage: Zu {query or 'der Anfrage'} konnte ich aktuell keine sauber belegten Meldungen "
+                "mit konkreter Detailquelle aufbereiten.\n\n"
+                "Einordnung:\n"
+                "RSS lieferte keine passenden Treffer; die Websuche lieferte keine ausreichend belastbaren Detailquellen."
+            )
+
         for idx, item in enumerate(render_items[:5], start=1):
             title = str(item.get("title") or "Ohne Titel").strip() or "Ohne Titel"
             date = str(item.get("date") or "").strip()
@@ -120,6 +129,10 @@ class RssNewsRenderer(BaseRenderer):
         else:
             lines.append("RSS-basierte Kurzlage aus kuratierten Quellen; bei fehlender Abdeckung nutzt Janus die Websuche als Fallback.")
         return "\n".join(lines).rstrip()
+
+    def _websearch_news_item_has_evidence(self, item: dict) -> bool:
+        url = str((item or {}).get("url") or "").strip()
+        return bool(url and not self._is_low_value_source(url))
 
     def _items_from_websearch_text_and_sources(self, text: str, sources: list, query_context: str = "") -> list:
         source_rows = [source for source in sources if isinstance(source, dict)]
