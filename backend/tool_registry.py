@@ -566,7 +566,7 @@ async def _resolve_news_detail_sources(
                 query=query,
                 claims=[_target_to_evidence_claim(target) for target in targets],
                 merged_sources=sources,
-                max_claims=2,
+                max_claims=3,
             )
             return url_resolved_sources or sources
     targets_to_resolve = initial_unresolved or targets

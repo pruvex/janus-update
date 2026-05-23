@@ -549,7 +549,6 @@ def score_source_for_intent(
             and _host_matches_broad_label_official(declared_host, label_norm)
             and _provider_redirect_has_bare_domain_title(source)
             and "resolved_target" not in reasons
-            and (token_matches < 7 or _provider_redirect_has_truncated_snippet(source))
         ):
             acceptable = False
             reasons.append("bare_official_provider_redirect")

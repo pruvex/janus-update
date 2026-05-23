@@ -750,6 +750,35 @@ async def test_websearch_wrapper_does_not_reuse_one_provider_redirect_for_multip
     assert '"Fuehrungswechsel und Wachstumsziele" "BornCity" site:de' in resolver_query
 
 
+def test_duckduckgo_html_results_preserve_source_titles_and_snippets_for_evidence_matching():
+    html = """
+    <html><body>
+      <div class="result">
+        <a class="result__a" href="https://www.drwindows.de/news/copilot-plus-pcs-mai-2026">
+          Dr. Windows: Copilot+ PCs starten in Deutschland
+        </a>
+        <a class="result__snippet">
+          Copilot+ PCs: Diese neue Windows-Hardwareklasse nutzt dedizierte NPU-Chips fuer lokale KI-Funktionen.
+        </a>
+      </div>
+    </body></html>
+    """
+
+    parsed = DuckDuckGoWebSearchProvider._parse_html_results(html)
+
+    assert parsed["urls"] == ["https://www.drwindows.de/news/copilot-plus-pcs-mai-2026"]
+    assert parsed["sources"] == [
+        {
+            "url": "https://www.drwindows.de/news/copilot-plus-pcs-mai-2026",
+            "title": "Dr. Windows: Copilot+ PCs starten in Deutschland",
+            "snippet": (
+                "Copilot+ PCs: Diese neue Windows-Hardwareklasse nutzt dedizierte NPU-Chips "
+                "fuer lokale KI-Funktionen."
+            ),
+        }
+    ]
+
+
 @pytest.mark.asyncio
 async def test_websearch_wrapper_runs_limited_focused_news_repair_when_batch_recall_is_low():
     fake_db = Mock()

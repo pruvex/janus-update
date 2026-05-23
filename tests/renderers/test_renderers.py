@@ -1454,7 +1454,7 @@ class TestWebsearchLinkQuality:
         assert not quality.acceptable
         assert "bare_official_provider_redirect" in quality.reasons
 
-    def test_strong_bare_official_provider_redirect_is_allowed_for_broad_news_label(self):
+    def test_bare_official_provider_redirect_is_rejected_even_with_strong_text_binding(self):
         source = {
             "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/microsoft",
             "title": "microsoft.com",
@@ -1475,8 +1475,8 @@ class TestWebsearchLinkQuality:
             label="Microsoft",
         )
 
-        assert quality.acceptable
-        assert "bare_official_provider_redirect" not in quality.reasons
+        assert not quality.acceptable
+        assert "bare_official_provider_redirect" in quality.reasons
 
     def test_country_suffix_on_broad_label_matches_official_news_host(self):
         source = {
@@ -1496,7 +1496,8 @@ class TestWebsearchLinkQuality:
             label="Microsoft Deutschland",
         )
 
-        assert quality.acceptable
+        assert not quality.acceptable
+        assert "bare_official_provider_redirect" in quality.reasons
         assert "source_label_host_mismatch" not in quality.reasons
         assert "non_german_news_host" not in quality.reasons
 
