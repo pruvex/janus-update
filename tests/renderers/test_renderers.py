@@ -1353,6 +1353,35 @@ class TestWebsearchLinkQuality:
         assert not quality.acceptable
         assert "source_label_host_mismatch" in quality.reasons
 
+    def test_provider_redirect_label_match_must_bind_to_same_news_item(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/borncity",
+            "title": "borncity.com",
+            "snippet": (
+                "2. Kritische Sicherheits-Patches: Microsoft veroeffentlichte Notfall-Updates "
+                "fuer Zero-Day-Luecken im Defender. Quelle: BornCity."
+            ),
+        }
+
+        matching_quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Kritische Sicherheits-Patches",
+            summary="Microsoft veroeffentlichte Notfall-Updates fuer Zero-Day-Luecken im Defender.",
+            label="BornCity",
+        )
+        mismatched_quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Anpassung der Copilot-Integration",
+            summary="Nutzer koennen den Copilot-Button in Office-Anwendungen verschieben.",
+            label="BornCity",
+        )
+
+        assert matching_quality.acceptable
+        assert not mismatched_quality.acceptable
+        assert "weak_item_binding" in mismatched_quality.reasons
+
     def test_known_suspicious_news_domain_is_low_value(self):
         source = {
             "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/digioneer",

@@ -471,7 +471,6 @@ async def test_websearch_wrapper_resolves_only_weak_news_targets():
         "usage": {"input_tokens": 80, "output_tokens": 20, "total_tokens": 100, "query_count": 1},
         "cost": {"total_cost": 0.0008},
     }
-
     with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
         "backend.tool_registry.execute_websearch_service",
         AsyncMock(side_effect=[primary_result, resolver_result]),
@@ -496,6 +495,80 @@ async def test_websearch_wrapper_resolves_only_weak_news_targets():
     assert "Elon Musk scheitert" not in resolver_query
     assert '"Spitzenposition im Bereich Coding-Agenten" site:openai.com' in resolver_query
     assert '"Neue Sicherheitsinitiative Daybreak" ComputerBase site:de' in resolver_query
+
+
+@pytest.mark.asyncio
+async def test_websearch_wrapper_does_not_reuse_one_provider_redirect_for_multiple_news_items():
+    fake_db = Mock()
+    primary_result = {
+        "text": (
+            "1. Kritische Sicherheits-Patches: Microsoft veroeffentlichte Notfall-Updates fuer Defender. Quelle: BornCity.\n"
+            "2. Anpassung der Copilot-Integration: Nutzer koennen den Copilot-Button in Office verschieben. Quelle: BornCity.\n"
+            "3. Fuehrungswechsel und Wachstumsziele: Yusuf Mehdi kuendigte seinen Abschied an. Quelle: BornCity."
+        ),
+        "sources": [
+            {
+                "title": "borncity.com",
+                "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/borncity",
+                "snippet": (
+                    "1. Kritische Sicherheits-Patches: Microsoft veroeffentlichte Notfall-Updates "
+                    "fuer Defender. Quelle: BornCity."
+                ),
+            }
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 100, "output_tokens": 40, "total_tokens": 140, "query_count": 1},
+        "cost": {"total_cost": 0.001},
+    }
+    resolver_result = {
+        "text": "detail repair",
+        "sources": [
+            {
+                "title": "BornCity Copilot Integration",
+                "url": "https://www.borncity.com/blog/2026/05/22/microsoft-copilot-button-office/",
+                "snippet": "Anpassung der Copilot-Integration: Nutzer koennen den Copilot-Button in Office verschieben.",
+            },
+            {
+                "title": "BornCity Yusuf Mehdi Microsoft",
+                "url": "https://www.borncity.com/blog/2026/05/22/microsoft-yusuf-mehdi-wachstumsziele/",
+                "snippet": "Fuehrungswechsel und Wachstumsziele: Yusuf Mehdi kuendigte seinen Abschied an.",
+            },
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 80, "output_tokens": 20, "total_tokens": 100, "query_count": 1},
+        "cost": {"total_cost": 0.0008},
+    }
+    fallback_result = {
+        "text": "",
+        "sources": [],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 20, "output_tokens": 0, "total_tokens": 20, "query_count": 1},
+        "cost": {"total_cost": 0.0001},
+    }
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
+        "backend.tool_registry.execute_websearch_service",
+        AsyncMock(side_effect=[primary_result, fallback_result, resolver_result]),
+    ) as execute_mock, patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
+        "backend.services.cost_service.create_cost_entry"
+    ):
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(
+                query="Microsoft News Mai 2026 Aktuell",
+                provider="gemini",
+                model="gemini-3-flash-preview",
+            )
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    urls = [source["url"] for source in rd["data"]["sources"]]
+    assert "https://www.borncity.com/blog/2026/05/22/microsoft-copilot-button-office/" in urls
+    assert "https://www.borncity.com/blog/2026/05/22/microsoft-yusuf-mehdi-wachstumsziele/" in urls
+    assert execute_mock.await_count == 3
+    resolver_query = execute_mock.await_args_list[2].kwargs["query"]
+    assert "Kritische Sicherheits-Patches" not in resolver_query
+    assert '"Anpassung der Copilot-Integration" BornCity site:de' in resolver_query
+    assert '"Fuehrungswechsel und Wachstumsziele" BornCity site:de' in resolver_query
 
 
 @pytest.mark.asyncio

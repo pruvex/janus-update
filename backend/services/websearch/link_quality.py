@@ -500,7 +500,7 @@ def score_source_for_intent(
         ):
             acceptable = False
             reasons.append("bare_official_provider_redirect")
-        if token_matches < min_token_matches and not strong_label:
+        if token_matches < min_token_matches and not (strong_label and "provider_redirect" not in reasons):
             acceptable = False
             reasons.append("weak_item_binding")
     return SourceQualityScore(score, acceptable, tuple(reasons), url=url, host=host)

@@ -507,7 +507,7 @@ async def _resolve_news_detail_sources(
         return sources
     targets_to_resolve = _news_targets_needing_resolution(sources, targets) or targets
     resolve_terms_list: List[str] = []
-    for target in targets_to_resolve[:3]:
+    for target in targets_to_resolve[:4]:
         label = target.get("label", "")
         official_site = _official_news_site_for_label(label)
         if official_site:

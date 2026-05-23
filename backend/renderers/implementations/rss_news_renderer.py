@@ -272,8 +272,8 @@ class RssNewsRenderer(BaseRenderer):
         return self._normalize_title_summary(title or "Meldung", clean)
 
     def _normalize_title_summary(self, title: str, summary: str) -> tuple[str, str]:
-        clean_title = re.sub(r"\s+", " ", str(title or "")).strip(" .")
-        clean_summary = re.sub(r"\s+", " ", str(summary or "")).strip(" .")
+        clean_title = re.sub(r"\s+", " ", str(title or "").replace("**", "")).strip(" .")
+        clean_summary = re.sub(r"\s+", " ", str(summary or "").replace("**", "")).strip(" .")
         clean_summary = re.sub(r"\s*\(Quelle:\s*[^)]+\)\.?", "", clean_summary, flags=re.IGNORECASE).strip(" .")
         clean_summary = re.sub(r"\s*\bQuelle:\s*[^.\n]+\.?", "", clean_summary, flags=re.IGNORECASE).strip(" .")
 
