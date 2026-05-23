@@ -8,6 +8,8 @@ Tests each renderer with:
 No LLM mocking needed – pure Python unit tests.
 """
 
+import json
+
 import pytest
 
 from backend.renderers.base import BaseRenderer
@@ -25,6 +27,12 @@ from backend.renderers.implementations.save_mp3_renderer import SaveMp3Renderer
 from backend.renderers.implementations.scrape_website_renderer import ScrapeWebsiteRenderer
 from backend.renderers.implementations.websearch_renderer import WebsearchRenderer
 from backend.renderers.implementations.wikipedia_summary_renderer import WikipediaSummaryRenderer
+from backend.services.websearch.link_quality import (
+    LinkIntent,
+    is_low_value_source,
+    score_source_for_intent,
+    select_best_source_for_item,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -576,6 +584,22 @@ _RSS_NEWS_EMPTY = {
     "source": "tagesschau",
 }
 
+_RSS_NEWS_ITEMS = {
+    "mode": "rss_hybrid",
+    "source": "auto",
+    "query": "OpenAI",
+    "items": [
+        {
+            "title": "OpenAI startet neue Funktion",
+            "summary": "Die Meldung beschreibt eine neue KI-Funktion und ordnet die wichtigsten Auswirkungen kurz ein.",
+            "url": "https://www.tagesschau.de/openai",
+            "source": "tagesschau",
+            "source_label": "Tagesschau",
+            "date": "23.05.2026",
+        }
+    ],
+}
+
 
 class TestRssNewsRenderer:
     renderer = RssNewsRenderer()
@@ -587,6 +611,16 @@ class TestRssNewsRenderer:
                 _RSS_NEWS_FULL,
                 ["Aktuelle Schlagzeilen von tagesschau", "1. Bundestag", "2. DAX", "Anzahl"],
                 id="full-data",
+            ),
+            pytest.param(
+                _RSS_NEWS_ITEMS,
+                [
+                    "Kurzlage: Zu OpenAI",
+                    "1. OpenAI startet neue Funktion (23.05.2026)",
+                    "Quelle: Tagesschau. [Link](https://www.tagesschau.de/openai)",
+                    "Einordnung:",
+                ],
+                id="rss-hybrid-items",
             ),
             pytest.param(
                 _RSS_NEWS_EMPTY,
@@ -613,6 +647,440 @@ class TestRssNewsRenderer:
 
     def test_skill_id(self):
         assert self.renderer.skill_id == "system.rss_news"
+
+    def test_response_finalizer_renders_rss_news_tool_result(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "get_latest_news_rss",
+                    "_skill_id": "system.rss_news",
+                    "content": json.dumps({"data": _RSS_NEWS_ITEMS}),
+                }
+            ]
+        )
+
+        assert "Kurzlage: Zu OpenAI" in result
+        assert "Quelle: Tagesschau. [Link](https://www.tagesschau.de/openai)" in result
+
+    def test_response_finalizer_prefers_rss_news_over_parallel_websearch(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "text": "1. Freie Websearch-Synthese ohne Template",
+                                "sources": [{"url": "https://example.com", "title": "Example"}],
+                            }
+                        }
+                    ),
+                },
+                {
+                    "role": "tool",
+                    "name": "system.rss_news",
+                    "_skill_id": "system.rss_news",
+                    "content": json.dumps({"data": _RSS_NEWS_ITEMS}),
+                },
+            ]
+        )
+
+        assert "Kurzlage: Zu OpenAI" in result
+        assert "Freie Websearch-Synthese" not in result
+
+    def test_response_finalizer_renders_news_websearch_as_news_template(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. GPT-5.5 Instant: Das Modell wurde veroeffentlicht und ist neuer Standard. "
+                                    "Quelle: OpenAI.\n"
+                                    "2. Sora-Einstellung: Die Webanwendung wurde eingestellt. Quelle: OpenAI."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://openai.com/news/example",
+                                        "title": "openai.com",
+                                        "snippet": "GPT-5.5 Instant Quelle: OpenAI",
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "Kurzlage: Zu OpenAI liegen aktuell belegte Meldungen vor." in result
+        assert "1. GPT-5.5 Instant" in result
+        assert "Quelle: OpenAI. [Link](https://openai.com/news/example)" in result
+
+    def test_response_finalizer_prefers_numbered_news_text_over_single_source_item(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "items": [
+                                    {
+                                        "title": "openai.com",
+                                        "description": "2. Nur ein strukturierter Snippet.",
+                                        "source_url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/example",
+                                    }
+                                ],
+                                "text": (
+                                    "1. OpenAI fuehrt im Mai 2026 die souveraene Cloud-Loesung OpenAI for Germany ein (Quelle: TechRepublic).\n"
+                                    "2. Das Unternehmen betreibt in Muenchen sein erstes deutsches Buero (Quelle: OpenAI).\n"
+                                    "3. In einer strategischen Allianz mit der Deutschen Telekom entwickelt OpenAI neue KI-Produkte fuer Europa (Quelle: Computerwoche).\n"
+                                    "\n[Global Research]\n"
+                                    "1. Dieser globale Zusatz soll nicht die Primaerliste verdoppeln (Quelle: OpenAI)."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/example",
+                                        "title": "openai.com",
+                                        "snippet": "Das Unternehmen betreibt in Muenchen sein erstes deutsches Buero (Quelle: OpenAI).",
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "1. OpenAI fuehrt im Mai 2026 die souveraene Cloud-Loesung OpenAI for Germany ein" in result
+        assert "2. Das Unternehmen betreibt in Muenchen sein erstes deutsches Buero" in result
+        assert "3. In einer strategischen Allianz mit der Deutschen Telekom entwickelt OpenAI" in result
+        assert "openai.com\n2. Nur ein strukturierter Snippet" not in result
+        assert "globaler Zusatz" not in result
+
+    def test_response_finalizer_uses_resolved_news_detail_link_for_item(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. Sora-App: Die eigenstaendige Anwendung wurde eingestellt und in ChatGPT integriert. "
+                                    "Quelle: OpenAI."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://reddit.com/r/example",
+                                        "title": "reddit.com",
+                                        "snippet": "Sora-App OpenAI Diskussion",
+                                    },
+                                    {
+                                        "url": "https://openai.com/de-DE/news/sora-in-chatgpt",
+                                        "title": "OpenAI Sora in ChatGPT",
+                                        "snippet": "Sora-App wurde in ChatGPT integriert.",
+                                        "news_target_index": "1",
+                                        "news_target_title": "Sora-App",
+                                        "news_target_label": "OpenAI",
+                                    },
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "Quelle: OpenAI. [Link](https://openai.com/de-DE/news/sora-in-chatgpt)" in result
+        assert "reddit.com/r/example" not in result
+
+    def test_response_finalizer_rejects_generic_news_landing_page_link(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. GPT-5.5: Das Modell wurde als neues Standardmodell ausgerollt. "
+                                    "Quelle: OpenAI."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://dentro.de/ai/news/",
+                                        "title": "AI News",
+                                        "snippet": "GPT-5.5 OpenAI Standardmodell",
+                                        "news_target_index": "1",
+                                        "news_target_title": "GPT-5.5",
+                                        "news_target_label": "OpenAI",
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "dentro.de/ai/news" not in result
+        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
+
+    def test_response_finalizer_drops_stale_current_news_item(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. Flaggschiff-Modell GPT-5.4: Am 5. Maerz 2026 veroeffentlichte OpenAI ein aelteres Modell. Quelle: Never Code Alone.\n"
+                                    "2. OpenAI fuer Deutschland: Am 18. Mai 2026 wurde eine neue KI-Infrastruktur angekuendigt. Quelle: Heise."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://nevercodealone.de/example",
+                                        "title": "Never Code Alone",
+                                        "snippet": "GPT-5.4 Maerz 2026",
+                                    },
+                                    {
+                                        "url": "https://www.heise.de/news/openai-deutschland",
+                                        "title": "Heise OpenAI fuer Deutschland",
+                                        "snippet": "OpenAI fuer Deutschland 18. Mai 2026",
+                                    },
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "GPT-5.4" not in result
+        assert "OpenAI fuer Deutschland" in result
+
+    def test_response_finalizer_rejects_paywall_news_link(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. Boersengang im September: Im Mai 2026 soll OpenAI vertrauliche Unterlagen vorbereiten. "
+                                    "Quelle: WELT."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://www.welt.de/wirtschaft/plus/openai-ipo",
+                                        "title": "WELT OpenAI IPO",
+                                        "snippet": "OpenAI IPO Mai 2026",
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "welt.de" not in result
+        assert "Quelle: WELT. Link online leider nicht verfuegbar." in result
+
+    def test_response_finalizer_rejects_openai_docs_as_news_link(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. Neue Realtime-Funktionen: OpenAI erweitert im Mai 2026 die Sprachfunktionen. "
+                                    "Quelle: OpenAI."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://platform.openai.com/docs/guides/realtime",
+                                        "title": "Realtime API docs",
+                                        "snippet": "OpenAI Realtime API docs",
+                                        "news_target_index": "1",
+                                        "news_target_title": "Neue Realtime-Funktionen",
+                                        "news_target_label": "OpenAI",
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "platform.openai.com/docs" not in result
+        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
+
+    def test_response_finalizer_removes_duplicated_news_title_prefix(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. Aktualisierung auf GPT-5.5 Instant: Seit Mai 2026 ist GPT-5.5 Instant das neue Standar\n"
+                                    "Aktualisierung auf GPT-5.5 Instant: Seit Mai 2026 ist GPT-5.5 Instant das neue Standardmodell in ChatGPT, "
+                                    "das eine gesteigerte Faktizitaet und eine praegnantere Antwortweise bietet (Quelle: OpenAI).\n"
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://openai.com/de-DE/index/gpt-5-5",
+                                        "title": "OpenAI GPT-5.5",
+                                        "snippet": "GPT-5.5 Instant Standardmodell",
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "1. Aktualisierung auf GPT-5.5 Instant\n" in result
+        assert "Aktualisierung auf GPT-5.5 Instant: Seit Mai" not in result
+        assert "Seit Mai 2026 ist GPT-5.5 Instant das neue Standardmodell" in result
+
+
+class TestWebsearchLinkQuality:
+    def test_openai_docs_are_bad_for_news_but_good_for_api_docs(self):
+        source = {
+            "url": "https://platform.openai.com/docs/guides/realtime",
+            "title": "Realtime API docs",
+            "snippet": "OpenAI Realtime API Dokumentation",
+        }
+
+        news_quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Neue Realtime-Funktionen",
+            summary="OpenAI erweitert im Mai 2026 die Sprachfunktionen.",
+            label="OpenAI",
+        )
+        docs_quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.API_DOCS,
+            title="Realtime API",
+            summary="Dokumentation fuer die Realtime API.",
+            label="OpenAI",
+        )
+
+        assert not news_quality.acceptable
+        assert "docs_not_news" in news_quality.reasons
+        assert docs_quality.acceptable
+
+    def test_detail_article_beats_generic_news_landing_page(self):
+        sources = [
+            {
+                "url": "https://dentro.de/ai/news/",
+                "title": "AI News",
+                "snippet": "GPT-5.5 OpenAI Standardmodell",
+            },
+            {
+                "url": "https://openai.com/de-DE/index/gpt-5-5",
+                "title": "OpenAI GPT-5.5 Instant",
+                "snippet": "GPT-5.5 Instant ist seit Mai 2026 das neue Standardmodell in ChatGPT.",
+            },
+        ]
+
+        url, quality = select_best_source_for_item(
+            sources,
+            intent=LinkIntent.NEWS,
+            title="GPT-5.5 Instant",
+            summary="Seit Mai 2026 ist GPT-5.5 Instant das neue Standardmodell in ChatGPT.",
+            label="OpenAI",
+        )
+
+        assert url == "https://openai.com/de-DE/index/gpt-5-5"
+        assert quality.acceptable
+        assert is_low_value_source(sources[0], LinkIntent.NEWS)
+
+    def test_german_detail_source_wins_over_english_generic_source(self):
+        sources = [
+            {
+                "url": "https://openai.com/news/",
+                "title": "OpenAI News",
+                "snippet": "Company news overview",
+            },
+            {
+                "url": "https://www.heise.de/news/openai-deutschland-sap-microsoft",
+                "title": "OpenAI fuer Deutschland",
+                "snippet": "OpenAI, SAP und Microsoft starten eine KI-Initiative fuer Deutschland.",
+            },
+        ]
+
+        url, quality = select_best_source_for_item(
+            sources,
+            intent=LinkIntent.NEWS,
+            title="OpenAI fuer Deutschland",
+            summary="OpenAI, SAP und Microsoft starten eine KI-Initiative fuer Deutschland.",
+            label="Heise",
+        )
+
+        assert url == "https://www.heise.de/news/openai-deutschland-sap-microsoft"
+        assert quality.acceptable
 
 
 _SAVE_MP3_FULL = {

@@ -33,6 +33,17 @@ from backend.tools.pdf_editor import edit_pdf_text_in_place
 from backend.services.tool_manager import tool_manager
 from backend.services.websearch.websearch import execute_websearch_service
 from backend.services.websearch.query_bias import normalize_source_url
+from backend.services.websearch.link_quality import (
+    LinkIntent,
+    has_german_or_official_signal,
+    is_documentation_page_for_news,
+    is_generic_news_landing_page,
+    is_low_value_source,
+    normalize_label_for_match,
+    score_source_for_intent,
+    source_haystack,
+    tokenize_quality_text,
+)
 from backend.renderers.websearch_templates import WebSearchTemplateEngine
 from backend.data.database import SessionLocal
 from backend.tools.calendar_tools import (
@@ -223,10 +234,7 @@ def _coerce_websearch_model_for_provider(provider: str, model: Optional[str]) ->
 
 
 def _normalize_source_label_for_match(label: str) -> str:
-    value = re.sub(r"\s+", " ", str(label or "")).strip().lower()
-    value = re.sub(r"^www\.", "", value)
-    value = re.sub(r"\.(com|de|net|org|co\.uk|tv)$", "", value)
-    return value
+    return normalize_label_for_match(label)
 
 
 def _extract_ranking_list_source_label(text: str) -> str:
@@ -362,6 +370,172 @@ def _candidate_matches_release_target(source: Dict[str, Any], target: Dict[str, 
     required = min(2, len(title_tokens))
     matched = sum(1 for token in title_tokens if token in haystack_norm)
     return matched >= required
+
+
+_NEWS_QUERY_MARKERS = (
+    "news",
+    "nachrichten",
+    "neuigkeiten",
+    "schlagzeilen",
+    "aktuell",
+    "aktuelle",
+    "aktuelles",
+    "was gibt es neues",
+    "newsticker",
+)
+
+def _is_news_lookup_query(query: str) -> bool:
+    lowered = str(query or "").casefold()
+    return any(marker in lowered for marker in _NEWS_QUERY_MARKERS)
+
+
+def _source_haystack(source: Dict[str, Any]) -> str:
+    return source_haystack(source)
+
+
+def _news_tokenize(value: str) -> List[str]:
+    return tokenize_quality_text(value)
+
+
+def _source_is_low_value_news(source: Dict[str, Any]) -> bool:
+    return is_low_value_source(source, LinkIntent.NEWS)
+
+
+def _source_is_documentation_page_for_news(source: Dict[str, Any]) -> bool:
+    return is_documentation_page_for_news(source)
+
+
+def _source_is_generic_news_landing_page(source: Dict[str, Any]) -> bool:
+    return is_generic_news_landing_page(source)
+
+
+def _source_has_german_or_official_news_signal(source: Dict[str, Any], label: str) -> bool:
+    return has_german_or_official_signal(source, label)
+
+
+def _split_news_body(body: str) -> tuple[str, str]:
+    clean = re.sub(r"\s+", " ", str(body or "")).strip(" .")
+    if not clean:
+        return "", ""
+    colon_match = re.match(r"^(.{3,90}?):\s+(.+)$", clean)
+    if colon_match:
+        return colon_match.group(1).strip(), colon_match.group(2).strip()
+    title = re.split(r"[.;]", clean, maxsplit=1)[0].strip()
+    return title[:90].strip(), clean
+
+
+def _extract_news_source_targets(query: str, text: str, limit: int = 5) -> List[Dict[str, str]]:
+    if not _is_news_lookup_query(query):
+        return []
+    primary_text = re.split(r"(?im)^\s*\[Global Research\]\s*$", str(text or ""), maxsplit=1)[0]
+    pattern = re.compile(
+        r"(?im)^\s*\d+[.)]\s*(?P<body>.+?)(?:\s*\(?Quelle:\s*(?P<label>[^).]+)\)?\.?)\s*$"
+    )
+    targets: List[Dict[str, str]] = []
+    for idx, match in enumerate(pattern.finditer(primary_text), start=1):
+        label = re.sub(r"\s+", " ", str(match.group("label") or "")).strip(" .)")
+        title, summary = _split_news_body(str(match.group("body") or ""))
+        if not title or not label:
+            continue
+        targets.append({"index": str(idx), "title": title, "summary": summary, "label": label})
+        if len(targets) >= limit:
+            break
+    return targets
+
+
+def _candidate_matches_news_target(source: Dict[str, Any], target: Dict[str, str]) -> bool:
+    url = normalize_source_url(str(source.get("url") or source.get("source_url") or ""))
+    if not url or _source_is_low_value_news(source):
+        return False
+    quality = score_source_for_intent(
+        source,
+        intent=LinkIntent.NEWS,
+        title=target.get("title", ""),
+        summary=target.get("summary", ""),
+        label=target.get("label", ""),
+        target_index=target.get("index"),
+    )
+    if quality.acceptable:
+        return True
+    return quality.score >= 36
+
+
+def _news_sources_need_resolution(text: str, sources: List[Dict[str, Any]], targets: List[Dict[str, str]]) -> bool:
+    if not targets:
+        return False
+    if not sources:
+        return True
+    matched_targets = 0
+    weak_sources = 0
+    for target in targets:
+        if any(isinstance(source, dict) and _candidate_matches_news_target(source, target) for source in sources):
+            matched_targets += 1
+    for source in sources:
+        if isinstance(source, dict) and _source_is_low_value_news(source):
+            weak_sources += 1
+    return matched_targets < min(3, len(targets)) or weak_sources >= max(2, len(sources) // 2)
+
+
+async def _resolve_news_detail_sources(
+    *,
+    query: str,
+    text: str,
+    sources: List[Dict[str, Any]],
+    provider: str,
+    model: Optional[str],
+    api_key: str,
+    persist_cost,
+) -> List[Dict[str, Any]]:
+    targets = _extract_news_source_targets(query=query, text=text)
+    if not _news_sources_need_resolution(text, sources, targets):
+        return sources
+    resolve_terms = " OR ".join(f'"{target["title"]}" {target["label"]}' for target in targets[:5])
+    resolve_query = (
+        f"{resolve_terms} {query} konkrete Detailquelle Artikel deutschsprachige Quelle "
+        "letzte 30 Tage aktuell keine Startseite keine News-Uebersicht keine Aggregatoren "
+        "keine Paywall keine Dokumentation keine API-Docs kein Help-Center kein dentro.de kein YouTube kein Reddit"
+    )
+    logger.info(
+        "WEBSEARCH-NEWS-SOURCE-RESOLVE: resolving targets=%s query=%s",
+        len(targets),
+        resolve_query,
+    )
+    try:
+        raw_resolve = await execute_websearch_service(
+            query=resolve_query,
+            api_key=api_key,
+            provider=provider,
+            model=model,
+        )
+        persist_cost(raw_resolve, provider or "default", model)
+    except Exception as exc:
+        logger.warning("WEBSEARCH-NEWS-SOURCE-RESOLVE: soft-failed: %s", exc)
+        return sources
+    resolved_sources = raw_resolve.get("sources") if isinstance(raw_resolve.get("sources"), list) else []
+    seen = {
+        normalize_source_url(str(source.get("url") or source.get("source_url") or ""))
+        for source in sources
+        if isinstance(source, dict)
+    }
+    additions: List[Dict[str, Any]] = []
+    for target in targets:
+        for candidate in resolved_sources:
+            if not isinstance(candidate, dict) or not _candidate_matches_news_target(candidate, target):
+                continue
+            url = normalize_source_url(str(candidate.get("url") or candidate.get("source_url") or ""))
+            if not url or url in seen:
+                continue
+            item = dict(candidate)
+            item["url"] = url
+            item["news_target_index"] = target["index"]
+            item["news_target_title"] = target["title"]
+            item["news_target_label"] = target["label"]
+            additions.append(item)
+            seen.add(url)
+            break
+    if not additions:
+        return sources
+    return additions + sources
 
 
 async def _resolve_missing_release_sources(
@@ -610,6 +784,15 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
             persist_cost=_persist_websearch_cost,
         )
         sources = await _resolve_missing_release_sources(
+            query=normalized_query,
+            text=text,
+            sources=sources,
+            provider=provider,
+            model=provider_model,
+            api_key=key,
+            persist_cost=_persist_websearch_cost,
+        )
+        sources = await _resolve_news_detail_sources(
             query=normalized_query,
             text=text,
             sources=sources,
