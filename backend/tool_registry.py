@@ -506,6 +506,40 @@ async def _resolve_news_detail_sources(
         return sources
     resolved_sources = raw_resolve.get("sources") if isinstance(raw_resolve.get("sources"), list) else []
     merged_sources = EvidencePipeline.merge_resolved_sources(sources, resolved_sources, resolve_claims)
+
+    all_claims = [_target_to_evidence_claim(target) for target in targets]
+    unresolved_after_batch = EvidencePipeline.claims_needing_resolution(merged_sources, all_claims)
+    accepted_after_batch = len(all_claims) - len(unresolved_after_batch)
+    if accepted_after_batch >= 3 or not unresolved_after_batch:
+        return merged_sources or sources
+
+    logger.info(
+        "WEBSEARCH-NEWS-SOURCE-REPAIR2: accepted=%s unresolved=%s",
+        accepted_after_batch,
+        len(unresolved_after_batch),
+    )
+    for claim in unresolved_after_batch[:2]:
+        focused_query = EvidencePipeline.focused_repair_query_for_claim(query, claim)
+        logger.info(
+            "WEBSEARCH-NEWS-SOURCE-REPAIR2: claim=%s label=%s query=%s",
+            claim.title,
+            claim.label,
+            focused_query,
+        )
+        try:
+            raw_focused = await execute_websearch_service(
+                query=focused_query,
+                api_key=api_key,
+                provider=provider,
+                model=model,
+            )
+            persist_cost(raw_focused, provider or "default", model)
+        except Exception as exc:
+            logger.warning("WEBSEARCH-NEWS-SOURCE-REPAIR2: soft-failed claim=%s error=%s", claim.title, exc)
+            continue
+        focused_sources = raw_focused.get("sources") if isinstance(raw_focused.get("sources"), list) else []
+        merged_sources = EvidencePipeline.merge_resolved_sources(merged_sources, focused_sources, [claim])
+
     return merged_sources or sources
 
 

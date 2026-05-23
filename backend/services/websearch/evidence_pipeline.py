@@ -191,12 +191,35 @@ class EvidencePipeline:
             if official_site:
                 terms.append(f'"{claim.title}" site:{official_site}')
             else:
-                terms.append(f'"{claim.title}" {claim.label} site:de')
+                terms.append(cls.repair_query_term_for_claim(claim))
         resolve_terms = " OR ".join(terms)
         return (
             f"{resolve_terms} {base_query} konkrete Detailquelle Artikel deutschsprachige Quelle "
             "letzte 30 Tage aktuell offizielle Quelle wenn genannt keine Startseite keine News-Uebersicht keine Aggregatoren "
             "keine Paywall keine Dokumentation keine API-Docs kein Help-Center kein dentro.de kein YouTube kein Reddit"
+        )
+
+    @classmethod
+    def repair_query_term_for_claim(cls, claim: EvidenceClaim) -> str:
+        official_site = cls.official_news_site_for_label(claim.label)
+        if official_site:
+            return f'"{claim.title}" site:{official_site}'
+
+        label_norm = normalize_label_for_match(claim.label)
+        label_domain = str(claim.label or "").strip().casefold().removeprefix("www.")
+        if re.fullmatch(r"[a-z0-9-]+(?:\.[a-z0-9-]+)+", label_domain):
+            return f'"{claim.title}" site:{label_domain}'
+        if label_norm:
+            return f'"{claim.title}" "{claim.label}" site:de'
+        return f'"{claim.title}" site:de'
+
+    @classmethod
+    def focused_repair_query_for_claim(cls, base_query: str, claim: EvidenceClaim) -> str:
+        term = cls.repair_query_term_for_claim(claim)
+        summary_terms = " ".join(token for token in re.findall(r"[A-Za-z0-9ÄÖÜäöüß-]{4,}", claim.summary)[:6])
+        return (
+            f"{term} {summary_terms} {base_query} konkrete Detailseite Artikel deutschsprachig "
+            "kein Startseite keine News-Uebersicht keine Paywall kein YouTube kein Reddit"
         )
 
     @classmethod

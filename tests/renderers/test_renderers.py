@@ -1545,6 +1545,17 @@ class TestWebsearchEvidencePipeline:
         assert merged[0]["news_target_title"] == "Surface Pro 11 Business"
         assert merged[0]["news_target_label"] == "WinFuture"
 
+    def test_pipeline_uses_domain_specific_repair_term_for_domain_label(self):
+        claims = EvidencePipeline.extract_news_claims(
+            "Microsoft News aktuell",
+            "1. Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.",
+        )
+
+        query = EvidencePipeline.focused_repair_query_for_claim("Microsoft News aktuell", claims[0])
+
+        assert '"Windows 11 Recall und Datenschutz" site:hp.com' in query
+        assert "Funktion erstellt lokale Snapshots" in query
+
 
 _SAVE_MP3_FULL = {
     "file_path": "C:/Users/User/Desktop/test_audio.mp3",

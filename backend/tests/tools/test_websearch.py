@@ -494,7 +494,7 @@ async def test_websearch_wrapper_resolves_only_weak_news_targets():
     resolver_query = execute_mock.await_args_list[1].kwargs["query"]
     assert "Elon Musk scheitert" not in resolver_query
     assert '"Spitzenposition im Bereich Coding-Agenten" site:openai.com' in resolver_query
-    assert '"Neue Sicherheitsinitiative Daybreak" ComputerBase site:de' in resolver_query
+    assert '"Neue Sicherheitsinitiative Daybreak" "ComputerBase" site:de' in resolver_query
 
 
 @pytest.mark.asyncio
@@ -567,8 +567,169 @@ async def test_websearch_wrapper_does_not_reuse_one_provider_redirect_for_multip
     assert execute_mock.await_count == 3
     resolver_query = execute_mock.await_args_list[2].kwargs["query"]
     assert "Kritische Sicherheits-Patches" not in resolver_query
-    assert '"Anpassung der Copilot-Integration" BornCity site:de' in resolver_query
-    assert '"Fuehrungswechsel und Wachstumsziele" BornCity site:de' in resolver_query
+    assert '"Anpassung der Copilot-Integration" "BornCity" site:de' in resolver_query
+    assert '"Fuehrungswechsel und Wachstumsziele" "BornCity" site:de' in resolver_query
+
+
+@pytest.mark.asyncio
+async def test_websearch_wrapper_runs_limited_focused_news_repair_when_batch_recall_is_low():
+    fake_db = Mock()
+    primary_result = {
+        "text": (
+            "1. Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.\n"
+            "2. Microsoft Patchday Mai 2026: Der Konzern schliesst kritische Sicherheitsluecken. Quelle: Security-Insider.\n"
+            "3. Fox Tempest: Microsoft geht gegen einen Cybercrime-Dienst vor. Quelle: Microsoft."
+        ),
+        "sources": [
+            {
+                "title": "hp.com",
+                "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/hp",
+                "snippet": "Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.",
+            }
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 100, "output_tokens": 40, "total_tokens": 140, "query_count": 1},
+        "cost": {"total_cost": 0.001},
+    }
+    batch_result = {
+        "text": "batch found one",
+        "sources": [
+            {
+                "title": "Security Insider Patchday Mai 2026",
+                "url": "https://www.security-insider.de/microsoft-patchday-mai-2026/",
+                "snippet": "Microsoft Patchday Mai 2026: Der Konzern schliesst kritische Sicherheitsluecken.",
+            }
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 80, "output_tokens": 20, "total_tokens": 100, "query_count": 1},
+        "cost": {"total_cost": 0.0008},
+    }
+    fallback_result = {
+        "text": "",
+        "sources": [],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 20, "output_tokens": 0, "total_tokens": 20, "query_count": 1},
+        "cost": {"total_cost": 0.0001},
+    }
+    focused_hp = {
+        "text": "hp detail",
+        "sources": [
+            {
+                "title": "HP Windows 11 Recall Datenschutz",
+                "url": "https://www.hp.com/de-de/windows-11-recall-datenschutz",
+                "snippet": "Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots.",
+            }
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 30, "output_tokens": 10, "total_tokens": 40, "query_count": 1},
+        "cost": {"total_cost": 0.0002},
+    }
+    focused_microsoft = {
+        "text": "microsoft detail",
+        "sources": [
+            {
+                "title": "Microsoft Fox Tempest",
+                "url": "https://www.microsoft.com/de-de/security/blog/2026/05/fox-tempest/",
+                "snippet": "Fox Tempest: Microsoft geht gegen einen Cybercrime-Dienst vor.",
+            }
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 30, "output_tokens": 10, "total_tokens": 40, "query_count": 1},
+        "cost": {"total_cost": 0.0002},
+    }
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
+        "backend.tool_registry.execute_websearch_service",
+        AsyncMock(side_effect=[primary_result, fallback_result, batch_result, focused_hp, focused_microsoft]),
+    ) as execute_mock, patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
+        "backend.services.cost_service.create_cost_entry"
+    ):
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(
+                query="Microsoft News Mai 2026 Aktuell",
+                provider="gemini",
+                model="gemini-3-flash-preview",
+            )
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    urls = [source["url"] for source in rd["data"]["sources"]]
+    assert "https://www.security-insider.de/microsoft-patchday-mai-2026/" in urls
+    assert "https://www.hp.com/de-de/windows-11-recall-datenschutz" in urls
+    assert "https://www.microsoft.com/de-de/security/blog/2026/05/fox-tempest/" in urls
+    assert execute_mock.await_count == 5
+    assert '"Windows 11 Recall und Datenschutz" site:hp.com' in execute_mock.await_args_list[3].kwargs["query"]
+    assert '"Fox Tempest" site:microsoft.com' in execute_mock.await_args_list[4].kwargs["query"]
+
+
+@pytest.mark.asyncio
+async def test_websearch_wrapper_skips_focused_news_repair_when_batch_has_three_links():
+    fake_db = Mock()
+    primary_result = {
+        "text": (
+            "1. Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.\n"
+            "2. Microsoft Patchday Mai 2026: Der Konzern schliesst kritische Sicherheitsluecken. Quelle: Security-Insider.\n"
+            "3. Fox Tempest: Microsoft geht gegen einen Cybercrime-Dienst vor. Quelle: Microsoft."
+        ),
+        "sources": [
+            {
+                "title": "hp.com",
+                "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/hp",
+                "snippet": "Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.",
+            }
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 100, "output_tokens": 40, "total_tokens": 140, "query_count": 1},
+        "cost": {"total_cost": 0.001},
+    }
+    batch_result = {
+        "text": "batch found three",
+        "sources": [
+            {
+                "title": "HP Windows 11 Recall Datenschutz",
+                "url": "https://www.hp.com/de-de/windows-11-recall-datenschutz",
+                "snippet": "Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots.",
+            },
+            {
+                "title": "Security Insider Patchday Mai 2026",
+                "url": "https://www.security-insider.de/microsoft-patchday-mai-2026/",
+                "snippet": "Microsoft Patchday Mai 2026: Der Konzern schliesst kritische Sicherheitsluecken.",
+            },
+            {
+                "title": "Microsoft Fox Tempest",
+                "url": "https://www.microsoft.com/de-de/security/blog/2026/05/fox-tempest/",
+                "snippet": "Fox Tempest: Microsoft geht gegen einen Cybercrime-Dienst vor.",
+            },
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 80, "output_tokens": 20, "total_tokens": 100, "query_count": 1},
+        "cost": {"total_cost": 0.0008},
+    }
+    fallback_result = {
+        "text": "",
+        "sources": [],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 20, "output_tokens": 0, "total_tokens": 20, "query_count": 1},
+        "cost": {"total_cost": 0.0001},
+    }
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
+        "backend.tool_registry.execute_websearch_service",
+        AsyncMock(side_effect=[primary_result, fallback_result, batch_result]),
+    ) as execute_mock, patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
+        "backend.services.cost_service.create_cost_entry"
+    ):
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(
+                query="Microsoft News Mai 2026 Aktuell",
+                provider="gemini",
+                model="gemini-3-flash-preview",
+            )
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    assert rd["status"] == "ok"
+    assert execute_mock.await_count == 3
 
 
 @pytest.mark.asyncio
