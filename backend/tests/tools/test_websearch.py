@@ -733,6 +733,114 @@ async def test_websearch_wrapper_skips_focused_news_repair_when_batch_has_three_
 
 
 @pytest.mark.asyncio
+async def test_websearch_wrapper_runs_focused_news_repair_when_batch_repair_fails():
+    fake_db = Mock()
+    primary_result = {
+        "text": (
+            "1. Office-Update fuer KI-Assistenten: Microsoft erlaubt flexiblere Copilot-Steuerung. Quelle: BornCity.\n"
+            "2. Lokale Datenverarbeitung in Deutschland: Microsoft 365 Copilot verarbeitet Daten national. Quelle: Computerwoche.\n"
+            "3. Neues News-Erlebnis in Microsoft Teams: SharePoint-News werden in Teams integriert. Quelle: Microsoft.\n"
+            "4. Firmware-Aktualisierung fuer Surface-Geraete: Updates korrigieren Touch- und Pen-Probleme. Quelle: Dr. Windows."
+        ),
+        "sources": [
+            {
+                "title": "borncity.com",
+                "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/borncity",
+                "snippet": "Office-Update fuer KI-Assistenten: Microsoft erlaubt flexiblere Copilot-Steuerung. Quelle: BornCity.",
+            }
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 100, "output_tokens": 40, "total_tokens": 140, "query_count": 1},
+        "cost": {"total_cost": 0.001},
+    }
+    fallback_result = {
+        "text": "",
+        "sources": [],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 20, "output_tokens": 0, "total_tokens": 20, "query_count": 1},
+        "cost": {"total_cost": 0.0001},
+    }
+    computerwoche_detail = {
+        "text": "computerwoche detail",
+        "sources": [
+            {
+                "title": "Computerwoche Microsoft 365 Copilot Deutschland",
+                "url": "https://www.computerwoche.de/article/microsoft-365-copilot-deutschland.html",
+                "snippet": "Lokale Datenverarbeitung in Deutschland: Microsoft 365 Copilot verarbeitet Daten national.",
+            }
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 30, "output_tokens": 10, "total_tokens": 40, "query_count": 1},
+        "cost": {"total_cost": 0.0002},
+    }
+    microsoft_detail = {
+        "text": "microsoft detail",
+        "sources": [
+            {
+                "title": "Microsoft Teams SharePoint News",
+                "url": "https://www.microsoft.com/de-de/microsoft-365/blog/2026/05/teams-sharepoint-news/",
+                "snippet": "Neues News-Erlebnis in Microsoft Teams: SharePoint-News werden in Teams integriert.",
+            }
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 30, "output_tokens": 10, "total_tokens": 40, "query_count": 1},
+        "cost": {"total_cost": 0.0002},
+    }
+    drwindows_detail = {
+        "text": "dr windows detail",
+        "sources": [
+            {
+                "title": "Dr. Windows Surface Firmware Update",
+                "url": "https://www.drwindows.de/news/surface-firmware-update-mai-2026",
+                "snippet": "Firmware-Aktualisierung fuer Surface-Geraete: Updates korrigieren Touch- und Pen-Probleme.",
+            }
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 30, "output_tokens": 10, "total_tokens": 40, "query_count": 1},
+        "cost": {"total_cost": 0.0002},
+    }
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
+        "backend.tool_registry.execute_websearch_service",
+        AsyncMock(
+            side_effect=[
+                primary_result,
+                fallback_result,
+                RuntimeError("Native Grounding failed"),
+                computerwoche_detail,
+                microsoft_detail,
+                drwindows_detail,
+            ]
+        ),
+    ) as execute_mock, patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
+        "backend.services.cost_service.create_cost_entry"
+    ):
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(
+                query="Microsoft News Aktuelles Mai 2026",
+                provider="gemini",
+                model="gemini-3-flash-preview",
+            )
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    urls = [source["url"] for source in rd["data"]["sources"]]
+    assert "https://www.computerwoche.de/article/microsoft-365-copilot-deutschland.html" in urls
+    assert "https://www.microsoft.com/de-de/microsoft-365/blog/2026/05/teams-sharepoint-news/" in urls
+    assert "https://www.drwindows.de/news/surface-firmware-update-mai-2026" in urls
+    assert execute_mock.await_count == 6
+    assert (
+        '"Lokale Datenverarbeitung in Deutschland" "Computerwoche" site:de'
+        in execute_mock.await_args_list[3].kwargs["query"]
+    )
+    assert '"Neues News-Erlebnis in Microsoft Teams" site:microsoft.com' in execute_mock.await_args_list[4].kwargs["query"]
+    assert (
+        '"Firmware-Aktualisierung fuer Surface-Geraete" "Dr. Windows" site:de'
+        in execute_mock.await_args_list[5].kwargs["query"]
+    )
+
+
+@pytest.mark.asyncio
 async def test_gemini_provider_costs_native_search_by_tokens_when_usage_metadata_exists():
     provider = GeminiWebSearchProvider()
     fake_response = {

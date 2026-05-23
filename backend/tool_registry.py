@@ -487,6 +487,9 @@ async def _resolve_news_detail_sources(
         return sources
     targets_to_resolve = _news_targets_needing_resolution(sources, targets) or targets
     resolve_claims = [_target_to_evidence_claim(target) for target in targets_to_resolve]
+    all_claims = [_target_to_evidence_claim(target) for target in targets]
+    merged_sources = sources
+    batch_failed = False
     resolve_query = EvidencePipeline.repair_query_for_claims(query, resolve_claims, limit=4)
     logger.info(
         "WEBSEARCH-NEWS-SOURCE-RESOLVE: resolving targets=%s query=%s",
@@ -503,11 +506,11 @@ async def _resolve_news_detail_sources(
         persist_cost(raw_resolve, provider or "default", model)
     except Exception as exc:
         logger.warning("WEBSEARCH-NEWS-SOURCE-RESOLVE: soft-failed: %s", exc)
-        return sources
-    resolved_sources = raw_resolve.get("sources") if isinstance(raw_resolve.get("sources"), list) else []
-    merged_sources = EvidencePipeline.merge_resolved_sources(sources, resolved_sources, resolve_claims)
+        batch_failed = True
+    else:
+        resolved_sources = raw_resolve.get("sources") if isinstance(raw_resolve.get("sources"), list) else []
+        merged_sources = EvidencePipeline.merge_resolved_sources(sources, resolved_sources, resolve_claims)
 
-    all_claims = [_target_to_evidence_claim(target) for target in targets]
     unresolved_after_batch = EvidencePipeline.claims_needing_resolution(merged_sources, all_claims)
     accepted_after_batch = len(all_claims) - len(unresolved_after_batch)
     if accepted_after_batch >= 3 or not unresolved_after_batch:
@@ -518,7 +521,8 @@ async def _resolve_news_detail_sources(
         accepted_after_batch,
         len(unresolved_after_batch),
     )
-    for claim in unresolved_after_batch[:2]:
+    focused_limit = 3 if batch_failed else 2
+    for claim in unresolved_after_batch[:focused_limit]:
         focused_query = EvidencePipeline.focused_repair_query_for_claim(query, claim)
         logger.info(
             "WEBSEARCH-NEWS-SOURCE-REPAIR2: claim=%s label=%s query=%s",

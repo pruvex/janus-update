@@ -1556,6 +1556,15 @@ class TestWebsearchEvidencePipeline:
         assert '"Windows 11 Recall und Datenschutz" site:hp.com' in query
         assert "Funktion erstellt lokale Snapshots" in query
 
+    def test_pipeline_keeps_dotted_news_source_labels(self):
+        claims = EvidencePipeline.extract_news_claims(
+            "Microsoft News aktuell",
+            "1. Firmware-Aktualisierung fuer Surface-Geraete: Updates korrigieren Touch-Probleme. Quelle: Dr. Windows.",
+        )
+
+        assert claims[0].label == "Dr. Windows"
+        assert claims[0].summary == "Updates korrigieren Touch-Probleme"
+
 
 _SAVE_MP3_FULL = {
     "file_path": "C:/Users/User/Desktop/test_audio.mp3",

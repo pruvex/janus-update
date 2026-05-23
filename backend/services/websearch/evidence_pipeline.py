@@ -98,7 +98,7 @@ class EvidencePipeline:
         source_match = re.search(r"\(Quelle:\s*([^)]+)\)", clean, flags=re.IGNORECASE)
         if not source_match:
             source_match = re.search(
-                r"\bQuelle:\s*([^.\n]+(?:\.(?:com|de|net|org|co\.uk|tv))?)\.?",
+                r"\bQuelle:\s*([^\n]+?)(?:\.\s*(?:Link)?\s*$|$)",
                 clean,
                 flags=re.IGNORECASE,
             )
@@ -106,7 +106,7 @@ class EvidencePipeline:
             label = re.sub(r"\s+", " ", source_match.group(1)).strip(" .)")
             clean = re.sub(r"\s*\(Quelle:\s*[^)]+\)\.?", "", clean, flags=re.IGNORECASE).strip(" .")
             clean = re.sub(
-                r"\s*\bQuelle:\s*[^.\n]+(?:\.(?:com|de|net|org|co\.uk|tv))?\.?",
+                r"\s*\bQuelle:\s*[^\n]+?(?:\.\s*(?:Link)?\s*$|$)",
                 "",
                 clean,
                 flags=re.IGNORECASE,
