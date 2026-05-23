@@ -820,48 +820,6 @@ class TestRssNewsRenderer:
         assert "Quelle: OpenAI. [Link](https://openai.com/de-DE/news/sora-in-chatgpt)" in result
         assert "reddit.com/r/example" not in result
 
-    def test_response_finalizer_uses_resolved_source_label_for_german_repair_link(self):
-        from backend.services.orchestrator.response_finalizer import render_websearch_sources
-
-        result = render_websearch_sources(
-            [
-                {
-                    "role": "tool",
-                    "name": "system.websearch",
-                    "_skill_id": "system.websearch",
-                    "content": json.dumps(
-                        {
-                            "data": {
-                                "query": "OpenAI News aktuell Mai 2026",
-                                "text": (
-                                    "1. GPT-5.3-Codex fuer Unternehmen: Neues Basismodell fuer Copilot Business. "
-                                    "Quelle: GitHub."
-                                ),
-                                "sources": [
-                                    {
-                                        "url": "https://www.heise.de/news/github-copilot-business-gpt-5-3-codex",
-                                        "title": "heise.de",
-                                        "snippet": "GPT-5.3-Codex fuer Unternehmen neues Basismodell fuer Copilot Business.",
-                                        "news_target_index": "1",
-                                        "news_target_title": "GPT-5.3-Codex fuer Unternehmen",
-                                        "news_target_label": "GitHub",
-                                    },
-                                    {
-                                        "url": "https://github.blog/news-insights/product-news/copilot-business",
-                                        "title": "github.blog",
-                                        "snippet": "GPT-5.3-Codex fuer Unternehmen neues Basismodell fuer Copilot Business.",
-                                    },
-                                ],
-                            }
-                        }
-                    ),
-                }
-            ]
-        )
-
-        assert "Quelle: Heise. [Link](https://www.heise.de/news/github-copilot-business-gpt-5-3-codex)" in result
-        assert "Quelle: GitHub. [Link]" not in result
-
     def test_response_finalizer_rejects_generic_news_landing_page_link(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources
 

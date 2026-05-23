@@ -32,7 +32,7 @@ from backend.services.knowledge_composite import hardened_edit_pdf
 from backend.tools.pdf_editor import edit_pdf_text_in_place
 from backend.services.tool_manager import tool_manager
 from backend.services.websearch.websearch import execute_websearch_service
-from backend.services.websearch.query_bias import is_likely_german_source, normalize_source_url
+from backend.services.websearch.query_bias import normalize_source_url
 from backend.services.websearch.link_quality import (
     LinkIntent,
     has_german_or_official_signal,
@@ -466,38 +466,14 @@ def _news_sources_need_resolution(text: str, sources: List[Dict[str, Any]], targ
     if not sources:
         return True
     matched_targets = 0
-    targets_without_german_or_official_detail = 0
     weak_sources = 0
     for target in targets:
-        matching_sources = []
-        for source in sources:
-            if not isinstance(source, dict):
-                continue
-            quality = score_source_for_intent(
-                source,
-                intent=LinkIntent.NEWS,
-                title=target.get("title", ""),
-                summary=target.get("summary", ""),
-                label=target.get("label", ""),
-                target_index=target.get("index"),
-            )
-            if quality.acceptable:
-                matching_sources.append(source)
-        if matching_sources:
+        if any(isinstance(source, dict) and _candidate_matches_news_target(source, target) for source in sources):
             matched_targets += 1
-            label = target.get("label", "")
-            if not any(_official_news_site_for_label(label) or is_likely_german_source(source) for source in matching_sources):
-                targets_without_german_or_official_detail += 1
-        else:
-            targets_without_german_or_official_detail += 1
     for source in sources:
         if isinstance(source, dict) and _source_is_low_value_news(source):
             weak_sources += 1
-    return (
-        matched_targets < len(targets)
-        or targets_without_german_or_official_detail > 0
-        or weak_sources >= max(2, len(sources) // 2)
-    )
+    return matched_targets < min(3, len(targets)) or weak_sources >= max(2, len(sources) // 2)
 
 
 def _official_news_site_for_label(label: str) -> str:
@@ -534,7 +510,7 @@ async def _resolve_news_detail_sources(
         if official_site:
             resolve_terms_list.append(f'"{target["title"]}" site:{official_site}')
         else:
-            resolve_terms_list.append(f'"{target["title"]}" {label} site:de')
+            resolve_terms_list.append(f'"{target["title"]}" {label}')
     resolve_terms = " OR ".join(resolve_terms_list)
     resolve_query = (
         f"{resolve_terms} {query} konkrete Detailquelle Artikel deutschsprachige Quelle "
