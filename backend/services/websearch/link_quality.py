@@ -278,6 +278,15 @@ def _provider_redirect_has_marker_only_snippet(source: Mapping[str, Any] | str) 
     return len(stripped) < 24
 
 
+def _provider_redirect_has_truncated_snippet(source: Mapping[str, Any] | str) -> bool:
+    if not isinstance(source, Mapping):
+        return False
+    snippet = " ".join(str(source.get(key) or "") for key in ("snippet", "description", "text")).strip()
+    if not snippet:
+        return True
+    return bool(re.search(r"\b(?:am|vom|seit|bis|Build|KB)?\s*\d{1,5}\.?$", snippet, flags=re.IGNORECASE))
+
+
 def source_url(source: Mapping[str, Any] | str) -> str:
     if isinstance(source, str):
         return normalize_source_url(source)
@@ -522,6 +531,7 @@ def score_source_for_intent(
             and _host_matches_broad_label_official(declared_host, label_norm)
             and _provider_redirect_has_bare_domain_title(source)
             and "resolved_target" not in reasons
+            and (token_matches < 7 or _provider_redirect_has_truncated_snippet(source))
         ):
             acceptable = False
             reasons.append("bare_official_provider_redirect")

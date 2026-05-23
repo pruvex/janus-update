@@ -1436,7 +1436,7 @@ class TestWebsearchLinkQuality:
         assert not mismatched_quality.acceptable
         assert "weak_item_binding" in mismatched_quality.reasons
 
-    def test_bare_official_provider_redirect_is_rejected_for_any_broad_news_label(self):
+    def test_weak_bare_official_provider_redirect_is_rejected_for_broad_news_label(self):
         source = {
             "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/microsoft",
             "title": "microsoft.com",
@@ -1447,8 +1447,50 @@ class TestWebsearchLinkQuality:
             source,
             intent=LinkIntent.NEWS,
             title="Nachhaltige KI-Infrastruktur",
-            summary="Microsoft stellt ein neues Rechenzentrumsdesign vor.",
+            summary="Neue Infrastruktur.",
             label="Microsoft",
+        )
+
+        assert not quality.acceptable
+        assert "bare_official_provider_redirect" in quality.reasons
+
+    def test_strong_bare_official_provider_redirect_is_allowed_for_broad_news_label(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/microsoft",
+            "title": "microsoft.com",
+            "snippet": (
+                "Autonome Copilot-Agenten: Die neuen KI-Assistenten fuer Microsoft 365 koennen "
+                "komplexe Geschaeftsprozesse koordinieren und als Moderatoren in Teams-Sitzungen agieren."
+            ),
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Autonome Copilot-Agenten",
+            summary=(
+                "Die neuen KI-Assistenten fuer Microsoft 365 koennen komplexe Geschaeftsprozesse "
+                "koordinieren und als Moderatoren in Teams-Sitzungen agieren."
+            ),
+            label="Microsoft",
+        )
+
+        assert quality.acceptable
+        assert "bare_official_provider_redirect" not in quality.reasons
+
+    def test_truncated_bare_official_provider_redirect_is_rejected(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/openai",
+            "title": "openai.com",
+            "snippet": "Wissenschaftlicher Durchbruch in der Geometrie: Ein spezialisiertes KI-Modell von OpenAI konnte am 20.",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Wissenschaftlicher Durchbruch in der Geometrie",
+            summary="Ein spezialisiertes KI-Modell von OpenAI konnte am 20. Mai eine zentrale Vermutung widerlegen.",
+            label="OpenAI",
         )
 
         assert not quality.acceptable
