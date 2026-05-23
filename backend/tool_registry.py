@@ -488,52 +488,68 @@ async def _resolve_news_detail_sources(
     targets = _extract_news_source_targets(query=query, text=text)
     if not _news_sources_need_resolution(text, sources, targets):
         return sources
+    initial_unresolved = _news_targets_needing_resolution(sources, targets)
+    initial_accepted = len(targets) - len(initial_unresolved)
+    late_zero_link_repair = False
     if elapsed_ms_fn and elapsed_ms_fn() > max_repair_start_ms:
-        logger.info(
-            "WEBSEARCH-NEWS-SOURCE-RESOLVE: skipped elapsed_ms=%s budget_ms=%s",
-            elapsed_ms_fn(),
-            max_repair_start_ms,
-        )
-        return sources
-    targets_to_resolve = _news_targets_needing_resolution(sources, targets) or targets
+        if targets and initial_accepted <= 0:
+            late_zero_link_repair = True
+            logger.info(
+                "WEBSEARCH-NEWS-SOURCE-RESOLVE: late-zero-link-repair elapsed_ms=%s budget_ms=%s",
+                elapsed_ms_fn(),
+                max_repair_start_ms,
+            )
+        else:
+            logger.info(
+                "WEBSEARCH-NEWS-SOURCE-RESOLVE: skipped elapsed_ms=%s budget_ms=%s",
+                elapsed_ms_fn(),
+                max_repair_start_ms,
+            )
+            return sources
+    targets_to_resolve = initial_unresolved or targets
     resolve_claims = [_target_to_evidence_claim(target) for target in targets_to_resolve]
     all_claims = [_target_to_evidence_claim(target) for target in targets]
     merged_sources = sources
     batch_failed = False
-    resolve_query = EvidencePipeline.repair_query_for_claims(query, resolve_claims, limit=4)
-    logger.info(
-        "WEBSEARCH-NEWS-SOURCE-RESOLVE: resolving targets=%s query=%s",
-        len(targets_to_resolve),
-        resolve_query,
-    )
-    try:
-        raw_resolve = await execute_websearch_service(
-            query=resolve_query,
-            api_key=api_key,
-            provider=provider,
-            model=model,
-        )
-        persist_cost(raw_resolve, provider or "default", model)
-    except Exception as exc:
-        logger.warning("WEBSEARCH-NEWS-SOURCE-RESOLVE: soft-failed: %s", exc)
+    if late_zero_link_repair:
         batch_failed = True
+        unresolved_after_batch = resolve_claims
+        accepted_after_batch = 0
     else:
-        resolved_sources = raw_resolve.get("sources") if isinstance(raw_resolve.get("sources"), list) else []
-        merged_sources = EvidencePipeline.merge_resolved_sources(sources, resolved_sources, resolve_claims)
+        resolve_query = EvidencePipeline.repair_query_for_claims(query, resolve_claims, limit=4)
+        logger.info(
+            "WEBSEARCH-NEWS-SOURCE-RESOLVE: resolving targets=%s query=%s",
+            len(targets_to_resolve),
+            resolve_query,
+        )
+        try:
+            raw_resolve = await execute_websearch_service(
+                query=resolve_query,
+                api_key=api_key,
+                provider=provider,
+                model=model,
+            )
+            persist_cost(raw_resolve, provider or "default", model)
+        except Exception as exc:
+            logger.warning("WEBSEARCH-NEWS-SOURCE-RESOLVE: soft-failed: %s", exc)
+            batch_failed = True
+        else:
+            resolved_sources = raw_resolve.get("sources") if isinstance(raw_resolve.get("sources"), list) else []
+            merged_sources = EvidencePipeline.merge_resolved_sources(sources, resolved_sources, resolve_claims)
 
-    unresolved_after_batch = EvidencePipeline.claims_needing_resolution(merged_sources, all_claims)
-    accepted_after_batch = len(all_claims) - len(unresolved_after_batch)
-    if accepted_after_batch >= 3 or not unresolved_after_batch:
-        return merged_sources or sources
+        unresolved_after_batch = EvidencePipeline.claims_needing_resolution(merged_sources, all_claims)
+        accepted_after_batch = len(all_claims) - len(unresolved_after_batch)
+        if accepted_after_batch >= 3 or not unresolved_after_batch:
+            return merged_sources or sources
 
     logger.info(
         "WEBSEARCH-NEWS-SOURCE-REPAIR2: accepted=%s unresolved=%s",
         accepted_after_batch,
         len(unresolved_after_batch),
     )
-    focused_limit = 3 if batch_failed else 2
+    focused_limit = 2 if late_zero_link_repair else (3 if batch_failed else 2)
     for claim in unresolved_after_batch[:focused_limit]:
-        if elapsed_ms_fn and elapsed_ms_fn() > max_focused_start_ms:
+        if not late_zero_link_repair and elapsed_ms_fn and elapsed_ms_fn() > max_focused_start_ms:
             logger.info(
                 "WEBSEARCH-NEWS-SOURCE-REPAIR2: budget-exhausted elapsed_ms=%s budget_ms=%s",
                 elapsed_ms_fn(),

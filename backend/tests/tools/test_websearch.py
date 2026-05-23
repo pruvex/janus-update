@@ -548,7 +548,13 @@ async def test_news_source_repair_skips_when_elapsed_budget_is_exhausted():
                 "1. Sicherheits-Patchday Mai 2026: Microsoft schliesst kritische Luecken. Quelle: Security-Insider.\n"
                 "2. Entwicklerkonferenz Build 2026: Microsoft kuendigt neue Azure-Funktionen an. Quelle: Microsoft."
             ),
-            sources=[],
+            sources=[
+                {
+                    "title": "Security Insider Patchday Mai 2026",
+                    "url": "https://www.security-insider.de/microsoft-patchday-mai-2026/",
+                    "snippet": "Sicherheits-Patchday Mai 2026: Microsoft schliesst kritische Luecken.",
+                }
+            ],
             provider="gemini",
             model="gemini-3-flash-preview",
             api_key="gemini-key",
@@ -556,8 +562,56 @@ async def test_news_source_repair_skips_when_elapsed_budget_is_exhausted():
             elapsed_ms_fn=lambda: 25001,
         )
 
-    assert sources == []
+    assert sources == [
+        {
+            "title": "Security Insider Patchday Mai 2026",
+            "url": "https://www.security-insider.de/microsoft-patchday-mai-2026/",
+            "snippet": "Sicherheits-Patchday Mai 2026: Microsoft schliesst kritische Luecken.",
+        }
+    ]
     execute_mock.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_news_source_repair_runs_late_focused_repair_when_no_links_are_accepted():
+    focused_result = {
+        "text": "microsoft detail",
+        "sources": [
+            {
+                "title": "Microsoft Surface Copilot PCs",
+                "url": "https://www.microsoft.com/de-de/surface/business/copilot-pcs",
+                "snippet": "Surface Copilot+ PCs der neuesten Generation: Surface Pro und Surface Laptop fuer KI-Workloads.",
+            }
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 30, "output_tokens": 10, "total_tokens": 40, "query_count": 1},
+        "cost": {"total_cost": 0.0002},
+    }
+    with patch("backend.tool_registry.execute_websearch_service", AsyncMock(return_value=focused_result)) as execute_mock:
+        sources = await _resolve_news_detail_sources(
+            query="Microsoft News aktuell Mai 2026",
+            text=(
+                "1. Surface Copilot+ PCs der neuesten Generation: Surface Pro und Surface Laptop fuer KI-Workloads. "
+                "Quelle: Microsoft Deutschland."
+            ),
+            sources=[
+                {
+                    "title": "microsoft.com",
+                    "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/microsoft",
+                    "snippet": "Microsoft Deutschland.",
+                }
+            ],
+            provider="gemini",
+            model="gemini-3-flash-preview",
+            api_key="gemini-key",
+            persist_cost=lambda *_args, **_kwargs: None,
+            elapsed_ms_fn=lambda: 42000,
+        )
+
+    urls = [source["url"] for source in sources]
+    assert "https://www.microsoft.com/de-de/surface/business/copilot-pcs" in urls
+    assert execute_mock.await_count == 1
+    assert '"Surface Copilot+ PCs der neuesten Generation" site:microsoft.com' in execute_mock.await_args.kwargs["query"]
 
 
 @pytest.mark.asyncio

@@ -1478,6 +1478,28 @@ class TestWebsearchLinkQuality:
         assert quality.acceptable
         assert "bare_official_provider_redirect" not in quality.reasons
 
+    def test_country_suffix_on_broad_label_matches_official_news_host(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/microsoft",
+            "title": "microsoft.com",
+            "snippet": (
+                "Surface Copilot+ PCs der neuesten Generation: Surface Pro und Surface Laptop "
+                "verfuegen ueber Snapdragon X Plus Prozessoren fuer lokale KI-Erlebnisse."
+            ),
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Surface Copilot+ PCs der neuesten Generation",
+            summary="Surface Pro und Surface Laptop verfuegen ueber Snapdragon X Plus Prozessoren.",
+            label="Microsoft Deutschland",
+        )
+
+        assert quality.acceptable
+        assert "source_label_host_mismatch" not in quality.reasons
+        assert "non_german_news_host" not in quality.reasons
+
     def test_truncated_bare_official_provider_redirect_is_rejected(self):
         source = {
             "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/openai",

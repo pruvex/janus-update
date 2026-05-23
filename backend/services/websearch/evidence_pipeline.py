@@ -8,6 +8,7 @@ from typing import Any, Mapping, Sequence
 from backend.services.websearch.link_quality import (
     LinkIntent,
     SourceQualityScore,
+    broad_label_for_match,
     is_low_value_source,
     normalize_label_for_match,
     score_source_for_intent,
@@ -181,7 +182,7 @@ class EvidencePipeline:
 
     @staticmethod
     def official_news_site_for_label(label: str) -> str:
-        return _OFFICIAL_NEWS_SITES.get(normalize_label_for_match(label), "")
+        return _OFFICIAL_NEWS_SITES.get(broad_label_for_match(label), "")
 
     @classmethod
     def repair_query_for_claims(cls, base_query: str, claims: Sequence[EvidenceClaim], limit: int = 4) -> str:

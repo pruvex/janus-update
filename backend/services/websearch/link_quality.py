@@ -217,10 +217,11 @@ def _source_declared_host(source: Mapping[str, Any] | str) -> str:
 
 def _host_is_german_or_official(host: str, label: str = "") -> bool:
     host_value = str(host or "").casefold().removeprefix("www.")
-    label_norm = normalize_label_for_match(label)
+    label_norm = broad_label_for_match(label)
     if host_value.endswith((".de", ".at", ".ch")) or host_value.startswith("de.") or ".de." in host_value:
         return True
-    if label_norm == "openai" and host_value.endswith("openai.com"):
+    official_hosts = _BROAD_LABEL_OFFICIAL_HOSTS.get(label_norm, ())
+    if any(host_value == expected or host_value.endswith("." + expected) for expected in official_hosts):
         return True
     if any(hint in host_value for hint in _GERMAN_SOURCE_HINTS):
         return True
@@ -228,14 +229,14 @@ def _host_is_german_or_official(host: str, label: str = "") -> bool:
 
 
 def _host_matches_broad_label_official(host: str, label: str) -> bool:
-    label_norm = normalize_label_for_match(label)
+    label_norm = broad_label_for_match(label)
     official_hosts = _BROAD_LABEL_OFFICIAL_HOSTS.get(label_norm, ())
     host_value = str(host or "").casefold().removeprefix("www.")
     return any(host_value == expected or host_value.endswith("." + expected) for expected in official_hosts)
 
 
 def _host_matches_source_label(host: str, label: str) -> bool:
-    label_norm = normalize_label_for_match(label)
+    label_norm = broad_label_for_match(label)
     expected_hosts = _SOURCE_LABEL_HOSTS.get(label_norm)
     host_value = str(host or "").casefold().removeprefix("www.")
     if not expected_hosts:
@@ -345,6 +346,14 @@ def normalize_label_for_match(value: str) -> str:
     return normalized
 
 
+def broad_label_for_match(value: str) -> str:
+    normalized = normalize_label_for_match(value)
+    for broad_label in _BROAD_LABELS:
+        if normalized == broad_label or normalized.startswith(f"{broad_label} "):
+            return broad_label
+    return normalized
+
+
 def is_generic_news_landing_page(source: Mapping[str, Any] | str) -> bool:
     host, path = source_host_path(source)
     if not host:
@@ -385,7 +394,7 @@ def is_low_value_source(source: Mapping[str, Any] | str, intent: LinkIntent | st
 
 def has_german_or_official_signal(source: Mapping[str, Any] | str, label: str = "") -> bool:
     haystack = source_haystack(source).casefold()
-    label_norm = normalize_label_for_match(label)
+    label_norm = broad_label_for_match(label)
     if label_norm and label_norm in normalize_label_for_match(haystack):
         return True
     return any(marker in haystack for marker in _GERMAN_SOURCE_HINTS)
@@ -409,7 +418,7 @@ def score_source_for_intent(
 
     haystack = source_haystack(source).casefold()
     haystack_norm = normalize_label_for_match(haystack)
-    label_norm = normalize_label_for_match(label)
+    label_norm = broad_label_for_match(label)
     score = 0
     reasons: list[str] = []
 
