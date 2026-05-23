@@ -161,6 +161,23 @@ _BROAD_LABELS = {
     "tesla",
 }
 
+_SOURCE_LABEL_HOSTS = {
+    "faz": ("faz.net",),
+    "frankfurter allgemeine": ("faz.net",),
+    "spiegel": ("spiegel.de",),
+    "der spiegel": ("spiegel.de",),
+    "zeit": ("zeit.de",),
+    "die zeit": ("zeit.de",),
+    "heise": ("heise.de",),
+    "golem": ("golem.de",),
+    "tagesschau": ("tagesschau.de",),
+    "deutschlandfunk": ("deutschlandfunk.de",),
+    "channelpartner": ("channelpartner.de",),
+    "techrepublic": ("techrepublic.com",),
+    "reuters": ("reuters.com", "reutersagency.com"),
+    "github": ("github.blog", "github.com"),
+}
+
 _PROVIDER_REDIRECT_HOSTS = {
     "vertexaisearch.cloud.google.com",
 }
@@ -185,6 +202,28 @@ def _host_is_german_or_official(host: str, label: str = "") -> bool:
     if label_norm == "openai" and host_value.endswith("openai.com"):
         return True
     return False
+
+
+def _host_matches_source_label(host: str, label: str) -> bool:
+    label_norm = normalize_label_for_match(label)
+    expected_hosts = _SOURCE_LABEL_HOSTS.get(label_norm)
+    if not expected_hosts:
+        return True
+    host_value = str(host or "").casefold().removeprefix("www.")
+    return any(host_value == expected or host_value.endswith("." + expected) for expected in expected_hosts)
+
+
+def _provider_redirect_has_ambiguous_news_snippet(source: Mapping[str, Any] | str) -> bool:
+    if not isinstance(source, Mapping):
+        return False
+    title = str(source.get("title") or source.get("name") or "").strip().casefold()
+    snippet = " ".join(
+        str(source.get(key) or "")
+        for key in ("snippet", "description", "text")
+    )
+    numbered_hits = len(re.findall(r"(?<!\d)\b\d+[.)]\s*\*\*", snippet))
+    source_marker_hits = len(re.findall(r"\(Quelle:\s*[^)]+\)", snippet, flags=re.IGNORECASE))
+    return title in {"openai.com", "www.openai.com"} and (numbered_hits > 1 or source_marker_hits >= 3)
 
 
 def source_url(source: Mapping[str, Any] | str) -> str:
@@ -398,9 +437,16 @@ def score_source_for_intent(
         declared_host = _source_declared_host(source)
         min_token_matches = 3 if "provider_redirect" in reasons else 2
         strong_label = "label_match" in reasons and label_norm not in _BROAD_LABELS
+        candidate_host_for_label = declared_host or host
+        if label_norm not in _BROAD_LABELS and not _host_matches_source_label(candidate_host_for_label, label_norm):
+            acceptable = False
+            reasons.append("source_label_host_mismatch")
         if label_norm in _BROAD_LABELS and declared_host and not _host_is_german_or_official(declared_host, label_norm):
             acceptable = False
             reasons.append("broad_label_third_party_source")
+        if "provider_redirect" in reasons and declared_host.endswith("openai.com") and _provider_redirect_has_ambiguous_news_snippet(source):
+            acceptable = False
+            reasons.append("ambiguous_official_provider_redirect")
         if token_matches < min_token_matches and not strong_label:
             acceptable = False
             reasons.append("weak_item_binding")

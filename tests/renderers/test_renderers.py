@@ -1101,6 +1101,40 @@ class TestRssNewsRenderer:
         assert "grounding-api-redirect/buildfast" not in result
         assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
 
+    def test_response_finalizer_rejects_link_when_publisher_label_mismatches_host(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. Gerichtssieg gegen Elon Musk: Eine Klage gegen OpenAI wurde abgewiesen. "
+                                    "Quelle: FAZ."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner",
+                                        "title": "channelpartner.de",
+                                        "snippet": "Gerichtssieg gegen Elon Musk Klage gegen OpenAI wurde abgewiesen.",
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "grounding-api-redirect/channelpartner" not in result
+        assert "Quelle: FAZ. Link online leider nicht verfuegbar." in result
+
 
 class TestWebsearchLinkQuality:
     def test_openai_docs_are_bad_for_news_but_good_for_api_docs(self):
@@ -1197,6 +1231,45 @@ class TestWebsearchLinkQuality:
 
         assert not quality.acceptable
         assert "broad_label_third_party_source" in quality.reasons
+
+    def test_publisher_label_does_not_accept_different_news_host(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner",
+            "title": "channelpartner.de",
+            "snippet": "Gerichtssieg gegen Elon Musk Klage gegen OpenAI wurde abgewiesen.",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Gerichtssieg gegen Elon Musk",
+            summary="Eine Klage gegen OpenAI wurde abgewiesen.",
+            label="FAZ",
+        )
+
+        assert not quality.acceptable
+        assert "source_label_host_mismatch" in quality.reasons
+
+    def test_ambiguous_official_provider_redirect_is_not_used_as_news_detail(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/openai",
+            "title": "openai.com",
+            "snippet": (
+                "3. **Auszeichnung als Gartner-Marktfuehrer:** OpenAI wurde eingestuft. "
+                "4. **Standard fuer Inhaltstransparenz:** OpenAI praesentierte neue Massnahmen."
+            ),
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Auszeichnung als Gartner-Marktfuehrer",
+            summary="OpenAI wurde als fuehrend fuer Coding-Agenten eingestuft.",
+            label="OpenAI",
+        )
+
+        assert not quality.acceptable
+        assert "ambiguous_official_provider_redirect" in quality.reasons
 
 
 _SAVE_MP3_FULL = {
