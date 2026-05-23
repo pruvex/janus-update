@@ -112,6 +112,7 @@ _HIGH_QUALITY_RELEASE_HOSTS = {
 _GENERIC_NEWS_PATHS = {
     "",
     "news",
+    "de-de/news",
     "ai/news",
     "ki/news",
     "aktuelles",

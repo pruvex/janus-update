@@ -476,6 +476,20 @@ def _news_sources_need_resolution(text: str, sources: List[Dict[str, Any]], targ
     return matched_targets < min(3, len(targets)) or weak_sources >= max(2, len(sources) // 2)
 
 
+def _official_news_site_for_label(label: str) -> str:
+    normalized = _normalize_source_label_for_match(label)
+    official_sites = {
+        "openai": "openai.com",
+        "google": "blog.google",
+        "microsoft": "microsoft.com",
+        "meta": "about.fb.com",
+        "apple": "apple.com",
+        "nvidia": "nvidia.com",
+        "tesla": "tesla.com",
+    }
+    return official_sites.get(normalized, "")
+
+
 async def _resolve_news_detail_sources(
     *,
     query: str,
@@ -489,10 +503,18 @@ async def _resolve_news_detail_sources(
     targets = _extract_news_source_targets(query=query, text=text)
     if not _news_sources_need_resolution(text, sources, targets):
         return sources
-    resolve_terms = " OR ".join(f'"{target["title"]}" {target["label"]}' for target in targets[:5])
+    resolve_terms_list: List[str] = []
+    for target in targets[:5]:
+        label = target.get("label", "")
+        official_site = _official_news_site_for_label(label)
+        if official_site:
+            resolve_terms_list.append(f'"{target["title"]}" site:{official_site}')
+        else:
+            resolve_terms_list.append(f'"{target["title"]}" {label}')
+    resolve_terms = " OR ".join(resolve_terms_list)
     resolve_query = (
         f"{resolve_terms} {query} konkrete Detailquelle Artikel deutschsprachige Quelle "
-        "letzte 30 Tage aktuell keine Startseite keine News-Uebersicht keine Aggregatoren "
+        "letzte 30 Tage aktuell offizielle Quelle wenn genannt keine Startseite keine News-Uebersicht keine Aggregatoren "
         "keine Paywall keine Dokumentation keine API-Docs kein Help-Center kein dentro.de kein YouTube kein Reddit"
     )
     logger.info(

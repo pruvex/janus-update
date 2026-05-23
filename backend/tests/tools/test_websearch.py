@@ -17,7 +17,11 @@ from backend.services.websearch.duckduckgo_provider import DuckDuckGoWebSearchPr
 from backend.services.websearch.openai_provider import coerce_openai_websearch_model, _build_diamond_search_system_prompt
 from backend.services.websearch.query_bias import augment_query_with_local_bias, normalize_source_url, prioritize_german_sources
 from backend.tool_registry import _coerce_websearch_model_for_provider, _normalize_websearch_query, websearch_wrapper
-from backend.services.skill_router import is_realtime_search_query
+from backend.services.skill_router import (
+    get_blocked_skills_for_query,
+    is_realtime_search_query,
+    prioritize_skills_for_query,
+)
 
 
 @pytest.mark.asyncio
@@ -351,6 +355,75 @@ async def test_websearch_wrapper_resolves_missing_release_entry_sources_in_one_b
 
 
 @pytest.mark.asyncio
+async def test_websearch_wrapper_resolves_openai_news_with_official_site_query():
+    fake_db = Mock()
+    primary_result = {
+        "text": (
+            "1. GPT-5.5 Instant: OpenAI veroeffentlichte das Modell als neuen ChatGPT-Standard. Quelle: OpenAI.\n"
+            "2. Einstellung von Sora: Die eigenstaendige Sora-App wurde eingestellt. Quelle: OpenAI."
+        ),
+        "sources": [
+            {
+                "title": "medium.com",
+                "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/medium",
+                "snippet": "GPT-5.5 Instant OpenAI ChatGPT Standard Quelle: OpenAI.",
+            },
+            {
+                "title": "digen.ai",
+                "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/digen",
+                "snippet": "Sora wurde eingestellt.",
+            },
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 100, "output_tokens": 40, "total_tokens": 140, "query_count": 1},
+        "cost": {"total_cost": 0.001},
+    }
+    resolver_result = {
+        "text": "OpenAI detail sources",
+        "sources": [
+            {
+                "title": "OpenAI GPT-5.5 Instant",
+                "url": "https://openai.com/de-DE/index/gpt-5-5",
+                "snippet": "GPT-5.5 Instant ist neuer ChatGPT-Standard.",
+            },
+            {
+                "title": "OpenAI Sora update",
+                "url": "https://openai.com/de-DE/index/sora-update",
+                "snippet": "Die eigenstaendige Sora-App wurde eingestellt.",
+            },
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 80, "output_tokens": 20, "total_tokens": 100, "query_count": 1},
+        "cost": {"total_cost": 0.0008},
+    }
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
+        "backend.tool_registry.execute_websearch_service",
+        AsyncMock(side_effect=[primary_result, resolver_result]),
+    ) as execute_mock, patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
+        "backend.services.cost_service.create_cost_entry"
+    ):
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(
+                query="OpenAI News Mai 2026 Aktuell",
+                provider="gemini",
+                model="gemini-3-flash-preview",
+            )
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    assert rd["status"] == "ok"
+    urls = [source["url"] for source in rd["data"]["sources"]]
+    assert "https://openai.com/de-DE/index/gpt-5-5" in urls
+    assert "https://openai.com/de-DE/index/sora-update" in urls
+    assert all("medium" not in url and "digen" not in url for url in urls[:2])
+    assert execute_mock.await_count == 2
+    resolver_query = execute_mock.await_args_list[1].kwargs["query"]
+    assert '"GPT-5.5 Instant" site:openai.com' in resolver_query
+    assert '"Einstellung von Sora" site:openai.com' in resolver_query
+
+
+@pytest.mark.asyncio
 async def test_gemini_provider_costs_native_search_by_tokens_when_usage_metadata_exists():
     provider = GeminiWebSearchProvider()
     fake_response = {
@@ -478,6 +551,18 @@ def test_ranking_query_requires_realtime_websearch_route():
     assert is_realtime_search_query("was sind im moment die besten bücher")
     assert is_realtime_search_query("top 5 ki tools für produktivität")
     assert not is_realtime_search_query("gib mir top 5 ideen für ein gedicht")
+
+
+def test_news_update_query_prioritizes_rss_before_websearch():
+    skills = ["system.websearch", "system.price_comparison", "system.rss_news"]
+
+    assert is_realtime_search_query("was gibt es neues zu OpenAI")
+    assert is_realtime_search_query("aktuelle Lage zu Ukraine")
+    assert "system.rss_news" not in get_blocked_skills_for_query("was gibt es neues zu OpenAI")
+    assert prioritize_skills_for_query("was gibt es neues zu OpenAI", skills)[:2] == [
+        "system.rss_news",
+        "system.websearch",
+    ]
 
 
 def test_gemini_ranking_prompt_preserves_requested_count_and_descriptions():
