@@ -30,29 +30,57 @@ from backend.services.skill_router import (
 
 
 @pytest.mark.asyncio
-async def test_websearch_wrapper_gemini_failure_returns_error_without_ddg_fallback():
+async def test_websearch_wrapper_gemini_failure_uses_neutral_fallback_for_news_queries():
+    fallback_result = {
+        "text": "1. EU-News: Eine aktuelle Meldung. Quelle: Tagesschau.",
+        "sources": [
+            {
+                "url": "https://www.tagesschau.de/eu/news",
+                "title": "Tagesschau EU-News",
+                "snippet": "EU-News: Eine aktuelle Meldung.",
+            }
+        ],
+        "metadata": {"provider": "duckduckgo"},
+        "usage": {"query_count": 1},
+        "cost": {"total_cost": 0.0},
+    }
     with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
         "backend.services.websearch.websearch.GEMINI_PROVIDER.search",
         AsyncMock(side_effect=RuntimeError("Native Grounding failed")),
     ) as gemini_search_mock, patch(
-        "backend.services.websearch.websearch.OPENAI_PROVIDER.search",
-        AsyncMock(
-            return_value={
-                "text": "must not be called",
-                "sources": [],
-                "metadata": {"provider": "openai"},
-            }
-        ),
-    ) as openai_search_mock:
+        "backend.services.websearch.websearch.DUCKDUCKGO_PROVIDER.search",
+        AsyncMock(return_value=fallback_result),
+    ) as ddg_search_mock:
         result = await websearch_wrapper(
             schemas.WebsearchArgsV2(query="Neuigkeiten zur EU", provider="gemini", model="gemini-2.0-flash")
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    assert rd["status"] == "ok"
+    assert rd["data"]["source"] == "duckduckgo"
+    assert rd["data"]["sources"][0]["url"] == "https://www.tagesschau.de/eu/news"
+    gemini_search_mock.assert_awaited_once()
+    assert ddg_search_mock.await_count >= 1
+
+
+@pytest.mark.asyncio
+async def test_websearch_wrapper_gemini_failure_does_not_fallback_for_static_queries():
+    with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
+        "backend.services.websearch.websearch.GEMINI_PROVIDER.search",
+        AsyncMock(side_effect=RuntimeError("Native Grounding failed")),
+    ) as gemini_search_mock, patch(
+        "backend.services.websearch.websearch.DUCKDUCKGO_PROVIDER.search",
+        AsyncMock(return_value={"text": "must not be called", "sources": []}),
+    ) as ddg_search_mock:
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(query="Was ist ein Compiler?", provider="gemini", model="gemini-2.0-flash")
         )
 
     rd = result.model_dump() if hasattr(result, "model_dump") else result
     assert rd["status"] == "error"
     assert rd["error"]["code"] == "WEBSEARCH_FAILED"
     gemini_search_mock.assert_awaited_once()
-    openai_search_mock.assert_not_awaited()
+    ddg_search_mock.assert_not_awaited()
 
 
 @pytest.mark.asyncio

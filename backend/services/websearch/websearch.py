@@ -19,6 +19,7 @@ async def execute_websearch_service(
     api_key: str,
     provider: str,
     model: Optional[str] = None,
+    log_exceptions: bool = True,
 ) -> WebSearchResult:
     """Gateway-Funktion mit harter Provider-Weiche ohne Cloud-zu-DDG-Fallback."""
     provider_key = (provider or "").strip().lower()
@@ -39,7 +40,10 @@ async def execute_websearch_service(
             result = await GEMINI_PROVIDER.search(api_key=api_key, query=query, model=model)
             return validate_websearch_result(result)
         except Exception as exc:
-            logger.error("💎 WEBSEARCH CRASH: %s", str(exc), exc_info=True)
+            if log_exceptions:
+                logger.error("💎 WEBSEARCH CRASH: %s", str(exc), exc_info=True)
+            else:
+                logger.warning("WEBSEARCH-SERVICE: Gemini search failed for handled fallback path: %s", str(exc))
             if "timeout" in str(exc).lower():
                 logger.warning("WEBSEARCH-SERVICE: Gemini search timed out. Graceful fail.")
                 return {

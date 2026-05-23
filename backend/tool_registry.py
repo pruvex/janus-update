@@ -824,6 +824,7 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
         lowered = str(query or "").casefold()
         markers = (
             "aktuell", "aktuelle", "aktueller", "heute", "morgen", "derzeit",
+            "neues", "neuigkeiten", "schlagzeilen",
             "latest", "current", "preis", "preise", "kosten", "kurs",
             "news", "nachrichten", "release", "verfuegbar", "verfügbar",
         )
@@ -835,14 +836,36 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
         normalized_query = _normalize_websearch_query(payload.query)
         provider_model = _coerce_websearch_model_for_provider(provider, payload.model)
         key = (keyring.get_password("Janus-Projekt", provider) or "") if provider else ""
+        repair_provider = provider
+        repair_model = provider_model
+        repair_key = key
 
         # ── Execute primary search ──────────────────────────────────────────
-        raw = await execute_websearch_service(
-            query=normalized_query,
-            api_key=key,
-            provider=provider,
-            model=provider_model,
-        )
+        try:
+            raw = await execute_websearch_service(
+                query=normalized_query,
+                api_key=key,
+                provider=provider,
+                model=provider_model,
+                log_exceptions=not (provider == "gemini" and _is_current_data_query(normalized_query)),
+            )
+        except Exception as primary_exc:
+            if provider == "gemini" and _is_current_data_query(normalized_query):
+                logger.warning(
+                    "WEBSEARCH-V2: Gemini primary search failed for current query; trying neutral fallback: %s",
+                    primary_exc,
+                )
+                raw = await execute_websearch_service(
+                    query=normalized_query,
+                    api_key="",
+                    provider="ollama",
+                    model=None,
+                )
+                repair_provider = "ollama"
+                repair_model = None
+                repair_key = ""
+            else:
+                raise
         _persist_websearch_cost(raw, provider or "default", provider_model)
 
         text = str(raw.get("text") or "")
@@ -922,27 +945,27 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
             query=normalized_query,
             text=text,
             sources=sources,
-            provider=provider,
-            model=provider_model,
-            api_key=key,
+            provider=repair_provider,
+            model=repair_model,
+            api_key=repair_key,
             persist_cost=_persist_websearch_cost,
         )
         sources = await _resolve_missing_release_sources(
             query=normalized_query,
             text=text,
             sources=sources,
-            provider=provider,
-            model=provider_model,
-            api_key=key,
+            provider=repair_provider,
+            model=repair_model,
+            api_key=repair_key,
             persist_cost=_persist_websearch_cost,
         )
         sources = await _resolve_news_detail_sources(
             query=normalized_query,
             text=text,
             sources=sources,
-            provider=provider,
-            model=provider_model,
-            api_key=key,
+            provider=repair_provider,
+            model=repair_model,
+            api_key=repair_key,
             persist_cost=_persist_websearch_cost,
             elapsed_ms_fn=_elapsed_ms,
         )
