@@ -772,10 +772,10 @@ class TestRssNewsRenderer:
             ]
         )
 
-        assert "OpenAI fuehrt im Mai 2026 die souveraene Cloud-Loesung OpenAI for Germany ein" not in result
-        assert "Das Unternehmen betreibt in Muenchen sein erstes deutsches Buero" not in result
-        assert "In einer strategischen Allianz mit der Deutschen Telekom entwickelt OpenAI" not in result
-        assert "keine sauber belegten Meldungen" in result
+        assert "OpenAI fuehrt im Mai 2026 die souveraene Cloud-Loesung OpenAI for Germany ein" in result
+        assert "Das Unternehmen betreibt in Muenchen sein erstes deutsches Buero" in result
+        assert "In einer strategischen Allianz mit der Deutschen Telekom entwickelt OpenAI" in result
+        assert "Link online leider nicht verfuegbar" in result
         assert "openai.com\n2. Nur ein strukturierter Snippet" not in result
         assert "globaler Zusatz" not in result
 
@@ -856,10 +856,10 @@ class TestRssNewsRenderer:
         )
 
         assert "dentro.de/ai/news" not in result
-        assert "1. GPT-5.5" not in result
-        assert "keine sauber belegten Meldungen" in result
+        assert "1. GPT-5.5" in result
+        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
 
-    def test_response_finalizer_omits_unlinked_websearch_news_but_keeps_linked_items(self):
+    def test_response_finalizer_keeps_unlinked_websearch_news_but_keeps_linked_items_linked(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources
 
         result = render_websearch_sources(
@@ -895,9 +895,60 @@ class TestRssNewsRenderer:
             ]
         )
 
-        assert "Gerichtssieg gegen Elon Musk" not in result
-        assert "1. Sora-App" in result
+        assert "1. Gerichtssieg gegen Elon Musk" in result
+        assert "Quelle: FAZ. Link online leider nicht verfuegbar." in result
+        assert "2. Sora-App" in result
         assert "Quelle: OpenAI. [Link](https://openai.com/de-DE/news/sora-in-chatgpt)" in result
+
+    def test_response_finalizer_keeps_all_websearch_news_findings_when_links_are_sparse(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "Microsoft News Mai 2026 Aktuell",
+                                "text": (
+                                    "1. Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.\n"
+                                    "2. Surface Pro 11 und Surface Laptop 7 Business: Neue Business-Modelle mit Intel Core Ultra. Quelle: WinFuture.\n"
+                                    "3. Erweiterte Copilot-Funktionen fuer Teams: Copilot kann Besprechungen zusammenfassen. Quelle: Grayling.\n"
+                                    "4. Nachhaltige KI-Infrastruktur: Microsoft stellt ein neues Rechenzentrumsdesign vor. Quelle: Microsoft.\n"
+                                    "5. Microsoft Edge Video-Uebersetzung: Edge uebersetzt Videos in Echtzeit. Quelle: Futurezone."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/hp",
+                                        "title": "hp.com",
+                                        "snippet": "Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.",
+                                    },
+                                    {
+                                        "url": "https://www.winfuture.de/news/surface-pro-11-business.htm",
+                                        "title": "WinFuture Surface Pro 11 Business",
+                                        "snippet": "Surface Pro 11 und Surface Laptop 7 Business mit Intel Core Ultra.",
+                                        "news_target_index": "2",
+                                        "news_target_title": "Surface Pro 11 und Surface Laptop 7 Business",
+                                        "news_target_label": "WinFuture",
+                                    },
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "1. Windows 11 Recall und Datenschutz" in result
+        assert "2. Surface Pro 11 und Surface Laptop 7 Business" in result
+        assert "3. Erweiterte Copilot-Funktionen fuer Teams" in result
+        assert "4. Nachhaltige KI-Infrastruktur" in result
+        assert "5. Microsoft Edge Video-Uebersetzung" in result
+        assert "Quelle: hp.com. Link online leider nicht verfuegbar." in result
+        assert "Quelle: WinFuture. [Link](https://www.winfuture.de/news/surface-pro-11-business.htm)" in result
 
     def test_response_finalizer_drops_stale_current_news_item(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources
@@ -970,8 +1021,8 @@ class TestRssNewsRenderer:
         )
 
         assert "welt.de" not in result
-        assert "1. Boersengang im September" not in result
-        assert "keine sauber belegten Meldungen" in result
+        assert "1. Boersengang im September" in result
+        assert "Quelle: WELT. Link online leider nicht verfuegbar." in result
 
     def test_response_finalizer_rejects_openai_docs_as_news_link(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources
@@ -1008,8 +1059,8 @@ class TestRssNewsRenderer:
         )
 
         assert "platform.openai.com/docs" not in result
-        assert "1. Neue Realtime-Funktionen" not in result
-        assert "keine sauber belegten Meldungen" in result
+        assert "1. Neue Realtime-Funktionen" in result
+        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
 
     def test_response_finalizer_removes_duplicated_news_title_prefix(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources
@@ -1096,12 +1147,14 @@ class TestRssNewsRenderer:
             ]
         )
 
-        assert "Geplanter Boersengang" not in result
+        assert "Geplanter Boersengang" in result
+        assert "Quelle: Deutschlandfunk. Link online leider nicht verfuegbar." in result
         assert (
             "Quelle: ChannelPartner. [Link](https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner)"
             in result
         )
-        assert "Marktfuehrerschaft bei Enterprise Coding Agents" not in result
+        assert "Marktfuehrerschaft bei Enterprise Coding Agents" in result
+        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
         assert "grounding-api-redirect/openai" not in result
 
     def test_response_finalizer_rejects_third_party_link_when_text_claims_openai_source(self):
@@ -1140,8 +1193,8 @@ class TestRssNewsRenderer:
 
         assert "buildfastwithai.com" not in result
         assert "grounding-api-redirect/buildfast" not in result
-        assert "GPT-5.5 Instant als Standard" not in result
-        assert "keine sauber belegten Meldungen" in result
+        assert "GPT-5.5 Instant als Standard" in result
+        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
 
     def test_response_finalizer_rejects_link_when_publisher_label_mismatches_host(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources
@@ -1175,8 +1228,8 @@ class TestRssNewsRenderer:
         )
 
         assert "grounding-api-redirect/channelpartner" not in result
-        assert "Gerichtssieg gegen Elon Musk" not in result
-        assert "keine sauber belegten Meldungen" in result
+        assert "Gerichtssieg gegen Elon Musk" in result
+        assert "Quelle: FAZ. Link online leider nicht verfuegbar." in result
 
 
 class TestWebsearchLinkQuality:
@@ -1381,6 +1434,42 @@ class TestWebsearchLinkQuality:
         assert matching_quality.acceptable
         assert not mismatched_quality.acceptable
         assert "weak_item_binding" in mismatched_quality.reasons
+
+    def test_bare_official_provider_redirect_is_rejected_for_any_broad_news_label(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/microsoft",
+            "title": "microsoft.com",
+            "snippet": "Nachhaltige KI-Infrastruktur: Microsoft stellt ein neues Rechenzentrumsdesign vor.",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Nachhaltige KI-Infrastruktur",
+            summary="Microsoft stellt ein neues Rechenzentrumsdesign vor.",
+            label="Microsoft",
+        )
+
+        assert not quality.acceptable
+        assert "bare_official_provider_redirect" in quality.reasons
+
+    def test_bare_non_german_provider_redirect_is_rejected_for_news(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/hp",
+            "title": "hp.com",
+            "snippet": "Windows 11 Recall und Datenschutz: HP beschreibt die geschuetzte Snapshot-Funktion.",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Windows 11 Recall und Datenschutz",
+            summary="HP beschreibt die geschuetzte Snapshot-Funktion.",
+            label="hp.com",
+        )
+
+        assert not quality.acceptable
+        assert "bare_non_german_provider_redirect" in quality.reasons
 
     def test_known_suspicious_news_domain_is_low_value(self):
         source = {

@@ -494,12 +494,23 @@ def score_source_for_intent(
             reasons.append("marker_only_provider_redirect")
         if (
             "provider_redirect" in reasons
-            and declared_host.endswith("openai.com")
+            and label_norm in _BROAD_LABELS
+            and _host_matches_broad_label_official(declared_host, label_norm)
             and _provider_redirect_has_bare_domain_title(source)
             and "resolved_target" not in reasons
         ):
             acceptable = False
             reasons.append("bare_official_provider_redirect")
+        if (
+            "provider_redirect" in reasons
+            and label_norm not in _BROAD_LABELS
+            and "." in str(label or "")
+            and declared_host.endswith(".com")
+            and not _host_is_german_or_official(declared_host, label_norm)
+            and _provider_redirect_has_bare_domain_title(source)
+        ):
+            acceptable = False
+            reasons.append("bare_non_german_provider_redirect")
         if token_matches < min_token_matches and not (strong_label and "provider_redirect" not in reasons):
             acceptable = False
             reasons.append("weak_item_binding")

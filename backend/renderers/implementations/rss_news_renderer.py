@@ -93,8 +93,6 @@ class RssNewsRenderer(BaseRenderer):
             lines = ["Kurzlage: Aktuelle Meldungen aus kuratierten RSS-Feeds.", ""]
 
         render_items = self._filter_current_news_items(data, items)
-        if used_websearch:
-            render_items = [item for item in render_items if self._websearch_news_item_has_evidence(item)]
         if used_websearch and not render_items:
             return (
                 f"Kurzlage: Zu {query or 'der Anfrage'} konnte ich aktuell keine sauber belegten Meldungen "
@@ -177,7 +175,11 @@ class RssNewsRenderer(BaseRenderer):
         label = ""
         source_match = re.search(r"\(Quelle:\s*([^)]+)\)", clean, flags=re.IGNORECASE)
         if not source_match:
-            source_match = re.search(r"\bQuelle:\s*([^.\n]+)\.?", clean, flags=re.IGNORECASE)
+            source_match = re.search(
+                r"\bQuelle:\s*([^.\n]+(?:\.(?:com|de|net|org|co\.uk|tv))?)\.?",
+                clean,
+                flags=re.IGNORECASE,
+            )
         if source_match:
             label = re.sub(r"\s+", " ", source_match.group(1)).strip(" .)")
             clean = re.sub(r"\s*\(Quelle:\s*[^)]+\)\.?", "", clean, flags=re.IGNORECASE).strip(" .")
