@@ -9,6 +9,7 @@ from backend.services.websearch.link_quality import (
     select_best_source_for_item,
     score_source_for_intent,
 )
+from backend.services.websearch.evidence_pipeline import EvidenceClaim, EvidencePipeline
 
 
 _SOURCE_LABELS = {
@@ -134,57 +135,22 @@ class RssNewsRenderer(BaseRenderer):
 
     def _items_from_websearch_text_and_sources(self, text: str, sources: list, query_context: str = "") -> list:
         source_rows = [source for source in sources if isinstance(source, dict)]
-        items = []
-        primary_text = re.split(r"(?im)^\s*\[Global Research\]\s*$", str(text or ""), maxsplit=1)[0]
-        segments = self._numbered_news_segments(primary_text)
-        for idx, raw_body in enumerate(segments, start=1):
-            body, label = self._extract_source_label(raw_body)
-            title, summary = self._split_websearch_news_body(body)
-            if self._is_current_news_context(f"{query_context} {text}") and self._news_item_is_stale(f"{title} {summary}"):
-                continue
-            url = self._url_for_item(label, title, summary, idx, source_rows)
-            items.append(
-                {
-                    "title": title,
-                    "summary": summary or "Kurzmeldung aus der Websuche; Details stehen in der verlinkten Quelle.",
-                    "url": url,
-                    "source": "websearch",
-                    "source_label": label or self._label_from_url(url),
-                    "date": "",
-                }
-            )
-            if len(items) >= 5:
-                break
+        is_current = self._is_current_news_context(f"{query_context} {text}")
+        items = EvidencePipeline.news_items_from_text_and_sources(
+            query=query_context,
+            text=text,
+            sources=source_rows,
+            is_stale=lambda value: is_current and self._news_item_is_stale(value),
+        )
         if items:
             return items
         return self._items_from_websearch_sources(source_rows)
 
     def _numbered_news_segments(self, text: str) -> list:
-        starts = list(re.finditer(r"(?m)^\s*\d+[.)]\s*", str(text or "")))
-        segments = []
-        for pos, match in enumerate(starts):
-            start = match.end()
-            end = starts[pos + 1].start() if pos + 1 < len(starts) else len(text)
-            segment = re.sub(r"\s+", " ", text[start:end]).strip(" .")
-            if segment:
-                segments.append(segment)
-        return segments
+        return EvidencePipeline.numbered_news_segments(text)
 
     def _extract_source_label(self, body: str) -> tuple[str, str]:
-        clean = re.sub(r"\s+", " ", str(body or "")).strip(" .")
-        label = ""
-        source_match = re.search(r"\(Quelle:\s*([^)]+)\)", clean, flags=re.IGNORECASE)
-        if not source_match:
-            source_match = re.search(
-                r"\bQuelle:\s*([^.\n]+(?:\.(?:com|de|net|org|co\.uk|tv))?)\.?",
-                clean,
-                flags=re.IGNORECASE,
-            )
-        if source_match:
-            label = re.sub(r"\s+", " ", source_match.group(1)).strip(" .)")
-            clean = re.sub(r"\s*\(Quelle:\s*[^)]+\)\.?", "", clean, flags=re.IGNORECASE).strip(" .")
-            clean = re.sub(r"\s*\bQuelle:\s*[^.\n]+\.?", "", clean, flags=re.IGNORECASE).strip(" .")
-        return clean, label
+        return EvidencePipeline.extract_source_label(body)
 
     def _filter_current_news_items(self, data: dict, items: list) -> list:
         query = str(data.get("query") or "")
@@ -257,21 +223,7 @@ class RssNewsRenderer(BaseRenderer):
         return None
 
     def _split_websearch_news_body(self, body: str) -> tuple[str, str]:
-        clean = re.sub(r"\s+", " ", str(body or "")).strip(" .")
-        if not clean:
-            return "Meldung", ""
-        colon_match = re.match(r"^(.{3,90}?):\s+(.+)$", clean)
-        if colon_match:
-            return self._normalize_title_summary(colon_match.group(1).strip(), colon_match.group(2).strip())
-
-        clause_match = re.match(
-            r"^(.{12,95}?)(?:,\s+|,\s*wobei\b|\s+und\s+|\.?\s*$)",
-            clean,
-        )
-        title = clause_match.group(1).strip(" ,.;") if clause_match else clean[:90].strip(" ,.;")
-        if len(title) > 90:
-            title = title[:87].rstrip(" ,.;") + "..."
-        return self._normalize_title_summary(title or "Meldung", clean)
+        return self._normalize_title_summary(*EvidencePipeline.split_news_body(body))
 
     def _normalize_title_summary(self, title: str, summary: str) -> tuple[str, str]:
         clean_title = re.sub(r"\s+", " ", str(title or "").replace("**", "")).strip(" .")
@@ -336,15 +288,8 @@ class RssNewsRenderer(BaseRenderer):
         return items
 
     def _url_for_item(self, label: str, title: str, summary: str, index: int, sources: list) -> str:
-        best_url, _quality = select_best_source_for_item(
-            [source for source in sources if isinstance(source, dict)],
-            intent=LinkIntent.NEWS,
-            title=title,
-            summary=summary,
-            label=label,
-            target_index=index,
-        )
-        return best_url
+        claim = EvidenceClaim(index=str(index), title=title, summary=summary, label=label)
+        return EvidencePipeline.match_source_for_claim([source for source in sources if isinstance(source, dict)], claim).url
 
     def _score_source_for_item(self, source: dict, label: str, title: str, summary: str, index: int) -> int:
         quality = score_source_for_intent(

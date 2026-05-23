@@ -44,6 +44,7 @@ from backend.services.websearch.link_quality import (
     source_haystack,
     tokenize_quality_text,
 )
+from backend.services.websearch.evidence_pipeline import EvidenceClaim, EvidencePipeline
 from backend.renderers.websearch_templates import WebSearchTemplateEngine
 from backend.data.database import SessionLocal
 from backend.tools.calendar_tools import (
@@ -425,37 +426,26 @@ def _split_news_body(body: str) -> tuple[str, str]:
 
 
 def _extract_news_source_targets(query: str, text: str, limit: int = 5) -> List[Dict[str, str]]:
-    if not _is_news_lookup_query(query):
-        return []
-    primary_text = re.split(r"(?im)^\s*\[Global Research\]\s*$", str(text or ""), maxsplit=1)[0]
-    pattern = re.compile(
-        r"(?im)^\s*\d+[.)]\s*(?P<body>.+?)(?:\s*\(?Quelle:\s*(?P<label>[^).]+)\)?\.?)\s*$"
+    return [
+        {"index": claim.index, "title": claim.title, "summary": claim.summary, "label": claim.label}
+        for claim in EvidencePipeline.extract_news_claims(query, text, limit=limit)
+    ]
+
+
+def _target_to_evidence_claim(target: Dict[str, str]) -> EvidenceClaim:
+    return EvidenceClaim(
+        index=str(target.get("index") or ""),
+        title=str(target.get("title") or ""),
+        summary=str(target.get("summary") or ""),
+        label=str(target.get("label") or ""),
     )
-    targets: List[Dict[str, str]] = []
-    for idx, match in enumerate(pattern.finditer(primary_text), start=1):
-        label = re.sub(r"\s+", " ", str(match.group("label") or "")).strip(" .)")
-        title, summary = _split_news_body(str(match.group("body") or ""))
-        if not title or not label:
-            continue
-        targets.append({"index": str(idx), "title": title, "summary": summary, "label": label})
-        if len(targets) >= limit:
-            break
-    return targets
 
 
 def _candidate_matches_news_target(source: Dict[str, Any], target: Dict[str, str]) -> bool:
     url = normalize_source_url(str(source.get("url") or source.get("source_url") or ""))
     if not url or _source_is_low_value_news(source):
         return False
-    quality = score_source_for_intent(
-        source,
-        intent=LinkIntent.NEWS,
-        title=target.get("title", ""),
-        summary=target.get("summary", ""),
-        label=target.get("label", ""),
-        target_index=target.get("index"),
-    )
-    return quality.acceptable
+    return EvidencePipeline.match_source_for_claim([source], _target_to_evidence_claim(target)).accepted
 
 
 def _news_targets_needing_resolution(sources: List[Dict[str, Any]], targets: List[Dict[str, str]]) -> List[Dict[str, str]]:
@@ -479,17 +469,7 @@ def _news_sources_need_resolution(text: str, sources: List[Dict[str, Any]], targ
 
 
 def _official_news_site_for_label(label: str) -> str:
-    normalized = _normalize_source_label_for_match(label)
-    official_sites = {
-        "openai": "openai.com",
-        "google": "blog.google",
-        "microsoft": "microsoft.com",
-        "meta": "about.fb.com",
-        "apple": "apple.com",
-        "nvidia": "nvidia.com",
-        "tesla": "tesla.com",
-    }
-    return official_sites.get(normalized, "")
+    return EvidencePipeline.official_news_site_for_label(label)
 
 
 async def _resolve_news_detail_sources(
@@ -506,20 +486,8 @@ async def _resolve_news_detail_sources(
     if not _news_sources_need_resolution(text, sources, targets):
         return sources
     targets_to_resolve = _news_targets_needing_resolution(sources, targets) or targets
-    resolve_terms_list: List[str] = []
-    for target in targets_to_resolve[:4]:
-        label = target.get("label", "")
-        official_site = _official_news_site_for_label(label)
-        if official_site:
-            resolve_terms_list.append(f'"{target["title"]}" site:{official_site}')
-        else:
-            resolve_terms_list.append(f'"{target["title"]}" {label} site:de')
-    resolve_terms = " OR ".join(resolve_terms_list)
-    resolve_query = (
-        f"{resolve_terms} {query} konkrete Detailquelle Artikel deutschsprachige Quelle "
-        "letzte 30 Tage aktuell offizielle Quelle wenn genannt keine Startseite keine News-Uebersicht keine Aggregatoren "
-        "keine Paywall keine Dokumentation keine API-Docs kein Help-Center kein dentro.de kein YouTube kein Reddit"
-    )
+    resolve_claims = [_target_to_evidence_claim(target) for target in targets_to_resolve]
+    resolve_query = EvidencePipeline.repair_query_for_claims(query, resolve_claims, limit=4)
     logger.info(
         "WEBSEARCH-NEWS-SOURCE-RESOLVE: resolving targets=%s query=%s",
         len(targets_to_resolve),
@@ -537,30 +505,8 @@ async def _resolve_news_detail_sources(
         logger.warning("WEBSEARCH-NEWS-SOURCE-RESOLVE: soft-failed: %s", exc)
         return sources
     resolved_sources = raw_resolve.get("sources") if isinstance(raw_resolve.get("sources"), list) else []
-    seen = {
-        normalize_source_url(str(source.get("url") or source.get("source_url") or ""))
-        for source in sources
-        if isinstance(source, dict)
-    }
-    additions: List[Dict[str, Any]] = []
-    for target in targets_to_resolve:
-        for candidate in resolved_sources:
-            if not isinstance(candidate, dict) or not _candidate_matches_news_target(candidate, target):
-                continue
-            url = normalize_source_url(str(candidate.get("url") or candidate.get("source_url") or ""))
-            if not url or url in seen:
-                continue
-            item = dict(candidate)
-            item["url"] = url
-            item["news_target_index"] = target["index"]
-            item["news_target_title"] = target["title"]
-            item["news_target_label"] = target["label"]
-            additions.append(item)
-            seen.add(url)
-            break
-    if not additions:
-        return sources
-    return additions + sources
+    merged_sources = EvidencePipeline.merge_resolved_sources(sources, resolved_sources, resolve_claims)
+    return merged_sources or sources
 
 
 async def _resolve_missing_release_sources(

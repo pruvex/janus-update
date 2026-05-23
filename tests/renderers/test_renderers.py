@@ -33,6 +33,7 @@ from backend.services.websearch.link_quality import (
     score_source_for_intent,
     select_best_source_for_item,
 )
+from backend.services.websearch.evidence_pipeline import EvidencePipeline
 
 
 # ---------------------------------------------------------------------------
@@ -1488,6 +1489,61 @@ class TestWebsearchLinkQuality:
 
         assert not quality.acceptable
         assert "low_value_domain" in quality.reasons
+
+
+class TestWebsearchEvidencePipeline:
+    def test_extract_news_claims_keeps_domain_source_label(self):
+        claims = EvidencePipeline.extract_news_claims(
+            "Microsoft News aktuell",
+            (
+                "1. Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.\n"
+                "2. Surface Pro 11 Business: Neue Business-Modelle mit Intel Core Ultra. Quelle: WinFuture."
+            ),
+        )
+
+        assert [claim.title for claim in claims] == ["Windows 11 Recall und Datenschutz", "Surface Pro 11 Business"]
+        assert claims[0].label == "hp.com"
+        assert claims[1].label == "WinFuture"
+
+    def test_pipeline_keeps_claim_but_marks_bad_link_unaccepted(self):
+        items = EvidencePipeline.news_items_from_text_and_sources(
+            query="Microsoft News aktuell",
+            text="1. Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.",
+            sources=[
+                {
+                    "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/hp",
+                    "title": "hp.com",
+                    "snippet": "Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.",
+                }
+            ],
+            is_stale=lambda _value: False,
+        )
+
+        assert len(items) == 1
+        assert items[0]["title"] == "Windows 11 Recall und Datenschutz"
+        assert items[0]["url"] == ""
+        assert "bare_non_german_provider_redirect" in items[0]["evidence_reasons"]
+
+    def test_pipeline_merges_resolved_sources_with_target_metadata(self):
+        claims = EvidencePipeline.extract_news_claims(
+            "Microsoft News aktuell",
+            "1. Surface Pro 11 Business: Neue Business-Modelle mit Intel Core Ultra. Quelle: WinFuture.",
+        )
+        merged = EvidencePipeline.merge_resolved_sources(
+            [],
+            [
+                {
+                    "url": "https://www.winfuture.de/news/surface-pro-11-business.htm",
+                    "title": "WinFuture Surface Pro 11 Business",
+                    "snippet": "Surface Pro 11 Business: Neue Business-Modelle mit Intel Core Ultra.",
+                }
+            ],
+            claims,
+        )
+
+        assert merged[0]["news_target_index"] == "1"
+        assert merged[0]["news_target_title"] == "Surface Pro 11 Business"
+        assert merged[0]["news_target_label"] == "WinFuture"
 
 
 _SAVE_MP3_FULL = {
