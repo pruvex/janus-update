@@ -540,8 +540,15 @@ async def test_websearch_wrapper_skips_global_fallback_for_news_queries():
 
 
 @pytest.mark.asyncio
-async def test_news_source_repair_skips_when_elapsed_budget_is_exhausted():
-    with patch("backend.tool_registry.execute_websearch_service", AsyncMock()) as execute_mock:
+async def test_news_source_repair_uses_url_resolver_when_provider_budget_is_exhausted():
+    empty_resolver_result = {
+        "text": "no detail link",
+        "sources": [],
+        "metadata": {"provider": "ollama"},
+        "usage": {"query_count": 1},
+        "cost": {"total_cost": 0.0},
+    }
+    with patch("backend.tool_registry.execute_websearch_service", AsyncMock(return_value=empty_resolver_result)) as execute_mock:
         sources = await _resolve_news_detail_sources(
             query="Microsoft News aktuell Mai 2026",
             text=(
@@ -569,7 +576,9 @@ async def test_news_source_repair_skips_when_elapsed_budget_is_exhausted():
             "snippet": "Sicherheits-Patchday Mai 2026: Microsoft schliesst kritische Luecken.",
         }
     ]
-    execute_mock.assert_not_awaited()
+    execute_mock.assert_awaited_once()
+    assert execute_mock.await_args.kwargs["provider"] == "ollama"
+    assert "Entwicklerkonferenz Build 2026" in execute_mock.await_args.kwargs["query"]
 
 
 @pytest.mark.asyncio

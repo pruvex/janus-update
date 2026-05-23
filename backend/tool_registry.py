@@ -558,11 +558,17 @@ async def _resolve_news_detail_sources(
             )
         else:
             logger.info(
-                "WEBSEARCH-NEWS-SOURCE-RESOLVE: skipped elapsed_ms=%s budget_ms=%s",
+                "WEBSEARCH-NEWS-SOURCE-RESOLVE: provider-repair-skipped elapsed_ms=%s budget_ms=%s",
                 elapsed_ms_fn(),
                 max_repair_start_ms,
             )
-            return sources
+            url_resolved_sources = await _resolve_news_links_with_url_resolver(
+                query=query,
+                claims=[_target_to_evidence_claim(target) for target in targets],
+                merged_sources=sources,
+                max_claims=2,
+            )
+            return url_resolved_sources or sources
     targets_to_resolve = initial_unresolved or targets
     resolve_claims = [_target_to_evidence_claim(target) for target in targets_to_resolve]
     all_claims = [_target_to_evidence_claim(target) for target in targets]
