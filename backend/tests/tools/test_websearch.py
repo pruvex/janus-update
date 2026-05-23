@@ -1048,6 +1048,17 @@ def test_ranking_queries_get_german_source_bias_without_price_cost_bias():
     assert '"in Euro"' not in purchase_bias
 
 
+def test_news_queries_are_germanized_before_source_bias_is_added():
+    biased = augment_query_with_local_bias("Microsoft News aktuell Mai 2026")
+
+    assert "Microsoft Nachrichten Neuigkeiten aktuell Mai 2026" in biased
+    assert "site:heise.de" in biased
+    assert "site:computerbase.de" in biased
+    assert "site:borncity.com" in biased
+    assert "deutschsprachige Quellen Deutschland" in biased
+    assert "latest news" not in biased
+
+
 def test_german_sources_are_prioritized_without_dropping_fallback_links():
     sources = [
         {"title": "ESPN", "url": "https://www.espn.com/nba/story"},
@@ -2488,7 +2499,9 @@ async def test_gemini_provider_search_sends_native_google_search_tool_block():
     assert result["text"] == "Antwort mit Quelle"
     assert captured["body"]["tools"] == [{"google_search": {}}]
     prompt_text = captured["body"]["contents"][0]["parts"][0]["text"]
-    assert "Nutzerfrage: Neuigkeiten zur EU Deutschland aktuell site:de deutschsprachige Quellen Deutschland" in prompt_text
+    assert "Nutzerfrage: Neuigkeiten zur EU Deutschland aktuell" in prompt_text
+    assert "site:heise.de" in prompt_text
+    assert "deutschsprachige Quellen Deutschland" in prompt_text
     assert "site:de" in prompt_text
     assert "gründliche Google-Recherche" in captured["body"]["contents"][0]["parts"][0]["text"]
     assert "KEINE Markdown-Links" in captured["body"]["contents"][0]["parts"][0]["text"]

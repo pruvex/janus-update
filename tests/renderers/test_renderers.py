@@ -1490,6 +1490,27 @@ class TestWebsearchLinkQuality:
         assert not quality.acceptable
         assert "bare_non_german_provider_redirect" in quality.reasons
 
+    def test_resolved_non_german_news_host_is_rejected(self):
+        source = {
+            "url": "https://www.notebookcheck.net/microsoft-surface-laptop-8-business-launch.html",
+            "title": "Notebookcheck Surface Laptop 8",
+            "snippet": "Vorstellung des Surface Laptop 8: Microsoft nennt neue Business-Geraete. Quelle: Notebookcheck.",
+            "news_target_index": "1",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Vorstellung des Surface Laptop 8",
+            summary="Microsoft nennt neue Business-Geraete.",
+            label="Notebookcheck",
+            target_index="1",
+        )
+
+        assert not quality.acceptable
+        assert "resolved_target" in quality.reasons
+        assert "non_german_news_host" in quality.reasons
+
     def test_known_german_com_provider_redirect_is_allowed_for_news(self):
         source = {
             "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/borncity",

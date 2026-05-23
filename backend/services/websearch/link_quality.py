@@ -485,6 +485,20 @@ def score_source_for_intent(
             LinkIntent.GENERAL: 1,
         }[link_intent]
     acceptable = score >= threshold and not is_low_value_source(source, link_intent)
+    if link_intent == LinkIntent.NEWS:
+        declared_host = _source_declared_host(source)
+        effective_host = declared_host or host
+        is_official_broad_host = label_norm in _BROAD_LABELS and _host_matches_broad_label_official(effective_host, label_norm)
+        has_german_path = bool(path.startswith(("/de/", "/de-de/", "/de_de/", "/deutschland/")))
+        if (
+            effective_host
+            and not _host_is_german_or_official(effective_host, label_norm)
+            and not has_german_path
+            and not is_official_broad_host
+        ):
+            acceptable = False
+            reasons.append("non_german_news_host")
+
     if link_intent == LinkIntent.NEWS and "resolved_target" not in reasons:
         declared_host = _source_declared_host(source)
         min_token_matches = 3 if "provider_redirect" in reasons else 2

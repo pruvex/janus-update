@@ -119,6 +119,11 @@ _LOCATION_TOKENS = {
 }
 
 _RELEASE_SITE_SUFFIX = "(site:nintendo.de OR site:spieletipps.de OR site:gameswirtschaft.de OR site:gamepro.de OR site:de.ign.com OR site:eurogamer.de)"
+_NEWS_SITE_SUFFIX = (
+    "(site:heise.de OR site:golem.de OR site:computerbase.de OR site:computerwoche.de "
+    "OR site:borncity.com OR site:drwindows.de OR site:security-insider.de OR site:t3n.de "
+    "OR site:winfuture.de OR site:netzwelt.de)"
+)
 _PRICE_SUFFIX = "Deutschland \"in Euro\" site:de"
 _NEWS_SUFFIX = "Deutschland aktuell site:de"
 _GERMAN_SOURCE_SUFFIX = "deutschsprachige Quellen Deutschland site:de"
@@ -187,9 +192,28 @@ def _build_news_suffix(lowered_query: str) -> str:
         parts.append("Deutschland")
     if "aktuell" not in lowered_query and "heute" not in lowered_query:
         parts.append("aktuell")
+    if "site:" not in lowered_query:
+        parts.append(_NEWS_SITE_SUFFIX)
     if "site:de" not in lowered_query:
         parts.append("site:de")
     return " ".join(parts)
+
+
+def _germanize_news_query(query: str) -> str:
+    germanized = str(query or "").strip()
+    if not germanized:
+        return germanized
+    replacements = (
+        (r"\blatest\s+news\b", "aktuelle Nachrichten Neuigkeiten"),
+        (r"\bnews\b", "Nachrichten Neuigkeiten"),
+        (r"\bupdates\b", "Aktuelles Neuigkeiten"),
+        (r"\bannouncements\b", "Ankuendigungen Neuigkeiten"),
+    )
+    for pattern, replacement in replacements:
+        germanized = re.sub(pattern, replacement, germanized, flags=re.IGNORECASE)
+    if not re.search(r"\b(nachrichten|neuigkeiten|aktuelles|aktuell|meldungen)\b", germanized, flags=re.IGNORECASE):
+        germanized = f"{germanized} aktuelle Nachrichten Neuigkeiten"
+    return _normalize_bias_query(germanized)
 
 
 def _is_game_release_query(lowered_query: str) -> bool:
@@ -252,12 +276,15 @@ def build_query_suffix(query: str) -> str:
 
 
 def augment_query_with_local_bias(query: str) -> str:
+    working_query = str(query or "").strip()
+    if _contains_keyword(working_query.lower(), _NEWS_KEYWORDS):
+        working_query = _germanize_news_query(working_query)
     suffix = build_query_suffix(query)
     if not suffix:
-        return _normalize_bias_query(query)
-    if suffix in query:
-        return _normalize_bias_query(query)
-    return _normalize_bias_query(f"{query} {suffix}".strip())
+        return _normalize_bias_query(working_query)
+    if suffix in working_query:
+        return _normalize_bias_query(working_query)
+    return _normalize_bias_query(f"{working_query} {suffix}".strip())
 
 
 def build_release_hint(query: str) -> Optional[str]:
