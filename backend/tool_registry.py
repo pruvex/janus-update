@@ -455,9 +455,15 @@ def _candidate_matches_news_target(source: Dict[str, Any], target: Dict[str, str
         label=target.get("label", ""),
         target_index=target.get("index"),
     )
-    if quality.acceptable:
-        return True
-    return quality.score >= 36
+    return quality.acceptable
+
+
+def _news_targets_needing_resolution(sources: List[Dict[str, Any]], targets: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    missing: List[Dict[str, str]] = []
+    for target in targets:
+        if not any(isinstance(source, dict) and _candidate_matches_news_target(source, target) for source in sources):
+            missing.append(target)
+    return missing
 
 
 def _news_sources_need_resolution(text: str, sources: List[Dict[str, Any]], targets: List[Dict[str, str]]) -> bool:
@@ -465,15 +471,11 @@ def _news_sources_need_resolution(text: str, sources: List[Dict[str, Any]], targ
         return False
     if not sources:
         return True
-    matched_targets = 0
     weak_sources = 0
-    for target in targets:
-        if any(isinstance(source, dict) and _candidate_matches_news_target(source, target) for source in sources):
-            matched_targets += 1
     for source in sources:
         if isinstance(source, dict) and _source_is_low_value_news(source):
             weak_sources += 1
-    return matched_targets < min(3, len(targets)) or weak_sources >= max(2, len(sources) // 2)
+    return bool(_news_targets_needing_resolution(sources, targets)) or weak_sources >= max(2, len(sources) // 2)
 
 
 def _official_news_site_for_label(label: str) -> str:
@@ -503,14 +505,15 @@ async def _resolve_news_detail_sources(
     targets = _extract_news_source_targets(query=query, text=text)
     if not _news_sources_need_resolution(text, sources, targets):
         return sources
+    targets_to_resolve = _news_targets_needing_resolution(sources, targets) or targets
     resolve_terms_list: List[str] = []
-    for target in targets[:5]:
+    for target in targets_to_resolve[:3]:
         label = target.get("label", "")
         official_site = _official_news_site_for_label(label)
         if official_site:
             resolve_terms_list.append(f'"{target["title"]}" site:{official_site}')
         else:
-            resolve_terms_list.append(f'"{target["title"]}" {label}')
+            resolve_terms_list.append(f'"{target["title"]}" {label} site:de')
     resolve_terms = " OR ".join(resolve_terms_list)
     resolve_query = (
         f"{resolve_terms} {query} konkrete Detailquelle Artikel deutschsprachige Quelle "
@@ -519,7 +522,7 @@ async def _resolve_news_detail_sources(
     )
     logger.info(
         "WEBSEARCH-NEWS-SOURCE-RESOLVE: resolving targets=%s query=%s",
-        len(targets),
+        len(targets_to_resolve),
         resolve_query,
     )
     try:
@@ -540,7 +543,7 @@ async def _resolve_news_detail_sources(
         if isinstance(source, dict)
     }
     additions: List[Dict[str, Any]] = []
-    for target in targets:
+    for target in targets_to_resolve:
         for candidate in resolved_sources:
             if not isinstance(candidate, dict) or not _candidate_matches_news_target(candidate, target):
                 continue

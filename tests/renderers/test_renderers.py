@@ -773,8 +773,9 @@ class TestRssNewsRenderer:
         )
 
         assert "OpenAI fuehrt im Mai 2026 die souveraene Cloud-Loesung OpenAI for Germany ein" not in result
-        assert "1. Das Unternehmen betreibt in Muenchen sein erstes deutsches Buero" in result
+        assert "Das Unternehmen betreibt in Muenchen sein erstes deutsches Buero" not in result
         assert "In einer strategischen Allianz mit der Deutschen Telekom entwickelt OpenAI" not in result
+        assert "keine sauber belegten Meldungen" in result
         assert "openai.com\n2. Nur ein strukturierter Snippet" not in result
         assert "globaler Zusatz" not in result
 
@@ -1101,10 +1102,7 @@ class TestRssNewsRenderer:
             in result
         )
         assert "Marktfuehrerschaft bei Enterprise Coding Agents" not in result
-        assert (
-            "Quelle: OpenAI. [Link](https://vertexaisearch.cloud.google.com/grounding-api-redirect/openai)"
-            in result
-        )
+        assert "grounding-api-redirect/openai" not in result
 
     def test_response_finalizer_rejects_third_party_link_when_text_claims_openai_source(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources

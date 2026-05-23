@@ -424,6 +424,81 @@ async def test_websearch_wrapper_resolves_openai_news_with_official_site_query()
 
 
 @pytest.mark.asyncio
+async def test_websearch_wrapper_resolves_only_weak_news_targets():
+    fake_db = Mock()
+    primary_result = {
+        "text": (
+            "1. Elon Musk scheitert mit Klage: Das Gericht wies die Klage ab. Quelle: ChannelPartner.\n"
+            "2. Spitzenposition im Bereich Coding-Agenten: Gartner stufte OpenAI als Marktführer ein. Quelle: OpenAI.\n"
+            "3. Neue Sicherheitsinitiative Daybreak: OpenAI startet ein Cybersecurity-Programm. Quelle: ComputerBase."
+        ),
+        "sources": [
+            {
+                "title": "channelpartner.de",
+                "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner",
+                "snippet": "1. Elon Musk scheitert mit Klage: Das Gericht wies die Klage ab. Quelle: ChannelPartner.",
+            },
+            {
+                "title": "openai.com",
+                "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/openai-generic",
+                "snippet": "Mai 2026 als Marktführer für KI-gestützte Entwicklerwerkzeuge in Unternehmen ein.",
+            },
+            {
+                "title": "computerbase.de",
+                "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/computerbase-generic",
+                "snippet": "(Quelle: OpenAI) (Quelle: OpenAI)",
+            },
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 100, "output_tokens": 40, "total_tokens": 140, "query_count": 1},
+        "cost": {"total_cost": 0.001},
+    }
+    resolver_result = {
+        "text": "detail repair",
+        "sources": [
+            {
+                "title": "OpenAI Gartner Coding Agents",
+                "url": "https://openai.com/de-DE/index/gartner-coding-agents",
+                "snippet": "Spitzenposition im Bereich Coding-Agenten: Gartner stufte OpenAI als Marktführer ein.",
+            },
+            {
+                "title": "ComputerBase Daybreak",
+                "url": "https://www.computerbase.de/news/ki/openai-daybreak-cybersecurity/",
+                "snippet": "Neue Sicherheitsinitiative Daybreak: OpenAI startet ein Cybersecurity-Programm.",
+            },
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 80, "output_tokens": 20, "total_tokens": 100, "query_count": 1},
+        "cost": {"total_cost": 0.0008},
+    }
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
+        "backend.tool_registry.execute_websearch_service",
+        AsyncMock(side_effect=[primary_result, resolver_result]),
+    ) as execute_mock, patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
+        "backend.services.cost_service.create_cost_entry"
+    ):
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(
+                query="OpenAI News Mai 2026 Aktuell",
+                provider="gemini",
+                model="gemini-3-flash-preview",
+            )
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    urls = [source["url"] for source in rd["data"]["sources"]]
+    assert "https://openai.com/de-DE/index/gartner-coding-agents" in urls
+    assert "https://www.computerbase.de/news/ki/openai-daybreak-cybersecurity/" in urls
+    assert "https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner" in urls
+    assert execute_mock.await_count == 2
+    resolver_query = execute_mock.await_args_list[1].kwargs["query"]
+    assert "Elon Musk scheitert" not in resolver_query
+    assert '"Spitzenposition im Bereich Coding-Agenten" site:openai.com' in resolver_query
+    assert '"Neue Sicherheitsinitiative Daybreak" ComputerBase site:de' in resolver_query
+
+
+@pytest.mark.asyncio
 async def test_gemini_provider_costs_native_search_by_tokens_when_usage_metadata_exists():
     provider = GeminiWebSearchProvider()
     fake_response = {

@@ -250,6 +250,24 @@ def _provider_redirect_has_ambiguous_news_snippet(source: Mapping[str, Any] | st
     return title in {"openai.com", "www.openai.com"} and (numbered_hits > 1 or source_marker_hits >= 3)
 
 
+def _provider_redirect_has_bare_domain_title(source: Mapping[str, Any] | str) -> bool:
+    if not isinstance(source, Mapping):
+        return False
+    title = str(source.get("title") or source.get("name") or "").strip().casefold().removeprefix("www.")
+    return bool(re.fullmatch(r"[a-z0-9-]+(?:\.[a-z0-9-]+)+", title))
+
+
+def _provider_redirect_has_marker_only_snippet(source: Mapping[str, Any] | str) -> bool:
+    if not isinstance(source, Mapping):
+        return False
+    snippet = " ".join(str(source.get(key) or "") for key in ("snippet", "description", "text")).strip()
+    if not snippet:
+        return True
+    stripped = re.sub(r"\(Quelle:\s*[^)]+\)", " ", snippet, flags=re.IGNORECASE)
+    stripped = re.sub(r"[\s.,;:()]+", " ", stripped).strip()
+    return len(stripped) < 24
+
+
 def source_url(source: Mapping[str, Any] | str) -> str:
     if isinstance(source, str):
         return normalize_source_url(source)
@@ -471,6 +489,17 @@ def score_source_for_intent(
         if "provider_redirect" in reasons and declared_host.endswith("openai.com") and _provider_redirect_has_ambiguous_news_snippet(source):
             acceptable = False
             reasons.append("ambiguous_official_provider_redirect")
+        if "provider_redirect" in reasons and _provider_redirect_has_marker_only_snippet(source):
+            acceptable = False
+            reasons.append("marker_only_provider_redirect")
+        if (
+            "provider_redirect" in reasons
+            and declared_host.endswith("openai.com")
+            and _provider_redirect_has_bare_domain_title(source)
+            and "resolved_target" not in reasons
+        ):
+            acceptable = False
+            reasons.append("bare_official_provider_redirect")
         if token_matches < min_token_matches and not strong_label:
             acceptable = False
             reasons.append("weak_item_binding")
