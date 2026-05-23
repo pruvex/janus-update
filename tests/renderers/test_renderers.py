@@ -1316,6 +1316,63 @@ class TestWebsearchLinkQuality:
         assert not quality.acceptable
         assert "ambiguous_official_provider_redirect" in quality.reasons
 
+    def test_openai_label_does_not_accept_german_third_party_host(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/kimuseum",
+            "title": "ki-museum.de",
+            "snippet": (
+                "GPT-5.5 Veröffentlichung mit verbesserter automatisierter Code-Erstellung "
+                "und Online-Recherche durch Reasoning-Faehigkeiten."
+            ),
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="GPT-5.5 Veröffentlichung",
+            summary="Das Modell bietet bessere Code-Erstellung und Online-Recherche.",
+            label="OpenAI",
+        )
+
+        assert not quality.acceptable
+        assert "broad_label_third_party_source" in quality.reasons
+
+    def test_unknown_publisher_label_must_match_declared_host_name(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/celler",
+            "title": "celler-presse.de",
+            "snippet": "Sora-Einstellung: Die eigenstaendige Video-App Sora wurde abgeschaltet.",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Sora-Einstellung",
+            summary="Die eigenstaendige Video-App Sora wurde abgeschaltet.",
+            label="The Decoder",
+        )
+
+        assert not quality.acceptable
+        assert "source_label_host_mismatch" in quality.reasons
+
+    def test_known_suspicious_news_domain_is_low_value(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/digioneer",
+            "title": "digioneer.pro",
+            "snippet": "GPT-5.5 Veröffentlichung",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="GPT-5.5 Veröffentlichung",
+            summary="OpenAI veroeffentlicht GPT-5.5.",
+            label="OpenAI",
+        )
+
+        assert not quality.acceptable
+        assert "low_value_domain" in quality.reasons
+
 
 _SAVE_MP3_FULL = {
     "file_path": "C:/Users/User/Desktop/test_audio.mp3",

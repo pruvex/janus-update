@@ -41,6 +41,7 @@ _LOW_VALUE_DOMAINS = (
     "nevercodealone.",
     "medium.com",
     "buildfastwithai.com",
+    "digioneer.pro",
 )
 
 _PAYWALL_DOMAINS = (
@@ -161,6 +162,17 @@ _BROAD_LABELS = {
     "tesla",
 }
 
+_BROAD_LABEL_OFFICIAL_HOSTS = {
+    "openai": ("openai.com",),
+    "google": ("google.com", "blog.google"),
+    "microsoft": ("microsoft.com",),
+    "meta": ("meta.com", "about.fb.com"),
+    "apple": ("apple.com",),
+    "amazon": ("amazon.com",),
+    "nvidia": ("nvidia.com",),
+    "tesla": ("tesla.com",),
+}
+
 _SOURCE_LABEL_HOSTS = {
     "faz": ("faz.net",),
     "frankfurter allgemeine": ("faz.net",),
@@ -176,6 +188,7 @@ _SOURCE_LABEL_HOSTS = {
     "techrepublic": ("techrepublic.com",),
     "reuters": ("reuters.com", "reutersagency.com"),
     "github": ("github.blog", "github.com"),
+    "the decoder": ("the-decoder.de", "the-decoder.com"),
 }
 
 _PROVIDER_REDIRECT_HOSTS = {
@@ -204,12 +217,23 @@ def _host_is_german_or_official(host: str, label: str = "") -> bool:
     return False
 
 
+def _host_matches_broad_label_official(host: str, label: str) -> bool:
+    label_norm = normalize_label_for_match(label)
+    official_hosts = _BROAD_LABEL_OFFICIAL_HOSTS.get(label_norm, ())
+    host_value = str(host or "").casefold().removeprefix("www.")
+    return any(host_value == expected or host_value.endswith("." + expected) for expected in official_hosts)
+
+
 def _host_matches_source_label(host: str, label: str) -> bool:
     label_norm = normalize_label_for_match(label)
     expected_hosts = _SOURCE_LABEL_HOSTS.get(label_norm)
-    if not expected_hosts:
-        return True
     host_value = str(host or "").casefold().removeprefix("www.")
+    if not expected_hosts:
+        label_compact = re.sub(r"[^a-z0-9]+", "", label_norm)
+        host_compact = re.sub(r"[^a-z0-9]+", "", host_value.rsplit(":", 1)[0])
+        if not label_compact or len(label_compact) < 4:
+            return True
+        return label_compact in host_compact
     return any(host_value == expected or host_value.endswith("." + expected) for expected in expected_hosts)
 
 
@@ -441,7 +465,7 @@ def score_source_for_intent(
         if label_norm not in _BROAD_LABELS and not _host_matches_source_label(candidate_host_for_label, label_norm):
             acceptable = False
             reasons.append("source_label_host_mismatch")
-        if label_norm in _BROAD_LABELS and declared_host and not _host_is_german_or_official(declared_host, label_norm):
+        if label_norm in _BROAD_LABELS and declared_host and not _host_matches_broad_label_official(declared_host, label_norm):
             acceptable = False
             reasons.append("broad_label_third_party_source")
         if "provider_redirect" in reasons and declared_host.endswith("openai.com") and _provider_redirect_has_ambiguous_news_snippet(source):
