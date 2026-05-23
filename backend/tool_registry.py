@@ -473,6 +473,62 @@ def _official_news_site_for_label(label: str) -> str:
     return EvidencePipeline.official_news_site_for_label(label)
 
 
+def _news_source_resolver_query(base_query: str, claim: EvidenceClaim) -> str:
+    term = EvidencePipeline.repair_query_term_for_claim(claim)
+    summary_terms = " ".join(
+        token for token in re.findall(r"[A-Za-z0-9ÄÖÜäöüß+-]{4,}", claim.summary)[:4]
+    )
+    parts = [
+        term,
+        summary_terms,
+        "deutschsprachiger Artikel",
+        "konkrete Detailseite",
+        "keine Startseite",
+        "keine News-Uebersicht",
+    ]
+    return " ".join(part for part in parts if str(part or "").strip())
+
+
+async def _resolve_news_links_with_url_resolver(
+    *,
+    query: str,
+    claims: List[EvidenceClaim],
+    merged_sources: List[Dict[str, Any]],
+    max_claims: int = 3,
+) -> List[Dict[str, Any]]:
+    unresolved = EvidencePipeline.claims_needing_resolution(merged_sources, claims)
+    if not unresolved:
+        return merged_sources
+    resolver_claims = list(unresolved[:max_claims])
+
+    async def _resolve_one(claim: EvidenceClaim) -> List[Dict[str, Any]]:
+        resolver_query = _news_source_resolver_query(query, claim)
+        logger.info(
+            "WEBSEARCH-NEWS-URL-RESOLVER: claim=%s label=%s query=%s",
+            claim.title,
+            claim.label,
+            resolver_query,
+        )
+        try:
+            raw_resolve = await execute_websearch_service(
+                query=resolver_query,
+                api_key="",
+                provider="ollama",
+                model=None,
+            )
+        except Exception as exc:
+            logger.warning("WEBSEARCH-NEWS-URL-RESOLVER: soft-failed claim=%s error=%s", claim.title, exc)
+            return []
+        resolved_sources = raw_resolve.get("sources") if isinstance(raw_resolve.get("sources"), list) else []
+        return EvidencePipeline.merge_resolved_sources([], resolved_sources, [claim])
+
+    resolved_batches = await asyncio.gather(*[_resolve_one(claim) for claim in resolver_claims])
+    for resolved in resolved_batches:
+        if resolved:
+            merged_sources = EvidencePipeline.merge_resolved_sources(merged_sources, resolved, claims)
+    return merged_sources
+
+
 async def _resolve_news_detail_sources(
     *,
     query: str,
@@ -592,6 +648,11 @@ async def _resolve_news_detail_sources(
         for resolved in focused_results:
             if resolved:
                 merged_sources = EvidencePipeline.merge_resolved_sources(merged_sources, resolved, all_claims)
+        merged_sources = await _resolve_news_links_with_url_resolver(
+            query=query,
+            claims=all_claims,
+            merged_sources=merged_sources,
+        )
         return merged_sources or sources
 
     for claim in focused_claims:
@@ -606,6 +667,11 @@ async def _resolve_news_detail_sources(
         if resolved:
             merged_sources = EvidencePipeline.merge_resolved_sources(merged_sources, resolved, [claim])
 
+    merged_sources = await _resolve_news_links_with_url_resolver(
+        query=query,
+        claims=all_claims,
+        merged_sources=merged_sources,
+    )
     return merged_sources or sources
 
 

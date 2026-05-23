@@ -615,6 +615,67 @@ async def test_news_source_repair_runs_late_focused_repair_when_no_links_are_acc
 
 
 @pytest.mark.asyncio
+async def test_news_source_repair_uses_url_resolver_for_remaining_missing_links():
+    empty_result = {
+        "text": "no matching detail",
+        "sources": [],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 20, "output_tokens": 5, "total_tokens": 25, "query_count": 1},
+        "cost": {"total_cost": 0.0001},
+    }
+    resolver_result = {
+        "text": "it haus detail",
+        "sources": [
+            {
+                "title": "IT-HAUS Team Copilot Rollout in Microsoft Teams",
+                "url": "https://www.it-haus.com/news/team-copilot-rollout-microsoft-teams",
+                "snippet": (
+                    "Team Copilot Rollout: Neue Funktionen in Microsoft Teams helfen bei "
+                    "Projektmanagement, Meeting-Moderation und Aufgabenverfolgung."
+                ),
+            }
+        ],
+        "metadata": {"provider": "ollama"},
+        "usage": {"query_count": 1},
+        "cost": {"total_cost": 0.0},
+    }
+
+    with patch(
+        "backend.tool_registry.execute_websearch_service",
+        AsyncMock(side_effect=[RuntimeError("Native Grounding failed"), empty_result, resolver_result]),
+    ) as execute_mock:
+        sources = await _resolve_news_detail_sources(
+            query="Microsoft News aktuell Mai 2026",
+            text=(
+                "1. Microsoft Patchday Mai 2026: Der Konzern schliesst kritische Sicherheitsluecken. "
+                "Quelle: Security-Insider.\n"
+                "2. Team Copilot Rollout: Neue Funktionen in Microsoft Teams helfen bei Projektmanagement. "
+                "Quelle: IT-HAUS."
+            ),
+            sources=[
+                {
+                    "title": "Security Insider Microsoft Patchday Mai 2026",
+                    "url": "https://www.security-insider.de/microsoft-patchday-mai-2026/",
+                    "snippet": "Microsoft Patchday Mai 2026: Der Konzern schliesst kritische Sicherheitsluecken.",
+                }
+            ],
+            provider="gemini",
+            model="gemini-3-flash-preview",
+            api_key="gemini-key",
+            persist_cost=lambda *_args, **_kwargs: None,
+        )
+
+    urls = [source["url"] for source in sources]
+    assert "https://www.security-insider.de/microsoft-patchday-mai-2026/" in urls
+    assert "https://www.it-haus.com/news/team-copilot-rollout-microsoft-teams" in urls
+    assert execute_mock.await_count == 3
+    assert execute_mock.await_args_list[0].kwargs["provider"] == "gemini"
+    assert execute_mock.await_args_list[1].kwargs["provider"] == "gemini"
+    assert execute_mock.await_args_list[2].kwargs["provider"] == "ollama"
+    assert "konkrete Detailseite" in execute_mock.await_args_list[2].kwargs["query"]
+
+
+@pytest.mark.asyncio
 async def test_websearch_wrapper_does_not_reuse_one_provider_redirect_for_multiple_news_items():
     fake_db = Mock()
     primary_result = {

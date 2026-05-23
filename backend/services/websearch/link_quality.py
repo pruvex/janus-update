@@ -84,6 +84,8 @@ _GERMAN_SOURCE_HINTS = (
     "drwindows",
     "security-insider",
     "computerbase",
+    "it-haus",
+    "channelpartner",
 )
 
 _HIGH_QUALITY_NEWS_HOSTS = {
@@ -101,7 +103,9 @@ _HIGH_QUALITY_NEWS_HOSTS = {
     "n-tv.de": 12,
     "ntv.de": 12,
     "borncity.com": 12,
+    "channelpartner.de": 12,
     "drwindows.de": 12,
+    "it-haus.com": 11,
     "security-insider.de": 13,
     "computerbase.de": 13,
 }
