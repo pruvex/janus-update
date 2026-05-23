@@ -1707,6 +1707,22 @@ class TestWebsearchEvidencePipeline:
         assert claims[0].label == "Dr. Windows"
         assert claims[0].summary == "Updates korrigieren Touch-Probleme"
 
+    def test_sentence_style_news_claims_use_compact_repair_query_title(self):
+        claims = EvidencePipeline.extract_news_claims(
+            "Microsoft News aktuell",
+            (
+                "1. Microsoft hat die Veröffentlichung neuer Surface Pro und Surface Laptop Modelle "
+                "mit dem Snapdragon X2 Prozessor für das Jahr 2026 bestätigt. "
+                "Quelle: Windows Central."
+            ),
+        )
+
+        query = EvidencePipeline.focused_repair_query_for_claim("Microsoft News aktuell", claims[0])
+
+        assert '"Veröffentlichung neuer Surface Pro und Surface Laptop Modelle"' in query
+        assert "mit dem Sn" not in query
+        assert claims[0].summary.startswith("Microsoft hat die Veröffentlichung neuer Surface Pro")
+
 
 _SAVE_MP3_FULL = {
     "file_path": "C:/Users/User/Desktop/test_audio.mp3",

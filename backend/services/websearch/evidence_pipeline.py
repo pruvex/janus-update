@@ -90,7 +90,56 @@ class EvidencePipeline:
         if colon_match:
             return colon_match.group(1).strip(" ."), colon_match.group(2).strip(" .")
         title = re.split(r"[.;]", clean, maxsplit=1)[0].strip()
-        return title[:90].strip(" ."), clean
+        short_title = title[:90].rsplit(" ", 1)[0].strip(" .") if len(title) > 90 else title.strip(" .")
+        return short_title, clean
+
+    @staticmethod
+    def _compact_sentence_news_title(sentence: str) -> str:
+        value = re.sub(r"\s+", " ", str(sentence or "")).strip(" .")
+        if not value:
+            return ""
+        lead_cleanup = (
+            r"^(?:Microsoft|OpenAI|Google|Apple|Meta|Amazon|Nvidia|Tesla)\s+"
+            r"(?:hat|will|plant|kündigt|kuendigt|veröffentlicht|veroeffentlicht|bringt|startet|führt|fuehrt)\s+"
+        )
+        value = re.sub(lead_cleanup, "", value, flags=re.IGNORECASE).strip(" .")
+        value = re.sub(
+            r"^(?:die|der|das|eine|ein|neue|neuer|neues|aktuelle|aktueller|aktuelles)\s+",
+            "",
+            value,
+            flags=re.IGNORECASE,
+        ).strip(" .")
+        stop_words = {
+            "mit",
+            "für",
+            "fuer",
+            "durch",
+            "wegen",
+            "nach",
+            "um",
+            "im",
+            "in",
+            "am",
+            "seit",
+            "als",
+            "bei",
+            "zu",
+            "zur",
+            "zum",
+        }
+        words = value.split()
+        selected: list[str] = []
+        for word in words:
+            if len(selected) >= 8:
+                break
+            core = word.strip(" ,;:.()[]")
+            if selected and core.casefold() in stop_words:
+                break
+            selected.append(word.strip(" ,;:.()[]"))
+        title = " ".join(part for part in selected if part).strip(" .")
+        if len(title) > 72:
+            title = title[:72].rsplit(" ", 1)[0].strip(" .")
+        return title
 
     @staticmethod
     def extract_source_label(body: str) -> tuple[str, str]:
@@ -203,16 +252,19 @@ class EvidencePipeline:
     @classmethod
     def repair_query_term_for_claim(cls, claim: EvidenceClaim) -> str:
         official_site = cls.official_news_site_for_label(claim.label)
+        query_title = claim.title
+        if claim.summary.casefold().startswith(claim.title.casefold()):
+            query_title = cls._compact_sentence_news_title(claim.summary) or claim.title
         if official_site:
-            return f'"{claim.title}" site:{official_site}'
+            return f'"{query_title}" site:{official_site}'
 
         label_norm = normalize_label_for_match(claim.label)
         label_domain = str(claim.label or "").strip().casefold().removeprefix("www.")
         if re.fullmatch(r"[a-z0-9-]+(?:\.[a-z0-9-]+)+", label_domain):
-            return f'"{claim.title}" site:{label_domain}'
+            return f'"{query_title}" site:{label_domain}'
         if label_norm:
-            return f'"{claim.title}" "{claim.label}" site:de'
-        return f'"{claim.title}" site:de'
+            return f'"{query_title}" "{claim.label}" site:de'
+        return f'"{query_title}" site:de'
 
     @classmethod
     def focused_repair_query_for_claim(cls, base_query: str, claim: EvidenceClaim) -> str:
