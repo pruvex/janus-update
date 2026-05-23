@@ -776,7 +776,7 @@ class TestRssNewsRenderer:
         assert "OpenAI fuehrt im Mai 2026 die souveraene Cloud-Loesung OpenAI for Germany ein" in result
         assert "Das Unternehmen betreibt in Muenchen sein erstes deutsches Buero" in result
         assert "In einer strategischen Allianz mit der Deutschen Telekom entwickelt OpenAI" in result
-        assert "Link online leider nicht verfuegbar" in result
+        assert "Link online leider nicht verfuegbar" not in result
         assert "openai.com\n2. Nur ein strukturierter Snippet" not in result
         assert "globaler Zusatz" not in result
 
@@ -858,7 +858,7 @@ class TestRssNewsRenderer:
 
         assert "dentro.de/ai/news" not in result
         assert "1. GPT-5.5" in result
-        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
+        assert "Quelle: OpenAI." in result
 
     def test_response_finalizer_keeps_unlinked_websearch_news_but_keeps_linked_items_linked(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources
@@ -897,7 +897,7 @@ class TestRssNewsRenderer:
         )
 
         assert "1. Gerichtssieg gegen Elon Musk" in result
-        assert "Quelle: FAZ. Link online leider nicht verfuegbar." in result
+        assert "Quelle: FAZ." in result
         assert "2. Sora-App" in result
         assert "Quelle: OpenAI. [Link](https://openai.com/de-DE/news/sora-in-chatgpt)" in result
 
@@ -948,7 +948,7 @@ class TestRssNewsRenderer:
         assert "3. Erweiterte Copilot-Funktionen fuer Teams" in result
         assert "4. Nachhaltige KI-Infrastruktur" in result
         assert "5. Microsoft Edge Video-Uebersetzung" in result
-        assert "Quelle: hp.com. Link online leider nicht verfuegbar." in result
+        assert "Quelle: hp.com." in result
         assert "Quelle: WinFuture. [Link](https://www.winfuture.de/news/surface-pro-11-business.htm)" in result
 
     def test_response_finalizer_drops_stale_current_news_item(self):
@@ -1023,7 +1023,7 @@ class TestRssNewsRenderer:
 
         assert "welt.de" not in result
         assert "1. Boersengang im September" in result
-        assert "Quelle: WELT. Link online leider nicht verfuegbar." in result
+        assert "Quelle: WELT." in result
 
     def test_response_finalizer_rejects_openai_docs_as_news_link(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources
@@ -1061,7 +1061,7 @@ class TestRssNewsRenderer:
 
         assert "platform.openai.com/docs" not in result
         assert "1. Neue Realtime-Funktionen" in result
-        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
+        assert "Quelle: OpenAI." in result
 
     def test_response_finalizer_removes_duplicated_news_title_prefix(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources
@@ -1149,13 +1149,13 @@ class TestRssNewsRenderer:
         )
 
         assert "Geplanter Boersengang" in result
-        assert "Quelle: Deutschlandfunk. Link online leider nicht verfuegbar." in result
+        assert "Quelle: Deutschlandfunk." in result
         assert (
             "Quelle: ChannelPartner. [Link](https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner)"
             in result
         )
         assert "Marktfuehrerschaft bei Enterprise Coding Agents" in result
-        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
+        assert "Quelle: OpenAI." in result
         assert "grounding-api-redirect/openai" not in result
 
     def test_response_finalizer_rejects_third_party_link_when_text_claims_openai_source(self):
@@ -1195,7 +1195,7 @@ class TestRssNewsRenderer:
         assert "buildfastwithai.com" not in result
         assert "grounding-api-redirect/buildfast" not in result
         assert "GPT-5.5 Instant als Standard" in result
-        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
+        assert "Quelle: OpenAI." in result
 
     def test_response_finalizer_rejects_link_when_publisher_label_mismatches_host(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources
@@ -1230,7 +1230,7 @@ class TestRssNewsRenderer:
 
         assert "grounding-api-redirect/channelpartner" not in result
         assert "Gerichtssieg gegen Elon Musk" in result
-        assert "Quelle: FAZ. Link online leider nicht verfuegbar." in result
+        assert "Quelle: FAZ." in result
 
 
 class TestWebsearchLinkQuality:

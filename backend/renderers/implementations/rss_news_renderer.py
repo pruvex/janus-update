@@ -118,6 +118,8 @@ class RssNewsRenderer(BaseRenderer):
             lines.append(summary)
             if url and not self._is_low_value_source(url):
                 lines.append(f"Quelle: {source_label}. [Link]({url})")
+            elif used_websearch:
+                lines.append(f"Quelle: {source_label}.")
             else:
                 lines.append(f"Quelle: {source_label}. Link online leider nicht verfuegbar.")
             lines.append("")

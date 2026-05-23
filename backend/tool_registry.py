@@ -1,4 +1,5 @@
 # backend/tool_registry.py
+import asyncio
 import logging
 import re
 from datetime import datetime, timezone
@@ -548,14 +549,17 @@ async def _resolve_news_detail_sources(
         len(unresolved_after_batch),
     )
     focused_limit = 2 if late_zero_link_repair else (3 if batch_failed else 2)
-    for claim in unresolved_after_batch[:focused_limit]:
-        if not late_zero_link_repair and elapsed_ms_fn and elapsed_ms_fn() > max_focused_start_ms:
-            logger.info(
-                "WEBSEARCH-NEWS-SOURCE-REPAIR2: budget-exhausted elapsed_ms=%s budget_ms=%s",
-                elapsed_ms_fn(),
-                max_focused_start_ms,
-            )
-            break
+    focused_claims = list(unresolved_after_batch[:focused_limit])
+    allow_late_focused_repair = late_zero_link_repair or (batch_failed and accepted_after_batch < 3)
+    if not allow_late_focused_repair and elapsed_ms_fn and elapsed_ms_fn() > max_focused_start_ms:
+        logger.info(
+            "WEBSEARCH-NEWS-SOURCE-REPAIR2: budget-exhausted elapsed_ms=%s budget_ms=%s",
+            elapsed_ms_fn(),
+            max_focused_start_ms,
+        )
+        return merged_sources or sources
+
+    async def _focused_repair_one(claim: EvidenceClaim) -> List[Dict[str, Any]]:
         focused_query = EvidencePipeline.focused_repair_query_for_claim(query, claim)
         logger.info(
             "WEBSEARCH-NEWS-SOURCE-REPAIR2: claim=%s label=%s query=%s",
@@ -573,9 +577,34 @@ async def _resolve_news_detail_sources(
             persist_cost(raw_focused, provider or "default", model)
         except Exception as exc:
             logger.warning("WEBSEARCH-NEWS-SOURCE-REPAIR2: soft-failed claim=%s error=%s", claim.title, exc)
-            continue
+            return []
         focused_sources = raw_focused.get("sources") if isinstance(raw_focused.get("sources"), list) else []
-        merged_sources = EvidencePipeline.merge_resolved_sources(merged_sources, focused_sources, [claim])
+        return EvidencePipeline.merge_resolved_sources([], focused_sources, [claim])
+
+    if allow_late_focused_repair and len(focused_claims) > 1:
+        logger.info(
+            "WEBSEARCH-NEWS-SOURCE-REPAIR2: parallel-focused claims=%s batch_failed=%s late_zero=%s",
+            len(focused_claims),
+            batch_failed,
+            late_zero_link_repair,
+        )
+        focused_results = await asyncio.gather(*[_focused_repair_one(claim) for claim in focused_claims])
+        for resolved in focused_results:
+            if resolved:
+                merged_sources = EvidencePipeline.merge_resolved_sources(merged_sources, resolved, all_claims)
+        return merged_sources or sources
+
+    for claim in focused_claims:
+        if not allow_late_focused_repair and elapsed_ms_fn and elapsed_ms_fn() > max_focused_start_ms:
+            logger.info(
+                "WEBSEARCH-NEWS-SOURCE-REPAIR2: budget-exhausted elapsed_ms=%s budget_ms=%s",
+                elapsed_ms_fn(),
+                max_focused_start_ms,
+            )
+            break
+        resolved = await _focused_repair_one(claim)
+        if resolved:
+            merged_sources = EvidencePipeline.merge_resolved_sources(merged_sources, resolved, [claim])
 
     return merged_sources or sources
 
