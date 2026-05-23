@@ -1063,6 +1063,44 @@ class TestRssNewsRenderer:
             in result
         )
 
+    def test_response_finalizer_rejects_third_party_link_when_text_claims_openai_source(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News Mai 2026 Aktuelle Entwicklungen",
+                                "text": (
+                                    "1. **GPT-5.5 Instant als Standard**: OpenAI hat GPT-5.5 Instant am 5. Mai 2026 "
+                                    "zum neuen Standardmodell fuer ChatGPT erhoben (Quelle: OpenAI)."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/buildfast",
+                                        "title": "buildfastwithai.com",
+                                        "snippet": (
+                                            "1. **GPT-5.5 Instant als Standard**: OpenAI hat GPT-5.5 Instant am 5. Mai "
+                                            "2026 zum neuen Standardmodell fuer ChatGPT erhoben."
+                                        ),
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "buildfastwithai.com" not in result
+        assert "grounding-api-redirect/buildfast" not in result
+        assert "Quelle: OpenAI. Link online leider nicht verfuegbar." in result
+
 
 class TestWebsearchLinkQuality:
     def test_openai_docs_are_bad_for_news_but_good_for_api_docs(self):
@@ -1141,6 +1179,24 @@ class TestWebsearchLinkQuality:
 
         assert url == "https://www.heise.de/news/openai-deutschland-sap-microsoft"
         assert quality.acceptable
+
+    def test_broad_official_label_does_not_accept_third_party_provider_redirect(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/buildfast",
+            "title": "buildfastwithai.com",
+            "snippet": "GPT-5.5 Instant OpenAI Standardmodell ChatGPT Mai 2026",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="GPT-5.5 Instant als Standard",
+            summary="OpenAI hat GPT-5.5 Instant zum neuen Standardmodell fuer ChatGPT erhoben.",
+            label="OpenAI",
+        )
+
+        assert not quality.acceptable
+        assert "broad_label_third_party_source" in quality.reasons
 
 
 _SAVE_MP3_FULL = {

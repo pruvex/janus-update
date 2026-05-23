@@ -39,6 +39,8 @@ _LOW_VALUE_DOMAINS = (
     "cryptobriefing.",
     "dentro.de/ai/news",
     "nevercodealone.",
+    "medium.com",
+    "buildfastwithai.com",
 )
 
 _PAYWALL_DOMAINS = (
@@ -161,6 +163,27 @@ _BROAD_LABELS = {
 _PROVIDER_REDIRECT_HOSTS = {
     "vertexaisearch.cloud.google.com",
 }
+
+
+def _source_declared_host(source: Mapping[str, Any] | str) -> str:
+    if isinstance(source, str):
+        return source_host_path(source)[0]
+    for key in ("domain", "source", "title", "name"):
+        value = str(source.get(key) or "").strip().casefold()
+        match = re.search(r"\b([a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,})\b", value)
+        if match:
+            return match.group(1).removeprefix("www.")
+    return source_host_path(source)[0]
+
+
+def _host_is_german_or_official(host: str, label: str = "") -> bool:
+    host_value = str(host or "").casefold().removeprefix("www.")
+    label_norm = normalize_label_for_match(label)
+    if host_value.endswith((".de", ".at", ".ch")) or host_value.startswith("de.") or ".de." in host_value:
+        return True
+    if label_norm == "openai" and host_value.endswith("openai.com"):
+        return True
+    return False
 
 
 def source_url(source: Mapping[str, Any] | str) -> str:
@@ -313,14 +336,23 @@ def score_source_for_intent(
 
     if link_intent == LinkIntent.NEWS:
         is_provider_redirect = host in _PROVIDER_REDIRECT_HOSTS
+        declared_host = _source_declared_host(source)
         host_bonus = _HIGH_QUALITY_NEWS_HOSTS.get(host, 0)
+        declared_host_bonus = _HIGH_QUALITY_NEWS_HOSTS.get(declared_host, 0)
         if not host_bonus:
             host_bonus = max((bonus for domain, bonus in _HIGH_QUALITY_NEWS_HOSTS.items() if host.endswith("." + domain)), default=0)
-        score += host_bonus
-        if host_bonus:
+        if not declared_host_bonus:
+            declared_host_bonus = max(
+                (bonus for domain, bonus in _HIGH_QUALITY_NEWS_HOSTS.items() if declared_host.endswith("." + domain)),
+                default=0,
+            )
+        score += max(host_bonus, declared_host_bonus)
+        if host_bonus or declared_host_bonus:
             reasons.append("trusted_news_host")
         if is_provider_redirect:
             reasons.append("provider_redirect")
+            if declared_host:
+                reasons.append(f"declared_host:{declared_host}")
         elif path and path.strip("/") and not is_generic_news_landing_page(source):
             score += 6
             reasons.append("detail_path")
@@ -362,8 +394,12 @@ def score_source_for_intent(
         }[link_intent]
     acceptable = score >= threshold and not is_low_value_source(source, link_intent)
     if link_intent == LinkIntent.NEWS and "resolved_target" not in reasons:
+        declared_host = _source_declared_host(source)
         min_token_matches = 3 if "provider_redirect" in reasons else 2
         strong_label = "label_match" in reasons and label_norm not in _BROAD_LABELS
+        if label_norm in _BROAD_LABELS and declared_host and not _host_is_german_or_official(declared_host, label_norm):
+            acceptable = False
+            reasons.append("broad_label_third_party_source")
         if token_matches < min_token_matches and not strong_label:
             acceptable = False
             reasons.append("weak_item_binding")
