@@ -119,11 +119,6 @@ _LOCATION_TOKENS = {
 }
 
 _RELEASE_SITE_SUFFIX = "(site:nintendo.de OR site:spieletipps.de OR site:gameswirtschaft.de OR site:gamepro.de OR site:de.ign.com OR site:eurogamer.de)"
-_NEWS_SITE_SUFFIX = (
-    "(site:heise.de OR site:golem.de OR site:computerbase.de OR site:computerwoche.de "
-    "OR site:borncity.com OR site:drwindows.de OR site:security-insider.de OR site:t3n.de "
-    "OR site:winfuture.de OR site:netzwelt.de)"
-)
 _PRICE_SUFFIX = "Deutschland \"in Euro\" site:de"
 _NEWS_SUFFIX = "Deutschland aktuell site:de"
 _GERMAN_SOURCE_SUFFIX = "deutschsprachige Quellen Deutschland site:de"
@@ -192,8 +187,6 @@ def _build_news_suffix(lowered_query: str) -> str:
         parts.append("Deutschland")
     if "aktuell" not in lowered_query and "heute" not in lowered_query:
         parts.append("aktuell")
-    if "site:" not in lowered_query:
-        parts.append(_NEWS_SITE_SUFFIX)
     if "site:de" not in lowered_query:
         parts.append("site:de")
     return " ".join(parts)

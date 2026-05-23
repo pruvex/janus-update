@@ -1052,10 +1052,11 @@ def test_news_queries_are_germanized_before_source_bias_is_added():
     biased = augment_query_with_local_bias("Microsoft News aktuell Mai 2026")
 
     assert "Microsoft Nachrichten Neuigkeiten aktuell Mai 2026" in biased
-    assert "site:heise.de" in biased
-    assert "site:computerbase.de" in biased
-    assert "site:borncity.com" in biased
+    assert "site:heise.de" not in biased
+    assert "site:computerbase.de" not in biased
+    assert "site:borncity.com" not in biased
     assert "deutschsprachige Quellen Deutschland" in biased
+    assert "site:de" in biased
     assert "latest news" not in biased
 
 
@@ -2500,7 +2501,7 @@ async def test_gemini_provider_search_sends_native_google_search_tool_block():
     assert captured["body"]["tools"] == [{"google_search": {}}]
     prompt_text = captured["body"]["contents"][0]["parts"][0]["text"]
     assert "Nutzerfrage: Neuigkeiten zur EU Deutschland aktuell" in prompt_text
-    assert "site:heise.de" in prompt_text
+    assert "site:heise.de" not in prompt_text
     assert "deutschsprachige Quellen Deutschland" in prompt_text
     assert "site:de" in prompt_text
     assert "gründliche Google-Recherche" in captured["body"]["contents"][0]["parts"][0]["text"]
