@@ -495,6 +495,8 @@ def score_source_for_intent(
         }[link_intent]
     acceptable = score >= threshold and not is_low_value_source(source, link_intent)
     if link_intent == LinkIntent.NEWS:
+        is_provider_redirect = host in _PROVIDER_REDIRECT_HOSTS
+        is_resolved_target = "resolved_target" in reasons
         declared_host = _source_declared_host(source)
         effective_host = declared_host or host
         is_official_broad_host = label_norm in _BROAD_LABELS and _host_matches_broad_label_official(effective_host, label_norm)
@@ -507,6 +509,9 @@ def score_source_for_intent(
         ):
             acceptable = False
             reasons.append("non_german_news_host")
+        if is_provider_redirect and is_resolved_target and token_matches < 8:
+            acceptable = False
+            reasons.append("resolved_provider_redirect_weak_binding")
 
     if link_intent == LinkIntent.NEWS and "resolved_target" not in reasons:
         declared_host = _source_declared_host(source)

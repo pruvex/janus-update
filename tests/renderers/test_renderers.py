@@ -1553,6 +1553,27 @@ class TestWebsearchLinkQuality:
         assert "resolved_target" in quality.reasons
         assert "non_german_news_host" in quality.reasons
 
+    def test_resolved_provider_redirect_still_needs_strong_news_binding(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/borncity",
+            "title": "borncity.com",
+            "snippet": "Neue Surface-Hardware fuer Unternehmenskunden: Neue Business-Geraete und Surface-Modelle.",
+            "news_target_index": "3",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Neue Surface-Hardware fuer Unternehmenskunden",
+            summary="Microsoft stellt neue Surface-Hardware fuer Unternehmenskunden vor.",
+            label="BornCity",
+            target_index="3",
+        )
+
+        assert not quality.acceptable
+        assert "resolved_target" in quality.reasons
+        assert "resolved_provider_redirect_weak_binding" in quality.reasons
+
     def test_known_german_com_provider_redirect_is_allowed_for_news(self):
         source = {
             "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/borncity",
