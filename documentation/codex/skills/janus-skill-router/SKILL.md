@@ -56,6 +56,27 @@ Use:
 - `janus-health-check` for hygiene, stale artifacts, drift, or documentation consistency.
 - `janus-git-governance` for save, commit, push, branch, tag, PR, checkpoint, audit-prep, or release Git/GitHub decisions.
 
+## Request Intake Contract
+
+When the user describes a desired product change, classify it before implementation:
+
+- Small bounded improvement: existing surface, one behavior, local bug, remembered setting, UI polish, small technical debt, low ambiguity. Route to `janus-backlog-intake`, then prioritization and dashboard handoff.
+- Larger feature: new/unclear surface, multiple product decisions, persistence or integration design, multiple affected areas, security/privacy/provider risk, or unclear scope. Route to `janus-feature-design` first.
+
+For small bounded improvements, give a compact assessment before or while preparing the Backlog item:
+
+```text
+Kurzbewertung:
+- Pfad:
+- Modelle:
+- Aufwand: S | M | L
+- Risiko: niedrig | mittel | hoch
+- Nutzen: niedrig | mittel | hoch
+- Naechster Skill:
+```
+
+For larger features, do not create implementation tasks directly. Start decision mode, lock the user's decisions, then route to spec generation, normalization, review, task breakdown, and Backlog/dashboard visibility.
+
 ## Model Routing
 
 - `5.5`, high/very high: architecture, security, privacy, prompt-injection, complex failure analysis, release gates, final audits.
@@ -63,6 +84,18 @@ Use:
 - `5.4 mini`, low/medium: Backlog cleanup, documentation normalization, snapshot sync, mechanical checks.
 - `5.3 codex`, medium/high: implementation, refactoring, tests, debugging, local repository work.
 - `5.2`, low: summaries, small text edits, lightweight status checks.
+
+## Plugin Routing
+
+Plugins are support tools, not primary workflow owners. Route to a Janus skill first, then recommend plugin support only when it creates concrete evidence or a useful external artifact.
+
+- `Codex Security`: security, privacy, provider, attack-path, validation, or release-risk checks.
+- `Documents`: shareable Word/docx reports, review documents, decision logs, or formal external documentation.
+- `Spreadsheets`: tabular analysis for Skill Usage, Healthcheck, Backlog metrics, costs, test matrices, CSV/XLSX.
+- `Presentations`: stakeholder decks, roadmap/review presentations, release summaries.
+- `Browser`: if available, local UI/Dashboard inspection, screenshots, click-path evidence, visual checks.
+
+Do not recommend installing more plugins by default. Propose a new plugin only when repeated friction shows a clear missing capability.
 
 ## Chat Strategy
 

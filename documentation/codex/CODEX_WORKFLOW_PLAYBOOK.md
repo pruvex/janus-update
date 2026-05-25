@@ -49,6 +49,31 @@ Bei einer neuen Janus-Arbeitssession fuehrt Codex zuerst einen leichten `janus-h
 | Build/Release | `janus-build-release` + `janus-git-governance` |
 | Ordnung/Drift/Altlasten | `janus-health-check` |
 
+## Wunsch-Intake im Alltag
+
+Wenn der Nutzer einen konkreten Wunsch nennt, klassifiziert Codex ihn zuerst in eine von zwei Bahnen:
+
+1. Kleine, klare Verbesserung: bestehende Oberflaeche, einzelnes Verhalten, lokaler Bug, gespeicherte Einstellung, kleiner UI-/UX-Schliff oder klar begrenzte technische Schuld.
+2. Groesseres Feature: neue oder unklare Oberflaeche, mehrere Entscheidungen, neue Persistenz/Integration, Sicherheits-/Datenschutzrisiko, mehrere betroffene Bereiche oder unklarer Nutzen/Scope.
+
+Bei einer kleinen, klaren Verbesserung macht Codex kurz:
+
+- relevante Dateien/Artefakte gezielt anschauen
+- Backlog-/Dashboard-Task ueber `janus-backlog-intake` vorbereiten
+- kurze Einschaetzung geben: empfohlene Modelle, grober Aufwand, Risiko, Nutzen
+- naechsten Gate nennen: Priorisierung, Handoff oder Preimplementation Check
+
+Bei einem groesseren oder unscharfen Feature startet Codex automatisch mit `janus-feature-design`, also Brainstorming/Entscheidungsmodus. Der Wunsch wird erst mit dem Nutzer besprochen, geplant und als `LATEST DECISION SUMMARY` fixiert. Danach folgen Spec-Generator, Spec-Normalizer, Spec-Review und erst dann Tasks/Backlog/Dashboard.
+
+Heuristik:
+
+- S-Aufwand: ein klarer Task, wenige Dateien, wenig Testflaeche.
+- M-Aufwand: mehrere Dateien oder Persistenz/Testanpassungen, aber ein klares Ziel.
+- L-Aufwand: neue UX-Flows, mehrere Systeme, Migrationen, Provider-/Security-/Release-Risiko.
+- Niedriges Risiko: lokales Verhalten, gute Testbarkeit, keine Datenmigration.
+- Mittleres Risiko: Persistenz, bestehende Nutzerzustaende, mehrere Einstiegspunkte.
+- Hohes Risiko: Security, Privacy, Provider, Release, Datenverlust, Architekturgrenzen.
+
 ## Modell- und Kostenregeln
 
 | Aufgabe | Modell | Intelligenz | Neuer Chat |
@@ -60,6 +85,30 @@ Bei einer neuen Janus-Arbeitssession fuehrt Codex zuerst einen leichten `janus-h
 | Final Audit, Security, Privacy, Release-Risiko | `5.5` | hoch | ja |
 
 Codex soll proaktiv eine Umstellung empfehlen, wenn der naechste Schritt deutlich guenstiger oder sicherer mit einem anderen Modell ist.
+
+## Plugin-Einsatz
+
+Plugins sind Hilfswerkzeuge innerhalb des Janus-Skill-Flusses. Die Reihenfolge bleibt:
+
+1. `janus-skill-router` bestimmt Ziel, Skill, Modell und Kontext.
+2. Der fuehrende Janus-Skill definiert Artefakte, Checks und Gates.
+3. Plugins werden nur eingesetzt, wenn sie fuer Evidenz, Ausgabeformat oder Analyse konkret nuetzen.
+
+Standardregeln:
+
+- `Codex Security`: bei Security-/Privacy-/Provider-Risiko, vor releasekritischen Audits oder wenn ein Finding validiert werden soll. Ergebnis fliesst in `janus-final-audit`, `janus-debug` oder Backlog.
+- `Documents`: wenn ein extern teilbares Word-Dokument gebraucht wird, zum Beispiel Review-Bericht, Entscheidungsprotokoll oder formale Dokumentation. Interne Janus-Quellen bleiben Markdown.
+- `Spreadsheets`: wenn Skill-Usage, Healthcheck, Kosten, Testmatrix oder Backlog-Signale tabellarisch ausgewertet werden sollen. Markdown bleibt Standard, XLSX/CSV nur bei echtem Analysewert.
+- `Presentations`: wenn Ergebnisse fuer Stakeholder, Review-Meetings oder Roadmap-Entscheidungen als Deck gebraucht werden. Nicht fuer normale Taskarbeit.
+- `Browser`: wenn in der Umgebung verfuegbar, fuer lokale UI-/Dashboard-Pruefung, Screenshots, Klickpfade und visuelle Regressionen nach Frontend-Aenderungen.
+
+Automatisierung:
+
+- Bei Frontend-/Dashboard-Tasks im Precheck pruefen, ob Browser-Evidenz sinnvoll ist.
+- Bei Security-/Privacy-Hinweisen im Router eine Security-Pruefung als moeglichen Gate nennen.
+- Bei Weekly/Monthly Healthcheck koennen Skill-Usage- oder Healthdaten als Spreadsheet empfohlen werden, wenn Muster sonst schwer erkennbar sind.
+- Bei Abschluss groesserer Phasen kann Documents oder Presentations empfohlen werden, wenn ein teilbares Ergebnis benoetigt wird.
+- Plugin-Nutzung in `documentation/codex/SKILL_USAGE_LOG.md` als Check oder Artefakt dokumentieren, wenn sie fuer die Entscheidung relevant war.
 
 ## Neuer Chat
 

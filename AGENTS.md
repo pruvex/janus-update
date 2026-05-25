@@ -80,6 +80,20 @@ User-Antworten:
 - Lange Historie nur als Archiv behandeln, nicht als aktive Anforderung.
 - Bei neuem Feature, langem Chat oder unabhaengigem Audit neuen Chat empfehlen.
 
+## Codex Plugins
+
+Plugins unterstuetzen den Janus-Skill-Workflow, ersetzen ihn aber nicht. Zuerst wird immer ueber `janus-skill-router` entschieden, welcher Janus-Skill fuehrt. Danach werden Plugins gezielt als Werkzeuge fuer Artefakte, Evidenz oder externe Formate genutzt.
+
+Standardnutzung:
+
+- `Codex Security`: gezielte Security-/Privacy-/Attack-Path-Pruefungen, besonders vor Final Audit, Release oder bei sicherheitsrelevanten Aenderungen.
+- `Documents`: `.docx`/Word-Artefakte nur, wenn der Nutzer ein teilbares Dokument, Review-Dokument, Bericht oder extern nutzbares Protokoll braucht.
+- `Spreadsheets`: strukturierte Auswertungen, Kosten-/Skill-Usage-Analysen, Tabellen, CSV/XLSX oder Metriken, wenn Markdown nicht mehr ausreicht.
+- `Presentations`: Entscheidungs-, Review- oder Stakeholder-Decks, nicht fuer normale interne Janus-Arbeit.
+- `Browser`: falls in der aktuellen Codex-Umgebung verfuegbar, fuer lokale UI-Pruefung, Screenshots, Klicktests und visuelle Evidenz nach Frontend-Aenderungen.
+
+Nicht automatisch neue Plugins installieren. Erst den bestehenden Workflow nutzen und nur dann gezielt ein Plugin vorschlagen, wenn ein wiederkehrender Engpass dadurch klar geloest wird.
+
 ## Janus Arbeitsmodus
 
 Die kompakte Praxisanleitung steht in `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`.
@@ -96,6 +110,21 @@ Standard:
 Bei einer neuen Janus-Arbeitssession zuerst einen leichten `janus-health-check DAILY` ausfuehren oder empfehlen, bevor in Backlog-, Spec-, Implementierungs- oder Release-Arbeit eingestiegen wird. Weekly/Monthly Healthchecks laufen ueber die Codex-Automation: samstags, erster Samstag im Monat als `MONTHLY`, sonst `WEEKLY`.
 
 Wenn der Nutzer nur `ok`, `weiter`, `los` oder aehnlich schreibt, fuehrt Codex den zuletzt empfohlenen naechsten Schritt aus, sofern dieser keine riskante Git-, Release-, Delete- oder Publish-Aktion ist. Fuer Commit, Push, Tag, Merge, Release, Delete oder riskante Auto-Fixes bleibt explizite Freigabe erforderlich.
+
+## Wunsch-Intake
+
+Wenn der Nutzer einen konkreten, klein wirkenden Wunsch beschreibt, zum Beispiel ein bestehendes UI-Verhalten, eine gespeicherte Einstellung, einen kleinen Bug oder eine klar begrenzte Verbesserung, macht Codex zuerst eine kurze Bewertung:
+
+- vermuteter Pfad: Backlog-Pipeline oder Feature-Pipeline
+- empfohlene Modelle fuer Bewertung, Planung und Umsetzung
+- grober Aufwand: S, M oder L
+- Risiko: niedrig, mittel oder hoch
+- Nutzen: niedrig, mittel oder hoch
+- naechster Skill und ob ein Dashboard-/Backlog-Task angelegt werden soll
+
+Kleine, klare Verbesserungen gehen standardmaessig in `janus-backlog-intake`, danach Priorisierung und Dashboard-Handoff. Codex implementiert nicht direkt, solange kein Backlog-/Handoff-/Precheck-Artefakt gebunden ist.
+
+Wenn der Wunsch groesser, produktentscheidend, mehrdeutig, surface-uebergreifend, persistenzrelevant oder riskant wirkt, geht Codex automatisch zuerst in `janus-feature-design`. Dort wird der Wunsch mit dem Nutzer entschieden und fixiert. Erst danach entstehen Spec, normalisierte Spec, Review, Tasks und Backlog-/Dashboard-Sichtbarkeit.
 
 ## Git/GitHub Governance
 
