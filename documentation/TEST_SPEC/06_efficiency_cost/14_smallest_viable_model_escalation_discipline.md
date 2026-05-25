@@ -122,12 +122,28 @@ Changing model prices, rewriting the model router, benchmarking raw provider int
 
 ## ACCEPTANCE CRITERIA
 
-- [ ] Simple chat and simple facts use the configured smallest viable model.
-- [ ] Tool/API routes do not escalate beyond configured skill tier.
-- [ ] Memory recall uses the configured low-cost memory-capable model.
-- [ ] Higher models appear only for configured quality, complexity or audit reasons.
-- [ ] Provider isolation is preserved in logs and cost records.
-- [ ] Escalation evidence is present when escalation happens.
+- [x] Simple chat and simple facts use the configured smallest viable model.
+- [x] Tool/API routes do not escalate beyond configured skill tier.
+- [x] Memory recall uses the configured low-cost memory-capable model.
+- [x] Higher models appear only for configured quality, complexity or audit reasons.
+- [x] Provider isolation is preserved in logs and cost records.
+- [x] Escalation evidence is present when escalation happens.
+
+## LATEST PIPELINE VALIDATION
+
+- **Latest TestRun**: `TEST-RUN-2026-05-21-031`
+- **Status**: PASS
+- **Total Tests**: 12
+- **Passed**: 12
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Dashboard State**: PASS, `isPartialRun=false`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-031_final_audit.md`
+- **Skill 7 Documentation Update**: `documentation/test-runs/TEST-RUN-2026-05-21-031_skill7_documentation_update.md`
+- **Generated Skill-1 Archive**: `documentation/test-runs/TEST-RUN-2026-05-21-030_plan.json`
+- **Validation Summary**: Static routing discipline now validates configured smallest viable GPT/Gemini routes, optimized skill-tier routes, MoA tier/catalog consistency, explicit escalation evidence and provider-silo isolation. Gemini MoA logic policy drift was corrected to `gemini-3.1-pro-preview`; unknown providers no longer fall back to OpenAI defaults.
 
 ## BLOCKING CONDITIONS
 

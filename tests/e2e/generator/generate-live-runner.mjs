@@ -176,6 +176,20 @@ function createE2eJwt() {
   return \`\${unsigned}.\${signature}\`;
 }
 
+function installE2eBrowserState(jwt) {
+  localStorage.clear();
+  localStorage.setItem('auth_token', jwt);
+  localStorage.setItem(
+    'janus_beta_privacy_ack_v1',
+    JSON.stringify({
+      accepted: true,
+      noticeVersion: '2026-05-21.1',
+      acceptedAt: new Date().toISOString(),
+      storage: 'localStorage',
+    }),
+  );
+}
+
 async function installInternalApiKeyRoute(page, internalKey) {
   if (!internalKey) {
     throw new Error('api_key missing in Janus config.json (required for E2E against real backend)');
@@ -674,6 +688,35 @@ function generateRunnerFunction(plan) {
   // accidentally leak into the spec source.
   void plan; // signature kept for symmetry with sibling generators
   return `
+async function setPromptExactly(input, prompt, windowName) {
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    await input.click();
+    await input.fill('');
+    await input.fill(prompt);
+    await input.evaluate((textarea, value) => {
+      const proto = Object.getPrototypeOf(textarea);
+      const descriptor = Object.getOwnPropertyDescriptor(proto, 'value');
+      textarea.focus();
+      if (descriptor?.set) {
+        descriptor.set.call(textarea, value);
+      } else {
+        textarea.value = value;
+      }
+      textarea.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: value }));
+      textarea.dispatchEvent(new Event('change', { bubbles: true }));
+    }, prompt);
+
+    await input.evaluate(() => new Promise((resolve) => setTimeout(resolve, 100)));
+    const current = await input.inputValue();
+    if (current === prompt) {
+      return;
+    }
+  }
+
+  const verified = await input.inputValue();
+  throw new Error('RUNNER_PROMPT_MISMATCH: #user-input-' + windowName + ' expected ' + prompt.length + ' chars but found ' + verified.length + ' chars.');
+}
+
 async function runPromptInChatWindow(page, prompt, windowName) {
   // BACKLOG-029 (ATOMIC SCOPE FIX): \`windowName\` is now an explicit function
   // parameter rather than a generator-time-interpolated string. The call site
@@ -720,10 +763,10 @@ async function runPromptInChatWindow(page, prompt, windowName) {
     // SEND STRATEGY: ${plan.strategies.send}
 ${plan.strategies.send === 'chat_button_click_send_v1' ? `    // Promise.all pattern: register stream listener BEFORE the click to eliminate
     // the race window where a fast SSE response could resolve before waitForResponse() attaches.
-    // pressSequentially simulates real typing so the frontend's per-keystroke validation
-    // (text present + model selected) flips the send button into the enabled state.
-    await input.click();
-    await input.pressSequentially(prompt, { delay: 30 });
+    // Set the textarea by value and verify exact equality before clicking. The
+    // previous keystroke simulation occasionally lost prefixes in parallel runs,
+    // which turned product assertions into false negatives.
+    await setPromptExactly(input, prompt, windowName);
 
     // DIAGNOSTIC: verify the textarea actually holds the prompt and the send button is enabled.
     // If either fails, the frontend submit handler will bail out at \`if (!promptText) return;\`
@@ -774,8 +817,14 @@ ${plan.strategies.send === 'chat_button_click_send_v1' ? `    // Promise.all pat
       };
     }, windowName);
     console.log('[E2E-DIAG] preClick:', JSON.stringify(preClickDiag));
+    if (preClickDiag.textareaValue !== prompt) {
+      await setPromptExactly(input, prompt, windowName);
+      preClickDiag.textareaValue = prompt;
+      preClickDiag.textareaValueLen = prompt.length;
+      preClickDiag.textareaTrimmedLen = prompt.trim().length;
+    }
     if (preClickDiag.textareaTrimmedLen === 0) {
-      throw new Error('RUNNER_PRECLICK_EMPTY: textarea #user-input-' + windowName + ' is empty after pressSequentially. ' + JSON.stringify(preClickDiag));
+      throw new Error('RUNNER_PRECLICK_EMPTY: textarea #user-input-' + windowName + ' is empty after prompt setup. ' + JSON.stringify(preClickDiag));
     }
     if (!preClickDiag.buttonInForm) {
       throw new Error('RUNNER_PRECLICK_DOM_BROKEN: #send-button-' + windowName + ' is not nested inside #chat-form-' + windowName + '. ' + JSON.stringify(preClickDiag));
@@ -787,17 +836,32 @@ ${plan.strategies.send === 'chat_button_click_send_v1' ? `    // Promise.all pat
     // HTMLElement.click() via evaluate(), which dispatches the click event directly on the
     // target element and triggers native form submission regardless of what sits on top
     // geometrically.
-    const [streamResponse] = await Promise.all([
-      page.waitForResponse(
-        (res) => res.url().includes('/api/chat/stream') && res.status() === 200,
-        { timeout: STREAM_REQUEST_TIMEOUT_MS },
-      ),
-      sendBtnLoc.evaluate((btn) => btn.click()),
-    ]);
-    void streamResponse;` : plan.strategies.send === 'form_request_submit_v1' ? `    await input.fill(prompt);
+    let streamResponse = null;
+    try {
+      [streamResponse] = await Promise.all([
+        page.waitForResponse(
+          (res) => res.url().includes('/api/chat/stream') && res.status() === 200,
+          { timeout: STREAM_REQUEST_TIMEOUT_MS },
+        ),
+        sendBtnLoc.evaluate((btn) => btn.click()),
+      ]);
+    } catch (firstSubmitError) {
+      if (streamRequestCount > 0) {
+        throw firstSubmitError;
+      }
+      await setPromptExactly(input, prompt, windowName);
+      [streamResponse] = await Promise.all([
+        page.waitForResponse(
+          (res) => res.url().includes('/api/chat/stream') && res.status() === 200,
+          { timeout: STREAM_REQUEST_TIMEOUT_MS },
+        ),
+        page.locator('#chat-form-' + windowName).evaluate((form) => form.requestSubmit()),
+      ]);
+    }
+    void streamResponse;` : plan.strategies.send === 'form_request_submit_v1' ? `    await setPromptExactly(input, prompt, windowName);
     // Direct form submit via requestSubmit (bypasses overlay issues)
     await page.locator('#chat-form-' + windowName).evaluate((form) => form.requestSubmit());
-    await page.waitForTimeout(300);` : `    await input.fill(prompt);
+    await page.waitForTimeout(300);` : `    await setPromptExactly(input, prompt, windowName);
     // Submit via real UI interaction (Enter key)
     await input.press('Enter');
     await page.waitForTimeout(300);`}
@@ -1177,8 +1241,7 @@ function generateBeforeEach(plan) {
       throw e;
     }
     const token = createE2eJwt();
-    await page.evaluate(() => localStorage.clear());
-    await page.evaluate((jwt) => localStorage.setItem('auth_token', jwt), token);
+    await page.evaluate(installE2eBrowserState, token);
     await page.reload();
 
     await page.waitForFunction(async () => {

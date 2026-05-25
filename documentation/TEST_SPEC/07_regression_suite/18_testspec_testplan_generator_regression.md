@@ -122,18 +122,37 @@ Live Janus behavior, provider answer quality, Playwright browser execution and p
 
 ## ACCEPTANCE CRITERIA
 
-- [ ] Clarification keywords from TestSpec appear in generated TestPlan.
-- [ ] Refusal keywords from TestSpec appear in generated TestPlan.
-- [ ] Source attribution patterns are preserved.
-- [ ] mustNotContain arrays are preserved.
-- [ ] Parallelization metadata validates.
-- [ ] Generated runner is created and structurally valid.
+- [x] Clarification keywords from TestSpec appear in generated TestPlan/fixture and generated runner source.
+- [x] Refusal keywords from TestSpec appear in generated TestPlan/fixture and generated runner source.
+- [x] Source attribution patterns are preserved.
+- [x] mustNotContain arrays are preserved.
+- [x] Parallelization metadata validates.
+- [x] Generated runner is created and structurally valid.
 
 ## BLOCKING CONDITIONS
 
-- [ ] TestPlan compiler cannot run.
-- [ ] Validator schema is unavailable.
-- [ ] No representative fixture/spec exists for pattern transfer checks.
+- [x] TestPlan compiler can run.
+- [x] Validator schema is available.
+- [x] Representative synthetic fixture exists for pattern transfer checks.
+
+## LATEST PIPELINE VALIDATION
+
+- **Latest TestRun**: TEST-RUN-2026-05-21-027
+- **Status**: PASS
+- **Pass Rate**: 100.00% (12/12)
+- **Dashboard Status**: PASS, not partial
+- **Generated Skill-1 Archive**: `documentation/test-runs/TEST-RUN-2026-05-21-026_plan.json`
+- **Dashboard Plan**: `documentation/test-runs/TEST-RUN-2026-05-21-027_plan.json`
+- **Result JSON**: `documentation/test-results/TEST-RUN-2026-05-21-027_results.json`
+- **Result Markdown**: `documentation/test-results/TEST-RUN-2026-05-21-027_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-027_final_audit.md`
+- **Validation Commands**:
+  - `node tests\e2e\generator\generator.self-test.mjs` -> PASS.
+  - `node tests/e2e/generator/compile-testspec-to-testplan.mjs --spec documentation/TEST_SPEC/07_regression_suite/18_testspec_testplan_generator_regression.md` -> TESTPLAN VALID, TEST-RUN-2026-05-21-026, 22 tests.
+  - `node tests\e2e\generator\validate-runner.mjs --plan documentation\test-runs\TEST-RUN-2026-05-21-026_plan.json --runner documentation\test-runs\TEST-RUN-2026-05-21-026_generated.spec.js` -> VALIDATION PASSED.
+  - `node --check documentation\test-runs\TEST-RUN-2026-05-21-026_generated.spec.js` -> PASS.
+  - `python backend\tools\validate_skill_schemas.py` -> PASS, 54 skill JSON files.
+- **Notes**: The generator self-test now includes synthetic oracle-transfer coverage for clarification, refusal, source attribution, `mustNotContain`, prompt-injection-as-data and mixed parallel/serial runner generation.
 
 ## INTERNAL TEST COMPLEXITY BREAKDOWN
 

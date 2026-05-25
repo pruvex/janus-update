@@ -91,3 +91,90 @@ def test_parse_backlog_text_counts_missing_routing_for_active_items():
     assert result.counts.total == 1
     assert result.counts.active == 1
     assert result.counts.routing_missing == 1
+
+
+def test_parse_backlog_text_accepts_real_dash_headings():
+    text = """# Janus Backlog
+
+## READY
+
+### BACKLOG-010 – Real En Dash
+
+- **Typ:** BUG
+- **Status:** READY
+- **Kurzbeschreibung:** Active item
+
+### BACKLOG-011 — Real Em Dash
+
+- **Typ:** TECH_DEBT
+- **Status:** READY
+- **Kurzbeschreibung:** Active item
+
+## DONE
+
+### BACKLOG-012 – Done Real Dash
+
+- **Typ:** TECH_DEBT
+- **Status:** DONE
+- **Kurzbeschreibung:** Done item
+"""
+    result = parse_backlog_text(text, source="sample")
+
+    assert [item.id for item in result.items] == ["BACKLOG-010", "BACKLOG-011", "BACKLOG-012"]
+    assert result.items[0].title == "Real En Dash"
+    assert result.items[1].title == "Real Em Dash"
+    assert result.counts.active == 2
+    assert result.counts.history == 1
+
+
+def test_parse_backlog_text_does_not_merge_done_item_after_real_dash_heading():
+    text = """# Janus Backlog
+
+## READY
+
+### BACKLOG-999 - Prior Item
+
+- **Typ:** BUG
+- **Status:** READY
+- **Kurzbeschreibung:** Prior active item
+
+## DONE
+
+### BACKLOG-001 – Test-Dateien in Root-Verzeichnis aufraeumen
+
+- **Typ:** TECH_DEBT
+- **Status:** DONE
+- **Kurzbeschreibung:** Done root cleanup
+"""
+    result = parse_backlog_text(text, source="sample")
+
+    assert len(result.items) == 2
+    assert result.items[0].id == "BACKLOG-999"
+    assert result.items[1].id == "BACKLOG-001"
+    assert result.items[1].status == "DONE"
+    assert result.items[1].section == "DONE"
+
+
+def test_parse_backlog_text_closes_item_at_section_boundary():
+    text = """# Janus Backlog
+
+## DONE
+
+### BACKLOG-001 – Test-Dateien in Root-Verzeichnis aufraeumen
+
+- **Typ:** TECH_DEBT
+- **Status:** DONE
+- **Kurzbeschreibung:** Done root cleanup
+
+## BLOCKED
+
+- **Typ:** BUG
+- **Status:** READY
+- **Kurzbeschreibung:** Orphaned legacy block without heading
+"""
+    result = parse_backlog_text(text, source="sample")
+
+    assert len(result.items) == 1
+    assert result.items[0].id == "BACKLOG-001"
+    assert result.items[0].status == "DONE"
+    assert result.items[0].section == "DONE"
