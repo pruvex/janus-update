@@ -55,6 +55,26 @@ Backlog/TestRun identifiers visible in dirty or untracked paths:
 - `BACKLOG-086`
 - Many `TEST-RUN-2026-05-21-*` artifacts, strongest clusters around `014`, `017`, `019`, `021`, `023`, `025`, `027`, `029`, `031`, `034`, `035`, `036`, `038`, `039`, `040`, `041`, `042`
 
+## TestRun Bundle Classification
+
+Initial bundle decision for untracked `TEST-RUN-2026-05-21-*` artifacts:
+
+| Bundle(s) | Reference signal | Classification | Cleanup action |
+| --- | --- | --- | --- |
+| `014`, `015` | Registry, pipeline log, TestSpec 08; `015` supersedes `014` for dashboard status | keep curated evidence | Commit as Skill Registry Integrity evidence bundle, preserving supersession note |
+| `017`, `019`, `021` | Registry, pipeline log, TestSpecs 10-12 | keep curated evidence | Commit by memory-context TestSpec bundle |
+| `023`, `025` | Registry, pipeline log, regression TestSpecs 16-17 | keep curated evidence | Commit by regression TestSpec bundle |
+| `026`, `027` | Registry/pipeline log notes `026` as generated archive and `027` as final generator certification | keep curated evidence | Commit together with TestSpec 18/generator evidence |
+| `028`, `029` | Registry/pipeline log notes `028` as generated archive and `029` as final cost/token certification | keep curated evidence | Commit together with TestSpec 13/cost evidence |
+| `030`, `031` | Registry/pipeline log notes `030` as generated archive and `031` as final model-routing certification | keep curated evidence | Commit together with TestSpec 14/model-routing evidence |
+| `033`, `034` | Registry/pipeline log notes `033` as generated archive and `034` as final prompt/context certification | keep curated evidence | Commit together with TestSpec 15/context-budget evidence |
+| `035` | Dashboard final-green audit/log files, 2-case result with 1 pass / 1 fail | needs follow-up | Inspect before commit; likely dashboard audit evidence but includes transient `.log.err` files |
+| `036`, `038`, `039`, `040`, `041` | Websearch retest chain; TestSpec 10 explicitly cites `041` as latest full live-provider run | keep curated evidence with care | Commit only if tied to Websearch Provider Parity work; consider retaining full chain or only cited milestone runs after audit |
+| `037` | Plan/runner/handover present, no result JSON found in current untracked result list | needs follow-up | Check whether it is a generated archive, aborted run, or missing result before commit |
+| `042` | TestSpec 10 cites as closure run; final audit and documentation update present | keep curated evidence | Commit with Websearch closure evidence |
+
+Do not stage all TestRun artifacts at once. Stage by bundle group after checking each group against its referenced TestSpec/Backlog/final audit.
+
 ## Safe Ordering
 
 1. Review and decide TestRun evidence policy.
