@@ -22,6 +22,23 @@ This skill replaces the old five-stage Test Skill pipeline with one Codex-native
 - Before live external/provider execution, present the preflight evidence and wait for explicit user approval: `OK START LIVE TEST`.
 - Use `janus-git-governance` before committing, pushing, tagging, or release branching.
 
+## Evidence Retention
+
+Version curated TestRun evidence when it is referenced by a TestSpec, Backlog item, final audit, central registry entry, documentation update, or release/audit decision. This includes:
+
+- `documentation/test-runs/<TEST_RUN_ID>_plan.json`
+- `documentation/test-runs/<TEST_RUN_ID>_generated.spec.js`
+- `documentation/test-runs/<TEST_RUN_ID>_skill*_handover.*`
+- `documentation/test-runs/<TEST_RUN_ID>_final_audit.md`
+- `documentation/test-results/<TEST_RUN_ID>_results.json`
+- `documentation/test-results/<TEST_RUN_ID>_results.md`
+- `documentation/test-results/<TEST_RUN_ID>/..._evidence.json`
+- `tests/e2e/generated/<TEST_RUN_ID>*.live.spec.js` when it is the executed runner for retained evidence
+
+Do not version raw Playwright report folders, trace bundles, transient terminal logs, local databases, or ad-hoc debug output unless a final audit explicitly cites them and `janus-git-governance` approves the path.
+
+During cleanup, do not delete or ignore `documentation/test-runs/`, `documentation/test-results/`, or `tests/e2e/generated/` wholesale. Group artifacts by `TEST_RUN_ID` and commit or archive each evidence bundle with its related Backlog/Spec/test decision.
+
 ## Mode Router
 
 Choose the smallest mode that matches the user request:

@@ -17,6 +17,19 @@ No files were deleted, reverted, moved, staged, committed, or pushed during this
 - Core artifacts: present
 - Backlog visibility: `IN PROGRESS 3`, `READY 43`, `NEEDS INFO 5`, `BLOCKED 13`
 
+## TestRun Evidence Policy
+
+`documentation/test-runs/`, `documentation/test-results/`, and `tests/e2e/generated/` are established evidence locations in this repository, not blanket cleanup targets. At audit time, Git already tracked roughly `508` files under `documentation/test-runs`, roughly `3070` files under `documentation/test-results`, and roughly `150` files under `tests/e2e/generated`.
+
+Retention rule:
+
+- Keep and version curated evidence bundles when referenced by TestSpec, Backlog, final audit, registry, documentation update, release gate, or retest decision.
+- Group cleanup decisions by `TEST_RUN_ID`, not by directory alone.
+- Treat `documentation/test-results/<TEST_RUN_ID>_results.json` as primary triage evidence.
+- Keep generated/live runners only when they are the executed runner for retained evidence.
+- Do not retain raw Playwright report folders, trace bundles, transient terminal logs, local databases, or ad-hoc debug output unless explicitly cited by a final audit.
+- Do not add broad ignore rules for `documentation/test-runs/`, `documentation/test-results/`, or `tests/e2e/generated/`.
+
 ## Main Groups
 
 | Group | Evidence | Count / Shape | Initial Classification | Recommended Next Step |
