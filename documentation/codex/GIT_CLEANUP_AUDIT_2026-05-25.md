@@ -140,6 +140,61 @@ Stage as evidence bundle:
 
 Do not include broad documentation sync files yet; they continue to mix several TestRun families and should be handled after evidence bundles are safely committed.
 
+### TEST-RUN-2026-05-21-036 / 038 / 039 / 040 / 041 / 042 - Websearch Provider Parity
+
+Decision: ready as a single curated Websearch evidence bundle with a retest chain and closure run.
+
+Validation:
+
+- `TEST-RUN-2026-05-21-036_results.json`: FAIL, `42/52` passed, `10` failed.
+- `TEST-RUN-2026-05-21-038_results.json`: FAIL, `46/52` passed, `6` failed.
+- `TEST-RUN-2026-05-21-039_results.json`: FAIL, `49/52` passed, `1` failed, `2` blocked.
+- `TEST-RUN-2026-05-21-040_results.json`: FAIL, `50/52` passed, `1` failed, `1` blocked.
+- `TEST-RUN-2026-05-21-041_results.json`: FAIL, `51/52` passed, `1` failed, `0` blocked.
+- `TEST-RUN-2026-05-21-042_results.json`: PASS, `1/1` passed, `0` failed, `0` blocked.
+- `validate_test_pipeline_artifacts.py` passed for `036`, `038`, `039`, `040`, `041`, and `042`.
+- `documentation/TEST_SPEC/03_tools_skills/10_websearch_provider_parity_optimization.md` explicitly cites `041` as the latest full live-provider run and `042` as the closure retest.
+- The full chain is intentional evidence of provider parity hardening and oracle calibration; `041` documents the last full live run, while `042` is the targeted closure retest.
+
+Stage as evidence bundle:
+
+- `documentation/test-runs/TEST-RUN-2026-05-21-036_generated.spec.js`
+- `documentation/test-runs/TEST-RUN-2026-05-21-036_plan.json`
+- `documentation/test-runs/TEST-RUN-2026-05-21-036_skill2_handover.txt`
+- `documentation/test-results/TEST-RUN-2026-05-21-036/`
+- `documentation/test-results/TEST-RUN-2026-05-21-036_results.json`
+- `documentation/test-runs/TEST-RUN-2026-05-21-038_generated.spec.js`
+- `documentation/test-runs/TEST-RUN-2026-05-21-038_plan.json`
+- `documentation/test-runs/TEST-RUN-2026-05-21-038_skill2_handover.txt`
+- `documentation/test-results/TEST-RUN-2026-05-21-038/`
+- `documentation/test-results/TEST-RUN-2026-05-21-038_results.json`
+- `documentation/test-runs/TEST-RUN-2026-05-21-039_generated.spec.js`
+- `documentation/test-runs/TEST-RUN-2026-05-21-039_plan.json`
+- `documentation/test-runs/TEST-RUN-2026-05-21-039_skill2_handover.txt`
+- `documentation/test-results/TEST-RUN-2026-05-21-039/`
+- `documentation/test-results/TEST-RUN-2026-05-21-039_results.json`
+- `documentation/test-runs/TEST-RUN-2026-05-21-040_generated.spec.js`
+- `documentation/test-runs/TEST-RUN-2026-05-21-040_plan.json`
+- `documentation/test-runs/TEST-RUN-2026-05-21-040_skill2_handover.txt`
+- `documentation/test-results/TEST-RUN-2026-05-21-040/`
+- `documentation/test-results/TEST-RUN-2026-05-21-040_results.json`
+- `documentation/test-runs/TEST-RUN-2026-05-21-041_generated.spec.js`
+- `documentation/test-runs/TEST-RUN-2026-05-21-041_plan.json`
+- `documentation/test-runs/TEST-RUN-2026-05-21-041_skill2_handover.txt`
+- `documentation/test-results/TEST-RUN-2026-05-21-041/`
+- `documentation/test-results/TEST-RUN-2026-05-21-041_results.json`
+- `documentation/test-results/TEST-RUN-2026-05-21-041_results.md`
+- `documentation/test-runs/TEST-RUN-2026-05-21-042_final_audit.md`
+- `documentation/test-runs/TEST-RUN-2026-05-21-042_generated.spec.js`
+- `documentation/test-runs/TEST-RUN-2026-05-21-042_plan.json`
+- `documentation/test-runs/TEST-RUN-2026-05-21-042_skill2_handover.txt`
+- `documentation/test-runs/TEST-RUN-2026-05-21-042_skill7_documentation_update.md`
+- `documentation/test-results/TEST-RUN-2026-05-21-042/`
+- `documentation/test-results/TEST-RUN-2026-05-21-042_results.json`
+- `documentation/test-results/TEST-RUN-2026-05-21-042_results.md`
+
+Do not include raw backend `.log` / `.err.log` files in this bundle unless a later audit explicitly needs them for an investigation.
+
 ## Safe Ordering
 
 1. Review and decide TestRun evidence policy.
