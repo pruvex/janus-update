@@ -20,6 +20,14 @@ from typing import Optional
 # Define injection patterns with their types
 INJECTION_PATTERNS = [
     (r"\bignore\s+(all|rules|instructions|constraints|previous|everything|this)\b", "ignore"),
+    (
+        r"\buse\s+\[?aktueller\s+preis\]?\s+(?:if|when)\s+unsure\b",
+        "placeholder_injection",
+    ),
+    (
+        r"\b(?:switch|fallback|fall\s+back)\s+to\s+another\s+provider\b",
+        "provider_switch_injection",
+    ),
     (r"\bdo\s+not\s+cite\s+sources\b", "source_policy_override"),
     (r"\bdon['’]?t\s+cite\s+sources\b", "source_policy_override"),
     (r"\b(?:do\s+not|don['’]?t)\s+(?:name|mention|show|include)\s+(?:the\s+)?sources\b", "source_policy_override"),

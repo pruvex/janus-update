@@ -2,6 +2,7 @@
 import datetime
 import json
 import logging
+import re
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import and_, or_
@@ -41,6 +42,41 @@ VECTOR_KNAPSACK_SIMILARITY_THRESHOLD = 0.70
 _HEALTH_JACCARD_DEDUP_THRESHOLD = 0.70
 
 
+_EXTERNAL_CONTEXT_QUERY_RE = re.compile(
+    r"\b(?:wetter|weather|websearch|websuche|web\s*search|internet|online|"
+    r"recherchier(?:e|en)?|recherche|suche|search|aktuell(?:e|er|es|en)?|"
+    r"news|nachrichten|preis(?:e)?|preise|kurs(?:e)?|schedule|fahrplan|"
+    r"entfernung|distanz|route|routing|wie\s+weit|how\s+far)\b",
+    re.IGNORECASE,
+)
+_PERSONAL_SCOPE_HINT_RE = re.compile(
+    r"\b(?:meine?|mein|mir|mich|my|me|"
+    r"vorlieben|praeferenzen|präferenzen|preferences|"
+    r"interessen|interests|allerg(?:ie|ien)|unvertraeglichkeit(?:en)?|unverträglichkeit(?:en)?|"
+    r"gesundheit|health|familie|family|wohnort|adresse|budget|kalender|termine)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_context_privacy_memory_suppressed_query(query: str) -> bool:
+    """Return True when memory would be irrelevant or unsafe for current/external queries."""
+    normalized = " ".join(str(query or "").strip().lower().split())
+    if not normalized:
+        return True
+    exact_suppressed = {
+        "simple factual prompt",
+        "factual prompt",
+        "erklaer kurz",
+        "erklär kurz",
+        "erkläre kurz",
+    }
+    if normalized in exact_suppressed:
+        return True
+    if _EXTERNAL_CONTEXT_QUERY_RE.search(normalized) and not _PERSONAL_SCOPE_HINT_RE.search(normalized):
+        return True
+    return False
+
+
 def _is_generic_memory_suppressed_query(query: str) -> bool:
     """Return True for synthetic or underspecified prompts that must not receive memory context."""
     normalized = " ".join(str(query or "").strip().lower().split())
@@ -53,7 +89,7 @@ def _is_generic_memory_suppressed_query(query: str) -> bool:
         "erklär kurz",
         "erkläre kurz",
     }
-    return normalized in exact_suppressed
+    return _is_context_privacy_memory_suppressed_query(query)
 
 
 def _dedupe_health_memories_jaccard(memories: List[Any]) -> List[Any]:

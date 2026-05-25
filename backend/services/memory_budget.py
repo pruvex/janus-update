@@ -289,6 +289,22 @@ def _calculate_text_similarity(text1: str, text2: str) -> float:
     return len(intersection) / len(union)
 
 
+def _is_placeholder_memory_slot(slot: MemorySlot) -> bool:
+    text = str(getattr(slot, "text", "") or "").casefold()
+    if not text:
+        return False
+    placeholder_markers = (
+        "name des testprojekts",
+        "projektname",
+        "chat titel platzhalter",
+        "chat-titel platzhalter",
+    )
+    if not any(marker in text for marker in placeholder_markers):
+        return False
+    concrete_markers = ("phoenix",)
+    return not any(marker in text for marker in concrete_markers)
+
+
 def select_slots_by_budget(
     slots: List[MemorySlot],
     budget: TokenBudget,
@@ -321,6 +337,15 @@ def select_slots_by_budget(
     _DUPLICATE_SIMILARITY_THRESHOLD = 0.70
 
     for slot in sorted_slots:
+        if _is_placeholder_memory_slot(slot):
+            skipped.append(slot)
+            logger.info(
+                "[KNAPSACK] Skipping placeholder memory slot ID=%s: %s",
+                slot.memory_id,
+                slot.text[:80],
+            )
+            continue
+
         if budget.remaining_memory < min_slot_tokens:
             logger.debug(f"[KNAPSACK] Budget zu klein für weitere Slots ({budget.remaining_memory} < {min_slot_tokens})")
             break

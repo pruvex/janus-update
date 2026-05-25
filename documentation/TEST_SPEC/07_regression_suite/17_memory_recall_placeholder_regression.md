@@ -145,3 +145,20 @@ Routing Decision: SWE_1_6
 Routing Confidence: HIGH
 Dashboard Hint: PRIORITY
 Security Hint: LOW
+
+## Latest Pipeline Validation
+
+- **TargetTestRun**: TEST-RUN-2026-05-21-025
+- **Date**: 2026-05-21
+- **Result**: PASS
+- **Total / Passed / Failed / Blocked**: 12 / 12 / 0 / 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT pre-provider static runner 100.00%, Gemini pre-provider static runner 100.00%
+- **Type Pass Rates**: functional 100.00%, prompt_injection 100.00%, security 100.00%
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-025_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-025_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-025_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-025_final_audit.md`
+- **Findings**: NONE
+- **Capability Validation**: memory recall placeholder regression validated; concrete facts win over placeholder titles, missing facts are honest, and corrections supersede stale facts.

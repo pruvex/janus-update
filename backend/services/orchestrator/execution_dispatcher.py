@@ -17,6 +17,7 @@ from backend.services.orchestrator.suggestion_engine import SuggestionEngine
 from backend.services.prompt_cache import decide_prompt_cache
 from backend.services.tool_executor import ToolExecutor
 from backend.services.tool_manager import tool_manager
+from backend.services.skill_router import is_realtime_search_query
 from backend.utils import intent_classifier
 # Der Model-Katalog ist ein Service, der die JSON-Config lädt und verarbeitet.
 from backend.services.model_catalog import get_models_by_provider
@@ -28,6 +29,19 @@ from backend.services.logging.logger_core import log_event
 from backend.data.schemas_logging import LogEventCreate
 
 logger = logging.getLogger("janus_backend")
+
+
+def _websearch_v3_news_routing_enabled(provider: str, query: str) -> bool:
+    if os.getenv("JANUS_WEBSEARCH_V3_PHASE1", "").strip().casefold() not in {"1", "true", "yes", "on"}:
+        return False
+    if str(provider or "").strip().casefold() not in {"openai", "gemini"}:
+        return False
+    try:
+        from backend.services.websearch_v3.query_planner import is_simple_news_query
+
+        return is_simple_news_query(query)
+    except Exception:
+        return False
 
 
 def _normalize_gemini_tool_messages(chat_history: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -181,13 +195,18 @@ def _is_unclear_destructive_action(query: str) -> bool:
 
 _FILESYSTEM_WRITE_RE = re.compile(
     r"\b(?:create|write|save|erstell(?:e|en)?|schreib(?:e|en)?|speicher(?:e|n)?)\b"
-    r".{0,80}\b(?:file|datei|ordner|folder|directory|verzeichnis)\b",
+    r".{0,120}(?:\b(?:file|datei|ordner|folder|directory|verzeichnis)\b|"
+    r"[a-zA-Z]:[\\/][^\s\"']+\.(?:txt|md|json|csv|log|pdf|docx?|xlsx?))",
     re.IGNORECASE,
 )
 _OUT_OF_SANDBOX_RE = re.compile(
     r"\b(?:outside|außerhalb|ausserhalb|beliebigen?\s+ort|anywhere|"
-    r"local\s+drives?|lokale(?:n)?\s+laufwerke|c:\\|d:\\)\b"
-    r"|approved\s+test\s+workspace|freigegeben(?:en|er|es)?\s+(?:test-)?workspace",
+    r"local\s+drives?|lokale(?:n)?\s+laufwerke)\b|"
+    r"[a-zA-Z]:[\\/](?:windows|program\s+files|programdata|system\s+volume\s+information|temp)\b",
+    re.IGNORECASE,
+)
+_APPROVED_WORKSPACE_RE = re.compile(
+    r"\b(?:approved\s+test\s+workspace|freigegeben(?:en|er|es)?\s+(?:test-)?workspace)\b",
     re.IGNORECASE,
 )
 
@@ -196,7 +215,15 @@ def _is_out_of_sandbox_filesystem_write(query: str) -> bool:
     q = str(query or "").strip()
     if not q:
         return False
-    return bool(_FILESYSTEM_WRITE_RE.search(q) and _OUT_OF_SANDBOX_RE.search(q))
+    if not _FILESYSTEM_WRITE_RE.search(q):
+        return False
+    if _APPROVED_WORKSPACE_RE.search(q) and not re.search(
+        r"\b(?:outside|auÃŸerhalb|ausserhalb|bypass|ignoriere)\b",
+        q,
+        re.IGNORECASE,
+    ):
+        return False
+    return bool(_OUT_OF_SANDBOX_RE.search(q))
 
 
 _PATH_TRAVERSAL_MARKER_RE = re.compile(
@@ -300,6 +327,21 @@ _MEMORY_FACT_FORWARDING_RE = re.compile(
     r"\btool\s+returns\s+text\s+instructing\b.{0,120}\b(?:leak|dump|forward|exfiltrate)\b.{0,80}\bmemory\b",
     re.IGNORECASE,
 )
+_MEMORY_DUMP_EXPORT_RE = re.compile(
+    r"\b(?:gib(?:\s+mir)?|zeige?|zeig|list(?:e|en)?|dump|exportier(?:e|en)?|export)\b"
+    r".{0,80}\b(?:alles|alle|vollstaendig|vollstaendig|komplett|saemtliche|all|everything)\b"
+    r".{0,80}\b(?:erinnerungen|gedaechtnis|gedaechtnis|memory|speicher)\b",
+    re.IGNORECASE,
+)
+_BROAD_PRIVATE_CONTEXT_EXTERNALIZATION_RE = re.compile(
+    r"\b(?:recherchier(?:e|en)?|suche|search|websearch|websuche|internet|online|api|tool|nutze|verwende)\b"
+    r".{0,140}\b(?:alles|alle|vollstaendig|vollstaendig|komplett|saemtliche|all|everything)\b"
+    r".{0,140}\b(?:was\s+du\s+(?:ueber|about)\s+(?:mich|mir|me)\s+(?:weisst|weiss|know|kannst|hast)|"
+    r"(?:ueber|about)\s+(?:mich|mir|me)|erinnerungen|gedaechtnis|memory|speicher)\b|"
+    r"\b(?:ignoriere|ignore|bypass|umgehe)\b.{0,80}\b(?:datenschutz|privacy|policy|safety)\b"
+    r".{0,140}\b(?:web|websearch|api|tool|extern|external|memory|erinnerungen|speicher)\b",
+    re.IGNORECASE,
+)
 _UNSCOPED_EXTERNAL_CONTENT_INSTRUCTION_RE = re.compile(
     r"\b(?:summari[sz]e|zusammenfass(?:e|en)?|fasse\s+zusammen)\b"
     r".{0,120}\b(?:page|seite|webpage|retrieved\s+content|abgerufene[rsn]?\s+inhalt)\b"
@@ -369,7 +411,8 @@ def _is_overbroad_user_data_export_request(query: str) -> bool:
     q = str(query or "").strip()
     if not q:
         return False
-    return bool(_OVERBROAD_USER_DATA_EXPORT_RE.search(q))
+    q_norm = q.casefold().replace("ü", "ue").replace("ä", "ae").replace("ö", "oe").replace("ß", "ss")
+    return bool(_OVERBROAD_USER_DATA_EXPORT_RE.search(q) or _MEMORY_DUMP_EXPORT_RE.search(q_norm))
 
 
 def _is_internal_identifier_request(query: str) -> bool:
@@ -411,7 +454,25 @@ def _is_memory_fact_forwarding_request(query: str) -> bool:
     q = str(query or "").strip().strip('"').strip("'")
     if not q:
         return False
-    return bool(_MEMORY_FACT_FORWARDING_RE.search(q))
+    q_norm = q.casefold().replace("ü", "ue").replace("ä", "ae").replace("ö", "oe").replace("ß", "ss")
+    return bool(
+        re.search(
+            r"\b(?:lade|load)\b.{0,80}\b(?:gesamtes|gesamt|alle|alles|komplett)\b"
+            r".{0,80}\b(?:memory|speicher|gedaechtnis|erinnerungen)\b",
+            q_norm,
+            re.IGNORECASE,
+        )
+        or _MEMORY_FACT_FORWARDING_RE.search(q)
+        or _MEMORY_DUMP_EXPORT_RE.search(q_norm)
+    )
+
+
+def _is_broad_private_context_externalization_request(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    q_norm = q.casefold().replace("ü", "ue").replace("ä", "ae").replace("ö", "oe").replace("ß", "ss")
+    return bool(_BROAD_PRIVATE_CONTEXT_EXTERNALIZATION_RE.search(q_norm))
 
 
 def _is_unscoped_external_content_instruction(query: str) -> bool:
@@ -557,10 +618,20 @@ def _is_external_current_research_query(query: str) -> bool:
     q = str(query or "").casefold()
     if not q:
         return False
+    if is_realtime_search_query(q):
+        return True
     has_current = any(token in q for token in ("aktuell", "aktuelle", "current", "latest", "heute", "derzeit"))
     has_research = any(token in q for token in ("recherch", "preise", "preis", "pricing", "modellpreise", "model prices"))
     has_model_vendor = any(token in q for token in ("gpt", "openai", "gemini", "google ai", "modell"))
     return has_current and has_research and has_model_vendor
+
+
+def _strip_memory_skills(skill_ids: Any) -> list[str]:
+    return [
+        str(skill_id)
+        for skill_id in (skill_ids or [])
+        if not str(skill_id or "").strip().lower().startswith("memory.")
+    ]
 
 
 def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
@@ -675,6 +746,18 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
             ):
                 logger.info(
                     "[AMBIGUITY-BYPASS] Weather intent stays tool-enabled despite ambiguity "
+                    "(confidence=%.2f >= %.2f). Query: %r",
+                    ambiguity_confidence,
+                    ambiguity_threshold,
+                    query_for_ambiguity[:50] if query_for_ambiguity else "",
+                )
+            elif (
+                is_ambiguous
+                and ambiguity_confidence >= ambiguity_threshold
+                and is_realtime_search_query(query_for_ambiguity)
+            ):
+                logger.info(
+                    "[AMBIGUITY-BYPASS] Realtime price/market query stays tool-enabled despite ambiguity "
                     "(confidence=%.2f >= %.2f). Query: %r",
                     ambiguity_confidence,
                     ambiguity_threshold,
@@ -1018,6 +1101,29 @@ async def execute_generation_prepare_gateway(
         wf.final_text = (
             "Ich kann nicht alle Memory-Fakten weitergeben oder dumpen. "
             "Bitte nenne konkret, welche eigene Information du prüfen möchtest."
+        )
+        wf.skip_llm_generation = True
+        return ctx
+
+    if _is_broad_private_context_externalization_request(user_query):
+        logger.warning(
+            "[PRIVATE-CONTEXT-EXTERNALIZATION-GATE] Blocking broad private context externalization before LLM/tools: %r",
+            user_query[:120],
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        if not hasattr(wf, "gateway_kwargs"):
+            wf.gateway_kwargs = {}
+        wf.gateway_kwargs["forced_tool"] = None
+        wf.gateway_kwargs["force_tool_name"] = None
+        wf.gateway_kwargs["tool_choice"] = "none"
+        wf.gateway_kwargs["disable_tools"] = True
+        wf.final_text = (
+            "Ich kopiere keinen breiten privaten Kontext in Web-, API- oder Tool-Anfragen. "
+            "Bitte nenne eine konkrete, unkritische Vorliebe oder einen engen Scope, den ich verwenden soll."
         )
         wf.skip_llm_generation = True
         return ctx
@@ -1613,6 +1719,14 @@ async def execute_generation_prepare_gateway(
             wf.gateway_kwargs["force_tool_name"] = "system.wikipedia_summary"
             logger.info("💎 SOURCE-ROUTING: Forcing system.wikipedia_summary for provider=%s", request.provider)
 
+        elif _news and _websearch_v3_news_routing_enabled(request.provider, wf.user_text):
+            wf.gateway_kwargs["forced_tool"] = {
+                "skill_id": "system.websearch",
+                "provider_tool_name": "system.websearch",
+            }
+            wf.gateway_kwargs["force_tool_name"] = "system.websearch"
+            logger.info("SOURCE-ROUTING: Forcing system.websearch for websearch_v3 news provider=%s", request.provider)
+
         elif _news:
             wf.gateway_kwargs["forced_tool"] = {
                 "skill_id": "system.rss_news",
@@ -1622,6 +1736,10 @@ async def execute_generation_prepare_gateway(
             logger.info("💎 SOURCE-ROUTING: Forcing system.rss_news for provider=%s", request.provider)
 
         elif _external_current_research:
+            wf.relevant_skill_ids = _strip_memory_skills(wf.relevant_skill_ids)
+            wf.memory_context_string = ""
+            wf.gateway_kwargs["allowed_skill_ids"] = wf.relevant_skill_ids
+            wf.gateway_kwargs["requested_skills"] = wf.relevant_skill_ids
             wf.gateway_kwargs["forced_tool"] = {
                 "skill_id": "system.websearch",
                 "provider_tool_name": "system.websearch",
@@ -1629,13 +1747,16 @@ async def execute_generation_prepare_gateway(
             wf.gateway_kwargs["force_tool_name"] = "system.websearch"
             if "system.websearch" not in wf.relevant_skill_ids:
                 wf.relevant_skill_ids.append("system.websearch")
+            wf.gateway_kwargs["allowed_skill_ids"] = wf.relevant_skill_ids
+            wf.gateway_kwargs["requested_skills"] = wf.relevant_skill_ids
             wf.action_guidance = (
                 (str(getattr(wf, "action_guidance", "") or "").strip() + "\n\n")
-                + "PFLICHT: Fuer aktuelle Modell-/API-Preise muss system.websearch genutzt werden. "
-                "Ohne zitierbare Quellen keine Preise oder Live-Daten nennen."
+                + "PFLICHT: Fuer aktuelle Preise, Kurse, Marktdaten, Modell-/API-Preise, Releases und Neuerscheinungen muss system.websearch genutzt werden. "
+                "Ohne zitierbare Quellen keine Preise, Termine, Releases oder Live-Daten nennen. "
+                "Wenn keine Waehrung genannt ist, nutze fuer deutsche Antworten standardmaessig EUR/Euro und frage nicht nur wegen der Waehrung nach."
             ).strip()
             logger.info(
-                "SOURCE-ROUTING: Forcing system.websearch for current model/pricing research provider=%s",
+                "SOURCE-ROUTING: Forcing system.websearch for current price/market/model research provider=%s",
                 request.provider,
             )
 

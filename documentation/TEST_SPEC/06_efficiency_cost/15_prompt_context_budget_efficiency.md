@@ -122,12 +122,28 @@ Provider-side cache internals that are not exposed, exact token parity between p
 
 ## ACCEPTANCE CRITERIA
 
-- [ ] Simple greetings and factual prompts avoid unnecessary tools/context.
-- [ ] Clear current-data prompts do not ask needless clarification for cost reasons.
-- [ ] Relevant memory improves answers without dragging unrelated memory.
-- [ ] Context selection is budget-aware and logged.
-- [ ] Repeated stable prompt segments produce cache-decision or cached-token evidence where supported.
-- [ ] Output length follows the user's requested granularity.
+- [x] Simple greetings and factual prompts avoid unnecessary tools/context.
+- [x] Clear current-data prompts do not ask needless clarification for cost reasons.
+- [x] Relevant memory improves answers without dragging unrelated memory.
+- [x] Context selection is budget-aware and logged.
+- [x] Repeated stable prompt segments produce cache-decision or cached-token evidence where supported.
+- [x] Output length follows the user's requested granularity.
+
+## LATEST PIPELINE VALIDATION
+
+- **Latest TestRun**: `TEST-RUN-2026-05-21-034`
+- **Status**: PASS
+- **Total Tests**: 12
+- **Passed**: 12
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Dashboard State**: PASS, `isPartialRun=false`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-034_final_audit.md`
+- **Skill 7 Documentation Update**: `documentation/test-runs/TEST-RUN-2026-05-21-034_skill7_documentation_update.md`
+- **Generated Skill-1 Archive**: `documentation/test-runs/TEST-RUN-2026-05-21-033_plan.json`
+- **Validation Summary**: Static prompt/context budget certification validates greeting budget, weather location clarity, relevant-only memory selection, private-memory minimization, prompt-cache cold/warm evidence, redacted cache evidence, output-length discipline, long-context guard behavior and cached-token DeepDive evidence. The memory dump gate now blocks the Spec 15 bulk-memory prompt before LLM/tools.
 
 ## BLOCKING CONDITIONS
 

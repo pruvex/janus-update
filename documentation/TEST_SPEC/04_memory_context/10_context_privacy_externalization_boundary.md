@@ -126,6 +126,30 @@ Full encryption design, real user memory export, production telemetry review, an
 - [ ] Prompt injection cannot force memory dumping.
 - [ ] GPT and Gemini preserve privacy boundaries.
 
+## Latest Pipeline Validation
+
+- **TargetTestRun:** TEST-RUN-2026-05-21-017
+- **Date:** 2026-05-21
+- **Result:** PASS
+- **Total:** 12
+- **Passed:** 12
+- **Failed:** 0
+- **Blocked:** 0
+- **ManualGate:** 0
+- **PassRatePct:** 100.00
+- **ProviderPassRatePct:** GPT pre-provider:100.00, Gemini pre-provider:100.00
+- **TypePassRatePct:** functional:100.00, security:100.00, prompt_injection:100.00
+- **TestPlan:** `documentation/test-runs/TEST-RUN-2026-05-21-017_plan.json`
+- **TestResultJson:** `documentation/test-results/TEST-RUN-2026-05-21-017_results.json`
+- **TestResult:** `documentation/test-results/TEST-RUN-2026-05-21-017_results.md`
+- **Final Audit:** `documentation/test-runs/TEST-RUN-2026-05-21-017_final_audit.md`
+- **Validation Evidence:** focused privacy/export gate suite PASS 17/17; memory/security/external-tool regression suite PASS 34/34; skill schema validator PASS for 54 skill JSON files.
+- **Dashboard Coverage:** 12 planned / 12 executed / 12 passed in deterministic pre-provider privacy-runner plan.
+- **Memory Privacy Boundary:** validated
+- **Externalization Boundary:** validated
+- **Security Gate:** PASS
+- **Findings:** NONE
+
 ## BLOCKING CONDITIONS
 
 - [ ] Isolated memory namespace cannot be created.

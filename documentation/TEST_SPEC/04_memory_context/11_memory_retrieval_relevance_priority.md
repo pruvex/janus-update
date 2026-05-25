@@ -125,6 +125,31 @@ Memory write/update correctness, externalization privacy, long-term retention po
 - [ ] Irrelevant private facts stay out of unrelated answers.
 - [ ] Ambiguous memory references trigger clarification.
 
+## Latest Pipeline Validation
+
+- **TargetTestRun:** TEST-RUN-2026-05-21-019
+- **Date:** 2026-05-21
+- **Result:** PASS
+- **Total:** 12
+- **Passed:** 12
+- **Failed:** 0
+- **Blocked:** 0
+- **ManualGate:** 0
+- **PassRatePct:** 100.00
+- **ProviderPassRatePct:** GPT pre-provider:100.00, Gemini pre-provider:100.00
+- **TypePassRatePct:** functional:100.00, security:100.00, prompt_injection:100.00
+- **TestPlan:** `documentation/test-runs/TEST-RUN-2026-05-21-019_plan.json`
+- **TestResultJson:** `documentation/test-results/TEST-RUN-2026-05-21-019_results.json`
+- **TestResult:** `documentation/test-results/TEST-RUN-2026-05-21-019_results.md`
+- **Final Audit:** `documentation/test-runs/TEST-RUN-2026-05-21-019_final_audit.md`
+- **Validation Evidence:** focused memory retrieval suite PASS 5/5; memory/tools/regression/privacy suite PASS 46/46; skill schema validator PASS for 54 skill JSON files.
+- **Dashboard Coverage:** 12 planned / 12 executed / 12 passed in deterministic pre-provider memory-runner plan.
+- **Memory Retrieval Quality:** validated
+- **Priority Over Placeholder:** validated
+- **Missing Fact Honesty:** validated
+- **Security Gate:** PASS
+- **Findings:** NONE
+
 ## BLOCKING CONDITIONS
 
 - [ ] Synthetic memory namespace cannot be seeded.

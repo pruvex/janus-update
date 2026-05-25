@@ -16,6 +16,7 @@ Logging Prefixe:
 
 import json
 import logging
+import re
 import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -34,6 +35,69 @@ logger = logging.getLogger("janus_backend")
 
 _MEMORY_TAGS = ["memory", "recall"]
 MEMORY_READ_SIMILARITY_THRESHOLD = 0.65
+
+
+_SENSITIVE_MEMORY_WRITE_RE = re.compile(
+    r"\b(?:passwort|password|secret|token|api[-_\s]?key|credential|zugangsdaten)\b"
+    r".{0,80}\b[A-Za-z0-9._~+/=-]*(?:SECRET|TOKEN|KEY|PASS)[A-Za-z0-9._~+/=-]*\b|"
+    r"\b(?:abc123SECRET|SECRET-[A-Za-z0-9._~+/=-]+)\b",
+    re.IGNORECASE,
+)
+_NO_DURABLE_MEMORY_RE = re.compile(
+    r"\b(?:speichere|speicher|merk(?:e)?|remember|save)\b"
+    r".{0,80}\b(?:nicht|not|no)\b.{0,80}\b(?:dauerhaft|permanent|langfristig|long[-\s]?term|memory|gedaechtnis|gedächtnis)\b|"
+    r"\b(?:nicht|not|no)\b.{0,80}\b(?:dauerhaft|permanent|langfristig|long[-\s]?term)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_sensitive_memory_write_request(text: Any) -> bool:
+    return bool(_SENSITIVE_MEMORY_WRITE_RE.search(str(text or "")))
+
+
+def _is_no_durable_memory_request(text: Any) -> bool:
+    return bool(_NO_DURABLE_MEMORY_RE.search(str(text or "")))
+
+
+def _normalize_memory_search_text(text: Any) -> str:
+    normalized = str(text or "").casefold()
+    normalized = normalized.replace("ü", "ue").replace("ä", "ae").replace("ö", "oe").replace("ß", "ss")
+    return re.sub(r"[^a-z0-9]+", " ", normalized).strip()
+
+
+def _memory_lexical_match_score(mem: models.Memory, query: str) -> int:
+    query_norm = _normalize_memory_search_text(query)
+    if not query_norm:
+        return 0
+    haystack = " ".join(
+        _normalize_memory_search_text(part)
+        for part in (
+            mem.snippet,
+            mem.category,
+            mem.canonical_key,
+            " ".join(mem.tags or []),
+        )
+    )
+    query_terms = [term for term in query_norm.split() if len(term) >= 3]
+    if not query_terms:
+        return 0
+    return sum(1 for term in query_terms if term in haystack)
+
+
+def _is_placeholder_memory_fact_text(text: Any) -> bool:
+    normalized = _normalize_memory_search_text(text)
+    if not normalized:
+        return False
+    placeholder_markers = (
+        "name des testprojekts",
+        "projektname",
+        "chat titel platzhalter",
+        "chat titel",
+    )
+    if not any(marker in normalized for marker in placeholder_markers):
+        return False
+    concrete_markers = ("phoenix", "orion")
+    return not any(marker in normalized for marker in concrete_markers)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -110,6 +174,27 @@ async def handle_memory_write(
     t0 = time.perf_counter()
     try:
         args = MemoryWriteArgs(**params)
+
+        if _is_sensitive_memory_write_request(args.fact):
+            logger.warning("[TOOL WRITE] BLOCKED sensitive memory write request")
+            return tool_err_v1(
+                "SENSITIVE_MEMORY_BLOCKED",
+                "Sensitive secret-like facts are not stored in memory.",
+                tags=_MEMORY_TAGS,
+                started_at=t0,
+            )
+
+        if _is_no_durable_memory_request(args.fact):
+            logger.info("[TOOL WRITE] Skipping non-durable memory request")
+            return tool_ok_v1(
+                {
+                    "operation": "not_saved",
+                    "reason": "no_durable_memory_requested",
+                    "memory_id": None,
+                },
+                tags=_MEMORY_TAGS,
+                started_at=t0,
+            )
         
         # 1. Build fact_object
         fact_object = {
@@ -250,14 +335,39 @@ async def handle_memory_read(
             results = [valid_memories[i] for i in indices]
         else:
             results = []
+
+        if len(results) < args.limit:
+            existing_ids = {mem.id for mem in results}
+            lexical_matches = sorted(
+                (
+                    (_memory_lexical_match_score(mem, args.query), mem)
+                    for mem in candidates
+                    if mem.id not in existing_ids
+                ),
+                key=lambda item: (-item[0], -(item[1].priority or 0.0), -(item[1].id or 0)),
+            )
+            results.extend(
+                mem
+                for score, mem in lexical_matches
+                if score > 0
+            )
+            results = results[:args.limit]
         
         # Format output
         memories_out = []
         for mem in results:
             snippet_data = _parse_snippet(mem.snippet)
+            fact_text = snippet_data.get("fact", mem.snippet)
+            if _is_placeholder_memory_fact_text(fact_text):
+                logger.info(
+                    "[TOOL READ] Skipping placeholder memory fact ID=%s: %s",
+                    mem.id,
+                    str(fact_text)[:80],
+                )
+                continue
             memories_out.append({
                 "memory_id": mem.id,
-                "fact": snippet_data.get("fact", mem.snippet),
+                "fact": fact_text,
                 "priority": mem.priority,
                 "category": mem.category,
                 "tags": mem.tags or [],
@@ -274,7 +384,7 @@ async def handle_memory_read(
         return tool_ok_v1(
             {
                 "memories": memories_out,
-                "total_found": len(results),
+                "total_found": len(memories_out),
                 "query": args.query,
             },
             tags=_MEMORY_TAGS,
@@ -361,6 +471,10 @@ async def handle_memory_update(
         # Update snippet
         new_snippet = json.dumps(existing_data, ensure_ascii=False)
         memory.snippet = new_snippet
+        new_canonical_key = _build_canonical_key(None, args.new_fact)
+        memory.canonical_key = new_canonical_key
+        memory.text_hash = _hash_canonical_key(new_canonical_key)
+        memory.normalized_text = new_canonical_key
         
         # Update embedding
         try:
@@ -571,6 +685,11 @@ def _build_canonical_key(subject_name: Optional[str], fact: str) -> str:
         # Hash the fact itself
         import hashlib
         return hashlib.sha256(fact.encode()).hexdigest()[:16]
+
+
+def _hash_canonical_key(key: str) -> str:
+    import hashlib
+    return hashlib.sha256(str(key or "").encode()).hexdigest()
 
 
 def _parse_snippet(snippet: Optional[str]) -> Dict[str, Any]:

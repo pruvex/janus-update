@@ -1687,7 +1687,7 @@ class IntentEngine:
             logger.info(
                 "[AMBIGUITY-DETECTION] Ambige Anfrage erkannt: confidence=%.2f, query=%r",
                 _ambiguity_confidence,
-                user_text[:50],
+                text_clean[:50],
             )
         
         # Guard: Calendar mutation beats fact-telling

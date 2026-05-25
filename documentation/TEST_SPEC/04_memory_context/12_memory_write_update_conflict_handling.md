@@ -126,6 +126,30 @@ Full memory architecture refactor, manual memory UI, real user data migration, a
 - [ ] Equivalent facts do not duplicate active memory.
 - [ ] Transient and sensitive facts are not over-persisted.
 
+## Latest Pipeline Validation
+
+- **TargetTestRun:** TEST-RUN-2026-05-21-021
+- **Date:** 2026-05-21
+- **Result:** PASS
+- **Total:** 12
+- **Passed:** 12
+- **Failed:** 0
+- **Blocked:** 0
+- **ManualGate:** 0
+- **PassRatePct:** 100.00
+- **ProviderPassRatePct:** GPT pre-provider:100.00, Gemini pre-provider:100.00
+- **TypePassRatePct:** functional:100.00, security:100.00, prompt_injection:100.00
+- **TestPlan:** `documentation/test-runs/TEST-RUN-2026-05-21-021_plan.json`
+- **TestResultJson:** `documentation/test-results/TEST-RUN-2026-05-21-021_results.json`
+- **TestResult:** `documentation/test-results/TEST-RUN-2026-05-21-021_results.md`
+- **Final Audit:** `documentation/test-runs/TEST-RUN-2026-05-21-021_final_audit.md`
+- **Validation Evidence:** focused memory mutation suite PASS 6/6; memory/tools/regression/security/retrieval/privacy suite PASS 56/56; skill schema validator PASS for 54 skill JSON files.
+- **Dashboard Coverage:** 12 planned / 12 executed / 12 passed in deterministic pre-provider memory-mutation plan.
+- **Memory Mutation Quality:** validated
+- **Conflict Handling:** validated
+- **Sensitive Persistence Gate:** PASS
+- **Findings:** NONE
+
 ## BLOCKING CONDITIONS
 
 - [ ] Isolated memory namespace cannot be created.

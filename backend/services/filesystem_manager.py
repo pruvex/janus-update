@@ -147,6 +147,20 @@ def _map_filesystem_exception(started: float, exc: Exception) -> ToolResultV1:
     return _fs_err("OPERATION_FAILED", f"Fehler: {exc}", started=started)
 
 
+def _ensure_path_in_allowed_workspace(
+    resolved: Path,
+    allowed_workspaces: list[Path],
+    user_path: str,
+) -> Path:
+    resolved_path = resolved.resolve()
+    for ws in allowed_workspaces:
+        if resolved_path.is_relative_to(ws.resolve()):
+            return resolved_path
+    raise PermissionError(
+        f"Pfad '{user_path}' liegt ausserhalb der freigegebenen Workspace-Verzeichnisse."
+    )
+
+
 def _resolve_and_validate_path(user_path: str, must_exist: bool = True) -> Path:
     """Findet den korrekten, absoluten Pfad und validiert ihn."""
     _reject_unsafe_path_segments(user_path)
@@ -158,16 +172,7 @@ def _resolve_and_validate_path(user_path: str, must_exist: bool = True) -> Path:
 
     if is_absolute_path:
         resolved = cleaned_path.resolve()
-        # Check if path is in a workspace (for must_exist validation)
-        in_workspace = False
-        for ws in allowed_workspaces:
-            if resolved.is_relative_to(ws.resolve()):
-                in_workspace = True
-                if must_exist and not resolved.exists():
-                    raise FileNotFoundError(f"Pfad '{user_path}' existiert nicht.")
-                return resolved
-        # If absolute path is not in a workspace, still return it
-        # The @requires_path_auth decorator will handle permission checking
+        _ensure_path_in_allowed_workspace(resolved, allowed_workspaces, user_path)
         if must_exist and not resolved.exists():
             raise FileNotFoundError(f"Pfad '{user_path}' existiert nicht.")
         return resolved
