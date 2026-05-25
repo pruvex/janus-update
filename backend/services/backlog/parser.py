@@ -6,7 +6,7 @@ from pathlib import Path
 from backend.services.backlog.schemas import BacklogCounts, BacklogItem, BacklogItemsResponse
 
 DEFAULT_BACKLOG_PATH = Path(__file__).resolve().parents[3] / "documentation" / "backlog" / "BACKLOG.md"
-ITEM_HEADING_PATTERN = re.compile(r"^###\s+(BACKLOG-\d+)\s+(?:–|â€“|-)\s+(.+?)\s*$")
+ITEM_HEADING_PATTERN = re.compile(r"^###\s+(BACKLOG-\d+)\s+(?:–|—|â€“|Ã¢â‚¬â€œ|-)\s+(.+?)\s*$")
 SECTION_PATTERN = re.compile(r"^##\s+(.+?)\s*$")
 FIELD_PATTERN = re.compile(r"^-\s+\*\*(.+?):\*\*\s*(.*)$")
 
@@ -74,6 +74,9 @@ def parse_backlog_text(text: str, source: str = "documentation/backlog/BACKLOG.m
         line = raw_line.rstrip()
         section_match = SECTION_PATTERN.match(line)
         if section_match and not line.startswith("###"):
+            if current_item is not None:
+                items.append(current_item)
+                current_item = None
             current_section = section_match.group(1).strip()
             current_field = None
             continue
