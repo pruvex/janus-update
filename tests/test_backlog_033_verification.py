@@ -5,7 +5,9 @@ Checks if Wikipedia and News tools are correctly selected for Gemini vs GPT.
 """
 
 import sys
-sys.path.insert(0, 'c:/KI/Janus-Projekt')
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from backend.services.orchestrator.intent_engine import IntentEngine
 
