@@ -579,6 +579,22 @@ def _trim_tool_results(tool_results: List[Dict[str, Any]], provider: str = "open
     return trimmed_results
 
 
+def _normalize_allowed_skill_ids(allowed_skill_ids: Optional[List[str]]) -> List[str]:
+    """Return stable canonical skill IDs, preserving first-seen order."""
+    normalized: List[str] = []
+    seen = set()
+    for raw_skill_id in allowed_skill_ids or []:
+        candidate = str(raw_skill_id or "").strip()
+        if not candidate:
+            continue
+        skill_id = str(tool_manager.get_skill_id(candidate) or candidate).strip()
+        if not skill_id or skill_id in seen:
+            continue
+        seen.add(skill_id)
+        normalized.append(skill_id)
+    return normalized
+
+
 def _filter_tools_by_skill_ids(allowed_skill_ids: Optional[List[str]]) -> List[Any]:
     all_tools = list(tool_manager.get_all_tools().values())
     unique_tools: List[Any] = []
@@ -589,24 +605,25 @@ def _filter_tools_by_skill_ids(allowed_skill_ids: Optional[List[str]]) -> List[A
             continue
         seen_all_tool_ids.add(tool_key)
         unique_tools.append(tool_def)
-    allowed = {
-        str(skill_id).strip()
-        for skill_id in (allowed_skill_ids or [])
-        if str(skill_id).strip()
-    }
+    normalized_allowed = _normalize_allowed_skill_ids(allowed_skill_ids)
+    allowed = set(normalized_allowed)
     if not allowed:
         return unique_tools
 
-    filtered: List[Any] = []
-    seen_skill_ids = set()
+    filtered_by_skill_id: Dict[str, Any] = {}
     for tool_def in unique_tools:
         tool_name = str(getattr(tool_def, "name", "") or "").strip()
         if not tool_name:
             continue
         skill_id = str(tool_manager.get_skill_id(tool_name) or "").strip()
-        if skill_id in allowed and skill_id not in seen_skill_ids:
-            seen_skill_ids.add(skill_id)
-            filtered.append(tool_def)
+        if skill_id in allowed and skill_id not in filtered_by_skill_id:
+            filtered_by_skill_id[skill_id] = tool_def
+
+    filtered = [
+        filtered_by_skill_id[skill_id]
+        for skill_id in normalized_allowed
+        if skill_id in filtered_by_skill_id
+    ]
 
     if filtered:
         logger.debug(
@@ -618,7 +635,7 @@ def _filter_tools_by_skill_ids(allowed_skill_ids: Optional[List[str]]) -> List[A
 
     logger.warning(
         "STRICT-PAYLOAD-CLAMP: allowed_skill_ids gesetzt, aber keine Tool-Matches gefunden (%s). Sende leere Toolliste.",
-        sorted(allowed),
+        normalized_allowed,
     )
     return []
 

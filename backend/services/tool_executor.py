@@ -893,16 +893,34 @@ class ToolExecutor:
                         )
                 elif request_provider == "openai":
                     tool_args["provider"] = "openai"
-                    if request_model:
+                    if request_model.lower().startswith("gemini-"):
+                        tool_args["model"] = "gpt-5.4-nano"
+                        logger.warning(
+                            "WEBSEARCH-EXECUTOR: replaced cross-provider model '%s' with OpenAI websearch model '%s'.",
+                            request_model,
+                            tool_args["model"],
+                        )
+                    elif request_model:
                         tool_args["model"] = request_model
                     logger.info(
                         "WEBSEARCH-EXECUTOR: enforced native OpenAI websearch (model='%s').",
-                        request_model or "<missing>",
+                        tool_args.get("model") or request_model or "<missing>",
                     )
                 else:
                     if request_provider:
                         tool_args["provider"] = request_provider
-                    if request_model and not str(tool_args.get("model") or "").strip():
+                    if (
+                        request_provider == "gemini"
+                        and request_model.lower().startswith("gpt-")
+                        and not str(tool_args.get("model") or "").strip()
+                    ):
+                        tool_args["model"] = "gemini-3-flash-preview"
+                        logger.warning(
+                            "WEBSEARCH-EXECUTOR: replaced cross-provider model '%s' with Gemini websearch model '%s'.",
+                            request_model,
+                            tool_args["model"],
+                        )
+                    elif request_model and not str(tool_args.get("model") or "").strip():
                         tool_args["model"] = request_model
 
                 logger.info(

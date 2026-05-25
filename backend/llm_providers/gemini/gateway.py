@@ -692,11 +692,11 @@ class GeminiGateway(BaseProviderGateway):
         _loop_output_tokens = 0
         _loop_websearch_queries = 0
 
+        all_available_tools = _filter_tools_by_skill_ids(allowed_skill_ids)
+        tools_for_call = _build_tool_definitions_for_llm(all_available_tools)
+
         while current_round < max_tool_rounds:
             current_round += 1
-
-            all_available_tools = _filter_tools_by_skill_ids(allowed_skill_ids)
-            tools_for_call = _build_tool_definitions_for_llm(all_available_tools)
 
             loop_kwargs = passthrough_kwargs.get("passthrough_kwargs")
             if loop_kwargs is None:

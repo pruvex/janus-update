@@ -174,6 +174,12 @@ def test_current_model_price_query_requires_external_research_route():
     )
 
     assert _is_external_current_research_query("Recherchiere aktuelle Modellpreise fuer GPT und Gemini")
+    assert _is_external_current_research_query("wieviel kostet eine feinunze gold?")
+    assert _is_external_current_research_query("wieviel kostet eine feinunze platin?")
+    assert _is_external_current_research_query("Goldpreis heute in Euro")
+    assert _is_external_current_research_query("current price of platinum per troy ounce USD")
+    assert _is_external_current_research_query("current price of gold per troy ounce USD")
+    assert _is_external_current_research_query("wann spielt der erste fc koeln das naechste mal und gegen wen?")
     assert not _is_external_current_research_query("Erklaere kurz, was ein GPT ist")
 
 

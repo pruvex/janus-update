@@ -512,18 +512,29 @@ class ToolManager:
         candidates.discard("")
         return candidates
 
-    @staticmethod
-    def _tool_definitions_cache_key(allowed_skill_ids: Optional[List[str]]) -> Tuple[bool, frozenset]:
+    def _normalize_allowed_skill_ids(self, allowed_skill_ids: Optional[List[str]]) -> List[str]:
+        normalized: List[str] = []
+        seen: Set[str] = set()
+        for raw_skill_id in allowed_skill_ids or []:
+            candidate = str(raw_skill_id or "").strip()
+            if not candidate:
+                continue
+            skill_id = str(self.get_skill_id(candidate) or candidate).strip()
+            if not skill_id or skill_id in seen:
+                continue
+            seen.add(skill_id)
+            normalized.append(skill_id)
+        return normalized
+
+    def _tool_definitions_cache_key(self, allowed_skill_ids: Optional[List[str]]) -> Tuple[bool, frozenset]:
         """
         Cache-Key: frozenset der normalisierten IDs; erstes Tuple-Element markiert,
         ob eine explizite (truthy) Einschränkungsliste übergeben wurde (vermeidet Kollision mit leeren Einträgen).
         """
-        if not allowed_skill_ids:
+        normalized = self._normalize_allowed_skill_ids(allowed_skill_ids)
+        if not normalized:
             return (False, frozenset())
-        return (
-            True,
-            frozenset(str(s).strip() for s in allowed_skill_ids if str(s).strip()),
-        )
+        return (True, frozenset(normalized))
 
     def get_tool_definitions(self, allowed_skill_ids: List[str] = None) -> List[Dict[str, Any]]:
         key = self._tool_definitions_cache_key(allowed_skill_ids)
@@ -533,9 +544,8 @@ class ToolManager:
 
         definitions: List[Dict[str, Any]] = []
         unique_tools = {id(tool): tool for tool in self.tools.values()}
-        allowed_set: Optional[Set[str]] = (
-            {str(s).strip() for s in allowed_skill_ids if str(s).strip()} if allowed_skill_ids else None
-        )
+        normalized_allowed = self._normalize_allowed_skill_ids(allowed_skill_ids)
+        allowed_set: Optional[Set[str]] = set(normalized_allowed) if normalized_allowed else None
 
         for tool in unique_tools.values():
             if allowed_set is not None:

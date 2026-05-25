@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from backend.services.tool_manager import tool_manager
 from backend.services.ops_kill_switches import provider_access_decision
 from backend.utils.config_loader import load_model_catalog
+from backend.llm_providers.shared.utils import _normalize_allowed_skill_ids
 
 if TYPE_CHECKING:
     from backend.services.tool_executor import ToolExecutor
@@ -135,7 +136,7 @@ async def reason_and_respond(
     # 2. Bestimme effektive Skills (Router-Logik)
     effective_allowed_skill_ids: Optional[List[str]] = None
     if allowed_skill_ids is not None:
-        effective_allowed_skill_ids = [str(s).strip() for s in (allowed_skill_ids or []) if str(s).strip()]
+        effective_allowed_skill_ids = _normalize_allowed_skill_ids(allowed_skill_ids)
     elif not disable_tools and str(user_prompt or "").strip():
         from backend.services.skill_selector import SkillSelector
 
@@ -146,8 +147,8 @@ async def reason_and_respond(
             for tool in tool_manager.get_all_tools().values()
         }
         normalized_selected = [
-            str(s).strip() for s in (selected_skills or [])
-            if str(s).strip() and str(s).strip() in available_skill_ids
+            skill_id for skill_id in _normalize_allowed_skill_ids(selected_skills)
+            if skill_id in available_skill_ids
         ]
         if normalized_selected:
             effective_allowed_skill_ids = normalized_selected[:10]  # 💎 BACKLOG-034: Erhöhe Limit auf 10

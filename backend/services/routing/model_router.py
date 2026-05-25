@@ -9,6 +9,13 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 
 
+def _normalize_provider(provider: str) -> str:
+    provider_key = str(provider or "openai").strip().lower()
+    if provider_key == "google":
+        return "gemini"
+    return provider_key
+
+
 class ModelRouter:
     """Router for model selection based on skill configuration (Provider-Silos)."""
     
@@ -50,6 +57,7 @@ class ModelRouter:
         Returns:
             Dictionary with primary, fallback, and escalation model configs for the provider
         """
+        provider = _normalize_provider(provider)
         # Check if skill has specific mapping
         skill_mappings = self.config.get("skill_mappings", {})
         
@@ -60,11 +68,13 @@ class ModelRouter:
         
         # Fall back to global defaults for the provider
         default_tiers = self.config.get("default_tiers", {})
-        provider_defaults = default_tiers.get(provider, default_tiers.get("openai", {
-            "primary": {"model": "gpt-4o-mini"},
-            "fallback": {"model": "gpt-4o"},
-            "escalation": {"model": "gpt-4-turbo"}
-        }))
+        provider_defaults = default_tiers.get(provider)
+        if provider_defaults is None:
+            provider_defaults = {
+                "primary": {"model": "unknown"},
+                "fallback": {"model": "unknown"},
+                "escalation": {"model": "unknown"},
+            }
         
         return provider_defaults
     

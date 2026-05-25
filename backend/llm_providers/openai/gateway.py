@@ -235,11 +235,12 @@ class OpenAIGateway(BaseProviderGateway):
         _loop_input_tokens = 0
         _loop_output_tokens = 0
 
+        all_available_tools = _filter_tools_by_skill_ids(allowed_skill_ids)
+        tools_for_call = _build_tool_definitions_for_llm(all_available_tools)
+
         while current_round < max_tool_rounds:
             current_round += 1
             
-            all_available_tools = _filter_tools_by_skill_ids(allowed_skill_ids)
-            tools_for_call = _build_tool_definitions_for_llm(all_available_tools)
 
             # Robustes Kwargs-Handling für den Service-Call
             loop_kwargs = passthrough_kwargs.get("passthrough_kwargs")

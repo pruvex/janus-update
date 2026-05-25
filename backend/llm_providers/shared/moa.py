@@ -27,7 +27,7 @@ MOA_MODEL_HIERARCHY: Dict[str, Dict[str, str]] = {
     "gemini": {
         "speed": "gemini-3-flash-preview",
         "balanced": "gemini-3-flash-preview",
-        "logic": "gemini-3-pro-preview",
+        "logic": "gemini-3.1-pro-preview",
         "vision": "gemini-pro-vision",
     },
     # Ollama: bewusst leer – lokale Modelle haben keine Tier-Hierarchie.
