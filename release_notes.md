@@ -1,5 +1,5 @@
 # Janus Projekt 0.4.17-beta.37
-**Released:** 2026-05-21 15:55
+**Released:** 2026-05-21 19:20
 
 ### Fixed
 - **TEST-RUN-2026-05-21-013 / Final Beta Launch Gate Review:** Category 2 Security & Safety is fully validated with 19/19 specs PASS and 100% dashboard pass rate. Added final launch-gate evidence for Security 01-18, final risk register, owner sign-off and honest PASS WITH WATCHPOINTS decision for controlled external packaged-local Electron beta. This gate explicitly does not approve hosted SaaS or public/commercial production release without a deployment-bound rerun. Files: `backend/tests/test_final_beta_launch_gate.py`, `tests/e2e/generated/TEST-RUN-2026-05-21-013.final-beta-launch-gate.spec.js`, `documentation/test-runs/TEST-RUN-2026-05-21-013_final_audit.md`, `documentation/test-results/TEST-RUN-2026-05-21-013_results.json`.
