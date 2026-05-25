@@ -80,6 +80,21 @@ User-Antworten:
 - Lange Historie nur als Archiv behandeln, nicht als aktive Anforderung.
 - Bei neuem Feature, langem Chat oder unabhaengigem Audit neuen Chat empfehlen.
 
+## Janus Arbeitsmodus
+
+Die kompakte Praxisanleitung steht in `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`.
+
+Standard:
+
+- ein Ziel
+- ein Skill
+- ein gebundenes Artefakt oder eine klare Entscheidungsfrage
+- eine Modell-/Intelligenz-Empfehlung
+- ein naechster Gate- oder Handoff-Schritt
+- Evidenz oder dokumentierter Blocker
+
+Wenn der Nutzer nur `ok`, `weiter`, `los` oder aehnlich schreibt, fuehrt Codex den zuletzt empfohlenen naechsten Schritt aus, sofern dieser keine riskante Git-, Release-, Delete- oder Publish-Aktion ist. Fuer Commit, Push, Tag, Merge, Release, Delete oder riskante Auto-Fixes bleibt explizite Freigabe erforderlich.
+
 ## Git/GitHub Governance
 
 - Normalarbeit findet auf `develop` statt.

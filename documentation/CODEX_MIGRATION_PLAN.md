@@ -73,10 +73,15 @@ Regel:
 - Danach die gepruefte `SKILL.md` und zugehoerige Scripts nach `documentation/codex/skills/<skill>/` spiegeln.
 - Commits enthalten die Repo-Kopie; die Home-Kopie allein gilt nicht als gesichert.
 
-## Naechste Migration
+## Betriebsmodus
 
-1. `janus-skill-router` in echten Aufgaben verwenden und schaerfen.
-2. `janus-feature-design` mit einer kleinen Feature-Idee testen.
-3. `janus-spec-generator` und `janus-spec-normalizer` aus den vorhandenen Prompt-Dateien bauen.
-4. Backlog-Skills migrieren.
-5. Execution-, Audit-, Dokumentations- und Release-Skills migrieren.
+Die Migration der Janus-Diamond-Skills ist abgeschlossen. Der laufende Codex-Arbeitsmodus steht in:
+
+- `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`
+
+Naechste Arbeit ist keine weitere Migration, sondern Anwendung und Schaerfung im echten Janus-Alltag:
+
+1. Neue Aufgaben zuerst ueber `janus-skill-router` routen.
+2. Backlog- und Dashboard-Flow mit realen READY Items testen.
+3. Einen kleinen Feature-Pfad von `janus-feature-design` bis `janus-documentation-update` komplett durchlaufen.
+4. `janus-health-check` regelmaessig als DAILY/WEEKLY Kontrollinstrument nutzen.

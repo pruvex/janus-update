@@ -9,6 +9,8 @@ description: Route Janus project work to the correct Diamond pipeline skill, mod
 
 Use this skill before acting on Janus work. Classify the user's request, recommend the next Janus skill, recommend model and reasoning settings, then either continue or stop at a model-switch gate.
 
+Default posture for this user: guide the process actively, keep the next step explicit, and prevent skipped gates. If the user says only `ok`, `weiter`, `los`, or similar, continue with the last recommended safe next step. Still require explicit approval for commit, push, tag, merge, release, delete, publish, or risky auto-fix actions.
+
 ## Required Context
 
 Prefer these files, only as needed:
@@ -78,6 +80,20 @@ Stay in the current chat for:
 - follow-up tests
 - documentation update tied to just-completed work
 - user asks for status or continuation
+
+## Working-Style Guardrails
+
+Prefer a narrow guided flow:
+
+- one goal
+- one skill
+- one bound artifact or one decision question
+- one next handoff
+- one evidence/check block
+
+Stop and clarify when no artifact is bound, the chat conflicts with the artifact, a product decision is missing, scope has multiple plausible paths, evidence would be missing, or a risky Git/release/destructive action would be needed.
+
+Use `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md` as the concise operating guide when the user asks how we should work.
 
 ## Completion Format
 
