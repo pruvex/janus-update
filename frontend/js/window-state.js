@@ -270,6 +270,20 @@ export function setWindowProvider(windowId, val) {
   emit();
 }
 
+export function setWindowLlm(windowId, providerValue, modelValue) {
+  assertWindowId(windowId);
+  const provider = normalizeLlmOverride(providerValue);
+  const modelId = normalizeLlmOverride(modelValue);
+  state = {
+    ...state,
+    windows: {
+      ...state.windows,
+      [windowId]: { ...state.windows[windowId], provider, modelId },
+    },
+  };
+  emit();
+}
+
 export function setWindowModel(windowId, val) {
   assertWindowId(windowId);
   const modelId = normalizeLlmOverride(val);

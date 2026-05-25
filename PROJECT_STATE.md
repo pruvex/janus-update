@@ -1,6 +1,6 @@
-# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
+﻿# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-13 (Prompt Injection Defense — 0.4.17-beta.29)
+**Aktualisiert:** 2026-05-25 (BACKLOG-094 Dual Parallel Chat Execution â€” 0.4.17-beta.38)
 
 ---
 
@@ -8,13 +8,16 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **BACKLOG-094 Zwei Chats parallel mit eigener Modellwahl** | SEALED WITH FIXES | Zwei Chatfenster arbeiten jetzt parallel mit sauber isoliertem Stream-/UI-State und provider-lokaler Modellwahl (z. B. GPT in A, Gemini in B). Backend liefert STREAM_AUDIT/TOKEN_AUDIT Nachweise inklusive Log-Spiegel in `documentation/logs/janus_backend.log`. Final Audit: PASS WITH FIXES. |
 | **Websearch Provider Parity / Diamond List Templates** | SEALED | Gemini und GPT liefern fuer Release- und Ranking-Websuchen jetzt dieselbe Chat-Form: Titel/Datum oder Titel/Details, Beschreibung, Preiszeile bei Releases, echte Quellenlinks und keine Fake-/Google-/SVG-/Normalartikel-Listenlinks. Musik-Releases und fehlende per-entry Release-Links werden kostenbewusst ueber einen Batch-Resolver abgesichert. Final Audit PASS; Version unveraendert 0.4.17-beta.38; Validation: Websearch/Diamond 83/83 PASS, Markdown 4/4 PASS. |
+| **BACKLOG-093 API-Key-Duplikate in Settings** | SEALED | Settings-Ansicht zeigt gespeicherte API-Keys jetzt nur noch einmal pro Provider an. Stale async responses werden ignoriert, Provider-Namen werden dedupliziert und Live-Janus-Sichtpruefung PASS bestaetigt genau zwei sichtbare Eintraege. Final Audit PASS; Version unveraendert 0.4.17-beta.38. |
 | **Spec 15 Prompt and Context Budget Efficiency** | SEALED | Prompt-/Context-Budget final validiert und gehaertet. Greeting/Weather-Budget, relevante Memory-Auswahl, Irrelevant-Memory-Suppression, Prompt-Cache-Evidence, Output-Kuerze, Long-Context-Guard und Privacy-Gates sind abgesichert. Final Audit PASS: TEST-RUN-2026-05-21-034 PASS 12/12, Dashboard 100%, Findings NONE. |
 | **Spec 14 Smallest Viable Model and Escalation Discipline** | SEALED | Model-Routing-Disziplin final validiert und gehaertet. GPT/Gemini smallest viable routes, skill-tier routes, MoA tiers, explicit escalation and provider-silo isolation sind abgesichert. Final Audit PASS: TEST-RUN-2026-05-21-031 PASS 12/12, Dashboard 100%, Findings NONE. |
 | **Spec 13 Cost and Token Tracking Completeness** | SEALED | Cost-/Token-Observability final validiert und verbessert. Hidden/cached Tokens, Total Tokens, ToolLoop-/Stream-Kontext und Websearch-Komponente landen sauber in Persistenz und DeepDive-Aggregation. Final Audit PASS: TEST-RUN-2026-05-21-029 PASS 12/12, Dashboard 100%, Findings NONE. |
 | **Spec 18 TestSpec TestPlan Generator Regression** | SEALED | Generator-/Compiler-Regression final validiert. Oracle-Transfer fuer Clarification, Refusal, Source Attribution, `mustNotContain`, Prompt-Injection-as-data und Parallel-Metadaten ist durch Selftest plus Skill-1-Compilerlauf abgesichert. Final Audit PASS: TEST-RUN-2026-05-21-027 PASS 12/12, Dashboard 100%, Findings NONE. |
 | **Spec 07 Rate Limits, Quotas, Abuse and Cost Control** | SEALED | Retry-storm, flood/mass-generation, quota bypass and rate-limit disablement safety behavior final validiert. Product gates und refusal-aware oracles sind gruen. Final Audit PASS: TEST-RUN-2026-05-20-018 PASS 26/26, Findings NONE, BACKLOG-088/089/090 DONE. |
 | **BACKLOG-080 Playwright Duplicate Installation Collision** | SEALED | Duplicate frontend `@playwright/test` Dependency entfernt. Playwright-Smoke-Test laeuft ohne second-require-Konfigurationsfehler; BACKLOG-079-Verifikation wurde dadurch wieder moeglich. |
+| **BACKLOG-091 Chat-Header-Modellwahl pro Chat persistent speichern** | SEALED | Per-Chat Header-Provider/Model Override wird jetzt in Chat-Daten persistiert, beim Chat-Reload restauriert und nach Restart fuer den jeweiligen Chat beibehalten. Final Audit PASS; Unit/Python/JS Checks PASS; manueller Restart-Test PASS. |
 | **BACKLOG-079 Playwright beforeEach Timeout Fix** | SEALED WITH FOLLOW-UP | Runner-Infrastrukturblocker aus TEST-RUN-2026-05-19-007 behoben. TEST-RUN-2026-05-19-008 lief mit 57 Tests durch und bestaetigt, dass der 42-Test-beforeEach-Timeout nicht mehr der Blocker ist. Spec 06 bleibt wegen separater AI-Safety-/Oracle-/Flaky-Findings offen. |
 | **BACKLOG-074 Planner Boundary Control** | SEALED | Planner-vs-Direct-Execution Boundary fuer Spec 05 final validiert. Fixes: Ambiguity over-caution, Memory/Identity bleed bei synthetic prompts, short workspace write clarification, broad multi-step workspace scope gate, TestPlan oracle and runner stability. Final Audit PASS: TEST-RUN-2026-05-19-003 PASS 32/32, Findings NONE. |
 | **OWASP Injection, XSS, CSRF, SSRF and Path Traversal** | SEALED | Web-Attack-Surface-Baseline validiert Injection-, XSS-, CSRF-, SSRF-, Path-Traversal-, MIME-/Upload- und Unsafe-Redirect-Probes. Final Audit PASS: TEST-RUN-2026-05-18-027 PASS 26/26, 26 Evidence-Dateien vorhanden, Findings NONE. |

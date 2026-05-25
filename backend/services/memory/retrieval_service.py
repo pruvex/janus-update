@@ -56,6 +56,17 @@ _PERSONAL_SCOPE_HINT_RE = re.compile(
     r"gesundheit|health|familie|family|wohnort|adresse|budget|kalender|termine)\b",
     re.IGNORECASE,
 )
+_STRICT_SHORT_FORMAT_REPLY_RE = re.compile(
+    r"\b(?:"
+    r"antworte\s+mit\s+genau|"
+    r"antworte\s+nur|"
+    r"gib\s+genau|"
+    r"nur\s+(?:zwei|2)\s+w(?:o|ö)rter|"
+    r"exactly\s+\d+\s+words?|"
+    r"reply\s+with\s+exactly"
+    r")\b",
+    re.IGNORECASE,
+)
 
 
 def _is_context_privacy_memory_suppressed_query(query: str) -> bool:
@@ -81,6 +92,8 @@ def _is_generic_memory_suppressed_query(query: str) -> bool:
     """Return True for synthetic or underspecified prompts that must not receive memory context."""
     normalized = " ".join(str(query or "").strip().lower().split())
     if not normalized:
+        return True
+    if _STRICT_SHORT_FORMAT_REPLY_RE.search(normalized):
         return True
     exact_suppressed = {
         "simple factual prompt",

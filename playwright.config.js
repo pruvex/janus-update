@@ -16,6 +16,7 @@ export default defineConfig({
   testDir: '.',
   testMatch: [
     'tests/e2e/**/*.spec.js',
+    'tests/functional/**/*.spec.js',
     'frontend/tests/e2e/**/*.spec.ts',
   ],
   /* Run tests in files in parallel */

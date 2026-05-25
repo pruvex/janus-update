@@ -1,6 +1,7 @@
 import logging
 import sys
 import os
+from pathlib import Path
 
 from backend.utils.redaction import redact_sensitive_text, redact_sensitive_value
 
@@ -53,6 +54,20 @@ def setup_logging():
         
     except Exception as e:
         print(f"WARNUNG: Konnte Logfile nicht erstellen: {e}")
+
+    # Zusätzlicher zentraler Log-Ort im Repo für einfache Auswertung:
+    # C:\KI\Janus-Projekt\documentation\logs\janus_backend.log
+    try:
+        backend_dir = Path(__file__).resolve().parent
+        repo_root = backend_dir.parent
+        docs_log_dir = repo_root / "documentation" / "logs"
+        docs_log_dir.mkdir(parents=True, exist_ok=True)
+        docs_log_file = docs_log_dir / "janus_backend.log"
+        docs_file_handler = logging.FileHandler(str(docs_log_file), mode="a", encoding="utf-8")
+        handlers.append(docs_file_handler)
+        print(f"DEBUG: Logging mirror to {docs_log_file}")
+    except Exception as e:
+        print(f"WARNUNG: Konnte documentation/logs Logfile nicht erstellen: {e}")
 
     # 3. Config anwenden
     noise_filter = NoiseSuppressFilter()

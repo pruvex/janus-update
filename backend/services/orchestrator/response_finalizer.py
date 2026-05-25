@@ -851,7 +851,10 @@ async def finalize_response(
         wf.execution_for_persist,
         extra_metadata={"video_list_metadata": wf.video_list_metadata} if getattr(wf, "video_list_metadata", None) else None,
     )
-    _trigger_chat_title_job_if_eligible(db, request.chat_id, request.provider)
+    if not bool(getattr(wf, "skip_lightweight_post_jobs", False)):
+        _trigger_chat_title_job_if_eligible(db, request.chat_id, request.provider)
+    else:
+        logger.info("[TITLE-TRIGGER] Skip chat %s: lightweight post jobs disabled for strict short reply.", request.chat_id)
     if wf.event in {"PERSON_IDENTIFIED", "PERSON_NAMED"}:
         identity_manager.clear_unknown_face(request.chat_id)
     if wf.event == "PERSON_NAMED" or wf.event == "PERSON_IDENTIFIED":
@@ -866,6 +869,7 @@ async def finalize_response(
         wf.learned_name,
         skip_fact_extraction=(
             wf.skip_fact_extraction
+            or bool(getattr(wf, "skip_lightweight_post_jobs", False))
             or (
                 has_websearch_tool(getattr(wf, "tool_results", []) or [])
                 and is_realtime_search_query(wf.user_text)

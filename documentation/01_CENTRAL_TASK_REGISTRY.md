@@ -2,6 +2,35 @@
 
 This registry tracks feature tasks, test validations, and pipeline runs.
 
+## Backlog Closures
+
+### BACKLOG-094 - Zwei Chats parallel mit eigener Modellwahl ausfuehren
+
+- **Status**: DONE
+- **Final Audit**: `documentation/test-runs/BACKLOG-094_final_audit.md` (PASS WITH FIXES)
+- **Task**: `documentation/tasks/backlog_BACKLOG-094_dual_parallel_chat_execution.md`
+- **Execution Result**: `documentation/tasks/backlog_BACKLOG-094_execution_result.md`
+- **Validation**: Parallel-Chat Verhalten und provider-lokale Isolation gehaertet; funktionaler Playwright-Test PASS; STREAM_AUDIT/TOKEN_AUDIT Backend-Nachweise vorhanden.
+- **Changed Files**: `backend/api/routers/chat.py`, `backend/main.py`, `backend/logger_config.py`, `backend/services/logging/supabase_client.py`, `frontend/js/chat.js`, `playwright.config.js`, `tests/functional/chat-core.spec.js`.
+
+### BACKLOG-093 - Gespeicherte API-Keys werden in den Einstellungen doppelt angezeigt
+
+- **Status**: DONE
+- **Final Audit**: `documentation/test-runs/BACKLOG-093_final_audit.md`
+- **Task**: `documentation/tasks/backlog_BACKLOG-093_duplicate_api_keys_settings.md`
+- **Execution Result**: `documentation/tasks/backlog_BACKLOG-093_execution_result.md`
+- **Validation**: `LIVE_JANUS_SMOKE` PASS with manual Janus sight check; `node --check frontend/js/settings.js` PASS.
+- **Changed Files**: `frontend/js/settings.js`.
+
+### BACKLOG-091 - Chat-Header-Modellwahl pro Chat persistent speichern
+
+- **Status**: DONE
+- **Final Audit**: `documentation/test-runs/BACKLOG-091_final_audit.md`
+- **Task**: `documentation/tasks/backlog_BACKLOG-091_chat_header_model_persistence.md`
+- **Execution Result**: `documentation/tasks/backlog_BACKLOG-091_execution_result.md`
+- **Validation**: PASS 1/1 unit test, Python compile PASS, frontend JS checks PASS, manual restart evidence PRESENT.
+- **Changed Files**: `backend/data/models.py`, `backend/data/schemas.py`, `backend/data/crud.py`, `backend/data/database.py`, `backend/api/routers/chat.py`, `frontend/js/window-state.js`, `frontend/js/chat-manager.js`, `frontend/js/app.js`, `tests/unit/test_chat_header_llm_override.py`, `alembic/versions/2026_05_25_chat_header_llm_override.py`.
+
 ## Test Pipeline Validations
 
 ### WEBSEARCH-PROVIDER-PARITY-2026-05-22 - Release-List Chat Template Hardening

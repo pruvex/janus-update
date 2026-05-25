@@ -25,6 +25,8 @@ logger.debug(
     bool(os.getenv("SUPABASE_URL")),
 )
 
+_schema_check_disabled_notice_emitted = False
+
 
 class SupabaseClientSingleton:
     """
@@ -96,6 +98,7 @@ def ensure_logging_schema() -> None:
     import logging
     logger = logging.getLogger(__name__)
     
+    global _schema_check_disabled_notice_emitted
     try:
         client = get_supabase_client()
         
@@ -133,6 +136,18 @@ def ensure_logging_schema() -> None:
             logger.info("Schema validation: trace_id column exists in logs_raw")
             
     except Exception as e:
+        msg = str(e)
+        # Some Supabase deployments do not expose custom SQL RPC helpers like public.exec_sql.
+        # In that case, skip schema auto-migration quietly to avoid repeated error spam.
+        if "Could not find the function public.exec_sql" in msg or "PGRST202" in msg:
+            if not _schema_check_disabled_notice_emitted:
+                logger.warning(
+                    "Schema validation skipped: RPC helper 'public.exec_sql' not available in this Supabase project."
+                )
+                _schema_check_disabled_notice_emitted = True
+            else:
+                logger.debug("Schema validation skipped (exec_sql unavailable).")
+            return
         logger.error(f"Schema validation failed: {e}")
         # Don't raise - allow application to start even if schema check fails
         # The logging pipeline will handle schema errors gracefully

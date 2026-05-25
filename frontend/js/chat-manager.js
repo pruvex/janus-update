@@ -9,6 +9,7 @@ import {
   setChatForWindow,
   setActiveWindow,
   setWindowOpen,
+  setWindowLlm,
   closeSecondWindow,
   subscribeWindowState,
   syncActiveWindowDom,
@@ -158,6 +159,55 @@ function setLastProjectChatId(projectId, chatId) {
 
 function isProjectChat(chat) {
   return chat && (chat.project_id != null || chat.projectId != null);
+}
+
+function normalizeChatLlmValue(value) {
+  const s = String(value ?? "").trim();
+  return s ? s : null;
+}
+
+function syncLoadedChatHeaderLlm(chatId, provider, model) {
+  const id = Number(chatId);
+  if (!Number.isFinite(id)) return;
+  const normalizedProvider = normalizeChatLlmValue(provider);
+  const normalizedModel = normalizeChatLlmValue(model);
+  for (const wid of WINDOW_IDS) {
+    if (Number(getActiveChatIdForWindow(wid)) === id) {
+      setWindowLlm(wid, normalizedProvider, normalizedModel);
+    }
+  }
+}
+
+export async function saveChatHeaderSelection(chatId, provider, model) {
+  const id = Number(chatId);
+  if (!Number.isFinite(id)) return null;
+
+  const response = await fetch(`${API_BASE_URL}/api/chats/${id}/llm`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      provider: normalizeChatLlmValue(provider),
+      model: normalizeChatLlmValue(model),
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const updatedChat = await response.json();
+  updateChatInSidebarSnapshot(id, {
+    header_provider: updatedChat.header_provider ?? null,
+    header_model: updatedChat.header_model ?? null,
+  });
+  syncLoadedChatHeaderLlm(
+    id,
+    updatedChat.header_provider ?? null,
+    updatedChat.header_model ?? null
+  );
+  return updatedChat;
 }
 
 function getChatTitleFromSidebarList(chatId) {
@@ -742,6 +792,7 @@ export async function loadChat(chatId) {
   }
 
   setChatForWindow(windowId, chatId);
+  setWindowLlm(windowId, null, null);
 
   chatMessagesDiv.innerHTML = "";
 
@@ -760,6 +811,16 @@ export async function loadChat(chatId) {
     } else if (options.context === "assistant" || !options.context) {
       setLastAssistantChatId(chatId);
     }
+
+    syncLoadedChatHeaderLlm(
+      chatId,
+      chatDetails.header_provider ?? null,
+      chatDetails.header_model ?? null
+    );
+    updateChatInSidebarSnapshot(chatId, {
+      header_provider: chatDetails.header_provider ?? null,
+      header_model: chatDetails.header_model ?? null,
+    });
 
     const chatHeaderElement = document.getElementById(paneId("chat-header", windowId));
     if (chatHeaderElement) {
@@ -886,6 +947,7 @@ if (typeof window !== "undefined") {
   window.chatManager.getCurrentChatId = getCurrentChatId;
   window.chatManager.getLastProjectChatId = getLastProjectChatId;
   window.chatManager.setLastProjectChatId = setLastProjectChatId;
+  window.chatManager.saveChatHeaderSelection = saveChatHeaderSelection;
   window.chatManager.patchChatTitleInUI = patchChatTitleInUI;
   window.chatManager.scheduleSmartTitleRefresh = scheduleSmartTitleRefresh;
   window.chatManager.syncSidebarWindowContextUi = syncSidebarWindowContextUi;

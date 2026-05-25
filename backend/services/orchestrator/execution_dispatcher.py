@@ -30,6 +30,44 @@ from backend.data.schemas_logging import LogEventCreate
 
 logger = logging.getLogger("janus_backend")
 
+_STRICT_SHORT_FORMAT_REPLY_RE = re.compile(
+    r"^\s*(?:antworte\s+mit\s+genau|antworte\s+nur|gib\s+genau|reply\s+with\s+exactly)",
+    re.IGNORECASE,
+)
+_STRICT_SHORT_FORMAT_QUOTE_RE = re.compile(r"['\"]([^'\"]{1,80})['\"]")
+_COMPACT_LIST_REQUEST_RE = re.compile(
+    r"(?:\b(?:nenne|gib|liste|list|name)\b.{0,40}\b(\d{1,2})\b.{0,40}\b(?:punkte|bullet|items|stichpunkte)\b)|"
+    r"(?:\b(?:kurz|knapp|kurze|kompakt|in\s+kurzform|briefly|concise)\b)",
+    re.IGNORECASE,
+)
+
+
+def _extract_strict_short_reply(query: str) -> Optional[str]:
+    text = str(query or "").strip()
+    if not text:
+        return None
+    if not _STRICT_SHORT_FORMAT_REPLY_RE.search(text):
+        return None
+    m = _STRICT_SHORT_FORMAT_QUOTE_RE.search(text)
+    if m:
+        return m.group(1).strip()
+    return None
+
+
+def _is_compact_response_request(query: str) -> bool:
+    text = str(query or "").strip()
+    if not text:
+        return False
+    m = _COMPACT_LIST_REQUEST_RE.search(text)
+    if not m:
+        return False
+    try:
+        requested_items = int(m.group(1)) if m and m.group(1) else None
+    except Exception:
+        requested_items = None
+    # Conservative: only bound list sizes are capped; generic "kurz" alone is not enough.
+    return requested_items is not None and 1 <= requested_items <= 15
+
 
 def _websearch_v3_news_routing_enabled(provider: str, query: str) -> bool:
     if os.getenv("JANUS_WEBSEARCH_V3_PHASE1", "").strip().casefold() not in {"1", "true", "yes", "on"}:
@@ -645,6 +683,28 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
     # Diese Logik MUSS immer ausgeführt werden, auch wenn last_msg None ist
     # Fallback auf wf.user_text wenn verfügbar
     query_for_ambiguity = last_msg or (wf.user_text if hasattr(wf, 'user_text') else None)
+    strict_short_reply = _extract_strict_short_reply(str(query_for_ambiguity or ""))
+    if strict_short_reply:
+        logger.info(
+            "[STRICT-SHORT-REPLY] Deterministic short-format response without LLM/tool loop: %r",
+            strict_short_reply,
+        )
+        wf.relevant_skill_ids = []
+        wf.force_tool_name = None
+        wf.proactive_guidance = ""
+        wf.has_tool_trigger = False
+        wf.disable_tools = True
+        wf.final_text_to_generate = strict_short_reply
+        wf.final_text = strict_short_reply
+        wf.skip_llm_generation = True
+        wf.skip_fact_extraction = True
+        wf.skip_lightweight_post_jobs = True
+        if not isinstance(getattr(wf, "response", None), dict):
+            wf.response = {}
+        wf.response["skip_fact_extraction"] = True
+        wf.response["skip_lightweight_post_jobs"] = True
+        return
+
     smalltalk_reply = intent_classifier.smalltalk_response(str(query_for_ambiguity or ""))
     if smalltalk_reply:
         logger.info(
@@ -1561,12 +1621,16 @@ async def execute_generation_prepare_gateway(
         wf._prompt_cache_base_prompt = str(getattr(wf, "system_prompt_for_llm", "") or "")
         raw_mode = getattr(wf, "suggestion_mode", 1)
         suggestion_mode = 0 if clarification_mode else (1 if raw_mode is None else int(raw_mode))
+        compact_answer_request = _is_compact_response_request(wf.user_text)
         _suggestion_suffix = None if clarification_mode else SuggestionEngine.build_suggestion_directive(
             suggestion_mode,
             [],
             str(wf.memory_context_string or ""),
             str(wf.user_text or ""),
         )
+        if compact_answer_request:
+            _suggestion_suffix = None
+            logger.info("[SUGGESTION-GUARD] Compact/list request detected: disable mandatory suggestion suffix.")
         # Suggestion-Direktive (Registry) an System hängen — unabhängig vom User-Turn-Footer.
         if _suggestion_suffix:
             _base_sp = str(getattr(wf, "system_prompt_for_llm", "") or "").strip()
@@ -1593,7 +1657,7 @@ async def execute_generation_prepare_gateway(
                 "(SYSTEM-STOPP: Antworte NUR mit Fakten. KEINE Höflichkeit. KEIN 'Hallo'. "
                 "KEINE Sätze wie 'Soll ich...'. Beende die Antwort sofort nach den Daten!)"
             )
-        elif suggestion_mode in (1, 2) and _suggestion_suffix:
+        elif suggestion_mode in (1, 2) and _suggestion_suffix and not compact_answer_request:
             _user_turn_content = (
                 f"{wf.final_text_to_generate}\n\n"
                 "(Denk an den obligatorischen Block '💡 Vorschlag:' bzw. '💡 Passende nächste Schritte:' "
@@ -2053,6 +2117,20 @@ async def execute_generation_prepare_gateway(
         wf.gateway_kwargs['max_tokens'] = 4000 if wf.high_output_required else 2500
         if wf.is_smalltalk_turn or (wf.is_ollama_provider and wf.is_basic_conversation):
             wf.gateway_kwargs['max_tokens'] = 220
+        # Conservative latency/token optimization for Gemini:
+        # apply only to explicitly bounded compact list requests and only when no forced tool is active.
+        if (
+            str(request.provider or "").lower() == "gemini"
+            and _is_compact_response_request(wf.user_text)
+            and not wf.high_output_required
+            and not wf.gateway_kwargs.get("force_tool_name")
+            and not wf.gateway_kwargs.get("forced_tool")
+        ):
+            wf.gateway_kwargs['max_tokens'] = min(int(wf.gateway_kwargs.get('max_tokens') or 2500), 900)
+            logger.info(
+                "[GEMINI-COMPACT-CAP] Applied compact response token cap: max_tokens=%s",
+                wf.gateway_kwargs['max_tokens'],
+            )
         if wf.dialog_mode in ['GREET_KNOWN', 'DESCRIBE_UNKNOWN']:
             wf.max_tokens = 1200 if wf.is_eval_reporting else 12000
             wf.gateway_kwargs['max_tokens'] = wf.max_tokens

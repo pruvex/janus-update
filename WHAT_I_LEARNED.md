@@ -2817,3 +2817,27 @@ ews_rss) statt der korrekten Namen im Codebase (system.wikipedia_summary, system
 - **Epic:** TEST-RUN-2026-05-21-025 Memory Recall Placeholder Regression
 - **Confidence:** High (Validation: TEST-RUN-2026-05-21-025 PASS 12/12; focused placeholder suite PASS 6/6; memory regression suite PASS 58/58).
 - **Tags:** MemoryRecall, PlaceholderSuppression, PromptInjection, TestPipeline, ProviderParity
+
+## [PATTERN] #LiveJanusSmokeFirstForTinyUIFixes "Small visible UI fixes should ask for a quick live Janus check before Playwright"
+
+- **Kontext:** BACKLOG-093 / Settings API-Key duplication fix on 2026-05-25.
+- **Problem:** A small, directly visible UI bug can be over-tested if the route immediately builds a heavyweight Playwright flow even though the user can verify the acceptance criteria in seconds.
+- **Loesung:** For tiny Janus UI fixes with straightforward visual acceptance criteria, ask the user for a quick live Janus sight check first. Reserve Playwright/generator flows for ambiguous, failed, broad, or regression-prone cases.
+- **Haertung:** BACKLOG-093 was verified via live Janus sight check (`open settings -> confirm two entries -> reopen and confirm still two`) and then closed through final audit without a heavy Playwright runner.
+- **Tripwire:** If the fix is local, visible, and can be confirmed in one quick app interaction, do not default to Playwright before asking for the live sight check.
+- **Location:** `C:\Users\pruve\.codex\skills\janus-executioner\SKILL.md`, `C:\Users\pruve\.codex\skills\janus-test-pipeline\SKILL.md`, validated 2026-05-25.
+- **Epic:** BACKLOG-093
+- **Confidence:** High
+- **Tags:** LiveSmoke, UIVerification, PlaywrightAvoidance, JanusWorkflow, Settings, Backlog093
+
+## [PATTERN] #DualWindowStreamIsolation "Parallel chat windows need per-window inflight and stream state ownership"
+
+- **Kontext:** BACKLOG-094 on 2026-05-25 (Dual parallel chat execution with mixed providers/models).
+- **Problem:** Shared inflight/stream handling across windows can serialize requests in practice or produce stale UI effects (wrong loading bubble, wrong stop/error state, delayed second stream) even when backend requests are accepted.
+- **Loesung:** Treat each chat window as its own stream owner: isolate inflight tracking, stale-stream guards, and cleanup by `window_id`; always forward `X-Janus-Window-Id`; persist per-chat header LLM overrides via dedicated endpoint; add backend `STREAM_AUDIT` + `TOKEN_AUDIT` evidence to verify true overlap and per-window/provider separation.
+- **Haertung:** Keep a functional overlap test that asserts stream endpoint success and visible assistant output while two windows are active. Mirror backend logs to a deterministic docs path for faster forensic checks.
+- **Tripwire:** If one window stream starts only after the other ends, or token/stream logs cannot attribute events to `window_id` and provider/model, isolation regressed.
+- **Location:** `frontend/js/chat.js`, `backend/api/routers/chat.py`, `backend/logger_config.py`, `backend/main.py`, `tests/functional/chat-core.spec.js`, implemented 2026-05-25.
+- **Epic:** BACKLOG-094
+- **Confidence:** High (Final Audit: PASS WITH FIXES, functional test PASS).
+- **Tags:** ParallelChat, StreamIsolation, WindowState, ProviderParity, TokenAudit, Backlog094

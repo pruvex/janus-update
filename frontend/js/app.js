@@ -116,11 +116,12 @@ Sentry.init({
 import interact from "interactjs";
 import { API_BASE_URL } from "./config.js";
 import "./personality-settings.js";
-import { loadChats } from "./chat-manager.js";
+import { loadChats, saveChatHeaderSelection } from "./chat-manager.js";
 import { initChatComposer, scrollChatToBottom, autoResize } from "./chat.js";
 import {
   paneId,
   getActiveWindowId,
+  getActiveChatIdForWindow,
   WINDOW_IDS,
   getWindowState,
   subscribeWindowState,
@@ -679,6 +680,12 @@ function setupChatHeaderLlmListeners() {
       const v = hp.value === "" ? null : hp.value;
       setWindowProvider(wid, v);
       setWindowModel(wid, null);
+      const chatId = getActiveChatIdForWindow(wid);
+      if (chatId != null) {
+        void saveChatHeaderSelection(chatId, v, null).catch((error) => {
+          console.warn("[chat-header] Failed to persist provider override:", error);
+        });
+      }
       const sbp = document.getElementById("provider-select");
       const effP = v ?? sbp?.value;
       if (effP) {
@@ -696,7 +703,16 @@ function setupChatHeaderLlmListeners() {
     });
 
     hm.addEventListener("change", () => {
-      setWindowModel(wid, hm.value === "" ? null : hm.value);
+      const provider = hp.value === "" ? null : hp.value;
+      const model = hm.value === "" ? null : hm.value;
+      setWindowProvider(wid, provider);
+      setWindowModel(wid, model);
+      const chatId = getActiveChatIdForWindow(wid);
+      if (chatId != null) {
+        void saveChatHeaderSelection(chatId, provider, model).catch((error) => {
+          console.warn("[chat-header] Failed to persist model override:", error);
+        });
+      }
       scheduleContextRefresh(wid);
     });
   }

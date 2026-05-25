@@ -32,6 +32,63 @@ let lastVideoModalRequest = null;
 const VIDEO_MODAL_CACHE_KEY = "janus_video_modal_by_chat_v1";
 // 💎 VIDEO-LIST-METADATA: Global storage for video list data from SSE metadata events
 let lastVideoListMetadata = null;
+const inFlightByWindow = new Map();
+const thinkingMessageRemoversByWindow = new Map();
+
+function getInFlightState(windowId) {
+  return inFlightByWindow.get(windowId) || null;
+}
+
+function setInFlightState(windowId, state) {
+  if (!state) {
+    inFlightByWindow.delete(windowId);
+    return;
+  }
+  inFlightByWindow.set(windowId, state);
+}
+
+function isCurrentStream(windowId, streamId) {
+  const state = getInFlightState(windowId);
+  return !!state && state.streamId === streamId;
+}
+
+function clearThinkingMessageForWindow(windowId) {
+  const removeFn = thinkingMessageRemoversByWindow.get(windowId);
+  if (typeof removeFn === "function") {
+    removeFn();
+  }
+  thinkingMessageRemoversByWindow.delete(windowId);
+}
+
+function buildStreamHeaders(windowId) {
+  const headers = { "Content-Type": "application/json" };
+  if (windowId) {
+    headers["x-janus-window-id"] = String(windowId);
+  }
+  return headers;
+}
+
+function modelMatchesProvider(provider, modelId) {
+  const p = String(provider || "").toLowerCase();
+  const m = String(modelId || "").toLowerCase();
+  if (!p || !m) return false;
+  if (p === "openai") return m.startsWith("gpt-");
+  if (p === "gemini") return m.startsWith("gemini-");
+  if (p === "ollama") return m.startsWith("ollama/") || m.startsWith("llama") || m.startsWith("mistral");
+  return true;
+}
+
+function firstModelForProviderFromSelect(selectEl, provider) {
+  if (!selectEl) return null;
+  const p = String(provider || "").toLowerCase();
+  const options = Array.from(selectEl.options || []);
+  const hit = options.find((opt) => {
+    const op = String(opt.dataset?.provider || "").toLowerCase();
+    const ov = String(opt.value || "");
+    return (op && op === p) || modelMatchesProvider(p, ov);
+  });
+  return hit?.value || null;
+}
 
 function _readVideoModalCache() {
   try {
@@ -263,11 +320,34 @@ async function ensureChatForWindow(windowId) {
 /** Fenster-Header-Override oder Sidebar (#provider-select / #model-select). */
 function effectiveProviderModelForWindow(windowId) {
   const w = getWindowState().windows[windowId];
-  const sp = document.getElementById("provider-select")?.value;
-  const sm = document.getElementById("model-select")?.value;
+  const spEl = document.getElementById("provider-select");
+  const smEl = document.getElementById("model-select");
+  const hpEl = document.getElementById(paneId("chat-header-provider", windowId));
+  const hmEl = document.getElementById(paneId("chat-header-model", windowId));
+  const sp = spEl?.value;
+  const sm = smEl?.value;
+  const hp = hpEl?.value;
+  const hm = hmEl?.value;
+  const provider =
+    (w.provider != null && w.provider !== "" ? w.provider : null) ||
+    (hp && hp !== "" ? hp : null) ||
+    sp;
+  let model =
+    (w.modelId != null && w.modelId !== "" ? w.modelId : null) ||
+    (hm && hm !== "" ? hm : null) ||
+    sm;
+
+  // Keep provider/model coherent even if stale sidebar model leaked into another provider window.
+  if (!modelMatchesProvider(provider, model)) {
+    model =
+      firstModelForProviderFromSelect(hmEl, provider) ||
+      firstModelForProviderFromSelect(smEl, provider) ||
+      model;
+  }
+
   return {
-    provider: w.provider != null && w.provider !== "" ? w.provider : sp,
-    model: w.modelId != null && w.modelId !== "" ? w.modelId : sm,
+    provider,
+    model,
   };
 }
 
@@ -490,7 +570,7 @@ Wähle eine Aktion (Antworte mit 1, 2 oder 3):
       // SSE-Streaming-Integration für /api/chat/stream
       const chatStreamResponse = await fetch(`${API_BASE_URL}/api/chat/stream`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: buildStreamHeaders(windowId),
         body: JSON.stringify({
           content: [{ type: "text", text: autoPrompt }],
           provider,
@@ -690,6 +770,10 @@ WINDOW_IDS.forEach((wid) => {
 export async function sendMessage(fromWindowId) {
   const windowId = fromWindowId ?? getActiveWindowId();
   setActiveWindow(windowId);
+  if (getInFlightState(windowId)) {
+    console.warn("[sendMessage] Request already in flight for window", windowId);
+    return;
+  }
   const chatInputEl = document.getElementById(paneId("user-input", windowId));
   // BACKLOG-026: `chatMessagesEl` is `let` (not `const`) so the SSE-stream wipe-guard
   // can re-resolve the container by ID if loadChat() or another async path replaces
@@ -820,14 +904,19 @@ export async function sendMessage(fromWindowId) {
     });
   }
 
+  const streamId = `${windowId}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  const abortController = new AbortController();
+  setInFlightState(windowId, { streamId, abortController, chatId: chat_id });
+
   try {
     // Kein PUT mit Erstsatz — verhindert auto_generated=false und blockiert Smart Chat Naming.
 
     // SSE-STREAMING IMPLEMENTATION
     const response = await fetch(`${API_BASE_URL}/api/chat/stream`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: buildStreamHeaders(windowId),
       body: JSON.stringify(requestBody),
+      signal: abortController.signal,
     });
 
     if (!response.ok) {
@@ -845,6 +934,15 @@ export async function sendMessage(fromWindowId) {
 
     while (true) {
       const { done, value } = await reader.read();
+      if (!isCurrentStream(windowId, streamId)) {
+        console.warn("[SSE] Stale stream detected, stopping read loop", { windowId, streamId });
+        try {
+          await reader.cancel();
+        } catch (_) {
+          // ignore cancel races
+        }
+        break;
+      }
       if (done) {
         console.log("[SSE-DONE]", { chunkIndex, textChunkIndex, finalLen: chatText.length, bufferRemaining: buffer.length });
         break;
@@ -877,10 +975,7 @@ export async function sendMessage(fromWindowId) {
         if (data.type === "text") {
           textChunkIndex++;
           // 💎 CU-4: Entferne thinking_message beim ersten Text-Delta
-          if (window._removeThinkingMessage) {
-            window._removeThinkingMessage();
-            window._removeThinkingMessage = null;
-          }
+          clearThinkingMessageForWindow(windowId);
           // Backend semantics:
           //   partial:true  -> incremental delta, append to accumulated text
           //   partial:false -> final/full content, replace accumulated text
@@ -946,7 +1041,7 @@ export async function sendMessage(fromWindowId) {
               }
             };
             // Speichere die Funktion zum späteren Aufruf
-            window._removeThinkingMessage = removeThinkingMessage;
+            thinkingMessageRemoversByWindow.set(windowId, removeThinkingMessage);
           }
         } else if (data.type === "tool_result") {
           // Handle tool results including permission_required from Path Sentinel
@@ -1056,12 +1151,20 @@ export async function sendMessage(fromWindowId) {
     
   } catch (error) {
     console.error("[SSE] Chat stream error:", error);
+    if (error?.name === "AbortError") {
+      return;
+    }
     const _msgContainer = loadingMessageElement?.closest('.message') || loadingMessageElement;
     if (_msgContainer && _msgContainer.parentNode === chatMessagesEl) {
       chatMessagesEl.removeChild(_msgContainer);
     }
     appendMessage("bot", { text: error.message || "Fehler beim Senden der Nachricht." }, { windowId });
     scheduleContextRefresh(windowId);
+  } finally {
+    if (isCurrentStream(windowId, streamId)) {
+      setInFlightState(windowId, null);
+    }
+    clearThinkingMessageForWindow(windowId);
   }
 }
 

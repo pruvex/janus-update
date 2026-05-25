@@ -925,7 +925,13 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "X-Janus-Internal-Key", "X-Janus-MCP-Debug-Session"],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "X-Janus-Internal-Key",
+        "X-Janus-MCP-Debug-Session",
+        "X-Janus-Window-Id",
+    ],
     expose_headers=["Content-Disposition"],
     max_age=600,  # Cache preflight request for 10 minutes
 )
