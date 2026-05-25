@@ -3,7 +3,7 @@ import cors from '@fastify/cors'
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
-import type { BacklogCounts, BacklogItem, BacklogResponse, TaskExecutionHistoryResponse, TaskExecutionRecord, TestResultRecord, TestResultsResponse, TestOverviewResponse, TestSpecOverview, TestSuiteCategory, TestSuiteResponse } from '../../../shared/types/index.js'
+import type { BacklogCounts, BacklogItem, BacklogPriorityAssessment, BacklogRecommendationResponse, BacklogResponse, TaskExecutionHistoryResponse, TaskExecutionRecord, TestResultRecord, TestResultsResponse, TestOverviewResponse, TestSpecOverview, TestSuiteCategory, TestSuiteResponse } from '../../../shared/types/index.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -17,7 +17,7 @@ const TEST_SPEC_DIRECTORY_PATH = join(__dirname, '../../../../documentation/TEST
 const TEST_RUNS_DIRECTORY_PATH = join(__dirname, '../../../../documentation/test-runs')
 const TEST_RESULTS_DIRECTORY_PATH = join(__dirname, '../../../../documentation/test-results')
 
-const ITEM_HEADING_PATTERN = /^###\s+(BACKLOG-\d+)\s+(?:–|â€“|-)\s+(.+?)\s*$/
+const ITEM_HEADING_PATTERN = /^###\s+(BACKLOG-\d+)\s+(?:–|—|â€“|Ã¢â‚¬â€œ|-)\s+(.+?)\s*$/
 const SECTION_PATTERN = /^##\s+(.+?)\s*$/
 const FIELD_PATTERN = /^-\s+\*\*(.+?):\*\*\s*(.*)$/
 const SPEC_REVIEW_METADATA_HEADING = /^##\s+SPEC REVIEW METADATA\s*$/i
@@ -58,6 +58,58 @@ const COUNT_KEYS: Record<string, keyof Pick<BacklogCounts, 'needs_info' | 'ready
   'IN PROGRESS': 'in_progress',
   'DONE': 'done',
   'BLOCKED': 'blocked',
+}
+
+const IMPORTANCE_SCORE: Record<string, number> = {
+  CRITICAL: 40,
+  HIGH: 30,
+  MEDIUM: 18,
+  LOW: 8,
+}
+
+const RISK_SCORE: Record<string, number> = {
+  LOW: 10,
+  MEDIUM: 0,
+  HIGH: -10,
+}
+
+const EFFORT_SCORE: Record<string, number> = {
+  XS: 16,
+  S: 12,
+  M: 6,
+  L: -4,
+  XL: -12,
+}
+
+const STATUS_SCORE: Record<string, number> = {
+  'IN PROGRESS': 18,
+  READY: 14,
+  'NEEDS INFO': -35,
+  BLOCKED: -45,
+}
+
+const RECOMMENDATION_SCORE: Record<string, number> = {
+  'DO NOW': 24,
+  SCHEDULE: 8,
+  'NEEDS INFO FIRST': -20,
+  DEFER: -15,
+  'DO NOT START': -40,
+  COMPLETED: -80,
+}
+
+const ENTRY_POINT_SCORE: Record<string, number> = {
+  EXECUTION_READY: 18,
+  PRE_IMPLEMENTATION_VERIFICATION: 14,
+  SPEC_PIPELINE_START: 12,
+  TASK_BREAKDOWN: 10,
+  SPEC_REVIEW_GATE: 6,
+  ROUTING_BLOCKED: -40,
+}
+
+const CONFIDENCE_SCORE: Record<string, number> = {
+  HIGH: 8,
+  MEDIUM: 4,
+  LOW: 0,
 }
 
 const fastify = Fastify({
@@ -106,6 +158,7 @@ function createSpecItem(filePath: string, relativePath: string, text: string): B
   const metadata = parseSpecReviewMetadata(text)
   const implementationMetadata = parseSpecImplementationMetadata(text)
   const executionRouting = parseSpecExecutionRouting(text)
+  const family = inferSpecFamily(relativePath, text)
   const reviewStatus = (metadata['Review Status'] || '').toUpperCase()
   const skillReady = (metadata['Skill-1 Ready'] || '').toUpperCase()
   const implementationStatus = (implementationMetadata['Implementation Status'] || '').toUpperCase()
@@ -145,6 +198,12 @@ function createSpecItem(filePath: string, relativePath: string, text: string): B
   item.validation_evidence = isImplementationDone ? implementationMetadata['Validation Evidence'] || null : null
   item.raw_fields = {
     Spec: normalizePathForPrompt(relativePath),
+    'Spec Document Kind': family.kind,
+    'Spec Feature Group Id': family.groupId,
+    'Spec Feature Group Label': family.groupLabel,
+    'Spec Pair Key': family.pairKey,
+    'Spec Sequence Order': String(family.sequenceOrder),
+    'Spec Pair Order': String(family.pairOrder),
     'Review Status': reviewStatus || 'TO REVIEW',
     'Skill-1 Ready': skillReady || 'NO',
     'Complexity Score': metadata['Complexity Score'] || '',
@@ -166,6 +225,47 @@ function createSpecItem(filePath: string, relativePath: string, text: string): B
   }
 
   return item
+}
+
+function inferSpecFamily(relativePath: string, text: string): {
+  kind: 'FEATURE_SPEC' | 'TEST_SPEC'
+  groupId: string
+  groupLabel: string
+  pairKey: string
+  pairOrder: number
+  sequenceOrder: number
+} {
+  const normalizedPath = relativePath.replace(/\\/g, '/')
+  const fileName = normalizedPath.split('/').pop() || normalizedPath
+  const numericPrefix = Number.parseInt(/^(\d+)_/.exec(fileName)?.[1] || '', 10)
+  const isTestSpec = /^#\s+JANUS TESTSPEC\b/i.test(text) || numericPrefix >= 7
+  const sourceFeatureSpec = /^-\s+Source Feature Spec:\s*(.+?)\s*$/im.exec(text)?.[1]?.trim() || ''
+  const sourceFileName = sourceFeatureSpec.split(/[\\/]/).pop() || ''
+  const sourcePrefix = Number.parseInt(/^(\d+)_/.exec(sourceFileName)?.[1] || '', 10)
+  const pairOrder = Number.isFinite(sourcePrefix)
+    ? sourcePrefix
+    : Number.isFinite(numericPrefix)
+    ? numericPrefix <= 3 ? numericPrefix : numericPrefix - 6
+    : 999
+  const pairKey = String(pairOrder).padStart(2, '0')
+  const groupId = normalizedPath.toLowerCase().includes('personalization')
+    || normalizedPath.toLowerCase().includes('contextual_memory')
+    || normalizedPath.toLowerCase().includes('proactive_companion')
+    || sourceFeatureSpec.toLowerCase().includes('personalization')
+    ? 'personalization-memory-companion'
+    : normalizedPath.split('/')[0].replace(/[^a-z0-9]+/gi, '-').toLowerCase()
+  const groupLabel = groupId === 'personalization-memory-companion'
+    ? 'Personalization + Memory Companion'
+    : groupId.replace(/[-_]+/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
+
+  return {
+    kind: isTestSpec ? 'TEST_SPEC' : 'FEATURE_SPEC',
+    groupId,
+    groupLabel,
+    pairKey,
+    pairOrder,
+    sequenceOrder: pairOrder * 10 + (isTestSpec ? 1 : 0),
+  }
 }
 
 function parseSpecReviewMetadata(text: string): Record<string, string> {
@@ -267,18 +367,18 @@ function extractSpecTitle(text: string, relativePath: string): string {
   const heading = text.split(/\r?\n/).find((line) => /^#\s+/.test(line.trim()))
   if (heading) {
     const title = heading.replace(/^#\s+/, '').trim()
-    if (!/^JANUS FEATURE SPEC\s+[–-]\s+DIAMANTSTANDARD/i.test(title)) {
+    if (!/^JANUS (?:FEATURE SPEC|TESTSPEC)\b/i.test(title)) {
       return title
     }
   }
 
-  const featureName = text
+  const explicitName = text
     .split(/\r?\n/)
-    .map((line) => /^-\s+\*?\*?Feature Name\*?\*?:\s*(.+?)\s*$/.exec(line.trim()))
+    .map((line) => /^-\s+\*?\*?(?:Feature Name|Spec Name|TestSpec Name)\*?\*?:\s*(.+?)\s*$/.exec(line.trim()))
     .find((match): match is RegExpExecArray => Boolean(match))?.[1]
 
-  if (featureName) {
-    return featureName.trim()
+  if (explicitName) {
+    return explicitName.trim()
   }
 
   return relativePath.split(/[\\/]/).pop()?.replace(/\.md$/i, '').replace(/[-_]+/g, ' ') || relativePath
@@ -469,6 +569,171 @@ function buildCounts(items: BacklogItem[]): BacklogCounts {
   return counts
 }
 
+function valueScore(value: string | null | undefined, table: Record<string, number>, fallback = 0): number {
+  const key = (value || '').trim().toUpperCase()
+  return table[key] ?? fallback
+}
+
+function hasCompletionEvidence(item: BacklogItem): boolean {
+  const evidenceText = [
+    item.completed_at,
+    item.completed_by_task,
+    item.completed_in_version,
+    item.final_audit,
+    item.validation_evidence,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toUpperCase()
+
+  return (
+    item.status !== 'DONE' &&
+    (
+      evidenceText.includes('PASS') ||
+      evidenceText.includes('DONE') ||
+      evidenceText.includes('COMPLETE') ||
+      evidenceText.includes('TEST-RUN-')
+    )
+  )
+}
+
+function ageScore(item: BacklogItem): number {
+  const rawDate = item.routing_decided_at || item.handoff_created
+  if (!rawDate) {
+    return 0
+  }
+
+  const timestamp = Date.parse(rawDate)
+  if (!Number.isFinite(timestamp)) {
+    return 0
+  }
+
+  const ageDays = Math.floor((Date.now() - timestamp) / (24 * 60 * 60 * 1000))
+  if (ageDays >= 30) return 8
+  if (ageDays >= 14) return 5
+  if (ageDays >= 7) return 3
+  return 0
+}
+
+function buildAssessmentReason(item: BacklogItem, score: number, completionEvidence: boolean): string {
+  if (completionEvidence) {
+    return 'Hat Abschluss-/Validierungshinweise, steht aber noch in Active. Erst Status und Dokumentation pruefen.'
+  }
+  if (item.status === 'BLOCKED' || item.entry_point === 'ROUTING_BLOCKED') {
+    return 'Blockiert: Ursache klaeren, bevor Umsetzung gestartet wird.'
+  }
+  if (item.status === 'NEEDS INFO') {
+    return 'Es fehlen Pflichtinformationen; zuerst Intake/Triage abschliessen.'
+  }
+  if ((item.recommendation || '').toUpperCase() === 'DO NOW') {
+    return 'Hoechste fachliche Empfehlung plus pipeline-faehige Routing-Daten.'
+  }
+  if (score >= 70) {
+    return 'Hoher Nutzwert bei vertretbarem Risiko und klarer Routing-Spur.'
+  }
+  if (score >= 45) {
+    return 'Solide vorbereitet, aber nicht der staerkste Hebel im Active-Pool.'
+  }
+  return 'Nachrangig gegenueber besser bewerteten Active-Items.'
+}
+
+function buildRecommendedAction(item: BacklogItem, completionEvidence: boolean): string {
+  if (completionEvidence) {
+    return `Pruefe Abschlussnachweise fuer ${item.id}; falls korrekt, per Skill 7 auf DONE dokumentieren.`
+  }
+  if (item.status === 'BLOCKED' || item.entry_point === 'ROUTING_BLOCKED') {
+    return `Klaere Blocker fuer ${item.id}, bevor Implementierung beginnt.`
+  }
+  if (item.status === 'NEEDS INFO') {
+    return `Fuehre BACKLOG SKILL 1 Intake fuer ${item.id} aus.`
+  }
+
+  const skill = (item.recommended_next_skill || '').trim()
+  if (skill) {
+    return `Starte ${skill} fuer ${item.id}.`
+  }
+
+  return `Priorisiere ${item.id} nach Backlog-Review.`
+}
+
+function buildPriorityAssessments(items: BacklogItem[]): BacklogPriorityAssessment[] {
+  const activeItems = items.filter((item) => item.status !== 'DONE')
+
+  const ranked = activeItems
+    .map((item) => {
+      const completionEvidence = hasCompletionEvidence(item)
+      let score =
+        valueScore(item.importance, IMPORTANCE_SCORE) +
+        valueScore(item.implementation_risk, RISK_SCORE) +
+        valueScore(item.effort, EFFORT_SCORE) +
+        valueScore(item.status, STATUS_SCORE) +
+        valueScore(item.recommendation, RECOMMENDATION_SCORE) +
+        valueScore(item.entry_point, ENTRY_POINT_SCORE) +
+        valueScore(item.routing_confidence, CONFIDENCE_SCORE) +
+        ageScore(item)
+
+      if (item.is_test_blocker) {
+        score += 10
+      }
+      if (!item.handoff && item.status !== 'NEEDS INFO') {
+        score -= 12
+      }
+      if (completionEvidence) {
+        score = Math.min(score, 12)
+      }
+
+      score = Math.max(0, Math.min(100, Math.round(score)))
+
+      let label: BacklogPriorityAssessment['label'] = 'WAIT'
+      if (completionEvidence) {
+        label = 'VERIFY DONE'
+      } else if (item.status === 'BLOCKED' || item.entry_point === 'ROUTING_BLOCKED') {
+        label = 'BLOCKED'
+      } else if (item.status === 'NEEDS INFO') {
+        label = 'REVIEW'
+      } else if (score >= 75) {
+        label = 'DO NEXT'
+      } else if (score >= 45) {
+        label = 'READY'
+      }
+
+      return {
+        taskId: item.id,
+        score,
+        rank: 0,
+        label,
+        reason: buildAssessmentReason(item, score, completionEvidence),
+        recommendedAction: buildRecommendedAction(item, completionEvidence),
+        recommendedSkill: item.recommended_next_skill || '',
+        completionEvidence,
+      }
+    })
+    .sort((left, right) => {
+      if (left.completionEvidence !== right.completionEvidence) {
+        return left.completionEvidence ? 1 : -1
+      }
+      return right.score - left.score
+    })
+
+  return ranked.map((assessment, index) => ({
+    ...assessment,
+    rank: index + 1,
+  }))
+}
+
+function readBacklogRecommendations(): BacklogRecommendationResponse {
+  const backlog = readBacklogData()
+  const assessments = buildPriorityAssessments(backlog.items)
+  return {
+    schema: 'janus-dashboard.backlog-recommendations.v1',
+    source: backlog.source,
+    generated_at: new Date().toISOString(),
+    active_count: assessments.length,
+    recommended_next: assessments[0] || null,
+    assessments,
+  }
+}
+
 function parseBacklogText(text: string, source: string): BacklogResponse {
   const items: BacklogItem[] = []
   let currentSection = ''
@@ -479,6 +744,10 @@ function parseBacklogText(text: string, source: string): BacklogResponse {
     const line = rawLine.replace(/\s+$/, '')
     const sectionMatch = SECTION_PATTERN.exec(line)
     if (sectionMatch && !line.startsWith('###')) {
+      if (currentItem) {
+        items.push(currentItem)
+        currentItem = null
+      }
       currentSection = sectionMatch[1].trim()
       currentField = null
       continue
@@ -1257,6 +1526,19 @@ fastify.get('/api/backlog/items', async (request, reply) => {
     return { 
       error: 'Failed to read local data',
       message: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+})
+
+fastify.get('/api/backlog/recommendations', async (request, reply) => {
+  try {
+    return readBacklogRecommendations()
+  } catch (error) {
+    fastify.log.error(error)
+    reply.code(500)
+    return {
+      error: 'Failed to calculate backlog recommendations',
+      message: error instanceof Error ? error.message : 'Unknown error',
     }
   }
 })

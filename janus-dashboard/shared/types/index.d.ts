@@ -36,8 +36,31 @@ export interface BacklogCounts {
 }
 export interface BacklogResponse {
     source: string;
+    generated_from?: string;
+    generated_at?: string;
+    snapshot_schema?: string;
+    snapshot_path?: string;
+    is_stale?: boolean;
     items: BacklogItem[];
     counts: BacklogCounts;
+}
+export interface BacklogPriorityAssessment {
+    taskId: string;
+    score: number;
+    rank: number;
+    label: 'DO NEXT' | 'READY' | 'REVIEW' | 'WAIT' | 'BLOCKED' | 'VERIFY DONE';
+    reason: string;
+    recommendedAction: string;
+    recommendedSkill: string;
+    completionEvidence: boolean;
+}
+export interface BacklogRecommendationResponse {
+    schema: string;
+    source: string;
+    generated_at: string;
+    active_count: number;
+    recommended_next: BacklogPriorityAssessment | null;
+    assessments: BacklogPriorityAssessment[];
 }
 export interface TestResultSummary {
     total: number;

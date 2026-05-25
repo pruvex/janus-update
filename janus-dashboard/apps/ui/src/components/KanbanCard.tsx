@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { BacklogItem } from '@shared/types'
+import type { BacklogItem, BacklogPriorityAssessment } from '@shared/types'
 import type { EstimatedTimeInsight } from '../lib/executionAnalytics'
 import { Copy } from 'lucide-react'
 import { getRepairIssueType, getRepairIssueBorderColor } from '../lib/repairIssues'
@@ -8,6 +8,7 @@ interface KanbanCardProps {
   item: BacklogItem
   viewType?: 'active' | 'history'
   estimatedTime?: EstimatedTimeInsight | null
+  priorityAssessment?: BacklogPriorityAssessment | null
 }
 
 const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
@@ -27,6 +28,15 @@ const IMPORTANCE_COLORS: Record<string, string> = {
   'HIGH': 'text-orange-400',
   'MEDIUM': 'text-yellow-400',
   'LOW': 'text-gray-400',
+}
+
+const PRIORITY_LABEL_COLORS: Record<string, string> = {
+  'DO NEXT': 'bg-emerald-500/15 text-emerald-700 border-emerald-300',
+  'READY': 'bg-blue-500/15 text-blue-700 border-blue-300',
+  'REVIEW': 'bg-amber-500/15 text-amber-700 border-amber-300',
+  'WAIT': 'bg-slate-500/10 text-slate-600 border-slate-300',
+  'BLOCKED': 'bg-red-500/15 text-red-700 border-red-300',
+  'VERIFY DONE': 'bg-violet-500/15 text-violet-700 border-violet-300',
 }
 
 const isPresent = (value: string | null | undefined): value is string => {
@@ -447,7 +457,7 @@ const buildPipelineHandoverPrompt = (task: BacklogItem): string => {
   return buildBlockedPrompt(task, 'Kein eindeutiger Entry Point oder Recommended next skill vorhanden.')
 }
 
-export function KanbanCard({ item, viewType = 'active', estimatedTime = null }: KanbanCardProps) {
+export function KanbanCard({ item, viewType = 'active', estimatedTime = null, priorityAssessment = null }: KanbanCardProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopyHandover = async () => {
@@ -465,6 +475,8 @@ export function KanbanCard({ item, viewType = 'active', estimatedTime = null }: 
   const importanceColor = IMPORTANCE_COLORS[item.importance] || IMPORTANCE_COLORS['LOW']
   const handoverButtonLabel = getSpecReviewButtonLabel(item)
   const showSpecReviewRouting = item.type === 'SPEC FEATURE' && item.entry_point === 'SPEC_REVIEW_GATE'
+  const specDocumentKind = valueOrFallback(item.raw_fields?.['Spec Document Kind'], '')
+  const specPairKey = valueOrFallback(item.raw_fields?.['Spec Pair Key'], '')
 
   // Get repair issue border color for active view
   const repairIssueType = viewType === 'active' ? getRepairIssueType(item) : null
@@ -518,6 +530,19 @@ export function KanbanCard({ item, viewType = 'active', estimatedTime = null }: 
         {item.title}
       </h3>
 
+      {item.type === 'SPEC FEATURE' && specDocumentKind && (
+        <div className="mb-2 flex flex-wrap items-center gap-1">
+          <span className="rounded border border-border bg-muted/40 px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground">
+            {specDocumentKind === 'TEST_SPEC' ? 'TestSpec' : 'FeatureSpec'}
+          </span>
+          {specPairKey && (
+            <span className="rounded border border-border bg-muted/40 px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground">
+              Pair {specPairKey}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Metrics grid */}
       <div className="grid grid-cols-2 gap-1.5 mb-2">
         <div>
@@ -537,6 +562,18 @@ export function KanbanCard({ item, viewType = 'active', estimatedTime = null }: 
           <p className="text-[10px] font-medium text-foreground">{item.status}</p>
         </div>
       </div>
+
+      {viewType === 'active' && priorityAssessment && (
+        <div className="mb-2 rounded-md border border-border bg-muted/30 p-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className={`px-1.5 py-0.5 rounded border text-[9px] font-semibold ${PRIORITY_LABEL_COLORS[priorityAssessment.label] || PRIORITY_LABEL_COLORS.WAIT}`}>
+              #{priorityAssessment.rank} {priorityAssessment.label}
+            </span>
+            <span className="text-[10px] font-semibold text-foreground">{priorityAssessment.score}/100</span>
+          </div>
+          <p className="mt-1 text-[10px] leading-snug text-muted-foreground break-words">{priorityAssessment.reason}</p>
+        </div>
+      )}
 
       {/* Routing info */}
       {item.entry_point && (

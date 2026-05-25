@@ -54,6 +54,26 @@ export interface BacklogResponse {
   counts: BacklogCounts
 }
 
+export interface BacklogPriorityAssessment {
+  taskId: string
+  score: number
+  rank: number
+  label: 'DO NEXT' | 'READY' | 'REVIEW' | 'WAIT' | 'BLOCKED' | 'VERIFY DONE'
+  reason: string
+  recommendedAction: string
+  recommendedSkill: string
+  completionEvidence: boolean
+}
+
+export interface BacklogRecommendationResponse {
+  schema: string
+  source: string
+  generated_at: string
+  active_count: number
+  recommended_next: BacklogPriorityAssessment | null
+  assessments: BacklogPriorityAssessment[]
+}
+
 export interface TaskExecutionRecord {
   execution_id: string
   task_id: string
