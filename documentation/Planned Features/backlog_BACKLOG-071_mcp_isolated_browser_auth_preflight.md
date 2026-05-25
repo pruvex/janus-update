@@ -39,11 +39,11 @@ Out of Scope:
 
 ## ACCEPTANCE CRITERIA
 
-- [ ] Lokaler MCP-Debug-Preflight ist dokumentiert oder automatisiert.
-- [ ] Geschuetzte Basis-Calls wie `/api/personalities` und `/api/personalities/active` erzeugen in der MCP-Debugsession keine unerwarteten 401-Fehler.
-- [ ] Keine echten Browserprofile, Secrets oder externen Origins werden benoetigt.
-- [ ] Der Preflight ist klar als Dev-/Debug-only gekennzeichnet.
-- [ ] Security-Watchpoints sind dokumentiert.
+- [x] Lokaler MCP-Debug-Preflight ist dokumentiert oder automatisiert.
+- [x] Geschuetzte Basis-Calls wie `/api/personalities` und `/api/personalities/active` erzeugen in der MCP-Debugsession nach Preflight keine unerwarteten 401-Fehler.
+- [x] Keine echten Browserprofile, Secrets oder externen Origins werden benoetigt.
+- [x] Der Preflight ist klar als Dev-/Debug-only gekennzeichnet.
+- [x] Security-Watchpoints sind dokumentiert.
 
 ## EVIDENCE
 
@@ -54,3 +54,34 @@ Out of Scope:
 ## IMPLEMENTATION NOTES
 
 Vorhandene E2E-JWT/LocalStorage-Mechanik pruefen und fuer MCP-Debugging als expliziten Dev-Preflight nutzbar machen. Security-Grenze: keine produktiven Auth-Bypasses und keine Wiederverwendung echter Browser-Sessions.
+
+## IMPLEMENTATION RESULT
+
+Status: DONE, 2026-05-21.
+
+Umgesetzt wurde ein lokaler Debug-Preflight unter `POST /api/debug/mcp/auth-preflight`. Der Endpunkt ist nur in explizitem Debug-/Development-Modus verfuegbar und akzeptiert nur lokale Browser-Kontexte. Er exportiert nicht den internen Janus API-Key, sondern erzeugt:
+
+- einen normalen kurzlebigen `auth_token` fuer bestehende JWT-geschuetzte Routen
+- eine kurzlebige `janus_mcp_debug_session` fuer intern-key-geschuetzte lokale API-Routen
+
+Der globale Frontend-Fetch-Wrapper nutzt die MCP-Debug-Session nur dann, wenn keine Electron-Bridge mit internem API-Key vorhanden ist. Produktive Electron-Flows bleiben dadurch unveraendert.
+
+Automatisierter Helper:
+
+```powershell
+node tools\mcp-debug-auth-preflight.mjs http://localhost:5173
+```
+
+Security-Watchpoints:
+
+- Dev-only: `JANUS_ENABLE_DEBUG_ENDPOINTS=1`, `NODE_ENV=development` oder `JANUS_DEV_MODE=true`.
+- Local-only: externe `Origin`/`Referer` werden abgelehnt.
+- Kein Secret-Export: Response enthaelt keinen `api_key` und nicht den internen `X-Janus-Internal-Key`.
+- Kurzlebig: Debug-Session laeuft nach 60 Minuten ab.
+- Kein echtes Browserprofil notwendig.
+
+Validation:
+
+- `python -m pytest backend\tests\test_mcp_debug_auth_preflight.py -q` -> PASS 3/3
+- `npx playwright test tests/e2e/mcp-debug-auth-preflight.spec.js --workers=1 --reporter=list` -> PASS 1/1
+- `PYTHONIOENCODING=UTF-8 npm run build` -> PASS
