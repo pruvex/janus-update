@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "janus.test-evidence.v1",
+  "testRunId": "TEST-RUN-2026-05-21-031",
+  "testCaseId": "TC-004",
+  "status": "PASS",
+  "classification": "FUNCTIONAL_ASSERTION_PASS",
+  "type": "functional",
+  "provider": "Static routing runner",
+  "prompt": "Synthetic memory recall question.",
+  "assertion": "Catalog and defaults show smallest memory-capable models are gpt-5.4-nano and gemini-3-flash-preview.",
+  "evidence": {
+    "commands": [
+      "python -m pytest backend/tests/test_smallest_viable_model_escalation_discipline.py -q",
+      "python -m pytest backend/tests/test_smallest_viable_model_escalation_discipline.py backend/tests/test_moa_routing.py backend/tests/test_cost_calculator.py backend/tests/test_cost_token_tracking_completeness.py -q",
+      "python -m py_compile backend/llm_providers/shared/moa.py backend/services/routing/model_router.py",
+      "node tests/e2e/generator/compile-testspec-to-testplan.mjs --spec documentation/TEST_SPEC/06_efficiency_cost/14_smallest_viable_model_escalation_discipline.md",
+      "node tests/e2e/generator/validate-runner.mjs --plan documentation/test-runs/TEST-RUN-2026-05-21-030_plan.json --runner documentation/test-runs/TEST-RUN-2026-05-21-030_generated.spec.js",
+      "node --check documentation/test-runs/TEST-RUN-2026-05-21-030_generated.spec.js",
+      "python backend/tools/validate_skill_schemas.py"
+    ],
+    "changedFiles": [
+      "backend/llm_providers/shared/moa.py",
+      "backend/services/routing/model_router.py",
+      "backend/tests/test_smallest_viable_model_escalation_discipline.py"
+    ],
+    "policySources": [
+      "backend/config/model_catalog.json",
+      "backend/config/model_routing.json",
+      "backend/llm_providers/shared/moa.py"
+    ],
+    "generatedPlan": "documentation/test-runs/TEST-RUN-2026-05-21-030_plan.json",
+    "generatedRunner": "documentation/test-runs/TEST-RUN-2026-05-21-030_generated.spec.js",
+    "invariant": "No cross-provider fallback between OpenAI/GPT and Gemini silos."
+  },
+  "timestamp": "2026-05-21T16:18:00.000Z"
+}

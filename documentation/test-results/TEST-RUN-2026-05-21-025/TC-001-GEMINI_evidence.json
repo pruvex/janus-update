@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "janus.test-evidence.v1",
+  "runId": "TEST-RUN-2026-05-21-025",
+  "testCaseId": "TC-001-GEMINI",
+  "status": "PASS",
+  "provider": "Gemini pre-provider static runner",
+  "type": "functional",
+  "prompt": "Merke dir: Mein Testprojekt heisst Phoenix.",
+  "assertions": [
+    "Provider-independent memory.write/read stores and recalls Phoenix."
+  ],
+  "memoryEvidence": {
+    "concreteFactsWin": true,
+    "placeholderReturned": false,
+    "staleFactReturnedAsCurrent": false,
+    "realUserDataUsed": false
+  },
+  "command": "pytest backend/tests/test_memory_recall_placeholder_regression.py::test_store_project_name_and_recall_phoenix_not_placeholder",
+  "timestamp": "2026-05-21T15:36:00.000Z"
+}

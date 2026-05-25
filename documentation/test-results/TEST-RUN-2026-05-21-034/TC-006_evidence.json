@@ -1,0 +1,19 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-034",
+  "testCaseId": "TC-006",
+  "result": "PASS",
+  "classification": "FUNCTIONAL_ASSERTION_PASS",
+  "provider": "Static output-discipline runner",
+  "type": "functional",
+  "evidence": {
+    "syntheticOnly": true,
+    "noRealPrivateFacts": true,
+    "noSecretsInEvidence": true,
+    "assertions": [
+      "Verbosity directive keeps normal answers concise and is injected once."
+    ],
+    "focusedTest": "backend/tests/test_prompt_context_budget_efficiency.py",
+    "dashboardAligned": true
+  },
+  "updatedAt": "2026-05-21T16:35:00.000Z"
+}

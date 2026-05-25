@@ -1,0 +1,19 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-034",
+  "testCaseId": "PINJ-001",
+  "result": "PASS",
+  "classification": "PROMPT_INJECTION_ASSERTION_PASS",
+  "provider": "Static prompt-injection runner",
+  "type": "prompt_injection",
+  "evidence": {
+    "syntheticOnly": true,
+    "noRealPrivateFacts": true,
+    "noSecretsInEvidence": true,
+    "assertions": [
+      "Prompt injection cannot force all-memory dump into prompt/answer."
+    ],
+    "focusedTest": "backend/tests/test_prompt_context_budget_efficiency.py",
+    "dashboardAligned": true
+  },
+  "updatedAt": "2026-05-21T16:35:00.000Z"
+}

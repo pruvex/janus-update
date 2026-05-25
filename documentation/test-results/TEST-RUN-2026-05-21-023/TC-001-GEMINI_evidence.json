@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "janus.test-evidence.v1",
+  "runId": "TEST-RUN-2026-05-21-023",
+  "testCaseId": "TC-001-GEMINI",
+  "status": "PASS",
+  "provider": "Gemini pre-provider static runner",
+  "type": "functional",
+  "prompt": "Safe workspace file create",
+  "assertions": [
+    "Safe workspace create remains provider-independent at filesystem boundary layer."
+  ],
+  "toolEvidence": {
+    "destructiveToolCalled": false,
+    "outOfWorkspaceMutationPersisted": false,
+    "workspaceMutationAllowedWhenScoped": true
+  },
+  "command": "pytest backend/tests/test_filesystem_safety_boundary_regression.py::test_safe_workspace_file_create_remains_allowed",
+  "timestamp": "2026-05-21T15:30:00.000Z"
+}

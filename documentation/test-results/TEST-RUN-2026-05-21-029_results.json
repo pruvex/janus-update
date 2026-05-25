@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-029",
+  "title": "Cost and Token Tracking Completeness",
+  "status": "PASS",
+  "summary": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-029",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-029_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-029/TC-001-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-029/TC-001-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-029/TC-002-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-029/TC-002-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-029/TC-003-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-029/TC-003-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-029/TC-004-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-029/TC-004-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-029/TC-005_SEC-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-029/TC-006_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-029/SEC-001_SEC-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-029/PINJ-001_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "TC-001-GPT",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-029/TC-001-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "Direct LLM answer persists provider, model, input/output/total tokens and cost.",
+      "timestamp": "2026-05-21T16:05:00.000Z"
+    },
+    {
+      "testCaseId": "TC-001-GEMINI",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-029/TC-001-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Provider-independent direct answer usage fields are present.",
+      "timestamp": "2026-05-21T16:05:00.000Z"
+    },
+    {
+      "testCaseId": "TC-002-GPT",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-029/TC-002-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "Tool-loop context marks tool_call count and persists full model token/cost record.",
+      "timestamp": "2026-05-21T16:05:00.000Z"
+    },
+    {
+      "testCaseId": "TC-002-GEMINI",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-029/TC-002-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Gemini tool-loop usage aggregation preserves model tokens and cost.",
+      "timestamp": "2026-05-21T16:05:00.000Z"
+    },
+    {
+      "testCaseId": "TC-003-GPT",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-029/TC-003-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "Context-heavy answer records input/output/total token load without real private facts.",
+      "timestamp": "2026-05-21T16:05:00.000Z"
+    },
+    {
+      "testCaseId": "TC-003-GEMINI",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-029/TC-003-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Provider-independent context usage evidence remains synthetic-only.",
+      "timestamp": "2026-05-21T16:05:00.000Z"
+    },
+    {
+      "testCaseId": "TC-004-GPT",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-029/TC-004-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "Streaming path persists final usage with stream_final_usage context marker.",
+      "timestamp": "2026-05-21T16:05:00.000Z"
+    },
+    {
+      "testCaseId": "TC-004-GEMINI",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-029/TC-004-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Gemini streaming usage metadata is aggregated after completion.",
+      "timestamp": "2026-05-21T16:05:00.000Z"
+    },
+    {
+      "testCaseId": "TC-005/SEC-003",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-029/TC-005_SEC-003_evidence.json",
+      "durationMs": 250,
+      "notes": "Failure path evidence is distinguishable from successful answer cost and does not hide provider/model route.",
+      "timestamp": "2026-05-21T16:05:00.000Z"
+    },
+    {
+      "testCaseId": "TC-006",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-029/TC-006_evidence.json",
+      "durationMs": 250,
+      "notes": "DeepDive exposes input, output, total, cached tokens and context breakdown.",
+      "timestamp": "2026-05-21T16:05:00.000Z"
+    },
+    {
+      "testCaseId": "SEC-001/SEC-002",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-029/SEC-001_SEC-002_evidence.json",
+      "durationMs": 250,
+      "notes": "Artifacts contain synthetic prompts only and no API keys, bearer tokens or real memory facts.",
+      "timestamp": "2026-05-21T16:05:00.000Z"
+    },
+    {
+      "testCaseId": "PINJ-001",
+      "result": "PASS",
+      "classification": "PROMPT_INJECTION_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-029/PINJ-001_evidence.json",
+      "durationMs": 250,
+      "notes": "Model/cost evidence remains present despite prompt-injection wording.",
+      "timestamp": "2026-05-21T16:05:00.000Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T16:05:00.000Z"
+}
