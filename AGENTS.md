@@ -87,10 +87,18 @@ Plugins unterstuetzen den Janus-Skill-Workflow, ersetzen ihn aber nicht. Zuerst 
 Standardnutzung:
 
 - `Codex Security`: gezielte Security-/Privacy-/Attack-Path-Pruefungen, besonders vor Final Audit, Release oder bei sicherheitsrelevanten Aenderungen.
+- `GitHub Connector`: PRs, Issues, Reviews, CI-Checks und Publish-Flows, wenn der Workflow ueber GitHub laeuft oder Review-/Actions-Evidenz gebraucht wird.
 - `Documents`: `.docx`/Word-Artefakte nur, wenn der Nutzer ein teilbares Dokument, Review-Dokument, Bericht oder extern nutzbares Protokoll braucht.
 - `Spreadsheets`: strukturierte Auswertungen, Kosten-/Skill-Usage-Analysen, Tabellen, CSV/XLSX oder Metriken, wenn Markdown nicht mehr ausreicht.
 - `Presentations`: Entscheidungs-, Review- oder Stakeholder-Decks, nicht fuer normale interne Janus-Arbeit.
 - `Browser`: falls in der aktuellen Codex-Umgebung verfuegbar, fuer lokale UI-Pruefung, Screenshots, Klicktests und visuelle Evidenz nach Frontend-Aenderungen.
+
+GitHub-Connector bevorzugen fuer:
+
+- Pull Requests erstellen, aktualisieren und reviewen
+- Action-Checks, Review-Feedback und Merge-Zustand pruefen
+- Issues, Labels, Assignees und Backlog-Nachverfolgung auf GitHub spiegeln
+- Release-/Publish-Vorbereitung, wenn der naechste Schritt direkt ueber GitHub laeuft
 
 Nicht automatisch neue Plugins installieren. Erst den bestehenden Workflow nutzen und nur dann gezielt ein Plugin vorschlagen, wenn ein wiederkehrender Engpass dadurch klar geloest wird.
 
@@ -132,6 +140,7 @@ Wenn der Wunsch groesser, produktentscheidend, mehrdeutig, surface-uebergreifend
 - `master` ist nur fuer Releases.
 - `backup` ist der private Sicherheits-Remote fuer Entwicklungscommits.
 - `origin` ist der oeffentliche/update Remote und bekommt nur `master` plus explizite Release-Tags.
+- Wenn ein Schritt direkt auf GitHub laeuft, bevorzuge den GitHub-Connector fuer PRs, Reviews, Issues, CI-Checks und Publish-Flows statt sofort auf CLI-Fallbacks zu gehen.
 - Nie blind `git add .` verwenden, wenn der Worktree nicht vollstaendig als ein Changeset geprueft wurde.
 - Vor Commit/Push immer `janus-git-governance` verwenden.
 - Vor unabhaengigen Audits muss ein sauberer Checkpoint-Commit empfohlen werden.

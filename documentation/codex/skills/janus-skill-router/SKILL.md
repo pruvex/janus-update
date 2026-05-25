@@ -90,10 +90,19 @@ For larger features, do not create implementation tasks directly. Start decision
 Plugins are support tools, not primary workflow owners. Route to a Janus skill first, then recommend plugin support only when it creates concrete evidence or a useful external artifact.
 
 - `Codex Security`: security, privacy, provider, attack-path, validation, or release-risk checks.
+- `GitHub Connector`: PRs, issues, review follow-up, CI checks, merge state, and publish flows when work moves through GitHub.
 - `Documents`: shareable Word/docx reports, review documents, decision logs, or formal external documentation.
 - `Spreadsheets`: tabular analysis for Skill Usage, Healthcheck, Backlog metrics, costs, test matrices, CSV/XLSX.
 - `Presentations`: stakeholder decks, roadmap/review presentations, release summaries.
 - `Browser`: if available, local UI/Dashboard inspection, screenshots, click-path evidence, visual checks.
+
+Prefer the GitHub connector for:
+
+- creating or updating pull requests
+- reviewing actionable feedback
+- checking or debugging GitHub Actions
+- mirroring issues, labels, and assignments
+- preparing reviewable publish flows
 
 Do not recommend installing more plugins by default. Propose a new plugin only when repeated friction shows a clear missing capability.
 

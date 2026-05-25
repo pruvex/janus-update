@@ -30,6 +30,16 @@ Read only if exact legacy wording is needed:
 - Never push development commits to `origin`.
 - Never push tags implicitly. Push release tags explicitly only in release flow.
 
+## GitHub Connector Preference
+
+When the next step happens on GitHub, prefer the GitHub connector before raw CLI fallbacks for:
+
+- opening or updating pull requests
+- reading or responding to review feedback
+- checking or debugging GitHub Actions
+- mirroring issues, labels, and assignments
+- preparing publishable review state for a PR or release
+
 ## Commit Timing
 
 Recommend a commit checkpoint:

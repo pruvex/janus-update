@@ -97,6 +97,7 @@ Plugins sind Hilfswerkzeuge innerhalb des Janus-Skill-Flusses. Die Reihenfolge b
 Standardregeln:
 
 - `Codex Security`: bei Security-/Privacy-/Provider-Risiko, vor releasekritischen Audits oder wenn ein Finding validiert werden soll. Ergebnis fliesst in `janus-final-audit`, `janus-debug` oder Backlog.
+- GitHub-Connector: bei PRs, Issues, Reviews, CI-Checks, Merge-Zustand und Publish-Flows. Das ist der bevorzugte Weg, wenn der naechste Schritt direkt auf GitHub stattfindet.
 - `Documents`: wenn ein extern teilbares Word-Dokument gebraucht wird, zum Beispiel Review-Bericht, Entscheidungsprotokoll oder formale Dokumentation. Interne Janus-Quellen bleiben Markdown.
 - `Spreadsheets`: wenn Skill-Usage, Healthcheck, Kosten, Testmatrix oder Backlog-Signale tabellarisch ausgewertet werden sollen. Markdown bleibt Standard, XLSX/CSV nur bei echtem Analysewert.
 - `Presentations`: wenn Ergebnisse fuer Stakeholder, Review-Meetings oder Roadmap-Entscheidungen als Deck gebraucht werden. Nicht fuer normale Taskarbeit.
@@ -105,6 +106,7 @@ Standardregeln:
 Automatisierung:
 
 - Bei Frontend-/Dashboard-Tasks im Precheck pruefen, ob Browser-Evidenz sinnvoll ist.
+- Bei PR-/Review-/CI-/Publish-Arbeit den GitHub-Connector vor CLI-Fallbacks bevorzugen.
 - Bei Security-/Privacy-Hinweisen im Router eine Security-Pruefung als moeglichen Gate nennen.
 - Bei Weekly/Monthly Healthcheck koennen Skill-Usage- oder Healthdaten als Spreadsheet empfohlen werden, wenn Muster sonst schwer erkennbar sind.
 - Bei Abschluss groesserer Phasen kann Documents oder Presentations empfohlen werden, wenn ein teilbares Ergebnis benoetigt wird.
@@ -155,6 +157,14 @@ Keinen Commit empfehlen:
 - bei reiner Planung ohne Dateiaenderung
 - bei gemischten, nicht verstandenen Changesets
 - wenn Tests bewusst rot sind und kein WIP-Checkpoint vereinbart wurde
+
+GitHub-Connector bevorzugen, sobald der naechste Git-Schritt direkt auf GitHub stattfindet:
+
+- Pull Requests aufmachen oder aktualisieren
+- Review-Feedback abarbeiten
+- GitHub Actions pruefen oder debuggen
+- Issues und Labels spiegeln
+- Publish-/Release-Schritte vorbereiten, wenn GitHub die Zielplattform ist
 
 Immer:
 
