@@ -53,14 +53,14 @@ Die bestehende Janus Diamond Pipeline wird von Windsurf/Cascade auf Codex-native
 | Spec Skill 1 | `janus-spec-review` | geplant |
 | Skill 1 | `janus-spec-to-task` | geplant |
 | Skill 2 | `janus-task-breakdown` | geplant |
-| Skill 3 | `janus-preimplementation-check` | geplant |
-| Skill 4 | `janus-executioner` | geplant |
-| Skill 5 | `janus-debug` | geplant |
-| Skill 6 | `janus-final-audit` | geplant |
-| Skill 7 | `janus-documentation-update` | geplant |
+| Skill 3 | `janus-preimplementation-check` | erstellt |
+| Skill 4 | `janus-executioner` | erstellt |
+| Skill 5 | `janus-debug` | erstellt |
+| Skill 6 | `janus-final-audit` | erstellt |
+| Skill 7 | `janus-documentation-update` | erstellt |
 | Skill 8 | `janus-build-release` | geplant |
 | System Health | `janus-health-check` | geplant |
-| Test Skill 1-5 | `janus-test-pipeline` | geplant |
+| Test Skill 1-5 | `janus-test-pipeline` | erstellt |
 | Git/GitHub Save/Commit/Release Guard | `janus-git-governance` | erstellt |
 
 ## Skill-Versionierung
