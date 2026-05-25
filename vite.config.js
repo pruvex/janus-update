@@ -6,7 +6,7 @@ import { sentryVitePlugin } from "@sentry/vite-plugin";
 const securityHeaders = {
   'Content-Security-Policy': [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+    "script-src 'self' 'unsafe-inline'",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: http://127.0.0.1:8001 http://localhost:8001 janus:",
     "font-src 'self' data:",

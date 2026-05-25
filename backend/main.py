@@ -925,7 +925,7 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "X-Janus-Internal-Key"],
+    allow_headers=["Authorization", "Content-Type", "X-Janus-Internal-Key", "X-Janus-MCP-Debug-Session"],
     expose_headers=["Content-Disposition"],
     max_age=600,  # Cache preflight request for 10 minutes
 )
@@ -1130,8 +1130,12 @@ app.include_router(consent.router, prefix="/api/consent", tags=["Consent"])
 from backend.dependencies import (
     get_current_user,
     create_access_token,
+    create_mcp_debug_session_token,
     check_api_keys_in_keyring,
     ACCESS_TOKEN_EXPIRE_MINUTES,
+    MCP_DEBUG_SESSION_EXPIRE_MINUTES,
+    require_debug_endpoints_enabled,
+    require_local_debug_request,
 )
 
 # Route zum Abrufen des zuletzt verwendeten Modells
@@ -1197,6 +1201,39 @@ def create_session_token():
     )
     
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.post("/api/debug/mcp/auth-preflight")
+def create_mcp_auth_preflight(
+    _debug_allowed: None = Depends(require_debug_endpoints_enabled),
+    _local_debug_request: None = Depends(require_local_debug_request),
+):
+    """Create a short-lived local debug session for isolated MCP browser contexts."""
+    user_identifier = "local_user"
+    scopes = ["me", "settings:write"]
+    access_token = create_access_token(
+        data={"sub": user_identifier, "scopes": scopes},
+        expires_delta=timedelta(minutes=MCP_DEBUG_SESSION_EXPIRE_MINUTES),
+    )
+    debug_session = create_mcp_debug_session_token()
+
+    return {
+        "token_type": "janus_mcp_debug_session",
+        "expires_in_minutes": MCP_DEBUG_SESSION_EXPIRE_MINUTES,
+        "access_token": access_token,
+        "debug_session": debug_session,
+        "storage": {
+            "auth_token": access_token,
+            "janus_mcp_debug_session": debug_session,
+        },
+        "security_boundaries": [
+            "local-dev-only",
+            "short-lived",
+            "no-real-browser-profile",
+            "no-internal-api-key-export",
+            "no-external-origin",
+        ],
+    }
 
 @app.post("/api/video/analyze")
 async def analyze_video(request: dict, db: Session = Depends(get_db)):

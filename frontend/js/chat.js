@@ -16,6 +16,7 @@ import {
 } from "./window-state.js";
 import { sanitizeChatHtml, sanitizeErrorHtml } from "./dompurify-config.js";
 import { scheduleContextRefresh } from "./context-awareness.js";
+import { configureMarkdownRenderer, renderChatMarkdown } from "./markdown-renderer.js";
 
 // Globaler Debugger für die Bridge
 window.addEventListener("open-knowledge-center", (e) => {
@@ -169,11 +170,7 @@ function closeImageModal() {
 }
 
 
-// Configure marked.js for stricter Markdown parsing
-marked.setOptions({
-  breaks: true, // Convert single newlines to <br> for better link rendering
-  gfm: true, // Use GitHub Flavored Markdown (stricter paragraph breaks)
-});
+configureMarkdownRenderer();
 
 // 💎 MCL: Hydrate video links with class and click handlers after stream rendering
 function hydrateVideoLinks(element) {
@@ -526,7 +523,7 @@ Wähle eine Aktion (Antworte mit 1, 2 oder 3):
           }
           if (data.type === "text") {
             chatText = data.partial ? chatText + data.content : data.content;
-            loadingMessageElement.innerHTML = sanitizeChatHtml(marked.parse(chatText));
+            loadingMessageElement.innerHTML = sanitizeChatHtml(renderChatMarkdown(chatText));
             hydrateVideoLinks(loadingMessageElement);
           } else if (data.type === "metadata") {
             if (window.updateSidebarCost) window.updateSidebarCost(data.cost, data.usage);
@@ -548,7 +545,7 @@ Wähle eine Aktion (Antworte mit 1, 2 oder 3):
           }
         }
       }
-      loadingMessageElement.innerHTML = sanitizeChatHtml(marked.parse(chatText));
+      loadingMessageElement.innerHTML = sanitizeChatHtml(renderChatMarkdown(chatText));
       hydrateVideoLinks(loadingMessageElement);
       applyMCLLinkStyling(loadingMessageElement);
       if (chat_id) {
@@ -895,7 +892,7 @@ export async function sendMessage(fromWindowId) {
 
           if (loadingMessageElement) {
             const healedText = chatText.replace(/Video ansehen\s*\((https?:\/\/[^\s)]+)\)/g, '[Video ansehen]($1)');
-            loadingMessageElement.innerHTML = sanitizeChatHtml(marked.parse(healedText));
+            loadingMessageElement.innerHTML = sanitizeChatHtml(renderChatMarkdown(healedText));
             normalizeLinksAndImages(loadingMessageElement);
             if (!firstTextRendered) {
               firstTextRendered = true;
@@ -1030,7 +1027,7 @@ export async function sendMessage(fromWindowId) {
     // post-stream render, re-create it so the user always sees the full reply.
     reanchorBubbleIfDetached(chatText);
     if (loadingMessageElement) {
-      loadingMessageElement.innerHTML = sanitizeChatHtml(marked.parse(healedText));
+      loadingMessageElement.innerHTML = sanitizeChatHtml(renderChatMarkdown(healedText));
       normalizeLinksAndImages(loadingMessageElement);
       console.log("[SSE-FINAL]", { chatTextLen: chatText.length, bubbleFinalLen: loadingMessageElement.textContent.length, isConnected: loadingMessageElement.isConnected, reanchorCount });
     } else {
@@ -1757,10 +1754,10 @@ export function appendMessage(sender, data, appendOpts = {}) {
 
   if (textContent) {
     console.log("Raw LLM textContent:", textContent);
-    console.log("textContent before marked.parse:", textContent); // NEU
+    console.log("textContent before markdown render:", textContent); // NEU
     const textNode = document.createElement("p"); // Kann auch div oder span sein, um img aufzunehmen
-    textNode.innerHTML = sanitizeChatHtml(marked.parse(textContent));
-    console.log("textNode.innerHTML after marked.parse:", textNode.innerHTML); // NEU
+    textNode.innerHTML = sanitizeChatHtml(renderChatMarkdown(textContent));
+    console.log("textNode.innerHTML after markdown render:", textNode.innerHTML); // NEU
     normalizeLinksAndImages(textNode);
     hydrateVideoLinks(textNode);
     if (
@@ -1795,7 +1792,7 @@ export function appendMessage(sender, data, appendOpts = {}) {
         if (watchUrl) formattedList += `[Video ansehen](${watchUrl})\n\n`;
       });
       // Replace the original text with the formatted list
-      textNode.innerHTML = sanitizeChatHtml(marked.parse(formattedList));
+      textNode.innerHTML = sanitizeChatHtml(renderChatMarkdown(formattedList));
       normalizeLinksAndImages(textNode);
       wireVideoReopenLink(textNode, apiPayload);
     } else {
@@ -1808,7 +1805,7 @@ export function appendMessage(sender, data, appendOpts = {}) {
     textNode.querySelectorAll("img").forEach(img => {
         img.addEventListener("click", (event) => {
             event.stopPropagation();
-            console.log("Image clicked from marked.parse, opening modal for URL:", img.src, "Target:", event.target);
+            console.log("Image clicked from markdown render, opening modal for URL:", img.src, "Target:", event.target);
             openImageModal(img.src);
         });
         img.style.cursor = "pointer"; // Visueller Hinweis, dass es klickbar ist

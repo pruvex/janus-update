@@ -80,7 +80,7 @@ export const DOMPURIFY_ERROR_CONFIG = {
 
 /**
  * Sanitize LLM-generated chat content
- * @param {string} html - HTML to sanitize (e.g., from marked.parse())
+ * @param {string} html - HTML to sanitize (e.g., from the chat Markdown renderer)
  * @returns {string} Sanitized HTML
  */
 export function sanitizeChatHtml(html) {

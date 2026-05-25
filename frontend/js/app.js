@@ -40,6 +40,11 @@ import { initUpdateUI, setSidebarVersionBase } from "./update-ui.js";
             const apiKey = await apiKeyPromise;
             if (apiKey) {
                 newOptions.headers['X-Janus-Internal-Key'] = apiKey;
+            } else {
+                const mcpDebugSession = localStorage.getItem('janus_mcp_debug_session');
+                if (mcpDebugSession) {
+                    newOptions.headers['X-Janus-MCP-Debug-Session'] = mcpDebugSession;
+                }
             }
         }
 
