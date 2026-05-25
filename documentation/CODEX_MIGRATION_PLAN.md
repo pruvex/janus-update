@@ -58,7 +58,7 @@ Die bestehende Janus Diamond Pipeline wird von Windsurf/Cascade auf Codex-native
 | Skill 5 | `janus-debug` | erstellt |
 | Skill 6 | `janus-final-audit` | erstellt |
 | Skill 7 | `janus-documentation-update` | erstellt |
-| Skill 8 | `janus-build-release` | geplant |
+| Skill 8 | `janus-build-release` | erstellt |
 | System Health | `janus-health-check` | geplant |
 | Test Skill 1-5 | `janus-test-pipeline` | erstellt |
 | Git/GitHub Save/Commit/Release Guard | `janus-git-governance` | erstellt |
