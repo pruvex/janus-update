@@ -144,7 +144,14 @@ _GERMAN_QUERY_MARKERS = {
 
 
 def _contains_keyword(text: str, keywords: set[str]) -> bool:
-    return any(keyword in text for keyword in keywords)
+    for keyword in keywords:
+        if " " in keyword:
+            if keyword in text:
+                return True
+            continue
+        if re.search(rf"\b{re.escape(keyword)}\b", text):
+            return True
+    return False
 
 
 def _append_unique_part(parts: list[str], candidate: str) -> None:

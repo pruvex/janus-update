@@ -84,6 +84,54 @@ async def test_websearch_wrapper_gemini_failure_does_not_fallback_for_static_que
 
 
 @pytest.mark.asyncio
+async def test_websearch_wrapper_news_uses_single_verified_source_when_claims_are_not_linkable():
+    gemini_result = {
+        "text": "Aktuelle Microsoft-Meldung ohne sauber extrahierbare Claim-Struktur.",
+        "sources": [
+            {
+                "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/microsoft",
+                "title": "microsoft.com",
+                "snippet": "1. Windows-Systemupdates: Microsoft hat neue Sicherheitsupdates veroeffentlicht.",
+            }
+        ],
+        "metadata": {"provider": "gemini"},
+        "usage": {"input_tokens": 100, "output_tokens": 40},
+        "cost": {"total_cost": 0.0001},
+    }
+    ddg_result = {
+        "text": "Microsoft Patchday Mai - Sicherheitsupdates fuer Windows.",
+        "sources": [
+            {
+                "url": "https://www.heise.de/news/microsoft-patchday-mai-2026.html",
+                "title": "Microsoft Patchday Mai 2026",
+                "snippet": "Microsoft veroeffentlicht Sicherheitsupdates fuer Windows im Mai 2026.",
+            }
+        ],
+        "metadata": {"provider": "duckduckgo"},
+        "usage": {"query_count": 1},
+        "cost": {"total_cost": 0.0},
+    }
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
+        "backend.services.websearch.websearch.GEMINI_PROVIDER.search",
+        AsyncMock(return_value=gemini_result),
+    ), patch(
+        "backend.services.websearch.websearch.DUCKDUCKGO_PROVIDER.search",
+        AsyncMock(return_value=ddg_result),
+    ) as ddg_search_mock:
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(query="Microsoft News aktuell", provider="gemini", model="gemini-2.0-flash")
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    assert rd["status"] == "ok"
+    assert rd["data"]["verified_source_mode"] == "single"
+    assert rd["data"]["sources"][0]["url"] == "https://www.heise.de/news/microsoft-patchday-mai-2026.html"
+    assert "Microsoft Patchday Mai 2026" in rd["data"]["text"]
+    ddg_search_mock.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_websearch_wrapper_persists_cost_entry_for_successful_openai_websearch():
     fake_db = Mock()
 
@@ -2655,7 +2703,7 @@ async def test_gemini_provider_search_sends_native_google_search_tool_block():
         def read(self):
             return b""
 
-    def _fake_urlopen(request):
+    def _fake_urlopen(request, timeout=None):
         captured["url"] = request.full_url
         captured["body"] = json.loads(request.data.decode("utf-8"))
         return _Response()

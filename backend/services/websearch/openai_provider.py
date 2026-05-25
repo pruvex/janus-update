@@ -3,6 +3,7 @@ import logging
 import re
 import json
 import sentry_sdk
+from datetime import datetime
 from typing import Any, Optional
 from urllib.parse import urlparse
 from openai import AsyncOpenAI, BadRequestError
@@ -77,6 +78,7 @@ def coerce_openai_websearch_model(model: Optional[str]) -> str:
 
 
 def _build_diamond_search_system_prompt(model_id: str) -> str:
+    today = datetime.now().strftime("%d.%m.%Y")
     return (
         "Du bist ein Präzisions-Recherche-Agent für Janus. Deine Aufgabe ist die faktenbasierte Suche.\n\n"
         "DIREKTIVE: Nenne Namen, Teams und Punkte vollständig. "
@@ -98,6 +100,13 @@ def _build_diamond_search_system_prompt(model_id: str) -> str:
         "Nutze, wenn moeglich, eine echte Ranking-/Toplisten-Seite als Hauptquelle fuer die Auswahl "
         "und nenne diese Quellenkennung konsistent bei den Eintraegen. "
         "Keine separate Quellenliste.\n"
+        f"NEWS-UPDATE: Heutiges Datum: {today}. Bei 'aktuell', 'news' oder 'latest' zaehlen vorrangig Meldungen der letzten 30 Tage. "
+        "Nutze konkrete Detailartikel, vermeide Startseiten, News-Uebersichten, Aggregatoren, Paywall-Quellen, YouTube/Reddit "
+        "und fremdsprachige Quellen, wenn deutschsprachige Detailartikel verfuegbar sind. "
+        "Nutze keine Dokumentationsseiten, API-Docs oder Help-Center-Seiten als News-Quelle, "
+        "ausser die Nutzerfrage fragt explizit nach Dokumentation oder API-Details. "
+        "Sortiere neueste/relevanteste Meldungen zuerst und nenne keine aeltere Modell-/Release-Meldung als Top-News, "
+        "wenn bereits eine neuere Version oder juengere Ankuendigung verfuegbar ist.\n"
         + _PRICE_INTEGRITY_RULE + "\n" + _GROUNDING_DIRECTIVE
     )
 
@@ -294,6 +303,10 @@ class OpenAIWebSearchProvider(BaseWebSearchProvider):
             "usage": usage,
             "cost": cost,
         }
+        if annotations:
+            metadata["url_citations"] = annotations  # type: ignore[typeddict-unknown-key]
+        if sources_dicts:
+            metadata["web_search_sources"] = sources_dicts  # type: ignore[typeddict-unknown-key]
 
         result: WebSearchResult = {
             "text": text_output,

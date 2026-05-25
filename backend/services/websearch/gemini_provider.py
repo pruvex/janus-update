@@ -5,6 +5,7 @@ import asyncio
 import re
 import urllib.request
 import urllib.error
+from datetime import datetime
 from typing import Dict, Any, Optional
 
 
@@ -156,10 +157,26 @@ def _strip_source_appendix(text: str) -> str:
 
 def _build_gemini_native_websearch_prompt(query: str) -> str:
     cleaned_query = str(query or "").strip()
+    today = datetime.now().strftime("%d.%m.%Y")
     lowered = cleaned_query.lower()
     game_platform_marker = any(token in lowered for token in ("switch", "nintendo", "playstation", "xbox", "steam", "spiele", "games"))
     release_marker = any(token in lowered for token in ("release", "releases", "erscheinen", "erscheint", "neuerschein", "kommende", "naechsten monat", "nächsten monat", "next month", "upcoming"))
     is_game_release_query = game_platform_marker and release_marker
+    asks_news_update = any(
+        token in lowered
+        for token in (
+            "news",
+            "nachrichten",
+            "neuigkeiten",
+            "schlagzeilen",
+            "aktuell",
+            "aktuelle",
+            "aktuelles",
+            "was gibt es neues",
+            "was ist neu",
+            "newsticker",
+        )
+    )
     asks_price = any(token in lowered for token in ("preis", "preise", "uvp", "straßenpreis", "strassenpreis", "street price", "in euro"))
     asks_ranking = bool(re.search(r"\btop\s*\d+\b", lowered)) or any(
         token in lowered
@@ -211,6 +228,21 @@ def _build_gemini_native_websearch_prompt(query: str) -> str:
         )
     if asks_price or asks_ranking or asks_launch:
         prompt_parts.append("Behandle kombinierte Teilfragen separat und recherchiere jede Facette explizit.")
+    if asks_news_update:
+        prompt_parts.append(
+            "NEWS-UPDATE: Liefere 3-5 einzelne aktuelle Meldungen als nummerierte Liste. "
+            f"Heutiges Datum: {today}. Bei 'aktuell', 'news' oder 'latest' zaehlen vorrangig Meldungen der letzten 30 Tage; "
+            "aeltere Meldungen nur nennen, wenn sie fuer die aktuelle Lage zwingend noetig sind. "
+            "Jeder Eintrag beginnt mit einem kurzen Titel, danach folgen 1-2 informative Saetze. "
+            "Nutze pro Meldung eine konkrete Detailquelle zum genannten Ereignis, keine Startseiten, "
+            "keine generischen News-Uebersichten, keine Paywall-Quellen, kein YouTube/Reddit und keine fremdsprachigen Quellen, "
+            "wenn deutschsprachige Detailartikel verfuegbar sind. "
+            "Nutze keine Dokumentationsseiten, API-Docs oder Help-Center-Seiten als News-Quelle, "
+            "ausser die Nutzerfrage fragt explizit nach Dokumentation oder API-Details. "
+            "Sortiere neueste/relevanteste Meldungen zuerst und nenne keine aeltere Modell-/Release-Meldung als Top-News, "
+            "wenn bereits eine neuere Version oder juengere Ankuendigung verfuegbar ist. "
+            "Nenne pro Eintrag eine Quellenkennung wie '(Quelle: Heise)' oder '(Quelle: OpenAI)', aber keine URLs."
+        )
     if asks_price:
         prompt_parts.append(
             "PREIS-INTEGRITÄT (ABSOLUTES GEBOT): "
@@ -280,7 +312,7 @@ class GeminiWebSearchProvider(BaseWebSearchProvider):
                 method='POST'
             )
             try:
-                with urllib.request.urlopen(req) as response:
+                with urllib.request.urlopen(req, timeout=20) as response:
                     if response.status != 200:
                         raise Exception(f"HTTP Status {response.status}")
                     return json.load(response)
@@ -289,7 +321,7 @@ class GeminiWebSearchProvider(BaseWebSearchProvider):
                 raise Exception(f"HTTP {e.code}: {error_body}")
 
         try:
-            result = await asyncio.to_thread(_make_request)
+            result = await asyncio.wait_for(asyncio.to_thread(_make_request), timeout=25)
 
             text_output = ""
             search_queries_count = 0
@@ -297,14 +329,15 @@ class GeminiWebSearchProvider(BaseWebSearchProvider):
             
             if "candidates" in result and result["candidates"]:
                 candidate = result["candidates"][0]
+                grounding_metadata = candidate.get("groundingMetadata") if isinstance(candidate.get("groundingMetadata"), dict) else {}
                 
                 if "content" in candidate and "parts" in candidate["content"]:
                     for part in candidate["content"]["parts"]:
                         if "text" in part:
                             text_output += part["text"]
 
-                if "groundingMetadata" in candidate:
-                    meta = candidate["groundingMetadata"]
+                if grounding_metadata:
+                    meta = grounding_metadata
                     if "webSearchQueries" in meta:
                         search_queries_count = len(meta["webSearchQueries"])
 
@@ -315,6 +348,7 @@ class GeminiWebSearchProvider(BaseWebSearchProvider):
                 clean_sources = []
                 urls = []
                 final_text = ""
+                grounding_metadata = {}
 
             if search_queries_count > 0:
                 logger.info("Gemini executed %s queries. Extracted %s clean sources.", search_queries_count, len(urls))
@@ -358,6 +392,9 @@ class GeminiWebSearchProvider(BaseWebSearchProvider):
                 "usage": usage,
                 "cost": cost,
             }
+            if grounding_metadata:
+                metadata["grounding_metadata"] = grounding_metadata  # type: ignore[typeddict-unknown-key]
+                metadata["web_search_queries"] = grounding_metadata.get("webSearchQueries", [])  # type: ignore[typeddict-unknown-key]
             
             result: WebSearchResult = {
                 "text": final_text,
@@ -371,6 +408,9 @@ class GeminiWebSearchProvider(BaseWebSearchProvider):
             
             return result
 
+        except asyncio.TimeoutError as e:
+            logger.error("Error during Gemini Direct web search: request timed out", exc_info=True)
+            raise RuntimeError("Native Grounding failed: request timed out") from e
         except Exception as e:
             logger.error(f"Error during Gemini Direct web search: {e}", exc_info=True)
-            raise RuntimeError("Native Grounding failed") from e
+            raise RuntimeError(f"Native Grounding failed: {e}") from e
