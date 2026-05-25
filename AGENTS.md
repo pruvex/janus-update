@@ -149,6 +149,17 @@ Wenn der Wunsch groesser, produktentscheidend, mehrdeutig, surface-uebergreifend
 - Commit/Push/Tag/Merge nur nach expliziter User-Freigabe ausfuehren.
 - Janus-Codex-Skills muessen im Repo unter `documentation/codex/skills/` versioniert werden; die Kopien unter `C:\Users\pruve\.codex\skills` gelten als installierte Arbeitskopien.
 
+## Versioning And Electron Auto-Update Releases
+
+- `package.json` ist die Versionsquelle fuer Janus Releases.
+- `package-lock.json` und `backend/version.py` muessen vor Build/Release dieselbe Version tragen.
+- Normale Beta-/Auto-Update-Releases erhoehen nur die Beta-Nummer, z.B. `0.4.17-beta.38` -> `0.4.17-beta.39`.
+- Stable-, Patch-, Minor- oder Major-Wechsel brauchen explizite User-Freigabe.
+- Version bump und Doku-Sync laufen ueber `janus-documentation-update`.
+- Build, Installer, Auto-Update-Manifest und GitHub Release laufen ueber `janus-build-release`.
+- Production Publish laeuft nur sauber von `master`, cleanem Worktree, synchronem `backup/master`, explizitem Tag/Origin-Schritt und finaler Freigabe `Publish: YES`.
+- Das Electron Auto-Update gilt erst als releasebereit, wenn `latest.yml`, `janus-update-manifest.json`, Installer, Blockmap falls vorhanden, lokale Hashes und GitHub Assets validiert sind.
+
 ## Completion Rules
 
 Ein Schritt ist erst fertig, wenn es echte Evidenz gibt oder ein Blocker dokumentiert ist.

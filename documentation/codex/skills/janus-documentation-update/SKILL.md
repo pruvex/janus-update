@@ -58,6 +58,28 @@ Block if:
 - duplicate Backlog items across active and DONE sections
 - silent skips of central registry, project state, changelog, or dashboard sync
 
+## Versioning For Release Prep
+
+Version bumps belong here, not in `janus-build-release`.
+
+When the user asks to prepare a Janus release or Electron auto-update release, update version metadata only after the validated work is documented and the release intent is clear.
+
+Rules:
+
+- Default channel is the existing channel from `package.json` such as `0.4.17-beta.38`.
+- For normal beta/update releases, increment the prerelease number only: `0.4.17-beta.38` -> `0.4.17-beta.39`.
+- For stable releases, require explicit user approval before dropping `-beta.N` or changing major/minor/patch.
+- Keep `package.json`, `package-lock.json`, and `backend/version.py` synchronized.
+- Prefer `npm version <version> --no-git-tag-version`, then `npm run write-version`, and verify lock/backend sync.
+- Do not create tags, merge branches, push to `origin`, publish GitHub releases, or build installers in this skill.
+- After the version/docs checkpoint is committed and pushed to `backup/develop`, route to `janus-build-release`.
+
+Required version check:
+
+```powershell
+node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json','utf8')); const lock=JSON.parse(fs.readFileSync('package-lock.json','utf8')); const backend=fs.readFileSync('backend/version.py','utf8'); console.log({root:pkg.version, lock:lock.version, lockRoot:lock.packages[''].version, backend}); if(lock.version!==pkg.version || lock.packages[''].version!==pkg.version || !backend.includes(pkg.version)) process.exit(1);"
+```
+
 ## Normal Completion Flow
 
 1. Verify final audit/manual/debug gates.
@@ -81,6 +103,7 @@ python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_
 ```
 
 11. Recommend `janus-git-governance` for a checkpoint commit.
+12. For release prep, verify version sync and recommend `janus-build-release` only after the Git checkpoint is clean.
 
 ## Test Pipeline Completion Mode
 

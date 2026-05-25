@@ -10,9 +10,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$")
-SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 
 
 def run_git(repo: Path, *args: str) -> str:
@@ -38,6 +39,21 @@ def load_json(path: Path, errors: list[str]) -> dict:
         return {}
     if not isinstance(value, dict):
         fail(errors, f"Expected JSON object: {path}")
+        return {}
+    return value
+
+
+def load_yaml(path: Path, errors: list[str]) -> dict:
+    try:
+        value = yaml.safe_load(path.read_text(encoding="utf-8-sig"))
+    except FileNotFoundError:
+        fail(errors, f"Missing file: {path}")
+        return {}
+    except yaml.YAMLError as exc:
+        fail(errors, f"Invalid YAML in {path}: {exc}")
+        return {}
+    if not isinstance(value, dict):
+        fail(errors, f"Expected YAML object: {path}")
         return {}
     return value
 
@@ -123,13 +139,20 @@ def manifest_issue(message: str, strict: bool, errors: list[str], warnings: list
 
 def validate_manifest(repo: Path, version: str | None, strict: bool, errors: list[str], warnings: list[str]) -> None:
     manifest_path = repo / "release" / "janus-update-manifest.json"
+    latest_path = repo / "release" / "latest.yml"
     if not manifest_path.exists():
         warn(warnings, "release/janus-update-manifest.json not present yet")
         return
+    if not latest_path.exists():
+        manifest_issue("release/latest.yml not present yet", strict, errors, warnings)
+        return
 
     manifest = load_json(manifest_path, errors)
+    latest = load_yaml(latest_path, errors)
     if version and manifest.get("version") != version:
         manifest_issue(f"Manifest version mismatch: {manifest.get('version')!r} != {version!r}", strict, errors, warnings)
+    if version and latest.get("version") != version:
+        manifest_issue(f"latest.yml version mismatch: {latest.get('version')!r} != {version!r}", strict, errors, warnings)
 
     asset_name = manifest.get("assetName")
     if not isinstance(asset_name, str) or not asset_name:
@@ -137,9 +160,18 @@ def validate_manifest(repo: Path, version: str | None, strict: bool, errors: lis
     elif not (repo / "release" / asset_name).exists():
         manifest_issue(f"Manifest asset missing: release/{asset_name}", strict, errors, warnings)
 
-    sha256 = manifest.get("sha256")
-    if not isinstance(sha256, str) or not SHA256_RE.match(sha256):
-        manifest_issue("Manifest sha256 must be 64 lowercase hex characters", strict, errors, warnings)
+    latest_path_value = latest.get("path")
+    if asset_name and latest_path_value and asset_name != latest_path_value:
+        manifest_issue(f"Manifest/latest asset mismatch: {asset_name!r} != {latest_path_value!r}", strict, errors, warnings)
+
+    sha512 = manifest.get("sha512")
+    latest_sha512 = latest.get("sha512")
+    if not isinstance(sha512, str) or not sha512:
+        manifest_issue("Manifest sha512 missing", strict, errors, warnings)
+    if not isinstance(latest_sha512, str) or not latest_sha512:
+        manifest_issue("latest.yml sha512 missing", strict, errors, warnings)
+    if sha512 and latest_sha512 and sha512 != latest_sha512:
+        manifest_issue("Manifest/latest sha512 mismatch", strict, errors, warnings)
 
     if not isinstance(manifest.get("critical"), bool):
         manifest_issue("Manifest critical must be boolean", strict, errors, warnings)

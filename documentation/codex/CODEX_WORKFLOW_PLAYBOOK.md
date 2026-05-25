@@ -173,6 +173,23 @@ Immer:
 - nie `git add .` im grossen Dirty Tree
 - normale Entwicklungscommits nur nach `backup/develop` pushen
 
+## Versionierung Und Auto-Update Release
+
+Codex fuehrt Versionierung und Electron Auto-Update Release ueber Skills, nicht per Ad-hoc-Kommandos:
+
+- Version bump: `janus-documentation-update`
+- Commit/Push/Merge/Tag Gate: `janus-git-governance`
+- Build, Manifest, Publish, Post-Publish Check: `janus-build-release`
+
+Regeln:
+
+- `package.json` ist Versionsquelle.
+- `package-lock.json` und `backend/version.py` muessen synchron sein.
+- Standard-Beta-Release: nur Beta-Nummer erhoehen, z.B. `0.4.17-beta.38` -> `0.4.17-beta.39`.
+- Stable-, Patch-, Minor- oder Major-Wechsel nur nach expliziter Entscheidung.
+- Electron Auto-Update Release braucht valide `latest.yml`, `janus-update-manifest.json`, Installer, optionale Blockmap, Hash-/Asset-Verifikation und GitHub Release Evidence.
+- Publish zu `origin`/GitHub Release passiert erst nach `Publish: YES`.
+
 ## Completion-Check
 
 Jeder Arbeitsblock endet mit:

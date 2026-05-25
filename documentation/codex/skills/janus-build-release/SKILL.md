@@ -18,7 +18,7 @@ This is a release gate, not an implementation skill. It may run build and verifi
 - Do not publish unless Final Audit is `PASS` or `PASS WITH FIXES`, documentation update is complete, and Git checkpoint is complete.
 - Do not publish from `develop`; production publish must go through the release branch/`master` protocol in `janus-git-governance`.
 - Do not publish from a dirty working tree.
-- Do not publish without showing target repository, version, installer path, manifest path, SHA256, and validation summary.
+- Do not publish without showing target repository, version, installer path, manifest path, manifest SHA512, installer SHA256, and validation summary.
 - Do not publish without the exact user approval phrase: `Publish: YES`.
 - Do not push to `origin`, create tags, merge branches, or publish GitHub releases without explicit user approval.
 - Do not run Vision test suites by default. For Vision-relevant releases, stop and ask approval for the exact Vision command.
@@ -82,6 +82,8 @@ Use `--mode publish` only during production publish preparation.
 
 ## Gate 2: Version And Metadata
 
+`package.json` is the version source of truth during release gates. `package-lock.json` and `backend/version.py` must match it before any build or publish step.
+
 Verify root release metadata:
 
 ```powershell
@@ -89,6 +91,13 @@ node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.j
 ```
 
 If versions are inconsistent, stop and route to `janus-documentation-update`.
+
+For Electron auto-update releases:
+
+- Version must be unique compared with the target GitHub release tag `v<version>`.
+- Beta releases keep the existing prerelease channel, for example `0.4.17-beta.38` -> `0.4.17-beta.39`.
+- Stable channel changes, patch/minor/major bumps, and rollback/reissue versions require explicit user approval before build.
+- Do not build or publish if `release/janus-update-manifest.json`, `release/latest.yml`, or installer artifacts are from a different version than `package.json`.
 
 ## Gate 3: Pre-Build Verification
 
@@ -137,7 +146,7 @@ npm run verify:update-artifacts
 Validate manually if needed:
 
 ```powershell
-node -e "const fs=require('fs'); const path=require('path'); const pkg=JSON.parse(fs.readFileSync('package.json','utf8')); const m=JSON.parse(fs.readFileSync('release/janus-update-manifest.json','utf8')); if(m.version!==pkg.version) throw new Error('manifest version mismatch'); if(!fs.existsSync(path.join('release',m.assetName))) throw new Error('manifest asset missing'); if(!/^[a-f0-9]{64}$/.test(m.sha256)) throw new Error('invalid sha256'); if(typeof m.critical!=='boolean') throw new Error('critical must be boolean'); if(Number.isNaN(Date.parse(m.createdAt))) throw new Error('invalid createdAt'); console.log('manifest OK', m);"
+node -e "const fs=require('fs'); const path=require('path'); const yaml=require('js-yaml'); const pkg=JSON.parse(fs.readFileSync('package.json','utf8')); const latest=yaml.load(fs.readFileSync('release/latest.yml','utf8')); const m=JSON.parse(fs.readFileSync('release/janus-update-manifest.json','utf8')); if(m.version!==pkg.version) throw new Error('manifest version mismatch'); if(latest.version!==pkg.version) throw new Error('latest.yml version mismatch'); if(m.assetName!==latest.path) throw new Error('manifest/latest asset mismatch'); if(m.sha512!==latest.sha512) throw new Error('manifest/latest sha512 mismatch'); if(!fs.existsSync(path.join('release',m.assetName))) throw new Error('manifest asset missing'); if(typeof m.critical!=='boolean') throw new Error('critical must be boolean'); if(Number.isNaN(Date.parse(m.createdAt))) throw new Error('invalid createdAt'); console.log('manifest OK', m);"
 ```
 
 Do not claim auto-update readiness unless the manifest and installer asset are both valid.
@@ -152,7 +161,8 @@ PUBLISH APPROVAL REQUIRED
 - Version:
 - Installer:
 - Manifest:
-- SHA256:
+- Manifest SHA512:
+- Installer SHA256:
 - Release notes:
 - Validation summary:
 - Required answer: Publish: YES
@@ -177,6 +187,13 @@ npm run build-installer -- --publish always
 
 Confirm whether `janus-update-manifest.json` was uploaded as a GitHub release asset. If not, report `RELEASE PUBLISHED WITH RISK`.
 
+For Electron auto-update, the GitHub release must contain, at minimum:
+
+- `janus-setup-<version>.exe`
+- `latest.yml`
+- `janus-update-manifest.json`
+- `janus-setup-<version>.exe.blockmap` when generated
+
 ## Gate 8: Post-Publish Verification
 
 Run:
@@ -191,6 +208,7 @@ Verify:
 - Installer asset exists.
 - Manifest asset exists.
 - GitHub asset sizes and SHA256 match local release artifacts.
+- `latest.yml` and `janus-update-manifest.json` match `package.json` and each other.
 - Published release evidence exists under `documentation/release/`.
 
 ## Model And Context Guidance
