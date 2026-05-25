@@ -1,6 +1,7 @@
 # backend/tool_registry.py
 import asyncio
 import logging
+import os
 import re
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
@@ -46,6 +47,9 @@ from backend.services.websearch.link_quality import (
     tokenize_quality_text,
 )
 from backend.services.websearch.evidence_pipeline import EvidenceClaim, EvidencePipeline
+from backend.services.websearch_v3 import execute_single_verified_news
+from backend.services.websearch_v3.pipeline import SUPPORTED_NATIVE_PROVIDERS as WEBSEARCH_V3_NATIVE_PROVIDERS
+from backend.services.websearch_v3.query_planner import is_simple_news_query as is_simple_news_query_v3
 from backend.renderers.websearch_templates import WebSearchTemplateEngine
 from backend.data.database import SessionLocal
 from backend.tools.calendar_tools import (
@@ -473,6 +477,84 @@ def _official_news_site_for_label(label: str) -> str:
     return EvidencePipeline.official_news_site_for_label(label)
 
 
+def _source_label_from_url(url: str) -> str:
+    host = str(url or "").replace("https://", "").replace("http://", "").split("/")[0]
+    host = host.removeprefix("www.")
+    label = host.split(".")[0] if host else "Web"
+    return label[:1].upper() + label[1:]
+
+
+def _best_single_verified_news_source(query: str, sources: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    best_source: Optional[Dict[str, Any]] = None
+    best_score = -999
+    for source in sources or []:
+        if not isinstance(source, dict):
+            continue
+        url = normalize_source_url(str(source.get("url") or source.get("source_url") or ""))
+        if not url:
+            continue
+        candidate = dict(source)
+        candidate["url"] = url
+        title = str(candidate.get("title") or "").strip()
+        snippet = str(candidate.get("snippet") or candidate.get("description") or "").strip()
+        quality = score_source_for_intent(
+            candidate,
+            intent=LinkIntent.NEWS,
+            title=f"{query} {title}",
+            summary=snippet,
+            label="",
+            min_score=24,
+        )
+        if quality.acceptable and quality.score > best_score:
+            best_source = candidate
+            best_score = quality.score
+    return best_source
+
+
+async def _resolve_single_verified_news_result(query: str) -> Optional[Dict[str, Any]]:
+    rescue_query = " ".join(
+        part
+        for part in [
+            query,
+            "deutschsprachige aktuelle Meldung Artikel Detailseite",
+        ]
+        if str(part or "").strip()
+    )
+    logger.info("WEBSEARCH-NEWS-SINGLE-VERIFY: query=%s", rescue_query)
+    try:
+        raw = await execute_websearch_service(
+            query=rescue_query,
+            api_key="",
+            provider="ollama",
+            model=None,
+        )
+    except Exception as exc:
+        logger.warning("WEBSEARCH-NEWS-SINGLE-VERIFY: soft-failed: %s", exc)
+        return None
+    candidate_sources = raw.get("sources") if isinstance(raw.get("sources"), list) else []
+    source = _best_single_verified_news_source(query, candidate_sources)
+    if not source:
+        return None
+    title = re.sub(r"\s+", " ", str(source.get("title") or "Aktuelle Meldung")).strip(" .")
+    snippet = re.sub(
+        r"\s+",
+        " ",
+        str(source.get("snippet") or source.get("description") or "Details stehen in der verlinkten Quelle.").strip(),
+    ).strip(" .")
+    if len(snippet) > 280:
+        snippet = snippet[:280].rsplit(" ", 1)[0].strip(" .")
+    label = _source_label_from_url(str(source.get("url") or ""))
+    verified_source = dict(source)
+    verified_source["news_target_index"] = "1"
+    verified_source["news_target_title"] = title
+    verified_source["news_target_label"] = label
+    verified_source["snippet"] = snippet
+    return {
+        "text": f"1. {title}: {snippet}. Quelle: {label}.",
+        "sources": [verified_source],
+    }
+
+
 def _news_source_resolver_query(base_query: str, claim: EvidenceClaim) -> str:
     term = EvidencePipeline.repair_query_term_for_claim(claim)
     summary_terms = " ".join(
@@ -840,6 +922,53 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
         repair_model = provider_model
         repair_key = key
 
+        use_websearch_v3_phase1 = (
+            os.getenv("JANUS_WEBSEARCH_V3_PHASE1", "").strip().casefold() in {"1", "true", "yes", "on"}
+            and is_simple_news_query_v3(normalized_query)
+        )
+        if use_websearch_v3_phase1 and provider not in WEBSEARCH_V3_NATIVE_PROVIDERS:
+            return ToolResultV1(
+                status="error",
+                data={},
+                error=ToolErrorDetails(
+                    code="WEBSEARCH_V3_PROVIDER_REQUIRED",
+                    message="websearch_v3 Phase 1 nutzt nur native Provider: openai oder gemini.",
+                    details={"provider": provider or "", "supported_providers": sorted(WEBSEARCH_V3_NATIVE_PROVIDERS)},
+                ),
+                metadata={"execution_time_ms": _elapsed_ms()},
+            )
+
+        if use_websearch_v3_phase1:
+            raw_v3 = await execute_single_verified_news(
+                query=normalized_query,
+                api_key=key,
+                provider=provider,
+                model=provider_model,
+            )
+            v3_meta = raw_v3.get("metadata") if isinstance(raw_v3.get("metadata"), dict) else {}
+            v3_sources = raw_v3.get("sources") if isinstance(raw_v3.get("sources"), list) else []
+            output = WebSearchOutput(
+                query=normalized_query,
+                locale="de_DE",
+                items=[i.model_dump() for i in _sources_to_items(v3_sources)] if v3_sources else [],
+                text=str(raw_v3.get("text") or ""),
+                price_enrichment=None,
+                source=str(v3_meta.get("provider") or provider),
+                retrieved_at=datetime.now(timezone.utc).isoformat(),
+            )
+            output_dict = output.model_dump()
+            output_dict["sources"] = v3_sources
+            output_dict["verified_source_mode"] = str(v3_meta.get("verified_source_mode") or "single")
+            output_dict["max_sources"] = v3_meta.get("max_sources")
+            output_dict["pipeline"] = "websearch_v3"
+            output_dict["verification_status"] = str(v3_meta.get("status") or "")
+            output_dict["verification_reason"] = str(v3_meta.get("reason") or "")
+            return ToolResultV1(
+                status="ok",
+                data=output_dict,
+                metadata={"execution_time_ms": _elapsed_ms()},
+            )
+
         # ── Execute primary search ──────────────────────────────────────────
         try:
             raw = await execute_websearch_service(
@@ -959,16 +1088,37 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
             api_key=repair_key,
             persist_cost=_persist_websearch_cost,
         )
-        sources = await _resolve_news_detail_sources(
-            query=normalized_query,
-            text=text,
-            sources=sources,
-            provider=repair_provider,
-            model=repair_model,
-            api_key=repair_key,
-            persist_cost=_persist_websearch_cost,
-            elapsed_ms_fn=_elapsed_ms,
-        )
+        if is_news_query:
+            sources = await _resolve_news_detail_sources(
+                query=normalized_query,
+                text=text,
+                sources=sources,
+                provider=repair_provider,
+                model=repair_model,
+                api_key=repair_key,
+                persist_cost=_persist_websearch_cost,
+                elapsed_ms_fn=_elapsed_ms,
+            )
+            claims = EvidencePipeline.extract_news_claims(normalized_query, text)
+            has_accepted_news_link = any(
+                decision.accepted for decision in EvidencePipeline.match_sources_for_claims(sources, claims)
+            )
+            if not has_accepted_news_link:
+                single_verified = await _resolve_single_verified_news_result(normalized_query)
+                if single_verified:
+                    text = str(single_verified.get("text") or text)
+                    sources = single_verified.get("sources") if isinstance(single_verified.get("sources"), list) else sources
+        else:
+            sources = await _resolve_news_detail_sources(
+                query=normalized_query,
+                text=text,
+                sources=sources,
+                provider=repair_provider,
+                model=repair_model,
+                api_key=repair_key,
+                persist_cost=_persist_websearch_cost,
+                elapsed_ms_fn=_elapsed_ms,
+            )
         items = _sources_to_items(sources)
 
         price_enrichment = None
@@ -994,6 +1144,8 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
         # can always find them regardless of whether items is populated.
         output_dict = output.model_dump()
         output_dict["sources"] = sources
+        if is_news_query:
+            output_dict["verified_source_mode"] = "single"
         return ToolResultV1(
             status="ok",
             data=output_dict,

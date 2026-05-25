@@ -60,6 +60,7 @@ class RssNewsRenderer(BaseRenderer):
                 str(data.get("websearch_text") or ""),
                 websearch_sources,
                 str(data.get("original_query") or data.get("query") or ""),
+                verified_source_mode=str(data.get("verified_source_mode") or "").strip(),
             )
             patched = dict(data)
             patched["items"] = fallback_items
@@ -135,7 +136,13 @@ class RssNewsRenderer(BaseRenderer):
         url = str((item or {}).get("url") or "").strip()
         return bool(url and not self._is_low_value_source(url))
 
-    def _items_from_websearch_text_and_sources(self, text: str, sources: list, query_context: str = "") -> list:
+    def _items_from_websearch_text_and_sources(
+        self,
+        text: str,
+        sources: list,
+        query_context: str = "",
+        verified_source_mode: str = "",
+    ) -> list:
         source_rows = [source for source in sources if isinstance(source, dict)]
         is_current = self._is_current_news_context(f"{query_context} {text}")
         items = EvidencePipeline.news_items_from_text_and_sources(
@@ -145,6 +152,11 @@ class RssNewsRenderer(BaseRenderer):
             is_stale=lambda value: is_current and self._news_item_is_stale(value),
         )
         if items:
+            if is_current and verified_source_mode == "single":
+                evidenced_items = [item for item in items if self._websearch_news_item_has_evidence(item)]
+                if evidenced_items:
+                    return evidenced_items[:1]
+                return []
             return items
         return self._items_from_websearch_sources(source_rows)
 

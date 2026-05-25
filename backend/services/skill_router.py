@@ -198,10 +198,38 @@ def _is_ranking_websearch_query(query: str) -> bool:
     return has_ranking and has_subject
 
 
+def _is_news_update_query(query: str) -> bool:
+    prompt = str(query or "").casefold()
+    if not prompt:
+        return False
+    news_markers = (
+        "news",
+        "nachrichten",
+        "neuigkeiten",
+        "schlagzeilen",
+        "aktuelle ereignisse",
+        "aktuelle meldungen",
+        "aktuelle lage",
+        "breaking",
+        "eilmeldung",
+        "newsticker",
+        "tagesgeschehen",
+        "was ist passiert",
+        "was passiert gerade",
+        "was gibt es neues",
+        "was gibt's neues",
+        "was gibts neues",
+        "latest news",
+    )
+    return any(marker in prompt for marker in news_markers)
+
+
 def is_realtime_search_query(query: str) -> bool:
     prompt = str(query or "").strip().lower()
     if not prompt:
         return False
+    if _is_news_update_query(prompt):
+        return True
     if _is_price_or_quote_query(prompt):
         return True
     if _is_sports_schedule_query(prompt):
@@ -214,6 +242,8 @@ def is_realtime_search_query(query: str) -> bool:
 
 
 def get_blocked_skills_for_query(query: str) -> Set[str]:
+    if _is_news_update_query(query):
+        return {"system.wikipedia_summary"}
     if is_realtime_search_query(query):
         return set(REALTIME_BLOCKED_SKILLS)
     return set()
@@ -228,6 +258,15 @@ def prioritize_skills_for_query(query: str, skills: List[str], top_k: int = 3) -
     filtered = [skill for skill in ordered_skills if skill not in blocked]
 
     prioritized: List[str] = []
+    if _is_news_update_query(query):
+        for forced_skill in ("system.rss_news", "system.websearch"):
+            if forced_skill not in prioritized:
+                prioritized.append(forced_skill)
+        for skill in filtered:
+            if skill not in prioritized:
+                prioritized.append(skill)
+        return prioritized
+
     for forced_skill in REALTIME_FORCED_SKILLS:
         if forced_skill not in prioritized:
             prioritized.append(forced_skill)
