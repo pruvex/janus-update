@@ -93,6 +93,8 @@ Standard:
 - ein naechster Gate- oder Handoff-Schritt
 - Evidenz oder dokumentierter Blocker
 
+Bei einer neuen Janus-Arbeitssession zuerst einen leichten `janus-health-check DAILY` ausfuehren oder empfehlen, bevor in Backlog-, Spec-, Implementierungs- oder Release-Arbeit eingestiegen wird. Weekly/Monthly Healthchecks laufen ueber die Codex-Automation: samstags, erster Samstag im Monat als `MONTHLY`, sonst `WEEKLY`.
+
 Wenn der Nutzer nur `ok`, `weiter`, `los` oder aehnlich schreibt, fuehrt Codex den zuletzt empfohlenen naechsten Schritt aus, sofern dieser keine riskante Git-, Release-, Delete- oder Publish-Aktion ist. Fuer Commit, Push, Tag, Merge, Release, Delete oder riskante Auto-Fixes bleibt explizite Freigabe erforderlich.
 
 ## Git/GitHub Governance
@@ -119,3 +121,7 @@ Jeder Abschluss nennt:
 - ausgefuehrte Checks
 - geaenderte Dateien
 - naechster Skill oder Gate
+
+Substantielle Skill-Laeufe werden fuer spaetere Optimierung in `documentation/codex/SKILL_USAGE_LOG.md` dokumentiert. Dafuer bevorzugt das Script `documentation/codex/scripts/record_skill_usage.py` nutzen. Reine Rueckfragen, kurze Statusantworten und reine Git-Ausfuehrung ohne neue Prozessentscheidung muessen nicht geloggt werden.
+
+`WHAT_I_LEARNED.md` ist das Langzeitgedaechtnis fuer validierte, wiederverwendbare technische Muster. Nicht vollstaendig laden. Vor Debug-, Build-/Release-, TestPipeline-Generator- und Final-Audit-Blockern gezielt suchen mit `documentation/codex/scripts/search_what_i_learned.py`. Neue Eintraege nur append-only und nur bei validierter Root Cause, Loesung, Haertung und Tripwire; bevorzugt `documentation/codex/scripts/append_learning_pattern.py` nutzen.

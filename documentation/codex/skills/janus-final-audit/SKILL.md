@@ -71,7 +71,8 @@ Do not turn a debug package into a final audit PASS.
 5. Check test evidence, including whether tests are relevant and not fake core assertions.
 6. Check regression risk outside declared scope.
 7. Check precheck compliance where applicable.
-8. Decide exactly one result: `PASS`, `PASS WITH FIXES`, or `BLOCKED`.
+8. For BLOCKED, PASS WITH FIXES, or high-risk findings, targeted-search `WHAT_I_LEARNED.md` for matching prior tripwires before deciding final routing.
+9. Decide exactly one result: `PASS`, `PASS WITH FIXES`, or `BLOCKED`.
 
 ## Decision Rules
 
@@ -138,4 +139,3 @@ When an audit report is saved, run:
 ```powershell
 python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py <path-to-final-audit.md>
 ```
-

@@ -42,12 +42,13 @@ Recommend `5.5` only for high-risk security/privacy/provider/memory architecture
 
 1. Load bound artifacts and isolate the target task.
 2. Validate precheck/handoff before any edits.
-3. Output a command-first Mini-TestPlan or N/A plan before product edits.
-4. Implement only in target scope.
-5. Run specified tests or the smallest meaningful test set.
-6. Run Playwright/generator validation unless N/A is explicitly valid.
-7. Fix verification failures only inside task scope, max two focused attempts.
-8. End in exactly one canonical state: `PASS`, `BLOCKED`, `NEEDS_INFO`, `FAILED`, or `HANDOFF`.
+3. For non-trivial or risky tasks, targeted-search `WHAT_I_LEARNED.md` using relevant subsystem/error tags.
+4. Output a command-first Mini-TestPlan or N/A plan before product edits.
+5. Implement only in target scope.
+6. Run specified tests or the smallest meaningful test set.
+7. Run Playwright/generator validation unless N/A is explicitly valid.
+8. Fix verification failures only inside task scope, max two focused attempts.
+9. End in exactly one canonical state: `PASS`, `BLOCKED`, `NEEDS_INFO`, `FAILED`, or `HANDOFF`.
 
 ## Command-First Rule
 
@@ -169,4 +170,3 @@ When an execution result is saved, run:
 ```powershell
 python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py <path-to-execution-result.md>
 ```
-

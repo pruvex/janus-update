@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import collections
 import json
 import subprocess
 import sys
@@ -46,15 +47,18 @@ def should_skip(path: Path) -> bool:
 
 def large_files(repo: Path, limit: int = 20) -> list[tuple[int, str]]:
     found: list[tuple[int, str]] = []
-    for path in repo.rglob("*"):
-        if not path.is_file() or should_skip(path.relative_to(repo)):
+    tracked = git(repo, "ls-files")
+    candidates = tracked.splitlines() if tracked and not tracked.startswith("ERROR:") else []
+    for rel in candidates:
+        path = repo / rel
+        if not path.is_file() or should_skip(Path(rel)):
             continue
         try:
             size = path.stat().st_size
         except OSError:
             continue
         if size > 500 * 1024:
-            found.append((size, str(path.relative_to(repo))))
+            found.append((size, rel))
     return sorted(found, reverse=True)[:limit]
 
 
@@ -91,6 +95,50 @@ def root_suspicious(repo: Path, limit: int = 20) -> list[str]:
     return items[:limit]
 
 
+def parse_usage_log(path: Path) -> list[dict[str, str]]:
+    if not path.exists():
+        return []
+    lines = [line.strip() for line in path.read_text(encoding="utf-8-sig", errors="replace").splitlines() if line.strip().startswith("|")]
+    if len(lines) < 3:
+        return []
+    header = [part.strip() for part in lines[0].strip("|").split("|")]
+    rows: list[dict[str, str]] = []
+    for line in lines[2:]:
+        values = [part.strip() for part in line.strip("|").split("|")]
+        if len(values) == len(header):
+            rows.append(dict(zip(header, values)))
+    return rows
+
+
+def usage_summary(repo: Path, mode: str) -> dict[str, object]:
+    log_path = repo / "documentation" / "codex" / "SKILL_USAGE_LOG.md"
+    rows = parse_usage_log(log_path)
+    data: dict[str, object] = {
+        "exists": log_path.exists(),
+        "entries": len(rows),
+    }
+    if mode == "DAILY":
+        return data
+
+    by_skill = collections.Counter(row.get("Skill", "N/A") for row in rows)
+    by_state = collections.Counter(row.get("State", "N/A") for row in rows)
+    by_model = collections.Counter(row.get("Model", "N/A") for row in rows)
+    frictions = [row for row in rows if row.get("Friction", "none").lower() not in {"none", "n/a", ""}]
+    optimizations = [row for row in rows if row.get("Optimization", "none").lower() not in {"none", "n/a", ""}]
+    data.update(
+        {
+            "by_skill": dict(by_skill.most_common(10)),
+            "by_state": dict(by_state.most_common()),
+            "by_model": dict(by_model.most_common()),
+            "friction_count": len(frictions),
+            "optimization_count": len(optimizations),
+            "recent_friction": frictions[-5:],
+            "recent_optimizations": optimizations[-5:],
+        }
+    )
+    return data
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Collect a read-only Janus health snapshot.")
     parser.add_argument("--repo", type=Path, default=Path.cwd())
@@ -116,6 +164,7 @@ def main() -> int:
         "backlog": count_backlog_markers(repo / "documentation" / "backlog" / "BACKLOG.md"),
         "migration_gaps": migration_gaps(repo),
         "root_suspicious": root_suspicious(repo),
+        "skill_usage": usage_summary(repo, args.mode),
     }
 
     if args.mode in {"WEEKLY", "MONTHLY"}:

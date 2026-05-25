@@ -95,6 +95,16 @@ Stop and clarify when no artifact is bound, the chat conflicts with the artifact
 
 Use `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md` as the concise operating guide when the user asks how we should work.
 
+## Usage Logging
+
+For substantial Janus skill runs, record a compact usage entry after completion:
+
+```powershell
+python documentation\codex\scripts\record_skill_usage.py --skill <skill> --trigger "<short reason>" --model <model> --intelligence <level> --chat same --state <PASS|BLOCKED|NEEDS_INFO|FAILED|HANDOFF|ESCALATED> --artifacts "<paths>" --checks "<checks>" --friction "none" --optimization "none"
+```
+
+Do not log pure status replies, simple questions, or git-only execution that does not change the process decision. Use the log to identify repeated friction, over-expensive model choices, missing handoffs, and skill improvements.
+
 ## Completion Format
 
 End each routed step with:

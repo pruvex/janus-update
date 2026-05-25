@@ -32,6 +32,16 @@ Require:
 
 If missing, return `SKILL 5 DEBUG RESULT: BLOCKED` with `Reason: DEBUG PACKAGE INCOMPLETE`.
 
+## WHAT_I_LEARNED Lookup
+
+Before iteration 1 for a non-trivial failure, search targeted terms from the failure code, exact error text, affected subsystem, and evidence file names:
+
+```powershell
+python documentation\codex\scripts\search_what_i_learned.py --query "<failure-code exact-error subsystem>"
+```
+
+Do not load the full file. Apply a learned pattern only if it directly matches the current root cause or tripwire. If a fix produces a new reusable root-cause pattern, route it to `janus-documentation-update` for append-only learning capture.
+
 ## Model Gate
 
 Default: `5.3 codex`, high.
@@ -144,4 +154,3 @@ When a debug result is saved, run:
 ```powershell
 python C:\Users\pruve\.codex\skills\janus-debug\scripts\validate_debug_result.py <path-to-debug-result.md>
 ```
-

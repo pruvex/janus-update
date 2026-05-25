@@ -84,6 +84,7 @@ Check:
 - Open `IN PROGRESS` Backlog items are visible.
 - Codex skill migration has no obvious missing repo directories for created skills.
 - Root has no obvious temporary junk that blocks work.
+- Skill usage log exists and entry count is visible.
 
 No Backlog writes in `DAILY`.
 
@@ -96,6 +97,7 @@ Includes DAILY plus:
 - documentation/task drift examples
 - legacy migration gaps
 - Backlog health signals such as many stale `IN PROGRESS`, `NEEDS INFO`, or blockers
+- skill usage summary and repeated friction from `documentation/codex/SKILL_USAGE_LOG.md`
 
 Concrete, non-speculative findings may be routed to `janus-backlog-intake`.
 
@@ -108,6 +110,7 @@ Includes WEEKLY plus bounded architecture review:
 - repeated failure patterns in documentation/test results
 - release and update artifact consistency
 - long-term maintainability risks
+- repeated skill usage friction that suggests router or skill changes
 
 Do not perform large fixes. Route to Backlog or recommend `5.5` review for high-risk ambiguity.
 

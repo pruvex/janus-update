@@ -30,6 +30,8 @@ Bei jeder neuen Janus-Aufgabe:
 3. Bei Modell-/Chatwechsel wartet Codex auf `ok`, `bleib hier` oder eine andere klare Nutzerentscheidung.
 4. Danach laeuft genau ein Skill-Pfad weiter.
 
+Bei einer neuen Janus-Arbeitssession fuehrt Codex zuerst einen leichten `janus-health-check DAILY` aus oder empfiehlt ihn, wenn der Nutzer erkennbar nur eine kurze Status-/Antwortfrage stellt. Das gilt besonders bei Formulierungen wie `neue Session`, `weiter an Janus`, `lass uns anfangen`, `was steht an` oder aehnlich.
+
 ## Intake-Pfade
 
 | Nutzerlage | Standardpfad |
@@ -121,3 +123,75 @@ Jeder Arbeitsblock endet mit:
 - geaenderte Dateien
 - naechster Skill
 - Modell-/Chat-Empfehlung fuer den naechsten Schritt
+
+## Skill-Nutzungslog
+
+Substantielle Skill-Laeufe werden im Log dokumentiert:
+
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Nicht loggen:
+
+- reine Rueckfragen
+- kurze Statusantworten
+- reine Commit-/Push-Ausfuehrung ohne neue Skill-Entscheidung
+- fehlgeschlagene Shell-Versuche ohne Prozessrelevanz
+
+Loggen:
+
+- Routing-Entscheidungen
+- Feature-/Spec-/Backlog-/Test-/Audit-/Release- und Health-Arbeitsbloecke
+- Blocker, Eskalationen und Modellwechsel
+- auffaellige Reibung, zum Beispiel zu viel Kontext, falscher Skill, fehlendes Artefakt, unklare Handoffs
+- konkrete Optimierungsideen
+
+Standardbefehl:
+
+```powershell
+python documentation\codex\scripts\record_skill_usage.py --skill <skill> --trigger "<kurzer Anlass>" --model <model> --intelligence <level> --chat same --state <PASS|BLOCKED|NEEDS_INFO|FAILED|HANDOFF|ESCALATED> --artifacts "<paths>" --checks "<checks>" --friction "none" --optimization "none"
+```
+
+Auswertung:
+
+```powershell
+python documentation\codex\scripts\summarize_skill_usage.py
+```
+
+Review-Rhythmus:
+
+- nach jedem groesseren Arbeitsblock kurz loggen
+- `janus-health-check` DAILY prueft Log-Existenz und Eintragszahl
+- `janus-health-check` WEEKLY wertet Skills, States, Modelle, Reibung und Optimierungsideen aus
+- `janus-health-check` MONTHLY nutzt wiederholte Reibung als Signal fuer Router-/Skill-Verbesserungen
+- Samstag-Automation: erster Samstag im Monat = MONTHLY, sonst WEEKLY
+- Daily ist keine Uhrzeit-Automation, sondern Session-Start-Regel
+- bei wiederholter Reibung den betroffenen Skill oder Router schaerfen
+
+## WHAT_I_LEARNED
+
+`WHAT_I_LEARNED.md` ist das Janus-Langzeitgedaechtnis fuer wiederverwendbare technische Muster. Es wird nicht vollstaendig in den Kontext geladen.
+
+Gezielt suchen:
+
+```powershell
+python documentation\codex\scripts\search_what_i_learned.py --query "<error tags root cause>"
+```
+
+Neues Pattern nur dann ergaenzen, wenn eine echte wiederverwendbare Erkenntnis vorliegt:
+
+- Root Cause ist verstanden.
+- Fix oder Regel wurde validiert.
+- Es gibt eine klare Tripwire-Regel fuer die Zukunft.
+- Das Pattern ist nicht schon vorhanden.
+
+Standard ist append-only:
+
+```powershell
+python documentation\codex\scripts\append_learning_pattern.py --id <PatternId> --title "<title>" --context "<context>" --problem "<problem>" --solution "<solution>" --hardening "<evidence/tests>" --tripwire "<future warning sign>" --location "<files>" --epic "<backlog/spec/test-run>" --tags "<tags>"
+```
+
+Pflege-Rhythmus:
+
+- Vor Debug, Build/Release-Fehlern, TestPipeline-Generatorproblemen und Final-Audit-Blockern gezielt suchen.
+- Nach Debug/Fix/Audit/Dokumentationsabschluss nur dann ergaenzen, wenn ein wiederverwendbares Pattern entstanden ist.
+- Im Healthcheck MONTHLY wiederkehrende Reibung aus Skill-Usage und WHAT_I_LEARNED als Optimierungssignal betrachten.

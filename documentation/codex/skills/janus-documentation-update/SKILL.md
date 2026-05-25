@@ -65,7 +65,7 @@ Block if:
 3. Update task/Spec implementation metadata.
 4. Update central registry and project state.
 5. Update changelog or report exact skip reason.
-6. Update `WHAT_I_LEARNED.md` if a reusable pattern exists.
+6. Update `WHAT_I_LEARNED.md` if a reusable pattern exists, using append-only format and avoiding duplicates.
 7. Move Backlog item to DONE when applicable.
 8. Sync dashboard snapshot if Backlog changed.
 9. Validate Backlog with:
@@ -164,3 +164,26 @@ Use:
 
 Do not report `COMPLETE` if any required checklist item is `MISSING`.
 
+## WHAT_I_LEARNED Rules
+
+Before appending, search for duplicates:
+
+```powershell
+python documentation\codex\scripts\search_what_i_learned.py --query "<pattern tags root cause>"
+```
+
+Append only when all are true:
+
+- root cause is understood
+- solution or rule was validated
+- hardening evidence exists
+- future tripwire can be stated concretely
+- no existing pattern already covers it
+
+Prefer:
+
+```powershell
+python documentation\codex\scripts\append_learning_pattern.py --id <PatternId> --title "<title>" --context "<context>" --problem "<problem>" --solution "<solution>" --hardening "<evidence/tests>" --tripwire "<future warning sign>" --location "<files>" --epic "<backlog/spec/test-run>" --tags "<tags>"
+```
+
+If skipped, output `WHAT_I_LEARNED marker: SKIPPED WITH REASON`.
