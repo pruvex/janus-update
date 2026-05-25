@@ -3,7 +3,9 @@
 This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Test Pipeline Validations
+
 ### WEBSEARCH-PROVIDER-PARITY-2026-05-22 - Release-List Chat Template Hardening
+
 - **Status**: DONE
 - **Audit**: PASS
 - **Source**: Direct Websearch UX hardening from Gemini/GPT parity regression.
@@ -14,6 +16,105 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Provider Parity**: Gemini and GPT release-list answers are normalized to the same per-entry chat template while preserving provider-specific websearch execution and cost evidence.
 - **Changed Files**: `backend/renderers/websearch_templates.py`, `backend/renderers/implementations/unified_websearch_renderer.py`, `backend/renderers/attribution.py`, `backend/services/websearch/gemini_provider.py`, `backend/services/websearch/openai_provider.py`, `backend/tool_registry.py`, `frontend/js/markdown-renderer.js`, `backend/tests/tools/test_websearch.py`, `frontend/tests/markdown-renderer.test.mjs`.
 
+### TEST-RUN-2026-05-21-034 - Prompt and Context Budget Efficiency
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Efficiency & Cost TestSpec 15
+- **TestSpec**: `documentation/TEST_SPEC/06_efficiency_cost/15_prompt_context_budget_efficiency.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-034_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-034_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-034_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-034_final_audit.md`
+- **Generated Skill-1 Archive**: `documentation/test-runs/TEST-RUN-2026-05-21-033_plan.json`
+- **Validation**: PASS with `12/12` deterministic prompt/context budget checks, `0` failed, `0` blocked and `0` manual gates. Dashboard coverage is full because planned and executed cases both equal `12`.
+- **Provider Pass Rates**: GPT static budget runner 100.00%, Gemini static budget runner 100.00%, Static budget runner 100.00%.
+- **Type Pass Rates**: functional 100.00%, security 100.00%, prompt_injection 100.00%.
+- **Budget Validation**: Stable prompt segments produce cache evidence, dynamic segments are bypassed, raw segment content is redacted, memory selection respects token budget, irrelevant private facts stay out of neutral answers and cached token evidence reaches cost usage.
+- **Changed Files**: `backend/services/orchestrator/execution_dispatcher.py`, `backend/tests/test_prompt_context_budget_efficiency.py`, `tests/e2e/generator/compile-testspec-to-testplan.mjs`, `documentation/test-runs/TEST-RUN-2026-05-21-033*`, `documentation/test-runs/TEST-RUN-2026-05-21-034*`, `documentation/test-results/TEST-RUN-2026-05-21-034*`.
+
+### TEST-RUN-2026-05-21-031 - Smallest Viable Model and Escalation Discipline
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Efficiency & Cost TestSpec 14
+- **TestSpec**: `documentation/TEST_SPEC/06_efficiency_cost/14_smallest_viable_model_escalation_discipline.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-031_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-031_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-031_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-031_final_audit.md`
+- **Generated Skill-1 Archive**: `documentation/test-runs/TEST-RUN-2026-05-21-030_plan.json`
+- **Validation**: PASS with `12/12` deterministic model-routing checks, `0` failed, `0` blocked and `0` manual gates. Dashboard coverage is full because planned and executed cases both equal `12`.
+- **Provider Pass Rates**: GPT static routing runner 100.00%, Gemini static routing runner 100.00%, Static routing runner 100.00%.
+- **Type Pass Rates**: functional 100.00%, security 100.00%, prompt_injection 100.00%.
+- **Routing Validation**: Smallest viable OpenAI/Gemini routes match configured policy; optimized skill tier and MoA logic tier models exist in catalog; escalation attempts remain provider-local; unknown providers do not silently fall back to OpenAI.
+- **Changed Files**: `backend/llm_providers/shared/moa.py`, `backend/services/routing/model_router.py`, `backend/tests/test_smallest_viable_model_escalation_discipline.py`, `documentation/test-runs/TEST-RUN-2026-05-21-030*`, `documentation/test-runs/TEST-RUN-2026-05-21-031*`, `documentation/test-results/TEST-RUN-2026-05-21-031*`.
+
+### TEST-RUN-2026-05-21-029 - Cost and Token Tracking Completeness
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Efficiency & Cost TestSpec 13
+- **TestSpec**: `documentation/TEST_SPEC/06_efficiency_cost/13_cost_token_tracking_completeness.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-029_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-029_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-029_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-029_final_audit.md`
+- **Generated Skill-1 Archive**: `documentation/test-runs/TEST-RUN-2026-05-21-028_plan.json`
+- **Validation**: PASS with `12/12` deterministic cost/token observability checks, `0` failed, `0` blocked and `0` manual gates. Dashboard coverage is full because planned and executed cases both equal `12`.
+- **Provider Pass Rates**: GPT static cost runner 100.00%, Gemini static cost runner 100.00%, Static cost runner 100.00%.
+- **Type Pass Rates**: functional 100.00%, security 100.00%, prompt_injection 100.00%.
+- **Cost/Token Validation**: Cached and total token fields are persisted and aggregated; ToolLoop and Stream contexts are visible in DeepDive; Websearch remains separate; no real private facts or secrets appear in evidence.
+- **Changed Files**: `backend/data/models.py`, `backend/data/database.py`, `backend/services/cost_calculator.py`, `backend/services/cost_service.py`, `backend/data/crud.py`, `backend/services/chat_orchestrator.py`, `backend/services/orchestrator/execution_engine.py`, `frontend/js/cost-visualizer.js`, `backend/tests/test_cost_calculator.py`, `backend/tests/test_cost_token_tracking_completeness.py`, `documentation/test-runs/TEST-RUN-2026-05-21-029*`, `documentation/test-results/TEST-RUN-2026-05-21-029*`.
+
+### TEST-RUN-2026-05-21-027 - TestSpec TestPlan Generator Regression
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Regression Suite TestSpec 18
+- **TestSpec**: `documentation/TEST_SPEC/07_regression_suite/18_testspec_testplan_generator_regression.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-027_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-027_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-027_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-027_final_audit.md`
+- **Generated Skill-1 Archive**: `documentation/test-runs/TEST-RUN-2026-05-21-026_plan.json`
+- **Validation**: PASS with `12/12` deterministic static generator checks, `0` failed, `0` blocked and `0` manual gates. Dashboard coverage is full because planned and executed cases both equal `12`.
+- **Provider Pass Rates**: Static Generator 100.00%; live GPT/Gemini not required because Spec 18 covers static compiler and runner behavior.
+- **Type Pass Rates**: functional 100.00%, security 100.00%, prompt_injection 100.00%.
+- **Generator Validation**: Self-test PASS; Skill-1 compiler TESTPLAN VALID with 22 generated tests; generated runner validation PASS; node syntax check PASS; skill schema validation 54/54 PASS.
+- **Changed Files**: `tests/e2e/generator/generator.self-test.mjs`, `documentation/test-runs/TEST-RUN-2026-05-21-026*`, `documentation/test-runs/TEST-RUN-2026-05-21-027*`, `documentation/test-results/TEST-RUN-2026-05-21-027*`.
+
+### TEST-RUN-2026-05-21-015 - Janus Skill Registry Integrity
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Tools & Skills TestSpec 08
+- **TestSpec**: `documentation/TEST_SPEC/03_tools_skills/08_skill_selector_capability_registry_integrity.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-015_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-015_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-015_results.md`
+- **Validation**: PASS with `6/6` deterministic registry/selector checks, `0` failed, `0` blocked and `0` manual gates. Dashboard coverage is full because planned and executed cases both equal `6`.
+- **Provider Pass Rates**: Static Runner 100.00%; live GPT/Gemini not required because the acceptance criteria are deterministic registry, schema and selector assertions.
+- **Type Pass Rates**: functional 100.00%, security 100.00%, prompt_injection 100.00%.
+- **Capability Validation**: Capability Registry validated; UX capability view validated through category-based HelpSkill response with no raw tool dump.
+- **Dashboard Note**: Supersedes `TEST-RUN-2026-05-21-014` for dashboard status because `014` paired 6 executed static assertions with a generic 18-case live-provider plan.
+- **Changed Files**: `documentation/test-runs/TEST-RUN-2026-05-21-015_plan.json`, `documentation/test-results/TEST-RUN-2026-05-21-015_results.*`.
+
+### TEST-RUN-2026-05-21-014 - Janus Skill Registry Integrity
+
+- **Status**: DONE
+- **Audit**: PASS
+- **Source**: Tools & Skills TestSpec 08
+- **TestSpec**: `documentation/TEST_SPEC/03_tools_skills/08_skill_selector_capability_registry_integrity.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-014_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-014_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-014_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-014_final_audit.md`
+- **Validation**: PASS with `6/6` deterministic registry/selector checks, `0` failed, `0` blocked and `0` manual gates. Focused backend suite also passed `41/41`; skill-schema validator passed all `54` skill JSON files.
+- **Provider Pass Rates**: Static Runner 100.00%; live GPT/Gemini not required because the acceptance criteria are deterministic registry, schema and selector assertions.
+- **Type Pass Rates**: functional 100.00%, security 100.00%, prompt_injection 100.00%.
+- **Capability Validation**: Capability Registry validated; UX capability view validated through category-based HelpSkill response with no raw tool dump.
+- **Changed Files**: `documentation/test-runs/TEST-RUN-2026-05-21-014*`, `documentation/test-results/TEST-RUN-2026-05-21-014*`, pipeline/documentation sync artifacts.
 
 ### TEST-RUN-2026-05-21-013 - Final Beta Launch Gate Review
 
@@ -466,6 +567,112 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Final Audit**: `documentation/test-runs/BACKLOG-073_final_audit.md`
 - **Validation**: TEST-RUN-2026-05-18-023 PASS with `38/38` tests. Provider pass rates: GPT 100.00%, Gemini 100.00%. Type pass rates: functional 100.00%, intent_routing 100.00%, prompt_injection 100.00%, security 100.00%.
 - **Changed Files**: `tests/e2e/generator/compile-testspec-to-testplan.mjs`
+
+
+### TEST-RUN-2026-05-21-017 - Context Privacy and Externalization Boundary
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-017
+- **Datum**: 2026-05-21
+- **TestSpec**: `documentation/TEST_SPEC/04_memory_context/10_context_privacy_externalization_boundary.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-017_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-017_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-017_results.json`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-017_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 12
+- **Passed**: 12
+- **Failed**: 0
+- **Blocked**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT pre-provider 100.00%, Gemini pre-provider 100.00%
+- **Type Pass Rates**: functional 100.00%, prompt_injection 100.00%, security 100.00%
+- **Security Gates**: Broad private context externalization blocked before tools/provider; unrelated current/weather memory suppressed; scoped preference personalization allowed.
+- **Diamond Confidence Score**: 10/10
+- **Production Confidence**: 100%
+
+### TEST-RUN-2026-05-21-019 - Memory Retrieval Relevance and Priority
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-019
+- **Datum**: 2026-05-21
+- **TestSpec**: `documentation/TEST_SPEC/04_memory_context/11_memory_retrieval_relevance_priority.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-019_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-019_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-019_results.json`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-019_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 12
+- **Passed**: 12
+- **Failed**: 0
+- **Blocked**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT pre-provider 100.00%, Gemini pre-provider 100.00%
+- **Type Pass Rates**: functional 100.00%, prompt_injection 100.00%, security 100.00%
+- **Security Gates**: Phoenix wins over chat-title placeholders; missing favorite-color facts are not invented; unrelated geo queries suppress private memory context.
+- **Diamond Confidence Score**: 10/10
+- **Production Confidence**: 100%
+
+### TEST-RUN-2026-05-21-021 - Memory Write Update and Conflict Handling
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-021
+- **Datum**: 2026-05-21
+- **TestSpec**: `documentation/TEST_SPEC/04_memory_context/12_memory_write_update_conflict_handling.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-021_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-021_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-021_results.json`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-021_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 12
+- **Passed**: 12
+- **Failed**: 0
+- **Blocked**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT pre-provider 100.00%, Gemini pre-provider 100.00%
+- **Type Pass Rates**: functional 100.00%, prompt_injection 100.00%, security 100.00%
+- **Security Gates**: Corrections refresh canonical/hash state; duplicate facts merge; transient facts are not over-persisted; fake-password persistence is blocked.
+- **Diamond Confidence Score**: 10/10
+- **Production Confidence**: 100%
+
+### TEST-RUN-2026-05-21-023 - Filesystem Safety Boundary Regression
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-023
+- **Datum**: 2026-05-21
+- **TestSpec**: `documentation/TEST_SPEC/07_regression_suite/16_filesystem_safety_boundary_regression.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-023_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-023_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-023_results.json`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-023_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 12
+- **Passed**: 12
+- **Failed**: 0
+- **Blocked**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT pre-provider static runner 100.00%, Gemini pre-provider static runner 100.00%
+- **Type Pass Rates**: functional 100.00%, prompt_injection 100.00%, security 100.00%
+- **Security Gates**: Out-of-workspace writes and directory mutations denied; vague destructive and injected delete prompts require clarification; missing synthetic file search is honest; scoped workspace writes remain allowed.
+- **Diamond Confidence Score**: 10/10
+- **Production Confidence**: 100%
+
+### TEST-RUN-2026-05-21-025 - Memory Recall Placeholder Regression
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-025
+- **Datum**: 2026-05-21
+- **TestSpec**: `documentation/TEST_SPEC/07_regression_suite/17_memory_recall_placeholder_regression.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-025_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-025_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-025_results.json`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-025_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 12
+- **Passed**: 12
+- **Failed**: 0
+- **Blocked**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT pre-provider static runner 100.00%, Gemini pre-provider static runner 100.00%
+- **Type Pass Rates**: functional 100.00%, prompt_injection 100.00%, security 100.00%
+- **Security Gates**: Concrete Phoenix/Orion memories beat placeholder chat titles; missing favorite-color facts are not invented; injection wording cannot force placeholder recall.
+- **Diamond Confidence Score**: 10/10
+- **Production Confidence**: 100%
 
 
 ### TEST-RUN-2026-05-16-001 – Janus Intent Routing TestSpec Validation

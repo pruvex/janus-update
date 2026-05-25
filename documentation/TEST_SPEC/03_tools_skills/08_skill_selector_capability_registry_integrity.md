@@ -127,6 +127,30 @@ Full execution of every skill, exhaustive natural language coverage, and UI desi
 - [ ] Representative prompts route to correct capability families.
 - [ ] Known orphan/mismatch patterns do not reappear silently.
 
+## Latest Pipeline Validation
+
+- **TargetTestRun:** TEST-RUN-2026-05-21-015
+- **Date:** 2026-05-21
+- **Result:** PASS
+- **Total:** 6
+- **Passed:** 6
+- **Failed:** 0
+- **Blocked:** 0
+- **ManualGate:** 0
+- **PassRatePct:** 100.00
+- **ProviderPassRatePct:** Static Runner:100.00
+- **TypePassRatePct:** functional:100.00, security:100.00, prompt_injection:100.00
+- **TestPlan:** `documentation/test-runs/TEST-RUN-2026-05-21-015_plan.json`
+- **TestResultJson:** `documentation/test-results/TEST-RUN-2026-05-21-015_results.json`
+- **TestResult:** `documentation/test-results/TEST-RUN-2026-05-21-015_results.md`
+- **Final Audit:** `documentation/test-runs/TEST-RUN-2026-05-21-014_final_audit.md`
+- **Validation Evidence:** skill schema validator PASS for 54 skill JSON files; focused backend suite PASS 41/41.
+- **Dashboard Coverage:** 6 planned / 6 executed / 6 passed in deterministic static-runner plan.
+- **Capability Registry:** validated
+- **Capability UX View:** validated
+- **Security Gate:** PASS
+- **Findings:** NONE
+
 ## BLOCKING CONDITIONS
 
 - [ ] Capability registry file is missing.

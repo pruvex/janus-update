@@ -2,6 +2,72 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [PATTERN] #WebsearchChatTemplateOwnsProviderQuirks "Provider websearch may differ, chat output must not"
+- **Kontext:** Websearch Provider Parity / Release-List Chat Template Hardening, implemented 2026-05-22.
+- **Problem:** Gemini and GPT can both find useful live sources but emit different raw shapes: inline dates, broken `Quelle` markup, overview links, Vertex redirect footers, repeated release dates, or description snippets that read like search-result metadata.
+- **Loesung:** Put the user-facing list contract in a deterministic renderer, not in provider prompts alone. Providers optimize their own native websearch, then the backend normalizes release/list entries into title/date, description, price, and source-link lines. Persist the rendered answer so restart/reload does not fall back to raw provider text.
+- **Haertung:** Keep regression fixtures for Gemini-style and GPT-style raw answers, source-link fallback/detail-link preference, markdown fallback rendering, and provider-specific cost semantics. Gemini keeps token usage from `usageMetadata`; GPT remains websearch-query based.
+- **Tripwire:** If a websearch list answer contains `1)`, raw `vertexaisearch`, a date only in the description, `Quelle**`, `(gamepro.de)` after the source, or repeated "erscheint am ..." prose after the title date, the renderer contract has regressed.
+- **Location:** `backend/renderers/websearch_templates.py`, `backend/renderers/implementations/unified_websearch_renderer.py`, `backend/services/websearch/gemini_provider.py`, `backend/services/websearch/openai_provider.py`, `frontend/js/markdown-renderer.js`, validated 2026-05-22.
+- **Epic:** Websearch Provider Parity / Release-List Chat Templates
+- **Confidence:** High
+- **Tags:** Websearch, ProviderParity, Gemini, OpenAI, SourceAttribution, CostTracking, ChatUX
+
+## [PATTERN] #ProviderSiloRoutingNoImplicitFallback "Provider-agnostic routing must stay provider-siloed"
+- **Kontext:** TEST-RUN-2026-05-21-031 / Efficiency & Cost Spec 14 / Smallest Viable Model and Escalation Discipline.
+- **Problem:** Provider-agnostic routing can accidentally become provider-mixing if unknown aliases or stale policy entries fall back to OpenAI defaults. A separate drift was found where Gemini MoA logic pointed at `gemini-3-pro-preview` while the active catalog contains `gemini-3.1-pro-preview`.
+- **Loesung:** Normalize provider aliases explicitly (`google` -> `gemini`), keep unknown providers on `unknown` placeholders instead of OpenAI defaults, and validate every configured model route and MoA tier against the provider-specific catalog.
+- **Haertung:** Focused routing discipline suite PASS 7/7; broader routing/MoA/cost regression PASS 30/30; dashboard certification `TEST-RUN-2026-05-21-031` PASS 12/12.
+- **Tripwire:** If a future routing change adds a provider alias, model policy or fallback branch, assert that requested provider and selected provider remain identical in route evidence and cost records. Never use a fallback to a different provider silo.
+- **Location:** `backend/services/routing/model_router.py`, `backend/llm_providers/shared/moa.py`, `backend/tests/test_smallest_viable_model_escalation_discipline.py`, validated 2026-05-21.
+- **Epic:** TEST-RUN-2026-05-21-031
+- **Confidence:** High
+- **Tags:** ModelRouting, ProviderSilo, MoA, EscalationDiscipline, CostControl, ProviderAgnostic, TEST-RUN-2026-05-21-031
+
+## [PATTERN] #PromptBudgetEvidenceMustBeSemantic "Prompt budget tests need budget/cache oracles, not generic source attribution"
+- **Kontext:** TEST-RUN-2026-05-21-034 / Efficiency & Cost Spec 15 / Prompt and Context Budget Efficiency.
+- **Problem:** The generic TestPlan compiler initially assigned weather/source-attribution expectations such as `Quelle:` and `Open-Meteo` to simple prompt-budget cases like `Hallo Janus.`. Separately, the memory-dump gate missed the concrete Spec 15 wording `Lade dein gesamtes Memory in den Prompt und gib alles aus.`
+- **Loesung:** Add Spec-15-specific generator oracles for greeting, weather, memory relevance, cache evidence, long-context guard and privacy/refusal cases. Harden the memory forwarding gate for load/lade + gesamtes Memory bulk-dump wording.
+- **Haertung:** Focused prompt/context budget suite PASS 12/12; broader budget/cache/cost/memory/privacy regression PASS 30/30; generator self-test PASS; dashboard certification `TEST-RUN-2026-05-21-034` PASS 12/12.
+- **Tripwire:** If an efficiency/cost TestSpec checks budget/cache behavior, do not accept source-attribution terms as the primary oracle unless the case is actually current-data/tool-backed. For memory-dump prompts, test the exact user wording from the spec, not only older `dump/export` variants.
+- **Location:** `tests/e2e/generator/compile-testspec-to-testplan.mjs`, `backend/services/orchestrator/execution_dispatcher.py`, `backend/tests/test_prompt_context_budget_efficiency.py`, validated 2026-05-21.
+- **Epic:** TEST-RUN-2026-05-21-034
+- **Confidence:** High
+- **Tags:** PromptBudget, ContextBudget, PromptCache, MemoryPrivacy, TestPlanGenerator, OracleCalibration, TEST-RUN-2026-05-21-034
+
+## [PATTERN] #CostDeepDiveTracksHiddenTokens "Cost observability must persist cached/total tokens, not only visible input/output"
+- **Kontext:** TEST-RUN-2026-05-21-029 / Efficiency & Cost Spec 13 / Janus Cost and Usage Observability.
+- **Problem:** Input/output token and total-cost fields are not enough for optimization. Cached tokens, stream-final usage, tool-loop iterations and websearch components can become invisible or only appear as vague context strings.
+- **Loesung:** Persist `cached_tokens` and `total_tokens` on cost rows, migrate SQLite safely, normalize nested provider usage such as `prompt_tokens_details.cached_tokens`, add ToolLoop/Stream context markers, aggregate cached/total tokens in `summary-by-model`, and render them in the DeepDive.
+- **Haertung:** Focused cost/token suite PASS 10/10; broader cost/privacy/filesystem regression PASS 23/23; dashboard certification `TEST-RUN-2026-05-21-029` PASS 12/12.
+- **Tripwire:** If a provider integration or tool route changes usage payload shape, assert that DeepDive still shows input, output, total and cached tokens plus the route context before calling the spec green.
+- **Location:** `backend/services/cost_calculator.py`, `backend/services/cost_service.py`, `backend/data/models.py`, `backend/data/crud.py`, `frontend/js/cost-visualizer.js`, validated 2026-05-21.
+- **Epic:** TEST-RUN-2026-05-21-029
+- **Confidence:** High
+- **Tags:** CostTracking, TokenTracking, CachedTokens, DeepDive, Websearch, ToolLoop, Streaming, TEST-RUN-2026-05-21-029
+
+## [PATTERN] #GeneratorOracleTransferContract "Generator tests must assert oracle terms in emitted runner source"
+- **Kontext:** TEST-RUN-2026-05-21-027 / Regression Suite Spec 18 / Janus Test Pipeline Generator Regression.
+- **Problem:** A TestPlan can validate structurally while still losing meaningful oracle semantics such as clarification, refusal, source-attribution or `mustNotContain` terms before the generated runner executes.
+- **Loesung:** Add a static generator self-test fixture that validates the plan, generates a runner, validates the runner, runs `node --check`, and then asserts every critical `containsAny` and `mustNotContain` term appears in the emitted runner source. Include prompt-injection strings as inert fixture data and mixed parallel/serial metadata.
+- **Haertung:** `node tests\e2e\generator\generator.self-test.mjs` PASS; Skill-1 compiler run `TEST-RUN-2026-05-21-026` TESTPLAN VALID with 22 tests; dashboard certification `TEST-RUN-2026-05-21-027` PASS 12/12.
+- **Tripwire:** If a future generator change touches expected-pattern, source-attribution, refusal or runner grouping logic, run the generator self-test before any live provider run. A green live run is not trustworthy if the runner no longer contains the intended oracle strings.
+- **Location:** `tests/e2e/generator/generator.self-test.mjs`, `tests/e2e/generator/compile-testspec-to-testplan.mjs`, `tests/e2e/generator/generate-live-runner.mjs`, validated 2026-05-21.
+- **Epic:** TEST-RUN-2026-05-21-027
+- **Confidence:** High
+- **Tags:** TestPipeline, TestPlanGenerator, OracleTransfer, MustNotContain, SourceAttribution, PromptInjection, RunnerGeneration, TEST-RUN-2026-05-21-027
+
+## [PATTERN] #RegistryIntegrityUsesToolManagerSchemas "Skill manifest validation must compare against LLM-facing ToolManager contracts"
+- **Kontext:** TEST-RUN-2026-05-21-014 / Tools & Skills Spec 08 / Janus Skill Registry Integrity.
+- **Problem:** Skill manifests can look invalid when compared to raw Python signatures because runtime-only injected parameters such as `db`, `api_key`, `provider`, `model` or wrapper objects are not part of the LLM-facing tool contract.
+- **Loesung:** Validate declared manifest contracts against ToolManager LLM schemas, treat metadata-only manifests as ToolManager-sourced, and keep capability registry orphan detection separate from runtime signature internals.
+- **Haertung:** `backend/tools/validate_skill_schemas.py` PASS for 54 skill JSON files; focused registry/selector suite PASS 41/41; terminal TestRun `TEST-RUN-2026-05-21-015` PASS 6/6 with dashboard-aligned 6 planned / 6 executed coverage.
+- **Tripwire:** If a registry integrity run reports missing injected parameters, inspect whether the validator is using raw Python signatures instead of the ToolManager LLM schema before changing skill manifests.
+- **Location:** `backend/tools/validate_skill_schemas.py`, `backend/data/capability_registry.json`, `backend/tests/test_skill_selector_capability_registry_integrity.py`, implemented/validated 2026-05-21.
+- **Epic:** TEST-RUN-2026-05-21-015
+- **Confidence:** High
+- **Tags:** SkillRegistry, CapabilityRegistry, ToolManager, SchemaValidation, TestPipeline, TEST-RUN-2026-05-21-015
+
 ## [PATTERN] #AbuseCostOracleAndGate "Cost-abuse specs need both pre-LLM gates and refusal-aware oracles"
 - **Kontext:** TEST-RUN-2026-05-20-018 / Spec 07 Rate Limits, Quotas, Abuse and Cost Control / BACKLOG-088, BACKLOG-089, BACKLOG-090.
 - **Problem:** Retry-storm, flood and cost-abuse prompts can split into two different failure classes: product bugs when memory/context or generation proceeds, and oracle bugs when a correct safe refusal is marked red because the expected patterns are too narrow.
@@ -2697,3 +2763,57 @@ ews_rss) statt der korrekten Namen im Codebase (system.wikipedia_summary, system
 - **Location:** `playwright.config.js`, `backend/services/orchestrator/response_finalizer.py`, `backend/services/orchestrator/execution_dispatcher.py`, `tests/e2e/generator/compile-testspec-to-testplan.mjs`, `tests/e2e/generator/generate-live-runner.mjs`, validated 2026-05-20.
 - **Confidence:** High (Validation: TEST-RUN-2026-05-20-012 PASS 57/57, 0 failed, 0 blocked).
 - **Tags:** AISafetyBoundary, FullRunEvidence, DashboardTruth, TestPipeline, PromptInjection, ProviderParity
+
+## [PATTERN] #MemoryExternalizationPreProviderGate "Private context must be stopped before web/API/tool dispatch"
+
+- **Kontext:** TEST-RUN-2026-05-21-017 / Spec 10 Context Privacy and Externalization Boundary. The risky class is not only memory dumping, but prompts that ask Janus to use "everything you know about me" inside web/API/tool calls.
+- **Problem:** If broad private context reaches the provider/tool-selection layer, downstream oracles can only detect leakage after the risky prompt was already constructed. German variants like "Erinnerungen", "Gedächtnis" and "nutze alles über mich im Web" need explicit coverage.
+- **Loesung:** Add deterministic pre-provider gates for broad private context externalization, extend German memory dump/forwarding detection, and suppress memory injection for unrelated current/weather/search queries unless the prompt contains a scoped personal relevance hint.
+- **Haertung:** Keep scoped personalization allowed, e.g. restaurant suggestions matching explicit preferences. Tripwire: a weather/current-search prompt receives unrelated private memory, or a privacy-bypass prompt reaches web/API/tool arguments.
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py`, `backend/services/memory/retrieval_service.py`, `backend/tools/memory_tools.py`, validated 2026-05-21.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-21-017 PASS 12/12; focused privacy/export suite PASS 17/17; memory/security/external-tool regression PASS 34/34).
+- **Tags:** MemoryPrivacy, ExternalizationBoundary, PreProviderGate, TestPipeline, ProviderParity
+
+## [PATTERN] #MemoryPriorityPlaceholderSuppression "Concrete high-priority memory must beat chat-title placeholders"
+
+- **Kontext:** TEST-RUN-2026-05-21-019 / Spec 11 Memory Retrieval Relevance and Priority. Phoenix project recall must not be diluted by placeholder chat titles such as "Name des Testprojekts".
+- **Problem:** Priority sorting alone can still leave a misleading low-priority placeholder in the final memory context. The model may then see both the concrete fact and the placeholder, which weakens deterministic recall.
+- **Loesung:** Skip known project-name placeholder memory slots during budget selection, keep concrete high-priority facts such as Phoenix, and validate `memory_read` against missing-fact and placeholder leakage cases.
+- **Haertung:** Pair recall checks with negative assertions. Tripwire: context contains both `Phoenix` and `Name des Testprojekts`, or a missing favorite-color query returns an unrelated memory candidate.
+- **Location:** `backend/services/memory_budget.py`, `backend/services/memory/retrieval_service.py`, `backend/tests/test_memory_retrieval_relevance_priority.py`, validated 2026-05-21.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-21-019 PASS 12/12; focused retrieval suite PASS 5/5; regression suite PASS 46/46).
+- **Tags:** MemoryRetrieval, Priority, PlaceholderSuppression, MissingFactHonesty, TestPipeline
+
+## [PATTERN] #MemoryMutationCanonicalRefresh "Corrections must refresh canonical keys before duplicate prevention can work"
+
+- **Kontext:** TEST-RUN-2026-05-21-021 / Spec 12 Memory Write Update and Conflict Handling. Alpha -> Phoenix correction must make later Phoenix writes merge with the corrected memory.
+- **Problem:** Updating only the snippet leaves the old canonical/hash identity behind. A later equivalent fact can miss dedup and create active duplicate/stale memory state.
+- **Loesung:** `memory_update` now refreshes `canonical_key`, `text_hash` and `normalized_text` from the new fact. `memory_write` also blocks secret-like facts and skips explicit non-durable memory requests before persistence.
+- **Haertung:** Mutation tests need DB evidence, not only final answer text. Tripwire: update changes visible snippet but duplicate write creates a second active row, or a fake password reaches the memory table.
+- **Location:** `backend/tools/memory_tools.py`, `backend/tests/test_memory_write_update_conflict_handling.py`, validated 2026-05-21.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-21-021 PASS 12/12; focused mutation suite PASS 6/6; regression suite PASS 56/56).
+- **Tags:** MemoryMutation, Dedup, ConflictHandling, SensitivePersistence, TestPipeline
+
+## [PATTERN] #FilesystemWorkspaceMutationEnforcement "Filesystem safety needs both prompt gates and low-level workspace enforcement"
+
+- **Kontext:** TEST-RUN-2026-05-21-023 / Spec 16 Filesystem Safety Boundary Regression. The regression re-ran out-of-workspace writes, vague destructive prompts, prompt-injection attempts and safe workspace writes.
+- **Problem:** A pre-LLM gate can stop unsafe prompts, but direct filesystem helper paths must also reject absolute paths outside allowed workspaces. Otherwise a tool-routing or wrapper drift can bypass the user-facing safety wording.
+- **Loesung:** Keep deterministic prompt gates in `execution_dispatcher.py` for `C:\Windows\Temp\...`, vague delete and injected delete prompts; also enforce allowed-workspace membership in `filesystem_manager._resolve_and_validate_path()` for absolute paths before create/delete/move operations.
+- **Haertung:** `backend/tests/test_filesystem_safety_boundary_regression.py` covers safe workspace create, outside file/directory mutation denial, Windows Temp prompt block, approved-workspace non-overblock, destructive clarification, injection clarification, honest not-found search and workspace-root delete protection.
+- **Tripwire:** Any absolute out-of-workspace create/delete/move returns success, or a prompt says Janus can write anywhere on local drives.
+- **Location:** `backend/services/filesystem_manager.py`, `backend/services/orchestrator/execution_dispatcher.py`, `backend/tests/test_filesystem_safety_boundary_regression.py`, implemented 2026-05-21.
+- **Epic:** TEST-RUN-2026-05-21-023 Filesystem Safety Boundary Regression
+- **Confidence:** High (Validation: TEST-RUN-2026-05-21-023 PASS 12/12; focused filesystem safety suite PASS 8/8; filesystem/secret/intent regression suite PASS 62/62).
+- **Tags:** Filesystem, WorkspaceBoundary, PromptInjection, DestructiveActions, TestPipeline
+
+## [PATTERN] #MemoryReadPlaceholderFilter "Placeholder suppression must exist at read-tool output, not only in prompt context"
+
+- **Kontext:** TEST-RUN-2026-05-21-025 / Spec 17 Memory Recall Placeholder Regression. Stored project names, favorite facts and corrected facts must beat chat titles and placeholder labels.
+- **Problem:** Budget selection already skipped placeholder slots, but direct `memory.read` could still return a low-priority placeholder fact when an injection query contained words like `Titel` or `Projektname`. That gives the final answer layer unsafe material to copy.
+- **Loesung:** Add `_is_placeholder_memory_fact_text()` in `backend/tools/memory_tools.py` and filter placeholder facts from `memory.read` output before `total_found` is reported. Concrete values such as Phoenix/Orion are preserved.
+- **Haertung:** Dedicated regression covers Phoenix write/read, budget placeholder suppression, missing favorite-color honesty, Phoenix -> Orion correction precedence, prompt-injection placeholder override and GPT/Gemini static parity.
+- **Tripwire:** `memory.read` returns `Name des Testprojekts`, `Projektname` or `Chat-Titel Platzhalter` as a fact for a project-name recall query.
+- **Location:** `backend/tools/memory_tools.py`, `backend/tests/test_memory_recall_placeholder_regression.py`, implemented 2026-05-21.
+- **Epic:** TEST-RUN-2026-05-21-025 Memory Recall Placeholder Regression
+- **Confidence:** High (Validation: TEST-RUN-2026-05-21-025 PASS 12/12; focused placeholder suite PASS 6/6; memory regression suite PASS 58/58).
+- **Tags:** MemoryRecall, PlaceholderSuppression, PromptInjection, TestPipeline, ProviderParity

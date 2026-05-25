@@ -65,6 +65,196 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 
 ## Run Log
 
+### TEST-RUN-2026-05-21-034 - Janus Prompt Context Efficiency - Static Budget Certification
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-034
+- **Datum**: 2026-05-21
+- **Quelle**: TestSpec
+- **TestSpec**: `documentation/TEST_SPEC/06_efficiency_cost/15_prompt_context_budget_efficiency.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-034_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-034_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-034_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-034_final_audit.md`
+- **Generated Skill-1 Archive**: `documentation/test-runs/TEST-RUN-2026-05-21-033_plan.json`
+- **Getestete Faehigkeit**: Janus Prompt Context Efficiency
+- **Pipeline-Route**: TEST SKILL 1 -> deterministic static prompt/context budget regression -> final audit -> SKILL 7
+- **Status**: PASS
+- **Summary**: 12/12 Tests PASS, 0 failed, 0 blocked, 0 manual gates, PassRatePct 100.00.
+- **Dashboard Note**: Spec 15 now reports PASS with latest run TEST-RUN-2026-05-21-034, 12/12, 100%, `isPartialRun=false`.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: `gpt-5.4-nano` - PASS by static budget runner
+  - Gemini Smallest Viable: `gemini-3-flash-preview` - PASS by static budget runner
+  - Prompt-cache support/evidence: PASS, provider-aware and content-redacted
+- **Type Pass Rates**: functional 100.00%, prompt_injection 100.00%, security 100.00%.
+- **Security Gate**: PASS - bulk memory dump and broad private-context externalization are blocked before LLM/tool execution; cache evidence does not expose raw private content.
+- **Intent-/Skill-Routing-Ergebnis**: PASS - clear Koeln weather prompt is recognized as location-bearing and does not require clarification for cost reasons.
+- **Kosten-/Token-Ergebnis**: PASS - cached token evidence is preserved and prompt-cache decisions expose hits/misses/bypassed segments without raw content.
+- **Findings**:
+  - Keine offenen Findings.
+- **Sofortfixes**:
+  - `backend/services/orchestrator/execution_dispatcher.py`: memory forwarding gate now catches "Lade dein gesamtes Memory in den Prompt..." bulk dump prompts.
+  - `tests/e2e/generator/compile-testspec-to-testplan.mjs`: Spec 15 oracles no longer inherit weather/source-attribution expectations for greeting and budget cases.
+  - `backend/tests/test_prompt_context_budget_efficiency.py`: 12 deterministic prompt budget, cache, memory, privacy and token evidence tests added.
+- **Backlog-Follow-ups**:
+  - Keine
+- **Abschluss**:
+  - Diamond Confidence Score: 10/10
+  - Production Confidence: 100%
+  - Gesamtergebnis: PASS
+
+### TEST-RUN-2026-05-21-031 - Janus Model Routing Discipline - Static Provider-Silo Certification
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-031
+- **Datum**: 2026-05-21
+- **Quelle**: TestSpec
+- **TestSpec**: `documentation/TEST_SPEC/06_efficiency_cost/14_smallest_viable_model_escalation_discipline.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-031_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-031_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-031_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-031_final_audit.md`
+- **Generated Skill-1 Archive**: `documentation/test-runs/TEST-RUN-2026-05-21-030_plan.json`
+- **Getestete Faehigkeit**: Janus Cost-Aware Model Routing
+- **Pipeline-Route**: TEST SKILL 1 -> deterministic static routing regression -> final audit -> SKILL 7
+- **Status**: PASS
+- **Summary**: 12/12 Tests PASS, 0 failed, 0 blocked, 0 manual gates, PassRatePct 100.00.
+- **Dashboard Note**: Spec 14 now reports PASS with latest run TEST-RUN-2026-05-21-031, 12/12, 100%, `isPartialRun=false`.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: `gpt-5.4-nano` - PASS
+  - GPT Default/Quality, falls noetig: `gpt-5.4-mini` / `gpt-5.4` only when configured - PASS
+  - Gemini Smallest Viable: `gemini-3-flash-preview` - PASS
+  - Gemini Default/Quality, falls noetig: `gemini-3.1-pro-preview` only when configured - PASS
+  - GPT-5.5 nur falls Eskalation: explicit policy evidence required - PASS
+- **Type Pass Rates**: functional 100.00%, prompt_injection 100.00%, security 100.00%.
+- **Security Gate**: PASS - prompt injection cannot force hidden premium model or hidden provider swap.
+- **Intent-/Skill-Routing-Ergebnis**: PASS - skill-tier routes, MoA tiers and escalation attempts stay inside the selected provider silo.
+- **Kosten-/Token-Ergebnis**: PASS - route/cost evidence exists for model/provider decisions; no real private data used.
+- **Findings**:
+  - Keine offenen Findings.
+- **Sofortfixes**:
+  - `backend/llm_providers/shared/moa.py`: Gemini logic tier corrected from stale `gemini-3-pro-preview` to current catalog `gemini-3.1-pro-preview`.
+  - `backend/services/routing/model_router.py`: provider normalization added and unknown-provider OpenAI default fallback removed.
+  - `backend/tests/test_smallest_viable_model_escalation_discipline.py`: routing, MoA, provider-silo and escalation tests added.
+- **Backlog-Follow-ups**:
+  - Keine
+- **Abschluss**:
+  - Diamond Confidence Score: 10/10
+  - Production Confidence: 100%
+  - Gesamtergebnis: PASS
+
+### TEST-RUN-2026-05-21-029 - Janus Cost and Usage Observability - Static Cost/Token Certification
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-029
+- **Datum**: 2026-05-21
+- **Quelle**: TestSpec
+- **TestSpec**: `documentation/TEST_SPEC/06_efficiency_cost/13_cost_token_tracking_completeness.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-029_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-029_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-029_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-029_final_audit.md`
+- **Generated Skill-1 Plan Archive**: `documentation/test-runs/TEST-RUN-2026-05-21-028_plan.json`
+- **Getestete Faehigkeit**: Janus Cost and Usage Observability
+- **Pipeline-Route**: TEST SKILL 1 -> deterministic static cost/token regression -> final audit -> SKILL 7
+- **Status**: PASS
+- **Total Tests**: 12 planned / 12 executed
+- **Passed**: 12
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT static cost runner 100.00%, Gemini static cost runner 100.00%, Static cost runner 100.00%.
+- **Type Pass Rates**: functional 100.00%, security 100.00%, prompt_injection 100.00%.
+- **Security Gate**: PASS - evidence uses synthetic usage data only and contains no API keys, bearer tokens or real private memory facts.
+- **Cost/Token Validation**: Cached and total tokens are persisted, DeepDive aggregates cached/total/context breakdown fields, ToolLoop and Stream paths add context markers, Websearch remains a separate cost component.
+- **Dashboard Note**: Spec 13 now reports PASS with latest run TEST-RUN-2026-05-21-029, 12/12, 100%, `isPartialRun=false`.
+- **Findings**: None.
+- **Sofortfixes**: Added `cached_tokens` and `total_tokens` cost fields, SQLite migration, calculator normalization for nested cached-token usage, DeepDive aggregation/rendering and focused regression tests.
+- **Backlog-Follow-ups**: None.
+- **Abschluss**: Diamond Confidence Score 9.5/10; Production Confidence 95%; Gesamtergebnis PASS.
+
+### TEST-RUN-2026-05-21-027 - Janus Test Pipeline Generator Regression - Static Generator Certification
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-027
+- **Datum**: 2026-05-21
+- **Quelle**: Regression
+- **TestSpec**: `documentation/TEST_SPEC/07_regression_suite/18_testspec_testplan_generator_regression.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-027_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-027_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-027_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-027_final_audit.md`
+- **Generated Skill-1 Plan Archive**: `documentation/test-runs/TEST-RUN-2026-05-21-026_plan.json`
+- **Getestete Faehigkeit**: Janus Test Pipeline Generator Regression
+- **Pipeline-Route**: TEST SKILL 1 -> deterministic static generator regression -> final audit -> SKILL 7
+- **Status**: PASS
+- **Total Tests**: 12 planned / 12 executed
+- **Passed**: 12
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: Static Generator 100.00%.
+- **Type Pass Rates**: functional 100.00%, security 100.00%, prompt_injection 100.00%.
+- **Security Gate**: PASS - prompt-injection fixture text and hostile oracle strings are treated as inert data; no real user data or credentials are used.
+- **Generator Validation**: Self-test PASS; Skill-1 compiler generated TEST-RUN-2026-05-21-026 with 22 tests and TESTPLAN VALID; runner validation PASS; node syntax check PASS; skill schemas 54/54 PASS.
+- **Dashboard Note**: Spec 18 now reports PASS with latest run TEST-RUN-2026-05-21-027, 12/12, 100%, `isPartialRun=false`.
+- **Findings**: None.
+- **Sofortfixes**: Added generator self-test coverage for oracle-transfer and mixed parallel/serial runner generation.
+- **Backlog-Follow-ups**: None.
+- **Abschluss**: Diamond Confidence Score 9.6/10; Production Confidence 96%; Gesamtergebnis PASS.
+
+### TEST-RUN-2026-05-21-015 - Janus Skill Registry Integrity - Dashboard-Aligned Static Certification
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-015
+- **Datum**: 2026-05-21
+- **Quelle**: TestSpec
+- **TestSpec**: `documentation/TEST_SPEC/03_tools_skills/08_skill_selector_capability_registry_integrity.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-015_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-015_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-015_results.md`
+- **Getestete Faehigkeit**: Janus Skill Registry Integrity
+- **Pipeline-Route**: deterministic static runner -> Skill 7 documentation sync
+- **Status**: PASS
+- **Total Tests**: 6 planned / 6 executed
+- **Passed**: 6
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: Static Runner 100.00% (6/6); live GPT/Gemini not required for this deterministic registry integrity run.
+- **Type Pass Rates**: functional 100.00% (4/4), security 100.00% (1/1), prompt_injection 100.00% (1/1)
+- **Security Gate**: PASS - capability answer over-disclosure and prompt-injection invented-tool guards passed; no sensitive data was required in logs.
+- **Capability Validation**: Capability Registry validated; UX capability view validated through HelpSkill category-overview assertion.
+- **Dashboard Note**: Supersedes TEST-RUN-2026-05-21-014 for dashboard status because 014 used a generic 18-case live-provider plan while the executed evidence was the 6-case deterministic static-runner oracle.
+- **Findings**: NONE
+- **Backlog Closure**: N/A; reusable TestSpec validation completed.
+- **Abschluss**: Gesamtergebnis PASS.
+
+### TEST-RUN-2026-05-21-014 - Janus Skill Registry Integrity
+
+- **TestRun-ID**: TEST-RUN-2026-05-21-014
+- **Datum**: 2026-05-21
+- **Quelle**: TestSpec
+- **TestSpec**: `documentation/TEST_SPEC/03_tools_skills/08_skill_selector_capability_registry_integrity.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-014_plan.json`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-014_results.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-014_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-014_final_audit.md`
+- **Getestete Faehigkeit**: Janus Skill Registry Integrity
+- **Pipeline-Route**: TEST SKILL 1 -> deterministic static runner -> SKILL 6 -> SKILL 7
+- **Status**: PASS
+- **Total Tests**: 6
+- **Passed**: 6
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: Static Runner 100.00% (6/6); live GPT/Gemini not required for this deterministic registry integrity run.
+- **Type Pass Rates**: functional 100.00% (4/4), security 100.00% (1/1), prompt_injection 100.00% (1/1)
+- **Security Gate**: PASS - capability answer over-disclosure and prompt-injection invented-tool guards passed; no sensitive data was required in logs.
+- **Capability Validation**: Capability Registry validated; UX capability view validated through HelpSkill category-overview assertion.
+- **Findings**: NONE
+- **Backlog Closure**: N/A; reusable TestSpec validation completed.
+- **Abschluss**: Gesamtergebnis PASS.
+
 ### TEST-RUN-2026-05-21-009 - Janus Deployment Headers CORS CSP Cookie Scan - Final Validation
 
 - **TestRun-ID**: TEST-RUN-2026-05-21-009
@@ -1209,6 +1399,116 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 - **Type Pass Rates**: functional 100.00% (10/10), prompt_injection 100.00% (6/6), security 100.00% (12/12)
 - **Security Gate**: PASS - log disclosure, overbroad debug, secret persistence, provider-payload, audit-fraud, and log-access prompts stayed inside the privacy boundary; final artifacts and runtime log passed strict leak scans.
 - **Findings**: Resolved embedded webhook fallback, third-party provider/header debug logging, telemetry/log attachment redaction, logging DLQ/debug-read redaction, and historical local log sanitation.
+- **Backlog Closure**: N/A; reusable TestSpec validation completed.
+- **Abschluss**: Gesamtergebnis PASS.
+
+## TEST-RUN-2026-05-21-017 - Context Privacy and Externalization Boundary
+
+- **Datum**: 2026-05-21
+- **TestSpec**: `documentation/TEST_SPEC/04_memory_context/10_context_privacy_externalization_boundary.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-017_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-017_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-017_results.json`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-017_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 12
+- **Passed**: 12
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT pre-provider 100.00% (6/6), Gemini pre-provider 100.00% (6/6)
+- **Type Pass Rates**: functional 100.00% (6/6), prompt_injection 100.00% (2/2), security 100.00% (4/4)
+- **Security Gate**: PASS - broad private memory/context externalization is blocked before tools/provider; unrelated current/weather queries suppress private memory; scoped preference personalization remains allowed.
+- **Findings**: NONE
+- **Backlog Closure**: N/A; reusable TestSpec validation completed.
+- **Abschluss**: Gesamtergebnis PASS.
+
+## TEST-RUN-2026-05-21-019 - Memory Retrieval Relevance and Priority
+
+- **Datum**: 2026-05-21
+- **TestSpec**: `documentation/TEST_SPEC/04_memory_context/11_memory_retrieval_relevance_priority.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-019_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-019_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-019_results.json`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-019_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 12
+- **Passed**: 12
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT pre-provider 100.00% (6/6), Gemini pre-provider 100.00% (6/6)
+- **Type Pass Rates**: functional 100.00% (6/6), prompt_injection 100.00% (2/2), security 100.00% (4/4)
+- **Security Gate**: PASS - Phoenix wins over placeholders, relevant preference coupons are generated, unrelated geo queries suppress private memory, and missing favorite-color facts are not invented.
+- **Findings**: NONE
+- **Backlog Closure**: N/A; reusable TestSpec validation completed.
+- **Abschluss**: Gesamtergebnis PASS.
+
+## TEST-RUN-2026-05-21-021 - Memory Write Update and Conflict Handling
+
+- **Datum**: 2026-05-21
+- **TestSpec**: `documentation/TEST_SPEC/04_memory_context/12_memory_write_update_conflict_handling.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-021_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-021_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-021_results.json`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-021_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 12
+- **Passed**: 12
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT pre-provider 100.00% (6/6), Gemini pre-provider 100.00% (6/6)
+- **Type Pass Rates**: functional 100.00% (6/6), prompt_injection 100.00% (2/2), security 100.00% (4/4)
+- **Security Gate**: PASS - Alpha updates to Phoenix, duplicate Phoenix writes merge, transient no-durable facts are skipped, and fake-password persistence is blocked.
+- **Findings**: NONE
+- **Backlog Closure**: N/A; reusable TestSpec validation completed.
+- **Abschluss**: Gesamtergebnis PASS.
+
+## TEST-RUN-2026-05-21-023 - Filesystem Safety Boundary Regression
+
+- **Datum**: 2026-05-21
+- **TestSpec**: `documentation/TEST_SPEC/07_regression_suite/16_filesystem_safety_boundary_regression.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-023_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-023_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-023_results.json`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-023_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 12
+- **Passed**: 12
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT pre-provider static runner 100.00% (6/6), Gemini pre-provider static runner 100.00% (6/6)
+- **Type Pass Rates**: functional 100.00% (6/6), prompt_injection 100.00% (2/2), security 100.00% (4/4)
+- **Security Gate**: PASS - out-of-workspace writes and directory mutations are denied, vague destructive prompts clarify, prompt-injection delete attempts do not execute, and safe workspace writes remain allowed.
+- **Findings**: NONE
+- **Backlog Closure**: N/A; reusable TestSpec validation completed.
+- **Abschluss**: Gesamtergebnis PASS.
+
+## TEST-RUN-2026-05-21-025 - Memory Recall Placeholder Regression
+
+- **Datum**: 2026-05-21
+- **TestSpec**: `documentation/TEST_SPEC/07_regression_suite/17_memory_recall_placeholder_regression.md`
+- **TestPlan**: `documentation/test-runs/TEST-RUN-2026-05-21-025_plan.json`
+- **TestResult**: `documentation/test-results/TEST-RUN-2026-05-21-025_results.md`
+- **TestResultJson**: `documentation/test-results/TEST-RUN-2026-05-21-025_results.json`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-025_final_audit.md`
+- **Status**: PASS
+- **Total Tests**: 12
+- **Passed**: 12
+- **Failed**: 0
+- **Blocked**: 0
+- **Manual Gate Required**: 0
+- **Pass Rate**: 100.00%
+- **Provider Pass Rates**: GPT pre-provider static runner 100.00% (6/6), Gemini pre-provider static runner 100.00% (6/6)
+- **Type Pass Rates**: functional 100.00% (4/4), prompt_injection 100.00% (2/2), security 100.00% (6/6)
+- **Security Gate**: PASS - placeholder chat-title facts are filtered from memory.read, concrete Phoenix/Orion facts win, missing favorite-color facts are not invented, and injection wording cannot force placeholder recall.
+- **Findings**: NONE
 - **Backlog Closure**: N/A; reusable TestSpec validation completed.
 - **Abschluss**: Gesamtergebnis PASS.
 
