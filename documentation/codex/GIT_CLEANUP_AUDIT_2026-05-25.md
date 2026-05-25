@@ -68,9 +68,9 @@ Initial bundle decision for untracked `TEST-RUN-2026-05-21-*` artifacts:
 | `028`, `029` | Registry/pipeline log notes `028` as generated archive and `029` as final cost/token certification | keep curated evidence | Commit together with TestSpec 13/cost evidence |
 | `030`, `031` | Registry/pipeline log notes `030` as generated archive and `031` as final model-routing certification | keep curated evidence | Commit together with TestSpec 14/model-routing evidence |
 | `033`, `034` | Registry/pipeline log notes `033` as generated archive and `034` as final prompt/context certification | keep curated evidence | Commit together with TestSpec 15/context-budget evidence |
-| `035` | Dashboard final-green audit/log files, 2-case result with 1 pass / 1 fail | needs follow-up | Inspect before commit; likely dashboard audit evidence but includes transient `.log.err` files |
+| `035` | Dashboard final-green audit says PASS for dashboard overview; separate Websearch result JSON is FAIL with 1/2; no registry/backlog reference found | split bundle | Keep `TEST-RUN-2026-05-21-035_dashboard_final_green_audit.md` as dashboard meta-audit evidence if needed; do not treat `035_results.json`, evidence files, generated runner, or logs as green Websearch evidence |
 | `036`, `038`, `039`, `040`, `041` | Websearch retest chain; TestSpec 10 explicitly cites `041` as latest full live-provider run | keep curated evidence with care | Commit only if tied to Websearch Provider Parity work; consider retaining full chain or only cited milestone runs after audit |
-| `037` | Plan/runner/handover present, no result JSON found in current untracked result list | needs follow-up | Check whether it is a generated archive, aborted run, or missing result before commit |
+| `037` | Plan/runner/handover present, no result JSON found and no registry/backlog reference found | orphan/generated candidate | Do not commit unless a later audit explicitly cites it as generated archive; otherwise leave untracked until archive/delete decision |
 | `042` | TestSpec 10 cites as closure run; final audit and documentation update present | keep curated evidence | Commit with Websearch closure evidence |
 
 Do not stage all TestRun artifacts at once. Stage by bundle group after checking each group against its referenced TestSpec/Backlog/final audit.
