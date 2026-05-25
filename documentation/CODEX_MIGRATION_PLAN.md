@@ -50,9 +50,9 @@ Die bestehende Janus Diamond Pipeline wird von Windsurf/Cascade auf Codex-native
 | Backlog Skill 3 | `janus-backlog-handoff` | erstellt |
 | Spec Generator | `janus-spec-generator` | erstellt |
 | Spec Normalizer | `janus-spec-normalizer` | erstellt |
-| Spec Skill 1 | `janus-spec-review` | geplant |
-| Skill 1 | `janus-spec-to-task` | geplant |
-| Skill 2 | `janus-task-breakdown` | geplant |
+| Spec Skill 1 | `janus-spec-review` | erstellt |
+| Skill 1 | `janus-spec-to-task` | erstellt |
+| Skill 2 | `janus-task-breakdown` | erstellt |
 | Skill 3 | `janus-preimplementation-check` | erstellt |
 | Skill 4 | `janus-executioner` | erstellt |
 | Skill 5 | `janus-debug` | erstellt |
