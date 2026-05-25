@@ -901,6 +901,168 @@ class TestRssNewsRenderer:
         assert "2. Sora-App" in result
         assert "Quelle: OpenAI. [Link](https://openai.com/de-DE/news/sora-in-chatgpt)" in result
 
+    def test_response_finalizer_single_verified_source_mode_keeps_only_linked_news(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell",
+                                "verified_source_mode": "single",
+                                "text": (
+                                    "1. Gerichtssieg gegen Elon Musk: Eine Klage gegen OpenAI wurde abgewiesen. Quelle: FAZ.\n"
+                                    "2. Sora-App: Die eigenstaendige Anwendung wurde eingestellt. Quelle: OpenAI."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner",
+                                        "title": "channelpartner.de",
+                                        "snippet": "Gerichtssieg gegen Elon Musk Klage gegen OpenAI wurde abgewiesen.",
+                                    },
+                                    {
+                                        "url": "https://openai.com/de-DE/news/sora-in-chatgpt",
+                                        "title": "OpenAI Sora in ChatGPT",
+                                        "snippet": "Sora-App eigenstaendige Anwendung wurde eingestellt.",
+                                    },
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "Gerichtssieg gegen Elon Musk" not in result
+        assert "1. Sora-App" in result
+        assert "Quelle: OpenAI. [Link](https://openai.com/de-DE/news/sora-in-chatgpt)" in result
+
+    def test_response_finalizer_preserves_websearch_v3_source_first_text(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        text = (
+            "Kurzlage: Es liegt aktuell eine belegte Meldung vor.\n\n"
+            "1. Microsoft und EY: Milliarden-Investition in KI-Agenten\n"
+            "EY rollt Microsoft Copilot fuer rund 400.000 Mitarbeiter aus.\n"
+            "Quelle: borncity.com. [Link](https://borncity.com/news/microsoft-und-ey-milliarden-investition-in-ki-agenten)\n\n"
+            "Einordnung:\nDiese Kurzlage basiert auf einer verifizierten Webquelle."
+        )
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "was gibt es neues zu Microsoft?",
+                                "pipeline": "websearch_v3",
+                                "verified_source_mode": "single",
+                                "verification_status": "ok",
+                                "text": text,
+                                "sources": [
+                                    {
+                                        "url": "https://borncity.com/news/microsoft-und-ey-milliarden-investition-in-ki-agenten",
+                                        "title": "Microsoft und EY: Milliarden-Investition in KI-Agenten",
+                                        "source_label": "borncity.com",
+                                        "verified": True,
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert result == text
+
+    def test_response_finalizer_preserves_websearch_v3_no_source_text(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        text = "Ich habe aktuell keine ausreichend belastbare Quelle gefunden."
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "was gibt es neues zu Apple?",
+                                "pipeline": "websearch_v3",
+                                "verified_source_mode": "single",
+                                "verification_status": "no_source",
+                                "verification_reason": "no_verified_source",
+                                "text": text,
+                                "sources": [],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert result == text
+
+    def test_response_finalizer_prefers_websearch_v3_over_rss_news(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        text = (
+            "Kurzlage: Es liegt aktuell eine belegte Meldung vor.\n\n"
+            "1. Produkt & Technik: Microsoft stellt eine neue Cloud-Funktion vor\n"
+            "Microsoft stellt eine neue Cloud-Funktion fuer Unternehmenskunden vor.\n"
+            "Quelle: microsoft.com. [Link](https://www.microsoft.com/de-de/news/detail)\n\n"
+            "Einordnung:\nDiese Kurzlage basiert auf einer verifizierten Webquelle."
+        )
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.rss_news",
+                    "_skill_id": "system.rss_news",
+                    "content": json.dumps({"data": _RSS_NEWS_ITEMS}),
+                },
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "was gibt es neues zu Microsoft?",
+                                "pipeline": "websearch_v3",
+                                "verified_source_mode": "multi",
+                                "verification_status": "ok",
+                                "text": text,
+                                "sources": [
+                                    {
+                                        "url": "https://www.microsoft.com/de-de/news/detail",
+                                        "title": "Microsoft stellt eine neue Cloud-Funktion vor",
+                                        "source_label": "microsoft.com",
+                                        "verified": True,
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                },
+            ]
+        )
+
+        assert result == text
+        assert "Kurzlage: Zu OpenAI" not in result
+
     def test_response_finalizer_keeps_all_websearch_news_findings_when_links_are_sparse(self):
         from backend.services.orchestrator.response_finalizer import render_websearch_sources
 
