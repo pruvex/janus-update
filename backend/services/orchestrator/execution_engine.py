@@ -1790,8 +1790,11 @@ class OrchestratorExecutionEngine:
                             model=_iter_model,
                             provider=_iter_provider,
                             source_type="conversation",
+                            context_details=f"tool_loop_iteration={current_iteration};tool_calls={len(response.get('tool_calls') or [])}",
                             input_tokens=int(input_tokens),
                             output_tokens=int(output_tokens),
+                            cached_tokens=int(usage_data.get("cached_tokens") or usage_data.get("prompt_tokens_cached") or 0),
+                            total_tokens=int(usage_data.get("total_tokens") or 0),
                             tokens_saved=_iter_tokens_saved,
                         )
                         # 💎 COST-PERSISTENCE FIX: Explizites db.commit() nach create_cost_entry
@@ -2884,8 +2887,11 @@ class OrchestratorExecutionEngine:
                                         model=str(current_call_model or user_selected_model or "unknown"),
                                         provider=str(current_call_provider or gateway_kwargs.get("provider") or "unknown"),
                                         source_type="conversation",
+                                        context_details="stream_final_usage=1",
                                         input_tokens=int(u.get("input_tokens") or u.get("prompt_tokens") or 0),
                                         output_tokens=int(u.get("output_tokens") or u.get("completion_tokens") or 0),
+                                        cached_tokens=int(u.get("cached_tokens") or u.get("prompt_tokens_cached") or 0),
+                                        total_tokens=int(u.get("total_tokens") or 0),
                                         tokens_saved=_stream_tokens_saved,
                                     )
                                     # 💎 COST-PERSISTENCE FIX: Explizites db.commit() nach create_cost_entry (Streaming)

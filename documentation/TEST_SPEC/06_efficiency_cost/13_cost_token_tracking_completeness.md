@@ -120,18 +120,38 @@ Provider invoice reconciliation, exact cent-level billing disputes, third-party 
 
 ## ACCEPTANCE CRITERIA
 
-- [ ] Every completed answer path records provider and model.
-- [ ] Every completed LLM answer records input/output tokens and estimated cost.
-- [ ] Streamed answers persist usage after completion.
-- [ ] Tool-backed routes expose both tool/source and model-cost evidence.
-- [ ] Failed or blocked provider/tool paths are visible and not mislabeled as success.
-- [ ] Dashboard/API aggregation can consume the persisted records.
+- [x] Every completed answer path records provider and model.
+- [x] Every completed LLM answer records input/output/total/cached token evidence and estimated cost.
+- [x] Streamed answers persist usage after completion.
+- [x] Tool-backed routes expose both tool/source context and model-cost evidence.
+- [x] Failed or blocked provider/tool paths are visible and not mislabeled as success.
+- [x] Dashboard/API aggregation can consume the persisted records.
 
 ## BLOCKING CONDITIONS
 
-- [ ] No cost/usage evidence can be read from logs, API or dashboard.
-- [ ] Test execution cannot isolate synthetic data from real user data.
-- [ ] Janus app is unreachable.
+- [x] Cost/usage evidence can be read from logs, API or dashboard.
+- [x] Test execution isolates synthetic data from real user data.
+- [x] Janus app/dashboard API is reachable.
+
+## LATEST PIPELINE VALIDATION
+
+- **Latest TestRun**: TEST-RUN-2026-05-21-029
+- **Status**: PASS
+- **Pass Rate**: 100.00% (12/12)
+- **Dashboard Status**: PASS, not partial
+- **Generated Skill-1 Archive**: `documentation/test-runs/TEST-RUN-2026-05-21-028_plan.json`
+- **Dashboard Plan**: `documentation/test-runs/TEST-RUN-2026-05-21-029_plan.json`
+- **Result JSON**: `documentation/test-results/TEST-RUN-2026-05-21-029_results.json`
+- **Result Markdown**: `documentation/test-results/TEST-RUN-2026-05-21-029_results.md`
+- **Final Audit**: `documentation/test-runs/TEST-RUN-2026-05-21-029_final_audit.md`
+- **Validation Commands**:
+  - `python -m pytest backend\tests\test_cost_calculator.py backend\tests\test_cost_token_tracking_completeness.py -q` -> PASS, 10/10.
+  - `python -m pytest backend\tests\test_cost_calculator.py backend\tests\test_cost_token_tracking_completeness.py backend\tests\test_context_privacy_externalization_boundary.py backend\tests\test_filesystem_safety_boundary_regression.py -q` -> PASS, 23/23.
+  - `node tests/e2e/generator/compile-testspec-to-testplan.mjs --spec documentation/TEST_SPEC/06_efficiency_cost/13_cost_token_tracking_completeness.md` -> TESTPLAN VALID, TEST-RUN-2026-05-21-028, 20 tests.
+  - `node tests\e2e\generator\validate-runner.mjs --plan documentation\test-runs\TEST-RUN-2026-05-21-028_plan.json --runner documentation\test-runs\TEST-RUN-2026-05-21-028_generated.spec.js` -> VALIDATION PASSED.
+  - `node --check documentation\test-runs\TEST-RUN-2026-05-21-028_generated.spec.js` -> PASS.
+  - `python backend\tools\validate_skill_schemas.py` -> PASS, 54 skill JSON files.
+- **Notes**: Tracking now persists and aggregates cached/hidden token evidence through `cached_tokens` and `total_tokens`, adds ToolLoop/Stream context markers for DeepDive, and keeps Websearch as its own cost component.
 
 ## INTERNAL TEST COMPLEXITY BREAKDOWN
 

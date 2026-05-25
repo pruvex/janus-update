@@ -992,7 +992,9 @@ class ChatOrchestrator:
                     provider=provider,
                     source_type=source_type,
                     input_tokens=usage_data.get("prompt_tokens", 0) or usage_data.get("input_tokens", 0),
-                    output_tokens=usage_data.get("completion_tokens", 0) or usage_data.get("output_tokens", 0)
+                    output_tokens=usage_data.get("completion_tokens", 0) or usage_data.get("output_tokens", 0),
+                    cached_tokens=usage_data.get("cached_tokens", 0) or usage_data.get("prompt_tokens_cached", 0),
+                    total_tokens=usage_data.get("total_tokens", 0),
                 )
             except Exception as e:
                 logger.error(f"Failed to save cost entry: {e}")

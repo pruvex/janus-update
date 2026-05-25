@@ -194,6 +194,8 @@ class Cost(Base):
     model = Column(String)
     input_tokens = Column(Integer, default=0)
     output_tokens = Column(Integer, default=0)
+    cached_tokens = Column(Integer, default=0)
+    total_tokens = Column(Integer, default=0)
     total_cost = Column(Float, default=0.0)
     context = Column(String, nullable=True)
     tokens_saved = Column(Integer, default=0)

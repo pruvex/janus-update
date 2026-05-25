@@ -67,17 +67,45 @@ def calculate_cost(model_id: str, usage_data: dict = None, custom_prompt: str = 
                     if hasattr(obj, k): return getattr(obj, k)
             return default
 
+        def get_nested_val(obj, paths, default=0):
+            for path in paths:
+                cur = obj
+                found = True
+                for key in path:
+                    if isinstance(cur, dict):
+                        if key not in cur:
+                            found = False
+                            break
+                        cur = cur[key]
+                    else:
+                        if not hasattr(cur, key):
+                            found = False
+                            break
+                        cur = getattr(cur, key)
+                if found and cur is not None:
+                    return cur
+            return default
+
         # Wir suchen nach 'prompt_tokens' (LLM) ODER 'input_tokens' (TTS/Generic)
         input_tokens = get_val(usage_data, ['prompt_tokens', 'input_tokens'])
         # Wir suchen nach 'completion_tokens' (LLM) ODER 'output_tokens' (Generic)
         output_tokens = get_val(usage_data, ['completion_tokens', 'output_tokens'])
+        total_tokens = get_val(usage_data, ['total_tokens'], 0) or (input_tokens + output_tokens)
 
         input_cost_per_token = model_info.get("cost_per_token_input", 0)
         cached_cost_per_token = model_info.get("cost_per_token_cached", 0)
         output_cost_per_token = model_info.get("cost_per_token_output", 0)
 
         # Prüfe auf Cached Tokens (von API zurückgegeben)
-        cached_tokens = get_val(usage_data, ['cached_tokens', 'prompt_tokens_cached'], 0)
+        cached_tokens = get_val(usage_data, ['cached_tokens', 'prompt_tokens_cached'], 0) or get_nested_val(
+            usage_data,
+            [
+                ['prompt_tokens_details', 'cached_tokens'],
+                ['input_tokens_details', 'cached_tokens'],
+                ['cache_read_input_tokens'],
+            ],
+            0,
+        )
 
         # Berechne Kosten: Cached Tokens (billiger) + Nicht-Cached Input + Output
         if cached_tokens > 0 and cached_cost_per_token > 0:
@@ -89,7 +117,7 @@ def calculate_cost(model_id: str, usage_data: dict = None, custom_prompt: str = 
         output_cost = output_tokens * output_cost_per_token
         cost_usd = input_cost + output_cost
 
-        usage = {"input_tokens": input_tokens, "output_tokens": output_tokens}
+        usage = {"input_tokens": input_tokens, "output_tokens": output_tokens, "total_tokens": total_tokens}
         if cached_tokens > 0:
             usage["cached_tokens"] = cached_tokens
 

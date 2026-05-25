@@ -733,11 +733,13 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
         "total_cost": 0.0, 
         "total_input_tokens": 0, 
         "total_output_tokens": 0, 
+        "total_cached_tokens": 0,
+        "total_tokens": 0,
         "image_count": 0,
         "total_tokens_saved": 0,
         "total_cost_saved": 0.0,
         "image_details": defaultdict(lambda: {"count": 0, "cost": 0.0}),
-        "context_breakdown": defaultdict(lambda: {"count": 0, "cost": 0.0, "input_tokens": 0, "output_tokens": 0})
+        "context_breakdown": defaultdict(lambda: {"count": 0, "cost": 0.0, "input_tokens": 0, "output_tokens": 0, "cached_tokens": 0, "total_tokens": 0})
     })
 
     # Separate websearch costs from LLM costs using context field prefix
@@ -758,6 +760,10 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
         summary[key]["total_cost"] += cost.total_cost
         summary[key]["total_input_tokens"] += cost.input_tokens
         summary[key]["total_output_tokens"] += cost.output_tokens
+        cached_tokens = int(getattr(cost, "cached_tokens", 0) or 0)
+        total_tokens = int(getattr(cost, "total_tokens", 0) or 0) or int((cost.input_tokens or 0) + (cost.output_tokens or 0))
+        summary[key]["total_cached_tokens"] += cached_tokens
+        summary[key]["total_tokens"] += total_tokens
         summary[key]["total_tokens_saved"] += int(cost.tokens_saved or 0)
         summary[key]["total_cost_saved"] += float(cost.cost_saved or 0.0)
         context_key = ctx or "conversation"
@@ -765,6 +771,8 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
         summary[key]["context_breakdown"][context_key]["cost"] += cost.total_cost
         summary[key]["context_breakdown"][context_key]["input_tokens"] += cost.input_tokens
         summary[key]["context_breakdown"][context_key]["output_tokens"] += cost.output_tokens
+        summary[key]["context_breakdown"][context_key]["cached_tokens"] += cached_tokens
+        summary[key]["context_breakdown"][context_key]["total_tokens"] += total_tokens
 
         if cost.context and "image" in cost.context:
             summary[key]["image_count"] += 1
@@ -791,6 +799,8 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
                 "cost": values["cost"],
                 "input_tokens": values["input_tokens"],
                 "output_tokens": values["output_tokens"],
+                "cached_tokens": values["cached_tokens"],
+                "total_tokens": values["total_tokens"],
             }
             for context, values in sorted(
                 data["context_breakdown"].items(),
@@ -803,6 +813,8 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
             "total_cost": data["total_cost"],
             "total_input_tokens": data["total_input_tokens"],
             "total_output_tokens": data["total_output_tokens"],
+            "total_cached_tokens": data["total_cached_tokens"],
+            "total_tokens": data["total_tokens"],
             "image_count": data["image_count"],
             "total_tokens_saved": data["total_tokens_saved"],
             "total_cost_saved": data["total_cost_saved"],
@@ -828,5 +840,4 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
         })
     
     return results
-
 

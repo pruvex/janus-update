@@ -169,8 +169,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         let detailText = "";
-        if (item.total_input_tokens > 0 || item.total_output_tokens > 0) {
-          detailText = `Eingabe: ${item.total_input_tokens}, Ausgabe: ${item.total_output_tokens}`;
+        if (item.total_input_tokens > 0 || item.total_output_tokens > 0 || item.total_cached_tokens > 0) {
+          const totalTokens = item.total_tokens || (item.total_input_tokens + item.total_output_tokens);
+          detailText = `Eingabe: ${item.total_input_tokens}, Ausgabe: ${item.total_output_tokens}, Gesamt: ${totalTokens}`;
+          if ((item.total_cached_tokens || 0) > 0) {
+            detailText += `, Cache: ${item.total_cached_tokens}`;
+          }
         } else if (item.image_count > 0) {
           detailText = `Bilder: ${item.image_count}`;
         } else if (item.context_breakdown && item.context_breakdown.length > 0) {
@@ -211,8 +215,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (hasMultipleContexts || hasMeaningfulContext) {
           item.context_breakdown.forEach(detail => {
             const detailParts = [];
-            if (detail.input_tokens > 0 || detail.output_tokens > 0) {
-              detailParts.push(`Eingabe: ${detail.input_tokens}, Ausgabe: ${detail.output_tokens}`);
+            if (detail.input_tokens > 0 || detail.output_tokens > 0 || detail.cached_tokens > 0) {
+              const totalTokens = detail.total_tokens || (detail.input_tokens + detail.output_tokens);
+              let tokenText = `Eingabe: ${detail.input_tokens}, Ausgabe: ${detail.output_tokens}, Gesamt: ${totalTokens}`;
+              if ((detail.cached_tokens || 0) > 0) {
+                tokenText += `, Cache: ${detail.cached_tokens}`;
+              }
+              detailParts.push(tokenText);
             }
             if (detail.count > 0) {
               detailParts.push(`Anfragen: ${detail.count}`);
