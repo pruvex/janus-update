@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-039",
+  "testCaseId": "TC-010-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Goldpreis-Quellen fuer heute",
+  "response": "1) Goldpreis Aktuell Euro pro Gramm (Deutschland, 24K) – Live-Kursseite  [goldgramm.de](https://goldgramm.de/?utm_source=openai)2) Goldpreis.de – Goldpreis heute in Euro (Tagesübersicht)  [goldpreis.de](https://www.goldpreis.de/)3) Goldpreisaktuel.de – Goldpreis in Euro je Feinunze (Spot/Preisangabe laut Treffer)  [goldpreisaktuel.de](https://goldpreisaktuel.de/)4) Goldrate24 – Gold Price Today in Germany (EUR pro Ounce/Gram/Kilogramm)  [goldrate24.com](https://goldrate24.com/)5) Silber.de – Goldpreis heute in Euro (Übersicht)  [silber.de](https://www.silber.de/)6) Goldpreis 24K heute pro Gramm (Deutschland) – Goldpreisz.com  [goldpreisz.com](https://goldpreisz.com/)💡 Passende nächste Schritte:• Sag mir kurz, ob du **Spot (Feinunze/Unze)** oder **pro Gramm (z.B. 24K/999)** meinst, dann liste ich dir nur die dafür passendsten Quellen• Wenn du willst, suche ich dir zusätzlich **seriöse Anbieter für Ankauf/Verkauf (Händlerpreise)** heraus22:04",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:04:37.985Z"
+}

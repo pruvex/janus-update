@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Goldpreis heute in Euro",
+  "response": "Hallo Pruve, hier sind die aktuellen Informationen zum Goldpreis:1. ZusammenfassungDer Goldpreis liegt heute am 21. Mai 2026 bei ca. 3.908,31 Euro pro Feinunze, was einem Preis von etwa 125,66 Euro pro Gramm entspricht.2. Liste der Fakten- Preis pro Feinunze: 3.908,31 Euro (laut Suchergebnis, Stand: 21.05.2026, 21:23 Uhr)- Preis pro Gramm: 125,66 Euro (laut Suchergebnis)- Währung: EUR3. Quellen- [feingoldhandel.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGQw1f7fXXOFnCkT_0DBSNWsreSovoUu-F_mshGREn1WDYKpG0pGj5llrmOijZzUnuNbeAFesRVZF5T6ltFq9LGj-iCGLVshioKeVuRnvGDQ4a-s8yEudBUVHy5G74NRQ==)- [goldpreis.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHLpqRKd2yOmWxCUto91RSOlv5JudSayZJ-we2IltXek4zjiLVnlztfATnTWeO9_OiFCKHiyLynb_FppeHxG2Bw8aIOvZtLcj33kyl5ufJ-NWU8V8Q=)💡 Passende nächste Schritte:• Möchtest du den Preisverlauf der letzten 30 Tage sehen?• Soll ich den Preis für eine bestimmte Menge (z.B. 100g Barren) berechnen?• Suchst du nach aktuellen Ankaufspreisen für Altgold?22:40",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:41:22.688Z"
+}

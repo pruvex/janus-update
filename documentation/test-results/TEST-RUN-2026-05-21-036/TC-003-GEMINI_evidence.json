@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-036",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was ist heute die wichtigste Tech-News?",
+  "response": "Hallo Pruve! Für den heutigen Donnerstag, den 21. Mai 2026, dominiert vor allem ein Thema die Schlagzeilen der Technikwelt: **Der Durchbruch bei der Skalierung von neuromorphen Halbleitern.**Passend zu den jüngsten Erfolgsberichten großer Hersteller wie Infineon (die ihren Wachstumskurs nach dem Rekordjahr 2025 weiter fortsetzen) wurde heute bekannt gegeben, dass neue Chip-Architekturen die Energieeffizienz von KI-Rechenzentren um bis zu 40 % steigern können. Das ist ein entscheidender Schritt, um die steigenden Anforderungen an lokale KI-Anwendungen ohne massiven Anstieg des Stromverbrauchs zu bewältigen.Hier sind die drei wichtigsten Punkte von heute:*   **Halbleiter-Boom:** Führende Unternehmen investieren verstärkt in grüne Industriestrom-Lösungen, um die Produktion nachhaltiger zu gestalten.*   **KI-Hardware:** Die ersten marktreifen \"Edge-AI\"-Prozessoren für Endgeräte wurden vorgestellt, die komplexe Sprachmodelle vollständig offline verarbeiten können.*   **Quanten-Computing:** Ein europäisches Konsortium hat einen neuen Meilenstein bei der Fehlerkorrektur von Qubits erreicht, was die kommerzielle Nutzung von Quantenrechnern bis 2028 in greifbare Nähe rückt.Quelle: Wikipedia💡 **Passende nächste Schritte:**• Möchtest du, dass ich nach spezifischen Details zu den neuen Edge-AI-Prozessoren suche?• Soll ich prüfen, wie sich diese Entwicklungen auf deine gespeicherten Interessen auswirken?• Kann ich dir eine Zusammenfassung der wichtigsten Börsenreaktionen im Tech-Sektor erstellen?21:01",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:02:19.602Z"
+}

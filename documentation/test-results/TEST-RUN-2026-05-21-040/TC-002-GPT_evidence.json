@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "TC-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Preise fuer OpenAI und Gemini Modelle",
+  "response": "1. OpenAI (ChatGPT) Abo: **23,00 € / Monat** (laut Suchergebnis, Stand: 2026-05-21) – [telefonica.de](https://www.telefonica.de/news/press-releases-telefonica-germany/2025/10/access-to-artificial-intelligence-o2-telefonica-makes-chatgpt-plus-available-to-its-customers.html?cat=products-services%3Byear%3D2025%3Btree_id%3D5346&utm_source=openai)  2. Gemini (Google) Consumer Abo: **21,99 € / Monat** (laut Suchergebnis, Stand: 2026-05-21) – [giga.de](https://www.giga.de/artikel/google-gemini-die-kosten-der-drei-abomodelle-im-ueberblick--fw8792c738?utm_source=openai)  - OpenAI (ChatGPT) Consumer: **103-€ Tarif** (laut Suchergebnis, Stand: 2026-05-21) – [heise.de](https://www.heise.de) ⚠️ (kein konkreter Trefferlink im Suchergebnis-Output enthalten)  - OpenAI (ChatGPT) Consumer: **229-€ Pro-Tarif** (laut Suchergebnis, Stand: 2026-05-21) – [heise.de](https://www.heise.de) ⚠️ (kein konkreter Trefferlink im Suchergebnis-Output enthalten)  - Gemini (Google) Consumer: **21,99 € / Monat (Google AI Pro)** (laut Suchergebnis, Stand: 2026-05-21) – [giga.de](https://www.giga.de/artikel/google-gemini-die-kosten-der-drei-abomodelle-im-ueberblick--fw8792c738?utm_source=openai) ✅  - Gemini (Google) Consumer: **274,99 € / Monat (Google AI Ultra)** (laut Suchergebnis, Stand: 2026-05-21) – [giga.de](https://www.giga.de/artikel/google-gemini-die-kosten-der-drei-abomodelle-im-ueberblick--fw8792c738?utm_source=openai) ✅  VERIFIZIERUNG: Für **API-Tokenpreise** (Input/Output pro 1M Tokens) habe ich in den Suchergebnissen **keine zuverlässig “wortwörtlich” in EUR belegbaren** Modellpreiswerte gefunden (oft erscheinen sie in $ bzw. nicht im Euro-Snippet). ✅/⚠️ nach: Suchergebnis-Output (Stand: 2026-05-21)💡 Passende nächste Schritte:• Soll es um **Abo-Preise (ChatGPT/Gemini im Web)** oder um **API-Tokenpreise** gehen?  • Wenn API: Nenne die **konkreten Modellnamen** (z.B. “GPT-4.1”, “Gemini 1.5 Pro”), dann recherchiere ich exakt diese.22:28",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:29:04.604Z"
+}

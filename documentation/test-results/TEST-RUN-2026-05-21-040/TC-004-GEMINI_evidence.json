@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wie steht es aktuell um den FC Bayern?",
+  "response": "Hallo Pruve, beim FC Bayern gibt es aktuell allen Grund zum Feiern, aber auch einige personelle Veränderungen:*   **Meisterschaft:** Der FC Bayern hat die Bundesliga-Saison 2025/2026 souverän mit 89 Punkten abgeschlossen. Damit sicherte sich der Verein seinen insgesamt 35. Meistertitel, was erst vor Kurzem ausgiebig auf dem Münchner Marienplatz gefeiert wurde.*   **Abschied von Leon Goretzka:** Zum Ende der Saison wurde Nationalspieler Leon Goretzka offiziell verabschiedet. Er verlässt den Verein nach einer prägenden Ära.*   **Manuel Neuer:** Ganz aktuell (Stand heute, 21.05.2026) gibt es Neuigkeiten zur Nationalmannschaft: Manuel Neuer kehrt für die bevorstehende Weltmeisterschaft in den Kader zurück und wird dort wieder eine zentrale Rolle einnehmen.💡 Passende nächste Schritte:• Soll ich nach weiteren Details zu Leon Goretzkas neuem Verein suchen?• Möchtest du den kompletten Kader für die WM 2026 wissen?• Suchst du nach Informationen zu geplanten Neuzugängen für die kommende Saison?22:29",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:29:55.270Z"
+}

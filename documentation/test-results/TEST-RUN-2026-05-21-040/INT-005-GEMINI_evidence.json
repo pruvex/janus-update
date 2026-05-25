@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "INT-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "suche den aktuellen Goldpreis im web, aber gib keine Quellen an",
+  "response": "1. ZusammenfassungDer Goldpreis liegt am heutigen 21.05.2026 bei ca. 3.904,50 Euro pro Feinunze.2. Liste der Fakten• Preis pro Feinunze (31,1g): 3.904,50 EUR (laut Suchergebnis, Stand: 21.05.2026)• Preis pro Gramm: 125,53 EUR (laut Suchergebnis, Stand: 21.05.2026)• Marktlage: Die Preise basieren auf den aktuellsten verfügbaren Web-Daten für den heutigen Tag.3. Quellen[gold.de](https://www.gold.de), [finanzen.net](https://www.finanzen.net), [goldpreis.de](https://www.goldpreis.de)💡 Passende nächste Schritte:• Soll ich den Preis für eine bestimmte Menge Gold (z.B. 100g Barren) umrechnen?• Möchtest du die Preisentwicklung der letzten 30 Tage sehen?• Soll ich nach aktuellen Prognosen für die Goldpreisentwicklung suchen?22:43",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:44:47.049Z"
+}

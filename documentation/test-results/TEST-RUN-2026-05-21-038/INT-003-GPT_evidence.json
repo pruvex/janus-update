@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "INT-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle API Preise",
+  "response": "1) GeoSci (Location Intelligence APIs) – Pricing (alle Preise in EUR, excl. VAT):  - Location Ratings: 0,79 € (laut Suchergebnis)  - AI Neighborhood Description: 2,49 € (laut Suchergebnis)  - AI Micro-Location Description: 0,89 € (laut Suchergebnis)  Quelle: [geosci.de – Pricing](https://geosci.de/en/pricing/?utm_source=openai)2) Empro GmbH – Pricing:  - 69 € pro Lizenz/Monat (Jahresvertrag, nur für Neukunden gültig)  - 79 € pro Lizenz/Monat (monatlich kündbar, nur für Neukunden gültig)  Quelle: (aus Suchergebnis) https://empro.de3) eco Billflow – Bestellung/Preise:  - 30,00 € pro Monat  Quelle: (aus Suchergebnis) https://eco-billflow.de4) e-Gehalt – Pricing:  - 0,49 € pro Employee / Monat  - Minimum monthly fee: 120 €  - 300 employees: 165 €  - 1.000 employees: 530 €  Quelle: (aus Suchergebnis) https://e-gehalt.de5) COM25 – Early Adopter Pricing:  - 69 € / Monat (Early Adopter gilt dauerhaft)  Quelle: (aus Suchergebnis) https://com25.de💡 Passende nächste Schritte:• Sag mir, welche API-Art du meinst (z.B. LLM/Text, OCR, Karten/Geodaten, HR-Dokumente, Telekom-Business), dann sammele ich gezielt die passenden Anbieterpreise.  • Nenn mir dein Zielbudget und ob du nur “Pay-as-you-go” oder auch “SaaS/monatliche Lizenzen” willst.21:35",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:35:44.223Z"
+}

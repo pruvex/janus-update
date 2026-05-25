@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-036",
+  "testCaseId": "TC-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Preise fuer OpenAI und Gemini Modelle",
+  "response": "Aktuelle Preise (laut Suchtreffern) für gängige **Abos** bzw. **Gemini Advanced**:1. **OpenAI – ChatGPT Plus: 23 € / Monat** (laut Suchergebnis, Stand: 2026-05-21)     Quelle: [skill-sprinters.de](https://skill-sprinters.de/blog/tools/chatgpt-go-vs-plus-2026-deutsche-preise/?utm_source=openai)2. **OpenAI – ChatGPT Pro: 103 € / Monat** (laut Suchergebnis, Stand: 2026-05-21)     Quelle: [hardware-news.de] (aus dem Suchtreffer-Text, ohne direkte Link-URL im Ergebnis)3. **OpenAI – ChatGPT Pro: 229 € / Monat** (laut Suchergebnis, Stand: 2026-05-21)     Quelle: [skill-sprinters.de](https://skill-sprinters.de/blog/tools/chatgpt-go-vs-plus-2026-deutsche-preise/?utm_source=openai)4. **Gemini – Gemini Advanced (über Google One AI Premium): 21,99 € / Monat** (laut Suchergebnis, Stand: 2026-05-21)     Quelle: [googlewatchblog.de] (aus dem Suchtreffer-Text, ohne direkte Link-URL im Ergebnis)5. **Gemini API (Token-basierte Preise):** In den gefundenen DE-Snippets wurden **keine** Euro-Token-Preise als wörtliches Preis-Snippet angezeigt; es wurde nur auf einen Link verwiesen (Stand: 2026-05-21).     Quelle: [insights.casoon.de] (aus dem Suchtreffer-Text, ohne direkte Link-URL im Ergebnis)Wenn du willst, suche ich als Nächstes **gezielt nach API-Tokenpreisen** (OpenAI API in € pro 1M Tokens und Gemini API in € pro 1M Tokens) und stelle dir nur die **tatsächlich im Snippet genannten Euro-Beträge** tabellarisch zusammen.💡 Passende nächste Schritte:• API-Tokenpreise: OpenAI (€/1M tokens) gezielt nach “OpenAI API pricing site:de” nachschlagen  • API-Tokenpreise: Gemini (€/1M tokens) gezielt nach “Gemini API pricing site:de” nachschlagen20:45",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T18:46:34.308Z"
+}

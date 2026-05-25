@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-041",
+  "testCaseId": "INT-004-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was gibt es Neues zu GPT heute",
+  "response": "Hallo Pruve1) OpenAI verbessert offenbar das ChatGPT-Standardmodell; dabei wird **GPT-5.5 Instant** als aktualisiertes Standardmodell genannt (laut heise online, Stand: 06.05.2026).  Quelle: [heise online](https://www.heise.de/en/news/OpenAI-improves-the-ChatGPT-that-almost-everyone-uses-11283523.html?utm_source=openai)2) Außerdem wird in Berichten **GPT-5.5** (als neues Modell) thematisiert – u. a. im Kontext eines Modells für zahlende Abonnenten (laut CHIP, Stand: 25.04.2026).  Quelle: (laut Suchtreffer-Übersicht, unverlinkt in den Ergebnissen)💡 Passende nächste Schritte:• Soll ich die **News nur für den heutigen Tag (21.05.2026)** in deutschen Medien gezielt nach “GPT / ChatGPT / OpenAI Modellupdate” durchsuchen?  • Willst du Updates eher zu **Modellen/Features** oder eher zu **Policy/Datenschutz/Unternehmensmeldungen**?23:21",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T21:21:51.524Z"
+}

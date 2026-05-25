@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-036",
+  "testCaseId": "TC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was kostet Gold gerade pro Unze in Euro?",
+  "response": "Hallo Pruve, hier ist der aktuelle Goldpreis pro Feinunze (ca. 31,1 Gramm) in Euro für heute, Donnerstag, den 21. Mai 2026:1. ZusammenfassungDer Goldpreis zeigt sich heute stabil auf hohem Niveau und notiert im Bereich zwischen ca. 3.896 € und 3.912 € pro Feinunze, abhängig von der jeweiligen Handelsplattform und dem exakten Abrufzeitpunkt.2. Liste der Fakten• Aktueller Kurs: 3.897,25 Euro pro Unze (Stand: 21.05.2026).• Varianz: Andere zeitgleiche Kurse liegen bei 3.896,30 Euro oder bis zu 3.912,40 Euro.• Einheit: Die Preise beziehen sich auf die Feinunze (oz).3. Quellen• [Finanzen.net](https://www.finanzen.net/rohstoffe/goldpreis/euro)• [Gold.de](https://www.gold.de/kurs/goldpreis/euro/)💡 Passende nächste Schritte:• Soll ich den Preis für eine bestimmte Goldmünze (z. B. Krügerrand) suchen?• Möchtest du wissen, wie sich der Preis im letzten Monat entwickelt hat?• Suchst du nach einem Juwelier oder Goldankauf in deiner Nähe?20:48",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T18:48:46.461Z"
+}

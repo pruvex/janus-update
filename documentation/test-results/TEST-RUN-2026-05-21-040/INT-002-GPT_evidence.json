@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "INT-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Goldpreis heute in Euro",
+  "response": "Heute beträgt der Goldpreis **125,60 EUR je Gramm** (laut Suchergebnis, Stand: 21.05.2026; Quelle: [silber.de](https://www.silber.de/goldpreis.html?utm_source=openai)).💡 Passende nächste Schritte:• Soll ich dir den Preis auch pro **Unze (31,1035 g)** umrechnen?• Für welche **Goldart** interessiert dich das (z.B. Goldbarren 999/24k)?22:39",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:40:02.935Z"
+}

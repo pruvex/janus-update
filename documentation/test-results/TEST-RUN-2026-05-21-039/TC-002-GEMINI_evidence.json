@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-039",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Preise fuer OpenAI und Gemini Modelle",
+  "response": "Hallo Pruve! Gerne habe ich die aktuellen Preise für die OpenAI- und Gemini-Modelle für dich recherchiert. Hier ist die Übersicht für Mai 2026:1. **Zusammenfassung**Die Preismodelle unterteilen sich weiterhin in monatliche Abonnements für Endnutzer und nutzungsbasierte API-Preise (Token-basiert) für Entwickler. Während die Standard-Abos stabil geblieben sind, zeigt sich bei den neuesten High-End-Modellen wie GPT-5.5 und Gemini 3.1 eine deutliche Leistungssteigerung bei angepasster Preisstruktur.2. **Liste der Fakten****OpenAI Abonnements (monatlich):***   **ChatGPT Plus:** 23,00 € [ki-spot.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF2GLHUv_LX4pjMX2K-1C60a8L5_HOCrTzbgogsmhstCRV66xDHNZseIO9ozkR0N18OcxLEGLtN3gUBwNf0B5uxLX5mLw5Vko1NDUHpSFettYXBeq7MxyE62-s9jS2QQ92RO05AFKOT)*   **ChatGPT Go:** 8,00 € [ki-spot.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF2GLHUv_LX4pjMX2K-1C60a8L5_HOCrTzbgogsmhstCRV66xDHNZseIO9ozkR0N18OcxLEGLtN3gUBwNf0B5uxLX5mLw5Vko1NDUHpSFettYXBeq7MxyE62-s9jS2QQ92RO05AFKOT)*   **ChatGPT Pro:** Schwankend zwischen 103,00 € und 229,00 € (je nach Funktionsumfang) [ki-spot.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF2GLHUv_LX4pjMX2K-1C60a8L5_HOCrTzbgogsmhstCRV66xDHNZseIO9ozkR0N18OcxLEGLtN3gUBwNf0B5uxLX5mLw5Vko1NDUHpSFettYXBeq7MxyE62-s9jS2QQ92RO05AFKOT)**API-Preise (pro 1 Mio. Token):***   **GPT-5.5:** 5,00 $ Input / 30,00 $ Output (laut Suchergebnis, Stand: Mai 2026) [atonementlicensing.com](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGwJY4xA5bRxflr89W94h2OtgCg2gg4e_GCIhyYUfDWnHVYmA5HuWMQXBRfZfR_i9X6Oy9zD6depz7m8p-7cPdLCQu43IyNCGTbGFvPNZdIzxCS5YO0xr-SSQyVAH-AMCnH7OCihQa9tLuS_SL7iX6Yr2SY0iIZFDM=)*   **GPT-4o:** 2,50 $ Input / 10,00 $ Output [atonementlicensing.com](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGwJY4xA5bRxflr89W94h2OtgCg2gg4e_GCIhyYUfDWnHVYmA5HuWMQXBRfZfR_i9X6Oy9zD6depz7m8p-7cPdLCQu43IyNCGTbGFvPNZdIzxCS5YO0xr-SSQyVAH-AMCnH7OCihQa9tLuS_SL7iX6Yr2SY0iIZFDM=)*   **Gemini 3.1 Pro:** 2,00 $ Input / 12,00 $ Output [atonementlicensing.com](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGwJY4xA5bRxflr89W94h2OtgCg2gg4e_GCIhyYUfDWnHVYmA5HuWMQXBRfZfR_i9X6Oy9zD6depz7m8p-7cPdLCQu43IyNCGTbGFvPNZdIzxCS5YO0xr-SSQyVAH-AMCnH7OCihQa9tLuS_SL7iX6Yr2SY0iIZFDM=)3. **Quellen***   [ki-spot.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF2GLHUv_LX4pjMX2K-1C60a8L5_HOCrTzbgogsmhstCRV66xDHNZseIO9ozkR0N18OcxLEGLtN3gUBwNf0B5uxLX5mLw5Vko1NDUHpSFettYXBeq7MxyE62-s9jS2QQ92RO05AFKOT)*   [atonementlicensing.com](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGwJY4xA5bRxflr89W94h2OtgCg2gg4e_GCIhyYUfDWnHVYmA5HuWMQXBRfZfR_i9X6Oy9zD6depz7m8p-7cPdLCQu43IyNCGTbGFvPNZdIzxCS5YO0xr-SSQyVAH-AMCnH7OCihQa9tLuS_SL7iX6Yr2SY0iIZFDM=)*   [pecollective.com](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFyLILs4Kmf7nxGQEcVs_OrzCtlUvSfZansx7RuPsHIs1sO6JfKOHEjr4-Tsayf4vjrI9tSUIXCqTPl3RbPq3wZEVXokhWGgNAJIGDd5yEoqK-CbUxznIBFpgU3MaRGRVvLUnmRd5uqkCv9GSMANLdV8qLuwA==)💡 Passende nächste Schritte:• Möchtest du einen detaillierten Kostenvergleich für ein spezifisches Projektvolumen (z. B. 100 Mio. Token)?• Soll ich prüfen, welche Modelle aktuell die besten kostenlosen Kontingente für Testzwecke anbieten?• Suchst du nach Informationen zu den Leistungsunterschieden zwischen GPT-5.5 und Gemini 3.1?21:57",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:58:39.865Z"
+}

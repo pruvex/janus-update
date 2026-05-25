@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-036",
+  "testCaseId": "TC-008-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Successful websearch with multiple results",
+  "response": "Zu welchem Thema möchtest du eine Websuche durchführen?20:51",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T18:51:17.074Z"
+}

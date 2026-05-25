@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "INT-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was gibt es Neues zu GPT heute",
+  "response": "Hallo Pruve, heute gibt es am 21. Mai 2026 gleich mehrere bahnbrechende Nachrichten rund um OpenAI und die GPT-Modelle.1. ZusammenfassungOpenAI hat heute das neue Angebot „Guaranteed Capacity“ für Unternehmenskunden vorgestellt, während gleichzeitig Berichte über einen bevorstehenden Börsengang mit einer astronomischen Bewertung die Runde machen. Überschattet werden diese Meldungen jedoch von einem massiven Systemausfall und neuen Details zur engen Zusammenarbeit mit der US-Regierung im Bereich Cybersicherheit.2. Liste der Fakten- **Guaranteed Capacity:** OpenAI führt ein neues Modell für Enterprise-Kunden ein, das feste Rechenkapazitäten garantiert.- **Börsengang-Gerüchte:** Berichte deuten auf einen geplanten Börsengang (IPO) hin, bei dem OpenAI mit über 850 Milliarden US-Dollar bewertet werden könnte (laut Suchergebnis, Stand: 21.05.2026).- **ChatGPT-Ausfall:** Trotz der großen Ankündigungen kam es heute zu einem massiven, zeitgleichen Systemausfall von ChatGPT.- **GPT-5.5-Cyber:** Die Zusammenarbeit mit der US-Regierung wurde offiziell bestätigt; dabei wird das spezialisierte Modell „GPT-5.5-Cyber“ im Rahmen einer neuen Exekutivverordnung für die nationale Cybersicherheit eingesetzt.3. Quellen- [openai.com](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEEhBTLoNMlBDhj6DmfE8W1b12eDGeDe9BwLj1abY10CkazHtmn3xuSuWYfGBiqUCB_VengNwccsqaAQ96a13HVHuwwsJsxM3se29HZFFaUnErOTi64JvcfHv0uri4cpz1yNoLL73kfXvE=)- [cyberdaily.au](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFxTeTM-Y7flG5mTpxeuOoSpme6pEoz8b80n8_sbdQLxuEyH25uwOBe0UNileTMmJ9g8GFwkRtPPxRqmr3Xe7uQ9MNYIGh5zvDyD4x3uPnMQryHPvhIWsEBaAprdeaGPn4pUePKLCFzKb6G9Z7MwM4uEia9pso6iioMdxRqY7fcujospE3Y5V9ztlEW0-Yh5fWYWX2OdxvI_AOTUOYgq1QoufJT6uDw7FjMJrYwHPBY1WvWyNirQvDrZQMgHgttlwoUcEiWRrRnhBC2uH_M1DCkSzjdIsjA5Q==)💡 Passende nächste Schritte:• Möchtest du mehr Details zu den Spezifikationen von GPT-5.5-Cyber erfahren?• Soll ich den Status des ChatGPT-Ausfalls für dich im Auge behalten?• Interessieren dich die Auswirkungen der 850-Milliarden-Bewertung auf den KI-Markt?21:37",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:38:17.917Z"
+}

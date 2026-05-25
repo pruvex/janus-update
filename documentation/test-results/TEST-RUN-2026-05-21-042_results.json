@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-042",
+  "title": "Janus Websearch Diamond Standard",
+  "status": "PASS",
+  "summary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-042",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-042_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-042/INT-003-GEMINI_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "INT-003-GEMINI",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-042/INT-003-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-21T21:41:33.020Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T21:41:33.028Z"
+}

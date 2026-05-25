@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-039",
+  "testCaseId": "INT-005-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "suche den aktuellen Goldpreis im web, aber gib keine Quellen an",
+  "response": "Aktueller Goldpreis: **3.881,55 EUR** (für **heute**, laut Suchergebnis).💡 Passende nächste Schritte:• Willst du den Goldpreis auch für **1 Unze in USD** statt EUR?• Soll ich dir zusätzlich den Kurs für **Gold in Gramm** (statt Unze) umrechnen?22:11",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:11:41.470Z"
+}

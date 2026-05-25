@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "TC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was kostet Gold gerade pro Unze in Euro?",
+  "response": "Hallo Pruve!1. ZusammenfassungDer aktuelle Goldpreis pro Feinunze liegt heute, am 21. Mai 2026, bei etwa 3.886,55 Euro.2. Liste der Fakten- **Aktueller Preis:** 3.886,55 € pro Unze (laut Suchergebnis, Stand: 21.05.2026).- **Alternativer Marktpreis:** 3.908,82 € pro Unze (Quelle: wallstreet-online.de).- **Preisentwicklung:** Im Vergleich zu der Information aus deinem Gedächtnis von heute um 21:24 Uhr (im Chat 'Aktueller Goldpreis'), als der Preis noch bei 3.881,55 € lag, ist ein leichter Anstieg zu verzeichnen.3. Quellen- [goldundco.at](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFyoxJ8XrISTJgcrGBZ86NFG4iLLv7dpJnCoCDza97RsxUyqT_URMdLVqkMlBEpTWNAfkYFFFC9FoebNgKNQxV_Z05ua8_JY1DJ9OxbZQA0z9RNZdXUyzd03rFuS0MuzK2gVy9EeA==)- [goldrepublic.com](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEJsz_1azUtaoBYcd3QMjuxNvBIEF8nezTZQm3CmrQdUY3on4bkeg2T655J7w3tPAd14mZF8CKDZMG_sEkrCiMWdV4q0liDssICIp3l7D8iUOIkxSW3Ubyf_4pQRvt4jQ6g8iAad2lcI0eet-3pj3K6)- [wallstreet-online.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEkJmfCS-EZfdX-E5gmMmttVzRPem0H6tlnOaPTSD3lQU7QMJAaciSvOInsgGvLIrPx6UIlpDKN1zMz-eKuNSL3hKfGCTpcmMT2Rt49nR_FLToCeqO7QoOMM7qq_WFDuQehFvjo8N0nd0PCyZB8kTg=)💡 Passende nächste Schritte:• Den Preis für eine spezifische Menge (z. B. 100g Barren oder Krügerrand) berechnen.• Die Preisentwicklung der letzten 7 Tage als Übersicht erstellen.• Einen Preis-Alarm für ein bestimmtes Euro-Niveau einrichten.22:30",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:31:04.506Z"
+}

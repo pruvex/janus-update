@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-039",
+  "testCaseId": "TC-008-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Goldpreis-Quellen mit mehreren Ergebnissen",
+  "response": "1. Goldpreis aktuell in Euro – Goldkurs (laut Quelle)  - [goldpreis.de](https://www.goldpreis.de/?utm_source=openai)2. Goldpreis heute – in Euro und US Dollar  - [silber.de](https://www.silber.de/)3. Aktueller Goldpreis in Gramm, Kilogramm und Unzen  - [goldenpreis.de](https://www.goldenpreis.de/)4. Goldpreis pro Gramm und Unze  - [gold.de](https://www.gold.de/)5. Goldpreis aktuell in Euro  - [goldheute.de](https://www.goldheute.de/)6. Goldpreis in Euro – Grammbasiert & Umrechnung  - [goldankauf123.de](https://www.goldankauf123.de/)7. GranValora – aktuelle Preise  - [granvalora.de](https://granvalora.de/)8. Aurum – Gold & Silber Echtzeit-Kurse  - [aurum-pro.de](https://aurum-pro.de/)9. RoGold – Ankaufspreise inkl. Euro/Gramm  - [rogold.de](https://rogold.de/)10. Commerzbank – Schalterkurse Edelmetalle (PDF)  - [commerzbank.de](https://www.commerzbank.de/)💡 Passende nächste Schritte:• Soll es **Spotpreis** (Markt/Anzeige) oder **Ankauf-/Bankkurse** (z. B. für Goldankauf) in **€ pro Gramm** sein?• Willst du daraus eine **Mini-Vergleichsliste** (Spot vs. Ankauf) mit aktuellsten Werten von 3–5 Seiten?22:02",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:02:47.978Z"
+}

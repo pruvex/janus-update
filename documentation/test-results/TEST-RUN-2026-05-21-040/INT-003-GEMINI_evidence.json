@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "INT-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle API Preise",
+  "response": "Hallo Pruve, hier sind die aktuellen API-Preise für die gängigsten KI-Modelle und Dienste, Stand Mai 2026:1. ZusammenfassungDie Preise für KI-APIs haben sich im Vergleich zum Vorjahr weiter differenziert. Während Flaggschiff-Modelle wie das neue GPT-5.5 höhere Kosten für Output-Tokens aufrufen, sind die Preise für ältere Modelle oder optimierte Varianten wie GPT-4o deutlich gesunken. Für kleine und mittlere Unternehmen (KMU) bewegen sich die monatlichen Kosten bei moderater Nutzung meist zwischen 50 € und 200 €.2. Liste der Fakten• GPT-5.5: Kostet aktuell 5,00 € pro 1 Mio. Input-Tokens und 30,00 € pro 1 Mio. Output-Tokens (laut Suchergebnis, Stand: 21.05.2026).• GPT-4o: Liegt bei 4,65 € pro 1 Mio. Input-Tokens (laut Suchergebnis).• GPT-4: Wird mit 27,90 € pro 1 Mio. Input-Tokens gelistet (laut Suchergebnis).• GPT-3.5: Ist mit 0,47 € pro 1 Mio. Input-Tokens die günstigste Option von OpenAI (laut Suchergebnis).• Google Maps API: Bei der App-Integration ist mit monatlichen Kosten zwischen 100 € und über 500 € zu rechnen (laut Suchergebnis).• Google Gemini 3.1 & Anthropic Claude: Konkrete Euro-Preise für diese Modelle variieren je nach Region und sind primär über die direkten Anbieter-Dashboards einsehbar.3. Quellen• [derprozessmeister.de](https://www.derprozessmeister.de)• [app-web-entwicklung.de](https://www.app-web-entwicklung.de)💡 Passende nächste Schritte:• Soll ich für dich eine Vergleichstabelle zwischen OpenAI und Anthropic Claude erstellen?• Benötigst du eine Schätzung der Kosten basierend auf deinem spezifischen monatlichen Token-Verbrauch?• Möchtest du wissen, welche Open-Source-Alternativen (z.B. via Llama-3) aktuell die besten Preis-Leistungs-Verhältnisse bieten?22:41",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:42:18.356Z"
+}

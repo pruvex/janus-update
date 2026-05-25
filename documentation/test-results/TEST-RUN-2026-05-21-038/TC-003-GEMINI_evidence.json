@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was ist heute die wichtigste Tech-News?",
+  "response": "Hallo Pruve! Schön, dich heute am Donnerstag, den 21. Mai 2026, zu unterstützen.Da ich aktuell keinen Zugriff auf eine Live-Websuche für den heutigen Tag habe, kann ich dir keine tagesaktuelle Schlagzeile vom 21. Mai 2026 präsentieren. In der Tech-Welt stehen jedoch derzeit vor allem die rasanten Entwicklungen im Bereich der **Agentic AI** (KI-Agenten, die autonom komplexe Aufgaben lösen) und neue Durchbrüche bei der **Energieeffizienz von Rechenzentren** im Fokus.Falls du dich für ein bestimmtes Thema interessierst – zum Beispiel neue Hardware-Releases oder regulatorische Änderungen in der KI-Branche –, lass es mich wissen! Ich kann auch gerne prüfen, ob wir in der Vergangenheit bereits über bestimmte Tech-Themen gesprochen haben, die dich interessieren.Quelle: Wikipedia💡 Passende nächste Schritte:• Soll ich im Gedächtnis nachsehen, welche Tech-Themen wir zuletzt besprochen haben?• Suchst du nach einem Preisvergleich für ein bestimmtes aktuelles Gadget?• Möchtest du, dass ich die Route zum nächsten Tech-Store für dich plane?21:38",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:39:19.615Z"
+}

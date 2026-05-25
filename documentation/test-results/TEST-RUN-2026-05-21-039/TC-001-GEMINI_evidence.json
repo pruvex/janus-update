@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-039",
+  "testCaseId": "TC-001-GEMINI",
+  "result": "BLOCKED",
+  "classification": "RUNNER_UNHANDLED_FAILURE",
+  "prompt": "",
+  "response": "",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Error: RUNNER_STREAM_TIMEOUT: No POST /api/chat/stream observed after \"wieviel kostet eine feinunze gold?\".\nChat Events: [{\"timestamp\":\"2026-05-21T19:55:39.482Z\",\"type\":\"response\",\"status\":200,\"url\":\"http://127.0.0.1:8001/api/chats/3549\"},{\"timestamp\":\"2026-05-21T19:55:39.494Z\",\"type\":\"request\",\"method\":\"GET\",\"url\":\"http://127.0.0.1:8001/api/chats/3549/messages\"},{\"timestamp\":\"2026-05-21T19:55:39.605Z\",\"type\":\"response\",\"status\":200,\"url\":\"http://127.0.0.1:8001/api/chats/3549/messages\"}]\nConsole [sendMessage]: []\nConsole [SSE]: []\nDiagnostics: [{\"timestamp\":\"2026-05-21T19:55:37.745Z\",\"type\":\"console:warning\",\"text\":\"An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.\"},{\"timestamp\":\"2026-05-21T19:55:38.250Z\",\"type\":\"console:warning\",\"text\":\"An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.\"},{\"timestamp\":\"2026-05-21T19:55:39.373Z\",\"type\":\"request\",\"method\":\"POST\",\"url\":\"http://127.0.0.1:8001/api/context/state\"},{\"timestamp\":\"2026-05-21T19:55:39.481Z\",\"type\":\"response\",\"status\":200,\"url\":\"http://127.0.0.1:8001/api/local-image-gen/status\"},{\"timestamp\":\"2026-05-21T19:55:39.482Z\",\"type\":\"response\",\"status\":200,\"url\":\"http://localhost:8001/api/local-llm/nodes\"},{\"timestamp\":\"2026-05-21T19:55:39.482Z\",\"type\":\"response\",\"status\":200,\"url\":\"http://127.0.0.1:8001/api/chats/3549\"},{\"timestamp\":\"2026-05-21T19:55:39.482Z\",\"type\":\"response\",\"status\":200,\"url\":\"http://127.0.0.1:8001/api/context/state\"},{\"timestamp\":\"2026-05-21T19:55:39.484Z\",\"type\":\"response\",\"status\":200,\"url\":\"http://127.0.0.1:8001/api/context/state\"},{\"timestamp\":\"2026-05-21T19:55:39.484Z\",\"type\":\"response\",\"status\":200,\"url\":\"http://127.0.0.1:8001/api/context/state\"},{\"timestamp\":\"2026-05-21T19:55:39.484Z\",\"type\":\"response\",\"status\":200,\"url\":\"http://127.0.0.1:8001/api/context/state\"},{\"timestamp\":\"2026-05-21T19:55:39.485Z\",\"type\":\"response\",\"status\":200,\"url\":\"http://127.0.0.1:8001/api/context/state\"},{\"timestamp\":\"2026-05-21T19:55:39.494Z\",\"type\":\"request\",\"method\":\"GET\",\"url\":\"http://127.0.0.1:8001/api/chats/3549/messages\"},{\"timestamp\":\"2026-05-21T19:55:39.605Z\",\"type\":\"response\",\"status\":200,\"url\":\"http://127.0.0.1:8001/api/chats/3549/messages\"},{\"timestamp\":\"2026-05-21T19:55:40.009Z\",\"type\":\"console:warning\",\"text\":\"An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.\"},{\"timestamp\":\"2026-05-21T19:56:09.506Z\",\"type\":\"request\",\"method\":\"GET\",\"url\":\"http://localhost:8001/api/local-llm/nodes\"},{\"timestamp\":\"2026-05-21T19:56:11.715Z\",\"type\":\"response\",\"status\":200,\"url\":\"http://localhost:8001/api/local-llm/nodes\"}]\nDOM messages: []\nOriginal: page.waitForResponse: Timeout 60000ms exceeded while waiting for event \"response\"",
+  "timestamp": "2026-05-21T19:56:40.235Z"
+}

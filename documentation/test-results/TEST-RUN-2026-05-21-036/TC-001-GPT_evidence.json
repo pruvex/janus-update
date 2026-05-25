@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-036",
+  "testCaseId": "TC-001-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "wieviel kostet eine feinunze gold?",
+  "response": "Eine Feinunze (1 troy ounce) Gold liegt aktuell bei **ca. 3.076,92 €**. (laut Suchergebnis, Quelle: [xaus.com](https://xaus.com/?utm_source=openai))💡 Passende nächste Schritte:• Soll ich dir den Preis zusätzlich in **CHF** oder **USD** umrechnen?• Willst du wissen, was das für einen **Betrag** bedeutet (z.B. „Für 100 € wie viel Gold“)?20:44",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T18:44:57.086Z"
+}

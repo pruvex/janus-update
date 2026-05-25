@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "TC-010-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Goldpreis-Quellen fuer heute",
+  "response": "1. ZusammenfassungHallo Pruve, für den heutigen Donnerstag, den 21. Mai 2026, zeigt der Goldmarkt stabile bis leicht steigende Notierungen im Vergleich zu den Vortagen. Der Preis für die Feinunze bewegt sich im Bereich von knapp über 3.900 Euro, was den aktuellen Trend zur Wertabsicherung widerspiegelt.2. Liste der Fakten• Goldpreis pro Feinunze (31,10 Gramm): ca. 3.896,30 Euro bis 3.917,75 Euro (Stand: 21.05.2026, laut Suchergebnis)• Goldpreis pro Gramm (Feingold 999): ca. 125,30 Euro bis 125,80 Euro (Stand: 21.05.2026, laut Suchergebnis)• Preis für ein Kilogramm Gold: ca. 125.300,00 Euro bis 125.800,00 Euro (hochgerechnet auf Basis aktueller Grammanbieter)• Handelsstatus: Die Kurse sind tagesaktuell und unterliegen den üblichen Marktschwankungen des heutigen Börsentages.3. Quellen• [exchange-ag.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGdPBH2e9UR2QNT-iKIAPuLIAlubvwG8Htdim1Yw_ci5FEqJHLyN9HpKuCh0v8lERlUyRKK6PGNcCdRlY9PCXyZYVLqoLrSke9djNzqdCBaafsxDQvzCGheHk4cB03OgpqESLen2oX6TQ==) (live-verifiziert am 21.05.2026)💡 Passende nächste Schritte:• Soll ich die Preise für verschiedene Legierungen (z.B. 585er oder 750er Gold) für den Altgoldverkauf recherchieren?• Benötigst du einen Vergleich der günstigsten Online-Händler für Goldmünzen oder Barren?• Möchtest du, dass ich die Preisentwicklung der letzten 7 Tage grafisch in einer Tabelle zusammenfasse?21:32",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:32:51.949Z"
+}

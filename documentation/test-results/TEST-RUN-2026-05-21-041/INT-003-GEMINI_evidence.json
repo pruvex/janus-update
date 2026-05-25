@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-041",
+  "testCaseId": "INT-003-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Recherchiere aktuelle API Preise",
+  "response": "Hallo Pruve, hier ist die Übersicht der aktuellen API-Preise für KI- und Übersetzungsdienste (Stand: Mai 2026):**1. Zusammenfassung**Die Preismodelle für APIs variieren stark zwischen monatlichen Grundgebühren (wie bei DeepL) und verbrauchsbasierten Token-Preisen (wie bei OpenAI). Während Übersetzungsdienste oft kostenlose Einstiegspakete bieten, berechnen LLM-Anbieter wie OpenAI ihre High-End-Modelle nach dem Volumen der verarbeiteten Daten (Tokens), wobei Input-Daten deutlich günstiger sind als generierte Output-Daten.**2. Liste der Fakten***   **DeepL API Free:** 0,00 € pro Monat für bis zu 500.000 Zeichen (laut Suchergebnis).*   **DeepL API Pro:** 5,49 € monatliche Grundgebühr zzgl. nutzungsabhängiger Kosten für unbegrenzte Übersetzungskapazität (laut Suchergebnis).*   **OpenAI GPT-4o:** Ca. 4,65 € pro 1 Million Input-Tokens und ca. 13,95 € pro 1 Million Output-Tokens (laut Suchergebnis, Stand Mai 2026).*   **Anthropic & Google Gemini:** Euro-Preise für Modelle wie Claude 3.5 oder Gemini 1.5 werden oft tagesaktuell auf Basis von USD-Preisen berechnet; detaillierte Tabellen sind direkt über die Anbieter-Portale einsehbar (laut Suchergebnis).*   **Kostenlose Kontingente:** Viele Anbieter (Google, DeepL) bieten kostenlose Tiers für Entwickler an, um die Integration zu testen, bevor Kosten anfallen.**3. Quellen***   [finout.io](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHY-KykpHP7rSzgmqsRhL4OJkWvtJqQsfwIv0OgpJ5kMfzeuScuh9pNpVi-pp_UmUn27YVTxk8GsGCLCWkd2Hvo1RfgKt8fUg6FZHfTQCEnFDl5Z8wyYyYCbGLrQKj5Ou9rKRBSg-CWX3g1ruo=)*   [pricepertoken.com](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHJbYn52xVAuC1xi8KMirs8xeXQ9OfbSVG2Ilc3sTP-Aqmb-Mybmr6fwB-pgcFKoCKWfIIELKGP4xPmPYfISyKHGDsjryu9A7rAwTYxu1fw1gf3mCUSuils7As17dlbVlboEiFP)*   [google.dev](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHHaeQ0FadjT_GxTREP6pR4Q2lpw9n6X2gsUJizdphIbJAUgvha_NSB3C-7e_e2UBg9r01XUH-qAgoZ_iT2sQedqsXVojQJ7zaBnalrdByiydxfI7U_RloWsWCLG8-9S9QQ6Dlg9GLiBdZnm_n5XA==)💡 Passende nächste Schritte:• Soll ich für dich eine Kosten-Nutzen-Rechnung für ein spezifisches monatliches Textvolumen erstellen?• Benötigst du Unterstützung bei der Integration einer dieser APIs in ein Python-Projekt?• Interessieren dich auch die Preise für Bild-Generierungs-APIs wie Midjourney oder DALL-E 3?23:19",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-21T21:20:56.854Z"
+}

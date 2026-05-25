@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-041",
+  "testCaseId": "TC-008-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Goldpreis-Quellen mit mehreren Ergebnissen",
+  "response": "1. GOLDPREIS.de (Goldpreis aktuell in Euro – Goldkurs) (Quelle: https://www.goldpreis.de/?utm_source=openai)  2. GOLD.DE (Goldpreis aktuell in Euro & US-Dollar | Goldkurs) (Quelle: https://www.gold.de)  3. GOLD.DE (Goldpreis-Tabellen: Euro pro Gramm/Unze) (Quelle: https://www.gold.de)  4. SILBER.de (Goldpreis heute in Euro) (Quelle: https://www.silber.de)  5. Goldheute.de (Goldpreis heute in Euro – Live Goldkurs in Deutschland) (Quelle: https://www.goldheute.de)  6. Goldpreis-euro.de (Goldpreis in Euro – aktuell mit Chart) (Quelle: https://www.goldpreis-euro.de)  7. Goldgramm.de (Goldpreis aktuell in Euro pro Gramm) (Quelle: https://www.goldgramm.de)  8. Gold-Preisvergleich.de (Goldpreis in Euro – Preis/Angabe im Ergebnis) (Quelle: https://www.gold-preisvergleich.de)💡 Passende nächste Schritte:• Sag mir, ob du **Euro pro Gramm** oder **Euro pro Unze** willst—dann filtere ich nur die passenden Seiten.• Wenn du magst, kann ich dir auch **3–5 zuverlässige “Preis-Tracker”** für eine kurze Vergleichsübersicht priorisieren.23:09",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T21:09:54.464Z"
+}

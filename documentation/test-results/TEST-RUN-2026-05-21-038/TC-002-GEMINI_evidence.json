@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Preise fuer OpenAI und Gemini Modelle",
+  "response": "Hallo Pruve! Ich habe die aktuellen Preise für OpenAI- und Gemini-Modelle (Stand Mai 2026) für dich recherchiert.1. ZusammenfassungDie Preismodelle teilen sich in monatliche Abonnements für Endnutzer und nutzungsbasierte API-Kosten für Entwickler auf. Während OpenAI mit dem neuen \"Pro\"-Abo eine hochpreisige Option für professionelle Anwender eingeführt hat, bleibt Google mit Gemini Advanced preislich eng am ChatGPT-Standardmodell orientiert.2. Liste der Fakten*   **OpenAI Abonnements:**    *   **ChatGPT Plus:** 23,00 € pro Monat.    *   **ChatGPT Go:** 8,00 € pro Monat.    *   **ChatGPT Pro:** Bis zu 229,00 € pro Monat (für erweiterte Kapazitäten und o1-Modell-Zugriff).*   **OpenAI API-Preise (Beispiele):**    *   **GPT-4o mini:** 0,15 USD pro 1 Mio. Input-Token / 0,60 USD pro 1 Mio. Output-Token.*   **Google Gemini Abonnements:**    *   **Gemini Advanced:** 21,99 € pro Monat (integriert im Google One AI Premium Plan).*   **Google Gemini API-Preise (Beispiele):**    *   **Gemini 3.1 Pro:** 2,00 USD pro 1 Mio. Input-Token / 12,00 USD pro 1 Mio. Output-Token (bei Kontext bis 128k).    *   **Gemini 1.5 Flash:** Deutlich günstigere Tarife für hohe Volumina verfügbar.3. Quellen*   [vodafone.de](https://www.vodafone.de/featured/digital-life/chatgpt-pro-abo-kosten-funktionen/)*   [metacto.com](https://metacto.com/ai-price-comparison-2026)*   [typingmind.com](https://www.typingmind.com/pricing-models)*   [openrouter.ai](https://openrouter.ai/models)*   [google.com](https://ai.google.dev/pricing)💡 Passende nächste Schritte:• Soll ich eine detaillierte Vergleichstabelle zwischen GPT-4o und Gemini 3.1 erstellen?• Benötigst du eine Kalkulation für ein spezifisches Projektvolumen (z.B. 10 Mio. Token)?• Möchtest du wissen, welche Funktionen im 229 € teuren ChatGPT Pro Abo enthalten sind?21:22",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:23:52.452Z"
+}

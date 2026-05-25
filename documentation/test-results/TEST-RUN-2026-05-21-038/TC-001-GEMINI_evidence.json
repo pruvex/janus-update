@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "TC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "wieviel kostet eine feinunze gold?",
+  "response": "Hallo Pruve, eine Feinunze Gold wird heute, am 21. Mai 2026, bei durchschnittlich etwa 3.905 € gehandelt.**1. Zusammenfassung**Der Goldpreis zeigt sich stabil mit einer leichten Spanne zwischen verschiedenen Handelsplätzen, wobei der Wert pro Feinunze (ca. 31,1 Gramm) derzeit die Marke von 3.900 € überschritten hat.**2. Liste der Fakten***   **Aktueller Preis:** 3.897,25 € (Quelle: Suchergebnis, Stand: 21.05.2026)*   **Alternative Notierung:** 3.904,92 € (Quelle: Suchergebnis, Stand: 21.05.2026)*   **Höchster gelisteter Wert:** 3.912,40 € (Quelle: Suchergebnis, Stand: 21.05.2026)**3. Quellen***   [Gefundene Quelle 1](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEB0Ad7IyPndcUOGlT3AhssTKv7fB3BHhL0BaPFTZEXMKM6V0H8hHGXv-0t63Tw-HbLPG-Xiz3pJv4h38KGlC60RrBrKTv9XjcPKlkvpWTdPSu34vPWozCiWP5xqldTspf74hyyNWURjMGjhl9HgRQ2HeX0oudSF3rPzPoEJra_5FaYxKIZvoz8AUHY6D6v1BJt2EAO8vG47XXjIUrYBly8hzFUgS-XyzzKgRtWtA==)*   [Gefundene Quelle 2](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFM-zJkViE-eEQqomlCOsMN8F0tt3gYM8BsalUPh2l-0mHwiDmg6PTv6ohILvvxRltanyiC5_tHvqepmdsp_eQXT2loTxBjGK10BJf_OWgRS0N21WmN1lc2VRxMz-sZp-DVTIvb3dPKexxPnXH40Vngm-rMvkVOt79wimHO_ry70j6ut35_y2fEBepg7geY4w-nk4EfdbetyusWJTaSQmkZFZa75d45odbY73PX)💡 Passende nächste Schritte:• Soll ich die Preisentwicklung der letzten 30 Tage für dich recherchieren?• Möchtest du einen Preisvergleich für physische Goldmünzen (z. B. Krügerrand) sehen?• Suchst du nach einem seriösen Händler in deiner Nähe?21:20",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:21:27.265Z"
+}

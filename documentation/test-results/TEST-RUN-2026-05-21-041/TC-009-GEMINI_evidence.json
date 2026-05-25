@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-041",
+  "testCaseId": "TC-009-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Goldpreis-Quellen fuer heute",
+  "response": "Hallo Pruve! Gerne habe ich für dich die aktuellen Goldpreis-Quellen für heute, Donnerstag, den 21. Mai 2026, recherchiert.1. **Zusammenfassung**Der Goldpreis steht heute stabil auf einem hohen Niveau. Eine Feinunze Gold kostet aktuell etwa 3.918,22 Euro, während der Preis pro Gramm bei rund 125,55 Euro liegt.2. **Liste der Fakten***   **Feinunze Gold:** 3.918,22 Euro (Quelle: goldpreis.de, Stand: 21.05.2026)*   **Preis pro Gramm:** 125,55 Euro (Quelle: goldpreis.de, Stand: 21.05.2026)*   **Kilobarren Gold:** 124.822,06 Euro (Quelle: boerse.de, Stand: 21.05.2026)*   **Markttrend:** Die Preise werden konsistent über verschiedene Quellen wie goldpreis.de, boerse.de und gold.de bestätigt.3. **Quellen***   [goldpreis.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGZk04hHNBVuJ5hqkKjTWhOt9HXwEICXA5mEJgQ-jP-CaCvuk2C4fTzcY81XfNIYTfHshFb6XZf0HKlkkrox7Gze5ndqEzf9_zYkubPKvDpKjJbCg==)*   [boerse.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFoNOx3McIXIt3e4zeS4pnlXed5tCnymAXg8UheDr_IdIGrVEYmKob3dBE6XGcE0rsleHDDsvJtpMyz-6dbG5YmQu6GYEJFNhNB77PLUlyXxkjk29iyitQF57VmAXu9fryLIAzYzWIkhZBo6V29otpc)*   [gold.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFhqyr9zKKZXozMz_aqpw9AjqZQnyZZs0WwPVS1epsbI7JJaP8jdKXsU35LAS0CpZwO8CB38c1Bo_zx3FB07xaqO1Lhf_X6RQlKFlGjiKl2YQ_mKbF9_PqZtx4O3IhN)💡 Passende nächste Schritte:• Möchtest du eine Prognose für die Preisentwicklung der nächsten Woche erhalten?• Soll ich den aktuellen Preis für eine spezifische Menge (z. B. ein Erbstück oder Münzen) berechnen?• Suchst du nach verifizierten Edelmetallhändlern in deiner Region für einen Ankauf?23:11",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T21:12:20.311Z"
+}

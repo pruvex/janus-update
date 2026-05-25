@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "INT-004-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was gibt es Neues zu GPT heute",
+  "response": "Hallo Pruve — hier sind die wichtigsten aktuellen GPT-Updates, die ich dazu gefunden habe:1. OpenAI entfernt GPT-4o, GPT-4.1, GPT-4.1 mini und o4-mini aus ChatGPT (Stichtag: 13. Februar 2026) (Quelle: [OpenAI Help Center – Modell-Release Notes](https://help.openai.com/de-de/articles/9624314-modell-release-notes)).2. GPT-4.1 wird schrittweise in ChatGPT ausgerollt (u. a. Zugriff über „weitere Modelle“ für Plus/Pro/Team ab dem genannten Zeitraum) (Quelle: [OpenAI Help Center – Modell-Release Notes](https://help.openai.com/de-de/articles/9624314-modell-release-notes)).3. GPT-4o-bezogene Versionshinweise (Beispiele aus den Release Notes): Anpassungen/Updates rund um Tool-Verhalten (z. B. Bildgenerierung) sowie ein zurückgenommenes Update nach Rückmeldungen (Quelle: [OpenAI Help Center – Modell-Release Notes](https://help.openai.com/de-de/articles/9624314-modell-release-notes)).💡 Passende nächste Schritte:• Soll ich dir die News **nur für die letzten 24 Stunden** oder **letzte 7 Tage** eingrenzen?• Willst du die Updates eher **für ChatGPT** oder **für die GPT-API** (Preise/Verfügbarkeit) zusammengefasst haben?21:36",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:36:44.006Z"
+}

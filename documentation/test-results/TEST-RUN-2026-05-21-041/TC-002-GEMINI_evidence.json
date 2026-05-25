@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-041",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Preise fuer OpenAI und Gemini Modelle",
+  "response": "Hallo Pruve, hier ist die aktuelle Preisübersicht für die Modelle von OpenAI und Google Gemini (Stand Mai 2026):1. **Zusammenfassung**Die Preismodelle von OpenAI und Google sind in zwei Kategorien unterteilt: Monatliche Abonnements für Privat- und Power-User sowie nutzungsbasierte API-Preise für Entwickler. Während die Standard-Plus-Abos bei etwa 20 € liegen, zeigen sich bei den API-Kosten deutliche Unterschiede je nach Modellgeneration und Token-Volumen.2. **Liste der Fakten***   **OpenAI ChatGPT Plus:** Kostet monatlich ca. 20 € bis 23 € (laut Suchergebnis, Stand: Mai 2026).*   **OpenAI ChatGPT Pro:** Liegt für professionelle Workflows bei ca. 200 € pro Monat (laut Suchergebnis).*   **OpenAI Go-Abo:** Eine kleinere Option für ca. 8 € pro Monat (laut Suchergebnis).*   **Google Gemini Advanced:** Wird für 19,99 € bis 21,99 € im Monat angeboten (laut Suchergebnis).*   **Gemini 3.1 Pro API:** Die Kosten betragen ca. 1,84 € pro 1 Million Input-Token und ca. 11,00 € pro 1 Million Output-Token (laut Suchergebnis).3. **Quellen***   [Google Cloud Grounding Result](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE-2Td93sWm-GpgmXxRDLpgUmgHaGwLU3UrVc_hWyR7WTLxkZKwQr6x1quLeZ57Q2CWJh_9223waUXVBO5A8UmOpt2zJumKiul-tKO4-s4yuoWmEQmsubEhoNCzSjBzpHCd29yFz6vcAF1jhz9vOvBujlTfBXjtbsgne7zABWE53oVw2gYNndsS1FwMphydrQIkl4m9sG3L5AcByP7G-lJ2iCgEBeduk8c=)*   [Zusätzliche Preisdetails](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHa00tk5MwcSKtZbqhGbRVbX8RCCDrD38SHSzLBq91N8cTCChMRL80oi3wiggrOkBCuQsWleM5m-7bV1oSFLWOu3i0KruTkp_L7EOXwTLXqXOPTd2-ngvjLsPLITbY-3cEkEhK3Zg4fgjlm1a46f27dJGbNpSBBqHzOabkpR4LhdeTluDDvxk_qcxE_rPjckQxHQAMbJv7VuTOyLs-S8RLo3Ty-OHRXZABed2RW5-ercxwSbFAseQ==)💡 **Passende nächste Schritte:***   Soll ich für dich die API-Preise von GPT-4o und Gemini 1.5 im direkten Vergleich gegenüberstellen?*   Möchtest du eine Kalkulation für ein spezifisches Projekt-Volumen (z.B. 10 Mio. Token pro Monat) erstellen?*   Soll ich nach Rabatten oder kostenlosen Kontingenten für Entwickler suchen?23:01",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T21:02:10.100Z"
+}

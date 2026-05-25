@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-036",
+  "testCaseId": "TC-006-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wieviel kostet Bitcoin gerade?",
+  "response": "Hallo Pruve.Der aktuelle Bitcoin-Kurs liegt bei etwa **67.109 Euro** (ca. 77.840 US-Dollar). Marktberichte von heute Abend deuten auf eine volatile Seitwärtsbewegung hin, die unter anderem durch Liquidationswellen aufgrund der aktuellen geopolitischen Lage beeinflusst wird.💡 Passende nächste Schritte:• Soll ich den Kursverlauf der letzten 24 Stunden für dich zusammenfassen?• Möchtest du aktuelle Nachrichten zu den Ursachen der Volatilität lesen?• Soll ich den Preis für eine andere Kryptowährung wie Ethereum prüfen?20:49",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T18:50:28.589Z"
+}

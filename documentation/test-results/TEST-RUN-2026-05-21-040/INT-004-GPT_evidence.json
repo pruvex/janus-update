@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "INT-004-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was gibt es Neues zu GPT heute",
+  "response": "Hallo Pruve — hier sind die wichtigsten GPT/OpenAI-bezogenen Updates, die sich heute (21.05.2026) aus aktuellen Quellen ergeben:1. OpenAI Deployment Safety Hub: System-Cards-Updates (inkl. GPT-5.5 Instant)- „GPT-5.5 Instant System Card“ (Updates, laut Seite „Updates“; Stand: 05. Mai 2026)- „GPT-5.5 System Card“ (Stand: 23. April 2026)- „ChatGPT Images 2.0 System Card“ (Stand: 21. April 2026)  Quelle: [deploymentsafety.openai.com](https://deploymentsafety.openai.com/)2. OpenAI Help Center: Versionshinweise (ChatGPT)- In den „ChatGPT — Versionshinweisen“ gibt es einen Abschnitt „13. Februar 2026“ zu Einstellungen/Entfernungen bestimmter (Legacy-)Modelle aus ChatGPT (u. a. GPT-4o bzw. GPT-5 bezogene Punkte)  Quelle: [help.openai.com](https://help.openai.com/)3. OpenAI Newsroom (DE): Produkt-/News-Übersicht mit GPT-Bezug (sichtbare Einträge)- „Entdecke GPT-5.5 Produkt“ (23. Apr. 2026)- „Einführung von ChatGPT Bilder 2.0 Produkt“ (21. Apr. 2026)- „Mit Codex von überall aus arbeiten Produkt“ (14. Mai 2026)- „Fortschritte bei Sprachintelligenz … mit neuen Modellen in der API“ (7. Mai 2026)- „Unsere Reaktion auf den Supply-Chain-Angriff …“ (13. Mai 2026)  Quelle: [openai.com/de/newsroom](https://openai.com/) (Newsroom-Übersicht)💡 Passende nächste Schritte:• Soll ich dir die Updates eher nach „GPT-Modelle“, „Bilder/Multimodal“ oder „API/Developer“ sortieren?• Soll ich gezielt nach genau „21.05.2026“ innerhalb OpenAI-Newsroom/Help Center suchen, um sicherzustellen, ob es heute noch einen eigenen GPT-Post gab?22:41",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:42:43.274Z"
+}

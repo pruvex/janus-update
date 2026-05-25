@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-036",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Goldpreis heute in Euro",
+  "response": "Hallo Pruve, hier sind die aktuellen Goldpreise für heute, Donnerstag, den 21. Mai 2026:**1. Zusammenfassung**Der Goldpreis notiert heute auf einem hohen Niveau. Die Feinunze wird aktuell zwischen etwa 3.896 € und 3.912 € gehandelt, während der Preis pro Gramm bei circa 125,79 € liegt.**2. Liste der Fakten***   **Feinunze Gold (31,1g):** 3.896,30 € bis 3.912,40 € (Quelle: goldpreis.de, Stand: 21.05.2026).*   **Goldpreis pro Gramm:** 125,79 € (Quelle: exchange-ag.de, Stand: 21.05.2026).*   **Tagesverlauf:** Schwankungsbreite zwischen 3.877,00 € (Tief) und 3.927,20 € (Hoch) (Quelle: gold.de, Stand: 21.05.2026).**3. Quellen***   [goldpreis.de](https://www.goldpreis.de)*   [exchange-ag.de](https://www.exchange-ag.de)*   [gold.de](https://www.gold.de)💡 **Passende nächste Schritte:**• Möchtest du die Preisentwicklung im Vergleich zur letzten Woche sehen?• Soll ich nach Preisen für spezifische Goldmünzen (z.B. Krügerrand) suchen?• Benötigst du einen Vergleich der Ankaufspreise bei verschiedenen Händlern?20:57",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T18:58:02.410Z"
+}

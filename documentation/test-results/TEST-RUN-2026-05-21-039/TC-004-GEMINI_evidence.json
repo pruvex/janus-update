@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-039",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wie steht es aktuell um den FC Bayern?",
+  "response": "Hallo Pruve, hier ist der aktuelle Stand zum FC Bayern München (Stand: Mai 2026):1. ZusammenfassungDer FC Bayern München hat die Bundesliga-Saison 2025/26 erfolgreich als Deutscher Meister abgeschlossen und blickt nun auf das bevorstehende DFB-Pokalfinale am kommenden Samstag.2. Liste der Fakten- Deutscher Meister: Die Bayern beendeten die Saison mit beeindruckenden 89 Punkten an der Tabellenspitze.- DFB-Pokal: Am 23.05.2026 bestreitet die Mannschaft das Finale gegen den VfB Stuttgart.- Champions League: Der Verein schied am 06.05.2026 im Halbfinale gegen Paris Saint-Germain aus.- Nationalmannschaft: Manuel Neuer und Jamal Musiala wurden offiziell für den Kader der kommenden Weltmeisterschaft nominiert.3. Quellen- [bild.de](https://www.bild.de) (laut Suchergebnis, Stand: 21.05.2026)💡 Passende nächste Schritte:• Soll ich dich am Samstag an den Anstoß des Pokalfinals erinnern?• Möchtest du mehr Details zur WM-Nominierung der Bayern-Spieler erfahren?• Suchst du nach Fanartikeln zur aktuellen Meisterschaft im Preisvergleich?21:58",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:58:59.490Z"
+}

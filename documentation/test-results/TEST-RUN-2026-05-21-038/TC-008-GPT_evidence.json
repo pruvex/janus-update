@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "TC-008-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Goldpreis-Quellen mit mehreren Ergebnissen",
+  "response": "1. GOLD.DE – Goldpreis aktuell in Euro und Dollar (Goldkurs)  https://www.gold.de/kurse/goldpreis/?utm_source=openai2. Goldpreis.de – Aktueller Goldpreis in Euro (mit Tabellen nach Gewicht)  (unser Suchergebnis nennt die Seite, aber ohne direkte URL im Treffertext – siehe nächsten Schritt)3. SILBER.DE – Goldpreis Heute (in Euro)  (unser Suchergebnis nennt die Seite, aber ohne direkte URL im Treffertext – siehe nächsten Schritt)4. Goldheute.de – Goldpreis heute in Euro (Live Goldkurs in Deutschland)  (unser Suchergebnis nennt die Seite, aber ohne direkte URL im Treffertext – siehe nächsten Schritt)💡 Passende nächste Schritte:• Soll ich dir nur Spot/Marktkurs (XAU in EUR) oder auch Händler-/Ankaufpreise für Deutschland mit rausziehen?• Für welche Einheit: 1 g, 1 oz oder 1 kg (oder alles)?21:28",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:29:00.789Z"
+}

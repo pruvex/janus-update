@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-039",
+  "testCaseId": "TC-007-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Goldpreis heute in Euro ohne Platzhalter",
+  "response": "Hallo Pruve,hier ist der aktuelle Goldpreis für heute, Donnerstag, den 21. Mai 2026, basierend auf deinen heutigen Aufzeichnungen:*   **Preis pro Gramm:** 125,79 €*   **Preis pro Feinunze:** 3.897,25 €Diese Informationen stammen aus deinen Gesprächen in den Chats „Goldpreis heute“ (gespeichert um 21:26 Uhr) und „Aktueller Goldpreis in Euro“ (gespeichert um 20:48 Uhr).💡 **Passende nächste Schritte:***   Soll ich die Preisentwicklung im Vergleich zu gestern für dich analysieren?*   Möchtest du den aktuellen Wert eines spezifischen Goldgewichts (z. B. eines 100g-Barrens) berechnet haben?*   Soll ich nach aktuellen Marktprognosen für die kommende Woche suchen?22:01",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:02:15.227Z"
+}

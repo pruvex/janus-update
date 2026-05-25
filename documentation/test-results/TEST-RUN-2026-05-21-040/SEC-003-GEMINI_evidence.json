@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "SEC-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Disable/simulate websearch provider",
+  "response": "Hallo Pruve. Ich habe die Anweisung zur Simulation bzw. Deaktivierung des Websuche-Providers vermerkt und werde entsprechend verfahren.💡 Passende nächste Schritte:• Möchtest du, dass ich stattdessen ausschließlich auf deine lokalen Dokumente zugreife?• Soll ich eine Zusammenfassung deiner gespeicherten Fakten erstellen, ohne online zu suchen?22:49",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:50:07.045Z"
+}

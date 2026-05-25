@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-036",
+  "testCaseId": "INT-006-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was weisst du aus meiner Erinnerung ueber Gold?",
+  "response": "Hallo Pruve,ich habe mein Gedächtnis sowie die aktuellen Marktberichte für dich geprüft.In deiner **persönlichen Erinnerung** (unserem bisherigen Wissensstand) liegen aktuell keine spezifischen Einträge oder Fakten zum Thema „Gold“ vor. Die dort gespeicherten Informationen konzentrieren sich primär auf deine Identität und sehr detaillierte Beschreibungen zu **Nikola Tesla**.Da ich dich jedoch proaktiv unterstützen möchte, habe ich die **aktuellen Marktdaten für heute, Donnerstag, den 21.05.2026**, abgerufen:*   **Aktueller Goldpreis:** Eine Feinunze Gold wird heute für etwa **3.912,40 € bis 3.917,75 €** gehandelt.*   **Preis pro Gramm:** Der Kurs liegt bei ca. **125,79 €**.*   **Marktlage:** Gold bewegt sich damit weiterhin auf einem historisch hohen Niveau, wobei das bisherige Allzeithoch bei rund 4.553,24 € markiert wurde.Falls du möchtest, dass ich eine bestimmte Information zu Gold (z. B. einen Bestand oder eine Vorliebe) für die Zukunft fest halte, gib mir einfach kurz Bescheid.💡 **Passende nächste Schritte:**• Möchtest du, dass ich den aktuellen Goldpreis in dein Langzeitgedächtnis übernehme?• Soll ich eine detaillierte Preisprognose für den Rest des Jahres 2026 erstellen?• Suchst du Informationen zu einem anderen Thema aus deiner Erinnerung, wie etwa den Details zu Nikola Tesla?21:02",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:03:50.185Z"
+}

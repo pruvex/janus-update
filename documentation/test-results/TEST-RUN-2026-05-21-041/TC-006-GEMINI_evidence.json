@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-041",
+  "testCaseId": "TC-006-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wieviel kostet Bitcoin gerade?",
+  "response": "Bitcoin liegt aktuell bei etwa **77.677,01 USD** (Stand: 21. Mai 2026, 23:06 Uhr).💡 Passende nächste Schritte:• Soll ich den Preis in Euro umrechnen?• Möchtest du die Kursentwicklung der letzten 24 Stunden sehen?• Soll ich nach aktuellen Nachrichten zu regulatorischen Fortschritten im Kryptomarkt suchen?23:06",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T21:07:40.354Z"
+}

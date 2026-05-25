@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "TC-008-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Goldpreis-Quellen mit mehreren Ergebnissen",
+  "response": "1. **GOLD.DE – Goldpreis pro Gramm (EUR)**: Goldpreis je 1 g (Feingold) in EUR (laut Suchergebnis, Stand: **17.05.2026, 20:39 Uhr**)     [gold.de – Goldpreis pro Gramm](https://www.gold.de/kurse/goldpreis/gramm/?utm_source=openai)2. **GOLD.DE – Goldkurs in EUR (nach Gewicht)**: Goldpreis in EUR (u.a. Gramm/Unze/Kilo), auf derselben Seite werden mehrere Gewichte dargestellt (laut Suchergebnis, Stand: **19.05.2026, 18:55 Uhr**)     [gold.de – Goldpreis in EUR](https://www.gold.de/kurse/goldpreis/gramm/?utm_source=openai)3. **goldpreis.de – Goldpreis aktuell (EUR/USD)**: u.a. **1 Gramm** und **1 Unze** in EUR (laut Suchergebnis, Stand: **19.05.2026, 18:55 Uhr**)     [goldpreis.de – Goldpreis aktuell](https://www.goldpreis.de/)4. **silber.de – Goldpreis heute (in Euro)**: Goldpreis „heute“ in EUR (laut Suchergebnis: **je Gramm**), Stand im Snippet nicht weiter spezifiziert     [silber.de – Goldpreis heute](https://www.silber.de/goldpreis.html)💡 Passende nächste Schritte:• Soll ich die Quellen zusätzlich **nach “Spot/Feingold” vs. “Handelspreise/Legierungen”** sortieren?• Willst du den Fokus auf **EUR/Gramm** oder **EUR/Unze (troy ounce)** legen?22:32",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:33:09.775Z"
+}

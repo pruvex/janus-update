@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was ist heute die wichtigste Tech-News?",
+  "response": "Hallo Pruve!Die aktuell wichtigste Tech-News am heutigen **21. Mai 2026** ist die fortlaufende Aufarbeitung des massiven **Canvas-Datenlecks**, das als der größte Sicherheitsvorfall im Bildungssektor aller Zeiten gilt.Hier sind die entscheidenden Details zur aktuellen Lage:*   **Das Ausmaß:** Die Lernplattform Canvas (betrieben von Instructure) wurde von der Hackergruppe *ShinyHunters* angegriffen. Dabei wurden Daten von rund **275 Millionen Nutzern** und über **8.800 Bildungseinrichtungen** weltweit kompromittiert.*   **Aktueller Stand:** Nachdem die Hacker gedroht hatten, die 3,65 Terabyte an Daten zu veröffentlichen, laufen heute die forensischen Untersuchungen auf Hochtouren. Viele Universitäten weltweit prüfen derzeit noch, ob auch private Nachrichten zwischen Lehrenden und Studierenden im Darknet gelandet sind.*   **Technischer Fokus:** In der Tech-Community wird heute besonders über die Schwachstellen in der Cloud-Infrastruktur diskutiert, die diesen Einbruch auf globaler Ebene ermöglicht haben.Abgesehen von diesem Sicherheits-GAU steht die Tech-Welt heute ganz im Zeichen der Nachwirkungen der diesjährigen Entwicklerkonferenzen, bei denen neue Durchbrüche in der KI-gestützten Forschung präsentiert wurden.Quelle: Wikipedia💡 **Passende nächste Schritte:**• Möchtest du wissen, ob deine E-Mail-Adresse von einem solchen Datenleck betroffen sein könnte?• Soll ich recherchieren, welche Sicherheitsmaßnahmen Experten nach dem Canvas-Vorfall nun für Online-Plattformen empfehlen?• Interessieren dich eher Produkt-Neuheiten von den aktuellen Frühjahrs-Events der großen Tech-Giganten?22:44",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:45:29.479Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-039",
+  "testCaseId": "TC-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Preise fuer OpenAI und Gemini Modelle",
+  "response": "## OpenAI: aktuelle Preise (API) – laut offizieller Preisseite (USD)1. **$5.00 / 1M Tokens** – GPT-5.4 mini (Quelle: [OpenAI API-Preise](https://openai.com/de-DE/api/pricing/?utm_source=openai))2. **$16.00 / 1M output tokens** – GPT-5 mini (Quelle: [OpenAI API-Preise](https://openai.com/de-DE/api/pricing/?utm_source=openai))## Gemini: aktuelle Preise (API/Vertex AI) – laut Google Cloud (USD)- **Gemini 1.5 Flash**  - **$0.000075 / 1k characters (Text Output)** (Quelle: [Google Cloud Vertex AI Pricing](https://cloud.google.com/vertex-ai/docs/generative-ai/pricing))- **Gemini 1.5 Pro**  - **$0.00125 / 1,000 characters (Text Output)** (Quelle: [Google Cloud Vertex AI Pricing](https://cloud.google.com/vertex-ai/docs/generative-ai/pricing))Hinweis: In den gefundenen Treffern werden die API-Preise bei OpenAI und Gemini aktuell **in USD** ausgewiesen; ich habe keine Umrechnung in EUR vorgenommen.💡 Passende nächste Schritte:• Sag mir kurz, ob du **API-Preise (Tokens/Zeichen)** oder **Abo-/Chat-Preise** meinst, dann liste ich dir die passende Modell-/Plan-Matrix vollständig.• Wenn du konkrete Modelle/Use-Cases nennst (z.B. “Text only” vs. “Vision”), kann ich die relevantesten Preiszeilen herausziehen.21:56",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:57:09.296Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "INT-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "wieviel kostet eine feinunze gold?",
+  "response": "Hallo Pruve,basierend auf den aktuellsten Marktdaten vom 21. Mai 2026 sowie den heute bereits gespeicherten Werten ergibt sich folgendes Bild für den Preis einer Feinunze Gold:**1. Zusammenfassung**Der Preis für eine Feinunze Gold liegt am heutigen Donnerstagabend bei etwa **3.907,10 €**. Der Markt zeigt heute eine dynamische Entwicklung mit Schwankungen zwischen ca. 3.845 € und 3.912 €.**2. Liste der Fakten***   **Aktueller Marktpreis:** 3.907,10 € (Stand: 21.05.2026, 21:33 Uhr).*   **Alternative Handelskurse:** Einige Quellen geben den Preis aktuell mit 3.886,55 € an.*   **Tagesverlauf:** Heute wurden bereits Werte von 3.845,14 € (21:33 Uhr) bis zu 3.912,40 € (21:10 Uhr) verzeichnet.*   **Physisches Gold:** Beim Kauf von Gold in Barrenform ist im Handel mit einem Preis von ca. 4.000,00 € zu rechnen.**3. Quellen***   [goldpreis.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE4KrxKPoMj1002BPMzVriue--v1ziew7JCK3ahoQjN87U1eE0z1ksoQKYsft8o9ThoR8hfrjfCVkCc7pXXT0wio0uH2gk9McLt48kaXWsJDGi2yvI=)*   [exchange-ag.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHLcYjGzaJpAqH6bhwltBYYBpGYi97sqJsoiHZ-sAyKBRrVZaDLYYTkK65nBpueROk0nH4M-UhQBoxGbHCB7JaSTr6tY33QP1DR9aF8ANQggTfyTRq15OrAMP9VCb6P2GORUeGb13Bhrg==)*   [goldrepublic.com](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGi8U71ModYhJr58hS1YG2VHn591xH0tLwYmmK1FXtzXhtBxIBxIuSSoT-J-EWeL7rQK87BbcOYCVJGpcbPTc2fIjrHRDjj5VW-U1sRoRCDqURVnRUnSBhw4pzVThrewE1dWGiuWJEoUQV1m83vQdiX)💡 **Passende nächste Schritte:**• Möchtest du den Goldpreis mit dem aktuellen Bitcoin-Kurs vergleichen?• Soll ich die historische Preisentwicklung der letzten Woche für dich recherchieren?• Suchst du nach Informationen zu Verkaufsstellen für physische Goldbarren?21:33",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:34:22.646Z"
+}

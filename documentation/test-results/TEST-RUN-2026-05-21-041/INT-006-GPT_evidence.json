@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-041",
+  "testCaseId": "INT-006-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was weisst du aus meiner Erinnerung ueber Gold?",
+  "response": "Aus deiner Erinnerung über Gold habe ich in deinem Kontext keinen spezifischen, dauerhaft gespeicherten Fakt gefunden—ich habe dazu nur die allgemeine Einordnung vorliegen, dass Gold in Finanz-/Rohstoffkontexten typischerweise als Kurs „pro Feinunze“ (oft als XAU/USD) gehandelt/als Referenz verwendet wird, und es je nach Kontext unterschiedliche „Goldpreise“ geben kann (Benchmark/Spot vs. Händlerpreise für physisches Gold).**💡 Passende nächste Schritte:**• Sag mir, ob du **Spot/Benchmark** oder **Händlerpreis** für **physisches Gold** meinst (dann kann ich es gezielt einordnen).• Soll es **pro Gramm** oder **pro Feinunze** sein?23:25",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T21:26:14.265Z"
+}
