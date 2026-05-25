@@ -75,6 +75,36 @@ Initial bundle decision for untracked `TEST-RUN-2026-05-21-*` artifacts:
 
 Do not stage all TestRun artifacts at once. Stage by bundle group after checking each group against its referenced TestSpec/Backlog/final audit.
 
+## Ready Commit Groups
+
+### TEST-RUN-2026-05-21-014 / 015 - Skill Registry Integrity
+
+Decision: ready as first curated evidence commit.
+
+Validation:
+
+- `TEST-RUN-2026-05-21-014_results.json`: PASS, 6/6, 0 failed, 0 blocked.
+- `TEST-RUN-2026-05-21-015_results.json`: PASS, 6/6, 0 failed, 0 blocked.
+- `validate_test_pipeline_artifacts.py` passed for both `014` and `015`.
+- `014` has final audit PASS and Skill 7 documentation update.
+- `015` is the dashboard-aligned deterministic static certification and supersedes `014` for dashboard status.
+
+Stage as evidence bundle:
+
+- `documentation/test-runs/TEST-RUN-2026-05-21-014_final_audit.md`
+- `documentation/test-runs/TEST-RUN-2026-05-21-014_generated.spec.js`
+- `documentation/test-runs/TEST-RUN-2026-05-21-014_plan.json`
+- `documentation/test-runs/TEST-RUN-2026-05-21-014_skill2_handover.txt`
+- `documentation/test-runs/TEST-RUN-2026-05-21-014_skill7_documentation_update.md`
+- `documentation/test-results/TEST-RUN-2026-05-21-014/`
+- `documentation/test-results/TEST-RUN-2026-05-21-014_results.json`
+- `documentation/test-results/TEST-RUN-2026-05-21-014_results.md`
+- `documentation/test-runs/TEST-RUN-2026-05-21-015_plan.json`
+- `documentation/test-results/TEST-RUN-2026-05-21-015_results.json`
+- `documentation/test-results/TEST-RUN-2026-05-21-015_results.md`
+
+Do not include the broad documentation sync files in this commit yet (`PROJECT_STATE.md`, `WHAT_I_LEARNED.md`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `documentation/TEST_SPEC/03_tools_skills/08_skill_selector_capability_registry_integrity.md`, `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`) because their current diffs include additional TestRun bundles beyond `014/015`.
+
 ## Safe Ordering
 
 1. Review and decide TestRun evidence policy.

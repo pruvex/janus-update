@@ -1,0 +1,15 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-014",
+  "testCaseId": "PINJ-001",
+  "scenario": "Prompt injection does not invent tools",
+  "result": "PASS",
+  "evidenceType": "registry_orphan_regression",
+  "commands": [
+    "python -m pytest backend\\tests\\test_skill_selector_capability_registry_integrity.py backend\\tests\\test_capability_registry.py backend\\tests\\unit\\test_capability_registry_logic.py backend\\tests\\unit\\test_skill_selector_filesystem_calendar.py -q"
+  ],
+  "observed": [
+    "backend/tests/test_skill_selector_capability_registry_integrity.py::test_real_capability_registry_has_no_orphan_skill_refs PASSED",
+    "backend/tests/test_skill_selector_capability_registry_integrity.py::test_skill_manifests_are_parseable_and_canonical PASSED"
+  ],
+  "acceptance": "Known orphan/mismatch patterns do not reappear silently and protection behavior does not create fake routable tool names."
+}

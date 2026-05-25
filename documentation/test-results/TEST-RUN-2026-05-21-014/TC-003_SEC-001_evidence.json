@@ -1,0 +1,15 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-014",
+  "testCaseId": "TC-003/SEC-001",
+  "scenario": "Capability help answer and internal over-disclosure guard",
+  "result": "PASS",
+  "evidenceType": "help_overview_static_assertion",
+  "commands": [
+    "python -m pytest backend\\tests\\test_skill_selector_capability_registry_integrity.py backend\\tests\\test_capability_registry.py backend\\tests\\unit\\test_capability_registry_logic.py backend\\tests\\unit\\test_skill_selector_filesystem_calendar.py -q"
+  ],
+  "observed": [
+    "backend/tests/test_skill_selector_capability_registry_integrity.py::test_help_overview_uses_categories_not_raw_tool_dump PASSED",
+    "[HELP-SKILL] Handling query 'Was kannst du mit Dateien, Kalender und Recherche?...' with intent 'capability_overview'"
+  ],
+  "acceptance": "Capability help uses understandable product categories and avoids a raw exhaustive internal tool dump."
+}
