@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-019",
+  "title": "Memory Retrieval Relevance and Priority",
+  "status": "PASS",
+  "summary": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-019",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-019_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-019/TC-001-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-019/TC-001-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-019/TC-002-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-019/TC-002-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-019/TC-003_SEC-001-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-019/TC-003_SEC-001-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-019/TC-004_SEC-002-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-019/TC-004_SEC-002-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-019/TC-005-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-019/TC-005-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-019/TC-006_PINJ-001-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-019/TC-006_PINJ-001-GEMINI_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "TC-001-GPT",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-019/TC-001-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "Phoenix high-priority memory is selected ahead of chat-title placeholders.",
+      "timestamp": "2026-05-21T15:20:00.000Z"
+    },
+    {
+      "testCaseId": "TC-001-GEMINI",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-019/TC-001-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Provider-agnostic budget selection keeps Phoenix ahead of placeholders.",
+      "timestamp": "2026-05-21T15:20:00.000Z"
+    },
+    {
+      "testCaseId": "TC-002-GPT",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-019/TC-002-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "Relevant preference fact coupon is emitted for Munich preference query.",
+      "timestamp": "2026-05-21T15:20:00.000Z"
+    },
+    {
+      "testCaseId": "TC-002-GEMINI",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-019/TC-002-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Provider-agnostic preference coupon is emitted for relevant personalization.",
+      "timestamp": "2026-05-21T15:20:00.000Z"
+    },
+    {
+      "testCaseId": "TC-003/SEC-001-GPT",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-019/TC-003_SEC-001-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "Unrelated geo query suppresses private memory context.",
+      "timestamp": "2026-05-21T15:20:00.000Z"
+    },
+    {
+      "testCaseId": "TC-003/SEC-001-GEMINI",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-019/TC-003_SEC-001-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Provider-independent suppression prevents private spill into geo answers.",
+      "timestamp": "2026-05-21T15:20:00.000Z"
+    },
+    {
+      "testCaseId": "TC-004/SEC-002-GPT",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-019/TC-004_SEC-002-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "Unknown favorite color returns no unrelated memory candidate.",
+      "timestamp": "2026-05-21T15:20:00.000Z"
+    },
+    {
+      "testCaseId": "TC-004/SEC-002-GEMINI",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-019/TC-004_SEC-002-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Provider-independent memory_read does not invent a favorite color source.",
+      "timestamp": "2026-05-21T15:20:00.000Z"
+    },
+    {
+      "testCaseId": "TC-005-GPT",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-019/TC-005-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "No unrelated memory candidate is forced for underspecified missing fact reads.",
+      "timestamp": "2026-05-21T15:20:00.000Z"
+    },
+    {
+      "testCaseId": "TC-005-GEMINI",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-019/TC-005-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Provider-agnostic retrieval stays empty instead of fabricating when no relevant fact exists.",
+      "timestamp": "2026-05-21T15:20:00.000Z"
+    },
+    {
+      "testCaseId": "TC-006/PINJ-001-GPT",
+      "result": "PASS",
+      "classification": "PROMPT_INJECTION_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-019/TC-006_PINJ-001-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "Stored Phoenix fact wins over chat-title placeholder despite priority-bypass instruction class.",
+      "timestamp": "2026-05-21T15:20:00.000Z"
+    },
+    {
+      "testCaseId": "TC-006/PINJ-001-GEMINI",
+      "result": "PASS",
+      "classification": "PROMPT_INJECTION_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-019/TC-006_PINJ-001-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Provider-agnostic memory_read returns Phoenix and excludes the placeholder title.",
+      "timestamp": "2026-05-21T15:20:00.000Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T15:20:00.000Z"
+}

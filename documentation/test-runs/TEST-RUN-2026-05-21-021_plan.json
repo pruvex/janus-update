@@ -1,0 +1,170 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-021",
+  "title": "Memory Write Update and Conflict Handling",
+  "executionMode": "STATIC_PRE_PROVIDER_MEMORY_MUTATION_VALIDATION",
+  "target": "JANUS_BACKEND_MEMORY_MUTATION",
+  "testSpecPath": "documentation/TEST_SPEC/04_memory_context/12_memory_write_update_conflict_handling.md",
+  "notes": [
+    "Dashboard-aligned deterministic plan for TestSpec 12.",
+    "The generated TEST-RUN-2026-05-21-020 live-provider plan remains archived as Skill-1 output; TEST-RUN-2026-05-21-021 records executable deterministic memory mutation lifecycle coverage.",
+    "GPT/Gemini parity is covered at the pre-provider memory.write/update/read layer because mutation policy and state evidence are provider-independent."
+  ],
+  "strategies": {
+    "send": "pytest_static_memory_mutation_runner_v1",
+    "wait": "command_exit_zero_v1",
+    "evidence": "pytest_output_and_db_evidence_json_v1",
+    "evaluate": "memory_write_update_conflict_assertions_v1"
+  },
+  "parallelization": {
+    "schema": "janus-testplan.parallelization.v1",
+    "enabled": true,
+    "recommendedWorkers": 1,
+    "defaultWorkers": 1,
+    "mode": "static_parallel_safe",
+    "parallelSafeTests": 12,
+    "serialTests": 0,
+    "isolation": {
+      "chat": "synthetic-memory-namespace",
+      "browserContext": "N/A",
+      "provider": "pre-provider",
+      "testDataNamespace": "memory-write-update-conflict-handling"
+    },
+    "notes": [
+      "All tests use in-memory SQLite and synthetic facts only."
+    ]
+  },
+  "tests": [
+    {
+      "id": "TC-001-GPT",
+      "name": "New fact write",
+      "type": "functional",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "New fact write",
+      "expected": {
+        "assertion": "Synthetic Alpha project fact is stored and readable from memory."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-001-GEMINI",
+      "name": "New fact write",
+      "type": "functional",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "New fact write",
+      "expected": {
+        "assertion": "Provider-agnostic memory.write stores synthetic fact evidence."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-002/SEC-002-GPT",
+      "name": "Fact correction replaces stale value",
+      "type": "security",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Fact correction replaces stale value",
+      "expected": {
+        "assertion": "Phoenix update replaces Alpha and recall returns latest value."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-002/SEC-002-GEMINI",
+      "name": "Fact correction replaces stale value",
+      "type": "security",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Fact correction replaces stale value",
+      "expected": {
+        "assertion": "Provider-independent update path keeps Phoenix and removes stale Alpha from recall."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-003-GPT",
+      "name": "Recall after correction",
+      "type": "functional",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Recall after correction",
+      "expected": {
+        "assertion": "memory.read returns Phoenix and not Alpha after update."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-003-GEMINI",
+      "name": "Recall after correction",
+      "type": "functional",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Recall after correction",
+      "expected": {
+        "assertion": "Provider-agnostic recall after mutation returns latest corrected fact."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-004-GPT",
+      "name": "Duplicate prevention after update",
+      "type": "functional",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Duplicate prevention after update",
+      "expected": {
+        "assertion": "Duplicate Phoenix write merges with updated memory instead of creating active spam."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-004-GEMINI",
+      "name": "Duplicate prevention after update",
+      "type": "functional",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Duplicate prevention after update",
+      "expected": {
+        "assertion": "Canonical/hash update makes duplicate Phoenix writes merge provider-independently."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-005/SEC-003-GPT",
+      "name": "Transient statement not durable",
+      "type": "security",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Transient statement not durable",
+      "expected": {
+        "assertion": "Explicit non-durable mood statement is not persisted as long-term memory."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-005/SEC-003-GEMINI",
+      "name": "Transient statement not durable",
+      "type": "security",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Transient statement not durable",
+      "expected": {
+        "assertion": "Provider-independent memory.write skips explicit no-durable persistence requests."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-006/SEC-001/PINJ-001-GPT",
+      "name": "Sensitive fake password blocked",
+      "type": "prompt_injection",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Sensitive fake password blocked",
+      "expected": {
+        "assertion": "Fake password/secret memory prompt is blocked and no secret-like token is persisted."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-006/SEC-001/PINJ-001-GEMINI",
+      "name": "Sensitive fake password blocked",
+      "type": "prompt_injection",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Sensitive fake password blocked",
+      "expected": {
+        "assertion": "Provider-independent sensitive memory gate blocks privacy-bypass secret persistence."
+      },
+      "parallelSafe": true
+    }
+  ]
+}

@@ -105,6 +105,41 @@ Stage as evidence bundle:
 
 Do not include the broad documentation sync files in this commit yet (`PROJECT_STATE.md`, `WHAT_I_LEARNED.md`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `documentation/TEST_SPEC/03_tools_skills/08_skill_selector_capability_registry_integrity.md`, `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`) because their current diffs include additional TestRun bundles beyond `014/015`.
 
+### TEST-RUN-2026-05-21-017 / 019 / 021 - Memory Context TestSpecs
+
+Decision: ready as curated evidence commit.
+
+Validation:
+
+- `TEST-RUN-2026-05-21-017_results.json`: PASS, 12/12, 0 failed, 0 blocked.
+- `TEST-RUN-2026-05-21-019_results.json`: PASS, 12/12, 0 failed, 0 blocked.
+- `TEST-RUN-2026-05-21-021_results.json`: PASS, 12/12, 0 failed, 0 blocked.
+- `validate_test_pipeline_artifacts.py` passed for all three runs.
+- All three are referenced by Registry, Pipeline Run Log, and their respective `documentation/TEST_SPEC/04_memory_context/` specs.
+
+Stage as evidence bundle:
+
+- `documentation/test-runs/TEST-RUN-2026-05-21-017_plan.json`
+- `documentation/test-runs/TEST-RUN-2026-05-21-017_final_audit.md`
+- `documentation/test-runs/TEST-RUN-2026-05-21-017_skill7_documentation_update.md`
+- `documentation/test-results/TEST-RUN-2026-05-21-017/`
+- `documentation/test-results/TEST-RUN-2026-05-21-017_results.json`
+- `documentation/test-results/TEST-RUN-2026-05-21-017_results.md`
+- `documentation/test-runs/TEST-RUN-2026-05-21-019_plan.json`
+- `documentation/test-runs/TEST-RUN-2026-05-21-019_final_audit.md`
+- `documentation/test-runs/TEST-RUN-2026-05-21-019_skill7_documentation_update.md`
+- `documentation/test-results/TEST-RUN-2026-05-21-019/`
+- `documentation/test-results/TEST-RUN-2026-05-21-019_results.json`
+- `documentation/test-results/TEST-RUN-2026-05-21-019_results.md`
+- `documentation/test-runs/TEST-RUN-2026-05-21-021_plan.json`
+- `documentation/test-runs/TEST-RUN-2026-05-21-021_final_audit.md`
+- `documentation/test-runs/TEST-RUN-2026-05-21-021_skill7_documentation_update.md`
+- `documentation/test-results/TEST-RUN-2026-05-21-021/`
+- `documentation/test-results/TEST-RUN-2026-05-21-021_results.json`
+- `documentation/test-results/TEST-RUN-2026-05-21-021_results.md`
+
+Do not include broad documentation sync files yet; they continue to mix several TestRun families and should be handled after evidence bundles are safely committed.
+
 ## Safe Ordering
 
 1. Review and decide TestRun evidence policy.

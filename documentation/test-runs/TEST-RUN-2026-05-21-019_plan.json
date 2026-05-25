@@ -1,0 +1,170 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-019",
+  "title": "Memory Retrieval Relevance and Priority",
+  "executionMode": "STATIC_PRE_PROVIDER_MEMORY_RETRIEVAL_VALIDATION",
+  "target": "JANUS_BACKEND_MEMORY_RETRIEVAL",
+  "testSpecPath": "documentation/TEST_SPEC/04_memory_context/11_memory_retrieval_relevance_priority.md",
+  "notes": [
+    "Dashboard-aligned deterministic plan for TestSpec 11.",
+    "The generated TEST-RUN-2026-05-21-018 live-provider plan remains archived as Skill-1 output; TEST-RUN-2026-05-21-019 records deterministic executable memory retrieval and priority assertions.",
+    "GPT/Gemini parity is covered at the pre-provider retrieval, budget and memory_read layer because these facts are assembled before provider dispatch."
+  ],
+  "strategies": {
+    "send": "pytest_static_memory_runner_v1",
+    "wait": "command_exit_zero_v1",
+    "evidence": "pytest_output_and_evidence_json_v1",
+    "evaluate": "memory_retrieval_priority_assertions_v1"
+  },
+  "parallelization": {
+    "schema": "janus-testplan.parallelization.v1",
+    "enabled": true,
+    "recommendedWorkers": 1,
+    "defaultWorkers": 1,
+    "mode": "static_parallel_safe",
+    "parallelSafeTests": 12,
+    "serialTests": 0,
+    "isolation": {
+      "chat": "synthetic-memory-namespace",
+      "browserContext": "N/A",
+      "provider": "pre-provider",
+      "testDataNamespace": "memory-retrieval-relevance-priority"
+    },
+    "notes": [
+      "No real user memory is used; all evidence is synthetic and deterministic."
+    ]
+  },
+  "tests": [
+    {
+      "id": "TC-001-GPT",
+      "name": "High-priority project recall",
+      "type": "functional",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "High-priority project recall",
+      "expected": {
+        "assertion": "Phoenix high-priority memory is selected ahead of chat-title placeholders."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-001-GEMINI",
+      "name": "High-priority project recall",
+      "type": "functional",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "High-priority project recall",
+      "expected": {
+        "assertion": "Provider-agnostic budget selection keeps Phoenix ahead of placeholders."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-002-GPT",
+      "name": "Relevant preference use",
+      "type": "functional",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Relevant preference use",
+      "expected": {
+        "assertion": "Relevant preference fact coupon is emitted for Munich preference query."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-002-GEMINI",
+      "name": "Relevant preference use",
+      "type": "functional",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Relevant preference use",
+      "expected": {
+        "assertion": "Provider-agnostic preference coupon is emitted for relevant personalization."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-003/SEC-001-GPT",
+      "name": "Irrelevant private memory suppression",
+      "type": "security",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Irrelevant private memory suppression",
+      "expected": {
+        "assertion": "Unrelated geo query suppresses private memory context."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-003/SEC-001-GEMINI",
+      "name": "Irrelevant private memory suppression",
+      "type": "security",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Irrelevant private memory suppression",
+      "expected": {
+        "assertion": "Provider-independent suppression prevents private spill into geo answers."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-004/SEC-002-GPT",
+      "name": "Missing fact honesty",
+      "type": "security",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Missing fact honesty",
+      "expected": {
+        "assertion": "Unknown favorite color returns no unrelated memory candidate."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-004/SEC-002-GEMINI",
+      "name": "Missing fact honesty",
+      "type": "security",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Missing fact honesty",
+      "expected": {
+        "assertion": "Provider-independent memory_read does not invent a favorite color source."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-005-GPT",
+      "name": "Ambiguous memory reference support",
+      "type": "functional",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Ambiguous memory reference support",
+      "expected": {
+        "assertion": "No unrelated memory candidate is forced for underspecified missing fact reads."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-005-GEMINI",
+      "name": "Ambiguous memory reference support",
+      "type": "functional",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Ambiguous memory reference support",
+      "expected": {
+        "assertion": "Provider-agnostic retrieval stays empty instead of fabricating when no relevant fact exists."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-006/PINJ-001-GPT",
+      "name": "Priority over placeholder under injection",
+      "type": "prompt_injection",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Priority over placeholder under injection",
+      "expected": {
+        "assertion": "Stored Phoenix fact wins over chat-title placeholder despite priority-bypass instruction class."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-006/PINJ-001-GEMINI",
+      "name": "Priority over placeholder under injection",
+      "type": "prompt_injection",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Priority over placeholder under injection",
+      "expected": {
+        "assertion": "Provider-agnostic memory_read returns Phoenix and excludes the placeholder title."
+      },
+      "parallelSafe": true
+    }
+  ]
+}

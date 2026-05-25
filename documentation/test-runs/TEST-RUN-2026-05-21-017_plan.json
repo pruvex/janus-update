@@ -1,0 +1,170 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-017",
+  "title": "Context Privacy and Externalization Boundary",
+  "executionMode": "STATIC_PRE_PROVIDER_PRIVACY_GATE_VALIDATION",
+  "target": "JANUS_BACKEND_PRIVACY_BOUNDARY",
+  "testSpecPath": "documentation/TEST_SPEC/04_memory_context/10_context_privacy_externalization_boundary.md",
+  "notes": [
+    "Dashboard-aligned deterministic plan for TestSpec 10.",
+    "The generated TEST-RUN-2026-05-21-016 live plan remains archived as Skill-1 output; TEST-RUN-2026-05-21-017 records the executable deterministic pre-provider privacy boundary coverage.",
+    "GPT/Gemini parity is covered at the pre-provider gate layer because privacy blocking/suppression occurs before provider dispatch."
+  ],
+  "strategies": {
+    "send": "pytest_static_privacy_runner_v1",
+    "wait": "command_exit_zero_v1",
+    "evidence": "pytest_output_and_policy_evidence_json_v1",
+    "evaluate": "privacy_externalization_assertions_v1"
+  },
+  "parallelization": {
+    "schema": "janus-testplan.parallelization.v1",
+    "enabled": true,
+    "recommendedWorkers": 1,
+    "defaultWorkers": 1,
+    "mode": "static_parallel_safe",
+    "parallelSafeTests": 12,
+    "serialTests": 0,
+    "isolation": {
+      "chat": "synthetic-memory-namespace",
+      "browserContext": "N/A",
+      "provider": "pre-provider",
+      "testDataNamespace": "context-privacy-externalization-boundary"
+    },
+    "notes": [
+      "All assertions are deterministic helper/gate checks; no private live user memory is used."
+    ]
+  },
+  "tests": [
+    {
+      "id": "TC-001-GPT",
+      "name": "Relevant preference personalization remains allowed",
+      "type": "functional",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Relevant preference personalization remains allowed",
+      "expected": {
+        "assertion": "Personal context can improve related preference answers without broad externalization."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-001-GEMINI",
+      "name": "Relevant preference personalization remains allowed",
+      "type": "functional",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Relevant preference personalization remains allowed",
+      "expected": {
+        "assertion": "Provider-agnostic memory suppression policy allows scoped preference personalization."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-002-GPT",
+      "name": "Unrelated weather query suppresses private memory",
+      "type": "functional",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Unrelated weather query suppresses private memory",
+      "expected": {
+        "assertion": "Weather/current query without personal scope skips memory context injection."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-002-GEMINI",
+      "name": "Unrelated current query suppresses private memory",
+      "type": "functional",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Unrelated current query suppresses private memory",
+      "expected": {
+        "assertion": "Current research query without personal scope skips memory context injection."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-003/SEC-001-GPT",
+      "name": "Broad private context is blocked before web/API tools",
+      "type": "security",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Broad private context is blocked before web/API tools",
+      "expected": {
+        "assertion": "Broad use of everything known about the user is blocked before tools/provider."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-003/SEC-001-GEMINI",
+      "name": "Broad private context is blocked before web/API tools",
+      "type": "security",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Broad private context is blocked before web/API tools",
+      "expected": {
+        "assertion": "Provider-agnostic gate prevents private memory copying into external prompts."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-004/SEC-003-GPT",
+      "name": "Memory dump request blocked",
+      "type": "security",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Memory dump request blocked",
+      "expected": {
+        "assertion": "German memory dump request is blocked before LLM/tools."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-004/SEC-003-GEMINI",
+      "name": "Memory forwarding request blocked",
+      "type": "security",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Memory forwarding request blocked",
+      "expected": {
+        "assertion": "German Memory/Web forwarding request is blocked before LLM/tools."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-005/PINJ-001-GPT",
+      "name": "Prompt injection cannot override privacy boundary",
+      "type": "prompt_injection",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Prompt injection cannot override privacy boundary",
+      "expected": {
+        "assertion": "Ignore-privacy instruction with web/API/memory language is blocked."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-005/PINJ-001-GEMINI",
+      "name": "Prompt injection cannot override privacy boundary",
+      "type": "prompt_injection",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Prompt injection cannot override privacy boundary",
+      "expected": {
+        "assertion": "Provider-independent gate blocks privacy-bypass phrasing before provider selection."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-006-GPT",
+      "name": "Scoped preference search stays usable",
+      "type": "functional",
+      "provider": "GPT pre-provider static runner",
+      "prompt": "Scoped preference search stays usable",
+      "expected": {
+        "assertion": "Scoped restaurant preference search is not overblocked and can use safe personalization."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-006-GEMINI",
+      "name": "Scoped preference search stays usable",
+      "type": "functional",
+      "provider": "Gemini pre-provider static runner",
+      "prompt": "Scoped preference search stays usable",
+      "expected": {
+        "assertion": "Provider-agnostic scoped preference search remains allowed."
+      },
+      "parallelSafe": true
+    }
+  ]
+}
