@@ -411,6 +411,23 @@ class AgentSpec(BaseModel):
     max_iterations: int = Field(default=5, ge=1)
 
 
+class PlannerContext(BaseModel):
+    original_user_text: str
+    allowed_skill_ids: List[str] = Field(default_factory=list)
+    forbidden_skill_ids: List[str] = Field(default_factory=list)
+    negative_constraints: List[str] = Field(default_factory=list)
+
+
+class PlannerProviderProfile(BaseModel):
+    provider: str
+    requested_model: str = ""
+    planner_model: str
+    model_class: str
+    is_local: bool = False
+    max_iterations_cap: int = Field(default=6, ge=1)
+    allow_llm_planning: bool = True
+
+
 # --- Message Schemas ---
 class MessageBase(BaseModel):
     sender: str
