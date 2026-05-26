@@ -386,28 +386,20 @@ async def _batch_upload_worker() -> None:
                     else:
                         retry_count += 1
                         backoff_delay = min(2 ** retry_count, 60)  # Max 60 seconds
-                        logger.warning(
-                            "Upload failed (attempt %d/%d). Retrying in %d seconds...",
-                            retry_count + 1, MAX_RETRIES, backoff_delay
-                        )
-                        await asyncio.sleep(backoff_delay)
                         global _total_retries
                         _total_retries += 1
                     
                     if retry_count < MAX_RETRIES and not _shutdown_requested:
+                        logger.warning(
+                            "Upload failed (attempt %d/%d). Retrying in %d seconds...",
+                            retry_count,
+                            MAX_RETRIES,
+                            backoff_delay,
+                        )
                         await asyncio.sleep(backoff_delay)
                         backoff_delay *= 2  # Exponential backoff: 1s, 2s, 4s, 8s...
-                        
-                        # Re-collect events from queue for retry
-                        batch = []
-                        while len(batch) < BATCH_SIZE and not _log_queue.empty():
-                            try:
-                                event = _log_queue.get_nowait()
-                                batch.append(event)
-                            except asyncio.QueueEmpty:
-                                break
             
-            if retry_count >= MAX_RETRIES:
+            if batch and retry_count >= MAX_RETRIES:
                 logger.error("Max retries (%d) exceeded for batch of %d events", MAX_RETRIES, len(batch))
                 # Write to DLQ instead of keeping in queue forever
                 _write_to_dlq(batch, f"Max retries ({MAX_RETRIES}) exceeded")

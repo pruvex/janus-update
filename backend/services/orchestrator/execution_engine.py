@@ -226,6 +226,23 @@ def _build_dynamic_fallback_summary(
     if str(tool_name or "").strip().lower() == "system.weather":
         return "Der Wetterdienst ist aktuell nicht erreichbar. Bitte versuche die Wetteranfrage gleich noch einmal."
 
+    if exception is not None:
+        exception_text = f"{type(exception).__name__}: {exception}".casefold()
+        if (
+            str(provider or "").strip().lower() == "openai"
+            and (
+                "authenticationerror" in exception_text
+                or "invalid_api_key" in exception_text
+                or "incorrect api key" in exception_text
+                or "status': 401" in exception_text
+                or "status=401" in exception_text
+            )
+        ):
+            return (
+                "Der gespeicherte OpenAI-API-Key wird von OpenAI abgelehnt. "
+                "Bitte den OpenAI-Key in den Einstellungen neu eintragen und die App neu starten."
+            )
+
     # Baue dynamische Fehlermeldung mit spezifischen Details
     error_parts = []
     
