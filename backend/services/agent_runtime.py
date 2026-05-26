@@ -67,6 +67,8 @@ class AgentRuntime:
                         "trace_id": phase_trace_id,
                         "allowed_skill_ids": [skill_id],
                         "original_user_text": original_user_text or user_prompt,
+                        "provider": provider,
+                        "model": model,
                     },
                 )
                 response = await llm_gateway.reason_and_respond(
@@ -104,6 +106,8 @@ class AgentRuntime:
                         "trace_id": final_trace_id,
                         "allowed_skill_ids": requested_skills,
                         "original_user_text": original_user_text or user_prompt,
+                        "provider": provider,
+                        "model": model,
                     },
                 )
                 logger.info("TASK-QUEUE: Finale Synthese startet nach %s abgeschlossenen Aufgaben.", len(task_queue))
@@ -130,6 +134,8 @@ class AgentRuntime:
                     "trace_id": trace_id,
                     "allowed_skill_ids": [],
                     "original_user_text": original_user_text or user_prompt,
+                    "provider": provider,
+                    "model": model,
                 },
             )
             response = await llm_gateway.reason_and_respond(

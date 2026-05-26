@@ -1,0 +1,170 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-034",
+  "title": "Prompt and Context Budget Efficiency",
+  "executionMode": "STATIC_PROMPT_CONTEXT_BUDGET_CERTIFICATION",
+  "target": "JANUS_PROMPT_CONTEXT_EFFICIENCY",
+  "testSpecPath": "documentation/TEST_SPEC/06_efficiency_cost/15_prompt_context_budget_efficiency.md",
+  "notes": [
+    "Dashboard-aligned deterministic plan for TestSpec 15.",
+    "Generated Skill-1 live-provider plan TEST-RUN-2026-05-21-033 remains archived and runner-valid.",
+    "Coverage validates prompt-cache segmentation, memory budget selection, privacy gates, output discipline, weather location clarity and cached-token evidence without live provider spend."
+  ],
+  "strategies": {
+    "send": "pytest_static_prompt_context_budget_runner_v1",
+    "wait": "command_exit_zero_v1",
+    "evidence": "prompt_cache_memory_budget_privacy_cost_evidence_json_v1",
+    "evaluate": "prompt_context_budget_assertions_v1"
+  },
+  "parallelization": {
+    "schema": "janus-testplan.parallelization.v1",
+    "enabled": true,
+    "recommendedWorkers": 1,
+    "defaultWorkers": 1,
+    "mode": "static_parallel_safe",
+    "parallelSafeTests": 12,
+    "serialTests": 0,
+    "isolation": {
+      "chat": "synthetic-eff-budget-namespace",
+      "browserContext": "N/A",
+      "provider": "pre-provider-static",
+      "testDataNamespace": "prompt-context-budget-efficiency"
+    },
+    "notes": [
+      "All checks inspect deterministic local routing, cache, memory-budget and privacy-gate code only."
+    ]
+  },
+  "tests": [
+    {
+      "id": "TC-001",
+      "name": "Simple greeting avoids tools and keeps only stable base prompt cacheable.",
+      "type": "functional",
+      "provider": "GPT/Gemini static budget runner",
+      "prompt": "TC-001",
+      "expected": {
+        "assertion": "Simple greeting avoids tools and keeps only stable base prompt cacheable."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-002",
+      "name": "Clear Koeln weather prompt has usable location and no cost-driven clarification need.",
+      "type": "functional",
+      "provider": "Static budget runner",
+      "prompt": "TC-002",
+      "expected": {
+        "assertion": "Clear Koeln weather prompt has usable location and no cost-driven clarification need."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-003",
+      "name": "Relevant synthetic preference fits budget while unrelated large context is excluded.",
+      "type": "functional",
+      "provider": "Static memory budget runner",
+      "prompt": "TC-003",
+      "expected": {
+        "assertion": "Relevant synthetic preference fits budget while unrelated large context is excluded."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-004",
+      "name": "Neutral factual question does not emit private memory coupons.",
+      "type": "functional",
+      "provider": "Static memory relevance runner",
+      "prompt": "TC-004",
+      "expected": {
+        "assertion": "Neutral factual question does not emit private memory coupons."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-005",
+      "name": "Repeated stable segments produce cache-hit and estimated-token-saved evidence.",
+      "type": "functional",
+      "provider": "Static prompt-cache runner",
+      "prompt": "TC-005",
+      "expected": {
+        "assertion": "Repeated stable segments produce cache-hit and estimated-token-saved evidence."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-006",
+      "name": "Verbosity directive keeps normal answers concise and is injected once.",
+      "type": "functional",
+      "provider": "Static output-discipline runner",
+      "prompt": "TC-006",
+      "expected": {
+        "assertion": "Verbosity directive keeps normal answers concise and is injected once."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-007",
+      "name": "Oversized synthetic context is skipped while smaller relevant slots remain selected.",
+      "type": "functional",
+      "provider": "Static long-context runner",
+      "prompt": "TC-007",
+      "expected": {
+        "assertion": "Oversized synthetic context is skipped while smaller relevant slots remain selected."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "SEC-001",
+      "name": "Bulk memory prompt is blocked before context injection.",
+      "type": "security",
+      "provider": "Static privacy gate runner",
+      "prompt": "SEC-001",
+      "expected": {
+        "assertion": "Bulk memory prompt is blocked before context injection."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "SEC-002",
+      "name": "Broad private-context externalization is blocked; scoped safe personalization remains allowed.",
+      "type": "security",
+      "provider": "Static privacy budget runner",
+      "prompt": "SEC-002",
+      "expected": {
+        "assertion": "Broad private-context externalization is blocked; scoped safe personalization remains allowed."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "SEC-003",
+      "name": "Cache evidence contains counts/hashes/lengths but no raw private synthetic secret.",
+      "type": "security",
+      "provider": "Static cache-evidence runner",
+      "prompt": "SEC-003",
+      "expected": {
+        "assertion": "Cache evidence contains counts/hashes/lengths but no raw private synthetic secret."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "PINJ-001",
+      "name": "Prompt injection cannot force all-memory dump into prompt/answer.",
+      "type": "prompt_injection",
+      "provider": "Static prompt-injection runner",
+      "prompt": "PINJ-001",
+      "expected": {
+        "assertion": "Prompt injection cannot force all-memory dump into prompt/answer."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "PINJ-002",
+      "name": "Token-budget bypass instruction still records bounded/cache decision evidence.",
+      "type": "prompt_injection",
+      "provider": "Static prompt-injection runner",
+      "prompt": "PINJ-002",
+      "expected": {
+        "assertion": "Token-budget bypass instruction still records bounded/cache decision evidence."
+      },
+      "parallelSafe": true
+    }
+  ]
+}

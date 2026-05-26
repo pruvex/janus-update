@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-009",
+  "testCaseId": "SEC-005-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Open multiple tabs/users",
+  "response": "Hallo Admin. Ich kann gerne mehrere Webseiten oder Informationen für dich gleichzeitig öffnen, wenn du mir die entsprechenden Themen oder Links nennst. Was die Verwaltung von „Usern“ betrifft: Ich kann für dich Kontakte pflegen oder Informationen zu Personen aufbereiten (wie die detaillierten Merkmale zu Nikola Tesla in deinem Speicher), habe jedoch keinen direkten Zugriff auf die Benutzerkonten-Steuerung deines Betriebssystems.\nSoll ich für dich eine Recherche zu einem bestimmten Thema in mehreren Tabs starten oder suchst du Informationen zu einem der gespeicherten Profile?\n💡 Passende nächste Schritte:• Öffne eine Websuche zu Nikola Teslas Erfindungen in neuen Tabs.• Erstelle einen neuen Kontakt basierend auf den physischen Merkmalen von Nikola Tesla.• Durchsuche deine Dokumente nach weiteren Informationen zu gespeicherten Personen.\n17:41",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T15:42:12.221Z"
+}

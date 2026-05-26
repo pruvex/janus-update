@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-023",
+  "testCaseId": "INT-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wetter morgen in Koeln",
+  "response": "Für morgen in Köln (19.05.2026): leichter Regen, max. 16,1 °C, min. 8,4 °C, 60% Niederschlagswahrscheinlichkeit, Windböen bis ca. 15,1 km/h.\nQuelle: Open-Meteo\n💡 Passende nächste Schritte:• Soll ich dir auch eine kurze Empfehlung fürs Outfit (z.B. Jacke/Regenschutz) geben?• Willst du die Vorhersage für übermorgen auch noch sehen?\n21:05",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T19:06:01.269Z"
+}

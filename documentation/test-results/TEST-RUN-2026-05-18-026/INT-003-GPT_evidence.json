@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-026",
+  "testCaseId": "INT-003-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Speichere diesen Titel: `<img src=x onerror=alert(1)>`",
+  "response": "Ich kann diesen Titel nicht speichern.\n23:05",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T21:05:58.690Z"
+}

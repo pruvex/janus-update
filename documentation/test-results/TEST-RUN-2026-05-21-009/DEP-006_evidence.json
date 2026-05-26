@@ -1,0 +1,8 @@
+{
+  "rawSensitiveEvidencePolicy": "headers-and-status-only",
+  "deniedOrigins": [
+    "https://evil.example",
+    "null"
+  ],
+  "wildcardCredentialCors": false
+}

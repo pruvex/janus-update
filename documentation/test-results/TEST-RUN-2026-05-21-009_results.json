@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-009",
+  "title": "Janus Deployment Headers CORS CSP Cookie Scan",
+  "status": "PASS",
+  "summary": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-009",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-009_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-004_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-005_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-006_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-007_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-008_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-009_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-010_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "DEP-001",
+      "result": "PASS",
+      "classification": "LOOPBACK_TRANSPORT_EXCEPTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-001_evidence.json",
+      "durationMs": 26,
+      "notes": "",
+      "timestamp": "2026-05-21T12:38:06.640Z"
+    },
+    {
+      "testCaseId": "DEP-002",
+      "result": "PASS",
+      "classification": "HSTS_LOCAL_EXCEPTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-002_evidence.json",
+      "durationMs": 4,
+      "notes": "",
+      "timestamp": "2026-05-21T12:38:06.672Z"
+    },
+    {
+      "testCaseId": "DEP-003",
+      "result": "PASS",
+      "classification": "CSP_HEADER_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-003_evidence.json",
+      "durationMs": 16,
+      "notes": "",
+      "timestamp": "2026-05-21T12:38:06.706Z"
+    },
+    {
+      "testCaseId": "DEP-004",
+      "result": "PASS",
+      "classification": "FRAME_MIME_HEADERS_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-004_evidence.json",
+      "durationMs": 15,
+      "notes": "",
+      "timestamp": "2026-05-21T12:38:06.743Z"
+    },
+    {
+      "testCaseId": "DEP-005",
+      "result": "PASS",
+      "classification": "CORS_APPROVED_ORIGIN_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-005_evidence.json",
+      "durationMs": 8,
+      "notes": "",
+      "timestamp": "2026-05-21T12:38:06.769Z"
+    },
+    {
+      "testCaseId": "DEP-006",
+      "result": "PASS",
+      "classification": "CORS_HOSTILE_ORIGIN_DENIED_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-006_evidence.json",
+      "durationMs": 10,
+      "notes": "",
+      "timestamp": "2026-05-21T12:38:06.799Z"
+    },
+    {
+      "testCaseId": "DEP-007",
+      "result": "PASS",
+      "classification": "COOKIE_FLAGS_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-007_evidence.json",
+      "durationMs": 9,
+      "notes": "",
+      "timestamp": "2026-05-21T12:38:06.833Z"
+    },
+    {
+      "testCaseId": "DEP-008",
+      "result": "PASS",
+      "classification": "DEBUG_ARTIFACTS_NOT_PUBLIC_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-008_evidence.json",
+      "durationMs": 23,
+      "notes": "",
+      "timestamp": "2026-05-21T12:38:06.876Z"
+    },
+    {
+      "testCaseId": "DEP-009",
+      "result": "PASS",
+      "classification": "UPLOAD_DOWNLOAD_HEADERS_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-009_evidence.json",
+      "durationMs": 41,
+      "notes": "",
+      "timestamp": "2026-05-21T12:38:06.936Z"
+    },
+    {
+      "testCaseId": "DEP-010",
+      "result": "PASS",
+      "classification": "DEPLOYMENT_SURFACE_GATE_DECISION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-009/DEP-010_evidence.json",
+      "durationMs": 2,
+      "notes": "",
+      "timestamp": "2026-05-21T12:38:06.951Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T12:38:06.965Z"
+}

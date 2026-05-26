@@ -1,0 +1,4 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-private-data",
+  "exportDryRunDocumented": true
+}

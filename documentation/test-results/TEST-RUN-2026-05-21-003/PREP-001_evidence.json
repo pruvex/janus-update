@@ -1,0 +1,17 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-003",
+  "testCaseId": "PREP-001",
+  "result": "PASS",
+  "classification": "LIVE_REACHABILITY_PASS",
+  "evidence": {
+    "appUrl": "http://localhost:5173",
+    "apiBaseUrl": "http://localhost:8001",
+    "healthStatus": 200,
+    "healthKeys": [
+      "audio_ready",
+      "status"
+    ],
+    "frontendBodyVisible": true
+  },
+  "timestamp": "2026-05-20T23:53:14.182Z"
+}

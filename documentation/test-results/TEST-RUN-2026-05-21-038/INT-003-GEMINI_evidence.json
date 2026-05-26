@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "INT-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle API Preise",
+  "response": "Hallo Pruve! Ich habe die aktuellen API-Preise für verschiedene Anbieter (Stand Mai 2026) recherchiert. Hier ist die Übersicht:### 1. ZusammenfassungDie Preise für KI-Schnittstellen variieren stark je nach Modellleistung und Abrechnungsmodell. Während Übersetzungstools wie DeepL oft auf einer monatlichen Grundgebühr basieren, rechnen große Sprachmodell-Anbieter wie OpenAI primär nach verbrauchten Token ab. GPT-4o hat sich dabei als ein Standard für leistungsstarke Anwendungen etabliert.### 2. Liste der Fakten*   **OpenAI GPT-4o:**    *   Input: ca. 4,65 € pro 1 Million Token (laut Suchergebnis, Stand: Mai 2026).    *   Output: ca. 13,95 € pro 1 Million Token (laut Suchergebnis, Stand: Mai 2026).*   **DeepL (Übersetzung):**    *   **DeepL API Free:** 0 € für bis zu 500.000 Zeichen pro Monat (laut Suchergebnis).    *   **DeepL API Pro:** 5,49 € monatliche Grundgebühr zzgl. nutzungsbasierter Kosten (laut Suchergebnis).*   **Anthropic (Claude):**    *   **Claude Pro:** ca. 18,00 € zzgl. MwSt. pro Monat (laut Suchergebnis).    *   **Team-Plan:** ca. 28,00 € zzgl. MwSt. pro Nutzer/Monat (laut Suchergebnis).*   **Andere Anbieter:** Für Google Gemini, Mistral AI und AWS Bedrock variieren die Preise je nach Region und spezifischem Modelltyp; diese sind meist in USD angegeben und schwanken leicht durch den Wechselkurs.### 3. Quellen*   [dida.do - OpenAI Preisübersicht](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFsugiR8r7bVJbqwwElGjre7hSiBxLGeHfXM6w_xScVe7nYA1t3bq1TcdVvvANIwrts50TKdZIH4rEWuiHTQZFQzkNkHdyXA9VGPccgw_I0aO_2b8Mp9pkfs1sjsbHQCPdLLbX1UzMCL3MkqPNU0g3FzWCOWB-dj6yr09k9HmSU2MqZM1uMo0g4aXB6)*   [metronome.com - DeepL API Details](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH3jj7dx3KQcUgGzrFrx1I6YObYjrryYOjmF7ZhMy8TnYWslRODjFStwIoZvsq0ITIzVTsNwKZcweV_uUna4UisFp8CUGzhVQ3ZNF2QfcOJSBUMP2R0fDyaGLVr0QlsYfMOgxZXzFeLWA==)*   [anthropic.com - Claude Pricing](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEFfXi4BGhPeCE3lVJHdUHAu7T3TLdJEucCXXJYlK27lwcgRMiob4UvL_xVeTimpF04cIYa9g47RD3isFTF49OrTnkiplRn8esxIlkOn-2o1nuam0wxTGOBy_iP2yXINDpOCe0DdPBX)*   [saasworthy.com - Software API Vergleich](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEZLDbM7GN5TootPKCk-QeVYkuM-pAVIWyXEvKqjpxaSRreyK7IbkpQ6WmZe9kKgn8grXuEr1urxY75RwJEZabiGcWXpyTwhzkDVBt-Rq5Vx5UdprE6Q4c8Qhq8qOntLB-dWj1Tp06QePkcvnWIPo8=)💡 **Passende nächste Schritte:**• Möchtest du eine Kostenkalkulation für ein spezifisches Projekt (z.B. 10.000 Anfragen/Monat)?• Soll ich die Preise für Open-Source-Modelle via Hosting-Anbieter wie Together AI oder Groq recherchieren?• Suchst du nach einem Vergleich der technischen Limits (Rate Limits) dieser APIs?21:35",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:37:06.573Z"
+}

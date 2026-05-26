@@ -1,0 +1,13 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-005",
+  "testCaseId": "STG-003",
+  "result": "PASS",
+  "classification": "BACKEND_PACKAGE_ARTIFACT_PASS",
+  "evidence": {
+    "backendExe": "dist/janus_backend.exe",
+    "backendExePresent": true,
+    "backendExeSize": 622144328,
+    "envBundlingAppendFound": false
+  },
+  "timestamp": "2026-05-21T00:53:04.622Z"
+}

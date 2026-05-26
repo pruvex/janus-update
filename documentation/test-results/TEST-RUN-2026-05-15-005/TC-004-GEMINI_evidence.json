@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-005",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Gib mir 5 Beispiele, wobei du helfen kannst",
+  "response": "Hier sind 5 Beispiele, wie ich dich im Alltag unterstützen kann:\n\nKalender & Termine: Ich verwalte deinen Terminkalender. Ich kann neue Termine eintragen (z. B. „Trage morgen um 10 Uhr das Meeting ein“), bestehende Events finden oder dir eine Übersicht über deine freien Zeitfenster geben.\nDateiverwaltung: Ich habe Zugriff auf deine lokalen Laufwerke. Ich kann Dateien auf dem Desktop oder in Dokumenten-Ordnern finden, sie für dich sortieren, verschieben oder neue Ordnerstrukturen anlegen.\nWissen & Recherche: Ich beantworte Fragen basierend auf deinen hinterlegten Dokumenten (PDFs) oder führe eine Websuche durch, um dir aktuelle Fakten, Zusammenfassungen oder Wikipedia-Einträge zu liefern.\nPreisvergleich: Wenn du ein Produkt kaufen möchtest, vergleiche ich für dich die Preise bei verschiedenen Anbietern, prüfe die Verfügbarkeit und suche nach günstigen Refurbished-Optionen.\nKreative Erstellung: Ich generiere Bilder nach deinen Vorstellungen für Projekte oder Präsentationen und helfe dir beim Verfassen und Formatieren von Texten, E-Mails oder der Erstellung von PDF-Dokumenten.\n\n💡 Vorschlag:• Soll ich deinen Kalender für heute auf anstehende Termine prüfen?\n01:47",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-14T23:47:20.125Z"
+}

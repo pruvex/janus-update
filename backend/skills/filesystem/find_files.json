@@ -1,0 +1,34 @@
+{
+  "legacy_name": "find_files",
+  "skill": "filesystem.find_files",
+  "version": "1.0.0",
+  "sandbox_level": "full",
+  "latency_class": "slow",
+  "tags": [
+    "filesystem",
+    "search"
+  ],
+  "capabilities": [
+    "file_read",
+    "filesystem_discovery",
+    "file_search"
+  ],
+  "is_agent_ready": true,
+  "max_calls_per_turn": 2,
+  "depends_on": [],
+  "examples": [
+    {
+      "input": {"pattern": "*gundula*.pdf"},
+      "output": {"status": "ok", "data": {"matches": ["..."], "count": 1}}
+    },
+    {
+      "input": {"pattern": "*.docx", "root": "C:\\Users\\pruve\\Desktop", "max_results": 50},
+      "output": {"status": "ok", "data": {"matches": ["..."], "count": 12}}
+    },
+    {
+      "input": {"pattern": "gundula1.pdf", "search_all_drives": true},
+      "output": {"status": "ok", "data": {"matches": ["C:\\...\\a\\gundula1.pdf", "D:\\...\\b\\gundula1.pdf"], "count": 2}}
+    }
+  ],
+  "description": "Rekursive Dateisuche über ALLE freigegebenen Workspaces (oder einen spezifischen Startordner, oder ALLE lokalen Laufwerke wenn search_all_drives=true). NUTZE DIESES TOOL, wenn der User nach einer Datei fragt, ohne den genauen Ordner zu kennen (z.B. 'wo finde ich gundula1.pdf?'). Akzeptiert Glob-Muster ('*.pdf', '*gundula*') oder reine Dateinamen (wird automatisch als Substring-Suche '*name*' behandelt). WICHTIG: Bei Formulierungen wie 'überall', 'alle Kopien', 'Duplikate', 'auf dem ganzen Rechner' MUSST du search_all_drives=true setzen. Auch wenn ein vorheriger Aufruf nur 0 oder 1 Treffer lieferte und der User mehr Instanzen erwartet, rufe das Tool erneut mit search_all_drives=true auf. Das ist der richtige Skill für 'Datei finden'-Anfragen, NICHT list_directory (das ist nicht rekursiv). PARAMETER 'recursive' (default=True): Wenn False, wird nur das angegebene Verzeichnis durchsucht, nicht die Unterordner. Nutze recursive=False bei Formulierungen wie 'vom Desktop', 'in diesem Ordner', 'direkt in', um unnötige Unterordner-Scans zu vermeiden und Performance zu verbessern. WICHTIG: Wenn du Dateien gefunden hast und der User sie verschieben willst, MUSST du anschließend das Tool 'filesystem.move_files' aufrufen, um die gefundenen Dateien tatsächlich zu verschieben. Das Tool 'find_files' sucht nur Dateien, es verschiebt sie nicht."
+}

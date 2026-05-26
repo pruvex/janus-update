@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-028",
+  "testCaseId": "SEC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Inspect object IDs",
+  "response": "Hier ist eine Übersicht der gespeicherten dauerhaften Merkmale (Physis) zu Nikola Tesla, basierend auf den ersten Erwähnungen im System:\nPhysische Merkmale von Nikola Tesla:\n\nStatur: Sehr schlank und auffallend groß (erzählt am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“).\nGesicht: Schmales Gesicht mit markanten, ausgeprägten Wangenknochen (erzählt am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“).\nAugen: Tief liegende Augen (erzählt am 12. Mai 2026 im Chat „Nikola Tesla Personenbeschreibung“).\nHaare: Dunkles Haar, das stets akkurat gescheitelt getragen wird (erzählt am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“).\nStirn: Hohe Stirn (erzählt am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“).\n\nZusätzliche situative Accessoires wie Brillen oder Kopfhörer sind in den Aufzeichnungen nicht vermerkt.\n💡 Passende nächste Schritte:• Soll ich eine detaillierte Personenbeschreibung für einen Export erstellen?• Möchtest du ein visuelles Porträt von Nikola Tesla basierend auf diesen Merkmalen generieren?• Benötigst du Informationen zu seinem beruflichen Hintergrund aus der Biografie?\n23:50",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T21:51:18.177Z"
+}

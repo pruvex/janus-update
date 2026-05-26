@@ -1,0 +1,10 @@
+{
+  "testCaseId": "TC-001",
+  "result": "PASS",
+  "evidence": {
+    "prompt": "Brauche ich morgen in München einen Regenschirm?",
+    "responseText": "Ja—nimm morgen in München am besten einen Regenschirm mit. In München ist für morgen Regenniederschlag sehr wahrscheinlich (ca. 73% bis 80%).\n💡 Passende nächste Schritte:• Pack den Schirm am besten gleich in die Tasche (falls du rausgehst).• Wenn du willst: Sag mir deine ungefähre Uhrzeit/Route, dann schätze ich dir, wie sinnvoll er zwischenzeitlich ist.\n00:41"
+  },
+  "notes": "Weather intent detected and API called",
+  "timestamp": "2026-05-11T22:41:06.158Z"
+}

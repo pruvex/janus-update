@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "TC-004-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wie steht es aktuell um den FC Bayern?",
+  "response": "Aktuell (laut der angezeigten Bundesliga-Übersicht):- **Bundesliga-Tabelle:** FC Bayern München auf **Platz 1** (34 Spiele, **89 Punkte**).- **Zuletzt vermeldetes Ergebnis:** **Bayern München 5:1 1. FC Köln** (16.05.).Wenn du mir sagst, **ob du Bundesliga, Champions League oder DFB-Pokal** meinst, kann ich dir die **letzten Spiele + nächstes Spiel** dafür gezielt zusammenstellen.💡 Passende nächste Schritte:• Nächste 3 Spiele von Bayern (für den von dir gewünschten Wettbewerb) zusammenfassen  • Dir die wichtigsten Tabellenwerte (Heim/Auswärts, Torverhältnis, Punkteabstand) geben  21:23",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:23:30.906Z"
+}

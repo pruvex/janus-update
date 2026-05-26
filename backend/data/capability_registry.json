@@ -1,6 +1,31 @@
 {
   "version": "1.0.0",
-  "last_updated": "2026-04-18",
+  "last_updated": "2026-05-17",
+  "validation": {
+    "last_test_run": "TEST-RUN-2026-05-17-006",
+    "validation_date": "2026-05-17",
+    "validation_status": "PASS",
+    "diamond_confidence_score": 10,
+    "production_confidence": 100,
+    "test_spec": "documentation/TEST_SPEC/06_api_tool_routing_and_source_attribution.md",
+    "test_result": "documentation/test-results/TEST-RUN-2026-05-17-006_results.md",
+    "capability_validation": "api_tool_routing.source_attribution",
+    "capability_ux_view": "validated",
+    "previous_validations": [
+      {
+        "test_run": "TEST-RUN-2026-05-16-001",
+        "validation_date": "2026-05-16",
+        "test_spec": "documentation/TEST_SPEC/02_intent_routing_real_user_requests.md",
+        "test_result": "documentation/test-results/TEST-RUN-2026-05-16-001_results.md"
+      },
+      {
+        "test_run": "TEST-RUN-2026-05-15-008",
+        "validation_date": "2026-05-15",
+        "test_spec": "documentation/TEST_SPEC/01_capability_overview_and_help.md",
+        "test_result": "documentation/test-results/TEST-RUN-2026-05-15-008_results.md"
+      }
+    ]
+  },
   "provider_details": {
     "openai": {
       "display_name": {
@@ -285,7 +310,7 @@
             "de": "Dateien hochladen",
             "en": "Upload Files"
           },
-          "skill_refs": ["filesystem.upload"],
+          "skill_refs": [],
           "how_to": {
             "de": "Ziehe eine Datei per Drag & Drop in den Chat oder nutze das Upload-Symbol.",
             "en": "Drag and drop a file into the chat, or use the upload button."
@@ -301,7 +326,65 @@
           "how_to": {
             "de": "Sage: 'Finde die Datei Rechnung.pdf' oder 'Wo ist mein Dokument?'.",
             "en": "Say: 'Find the file invoice.pdf' or 'Where is my document?'"
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
+        },
+        {
+          "id": "filesystem.create_directory",
+          "label": {
+            "de": "Ordner erstellen",
+            "en": "Create Directory"
+          },
+          "skill_refs": ["filesystem.create_directory"],
+          "how_to": {
+            "de": "Sage: 'Erstelle einen Ordner Bilder auf dem Desktop'.",
+            "en": "Say: 'Create a folder Pictures on the Desktop'."
+          },
+          "status": "verified",
+          "confidence": 1.0
+        },
+        {
+          "id": "filesystem.move_files",
+          "label": {
+            "de": "Dateien verschieben",
+            "en": "Move Files"
+          },
+          "skill_refs": ["filesystem.move_files"],
+          "how_to": {
+            "de": "Sage: 'Verschiebe alle JPG-Dateien in den Bilder-Ordner'.",
+            "en": "Say: 'Move all JPG files to the Pictures folder'."
+          },
+          "status": "verified",
+          "confidence": 1.0
+        },
+        {
+          "id": "filesystem.find_files",
+          "label": {
+            "de": "Dateien finden",
+            "en": "Find Files"
+          },
+          "skill_refs": ["filesystem.find_files"],
+          "how_to": {
+            "de": "Sage: 'Finde alle PNG-Dateien auf dem Desktop'.",
+            "en": "Say: 'Find all PNG files on the Desktop'."
+          },
+          "status": "verified",
+          "confidence": 1.0
+        },
+        {
+          "id": "filesystem.list_directory",
+          "label": {
+            "de": "Ordnerinhalt anzeigen",
+            "en": "List Directory"
+          },
+          "skill_refs": ["filesystem.list_directory", "filesystem.list_workspaces"],
+          "how_to": {
+            "de": "Sage: 'Zeige den Inhalt des Desktops'.",
+            "en": "Say: 'Show the contents of the Desktop'."
+          },
+          "status": "verified",
+          "confidence": 1.0
         }
       ],
       "ui_locations": {
@@ -340,7 +423,9 @@
           "how_to": {
             "de": "Frage: 'Wie heißt der Hund von Max?' oder 'Was weiß ich über...?'",
             "en": "Ask: 'What is Max's dog called?' or 'What do I know about...?'"
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
         },
         {
           "id": "memory.save_person",
@@ -352,7 +437,9 @@
           "how_to": {
             "de": "Sag: 'Merke dir: Max hat einen Hund namens Bello.'",
             "en": "Say: 'Remember: Max has a dog named Bello.'"
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
         }
       ],
       "ui_locations": {
@@ -387,7 +474,7 @@
             "de": "Bilder analysieren",
             "en": "Analyze Images"
           },
-          "skill_refs": ["system.video_understanding"],
+          "skill_refs": ["video.understand"],
           "how_to": {
             "de": "Lade ein Bild hoch und frage: 'Was siehst du?' oder 'Beschreibe das Bild.'",
             "en": "Upload an image and ask: 'What do you see?' or 'Describe the image.'"
@@ -442,7 +529,9 @@
           "how_to": {
             "de": "Lade eine PDF hoch und frage: 'Was steht in diesem Dokument?' oder 'Zusammenfasse die wichtigsten Punkte.'",
             "en": "Upload a PDF and ask: 'What's in this document?' or 'Summarize the key points.'"
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
         },
         {
           "id": "knowledge.search_docs",
@@ -454,7 +543,23 @@
           "how_to": {
             "de": "Sage: 'Finde alle Dokumente über...' oder 'Wo steht etwas über...?'",
             "en": "Say: 'Find all documents about...' or 'Where does it mention...?'"
-          }
+          },
+          "status": "verified",
+          "confidence": 1.0
+        },
+        {
+          "id": "knowledge.code_search",
+          "label": {
+            "de": "Code-Suche",
+            "en": "Code Search"
+          },
+          "skill_refs": ["knowledge.code_search"],
+          "how_to": {
+            "de": "Sage: 'Wo ist die Funktion X definiert?' oder 'Zeige mir den Code für Y' oder 'Wie funktioniert die Klasse Z?'",
+            "en": "Say: 'Where is function X defined?' or 'Show me the code for Y' or 'How does class Z work?'"
+          },
+          "status": "verified",
+          "confidence": 1.0
         }
       ],
       "ui_locations": {
@@ -574,6 +679,337 @@
         }
       }
     },
+    "shopping": {
+      "display_name": {
+        "de": "Shopping & Preise",
+        "en": "Shopping & Prices"
+      },
+      "icon": "€",
+      "description": {
+        "de": "Live-Preisvergleiche und Kaufberatung mit verifizierbaren Quellen",
+        "en": "Live price comparisons and shopping assistance with verifiable sources"
+      },
+      "abilities": [
+        {
+          "id": "shopping.price_compare",
+          "label": {
+            "de": "Preise vergleichen",
+            "en": "Compare Prices"
+          },
+          "skill_refs": ["system.price_comparison"],
+          "how_to": {
+            "de": "Frage: 'Was kostet...' oder 'Finde den besten Preis für...'",
+            "en": "Ask: 'What does ... cost?' or 'Find the best price for...'"
+          }
+        }
+      ],
+      "ui_locations": {}
+    },
+    "geo_routing": {
+      "display_name": {
+        "de": "Orte & Routen",
+        "en": "Places & Routes"
+      },
+      "icon": "map",
+      "description": {
+        "de": "Länderinformationen, Wetter, Routen, Distanzen und lokale Geschäfte",
+        "en": "Country facts, weather, routes, distances, and local businesses"
+      },
+      "abilities": [
+        {
+          "id": "geo.country_info",
+          "label": {
+            "de": "Länderinformationen",
+            "en": "Country Info"
+          },
+          "skill_refs": ["system.country_info"],
+          "how_to": {
+            "de": "Frage: 'Wie viele Einwohner hat Japan?' oder 'Welche Währung hat Schweden?'",
+            "en": "Ask: 'How many people live in Japan?' or 'What currency does Sweden use?'"
+          }
+        },
+        {
+          "id": "geo.weather",
+          "label": {
+            "de": "Wetter abfragen",
+            "en": "Weather Lookup"
+          },
+          "skill_refs": ["system.weather"],
+          "how_to": {
+            "de": "Frage: 'Wie wird das Wetter in München?' oder 'Regnet es morgen in Berlin?'",
+            "en": "Ask: 'What's the weather in Munich?' or 'Will it rain tomorrow in Berlin?'"
+          }
+        },
+        {
+          "id": "geo.route",
+          "label": {
+            "de": "Route berechnen",
+            "en": "Calculate Route"
+          },
+          "skill_refs": ["system.routing"],
+          "how_to": {
+            "de": "Frage: 'Wie weit ist es von Tokio nach Kyoto?'",
+            "en": "Ask: 'How far is Tokyo from Kyoto?'"
+          }
+        },
+        {
+          "id": "geo.local_business",
+          "label": {
+            "de": "Lokale Geschäfte finden",
+            "en": "Find Local Businesses"
+          },
+          "skill_refs": ["system.local_business"],
+          "how_to": {
+            "de": "Frage: 'Finde eine Apotheke in meiner Nähe.'",
+            "en": "Ask: 'Find a pharmacy nearby.'"
+          }
+        }
+      ],
+      "ui_locations": {}
+    },
+    "web_research": {
+      "display_name": {
+        "de": "Web-Recherche",
+        "en": "Web Research"
+      },
+      "icon": "web",
+      "description": {
+        "de": "Aktuelle Webinformationen, Nachrichten und Wikipedia-Zusammenfassungen",
+        "en": "Current web information, news, and Wikipedia summaries"
+      },
+      "mandatory_skills": [
+        "system.wikipedia_summary",
+        "system.rss_news"
+      ],
+      "abilities": [
+        {
+          "id": "web.search",
+          "label": {
+            "de": "Websuche",
+            "en": "Web Search"
+          },
+          "skill_refs": ["system.websearch", "system.rss_news", "system.wikipedia_summary"],
+          "how_to": {
+            "de": "Frage nach aktuellen Fakten, Nachrichten oder Hintergrundwissen.",
+            "en": "Ask for current facts, news, or background information."
+          },
+          "status": "verified",
+          "confidence": 1.0
+        }
+      ],
+      "ui_locations": {}
+    },
+    "document_generation": {
+      "display_name": {
+        "de": "Dokument-Erstellung",
+        "en": "Document Generation"
+      },
+      "icon": "doc",
+      "description": {
+        "de": "PDFs und Dokumente aus explizit angefordertem Inhalt erzeugen",
+        "en": "Create PDFs and documents from explicitly requested content"
+      },
+      "abilities": [
+        {
+          "id": "document.create_pdf",
+          "label": {
+            "de": "PDF erstellen",
+            "en": "Create PDF"
+          },
+          "skill_refs": ["system.create_pdf"],
+          "how_to": {
+            "de": "Sag ausdrücklich: 'Erstelle ein PDF mit folgendem Inhalt...'",
+            "en": "Say explicitly: 'Create a PDF with this content...'"
+          }
+        }
+      ],
+      "ui_locations": {}
+    },
+    "productivity": {
+      "display_name": {
+        "de": "Aufgaben & Produktivität",
+        "en": "Tasks & Productivity"
+      },
+      "icon": "✅",
+      "description": {
+        "de": "Aufgaben erstellen, verwalten und verfolgen",
+        "en": "Create, manage, and track tasks"
+      },
+      "abilities": [
+        {
+          "id": "tasks.create",
+          "label": {
+            "de": "Aufgabe erstellen",
+            "en": "Create Task"
+          },
+          "skill_refs": [],
+          "how_to": {
+            "de": "Sag: 'Erstelle eine Aufgabe: Projektbericht bis Freitag fertigstellen.'",
+            "en": "Say: 'Create a task: Finish project report by Friday.'"
+          },
+          "status": "verified",
+          "confidence": 1.0
+        }
+      ],
+      "ui_locations": {}
+    },
+    "release_deployment": {
+      "display_name": {
+        "de": "Updates & Installation",
+        "en": "Updates & Installation"
+      },
+      "icon": "🚀",
+      "description": {
+        "de": "Janus installieren, aktualisieren und neue Versionen sicher beziehen",
+        "en": "Install, update, and safely receive new Janus versions"
+      },
+      "abilities": [
+        {
+          "id": "release.auto_update",
+          "label": {
+            "de": "Janus aktualisieren",
+            "en": "Update Janus"
+          },
+          "skill_refs": [],
+          "how_to": {
+            "de": "Wenn eine neue Version verfügbar ist, zeigt Janus dir einen Aktualisierungshinweis und führt dich durch die Installation.",
+            "en": "When a new version is available, Janus shows an update notice and guides you through the installation."
+          },
+          "status": "verified",
+          "confidence": 1.0
+        }
+      ],
+      "ui_locations": {}
+    },
+    "calendar": {
+      "display_name": {
+        "de": "Kalender & Termine",
+        "en": "Calendar & Appointments"
+      },
+      "icon": "📅",
+      "description": {
+        "de": "Kalendertermine lesen, erstellen, ändern und löschen (Google Calendar)",
+        "en": "Read, create, modify, and delete calendar events (Google Calendar)"
+      },
+      "mandatory_skills": [
+        "calendar.list_events",
+        "calendar.create_event",
+        "calendar.find_and_update_event"
+      ],
+      "abilities": [
+        {
+          "id": "calendar.read",
+          "label": {
+            "de": "Termine abrufen",
+            "en": "Fetch Events"
+          },
+          "skill_refs": ["calendar.list_events", "calendar.find_slots"],
+          "how_to": {
+            "de": "Frage: 'Was habe ich nächste Woche?' oder 'Welche Termine habe ich am Mittwoch?'",
+            "en": "Ask: 'What do I have next week?' or 'What appointments do I have on Wednesday?'"
+          },
+          "status": "verified",
+          "confidence": 1.0
+        },
+        {
+          "id": "calendar.create",
+          "label": {
+            "de": "Termin erstellen",
+            "en": "Create Event"
+          },
+          "skill_refs": ["calendar.create_event"],
+          "how_to": {
+            "de": "Sag: 'Erstelle einen Termin für Montag 10 Uhr: Arzt.' oder 'Füge Besprechung am Dienstag um 14:00 hinzu.'",
+            "en": "Say: 'Create an appointment for Monday at 10am: Doctor.' or 'Add meeting Tuesday at 2pm.'"
+          },
+          "status": "verified",
+          "confidence": 1.0
+        },
+        {
+          "id": "calendar.update",
+          "label": {
+            "de": "Termin ändern",
+            "en": "Update Event"
+          },
+          "skill_refs": ["calendar.update_event", "calendar.find_and_update_event", "calendar.update_event_description", "calendar.find_address_and_update_event"],
+          "how_to": {
+            "de": "Sag: 'Verschiebe meinen Arzttermin auf Mittwoch.' oder 'Aktualisiere die Adresse des Meetings.'",
+            "en": "Say: 'Move my doctor appointment to Wednesday.' or 'Update the meeting address.'"
+          },
+          "status": "verified",
+          "confidence": 1.0
+        },
+        {
+          "id": "calendar.delete",
+          "label": {
+            "de": "Termin löschen",
+            "en": "Delete Event"
+          },
+          "skill_refs": ["calendar.delete_event"],
+          "how_to": {
+            "de": "Sag: 'Lösche den Zahnarzttermin am Freitag.' oder 'Entferne das Meeting am Donnerstag.'",
+            "en": "Say: 'Delete the dentist appointment on Friday.' or 'Remove Thursday's meeting.'"
+          },
+          "status": "verified",
+          "confidence": 1.0
+        }
+      ],
+      "ui_locations": {
+        "calendar": {
+          "label": {
+            "de": "Kalender",
+            "en": "Calendar"
+          },
+          "action": {
+            "type": "open_module",
+            "payload": {
+              "module": "calendar"
+            }
+          }
+        }
+      }
+    },
+    "system": {
+      "display_name": {
+        "de": "Einstellungen & System",
+        "en": "Settings & System"
+      },
+      "icon": "⚙️",
+      "description": {
+        "de": "System-Status, Einstellungen und technische Informationen",
+        "en": "System status, settings and technical information"
+      },
+      "abilities": [
+        {
+          "id": "system.status",
+          "label": {
+            "de": "System-Status prüfen",
+            "en": "Check System Status"
+          },
+          "skill_refs": ["system.routing"],
+          "how_to": {
+            "de": "Frage: 'Wie ist dein System-Status?' oder 'Läuft alles stabil?'",
+            "en": "Ask: 'What is your system status?' or 'Is everything running smoothly?'"
+          },
+          "status": "verified",
+          "confidence": 1.0
+        }
+      ],
+      "ui_locations": {
+        "settings": {
+          "label": {
+            "de": "Einstellungen",
+            "en": "Settings"
+          },
+          "action": {
+            "type": "open_settings",
+            "payload": {
+              "section": "system"
+            }
+          }
+        }
+      }
+    },
     "video_system": {
       "display_name": {
         "de": "Video-System",
@@ -591,7 +1027,7 @@
             "de": "Videos abspielen",
             "en": "Play Videos"
           },
-          "skill_refs": ["system.video_search"],
+          "skill_refs": ["video.search"],
           "how_to": {
             "de": "Sage: 'Spiele das Video ab' oder 'Zeige mir den Film'. Der MCL Video-Player öffnet sich automatisch.",
             "en": "Say: 'Play the video' or 'Show me the movie'. The MCL Video Player opens automatically."
@@ -603,7 +1039,7 @@
             "de": "YouTube integrieren",
             "en": "YouTube Integration"
           },
-          "skill_refs": ["system.video_search"],
+          "skill_refs": ["video.search"],
           "how_to": {
             "de": "Sende einen YouTube-Link und ich werde das Video analysieren oder Transkripte erstellen.",
             "en": "Send a YouTube link and I'll analyze the video or create transcripts."
@@ -615,7 +1051,7 @@
             "de": "KI-Transkripte erstellen",
             "en": "AI Transcripts"
           },
-          "skill_refs": ["system.video_search"],
+          "skill_refs": ["video.search"],
           "how_to": {
             "de": "Lade ein Video hoch und frage: 'Transkribiere das Video' oder 'Fasse den Inhalt zusammen'.",
             "en": "Upload a video and ask: 'Transcribe the video' or 'Summarize the content'."
@@ -636,6 +1072,34 @@
           }
         }
       }
+    },
+    "security": {
+      "display_name": {
+        "de": "Sicherheit & Schutz",
+        "en": "Security & Protection"
+      },
+      "icon": "🛡️",
+      "description": {
+        "de": "Sicherheitsmechanismen und Schutz vor manipulativen Anweisungen",
+        "en": "Security mechanisms and protection against manipulative instructions"
+      },
+      "abilities": [
+        {
+          "id": "security.prompt_injection_defense",
+          "label": {
+            "de": "Sicherheits-Gate gegen Prompt Injections",
+            "en": "Security Gate against Prompt Injections"
+          },
+          "skill_refs": [],
+          "how_to": {
+            "de": "Janus verfügt über einen integrierten Schutz gegen manipulative Anweisungen (Injection Defense). Der Guard wird vor jedem Provider-Aufruf ausgeführt und erkennt Injection-Patterns (ignore, delete, override, bypass, forget). Bei erkannter Injection wird die gesamte Query-Verarbeitung blockiert. Provider-agnostisch (funktioniert für GPT und Gemini).",
+            "en": "Janus has built-in protection against manipulative instructions (Injection Defense). The guard runs before any provider request and detects injection patterns (ignore, delete, override, bypass, forget). When injection is detected, the entire query processing is blocked. Provider-agnostic (works for GPT and Gemini)."
+          },
+          "status": "verified",
+          "confidence": 0.95
+        }
+      ],
+      "ui_locations": {}
     }
   }
 }

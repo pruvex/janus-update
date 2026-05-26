@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "INT-006-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was weisst du aus meiner Erinnerung ueber Gold?",
+  "response": "Hallo Pruve, aus deiner Erinnerung habe ich folgende Informationen über Gold für dich zusammengestellt:*   **Interesse:** Du interessierst dich für aktuelle Goldpreise (festgehalten am 21. Mai 2026).*   **Preisangaben:**    *   Am **21. Mai 2026** wurde ein Goldpreis von **125,79 € pro Gramm** notiert.    *   Du hast vermerkt, dass diese Goldpreisangaben für **Deutschland** gelten.*   **Historie:** Eine weitere Feststellung des Goldpreises in deinen Notizen stammt vom **19. Mai 2026**.Zusätzlich zu deinen gespeicherten Erinnerungen liegt der aktuelle Marktpreis für Gold heute (21.05.2026) bei ca. **3.896,30 EUR pro Feinunze** (bzw. ca. 125,27 € pro Gramm).💡 **Passende nächste Schritte:**• Möchtest du, dass ich die Preisentwicklung der letzten Tage für dich in einer Tabelle zusammenfasse?• Soll ich den aktuellen Goldpreis in regelmäßigen Abständen für dich prüfen und speichern?• Suchst du nach weiteren Details zu Gold-Investitionen oder Handelsplätzen in Deutschland?21:40",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:41:14.931Z"
+}

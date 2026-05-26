@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "janus.test-plan.v1",
+  "testRunId": "TEST-RUN-2026-05-21-011",
+  "title": "Janus Ops Recovery Kill Switches",
+  "sourceSpec": "documentation/TEST_SPEC/02_security_safety/17_ops_recovery_kill_switches.md",
+  "status": "planned",
+  "scope": [
+    "Provider access kill switch",
+    "External/current-data tool kill switch",
+    "Write/destructive tool kill switch",
+    "Local beta user lock",
+    "Rotation dry-run",
+    "Telemetry recovery mode",
+    "Rollback/restore procedure",
+    "Beta export/delete dry-run",
+    "Incident reporting",
+    "Final gate decision"
+  ],
+  "evidencePolicy": "No raw secrets, cookies, bearer tokens, provider headers, file payloads or raw user content in evidence. JANUS_TELEMETRY_MODE=minimal disables remote telemetry upload during the dry-run.",
+  "updatedAt": "2026-05-21T13:20:00.000Z"
+}

@@ -1,0 +1,17 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-014",
+  "testCaseId": "TC-002",
+  "scenario": "Skill file schema check",
+  "result": "PASS",
+  "evidenceType": "skill_schema_validator",
+  "commands": [
+    "$env:PYTHONIOENCODING='utf-8'; python backend\\tools\\validate_skill_schemas.py",
+    "python -m pytest backend\\tests\\test_skill_selector_capability_registry_integrity.py backend\\tests\\test_capability_registry.py backend\\tests\\unit\\test_capability_registry_logic.py backend\\tests\\unit\\test_skill_selector_filesystem_calendar.py -q"
+  ],
+  "observed": [
+    "Found 54 skill JSON files",
+    "OK All validated skills passed!",
+    "backend/tests/test_skill_selector_capability_registry_integrity.py::test_skill_manifests_are_parseable_and_canonical PASSED"
+  ],
+  "acceptance": "Skill JSON files are parseable and expose stable canonical domain.action skill ids where applicable."
+}

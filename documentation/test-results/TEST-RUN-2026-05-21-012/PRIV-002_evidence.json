@@ -1,0 +1,9 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-private-data",
+  "providerClassesCovered": [
+    "llm",
+    "local",
+    "current-data",
+    "telemetry"
+  ]
+}

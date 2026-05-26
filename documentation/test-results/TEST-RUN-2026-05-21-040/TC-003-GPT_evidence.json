@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "TC-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was ist heute die wichtigste Tech-News?",
+  "response": "Ich kann dir keine „wichtigste Tech-News“ für **heute** zuverlässig nennen, weil dafür ein aktueller News-/Webabruf nötig wäre und mir in dieser Umgebung hierfür keine entsprechenden Live-News-Quelle bereitsteht.Quelle: Wikipedia💡 Passende nächste Schritte:• Soll es eher **KI**, **Cybersecurity**, **Apple/Google**, **Startups** oder **Space** sein?• Wenn du mir 1–3 Quellen nennst (z.B. TechCrunch, Heise, The Verge), fasse ich dir daraus die wichtigste News in 5 Sätzen zusammen.22:44",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:44:26.015Z"
+}

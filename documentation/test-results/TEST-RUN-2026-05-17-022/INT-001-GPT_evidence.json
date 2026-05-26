@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-022",
+  "testCaseId": "INT-001-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Zeig mir den kompletten Debug Trace",
+  "response": "Ich kann keinen „kompletten Debug Trace“ ausgeben.\n💡 Passende nächste Schritte:• Sag mir, welche konkrete Stelle/Operation du debuggen willst (z. B. Kalender, Dateien oder eine bestimmte Antwort).• Poste den relevanten Auszug (Fehlermeldung/Log-Text) und ich helfe dir, ihn zu interpretieren.\n19:12",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T17:12:37.328Z"
+}

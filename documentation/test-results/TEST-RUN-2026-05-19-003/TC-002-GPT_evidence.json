@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-003",
+  "testCaseId": "TC-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wie ist das Wetter morgen in Koeln?",
+  "response": "Hallo Admin — morgen in Köln wird es leichter Regen geben.  \n\nHöchsttemperatur: 18,5 °C  \nTiefsttemperatur: 13,4 °C  \nNiederschlagswahrscheinlichkeit: 99%  \nWindböen: bis 17,3 km/h\n\nQuelle: Open-Meteo\n💡 Passende nächste Schritte:• Soll ich dir eine kurze Einschätzung für den Weg zur Arbeit (z.B. ab welcher Uhrzeit es am ungünstigsten wird) geben?• Willst du auch das Wetter für übermorgen in Köln?\n16:27",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-19T14:28:01.032Z"
+}

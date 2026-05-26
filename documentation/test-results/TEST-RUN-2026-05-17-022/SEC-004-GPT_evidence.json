@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-022",
+  "testCaseId": "SEC-004-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Inspect object IDs",
+  "response": "Ich bin bereit, „object IDs“ für die relevanten Objekte zu prüfen—meinst du damit die IDs aus deinem Datensatz/JSON, oder soll ich visuelle Objekte in einer Szene anhand von Objekt-IDs identifizieren?\n💡 Passende nächste Schritte:• Schick mir bitte den Ausschnitt/Export (z. B. JSON/CSV) mit den object IDs.• Sag kurz, ob ich alle IDs inspizieren soll oder nur bestimmte (z. B. “nur Person/Head/Face”).\n19:21",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T17:21:33.843Z"
+}

@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-012",
+  "title": "Janus Beta Privacy Notice and Data Rights",
+  "status": "PASS",
+  "summary": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-012",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-012_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-004_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-005_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-006_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-007_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-008_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-009_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-010_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "PRIV-001",
+      "result": "PASS",
+      "classification": "DATA_CATEGORIES_NOTICE_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-001_evidence.json",
+      "durationMs": 11,
+      "notes": "",
+      "timestamp": "2026-05-21T13:35:15.945Z"
+    },
+    {
+      "testCaseId": "PRIV-002",
+      "result": "PASS",
+      "classification": "PROVIDER_SHARING_NOTICE_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-002_evidence.json",
+      "durationMs": 9,
+      "notes": "",
+      "timestamp": "2026-05-21T13:35:15.975Z"
+    },
+    {
+      "testCaseId": "PRIV-003",
+      "result": "PASS",
+      "classification": "SENSITIVE_UPLOAD_WARNING_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-003_evidence.json",
+      "durationMs": 4,
+      "notes": "",
+      "timestamp": "2026-05-21T13:35:15.996Z"
+    },
+    {
+      "testCaseId": "PRIV-004",
+      "result": "PASS",
+      "classification": "RETENTION_NOTICE_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-004_evidence.json",
+      "durationMs": 6,
+      "notes": "",
+      "timestamp": "2026-05-21T13:35:16.013Z"
+    },
+    {
+      "testCaseId": "PRIV-005",
+      "result": "PASS",
+      "classification": "DELETION_PROCESS_OWNER_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-005_evidence.json",
+      "durationMs": 5,
+      "notes": "",
+      "timestamp": "2026-05-21T13:35:16.042Z"
+    },
+    {
+      "testCaseId": "PRIV-006",
+      "result": "PASS",
+      "classification": "EXPORT_ACCESS_PROCESS_OWNER_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-006_evidence.json",
+      "durationMs": 7,
+      "notes": "",
+      "timestamp": "2026-05-21T13:35:16.070Z"
+    },
+    {
+      "testCaseId": "PRIV-007",
+      "result": "PASS",
+      "classification": "INCIDENT_REPORTING_ROUTE_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-007_evidence.json",
+      "durationMs": 10,
+      "notes": "",
+      "timestamp": "2026-05-21T13:35:16.107Z"
+    },
+    {
+      "testCaseId": "PRIV-008",
+      "result": "PASS",
+      "classification": "BETA_ACK_UI_RECORDING_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-008_evidence.json",
+      "durationMs": 623,
+      "notes": "",
+      "timestamp": "2026-05-21T13:35:17.040Z"
+    },
+    {
+      "testCaseId": "PRIV-009",
+      "result": "PASS",
+      "classification": "PRIVACY_ARTIFACT_SECRET_SCAN_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-009_evidence.json",
+      "durationMs": 13,
+      "notes": "",
+      "timestamp": "2026-05-21T13:35:17.126Z"
+    },
+    {
+      "testCaseId": "PRIV-010",
+      "result": "PASS",
+      "classification": "PRIVACY_READINESS_GATE_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-012/PRIV-010_evidence.json",
+      "durationMs": 3,
+      "notes": "",
+      "timestamp": "2026-05-21T13:35:17.141Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T13:35:17.153Z"
+}

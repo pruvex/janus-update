@@ -2,6 +2,7 @@
 import datetime
 import json
 import logging
+import re
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import and_, or_
@@ -33,9 +34,75 @@ logger = logging.getLogger("janus_backend")
 MAX_CORE_ALWAYS_TOKENS = 400
 MAX_CORE_QUERY_TOKENS = 600
 MAX_STM_TOKENS = 1500
-SIMILARITY_THRESHOLD = 0.35
+# BACKLOG-074 FIX: Increased similarity threshold from 0.35 to 0.50 to prevent context bleed
+# (SEC-003-GEMINI: "Simple factual prompt" was returning unrelated Tesla content)
+SIMILARITY_THRESHOLD = 0.50
+VECTOR_KNAPSACK_SIMILARITY_THRESHOLD = 0.70
 # Health-Injector: gleiche Schwelle wie Knapsack-Dubletten (memory_budget)
 _HEALTH_JACCARD_DEDUP_THRESHOLD = 0.70
+
+
+_EXTERNAL_CONTEXT_QUERY_RE = re.compile(
+    r"\b(?:wetter|weather|websearch|websuche|web\s*search|internet|online|"
+    r"recherchier(?:e|en)?|recherche|suche|search|aktuell(?:e|er|es|en)?|"
+    r"news|nachrichten|preis(?:e)?|preise|kurs(?:e)?|schedule|fahrplan|"
+    r"entfernung|distanz|route|routing|wie\s+weit|how\s+far)\b",
+    re.IGNORECASE,
+)
+_PERSONAL_SCOPE_HINT_RE = re.compile(
+    r"\b(?:meine?|mein|mir|mich|my|me|"
+    r"vorlieben|praeferenzen|präferenzen|preferences|"
+    r"interessen|interests|allerg(?:ie|ien)|unvertraeglichkeit(?:en)?|unverträglichkeit(?:en)?|"
+    r"gesundheit|health|familie|family|wohnort|adresse|budget|kalender|termine)\b",
+    re.IGNORECASE,
+)
+_STRICT_SHORT_FORMAT_REPLY_RE = re.compile(
+    r"\b(?:"
+    r"antworte\s+mit\s+genau|"
+    r"antworte\s+nur|"
+    r"gib\s+genau|"
+    r"nur\s+(?:zwei|2)\s+w(?:o|ö)rter|"
+    r"exactly\s+\d+\s+words?|"
+    r"reply\s+with\s+exactly"
+    r")\b",
+    re.IGNORECASE,
+)
+
+
+def _is_context_privacy_memory_suppressed_query(query: str) -> bool:
+    """Return True when memory would be irrelevant or unsafe for current/external queries."""
+    normalized = " ".join(str(query or "").strip().lower().split())
+    if not normalized:
+        return True
+    exact_suppressed = {
+        "simple factual prompt",
+        "factual prompt",
+        "erklaer kurz",
+        "erklär kurz",
+        "erkläre kurz",
+    }
+    if normalized in exact_suppressed:
+        return True
+    if _EXTERNAL_CONTEXT_QUERY_RE.search(normalized) and not _PERSONAL_SCOPE_HINT_RE.search(normalized):
+        return True
+    return False
+
+
+def _is_generic_memory_suppressed_query(query: str) -> bool:
+    """Return True for synthetic or underspecified prompts that must not receive memory context."""
+    normalized = " ".join(str(query or "").strip().lower().split())
+    if not normalized:
+        return True
+    if _STRICT_SHORT_FORMAT_REPLY_RE.search(normalized):
+        return True
+    exact_suppressed = {
+        "simple factual prompt",
+        "factual prompt",
+        "erklaer kurz",
+        "erklär kurz",
+        "erkläre kurz",
+    }
+    return _is_context_privacy_memory_suppressed_query(query)
 
 
 def _dedupe_health_memories_jaccard(memories: List[Any]) -> List[Any]:
@@ -306,6 +373,13 @@ def retrieve_diamond_slots(
     seen_ids: set = set()  # Deduplizierung
     now = datetime.datetime.now()
 
+    if _is_generic_memory_suppressed_query(query):
+        logger.info(
+            "[MEMORY SUPPRESS] Generic/underspecified query skips memory injection: %r",
+            str(query or "")[:80],
+        )
+        return slots
+
     # ═══════════════════════════════════════════════════════════════════════════
     # ISSUE 011: Query-Embedding EINMAL berechnen (wiederverwendbar)
     # ═══════════════════════════════════════════════════════════════════════════
@@ -493,7 +567,7 @@ def retrieve_diamond_slots(
     if global_candidates:
         candidate_embeddings = [parse_embedding(m.embedding_json) for m in global_candidates]
         indices = vector_service.find_most_similar_indices_precomputed(
-            query_embedding, candidate_embeddings, top_k=10, threshold=0.25
+            query_embedding, candidate_embeddings, top_k=10, threshold=VECTOR_KNAPSACK_SIMILARITY_THRESHOLD
         )
 
         for idx in indices:
@@ -518,7 +592,7 @@ def retrieve_diamond_slots(
     if active_candidates:
         emb_active = [parse_embedding(m.embedding_json) for m in active_candidates]
         idx_active = vector_service.find_most_similar_indices_precomputed(
-            query_embedding, emb_active, top_k=5, threshold=0.2
+            query_embedding, emb_active, top_k=5, threshold=VECTOR_KNAPSACK_SIMILARITY_THRESHOLD
         )
 
         for idx in idx_active:
@@ -541,7 +615,7 @@ def retrieve_diamond_slots(
     if stm_candidates:
         emb_stm = [parse_embedding(m.embedding_json) for m in stm_candidates]
         idx_stm = vector_service.find_most_similar_indices_precomputed(
-            query_embedding, emb_stm, top_k=10, threshold=similarity_threshold
+            query_embedding, emb_stm, top_k=10, threshold=max(similarity_threshold, VECTOR_KNAPSACK_SIMILARITY_THRESHOLD)
         )
 
         for idx in idx_stm:

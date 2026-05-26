@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-006",
+  "testCaseId": "TC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Brauche ich morgen in Muenchen einen Regenschirm?",
+  "response": "Ja, für morgen in München solltest du unbedingt einen Regenschirm einplanen. Die Vorhersage meldet Gewitter bei einer hohen Niederschlagswahrscheinlichkeit von 83 %. Die Temperaturen liegen zwischen 5,6 °C und 17,8 °C.\nQuelle: Open-Meteo\n💡 Passende nächste Schritte:• Soll ich die Wettervorhersage für die restliche Woche in München prüfen?• Suchst du nach Indoor-Aktivitäten in München für Regentage?• Möchtest du eine Route mit dem Auto oder ÖPNV planen, um trocken zu bleiben?\n14:42",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:42:29.699Z"
+}

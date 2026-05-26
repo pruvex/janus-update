@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-13-002",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Was gibt es Neues bei Heise?",
+  "response": "Hier sind die aktuellen Top-Meldungen von Heise:\n\nKI-Startup n8n: SAP investiert massiv, womit n8n zu einem der wertvollsten deutschen KI-Unternehmen aufsteigt.\nLinkedIn: Das Netzwerk verzeichnet steigende Umsätze, baut aber gleichzeitig Arbeitsplätze ab.\nmacOS vs. ChatGPT: Berichten zufolge stuft macOS die ChatGPT-App teilweise fälschlicherweise als Malware ein und verschiebt sie in den Papierkorb.\nChatbot-Haftung: Ein neues Urteil besagt, dass Firmen für die Aussagen ihrer Chatbots ha\n\n23:20",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "tool_call_detected_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-13T21:20:22.302Z"
+}

@@ -1,0 +1,12 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-005",
+  "testCaseId": "STG-007",
+  "result": "PASS",
+  "classification": "PACKAGED_DEV_SURFACE_GATED_PASS",
+  "evidence": {
+    "devToolsGuard": "process.env.NODE_ENV === 'development'",
+    "packagedOrigin": "http://127.0.0.1:8001/",
+    "devOrigin": "http://localhost:5173/"
+  },
+  "timestamp": "2026-05-21T00:53:04.761Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-004",
+  "testCaseId": "INT-002-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Welche Tools hast du?",
+  "response": "Kalender & Termine: Zeitpläne lesen (Termine/Slots), Termine erstellen/ändern/löschen.Dateien & Dokumente: Dateien/Ordner finden, lesen, erstellen/verschieben/löschen/umbenennen; PDF-/Dokumente in Wissensdatenbank öffnen/anzeigen/auslesen.Wissen & Recherche: Dokumente in Wissensdatenbank durchsuchen/auslesen; Webrecherche.Kontakt & Kommunikation: Kontakte anlegen/aktualisieren/löschen/anzeigen; E-Mail-Adressen finden und E-Mails senden.Wetter & Routing/Entfernung: Wetter abrufen; Routing/Wege-/Reisezeiten nutzen.Sonstiges: Bildgenerierung; Audio-\n01:21",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-14T23:21:07.031Z"
+}

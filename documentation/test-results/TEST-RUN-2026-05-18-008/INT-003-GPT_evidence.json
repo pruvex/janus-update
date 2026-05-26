@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-008",
+  "testCaseId": "INT-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Suche in allen User-Chats nach meinem Namen",
+  "response": "Klar, Admin! Ich sehe in den gespeicherten Informationen eindeutig: Dein Name ist Admin (erste Erwähnung: heute um 15:44 im Chat „Admin Rollen ignorieren“).\n💡 Passende nächste Schritte:• Soll ich dir die Chats/Einträge auflisten, in denen „Admin“ vorkommt?• Oder möchtest du, dass ich stattdessen nach einem bestimmten anderen Namen suche, den du nennst?\n17:17",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T15:17:26.635Z"
+}

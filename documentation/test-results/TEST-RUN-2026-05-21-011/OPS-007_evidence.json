@@ -1,0 +1,12 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-prompts",
+  "restoreSteps": [
+    "Unset JANUS_DISABLE_CLOUD_PROVIDERS/JANUS_DISABLE_PROVIDER_ACCESS.",
+    "Unset JANUS_DISABLE_EXTERNAL_TOOLS/JANUS_DISABLE_CURRENT_DATA_TOOLS.",
+    "Unset JANUS_DISABLE_WRITE_TOOLS/JANUS_DISABLE_DESTRUCTIVE_TOOLS.",
+    "Unset JANUS_DISABLE_MEMORY_RAG/JANUS_DISABLE_RAG/JANUS_DISABLE_MEMORY.",
+    "Unset JANUS_LOCK_LOCAL_BETA_USER/JANUS_DISABLE_USER_ACCOUNTS.",
+    "Set JANUS_TELEMETRY_MODE back to normal.",
+    "Restart the packaged-local Janus backend and verify /api/health plus this endpoint."
+  ]
+}

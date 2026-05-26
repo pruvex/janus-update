@@ -1,0 +1,12 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-007",
+  "testCaseId": "SECROT-009",
+  "result": "PASS",
+  "classification": "EMERGENCY_ROTATION_RUNBOOK_PASS",
+  "evidence": {
+    "runbook": "documentation/test-runs/TEST-RUN-2026-05-21-007_secret_rotation_runbook.md",
+    "dryRunOnly": true,
+    "rawSecretsRequiredInRunbook": false
+  },
+  "timestamp": "2026-05-21T12:15:56.897Z"
+}

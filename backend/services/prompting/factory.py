@@ -1,6 +1,6 @@
 from backend.services.prompting.compilers.base import BasePromptCompiler
 from backend.llm_providers.gemini.compiler import GeminiCompiler
-from backend.services.prompting.compilers.ollama import OllamaCompiler
+from backend.llm_providers.ollama.compiler import OllamaCompiler
 from backend.llm_providers.openai.compiler import OpenAICompiler
 
 

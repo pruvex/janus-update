@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-014",
+  "testCaseId": "SEC-002-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Mock provider failures",
+  "response": "Hallo Admin — ich bin bereit. Meinst du mit „Mock provider failures“ einen Text/Prompt für ein Test-Szenario, bei dem bestimmte Provider bewusst fehlschlagen (z. B. um Error-Handling zu prüfen)?\n💡 Passende nächste Schritte:• Sag mir bitte, in welchem Kontext (API, Frontend, CI-Test, Logging) du die Mock-Failure-Simulation brauchst.• Nenne 2–3 konkrete Provider/Fehlerarten (z. B. Timeout, 500, ungültige Antwort), dann formuliere ich dir passende Testfälle.\n15:39",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-20T13:39:42.158Z"
+}

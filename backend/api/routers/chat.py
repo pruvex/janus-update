@@ -3,6 +3,8 @@ import os
 import traceback
 import json
 import asyncio
+import time
+import uuid
 from typing import List, Optional
 
 from backend.data import crud, schemas
@@ -21,6 +23,23 @@ from tenacity import RetryError
 
 router = APIRouter()
 logger = logging.getLogger("janus_backend")
+
+
+def _emit_stream_audit(event: str, payload: dict) -> None:
+    """Structured stream audit marker for parallel-debug analysis."""
+    try:
+        blob = {"event": event, **payload}
+        logger.info("STREAM_AUDIT %s", json.dumps(blob, ensure_ascii=False, default=str))
+    except Exception:
+        logger.warning("STREAM_AUDIT_EMIT_FAILED event=%s", event, exc_info=True)
+
+
+def _emit_token_audit(payload: dict) -> None:
+    """Structured token/cost marker bound to one stream request."""
+    try:
+        logger.info("TOKEN_AUDIT %s", json.dumps(payload, ensure_ascii=False, default=str))
+    except Exception:
+        logger.warning("TOKEN_AUDIT_EMIT_FAILED", exc_info=True)
 
 
 def _stream_event_to_frontend_sse_line(ev: StreamEvent) -> Optional[str]:
@@ -89,7 +108,38 @@ def _stream_event_to_frontend_sse_line(ev: StreamEvent) -> Optional[str]:
             msg = str(ev.metadata.get("message") or "stream error")
         payload = {"type": "error", "message": msg}
         return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
-    # tool_start / tool_end / provider finish / done: omit for legacy UI (or use StreamEvent.to_sse() in a debug client)
+    if t == "tool_result":
+        # 💎 PATH-SENTINEL: Propagate permission_required (and future tool events) to UI
+        blob = ev.content if isinstance(ev.content, dict) else {}
+        result = blob.get("result") if isinstance(blob, dict) else None
+        payload = {"type": "tool_result", "result": result}
+        if isinstance(ev.metadata, dict):
+            payload["name"] = ev.metadata.get("name")
+            payload["tool_call_id"] = ev.metadata.get("tool_call_id")
+        return f"data: {json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
+    if t == "status_update":
+        # 💎 CU-4: Status-Update für UI-Feedback bei langen Anfragen
+        blob = ev.content if isinstance(ev.content, dict) else {}
+        payload = {"type": "status_update", "status": blob.get("status")}
+        return f"data: {json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
+    if t == "tool_end":
+        # BACKLOG-031: surface successful tool executions to the SSE stream so the
+        # Playwright runner (and any future UI tool indicator) can observe which
+        # tool was triggered. We map tool_end -> tool_result with result=None so
+        # the frontend's existing permission_required handler does not fire on
+        # this telemetry frame (it explicitly requires result.status === 'permission_required').
+        md = ev.metadata if isinstance(ev.metadata, dict) else {}
+        name = md.get("name")
+        if not name:
+            return None
+        payload = {
+            "type": "tool_result",
+            "result": None,
+            "name": name,
+            "tool_call_id": md.get("id") or md.get("tool_call_id"),
+        }
+        return f"data: {json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
+    # tool_start / provider finish / done: omit for legacy UI (or use StreamEvent.to_sse() in a debug client)
     return None
 
 
@@ -185,6 +235,29 @@ async def update_chat_title(
     return {"message": "Chat title updated successfully"}
 
 
+@router.put("/chats/{chat_id}/llm", response_model=schemas.ChatResponse)
+async def update_chat_header_llm(
+    chat_id: int,
+    llm_update: schemas.ChatHeaderLlmUpdate,
+    db: Session = Depends(get_db),
+):
+    payload = llm_update.model_dump()
+    provider = (
+        payload["provider"]
+        if "provider" in llm_update.model_fields_set
+        else crud.CHAT_UPDATE_UNSET
+    )
+    model = (
+        payload["model"]
+        if "model" in llm_update.model_fields_set
+        else crud.CHAT_UPDATE_UNSET
+    )
+    chat = crud.update_chat_header_llm(db, chat_id, provider, model)
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    return chat
+
+
 @router.put("/chats/{chat_id}/archive")
 async def toggle_chat_archive(chat_id: int, db: Session = Depends(get_db)):
     chat = crud.toggle_archive_chat(db, chat_id)
@@ -214,26 +287,118 @@ async def chat_stream(
     die Finalize-Pipeline nutzt aktuell keine FastAPI-BackgroundTasks (Fakten: ``asyncio.create_task``).
     """
 
+    request_id = str(uuid.uuid4())
+    started_at = time.time()
+    chat_id = request.chat_id
+    provider = str(request.provider or "").strip().lower() or None
+    model = str(request.model or "").strip() or None
+    window_id = (
+        starlette_request.headers.get("x-janus-window-id")
+        or starlette_request.headers.get("x-window-id")
+        or None
+    )
+    client_host = starlette_request.client.host if starlette_request.client else None
+    stream_status = "ok"
+    stream_error = None
+    usage_event_index = 0
+    cumulative_input_tokens = 0
+    cumulative_output_tokens = 0
+    cumulative_total_tokens = 0
+    cumulative_total_cost = 0.0
+
+    _emit_stream_audit(
+        "stream_start",
+        {
+            "request_id": request_id,
+            "chat_id": chat_id,
+            "window_id": window_id,
+            "provider": provider,
+            "model": model,
+            "client_host": client_host,
+            "started_at_epoch_ms": int(started_at * 1000),
+        },
+    )
+
     async def event_generator():
+        nonlocal stream_status, stream_error, usage_event_index, cumulative_input_tokens
+        nonlocal cumulative_output_tokens, cumulative_total_tokens, cumulative_total_cost
         try:
             async for ev in orchestrator.handle_chat_request_stream(request, background_tasks):
                 if await starlette_request.is_disconnected():
+                    stream_status = "client_disconnected"
                     logger.info("Client disconnected during stream (orchestrator)")
                     return
+                if ev.type == "usage" and isinstance(ev.content, dict):
+                    usage_event_index += 1
+                    u = ev.content.get("usage") or {}
+                    c = ev.content.get("cost") or {}
+                    in_tok = int(u.get("input_tokens") or u.get("prompt_tokens") or 0)
+                    out_tok = int(u.get("output_tokens") or u.get("completion_tokens") or 0)
+                    total_tok = int(u.get("total_tokens") or (in_tok + out_tok))
+                    cached_tok = int(u.get("cached_tokens") or u.get("prompt_tokens_cached") or 0)
+                    total_cost = float(c.get("total_cost") or 0.0)
+                    cumulative_input_tokens += in_tok
+                    cumulative_output_tokens += out_tok
+                    cumulative_total_tokens += total_tok
+                    cumulative_total_cost += total_cost
+                    _emit_token_audit(
+                        {
+                            "request_id": request_id,
+                            "chat_id": chat_id,
+                            "window_id": window_id,
+                            "provider": provider,
+                            "model": model,
+                            "usage_event_index": usage_event_index,
+                            "input_tokens": in_tok,
+                            "output_tokens": out_tok,
+                            "total_tokens": total_tok,
+                            "cached_tokens": cached_tok,
+                            "total_cost_eur": total_cost,
+                            "cum_input_tokens": cumulative_input_tokens,
+                            "cum_output_tokens": cumulative_output_tokens,
+                            "cum_total_tokens": cumulative_total_tokens,
+                            "cum_total_cost_eur": cumulative_total_cost,
+                        }
+                    )
                 line = _stream_event_to_frontend_sse_line(ev)
                 if line:
                     yield line
             if await starlette_request.is_disconnected():
+                stream_status = "client_disconnected"
                 logger.info("Client disconnected before done signal")
                 return
             yield f"data: {json.dumps({'type': 'done'})}\n\n"
         except asyncio.CancelledError:
+            stream_status = "cancelled"
             logger.info("Stream generator cancelled (client disconnected)")
             raise
         except Exception as e:
+            stream_status = "error"
+            stream_error = str(e)
             logger.error("Error in chat stream: %s", e, exc_info=True)
             err = {"type": "error", "message": str(e)}
             yield f"data: {json.dumps(err)}\n\n"
+        finally:
+            ended_at = time.time()
+            _emit_stream_audit(
+                "stream_end",
+                {
+                    "request_id": request_id,
+                    "chat_id": chat_id,
+                    "window_id": window_id,
+                    "provider": provider,
+                    "model": model,
+                    "status": stream_status,
+                    "error": stream_error,
+                    "ended_at_epoch_ms": int(ended_at * 1000),
+                    "duration_ms": int((ended_at - started_at) * 1000),
+                    "usage_events": usage_event_index,
+                    "cum_input_tokens": cumulative_input_tokens,
+                    "cum_output_tokens": cumulative_output_tokens,
+                    "cum_total_tokens": cumulative_total_tokens,
+                    "cum_total_cost_eur": round(cumulative_total_cost, 8),
+                },
+            )
 
     return StreamingResponse(
         event_generator(),

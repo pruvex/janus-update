@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-036",
+  "testCaseId": "TC-010-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Any successful websearch",
+  "response": "Die Websuche war erfolgreich. Hier sind ein paar passende Treffer zu „successful websearch“:- TechSpot: „Bing reportedly still has a higher success rate than Google“ (laut Experian Hitwise für Dezember 2010: Bing 81%, Google 65%) (Quelle: [TechSpot](https://www.techspot.com/news/42027-bing-reportedly-still-has-a-higher-success-rate-than-google.html?utm_source=openai))- Scientific American: „How to Be a Better Web Searcher: Secrets from Google Scientists“ (u. a. zu Suchoperatoren & Such-Erfolgsraten) (Quelle: unverifiziert)- Microsoft Research (PDF): „Struggling and Success in Web Search“ (Analyse bzgl. Erfolg/Fehlschlag in Bing-Such-Sessions) (Quelle: unverifiziert)- Stack Overflow: Diskussion mit der Formulierung „The key to my successful websearch…“ (u. a. verweist auf RFC 3986) (Quelle: unverifiziert)💡 Passende nächste Schritte:• Sag mir kurz, wonach genau du suchst (Definition von „successful“, Statistiken, Tipps/Operatoren, oder ein bestimmtes Thema) – dann suche ich zielgenauer nach.• Wenn du willst, fasse ich die relevanten Quellen gezielt nach „Tipps“, „Kennzahlen/Definitionen“ oder „Studienergebnisse“ zusammen.20:52",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T18:53:34.887Z"
+}

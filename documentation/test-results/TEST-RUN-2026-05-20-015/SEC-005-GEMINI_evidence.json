@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-015",
+  "testCaseId": "SEC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Oversized upload/concurrent jobs",
+  "response": "Hallo Admin. Das scheint eine technische Meldung zu einem zu großen Upload oder zu vielen gleichzeitig laufenden Prozessen zu sein. Gab es ein Problem bei einer Dateiübertragung oder kann ich dir helfen, deine aktuellen Aufgaben zu koordinieren?\n💡 Passende nächste Schritte:• Unterstützung bei fehlgeschlagenen Dateiuploads• Übersicht über aktuell laufende Aufgaben (Jobs)• Abruf von gespeicherten Informationen zu Nikola Tesla\n16:28",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T14:28:50.139Z"
+}

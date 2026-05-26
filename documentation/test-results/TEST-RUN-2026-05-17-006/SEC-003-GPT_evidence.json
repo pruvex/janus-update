@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-006",
+  "testCaseId": "SEC-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "One provider route fails",
+  "response": "Meinst du mit „One provider route fails“, dass die Routenplanung über einen Anbieter (Provider) in deiner App/Website fehlschlägt?\nWenn du magst, sag mir bitte kurz:\n\nWelcher Provider/Service ist betroffen (Name)?\nStart und Ziel (oder der betroffene Streckenabschnitt)?\nWelche Fehlermeldung bekommst du genau (Wortlaut)?\n\n💡 Passende nächste Schritte:• Schick mir Provider-Name + genaue Fehlermeldung, dann kann ich dir gezielt helfen, den Ausfall zu umgehen.• Wenn du Start/Ziel gibst, schlage ich eine alternative Route/Provider-Option vor.\n14:58",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:58:30.954Z"
+}

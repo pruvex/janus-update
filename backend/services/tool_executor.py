@@ -4,15 +4,19 @@ import inspect
 import json
 import logging
 import os
+import pathlib
 import re
+import threading
 import time
 import uuid
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from backend.data.models import SkillTelemetry
 from backend.data.schemas import SkillResponse
 from backend.data.schemas_tools import ToolResultV1
+from backend.services.ops_kill_switches import tool_access_decision
 from backend.services.policy_engine import PolicyEngine
 from backend.services.skill_router import SkillNotFoundError, skill_router
 from backend.services.tool_argument_sanitizer import sanitize_tool_arguments
@@ -22,6 +26,7 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from backend.tools.tool_contract_v1 import tool_err_v1, tool_ok_v1
+from backend.services.logging.logger_core import log_event, LogEventCreate
 
 logger = logging.getLogger("janus_backend")
 
@@ -105,13 +110,298 @@ async def list_knowledge_documents(db: Session) -> ToolResultV1:
         return tool_err_v1("OPERATION_FAILED", str(e), tags=tags, started_at=started)
 
 
-async def get_full_document_text(filename: str, db: Session) -> ToolResultV1:
-    """Liefert den kompletten Text einer Datei, ohne die Chroma-Kürzung."""
+async def _read_file_fulltext(
+    file_path: str,
+    started: float,
+    tags: List[str],
+) -> Optional[ToolResultV1]:
+    """Read full text from a file on disk (PDF via PyMuPDF/pypdf, else UTF-8 text)."""
+    ext = os.path.splitext(file_path)[1].lower()
+    filename_only = os.path.basename(file_path)
+
+    def _extract() -> Optional[str]:
+        try:
+            if ext == ".pdf":
+                try:
+                    import fitz  # PyMuPDF
+                    doc_pdf = fitz.open(file_path)
+                    text = "\n".join((page.get_text() or "") for page in doc_pdf)
+                    doc_pdf.close()
+                    return text.strip()
+                except Exception:
+                    from pypdf import PdfReader
+                    reader = PdfReader(file_path)
+                    return "\n".join((p.extract_text() or "") for p in reader.pages).strip()
+            elif ext == ".docx":
+                try:
+                    import docx  # python-docx
+                    d = docx.Document(file_path)
+                    return "\n".join(p.text for p in d.paragraphs).strip()
+                except Exception as exc:
+                    logger.warning("DOCX read failed for %s: %s", file_path, exc)
+                    return None
+            else:
+                with open(file_path, "r", encoding="utf-8", errors="replace") as fh:
+                    return fh.read().strip()
+        except Exception as exc:
+            logger.warning("File read failed for %s: %s", file_path, exc)
+            return None
+
+    content = await asyncio.to_thread(_extract)
+    if not content:
+        return None
+
+    # Inject source header directly into content to make it inseparable for LLMs
+    source_header = f"[DOKUMENT-QUELLE: {file_path}]"
+    content = f"{source_header}\n\n{content}"
+
+    return tool_ok_v1(
+        {
+            "content": content,
+            "source": "rag_v2_filesystem",
+            "filename": filename_only,
+            "file_path": file_path,
+        },
+        message=f"Volltext aus Quell-Datei geladen ({ext or 'text'}).",
+        tags=tags,
+        started_at=started,
+    )
+
+
+async def _v2_fulltext_fallback(
+    filename: str,
+    started: float,
+    tags: List[str],
+    absolute_path: Optional[str] = None,
+) -> Optional[ToolResultV1]:
+    """Resolve a filename via RAG-V2 IndexStore (endswith match) and read the file from disk.
+    
+    DUPLICATE HANDLING LOGIC (always enforced):
+    1. Physical duplicate scan runs FIRST (before any file reading)
+    2. If duplicates found:
+       - Build warning_block with all paths
+       - If no absolute_path: Content Withholding (return ONLY warning)
+       - If absolute_path: Read file + prepend warning to content
+    3. If no duplicates: Normal single-file flow
+    """
+    if not filename:
+        return None
+    store = None  # FIX #1: Managed lifecycle — close only at the end
+    try:
+        from backend.services.rag.index_store import IndexStore
+        from backend.utils.paths import get_app_data_dir
+
+        index_db = os.path.join(get_app_data_dir(), "knowledge_index_v2.db")
+        if not os.path.exists(index_db):
+            return None
+
+        # Robust path-based matching: compare by stem (no extension, lowercase)
+        # Normalize paths for Windows compatibility (backslashes -> forward slashes)
+        from pathlib import PurePath
+
+        def _normalize_path(p: str) -> str:
+            """Convert backslashes to forward slashes and lowercase for path comparison."""
+            return p.replace("\\", "/").lower() if p else p
+
+        needle_basename = PurePath(filename).name.lower()
+        needle_stem = PurePath(needle_basename).stem
+
+        store = IndexStore(db_path=index_db)
+        raw_matches = store.find_by_filename(needle_stem)
+
+        def _stem_match(path: str) -> bool:
+            base = PurePath(_normalize_path(path)).name
+            return base == needle_basename or PurePath(base).stem == needle_stem
+
+        matches = [m for m in raw_matches if _stem_match(m.path)]
+        if not matches:
+            return None
+
+        # Initialize path_previews for potential duplicate handling
+        path_previews = {}
+        duplicate_paths = None  # Will hold paths if duplicates found
+        new_paths = []  # Unindexed paths found during duplicate scan
+
+        # PHYSICAL DUPLICATE DETECTION: Run FIRST before any reading decision
+        # This ensures warning_block is always generated when duplicates exist
+        try:
+            from backend.services.filesystem_manager import find_files
+            stem_pattern = f"{needle_stem}.*"
+            fs_result = find_files(
+                pattern=stem_pattern,
+                max_results=100,
+                search_all_drives=False
+            )
+            if fs_result and fs_result.data and fs_result.data.get("matches"):
+                physical_matches = fs_result.data["matches"]
+                filtered_physical = [
+                    p for p in physical_matches
+                    if PurePath(p).stem.lower() == needle_stem
+                ]
+                if len(filtered_physical) > 1:
+                    duplicate_paths = sorted(filtered_physical)
+                    logger.info(
+                        f"[DUPLICATE-DETECTION] Physical search found {len(filtered_physical)} "
+                        f"copies of '{filename}': {duplicate_paths}"
+                    )
+
+                    # Identify new (unindexed) paths - validate both DB entry AND chunks
+                    indexed_paths_normalized = {pathlib.Path(m.path).resolve().as_posix().lower() for m in matches}
+
+                    new_paths = []
+                    for path in duplicate_paths:
+                        normalized_path = pathlib.Path(path).resolve().as_posix().lower()
+                        is_in_db = normalized_path in indexed_paths_normalized
+
+                        if not is_in_db:
+                            # Path not in DB at all -> needs ingestion
+                            new_paths.append(path)
+
+                    # Auto-Ingest in background
+                    if new_paths:
+                        logger.info(f"[AUTO-INGEST] Found {len(new_paths)} unindexed files, triggering background ingestion: {new_paths}")
+                        def _background_ingest(paths_to_ingest):
+                            logger.info(f"[AUTO-INGEST] Background thread STARTED for {len(paths_to_ingest)} files: {paths_to_ingest}")
+                            try:
+                                from backend.services.rag.ingestion import IngestionRun
+                                # Use parent of first file as root_dir (IngestionRun needs
+                                # a valid existing directory for start_run)
+                                root_dir = str(pathlib.Path(paths_to_ingest[0]).parent.resolve())
+                                logger.info(f"[AUTO-INGEST] Initializing IngestionRun with root_dir: {root_dir}")
+                                mgr = IngestionRun(root_dir=root_dir)
+                                try:
+                                    logger.info(f"[AUTO-INGEST] Calling mgr.run_partial with file_paths: {paths_to_ingest}")
+                                    mgr.run_partial(file_paths=paths_to_ingest)
+                                    logger.info(f"[AUTO-INGEST] Completed ingestion for {len(paths_to_ingest)} files")
+                                except Exception as exc:
+                                    logger.error(f"[AUTO-INGEST] Failed to ingest files: {exc}", exc_info=True)
+                            except Exception as exc:
+                                logger.error(f"[AUTO-INGEST] Could not initialize IngestionRun: {exc}", exc_info=True)
+                            logger.info(f"[AUTO-INGEST] Background thread FINISHED")
+                        logger.info(f"[AUTO-INGEST] Starting background thread...")
+                        threading.Thread(target=_background_ingest, args=(list(new_paths),), daemon=True).start()
+
+                    # Generate content previews for all duplicate paths
+                    try:
+                        for path in duplicate_paths:
+                            try:
+                                chunks = store.get_chunks_by_file(path, limit=2)
+                                if chunks:
+                                    preview = chunks[0].get("text", "")[:200]
+                                    path_previews[path] = preview
+                                else:
+                                    path_previews[path] = "[NICHT INDIZIERT - AKTION ERFORDERLICH: Nutze 'knowledge.read_full_text' mit dem Parameter 'absolute_path' für diesen Pfad, um den Text jetzt live zu lesen!]"
+                            except Exception as exc:
+                                logger.warning("Failed to get preview for '%s': %s", path, exc)
+                                path_previews[path] = "[NICHT INDIZIERT - AKTION ERFORDERLICH: Nutze 'knowledge.read_full_text' mit dem Parameter 'absolute_path' für diesen Pfad, um den Text jetzt live zu lesen!]"
+                    except Exception as exc:
+                        logger.warning("Content preview generation failed: %s", exc)
+        except Exception as exc:
+            logger.warning("Physical duplicate detection failed for '%s': %s", filename, exc)
+
+        # DUPLICATE HANDLING: If duplicates found, enforce warning + decide on content
+        if duplicate_paths:
+            # Build warning block (always included when duplicates exist)
+            paths_info = ""
+            for path in duplicate_paths:
+                preview = path_previews.get(path, "[Keine Vorschau]")
+                paths_info += f"\n  - {path}\n    Vorschau: {preview}\n"
+            
+            auto_ingest_notice = ""
+            if new_paths:
+                auto_ingest_notice = f"\n[SYSTEM] Ich habe die Indizierung für {len(new_paths)} neue Datei(en) soeben automatisch gestartet. Sie stehen in wenigen Sekunden im RAG zur Verfügung.\n"
+            
+            warning_block = f"!!! SYSTEM-WARNHINWEIS: MEHRERE DATEIEN GEFUNDEN !!!\nDateiname: {filename}\nGefundene Pfade:{paths_info}{auto_ingest_notice}"
+
+            # CONTENT WITHHOLDING: No absolute_path provided → return ONLY warning
+            if not absolute_path:
+                logger.info(f"[CONTENT-WITHHOLDING] Duplicates found for '{filename}' without absolute_path. Forcing agentic loop.")
+                full_warning = f"{warning_block}\nAKTION ERFORDERLICH: Rufe für JEDEN Pfad oben 'knowledge.read_full_text' mit dem Parameter 'absolute_path' auf, um den Inhalt zu lesen und einen Vergleich zu erstellen."
+                return tool_ok_v1(
+                    data={"content": full_warning},
+                    message=f"Mehrere Dateien gefunden ({len(duplicate_paths)}). Die KI muss nun die einzelnen Pfade autonom auslesen.",
+                    started_at=started,
+                    tags=tags,
+                )
+
+            # ABSOLUTE_PATH PROVIDED: Read the specific file + prepend warning
+            logger.info(f"[DUPLICATE-WITH-PINNING] absolute_path provided for '{filename}'. Reading file with warning prepended.")
+            if not os.path.exists(absolute_path):
+                logger.warning(f"absolute_path '{absolute_path}' does not exist for duplicate resolution")
+                return None
+            
+            result = await _read_file_fulltext(absolute_path, started=started, tags=tags)
+            if result:
+                # Prepend warning to content
+                result.data["content"] = f"{warning_block}\nAktuelle Auswahl (via absolute_path): {absolute_path}\n\n{result.data['content']}"
+            return result
+
+        # NO DUPLICATES: Normal single-file flow
+        # Prefer exact basename match, else most recent indexed_at
+        exact = [m for m in matches if PurePath(m.path).name.lower() == needle_basename]
+        chosen = (exact or sorted(matches, key=lambda m: m.indexed_at, reverse=True))[0]
+
+        if not os.path.exists(chosen.path):
+            logger.warning("RAG V2 resolved %s but file missing on disk: %s", filename, chosen.path)
+            return None
+
+        return await _read_file_fulltext(chosen.path, started=started, tags=tags)
+    except Exception as exc:
+        logger.warning("V2 fulltext fallback failed for '%s': %s", filename, exc)
+        return None
+    finally:
+        # FIX #1 contd: Close store AFTER all usage
+        if store is not None:
+            try:
+                store.close()
+            except Exception:
+                pass
+
+
+async def get_full_document_text(filename: str, db: Session, absolute_path: Optional[str] = None) -> ToolResultV1:
+    """Liefert den kompletten Text einer Datei, ohne die Chroma-Kürzung.
+
+    Zuerst wird die Legacy-Document-Tabelle (Uploads) geprüft. Schlägt das fehl,
+    wird die RAG-V2 Fuzzy-Filename-Resolution verwendet, um Dateien zu finden,
+    die via globaler Indizierung aufgenommen wurden (z. B. ~/Desktop, ~/Documents).
+    Absolute Pfade werden ebenfalls direkt akzeptiert.
+    
+    PATH-PINNING: Wenn absolute_path gesetzt ist, hat dieser Parameter ABSOLUTE
+    PRIORITÄT: filename wird ignoriert, keine Dubletten-Prüfung, direktes Lesen vom
+    angegebenen Pfad. Dies ermöglicht Agentic AI-Loops zur autonomen Dubletten-Auflösung.
+    
+    Args:
+        filename: Dateiname oder relativer Pfad (wird ignoriert wenn absolute_path gesetzt)
+        db: Database session
+        absolute_path: Optionaler absoluter Pfad für Path-Pinning - wenn gesetzt, wird diese
+                       Datei direkt von der Festplatte gelesen (ignoriert filename, Index und Dubletten-Suche)
+    """
     from backend.data.models import Document
 
     started = time.perf_counter()
     tags = ["knowledge", "documents"]
     try:
+        # --- V2 RESOLUTION FIRST (handles duplicates, auto-ingest, warning injection) ---
+        # _v2_fulltext_fallback handles BOTH filename-only AND absolute_path calls.
+        # It always runs physical duplicate detection and prepends warnings.
+        v2_result = await _v2_fulltext_fallback(filename, started=started, tags=tags, absolute_path=absolute_path)
+        if v2_result is not None:
+            return v2_result
+
+        # --- DIRECT PATH FALLBACK: If V2 couldn't resolve but path exists on disk ---
+        if absolute_path and os.path.exists(absolute_path):
+            logger.info(f"[ABSOLUTE-PATH FALLBACK] V2 miss, reading directly from disk: {absolute_path}")
+            result = await _read_file_fulltext(absolute_path, started=started, tags=tags)
+            if result is not None:
+                return result
+
+        if filename and (os.path.isabs(filename) or filename.startswith(("/", "\\"))):
+            if os.path.exists(filename):
+                result = await _read_file_fulltext(filename, started=started, tags=tags)
+                if result is not None:
+                    return result
+
+        # Legacy Document lookup (uploaded PDFs in DB)
         doc = (
             db.query(Document)
             .filter(Document.filename.ilike(f"%{filename}%"))
@@ -316,6 +606,15 @@ class ToolExecutor:
             "memory.modify": "memory_update",
             "memory.update": "memory_update",
             # ═══════════════════════════════════════════════════════════════════════════
+            # MEMORY DELETE ALIASE - Legacy -> memory_delete (V2.1 Gold Standard)
+            # ═══════════════════════════════════════════════════════════════════════════
+            "delete_memory": "memory_delete",
+            "remove_memory": "memory_delete",
+            "erase_memory": "memory_delete",
+            "memory.remove": "memory_delete",
+            "memory.erase": "memory_delete",
+            "memory.delete": "memory_delete",
+            # ═══════════════════════════════════════════════════════════════════════════
             # Contact Aliase
             "add_contact": "create_or_update_contact_tool",
             "update_contact": "create_or_update_contact_tool",
@@ -326,6 +625,39 @@ class ToolExecutor:
             # Routing Alias
             "get_distance_and_route_tool": "system.routing",
         }
+
+    @staticmethod
+    def _requested_name_alternates(requested_name: str) -> List[str]:
+        raw = str(requested_name or "").strip()
+        candidates = [raw]
+        if raw:
+            candidates.append(raw.replace(".", "_"))
+            candidates.append(raw.replace("_", "."))
+            for delimiter in (".", "_"):
+                if delimiter in raw:
+                    suffix = raw.split(delimiter, 1)[1]
+                    candidates.append(suffix)
+                    candidates.append(suffix.replace(".", "_"))
+                    candidates.append(suffix.replace("_", "."))
+        seen = set()
+        return [item for item in candidates if item and not (item in seen or seen.add(item))]
+
+    def _resolve_tool_name_with_alternates(self, requested_name: str) -> str:
+        last_error: Optional[SkillNotFoundError] = None
+        for candidate in self._requested_name_alternates(requested_name):
+            try:
+                resolved = skill_router.resolve_tool_name(candidate)
+                if candidate != requested_name or resolved != requested_name:
+                    logger.info(
+                        "EXECUTOR-NAME-NORMALIZE: requested='%s' candidate='%s' resolved='%s'",
+                        requested_name,
+                        candidate,
+                        resolved,
+                    )
+                return resolved
+            except SkillNotFoundError as exc:
+                last_error = exc
+        raise last_error or SkillNotFoundError(requested_name)
 
     async def execute_tool_call(
         self,
@@ -538,33 +870,57 @@ class ToolExecutor:
                     self.additional_context.get("websearch_fallback_provider") or ""
                 ).strip().lower()
 
-                # Diamond rule: when Janus itself runs on OpenAI, the native
-                # OpenAI websearch provider must be used, regardless of what the
-                # LLM tried to pass in the tool arguments. This prevents
-                # accidental downgrades to legacy wrappers or DDG fallbacks.
+                # HARD POLICY: never honor a forced websearch provider that differs from the
+                # chat session provider (cross-provider fallback is forbidden).
                 if forced_websearch_provider in {"openai", "gemini", "ollama"}:
-                    tool_args["provider"] = forced_websearch_provider
-                    if forced_websearch_provider == "gemini":
-                        tool_args["model"] = "gemini-3-flash-preview"
-                    elif request_model and not str(tool_args.get("model") or "").strip():
-                        tool_args["model"] = request_model
-                    logger.warning(
-                        "WEBSEARCH-EXECUTOR: forced provider fallback active -> provider='%s' model='%s'",
-                        tool_args.get("provider"),
-                        tool_args.get("model") or "<missing>",
-                    )
+                    if forced_websearch_provider != request_provider:
+                        logger.warning(
+                            "WEBSEARCH-EXECUTOR: ignoring cross-provider forced provider '%s' "
+                            "(chat session provider is '%s').",
+                            forced_websearch_provider,
+                            request_provider,
+                        )
+                    else:
+                        tool_args["provider"] = forced_websearch_provider
+                        if forced_websearch_provider == "gemini":
+                            tool_args["model"] = "gemini-3-flash-preview"
+                        elif request_model and not str(tool_args.get("model") or "").strip():
+                            tool_args["model"] = request_model
+                        logger.warning(
+                            "WEBSEARCH-EXECUTOR: forced provider active -> provider='%s' model='%s'",
+                            tool_args.get("provider"),
+                            tool_args.get("model") or "<missing>",
+                        )
                 elif request_provider == "openai":
                     tool_args["provider"] = "openai"
-                    if request_model:
+                    if request_model.lower().startswith("gemini-"):
+                        tool_args["model"] = "gpt-5.4-nano"
+                        logger.warning(
+                            "WEBSEARCH-EXECUTOR: replaced cross-provider model '%s' with OpenAI websearch model '%s'.",
+                            request_model,
+                            tool_args["model"],
+                        )
+                    elif request_model:
                         tool_args["model"] = request_model
                     logger.info(
                         "WEBSEARCH-EXECUTOR: enforced native OpenAI websearch (model='%s').",
-                        request_model or "<missing>",
+                        tool_args.get("model") or request_model or "<missing>",
                     )
                 else:
                     if request_provider:
                         tool_args["provider"] = request_provider
-                    if request_model and not str(tool_args.get("model") or "").strip():
+                    if (
+                        request_provider == "gemini"
+                        and request_model.lower().startswith("gpt-")
+                        and not str(tool_args.get("model") or "").strip()
+                    ):
+                        tool_args["model"] = "gemini-3-flash-preview"
+                        logger.warning(
+                            "WEBSEARCH-EXECUTOR: replaced cross-provider model '%s' with Gemini websearch model '%s'.",
+                            request_model,
+                            tool_args["model"],
+                        )
+                    elif request_model and not str(tool_args.get("model") or "").strip():
                         tool_args["model"] = request_model
 
                 logger.info(
@@ -597,6 +953,35 @@ class ToolExecutor:
             )
 
             # 4. Kontextabhängigkeiten injizieren.
+            ops_decision = tool_access_decision(canonical_skill_id or resolved_name or original_name)
+            if ops_decision.disabled:
+                logger.warning(
+                    "OPS-KILL-SWITCH: blocked tool=%s category=%s switch=%s",
+                    canonical_skill_id,
+                    ops_decision.category,
+                    ops_decision.switch,
+                )
+                blocked_payload = SkillResponse(
+                    status="error",
+                    error={
+                        "code": ops_decision.code,
+                        "message": ops_decision.message,
+                        "details": {
+                            "category": ops_decision.category,
+                            "switch": ops_decision.switch,
+                        },
+                    },
+                ).model_dump()
+                return self._finalize_tool_result(
+                    original_name=original_name,
+                    skill_id=canonical_skill_id,
+                    payload=blocked_payload,
+                    started_at=started_at,
+                    trace_id=request_trace_id,
+                    arguments_json=raw_arguments,
+                    call_type="internal" if is_internal_call else "external",
+                )
+
             context_vars = {
                 "db": self.db,
                 "api_key": self.api_key,
@@ -772,6 +1157,7 @@ class ToolExecutor:
         dry_run: bool = False,
     ) -> List[Dict[str, Any]]:
         """Führt eine Liste von Tool-Aufrufen parallel aus."""
+        logger.info(f"DEBUG-LOGGING: Context contains keys: {self.additional_context.keys()}")
         result_slots = [None] * len(tool_calls)
         pending_tasks = []
         pending_indices = []
@@ -784,6 +1170,12 @@ class ToolExecutor:
         logger.info(
             f"EXECUTOR: execute_tool_calls aufgerufen. Bypass={bypass_policy}, DryRun={dry_run}, Anzahl Tools={len(tool_calls)}"
         )
+
+        # Extract context data for logging
+        ctx_data = self.additional_context or {}
+        provider = str(ctx_data.get("provider") or "MISSING_PROVIDER")
+        model = str(ctx_data.get("model") or ctx_data.get("model_id") or "MISSING_MODEL")
+        session_id = str(ctx_data.get("chat_id") or ctx_data.get("session_id") or "MISSING_SESSION")
 
         for idx, tool_call in enumerate(tool_calls):
             function = tool_call.get("function", {})
@@ -799,7 +1191,7 @@ class ToolExecutor:
 
             resolved_name = func_name
             try:
-                resolved_name = skill_router.resolve_tool_name(func_name)
+                resolved_name = self._resolve_tool_name_with_alternates(func_name)
             except SkillNotFoundError as exc:
                 error_payload = SkillResponse(
                     status="error",
@@ -820,6 +1212,13 @@ class ToolExecutor:
                 result["tool_call_id"] = tool_call.get("id")
                 result_slots[idx] = result
                 continue
+
+            # BACKLOG-011 FIX: Override mode="single" to mode="list" for video.search
+            # Gemini ignores the schema default and always sets mode="single"
+            # This ensures list mode is used for auto-open modal behavior
+            if resolved_name in ("video.search", "video_search") and func_args.get("mode") == "single":
+                func_args["mode"] = "list"
+                logger.info("[BACKLOG-011] Override: video.search mode forced from 'single' to 'list'")
 
             skill_id = self.tool_manager.get_skill_id(resolved_name)
             allowed_skill_ids = self.additional_context.get("allowed_skill_ids")
@@ -844,37 +1243,6 @@ class ToolExecutor:
                         original_name=str(func_name or ""),
                         skill_id=requested_skill,
                         payload=disallowed_payload,
-                        started_at=started_at,
-                        trace_id=trace_id,
-                        arguments_json=func_args,
-                    )
-                    result["tool_call_id"] = tool_call.get("id")
-                    result_slots[idx] = result
-                    continue
-
-            sandbox_level = self.tool_manager.get_sandbox_level(skill_id)
-            if sandbox_level == "workspace_only":
-                violation = self._get_sandbox_violation(func_args)
-                if violation:
-                    sandbox_payload = SkillResponse(
-                        status="error",
-                        error={
-                            "code": "SANDBOX_VIOLATION",
-                            "message": (
-                                "Pfad liegt außerhalb der erlaubten Workspaces "
-                                f"(sandbox_level={sandbox_level})."
-                            ),
-                            "details": {
-                                "skill_id": skill_id,
-                                "path_arg": violation["arg"],
-                                "path_value": violation["value"],
-                            },
-                        },
-                    ).model_dump()
-                    result = self._finalize_tool_result(
-                        original_name=str(func_name or ""),
-                        skill_id=skill_id,
-                        payload=sandbox_payload,
                         started_at=started_at,
                         trace_id=trace_id,
                         arguments_json=func_args,
@@ -979,7 +1347,46 @@ class ToolExecutor:
                 continue
 
             pending_indices.append(idx)
-            pending_tasks.append(self.execute_tool_call(func_name, func_args, trace_id=trace_id))
+            # Create a wrapper that handles logging
+            async def _execute_with_logging(skill_id, func_name, func_args, trace_id, idx):
+                start_time = time.perf_counter()
+                
+                # Log tool start
+                try:
+                    await log_event(LogEventCreate(
+                        session_id=session_id,
+                        provider=provider,
+                        model=model,
+                        skill=skill_id,
+                        event_type="tool_start",
+                        payload={"arguments": func_args}
+                    ))
+                except Exception as log_exc:
+                    logger.error(f"Failed to log tool_start event: {log_exc}")
+
+                # Execute the tool
+                result = await self.execute_tool_call(func_name, func_args, trace_id=trace_id)
+
+                # Log tool end
+                latency_ms = int((time.perf_counter() - start_time) * 1000)
+                status = "success" if result.get("status") in ("ok", "dry_run_success") else "error"
+                try:
+                    await log_event(LogEventCreate(
+                        session_id=session_id,
+                        provider=provider,
+                        model=model,
+                        skill=skill_id,
+                        event_type="tool_end",
+                        status=status,
+                        payload={"result": result.get("data") if status == "success" else result.get("error")},
+                        latency_ms=latency_ms
+                    ))
+                except Exception as log_exc:
+                    logger.error(f"Failed to log tool_end event: {log_exc}")
+
+                return result
+
+            pending_tasks.append(_execute_with_logging(skill_id or resolved_name or func_name or "", func_name, func_args, trace_id, idx))
 
         if pending_tasks:
             execution_results = await asyncio.gather(*pending_tasks)
@@ -1099,62 +1506,6 @@ class ToolExecutor:
                 self.db.rollback()
             except Exception:
                 pass
-
-    def _iter_candidate_paths(self, arguments_json: Dict[str, Any]) -> List[Dict[str, str]]:
-        candidates: List[Dict[str, str]] = []
-        for key, value in (arguments_json or {}).items():
-            if not isinstance(value, str):
-                continue
-            key_l = str(key).lower()
-            if "path" not in key_l and key_l not in {"filename", "file", "target", "source", "destination"}:
-                continue
-            normalized = value.strip()
-            if not normalized:
-                continue
-            candidates.append({"arg": str(key), "value": normalized})
-        return candidates
-
-    def _is_virtual_workspace_path(self, candidate_path: str) -> bool:
-        normalized = str(candidate_path or "").strip().replace("\\", "/").lower()
-        return normalized.startswith("/user_images/") or normalized.startswith("user_images/")
-
-    def _is_path_allowed(self, candidate_path: str, allowed_roots: List[os.PathLike]) -> bool:
-        if not os.path.isabs(str(candidate_path)):
-            return True
-
-        try:
-            candidate = os.path.realpath(os.path.abspath(candidate_path))
-        except Exception:
-            return False
-
-        for root in allowed_roots:
-            try:
-                root_path = os.path.realpath(os.path.abspath(str(root)))
-                common = os.path.commonpath([candidate, root_path])
-                if common == root_path:
-                    return True
-            except Exception:
-                continue
-        return False
-
-    def _get_sandbox_violation(self, arguments_json: Dict[str, Any]) -> Optional[Dict[str, str]]:
-        candidates = self._iter_candidate_paths(arguments_json)
-        if not candidates:
-            return None
-
-        try:
-            from backend.services.filesystem_manager import _get_allowed_workspaces
-
-            allowed_roots = _get_allowed_workspaces()
-        except Exception:
-            allowed_roots = []
-
-        for candidate in candidates:
-            if self._is_virtual_workspace_path(candidate["value"]):
-                continue
-            if not self._is_path_allowed(candidate["value"], allowed_roots):
-                return candidate
-        return None
 
     def _decode_tool_content(self, wrapped_result: Dict[str, Any]) -> Dict[str, Any]:
         if not isinstance(wrapped_result, dict):

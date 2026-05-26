@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-003",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Welche Tools hast du?",
+  "response": "calendar.create_event, calendar.delete_event, calendar.find_slots, calendar.list_events, calendar.update_event, communication.send_email, communication.list_emails, communication.read_email, contacts.list, contacts.create_or_update, contacts.delete, filesystem.list_directory, filesystem.read_file, filesystem.find_files, filesystem.create_file, filesystem.move_files, filesystem.delete_file, knowledge.query, knowledge.list_documents, knowledge.read_full_text, knowledge.edit_pdf, memory.memory_read, memory.memory_write, system.websearch, system.generate_image, system.weather, system.routing, system.create_pdf, system.save_mp3, system.wikipedia_summary, system.price_comparison, system.scrape_website, system.local_business, video.search, video.understand\n00:34",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-14T22:34:21.104Z"
+}

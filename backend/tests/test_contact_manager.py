@@ -50,7 +50,7 @@ async def test_extract_and_save_contact_no_name_error():
                         text_block="Some text with contact info",
                         api_key="dummy_key",
                         provider="gemini",
-                        model="gemini-2.5-flash",
+                        model="gemini-3-flash-preview",
                     )
                     # If no NameError is raised, the test passes
                     assert mock_call_llm.called

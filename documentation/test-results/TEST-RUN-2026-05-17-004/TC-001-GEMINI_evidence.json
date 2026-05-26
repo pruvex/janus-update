@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-004",
+  "testCaseId": "TC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Brauche ich morgen in Muenchen einen Regenschirm?",
+  "response": "Ja, für morgen in München solltest du unbedingt einen Regenschirm einpacken. \nDie Vorhersage für Montag, den 18. Mai 2026, kündigt Gewitter an. Die Niederschlagswahrscheinlichkeit liegt bei sehr hohen 83 %. Die Temperaturen erreichen maximal 17,8 °C und sinken nachts auf etwa 5,6 °C.\nQuelle: Open-Meteo\n💡 Passende nächste Schritte:• Regenradar für eine genauere zeitliche Planung prüfen• Kleidung für kühlere 6 °C am Morgen vorbereiten• Eventuelle Outdoor-Aktivitäten aufgrund der Gewitterwarnung nach drinnen verlegen\n14:08",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:09:03.109Z"
+}

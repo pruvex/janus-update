@@ -101,6 +101,16 @@ Systeme für langfristige Speicherung und Kontexterhaltung.
   - `memory.search_summaries` – Durchsucht frühere Gespräche
   - `memory.save_core_fact` – Speichert wichtige Nutzer-Fakten
 
+### Feature: Calendar Memory Mirror
+- **Beschreibung:** Spiegelt die nächsten Kalendertermine als kompakten, nicht-autoritativen Snapshot in `memories.category = "calendar_snapshot"` und injiziert daraus bei Kalender-/Planungsfragen einen begrenzten Chat-Kontext.
+- **Beteiligte Systeme:** `Calendar Service`, `Memory Manager`, `Chat Orchestrator`
+- **Zugehörige Dateien:**
+  - `backend/services/calendar/calendar_memory.py`
+  - `backend/api/routers/calendar.py`
+  - `backend/services/chat_orchestrator.py`
+  - `backend/tests/test_calendar_memory.py`
+- **Betriebsflags:** `JANUS_CALENDAR_MIRROR_ENABLED` (default on), `JANUS_CALENDAR_PROACTIVE_HINTS` (default off).
+
 ---
 
 ## Domain: Communication
@@ -135,10 +145,23 @@ Features für E-Mail, Kontakte und externe Kommunikation.
 
 Kalender-Funktionen und Terminmanagement.
 
+### UI: Tages-Panel (Diamond Rail)
+- **Beschreibung:** Eingebetteter rechter Rail am Chat (`calendar-day-widget`): Tages-Kennzahlen, nächster Termin, Schnellaktionen, KI-Zeile (Delegation Vollkalender). Produktions-UI aus **`frontend/dist`** nach `vite build`; Gate: `scripts/verify-frontend-dist.cjs`.
+- **Zugehörige Dateien:** `frontend/js/calendar-day-widget.js`, `frontend/js/calendar-day-stats.js`, `frontend/css/calendar-day-widget.css`, `frontend/index.html`; Release-Doku: `documentation/tasks/task_calendar_day_widget_rail_diamond.md`.
+
 ### System: Calendar Tools
 - **Beschreibung:** Integration mit Kalender-APIs zum Lesen, Erstellen und Aktualisieren von Terminen.
 - **Zugehörige Dateien:**
   - `backend/tools/calendar_tools.py`
+
+### System: Calendar Memory Mirror
+- **Beschreibung:** Nicht-autoritatives Spiegel-System für kommende Kalendertermine im Memory-Kontext. Erzeugt Snapshot v1 (`derived` + `events[]`), limitiert die Prompt-Injection auf relevante Kalender-/Planungsfragen und hält proaktive Hinweise per Flag deaktivierbar.
+- **Zugehörige Dateien:**
+  - `backend/services/calendar/calendar_memory.py`
+  - `backend/api/routers/calendar.py`
+  - `backend/services/chat_orchestrator.py`
+- **Endpoint:** `POST /api/calendar/sync/memory`
+- **Tests:** `backend/tests/test_calendar_memory.py`
 
 ### Feature: Terminmanagement
 - **Beschreibung:** Vollständige Kalender-Funktionalität inkl. Terminsuche, Erstellung, Update und Freizeitsuche.

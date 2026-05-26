@@ -1,0 +1,13 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-007",
+  "testCaseId": "SECROT-004",
+  "result": "PASS",
+  "classification": "BUNDLE_SECRET_SCAN_PASS",
+  "evidence": {
+    "bundleRoot": "frontend/dist",
+    "scannedFiles": 5,
+    "exactSecretFindings": 0,
+    "credentialPatternFindings": 0
+  },
+  "timestamp": "2026-05-21T12:15:55.739Z"
+}

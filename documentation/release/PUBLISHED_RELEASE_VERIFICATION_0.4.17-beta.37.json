@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "janus.release-verification.v1",
+  "status": "PASS",
+  "repository": "pruvex/janus-update",
+  "version": "0.4.17-beta.37",
+  "tagName": "v0.4.17-beta.37",
+  "releaseUrl": "https://github.com/pruvex/janus-update/releases/tag/v0.4.17-beta.37",
+  "prerelease": true,
+  "draft": false,
+  "assets": [
+    {
+      "name": "janus-setup-0.4.17-beta.37.exe",
+      "role": "installer",
+      "githubState": "uploaded",
+      "githubSize": 688266935,
+      "localSize": 688266935,
+      "githubDigest": "sha256:c7e096ed0cac179ac57bd632f0becc88d4070cdee5db31acb040884c09190b77",
+      "localSha256": "c7e096ed0cac179ac57bd632f0becc88d4070cdee5db31acb040884c09190b77",
+      "browserDownloadUrl": "https://github.com/pruvex/janus-update/releases/download/v0.4.17-beta.37/janus-setup-0.4.17-beta.37.exe",
+      "result": "PASS",
+      "notes": ""
+    },
+    {
+      "name": "latest.yml",
+      "role": "electron-latest-metadata",
+      "githubState": "uploaded",
+      "githubSize": 20328,
+      "localSize": 20328,
+      "githubDigest": "sha256:cfe90095a4841a7a9665519ef000b6ba4366661a4201db9f3fb151ae500c7a48",
+      "localSha256": "cfe90095a4841a7a9665519ef000b6ba4366661a4201db9f3fb151ae500c7a48",
+      "browserDownloadUrl": "https://github.com/pruvex/janus-update/releases/download/v0.4.17-beta.37/latest.yml",
+      "result": "PASS",
+      "notes": ""
+    },
+    {
+      "name": "janus-update-manifest.json",
+      "role": "janus-update-manifest",
+      "githubState": "uploaded",
+      "githubSize": 250,
+      "localSize": 250,
+      "githubDigest": "sha256:6e2fcdf98dae028f3ff5a38a4377df7817659a7fa4b70fb35c3968f0323b7104",
+      "localSha256": "6e2fcdf98dae028f3ff5a38a4377df7817659a7fa4b70fb35c3968f0323b7104",
+      "browserDownloadUrl": "https://github.com/pruvex/janus-update/releases/download/v0.4.17-beta.37/janus-update-manifest.json",
+      "result": "PASS",
+      "notes": ""
+    }
+  ],
+  "missing": [],
+  "unexpectedRelevant": [],
+  "verifiedAt": "2026-05-21T14:23:42.605Z"
+}

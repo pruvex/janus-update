@@ -1,0 +1,12 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-006",
+  "testCaseId": "ISO-004",
+  "result": "PASS",
+  "classification": "FILE_PROFILE_ISOLATION_PASS",
+  "evidence": {
+    "profileAUploadRoot": "documentation/test-results/TEST-RUN-2026-05-21-006/fixtures/profile_a/AppData/Roaming/Janus Projekt/uploads",
+    "profileBUploadOutsideProfileARoot": true,
+    "profileAUploadContainsProfileBFileCanary": false
+  },
+  "timestamp": "2026-05-21T11:58:06.284Z"
+}

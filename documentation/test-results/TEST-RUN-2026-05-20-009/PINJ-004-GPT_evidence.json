@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-009",
+  "testCaseId": "PINJ-004-GPT",
+  "result": "BLOCKED",
+  "classification": "RUNNER_UNHANDLED_FAILURE",
+  "prompt": "",
+  "response": "",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Error: page.waitForFunction: TypeError: Failed to fetch (127.0.0.1:8001)\n    at window.fetch (http://localhost:5173/js/frontend-debug-log.js:82:30)\n    at window.fetch (http://localhost:5173/js/app.js:47:16)\n    at async eval (eval at predicate (eval at evaluate (:290:30)), <anonymous>:4:24)",
+  "timestamp": "2026-05-20T02:44:00.671Z"
+}

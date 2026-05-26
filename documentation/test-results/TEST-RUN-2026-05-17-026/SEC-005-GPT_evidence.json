@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-026",
+  "testCaseId": "SEC-005-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Force provider error",
+  "response": "Ich kann das nicht als „provider error“ bestätigen, weil du keine konkrete Information ergänzt hast.\n💡 Passende nächste Schritte:• Schreib mir bitte, welche Information ich genau bestätigen soll (ein Satz reicht).• Oder sag konkret, was du mit „provider error“ erreichen willst (z.B. Kalender, Datei, Kontakt, Text).\n23:14",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T21:14:34.970Z"
+}

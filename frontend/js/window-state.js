@@ -91,6 +91,9 @@ function createInitialState() {
         "video-player": dockModuleShape({
           exists: false,
         }),
+        calendar: dockModuleShape({
+          exists: true,
+        }),
       },
     },
   };
@@ -262,6 +265,20 @@ export function setWindowProvider(windowId, val) {
     windows: {
       ...state.windows,
       [windowId]: { ...state.windows[windowId], provider },
+    },
+  };
+  emit();
+}
+
+export function setWindowLlm(windowId, providerValue, modelValue) {
+  assertWindowId(windowId);
+  const provider = normalizeLlmOverride(providerValue);
+  const modelId = normalizeLlmOverride(modelValue);
+  state = {
+    ...state,
+    windows: {
+      ...state.windows,
+      [windowId]: { ...state.windows[windowId], provider, modelId },
     },
   };
   emit();

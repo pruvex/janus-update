@@ -1,0 +1,6 @@
+{
+  "rawSensitiveEvidencePolicy": "headers-and-status-only",
+  "status": 200,
+  "approvedOrigin": "http://127.0.0.1:8001",
+  "credentialed": true
+}

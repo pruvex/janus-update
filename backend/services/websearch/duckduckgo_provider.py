@@ -39,6 +39,23 @@ def _dedupe_preserve_order(values: List[str]) -> List[str]:
     return unique_values
 
 
+def _dedupe_sources_preserve_order(sources: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    unique_sources: List[Dict[str, str]] = []
+    seen: set[str] = set()
+    for source in sources:
+        if not isinstance(source, dict):
+            continue
+        url = str(source.get("url") or "").strip()
+        if not url:
+            continue
+        key = url.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        unique_sources.append(source)
+    return unique_sources
+
+
 def _normalize_duckduckgo_result_url(url: str) -> str:
     normalized = str(url or "").strip()
     if not normalized:
@@ -100,6 +117,7 @@ class DuckDuckGoWebSearchProvider(BaseWebSearchProvider):
         soup = BeautifulSoup(str(html or ""), "html.parser")
         urls: List[str] = []
         snippets: List[str] = []
+        sources: List[Dict[str, str]] = []
 
         for result in soup.select(".result, .web-result, .result.results_links, div[data-layout='organic']"):
             link = result.select_one("a.result__a, h2 a, a[data-testid='result-title-a']")
@@ -109,6 +127,10 @@ class DuckDuckGoWebSearchProvider(BaseWebSearchProvider):
             snippet_text = " ".join(snippet.get_text(" ", strip=True).split()) if snippet else ""
             if href:
                 urls.append(href)
+                source = {"url": href, "title": title or urlparse(href).netloc.replace("www.", "") or "Quelle"}
+                if snippet_text:
+                    source["snippet"] = snippet_text[:320]
+                sources.append(source)
             line_parts = [part for part in [title, snippet_text] if part]
             if line_parts:
                 snippets.append(" - ".join(line_parts))
@@ -134,6 +156,7 @@ class DuckDuckGoWebSearchProvider(BaseWebSearchProvider):
 
         unique_urls = _dedupe_preserve_order(urls)
         unique_snippets = _dedupe_preserve_order(snippets)
+        unique_sources = _dedupe_sources_preserve_order(sources)
         if not unique_urls and not unique_snippets:
             title_text = " ".join((soup.title.get_text(" ", strip=True) if soup.title else "").split())
             preview_text = " ".join(soup.get_text(" ", strip=True).split())[:300]
@@ -151,6 +174,7 @@ class DuckDuckGoWebSearchProvider(BaseWebSearchProvider):
         return {
             "text": "\n\n".join(f"- {snippet}" for snippet in unique_snippets[:5]),
             "urls": unique_urls[:10],
+            "sources": unique_sources[:10],
             "usage": {},
             "cost": {},
         }
@@ -200,12 +224,24 @@ class DuckDuckGoWebSearchProvider(BaseWebSearchProvider):
 
             urls: List[str] = []
             snippets: List[str] = []
+            sources: list[WebSearchSource] = []
             for item in raw_results:
                 title = str(item.get("title") or "").strip()
                 href = str(item.get("href") or "").strip()
                 body = str(item.get("body") or "").strip()
                 if href:
                     urls.append(href)
+                    try:
+                        domain = urlparse(href).netloc.replace("www.", "")
+                    except Exception:
+                        domain = href
+                    source: WebSearchSource = {
+                        "url": href,
+                        "title": title or domain or "Quelle",
+                    }
+                    if body:
+                        source["snippet"] = body[:320]
+                    sources.append(source)
                 line_parts = [part for part in [title, body] if part]
                 if line_parts:
                     snippets.append(" - ".join(line_parts))
@@ -221,19 +257,9 @@ class DuckDuckGoWebSearchProvider(BaseWebSearchProvider):
                 query, len(raw_results), len(urls), len(text),
             )
             # 💎 DIAMOND: Return WebSearchResult
-            sources: list[WebSearchSource] = []
-            for url in urls[:10]:
-                try:
-                    domain = urlparse(url).netloc.replace("www.", "")
-                except Exception:
-                    domain = url
-                sources.append({
-                    "url": url,
-                    "title": domain or "Quelle",
-                })
             result: WebSearchResult = {
                 "text": text,
-                "sources": sources,
+                "sources": _dedupe_sources_preserve_order(sources)[:10],
                 "metadata": {"provider": "duckduckgo"},
             }
             return result
@@ -326,6 +352,7 @@ class DuckDuckGoWebSearchProvider(BaseWebSearchProvider):
         html_results = await self._search_html_results(query)
         html_text = str(html_results.get("text") or "").strip()
         html_urls = html_results.get("urls") if isinstance(html_results.get("urls"), list) else []
+        html_sources = html_results.get("sources") if isinstance(html_results.get("sources"), list) else []
 
         if html_text and summary_is_generic and not snippet_lines:
             combined_text = ""
@@ -334,8 +361,25 @@ class DuckDuckGoWebSearchProvider(BaseWebSearchProvider):
         # 💎 DIAMOND: Normalize to WebSearchResult
         final_urls = _dedupe_preserve_order([*_dedupe_preserve_order(urls), *[str(url).strip() for url in html_urls if str(url).strip()]])
         
-        # Build sources from URLs (DDG doesn't provide titles reliably)
         sources: list[WebSearchSource] = []
+        for source in html_sources:
+            if not isinstance(source, dict):
+                continue
+            url = str(source.get("url") or "").strip()
+            if not url:
+                continue
+            try:
+                domain = urlparse(url).netloc.replace("www.", "")
+            except Exception:
+                domain = url
+            item: WebSearchSource = {
+                "url": url,
+                "title": str(source.get("title") or domain or "Quelle").strip(),
+            }
+            snippet = str(source.get("snippet") or "").strip()
+            if snippet:
+                item["snippet"] = snippet[:320]
+            sources.append(item)
         for url in final_urls[:10]:
             try:
                 domain = urlparse(url).netloc.replace("www.", "")
@@ -358,7 +402,7 @@ class DuckDuckGoWebSearchProvider(BaseWebSearchProvider):
 
         result: WebSearchResult = {
             "text": "\n\n".join(final_text_parts),
-            "sources": sources,
+            "sources": _dedupe_sources_preserve_order(sources)[:10],
             "metadata": {"provider": "duckduckgo"},
         }
         return result

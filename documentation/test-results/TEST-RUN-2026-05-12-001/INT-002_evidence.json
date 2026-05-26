@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-12-001",
+  "testCaseId": "INT-002",
+  "result": "PASS",
+  "classification": "TOOL_ROUTING_PASS",
+  "prompt": "Erzähl mir über Einstein",
+  "response": "Albert Einstein (14. März 1879 bis 18. April 1955) war ein theoretischer Physiker und gilt als einer der bedeutendsten Wissenschaftler der Geschichte. Seine Arbeiten zu Raum, Zeit und Gravitation haben das zuvor geltende new\n21:34",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expected tool \"system.wikipedia_summary\" was triggered (observed: system_wikipedia_summary)",
+  "timestamp": "2026-05-14T19:34:48.292Z"
+}

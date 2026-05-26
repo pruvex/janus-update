@@ -1,0 +1,16 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-014",
+  "testCaseId": "TC-001",
+  "scenario": "Static registry check",
+  "result": "PASS",
+  "evidenceType": "static_registry_assertion",
+  "commands": [
+    "python -m pytest backend\\tests\\test_skill_selector_capability_registry_integrity.py backend\\tests\\test_capability_registry.py backend\\tests\\unit\\test_capability_registry_logic.py backend\\tests\\unit\\test_skill_selector_filesystem_calendar.py -q"
+  ],
+  "observed": [
+    "backend/tests/test_skill_selector_capability_registry_integrity.py::test_real_capability_registry_has_no_orphan_skill_refs PASSED",
+    "[CAPABILITY-REGISTRY] Discovered 53 skills",
+    "[CAPABILITY-REGISTRY] All skill_refs validated - no orphans found."
+  ],
+  "acceptance": "Every skill referenced by the shipped capability registry exists or is intentionally handled by the registry logic."
+}

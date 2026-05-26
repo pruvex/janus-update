@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-028",
+  "testCaseId": "INT-004-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Sortiere, fasse zusammen, erstelle Uebersicht",
+  "response": "Hallo Admin. Hier ist die strukturierte Übersicht zu Nikola Tesla, basierend auf den dauerhaften physischen Merkmalen in deinem Langzeitgedächtnis.\nPersonenbeschreibung: Nikola Tesla (Physis)\n\n\n\nStatur\nAuffallend groß und sehr schlank\n17. Mai 2026 um 14:57 im Chat „Nikola Tesla Personenbeschreibung“\n\n\nGesichtsform\nSchmales Gesicht mit markanten, ausgeprägten Wangenknochen\n17. Mai 2026 um 14:57 im Chat „Nikola Tesla Personenbeschreibung“\n\n\nAugen\nDunkle, tief liegende Augen\n12. Mai 2026 um 19:23 im Chat „Neuer Chat“\n\n\nStirn\nHohe Stirn\n17. Mai 2026 um 14:57 im Chat „Nikola Tesla Personenbeschreibung“\n\n\nHaar\nDunkles Haar, stets akkurat gescheitelt\n12. Mai 2026 um 19:23 im Chat „Nikola Tesla Übersicht“ (Scheitel) & 13. Mai 2026 um 16:25 im Chat „Wer war Nikola Tesla“ (Farbe)\n\n\nZusammenfassung:Nikola Tesla wird als eine imposante, sehr schlanke und auffallend große Persönlichkeit beschrieben. Sein markantes Gesicht zeichnet sich durch eine hohe Stirn, ein schmales Profil und deutlich ausgeprägte Wangenknochen aus. Besonders charakteristisch sind seine dunklen, tief liegenden Augen sowie sein dunkles Haar, das er stets streng und akkurat gescheitelt trägt.\nSpezifische Accessoires (wie Brillen oder Kopfhörer) sind in den dauerhaften Merkmalen aktuell nicht verzeichnet.\n💡 Passende nächste Schritte:• Soll ich basierend auf dieser Beschreibung ein detailliertes Porträt für dich generieren?• Möchtest du weitere biographische Fakten zu Nikola Tesla ergänzen oder sortieren?• Soll ich nach situativen Beobachtungen (z. B. Accessoires in bestimmten Momenten) in anderen Aufzeichnungen suchen?\n00:22",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T22:22:42.649Z"
+}

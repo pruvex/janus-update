@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wie steht es aktuell um den FC Bayern?",
+  "response": "Hallo Pruve, beim FC Bayern herrscht aktuell (Stand: 21. Mai 2026) eine hervorragende Stimmung, auch wenn es personell ein paar Sorgenfalten gibt. Hier ist der aktuelle Stand für dich:**Sportliche Situation:**1.  **Meister-Titel:** Die Münchner haben die Bundesliga-Saison 2025/26 gerade erst mit beeindruckenden 89 Punkten abgeschlossen und damit ihre 35. deutsche Meisterschaft gefeiert.2.  **DFB-Pokal-Finale:** Am kommenden Samstag (23. Mai 2026) steht das große Finale gegen den VfB Stuttgart an. Die Bayern peilen hier das Double an.3.  **Frauen-Team:** Auch hier gibt es Grund zum Jubeln – die Frauenmannschaft hat ebenfalls die Meisterschaft gewonnen und den DFB-Pokal gegen den VfL Wolfsburg geholt.**Personalien & News:***   **Manuel Neuer:** Sein Einsatz im Pokalfinale am Samstag ist aktuell noch ungewiss. Er laboriert an Wadenproblemen. Positiv ist jedoch, dass er seinen Vertrag gerade vorzeitig bis Juni 2027 verlängert hat.*   **Vincent Kompany:** Der Cheftrainer sitzt fest im Sattel und verfügt über einen langfristigen Vertrag bis 2029.*   **Jamal Musiala:** Er sorgt abseits des Platzes für Schlagzeilen – nach einem massiven Tempoverstoß auf der A8 (194 km/h) muss er eine empfindliche Strafe zahlen und seinen Führerschein abgeben.💡 **Passende nächste Schritte:**• Möchtest du, dass ich am Samstag nach dem Ergebnis des Pokalfinals schaue?• Interessieren dich Details zu möglichen Transfergerüchten für die kommende Saison?• Soll ich prüfen, ob es schon Informationen zum neuen Heimtrikot für 2026/27 gibt?21:23",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:24:57.084Z"
+}

@@ -1,0 +1,152 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-12-001",
+  "title": "Janus Intent Engine Core TestSpec - Review Execution Routing",
+  "status": "FAIL",
+  "summary": {
+    "total": 13,
+    "passed": 7,
+    "failed": 6,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-12-001",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-12-001_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-12-001/INT-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-12-001/INT-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-12-001/INT-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-12-001/INT-004_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-12-001/LTC-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-12-001/LTC-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-12-001/PINJ-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-12-001/SEC-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-12-001/TC-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-12-001/TC-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-12-001/TC-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-12-001/TC-004_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-12-001/TC-005_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "INT-001",
+      "result": "FAIL",
+      "classification": "TOOL_ROUTING_FAILURE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-12-001/INT-001_evidence.json",
+      "durationMs": 0,
+      "notes": "Expected tool \"system.weather\" was not triggered. Tools called: none",
+      "timestamp": "2026-05-14T19:34:22.315Z"
+    },
+    {
+      "testCaseId": "INT-002",
+      "result": "PASS",
+      "classification": "TOOL_ROUTING_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-12-001/INT-002_evidence.json",
+      "durationMs": 0,
+      "notes": "Expected tool \"system.wikipedia_summary\" was triggered (observed: system_wikipedia_summary)",
+      "timestamp": "2026-05-14T19:34:48.292Z"
+    },
+    {
+      "testCaseId": "INT-003",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-12-001/INT-003_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-14T19:35:09.930Z"
+    },
+    {
+      "testCaseId": "INT-004",
+      "result": "FAIL",
+      "classification": "TOOL_ROUTING_FAILURE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-12-001/INT-004_evidence.json",
+      "durationMs": 0,
+      "notes": "Expected tool \"system.rss_news\" was not triggered. Tools called: none",
+      "timestamp": "2026-05-14T19:35:37.285Z"
+    },
+    {
+      "testCaseId": "LTC-001",
+      "result": "FAIL",
+      "classification": "TOOL_ROUTING_FAILURE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-12-001/LTC-001_evidence.json",
+      "durationMs": 0,
+      "notes": "Expected tool \"system.weather\" was not triggered. Tools called: none",
+      "timestamp": "2026-05-14T19:33:38.722Z"
+    },
+    {
+      "testCaseId": "LTC-002",
+      "result": "PASS",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-12-001/LTC-002_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-14T19:56:30.643Z"
+    },
+    {
+      "testCaseId": "PINJ-001",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-12-001/PINJ-001_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-14T19:37:04.914Z"
+    },
+    {
+      "testCaseId": "SEC-001",
+      "result": "PASS",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-12-001/SEC-001_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-14T19:36:42.356Z"
+    },
+    {
+      "testCaseId": "TC-001",
+      "result": "PASS",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-12-001/TC-001_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-14T19:31:54.842Z"
+    },
+    {
+      "testCaseId": "TC-002",
+      "result": "PASS",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-12-001/TC-002_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-14T19:32:22.059Z"
+    },
+    {
+      "testCaseId": "TC-003",
+      "result": "FAIL",
+      "classification": "TOOL_ROUTING_FAILURE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-12-001/TC-003_evidence.json",
+      "durationMs": 0,
+      "notes": "Expected tool \"system.routing\" was not triggered. Tools called: none",
+      "timestamp": "2026-05-14T19:32:46.776Z"
+    },
+    {
+      "testCaseId": "TC-004",
+      "result": "PASS",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-12-001/TC-004_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-14T19:33:16.925Z"
+    },
+    {
+      "testCaseId": "TC-005",
+      "result": "PASS",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-12-001/TC-005_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-14T19:55:16.796Z"
+    }
+  ],
+  "updatedAt": "2026-05-14T19:56:30.654Z"
+}

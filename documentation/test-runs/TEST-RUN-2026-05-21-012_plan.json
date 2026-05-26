@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "janus.test-plan.v1",
+  "testRunId": "TEST-RUN-2026-05-21-012",
+  "title": "Beta Privacy Notice and Data Rights",
+  "sourceSpec": "documentation/TEST_SPEC/02_security_safety/18_beta_privacy_notice_and_data_rights.md",
+  "createdAt": "2026-05-21T00:00:00+02:00",
+  "target": {
+    "mode": "packaged-local beta frontend/backend",
+    "url": "http://127.0.0.1:8001",
+    "providerMode": "no live provider calls; notice/process/UI validation only"
+  },
+  "controlsUnderTest": [
+    "Data category disclosure",
+    "External provider sharing disclosure",
+    "Sensitive upload warning",
+    "Retention/minimization language",
+    "Deletion request process",
+    "Export/access request process",
+    "Incident reporting route",
+    "Tester acknowledgement recording",
+    "Privacy artifact secret scan",
+    "Privacy readiness gate"
+  ],
+  "matrix": [
+    "PRIV-001",
+    "PRIV-002",
+    "PRIV-003",
+    "PRIV-004",
+    "PRIV-005",
+    "PRIV-006",
+    "PRIV-007",
+    "PRIV-008",
+    "PRIV-009",
+    "PRIV-010"
+  ],
+  "artifacts": {
+    "privacyNotice": "documentation/beta/BETA_PRIVACY_NOTICE.md",
+    "dataRightsProcess": "documentation/beta/BETA_DATA_RIGHTS_PROCESS.md",
+    "onboardingAck": "documentation/beta/BETA_TESTER_ONBOARDING_PRIVACY_ACK.md",
+    "runner": "tests/e2e/generated/TEST-RUN-2026-05-21-012.beta-privacy-notice.spec.js",
+    "playwrightConfig": "tests/e2e/generated/TEST-RUN-2026-05-21-012.beta-privacy-notice.playwright.config.js",
+    "unitTests": "backend/tests/test_beta_privacy_notice.py",
+    "finalAudit": "documentation/test-runs/TEST-RUN-2026-05-21-012_final_audit.md"
+  },
+  "requiredCommands": [
+    "python -m pytest backend/tests/test_beta_privacy_notice.py -q",
+    "$env:PYTHONIOENCODING='UTF-8'; npm run build",
+    "npx playwright test --config tests/e2e/generated/TEST-RUN-2026-05-21-012.beta-privacy-notice.playwright.config.js --reporter=list"
+  ]
+}

@@ -234,8 +234,9 @@ class ToolManager:
 
             if isinstance(data, dict) and "legacy_name" in data:
                 legacy_name = str(data.get("legacy_name") or "").strip()
+                skill_key = str(data.get("skill") or "").strip()
                 if legacy_name:
-                    data = {legacy_name: data}
+                    data = {legacy_name: data, skill_key: data} if skill_key else {legacy_name: data}
                 else:
                     data = {}
             elif isinstance(data, dict) and "skill" in data and "version" in data:
@@ -323,15 +324,58 @@ class ToolManager:
         skill_name = self.get_skill_id(tool_name)
         skill_metadata = self.get_skill_metadata(skill_name)
         tool = ToolDefinition(func, args_schema, description, skill_metadata=skill_metadata, name=tool_name)
-        self.tools[tool.name] = tool
+        skill_id = self.get_skill_id(tool_name)
+        self.tools[skill_id] = tool  # Registrierung unter Skill-ID (z.B. knowledge.query)
+        for alias in self._tool_name_aliases(tool_name, skill_id):
+            self.tools[alias] = tool
         self._tool_definitions_cache.clear()
         if tool.name not in self._skill_mapping:
             logger.warning("SKILL-SYSTEM: Kein Mapping für Tool '%s'.", tool.name)
 
+    @staticmethod
+    def _dot_underscore_variants(name: str) -> List[str]:
+        raw = str(name or "").strip()
+        candidates = [raw]
+        if raw:
+            candidates.append(raw.replace(".", "_"))
+            candidates.append(raw.replace("_", "."))
+        seen = set()
+        return [item for item in candidates if item and not (item in seen or seen.add(item))]
+
+    def _legacy_suffix_candidates(self, name: str) -> List[str]:
+        raw = str(name or "").strip()
+        candidates: List[str] = []
+        for delimiter in (".", "_"):
+            if delimiter in raw:
+                suffix = raw.split(delimiter, 1)[1]
+                candidates.extend(self._dot_underscore_variants(suffix))
+        seen = set()
+        return [item for item in candidates if item and not (item in seen or seen.add(item))]
+
+    def _tool_name_aliases(self, tool_name: str, skill_id: str) -> List[str]:
+        aliases: List[str] = []
+        for name in (tool_name, skill_id):
+            aliases.extend(self._dot_underscore_variants(name))
+        seen = set()
+        return [item for item in aliases if item and not (item in seen or seen.add(item))]
+
     def get_skill_id(self, name: str) -> str:
-        candidate = str(name or "")
-        if candidate in self._skill_mapping:
-            return self._skill_mapping[candidate]
+        candidate = str(name or "").strip()
+        for variant in self._dot_underscore_variants(candidate):
+            if variant in self._skill_mapping:
+                return self._skill_mapping[variant]
+        for suffix in self._legacy_suffix_candidates(candidate):
+            if suffix in self._skill_mapping:
+                mapped = self._skill_mapping[suffix]
+                if mapped != candidate:
+                    logger.info("SKILL-ALIAS: Gemischter Toolname '%s' auf Skill '%s' aufgeloest.", candidate, mapped)
+                return mapped
+        safe_candidate = candidate.replace(".", "_")
+        known_skill_ids = set(self._skill_mapping.values()) | set(self._skill_metadata.keys())
+        for skill_id in known_skill_ids:
+            skill_id_str = str(skill_id or "").strip()
+            if skill_id_str and skill_id_str.replace(".", "_") == safe_candidate:
+                return skill_id_str
         return candidate
 
     def get_skill_metadata(self, name: str) -> SkillMetadata:
@@ -376,32 +420,36 @@ class ToolManager:
 
     def get_tool(self, name: str, warn_if_legacy: bool = False) -> Optional[ToolDefinition]:
         """Holt ein Tool anhand des Namens und löst Legacy-Aliase transparent auf."""
-        tool_name = str(name or "")
+        tool_name = str(name or "").strip()
 
-        if self.is_legacy_name(tool_name):
-            actual_skill_id = self.get_skill_name_for_legacy(tool_name)
-            tool = self.tools.get(actual_skill_id)
+        lookup_names: List[str] = []
+        lookup_names.extend(self._dot_underscore_variants(tool_name))
+        resolved_skill_id = self.get_skill_id(tool_name)
+        lookup_names.extend(self._dot_underscore_variants(resolved_skill_id))
+        lookup_names.extend(self._legacy_suffix_candidates(tool_name))
+
+        seen = set()
+        lookup_names = [item for item in lookup_names if item and not (item in seen or seen.add(item))]
+
+        for lookup_name in lookup_names:
+            if self.is_legacy_name(lookup_name):
+                actual_skill_id = self.get_skill_name_for_legacy(lookup_name)
+                tool = self.tools.get(actual_skill_id) or self.tools.get(str(actual_skill_id or "").replace(".", "_"))
+                if tool:
+                    if warn_if_legacy:
+                        logger.info(
+                            "SKILL-ALIAS: Toolname '%s' wurde ueber Legacy-Alias '%s' auf '%s' aufgeloest.",
+                            tool_name,
+                            lookup_name,
+                            actual_skill_id,
+                        )
+                    return tool
+
+            tool = self.tools.get(lookup_name)
             if tool:
                 return tool
 
-        tool = self.tools.get(tool_name)
-
-        if tool and warn_if_legacy and self.is_legacy_name(tool_name):
-            skill_name = self.get_skill_name_for_legacy(tool_name)
-            if str(skill_name or "") in {"system.routing", "system.websearch"}:
-                logger.debug(
-                    "SKILL-ALIAS: Legacy-Toolname '%s' wird stillschweigend auf '%s' aufgeloest.",
-                    tool_name,
-                    skill_name,
-                )
-            else:
-                logger.warning(
-                    "SKILL-DEPRECATION: Legacy-Toolname '%s' wurde aufgerufen. Bitte auf Skill '%s' umstellen.",
-                    tool_name,
-                    skill_name,
-                )
-
-        return tool
+        return None
 
     def get_timeout_seconds(self, name: str) -> Optional[float]:
         """Liefert den Timeout in Sekunden aus den Skill-Metadaten. None = kein Timeout."""
@@ -453,18 +501,40 @@ class ToolManager:
         """Gibt alle registrierten Tool-Objekte zurück."""
         return self.tools
 
-    @staticmethod
-    def _tool_definitions_cache_key(allowed_skill_ids: Optional[List[str]]) -> Tuple[bool, frozenset]:
+    def _candidate_names_for_tool(self, tool: ToolDefinition) -> Set[str]:
+        """Alle Namen (kanonischer Skill-ID, Registrierungsname, Legacy-Aliase), unter denen dieses Tool erreichbar ist."""
+        canon = self.get_skill_id(tool.name)
+        candidates: Set[str] = {canon, str(tool.name or "").strip()}
+        candidates.discard("")
+        for legacy, sid in self._skill_mapping.items():
+            if sid == canon:
+                candidates.add(str(legacy).strip())
+        candidates.discard("")
+        return candidates
+
+    def _normalize_allowed_skill_ids(self, allowed_skill_ids: Optional[List[str]]) -> List[str]:
+        normalized: List[str] = []
+        seen: Set[str] = set()
+        for raw_skill_id in allowed_skill_ids or []:
+            candidate = str(raw_skill_id or "").strip()
+            if not candidate:
+                continue
+            skill_id = str(self.get_skill_id(candidate) or candidate).strip()
+            if not skill_id or skill_id in seen:
+                continue
+            seen.add(skill_id)
+            normalized.append(skill_id)
+        return normalized
+
+    def _tool_definitions_cache_key(self, allowed_skill_ids: Optional[List[str]]) -> Tuple[bool, frozenset]:
         """
         Cache-Key: frozenset der normalisierten IDs; erstes Tuple-Element markiert,
         ob eine explizite (truthy) Einschränkungsliste übergeben wurde (vermeidet Kollision mit leeren Einträgen).
         """
-        if not allowed_skill_ids:
+        normalized = self._normalize_allowed_skill_ids(allowed_skill_ids)
+        if not normalized:
             return (False, frozenset())
-        return (
-            True,
-            frozenset(str(s).strip() for s in allowed_skill_ids if str(s).strip()),
-        )
+        return (True, frozenset(normalized))
 
     def get_tool_definitions(self, allowed_skill_ids: List[str] = None) -> List[Dict[str, Any]]:
         key = self._tool_definitions_cache_key(allowed_skill_ids)
@@ -473,18 +543,34 @@ class ToolManager:
             return list(cached)
 
         definitions: List[Dict[str, Any]] = []
-        for name, tool in self.tools.items():
-            # Diamond-Fallback: Wenn allowed_skill_ids da sind, MUSS das Tool rein, wenn Name oder Skill-ID passt
-            if allowed_skill_ids:
-                skill_id = getattr(tool.skill_metadata, 'skill', None)
-                if name not in allowed_skill_ids and skill_id not in allowed_skill_ids:
+        unique_tools = {id(tool): tool for tool in self.tools.values()}
+        normalized_allowed = self._normalize_allowed_skill_ids(allowed_skill_ids)
+        allowed_set: Optional[Set[str]] = set(normalized_allowed) if normalized_allowed else None
+
+        for tool in unique_tools.values():
+            if allowed_set is not None:
+                if self._candidate_names_for_tool(tool).isdisjoint(allowed_set):
                     continue
+
+            canonical_name = self.get_skill_id(tool.name)
+            # Guard: Sanitize tool name and description for Gemini compatibility
+            # Gemini requires alphanumeric (a-z, A-Z, 0-9) or underscores (_) in tool names
+            safe_name = canonical_name if canonical_name and isinstance(canonical_name, str) else "unknown_tool"
+            # Replace dots with underscores to ensure alphanumeric compliance
+            safe_name = safe_name.replace(".", "_").replace("-", "_")
+            if not safe_name or not safe_name.replace("_", "").isalnum():
+                safe_name = f"tool_{len(definitions)}"
+            
+            safe_description = tool.description if tool.description and isinstance(tool.description, str) else "No description available"
+
+            if canonical_name != safe_name:
+                logger.warning(f"[D21-TOOL-DEF-GUARD] Tool name '{canonical_name}' sanitized to '{safe_name}' for Gemini compatibility")
 
             definitions.append({
                 "type": "function",
                 "function": {
-                    "name": name,
-                    "description": tool.description,
+                    "name": safe_name,
+                    "description": safe_description,
                     "parameters": tool.llm_definition["parameters"],
                 },
             })

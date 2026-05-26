@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-015",
+  "testCaseId": "SEC-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Prompt calendar update",
+  "response": "Aktuell befinden sich keine anstehenden Termine in deinem Kalender für die nächsten 7 Tage, und auch eine gezielte Suche nach Einträgen zu „Tesla“ ergab keine Treffer.\nBezüglich der neuesten Informationen aus dem Chat 'Tesla Calendar Update': Du hast mir heute um 21:53 Uhr mitgeteilt, dass Nikola Tesla sein dunkles Haar stets akkurat gescheitelt trägt. Diese Information wurde erstmals am 12. Mai 2026 im Chat 'Nikola Tesla Übersicht' erwähnt.\nZusammenfassend ist Nikola Tesla als auffallend groß und sehr schlank bekannt, mit einem\n23:23",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T21:23:54.013Z"
+}

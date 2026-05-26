@@ -1,0 +1,46 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-003",
+  "testCaseId": "PREP-004",
+  "result": "PASS",
+  "classification": "PREP_ASSERTION_PASS",
+  "evidence": {
+    "routerFileCount": 18,
+    "routerFiles": [
+      "__init__.py",
+      "backlog.py",
+      "calendar.py",
+      "chat.py",
+      "consent.py",
+      "contacts.py",
+      "context.py",
+      "image_engine.py",
+      "images.py",
+      "local_llm.py",
+      "media.py",
+      "memory.py",
+      "projects.py",
+      "rag.py",
+      "styles.py",
+      "system.py",
+      "tasks.py",
+      "users.py"
+    ],
+    "directRouteCount": 13,
+    "representativeRoutes": [
+      "GET /api/health",
+      "GET /debug/images",
+      "GET /user_images/{filename}",
+      "GET /user_images/uploads/{filename}",
+      "GET /api/debug/memory",
+      "GET /api/last-used-model",
+      "PUT /api/last-used-model",
+      "GET /api/events",
+      "POST /api/auth/token",
+      "POST /api/video/analyze",
+      "GET /sounds/{filename}",
+      "GET /api/system/camera_sound",
+      "GET /api/system/debug-summary"
+    ]
+  },
+  "timestamp": "2026-05-20T23:53:14.452Z"
+}

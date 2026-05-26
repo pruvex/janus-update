@@ -1,0 +1,7 @@
+{
+  "rawSensitiveEvidencePolicy": "redacted-only",
+  "rawPrivateCanariesWritten": false,
+  "endpointStatus": 200,
+  "localLogCanariesPresent": false,
+  "redactionMarkerObserved": true
+}

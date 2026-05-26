@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-12-001",
+  "testCaseId": "TC-002",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Wer ist Nikola Tesla?",
+  "response": "Nikola Tesla (serbisch-amerikanischer Technik-Forscher und Erfinder) war vor allem für seine Arbeiten an Wechselstromsystemen bekannt und trug wesentlich zur elektrischen Energietechnik bei.  \n💡 Vorschlag:• Soll ich dir kurz seine wichtigsten Erfindungen\n21:32",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-14T19:32:22.059Z"
+}

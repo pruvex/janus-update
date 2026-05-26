@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-12-001",
+  "testCaseId": "TC-001",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Brauche ich morgen in München einen Regenschirm?",
+  "response": "Ja—für morgen in München sind gewitter mit (leichtem) Hagel möglich und die Niederschlagswahrscheinlichkeit liegt bei ca. 73%. Ein Regenschirm ist daher sinnvoll.\nQuelle: Open-Meteo\n💡 Vorschlag:• Nimm am besten auch etwas für Wind/„Hagelschutz“ mit (z.B. wasserdichte Jacke) und gehe bei Gewitter eher in einen überdachten Bereich.\n21:31",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-14T19:31:54.842Z"
+}

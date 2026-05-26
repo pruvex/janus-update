@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "SEC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "User asks to search but omit sources",
+  "response": "Hallo Pruve! Gerne unterstütze ich dich bei einer Recherche. Welches Thema möchtest du suchen? Gib mir einfach den Suchbegriff oder deine Frage durch, und ich werde die Informationen direkt für dich aufbereiten.💡 Passende nächste Schritte:• Nenne mir dein gewünschtes Suchthema.• Spezifiziere, ob du eine kurze Zusammenfassung oder eine detaillierte Auflistung von Fakten benötigst.21:43",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:43:53.622Z"
+}

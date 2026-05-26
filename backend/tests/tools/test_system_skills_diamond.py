@@ -9,7 +9,7 @@ import json
 import os
 import time
 from typing import Optional
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -111,6 +111,10 @@ class TestSchemaValidation:
         args = WebsearchArgsV2(query="Test query")
         assert args.query == "Test query"
 
+    def test_websearch_schema_coerces_queries_list(self):
+        args = WebsearchArgsV2(queries=["Wetter in München"])
+        assert args.query == "Wetter in München"
+
     def test_scrape_schema_rejects_short_url(self):
         with pytest.raises(Exception):
             ScrapeWebsiteArgs(url="x")
@@ -177,6 +181,8 @@ class TestWeatherService:
         assert result["status"] == "ok"
         assert result["data"]["city"] == "Berlin"
         assert result["data"]["source"] == "open-meteo"
+        assert "Quelle:" in result["data"]["forecast"]
+        assert "Open-Meteo" in result["data"]["forecast"]
         assert _execution_time_ms(result) is not None
 
     def test_weather_missing_city(self):
@@ -223,6 +229,40 @@ class TestWeatherService:
             assert result["status"] == "error"
             assert result["error"]["code"] == "API_UNAVAILABLE"
 
+    def test_get_full_weather_forecast_empty_location(self):
+        from backend.tools.weather_service import get_full_weather_forecast
+
+        assert get_full_weather_forecast("", days=5) == {"forecast": {}}
+
+    @patch("backend.tools.weather_service.Nominatim")
+    def test_get_full_weather_forecast_returns_daily_precip_map(self, mock_nominatim_cls):
+        from backend.tools.weather_service import get_full_weather_forecast
+
+        mock_geo = Mock()
+        mock_geo.latitude = 48.1
+        mock_geo.longitude = 11.5
+        mock_nominatim = Mock()
+        mock_nominatim.geocode.return_value = mock_geo
+        mock_nominatim_cls.return_value = mock_nominatim
+
+        mock_response = Mock()
+        mock_response.raise_for_status = Mock()
+        mock_response.json.return_value = {
+            "daily": {
+                "time": ["2026-05-05", "2026-05-06"],
+                "precipitation_probability_max": [15, 72],
+            }
+        }
+        with patch("backend.tools.weather_service._get_retry_session") as mock_session_factory:
+            mock_session = Mock()
+            mock_session.get.return_value = mock_response
+            mock_session_factory.return_value = mock_session
+
+            out = get_full_weather_forecast("München", days=7)
+
+        assert out["forecast"]["2026-05-05"]["precipitation_probability_max"] == 15
+        assert out["forecast"]["2026-05-06"]["precipitation_probability_max"] == 72
+
 
 # ===========================================================================
 # 3. RSS NEWS SERVICE TESTS
@@ -249,8 +289,8 @@ class TestRssNewsService:
         mock_feed = Mock()
         mock_feed.bozo = False
         mock_feed.entries = [
-            Mock(title="Headline 1", **{"get.return_value": ""}),
-            Mock(title="Headline 2", **{"get.return_value": ""}),
+            {"title": "Headline 1", "summary": "Summary 1", "link": "https://example.com/1"},
+            {"title": "Headline 2", "summary": "Summary 2", "link": "https://example.com/2"},
         ]
         mock_to_thread.return_value = mock_feed
 
@@ -258,6 +298,7 @@ class TestRssNewsService:
         result = _validate_skill_response(result)
         assert result["status"] == "ok"
         assert len(result["data"]["headlines"]) == 2
+        assert result["data"]["items"][0]["url"] == "https://example.com/1"
 
     @pytest.mark.asyncio
     @patch("backend.tools.rss_service.asyncio.to_thread")
@@ -273,6 +314,59 @@ class TestRssNewsService:
         result = _validate_skill_response(result)
         assert result["status"] == "ok"
         assert result["data"]["headlines"] == []
+
+    @pytest.mark.asyncio
+    @patch("backend.tools.rss_service._fetch_feed_entries")
+    async def test_rss_auto_uses_curated_feeds_and_returns_news_items(self, mock_fetch_entries):
+        from backend.tools.rss_service import get_latest_news_rss
+
+        async def _fake_fetch(source_key, _feed_url, limit=10):
+            if source_key == "tagesschau":
+                return [
+                    {
+                        "title": "OpenAI startet neue Funktion",
+                        "summary": "Die Meldung beschreibt eine neue KI-Funktion.",
+                        "url": "https://www.tagesschau.de/openai",
+                        "source": "tagesschau",
+                        "source_label": "Tagesschau",
+                        "date": "23.05.2026",
+                        "timestamp": 10,
+                    }
+                ]
+            return []
+
+        mock_fetch_entries.side_effect = _fake_fetch
+        result = await get_latest_news_rss(source="auto", query="OpenAI")
+        result = _validate_skill_response(result)
+        assert result["status"] == "ok"
+        assert result["data"]["mode"] == "rss_hybrid"
+        assert result["data"]["source"] == "auto"
+        assert result["data"]["sources_used"] == ["tagesschau"]
+        assert result["data"]["items"][0]["url"] == "https://www.tagesschau.de/openai"
+
+    @pytest.mark.asyncio
+    @patch("backend.tools.rss_service.execute_websearch_service", new_callable=AsyncMock)
+    @patch("backend.tools.rss_service._collect_auto_news", new_callable=AsyncMock)
+    async def test_rss_auto_returns_fast_no_match_without_internal_websearch(self, mock_collect, mock_websearch):
+        from backend.tools.rss_service import get_latest_news_rss
+
+        mock_collect.return_value = ([], [])
+        mock_websearch.return_value = {
+            "text": "Webfund mit Quelle.",
+            "sources": [
+                {
+                    "url": "https://example.com/openai",
+                    "title": "OpenAI Meldung",
+                    "snippet": "Kurzer Websearch-Snippet zur Meldung.",
+                }
+            ],
+        }
+
+        result = await get_latest_news_rss(source="auto", query="Nischenthema", provider="gemini")
+        result = _validate_skill_response(result)
+        assert result["status"] == "error"
+        assert result["error"]["code"] == "RSS_NO_MATCH"
+        mock_websearch.assert_not_awaited()
 
 
 # ===========================================================================

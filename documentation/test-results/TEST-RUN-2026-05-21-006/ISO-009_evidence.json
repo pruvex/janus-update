@@ -1,0 +1,13 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-006",
+  "testCaseId": "ISO-009",
+  "result": "PASS",
+  "classification": "SESSION_BOUNDARY_PASS",
+  "evidence": {
+    "jwtExpirationClaim": true,
+    "expiredTokenRejected": true,
+    "frontendClearsInvalidToken": true,
+    "electronSessionPartition": "persist:janus under profile-local Electron userData"
+  },
+  "timestamp": "2026-05-21T11:58:23.617Z"
+}

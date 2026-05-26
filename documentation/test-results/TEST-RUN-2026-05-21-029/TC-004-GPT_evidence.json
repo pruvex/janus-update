@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "janus.test-evidence.v1",
+  "testRunId": "TEST-RUN-2026-05-21-029",
+  "testCaseId": "TC-004-GPT",
+  "status": "PASS",
+  "classification": "FUNCTIONAL_ASSERTION_PASS",
+  "type": "functional",
+  "provider": "GPT static cost runner",
+  "prompt": "Short streamed answer.",
+  "assertion": "Streaming path persists final usage with stream_final_usage context marker.",
+  "evidence": {
+    "commands": [
+      "python -m pytest backend/tests/test_cost_calculator.py backend/tests/test_cost_token_tracking_completeness.py -q",
+      "python -m pytest backend/tests/test_cost_calculator.py backend/tests/test_cost_token_tracking_completeness.py backend/tests/test_context_privacy_externalization_boundary.py backend/tests/test_filesystem_safety_boundary_regression.py -q",
+      "python -m py_compile backend/services/cost_service.py backend/services/cost_calculator.py backend/data/crud.py backend/data/models.py backend/data/database.py backend/services/chat_orchestrator.py backend/services/orchestrator/execution_engine.py",
+      "node tests/e2e/generator/compile-testspec-to-testplan.mjs --spec documentation/TEST_SPEC/06_efficiency_cost/13_cost_token_tracking_completeness.md",
+      "node tests/e2e/generator/validate-runner.mjs --plan documentation/test-runs/TEST-RUN-2026-05-21-028_plan.json --runner documentation/test-runs/TEST-RUN-2026-05-21-028_generated.spec.js",
+      "node --check documentation/test-runs/TEST-RUN-2026-05-21-028_generated.spec.js",
+      "python backend/tools/validate_skill_schemas.py"
+    ],
+    "changedFiles": [
+      "backend/data/models.py",
+      "backend/data/database.py",
+      "backend/services/cost_calculator.py",
+      "backend/services/cost_service.py",
+      "backend/data/crud.py",
+      "backend/services/chat_orchestrator.py",
+      "backend/services/orchestrator/execution_engine.py",
+      "frontend/js/cost-visualizer.js",
+      "backend/tests/test_cost_calculator.py",
+      "backend/tests/test_cost_token_tracking_completeness.py"
+    ],
+    "generatedPlan": "documentation/test-runs/TEST-RUN-2026-05-21-028_plan.json",
+    "generatedRunner": "documentation/test-runs/TEST-RUN-2026-05-21-028_generated.spec.js",
+    "dashboardFields": [
+      "total_input_tokens",
+      "total_output_tokens",
+      "total_cached_tokens",
+      "total_tokens",
+      "context_breakdown"
+    ]
+  },
+  "timestamp": "2026-05-21T16:05:00.000Z"
+}

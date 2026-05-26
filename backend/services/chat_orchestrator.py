@@ -69,7 +69,13 @@ from backend.services.orchestrator.identity_manager import identity_manager
 from backend.data.schemas import ExtractedFact
 from backend.services.vision.utils import fuse_vision_results, clean_for_chat
 from backend.utils import intent_classifier
-from backend.utils.config_loader import initialize_file_from_template, load_config_data, save_config_data
+from backend.utils.config_loader import (
+    initialize_file_from_template,
+    load_config_data,
+    load_model_catalog,
+    save_config_data,
+)
+from backend.services.llm_silo_context import normalize_llm_silo_provider
 
 logger = logging.getLogger("janus_backend")
 
@@ -96,6 +102,29 @@ def apply_directives(memory_context_string: str, directives: List[PromptDirectiv
         except Exception:
             logger.warning("DIRECTIVE detector failed: %s", directive.name, exc_info=True)
     return active
+
+
+_RETRY_STORM_ABUSE_RE = re.compile(
+    r"\b(?:wiederhole|wiederholen|wiederhol|repeat|retry|retrying)\b"
+    r".{0,60}\b(?:bis\s+es\s+funktioniert|until\s+it\s+works|immer\s+wieder|forever|unbegrenzt|unlimited|"
+    r"10000\s+mal|10000\s+times|unendlich|infinite|endlos|endless)\b|"
+    r"\b(?:teuerste\s+modell|expensive\s+model|ignoriere\s+limits|ignore\s+limits|"
+    r"bypass\s+quotas|umgehe\s+limits|uebergehe\s+limits|maximale\s+kosten|max(?:imum)?\s+cost)\b|"
+    r"\b(?:schreibe|schreiben|generiere|generieren|erstelle|erstellen|write|generate|create)\b"
+    r".{0,60}\b(?:1000\s+mal|1000\s+times|10000\s+mal|10000\s+times|tausendmal|x-mal)\b|"
+    r"\b(?:durchsuche|crawl|crawle|scrape|scrape|websearch|rss|news|suche|search)\b"
+    r".{0,80}\b(?:das\s+ganze\s+web|gesamte[ns]?\s+web|alle\s+webseiten|"
+    r"100\s+(?:seiten|urls|webseiten|tools|aufrufe)|1000\s+(?:seiten|urls|webseiten|tools|aufrufe)|"
+    r"unbegrenzt|unlimited|endlos|forever)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_retry_storm_abuse_request(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_RETRY_STORM_ABUSE_RE.search(q))
 
 
 _ENABLE_STRICT_LITERAL_BACKFILL = str(os.getenv("JANUS_ENABLE_STRICT_LITERAL_BACKFILL", "1")).strip().lower() in {"1", "true", "yes", "on"}
@@ -290,6 +319,61 @@ class ChatOrchestrator:
         ("Island", "Reykjavik"),
     ]
 
+    @staticmethod
+    def _hierarchy_provider_key(provider: Optional[str]) -> str:
+        p = str(provider or "").strip().lower()
+        if p == "google":
+            return "gemini"
+        return p
+
+    def _coerce_model_to_session_provider(self, provider: Optional[str], model: Optional[str]) -> str:
+        """BYOK: keep chat ``model`` aligned with session cloud provider (no gpt-* on gemini silo)."""
+        pkey = self._hierarchy_provider_key(provider)
+        tiers = self.MODEL_HIERARCHY.get(pkey) or {}
+        default_model = str(
+            tiers.get("speed") or tiers.get("balanced") or tiers.get("logic") or ""
+        ).strip()
+        m = str(model or "").strip()
+        if not m:
+            return default_model
+        if pkey not in ("openai", "gemini"):
+            return m
+        prov_norm = normalize_llm_silo_provider(pkey) or pkey
+        try:
+            cat = load_model_catalog() or {}
+            info = cat.get(m) if isinstance(cat, dict) else None
+            if isinstance(info, dict):
+                raw_owner = str(info.get("provider") or "").strip().lower()
+                owner_norm = normalize_llm_silo_provider(raw_owner) or raw_owner
+                if owner_norm in ("openai", "gemini") and owner_norm != prov_norm and default_model:
+                    logger.warning(
+                        "CHAT-MODEL-COERCION (BYOK): model %r (catalog owner=%r) incompatible with "
+                        "session provider %r — using default %r.",
+                        m,
+                        owner_norm,
+                        prov_norm,
+                        default_model,
+                    )
+                    return default_model
+        except Exception as exc:
+            logger.debug("CHAT-MODEL-COERCION: catalog lookup skipped (%s)", exc)
+        ml = m.lower()
+        inferred: Optional[str] = None
+        if ml.startswith("gpt-") or ml.startswith("ft:gpt") or ml.startswith("o1") or ml.startswith("o3") or ml.startswith("o4"):
+            inferred = "openai"
+        elif ml.startswith("gemini-"):
+            inferred = "gemini"
+        if inferred and inferred != prov_norm and default_model:
+            logger.warning(
+                "CHAT-MODEL-COERCION (BYOK, heuristic): model %r looks like %r but session is %r — using %r.",
+                m,
+                inferred,
+                prov_norm,
+                default_model,
+            )
+            return default_model
+        return m
+
     def __init__(
         self,
         *,
@@ -313,7 +397,14 @@ class ChatOrchestrator:
         self.context_builder = ContextBuilder(db)
         self.orchestrator_context = OrchestratorContextManager(db)
         self.status_sync = OrchestratorStatusSync(db)
-        self.skill_selector = SkillSelector()
+        # Help System + CapabilityRegistry (FEAT-HELP-001) — vor SkillSelector, damit
+        # get_relevant_skills nur Registry-validierte Skill-Refs sieht (keine DOMAIN_KEYWORDS).
+        registry_path = get_resource_path("backend/data/capability_registry.json")
+        skills_dir = get_resource_path("backend/skills")
+        self.capability_registry = CapabilityRegistry(registry_path, skills_dir)
+        self.capability_registry.load()
+        self.help_skill = create_help_skill(self.capability_registry)
+        self.skill_selector = SkillSelector(capability_registry=self.capability_registry)
         self.agent_planner = AgentPlanner(model_hierarchy=self.MODEL_HIERARCHY)
         self.agent_runtime = AgentRuntime(db=db, context_manager=context_manager)
         self.execution_engine = OrchestratorExecutionEngine(
@@ -323,15 +414,9 @@ class ChatOrchestrator:
             agent_planner=self.agent_planner,
             agent_runtime=self.agent_runtime,
             skill_selector=self.skill_selector,
+            capability_registry=self.capability_registry,
         )
         self._policy_pending_data: Dict[int, Optional[Dict[str, Any]]] = {}
-        # Help System (FEAT-HELP-001)
-        # Use get_resource_path for PyInstaller compatibility (.exe vs script)
-        registry_path = get_resource_path("backend/data/capability_registry.json")
-        skills_dir = get_resource_path("backend/skills")
-        self.capability_registry = CapabilityRegistry(registry_path, skills_dir)
-        self.capability_registry.load()
-        self.help_skill = create_help_skill(self.capability_registry)
 
     def _get_policy_pending_data(self, chat_id: Optional[int]) -> Optional[Dict[str, Any]]:
         if chat_id is None:
@@ -753,6 +838,8 @@ class ChatOrchestrator:
                         "chat_id": request.chat_id,
                         "trace_id": str(uuid.uuid4()),
                         "allowed_skill_ids": ["system.country_info"],
+                        "provider": request.provider,
+                        "model": request.model,
                     },
                 )
                 tool_call = {
@@ -905,7 +992,9 @@ class ChatOrchestrator:
                     provider=provider,
                     source_type=source_type,
                     input_tokens=usage_data.get("prompt_tokens", 0) or usage_data.get("input_tokens", 0),
-                    output_tokens=usage_data.get("completion_tokens", 0) or usage_data.get("output_tokens", 0)
+                    output_tokens=usage_data.get("completion_tokens", 0) or usage_data.get("output_tokens", 0),
+                    cached_tokens=usage_data.get("cached_tokens", 0) or usage_data.get("prompt_tokens_cached", 0),
+                    total_tokens=usage_data.get("total_tokens", 0),
                 )
             except Exception as e:
                 logger.error(f"Failed to save cost entry: {e}")
@@ -951,7 +1040,8 @@ class ChatOrchestrator:
                 logger.info('[IDENTITY REALTIME] Name %r detected in current message — overriding identity slot', wf._realtime_name)
         wf.requested_pdf_filename = self._extract_requested_pdf_filename(wf.user_text)
         wf.user_text_clean = wf.user_text.strip().lower()
-        wf.is_storybook_macro = any((kw in wf.user_text_clean for kw in ['kinderbuch', 'geschichte', 'märchen', 'maerchen'])) and any((kw in wf.user_text_clean for kw in ['bild', 'illustration', 'zeichn'])) and ('pdf' in wf.user_text_clean)
+        # 💎 CU-2: Verwende intent_engine.detect_storybook_intent mit Ausschlusskriterien
+        wf.is_storybook_macro = intent_engine.detect_storybook_intent(wf.user_text_clean)
         wf.decision_tokens = ['1', '2', '3', '1.', '2.', '3.']
         wf.factcheck_tokens = ['1', '2', '1.', '2.']
         wf.policy_injection_message = None
@@ -1006,25 +1096,40 @@ class ChatOrchestrator:
         )
         wf.system_prompt_for_llm = apply_verbosity_control(wf.base_system_prompt)
         wf.user_text_for_prompt = (wf.user_text or '').strip().lower()
-        # Diamond: Intent Detection via IntentEngine
-        wf.is_multitask_image_pdf = intent_engine.detect_multitask_image_pdf(wf.user_text_for_prompt)
-        wf.is_shopping_intent_early = intent_engine.detect_shopping_intent(wf.user_text_for_prompt)
+        wf.user_prompt_lower = (wf.user_text or '').strip().lower()
+        # Kalender-Snapshot vor Intent: Contextual Boost (TASK-062) gegen Event-Titel/Ort.
+        try:
+            from backend.services.calendar.calendar_memory import load_calendar_snapshot
+            wf.calendar_snapshot = load_calendar_snapshot(self.db)
+        except Exception as _cal_early_err:
+            logger.debug("[CAL-SNAPSHOT] Vorab-Ladefehler (Intent): %s", _cal_early_err)
+            wf.calendar_snapshot = getattr(wf, "calendar_snapshot", None)
+        # 💎 Single Dispatch Contract: genau eine Intent-Erkennung pro User-Turn
+        wf.intent_detection_result = intent_engine.detect_all_intents(
+            wf.user_text, calendar_snapshot=wf.calendar_snapshot
+        )
+        inc = wf.intent_detection_result
+        wf.is_calendar_intent = bool(getattr(inc, "is_calendar_intent", False))
+        wf.is_calendar_mutation = bool(getattr(inc, "is_calendar_mutation", False))
+        wf.is_calendar_creation = bool(getattr(inc, "is_calendar_creation", False))
+        wf.is_filesystem_intent = bool(getattr(inc, "is_filesystem_intent", False))
+        wf.is_multitask_image_pdf = inc.is_multitask_image_pdf
+        wf.is_shopping_intent_early = inc.is_shopping_intent
         self._is_shopping_intent_flag = wf.is_shopping_intent_early
         wf.dialog_mode = 'DEFAULT'
         wf.v_profile = openai_profile if request.provider == 'openai' else gemini_profile
         wf.has_image = False
         wf.base64_image = ''
         wf.image_data = None
-        wf.user_prompt_lower = (wf.user_text or '').strip().lower()
-        wf.has_tool_trigger = intent_engine.has_ollama_tool_trigger(wf.user_prompt_lower)
+        wf.has_tool_trigger = inc.has_tool_trigger
         wf.is_large_ollama_model = str(request.provider or '').lower() == 'ollama' and self._is_large_local_model(getattr(request, 'model', ''))
-        wf.is_ollama_vague_smalltalk = intent_engine.is_ollama_vague_smalltalk(wf.user_prompt_lower)
-        wf.is_simple_document_check_prompt = intent_engine.is_simple_document_check(wf.user_prompt_lower)
+        wf.is_ollama_vague_smalltalk = inc.is_ollama_vague_smalltalk
+        wf.is_simple_document_check_prompt = inc.is_simple_document_check
         wf.is_local_planner_early_exit = False
-        
-        # Help System (FEAT-HELP-001): Detect help intents before use_agent_factory
-        wf.help_intents = intent_engine.detect_all_intents(wf.user_text)
-        wf.help_intent_type = self._resolve_help_intent(wf.help_intents)
+
+        wf.help_intent_type = self._resolve_help_intent(inc)
+        if intent_classifier.is_greeting(wf.user_text):
+            wf.help_intent_type = None
         
         # Help Fast-Path: Skip LLM for help queries (§4.3)
         if wf.help_intent_type and not wf.has_image and not wf.is_policy_response:
@@ -1073,20 +1178,20 @@ class ChatOrchestrator:
             wf.skip_llm_generation = True
             wf.use_agent_factory = False
         else:
-            wf.use_agent_factory = not wf.has_image and (not wf.is_policy_response) and (not wf.is_policy_question) and (not wf.is_audit_request) and (not wf.is_factcheck_decision) and (not intent_classifier.is_greeting(wf.user_text)) and (not intent_classifier.is_identity_query(wf.user_text)) and (not intent_classifier.is_opinion_query(wf.user_text)) and (not wf.is_ollama_vague_smalltalk) and (not wf.is_simple_document_check_prompt) and (not wf.is_local_planner_early_exit) and (wf.planner_prefers_agent or self.is_complex_document_request(wf.user_text))
-        wf._is_personal_recall = intent_engine.is_self_referential_query(wf.user_text)
+            wf.use_agent_factory = not wf.has_image and (not wf.is_policy_response) and (not wf.is_policy_question) and (not wf.is_audit_request) and (not wf.is_factcheck_decision) and (not intent_classifier.is_greeting(wf.user_text)) and (not intent_classifier.is_identity_query(wf.user_text)) and (not intent_classifier.is_opinion_query(wf.user_text)) and (not wf.is_ollama_vague_smalltalk) and (not wf.is_simple_document_check_prompt) and (not wf.is_local_planner_early_exit) and (wf.planner_prefers_agent or inc.is_complex_document_request)
+        wf._is_personal_recall = inc.is_self_referential
         wf.user_text_lower = str(wf.user_text or '').lower()
-        wf.is_local_business_intent = intent_engine.detect_local_business_intent(wf.user_text_lower)
+        wf.is_local_business_intent = inc.is_local_business_intent
         wf.is_shopping_intent = getattr(self, '_is_shopping_intent_flag', False)
-        wf.is_video_intent = intent_engine.detect_video_intent(wf.user_text or "")
-        wf.is_video_understanding_intent = intent_engine.detect_video_understanding_intent(wf.user_text or "")
-        if intent_engine.detect_named_channel_video_intent(wf.user_text or ""):
+        wf.is_video_intent = inc.is_video_intent
+        wf.is_video_understanding_intent = inc.is_video_understanding_intent
+        if inc.named_channel_video:
             logger.info(
                 "💎 CHANNEL-LOCK-INTENT: Kanalbezug erkannt (von/Kanal/…) — video.search mit Channel-Resolve priorisieren.",
             )
-        wf.is_personal_recall = intent_engine.detect_personal_recall(wf.user_text_lower)
-        # Diamond: Meta-Agent und Image Intent via IntentEngine
-        wf.is_meta_agent_candidate = intent_engine.detect_complex_document_request(wf.user_text) and (not wf.has_image) and (not wf.is_policy_response) and (not wf.is_policy_question) and (not wf.is_audit_request) and (not wf.is_factcheck_decision)
+        wf.is_personal_recall = inc.is_personal_recall
+        # Diamond: Meta-Agent und Image Intent via IntentDetectionResult (Single Dispatch Contract)
+        wf.is_meta_agent_candidate = inc.is_complex_document_request and (not wf.has_image) and (not wf.is_policy_response) and (not wf.is_policy_question) and (not wf.is_audit_request) and (not wf.is_factcheck_decision)
         wf.image_intent_keywords = list(intent_engine.image_intent_keywords)
         wf.image_name_hint = ''
         wf.chat_title = ''
@@ -1155,9 +1260,225 @@ class ChatOrchestrator:
         ctx.identity_fact = wf._identity
         return ctx
 
+    _TOOLS_CMD_RE = re.compile(
+        r"^/tools\s+(?P<skill>[a-zA-Z_][a-zA-Z0-9_.]*)"
+        r"(?P<rest>.*)$",
+        re.DOTALL,
+    )
+
+    async def _try_tools_command(self, ctx: RequestContext) -> Optional[Dict]:
+        # --- SICHERHEITS-NOTBREMSE (Task-066 / Dispatcher-Bug) ---
+        # Deaktiviert den experimentellen Tool-Dispatcher als Vorsichtsmaßnahme.
+        # ToolExecutor-Wiring ist korrekt (wird direkt in Methode instanziiert),
+        # aber der Dispatcher bleibt deaktiviert bis er vollständig getestet ist.
+        return None
+        # --------------------------------------------------------
+        """Intercept `/tools <skill> --key value` commands and dispatch directly."""
+        wf = ctx.workflow
+        user_text = (wf.user_text or "").strip()
+        m = self._TOOLS_CMD_RE.match(user_text)
+        if not m:
+            return None
+
+        skill_name = m.group("skill").strip()
+        rest = (m.group("rest") or "").strip()
+
+        logger.info("[TOOLS-CMD] Intercepted: skill='%s', args_raw='%s'", skill_name, rest)
+
+        from backend.services.tool_manager import tool_manager
+        tool_def = tool_manager.get_tool(skill_name, warn_if_legacy=True)
+        if not tool_def:
+            try:
+                from backend.services.skill_router import skill_router
+                tool_def = skill_router.get_tool_definition(skill_name)
+            except Exception:
+                tool_def = None
+
+        if not tool_def:
+            error_text = (
+                f"**Fehler:** Skill `{skill_name}` nicht gefunden.\n\n"
+                f"Verfügbare Memory-Skills: `memory.write`, `memory.read`, "
+                f"`memory.update`, `memory.delete`, `memory.history`"
+            )
+            logger.warning("[TOOLS-CMD] Skill '%s' not found", skill_name)
+            from backend.services.orchestrator.schemas import ExecutionResponse
+            wf.execution_for_api = ExecutionResponse(text=error_text)
+            wf.skip_llm_generation = True
+            self.status_sync.persist_assistant_message(ctx.request.chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        tool_args: Dict[str, Any] = {}
+        if rest:
+            import shlex
+            try:
+                tokens = shlex.split(rest)
+            except ValueError:
+                tokens = rest.split()
+            i = 0
+            while i < len(tokens):
+                token = tokens[i]
+                if token.startswith("--") and len(token) > 2:
+                    key = token[2:]
+                    if i + 1 < len(tokens) and not tokens[i + 1].startswith("--"):
+                        raw_val = tokens[i + 1]
+                        try:
+                            tool_args[key] = int(raw_val)
+                        except ValueError:
+                            try:
+                                tool_args[key] = float(raw_val)
+                            except ValueError:
+                                tool_args[key] = raw_val
+                        i += 2
+                    else:
+                        tool_args[key] = True
+                        i += 1
+                else:
+                    i += 1
+
+        logger.info("[TOOLS-CMD] Dispatching skill='%s' with args=%s", skill_name, tool_args)
+        try:
+            executor = ToolExecutor(
+                self.db,
+                wf.api_key,
+                request.provider,
+                request.model,
+                additional_context={
+                    "chat_id": request.chat_id,
+                    "trace_id": str(uuid.uuid4()),
+                    "provider": request.provider,
+                    "model": request.model,
+                },
+            )
+            result = await executor.execute_tool_call(
+                tool_name=skill_name,
+                tool_args=tool_args,
+                is_internal_call=False,
+            )
+            result_content = result.get("content") or result.get("_raw_content") or str(result)
+            if isinstance(result_content, str):
+                try:
+                    parsed = json.loads(result_content)
+                    if isinstance(parsed, dict):
+                        status = parsed.get("status", "")
+                        if status == "ok":
+                            data = parsed.get("data", {})
+                            response_text = f"**{skill_name}** erfolgreich ausgeführt.\n\n```json\n{json.dumps(data, indent=2, ensure_ascii=False)}\n```"
+                        else:
+                            error = parsed.get("error", {})
+                            response_text = f"**Fehler bei {skill_name}:** {error.get('message', str(parsed))}"
+                    else:
+                        response_text = f"```json\n{json.dumps(parsed, indent=2, ensure_ascii=False)}\n```"
+                except (json.JSONDecodeError, TypeError):
+                    response_text = str(result_content)
+            else:
+                response_text = str(result_content)
+        except Exception as exc:
+            logger.error("[TOOLS-CMD] Execution failed: %s", exc, exc_info=True)
+            response_text = f"**Fehler bei {skill_name}:** {exc}"
+
+        from backend.services.orchestrator.schemas import ExecutionResponse
+        wf.execution_for_api = ExecutionResponse(text=response_text)
+        wf.skip_llm_generation = True
+        self.status_sync.persist_assistant_message(ctx.request.chat_id, wf.execution_for_api)
+        return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+    async def _try_mutation_guard_confirmation(self, ctx: RequestContext) -> Optional[Dict]:
+        """TASK-067: Human-in-the-loop für Pending-Proposals (**nur TIME_MUTATION** / Löschen).
+
+        Reine Beschreibungs-/Titel-/Ort-Mutationen (**DATA_MUTATION**, TASK-067-B) erzeugen
+        kein Proposal — dieser Pfad steht ihnen nicht im Weg.
+        """
+        from backend.services.calendar import mutation_guard_store as mgs
+        from backend.services.orchestrator.schemas import ExecutionResponse
+        from backend.tools.calendar_tools import find_and_update_calendar_event
+
+        request = ctx.request
+        wf = ctx.workflow
+        chat_id = request.chat_id
+        if chat_id is None:
+            return None
+
+        pending = mgs.get_pending_mutation_proposal(chat_id)
+        if pending is None:
+            return None
+
+        verdict = mgs.classify_confirmation_reply(wf.user_text or "")
+        if verdict is None:
+            return None
+
+        if verdict == "reject":
+            mgs.log_rejection_received(pending.proposal_id, chat_id=int(chat_id))
+            mgs.pop_pending_mutation_proposal(chat_id)
+            wf.execution_for_api = ExecutionResponse(
+                text=(
+                    "Alles klar — ich habe die geplante Kalender-Änderung **verworfen**. "
+                    "Der Termin bei Google Calendar wurde **nicht** verändert (es lag nur eine Vorschau vor)."
+                )
+            )
+            wf.skip_llm_generation = True
+            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        # confirm
+        mgs.log_confirmation_received(pending.proposal_id, chat_id=int(chat_id))
+        prop = mgs.pop_pending_mutation_proposal(chat_id)
+        if prop is None:
+            return None
+
+        tool_args = mgs.tool_args_from_proposal(prop)
+        logger.info(
+            "[MUTATION-GUARD] Applying confirmed mutation event_id=%r chat_id=%s",
+            prop.event_id,
+            chat_id,
+        )
+        try:
+            cal_result = await find_and_update_calendar_event(
+                **tool_args,
+                skip_mutation_confirmation=True,
+                chat_id=int(chat_id),
+            )
+        except Exception as exc:
+            logger.error("[MUTATION-GUARD] Confirmed execution failed: %s", exc, exc_info=True)
+            msg = (
+                f"Die Kalender-Änderung konnte **nicht** gespeichert werden: {exc}\n\n"
+                f"Du kannst die Änderung gern noch einmal anstoßen."
+            )
+            wf.execution_for_api = ExecutionResponse(text=msg)
+            wf.skip_llm_generation = True
+            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        if str(cal_result.status) == "ok":
+            reply = (
+                cal_result.message
+                or "Die Kalender-Änderung wurde **gespeichert**."
+            )
+        else:
+            err_txt = ""
+            if cal_result.error is not None:
+                err_txt = str(getattr(cal_result.error, "message", "") or cal_result.error or "")
+            reply = (
+                "Die Kalender-Änderung konnte **nicht** gespeichert werden."
+                + (f" Details: {err_txt}" if err_txt else "")
+            )
+
+        wf.execution_for_api = ExecutionResponse(text=str(reply))
+        wf.skip_llm_generation = True
+        self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+        return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
     async def _try_early_exit(self, ctx: RequestContext) -> Optional[Dict]:
         wf = ctx.workflow
         request = ctx.request
+
+        tools_cmd_result = await self._try_tools_command(ctx)
+        if tools_cmd_result is not None:
+            return tools_cmd_result
+
+        mutation_guard_result = await self._try_mutation_guard_confirmation(ctx)
+        if mutation_guard_result is not None:
+            return mutation_guard_result
+
         policy_response = await handle_policy_consent_phase(self, ctx)
         if policy_response is not None:
             return policy_response
@@ -1219,25 +1540,63 @@ class ChatOrchestrator:
             wf.skip_llm_generation = True
             wf.disable_tools = True
             logger.info('IDENTITY FAST-PATH aktiv (ollama): direkte Janus-Selbstvorstellung ohne LLM-Call.')
-        elif str(request.provider or '').lower() == 'ollama' and (not wf.has_image) and intent_classifier.is_greeting(wf.user_text):
-            wf.user_text_lower = str(wf.user_text or '').lower()
-            if 'wie geht' in wf.user_text_lower or 'wie gehts' in wf.user_text_lower:
-                wf.final_text_to_generate = prompt_registry.get_directive("ollama_greeting_how_are_you")
-            else:
-                wf.final_text_to_generate = prompt_registry.get_directive("ollama_greeting_default")
+        elif (not wf.has_image) and intent_classifier.is_greeting(wf.user_text):
+            wf.final_text_to_generate = (
+                intent_classifier.smalltalk_response(wf.user_text)
+                or prompt_registry.get_directive("ollama_greeting_default")
+            )
             wf.skip_llm_generation = True
             wf.disable_tools = True
-            logger.info('SMALLTALK FAST-PATH aktiv (ollama): direkte Kurzantwort ohne LLM-Call.')
+            logger.info('SMALLTALK FAST-PATH aktiv: direkte Kurzantwort ohne LLM-Call.')
         elif str(request.provider or '').lower() == 'ollama' and (not wf.has_image) and intent_classifier.is_opinion_query(wf.user_text):
             wf.final_text_to_generate = prompt_registry.get_directive("ollama_opinion_ducks")
             wf.skip_llm_generation = True
             wf.disable_tools = True
             logger.info('SMALLTALK FAST-PATH aktiv (ollama): Meinungsklärung ohne LLM-Call.')
-        try:
-            wf.relevant_skill_ids = self.skill_selector.get_relevant_skills(wf.user_text)
-        except Exception as exc:
-            logger.debug('SkillSelector fallback (keine Filterung): %s', exc)
+        if wf.skip_llm_generation and wf.disable_tools:
             wf.relevant_skill_ids = []
+        else:
+            try:
+                wf.relevant_skill_ids = self.skill_selector.get_relevant_skills(
+                    wf.user_text, intent_result=wf.intent_detection_result
+                )
+            except Exception as exc:
+                logger.debug('SkillSelector fallback (keine Filterung): %s', exc)
+                wf.relevant_skill_ids = []
+        
+        # File Extension Guard: Always allow knowledge skills when file extensions are detected
+        _FILE_EXTENSIONS = (
+            '.pdf', '.txt', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+            '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.webp',
+            '.mp4', '.mp3', '.wav', '.flac', '.zip', '.rar', '.7z',
+            '.json', '.xml', '.csv', '.md', '.html', '.css', '.js',
+            '.py', '.java', '.c', '.cpp', '.h', '.php', '.rb', '.go',
+            '.ts', '.tsx', '.jsx', '.vue', '.svelte', '.sql', '.db',
+        )
+        text_lower = (wf.user_text or '').lower()
+        has_file_extension = any(ext in text_lower for ext in _FILE_EXTENSIONS)
+        if has_file_extension:
+            for skill in ['knowledge.query', 'knowledge.code_search']:
+                if skill not in wf.relevant_skill_ids:
+                    wf.relevant_skill_ids.append(skill)
+            logger.debug(
+                "[FILE-EXTENSION-GUARD] Added knowledge skills to relevant_skill_ids: %s",
+                [s for s in ['knowledge.query', 'knowledge.code_search'] if s in wf.relevant_skill_ids]
+            )
+        
+        # PDF Routing Guard: Prevent filesystem.read_file for PDF files, ensure knowledge skills
+        if '.pdf' in text_lower:
+            if 'filesystem.read_file' in wf.relevant_skill_ids:
+                wf.relevant_skill_ids.remove('filesystem.read_file')
+                logger.debug("[PDF-ROUTING-GUARD] Removed filesystem.read_file (PDF detected)")
+            # Ensure knowledge.query or knowledge.read_full_text is included
+            for knowledge_skill in ['knowledge.query', 'knowledge.read_full_text']:
+                if knowledge_skill not in wf.relevant_skill_ids:
+                    wf.relevant_skill_ids.append(knowledge_skill)
+            logger.debug(
+                "[PDF-ROUTING-GUARD] Added knowledge skills for PDF: %s",
+                [s for s in ['knowledge.query', 'knowledge.read_full_text'] if s in wf.relevant_skill_ids]
+            )
         if wf._is_personal_recall and (not wf.is_video_intent):
             wf._websearch_skills = {'system.websearch', 'system.rss_news'}
             wf._before = len(wf.relevant_skill_ids)
@@ -1247,7 +1606,12 @@ class ChatOrchestrator:
             logger.info("DIAMOND GUARDRAIL: Lokale Suche erkannt. Forciere 'system.local_business' und blockiere allgemeine Textantworten ohne Tool.")
             wf.relevant_skill_ids = ['system.local_business']
         if wf.is_shopping_intent and (not wf.is_personal_recall):
-            logger.info("SHOPPING-GUARDRAIL: Kaufberatung erkannt (Intent=%s, Recall=%s). Forciere 'system.price_comparison'.", wf.is_shopping_intent, wf.is_personal_recall)
+            logger.info(
+                "SHOPPING-GUARDRAIL: Kaufberatung erkannt (Intent=%s, Recall=%s, primary=%s). Forciere 'system.price_comparison'.",
+                wf.is_shopping_intent,
+                wf.is_personal_recall,
+                getattr(wf.intent_detection_result, "primary_intent", None),
+            )
             wf.relevant_skill_ids = ['system.price_comparison']
         elif wf.is_video_intent and (not wf.is_local_business_intent):
             logger.info(
@@ -1270,13 +1634,66 @@ class ChatOrchestrator:
         wf = ctx.workflow
         request = ctx.request
         apply_image_intent_skill_guardrails(wf)
+        if _is_retry_storm_abuse_request(wf.user_text):
+            logger.warning(
+                "[RETRY-STORM-ABUSE-GATE] Blocking retry-storm/abuse request before memory retrieval: query_len=%s",
+                len(str(wf.user_text or "")),
+            )
+            wf.relevant_skill_ids = []
+            wf.force_tool_name = None
+            wf.proactive_guidance = ""
+            wf.has_tool_trigger = False
+            wf.disable_tools = True
+            wf.requires_clarification = True
+            wf.context_isolation_mode = "abuse_refusal"
+            wf.memory_context_string = ""
+            wf.slots = []
+            wf.selected = []
+            wf._fact_coupons = []
+            wf._formatted_coupons = ""
+            wf._active_directives = []
+            wf._active_directive_names = set()
+            if not hasattr(wf, "gateway_kwargs"):
+                wf.gateway_kwargs = {}
+            wf.gateway_kwargs["forced_tool"] = None
+            wf.gateway_kwargs["force_tool_name"] = None
+            wf.gateway_kwargs["tool_choice"] = "none"
+            wf.gateway_kwargs["disable_tools"] = True
+            wf.gateway_kwargs["requires_clarification"] = True
+            wf.gateway_kwargs["context_isolation_mode"] = "abuse_refusal"
+            wf.final_text = (
+                "Ich kann diesen Aufruf nicht wiederholen. "
+                "Retry-Storm und Cost-Abuse Anfragen werden aus Sicherheitsgruenden abgelehnt."
+            )
+            wf.final_text_to_generate = wf.final_text
+            wf.skip_llm_generation = True
+            return ctx
+        if wf.skip_llm_generation and wf.disable_tools:
+            logger.info("[SMALLTALK FAST-PATH] Skipping memory context and tool retrieval for direct response.")
+            wf.memory_context_string = ""
+            wf.slots = []
+            wf.selected = []
+            wf._fact_coupons = []
+            wf._formatted_coupons = ""
+            wf._active_directives = []
+            wf._active_directive_names = set()
+            return ctx
         if wf.is_meta_agent_candidate:
+            # 💎 GLOBAL VETO: Prüfe globale negative Keywords vor Meta-Agent-Start
+            if wf.intent_detection_result and wf.intent_detection_result.meta_agent_global_veto:
+                veto_reason = "meta_agent_global_veto"
+                logger.warning("[GLOBAL VETO] Meta-Agent blocked by negative keyword: %s. Skipping meta_agent_run.", veto_reason)
+                wf.is_meta_agent_run = False
+                wf.is_meta_agent_candidate = False
+                return ctx
             wf.is_meta_agent_run = True
             wf.meta_profile = self._get_meta_provider_profile(request.provider)
             wf.meta_fast_path = self._is_large_local_model(request.model)
             logger.info('META-AGENT PHASE 1 START (Recherche)')
             wf.kpi_phase1_started_at = time.perf_counter()
-            wf.all_dynamic_skills = self.skill_selector.get_relevant_skills(wf.user_text)
+            wf.all_dynamic_skills = self.skill_selector.get_relevant_skills(
+                wf.user_text, intent_result=wf.intent_detection_result
+            )
             wf.is_small = any((m in str(request.model or '').lower() for m in ['nano', 'mini']))
             if wf.is_small:
                 wf.dynamic_skills = ['system.websearch']
@@ -1290,7 +1707,7 @@ class ChatOrchestrator:
                 ctx.workflow.mark_retry_path('meta_phase1_forced')
                 wf.phase1_execution = await self._run_meta_agent_research_fallback(user_text=wf.user_text, request=request, api_key=wf.api_key or '', skip_final_synthesis=True, meta_profile=wf.meta_profile)
             else:
-                wf.phase1_execution = await self.execution_engine.run_agent_factory(enabled=True, chat_id=request.chat_id, user_text=self._build_meta_research_prompt(wf.user_text, wf.meta_profile.get('phase1_max_tokens')), relevant_skill_ids=wf.dynamic_skills, provider=request.provider, model=request.model, api_key=wf.api_key or '')
+                wf.phase1_execution = await self.execution_engine.run_agent_factory(enabled=True, chat_id=request.chat_id, user_text=self._build_meta_research_prompt(wf.user_text, wf.meta_profile.get('phase1_max_tokens')), relevant_skill_ids=wf.dynamic_skills, provider=request.provider, model=request.model, api_key=wf.api_key or '', intent_result=wf.intent_detection_result)
             if wf.kpi_phase1_started_at is not None:
                 wf.kpi_phase1_research_ms = round((time.perf_counter() - wf.kpi_phase1_started_at) * 1000.0, 2)
             if wf.phase1_execution.is_agent_flow:
@@ -1309,7 +1726,7 @@ class ChatOrchestrator:
                         wf.phase2_prompt = prompt_registry.get_directive("meta_phase2_mandatory_pdf").format(
                             fname=wf.fname, phase1_context=wf.phase1_context
                         )
-                    wf.phase2_execution = await self.execution_engine.run_agent_factory(enabled=True, chat_id=request.chat_id, user_text=wf.phase2_prompt, relevant_skill_ids=wf.pdf_only_skill, provider=request.provider, model=request.model, api_key=wf.api_key or '')
+                    wf.phase2_execution = await self.execution_engine.run_agent_factory(enabled=True, chat_id=request.chat_id, user_text=wf.phase2_prompt, relevant_skill_ids=wf.pdf_only_skill, provider=request.provider, model=request.model, api_key=wf.api_key or '', intent_result=wf.intent_detection_result)
                 if wf.phase2_execution.is_agent_flow:
                     wf.agent_response_payload = wf.phase2_execution.agent_payload
                     wf.final_text_to_generate = self._build_meta_pdf_success_message(phase1_context=wf.phase1_context, phase2_text=str(wf.phase2_execution.text or ''))
@@ -1329,7 +1746,7 @@ class ChatOrchestrator:
                 wf.kpi_error_code = 'META_AGENT_PHASE1_FAILED'
                 logger.warning('META-AGENT PHASE 1 fehlgeschlagen, fallback auf Standard-Agent-Flow.')
         if wf.use_agent_factory:
-            wf.agent_execution = await self.execution_engine.run_agent_factory(enabled=True, chat_id=request.chat_id, user_text=wf.user_text, relevant_skill_ids=wf.relevant_skill_ids, provider=request.provider, model=request.model, api_key=wf.api_key or '')
+            wf.agent_execution = await self.execution_engine.run_agent_factory(enabled=True, chat_id=request.chat_id, user_text=wf.user_text, relevant_skill_ids=wf.relevant_skill_ids, provider=request.provider, model=request.model, api_key=wf.api_key or '', intent_result=wf.intent_detection_result)
             if wf.agent_execution.is_agent_flow:
                 wf.agent_response_payload = wf.agent_execution.agent_payload
                 wf.final_text_to_generate = str(wf.agent_execution.text or 'Agent-Ausführung abgeschlossen.')
@@ -1441,10 +1858,11 @@ class ChatOrchestrator:
                 wf.event_data['name'] = wf.match.group(1).capitalize()
                 logger.info("LERN-TRIGGER AKTIVIERT: Versuche Name '%s' an Gesichtsbild zu binden.", wf.event_data['name'])
         crud.create_message(self.db, request.chat_id, 'user', (wf.vision_data.get('markdown', '') if wf.vision_data else '') + wf.user_text)
+        _hkey = self._hierarchy_provider_key(request.provider)
         if not wf.user_selected_model:
-            wf.chosen_model = self.MODEL_HIERARCHY[request.provider]['speed']
+            wf.chosen_model = self.MODEL_HIERARCHY[_hkey]["speed"]
         else:
-            wf.chosen_model = wf.user_selected_model
+            wf.chosen_model = self._coerce_model_to_session_provider(request.provider, wf.user_selected_model)
         logger.info(
             "MoA-Routing aktiv: Basis-Modell=%r, Skill-Tier hat Vorrang wenn verfügbar.",
             wf.chosen_model,
@@ -1533,7 +1951,12 @@ class ChatOrchestrator:
             wf._active_directives = []
             wf._active_directive_names = set()
             wf._has_negative_preferences = False
-            if MEMORY_V2_ENABLED:
+            # 💎 BACKLOG-039: Skip memory context rebuilding if context isolation mode is active
+            # 💎 BACKLOG-087: Also skip for abuse_refusal mode to prevent memory leakage in retry-storm attacks
+            context_isolation_mode = str(getattr(wf, "context_isolation_mode", "") or "")
+            if context_isolation_mode in ("ambiguity_clarification", "abuse_refusal"):
+                logger.info("[CONTEXT-ISOLATION] Skipping memory context rebuilding due to context_isolation_mode=%s", context_isolation_mode)
+            elif MEMORY_V2_ENABLED:
                 try:
                     wf.model_limit = 8000
                     logger.info(
@@ -1549,7 +1972,15 @@ class ChatOrchestrator:
                         logger.info('[BUDGET] Small model detected (%s) — memory_ratio=%.2f', request.model, wf._memory_ratio)
                     wf.selected = select_slots_by_budget(wf.slots, wf.budget)
                     from backend.services.memory_identity import ensure_identity_in_slots as _ensure_id
-                    wf.selected = _ensure_id(wf.selected, wf._identity)
+                    _memory_suppressed_query = " ".join(str(wf.user_text or "").strip().lower().split()) in {
+                        "simple factual prompt",
+                        "factual prompt",
+                        "erklaer kurz",
+                        "erklär kurz",
+                        "erkläre kurz",
+                    }
+                    if not _memory_suppressed_query:
+                        wf.selected = _ensure_id(wf.selected, wf._identity)
                     wf.memory_context_string = format_memory_context(wf.selected)
                     wf._active_directives = apply_directives(wf.memory_context_string, DIRECTIVES)
                     wf._active_directive_names = {d.name for d in wf._active_directives}
@@ -1569,10 +2000,20 @@ class ChatOrchestrator:
                         logger.info(f'[FACT COUPONS] Generated {len(wf._fact_coupons)} deterministic coupons')
                 except Exception as v2_err:
                     logger.error(f'[CONTEXT V2] Fehler im V2-Pfad, Fallback auf V1: {v2_err}', exc_info=True)
-                    wf.memory_context_string = self.context_builder._get_memory_context(wf.relevant_facts)
+                    # 💎 BACKLOG-039: Skip memory context rebuilding if context isolation mode is active
+                    # 💎 BACKLOG-087: Also skip for abuse_refusal mode to prevent memory leakage in retry-storm attacks
+                    if context_isolation_mode not in ("ambiguity_clarification", "abuse_refusal"):
+                        wf.memory_context_string = self.context_builder._get_memory_context(wf.relevant_facts)
+                    else:
+                        logger.info("[CONTEXT-ISOLATION] Skipping memory context rebuilding in V2 fallback due to context_isolation_mode=%s", context_isolation_mode)
             else:
-                wf.memory_context_string = self.context_builder._get_memory_context(wf.relevant_facts)
-                logger.info('[CONTEXT V1] Memory V2 disabled, using legacy context')
+                # 💎 BACKLOG-039: Skip memory context rebuilding if context isolation mode is active
+                # 💎 BACKLOG-087: Also skip for abuse_refusal mode to prevent memory leakage in retry-storm attacks
+                if context_isolation_mode not in ("ambiguity_clarification", "abuse_refusal"):
+                    wf.memory_context_string = self.context_builder._get_memory_context(wf.relevant_facts)
+                    logger.info('[CONTEXT V1] Memory V2 disabled, using legacy context')
+                else:
+                    logger.info("[CONTEXT-ISOLATION] Skipping memory context rebuilding in V1 path due to context_isolation_mode=%s", context_isolation_mode)
             if not wf._active_directives and wf.memory_context_string:
                 wf._active_directives = apply_directives(wf.memory_context_string, DIRECTIVES)
                 wf._active_directive_names = {d.name for d in wf._active_directives}
@@ -1584,6 +2025,40 @@ class ChatOrchestrator:
                         logger.info('[FAMILY-CONTEXT-021] Family relations detected in memory context')
                     else:
                         logger.info('%s Negative preferences found in memory context', _directive.log_tag)
+            try:
+                from backend.services.calendar.calendar_memory import (
+                    load_calendar_snapshot,
+                    render_calendar_context,
+                    render_proactive_calendar_guidance,
+                )
+                if getattr(wf, "calendar_snapshot", None) is None:
+                    wf.calendar_snapshot = load_calendar_snapshot(self.db)
+                wf.calendar_context_string = render_calendar_context(
+                    wf.calendar_snapshot,
+                    wf.user_text,
+                    now=wf._now_local,
+                )
+                wf.calendar_proactive_guidance = render_proactive_calendar_guidance(
+                    wf.calendar_snapshot,
+                    wf.user_text,
+                    now=wf._now_local,
+                )
+                if wf.calendar_context_string:
+                    wf.memory_context_string = (
+                        f"{wf.memory_context_string}\n\n{wf.calendar_context_string}"
+                        if wf.memory_context_string
+                        else wf.calendar_context_string
+                    )
+                    logger.info(
+                        "[CALENDAR-MEMORY] Injected calendar snapshot context (%d chars)",
+                        len(wf.calendar_context_string),
+                    )
+            except Exception as calendar_ctx_err:
+                logger.warning(
+                    "[CALENDAR-MEMORY] Context injection skipped: %s",
+                    calendar_ctx_err,
+                    exc_info=True,
+                )
             wf.stripped_input = wf.user_text.strip()
             wf.is_menu_selection = (wf.stripped_input in ['1', '2', '3'] or wf.stripped_input in ['1.', '2.', '3.']) and (not wf.is_factcheck_decision) and (not wf.is_policy_question)
             wf.llm_payload = ''
@@ -1605,6 +2080,8 @@ class ChatOrchestrator:
                     if wf._has_negative_preferences:
                         wf._memory_recall_block += 'NEGATIV-PRÄFERENZEN ERKANNT: Im Kontext stehen Dinge, die der User HASST oder NICHT MAG. Bei Fragen nach Vorlieben/Gewohnheiten MÜSSEN diese Abneigungen EXPLIZIT und VOLLSTÄNDIG genannt werden — positive UND negative!\n'
                     wf._memory_recall_block += '[TEMPORAL-RECALL] Jede Erinnerung im KONTEXT-WISSEN enthält Metadaten: \'GESPEICHERT AM\' (Zeitstempel) und \'IM CHAT\' (Chat-Name). Wenn der User fragt WANN er dir etwas erzählt hat oder IN WELCHEM GESPRÄCH, gib diese Metadaten exakt wieder. Beispiel: \'Das hast du mir am 3. März 2026 im Chat "Kennenlern-Gespräch" erzählt.\'\nFOKUS AUF URSPRUNG: Nenne primär den Zeitpunkt der ERSTEN Erwähnung eines Fakts. Wiederholte Bestätigungen desselben Fakts sind NICHT separat aufzulisten. Erwähne sie nur, wenn sie neue Details enthalten oder der User explizit nach allen Erwähnungen fragt.\n!!! DYNAMISCHE KONSISTENZ-PFLICHT !!!: Die Chat-Titel im folgenden KONTEXT-WISSEN sind die EINZIGE \'Single Source of Truth\'. Wenn sich ein Chat-Name gegenüber früher im Gesprächsverlauf geändert hat, MUSST du zwingend den NEUEN Namen aus dem KONTEXT-WISSEN verwenden. Ignoriere veraltete Chat-Namen aus dem bisherigen Gesprächsverlauf — sie sind OBSOLET.\n'
+                    if wf.calendar_proactive_guidance:
+                        wf._memory_recall_block += wf.calendar_proactive_guidance + '\n'
                     wf._memory_recall_block += '\n'
                 wf.llm_payload = f"ACHTUNG: Die folgenden Daten enthalten 'Dauerhafte Merkmale' und 'Einmalige Beobachtungen'. NUTZE FÜR BESCHREIBUNGEN NUR DIE DAUERHAFTEN MERKMALE (Physis). IGNORIERE FOLGENDES BEI BESCHREIBUNGEN VON PERSONEN: 'Mantel', 'Jacke', 'Schal', 'T-Shirt', 'Anzug', 'Krawatte', 'Kleid', 'Hose', 'Rock', 'Schuhe'. AKZENTUIERE HINGEGEN: 'Brille', 'Sonnenbrille', 'Kopfhörer', 'Headset', 'Smartwatch', 'Piercing', 'auffällige Kette'.\n{wf._memory_recall_block}KONTEXT-WISSEN (AUS DB):\n{wf.memory_context_string}\n\nUSER-ANFRAGE: {wf.user_text}\n\nAUFGABE: Bestätige kurz, wenn der User eine Information ergänzt. Erstelle ein Porträt nur bei expliziter Anfrage des Users. Wenn der User nach spezifischen Accessoires fragt (z.B. 'Trägt er Kopfhörer?'), durchsuche die Kategorie 'Aussehen_Situativ'. Wenn der User nur 'Beschreibe ihn' fragt, ignoriere diese Kategorie."
             if not wf.skip_llm_generation:
@@ -1685,6 +2162,43 @@ class ChatOrchestrator:
             getattr(ctx.request, "provider", None),
             getattr(ctx.request, "model", None),
         )
+        
+        # Log routing decision with selected model in payload
+        from backend.services.logging.logger_core import log_event
+        from backend.data.schemas_logging import LogEventCreate
+        try:
+            await log_event(LogEventCreate(
+                session_id=str(getattr(ctx.request, "chat_id", "") or ""),
+                provider=str(getattr(ctx.request, "provider", "") or "").lower(),
+                model=str(getattr(ctx.request, "model", "") or "").lower(),
+                event_type="routing_decision",
+                status="success",
+                payload={
+                    "input_hash": str(hash(str(getattr(ctx.request, "prompt", "") or ""))),
+                    "output_summary": f"Routed to provider={ctx.request.provider}, model={ctx.request.model}",
+                    "error_code": None
+                }
+            ))
+        except Exception as log_exc:
+            logger.error(f"Failed to log routing_decision: {log_exc}")
+
+        # 💎 CU-4: Sende status_update Event für UI-Feedback bei langen Anfragen
+        from backend.services.orchestrator.stream_protocol import StreamEvent
+        # Schätze Token-Anzahl für Entscheidung
+        prompt_text = str(getattr(ctx.request, "prompt", "") or "")
+        estimated_tokens = len(prompt_text.split())  # Grobe Schätzung: ~1 Token pro Wort
+        is_long_request = estimated_tokens > 1000  # >1000 Wörter = lange Anfrage
+
+        if is_long_request:
+            logger.info(f"[CU-4] Long request detected ({estimated_tokens} tokens), sending thinking_long_request status")
+            # Sende Event über den Generator (wird im execution_dispatcher verarbeitet)
+            status_event = StreamEvent(
+                type="status_update",
+                content={"status": "thinking_long_request"}
+            )
+            # Speichere im ctx, damit execution_dispatcher es in gateway_kwargs übergeben kann
+            ctx._pending_status_update = status_event
+
         return await execute_generation(
             ctx,
             db=self.db,
@@ -1710,13 +2224,48 @@ class ChatOrchestrator:
         )
 
     async def handle_chat_request(self, request: schemas.ChatRequest, background_tasks: Any = None) -> Dict:
-        ctx = self._classify_request(request, background_tasks)
-        early = await self._try_early_exit(ctx)
-        if early is not None:
-            return early
-        ctx = await self._build_memory_context(ctx)
-        ctx = await self._execute_generation(ctx)
-        return await self._finalize_response(ctx)
+        # Set trace_id for this request context
+        from backend.services.logging.logger_core import set_trace_id, generate_trace_id
+        trace_id = str(request.chat_id) if request.chat_id else generate_trace_id()
+        set_trace_id(trace_id)
+        
+        try:
+            ctx = self._classify_request(request, background_tasks)
+            early = await self._try_early_exit(ctx)
+            if early is not None:
+                return early
+            from backend.services.llm_silo_context import (
+                normalize_llm_silo_provider,
+                push_active_llm_silo,
+                reset_active_llm_silo,
+            )
+
+            _janus_silo_tok = push_active_llm_silo(
+                normalize_llm_silo_provider(getattr(ctx.request, "provider", None))
+            )
+            try:
+                ctx = await self._build_memory_context(ctx)
+                ctx = await self._execute_generation(ctx)
+                return await self._finalize_response(ctx)
+            finally:
+                reset_active_llm_silo(_janus_silo_tok)
+        except Exception as exc:
+            # Log error event to Supabase
+            try:
+                from backend.services.logging.logger_core import log_event
+                from backend.data.schemas_logging import LogEventCreate
+                
+                await log_event(LogEventCreate(
+                    session_id=str(request.chat_id or ""),
+                    provider=str(request.provider or "").lower(),
+                    model=str(request.model or ""),
+                    event_type="error",
+                    status="error",
+                    payload={"error": str(exc), "request_type": "chat_request"}
+                ))
+            except Exception as log_exc:
+                logger.error(f"Failed to log error event: {log_exc}")
+            raise
 
     def _iter_modal_request_stream_events(self, ctx: Any):
         """Nach ``finalize_response_async``: StreamEvent(s), damit SSE-Clients ``modal_request`` wie POST /chat erhalten."""
@@ -1753,160 +2302,202 @@ class ChatOrchestrator:
         from backend.services.orchestrator.response_finalizer import finalize_response_async
         from backend.services.orchestrator.stream_protocol import StreamEvent
 
-        ctx = self._classify_request(request, background_tasks)
-        early = await self._try_early_exit(ctx)
-        if early is not None:
-            wf = ctx.workflow
-            if isinstance(early, ExecutionResponse):
-                wf.final_text = str(early.text or "")
-                wf.execution_for_api = early
-            elif isinstance(early, dict):
-                wf.final_text = str(early.get("text") or early.get("message") or "")
-            else:
-                wf.final_text = str(early)
-            wf.run_tool_loop_result = None
-            wf.response = {}
-            yield StreamEvent(type="stream_complete", content={"text": wf.final_text})
-            await finalize_response_async(
-                ctx,
-                model_hierarchy=self.MODEL_HIERARCHY,
-                orchestrator_cls=ChatOrchestrator,
+        try:
+            ctx = self._classify_request(request, background_tasks)
+            early = await self._try_early_exit(ctx)
+            from backend.services.llm_silo_context import (
+                normalize_llm_silo_provider,
+                push_active_llm_silo,
+                reset_active_llm_silo,
             )
-            for ev in self._iter_modal_request_stream_events(ctx):
-                yield ev
-            return
+            _janus_silo_tok = push_active_llm_silo(
+                normalize_llm_silo_provider(getattr(ctx.request, 'provider', None))
+            )
+            try:
+                if early is not None:
+                    wf = ctx.workflow
+                    if isinstance(early, ExecutionResponse):
+                        wf.final_text = str(early.text or "")
+                        wf.execution_for_api = early
+                    elif isinstance(early, dict):
+                        wf.final_text = str(early.get("text") or early.get("message") or "")
+                    else:
+                        wf.final_text = str(early)
+                    wf.run_tool_loop_result = None
+                    wf.response = {}
+                    yield StreamEvent(type="stream_complete", content={"text": wf.final_text})
+                    await finalize_response_async(
+                        ctx,
+                        model_hierarchy=self.MODEL_HIERARCHY,
+                        orchestrator_cls=ChatOrchestrator,
+                    )
+                    for ev in self._iter_modal_request_stream_events(ctx):
+                        yield ev
+                    return
 
-        # 💎 STREAM-SWITCH: Video-Listen → Block-Response für stabile Markdown-Links
-        _wf_check = ctx.workflow
-        if intent_engine.should_disable_streaming(getattr(_wf_check, "user_text", "") or ""):
-            logger.info("💎 STREAM-SWITCH: Video-List-Intent erkannt → Block-Response für stabile Links")
-            ctx = await self._build_memory_context(ctx)
-            ctx = await self._execute_generation(ctx)
-            result = await self._finalize_response(ctx)
-            wf = ctx.workflow
+                # 💎 STREAM-SWITCH: Video-Listen → Block-Response für stabile Markdown-Links
+                _wf_check = ctx.workflow
+                _idr = getattr(_wf_check, "intent_detection_result", None)
+                if _idr is not None and _idr.is_video_list_intent:
+                    logger.info("💎 STREAM-SWITCH: Video-List-Intent erkannt → Block-Response für stabile Links")
+                    ctx = await self._build_memory_context(ctx)
+                    ctx = await self._execute_generation(ctx)
+                    result = await self._finalize_response(ctx)
+                    wf = ctx.workflow
 
-            # Extract text from result
-            if isinstance(result, ExecutionResponse):
-                block_text = str(result.text or "")
-            elif isinstance(result, dict):
-                block_text = str(result.get("text") or result.get("message") or "")
-            else:
-                block_text = str(result)
+                    # Extract text from result
+                    if isinstance(result, ExecutionResponse):
+                        block_text = str(result.text or "")
+                    elif isinstance(result, dict):
+                        block_text = str(result.get("text") or result.get("message") or "")
+                    else:
+                        block_text = str(result)
 
-            # 💎 Extract video-list metadata from tool results for frontend cards
-            _video_meta = None
-            _all_tr = []
-            if isinstance(result, ExecutionResponse):
-                _all_tr = result.all_tool_results or []
-            elif isinstance(result, dict):
-                _all_tr = result.get("all_tool_results") or []
-            for _tr in _all_tr:
-                if not isinstance(_tr, dict):
-                    continue
-                _raw = _tr.get("_raw_content") or _tr.get("content", "{}")
-                try:
-                    _parsed = json.loads(_raw) if isinstance(_raw, str) else dict(_raw or {})
-                except Exception:
-                    continue
-                if isinstance(_parsed, dict) and _parsed.get("status") == "ok":
-                    _data = _parsed.get("data") if isinstance(_parsed.get("data"), dict) else {}
-                    if str(_data.get("mode") or "").strip().lower() == "list" and isinstance(_data.get("videos"), list):
-                        _video_meta = {
-                            "videos": _data["videos"],
-                            "count": _data.get("count", 0),
-                            "mode": "list",
-                            "query": _data.get("query"),
-                        }
-                        break
+                    # 💎 Extract video-list metadata from tool results for frontend cards
+                    _video_meta = None
+                    _all_tr = []
+                    if isinstance(result, ExecutionResponse):
+                        _all_tr = result.all_tool_results or []
+                    elif isinstance(result, dict):
+                        _all_tr = result.get("all_tool_results") or []
+                    for _tr in _all_tr:
+                        if not isinstance(_tr, dict):
+                            continue
+                        _raw = _tr.get("_raw_content") or _tr.get("content", "{}")
+                        try:
+                            _parsed = json.loads(_raw) if isinstance(_raw, str) else dict(_raw or {})
+                        except Exception:
+                            continue
+                        if isinstance(_parsed, dict) and _parsed.get("status") == "ok":
+                            _data = _parsed.get("data") if isinstance(_parsed.get("data"), dict) else {}
+                            if str(_data.get("mode") or "").strip().lower() == "list" and isinstance(_data.get("videos"), list):
+                                _video_meta = {
+                                    "videos": _data["videos"],
+                                    "count": _data.get("count", 0),
+                                    "mode": "list",
+                                    "query": _data.get("query"),
+                                }
+                                break
 
-            if _video_meta:
-                yield StreamEvent(
-                    type="metadata",
-                    content=_video_meta,
-                    metadata={"source": "video.search.list_mode"},
+                    if _video_meta:
+                        yield StreamEvent(
+                            type="metadata",
+                            content=_video_meta,
+                            metadata={"source": "video.search.list_mode"},
+                        )
+                        logger.info("💎 STREAM-SWITCH: Sent %d videos metadata to frontend", len(_video_meta.get("videos", [])))
+
+                    yield StreamEvent(type="stream_complete", content={"text": block_text})
+                    for ev in self._iter_modal_request_stream_events(ctx):
+                        yield ev
+                    return
+
+                ctx = await self._build_memory_context(ctx)
+                ctx = await execute_generation_prepare_gateway(
+                    ctx,
+                    db=self.db,
+                    context_manager=self.context_manager,
+                    orchestrator_context_manager=self.orchestrator_context,
+                    skill_selector=self.skill_selector,
+                    prompt_role_from_db_role=self._prompt_role_from_db_role,
+                    user_budget_info=getattr(self, "_user_budget_info", None),
                 )
-                logger.info("💎 STREAM-SWITCH: Sent %d videos metadata to frontend", len(_video_meta.get("videos", [])))
+                wf = ctx.workflow
+                req = ctx.request
 
-            yield StreamEvent(type="stream_complete", content={"text": block_text})
-            for ev in self._iter_modal_request_stream_events(ctx):
-                yield ev
-            return
+                self.db.commit()
+                self.db.expunge_all()
+                wf.executor = ToolExecutor(
+                    self.db,
+                    wf.api_key,
+                    req.provider,
+                    req.model,
+                    additional_context={
+                        "chat_id": req.chat_id,
+                        "trace_id": getattr(wf, "request_trace_id", str(uuid.uuid4())),
+                        "original_user_text": wf.user_text,
+                        "provider": req.provider,
+                        "model": req.model,
+                    },
+                )
+                if getattr(wf, "gateway_kwargs", None):
+                    wf.gateway_kwargs["db"] = self.db
+                    wf.gateway_kwargs["tool_executor"] = wf.executor
+                    wf.gateway_kwargs["chat_history"] = wf.messages
+                    wf.gateway_kwargs["_workflow"] = wf
 
-        ctx = await self._build_memory_context(ctx)
-        ctx = await execute_generation_prepare_gateway(
-            ctx,
-            db=self.db,
-            context_manager=self.context_manager,
-            orchestrator_context_manager=self.orchestrator_context,
-            skill_selector=self.skill_selector,
-            prompt_role_from_db_role=self._prompt_role_from_db_role,
-            user_budget_info=getattr(self, "_user_budget_info", None),
-        )
-        wf = ctx.workflow
-        req = ctx.request
+                if wf.skip_llm_generation:
+                    wf.final_text = wf.final_text or wf.final_text_to_generate
+                    if not isinstance(getattr(wf, "response", None), dict):
+                        wf.response = {}
+                    yield StreamEvent(type="stream_complete", content={"text": wf.final_text})
+                    apply_post_generation_tail(ctx)
+                    ctx.final_response = str(wf.final_text or "")
+                    await finalize_response_async(
+                        ctx,
+                        model_hierarchy=self.MODEL_HIERARCHY,
+                        orchestrator_cls=ChatOrchestrator,
+                    )
+                    for ev in self._iter_modal_request_stream_events(ctx):
+                        yield ev
+                    return
 
-        self.db.commit()
-        self.db.expunge_all()
+                result_holder: Dict[str, Any] = {}
+                async for ev in self.execution_engine.run_tool_loop_stream(
+                    orchestrator_context=wf.orchestrator_context,
+                    tool_executor=wf.executor,
+                    gateway_kwargs=wf.gateway_kwargs,
+                    fallback_summary=wf.fallback_summary,
+                    current_limit=wf.current_limit,
+                    bypass_policy_this_turn=wf.bypass_policy_this_turn,
+                    set_policy_pending=self._set_policy_pending_data,
+                    chat_id=req.chat_id,
+                    user_text=wf.user_text,
+                    agent_flow_error=wf.agent_flow_error,
+                    result_holder=result_holder,
+                ):
+                    yield ev
 
-        wf.executor = ToolExecutor(
-            self.db,
-            wf.api_key,
-            req.provider,
-            wf.chosen_model,
-            additional_context={
-                "chat_id": req.chat_id,
-                "trace_id": getattr(wf, "request_trace_id", str(uuid.uuid4())),
-                "original_user_text": wf.user_text,
-            },
-        )
-        if getattr(wf, "gateway_kwargs", None):
-            wf.gateway_kwargs["db"] = self.db
-            wf.gateway_kwargs["tool_executor"] = wf.executor
-            wf.gateway_kwargs["chat_history"] = wf.messages
-            wf.gateway_kwargs["_workflow"] = wf
-
-        if wf.skip_llm_generation:
-            wf.final_text = wf.final_text or wf.final_text_to_generate
-            if not isinstance(getattr(wf, "response", None), dict):
-                wf.response = {}
-            yield StreamEvent(type="stream_complete", content={"text": wf.final_text})
-            apply_post_generation_tail(ctx)
-            ctx.final_response = str(wf.final_text or "")
-            await finalize_response_async(
-                ctx,
-                model_hierarchy=self.MODEL_HIERARCHY,
-                orchestrator_cls=ChatOrchestrator,
+                wf.run_tool_loop_result = result_holder.get("execution_result")
+                apply_run_tool_loop_result_to_workflow(ctx)
+                apply_post_generation_tail(ctx)
+                ctx.final_response = str(wf.final_text or "")
+                await finalize_response_async(
+                    ctx,
+                    model_hierarchy=self.MODEL_HIERARCHY,
+                    orchestrator_cls=ChatOrchestrator,
+                )
+                _api_text = str(getattr(getattr(wf, "execution_for_api", None), "text", "") or "").strip()
+                if _api_text and _api_text != str(ctx.final_response or "").strip():
+                    yield StreamEvent(type="stream_complete", content={"text": _api_text})
+                for ev in self._iter_modal_request_stream_events(ctx):
+                    yield ev
+            finally:
+                reset_active_llm_silo(_janus_silo_tok)
+        except Exception as exc:
+            # Log error event to Supabase
+            try:
+                from backend.services.logging.logger_core import log_event
+                from backend.data.schemas_logging import LogEventCreate
+                
+                await log_event(LogEventCreate(
+                    session_id=str(request.chat_id or ""),
+                    provider=str(request.provider or "").lower(),
+                    model=str(request.model or ""),
+                    event_type="error",
+                    status="error",
+                    payload={"error": str(exc), "request_type": "chat_request_stream"}
+                ))
+            except Exception as log_exc:
+                logger.error(f"Failed to log error event: {log_exc}")
+            
+            # Yield error event to stream
+            yield StreamEvent(
+                type="error",
+                content={"error": str(exc)},
+                metadata={"error_type": "exception"}
             )
-            for ev in self._iter_modal_request_stream_events(ctx):
-                yield ev
-            return
-
-        result_holder: Dict[str, Any] = {}
-        async for ev in self.execution_engine.run_tool_loop_stream(
-            orchestrator_context=wf.orchestrator_context,
-            tool_executor=wf.executor,
-            gateway_kwargs=wf.gateway_kwargs,
-            fallback_summary=wf.fallback_summary,
-            current_limit=wf.current_limit,
-            bypass_policy_this_turn=wf.bypass_policy_this_turn,
-            set_policy_pending=self._set_policy_pending_data,
-            chat_id=req.chat_id,
-            agent_flow_error=wf.agent_flow_error,
-            result_holder=result_holder,
-        ):
-            yield ev
-
-        wf.run_tool_loop_result = result_holder.get("execution_result")
-        apply_run_tool_loop_result_to_workflow(ctx)
-        apply_post_generation_tail(ctx)
-        ctx.final_response = str(wf.final_text or "")
-        await finalize_response_async(
-            ctx,
-            model_hierarchy=self.MODEL_HIERARCHY,
-            orchestrator_cls=ChatOrchestrator,
-        )
-        for ev in self._iter_modal_request_stream_events(ctx):
-            yield ev
+            raise
 
     def _trigger_fact_extraction(
         self,

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-036",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wie steht es aktuell um den FC Bayern?",
+  "response": "Hallo Pruve, hier ist der aktuelle Stand beim FC Bayern München (Stand: 21. Mai 2026):### 1. ZusammenfassungDer FC Bayern hat die Bundesliga-Saison 2025/26 erfolgreich als Deutscher Meister abgeschlossen. Während man in der Champions League knapp am Finale vorbeischrammte, steht am kommenden Samstag noch ein großes Highlight an: das DFB-Pokalfinale. Zudem gibt es wichtige personelle Weichenstellungen für die Zukunft.### 2. Liste der Fakten*   **Deutscher Meister:** Die Mannschaft unter Vincent Kompany sicherte sich mit 89 Punkten den 35. Meistertitel der Vereinsgeschichte.*   **DFB-Pokalfinale:** Am kommenden Samstag (23. Mai 2026) trifft der FC Bayern im Endspiel auf den VfB Stuttgart.*   **Manuel Neuer:** Der Kapitän hat seinen Vertrag vorzeitig bis Juni 2027 verlängert und wird zudem als Teil des DFB-Kaders in die Weltmeisterschaft 2026 gehen.*   **Champions League:** Die Bayern schieden im Halbfinale gegen Paris Saint-Germain aus.*   **Jamal Musiala:** Abseits des Platzes sorgte Musiala für Schlagzeilen, da er eine Geldstrafe nach einem Verkehrsunfall akzeptierte.### 3. Quellen*   [Spiegel Sport](https://www.spiegel.de/sport)*   [Tagesschau Sport](https://www.tagesschau.de/sport)💡 **Passende nächste Schritte:**• Soll ich dir die voraussichtliche Aufstellung für das Pokalfinale am Samstag heraussuchen?• Möchtest du Details zum WM-Kader der Nationalmannschaft und den weiteren Bayern-Spielern wissen?• Suchst du nach Tickets oder Public Viewing Optionen für das Finale gegen Stuttgart?20:47",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T18:47:54.242Z"
+}

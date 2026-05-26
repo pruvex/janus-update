@@ -51,6 +51,33 @@ class CapabilityRegistry:
         _available_skills: Set of discovered skill IDs from skills_dir.
     """
 
+    # Known categories for UX display; unknowns are folded into "Sonstiges" (TASK-069.10)
+    ALLOWED_CATEGORIES = {
+        "Kommunikation & Chat",
+        "Wissen & Recherche",
+        "Aufgaben & Produktivität",
+        "Kalender & Termine",
+        "Dateien & Dokumente",
+        "Bilder & Medien",
+        "Analyse & Auswertung",
+        "Entwicklung & Automatisierung",
+        "Einstellungen & System",
+        "Updates & Installation",
+        "Sonstiges",
+    }
+
+    CATEGORY_ALIASES = {
+        "Dateiverwaltung": "Dateien & Dokumente",
+        "Wissens-Hub": "Wissen & Recherche",
+        "Web-Recherche": "Wissen & Recherche",
+        "Bildanalyse": "Bilder & Medien",
+        "Bild-Studio": "Bilder & Medien",
+        "Video-System": "Bilder & Medien",
+        "Erinnerungen": "Aufgaben & Produktivität",
+        "Shopping & Preise": "Wissen & Recherche",
+        "Orte & Routen": "Wissen & Recherche",
+    }
+
     def __init__(self, registry_path: str, skills_dir: str) -> None:
         """Initialize the registry with paths.
         
@@ -169,6 +196,79 @@ class CapabilityRegistry:
             if field:
                 return next(iter(field.values()))
         return ""
+
+    def _normalize_category_name(self, category_name: str) -> str:
+        """Map registry display names to stable, user-facing capability groups."""
+        normalized = self.CATEGORY_ALIASES.get(category_name, category_name)
+        if normalized in self.ALLOWED_CATEGORIES:
+            return normalized
+        return "Sonstiges"
+
+    def get_verified_capabilities_for_overview(self, language: str = "de") -> List[Dict]:
+        """Get a filtered, mapped, and deduplicated list of verified capabilities for the overview.
+
+        TASK-069.2: Provides a flat list of validated capabilities for UX display.
+
+        Args:
+            language: The language for localized strings.
+
+        Returns:
+            A list of dictionaries, each representing a verified capability.
+            Each dict contains: id, name, description, category, status, confidence.
+        """
+        verified_capabilities = []
+        seen_ids = set()
+
+        if not self._registry or "categories" not in self._registry:
+            return []
+
+        for cat_id, cat_data in self._registry["categories"].items():
+            category_name = self._get_i18n_value(cat_data.get("display_name"), language, "de")
+            if not category_name:
+                category_name = "Sonstiges"
+            category_name = self._normalize_category_name(category_name)
+
+            for ability_data in cat_data.get("abilities", []):
+                capability_id = ability_data.get("id")
+                capability_name = self._get_i18n_value(ability_data.get("label"), language, "de")
+                capability_description = self._get_i18n_value(ability_data.get("how_to"), language, "de")
+                status = ability_data.get("status")
+                confidence = ability_data.get("confidence")
+
+                # Validate required fields (TASK-069.2)
+                if not all([capability_id, capability_name, capability_description, status is not None, confidence is not None]):
+                    logger.warning(
+                        "[CAPABILITY-REGISTRY] Skipping capability '%s' due to missing required fields.",
+                        capability_id or "UNKNOWN",
+                    )
+                    continue
+
+                # Filter by status and confidence (TASK-069.2)
+                if status != "verified" or not isinstance(confidence, (int, float)) or confidence < 0.7:
+                    logger.debug(
+                        "[CAPABILITY-REGISTRY] Skipping capability '%s' due to status '%s' or confidence '%.2f'.",
+                        capability_id, status, confidence,
+                    )
+                    continue
+
+                # Deduplication (TASK-069.2)
+                if capability_id in seen_ids:
+                    logger.debug(
+                        "[CAPABILITY-REGISTRY] Skipping duplicate capability ID '%s'.", capability_id
+                    )
+                    continue
+
+                seen_ids.add(capability_id)
+
+                verified_capabilities.append({
+                    "id": capability_id,
+                    "name": capability_name,
+                    "description": capability_description,
+                    "category": category_name,
+                    "status": status,
+                    "confidence": confidence,
+                })
+        return verified_capabilities
 
     def get_overview(self, language: str = "de") -> Dict[str, Any]:
         """Get capability overview for all categories.
@@ -296,6 +396,182 @@ class CapabilityRegistry:
     def all_categories(self) -> List[str]:
         """Return list of all category IDs."""
         return list(self._registry.get("categories", {}).keys())
+
+    def get_capability_groups(
+        self,
+        allowed_skill_ids: Optional[List[str]] = None,
+    ) -> Dict[str, List[str]]:
+        """Return planner-facing capability groups from the static registry only."""
+        allowed = {
+            str(skill_id).strip()
+            for skill_id in (allowed_skill_ids or [])
+            if str(skill_id).strip()
+        }
+        groups: Dict[str, List[str]] = {}
+        categories = self._registry.get("categories", {})
+        for category_id, category in categories.items():
+            skill_refs: List[str] = []
+            for ability in category.get("abilities", []):
+                for skill_id in ability.get("skill_refs", []):
+                    sid = str(skill_id or "").strip()
+                    if not sid:
+                        continue
+                    if sid not in self._available_skills:
+                        continue
+                    if allowed and sid not in allowed:
+                        continue
+                    if sid not in skill_refs:
+                        skill_refs.append(sid)
+            if skill_refs:
+                groups[str(category_id)] = skill_refs
+        return groups
+
+    def get_intent_skill_policy(self, intent_result: Any) -> Dict[str, List[str]]:
+        """Return {mandatory, boosted, forbidden} skill lists derived from IntentDetectionResult.
+
+        Mandatory skills are inserted at the front of the selector output regardless of vector
+        scores. Forbidden skills are removed from the candidate list. Boosted skills are
+        promoted over semantic hits but not guaranteed.
+        """
+        mandatory: List[str] = []
+        boosted: List[str] = []
+        forbidden: List[str] = []
+
+        def _flag(name: str) -> bool:
+            return bool(getattr(intent_result, name, False))
+
+        primary = str(getattr(intent_result, "primary_intent", "") or "")
+
+        # Diamond: PDF nur noch bei explizitem Wunsch, Bild+PDF-Pipeline oder komplexem Dokument-Metaflow.
+        pdf_allowed = (
+            _flag("is_multitask_image_pdf")
+            or _flag("is_complex_document_request")
+            or _flag("is_explicit_pdf_intent")
+        )
+        if not pdf_allowed:
+            forbidden += ["system.create_pdf"]
+
+        if _flag("is_routing_geo_intent") or primary == "routing_geo":
+            boosted += ["system.routing"]
+
+        if _flag("is_weather_intent") or primary == "weather":
+            # Mandatory: SkillSelector universe comes from registry skill_refs; weather must stay
+            # available even when boosted-only skills would otherwise be dropped from the tool list.
+            mandatory += ["system.weather"]
+
+        if _flag("is_wikipedia_intent") or primary == "wikipedia":
+            # BACKLOG-031: Wikipedia-Intent must be mandatory to force tool call instead of LLM knowledge
+            mandatory += ["system.wikipedia_summary"]
+
+        if _flag("is_news_intent") or primary == "news":
+            # BACKLOG-031: News-Intent must be mandatory to force tool call instead of LLM knowledge
+            mandatory += ["system.rss_news"]
+
+        source_lookup_dominates_calendar = (
+            (_flag("is_weather_intent") or _flag("is_routing_geo_intent"))
+            and primary != "calendar"
+        )
+        if (_flag("is_calendar_intent") or primary == "calendar") and not source_lookup_dominates_calendar:
+            mandatory += ["calendar.list_events", "calendar.find_slots", "calendar.find_and_update_event"]
+            forbidden += ["system.create_pdf", "knowledge.edit_pdf", "system.generate_image"]
+
+        if _flag("is_shopping_intent") or primary == "shopping":
+            mandatory += ["system.price_comparison"]
+            forbidden += ["system.websearch"]
+
+        if _flag("is_local_business_intent") or primary == "local_business":
+            mandatory += ["system.local_business"]
+
+        if _flag("is_video_understanding_intent") or primary == "video_understanding":
+            mandatory += ["video.understand"]
+
+        if _flag("is_video_list_intent") or primary == "video_list":
+            mandatory += ["video.search"]
+        elif _flag("is_video_intent") or primary == "video":
+            mandatory += ["video.search"]
+            boosted += ["system.websearch"]
+
+        # 💎 TASK-005: BACKLOG-005 - Filesystem-Intent hat Vorrang vor Bild-Intent
+        # Wenn Filesystem-Intent erkannt wurde, hat er Vorrang vor Bild-Intent
+        is_filesystem = _flag("is_filesystem_intent") or primary == "filesystem"
+        is_image = _flag("is_image_intent") or primary == "image"
+        if is_filesystem and is_image:
+            # Filesystem-Intent hat Vorrang, Bild-Intent wird ignoriert
+            is_image = False
+
+        # 💎 TASK-005: BACKLOG-005 - Filesystem-Intent fügt Filesystem-Tools hinzu
+        # Wenn Filesystem-Intent erkannt wurde, füge Filesystem-Tools als mandatory hinzu
+        if is_filesystem:
+            # Creation tools must be mandatory so "Ordner/Datei erstellen" does not drift
+            # into read/search tools on smaller provider models.
+            mandatory += [
+                "filesystem.create_directory",
+                "filesystem.create_file",
+            ]
+            boosted += [
+                "filesystem.delete_directory",
+                "filesystem.delete_file",
+                "filesystem.find_files",
+                "filesystem.list_directory",
+                "filesystem.list_workspaces",
+                "filesystem.move_file",
+                "filesystem.move_files",
+                "filesystem.read_file",
+                "filesystem.rename_file",
+            ]
+            forbidden += [
+                "knowledge.query",
+                "system.rss_news",
+                "system.websearch",
+                "system.wikipedia_summary",
+            ]
+
+        if is_image and not _flag("is_multitask_image_pdf"):
+            mandatory += ["system.generate_image"]
+
+        if _flag("is_multitask_image_pdf"):
+            mandatory += ["system.generate_image", "system.create_pdf"]
+
+        if _flag("is_personal_recall") or _flag("is_self_referential"):
+            mandatory += ["system.memory_read", "memory.read"]
+            forbidden += ["system.websearch", "system.rss_news"]
+
+        # Canonicalise: keep first occurrence, drop dupes, filter against available skills.
+        def _unique(lst: List[str]) -> List[str]:
+            seen: set = set()
+            result = []
+            for s in lst:
+                sid = str(s or "").strip()
+                if sid and sid not in seen:
+                    seen.add(sid)
+                    result.append(sid)
+            return result
+
+        return {
+            "mandatory": _unique(mandatory),
+            "boosted": _unique(boosted),
+            "forbidden": _unique(forbidden),
+        }
+
+    def get_planner_scope(
+        self,
+        intent_result: Any,
+        allowed_skill_ids: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """Build a registry-only skill scope for the Agent Planner."""
+        groups = self.get_capability_groups(allowed_skill_ids=allowed_skill_ids)
+        allowed = sorted({
+            skill
+            for skills in groups.values()
+            for skill in skills
+            if str(skill or "").strip()
+        })
+        primary_intent = str(getattr(intent_result, "primary_intent", "") or "").strip()
+        return {
+            "primary_intent": primary_intent,
+            "capability_groups": groups,
+            "allowed_skill_ids": allowed,
+        }
 
     def get_provider_details(self, provider_id: str, language: str = "de") -> Optional[Dict[str, Any]]:
         """Get provider details by ID.

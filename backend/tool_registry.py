@@ -1,5 +1,7 @@
 # backend/tool_registry.py
+import asyncio
 import logging
+import os
 import re
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
@@ -12,10 +14,12 @@ import keyring
 # Wir importieren die Module, damit die Funktionen verfügbar sind
 from backend.data import contact_schemas, schemas
 from backend.services import filesystem_manager
+from backend.tools import filesystem_tools
 from backend.tools.memory_tools import (
     memory_write_tool,
     memory_read_tool,
     memory_update_tool,
+    memory_delete_tool,
     memory_history_tool,
 )
 from backend.services.permission_service import grant_permission, revoke_permission
@@ -30,6 +34,23 @@ from backend.services.knowledge_composite import hardened_edit_pdf
 from backend.tools.pdf_editor import edit_pdf_text_in_place
 from backend.services.tool_manager import tool_manager
 from backend.services.websearch.websearch import execute_websearch_service
+from backend.services.websearch.query_bias import normalize_source_url
+from backend.services.websearch.link_quality import (
+    LinkIntent,
+    has_german_or_official_signal,
+    is_documentation_page_for_news,
+    is_generic_news_landing_page,
+    is_low_value_source,
+    normalize_label_for_match,
+    score_source_for_intent,
+    source_haystack,
+    tokenize_quality_text,
+)
+from backend.services.websearch.evidence_pipeline import EvidenceClaim, EvidencePipeline
+from backend.services.websearch_v3 import execute_single_verified_news
+from backend.services.websearch_v3.pipeline import SUPPORTED_NATIVE_PROVIDERS as WEBSEARCH_V3_NATIVE_PROVIDERS
+from backend.services.websearch_v3.query_planner import is_simple_news_query as is_simple_news_query_v3
+from backend.renderers.websearch_templates import WebSearchTemplateEngine
 from backend.data.database import SessionLocal
 from backend.tools.calendar_tools import (
     create_calendar_event,
@@ -146,7 +167,28 @@ def _normalize_websearch_query(query: str) -> str:
         return normalized
     lowered = normalized.lower()
     current_markers = ("aktuell", "aktuelle", "heute", "derzeit", "current", "latest")
-    price_markers = ("preis", "preise", "gold", "feinunze", "kosten", "kurs", "wert")
+    price_markers = (
+        "preis",
+        "preise",
+        "gold",
+        "goldpreis",
+        "platin",
+        "platinum",
+        "platinpreis",
+        "silber",
+        "silver",
+        "silberpreis",
+        "palladium",
+        "palladiumpreis",
+        "edelmetall",
+        "feinunze",
+        "troy ounce",
+        "kosten",
+        "kostet",
+        "kurs",
+        "wert",
+        "spotpreis",
+    )
     if any(marker in lowered for marker in current_markers):
         current_year = str(datetime.utcnow().year)
         for year in ("2024", "2025", "2026", "2027"):
@@ -155,7 +197,670 @@ def _normalize_websearch_query(query: str) -> str:
                 lowered = normalized.lower()
     if any(marker in lowered for marker in price_markers) and not any(token in lowered for token in (" euro", " eur", "€", " usd", "dollar")):
         normalized = f"{normalized} in Euro"
+    lowered = normalized.lower()
+    precious_metals = {
+        "platin": "Platinpreis",
+        "platinum": "Platinpreis",
+        "silber": "Silberpreis",
+        "silver": "Silberpreis",
+        "palladium": "Palladiumpreis",
+        "gold": "Goldpreis",
+    }
+    already_canonical = (
+        any(marker in lowered for marker in ("goldpreis", "platinpreis", "silberpreis", "palladiumpreis", "spotpreis"))
+        or ("troy ounce" in lowered and any(marker in lowered for marker in ("price", "spot")))
+    )
+    if not already_canonical and any(marker in lowered for marker in ("feinunze", "troy ounce", "preis", "kosten", "kostet")):
+        for token, canonical in precious_metals.items():
+            if token in lowered and canonical.lower() not in lowered:
+                normalized = f"{normalized} {canonical} Spotpreis"
+                break
     return normalized
+
+
+def _coerce_websearch_model_for_provider(provider: str, model: Optional[str]) -> Optional[str]:
+    provider_key = str(provider or "").strip().lower()
+    model_id = str(model or "").strip()
+    if not model_id:
+        return model
+    model_lower = model_id.lower()
+    if provider_key == "openai" and model_lower.startswith("gemini-"):
+        logger.warning(
+            "WEBSEARCH-MODEL-GUARD: coerced cross-provider model %r for provider=openai to gpt-5.4-nano.",
+            model_id,
+        )
+        return "gpt-5.4-nano"
+    if provider_key == "gemini" and model_lower.startswith("gpt-"):
+        logger.warning(
+            "WEBSEARCH-MODEL-GUARD: coerced cross-provider model %r for provider=gemini to gemini-3-flash-preview.",
+            model_id,
+        )
+        return "gemini-3-flash-preview"
+    return model_id
+
+
+def _normalize_source_label_for_match(label: str) -> str:
+    return normalize_label_for_match(label)
+
+
+def _extract_ranking_list_source_label(text: str) -> str:
+    value = str(text or "")
+    patterns = (
+        r"(?im)^\s*Quelle der Liste:\s*([^.\n]+)\.?",
+        r"(?im)^\s*Quelle:\s*([^.\n]+)\.?",
+        r"\(Quelle:\s*([^)]+)\)",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, value)
+        if match:
+            label = re.sub(r"\s+", " ", match.group(1)).strip(" .:")
+            if label and label.lower() not in {"nicht eindeutig verfügbar", "nicht eindeutig verfuegbar"}:
+                return label
+    return ""
+
+
+def _source_list_has_label_url(sources: List[Dict[str, Any]], label: str) -> bool:
+    normalized = _normalize_source_label_for_match(label)
+    if not normalized:
+        return False
+    for source in sources or []:
+        if not isinstance(source, dict):
+            continue
+        url = normalize_source_url(str(source.get("url") or source.get("source_url") or ""))
+        if not url:
+            continue
+        haystack = " ".join(
+            str(source.get(key) or "")
+            for key in ("title", "name", "source", "domain", "snippet", "text")
+        )
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(url)
+            haystack += f" {parsed.netloc} {parsed.path}"
+        except Exception:
+            pass
+        if normalized in _normalize_source_label_for_match(haystack):
+            return True
+    return False
+
+
+def _candidate_looks_like_ranking_source(source: Dict[str, Any], label: str, query: str) -> bool:
+    url = normalize_source_url(str(source.get("url") or source.get("source_url") or ""))
+    if not url or "wikipedia.org/wiki/" in url.lower():
+        return False
+    haystack = " ".join(
+        str(source.get(key) or "")
+        for key in ("title", "name", "source", "domain", "snippet", "text")
+    ).lower()
+    try:
+        from urllib.parse import urlparse, unquote
+        parsed = urlparse(url)
+        haystack += f" {parsed.netloc.lower()} {unquote(parsed.path).lower()}"
+    except Exception:
+        pass
+    label_norm = _normalize_source_label_for_match(label)
+    ranking_markers = ("ranking", "rangliste", "top", "topliste", "beste", "besten", "aller zeiten", "liste", "galerie")
+    has_label = label_norm and label_norm in _normalize_source_label_for_match(haystack)
+    has_ranking = any(marker in haystack for marker in ranking_markers)
+    query_tokens = [
+        token
+        for token in re.findall(r"[a-z0-9äöüß]+", str(query or "").lower())
+        if len(token) > 4 and token not in {"welche", "wer", "sind", "top", "besten", "berühmtesten", "beruehmtesten"}
+    ]
+    has_query_context = not query_tokens or any(token in haystack for token in query_tokens[:4])
+    return bool(has_label and has_ranking and has_query_context)
+
+
+def _extract_release_source_targets(
+    *,
+    query: str,
+    text: str,
+    sources: List[Dict[str, Any]],
+    limit: int = 4,
+) -> List[Dict[str, str]]:
+    if not WebSearchTemplateEngine.is_release_lookup(query):
+        return []
+    try:
+        items = WebSearchTemplateEngine._parse_release_items(text, data={"sources": []})
+    except Exception as exc:
+        logger.warning("WEBSEARCH-RELEASE-SOURCE-RESOLVE: parse soft-failed: %s", exc)
+        return []
+    targets: List[Dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for item in items:
+        source_match = re.search(r"^Quelle:\s*([^.\n]+)\.", item.source_line, flags=re.IGNORECASE)
+        if not source_match or "[Link](" in item.source_line:
+            continue
+        label = re.sub(r"\s+", " ", source_match.group(1)).strip(" .:")
+        if not label or label.lower() in {"nicht eindeutig verfÃ¼gbar", "nicht eindeutig verfuegbar"}:
+            continue
+        title = re.sub(r"\([^)]*\)", " ", item.title)
+        title = re.sub(r"\s+", " ", title).strip(" :")
+        if not title:
+            continue
+        key = (_normalize_source_label_for_match(label), title.casefold())
+        if key in seen:
+            continue
+        seen.add(key)
+        targets.append({"label": label, "title": title})
+        if len(targets) >= limit:
+            break
+    return targets
+
+
+def _candidate_matches_release_target(source: Dict[str, Any], target: Dict[str, str]) -> bool:
+    url = normalize_source_url(str(source.get("url") or source.get("source_url") or ""))
+    if not url:
+        return False
+    haystack = " ".join(
+        str(source.get(key) or "")
+        for key in ("title", "name", "source", "domain", "snippet", "text")
+    )
+    try:
+        from urllib.parse import urlparse, unquote
+        parsed = urlparse(url)
+        haystack += f" {parsed.netloc} {unquote(parsed.path)}"
+    except Exception:
+        pass
+    haystack_norm = _normalize_source_label_for_match(haystack)
+    label_norm = _normalize_source_label_for_match(target.get("label", ""))
+    title_tokens = [
+        token
+        for token in re.findall(r"[a-z0-9Ã¤Ã¶Ã¼ÃŸ]+", str(target.get("title") or "").lower())
+        if len(token) > 2 and token not in {"the", "and", "for", "eine", "einen", "album", "single", "rock", "ep"}
+    ]
+    if label_norm and label_norm not in haystack_norm:
+        return False
+    if not title_tokens:
+        return False
+    required = min(2, len(title_tokens))
+    matched = sum(1 for token in title_tokens if token in haystack_norm)
+    return matched >= required
+
+
+_NEWS_QUERY_MARKERS = (
+    "news",
+    "nachrichten",
+    "neuigkeiten",
+    "schlagzeilen",
+    "aktuell",
+    "aktuelle",
+    "aktuelles",
+    "was gibt es neues",
+    "newsticker",
+)
+
+def _is_news_lookup_query(query: str) -> bool:
+    lowered = str(query or "").casefold()
+    return any(marker in lowered for marker in _NEWS_QUERY_MARKERS)
+
+
+def _source_haystack(source: Dict[str, Any]) -> str:
+    return source_haystack(source)
+
+
+def _news_tokenize(value: str) -> List[str]:
+    return tokenize_quality_text(value)
+
+
+def _source_is_low_value_news(source: Dict[str, Any]) -> bool:
+    return is_low_value_source(source, LinkIntent.NEWS)
+
+
+def _source_is_documentation_page_for_news(source: Dict[str, Any]) -> bool:
+    return is_documentation_page_for_news(source)
+
+
+def _source_is_generic_news_landing_page(source: Dict[str, Any]) -> bool:
+    return is_generic_news_landing_page(source)
+
+
+def _source_has_german_or_official_news_signal(source: Dict[str, Any], label: str) -> bool:
+    return has_german_or_official_signal(source, label)
+
+
+def _split_news_body(body: str) -> tuple[str, str]:
+    clean = re.sub(r"\s+", " ", str(body or "")).strip(" .")
+    if not clean:
+        return "", ""
+    colon_match = re.match(r"^(.{3,90}?):\s+(.+)$", clean)
+    if colon_match:
+        return colon_match.group(1).strip(), colon_match.group(2).strip()
+    title = re.split(r"[.;]", clean, maxsplit=1)[0].strip()
+    return title[:90].strip(), clean
+
+
+def _extract_news_source_targets(query: str, text: str, limit: int = 5) -> List[Dict[str, str]]:
+    return [
+        {"index": claim.index, "title": claim.title, "summary": claim.summary, "label": claim.label}
+        for claim in EvidencePipeline.extract_news_claims(query, text, limit=limit)
+    ]
+
+
+def _target_to_evidence_claim(target: Dict[str, str]) -> EvidenceClaim:
+    return EvidenceClaim(
+        index=str(target.get("index") or ""),
+        title=str(target.get("title") or ""),
+        summary=str(target.get("summary") or ""),
+        label=str(target.get("label") or ""),
+    )
+
+
+def _candidate_matches_news_target(source: Dict[str, Any], target: Dict[str, str]) -> bool:
+    url = normalize_source_url(str(source.get("url") or source.get("source_url") or ""))
+    if not url or _source_is_low_value_news(source):
+        return False
+    return EvidencePipeline.match_source_for_claim([source], _target_to_evidence_claim(target)).accepted
+
+
+def _news_targets_needing_resolution(sources: List[Dict[str, Any]], targets: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    missing: List[Dict[str, str]] = []
+    for target in targets:
+        if not any(isinstance(source, dict) and _candidate_matches_news_target(source, target) for source in sources):
+            missing.append(target)
+    return missing
+
+
+def _news_sources_need_resolution(text: str, sources: List[Dict[str, Any]], targets: List[Dict[str, str]]) -> bool:
+    if not targets:
+        return False
+    if not sources:
+        return True
+    weak_sources = 0
+    for source in sources:
+        if isinstance(source, dict) and _source_is_low_value_news(source):
+            weak_sources += 1
+    return bool(_news_targets_needing_resolution(sources, targets)) or weak_sources >= max(2, len(sources) // 2)
+
+
+def _official_news_site_for_label(label: str) -> str:
+    return EvidencePipeline.official_news_site_for_label(label)
+
+
+def _source_label_from_url(url: str) -> str:
+    host = str(url or "").replace("https://", "").replace("http://", "").split("/")[0]
+    host = host.removeprefix("www.")
+    label = host.split(".")[0] if host else "Web"
+    return label[:1].upper() + label[1:]
+
+
+def _best_single_verified_news_source(query: str, sources: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    best_source: Optional[Dict[str, Any]] = None
+    best_score = -999
+    for source in sources or []:
+        if not isinstance(source, dict):
+            continue
+        url = normalize_source_url(str(source.get("url") or source.get("source_url") or ""))
+        if not url:
+            continue
+        candidate = dict(source)
+        candidate["url"] = url
+        title = str(candidate.get("title") or "").strip()
+        snippet = str(candidate.get("snippet") or candidate.get("description") or "").strip()
+        quality = score_source_for_intent(
+            candidate,
+            intent=LinkIntent.NEWS,
+            title=f"{query} {title}",
+            summary=snippet,
+            label="",
+            min_score=24,
+        )
+        if quality.acceptable and quality.score > best_score:
+            best_source = candidate
+            best_score = quality.score
+    return best_source
+
+
+async def _resolve_single_verified_news_result(query: str) -> Optional[Dict[str, Any]]:
+    rescue_query = " ".join(
+        part
+        for part in [
+            query,
+            "deutschsprachige aktuelle Meldung Artikel Detailseite",
+        ]
+        if str(part or "").strip()
+    )
+    logger.info("WEBSEARCH-NEWS-SINGLE-VERIFY: query=%s", rescue_query)
+    try:
+        raw = await execute_websearch_service(
+            query=rescue_query,
+            api_key="",
+            provider="ollama",
+            model=None,
+        )
+    except Exception as exc:
+        logger.warning("WEBSEARCH-NEWS-SINGLE-VERIFY: soft-failed: %s", exc)
+        return None
+    candidate_sources = raw.get("sources") if isinstance(raw.get("sources"), list) else []
+    source = _best_single_verified_news_source(query, candidate_sources)
+    if not source:
+        return None
+    title = re.sub(r"\s+", " ", str(source.get("title") or "Aktuelle Meldung")).strip(" .")
+    snippet = re.sub(
+        r"\s+",
+        " ",
+        str(source.get("snippet") or source.get("description") or "Details stehen in der verlinkten Quelle.").strip(),
+    ).strip(" .")
+    if len(snippet) > 280:
+        snippet = snippet[:280].rsplit(" ", 1)[0].strip(" .")
+    label = _source_label_from_url(str(source.get("url") or ""))
+    verified_source = dict(source)
+    verified_source["news_target_index"] = "1"
+    verified_source["news_target_title"] = title
+    verified_source["news_target_label"] = label
+    verified_source["snippet"] = snippet
+    return {
+        "text": f"1. {title}: {snippet}. Quelle: {label}.",
+        "sources": [verified_source],
+    }
+
+
+def _news_source_resolver_query(base_query: str, claim: EvidenceClaim) -> str:
+    term = EvidencePipeline.repair_query_term_for_claim(claim)
+    summary_terms = " ".join(
+        token for token in re.findall(r"[A-Za-z0-9ÄÖÜäöüß+-]{4,}", claim.summary)[:4]
+    )
+    parts = [
+        term,
+        summary_terms,
+        "deutschsprachiger Artikel",
+        "konkrete Detailseite",
+        "keine Startseite",
+        "keine News-Uebersicht",
+    ]
+    return " ".join(part for part in parts if str(part or "").strip())
+
+
+async def _resolve_news_links_with_url_resolver(
+    *,
+    query: str,
+    claims: List[EvidenceClaim],
+    merged_sources: List[Dict[str, Any]],
+    max_claims: int = 3,
+) -> List[Dict[str, Any]]:
+    unresolved = EvidencePipeline.claims_needing_resolution(merged_sources, claims)
+    if not unresolved:
+        return merged_sources
+    resolver_claims = list(unresolved[:max_claims])
+
+    async def _resolve_one(claim: EvidenceClaim) -> List[Dict[str, Any]]:
+        resolver_query = _news_source_resolver_query(query, claim)
+        logger.info(
+            "WEBSEARCH-NEWS-URL-RESOLVER: claim=%s label=%s query=%s",
+            claim.title,
+            claim.label,
+            resolver_query,
+        )
+        try:
+            raw_resolve = await execute_websearch_service(
+                query=resolver_query,
+                api_key="",
+                provider="ollama",
+                model=None,
+            )
+        except Exception as exc:
+            logger.warning("WEBSEARCH-NEWS-URL-RESOLVER: soft-failed claim=%s error=%s", claim.title, exc)
+            return []
+        resolved_sources = raw_resolve.get("sources") if isinstance(raw_resolve.get("sources"), list) else []
+        return EvidencePipeline.merge_resolved_sources([], resolved_sources, [claim])
+
+    resolved_batches = await asyncio.gather(*[_resolve_one(claim) for claim in resolver_claims])
+    for resolved in resolved_batches:
+        if resolved:
+            merged_sources = EvidencePipeline.merge_resolved_sources(merged_sources, resolved, claims)
+    return merged_sources
+
+
+async def _resolve_news_detail_sources(
+    *,
+    query: str,
+    text: str,
+    sources: List[Dict[str, Any]],
+    provider: str,
+    model: Optional[str],
+    api_key: str,
+    persist_cost,
+    elapsed_ms_fn=None,
+    max_repair_start_ms: int = 22000,
+    max_focused_start_ms: int = 30000,
+) -> List[Dict[str, Any]]:
+    targets = _extract_news_source_targets(query=query, text=text)
+    if not _news_sources_need_resolution(text, sources, targets):
+        return sources
+    initial_unresolved = _news_targets_needing_resolution(sources, targets)
+    initial_accepted = len(targets) - len(initial_unresolved)
+    late_zero_link_repair = False
+    if elapsed_ms_fn and elapsed_ms_fn() > max_repair_start_ms:
+        if targets and initial_accepted <= 0:
+            late_zero_link_repair = True
+            logger.info(
+                "WEBSEARCH-NEWS-SOURCE-RESOLVE: late-zero-link-repair elapsed_ms=%s budget_ms=%s",
+                elapsed_ms_fn(),
+                max_repair_start_ms,
+            )
+        else:
+            logger.info(
+                "WEBSEARCH-NEWS-SOURCE-RESOLVE: provider-repair-skipped elapsed_ms=%s budget_ms=%s",
+                elapsed_ms_fn(),
+                max_repair_start_ms,
+            )
+            url_resolved_sources = await _resolve_news_links_with_url_resolver(
+                query=query,
+                claims=[_target_to_evidence_claim(target) for target in targets],
+                merged_sources=sources,
+                max_claims=3,
+            )
+            return url_resolved_sources or sources
+    targets_to_resolve = initial_unresolved or targets
+    resolve_claims = [_target_to_evidence_claim(target) for target in targets_to_resolve]
+    all_claims = [_target_to_evidence_claim(target) for target in targets]
+    merged_sources = sources
+    batch_failed = False
+    if late_zero_link_repair:
+        batch_failed = True
+        unresolved_after_batch = resolve_claims
+        accepted_after_batch = 0
+    else:
+        resolve_query = EvidencePipeline.repair_query_for_claims(query, resolve_claims, limit=4)
+        logger.info(
+            "WEBSEARCH-NEWS-SOURCE-RESOLVE: resolving targets=%s query=%s",
+            len(targets_to_resolve),
+            resolve_query,
+        )
+        try:
+            raw_resolve = await execute_websearch_service(
+                query=resolve_query,
+                api_key=api_key,
+                provider=provider,
+                model=model,
+            )
+            persist_cost(raw_resolve, provider or "default", model)
+        except Exception as exc:
+            logger.warning("WEBSEARCH-NEWS-SOURCE-RESOLVE: soft-failed: %s", exc)
+            batch_failed = True
+        else:
+            resolved_sources = raw_resolve.get("sources") if isinstance(raw_resolve.get("sources"), list) else []
+            merged_sources = EvidencePipeline.merge_resolved_sources(sources, resolved_sources, resolve_claims)
+
+        unresolved_after_batch = EvidencePipeline.claims_needing_resolution(merged_sources, all_claims)
+        accepted_after_batch = len(all_claims) - len(unresolved_after_batch)
+        if accepted_after_batch >= 3 or not unresolved_after_batch:
+            return merged_sources or sources
+
+    logger.info(
+        "WEBSEARCH-NEWS-SOURCE-REPAIR2: accepted=%s unresolved=%s",
+        accepted_after_batch,
+        len(unresolved_after_batch),
+    )
+    focused_limit = 2 if late_zero_link_repair else (3 if batch_failed else 2)
+    focused_claims = list(unresolved_after_batch[:focused_limit])
+    allow_late_focused_repair = late_zero_link_repair or (batch_failed and accepted_after_batch < 3)
+    if not allow_late_focused_repair and elapsed_ms_fn and elapsed_ms_fn() > max_focused_start_ms:
+        logger.info(
+            "WEBSEARCH-NEWS-SOURCE-REPAIR2: budget-exhausted elapsed_ms=%s budget_ms=%s",
+            elapsed_ms_fn(),
+            max_focused_start_ms,
+        )
+        return merged_sources or sources
+
+    async def _focused_repair_one(claim: EvidenceClaim) -> List[Dict[str, Any]]:
+        focused_query = EvidencePipeline.focused_repair_query_for_claim(query, claim)
+        logger.info(
+            "WEBSEARCH-NEWS-SOURCE-REPAIR2: claim=%s label=%s query=%s",
+            claim.title,
+            claim.label,
+            focused_query,
+        )
+        try:
+            raw_focused = await execute_websearch_service(
+                query=focused_query,
+                api_key=api_key,
+                provider=provider,
+                model=model,
+            )
+            persist_cost(raw_focused, provider or "default", model)
+        except Exception as exc:
+            logger.warning("WEBSEARCH-NEWS-SOURCE-REPAIR2: soft-failed claim=%s error=%s", claim.title, exc)
+            return []
+        focused_sources = raw_focused.get("sources") if isinstance(raw_focused.get("sources"), list) else []
+        return EvidencePipeline.merge_resolved_sources([], focused_sources, [claim])
+
+    if allow_late_focused_repair and len(focused_claims) > 1:
+        logger.info(
+            "WEBSEARCH-NEWS-SOURCE-REPAIR2: parallel-focused claims=%s batch_failed=%s late_zero=%s",
+            len(focused_claims),
+            batch_failed,
+            late_zero_link_repair,
+        )
+        focused_results = await asyncio.gather(*[_focused_repair_one(claim) for claim in focused_claims])
+        for resolved in focused_results:
+            if resolved:
+                merged_sources = EvidencePipeline.merge_resolved_sources(merged_sources, resolved, all_claims)
+        merged_sources = await _resolve_news_links_with_url_resolver(
+            query=query,
+            claims=all_claims,
+            merged_sources=merged_sources,
+        )
+        return merged_sources or sources
+
+    for claim in focused_claims:
+        if not allow_late_focused_repair and elapsed_ms_fn and elapsed_ms_fn() > max_focused_start_ms:
+            logger.info(
+                "WEBSEARCH-NEWS-SOURCE-REPAIR2: budget-exhausted elapsed_ms=%s budget_ms=%s",
+                elapsed_ms_fn(),
+                max_focused_start_ms,
+            )
+            break
+        resolved = await _focused_repair_one(claim)
+        if resolved:
+            merged_sources = EvidencePipeline.merge_resolved_sources(merged_sources, resolved, [claim])
+
+    merged_sources = await _resolve_news_links_with_url_resolver(
+        query=query,
+        claims=all_claims,
+        merged_sources=merged_sources,
+    )
+    return merged_sources or sources
+
+
+async def _resolve_missing_release_sources(
+    *,
+    query: str,
+    text: str,
+    sources: List[Dict[str, Any]],
+    provider: str,
+    model: Optional[str],
+    api_key: str,
+    persist_cost,
+) -> List[Dict[str, Any]]:
+    targets = _extract_release_source_targets(query=query, text=text, sources=sources)
+    if not targets:
+        return sources
+    resolve_terms = " OR ".join(f'"{target["title"]}" {target["label"]}' for target in targets)
+    resolve_query = f"{resolve_terms} {query} deutschsprachige Quellen site:de"
+    logger.info(
+        "WEBSEARCH-RELEASE-SOURCE-RESOLVE: resolving missing=%s query=%s",
+        len(targets),
+        resolve_query,
+    )
+    try:
+        raw_resolve = await execute_websearch_service(
+            query=resolve_query,
+            api_key=api_key,
+            provider=provider,
+            model=model,
+        )
+        persist_cost(raw_resolve, provider or "default", model)
+    except Exception as exc:
+        logger.warning("WEBSEARCH-RELEASE-SOURCE-RESOLVE: soft-failed: %s", exc)
+        return sources
+    resolved_sources = raw_resolve.get("sources") if isinstance(raw_resolve.get("sources"), list) else []
+    seen = {normalize_source_url(str(source.get("url") or source.get("source_url") or "")) for source in sources if isinstance(source, dict)}
+    additions: List[Dict[str, Any]] = []
+    for target in targets:
+        for candidate in resolved_sources:
+            if not isinstance(candidate, dict) or not _candidate_matches_release_target(candidate, target):
+                continue
+            url = normalize_source_url(str(candidate.get("url") or candidate.get("source_url") or ""))
+            if not url or url in seen:
+                continue
+            item = dict(candidate)
+            item["url"] = url
+            item.setdefault("title", target["label"])
+            additions.append(item)
+            seen.add(url)
+            break
+    if not additions:
+        return sources
+    return sources + additions
+
+
+async def _resolve_missing_ranking_list_source(
+    *,
+    query: str,
+    text: str,
+    sources: List[Dict[str, Any]],
+    provider: str,
+    model: Optional[str],
+    api_key: str,
+    persist_cost,
+) -> List[Dict[str, Any]]:
+    if not WebSearchTemplateEngine.is_ranking_lookup(query):
+        return sources
+    label = _extract_ranking_list_source_label(text)
+    if not label or _source_list_has_label_url(sources, label):
+        return sources
+    resolve_query = f'{label} {query} Ranking Topliste Liste deutschsprachige Quellen site:de'
+    logger.info("WEBSEARCH-LIST-SOURCE-RESOLVE: resolving label=%s query=%s", label, resolve_query)
+    try:
+        raw_resolve = await execute_websearch_service(
+            query=resolve_query,
+            api_key=api_key,
+            provider=provider,
+            model=model,
+        )
+        persist_cost(raw_resolve, provider or "default", model)
+    except Exception as exc:
+        logger.warning("WEBSEARCH-LIST-SOURCE-RESOLVE: soft-failed for label=%s: %s", label, exc)
+        return sources
+    resolved_sources = raw_resolve.get("sources") if isinstance(raw_resolve.get("sources"), list) else []
+    selected: List[Dict[str, Any]] = []
+    for candidate in resolved_sources:
+        if isinstance(candidate, dict) and _candidate_looks_like_ranking_source(candidate, label, query):
+            selected.append(candidate)
+    if not selected:
+        return sources
+    seen = {normalize_source_url(str(source.get("url") or source.get("source_url") or "")) for source in sources if isinstance(source, dict)}
+    additions = []
+    for source in selected[:2]:
+        url = normalize_source_url(str(source.get("url") or source.get("source_url") or ""))
+        if url and url not in seen:
+            item = dict(source)
+            item["url"] = url
+            item.setdefault("title", label)
+            additions.append(item)
+            seen.add(url)
+    return additions + sources
 
 
 async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResultV1:
@@ -184,38 +889,170 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
                 model=str(model_name or provider_name or "websearch"),
                 provider=str(provider_name or "unknown"),
                 source_type="websearch",
-                input_tokens=int(usage.get("query_count") or 0),
-                output_tokens=0,
-                context_details=f"query_count={int(usage.get('query_count') or 1)}",
+                input_tokens=int(usage.get("input_tokens") or usage.get("query_count") or 0),
+                output_tokens=int(usage.get("output_tokens") or 0),
+                cached_tokens=int(usage.get("cached_tokens") or 0),
+                total_tokens=int(usage.get("total_tokens") or 0),
+                context_details=(
+                    f"query_count={int(usage.get('query_count') or 1)}"
+                    if usage.get("query_count")
+                    else "token_usage=1"
+                ),
             )
         finally:
             db.close()
+
+    def _is_current_data_query(query: str) -> bool:
+        lowered = str(query or "").casefold()
+        markers = (
+            "aktuell", "aktuelle", "aktueller", "heute", "morgen", "derzeit",
+            "neues", "neuigkeiten", "schlagzeilen",
+            "latest", "current", "preis", "preise", "kosten", "kurs",
+            "news", "nachrichten", "release", "verfuegbar", "verfügbar",
+        )
+        return any(marker in lowered for marker in markers)
 
     try:
         payload = schemas.WebsearchArgsV2.model_validate(websearch_args)
         provider = str(payload.provider or "").strip().lower()
         normalized_query = _normalize_websearch_query(payload.query)
+        provider_model = _coerce_websearch_model_for_provider(provider, payload.model)
         key = (keyring.get_password("Janus-Projekt", provider) or "") if provider else ""
+        repair_provider = provider
+        repair_model = provider_model
+        repair_key = key
+
+        use_websearch_v3_phase1 = (
+            os.getenv("JANUS_WEBSEARCH_V3_PHASE1", "").strip().casefold() in {"1", "true", "yes", "on"}
+            and is_simple_news_query_v3(normalized_query)
+        )
+        if use_websearch_v3_phase1 and provider not in WEBSEARCH_V3_NATIVE_PROVIDERS:
+            return ToolResultV1(
+                status="error",
+                data={},
+                error=ToolErrorDetails(
+                    code="WEBSEARCH_V3_PROVIDER_REQUIRED",
+                    message="websearch_v3 Phase 1 nutzt nur native Provider: openai oder gemini.",
+                    details={"provider": provider or "", "supported_providers": sorted(WEBSEARCH_V3_NATIVE_PROVIDERS)},
+                ),
+                metadata={"execution_time_ms": _elapsed_ms()},
+            )
+
+        if use_websearch_v3_phase1:
+            raw_v3 = await execute_single_verified_news(
+                query=normalized_query,
+                api_key=key,
+                provider=provider,
+                model=provider_model,
+            )
+            v3_meta = raw_v3.get("metadata") if isinstance(raw_v3.get("metadata"), dict) else {}
+            v3_sources = raw_v3.get("sources") if isinstance(raw_v3.get("sources"), list) else []
+            output = WebSearchOutput(
+                query=normalized_query,
+                locale="de_DE",
+                items=[i.model_dump() for i in _sources_to_items(v3_sources)] if v3_sources else [],
+                text=str(raw_v3.get("text") or ""),
+                price_enrichment=None,
+                source=str(v3_meta.get("provider") or provider),
+                retrieved_at=datetime.now(timezone.utc).isoformat(),
+            )
+            output_dict = output.model_dump()
+            output_dict["sources"] = v3_sources
+            output_dict["verified_source_mode"] = str(v3_meta.get("verified_source_mode") or "single")
+            output_dict["max_sources"] = v3_meta.get("max_sources")
+            output_dict["pipeline"] = "websearch_v3"
+            output_dict["verification_status"] = str(v3_meta.get("status") or "")
+            output_dict["verification_reason"] = str(v3_meta.get("reason") or "")
+            return ToolResultV1(
+                status="ok",
+                data=output_dict,
+                metadata={"execution_time_ms": _elapsed_ms()},
+            )
 
         # ── Execute primary search ──────────────────────────────────────────
-        raw = await execute_websearch_service(
-            query=normalized_query,
-            api_key=key,
-            provider=provider,
-            model=payload.model,
-        )
-        _persist_websearch_cost(raw, provider or "default", payload.model)
+        try:
+            raw = await execute_websearch_service(
+                query=normalized_query,
+                api_key=key,
+                provider=provider,
+                model=provider_model,
+                log_exceptions=not (provider == "gemini" and _is_current_data_query(normalized_query)),
+            )
+        except Exception as primary_exc:
+            if provider == "gemini" and _is_current_data_query(normalized_query):
+                logger.warning(
+                    "WEBSEARCH-V2: Gemini primary search failed for current query; trying neutral fallback: %s",
+                    primary_exc,
+                )
+                raw = await execute_websearch_service(
+                    query=normalized_query,
+                    api_key="",
+                    provider="ollama",
+                    model=None,
+                )
+                repair_provider = "ollama"
+                repair_model = None
+                repair_key = ""
+            else:
+                raise
+        _persist_websearch_cost(raw, provider or "default", provider_model)
 
         text = str(raw.get("text") or "")
         sources = raw.get("sources") if isinstance(raw.get("sources"), list) else []
         meta = raw.get("metadata") if isinstance(raw.get("metadata"), dict) else {}
         source_provider = str(meta.get("provider") or provider or "unknown")
+        raw_status = str(meta.get("status") or "").strip().lower()
 
         # ── Build structured items from sources ────────────────────────────
         items = _sources_to_items(sources)
 
+        if raw_status in {"timeout", "error", "unavailable"}:
+            logger.warning(
+                "skill=%s status=error code=WEBSEARCH_UNAVAILABLE provider=%s raw_status=%s ms=%s",
+                skill_name,
+                source_provider,
+                raw_status,
+                _elapsed_ms(),
+            )
+            return ToolResultV1(
+                status="error",
+                data={},
+                error=ToolErrorDetails(
+                    code="WEBSEARCH_UNAVAILABLE",
+                    message=(
+                        f"Die Websuche ueber '{source_provider}' ist derzeit nicht verlaesslich verfuegbar "
+                        "oder lieferte keine belegbaren Quellen. Ich kann daraus keine aktuellen/live Daten ableiten."
+                    ),
+                    details={"provider": source_provider, "status": raw_status, "query": normalized_query},
+                ),
+                metadata={"execution_time_ms": _elapsed_ms()},
+            )
+
+        if _is_current_data_query(normalized_query) and text.strip() and not sources:
+            logger.warning(
+                "skill=%s status=error code=WEBSEARCH_NO_SOURCES provider=%s query=%s ms=%s",
+                skill_name,
+                source_provider,
+                normalized_query,
+                _elapsed_ms(),
+            )
+            return ToolResultV1(
+                status="error",
+                data={},
+                error=ToolErrorDetails(
+                    code="WEBSEARCH_NO_SOURCES",
+                    message=(
+                        f"Die Websuche ueber '{source_provider}' lieferte fuer diese aktuelle Anfrage "
+                        "keine zitierbaren Quellen. Ohne Quellenbeleg gebe ich keine aktuellen Daten aus."
+                    ),
+                    details={"provider": source_provider, "query": normalized_query},
+                ),
+                metadata={"execution_time_ms": _elapsed_ms()},
+            )
+
         # ── Ebene 5: Smart Global Fallback (Tech/News ohne ausreichend Ergebnisse) ──
-        if _detect_global_fallback_needed(normalized_query, items):
+        is_news_query = EvidencePipeline.is_news_query(normalized_query)
+        if not is_news_query and _detect_global_fallback_needed(normalized_query, items):
             en_query = f"{normalized_query} latest news"
             logger.info("WEBSEARCH-V2: Smart Global Fallback → '%s'", en_query)
             try:
@@ -233,6 +1070,57 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
 
         # ── Ebene 8: Seamless Integration – Preis-Signal → interne price_comparison ──
         # TASK 002 (STANDALONE VALIDATION): Deaktiviert — Keine Skill-Kopplung erlaubt.
+        sources = await _resolve_missing_ranking_list_source(
+            query=normalized_query,
+            text=text,
+            sources=sources,
+            provider=repair_provider,
+            model=repair_model,
+            api_key=repair_key,
+            persist_cost=_persist_websearch_cost,
+        )
+        sources = await _resolve_missing_release_sources(
+            query=normalized_query,
+            text=text,
+            sources=sources,
+            provider=repair_provider,
+            model=repair_model,
+            api_key=repair_key,
+            persist_cost=_persist_websearch_cost,
+        )
+        if is_news_query:
+            sources = await _resolve_news_detail_sources(
+                query=normalized_query,
+                text=text,
+                sources=sources,
+                provider=repair_provider,
+                model=repair_model,
+                api_key=repair_key,
+                persist_cost=_persist_websearch_cost,
+                elapsed_ms_fn=_elapsed_ms,
+            )
+            claims = EvidencePipeline.extract_news_claims(normalized_query, text)
+            has_accepted_news_link = any(
+                decision.accepted for decision in EvidencePipeline.match_sources_for_claims(sources, claims)
+            )
+            if not has_accepted_news_link:
+                single_verified = await _resolve_single_verified_news_result(normalized_query)
+                if single_verified:
+                    text = str(single_verified.get("text") or text)
+                    sources = single_verified.get("sources") if isinstance(single_verified.get("sources"), list) else sources
+        else:
+            sources = await _resolve_news_detail_sources(
+                query=normalized_query,
+                text=text,
+                sources=sources,
+                provider=repair_provider,
+                model=repair_model,
+                api_key=repair_key,
+                persist_cost=_persist_websearch_cost,
+                elapsed_ms_fn=_elapsed_ms,
+            )
+        items = _sources_to_items(sources)
+
         price_enrichment = None
         # if _detect_price_query(normalized_query, text):
         #     logger.info("WEBSEARCH-V2: Preis-Signal detektiert → interne price_comparison für '%s'", normalized_query)
@@ -256,6 +1144,8 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
         # can always find them regardless of whether items is populated.
         output_dict = output.model_dump()
         output_dict["sources"] = sources
+        if is_news_query:
+            output_dict["verified_source_mode"] = "single"
         return ToolResultV1(
             status="ok",
             data=output_dict,
@@ -399,16 +1289,17 @@ def register_all_tools():
 
     # 4. Filesystem
     fs_tools = [
-        (filesystem_manager.create_file, schemas.CreateFileArgs),
-        (filesystem_manager.read_file, schemas.ReadFileArgs),
-        (filesystem_manager.delete_file, schemas.DeleteFileArgs),
-        (filesystem_manager.list_directory, schemas.ListDirectoryArgs),
+        (filesystem_tools.create_file, schemas.CreateFileArgs),
+        (filesystem_tools.read_file, schemas.ReadFileArgs),
+        (filesystem_tools.delete_file, schemas.DeleteFileArgs),
+        (filesystem_tools.list_directory, schemas.ListDirectoryArgs),
         (filesystem_manager.list_allowed_workspaces, schemas.ListAllowedWorkspacesArgs),
         (filesystem_manager.create_directory, schemas.CreateDirectoryArgs),
         (filesystem_manager.delete_directory, schemas.DeleteDirectoryArgs),
         (filesystem_manager.rename_file, schemas.RenameFileArgs),
-        (filesystem_manager.move_file, schemas.MoveFileArgs),
+        (filesystem_tools.move_file, schemas.MoveFileArgs),
         (filesystem_manager.move_files, schemas.MoveFilesArgs),
+        (filesystem_manager.find_files, schemas.FindFilesArgs),
     ]
     for func, schema in fs_tools:
         tool_manager.register_tool(func, schema)
@@ -455,6 +1346,13 @@ def register_all_tools():
         name="memory.update",
         description="Aktualisiert oder korrigiert eine bestehende Erinnerung. Nur für user_editable=true Memories.",
     )
+    # DISABLED (Task-066): memory.delete is unstable and causes hallucination loops
+    # tool_manager.register_tool(
+    #     memory_delete_tool,
+    #     schemas.MemoryDeleteArgs,
+    #     name="memory.delete",
+    #     description="Löscht eine Erinnerung dauerhaft anhand ihrer ID. Nur für user_editable=true Memories.",
+    # )
     tool_manager.register_tool(
         memory_history_tool,
         schemas.MemoryHistoryArgs,

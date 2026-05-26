@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-017",
+  "testCaseId": "SEC-005-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Oversized upload/concurrent jobs",
+  "response": "Hallo Admin — meinst du mit „Oversized upload/concurrent jobs“ eher:\n\nWie du Uploads/Jobs in deinem System begrenzt, um Overload zu vermeiden (z.B. Parallelität, Queue-Limit, Rate-Limits)?  \nPerformance/Fehler durch zu große Payloads (z.B. Timeouts, memory pressure, Chunking)?\n\nWenn du magst, sag kurz:\n\nWelche Plattform/Technologie (z.B. S3, AWS Batch, Celery, Kubernetes, Nginx, Webapp)?\nWas ist das konkrete Symptom (Fehlermeldung oder Verhalten)?\n\n💡 Passende nächste Schritte:• Gib mir 1–2 konkrete Fehlermeldungen/Log-Zeilen (oder beschreibe das Verhalten genauer).• Nenne die Umgebung (Framework/Worker-Queue/Deployment), dann schlage ich passende Limits & ein sicheres Chunking/Concurrency-Setup vor.\n19:08",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T17:08:34.297Z"
+}

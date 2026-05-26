@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-007",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Gib mir 5 Beispiele, wobei du helfen kannst",
+  "response": "Ich bin dein persönlicher KI-Assistent. Ich unterstütze dich bei Aufgaben im Alltag – von Planung über Recherche bis Umsetzung. Deine Anweisungen zur Unterscheidung zwischen dauerhaften und situativen Merkmalen bei Personenbeschreibungen habe ich übernommen.\nHier sind 5 Beispiele, wobei ich dir helfen kann:\n\nKalender & Planung: Ich erstelle und verwalte deine Termine, prüfe deinen Zeitplan auf Überschneidungen oder finde freie Slots für neue Vorhaben.\nDateimanagement: Ich kann Dateien auf deinen lokalen Laufwerken suchen, sie in Ordner sortieren oder Dokumente für dich umbenennen und verschieben.\nRecherche & Analyse: Ich durchsuche das Internet nach aktuellen Informationen oder beantworte spezifische Fragen basierend auf Inhalten aus deinen PDF-Dokumenten.\nPreisvergleich: Wenn du ein Produkt suchst, finde ich den besten Preis für dich und gebe dir Tipps zu günstigeren,\n\n16:22",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T14:23:04.045Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-004",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was ist meine Lieblingsfarbe?",
+  "response": "Ich habe aktuell keine Informationen über deine Lieblingsfarbe in meinen Aufzeichnungen gespeichert. In deinem Gedächtnis sind bisher vor allem physische Merkmale zu Nikola Tesla hinterlegt (wie sein dunkles, akkurat gescheiteltes Haar und seine markanten, tief liegenden Augen), aber eine persönliche Präferenz für eine Farbe wurde noch nicht vermerkt.\nMöchtest du mir deine Lieblingsfarbe verraten, damit ich sie mir für die Zukunft merke?\n💡 Passende nächste Schritte:• Verrate mir deine Lieblingsfarbe, damit ich sie speichern kann.• Frage mich nach weiteren Details aus der Biografie von Nikola Tesla.• Lass uns ein Porträt basierend auf den gespeicherten Merkmalen erstellen.\n19:41",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T17:41:36.677Z"
+}

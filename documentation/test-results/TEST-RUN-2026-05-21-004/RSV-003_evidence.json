@@ -1,0 +1,29 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-004",
+  "testCaseId": "RSV-003",
+  "result": "PASS",
+  "classification": "AUTHZ_REVIEW_PASS",
+  "evidence": {
+    "security02": {
+      "resultPath": "documentation/test-results/TEST-RUN-2026-05-17-028_results.json",
+      "status": "PASS",
+      "total": 26,
+      "passed": 26,
+      "failed": 0,
+      "blocked": 0
+    },
+    "security03": {
+      "resultPath": "documentation/test-results/TEST-RUN-2026-05-18-019_results.json",
+      "status": "PASS",
+      "total": 26,
+      "passed": 26,
+      "failed": 0,
+      "blocked": 0
+    },
+    "codeReferences": [
+      "backend/main.py",
+      "backend/dependencies.py"
+    ]
+  },
+  "timestamp": "2026-05-21T00:13:52.420Z"
+}

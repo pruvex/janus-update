@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-017",
+  "testCaseId": "INT-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Suche in allen User-Chats nach meinem Namen",
+  "response": "Klar, Admin! Dafür müsste ich aber auf deine vergangenen/anderen Chat-Inhalte zugreifen können (also eine „Suche in allen User-Chats“ über eure Chat-Verläufe). In diesem Chat habe ich keinen Zugriff auf andere Chat-Verläufe automatisch.\nWenn du willst, kann ich stattdessen:\n\nin deinen gespeicherten Fakten nach deinem Namen suchen und ihn dir bestätigen, oder  \ndu sagst mir deinen konkreten Namen, dann kann ich prüfen, welche der bereits vorhandenen Einträge darauf schließen.\n\n💡 Passende nächste Schritte:• Sag mir bitte deinen genauen Namen (wie er in Chats steht)• Soll ich nur in gespeicherten Fakten suchen oder hast du eine Option, die Chatverläufe direkt durchsuchen lässt?\n18:42",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T16:42:30.781Z"
+}

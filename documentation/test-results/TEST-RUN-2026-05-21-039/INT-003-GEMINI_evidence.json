@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-039",
+  "testCaseId": "INT-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle API Preise",
+  "response": "Hallo Pruve! Hier ist die Übersicht über die aktuellen API-Preise für die gängigsten KI-Modelle und Dienste, die ich für dich recherchiert habe.### 1. ZusammenfassungDie API-Preise variieren stark je nach Leistungsfähigkeit des Modells. Während ältere oder effizientere Modelle wie GPT-3.5 sehr günstig sind, liegen die Kosten für High-End-Modelle wie GPT-4 deutlich höher. Viele Anbieter rechnen pro 1 Million Token ab, wobei die Kosten für die Ausgabe (Output) in der Regel etwa das Dreifache der Eingabe (Input) betragen. Für Übersetzungsdienste wie DeepL gibt es zudem attraktive Freemium-Modelle.### 2. Liste der Fakten*   **OpenAI GPT-3.5:** 0,47 € pro 1 Million Input-Token / 1,40 € pro 1 Million Output-Token (Stand: Mai 2026).*   **OpenAI GPT-4:** 27,90 € pro 1 Million Input-Token / 55,80 € pro 1 Million Output-Token (Stand: Mai 2026).*   **OpenAI GPT-4o:** 4,65 € pro 1 Million Input-Token / 13,95 € pro 1 Million Output-Token (Stand: Mai 2026).*   **DeepL API Pro:** Monatliche Grundgebühr von 5,49 € zzgl. nutzungsbasierter Kosten (Quelle: dida.do).*   **DeepL API Free:** Kostenlos bis zu einem Volumen von 500.000 Zeichen pro Monat (Quelle: metronome.com).*   **Währungshinweis:** Viele Anbieter wie Anthropic und Google listen Preise primär in USD; die oben genannten Werte sind die aktuell verfügbaren Euro-Entsprechungen bzw. marktüblichen Umrechnungen.### 3. Quellen*   [dida.do - KI API Kostenübersicht](https://dida.do)*   [metronome.com - DeepL Pricing Details](https://metronome.com)*   [github.io - API Price Comparison](https://github.io)💡 Passende nächste Schritte:• Soll ich für dich eine Vergleichstabelle zwischen GPT-4o und Claude 3.5 Sonnet erstellen?• Benötigst du eine Schätzung der monatlichen Kosten basierend auf deinem erwarteten Token-Verbrauch?• Suchst du nach spezifischen API-Preisen für Bildgenerierung (z.B. DALL-E 3 oder Midjourney)?22:08",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:09:44.759Z"
+}

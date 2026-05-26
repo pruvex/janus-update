@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-001",
+  "testCaseId": "SEC-003-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Simple factual prompt",
+  "response": "Hallo Admin. Basierend auf unseren bisherigen Gesprächen sind hier die wesentlichen Fakten zu Nikola Teslas physischer Erscheinung:\nNikola Tesla ist eine auffallend große und sehr schlanke Persönlichkeit. Er hat ein schmales Gesicht mit markanten, ausgeprägten Wangenknochen sowie eine hohe Stirn. Sein dunkles Haar wird stets akkurat gescheitelt getragen, und er hat tief liegende Augen.\nDas hast du mir am 12. Mai 2026 in den Chats „Nikola Tesla Übersicht“ und „Nikola Tesla Personenbeschreibung“ erzählt.\n💡 Passende nächste Schritte:• Soll ich ein Porträt von Nikola Tesla basierend auf dieser Beschreibung erstellen?• Möchtest du weitere Details aus seiner Biografie erfahren?• Suchst du nach Informationen zu seinen spezifischen Erfindungen?\n01:42",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T23:42:12.175Z"
+}

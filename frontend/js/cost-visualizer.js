@@ -20,6 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeButton = document.querySelector("#cost-deep-dive-modal .close-button");
   const deepDiveContent = document.getElementById("deep-dive-content");
 
+  let currentSortMode = "model"; // "model" or "cost"
+
   async function showDeepDiveModal() {
     costDeepDiveModal.style.display = "flex";
     deepDiveContent.innerHTML = "Lade detaillierte Kosten...";
@@ -51,8 +53,21 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error fetching deep dive cost data:", error);
     }
 
+    // Render the modal with current sort mode
+    renderDeepDiveContent(summaryData, totalCost, dbOk, liveMeta);
+  }
+
+  function renderDeepDiveContent(summaryData, totalCost, dbOk, liveMeta) {
     // --- BUILD HTML ---
-    let html = "<h3>Kostenübersicht nach Modell (Dieser Monat)</h3>";
+    const buttonText = currentSortMode === "cost" ? "Nach Modellen sortieren" : "Nach Kosten sortieren";
+    let html = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="margin: 0;">Kostenübersicht nach Modell (Dieser Monat)</h3>
+        <button id="toggle-sort-btn" style="padding: 0.5rem 1rem; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; white-space: nowrap;">
+          ${buttonText}
+        </button>
+      </div>
+    `;
 
     const hasDbData = dbOk && summaryData.length > 0;
     const hasLiveData = liveMeta && liveMeta.cost > 0;
@@ -83,8 +98,63 @@ document.addEventListener("DOMContentLoaded", () => {
         // Live row is visual feedback only — DB total is the single source of truth
       }
 
+      // Sort based on current mode
+      let sortedData = [...summaryData]; // Create a copy to avoid mutating original
+      
+      if (currentSortMode === "cost") {
+        // Sort by total_cost descending (highest first)
+        sortedData.sort((a, b) => (b.total_cost || 0) - (a.total_cost || 0));
+      } else {
+        // Custom sort: GPT models (nano → mini → base → 5.5 → pro), then Gemini (flash → pro)
+        sortedData.sort((a, b) => {
+          const modelA = (a.model || "").toLowerCase();
+          const modelB = (b.model || "").toLowerCase();
+          
+          const isGptA = modelA.includes("gpt");
+          const isGptB = modelB.includes("gpt");
+          const isGeminiA = modelA.includes("gemini");
+          const isGeminiB = modelB.includes("gemini");
+          
+          // GPT models come first
+          if (isGptA && !isGptB) return -1;
+          if (!isGptA && isGptB) return 1;
+          
+          // Within GPT: nano → mini → base → 5.5 → pro
+          if (isGptA && isGptB) {
+            const gptOrder = ["nano", "mini", "base", "5.5", "pro"];
+            let orderA = 999, orderB = 999;
+            for (let i = 0; i < gptOrder.length; i++) {
+              if (modelA.includes(gptOrder[i])) orderA = i;
+              if (modelB.includes(gptOrder[i])) orderB = i;
+            }
+            if (orderA !== orderB) return orderA - orderB;
+            // Fallback: alphabetical
+            return modelA.localeCompare(modelB);
+          }
+          
+          // Within Gemini: flash → pro
+          if (isGeminiA && isGeminiB) {
+            const geminiOrder = ["flash", "pro"];
+            let orderA = 999, orderB = 999;
+            for (let i = 0; i < geminiOrder.length; i++) {
+              if (modelA.includes(geminiOrder[i])) orderA = i;
+              if (modelB.includes(geminiOrder[i])) orderB = i;
+            }
+            if (orderA !== orderB) return orderA - orderB;
+            return modelA.localeCompare(modelB);
+          }
+          
+          // Gemini comes after GPT
+          if (isGeminiA && !isGeminiB) return 1;
+          if (!isGeminiA && isGeminiB) return -1;
+          
+          // Default: alphabetical
+          return modelA.localeCompare(modelB);
+        });
+      }
+
       // DB ROWS
-      summaryData.forEach((item) => {
+      sortedData.forEach((item) => {
         // Special handling for Web Search entry
         if (item.model === "__WEB_SEARCHES__") {
           const searchCount = item.search_count || 0;
@@ -99,12 +169,27 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         let detailText = "";
-        if (item.total_input_tokens > 0 || item.total_output_tokens > 0) {
-          detailText = `Eingabe: ${item.total_input_tokens}, Ausgabe: ${item.total_output_tokens}`;
+        if (item.total_input_tokens > 0 || item.total_output_tokens > 0 || item.total_cached_tokens > 0) {
+          const totalTokens = item.total_tokens || (item.total_input_tokens + item.total_output_tokens);
+          detailText = `Eingabe: ${item.total_input_tokens}, Ausgabe: ${item.total_output_tokens}, Gesamt: ${totalTokens}`;
+          if ((item.total_cached_tokens || 0) > 0) {
+            detailText += `, Cache: ${item.total_cached_tokens}`;
+          }
         } else if (item.image_count > 0) {
           detailText = `Bilder: ${item.image_count}`;
         } else if (item.context_breakdown && item.context_breakdown.length > 0) {
           detailText = `Kontexte: ${item.context_breakdown.length}`;
+        }
+
+        // Janus Caching Savings
+        const costSaved = item.total_cost_saved || 0;
+        const totalCostWithSavings = (item.total_cost || 0) + costSaved;
+        const efficiencyPct = totalCostWithSavings > 0
+          ? Math.round((costSaved / totalCostWithSavings) * 100)
+          : 0;
+        
+        if (costSaved > 0) {
+          detailText += `<br><span style="color: #4caf50; font-size: 0.9em;">(Janus Caching: -${costSaved.toFixed(4)} € | ${efficiencyPct}% gespart)</span>`;
         }
 
         html += `
@@ -130,8 +215,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (hasMultipleContexts || hasMeaningfulContext) {
           item.context_breakdown.forEach(detail => {
             const detailParts = [];
-            if (detail.input_tokens > 0 || detail.output_tokens > 0) {
-              detailParts.push(`Eingabe: ${detail.input_tokens}, Ausgabe: ${detail.output_tokens}`);
+            if (detail.input_tokens > 0 || detail.output_tokens > 0 || detail.cached_tokens > 0) {
+              const totalTokens = detail.total_tokens || (detail.input_tokens + detail.output_tokens);
+              let tokenText = `Eingabe: ${detail.input_tokens}, Ausgabe: ${detail.output_tokens}, Gesamt: ${totalTokens}`;
+              if ((detail.cached_tokens || 0) > 0) {
+                tokenText += `, Cache: ${detail.cached_tokens}`;
+              }
+              detailParts.push(tokenText);
             }
             if (detail.count > 0) {
               detailParts.push(`Anfragen: ${detail.count}`);
@@ -146,13 +236,30 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
+      // Calculate total savings across all models
+      const totalSaved = summaryData.reduce((sum, item) => sum + (item.total_cost_saved || 0), 0);
+      const totalSpent = summaryData.reduce((sum, item) => sum + (item.total_cost || 0), 0);
+      const totalEffPct = (totalSpent + totalSaved) > 0
+        ? Math.round((totalSaved / (totalSpent + totalSaved)) * 100)
+        : 0;
+
       html += `
           </tbody>
           <tfoot>
             <tr>
               <td colspan="2"><strong>Gesamt</strong></td>
               <td><strong>${totalCost.toFixed(4)} €</strong></td>
-            </tr>
+            </tr>`;
+      
+      if (totalSaved > 0) {
+        html += `
+            <tr style="background: rgba(76, 175, 80, 0.1);">
+              <td colspan="2"><strong>💚 Gesamtersparnis (Janus Caching)</strong></td>
+              <td><strong style="color: #4caf50;">-${totalSaved.toFixed(4)} € (${totalEffPct}%)</strong></td>
+            </tr>`;
+      }
+      
+      html += `
           </tfoot>`;
       html += "</table>";
     }
@@ -164,6 +271,17 @@ document.addEventListener("DOMContentLoaded", () => {
         <button id="save-budget-btn">Speichern</button>
       </div>`;
     deepDiveContent.innerHTML = html;
+
+    // Add event listener for sort toggle button
+    const toggleBtn = document.getElementById("toggle-sort-btn");
+    if (toggleBtn) {
+      toggleBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        currentSortMode = currentSortMode === "model" ? "cost" : "model";
+        console.log("[COST-VIS] Sort mode toggled to:", currentSortMode);
+        renderDeepDiveContent(summaryData, totalCost, dbOk, liveMeta);
+      });
+    }
   }
 
   function hideDeepDiveModal() {

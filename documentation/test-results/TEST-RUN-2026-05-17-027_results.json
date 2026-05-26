@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-17-027",
+  "title": "Janus API Privacy Boundary",
+  "status": "FAIL",
+  "summary": {
+    "total": 3,
+    "passed": 1,
+    "failed": 2,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-17-027",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-17-027_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-17-027/INT-003-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-17-027/SEC-002-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-17-027/SEC-005-GPT_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "INT-003-GEMINI",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-17-027/INT-003-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T21:18:32.387Z"
+    },
+    {
+      "testCaseId": "SEC-002-GPT",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-17-027/SEC-002-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-17T21:19:10.220Z"
+    },
+    {
+      "testCaseId": "SEC-005-GPT",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-17-027/SEC-005-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-17T21:19:44.221Z"
+    }
+  ],
+  "updatedAt": "2026-05-17T21:19:44.229Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-004",
+  "testCaseId": "TC-001-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Brauche ich morgen in Muenchen einen Regenschirm?",
+  "response": "Ja — für morgen in München wird Gewitter erwartet und die Regenwahrscheinlichkeit liegt bei ca. 83%. Ein Regenschirm ist sinnvoll.\nQuelle: Open-Meteo\n💡 Passende nächste Schritte:• Nimm zusätzlich eine Regenjacke/Schirm für den Weg (Gewitter kann stärker ausfallen).• Wenn du draußen länger unterwegs bist: Plane für kurze Wetterpausen und prüfe ggf. kurz vor Abfahrt.\n14:08",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:08:31.492Z"
+}

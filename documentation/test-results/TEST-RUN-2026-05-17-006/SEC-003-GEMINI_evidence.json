@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-006",
+  "testCaseId": "SEC-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "One provider route fails",
+  "response": "Verstanden, ich habe die Information zum Ausfall einer Provider-Route registriert. Benötigst du Unterstützung bei der Analyse dieses Fehlers oder kann ich dir bei einem anderen Thema – zum Beispiel bei Fragen zu Nikola Tesla aus deinem Speicher – behilflich sein?\n💡 Passende nächste Schritte:• Ursache des Routen-Fehlers untersuchen• Physische Beschreibung von Nikola Tesla abrufen• Eine neue Aufgabe oder Recherche starten\n14:58",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:59:07.527Z"
+}

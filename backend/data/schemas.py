@@ -88,7 +88,7 @@ class QueryKnowledgeBaseArgs(BaseModel):
     )
     filename: Optional[str] = Field(
         None,
-        description="Optional: auf eine bestimmte PDF-Datei einschränken (Dateiname wie in der DB).",
+        description="PFLICHT wenn die User-Anfrage einen Dateinamen enthält (z.B. 'aegypten.pdf'): Setze hier den exakten Dateinamen ein, um die Suche auf diese Datei einzuschränken. Ohne diesen Parameter werden ALLE Dokumente durchsucht, was zu falschen Ergebnissen führt!",
     )
     n_results: Optional[int] = Field(10, description="Maximale Anzahl Chunks/Treffer (Standard 10).")
 
@@ -121,6 +121,10 @@ class GetFullDocumentTextArgs(BaseModel):
             "Volltext eines registrierten Dokuments (DB/Chroma/PDF-Datei). "
             + _KNOWLEDGE_VS_MEMORY
         ),
+    )
+    absolute_path: Optional[str] = Field(
+        None,
+        description="Path-Pinning for Disambiguation: Nutze dieses Feld, um eine spezifische Dublette via absolutem Pfad zu lesen, wenn das System dich dazu auffordert (z.B. '[NICHT INDIZIERT - AKTION ERFORDERLICH...]'). Wenn absolute_path gesetzt ist, hat dieser Parameter ABSOLUTE PRIORITÄT: filename wird ignoriert, keine Dubletten-Prüfung, direktes Lesen vom angegebenen Pfad.",
     )
 
 
@@ -183,12 +187,16 @@ class SkillResponse(BaseModel):
 
 
 class SkillMetadata(BaseModel):
+    description: Optional[str] = Field(
+        default=None,
+        description="Menschenlesbare Skill-Beschreibung (für Agent-Planner Prompts und UI).",
+    )
     examples: List[Dict[str, Any]] = Field(default_factory=list)
     latency_class: Literal["fast", "normal", "slow"] = "normal"
     tags: List[str] = Field(default_factory=list)
     capabilities: List[str] = Field(default_factory=list)
     version: str = "1.0.0"
-    sandbox_level: Literal["unrestricted", "workspace_only", "read_only_fs"] = "unrestricted"
+    sandbox_level: Literal["unrestricted", "workspace_only", "read_only_fs", "full"] = "unrestricted"
     depends_on: List[str] = Field(default_factory=list)
     is_agent_ready: bool = True
     max_calls_per_turn: int = Field(default=3, ge=1)
@@ -411,21 +419,32 @@ class AgentSpec(BaseModel):
     max_iterations: int = Field(default=5, ge=1)
 
 
+class PlannerProviderProfile(BaseModel):
+    """Runtime profile for planner prompting and deterministic planning."""
+
+    provider: str
+    requested_model: Optional[str] = None
+    planner_model: str
+    model_class: Literal["nano", "mini", "standard", "logic", "local"] = "standard"
+    is_local: bool = False
+    max_iterations_cap: int = Field(default=8, ge=1, le=12)
+    allow_llm_planning: bool = True
+
+
 class PlannerContext(BaseModel):
-    original_user_text: str
+    """Structured handoff from Intent Engine and orchestrator into AgentPlanner."""
+
+    original_user_text: str = ""
     allowed_skill_ids: List[str] = Field(default_factory=list)
+    required_skill_ids: List[str] = Field(default_factory=list)
+    priority_skill_ids: List[str] = Field(default_factory=list)
     forbidden_skill_ids: List[str] = Field(default_factory=list)
     negative_constraints: List[str] = Field(default_factory=list)
-
-
-class PlannerProviderProfile(BaseModel):
-    provider: str
-    requested_model: str = ""
-    planner_model: str
-    model_class: str
-    is_local: bool = False
-    max_iterations_cap: int = Field(default=6, ge=1)
-    allow_llm_planning: bool = True
+    completed_skills: List[str] = Field(default_factory=list)
+    failed_steps: List[str] = Field(default_factory=list)
+    round_idx: int = Field(default=1, ge=1)
+    lockdown_after_pdf: bool = False
+    deterministic_planning_allowed: bool = True
 
 
 # --- Message Schemas ---
@@ -599,6 +618,8 @@ class Chat(ChatBase):
     updated_at: datetime
     messages: List[MessageResponse] = []
     project_id: Optional[int] = None
+    header_provider: Optional[str] = None
+    header_model: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -612,6 +633,8 @@ class ChatResponse(ChatBase):
     project_id: Optional[int] = None
     auto_generated: bool = True
     last_topic_hash: Optional[str] = None
+    header_provider: Optional[str] = None
+    header_model: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -619,6 +642,11 @@ class ChatResponse(ChatBase):
 
 class ChatTitleUpdate(BaseModel):
     title: str
+
+
+class ChatHeaderLlmUpdate(BaseModel):
+    provider: Optional[str] = None
+    model: Optional[str] = None
 
 
 # --- Filesystem Tool Schemas ---
@@ -630,7 +658,7 @@ _WORKSPACE_PATH_DESC = (
 
 
 class CreateFileArgs(BaseModel):
-    path: str = Field(..., description=_WORKSPACE_PATH_DESC)
+    file_path: str = Field(..., description=_WORKSPACE_PATH_DESC)
     content: Optional[str] = ""
     is_binary: Optional[bool] = Field(
         False,
@@ -656,11 +684,11 @@ class SaveMp3Args(BaseModel):
 
 
 class ReadFileArgs(BaseModel):
-    path: str = Field(..., description=_WORKSPACE_PATH_DESC)
+    file_path: str = Field(..., description=_WORKSPACE_PATH_DESC)
 
 
 class DeleteFileArgs(BaseModel):
-    path: str = Field(..., description=_WORKSPACE_PATH_DESC)
+    file_path: str = Field(..., description=_WORKSPACE_PATH_DESC)
 
 
 class ListDirectoryArgs(BaseModel):
@@ -701,9 +729,45 @@ class RenameFileArgs(BaseModel):
 class MoveFilesArgs(BaseModel):
     source_directory: str = Field(..., description=_WORKSPACE_PATH_DESC)
     destination_directory: str = Field(..., description=_WORKSPACE_PATH_DESC)
+    file_names: List[str] = Field(
+        ...,
+        description="Liste der exakten Dateinamen im Quellordner, die verschoben werden sollen.",
+    )
+
+
+class FindFilesArgs(BaseModel):
     pattern: str = Field(
         ...,
-        description="Glob-Muster nur für Dateinamen im Quellordner (z.B. '*.pdf'). Keine '..'.",
+        description=(
+            "Dateinamen-Glob für die rekursive Suche (z.B. '*.pdf', '*gundula*', 'gundula1.pdf'). "
+            "KEINE Pfadsegmente, nur Dateinamen. Wenn das Pattern weder '*' noch '?' enthält, "
+            "wird automatisch Substring-Suche verwendet (z.B. 'gundula' → '*gundula*')."
+        ),
+    )
+    root: Optional[str] = Field(
+        None,
+        description=(
+            "Optional: Startordner (Workspace-relativer oder absoluter Pfad). "
+            "Wenn leer/None, werden ALLE freigegebenen Workspaces rekursiv durchsucht — "
+            "das ist der empfohlene Default, wenn der User keinen Pfad nennt."
+        ),
+    )
+    max_results: Optional[int] = Field(
+        100,
+        ge=1,
+        le=1000,
+        description="Obergrenze für Treffer (1–1000, Default 100).",
+    )
+    search_all_drives: Optional[bool] = Field(
+        False,
+        description=(
+            "Wenn True: durchsucht ALLE lokalen Laufwerke (C:\\, D:\\, ...) — nicht nur freigegebene Workspaces. "
+            "SETZE DIESEN PARAMETER AUF TRUE, wenn der User Formulierungen wie 'überall', 'auf dem ganzen Rechner', "
+            "'alle Kopien', 'Duplikate', 'wo liegt die Datei überall' benutzt, ODER wenn ein vorheriger find_files-Aufruf "
+            "ohne dieses Flag nur 0 oder 1 Treffer lieferte und der User mehr Instanzen erwartet. "
+            "Dauert deutlich länger (mehrere Sekunden), überspringt aber automatisch System-/Noise-Ordner. "
+            "Wird ignoriert, wenn 'root' gesetzt ist."
+        ),
     )
 
 
@@ -776,6 +840,26 @@ class WebsearchArgsV2(BaseModel):
             "'iPhone 16 Pro Testbericht'). Mindestens 2 Zeichen; konkret formulieren, damit der Provider passende Treffer liefert."
         ),
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _coerce_queries_alias(cls, data: Any) -> Any:
+        """Some models emit ``queries`` (list/str); normalize to ``query``."""
+        if not isinstance(data, dict):
+            return data
+        if data.get("query") not in (None, ""):
+            return data
+        raw = data.get("queries")
+        if raw is None:
+            return data
+        if isinstance(raw, list):
+            parts = [str(p).strip() for p in raw if str(p or "").strip()]
+            if parts:
+                return {**data, "query": parts[0] if len(parts) == 1 else " ".join(parts)}
+            return data
+        if isinstance(raw, str) and raw.strip():
+            return {**data, "query": raw.strip()}
+        return data
     provider: Optional[str] = Field(
         None,
         description=(
@@ -938,6 +1022,10 @@ class CreateCalendarEventArgs(BaseModel):
     start_time_str: str = Field(
         ...,
         description=f"Start des Termins. {_CAL_DATETIME_HINT} Für ganztägige Termine nur das Datum angeben.",
+    )
+    duration_minutes: Optional[int] = Field(
+        default=None,
+        description="Dauer des Termins in Minuten (z.B. 30 für 30 Minuten, 60 für 1 Stunde). WICHTIG: Immer angeben für korrekte Endzeit-Berechnung.",
     )
     location: Optional[str] = Field(
         default=None,
@@ -1157,6 +1245,11 @@ class MemoryUpdateArgs(BaseModel):
     new_priority: Optional[float] = Field(None, ge=0.0, le=1.0, description="Neue Priority. Wird ggf. durch Guard gekappt.")
 
 
+class MemoryDeleteArgs(BaseModel):
+    """Arguments for memory_delete tool - deletes a memory by ID."""
+    memory_id: int = Field(..., description="ID der zu löschenden Memory (von memory_read).")
+
+
 class MemoryHistoryArgs(BaseModel):
     """Arguments for memory_history tool - shows audit trail of a memory."""
     memory_id: int = Field(..., description="ID der Memory (von memory_read).")
@@ -1185,6 +1278,34 @@ class SendEmailArgs(BaseModel):
     attachment_path: Optional[str] = Field(None, description="Anhang Pfad.")
 
 
+MutationProposalStatus = Literal["pending", "confirmed", "rejected", "applied"]
+
+
+class MutationProposal(BaseModel):
+    """TASK-067: Pending calendar change awaiting user confirmation.
+
+    Stored in memory (per chat_id) until the user answers Ja/Nein or the
+    proposal is cleared. ``proposed_changes`` mirrors the tool kwargs for
+    ``find_and_update_calendar_event`` (excluding internal bypass flags).
+    """
+
+    proposal_id: str = Field(..., description="UUID für dieses Proposal.")
+    chat_id: int = Field(..., description="Zugehöriger Chat (Session-Schlüssel).")
+    event_id: str = Field(..., description="Google Calendar event_id (truth source).")
+    proposed_changes: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Geplante Tool-Parameter (new_start_time, new_description, cancel_event, …).",
+    )
+    original_event: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Kompakte Kopie des Events vor der Mutation (für Anzeige/Revert-Metadaten).",
+    )
+    status: MutationProposalStatus = Field(
+        default="pending",
+        description="Lebenszyklus: pending bis Bestätigung oder Verwerfen.",
+    )
+
+
 class FindFreeTimeSlotsArgs(BaseModel):
     year: int = Field(..., description="Vierstelliges Jahr des anzuzeigenden Monats (z.B. 2026).")
     month: int = Field(..., ge=1, le=12, description="Monat 1–12.")
@@ -1211,9 +1332,15 @@ class SaveCoreMemoryToolArgs(BaseModel):
 
 
 class FindAndUpdateCalendarEventArgs(BaseModel):
-    event_title_query: str = Field(
-        ...,
-        description="Suchtext für den Termintitel (Fuzzy-Match); sollte den Termin eindeutig genug treffen.",
+    event_title_query: Optional[str] = Field(
+        None,
+        description=(
+            "Suchtext für den Termintitel (Fuzzy-Match). "
+            "KRITISCH: Dieser Parameter heißt zwingend 'event_title_query' — "
+            "NICHT 'query', NICHT 'title', NICHT 'event_name'. "
+            "Beispiel: 'event_title_query': 'Aldi'. "
+            "Optional wenn event_id angegeben wird."
+        ),
     )
     new_summary: Optional[str] = Field(None, description="Neuer Kalendertitel (optional).")
     new_start_time: Optional[str] = Field(
@@ -1229,6 +1356,13 @@ class FindAndUpdateCalendarEventArgs(BaseModel):
         description="Neuer Ort (optional), Format **Straße, PLZ Stadt, Land** wenn möglich.",
     )
     new_description: Optional[str] = Field(None, description="Neue volle oder ergänzte Beschreibung (optional).")
+    event_id: Optional[str] = Field(
+        None,
+        description=(
+            "Optional: Google Event-ID wenn bereits durch den Contextual Entity Resolver "
+            "(TASK-065) aus dem Kalender-Snapshot aufgelöst — dann ohne Fuzzy-Suche direkt PATCH."
+        ),
+    )
     cancel_event: Optional[bool] = Field(
         default=False,
         description="Wenn true: Termin löschen statt aktualisieren.",
@@ -1447,6 +1581,8 @@ class UserMeResponse(BaseModel):
     status: str
     user: str
     suggestion_mode: int = Field(default=1, ge=0, le=2)
+    # Dark Mode preference (false = Light Mode, true = Dark Mode)
+    dark_mode_enabled: bool = Field(default=False)
     # Mirrors persisted chat defaults (same source as GET /api/last-used-model).
     last_used_provider: Optional[str] = None
     last_used_model: Optional[str] = None
@@ -1456,3 +1592,10 @@ class UserSuggestionModeUpdate(BaseModel):
     """PATCH /api/users/me — update proactive suggestion tier."""
 
     suggestion_mode: int = Field(ge=0, le=2)
+
+
+class UserSettingsUpdate(BaseModel):
+    """PATCH /api/users/me — update user settings (suggestion_mode and dark_mode_enabled)."""
+
+    suggestion_mode: Optional[int] = Field(None, ge=0, le=2)
+    dark_mode_enabled: Optional[bool] = None

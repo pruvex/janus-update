@@ -1909,7 +1909,13 @@ async def get_distance_and_route_tool(
 
     except Exception as e:
         logger.error(f"{trace_tag} Fehler im Geo-Tool: {e}", exc_info=True)
-        return _error_response("UNEXPECTED_ERROR", str(e))
+        return _error_response(
+            "ROUTING_UNAVAILABLE",
+            (
+                "Die Routing-/Geodatenquelle konnte nicht verlaesslich abgerufen werden. "
+                "Ich gebe deshalb keine praezise Entfernung oder Route aus."
+            ),
+        )
 
 
 async def find_local_business_tool(

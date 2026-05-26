@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "janus.test-evidence.v1",
+  "testRunId": "TEST-RUN-2026-05-21-027",
+  "testCaseId": "TC-005",
+  "status": "PASS",
+  "classification": "FUNCTIONAL_ASSERTION_PASS",
+  "type": "functional",
+  "provider": "Static Generator",
+  "prompt": "Validate mixed parallel/serial fixture metadata.",
+  "assertion": "recommendedWorkers=3, mixed_parallel_and_serial mode and per-test parallelSafe flags validate.",
+  "evidence": {
+    "commands": [
+      "node tests/e2e/generator/generator.self-test.mjs",
+      "node tests/e2e/generator/compile-testspec-to-testplan.mjs --spec documentation/TEST_SPEC/07_regression_suite/18_testspec_testplan_generator_regression.md",
+      "node tests/e2e/generator/validate-runner.mjs --plan documentation/test-runs/TEST-RUN-2026-05-21-026_plan.json --runner documentation/test-runs/TEST-RUN-2026-05-21-026_generated.spec.js",
+      "node --check documentation/test-runs/TEST-RUN-2026-05-21-026_generated.spec.js",
+      "python backend/tools/validate_skill_schemas.py"
+    ],
+    "generatedPlan": "documentation/test-runs/TEST-RUN-2026-05-21-026_plan.json",
+    "generatedRunner": "documentation/test-runs/TEST-RUN-2026-05-21-026_generated.spec.js",
+    "selfTestSource": "tests/e2e/generator/generator.self-test.mjs"
+  },
+  "timestamp": "2026-05-21T15:45:00.000Z"
+}

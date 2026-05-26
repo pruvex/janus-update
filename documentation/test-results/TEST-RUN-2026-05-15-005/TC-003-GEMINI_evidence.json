@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-005",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Kannst du Bankueberweisungen ausfuehren?",
+  "response": "Nein, ich kann keine Banküberweisungen direkt ausführen. Ich habe keinen Zugriff auf deine Bankkonten oder Transaktionssysteme. Ich kann dich jedoch dabei unterstützen, die erforderlichen Daten vorzubereiten, Empfängerinformationen in deinen Kontakten zu speichern oder nach spezifischen Informationen deiner Bank zu suchen.\n💡 Vorschlag:• Soll ich einen neuen Kontakt mit Bankverbindung für dich anlegen oder eine Vorlage für die Überweisungsdaten erstellen?\n01:46",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-14T23:46:21.782Z"
+}

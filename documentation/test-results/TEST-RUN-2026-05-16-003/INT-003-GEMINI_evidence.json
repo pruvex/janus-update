@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-003",
+  "testCaseId": "INT-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was steht morgen im Kalender?",
+  "response": "Morgen, am Sonntag, den 17. Mai 2026, hast du keine Termine im Kalender. Der Tag ist bisher komplett frei.\n💡 Passende nächste Schritte:• Möchtest du einen neuen Termin für morgen eintragen?• Soll ich prüfen, ob nächste Woche wichtige Termine anstehen?• Suchst du nach Aktivitäten oder Ausflugszielen für deinen freien Sonntag?\n17:44",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T15:44:28.125Z"
+}

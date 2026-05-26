@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-002",
+  "testCaseId": "TC-007-GEMINI",
+  "result": "BLOCKED",
+  "classification": "RUNNER_UNHANDLED_FAILURE",
+  "prompt": "",
+  "response": "",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Error: RUNNER_STREAM_TIMEOUT: Assistant bubble appeared but is empty or only contains \"...\" with timestamp. SSE stream observed but no real content rendered.\nConsole [SSE]: [{\"timestamp\":\"2026-05-19T12:40:44.411Z\",\"type\":\"log\",\"text\":\"[SSE-INIT] {windowId: A, chatMessagesChildren: 2, containerClass: message assistant, bubbleFound: true, bubbleInitialText: ...\\n}\"}]\nDOM eval: {\"found\":true,\"containerChildCount\":2,\"messageCount\":2,\"messages\":[{\"i\":0,\"className\":\"message user\",\"bubbleHTMLLen\":91,\"bubbleTextLen\":77,\"bubbleTextSample\":\"Recherchiere aktuelle Modellpreise und erstelle eine kurze Vergleichstabelle\\n\",\"isConnected\":true},{\"i\":1,\"className\":\"message assistant\",\"bubbleHTMLLen\":18,\"bubbleTextLen\":4,\"bubbleTextSample\":\"...\\n\",\"isConnected\":true}],\"containerHTMLLen\":298,\"containerHTMLSample\":\"<div class=\\\"message user\\\"><div class=\\\"bubble\\\"><p><p>Recherchiere aktuelle Modellpreise und erstelle eine kurze Vergleichstabelle</p>\\n</p></div><div class=\\\"timestamp\\\">14:40</div></div><div class=\\\"message assistant\\\"><div class=\\\"bubble\\\"><p><p>...</p>\\n</p></div><div class=\\\"timestamp\\\">14:40</div></div>\"}\nDOM message texts: [\"Recherchiere aktuelle Modellpreise und erstelle eine kurze Vergleichstabelle\\n14:40\",\"...\\n14:40\"]",
+  "timestamp": "2026-05-19T12:41:45.511Z"
+}

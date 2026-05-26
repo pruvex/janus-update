@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-020",
+  "testCaseId": "TC-005-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Was weisst du ueber mein Testprojekt Phoenix?",
+  "response": "Hallo Admin. Über dein Testprojekt „Phoenix“ weiß ich, dass du es so benannt hast. Das hast du mir am 16. Mai 2026 um 17:35 Uhr im Chat „Testprojekt Phoenix“ zum ersten Mal erzählt.\n💡 Passende nächste Schritte:• Möchtest du spezifische Ziele oder Meilensteine für das Projekt Phoenix festlegen?• Soll ich eine Liste mit Aufgaben oder Notizen für dieses Projekt anlegen?\n19:50",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T17:50:44.900Z"
+}

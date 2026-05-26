@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-041",
+  "testCaseId": "INT-006-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was weisst du aus meiner Erinnerung ueber Gold?",
+  "response": "Hallo Pruve,in deinen bisher gespeicherten Erinnerungen finden sich aktuell keine Informationen oder Präferenzen zum Thema **Gold**. Deine hinterlegten Daten konzentrieren sich derzeit primär auf deine Identität sowie detaillierte Beschreibungen zu **Nikola Tesla**.Falls du mir in der Vergangenheit etwas über Gold erzählt hast, das hier nicht aufgeführt ist, kann ich es gerne neu für dich festhalten. Da du jedoch danach gefragt hast, hier der aktuelle Marktstatus (Stand: 21.05.2026):*   **Goldpreis:** Eine Feinunze Gold liegt derzeit bei ca. **3.908,60 €**.*   **Grammpreis:** Der Preis für ein Gramm Gold beträgt aktuell etwa **125,66 €**.Was Nikola Tesla betrifft, hast du mir am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“ zum ersten Mal erzählt, dass er eine sehr schlanke und auffallend große Persönlichkeit mit dunklem, akkurat gescheiteltem Haar und markanten Wangenknochen war.💡 **Passende nächste Schritte:**• Möchtest du, dass ich eine spezifische Information zu Gold (z.B. eine Vorliebe oder einen Besitz) in deinem Gedächtnis speichere?• Soll ich für dich recherchieren, ob es historische Verbindungen zwischen Nikola Tesla und Goldexperimenten gibt?• Benötigst du einen Preisvergleich für bestimmte Goldmünzen oder Barren?23:26",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T21:27:10.087Z"
+}

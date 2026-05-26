@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-002",
+  "testCaseId": "TC-001-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Brauche ich morgen in Muenchen einen Regenschirm?",
+  "response": "Ja, für morgen in München solltest du unbedingt einen Regenschirm einpacken. Es werden Gewitter erwartet und die Niederschlagswahrscheinlichkeit liegt bei 68 %. Die Temperaturen erreichen maximal etwa 19 °C.\nQuelle: Open-Meteo\n💡 Passende nächste Schritte:• Soll ich prüfen, ob es zu einer bestimmten Uhrzeit trocken bleibt?• Benötigst du eine Route zu einem Ziel in München, die möglichst überdacht ist?• Möchtest du wissen, wie das Wetter in den darauffolgenden Tagen wird?\n01:28",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-16T23:28:31.913Z"
+}

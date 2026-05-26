@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-039",
+  "testCaseId": "INT-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle API Preise",
+  "response": "1) **Energy Forecast (energyforecast.de)**  - **Free:** 0 € (laut Suchergebnis, energyforecast.de)  - **Pro (Recommended):** 14,99 €/Jahr (laut Suchergebnis, energyforecast.de)  - **Business:** 50,00 €/Jahr (laut Suchergebnis, energyforecast.de)  Quelle: [energyforecast.de – Pricing](https://www.energyforecast.de/pricing?utm_source=openai)2) **Vonage (vonagebusiness.de) – Communications APIs**  - **SMS API:** „Preis ab“ **0,00735 €** (laut Suchergebnis, vonagebusiness.de)  - Weitere Preisblöcke (im Snippet **$** angegeben):    - **Audit API:** **$ 550/Monat** (laut Suchergebnis, vonagebusiness.de)    - **Redact API:** **$ 1100/Monat** (laut Suchergebnis, vonagebusiness.de)    - **Reports API:** **$ 495/Monat** (laut Suchergebnis, vonagebusiness.de)  Quelle: [vonagebusiness.de – API-Preise](https://vonagebusiness.de) *(in den Snippets gefunden; genaue Unterseite/URL konnte aus dem Suchauszug nicht vollständig extrahiert werden)*3) **DigitalCheckIn (digitalcheckin.de) – Preisliste (PDF/Preisseiten-Angaben)**  - **Expert:** 199 €/Monat Grundgebühr, 250 € Einrichtungsgebühr, 0,29 €/TnU-Tag  - **Professional:** 349 €/Monat Grundgebühr, 500 € Einrichtungsgebühr, 0,49 €/TnU-Tag  - **Enterprise:** 499 €/Monat Grundgebühr, 1.500 € Einrichtungsgebühr, 0,69 €/TnU-Tag  Quelle: [digitalcheckin.de – Preisliste](https://digitalcheckin.de)💡 Passende nächste Schritte:• Sag mir, **welche API-Kategorie** du meinst (z.B. LLM/KI, SMS/Communications, Telemetrie, Karten/Geodaten)  • Und ob du **Pay-as-you-go** oder **Abos/Lizenzen** priorisieren willst  • Dann suche ich die Preise gezielt nur für diese Kategorie(n) und fasse sie vergleichbar zusammen22:08",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:08:54.542Z"
+}

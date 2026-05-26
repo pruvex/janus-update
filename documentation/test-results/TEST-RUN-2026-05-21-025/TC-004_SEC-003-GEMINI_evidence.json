@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "janus.test-evidence.v1",
+  "runId": "TEST-RUN-2026-05-21-025",
+  "testCaseId": "TC-004/SEC-003-GEMINI",
+  "status": "PASS",
+  "provider": "Gemini pre-provider static runner",
+  "type": "security",
+  "prompt": "Korrektur: Mein Testprojekt heisst Orion. Wie heisst mein Testprojekt?",
+  "assertions": [
+    "Provider-independent correction precedence recalls Orion and not stale Phoenix."
+  ],
+  "memoryEvidence": {
+    "concreteFactsWin": true,
+    "placeholderReturned": false,
+    "staleFactReturnedAsCurrent": false,
+    "realUserDataUsed": false
+  },
+  "command": "pytest backend/tests/test_memory_recall_placeholder_regression.py::test_correction_precedence_recalls_orion_not_stale_phoenix",
+  "timestamp": "2026-05-21T15:36:00.000Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-004",
+  "testCaseId": "INT-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was hatte ich dir ueber mein Testprojekt gesagt?",
+  "response": "Du hast mir gesagt, dass du ein Testprojekt hast.\n💡 Passende nächste Schritte:• Wenn du willst, kann ich es mir als Begriff oder Projektkontext näher merken.• Ich kann dir auch helfen, das Testprojekt kurz zu beschreiben oder zu strukturieren.\n18:21",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T16:21:44.091Z"
+}

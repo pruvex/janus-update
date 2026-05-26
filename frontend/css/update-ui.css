@@ -1,0 +1,238 @@
+/* ============================================================
+   STATE-DRIVEN UPDATE UI STYLES
+   ============================================================ */
+
+/* Normal Update Toast */
+.update-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #1e1e2e;
+    border: 1px solid #89b4fa;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    animation: slideIn 0.3s ease-out;
+}
+
+.update-toast--normal {
+    border-left: 4px solid #89b4fa;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.update-toast-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 300px;
+}
+
+.update-toast-message {
+    color: #cdd6f4;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.update-toast-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.update-toast-button {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+.update-toast-button:hover {
+    opacity: 0.8;
+}
+
+.update-toast-button--primary {
+    background: #89b4fa;
+    color: #1e1e2e;
+}
+
+.update-toast-button--secondary {
+    background: transparent;
+    color: #cdd6f4;
+    border: 1px solid #cdd6f4;
+}
+
+/* Critical Update Modal */
+.update-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.update-modal--critical {
+    background: rgba(0, 0, 0, 0.85);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.update-modal-content {
+    background: #1e1e2e;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 2px solid #f38ba8;
+    box-shadow: 0 8px 24px rgba(243, 139, 168, 0.2);
+}
+
+.update-modal-header {
+    margin-bottom: 1.5rem;
+}
+
+.update-modal-title {
+    margin: 0;
+    color: #f38ba8;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.update-modal-body {
+    margin-bottom: 1.5rem;
+}
+
+.update-modal-message {
+    color: #cdd6f4;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.update-modal-notes {
+    margin-top: 1rem;
+}
+
+.update-modal-notes h3 {
+    margin: 0 0 0.5rem 0;
+    color: #a6adc8;
+    font-size: 1rem;
+}
+
+.update-modal-notes-content {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.75rem;
+    border-radius: 6px;
+    color: #cdd6f4;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.update-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.update-modal-button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.update-modal-button:hover {
+    opacity: 0.8;
+}
+
+.update-modal-button--primary {
+    background: #f38ba8;
+    color: #1e1e2e;
+}
+
+/* Error Banner */
+.update-error-banner {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e1e2e;
+    border: 1px solid #f38ba8;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 4px 12px rgba(243, 139, 168, 0.3);
+    z-index: 10002;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translate(-50%, -100%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+.update-error-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: space-between;
+    min-width: 400px;
+}
+
+.update-error-message {
+    color: #f38ba8;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.update-error-retry-btn {
+    background: #f38ba8;
+    color: #1e1e2e;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.update-error-retry-btn:hover {
+    opacity: 0.8;
+}

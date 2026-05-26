@@ -14,6 +14,7 @@ from backend.services import memory_manager
 import sys
 import os
 from pathlib import Path
+from backend.services.vision.model_loader import get_model_loader, start_clip_model_download
 
 # PyInstaller: Setze Pfad für CLIP Datei
 if getattr(sys, 'frozen', False):
@@ -58,16 +59,11 @@ class LocalVisionService:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = None
         self.preprocess = None
-        try:
-            self.model, self.preprocess = clip.load("ViT-B/32", device=self.device)
-            logger.info(f"VISION: CLIP-Modell auf {self.device} geladen.")
-        except Exception as exc:
-            self.model = None
-            self.preprocess = None
-            logger.warning(
-                "⚠️ VISION-SERVICE: CLIP-Modell konnte nicht geladen werden (Bildsuche deaktiviert)"
-            )
-            logger.debug("VISION: CLIP-Load error details: %s", exc, exc_info=True)
+        
+        # Lazy-Loading: Model-Loader initialisieren, aber Download NICHT hier starten
+        # Download wird in backend/main.py lifespan gestartet (nach App-Start)
+        self.model_loader = get_model_loader()
+        logger.info("VISION: Model-Loader initialisiert (Download wird nach App-Start gestartet).")
         
         self.settings = VisionSettings() # Instanziiere VisionSettings hier
         
@@ -232,6 +228,15 @@ class LocalVisionService:
                             result["unknown_encodings"].append(encoding)
                     
             # 2. CLIP Inference (Zentralisiert)
+            # Lazy-Loading: Model vom Loader holen
+            if not self.model_loader.is_ready():
+                logger.info("VISION: CLIP-Modell noch nicht geladen - ueberspringe Bildsuche.")
+                return result
+            
+            # Model vom Loader holen
+            self.model = self.model_loader.model
+            self.preprocess = self.model_loader.preprocess
+            
             if self.model is None or self.preprocess is None:
                 logger.info("VISION: CLIP nicht verfügbar - ueberspringe Bildsuche.")
                 return result

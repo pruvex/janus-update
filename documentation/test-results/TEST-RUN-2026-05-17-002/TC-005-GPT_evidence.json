@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-002",
+  "testCaseId": "TC-005-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Recherchiere aktuelle Modellpreise fuer OpenAI und Gemini",
+  "response": "\nOpenAI (API-Preise, pro 1M Tokens)\n\n\nGPT-5.4: Input 2,50 $ • Cache-Input 0,25 $ • Output 15,00 $ (unverifiziert)  \nGPT-5.4 mini: Input 0,75 $ • Cache-Input 0,075 $ • Output 4,50 $ (unverifiziert)  \nGPT-5.5: Input 5,00 $ • Cache-Input 0,50 $ • Output 30,00 $ (unverifiziert)\n\n\nGoogle Gemini (Gemini Developer API, pro 1M Tokens; Preise im Suchergebnis in USD, daher keine EUR-Angaben)\n\n\nGemini 3 Pro Preview:  \nInput (≤200k): 2,00 $ • Output (≤200k, inkl. thinking): 12,00 $ (unverifiziert)  \nInput (>200k): 4,00 $ • Output (>200k, inkl. thinking): 18,00 $ (unverifiziert)\n\n\nGemini 3 Flash Preview:  \nInput (text/image/video): 0,50 $ • Output (inkl. thinking): 3,00 $ (unverifiziert)  \nInput (audio): 1,00 $ (unverifiziert)\n\n\n\nQuellen  \n\nOpenAI API-Preisgestaltung: https://openai.com/de-DE/api/pricing/  \nGoogle Gemini Developer API Pricing: https://ai.google.dev/gemini-api/docs/pricing?hl=de\n\n💡 Passende nächste Schritte:• Soll ich zusätzlich nur nach EUR-Preisen suchen (falls irgendwo direkt EUR angegeben wird) statt USD-Token-Preise?• Willst du nur die “Top”-Modelle (je Anbieter 1–2) oder eine vollständige Preisliste aller angebotenen Modelle?\n01:32",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-16T23:33:18.909Z"
+}

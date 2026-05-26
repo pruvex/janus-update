@@ -1,0 +1,14 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-005",
+  "testCaseId": "STG-010",
+  "result": "PASS",
+  "classification": "PACKAGED_LOCAL_BETA_GATE_DECISION_PASS",
+  "evidence": {
+    "decision": "PASS",
+    "targetModel": "packaged-local Electron beta",
+    "hostedStagingRequired": false,
+    "openCriticalFindings": 0,
+    "openHighFindings": 0
+  },
+  "timestamp": "2026-05-21T00:53:04.821Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-036",
+  "testCaseId": "TC-004-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wie steht es aktuell um den FC Bayern?",
+  "response": "Hallo PruveAktuell: Der FC Bayern ist in der **Bundesliga** in der Tabelle auf **Platz 1** mit **86 Punkten** (laut Bundesliga.com, **33. Spieltag**, Saison 2025/26).💡 Passende nächste Schritte:• Sollen wir das **Spiel von heute** (inkl. Gegner/Spielstand) checken? Nenn mir dafür kurz den **Wettbewerb** (Bundesliga/CL/Pokal) und ggf. den **Gegner**.• Willst du auch die **aktuelle Form** (letzte Spiele/Serie) oder die **nächste Partie**?20:46",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T18:47:35.237Z"
+}

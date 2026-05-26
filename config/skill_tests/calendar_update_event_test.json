@@ -1,0 +1,40 @@
+{
+  "skill_id": "calendar.update_event",
+  "skill_type": "calendar",
+  "generated_at": "2026-05-03T21:37:01.826936",
+  "tests": {
+    "happy_path": {
+      "name": "happy_path",
+      "description": "Standard successful execution",
+      "input": {
+        "input": "default input"
+      },
+      "validation": [
+        "type_match:dict",
+        "key_exists:status"
+      ]
+    },
+    "edge_case": {
+      "name": "edge_case",
+      "description": "Boundary condition or unusual input",
+      "input": {
+        "input": "edge input"
+      },
+      "validation": [
+        "type_match:dict",
+        "key_exists:status"
+      ]
+    },
+    "failure_case": {
+      "name": "failure_case",
+      "description": "Invalid input or error condition",
+      "input": {
+        "input": "failure input"
+      },
+      "validation": [
+        "type_match:dict",
+        "key_exists:status"
+      ]
+    }
+  }
+}

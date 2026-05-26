@@ -1,0 +1,10 @@
+{
+  "rawSensitiveEvidencePolicy": "headers-and-status-only",
+  "status": 200,
+  "headersChecked": [
+    "x-frame-options",
+    "x-content-type-options",
+    "referrer-policy",
+    "permissions-policy"
+  ]
+}

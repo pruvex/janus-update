@@ -203,61 +203,9 @@ def _first_youtube_match(blob: str) -> Optional[re.Match[str]]:
     return picked[0] if picked else None
 
 
-def detect_video_modal_request_dict(assistant_text: str, user_text: str) -> Optional[Dict[str, Any]]:
-    """YouTube/Vimeo; mehrere YouTube-Links: Shorts runterstufen, /embed/ und normale Videos bevorzugen."""
-    for blob in (assistant_text or "", user_text or ""):
-        cands = _ordered_youtube_candidates(blob)
-        if not cands:
-            continue
-        best = _pick_best_youtube_candidate(cands)
-        to_try: List[Tuple[re.Match[str], str]] = []
-        if best:
-            to_try.append(best)
-        for tup in cands:
-            if best and tup == best:
-                continue
-            to_try.append(tup)
-        for m, _label in to_try:
-            vid = m.group("id")
-            raw = _ensure_http(m.group("url"))
-            if not _youtube_url_passes_modal_validation(vid, raw):
-                logger.warning(
-                    "VIDEO-MODAL: YouTube-URL abgelehnt (Validierung), nächster Treffer — %s",
-                    raw[:96],
-                )
-                continue
-            return {
-                "type": "video",
-                "payload": {
-                    "source": "youtube",
-                    "url": raw,
-                    "title": None,
-                    "embed_url": _youtube_embed(vid),
-                },
-                "options": {"auto_open": True, "pinnable": True},
-            }
-    for blob in (assistant_text or "", user_text or ""):
-        m = _VIMEO_RE.search(blob)
-        if m:
-            vid = m.group("id")
-            raw = _ensure_http(m.group("url"))
-            if not _vimeo_url_passes_modal_validation(vid, raw):
-                logger.warning(
-                    "VIDEO-MODAL: Vimeo-URL abgelehnt (Validierung) — %s",
-                    raw[:96],
-                )
-                continue
-            return {
-                "type": "video",
-                "payload": {
-                    "source": "vimeo",
-                    "url": raw,
-                    "title": None,
-                    "embed_url": _vimeo_embed(vid),
-                },
-                "options": {"auto_open": True, "pinnable": True},
-            }
-    return None
+# BACKLOG-011 FIX: detect_video_modal_request_dict() entfernt
+# URL-Detection Fallback wurde deaktiviert, modal_request wird ausschließlich aus video.search tool_results abgeleitet
+# Diese Funktion ist nicht mehr benötigt und wurde entfernt um falsch-positive Video-Links zu verhindern
 
 
 def merge_skill_modal_request_into_workflow(wf: Any) -> None:
@@ -301,7 +249,7 @@ def _ensure_video_embed_in_payload(mr: ModalRequest) -> ModalRequest:
 
 
 def resolve_modal_request_for_execution(wf: Any) -> Optional[ModalRequest]:
-    """Validated ``ModalRequest`` from workflow, skill response, or URL detection."""
+    """Validated ``ModalRequest`` from workflow or skill response. URL detection fallback disabled (BACKLOG-011)."""
     merge_skill_modal_request_into_workflow(wf)
     raw = getattr(wf, "modal_request", None)
     if raw is not None:
@@ -310,20 +258,13 @@ def resolve_modal_request_for_execution(wf: Any) -> Optional[ModalRequest]:
             mr = _ensure_video_embed_in_payload(mr)
             if _should_reject_video_modal_request(mr):
                 logger.warning(
-                    "modal_request video rejected by URL validation; falling back to URL detection",
+                    "modal_request video rejected by URL validation; no fallback to URL detection (BACKLOG-011)",
                 )
             else:
                 return mr
         except Exception:
-            logger.warning("modal_request on workflow invalid; falling back to URL detection", exc_info=True)
-    detected = detect_video_modal_request_dict(
-        str(getattr(wf, "final_text", "") or ""),
-        str(getattr(wf, "user_text", "") or ""),
-    )
-    if not detected:
-        return None
-    try:
-        return ModalRequest.model_validate(detected)
-    except Exception:
-        logger.warning("Detected video modal_request failed validation", exc_info=True)
-        return None
+            logger.warning("modal_request on workflow invalid; no fallback to URL detection (BACKLOG-011)", exc_info=True)
+    # BACKLOG-011 FIX: URL-Detection Fallback deaktiviert
+    # modal_request wird ausschließlich aus video.search tool_results abgeleitet (in response_finalizer.py)
+    # Falsch-positive Video-Links bei nicht-video-bezogenen Antworten werden verhindert
+    return None

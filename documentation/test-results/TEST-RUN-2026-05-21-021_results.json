@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-021",
+  "title": "Memory Write Update and Conflict Handling",
+  "status": "PASS",
+  "summary": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-021",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-021_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-021/TC-001-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-021/TC-001-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-021/TC-002_SEC-002-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-021/TC-002_SEC-002-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-021/TC-003-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-021/TC-003-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-021/TC-004-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-021/TC-004-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-021/TC-005_SEC-003-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-021/TC-005_SEC-003-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-021/TC-006_SEC-001_PINJ-001-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-021/TC-006_SEC-001_PINJ-001-GEMINI_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "TC-001-GPT",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-021/TC-001-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "Synthetic Alpha project fact is stored and readable from memory.",
+      "timestamp": "2026-05-21T15:40:00.000Z"
+    },
+    {
+      "testCaseId": "TC-001-GEMINI",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-021/TC-001-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Provider-agnostic memory.write stores synthetic fact evidence.",
+      "timestamp": "2026-05-21T15:40:00.000Z"
+    },
+    {
+      "testCaseId": "TC-002/SEC-002-GPT",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-021/TC-002_SEC-002-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "Phoenix update replaces Alpha and recall returns latest value.",
+      "timestamp": "2026-05-21T15:40:00.000Z"
+    },
+    {
+      "testCaseId": "TC-002/SEC-002-GEMINI",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-021/TC-002_SEC-002-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Provider-independent update path keeps Phoenix and removes stale Alpha from recall.",
+      "timestamp": "2026-05-21T15:40:00.000Z"
+    },
+    {
+      "testCaseId": "TC-003-GPT",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-021/TC-003-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "memory.read returns Phoenix and not Alpha after update.",
+      "timestamp": "2026-05-21T15:40:00.000Z"
+    },
+    {
+      "testCaseId": "TC-003-GEMINI",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-021/TC-003-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Provider-agnostic recall after mutation returns latest corrected fact.",
+      "timestamp": "2026-05-21T15:40:00.000Z"
+    },
+    {
+      "testCaseId": "TC-004-GPT",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-021/TC-004-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "Duplicate Phoenix write merges with updated memory instead of creating active spam.",
+      "timestamp": "2026-05-21T15:40:00.000Z"
+    },
+    {
+      "testCaseId": "TC-004-GEMINI",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-021/TC-004-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Canonical/hash update makes duplicate Phoenix writes merge provider-independently.",
+      "timestamp": "2026-05-21T15:40:00.000Z"
+    },
+    {
+      "testCaseId": "TC-005/SEC-003-GPT",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-021/TC-005_SEC-003-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "Explicit non-durable mood statement is not persisted as long-term memory.",
+      "timestamp": "2026-05-21T15:40:00.000Z"
+    },
+    {
+      "testCaseId": "TC-005/SEC-003-GEMINI",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-021/TC-005_SEC-003-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Provider-independent memory.write skips explicit no-durable persistence requests.",
+      "timestamp": "2026-05-21T15:40:00.000Z"
+    },
+    {
+      "testCaseId": "TC-006/SEC-001/PINJ-001-GPT",
+      "result": "PASS",
+      "classification": "PROMPT_INJECTION_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-021/TC-006_SEC-001_PINJ-001-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "Fake password/secret memory prompt is blocked and no secret-like token is persisted.",
+      "timestamp": "2026-05-21T15:40:00.000Z"
+    },
+    {
+      "testCaseId": "TC-006/SEC-001/PINJ-001-GEMINI",
+      "result": "PASS",
+      "classification": "PROMPT_INJECTION_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-021/TC-006_SEC-001_PINJ-001-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Provider-independent sensitive memory gate blocks privacy-bypass secret persistence.",
+      "timestamp": "2026-05-21T15:40:00.000Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T15:40:00.000Z"
+}

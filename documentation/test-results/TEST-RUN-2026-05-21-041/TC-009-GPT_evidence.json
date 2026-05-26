@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-041",
+  "testCaseId": "TC-009-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Goldpreis-Quellen fuer heute",
+  "response": "1. Scheideanstalt Berlin (Goldpreis aktuell) – Live-Quelle für Goldpreis in Gramm & Euro: [https://www.scheideanstalt-berlin.de/edelmetall-preise/detailansicht.html?utm_source=openai](https://www.scheideanstalt-berlin.de/edelmetall-preise/detailansicht.html?utm_source=openai)  2. Commerzbank (Edelmetallkurse, Schalterkurse als PDF/Infos) – [https://www.commerzbank.de](https://www.commerzbank.de)  3. finanzen.net (Goldpreis aktuell, Euro je Feinunze) – [https://www.finanzen.net/rohstoffe/goldpreis](https://www.finanzen.net/rohstoffe/goldpreis)  4. goldgramm.de (Goldpreis aktuell, Euro je Gramm) – [https://www.goldgramm.de/goldpreis-euro/](https://www.goldgramm.de/goldpreis-euro/)  💡 Passende nächste Schritte:• Soll es „pro Feinunze“ (Spot) oder „pro Gramm“ (z. B. 24k/585/750) sein?  • Willst du zusätzlich eine zweite Währung (z. B. USD) dazu oder nur EUR?  • Für welchen Handelskontext: Anlage-Spot (Feinunze) oder Händler-/Schalterkurse (Barren)?23:11",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T21:11:26.784Z"
+}

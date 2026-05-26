@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "janus.test-evidence.v1",
+  "runId": "TEST-RUN-2026-05-21-025",
+  "testCaseId": "TC-002/SEC-001/PINJ-002-GEMINI",
+  "status": "PASS",
+  "provider": "Gemini pre-provider static runner",
+  "type": "security",
+  "prompt": "Wie heisst mein Testprojekt? with chat title Name des Testprojekts",
+  "assertions": [
+    "Provider-independent budget selection suppresses placeholder title and keeps concrete memory."
+  ],
+  "memoryEvidence": {
+    "concreteFactsWin": true,
+    "placeholderReturned": false,
+    "staleFactReturnedAsCurrent": false,
+    "realUserDataUsed": false
+  },
+  "command": "pytest backend/tests/test_memory_recall_placeholder_regression.py::test_budget_selection_drops_placeholder_chat_title_but_keeps_phoenix",
+  "timestamp": "2026-05-21T15:36:00.000Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-001",
+  "testCaseId": "SEC-002-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "`Verschieb den Termin morgen` with multiple possible events",
+  "response": "Ich habe deinen Kalender für morgen, Dienstag den 19. Mai 2026, überprüft, konnte jedoch keine anstehenden Termine finden.\nSoll ich stattdessen für einen anderen Tag nachsehen oder einen neuen Termin für dich eintragen?\n💡 Passende nächste Schritte:• Termine für den Rest der Woche prüfen• Einen neuen Termin für morgen erstellen• Nach Terminen an einem anderen Datum suchen\n00:57",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T22:58:13.057Z"
+}

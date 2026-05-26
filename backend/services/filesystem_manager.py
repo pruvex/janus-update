@@ -41,10 +41,14 @@ def _get_allowed_workspaces() -> list[Path]:
     except Exception as e:
         logger.error(f"Fehler beim Laden der Workspace-Konfiguration: {e}")
 
-    # Füge den Desktop-Pfad standardmäßig hinzu
+    # Füge die Standard-Systempfade hinzu ( synchron mit Global Discovery )
     desktop_path = Path.home() / "Desktop"
     if desktop_path.is_dir() and desktop_path.resolve() not in resolved_paths:
         resolved_paths.append(desktop_path.resolve())
+
+    documents_path = Path.home() / "Documents"
+    if documents_path.is_dir() and documents_path.resolve() not in resolved_paths:
+        resolved_paths.append(documents_path.resolve())
 
     # Füge den Standard-Workspace am ENDE als Fallback hinzu.
     if DEFAULT_WORKSPACE.resolve() not in resolved_paths:
@@ -74,6 +78,32 @@ def _validate_glob_pattern(pattern: Optional[str]) -> None:
         raise PermissionError(
             "Suchmuster dürfen keine übergeordneten Pfadsegmente ('..') enthalten."
         )
+
+
+_SENSITIVE_FILE_NAMES = {
+    ".env",
+    ".env.local",
+    ".env.development",
+    ".env.production",
+    "secrets.json",
+    "credentials.json",
+}
+
+
+def _is_sensitive_filesystem_target(value: Optional[str]) -> bool:
+    normalized = str(value or "").strip().replace("\\", "/").lower()
+    if not normalized:
+        return False
+    name = Path(normalized).name
+    if name in _SENSITIVE_FILE_NAMES:
+        return True
+    if name.startswith(".env."):
+        return True
+    if name.endswith(".env") or ".env." in name:
+        return True
+    if any(marker in name for marker in ("secret", "credential", "api_key", "apikey", "token")):
+        return True
+    return False
 
 
 def _fs_err(
@@ -117,6 +147,20 @@ def _map_filesystem_exception(started: float, exc: Exception) -> ToolResultV1:
     return _fs_err("OPERATION_FAILED", f"Fehler: {exc}", started=started)
 
 
+def _ensure_path_in_allowed_workspace(
+    resolved: Path,
+    allowed_workspaces: list[Path],
+    user_path: str,
+) -> Path:
+    resolved_path = resolved.resolve()
+    for ws in allowed_workspaces:
+        if resolved_path.is_relative_to(ws.resolve()):
+            return resolved_path
+    raise PermissionError(
+        f"Pfad '{user_path}' liegt ausserhalb der freigegebenen Workspace-Verzeichnisse."
+    )
+
+
 def _resolve_and_validate_path(user_path: str, must_exist: bool = True) -> Path:
     """Findet den korrekten, absoluten Pfad und validiert ihn."""
     _reject_unsafe_path_segments(user_path)
@@ -128,13 +172,10 @@ def _resolve_and_validate_path(user_path: str, must_exist: bool = True) -> Path:
 
     if is_absolute_path:
         resolved = cleaned_path.resolve()
-        for ws in allowed_workspaces:
-            if resolved.is_relative_to(ws.resolve()):
-                if must_exist and not resolved.exists():
-                    raise FileNotFoundError(f"Pfad '{user_path}' existiert nicht.")
-                return resolved
-        # If it's an absolute path but not relative to any allowed workspace
-        raise PermissionError(f"Absoluter Pfad '{user_path}' ist nicht erlaubt.")
+        _ensure_path_in_allowed_workspace(resolved, allowed_workspaces, user_path)
+        if must_exist and not resolved.exists():
+            raise FileNotFoundError(f"Pfad '{user_path}' existiert nicht.")
+        return resolved
     else:  # Handle relative paths
         # First, check if the path starts with a workspace name
         for ws in allowed_workspaces:
@@ -194,6 +235,12 @@ def create_file(path: str, content: str = "", is_binary: bool = False) -> ToolRe
 def read_file(path: str) -> ToolResultV1:
     started = time.perf_counter()
     try:
+        if _is_sensitive_filesystem_target(path):
+            return _fs_err(
+                "SENSITIVE_FILE_BLOCKED",
+                "Fehler: Sicherheitsrelevante Dateien wie .env, Secrets, Tokens oder Credentials duerfen nicht gelesen werden.",
+                started=started,
+            )
         safe_path = _resolve_and_validate_path(path, must_exist=True)
         if safe_path.suffix.lower() == ".pdf":
             msg = (
@@ -238,6 +285,20 @@ def delete_file(path: str) -> ToolResultV1:
         return _map_filesystem_exception(started, e)
 
 
+def _is_pdf_indexed(file_path: Path) -> bool:
+    """Prüft, ob eine PDF-Datei im IndexStore/ChromaDB indiziert ist."""
+    if file_path.suffix.lower() != ".pdf":
+        return False
+    try:
+        from backend.services.rag.index_store import IndexStore
+        store = IndexStore()
+        indexed_file = store.get(str(file_path))
+        return indexed_file is not None and len(indexed_file.chunk_ids) > 0
+    except Exception as e:
+        logger.debug(f"IndexStore check failed for {file_path}: {e}")
+        return False
+
+
 def list_directory(path: str, pattern: Optional[str] = None) -> ToolResultV1:
     started = time.perf_counter()
     try:
@@ -263,7 +324,13 @@ def list_directory(path: str, pattern: Optional[str] = None) -> ToolResultV1:
             items = list(safe_path.iterdir())
             output_intro = f"Es wurden {len(items)} Einträge in '{path}' gefunden."
 
-        item_names = [f"{item.name}{'/' if item.is_dir() else ''}" for item in items]
+        item_names = []
+        for item in items:
+            name = item.name
+            if item.is_file() and item.suffix.lower() == ".pdf":
+                if _is_pdf_indexed(item):
+                    name = f"{name} [INDIZIERT]"
+            item_names.append(f"{name}{'/' if item.is_dir() else ''}")
 
         if 0 < len(item_names) < 25:
             output = f"{output_intro}\n" + "\n".join(item_names)
@@ -273,6 +340,181 @@ def list_directory(path: str, pattern: Optional[str] = None) -> ToolResultV1:
         return _fs_ok(
             {"output": output, "count": len(items), "items": item_names},
             message=output_intro,
+            started=started,
+        )
+    except Exception as e:
+        return _map_filesystem_exception(started, e)
+
+
+_ALL_DRIVES_EXCLUDE_DIRS = {
+    # Windows-System / Noise-Ordner — nie durchsuchen
+    "$recycle.bin", "system volume information", "windows", "windows.old",
+    "program files", "program files (x86)", "programdata",
+    "msocache", "recovery", "perflogs",
+    # Entwickler-Noise
+    "node_modules", ".git", ".venv", "venv", "__pycache__", ".cache",
+    ".pytest_cache", ".ruff_cache", ".mypy_cache", "dist", "build",
+    # Browser-Caches & AppData-Untermengen (zu groß, irrelevant)
+    "appdata",
+}
+
+
+def _enumerate_local_drives() -> list[Path]:
+    """Liefert vorhandene lokale Windows-Laufwerke (C:\\, D:\\, ...)."""
+    import string
+    drives: list[Path] = []
+    for letter in string.ascii_uppercase:
+        drive = Path(f"{letter}:\\")
+        try:
+            if drive.exists():
+                drives.append(drive)
+        except OSError:
+            continue
+    return drives
+
+
+def find_files(
+    pattern: str,
+    root: Optional[str] = None,
+    max_results: int = 20,
+    search_all_drives: bool = False,
+    recursive: bool = True,
+) -> ToolResultV1:
+    """Rekursive Dateisuche über alle freigegebenen Workspaces (oder einen spezifischen Root).
+
+    Args:
+        pattern: Glob-Muster (z.B. '*.pdf', '*gundula*', 'gundula1.pdf'). Nur Dateinamen, keine Pfadsegmente.
+                 Wenn das Pattern weder '*' noch '?' enthält, wird es als '*<pattern>*' (Substring-Suche) interpretiert.
+        root:    Optional: Workspace-relativer oder absoluter Pfad als Startordner. None → ALLE Workspaces.
+        max_results: Harte Obergrenze für Treffer (Default 20 — begrenzt Fakten-Extraktion-Overhead nach Dateisuchen).
+        search_all_drives: Wenn True, werden ALLE lokalen Windows-Laufwerke (C:\\, D:\\, ...) durchsucht
+                           — unabhängig von Workspaces. Dauert länger, findet aber Duplikate überall.
+                           System-/Noise-Ordner (Windows, Program Files, node_modules, .git, ...) werden übersprungen.
+        recursive: Wenn False, wird nur das angegebene Verzeichnis durchsucht, nicht die Unterordner.
+                   (Default True für Kompatibilität mit bestehendem Verhalten).
+
+    Returns:
+        ToolResultV1 mit data.matches (Liste von absoluten Pfaden) und data.count.
+    """
+    started = time.perf_counter()
+    try:
+        if not pattern or not str(pattern).strip():
+            return _fs_err("INVALID_ARGUMENT", "Fehler: 'pattern' darf nicht leer sein.", started=started)
+
+        _validate_glob_pattern(pattern)
+        if _is_sensitive_filesystem_target(pattern):
+            return _fs_err(
+                "SENSITIVE_FILE_BLOCKED",
+                "Fehler: Sicherheitsrelevante Dateien wie .env, Secrets, Tokens oder Credentials duerfen nicht gesucht oder aufgelistet werden.",
+                started=started,
+            )
+        # Pfadsegmente im Pattern verbieten (Suche nur nach Dateinamen):
+        if "/" in pattern or "\\" in pattern:
+            return _fs_err(
+                "INVALID_ARGUMENT",
+                "Fehler: 'pattern' darf keine Pfadsegmente enthalten — nur Dateinamen-Glob (z.B. '*.pdf').",
+                started=started,
+            )
+
+        # Fuzzy-Fallback: Wenn kein Glob-Zeichen vorhanden → Substring-Suche
+        effective_pattern = pattern
+        if "*" not in pattern and "?" not in pattern:
+            effective_pattern = f"*{pattern}*"
+
+        try:
+            max_results_int = max(1, min(int(max_results), 1000))
+        except Exception:
+            max_results_int = 100
+
+        import fnmatch
+        import os as _os
+
+        def _walk_onerror(err: OSError) -> None:
+            logger.debug("find_files: Überspringe unerreichbaren Pfad (%s)", err)
+
+        def _sweep(sweep_roots: list[Path], apply_exclude: bool, current_matches: list[str], recursive: bool = True) -> bool:
+            """Durchsucht sweep_roots rekursiv oder nicht-rekursiv, appendet an current_matches. Returns True wenn truncated."""
+            existing = set(current_matches)
+            for ws_root in sweep_roots:
+                if not ws_root.is_dir():
+                    continue
+                if str(ws_root) not in searched_roots:
+                    searched_roots.append(str(ws_root))
+                for dirpath, dirnames, filenames in _os.walk(str(ws_root), onerror=_walk_onerror):
+                    if apply_exclude:
+                        dirnames[:] = [d for d in dirnames if d.lower() not in _ALL_DRIVES_EXCLUDE_DIRS]
+                    # 💎 TASK-005: BACKLOG-005 - Nicht-rekursive Suche
+                    # Wenn recursive=False, leere dirnames, um Unterordner zu überspringen
+                    if not recursive:
+                        dirnames[:] = []
+                    for fname in fnmatch.filter(filenames, effective_pattern):
+                        full = _os.path.join(dirpath, fname)
+                        if full in existing:
+                            continue
+                        existing.add(full)
+                        current_matches.append(full)
+                        if len(current_matches) >= max_results_int:
+                            return True
+            return False
+
+        matches: list[str] = []
+        searched_roots: list[str] = []
+        auto_escalated = False
+        explicit_root = bool(root and str(root).strip() and str(root).strip() not in (".", "/"))
+        explicit_all_drives = bool(search_all_drives)
+
+        # 💎 TASK-005: BACKLOG-005 - Heuristik für nicht-rekursive Suche
+        # Wenn ein expliziter Root angegeben ist, setze recursive=False standardmäßig
+        # um unnötige Unterordner-Scans zu vermeiden (z.B. "vom Desktop", "in diesem Ordner")
+        if explicit_root and recursive:
+            recursive = False
+            logger.info(f"[find_files] Expliziter Root '{root}' erkannt, deaktiviere rekursive Suche für Performance.")
+
+        # --- Phase 1: primärer Sweep ---
+        if explicit_root:
+            primary_roots = [_resolve_and_validate_path(str(root), must_exist=True)]
+            truncated = _sweep(primary_roots, apply_exclude=False, current_matches=matches, recursive=recursive)
+        elif explicit_all_drives:
+            primary_roots = _enumerate_local_drives()
+            truncated = _sweep(primary_roots, apply_exclude=True, current_matches=matches, recursive=recursive)
+        else:
+            # Default: Workspaces
+            primary_roots = _get_allowed_workspaces()
+            truncated = _sweep(primary_roots, apply_exclude=False, current_matches=matches, recursive=recursive)
+
+            # --- Phase 2: Auto-Escalation bei ≤1 Treffer ---
+            # Wenn Workspace-Suche wenig Erfolg hatte, erweitere auf alle Laufwerke,
+            # um mögliche Duplikate/weitere Instanzen zu finden.
+            if not truncated and len(matches) <= 1:
+                auto_escalated = True
+                all_drives = _enumerate_local_drives()
+                # Laufwerke skippen, deren Workspace-Roots schon gescannt wurden?
+                # Nein — wir müssen andere Pfade auf demselben Drive auch abdecken.
+                # Dedupe läuft über existing-Set in _sweep.
+                truncated = _sweep(all_drives, apply_exclude=True, current_matches=matches, recursive=recursive)
+
+        if matches:
+            preview = "\n".join(matches[:25])
+            extra = f"\n... (+{len(matches) - 25} weitere)" if len(matches) > 25 else ""
+            escalation_note = " (globale Suche auf allen Laufwerken aktiviert)" if auto_escalated else ""
+            out = f"{len(matches)} Treffer für '{pattern}'{escalation_note}:\n{preview}{extra}"
+        else:
+            out = (
+                f"Keine Datei passend zu '{pattern}' gefunden (durchsuchte Roots: {len(searched_roots)})."
+            )
+
+        return _fs_ok(
+            {
+                "output": out,
+                "pattern": pattern,
+                "effective_pattern": effective_pattern,
+                "matches": matches,
+                "count": len(matches),
+                "searched_roots": searched_roots,
+                "truncated": truncated,
+                "auto_escalated": auto_escalated,
+            },
+            message=out,
             started=started,
         )
     except Exception as e:
@@ -347,10 +589,9 @@ def rename_file(old_path: str, new_path: str) -> ToolResultV1:
         return _map_filesystem_exception(started, e)
 
 
-def move_files(source_directory: str, destination_directory: str, pattern: str) -> ToolResultV1:
+def move_files(source_directory: str, destination_directory: str, file_names: list[str]) -> ToolResultV1:
     started = time.perf_counter()
     try:
-        _validate_glob_pattern(pattern)
         safe_source_dir = _resolve_and_validate_path(source_directory, must_exist=True)
         safe_dest_dir = _resolve_and_validate_path(destination_directory, must_exist=False)
 
@@ -358,11 +599,14 @@ def move_files(source_directory: str, destination_directory: str, pattern: str) 
             safe_dest_dir.mkdir(parents=True, exist_ok=True)
             logger.info(f"Zielordner '{destination_directory}' wurde erstellt.")
 
-        files_to_move = [f for f in safe_source_dir.glob(pattern) if f.is_file()]
+        files_to_move: list[Path] = []
+        for name in file_names:
+            file_path = safe_source_dir / name
+            if file_path.is_file():
+                files_to_move.append(file_path)
+
         if not files_to_move:
-            out = (
-                f"Keine Dateien passend zum Muster '{pattern}' in '{source_directory}' gefunden."
-            )
+            out = f"Keine der angegebenen Dateien in '{source_directory}' gefunden."
             return _fs_ok(
                 {"output": out, "moved_count": 0, "error_count": 0, "items": []},
                 message=out,
@@ -371,15 +615,17 @@ def move_files(source_directory: str, destination_directory: str, pattern: str) 
 
         moved_count = 0
         errors: list[str] = []
+        moved_files: list[str] = []
         for file_path in files_to_move:
             try:
                 shutil.move(str(file_path), str(safe_dest_dir))
                 moved_count += 1
+                moved_files.append(str(file_path))
             except Exception as e:
                 errors.append(f"Konnte '{file_path.name}' nicht verschieben: {e}")
 
         logger.info(
-            f"{moved_count} Dateien passend zu '{pattern}' nach '{safe_dest_dir}' verschoben."
+            f"{moved_count} Dateien nach '{safe_dest_dir}' verschoben."
         )
 
         if errors:
@@ -389,9 +635,12 @@ def move_files(source_directory: str, destination_directory: str, pattern: str) 
                 f"{error_details}"
             )
         else:
+            # 💎 TASK-005: BACKLOG-005 - Detaillierte Ausgabe für verschobene Dateien
+            # Zeige die verschobenen Dateien mit ihren Pfaden an
+            moved_files_output = "\n".join(moved_files)
             output = (
-                f"Alle {moved_count} Dateien passend zu '{pattern}' wurden erfolgreich nach "
-                f"'{destination_directory}' verschoben."
+                f"Alle {moved_count} Dateien wurden erfolgreich nach "
+                f"'{destination_directory}' verschoben:\n{moved_files_output}"
             )
 
         return _fs_ok(

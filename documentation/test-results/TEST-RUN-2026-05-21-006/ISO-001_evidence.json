@@ -1,0 +1,20 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-006",
+  "testCaseId": "ISO-001",
+  "result": "PASS",
+  "classification": "PROFILE_FIXTURE_SETUP_PASS",
+  "evidence": {
+    "fixtureMap": {
+      "A": {
+        "appDataRoot": "documentation/test-results/TEST-RUN-2026-05-21-006/fixtures/profile_a/AppData/Roaming/Janus Projekt",
+        "db": "documentation/test-results/TEST-RUN-2026-05-21-006/fixtures/profile_a/AppData/Roaming/Janus Projekt/janus.db"
+      },
+      "B": {
+        "appDataRoot": "documentation/test-results/TEST-RUN-2026-05-21-006/fixtures/profile_b/AppData/Roaming/Janus Projekt",
+        "db": "documentation/test-results/TEST-RUN-2026-05-21-006/fixtures/profile_b/AppData/Roaming/Janus Projekt/janus.db"
+      }
+    },
+    "rawCanariesWrittenToEvidence": false
+  },
+  "timestamp": "2026-05-21T11:58:06.181Z"
+}

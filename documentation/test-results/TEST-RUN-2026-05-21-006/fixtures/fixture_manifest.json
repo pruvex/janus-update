@@ -1,0 +1,70 @@
+{
+  "fixtureRoot": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures",
+  "profiles": {
+    "A": {
+      "profileRoot": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_a",
+      "appDataRoot": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_a\\AppData\\Roaming\\Janus Projekt",
+      "dbPath": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_a\\AppData\\Roaming\\Janus Projekt\\janus.db",
+      "uploadsRoot": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_a\\AppData\\Roaming\\Janus Projekt\\uploads",
+      "artifactsRoot": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_a\\AppData\\Roaming\\Janus Projekt\\generated_artifacts",
+      "uploadFile": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_a\\AppData\\Roaming\\Janus Projekt\\uploads\\a_upload.txt",
+      "artifactFile": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_a\\AppData\\Roaming\\Janus Projekt\\generated_artifacts\\a_artifact.txt",
+      "ids": {
+        "chat": 1101,
+        "message": 1102,
+        "memory": 1103,
+        "project": 1104,
+        "task": 1105,
+        "image": 1106
+      }
+    },
+    "B": {
+      "profileRoot": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_b",
+      "appDataRoot": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_b\\AppData\\Roaming\\Janus Projekt",
+      "dbPath": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_b\\AppData\\Roaming\\Janus Projekt\\janus.db",
+      "uploadsRoot": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_b\\AppData\\Roaming\\Janus Projekt\\uploads",
+      "artifactsRoot": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_b\\AppData\\Roaming\\Janus Projekt\\generated_artifacts",
+      "uploadFile": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_b\\AppData\\Roaming\\Janus Projekt\\uploads\\b_upload.txt",
+      "artifactFile": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_b\\AppData\\Roaming\\Janus Projekt\\generated_artifacts\\b_artifact.txt",
+      "ids": {
+        "chat": 2201,
+        "message": 2202,
+        "memory": 2203,
+        "project": 2204,
+        "task": 2205,
+        "image": 2206
+      }
+    }
+  },
+  "canaryRegistry": {
+    "A": {
+      "chat": "JANUS_ISO_A_CHAT_CANARY_20260521",
+      "memory": "JANUS_ISO_A_MEMORY_CANARY_20260521",
+      "file": "JANUS_ISO_A_FILE_CANARY_20260521",
+      "project": "JANUS_ISO_A_PROJECT_CANARY_20260521",
+      "task": "JANUS_ISO_A_TASK_CANARY_20260521",
+      "artifact": "JANUS_ISO_A_ARTIFACT_CANARY_20260521"
+    },
+    "B": {
+      "chat": "JANUS_ISO_B_CHAT_CANARY_20260521",
+      "memory": "JANUS_ISO_B_MEMORY_CANARY_20260521",
+      "file": "JANUS_ISO_B_FILE_CANARY_20260521",
+      "project": "JANUS_ISO_B_PROJECT_CANARY_20260521",
+      "task": "JANUS_ISO_B_TASK_CANARY_20260521",
+      "artifact": "JANUS_ISO_B_ARTIFACT_CANARY_20260521"
+    }
+  },
+  "checks": {
+    "a_has_a_chat": 1,
+    "a_lookup_b_chat_id": 0,
+    "a_lookup_b_message_id": 0,
+    "a_lookup_b_memory_canary": 0,
+    "a_lookup_b_project_id": 0,
+    "a_lookup_b_task_canary": 0,
+    "a_lookup_b_image_id": 0,
+    "a_export_contains_b_canary": 0,
+    "a_upload_tree_contains_b_canary": 0
+  },
+  "profileAExport": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_a_export.json",
+  "profileAExportContainsB": false
+}

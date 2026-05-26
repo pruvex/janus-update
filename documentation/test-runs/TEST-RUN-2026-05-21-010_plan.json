@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "janus.test-plan.v1",
+  "testRunId": "TEST-RUN-2026-05-21-010",
+  "title": "Beta Abuse Limits and Cost Controls",
+  "sourceSpec": "documentation/TEST_SPEC/02_security_safety/16_beta_abuse_limits_and_cost_controls.md",
+  "createdAt": "2026-05-21T00:00:00+02:00",
+  "target": {
+    "mode": "packaged-local beta backend",
+    "url": "http://127.0.0.1:8001",
+    "providerMode": "capped/synthetic abuse probes; no raw provider secrets in evidence"
+  },
+  "controlsUnderTest": [
+    "Per-user mutating API burst limit",
+    "Global mutating API burst limit",
+    "Provider spend prompt gate",
+    "Retry-storm prompt gate",
+    "Tool flood and broad crawl prompt gate",
+    "Image/PDF upload size limits",
+    "Safe limit wording",
+    "Operator abuse alert privacy"
+  ],
+  "matrix": [
+    "ABUSE-001",
+    "ABUSE-002",
+    "ABUSE-003",
+    "ABUSE-004",
+    "ABUSE-005",
+    "ABUSE-006",
+    "ABUSE-007",
+    "ABUSE-008",
+    "ABUSE-009",
+    "ABUSE-010"
+  ],
+  "artifacts": {
+    "policy": "documentation/test-runs/TEST-RUN-2026-05-21-010_beta_abuse_limit_policy.md",
+    "runner": "tests/e2e/generated/TEST-RUN-2026-05-21-010.beta-abuse.spec.js",
+    "playwrightConfig": "tests/e2e/generated/TEST-RUN-2026-05-21-010.beta-abuse.playwright.config.js",
+    "unitTests": "backend/tests/test_beta_abuse_limits.py",
+    "finalAudit": "documentation/test-runs/TEST-RUN-2026-05-21-010_final_audit.md"
+  },
+  "requiredCommands": [
+    "python -m py_compile backend/main.py backend/api/routers/images.py backend/api/routers/rag.py backend/services/chat_orchestrator.py backend/services/orchestrator/execution_dispatcher.py",
+    "python -m pytest backend/tests/test_beta_abuse_limits.py -q",
+    "npx playwright test --config tests/e2e/generated/TEST-RUN-2026-05-21-010.beta-abuse.playwright.config.js --reporter=list"
+  ]
+}

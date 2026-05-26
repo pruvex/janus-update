@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-002",
+  "testCaseId": "INT-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Sortiere, fasse zusammen, erstelle Uebersicht",
+  "response": "Hallo Admin, hier ist die sortierte Zusammenfassung der dauerhaften physischen Merkmale von Nikola Tesla, basierend auf unseren bisherigen Aufzeichnungen.\n👤 Personenbeschreibung: Nikola Tesla\nDiese Übersicht konzentriert sich ausschließlich auf dauerhafte physische Merkmale und nennt den Zeitpunkt sowie den Chat der ersten Erwähnung.\nStatur und Erscheinung\n\nGröße: Auffallend groß.\nUrsprung: Erstmals erwähnt am 12. Mai 2026 um 19:23 im Chat \"Nikola Tesla Übersicht\".\n\n\nKörperbau: Sehr schlank.\nUrsprung: Erstmals erwähnt am 12. Mai 2026 um 19:23 im Chat \"Nikola Tesla Übersicht\".\n\n\n\nHaar und Kopfpartie\n\nHaarbeschaffenheit: Dunkles Haar, das stets akkurat gescheitelt getragen wird.\nUrsprung (Scheitel): 12. Mai 2026 um 19:23 im Chat \"Neuer Chat\".\nUrsprung (Farbe): 13. Mai 2026 um 16:25 im Chat \"Wer war Nikola Tesla\".\n\n\nStirn: Hohe Stirn.\nUrsprung: Erstmals erwähnt am 17. Mai 2026 um 14:57 im Chat \"Nikola Tesla Personenbeschreibung\".\n\n\n\nGesichtszüge\n\nGesichtsform: Schmales Gesicht mit markanten, ausgeprägten Wangenknochen.\nUrsprung: Erstmals erwähnt am 17. Mai 2026 um 14:57 im Chat \"Nikola Tesla Personenbeschreibung\".\n\n\nAugen: Dunkle, tief liegende Augen.\nUrsprung: Erstmals erwähnt am 12. Mai 2026 um 19:23 im Chat \"Neuer Chat\".\n\n\n\n\nZusammenfassendes Profil:Nikola Tesla wird als eine auffallend große und sehr schlanke Persönlichkeit beschrieben. Sein Erscheinungsbild ist geprägt durch ein schmales Gesicht mit ausgeprägten Wangenknochen und einer hohen Stirn. Besonders markant sind seine dunklen, tief liegenden Augen sowie sein dunkles Haar, das stets präzise gescheitelt ist.\n💡 Passende nächste Schritte:• Soll ich basierend auf dieser Beschreibung ein Porträt von Nikola Tesla generieren?• Möchtest du weitere Details zu seinen Erfindungen aus der Wissensdatenbank abrufen?• Benötigst du eine Export-Datei dieser Merkmale für deine Unterlagen?\n14:44",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-19T12:44:27.351Z"
+}

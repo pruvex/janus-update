@@ -1,0 +1,7 @@
+{
+  "rawSensitiveEvidencePolicy": "headers-and-status-only",
+  "targetUrl": "http://127.0.0.1:8001",
+  "targetScope": "loopback-only",
+  "hostedHttpsExceptionDocumented": true,
+  "status": 200
+}

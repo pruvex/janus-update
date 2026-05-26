@@ -1,0 +1,5 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-prompts",
+  "status": 423,
+  "safeDetail": "Diese Funktion ist gerade durch einen Ops-Recovery-Schalter deaktiviert. Bitte versuche es spaeter erneut oder kontaktiere den Betreiber."
+}

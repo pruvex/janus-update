@@ -28,6 +28,7 @@ logger = logging.getLogger("janus_backend")
 
 ROLE_USER = "user"
 ROLE_ASSISTANT = "assistant"
+CHAT_UPDATE_UNSET = object()
 
 
 def _serialize_embedding_json(embedding_json: str) -> bytes:
@@ -106,6 +107,8 @@ def create_message(
         metadata_payload["image_path"] = image_path
     if isinstance(modal_request, dict):
         metadata_payload["modal_request"] = modal_request
+    if isinstance(metadata, dict) and "video_list_metadata" in metadata:
+        metadata_payload["video_list_metadata"] = metadata["video_list_metadata"]
     if metadata_payload:
         db_message.metadata_json = json.dumps(metadata_payload, ensure_ascii=False)
 
@@ -122,6 +125,35 @@ def update_chat_title(db: Session, chat_id: int, new_title: str):
         chat.auto_generated = False
         db.commit()
         db.refresh(chat)
+    return chat
+
+
+def update_chat_header_llm(
+    db: Session,
+    chat_id: int,
+    provider=CHAT_UPDATE_UNSET,
+    model=CHAT_UPDATE_UNSET,
+):
+    chat = get_chat_by_id(db, chat_id)
+    if not chat:
+        return None
+
+    if provider is not CHAT_UPDATE_UNSET:
+        if provider is None:
+            chat.header_provider = None
+        else:
+            provider_value = str(provider).strip()
+            chat.header_provider = provider_value or None
+
+    if model is not CHAT_UPDATE_UNSET:
+        if model is None:
+            chat.header_model = None
+        else:
+            model_value = str(model).strip()
+            chat.header_model = model_value or None
+
+    db.commit()
+    db.refresh(chat)
     return chat
 
 
@@ -731,9 +763,13 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
         "total_cost": 0.0, 
         "total_input_tokens": 0, 
         "total_output_tokens": 0, 
+        "total_cached_tokens": 0,
+        "total_tokens": 0,
         "image_count": 0,
+        "total_tokens_saved": 0,
+        "total_cost_saved": 0.0,
         "image_details": defaultdict(lambda: {"count": 0, "cost": 0.0}),
-        "context_breakdown": defaultdict(lambda: {"count": 0, "cost": 0.0, "input_tokens": 0, "output_tokens": 0})
+        "context_breakdown": defaultdict(lambda: {"count": 0, "cost": 0.0, "input_tokens": 0, "output_tokens": 0, "cached_tokens": 0, "total_tokens": 0})
     })
 
     # Separate websearch costs from LLM costs using context field prefix
@@ -754,11 +790,19 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
         summary[key]["total_cost"] += cost.total_cost
         summary[key]["total_input_tokens"] += cost.input_tokens
         summary[key]["total_output_tokens"] += cost.output_tokens
+        cached_tokens = int(getattr(cost, "cached_tokens", 0) or 0)
+        total_tokens = int(getattr(cost, "total_tokens", 0) or 0) or int((cost.input_tokens or 0) + (cost.output_tokens or 0))
+        summary[key]["total_cached_tokens"] += cached_tokens
+        summary[key]["total_tokens"] += total_tokens
+        summary[key]["total_tokens_saved"] += int(cost.tokens_saved or 0)
+        summary[key]["total_cost_saved"] += float(cost.cost_saved or 0.0)
         context_key = ctx or "conversation"
         summary[key]["context_breakdown"][context_key]["count"] += 1
         summary[key]["context_breakdown"][context_key]["cost"] += cost.total_cost
         summary[key]["context_breakdown"][context_key]["input_tokens"] += cost.input_tokens
         summary[key]["context_breakdown"][context_key]["output_tokens"] += cost.output_tokens
+        summary[key]["context_breakdown"][context_key]["cached_tokens"] += cached_tokens
+        summary[key]["context_breakdown"][context_key]["total_tokens"] += total_tokens
 
         if cost.context and "image" in cost.context:
             summary[key]["image_count"] += 1
@@ -785,6 +829,8 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
                 "cost": values["cost"],
                 "input_tokens": values["input_tokens"],
                 "output_tokens": values["output_tokens"],
+                "cached_tokens": values["cached_tokens"],
+                "total_tokens": values["total_tokens"],
             }
             for context, values in sorted(
                 data["context_breakdown"].items(),
@@ -797,7 +843,11 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
             "total_cost": data["total_cost"],
             "total_input_tokens": data["total_input_tokens"],
             "total_output_tokens": data["total_output_tokens"],
+            "total_cached_tokens": data["total_cached_tokens"],
+            "total_tokens": data["total_tokens"],
             "image_count": data["image_count"],
+            "total_tokens_saved": data["total_tokens_saved"],
+            "total_cost_saved": data["total_cost_saved"],
             "image_details": image_details_list,
             "context_breakdown": context_breakdown_list,
             "search_count": 0,  # Model entries don't have search count
@@ -820,5 +870,3 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
         })
     
     return results
-
-

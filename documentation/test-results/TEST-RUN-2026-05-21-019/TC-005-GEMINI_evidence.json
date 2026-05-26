@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "janus.test-evidence.v1",
+  "testRunId": "TEST-RUN-2026-05-21-019",
+  "testCaseId": "TC-005-GEMINI",
+  "status": "PASS",
+  "provider": "Gemini pre-provider static runner",
+  "assertion": "Provider-agnostic retrieval stays empty instead of fabricating when no relevant fact exists.",
+  "pytestNode": "test_memory_retrieval_relevance_priority.py::test_missing_favorite_color_is_not_returned_from_unrelated_memory",
+  "commands": [
+    "python -m pytest backend\\tests\\test_memory_retrieval_relevance_priority.py -q",
+    "python -m pytest backend\\tests\\test_memory_retrieval_relevance_priority.py backend\\tests\\test_memory_tools.py backend\\tests\\test_memory_regression.py backend\\tests\\test_context_privacy_externalization_boundary.py -q",
+    "python backend\\tools\\validate_skill_schemas.py"
+  ],
+  "observed": {
+    "focusedMemoryRetrievalSuite": "5 passed",
+    "regressionSuite": "46 passed",
+    "skillSchemaValidation": "54 skill JSON files validated, OK All validated skills passed",
+    "changedGuardrails": [
+      "placeholder memory slots are skipped during budget selection",
+      "geo/distance queries suppress unrelated private memory context",
+      "memory_read lexical fallback from prior run preserves explicit relevant recall"
+    ]
+  },
+  "timestamp": "2026-05-21T15:20:00.000Z"
+}

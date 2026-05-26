@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-12-001",
+  "testCaseId": "LTC-002",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Ich brauche Infos",
+  "response": "Ich habe folgende Informationen in meinen Aufzeichnungen für dich gefunden:\nDas hast du mir am 13. Mai 2026 im Chat „Regenvorhersage München“ erzählt:\n\nDie Höchsttemperatur beträgt etwa 12,1 °C.\nDie Tiefsttemperatur liegt bei etwa 7,1 °C.\n\nWelche weiteren Informationen benötigst du? Wenn du ein bestimmtes Thema, eine Person oder aktuelle Nachrichten suchst, nenne mir einfach ein Stichwort, damit ich gezielt für dich recherchieren kann.\n💡 Vorschlag:• Soll ich für dich die aktuelle Wettervorhersage für München prüfen, um zu sehen, ob sich die Werte geändert haben?\n21:56",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-14T19:56:30.643Z"
+}

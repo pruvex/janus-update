@@ -1,0 +1,3 @@
+```
+@[/TEST SKILL 2 â€“ TEST RUN PRECHECK] Mode=TEST_RUN_PRECHECK; ExecutionModel=SWE_1_6; TestSpec=documentation/TEST_SPEC/03_tools_skills/10_websearch_provider_parity_optimization.md; TestPlan=documentation/test-runs/TEST-RUN-2026-05-21-041_plan.json; TargetTestRun=TEST-RUN-2026-05-21-041; Capability=Janus Websearch Diamond Standard; Skill1Result=TEST_PLAN_CREATED; StrictValidator=TESTPLAN_VALID; GeneratorPlanTests=52; ParallelMode=mixed_parallel_and_serial; RecommendedWorkers=2; ParallelSafeTests=32; SerialTests=20; Rules=USE_ARTIFACTS_ONLY_VALIDATE_PRECHECK_NO_IMPLEMENTATION_NO_LIVE_TESTS; ExpectedOutput=READY_FOR_LIVE_TEST_OR_TEST_RUN_BLOCKED
+```

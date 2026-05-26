@@ -1,0 +1,7 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-private-data",
+  "contactAliases": [
+    "operator-on-call",
+    "privacy-contact"
+  ]
+}

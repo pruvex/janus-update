@@ -39,6 +39,24 @@ from backend.services.director_service import director_service
 # ---------------------------------
 from datetime import datetime
 
+DEFAULT_MAX_IMAGE_UPLOAD_BYTES = 10 * 1024 * 1024
+ALLOWED_IMAGE_UPLOAD_TYPES = {"image/png", "image/jpeg", "image/webp", "image/gif"}
+
+
+async def _enforce_image_upload_limit(file: UploadFile) -> None:
+    max_bytes = int(os.getenv("JANUS_MAX_IMAGE_UPLOAD_BYTES", str(DEFAULT_MAX_IMAGE_UPLOAD_BYTES)))
+    sample = await file.read(max_bytes + 1)
+    await file.seek(0)
+    if len(sample) > max_bytes:
+        logger.warning(
+            "[ABUSE-LIMIT] scope=upload-image filename_len=%s bytes_over_limit=true",
+            len(file.filename or ""),
+        )
+        raise HTTPException(
+            status_code=413,
+            detail="Die Bilddatei ist zu groß. Bitte lade eine kleinere Datei hoch.",
+        )
+
 
 async def _generate_and_rename_image_in_background(
     db: Session,
@@ -728,8 +746,9 @@ async def generate_image(
 async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_db)):
     """Handles user-uploaded images."""
     try:
-        if not file.content_type.startswith("image/"):
-            raise HTTPException(status_code=400, detail="File is not an image.")
+        if file.content_type not in ALLOWED_IMAGE_UPLOAD_TYPES:
+            raise HTTPException(status_code=400, detail="Dieser Bildtyp wird nicht unterstützt.")
+        await _enforce_image_upload_limit(file)
 
         new_image_entry = await image_manager.save_uploaded_file(db=db, file=file)
         return new_image_entry
@@ -738,7 +757,7 @@ async def upload_image(file: UploadFile = File(...), db: Session = Depends(get_d
         raise e
     except Exception as e:
         logger.error(f"Error uploading image: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to process image: {str(e)}")
+        raise HTTPException(status_code=500, detail="Bild konnte nicht verarbeitet werden.")
 
 @router.get("/images/pricing")
 async def get_pricing_info():

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-002",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wer ist Ada Lovelace?",
+  "response": "Ada Lovelace (1815–1852) war eine britische Mathematikerin und Gesellschaftsdame. Sie ist vor allem für ihre Zusammenarbeit mit Charles Babbage an dessen \"Analytical Engine\" bekannt und gilt als die erste Programmiererin der Welt, da sie einen Algorithmus zur Berechnung von Bernoulli-Zahlen für diese Maschine verfasste.\nNach ihr wurde die Programmiersprache Ada sowie die Kryptowährung ADA (Cardano) benannt.\nQuelle: Wikipedia\n💡 Passende nächste Schritte:• Details zu ihrer Zusammenarbeit mit Charles Babbage erfahren• Informationen zur Programmiersprache Ada abrufen• Mehr über ihre Rolle als Tochter des Dichters Lord Byron wissen\n02:04",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T00:04:34.681Z"
+}

@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import threading
 import time
 from pathlib import Path
@@ -16,6 +17,26 @@ logger = logging.getLogger("janus_backend")
 REALTIME_SEARCH_TRIGGER_WORDS = ["preis", "kurs", "aktuell", "heute", "gold", "aktie", "währung"]
 REALTIME_BLOCKED_SKILLS = {"system.wikipedia_summary", "system.rss_news"}
 REALTIME_FORCED_SKILLS = ["system.websearch", "system.price_comparison"]
+REALTIME_SEARCH_TRIGGER_WORDS.extend([
+    "platin",
+    "platinum",
+    "silber",
+    "silver",
+    "palladium",
+    "edelmetall",
+    "spielplan",
+    "bundesliga",
+    "release",
+    "releases",
+    "erschein",
+    "erscheint",
+    "erscheinen",
+    "neuerschein",
+    "neue spiele",
+    "kommende spiele",
+    "naechsten monat",
+    "nächsten monat",
+])
 
 
 def _is_price_or_quote_query(query: str) -> bool:
@@ -26,27 +47,203 @@ def _is_price_or_quote_query(query: str) -> bool:
         "kurs",
         "kurse",
         "goldpreis",
+        "platinpreis",
+        "silberpreis",
+        "palladiumpreis",
         "aktienkurs",
         "wechselkurs",
         "währung",
         "waehrung",
         "marktdaten",
         "feinunze",
+        "troy ounce",
         "spotpreis",
+        "edelmetall",
+        "platin",
+        "platinum",
+        "silber",
+        "silver",
+        "palladium",
     ]
     return any(marker in prompt for marker in markers)
+
+
+def _is_sports_schedule_query(query: str) -> bool:
+    prompt = str(query or "").casefold()
+    if not prompt:
+        return False
+    team_markers = (
+        "fc köln",
+        "fc koeln",
+        "1. fc köln",
+        "1. fc koeln",
+        "erster fc köln",
+        "erster fc koeln",
+        "bundesliga",
+    )
+    schedule_markers = (
+        "wann spielt",
+        "nächste mal",
+        "naechste mal",
+        "nächstes spiel",
+        "naechstes spiel",
+        "next match",
+        "next game",
+        "gegen wen",
+        "spielplan",
+        "spieltag",
+        "termin",
+    )
+    return any(marker in prompt for marker in team_markers) and any(
+        marker in prompt for marker in schedule_markers
+    )
+
+
+def _is_release_lookup_query(query: str) -> bool:
+    prompt = str(query or "").casefold()
+    if not prompt:
+        return False
+    product_markers = (
+        "switch",
+        "nintendo",
+        "playstation",
+        "xbox",
+        "steam",
+        "pc",
+        "spiele",
+        "games",
+        "buch",
+        "buecher",
+        "bücher",
+        "film",
+        "serie",
+        "album",
+        "alben",
+        "rockalbum",
+        "rockalben",
+        "musik",
+        "ep",
+        "single",
+    )
+    release_markers = (
+        "release",
+        "releases",
+        "erschein",
+        "erscheint",
+        "erscheinen",
+        "neuerschein",
+        "kommt raus",
+        "kommen raus",
+        "kommende",
+        "naechsten monat",
+        "nächsten monat",
+        "next month",
+        "upcoming",
+    )
+    return any(marker in prompt for marker in product_markers) and any(
+        marker in prompt for marker in release_markers
+    )
+
+
+def _is_ranking_websearch_query(query: str) -> bool:
+    prompt = str(query or "").casefold()
+    if not prompt:
+        return False
+    ranking_markers = (
+        "top",
+        "topliste",
+        "ranking",
+        "rangliste",
+        "beste",
+        "besten",
+        "beruehmteste",
+        "berühmteste",
+        "bekannteste",
+        "beliebteste",
+        "beliebtesten",
+        "wichtigste",
+        "groesste",
+        "größte",
+        "fuehrende",
+        "führende",
+    )
+    subject_markers = (
+        "buch",
+        "buecher",
+        "bücher",
+        "spieler",
+        "sportler",
+        "basketball",
+        "fussball",
+        "fußball",
+        "film",
+        "filme",
+        "serie",
+        "serien",
+        "produkt",
+        "produkte",
+        "tools",
+        "ki",
+        "ai",
+        "smartphone",
+        "laptop",
+        "kopfhoerer",
+        "kopfhörer",
+        "monitor",
+        "spiele",
+        "games",
+    )
+    has_ranking = any(re.search(rf"\b{re.escape(marker)}\b", prompt) for marker in ranking_markers)
+    has_subject = any(marker in prompt for marker in subject_markers)
+    return has_ranking and has_subject
+
+
+def _is_news_update_query(query: str) -> bool:
+    prompt = str(query or "").casefold()
+    if not prompt:
+        return False
+    news_markers = (
+        "news",
+        "nachrichten",
+        "neuigkeiten",
+        "schlagzeilen",
+        "aktuelle ereignisse",
+        "aktuelle meldungen",
+        "aktuelle lage",
+        "breaking",
+        "eilmeldung",
+        "newsticker",
+        "tagesgeschehen",
+        "was ist passiert",
+        "was passiert gerade",
+        "was gibt es neues",
+        "was gibt's neues",
+        "was gibts neues",
+        "latest news",
+    )
+    return any(marker in prompt for marker in news_markers)
 
 
 def is_realtime_search_query(query: str) -> bool:
     prompt = str(query or "").strip().lower()
     if not prompt:
         return False
+    if _is_news_update_query(prompt):
+        return True
     if _is_price_or_quote_query(prompt):
+        return True
+    if _is_sports_schedule_query(prompt):
+        return True
+    if _is_release_lookup_query(prompt):
+        return True
+    if _is_ranking_websearch_query(prompt):
         return True
     return any(trigger in prompt for trigger in REALTIME_SEARCH_TRIGGER_WORDS)
 
 
 def get_blocked_skills_for_query(query: str) -> Set[str]:
+    if _is_news_update_query(query):
+        return {"system.wikipedia_summary"}
     if is_realtime_search_query(query):
         return set(REALTIME_BLOCKED_SKILLS)
     return set()
@@ -61,6 +258,15 @@ def prioritize_skills_for_query(query: str, skills: List[str], top_k: int = 3) -
     filtered = [skill for skill in ordered_skills if skill not in blocked]
 
     prioritized: List[str] = []
+    if _is_news_update_query(query):
+        for forced_skill in ("system.rss_news", "system.websearch"):
+            if forced_skill not in prioritized:
+                prioritized.append(forced_skill)
+        for skill in filtered:
+            if skill not in prioritized:
+                prioritized.append(skill)
+        return prioritized
+
     for forced_skill in REALTIME_FORCED_SKILLS:
         if forced_skill not in prioritized:
             prioritized.append(forced_skill)

@@ -70,6 +70,8 @@ class Chat(Base):
     category = Column(String, nullable=False, default="general", server_default=text("'general'"))
     auto_generated = Column(Boolean, default=True, nullable=False)
     last_topic_hash = Column(String, nullable=True)
+    header_provider = Column(String, nullable=True)
+    header_model = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     summary = Column(ContentType, nullable=True)
     summary_embedding_json = Column(String, nullable=True)
@@ -194,8 +196,12 @@ class Cost(Base):
     model = Column(String)
     input_tokens = Column(Integer, default=0)
     output_tokens = Column(Integer, default=0)
+    cached_tokens = Column(Integer, default=0)
+    total_tokens = Column(Integer, default=0)
     total_cost = Column(Float, default=0.0)
     context = Column(String, nullable=True)
+    tokens_saved = Column(Integer, default=0)
+    cost_saved = Column(Float, default=0.0)
 
 
 class SkillTelemetry(Base):
@@ -242,6 +248,8 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     # Suggestion-engine preference (1 = default on); reserved for future UI modes
     suggestion_mode = Column(Integer, default=1, nullable=False)
+    # Dark Mode preference (false = Light Mode, true = Dark Mode)
+    dark_mode_enabled = Column(Boolean, default=False, nullable=False)
 
 class APIKey(Base):
     __tablename__ = "api_keys"
@@ -307,3 +315,49 @@ class Task(Base):
     
     chat = relationship("Chat", back_populates="tasks")
     project = relationship("Project", back_populates="tasks")
+
+
+class PathPermission(Base):
+    """Path Sentinel: Persistent path permissions for users."""
+    __tablename__ = "path_permissions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, index=True, nullable=False)
+    path_raw = Column(String, nullable=False)  # Normalized path
+    op = Column(String, nullable=False)  # read/write/delete
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ============================================
+# PHASE 4: Context Compression & Archive
+# ============================================
+
+class ContextCompression(Base):
+    """Speichert Metadaten einer durchgeführten Kontext-Kompression."""
+    __tablename__ = "context_compressions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    chat_id = Column(Integer, ForeignKey("chats.id"), nullable=False, index=True)
+    summary_text = Column(Text, nullable=False)  # Die generierte Zusammenfassung
+    tokens_saved = Column(Integer, default=0)  # Geschätzte eingesparte Tokens
+    original_message_count = Column(Integer, default=0)  # Anzahl komprimierter Nachrichten
+    compression_ratio = Column(Float, default=0.0)  # Verhältnis (0-1)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    is_restored = Column(Boolean, default=False)  # Wurde die Kompression rückgängig gemacht?
+    restored_at = Column(DateTime, nullable=True)
+
+    chat = relationship("Chat", backref="compressions")
+    archives = relationship("ContextArchive", back_populates="compression", cascade="all, delete-orphan")
+
+
+class ContextArchive(Base):
+    """Archivierte Original-Nachrichten vor der Kompression."""
+    __tablename__ = "context_archives"
+
+    id = Column(Integer, primary_key=True, index=True)
+    compression_id = Column(Integer, ForeignKey("context_compressions.id"), nullable=False, index=True)
+    original_message_json = Column(JSON, nullable=False)  # Vollständige Original-Message als JSON
+    order_index = Column(Integer, nullable=False)  # Original-Position im Chat
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    compression = relationship("ContextCompression", back_populates="archives")

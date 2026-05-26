@@ -74,8 +74,10 @@
       "query": {"type": "string", "minLength": 2, "description": "PFLICHTFELD. Mindestens 2 Zeichen. Wenn du nur Videos eines Kanals willst, schreibe '[Kanalname] Videos' hier rein. EIN LEERER STRING IST STRENGSTENS VERBOTEN UND FÜHRT ZU EINEM FEHLER."},
       "wants_latest": {"type": "boolean"},
       "channel_name": {"type": "string"},
-      "mode": {"type": "string", "enum": ["single", "list"], "default": "single"},
+      "mode": {"type": "string", "enum": ["single", "list"], "default": "list"},
       "max_results": {"type": "integer", "default": 5, "minimum": 1, "maximum": 15},
+      "min_views": {"type": "integer", "default": 10000, "minimum": 0, "maximum": 2000000000},
+      "safe_search": {"type": "boolean", "default": true},
       "published_after": {"type": "string", "format": "date", "nullable": true},
       "published_before": {"type": "string", "format": "date", "nullable": true},
       "topic_query": {"type": "string", "nullable": true}

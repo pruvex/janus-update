@@ -1,0 +1,6 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-prompts",
+  "status": 429,
+  "noStackTrace": true,
+  "noCanaryEcho": true
+}

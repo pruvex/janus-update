@@ -1,19 +1,35 @@
 :root {
   --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Light Mode (Default) */
+  --background-primary: #FFFFFF;
+  --background-secondary: #F5F5F5;
+  --surface-color: #FFFFFF;
+  --accent-color: #00A3FF;
+  --janus-blue: #00a3ff;
+  /* Dual-pane chrome (Sidebar Chips, Header-Streifen, Fokus-Glow) — klar von Button-Blau getrennt */
+  --color-pane-a: #9b59b6;
+  --color-pane-b: #00f2ff;
+  --sidebar-carbon: #F0F0F0;
+  --sidebar-border: #E0E0E0;
+  --text-primary: #1A1A1A;
+  --text-secondary: #666666;
+  --border-radius-main: 8px;
+  --transition-speed: 0.3s;
+}
+
+/* Dark Mode */
+body.dark-mode {
   --background-primary: #121212;
   --background-secondary: #1E1E1E;
   --surface-color: #2A2A2A;
   --accent-color: #00A3FF;
   --janus-blue: #00a3ff;
-  /* Dual-pane chrome (Sidebar Chips, Header-Streifen, Fokus-Glow) — klar von Button-Blau getrennt */
   --color-pane-a: #9b59b6;
   --color-pane-b: #00f2ff;
   --sidebar-carbon: #141414;
   --sidebar-border: #222222;
   --text-primary: #EAEAEA;
   --text-secondary: #B3B3B3;
-  --border-radius-main: 8px;
-  --transition-speed: 0.3s;
 }
 
 html, body {
@@ -24,6 +40,7 @@ html, body {
     background-color: var(--background-primary);
     color: var(--text-primary);
     font-size: 14px; /* Global base font size */
+    transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
 /* Markdown styling within chat bubbles */
@@ -363,7 +380,7 @@ html, body {
   margin: 0;
   padding: 8px 10px;
   font-size: 0.82rem;
-  background-color: #1a1a1a !important;
+  background-color: var(--surface-color) !important;
   border: 1px solid var(--sidebar-border) !important;
   border-radius: 6px !important;
   color: var(--text-primary) !important;
@@ -703,6 +720,24 @@ html, body {
   color: #666;
   text-align: center;
   border-top: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.sidebar-footer-version {
+  display: block;
+  font-size: 0.72rem;
+  color: #666;
+}
+
+.sidebar-footer-update-msg {
+  display: block;
+  font-size: 0.68rem;
+  line-height: 1.3;
+  color: var(--accent-color, #6b9cff);
+  min-height: 1.3em;
 }
 
 #new-chat-btn {
@@ -1061,7 +1096,7 @@ button:hover {
 .modal {
     display: none;
     position: fixed;
-    z-index: 1000;
+    z-index: 9999;
     left: 0;
     top: 0;
     width: 100%;
@@ -1178,20 +1213,50 @@ button:hover {
 
 .video-player-fallback-line {
     text-align: center;
-    margin: 8px 10px 10px;
-    font-size: 0.85rem;
+    margin: 10px 10px 12px;
+    font-size: 0.9rem;
     line-height: 1.4;
     flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .video-player-fallback-muted {
-    color: #666;
-    margin-right: 6px;
+    color: #9aa0a6;
 }
 
 .video-player-fallback-a {
-    color: var(--accent-color, #00a3ff);
-    text-decoration: underline;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--accent-color, #00a3ff);
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background 0.15s ease, transform 0.1s ease;
+    cursor: pointer;
+}
+
+.video-player-fallback-a:hover {
+    background: var(--accent-color-hover, #0088d6);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.video-player-fallback-a:active {
+    transform: translateY(0);
+}
+
+.video-player-fallback-a::before {
+    content: "↗";
+    font-size: 1.05em;
+    line-height: 1;
 }
 
 #video-player-modal .video-player-resize-handle {
@@ -1391,15 +1456,15 @@ button:hover {
 .control-group label { display: block; margin-bottom: 6px; font-weight: bold; color: var(--text-primary); }
 
 /* Hier war der Fehler: Styles für Inputs waren verloren gegangen */
-.control-group input, 
-.control-group select, 
+.control-group input,
+.control-group select,
 .control-group textarea {
-    width: 100%; 
+    width: 100%;
     padding: 10px;
-    border: 1px solid #444;
+    border: 1px solid var(--sidebar-border);
     border-radius: 4px;
-    background-color: #121212 !important; /* Erzwingt Dunkel */
-    color: #EAEAEA !important;
+    background-color: var(--surface-color) !important;
+    color: var(--text-primary) !important;
     font-family: inherit;
     box-sizing: border-box;
 }
@@ -1649,4 +1714,536 @@ button:hover {
     height: 100%;
     border: none;
     background: #525659;
+}
+
+/* ============================================
+   Phase 1-2: Context Meter (Ampel)
+   ============================================ */
+
+.context-meter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--surface-color);
+  border: 1px solid var(--sidebar-border);
+  cursor: help;
+  transition: all 0.3s ease;
+}
+
+.context-meter-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.context-meter-label {
+  color: var(--text-secondary);
+}
+
+.context-meter-value {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.context-meter-warning {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-left: 4px;
+}
+
+/* Status Colors */
+.context-meter--green {
+  color: #4caf50;
+  border-color: rgba(76, 175, 80, 0.3);
+  background: linear-gradient(90deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));
+}
+
+.context-meter--yellow {
+  color: #ffeb3b;
+  border-color: rgba(255, 235, 59, 0.3);
+  background: linear-gradient(90deg, rgba(255, 235, 59, 0.1), rgba(255, 235, 59, 0.05));
+}
+
+.context-meter--orange {
+  color: #ff9800;
+  border-color: rgba(255, 152, 0, 0.4);
+  background: linear-gradient(90deg, rgba(255, 152, 0, 0.15), rgba(255, 152, 0, 0.08));
+}
+
+.context-meter--red,
+.context-meter--overflow {
+  color: #f44336;
+  border-color: rgba(244, 67, 54, 0.4);
+  background: linear-gradient(90deg, rgba(244, 67, 54, 0.15), rgba(244, 67, 54, 0.08));
+  animation: meter-urgent-pulse 1s ease-in-out infinite;
+}
+
+@keyframes meter-urgent-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 8px 2px rgba(244, 67, 54, 0.2);
+  }
+}
+
+/* ============================================
+   Phase 2: Context Awareness - Warning Modal
+   ============================================ */
+
+.context-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.context-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.context-modal-content {
+  position: relative;
+  background: var(--background-secondary);
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--border-radius-main);
+  padding: 24px;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  animation: context-modal-in 0.2s ease-out;
+}
+
+@keyframes context-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.context-modal-title {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.context-modal-body {
+  margin: 0 0 24px 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.context-modal-body strong {
+  color: var(--text-primary);
+}
+
+.context-modal-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.context-modal-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--border-radius-main);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.context-modal-btn--primary {
+  background: var(--accent-color);
+  color: white;
+}
+
+.context-modal-btn--primary:hover {
+  background: #0088d4;
+}
+
+.context-modal-btn--secondary {
+  background: var(--surface-color);
+  color: var(--text-primary);
+  border: 1px solid var(--sidebar-border);
+}
+
+.context-modal-btn--secondary:hover {
+  background: #3a3a3a;
+}
+
+.context-modal-btn--tertiary {
+  background: transparent;
+  color: var(--accent-color);
+  border: 1px dashed var(--accent-color);
+  opacity: 0.7;
+}
+
+.context-modal-btn--tertiary:hover {
+  opacity: 1;
+  background: rgba(0, 163, 255, 0.1);
+}
+
+/* ============================================
+   Phase 2: Context Toast (In-Chat Warning)
+   ============================================ */
+
+.context-toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin: 8px 16px;
+  border-radius: var(--border-radius-main);
+  font-size: 13px;
+  animation: context-toast-in 0.3s ease-out;
+  position: relative;
+}
+
+@keyframes context-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.context-toast--orange {
+  background: linear-gradient(90deg, rgba(255, 152, 0, 0.15), rgba(255, 152, 0, 0.05));
+  border-left: 3px solid #ff9800;
+  color: #ffb74d;
+}
+
+.context-toast--orange::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--border-radius-main);
+  box-shadow: 0 0 20px rgba(255, 152, 0, 0.3);
+  animation: context-toast-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes context-toast-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+.context-toast-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.context-toast-text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.context-toast-close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 0 4px;
+  line-height: 1;
+  transition: opacity 0.2s;
+}
+
+.context-toast-close:hover {
+  opacity: 1;
+}
+
+/* Pulsierende Ampel-Animation für orange/red Status */
+.context-meter--orange .context-meter-dot,
+.context-meter--red .context-meter-dot {
+  animation: meter-dot-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes meter-dot-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+}
+
+/* ============================================
+   Phase 3: Compression Proposal UI
+   ============================================ */
+
+.context-modal-content--large {
+  max-width: 640px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Loading Animation */
+.context-loading-dots {
+  display: inline-block;
+  animation: loading-dots 1.5s infinite;
+}
+
+@keyframes loading-dots {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Proposal Stats Grid */
+.context-proposal-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 20px 0;
+  padding: 16px;
+  background: rgba(0, 163, 255, 0.05);
+  border-radius: var(--border-radius-main);
+  border: 1px solid rgba(0, 163, 255, 0.2);
+}
+
+.context-stat {
+  text-align: center;
+}
+
+.context-stat-value {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent-color);
+}
+
+.context-stat-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* Savings Visualizer (#SavingsVisualizer) */
+.context-savings-visual {
+  text-align: center;
+  padding: 12px;
+  margin: 16px 0;
+  background: linear-gradient(90deg, rgba(76, 175, 80, 0.15), rgba(76, 175, 80, 0.05));
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: var(--border-radius-main);
+  color: #4caf50;
+  font-weight: 500;
+}
+
+/* Summary Box */
+.context-proposal-summary {
+  margin: 20px 0;
+}
+
+.context-proposal-summary h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.context-summary-text {
+  background: var(--background-primary);
+  padding: 16px;
+  border-radius: var(--border-radius-main);
+  border: 1px solid var(--sidebar-border);
+  font-family: monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Candidate List */
+.context-proposal-candidates {
+  margin: 20px 0;
+}
+
+.context-proposal-candidates h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.context-candidate-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.context-candidate-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  margin: 6px 0;
+  background: var(--background-primary);
+  border-radius: 6px;
+  border: 1px solid var(--sidebar-border);
+  font-size: 13px;
+}
+
+.context-candidate-role {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--surface-color);
+  color: var(--accent-color);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.context-candidate-preview {
+  flex: 1;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.context-candidate-tokens {
+  color: var(--text-secondary);
+  font-size: 11px;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.context-candidate-more {
+  text-align: center;
+  padding: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* Modal Hint */
+.context-modal-hint {
+  margin: 16px 0 0 0;
+  padding: 12px;
+  background: rgba(255, 193, 7, 0.1);
+  border-left: 3px solid #ffc107;
+  border-radius: 0 var(--border-radius-main) var(--border-radius-main) 0;
+  font-size: 12px;
+  color: #ffc107;
+}
+
+/* Success Toast */
+.context-toast--success {
+  background: linear-gradient(90deg, rgba(76, 175, 80, 0.15), rgba(76, 175, 80, 0.05));
+  border-left: 3px solid #4caf50;
+  color: #81c784;
+}
+
+.context-toast-action {
+  background: transparent;
+  border: 1px solid currentColor;
+  color: inherit;
+  padding: 4px 12px;
+  margin-left: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.context-toast-action:hover {
+  background: rgba(76, 175, 80, 0.2);
+}
+
+/* ============================================
+   Phase 4: Compression Summary Block (In-Chat)
+   ============================================ */
+
+.compression-summary-block {
+  margin: 12px 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(0, 163, 255, 0.08), rgba(0, 163, 255, 0.03));
+  border: 1px solid rgba(0, 163, 255, 0.2);
+  border-radius: var(--border-radius-main);
+  font-size: 13px;
+}
+
+.compression-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 163, 255, 0.1);
+}
+
+.compression-summary-icon {
+  font-size: 18px;
+}
+
+.compression-summary-title {
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.compression-summary-content {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.compression-details-btn,
+.compression-restore-btn {
+  padding: 8px 16px;
+  border-radius: var(--border-radius-main);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid;
+}
+
+.compression-details-btn {
+  background: rgba(0, 163, 255, 0.1);
+  border-color: rgba(0, 163, 255, 0.3);
+  color: var(--accent-color);
+}
+
+.compression-details-btn:hover {
+  background: rgba(0, 163, 255, 0.2);
+}
+
+.compression-restore-btn {
+  background: rgba(255, 152, 0, 0.1);
+  border-color: rgba(255, 152, 0, 0.3);
+  color: #ff9800;
+}
+
+.compression-restore-btn:hover {
+  background: rgba(255, 152, 0, 0.2);
 }

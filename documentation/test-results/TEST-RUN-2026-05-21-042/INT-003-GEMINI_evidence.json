@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-042",
+  "testCaseId": "INT-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle API Preise",
+  "response": "Hallo Pruve! Ich habe die aktuellen API-Preise für die wichtigsten Anbieter (Stand Mai 2026) für dich recherchiert. Hier ist die Übersicht:### 1. ZusammenfassungDie Preise für KI-APIs stabilisieren sich zunehmend auf einem Niveau, bei dem vor allem die Kosten pro 1 Million Token als Standardmaßstab dienen. Während Basis-Modelle immer günstiger werden, bleiben High-End-Modelle wie Mistral Large oder GPT-4o preislich im Premium-Segment, bieten dafür jedoch deutlich höhere Kapazitäten. Übersetzungs-APIs wie DeepL setzen weiterhin auf eine Kombination aus Grundgebühr und volumenbasierter Abrechnung.### 2. Liste der Fakten (Preise pro 1 Million Token/Zeichen)*   **OpenAI GPT-4o:**    *   Input: 2,50 € pro 1 Mio. Token (laut Suchergebnis, Stand: Mai 2026).    *   Output: 10,00 € pro 1 Mio. Token (laut Suchergebnis, Stand: Mai 2026).*   **Mistral AI (Mistral Large):**    *   Input: 7,30 € pro 1 Mio. Token (laut Suchergebnis, Stand: Mai 2026).    *   Output: 22,00 € pro 1 Mio. Token (laut Suchergebnis, Stand: Mai 2026).*   **DeepL API (Übersetzung):**    *   **Free Plan:** 0,00 € (bis zu einem gewissen Limit).    *   **Pro Plan:** 5,49 € Grundgebühr pro Monat + ca. 25,00 € pro 1 Mio. Zeichen (laut Suchergebnis, Stand: Mai 2026).*   **Google Gemini & Anthropic Claude:**    *   Die Preise liegen in ähnlichen Korridoren wie GPT-4o, wobei spezifische Euro-Preise oft tagesaktuell nach USD-Kurs umgerechnet werden (ca. 3,00 $ - 15,00 $ je nach Modellvariante).### 3. Quellen*   [metronome.com](https://metronome.com)*   [google.com/cloud/vertex-ai](https://cloud.google.com)💡 **Passende nächste Schritte:**• Soll ich für dich eine Vergleichstabelle zwischen OpenAI und Anthropic erstellen, um das beste Preis-Leistungs-Verhältnis für dein Projekt zu finden?• Benötigst du eine Kalkulation für ein spezifisches monatliches Token-Volumen?• Möchtest du, dass ich nach Open-Source-Alternativen recherchiere, die du selbst hosten kannst?23:40",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T21:41:33.020Z"
+}

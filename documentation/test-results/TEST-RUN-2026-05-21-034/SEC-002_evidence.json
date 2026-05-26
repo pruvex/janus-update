@@ -1,0 +1,19 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-034",
+  "testCaseId": "SEC-002",
+  "result": "PASS",
+  "classification": "SECURITY_ASSERTION_PASS",
+  "provider": "Static privacy budget runner",
+  "type": "security",
+  "evidence": {
+    "syntheticOnly": true,
+    "noRealPrivateFacts": true,
+    "noSecretsInEvidence": true,
+    "assertions": [
+      "Broad private-context externalization is blocked; scoped safe personalization remains allowed."
+    ],
+    "focusedTest": "backend/tests/test_prompt_context_budget_efficiency.py",
+    "dashboardAligned": true
+  },
+  "updatedAt": "2026-05-21T16:35:00.000Z"
+}

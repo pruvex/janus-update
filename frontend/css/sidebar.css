@@ -1,0 +1,61 @@
+/**
+ * Sidebar workspace nav — kompaktere vertikale Dichte (TASK-058 / MCL).
+ * Lädt nach src/styles.css und überschreibt nur #sidebar-nav / .sidebar-nav-item.
+ */
+
+#sidebar-nav.sidebar-main-nav,
+#sidebar-nav {
+  gap: 0;
+  margin: 0 0 4px;
+  padding: 0;
+}
+
+.sidebar-nav-item {
+  gap: 8px;
+  padding: 6px 8px !important;
+  border-radius: 6px !important;
+  font-size: 0.82rem;
+}
+
+.sidebar-nav-icon {
+  width: 20px;
+  height: 20px;
+}
+
+#sidebar-nav .janus-nav-icon-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.app-container.sidebar-collapsed .sidebar-nav-item {
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 36px !important;
+  padding: 4px !important;
+}
+
+.app-container.sidebar-collapsed #sidebar-nav.sidebar-main-nav,
+.app-container.sidebar-collapsed #sidebar-nav {
+  gap: 2px;
+}
+
+.app-container.sidebar-collapsed .sidebar-nav-icon,
+.app-container.sidebar-collapsed #sidebar-nav .janus-nav-icon-svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Kalender-Icon (Farben analog Icon-System in style.css) */
+#sidebar-nav .sidebar-nav-item .sidebar-nav-icon.icon-calendar {
+  color: #5cdb9a;
+}
+
+#sidebar-nav .sidebar-nav-item:hover .sidebar-nav-icon.icon-calendar {
+  color: #8ae9b8;
+}
+
+#sidebar-nav .sidebar-nav-item.sidebar-nav-item--active .sidebar-nav-icon.icon-calendar {
+  color: #a8f0c8;
+  filter: drop-shadow(0 0 4px rgba(92, 219, 154, 0.55))
+    drop-shadow(0 0 10px rgba(92, 219, 154, 0.28));
+}

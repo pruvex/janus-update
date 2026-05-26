@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-016",
+  "testCaseId": "INT-003-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Suche in allen User-Chats nach meinem Namen",
+  "response": "Klar, du bist Admin.\nIch kann aber nicht wirklich „in allen User‑Chats suchen“, weil ich dafür keinen direkten Zugriff auf alle Chats anderer User/Threads habe. Wenn du möchtest, sag mir bitte wo (z.B. nur in deinen eigenen Chats / in einem bestimmten Export / in einer Datei) ich nach deinem Namen suchen soll, dann formuliere ich dir den passenden Such-Plan.\n💡 Passende nächste Schritte:• Nenne mir, in welchen Chats/Ordnern/Exports ich suchen soll (z.B. nur deine eigenen, oder ein bestimmter Zeitraum).• Schreib mir deinen exakten Suchbegriff (Name/Schreibweise), dann erstelle ich dir eine saubere Suchanfrage (Regex/Case-Sensitivität etc.).\n18:26",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T16:26:26.783Z"
+}

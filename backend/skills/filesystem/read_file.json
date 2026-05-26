@@ -1,18 +1,29 @@
 {
   "legacy_name": "read_file",
   "skill": "filesystem.read_file",
+  "description": "WICHTIG: Dieses Tool kann KEINE PDFs lesen! Wenn du PDFs inhaltlich analysieren sollst (z.B. für thematisches Sortieren), MUSST du auf den Index zugreifen: Nutze dafür 'knowledge.query' oder 'knowledge.read_full_text'.",
   "version": "1.0.0",
-  "sandbox_level": "workspace_only",
+  "sandbox_level": "full",
   "latency_class": "fast",
   "tags": [
     "filesystem"
   ],
   "capabilities": [
     "file_read",
-    "workspace_inspection"
+    "filesystem_inspection"
   ],
   "is_agent_ready": true,
   "max_calls_per_turn": 3,
   "depends_on": [],
-  "examples": []
+  "examples": [],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "file_path": {
+        "type": "string",
+        "description": "Pfad zur Datei"
+      }
+    },
+    "required": ["file_path"]
+  }
 }

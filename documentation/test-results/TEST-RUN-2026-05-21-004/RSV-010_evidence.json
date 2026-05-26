@@ -1,0 +1,11 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-004",
+  "testCaseId": "RSV-010",
+  "result": "PASS",
+  "classification": "DEPLOYMENT_REVIEW_PASS_WITH_WATCHPOINTS",
+  "evidence": {
+    "path": "documentation/test-runs/TEST-RUN-2026-05-21-004_code_config_review.md",
+    "bytes": 3217
+  },
+  "timestamp": "2026-05-21T00:13:52.564Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-004",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Kannst du Dateien und Ordner bearbeiten?",
+  "response": "Ja. Im Bereich \"Dateien & Dokumente\" besitze ich vollen Zugriff auf alle lokalen Laufwerke. Meine Fähigkeiten umfassen:\n\nDateien suchen\nVerzeichnisse auflisten\nOrdner erstellen\nDateien verschieben\nDateien löschen\nDateiinhalte auslesen\n\n01:17",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-14T23:17:27.947Z"
+}

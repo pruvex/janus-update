@@ -1,0 +1,11 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-004",
+  "testCaseId": "RSV-002",
+  "result": "PASS",
+  "classification": "THREAT_MODEL_REVIEW_PASS",
+  "evidence": {
+    "path": "documentation/test-runs/TEST-RUN-2026-05-21-004_threat_model.md",
+    "bytes": 2852
+  },
+  "timestamp": "2026-05-21T00:13:52.392Z"
+}

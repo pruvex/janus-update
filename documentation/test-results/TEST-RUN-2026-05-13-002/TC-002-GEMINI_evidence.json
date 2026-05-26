@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-13-002",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Wer ist Nikola Tesla?",
+  "response": "Nikola Tesla (1856–1943) war ein bedeutender serbisch-amerikanischer Erfinder, Physiker und Elektroingenieur, der als eine der prägendsten Figuren der modernen Elektrotechnik gilt.\nHier sind die wichtigsten Details zu seinem Wirken:\n\nWechselstrom-Pionier: Er ist vor allem für seine wegweisenden Arbeiten an Wechselstromsystemen (AC) bekannt, die heute die Grundlage unserer globalen Stromversorgung bilden.\nVielseitiger Erfinder: Tesla\n\n23:18",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "tool_call_detected_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-13T21:18:25.427Z"
+}

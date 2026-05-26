@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-027",
+  "testCaseId": "INT-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Speichere diesen Titel: `<img src=x onerror=alert(1)>`",
+  "response": "Alles klar, Admin, ich habe den Titel <img src=x onerror=alert(1)> für dich gespeichert.\n💡 Passende nächste Schritte:• Soll ich dir eine Zusammenfassung der physischen Merkmale von Nikola Tesla aus deinen gespeicherten Erinnerungen erstellen?• Möchtest du wissen, in welchen Chats und zu welchen Zeitpunkten du mir Informationen über Nikola Tesla gegeben hast?• Benötigst du eine Auflistung aller bisher gespeicherten Titel und Fakten?\n23:26",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T21:26:56.506Z"
+}

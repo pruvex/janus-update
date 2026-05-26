@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-15-011",
+  "title": "Janus Intent Routing",
+  "status": "FAIL",
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-15-011",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-15-011_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-15-011/_INFRA_SETUP__evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "_INFRA_SETUP_",
+      "result": "FAIL",
+      "classification": "INFRASTRUCTURE_OFFLINE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-15-011/_INFRA_SETUP__evidence.json",
+      "durationMs": 0,
+      "notes": "Failure Code: INFRASTRUCTURE_OFFLINE. ERR_CONNECTION_REFUSED reaching baseUrl. Suggested action: npm run start-dev (repository root).",
+      "timestamp": "2026-05-15T16:25:36.931Z"
+    }
+  ],
+  "updatedAt": "2026-05-15T16:25:36.944Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-003",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Erstelle im Test-Workspace einen Ordner PlannerCheck und speichere darin eine kurze Notiz",
+  "response": "Ich kann das direkt weiter im Test-Workspace ausführen, brauche dafür aber den exakten Pfad oder Zielbereich. Bitte nenne den Ordnerpfad, in dem ich den Ordner PlannerCheck erstellen und die kurze Notiz speichern soll.\n16:52",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-19T14:52:29.342Z"
+}

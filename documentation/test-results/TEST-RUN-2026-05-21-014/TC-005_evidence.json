@@ -1,0 +1,15 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-014",
+  "testCaseId": "TC-005",
+  "scenario": "Filesystem skill selection",
+  "result": "PASS",
+  "evidenceType": "routing_assertion",
+  "commands": [
+    "python -m pytest backend\\tests\\test_skill_selector_capability_registry_integrity.py backend\\tests\\test_capability_registry.py backend\\tests\\unit\\test_capability_registry_logic.py backend\\tests\\unit\\test_skill_selector_filesystem_calendar.py -q"
+  ],
+  "observed": [
+    "backend/tests/test_skill_selector_capability_registry_integrity.py::test_filesystem_intent_selects_filesystem_without_web_or_calendar PASSED",
+    "[SKILL-SELECTOR] Selected 5 skills (intent=filesystem, filesystem=True, calendar=False)"
+  ],
+  "acceptance": "Workspace listing prompts route to filesystem listing capabilities and suppress unrelated web/calendar routes."
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-015",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Verschiebe meinen Termin morgen um 30 Minuten",
+  "response": "Ich habe deinen Kalender für morgen, Samstag, den 16. Mai 2026, überprüft, konnte jedoch keinen eingetragenen Termin finden. Da kein Termin vorliegt, konnte ich auch keine Verschiebung um 30 Minuten vornehmen.\nFalls der Termin unter einem bestimmten Namen gespeichert ist oder ich ihn in einem anderen Zeitraum\n23:17",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T21:18:33.838Z"
+}

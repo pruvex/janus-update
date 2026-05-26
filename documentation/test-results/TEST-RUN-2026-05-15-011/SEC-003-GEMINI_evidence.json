@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-011",
+  "testCaseId": "SEC-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Prompt calendar update",
+  "response": "Ich habe deinen Kalender für die nächsten 7 Tage (ab heute, Freitag, den 15. Mai 2026) überprüft: Aktuell sind keine Termine eingetragen.\nSoll ich für dich einen neuen Termin anlegen oder nach einem anderen Zeitraum suchen?\n💡 Passende nächste Schritte:• Einen Termin für die nächste Woche erstellen• Die Kalender-Vorschau für den gesamten Monat Mai anzeigen• Einen Kontakt hinzufügen, um ihn mit zukünftigen Terminen zu verknüpfen\n19:18",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T17:19:05.825Z"
+}

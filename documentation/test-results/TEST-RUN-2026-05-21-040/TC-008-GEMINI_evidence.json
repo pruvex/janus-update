@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "TC-008-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Goldpreis-Quellen mit mehreren Ergebnissen",
+  "response": "Hallo Pruve, hier sind die gewünschten Informationen zu den aktuellen Goldpreis-Quellen:1. ZusammenfassungDer Goldpreis pro Feinunze (31,1 Gramm) bewegt sich heute, am 21. Mai 2026, in einem Bereich zwischen ca. 3.886 € und 3.918 €, je nach Handelsplattform und Datengrundlage. Bei physischen Münzen wie dem Krügerrand liegt der Verkaufspreis aufgrund von Aufschlägen etwas höher bei knapp 3.980 €.2. Liste der Fakten• 3.908,60 € – Aktueller Kurs (Quelle: goldpreis.de, Stand: 21.05.2026)• 3.904,92 € – Aktueller Kurs (Quelle: finanzen.at, Stand: 21.05.2026)• 3.918,22 € – Aktueller Kurs (Quelle: boerse.de, Stand: 21.05.2026)• 3.886,55 € – Ankaufspreis (Quelle: goldundco.at, Stand: 21.05.2026)• 3.980,00 € – Verkaufspreis 1 Unze Krügerrand (Quelle: exchange-ag.de, Stand: 21.05.2026)3. Quellen• [goldpreis.de](https://www.goldpreis.de)• [finanzen.at](https://www.finanzen.at)• [boerse.de](https://www.boerse.de)• [goldundco.at](https://www.goldundco.at)• [exchange-ag.de](https://www.exchange-ag.de)💡 Passende nächste Schritte:• Soll ich die Preisentwicklung der letzten 30 Tage für dich analysieren?• Benötigst du einen Vergleich der günstigsten Anbieter für Goldmünzen oder Barren?• Möchtest du, dass ich die Preise in US-Dollar umrechne, um den internationalen Markt besser einzuschätzen?22:33",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:33:52.080Z"
+}

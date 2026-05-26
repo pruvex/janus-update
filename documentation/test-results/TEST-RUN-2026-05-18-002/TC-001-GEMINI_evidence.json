@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-002",
+  "testCaseId": "TC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Brauche ich morgen in Muenchen einen Regenschirm?",
+  "response": "Ja, es ist ratsam, morgen in München einen Regenschirm mitzunehmen. Für Dienstag, den 19. Mai 2026, werden leichte Regenschauer vorhergesagt. Die Niederschlagswahrscheinlichkeit liegt bei hohen 80 %.\nDie Temperaturen erreichen maximal 17,6 °C und sinken nachts auf etwa 9,1 °C.\nQuelle: Open-Meteo\n💡 Passende nächste Schritte:• Möchtest du wissen, wie das Wetter am Mittwoch wird?• Soll ich dir eine passende Route für morgen mit dem Auto oder dem Fahrrad heraussuchen?• Suchst du nach Indoor-Aktivitäten in München für den regnerischen Tag?\n01:54",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T23:54:57.575Z"
+}

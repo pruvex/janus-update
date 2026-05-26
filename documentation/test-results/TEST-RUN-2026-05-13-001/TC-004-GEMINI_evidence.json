@@ -1,0 +1,20 @@
+{
+  "testRunId": "TEST-RUN-2026-05-13-001",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "FAIL",
+  "classification": "TOOL_ROUTING_FAILURE",
+  "prompt": "Was gibt es Neues bei Heise?",
+  "response": "Bei Heise sind aktuell diese Themen in den Schlagzeilen:\n\nHörgerät: Gehirnwellen erkennen und filtern einzelne Stimmen aus dem Hintergrund  \nNeue PC-Spiele im Juni 2026: „Gothic 1 Remake“  \nDigitaler Euro: Datenschützer fordern echtes digitales Bargeld statt Überwachung  \nWWDC 2026: Apples KI-Jahr der Wahrheit | Mac & i-Podcast  \nThinkpad X13 Gen 7: Neue Prozessoren, unter 1 kg, 5G-Mobilfunk  \nSony Alpha 7R VI bringt 67 Megapixel auf das Tempo des Spitzenmodells  \nErste Atombombenexplosion der Welt erzeugte ungewöhnlichen Kristall  \nKI-Rechenleistung aus dem Vorgarten: Start-up setzt auf dezentrale Server  \nDigitale Souveränität: Verfassungsschutz kauft europäische Palantir-Alternative  \nUrtopia Carbon 1 ST im Test: Leichtes City-E-Bike mit GPS, Alarm & Fingerprint\n\n💡 Vorschlag:• Sag mir, welches der Themen dich am meisten interessiert (z.B. „digitaler Euro“ oder „ThinkPad X13“), dann fasse ich dir die Hintergründe zusammen.\n18:58",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_text_present_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1"
+  },
+  "notes": "Expected tool \"news_rss\" was not triggered. Tools called: system_rss_news",
+  "timestamp": "2026-05-13T16:58:22.745Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-007",
+  "testCaseId": "TC-003-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Kannst du Bankueberweisungen ausfuehren?",
+  "response": "Ich kann keine Banküberweisungen direkt ausführen (keine Zahlungen oder Zugriffe auf dein Banking).\nWenn du willst, helfe ich dir aber gern dabei, die Überweisung korrekt vorzubereiten (z. B. Empfänger, IBAN, Betrag, Verwendungszweck, Termin) – sag mir kurz die Angaben, die du eintragen willst.\n💡 Vorschlag:• Nenne mir Empfänger (Name), IBAN, Betrag, Verwendungszweck und gewünschtes Ausführungsdatum, dann erstelle ich dir eine saubere Überweisungs-Vorlage.\n16:21",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-15T14:21:29.840Z"
+}

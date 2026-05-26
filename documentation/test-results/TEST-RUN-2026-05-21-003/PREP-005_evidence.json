@@ -1,0 +1,14 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-003",
+  "testCaseId": "PREP-005",
+  "result": "PASS",
+  "classification": "PREP_ASSERTION_PASS",
+  "evidence": {
+    "authMethod": "local signed JWT plus X-Janus-Internal-Key in E2E route injection",
+    "configPath": "%APPDATA%\\Janus Projekt\\config.json",
+    "jwtSecret": "present(length=64)",
+    "internalApiKey": "present(length=64)",
+    "rawSecretsWrittenToEvidence": false
+  },
+  "timestamp": "2026-05-20T23:53:14.463Z"
+}

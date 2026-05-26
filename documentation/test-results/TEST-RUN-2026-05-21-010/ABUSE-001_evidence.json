@@ -1,0 +1,6 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-prompts",
+  "status": 429,
+  "retryAfterPresent": true,
+  "safeMessage": "Zu viele Anfragen in kurzer Zeit. Bitte warte kurz und versuche es erneut."
+}

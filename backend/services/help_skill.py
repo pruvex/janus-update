@@ -28,6 +28,21 @@ class HelpSkill:
     # Fallback message when no information is available
     FALLBACK_MESSAGE = "Dazu habe ich keine Information."
 
+    # Deterministic category display order for capability overview (TASK-069.4)
+    CATEGORY_ORDER = [
+        "Kommunikation & Chat",
+        "Wissen & Recherche",
+        "Aufgaben & Produktivität",
+        "Kalender & Termine",
+        "Dateien & Dokumente",
+        "Bilder & Medien",
+        "Analyse & Auswertung",
+        "Entwicklung & Automatisierung",
+        "Einstellungen & System",
+        "Updates & Installation",
+        "Sonstiges",
+    ]
+
     def __init__(self, registry: CapabilityRegistry) -> None:
         """Initialize HelpSkill with a CapabilityRegistry.
         
@@ -90,60 +105,69 @@ class HelpSkill:
             )
 
     def _handle_capability_overview(self, query: str, language: str) -> HelpOutput:
-        """Generate capability overview listing all categories.
-        
+        """Generate deterministic capability overview markdown.
+
+        TASK-069.4: Uses filtered registry data, fixed category order,
+        alphabetical sorting, and exact Markdown format.
+
         Args:
             query: The user's query (e.g., "Was kannst du?").
             language: Target language for the response.
-        
-        Returns:
-            HelpOutput with structured category list.
-        """
-        overview = self.registry.get_overview(language)
-        categories = overview.get("categories", {})
 
-        if not categories:
+        Returns:
+            HelpOutput with rendered Markdown answer.
+        """
+        capabilities = self.registry.get_verified_capabilities_for_overview(language)
+
+        if not capabilities:
+            empty_state_text = (
+                "Aktuell kann ich meine Fähigkeiten leider nicht anzeigen. "
+                "Dies liegt daran, dass die Capability-Daten entweder nicht geladen, "
+                "nicht initialisiert oder nicht verfügbar sind. "
+                "Dieser Zustand kann temporär sein – bitte versuche deine Anfrage später erneut."
+            )
             return HelpOutput(
-                answer=self.FALLBACK_MESSAGE,
+                answer=empty_state_text,
                 suggestions=[],
                 actions=[],
-                source_category=None,
+                source_category="capability_overview",
                 fallback_used=True
             )
 
-        # Build structured answer
-        lines = [self._get_overview_intro(language)]
-        suggestions = []
+        # Group by category (normalization already handled by Registry, TASK-069.10)
+        from collections import defaultdict
+        grouped = defaultdict(list)
+        for cap in capabilities:
+            grouped[cap["category"]].append(cap)
 
-        for cat_id, cat_data in categories.items():
-            icon = cat_data.get("icon", "")
-            name = cat_data.get("display_name", cat_id)
-            desc = cat_data.get("description", "")
-            abilities = cat_data.get("abilities", [])
+        # Sort categories by CATEGORY_ORDER; unknowns come after "Sonstiges"
+        order_index = {name: idx for idx, name in enumerate(self.CATEGORY_ORDER)}
+        sorted_categories = sorted(
+            grouped.keys(),
+            key=lambda cat: order_index.get(cat, len(self.CATEGORY_ORDER))
+        )
 
-            lines.append(f"\n{icon} **{name}**")
-            if desc:
-                lines.append(f"_{desc}_")
+        # Build Markdown
+        lines = [
+            "## Das kann ich aktuell",
+            "",
+            "Ich kann dir aktuell in diesen Bereichen helfen:",
+            "",
+        ]
 
-            # List abilities
-            if abilities:
-                ability_labels = [a.get("label", a.get("id", "")) for a in abilities]
-                lines.append("- " + ", ".join(ability_labels))
-
-                # Collect suggestions from ability IDs
-                for ability in abilities:
-                    ability_id = ability.get("id", "")
-                    if ability_id:
-                        suggestions.append(f"Wie funktioniert {ability.get('label', ability_id)}?")
+        for category in sorted_categories:
+            lines.append(f"### {category}")
+            # Sort capabilities alphabetically by name
+            caps = sorted(grouped[category], key=lambda c: c["name"])
+            for cap in caps:
+                lines.append(f"- **{cap['name']}:** {cap['description']}")
+            lines.append("")
 
         answer = "\n".join(lines)
 
-        # Limit suggestions to top 3
-        suggestions = suggestions[:3]
-
         return HelpOutput(
             answer=answer,
-            suggestions=suggestions,
+            suggestions=[],
             actions=[],
             source_category="capability_overview",
             fallback_used=False

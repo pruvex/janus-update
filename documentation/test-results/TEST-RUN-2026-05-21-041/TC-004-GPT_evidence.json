@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-041",
+  "testCaseId": "TC-004-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wie steht es aktuell um den FC Bayern?",
+  "response": "Aktuell zum FC Bayern: Dafür brauche ich die **genaue Spielsituation** (z.B. *letztes Spiel* oder *nächstes Spiel*) bzw. den **Wettbewerb**. In den live gefundenen Quellen habe ich zwar eine generische Seite zur Bundesliga-Tabelle gefunden, aber daraus lässt sich mir **keine eindeutig auslesbare “Aktuell”-Situation** für “jetzt” (inkl. Ergebnis/Tabellenplatz) direkt und verlässlich ableiten.Wenn du mir **einen** dieser Punkte sagst, liefere ich dir sofort das konkrete Update (Ergebnis + Tabellenstand):- **Welcher Wettbewerb**: Bundesliga, DFB-Pokal oder Champions League?- **Bezug**: *letztes Spiel* oder *nächstes Spiel*?💡 Passende nächste Schritte:• Nenn mir “Bundesliga, letztes Spiel” oder “Bundesliga, nächstes Spiel”• Sag mir alternativ “DFB-Pokal, letztes Spiel”23:02",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T21:03:02.346Z"
+}

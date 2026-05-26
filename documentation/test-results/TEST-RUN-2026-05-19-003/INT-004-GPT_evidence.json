@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-003",
+  "testCaseId": "INT-004-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Sortiere, fasse zusammen, erstelle Uebersicht",
+  "response": "Hallo Admin — ich habe die dauerhaften Merkmale aus dem Kontext gebündelt und in eine übersichtliche Zusammenfassung sortiert:\nÜbersicht: Person (Nikola Tesla) – dauerhafte Merkmale\n\nStatur: auffallend groß und sehr schlank (zuerst erwähnt: 12. Mai 2026 um 19:23, Chat „Nikola Tesla Übersicht“)\nHaare: dunkles Haar, akkurat gescheitelt (zuerst erwähnt: 12. Mai 2026 um 19:23, Chat „Nikola Tesla Übersicht“)\nStirn & Gesicht: hohe Stirn; schmales Gesicht (zuerst erwähnt: 12. Mai 2026 um 19:23, Chat „Nikola Tesla Übersicht“)\nAugen: tief liegende Augen / dunkle, tief liegende Augen (zuerst erwähnt: 12. Mai 2026 um 19:23, Chat „Nikola Tesla Übersicht“)\nWangenknochen: ausgeprägte Wangenknochen (zuerst erwähnt: 12. Mai 2026 um 19:23, Chat „Nikola Tesla Übersicht“)\n\n💡 Passende nächste Schritte:• Soll ich daraus eine kurze 3–4 Sätze Personenbeschreibung als Fließtext machen?• Oder brauchst du eine strukturierte Checkliste (z.B. nur „Körperbau“, „Haare“, „Gesichtszüge“, „Augen“)?\n16:41",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-19T14:41:59.789Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-001",
+  "testCaseId": "INT-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Erstelle Ordner und Notiz",
+  "response": "Hallo Admin! Sehr gerne erstelle ich einen Ordner und eine Notiz für dich.\nDamit ich dies präzise ausführen kann, benötige ich noch zwei Informationen:\n\nName des Ordners: Wie soll der neue Ordner heißen?\nInhalt der Notiz: Welchen Text oder Titel soll die Notiz haben?\n\nDa wir im Kontext viele Informationen zu Nikola Tesla haben, könnte ich beispielsweise einen Ordner „Tesla_Archiv“ anlegen und darin eine Personenbeschreibung speichern. Basierend auf deinen Vorgaben für dauerhafte physische Merkmale (unter Verzicht auf Kleidung) würde die Beschreibung so aussehen:\n\nPersonenbeschreibung: Nikola TeslaNikola Tesla ist eine auffallend große und sehr schlanke Persönlichkeit mit einem schmalen Gesicht und markanten, ausgeprägten Wangenknochen. Er zeichnet sich durch eine hohe Stirn und tief liegende Augen aus. Sein dunkles Haar trägt er stets akkurat gescheitelt.\n\nSoll ich diese Beschreibung verwenden oder hast du einen anderen Inhalt im Sinn? Sobald du mir den Ordnernamen nennst, ermittle ich deinen Benutzernamen, um das Verzeichnis (z. B. auf dem Desktop) korrekt anzulegen.\n💡 Passende nächste Schritte:• Ordnernamen und Notiz-Inhalt bestätigen• Zielpfad festlegen (z. B. Desktop oder Dokumente)• Spezifische Accessoires wie Kopfhörer oder Smartwatches prüfen (Kategorie: Aussehen_Situativ)\n01:37",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T23:37:35.277Z"
+}

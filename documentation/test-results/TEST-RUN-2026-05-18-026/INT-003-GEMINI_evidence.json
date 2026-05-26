@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-026",
+  "testCaseId": "INT-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Speichere diesen Titel: `<img src=x onerror=alert(1)>`",
+  "response": "Hallo Admin, ich habe den Titel <img src=x onerror=alert(1)> für dich gespeichert.\n💡 Passende nächste Schritte:• Soll ich Nikola Tesla basierend auf seinen dauerhaften physischen Merkmalen wie seiner Größe und seinem schmalen Gesicht für dich beschreiben?• Möchtest du weitere Details aus den vorhandenen Aufzeichnungen zur Biografie von Nikola Tesla abrufen?• Hast du noch weitere technische Titel oder Informationen, die ich in dein Gedächtnis aufnehmen soll?\n23:06",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T21:07:16.453Z"
+}

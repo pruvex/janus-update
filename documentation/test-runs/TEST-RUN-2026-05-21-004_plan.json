@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "janus.test-plan.v1",
+  "testRunId": "TEST-RUN-2026-05-21-004",
+  "title": "Janus Security ReviewSpec Suite",
+  "sourceSpec": "documentation/TEST_SPEC/02_security_safety/10_security_reviewspec_suite.md",
+  "route": "TEST SKILL SECURITY -> custom Security ReviewSpec runner -> SKILL 7",
+  "compilerStatus": {
+    "status": "BLOCKED",
+    "reason": "Checklist-style ReviewSpec contains no executable test matrix; custom review runner validates the required evidence chain."
+  },
+  "reviewDecisionTarget": "PASS WITH WATCHPOINTS",
+  "cases": [
+    { "id": "RSV-001", "domain": "Asset and Data Flow", "expectedEvidence": "Asset map and trust-boundary artifact" },
+    { "id": "RSV-002", "domain": "Threat Model", "expectedEvidence": "Threat list with mitigations" },
+    { "id": "RSV-003", "domain": "Auth/AuthZ Architecture", "expectedEvidence": "Code references plus Security 02/03 PASS" },
+    { "id": "RSV-004", "domain": "Secret Management", "expectedEvidence": "Redaction/secret evidence plus Security 01/08 PASS" },
+    { "id": "RSV-005", "domain": "API Privacy Boundary", "expectedEvidence": "API privacy evidence plus Security 02/03/08 PASS" },
+    { "id": "RSV-006", "domain": "AI Tooling and Prompt Injection", "expectedEvidence": "Security 05/06/07 and tool evidence PASS" },
+    { "id": "RSV-007", "domain": "OWASP Surface", "expectedEvidence": "Security 04/05 PASS and header/config references" },
+    { "id": "RSV-008", "domain": "Logging and Telemetry", "expectedEvidence": "Security 08 PASS, privacy scan, Sentry PII disabled" },
+    { "id": "RSV-009", "domain": "Rate Limit and Cost Abuse", "expectedEvidence": "Security 07 PASS and cost-controlled prep evidence" },
+    { "id": "RSV-010", "domain": "Deployment Config", "expectedEvidence": "Deployment review with explicit environment watchpoints" },
+    { "id": "RSV-011", "domain": "Red Team Playbook", "expectedEvidence": "RT-001..RT-010 mapped to evidence" },
+    { "id": "RSV-012", "domain": "Launch Gate", "expectedEvidence": "Risk register, final audit, no open Critical/High findings" }
+  ],
+  "requiredBaselineRuns": [
+    "TEST-RUN-2026-05-17-021",
+    "TEST-RUN-2026-05-17-028",
+    "TEST-RUN-2026-05-18-019",
+    "TEST-RUN-2026-05-18-024",
+    "TEST-RUN-2026-05-18-027",
+    "TEST-RUN-2026-05-20-012",
+    "TEST-RUN-2026-05-20-018",
+    "TEST-RUN-2026-05-20-023",
+    "TEST-RUN-2026-05-21-003",
+    "TEST-RUN-2026-05-20-021",
+    "TEST-RUN-2026-05-21-002"
+  ],
+  "artifacts": {
+    "runner": "tests/e2e/generated/TEST-RUN-2026-05-21-004.security-review.spec.js",
+    "assetDataFlow": "documentation/test-runs/TEST-RUN-2026-05-21-004_asset_data_flow.md",
+    "threatModel": "documentation/test-runs/TEST-RUN-2026-05-21-004_threat_model.md",
+    "codeConfigReview": "documentation/test-runs/TEST-RUN-2026-05-21-004_code_config_review.md",
+    "redTeamPlaybook": "documentation/test-runs/TEST-RUN-2026-05-21-004_red_team_playbook.md",
+    "riskRegister": "documentation/test-runs/TEST-RUN-2026-05-21-004_risk_register.md",
+    "finalAudit": "documentation/test-runs/TEST-RUN-2026-05-21-004_final_audit.md"
+  }
+}

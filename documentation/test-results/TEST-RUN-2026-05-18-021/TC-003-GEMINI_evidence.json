@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-021",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wie ist das Wetter morgen in Koeln?",
+  "response": "Hallo Admin! Für morgen, Dienstag den 19. Mai 2026, wird in Köln – wie bereits heute um 19:46 Uhr im Chat \"Wettervorhersage Köln morgen\" vermerkt – leichter Regen (bzw. Nieselregen) erwartet.\nHier sind die Details für deinen Tag:\n\nTemperaturen: Es wird maximal 16,2 °C warm, während es nachts auf bis zu 8,6 °C abkühlt.\nNiederschlag: Die Regenwahrscheinlichkeit liegt bei etwa 59 %.\nWind: Es wehen leichte Böen mit bis zu 17 km/h.\n\nDenk also am besten an einen Regenschirm oder eine wetterfeste Jacke, wenn du morgen in der Domstadt unterwegs bist.\nQuelle: Open-Meteo\n💡 Passende nächste Schritte:• Soll ich prüfen, ob es zu einer bestimmten Uhrzeit morgen trocken bleibt?• Benötigst du eine passende Verbindung mit den öffentlichen Verkehrsmitteln in Köln?• Möchtest du, dass ich dich morgen früh an den Regenschirm erinnere?\n20:19",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T18:19:50.089Z"
+}

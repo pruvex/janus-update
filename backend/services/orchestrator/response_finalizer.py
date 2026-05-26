@@ -25,7 +25,6 @@ from backend.renderers.attribution import append_tool_attributions_from_tools
 
 logger = logging.getLogger("janus_backend")
 
-
 def _normalize_inline_weather_source_footer(text: str) -> str:
     value = str(text or "")
     if not value:

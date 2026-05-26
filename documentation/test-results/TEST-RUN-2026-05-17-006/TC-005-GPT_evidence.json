@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-006",
+  "testCaseId": "TC-005-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Modellpreise fuer OpenAI und Gemini",
+  "response": "\nErklärungs-Klarheit: „Modellpreise“ meint bei dir bitte API-Preise pro Token (z.B. pro 1M Tokens) oder Abo-/Chat-Preise (z.B. ChatGPT Plus, Gemini Advanced)?\nAktueller Webfund (Hinweis: Abo-/Planpreise, nicht API-Token):\nChatGPT Plus: 23 € / Monat (laut Suchergebnis, unverifiziert) — wisspro.de\nChatGPT Pro: 103 € / Monat (laut Suchergebnis, unverifiziert) — all-ai.de\nGemini Advanced: 21,99 € / Monat (laut Suchergebnis, unverifiziert) — praxistipps.chip.de\nGoogle AI Plus: 7,99 € / Monat (laut Suchergebnis, unverifiziert) — smartdroid.de\n\n\nZur API-Seite: Ich habe aus der Toolausgabe nur einen einzelnen Beispiel-Treffer gesehen (OpenAI o3-mini), aber der Live-Preis war dort nicht verfügbar/validierbar (Verifizierungsstatus „unavailable“).\n\n💡 Passende nächste Schritte:• Bestätige: Willst du API-Tokenpreise (pro 1M Tokens) oder Abo-/Planpreise?• Wenn API: Nenne bitte die konkreten Modelle, die dich interessieren (z.B. „o3-mini, o1-mini, GPT-4o“ und „Gemini 1.5 Pro/Flash“).\n14:45",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:46:53.523Z"
+}

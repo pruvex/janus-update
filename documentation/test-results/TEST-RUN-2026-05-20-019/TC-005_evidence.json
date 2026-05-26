@@ -1,0 +1,9 @@
+{
+  "testCaseId": "TC-005",
+  "source": "python -m pytest backend\\tests\\test_skill_selector_capability_registry_integrity.py -q",
+  "assertions": [
+    "Filesystem intent selects filesystem.list_directory and filesystem.list_workspaces.",
+    "Filesystem intent suppresses unrelated web and calendar routing candidates."
+  ],
+  "result": "PASS"
+}

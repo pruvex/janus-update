@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-039",
+  "testCaseId": "INT-001-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "wieviel kostet eine feinunze gold?",
+  "response": "Eine Feinunze Gold (1 oz) kostet aktuell **4.007,20 €** (laut Suchergebnis, Stand: 2026-05-21).  Quelle: [gold.de – Goldpreis aktuell in Euro und Dollar](https://www.gold.de/kurse/goldpreis/?utm_source=openai)💡 Passende nächste Schritte:• Soll ich dir den Preis auch für **1 Gramm** umrechnen?• Meinst du **Barrenform** oder **Münzen/Ankaufspreis** (oft mit Aufschlag)?22:06",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:07:05.422Z"
+}

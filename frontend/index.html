@@ -5,9 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Janus</title>
     <link rel="stylesheet" href="src/styles.css" />
+    <link rel="stylesheet" href="css/sidebar.css" />
+    <link rel="stylesheet" href="css/calendar-modal.css" />
+    <link rel="stylesheet" href="css/calendar-day-widget.css" />
     <link rel="stylesheet" href="css/settings.css" />
     <link rel="stylesheet" href="css/gallery.css" />
     <link rel="stylesheet" href="css/image-studio.css" />
+    <link rel="stylesheet" href="css/update-ui.css" />
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
@@ -201,6 +205,64 @@
               </span>
               <span class="sidebar-nav-label">Bildgalerie</span>
             </button>
+            <button
+              type="button"
+              class="sidebar-nav-item"
+              id="sidebar-nav-calendar"
+              aria-pressed="false"
+              aria-label="Janus Kalender ein- oder ausblenden"
+              onclick="window.dockOpen && window.dockOpen('calendar')"
+            >
+              <span class="sidebar-nav-icon icon-calendar" aria-hidden="true">
+                <svg
+                  class="janus-nav-icon-svg"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                  <line x1="16" x2="16" y1="2" y2="6" />
+                  <line x1="8" x2="8" y1="2" y2="6" />
+                  <line x1="3" x2="21" y1="10" y2="10" />
+                </svg>
+              </span>
+              <span class="sidebar-nav-label">Janus Kalender</span>
+            </button>
+            <button
+              type="button"
+              class="sidebar-nav-item"
+              id="sidebar-nav-day-panel"
+              aria-pressed="false"
+              aria-label="Tages-Panel ein- oder ausblenden"
+              title="Tages-Panel"
+            >
+              <span class="sidebar-nav-icon icon-day-panel" aria-hidden="true">
+                <svg
+                  class="janus-nav-icon-svg"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect width="7" height="9" x="3" y="3" rx="1" />
+                  <rect width="7" height="5" x="14" y="3" rx="1" />
+                  <rect width="7" height="9" x="14" y="12" rx="1" />
+                  <rect width="7" height="5" x="3" y="16" rx="1" />
+                </svg>
+              </span>
+              <span class="sidebar-nav-label">Tages-Panel</span>
+            </button>
           </nav>
         </div>
 
@@ -274,7 +336,8 @@
         <footer id="sidebar-version" class="sidebar-footer"></footer>
       </div>
       <main id="chat-view" class="view">
-        <div id="main-content" class="dual-chat-workspace">
+        <div id="chat-workspace-wrap" class="chat-workspace-wrap">
+          <div id="main-content" class="dual-chat-workspace">
           <div id="chat-window-host-A" class="chat-window-host" data-window="A">
             <div
               id="chat-window-A"
@@ -458,6 +521,69 @@
               </div>
             </div>
           </div>
+          </div>
+          <aside
+            id="calendar-day-widget-rail"
+            class="calendar-day-widget-rail"
+            hidden
+            aria-label="Janus Tages-Panel"
+            aria-hidden="true"
+          >
+            <div class="calendar-day-widget-inner">
+              <header class="calendar-day-widget-header">
+                <h2 class="calendar-day-widget-title">Tages-Panel</h2>
+                <button
+                  type="button"
+                  class="calendar-day-widget-dismiss"
+                  id="calendar-day-widget-close"
+                  title="Ausblenden"
+                  aria-label="Tages-Panel ausblenden"
+                  onclick="if(typeof window.janusCloseDayPanel==='function')window.janusCloseDayPanel(event)"
+                >
+                  ×
+                </button>
+              </header>
+              <p class="calendar-day-widget-lede">
+                Heute auf einen Blick — gleiche Kennzahlen wie die Kalender-Rechtsrail. Schnellaktionen, „Jetzt“-Marker im Tagesplan und KI‑Plan über den Vollkalender.
+              </p>
+              <div class="calendar-day-widget-placeholder" id="calendar-day-widget-body" role="region" aria-live="polite">
+                <p class="calendar-day-widget-muted">Wird geladen …</p>
+              </div>
+              <div class="calendar-day-widget-extras" id="calendar-day-widget-extras">
+                <div class="calendar-day-widget-quick-actions" aria-label="Schnellaktionen">
+                  <div class="calendar-day-widget-kicker">Schnellaktionen</div>
+                  <div class="calendar-day-widget-quick-grid">
+                    <button type="button" class="cdw-quick-btn" id="cdw-quick-create">+ Termin</button>
+                    <button type="button" class="cdw-quick-btn" id="cdw-quick-focus" title="Kalender öffnen und Fokuszeit vorschlagen">
+                      Fokuszeit
+                    </button>
+                    <button type="button" class="cdw-quick-btn" id="cdw-quick-calendar">Kalender</button>
+                  </div>
+                </div>
+                <div class="calendar-day-widget-ai" aria-label="KI für heute">
+                  <div class="calendar-day-widget-kicker">KI für heute</div>
+                  <div class="calendar-day-widget-ai-row">
+                    <label for="calendar-day-widget-ai-input" class="visually-hidden">KI‑Befehl für den Kalender</label>
+                    <input
+                      type="text"
+                      id="calendar-day-widget-ai-input"
+                      class="calendar-day-widget-ai-input"
+                      placeholder="z. B. Nachmittag freihalten für Deep Work …"
+                      maxlength="1000"
+                      autocomplete="off"
+                    />
+                    <button type="button" class="calendar-day-widget-ai-send" id="calendar-day-widget-ai-send">Plan</button>
+                  </div>
+                  <p class="calendar-day-widget-ai-hint" id="calendar-day-widget-ai-out" hidden></p>
+                </div>
+              </div>
+              <div class="calendar-day-widget-actions">
+                <button type="button" class="calendar-day-widget-btn" id="calendar-day-widget-open-calendar">
+                  Vollständigen Kalender öffnen
+                </button>
+              </div>
+            </div>
+          </aside>
         </div>
       </main>
       <div id="dock-bar" aria-label="Taskleiste">
@@ -690,6 +816,11 @@
                 <input type="checkbox" id="show-archived-chats" />
                 <span>Archivierte Chats anzeigen</span>
               </label>
+              <label class="settings-checkbox-row">
+                <input type="checkbox" id="dark-mode-checkbox" />
+                <span>Dark Mode aktivieren</span>
+              </label>
+              <span id="dark-mode-status" class="settings-status"></span>
             </div>
 
             <!-- Sektion 2: Modellverwaltung -->
@@ -1032,6 +1163,245 @@
       </div>
       <!-- NEUER BEREICH ENDE -->
 
+      <div id="calendar-view" class="view" style="display: none">
+        <div id="calendar-modal" class="resizable draggable">
+
+          <header id="calendar-header" class="calendar-hg-header">
+            <div class="cal-hg-left" id="calendar-drag-handle">
+              <button type="button" class="chat-window-reset-btn cal-icon-btn" id="calendar-reset-btn"
+                title="Position und Größe zurücksetzen" aria-label="Kalenderfenster zurücksetzen">↺</button>
+              <span class="cal-app-title">Janus Kalender</span>
+              <div class="calendar-date-nav" aria-label="Datumsnavigation">
+                <button type="button" id="calendar-prev-btn" class="cal-nav-btn" aria-label="Vorheriger Zeitraum">‹</button>
+                <button type="button" id="calendar-today-btn" class="cal-nav-btn">Heute</button>
+                <button type="button" id="calendar-next-btn" class="cal-nav-btn" aria-label="Nächster Zeitraum">›</button>
+              </div>
+            </div>
+
+            <div class="cal-hg-center">
+              <div id="calendar-period-label" class="calendar-period-label">Diese Woche</div>
+              <span id="calendar-sync-status" class="calendar-sync-status" role="status">Synchronisiert</span>
+            </div>
+
+            <div class="cal-hg-right">
+              <div class="calendar-view-toggle" role="tablist" aria-label="Kalenderansicht">
+                <button type="button" class="calendar-view-btn" data-view="day" aria-selected="false">Tag</button>
+                <button type="button" class="calendar-view-btn calendar-view-btn--active" data-view="week" aria-selected="true">Woche</button>
+                <button type="button" class="calendar-view-btn" data-view="month" aria-selected="false">Monat</button>
+              </div>
+              <label class="calendar-search-shell" for="calendar-search-input">
+                <span aria-hidden="true">⌕</span>
+                <input id="calendar-search-input" type="search" placeholder="Suche" autocomplete="off" />
+              </label>
+              <button type="button" id="calendar-minimize-btn" class="chat-window-minimize-btn cal-icon-btn" title="Minimieren" aria-label="Kalender minimieren">_</button>
+              <button type="button" id="close-calendar-btn" class="chat-window-close-btn cal-icon-btn" title="Schließen" aria-label="Kalender schließen">×</button>
+            </div>
+          </header>
+
+          <!-- ── HOLY-GRAIL BODY: Sidebar | Content-Pane ──────────────────── -->
+          <div class="calendar-hg-body">
+
+            <!-- LINKE SIDEBAR: Filter (scrollt NICHT mit Content) -->
+            <aside class="calendar-modal-sidebar" aria-label="Kalenderfilter">
+              <button type="button" id="create-event-btn" class="cal-new-event-btn calendar-sidebar-create">+ Neuer Termin</button>
+              <div class="calendar-sidebar-section calendar-mini-month-section">
+                <div class="calendar-sidebar-heading">
+                  <span id="calendar-mini-month-label">Monat</span>
+                  <div class="calendar-mini-month-nav" aria-label="Minikalender Navigation">
+                    <button type="button" id="calendar-mini-prev-btn" class="cal-nav-btn" aria-label="Vorheriger Monat">‹</button>
+                    <button type="button" id="calendar-mini-next-btn" class="cal-nav-btn" aria-label="Nächster Monat">›</button>
+                  </div>
+                </div>
+                <div id="calendar-mini-month" class="calendar-mini-month" aria-label="Minikalender"></div>
+              </div>
+              <div class="calendar-sidebar-section">
+                <div class="calendar-sidebar-label">Zeitraum</div>
+                <div class="calendar-filter-pills" role="group" aria-label="Zeitraumfilter">
+                  <button type="button" class="calendar-filter-btn" data-filter="today">Heute</button>
+                  <button type="button" class="calendar-filter-btn calendar-filter-btn--active" data-filter="week">Woche</button>
+                  <button type="button" class="calendar-filter-btn" data-filter="month">Monat</button>
+                  <button type="button" class="calendar-filter-btn" data-filter="custom">Benutzerdefiniert</button>
+                </div>
+                <div id="calendar-custom-range" class="calendar-custom-range" hidden>
+                  <label class="calendar-sidebar-label" for="calendar-range-start">Von</label>
+                  <input type="date" id="calendar-range-start" class="calendar-sidebar-input" />
+                  <label class="calendar-sidebar-label" for="calendar-range-end">Bis</label>
+                  <input type="date" id="calendar-range-end" class="calendar-sidebar-input" />
+                  <button type="button" id="calendar-apply-custom-range" class="calendar-sidebar-apply">Anwenden</button>
+                </div>
+              </div>
+              <div class="calendar-sidebar-section">
+                <div class="calendar-sidebar-label">Kalender</div>
+                <label class="calendar-category-row calendar-category-row--personal">
+                  <input type="checkbox" checked />
+                  <span>Persönlich</span>
+                </label>
+                <label class="calendar-category-row calendar-category-row--work">
+                  <input type="checkbox" checked />
+                  <span>Arbeit</span>
+                </label>
+                <label class="calendar-category-row calendar-category-row--project">
+                  <input type="checkbox" checked />
+                  <span>Projekte</span>
+                </label>
+                <label class="calendar-category-row calendar-category-row--birthday">
+                  <input type="checkbox" checked />
+                  <span>Geburtstage</span>
+                </label>
+                <label class="calendar-source-row">
+                  <input type="checkbox" id="calendar-source-google" checked />
+                  <span>Google Sync</span>
+                </label>
+              </div>
+              <div class="calendar-sidebar-section">
+                <div class="calendar-sidebar-label">Schnellzugriff</div>
+                <button type="button" class="calendar-quick-nav-btn" data-filter="today">Meine Termine</button>
+                <button type="button" class="calendar-quick-nav-btn" data-ai-quick="focus_block">Fokuszeit</button>
+                <button type="button" class="calendar-quick-nav-btn" data-ai-quick="optimize_day">Wöchentliche Planung</button>
+              </div>
+            </aside>
+
+            <!-- CONTENT-PANE: einziger scrollbarer Bereich -->
+            <div class="calendar-content-pane">
+              <div id="calendar-agenda">
+                <div class="calendar-empty">Lade Termine...</div>
+              </div>
+            </div>
+
+            <aside class="calendar-right-sidebar" aria-label="Planungsübersicht">
+              <section class="calendar-insight-card calendar-daily-stats-card">
+                <div class="calendar-insight-kicker">Heute</div>
+                <div class="calendar-daily-stats-grid">
+                  <div>
+                    <strong id="calendar-stat-events">0</strong>
+                    <span>Termine</span>
+                  </div>
+                  <div>
+                    <strong id="calendar-stat-focus">0h</strong>
+                    <span>Fokuszeit</span>
+                  </div>
+                  <div>
+                    <strong id="calendar-stat-load">0%</strong>
+                    <span>Auslastung</span>
+                  </div>
+                </div>
+                <div class="calendar-load-meter" aria-hidden="true">
+                  <span id="calendar-load-meter-fill"></span>
+                </div>
+              </section>
+
+              <section class="calendar-insight-card">
+                <div class="calendar-insight-kicker">Nächster Termin</div>
+                <div id="calendar-next-event-card" class="calendar-next-event-card">
+                  <div class="calendar-muted">Kein kommender Termin</div>
+                </div>
+              </section>
+
+              <section class="calendar-insight-card">
+                <div class="calendar-insight-kicker">Aufgaben</div>
+                <div class="calendar-task-list">
+                  <label>
+                    <input type="checkbox" />
+                    Prioritäten prüfen
+                    <span class="calendar-tooltip-trigger" data-tooltip="Prüft, ob deine Termine heute mit deinen langfristigen Projekten/Zielen in Janus übereinstimmen.">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="calendar-help-icon">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                      </svg>
+                    </span>
+                  </label>
+                  <label>
+                    <input type="checkbox" />
+                    Fokusblock schützen
+                    <span class="calendar-tooltip-trigger" data-tooltip="Reserviert 2-4 Stunden am Stück für konzentrierte Arbeit ohne Termine. Die KI erkennt Lücken automatisch.">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="calendar-help-icon">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                      </svg>
+                    </span>
+                  </label>
+                  <label>
+                    <input type="checkbox" />
+                    Offene Termine bestätigen
+                    <span class="calendar-tooltip-trigger" data-tooltip="Zeigt Termine an, bei denen der Status noch 'tentative' ist oder Klärungsbedarf besteht.">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="calendar-help-icon">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                      </svg>
+                    </span>
+                  </label>
+                </div>
+              </section>
+
+              <section class="calendar-insight-card calendar-ai-side-card">
+                <div class="calendar-insight-kicker">
+                  KI-Assistent
+                  <span class="calendar-tooltip-trigger calendar-tooltip-wide" data-tooltip="Tag optimieren:
+• Analysiert alle Termine des aktuellen Tages.
+• Findet ungenutzte Lücken für Deep Work.
+• Schlägt das Zusammenlegen von kurzen Meetings vor.
+• Wichtig: Die KI erstellt erst einen unverbindlichen Plan-Entwurf. Du siehst alle Änderungen in einer Vergleichsansicht (Diff) und musst sie explizit bestätigen, bevor dein Google-Kalender geändert wird.">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="calendar-help-icon">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                  </span>
+                </div>
+                <p>Ich helfe dir, deinen Tag optimal zu planen.</p>
+                <button type="button" class="calendar-ai-quick-btn calendar-ai-side-action" data-ai-quick="optimize_day">
+                  Tag optimieren
+                </button>
+              </section>
+            </aside>
+
+            <!-- DETAIL-PANEL: slide-in rechts über Content-Pane -->
+            <aside id="calendar-detail-panel" class="calendar-detail-panel" hidden aria-label="Termindetails">
+              <div class="calendar-detail-header">
+                <h3 class="calendar-detail-title" id="calendar-detail-title"></h3>
+                <button type="button" id="calendar-detail-close-btn" class="calendar-detail-close" aria-label="Details schließen">×</button>
+              </div>
+              <div class="calendar-detail-body" id="calendar-detail-body"></div>
+            </aside>
+
+            <!-- KI-PLAN OVERLAY -->
+            <div id="calendar-ai-overlay" class="calendar-ai-overlay" hidden aria-modal="true" role="dialog" aria-labelledby="calendar-ai-overlay-title">
+              <div id="calendar-ai-overlay-backdrop" class="calendar-ai-overlay-backdrop" aria-hidden="true"></div>
+              <div class="calendar-ai-overlay-panel">
+                <h3 id="calendar-ai-overlay-title" class="calendar-ai-overlay-title">KI‑Plan (Vorschau)</h3>
+                <p id="calendar-ai-plan-summary" class="calendar-ai-plan-summary"></p>
+                <p id="calendar-ai-plan-risk" class="calendar-ai-plan-risk" role="status"></p>
+                <ul id="calendar-ai-plan-actions" class="calendar-ai-plan-actions"></ul>
+                <div class="calendar-ai-overlay-footer">
+                  <button type="button" id="calendar-ai-plan-apply" class="btn-primary">Anwenden</button>
+                  <button type="button" id="calendar-ai-plan-cancel" class="btn-secondary">Abbrechen</button>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /calendar-hg-body -->
+
+          <!-- ── FOOTER: KI-Kommando (scrollt NIE mit) ─────────────────────── -->
+          <footer class="calendar-ai-footer" aria-label="Kalender KI und Schnellaktionen">
+            <div class="calendar-ai-footer-inner">
+              <div class="calendar-ai-quick-row">
+                <span class="calendar-ai-footer-label">KI:</span>
+                <button type="button" class="calendar-ai-quick-btn" data-ai-quick="optimize_day">Tag optimieren</button>
+                <button type="button" class="calendar-ai-quick-btn" data-ai-quick="focus_block">Fokuszeit blocken</button>
+              </div>
+              <div class="calendar-ai-input-row">
+                <label for="calendar-ai-command" class="visually-hidden">AI Command Input</label>
+                <textarea id="calendar-ai-command" class="calendar-ai-command" rows="1" placeholder="KI-Befehl eingeben…"></textarea>
+                <button type="button" id="calendar-ai-plan-btn" class="btn-primary calendar-ai-plan-trigger">Plan erstellen</button>
+              </div>
+            </div>
+          </footer>
+
+        </div><!-- /calendar-modal -->
+      </div>
       <div id="knowledge-center-modal" class="dock-panel dock-panel--knowledge">
         <div class="dock-panel-content knowledge-center-content">
           <div class="chat-header-dual dock-panel-header">
@@ -1092,14 +1462,19 @@
         </div>
       </div>
     </div>
+    <script type="module" src="js/frontend-debug-log.js"></script>
     <script type="module" src="js/config.js"></script>
     <script type="module" src="js/window-state.js"></script>
     <script type="module" src="js/modal-api.js"></script>
+    <script type="module" src="js/calendar-day-widget.js"></script>
+    <script type="module" src="js/calendar-modal.js"></script>
     <script type="module" src="js/video-player.js"></script>
     <script type="module" src="js/app.js"></script>
     <script type="module" src="js/settings.js"></script>
     <script type="module" src="js/chat-manager.js"></script>
     <script type="module" src="js/chat.js"></script>
+    <script type="module" src="js/consent-modal.js"></script>
+    <script type="module" src="js/beta-privacy-notice.js"></script>
     <script type="module" src="js/dock.js"></script>
     <script type="module" src="js/cost-visualizer.js"></script>
     <script type="module" src="js/context-menu.js"></script>
@@ -1117,7 +1492,6 @@
         <div id="deep-dive-content"></div>
       </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <div id="style-profile-modal" class="modal" style="display: none">
       <div class="modal-content">
         <span class="close-button">&times;</span>
@@ -1209,9 +1583,9 @@
         <div id="video-analysis-status" class="video-status-overlay" style="display: none; text-align: center; padding: 8px; background: rgba(0, 0, 0, 0.8); color: #fff; border-radius: 4px; margin-top: 8px; font-size: 14px;">
           ⏳ KI-Analyse läuft im Hintergrund...
         </div>
-        <p class="video-player-fallback-line" id="video-player-fallback-line" hidden>
+        <p class="video-player-fallback-line" id="video-player-fallback-line">
           <span class="video-player-fallback-muted">Lädt nicht?</span>
-          <a id="video-player-external-link" class="video-player-fallback-a" href="#" target="_blank" rel="noopener noreferrer">Auf YouTube ansehen</a>
+          <a id="video-player-external-link" class="video-player-fallback-a" href="#" target="_blank" rel="noopener noreferrer">Im Browser öffnen</a>
         </p>
         <div class="video-player-resize-handle video-player-resize-handle--right" aria-hidden="true"></div>
         <div class="video-player-resize-handle video-player-resize-handle--bottom" aria-hidden="true"></div>
@@ -1731,6 +2105,77 @@
             <div class="button-group" style="justify-content: center;">
                 <button id="delete-confirm-btn" class="button button-danger">Ja, löschen</button>
                 <button id="delete-cancel-btn" class="button">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- ==== Path Sentinel Consent Modal ==== -->
+    <!-- ============================================= -->
+    <div id="consent-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Zugriffsberechtigung erforderlich</h3>
+                <span class="close-button" id="close-consent-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Janus benötigt Berechtigungen für folgenden Pfad:</p>
+                <p id="consent-path-display" class="consent-path"></p>
+                <p><strong>Operation:</strong> <span id="consent-op-display"></span></p>
+            </div>
+            <div class="modal-buttons consent-buttons">
+                <button id="consent-deny-btn" class="button button-secondary">Ablehnen</button>
+                <button id="consent-once-btn" class="button button-primary">Einmalig</button>
+                <button id="consent-session-btn" class="button button-primary">Für diese Session</button>
+                <button id="consent-always-btn" class="button button-primary consent-always-btn">Immer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- ==== Beta Privacy Notice Modal ============== -->
+    <!-- ============================================= -->
+    <div id="beta-privacy-modal" class="modal hidden" data-notice-version="2026-05-21.1">
+        <div class="modal-content" style="max-width: 720px;">
+            <div class="modal-header">
+                <h3>Beta-Datenschutz & Datenrechte</h3>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Janus ist in dieser Beta eine lokal paketierte Electron-App. Chats, Dateien,
+                    Memory/RAG, Projekte, Kalender/Aufgaben, generierte Artefakte, lokale Logs,
+                    Telemetrie-Metadaten und Provider-/Tool-Metadaten kÃ¶nnen verarbeitet werden.
+                </p>
+                <p>
+                    Je nach gewÃ¤hlter Funktion kÃ¶nnen ausgewÃ¤hlte Inhalte an konfigurierte
+                    LLM-, Bild/Audio-, Websearch-, RSS/News-, Wikipedia/Knowledge-,
+                    Wetter-, Geo/Distanz-, Preis/Current-Data-, Kalender- oder Telemetrie-Provider
+                    gesendet werden. Lokale Ollama-Anfragen bleiben lokal, sofern deine Ollama-Umgebung
+                    nicht anders konfiguriert ist.
+                </p>
+                <p>
+                    Bitte keine Secrets, API-Keys, PasswÃ¶rter, produktiven Kundendaten,
+                    regulierten Gesundheits-/Finanz-/Rechtsdaten oder vertraulichen Drittinhalte
+                    hochladen, solange das nicht ausdrÃ¼cklich fÃ¼r einen Beta-Test freigegeben wurde.
+                </p>
+                <p>
+                    Lokale Beta-Daten bleiben erhalten, bis du oder der Betreiber sie lÃ¶schen.
+                    Datenzugriff, Export, Korrektur oder LÃ¶schung laufen Ã¼ber
+                    <strong>privacy-contact</strong>; Datenschutz- oder SicherheitsvorfÃ¤lle Ã¼ber
+                    <strong>operator-on-call</strong> und <strong>privacy-contact</strong>.
+                </p>
+                <label style="display: flex; align-items: flex-start; gap: 10px; margin-top: 18px; cursor: pointer;">
+                    <input type="checkbox" id="beta-privacy-ack-checkbox" style="margin-top: 4px;">
+                    <span>
+                        Ich habe verstanden, welche Daten Janus in der Beta verarbeitet, welche Provider
+                        beteiligt sein kÃ¶nnen, welche Daten ich nicht hochladen soll und wie ich
+                        Datenrechte oder Privacy-Issues melde.
+                    </span>
+                </label>
+            </div>
+            <div class="modal-buttons">
+                <button id="beta-privacy-open-notice-btn" class="button button-secondary" type="button">Notice Ã¶ffnen</button>
+                <button id="beta-privacy-accept-btn" class="button button-primary" type="button" disabled>Akzeptieren</button>
             </div>
         </div>
     </div>

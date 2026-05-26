@@ -1,0 +1,6 @@
+{
+  "rawSensitiveEvidencePolicy": "redacted-only",
+  "rawPrivateCanariesWritten": false,
+  "openCriticalHighFindings": 0,
+  "gateDecision": "PASS"
+}

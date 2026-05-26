@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-12-001",
+  "testCaseId": "LTC-001",
+  "result": "FAIL",
+  "classification": "TOOL_ROUTING_FAILURE",
+  "prompt": "Wie ist das Wetter in Berlin?",
+  "response": "Ich konnte diesmal keine stabile Antwort erzeugen. Bitte sende die Anfrage direkt noch einmal; ich versuche es dann mit einem robusten Neuaufbau.\n21:33",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expected tool \"system.weather\" was not triggered. Tools called: none",
+  "timestamp": "2026-05-14T19:33:38.722Z"
+}

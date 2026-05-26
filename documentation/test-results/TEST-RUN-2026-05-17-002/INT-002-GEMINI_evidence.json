@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-002",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wer ist Ada Lovelace?",
+  "response": "Ada Lovelace (1815–1852) war eine britische Mathematikerin und Visionärin, die heute als die erste Programmiererin der Welt gilt.\nHier sind die wichtigsten Fakten zu ihrem Leben und Werk:\n\nPionierin der Informatik: Sie arbeitete eng mit Charles Babbage zusammen, dem Erfinder der „Analytical Engine“ (einer frühen mechanischen Rechenmaschine).\nDas erste Programm: In ihren Notizen zu dieser Maschine hielt sie einen Algorithmus zur Berechnung von Bernoulli-Zahlen fest. Da dies der erste Algorithmus war, der speziell für die Ausführung durch eine Maschine geschrieben wurde, gilt Lovelace als erste Programmiererin.\nVisionäre Weitsicht: Während Babbage die Maschine primär für Berechnungen sah, erkannte Lovelace, dass solche Maschinen nicht nur Zahlen, sondern auch Symbole, Musik oder Grafiken verarbeiten könnten – sie sah das Potenzial moderner Computer voraus.\nHerkunft: Sie war die einzige legitime Tochter des berühmten Dichters Lord Byron. Ihre Mutter förderte ihr mathematisches Talent gezielt, um den „poetischen Wahnsinn“ des Vaters auszugleichen.\n\nIhr Vermächtnis lebt heute unter anderem in der nach ihr benannten Programmiersprache Ada weiter.\n💡 Passende nächste Schritte:• Möchtest du mehr über die Funktionsweise der Analytical Engine erfahren?• Soll ich dir Details zur Programmiersprache Ada heraussuchen?• Hast du Interesse an weiteren Porträts berühmter Persönlichkeiten der Technikgeschichte?\n01:39",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T23:40:04.457Z"
+}

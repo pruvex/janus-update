@@ -1,0 +1,6 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-prompts",
+  "syntheticUsers": 3,
+  "status": 429,
+  "globalScope": "abuse002"
+}

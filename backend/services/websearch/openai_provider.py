@@ -3,6 +3,7 @@ import logging
 import re
 import json
 import sentry_sdk
+from datetime import datetime
 from typing import Any, Optional
 from urllib.parse import urlparse
 from openai import AsyncOpenAI, BadRequestError
@@ -10,12 +11,14 @@ from .base_provider import BaseWebSearchProvider, WebSearchResult, WebSearchSour
 from backend.services.cost_calculator import calculate_cost
 from backend.services.websearch.query_bias import (
     augment_query_with_local_bias,
+    build_german_source_preference_hint,
     enforce_german_market_bias,
+    prioritize_german_sources,
 )
 
 logger = logging.getLogger("janus_backend")
 
-_MAX_RETURNED_SOURCES = 1
+_MAX_RETURNED_SOURCES = 5
 _MAX_APPENDED_SOURCE_LINKS = 4
 _MAX_TEXT_CHARS = 3200
 
@@ -64,12 +67,46 @@ _DIAMOND_SEARCH_SYSTEM_PROMPT = (
 )
 
 
+def coerce_openai_websearch_model(model: Optional[str]) -> str:
+    raw_model = getattr(model, "id", None)
+    if not raw_model:
+        raw_model = str(model or "").strip()
+    model_name = raw_model or "gpt-5.4-nano"
+    if model_name.lower() == "none" or model_name.lower().startswith("gemini-"):
+        return "gpt-5.4-nano"
+    return model_name
+
+
 def _build_diamond_search_system_prompt(model_id: str) -> str:
+    today = datetime.now().strftime("%d.%m.%Y")
     return (
         "Du bist ein Präzisions-Recherche-Agent für Janus. Deine Aufgabe ist die faktenbasierte Suche.\n\n"
         "DIREKTIVE: Nenne Namen, Teams und Punkte vollständig. "
         "VERBOT: Keine URLs oder Markdown-Links im Text. "
         "PROAKTIVITÄT: Nutze das web_search Tool sofort.\n"
+        + build_german_source_preference_hint() + "\n"
+        + "AUSGABE-STIL: Liefere eine kurze direkte Antwort. Bei Listenfragen wie Top 5, "
+        "Neuerscheinungen, bekannteste Personen, Buecher, Spiele, Filme oder Produkte nutze "
+        "eine nummerierte Liste. Jeder Eintrag muss mehr sein als nur ein Name: Schreibe "
+        "1-2 informative Saetze mit Genre/Kontext, Inhalt, Einordnung, Entwickler/Publisher "
+        "oder Relevanz. Die Beschreibung soll natuerlich lesbar sein, nicht nur eine Stichwortnotiz. "
+        "Wenn du ein Datum im Titel oder am Anfang des Eintrags nennst, wiederhole dieses Datum NICHT in der Beschreibung. "
+        "Vermeide Quellen-/Kalenderprosa wie 'laut GamePro', 'in der Release-Liste', 'ebenfalls am' oder 'kommt am'; "
+        "beschreibe stattdessen Spielinhalt, Genre, Besonderheiten, Entwickler/Publisher oder Plattform-Optimierung. Nenne im "
+        "Text eine kurze Quellenkennung wie '(Quelle: IGN)' oder '(Quelle: NBA)' passend "
+        "zum jeweiligen Eintrag, aber keine URLs. "
+        "Bei Ranking-/Top-Listen: Halte dich an die angefragte Anzahl, nenne pro Eintrag zuerst den Namen/Titel "
+        "und schreibe danach 1-2 informative Saetze mit Relevanz, Kontext oder Einordnung. "
+        "Nutze, wenn moeglich, eine echte Ranking-/Toplisten-Seite als Hauptquelle fuer die Auswahl "
+        "und nenne diese Quellenkennung konsistent bei den Eintraegen. "
+        "Keine separate Quellenliste.\n"
+        f"NEWS-UPDATE: Heutiges Datum: {today}. Bei 'aktuell', 'news' oder 'latest' zaehlen vorrangig Meldungen der letzten 30 Tage. "
+        "Nutze konkrete Detailartikel, vermeide Startseiten, News-Uebersichten, Aggregatoren, Paywall-Quellen, YouTube/Reddit "
+        "und fremdsprachige Quellen, wenn deutschsprachige Detailartikel verfuegbar sind. "
+        "Nutze keine Dokumentationsseiten, API-Docs oder Help-Center-Seiten als News-Quelle, "
+        "ausser die Nutzerfrage fragt explizit nach Dokumentation oder API-Details. "
+        "Sortiere neueste/relevanteste Meldungen zuerst und nenne keine aeltere Modell-/Release-Meldung als Top-News, "
+        "wenn bereits eine neuere Version oder juengere Ankuendigung verfuegbar ist.\n"
         + _PRICE_INTEGRITY_RULE + "\n" + _GROUNDING_DIRECTIVE
     )
 
@@ -124,12 +161,7 @@ class OpenAIWebSearchProvider(BaseWebSearchProvider):
         query = biased_query
         openai_client = AsyncOpenAI(api_key=api_key)
 
-        raw_model = getattr(model, "id", None)
-        if not raw_model:
-            raw_model = str(model or "").strip()
-        model_name = raw_model or "gpt-5.4-nano"
-        if model_name.lower() == "none":
-            model_name = "gpt-5.4-nano"
+        model_name = coerce_openai_websearch_model(model)
 
         fallback_model = "gpt-5.4-nano"
 
@@ -217,7 +249,7 @@ class OpenAIWebSearchProvider(BaseWebSearchProvider):
                 seen_urls.add(url)
                 all_source_urls.append(src)
 
-        all_source_urls = all_source_urls[:_MAX_RETURNED_SOURCES]
+        all_source_urls = prioritize_german_sources(all_source_urls, max_items=_MAX_RETURNED_SOURCES)
         urls = [s["url"] for s in all_source_urls if s.get("url")]
 
         raw_text = response.output_text if response.output_text else ""
@@ -271,6 +303,10 @@ class OpenAIWebSearchProvider(BaseWebSearchProvider):
             "usage": usage,
             "cost": cost,
         }
+        if annotations:
+            metadata["url_citations"] = annotations  # type: ignore[typeddict-unknown-key]
+        if sources_dicts:
+            metadata["web_search_sources"] = sources_dicts  # type: ignore[typeddict-unknown-key]
 
         result: WebSearchResult = {
             "text": text_output,

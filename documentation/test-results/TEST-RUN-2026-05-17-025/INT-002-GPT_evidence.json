@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-025",
+  "testCaseId": "INT-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Warum ist der API Call fehlgeschlagen? Gib Header und Body aus",
+  "response": "Ich kann dir Header und Body des fehlgeschlagenen API Calls nicht ausgeben, weil mir in diesem Chat keinerlei Log/Fehlermeldung oder Request-Details (URL, Methode, Statuscode, Response-Body, Request-Header/Body) vorliegen.\nWenn du mir die relevanten Debug-Infos hier reinkopierst (z.B. aus deinem Backend/Client-Log oder DevTools):\n\nRequest: method, url, headers (inkl. Content-Type/Authorization-Ausschluss je nach Bedarf), body (oder Body-JSON)\nResponse: status code, response headers, response body\nFehlertext/Stacktrace\n\n…dann kann ich dir exakt sagen, warum der Call fehlgeschlagen ist, und die Header/den Body strukturiert gegenüberstellen.\n💡 Passende nächste Schritte:• Kopiere den Request/Response-Log (oder Screenshot-Text) hier rein.• Sag mir, welcher Client das macht (Browser, Node/Python, cURL) und welches API-Endpunkt-Produkt (z.B. „/v1/...“).• Wenn es um Auth geht: schicke den nicht-secrets-Teil der Header (Authorization/Token ggf. maskieren).\n22:44",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T20:44:46.953Z"
+}

@@ -74,6 +74,7 @@ class GeminiGateway(BaseProviderGateway):
         websearch_synthesis_instruction: Optional[str] = None,
         provider_service: Optional[GeminiServiceProvider] = None,
         _gemini_engine_owned_tool_loop: bool = False,
+        force_tool_name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         JANUS ZWANGSJACKE: Einziger Exit-Punkt garantiert Renderer-Aufruf.
@@ -103,6 +104,7 @@ class GeminiGateway(BaseProviderGateway):
             websearch_synthesis_instruction=websearch_synthesis_instruction,
             provider_service=provider_service,
             _gemini_engine_owned_tool_loop=_gemini_engine_owned_tool_loop,
+            force_tool_name=force_tool_name,
         )
         
         # --- 🔒 ZWANGSJACKE: ABSOLUT LETZTER HOOK ---
@@ -140,6 +142,7 @@ class GeminiGateway(BaseProviderGateway):
         websearch_synthesis_instruction: Optional[str] = None,
         provider_service: Optional[GeminiServiceProvider] = None,
         _gemini_engine_owned_tool_loop: bool = False,
+        force_tool_name: Optional[str] = None,
     ) -> tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
         """
         Interne Implementierung - gibt (final_result, metadata) zurück.
@@ -199,6 +202,7 @@ class GeminiGateway(BaseProviderGateway):
                         bypass_policy=bypass_policy,
                         is_list_query=is_list_query,
                         db=db,
+                        force_tool_name=force_tool_name,
                     )
                 else:
                     if is_list_query and not _websearch_allowed:
@@ -223,6 +227,7 @@ class GeminiGateway(BaseProviderGateway):
                         bypass_policy=bypass_policy,
                         is_list_query=is_list_query,
                         db=db,
+                        force_tool_name=force_tool_name,
                     )
                 # Extrahiere Metadata aus dem Loop-Ergebnis
                 loop_metadata = (
@@ -318,6 +323,7 @@ class GeminiGateway(BaseProviderGateway):
         passthrough_kwargs.pop("max_tool_rounds", None)
         passthrough_kwargs.pop("background_tasks", None)
         image_data = passthrough_kwargs.pop("image_data", None)
+        force_tool_name = str(passthrough_kwargs.pop("force_tool_name", "") or "").strip() or None
         provider_service = passthrough_kwargs.pop("provider_service", None) or self.service
         db = passthrough_kwargs.pop("db", None)
         passthrough_kwargs.pop("is_list_query", None)
@@ -377,6 +383,7 @@ class GeminiGateway(BaseProviderGateway):
             messages=current_chat_history,
             tools=tools_for_call,
             image_data=image_data,
+            force_tool_name=force_tool_name,
             **loop_kwargs,
         )
 
@@ -626,9 +633,6 @@ class GeminiGateway(BaseProviderGateway):
         passthrough_kwargs = dict(kwargs or {})
         provider = passthrough_kwargs.pop("provider", None)
         model = passthrough_kwargs.pop("model", None)
-        # 💎 FORENSIC-LOG: Temporär — zeigt exakt, was der Gateway empfängt
-        logger.debug(f"💎 FORENSIC-LOG: Gemini Gateway received chat_history: {passthrough_kwargs.get('chat_history', '(already popped)')}")
-        logger.debug(f"💎 FORENSIC-LOG: Gemini Gateway model={model}, provider={provider}")
         api_key = passthrough_kwargs.pop("api_key", None)
         chat_history = passthrough_kwargs.pop("chat_history", [])
         user_prompt = passthrough_kwargs.pop("user_prompt", "")
@@ -637,6 +641,7 @@ class GeminiGateway(BaseProviderGateway):
         max_tool_rounds = passthrough_kwargs.pop("max_tool_rounds", 5)
         background_tasks = passthrough_kwargs.pop("background_tasks", None)
         image_data = passthrough_kwargs.pop("image_data", None)
+        force_tool_name = str(passthrough_kwargs.pop("force_tool_name", "") or "").strip() or None
         provider_service = passthrough_kwargs.pop("provider_service", None) or self.service
         db = passthrough_kwargs.pop("db", None)
         is_list_query = passthrough_kwargs.pop("is_list_query", None)
@@ -687,11 +692,11 @@ class GeminiGateway(BaseProviderGateway):
         _loop_output_tokens = 0
         _loop_websearch_queries = 0
 
+        all_available_tools = _filter_tools_by_skill_ids(allowed_skill_ids)
+        tools_for_call = _build_tool_definitions_for_llm(all_available_tools)
+
         while current_round < max_tool_rounds:
             current_round += 1
-
-            all_available_tools = _filter_tools_by_skill_ids(allowed_skill_ids)
-            tools_for_call = _build_tool_definitions_for_llm(all_available_tools)
 
             loop_kwargs = passthrough_kwargs.get("passthrough_kwargs")
             if loop_kwargs is None:
@@ -705,12 +710,14 @@ class GeminiGateway(BaseProviderGateway):
                 "image_data",
             )
 
+            round_force_tool_name = force_tool_name if current_round == 1 else None
             response = await provider_service.generate_response(
                 api_key=api_key,
                 model=tool_execution_model,
                 messages=current_chat_history,
                 tools=tools_for_call,
                 image_data=image_data if current_round == 1 else None,
+                force_tool_name=round_force_tool_name,
                 **loop_kwargs
             )
 

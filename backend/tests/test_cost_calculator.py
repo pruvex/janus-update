@@ -19,6 +19,7 @@ def setup_test_catalog():
             "id": "gpt-5.4-nano",
             "type": "text",
             "cost_per_token_input": 0.00000015,
+            "cost_per_token_cached": 0.000000015,
             "cost_per_token_output": 0.00000060,
             "provider": "openai"
         },
@@ -73,4 +74,20 @@ def test_calculate_cost_openai_object(setup_test_catalog):
     usage_data = MockUsage(prompt_tokens=2000, completion_tokens=1000)
     usage, cost = calculate_cost("gpt-5.4-nano", usage_data=usage_data)
     assert "total_cost" in cost
+    assert cost["total_cost"] > 0
+
+def test_calculate_cost_preserves_total_and_nested_cached_tokens(setup_test_catalog):
+    usage_data = {
+        "prompt_tokens": 1000,
+        "completion_tokens": 200,
+        "total_tokens": 1200,
+        "prompt_tokens_details": {"cached_tokens": 400},
+    }
+
+    usage, cost = calculate_cost("gpt-5.4-nano", usage_data=usage_data)
+
+    assert usage["input_tokens"] == 1000
+    assert usage["output_tokens"] == 200
+    assert usage["total_tokens"] == 1200
+    assert usage["cached_tokens"] == 400
     assert cost["total_cost"] > 0

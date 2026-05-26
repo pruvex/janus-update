@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-004",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wer ist Ada Lovelace?",
+  "response": "Ada Lovelace (1815–1852) war eine britische Mathematikerin und gilt als die erste Programmiererin der Welt. Sie erkannte das visionäre Potenzial der von Charles Babbage entworfenen \"Analytical Engine\" und verfasste einen Algorithmus zu deren Berechnung von Bernoulli-Zahlen. Zu ihren Ehren wurde die Programmiersprache „Ada“ nach ihr benannt. Zudem war sie als Gesellschaftsdame bekannt und war die Tochter des berühmten Dichters Lord Byron.\nHier ist die Übersicht, wann du mir diese Details mitgeteilt hast:\n\nDass sie eine britische Mathematikerin und die erste Programmiererin war, nach der die Sprache Ada benannt wurde, hast du mir heute um 01:40 Uhr im Chat 'Ada Lovelace Biografie' erzählt.\nDie Information, dass sie eine Gesellschaftsdame war, hast du mir heute um 14:17 Uhr im Chat 'Ada Lovelace' mitgeteilt.\n\nQuelle: Wikipedia\n💡 Passende nächste Schritte:• Möchtest du mehr über ihre Zusammenarbeit mit Charles Babbage erfahren?• Soll ich Details zu ihrem Algorithmus für die Bernoulli-Zahlen recherchieren?• Interessieren dich weitere Informationen über ihre Verbindung zu Lord Byron?\n14:18",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:18:17.111Z"
+}

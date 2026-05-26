@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "TC-009-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Goldpreis-Quellen fuer heute",
+  "response": "Hallo Pruve! Hier sind die aktuellen Goldpreis-Informationen für heute:1. ZusammenfassungDer Goldpreis am Donnerstag, den 21. Mai 2026, liegt bei etwa 3.917 EUR pro Feinunze. Der Markt zeigt stabile Werte mit einem Grammpreis von rund 125,66 EUR, während regionale Händler Margen zwischen Ankauf und Verkauf von etwa 200 EUR pro Unze ausweisen.2. Liste der Fakten- Feinunze Gold (Spot): 3.917,75 EUR oder 3.910,03 EUR (laut Suchergebnis, Stand: 21.05.2026)- Goldpreis pro Gramm: 125,66 EUR (laut Suchergebnis, Stand: 21.05.2026)- Regionaler Ankaufspreis: 3.805,00 EUR pro Unze (Quelle: exchange-ag.de, Stand: 21.05.2026)- Regionaler Verkaufspreis: 4.000,00 EUR pro Unze (Quelle: exchange-ag.de, Stand: 21.05.2026)3. Quellen- [goldpreis.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEGYbuWzGm0j4Au_quGMj1EoSgLuQUoDKBHWUBS4FyxrDlBPOPim-XMTAdqGiYK6fuCJFV20PedRlR1g1NHswm_QanyT28znY8YLhdj8Hk3u9zls44=)- [exchange-ag.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGiYn-y7ilbjnb5mLnRcMCSBpUPARMmdrSkSf4sWRFVK5UXDSEFGYEdN9Ymhu7Cw4w14oshdRjJOBpOEUYClcND0l1AZpDNYkLKQSa-fAyNgFi-mTCDB0q26Yv5IcluN0AvXvZSYiLPEA==)💡 Passende nächste Schritte:• Einen Preisvergleich für bestimmte Goldmünzen (z. B. Krügerrand oder Wiener Philharmoniker) durchführen.• Die Kursentwicklung der letzten 7 Tage analysieren, um Trends zu erkennen.• Informationen zu Steuervorteilen beim Kauf von physischem Anlagegold recherchieren.21:29",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:29:51.237Z"
+}

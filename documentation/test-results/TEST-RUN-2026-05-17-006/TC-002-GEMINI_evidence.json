@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-006",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wer ist Nikola Tesla?",
+  "response": "Nikola Tesla (1856–1943) war ein serbisch-amerikanischer Erfinder, Physiker und Elektroingenieur, der vor allem für seine wegweisenden Beiträge zur Entwicklung des modernen Wechselstromsystems (AC) bekannt ist. Er hielt weltweit über 280 Patente und prägte die elektrische Energietechnik maßgeblich.\nDiese Informationen habe ich erstmals am 12. Mai 2026 im Chat \"Nikola Tesla Übersicht\" sowie in der \"Biografie von Nikola Tesla\" gespeichert.\nBasierend auf den hinterlegten dauerhaften Merkmalen lässt er sich physisch wie folgt beschreiben:\n\nStatur: Er ist auffallend groß und sehr schlank.\nGesicht: Er hat ein schmales Gesicht mit einer hohen Stirn und ausgeprägten Wangenknochen.\nAugen: Seine Augen sind markant und liegen tief.\nHaare: Er hat dunkles Haar, das stets akkurat gescheitelt getragen wird.\n\nQuelle: Wikipedia\n💡 Passende nächste Schritte:• Möchtest du mehr über seine Erfindungen wie die Tesla-Spule erfahren?• Soll ich die Unterschiede zwischen seinem Wechselstrom und Edisons Gleichstrom erklären?• Suchst du nach Informationen zu seinem berühmten \"War of Currents\"?\n14:43",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:43:35.968Z"
+}

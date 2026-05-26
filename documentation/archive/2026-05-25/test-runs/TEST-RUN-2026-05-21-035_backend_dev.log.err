@@ -1,0 +1,15 @@
+2026-05-21 20:26:59,526 - janus_backend - [INFO] - [v0.4.17-beta.37] - Janus Backend starting up (v0.4.17-beta.37)
+2026-05-21 20:27:07,651 - sentence_transformers.SentenceTransformer - [INFO] - [v0.4.17-beta.37] - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2026-05-21 20:27:09,483 - chromadb.telemetry.product.posthog - [INFO] - [v0.4.17-beta.37] - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2026-05-21 20:27:09,552 - janus_backend - [INFO] - [v0.4.17-beta.37] - Vektor-Service: Diamond-Initialisierung erfolgreich.
+C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\pydub\utils.py:170: RuntimeWarning: Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work
+  warn("Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work", RuntimeWarning)
+INFO:     Started server process [24652]
+INFO:     Waiting for application startup.
+C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\supabase\_sync\client.py:309: DeprecationWarning: The 'timeout' parameter is deprecated. Please configure it in the http client instead.
+  return SyncPostgrestClient(
+C:\KI\Janus-Projekt\backend\venv\Lib\site-packages\supabase\_sync\client.py:309: DeprecationWarning: The 'verify' parameter is deprecated. Please configure it in the http client instead.
+  return SyncPostgrestClient(
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://localhost:8001 (Press CTRL+C to quit)
+Batches:   0%|          | 0/1 [00:00<?, ?it/s]Batches: 100%|â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ| 1/1 [00:00<00:00, 58.90it/s]

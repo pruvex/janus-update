@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-005",
+  "testCaseId": "TC-004-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Gib mir 5 Beispiele, wobei du helfen kannst",
+  "response": "Klar — ich kann dir zum Beispiel helfen bei:\n\nPlanung von Terminen und Aufgaben  \nSchreiben und Überarbeiten von Texten  \nRecherche und Zusammenfassungen  \nDateien ordnen, finden oder umbenennen  \nIdeen finden, z. B. für Geschenke, Reisen oder Projekte\n\n💡 Vorschlag:• Ich kann dir direkt 5 Beispiele für einen bestimmten Bereich geben, wenn du magst.\n01:46",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-14T23:46:44.993Z"
+}

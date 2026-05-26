@@ -1,0 +1,34 @@
+{
+  "testRunId": "TEST-RUN-2026-05-14-001",
+  "title": "Gemini Ambiguity-Detection und Confidence-Blockade",
+  "executionMode": "LIVE_VISUAL",
+  "target": "JANUS_CHAT",
+  "chatWindow": "A",
+  "baseUrl": "http://localhost:5173",
+  "backendHealthUrl": "http://localhost:8000/api/health",
+  "timeouts": {
+    "testCaseMs": 60000,
+    "assistantResponseMs": 30000,
+    "streamRequestMs": 10000
+  },
+  "strategies": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1"
+  },
+  "tests": [
+    {
+      "id": "TC-GEM-AMBIG-001",
+      "name": "Gemini stellt Klärungsfrage bei ambiger Anfrage",
+      "type": "functional",
+      "provider": "Gemini",
+      "model": "gemini-3-flash-preview",
+      "prompt": "Ich brauche Infos dazu",
+      "expected": {
+        "containsAny": ["Welche", "Was genau", "Welche Infos", "Um was geht es", "Welches", "Was meinst"],
+        "mustNotContain": ["Höchsttemperatur", "Regenvorhersage", "12,1 °C"]
+      }
+    }
+  ]
+}

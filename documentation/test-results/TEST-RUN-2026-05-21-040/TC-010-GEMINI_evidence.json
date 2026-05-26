@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "TC-010-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Goldpreis-Quellen fuer heute",
+  "response": "Hallo Pruve, hier sind die aktuellen Informationen zum Goldpreis für heute, Donnerstag, den 21. Mai 2026:**1. Zusammenfassung**Der Goldpreis zeigt sich heute stabil auf einem hohen Niveau. Die Feinunze wird im Bereich von etwa 3.904 € bis 3.908 € gehandelt, während der Preis für ein Gramm Feingold bei circa 125 € liegt.**2. Liste der Fakten**• **Preis pro Feinunze (31,1g):** 3.904,50 Euro bis 3.908,60 Euro (laut Suchergebnis, Stand: 21.05.2026)• **Preis pro Gramm Feingold:** 125,30 Euro bis 125,66 Euro (laut Suchergebnis, Stand: 21.05.2026)• **Markttendenz:** Die Werte basieren auf aktuellen Handelsdaten namhafter Vergleichsportale.**3. Quellen**• [goldpreis.de](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGaHNABAWoe1Cevv7OfBsaGJxRgKtA74Xc8FRi0sHHVP9lQtGdzA_de5CRzv3Lqpg7ufFNG1rq_2WP7cbNO8znhLq80qiIQbjRvzt7H1uZLt3cTYo4=)💡 Passende nächste Schritte:• Soll ich die Preisentwicklung der letzten 7 Tage für dich analysieren?• Benötigst du einen Vergleich der Ankaufspreise für Goldschmuck oder Münzen?• Möchtest du, dass ich diese Preise in einer Tabelle speichere?22:36",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:37:00.053Z"
+}

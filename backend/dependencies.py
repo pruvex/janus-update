@@ -1,18 +1,107 @@
-from fastapi import Depends, HTTPException, status, Header
+from fastapi import Depends, HTTPException, status, Header, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, SecurityScopes
 from typing import Optional
 import jwt
 import os
 from datetime import datetime, timedelta
 import secrets
+from urllib.parse import urlparse
 
 from backend.utils.config_loader import load_config_data
 
 
-async def api_key_auth(internal_api_key: str = Header(..., alias="X-Janus-Internal-Key")):
+LOCAL_DEBUG_HOSTS = {"127.0.0.1", "::1", "localhost"}
+MCP_DEBUG_SESSION_PURPOSE = "mcp_debug_session"
+MCP_DEBUG_SESSION_EXPIRE_MINUTES = 60
+
+
+def _debug_endpoints_enabled() -> bool:
+    return (
+        os.getenv("JANUS_ENABLE_DEBUG_ENDPOINTS") == "1"
+        or os.getenv("NODE_ENV") == "development"
+        or os.getenv("JANUS_DEV_MODE") == "true"
+    )
+
+
+def _host_without_port(value: str | None) -> str:
+    if not value:
+        return ""
+    if value.startswith("[") and "]" in value:
+        return value[1:value.index("]")]
+    return value.split(":", 1)[0].strip().lower()
+
+
+def _is_local_host(value: str | None) -> bool:
+    return _host_without_port(value) in LOCAL_DEBUG_HOSTS
+
+
+def _is_local_request(request: Request) -> bool:
+    client_host = request.client.host if request.client else ""
+    if not _is_local_host(client_host):
+        return False
+
+    for header_name in ("origin", "referer"):
+        header_value = request.headers.get(header_name)
+        if not header_value:
+            continue
+        parsed = urlparse(header_value)
+        if parsed.scheme in {"file", ""}:
+            continue
+        if not _is_local_host(parsed.hostname or parsed.netloc):
+            return False
+    return True
+
+
+def create_mcp_debug_session_token(expires_delta: Optional[timedelta] = None) -> str:
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=MCP_DEBUG_SESSION_EXPIRE_MINUTES))
+    return jwt.encode(
+        {
+            "sub": "mcp_debug_session",
+            "purpose": MCP_DEBUG_SESSION_PURPOSE,
+            "scopes": ["debug:mcp"],
+            "exp": expire,
+        },
+        SECRET_KEY,
+        algorithm=ALGORITHM,
+    )
+
+
+def _is_valid_mcp_debug_session(token: str | None) -> bool:
+    if not token:
+        return False
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except (jwt.ExpiredSignatureError, jwt.JWTError, jwt.PyJWTError):
+        return False
+    return payload.get("purpose") == MCP_DEBUG_SESSION_PURPOSE and "debug:mcp" in payload.get("scopes", [])
+
+
+async def require_local_debug_request(request: Request):
+    if not _is_local_request(request):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Debug preflight is limited to local browser contexts.",
+        )
+
+
+async def api_key_auth(
+    request: Request,
+    internal_api_key: Optional[str] = Header(None, alias="X-Janus-Internal-Key"),
+    mcp_debug_session: Optional[str] = Header(None, alias="X-Janus-MCP-Debug-Session"),
+):
     """
     Dependency to authenticate requests via an internal API key in the header.
     """
+    if (
+        _debug_endpoints_enabled()
+        and _is_local_request(request)
+        and _is_valid_mcp_debug_session(mcp_debug_session)
+    ):
+        from backend.services.ops_kill_switches import require_local_user_unlocked
+
+        require_local_user_unlocked(request.url.path)
+        return
+
     if not internal_api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -33,6 +122,18 @@ async def api_key_auth(internal_api_key: str = Header(..., alias="X-Janus-Intern
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Internal API Key",
+        )
+    from backend.services.ops_kill_switches import require_local_user_unlocked
+
+    require_local_user_unlocked(request.url.path)
+
+
+async def require_debug_endpoints_enabled():
+    """Allow debug-only endpoints only in explicit local development/debug mode."""
+    if not _debug_endpoints_enabled():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Debug endpoints are disabled in packaged beta mode.",
         )
 
 # JWT Settings (in production, use environment variables and proper secrets management)
@@ -83,7 +184,7 @@ def _get_or_generate_jwt_secret() -> str:
 
 SECRET_KEY = _get_or_generate_jwt_secret()
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 💎 FIX-AUTH-068: Erhöht auf 24h (1440 Minuten)
 
 # This is a simple user store for demo purposes
 # In a real application, you would query a database here
@@ -153,6 +254,9 @@ async def get_current_user(
                 detail="User not found",
                 headers={"WWW-Authenticate": authenticate_value},
             )
+        from backend.services.ops_kill_switches import require_local_user_unlocked
+
+        require_local_user_unlocked()
         return username
     except jwt.ExpiredSignatureError:
         raise HTTPException(

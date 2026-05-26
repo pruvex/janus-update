@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "INT-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was gibt es Neues zu GPT heute",
+  "response": "Hallo Pruve! Heute, am Donnerstag, den 21. Mai 2026, gibt es tatsächlich einige bahnbrechende Neuigkeiten rund um GPT und OpenAI:1. **IPO-Pläne und Rekordbewertung**: Berichten zufolge bereitet OpenAI einen Börsengang für September vor. Dabei wird das Unternehmen mit einer privaten Bewertung von über 850 Milliarden Dollar gehandelt (laut Suchergebnis, Stand: 21.05.2026).2. **Mathematischer Durchbruch**: Ein neues Reasoning-Modell von OpenAI hat eine mathematische Vermutung gelöst, die seit 1946 offen war – ein riesiger Schritt für die wissenschaftliche Anwendung von KI.3. **Technische Störungen**: Falls du heute Probleme beim Zugriff hattest: Es gab weitreichende ChatGPT-Ausfälle, die viele Nutzer weltweit betroffen haben.4. **Neue Funktionen**: Für macOS wurden neue Codex-Funktionen eingeführt, und es gibt Berichte über die Integration erster personalisierter Werbeformate innerhalb der Plattform.💡 Passende nächste Schritte:• Möchtest du mehr Details zu dem gelösten mathematischen Rätsel erfahren?• Soll ich für dich im Auge behalten, wann die ChatGPT-Dienste wieder vollständig stabil laufen?• Interessieren dich die Details zum geplanten Börsengang im September?22:42",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:43:46.270Z"
+}

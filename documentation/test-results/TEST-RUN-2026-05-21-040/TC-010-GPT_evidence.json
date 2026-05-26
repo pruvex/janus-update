@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "TC-010-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Goldpreis-Quellen fuer heute",
+  "response": "1) Goldpreisaktuel.de (Goldpreis Aktuell in Deutschland, Feinunze) (laut Suchergebnis, Stand: 21.05.2026)  - Quelle: [goldpreisaktuel.de](https://www.goldpreisaktuel.de/?utm_source=openai)2) Silber.de (Goldpreis, je Unze, EUR) (laut Suchergebnis, Stand: 21.05.2026)  - Quelle: [silber.de](https://www.silber.de/)3) Gold.de (Kurse → Goldpreis → Gramm/Umrechnungstabellen in EUR) (laut Suchergebnis, Stand: 21.05.2026)  - Quelle: [gold.de](https://www.gold.de/)4) Goldpreis.de (Goldpreis heute in Euro/Dollar) (laut Suchergebnis, Stand: 21.05.2026)  - Quelle: [goldpreis.de](https://www.goldpreis.de/)5) GoldHeute.de (Live Goldkurs in Deutschland, in Euro) (laut Suchergebnis, Stand: 21.05.2026)  - Quelle: [goldheute.de](https://www.goldheute.de/)6) GoldenPreis.de (Aktueller Goldpreis in Euro) (laut Suchergebnis, Stand: 21.05.2026)  - Quelle: [goldenpreis.de](https://www.goldenpreis.de/)💡 Passende nächste Schritte:• Sag mir, ob du **Feinunze (1 oz)** oder **Gramm** brauchst – dann ordne ich dir die relevantesten Quellen dafür.  • Wenn du willst, kann ich zusätzlich **Gold in USD vs. EUR** gegeneinander einordnen (z.B. Wechselkurs-Einfluss).22:36",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:36:40.174Z"
+}

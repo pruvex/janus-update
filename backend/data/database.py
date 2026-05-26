@@ -36,15 +36,15 @@ def get_db_url():
 SQLALCHEMY_DATABASE_URL = get_db_url()
 
 
-# Wir erhöhen den Timeout auf 30 Sekunden (verhindert 'database is locked')
+# Wir erhöhen den Timeout auf 60 Sekunden (verhindert 'database is locked' bei aufeinanderfolgenden Writes)
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, 
-    connect_args={"check_same_thread": False, "timeout": 30},
+    connect_args={"check_same_thread": False, "timeout": 60},
     pool_pre_ping=True,
     pool_recycle=1800,
     pool_size=10,
     max_overflow=20,
-    pool_timeout=30,
+    pool_timeout=60,
     pool_reset_on_return="rollback",
 )
 
@@ -80,6 +80,14 @@ def _ensure_sqlite_schema_migrations() -> None:
                         )
                     )
                 logger.info("Migration: users.suggestion_mode added (default=1).")
+            if "dark_mode_enabled" not in user_cols:
+                with engine.begin() as conn:
+                    conn.execute(
+                        text(
+                            "ALTER TABLE users ADD COLUMN dark_mode_enabled BOOLEAN NOT NULL DEFAULT 1"
+                        )
+                    )
+                logger.info("Migration: users.dark_mode_enabled added (default=1).")
 
         if insp.has_table("chats"):
             chat_cols = {c["name"] for c in insp.get_columns("chats")}
@@ -99,6 +107,14 @@ def _ensure_sqlite_schema_migrations() -> None:
                         )
                     )
                 logger.info("Migration: chats.auto_generated added (default=1).")
+            if "header_provider" not in chat_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE chats ADD COLUMN header_provider VARCHAR"))
+                logger.info("Migration: chats.header_provider added.")
+            if "header_model" not in chat_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE chats ADD COLUMN header_model VARCHAR"))
+                logger.info("Migration: chats.header_model added.")
 
         if insp.has_table("memories"):
             memory_cols = {c["name"] for c in insp.get_columns("memories")}
@@ -118,6 +134,42 @@ def _ensure_sqlite_schema_migrations() -> None:
                         )
                     )
                 logger.info("Migration: memories.source_type added (default='text').")
+
+        if insp.has_table("costs"):
+            cost_cols = {c["name"] for c in insp.get_columns("costs")}
+            if "tokens_saved" not in cost_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE costs ADD COLUMN tokens_saved INTEGER NOT NULL DEFAULT 0"))
+                logger.info("Migration: costs.tokens_saved added (default=0).")
+            if "cost_saved" not in cost_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE costs ADD COLUMN cost_saved REAL NOT NULL DEFAULT 0.0"))
+                logger.info("Migration: costs.cost_saved added (default=0.0).")
+            if "cached_tokens" not in cost_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE costs ADD COLUMN cached_tokens INTEGER NOT NULL DEFAULT 0"))
+                logger.info("Migration: costs.cached_tokens added (default=0).")
+            if "total_tokens" not in cost_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE costs ADD COLUMN total_tokens INTEGER NOT NULL DEFAULT 0"))
+                logger.info("Migration: costs.total_tokens added (default=0).")
+
+        # Path Sentinel: Create path_permissions table if it doesn't exist
+        if not insp.has_table("path_permissions"):
+            from backend.data.models import PathPermission
+            PathPermission.__table__.create(bind=engine)
+            logger.info("Migration: path_permissions table created.")
+
+        # Phase 4: Context Compression Tables
+        if not insp.has_table("context_compressions"):
+            from backend.data.models import ContextCompression
+            ContextCompression.__table__.create(bind=engine)
+            logger.info("Migration: context_compressions table created.")
+
+        if not insp.has_table("context_archives"):
+            from backend.data.models import ContextArchive
+            ContextArchive.__table__.create(bind=engine)
+            logger.info("Migration: context_archives table created.")
     except Exception:
         logger.warning(
             "SQLite schema migration skipped or failed (non-fatal).",

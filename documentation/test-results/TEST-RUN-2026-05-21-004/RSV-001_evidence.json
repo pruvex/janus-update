@@ -1,0 +1,11 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-004",
+  "testCaseId": "RSV-001",
+  "result": "PASS",
+  "classification": "ASSET_DATA_FLOW_REVIEW_PASS",
+  "evidence": {
+    "path": "documentation/test-runs/TEST-RUN-2026-05-21-004_asset_data_flow.md",
+    "bytes": 2871
+  },
+  "timestamp": "2026-05-21T00:13:52.368Z"
+}

@@ -1,0 +1,13 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-003",
+  "testCaseId": "PREP-008",
+  "result": "PASS",
+  "classification": "PREP_ASSERTION_PASS",
+  "evidence": {
+    "providerMode": "low-cost live provider mode for generated E2E; JANUS_E2E_FAST_MODE enabled for background work suppression",
+    "rateLimitMode": "validated by TEST-RUN-2026-05-20-018",
+    "rateLimitResultStatus": "PASS",
+    "uncontrolledProviderBurnAllowed": false
+  },
+  "timestamp": "2026-05-20T23:53:14.518Z"
+}

@@ -4,6 +4,8 @@ import sys
 import os
 import json
 
+os.environ.setdefault("JANUS_DISABLE_SENTRY", "1")
+
 # --- HIER IST DIE KORREKTUR ---
 # Fügt das Projekt-Stammverzeichnis (C:\KI\Janus-Projekt) zum Suchpfad hinzu.
 # Dies muss GANZ AM ANFANG stehen, vor allen anderen Imports.

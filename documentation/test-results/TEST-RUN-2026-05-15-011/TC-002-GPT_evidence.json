@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-011",
+  "testCaseId": "TC-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Verschiebe meinen Termin morgen um 30 Minuten",
+  "response": "Ich habe morgen keinen Termin in deinem Kalender gefunden, den ich um 30 Minuten verschieben könnte.  \n💡 Passende nächste Schritte:• Nenne den genauen Titel oder die Uhrzeit des Termins (morgen)• Falls der Termin in einem anderen Kalender ist: sag mir, in welchem Kalender er steht\n19:12",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T17:12:42.556Z"
+}

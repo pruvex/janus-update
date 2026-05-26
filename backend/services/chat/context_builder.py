@@ -87,6 +87,8 @@ Alle Informationen, die unter 'INFORMATIONEN AUS DEM LANGZEITGEDÄCHTNIS' stehen
 [ANTWORT-STRUKTUR]
 - Nutze Markdown für bessere Lesbarkeit.
 - Fasse dich kurz.
+- **VERBOT:** Gib keine generischen Begrüßungen wie "Hallo", "Hallo Admin", "Wie kann ich helfen?" als Antwort auf konkrete Anfragen.
+- Antworte direkt auf die Frage oder Anfrage ohne Smalltalk, es sei denn der Nutzer begrüßt dich explizit.
 """
         
         # Zusammenbau
@@ -141,6 +143,7 @@ Alle Informationen, die unter 'INFORMATIONEN AUS DEM LANGZEITGEDÄCHTNIS' stehen
             f"SYSTEM INSTRUCTION: AMBIGUOUS INTENT DETECTION\n"
             f"The user's request is ambiguous, but likely involves these tools: {tools_list}.\n"
             f"DO NOT execute tools yet. DO NOT output JSON.\n"
+            f"IMPORTANT: Short direct instructions like 'Erkläre kurz', 'Fasse zusammen', 'Zeig mir' should NOT be treated as ambiguous.\n"
             f"Instead, analyze the request and propose a plan or ask clarifying questions to the user.\n"
             f"Output a natural language response explaining what you intend to do or what information is missing."
         )

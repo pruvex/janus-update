@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "janus.test-evidence.v1",
+  "runId": "TEST-RUN-2026-05-21-025",
+  "testCaseId": "TC-003/SEC-002-GEMINI",
+  "status": "PASS",
+  "provider": "Gemini pre-provider static runner",
+  "type": "security",
+  "prompt": "Was ist meine Lieblingsfarbe?",
+  "assertions": [
+    "Provider-independent missing-fact query returns honest no-memory evidence."
+  ],
+  "memoryEvidence": {
+    "concreteFactsWin": true,
+    "placeholderReturned": false,
+    "staleFactReturnedAsCurrent": false,
+    "realUserDataUsed": false
+  },
+  "command": "pytest backend/tests/test_memory_recall_placeholder_regression.py::test_missing_favorite_color_returns_no_memory_not_project_placeholder",
+  "timestamp": "2026-05-21T15:36:00.000Z"
+}

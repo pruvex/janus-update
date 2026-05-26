@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-036",
+  "testCaseId": "INT-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle API Preise",
+  "response": "Hallo Pruve! Ich habe die aktuellen API-Preise für dich recherchiert. Hier ist die Übersicht der aktuellen Konditionen für führende Dienste:1. **Zusammenfassung**Die Preise für KI- und Sprach-APIs im Jahr 2026 zeigen eine deutliche Tendenz zur Abrechnung nach Nutzungsvolumen (Tokens oder Transaktionen), wobei einige Dienste zusätzlich eine monatliche Grundgebühr für Profi-Funktionen erheben.2. **Liste der Fakten***   **OpenAI GPT-4o API**: Die Kosten liegen bei ca. 4,65 EUR pro 1 Million Input-Tokens und ca. 13,95 EUR pro 1 Million Output-Tokens (laut Suchergebnis, Stand: Mai 2026).*   **DeepL API Pro**: Erfordert eine monatliche Grundgebühr von 5,49 EUR zzgl. nutzungsabhängiger Kosten für übersetzte Zeichen (laut Suchergebnis, Stand: Mai 2026).*   **Stripe Tax API**: Für die Integration der Steuerberechnung fallen 0,45 EUR pro Transaktion an (laut Suchergebnis, Stand: Mai 2026).*   **Google Maps & Twilio**: Diese Anbieter nutzen primär gestaffelte \"Pay-as-you-go\"-Modelle, deren exakte Details je nach Endpunkt variieren (Quelle: Google).3. **Quellen***   [Google Suchergebnisse zu API-Preisen 2026](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQE5F45blgIcHohf0s-VR7Cij_SFncixrNife_mpy7ISBITKnSsVcM3szdj5Bxgj42A-mWSf6W84sXsGPFhbvlAyZx7g1ezA8PVh5mha-Gt0y7n9rpoKPFyiMQUx_fCYfyxPaOkujASlvuLuM0Riv-iKqmhHebkMsy-D)💡 Passende nächste Schritte:• Soll ich die Preise spezifischer Modelle wie Claude (Anthropic) oder Gemini (Google) detaillierter vergleichen?• Benötigst du eine Berechnungshochrechnung für ein spezifisches Projektvolumen?• Möchtest du, dass ich nach kostenlosen Kontingenten (Free Tiers) für diese Anbieter suche?20:57",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T18:58:23.781Z"
+}

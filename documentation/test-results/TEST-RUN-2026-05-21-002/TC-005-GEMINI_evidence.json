@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-002",
+  "testCaseId": "TC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wie weit ist Koeln von Hamburg? with geo route unavailable",
+  "response": "Hallo Pruve,\ndie Entfernung zwischen Köln und Hamburg beträgt mit dem Auto etwa 426 Kilometer. Für die Fahrt solltest du bei normaler Verkehrslage ungefähr 4 Stunden und 15 Minuten einplanen.\nQuelle: OSRM\n💡 Passende nächste Schritte:• Soll ich dir eine Route mit der Bahn heraussuchen?• Suchst du nach Ladestationen für Elektrofahrzeuge auf dieser Strecke?• Benötigst du Empfehlungen für Zwischenstopps oder Sehenswürdigkeiten?\n01:21",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T23:22:00.443Z"
+}

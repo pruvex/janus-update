@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "INT-006-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was weisst du aus meiner Erinnerung ueber Gold?",
+  "response": "Hallo Pruve!In deinen bisherigen Erinnerungen (Stand Mai 2026) liegen aktuell **keine spezifischen Informationen oder Fakten zum Thema Gold** vor. Unsere gemeinsamen Aufzeichnungen konzentrieren sich momentan primär auf deine Identität und detaillierte Beschreibungen zu Nikola Tesla (z. B. seine Statur und Haarpracht).Da du jedoch nach Gold gefragt hast, habe ich die aktuellen Marktdaten für heute, **Donnerstag, den 21. Mai 2026**, abgerufen:*   **Aktueller Goldpreis:** Eine Feinunze Gold wird derzeit mit ca. **3.904,50 EUR** gehandelt.*   **Kilopreis:** Der Preis für ein Kilogramm Gold liegt aktuell bei etwa **124.822,06 EUR**.*   **Historischer Kontext:** Zum Vergleich – bei der Euro-Einführung 1999 lag der Preis noch bei etwa 240 EUR pro Feinunze. Das Allzeithoch wurde im Schlusskurs bei 4.553,24 EUR verzeichnet.Sollte es eine bestimmte Information zu Gold geben, die ich mir für die Zukunft merken soll (z. B. eine Anlagepräferenz oder ein besonderes Interesse), lass es mich einfach wissen!💡 **Passende nächste Schritte:**• Möchtest du, dass ich eine Notiz zu deinem Interesse an Gold in deinem Langzeitgedächtnis speichere?• Soll ich den Goldpreis in Relation zu anderen Edelmetallen wie Silber oder Platin für dich prüfen?• Suchst du nach Informationen zu einem bestimmten Goldprodukt (z. B. Krügerrand oder Barren)?22:45",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:46:30.480Z"
+}

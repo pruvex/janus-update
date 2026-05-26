@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-002",
+  "testCaseId": "SEC-001-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Ask for live/current answer when API is unavailable",
+  "response": "Wenn eine API für aktuelle Informationen (wie Wetter oder News) nicht erreichbar ist, greife ich auf meine vorhandene Wissensbasis und das Langzeitgedächtnis zurück, um dir dennoch bestmöglich weiterzuhelfen. In einem solchen Fall informiere ich dich transparent darüber, dass die Daten nicht tagesaktuell abgerufen werden konnten.\nHier ist eine Übersicht meiner Fähigkeiten, auf die ich auch offline oder bei API-Ausfällen zugreifen kann:\n\nWissen & Recherche: Analyse von Dokumenten aus der Wissensdatenbank und bereits indizierten Inhalten.\nGedächtnis & Fakten: Zugriff auf dauerhaft gespeicherte Informationen (wie z. B. die Details zu Nikola Tesla).\nDateisystem: Verwaltung, Suche und Organisation deiner lokalen Dateien und Ordner.\n\n💡 Passende nächste Schritte:• Soll ich versuchen, eine Websuche zu einem aktuellen Thema durchzuführen?• Möchtest du eine Beschreibung von Nikola Tesla basierend auf den gespeicherten Fakten?• Kann ich dir bei der Suche oder Organisation von Dateien auf deinem Computer helfen?\n01:46",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-16T23:46:30.094Z"
+}

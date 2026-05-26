@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-018",
+  "testCaseId": "INT-005-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Gemini geht nicht, nutz einfach GPT",
+  "response": "Ich kann nicht bestätigen, warum „Gemini“ bei dir nicht funktioniert, weil keine Fehlermeldung oder Details vorliegen. Gib bitte die genaue Fehlermeldung und den Kontext (Browser/App, welche Seite/ welcher Chat, wann es zuletzt ging) an.\n00:24",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T22:24:41.363Z"
+}

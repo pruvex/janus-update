@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-036",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Preise fuer OpenAI und Gemini Modelle",
+  "response": "Hallo Pruve, ich habe die aktuellen Preise für die Modelle von OpenAI und Google Gemini für dich recherchiert.1. ZusammenfassungDie Preise für KI-Modelle im Mai 2026 zeigen eine deutliche Staffelung zwischen effizienten Modellen wie GPT-4o und den leistungsstärkeren Klassikern. Während OpenAI verstärkt auf Token-basierte Abrechnung für Entwickler setzt, bietet Google für Gemini sowohl monatliche als auch preiswerte jährliche Abo-Modelle für Endnutzer an.2. Liste der Fakten• OpenAI GPT-4o: 4,65 EUR pro 1 Million Input-Token und 13,95 EUR pro 1 Million Output-Token (Quelle: dida.do, Stand: Mai 2026).• OpenAI GPT-4: 27,90 EUR pro 1 Million Input-Token und 55,80 EUR pro 1 Million Output-Token (Quelle: dida.do, Stand: Mai 2026).• OpenAI Abonnements: ChatGPT Go für ca. 8 EUR/Monat, Plus für 23 EUR/Monat und Pro-Tarife ab 103 EUR/Monat (Quelle: finout.io).• Google Gemini Abonnements: Basic für 19,99 EUR/Jahr, Plus für 79,99 EUR/Jahr oder der Pro-Tarif für monatlich 19,99 EUR (Quelle: finout.io).• Google Gemini API: Die Preise werden primär in USD abgerechnet oder sind über spezifische EU-Portals in Euro-Äquivalenten abrufbar (Quelle: typingmind.com).3. Quellen• [dida.do](https://dida.do)• [finout.io](https://finout.io)• [typingmind.com](https://typingmind.com)💡 Passende nächste Schritte:• Möchtest du einen Vergleich der Token-Limits für diese Modelle?• Soll ich berechnen, welches Abo sich für dein monatliches Nutzungsvolumen mehr lohnt?• Suchst du nach Informationen zur Integration einer dieser APIs in ein spezifisches Projekt?20:45",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T18:46:53.337Z"
+}

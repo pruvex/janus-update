@@ -1,0 +1,6 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-private-data",
+  "storageKey": "janus_beta_privacy_ack_v1",
+  "noticeVersion": "2026-05-21.1",
+  "accepted": true
+}

@@ -1,0 +1,60 @@
+{
+  "chats": [
+    {
+      "id": 1101,
+      "title": "A chat",
+      "summary": "JANUS_ISO_A_CHAT_CANARY_20260521"
+    }
+  ],
+  "messages": [
+    {
+      "id": 1102,
+      "chat_id": 1101,
+      "role": "user",
+      "content": "JANUS_ISO_A_CHAT_CANARY_20260521"
+    }
+  ],
+  "memories": [
+    {
+      "id": 1103,
+      "chat_id": 1101,
+      "snippet": "JANUS_ISO_A_MEMORY_CANARY_20260521",
+      "category": "conversation"
+    }
+  ],
+  "projects": [
+    {
+      "id": 1104,
+      "name": "JANUS_ISO_A_PROJECT_CANARY_20260521",
+      "description": "A project"
+    }
+  ],
+  "project_files": [
+    {
+      "id": 1154,
+      "project_id": 1104,
+      "filename": "a_upload.txt",
+      "file_path": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_a\\AppData\\Roaming\\Janus Projekt\\uploads\\a_upload.txt"
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1105,
+      "title": "JANUS_ISO_A_TASK_CANARY_20260521",
+      "description": "A task",
+      "project_id": 1104
+    }
+  ],
+  "generated_images": [
+    {
+      "id": 1106,
+      "prompt": "JANUS_ISO_A_ARTIFACT_CANARY_20260521",
+      "file_path": "C:\\KI\\Janus-Projekt\\documentation\\test-results\\TEST-RUN-2026-05-21-006\\fixtures\\profile_a\\AppData\\Roaming\\Janus Projekt\\generated_artifacts\\a_artifact.txt",
+      "url": "janus://a/artifact"
+    }
+  ],
+  "files": {
+    "upload": "JANUS_ISO_A_FILE_CANARY_20260521",
+    "artifact": "JANUS_ISO_A_ARTIFACT_CANARY_20260521"
+  }
+}

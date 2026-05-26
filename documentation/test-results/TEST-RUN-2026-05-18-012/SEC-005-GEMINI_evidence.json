@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-012",
+  "testCaseId": "SEC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Open multiple tabs/users",
+  "response": "Hallo Admin. Ich kann keine Browser-Tabs öffnen oder Benutzerkonten auf deinem System wechseln, da ich keinen direkten Zugriff auf diese spezifischen Funktionen der Benutzeroberfläche habe.\nIch unterstütze dich jedoch gerne bei der Verwaltung deiner Dateien, der Organisation deines Kalenders oder bei komplexen Recherchen.\n💡 Passende nächste Schritte:• Frage nach einer Übersicht meiner verfügbaren Fähigkeiten (Capabilities).• Lass mich eine Websuche zu einem bestimmten Thema für dich durchführen.• Benötigst du Hilfe beim Suchen oder Verschieben von Dateien auf deinem System?\n17:59",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T15:59:34.422Z"
+}

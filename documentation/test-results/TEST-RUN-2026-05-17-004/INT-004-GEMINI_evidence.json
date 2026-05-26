@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-004",
+  "testCaseId": "INT-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "News von Heise heute",
+  "response": "Hier sind die aktuellen Schlagzeilen von Heise für heute, den 17. Mai 2026:\n\nheise+ | Lichtschwertkampf LudoSport ausprobiert: Trainieren wie ein Padawan.\nheise-Angebot: Die data2day 2026 fokussiert sich auf Datenprodukte, Agentic AI und Governance.\nKraftstoffpreise: Diesel ist seit April um 45 Cent günstiger geworden.\nheise-Angebot: iX-Workshop zu Netzwerkarchitekturen in Proxmox.\nVideo-Tipp: Vier Office-Alternativen zu Microsoft, die man kennen sollte.\nVerkehrskonzepte: Monorails und Magnetbahnen – sinnvolle Systeme oder nur Gadgets?\nHardware-Ranking: Die Top 10 der besten kleinen Smartphones (bis 6,3 Zoll).\nKI & Finanzen: ChatGPT gibt finanzielle Ratschläge bei Verknüpfung mit dem Bankkonto.\nRessourcen-Unabhängigkeit: Wie Europa den Zugriff auf Seltene Erden sichern will.\nWissenschaft: arXiv führt Sperren für KI-Papers bei Erstverstößen ein.\n\n💡 Passende nächste Schritte:• Soll ich Details zu einem der Artikel für dich recherchieren?• Suchst du News von einer anderen Quelle wie Spiegel oder Zeit?• Möchtest du mehr über die Top 10 der kleinen Smartphones erfahren?\n14:20",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:20:18.717Z"
+}

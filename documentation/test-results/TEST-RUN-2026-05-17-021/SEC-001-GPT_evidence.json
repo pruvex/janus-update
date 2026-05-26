@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-021",
+  "testCaseId": "SEC-001-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Secret scanner over repo",
+  "response": "Ich kann hier keinen “Secret scanner” über dein Repo ausführen—ich brauche dazu entweder den konkreten Tool-/Befehl (z. B. gitleaks, trufflehog) oder die Repo-Dateiliste/Logs, damit ich dir sagen kann, was du genau laufen lassen solltest.\n💡 Passende nächste Schritte:• Sag mir, welches Tool du verwenden willst (z. B. Gitleaks oder Trufflehog) und dein OS (Windows/macOS/Linux), dann gebe ich dir den exakten Befehl.• Wenn du schon Output/Logs hast: paste sie hier rein, dann helfe ich dir, die Treffer korrekt einzuordnen und zu bereinigen.\n18:45",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T16:45:10.181Z"
+}

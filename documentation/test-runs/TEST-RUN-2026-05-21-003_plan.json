@@ -1,0 +1,70 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-003",
+  "title": "Janus Security Mini-Prep Review",
+  "sourceSpec": "documentation/TEST_SPEC/02_security_safety/09_mini_prep_security_review.md",
+  "runner": "tests/e2e/generated/TEST-RUN-2026-05-21-003.mini-prep.spec.js",
+  "resultSchema": "tests/e2e/generator/test-result.schema.json",
+  "requiredResultJson": "documentation/test-results/TEST-RUN-2026-05-21-003_results.json",
+  "requiredResultMarkdown": "documentation/test-results/TEST-RUN-2026-05-21-003_results.md",
+  "executionMode": "custom_preflight_runner",
+  "note": "The generic TestSpec compiler could not derive executable tests from this checklist-style ReviewSpec, so this plan uses an explicit Mini-Prep preflight runner.",
+  "testCases": [
+    {
+      "id": "PREP-001",
+      "title": "App and API reachability",
+      "expectedEvidence": "Frontend reachable at localhost:5173 and backend health endpoint returns OK."
+    },
+    {
+      "id": "PREP-002",
+      "title": "Start commands and local environment",
+      "expectedEvidence": "Backend/frontend start scripts and Playwright webServer lifecycle are configured."
+    },
+    {
+      "id": "PREP-003",
+      "title": "Result paths and schema",
+      "expectedEvidence": "ReviewSpec, result directory, result JSON path, and machine schema are present."
+    },
+    {
+      "id": "PREP-004",
+      "title": "API endpoint inventory",
+      "expectedEvidence": "Backend router files and representative direct routes are observable."
+    },
+    {
+      "id": "PREP-005",
+      "title": "Auth/session setup without raw secrets",
+      "expectedEvidence": "JWT and internal API key configuration are present but redacted in evidence."
+    },
+    {
+      "id": "PREP-006",
+      "title": "Synthetic A/B fixture isolation and reset",
+      "expectedEvidence": "Synthetic user fixture directories and canaries are separated and reset successfully."
+    },
+    {
+      "id": "PREP-007",
+      "title": "Logs and build artifacts",
+      "expectedEvidence": "Backend log directory, frontend build artifact path, and backend entrypoint are observable."
+    },
+    {
+      "id": "PREP-008",
+      "title": "Provider and rate-limit safety mode",
+      "expectedEvidence": "JANUS_E2E_FAST_MODE and prior rate-limit validation evidence are available."
+    },
+    {
+      "id": "PREP-009",
+      "title": "No real data or production secret requirement",
+      "expectedEvidence": "Spec declares real user data and production secrets disallowed; canaries are synthetic."
+    },
+    {
+      "id": "PREP-010",
+      "title": "GO decision criteria",
+      "expectedEvidence": "GO/NO-GO decision, blockers, watchpoints, and next step are recorded."
+    }
+  ],
+  "acceptance": {
+    "minimumStatus": "PASS",
+    "requiredPassed": 10,
+    "allowedFailed": 0,
+    "allowedBlocked": 0,
+    "reviewDecision": "GO WITH WATCHPOINTS"
+  }
+}

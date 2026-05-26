@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "TC-009-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Goldpreis-Quellen fuer heute",
+  "response": "Hier sind aktuelle Goldpreis-Quellen für **heute** (Deutschland, Euro):1) [GOLDPREIS.de – Goldpreis aktuell in Euro](https://www.goldpreis.de/?utm_source=openai)  2) [Silber.de – Goldpreis heute in Euro](https://silber.de)  3) [Goldgramm.de – Goldpreis pro Gramm in Euro (Echtzeit)](https://goldgramm.de)  4) [Goldpreisaktuel.de – Goldpreis heute in Deutschland (EUR)](https://goldpreisaktuel.de)  5) [Gold.de (GOLD.DE) – Goldkurs / Goldpreis in Euro](https://gold.de)💡 Passende nächste Schritte:• Sag mir die Einheit: **1 g**, **1 Feinunze** oder **Goldbarren Ankauf/Verkauf** – dann filtere ich genau die passenden Seiten/Zeilen dafür.  • Wenn du willst, erstelle ich dir eine kurze Vergleichsliste der **Top-Quellen** (am besten 2–3) für dein konkretes Ziel (Ankauf vs. Spot-Kurs).22:35",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:35:46.244Z"
+}

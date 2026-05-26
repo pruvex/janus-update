@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "janus.test-plan.v1",
+  "testRunId": "TEST-RUN-2026-05-21-009",
+  "title": "Janus Deployment Headers CORS CSP Cookie Scan",
+  "sourceSpec": "documentation/TEST_SPEC/02_security_safety/15_deployment_headers_cors_csp_cookie_scan.md",
+  "route": "TEST SKILL SECURITY -> custom deployment surface runner -> SKILL 7",
+  "deploymentModel": {
+    "type": "packaged-local-electron",
+    "targetUrl": "http://127.0.0.1:8001",
+    "hostedHttpsRequired": false,
+    "transportException": "Janus beta is a packaged local Electron app that binds to loopback. HTTPS/HSTS become mandatory if a non-loopback hosted target is introduced."
+  },
+  "compilerStatus": {
+    "status": "CUSTOM_RUNNER_REQUIRED",
+    "reason": "Spec 15 requires direct HTTP/browser header, CORS, cookie, debug and asset-path probes against the target URL."
+  },
+  "cases": [
+    { "id": "DEP-001", "domain": "HTTPS/target", "expectedEvidence": "Loopback packaged-local target is documented; hosted HTTPS requirement is an explicit exception" },
+    { "id": "DEP-002", "domain": "HSTS", "expectedEvidence": "HSTS exists for HTTPS requests in code or local loopback exception is documented" },
+    { "id": "DEP-003", "domain": "CSP", "expectedEvidence": "CSP restricts default, object, base, frame ancestor, connect and form sources" },
+    { "id": "DEP-004", "domain": "Frame/MIME", "expectedEvidence": "Frame, nosniff, referrer and permissions headers are present" },
+    { "id": "DEP-005", "domain": "CORS allowed", "expectedEvidence": "Approved packaged-local origin receives credentialed CORS" },
+    { "id": "DEP-006", "domain": "CORS denied", "expectedEvidence": "Hostile origin receives no allow-origin and no credential grant" },
+    { "id": "DEP-007", "domain": "Cookies", "expectedEvidence": "No insecure Set-Cookie on target responses; any cookies must be flag-safe" },
+    { "id": "DEP-008", "domain": "Sourcemaps/debug", "expectedEvidence": "Sourcemaps absent from beta build; debug routes disabled; no stack traces" },
+    { "id": "DEP-009", "domain": "Upload/download", "expectedEvidence": "User image/file response headers avoid wildcard credential CORS and keep MIME/cache controls" },
+    { "id": "DEP-010", "domain": "Gate decision", "expectedEvidence": "No open Critical/High deployment-surface findings" }
+  ],
+  "artifacts": {
+    "runner": "tests/e2e/generated/TEST-RUN-2026-05-21-009.deployment-surface.spec.js",
+    "playwrightConfig": "tests/e2e/generated/TEST-RUN-2026-05-21-009.deployment-surface.playwright.config.js",
+    "policy": "documentation/test-runs/TEST-RUN-2026-05-21-009_deployment_surface_policy.md",
+    "finalAudit": "documentation/test-runs/TEST-RUN-2026-05-21-009_final_audit.md"
+  }
+}

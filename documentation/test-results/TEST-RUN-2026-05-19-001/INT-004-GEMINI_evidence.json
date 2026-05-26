@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-001",
+  "testCaseId": "INT-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Sortiere, fasse zusammen, erstelle Uebersicht",
+  "response": "Hallo Admin. Hier ist die sortierte Übersicht der dauerhaften physischen Merkmale von Nikola Tesla, basierend auf deinen bisherigen Angaben und unter Berücksichtigung der zeitlichen Einordnung.\nPhysische Personenbeschreibung: Nikola Tesla\n1. Statur\n\nMerkmale: Auffallend groß und sehr schlank.\nUrsprung: Das hast du mir zuerst am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“ erzählt.\n\n2. Gesichtszüge\n\nMerkmale: Schmales Gesicht mit markanten, ausgeprägten Wangenknochen, tief liegenden Augen und einer hohen Stirn, die durch die Frisur betont wird.\nUrsprung: Die Details zum Gesicht und der Stirn stammen vom 12. Mai 2026 aus dem Chat „Nikola Tesla Übersicht“. Die tief liegenden Augen hast du am selben Tag im Chat „Nikola Tesla Personenbeschreibung“ ergänzt.\n\n3. Haare\n\nMerkmale: Dunkles Haar, das stets akkurat gescheitelt getragen wird.\nUrsprung: Diese Information wurde erstmals am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“ gespeichert.\n\n\nHinweis: Situative Merkmale wie Kleidung wurden gemäß deiner Anweisung ignoriert. Spezifische Accessoires (Brillen, Schmuck etc.) lagen in den Daten nicht vor.\n💡 Passende nächste Schritte:• Soll ich auf Basis dieser dauerhaften Merkmale ein visuelles Porträt von Nikola Tesla generieren?• Möchtest du die Übersicht um berufliche Meilensteine aus seinem Lebenslauf ergänzen?• Soll ich prüfen, ob in deinen anderen Dokumenten Informationen zu spezifischen Accessoires wie Uhren oder Brillen vorliegen?\n01:38",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T23:38:47.147Z"
+}

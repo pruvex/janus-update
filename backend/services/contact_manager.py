@@ -165,11 +165,19 @@ async def _is_ambiguous_result(
     if not web_content:
         return False
 
+    # 💎 Use get_speed_tier_model() for background jobs instead of hardcoded model names
+    from backend.services.logging.debug_engine import get_speed_tier_model
+    speed_provider, speed_model = get_speed_tier_model()
+    
     model_to_use = model
     if provider == "openai":
         model_to_use = "gpt-5-nano"
     elif provider == "gemini":
-        model_to_use = "gemini-2.5-flash"
+        # If the speed-tier provider matches, use speed-tier model
+        if speed_provider == "gemini":
+            model_to_use = speed_model
+        else:
+            model_to_use = "gemini-3-flash-preview"
 
     prompt = f"""
     Du bist ein Datenanalyse-Experte. Der folgende Text ist das Ergebnis einer Websuche nach dem Namen '{contact_name}'.
@@ -289,19 +297,23 @@ async def enrich_incomplete_contacts(
                 f"Provider for model '{model}' not found in model catalog. Defaulting to OpenAI."
             )
             provider_for_model = "openai"  # Fallback
-            model_to_use_for_websearch = "gpt-5.4-nano"
-        elif provider_for_model == "openai":
-            model_to_use_for_websearch = (
-                "gpt-5.4-nano"  # Feste Modellwahl für interne OpenAI-Websuche
-            )
-        elif provider_for_model == "gemini":
-            model_to_use_for_websearch = (
-                "gemini-2.5-flash"  # Feste Modellwahl für interne Gemini-Websuche
-            )
+
+        # 💎 Use get_speed_tier_model() for background jobs instead of hardcoded model names
+        from backend.services.logging.debug_engine import get_speed_tier_model
+        speed_provider, speed_model = get_speed_tier_model()
+        
+        # If the speed-tier provider matches the model's provider, use the speed-tier model
+        if speed_provider == provider_for_model:
+            model_to_use_for_websearch = speed_model
+            logger.info(f"Using speed-tier model '{speed_model}' for provider '{provider_for_model}' in contact enrichment")
         else:
-            model_to_use_for_websearch = (
-                model  # Fallback, wenn der Provider nicht OpenAI/Gemini ist
-            )
+            # Fallback to provider-specific hardcoded models if speed-tier provider doesn't match
+            if provider_for_model == "openai":
+                model_to_use_for_websearch = "gpt-5.4-nano"
+            elif provider_for_model == "gemini":
+                model_to_use_for_websearch = "gemini-3-flash-preview"
+            else:
+                model_to_use_for_websearch = model  # Fallback, wenn der Provider nicht OpenAI/Gemini ist
 
         # --- ENDE KORREKTUR ---
 

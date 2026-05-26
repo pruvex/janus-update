@@ -12,7 +12,7 @@
     "knowledge_discovery"
   ],
   "is_agent_ready": true,
-  "max_calls_per_turn": 3,
+  "max_calls_per_turn": 10,
   "depends_on": [],
   "examples": []
 }

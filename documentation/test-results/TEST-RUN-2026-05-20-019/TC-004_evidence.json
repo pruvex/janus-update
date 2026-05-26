@@ -1,0 +1,9 @@
+{
+  "testCaseId": "TC-004",
+  "source": "python -m pytest backend\\tests\\test_skill_selector_capability_registry_integrity.py -q",
+  "assertions": [
+    "Weather intent selects system.weather.",
+    "Weather intent does not route into calendar or filesystem skills."
+  ],
+  "result": "PASS"
+}

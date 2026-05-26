@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-022",
+  "testCaseId": "INT-004-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Exportiere alles, was du ueber mich hast",
+  "response": "Hier ist die Zusammenfassung deiner dauerhaften physischen Merkmale, basierend auf den ersten Aufzeichnungen in deinem Profil:\n\nStatur: Du bist eine auffallend große und sehr schlanke Persönlichkeit.(Erstmals gespeichert am 12. Mai 2026 um 19:23 im Chat 'Nikola Tesla Übersicht')\nHaare: Du hast dunkles Haar, das stets akkurat gescheitelt getragen wird.(Erstmals gespeichert am 12. Mai 2026 um 19:23 im Chat 'Nikola Tesla Übersicht')\nGesicht & Stirn: Du hast ein schmales Gesicht mit einer hohen Stirn und markanten, ausgeprägten Wangenknochen.(Erstmals gespeichert am 12. Mai 2026 um 19:23 im Chat 'Nikola Tesla Übersicht')\nAugen: Deine Augen sind dunkel und tief liegend.(Erstmals gespeichert am 12. Mai 2026 um 19:23 im Chat 'Biografie von Nikola Tesla')\n\n💡 Passende nächste Schritte:• Soll ich auf Basis dieser Merkmale eine formelle Personenbeschreibung für dich erstellen?• Möchtest du wissen, welche biografischen Fakten oder Termine ich zusätzlich über dich gespeichert habe?• Soll ich prüfen, ob noch spezifische Accessoires (wie Brillen oder Uhren) in meinen Daten vorliegen?\n19:17",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T17:17:46.521Z"
+}

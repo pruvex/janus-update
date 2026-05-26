@@ -1,0 +1,14 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-007",
+  "testCaseId": "SECROT-008",
+  "result": "PASS",
+  "classification": "KEY_SCOPE_STORAGE_PASS",
+  "evidence": {
+    "providerKeysStoredInKeyring": true,
+    "sentryDsnEnvConfigurable": true,
+    "sentryPiiDisabled": true,
+    "pyinstallerEnvBundlingAbsent": true,
+    "leastPrivilegeStatus": "provider console scopes/cost caps require owner-side certification outside repo"
+  },
+  "timestamp": "2026-05-21T12:15:56.881Z"
+}

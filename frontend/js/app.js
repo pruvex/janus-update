@@ -1,4 +1,7 @@
 import { sanitizeReleaseNotes, sanitizeTemplateHtml } from "./dompurify-config.js";
+import { initializeSettings } from "./settings.js";
+import { initializeStudio } from "./image-studio.js";
+import { initUpdateUI, setSidebarVersionBase } from "./update-ui.js";
 
 // ================= WRAPPER FÜR FETCH (API KEY) =================
 (() => {
@@ -37,6 +40,11 @@ import { sanitizeReleaseNotes, sanitizeTemplateHtml } from "./dompurify-config.j
             const apiKey = await apiKeyPromise;
             if (apiKey) {
                 newOptions.headers['X-Janus-Internal-Key'] = apiKey;
+            } else {
+                const mcpDebugSession = localStorage.getItem('janus_mcp_debug_session');
+                if (mcpDebugSession) {
+                    newOptions.headers['X-Janus-MCP-Debug-Session'] = mcpDebugSession;
+                }
             }
         }
 
@@ -54,6 +62,7 @@ import * as Sentry from '@sentry/browser';
 Sentry.init({
   dsn: "https://52d089968563a42a98ed367df7723736@o4510659131670528.ingest.de.sentry.io/4510660337533008",
   release: "janus-projekt@" + (import.meta.env.APP_VERSION || "0.0.0-dev"),
+  sendDefaultPii: false,
   integrations: [
     // --- NEU: DISTRIBUTED TRACING AKTIVIEREN ---
     Sentry.browserTracingIntegration({
@@ -62,11 +71,23 @@ Sentry.init({
       tracePropagationTargets: ["localhost", "127.0.0.1"],
     }),
     // -------------------------------------------
-    Sentry.replayIntegration(),
+    Sentry.replayIntegration({
+      maskAllText: true,
+      blockAllMedia: true,
+    }),
   ],
 
   // --- NEU: FEEDBACK-DIALOG BEI FEHLERN ---
   beforeSend(event, hint) {
+    delete event.user;
+    delete event.request;
+    if (event.breadcrumbs) {
+      event.breadcrumbs = event.breadcrumbs.map((breadcrumb) => ({
+        ...breadcrumb,
+        message: breadcrumb.message ? "[REDACTED]" : breadcrumb.message,
+        data: undefined,
+      }));
+    }
     // Wir prüfen, ob es sich um eine echte, unbehandelte Exception handelt.
     // Das verhindert, dass der Dialog bei kleinen Netzwerkfehlern aufploppt.
     if (event.exception && hint.originalException) {
@@ -85,9 +106,9 @@ Sentry.init({
   },
   // ----------------------------------------
 
-  tracesSampleRate: 1.0,
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
+  tracesSampleRate: 0.1,
+  replaysSessionSampleRate: 0.0,
+  replaysOnErrorSampleRate: 0.0,
 });
 
 // ======================== ENDE DER INTEGRATION ========================
@@ -95,11 +116,12 @@ Sentry.init({
 import interact from "interactjs";
 import { API_BASE_URL } from "./config.js";
 import "./personality-settings.js";
-import { loadChats } from "./chat-manager.js";
+import { loadChats, saveChatHeaderSelection } from "./chat-manager.js";
 import { initChatComposer, scrollChatToBottom, autoResize } from "./chat.js";
 import {
   paneId,
   getActiveWindowId,
+  getActiveChatIdForWindow,
   WINDOW_IDS,
   getWindowState,
   subscribeWindowState,
@@ -108,6 +130,7 @@ import {
 } from "./window-state.js";
 import { openProjectModal, showProjectModalView, initProjectModalAfterListLoad } from "./projects.js";
 import { openModal } from "./modal-api.js";
+import { scheduleContextRefresh, setupContextAwareness } from "./context-awareness.js";
 
 /** Scroll main chat (#chat-messages) to the end; delegates to chat.js (same role as scrollToBottom in autoResize docs). */
 export function scrollToBottom(options) {
@@ -466,7 +489,8 @@ async function validateToken() {
 }
 
 // NEU: Funktion zum Speichern des zuletzt verwendeten Modells und Providers im Backend
-async function updateLastUsedModelInBackend() {
+// Global verfügbar machen für context-awareness.js
+window.updateLastUsedModelInBackend = async function updateLastUsedModelInBackend() {
   const token = localStorage.getItem('auth_token');
   if (!token) {
     console.warn("Cannot update last used model: No auth token found.");
@@ -485,6 +509,33 @@ async function updateLastUsedModelInBackend() {
         model: appState.last_active.model,
       }),
     });
+    
+    // 💎 FIX-AUTH-068: Retry-Mechanismus für 401-Fehler
+    if (response.status === 401) {
+      console.warn("Token expired (401), attempting silent login and retry...");
+      const refreshSuccess = await attemptSilentLogin();
+      if (refreshSuccess) {
+        console.log("Token refreshed successfully, retrying request...");
+        const newToken = localStorage.getItem('auth_token');
+        const retryResponse = await fetch(`${API_BASE_URL}/api/last-used-model`, {
+          method: "PUT",
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${newToken}`
+          },
+          body: JSON.stringify({
+            provider: appState.last_active.provider,
+            model: appState.last_active.model,
+          }),
+        });
+        if (retryResponse.ok) {
+          console.log("Last used model updated in backend after token refresh:", appState.last_active.provider, appState.last_active.model);
+          return;
+        }
+      }
+      // Wenn Refresh fehlschlägt, falle durch zum normalen Error-Handling
+    }
+    
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || "Failed to update last used model in backend.");
@@ -493,7 +544,7 @@ async function updateLastUsedModelInBackend() {
   } catch (error) {
     console.error("Error updating last used model in backend:", error);
   }
-}
+};
 
 /**
  * Füllt ein beliebiges Modell-Dropdown mit derselben Logik wie die Sidebar (Katalog + User-Selection + Filter).
@@ -505,8 +556,14 @@ function fillModelOptionsIntoSelect(selectEl, targetProvider) {
   selectEl.innerHTML = "";
   let allowedModels = appState.user_selections[targetProvider] || [];
 
-  if (allowedModels.length === 0 && appState.model_catalog[targetProvider]) {
-    allowedModels = appState.model_catalog[targetProvider].map((model) => model.id);
+  // Wenn keine Modelle ausgewählt sind, zeige keine an (nicht alle als Fallback)
+  if (allowedModels.length === 0) {
+    console.warn(`[fillModelOptionsIntoSelect] No models selected for provider: ${targetProvider}`);
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "-- Keine Modelle ausgewählt --";
+    selectEl.appendChild(option);
+    return;
   }
 
   if (!appState.model_catalog[targetProvider]) {
@@ -623,6 +680,12 @@ function setupChatHeaderLlmListeners() {
       const v = hp.value === "" ? null : hp.value;
       setWindowProvider(wid, v);
       setWindowModel(wid, null);
+      const chatId = getActiveChatIdForWindow(wid);
+      if (chatId != null) {
+        void saveChatHeaderSelection(chatId, v, null).catch((error) => {
+          console.warn("[chat-header] Failed to persist provider override:", error);
+        });
+      }
       const sbp = document.getElementById("provider-select");
       const effP = v ?? sbp?.value;
       if (effP) {
@@ -636,10 +699,21 @@ function setupChatHeaderLlmListeners() {
         }
       }
       syncChatWindowHeaderLlm();
+      scheduleContextRefresh(wid);
     });
 
     hm.addEventListener("change", () => {
-      setWindowModel(wid, hm.value === "" ? null : hm.value);
+      const provider = hp.value === "" ? null : hp.value;
+      const model = hm.value === "" ? null : hm.value;
+      setWindowProvider(wid, provider);
+      setWindowModel(wid, model);
+      const chatId = getActiveChatIdForWindow(wid);
+      if (chatId != null) {
+        void saveChatHeaderSelection(chatId, provider, model).catch((error) => {
+          console.warn("[chat-header] Failed to persist model override:", error);
+        });
+      }
+      scheduleContextRefresh(wid);
     });
   }
 }
@@ -708,40 +782,95 @@ function render() {
       sidebarModelSelect.value = targetModel;
     } else if (availableOptions.length > 0) {
       // Fall B: Das gespeicherte Modell existiert nicht mehr (z.B. gpt-4o-mini).
-      // Selbstheilung: Wir wählen automatisch das erste verfügbare Modell.
-      const fallbackModel = availableOptions[0];
-      console.log(`--> [Render] Gespeichertes Modell '${targetModel}' nicht verfügbar. Wechsele zu Fallback: '${fallbackModel}'`);
-      
-      sidebarModelSelect.value = fallbackModel;
-      
-      // Wir aktualisieren auch gleich den State, damit beim nächsten Mal alles stimmt.
-      appState.last_active.model = fallbackModel;
-      updateLastUsedModelInBackend(); // Speichern im Hintergrund
-      
-      // Optional: Benachrichtigung an den Benutzer (kann entfernt werden, wenn nicht gewünscht)
-      const notification = document.createElement('div');
-      notification.className = 'notification is-warning is-light';
-      notification.style.position = 'fixed';
-      notification.style.top = '1rem';
-      notification.style.right = '1rem';
-      notification.style.zIndex = '1000';
-      notification.innerHTML = `
-        <button class="delete"></button>
-        Modell '${targetModel}' ist nicht verfügbar. Verwende stattdessen '${fallbackModel}'.
-      `;
-      document.body.appendChild(notification);
-      
-      // Schließen-Button für die Benachrichtigung
-      notification.querySelector('.delete').addEventListener('click', () => {
-        notification.remove();
-      });
-      
-      // Automatisches Ausblenden nach 5 Sekunden
-      setTimeout(() => {
-        if (notification.parentNode) {
-          notification.remove();
+      // 💎 FIX: Überspringe die Fallback-Logik beim Provider-Wechsel, da das Modell bereits korrekt gesetzt wurde
+      if (appState.providerSwitchInProgress) {
+        console.log(`--> [Render] Provider-Wechsel läuft, verwende bereits gesetztes Modell aus State`);
+        // Verwende das bereits gesetzte Modell aus dem State (nicht targetModel, das das alte Modell sein kann)
+        const currentModel = appState.last_active.model;
+        if (currentModel && availableOptions.includes(currentModel)) {
+          sidebarModelSelect.value = currentModel;
+          console.log(`--> [Render] Modell '${currentModel}' aus State ausgewählt`);
+        } else {
+          // Fallback: erstes verfügbares Modell
+          const fallbackModel = availableOptions[0];
+          sidebarModelSelect.value = fallbackModel;
+          appState.last_active.model = fallbackModel;
+          console.log(`--> [Render] Fallback auf '${fallbackModel}' (State-Modell nicht verfügbar)`);
         }
-      }, 5000);
+      } else {
+        // Selbstheilung: Wir wählen automatisch das erste verfügbare Modell.
+        const fallbackModel = availableOptions[0];
+        console.log(`--> [Render] Gespeichertes Modell '${targetModel}' nicht verfügbar. Wechsele zu Fallback: '${fallbackModel}'`);
+
+        sidebarModelSelect.value = fallbackModel;
+
+        // Wir aktualisieren auch gleich den State, damit beim nächsten Mal alles stimmt.
+        appState.last_active.model = fallbackModel;
+        updateLastUsedModelInBackend(); // Speichern im Hintergrund
+
+        // Optional: Benachrichtigung an den Benutzer (verbessert gemäß BACKLOG-015)
+        const notification = document.createElement('div');
+        notification.className = 'notification is-warning is-light model-unavailable-notification';
+        notification.style.position = 'fixed';
+        notification.style.top = '1rem';
+        notification.style.right = '1rem';
+        notification.style.zIndex = '1000';
+        notification.style.maxWidth = '400px';
+        notification.style.padding = '1rem';
+        notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        notification.style.borderRadius = '8px';
+        notification.style.border = '1px solid #ffdd57';
+        notification.style.backgroundColor = '#fffdf5';
+        notification.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+            <strong style="color: #9a7d0a; font-size: 0.95rem;">⚠️ Modell nicht verfügbar</strong>
+            <button class="delete" style="margin-left: 0.5rem; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #9a7d0a;">×</button>
+          </div>
+          <div style="color: #4a4a4a; font-size: 0.9rem; margin-bottom: 0.75rem; line-height: 1.4;">
+            Das Modell <strong>'${targetModel}'</strong> ist nicht mehr verfügbar.<br>
+            Janus hat automatisch zu <strong>'${fallbackModel}'</strong> gewechselt.
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="model-keep-fallback" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border: 1px solid #9a7d0a; background: #ffdd57; color: #4a4a4a; border-radius: 4px; cursor: pointer;">
+              Fallback behalten
+            </button>
+            <button class="model-open-settings" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border: 1px solid #dbdbdb; background: white; color: #4a4a4a; border-radius: 4px; cursor: pointer;">
+              Modell wählen
+            </button>
+          </div>
+        `;
+        document.body.appendChild(notification);
+
+        // Schließen-Button für die Benachrichtigung
+        notification.querySelector('.delete').addEventListener('click', () => {
+          notification.remove();
+        });
+
+        // "Fallback behalten" Button - schließt nur die Benachrichtigung
+        notification.querySelector('.model-keep-fallback').addEventListener('click', () => {
+          notification.remove();
+        });
+
+        // "Modell wählen" Button - öffnet Einstellungen für Modell-Auswahl
+        notification.querySelector('.model-open-settings').addEventListener('click', () => {
+          notification.remove();
+          // Öffne Einstellungen und wechsle zum API-Key/Modell-Tab
+          if (typeof window.switchView === 'function') {
+            window.switchView('settings-view');
+            setTimeout(() => {
+              const apiKeyLink = document.querySelector('[data-target="api-key-section"]');
+              if (apiKeyLink) apiKeyLink.click();
+            }, 100);
+          }
+        });
+
+        // Automatisches Ausblenden nach 10 Sekunden (erhöht für bessere Lesbarkeit)
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.remove();
+          }
+        }, 10000);
+      }
     } else {
       // Fall C: Keine Modelle verfügbar
       console.error('--> [Render] Keine Modelle für den ausgewählten Provider verfügbar!');
@@ -831,8 +960,71 @@ async function attemptSilentLogin() {
 // The single entry point of the application
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("--> [1] DOM fully loaded. Starting application initialization...");
+
+  // Apply Dark Mode immediately from localStorage cache (before async operations)
+  const cachedDarkMode = localStorage.getItem("dark_mode_enabled");
+  if (cachedDarkMode !== null) {
+    applyDarkMode(cachedDarkMode === "true");
+    console.log("[Dark Mode] Applied from localStorage cache:", cachedDarkMode === "true");
+  }
+
+  // Initialize state-driven update UI (independent of authentication)
+  try {
+      initUpdateUI();
+  } catch (err) {
+      console.error('[UpdateUI] Failed to initialize update UI:', err);
+  }
+
   await initializeApp();
 });
+
+// Dark Mode Theme Functions
+function applyDarkMode(darkModeEnabled) {
+  if (darkModeEnabled === true) {
+    document.body.classList.add('dark-mode');
+    console.log("[Dark Mode] Applied dark mode");
+  } else {
+    document.body.classList.remove('dark-mode');
+    console.log("[Dark Mode] Applied light mode");
+  }
+}
+
+function authHeadersJson() {
+  const token = localStorage.getItem("auth_token");
+  const headers = { "Content-Type": "application/json" };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+async function loadAndApplyDarkModeOnStartup() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+      headers: authHeadersJson(),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      const darkModeEnabled = Boolean(data.dark_mode_enabled);
+      // Update localStorage cache
+      localStorage.setItem("dark_mode_enabled", darkModeEnabled.toString());
+      // Apply theme
+      applyDarkMode(darkModeEnabled);
+      // Update checkbox if it exists
+      const checkbox = document.getElementById("dark-mode-checkbox");
+      if (checkbox) {
+        checkbox.checked = darkModeEnabled;
+      }
+      console.log("[Dark Mode] Loaded and applied dark_mode_enabled:", darkModeEnabled);
+    } else {
+      console.warn("[Dark Mode] Failed to load dark mode setting, defaulting to light mode");
+      applyDarkMode(false);
+    }
+  } catch (error) {
+    console.error("[Dark Mode] Error loading dark mode setting:", error);
+    applyDarkMode(false);
+  }
+}
 
 // The central initialization function that controls the entire startup process
 async function initializeApp() {
@@ -903,14 +1095,27 @@ async function initializeApp() {
       
       console.log("--> [3.3] Loading last used model...");
       await loadLastUsedModel();
-      
+
       console.log("--> [3.4] Loading projects...");
       await loadProjects();
+
+      // 💎 CU-3: Initialisiere Settings NACH Auth (verhindert Race-Condition)
+      console.log("--> [3.4.5] Initializing settings...");
+      await initializeSettings();
+
+      // Dark Mode: Load and apply theme setting
+      console.log("--> [3.4.6] Loading dark mode setting...");
+      await loadAndApplyDarkModeOnStartup();
+
+      // 💎 CU-3: Initialisiere Image Studio NACH Auth (verhindert Race-Condition)
+      console.log("--> [3.4.7] Initializing image studio...");
+      await initializeStudio();
 
       // RENDERE die UI und MACHE sie INTERAKTIV
       console.log("--> [3.5] Rendering UI and setting up event listeners...");
       render();
       setupEventListeners();
+      setupContextAwareness();
 
       // Lade die Chat-Liste als letzten Schritt
       console.log("--> [3.6] Loading chat list...");
@@ -937,10 +1142,8 @@ async function initializeApp() {
           currentVersion = __APP_VERSION__;
       }
 
-      const sidebarVersionEl = document.getElementById('sidebar-version');
-      if (sidebarVersionEl) {
-          sidebarVersionEl.textContent = `v${currentVersion}`;
-      }
+      const sidebarLabel = `v${currentVersion}`;
+      setSidebarVersionBase(sidebarLabel);
       
       const settingsVersionEl = document.getElementById('app-version-display');
       if (settingsVersionEl) {
@@ -953,7 +1156,7 @@ async function initializeApp() {
         appContainer.style.display = '';
       }
       hideLoginScreen();
-      
+
       console.log("--> [4] Initialization complete. Janus is ready.");
     } catch (error) {
       console.error("--> [ERROR] Failed to initialize application after successful authentication:", error);
@@ -1044,13 +1247,13 @@ function setupEventListeners() {
       const newProvider = sidebarProviderSelect.value;
       appState.last_active.provider = newProvider;
       console.log(`--> [Event] New provider set in state: ${newProvider}`);
-      
+
       // --- SENTRY DIAMANT-STANDARD: TAGS ---
       // Wir markieren den aktuellen Zustand für alle zukünftigen Fehler
       if (window.Sentry) {
           Sentry.setTag("active_provider", newProvider);
           console.log(`[Sentry] Tag gesetzt: active_provider=${newProvider}`);
-          
+
           // Wenn wir bereits ein Modell haben, setzen wir es auch
           if (appState.last_active.model) {
               Sentry.setTag("active_model", appState.last_active.model);
@@ -1077,11 +1280,16 @@ function setupEventListeners() {
       await updateLastUsedModelInBackend();
 
       // 4. Die UI komplett neu zeichnen, um die Änderungen anzuzeigen
+      // 💎 FIX: Setze ein Flag, um zu verhindern, dass render() die Fallback-Logik auslöst
+      // Beim Provider-Wechsel wurde das Modell bereits korrekt gesetzt
+      appState.providerSwitchInProgress = true;
       console.log("--> [Event] Calling render() to update the UI...");
       render();
+      appState.providerSwitchInProgress = false;
 
       // Sync window headers in 'Wie Sidebar' mode
-      syncChatWindowHeaderLlm(); 
+      syncChatWindowHeaderLlm();
+      WINDOW_IDS.forEach((wid) => scheduleContextRefresh(wid));
     });
   }
 
@@ -1096,6 +1304,7 @@ function setupEventListeners() {
       await updateLastUsedModelInBackend();
       // Sync window headers in 'Wie Sidebar' mode
       syncChatWindowHeaderLlm();
+      WINDOW_IDS.forEach((wid) => scheduleContextRefresh(wid));
     });
   }
   
@@ -1204,11 +1413,15 @@ function injectKnowledgeButton() {
   console.log("Legacy sidebar now exposes the Wissensdatenbank button.");
 }
 
-/** Drag/Resize-Grenzen für #chat-window-A|B: im Chat #chat-view, in der Projektansicht #project-chat-host */
+/** Drag/Resize-Grenzen für #chat-window-A|B: im Chat nur #main-content (ohne Diamond-Tages-Rail), sonst #project-chat-host */
 function getChatWindowBoundsEl(target) {
   if (target.id !== "chat-window-A" && target.id !== "chat-window-B") return null;
   const projectHost = target.closest("#project-chat-host");
   if (projectHost) return projectHost;
+  if (target.closest("#chat-view")) {
+    const main = document.getElementById("main-content");
+    if (main) return main;
+  }
   return document.getElementById("chat-view");
 }
 
@@ -1402,14 +1615,12 @@ function initializeDraggableElements() {
 
     if (host) {
       const maxW = Math.max(300, host.clientWidth - x);
-      const maxH = Math.max(200, host.clientHeight - y);
       w = Math.min(w, maxW);
-      h = Math.min(h, maxH);
+      // Keine maxH-Beschränkung: erlaubt freies vertikales Resizen
+      // maxY constraint entfernt für freie vertikale Positionierung
 
       const maxX = Math.max(0, host.clientWidth - w);
-      const maxY = Math.max(0, host.clientHeight - h);
       x = Math.max(0, Math.min(x, maxX));
-      y = Math.max(0, Math.min(y, maxY));
     }
 
     Object.assign(event.target.style, {
@@ -1666,6 +1877,19 @@ async function loadModelCatalog() {
       catalogByProvider[model.provider].push(model);
     });
     appState.model_catalog = catalogByProvider;
+
+    // Auto-select all local Ollama models so they appear in the dropdown
+    if (localModels.length > 0) {
+      const ollamaModelIds = localModels.map((m) => m.id);
+      if (!appState.user_selections) {
+        appState.user_selections = {};
+      }
+      // Merge with existing selections (don't overwrite if already set)
+      const existingSelections = appState.user_selections.ollama || [];
+      const allOllamaIds = new Set([...existingSelections, ...ollamaModelIds]);
+      appState.user_selections.ollama = Array.from(allOllamaIds);
+      console.log("[loadModelCatalog] Auto-selected Ollama models:", appState.user_selections.ollama);
+    }
   } catch (error) {
     console.error("Failed to load model catalog:", error);
     // Set empty object to prevent crashes in dependent code
@@ -1755,10 +1979,23 @@ async function loadUserSelections() {
         }
         // -------------------------
         
-        appState.user_selections[provider] = data.selected_models;
+        // For Ollama, merge with existing selections (to keep locally installed models)
+        // For other providers, use server selections
+        if (provider === "ollama") {
+          const existingSelections = appState.user_selections[provider] || [];
+          const serverSelections = data.selected_models || [];
+          const merged = new Set([...existingSelections, ...serverSelections]);
+          appState.user_selections[provider] = Array.from(merged);
+        } else {
+          appState.user_selections[provider] = data.selected_models;
+        }
       } catch (error) {
         console.error(`Failed to load models for ${provider}:`, error);
-        appState.user_selections[provider] = []; // Default to empty on error
+        // For Ollama, don't clear existing selections (keep locally discovered models)
+        // For other providers, default to empty on error
+        if (provider !== "ollama" || !appState.user_selections[provider]) {
+          appState.user_selections[provider] = [];
+        }
       }
     });
 
@@ -1795,15 +2032,36 @@ function geminiSidebarModelRank(m) {
 }
 
 function sortSidebarModelsForProvider(provider, models) {
-  if (provider !== "gemini" || !Array.isArray(models)) {
-    return models;
+  if (!Array.isArray(models)) return models;
+
+  // OpenAI: Definierte Reihenfolge (kleinstes zuerst)
+  if (provider === "openai") {
+    const openaiRank = {
+      "gpt-5.4-nano": 1,
+      "gpt-5.4-mini": 2,
+      "gpt-5.4": 3,
+      "gpt-5.4-pro": 4,
+      "gpt-5.5": 5,
+      "gpt-5.5-pro": 6
+    };
+    return [...models].sort((a, b) => {
+      const ra = openaiRank[a.id] || 999;
+      const rb = openaiRank[b.id] || 999;
+      return ra - rb;
+    });
   }
-  return [...models].sort((a, b) => {
-    const ra = geminiSidebarModelRank(a);
-    const rb = geminiSidebarModelRank(b);
-    if (ra !== rb) return ra - rb;
-    return String(a.id).localeCompare(String(b.id));
-  });
+
+  // Gemini: Bestehende Sortierung
+  if (provider === "gemini") {
+    return [...models].sort((a, b) => {
+      const ra = geminiSidebarModelRank(a);
+      const rb = geminiSidebarModelRank(b);
+      if (ra !== rb) return ra - rb;
+      return String(a.id).localeCompare(String(b.id));
+    });
+  }
+
+  return models;
 }
 
 function findFirstAvailableModel(provider) {
@@ -1813,10 +2071,11 @@ function findFirstAvailableModel(provider) {
     return null;
   }
 
-  // Holt die vom User erlaubten Modelle oder nimmt alle als Fallback.
+  // Holt die vom User erlaubten Modelle. Kein Fallback auf alle Modelle.
   let allowedModels = appState.user_selections[provider] || [];
   if (allowedModels.length === 0) {
-      allowedModels = appState.model_catalog[provider].map(m => m.id);
+    console.warn(`[findFirstAvailableModel] No models selected for provider: ${provider}`);
+    return null;
   }
   
   // Filtert die Modelle (z.B. um reine TTS-Modelle auszublenden).
@@ -1897,137 +2156,8 @@ function forceOpenSettings() {
 }
 
 // ============================================================
-// AUTO-UPDATE UI MANAGER (NEUE VERSION)
+// AUTO-UPDATE UI MANAGER (REMOVED - now using state-driven update-ui.js)
 // ============================================================
-if (window.electron && typeof window.electron.on === 'function') {
-    // Hilfsfunktion, um sicherzustellen, dass das Modal existiert und bereit ist
-    function ensureUpdateModal() {
-        if (document.getElementById('update-modal')) return document.getElementById('update-modal');
-
-        const modal = document.createElement('div');
-        modal.id = 'update-modal';
-        modal.className = 'modal';
-        // ... (Der restliche HTML-Code für das Modal bleibt identisch)
-        modal.innerHTML = `
-            <div class="modal-content" style="background: #1e1e2e; border-radius: 8px; padding: 1.5rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; color: #cdd6f4;">
-                <h3 id="update-modal-title" style="margin-top: 0; color: #89b4fa;">Update-Information</h3>
-                <div id="update-modal-body" style="margin: 1rem 0; line-height: 1.6; text-align: left;">
-                    <p id="update-modal-text">Prüfe auf Updates...</p>
-                    
-                    <div id="progress-container" style="display: none; margin: 1rem 0;">
-                        <progress id="update-progress-bar" value="0" max="100" style="width: 100%; height: 10px; border-radius: 5px; overflow: hidden;"></progress>
-                        <div id="progress-text" style="font-size: 0.8em; color: #a6adc8; text-align: right; margin-top: 5px;">0%</div>
-                    </div>
-                    
-                    <div id="changelog-container" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(0, 0, 0, 0.3); border-radius: 6px; max-height: 300px; overflow-y: auto;">
-                        <h4 style="margin-top: 0; color: #a6adc8;">Änderungen in dieser Version:</h4>
-                        <div id="changelog-content" style="font-size: 0.9rem; line-height: 1.5;">Lade Änderungsliste...</div>
-                    </div>
-                </div>
-                <div id="update-modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
-                    <button id="restart-app-btn" class="primary-button" style="display: none;">
-                        Jetzt neu starten & installieren
-                    </button>
-                    <span id="download-progress-text" style="display: none; align-items: center; color: #a6adc8; font-size: 0.9rem;">
-                        <span class="spinner" style="display: inline-block; width: 1rem; height: 1rem; border: 2px solid rgba(205, 214, 244, 0.3); border-radius: 50%; border-top-color: #89b4fa; animation: spin 1s ease-in-out infinite; margin-right: 0.5rem;"></span>
-                        <span id="download-status">Update wird vorbereitet...</span>
-                    </span>
-                </div>
-            </div>
-            <style> @keyframes spin { to { transform: rotate(360deg); } } .primary-button { background: #89b4fa; color: #1e1e2e; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: 500; } .primary-button:hover { opacity: 0.9; } </style>
-        `;
-        document.body.appendChild(modal);
-
-        const restartBtn = document.getElementById('restart-app-btn');
-        if (restartBtn) {
-            restartBtn.addEventListener('click', () => {
-                if (window.electron && typeof window.electron.send === 'function') {
-                    window.electron.send('restart-app-for-update');
-                }
-            });
-        }
-        return modal;
-    }
-
-    // Event 1: Ein Update wurde gefunden
-    window.electron.on('update-available', (data) => {
-        console.log('EVENT: update-available', data);
-        const modal = ensureUpdateModal();
-        modal.style.display = 'flex';
-        
-        // UI zurücksetzen und vorbereiten
-        document.getElementById('update-modal-title').textContent = `Update auf Version ${data.version} verfügbar!`;
-        document.getElementById('update-modal-text').textContent = "Eine neue Version von Janus wird jetzt heruntergeladen.";
-        
-        // Ladebalken und Changelog anzeigen
-        document.getElementById('progress-container').style.display = 'block';
-        document.getElementById('changelog-container').style.display = 'block';
-        document.getElementById('download-progress-text').style.display = 'flex';
-        
-        // Changelog füllen
-        const changelogContent = document.getElementById('changelog-content');
-        if (window.marked) {
-            changelogContent.innerHTML = sanitizeReleaseNotes(window.marked.parse(data.releaseNotes || 'Keine Änderungsnotizen verfügbar.'));
-        } else {
-            changelogContent.textContent = data.releaseNotes || 'Keine Änderungsnotizen verfügbar.';
-        }
-    });
-
-    // Event 2: Download-Fortschritt
-    window.electron.on('download-progress', (progress) => {
-        // Dieser Event kommt sehr oft, daher kein console.log
-        const progressBar = document.getElementById('update-progress-bar');
-        const progressText = document.getElementById('progress-text');
-
-        if (progressBar && progressText) {
-            const percent = Math.round(progress.percent);
-            progressBar.value = percent;
-            
-            const downloadedMB = (progress.transferred / (1024 * 1024)).toFixed(1);
-            const totalMB = (progress.total / (1024 * 1024)).toFixed(1);
-            
-            progressText.textContent = `${percent}% (${downloadedMB}MB / ${totalMB}MB)`;
-        }
-    });
-
-    // Event 3: Download ist fertig
-    window.electron.on('update-downloaded', () => {
-        console.log('EVENT: update-downloaded');
-        const modal = ensureUpdateModal(); // Sicherstellen, dass das Modal da ist
-        modal.style.display = 'flex';
-
-        // UI auf "Fertig" setzen
-        document.getElementById('update-modal-title').textContent = 'Update bereit zur Installation!';
-        document.getElementById('update-modal-text').textContent = 'Der Download ist abgeschlossen. Starten Sie die App neu, um das Update zu installieren.';
-        
-        // Fortschrittsanzeigen ausblenden
-        document.getElementById('progress-container').style.display = 'none';
-        document.getElementById('download-progress-text').style.display = 'none';
-        
-        // Neustart-Button anzeigen
-        document.getElementById('restart-app-btn').style.display = 'block';
-    });
-
-    // Event 4: Fehler
-    window.electron.on('update-error', (error) => {
-        console.error('EVENT: update-error', error);
-        const modal = ensureUpdateModal();
-        modal.style.display = 'flex';
-        
-        // UI auf Fehler setzen
-        document.getElementById('update-modal-title').textContent = 'Update-Fehler';
-        document.getElementById('update-modal-body').innerHTML = sanitizeTemplateHtml(`
-            <p>Beim Herunterladen des Updates ist ein Fehler aufgetreten:</p>
-            <div style="background: rgba(243, 139, 168, 0.2); color: #f38ba8; padding: 0.75rem; border-radius: 4px; margin-top: 1rem; font-size: 0.9rem;">
-                ${error || 'Unbekannter Fehler'}
-            </div>
-            <p style="margin-top: 1rem;">Bitte überprüfen Sie Ihre Internetverbindung.</p>
-        `);
-        document.getElementById('update-modal-footer').innerHTML = sanitizeTemplateHtml(`
-            <button onclick="document.getElementById('update-modal').style.display='none'" class="primary-button">Schließen</button>
-        `);
-    });
-}
 
 // 2. Event-Listener neu setzen (mit kurzer Verzögerung, um sicherzugehen, dass DOM da ist)
 setTimeout(() => {
@@ -2214,4 +2344,7 @@ setTimeout(() => {
 
     console.log("Feedback modal initialized successfully");
 }, 500); // Execute after DOM is ready
+
+// 💎 CU-3: Exportiere appState global für context-awareness.js
+window.appState = appState;
 // ============================================================

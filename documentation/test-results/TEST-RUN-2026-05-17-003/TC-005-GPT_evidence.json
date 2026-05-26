@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-003",
+  "testCaseId": "TC-005-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Modellpreise fuer OpenAI und Gemini",
+  "response": "\nZusammenfassungAktuelle API-Preise für OpenAI und Gemini (Google) werden meist pro 1M Tokens (Input/Output) angegeben; je nach Quelle stehen sie teils in USD (Tokenpreise) oder teils als Euro pro Mio. Tokens (umgerechnet/aufbereitet).\n\nListe der Fakten\n\n\nOpenAI (API) – Tokenpreise pro 1M Tokens\n\nGPT-5: Input 1,25 $/1M, Output 10,00 $/1M (unverifiziert)  \nGPT-5 mini: Input 0,25 $/1M, Output 2,00 $/1M (unverifiziert)  \nGPT-5 nano: Input 0,05 $/1M, Output 0,40 $/1M (unverifiziert)  \nGPT-4o mini: Input 0,15 $/1M, Output 0,60 $/1M (unverifiziert)\n\nOpenAI (API) – Euro-Angaben pro Mio. Tokens (laut Suchtreffer)\n\ngpt-5: Input 1,29 € pro Mio., Output 10,29 € pro Mio. (unverifiziert)  \ngpt-5-mini: Input 0,26 € pro Mio., Output 2,06 € pro Mio. (unverifiziert)  \ngpt-5-nano: Input 0,06 € pro Mio., Output 0,42 € pro Mio. (unverifiziert)\n\nGemini (Google) – Tokenpreise pro 1M Tokens\n\nGemini 2.5 Pro: Input 1,25 $/1M, Output 10,00 $/1M (unverifiziert)  \nGemini 2.5 Flash: Input 0,30 $/1M, Output 2,50 $/1M (unverifiziert)  \nGemini 2.5 Flash Lite: Input 0,10 $/1M, Output 0,40 $/1M (unverifiziert)\n\n\nQuellen\n\n\nKI-API Preise: verifizierte Standard-Tarife von OpenAI, Anthropic und Google | serverberater.de  \ninnogpt.de (Euro-Angaben für gpt-5 / gpt-5-mini / gpt-5-nano)  \nki-syndikat.de (Tokenpreise für Gemini 2.5 Pro/Flash/Flash Lite)\n\n💡 Passende nächste Schritte:• Sag mir, welche Modelle dich konkret interessieren (z.B. „GPT-4o mini vs Gemini Flash“), dann rechne ich dir die Kosten für dein Beispiel-Usage (z.B. Tokens/Tag) aus.• Soll ich nur API-Tokenpreise liefern oder auch Chat-Abos (Plus/Pro/Business) mit Preisvergleich?\n02:28",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T00:29:22.148Z"
+}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import type { Theme, CSSObject } from '@mui/material/styles';
@@ -14,6 +14,9 @@ import {
   Toolbar,
   IconButton,
   Typography,
+  Modal,
+  LinearProgress,
+  Chip,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -66,9 +69,43 @@ interface SidebarProps {
   costData?: { total_cost: number; input_tokens: number; output_tokens: number } | null;
 }
 
+interface ModelCostSummary {
+  model: string;
+  total_cost: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  total_tokens_saved: number;
+  total_cost_saved: number;
+  image_count: number;
+  search_count: number;
+}
+
 const Sidebar: React.FC<SidebarProps> = ({ projects, onSelectProject, onCreateProject, onOpenImageStudio, onOpenKnowledgeCenter, costData }) => {
   const [open, setOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCostModalOpen, setIsCostModalOpen] = useState(false);
+  const [modelSummary, setModelSummary] = useState<ModelCostSummary[]>([]);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+
+  const fetchModelSummary = useCallback(async () => {
+    setSummaryLoading(true);
+    try {
+      const res = await fetch('/api/system/costs/summary-by-model');
+      if (res.ok) {
+        const data = await res.json();
+        setModelSummary(data.filter((e: ModelCostSummary) => e.model !== '__WEB_SEARCHES__'));
+      }
+    } catch (_) {
+      // silent
+    } finally {
+      setSummaryLoading(false);
+    }
+  }, []);
+
+  const handleOpenCostModal = () => {
+    setIsCostModalOpen(true);
+    fetchModelSummary();
+  };
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
   const navigate = useNavigate();
@@ -297,10 +334,13 @@ const Sidebar: React.FC<SidebarProps> = ({ projects, onSelectProject, onCreatePr
             </ListItemButton>
           </ListItem>
           
-          {/* Cost Display */}
+          {/* Cost Display — klickbar öffnet Kosten-Modal */}
           {costData && open && (
             <ListItem sx={{ display: 'block', mt: 2 }}>
-              <Box sx={{ px: 2.5, py: 1, backgroundColor: 'grey.100', borderRadius: 1 }}>
+              <Box
+                onClick={handleOpenCostModal}
+                sx={{ px: 2.5, py: 1, backgroundColor: 'grey.100', borderRadius: 1, cursor: 'pointer', '&:hover': { backgroundColor: 'grey.200' } }}
+              >
                 <Typography variant="caption" color="text.secondary">
                   💰 Session Kosten
                 </Typography>
@@ -308,13 +348,93 @@ const Sidebar: React.FC<SidebarProps> = ({ projects, onSelectProject, onCreatePr
                   € {costData.total_cost.toFixed(4)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" display="block">
-                  {costData.input_tokens + costData.output_tokens} Tokens
+                  {costData.input_tokens + costData.output_tokens} Tokens · Details →
                 </Typography>
               </Box>
             </ListItem>
           )}
         </List>
       </Drawer>
+
+      {/* ── Kosten-Detail-Modal ── */}
+      <Modal open={isCostModalOpen} onClose={() => setIsCostModalOpen(false)}>
+        <Box sx={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          width: 560, maxHeight: '80vh', overflowY: 'auto',
+          bgcolor: 'background.paper', borderRadius: 2, boxShadow: 24, p: 3,
+        }}>
+          <Typography variant="h6" fontWeight="bold" mb={2}>
+            📊 Kostenübersicht – dieser Monat
+          </Typography>
+
+          {summaryLoading && <LinearProgress sx={{ mb: 2 }} />}
+
+          {!summaryLoading && modelSummary.length === 0 && (
+            <Typography variant="body2" color="text.secondary">Noch keine Daten für diesen Monat.</Typography>
+          )}
+
+          {modelSummary.map((row) => {
+            const efficiencyPct = row.total_cost > 0
+              ? Math.round((row.total_cost_saved / (row.total_cost + row.total_cost_saved)) * 100)
+              : 0;
+            const hasSavings = row.total_cost_saved > 0;
+            return (
+              <Box key={row.model} sx={{ mb: 2, p: 1.5, border: '1px solid', borderColor: 'grey.200', borderRadius: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="body2" fontWeight="bold" noWrap sx={{ maxWidth: 260 }}>
+                    {row.model}
+                  </Typography>
+                  <Typography variant="body2" fontWeight="bold" color="error.main">
+                    {row.total_cost.toFixed(4)} €
+                  </Typography>
+                </Box>
+                <Typography variant="caption" color="text.secondary">
+                  {(row.total_input_tokens + row.total_output_tokens).toLocaleString()} Tokens
+                  {' '}({row.total_input_tokens.toLocaleString()} in / {row.total_output_tokens.toLocaleString()} out)
+                </Typography>
+                {hasSavings && (
+                  <Box sx={{ mt: 0.5 }}>
+                    <Chip
+                      size="small"
+                      color="success"
+                      variant="outlined"
+                      label={`Janus Caching: -${row.total_cost_saved.toFixed(4)} € | ${efficiencyPct}% gespart`}
+                      sx={{ fontSize: '0.7rem' }}
+                    />
+                  </Box>
+                )}
+              </Box>
+            );
+          })}
+
+          {/* Footer: Gesamtersparnis */}
+          {modelSummary.length > 0 && (() => {
+            const totalSaved = modelSummary.reduce((s, r) => s + r.total_cost_saved, 0);
+            const totalSpent = modelSummary.reduce((s, r) => s + r.total_cost, 0);
+            const totalEffPct = (totalSpent + totalSaved) > 0
+              ? Math.round((totalSaved / (totalSpent + totalSaved)) * 100)
+              : 0;
+            return totalSaved > 0 ? (
+              <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'grey.300' }}>
+                <Typography variant="body2" color="success.main" fontWeight="bold">
+                  💚 Gesamtersparnis durch Janus Caching: {totalSaved.toFixed(4)} € ({totalEffPct}% aller Prompt-Kosten)
+                </Typography>
+              </Box>
+            ) : null;
+          })()}
+
+          <Box sx={{ mt: 2, textAlign: 'right' }}>
+            <Typography
+              variant="caption"
+              color="primary"
+              sx={{ cursor: 'pointer', textDecoration: 'underline' }}
+              onClick={() => setIsCostModalOpen(false)}
+            >
+              Schließen
+            </Typography>
+          </Box>
+        </Box>
+      </Modal>
     </Box>
   );
 };

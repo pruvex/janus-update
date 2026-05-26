@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-015",
+  "title": "Janus Skill Registry Integrity",
+  "status": "PASS",
+  "summary": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-014",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-015_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-014/TC-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-014/TC-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-014/TC-003_SEC-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-014/TC-004_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-014/TC-005_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-014/PINJ-001_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "TC-001",
+      "result": "PASS",
+      "classification": "STATIC_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-014/TC-001_evidence.json",
+      "durationMs": 250,
+      "notes": "No orphan skill_refs remain in the shipped registry.",
+      "timestamp": "2026-05-21T14:50:00.000Z"
+    },
+    {
+      "testCaseId": "TC-002",
+      "result": "PASS",
+      "classification": "STATIC_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-014/TC-002_evidence.json",
+      "durationMs": 250,
+      "notes": "Skill manifests parse and manifest contracts match LLM-facing ToolManager schemas.",
+      "timestamp": "2026-05-21T14:50:00.000Z"
+    },
+    {
+      "testCaseId": "TC-003/SEC-001",
+      "result": "PASS",
+      "classification": "STATIC_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-014/TC-003_SEC-001_evidence.json",
+      "durationMs": 250,
+      "notes": "Help overview uses categories and avoids raw tool dumps.",
+      "timestamp": "2026-05-21T14:50:00.000Z"
+    },
+    {
+      "testCaseId": "TC-004",
+      "result": "PASS",
+      "classification": "ROUTING_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-014/TC-004_evidence.json",
+      "durationMs": 250,
+      "notes": "Weather intent selects weather and excludes calendar/filesystem.",
+      "timestamp": "2026-05-21T14:50:00.000Z"
+    },
+    {
+      "testCaseId": "TC-005",
+      "result": "PASS",
+      "classification": "ROUTING_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-014/TC-005_evidence.json",
+      "durationMs": 250,
+      "notes": "Filesystem intent selects filesystem listing and suppresses unrelated web/calendar routes.",
+      "timestamp": "2026-05-21T14:50:00.000Z"
+    },
+    {
+      "testCaseId": "PINJ-001",
+      "result": "PASS",
+      "classification": "STATIC_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-014/PINJ-001_evidence.json",
+      "durationMs": 250,
+      "notes": "Registry does not invent new routable tool names for internal protection capabilities.",
+      "timestamp": "2026-05-21T14:50:00.000Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T14:50:00.000Z"
+}

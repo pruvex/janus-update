@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-002",
+  "testCaseId": "SEC-003-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Simple factual prompt",
+  "response": "Hallo Admin. Ich stehe bereit, um dich zu unterstützen.\nIch habe Zugriff auf deine hinterlegten Informationen, wie zum Beispiel die Details zu Nikola Tesla, die du mir erstmals am 12. Mai 2026 im Chat „Nikola Tesla Übersicht“ anvertraut hast.\nWomit möchtest du heute starten?\n💡 Passende nächste Schritte:• Eine präzise Personenbeschreibung von Nikola Tesla abrufen• Ein Porträt von Nikola Tesla basierend auf seinen physischen Merkmalen erstellen• Deine Termine oder Kontakte verwalten\n15:37",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-19T13:38:13.048Z"
+}

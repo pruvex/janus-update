@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-002",
+  "testCaseId": "SEC-003-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Simple factual prompt",
+  "response": "Hallo Admin\n💡 Passende nächste Schritte:• Wenn du eine konkrete Frage zu Nikola Tesla hast, antworte ich kurz und direkt.• Wenn du ein Porträt möchtest, kann ich es auf Basis der dauerhaften Merkmale formulieren.\n15:37",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-19T13:37:22.893Z"
+}

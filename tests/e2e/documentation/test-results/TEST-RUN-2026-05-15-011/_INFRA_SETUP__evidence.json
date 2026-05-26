@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-011",
+  "testCaseId": "_INFRA_SETUP_",
+  "result": "FAIL",
+  "classification": "INFRASTRUCTURE_OFFLINE",
+  "prompt": "",
+  "response": "",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Failure Code: INFRASTRUCTURE_OFFLINE. ERR_CONNECTION_REFUSED reaching baseUrl. Suggested action: npm run start-dev (repository root).",
+  "timestamp": "2026-05-15T16:25:36.931Z"
+}

@@ -1,0 +1,44 @@
+{
+  "entries": [
+    {
+      "skill_id": "system.weather",
+      "winner": "gpt-5.4-mini",
+      "pass_rate": 1.0,
+      "latency_ms": 500,
+      "timestamp": "2026-04-28T18:45:18.064347",
+      "primary_model": "gpt-5.4-mini",
+      "fallback_model": "gpt-5.4",
+      "escalation_model": "gpt-5.4"
+    },
+    {
+      "skill_id": "system.weather",
+      "winner": "gpt-5.4-nano",
+      "pass_rate": 0.4,
+      "latency_ms": 1586.3548387096773,
+      "timestamp": "2026-04-28T18:38:23.215797",
+      "primary_model": "gpt-5.4-nano",
+      "fallback_model": "gpt-5.4-mini",
+      "escalation_model": "gpt-5.4"
+    },
+    {
+      "skill_id": "system.weather",
+      "winner": "gpt-5.4-nano",
+      "pass_rate": 1.0,
+      "latency_ms": 1586.3548387096773,
+      "timestamp": "2026-04-28T18:31:45.134552",
+      "primary_model": "gpt-5.4-nano",
+      "fallback_model": "gpt-5.4-mini",
+      "escalation_model": "gpt-5.4"
+    },
+    {
+      "skill_id": "system.weather",
+      "winner": "openai",
+      "pass_rate": 1.0,
+      "latency_ms": 1565.0,
+      "timestamp": "2026-04-28T17:57:46.149840",
+      "primary_model": "gpt-5.4-nano",
+      "fallback_model": "gpt-5.4-mini",
+      "escalation_model": "gpt-5.4"
+    }
+  ]
+}

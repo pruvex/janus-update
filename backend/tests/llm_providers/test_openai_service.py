@@ -4,6 +4,13 @@ import pytest
 from backend.llm_providers.openai.service import OpenAIServiceProvider
 
 
+# Simple class to mock usage data without Mock comparison issues
+class UsageMock:
+    def __init__(self, prompt_tokens, completion_tokens):
+        self.prompt_tokens = prompt_tokens
+        self.completion_tokens = completion_tokens
+
+
 @pytest.mark.asyncio
 async def test_provider_generate_response():
     with patch("openai.AsyncOpenAI") as mock_async_openai:
@@ -16,9 +23,8 @@ async def test_provider_generate_response():
         mock_response.choices[0].message.tool_calls = None
         mock_response.choices[0].message.content = "Test response"
         mock_response.choices[0].message.refusal = False # Set refusal to False for this test
-        mock_response.usage = AsyncMock()
-        mock_response.usage.prompt_tokens = 10
-        mock_response.usage.completion_tokens = 5
+        # Use simple class for usage to avoid Mock comparison issues in cost_calculator
+        mock_response.usage = UsageMock(prompt_tokens=10, completion_tokens=5)
         mock_client.chat.completions.create.return_value = mock_response
 
         provider = OpenAIServiceProvider()

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-021",
+  "testCaseId": "INT-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wetter morgen in Koeln",
+  "response": "In Köln wird morgen (19.05.2026) leichter Nieselregen erwartet.  \n\nHöchsttemperatur: 16,2 °C  \nTiefsttemperatur: 8,6 °C  \nNiederschlagswahrscheinlichkeit: 59 %  \nWindböen: bis 16,6 km/h\n\nQuelle: Open-Meteo\n💡 Passende nächste Schritte:• Soll ich dir auch die Wetterlage für übermorgen in Köln dazugeben?• Willst du eine kurze Kleidungsempfehlung für morgen bei dem Nieselregen?\n20:26",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T18:26:43.647Z"
+}

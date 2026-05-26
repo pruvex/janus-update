@@ -1,0 +1,7 @@
+{
+  "rawSensitiveEvidencePolicy": "redacted-only",
+  "rawPrivateCanariesWritten": false,
+  "backendPiiDisabled": true,
+  "frontendPiiDisabled": true,
+  "replayMaskedAndBlocked": true
+}

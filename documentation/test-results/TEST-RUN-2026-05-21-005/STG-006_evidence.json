@@ -1,0 +1,13 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-005",
+  "testCaseId": "STG-006",
+  "result": "PASS",
+  "classification": "LOCAL_SECRET_MODEL_PASS",
+  "evidence": {
+    "keyringUsed": true,
+    "appDataConfigUsed": true,
+    "packagedEnvExcluded": true,
+    "rawSecretsWrittenToEvidence": false
+  },
+  "timestamp": "2026-05-21T00:53:04.743Z"
+}

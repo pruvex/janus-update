@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-038",
+  "testCaseId": "TC-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Preise fuer OpenAI und Gemini Modelle",
+  "response": "1. OpenAI (API) – GPT-5.5: $5.00 Eingabe / 1M Tokens, $30.00 Ausgabe / 1M Tokens (Stand/Quelle: laut Suchergebnis, offizielle OpenAI API Pricing-Seite)  - [OpenAI API Pricing](https://openai.com/api/pricing/)2. OpenAI (API) – GPT-5.4: $2.50 Eingabe / 1M Tokens, $15.00 Ausgabe / 1M Tokens (Stand/Quelle: laut Suchergebnis, offizielle OpenAI API Pricing-Seite)  - [OpenAI API Pricing](https://openai.com/api/pricing/)3. OpenAI (API) – GPT-5.4 mini: $0.75 Eingabe / 1M Tokens, $4.50 Ausgabe / 1M Tokens (Stand/Quelle: laut Suchergebnis, offizielle OpenAI API Pricing-Seite)  - [OpenAI API Pricing](https://openai.com/api/pricing/)4. Gemini (API) – Gemini 2.5 Pro: in den gefundenen offiziellen Tabellen sind USD-Preise ausgewiesen (Stand/Quelle: laut Suchergebnis, offizielle Google Developer Pricing-Seite; Euro-Preise nicht direkt wörtlich im Snippet gefunden)  - [ai.google.dev (Gemini Developer API pricing)](https://ai.google.dev/)5. Gemini (Abo, DE/EUR, nicht API pro Token): Google AI Pro 21,99 €/Monat; Google AI Ultra 219,99 €/Monat (Stand/Quelle: laut Suchergebnis, Drittquellen/Artikel mit DE/EUR-Angaben)  - [golem.de (Google AI Pro/Ultra Preise)](https://www.golem.de/)💡 Passende nächste Schritte:• Sag mir, ob du **API-Token-Preise** oder **Abo-Preise (Chat/Advanced/Pro)** vergleichen willst  • Nenne die **konkreten Modellnamen** (z.B. bei Gemini: Pro/Flash/Ultra bzw. bei OpenAI: gewünschte GPT-Variante), dann ziehe ich die passenden Zeilen gezielt aus den Pricing-Tabellen heraus  • Wenn du willst: Ich erstelle eine kompakte Vergleichstabelle **Eingabe vs. Ausgabe pro 1M Tokens** (in USD, da die offiziellen API-Listen dafür typischerweise USD ausweisen)21:21",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T19:22:41.815Z"
+}

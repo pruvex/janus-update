@@ -4,6 +4,7 @@ Converts country-info tool-result data into a human-readable Markdown answer
 including name, capital, population, region, currencies, and languages.
 """
 
+from backend.renderers.attribution import COUNTRY_INFO_SOURCE_LABEL, append_quelle_line
 from backend.renderers.base import BaseRenderer
 from backend.renderers.registry import register_renderer
 
@@ -39,7 +40,8 @@ class CountryInfoRenderer(BaseRenderer):
         lines.append(f"- **Währung(en):** {currencies_str}")
         lines.append(f"- **Sprache(n):** {languages_str}")
 
-        return "\n".join(lines)
+        body = "\n".join(lines)
+        return append_quelle_line(body, COUNTRY_INFO_SOURCE_LABEL)
 
     @staticmethod
     def _format_population(population: int) -> str:

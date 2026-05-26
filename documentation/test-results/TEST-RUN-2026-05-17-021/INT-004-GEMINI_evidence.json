@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-021",
+  "testCaseId": "INT-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Debugge den Providerfehler komplett mit Headern",
+  "response": "Ich helfe dir gerne beim Debuggen des Providerfehlers. Wie du mir heute um 17:20 Uhr im Chat „Providerfehler Header Debuggen“ bereits berichtet hast, geht es um eine detaillierte Analyse inklusive der Header-Daten.\nUm die genaue Ursache (wie etwa Rate-Limits, Authentifizierungsprobleme oder Gateway-Fehler) zu identifizieren, benötige ich den vollständigen Header-Output oder die spezifische Fehlermeldung. Bitte kopiere diese hier hinein, damit ich sie für dich auswerten kann.\n💡 Passende nächste Schritte:\n\nKopiere die Header-Daten für eine direkte Analyse hier in den Chat.\nNenne mir die Fehlermeldung (z. B. HTTP 429 oder 503), falls diese bekannt ist.\nSoll ich eine Checkliste für häufige Provider-Fehler in Verbindung mit Headern erstellen?\n\n18:43",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T16:44:40.104Z"
+}

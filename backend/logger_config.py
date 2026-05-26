@@ -1,6 +1,9 @@
 import logging
 import sys
 import os
+from pathlib import Path
+
+from backend.utils.redaction import redact_sensitive_text, redact_sensitive_value
 
 
 NOISE_PATTERNS = (
@@ -14,6 +17,15 @@ class NoiseSuppressFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         message = record.getMessage()
         return not any(pattern in message for pattern in NOISE_PATTERNS)
+
+
+class SensitiveRedactionFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        record.msg = redact_sensitive_text(str(record.msg))
+        if record.args:
+            record.args = redact_sensitive_value(record.args)
+        return True
+
 
 def setup_logging():
     """Konfiguriert das Logging. Schreibt IMMER in AppData."""
@@ -43,10 +55,26 @@ def setup_logging():
     except Exception as e:
         print(f"WARNUNG: Konnte Logfile nicht erstellen: {e}")
 
+    # Zusätzlicher zentraler Log-Ort im Repo für einfache Auswertung:
+    # C:\KI\Janus-Projekt\documentation\logs\janus_backend.log
+    try:
+        backend_dir = Path(__file__).resolve().parent
+        repo_root = backend_dir.parent
+        docs_log_dir = repo_root / "documentation" / "logs"
+        docs_log_dir.mkdir(parents=True, exist_ok=True)
+        docs_log_file = docs_log_dir / "janus_backend.log"
+        docs_file_handler = logging.FileHandler(str(docs_log_file), mode="a", encoding="utf-8")
+        handlers.append(docs_file_handler)
+        print(f"DEBUG: Logging mirror to {docs_log_file}")
+    except Exception as e:
+        print(f"WARNUNG: Konnte documentation/logs Logfile nicht erstellen: {e}")
+
     # 3. Config anwenden
     noise_filter = NoiseSuppressFilter()
+    redaction_filter = SensitiveRedactionFilter()
     for handler in handlers:
         handler.addFilter(noise_filter)
+        handler.addFilter(redaction_filter)
 
     logging.basicConfig(
         level=numeric_level,
@@ -60,6 +88,10 @@ def setup_logging():
     # 4. Externe Libs ruhig stellen
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("openai").setLevel(logging.WARNING)
+    logging.getLogger("openai._base_client").setLevel(logging.WARNING)
+    logging.getLogger("hpack").setLevel(logging.WARNING)
+    logging.getLogger("h2").setLevel(logging.WARNING)
     logging.getLogger("multipart").setLevel(logging.WARNING)
     logging.getLogger("watchfiles").setLevel(logging.WARNING)
     logging.getLogger("fontTools.subset").setLevel(logging.WARNING)

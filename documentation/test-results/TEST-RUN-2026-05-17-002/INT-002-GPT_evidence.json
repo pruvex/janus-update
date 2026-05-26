@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-002",
+  "testCaseId": "INT-002-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Wer ist Ada Lovelace?",
+  "response": "Ada Lovelace (Augusta Ada King-Noel, Countess of Lovelace, auch „Lady Lovelace“) war eine britische Mathematikerin und Gesellschaftsdame. Sie wurde am 10. Dezember 1815 in London geboren und starb am 27. November 1852 ebenda. Sie arbeitete mit Charles Babbage an der „Analytical Engine“ und erkannte deren Potenzial weit über das reine Ausrechnen hinaus. Besonders bekannt ist sie dafür, in ihren Notizen ein Beispiel-Programm für diese Maschine beschrieben zu haben (oft als frühe Grundlage für Programmierung gesehen).\n💡 Passende nächste Schritte:• Willst du kurz die Verbindung zu Charles Babbage und der Analytical Engine erklärt bekommen?• Soll ich dir die wichtigsten Begriffe rund um „Programmieridee“ bei Ada Lovelace in 3 Stichpunkten zusammenfassen?\n01:39",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-16T23:39:24.563Z"
+}

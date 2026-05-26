@@ -1,10 +1,33 @@
 import json
+from unittest.mock import MagicMock
 
 import pytest
 
 from backend.data.models import SkillTelemetry
+from backend.data.schemas import PlannerContext, PlannerProviderProfile
 from backend.services.agent_planner import AgentPlanner
 from backend.services.agent_runtime import AgentRuntime
+from backend.services.orchestrator.intent_engine import IntentDetectionResult
+from backend.services.skill_selector import SkillSelector
+
+
+def _planner_profile(provider="openai", model="gpt-5.4-nano"):
+    return PlannerProviderProfile(
+        provider=provider,
+        requested_model=model,
+        planner_model=model,
+        model_class="nano" if "nano" in model else "standard",
+        max_iterations_cap=8,
+    )
+
+
+def _planner_context(allowed=None, forbidden=None, negative=None, required=None):
+    return PlannerContext(
+        allowed_skill_ids=list(allowed or []),
+        required_skill_ids=list(required or []),
+        forbidden_skill_ids=list(forbidden or []),
+        negative_constraints=list(negative or []),
+    )
 
 
 @pytest.mark.asyncio
@@ -29,6 +52,9 @@ async def test_agent_planner_builds_specialist_spec(monkeypatch):
 
     spec = await planner.plan(
         user_prompt="Durchsuche meine Dokumente nach Kairo und erstelle eine Zusammenfassung als neue Textdatei.",
+        intent_result=IntentDetectionResult(primary_intent="complex_document"),
+        planner_context=_planner_context(["knowledge.query", "filesystem.create_file"]),
+        provider_profile=_planner_profile(),
         capability_groups={
             "document_analysis": ["knowledge.query"],
             "file_write": ["filesystem.create_file"],
@@ -70,6 +96,9 @@ async def test_agent_planner_normalizes_llm_plan_and_injects_required_routing_co
 
     spec = await planner.plan(
         user_prompt="Wie viele Einwohner hat Japan und wie weit ist es von Tokio nach Kyoto?",
+        intent_result=IntentDetectionResult(),
+        planner_context=_planner_context(["system.country_info", "system.routing"]),
+        provider_profile=_planner_profile(provider="gemini", model="gemini-3-flash-preview"),
         capability_groups={
             "geo": ["system.country_info", "system.routing"],
         },
@@ -104,6 +133,9 @@ async def test_agent_planner_sanitizes_list_strings_and_required_skills_string(m
 
     spec = await planner.plan(
         user_prompt="Wie weit ist es von Berlin nach Stockholm?",
+        intent_result=IntentDetectionResult(),
+        planner_context=_planner_context(["system.routing", "system.country_info"]),
+        provider_profile=_planner_profile(provider="ollama", model="gemma2:27b"),
         capability_groups={
             "geo": ["system.routing", "system.country_info"],
         },
@@ -128,6 +160,9 @@ async def test_agent_planner_heuristic_plan_selects_country_and_routing_for_trav
 
     spec = await planner.plan(
         user_prompt="Berechne Distanz und Fahrzeit von Tokio nach Kyoto und nenne die Einwohner von Japan.",
+        intent_result=IntentDetectionResult(),
+        planner_context=_planner_context(["system.country_info", "system.routing", "knowledge.query"]),
+        provider_profile=_planner_profile(),
         capability_groups={
             "geo": ["system.country_info", "system.routing"],
             "knowledge": ["knowledge.query"],
@@ -168,6 +203,12 @@ async def test_agent_planner_pdf_single_goal_keeps_only_create_pdf(monkeypatch):
 
     spec = await planner.plan(
         user_prompt="Erstelle eine PDF 'Reise.pdf' mit Inhalt 'Hallo'.",
+        intent_result=IntentDetectionResult(),
+        planner_context=_planner_context(
+            ["create_pdf", "knowledge.open_document", "knowledge.edit_pdf", "read_full_text"],
+            required=["create_pdf"],
+        ),
+        provider_profile=_planner_profile(),
         capability_groups={
             "pdf": ["create_pdf", "knowledge.open_document", "knowledge.edit_pdf", "read_full_text"],
         },
@@ -191,6 +232,9 @@ async def test_agent_planner_lockdown_prompt_returns_empty_required_skills(monke
 
     spec = await planner.plan(
         user_prompt="LOCKDOWN_MODE: CREATE_PDF_DONE\nRegel: Keine weiteren Tools planen.",
+        intent_result=IntentDetectionResult(),
+        planner_context=_planner_context(["create_pdf", "knowledge.open_document"]),
+        provider_profile=_planner_profile(),
         capability_groups={"pdf": ["create_pdf", "knowledge.open_document"]},
         provider="openai",
         model="gpt-5.4-nano",
@@ -198,6 +242,65 @@ async def test_agent_planner_lockdown_prompt_returns_empty_required_skills(monke
     )
 
     assert spec.required_skills == []
+    assert spec.max_iterations == 1
+
+
+@pytest.mark.asyncio
+async def test_agent_planner_calendar_intent_forbids_pdf_and_skips_llm(monkeypatch):
+    planner = AgentPlanner()
+
+    async def _fake_generate(**_kwargs):
+        raise AssertionError("LLM darf bei eindeutigem Kalender-Intent nicht aufgerufen werden")
+
+    monkeypatch.setattr("backend.services.agent_planner.llm_gateway.simple_llm_generate_content", _fake_generate)
+
+    spec = await planner.plan(
+        user_prompt="Welche Termine habe ich nächsten Mittwoch?",
+        intent_result=IntentDetectionResult(is_calendar_intent=True, primary_intent="calendar"),
+        planner_context=_planner_context(
+            ["calendar.list_events", "system.create_pdf"],
+            forbidden=["system.create_pdf"],
+            negative=["Kalender-Turn: PDF-Tools verboten."],
+        ),
+        provider_profile=_planner_profile(),
+        capability_groups={
+            "calendar": ["calendar.list_events"],
+            "document_generation": ["system.create_pdf"],
+        },
+        provider="openai",
+        model="gpt-5.4-nano",
+        api_key="dummy",
+    )
+
+    assert spec.required_skills == ["calendar.list_events"]
+    assert "system.create_pdf" not in spec.required_skills
+    assert spec.max_iterations == 1
+
+
+@pytest.mark.asyncio
+async def test_agent_planner_shopping_intent_forces_price_comparison_without_llm(monkeypatch):
+    planner = AgentPlanner()
+
+    async def _fake_generate(**_kwargs):
+        raise AssertionError("LLM darf bei eindeutigem Shopping-Intent nicht aufgerufen werden")
+
+    monkeypatch.setattr("backend.services.agent_planner.llm_gateway.simple_llm_generate_content", _fake_generate)
+
+    spec = await planner.plan(
+        user_prompt="Was kostet die Apple Watch Ultra am günstigsten?",
+        intent_result=IntentDetectionResult(is_shopping_intent=True, primary_intent="shopping"),
+        planner_context=_planner_context(["system.price_comparison", "system.websearch"]),
+        provider_profile=_planner_profile(),
+        capability_groups={
+            "shopping": ["system.price_comparison"],
+            "web_research": ["system.websearch"],
+        },
+        provider="openai",
+        model="gpt-5.4-nano",
+        api_key="dummy",
+    )
+
+    assert spec.required_skills == ["system.price_comparison"]
     assert spec.max_iterations == 1
 
 
@@ -518,3 +621,93 @@ async def test_agent_runtime_uses_phase_summary_when_final_synthesis_is_generic(
 
     assert result["phase_outputs"] == ["[system.country_info] Japan: Hauptstadt Tokio, Einwohner 124.5 Mio."]
     assert result["text"] == "[system.country_info] Japan: Hauptstadt Tokio, Einwohner 124.5 Mio."
+
+
+# ---------------------------------------------------------------------------
+# TASK-061 — Intent-Driven Skill Bootstrapping
+# ---------------------------------------------------------------------------
+
+def _make_registry_with_calendar():
+    """Return a lightweight CapabilityRegistry mock that exposes calendar skills."""
+    reg = MagicMock()
+    reg.get_capability_groups.return_value = {
+        "calendar": ["calendar.list_events", "calendar.find_slots", "calendar.create_event"],
+        "document_generation": ["system.create_pdf"],
+    }
+    reg.get_intent_skill_policy.return_value = {
+        "mandatory": ["calendar.list_events", "calendar.find_slots"],
+        "boosted": [],
+        "forbidden": ["system.create_pdf"],
+    }
+    return reg
+
+
+def test_skill_selector_calendar_intent_mandatory_injection_with_empty_chroma(monkeypatch):
+    """TASK-061 criterion: Chroma returns empty list but calendar.list_events is still delivered."""
+    registry = _make_registry_with_calendar()
+    selector = SkillSelector(capability_registry=registry)
+
+    # Force semantic search to return nothing (simulates Chroma miss or model loading).
+    monkeypatch.setattr(selector, "_semantic_search", lambda **_: [])
+
+    intent = IntentDetectionResult(is_calendar_intent=True, primary_intent="calendar")
+    result = selector.get_relevant_skills("Zeige meine Termine heute", intent_result=intent)
+
+    assert "calendar.list_events" in result, (
+        "calendar.list_events must be present even when Chroma returns nothing"
+    )
+    assert "system.create_pdf" not in result, (
+        "system.create_pdf must be excluded for calendar intents"
+    )
+    # Mandatory skills must appear before any other skills.
+    assert result.index("calendar.list_events") == 0, (
+        "calendar.list_events must be the first returned skill"
+    )
+
+
+def test_skill_selector_shopping_intent_forces_price_comparison(monkeypatch):
+    """Shopping intent must surface system.price_comparison even on empty Chroma."""
+    reg = MagicMock()
+    reg.get_capability_groups.return_value = {
+        "shopping": ["system.price_comparison"],
+        "web": ["system.websearch"],
+    }
+    reg.get_intent_skill_policy.return_value = {
+        "mandatory": ["system.price_comparison"],
+        "boosted": [],
+        "forbidden": ["system.websearch"],
+    }
+    selector = SkillSelector(capability_registry=reg)
+    monkeypatch.setattr(selector, "_semantic_search", lambda **_: [])
+
+    intent = IntentDetectionResult(is_shopping_intent=True, primary_intent="shopping")
+    result = selector.get_relevant_skills("Preis für Samsung Galaxy", intent_result=intent)
+
+    assert "system.price_comparison" in result
+    assert "system.websearch" not in result
+
+
+def test_skill_selector_no_duplication_when_chroma_and_mandatory_overlap(monkeypatch):
+    """If Chroma returns a mandatory skill, it must not appear twice."""
+    registry = _make_registry_with_calendar()
+    selector = SkillSelector(capability_registry=registry)
+
+    # Chroma also returns calendar.list_events — overlap case.
+    monkeypatch.setattr(selector, "_semantic_search", lambda **_: ["calendar.list_events", "calendar.create_event"])
+
+    intent = IntentDetectionResult(is_calendar_intent=True, primary_intent="calendar")
+    result = selector.get_relevant_skills("Neuer Termin morgen", intent_result=intent)
+
+    assert result.count("calendar.list_events") == 1, "No duplicates allowed"
+
+
+def test_skill_selector_no_intent_falls_back_to_chroma(monkeypatch):
+    """When intent_result is None the selector behaves as pure semantic search."""
+    registry = _make_registry_with_calendar()
+    selector = SkillSelector(capability_registry=registry)
+
+    monkeypatch.setattr(selector, "_semantic_search", lambda **_: ["system.create_pdf"])
+
+    result = selector.get_relevant_skills("Erstelle ein Dokument", intent_result=None)
+
+    assert "system.create_pdf" in result

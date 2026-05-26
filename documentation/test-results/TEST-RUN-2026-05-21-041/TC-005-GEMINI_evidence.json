@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-041",
+  "testCaseId": "TC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was kostet Gold gerade pro Unze in Euro?",
+  "response": "Hallo Pruve, der Goldpreis ist heute Abend deutlich gestiegen.Laut dem aktuellsten Eintrag von **23:04 Uhr** (aus dem Chat „Aktueller Goldpreis“) liegt der Preis momentan bei **4.095,25 € pro Unze**.Hier ist die Zusammenfassung der aktuellen Daten:1.  **Zusammenfassung**    Der Goldpreis verzeichnete heute eine starke Dynamik. Während er um **21:24 Uhr** noch bei 3.881,55 € lag, erreichte er zum jetzigen Zeitpunkt (23:04 Uhr) den Wert von 4.095,25 €. Externe Marktdaten liegen derzeit noch etwas niedriger, was auf eine sehr schnelle aktuelle Preisbewegung hindeutet.2.  **Liste der Fakten**    *   **Aktueller Preis (Memory):** 4.095,25 € pro Unze (Stand: 21.05.2026, 23:04 Uhr).    *   **Vorheriger Preis (Memory):** 3.881,55 € pro Unze (Stand: 21.05.2026, 21:24 Uhr).    *   **Externe Marktwerte:** Zwischen 3.894,88 € und 3.908,60 € (laut Websuche, Stand: 21.05.2026).3.  **Quellen**    *   Interne Aufzeichnungen (Chats: „Aktueller Goldpreis“)    *   [Gefundene Marktquelle 1](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHh_oOROjCmrHMoOwOqgMxeKpQgCLIQIl5thf3WXfA_ZUGWafVpeg4JfGhEQos2nfIf43XPYSexDk1LoYzgCw4eRwBJb5Oz0qWqadOmDG_hEqXMhbN5Q4C7IVwuIjVYGnXtP5W84OMOwGOBEZUtGURchhbchSY3jYviB3NOySOs3iB3s5dwbgGBbmpxpBgRdfgf14KkaChMwKxCc1wnHJI=)    *   [Gefundene Marktquelle 2](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGXMB7IArulcpl-50xnjsal3BIDhqsFtT8cnB_-HYxxF6oO5uLrhhqM6FFIf8Fp-VxvpmPTo8_nTiawhfDh1GF53YN6zrhUNKmuay7Dt0cGtNfapO_ejYDTPnvAxoHiZZDCxOtT1_RMSoWAUJZUA-GIBE_FoYC0WBx5eg2MKMq1d9g2W9nkOGkpMxDPl7PEBF8xDrYJ1h3s6Xjssk742SA0FdU7M5TFs_7_570m)💡 **Passende nächste Schritte:**• Soll ich den prozentualen Anstieg seit heute Nachmittag für dich ausrechnen?• Möchtest du den Wert in Gramm oder Kilogramm umgerechnet haben?• Soll ich nach den Ursachen für diesen aktuellen Preissprung recherchieren?23:04",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T21:05:36.500Z"
+}

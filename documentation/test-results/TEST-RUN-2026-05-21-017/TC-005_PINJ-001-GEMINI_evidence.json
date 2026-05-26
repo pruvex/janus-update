@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "janus.test-evidence.v1",
+  "testRunId": "TEST-RUN-2026-05-21-017",
+  "testCaseId": "TC-005/PINJ-001-GEMINI",
+  "status": "PASS",
+  "provider": "Gemini pre-provider static runner",
+  "assertion": "Provider-independent gate blocks privacy-bypass phrasing before provider selection.",
+  "pytestNode": "test_context_privacy_externalization_boundary.py::test_broad_private_context_must_not_be_externalized_to_web_or_api",
+  "commands": [
+    "python -m pytest backend\\tests\\test_context_privacy_externalization_boundary.py backend\\tests\\test_privacy_export_gate.py -q",
+    "python -m pytest backend\\tests\\test_memory_security.py backend\\tests\\test_memory_regression.py backend\\tests\\tools\\test_external_tool_fallback_honesty.py -q",
+    "python backend\\tools\\validate_skill_schemas.py"
+  ],
+  "observed": {
+    "focusedPrivacyGateSuite": "17 passed",
+    "memoryAndExternalRegressionSuite": "34 passed",
+    "skillSchemaValidation": "54 skill JSON files validated, OK All validated skills passed",
+    "changedGuardrails": [
+      "broad private context externalization gate blocks before LLM/tools",
+      "memory suppression skips unrelated current/weather queries without personal scope",
+      "memory_read lexical fallback preserves explicit relevant recall"
+    ]
+  },
+  "timestamp": "2026-05-21T15:00:00.000Z"
+}

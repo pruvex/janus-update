@@ -1,0 +1,10 @@
+{
+  "testCaseId": "TC-002",
+  "source": "python -m pytest backend\\tests\\test_skill_selector_capability_registry_integrity.py -q",
+  "assertions": [
+    "All backend/skills JSON files parse as JSON.",
+    "Every discovered skill id uses a canonical domain.action shape.",
+    "Empty or incomplete skill ids fail the regression test."
+  ],
+  "result": "PASS"
+}

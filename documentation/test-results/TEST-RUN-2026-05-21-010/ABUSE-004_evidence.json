@@ -1,0 +1,5 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-prompts",
+  "priorSecurity07Evidence": true,
+  "currentUnitProbe": true
+}

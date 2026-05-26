@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-001",
+  "testCaseId": "TC-007-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Modellpreise und erstelle eine kurze Vergleichstabelle",
+  "response": "Hallo Admin, ich habe die aktuellen Modellpreise für dich recherchiert. Hier ist die gewünschte Vergleichstabelle mit den ermittelten Werten (Stand Mai 2026):\nVergleich aktueller Modellpreise\n\n\n\nGoogle Pixel 8 Pro\n495,00 € (unverifiziert)\n\n\niPhone 15 Pro\n729,00 € (unverifiziert)\n\n\nSamsung Galaxy S24 Ultra\n739,99 € (unverifiziert)\n\n\niPad Pro 13 (2024, M4)\n1.093,99 € (unverifiziert)\n\n\nMacBook Pro 14 (M3)\n1.219,00 € (unverifiziert)\n\n\nZusatzinformation zu KI-Modellen:Falls du mit \"Modellen\" die API-Kosten für KI meinst: GPT-4o liegt aktuell bei ca. 4,65 € für Input- und 13,95 € für Output-Tokens pro eine Million Einheiten (unverifiziert).\n💡 Passende nächste Schritte:• Soll ich für eines dieser Modelle einen detaillierten Preisvergleich über verschiedene Händler durchführen?• Benötigst du technische Spezifikationen im direkten Vergleich zu diesen Preisen?• Möchtest du, dass ich die Preisentwicklung für ein bestimmtes Modell über die letzten Monate prüfe?\n01:35",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T23:36:17.522Z"
+}

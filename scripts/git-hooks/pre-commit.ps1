@@ -5,9 +5,9 @@ $exitCode = 0
 $staged = git diff --cached --name-only --diff-filter=AM
 if (-not $staged) { exit 0 }
 foreach ($f in $staged) {
-    if (-not (Test-Path -LiteralPath $f)) { continue }
+    if (-not (Test-Path -Path $f -ErrorAction SilentlyContinue)) { continue }
     try {
-        $sizeMB = [math]::Round((Get-Item -LiteralPath $f).Length / 1MB, 2)
+        $sizeMB = [math]::Round((Get-Item -Path $f -ErrorAction SilentlyContinue).Length / 1MB, 2)
     } catch { continue }
     if ($sizeMB -gt $MAX_MB) {
         Write-Host "[PRE-COMMIT BLOCKER] $f = $sizeMB MB > $MAX_MB MB"

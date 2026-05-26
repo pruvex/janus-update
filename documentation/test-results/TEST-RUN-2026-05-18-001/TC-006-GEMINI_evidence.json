@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-001",
+  "testCaseId": "TC-006-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Verschieb den Termin morgen um 30 Minuten",
+  "response": "Ich habe in deinem Kalender für morgen, Dienstag den 19. Mai 2026, keine Termine gefunden, die ich verschieben könnte. Auch eine Suche nach dem „Phoenix-Termin“ oder einem „Sport-Termin“ ergab für diesen Zeitraum leider keine Treffer.\nSoll ich den Termin unter einem anderen Namen suchen oder möchtest du, dass ich ihn für morgen neu anlege?\n💡 Passende nächste Schritte:• Phoenix-Termin für morgen neu anlegen• Kalender für die gesamte Woche anzeigen• Nach einem anderen Stichwort suchen (z. B. \"Sport\")\n00:54",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T22:55:11.197Z"
+}

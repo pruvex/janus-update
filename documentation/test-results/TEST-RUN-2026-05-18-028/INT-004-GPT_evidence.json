@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-028",
+  "testCaseId": "INT-004-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Sortiere, fasse zusammen, erstelle Uebersicht",
+  "response": "Hallo Admin — ich habe die dauerhaften Merkmale aus dem Kontext extrahiert, gruppiert und zu einer kompakten Übersicht zusammengefasst:\nÜbersicht (dauerhafte Merkmale / Physik)\nKörperbau & Größe\n\nsehr schlank  \nauffallend groß\n\nKopf-/Gesichtsmerkmale\n\nhohes/ausgeprägtes Stirnprofil (hohe Stirn)  \nschmales Gesicht  \nmarkante, ausgeprägte Wangenknochen  \ntief liegende Augen (auch als „tief liegende / dunkel wirkende Augen“ im Kontext benannt)\n\nHaar\n\ndunkles Haar  \nakkurat gescheitelt getragen (immer so)\n\nZusammenfassung (1 Satz)\nNikola Tesla wird als auffallend großer, sehr schlanker Mann mit dunklem, akkurat gescheiteltem Haar, hoher Stirn, schmalem Gesicht, ausgeprägten Wangenknochen und tief liegenden Augen beschrieben.\n💡 Passende nächste Schritte:• Soll ich die Übersicht zusätzlich in eine „Checkliste“ zum schnellen Abhaken umformatieren?• Möchtest du, dass ich daraus eine kurze, einheitliche Personenbeschreibung (ohne Wiederholungen) formuliere?\n00:21",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T22:21:56.279Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "INT-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle API Preise",
+  "response": "1. Zusammenfassung  Ich habe beim Suchen nach „API-Preise“ aktuell konkrete Preisangaben gefunden, aber diese sind nicht allgemein „die API-Preise“ an sich, sondern hängen stark davon ab, welchen Anbieter bzw. welche API-Kategorie du meinst (z.B. KI-/Agenten, Daten-/Forecast-APIs).2. Liste der Fakten  - Energy Forecast (laut Suchergebnis, Stand: aus dem Suchtreffer):    - Free: 0 € / year    - Pro: 14,99 € / year    - Business: 50,00 € / year    Quelle: [Energy Forecast – Pricing](https://www.energyforecast.de/pricing?utm_source=openai)- KI-Agenten/Automatisierung (laut Suchergebnis, Stand: aus dem Suchtreffer):    - Starter-Agent: einmalig ab 5.900 €, monatlich ab 490 €    - Business-Agent: einmalig ab 14.900 €, monatlich ab 890 €    - Enterprise-Agent: einmalig ab 29.900 €, monatlich ab 1.490 €    Quelle: (kein klickbarer Preislink im Ergebnis-Output enthalten; nur: „ki-beratung-deutschland.de“ im Suchtext)3. Quellen  - [Energy Forecast – Pricing](https://www.energyforecast.de/pricing?utm_source=openai)  - (Weitere gefundene Preisstellen waren im Tool-Output nicht mit einer konkreten URL für jeden Preis verlinkt.)💡 Passende nächste Schritte:• Nenne die API-Kategorie, die du meinst (z.B. „KI-Modelle“, „Daten/Forecast“, „Carrier/Telekom“, „Zahlungen/Payment“) – dann recherchiere ich gezielt Anbieter + aktuelle Euro-Preise.  • Sag mir, ob du eher „nur Free/Entry“ oder „Pro/Enterprise“ vergleichen willst.22:40",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:40:59.949Z"
+}

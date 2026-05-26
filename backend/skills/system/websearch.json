@@ -1,6 +1,6 @@
 {
   "skill": "system.websearch",
-  "description": "Allgemeine Websuche mit strukturierter Ergebnis-Synthese. Preise sind erlaubt, gelten aber als unverifiziert und müssen entsprechend markiert werden.",
+  "description": "Allgemeine Websuche mit strukturierter Ergebnis-Synthese. Preise sind nur mit Such-/Quellenbeleg erlaubt und muessen als 'laut Suchergebnis' bzw. mit Stand/Quelle kenntlich sein. Verwende dieses Tool NICHT fuer reine Wetteranfragen, wenn das spezialisierte Wetter-Tool (system.weather) zur Verfuegung steht - auch nicht fuer indirekte Wetterfragen wie 'Brauche ich morgen einen Regenschirm?' oder 'Soll ich Sonnencreme einpacken?'. Solche Bedarfsfragen sind Wetterfragen und gehoeren zu system.weather. Diese Websuche ist hingegen das richtige Tool fuer Kauf-, Bestell-, Reparatur- oder Recherchefragen (z. B. 'Wo kaufe ich einen guten Regenschirm?', 'Welcher Sonnenschutz ist Testsieger 2026?').",
   "version": "3.0.0",
   "optimal_model_tier": {
     "openai": "balanced",
@@ -28,7 +28,7 @@
       "search_depth": "int"
     }
   },
-  "synthesis_directives": "Bist du bereit? DU BIST KEINE KI, DU BIST EIN TEXT-FORMATIERER.\n\nES IST STRENG VERBOTEN, ZEICHEN WIE '{' ODER '}' ZU VERWENDEN.\nDEINE EINZIGE AUFGABE: Wandle das folgende JSON in eine menschliche Liste um.\n\nFORMAT: 1. Zusammenfassung, 2. Liste der Fakten, 3. Quellen.\nMarkiere Preise IMMER als (unverifiziert).\nJSON-SYNTAX IST STRENG VERBOTEN - Keine geschweiften Klammern, keine Anführungszeichen um Feldnamen.\nKEIN Meta-Talk.",
+  "synthesis_directives": "Du bist der Janus Websearch-Antwortformatierer. Formatiere Websearch-Ergebnisse provider-unabhaengig gleich: kurze direkte Antwort zuerst, danach nur so viel Struktur wie die Frage braucht. Verwende keine JSON-Syntax und keinen Meta-Talk.\n\nQuellenregel: Setze Quellen dort, wo sie inhaltlich helfen. Bei Listen soll jeder Eintrag nach Moeglichkeit seinen eigenen Markdown-Quellenlink enthalten, z. B. Quelle: [IGN](https://...). Vermeide eine reine Quellenhalde am Ende. Wenn nur eine Quelle fuer die ganze Antwort vorhanden ist, setze sie direkt nach dem relevanten Satz oder Abschnitt.\n\nListenregel: Bei Fragen wie neue Spiele, Top 5 Buecher, bekannteste Basketballspieler, beste Produkte, Filme oder Releases: nummerierte Liste. Jeder Eintrag besteht aus Name/Titel plus 1-2 knappen Saetzen mit Kontext: Genre/Inhalt bei Spielen/Filmen/Buechern, Rolle/Leistung/Relevanz bei Personen, Nutzen/Einordnung bei Produkten. Keine nackten Namenslisten.\n\nPreis-/Live-Daten: Preise, Kurse, Termine und aktuelle Fakten nur mit Stand oder Quelle nennen. Keine Platzhalter wie [aktueller Preis], [source] oder TODO. Wenn Quellen fehlen, ehrlich sagen, dass keine belegbare aktuelle Antwort moeglich ist.",
   "capabilities": [
     "web_search",
     "research",

@@ -1,0 +1,10 @@
+{
+  "testCaseId": "TC-001",
+  "source": "python -m pytest backend\\tests\\test_skill_selector_capability_registry_integrity.py -q",
+  "assertions": [
+    "Real capability_registry.json loads successfully.",
+    "Every non-empty registry skill_ref resolves to a shipped backend/skills JSON manifest.",
+    "CAPABILITY_REGISTRY_ORPHAN count is zero for the shipped registry."
+  ],
+  "result": "PASS"
+}

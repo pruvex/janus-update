@@ -1,0 +1,17 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-007",
+  "testCaseId": "SECROT-002",
+  "result": "PASS",
+  "classification": "SECRET_ROTATION_CERTIFICATION_PASS",
+  "evidence": {
+    "betaSecretCount": 6,
+    "rotationMode": "repository-level certification; external provider rotation requires owner console action",
+    "sentrySourcemapUploadRequiresExplicitEnv": true,
+    "ignoredEnvFiles": [
+      ".env",
+      ".env.*"
+    ],
+    "noRawSecretsInEvidence": true
+  },
+  "timestamp": "2026-05-21T12:15:53.620Z"
+}

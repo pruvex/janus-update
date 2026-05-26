@@ -1,0 +1,170 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-027",
+  "title": "TestSpec TestPlan Generator Regression",
+  "executionMode": "STATIC_GENERATOR_REGRESSION_VALIDATION",
+  "target": "JANUS_TEST_PIPELINE_GENERATOR",
+  "testSpecPath": "documentation/TEST_SPEC/07_regression_suite/18_testspec_testplan_generator_regression.md",
+  "notes": [
+    "Dashboard-aligned deterministic plan for TestSpec 18.",
+    "Generated Skill-1 plan TEST-RUN-2026-05-21-026 remains archived; TEST-RUN-2026-05-21-027 records static generator regression evidence.",
+    "Coverage validates TestSpec compiler parsing, TestPlan schema/metadata, oracle transfer and generated runner integrity without live provider execution."
+  ],
+  "strategies": {
+    "send": "static_generator_self_test_v1",
+    "wait": "command_exit_zero_v1",
+    "evidence": "generator_plan_runner_and_schema_evidence_v1",
+    "evaluate": "oracle_transfer_static_assertions_v1"
+  },
+  "parallelization": {
+    "schema": "janus-testplan.parallelization.v1",
+    "enabled": true,
+    "recommendedWorkers": 1,
+    "defaultWorkers": 1,
+    "mode": "static_parallel_safe",
+    "parallelSafeTests": 12,
+    "serialTests": 0,
+    "isolation": {
+      "chat": "N/A",
+      "browserContext": "N/A",
+      "provider": "static-generator",
+      "testDataNamespace": "testspec-testplan-generator-regression"
+    },
+    "notes": [
+      "All checks use synthetic fixture data, generated plan artifacts and local static validators."
+    ]
+  },
+  "tests": [
+    {
+      "id": "TC-001",
+      "name": "Clarification keywords transfer",
+      "type": "functional",
+      "provider": "Static Generator",
+      "prompt": "Compile spec/fixture with clarification terms.",
+      "expected": {
+        "assertion": "containsAny includes clarification keywords and generated runner source preserves them."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-002",
+      "name": "Refusal keywords transfer",
+      "type": "security",
+      "provider": "Static Generator",
+      "prompt": "Compile spec/fixture with refusal expectations.",
+      "expected": {
+        "assertion": "Refusal terms such as kann nicht, nicht erlaubt and darf ich nicht are preserved."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-003",
+      "name": "Source attribution transfer",
+      "type": "functional",
+      "provider": "Static Generator",
+      "prompt": "Compile source-attribution fixture.",
+      "expected": {
+        "assertion": "Source patterns such as Quelle:, Open-Meteo and source attribution are preserved."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-004/SEC-001",
+      "name": "mustNotContain preservation",
+      "type": "security",
+      "provider": "Static Generator",
+      "prompt": "Compile security fixture with forbidden terms.",
+      "expected": {
+        "assertion": "mustNotContain values including SECRET-123 and unsafe completion text are not dropped."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-005",
+      "name": "Parallel metadata generation",
+      "type": "functional",
+      "provider": "Static Generator",
+      "prompt": "Validate mixed parallel/serial fixture metadata.",
+      "expected": {
+        "assertion": "recommendedWorkers=3, mixed_parallel_and_serial mode and per-test parallelSafe flags validate."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "TC-006",
+      "name": "Runner generation",
+      "type": "functional",
+      "provider": "Static Generator",
+      "prompt": "Generate and validate runner from compiled plan.",
+      "expected": {
+        "assertion": "Generated runner validates, passes node --check and emits parallel/serial describe sections."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "SEC-002",
+      "name": "Oracle drift detection",
+      "type": "security",
+      "provider": "Static Generator",
+      "prompt": "Compare expected patterns against generated runner source.",
+      "expected": {
+        "assertion": "Exact assertions fail if critical oracle patterns are missing."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "SEC-003",
+      "name": "Unsafe runner path scan",
+      "type": "security",
+      "provider": "Static Generator",
+      "prompt": "Inspect generated runner source for destructive real-path operations.",
+      "expected": {
+        "assertion": "Runner contains no user-home hardcoded writes and no Remove-Item/rm-rf/rmdir destructive command text."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "PINJ-001",
+      "name": "Prompt injection terms treated as data",
+      "type": "prompt_injection",
+      "provider": "Static Generator",
+      "prompt": "Include hostile prompt text in fixture.",
+      "expected": {
+        "assertion": "Prompt text remains data and cannot remove mustNotContain assertions."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "PINJ-002",
+      "name": "Hostile oracle text preserved as data",
+      "type": "prompt_injection",
+      "provider": "Static Generator",
+      "prompt": "Include hostile source/refusal oracle strings.",
+      "expected": {
+        "assertion": "Hostile oracle terms are preserved as strings and do not alter generator behavior."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "PIPE-001",
+      "name": "Skill-1 compiler parse and generation",
+      "type": "functional",
+      "provider": "Static Generator",
+      "prompt": "Run compile-testspec-to-testplan on TestSpec 18.",
+      "expected": {
+        "assertion": "TEST-RUN-2026-05-21-026 created 22 tests, TESTPLAN VALID, generated runner emitted."
+      },
+      "parallelSafe": true
+    },
+    {
+      "id": "PIPE-002",
+      "name": "Schema and runner validation",
+      "type": "functional",
+      "provider": "Static Generator",
+      "prompt": "Run generator self-test, validate-runner, node --check and skill schema validation.",
+      "expected": {
+        "assertion": "Generator self-test passed, generated runner validation passed, node --check passed, 54 skill schemas OK."
+      },
+      "parallelSafe": true
+    }
+  ]
+}

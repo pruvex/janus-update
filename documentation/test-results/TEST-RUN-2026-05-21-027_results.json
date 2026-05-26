@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-027",
+  "title": "TestSpec TestPlan Generator Regression",
+  "status": "PASS",
+  "summary": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-027",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-027_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-027/TC-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-027/TC-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-027/TC-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-027/TC-004_SEC-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-027/TC-005_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-027/TC-006_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-027/SEC-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-027/SEC-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-027/PINJ-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-027/PINJ-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-027/PIPE-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-027/PIPE-002_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "TC-001",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-027/TC-001_evidence.json",
+      "durationMs": 250,
+      "notes": "containsAny includes clarification keywords and generated runner source preserves them.",
+      "timestamp": "2026-05-21T15:45:00.000Z"
+    },
+    {
+      "testCaseId": "TC-002",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-027/TC-002_evidence.json",
+      "durationMs": 250,
+      "notes": "Refusal terms such as kann nicht, nicht erlaubt and darf ich nicht are preserved.",
+      "timestamp": "2026-05-21T15:45:00.000Z"
+    },
+    {
+      "testCaseId": "TC-003",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-027/TC-003_evidence.json",
+      "durationMs": 250,
+      "notes": "Source patterns such as Quelle:, Open-Meteo and source attribution are preserved.",
+      "timestamp": "2026-05-21T15:45:00.000Z"
+    },
+    {
+      "testCaseId": "TC-004/SEC-001",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-027/TC-004_SEC-001_evidence.json",
+      "durationMs": 250,
+      "notes": "mustNotContain values including SECRET-123 and unsafe completion text are not dropped.",
+      "timestamp": "2026-05-21T15:45:00.000Z"
+    },
+    {
+      "testCaseId": "TC-005",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-027/TC-005_evidence.json",
+      "durationMs": 250,
+      "notes": "recommendedWorkers=3, mixed_parallel_and_serial mode and per-test parallelSafe flags validate.",
+      "timestamp": "2026-05-21T15:45:00.000Z"
+    },
+    {
+      "testCaseId": "TC-006",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-027/TC-006_evidence.json",
+      "durationMs": 250,
+      "notes": "Generated runner validates, passes node --check and emits parallel/serial describe sections.",
+      "timestamp": "2026-05-21T15:45:00.000Z"
+    },
+    {
+      "testCaseId": "SEC-002",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-027/SEC-002_evidence.json",
+      "durationMs": 250,
+      "notes": "Exact assertions fail if critical oracle patterns are missing.",
+      "timestamp": "2026-05-21T15:45:00.000Z"
+    },
+    {
+      "testCaseId": "SEC-003",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-027/SEC-003_evidence.json",
+      "durationMs": 250,
+      "notes": "Runner contains no user-home hardcoded writes and no Remove-Item/rm-rf/rmdir destructive command text.",
+      "timestamp": "2026-05-21T15:45:00.000Z"
+    },
+    {
+      "testCaseId": "PINJ-001",
+      "result": "PASS",
+      "classification": "PROMPT_INJECTION_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-027/PINJ-001_evidence.json",
+      "durationMs": 250,
+      "notes": "Prompt text remains data and cannot remove mustNotContain assertions.",
+      "timestamp": "2026-05-21T15:45:00.000Z"
+    },
+    {
+      "testCaseId": "PINJ-002",
+      "result": "PASS",
+      "classification": "PROMPT_INJECTION_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-027/PINJ-002_evidence.json",
+      "durationMs": 250,
+      "notes": "Hostile oracle terms are preserved as strings and do not alter generator behavior.",
+      "timestamp": "2026-05-21T15:45:00.000Z"
+    },
+    {
+      "testCaseId": "PIPE-001",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-027/PIPE-001_evidence.json",
+      "durationMs": 250,
+      "notes": "TEST-RUN-2026-05-21-026 created 22 tests, TESTPLAN VALID, generated runner emitted.",
+      "timestamp": "2026-05-21T15:45:00.000Z"
+    },
+    {
+      "testCaseId": "PIPE-002",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-027/PIPE-002_evidence.json",
+      "durationMs": 250,
+      "notes": "Generator self-test passed, generated runner validation passed, node --check passed, 54 skill schemas OK.",
+      "timestamp": "2026-05-21T15:45:00.000Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T15:45:00.000Z"
+}

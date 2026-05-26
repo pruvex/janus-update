@@ -12,8 +12,11 @@ import {
   setWindowMinimized,
   WINDOW_IDS,
   getDockModuleState,
+  dockClose,
 } from "./window-state.js";
 import { sanitizeChatHtml, sanitizeErrorHtml } from "./dompurify-config.js";
+import { scheduleContextRefresh } from "./context-awareness.js";
+import { configureMarkdownRenderer, renderChatMarkdown } from "./markdown-renderer.js";
 
 // Globaler Debugger für die Bridge
 window.addEventListener("open-knowledge-center", (e) => {
@@ -29,6 +32,63 @@ let lastVideoModalRequest = null;
 const VIDEO_MODAL_CACHE_KEY = "janus_video_modal_by_chat_v1";
 // 💎 VIDEO-LIST-METADATA: Global storage for video list data from SSE metadata events
 let lastVideoListMetadata = null;
+const inFlightByWindow = new Map();
+const thinkingMessageRemoversByWindow = new Map();
+
+function getInFlightState(windowId) {
+  return inFlightByWindow.get(windowId) || null;
+}
+
+function setInFlightState(windowId, state) {
+  if (!state) {
+    inFlightByWindow.delete(windowId);
+    return;
+  }
+  inFlightByWindow.set(windowId, state);
+}
+
+function isCurrentStream(windowId, streamId) {
+  const state = getInFlightState(windowId);
+  return !!state && state.streamId === streamId;
+}
+
+function clearThinkingMessageForWindow(windowId) {
+  const removeFn = thinkingMessageRemoversByWindow.get(windowId);
+  if (typeof removeFn === "function") {
+    removeFn();
+  }
+  thinkingMessageRemoversByWindow.delete(windowId);
+}
+
+function buildStreamHeaders(windowId) {
+  const headers = { "Content-Type": "application/json" };
+  if (windowId) {
+    headers["x-janus-window-id"] = String(windowId);
+  }
+  return headers;
+}
+
+function modelMatchesProvider(provider, modelId) {
+  const p = String(provider || "").toLowerCase();
+  const m = String(modelId || "").toLowerCase();
+  if (!p || !m) return false;
+  if (p === "openai") return m.startsWith("gpt-");
+  if (p === "gemini") return m.startsWith("gemini-");
+  if (p === "ollama") return m.startsWith("ollama/") || m.startsWith("llama") || m.startsWith("mistral");
+  return true;
+}
+
+function firstModelForProviderFromSelect(selectEl, provider) {
+  if (!selectEl) return null;
+  const p = String(provider || "").toLowerCase();
+  const options = Array.from(selectEl.options || []);
+  const hit = options.find((opt) => {
+    const op = String(opt.dataset?.provider || "").toLowerCase();
+    const ov = String(opt.value || "");
+    return (op && op === p) || modelMatchesProvider(p, ov);
+  });
+  return hit?.value || null;
+}
 
 function _readVideoModalCache() {
   try {
@@ -167,11 +227,7 @@ function closeImageModal() {
 }
 
 
-// Configure marked.js for stricter Markdown parsing
-marked.setOptions({
-  breaks: true, // Convert single newlines to <br> for better link rendering
-  gfm: true, // Use GitHub Flavored Markdown (stricter paragraph breaks)
-});
+configureMarkdownRenderer();
 
 // 💎 MCL: Hydrate video links with class and click handlers after stream rendering
 function hydrateVideoLinks(element) {
@@ -264,11 +320,34 @@ async function ensureChatForWindow(windowId) {
 /** Fenster-Header-Override oder Sidebar (#provider-select / #model-select). */
 function effectiveProviderModelForWindow(windowId) {
   const w = getWindowState().windows[windowId];
-  const sp = document.getElementById("provider-select")?.value;
-  const sm = document.getElementById("model-select")?.value;
+  const spEl = document.getElementById("provider-select");
+  const smEl = document.getElementById("model-select");
+  const hpEl = document.getElementById(paneId("chat-header-provider", windowId));
+  const hmEl = document.getElementById(paneId("chat-header-model", windowId));
+  const sp = spEl?.value;
+  const sm = smEl?.value;
+  const hp = hpEl?.value;
+  const hm = hmEl?.value;
+  const provider =
+    (w.provider != null && w.provider !== "" ? w.provider : null) ||
+    (hp && hp !== "" ? hp : null) ||
+    sp;
+  let model =
+    (w.modelId != null && w.modelId !== "" ? w.modelId : null) ||
+    (hm && hm !== "" ? hm : null) ||
+    sm;
+
+  // Keep provider/model coherent even if stale sidebar model leaked into another provider window.
+  if (!modelMatchesProvider(provider, model)) {
+    model =
+      firstModelForProviderFromSelect(hmEl, provider) ||
+      firstModelForProviderFromSelect(smEl, provider) ||
+      model;
+  }
+
   return {
-    provider: w.provider != null && w.provider !== "" ? w.provider : sp,
-    model: w.modelId != null && w.modelId !== "" ? w.modelId : sm,
+    provider,
+    model,
   };
 }
 
@@ -329,18 +408,18 @@ WINDOW_IDS.forEach((wid) => {
     const target = event.target;
     const link = target?.closest?.("a");
     if (!link) return;
-    // 💎 MCL: Handle "Video ansehen" links from LLM synthesis
-    if (link.textContent.includes("Video ansehen")) {
-      event.preventDefault();
-      const url = String(link.getAttribute("href") || "").trim();
-      if (url && isVideoUrl(url)) {
-        openModal({ type: "video", payload: { url } });
-      }
-      return;
-    }
+    // 💎 BACKLOG-016: Check for reopen-video-modal FIRST, before "Video ansehen" handler
+    // This ensures video-specific URLs from metadata are used
     if (link.dataset?.janusAction === "reopen-video-modal") {
       event.preventDefault();
       const fallbackVideoUrl = String(link.dataset.videoUrl || "").trim();
+      // 💎 BACKLOG-016: Update lastVideoModalRequest with the new URL before reopening
+      // This ensures the video is switched when the modal is already open
+      if (fallbackVideoUrl && isVideoUrl(fallbackVideoUrl)) {
+        lastVideoModalRequest = { type: "video", payload: { url: fallbackVideoUrl } };
+        const activeChatId = getActiveChatIdForWindow(getActiveWindowId());
+        persistVideoModalForChat(activeChatId, lastVideoModalRequest);
+      }
       if (lastVideoModalRequest && lastVideoModalRequest.type === "video") {
         reopenLastVideoModal();
       } else {
@@ -352,6 +431,15 @@ WINDOW_IDS.forEach((wid) => {
         } else if (fallbackVideoUrl && isVideoUrl(fallbackVideoUrl)) {
           openModal({ type: "video", payload: { url: fallbackVideoUrl } });
         }
+      }
+      return;
+    }
+    // 💎 MCL: Handle "Video ansehen" links from LLM synthesis (fallback if no reopen-video-modal)
+    if (link.textContent.includes("Video ansehen")) {
+      event.preventDefault();
+      const url = String(link.getAttribute("href") || "").trim();
+      if (url && isVideoUrl(url)) {
+        openModal({ type: "video", payload: { url } });
       }
       return;
     }
@@ -482,7 +570,7 @@ Wähle eine Aktion (Antworte mit 1, 2 oder 3):
       // SSE-Streaming-Integration für /api/chat/stream
       const chatStreamResponse = await fetch(`${API_BASE_URL}/api/chat/stream`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: buildStreamHeaders(windowId),
         body: JSON.stringify({
           content: [{ type: "text", text: autoPrompt }],
           provider,
@@ -515,7 +603,7 @@ Wähle eine Aktion (Antworte mit 1, 2 oder 3):
           }
           if (data.type === "text") {
             chatText = data.partial ? chatText + data.content : data.content;
-            loadingMessageElement.innerHTML = sanitizeChatHtml(marked.parse(chatText));
+            loadingMessageElement.innerHTML = sanitizeChatHtml(renderChatMarkdown(chatText));
             hydrateVideoLinks(loadingMessageElement);
           } else if (data.type === "metadata") {
             if (window.updateSidebarCost) window.updateSidebarCost(data.cost, data.usage);
@@ -531,14 +619,13 @@ Wähle eine Aktion (Antworte mit 1, 2 oder 3):
                 mode: data.mode,
                 query: data.query
               };
-              console.log("💎 VIDEO-LIST-METADATA: Stored video list data:", lastVideoListMetadata);
             }
           } else if (data.type === "done") {
             break;
           }
         }
       }
-      loadingMessageElement.innerHTML = sanitizeChatHtml(marked.parse(chatText));
+      loadingMessageElement.innerHTML = sanitizeChatHtml(renderChatMarkdown(chatText));
       hydrateVideoLinks(loadingMessageElement);
       applyMCLLinkStyling(loadingMessageElement);
       if (chat_id) {
@@ -683,11 +770,19 @@ WINDOW_IDS.forEach((wid) => {
 export async function sendMessage(fromWindowId) {
   const windowId = fromWindowId ?? getActiveWindowId();
   setActiveWindow(windowId);
+  if (getInFlightState(windowId)) {
+    console.warn("[sendMessage] Request already in flight for window", windowId);
+    return;
+  }
   const chatInputEl = document.getElementById(paneId("user-input", windowId));
-  const chatMessagesEl = document.getElementById(paneId("chat-messages", windowId));
+  // BACKLOG-026: `chatMessagesEl` is `let` (not `const`) so the SSE-stream wipe-guard
+  // can re-resolve the container by ID if loadChat() or another async path replaces
+  // the entire chat-messages pane while we are mid-stream.
+  let chatMessagesEl = document.getElementById(paneId("chat-messages", windowId));
   if (!chatInputEl || !chatMessagesEl) return;
   const promptText = chatInputEl.value.trim();
   if (!promptText) return;
+  lastVideoListMetadata = null;
 
   const { provider, model } = effectiveProviderModelForWindow(windowId);
   let chat_id = getActiveChatIdForWindow(windowId);
@@ -705,6 +800,7 @@ export async function sendMessage(fromWindowId) {
 
   // 1. Append user message to UI
   appendMessage("user", { text: promptText }, { windowId });
+  scheduleContextRefresh(windowId);
   chatInputEl.value = "";
   resetUserInputHeight(windowId);
 
@@ -716,9 +812,101 @@ export async function sendMessage(fromWindowId) {
     chat_id,
   };
 
-  // 3. Show loading indicator
+  // 3. Show loading indicator. Use lastElementChild (not lastChild) to ignore
+  // stray whitespace text nodes. The newly appended bot bubble is the last
+  // <div class="message assistant"> child.
   appendMessage("bot", "...", { windowId });
-  const loadingMessageElement = chatMessagesEl.lastChild?.querySelector('.bubble') || chatMessagesEl.lastChild;
+  let loadingMessageContainer = chatMessagesEl.lastElementChild;
+  let loadingMessageElement = loadingMessageContainer?.querySelector('.bubble') ?? null;
+
+  console.log("[SSE-INIT]", {
+    windowId,
+    chatMessagesChildren: chatMessagesEl.childElementCount,
+    containerClass: loadingMessageContainer?.className ?? null,
+    bubbleFound: !!loadingMessageElement,
+    bubbleInitialText: loadingMessageElement?.textContent?.slice(0, 40) ?? null,
+  });
+
+  // BACKLOG-026 DOM-RESILIENCE + PERSISTENCE-LOCK:
+  // The SSE stream can race against asynchronous DOM rewrites — e.g. a late-arriving
+  // loadChat() restore from the chat-sidebar boot path that wipes
+  // #chat-messages-{windowId} after we have already appended the loading bubble.
+  // When that happens, our `loadingMessageElement` reference becomes a detached
+  // node and any further innerHTML writes are invisible to the user.
+  //
+  // The wipe-guard below detects ALL of these conditions on every chunk:
+  //   (a) bubble was detached (loadingMessageElement.isConnected === false)
+  //   (b) container reference is stale (the live #chat-messages-{windowId} element was
+  //       replaced by a different DOM node entirely)
+  //   (c) live container exists but has been emptied (childElementCount === 0)
+  //   (d) bubble is connected but no longer inside the live container (re-parented)
+  //
+  // If any of these are true, we re-resolve the container by ID, sync the local
+  // reference, and re-append the bubble with the FULL accumulated `chatText` (the
+  // persistence anchor that survives DOM wipes). This guarantees no text loss
+  // regardless of how many wipes happen mid-stream.
+  let reanchorCount = 0;
+  function reanchorBubbleIfDetached(currentText) {
+    const liveContainer = document.getElementById(paneId("chat-messages", windowId));
+
+    const bubbleConnected = !!loadingMessageElement?.isConnected;
+    const containerLive = !!liveContainer;
+    const containerStale = containerLive && liveContainer !== chatMessagesEl;
+    const containerEmpty = containerLive && liveContainer.childElementCount === 0;
+    const bubbleInsideLive = bubbleConnected && containerLive && liveContainer.contains(loadingMessageElement);
+
+    // Healthy state: bubble connected, container reference fresh, bubble lives
+    // inside the current live container.
+    if (bubbleConnected && containerLive && !containerStale && !containerEmpty && bubbleInsideLive) {
+      return;
+    }
+
+    reanchorCount++;
+    console.warn("[SSE-REANCHOR]", {
+      reanchorCount,
+      reason: {
+        bubbleConnected,
+        containerLive,
+        containerStale,
+        containerEmpty,
+        bubbleInsideLive,
+      },
+      currentTextLen: (currentText ?? "").length,
+      currentTextSample: (currentText ?? "").slice(0, 80),
+      liveContainerChildren: liveContainer?.childElementCount ?? null,
+      staleContainerStillInDoc: !!chatMessagesEl?.isConnected,
+    });
+
+    if (!containerLive) {
+      // Fatal: the entire chat-messages pane is gone. We cannot re-anchor and
+      // any further writes will be lost. Loud-log so this surfaces in evidence.
+      console.error("[SSE-REANCHOR-FATAL] live container missing for windowId=" + windowId);
+      return;
+    }
+
+    // Sync the local container reference BEFORE re-appending so appendMessage and
+    // subsequent lastElementChild reads target the live DOM, not the detached one.
+    chatMessagesEl = liveContainer;
+
+    // Re-attach an assistant container with the FULL accumulated text. This is
+    // the wipe-guard: the persisted `chatText` survives any number of DOM wipes
+    // and is re-rendered into a fresh bubble each time. The caller will overwrite
+    // innerHTML with the markdown-parsed version immediately after this returns.
+    appendMessage("bot", currentText || "...", { windowId, skipScroll: true });
+    loadingMessageContainer = chatMessagesEl.lastElementChild;
+    loadingMessageElement = loadingMessageContainer?.querySelector('.bubble') ?? null;
+
+    console.log("[SSE-REANCHOR-DONE]", {
+      reanchorCount,
+      bubbleReconnected: !!loadingMessageElement?.isConnected,
+      bubbleTextLen: loadingMessageElement?.textContent?.length ?? 0,
+      newContainerChildren: chatMessagesEl?.childElementCount ?? null,
+    });
+  }
+
+  const streamId = `${windowId}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  const abortController = new AbortController();
+  setInFlightState(windowId, { streamId, abortController, chatId: chat_id });
 
   try {
     // Kein PUT mit Erstsatz — verhindert auto_generated=false und blockiert Smart Chat Naming.
@@ -726,8 +914,9 @@ export async function sendMessage(fromWindowId) {
     // SSE-STREAMING IMPLEMENTATION
     const response = await fetch(`${API_BASE_URL}/api/chat/stream`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: buildStreamHeaders(windowId),
       body: JSON.stringify(requestBody),
+      signal: abortController.signal,
     });
 
     if (!response.ok) {
@@ -739,34 +928,75 @@ export async function sendMessage(fromWindowId) {
     let buffer = "";
     let chatText = "";
     let streamModalRequest = null;
+    let chunkIndex = 0;
+    let textChunkIndex = 0;
+    let firstTextRendered = false;
 
     while (true) {
       const { done, value } = await reader.read();
-      if (done) break;
-      
+      if (!isCurrentStream(windowId, streamId)) {
+        console.warn("[SSE] Stale stream detected, stopping read loop", { windowId, streamId });
+        try {
+          await reader.cancel();
+        } catch (_) {
+          // ignore cancel races
+        }
+        break;
+      }
+      if (done) {
+        console.log("[SSE-DONE]", { chunkIndex, textChunkIndex, finalLen: chatText.length, bufferRemaining: buffer.length });
+        break;
+      }
+
       buffer += decoder.decode(value, { stream: true });
-      let lines = buffer.split("\n\n");
-      buffer = lines.pop(); // Keep incomplete chunk
-      
-      for (const line of lines) {
-        if (!line.startsWith("data: ")) continue;
-        
-        const jsonStr = line.slice(6);
+      // SSE events are separated by a blank line (\n\n). Anything after the last
+      // separator is a (potentially) incomplete event and must stay in the buffer.
+      const events = buffer.split("\n\n");
+      buffer = events.pop() ?? "";
+
+      for (const rawEvent of events) {
+        if (!rawEvent) continue;
+        // An SSE event can span multiple lines (id:, event:, retry:, data:).
+        // Per spec, multiple "data:" lines within one event are concatenated with "\n".
+        const dataLines = rawEvent.split("\n").filter((l) => l.startsWith("data:"));
+        if (dataLines.length === 0) continue;
+        const jsonStr = dataLines.map((l) => l.replace(/^data:\s?/, "")).join("\n");
+
         let data;
         try {
           data = JSON.parse(jsonStr);
         } catch (e) {
-          console.warn("[SSE] JSON parse error, skipping chunk");
+          console.warn("[SSE] JSON parse error, raw fragment:", jsonStr.slice(0, 240));
           continue;
         }
-        
+
+        chunkIndex++;
+
         if (data.type === "text") {
-          chatText = data.partial ? chatText + data.content : data.content;
-          // Heilt nackte URLs vom Modell
-          const healedText = chatText.replace(/Video ansehen\s*\((https?:\/\/[^\s)]+)\)/g, '[Video ansehen]($1)');
-          loadingMessageElement.innerHTML = sanitizeChatHtml(marked.parse(healedText));
-          normalizeLinksAndImages(loadingMessageElement);
-          scrollChatToBottom({ behavior: "auto", windowId });
+          textChunkIndex++;
+          // 💎 CU-4: Entferne thinking_message beim ersten Text-Delta
+          clearThinkingMessageForWindow(windowId);
+          // Backend semantics:
+          //   partial:true  -> incremental delta, append to accumulated text
+          //   partial:false -> final/full content, replace accumulated text
+          const content = typeof data.content === "string" ? data.content : "";
+          chatText = data.partial ? chatText + content : content;
+
+          // Guard against late-arriving DOM wipes (loadChat race etc.)
+          reanchorBubbleIfDetached(chatText);
+
+          if (loadingMessageElement) {
+            const healedText = chatText.replace(/Video ansehen\s*\((https?:\/\/[^\s)]+)\)/g, '[Video ansehen]($1)');
+            loadingMessageElement.innerHTML = sanitizeChatHtml(renderChatMarkdown(healedText));
+            normalizeLinksAndImages(loadingMessageElement);
+            if (!firstTextRendered) {
+              firstTextRendered = true;
+              console.log("[SSE-FIRST-TEXT]", { partial: !!data.partial, contentLen: content.length, chatTextLen: chatText.length, bubbleNowLen: loadingMessageElement.textContent.length, isConnected: loadingMessageElement.isConnected });
+            }
+            scrollChatToBottom({ behavior: "auto", windowId });
+          } else {
+            console.error("[SSE-LOST-CHUNK] text frame received but loadingMessageElement is null. textChunk#", textChunkIndex, "contentLen=", content.length);
+          }
         } else if (data.type === "metadata") {
           // DISPATCH CUSTOM EVENT for sidebar update
           window.dispatchEvent(new CustomEvent("janus:metadata", {
@@ -780,35 +1010,129 @@ export async function sendMessage(fromWindowId) {
           if (data.videos && Array.isArray(data.videos) && data.mode === "list") {
             lastVideoListMetadata = {
               videos: data.videos,
-              count: data.count,
               mode: data.mode,
               query: data.query
             };
-            console.log("💎 VIDEO-LIST-METADATA: Stored video list data:", lastVideoListMetadata);
           }
         } else if (data.type === "modal_request") {
           streamModalRequest = data.modal_request ?? null;
           stripInlineAssistantVideoLinks(loadingMessageElement);
           ensureVideoReopenLinkForStreamMessage(loadingMessageElement, streamModalRequest);
+        } else if (data.type === "status_update") {
+          // 💎 CU-4: Handler für status_update Event (z.B. thinking_long_request)
+          if (data.status === "thinking_long_request") {
+            console.log("[CU-4] Long request detected, showing thinking message");
+            // Zeige eine temporäre "Denke nach..."-Nachricht an
+            const thinkingMessage = document.createElement("div");
+            thinkingMessage.className = "thinking-message";
+            thinkingMessage.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(137, 180, 250, 0.1); border-radius: 8px; margin-bottom: 8px;">
+                <div class="spinner" style="width: 16px; height: 16px; border: 2px solid rgba(205, 214, 244, 0.3); border-radius: 50%; border-top-color: #89b4fa; animation: spin 1s ease-in-out infinite;"></div>
+                <span style="color: #cdd6f4; font-size: 14px;">🤖 Ich analysiere deinen Text, das kann bei lokalen Modellen einen Moment dauern...</span>
+              </div>
+              <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+            `;
+            loadingMessageElement.appendChild(thinkingMessage);
+            scrollChatToBottom({ behavior: "auto", windowId });
+            // Entferne die Nachricht nach dem ersten Text-Delta
+            const removeThinkingMessage = () => {
+              if (thinkingMessage.parentNode) {
+                thinkingMessage.remove();
+              }
+            };
+            // Speichere die Funktion zum späteren Aufruf
+            thinkingMessageRemoversByWindow.set(windowId, removeThinkingMessage);
+          }
+        } else if (data.type === "tool_result") {
+          // Handle tool results including permission_required from Path Sentinel
+          let result = data.result;
+          if (typeof result === 'string') {
+            try {
+              result = JSON.parse(result);
+            } catch (e) {
+              console.warn("[SSE] Failed to parse tool result as JSON:", e);
+            }
+          }
+
+          if (result && result.status === 'permission_required') {
+            // Extract consent details
+            const challengeId = result.data?.challenge_id;
+            const path = result.data?.path;
+            const op = result.data?.op;
+
+            if (challengeId && path && op) {
+              // Import and show consent modal
+              import('./consent-modal.js').then(({ showConsentModal }) => {
+                showConsentModal(challengeId, path, op, (decision) => {
+                  // On user decision, send a message to continue the flow
+                  if (decision !== 'deny') {
+                    import('./chat.js').then(({ sendMessage }) => {
+                      sendMessage("[System] Die Berechtigung wurde erteilt. Bitte führe die abgebrochene Dateisystem-Aktion jetzt erneut aus.");
+                    });
+                  }
+                });
+              });
+            }
+          }
+
+          // 💎 BACKLOG-012: Display formatted video list message from tool result
+          // (Removed - tool_result handler not being called reliably)
+          // Alternative approach: Use VIDEO-LIST-METADATA in final render
         } else if (data.type === "done") {
           break;
         } else if (data.type === "error") {
           console.error("[SSE] Error chunk:", data.message);
-          loadingMessageElement.innerHTML = sanitizeErrorHtml(`<span style="color:red">[Stream Error] ${data.message}</span>`);
-          scrollChatToBottom({ behavior: "auto", windowId });
+          // BACKLOG-026: Re-anchor before writing error HTML so the user always
+          // sees the error message even if the bubble was wiped mid-stream.
+          reanchorBubbleIfDetached(chatText);
+          if (loadingMessageElement) {
+            loadingMessageElement.innerHTML = sanitizeErrorHtml(`<span style="color:red">[Stream Error] ${data.message}</span>`);
+            scrollChatToBottom({ behavior: "auto", windowId });
+          }
         }
       }
     }
     
     // Final render
+    // 💎 BACKLOG-012: Use VIDEO-LIST-METADATA to render formatted video list
+    if (lastVideoListMetadata && lastVideoListMetadata.videos && Array.isArray(lastVideoListMetadata.videos)) {
+      const videos = lastVideoListMetadata.videos;
+      let formattedList = `### 🎬 Gefundene Videos (${videos.length})\n\n`;
+      videos.forEach((video, index) => {
+        const title = video.title || "Unbekannter Titel";
+        const channel = video.channel || video.channel_title || "";
+        const rawViews = video.views ?? video.view_count;
+        const views = rawViews ? `${Number(rawViews).toLocaleString("de-DE")} Aufrufe` : "";
+        const rawUploadDate = video.published_date_human || video.upload_date || video.published_at || "";
+        const uploadDate = rawUploadDate ? `(Hochgeladen am ${rawUploadDate})` : "";
+        const watchUrl = video.watch_url || video.embed_url || "";
+        
+        formattedList += `**${index + 1}. ${title}**\n`;
+        if (channel) formattedList += `${channel} • `;
+        if (views) formattedList += `${views} • `;
+        if (uploadDate) formattedList += `${uploadDate}\n`;
+        if (watchUrl) formattedList += `[Video ansehen](${watchUrl})\n\n`;
+      });
+      chatText = formattedList;
+    }
+    
     // Heilt nackte URLs vom Modell
     const healedText = chatText.replace(/Video ansehen\s*\((https?:\/\/[^\s)]+)\)/g, '[Video ansehen]($1)');
-    loadingMessageElement.innerHTML = sanitizeChatHtml(marked.parse(healedText));
-    normalizeLinksAndImages(loadingMessageElement);
+    // Final guard: if the bubble was wiped between the last text-chunk and the
+    // post-stream render, re-create it so the user always sees the full reply.
+    reanchorBubbleIfDetached(chatText);
+    if (loadingMessageElement) {
+      loadingMessageElement.innerHTML = sanitizeChatHtml(renderChatMarkdown(healedText));
+      normalizeLinksAndImages(loadingMessageElement);
+      console.log("[SSE-FINAL]", { chatTextLen: chatText.length, bubbleFinalLen: loadingMessageElement.textContent.length, isConnected: loadingMessageElement.isConnected, reanchorCount });
+    } else {
+      console.error("[SSE-FINAL-LOST] loadingMessageElement is null at final render. chatTextLen=", chatText.length);
+    }
     // Keine weiteren Hydration-Calls hier nötig, da der Window-Listener alles abfängt!
     scrollChatToBottom({ behavior: "auto", windowId });
 
     applyBotModalRequestFromData({ text: chatText, modal_request: streamModalRequest });
+    scheduleContextRefresh(windowId);
 
     // 💎 VIDEO-LIST-POST-STREAM: Deaktiviert - wir nutzen nur noch Markdown-Links
     // if (lastVideoListMetadata && lastVideoListMetadata.mode === "list" && lastVideoListMetadata.videos && Array.isArray(lastVideoListMetadata.videos)) {
@@ -827,11 +1151,20 @@ export async function sendMessage(fromWindowId) {
     
   } catch (error) {
     console.error("[SSE] Chat stream error:", error);
+    if (error?.name === "AbortError") {
+      return;
+    }
     const _msgContainer = loadingMessageElement?.closest('.message') || loadingMessageElement;
     if (_msgContainer && _msgContainer.parentNode === chatMessagesEl) {
       chatMessagesEl.removeChild(_msgContainer);
     }
     appendMessage("bot", { text: error.message || "Fehler beim Senden der Nachricht." }, { windowId });
+    scheduleContextRefresh(windowId);
+  } finally {
+    if (isCurrentStream(windowId, streamId)) {
+      setInFlightState(windowId, null);
+    }
+    clearThinkingMessageForWindow(windowId);
   }
 }
 
@@ -1097,7 +1430,16 @@ function reopenLastVideoModal() {
   if (!lastVideoModalRequest || lastVideoModalRequest.type !== "video") return;
   const current = getDockModuleState("video-player");
   if (current?.isOpen && !current?.minimized) {
-    bringToFront("video-player");
+    // 💎 BACKLOG-016: If modal is already open, close and reopen to switch video
+    // This ensures the video is switched when clicking on different video links
+    dockClose("video-player");
+    setTimeout(() => {
+      openModal({
+        type: "video",
+        payload: { ...(lastVideoModalRequest.payload || {}) },
+        options: { ...(lastVideoModalRequest.options || {}) },
+      });
+    }, 100);
     return;
   }
   openModal({
@@ -1117,24 +1459,49 @@ function renderVideoListCards(messageEl, payload) {
 
   const container = document.createElement("div");
   container.className = "video-list-cards";
-  container.style.cssText = "display: flex; flex-direction: column; gap: 4px; margin-top: 10px;";
+  container.style.cssText = "display: flex; flex-direction: column; gap: 8px; margin-top: 10px;";
 
-  for (const video of payload.videos) {
-    if (!video || typeof video !== "object") continue;
+  payload.videos.forEach((video, index) => {
+    if (!video || typeof video !== "object") return;
 
     const card = document.createElement("div");
     card.className = "video-list-card";
-    card.style.cssText = "background: none; border: none; padding: 0; color: var(--accent-color); text-decoration: underline; cursor: pointer; font-size: 0.9rem; text-align: left;";
+    card.style.cssText = "background: rgba(137, 180, 250, 0.05); border: 1px solid rgba(137, 180, 250, 0.2); padding: 12px; border-radius: 8px;";
 
-    const title = video.title || "Video";
+    const title = video.title || "Unbekannter Titel";
+    const channel = video.channel || video.channel_title || "";
+    const rawViews = video.views ?? video.view_count;
+    const views = rawViews ? `${Number(rawViews).toLocaleString("de-DE")} Aufrufe` : "";
+    const rawUploadDate = video.published_date_human || video.upload_date || video.published_at || "";
+    const uploadDate = rawUploadDate ? `(Hochgeladen am ${rawUploadDate})` : "";
     const isEmbeddable = video.is_embeddable !== false;
     const videoId = video.video_id || "";
     const watchUrl = video.watch_url || (videoId ? `https://www.youtube.com/watch?v=${videoId}` : "");
     const embedUrl = video.embed_url || (videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : "");
 
-    card.innerHTML = `<span>▶ Video ansehen: ${title}</span>`;
+    const titleEl = document.createElement("div");
+    titleEl.style.cssText = "font-weight: bold; color: #cdd6f4; margin-bottom: 4px;";
+    titleEl.textContent = `${index + 1}. ${title}`;
+    card.appendChild(titleEl);
 
-    card.addEventListener("click", () => {
+    if (channel || views || uploadDate) {
+      const metaEl = document.createElement("div");
+      metaEl.style.cssText = "font-size: 0.85rem; color: #a6adc8; margin-bottom: 8px;";
+      const metaParts = [];
+      if (channel) metaParts.push(channel);
+      if (views) metaParts.push(views);
+      if (uploadDate) metaParts.push(uploadDate);
+      metaEl.textContent = metaParts.join(" • ");
+      card.appendChild(metaEl);
+    }
+
+    const link = document.createElement("a");
+    link.href = "#";
+    link.style.cssText = "color: #89b4fa; text-decoration: none; font-size: 0.9rem; cursor: pointer;";
+    link.textContent = "Video ansehen";
+
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
       openModal({
         type: "video",
         payload: {
@@ -1148,16 +1515,53 @@ function renderVideoListCards(messageEl, payload) {
       });
     });
 
-    card.addEventListener("mouseenter", () => { card.style.transform = "scale(1.02)"; });
+    card.addEventListener("mouseenter", () => { card.style.transform = "scale(1.01)"; });
     card.addEventListener("mouseleave", () => { card.style.transform = "scale(1)"; });
 
+    card.appendChild(link);
     container.appendChild(card);
-  }
+  });
 
   if (container.childElementCount === 0) return false;
 
   messageEl.appendChild(container);
   return true;
+}
+
+function enhanceVideoLinks(textNode, videoListMetadata) {
+  if (!textNode || !videoListMetadata || !Array.isArray(videoListMetadata.videos)) return;
+  
+  const videos = videoListMetadata.videos;
+  const anchors = textNode.querySelectorAll("a");
+  let videoIndex = 0;
+  
+  anchors.forEach((a) => {
+    const href = String(a.getAttribute("href") || "").trim();
+    if (!isVideoUrl(href) || videoIndex >= videos.length) return;
+    
+    const video = videos[videoIndex];
+    videoIndex++;
+    
+    const title = video.title || "";
+    const channel = video.channel || video.channel_title || "";
+    const rawViews = video.views ?? video.view_count;
+    const views = rawViews ? `${Number(rawViews).toLocaleString("de-DE")} Aufrufe` : "";
+    const rawUploadDate = video.published_date_human || video.upload_date || video.published_at || "";
+    const uploadDate = rawUploadDate ? `(Hochgeladen am ${rawUploadDate})` : "";
+    
+    if (title || channel || views || uploadDate) {
+      const detailsDiv = document.createElement("div");
+      detailsDiv.style.cssText = "font-size: 0.85rem; color: #a6adc8; margin-top: 4px;";
+      const parts = [];
+      if (title) parts.push(title);
+      if (channel) parts.push(channel);
+      if (views) parts.push(views);
+      if (uploadDate) parts.push(uploadDate);
+      detailsDiv.textContent = parts.join(" • ");
+      
+      a.parentNode.insertBefore(detailsDiv, a.nextSibling);
+    }
+  });
 }
 
 function extractFirstVideoUrlFromElement(rootElement) {
@@ -1174,7 +1578,10 @@ function wireVideoReopenLink(rootElement, apiPayload) {
   if (!rootElement || !apiPayload || typeof apiPayload !== "object") return;
   const mr = apiPayload.modal_request;
   const type = String(mr?.type || "").trim().toLowerCase();
-  if (type !== "video") return;
+  const videoListMetadata = apiPayload.video_list_metadata || null;
+  // Allow processing even if modal_request.type !== "video" when video_list_metadata exists
+  // This fixes BACKLOG-016: Video links from video_list_metadata should work after chat reload
+  if (type !== "video" && !videoListMetadata) return;
   const modalUrl = canonicalWatchUrlFromModalRequest(mr);
   const anchors = rootElement.querySelectorAll("a");
   anchors.forEach((a) => {
@@ -1182,23 +1589,37 @@ function wireVideoReopenLink(rootElement, apiPayload) {
     const href = String(a.getAttribute("href") || "").trim().toLowerCase();
     const looksLikeVideoLink =
       label.includes("hier ansehen") ||
+      label.includes("video ansehen") ||
       href.includes("youtube.com") ||
       href.includes("youtu.be") ||
       href.includes("vimeo.com");
     if (!looksLikeVideoLink) return;
     a.setAttribute("href", "#");
     a.dataset.janusAction = "reopen-video-modal";
-    if (modalUrl) {
-      a.dataset.videoUrl = modalUrl;
+    // Use video-specific URL from videoListMetadata if available, otherwise fall back to modalUrl
+    let videoUrl = modalUrl;
+    if (videoListMetadata && Array.isArray(videoListMetadata.videos)) {
+      // Extract video ID from href and find matching video in metadata
+      const videoIdMatch = href.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+      if (videoIdMatch) {
+        const videoId = videoIdMatch[1];
+        const matchingVideo = videoListMetadata.videos.find(v => v.video_id?.toLowerCase() === videoId.toLowerCase() || v.watch_url?.toLowerCase().includes(videoId.toLowerCase()));
+        if (matchingVideo && matchingVideo.watch_url) {
+          videoUrl = matchingVideo.watch_url;
+        }
+      }
+    }
+    if (videoUrl) {
+      a.dataset.videoUrl = videoUrl;
     }
   });
   const hasReopenLink = rootElement.querySelector('a[data-janus-action="reopen-video-modal"]');
   if (!hasReopenLink) {
-    appendVideoReopenLink(rootElement, modalUrl);
+    appendVideoReopenLink(rootElement, modalUrl, videoListMetadata);
   }
 }
 
-function appendVideoReopenLink(rootElement, fallbackVideoUrl = "") {
+function appendVideoReopenLink(rootElement, fallbackVideoUrl = "", videoListMetadata = null) {
   if (!rootElement || typeof rootElement.querySelector !== "function") return;
   const existing = rootElement.querySelector('a[data-janus-action="reopen-video-modal"]');
   const canon = String(fallbackVideoUrl || "").trim();
@@ -1211,6 +1632,80 @@ function appendVideoReopenLink(rootElement, fallbackVideoUrl = "") {
     }
     return;
   }
+
+  // 💎 BACKLOG-012: Use VIDEO-LIST-METADATA to render videos with full details
+  const metadataToUse = videoListMetadata || lastVideoListMetadata;
+  if (metadataToUse && metadataToUse.videos && Array.isArray(metadataToUse.videos)) {
+    const videos = metadataToUse.videos;
+    const container = document.createElement("div");
+    container.className = "video-list-container";
+    container.style.marginTop = "1rem";
+    container.style.padding = "1rem";
+    container.style.backgroundColor = "rgba(137, 180, 250, 0.1)";
+    container.style.borderRadius = "8px";
+    container.style.border = "1px solid rgba(137, 180, 250, 0.3)";
+
+    const header = document.createElement("div");
+    header.style.marginBottom = "1rem";
+    header.style.fontWeight = "bold";
+    header.style.color = "#cdd6f4";
+    header.textContent = `Gefundene Videos (${videos.length})`;
+    container.appendChild(header);
+
+    videos.forEach((video, index) => {
+      const videoItem = document.createElement("div");
+      videoItem.style.marginBottom = "1rem";
+      videoItem.style.paddingBottom = "1rem";
+      videoItem.style.borderBottom = index < videos.length - 1 ? "1px solid rgba(137, 180, 250, 0.2)" : "none";
+
+      const title = document.createElement("div");
+      title.style.fontWeight = "bold";
+      title.style.color = "#cdd6f4";
+      title.style.marginBottom = "0.25rem";
+      title.textContent = `${index + 1}. ${video.title || "Unbekannter Titel"}`;
+      videoItem.appendChild(title);
+
+      const channel = document.createElement("div");
+      channel.style.fontSize = "0.9rem";
+      channel.style.color = "#a6adc8";
+      channel.style.marginBottom = "0.25rem";
+      channel.textContent = video.channel || "";
+      videoItem.appendChild(channel);
+
+      const meta = document.createElement("div");
+      meta.style.fontSize = "0.85rem";
+      meta.style.color = "#9399b2";
+      meta.style.marginBottom = "0.5rem";
+      const metaParts = [];
+      if (video.view_count) metaParts.push(video.view_count + " Aufrufe");
+      if (video.upload_date) metaParts.push(`(Hochgeladen am ${video.upload_date})`);
+      meta.textContent = metaParts.join(" • ");
+      videoItem.appendChild(meta);
+
+      const a = document.createElement("a");
+      a.href = "#";
+      a.dataset.janusAction = "reopen-video-modal";
+      a.dataset.videoUrl = video.watch_url || video.embed_url || "";
+      a.textContent = "Video ansehen";
+      a.style.color = "#89b4fa";
+      a.style.textDecoration = "none";
+      a.style.fontSize = "0.9rem";
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (a.dataset.videoUrl) {
+          openModal({ type: "video", payload: { url: a.dataset.videoUrl } });
+        }
+      });
+      videoItem.appendChild(a);
+
+      container.appendChild(videoItem);
+    });
+
+    rootElement.appendChild(container);
+    return;
+  }
+
+  // Fallback: Simple "Video ansehen" link (original behavior)
   const p = document.createElement("p");
   const a = document.createElement("a");
   a.href = "#";
@@ -1223,12 +1718,16 @@ function appendVideoReopenLink(rootElement, fallbackVideoUrl = "") {
   rootElement.appendChild(p);
 }
 
-function ensureVideoReopenLinkForStreamMessage(messageElement, modalRequest) {
-  if (!messageElement || !modalRequest || typeof modalRequest !== "object") return;
-  const mrType = String(modalRequest.type || "").trim().toLowerCase();
-  if (mrType !== "video") return;
-  const candidateUrl = canonicalWatchUrlFromModalRequest(modalRequest);
-  appendVideoReopenLink(messageElement, candidateUrl);
+function ensureVideoReopenLinkForStreamMessage(messageElement, apiPayload) {
+  if (!messageElement || !apiPayload || typeof apiPayload !== "object") return;
+  const mr = apiPayload.modal_request;
+  const type = String(mr?.type || "").trim().toLowerCase();
+  const videoListMetadata = apiPayload.video_list_metadata || null;
+  // Allow processing even if modal_request.type !== "video" when video_list_metadata exists
+  // This fixes BACKLOG-016: Video links from video_list_metadata should work after chat reload
+  if (type !== "video" && !videoListMetadata) return;
+  const modalUrl = canonicalWatchUrlFromModalRequest(mr);
+  appendVideoReopenLink(messageElement, modalUrl);
 }
 
 function ensureVideoReopenLinkForRenderedMessage(messageElement, apiPayload) {
@@ -1358,10 +1857,10 @@ export function appendMessage(sender, data, appendOpts = {}) {
 
   if (textContent) {
     console.log("Raw LLM textContent:", textContent);
-    console.log("textContent before marked.parse:", textContent); // NEU
+    console.log("textContent before markdown render:", textContent); // NEU
     const textNode = document.createElement("p"); // Kann auch div oder span sein, um img aufzunehmen
-    textNode.innerHTML = sanitizeChatHtml(marked.parse(textContent));
-    console.log("textNode.innerHTML after marked.parse:", textNode.innerHTML); // NEU
+    textNode.innerHTML = sanitizeChatHtml(renderChatMarkdown(textContent));
+    console.log("textNode.innerHTML after markdown render:", textNode.innerHTML); // NEU
     normalizeLinksAndImages(textNode);
     hydrateVideoLinks(textNode);
     if (
@@ -1371,15 +1870,37 @@ export function appendMessage(sender, data, appendOpts = {}) {
     ) {
       stripInlineAssistantVideoLinks(textNode);
     }
-    wireVideoReopenLink(textNode, apiPayload);
-    ensureVideoReopenLinkForRenderedMessage(textNode, apiPayload);
     if (
-      sender === "bot" &&
+      (sender === "bot" || sender === "model") &&
       apiPayload?.video_list_metadata &&
       apiPayload.video_list_metadata.mode === "list" &&
       Array.isArray(apiPayload.video_list_metadata.videos)
     ) {
-      renderVideoListCards(textNode, apiPayload.video_list_metadata);
+      // Generate formatted markdown with header (same format as SSE stream)
+      const videos = apiPayload.video_list_metadata.videos;
+      let formattedList = `### 🎬 Gefundene Videos (${videos.length})\n\n`;
+      videos.forEach((video, index) => {
+        const title = video.title || "Unbekannter Titel";
+        const channel = video.channel || video.channel_title || "";
+        const rawViews = video.views ?? video.view_count;
+        const views = rawViews ? `${Number(rawViews).toLocaleString("de-DE")} Aufrufe` : "";
+        const rawUploadDate = video.published_date_human || video.upload_date || video.published_at || "";
+        const uploadDate = rawUploadDate ? `(Hochgeladen am ${rawUploadDate})` : "";
+        const watchUrl = video.watch_url || video.embed_url || "";
+
+        formattedList += `**${index + 1}. ${title}**\n`;
+        if (channel) formattedList += `${channel} • `;
+        if (views) formattedList += `${views} • `;
+        if (uploadDate) formattedList += `${uploadDate}\n`;
+        if (watchUrl) formattedList += `[Video ansehen](${watchUrl})\n\n`;
+      });
+      // Replace the original text with the formatted list
+      textNode.innerHTML = sanitizeChatHtml(renderChatMarkdown(formattedList));
+      normalizeLinksAndImages(textNode);
+      wireVideoReopenLink(textNode, apiPayload);
+    } else {
+      wireVideoReopenLink(textNode, apiPayload);
+      ensureVideoReopenLinkForRenderedMessage(textNode, apiPayload);
     }
     bubble.appendChild(textNode);
 
@@ -1387,7 +1908,7 @@ export function appendMessage(sender, data, appendOpts = {}) {
     textNode.querySelectorAll("img").forEach(img => {
         img.addEventListener("click", (event) => {
             event.stopPropagation();
-            console.log("Image clicked from marked.parse, opening modal for URL:", img.src, "Target:", event.target);
+            console.log("Image clicked from markdown render, opening modal for URL:", img.src, "Target:", event.target);
             openImageModal(img.src);
         });
         img.style.cursor = "pointer"; // Visueller Hinweis, dass es klickbar ist
@@ -1479,6 +2000,7 @@ export function appendMessage(sender, data, appendOpts = {}) {
   messageContainer.appendChild(timestamp);
 
   chatMessages.appendChild(messageContainer);
+  scheduleContextRefresh(windowId);
 
   if (sender === "bot") {
     // Single-Mode: Normales Verhalten (Auto-Modal bei modal_request)

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-002",
+  "testCaseId": "SEC-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "One provider route fails",
+  "response": "Klingt so, als würde eine Route bei einem Anbieter nicht funktionieren. Sag mir bitte kurz:\n\nStart und Ziel (Orte/Adresse)  \nFortbewegungsart: Auto, zu Fuß oder Fahrrad  \nWas genau heißt “provider route fails” (Fehlermeldung/Code oder Verhalten)?\n\n💡 Passende nächste Schritte:• Gib mir Start/Ziel + Verkehrsmittel, dann kann ich die Route mit einem anderen Anbieter erneut berechnen• Teile die genaue Fehlermeldung, dann kann ich gezielt sagen, was typischerweise dahintersteckt\n01:48",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T23:48:11.225Z"
+}

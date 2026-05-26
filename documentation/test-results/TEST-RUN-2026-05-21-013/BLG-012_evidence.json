@@ -1,0 +1,6 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-private-data-no-tester-payloads",
+  "decision": "PASS WITH WATCHPOINTS",
+  "dashboardStatus": "PASS",
+  "publicProductionApproval": false
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-001",
+  "testCaseId": "INT-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wie weit ist Berlin von Muenchen",
+  "response": "Die Entfernung zwischen Berlin und München beträgt etwa 584,8 km. Mit dem Auto solltest du für die Strecke eine Fahrzeit von ungefähr 5 Stunden und 55 Minuten einplanen.\nHier ist die direkte Route: Google Maps Link\nQuelle: OSRM\n💡 Passende nächste Schritte:• Möchtest du die Fahrtzeit für die Strecke mit der Bahn oder dem Fahrrad wissen?• Suchst du nach Sehenswürdigkeiten oder Restaurants entlang der Route?• Soll ich eine detaillierte Wegbeschreibung für eine bestimmte Teilstrecke erstellen?\n00:50",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T22:50:53.465Z"
+}

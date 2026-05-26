@@ -1,0 +1,152 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-18-024",
+  "title": "Janus Browser Security Baseline",
+  "status": "PASS",
+  "summary": {
+    "total": 13,
+    "passed": 13,
+    "failed": 0,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-18-024",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-18-024_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-18-024/SEC-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-024/SEC-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-024/SEC-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-024/SEC-004_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-024/SEC-005_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-024/TC-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-024/TC-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-024/TC-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-024/TC-004_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-024/TC-005_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-024/TC-006_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-024/TC-007_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-18-024/TC-008_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "SEC-001",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-024/SEC-001_evidence.json",
+      "durationMs": 3651,
+      "notes": "Browser security checks passed",
+      "timestamp": "2026-05-18T19:58:00.628Z"
+    },
+    {
+      "testCaseId": "SEC-002",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-024/SEC-002_evidence.json",
+      "durationMs": 3669,
+      "notes": "Browser security checks passed",
+      "timestamp": "2026-05-18T19:58:04.705Z"
+    },
+    {
+      "testCaseId": "SEC-003",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-024/SEC-003_evidence.json",
+      "durationMs": 3695,
+      "notes": "Browser security checks passed",
+      "timestamp": "2026-05-18T19:58:08.814Z"
+    },
+    {
+      "testCaseId": "SEC-004",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-024/SEC-004_evidence.json",
+      "durationMs": 3596,
+      "notes": "Browser security checks passed",
+      "timestamp": "2026-05-18T19:58:12.880Z"
+    },
+    {
+      "testCaseId": "SEC-005",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-024/SEC-005_evidence.json",
+      "durationMs": 5724,
+      "notes": "Browser security checks passed",
+      "timestamp": "2026-05-18T19:58:18.997Z"
+    },
+    {
+      "testCaseId": "TC-001",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-024/TC-001_evidence.json",
+      "durationMs": 9908,
+      "notes": "Browser security checks passed",
+      "timestamp": "2026-05-18T19:57:21.023Z"
+    },
+    {
+      "testCaseId": "TC-002",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-024/TC-002_evidence.json",
+      "durationMs": 5873,
+      "notes": "Browser security checks passed",
+      "timestamp": "2026-05-18T19:57:27.733Z"
+    },
+    {
+      "testCaseId": "TC-003",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-024/TC-003_evidence.json",
+      "durationMs": 3442,
+      "notes": "Browser security checks passed",
+      "timestamp": "2026-05-18T19:57:31.788Z"
+    },
+    {
+      "testCaseId": "TC-004",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-024/TC-004_evidence.json",
+      "durationMs": 3642,
+      "notes": "Browser security checks passed",
+      "timestamp": "2026-05-18T19:57:35.859Z"
+    },
+    {
+      "testCaseId": "TC-005",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-024/TC-005_evidence.json",
+      "durationMs": 7676,
+      "notes": "Browser security checks passed",
+      "timestamp": "2026-05-18T19:57:43.994Z"
+    },
+    {
+      "testCaseId": "TC-006",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-024/TC-006_evidence.json",
+      "durationMs": 3534,
+      "notes": "Browser security checks passed",
+      "timestamp": "2026-05-18T19:57:48.095Z"
+    },
+    {
+      "testCaseId": "TC-007",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-024/TC-007_evidence.json",
+      "durationMs": 3862,
+      "notes": "Browser security checks passed",
+      "timestamp": "2026-05-18T19:57:52.479Z"
+    },
+    {
+      "testCaseId": "TC-008",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-18-024/TC-008_evidence.json",
+      "durationMs": 18169,
+      "notes": "Browser security checks passed",
+      "timestamp": "2026-05-19T22:31:05.768Z"
+    }
+  ],
+  "updatedAt": "2026-05-19T22:31:05.785Z"
+}

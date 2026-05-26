@@ -1,0 +1,315 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-024",
+  "title": "Janus Browser Security Baseline",
+  "executionMode": "LIVE_VISUAL",
+  "target": "JANUS_BROWSER_SECURITY",
+  "chatWindow": "A",
+  "baseUrl": "http://localhost:5173/",
+  "backendHealthUrl": "http://localhost:8001/api/health",
+  "timeouts": {
+    "testCaseMs": 120000,
+    "assistantResponseMs": 60000,
+    "streamRequestMs": 15000
+  },
+  "strategies": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1"
+  },
+  "parallelization": {
+    "schema": "janus-testplan.parallelization.v1",
+    "enabled": true,
+    "recommendedWorkers": 3,
+    "defaultWorkers": 1,
+    "mode": "all_parallel_safe",
+    "parallelSafeTests": 13,
+    "serialTests": 0,
+    "isolation": {
+      "chat": "new_chat_per_test",
+      "browserContext": "playwright_worker_context",
+      "provider": "per_test_header_model_selection",
+      "testDataNamespace": "per_test_field"
+    },
+    "notes": [
+      "Use recommendedWorkers only when Janus backend and provider quotas are stable.",
+      "Mutation, memory, calendar and filesystem stateful tests remain serial by default.",
+      "Provider-parallel tests must use separate chats and testDataNamespace values."
+    ]
+  },
+  "tests": [
+    {
+      "id": "TC-001",
+      "name": "CSP present",
+      "type": "functional",
+      "provider": "Any",
+      "model": "deterministic-http",
+      "prompt": "Inspect page headers",
+      "expected": {
+        "containsAny": [
+          "PASS"
+        ],
+        "mustNotContain": [
+          "FAIL"
+        ],
+        "criterion": "No blanket `unsafe-inline`/`unsafe-eval` unless documented and temporary"
+      },
+      "parallelSafe": true,
+      "isolationKey": "static",
+      "testDataNamespace": "static",
+      "parallelReason": "Provider-free/static test case"
+    },
+    {
+      "id": "TC-002",
+      "name": "Clickjacking protection",
+      "type": "functional",
+      "provider": "Any",
+      "model": "deterministic-http",
+      "prompt": "Inspect `frame-ancestors` or `X-Frame-Options`",
+      "expected": {
+        "containsAny": [
+          "PASS"
+        ],
+        "mustNotContain": [
+          "FAIL"
+        ],
+        "criterion": "App cannot be embedded by arbitrary origins"
+      },
+      "parallelSafe": true,
+      "isolationKey": "static",
+      "testDataNamespace": "static",
+      "parallelReason": "Provider-free/static test case"
+    },
+    {
+      "id": "TC-003",
+      "name": "MIME sniffing",
+      "type": "functional",
+      "provider": "Any",
+      "model": "deterministic-http",
+      "prompt": "Inspect `X-Content-Type-Options`",
+      "expected": {
+        "containsAny": [
+          "PASS"
+        ],
+        "mustNotContain": [
+          "FAIL"
+        ],
+        "criterion": "Header present on relevant HTML/script/style/API responses"
+      },
+      "parallelSafe": true,
+      "isolationKey": "static",
+      "testDataNamespace": "static",
+      "parallelReason": "Provider-free/static test case"
+    },
+    {
+      "id": "TC-004",
+      "name": "Referrer policy",
+      "type": "functional",
+      "provider": "Any",
+      "model": "deterministic-http",
+      "prompt": "Inspect headers",
+      "expected": {
+        "containsAny": [
+          "PASS"
+        ],
+        "mustNotContain": [
+          "FAIL"
+        ],
+        "criterion": "No full sensitive URLs leaked cross-origin"
+      },
+      "parallelSafe": true,
+      "isolationKey": "static",
+      "testDataNamespace": "static",
+      "parallelReason": "Provider-free/static test case"
+    },
+    {
+      "id": "TC-005",
+      "name": "Permissions policy",
+      "type": "functional",
+      "provider": "Any",
+      "model": "deterministic-http",
+      "prompt": "Inspect headers",
+      "expected": {
+        "containsAny": [
+          "PASS"
+        ],
+        "mustNotContain": [
+          "FAIL"
+        ],
+        "criterion": "Camera/mic/location/payment disabled unless feature requires them"
+      },
+      "parallelSafe": true,
+      "isolationKey": "static",
+      "testDataNamespace": "static",
+      "parallelReason": "Provider-free/static test case"
+    },
+    {
+      "id": "TC-006",
+      "name": "HSTS",
+      "type": "functional",
+      "provider": "Any",
+      "model": "deterministic-http",
+      "prompt": "HTTPS deployment only",
+      "expected": {
+        "containsAny": [
+          "PASS"
+        ],
+        "mustNotContain": [
+          "FAIL"
+        ],
+        "criterion": "`Strict-Transport-Security` present in HTTPS production/staging"
+      },
+      "parallelSafe": true,
+      "isolationKey": "static",
+      "testDataNamespace": "static",
+      "parallelReason": "Provider-free/static test case"
+    },
+    {
+      "id": "TC-007",
+      "name": "Session cookies",
+      "type": "functional",
+      "provider": "Any",
+      "model": "deterministic-http",
+      "prompt": "Inspect `Set-Cookie`",
+      "expected": {
+        "containsAny": [
+          "PASS"
+        ],
+        "mustNotContain": [
+          "FAIL"
+        ],
+        "criterion": "HttpOnly, Secure in HTTPS, SameSite Lax/Strict or justified None"
+      },
+      "parallelSafe": true,
+      "isolationKey": "static",
+      "testDataNamespace": "static",
+      "parallelReason": "Provider-free/static test case"
+    },
+    {
+      "id": "TC-008",
+      "name": "CORS baseline",
+      "type": "functional",
+      "provider": "Any",
+      "model": "deterministic-http",
+      "prompt": "Preflight and origin tests",
+      "expected": {
+        "containsAny": [
+          "PASS"
+        ],
+        "mustNotContain": [
+          "FAIL"
+        ],
+        "criterion": "No wildcard credentials and no arbitrary trusted origin reflection"
+      },
+      "parallelSafe": true,
+      "isolationKey": "static",
+      "testDataNamespace": "static",
+      "parallelReason": "Provider-free/static test case"
+    },
+    {
+      "id": "SEC-001",
+      "name": "Clickjacking",
+      "type": "security",
+      "provider": "Any",
+      "model": "deterministic-http",
+      "prompt": "Try loading Janus in attacker iframe",
+      "expected": {
+        "containsAny": [
+          "PASS"
+        ],
+        "mustNotContain": [
+          "FAIL"
+        ],
+        "criterion": "Browser refuses arbitrary framing"
+      },
+      "parallelSafe": true,
+      "isolationKey": "static",
+      "testDataNamespace": "static",
+      "parallelReason": "Provider-free/static test case"
+    },
+    {
+      "id": "SEC-002",
+      "name": "Cookie theft via JS",
+      "type": "security",
+      "provider": "Any",
+      "model": "deterministic-http",
+      "prompt": "Inspect document.cookie after login",
+      "expected": {
+        "containsAny": [
+          "PASS"
+        ],
+        "mustNotContain": [
+          "FAIL"
+        ],
+        "criterion": "Auth cookies are HttpOnly"
+      },
+      "parallelSafe": true,
+      "isolationKey": "static",
+      "testDataNamespace": "static",
+      "parallelReason": "Provider-free/static test case"
+    },
+    {
+      "id": "SEC-003",
+      "name": "Cross-origin credential abuse",
+      "type": "security",
+      "provider": "Any",
+      "model": "deterministic-http",
+      "prompt": "CORS request with attacker origin",
+      "expected": {
+        "containsAny": [
+          "PASS"
+        ],
+        "mustNotContain": [
+          "FAIL"
+        ],
+        "criterion": "No credentialed wildcard or origin reflection"
+      },
+      "parallelSafe": true,
+      "isolationKey": "static",
+      "testDataNamespace": "static",
+      "parallelReason": "Provider-free/static test case"
+    },
+    {
+      "id": "SEC-004",
+      "name": "CSP regression",
+      "type": "security",
+      "provider": "Any",
+      "model": "deterministic-http",
+      "prompt": "Inject inline script in test page/context",
+      "expected": {
+        "containsAny": [
+          "PASS"
+        ],
+        "mustNotContain": [
+          "FAIL"
+        ],
+        "criterion": "CSP and renderer prevent execution"
+      },
+      "parallelSafe": true,
+      "isolationKey": "static",
+      "testDataNamespace": "static",
+      "parallelReason": "Provider-free/static test case"
+    },
+    {
+      "id": "SEC-005",
+      "name": "Overbroad permissions",
+      "type": "security",
+      "provider": "Any",
+      "model": "deterministic-http",
+      "prompt": "Query permission policy",
+      "expected": {
+        "containsAny": [
+          "PASS"
+        ],
+        "mustNotContain": [
+          "FAIL"
+        ],
+        "criterion": "No camera/mic/location/payment unless feature-owned"
+      },
+      "parallelSafe": true,
+      "isolationKey": "static",
+      "testDataNamespace": "static",
+      "parallelReason": "Provider-free/static test case"
+    }
+  ]
+}

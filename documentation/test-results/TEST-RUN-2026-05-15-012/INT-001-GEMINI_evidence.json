@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-012",
+  "testCaseId": "INT-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Erstell einen Ordner Janus-Test",
+  "response": "Der Ordner Janus-Test existiert bereits im aktuellen Verzeichnis.\n💡 Passende nächste Schritte:• Den Inhalt des Ordners anzeigen lassen• Dateien in den Ordner verschieben• Einen Unterordner innerhalb von Janus-Test erstellen\n21:48",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T19:49:02.304Z"
+}

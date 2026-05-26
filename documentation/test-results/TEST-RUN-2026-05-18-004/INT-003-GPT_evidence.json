@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-004",
+  "testCaseId": "INT-003-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Suche in allen User-Chats nach meinem Namen",
+  "response": "Ich kann in „allen User-Chats“ nicht direkt suchen, solange mir dein Name nicht konkret vorliegt.\nBitte nenn mir deinen genauen Namen (so wie er in den Chats vorkommt), dann kann ich gezielt helfen, ihn zu finden/zuzuordnen.  \n💡 Passende nächste Schritte:• Nenne mir deinen exakten Namen (Schreibweise/evtl. mit Nachname).• Wenn du vermutest, dass er abgekürzt vorkommt: sag mir auch die möglichen Varianten.\n15:42",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T13:42:59.788Z"
+}

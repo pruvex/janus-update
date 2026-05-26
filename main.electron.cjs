@@ -4,6 +4,8 @@ const { app, BrowserWindow, ipcMain, dialog, Menu, MenuItem, net, session, shell
 
 // ============================================================
 // YOUTUBE ORIGIN FIX: Disable site-per-process isolation to prevent iframe blocking
+// disable-site-isolation-trials was removed in v0.4.16-beta.3 as it caused
+// startup instability without measurable benefit for YouTube embedding.
 // ============================================================
 app.commandLine.appendSwitch('disable-features', 'IsolateOrigins,site-per-process');
 const path = require('path');
@@ -12,6 +14,20 @@ const http = require('http'); // For health check
 const { spawn } = require('child_process');
 const { autoUpdater } = require('electron-updater');
 const axios = require('axios');
+const { initJanusUpdateManager } = require('./electron/update-manager.cjs');
+const { readUpdateState, transitionUpdateState } = require('./electron/update-state.cjs');
+
+// ============================================================
+// STARTUP TELEMETRY (Dev Context Only)
+// ============================================================
+const { getStartupTelemetryConfig, StartupTelemetryLogger } = require('./electron/startup-telemetry.cjs');
+const telemetryConfig = getStartupTelemetryConfig();
+const telemetryLogger = new StartupTelemetryLogger({
+  enabled: telemetryConfig.enabled,
+  logFilePath: telemetryConfig.log_file_path,
+  maxFileSizeBytes: telemetryConfig.max_file_size_bytes,
+  maxBackupFiles: telemetryConfig.max_backup_files
+});
 
 // ============================================================
 // YOUTUBE ORIGIN FIX: Register custom scheme as privileged
@@ -32,7 +48,7 @@ protocol.registerSchemesAsPrivileged([
 // ============================================================
 // YOUTUBE ORIGIN FIX: Mask Janus as real Chrome browser globally
 // ============================================================
-app.userAgentFallback = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+// Moved to app.ready to prevent startup crash in some Electron versions
 
 // ============================================================
 // DIAMANT-STANDARD UPDATE KONFIGURATION
@@ -40,6 +56,8 @@ app.userAgentFallback = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/5
 
 autoUpdater.allowPrerelease = true; 
 autoUpdater.allowDowngrade = false;
+autoUpdater.disableDifferentialDownload = true;
+autoUpdater.disableWebInstaller = true;
 
 // KORREKTUR: Wir laden das Log-Modul hier direkt. 
 // So ist es egal, wo 'const log' im Rest der Datei steht.
@@ -545,10 +563,17 @@ function createWindow() {
     height: 800,
     autoHideMenuBar: true,
     show: false, // Initially hidden
+    icon: path.join(__dirname, 'frontend/assets/icon.png'),
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
       sandbox: true,
+      // ============================================================
+      // YOUTUBE ORIGIN FIX (v0.4.16-beta.3): Dedicated persistent session partition.
+      // Gives YouTube iframe a stable cookie jar for CONSENT cookies and
+      // recommendation state, which reduces Error 150/153 occurrences.
+      // ============================================================
+      partition: "persist:janus",
       // ============================================================
       // YOUTUBE ORIGIN FIX: Allow running insecure content for YouTube embedding
       // ============================================================
@@ -565,14 +590,27 @@ function createWindow() {
   });
 
   // ============================================================
-  // YOUTUBE ORIGIN FIX: Referer/Origin Spoofing + Header-Stripping
+  // YOUTUBE ORIGIN FIX (reverted to beta.3 state): UA-only, diagnostic logging.
+  // We log the ORIGINAL Referer/Origin/Sec-Fetch values so we can see what
+  // Electron actually sends before any spoofing. This is diagnostic-first —
+  // we will decide the actual header strategy based on what the logs show.
   // ============================================================
-  // --- Request-Header: User-Agent hardening for YouTube ---
+  const CHROME_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+  let _ytRequestLogCount = 0;
   mainWindow.webContents.session.webRequest.onBeforeSendHeaders(
-    { urls: ['*://*.youtube.com/*'] },
+    { urls: ['*://*.youtube.com/*', '*://*.youtube-nocookie.com/*', '*://*.googlevideo.com/*'] },
     (details, callback) => {
-      // Force User-Agent to match Chrome 124 (same as window userAgent and app.userAgentFallback)
-      details.requestHeaders['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+      if (_ytRequestLogCount < 30) {
+        _ytRequestLogCount++;
+        const ref = details.requestHeaders['Referer'] || details.requestHeaders['referer'] || '(none)';
+        const org = details.requestHeaders['Origin'] || details.requestHeaders['origin'] || '(none)';
+        const sfs = details.requestHeaders['Sec-Fetch-Site'] || '(none)';
+        const sfm = details.requestHeaders['Sec-Fetch-Mode'] || '(none)';
+        console.log(`[YT-REQ ${_ytRequestLogCount}] ${details.method} ${details.url.substring(0, 100)} | ref=${ref.substring(0, 50)} origin=${org} sfs=${sfs} sfm=${sfm}`);
+      }
+      // Only normalize User-Agent (avoid "Electron/x.x.x" substring block).
+      // Do NOT touch Referer/Origin/Sec-Fetch-* — we log them instead to diagnose.
+      details.requestHeaders['User-Agent'] = CHROME_UA;
       callback({ cancel: false, requestHeaders: details.requestHeaders });
     }
   );
@@ -603,9 +641,15 @@ function createWindow() {
       console.log('[PERMISSION CHECK] ALLOWED: YouTube origin');
       return true;
     }
-    // Allow all permissions from file:// origin (renderer runs locally)
-    if (requestingOrigin && requestingOrigin.startsWith('file://')) {
-      console.log('[PERMISSION CHECK] ALLOWED: file:// origin');
+    // Allow all permissions from local renderer origins
+    // (file://, janus:// legacy, http://127.0.0.1:8001 and http://localhost:* for Vite dev)
+    if (requestingOrigin && (
+      requestingOrigin.startsWith('file://') ||
+      requestingOrigin.startsWith('janus://') ||
+      requestingOrigin.startsWith('http://127.0.0.1:8001') ||
+      requestingOrigin.startsWith('http://localhost:')
+    )) {
+      console.log('[PERMISSION CHECK] ALLOWED: local origin', requestingOrigin);
       return true;
     }
     // Allow clipboard, fullscreen, and background-sync permissions for app context
@@ -625,10 +669,22 @@ function createWindow() {
       callback(true);
       return;
     }
-    // Allow all permissions from file:// origin (renderer runs locally)
-    const requestingOrigin = webContents.getURL();
-    if (requestingOrigin && requestingOrigin.startsWith('file://')) {
-      console.log('[PERMISSION REQUEST] ALLOWED: file:// origin');
+    // Allow all permissions from local renderer origins
+    // (file://, janus:// legacy, http://127.0.0.1:8001 and http://localhost:* for Vite dev)
+    const requestingOrigin = (details && details.requestingUrl) || webContents.getURL();
+    if (requestingOrigin && (
+      requestingOrigin.startsWith('file://') ||
+      requestingOrigin.startsWith('janus://') ||
+      requestingOrigin.startsWith('http://127.0.0.1:8001') ||
+      requestingOrigin.startsWith('http://localhost:')
+    )) {
+      console.log('[PERMISSION REQUEST] ALLOWED: local origin', requestingOrigin);
+      callback(true);
+      return;
+    }
+    // For openExternal with no origin yet (initial navigation to janus://), allow as well
+    if (permission === 'openExternal' && (!requestingOrigin || requestingOrigin === '' || requestingOrigin.startsWith('janus:') || requestingOrigin === 'about:blank')) {
+      console.log('[PERMISSION REQUEST] ALLOWED: openExternal during janus:// navigation');
       callback(true);
       return;
     }
@@ -645,13 +701,26 @@ function createWindow() {
   // Function to load the main app content
   const loadApp = () => {
     return new Promise((resolve, reject) => {
+      // v0.4.16-beta.9: Load packaged app from http://127.0.0.1:8001/ instead
+      // of a custom scheme. Required by YouTube's embed player (Error 153 was
+      // caused by the non-http `janus://` origin). The backend's FastAPI app
+      // already mounts frontend/dist at `/`, so it serves the UI over HTTP.
+      // Dev mode keeps Vite's hot-reload server at http://localhost:5173/.
       const loadPromise = app.isPackaged
-        ? mainWindow.loadFile(path.join(__dirname, 'frontend', 'dist', 'index.html'))
+        ? (() => {
+            if (process.env.NODE_ENV === 'development') {
+                mainWindow.webContents.openDevTools({ mode: 'detach' });
+            }
+            console.log('[LOAD] Using HTTP origin: http://127.0.0.1:8001/');
+            return mainWindow.loadURL('http://127.0.0.1:8001/');
+          })()
         : (() => {
-            mainWindow.webContents.openDevTools();
+            if (process.env.NODE_ENV === 'development') {
+                mainWindow.webContents.openDevTools();
+            }
             return mainWindow.loadURL('http://localhost:5173/');
           })();
-      
+
       loadPromise.then(resolve).catch(reject);
     });
   };
@@ -692,46 +761,83 @@ function createWindow() {
   // Start the backend and wait for it to be ready
   const startApp = async () => {
     try {
+      // STARTUP TELEMETRY: Backend start phase (measure before startRun)
+      const backendStart = Date.now();
+      let backendStartDuration = 0;
       if (app.isPackaged) {
         await startBackend();
+        backendStartDuration = Date.now() - backendStart;
+      } else {
+        // In dev mode, backend might already be running or started separately
+        backendStartDuration = 0;
       }
-      
+
       // Wait for backend to be ready
       let attempts = 0;
       const maxAttempts = 120; // 120 seconds (2 minutes) max
-      
+      let telemetryStarted = false;
+
       while (attempts < maxAttempts) {
         const isReady = await checkBackendReady();
         if (isReady) {
           console.log('[Electron Main] Backend ready, loading app...');
+
+          // STARTUP TELEMETRY: Start run on first successful backend health check
+          if (!telemetryStarted) {
+            telemetryLogger.startRun();
+            telemetryStarted = true;
+
+            // Log backend_start phase after startRun
+            if (app.isPackaged) {
+              telemetryLogger.logPhase('backend_start', backendStartDuration);
+            } else {
+              telemetryLogger.logPhase('backend_start', 0, { note: 'Dev mode - backend not started by Electron' });
+            }
+          }
+
+          // STARTUP TELEMETRY: Frontend load phase
+          const frontendStart = Date.now();
           await loadApp();
+          telemetryLogger.logPhase('frontend_load', Date.now() - frontendStart);
+
+          // STARTUP TELEMETRY: App ready phase (window shown, Janus is usable)
+          const appReadyStart = Date.now();
           mainWindow.show();
           if (splashWindow) {
             splashWindow.close();
             splashWindow = null;
           }
+          telemetryLogger.logPhase('app_ready', Date.now() - appReadyStart);
+
+          // STARTUP TELEMETRY: End run when Janus is actually usable
+          telemetryLogger.endRun(success=true);
+
           return;
         }
-        
+
         // Update splash screen status with more informative message
         if (splashWindow) {
           // Better user message
-          const status = (attempts < 15) 
-            ? `Starte Dienste... (${attempts + 1})` 
+          const status = (attempts < 15)
+            ? `Starte Dienste... (${attempts + 1})`
             : `Lade Modelle (kann dauern)... (${attempts + 1})`;
-            
+
           splashWindow.webContents.executeJavaScript(`
             document.querySelector('.status').textContent = '${status}';
           `);
         }
-        
+
         await new Promise(resolve => setTimeout(resolve, 1000));
         attempts++;
       }
-      
+
       throw new Error('Backend did not start in time');
     } catch (err) {
       console.error('Failed to start app:', err);
+      
+      // STARTUP TELEMETRY: Log startup failure
+      telemetryLogger.endRun(success=false, errorMessage=err.message);
+      
       if (splashWindow) {
         splashWindow.close();
       }
@@ -809,88 +915,6 @@ const log = require('electron-log');
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 
-function initAutoUpdater(window) {
-    log.info('[AutoUpdater] initAutoUpdater called. app.isPackaged:', app.isPackaged);
-    if (!app.isPackaged) {
-        log.info('[AutoUpdater] Skipping update check (Development Mode)');
-        return;
-    }
-
-    log.info('[AutoUpdater] Initializing...');
-
-    // Einstellungen für den Workflow wie im Screenshot
-    autoUpdater.autoDownload = true; // Lädt sofort, damit der Balken sich bewegt
-    autoUpdater.autoInstallOnAppQuit = false; // WICHTIG: Damit wir den "Neu starten"-Button nutzen können
-    autoUpdater.requestHeaders = { 'User-Agent': 'Janus-Project' }; // GitHub API要求
-    autoUpdater.fullChangelog = true; // Vollständige Changelog-Informationen
-
-    // Events an das Frontend senden
-    autoUpdater.on('checking-for-update', () => {
-        log.info('[AutoUpdater] Checking for update...');
-        if (splashWindow && !splashWindow.isDestroyed()) {
-            splashWindow.webContents.send('update-status', 'Prüfe auf Updates...');
-        }
-    });
-
-    autoUpdater.on('update-available', (info) => {
-        log.info(`[AutoUpdater] Update available: ${info.version}`);
-        if (splashWindow && !splashWindow.isDestroyed()) {
-            splashWindow.webContents.send('update-status', `Update gefunden: ${info.version}`);
-            splashWindow.webContents.send('update-progress', 'Lade Update herunter...');
-        }
-        if (window && !window.isDestroyed()) {
-            // Sendet das Event, das dein React-Modal öffnet
-            window.webContents.send('update-available', {
-                version: info.version,
-                releaseNotes: info.releaseNotes || 'Siehe GitHub für Details.'
-            });
-        }
-    });
-
-    autoUpdater.on('download-progress', (progressObj) => {
-        // Sendet den Fortschritt an deinen Balken im Screenshot
-        if (window && !window.isDestroyed()) {
-            window.webContents.send('download-progress', progressObj);
-        }
-        if (splashWindow && !splashWindow.isDestroyed()) {
-            const percent = Math.round(progressObj.percent);
-            splashWindow.webContents.send('update-progress', `Lade Update... ${percent}%`);
-        }
-    });
-
-    autoUpdater.on('update-downloaded', (info) => {
-        log.info('[AutoUpdater] Update downloaded.');
-        if (splashWindow && !splashWindow.isDestroyed()) {
-            splashWindow.webContents.send('update-complete');
-        }
-        if (window && !window.isDestroyed()) {
-            window.webContents.send('update-downloaded');
-        }
-    });
-    
-    autoUpdater.on('error', (err) => {
-        log.error('[AutoUpdater] Error:', err);
-        if (splashWindow && !splashWindow.isDestroyed()) {
-            splashWindow.webContents.send('update-status', 'Update-Check fehlgeschlagen, starte App...');
-        }
-    });
-
-    // SOFORTIGER CHECK OHNE NOTIFICATION (Das UI macht die Anzeige)
-    // Timeout nach 10 Sekunden, falls GitHub API nicht antwortet
-    const updateCheckTimeout = setTimeout(() => {
-        log.warn('[AutoUpdater] Update check timeout - starting app anyway');
-        if (splashWindow && !splashWindow.isDestroyed()) {
-            splashWindow.webContents.send('update-status', 'Update-Check timeout, starte App...');
-        }
-    }, 10000);
-
-    autoUpdater.checkForUpdates().then(() => {
-        clearTimeout(updateCheckTimeout);
-    }).catch((err) => {
-        clearTimeout(updateCheckTimeout);
-        log.error('[AutoUpdater] Check failed:', err);
-    });
-}
 
 // ===================================================================
 //  FOLDER SELECTION HANDLER
@@ -1038,12 +1062,121 @@ ipcMain.handle('clipboard:read', () => {
   }
 });
 
+ipcMain.handle('debug:write-frontend-log', async (event, payload = {}) => {
+  try {
+    const content = typeof payload.content === 'string' ? payload.content : '';
+    if (!content.trim()) {
+      return { success: false, error: 'Frontend debug log content is empty' };
+    }
+
+    const isDev = process.env.NODE_ENV === 'development';
+    const debugDir = isDev
+      ? path.join(process.cwd(), 'debug_logs')
+      : path.join(app.getPath('userData'), 'debug_logs');
+    await fs.promises.mkdir(debugDir, { recursive: true });
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filePath = path.join(debugDir, `frontend_log_${timestamp}.md`);
+    await fs.promises.writeFile(filePath, content, 'utf8');
+
+    log.info(`[DebugLog] Frontend debug log exported: ${filePath}`);
+    return { success: true, path: filePath };
+  } catch (error) {
+    log.error('[DebugLog] Failed to export frontend debug log:', error);
+    return { success: false, error: error.message };
+  }
+});
+
 // ===================================================================
 //  APP INITIALIZATION
 // ===================================================================
 app.whenReady().then(async () => {
-    // 💎 YOUTUBE FIX: Disable site isolation to allow YouTube embedding
-    app.commandLine.appendSwitch('disable-features', 'IsolateOrigins,site-per-process');
+    // STARTUP TELEMETRY: Start run will be triggered on first successful backend health check
+    // (not here, to ensure we capture time from "backend ready" to "Janus usable")
+
+    // YOUTUBE ORIGIN FIX: Mask Janus as real Chrome browser globally (set here to avoid startup race conditions).
+    // Note: command-line switches like disable-features are set at the top of the script (before app init).
+    app.userAgentFallback = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+    // ============================================================
+    // YOUTUBE ORIGIN FIX (v0.4.16-beta.5): Register janus:// protocol handler.
+    // Root cause of Error 153: Production used loadFile() → file:// origin →
+    // YouTube embed endpoint refuses any non-http(s) referrer.
+    // Fix: Serve frontend/dist via custom 'janus' scheme (registered as
+    // privileged+secure+standard at top of script). Origin becomes janus://app,
+    // which YouTube treats as a standard web origin.
+    // ============================================================
+    const { protocol: electronProtocol, session: electronSession } = require('electron');
+    const distRoot = path.join(__dirname, 'frontend', 'dist');
+    const MIME_TYPES = {
+      '.html': 'text/html; charset=utf-8',
+      '.js':   'text/javascript; charset=utf-8',
+      '.mjs':  'text/javascript; charset=utf-8',
+      '.css':  'text/css; charset=utf-8',
+      '.json': 'application/json; charset=utf-8',
+      '.map':  'application/json; charset=utf-8',
+      '.png':  'image/png',
+      '.jpg':  'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.gif':  'image/gif',
+      '.svg':  'image/svg+xml',
+      '.webp': 'image/webp',
+      '.ico':  'image/x-icon',
+      '.woff':  'font/woff',
+      '.woff2': 'font/woff2',
+      '.ttf':   'font/ttf',
+      '.otf':   'font/otf',
+      '.mp3':  'audio/mpeg',
+      '.wav':  'audio/wav',
+      '.mp4':  'video/mp4',
+      '.txt':  'text/plain; charset=utf-8',
+    };
+    const janusHandler = async (request) => {
+      try {
+        const parsed = new URL(request.url);
+        let relPath = decodeURIComponent(parsed.pathname).replace(/^\/+/, '');
+        if (!relPath || relPath.endsWith('/')) relPath += 'index.html';
+        const absPath = path.normalize(path.join(distRoot, relPath));
+        if (!absPath.startsWith(distRoot)) {
+          console.warn(`[JANUS-PROTO] Blocked path traversal: ${request.url}`);
+          return new Response('Forbidden', { status: 403 });
+        }
+        let data;
+        try {
+          data = await fs.promises.readFile(absPath);
+        } catch (readErr) {
+          console.warn(`[JANUS-PROTO] File not found: ${absPath} (url=${request.url})`);
+          return new Response('Not Found', { status: 404 });
+        }
+        const ext = path.extname(absPath).toLowerCase();
+        const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+        console.log(`[JANUS-PROTO] Served: ${relPath} (${data.length} bytes, ${contentType})`);
+        return new Response(data, {
+          status: 200,
+          headers: { 'Content-Type': contentType, 'Cache-Control': 'no-cache' },
+        });
+      } catch (err) {
+        console.error('[JANUS-PROTO] Handler error:', err && err.stack ? err.stack : err);
+        return new Response('Internal Error', { status: 500 });
+      }
+    };
+
+    // Register on default session (for safety / fallback)
+    electronProtocol.handle('janus', janusHandler);
+    // CRITICAL: Also register on the persist:janus partition session,
+    // because our BrowserWindow uses `partition: "persist:janus"` which is
+    // a separate session with its own protocol registry.
+    const partitionSession = electronSession.fromPartition('persist:janus');
+    partitionSession.protocol.handle('janus', janusHandler);
+    console.log(`[JANUS-PROTO] Custom scheme registered on default + persist:janus sessions, serving from: ${distRoot}`);
+
+    // NOTE: Previous beta.6 introduced a YouTube Referer/Origin rewriter via
+    // webRequest.onBeforeSendHeaders. It was removed in beta.8 because:
+    //  - It did not fix the reported Error 153 (reproducible in plain browser
+    //    on the affected machine, not an Electron issue).
+    //  - Manipulating Referer/Origin/Sec-Fetch headers can INCREASE YouTube's
+    //    bot-detection score for normal users. Browser defaults are trusted
+    //    signals; leaving them untouched is the safer baseline.
 
     // 1. Splash zeigen
     createSplashWindow();
@@ -1054,14 +1187,53 @@ app.whenReady().then(async () => {
     // 3. WICHTIG: Update SOFORT prüfen (vor Backend-Start)
     // Dadurch kann sich die App auch bei kritischen Fehlern selbst updaten
     setTimeout(() => {
-        initAutoUpdater(win);
+        initJanusUpdateManager({ app, autoUpdater, mainWindow: win, log });
     }, 1000);
 
-    // 4. Globaler Listener für den Neustart-Button im Frontend
-    ipcMain.on('restart-app-for-update', () => {
-        log.info('[AutoUpdater] Restarting app to install update...');
+    // NOTE: Telemetry starts on first successful backend health check in startApp()
+    // Phases before that (splash, window, update) are not logged
+});
+
+// ===================================================================
+//  UPDATE IPC HANDLERS
+// ===================================================================
+
+ipcMain.handle('update:get-state', () => {
+    return readUpdateState(app);
+});
+
+ipcMain.on('update:install-now', () => {
+    const state = readUpdateState(app);
+    if (state.status === 'ready_to_install') {
+        log.info('[UpdateIPC] Installing update...');
         autoUpdater.quitAndInstall();
-    });
+    }
+});
+
+ipcMain.on('update:retry', () => {
+    const state = readUpdateState(app);
+    if (state.status === 'download_failed' || state.status === 'validation_failed' || state.status === 'install_failed') {
+        log.info(`[UpdateIPC] Retrying update from state: ${state.status}`);
+        const newState = transitionUpdateState(app, {
+            status: 'checking',
+            retryCount: 0,
+            errorCode: null,
+            errorMessage: null,
+            downloadProgress: null,
+        });
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('update-state-changed', newState);
+        }
+        autoUpdater.checkForUpdates();
+    }
+});
+
+ipcMain.on('update:dismiss-normal', () => {
+    const state = readUpdateState(app);
+    if (state.status === 'ready_to_install' && state.isCritical === false) {
+        log.info('[UpdateIPC] Dismissing normal update');
+        transitionUpdateState(app, { status: 'idle', downloadProgress: null });
+    }
 });
 
 app.on('will-quit', stopBackend);

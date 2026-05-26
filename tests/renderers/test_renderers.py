@@ -8,6 +8,8 @@ Tests each renderer with:
 No LLM mocking needed – pure Python unit tests.
 """
 
+import json
+
 import pytest
 
 from backend.renderers.base import BaseRenderer
@@ -25,6 +27,13 @@ from backend.renderers.implementations.save_mp3_renderer import SaveMp3Renderer
 from backend.renderers.implementations.scrape_website_renderer import ScrapeWebsiteRenderer
 from backend.renderers.implementations.websearch_renderer import WebsearchRenderer
 from backend.renderers.implementations.wikipedia_summary_renderer import WikipediaSummaryRenderer
+from backend.services.websearch.link_quality import (
+    LinkIntent,
+    is_low_value_source,
+    score_source_for_intent,
+    select_best_source_for_item,
+)
+from backend.services.websearch.evidence_pipeline import EvidencePipeline
 
 
 # ---------------------------------------------------------------------------
@@ -88,17 +97,31 @@ class TestRoutingRenderer:
         [
             pytest.param(
                 _ROUTING_FULL,
-                ["Berlin → Hamburg", "289.0 km", "3 Std. 15 Min.", "google.com/maps"],
+                [
+                    "Berlin → Hamburg",
+                    "289.0 km",
+                    "3 Std. 15 Min.",
+                    "google.com/maps",
+                    "Quelle:",
+                    "OSRM",
+                    "Nominatim",
+                ],
                 id="full-data",
             ),
             pytest.param(
                 _ROUTING_PARTIAL,
-                ["München → Wien", "Distanz unbekannt", "Dauer unbekannt"],
+                [
+                    "München → Wien",
+                    "Distanz unbekannt",
+                    "Dauer unbekannt",
+                    "Quelle:",
+                    "OSRM",
+                ],
                 id="partial-data",
             ),
             pytest.param(
                 _ROUTING_EMPTY,
-                ["Unbekannt → Unbekannt", "Distanz unbekannt"],
+                ["Unbekannt → Unbekannt", "Distanz unbekannt", "Quelle:", "OSRM"],
                 id="empty-data",
             ),
         ],
@@ -163,17 +186,33 @@ class TestWeatherRenderer:
         [
             pytest.param(
                 _WEATHER_FULL,
-                ["Berlin", "Wettervorhersage", "12°C", "open-meteo"],
+                [
+                    "Berlin",
+                    "Wettervorhersage",
+                    "12°C",
+                    "Quelle:",
+                    "Open-Meteo",
+                    "Nominatim",
+                ],
                 id="full-data",
             ),
             pytest.param(
                 _WEATHER_WTTR_FALLBACK,
-                ["Berlin", "wttr.in"],
+                ["Berlin", "Quelle:", "wttr.in"],
                 id="wttr-fallback",
             ),
             pytest.param(
                 _WEATHER_STRUCTURED_ONLY,
-                ["Hamburg", "Regen", "9°C", "3°C", "60%", "40 km/h"],
+                [
+                    "Hamburg",
+                    "Regen",
+                    "9°C",
+                    "3°C",
+                    "60%",
+                    "40 km/h",
+                    "Quelle:",
+                    "Open-Meteo",
+                ],
                 id="structured-no-forecast",
             ),
             pytest.param(
@@ -195,7 +234,8 @@ class TestWeatherRenderer:
 
     def test_source_attribution_present(self):
         result = self.renderer.render(_WEATHER_FULL)
-        assert "open-meteo" in result
+        assert "Quelle:" in result
+        assert "Open-Meteo" in result
 
 
 # ---------------------------------------------------------------------------
@@ -227,17 +267,32 @@ class TestCountryInfoRenderer:
         [
             pytest.param(
                 _COUNTRY_FULL,
-                ["Japan", "Tokio", "125.1 Mio.", "Asia", "Japanischer Yen", "Japanisch"],
+                [
+                    "Japan",
+                    "Tokio",
+                    "125.1 Mio.",
+                    "Asia",
+                    "Japanischer Yen",
+                    "Japanisch",
+                    "Quelle:",
+                    "REST Countries API",
+                ],
                 id="full-data",
             ),
             pytest.param(
                 _COUNTRY_PARTIAL,
-                ["Atlantis", "Poseidonia", "Unbekannt"],
+                [
+                    "Atlantis",
+                    "Poseidonia",
+                    "Unbekannt",
+                    "Quelle:",
+                    "REST Countries API",
+                ],
                 id="partial-data",
             ),
             pytest.param(
                 _COUNTRY_EMPTY,
-                ["Unbekannt"],
+                ["Unbekannt", "Quelle:", "REST Countries API"],
                 id="empty-data",
             ),
         ],
@@ -530,6 +585,22 @@ _RSS_NEWS_EMPTY = {
     "source": "tagesschau",
 }
 
+_RSS_NEWS_ITEMS = {
+    "mode": "rss_hybrid",
+    "source": "auto",
+    "query": "OpenAI",
+    "items": [
+        {
+            "title": "OpenAI startet neue Funktion",
+            "summary": "Die Meldung beschreibt eine neue KI-Funktion und ordnet die wichtigsten Auswirkungen kurz ein.",
+            "url": "https://www.tagesschau.de/openai",
+            "source": "tagesschau",
+            "source_label": "Tagesschau",
+            "date": "23.05.2026",
+        }
+    ],
+}
+
 
 class TestRssNewsRenderer:
     renderer = RssNewsRenderer()
@@ -541,6 +612,16 @@ class TestRssNewsRenderer:
                 _RSS_NEWS_FULL,
                 ["Aktuelle Schlagzeilen von tagesschau", "1. Bundestag", "2. DAX", "Anzahl"],
                 id="full-data",
+            ),
+            pytest.param(
+                _RSS_NEWS_ITEMS,
+                [
+                    "Kurzlage: Zu OpenAI",
+                    "1. OpenAI startet neue Funktion (23.05.2026)",
+                    "Quelle: Tagesschau. [Link](https://www.tagesschau.de/openai)",
+                    "Einordnung:",
+                ],
+                id="rss-hybrid-items",
             ),
             pytest.param(
                 _RSS_NEWS_EMPTY,
@@ -567,6 +648,1242 @@ class TestRssNewsRenderer:
 
     def test_skill_id(self):
         assert self.renderer.skill_id == "system.rss_news"
+
+    def test_response_finalizer_renders_rss_news_tool_result(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "get_latest_news_rss",
+                    "_skill_id": "system.rss_news",
+                    "content": json.dumps({"data": _RSS_NEWS_ITEMS}),
+                }
+            ]
+        )
+
+        assert "Kurzlage: Zu OpenAI" in result
+        assert "Quelle: Tagesschau. [Link](https://www.tagesschau.de/openai)" in result
+
+    def test_response_finalizer_prefers_rss_news_over_parallel_websearch(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "text": "1. Freie Websearch-Synthese ohne Template",
+                                "sources": [{"url": "https://example.com", "title": "Example"}],
+                            }
+                        }
+                    ),
+                },
+                {
+                    "role": "tool",
+                    "name": "system.rss_news",
+                    "_skill_id": "system.rss_news",
+                    "content": json.dumps({"data": _RSS_NEWS_ITEMS}),
+                },
+            ]
+        )
+
+        assert "Kurzlage: Zu OpenAI" in result
+        assert "Freie Websearch-Synthese" not in result
+
+    def test_response_finalizer_renders_news_websearch_as_news_template(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. GPT-5.5 Instant: Das Modell wurde veroeffentlicht und ist neuer Standard. "
+                                    "Quelle: OpenAI.\n"
+                                    "2. Sora-Einstellung: Die Webanwendung wurde eingestellt. Quelle: OpenAI."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://openai.com/news/example",
+                                        "title": "openai.com",
+                                        "snippet": "GPT-5.5 Instant Quelle: OpenAI",
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "Kurzlage: Zu OpenAI liegen aktuell belegte Meldungen vor." in result
+        assert "1. GPT-5.5 Instant" in result
+        assert "Quelle: OpenAI. [Link](https://openai.com/news/example)" in result
+
+    def test_response_finalizer_prefers_numbered_news_text_over_single_source_item(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "items": [
+                                    {
+                                        "title": "openai.com",
+                                        "description": "2. Nur ein strukturierter Snippet.",
+                                        "source_url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/example",
+                                    }
+                                ],
+                                "text": (
+                                    "1. OpenAI fuehrt im Mai 2026 die souveraene Cloud-Loesung OpenAI for Germany ein (Quelle: TechRepublic).\n"
+                                    "2. Das Unternehmen betreibt in Muenchen sein erstes deutsches Buero (Quelle: OpenAI).\n"
+                                    "3. In einer strategischen Allianz mit der Deutschen Telekom entwickelt OpenAI neue KI-Produkte fuer Europa (Quelle: Computerwoche).\n"
+                                    "\n[Global Research]\n"
+                                    "1. Dieser globale Zusatz soll nicht die Primaerliste verdoppeln (Quelle: OpenAI)."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/example",
+                                        "title": "openai.com",
+                                        "snippet": "Das Unternehmen betreibt in Muenchen sein erstes deutsches Buero (Quelle: OpenAI).",
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "OpenAI fuehrt im Mai 2026 die souveraene Cloud-Loesung OpenAI for Germany ein" in result
+        assert "Das Unternehmen betreibt in Muenchen sein erstes deutsches Buero" in result
+        assert "In einer strategischen Allianz mit der Deutschen Telekom entwickelt OpenAI" in result
+        assert "Link online leider nicht verfuegbar" not in result
+        assert "openai.com\n2. Nur ein strukturierter Snippet" not in result
+        assert "globaler Zusatz" not in result
+
+    def test_response_finalizer_uses_resolved_news_detail_link_for_item(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. Sora-App: Die eigenstaendige Anwendung wurde eingestellt und in ChatGPT integriert. "
+                                    "Quelle: OpenAI."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://reddit.com/r/example",
+                                        "title": "reddit.com",
+                                        "snippet": "Sora-App OpenAI Diskussion",
+                                    },
+                                    {
+                                        "url": "https://openai.com/de-DE/news/sora-in-chatgpt",
+                                        "title": "OpenAI Sora in ChatGPT",
+                                        "snippet": "Sora-App wurde in ChatGPT integriert.",
+                                        "news_target_index": "1",
+                                        "news_target_title": "Sora-App",
+                                        "news_target_label": "OpenAI",
+                                    },
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "Quelle: OpenAI. [Link](https://openai.com/de-DE/news/sora-in-chatgpt)" in result
+        assert "reddit.com/r/example" not in result
+
+    def test_response_finalizer_rejects_generic_news_landing_page_link(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. GPT-5.5: Das Modell wurde als neues Standardmodell ausgerollt. "
+                                    "Quelle: OpenAI."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://dentro.de/ai/news/",
+                                        "title": "AI News",
+                                        "snippet": "GPT-5.5 OpenAI Standardmodell",
+                                        "news_target_index": "1",
+                                        "news_target_title": "GPT-5.5",
+                                        "news_target_label": "OpenAI",
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "dentro.de/ai/news" not in result
+        assert "1. GPT-5.5" in result
+        assert "Quelle: OpenAI." in result
+
+    def test_response_finalizer_keeps_unlinked_websearch_news_but_keeps_linked_items_linked(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. Gerichtssieg gegen Elon Musk: Eine Klage gegen OpenAI wurde abgewiesen. Quelle: FAZ.\n"
+                                    "2. Sora-App: Die eigenstaendige Anwendung wurde eingestellt. Quelle: OpenAI."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner",
+                                        "title": "channelpartner.de",
+                                        "snippet": "Gerichtssieg gegen Elon Musk Klage gegen OpenAI wurde abgewiesen.",
+                                    },
+                                    {
+                                        "url": "https://openai.com/de-DE/news/sora-in-chatgpt",
+                                        "title": "OpenAI Sora in ChatGPT",
+                                        "snippet": "Sora-App eigenstaendige Anwendung wurde eingestellt.",
+                                    },
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "1. Gerichtssieg gegen Elon Musk" in result
+        assert "Quelle: FAZ." in result
+        assert "2. Sora-App" in result
+        assert "Quelle: OpenAI. [Link](https://openai.com/de-DE/news/sora-in-chatgpt)" in result
+
+    def test_response_finalizer_single_verified_source_mode_keeps_only_linked_news(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell",
+                                "verified_source_mode": "single",
+                                "text": (
+                                    "1. Gerichtssieg gegen Elon Musk: Eine Klage gegen OpenAI wurde abgewiesen. Quelle: FAZ.\n"
+                                    "2. Sora-App: Die eigenstaendige Anwendung wurde eingestellt. Quelle: OpenAI."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner",
+                                        "title": "channelpartner.de",
+                                        "snippet": "Gerichtssieg gegen Elon Musk Klage gegen OpenAI wurde abgewiesen.",
+                                    },
+                                    {
+                                        "url": "https://openai.com/de-DE/news/sora-in-chatgpt",
+                                        "title": "OpenAI Sora in ChatGPT",
+                                        "snippet": "Sora-App eigenstaendige Anwendung wurde eingestellt.",
+                                    },
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "Gerichtssieg gegen Elon Musk" not in result
+        assert "1. Sora-App" in result
+        assert "Quelle: OpenAI. [Link](https://openai.com/de-DE/news/sora-in-chatgpt)" in result
+
+    def test_response_finalizer_preserves_websearch_v3_source_first_text(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        text = (
+            "Kurzlage: Es liegt aktuell eine belegte Meldung vor.\n\n"
+            "1. Microsoft und EY: Milliarden-Investition in KI-Agenten\n"
+            "EY rollt Microsoft Copilot fuer rund 400.000 Mitarbeiter aus.\n"
+            "Quelle: borncity.com. [Link](https://borncity.com/news/microsoft-und-ey-milliarden-investition-in-ki-agenten)\n\n"
+            "Einordnung:\nDiese Kurzlage basiert auf einer verifizierten Webquelle."
+        )
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "was gibt es neues zu Microsoft?",
+                                "pipeline": "websearch_v3",
+                                "verified_source_mode": "single",
+                                "verification_status": "ok",
+                                "text": text,
+                                "sources": [
+                                    {
+                                        "url": "https://borncity.com/news/microsoft-und-ey-milliarden-investition-in-ki-agenten",
+                                        "title": "Microsoft und EY: Milliarden-Investition in KI-Agenten",
+                                        "source_label": "borncity.com",
+                                        "verified": True,
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert result == text
+
+    def test_response_finalizer_preserves_websearch_v3_no_source_text(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        text = "Ich habe aktuell keine ausreichend belastbare Quelle gefunden."
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "was gibt es neues zu Apple?",
+                                "pipeline": "websearch_v3",
+                                "verified_source_mode": "single",
+                                "verification_status": "no_source",
+                                "verification_reason": "no_verified_source",
+                                "text": text,
+                                "sources": [],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert result == text
+
+    def test_response_finalizer_prefers_websearch_v3_over_rss_news(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        text = (
+            "Kurzlage: Es liegt aktuell eine belegte Meldung vor.\n\n"
+            "1. Produkt & Technik: Microsoft stellt eine neue Cloud-Funktion vor\n"
+            "Microsoft stellt eine neue Cloud-Funktion fuer Unternehmenskunden vor.\n"
+            "Quelle: microsoft.com. [Link](https://www.microsoft.com/de-de/news/detail)\n\n"
+            "Einordnung:\nDiese Kurzlage basiert auf einer verifizierten Webquelle."
+        )
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.rss_news",
+                    "_skill_id": "system.rss_news",
+                    "content": json.dumps({"data": _RSS_NEWS_ITEMS}),
+                },
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "was gibt es neues zu Microsoft?",
+                                "pipeline": "websearch_v3",
+                                "verified_source_mode": "multi",
+                                "verification_status": "ok",
+                                "text": text,
+                                "sources": [
+                                    {
+                                        "url": "https://www.microsoft.com/de-de/news/detail",
+                                        "title": "Microsoft stellt eine neue Cloud-Funktion vor",
+                                        "source_label": "microsoft.com",
+                                        "verified": True,
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                },
+            ]
+        )
+
+        assert result == text
+        assert "Kurzlage: Zu OpenAI" not in result
+
+    def test_response_finalizer_keeps_all_websearch_news_findings_when_links_are_sparse(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "Microsoft News Mai 2026 Aktuell",
+                                "text": (
+                                    "1. Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.\n"
+                                    "2. Surface Pro 11 und Surface Laptop 7 Business: Neue Business-Modelle mit Intel Core Ultra. Quelle: WinFuture.\n"
+                                    "3. Erweiterte Copilot-Funktionen fuer Teams: Copilot kann Besprechungen zusammenfassen. Quelle: Grayling.\n"
+                                    "4. Nachhaltige KI-Infrastruktur: Microsoft stellt ein neues Rechenzentrumsdesign vor. Quelle: Microsoft.\n"
+                                    "5. Microsoft Edge Video-Uebersetzung: Edge uebersetzt Videos in Echtzeit. Quelle: Futurezone."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/hp",
+                                        "title": "hp.com",
+                                        "snippet": "Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.",
+                                    },
+                                    {
+                                        "url": "https://www.winfuture.de/news/surface-pro-11-business.htm",
+                                        "title": "WinFuture Surface Pro 11 Business",
+                                        "snippet": "Surface Pro 11 und Surface Laptop 7 Business mit Intel Core Ultra.",
+                                        "news_target_index": "2",
+                                        "news_target_title": "Surface Pro 11 und Surface Laptop 7 Business",
+                                        "news_target_label": "WinFuture",
+                                    },
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "1. Windows 11 Recall und Datenschutz" in result
+        assert "2. Surface Pro 11 und Surface Laptop 7 Business" in result
+        assert "3. Erweiterte Copilot-Funktionen fuer Teams" in result
+        assert "4. Nachhaltige KI-Infrastruktur" in result
+        assert "5. Microsoft Edge Video-Uebersetzung" in result
+        assert "Quelle: hp.com." in result
+        assert "Quelle: WinFuture. [Link](https://www.winfuture.de/news/surface-pro-11-business.htm)" in result
+
+    def test_response_finalizer_drops_stale_current_news_item(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. Flaggschiff-Modell GPT-5.4: Am 5. Maerz 2026 veroeffentlichte OpenAI ein aelteres Modell. Quelle: Never Code Alone.\n"
+                                    "2. OpenAI fuer Deutschland: Am 18. Mai 2026 wurde eine neue KI-Infrastruktur angekuendigt. Quelle: Heise."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://nevercodealone.de/example",
+                                        "title": "Never Code Alone",
+                                        "snippet": "GPT-5.4 Maerz 2026",
+                                    },
+                                    {
+                                        "url": "https://www.heise.de/news/openai-deutschland",
+                                        "title": "Heise OpenAI fuer Deutschland",
+                                        "snippet": "OpenAI fuer Deutschland 18. Mai 2026",
+                                    },
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "GPT-5.4" not in result
+        assert "OpenAI fuer Deutschland" in result
+
+    def test_response_finalizer_rejects_paywall_news_link(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. Boersengang im September: Im Mai 2026 soll OpenAI vertrauliche Unterlagen vorbereiten. "
+                                    "Quelle: WELT."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://www.welt.de/wirtschaft/plus/openai-ipo",
+                                        "title": "WELT OpenAI IPO",
+                                        "snippet": "OpenAI IPO Mai 2026",
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "welt.de" not in result
+        assert "1. Boersengang im September" in result
+        assert "Quelle: WELT." in result
+
+    def test_response_finalizer_rejects_openai_docs_as_news_link(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. Neue Realtime-Funktionen: OpenAI erweitert im Mai 2026 die Sprachfunktionen. "
+                                    "Quelle: OpenAI."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://platform.openai.com/docs/guides/realtime",
+                                        "title": "Realtime API docs",
+                                        "snippet": "OpenAI Realtime API docs",
+                                        "news_target_index": "1",
+                                        "news_target_title": "Neue Realtime-Funktionen",
+                                        "news_target_label": "OpenAI",
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "platform.openai.com/docs" not in result
+        assert "1. Neue Realtime-Funktionen" in result
+        assert "Quelle: OpenAI." in result
+
+    def test_response_finalizer_removes_duplicated_news_title_prefix(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. Aktualisierung auf GPT-5.5 Instant: Seit Mai 2026 ist GPT-5.5 Instant das neue Standar\n"
+                                    "Aktualisierung auf GPT-5.5 Instant: Seit Mai 2026 ist GPT-5.5 Instant das neue Standardmodell in ChatGPT, "
+                                    "das eine gesteigerte Faktizitaet und eine praegnantere Antwortweise bietet (Quelle: OpenAI).\n"
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://openai.com/de-DE/index/gpt-5-5",
+                                        "title": "OpenAI GPT-5.5",
+                                        "snippet": "GPT-5.5 Instant Standardmodell",
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "1. Aktualisierung auf GPT-5.5 Instant\n" in result
+        assert "Aktualisierung auf GPT-5.5 Instant: Seit Mai" not in result
+        assert "Seit Mai 2026 ist GPT-5.5 Instant das neue Standardmodell" in result
+
+    def test_response_finalizer_does_not_reuse_sparse_gemini_sources_for_wrong_news_items(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News Mai 2026 Aktuell",
+                                "text": (
+                                    "1. **Geplanter Boersengang im September 2026**: OpenAI bereitet laut Medienberichten "
+                                    "einen vertraulichen Antrag auf Boersenzulassung vor (Quelle: Deutschlandfunk).\n"
+                                    "2. **Erfolg im Rechtsstreit gegen Elon Musk**: Ein kalifornisches Gericht wies am "
+                                    "19. Mai 2026 eine Klage gegen die OpenAI-Fuehrung ab (Quelle: ChannelPartner).\n"
+                                    "3. **Marktfuehrerschaft bei Enterprise Coding Agents**: Gartner ernannte OpenAI im "
+                                    "Mai 2026 zum Branchenfuehrer fuer Programmierassistenten (Quelle: OpenAI).\n"
+                                    "4. **Wissenschaftlicher Durchbruch in der Geometrie**: Ein spezialisiertes KI-Modell "
+                                    "von OpenAI konnte am 20. Mai 2026 eine zentrale Vermutung widerlegen (Quelle: OpenAI)."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner",
+                                        "title": "channelpartner.de",
+                                        "snippet": (
+                                            "2. **Erfolg im Rechtsstreit gegen Elon Musk**: Ein kalifornisches Gericht "
+                                            "wies am 19. Mai 2026 eine Klage gegen die OpenAI-Fuehrung ab "
+                                            "(Quelle: ChannelPartner)."
+                                        ),
+                                    },
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/openai",
+                                        "title": "openai.com",
+                                        "snippet": (
+                                            "4. **Wissenschaftlicher Durchbruch in der Geometrie**: Ein spezialisiertes "
+                                            "KI-Modell von OpenAI konnte am 20."
+                                        ),
+                                    },
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "Geplanter Boersengang" in result
+        assert "Quelle: Deutschlandfunk." in result
+        assert (
+            "Quelle: ChannelPartner. [Link](https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner)"
+            in result
+        )
+        assert "Marktfuehrerschaft bei Enterprise Coding Agents" in result
+        assert "Quelle: OpenAI." in result
+        assert "grounding-api-redirect/openai" not in result
+
+    def test_response_finalizer_rejects_third_party_link_when_text_claims_openai_source(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News Mai 2026 Aktuelle Entwicklungen",
+                                "text": (
+                                    "1. **GPT-5.5 Instant als Standard**: OpenAI hat GPT-5.5 Instant am 5. Mai 2026 "
+                                    "zum neuen Standardmodell fuer ChatGPT erhoben (Quelle: OpenAI)."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/buildfast",
+                                        "title": "buildfastwithai.com",
+                                        "snippet": (
+                                            "1. **GPT-5.5 Instant als Standard**: OpenAI hat GPT-5.5 Instant am 5. Mai "
+                                            "2026 zum neuen Standardmodell fuer ChatGPT erhoben."
+                                        ),
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "buildfastwithai.com" not in result
+        assert "grounding-api-redirect/buildfast" not in result
+        assert "GPT-5.5 Instant als Standard" in result
+        assert "Quelle: OpenAI." in result
+
+    def test_response_finalizer_rejects_link_when_publisher_label_mismatches_host(self):
+        from backend.services.orchestrator.response_finalizer import render_websearch_sources
+
+        result = render_websearch_sources(
+            [
+                {
+                    "role": "tool",
+                    "name": "system.websearch",
+                    "_skill_id": "system.websearch",
+                    "content": json.dumps(
+                        {
+                            "data": {
+                                "query": "OpenAI News aktuell Mai 2026",
+                                "text": (
+                                    "1. Gerichtssieg gegen Elon Musk: Eine Klage gegen OpenAI wurde abgewiesen. "
+                                    "Quelle: FAZ."
+                                ),
+                                "sources": [
+                                    {
+                                        "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner",
+                                        "title": "channelpartner.de",
+                                        "snippet": "Gerichtssieg gegen Elon Musk Klage gegen OpenAI wurde abgewiesen.",
+                                    }
+                                ],
+                            }
+                        }
+                    ),
+                }
+            ]
+        )
+
+        assert "grounding-api-redirect/channelpartner" not in result
+        assert "Gerichtssieg gegen Elon Musk" in result
+        assert "Quelle: FAZ." in result
+
+
+class TestWebsearchLinkQuality:
+    def test_openai_docs_are_bad_for_news_but_good_for_api_docs(self):
+        source = {
+            "url": "https://platform.openai.com/docs/guides/realtime",
+            "title": "Realtime API docs",
+            "snippet": "OpenAI Realtime API Dokumentation",
+        }
+
+        news_quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Neue Realtime-Funktionen",
+            summary="OpenAI erweitert im Mai 2026 die Sprachfunktionen.",
+            label="OpenAI",
+        )
+        docs_quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.API_DOCS,
+            title="Realtime API",
+            summary="Dokumentation fuer die Realtime API.",
+            label="OpenAI",
+        )
+
+        assert not news_quality.acceptable
+        assert "docs_not_news" in news_quality.reasons
+        assert docs_quality.acceptable
+
+    def test_detail_article_beats_generic_news_landing_page(self):
+        sources = [
+            {
+                "url": "https://dentro.de/ai/news/",
+                "title": "AI News",
+                "snippet": "GPT-5.5 OpenAI Standardmodell",
+            },
+            {
+                "url": "https://openai.com/de-DE/index/gpt-5-5",
+                "title": "OpenAI GPT-5.5 Instant",
+                "snippet": "GPT-5.5 Instant ist seit Mai 2026 das neue Standardmodell in ChatGPT.",
+            },
+        ]
+
+        url, quality = select_best_source_for_item(
+            sources,
+            intent=LinkIntent.NEWS,
+            title="GPT-5.5 Instant",
+            summary="Seit Mai 2026 ist GPT-5.5 Instant das neue Standardmodell in ChatGPT.",
+            label="OpenAI",
+        )
+
+        assert url == "https://openai.com/de-DE/index/gpt-5-5"
+        assert quality.acceptable
+        assert is_low_value_source(sources[0], LinkIntent.NEWS)
+
+    def test_german_detail_source_wins_over_english_generic_source(self):
+        sources = [
+            {
+                "url": "https://openai.com/news/",
+                "title": "OpenAI News",
+                "snippet": "Company news overview",
+            },
+            {
+                "url": "https://www.heise.de/news/openai-deutschland-sap-microsoft",
+                "title": "OpenAI fuer Deutschland",
+                "snippet": "OpenAI, SAP und Microsoft starten eine KI-Initiative fuer Deutschland.",
+            },
+        ]
+
+        url, quality = select_best_source_for_item(
+            sources,
+            intent=LinkIntent.NEWS,
+            title="OpenAI fuer Deutschland",
+            summary="OpenAI, SAP und Microsoft starten eine KI-Initiative fuer Deutschland.",
+            label="Heise",
+        )
+
+        assert url == "https://www.heise.de/news/openai-deutschland-sap-microsoft"
+        assert quality.acceptable
+
+    def test_broad_official_label_does_not_accept_third_party_provider_redirect(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/buildfast",
+            "title": "buildfastwithai.com",
+            "snippet": "GPT-5.5 Instant OpenAI Standardmodell ChatGPT Mai 2026",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="GPT-5.5 Instant als Standard",
+            summary="OpenAI hat GPT-5.5 Instant zum neuen Standardmodell fuer ChatGPT erhoben.",
+            label="OpenAI",
+        )
+
+        assert not quality.acceptable
+        assert "broad_label_third_party_source" in quality.reasons
+
+    def test_publisher_label_does_not_accept_different_news_host(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/channelpartner",
+            "title": "channelpartner.de",
+            "snippet": "Gerichtssieg gegen Elon Musk Klage gegen OpenAI wurde abgewiesen.",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Gerichtssieg gegen Elon Musk",
+            summary="Eine Klage gegen OpenAI wurde abgewiesen.",
+            label="FAZ",
+        )
+
+        assert not quality.acceptable
+        assert "source_label_host_mismatch" in quality.reasons
+
+    def test_ambiguous_official_provider_redirect_is_not_used_as_news_detail(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/openai",
+            "title": "openai.com",
+            "snippet": (
+                "3. **Auszeichnung als Gartner-Marktfuehrer:** OpenAI wurde eingestuft. "
+                "4. **Standard fuer Inhaltstransparenz:** OpenAI praesentierte neue Massnahmen."
+            ),
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Auszeichnung als Gartner-Marktfuehrer",
+            summary="OpenAI wurde als fuehrend fuer Coding-Agenten eingestuft.",
+            label="OpenAI",
+        )
+
+        assert not quality.acceptable
+        assert "ambiguous_official_provider_redirect" in quality.reasons
+
+    def test_openai_label_does_not_accept_german_third_party_host(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/kimuseum",
+            "title": "ki-museum.de",
+            "snippet": (
+                "GPT-5.5 Veröffentlichung mit verbesserter automatisierter Code-Erstellung "
+                "und Online-Recherche durch Reasoning-Faehigkeiten."
+            ),
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="GPT-5.5 Veröffentlichung",
+            summary="Das Modell bietet bessere Code-Erstellung und Online-Recherche.",
+            label="OpenAI",
+        )
+
+        assert not quality.acceptable
+        assert "broad_label_third_party_source" in quality.reasons
+
+    def test_unknown_publisher_label_must_match_declared_host_name(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/celler",
+            "title": "celler-presse.de",
+            "snippet": "Sora-Einstellung: Die eigenstaendige Video-App Sora wurde abgeschaltet.",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Sora-Einstellung",
+            summary="Die eigenstaendige Video-App Sora wurde abgeschaltet.",
+            label="The Decoder",
+        )
+
+        assert not quality.acceptable
+        assert "source_label_host_mismatch" in quality.reasons
+
+    def test_provider_redirect_label_match_must_bind_to_same_news_item(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/borncity",
+            "title": "borncity.com",
+            "snippet": (
+                "2. Kritische Sicherheits-Patches: Microsoft veroeffentlichte Notfall-Updates "
+                "fuer Zero-Day-Luecken im Defender. Quelle: BornCity."
+            ),
+        }
+
+        matching_quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Kritische Sicherheits-Patches",
+            summary="Microsoft veroeffentlichte Notfall-Updates fuer Zero-Day-Luecken im Defender.",
+            label="BornCity",
+        )
+        mismatched_quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Anpassung der Copilot-Integration",
+            summary="Nutzer koennen den Copilot-Button in Office-Anwendungen verschieben.",
+            label="BornCity",
+        )
+
+        assert matching_quality.acceptable
+        assert not mismatched_quality.acceptable
+        assert "weak_item_binding" in mismatched_quality.reasons
+
+    def test_weak_bare_official_provider_redirect_is_rejected_for_broad_news_label(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/microsoft",
+            "title": "microsoft.com",
+            "snippet": "Nachhaltige KI-Infrastruktur: Microsoft stellt ein neues Rechenzentrumsdesign vor.",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Nachhaltige KI-Infrastruktur",
+            summary="Neue Infrastruktur.",
+            label="Microsoft",
+        )
+
+        assert not quality.acceptable
+        assert "bare_official_provider_redirect" in quality.reasons
+
+    def test_bare_official_provider_redirect_is_rejected_even_with_strong_text_binding(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/microsoft",
+            "title": "microsoft.com",
+            "snippet": (
+                "Autonome Copilot-Agenten: Die neuen KI-Assistenten fuer Microsoft 365 koennen "
+                "komplexe Geschaeftsprozesse koordinieren und als Moderatoren in Teams-Sitzungen agieren."
+            ),
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Autonome Copilot-Agenten",
+            summary=(
+                "Die neuen KI-Assistenten fuer Microsoft 365 koennen komplexe Geschaeftsprozesse "
+                "koordinieren und als Moderatoren in Teams-Sitzungen agieren."
+            ),
+            label="Microsoft",
+        )
+
+        assert not quality.acceptable
+        assert "bare_official_provider_redirect" in quality.reasons
+
+    def test_country_suffix_on_broad_label_matches_official_news_host(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/microsoft",
+            "title": "microsoft.com",
+            "snippet": (
+                "Surface Copilot+ PCs der neuesten Generation: Surface Pro und Surface Laptop "
+                "verfuegen ueber Snapdragon X Plus Prozessoren fuer lokale KI-Erlebnisse."
+            ),
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Surface Copilot+ PCs der neuesten Generation",
+            summary="Surface Pro und Surface Laptop verfuegen ueber Snapdragon X Plus Prozessoren.",
+            label="Microsoft Deutschland",
+        )
+
+        assert not quality.acceptable
+        assert "bare_official_provider_redirect" in quality.reasons
+        assert "source_label_host_mismatch" not in quality.reasons
+        assert "non_german_news_host" not in quality.reasons
+
+    def test_truncated_bare_official_provider_redirect_is_rejected(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/openai",
+            "title": "openai.com",
+            "snippet": "Wissenschaftlicher Durchbruch in der Geometrie: Ein spezialisiertes KI-Modell von OpenAI konnte am 20.",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Wissenschaftlicher Durchbruch in der Geometrie",
+            summary="Ein spezialisiertes KI-Modell von OpenAI konnte am 20. Mai eine zentrale Vermutung widerlegen.",
+            label="OpenAI",
+        )
+
+        assert not quality.acceptable
+        assert "bare_official_provider_redirect" in quality.reasons
+
+    def test_bare_non_german_provider_redirect_is_rejected_for_news(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/hp",
+            "title": "hp.com",
+            "snippet": "Windows 11 Recall und Datenschutz: HP beschreibt die geschuetzte Snapshot-Funktion.",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Windows 11 Recall und Datenschutz",
+            summary="HP beschreibt die geschuetzte Snapshot-Funktion.",
+            label="hp.com",
+        )
+
+        assert not quality.acceptable
+        assert "bare_non_german_provider_redirect" in quality.reasons
+
+    def test_bare_non_german_net_provider_redirect_is_rejected_for_news(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/notebookcheck",
+            "title": "notebookcheck.net",
+            "snippet": "Vorstellung des Surface Laptop 8: Microsoft nennt neue Business-Geraete. Quelle: Notebookcheck.",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Vorstellung des Surface Laptop 8",
+            summary="Microsoft nennt neue Business-Geraete.",
+            label="Notebookcheck",
+        )
+
+        assert not quality.acceptable
+        assert "bare_non_german_provider_redirect" in quality.reasons
+
+    def test_resolved_non_german_news_host_is_rejected(self):
+        source = {
+            "url": "https://www.notebookcheck.net/microsoft-surface-laptop-8-business-launch.html",
+            "title": "Notebookcheck Surface Laptop 8",
+            "snippet": "Vorstellung des Surface Laptop 8: Microsoft nennt neue Business-Geraete. Quelle: Notebookcheck.",
+            "news_target_index": "1",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Vorstellung des Surface Laptop 8",
+            summary="Microsoft nennt neue Business-Geraete.",
+            label="Notebookcheck",
+            target_index="1",
+        )
+
+        assert not quality.acceptable
+        assert "resolved_target" in quality.reasons
+        assert "non_german_news_host" in quality.reasons
+
+    def test_resolved_provider_redirect_still_needs_strong_news_binding(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/borncity",
+            "title": "borncity.com",
+            "snippet": "Neue Surface-Hardware fuer Unternehmenskunden: Neue Business-Geraete und Surface-Modelle.",
+            "news_target_index": "3",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Neue Surface-Hardware fuer Unternehmenskunden",
+            summary="Microsoft stellt neue Surface-Hardware fuer Unternehmenskunden vor.",
+            label="BornCity",
+            target_index="3",
+        )
+
+        assert not quality.acceptable
+        assert "resolved_target" in quality.reasons
+        assert "resolved_provider_redirect_weak_binding" in quality.reasons
+
+    def test_known_german_com_provider_redirect_is_allowed_for_news(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/borncity",
+            "title": "borncity.com",
+            "snippet": "Preisanpassungen bei Microsoft 365: Neue Preise ab Juli. Quelle: BornCity.",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="Preisanpassungen bei Microsoft 365",
+            summary="Neue Preise ab Juli.",
+            label="BornCity",
+        )
+
+        assert quality.acceptable
+
+    def test_known_suspicious_news_domain_is_low_value(self):
+        source = {
+            "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/digioneer",
+            "title": "digioneer.pro",
+            "snippet": "GPT-5.5 Veröffentlichung",
+        }
+
+        quality = score_source_for_intent(
+            source,
+            intent=LinkIntent.NEWS,
+            title="GPT-5.5 Veröffentlichung",
+            summary="OpenAI veroeffentlicht GPT-5.5.",
+            label="OpenAI",
+        )
+
+        assert not quality.acceptable
+        assert "low_value_domain" in quality.reasons
+
+
+class TestWebsearchEvidencePipeline:
+    def test_extract_news_claims_keeps_domain_source_label(self):
+        claims = EvidencePipeline.extract_news_claims(
+            "Microsoft News aktuell",
+            (
+                "1. Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.\n"
+                "2. Surface Pro 11 Business: Neue Business-Modelle mit Intel Core Ultra. Quelle: WinFuture."
+            ),
+        )
+
+        assert [claim.title for claim in claims] == ["Windows 11 Recall und Datenschutz", "Surface Pro 11 Business"]
+        assert claims[0].label == "hp.com"
+        assert claims[1].label == "WinFuture"
+
+    def test_pipeline_keeps_claim_but_marks_bad_link_unaccepted(self):
+        items = EvidencePipeline.news_items_from_text_and_sources(
+            query="Microsoft News aktuell",
+            text="1. Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.",
+            sources=[
+                {
+                    "url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/hp",
+                    "title": "hp.com",
+                    "snippet": "Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.",
+                }
+            ],
+            is_stale=lambda _value: False,
+        )
+
+        assert len(items) == 1
+        assert items[0]["title"] == "Windows 11 Recall und Datenschutz"
+        assert items[0]["url"] == ""
+        assert "bare_non_german_provider_redirect" in items[0]["evidence_reasons"]
+
+    def test_pipeline_merges_resolved_sources_with_target_metadata(self):
+        claims = EvidencePipeline.extract_news_claims(
+            "Microsoft News aktuell",
+            "1. Surface Pro 11 Business: Neue Business-Modelle mit Intel Core Ultra. Quelle: WinFuture.",
+        )
+        merged = EvidencePipeline.merge_resolved_sources(
+            [],
+            [
+                {
+                    "url": "https://www.winfuture.de/news/surface-pro-11-business.htm",
+                    "title": "WinFuture Surface Pro 11 Business",
+                    "snippet": "Surface Pro 11 Business: Neue Business-Modelle mit Intel Core Ultra.",
+                }
+            ],
+            claims,
+        )
+
+        assert merged[0]["news_target_index"] == "1"
+        assert merged[0]["news_target_title"] == "Surface Pro 11 Business"
+        assert merged[0]["news_target_label"] == "WinFuture"
+
+    def test_pipeline_uses_domain_specific_repair_term_for_domain_label(self):
+        claims = EvidencePipeline.extract_news_claims(
+            "Microsoft News aktuell",
+            "1. Windows 11 Recall und Datenschutz: Die Funktion erstellt lokale Snapshots. Quelle: hp.com.",
+        )
+
+        query = EvidencePipeline.focused_repair_query_for_claim("Microsoft News aktuell", claims[0])
+
+        assert '"Windows 11 Recall und Datenschutz" site:hp.com' in query
+        assert "Funktion erstellt lokale Snapshots" in query
+
+    def test_pipeline_keeps_dotted_news_source_labels(self):
+        claims = EvidencePipeline.extract_news_claims(
+            "Microsoft News aktuell",
+            "1. Firmware-Aktualisierung fuer Surface-Geraete: Updates korrigieren Touch-Probleme. Quelle: Dr. Windows.",
+        )
+
+        assert claims[0].label == "Dr. Windows"
+        assert claims[0].summary == "Updates korrigieren Touch-Probleme"
+
+    def test_sentence_style_news_claims_use_compact_repair_query_title(self):
+        claims = EvidencePipeline.extract_news_claims(
+            "Microsoft News aktuell",
+            (
+                "1. Microsoft hat die Veröffentlichung neuer Surface Pro und Surface Laptop Modelle "
+                "mit dem Snapdragon X2 Prozessor für das Jahr 2026 bestätigt. "
+                "Quelle: Windows Central."
+            ),
+        )
+
+        query = EvidencePipeline.focused_repair_query_for_claim("Microsoft News aktuell", claims[0])
+
+        assert '"Veröffentlichung neuer Surface Pro und Surface Laptop Modelle"' in query
+        assert "mit dem Sn" not in query
+        assert claims[0].summary.startswith("Microsoft hat die Veröffentlichung neuer Surface Pro")
 
 
 _SAVE_MP3_FULL = {
@@ -675,7 +1992,7 @@ class TestWebsearchRenderer:
         [
             pytest.param(
                 _WEBSEARCH_FULL,
-                ["Executive Summary: Websuche bereit", "duckduckgo", "2", "https://example.com"],
+                ["Suchergebnisse mit mehreren Quellen"],
                 id="full-data",
             ),
             pytest.param(

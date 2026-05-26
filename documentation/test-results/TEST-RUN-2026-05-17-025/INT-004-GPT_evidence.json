@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-025",
+  "testCaseId": "INT-004-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Exportiere alles, was du ueber mich hast",
+  "response": "Hier ist der Export dessen, was ich über dich habe:\nGespeicherte Information\n\nDu möchtest alles über dich exportiert haben.\n\nHinweise\n\nMehr Informationen über dich sind in diesem Kontext nicht gespeichert.\n\n💡 Passende nächste Schritte:• Ich kann dir die gespeicherten Infos auch als kompakte Liste oder als Markdown-Export formatieren.• Ich kann daraus eine strukturierte Personenkarte erstellen.• Ich kann die Daten nach Themen sortieren, z. B. Profil, Vorlieben oder Verlauf.\n22:48",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-17T20:48:19.308Z"
+}

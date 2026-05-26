@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-041",
+  "testCaseId": "TC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "wieviel kostet eine feinunze gold?",
+  "response": "Hallo Pruve, hier ist der aktuelle Stand für Gold:1. **Zusammenfassung**Der Preis für eine Feinunze Gold liegt heute, am 21. Mai 2026, bei etwa **3.908,60 Euro**. Die Preise schwanken je nach Handelsplatz und Zeitpunkt der Abfrage leicht.2. **Liste der Fakten***   **Aktueller Bestpreis:** 3.908,60 € pro Feinunze (laut Suchergebnis, Stand: 21.05.2026).*   **Weitere Marktwerte:** Andere Handelsquellen notierten am selben Tag Kurse zwischen 3.897,25 € und 3.904,92 € (laut Suchergebnis).*   **Vergleich zum Abend:** In deinen Aufzeichnungen von vor etwa einer halben Stunde (22:27 Uhr) lag ein Wert von 4.007,20 € vor, was auf eine aktuelle kurzfristige Volatilität hindeutet.3. **Quellen***   [goldpreis.de](https://www.goldpreis.de)💡 Passende nächste Schritte:• Möchtest du, dass ich diesen aktuellen Preis in deinem Preis-Logbuch speichere?• Soll ich den Goldpreis in eine andere Währung (z. B. USD) umrechnen?• Suchst du nach Preisen für bestimmte Goldmünzen oder Barrengrößen?22:59",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:59:47.207Z"
+}

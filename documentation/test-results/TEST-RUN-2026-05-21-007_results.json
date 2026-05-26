@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-007",
+  "title": "Janus Production Secret Rotation and Leak Scan",
+  "status": "PASS",
+  "summary": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-007",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-007_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-004_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-005_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-006_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-007_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-008_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-009_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-010_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "SECROT-001",
+      "result": "PASS",
+      "classification": "SECRET_INVENTORY_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-001_evidence.json",
+      "durationMs": 8,
+      "notes": "",
+      "timestamp": "2026-05-21T12:15:53.592Z"
+    },
+    {
+      "testCaseId": "SECROT-002",
+      "result": "PASS",
+      "classification": "SECRET_ROTATION_CERTIFICATION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-002_evidence.json",
+      "durationMs": 4,
+      "notes": "",
+      "timestamp": "2026-05-21T12:15:53.620Z"
+    },
+    {
+      "testCaseId": "SECROT-003",
+      "result": "PASS",
+      "classification": "REPO_SECRET_SCAN_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-003_evidence.json",
+      "durationMs": 2050,
+      "notes": "",
+      "timestamp": "2026-05-21T12:15:55.691Z"
+    },
+    {
+      "testCaseId": "SECROT-004",
+      "result": "PASS",
+      "classification": "BUNDLE_SECRET_SCAN_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-004_evidence.json",
+      "durationMs": 37,
+      "notes": "",
+      "timestamp": "2026-05-21T12:15:55.739Z"
+    },
+    {
+      "testCaseId": "SECROT-005",
+      "result": "PASS",
+      "classification": "LOG_SECRET_SCAN_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-005_evidence.json",
+      "durationMs": 5,
+      "notes": "",
+      "timestamp": "2026-05-21T12:15:55.754Z"
+    },
+    {
+      "testCaseId": "SECROT-006",
+      "result": "PASS",
+      "classification": "RESULT_ARTIFACT_SECRET_SCAN_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-006_evidence.json",
+      "durationMs": 987,
+      "notes": "",
+      "timestamp": "2026-05-21T12:15:56.755Z"
+    },
+    {
+      "testCaseId": "SECROT-007",
+      "result": "PASS",
+      "classification": "RUNTIME_RESPONSE_SECRET_SCAN_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-007_evidence.json",
+      "durationMs": 81,
+      "notes": "",
+      "timestamp": "2026-05-21T12:15:56.860Z"
+    },
+    {
+      "testCaseId": "SECROT-008",
+      "result": "PASS",
+      "classification": "KEY_SCOPE_STORAGE_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-008_evidence.json",
+      "durationMs": 4,
+      "notes": "",
+      "timestamp": "2026-05-21T12:15:56.881Z"
+    },
+    {
+      "testCaseId": "SECROT-009",
+      "result": "PASS",
+      "classification": "EMERGENCY_ROTATION_RUNBOOK_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-009_evidence.json",
+      "durationMs": 4,
+      "notes": "",
+      "timestamp": "2026-05-21T12:15:56.897Z"
+    },
+    {
+      "testCaseId": "SECROT-010",
+      "result": "PASS",
+      "classification": "SECRET_ROTATION_GATE_DECISION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-007/SECROT-010_evidence.json",
+      "durationMs": 1,
+      "notes": "",
+      "timestamp": "2026-05-21T12:15:56.910Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T12:15:56.920Z"
+}

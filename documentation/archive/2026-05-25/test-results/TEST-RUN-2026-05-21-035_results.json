@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-035",
+  "title": "Janus Websearch Diamond Standard",
+  "status": "FAIL",
+  "summary": {
+    "total": 2,
+    "passed": 1,
+    "failed": 1,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-035",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-035_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-035/TC-001-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-035/TC-001-GPT_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "TC-001-GEMINI",
+      "result": "FAIL",
+      "classification": "ASSERTION_MISMATCH",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-035/TC-001-GEMINI_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations not met",
+      "timestamp": "2026-05-21T18:38:53.657Z"
+    },
+    {
+      "testCaseId": "TC-001-GPT",
+      "result": "PASS",
+      "classification": "ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-035/TC-001-GPT_evidence.json",
+      "durationMs": 0,
+      "notes": "Expectations met",
+      "timestamp": "2026-05-21T18:38:13.790Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T18:38:53.666Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-036",
+  "testCaseId": "TC-006-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wieviel kostet Bitcoin gerade?",
+  "response": "Aktuell kann ich den Bitcoin-Preis hier nicht live verifizieren: **keine live-verifizierten Kurse geliefert** (Verifizierung übersprungen wegen Timeout).  💡 Passende nächste Schritte:• Soll ich dir den Preis in **EUR** statt **USD** anzeigen?  • Willst du den Preis als **“ungefähr jetzt”** oder nur **live verifiziert** (mit ✅)?20:48",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T18:49:24.676Z"
+}

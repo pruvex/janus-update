@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "janus.test-plan.v1",
+  "testRunId": "TEST-RUN-2026-05-21-008",
+  "title": "Janus Beta Telemetry Logging Privacy Hardening",
+  "sourceSpec": "documentation/TEST_SPEC/02_security_safety/14_beta_telemetry_logging_privacy_hardening.md",
+  "route": "TEST SKILL SECURITY -> custom telemetry privacy runner -> SKILL 7",
+  "deploymentModel": {
+    "type": "packaged-local-electron",
+    "telemetrySinks": ["local AppData logs", "backend Sentry", "frontend Sentry", "Supabase logs_raw", "optional feedback webhook", "Chroma anonymized PostHog telemetry"],
+    "rawSensitiveEvidencePolicy": "Never write raw secrets, private prompt canaries, file-content canaries, cookies or bearer tokens to result evidence."
+  },
+  "compilerStatus": {
+    "status": "CUSTOM_RUNNER_REQUIRED",
+    "reason": "Spec 14 requires runtime log emission, privacy redaction checks and cross-sink configuration inspection."
+  },
+  "cases": [
+    { "id": "TLOG-001", "domain": "Destination inventory", "expectedEvidence": "Telemetry sink map with owners and retention notes" },
+    { "id": "TLOG-002", "domain": "PII defaults", "expectedEvidence": "Backend/frontend Sentry PII and replay privacy controls" },
+    { "id": "TLOG-003", "domain": "Sampling", "expectedEvidence": "Production sampling rates are conservative or disabled" },
+    { "id": "TLOG-004", "domain": "Secret redaction", "expectedEvidence": "Synthetic secrets are redacted by shared logging filter" },
+    { "id": "TLOG-005", "domain": "Prompt privacy", "expectedEvidence": "Private prompt/file canaries are redacted in local context telemetry logs" },
+    { "id": "TLOG-006", "domain": "Error privacy", "expectedEvidence": "Runtime error/auth/debug responses do not expose stack traces or private payloads" },
+    { "id": "TLOG-007", "domain": "Access control", "expectedEvidence": "Log access model documented for local and provider sinks" },
+    { "id": "TLOG-008", "domain": "Retention/deletion", "expectedEvidence": "Retention and deletion path documented" },
+    { "id": "TLOG-009", "domain": "Incident audit", "expectedEvidence": "Security-relevant event shape exists without raw payload" },
+    { "id": "TLOG-010", "domain": "Gate decision", "expectedEvidence": "No open Critical/High telemetry privacy findings" }
+  ],
+  "artifacts": {
+    "runner": "tests/e2e/generated/TEST-RUN-2026-05-21-008.telemetry-privacy.spec.js",
+    "playwrightConfig": "tests/e2e/generated/TEST-RUN-2026-05-21-008.telemetry-privacy.playwright.config.js",
+    "sinkInventory": "documentation/test-runs/TEST-RUN-2026-05-21-008_telemetry_sink_inventory.md",
+    "retentionAccess": "documentation/test-runs/TEST-RUN-2026-05-21-008_telemetry_access_retention.md",
+    "finalAudit": "documentation/test-runs/TEST-RUN-2026-05-21-008_final_audit.md"
+  }
+}

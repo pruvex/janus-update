@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-031",
+  "title": "Smallest Viable Model and Escalation Discipline",
+  "status": "PASS",
+  "summary": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-031",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-031_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-031/TC-001-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-031/TC-001-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-031/TC-002-GPT_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-031/TC-002-GEMINI_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-031/TC-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-031/TC-004_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-031/TC-005_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-031/TC-006_SEC-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-031/TC-007_SEC-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-031/SEC-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-031/PINJ-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-031/PINJ-002_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "TC-001-GPT",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-031/TC-001-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "OpenAI primary defaults to gpt-5.4-nano and remains in openai silo.",
+      "timestamp": "2026-05-21T16:18:00.000Z"
+    },
+    {
+      "testCaseId": "TC-001-GEMINI",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-031/TC-001-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Gemini primary defaults to gemini-3-flash-preview and remains in gemini silo.",
+      "timestamp": "2026-05-21T16:18:00.000Z"
+    },
+    {
+      "testCaseId": "TC-002-GPT",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-031/TC-002-GPT_evidence.json",
+      "durationMs": 250,
+      "notes": "Default OpenAI route does not use gpt-5.5/pro for routine factual work.",
+      "timestamp": "2026-05-21T16:18:00.000Z"
+    },
+    {
+      "testCaseId": "TC-002-GEMINI",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-031/TC-002-GEMINI_evidence.json",
+      "durationMs": 250,
+      "notes": "Default Gemini route does not use pro unless configured fallback/escalation evidence is needed.",
+      "timestamp": "2026-05-21T16:18:00.000Z"
+    },
+    {
+      "testCaseId": "TC-003",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-031/TC-003_evidence.json",
+      "durationMs": 250,
+      "notes": "system.weather uses configured OpenAI mini primary while Gemini falls back to Gemini flash default, with no cross-provider model.",
+      "timestamp": "2026-05-21T16:18:00.000Z"
+    },
+    {
+      "testCaseId": "TC-004",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-031/TC-004_evidence.json",
+      "durationMs": 250,
+      "notes": "Catalog and defaults show smallest memory-capable models are gpt-5.4-nano and gemini-3-flash-preview.",
+      "timestamp": "2026-05-21T16:18:00.000Z"
+    },
+    {
+      "testCaseId": "TC-005",
+      "result": "PASS",
+      "classification": "FUNCTIONAL_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-031/TC-005_evidence.json",
+      "durationMs": 250,
+      "notes": "MoA logic tier resolves to provider-local gpt-5.4 or gemini-3.1-pro-preview with explicit tier evidence.",
+      "timestamp": "2026-05-21T16:18:00.000Z"
+    },
+    {
+      "testCaseId": "TC-006/SEC-001",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-031/TC-006_SEC-001_evidence.json",
+      "durationMs": 250,
+      "notes": "Escalation chain remains primary->fallback->escalation inside selected provider and records tier/model evidence.",
+      "timestamp": "2026-05-21T16:18:00.000Z"
+    },
+    {
+      "testCaseId": "TC-007/SEC-002",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-031/TC-007_SEC-002_evidence.json",
+      "durationMs": 250,
+      "notes": "Gemini/Google alias resolves to Gemini silo and never OpenAI fallback; OpenAI remains OpenAI.",
+      "timestamp": "2026-05-21T16:18:00.000Z"
+    },
+    {
+      "testCaseId": "SEC-003",
+      "result": "PASS",
+      "classification": "SECURITY_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-031/SEC-003_evidence.json",
+      "durationMs": 250,
+      "notes": "All configured routing and MoA models exist in catalog and match their provider owner.",
+      "timestamp": "2026-05-21T16:18:00.000Z"
+    },
+    {
+      "testCaseId": "PINJ-001",
+      "result": "PASS",
+      "classification": "PROMPT_INJECTION_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-031/PINJ-001_evidence.json",
+      "durationMs": 250,
+      "notes": "Static policy blocks hidden premium use unless configured tier/escalation evidence exists.",
+      "timestamp": "2026-05-21T16:18:00.000Z"
+    },
+    {
+      "testCaseId": "PINJ-002",
+      "result": "PASS",
+      "classification": "PROMPT_INJECTION_ASSERTION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-031/PINJ-002_evidence.json",
+      "durationMs": 250,
+      "notes": "Provider selection is preserved; no GPT/Gemini cross-provider fallback path is accepted.",
+      "timestamp": "2026-05-21T16:18:00.000Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T16:18:00.000Z"
+}

@@ -1106,6 +1106,12 @@ async def _video_list_pipeline(
         status = item.get("status") if isinstance(item.get("status"), dict) else {}
         if str(status.get("privacyStatus") or "").lower() != "public":
             continue
+        # v0.4.16-beta.7: Drop non-embeddable videos. YouTube reports these via
+        # status.embeddable=false. Embedding them leads to Error 101/150/153 in
+        # the iframe player. Filtering upstream keeps the UI clean.
+        if not bool(status.get("embeddable")):
+            logger.debug("VIDEO-SEARCH: skipping non-embeddable video id=%s", item.get("id"))
+            continue
         snippet = item.get("snippet") if isinstance(item.get("snippet"), dict) else {}
         stats = item.get("statistics") if isinstance(item.get("statistics"), dict) else {}
         vid = str(item.get("id") or "").strip()
@@ -1322,12 +1328,13 @@ async def video_search_tool(args: VideoSearchInput) -> ToolResultV1:
                 if uploads_pl_id:
                     # Index 0 = physikalisch neuestes Video
                     playlist_video_ids = await _playlist_items_get_videos(
-                        session, api_key, uploads_pl_id, max_results=3
+                        session, api_key, uploads_pl_id, max_results=payload.max_results
                     )
                     if playlist_video_ids:
                         logger.info(
-                            "💎 FEED-AUTHORITY: %d Videos aus Upload-Playlist (Top-3)",
+                            "💎 FEED-AUTHORITY: %d Videos aus Upload-Playlist (Top-%d)",
                             len(playlist_video_ids),
+                            payload.max_results,
                         )
                         feed_details = await _fetch_details_for_ids(playlist_video_ids)
                         # Pick first public, non-upcoming, non-short video
@@ -1527,6 +1534,11 @@ async def video_search_tool(args: VideoSearchInput) -> ToolResultV1:
             if not relax_min_views and views < payload.min_views:
                 continue
             if len(video_id) != 11 or not title:
+                continue
+            # v0.4.16-beta.7: Skip non-embeddable videos (status.embeddable=false)
+            # to avoid Error 101/150/153 in the iframe player.
+            if not is_embeddable:
+                logger.debug("VIDEO-SEARCH (single): skipping non-embeddable id=%s", video_id)
                 continue
 
             score = _rank_video(

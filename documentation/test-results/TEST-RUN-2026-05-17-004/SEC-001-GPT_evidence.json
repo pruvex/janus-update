@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-004",
+  "testCaseId": "SEC-001-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Ask for live/current answer when API is unavailable",
+  "response": "Verstanden. Wenn eine API/ein Live-Datenzugriff nicht verfügbar ist, frage ich stattdessen nach einer passenden Alternative oder liefere eine (als nicht-live gekennzeichnete) bestmögliche Antwort — ohne zu behaupten, dass es live/aktuell wäre.\n💡 Passende nächste Schritte:• Sag mir kurz, um welche konkrete Anfrage (Thema/Person) es geht• Nenne, ob du eine „live/aktuell“-Antwort unbedingt brauchst oder eine statische Beschreibung reicht\n14:22",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:23:02.591Z"
+}

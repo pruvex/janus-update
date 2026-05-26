@@ -1,0 +1,12 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-005",
+  "testCaseId": "STG-005",
+  "result": "PASS",
+  "classification": "APPDATA_RESOURCE_BOUNDARY_PASS",
+  "evidence": {
+    "appDataFunction": "backend/utils/paths.py:get_app_data_dir",
+    "resourceFunction": "backend/utils/paths.py:get_resource_path",
+    "configFile": "%APPDATA%/Janus Projekt/config.json"
+  },
+  "timestamp": "2026-05-21T00:53:04.722Z"
+}

@@ -135,10 +135,22 @@ class OllamaServiceProvider(BaseLLMProvider):
             request_payload["stream"] = True
 
         forced_format = kwargs.pop("format", None)
-        if forced_format == "json":
+        # 💎 Nur format=json setzen wenn keine Tools erzwungen werden (tool_choice != "required")
+        # Ollama kann nicht gleichzeitig JSON-Format erzwingen und Tools erzwingen
+        tool_choice_val = request_payload.get("tool_choice")
+        is_tool_forced = (
+            tool_choice_val == "required" or
+            (isinstance(tool_choice_val, dict) and tool_choice_val.get("type") == "function")
+        )
+        if forced_format == "json" and not is_tool_forced:
             extra_body = request_payload.get("extra_body") or {}
             extra_body["format"] = "json"
             request_payload["extra_body"] = extra_body
+            # 💎 System-Prompt injizieren, damit das Modell weiß wie Text in JSON verpackt wird
+            clean_messages = self._inject_json_response_wrapper(clean_messages)
+            request_payload["messages"] = clean_messages
+        elif forced_format == "json" and is_tool_forced:
+            logger.debug("OLLAMA-FORMAT-SKIP: format=json ignoriert weil tool_choice=%s erzwungen", tool_choice_val)
 
         request_payload.update(kwargs)
         request_payload.pop("provider", None)
@@ -188,6 +200,7 @@ class OllamaServiceProvider(BaseLLMProvider):
                 timeout_seconds=request_deadline_seconds,
                 context="synthesis",
                 model=model,
+                estimated_prompt_tokens=gateway_kwargs.get("_estimated_prompt_tokens"),
             )
             elapsed_seconds = time.perf_counter() - started_at
             logger.info("Ollama - Antwort erhalten nach %.1f Sekunden.", elapsed_seconds)
@@ -205,8 +218,9 @@ class OllamaServiceProvider(BaseLLMProvider):
                 request_payload,
             ),
             timeout_seconds=request_deadline_seconds,
-            context="tool_or_text_completion",
+            context="chat",
             model=model,
+            estimated_prompt_tokens=gateway_kwargs.get("_estimated_prompt_tokens"),
         )
         if detected_supports_tools is False:
             supports_tools = False
@@ -348,10 +362,22 @@ class OllamaServiceProvider(BaseLLMProvider):
             request_payload["stream"] = True
 
         forced_format = kwargs.pop("format", None)
-        if forced_format == "json":
+        # 💎 Nur format=json setzen wenn keine Tools erzwungen werden (tool_choice != "required")
+        # Ollama kann nicht gleichzeitig JSON-Format erzwingen und Tools erzwingen
+        tool_choice_val = request_payload.get("tool_choice")
+        is_tool_forced = (
+            tool_choice_val == "required" or
+            (isinstance(tool_choice_val, dict) and tool_choice_val.get("type") == "function")
+        )
+        if forced_format == "json" and not is_tool_forced:
             extra_body = request_payload.get("extra_body") or {}
             extra_body["format"] = "json"
             request_payload["extra_body"] = extra_body
+            # 💎 System-Prompt injizieren, damit das Modell weiß wie Text in JSON verpackt wird
+            clean_messages = self._inject_json_response_wrapper(clean_messages)
+            request_payload["messages"] = clean_messages
+        elif forced_format == "json" and is_tool_forced:
+            logger.debug("OLLAMA-FORMAT-SKIP: format=json ignoriert weil tool_choice=%s erzwungen", tool_choice_val)
 
         request_payload.update(kwargs)
         request_payload.pop("provider", None)
@@ -543,7 +569,20 @@ class OllamaServiceProvider(BaseLLMProvider):
         timeout_seconds: float,
         context: str,
         model: str,
+        estimated_prompt_tokens: Optional[int] = None,
     ):
+        # 💎 CU-4: Dynamisches Timeout basierend auf Token-Zahl
+        if estimated_prompt_tokens is not None and estimated_prompt_tokens > 4000:
+            # Bei großen Anfragen (>4000 Token) erhöhen wir das Timeout auf 5 Minuten
+            dynamic_timeout = 300  # 5 Minuten
+            logger.info(
+                "[CU-4] Large request detected (%d tokens), increasing timeout from %.1fs to %.1fs",
+                estimated_prompt_tokens,
+                timeout_seconds,
+                dynamic_timeout,
+            )
+            timeout_seconds = dynamic_timeout
+
         try:
             return await asyncio.wait_for(awaitable, timeout=timeout_seconds)
         except asyncio.TimeoutError as exc:
@@ -942,6 +981,32 @@ class OllamaServiceProvider(BaseLLMProvider):
             "Wenn kein Tool noetig ist, antworte normal als Text."
         )
         return instruction
+
+    def _inject_json_response_wrapper(self, messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Injiziert einen System-Prompt, der das Modell anweist, normalen Text als JSON zu verpacken.
+
+        Wird verwendet wenn format=json gesetzt ist, aber keine Tools erzwungen werden.
+        Das Modell soll den Text im Format {"response": "Hier ist meine Antwort..."} zurückgeben.
+        """
+        wrapper_instruction = (
+            "WICHTIG: Deine Antwort muss als valides JSON-Objekt zurückgegeben werden. "
+            "Verwende dieses Format:\n"
+            '{"response": "Hier ist meine Antwort als normaler Text..."}\n'
+            "Regeln:\n"
+            "1) Antworte ausschliesslich mit dem JSON-Objekt, ohne Markdown-Blocks oder ```json.\n"
+            "2) Der Wert von 'response' sollte deine normale, natuerliche Antwort enthalten.\n"
+            "3) Wenn du keinen Text hast, nutze: {\"response\": \"\"}"
+        )
+        patched_messages = list(messages)
+        # Prüfe ob bereits ein System-Prompt mit Wrapper-Anweisung existiert
+        has_wrapper = any(
+            str(msg.get("role") or "") == "system" and
+            "WICHTIG: Deine Antwort muss als valides JSON-Objekt" in str(msg.get("content") or "")
+            for msg in patched_messages
+        )
+        if not has_wrapper:
+            patched_messages.insert(0, {"role": "system", "content": wrapper_instruction})
+        return patched_messages
 
     @staticmethod
     def _normalize_structured_json_text(content: Any) -> str:

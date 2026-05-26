@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-021",
+  "testCaseId": "TC-006-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Erstelle einen Testtermin morgen um 10 Uhr mit Titel EvidenceCheck",
+  "response": "Hallo Pruve, sehr gerne. Ich habe den Testtermin „EvidenceCheck“ für morgen, Donnerstag den 21. Mai 2026, um 10:00 Uhr in deinem Kalender eingetragen.\n💡 Passende nächste Schritte:• Eine Erinnerung für den Termin einrichten• Zusätzliche Details oder Teilnehmer zum Termin hinzufügen• Die Kalenderübersicht für den morgigen Vormittag prüfen\n21:06",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T19:07:06.238Z"
+}

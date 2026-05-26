@@ -1,6 +1,7 @@
 # Janus Skill Inventory
 
 **Erstellt:** 2026-04-13  
+**Aktualisiert:** 2026-04-22 — Diamond-Standard RAG V2 + knowledge.code_search registriert
 **Quelle:** Backend Tool-Registry & Skill-Katalog (`backend/skills/`)
 
 ---
@@ -80,11 +81,12 @@
 | `tools/db_wrappers.py` | `contacts.list` | Contacts | [x] Diamond Certified |
 | `tools/db_wrappers.py` | `contacts.delete` | Contacts | [x] Diamond Certified |
 
-### 8. Wissensbasis & Dokumente (6 Skills)
+### 8. Wissensbasis & Dokumente (7 Skills)
 
 | Modul / Datei | Skill Name | Kategorie | Status |
 |---------------|------------|-----------|--------|
 | `services/rag_manager.py` | `knowledge.query` | Knowledge | [x] Diamond Certified |
+| `services/rag/api_adapter.py` | `knowledge.code_search` | Knowledge | [x] Diamond Certified — RAG V2 Code-Aware Search |
 | `services/tool_executor.py` | `knowledge.open_document` | Knowledge | [x] Diamond Certified |
 | `services/tool_executor.py` | `knowledge.read_full_text` | Knowledge | [x] Diamond Certified |
 | `services/tool_executor.py` | `knowledge.list_documents` | Knowledge | [x] Diamond Certified |
@@ -145,32 +147,33 @@
 | 23 | `filesystem.move_files` | `filesystem_manager.py` | File-IO |
 | 24 | `filesystem.read_file` | `filesystem_manager.py` | File-IO |
 | 25 | `filesystem.rename_file` | `filesystem_manager.py` | File-IO |
-| 26 | `knowledge.edit_pdf` | `pdf_editor.py` | Knowledge |
-| 27 | `knowledge.hardened_edit` | `knowledge_composite.py` | Knowledge |
-| 28 | `knowledge.list_documents` | `tool_executor.py` | Knowledge |
-| 29 | `knowledge.open_document` | `tool_executor.py` | Knowledge |
-| 30 | `knowledge.query` | `rag_manager.py` | Knowledge |
-| 31 | `knowledge.read_full_text` | `tool_executor.py` | Knowledge |
-| 32 | `memory.history` | `memory_tools.py` | Memory |
-| 33 | `memory.read` | `memory_tools.py` | Memory |
-| 34 | `memory.update` | `memory_tools.py` | Memory |
-| 35 | `memory.write` | `memory_tools.py` | Memory |
-| 36 | `system.country_info` | `geo_service.py` | Geo |
-| 37 | `system.create_pdf` | `pdf_generator.py` | Media |
-| 38 | `system.generate_image` | `media_tools.py` | Media |
-| 39 | `system.grant_permission` | `tool_registry.py` | System |
-| 40 | `system.local_business` | `geo_service.py` | Geo |
-| 41 | `system.price_comparison` | `finance_tools.py` | Web |
-| 42 | `system.revoke_permission` | `tool_registry.py` | System |
-| 43 | `system.routing` | `geo_service.py` | Geo |
-| 44 | `system.rss_news` | `rss_service.py` | Web |
-| 45 | `system.save_mp3` | `media_tools.py` | Media |
-| 46 | `system.scrape_website` | `scraper_service.py` | Web |
-| 47 | `system.weather` | `weather_service.py` | Web/API |
-| 48 | `system.websearch` | `tool_registry.py` | Web |
-| 49 | `system.wikipedia_summary` | `wiki_service.py` | Web |
-| 50 | `video.search` | `video_tools.py` | Video |
-| 51 | `video.understand` | `video_understanding.py` | Video |
+| 26 | `knowledge.code_search` | `rag/api_adapter.py` | Knowledge |
+| 27 | `knowledge.edit_pdf` | `pdf_editor.py` | Knowledge |
+| 28 | `knowledge.hardened_edit` | `knowledge_composite.py` | Knowledge |
+| 29 | `knowledge.list_documents` | `tool_executor.py` | Knowledge |
+| 30 | `knowledge.open_document` | `tool_executor.py` | Knowledge |
+| 31 | `knowledge.query` | `rag_manager.py` | Knowledge |
+| 32 | `knowledge.read_full_text` | `tool_executor.py` | Knowledge |
+| 33 | `memory.history` | `memory_tools.py` | Memory |
+| 34 | `memory.read` | `memory_tools.py` | Memory |
+| 35 | `memory.update` | `memory_tools.py` | Memory |
+| 36 | `memory.write` | `memory_tools.py` | Memory |
+| 37 | `system.country_info` | `geo_service.py` | Geo |
+| 38 | `system.create_pdf` | `pdf_generator.py` | Media |
+| 39 | `system.generate_image` | `media_tools.py` | Media |
+| 40 | `system.grant_permission` | `tool_registry.py` | System |
+| 41 | `system.local_business` | `geo_service.py` | Geo |
+| 42 | `system.price_comparison` | `finance_tools.py` | Web |
+| 43 | `system.revoke_permission` | `tool_registry.py` | System |
+| 44 | `system.routing` | `geo_service.py` | Geo |
+| 45 | `system.rss_news` | `rss_service.py` | Web |
+| 46 | `system.save_mp3` | `media_tools.py` | Media |
+| 47 | `system.scrape_website` | `scraper_service.py` | Web |
+| 48 | `system.weather` | `weather_service.py` | Web/API |
+| 49 | `system.websearch` | `tool_registry.py` | Web |
+| 50 | `system.wikipedia_summary` | `wiki_service.py` | Web |
+| 51 | `video.search` | `video_tools.py` | Video |
+| 52 | `video.understand` | `video_understanding.py` | Video |
 
 ---
 
@@ -186,10 +189,10 @@
 | Kalender | 8 |
 | Kommunikation & Email | 4 |
 | Kontakte | 3 |
-| Wissensbasis & Dokumente | 6 |
+| Wissensbasis & Dokumente | 7 |
 | Memory | 4 |
 | System & Permissions | 2 |
-| **GESAMT** | **51 Skills** |
+| **GESAMT** | **52 Skills** |
 
 ---
 
@@ -221,7 +224,7 @@
 - `services/video/transcript_service.py` - YouTube Transcript-Service für Video-Understanding
 
 ### Registry
-- `tool_registry.py` - Zentrale Registrierung aller 51 Skills
+- `tool_registry.py` - Zentrale Registrierung aller 52 Skills
 
 ### Skill-Katalog (`backend/skills/`)
 JSON-Definitionen für alle Skills nach Namespace organisiert:
@@ -229,6 +232,6 @@ JSON-Definitionen für alle Skills nach Namespace organisiert:
 - `communication/` - 4 Skills
 - `contacts/` - 3 Skills
 - `filesystem/` - 10 Skills
-- `knowledge/` - 6 Skills
+- `knowledge/` - 7 Skills (inkl. `knowledge.code_search` — RAG V2 Diamond-Standard)
 - `system/` - 18 Skills
 - `video/` - 2 Skills (video.search, video.understand)

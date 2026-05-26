@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "janus.test-plan.v1",
+  "testRunId": "TEST-RUN-2026-05-21-006",
+  "title": "Janus Packaged Local Beta Profile Isolation",
+  "sourceSpec": "documentation/TEST_SPEC/02_security_safety/12_multi_account_staging_isolation.md",
+  "route": "TEST SKILL SECURITY -> custom packaged-local profile isolation runner -> SKILL 7",
+  "deploymentModel": {
+    "type": "packaged-local-electron",
+    "hostedStagingRequired": false,
+    "identityInterpretation": "separate local beta profiles / AppData roots",
+    "localBackendHealthUrl": "http://127.0.0.1:8001/api/health",
+    "runtimeStateRoot": "%APPDATA%/Janus Projekt",
+    "futureHostedRequirement": "If Janus becomes hosted/SaaS, rerun this spec with real staging accounts and server-side tenant IDs."
+  },
+  "compilerStatus": {
+    "status": "CUSTOM_RUNNER_REQUIRED",
+    "reason": "Spec 12 is a cross-profile security gate for Janus' local Electron beta model. A custom runner creates two isolated beta-profile fixtures and validates DB, file, export, tool-gate, session and debug-surface boundaries."
+  },
+  "cases": [
+    { "id": "ISO-001", "domain": "Profile setup", "expectedEvidence": "Separate A/B AppData, SQLite, upload and artifact roots exist" },
+    { "id": "ISO-002", "domain": "Chat isolation", "expectedEvidence": "Profile A cannot resolve Profile B chat/message IDs" },
+    { "id": "ISO-003", "domain": "Memory isolation", "expectedEvidence": "Profile A cannot find Profile B memory canary" },
+    { "id": "ISO-004", "domain": "File isolation", "expectedEvidence": "Profile B upload canary is outside Profile A root and absent from A files" },
+    { "id": "ISO-005", "domain": "Task/calendar-equivalent isolation", "expectedEvidence": "Profile A cannot resolve Profile B project/task canaries" },
+    { "id": "ISO-006", "domain": "Project/artifact isolation", "expectedEvidence": "Profile A cannot resolve Profile B generated artifact IDs or file canaries" },
+    { "id": "ISO-007", "domain": "Export privacy", "expectedEvidence": "Profile A export scan contains no Profile B canaries" },
+    { "id": "ISO-008", "domain": "Tool-mediated access", "expectedEvidence": "Cross-user data gate disables tools and skips LLM generation" },
+    { "id": "ISO-009", "domain": "Session boundary", "expectedEvidence": "JWT expiration and profile-local session behavior are explicit" },
+    { "id": "ISO-010", "domain": "Debug/admin boundary", "expectedEvidence": "Debug endpoints are denied in packaged beta mode" }
+  ],
+  "artifacts": {
+    "runner": "tests/e2e/generated/TEST-RUN-2026-05-21-006.multi-account-isolation.spec.js",
+    "playwrightConfig": "tests/e2e/generated/TEST-RUN-2026-05-21-006.multi-account-isolation.playwright.config.js",
+    "profileMap": "documentation/test-runs/TEST-RUN-2026-05-21-006_profile_isolation_map.md",
+    "finalAudit": "documentation/test-runs/TEST-RUN-2026-05-21-006_final_audit.md"
+  }
+}

@@ -1,7 +1,7 @@
 {
   "legacy_name": "create_pdf_from_markdown",
   "skill": "system.create_pdf",
-  "description": "Erzeugt PDF-Dokumente aus Markdown. Unterstützt DRY_RUN für Vorschau-Zwecke.",
+  "description": "Erzeugt PDF-Dokumente aus Markdown-Inhalt. Unterstützt DRY_RUN für Vorschau-Zwecke. VERBOTEN: Dieses Tool zur Beantwortung von Kalender-, Termin- oder Zeitplan-Anfragen nutzen. Für Terminabfragen ist ausschließlich calendar.list_events zuständig.",
   "version": "1.1.1",
   "sandbox_level": "workspace_only",
   "latency_class": "normal",

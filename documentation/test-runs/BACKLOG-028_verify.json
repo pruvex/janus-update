@@ -1,0 +1,33 @@
+{
+  "testRunId": "TEST-RUN-2026-05-12-097",
+  "title": "BACKLOG-028 verify: tool-routing assertion produces TOOL_ROUTING_FAILURE on mismatch",
+  "executionMode": "LIVE_VISUAL",
+  "target": "JANUS_CHAT",
+  "chatWindow": "A",
+  "baseUrl": "http://localhost:5173",
+  "backendHealthUrl": "http://localhost:8000/health",
+  "timeouts": {
+    "testCaseMs": 120000,
+    "assistantResponseMs": 90000,
+    "streamRequestMs": 20000
+  },
+  "strategies": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "tool_call_detected_v1"
+  },
+  "tests": [
+    {
+      "id": "TC-001",
+      "name": "Weather inference vs correct expected tool (must PASS with TOOL_ROUTING_PASS)",
+      "type": "intent_routing",
+      "provider": "GPT",
+      "model": "gpt-5.4-nano",
+      "prompt": "Brauche ich morgen in Muenchen einen Regenschirm?",
+      "expected": {
+        "tool": "system.weather"
+      }
+    }
+  ]
+}

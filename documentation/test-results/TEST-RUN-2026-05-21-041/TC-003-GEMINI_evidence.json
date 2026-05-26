@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-041",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was ist heute die wichtigste Tech-News?",
+  "response": "Hallo Pruve! Heute, am 21. Mai 2026, dominiert vor allem eine Nachricht die Tech-Welt: **Nvidia sprengt alle Rekorde.**Hier sind die wichtigsten Highlights des Tages für dich zusammengefasst:*   **Nvidia-Rekordzahlen:** Das Unternehmen hat im ersten Quartal einen unfassbaren Umsatz von **81,62 Milliarden US-Dollar** erzielt. Passend dazu wurde ein Aktienrückkaufprogramm im Wert von 80 Milliarden Dollar angekündigt, was die Märkte weltweit beflügelt.*   **Google & Gemini 3.5:** Google hat heute eine radikale Neugestaltung der Suche auf Basis des neuen Modells **Gemini 3.5 Flash** vorgestellt. Zudem sorgt das „Googlebook“ für Aufsehen – ein neues Hardware-Konzept, das Desktop-Android nativ nutzt.*   **Apple „MacBook Neo“:** Apple überraschte mit der Einführung der neuen Einstiegsreihe „MacBook Neo“, die mit dem **A18 Pro Chip** ausgestattet ist. Außerdem gibt es neue Gesundheitsfunktionen: Die AirPods Pro 3 bieten nun klinisch validierte Hörtests an.*   **Krypto-Boom:** Der XRP-Kurs ist nach regulatorischen Fortschritten durch den US-CLARITY Act auf über **1,50 US-Dollar** geklettert.Es ist ein ereignisreicher Donnerstag in der Branche! Welches dieser Themen interessiert dich am meisten?Quelle: Wikipedia💡 **Passende nächste Schritte:**• Möchtest du mehr Details zum neuen Googlebook und Desktop-Android erfahren?• Soll ich dir die technischen Spezifikationen des MacBook Neo heraussuchen?• Interessieren dich die Auswirkungen der Nvidia-Zahlen auf den KI-Markt?23:24",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T21:25:36.834Z"
+}

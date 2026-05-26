@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "janus.test-result.v1",
+  "testRunId": "TEST-RUN-2026-05-21-005",
+  "title": "Janus Packaged Local Beta Environment Security Baseline",
+  "status": "PASS",
+  "summary": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "blocked": 0,
+    "manualGateRequired": 0
+  },
+  "artifacts": {
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-005",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-005_results.json",
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-001_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-002_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-003_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-004_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-005_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-006_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-007_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-008_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-009_evidence.json",
+      "documentation/test-results/TEST-RUN-2026-05-21-005/STG-010_evidence.json"
+    ]
+  },
+  "results": [
+    {
+      "testCaseId": "STG-001",
+      "result": "PASS",
+      "classification": "PACKAGED_MODEL_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-001_evidence.json",
+      "durationMs": 13,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.538Z"
+    },
+    {
+      "testCaseId": "STG-002",
+      "result": "PASS",
+      "classification": "FRONTEND_DIST_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-002_evidence.json",
+      "durationMs": 12,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.578Z"
+    },
+    {
+      "testCaseId": "STG-003",
+      "result": "PASS",
+      "classification": "BACKEND_PACKAGE_ARTIFACT_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-003_evidence.json",
+      "durationMs": 21,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.622Z"
+    },
+    {
+      "testCaseId": "STG-004",
+      "result": "PASS",
+      "classification": "LOCAL_BACKEND_HEALTH_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-004_evidence.json",
+      "durationMs": 31,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.688Z"
+    },
+    {
+      "testCaseId": "STG-005",
+      "result": "PASS",
+      "classification": "APPDATA_RESOURCE_BOUNDARY_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-005_evidence.json",
+      "durationMs": 6,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.722Z"
+    },
+    {
+      "testCaseId": "STG-006",
+      "result": "PASS",
+      "classification": "LOCAL_SECRET_MODEL_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-006_evidence.json",
+      "durationMs": 6,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.743Z"
+    },
+    {
+      "testCaseId": "STG-007",
+      "result": "PASS",
+      "classification": "PACKAGED_DEV_SURFACE_GATED_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-007_evidence.json",
+      "durationMs": 4,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.761Z"
+    },
+    {
+      "testCaseId": "STG-008",
+      "result": "PASS",
+      "classification": "UPDATE_ROLLBACK_METADATA_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-008_evidence.json",
+      "durationMs": 10,
+      "notes": "Current source version 0.4.17-beta.37 differs from last built installer 0.4.17-beta.27; rebuild installer before shipping a new beta.",
+      "timestamp": "2026-05-21T00:53:04.787Z"
+    },
+    {
+      "testCaseId": "STG-009",
+      "result": "PASS",
+      "classification": "PACKAGED_LOCAL_EVIDENCE_HYGIENE_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-009_evidence.json",
+      "durationMs": 6,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.807Z"
+    },
+    {
+      "testCaseId": "STG-010",
+      "result": "PASS",
+      "classification": "PACKAGED_LOCAL_BETA_GATE_DECISION_PASS",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-05-21-005/STG-010_evidence.json",
+      "durationMs": 0,
+      "notes": "",
+      "timestamp": "2026-05-21T00:53:04.821Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T00:53:04.837Z"
+}

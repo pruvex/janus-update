@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-002",
+  "testCaseId": "TC-004-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Was gibt es Neues bei Heise?",
+  "response": "\nTop 10: Bestes kleines Smartphone bis 6,3 Zoll  \nFinanzielle Ratschläge von ChatGPT – wenn man sein Bankkonto verknüpft  \nDigitale Souveränität: Wie Europa Chinas Griff nach Seltenen Erden brechen kann  \nKI-Papers bei arXiv: Sperre bei erstem Verstoß  \nEcovacs Deebot Mini im Test: Günstiger Saugroboter für kleine Wohnungen  \n„Doom“ läuft jetzt auch auf Meta Ray-Ban Smart Glasses  \nheise-Angebot: Makey:Lab: Technik verstehen statt nur über Bildschirme zu wischen  \nSpaceX-Börsengang: 80 Milliarden US-Dollar Kapitalerhöhung geplant  \nKommentar: Das Ende der SaaS-Gelddruckmaschine  \nheise-Angebot: iX-Workshop: Nach dem Ransomware-Angriff – sicher entscheiden und kommunizieren\n\n💡 Passende nächste Schritte:• Sag mir ein Thema (z. B. KI, IT-Security, Smartphones, Robotik) – dann filtere ich die Heise-Highlights genau dafür.• Wenn du willst, fasse ich dir 2–3 der Schlagzeilen kurz zusammen.\n01:31",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-16T23:31:48.647Z"
+}

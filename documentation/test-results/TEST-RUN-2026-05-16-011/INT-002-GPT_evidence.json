@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-011",
+  "testCaseId": "INT-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Mach das besser",
+  "response": "Welche Sache genau soll ich „besser machen“ (Text, E-Mail, Bewerbung, Code, Bildbeschreibung o.Ä.) – und bitte den aktuellen Inhalt hier einfügen.\n22:25",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T20:25:41.922Z"
+}

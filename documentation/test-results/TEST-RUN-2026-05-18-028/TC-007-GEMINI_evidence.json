@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-028",
+  "testCaseId": "TC-007-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Modellpreise und erstelle eine kurze Vergleichstabelle",
+  "response": "Hier ist die Übersicht der aktuellen Modellpreise für Mai 2026, basierend auf den neuesten Marktdaten:\n\nZusammenfassungIm Mai 2026 zeigen sich deutliche Preisunterschiede bei den Flaggschiff-Modellen der Smartphone-Hersteller sowie bei den Einstiegspreisen für populäre Elektrofahrzeuge. Während Apple mit dem iPhone 17 Pro weiterhin das Premium-Segment anführt, bieten Samsung und Google preislich attraktive Alternativen im High-End-Bereich.\n\nListe der Fakten• iPhone 17 Pro: ab 1.178,99 € (unverifiziert)• Samsung Galaxy S26 Ultra: ab 919,90 € (unverifiziert)• Google Pixel 10 Pro: ab 689,11 € (unverifiziert)• Tesla Model 3 (2026): ab 36.990,00 € (unverifiziert)• VW ID.4 (2026): ab 39.990,00 € (unverifiziert)\n\nQuellen• uswitch.com (Marktanalyse Mai 2026)• vertexaisearch.cloud.google.com\n\n\n💡 Passende nächste Schritte:• Soll ich für eines der Smartphone-Modelle einen detaillierten Preisvergleich über verschiedene Händler durchführen?• Benötigst du eine Aufstellung der technischen Spezifikationen im direkten Vergleich zu den Vorgängermodellen?• Suchst du nach speziellen Finanzierungs- oder Leasingangeboten für die genannten Fahrzeugmodelle?\n00:19",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T22:19:58.334Z"
+}

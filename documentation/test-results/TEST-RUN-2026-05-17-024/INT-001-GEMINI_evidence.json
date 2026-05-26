@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-024",
+  "testCaseId": "INT-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Zeig mir den kompletten Debug Trace",
+  "response": "Basierend auf dem Informationstrace aus deinem Langzeitgedächtnis sind hier die dauerhaften physischen Merkmale von Nikola Tesla, sortiert nach ihrer ersten Erwähnung:\n\nKörperbau: Er ist eine sehr schlanke und auffallend große Person.\nUrsprung: Das hast du mir am 12. Mai 2026 um 19:23 Uhr im Chat „Nikola Tesla Übersicht“ erzählt.\n\n\nHaare: Er hat dunkles Haar, das stets akkurat gescheitelt getragen wird.\nUrsprung: Das hast du mir am 12. Mai 2026 um 19:23 Uhr im Chat „Nikola Tesla Übersicht“ erzählt.\n\n\nGesichtszüge: Er hat ein schmales Gesicht, eine hohe Stirn und markante, ausgeprägte Wangenknochen.\nUrsprung: Das hast du mir am 12. Mai 2026 um 19:23 Uhr im Chat „Nikola Tesla Übersicht“ erzählt.\n\n\nAugen: Er hat tief liegende Augen.\nUrsprung: Das hast du mir am 12. Mai 2026 um 19:23 Uhr im Chat „Nikola Tesla Personenbeschreibung“ erzählt.\n\n\n\n💡 Passende nächste Schritte:• Soll ich basierend auf diesen physischen Merkmalen ein Porträt von Nikola Tesla erstellen?• Möchtest du weitere Details aus seinem Lebenslauf oder seiner Biografie ergänzen?• Soll ich nach spezifischen Accessoires (wie Brille oder Smartwatch) in deinen situativen Beobachtungen suchen?\n20:58",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T18:58:55.047Z"
+}

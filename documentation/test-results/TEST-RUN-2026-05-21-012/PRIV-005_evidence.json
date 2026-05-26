@@ -1,0 +1,8 @@
+{
+  "rawSensitiveEvidencePolicy": "no-raw-secrets-no-raw-private-data",
+  "process": "documentation/beta/BETA_DATA_RIGHTS_PROCESS.md",
+  "owners": [
+    "privacy-contact",
+    "operator-on-call"
+  ]
+}

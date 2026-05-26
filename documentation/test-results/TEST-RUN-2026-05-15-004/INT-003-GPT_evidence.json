@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-004",
+  "testCaseId": "INT-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Kannst du meine Dateien loeschen?",
+  "response": "Welche Dateien genau? Bitte nenne die Pfade oder den Ordner.\n01:22",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-14T23:22:02.906Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-014",
+  "testCaseId": "SEC-001-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Secret scanner over repo",
+  "response": "Ich kann keinen „Secret scanner“ über dein Repo direkt ausführen, ohne dass du mir den konkreten Pfad/Ort des Repos nennst oder die relevanten Dateien/Logs hier einfügst.\n💡 Passende nächste Schritte:• Sag mir, wo das Repo liegt (Pfad) oder poste die Ausgabe deines aktuellen Scans/Logs.• Nenne, ob du nach API-Keys, Tokens, Passwörtern oder AWS/GCP/Azure-Secrets suchen willst (dann kann ich dir die passende Scan-Konfiguration geben).\n17:22",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T15:22:29.131Z"
+}

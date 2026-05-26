@@ -1,0 +1,14 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-014",
+  "testCaseId": "TC-004",
+  "scenario": "Weather skill selection",
+  "result": "PASS",
+  "evidenceType": "routing_assertion",
+  "commands": [
+    "python -m pytest backend\\tests\\test_skill_selector_capability_registry_integrity.py backend\\tests\\test_capability_registry.py backend\\tests\\unit\\test_capability_registry_logic.py backend\\tests\\unit\\test_skill_selector_filesystem_calendar.py -q"
+  ],
+  "observed": [
+    "backend/tests/test_skill_selector_capability_registry_integrity.py::test_weather_intent_selects_weather_without_calendar_or_filesystem PASSED"
+  ],
+  "acceptance": "Weather prompts route to the weather capability family and do not select calendar or filesystem routes."
+}

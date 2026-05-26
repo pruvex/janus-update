@@ -1,17 +1,18 @@
 {
   "name": "janus-projekt",
-  "version": "0.4.17-beta.40",
+  "version": "0.4.17-beta.41",
   "description": "",
   "type": "module",
   "main": "main.electron.cjs",
   "scripts": {
     "start": "vite",
-    "build": "npm run write-version && python -X utf8 tools/generate_release_notes.py && vite build",
+    "build": "npm run write-version && python -X utf8 tools/generate_release_notes.py && vite build && node scripts/verify-frontend-dist.cjs",
+    "verify:frontend-dist": "node scripts/verify-frontend-dist.cjs",
     "preview": "vite preview",
     "write-version": "node -e \"require('fs').writeFileSync('backend/version.py', 'APP_VERSION = \\\"' + require('./package.json').version + '\\\"')\"",
     "start-backend": "node scripts/run-backend-dev.cjs",
     "start-frontend": "concurrently \"npm run start-electron\" \"npm run start-vite\"",
-    "start-dev": "concurrently \"npm:start-backend-only\" \"npm:start-vite\" \"npm:start-electron\"",
+    "start-dev": "node scripts/write-startup-marker.cjs && concurrently \"npm:start-backend-only\" \"npm:start-vite\" \"npm:start-electron\"",
     "start-electron": "wait-on --timeout 180000 tcp:8001 && cross-env NODE_ENV=development electron .",
     "start-electron-only": "cross-env NODE_ENV=development electron .",
     "start-vite": "vite",
@@ -21,15 +22,20 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
     "test:e2e:log": "playwright test --reporter=list > test-log.md",
+    "test:generator": "node tests/e2e/generator/generator.self-test.mjs",
+    "test:pipeline-integrity": "node scripts/pipeline-integrity-check.mjs",
     "test:vision:stresstest": "python backend/tests/tools/vision_evaluator.py --matrix-dir backend/tests/vision_matrix/Stresstest --e2e",
     "test:vision:stresstest:kpi": "python backend/tests/tools/vision_evaluator.py --matrix-dir backend/tests/vision_matrix/Stresstest --e2e --kpi-gate --max-contradiction-rate 0.0 --min-source-map-coverage 0.95",
     "test:vision:openworld": "python backend/tests/tools/vision_evaluator.py --matrix-dir backend/tests/vision_matrix/OpenWorldStandard --e2e --kpi-gate --max-contradiction-rate 0.0 --min-source-map-coverage 0.95",
     "prebuild-installer": "echo 'Vision-Tests deaktiviert für schnelle Builds'",
     "prebuild-all": "echo \"prebuild-all: vision gate moved to separate QA run\"",
-    "build-installer": "electron-builder",
-    "build-all": "npm run build && node scripts/run-pyinstaller-if-spec.cjs && npm run build-installer",
+    "build-installer": "electron-builder --publish never && npm run generate:update-manifest && npm run verify:update-artifacts",
+    "build-all": "npm run build && python -m PyInstaller janus_backend.spec --clean --noconfirm && npm run build-installer",
     "release:guard": "node scripts/release-gate.js",
-    "release": "npm run release:guard && npm run build-all && electron-builder --publish always",
+    "release:verify-published": "node scripts/verify_published_release.cjs --write-evidence",
+    "release": "npm run release:guard && npm run build-all && node scripts/publish_to_github.cjs && npm run release:verify-published",
+    "generate:update-manifest": "node scripts/generate_update_manifest.cjs",
+    "verify:update-artifacts": "node scripts/verify_update_artifacts.cjs",
     "release:ship": "node scripts/release-ship.cjs"
   },
   "keywords": [],
@@ -44,15 +50,29 @@
     "electron": "^31.0.2",
     "electron-builder": "^26.0.12",
     "eslint": "^9.33.0",
+    "js-yaml": "^4.1.1",
     "vite": "^5.3.1",
     "wait-on": "^8.0.4"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.6",
+    "@mui/material": "^7.3.6",
+    "@sentry/browser": "^10.32.1",
+    "antd": "^6.3.1",
     "axios": "^1.11.0",
     "dompurify": "^3.4.0",
     "electron-log": "^5.4.3",
     "electron-updater": "^6.7.3",
-    "node-fetch": "^2.7.0"
+    "formdata-node": "^6.0.3",
+    "interactjs": "^1.10.27",
+    "node-fetch": "^2.7.0",
+    "octokit": "^5.0.5",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-pdf": "^10.4.1",
+    "react-router-dom": "^7.10.1"
   },
   "build": {
     "appId": "de.pruvex.janus",
@@ -73,20 +93,21 @@
     },
     "win": {
       "target": "nsis",
-      "icon": "frontend/assets/icon.ico"
+      "icon": "frontend/assets/icon.png"
     },
     "nsis": {
       "oneClick": false,
       "perMachine": true,
       "allowToChangeInstallationDirectory": true,
-      "differentialPackage": true
+      "differentialPackage": false
     },
     "files": [
       "frontend/dist/",
       "main.electron.cjs",
       "frontend/preload.js",
       "package.json",
-      "splash.html"
+      "splash.html",
+      "electron/**/*"
     ],
     "extraResources": [
       {

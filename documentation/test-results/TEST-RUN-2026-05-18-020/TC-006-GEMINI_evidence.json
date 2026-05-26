@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-020",
+  "testCaseId": "TC-006-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Was steht morgen in meinem Kalender?",
+  "response": "Hallo Admin, für morgen, Dienstag den 19. Mai 2026, stehen aktuell keine Termine in deinem Kalender. Dein Tag ist also noch komplett frei.\n💡 Passende nächste Schritte:• Möchtest du für morgen einen neuen Termin eintragen?• Soll ich prüfen, ob an den darauffolgenden Tagen Termine anstehen?• Suchst du nach einem freien Zeitfenster für eine bestimmte Aufgabe?\n19:51",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-18T17:51:52.069Z"
+}

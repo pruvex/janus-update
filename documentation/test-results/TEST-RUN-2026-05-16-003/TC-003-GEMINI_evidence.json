@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-003",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Was ist meine Lieblingsfarbe?",
+  "response": "Ich habe derzeit keine Informationen über deine Lieblingsfarbe in meinen Aufzeichnungen gespeichert. In meinem aktuellen Kontext befinden sich lediglich Details zum äußeren Erscheinungsbild von Nikola Tesla, wie seine Größe, sein schmales Gesicht und sein akkurat gescheiteltes dunkles Haar.\n💡 Passende nächste Schritte:• Verrate mir deine Lieblingsfarbe, damit ich sie mir für die Zukunft merken kann.• Frage mich nach weiteren Details aus der Biografie von Nikola Tesla.• Lass uns gemeinsam ein Projekt passend zu deiner Lieblingsfarbe planen.\n17:37",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-16T15:37:33.032Z"
+}

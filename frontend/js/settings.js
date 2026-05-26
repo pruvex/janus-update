@@ -100,6 +100,39 @@ async function loadSuggestionModeSettings() {
   }
 }
 
+async function loadDarkModeSettings() {
+  const checkbox = document.getElementById("dark-mode-checkbox");
+  const statusEl = document.getElementById("dark-mode-status");
+  if (!checkbox) return;
+  if (statusEl) {
+    statusEl.textContent = "";
+    statusEl.classList.remove("is-error");
+  }
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+      headers: authHeadersJson(),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    const darkModeEnabled = Boolean(data.dark_mode_enabled);
+    checkbox.checked = darkModeEnabled;
+    // Update localStorage cache
+    localStorage.setItem("dark_mode_enabled", darkModeEnabled.toString());
+    console.log("[Dark Mode] Loaded dark_mode_enabled:", darkModeEnabled);
+  } catch (error) {
+    console.error("loadDarkModeSettings:", error);
+    checkbox.checked = false;
+    if (statusEl) {
+      statusEl.style.display = "block";
+      statusEl.classList.add("is-error");
+      statusEl.textContent =
+        "Konnte die Einstellung nicht laden. Bitte anmelden oder später erneut versuchen.";
+    }
+  }
+}
+
 async function saveSuggestionModeFromSlider() {
   const slider = document.getElementById("suggestion-mode-slider");
   const statusEl = document.getElementById("suggestion-mode-status");
@@ -140,6 +173,61 @@ async function saveSuggestionModeFromSlider() {
       statusEl.classList.add("is-error");
       statusEl.textContent = "Speichern fehlgeschlagen.";
     }
+  }
+}
+
+async function saveDarkModeFromCheckbox() {
+  const checkbox = document.getElementById("dark-mode-checkbox");
+  const statusEl = document.getElementById("dark-mode-status");
+  if (!checkbox) return;
+  const darkModeEnabled = checkbox.checked;
+  if (statusEl) {
+    statusEl.textContent = "Speichere…";
+  }
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+      method: "PATCH",
+      headers: authHeadersJson(),
+      body: JSON.stringify({ dark_mode_enabled: darkModeEnabled }),
+    });
+    if (!response.ok) {
+      let detail = `HTTP ${response.status}`;
+      try {
+        const errData = await response.json();
+        if (errData.detail) detail = errData.detail;
+      } catch (e) {}
+      throw new Error(detail);
+    }
+    // Update localStorage cache
+    localStorage.setItem("dark_mode_enabled", darkModeEnabled.toString());
+    // Apply theme immediately
+    applyDarkMode(darkModeEnabled);
+    if (statusEl) {
+      statusEl.textContent = "";
+      statusEl.classList.remove("is-error");
+    }
+    console.log("[Dark Mode] Saved dark_mode_enabled:", darkModeEnabled);
+  } catch (error) {
+    console.error("[Dark Mode] saveDarkModeFromCheckbox:", error);
+    if (statusEl) {
+      statusEl.style.display = "block";
+      statusEl.classList.add("is-error");
+      statusEl.textContent =
+        "Konnte die Einstellung nicht speichern. Bitte erneut versuchen.";
+    }
+  }
+  // Theme trotzdem basierend auf Checkbox-Status anwenden
+  applyDarkMode(darkModeEnabled);
+}
+
+// Dark Mode Theme Utility Function (wird auch in app.js verwendet)
+function applyDarkMode(darkModeEnabled) {
+  if (darkModeEnabled === true) {
+    document.body.classList.add('dark-mode');
+    console.log("[Dark Mode] Applied dark mode");
+  } else {
+    document.body.classList.remove('dark-mode');
+    console.log("[Dark Mode] Applied light mode");
   }
 }
 
@@ -355,26 +443,53 @@ async function loadApiKeys() {
   }
 }
 
-async function renderSettingsView(targetSection = "api-key-section") {
-  setActiveSettingsSection(targetSection);
-  await loadApiKeys();
+// Flag für renderSettingsView um parallele Ausführung zu verhindern
+let isSettingsViewRendering = false;
 
-  modelManagementButtons.innerHTML = "";
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/keys`);
-    const data = await response.json();
-    for (const provider in data.api_keys) {
-      const manageModelsBtn = document.createElement("button");
-      manageModelsBtn.textContent = `Modelle für ${provider} verwalten`;
-      manageModelsBtn.dataset.provider = provider;
-      modelManagementButtons.appendChild(manageModelsBtn);
-    }
-  } catch (error) {
-    console.error("Error loading providers for model management buttons:", error);
+async function renderSettingsView(targetSection = "api-key-section") {
+  // Verhindere parallele Ausführung
+  if (isSettingsViewRendering) {
+    console.log("[renderSettingsView] Bereits am Rendern, überspringe...");
+    return;
   }
-  await updateImageGenStatus();
-  if (targetSection === "assistenz-section") {
-    await loadSuggestionModeSettings();
+  isSettingsViewRendering = true;
+
+  try {
+    setActiveSettingsSection(targetSection);
+    await loadApiKeys();
+
+    // Sicherstellen, dass Buttons komplett neu aufgebaut werden
+    modelManagementButtons.innerHTML = "";
+    // Kurzer Delay um DOM zu entschlacken
+    await new Promise(resolve => setTimeout(resolve, 0));
+    modelManagementButtons.innerHTML = "";
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/keys`);
+      const data = await response.json();
+      // Tracken welche Provider bereits hinzugefügt wurden (Schutz gegen Duplikate)
+      const addedProviders = new Set();
+      for (const provider in data.api_keys) {
+        if (addedProviders.has(provider)) continue;
+        addedProviders.add(provider);
+        const manageModelsBtn = document.createElement("button");
+        manageModelsBtn.textContent = `Modelle für ${provider} verwalten`;
+        manageModelsBtn.dataset.provider = provider;
+        manageModelsBtn.classList.add('model-manage-btn');
+        modelManagementButtons.appendChild(manageModelsBtn);
+      }
+    } catch (error) {
+      console.error("Error loading providers for model management buttons:", error);
+    }
+    await updateImageGenStatus();
+    if (targetSection === "assistenz-section") {
+      await loadSuggestionModeSettings();
+    }
+    if (targetSection === "display-options-section") {
+      await loadDarkModeSettings();
+    }
+  } finally {
+    isSettingsViewRendering = false;
   }
 }
 
@@ -382,7 +497,15 @@ async function renderModelManagementView(provider) {
   setActiveSettingsSection("model-management-section");
   document.querySelector("#model-management-section h3").textContent =
     `Modelle für ${provider} verwalten`;
+
+  // Liste KOMPLETT leeren - zweimal für Sicherheit
   modelList.innerHTML = "";
+  // Kleiner Delay um DOM zu entschlacken
+  await new Promise(resolve => setTimeout(resolve, 0));
+  modelList.innerHTML = "";
+
+  // Sicherstellen, dass wir mit einer frischen ID-Liste arbeiten (Schutz gegen Duplikate)
+  const renderedModelIds = new Set();
 
   let selectedModels = [];
   try {
@@ -402,16 +525,80 @@ async function renderModelManagementView(provider) {
     "gemini-2.5-flash-image",
     "gemini-pro-vision"
   ];
-  
+
+  // Für OpenAI nur GPT-5.4 und GPT-5.5 Modelle anzeigen - in definierter Reihenfolge
+  const openaiAllowedModels = [
+    "gpt-5.4-nano",
+    "gpt-5.4-mini",
+    "gpt-5.4",
+    "gpt-5.4-pro",
+    "gpt-5.5",
+    "gpt-5.5-pro"
+  ];
+
+  // Hilfsfunktion zur Formatierung der Kosten
+  function formatModelCost(model) {
+    if (!model.cost_per_token_input && !model.cost_per_token_output) return "";
+    const inputCost = model.cost_per_token_input ? (model.cost_per_token_input * 1000000).toFixed(2) : "0";
+    const cachedCost = model.cost_per_token_cached ? (model.cost_per_token_cached * 1000000).toFixed(2) : null;
+    const outputCost = model.cost_per_token_output ? (model.cost_per_token_output * 1000000).toFixed(2) : "0";
+
+    if (cachedCost) {
+      return `$${inputCost}/Mio (Input) | $${cachedCost}/Mio (Cached) | $${outputCost}/Mio (Output)`;
+    }
+    return `$${inputCost}/Mio (Input) | $${outputCost}/Mio (Output)`;
+  }
+
   const modelsForProvider = appState.model_catalog[provider];
   if (modelsForProvider && Array.isArray(modelsForProvider)) {
-      modelsForProvider.forEach((model) => {
-        if (excludedModels.includes(model.id)) return;
-        const listItem = document.createElement("li");
-        const isChecked = selectedModels.includes(model.id) ? "checked" : "";
-        listItem.innerHTML = `<input type="checkbox" id="${model.id}" value="${model.id}" ${isChecked}> <label for="${model.id}">${model.name}</label>`;
-        modelList.appendChild(listItem);
-      });
+    // Erstelle Map für schnellen Zugriff
+    const modelMap = new Map(modelsForProvider.map(m => [m.id, m]));
+
+    // Definiere Reihenfolge je nach Provider
+    let modelOrder;
+    if (provider === "openai") {
+      modelOrder = openaiAllowedModels;
+    } else if (provider === "gemini") {
+      // Nur die beiden gewünschten Gemini-Modelle
+      modelOrder = [
+        "gemini-3-flash-preview",
+        "gemini-3.1-pro-preview"
+      ];
+    } else {
+      // Für andere Provider: Alle verfügbaren Modelle verwenden
+      modelOrder = modelsForProvider.map(m => m.id);
+    }
+
+    // Gehe in definierter Reihenfolge durch die Modelle
+    modelOrder.forEach((modelId) => {
+      const model = modelMap.get(modelId);
+      if (!model) return;
+      // Für OpenAI: Nur erlaubte Modelle
+      if (provider === "openai" && !openaiAllowedModels.includes(model.id)) return;
+      if (excludedModels.includes(model.id)) return;
+
+      // Schutz gegen doppelte Modelle in der Liste
+      if (renderedModelIds.has(model.id)) return;
+      renderedModelIds.add(model.id);
+
+      const isChecked = selectedModels.includes(model.id) ? "checked" : "";
+      const costInfo = formatModelCost(model);
+      const description = model.desc || "";
+
+      const listItem = document.createElement("li");
+      listItem.style.cssText = "margin-bottom: 12px; padding: 8px; border-bottom: 1px solid #333;";
+      listItem.innerHTML = `
+        <div style="display: flex; align-items: flex-start; gap: 10px;">
+          <input type="checkbox" id="${model.id}" value="${model.id}" ${isChecked} style="margin-top: 4px;">
+          <div style="flex: 1;">
+            <label for="${model.id}" style="font-weight: bold; font-size: 14px; cursor: pointer;">${model.name}</label>
+            <div style="font-size: 11px; color: #888; margin-top: 2px;">${costInfo}</div>
+            <div style="font-size: 12px; color: #aaa; margin-top: 4px; line-height: 1.3;">${description}</div>
+          </div>
+        </div>
+      `;
+      modelList.appendChild(listItem);
+    });
   } else {
     console.warn(`[renderModelManagementView] No models found for provider '${provider}' or data not loaded yet.`);
     modelList.innerHTML = `<li>Keine Modelle für ${provider} gefunden oder der Katalog wird noch geladen.</li>`;
@@ -925,14 +1112,24 @@ export async function updateActivePersonalityDisplay() {
   if (!activePersonalityDisplay) return;
 
   try {
+    const token = localStorage.getItem('auth_token');
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
     // Get active personality ID
-    const activeResponse = await fetch(`${API_BASE_URL}/api/personalities/active`);
+    const activeResponse = await fetch(`${API_BASE_URL}/api/personalities/active`, { headers });
     const activeData = await activeResponse.json();
     const activePersonalityId = activeData.active_personality_id;
 
     // Get all personalities to find the name
-    const allPersonalitiesResponse = await fetch(`${API_BASE_URL}/api/personalities`);
+    const allPersonalitiesResponse = await fetch(`${API_BASE_URL}/api/personalities`, { headers });
     const allPersonalities = await allPersonalitiesResponse.json();
+
+    // 💎 CU-3: Null-Safety - verhindert Totalabsturz bei API-Fehler
+    if (!Array.isArray(allPersonalities)) {
+      console.warn("[SETTINGS] allPersonalities is not an array:", allPersonalities);
+      activePersonalityDisplay.textContent = "";
+      return;
+    }
 
     const activePersonality = allPersonalities.find((p) => p.id === activePersonalityId);
 
@@ -949,22 +1146,35 @@ export async function updateActivePersonalityDisplay() {
 
 // --- Event Listeners ---
 
-document.addEventListener("DOMContentLoaded", async () => {
-  const versionDisplay = document.getElementById('app-version-display');
-  if (versionDisplay) {
-    versionDisplay.textContent = `Version ${import.meta.env.APP_VERSION || '0.1.0-beta.1'}`;
+// 💎 CU-3: Entferne parallelen DOMContentLoaded Listener - wird jetzt über app.js gesteuert
+// Das verhindert Race-Conditions mit der Auth-Initialisierung
+// Settings werden jetzt in app.js::initializeApp() nach Auth geladen
+
+// Chat-Modell (#model-select) wird hier nicht gesetzt — das übernimmt app.js::render().
+document.addEventListener("show-settings", (event) => {
+  const targetSection = event?.detail?.target || "api-key-section";
+  renderSettingsView(targetSection);
+});
+
+// Exportiere Initialisierungsfunktion für app.js
+export async function initializeSettings() {
+  try {
+    const versionDisplay = document.getElementById('app-version-display');
+    if (versionDisplay) {
+      versionDisplay.textContent = `Version ${import.meta.env.APP_VERSION || '0.1.0-beta.1'}`;
+    }
+
+    await loadModelCatalogForSettings();
+    renderSettingsView();
+    updateActivePersonalityDisplay(); // Initial call to display active personality
+  } catch (error) {
+    console.error("[SETTINGS] Initialization error:", error);
   }
+}
 
-  await loadModelCatalogForSettings();
-
-  // Chat-Modell (#model-select) wird hier nicht gesetzt — das übernimmt app.js::render().
-  document.addEventListener("show-settings", (event) => {
-    const targetSection = event?.detail?.target || "api-key-section";
-    renderSettingsView(targetSection);
-  });
-
-  renderSettingsView();
-  updateActivePersonalityDisplay(); // Initial call to display active personality
+// 💎 CU-3: Event-Listener werden jetzt direkt nach DOMContentLoaded registriert
+// aber ohne API-Calls, die erst nach Auth ausgeführt werden
+document.addEventListener("DOMContentLoaded", () => {
 
   const suggestionModeSlider = document.getElementById("suggestion-mode-slider");
   if (suggestionModeSlider) {
@@ -975,6 +1185,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       saveSuggestionModeFromSlider();
     });
     updateSuggestionModeDescription(suggestionModeSlider.value);
+  }
+
+  const darkModeCheckbox = document.getElementById("dark-mode-checkbox");
+  if (darkModeCheckbox) {
+    darkModeCheckbox.addEventListener("change", () => {
+      saveDarkModeFromCheckbox();
+    });
   }
 
   // Navigation
@@ -1035,13 +1252,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // Model Management
+  // Model Management - Flag um parallele Ausführung zu verhindern
+  let isModelViewLoading = false;
   modelManagementButtons.addEventListener("click", async (e) => {
-    if (e.target.tagName === "BUTTON") {
-      const provider = e.target.dataset.provider;
+    const btn = e.target.closest("button.model-manage-btn");
+    if (!btn || isModelViewLoading) return;
+
+    const provider = btn.dataset.provider;
+    isModelViewLoading = true;
+    btn.disabled = true;
+    btn.textContent = "Lade...";
+
+    try {
       // Sicherstellen, dass der Katalog geladen ist, bevor die Ansicht gerendert wird.
       await loadModelCatalogForSettings();
-      renderModelManagementView(provider);
+      await renderModelManagementView(provider);
+    } finally {
+      isModelViewLoading = false;
+      btn.disabled = false;
+      btn.textContent = `Modelle für ${provider} verwalten`;
     }
   });
 
@@ -1639,8 +1868,4 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.showSettingsSection = (targetSection = "api-key-section") => {
     dispatchShowSettingsEvent(targetSection);
   };
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  updateImageGenStatus();
 });

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-004",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Was gibt es Neues bei Heise?",
+  "response": "Hier sind die aktuellen Top-Schlagzeilen von Heise:\n\nLichtschwertkampf LudoSport: Ein Erfahrungsbericht über das Training wie ein Padawan (heise+).\ndata2day 2026: Die Konferenz setzt Schwerpunkte auf Datenprodukte, Agentic AI und Governance.\nDiesel-Preise: Kraftstoff ist seit April um 45 Cent günstiger geworden.\niX-Workshop: Praxis-Training zu Netzwerkarchitekturen in Proxmox.\nOffice-Alternativen: Ein Video stellt vier Pakete vor, die Microsoft Office ersetzen können.\nVerkehrssysteme: Analyse zu Monorails, Magnet- und Seilbahnen als Gadget oder sinnvolle Lösung.\nSmartphones: Die Top 10 der besten kleinen Smartphones bis 6,3 Zoll.\nKI & Finanzen: ChatGPT gibt finanzielle Ratschläge bei Verknüpfung mit dem Bankkonto.\nDigitale Souveränität: Europas Strategien gegen Chinas Dominanz bei Seltenen Erden.\nKI-Papers bei arXiv: Einführung einer Sperre bereits beim ersten Verstoß.\n\n💡 Passende nächste Schritte:• Details zu einer der Meldungen recherchieren (z. B. die genannten Office-Alternativen).• Nach Nachrichten zu einem spezifischen Thema (z. B. „Künstliche Intelligenz“ oder „Hardware“) suchen.• Die data2day 2026 oder den iX-Workshop als Termin in deinen Kalender vormerken.\n14:12",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:12:14.246Z"
+}

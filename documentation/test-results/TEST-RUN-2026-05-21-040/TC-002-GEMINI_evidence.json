@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-040",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Preise fuer OpenAI und Gemini Modelle",
+  "response": "Hallo Pruve! Ich habe die aktuellen Preise für die OpenAI- und Gemini-Modelle (Stand Mai 2026) für dich recherchiert. Hier ist die Übersicht der Kosten für API-Nutzung und Abonnements:1. ZusammenfassungDie Preismodelle teilen sich in monatliche Abonnements für Endnutzer und nutzungsbasierte API-Preise für Entwickler auf. OpenAI bietet mit GPT-4o ein hocheffizientes Flaggschiff-Modell an, während Google mit Gemini Advanced und abgestuften API-Preisen (Flash vs. Pro) konkurriert.2. Liste der Fakten• OpenAI GPT-4o (API): Kostet ca. 4,65 EUR für 1 Mio. Input-Token und 13,95 EUR für 1 Mio. Output-Token (laut Suchergebnis, Stand: Mai 2026).• OpenAI GPT-4 (Legacy API): Liegt deutlich höher bei ca. 27,90 EUR (Input) und 55,80 EUR (Output) pro 1 Mio. Token (Quelle: dida.do).• OpenAI Abonnements:  - ChatGPT Plus: 23,00 EUR / Monat (laut Suchergebnis).  - ChatGPT Go: 8,00 EUR / Monat (laut Suchergebnis).  - ChatGPT Pro: 229,00 EUR / Monat für Power-User (laut Suchergebnis).• Google Gemini Advanced (Abonnement): Erhältlich für 21,99 EUR / Monat im Rahmen des Google One KI-Premiumpakets (Quelle: google.com).• Google Gemini API: Die Preise für Gemini 1.5 Pro und Flash sind stark von der Kontextlänge abhängig. Gemini 1.5 Flash gilt als die preiswerte \"Speed-Variante\", während 1.5 Pro für komplexe Aufgaben optimiert ist (Preise aktuell primär in USD gelistet, Umrechnung erfolgt tagesaktuell via Anbieter-Link).3. Quellen• [google.com](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEs4ctPKqR7U2uUIVIpWcee6Gtdpkk2PTQlPYHZ2Jb5GnXQnHhEneKKlgtcIoZaBaEcNy6bceBNEnqNgZS7NgqfvEehmVYjprsuxb0EeA3dpSNwiNelFQxodsJuS9EW7kL9DOpOVvfyIk0X_PkL-K5EpxYiSJ10vVhhXh6m2IP5S7vJ8wAJ8VPTgQ==)• [dida.do](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF1_M7eFb0Bin2tXt8pFHyCUzJIOXaFovCMce23dMq93QYLpqdTlMlj2o5dX1seKMs01Cx5LwT0VzYpsBWXGpP0a5re8BEFQL22zDU_LPiLhKajoWXi-9ObC2WlPNU_8hKmnn9sfIr1rNouHLTB4SNZ9UR4Ulg7Dc3LDVn66DW0exYObM3Svz4DBLc=)• [nicolalazzari.ai](https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGR_CamqKtbpdofk8sMtwjucrWSiPMpRuuywE3HXyaRwTsU4c8qq6yzV0KNqyUnLJhb6YrIqrh5DpB2Ddc-BriZbwT1UapoAaRG8UoP2_0CNrE78xuvMnX2kg6is2rkbYMKaETFAojstKDA8vfUF_3vMwDwZK1OaXMtWccIdA==)💡 Passende nächste Schritte:• Soll ich die API-Kosten für ein spezifisches Projektvolumen (z. B. 10 Mio. Token) hochrechnen?• Möchtest du einen detaillierten Funktionsvergleich zwischen ChatGPT Plus und Gemini Advanced?• Benötigst du Hilfe bei der Einrichtung eines API-Keys für eines der Modelle?22:27",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:28:27.190Z"
+}

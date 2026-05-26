@@ -1,0 +1,31 @@
+{
+  "testRunId": "BACKLOG-023-TIMEOUT-FIX-VERIFY",
+  "description": "Mini-Verification für BACKLOG-023 Gateway Silos Fix - Testet aufeinanderfolgende Requests auf Timeout",
+  "strategy": "sequential_chat_requests",
+  "testCases": [
+    {
+      "id": "TC-001",
+      "name": "Sequential Request 1",
+      "prompt": "Wie ist das Wetter heute?",
+      "expectedBehavior": "Antwort mit Wetter-Informationen",
+      "containsAny": ["Wetter", "Grad", "Temperatur"],
+      "mustNotContain": ["timeout", "Fehler", "keine Antwort"],
+      "timeoutMs": 30000
+    },
+    {
+      "id": "TC-002",
+      "name": "Sequential Request 2",
+      "prompt": "Wie ist das Wetter morgen?",
+      "expectedBehavior": "Antwort mit Wetter-Informationen (kein Timeout)",
+      "containsAny": ["Wetter", "Grad", "Temperatur"],
+      "mustNotContain": ["timeout", "Fehler", "keine Antwort"],
+      "timeoutMs": 30000,
+      "dependsOn": "TC-001"
+    }
+  ],
+  "metadata": {
+    "feature": "BACKLOG-023",
+    "fix": "Gateway Silos Pre-Initialization",
+    "risk": "MEDIUM"
+  }
+}

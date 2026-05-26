@@ -1,0 +1,128 @@
+{
+  "default_tiers": {
+    "openai": {
+      "primary": {
+        "model": "gpt-5.4-nano"
+      },
+      "fallback": {
+        "model": "gpt-5.4-mini"
+      },
+      "escalation": {
+        "model": "gpt-5.4"
+      }
+    },
+    "gemini": {
+      "primary": {
+        "model": "gemini-3-flash-preview"
+      },
+      "fallback": {
+        "model": "gemini-3.1-pro-preview"
+      },
+      "escalation": {
+        "model": "gemini-3.1-pro-preview"
+      }
+    }
+  },
+  "skill_mappings": {
+    "system.weather": {
+      "winner": "gpt-5.4-mini",
+      "active": {
+        "primary": {
+          "model": "gpt-5.4-mini"
+        },
+        "fallback": {
+          "model": "gpt-5.4"
+        },
+        "escalation": {
+          "model": "gpt-5.4"
+        },
+        "metrics": {
+          "gpt-5.4-nano": {
+            "pass_rate": 0.4,
+            "avg_latency_ms": 1500,
+            "run_count": 100
+          },
+          "gpt-5.4-mini": {
+            "pass_rate": 1.0,
+            "avg_latency_ms": 500,
+            "run_count": 100
+          }
+        }
+      },
+      "openai": {
+        "primary": {
+          "model": "gpt-5.4-mini"
+        },
+        "fallback": {
+          "model": "gpt-5.4"
+        },
+        "escalation": {
+          "model": "gpt-5.4"
+        },
+        "metrics": {
+          "gpt-5.4-nano": {
+            "pass_rate": 0.4,
+            "avg_latency_ms": 1500,
+            "run_count": 100
+          },
+          "gpt-5.4-mini": {
+            "pass_rate": 1.0,
+            "avg_latency_ms": 500,
+            "run_count": 100
+          }
+        }
+      },
+      "gemini": null,
+      "metadata": {
+        "pass_rate": 1.0,
+        "latency_ms": 500,
+        "updated_at": "2026-04-28T18:45:18.063331"
+      }
+    },
+    "filesystem.list_directory": {
+      "winner": "openai",
+      "active": {
+        "primary": {
+          "model": "gpt-5.4-nano"
+        },
+        "fallback": {
+          "model": "gpt-5.4-mini"
+        },
+        "escalation": {
+          "model": "gpt-5.4"
+        },
+        "metrics": {
+          "gpt-5.4-nano": {
+            "pass_rate": 1.0,
+            "avg_latency_ms": 1225.952380952381,
+            "run_count": 42
+          }
+        }
+      },
+      "openai": {
+        "primary": {
+          "model": "gpt-5.4-nano"
+        },
+        "fallback": {
+          "model": "gpt-5.4-mini"
+        },
+        "escalation": {
+          "model": "gpt-5.4"
+        },
+        "metrics": {
+          "gpt-5.4-nano": {
+            "pass_rate": 1.0,
+            "avg_latency_ms": 1225.952380952381,
+            "run_count": 42
+          }
+        }
+      },
+      "gemini": null,
+      "metadata": {
+        "pass_rate": 1.0,
+        "latency_ms": 1225.952380952381,
+        "updated_at": "2026-04-28T16:48:49.687535"
+      }
+    }
+  }
+}

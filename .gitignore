@@ -17,9 +17,10 @@ node_modules/
 backend/venv/
 __pycache__/
 .env
+.env.*
 local_config.json
 # Large build artifacts
-release/
+/release/
 Asthma/
 workspace/temp_audio/
 # PyInstaller builds
@@ -32,3 +33,6 @@ nathan/
 *.log
 # Runtime fallback logs (generated during local dev runs)
 backend/backend/
+e2e_janus.db*
+playwright-report/data/
+playwright-report/trace/

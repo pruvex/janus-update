@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-039",
+  "testCaseId": "INT-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was gibt es Neues zu GPT heute",
+  "response": "Hallo Pruve, heute am 21. Mai 2026 gibt es einige weitreichende Entwicklungen rund um OpenAI und die GPT-Modelle:1. **Rechtlicher Sieg gegen Elon Musk**: OpenAI hat heute den Prozess gegen Elon Musk gewonnen. Dieser Ausgang könnte die zukünftige Ausrichtung des Unternehmens und den Umgang mit Open-Source-Fragen maßgeblich beeinflussen.2. **Börsengang (IPO) im Visier**: Nach dem juristischen Erfolg strebt OpenAI nun einen Börsengang an. Die angestrebte Bewertung liegt bei beeindruckenden **1 Billion US-Dollar** (laut Suchergebnis, Stand: 21.05.2026). [gizmodo.com](https://gizmodo.com)3. **Großzügiges Angebot für Startups**: Sam Altman hat angekündigt, jedem aktuellen Y-Combinator-Startup KI-Tokens im Wert von **2 Millionen US-Dollar** anzubieten – im Austausch gegen Firmenanteile (Eigenkapital). [eweek.com](https://eweek.com)💡 Passende nächste Schritte:• Möchtest du mehr Details zum Ausgang des Prozesses gegen Elon Musk erfahren?• Soll ich die aktuellen Prognosen zur OpenAI-Bewertung genauer analysieren?• Interessieren dich die technischen Spezifikationen der neuesten GPT-Iterationen, die für den Börsengang eine Rolle spielen?22:11",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T20:12:22.697Z"
+}

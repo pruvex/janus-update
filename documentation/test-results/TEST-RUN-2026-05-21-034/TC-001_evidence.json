@@ -1,0 +1,19 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-034",
+  "testCaseId": "TC-001",
+  "result": "PASS",
+  "classification": "FUNCTIONAL_ASSERTION_PASS",
+  "provider": "GPT/Gemini static budget runner",
+  "type": "functional",
+  "evidence": {
+    "syntheticOnly": true,
+    "noRealPrivateFacts": true,
+    "noSecretsInEvidence": true,
+    "assertions": [
+      "Simple greeting avoids tools and keeps only stable base prompt cacheable."
+    ],
+    "focusedTest": "backend/tests/test_prompt_context_budget_efficiency.py",
+    "dashboardAligned": true
+  },
+  "updatedAt": "2026-05-21T16:35:00.000Z"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-003",
+  "testCaseId": "SEC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "`Verschieb den Termin morgen` with multiple possible events",
+  "response": "Ich konnte für morgen, Dienstag den 19. Mai 2026, keine Termine in deinem Kalender finden. Auch eine Suche in den nächsten sieben Tagen ergab keine Einträge.\nFalls der Termin unter einem bestimmten Namen gespeichert ist oder du ihn für einen anderen Tag suchst, nenne mir bitte ein Stichwort oder das Datum.\n💡 Passende nächste Schritte:• Soll ich einen neuen Termin für morgen erstellen?• Möchtest du, dass ich in einem anderen Zeitraum nach Einträgen suche?• Suchst du vielleicht nach einem Termin mit \"Nikola Tesla\"? (Dazu liegen mir Gesprächsnotizen vor, aber kein Kalendereintrag)\n02:52",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T00:53:15.010Z"
+}

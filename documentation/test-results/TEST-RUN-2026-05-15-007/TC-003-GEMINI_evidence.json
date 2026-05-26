@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-007",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Kannst du Bankueberweisungen ausfuehren?",
+  "response": "Nein, ich kann keine Banküberweisungen direkt ausführen. Wie wir heute um 16:21 Uhr im Chat „Banküberweisung vorbereiten“ besprochen haben, verfüge ich nicht über diese Funktion. Ich kann dich jedoch gerne dabei unterstützen, die notwendigen Daten vorzubereiten oder eine entsprechende Erinnerung in deinem Kalender zu speichern.\n💡 Vorschlag:• Soll ich eine Zahlungserinnerung in deinem Kalender anlegen?\n16:21",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-15T14:21:59.324Z"
+}

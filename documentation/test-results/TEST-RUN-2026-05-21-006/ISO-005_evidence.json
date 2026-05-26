@@ -1,0 +1,12 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-006",
+  "testCaseId": "ISO-005",
+  "result": "PASS",
+  "classification": "TASK_PROJECT_PROFILE_ISOLATION_PASS",
+  "evidence": {
+    "profileALookupProfileBProjectIdCount": 0,
+    "profileALookupProfileBTaskCanaryCount": 0,
+    "calendarNote": "Calendar tools use local OAuth credentials; no hosted shared calendar tenant is claimed by this local beta gate."
+  },
+  "timestamp": "2026-05-21T11:58:06.308Z"
+}

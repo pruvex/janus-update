@@ -7,6 +7,7 @@
 
 import {
   dockClose,
+  dockMinimize,
   dockOpen,
   getDockModuleState,
   getWindowState,
@@ -22,6 +23,7 @@ export const RENDERER_MAP = Object.freeze({
   gallery: "gallery",
   video: "video-player",
   image: "image-viewer",
+  calendar: "calendar",
 });
 
 const SUPPORTED_TYPES = Object.freeze(Object.keys(RENDERER_MAP));
@@ -45,6 +47,7 @@ const DOCK_HOST_ELEMENT_IDS = Object.freeze({
   "image-viewer": "image-modal",
   "video-player": "video-player-modal",
   "transcript": "transcript-modal",
+  calendar: "calendar-modal",
 });
 
 function emitModalEvent(modalId, event, context = {}) {
@@ -205,9 +208,39 @@ export function bringToFront(modalId) {
 
 export { Z_BASE };
 
+/** Dock-Modul-ID → MCL-`openModal`-Typ (Sidebar onclick / Legacy). */
+const DOCK_MODULE_TO_OPEN_MODAL_TYPE = Object.freeze({
+  "knowledge-center": "document",
+  "image-studio": "image-studio",
+  gallery: "gallery",
+  "video-player": "video",
+  "image-viewer": "image",
+  calendar: "calendar",
+});
+
 // Global export for legacy code compatibility
 if (typeof window !== "undefined") {
   window.openModal = openModal;
   window.closeModal = closeModal;
   window.bringToFront = bringToFront;
+  /**
+   * Öffnet ein registriertes Dock-Modul per MCL (Z-Stack, Soft-Limit), sonst rohes `dockOpen`.
+   * z. B. `onclick="window.dockOpen('calendar')"` nach Laden von modal-api.js.
+   */
+  window.dockOpen = (moduleId) => {
+    const id = String(moduleId || "").trim();
+    const modalType = DOCK_MODULE_TO_OPEN_MODAL_TYPE[id];
+    if (modalType) {
+      if (id === "calendar") {
+        const cal = getDockModuleState("calendar");
+        if (cal?.isOpen && !cal?.minimized) {
+          dockMinimize("calendar", true);
+          return;
+        }
+      }
+      openModal({ type: modalType });
+      return;
+    }
+    dockOpen(id);
+  };
 }

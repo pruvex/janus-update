@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-20-018",
+  "testCaseId": "SEC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Oversized upload/concurrent jobs",
+  "response": "Hallo Admin, ich habe die Information zu „Oversized upload/concurrent jobs“ vermerkt. Benötigst du Unterstützung bei der Fehlerbehebung oder soll ich diese Details für deine laufenden Projekte dokumentieren?\n💡 Passende nächste Schritte:• Soll ich eine Websuche nach Best Practices für das Management von Concurrent Jobs durchführen?• Möchtest du, dass ich dein lokales System nach Log-Dateien durchsuche, die diese Upload-Fehler betreffen könnten?• Benötigst du eine Übersicht deiner gespeicherten Fakten zu Nikola Tesla oder anderen Themen?\n19:39",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-20T17:39:42.379Z"
+}

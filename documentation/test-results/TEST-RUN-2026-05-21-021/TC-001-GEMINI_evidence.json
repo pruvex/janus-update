@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "janus.test-evidence.v1",
+  "testRunId": "TEST-RUN-2026-05-21-021",
+  "testCaseId": "TC-001-GEMINI",
+  "status": "PASS",
+  "provider": "Gemini pre-provider static runner",
+  "assertion": "Provider-agnostic memory.write stores synthetic fact evidence.",
+  "pytestNode": "test_memory_write_update_conflict_handling.py::test_new_fact_write_and_recall_evidence",
+  "commands": [
+    "python -m pytest backend\\tests\\test_memory_write_update_conflict_handling.py -q",
+    "python -m pytest backend\\tests\\test_memory_write_update_conflict_handling.py backend\\tests\\test_memory_tools.py backend\\tests\\test_memory_regression.py backend\\tests\\test_memory_security.py backend\\tests\\test_memory_retrieval_relevance_priority.py backend\\tests\\test_context_privacy_externalization_boundary.py -q",
+    "python backend\\tools\\validate_skill_schemas.py"
+  ],
+  "observed": {
+    "focusedMemoryMutationSuite": "6 passed",
+    "regressionSuite": "56 passed",
+    "skillSchemaValidation": "54 skill JSON files validated, OK All validated skills passed",
+    "changedGuardrails": [
+      "memory_update refreshes canonical_key/text_hash after correction so later duplicate writes merge",
+      "memory_write blocks secret-like sensitive facts before persistence",
+      "memory_write skips explicitly non-durable memory requests"
+    ]
+  },
+  "timestamp": "2026-05-21T15:40:00.000Z"
+}

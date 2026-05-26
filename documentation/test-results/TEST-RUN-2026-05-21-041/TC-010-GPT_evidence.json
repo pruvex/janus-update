@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-041",
+  "testCaseId": "TC-010-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Goldpreis-Quellen fuer heute",
+  "response": "1. **GOLD.DE – Goldpreis aktuell in Euro und Dollar (Goldkurs)**- Quelle (live): [gold.de – Goldpreis](https://www.gold.de/kurse/goldpreis/)2. **GOLD.DE – Edelmetallpreise / Kursübersicht**- Quelle (live): [gold.de – Edelmetallpreise](https://www.gold.de/)3. **Goldpreis.de – Goldpreis aktuell in Euro**- Quelle (live): [goldpreis.de – Goldpreis aktuell in Euro](https://goldpreis.de/)4. **goldgramm.de – Goldpreis pro Gramm (je nach Legierung)**- Quelle (Erklärung/Übersicht): [goldgramm.de](https://goldgramm.de/)💡 Passende nächste Schritte:• Sag mir „Spot/Feinunze“ oder „pro Gramm (24k/585/750)“ – dann fokussiere ich die Quellen genau dafür.• Wenn du willst, erstelle ich dir daraus eine kleine Vergleichsübersicht mit den jeweiligen **Zeitständen** (Update-Uhrzeiten).23:12",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T21:13:02.894Z"
+}

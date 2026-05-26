@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-036",
+  "testCaseId": "TC-009-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Any successful websearch",
+  "response": "Hallo Pruve! In unserem aktuellen Gespräch habe ich bisher noch keine Websuche durchgeführt, daher liegen mir momentan keine neuen Suchergebnisse vor.Wenn du möchtest, dass ich eine Recherche zu einem bestimmten Thema für dich starte oder aktuelle Informationen einhole, lass es mich einfach wissen.💡 Passende nächste Schritte:• Nenne mir ein Thema oder eine Frage für eine gezielte Websuche.• Soll ich in deinen Dokumenten nach spezifischen Informationen suchen?• Benötigst du Unterstützung bei der Planung deiner anstehenden Termine?20:52",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T18:52:36.911Z"
+}

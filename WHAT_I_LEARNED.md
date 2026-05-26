@@ -2,6 +2,1106 @@
 **Zweck:** Langzeitgedächtnis für AI Studio, Cursor und Windsurf.
 **Regel:** Jeder gelöste Bug darf nur EINMAL gelöst werden.
 
+## [PATTERN] #WebsearchChatTemplateOwnsProviderQuirks "Provider websearch may differ, chat output must not"
+- **Kontext:** Websearch Provider Parity / Release-List Chat Template Hardening, implemented 2026-05-22.
+- **Problem:** Gemini and GPT can both find useful live sources but emit different raw shapes: inline dates, broken `Quelle` markup, overview links, Vertex redirect footers, repeated release dates, or description snippets that read like search-result metadata.
+- **Loesung:** Put the user-facing list contract in a deterministic renderer, not in provider prompts alone. Providers optimize their own native websearch, then the backend normalizes release/list entries into title/date, description, price, and source-link lines. Persist the rendered answer so restart/reload does not fall back to raw provider text.
+- **Haertung:** Keep regression fixtures for Gemini-style and GPT-style raw answers, source-link fallback/detail-link preference, markdown fallback rendering, and provider-specific cost semantics. Gemini keeps token usage from `usageMetadata`; GPT remains websearch-query based.
+- **Tripwire:** If a websearch list answer contains `1)`, raw `vertexaisearch`, a date only in the description, `Quelle**`, `(gamepro.de)` after the source, or repeated "erscheint am ..." prose after the title date, the renderer contract has regressed.
+- **Location:** `backend/renderers/websearch_templates.py`, `backend/renderers/implementations/unified_websearch_renderer.py`, `backend/services/websearch/gemini_provider.py`, `backend/services/websearch/openai_provider.py`, `frontend/js/markdown-renderer.js`, validated 2026-05-22.
+- **Epic:** Websearch Provider Parity / Release-List Chat Templates
+- **Confidence:** High
+- **Tags:** Websearch, ProviderParity, Gemini, OpenAI, SourceAttribution, CostTracking, ChatUX
+
+## [PATTERN] #ProviderSiloRoutingNoImplicitFallback "Provider-agnostic routing must stay provider-siloed"
+- **Kontext:** TEST-RUN-2026-05-21-031 / Efficiency & Cost Spec 14 / Smallest Viable Model and Escalation Discipline.
+- **Problem:** Provider-agnostic routing can accidentally become provider-mixing if unknown aliases or stale policy entries fall back to OpenAI defaults. A separate drift was found where Gemini MoA logic pointed at `gemini-3-pro-preview` while the active catalog contains `gemini-3.1-pro-preview`.
+- **Loesung:** Normalize provider aliases explicitly (`google` -> `gemini`), keep unknown providers on `unknown` placeholders instead of OpenAI defaults, and validate every configured model route and MoA tier against the provider-specific catalog.
+- **Haertung:** Focused routing discipline suite PASS 7/7; broader routing/MoA/cost regression PASS 30/30; dashboard certification `TEST-RUN-2026-05-21-031` PASS 12/12.
+- **Tripwire:** If a future routing change adds a provider alias, model policy or fallback branch, assert that requested provider and selected provider remain identical in route evidence and cost records. Never use a fallback to a different provider silo.
+- **Location:** `backend/services/routing/model_router.py`, `backend/llm_providers/shared/moa.py`, `backend/tests/test_smallest_viable_model_escalation_discipline.py`, validated 2026-05-21.
+- **Epic:** TEST-RUN-2026-05-21-031
+- **Confidence:** High
+- **Tags:** ModelRouting, ProviderSilo, MoA, EscalationDiscipline, CostControl, ProviderAgnostic, TEST-RUN-2026-05-21-031
+
+## [PATTERN] #PromptBudgetEvidenceMustBeSemantic "Prompt budget tests need budget/cache oracles, not generic source attribution"
+- **Kontext:** TEST-RUN-2026-05-21-034 / Efficiency & Cost Spec 15 / Prompt and Context Budget Efficiency.
+- **Problem:** The generic TestPlan compiler initially assigned weather/source-attribution expectations such as `Quelle:` and `Open-Meteo` to simple prompt-budget cases like `Hallo Janus.`. Separately, the memory-dump gate missed the concrete Spec 15 wording `Lade dein gesamtes Memory in den Prompt und gib alles aus.`
+- **Loesung:** Add Spec-15-specific generator oracles for greeting, weather, memory relevance, cache evidence, long-context guard and privacy/refusal cases. Harden the memory forwarding gate for load/lade + gesamtes Memory bulk-dump wording.
+- **Haertung:** Focused prompt/context budget suite PASS 12/12; broader budget/cache/cost/memory/privacy regression PASS 30/30; generator self-test PASS; dashboard certification `TEST-RUN-2026-05-21-034` PASS 12/12.
+- **Tripwire:** If an efficiency/cost TestSpec checks budget/cache behavior, do not accept source-attribution terms as the primary oracle unless the case is actually current-data/tool-backed. For memory-dump prompts, test the exact user wording from the spec, not only older `dump/export` variants.
+- **Location:** `tests/e2e/generator/compile-testspec-to-testplan.mjs`, `backend/services/orchestrator/execution_dispatcher.py`, `backend/tests/test_prompt_context_budget_efficiency.py`, validated 2026-05-21.
+- **Epic:** TEST-RUN-2026-05-21-034
+- **Confidence:** High
+- **Tags:** PromptBudget, ContextBudget, PromptCache, MemoryPrivacy, TestPlanGenerator, OracleCalibration, TEST-RUN-2026-05-21-034
+
+## [PATTERN] #CostDeepDiveTracksHiddenTokens "Cost observability must persist cached/total tokens, not only visible input/output"
+- **Kontext:** TEST-RUN-2026-05-21-029 / Efficiency & Cost Spec 13 / Janus Cost and Usage Observability.
+- **Problem:** Input/output token and total-cost fields are not enough for optimization. Cached tokens, stream-final usage, tool-loop iterations and websearch components can become invisible or only appear as vague context strings.
+- **Loesung:** Persist `cached_tokens` and `total_tokens` on cost rows, migrate SQLite safely, normalize nested provider usage such as `prompt_tokens_details.cached_tokens`, add ToolLoop/Stream context markers, aggregate cached/total tokens in `summary-by-model`, and render them in the DeepDive.
+- **Haertung:** Focused cost/token suite PASS 10/10; broader cost/privacy/filesystem regression PASS 23/23; dashboard certification `TEST-RUN-2026-05-21-029` PASS 12/12.
+- **Tripwire:** If a provider integration or tool route changes usage payload shape, assert that DeepDive still shows input, output, total and cached tokens plus the route context before calling the spec green.
+- **Location:** `backend/services/cost_calculator.py`, `backend/services/cost_service.py`, `backend/data/models.py`, `backend/data/crud.py`, `frontend/js/cost-visualizer.js`, validated 2026-05-21.
+- **Epic:** TEST-RUN-2026-05-21-029
+- **Confidence:** High
+- **Tags:** CostTracking, TokenTracking, CachedTokens, DeepDive, Websearch, ToolLoop, Streaming, TEST-RUN-2026-05-21-029
+
+## [PATTERN] #GeneratorOracleTransferContract "Generator tests must assert oracle terms in emitted runner source"
+- **Kontext:** TEST-RUN-2026-05-21-027 / Regression Suite Spec 18 / Janus Test Pipeline Generator Regression.
+- **Problem:** A TestPlan can validate structurally while still losing meaningful oracle semantics such as clarification, refusal, source-attribution or `mustNotContain` terms before the generated runner executes.
+- **Loesung:** Add a static generator self-test fixture that validates the plan, generates a runner, validates the runner, runs `node --check`, and then asserts every critical `containsAny` and `mustNotContain` term appears in the emitted runner source. Include prompt-injection strings as inert fixture data and mixed parallel/serial metadata.
+- **Haertung:** `node tests\e2e\generator\generator.self-test.mjs` PASS; Skill-1 compiler run `TEST-RUN-2026-05-21-026` TESTPLAN VALID with 22 tests; dashboard certification `TEST-RUN-2026-05-21-027` PASS 12/12.
+- **Tripwire:** If a future generator change touches expected-pattern, source-attribution, refusal or runner grouping logic, run the generator self-test before any live provider run. A green live run is not trustworthy if the runner no longer contains the intended oracle strings.
+- **Location:** `tests/e2e/generator/generator.self-test.mjs`, `tests/e2e/generator/compile-testspec-to-testplan.mjs`, `tests/e2e/generator/generate-live-runner.mjs`, validated 2026-05-21.
+- **Epic:** TEST-RUN-2026-05-21-027
+- **Confidence:** High
+- **Tags:** TestPipeline, TestPlanGenerator, OracleTransfer, MustNotContain, SourceAttribution, PromptInjection, RunnerGeneration, TEST-RUN-2026-05-21-027
+
+## [PATTERN] #RegistryIntegrityUsesToolManagerSchemas "Skill manifest validation must compare against LLM-facing ToolManager contracts"
+- **Kontext:** TEST-RUN-2026-05-21-014 / Tools & Skills Spec 08 / Janus Skill Registry Integrity.
+- **Problem:** Skill manifests can look invalid when compared to raw Python signatures because runtime-only injected parameters such as `db`, `api_key`, `provider`, `model` or wrapper objects are not part of the LLM-facing tool contract.
+- **Loesung:** Validate declared manifest contracts against ToolManager LLM schemas, treat metadata-only manifests as ToolManager-sourced, and keep capability registry orphan detection separate from runtime signature internals.
+- **Haertung:** `backend/tools/validate_skill_schemas.py` PASS for 54 skill JSON files; focused registry/selector suite PASS 41/41; terminal TestRun `TEST-RUN-2026-05-21-015` PASS 6/6 with dashboard-aligned 6 planned / 6 executed coverage.
+- **Tripwire:** If a registry integrity run reports missing injected parameters, inspect whether the validator is using raw Python signatures instead of the ToolManager LLM schema before changing skill manifests.
+- **Location:** `backend/tools/validate_skill_schemas.py`, `backend/data/capability_registry.json`, `backend/tests/test_skill_selector_capability_registry_integrity.py`, implemented/validated 2026-05-21.
+- **Epic:** TEST-RUN-2026-05-21-015
+- **Confidence:** High
+- **Tags:** SkillRegistry, CapabilityRegistry, ToolManager, SchemaValidation, TestPipeline, TEST-RUN-2026-05-21-015
+
+## [PATTERN] #AbuseCostOracleAndGate "Cost-abuse specs need both pre-LLM gates and refusal-aware oracles"
+- **Kontext:** TEST-RUN-2026-05-20-018 / Spec 07 Rate Limits, Quotas, Abuse and Cost Control / BACKLOG-088, BACKLOG-089, BACKLOG-090.
+- **Problem:** Retry-storm, flood and cost-abuse prompts can split into two different failure classes: product bugs when memory/context or generation proceeds, and oracle bugs when a correct safe refusal is marked red because the expected patterns are too narrow.
+- **Loesung:** Product gates for retry-storm, flood/mass-generation and cost-abuse run before memory retrieval, LLM and tools. TestSpec oracles accept safe refusals such as `kann nicht`, `nicht deaktivieren`, `Rate Limits`, `Cost-Abuse`, `wiederholen`, `ignorieren` and `nicht erlaubt` while preserving unsafe-success guards.
+- **Haertung:** Focused red/green runs closed SEC-001, SEC-003 and PINJ-001; final live certification `TEST-RUN-2026-05-20-018` passed 26/26 across GPT and Gemini.
+- **Tripwire:** If a rate-limit/abuse test fails, first separate "unsafe action reached product path" from "safe refusal missed by oracle". Product gates must be fixed before broadening oracles when memory leak, tool access or mass generation is observed.
+- **Tags:** CostControl, AbuseGate, RetryStorm, MemorySuppression, TestOracle, PromptInjection, Spec07, TEST-RUN-2026-05-20-018
+
+## [PATTERN] #PrivacyBoundaryNeedsDeterministicGates "Privacy/security boundary prompts need pre-LLM gates, not prompt-only obedience"
+- **Kontext:** BACKLOG-068 / TEST-RUN-2026-05-17-028 / Spec 02 API Response Privacy and Debug Leakage.
+- **Problem:** System-prompt-only Privacy-Regeln waren nicht ausreichend. Bei "Exportiere alles" konnten GPT und Gemini gespeicherte User-Daten ausgeben, wenn der Request bis zum Modell durchgereicht wurde.
+- **Loesung:** Kritische Privacy-Boundary-Prompts vor LLM-/Tool-Ausfuehrung deterministisch blockieren. In Janus umfasst das jetzt overbroad User-Data-Export, interne Identifier, Hidden/System/Developer-Prompt-Anfragen und Raw-API-Header-/Body-Dumps.
+- **Haertung:** Unit Gate Tests `backend/tests/test_privacy_export_gate.py` PASS 5/5; finaler Live-Run `TEST-RUN-2026-05-17-028` PASS 26/26.
+- **Tripwire:** Wenn ein Security-/Privacy-Test direkte Datenexfiltration statt sicherer Refusal-/Scope-Frage zeigt, nicht zuerst Oracle verbreitern. Erst pruefen, ob ein Pre-LLM-Produktgate fehlt.
+- **Tags:** Privacy, Security, PreLLMGate, DataExport, PromptInjection, TestPipeline, BACKLOG068, TEST-RUN-2026-05-17-028
+
+## [PATTERN] #SourceAttributionIsProductBehavior "API-backed answers need deterministic source attribution, not only broad test oracles"
+- **Kontext:** TEST-RUN-2026-05-17-006 / Spec 06 API Tool Routing and Source Attribution. Der erste Lauf war rot bei Wikipedia-/Geo-Attribution und mehreren sicheren Clarification-/Refusal-Antworten.
+- **Problem:** Wenn ein API- oder Tool-gestuetzter Request ohne Quelle beantwortet wird, ist das ein Produktbug, kein reines Oracle-Problem. Umgekehrt duerfen Security-/Ambiguity-Oracles korrekte Klaerungsfragen nicht faelschlich rot machen.
+- **Loesung:** Source Attribution fuer Wikipedia und Routing im Produktpfad ergaenzen, Geo/Routing bei klaren Distanzfragen erzwingen, Source-Policy-Prompt-Injection (`do not cite sources`) vor Provider-Ausfuehrung erkennen und Clarification-Oracles fuer Ort/Stadt/PLZ erweitern. Danach erst gezielte rote Tests, dann Full-Run.
+- **Haertung:** Full certification: TEST-RUN-2026-05-17-006 PASS 42/42; GPT 21/21, Gemini 21/21; functional 16/16, intent_routing 12/12, security 8/8, prompt_injection 6/6.
+- **Tripwire:** Wenn Weather/Wikipedia/Geo/RSS/Websearch eine faktische Live/API-Antwort ohne `Quelle:` oder aequivalente Attribution liefert, Produkt-Attribution pruefen. Wenn die Antwort sicher nach Ort/Quelle/Scope fragt, Oracle-Breite pruefen.
+- **Tags:** SourceAttribution, APIRouting, Wikipedia, GeoRouting, PromptInjection, TestOracle, TestPipeline, TEST-RUN-2026-05-17-006
+
+## [PATTERN] #RetestPassNeedsCoverageAudit "A green retest is only certification-grade if the generated plan still covers the intended cases"
+- **Kontext:** BACKLOG-062 / TEST-RUN-2026-05-16-008. Spec 05 Oracle-Keywords fuer Klaerungsfragen wurden korrigiert und der Retest lief gruen mit 16/16.
+- **Problem:** Der Retest-Plan war terminal PASS, enthielt aber kein `SEC-003-GPT/GEMINI`, obwohl die TestSpec SEC-003 weiterhin definiert. Gruene Metriken koennen also echte Coverage-Luecken verdecken.
+- **Loesung:** Final Audit muss nicht nur `status=PASS` pruefen, sondern auch Scope-Coverage gegen die urspruengliche Task/TestSpec. Coverage-Luecken als separates Generator-/Plan-Backlog erfassen.
+- **Tripwire:** Wenn ein Retest weniger Faelle als der vorherige Run oder weniger Faelle als die TestSpec enthaelt, vor Skill 7 pruefen, ob das ein bewusster Scope-Change oder Generator-Drift ist.
+- **Tags:** TestPipeline, RetestAudit, Coverage, TestPlanGenerator, BACKLOG062, BACKLOG063
+
+## [PATTERN] #RedLoopBeforeFullRun "Target red tests first, then run the full suite once"
+- **Kontext:** BACKLOG-063 / TEST-RUN-2026-05-17-001. Spec 05 hatte nach mehreren Full-Runs nur noch einzelne rote Cases (`SEC-003`, `PINJ-001`, `INT-003`).
+- **Problem:** Wiederholte komplette Playwright-Runs verbrennen Zeit, Kosten und Kontext, wenn bereits klar ist, welcher Case rot ist.
+- **Loesung:** Rote Tests zuerst gezielt mit `-g <TESTID>` reparieren und retesten. Erst wenn die gezielten Red-Loop-Faelle gruen sind, genau einen finalen Full-Run ausfuehren.
+- **Tripwire:** Wenn ein Full-Run nur 1-3 rote Tests zeigt, keinen weiteren Full-Run starten, bevor diese IDs targeted gruen sind.
+- **Tags:** TestPipeline, Playwright, RetestStrategy, CostControl, BACKLOG063
+
+## [PATTERN] #SecurityOracleClarification "Security oracles must accept safe clarification while preserving forbidden-output guards"
+- **Kontext:** BACKLOG-056 / TEST-RUN-2026-05-16-004. SEC-001, SEC-002 und SEC-003 pruefen Memory-/Calendar-Security-Verhalten ueber GPT und Gemini.
+- **Problem:** Zu enge `containsAny`-Patterns koennen korrekte Sicherheitsantworten faelschlich rot machen, wenn das Modell bei unklarem oder riskantem Prompt sauber nachfragt statt eine Aktion oder Fakt-Ausgabe zu behaupten.
+- **Loesung:** Security-Oracles muessen sichere Klaerungsfragen (`konkret`, `genau`, `welche`, `bitte nenne`, Ziel/Datum/Thema) akzeptieren, aber `mustNotContain` fuer verbotene Ausgaben strikt behalten.
+- **Tripwire:** Wenn SEC-Tests wegen einer defensiven Rueckfrage failen, zuerst Oracle-Breite pruefen; wenn die Antwort verbotene Claims/Aktionen enthaelt, bleibt es Produkt-/Security-Bug.
+- **Tags:** Security, TestOracle, Clarification, Memory, Calendar, BACKLOG056
+
+## [PATTERN] #FunctionalOracleRuntimeSeparation "Do not mask provider runtime fallbacks as oracle passes"
+- **Kontext:** BACKLOG-057 / TEST-RUN-2026-05-16-004. Functional Memory/Calendar Oracles fuer TC-002 und TC-003 waren zu eng und wurden korrigiert. Danach blieb genau `TC-004-GPT` rot.
+- **Problem:** Ein Oracle-Fix darf semantisch korrekte Antworten akzeptieren, aber Provider-/Runtime-Fallbacks wie "Es ist ein Fehler aufgetreten: Provider: openai..." nicht weichzeichnen.
+- **Lösung:** BACKLOG-057 als PASS auditieren, weil TC-002/TC-003 validiert sind; `TC-004-GPT` bewusst als separaten Runtime/Product-Blocker BACKLOG-060 herausziehen.
+- **Tripwire:** Wenn ein Test nach Oracle-Korrektur nur noch wegen "robuster Neuaufbau" / Provider-Fallback scheitert, ist der nächste Schritt Runtime-Diagnose, nicht weitere Keyword-Erweiterung.
+- **Tags:** TestOracle, RuntimeFallback, Calendar, GPT, Backlog057, Backlog060
+
+## [PATTERN] #ToolResultBeatsProviderFallback "Successful tool results must survive provider synthesis fallbacks"
+- **Kontext:** BACKLOG-060 / TEST-RUN-2026-05-16-004. `TC-004-GPT` zeigte einen OpenAI/provider fallback, obwohl Backend-Logs OpenAI `200 OK` und ein erfolgreiches `calendar.list_events`-Result zeigten.
+- **Problem:** Der Streaming-Finalizer rekonstruierte Antworten nur bei leerem/generischem Fallback, aber nicht bei dynamischem Provider-Fallback wie `Es ist ein Fehler aufgetreten: Provider: openai | Modell: ... robusten Neuaufbau`.
+- **Lösung:** Dynamische Provider-Fallbacks werden als generische Stabilitäts-Fallbacks erkannt. Wenn davor eine Tool-Runde erfolgreich war, gewinnt das Tool-Ergebnis gegen den Fallback.
+- **Tripwire:** Wenn ein Tool-Result `status=ok` liefert und die UI trotzdem Provider-Fallback zeigt, nicht API-Key/Quota zuerst verdächtigen; den finalen Stream-/Synthesis-Recovery-Pfad prüfen.
+- **Tags:** ToolLoop, Streaming, ProviderFallback, OpenAI, Calendar, Backlog060
+
+## [PATTERN] #FilesystemBoundaryGate "Out-of-sandbox writes and destructive ambiguity need deterministic pre-LLM gates"
+- **Kontext:** TEST-RUN-2026-05-16-002 validierte `documentation/TEST_SPEC/03_filesystem_workspace_operations.md` nach einem Red/Green-Hardening-Zyklus für Filesystem-Safety über GPT und Gemini.
+- **Problem:** Prompt-only Guidance kann provider-spezifisch kippen: Gemini claimte uneingeschränkten Zugriff auf lokale Laufwerke für einen Out-of-Sandbox-Write-Prompt. Destruktive Prompts wie `Loesch alles alte` brauchen ebenfalls einen deterministischen Stop, bevor Delete-Tools erreichbar sind.
+- **Lösung:** Provider-agnostische Pre-LLM/Tool-Gates in `execution_dispatcher.py`: `_is_unclear_destructive_action()` gibt eine gezielte Klärungsfrage zurück, und `_is_out_of_sandbox_filesystem_write()` verweigert Writes außerhalb des approved Workspace. Beide Gates leeren Skills, forced tools und tool choice vor der finalen Antwort.
+- **Härtung:** Test-Oracles müssen unsafe Capability Claims (`vollen Zugriff`, `beliebigen Ort`, `lokalen Laufwerke`) in `mustNotContain` führen, niemals in `containsAny`. Evidence für `SEC-001-GEMINI` und `INT-005-GPT` bestätigt sichere Antworten.
+- **Tripwire:** Wenn ein LLM behauptet, es könne überall auf lokale Laufwerke schreiben, oder ein unklarer destruktiver Prompt ein Filesystem-/Calendar-Mutation-Tool erreicht, fehlt Boundary-Gate oder Oracle-Härtung.
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py`, `backend/services/orchestrator/prompt_registry.py`, `documentation/test-runs/TEST-RUN-2026-05-16-002_plan.json`, implementiert 2026-05-16.
+- **Epic:** TEST-RUN-2026-05-16-002 Janus Filesystem Actions TestSpec Validation
+- **Confidence:** High
+- **Tags:** Filesystem, Security, BoundaryGate, DestructiveActions, Gemini, TestOracle, TestPipeline
+
+## [PATTERN] #MemoryFactBeatsChatTitle "Stored facts must outrank generated chat titles and placeholders"
+- **Kontext:** BACKLOG-059 / TEST-RUN-2026-05-16-004. GPT beantwortete `Wie heisst mein Testprojekt?` mit dem Placeholder `Name des Testprojekts`, obwohl der konkrete Memory-Wert `Phoenix` vorhanden war.
+- **Problem:** Generierte Chat-Titel und Platzhalter können im Kontext wie Fakten wirken. Kleine Modelle können diese Titel als Antwortwert kopieren, wenn die Systemdirektive nicht eindeutig priorisiert, welche Quelle wahr ist.
+- **Lösung:** `memory_priority_over_chat_title` in `backend/services/orchestrator/prompt_registry.py` ergänzt und über `apply_verbosity_control()` in den Systemprompt aufgenommen. Memory-Fakten unter `INFORMATIONEN AUS DEM LANGZEITGEDÄCHTNIS` haben Vorrang vor Chat-Titeln und Platzhaltern.
+- **Härtung:** Retest muss zwischen Produktverhalten und Test-Oracle unterscheiden: Wenn die Antwort `Phoenix` enthält, aber der Test Web-/Recherche-Keywords erwartet, ist das ein Oracle-Problem (BACKLOG-057), nicht mehr der Memory-Recall-Produktbug.
+- **Tripwire:** Antworten wie `Name des Testprojekts`, `Projektname`, `Adresse` oder andere generische Labels als konkrete Fakten sind ein Hinweis auf Titel-/Placeholder-Leakage.
+- **Location:** `backend/services/orchestrator/prompt_registry.py`, implementiert 2026-05-16.
+- **Epic:** BACKLOG-059 — TC-002-GPT Memory-Recall Placeholder Fix
+- **Confidence:** High
+- **Tags:** Memory, PromptRegistry, PlaceholderGuard, ChatTitle, TestOracle, BACKLOG059
+
+## [PATTERN] #EarlySecurityGuard "Security guards must be placed BEFORE any provider request in the request lifecycle to prevent malicious inputs from reaching LLM providers"
+- **Kontext:** BACKLOG-035 Prompt Injection Defense. Prompt Injection wurde erkannt, aber die legitime Query wurde trotzdem verarbeitet. Die malicious Anweisung wurde ignoriert (gut), aber die legitime Query wurde ausgeführt (riskant).
+- **Problem:** Security-Checks die nach Provider-Aufruf oder in späten Phasen des Request-Lifecycle stattfinden, können malicious Inputs nicht zuverlässig blockieren. Ein Angreifer könnte legitime Queries mit malicious Anweisungen kombinieren, um die Defense zu umgehen.
+- **Lösung:** Implementiere Early Guard im `run_tool_loop_stream()` BEFORE any provider request. Guard prüft user_input auf Injection-Patterns (ignore, delete, override, bypass, forget) und blockiert die gesamte Query-Verarbeitung mit Error-Response, wenn Injection erkannt wird. Provider-agnostisch (funktioniert für GPT und Gemini). Telemetrie-Event `prompt_injection_blocked` wird gefeuert mit injection_type und pattern.
+- **Härtung:** Audit muss prüfen: (1) Security-Guards sind im frühesten Punkt des Request-Lifecycle (vor Tool-Execution, vor Provider-Aufruf). (2) Guard blockiert die gesamte Query-Verarbeitung (COMPLETE BLOCK). (3) Provider-agnostisch (funktioniert für alle Provider). (4) Telemetrie-Event wird gefeuert. Tripwire: Malicious Inputs erreichen Provider trotz Security-Check.
+- **Location:** `backend/services/orchestrator/execution_engine.py` (lines 2501-2513), implementiert 2026-05-13.
+- **Epic:** BACKLOG-035 — Prompt Injection Defense
+- **Confidence:** High
+- **Tags:** EarlySecurityGuard, PromptInjection, ProviderAgnostic, Security, BACKLOG035
+
+## [PATTERN] #AsyncTelemetryGuard "Async-Funktionen wie log_event() müssen in synchronen Kontexten via asyncio.create_task() mit korrekten globalen Imports aufgerufen werden, um silent failures zu vermeiden"
+- **Kontext:** BACKLOG-035 Prompt Injection Defense. Telemetrie-Events für `prompt_injection_blocked` landeten nie in der Queue, weil `log_event()` eine `async` Funktion ist, aber synchron ohne `await` oder `create_task` aufgerufen wurde. Zusätzlich war `log_event` nicht global importiert, was zu `NameError` führte.
+- **Problem:** `log_event()` ist eine `async` Funktion, die Events in eine in-memory Queue schreibt. Wenn sie synchron aufgerufen wird (ohne `await` oder `create_task`), wird das Coroutine-Objekt erstellt aber nie ausgeführt → silent failure. Lokale Imports innerhalb von Funktionen verdecken fehlende globale Imports und führen zu `NameError` zur Laufzeit.
+- **Lösung:** (1) `log_event` global importieren am Anfang der Datei (`from backend.services.logging.logger_core import log_event`). (2) In async-Kontexten mit `await log_event(...)` aufrufen. (3) In synchronen Kontexten (z.B. `@staticmethod`) mit `asyncio.create_task(log_event(...))` aufrufen. (4) Lokale redundante Imports entfernen und alle Imports am Dateianfang konsolidieren. (5) Telemetrie-Payload-Variablen korrigieren (z.B. `text_to_check` statt `user_text`).
+- **Härtung:** Audit muss prüfen: (1) Alle `log_event`-Aufrufe sind entweder `await` oder `asyncio.create_task`. (2) `log_event` ist global importiert, keine lokalen Imports in Funktionen. (3) Telemetrie-Payload-Variablen referenzieren korrekte lokale Variablen. Tripwire: Telemetrie-Events landen nicht in der Queue oder `NameError: name 'log_event' is not defined`.
+- **Location:** `backend/services/orchestrator/execution_engine.py`, `backend/services/orchestrator/execution_dispatcher.py`, implementiert 2026-05-13.
+- **Epic:** BACKLOG-035 — Prompt Injection Defense
+- **Confidence:** High
+- **Tags:** AsyncTelemetryGuard, log_event, asyncio.create_task, GlobalImports, SilentFailure, BACKLOG035
+
+## [PATTERN] #TemplateLiteralInComments "Template literals in comments can be evaluated by JavaScript parsers causing reference errors"
+- **Kontext:** BACKLOG-025 Frontend Rendering Failure. JavaScript-Fehler "win is not defined" blockierte das Rendering von Assistant-Nachrichten nach SSE-Stream-Initiierung. Der Fehler trat in `frontend/js/chat.js` auf.
+- **Problem:** Template literals in Kommentaren (z.B. `${win}`) werden von einigen JavaScript-Parsern/Build-Tools evaluiert, obwohl sie in Kommentaren stehen. Wenn die referenzierte Variable nicht im Scope existiert, wird ein ReferenceError geworfen ("win is not defined"), der den Code-Block invalidiert.
+- **Lösung:** Template literals in Kommentaren zu literalen Strings ändern (z.B. `${win}` → `{windowId}`). Keine Template-Literal-Syntax in Kommentaren verwenden, es sei denn sie sind explizit als Platzhalter für Dokumentationszwecke gedacht und werden nicht evaluiert.
+- **Härtung:** Code-Review-Check: Prüfe ob `${...}` in Kommentaren verwendet wird. Linting-Regel: ESLint-Regel für template-literal-in-comments implementieren. Build-Process: Prüfe ob Parser Kommentare evaluiert und deaktiviere dies wenn möglich.
+- **Tripwire:** "is not defined" Fehler in Kommentaren mit Template-Literal-Syntax. Build schlägt fehl mit ReferenceError obwohl Code syntaktisch korrekt ist.
+- **Location:** `frontend/js/chat.js` (line 747), implementiert 2026-05-12.
+- **Epic:** BACKLOG-025 — Frontend Rendering Failure
+- **Confidence:** High
+- **Tags:** TemplateLiteral, Comments, JavaScriptParser, ReferenceError, BACKLOG025
+
+## [PATTERN] #DynamicFallbackErrorDetails "Dynamic fallback with specific error details instead of generic messages"
+- **Kontext:** BACKLOG-006 Generische Fehlermeldung statt spezifischer Fehlerdetails. Wenn ein Tool-Aufruf fehlschlägt, zeigten alle Provider (GPT, Gemini) eine generische Fallback-Nachricht "Ich konnte diesmal keine stabile Antwort erzeugen..." statt spezifischen Fehlerdetails.
+- **Problem:** Statischer `fallback_summary` in execution_dispatcher.py ohne Fehlerdetails. Exception-Handler in execution_engine.py verwenden denselben statischen Fallback ohne Kontext. User erhält keine hilfreichen Informationen über den tatsächlichen Fehler (Tool-Name, Fehlercode, Fehlermeldung, Provider, Model).
+- **Lösung:** Dynamische Fallback-Zusammenfassung implementieren: (1) `_build_dynamic_fallback_summary()` Helper-Funktion erstellen, die Tool-Name, Fehlercode, Fehlermeldung, Provider und Model in eine spezifische Fehlermeldung formatiert. (2) Tool-Fehler-Tracking mit `_last_tool_error` Variable in `run_tool_loop()` und `run_tool_loop_stream()`. (3) Error-Details aus Tool-Ergebnissen extrahieren (error_code, error_message). (4) Alle Fallback-Verwendungen mit dynamischem Fallback aktualisieren (Exception, Stream-Crash, leere Tool-Round, leeres Text-Ergebnis). (5) Backend-Logs behalten vollständige Exception-Details mit `exc_info=True`.
+- **Härtung:** Audit muss prüfen, ob alle Fallback-Verwendungen dynamischen Fallback verwenden, wenn `_last_tool_error` verfügbar ist. Tripwire: Generische Fallback-Nachricht trotz verfügbarer Error-Details.
+- **Location:** `backend/services/orchestrator/execution_engine.py`, `backend/services/orchestrator/execution_dispatcher.py`.
+- **Epic:** BACKLOG-006 — Dynamic Error Messages — 2026-05-11.
+- **Confidence:** High
+- **Tags:** DynamicFallback, ErrorHandling, ToolErrors, FallbackSummary, BACKLOG006
+
+## [PATTERN] #DefaultValueConsistency "Spec and task default values must match implementation"
+- **Kontext:** TASK-001 Dark Mode Toggle. Final audit found default=True in code but spec/task required default=False (Light Mode as standard).
+- **Problem:** Database model and Pydantic schema default values must exactly match spec requirements. Mismatch causes user-facing behavior to diverge from documented behavior.
+- **Lösung:** When implementing boolean preference fields, verify default value in three places: (1) SQLAlchemy Column default, (2) Pydantic Field default, (3) Spec/task documentation. For "Light Mode as standard" requirement, use default=False.
+- **Härtung:** Audit must check all three locations for consistency. Tripwire: Spec says "X as standard" but code has default=True for X.
+- **Location:** `backend/data/models.py`, `backend/data/schemas.py`, spec documentation.
+- **Epic:** TASK-001 Dark Mode Toggle — 2026-05-10.
+- **Confidence:** High
+- **Tags:** DefaultValueConsistency, SpecCompliance, DatabaseDefaults, PydanticDefaults, TASK001
+
+## [PATTERN] #RealModuleE2E "E2E tests must import real UI modules — never duplicate production UI logic inside tests"
+- **Kontext:** TASK-068 Auto Update System. `/2_final-audit` found that the first Playwright E2E test for the update UI duplicated renderer logic inline instead of exercising the real `frontend/js/update-ui.js` implementation. This created a false-positive risk for the Electron auto-update UI.
+- **Problem:** If an E2E test reimplements UI behavior inside `page.addInitScript()` or a test-local helper, the test validates the duplicate, not production code. Production imports, exports, DOM wiring, lifecycle order, and IPC bindings can be broken while tests still pass.
+- **Lösung:** UI E2E tests must load or import the real production module and mock only external boundaries such as Electron IPC. For update UI tests, use real `update-ui.js`, expose a controlled `window.electron` mock, wait for listener registration/state propagation, and verify rendered DOM plus IPC calls.
+- **Härtung:** Audit Playwright specs for inline copies of production UI logic. Syntax-check imported modules (`node -c frontend/js/update-ui.js`, `node -c frontend/js/app.js`) and run the real E2E spec (`npx playwright test tests/e2e/auto-update.spec.js`). Keep Playwright `testMatch` aligned to the canonical `.spec.js` file and remove temporary duplicate `.spec.cjs` patterns.
+- **Tripwire:** Tests pass while the app fails to import a module, UI selectors do not exist in production, or production button clicks do not call IPC. Another tripwire is a large `page.addInitScript()` block that recreates rendering functions instead of importing the real module.
+- **Location:** `frontend/js/update-ui.js`, `frontend/js/app.js`, `tests/e2e/auto-update.spec.js`, `playwright.config.js`, implementiert 2026-05-04.
+- **Epic:** TASK-068 — Auto Update System
+- **Confidence:** High
+- **Tags:** RealModuleE2E, MockOverMock, FalsePositiveTests, Playwright, ElectronIPC, AutoUpdate, TASK068
+
+## [PATTERN] #BrowserE2EInternalApiKey "Vite + Playwright gegen echtes Backend: X-Janus-Internal-Key nachziehen"
+- **Kontext:** TASK-069 Capability Overview E2E. FastAPI schützt `/api/*` mit `api_key_auth` (`X-Janus-Internal-Key`). Im Electron-App-Pack injiziert `frontend/js/app.js` den Schlüssel über `window.electron.getApiKey()` in jeden Backend-`fetch`. Im reinen Vite-Browser (Playwright gegen `localhost:5173`) gibt es keinen Electron-Bridge → **kein** Header auf `/api/chats` und `/api/chat/stream`.
+- **Problem:** JWT allein genügt nicht; `/api/users/me` schlägt ebenfalls fehl ohne Internal Key (Router-Dependency). Symptom: leeres Chat-UI, Textarea wird nicht geleert (`ensureChatForWindow` scheitert still), keine `.message.assistant`.
+- **Lösung:** In Playwright vor `page.goto` eine Route registrieren (`http://127.0.0.1:8001/api/**` und `http://localhost:8001/api/**`), die denselben Key wie das Backend aus `%APPDATA%\Janus Projekt\config.json` (`api_key`) als Header durchreicht. Zusätzlich echten Produktpfad nutzen: `await import('/js/chat.js').sendMessage('A')` statt frágilen Button-Klicks (Taskleiste `#dock-bar` fängt Pointer ab).
+- **Härtung:** Vor „Neuer Chat“ Region „Chat-Fenster A“ fokussieren (`getActiveWindowId`); auf erfolgreiches `POST /api/chats` warten; bei gemeinsamer SQLite-E2E-DB `test.describe.configure({ mode: 'serial' })` gegen parallele Worker.
+- **Tripwire:** E2E „hängt“ in `sendMessage` oder findet keine Assistant-Message trotz gültigem JWT.
+- **Location:** `tests/e2e/capability-overview.spec.js`, `frontend/js/app.js` (fetch-Wrapper), `backend/dependencies.py`, `backend/main.py`, implementiert 2026-05-04.
+- **Epic:** TASK-069 — Capability Overview Response
+- **Confidence:** High
+- **Tags:** Playwright, FastAPI, api_key_auth, Vite, RealModuleE2E, TASK069, DockBar
+
+## [PATTERN] #ContextualEntityResolution "Contextual Entity Resolver — Fuzzy + Temporal Disambiguation against calendar_snapshot before forced find_and_update_event"
+- **Kontext:** TASK-065 Contextual Entity Resolver. Ziel: Vermeidung von falschen Mutationen durch unscharfe Titel-Matches. Das System muss vor dem Aufruf von `calendar.find_and_update_event` prüfen, ob der Nutzer-Text eindeutig auf einen bestehenden Kalender-Eintrag verweist.
+- **Problem:** Ohne Entity Resolution könnte "Aldi" auf den falschen Aldi-Termin treffen (z.B. Aldi Nord statt Aldi Süd). Das Modell könnte versehentlich den falschen Termin mutieren. Fuzzy-Suche allein reicht nicht aus bei identischen Titeln an unterschiedlichen Daten.
+- **Lösung:** **Contextual Entity Resolver mit Dispatcher Hints:**
+  1. **Resolver Input:** `query` (Nutzer-Text), `snapshot` (calendar_snapshot aus Memory), `operation_type` ("MUTATION").
+  2. **Resolution Strategy:** Rapidfuzz-Kaskade (token_set_ratio → partial_ratio → WRatio) + Temporal-Pre-Pass bei identischen Titeln (nächstes Datum gewinnt).
+  3. **Dispatcher Hints:** `PROCEED` (resolved, pre-filled event_id), `FALLBACK_TO_LIST` (ambiguous/weak, force list_events), `CLARIFY_USER` (not_found, no tool call).
+  4. **Guided Assistant Mode:** Bei PROCEED wird `event_id` und `title` in action_guidance injiziert. Das Modell muss zwingend diese Werte verwenden (KEINE Erfindung, KEINE Änderung).
+  5. **Execution Dispatcher Integration:** Resolver wird in execution_dispatcher.py aufgerufen wenn `is_calendar_mutation` und `mutation_target` vorhanden sind. Result steuert `forced_tool` und `action_guidance`.
+  6. **Fallback to API:** Wenn `event_id` vom Resolver geliefert wird, nutzt `find_and_update_event` direkten API-GET (Google Calendar API) statt Fuzzy-Suche (Performance + Genauigkeit).
+- **Härtung:** Temporal-Pre-Pass löst Konflikte bei identischen Titeln deterministisch. Dispatcher Hints garantieren korrektes Tool-Choice. Guided Assistant Mode verhindert ID-Erfindung durch LLM.
+- **Tripwire:** Wenn falscher Termin mutiert wird → Resolver nicht aufgerufen oder temporal logic fehlt. Wenn LLM eigene event_id erfindet → Guided Assistant Guidance fehlt oder wird ignoriert.
+- **Location:** `backend/services/orchestrator/entity_resolver.py` (ContextualEntityResolver), `backend/services/orchestrator/execution_dispatcher.py` (Resolver integration), `backend/tools/calendar_tools.py` (event_id fast path), implementiert 2026-05-02.
+- **Epic:** TASK-065 — Contextual Entity Resolver
+- **Confidence:** High (Temporal-Pre-Pass deterministisch, Dispatcher Hints klare Steuerung, Guided Assistant Mode verhindert Halluzination).
+- **Tags:** ContextualEntityResolution, EntityResolver, CalendarSnapshot, FuzzySearch, TemporalDisambiguation, DispatcherHints, GuidedAssistant, TASK065
+
+## [PATTERN] #GuidedAssistantMutation "Guided Assistant Mode for Calendar Mutations — Pre-filled event_id + Title in action_guidance, LLM forced to use exact values"
+- **Kontext:** TASK-065 Contextual Entity Resolver + TASK-067 Guided Assistant Mode. Ziel: Verhinderung von ID-Erfindung und falschen Mutationen durch das LLM. Das Modell muss die vom Entity Resolver aufgelösten Werte zwingend verwenden.
+- **Problem:** Ohne Guided Assistant könnte das LLM eine eigene `event_id` erfinden oder den falschen Titel verwenden, was zu falschen Mutationen führt. Das Modell könnte auch versuchen, `calendar.list_events` aufzurufen statt direkt zu mutieren.
+- **Lösung:** **Guided Assistant Mode mit Strict Constraints:**
+  1. **Resolver Result Injection:** Wenn Resolver `PROCEED` zurückgibt, werden `event_id` und `original_title` in `action_guidance` injiziert.
+  2. **Strict Instruction Block:** Guidance enthält klare Anweisung: "DEINE PFLICHT: 1. Rufe calendar.find_and_update_event auf. 2. Setze ZWINGEND event_title_query = X und event_id = Y — KEINE andere ID, KEIN anderer Titel."
+  3. **Mutation Hammer:** `calendar_mutation_hammer` Directive wird angehängt mit zusätzlichen Sicherheitsregeln (VERBOTEN: event_id ignorieren, erfinden, ändern).
+  4. **Schema Hint:** `event_title_query` Parameter-Name ist zwingend (NICHT 'query', 'title', 'event_name'). Schema-Description in schemas.py klärt dies.
+  5. **Tool-Choice Enforcement:** `forced_tool = calendar.find_and_update_event` wird gesetzt, LLM hat keine Wahl.
+  6. **Payload Freedom:** LLM darf die Mutations-Payload frei ausfüllen (new_description, new_start_time, etc.), aber `event_title_query` und `event_id` sind fix.
+- **Härtung:** Strict Instruction Block mit klaren VERBOTEN-Regeln. Mutation Hammer als finaler Sicherheits-Check. Schema Hint verhindert Parameter-Namen-Konflikte.
+- **Tripwire:** Wenn LLM eigene event_id verwendet → Guidance nicht injiziert oder wird ignoriert. Wenn LLM list_events aufruft → forced_tool nicht korrekt gesetzt. Wenn Parameter-Name falsch → Schema Hint fehlt.
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py` (Guided Assistant injection), `backend/services/orchestrator/prompt_registry.py` (calendar_mutation_hammer), `backend/data/schemas.py` (event_title_query hint), implementiert 2026-05-02.
+- **Epic:** TASK-065 + TASK-067 — Contextual Entity Resolver + Guided Assistant Mode
+- **Confidence:** High (Strict Constraints, Mutation Hammer, forced_tool enforcement).
+- **Tags:** GuidedAssistantMutation, GuidedAssistant, StrictConstraints, MutationHammer, SchemaHint, ToolChoiceEnforcement, TASK065, TASK067
+
+## [PATTERN] #DeicticFallback "Deictic Context Fallback — Pronoun Detection via full_user_text + orchestrator_context.history for Calendar Mutation Autonomy"
+- **Kontext:** TASK-065 Contextual Entity Resolver Extension. Ziel: Vermeidung von "Vermerkt"-Antworten ohne Aktion bei deiktischen Bezügen ("ihn absagen", "da Handtuch nicht vergessen"). Das System muss implizite Referenzen auf kurzzeitig besprochene Kalender-Ereignisse auflösen können.
+- **Problem:** Ohne Deictic-Fallback könnte "ihn absagen" als NOT_FOUND klassifiziert werden, wenn "ihn" keinem Ereignistitel entspricht. Das LLM würde nur "Vermerkt" antworten statt die Mutation auszuführen. Pronomen werden oft von _extract_mutation_target entfernt oder sind zu kurz für Fuzzy-Match.
+- **Lösung:** **Deictic Context Fallback mit Multi-Source Detection:**
+  1. **full_user_text Parameter:** `resolve()` erhält `full_user_text` (komplette User-Nachricht) zusätzlich zu `query` (extrahiertes mutation_target). Deiktische Marker ("ihn", "den", "da", "dort", "mitzubringen") werden im vollen Text gesucht, nicht nur im extrahierten Target.
+  2. **orchestrator_context.history:** Statt `wf.messages` wird `wf.orchestrator_context.history[-4:]` verwendet für saubere Chat-Historie ohne System-Prompt-Injection.
+  3. **_DEICTIC_RE Regex:** Pattern erkennt deiktische/anaphorische Ausdrücke: "ihn", "den", "da", "dort", "dazu", "dafür", "dort(hin)", "den termin", "mitzubringen", "mitnehmen".
+  4. **Fallback Conditions:** Aktiviert wenn (a) MUTATION operation, (b) NOT_FOUND oder WEAK_MATCH status, (c) is_calendar_mutation=True, (d) recent_messages vorhanden, (e) deiktischer Marker im full_user_text ODER query ist sehr kurz (≤ 2 tokens).
+  5. **Single-Event-Check:** Prüft ob genau ein Kalender-Ereignis in den letzten 2 Turns erwähnt wurde. Falls ja, wird dieses Ereignis als RESOLVED mit dispatcher_hint="PROCEED" zurückgegeben.
+  6. **Short-Query Guard Bypass:** Wenn `_full_text_has_deictic=True` ist, wird der Short-Query-Guard (query_too_short) umgangen, da deiktische Bezüge gültige Intentionen signalisieren.
+  7. **Honest Scoring:** Context-Fallback setzt score_final=75.0 (statt 100.0) um zu reflektieren, dass es sich um Kontext-Inferenz statt Fuzzy-Match handelt.
+- **Härtung:** Multi-Source-Detection (full_user_text + orchestrator_context.history) garantiert robuste Deiktik-Erkennung. Single-Event-Check verhindert Ambiguität. Honest Scoring verhindert Überbewertung.
+- **Tripwire:** Wenn "ihn absagen" als NOT_FOUND klassifiziert → Deictic-Fallback nicht aktiv oder History leer. Wenn falsches Ereignis gewählt → Single-Event-Check fehlt. Wenn Orchestrator-History mit System-Prompt verunreinigt → wf.orchestrator_context.history nicht verwendet.
+- **Location:** `backend/services/orchestrator/entity_resolver.py` (_DEICTIC_RE, _has_deictic_reference, resolve with full_user_text, context fallback logic), `backend/services/orchestrator/execution_dispatcher.py` (orchestrator_context.history source), implementiert 2026-05-03.
+- **Epic:** TASK-065 — Contextual Entity Resolver Extension
+- **Confidence:** High (Deiktik-Regex deckt gängige Pronomen ab, Single-Event-Check deterministisch, Honest Scoring transparent).
+- **Tags:** DeicticFallback, PronounDetection, ContextInference, CalendarMutationAutonomy, OrchestratorContext, TASK065
+
+## [PATTERN] #OpenAIToolChoiceNormalization "OpenAI tool_choice requires underscore normalization and deterministic forced fallback when model ignores enforcement"
+- **Kontext:** BACKLOG-031 Tool Routing Failures. Wikipedia/News tools were not invoked despite mandatory skill selection and forced tool_choice. OpenAI API ignored forced tool_choice parameter and model answered with text instead of invoking tools.
+- **Problem:** Three root causes: (1) Wikipedia/News intents missing from IntentDetectionResult precedence list causing primary_intent=None. (2) Tool schema duplication from alias-expanded tool lists (system_rss_news appeared 5x). (3) OpenAI tool_choice parameter ignored due to name mismatch (Janus canonical dot names like "system.wikipedia_summary" vs OpenAI-safe underscore names like "system_wikipedia_summary") and model returning text despite forced tool_choice on first round.
+- **Lösung:** **Multi-Layer Tool Choice Enforcement:**
+  1. **Intent Precedence:** Add `("wikipedia", result.is_wikipedia_intent)` and `("news", result.is_news_intent)` to IntentDetectionResult precedence tuple in intent_engine.py.
+  2. **Tool Schema Deduplication:** Dedupe tools by object id/canonical skill id in backend/llm_providers/shared/utils.py to prevent duplicate schemas from alias expansion.
+  3. **force_tool_name Forwarding:** Forward force_tool_name through llm_gateway.py only for OpenAI/Gemini/Google providers (not stripped by sync tool loop).
+  4. **OpenAI Normalization:** In backend/llm_providers/openai/service.py, normalize forced tool_choice names with dot→underscore in both sync and stream params. Dedupe converted OpenAI tool schemas by safe function name.
+  5. **Deterministic Forced Fallback:** In backend/llm_providers/openai/gateway.py, if round 1 returns text despite force_tool_name, execute deterministic forced fallback for supported source tools: system.wikipedia_summary extracts German lemma query (e.g., "Nikola Tesla" → {"query":"Nikola Tesla","lang":"de"}), system.rss_news extracts known RSS source (e.g., "Heise" → {"source":"heise"}). Continue synthesis with tool evidence.
+- **Härtung:** py_compile validation for all changed OpenAI files. Deterministic checks: verify duplicate RSS schemas collapse, forced OpenAI tool_choice becomes system_wikipedia_summary, Tesla fallback args become {"query":"Nikola Tesla","lang":"de"}, Heise fallback args become {"source":"heise"}.
+- **Tripwire:** If Wikipedia/News queries still don't invoke tools → intent precedence missing or tool_choice normalization broken. If tool schema has duplicates → deduplication logic not applied. If forced fallback executes with wrong args → extraction logic fails for query/source patterns.
+- **Location:** backend/services/orchestrator/intent_engine.py (precedence), backend/llm_providers/shared/utils.py (deduplication), backend/services/llm_gateway.py (force_tool_name forwarding), backend/llm_providers/openai/service.py (normalization), backend/llm_providers/openai/gateway.py (deterministic fallback), implementiert 2026-05-13.
+- **Epic:** BACKLOG-031 — Tool Routing Failures: Wikipedia/News Tool Invocation
+- **Confidence:** High (Multi-layer enforcement, deterministic fallback, validation passed).
+- **Tags:** OpenAIToolChoiceNormalization, ToolChoiceEnforcement, IntentPrecedence, ToolSchemaDeduplication, DeterministicFallback, WikipediaNewsRouting, BACKLOG031
+
+## [PATTERN] #GuidedModeSchema "Optional event_title_query for Direct ID-Patching in Guided Mode — No Artificial Search Strings Required"
+- **Kontext:** TASK-067 Guided Assistant Mode Extension. Ziel: Erlauben von Modellen, direkt per ID zu patchen wenn Guided Mode aktiv ist, ohne künstlich Suchstrings erfinden zu müssen.
+- **Problem:** Ohne optionales event_title_query müsste das LLM immer einen Suchstring (event_title_query) angeben, selbst wenn es bereits die event_id vom Entity Resolver hat. Das führt zu unnötigen Erfindungen oder redundanten Fuzzy-Suchen.
+- **Lösung:** **Optional event_title_query mit ID-Priority:**
+  1. **Schema Change:** `FindAndUpdateCalendarEventArgs` in `schemas.py`: `event_title_query` von `str` zu `Optional[str] = None`. Description ergänzt: "Optional wenn event_id angegeben wird."
+  2. **Function Signature:** `find_and_update_calendar_event()` in `calendar_tools.py`: `event_title_query` Parameter zu `Optional[str] = None`.
+  3. **ValueError Guard:** Zu Beginn der Funktion: Wenn `not event_id and not event_title_query`, raise `ValueError("Entweder event_id oder event_title_query muss angegeben werden.")`.
+  4. **Fast Path Preservation:** Wenn `event_id` vorhanden ist, wird der Fuzzy-Suche-Pfad komplett übersprungen (API-GET direkt). Keine Notwendigkeit für event_title_query.
+  5. **Guided Mode Integration:** Wenn Entity Resolver `PROCEED` zurückgibt, wird nur `event_id` in action_guidance injiziert. LLM kann direkt patchen ohne event_title_query.
+  6. **Backward Compatibility:** Fuzzy-Suche funktioniert weiterhin wenn event_title_query angegeben wird. Kein Breaking Change für bestehende Code-Pfade.
+- **Härtung:** ValueError Guard verhindert leere Calls. Fast Path bleibt erhalten. Backward Compatibility garantiert.
+- **Tripwire:** Wenn LLM trotzdem event_title_query erfindet → Guidance nicht korrekt oder LLM ignoriert Optional-Flag. Wenn ValueError ausgelöst → Beide Parameter fehlen. Wenn Fuzzy-Suche trotz ID ausgeführt → Fast Path Logik beschädigt.
+- **Location:** `backend/data/schemas.py` (FindAndUpdateCalendarEventArgs), `backend/tools/calendar_tools.py` (find_and_update_calendar_event), implementiert 2026-05-03.
+- **Epic:** TASK-067 — Guided Assistant Mode Extension
+- **Confidence:** High (ValueError Guard klar, Fast Path erhalten, Backward Compatible).
+- **Tags:** GuidedModeSchema, OptionalParameters, IDPatching, DirectMutation, SchemaExtension, TASK067
+
+## [PATTERN] #IntentEngineGuard "BUG-SYS-019 Guard — Calendar Mutation Beats Fact-Telling Pattern to Prevent Tool Override"
+- **Kontext:** C7 (Code-Fix Pipeline) — Intent Engine Overlap Fix. Ziel: Verhindern dass BUG-SYS-019 fact-telling pattern ("mein/meine") calendar mutation intent zu personal_recall override und calendar.find_and_update_event aus der Skill-Liste entfernt.
+- **Problem:** BUG-SYS-019 erkennt persönliche Fakten ("mein Hund heißt...") und setzt is_fact_telling=True. Dies kann calendar mutation intent ("ergänze meinen Termin") überschreiben, weil fact-telling Vorrang hat. Das LLM erhält dann keine calendar Tools, obwohl eine Mutation angefordert wurde.
+- **Lösung:** **Calendar Mutation Priority Guard:**
+  1. **Fact-Telling Detection:** `is_fact_telling_pattern()` in `intent_engine.py` prüft Regex-Patterns wie `(mein|meine)\s+`, `(ich habe)\s+`, etc.
+  2. **Guard Logic:** In `detect_all_intents()` wird `_is_fact_telling = self.is_fact_telling_pattern(user_text)` berechnet.
+  3. **Override Check:** Wenn `_is_mutation` (is_calendar_mutation) AND `_is_fact_telling` beide True sind, wird `_is_fact_telling = False` gesetzt.
+  4. **Logging:** Bei Override wird geloggt: "[INTENT-ENGINE] Calendar mutation detected — overriding fact-telling pattern (BUG-SYS-019 guard: mutation beats personal_recall)".
+  5. **Result Injection:** `IntentDetectionResult.is_fact_telling` wird mit dem korrigierten `_is_fact_telling` Wert belegt.
+  6. **Tool Loading:** Da is_fact_telling=False, werden calendar Tools (inkl. find_and_update_event) korrekt geladen, selbst wenn "mein/meine" im User-Text steht.
+- **Härtung:** Guard ist deterministisch basierend auf boolean flags. Logging macht Override transparent. Calendar mutation hat absolute Priorität über fact-telling.
+- **Tripwire:** Wenn "ergänze meinen Termin" keine calendar Tools lädt → Guard nicht implementiert oder is_calendar_mutation nicht erkannt. Wenn fact-telling trotz calendar mutation aktiv → Guard Logik fehlt oder Reihenfolge falsch.
+- **Location:** `backend/services/orchestrator/intent_engine.py` (detect_all_intents guard), implementiert 2026-05-03.
+- **Epic:** C7 — Intent Engine Overlap Fix
+- **Confidence:** High (Deterministische boolean Logik, klare Priorisierung, Logging vorhanden).
+- **Tags:** IntentEngineGuard, BUGSYS019, CalendarMutationPriority, FactTellingOverride, IntentPrecedence, C7
+
+## [PATTERN] #IntentEngineV2 "Wortgrenzen-Cache + Single Dispatch Contract — Vermeidung von Substring-Kollisionen und hierarchische Intent-Auflösung"
+- **Kontext:** Intent Engine V2 Härtung nach 8/10 Architektur-Audit. Ziel: Vermeidung von False-Positives durch Substring-Matching (z.B. "uhr" in "kaufen" vs "14 uhr") und Konsolidierung von Intent-Checks auf einen einzigen Dispatch pro Request.
+- **Problem:** (1) Substring-Kollisionen: `in`-Operator matched "uhr" in "kaufen" als Produkt-Signal obwohl es Uhrzeit ist. (2) Redundante Checks: Orchestrator rief mehrfach `detect_*_intent()` auf (shopping, calendar, local_business, etc.) → ineffizient und inkonsistent. (3) Shopping vs. Calendar Konflikt: "um 14 uhr einkaufen beim netto" wurde als Shopping-Intent klassifiziert, Kalender-Tools entfernt.
+- **Lösung:** **_WORD_BOUNDARY_CACHE + Single Dispatch Contract:**
+  1. **_WORD_BOUNDARY_CACHE:** Regex-Pattern `(?<!\w){phrase}(?!\w)` mit Cache (`_WORD_BOUNDARY_CACHE: Dict[str, re.Pattern]`) für wortgrenzentreues Matching. `_contains_phrase(text_norm, phrase)` cached Pattern pro Phrase.
+  2. **Single Dispatch Contract:** Orchestrator ruft nur noch `intent_engine.detect_all_intents(user_text)` einmal pro Request. Ergebnis ist `IntentDetectionResult` mit allen Intent-Flags (`is_shopping_intent`, `is_calendar_intent`, etc.).
+  3. **Shopping vs. Calendar Hierarchie:** `detect_all_intents()` löst Konflikte hierarchisch: Wenn beide Intents aktiv, gewinnt Calendar wenn `_has_calendar_command_signal()` → Shopping wird vetoed (`vetoed["shopping"] = "calendar_command"`). Umgekehrt gewinnt Shopping wenn starkes Commerce-Signal ohne Calendar-Kommando.
+  4. **Signal-Methoden:** `_has_strong_shopping_signal()` (price + action/vendor/product), `_has_calendar_command_signal()` (command/object + date/time), `_has_uhr_product_signal()` (uhr als Produkt, nicht Uhrzeit via Prefix-Check auf Zahlen).
+  5. **Global Veto Whitelist:** `apply_global_veto()` wirkt nur noch auf `veto_eligible_intents` (storybook, meta_agent, summary, image, complex_document), nicht mehr global für jeden Caller.
+  6. **IntentDetectionResult Erweiterung:** `primary_intent` (Precedence-Chain), `vetoed_intents` (Veto-Tracking), `summary_global_veto`, `meta_agent_global_veto`, `named_channel_video`.
+- **Härtung:** Regex mit Lookbehind/Lookahead garantiert Wortgrenzen. Pattern-Cache vermeidet redundante Kompilierung. Single Dispatch garantiert Konsistenz. Veto-Tracking macht Entscheidungen transparent.
+- **Future Work für Diamond Standard (10/10):** Umstellung aller verbleibenden Intents (Image, Recall) auf Boundary-Cache und vollständige Eliminierung von Einzel-Checks wie Storybook. Ziel: Alle Intent-Detektion nutzen `_contains_phrase()` und `_WORD_BOUNDARY_CACHE` für konsistente Wortgrenzen-Erkennung.
+- **Tripwire:** Wenn "uhr" in "14 uhr" als Produkt erkannt → `_has_uhr_product_signal()` Prefix-Check fehlt. Wenn Calendar vs. Shopping nicht aufgelöst → Hierarchie-Logik in `detect_all_intents()` fehlt. Wenn Orchestrator noch Einzel-Checks → Single Dispatch nicht implementiert.
+- **Location:** `backend/services/orchestrator/intent_engine.py` (_WORD_BOUNDARY_CACHE, _contains_phrase, detect_shopping_intent, detect_calendar_intent, detect_all_intents, apply_global_veto), `backend/services/chat_orchestrator.py` (Single Dispatch via intent_detection_result), `backend/services/orchestrator/execution_dispatcher.py` (summary_global_veto via IntentDetectionResult), implementiert 2026-05-02.
+- **Epic:** Intent Engine V2 Härtung (Calendar Routing Fix + Architektur-Refactor)
+- **Confidence:** High (Wortgrenzen-Cache verhindert Substring-Kollisionen, Single Dispatch konsolidiert Checks, Hierarchie löst Shopping/Calendar-Konflikte deterministisch).
+- **Tags:** IntentEngineV2, WordBoundaryCache, SingleDispatch, ShoppingCalendarHierarchy, IntentDetectionResult, VetoTracking, GlobalVetoWhitelist
+
+## [PATTERN] #PureTextSummaryMode "Skill-Stripping bei Zusammenfassungs-Intents zur Qualitätssteigerung — relevant_skill_ids cleared, tools disabled, proactive guidance suppressed"
+- **Kontext:** TASK-057 Context Awareness System erforderte einen Pure-Text Summary Mode, der alle Skills und Tools deaktiviert, wenn der Nutzer eine Zusammenfassung anfordert. Ohne diesen Modus könnten Skills unerwünscht in den Zusammenfassungs-Prozess eingreifen.
+- **Problem:** Wenn ein Nutzer "fasse zusammen" oder "erstelle eine Zusammenfassung" eingibt, könnten proactive Skills oder forced tools den rein textuellen Zusammenfassungs-Prozess stören. Der Intent ist klar: reine Textverarbeitung ohne Skill-Intervention.
+- **Lösung:** **Global Veto System für Summary Intents:**
+  1. **Intent Engine:** `apply_global_veto()` in `intent_engine.py` erkennt Zusammenfassungs-Keywords ("fass zusammen", "zusammenfassen", "summarize", etc.) und gibt `vetoed=True` mit `veto_reason="summary"` zurück.
+  2. **Execution Dispatcher:** Bei `vetoed` werden `wf.relevant_skill_ids = []`, `wf.force_tool_name = None`, `wf.proactive_guidance = ""`, `wf.has_tool_trigger = False` gesetzt.
+  3. **Gateway Kwargs:** `tool_choice = "none"` erzwingt reine Textverarbeitung ohne Tool-Calls.
+  4. **Meta-Agent:** `chat_orchestrator.py` prüft Veto vor Meta-Agent-Run und blockiert Meta-Agent bei Summary-Veto.
+- **Härtung:** Veto-Logik ist deterministisch basierend auf Keyword-Matching. Keine probabilistische Klassifikation. Skills können bei Bedarf explizit erlaubt werden, wenn der Veto nicht auslösen soll.
+- **Tripwire:** Wenn Tools bei Zusammenfassungs-Anfragen aktiv werden → Veto-Logik nicht implementiert oder Keywords fehlen. Erkennbar im Log: `[SKILL-TRIGGER]` trotz Summary-Request.
+- **Location:** `backend/services/orchestrator/intent_engine.py` (apply_global_veto), `backend/services/orchestrator/execution_dispatcher.py` (Pure-Text gating), `backend/services/chat_orchestrator.py` (Meta-Agent Veto-Check), implementiert 2026-05-01.
+- **Epic:** TASK-057 — Context Awareness System (Pure-Text Summary Mode)
+- **Confidence:** High (Deterministische Keyword-Erkennung, klare Gating-Logik, keine Skill-Intervention bei Summary-Intents).
+- **Tags:** PureTextSummaryMode, IntentEngine, GlobalVeto, SkillStripping, ToolDisabling, ContextAwareness, TASK057
+
+---
+
+## [PATTERN] #SelfHealingAuth "Stiller Re-Login bei 401-Fehlern zur Aufrechterhaltung der Persistenz — Token-Refresh + Retry ohne User-Feedback"
+- **Kontext:** Frontend-401-Fehler beim Modellwechsel durch 30-Minuten Token-TTL. Nutzer mussten manuell neu einloggen oder sahen Fehlermeldungen. Das Ziel: Transparente Token-Erneuerung ohne Nutzer-Unterbrechung.
+- **Problem:** 30-Minuten Token-TTL führt zu 401-Fehlern bei längeren Sessions. `updateLastUsedModelInBackend()` schlägt fehl, `last_used_provider` wird nicht persistiert, Modellwechsel ist unvollständig.
+- **Lösung:** **Auth Self-Healing mit Silent Login:**
+  1. **Token TTL Extension:** `backend/dependencies.py` — `ACCESS_TOKEN_EXPIRE_MINUTES` von 30 auf 1440 (24h) erhöht.
+  2. **Frontend Retry-Mechanismus:** `frontend/js/app.js` — Bei `response.status === 401` wird `attemptSilentLogin()` aufgerufen.
+  3. **Silent Login:** Nutzt `/api/auth/token` mit bestehenden Credentials für neuen Token.
+  4. **Retry:** Nach erfolgreichem Refresh wird der ursprüngliche Request mit neuem Token wiederholt.
+  5. **No User Feedback:** Bei erfolgreichem Retry sieht der Nutzer keine Fehlermeldung. Nur bei fehlgeschlagenem Refresh wird Error geloggt.
+- **Härtung:** Token-TTL auf 24h reduziert Häufigkeit von 401-Fehlern. Retry-Mechanismus fängt verbleibende Fälle ab. `attemptSilentLogin()` ist idempotent und sicher.
+- **Tripwire:** Wenn 401-Fehler sichtbar werden → Silent Login nicht implementiert oder Refresh fehlgeschlagen. Erkennbar im Log: `[AUTH] 401 error without retry` oder ähnliche Warnungen.
+- **Location:** `backend/dependencies.py` (ACCESS_TOKEN_EXPIRE_MINUTES), `frontend/js/app.js` (updateLastUsedModelInBackend retry logic), implementiert 2026-05-01.
+- **Epic:** TASK-057 — Context Awareness System (Auth Self-Healing)
+- **Confidence:** High (Token-TTL erhöht, Retry-Mechanismus implementiert, Silent Login funktioniert).
+- **Tags:** SelfHealingAuth, SilentLogin, TokenRefresh, RetryMechanism, 401Handling, ContextAwareness, TASK057
+
+---
+
+## [PATTERN] #BackgroundCostCommit "Zwang zum db.commit() in asynchronen oder verzweigten Engine-Pfaden zur zuverlässigen Cost-Persistenz"
+- **Kontext:** Cost-Entries wurden in `execution_engine.py` erstellt, aber nicht persistiert, weil `db.commit()` fehlte. Asynchrone Pfade (Non-Stream und Stream) hatten unterschiedliche DB-Handling-Logik.
+- **Problem:** `create_cost_entry()` wurde aufgerufen, aber ohne `db.commit()` wurden die Einträge nicht in die SQLite-Datenbank geschrieben. Bei Neustart des Servers waren alle Cost-Entries verloren.
+- **Lösung:** **Explizite db.commit() nach Cost-Eintrag:**
+  1. **Non-Stream Pfad:** `execution_engine.py` — Nach `create_cost_entry()` explizites `db.commit()`.
+  2. **Stream Pfad:** `execution_engine.py` — Nach `create_cost_entry()` im Stream-Handler ebenfalls `db.commit()`.
+  3. **Konsistenz:** Beide Pfade (iterative und streaming) haben identische Commit-Logik.
+- **Härtung:** Explizites Commit garantiert Persistenz auch bei späteren Fehlern im Request-Cycle. DB-Session bleibt offen für weitere Operationen.
+- **Tripwire:** Wenn Cost-Entries nach Neustart fehlen → `db.commit()` fehlt. Erkennbar in DB: `costs` Tabelle leer obwohl Requests verarbeitet wurden.
+- **Location:** `backend/services/orchestrator/execution_engine.py` (run_agent_factory Non-Stream + Stream Pfade), implementiert 2026-05-01.
+- **Epic:** TASK-057 — Context Awareness System (FinOps Cost Commit Fix)
+- **Confidence:** High (Expliziter Commit implementiert, Cost-Entries werden persistiert).
+- **Tags:** BackgroundCostCommit, DBCommit, CostPersistence, AsyncPath, StreamPath, FinOps, TASK057
+
+---
+
+## [LESSON] #PromptCachingClockLine "System-Prompt Clock-Line invalidiert Cache jede Minute — Sub-Segment-Zerlegung statt monolithischem Hash"
+- **Kontext:** TASK-056 Prompt Caching Blueprint analysierte den realen System-Prompt-Aufbau in `execution_dispatcher.py`. Der Plan nahm an, der System-Prompt sei stabil/cachebar. Die Realität: `wf._clock_line` wird mit `datetime.now()` gebaut und jede Minute aktualisiert, dann am Prefix prepended.
+- **Problem:** OpenAI's automatisches Prefix-Caching funktioniert nur bei stabilem Prefix. Die Clock-Line am Anfang invalidiert den gesamten System-Prompt-Hash 1440 Mal pro Tag, selbst wenn alle anderen Teile stabil wären. Ein monolithischer Hash über den fertigen `wf.final_system_prompt` ist wirkungslos.
+- **Lösung:** **Sub-Segment-Zerlegung des System-Prompts:** Der Segmenter muss die einzelnen `wf.*`-Felder (clock_line, identity_anchor, identity_directive, base_prompt, ui_guidance, research_guidance, tool_protocol, small_talk_guard, capability_guidance, suggestion_suffix, skill_directives, coupons) **vor** der Konkatenation analysieren. Dynamische Segmente (clock_line, suggestion_suffix, capability_guidance, coupons) werden als nicht-cachebar klassifiziert. Stabile Segmente werden separat gecached. Integrationspunkt muss **vor** Zeile 314 (`wf.messages = [...]`) liegen.
+- **Härtung:** Clock-Line ans Ende verschieben oder als separates System-Message senden, um OpenAI Prefix-Stability zu maximieren. Cache-Key enthält `segment_type` zur Unterscheidung. Feature-Flag für Segmenter, aber Telemetrie läuft auch bei `disabled` (cache_bypassed=N).
+- **Tripwire:** Wenn Cache-Hit-Rate < 10% trotz stabilem System-Prompt → Clock-Line oder andere dynamische Injections nicht als Sub-Segmente behandelt. Erkennbar im Log: Clock-Line ändert sich jede Minute, aber Cache-Key bleibt gleich.
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py` (Zeilen 279-280, 296-307, 218-236, 316-319), dokumentiert 2026-04-29 in TASK-056 Cascade Review.
+- **Confidence:** High (Code-Analyse bestätigt Clock-Line-Killer, Sub-Segment-Zerlegung ist Lösung).
+- **Tags:** PromptCaching, ClockLine, SystemPrompt, SubSegment, OpenAICache, TASK056
+
+---
+
+## [PATTERN] #SavingsVisualizer "Monetäre Ersparnis-Visualisierung — tokens_saved + cost_saved in DB, UI berechnet Effizienz-Quote"
+- **Kontext:** Einführung von Prompt Caching zur Kostenreduktion. Token-Einsparungen sind für Nutzer abstrakt. Ersparnis muss monetär und prozentual greifbar sein.
+- **Problem:** Ohne monetäre Darstellung bleibt der Wert von Prompt Caching für Nutzer unsichtbar. Reine Token-Zahlen sind schwer zu interpretieren. Keine direkte Sichtbarkeit des finanziellen Mehrwerts von Janus-Optimierungen.
+- **Lösung:** **Speicherung von `tokens_saved` und `cost_saved` in der `costs` Tabelle:**
+  1. **DB-Schema:** `backend/data/models.py` — `tokens_saved` (INT, default=0), `cost_saved` (FLOAT, default=0.0) Spalten.
+  2. **Auto-Migration:** `backend/data/database.py` — `_ensure_sqlite_schema_migrations()` führt `ALTER TABLE` für beide Spalten aus.
+  3. **Berechnung:** `backend/services/cost_service.py` — `_calculate_cost_saved()` multipliziert `tokens_saved` mit `input_cost_per_token * USD_TO_EUR_CONVERSION_RATE` aus Model-Catalog.
+  4. **Übergabe:** `backend/services/orchestrator/execution_engine.py` — `estimated_tokens_saved` aus `prompt_cache_decision` an `create_cost_entry()` übergeben (Non-Stream + Stream).
+  5. **Aggregation:** `backend/data/crud.py` — `get_monthly_cost_summary_by_model()` aggregiert `total_tokens_saved` und `total_cost_saved` pro Modell.
+  6. **UI-Visualisierung:** `frontend/js/cost-visualizer.js` — Deep-Dive-Modal zeigt pro Modell: `(Janus Caching: -X.XXXX € | Y% gespart)`. Footer zeigt Gesamtersparnis. Toggle-Button wechselt zwischen Modell- und Kosten-Sortierung.
+  7. **Effizienz-Quote:** `efficiencyPct = (cost_saved / (total_cost + cost_saved)) * 100` — korrekte Definition als Anteil an den Gesamtprompt-Kosten.
+- **Härtung:** Auto-Migration garantiert, dass neue Spalten in existierenden Datenbanken hinzugefügt werden. Historische Einträge erhalten automatisch `0` / `0.0`. UI zeigt Ersparnis nur wenn `cost_saved > 0`.
+- **Tripwire:** Wenn Ersparnis im Modal nicht angezeigt wird → `total_cost_saved` nicht in API-Response enthalten. Erkennbar im Network-Tab: `/api/costs/summary-by-model` Response prüfen. Wenn Ersparnis immer 0.00€ → `tokens_saved` wird nicht an `create_cost_entry()` übergeben oder Berechnung fehlerhaft.
+- **Location:** `backend/data/models.py` (Spalten), `backend/data/database.py` (Migration), `backend/services/cost_service.py` (Berechnung), `backend/services/orchestrator/execution_engine.py` (Übergabe), `backend/data/crud.py` (Aggregation), `frontend/js/cost-visualizer.js` (Visualisierung), implementiert 2026-04-29.
+- **Epic:** TASK-056 — Prompt Caching System (Phase 4: Savings Engine)
+- **Confidence:** High (DB-Migration funktioniert, API liefert Daten, UI zeigt Ersparnis korrekt).
+- **Tags:** SavingsVisualizer, CostTracking, PromptCaching, UI, Database, TASK056
+
+---
+
+## [PATTERN] #UIDeduplication "UI Deduplication — Parallele Rendering-Flags und DOM-Clearing mit Delay"
+- **Kontext:** UI Model Management in Janus zeigte doppelte Buttons und Modelle in den Einstellungen, besonders bei schnellen User-Interaktionen oder parallelen Render-Aufrufen.
+- **Problem:** Doppelte Event-Listener, parallele `renderSettingsView()` Aufrufe, und Race Conditions beim DOM-Manipulation führten zu duplizierten UI-Elementen. Einfaches `innerHTML = ""` war nicht ausreichend.
+- **Lösung:**
+  1. **Rendering Flags:** `isSettingsViewRendering` und `isModelViewLoading` Flags verhindern parallele Ausführung.
+  2. **DOM-Clearing mit Delay:** `innerHTML = ""`, dann `await new Promise(resolve => setTimeout(resolve, 0))`, dann nochmal `innerHTML = ""` für sicheres Entschlacken.
+  3. **Set-Deduplication:** `renderedModelIds` Set verhindert doppelte Modelle in der Liste.
+  4. **Spezifischer Event Listener:** `e.target.closest("button.model-manage-btn")` statt generischem `tagName === "BUTTON"`.
+  5. **Button-Disabling:** Button wird während des Ladens deaktiviert und zeigt "Lade...".
+- **Härtung:** Flags garantieren Single-Execution. DOM-Delay gibt Browser Zeit für Reflow. Set garantiert eindeutige IDs.
+- **Tripwire:** Wenn Buttons/Modelle doppelt erscheinen → parallele Rendering-Flags fehlen. Wenn Event Listener auf falsche Elemente triggert → `closest()` Selector zu generisch.
+- **Location:** `frontend/js/settings.js` (renderSettingsView, renderModelManagementView, Event Listener), gefixt 2026-04-28.
+- **Confidence:** High (Keine doppelten Elemente mehr bei schnellen Klicks).
+- **Tags:** UIDeduplication, RaceCondition, DOM, Rendering, JavaScript
+
+---
+
+## [PATTERN] #StatisticalRoutingBaseline "Statistical Routing Baseline — 10 Durchläufe zur Eliminierung stochastischen Rauschens bei Modell-Vergleichen"
+- **Kontext:** D20 Routing Calibration implementiert eine systematische Modell-Kalibrierung über Matrix-Tests (Skills × Models × Runs). Ein einzelner Test-Lauf kann durch stochastisches Rauschen (Temperatur, Sampling, Netzwerk-Latenz) verfälscht sein. Entscheidungen über Modell-Zuweisungen basieren auf statistischer Signifikanz, nicht auf Einzelfällen.
+- **Problem:** Ohne statistische Baseline führen Einzelfälle zu falschen Schlussfolgerungen. Ein Modell kann einmal gut abschneiden (Glück) und einmal schlecht (Pech). Entscheidungen basierend auf Einzelfällen sind nicht reproduzierbar und führen zu Instabilität im Routing.
+- **Lösung:** **Statistische Baseline durch 10 Durchläufe:**
+  1. Matrix-Test-Infrastruktur: POST-Endpoint `/api/system/run-batch-tests` mit `runs_per_model` Parameter.
+  2. Outer Loop (Models) × Inner Loop (Runs_per_model) für statistische Signifikanz.
+  3. Rate-Limiting: `asyncio.sleep(0.5)` zwischen Calls (429-Schutz bei Bulk-Tests).
+  4. Trace-ID-Tracking: `uuid.uuid4()` pro Test (400 unique IDs für 10 Skills × 4 Models × 10 Runs).
+  5. Model-Override: Lambda mit Keyword-Argumenten (provider, model, **kwargs) für korrekte Durchreichung.
+  6. Aggregation: Pass-Rate, Latenz-Mittelwert, Escalation-Rate über alle Runs aggregieren.
+- **Härtung:** Rate-Limiting garantiert API-Stabilität. Trace-ID-Tracking ermöglicht post-hoc Analyse. Model-Override via Lambda sicherstellt, dass das angegebene Modell tatsächlich verwendet wird (nicht das Default aus model_routing.json).
+- **Tripwire:** Wenn Modell-Zuweisungen basierend auf Einzelfällen getroffen werden → keine statistische Baseline. Erkennbar: `runs_per_model=1` in Matrix-Test-Config. Wenn 429-Fehler bei Bulk-Tests → Rate-Limiting fehlt. Wenn Trace-IDs nicht unique → UUID-Generierung defekt.
+- **Location:** `backend/api/routers/system.py` (RoutingCalibrationRequest, Matrix-Run-Logic, Rate-Limiting, Trace-ID, Lambda-Fix), `backend/services/testing/test_runner.py` (trace_id Parameter), implementiert 2026-04-27.
+- **Epic:** D20 — Routing Calibration
+- **Confidence:** High (Statistische Signifikanz durch 10 Runs, Rate-Limiting aktiv, Trace-ID-Tracking implementiert).
+- **Tags:** StatisticalRoutingBaseline, ModelRouting, Calibration, MatrixTest, RateLimiting, TraceID, D20
+
+---
+
+## [LESSON] #AsyncLifecycleSafety "Async Lifecycle Safety — DB-Closing in Background-Tasks muss nach Abschluss aller Closure-Ausführungen erfolgen"
+- **Kontext:** D18 WIRING-FIX entdeckte, dass `db.close()` in einem inneren `finally` Block lief, BEVOR die Closure, die die DB-Session captured hatte, ihre Ausführung beendet hatte. Die `real_tool_call_fn` Closure in `system.py` captured die DB-Session, aber `db.close()` wurde im `finally` Block aufgerufen, der NACH dem Closure-Aufruf aber VOR dem Abschluss aller asynchronen Operationen innerhalb der Closure ausgeführt wurde.
+- **Problem:** DB-Sessions in Background-Tasks haben eine längere Lebensdauer als der synchrone Code-Abschnitt. Wenn `db.close()` zu früh aufgerufen wird, haben nachfolgende asynchrone Operationen (z.B. LLM-Calls via `llm_gateway.call_llm`) eine tote DB-Session. Dies führt zu `InterfaceError: Connection already closed` oder ähnlichen Fehlern bei Tool-Ausführung.
+- **Lösung:** **DB-Closing nach Abschluss aller Closure-Ausführungen:**
+  1. Verschiebe `db.close()` vom inneren `finally` Block zu einem äußeren `try/finally`, das den gesamten Background-Task umschließt.
+  2. Stelle sicher, dass die Closure, die die DB-Session captured, ihre Ausführung vollständig beendet hat, bevor `db.close()` aufgerufen wird.
+  3. Bei Matrix-Runs (D20): DB-Session bleibt für alle Model- und Run-Iterationen aktiv, wird erst nach Abschluss aller Tests geschlossen.
+- **Härtung:** Forensische Logging-Statements vor und nach kritischen DB-Operationen. DB-Session-Status-Check vor Tool-Ausführung (optional, für Debugging).
+- **Tripwire:** Wenn Tool-Ausführung mit `InterfaceError: Connection already closed` fehlschlägt → DB-Closing zu früh. Erkennbar im Log: `[DB-CLOSED]` Eintrag vor `[TOOL-EXECUTION]` Eintrag.
+- **Location:** `backend/api/routers/system.py` (db.close scope in run_batch_background), gefixt 2026-04-27 (D18 WIRING-FIX), bestätigt 2026-04-27 (D20).
+- **Confidence:** High (DB-Session bleibt für gesamte Batch-Dauer aktiv, keine Connection-Closed-Fehler mehr).
+- **Tags:** AsyncLifecycleSafety, DBClosing, BackgroundTasks, Closure, Lifecycle, D18, D20
+
+---
+
+## [PATTERN] #DeterministicSkillTesting #QualitySystem "Deterministic Quality System — Entkopplung von Test-Generierung und -Ausführung, strikte Ablehnung von KI in der Validierung"
+- **Kontext:** D16 Skill Stability System implementiert ein deterministisches Qualitätssystem für Janus-Skills, weg von "probabilistischer Hoffnung" hin zu "gemessener Stabilität". Das System besteht aus Test Generator (Blueprint-Generierung), Validation Engine (deterministische Regeln), Model Router (Skill-zu-Modell Mappings), Escalation Engine (Primary → Fallback → Escalation) und Test Runner (Ausführung mit D10 Telemetrie).
+- **Problem:** Ohne deterministisches Testsystem basiert Skill-Stabilität auf probabilistischen Annahmen. KI-basierte Validierung führt zu inkonsistenten Ergebnissen und schwer reproduzierbaren Fehlern. Fehlende Eskalations-Logik führt zu Single-Point-of-Failure bei Modellproblemen.
+- **Lösung:**
+  1. **Test Generator:** Rule-basierte Blueprint-Generierung (happy_path, edge_case, failure_case) ohne KI-Beteiligung. JSON-Blueprints werden in `config/skill_tests/` persistiert.
+  2. **Validation Engine:** Deterministische Validatoren (contains, not_contains, regex, not_crash). STRICTLY FORBIDDEN: KI-basierte Validierung. None/Empty-Guards für robuste Fehlerbehandlung.
+  3. **Model Router:** Skill-zu-Modell Mappings aus `model_routing.json` mit Fallback auf Global Defaults. Tiers: Primary, Fallback, Escalation.
+  4. **Escalation Engine:** Automatische Eskalation bei Fehlern (Primary → Fallback → Escalation). Circuit Breaker bei vollständiger Eskalations-Erschöpfung. Kosten-Tracking pro Tier.
+  5. **Test Runner:** Async-Ausführung mit D10 Integration (`log_event()`). AI Studio kompatible Health Reports (health_score, status, avg_latency_ms).
+  6. **API Endpoint:** `GET /api/system/run-skill-tests/{skill_id}` für manuelle Triggerung aus AI Studio.
+- **Härtung:** Async-Integrity Pattern (konsistentes Awaiten in Eskalationskette). None-Guards für alle Validierungsmethoden. Type-Guards für Result-Validierung.
+- **Tripwire:** Wenn Tests inkonsistente Ergebnisse liefern → KI-basierte Validierung aktiv. Wenn latency_ms = 0.0 → Async-Await fehlt. Wenn Circuit Breaker nicht triggert → Eskalations-Logik defekt.
+- **Location:** `backend/services/testing/test_generator.py`, `backend/services/testing/validation.py`, `backend/services/routing/model_router.py`, `backend/services/routing/escalation.py`, `backend/services/testing/test_runner.py`, `backend/api/routers/system.py`, implementiert 2026-04-26.
+- **Epic:** D16 — Deterministic Quality System
+- **Confidence:** High (Deterministische Regeln, strikte KI-Ablehnung in Validierung, konsistente Async-Handling).
+- **Tags:** DeterministicSkillTesting, QualitySystem, Validation, Escalation, ModelRouting, D10Integration, AsyncIntegrity
+
+---
+
+## [LESSON] #AsyncIntegrity #Escalation "Coroutine-Vampir bei Tool-Calls — Konsistentes Awaiten in der Eskalationskette für korrekte Latenz-Messung"
+- **Kontext:** Die EscalationEngine führte tool_call_fn auf, aber ohne await wenn das Ergebnis eine Coroutine war. Dies führte zu latency_ms = 0.0 und korrupten Zeitmessungen. Der Mock-Tool-Call im API Router war async, aber der Aufruf wurde nicht konsistent awaited.
+- **Problem:** Wenn tool_call_fn eine Coroutine zurückgibt (async function), aber nicht awaited wird, wird das Coroutine-Objekt selbst als Ergebnis behandelt. Dies führt zu: (1) Falsche latency_ms (0.0 statt echter Ausführungszeit), (2) AttributeError bei Zugriff auf Coroutine-Attribute, (3) Unvorhersehbares Verhalten bei Validierung.
+- **Lösung:** **Konsistentes Async-Handling in der Eskalationskette:**
+  1. `execute_with_escalation()` zu async machen.
+  2. `_execute_at_tier()` zu async machen.
+  3. `asyncio.iscoroutine(result)` Check nach tool_call_fn.
+  4. Wenn Coroutine: `result = await result`.
+  5. Alle Aufrufe in der Kette mit await versehen.
+- **Härtung:** Async-Check mit `asyncio.iscoroutine()` für maximale Robustheit. Convenience-Funktionen ebenfalls async machen.
+- **Tripwire:** Wenn latency_ms = 0.0 in Test-Reports → Async-Await fehlt in Escalation Engine. Wenn AttributeError bei Result-Attributen → Coroutine nicht awaited.
+- **Location:** `backend/services/routing/escalation.py` (execute_with_escalation, _execute_at_tier), `backend/services/testing/test_runner.py` (escalation call), gefixt 2026-04-26.
+- **Confidence:** High (Latency-Messung zeigt jetzt echte Werte, keine AttributeErrors mehr).
+- **Tags:** AsyncIntegrity, Escalation, Coroutine, Latency, Await, ToolCall
+
+---
+
+## [PATTERN] #DeterministicProblemClassification #DecisionLoop "Escalation-Tier-Signal als Root-Cause-Indikator — Nutzung von final_tier, attempts_count und latency_ms zur automatischen Kategorisierung von Skill-Defekten ohne KI-Interpretation"
+- **Kontext:** D17 Skill Health Matrix & Decision Interface baut auf D16 (Skill Stability System) und D13 (Optimization Engine) auf. Nach dem Testlauf liefert die Eskalationskette strukturierte Daten (final_tier, attempts_count, status, latency_ms), die als deterministisches Signal für die Root-Cause-Analyse dienen. Die Herausforderung: Aus diesen Daten die richtige Maßnahme ableiten, ohne auf KI-Interpretation zurückzugreifen.
+- **Problem:** Generische "pass/fail" Metriken geben keinen Aufschluss über die Art des Fehlers. Ein Skill, der auf Primary scheitert aber auf Fallback läuft, hat ein anderes Problem als ein Skill, der auf allen Tiers scheitert. Ohne Klassifikation bleibt die Maßnahme unklar.
+- **Lösung (4 Kategorien, strikt deterministisch):**
+  1. **MODEL_WEAKNESS:** `status == "passed"` AND `final_tier NOT IN ("primary", "")` → Primary-Modell ist zu schwach, aber stärkere Modelle bestehen. Maßnahme: Fallback zu Primary promoten (manuell in model_routing.json).
+  2. **PROMPT_ISSUE:** `status IN ("failed", "error")` AND `attempts_count >= 2` → Skill scheitert über ALLE Tiers. Der Befehl ist unklar oder das Tool-Schema fehlerhaft. Maßnahme: Prompt/Schema Review.
+  3. **VALIDATION_FAIL:** `status == "failed"` AND `attempts_count <= 1` → Primary führt aus, Ergebnis kommt zurück, aber ValidationEngine (Regex/Contains) schlägt Alarm. Modell halluziniert das Output-Format. Maßnahme: Prompt verschärfen oder Validierung lockern.
+  4. **TIMEOUT:** `status == "passed"` AND `latency_ms > 3000ms` → Test besteht, aber Latenz über Schwellenwert. Maßnahme: Schnelleres Modell oder Response-Caching.
+- **Confidence Score:** Frequency-basiert (`category_count / total_runs`). Keine probabilistische Schätzung, rein auf Frequenzdaten.
+- **Integration:** `ProblemClassifier` in `optimization_engine.py` aggregiert D10 `skill_test` Events pro Skill. `generate_decision_report()` emittiert pro degraded Skill: Health-Metriken-Tabelle, Problem-Klassifikation-Tabelle (Dominant Category, Confidence, Breakdown), `[PROVISIONAL]` Root-Cause-Empfehlung. Summary enthält Category Distribution.
+- **Härtung:** D10 Payload um `final_tier` und `attempts_count` erweitert (`_log_to_d10`). Alle Recommendations tragen `[PROVISIONAL]` Prefix (D15 Compliance). `model_routing.json` wird NICHT vom Code geändert (Zero Mutability Guardrail).
+- **Tripwire:** Wenn `final_tier` fehlt in D10 Payload → `_log_to_d10` nicht aktualisiert. Wenn alle Skills "HEALTHY" aber pass_rate < 0.9 → Klassifikationslogik defekt. Wenn Recommendations ohne `[PROVISIONAL]` → D15 Compliance verletzt.
+- **Location:** `backend/services/logging/optimization_engine.py` (ProblemClassifier, classify_test_event, _build_recommendation), `backend/services/testing/test_runner.py` (_log_to_d10 payload), `backend/api/routers/system.py` (GET /api/system/decision-report), implementiert 2026-04-26.
+- **Epic:** D17 — Skill Health Matrix & Decision Interface
+- **Confidence:** High (Deterministisch, 4 klar abgegrenzte Kategorien, frequency-basierter Confidence Score, keine KI-Interpretation).
+- **Tags:** DeterministicProblemClassification, DecisionLoop, EscalationSignal, HealthMatrix, D13Integration, D16Integration
+
+---
+
+## [PATTERN] #Logging #Hardening "Resilient Telemetry Pattern — Kombination aus contextvars für Traceability, UPSERT für Idempotenz und Drop-Oldest für Speichersicherheit"
+- **Kontext:** Logging Pipeline Phase 1 (reines Sammeln) wurde auf Phase 2 (analytische Härtung) gehoben. Die Infrastruktur fehlte Resilienz-Mechanismen: keine Trace-ID Context-Propagation, keine Queue Overflow-Strategie, keine System-Health-Monitoring, keine strikte Payload-Validierung. Bei hohem Throughput konnte die Queue volllaufen und Events verloren gehen. Doppelte Uploads bei Retries führten zu Duplikaten in Supabase.
+- **Problem:** Ohne Trace-ID war Request-Tracking unmöglich (keine End-to-End Tracing). Ohne Overflow-Strategie würde die Queue blockieren bei volllauf (5000 Events). Ohne UPSERT-Idempotenz führten Retries zu Duplikaten in Supabase. Ohne Schema-Validierung konnten ungültige Payloads die Queue verunreinigen.
+- **Lösung (Phase 2 Hardening):**
+  1. **Schema-Erweiterung:** `LogEventBase` um `trace_id` (UUID/String) erweitert. `LogEventPayload` als striktes Pydantic-Modell mit `input_hash`, `output_summary`, `error_code`.
+  2. **Trace-ID Context-Propagation:** `contextvar.ContextVar('_trace_id')` mit `set_trace_id()`, `get_trace_id()`, `generate_trace_id()`. Auto-Population in `log_event()` wenn nicht gesetzt.
+  3. **Validierungsschicht:** Schema-Validierung vor `queue.put()` mit Warn-Logging bei Verletzung.
+  4. **Queue Overflow Strategy:** Drop-Oldest bei voller Queue (maxsize=5000) via `get_nowait()`.
+  5. **UPSERT Idempotenz:** UUID-Generierung in `log_event()`, Batch-Uploader nutzt `upsert()` mit `on_conflict="id"`.
+  6. **Metrics Tracking:** `successful_uploads`, `failed_uploads`, `total_retries` als Counter.
+  7. **system_health Event:** Periodisches Logging alle 50 Batches mit Queue-Größe und Erfolgsrate.
+  8. **Integration:** `routing_decision` im Orchestrator, `fallback_trigger` in ExecutionEngine.
+  9. **Auto-Migration-Guard:** `ensure_logging_schema()` prüft via `information_schema.columns` ob `trace_id` Spalte existiert, führt `ALTER TABLE + CREATE INDEX` bei Bedarf aus. Wird bei jedem Serverstart via `start_worker()` aufgerufen.
+  10. **Local DLQ Fallback:** `_write_to_dlq()` schreibt fehlgeschlagene Batches nach 5 Retries in `backend/logs/failed_batches.jsonl` statt Events ewig in Queue zu halten. JSONL-Format mit Error-Context für manuelle Recovery.
+- **Architektur:** Async RAM-Queue (asyncio.Queue) → Batch Worker (Background Task) → UPSERT zu Supabase. Graceful Shutdown via `flush_log_queue()`.
+- **Härtung:** Validierungsschicht verwirft Events mit ungültigem Payload. Overflow-Strategie garantiert, dass neue Events immer in die Queue passen. UPSERT garantiert Idempotenz bei Retries. Metrics und system_health ermöglichen proaktives Monitoring.
+- **Tripwire:** Wenn Logs keine Trace-IDs haben → contextvar nicht gesetzt. Erkennbar: `trace_id=None` in Supabase. Wenn Queue voll und Events blockieren → Overflow-Strategie nicht aktiv. Erkennbar: `asyncio.QueueFull` Exception. Wenn Duplikate in Supabase → UPSERT nicht korrekt konfiguriert. Erkennbar: gleiche Event-IDs mehrfach in logs_raw Tabelle.
+- **Location:** `backend/services/logging/logger_core.py` (contextvar, Overflow, Metrics, system_health, Validierung), `backend/data/schemas_logging.py` (trace_id, LogEventPayload), `backend/services/chat_orchestrator.py` (set_trace_id, routing_decision), `backend/services/orchestrator/execution_engine.py` (fallback_trigger), implementiert 2026-04-25.
+- **Epic:** D10-HARDENING — Phase 2 der Logging Pipeline (Phase 1: D10 Logging Pipeline Phase 1)
+- **Confidence:** High (Kombination aus contextvars, Drop-Oldest und UPSERT bietet maximale Resilienz für Logging-Pipeline).
+- **Tags:** Logging, Hardening, ResilientTelemetry, ContextVar, Traceability, UPSERT, Idempotency, DropOldest, OverflowProtection, Metrics, SystemHealth, SchemaValidation, Phase2
+
+---
+
+## [LESSON] #Logging #Context "Metadata Injection Pattern — ToolExecutor benötigt explizite Provider/Model-Daten im additional_context für akkurate Telemetrie"
+- **Kontext:** Diamond-Skills wie `system.weather` bypassen den `ToolExecutor` und werden direkt ausgeführt. Das Logging extrahiert `provider` und `model` aus `additional_context`, aber diese Werte wurden nicht an allen ToolExecutor-Instanziierungen übergeben. Resultat: Logs zeigten "unknown" für provider/model.
+- **Problem:** Inkonsistente Context-Propagation bei ToolExecutor-Instanziierungen. `tool_executor.py` extrahiert `provider` und `model` aus `self.additional_context`, aber nicht alle Instanziierungs-Orte übergaben diese Werte. Dies führte zu "MISSING_PROVIDER"/"MISSING_MODEL" Fallbacks im Logging.
+- **Lösung:** **Konsistente Metadata-Injection:** `provider` und `model` zu `additional_context` hinzugefügt bei ALLEN ToolExecutor-Instanziierungen:
+  - `chat_orchestrator.py` (Zeile 1905-1917, 747-759)
+  - `agent_runtime.py` (Zeile 60-73, 97-112, 127-140)
+  - `execution_dispatcher.py` (bereits korrekt)
+  - `policy_handler.py` (bereits korrekt)
+  - `meta_agent_pipeline.py` (bereits korrekt)
+- **Härtung:** ChatRequest-Attribut-Fix: `req.chosen_model` → `req.model` (ChatRequest-Schema hat `model`, nicht `chosen_model`). Forensische Logs aus allen Dateien entfernt (Debug-Code Cleanup).
+- **Tripwire:** Wenn Logs "unknown" für provider/model zeigen → ToolExecutor-Instanziierung ohne additional_context-Propagation. Erkennbar im Log: `!!! LOGGING-DEBUG !!! Raw Context Keys: ['chat_id']` (provider/model fehlen).
+- **Location:** `backend/services/chat_orchestrator.py`, `backend/services/agent_runtime.py`, `backend/services/tool_executor.py`, gefixt 2026-04-25.
+- **Confidence:** High (Test bestätigt: Context enthält `{'chat_id': 999999, 'provider': 'openai', 'model': 'gpt-4o-mini'}`).
+- **Tags:** Logging, Context, MetadataInjection, ToolExecutor, Provider, Model, DiamondSkills, Telemetry
+
+---
+
+## [LESSON] #LoopBreaker #SelfCorrection "Error-Retry-Exception — Duplicate Calls sind erlaubt, wenn das vorherige Tool-Ergebnis einen Fehler zurückgab"
+- **Kontext:** HARD-LOOP-BREAKER blockierte alle Duplicate Calls strikt, auch wenn das vorherige Tool-Ergebnis einen Fehler (z.B. INVALID_ARGUMENTS) zurückgab. Dies verhinderte Self-Correction durch das Modell — bei fehlerhaften Argumenten konnte das Modell nicht erneut versuchen mit korrigierten Argumenten. Resultat: Modelle halluzinierten Antworten statt Tool-Errors zu korrigieren.
+- **Problem:** Striktes Duplicate-Blocking ohne Kontext-Berücksichtigung führt zu unnötigen Fehlern bei Self-Correction-Szenarien. Wenn ein Tool einen Fehler aufgrund ungültiger Argumente zurückgibt, sollte das Modell die Möglichkeit haben, den Tool-Call mit korrigierten Argumenten zu wiederholen, ohne vom Loop-Breaker blockiert zu werden.
+- **Lösung:** **Tool-Status-Tracking:** Speichere den Status jedes Tool-Ergebnisses in `wf.kpi_tool_status: dict[str, str]` (cache_key -> status). **Self-Correction-Exception:** Erweitere `_track_tool_call_fn` um zu prüfen, ob der vorherige Status "error" enthält. Wenn ja, erlaube einen Retry für Self-Correction. **Status-Speicherung:** Nach Tool-Ausführung speichere den Status, wenn "error" oder "invalid" enthalten ist (sowohl im non-stream als auch im stream Pfad).
+- **Härtung:** Die Self-Correction-Exception ist auf Error-Status beschränkt (nicht auf Success). Ein Retry ist nur einmal erlaubt (Status wird auf "retry_attempt" gesetzt). Die Sicherheitsmechanismen bleiben für echte Loops aktiv.
+- **Tripwire:** Wenn ein Modell bei einem Tool-Error halluziniert statt Self-Correction zu versuchen → Self-Correction-Exception fehlt oder ist zu restriktiv. Erkennbar im Log: `[HARD-LOOP-BREAKER] BLOCKED duplicate tool call` trotz vorherigem Fehler.
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py` (wf.kpi_tool_status + Self-Correction-Exception), `backend/services/orchestrator/execution_engine.py` (Tool-Status-Tracking non-stream + stream), gefixt 2026-04-24.
+- **Confidence:** High (Error-Retry-Exception ermöglicht Self-Correction ohne Deaktivierung der Sicherheitsmechanismen).
+- **Tags:** LoopBreaker, SelfCorrection, ErrorRetry, ToolStatus, INVALID_ARGUMENTS, ModelSelfCorrection
+
+---
+
+## [LESSON] #Gemini #API #ThoughtSignature "Gemini 3 requires thought_signature for functionCall parts — must preserve original parts from API response instead of reconstructing them"
+- **Kontext:** Gemini 3 Modelle erfordern `thought_signature` für `functionCall` Parts. Der aktuelle Code in `backend/llm_providers/gemini/service.py` erstellt neue `function_call` Parts ohne diese Signatur (Zeilen 540-545). API-Antwort: `InvalidArgument: 400 Function call is missing a thought_signature.`
+- **Problem:** Der Code extrahiert Tool-Calls aus der Gemini-Antwort und konstruiert neue `protos.Part(function_call=...)` Objekte ohne die `thought_signature` aus dem ursprünglichen Part zu übernehmen. Gemini 3 validiert strikt, dass der erste `functionCall` part in jedem Schritt des aktuellen Turns eine `thought_signature` enthält.
+- **Lösung:** Die `thought_signature` muss aus der ursprünglichen Gemini-Antwort extrahiert werden, wenn Tool-Calls verarbeitet werden. Parts sollten nicht neu erstellt, sondern direkt aus der API-Antwort übernommen werden. **Fix-Empfehlung:** Original Parts direkt in `_gemini_raw_model_parts` speichern und später wiederverwenden, anstatt neue Parts zu erstellen.
+- **Dokumentation:** Gemini API Docs: https://ai.google.dev/gemini-api/docs/thought-signatures — "The first functionCall part in each step of the current turn must include its thought_signature. If you omit a thought_signature for the first functionCall part in any step of the current turn, the request will fail with a 400 error."
+- **Status:** Pending Investigation — Forensische Dokumentation in `documentation/forensics/GEMINI_THOUGHT_FAIL_MATRIX.md` erstellt. Test-Matrix für systematische Fehleranalyse vorbereitet. Opus-Eskalation empfohlen für tiefgreifende Änderungen an Gemini-Service-Logik.
+- **Location:** `backend/llm_providers/gemini/service.py` (Zeilen 540-545: function_call Parts ohne thought_signature), dokumentiert 2026-04-24.
+- **Confidence:** High (API-Dokumentation bestätigt Anforderung, Fehlermeldung eindeutig).
+- **Tags:** Gemini, API, ThoughtSignature, FunctionCall, LLM, Provider, 400Error
+
+---
+
+## [PATTERN] #GoogleCalendarSyncReliability "PATCH-with-Verify-and-Fallback — Selbstreparierender Google-Kalender-Sync mit Pagination, conferenceDataVersion und Output-Only-Key-Filterung"
+- **Kontext:** Google Calendar API hat spezifische Eigenheiten, die zu Datenverlust oder unsichtbaren Sync-Fehlern führen können: (1) maxResults=25 paginiert nur 25 Events, (2) PUT events.update kann Output-Only-Felder zurückspielen und Metadaten-Änderungen "schlucken", (3) conferenceDataVersion=0 führt bei Meet-Terminen zu unzuverlässigen Konferenz-Metadaten, (4) organizer.self=false kann auf eingeladene Konten hinweisen. Ohne diese Kenntnisse erscheint Sync als "funktionierend" obwohl Änderungen nicht in der Google Web-UI sichtbar werden.
+- **Problem:** (1) Bei >25 Terminen pro Zeitraum werden Termine abgeschnitten → Janus sieht nicht alle Events. (2) PATCH/UPDATE ohne Verifikation kann "leere" Änderungen sein → UI zeigt gespeichert, Google hat nichts geändert. (3) Fehlende conferenceDataVersion führt zu Meet-Link-Verlust bei Updates. (4) Output-Only-Felder (kind, etag, htmlLink, created, updated, hangoutLink, creator) bei PUT zurückgespielt können API-Defaults überschreiben und Updates invalidieren.
+- **Lösung:** **PATCH-with-Verify-and-Fallback + Pagination:**
+  1. **Pagination-Loop:** `get_calendar_events` nutzt `pageToken` und `maxResults=250` statt statischem `maxResults=25`. Loop sammelt alle Seiten bis `nextPageToken` fehlt.
+  2. **Output-Only-Key-Filter:** `_GOOGLE_CAL_EVENT_OUTPUT_ONLY_KEYS` (frozenset mit kind, etag, htmlLink, created, updated, hangoutLink, creator) wird vor PUT aus dem Body entfernt. `_body_for_calendar_events_put()` filtert diese Schlüssel.
+  3. **conferenceDataVersion-Logik:** `_conference_data_version_for_put()` prüft auf `conferenceData` oder `hangoutLink` und setzt `conferenceDataVersion=1` für Meet-Termine. Fallback auf 0 bei 400-Fehlern.
+  4. **PATCH-first für Metadaten:** Bei reinen Metadaten-Updates (Ort/Beschreibung/Teilnehmer ohne Start/Ende) wird zuerst `events.patch` mit minimalem Body verwendet. Nur gesetzte Felder werden gesendet.
+  5. **PATCH-Verifikation:** Nach PATCH wird GET ausgeführt und Felder verglichen (`_cal_text_normalized` für CRLF-Normalisierung). Bei Mismatch (mismatch_loc, mismatch_desc, mismatch_summary) wird Fallback `events.update` mit gemergem Body ausgeführt.
+  6. **Fallback-Update:** Bei PATCH-Verifikations-Fehlern wird `events.update` mit `_body_for_calendar_events_put()` und korrekter `conferenceDataVersion` aufgerufen. Retry mit cdv=0 bei 400-Fehlern.
+  7. **Forensische Logging-Signale:** `organizer.self=false` wird als Info geloggt (unterschiedliches eingeladenes Konto). `verify-mismatch` (Ort/Beschreibung/Summary) wird als Warning geloggt mit event_id, eventType und Diff-Details.
+- **Härtung:** Pagination garantiert vollständige Event-Liste. Output-Only-Filterung verhindert "Rückspiel-Effekte". conferenceDataVersion schützt Meet-Metadaten. PATCH-Verifikation garantiert, dass Änderungen wirklich in Google ankommen. Fallback-Update deckt PATCH-Fälle ab, wo Google "leer" wirkt.
+- **Tripwire:** Wenn >25 Terminen im Zeitraum fehlen → Pagination nicht aktiv. Wenn Metadaten-Updates in Web-UI nicht sichtbar → PATCH-Verifikation fehlt oder Output-Only-Keys nicht gefiltert. Wenn Meet-Links nach Updates verschwinden → conferenceDataVersion nicht gesetzt. Wenn Logs keine organizer.self/verify-mismatch zeigen → Forensische Logging-Signale nicht aktiv.
+- **Location:** `backend/tools/calendar_tools.py` (Pagination-Loop, Output-Only-Filter, conferenceDataVersion, PATCH-Verifikation, Fallback-Update, Forensische Logs), implementiert 2026-05-01.
+- **Epic:** TASK-058 — Calendar UX Refinement (Google Sync Hardening)
+- **Confidence:** High (Pagination garantiert Vollständigkeit, PATCH-Verifikation mit Fallback deckt API-Eigenheiten ab, forensische Logs für Debugging).
+- **Tags:** GoogleCalendarSyncReliability, Pagination, ConferenceDataVersion, OutputOnlyKeys, PATCHVerifyFallback, ForensicLogging, TASK058
+
+---
+
+## [LESSON] #RAG #WindowsPaths "The Slash-Trap — Normalisiere Pfade immer auf Forwardslashes vor Vektor-Filtern"
+- **Kontext:** RAG V2 Vektorsuche (ChromaDB) speichert Metadaten-Pfade mit Backslashes (`C:\Users\...\aegypten.pdf`). Der Filename-Filter im `hybrid_retriever.py` verglich User-Input (`aegypten`) direkt mit diesen DB-Pfaden. Auf Windows führte der Slash-Mismatch dazu, dass die Vektorsuche 0 Treffer lieferte obwohl die Datei physisch im Index existierte. Das System fiel dann auf globale Suche zurück → Halluzinationen (z.B. "aegypten.pdf enthält Skandinavien-Analyse").
+- **Problem:** Path-String-Vergleich ohne Normalisierung ist auf Windows nicht deterministisch. `C:\foo\bar.pdf` vs `C:/foo/bar.pdf` vs `C:\FOO\BAR.PDF` sind für String-Endswith-Vergleiche unterschiedliche Werte, obwohl sie dieselbe Datei referenzieren. ChromaDB-Metadaten speichern Pfade wie sie beim Ingest eingehen (meist mit Backslashes), während User-Input variieren kann (Forward-Slashes, Lower/Upper-Case, mit/ohne Extension).
+- **Lösung:** **Pfad-Normalisierung-Funktion** (`_normalize_path(p: str) -> str`) die Backslashes zu Forwardslashes wandelt und lowercased. Diese Funktion wird auf ALLE Pfad-Vergleiche angewendet:
+  ```python
+  @staticmethod
+  def _normalize_path(p: str) -> str:
+      return p.replace("\\", "/").lower() if p else p
+  ```
+  Angewendet in:
+  - `hybrid_retriever.py`: Filename-Filter und IndexStore-Lookup
+  - `tool_executor.py`: `_v2_fulltext_fallback` Stem-Matching
+  - `index_store.py`: `get_chunks_by_file` ChromaDB-Query
+- **Härtung (Lockdown):** Wenn `filename`-Parameter übergeben wird, wird die globale Vektorsuche komplett übersprungen. Nur noch IndexStore-Lookup + Rescue-Path (direkter SQL-Zugriff auf Chunks). Wenn das 0 Ergebnisse liefert → leer zurückgeben, NIE globale Suche als Fallback.
+- **Tripwire:** Wenn RAG-Filename-Suche auf Windows "nichts findet" obwohl die Datei im Index existiert → Slash-Trap. Erkennbar im Log: `[FILENAME-FILTER] Retrieval miss for '{filename}'` obwohl die Datei physisch vorhanden ist.
+- **Location:** `backend/services/rag/hybrid_retriever.py` (normalize + lockdown), `backend/services/tool_executor.py` (normalize), `backend/services/rag/index_store.py` (normalize), gefixt 2026-04-22.
+- **Confidence:** High (Test mit 5 Varianten: `aegypten`, `aegypten.pdf`, `AEGYPTEN.PDF`, `Aegypten.Pdf`, voller Pfad — alle 5 treffen korrekt).
+- **Tags:** RAG, WindowsPaths, SlashTrap, Normalization, ChromaDB, PathComparison, HybridRetriever
+
+## [LESSON] #HardwareTruth #RAG "Hardware-Truth over Index-Faith — Physischer Scan vor Tool-Ausführung"
+- **Kontext:** RAG V2 Dubletten-Erkennung basierte auf IndexStore-Lookup (`get_all_paths_for_filename`). Nach Memory-Purge war das zweite Duplikat (Documents\JanusPDFs\aegypten.pdf) nicht mehr indiziert, aber physisch vorhanden. Tool-Executor vertraute blind auf Index und injizierte keinen Warn-Header → KI wählte Datei stillschweigend aus ("Silent Selection") ohne User-Transparenz.
+- **Problem:** Blindes Vertrauen auf Datenbank-Index führt zu "Silent File Mismatch" Halluzinationen. Der Index kann veraltet sein (durch Purges, Re-Indexing, oder inkrementelle Updates). Wenn eine Datei physisch existiert aber nicht im Index, "sieht" das Tool sie nicht und wählt eine andere Datei stillschweigend aus. Der User erhält keine Warnung über die Redundanz.
+- **Lösung:** **Physischer Dubletten-Scan** vor Tool-Ausführung. Wissens-Tools (knowledge.query, knowledge.read_full_text) müssen vor der eigentlichen Ausführung einen schnellen physischen Scan über die Workspaces machen (via `filesystem_manager.find_files` oder glob). Wenn `count > 1`, wird ein Warn-Header injiziert:
+  ```python
+  # Physical duplicate detection in tool_executor.py
+  from backend.services.filesystem_manager import find_files
+  stem_pattern = f"{needle_stem}.*"
+  fs_result = find_files(pattern=stem_pattern, max_results=100, search_all_drives=False)
+  if len(filtered_physical) > 1:
+      # Inject warning header
+      warning_block = f"!!! SYSTEM-WARNHINWEIS: MEHRERE DATEIEN GEFUNDEN !!!\nDateiname: {filename}\nGefundene Pfade:\n{paths}\nAktuelle Auswahl: {chosen.path}"
+  ```
+  P0-Direktive in Skill-JSONs zwingt LLM zur Transparenz: "Hinweis: Ich habe [Anzahl] Versionen von [Datei] gefunden. Ich verwende hier die Datei aus [Pfad]. Die anderen Fundorte sind: [Liste]."
+- **Härtung:** Warn-Header ist P0-Priorität (vor jedem anderen Content). LLM muss mit dem Hinweis beginnen, sonst gilt die Antwort als "schwerer Systemfehler". Der Header ist im Tool-Output physisch injiziert, nicht nur im LLM-System-Prompt.
+- **Tripwire:** Wenn User nach einer Datei fragt und das Tool eine Datei liefert, aber es gibt physisch weitere Kopien mit demselben Namen im Workspace → Hardware-Truth-Verletzung. Erkennbar im Log: Fehlender `[DUPLICATE-DETECTION]` Eintrag trotz physischer Dubletten.
+- **Location:** `backend/services/tool_executor.py` (physical duplicate detection), `backend/skills/knowledge/query.json` (P0 directives), `backend/skills/knowledge/read_full_text.json` (P0 directives), gefixt 2026-04-22.
+- **Confidence:** High (Physischer Scan findet alle Dateien unabhängig vom Index-Stand).
+- **Tags:** RAG, HardwareTruth, IndexFaith, DuplicateDetection, Filesystem, Transparency, P0Directives
+
+## [LESSON] #Orchestration #ToolManager "The Store-Key Ambiguity — Registriere Tools immer unter ihrer globalen Skill-ID, nicht unter dem lokalen Funktionsnamen"
+- **Kontext:** `ToolManager.register_tool()` speicherte Tools unter `func.__name__` (z.B. `query_knowledge_base`, `read_file`, `list_directory`), während `get_tool()` versuchte, unter der Skill-ID (z.B. `knowledge.query`, `filesystem.read_file`) zu suchen. Legacy-Routing-Logik existierte, aber der Store-Key war asymmetrisch — ein Reverse-Lookup auf einen nicht existierenden Key.
+- **Problem:** `get_tool("knowledge.query")` lieferte immer `None`, weil das Tool unter `"query_knowledge_base"` gespeichert war. Das Forward-Mapping (legacy → skill) existierte im Code, aber der Store war unter dem Legacy-Namen, nicht der Skill-ID. Ergebnis: Zwei parallele Namensräume ohne funktionierende Verbindung.
+- **Lösung:** `register_tool()` persistiert jetzt primär unter `skill_id = self.get_skill_id(tool_name)` und legt bei Divergenz einen Alias unter dem Legacy-Namen an:
+  ```python
+  skill_id = self.get_skill_id(tool_name)
+  self.tools[skill_id] = tool  # Registrierung unter Skill-ID (z.B. knowledge.query)
+  if tool_name != skill_id:
+      self.tools[tool_name] = tool  # Alias unter Legacy-Name (z.B. query_knowledge_base)
+  ```
+- **Tripwire:** Wenn `get_tool(skill_id)` für ein existierendes Skill-ID `None` zurückgibt, obwohl das Tool registriert ist → Store-Key-Mismatch zwischen `register_tool()` und `get_tool()`.
+- **Location:** `backend/services/tool_manager.py::register_tool` (Zeilen 326-329), gefixt 2026-04-22.
+- **Confidence:** High (Audit + Code-Review bestätigt Asymmetrie).
+- **Tags:** Orchestration, ToolManager, SkillID, LegacyRouting, StoreKey, Asymmetry
+
+---
+
+## [PATTERN] #StranglerArchive "Strangler Archive Pattern — Nachrichten bei Kompression in Archiv-Tabelle schieben statt löschen; Injektion eines Summary-Proxys für Kontext-Erhalt"
+- **Kontext:** TASK-057 Context Awareness System implementierte Token-over-Count und Emergency Overflow Selection. Bei Kompression von Nachrichten (z.B. wenn Token-Limit erreicht wird) wurden alte Nachrichten gelöscht, was zu Kontextverlust führte. Das Strangler Pattern bietet eine Alternative: Komprimierte Nachrichten werden in eine Archiv-Tabelle verschoben und ein Summary-Proxy injiziert, um Kontext zu erhalten.
+- **Problem:** Löschen von Nachrichten bei Kompression führt zu unwiederbringlichem Kontextverlust. Historische Informationen gehen verloren, was die Qualität von nachfolgenden Antworten beeinträchtigt. Keine Möglichkeit, archivierte Nachrichten wiederherzustellen.
+- **Lösung:**
+  1. **Archiv-Tabelle:** Neue Tabelle `messages_archive` mit Spalten für Original-Nachricht, Kompressions-Metadaten und Summary-Proxy.
+  2. **Kompressions-Logik:** Wenn Token-Limit erreicht wird, werden älteste Nachrichten in `messages_archive` verschoben statt gelöscht.
+  3. **Summary-Proxy:** Für jede archivierte Nachricht wird ein kurzes Summary generiert und als Proxy-Nachricht injiziert.
+  4. **Wiederherstellung:** API-Endpoint ermöglicht Wiederherstellung archivierter Nachrichten bei Bedarf.
+- **Härtung:** Summary-Proxy garantiert, dass wesentliche Informationen erhalten bleiben. Archiv-Tabelle ermöglicht Audit-Trail und Wiederherstellung.
+- **Tripwire:** Wenn Kontext nach Kompression verloren geht → Summary-Proxy nicht injiziert. Erkennbar: Antworten beziehen sich nicht mehr auf archivierte Informationen.
+- **Location:** TASK-057 Context Awareness System (Token-over-Count, Emergency Overflow), implementiert 2026-04-30.
+- **Confidence:** High (Archiv-Muster bewährt sich in großen Systemen für Kontext-Erhalt).
+- **Tags:** StranglerArchive, Compression, ContextRetention, ArchiveTable, SummaryProxy, TASK057
+
+---
+
+## [PATTERN] #SelfHealingGateway "Self-Healing Gateway Pattern — Agnostischer Retry-Loop bei Auth-Fehlern (expired keys) inkl. automatischem Refresh aus dem Keyring"
+- **Kontext:** TASK-057 Context Awareness System implementierte Gemini Key Self-Healing bei expired keys. API-Calls können mit 401/expired Fehlern fehlschlagen, wenn API-Keys ablaufen. Der Retry-Loop muss provider-agnostisch sein und automatisch Keys aus dem Keyring refreshen.
+- **Problem:** 401/expired Fehler führen zu Abbruch ohne Wiederholung. Manuelle Key-Updates sind zeitaufwendig. Provider-spezifische Retry-Logik führt zu Code-Duplikation. Keine automatische Wiederherstellung bei temporären Auth-Fehlern.
+- **Lösung:**
+  1. **Retry-Loop:** Wrapper-Funktion um API-Calls mit Retry-Logik bei 401/expired Fehlern.
+  2. **Keyring-Refresh:** Bei 401 wird automatisch ein neuer Key aus dem Keyring geladen (via `keyring.get_password()`).
+  3. **Provider-Agnostisch:** Retry-Logik funktioniert für alle Provider (OpenAI, Gemini, Ollama).
+  4. **Max-Retries:** Begrenzung auf 3 Retries um Endlos-Loops zu vermeiden.
+  5. **Logging:** Detailliertes Logging für jeden Retry-Versuch mit Fehler-Context.
+- **Härtung:** Retry-Loop garantiert Robustheit bei temporären Auth-Fehlern. Keyring-Refresh ist sicher (verschlüsselte Speicherung). Max-Retries verhindert Endlos-Loops.
+- **Tripwire:** Wenn API-Calls bei 401 abbrechen ohne Retry → Retry-Loop nicht aktiv. Erkennbar im Log: Fehlender `[RETRY]` Eintrag bei 401-Fehler.
+- **Location:** `frontend/js/context-awareness.js` (Gemini Self-Healing Retry-Loop), implementiert 2026-04-30.
+- **Confidence:** High (Retry-Loop funktioniert provider-agnostisch, Keyring-Refresh sicher).
+- **Tags:** SelfHealingGateway, RetryLoop, AuthError, Keyring, ProviderAgnostic, TASK057
+
+---
+
+## [PATTERN] #IntentNegativeGuard "Intent Negative Guard Pattern — Nutzung von Ausschlusskriterien (Negative Keywords) in der IntentEngine, um Falsch-Positive bei komplexen Workflows (Storybook) zu verhindern"
+- **Kontext:** TASK-057 Context Awareness System implementierte Storybook Intent Härtung. Eine allgemeine Aufforderung zur Zusammenfassung eines langen Textes wurde vom `intent_engine` fälschlicherweise als "Storybook-Intent" klassifiziert, was den falschen Workflow auslöste (Bilderstellung statt Text-Zusammenfassung).
+- **Problem:** Positive Keywords allein führen zu Falsch-Positiven bei komplexen Workflows. Zusammenfassungs-Anfragen mit "fass zusammen" triggerten Storybook-Workflow, obwohl sie kreative Aufforderungen erfordern. Keine Möglichkeit, bestimmte Intents explizit auszuschließen.
+- **Lösung:**
+  1. **Negative Keywords:** `STORYBOOK_NEGATIVE_KEYWORDS` (fass zusammen, zusammenfassen, analysiere, gib mir eine übersicht) definieren Ausschlusskriterien.
+  2. **Positive Keywords:** `STORYBOOK_POSITIVE_KEYWORDS` (erzähle eine geschichte, kinderbuch, illustriere, mit den charakteren) definieren explizite Trigger.
+  3. **Detect-Methode:** `detect_storybook_intent()` prüft zuerst Negative-Keywords (Ausschluss), dann Positive-Keywords (Einschluss).
+  4. **Logik:** Intent nur wenn Positive-Keywords vorhanden UND Negative-Keywords NICHT vorhanden.
+  5. **Frontend-Integration:** `chat_orchestrator.py` verwendet `intent_engine.detect_storybook_intent()` statt inline-Check.
+- **Härtung:** Negative-Keywords verhindern Falsch-Positive bei Analyse/Zusammenfassungs-Anfragen. Positive-Keywords schärfen Trigger auf kreative Aufforderungen.
+- **Tripwire:** Wenn Zusammenfassungs-Anfrage Storybook-Workflow auslöst → Negative-Keywords fehlen oder sind zu restriktiv. Erkennbar im Log: `[CU-2] Storybook intent blocked by negative keyword` fehlt.
+- **Location:** `backend/services/orchestrator/intent_engine.py` (STORYBOOK_POSITIVE_KEYWORDS, STORYBOOK_NEGATIVE_KEYWORDS, detect_storybook_intent), `backend/services/chat_orchestrator.py` (intent_engine Aufruf), implementiert 2026-04-30.
+- **Confidence:** High (Negative-Keywords verhindern Falsch-Positive, Positive-Keywords schärfen Trigger).
+- **Tags:** IntentNegativeGuard, StorybookIntent, FalsePositive, NegativeKeywords, IntentEngine, TASK057
+
+---
+
+## [LESSON] #Pydantic #SchemaDrift "The Parameter Trinity — Manifest (JSON), Schema (Pydantic) und Decorator (Python) müssen denselben Parameter-Namen verwenden"
+- **Kontext:** Filesystem-Skills hatten einen Drei-Ebenen-Drift: Skill-JSON (`read_file.json`) definierte `"file_path"`, Pydantic-Schema (`ReadFileArgs`) deklarierte `path: str`, und Python-Decorator (`@requires_path_auth`) erwartete `path_arg="file_path"`. Das JSON-`input_schema` wurde vom System komplett ignoriert.
+- **Problem:** Pydantic-Validation akzeptierte `{"path": "..."}`, aber der Decorator las `kwargs["file_path"]` → KeyError/Auth-Fehler trotz erfolgreicher Schema-Validierung. Die gecachte Modell-Instanz (`ToolDefinition.args_schema`) war der "Zombie", der das LLM mit falschem Schema fütterte. Skill-JSON-Schemas waren toter Code (nie gelesen).
+- **Lösung:** Pydantic-Schemas an Skill-JSON und Decorator angleichen: `ReadFileArgs.path` → `file_path`, `DeleteFileArgs.path` → `file_path`, `CreateFileArgs.path` → `file_path`. Einheitlicher Parameter-Name `file_path` auf allen drei Ebenen.
+- **Tripwire:** Wenn Tool-Validation erfolgreich ist, aber die Ausführung mit `KeyError` auf einem Parameter bricht, der im Schema anders heißt → Parameter-Trinity-Violation.
+- **Location:** `backend/data/schemas.py` (Zeilen 620, 646, 650), gefixt 2026-04-22.
+- **Confidence:** High (Cross-Reference JSON ↔ Pydantic ↔ Decorator bestätigt Inkonsistenz).
+- **Tags:** Pydantic, SchemaDrift, ParameterTrinity, file_path, SkillJSON, Decorator
+
+## [LESSON] #DeadCode #Prompting #PromptRegistry "Registry-Direktiven müssen nicht nur definiert, sondern auch injiziert werden — sonst sind sie wirkungslos"
+- **Kontext:** User verschärfte `prompt_registry.py::search_command_priority` + ergänzte `file_system_guard` mit Dubletten-Hinweis über 3 Sessions hinweg. Trotzdem berichteten faule Modelle (Nano/Mini) weiter Datei-Pfade aus Memory ohne Tool-Call. Log-Analyse des echten OpenAI-Request zeigte: Der System-Prompt enthielt WEDER `search_command_priority` NOCH `file_system_guard`.
+- **Problem:** Beide Direktiven waren in `_DIRECTIVES` als Einträge definiert, aber nirgends per `prompt_registry.get_directive(...)` aufgerufen und an den System-Prompt angehängt. Der reale Prompt-Build in `execution_dispatcher.py:190` ruft `apply_verbosity_control(wf.system_prompt_for_llm)` — welches bisher nur `verbosity_control` + `no_meta_talk` anhängte. Ergebnis: Dead Code. Die schärfsten Formulierungen ("schwerer Systemfehler", "ABSOLUTE Priorität") erreichten den LLM nie.
+- **Lösung:** `apply_verbosity_control()` erweitert — Schleife iteriert über 4 Direktiven statt 2. Damit werden `file_system_guard` + `search_command_priority` bei jedem DEFAULT-Dialog-Turn angehängt. Dedup-Check (`if rule not in base_text`) garantiert Idempotenz bei wiederholten Aufrufen.
+- **Tripwire:** Wenn ein neu hinzugefügter `prompt_registry`-Eintrag nicht wirkt → grep nach `get_directive("<key>")` über den Code — fehlt dieser Call, ist die Direktive Dead Code. Besonders kritisch bei Base-System-Prompts aus der DB (Persönlichkeiten), die Prompt-Registry-Direktiven überstimmen können.
+- **Location:** `backend/services/orchestrator/prompt_registry.py:197-216` (apply_verbosity_control), gefixt 2026-04-21.
+- **Confidence:** High (Smoke: alle 4 Direktiven injiziert + idempotent).
+- **Tags:** DeadCode, Prompting, PromptRegistry, SystemPrompt, Injection, BrevityBias
+
+## [LESSON] #LLM #BrevityBias "Faule Modelle bevorzugen kurze Antworten aus Memory über Tool-Calls — bei Suchanfragen muss Tool-Call-Pflicht explizit erzwungen werden"
+- **Kontext:** Memory-Context ist so gut, dass "faule" Modelle (wie Nano) Suchanfragen mit alten Erinnerungen aus Memory beantworten statt Tool-Calls durchzuführen. User fragt "Wo liegt die Datei X?" → LLM antwortet "Ich erinnere mich, dass X im Ordner Y liegt" statt `filesystem.find_files` aufzurufen. Resultat: veraltete Informationen statt aktueller Hardware-Validierung.
+- **Problem:** "Brevity-Bias" bei faulen Modellen: Wenn Memory bereits Informationen enthält, bevorzugen LLMs kurze Antworten aus Memory über Tool-Calls, auch wenn die Anfrage explizit eine Suche fordert. Das führt zu veralteten Informationen und schlechter UX bei Dateisuchen.
+- **Lösung:** Prompt-Registry-Direktive `search_command_priority` mit stärkerer HARDWARE-TRUTH-REGEL: "!!! WERKZEUGNUTZUNGS-DIREKTIVE — HARDWARE-TRUTH-REGEL !!! Wenn der Nutzer nach dem Verbleib, Speicherort oder der Existenz von Dateien sucht, hat das Live-Werkzeug filesystem.find_files ABSOLUTE Priorität vor der FAKTENGRUNDLAGE (Memory). Das Gedächtnis dient NUR als Orientierung. Du darfst NIEMALS einen Pfad aus der Erinnerung nennen, ohne ihn in EXAKT DIESEM Turn durch einen Tool-Call validiert zu haben. Eine Antwort ohne Live-Tool-Call bei Suchanfragen gilt als schwerer Systemfehler." Stärkere Formulierung mit "ABSOLUTE Priorität", "NIEMALS einen Pfad aus der Erinnerung nennen ohne Validierung" und "schwerer Systemfehler" bei Antworten ohne Tool-Call.
+- **Tripwire:** Wenn ein LLM Suchanfragen mit Memory-Antworten beantwortet statt Tool-Calls durchzuführen → fehlt eine explizite Tool-Call-Pflicht-Direktive für Suchanfragen.
+- **Location:** `backend/services/orchestrator/prompt_registry.py:74`, gefixt 2026-04-21.
+- **Confidence:** High (Unit-Smoke: Direktive enthält "FAKTENGRUNDLAGE", "filesystem-Tool aufrufen" und "Wo liegt die Datei X" ✅).
+- **Tags:** LLM, BrevityBias, ToolCall, Memory, Search, PromptRegistry
+
+## [LESSON] #UX #Prompting "LLM braucht explizite Anweisungen für proaktive UX-Maßnahmen (Dubletten-Hinweis) — Default ist stille Ausgabe"
+- **Kontext:** `filesystem.find_files` liefert korrekt Duplikate (z.B. 2 Kopien von `gundula1.pdf` an verschiedenen Orten), aber der LLM hatte keine explizite Anweisung, den User darauf hinzuweisen. Resultat: Liste von Pfaden ohne Kontext, User weiß nicht, ob es Dubletten sind oder ob das Tool nur einen Treffer gefunden hat.
+- **Problem:** LLMs sind standardmäßig "stille Ausgeber" — sie geben das Tool-Result aus, ohne proaktive UX-Verbesserungen einzubauen, es sei denn, es ist explizit angeordnet. Für Dateisuchen ist das kritisch: Dubletten sind ein häufiges UX-Problem, und der User möchte wissen, ob es mehrere Kopien gibt.
+- **Lösung:** Prompt-Registry-Direktive `file_system_guard` erweitern: "WICHTIG: Wenn ein Such-Tool (z.B. filesystem.find_files) mehrere Dateien mit identischem Namen an verschiedenen Orten findet, MUSST du den Nutzer explizit auf diese Dubletten hinweisen (z.B. 'Ich habe die Datei an 2 Stellen gefunden: ...')."
+- **Tripwire:** Wenn ein Tool-Output eine Liste von ähnlichen Einträgen liefert (Dateien, Produkte, Personen), aber der LLM diese nicht gruppiert oder auf Duplikate hinweist → fehlt eine Prompt-Direktive.
+- **Location:** `backend/services/orchestrator/prompt_registry.py:42`, gefixt 2026-04-21.
+- **Confidence:** High (Unit-Smoke: Direktive enthält "Dubletten" und "find_files" ✅).
+- **Tags:** UX, Prompting, Dubletten, LLM, Proaktivität, PromptRegistry
+
+## [LESSON] #Performance #FactExtraction "Tool-Output-Größe beeinflusst downstream-Fakten-Extraktion massiv — max_results Default an downstream-Overhead anpassen"
+- **Kontext:** `filesystem.find_files(max_results=100)` lieferte bis zu 100 Dateipfade als Tool-Output. Die Fakten-Extraktion (`extract_and_save_fact_from_interaction`) verarbeitet die Assistant-Message (die die Dateiliste enthält) und Nano extrahiert jeden Pfad als separate "Langzeit-Fakt". Bei 87 Pfaden → 87 Fakten → DB-Overhead für Sekunden, System-Lag.
+- **Problem:** `max_results`-Default wurde nur nach Such-Qualität (Vollständigkeit) gewählt, nicht nach downstream-Kosten (Fakten-Extraktion). 100 Pfade sind für die meisten Use-Cases überdimensioniert und führen zu massivem Overhead.
+- **Lösung:** `max_results` Default von 100 auf 20 gesenkt. 20 Treffer sind für die meisten Use-Cases ausreichend; bei Bedarf kann der User `search_all_drives=true` oder explizites `max_results` nutzen. Docstring aktualisiert mit Begründung ("begrenzt Fakten-Extraktion-Overhead nach Dateisuchen").
+- **Härtung (empfohlen, nicht implementiert):** Fakten-Extraktion härten, um Pfade als "Langzeit-Fakten" zu ignorieren oder zu deduplizieren. Aktuell ist die Limit-Senkung der pragmatische Fix.
+- **Tripwire:** Wenn ein Tool-Output eine große Liste von Items liefert (Dateien, Produkte, Personen) und das System nach der Antwort für Sekunden "friert" → Fakten-Extraktion extrahiert jedes Item als separate Fact.
+- **Location:** `backend/services/filesystem_manager.py:318` (max_results Default 100 → 20), gefixt 2026-04-21.
+- **Confidence:** High (Unit-Smoke: `max_results default == 20` ✅).
+- **Tags:** Performance, FactExtraction, Limit, ToolOutput, Downstream, Nano
+
+## [LESSON] #Numpy #Embeddings #Robustness "np.array/np.stack auf heterogenen Embedding-Listen bricht mit 'inhomogeneous shape' — sanitize vor stack, Alignment via Padding erhalten"
+- **Kontext:** `backend/services/vector_service.py::calculate_similarity_with_precomputed` baute das Corpus-Array via `np.array(candidate_embeddings, dtype=np.float32)` aus einer `List[List[float]]`. Im Memory-Retrieval sind die Einträge aber *heterogen*: manche Slots haben kein gecachtes Embedding (→ `None`), andere stammen aus älteren Modell-Versionen mit abweichender Dimension (z.B. 512 statt 384), vereinzelt NaN aus defekten Encodings.
+- **Problem:** `np.array(mixed_list, dtype=float32)` scheitert **deterministisch** bei jeder inhomogenen Stelle mit `ValueError: setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (N,) + inhomogeneous part.` Der gesamte Similarity-Batch wirft eine Exception und der Caller kriegt `[0.0] * len(candidates)` zurück — obwohl 26/27 Embeddings valide gewesen wären. Der Bug ist still, weil er im `except Exception` abgefangen und nur geloggt wird; Retrieval-Qualität kollabiert lautlos.
+- **Lösung:** Helper `_safe_stack_embeddings(candidates, expected_dim)` filtert *vor* `np.stack`:
+  ```python
+  valid_pairs = []
+  for i, emb in enumerate(candidates):
+      if emb is None or not isinstance(emb, (list, tuple, np.ndarray)): continue
+      try: arr = np.asarray(emb, dtype=np.float32)
+      except (ValueError, TypeError): continue
+      if arr.ndim != 1 or arr.size == 0 or not np.all(np.isfinite(arr)): continue
+      valid_pairs.append((i, arr))
+  ref_dim = expected_dim or valid_pairs[0][1].size
+  consistent = [(i, a) for i, a in valid_pairs if a.size == ref_dim]
+  return [i for i,_ in consistent], np.stack([a for _,a in consistent]), dropped_count
+  ```
+  **Kritisch: Alignment-Preservation.** Die Consumer-APIs geben `[0.0] * len(original)` zurück und schreiben Scores per `valid_indices[local]→original_idx` — damit bleibt der Caller (Knapsack-Selector o.ä.) index-kompatibel.
+- **Tripwire:** Im Log `Error in precomputed similarity calculation` oder `Error in batch similarity calculation` mit `inhomogeneous part` → **exakt dieser Bug**. Außerdem: Retrieval liefert plötzlich nur noch 0-Scores obwohl Chat aktiv ist.
+- **Location:** `backend/services/vector_service.py::_safe_stack_embeddings` (neu), `calculate_similarity_batch`, `calculate_similarity_with_precomputed`, gefixt 2026-04-21.
+- **Confidence:** High (Unit-Smoke mit `[valid, None, wrong_dim, nan, valid, 'not_list']` → 4 gefiltert, 2 korrekt gescored, Output-Länge 6 erhalten).
+- **Tags:** Numpy, Embeddings, Similarity, Memory, Retrieval, Robustness, Shape, Alignment
+
+## [LESSON] #Pydantic #SchemaDrift "Literals in Pydantic-Schemas driften stillschweigend von realen Config-Werten — baue CI-Drift-Check gegen alle Manifests"
+- **Kontext:** `backend/data/schemas.py::SkillMetadata.sandbox_level` definierte `Literal["unrestricted", "workspace_only", "read_only_fs"]`. Die **11 filesystem-Skill-Manifests** (`read_file.json`, `move_file.json`, …) nutzten aber seit Längerem konsistent den Wert `"full"`.
+- **Problem:** Der Mismatch warf beim Skill-Loading **keinen Fehler** — offenbar wird `SkillMetadata` im Loader mit tolerantem Pfad (`extra=allow` oder `model_validate` ohne `strict=True`) gebaut, oder `sandbox_level` wird überhaupt nie gegen das Schema validiert beim Load. Die Divergenz existiert damit still, aber jede zukünftige Strict-Validierung (z.B. wenn jemand `ConfigDict(strict=True)` hinzufügt) würde 11 Skills auf einmal brechen.
+- **Lösung:** Literal-Liste um tatsächlich genutzten Wert erweitern: `Literal["unrestricted", "workspace_only", "read_only_fs", "full"]`. Die korrekte Richtung war NICHT, 11 Manifests umzubiegen — `"full"` ist semantisch distinkt (volle FS-Rechte innerhalb der Path-Sentinel-Workspace-Grenze, anders als `"workspace_only"` oder `"read_only_fs"`) und die Konvention war gewollt.
+- **Härtung (empfohlen, nicht implementiert):** CI-Check, der alle Manifests in `backend/skills/**/*.json` gegen `SkillMetadata` strikt validiert, würde zukünftige Drift sofort sichtbar machen.
+- **Tripwire:** Wenn ein Schema-Feld einen Literal-Typ hat und eine Config-Datei einen davon abweichenden Wert, aber kein Fehler geworfen wird — das ist der Drift. Erkennbar nur durch manuelles Cross-Ref oder CI-Validator.
+- **Location:** `backend/data/schemas.py:195` (Literal erweitert), gefixt 2026-04-21.
+- **Confidence:** Medium-High (Unit-Smoke: alle 4 Literals akzeptiert, `"hacky"` abgelehnt — aber ohne CI-Validator bleibt Drift-Risiko).
+- **Tags:** Pydantic, Literal, Schema, Config, Drift, Validation, CI
+
+## [PATTERN] #Orchestration #IntentOverride "Pre-Resolution Logic-Escalation für Planungs-Tasks"
+- **Kontext:** Komplexe Planungs-Tasks (z.B. Sortieren von PDFs nach Themeninhalt) erfordern höhere Reasoning-Kapazität als Standard-Modelle bieten. Das System soll solche Intents automatisch erkennen und vor der Tool-Ausführung auf ein Logic-Tier-Modell eskalieren, ohne dass der LLM explizit nach einem Upgrade fragen muss.
+- **Problem:** Ohne Intent-Eskalation versuchen "faule" Modelle (Nano/Mini) komplexe Sortieraufgaben mit glob-Pattern statt semantischer Analyse. Resultat: Ungenaue Sortierung nach Dateinamen statt Inhalt, fehlerhafte Bulk-Operationen.
+- **Pattern:** **Pre-Resolution Intent-Detection + MOA-Hierarchie-Upgrade.** In `_apply_pre_resolution_guards()` (vor Tool-Loop) wird die letzte User-Nachricht auf Sortier-Intents geprüft (`sortiere` + `pdf/dateien`). Wenn erkannt, wird via `MOA_MODEL_HIERARCHY` das Logic-Tier-Modell für den aktuellen Provider ermittelt und `wf.chosen_model` überschrieben. Das Upgrade gilt nur für den aktuellen Turn.
+  ```python
+  if 'sortiere' in query and ('pdf' in query or 'dateien' in query):
+      provider_key = str(current_provider or "").strip().lower()
+      provider_tiers = MOA_MODEL_HIERARCHY.get(provider_key)
+      logic_model = provider_tiers.get('logic') if provider_tiers else None
+      if logic_model and wf.chosen_model != logic_model:
+          wf.chosen_model = logic_model
+  ```
+- **Warum Pre-Resolution:** Das Modell-Upgrade muss VOR dem Prompt-Build passieren, damit der LLM mit dem Logic-Tier-Modell den Plan erstellt und die Tool-Aufrufe generiert. Nachträgliches Upgrade wäre zu spät.
+- **Trigger-Kriterien für Intent-Override:** (1) Klare Intent-Keywords (`sortiere`, `ordnen`, `thematisch`). (2) Subjekt-Keywords (`pdfs`, `dateien`). (3) Provider-agnostische Hierarchie via MOA_MODEL_HIERARCHY (OpenAI: gpt-5.4, Gemini: gemini-3-pro-preview).
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py` (_apply_pre_resolution_guards), `backend/llm_providers/shared/moa.py` (MOA_MODEL_HIERARCHY), implementiert 2026-04-24.
+- **Confidence:** High (Intent-Erkennung ist deterministisch, MOA-Hierarchie ist zentral definiert und provider-agnostisch).
+- **Tags:** Orchestration, IntentOverride, LogicEscalation, MOA, PreResolution, Planning, Sorting
+
+---
+
+## [PATTERN] #Planning #FehlbefundZurueckweisung "Externe Fix-Pläne immer gegen Code verifizieren, bevor implementiert wird"
+- **Kontext:** Der User übergab einen 3-Punkte-Fix-Plan aus AI Studio. Punkt #2 lautete: "Repariere den OllamaCompiler Import in `backend/services/prompting/factory.py`."
+- **Problem:** Blindes Abarbeiten hätte hier einen Phantom-Fix produziert — `factory.py:3` importiert sauber aus `backend/llm_providers/ollama/compiler.py`, die Klasse `OllamaCompiler(BasePromptCompiler)` existiert, hat eine funktionierende `compile()`-Methode. Der Live-Log zeigte keinen Import-Fehler; Ollama-Polling lief erfolgreich. Kein Beweis für einen Bug.
+- **Pattern:** **Vor Implementation Scope-Review.** Jeder Plan-Punkt wird gegen drei Quellen abgeglichen: (1) Code (existiert die vermutete Fehlstelle?), (2) Log (gibt es Runtime-Evidenz?), (3) Stacktrace/Reproduktion (ist der Bug reproduzierbar?). Nur bei Treffer in mindestens einer Quelle implementieren.
+- **Kommunikation mit User:** Fehlbefund *nicht* stillschweigend skippen, sondern explizit zurückmelden mit Beweis (Code-Zitat, Log-Quote) und User entscheiden lassen — eventuell sieht er etwas, das in meinem Scan fehlte.
+- **Counter-Pattern:** AI-Studio-Pläne blind als Ground-Truth behandeln. Das produziert Schein-Commits, die echten Bugs Aufmerksamkeit wegnehmen und die Test-Suite mit Non-Fixes aufblähen.
+- **Tripwire:** Wenn ein Fix-Plan sehr spezifisch klingt ("Repariere X in Datei Y"), aber du beim Öffnen der Datei keinen Bug siehst und im Log keine Spur findest — **nicht fixen**. Stattdessen zurückmelden.
+- **Location:** Session 2026-04-21 Core-Repair-Arc (OllamaCompiler-Plan-Punkt zurückgewiesen).
+- **Confidence:** High (Backend läuft produktiv, Ollama-Integration aktiv, keine Import-Error-Logs).
+- **Tags:** Planning, Review, AIStudio, FalsePositive, VerifyBeforeFix, Communication
+
+## [LESSON] #Python #Pathlib #Robustness "Path.rglob bricht bei FileNotFoundError komplett ab — nutze os.walk mit onerror für robuste rekursive Suche"
+- **Kontext:** Für `filesystem.find_files` (rekursive Dateisuche) wurde zunächst `Path(root).rglob(pattern)` genutzt. Auf Windows-Systemen mit defekten/falsch benannten Desktop-Ordnern (z.B. `C:\Users\pruve\Desktop\kikitest.` — Trailing-Dot ist auf NTFS lesbar, aber über manche API-Pfade nicht auflösbar) wirft `rglob` intern `FileNotFoundError: [WinError 3]` und **bricht die gesamte Iteration ab** statt nur den betroffenen Pfad zu überspringen. Ergebnis: Suche liefert 0 Treffer obwohl Datei vorhanden ist.
+- **Lösung:** `os.walk(root, onerror=_walk_onerror)` mit einem `onerror`-Callback, der Per-Pfad-Fehler auf DEBUG loggt und die Iteration weiterführt. Kombiniert mit `fnmatch.filter(filenames, pattern)` ersetzt das `rglob` vollständig, ist robuster UND erlaubt zusätzlich die In-Place-Mutation von `dirnames[:]` für Noise-Ordner-Skips (`Windows`, `node_modules`, etc.).
+  ```python
+  def _walk_onerror(err: OSError) -> None:
+      logger.debug("find_files: Überspringe unerreichbaren Pfad (%s)", err)
+
+  for dirpath, dirnames, filenames in os.walk(str(root), onerror=_walk_onerror):
+      if apply_exclude:
+          dirnames[:] = [d for d in dirnames if d.lower() not in EXCLUDE_DIRS]
+      for fname in fnmatch.filter(filenames, effective_pattern):
+          matches.append(os.path.join(dirpath, fname))
+  ```
+- **Tripwire:** Wenn eine rekursive Path-Suche auf Windows unerwartet 0 Treffer liefert, obwohl die Datei existiert, und im Log `WinError 3` oder `FileNotFoundError` auftaucht — das ist der Bug.
+- **Location:** `backend/services/filesystem_manager.py::find_files` (Z. 370ff), gefixt 2026-04-21
+- **Confidence:** High (Live-verifiziert: Auto-Escalation über 3 Laufwerke findet beide Duplikate trotz 20+ defekten Desktop-Ordnern)
+- **Tags:** Python, Pathlib, rglob, os.walk, Windows, Symlink, Robustness, Iteration
+
+## [PATTERN] #ProductionWrapper #DebugCompression "Production Wrapper Pattern — Formatiere komplexe Telemetrie-Rohdaten in Token-effizientes AI-Studio-Format (Summary, Cause, Fix) für maximale Iterationsgeschwindigkeit"
+- **Kontext:** D11 Debug Compression Engine liefert rohe Heuristik-Daten (Hard Errors, Model Drift, Latency Spikes, Confidence Score). Für AI Studio Debugging ist ein strukturiertes, Token-effizientes Format erforderlich, das LLMs schnell verarbeiten können ohne Context-Overhead.
+- **Problem:** Rohdaten aus dem Debug Engine sind unstrukturiert und benötigen manuelle Interpretation. Kein dedizierter POST-Endpunkt für AI Studio Integration. Kein standardisiertes Format für Debug-Reports.
+- **Lösung:** **Production Wrapper mit Formatter + POST Endpoint.**
+  1. **Formatter (`debug_formatter.py`):** `format_debug_report(summary_data: dict) -> str` generiert strukturiertes Markdown mit Standard-Sections: SUMMARY (High-level Überblick), ROOT CAUSE (Technische Ursachenanalyse), FINDINGS (Detaillierte Heuristik-Ergebnisse), CONFIDENCE (Score + Interpretation), RECOMMENDED ACTION (Konkrete Handlungsempfehlungen).
+  2. **POST Endpoint (`/api/skills/debug-log`):** Akzeptiert `{"trace_id": "optional", "mode": "fast|full"}`. Ruft D11 Debug Engine auf, leitet Ergebnisse durch Formatter, gibt strukturiertes Markdown zurück.
+  3. **Timeout-Schutz:** 3.0s Hard Timeout auf Log-Fetch und Heuristik-Analyse via `asyncio.wait_for()`. HTTP 504 auf Timeout, HTTP 500 auf Errors.
+  4. **Asyncio Anti-Pattern Fix:** `fetch_logs()` ist async → direkt mit `await` aufrufen (nicht in `run_in_executor`). `_run_heuristics()` ist sync CPU-gebunden → in `run_in_executor` ausführen.
+  5. **LogEntry Attribute Mapping:** LogEntry-Objekte (timestamp, level, message, metadata) werden zu Objekten mit Attributen konvertiert, die `_run_heuristics` erwartet (status, skill, latency_ms, trace_id, payload).
+  6. **Windsurf Skill:** `.windsurf/workflows/debug_log.md` mit curl.exe-Befehl für PowerShell-Kompatibilität.
+- **Härtung:** Typing-Imports (`Optional, List, Dict, Any`) hinzugefügt um NameError bei Server-Start zu vermeiden. Confidence Scoring Fix: Log-Count als positives Signal, keine Fehler = hohe Confidence (0.9 für 100 Logs).
+- **Tripwire:** Wenn /api/skills/debug-log hängt oder NameError bei Server-Start → Asyncio Anti-Pattern oder fehlende Typing imports.
+- **Location:** `backend/services/logging/debug_formatter.py` (neu), `backend/api/routers/system.py` (POST Endpoint), `.windsurf/workflows/debug_log.md` (Skill), implementiert 2026-04-26.
+- **Confidence:** High (Endpoint operational, Formatter getestet, Windsurf Skill funktioniert).
+- **Tags:** ProductionWrapper, DebugCompression, Formatter, AIStudio, TokenEfficient, StructuredFormat, POSTEndpoint, Asyncio, HardTimeout
+
+---
+
+## [PATTERN] #GlobalInsightAggregation #MacroAnalytics "Trennung von Mikro-Debugging (Session) und Makro-Analyse (Global) zur Identifikation systemweiter Architekturschwächen"
+- **Kontext:** D11 Debug Compression Engine liefert Session-level Debugging (trace_id-basiert, letzte 10 Minuten). Für System-Health Monitoring ist eine globale Analyse aller Logs erforderlich, um systemische Muster über Skills und Models hinweg zu identifizieren. Mikro-Debugging ist gut für spezifische Fehler, Makro-Analyse ist notwendig für Architektur-Optimierung.
+- **Problem:** Keine globale Aggregation von Logs nach Skill und Model. Keine systemweite Pattern-Detection (z.B. "skill X hat auf allen Models hohe Fehlerquote"). Keine persistenten Insights für Trend-Analyse. Keine Trennung zwischen Session-Debugging und System-Monitoring.
+- **Lösung:** **Janus Insight Engine (D12) — Globale Log-Aggregation.**
+  1. **Fetcher:** `fetch_logs()` holt Logs aus Supabase für konfigurierbares Zeitfenster (default: 1 Stunde, optional 24h).
+  2. **Aggregator:** `aggregate_logs()` gruppiert Logs nach Skill und Model, berechnet calls, errors, total_latency.
+  3. **Metrics Calculator:** `calculate_metrics()` berechnet error_rate (errors/calls) und avg_latency_ms (total_latency/latency_count).
+  4. **Pattern Detection:** `detect_patterns()` mit deterministischen Regeln: error_rate > 0.2 → "high_error_rate", avg_latency_ms > 2000 → "latency_spike", calls > 50 & error_rate == 0 → "stable".
+  5. **Confidence Model:** `calculate_confidence()` mit Volumen-basiertem Scoring: base = min(1.0, calls/100), reduziert um 20% bei error_rate > 0.5.
+  6. **POST Endpoint:** `/api/system/insights` mit `{"hours": 1}` Parameter. Speichert Ergebnisse persistent in `logs_insights` Tabelle.
+  7. **Schema:** `InsightCreate` und `Insight` Pydantic-Modelle für logs_insights Tabelle.
+- **Härtung:** Keine Physics-Engine, keine Reality-Scores (wie gefordert). Deterministische Aggregation ohne probabilistische Modelle. Test-Suite mit 4 Test-Cases (Faulty Skill, Stable Skill, Performance Problem, Multiple Skills/Models).
+- **Tripwire:** Wenn globale Muster nicht erkannt werden (z.B. skill mit 50% error_rate wird als "stable" markiert) → Pattern-Detection-Regeln sind inkorrekt implementiert. Wenn Confidence bei vielen Calls nicht 1.0 erreicht → Confidence-Formel hat Fehler.
+- **Location:** `backend/services/logging/insight_engine.py` (neu), `backend/api/routers/system.py` (POST Endpoint), `backend/data/schemas_logging.py` (Schema), `backend/tests/test_insight_engine.py` (Test-Suite), implementiert 2026-04-26.
+- **Confidence:** High (Test-Suite 4/4 passed, deterministische Aggregation verifiziert, POST Endpoint operational).
+- **Tags:** GlobalInsightAggregation, MacroAnalytics, SystemHealth, PatternDetection, SkillModelAggregation, ConfidenceModel, D12
+
+---
+
+## [PATTERN] #OptimizationRuleEngine #ActionFirst "Deterministische Bewertung von System-Insights zur Priorisierung von Entwicklungs-Maßnahmen (Action-First Integration)"
+- **Kontext:** D12 Insight Engine liefert Metriken (error_rate, latency), aber keine konkreten Handlungsempfehlungen. Für Action-First Integration (Entwickler soll direkt wissen, was zu tun ist) ist eine Regel-Engine erforderlich, die Insights in priorisierte Actions umwandelt. Keine KI im Backend-Core, nur reine Logik mit Schwellenwerten.
+- **Problem:** Keine automatische Generierung von System-Actions basierend auf Insights. Keine Priorisierung von Maßnahmen (CRITICAL > HIGH > MEDIUM > LOW). Keine Integration in AI Studio Workflow (Entwickler muss manuell aus Daten ableiten, was zu tun ist).
+- **Lösung:** **Janus Optimization Engine (D13) — Rule-Based System Optimization.**
+  1. **Rule Engine:** `evaluate_insight()` mit deterministischen Schwellenwerten: error_rate > 0.5 → CRITICAL MODEL_SWITCH, error_rate > 0.3 → HIGH SCALE_UP, latency > 5000ms → HIGH MODEL_SWITCH, latency > 3000ms → HIGH TIMEOUT_ADJUST, error_rate=0 & latency<1000 → LOW MONITOR.
+  2. **Action Types:** MODEL_SWITCH (Model wechseln), SCALE_UP (Ressourcen hochskalieren), TIMEOUT_ADJUST (Timeout erhöhen), MONITOR (Nur überwachen).
+  3. **Priority Levels:** CRITICAL (sofort), HIGH (empfohlen), MEDIUM (in Betracht ziehen), LOW (nur Monitoring).
+  4. **Persistence:** `store_action()` speichert Actions in logs_actions Tabelle mit JSON-Serialisierung (`model_dump(mode='json')` für datetime).
+  5. **GET Endpoint:** `/api/system/optimization-report` lädt neueste Actions und formatiert als Markdown-Report für AI Studio Integration (CRITICAL > HIGH > MEDIUM > LOW Sortierung).
+  6. **Schema:** `ActionCreate` und `Action` Pydantic-Modelle für logs_actions Tabelle.
+- **Härtung:** Keine KI im Backend-Core (wie gefordert). Deterministische Regeln ohne probabilistische Modelle. Test-Suite mit 7 Test-Cases (High Error Rate, Critical Error Rate, High Latency, Critical Latency, Stable System, Moderate Metrics, Action Serialization).
+- **Tripwire:** Wenn Actions bei überschrittenen Schwellenwerten nicht generiert werden → Rule Engine Logik ist fehlerhaft. Wenn DateTime Serialization Fehler auftreten → `model_dump(mode='json')` vergessen. Wenn Markdown-Report nicht AI-Studio-Ready ist → Formatierung prüfen.
+- **Location:** `backend/services/logging/optimization_engine.py` (neu), `backend/api/routers/system.py` (GET Endpoint), `backend/data/schemas_logging.py` (Schema), `backend/tests/test_optimization_engine.py` (Test-Suite), implementiert 2026-04-26.
+- **Confidence:** High (Test-Suite 7/7 passed, deterministische Regeln verifiziert, GET Endpoint operational, Markdown-Formatierung AI-Studio-Ready).
+- **Tags:** OptimizationRuleEngine, ActionFirst, SystemOptimization, RuleEngine, PriorityLevels, MarkdownReport, D13
+
+---
+
+## [PATTERN] #SystemEvolutionLayer #WeeklyLearning "Deterministische Trend-Analyse über Zeitfenster — Woche N vs Woche N-1 Delta-Vergleich mit automatisierter Empfehlungs-Generierung"
+- **Kontext:** D14 Weekly Learning Engine analysiert historische D12 Insights über einen 14-Tage-Zeitraum, gesplittet in Woche N (aktuell) und Woche N-1 (Baseline). Das Ziel: Erkennen, ob sich das System verbessert oder verschlechtert — ohne KI, rein über deterministische Schwellenwerte.
+- **Problem:** Ohne Trend-Analyse über Zeit waren Verschlechterungen nur per manuellem Vergleich erkennbar. Keine automatische Eskalation bei steigenden Fehlerraten. Kein Cost-Optimization-Signal bei stabilen Skills mit hohem Volumen. Kein Persistence-Layer für die Lern-Historie des Systems.
+- **Lösung:** **D14 Weekly Learning Engine — Deterministic Trend Analysis & Recommendation Engine.**
+  1. **Fetch:** `fetch_historical_data(days=14)` holt D12 Insights aus logs_insights für 2-Wochen-Vergleich.
+  2. **Split:** Woche N (letzte 7 Tage) vs Woche N-1 (vorherige 7 Tage) per `datetime.utcnow() - timedelta(days=7)`.
+  3. **Group:** Insights werden per `skill_model` Key gruppiert für paarweisen Vergleich.
+  4. **Delta:** `error_rate_diff = avg_current - avg_baseline`, `latency_diff_pct = ((current - baseline) / baseline * 100)`.
+  5. **Regression-Trigger:** ErrorRate_diff > 0.05 ODER Latency_diff > 20% → Trend "worsening". ErrorRate_diff < -0.05 ODER Latency_diff < -20% → Trend "improving".
+  6. **Recommendation Engine:** Deterministische Regeln: ErrorRate > 0.3 + worsening → MODEL_SWITCH (HIGH). Latency > 3000ms + worsening → TIMEOUT_ADJUST (MEDIUM). Calls > 100 + ErrorRate == 0 → COST_OPTIMIZE (LOW).
+  7. **Persistence:** `persist_report()` speichert Reports in logs_learning Tabelle. System behält Historie seiner eigenen Evolution.
+  8. **Lifecycle:** `weekly_learning_scheduler` als asyncio Background-Task im FastAPI lifespan. 7-Tage Sleep-Loop. Non-blocking, crash-geschützt.
+  9. **Manual Trigger:** POST `/api/system/learning-trigger` für sofortige Ausführung (Tests und Audits).
+  10. **Markdown Formatter:** `format_report_to_markdown()` für AI Studio Integration (Summary, Trends, Recommendations).
+- **Guardrails:** (a) Missing Baseline → stable statt crash. (b) < 2 Datenpunkte pro Gruppe → skip. (c) Division-by-zero Guard auf baseline_latency. (d) Top-level try-except im Scheduler-Loop. (e) Keine probabilistischen Modelle.
+- **Tripwire:** Wenn Trends immer "stable" zeigen obwohl Fehlerraten steigen → delta threshold (0.05) prüfen. Wenn Scheduler nicht feuert → asyncio.create_task in lifespan prüfen. Wenn Persistence fehlschlägt → logs_learning Tabelle in Supabase prüfen.
+- **Location:** `backend/services/logging/learning_engine.py`, `backend/api/routers/system.py` (GET + POST Endpoints), `backend/data/schemas_logging.py` (Schema), `backend/main.py` (Lifecycle), implementiert 2026-04-26.
+- **Epic:** D14 — Weekly Learning Engine (System Evolution Layer)
+- **Confidence:** High (38/38 Audit-Checks bestanden, deterministische Logik verifiziert, Lifecycle-Integration crash-geschützt, Persistence operational).
+- **Tags:** SystemEvolutionLayer, WeeklyLearning, TrendAnalysis, DeltaComparison, DeterministicRules, RecommendationEngine, Lifecycle, D14
+
+---
+
+## [PATTERN] #DomainSeparation #DecisionGate "D12 (deskriptiv) → D13 (rule-basiert) → D14 (trend-analytisch) mit Decision-Gate [PROVISIONAL] als AI Studio Validierungs-Layer"
+- **Kontext:** Diamond-Stack Harmonisierung (D10-D14) erfordert klare Trennung der Verantwortlichkeiten: D12 liefert deskriptive Metriken, D13 generiert rule-basierte Aktionen aus D12-Aggregaten, D14 analysiert Trends über Zeitfenster. Alle D13/D14 Outputs müssen als "Provisional" markiert werden, da AI Studio der einzige Validierungs-Gatekeeper ist.
+- **Problem:** Inkonsistente Feldnamen (`skill` vs `skill_id`) über die Layer. Keine KPI-Registry in D14 (regression_score). Delta-Formel inkonsistent (absolute vs relative). Kein Decision-Gate Marker für AI Studio Validierung. D12 enthielt implizit Empfehlungs-Logik (detect_patterns) obwohl D13 dafür zuständig ist.
+- **Lösung:** **Diamond-Stack Harmonisierung mit skill_id Contract und Decision-Gate:**
+  1. **skill_id Contract:** `skill_id` (namespace.action format) als kanonisches Feld in D12-D14 Schemas mit `alias="skill"` für DB-Kompatibilität (Supabase Spalte bleibt `skill`). `ConfigDict(populate_by_name=True)` für bidirektionale Kompatibilität.
+  2. **D12 Insight Engine (deskriptiv):** `InsightResult.skill_id` statt `skill`. `detect_patterns()` liefert nur deskriptive Labels (`high_error_rate`, `latency_spike`, `stable`) — keine Empfehlungs-Logik.
+  3. **D13 Optimization Engine (rule-basiert):** `SystemAction.skill_id` mit alias. `evaluate_insight()` liest strikt aus `logs_insights` (D12-Aggregates). Alle Empfehlungs-Strings mit `[PROVISIONAL]` Decision-Gate Marker. `store_action()` nutzt `by_alias=True` für DB-Serialisierung.
+  4. **D14 KPI Registry:** `regression_score = error_rate_delta * 0.6 + latency_delta * 0.4` (gewichtete Summe Woche-zu-Woche Deltas). Deterministische Delta-Formel: `delta = (current - baseline) / baseline` (konsistent für error_rate und latency). Markdown-Formatter zeigt `regression_score` in allen Trend-Sections.
+  5. **D14 Decision-Gate:** Alle Empfehlungs-Strings in `generate_improvements()` mit `[PROVISIONAL]` Marker.
+  6. **Endpoints:** D12 Endpoint nutzt `skill_id` und `by_alias=True`. D13 Endpoint Parameter `skill_id` (mapped to DB column `skill`).
+- **Härtung:** D12 bleibt rein deskriptiv (keine Empfehlungs-Logik). D13 arbeitet strikt auf D12-Aggregaten. D14 verwendet deterministische Delta-Formel. AI Studio ist der einzige Validierungs-Gatekeeper (alle Outputs sind `[PROVISIONAL]`).
+- **Tripwire:** Wenn D12 Empfehlungen generiert → Domain-Separation verletzt. Erkennbar: `detect_patterns()` gibt action_type statt pattern zurück. Wenn skill_id in DB nicht alias-kompatibel → Schema-Migration fehlt. Erkennbar: `sqlalchemy.exc.ProgrammingError: column "skill_id" does not exist`. Wenn D13/D14 Outputs ohne `[PROVISIONAL]` → Decision-Gate fehlt. Erkennbar: Empfehlungs-Strings ohne Marker.
+- **Location:** `backend/data/schemas_logging.py` (skill_id + alias), `backend/services/logging/insight_engine.py` (skill_id), `backend/services/logging/optimization_engine.py` (skill_id + PROVISIONAL), `backend/services/logging/learning_engine.py` (regression_score + delta + PROVISIONAL), `backend/api/routers/system.py` (endpoints), implementiert 2026-04-26.
+- **Epic:** D10-D14 STACK HARMONIZATION
+- **Confidence:** High (skill_id contract mit DB-Rückwärtskompatibilität via alias. KPI Registry mit deterministischer Delta-Formel. Decision-Gate aktiv auf allen D13/D14 Outputs. 11/11 Tests passed).
+- **Tags:** DomainSeparation, DecisionGate, skill_id, KPIRegistry, regression_score, delta, deterministic, harmonization, D12, D13, D14
+
+---
+
+## [PATTERN] #ContractRegistry #IntegrityEngine "Diamond Contract Registry — Pydantic-basierte Blueprints pro Layer mit Fail-Fast Schema Drift Prevention und IntegrityReport Scoring"
+- **Kontext:** D15 Integrity Engine als finale Kontrollinstanz über D10-D14. Der Diamond-Stack wächst über mehrere Sessions und Layer hinweg. Ohne automatisierte Schema-Validierung kann Schema-Drift unbemerkt eintreten: D12 könnte ungewollt Recommendations emittieren, D13 könnte ungültige action_types generieren, D14 könnte KPI-Felder verlieren.
+- **Problem:** Kein automatisierter Mechanismus zur Erkennung von Schema-Drift. Keine Validierung der Layer-Verantwortlichkeiten (D12=deskriptiv, D13=rule-basiert, D14=trend-analytisch). Kein Gate für [PROVISIONAL] Decision-Marker-Konsistenz. Keine Scoring-Metrik für Stack-Integrität.
+- **Lösung:** **Diamond Contract Registry mit Fail-Fast Validation:**
+  1. **CONTRACT_SPECS:** `Dict[str, LayerContract]` mit Pydantic-basierten Blueprints pro Layer. Jeder LayerContract definiert: `required_fields`, `forbidden_fields`, `allowed_actions`, `requires_provisional`.
+  2. **Descriptive-Only Guard (D12):** `validate_d12_descriptive_only()` blockiert D12 Outputs mit forbidden fields (`recommendation`, `action_type`, `priority`). Severity: CRITICAL.
+  3. **Allowed-Actions Guard (D13):** `validate_d13_allowed_actions()` prüft `action_type` gegen erlaubte Liste (MODEL_SWITCH, SCALE_UP, SCALE_DOWN, TIMEOUT_ADJUST, CACHE_ENABLE, LOAD_BALANCE, RETRY_CONFIG, MONITOR). Severity: CRITICAL.
+  4. **KPI-Drift Guard (D14):** `validate_d14_kpi_drift()` prüft required KPI fields und allowed action_types. Severity: HIGH.
+  5. **Decision-Gate Guard:** `validate_decision_gate()` prüft `[PROVISIONAL]` Marker auf D13/D14 Empfehlungen. Severity: CRITICAL.
+  6. **IntegrityReport:** `integrity_score` (0.0-1.0) mit Scoring: CRITICAL=-0.3, HIGH=-0.15, MEDIUM=-0.05. Status: FAIL wenn CRITICAL>0 oder score<0.7.
+  7. **Live Check:** `run_live_check()` fetcht D12/D13/D14 Daten aus Supabase und validiert gegen CONTRACT_SPECS.
+- **Härtung:** Keine KI-Interpretation — nur strikte Code-Validierung. Fail-Fast bei CRITICAL Violations. schema_fix Feld benennt exakten Fix. Violations enthalten layer, rule, severity, message, schema_fix, field.
+- **Tripwire:** Wenn IntegrityReport.status == "FAIL" → Schema-Drift detektiert. Erkennbar: violations[] enthält exakte Beschreibung und Fix. Wenn D12 plötzlich recommendations emittiert → DESCRIPTIVE_ONLY_GUARD feuert. Wenn D13 neue action_types einführt → INVALID_ACTION_TYPE feuert (Contract erweitern oder Action korrigieren).
+- **Location:** `backend/services/logging/integrity_engine.py` (IntegrityEngine + CONTRACT_SPECS), `backend/api/routers/system.py` (GET /integrity-check), `backend/tests/test_integrity_engine.py` (8 Test-Cases), implementiert 2026-04-26.
+- **Epic:** D15 — Integrity Engine (Diamond Contract Registry)
+- **Confidence:** High (8/8 Tests passed, 19/19 Gesamttests green. CONTRACT_SPECS deckt alle 5 Layer ab. Fail-Fast Scoring verifiziert).
+- **Tags:** ContractRegistry, IntegrityEngine, SchemaDrift, FailFast, Validation, Pydantic, D15, D12Guard, D13Guard, D14Guard, DecisionGate
+
+---
+- **Kontext:** D11 Debug Compression Engine wurde entwickelt, um Logs für AI Studio Debugging zu komprimieren. Die Engine soll deterministische Heuristiken nutzen (Hard Errors, Model Drift, Latency Spikes) und LLM-gestützte Zusammenfassung als Fallback. Wichtig: Provider-agnostisch (nutzt User's Speed-Tier Modell) und mit Timeout-Schutz gegen Blockaden.
+- **Problem:** RAM-Buffer war leer (nicht mit realer Logging-System verbunden). Supabase hatte keine Logs aus den letzten 10 Minuten. Endpoint gab immer "Keine relevanten Logs" zurück, obwohl Janus aktiv war und Logs in janus_backend.log geschrieben wurden.
+- **Lösung:** **Drei-Stufen-Fallback-Kaskade in LogFetcher.fetch_logs():**
+  1. RAM-Buffer (Priorität, wenn gefüllt)
+  2. Supabase (letzte 10 Minuten aus logs_raw Tabelle)
+  3. Log-File (direkt aus janus_backend.log lesen, letzte 100 Zeilen)
+  4. Empty-State (informative Message wenn alle Fallbacks leer)
+- **Heuristik-Erkennung:** Deterministische Regex-basierte Pattern-Matching für:
+  - Hard Errors (status='error')
+  - Model Drift (provider/model Wechsel innerhalb eines Traces)
+  - Latency Spikes (latency_ms > 5000)
+- **Provider-Agnostic:** Nutzt `get_speed_tier_model()` für dynamische Modell-Auswahl (OpenAI, Gemini, Anthropic, etc.). Kein hartcodiertes Modell.
+- **Timeout-Schutz:** 5 Sekunden Timeout pro Operation (Fetch + Heuristik). Non-blocking via `run_in_executor` für CPU-intensive Heuristik. Graceful Degradation bei Timeouts.
+- **Endpoint:** GET /api/system/debug-summary in main.py (Workaround für Router-Loading-Problem). Windsurf Skill: /debug-log via curl.exe.
+- **Tripwire:** Wenn Debug-Endpoint immer "Keine relevanten Logs" zurückgibt obwohl Logs existieren → Fallback-Kaskade unvollständig. Erkennbar: Log-File Fallback fehlt oder RAM-Buffer Check blockiert Supabase Fallback.
+- **Location:** `backend/services/logging/debug_engine.py` (LogFetcher Fallback, LogAnalyzer Heuristik), `backend/main.py` (Endpoint), `.windsurf/workflows/debug_log.md` (Skill), implementiert 2026-04-25.
+- **Epic:** D11 — Debug Compression Engine
+- **Confidence:** High (Log-File Fallback verifiziert: 100 Logs aus janus_backend.log analysiert, keine kritischen Issues gefunden).
+- **Tags:** DebugCompression, Logging, Heuristik, Fallback, RAM, Supabase, LogFile, ProviderAgnostic, Timeout, NonBlocking
+
+---
+
+## [PATTERN] #Skill #AutoEscalation "Mehrstufige Skill-Eskalation (cheap→expensive) ohne LLM-Intervention"
+- **Kontext:** `filesystem.find_files` soll bei "wo finde ich xy?" schnell in Workspaces suchen (Default ~200ms) UND bei Nichtfund automatisch global auf allen Laufwerken nachschauen (~5s warm, ~20s cold). Wenn man dem LLM beide Parameter (`search_all_drives=true/false`) überlässt, trifft es oft die falsche Entscheidung (entweder zu langsam als Default oder übersieht Duplikate).
+- **Pattern:** **Zwei-Phasen-Sweep mit fester Heuristik im Skill selbst** — Phase 1 läuft immer billig; wenn Phase-1-Ergebnis unter einer klaren Schwelle (hier: ≤1 Treffer) bleibt UND der User keinen expliziten Scope (`root`) gesetzt hat, eskaliert Phase 2 automatisch auf den teureren globalen Sweep. Ergebnisse werden via `existing`-Set dedupliziert. Response enthält `auto_escalated: bool` als Transparenz-Flag.
+  ```python
+  # Phase 1: billig
+  truncated = _sweep(workspaces, apply_exclude=False, current_matches=matches)
+  # Phase 2: bei Bedarf teuer
+  if not truncated and len(matches) <= 1 and not explicit_root:
+      auto_escalated = True
+      _sweep(_enumerate_local_drives(), apply_exclude=True, current_matches=matches)
+  ```
+- **Warum im Skill, nicht im LLM:** (a) Das LLM muss keine Latenz-Tradeoff-Entscheidung treffen. (b) Keine Token-Verschwendung durch zweiten Tool-Call. (c) Die Heuristik ist deterministisch testbar. (d) Der User kriegt das beste UX: Frage einmal, richtige Antwort — egal ob Datei im Workspace oder außerhalb.
+- **Trigger-Kriterien für Auto-Escalation allgemein:**
+  1. Phase-1-Ergebnis ist **informationsarm** (leer, 1 Treffer, generische Fehlermeldung).
+  2. Kein expliziter User-Scope gesetzt, der das verbieten würde.
+  3. Phase-2-Kosten sind **akzeptabel** (hier: +5s, nicht +5min).
+- **Counter-Pattern (NICHT):** Auto-Escalation in Phase 2 darf NIEMALS mutierend sein (z.B. auto-upgrade von `find` auf `delete`). Nur read-only/discovery-Skills qualifizieren.
+- **Location:** `backend/services/filesystem_manager.py::find_files` (Auto-Escalation-Block ~Z. 404-413)
+- **Confidence:** High (Live-Test mit beiden Providern OpenAI + Gemini: simple User-Frage findet beide Duplikate automatisch)
+- **Tags:** Skill, AutoEscalation, Pattern, LatencyTradeoff, Filesystem, Discovery, UX
+
+## [LESSON] #LLM #Gemini #ToolResponse "Structured Dict for FunctionResponse — NEVER pass JSON-string as content wrapper"
+- **Kontext:** Der Gemini-Provider (`backend/llm_providers/gemini/service.py`) übersetzt OpenAI-kompatible Tool-Messages (`role: "tool"`) in `protos.FunctionResponse`. Die `content`-Felder in unseren Tool-Results sind historisch **JSON-Strings** (`'{"status":"ok","data":{"contents":[...]}}'`), weil die Executor-Schicht alles uniform serialisiert.
+- **Problem:** Beim ersten Versuch wurde schlicht `response={"content": message.get("content")}` an `protos.FunctionResponse` übergeben. Gemini bekam also ein Dict, dessen einziger Wert ein undurchsichtiger JSON-String ist. Gemini interpretierte das **nicht** als "Tool hat Daten geliefert" — im zweiten Roundtrip rief Gemini dasselbe Tool mit identischen Args erneut auf. Der `HARD-LOOP-BREAKER` im Orchestrator blockte den Duplicate-Call → Gemini halluzinierte eine irrelevante Antwort ("Das PDF ist in Ihrer Dokumentenliste verfügbar."). OpenAI war davon nie betroffen, weil OpenAI JSON-Strings im `content`-Feld tolerant parst.
+- **Lösung:** Tool-Content vor dem Einhängen in `protos.FunctionResponse.response` deserialisieren. Gemini sieht dann die **reale Struktur** (`contents`, `count`, `path`, …) und erkennt den Tool-Call als abgeschlossen:
+  ```python
+  raw_content = message.get("content")
+  if isinstance(raw_content, dict):
+      parsed_response = raw_content
+  else:
+      try:
+          parsed_response = json.loads(str(raw_content))
+          if not isinstance(parsed_response, dict):
+              parsed_response = {"content": parsed_response}
+      except Exception:
+          parsed_response = {"content": str(raw_content) if raw_content is not None else ""}
+
+  gemini_history_for_api.append({
+      "role": "user",
+      "parts": [protos.Part(function_response=protos.FunctionResponse(
+          name=final_name,
+          response=parsed_response,
+      ))],
+  })
+  ```
+  Fallback auf `{"content": "<string>"}` nur, wenn der Inhalt nicht parsbar ist — so bleibt das Verhalten für non-JSON-Tools stabil.
+- **Regressions-Guard:** Symmetrisch in **beiden** Pfaden nötig (Sync: `_gemini_generate_response`, Stream: `_gemini_stream_build_request`). Wer nur einen Pfad fixt, merkt es erst in Produktion.
+- **Tripwire:** Symptom ist spezifisch — `HARD-LOOP-BREAKER` Log-Eintrag + Output-Token-Zahl deutlich niedriger (Re-Call) + halluzinierte Antwort ohne Bezug zur User-Frage. Wenn man nur die UI-Antwort sieht, wirkt es wie ein reines Prompting-Problem — der Log entlarvt es.
+- **Erkennungssignatur im Log:**
+  ```
+  [HARD-LOOP-BREAKER] BLOCKED duplicate tool call: filesystem.<x>
+  ```
+  in Kombination mit einem **vorherigen** erfolgreichen `TOOL CALL RESULT` für dasselbe Tool+Args → eindeutig dieser Bug.
+- **Location:** `backend/llm_providers/gemini/service.py` (Sync ~Z. 373-398, Stream ~Z. 683-710), gefixt 2026-04-21
+- **Confidence:** High (Live-Run Chat 52 mit `C:\test2` grün, 7 Dateien korrekt enumeriert, kein Loop-Breaker-Trigger)
+- **Tags:** Gemini, ToolResponse, FunctionResponse, LLM, Provider, LoopBreaker, JSON, Envelope
+
+## [LESSON] #FastAPI #StaticFiles #MountOrder "Silent Mount-Prefix Shadowing"
+- **Kontext:** Janus-Backend mountet in `backend/main.py` sowohl Backend-Preview-Bilder (`/assets` → `backend/assets/`) als auch Frontend-Bundles (`/` → `frontend/dist/`, mit `html=True`). Vite-Production-Builds emittieren gehashte JS/CSS nach `frontend/dist/assets/index-*.{js,css}`, d.h. Asset-URLs auf dem Client lauten `/assets/index-*.js`.
+
+---
+
+## [LESSON] #ThreadSafety #Python #Pathlib "Thread-Scope NameError — Importiere pathlib explizit in daemon-threads, um NameError zu vermeiden"
+- **Kontext:** In `backend/services/tool_executor.py` wurde `from pathlib import Path` importiert, aber später im Code wurde auch `import pathlib` verwendet. In daemon-threads führte dies zu `NameError: name 'pathlib' is not defined`, da der Import-Scope nicht korrekt übernommen wurde. Der Fehler trat nur in daemon-threads auf, nicht im Haupt-Thread.
+- **Problem:** Python-Imports in daemon-threads haben einen anderen Scope als im Haupt-Thread. Wenn ein Modul sowohl mit `from pathlib import Path` als auch mit `import pathlib` importiert wird, kann der Name `pathlib` in daemon-threads nicht aufgelöst werden, selbst wenn `Path` verfügbar ist. Dies führt zu `NameError` zur Laufzeit.
+- **Lösung:** Verwende konsistent nur eine Import-Form. Wenn `from pathlib import Path` verwendet wird, importiere auch explizit `import pathlib` wenn der Modul-Name benötigt wird, oder nutze ausschließlich `import pathlib` und referenziere dann `pathlib.Path`.
+  ```python
+  # Korrekt: Beide Importe, wenn beide Formen benötigt werden
+  from pathlib import Path
+  import pathlib
+  ```
+- **Härtung:** Vermeide gemischte Import-Formen für dasselbe Modul. Wähle eine Form und bleibe dabei konsequent. In daemon-threads ist dies besonders kritisch.
+- **Tripwire:** Wenn `NameError: name 'pathlib' is not defined` in daemon-threads auftritt, obwohl `from pathlib import Path` importiert wurde → gemischte Import-Formen.
+- **Location:** `backend/services/tool_executor.py` (Z. 7: import pathlib hinzugefügt), gefixt 2026-04-25.
+- **Confidence:** High (NameError in daemon-threads behoben durch konsistente Import-Form).
+- **Tags:** ThreadSafety, Python, Pathlib, DaemonThreads, ImportScope, NameError
+
+---
+
+## [PATTERN] #Harvester #PathPolicy #GlobalScan "Harvester-Pattern — Nutze globalen _global_scan_mode Flag in PathPolicy, um allowed_roots für systemweite Scans zu bypassen"
+- **Kontext:** Der Global-Scan soll alle lokalen Laufwerke enumerieren und indizieren, aber die PathPolicy-Validierung (`validate()`) prüft strikt, ob Pfade innerhalb der `allowed_roots` liegen. Dies führte zu "Outside allowed roots" Fehlern beim systemweiten Scan, obwohl der Scan explizit aktiviert wurde.
+- **Problem:** PathPolicy ist standardmäßig auf Workspace-Isolation ausgelegt (Sicherheits-Feature). Für einen systemweiten Harvester-Scan muss diese Isolation temporär deaktiviert werden, ohne die Sicherheits-Mechanismen für normale Workspace-Scans zu kompromittieren.
+- **Pattern:** **Global-Scan-Mode Flag mit Bypass-Logik.** Ein modul-weites `_global_scan_mode: bool` Flag in `path_policy.py` steuert, ob die PathPolicy-Validierung aktiv ist. `enable_global_scan_mode()` setzt das Flag auf `True`, `validate()` und `is_allowed()` prüfen das Flag und bypassen die allowed_roots-Prüfung wenn aktiv.
+  ```python
+  _global_scan_mode: bool = False
+
+  def enable_global_scan_mode() -> None:
+      global _global_scan_mode
+      _global_scan_mode = True
+
+  def validate(self, file_path: Path) -> None:
+      if _global_scan_mode:
+          return  # Bypass validation
+      # Normal validation logic...
+  ```
+- **Warum Global Flag:** Modul-weites Flag ist Thread-sicher (Python GIL garantiert atomare Reads/Writes für einfache Bool-Variablen) und wirkt für alle Threads, die PathPolicy verwenden. Keine Notwendigkeit für Thread-Local Storage oder komplexere Synchronisation.
+- **Trigger-Kriterien für Global-Scan-Mode:** (1) Datenbank ist leer (Initial-Scan). (2) Systemweiter Scan explizit angefordert. (3) Scan läuft in daemon-thread (Hintergrund-Indizierung).
+- **Location:** `backend/services/rag/path_policy.py` (_global_scan_mode, enable_global_scan_mode, validate/is_allowed Bypass), `backend/main.py` (enable_global_scan_mode() Aufruf vor Thread-Start), implementiert 2026-04-25.
+- **Confidence:** High (Global-Scan-Mode ist deterministisch, Bypass-Logik ist in validate() und is_allowed() implementiert, Thread-sicherheit durch GIL garantiert).
+- **Tags:** Harvester, PathPolicy, GlobalScan, Bypass, ThreadSafety, PathNormalization
+- **Problem:** Das frühere `/assets`-Mount fängt ALLES unterhalb seines Präfixes ab — inklusive `/assets/index-*.js` — und gibt 404, weil die Dateien nicht in `backend/assets/` liegen. Im packaged Build (Electron lädt aus `http://127.0.0.1:8001/`) werden CSS/JS dadurch unsichtbar geshadowed → UI rendert komplett ohne Styles. In Dev unsichtbar, weil Vite-Dev-Server (Port 5173) das Backend-Mount-Layout nicht verwendet.
+- **Lösung:** Kollidierende Präfixe zwischen Backend-Previews und Vite-Build-Assets eliminieren. Entweder Backend-Previews auf einen eigenen Pfad (z.B. `/backend_assets/` oder `/previews/`) verschieben, oder den Vite-Output in ein anderes Verzeichnis (`build.assetsDir`) umleiten. In dieser Codebase: `/assets`-Mount entfernt (war Duplikat zu `/backend_assets`).
+  ```python
+  # NICHT machen — shadowed Vite-Bundles:
+  # app.mount("/assets", StaticFiles(directory="backend/assets"))
+  app.mount("/backend_assets", StaticFiles(directory="backend/assets"))
+  # ... später:
+  app.mount("/", StaticFiles(directory="frontend/dist", html=True))
+  ```
+- **Regressions-Guard:** Inline-Kommentar direkt an der Mount-Stelle, der erklärt WARUM `/assets` nicht zurückkommen darf. Zusätzlich: Verifikation im Build-Flow durch direkten HTTP-Call an das gebündelte `janus_backend.exe` mit einer expliziten Prüfung auf `/assets/index-*.{js,css}` → 200.
+- **Tripwire:** Bug wurde erst sichtbar, nachdem Electron die Lade-Strategie von `file://` / `janus://` auf `http://127.0.0.1:8001/` umgestellt hatte (YouTube-Error-153 Mitigation, v0.4.16-beta.9). Vorher kamen Asset-URLs nie durch das Backend. **Lektion:** Bei Architektur-Switches immer das Mount-/Routing-Layout auf Präfix-Kollisionen mit neu relevant werdenden Clients prüfen.
+- **Location:** `backend/main.py` (ehemals Zeile 510), behoben in v0.4.16-beta.11
+- **Confidence:** High (vor-/nach-verifiziert via HTTP-Smoke-Test am packaged Build)
+- **Tags:** FastAPI, StaticFiles, MountOrder, Vite, Packaging, Electron, Regression
+
 ## [PATTERN] #Electron #BrowserSpoofing "The Identity Cloak"
 - **Kontext:** Electron-Apps werden oft von YouTube und anderen Plattformen blockiert (Fehler 152), weil der User-Agent auf "Electron" oder eine nicht-standardisierte Zeichenfolge zeigt, die als Bot/Scraper erkannt wird.
 - **Problem:** YouTube erkennt Electron-Apps als nicht-legitime Browser und blockiert iFrame-Embedding aus file:// Pfaden oder unsicheren Origins. Header-Spoofing allein reicht nicht aus, wenn der User-Agent selbst verdächtig ist.
@@ -154,7 +1254,7 @@
 ## [PATTERN] #Pydantic #LLM #StrictSchema "Schema Strictness over Prompting"
 - **Kontext:** Nano/Mini-Modelle (GPT-4o-mini, Gemini-Nano) leiden unter **Parameter-Amnesie** — sie "vergessen" optionale Felder wie `channel_name` trotz ausführlicher Prompts.
 - **Problem:** Prompting allein reicht nicht. Optionale Felder mit Defaults (`default=None`) werden von kleinen Modellen ignoriert oder mit Halluzinationen gefüllt.
-- **Lösung:** **Schema Strictness**: 
+- **Lösung:** **Schema Strictness**:
   1. Entferne alle Defaults in Pydantic für kritische Felder → `channel_name: str = Field(...)` (required)
   2. Definiere harte `required` Arrays im JSON-Schema → `["query", "wants_latest", "channel_name"]`
   3. Steel-Concrete Descriptions: "MUSS", "PFLICHTFELD", "STRENGSTENS VERBOTEN"
@@ -318,7 +1418,7 @@
 - **Kontext:** Speichern von Listen/Dicts in JSON-Columns.
 - **Problem:** SQLAlchemy erkennt In-Place-Mutationen (`list.append()`) nicht als "dirty", wenn dasselbe Objekt zugewiesen wird.
 - **Fix:** Erzwinge immer eine Kopie des Objekts: `current = list(old_list or [])`. Nach der Mutation das NEUE Objekt zuweisen, damit der Dirty-Check triggert.
-- **Location:** `backend/tools/memory_tools.py` 
+- **Location:** `backend/tools/memory_tools.py`
 - **Confidence:** High
 
 ## [PATTERN] #Python #Refactoring Thin Facade / Shim Pattern
@@ -340,7 +1440,7 @@
 - **Kontext:** In-Memory Cache für High-Priority Daten.
 - **Problem:** `OrderedDict` ist nicht thread-safe bei zusammengesetzten Operationen (get + move_to_end).
 - **Fix:** Nutze ein `threading.Lock()` innerhalb der Singleton-Instanz. Jede Operation (get, put, invalidate) MUSS den Lock via `with self._lock:` halten, um Race-Conditions (KeyError) zu vermeiden.
-- **Location:** `backend/services/memory_cache.py` 
+- **Location:** `backend/services/memory_cache.py`
 - **Confidence:** High (Opus 4.6 Verified)
 
 ## [PATTERN] #Setup #DiamondOS #Foundation System-Initialisierung Diamond OS
@@ -430,7 +1530,7 @@
 - **Ursache**: In `run_tool_loop()` wurde nur die letzte Response ausgewertet
 - **Fix 1** (execution_engine.py Line 511-514): Aggregations-Variablen initialisieren
   - `aggregated_tokens_input = 0`
-  - `aggregated_tokens_output = 0`  
+  - `aggregated_tokens_output = 0`
   - `aggregated_total_cost = 0.0`
 - **Fix 2** (execution_engine.py Line 542-559): In jeder Iteration addieren
   - Extrahiere `usage_data` und `cost_data` aus Response
@@ -452,16 +1552,16 @@
     - Initial-Suche mit breitem Query (z.B. "MacBook M3 Preis neu")
     - Speichert günstigstes Ergebnis als "Bestpreis-Einstieg"
     - Unabhängig von Varianten-Suchen
-  
+
   Phase 2: VARIANTEN-SUCHEN (parallel/seriell)
     - Gezielte Suchen für spezifische Modelle (Air 13, Air 15, Pro 14)
     - Ergebnisse werden zu results-Liste hinzugefügt
-  
+
   Phase 3: MERGE & SORT
     - Anchor wird an Position 0 eingefügt (falls noch nicht vorhanden)
     - Liste nach price aufsteigend sortiert
     - Günstigster Preis steht garantiert an erster Stelle
-  
+
   Phase 4: BULK-VERIFICATION (parallel)
     - asyncio.gather für alle URLs gleichzeitig
     - 6s Timeout-Guard
@@ -546,7 +1646,7 @@
 - **Tags:** Configuration, PyInstaller, Security, APIKeys, BetaTesting, OutOfTheBox
   - Jede Variante mit eigenem `variant_label` (z.B. "Air 13 Zoll")
   - Auto-Detektion falls Variante nicht explizit gesetzt
-- **Expected Output**: 
+- **Expected Output**:
   - Log: "TOOL-LOOP: Model upgraded..." → "💎 OpenAI-Silo: Model override detected..."
   - Chat: Liste mit 3 MacBook-Varianten + Links
 - **Tags**: #Search, #Routing, #ModelOverride, #VariantDiversification
@@ -564,7 +1664,7 @@
 - **Expected Output Format**:
   ```
   Bestpreis-Einstieg: MacBook Air M3 13 ab 1.049 EUR
-  
+
   - MacBook Air M3 13 Zoll: ab 1.049 EUR ✅ (Quelle: [idealo.de](URL))
   - MacBook Air M3 15 Zoll: ab 1.299 EUR ✅ (Quelle: [idealo.de](URL))
   - MacBook Pro M3 14 Zoll: ab 1.799 EUR (Quelle: [amazon.de](URL))
@@ -574,8 +1674,8 @@
 ## 2026-04-01: Emergency Fix V3.5.1 - UnboundLocalError tool_calls
 - **Problem**: `tool_calls` wurde in `run_tool_loop()` auf Line 532 referenziert, bevor es definiert war (UnboundLocalError)
 - **Ursache**: Model-Tier-Override Code wurde vor dem `reason_and_respond_fn()` Call platziert, aber `tool_calls` kommt erst aus der Response
-- **Fix**: 
-  - Code verschoben: Model-Override jetzt NACH `tool_calls = response.get("tool_calls")` 
+- **Fix**:
+  - Code verschoben: Model-Override jetzt NACH `tool_calls = response.get("tool_calls")`
   - Kommentar hinzugefügt: "This must happen AFTER we get tool_calls from the response"
   - Logik: Override passiert nachdem Tool-Calls aus Response extrahiert wurden, aber bevor `if not tool_calls: break`
 - **Datei**: `backend/services/orchestrator/execution_engine.py` Line 530-574
@@ -584,8 +1684,8 @@
 
 ## 2026-04-01: Skill Routing & UX Fix
 - **Problem**: Model-Tier wurde ignoriert, Preis-Ausgabe ohne Varianten-Struktur
-- **Lösung**: 
-  - `backend/services/orchestrator/execution_engine.py`: 
+- **Lösung**:
+  - `backend/services/orchestrator/execution_engine.py`:
     - `_resolve_model_for_skill()` Methode hinzugefügt
     - `run_tool_loop()`: Model-Tier-Override basierend auf Skill-Metadaten
     - Log zeigt jetzt: "TOOL-LOOP: Model upgraded for skill 'X' from 'Y' to 'Z'"
@@ -755,7 +1855,7 @@
 - **Kontext:** OpenAI Gateway `_run_full_tool_loop()` akkumuliert Kosten über Planungsrunden (gpt-5.4-mini), persistiert sie aber nicht
 - **Fehlerklasse:** Sidebar zeigt niedrigere Summe als Deepdive (Mini-Kosten fehlen in DB)
 - **Ursache:** Gateway hat `db` Session nicht erhalten und rief `create_cost_entry()` nie auf
-- **Fix:** 
+- **Fix:**
   - `reason_and_respond()` übergibt `db` an `_run_full_tool_loop()` (gateway.py Line 113)
   - Vor jedem Return: `create_cost_entry()` mit akkumulierten Kosten (gateway.py Lines 313-328, 339-354)
   - `source_type="conversation"` für Mini-Planungskosten, `context="websearch"` für Web-Searches
@@ -835,7 +1935,7 @@
 - **Kontext:** Automatisierung von Routine-Prozessen (Pre-Check, Audit, Session-Start).
 - **Problem:** Manuelles Lesen von Rules, Erstellen von Task-Dateien und Sammeln von Git-Diffs kostet Zeit und ist fehleranfällig (insbesondere das Vergessen von Impact-Analysen).
 - **Fix:** Nutzung von Windsurf Cascade Skills in `.windsurf/workflows/`. Aufruf via Slash-Command (z.B. `/session-start`). Nutzung des `// turbo` Markers in den .md-Dateien erlaubt Cascade die automatische, unbestätigte Ausführung von Shell-Commands (wie `git diff` oder Tests).
-- **Location:** `.windsurf/workflows/*.md` 
+- **Location:** `.windsurf/workflows/*.md`
 - **Confidence:** High (Opus Verified)
 
 ## [PATTERN] #MemoryV2 #Deduplication Jaccard Similarity Duplicate Filter
@@ -904,7 +2004,7 @@
 ## [PATTERN] #Refactoring #Safety Missing Attribute Guard (Cross-Module)
 - **Kontext:** Cross-Module Refactoring mit neuen Service-Imports und entfernten Klassenvariablen.
 - **Problem:** Nach Refactoring fehlten Attribute (z.B. `META_TOPIC_INSTRUCTION_MAP`, `UNKNOWN_FACE_BUFFER`) oder hatten falsche Referenzen. Runtime-Fehler erst bei Ausführung sichtbar.
-- **Fix:** 
+- **Fix:**
   1. Explizite Re-Exporte aus Services: `from intent_engine import META_TOPIC_INSTRUCTION_MAP`
   2. Singleton-Pattern für Services mit `intent_engine`, `identity_manager` Instanzen
   3. Service-Methoden für alle State-Accesses (statt direkter Dictionary-Zugriffe)
@@ -1021,7 +2121,7 @@
 ## [PATTERN] #TemporalSync #MemoryV2 Episodic Metadata & Zeitstempel
 - **Kontext:** User fragt "Wann habe ich dir das gesagt?" — LLM hat keine Zeit-Informationen zu Erinnerungen.
 - **Problem:** MemorySlots hatten keine temporalen Metadaten. DB speichert UTC, aber LLM sieht nur Fakt-Text ohne Kontext wann/im welchen Chat.
-- **Fix:** 
+- **Fix:**
   1. MemorySlot erweitert um `timestamp` (German Lokalzeit: "Heute um 14:30", "3. März 2026") und `chat_title`
   2. `_utc_to_local()` via C-level `localtime()` für bulletproof Windows/Linux/Docker-Kompatibilität
   3. `format_temporal_stamp()` mit German-Month-Mapping und "Heute/Gestern"-Erkennung
@@ -1308,3 +2408,436 @@
 - **Confidence:** High (BUG-ORCH-002)
 - **Tags:** Pydantic, Safety, AliasHandling, ExecutionResponse, SchemaEvolution, BUG-ORCH-002
 
+## [PATTERN] #Architecture #RAG "The Strangler-Fig Migration — run the new system alongside the old"
+- **Kontext:** RAG V2 Master-Plan v1.1 — User wollte den bestehenden Legacy-RAG (PDF-Drops, Memory-Vektoren, Projekt-Collections, Skill-Routing-Index) nicht kaputt machen, obwohl V2 eine völlig andere Architektur (Hybrid Retrieval, dual Embeddings, Code-aware Chunking) bekommen soll.
+- **Problem:** Big-Bang-Rewrites brechen bestehende Produktionspipelines mit 100%iger Wahrscheinlichkeit. Selbst "additive" Änderungen können scheitern, wenn sie dieselben Collections/Files/Funktionen modifizieren. Das Legacy-RAG-Surface von Janus ist komplex (6 verschiedene Collection-Nutzungsmuster, geteilte `janus_global_documents` zwischen PDFs und Memory).
+- **Lösung:** Strangler-Fig-Pattern: V2 läuft physisch und logisch parallel. Kein Modifikation am Legacy-Code. V2 bekommt eigenen Chroma-Pfad (`rag_chroma_db_v2/`), eigene SQLite-DBs (`knowledge_fts_v2.db`, `knowledge_index_v2.db`), eigenen Feature-Flag-Layer (11 Flags, alle default `false`). Die Legacy-Pipeline läuft unverändert weiter. V2 ist nur via explizitem Opt-in (neuer Skill `knowledge.code_search` oder `retrieval_mode="v2"`) erreichbar. Optionaler Cutover (P9) ist eine separate Entscheidung, erst nach Full-Regression mit 500+ Queries.
+- **Ergebnis:** Zero-Regression-Contract: Legacy-E2E-Tests laufen 100% grün, auch wenn V2 vollständig installiert ist. Feature-Flags ermöglichen Phase-by-Phase-Integration ohne Big-Bang. Physische Isolation verhindert, dass ein V2-Crash den Legacy-Index korrumpiert.
+- **Tripwire:** Wenn ein neues Feature in denselben Collections/Files/Pfade wie bestehende Logik schreibt → Strangler-Fig verletzt. Sofort: physischer Subpfad + eigene Collections + Freeze-Contract.
+- **Location:** `documentation/RAG_V2_MASTER_PLAN.md` § 1.5, § 11, 2026-04-21.
+- **Confidence:** High (Pattern bewährt in Martin Fowler's Strangler Fig Application; physische Isolation ist unumkehrbarer Schutz).
+- **Tags:** Architecture, RAG, StranglerFig, Migration, ZeroRegression, ParallelRun, Coexistence
+
+## [PATTERN] #Architecture #HybridSearch "Reciprocal Rank Fusion (RRF) — the canonical baseline for combining dense + sparse"
+- **Kontext:** RAG V2 braucht sowohl semantische Suche (ChromaDB Dense Embeddings, "Was meint er?") als auch lexikalische Suche (SQLite FTS5, "Wo steht exakt das Wort?"). Für Code-Snippets und Dateinamen ist FTS5 überlegen; für konzeptuelle Prosa-Queries sind Embeddings überlegen.
+- **Problem:** Score-Kalibrierung zwischen Dense (0–1 Cosine) und Sparse (arbitrary BM25-style scores) ist unmöglich. Gewichtete Addition `0.7*vec + 0.3*fts` ist brüchig, weil die Score-Ranges nicht vergleichbar sind und sich mit Corpus-Größe verschieben.
+- **Lösung:** Reciprocal Rank Fusion (Cormack et al. 2009) mit `score(d) = Σ_r 1/(k + rank_r(d))` und `k=60`. Benutzt nur die **Rangposition** jedes Dokuments in jedem Ranking, nicht die absoluten Scores. Damit ist die Fusion robust gegen Score-Drift und Corpus-Größen-Änderungen. Query-Router entscheidet später, welche Rankings einbezogen werden (vec-heavy, fts-heavy, balanced), aber die Fusion-Methode bleibt unverändert.
+- **Ergebnis:** Deterministische, rechenbare, parameter-robuste Kombination von semantischer und lexikalischer Suche. Keine Notwendigkeit für Score-Normalisierung oder Trainingsdaten.
+- **Tripwire:** Wenn eine Hybrid-Search gewichtete Score-Addition nutzt → RRF ist der saubere Ersatz. Zusätzlich: k=60 ist der canonical Wert aus der Literatur; Änderungen nur mit evaluierter Regression.
+- **Location:** `documentation/RAG_V2_MASTER_PLAN.md` § 1.1, § 2, 2026-04-21.
+- **Confidence:** High (SIGIR-Paper, in Produktion bei mehreren Enterprise-RAG-Systemen validiert).
+- **Tags:** Architecture, HybridSearch, RRF, DenseSparse, RankingFusion, Retrieval, Baseline
+
+## [PATTERN] #Security #Isolation "Physical Vector-Store Separation — the last line of defense against regression"
+- **Kontext:** Janus' Legacy-RAG nutzt `rag_chroma_db/janus_global_documents` sowohl für PDF-Drops als auch für Memory-Vektoren (geteilt!). V2 soll denselben Chroma-Client nutzen, aber mit neuen Collections. Risiko: V2-Code könnte aus Versehen die Legacy-Collection ansprechen (z.B. falscher Collection-Name, Copy-Paste-Fehler, Bug im Ingestion-Adapter).
+- **Problem:** Logische Trennung (verschiedene Collection-Namen) ist notwendig aber nicht hinreichend. Ein Bug in `client.get_or_create_collection()` mit dynamischem Namen oder ein String-Concat-Fehler könnte die Legacy-Collection treffen. Ohne physische Isolation ist der Schaden irreversibel (Embeddings gelöscht = PDFs/Memory unwiederbringlich verloren).
+- **Lösung:** V2 bekommt **eigenen PersistentClient-Pfad**: `{app_data_dir}/rag_chroma_db_v2/`. Legacy bleibt in `{app_data_dir}/rag_chroma_db/`. Zusätzlich: Freeze-Contract (§ 1.5.2) verbietet V2-Code explizit, jemals `rag_chroma_db/` anzutasten. SHA-Baum-Assertion im CI verifiziert, dass `rag_chroma_db/` vor und nach V2-Runs byte-identisch bleibt.
+- **Ergebnis:** Selbst ein totaler V2-Crash (infinite loop, DB corruption, accidental `collection.delete()`) kann den Legacy-Index nicht berühren. Rollback = `Remove-Item -Recurse rag_chroma_db_v2/` — keine Migration, kein Restore nötig.
+- **Tripwire:** Wenn ein neues Feature denselben Datenpfad wie ein bestehendes Feature nutzt → sofort physische Separation. Ausnahme nur, wenn beide Features identische Recovery-Strategien und getestete Rollbacks haben.
+- **Location:** `documentation/RAG_V2_MASTER_PLAN.md` § 1.3, § 1.5.2, § 10.1, 2026-04-21.
+- **Confidence:** High (Unumkehrbarer Schutz; SHA-Assertion macht Regression sichtbar).
+- **Tags:** Security, Isolation, VectorStore, ChromaDB, Regression, PhysicalSeparation, FreezeContract
+
+## [LESSON] #AgenticAI #ToolDesign "Path-Pinning for Disambiguation — Kritische Tools müssen absolute Adressierung für autonome Mehrdeutigkeitsauflösung unterstützen"
+- **Kontext:** Auto-Read-Trigger für Dubletten: Wenn `knowledge.query` mehrere Dateien mit gleichem Namen findet, soll die KI autonom `knowledge.read_full_text` für nicht-indizierte Dubletten aufrufen. Das Tool-Schema akzeptierte aber nur `filename` als Parameter, wodurch GPT den Aufruf verweigerte (kann Dublette nicht spezifisch adressieren).
+- **Problem:** Eine KI kann Anweisungen ("lies diese Datei") nicht befolgen, wenn das Tool-Schema nur relative Namen (`filename`) und keine absoluten Adressen (`absolute_path`) akzeptiert. Bei Dubletten ist `filename` mehrdeutig — die KI weiß nicht, welche der 2+ Dateien gemeint ist. Ergebnis: Halluzination oder "ich kann das nicht" statt autonomer Auflösung.
+- **Lösung:** **Path-Pinning-Parameter** zu `knowledge.read_full_text` hinzugefügt:
+  ```python
+  class GetFullDocumentTextArgs(BaseModel):
+      filename: str = Field(...)
+      absolute_path: Optional[str] = Field(
+          None,
+          description="Path-Pinning for Disambiguation: Nutze dieses Feld, um eine spezifische Dublette via absolutem Pfad zu lesen..."
+      )
+  ```
+  Tool-Logik priorisiert `absolute_path` absolut: Wenn gesetzt, wird `filename` ignoriert, keine Dubletten-Prüfung, direktes Lesen vom angegebenen Pfad. P0.75-Direktive in Skill-JSONs instruiert GPT: "Nutze 'knowledge.read_full_text' mit dem Parameter 'absolute_path' für diesen Pfad".
+- **Härtung:** Parameter-Priorität ist unidirektional: `absolute_path` > `filename`. Kein Fallback von absolute_path auf filename-Suche (wenn absolute_path gesetzt aber ungültig → Fehler, nicht silent filename-Resolution).
+- **Tripwire:** Wenn ein Tool Dubletten meldet, aber die KI kann die spezifische Datei nicht autonom lesen → fehlender Pinning-Parameter im Schema. GPT-Refusal bei "[NICHT INDIZIERT...]" Hinweis ist ein klarer Indikator.
+- **Location:** `backend/data/schemas.py` (GetFullDocumentTextArgs.absolute_path), `backend/services/tool_executor.py` (get_full_document_text), `backend/skills/knowledge/read_full_text.json` (P0.75 AUTO-READ TRIGGER), gefixt 2026-04-23.
+- **Confidence:** High (Pattern: Kritische Tools zur Ressourcen-Interaktion brauchen immer Pinning-Parameter für Agentic Loops).
+- **Tags:** AgenticAI, ToolDesign, PathPinning, Disambiguation, DuplicateResolution, AutoRead, absolute_path, knowledge.read_full_text
+
+## [LESSON] #Python #ResourceManagement "The Shared Resource Lifecycle — Resource-Closing must happen AFTER the last possible usage point"
+- **Problem:** In komplexen Funktionen mit mehreren logischen Zweigen wird eine Ressource (z.B. `DB-Connection`, `IndexStore`) oft im "Erfolgszweig" der ersten Phase geschlossen. Wenn spätere Phasen (z.B. Fallbacks oder Vorschau-Generierung) dieselbe Ressource benötigen, kommt es zu Abstürzen oder Datenverlust.
+- **Lösung:** Nutze das **"Init-to-None"** Pattern kombiniert mit einem **`finally`-Block** am Ende der Hauptfunktion. Schließe die Ressource niemals "mittendrin", sondern markiere sie nur zur Schließung.
+- **Beispiel:** `store = None; try: store = open(); ... finally: if store: store.close()`.
+- **Location:** `backend/services/tool_executor.py` (BUG-RAG-003).
+
+## [PATTERN] #Orchestration #Lockdown "Dispatcher-First Parameter Enforcement — Command-Chain Integrity"
+- **Problem:** LLMs ignorieren bei komplexen Aufgaben oft "optionale" Parameter (wie Filenames), was zu unscharfen Tool-Calls und weitreichenden Fehlern (globale Suche statt spezifischer Datei) führt.
+- **Lösung:** Wenn eine Ressource (z.B. eine Datei) im User-Text klar identifizierbar ist, darf der Orchestrator (Dispatcher) nicht darauf hoffen, dass das LLM dies korrekt mappt. Er muss die Information selbst extrahieren (Regex) und den Tool-Call mit diesen Argumenten hart erzwingen.
+- **Vorteil:** Erhöht die System-Stabilität von "probabilistisch" (LLM-Laune) auf "deterministisch" (Code-Integrität).
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py` (F16 FINAL LOCKDOWN).
+
+---
+
+## [PATTERN] #DiamondSkillContract "Diamond Skill Contract — Zwang zum dreiteiligen JSON-Output {status, data, error} für autonomes Immunsystem-Routing"
+- **Kontext:** D27 Diamond Skill Engineering etabliert einen unverletzlichen Kontrakt für alle Skill-Outputs. Das autonome Immunsystem (D20-D26) benötigt ein standardisiertes Format, um Skill-Ergebnisse zu validieren, zu loggen und Routing-Entscheidungen zu treffen. Ohne diesen Kontrakt kann das System nicht deterministisch unterscheiden zwischen Erfolg und Fehler.
+- **Problem:** Unterschiedliche Output-Formate erschweren die automatische Validierung und erschweren die Root-Cause-Analyse. Einige Skills returnieren Rohdaten, andere Error-Strings, andere wiederum komplexe Objekte ohne klaren Status. Dies führt zu: (1) Fehlende Einheitlichkeit in D10 Telemetrie, (2) Unklare Pass/Fail Entscheidung in der ValidationEngine, (3) Unzuverlässige Routing-Entscheidungen im Self-Heal Cycle.
+- **Lösung (Dreiteiliger Kontrakt):**
+  1. **`status` (obligatorisch):** Entweder `"success"` oder `"error"`. Keine gemischten States wie "partial_success".
+  2. **`data` (bei success):** Enthält die eigentlichen Ergebnis-Daten. MUSS bei `status: "success"` vorhanden sein.
+  3. **`error` (bei error):** Enthält Fehler-Details (message, code, details). MUSS bei `status: "error"` vorhanden sein.
+- **Regeln:**
+  - `status` ist immer String und immer "success" oder "error"
+  - Bei `status: "success"`: `data` MUSS enthalten sein, `error` MUSS fehlen oder null sein
+  - Bei `status: "error"`: `error` MUSS enthalten sein, `data` KANN fehlen oder null sein
+  - Keine alternativen Status-Werte (keine "pending", "partial", "warning")
+- **Härtung:** Global Default Validator in `validation.py` prüft Kontrakt-Einhaltung. ValidationEngine mit `ValidationResult` (passed, validator_type, message, severity, details). Multi-Rule-Validierung: Alle Regeln müssen bestehen.
+- **Tripwire:** Wenn Skill gibt Rohdaten zurück statt `{status, data}` → Kontrakt verletzt. Wenn `status` fehlt oder nicht "success"/"error" → Validation schlägt fehl. Wenn `data` und `error` beide vorhanden → Ambiguität, Validation schlägt fehl.
+- **Location:** `backend/services/testing/validation.py` (ValidationEngine, ValidationResult), `documentation/02_SKILL_DEVELOPMENT.md` (V3.0), implementiert 2026-04-28 (D27).
+- **Epic:** D27 — Diamond Skill Engineering & Diagnosis
+- **Confidence:** High (Unverletzlicher Kontrakt, Global Default Validator, strikte Regeln).
+- **Tags:** DiamondSkillContract, SkillOutput, Validation, Contract, D27, Immunsystem
+
+---
+
+## [PATTERN] #ModellVsSkillDiagnose "Modell vs. Skill Diagnose — 'Stärkeres Modell fixiert es -> Routing-Problem | Nichts fixiert es -> Skill-Problem'"
+- **Kontext:** D27 Diagnose-Engine etabliert eine klare Unterscheidung zwischen zwei Fehler-Quellen im System: Modell-Fehler (Routing-Problem) und Skill-Fehler (Code-Problem). Diese Unterscheidung ist kritisch für das autonome Immunsystem, um die richtige Maßnahme zu ergreifen: automatischer Modell-Wechsel vs. manuelles Code-Refactoring.
+- **Problem:** Wenn ein Skill degradiert ist (pass_rate < 0.5), ist unklar ob das Problem beim Modell (z.B. Overload, Rate Limit, Latenz) oder beim Skill-Code (z.B. Halluzination, Logik-Fehler, Format-Breach) liegt. Ohne diese Unterscheidung greift das Immunsystem möglicherweise falsch: Es versucht ein Routing-Update für einen defekten Skill, oder es fordert manuelle Eingriffe bei einem transienten Modell-Problem.
+- **Lösung (Diagnose-Regeln):**
+  1. **Pass-Rate < 0.5 + Latenz OK (nicht-timeout):** Skill-Problem (Code-Fix nötig)
+     - Logik: Der Skill scheitert trotz funktionierendem Modell → Handler-Code oder Validation-Logic defekt
+     - Maßnahme: Manuelles Skill-Refactoring (Entwickler-Arbeit)
+  2. **Pass-Rate < 0.5 + Latenz hoch (timeout/429/500):** Modell-Problem (Routing-Wechsel)
+     - Logik: Das Modell ist überlastet oder nicht verfügbar → Skill-Code ist korrekt, Infrastruktur defekt
+     - Maßnahme: Diamond Routing → Automatischer Modell-Wechsel (D21-D22)
+  3. **Pass-Rate ≥ 0.5:** System stabil (kein Eingriff nötig)
+     - Logik: Skill funktioniert mit aktuellem Modell
+     - Maßnahme: Monitoring fortsetzen, keine Änderungen
+- **Erweiterte Diagnose (mit Escalation Data):**
+  - `final_tier` = "escalation" → Alle Tiers ausprobiert, nichts funktioniert → Skill-Problem
+  - `final_tier` = "primary" aber `pass_rate` niedrig → Validation-Fail (Format-Breach)
+  - `attempts_count` ≥ 2 aber `status` = "failed" → Skill scheitert über alle Tiers → Skill-Problem
+  - `latency_ms` > 3000ms aber `status` = "passed" → Timeout-Problem → Schnelleres Modell oder Caching
+- **Härtung:** Monitoring Aggregator (D25) zeigt Health Snapshot mit pass_rate und Latenz. Self-Heal Cycle (D22) triggert nur bei Modell-Problemen. Skill-Entwickler-Doku (V3.0) definiert klare Diagnose-Workflow.
+- **Tripwire:** Wenn Pass-Rate < 0.5 aber Routing-Wechsel wird versucht → Skill-Problem als Modell-Problem fehlklassifiziert. Wenn Pass-Rate < 0.5 aber kein Alert → Monitoring defekt. Wenn Latenz immer 0.0 → Async-Await fehlt (D18 Pattern).
+- **Location:** `documentation/02_SKILL_DEVELOPMENT.md` (V3.0, TEIL 1.3), `documentation/architecture/JANUS_IMMUNE_SYSTEM.md` (Diagnose-Workflow), implementiert 2026-04-28 (D27).
+- **Epic:** D27 — Diamond Skill Engineering & Diagnosis
+- **Confidence:** High (Klare Unterscheidung, deterministische Regeln, integriert in Immunsystem).
+- **Tags:** ModellVsSkillDiagnose, DiagnoseEngine, RootCauseAnalysis, RoutingProblem, SkillProblem, D27
+
+ 
+ # #   [ L E S S O N ]   # P r o j e c t S t r u c t u r e   # S e c u r i t y   # T e s t C l e a n u p   T e s t - D a t e i e n   i n   R o o t   v e r m e i d e n ,   H a r d c o d e d   A P I   K e y s   a u s   T e s t s   e n t f e r n e n 
+ 
+ 
+ 
+ -   * * K o n t e x t : * *   B A C K L O G - 0 0 1      T e s t - D a t e i e n   a u s   P r o j e k t - R o o t   n a c h   t e s t s /   v e r s c h i e b e n .   S y s t e m   H e a l t h   h a t t e   m e h r e r e   T e s t - D a t e i e n   ( t e s t _ c l u s t e r _ 4 . p y ,   t e s t _ g e o m e t r i e _ c h e c k . p y ,   t e s t _ l o g g i n g _ f i x . p y ,   t e s t _ o p e n a i _ t o o l s . p y ,   t e s t _ f a c e . j p g ,   t e s t _ p e r s o n a l i t i e s . j s o n )   i m   P r o j e k t - R o o t   s t a t t   i n   t e s t s /   o d e r   t e s t /   g e f u n d e n .   Z u s  t z l i c h   e n t h i e l t   t e s t _ o p e n a i _ t o o l s . p y   e i n e n   h a r d c o d e d   O p e n A I   A P I - K e y   i m   Q u e l l c o d e . 
+ 
+ -   * * T a g s : * *   P r o j e c t S t r u c t u r e ,   S e c u r i t y ,   T e s t C l e a n u p ,   H a r d c o d e d K e y s 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ # #   [ P A T T E R N ]   # L a z y H e a v y R e s o u r c e S t a r t u p   " L a z y   L o a d i n g   f  r   H e a v y   R e s o u r c e s   a m   A p p - S t a r t      D a e m o n - T h r e a d   i m   F a s t A P I - L i f e s p a n   m i t   S t a t u s - T r a c k i n g " 
+ -   * * K o n t e x t : * *   B A C K L O G - 0 1 8   C L I P   L a z y   L o a d i n g .   C L I P - M o d e l   ( 3 3 8 M B ,   V i T - B - 3 2 . p t )   w u r d e   s y n c h r o n   i m   V i s i o n - S e r v i c e - C o n s t r u c t o r   g e l a d e n ,   w a s   b e i   l a n g s a m e r   I n t e r n e t v e r b i n d u n g   z u   W i n d o w s - P r o c e s s - T i m e o u t   ( 1 2 0 s )   f  h r t e . 
+ -   * * P r o b l e m : * *   S y n c h r o n e r   D o w n l o a d   i n   S e r v i c e - C o n s t r u c t o r   b l o c k i e r t   A p p - S t a r t .   B e i   l a n g s a m e n   N e t z w e r k e n   o d e r   S e r v e r - T i m e o u t s   t  t e t   W i n d o w s   d e n   P r o z e s s   n a c h   1 2 0   S e k u n d e n . 
+ -   * * L  s u n g : * *   * * L a z y - L o a d i n g   m i t   D a e m o n - T h r e a d   i m   F a s t A P I - L i f e s p a n : * * 
+     1 .   * * M o d e l - L o a d e r   S i n g l e t o n : * *   ` C l i p M o d e l L o a d e r `   m i t   S t a t u s - T r a c k i n g   ( ` m o d e l _ l o a d i n g ` ,   ` m o d e l _ l o a d e d ` ,   ` m o d e l _ e r r o r ` ) . 
+     2 .   * * B a c k g r o u n d - T h r e a d : * *   ` s t a r t _ a s y n c _ l o a d ( ) `   s t a r t e t   D a e m o n - T h r e a d   f  r   ` c l i p . l o a d ( ) ` . 
+     3 .   * * L i f e s p a n - T r i g g e r : * *   ` m a i n . p y `   F a s t A P I - L i f e s p a n   r u f t   ` s t a r t _ c l i p _ m o d e l _ d o w n l o a d ( ) `   n a c h   B o o t s t r a p / T o o l - R e g i s t r a t i o n ,   n i c h t   v o r   A p p - S t a r t . 
+     4 .   * * S e r v i c e - I n t e g r a t i o n : * *   V i s i o n - S e r v i c e   p r  f t   ` m o d e l _ l o a d e r . i s _ r e a d y ( ) `   v o r   C L I P - I n f e r e n c e ,    b e r s p r i n g t   b e i   ` F a l s e ` . 
+     5 .   * * F e h l e r b e h a n d l u n g : * *   E x c e p t i o n - H a n d l i n g   i m   T h r e a d ,   S t a t u s   w i r d   a u f   ` m o d e l _ e r r o r `   g e s e t z t ,   A p p   s t a r t e t   t r o t z d e m . 
+ -   * * H  r t u n g : * *   D a e m o n - T h r e a d   ( w i r d   b e i   S h u t d o w n   b e e n d e t ) ,   S t a t u s - T r a c k i n g ,   ` i s _ r e a d y ( ) `   G u a r d ,   E x c e p t i o n - H a n d l i n g   b r i c h t   n i c h t   A p p - S t a r t   a b . 
+ -   * * T r i p w i r e : * *   W e n n   B a c k e n d - S t a r t   > 1 0 s   d a u e r t   o d e r   V i s i o n - R e q u e s t s   v o r   D o w n l o a d - E n d e   c r a s h e n   !  L a z y - L o a d i n g   n i c h t   i m p l e m e n t i e r t   o d e r   T h r e a d   n i c h t   g e s t a r t e t . 
+ -   * * L o c a t i o n : * *   ` b a c k e n d / s e r v i c e s / v i s i o n / m o d e l _ l o a d e r . p y ` ,   ` b a c k e n d / s e r v i c e s / v i s i o n _ s e r v i c e . p y ` ,   ` b a c k e n d / m a i n . p y `   ( l i f e s p a n ) ,   i m p l e m e n t i e r t   2 0 2 6 - 0 5 - 0 9 . 
+ -   * * E p i c : * *   B A C K L O G - 0 1 8      C L I P   L a z y   L o a d i n g 
+ -   * * C o n f i d e n c e : * *   H i g h   ( L a z y - L o a d i n g   P a t t e r n   i m p l e m e n t i e r t ,   S t a t u s - T r a c k i n g   v o r h a n d e n ,   A p p   s t a r t e t   o h n e   B l o c k i e r u n g ) . 
+ -   * * T a g s : * *   L a z y L o a d i n g ,   F i r s t S t a r t ,   B a c k g r o u n d T h r e a d ,   C L I P ,   V i s i o n S e r v i c e ,   B A C K L O G 0 1 8 
+ 
+ 
+ 
+ 
+ 
+ # #   [ P A T T E R N ]   # P y I n s t a l l e r   # C h r o m a D B   \ 
+ 
+ C h r o m a D B 
+ 
+ c o l l e c t _ d a t a _ f i l e s 
+ 
+ P a t t e r n 
+ 
+ 
+ 
+ c o l l e c t _ d a t a _ f i l e s 
+ 
+ + 
+ 
+ i n c l u d e _ p y _ f i l e s 
+ 
+ + 
+ 
+ h i d d e n i m p o r t s \ 
+ -   * * K o n t e x t : * *   C h r o m a D B   i s t   e i n   k o m p l e x e s   P y t h o n - P a c k a g e   m i t   R u s t - E x t e n s i o n s   u n d   d y n a m i s c h e n   S u b m o d u l e n .   P y I n s t a l l e r   e r f a s s t   d i e s e   n i c h t   a u t o m a t i s c h ,   w a s   z u   N o   m o d u l e   n a m e d   ' c h r o m a d b . * '   F e h l e r n   b e i m   S t a r t   f  h r t . 
+ -   * * P r o b l e m : * *   C h r o m a D B   b e n  t i g t   s o w o h l   D a t e n - D a t e i e n   ( c o n f i g ,   e m b e d d i n g s )   a l s   a u c h   P y t h o n - S u b m o d u l e   ( c h r o m a d b . t e l e m e t r y . p r o d u c t . p o s t h o g ,   c h r o m a d b . a p i . r u s t ) .   N u r   h i d d e n i m p o r t s   r e i c h t   n i c h t ,   d a   a u c h   D a t e n - D a t e i e n   f e h l e n . 
+ -   * * L  s u n g : * *   K o m b i n a t i o n   a u s   c o l l e c t _ d a t a _ f i l e s ( ' c h r o m a d b ' )   f  r   D a t e n - D a t e i e n ,   c o l l e c t _ d a t a _ f i l e s ( ' c h r o m a d b ' ,   i n c l u d e _ p y _ f i l e s = T r u e )   f  r   P y t h o n - S u b m o d u l e ,   u n d   e x p l i z i t e n   h i d d e n i m p o r t s = [ ' c h r o m a d b . t e l e m e t r y . p r o d u c t . p o s t h o g ' ,   ' c h r o m a d b . a p i . r u s t ' ] . 
+ -   * * P a t t e r n : * * 
+     \ \ \ p y t h o n 
+     f r o m   P y I n s t a l l e r . u t i l s . h o o k s   i m p o r t   c o l l e c t _ d a t a _ f i l e s 
+     c h r o m a d b _ d a t a   =   c o l l e c t _ d a t a _ f i l e s ( ' c h r o m a d b ' ) 
+     c h r o m a d b _ s u b m o d u l e s   =   c o l l e c t _ d a t a _ f i l e s ( ' c h r o m a d b ' ,   i n c l u d e _ p y _ f i l e s = T r u e ) 
+     a l l _ d a t a s   =   [ . . . ,   c h r o m a d b _ d a t a ,   c h r o m a d b _ s u b m o d u l e s ] 
+     h i d d e n i m p o r t s = [ ' c h r o m a d b . t e l e m e t r y . p r o d u c t . p o s t h o g ' ,   ' c h r o m a d b . a p i . r u s t ' ] 
+     \ \ \ 
+ -   * * T r i p w i r e : * *   W e n n   P y I n s t a l l e r - B u n d l e   \ N o 
+ 
+ m o d u l e 
+ 
+ n a m e d 
+ 
+ c h r o m a d b . * 
+ 
+ \   F e h l e r   z e i g t   !  c o l l e c t _ d a t a _ f i l e s   +   i n c l u d e _ p y _ f i l e s   P a t t e r n   a n w e n d e n . 
+ -   * * L o c a t i o n : * *   \ j a n u s _ b a c k e n d . s p e c \   ( B A C K L O G - 0 1 7   F i x ) ,   g e f i x t   2 0 2 6 - 0 5 - 0 9 . 
+ -   * * C o n f i d e n c e : * *   H i g h   ( V a l i d i e r u n g :   P y I n s t a l l e r   B u i l d   P A S S ,   E X E   S t a r t u p   P A S S ,   T o o l M a n a g e r   P A S S ,   C L I P   M o d e l   P A S S ,   S e r v i c e s   P A S S ) . 
+ -   * * T a g s : * *   P y I n s t a l l e r ,   C h r o m a D B ,   c o l l e c t _ d a t a _ f i l e s ,   h i d d e n i m p o r t s ,   P a c k a g i n g ,   R u s t E x t e n s i o n s 
+ 
+ 
+## Dynamic Model Selection with Provider Consistency
+
+- **Context:** BACKLOG-019 Fix - Hardcoded gpt-5-mini caused fallback warnings. System now selects first available text model from catalog dynamically.
+- **Problem:** When selecting models dynamically from catalog, provider must be set consistently to avoid Provider/Model-Mismatch. Hardcoded provider="openai" with dynamic model selection caused mismatch when first available model was from different provider (gemini, ollama).
+- **Solution:** Helper function get_first_available_text_model_with_provider() returns (provider, model_id) tuple from catalog. Both main.py and calendar_ai_engine.py use this function to set provider and model consistently. Fallback path also uses provider from catalog, not hardcoded "openai".
+- **Pattern:**
+  ```python
+  from backend.services.llm_gateway import get_first_available_text_model_with_provider
+  provider, model_id = get_first_available_text_model_with_provider()
+  config["last_used_provider"] = provider if provider else "openai"
+  config["last_used_model"] = model_id if model_id else ""
+  ```
+- **Location:** backend/services/llm_gateway.py (get_first_available_text_model_with_provider), backend/main.py (bootstrap), backend/services/calendar/calendar_ai_engine.py (_resolve_provider_model_key). Fixed 2026-05-09.
+- **Confidence:** High (Validation: Syntax-Check PASS, Manual Janus Test PASS, no hardcoded model IDs remain, provider/model consistency guaranteed).
+- **Tags:** dynamic_model_selection, provider_consistency, model_catalog, hardcoded_models, backlog_019
+
+## [PATTERN] #LoggerImportInRenderers "Renderer modules must import logging and initialize logger before use"
+- **Kontext:** BACKLOG-032/034 Geo-Routing Attribution. backend/renderers/attribution.py used logger.info() without importing logging or initializing logger variable, causing NameError at runtime.
+- **Problem:** Renderer modules (attribution.py) used logger.info() calls without importing logging module or initializing logger variable. This caused NameError: name 'logger' is not defined when the attribution renderer was called after tool execution.
+- **Lösung:** Add `import logging` at the top of renderer modules and initialize logger with `logger = logging.getLogger(__name__)` before any logger calls. Use try/except block for logger calls if logger scope is uncertain to provide fallback to logging.getLogger() directly.
+- **Härtung:** Audit all renderer modules for logger usage without import. Tripwire: NameError for logger at runtime when renderer is called.
+- **Location:** backend/renderers/attribution.py (line 4, 8), implementiert 2026-05-13.
+- **Epic:** BACKLOG-032/034 — Geo-Routing Attribution Hardening
+- **Confidence:** High
+- **Tags:** LoggerImport, Renderer, Attribution, NameError, BACKLOG032, BACKLOG034
+
+## [PATTERN] #ForceToolChoiceForMandatorySkills "OpenAI GPT-Nano ignores mandatory tools and responds from knowledge context"
+- **Kontext:** BACKLOG-032/034 Geo-Routing Attribution. GPT-5.4-nano ignored mandatory system.routing tool and responded from knowledge context, causing attribution (Quelle: OSRM) to be missing.
+- **Problem:** OpenAI GPT-Nano models can ignore mandatory tools when tool_choice is set to "auto" and respond from knowledge context instead of calling the tool. This breaks attribution and data freshness requirements.
+- **Lösung:** Force tool_choice for critical mandatory skills by checking intent_detection_result instead of list length. If routing intent is detected (primary_intent contains "routing"), set force_tool_name in gateway_kwargs to "system.routing". This forces OpenAI to call the specific tool instead of choosing from knowledge. Check intent instead of list length because memory skills can enlarge the relevant_skill_ids list.
+- **Härtung:** Audit all critical mandatory skills (system.routing, system.weather, system.wikipedia_summary, system.rss_news) for force_tool_choice logic. Tripwire: Mandatory tool not called despite being in allowed_skill_ids, attribution missing, or knowledge-context response when tool should be mandatory.
+- **Location:** backend/services/orchestrator/execution_dispatcher.py (line 855-862), backend/services/skill_selector.py (line 94-110), implementiert 2026-05-13.
+- **Epic:** BACKLOG-032/034 — Geo-Routing Attribution Hardening
+- **Confidence:** High
+- **Tags:** ForceToolChoice, MandatorySkills, OpenAI, GPTNano, KnowledgeContext, Attribution, BACKLOG032, BACKLOG034
+
+## [PATTERN] #IntentBasedForceLogic "Use intent detection result instead of list length for tool forcing"
+- **Kontext:** BACKLOG-032/034 Geo-Routing Attribution. Initial force logic checked `len(wf.relevant_skill_ids) == 1` which was too strict because memory skills can enlarge the list, allowing GPT to ignore routing tool.
+- **Problem:** List-based conditions for forcing tools are fragile because other skills (memory, capability groups) can enlarge the list, breaking the condition. GPT uses this loophole to ignore mandatory tools.
+- **Lösung:** Use intent-based forcing instead of list-length checking. Check intent_detection_result.primary_intent for routing intent (contains "routing") and force tool_choice unconditionally. This is more robust because intent detection is independent of other skill additions.
+- **Härtung:** Audit all force-tool conditions for list-length checks and replace with intent-based checks where possible. Tripwire: Force logic fails when list length changes due to non-mandatory skills.
+- **Location:** backend/services/orchestrator/execution_dispatcher.py (line 859-862), implementiert 2026-05-13.
+- **Epic:** BACKLOG-032/034 — Geo-Routing Attribution Hardening
+- **Confidence:** High
+- **Tags:** IntentBased, ForceLogic, ListLength, MemorySkills, Robustness, BACKLOG032, BACKLOG034
+
+## [PATTERN] #GeminiForceRouting "Gemini requires explicit is_routing_geo_intent flags in dispatcher to avoid knowledge fallback"
+- **Kontext:** BACKLOG-036 Gemini Geo-Distance Hallucination. Gemini antwortet auf Geo-Distanz-Abfragen ("Wie weit ist Berlin von München?") ohne Tool-Call zu system.routing und zeigt keine "Quelle: OSRM" Attribution. GPT führt korrekt Tool-Call aus.
+- **Problem:** DIAMOND-CORE-ROUTING-FORCE prüfte nur auf "routing" im primary_intent, nicht auf is_routing_geo_intent. Für Geo-Distanz-Abfragen ist der primary_intent möglicherweise nicht "routing" sondern etwas anderes (z.B. "geo"), sodass force_tool_name gar nicht gesetzt wurde und Gemini das Tool nicht zwangsweise aufrufen musste. Die bloße Intent-Erkennung reicht oft nicht aus, um den Tool-Call gegenüber dem LLM-Wissen zu erzwingen.
+- **Lösung:** Erweitere DIAMOND-CORE-ROUTING-FORCE Bedingung um is_routing_geo_intent flag zusätzlich zu primary_intent check. Prüfe: `is_routing_geo = bool(getattr(intent_result, 'is_routing_geo_intent', False)) if intent_result else False` und `if intent_result and ("routing" in str(getattr(intent_result, 'primary_intent', '')).lower() or is_routing_geo)`. Dies stellt sicher, dass Gemini bei Geo-Distanz-Abfragen das system.routing Tool zwangsweise aufrufen muss, unabhängig vom genauen primary_intent String.
+- **Härtung:** Audit alle force-tool Bedingungen für Gemini-spezifische Intents und prüfe ob zusätzlich zum primary_intent auch die spezifischen intent_flags (is_routing_geo_intent, is_weather_intent, is_wikipedia_intent, is_news_intent) geprüft werden. Tripwire: Gemini ignoriert Tool-Call bei bestimmten Intents obwohl Tool in allowed_skill_ids.
+- **Location:** backend/services/orchestrator/execution_dispatcher.py (lines 895-903), implementiert 2026-05-14.
+- **Epic:** BACKLOG-036 — Gemini Geo-Distance Hallucination Fix
+- **Confidence:** High (Validation: Playwright E2E Test TASK-036-02 PASS, Backend-Logs zeigen system.routing tool call und "Quelle: OSRM" attribution)
+- **Tags:** GeminiForceRouting, is_routing_geo_intent, ForceToolChoice, GeoDistance, ProviderParity, BACKLOG036
+
+
+## BACKLOG-033: Test-Erwartungs-Namen vs. Backend-Tool-Namen Mismatch
+
+**Root Cause:** Test-Erwartungen verwendeten falsche Tool-Namen (wiki_fact,
+ews_rss) statt der korrekten Namen im Codebase (system.wikipedia_summary, system.rss_news). Dies f�hrte zu Test-Fehlern obwohl die Tools korrekt aufgerufen wurden.
+
+**Fix Pattern:** Bei Test-Fehlern immer zuerst pr�fen ob Tool-Namen in Test-Erwartungen mit den tats�chlichen Tool-Namen im Codebase �bereinstimmen. Backend-Logik kann korrekt sein trotz Test-Fehlern.
+
+**Verification:**
+- Grep nach Tool-Namen im Codebase: system.wikipedia_summary, system.rss_news`n- TestPlan-Dateien auf korrekte Tool-Namen pr�fen
+- Backend-Logik verifizieren (skill_selector.py, capability_registry.py)
+
+**Tripwire:** Wenn Tests f�r Tool-Call-Evidence fehlschagen obwohl Backend-Logs zeigen dass Tools aufgerufen wurden, pr�fe Tool-Namen in Test-Erwartungen.
+
+
+## [PATTERN] #TestPipelineValidation Diamond-Standard Test Pipeline for TestSpec Validation
+
+- **Kontext:** TEST-RUN-2026-05-15-008 Capability Overview and Help TestSpec validation. Complete test pipeline execution from TEST SKILL 1 through TEST SKILL 4 with 22/22 tests PASS (100% Pass-Rate).
+
+- **Problem:** Need deterministic, artifact-based test pipeline for validating TestSpecs without manual intervention or ad-hoc testing.
+
+- **L�sung:** Diamond-Standard Test Pipeline (TEST SKILL 1-4) with deterministic compiler, validator, and live runner. TEST SKILL 1 compiles TestSpec to TestPlan with provider/model matrix duplication. TEST SKILL 2 validates precheck gates (runtime safety, provider matrix, test data availability). TEST SKILL 3 executes live Playwright tests with evidence capture. TEST SKILL 4 triages findings and routes to next steps. All artifacts are machine-readable JSON with schema validation.
+
+- **H�rtung:** Always run TEST SKILL 1-4 sequence for TestSpec validation. Never skip TEST SKILL 2 precheck. Preserve failure codes and evidence. Use deterministic scripts for all handovers. Tripwire: Manual testing without artifact-based pipeline or skipped precheck gates.
+
+- **Location:** tests/e2e/generator/ (compile-testspec-to-testplan.mjs, validate-test-plan.mjs, test-skill3-preflight.mjs, generate-live-runner.mjs, create-test-skill3-handover.mjs, create-test-skill4-handover.mjs, create-test-result-md.mjs), documentation/pipeline/TEST_PIPELINE_RUN_LOG.md, implementiert 2026-05-15.
+
+- **Epic:** TEST-RUN-2026-05-15-008 � Capability Overview and Help TestSpec Validation
+
+- **Confidence:** High
+
+- **Tags:** TestPipeline, DiamondStandard, TestSpec, Playwright, ProviderMatrix, Deterministic, ArtifactBased, TEST-RUN-2026-05-15-008
+
+## [PATTERN] #SecurityRefusalOracle "Secret-handling tests need refusal-specific pass patterns"
+
+- **Kontext:** BACKLOG-065 / TEST-RUN-2026-05-17-021. Spec 01 secret/env/key disclosure prompts produced safe refusals, but the generated TestPlan expected generic clarification/capability keywords and caused false FAILs.
+- **Problem:** Security prompts should not always ask clarification questions. A direct refusal like "kann keine API Keys ausgeben" is correct and must be accepted while leak guards remain strict.
+- **Loesung:** Generate security-refusal `containsAny` patterns for secret/env/key/debug/prompt-injection cases and keep `mustNotContain` patterns for canary secrets, API key prefixes, bearer tokens, cookies, and credential markers.
+- **Haertung:** For security tests, never replace refusal oracles with broad generic keywords. Tripwire: product response is a safe refusal but assertion fails because the oracle only accepts "Welche", "konkret", or capability-help phrases.
+- **Location:** `tests/e2e/generator/compile-testspec-to-testplan.mjs`, implemented 2026-05-17.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-17-021 PASS 28/28).
+- **Tags:** SecurityRefusalOracle, TestPlanGenerator, SecretHandling, BACKLOG065
+
+## [PATTERN] #TestSpecPatternTransfer "Explicit TestSpec containsAny columns must override generator defaults"
+
+- **Kontext:** BACKLOG-067 / TEST-RUN-2026-05-17-024. TestSpec 02 already contained corrected `Expected containsAny Patterns`, but the generated plan kept old default source-attribution/capability patterns.
+- **Problem:** Hardcoded generator heuristics can silently override precise TestSpec oracle patterns and create false red runs after a TestSpec fix.
+- **Loesung:** Pass the table column `Expected containsAny Patterns` through provider expansion and let `expectedFor()` use it before falling back to hardcoded/default logic.
+- **Haertung:** For every TestSpec table that has explicit expected patterns, the generated TestPlan should be checked against the table, not only schema-validity. Tripwire: TestSpec patterns updated but generated `expected.containsAny` still contains unrelated defaults like `Quelle:`, `Wikipedia`, or `Faehigkeiten`.
+- **Location:** `tests/e2e/generator/compile-testspec-to-testplan.mjs`, implemented 2026-05-17.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-17-024 TESTPLAN VALID; INT-002/003/004 and SEC-005 provider-expanded patterns match the TestSpec).
+- **Tags:** TestSpecPatternTransfer, TestPlanGenerator, OraclePatterns, BACKLOG067
+
+## [PATTERN] #PlaywrightServerParallelism "Do not start multiple Janus webserver-backed Playwright runs on the same ports"
+
+- **Kontext:** BACKLOG-065 retest iteration. Multiple Playwright processes with webserver autostart can fight over ports 8001/5173 and hide the real assertion signal.
+- **Problem:** Parallel Playwright commands that each try to own Janus backend/frontend startup can create infrastructure failures unrelated to the test under review.
+- **Loesung:** Run one webserver-backed Playwright process at a time. Use `--workers=1` for mutation/security/live Janus runs unless a TestPlan explicitly marks isolated parallel-safe cases and the runner controls shared startup.
+- **Haertung:** Parallelize within one coordinated runner, not by launching competing `npx playwright` processes.
+- **Confidence:** Medium-high.
+- **Tags:** Playwright, WebserverAutostart, PortConflict, TestPipeline
+
+## [PATTERN] #EvidenceBackedRunnerCompletion "Every generated Janus test must write evidence, even on early Playwright failures"
+
+- **Kontext:** BACKLOG-072 / TEST-RUN-2026-05-18-019. Auth/AuthZ/Tenant-Isolation validation originally produced only 5 result entries out of 26 planned tests, so the product/oracle status could not be trusted.
+- **Problem:** If Playwright failed before `writeEvidence()` ran, the aggregate result JSON silently undercounted tests. That can make a run look partially green while hiding unexecuted or infrastructure-blocked cases.
+- **Loesung:** The generated live runner now writes aggregate result JSON from evidence files after each case and records fallback `BLOCKED` evidence in `test.afterEach` when a test fails before Janus evidence exists. Result summaries must be based on evidence count matching the TestPlan count.
+- **Haertung:** Treat `results.length !== plan.tests.length` as a test-infrastructure finding, not a product result. Tripwire: a TestPlan has N tests, but `*_results.json.summary.total` is lower than N.
+- **Location:** `tests/e2e/generator/generate-live-runner.mjs`, implemented 2026-05-18.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-18-019 PASS 26/26 with 26 evidence-backed result entries).
+- **Tags:** EvidenceBackedRunner, Playwright, TestPipeline, BACKLOG072
+
+## [PATTERN] #AuthZTenantOracle "Cross-user security tests need refusal and isolation variants, not generic source or memory patterns"
+
+- **Kontext:** BACKLOG-072 / Spec 03 Auth, AuthZ and Tenant Isolation. Safe answers such as refusing User B memory/calendar/file mutation or admin-route bypass failed because the generated oracle expected unrelated source-attribution or memory keywords.
+- **Problem:** Security/AuthZ cases can be correct with direct refusals, scope restrictions, or isolation explanations. Generic oracles like `Quelle:`, `Wikipedia`, `RSS`, or memory recall phrases create false red runs and obscure real security regressions.
+- **Loesung:** Add Spec-specific Auth/AuthZ oracle branches and variants for unauthorized data, unauthorized mutation, overbroad private search, role bypass, auth-state confusion, and memory-granted-access prompt injection.
+- **Haertung:** For AuthZ/Tenant tests, keep `mustNotContain` leak guards strict while broadening only safe refusal/isolation phrasing. Tripwire: response refuses cross-user action but fails because oracle expects source attribution or generic clarification keywords.
+- **Location:** `tests/e2e/generator/compile-testspec-to-testplan.mjs`, implemented 2026-05-18.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-18-019 PASS 26/26).
+- **Tags:** AuthZTenantOracle, TestPlanGenerator, SecurityRefusal, BACKLOG072
+
+## [PATTERN] #CoreRoutingOracle "Core routing specs need route-family oracles, not exact wording or broad negative substrings"
+
+- **Kontext:** BACKLOG-073 / Spec 04 Core Routing Decision Quality. The intermediate retest was 31/38 because safe responses for current research, memory recall, fake regulated capability, missing memory fact and prompt-injection refusal were rejected by overly narrow generated patterns.
+- **Problem:** Route-quality tests can fail falsely when `mustNotContain` uses broad substrings such as `Suche` or when safe refusal/clarification variants are not accepted. Follow-up questions after a valid answer and direct prompt-injection refusals are valid behavior, not routing failures.
+- **Loesung:** Add Spec-04-specific oracle branches that accept route-equivalent answers per route family: direct chat, capability overview, weather/API, filesystem, memory, calendar, current research, refusal and clarification. Keep leak/unsafe-route guards strict but avoid broad substring traps.
+- **Haertung:** For core routing tests, validate the capability family and safety outcome rather than exact phrasing. Tripwire: response is safe and route-equivalent, but the oracle requires unrelated source-attribution or clarification wording.
+- **Location:** `tests/e2e/generator/compile-testspec-to-testplan.mjs`, implemented 2026-05-18.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-18-023 PASS 38/38).
+- **Tags:** CoreRoutingOracle, TestPlanGenerator, RouteQuality, BACKLOG073
+
+## [PATTERN] #PlannerBoundaryControl "Planner boundary tests need route-family gates plus context suppression"
+
+- **Kontext:** BACKLOG-074 / TEST-RUN-2026-05-19-003. Spec 05 validates direct response, short tool workflow, clarification, multi-step planning, prompt-injection refusal and provider parity.
+- **Problem:** Planner-boundary red runs can mix true product bugs with oracle/runner problems: short synthetic prompts were over-clarified, unrelated memory/identity context leaked into simple factual prompts, broad workspace tasks produced unstable fallback text, and generated oracles reused source-attribution defaults.
+- **Loesung:** Add deterministic pre-LLM gates for synthetic factual prompts, missing workspace path, and broad multi-step workspace scope; suppress memory/identity injection for synthetic prompts; calibrate Spec 05 oracle expectations to route families; keep runner evidence complete.
+- **Haertung:** Validate with both focused red retests and a final aggregate evidence-backed run. Tripwire: a direct/simple prompt includes unrelated memory/identity, a broad workspace task executes without scope, or a planner-boundary oracle expects `Quelle:`/weather/geodata text.
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py`, `backend/services/memory/retrieval_service.py`, `backend/services/chat_orchestrator.py`, `tests/e2e/generator/compile-testspec-to-testplan.mjs`, `tests/e2e/generator/generate-live-runner.mjs`, implemented 2026-05-19.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-19-003 PASS 32/32).
+- **Tags:** PlannerBoundary, MemorySuppression, TestPlanGenerator, TestPipeline, BACKLOG074
+
+## [PATTERN] #AISafetyBoundaryFullGreen "Security TestSpecs need full-run proof after focused red/green fixes"
+
+- **Kontext:** TEST-RUN-2026-05-20-012 / Spec 06 AI Prompt Injection, Tool Abuse and Data Exfiltration. Earlier focused retests proved individual fixes, but the dashboard legitimately returned to the latest full-run state until a complete 57-test run passed.
+- **Problem:** Focused retests can make a local issue look solved while stale full-run evidence, blocked runner setup, or remaining provider-specific edge cases keep the TestSpec red or partial. Dashboard truth must prefer the latest complete run over partial green snippets.
+- **Loesung:** Finish security TestSpecs with one full evidence-backed run where `planned == executed`, `failed == 0`, `blocked == 0`, and provider/type pass rates are all 100%. Use E2E fast mode to suppress nonessential background jobs during Playwright runs, and keep AI-safety oracles broad enough for safe refusals/clarifications while preserving strict leak/unsafe-success guards.
+- **Haertung:** Do not mark a high-risk TestSpec done from focused retests alone. Tripwire: dashboard shows a lower percentage than the focused run, or result JSON totals do not match the TestPlan count.
+- **Location:** `playwright.config.js`, `backend/services/orchestrator/response_finalizer.py`, `backend/services/orchestrator/execution_dispatcher.py`, `tests/e2e/generator/compile-testspec-to-testplan.mjs`, `tests/e2e/generator/generate-live-runner.mjs`, validated 2026-05-20.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-20-012 PASS 57/57, 0 failed, 0 blocked).
+- **Tags:** AISafetyBoundary, FullRunEvidence, DashboardTruth, TestPipeline, PromptInjection, ProviderParity
+
+## [PATTERN] #MemoryExternalizationPreProviderGate "Private context must be stopped before web/API/tool dispatch"
+
+- **Kontext:** TEST-RUN-2026-05-21-017 / Spec 10 Context Privacy and Externalization Boundary. The risky class is not only memory dumping, but prompts that ask Janus to use "everything you know about me" inside web/API/tool calls.
+- **Problem:** If broad private context reaches the provider/tool-selection layer, downstream oracles can only detect leakage after the risky prompt was already constructed. German variants like "Erinnerungen", "Gedächtnis" and "nutze alles über mich im Web" need explicit coverage.
+- **Loesung:** Add deterministic pre-provider gates for broad private context externalization, extend German memory dump/forwarding detection, and suppress memory injection for unrelated current/weather/search queries unless the prompt contains a scoped personal relevance hint.
+- **Haertung:** Keep scoped personalization allowed, e.g. restaurant suggestions matching explicit preferences. Tripwire: a weather/current-search prompt receives unrelated private memory, or a privacy-bypass prompt reaches web/API/tool arguments.
+- **Location:** `backend/services/orchestrator/execution_dispatcher.py`, `backend/services/memory/retrieval_service.py`, `backend/tools/memory_tools.py`, validated 2026-05-21.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-21-017 PASS 12/12; focused privacy/export suite PASS 17/17; memory/security/external-tool regression PASS 34/34).
+- **Tags:** MemoryPrivacy, ExternalizationBoundary, PreProviderGate, TestPipeline, ProviderParity
+
+## [PATTERN] #MemoryPriorityPlaceholderSuppression "Concrete high-priority memory must beat chat-title placeholders"
+
+- **Kontext:** TEST-RUN-2026-05-21-019 / Spec 11 Memory Retrieval Relevance and Priority. Phoenix project recall must not be diluted by placeholder chat titles such as "Name des Testprojekts".
+- **Problem:** Priority sorting alone can still leave a misleading low-priority placeholder in the final memory context. The model may then see both the concrete fact and the placeholder, which weakens deterministic recall.
+- **Loesung:** Skip known project-name placeholder memory slots during budget selection, keep concrete high-priority facts such as Phoenix, and validate `memory_read` against missing-fact and placeholder leakage cases.
+- **Haertung:** Pair recall checks with negative assertions. Tripwire: context contains both `Phoenix` and `Name des Testprojekts`, or a missing favorite-color query returns an unrelated memory candidate.
+- **Location:** `backend/services/memory_budget.py`, `backend/services/memory/retrieval_service.py`, `backend/tests/test_memory_retrieval_relevance_priority.py`, validated 2026-05-21.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-21-019 PASS 12/12; focused retrieval suite PASS 5/5; regression suite PASS 46/46).
+- **Tags:** MemoryRetrieval, Priority, PlaceholderSuppression, MissingFactHonesty, TestPipeline
+
+## [PATTERN] #MemoryMutationCanonicalRefresh "Corrections must refresh canonical keys before duplicate prevention can work"
+
+- **Kontext:** TEST-RUN-2026-05-21-021 / Spec 12 Memory Write Update and Conflict Handling. Alpha -> Phoenix correction must make later Phoenix writes merge with the corrected memory.
+- **Problem:** Updating only the snippet leaves the old canonical/hash identity behind. A later equivalent fact can miss dedup and create active duplicate/stale memory state.
+- **Loesung:** `memory_update` now refreshes `canonical_key`, `text_hash` and `normalized_text` from the new fact. `memory_write` also blocks secret-like facts and skips explicit non-durable memory requests before persistence.
+- **Haertung:** Mutation tests need DB evidence, not only final answer text. Tripwire: update changes visible snippet but duplicate write creates a second active row, or a fake password reaches the memory table.
+- **Location:** `backend/tools/memory_tools.py`, `backend/tests/test_memory_write_update_conflict_handling.py`, validated 2026-05-21.
+- **Confidence:** High (Validation: TEST-RUN-2026-05-21-021 PASS 12/12; focused mutation suite PASS 6/6; regression suite PASS 56/56).
+- **Tags:** MemoryMutation, Dedup, ConflictHandling, SensitivePersistence, TestPipeline
+
+## [PATTERN] #FilesystemWorkspaceMutationEnforcement "Filesystem safety needs both prompt gates and low-level workspace enforcement"
+
+- **Kontext:** TEST-RUN-2026-05-21-023 / Spec 16 Filesystem Safety Boundary Regression. The regression re-ran out-of-workspace writes, vague destructive prompts, prompt-injection attempts and safe workspace writes.
+- **Problem:** A pre-LLM gate can stop unsafe prompts, but direct filesystem helper paths must also reject absolute paths outside allowed workspaces. Otherwise a tool-routing or wrapper drift can bypass the user-facing safety wording.
+- **Loesung:** Keep deterministic prompt gates in `execution_dispatcher.py` for `C:\Windows\Temp\...`, vague delete and injected delete prompts; also enforce allowed-workspace membership in `filesystem_manager._resolve_and_validate_path()` for absolute paths before create/delete/move operations.
+- **Haertung:** `backend/tests/test_filesystem_safety_boundary_regression.py` covers safe workspace create, outside file/directory mutation denial, Windows Temp prompt block, approved-workspace non-overblock, destructive clarification, injection clarification, honest not-found search and workspace-root delete protection.
+- **Tripwire:** Any absolute out-of-workspace create/delete/move returns success, or a prompt says Janus can write anywhere on local drives.
+- **Location:** `backend/services/filesystem_manager.py`, `backend/services/orchestrator/execution_dispatcher.py`, `backend/tests/test_filesystem_safety_boundary_regression.py`, implemented 2026-05-21.
+- **Epic:** TEST-RUN-2026-05-21-023 Filesystem Safety Boundary Regression
+- **Confidence:** High (Validation: TEST-RUN-2026-05-21-023 PASS 12/12; focused filesystem safety suite PASS 8/8; filesystem/secret/intent regression suite PASS 62/62).
+- **Tags:** Filesystem, WorkspaceBoundary, PromptInjection, DestructiveActions, TestPipeline
+
+## [PATTERN] #MemoryReadPlaceholderFilter "Placeholder suppression must exist at read-tool output, not only in prompt context"
+
+- **Kontext:** TEST-RUN-2026-05-21-025 / Spec 17 Memory Recall Placeholder Regression. Stored project names, favorite facts and corrected facts must beat chat titles and placeholder labels.
+- **Problem:** Budget selection already skipped placeholder slots, but direct `memory.read` could still return a low-priority placeholder fact when an injection query contained words like `Titel` or `Projektname`. That gives the final answer layer unsafe material to copy.
+- **Loesung:** Add `_is_placeholder_memory_fact_text()` in `backend/tools/memory_tools.py` and filter placeholder facts from `memory.read` output before `total_found` is reported. Concrete values such as Phoenix/Orion are preserved.
+- **Haertung:** Dedicated regression covers Phoenix write/read, budget placeholder suppression, missing favorite-color honesty, Phoenix -> Orion correction precedence, prompt-injection placeholder override and GPT/Gemini static parity.
+- **Tripwire:** `memory.read` returns `Name des Testprojekts`, `Projektname` or `Chat-Titel Platzhalter` as a fact for a project-name recall query.
+- **Location:** `backend/tools/memory_tools.py`, `backend/tests/test_memory_recall_placeholder_regression.py`, implemented 2026-05-21.
+- **Epic:** TEST-RUN-2026-05-21-025 Memory Recall Placeholder Regression
+- **Confidence:** High (Validation: TEST-RUN-2026-05-21-025 PASS 12/12; focused placeholder suite PASS 6/6; memory regression suite PASS 58/58).
+- **Tags:** MemoryRecall, PlaceholderSuppression, PromptInjection, TestPipeline, ProviderParity
+
+## [PATTERN] #LiveJanusSmokeFirstForTinyUIFixes "Small visible UI fixes should ask for a quick live Janus check before Playwright"
+
+- **Kontext:** BACKLOG-093 / Settings API-Key duplication fix on 2026-05-25.
+- **Problem:** A small, directly visible UI bug can be over-tested if the route immediately builds a heavyweight Playwright flow even though the user can verify the acceptance criteria in seconds.
+- **Loesung:** For tiny Janus UI fixes with straightforward visual acceptance criteria, ask the user for a quick live Janus sight check first. Reserve Playwright/generator flows for ambiguous, failed, broad, or regression-prone cases.
+- **Haertung:** BACKLOG-093 was verified via live Janus sight check (`open settings -> confirm two entries -> reopen and confirm still two`) and then closed through final audit without a heavy Playwright runner.
+- **Tripwire:** If the fix is local, visible, and can be confirmed in one quick app interaction, do not default to Playwright before asking for the live sight check.
+- **Location:** `C:\Users\pruve\.codex\skills\janus-executioner\SKILL.md`, `C:\Users\pruve\.codex\skills\janus-test-pipeline\SKILL.md`, validated 2026-05-25.
+- **Epic:** BACKLOG-093
+- **Confidence:** High
+- **Tags:** LiveSmoke, UIVerification, PlaywrightAvoidance, JanusWorkflow, Settings, Backlog093
+
+## [PATTERN] #DualWindowStreamIsolation "Parallel chat windows need per-window inflight and stream state ownership"
+
+- **Kontext:** BACKLOG-094 on 2026-05-25 (Dual parallel chat execution with mixed providers/models).
+- **Problem:** Shared inflight/stream handling across windows can serialize requests in practice or produce stale UI effects (wrong loading bubble, wrong stop/error state, delayed second stream) even when backend requests are accepted.
+- **Loesung:** Treat each chat window as its own stream owner: isolate inflight tracking, stale-stream guards, and cleanup by `window_id`; always forward `X-Janus-Window-Id`; persist per-chat header LLM overrides via dedicated endpoint; add backend `STREAM_AUDIT` + `TOKEN_AUDIT` evidence to verify true overlap and per-window/provider separation.
+- **Haertung:** Keep a functional overlap test that asserts stream endpoint success and visible assistant output while two windows are active. Mirror backend logs to a deterministic docs path for faster forensic checks.
+- **Tripwire:** If one window stream starts only after the other ends, or token/stream logs cannot attribute events to `window_id` and provider/model, isolation regressed.
+- **Location:** `frontend/js/chat.js`, `backend/api/routers/chat.py`, `backend/logger_config.py`, `backend/main.py`, `tests/functional/chat-core.spec.js`, implemented 2026-05-25.
+- **Epic:** BACKLOG-094
+- **Confidence:** High (Final Audit: PASS WITH FIXES, functional test PASS).
+- **Tags:** ParallelChat, StreamIsolation, WindowState, ProviderParity, TokenAudit, Backlog094

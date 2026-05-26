@@ -1,0 +1,10 @@
+{
+  "rawSensitiveEvidencePolicy": "headers-and-status-only",
+  "sourceMapsInDist": 0,
+  "debugStatuses": [
+    403,
+    403,
+    404
+  ],
+  "noStackTrace": true
+}

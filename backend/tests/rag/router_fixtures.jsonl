@@ -1,0 +1,34 @@
+{"query": "def process_data() { return x + 1 }", "expected_mode": "code_heavy", "description": "inline function definition"}
+{"query": "how does the database connection pool work", "expected_mode": "prose_heavy", "description": "natural language how-question"}
+{"query": "user_repository.findById(id)", "expected_mode": "code_heavy", "description": "snake_case and method call"}
+{"query": "What is the purpose of the authentication module", "expected_mode": "prose_heavy", "description": "what-question about module"}
+{"query": "import os from './utils'", "expected_mode": "code_heavy", "description": "import statement"}
+{"query": "Where can I find the user profile settings", "expected_mode": "prose_heavy", "description": "where-question"}
+{"query": "class UserService { getUser() {} }", "expected_mode": "code_heavy", "description": "class definition with method"}
+{"query": "Wie funktioniert die Dateispeicherung in Janus", "expected_mode": "prose_heavy", "description": "German how-question"}
+{"query": "config.get('database.host')", "expected_mode": "code_heavy", "description": "method chain with string"}
+{"query": "Why does the search return empty results for new files", "expected_mode": "prose_heavy", "description": "why-question with context"}
+{"query": "async function fetchData() { await api.call(); }", "expected_mode": "code_heavy", "description": "async function with await"}
+{"query": "Wann wurde die API-Dokumentation zuletzt aktualisiert", "expected_mode": "prose_heavy", "description": "German when-question"}
+{"query": "src/services/rag/query_router.py", "expected_mode": "code_heavy", "description": "file path"}
+{"query": "Can you explain the difference between vector and keyword search", "expected_mode": "prose_heavy", "description": "can-you-explain question"}
+{"query": "const result = db.query('SELECT * FROM users')", "expected_mode": "code_heavy", "description": "const variable with SQL"}
+{"query": "How many documents are currently indexed in the knowledge base", "expected_mode": "prose_heavy", "description": "how-many question"}
+{"query": "function calculateSum(a, b) { return a + b }", "expected_mode": "code_heavy", "description": "function with parameters"}
+{"query": "Welche Dateien wurden im letzten Commit geändert", "expected_mode": "prose_heavy", "description": "German which-question"}
+{"query": "npm install lodash", "expected_mode": "code_heavy", "description": "CLI command"}
+{"query": "I need to understand the routing logic for user queries", "expected_mode": "prose_heavy", "description": "i-need statement"}
+{"query": "for (let i = 0; i < items.length; i++) { process(items[i]) }", "expected_mode": "code_heavy", "description": "for loop with processing"}
+{"query": "Was ist der Unterschied zwischen Dense und Sparse Search", "expected_mode": "prose_heavy", "description": "German what-is question"}
+{"query": "if (user.isAdmin) { return true } else { return false }", "expected_mode": "code_heavy", "description": "if-else conditional"}
+{"query": "Tell me about the ChromaDB integration and how it handles embeddings", "expected_mode": "prose_heavy", "description": "tell-me-about statement"}
+{"query": "README.md", "expected_mode": "code_heavy", "description": "just a filename"}
+{"query": "Warum ist die Suche so langsam bei großen Dateien", "expected_mode": "prose_heavy", "description": "German why-question"}
+{"query": "userModel.validateEmail(email)", "expected_mode": "code_heavy", "description": "camelCase method call"}
+{"query": "Describe the process of indexing markdown files", "expected_mode": "prose_heavy", "description": "describe-command"}
+{"query": "from backend.services.rag import query_router", "expected_mode": "code_heavy", "description": "Python import statement"}
+{"query": "Who implemented the context expansion feature", "expected_mode": "prose_heavy", "description": "who-question"}
+{"query": "renderToString(<Component props={data} />)", "expected_mode": "code_heavy", "description": "JSX function call"}
+{"query": "Explain the RRF formula and how it combines rankings", "expected_mode": "prose_heavy", "description": "explain-command"}
+{"query": "git commit -m 'fix: resolve memory leak in chunking'", "expected_mode": "code_heavy", "description": "git commit command"}
+{"query": "How do I configure the embedding model for code files", "expected_mode": "prose_heavy", "description": "how-do-i question"}

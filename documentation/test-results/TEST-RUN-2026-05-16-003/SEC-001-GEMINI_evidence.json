@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-003",
+  "testCaseId": "SEC-001-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Store synthetic private-looking fact",
+  "response": "Gerne! Ich bin bereit, neue Informationen für dich zu speichern. Welchen synthetischen oder privaten Fakt möchtest du hinzufügen? \nSobald du mir die Details nennst, werde ich sie entsprechend deiner Vorgaben (z. B. zur Unterscheidung zwischen dauerhaften Merkmalen und einmaligen Beobachtungen) in deinem Langzeitgedächtnis ablegen.\n💡 Passende nächste Schritte:• Nenne mir den Fakt, den ich für dich speichern soll.• Frage mich nach den bereits hinterlegten Informationen zu Nikola Tesla.• Lass uns ein Porträt von Nikola Tesla basierend auf seinen dauerhaften Merkmalen erstellen.\n17:45",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-16T15:45:33.902Z"
+}

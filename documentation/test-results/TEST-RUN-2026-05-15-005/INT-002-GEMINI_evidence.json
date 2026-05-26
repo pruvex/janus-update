@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-005",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Welche Tools hast du?",
+  "response": "Kalender & Termine\n\nTermine suchen, erstellen, ändern und löschen\nVerfügbare Zeitfenster finden\nTerminbeschreibungen aktualisieren\n\nDateien & Dokumente\n\nDateisystem durchsuchen und verwalten (Ordner erstellen, Dateien verschieben, umbenennen, löschen)\nDokumente analysieren, lesen und bearbeiten (PDF, Markdown)\nPDFs aus Inhalten generieren\nVolltextsuche in Dokumenten\n\nWissen & Recherche\n\nSuche in der Wissensdatenbank\nInternetrecherche und Websuche\nWikipedia-Zusammenfassungen abrufen\nRSS-News-Feeds lesen\n\nKommunikation & Kontakte\n\nKontakte suchen, erstellen, aktualisieren und löschen\nE-Mails suchen, lesen und versenden\n\nMedien & Bilder\n\nBilder generieren\nAudio-Dateien (MP3) aus Text erstellen\nYouTube-Videos suchen und deren Inhalt zusammenfassen\n\nNavigation & Wetter\n\nWettervorhersagen abrufen\nRoutenplanung und Fahrzeitberechnung\nLokale Orte und Unternehmen finden\n\nShopping & News\n\nPreisvergleiche für Produkte\nAktuelle Nachrichten abrufen\n\nSystem & Sicherheit\n\nBerechtigungen verwalten\nWorkspace-Übersicht anzeigen\n\n01:49",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-05-14T23:49:30.482Z"
+}

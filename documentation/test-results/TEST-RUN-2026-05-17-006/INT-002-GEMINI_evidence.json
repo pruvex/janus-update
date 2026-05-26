@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-17-006",
+  "testCaseId": "INT-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Wer ist Ada Lovelace?",
+  "response": "Ada Lovelace (1815–1852) war eine britische Mathematikerin und Gesellschaftsdame. Sie gilt als die erste Programmiererin der Welt, da sie einen Algorithmus zur Berechnung von Bernoulli-Zahlen für Charles Babbages \"Analytical Engine\" verfasste. Zu ihren Ehren wurde die Programmiersprache Ada nach ihr benannt.\nDiese Informationen habe ich heute um 01:40 Uhr im Chat 'Ada Lovelace Biografie' sowie um 14:17 Uhr im Chat 'Ada Lovelace' (in Bezug auf ihren Status als Gesellschaftsdame) für dich festgehalten.\nQuelle: Wikipedia\n💡 Passende nächste Schritte:• Möchtest du mehr über ihre Zusammenarbeit mit Charles Babbage erfahren?• Soll ich Details zu den von ihr berechneten Bernoulli-Zahlen heraussuchen?• Benötigst du eine Zusammenfassung ihrer wichtigsten Veröffentlichungen?\n14:51",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-17T12:52:08.460Z"
+}

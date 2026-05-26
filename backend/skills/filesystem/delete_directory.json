@@ -2,17 +2,27 @@
   "legacy_name": "delete_directory",
   "skill": "filesystem.delete_directory",
   "version": "1.0.0",
-  "sandbox_level": "workspace_only",
+  "sandbox_level": "full",
   "latency_class": "fast",
   "tags": [
     "filesystem"
   ],
   "capabilities": [
     "directory_delete",
-    "workspace_mutation"
+    "filesystem_mutation"
   ],
   "is_agent_ready": true,
   "max_calls_per_turn": 1,
   "depends_on": [],
-  "examples": []
+  "examples": [],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string",
+        "description": "Pfad zum zu löschenden Verzeichnis"
+      }
+    },
+    "required": ["path"]
+  }
 }

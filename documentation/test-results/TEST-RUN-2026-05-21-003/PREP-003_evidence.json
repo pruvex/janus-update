@@ -1,0 +1,13 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-003",
+  "testCaseId": "PREP-003",
+  "result": "PASS",
+  "classification": "PREP_ASSERTION_PASS",
+  "evidence": {
+    "reviewSpec": "documentation/TEST_SPEC/02_security_safety/09_mini_prep_security_review.md",
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-05-21-003",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-05-21-003_results.json",
+    "schema": "tests/e2e/generator/test-result.schema.json"
+  },
+  "timestamp": "2026-05-20T23:53:14.436Z"
+}

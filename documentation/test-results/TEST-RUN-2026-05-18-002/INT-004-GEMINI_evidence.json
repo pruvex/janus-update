@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-18-002",
+  "testCaseId": "INT-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "News von Heise heute",
+  "response": "Hier sind die aktuellen Schlagzeilen von Heise für heute, den 18.05.2026:\n\nSaugroboter-Test: Roborock ist Testsieger, Dreame überzeugt durch geringe Lautstärke.\nDeutsche Bahn auf Sparkurs: Umfangreiche Verschlankung soll Milliardenverluste stoppen.\nKI-Bilder & Urheberrecht: Analyse zum Schutz durch Prompting und zur rechtlichen Lage beim Kopieren.\nNeuer Taktrekord: Intel Core i9-14900KF erreicht 9,2 GHz unter Helium-Kühlung.\nMähroboter-Test: Der Sunseeker X5 Gen2 punktet mit Allradantrieb und präzisem Kantenschnitt.\nDigitalsteuer in Kalifornien: Neue Pläne für eine Steuer auf Cloud-Software trotz KI-Booms.\nLudoSport ausprobiert: Ein Erfahrungsbericht über Lichtschwertkampf als Sportart (heise+).\nEvent-Tipp: Die data2day 2026 legt Schwerpunkte auf Datenprodukte und Agentic AI.\nKraftstoffpreise: Diesel ist seit April um durchschnittlich 45 Cent günstiger geworden.\niX-Workshop: Praxis-Seminar zum Aufbau und Schutz von Netzwerkarchitekturen in Proxmox.\n\n💡 Passende nächste Schritte:• Möchtest du Details zu einem der Hardware-Tests (Saugroboter/Mähroboter) wissen?• Soll ich nach weiteren Informationen zur geplanten Digitalsteuer in Kalifornien suchen?• Suchst du nach weiteren News zu einem spezifischen Thema wie KI oder Hardware?\n02:06",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-18T00:06:46.759Z"
+}

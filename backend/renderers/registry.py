@@ -48,6 +48,7 @@ def _ensure_loaded() -> None:
         import backend.renderers.implementations.grant_permission_renderer  # noqa: F401
         import backend.renderers.implementations.local_business_renderer  # noqa: F401
         import backend.renderers.implementations.revoke_permission_renderer  # noqa: F401
+        import backend.renderers.implementations.rss_news_renderer  # noqa: F401
         # 💎 DIAMOND: UnifiedWebSearchRenderer für deterministisches Post-Aggregation Rendering
         import backend.renderers.implementations.unified_websearch_renderer  # noqa: F401
         import backend.renderers.implementations.price_comparison_renderer  # noqa: F401

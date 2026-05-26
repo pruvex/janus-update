@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-041",
+  "testCaseId": "TC-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Recherchiere aktuelle Preise fuer OpenAI und Gemini Modelle",
+  "response": "1) **OpenAI (API / GPT-Modelle)**- Für die **OpenAI-API-Modellpreise** habe ich in den gefundenen DE-Suchergebnissen **keine wortwörtlichen Euro-Preisangaben** vorgefunden (oft nur Verweise/Tokenpreise ohne „€“ als Zahl im Snippet).  - Quelle: [OpenAI API – 21medien](https://www.21medien.de/de/library/openai-api?utm_source=openai)2) **Gemini (Google / Gemini-Modelle)**- **Gemini als Abo (monatlich, €):**  - **Google AI Pro: 21,99 € / Monat** (laut Suchergebnis, DE/Shop-Kontext)    - **Google AI Ultra: 274,99 € / Monat** (laut Suchergebnis, DE/Shop-Kontext)    - Quelle: [giga.de](https://www.giga.de/)- **Gemini-API (Tokenpreise):**  - In den gefundenen Snippets waren **für die Gemini-API Tokenpreise keine Euro-Beträge** wortwörtlich ausgewiesen (stattdessen häufig USD/Richtwerte).    - Quelle (Kontext/Verweis): [Casuon Insights](https://insights.casoon.de)- **Gemini API (Euro-Beispiele, gefunden auf einer DE-Seite):**  - **Gemini 2.5 Pro:** **€ 1,88 input** und **€ 13,05 output** (laut Suchergebnis)    - Quelle: [DeutschlandGPT – Plattform/API](https://www.deutschlandgpt.de/plattform/api?utm_source=openai)💡 Passende nächste Schritte:• Soll ich die **Liste auf konkrete Modelle** eingrenzen (z.B. „nur Gemini 2.5 …“ und „nur GPT-…“), damit ich gezielter Euro-Preise pro Modell/Token finde?  • Geht es dir um **API-Tokenpreise** oder um **Consumer-Abos** (z.B. Gemini Advanced/Pro/Ultra) — oder beides?23:00",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-21T21:00:58.860Z"
+}

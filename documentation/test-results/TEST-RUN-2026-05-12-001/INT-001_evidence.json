@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-12-001",
+  "testCaseId": "INT-001",
+  "result": "FAIL",
+  "classification": "TOOL_ROUTING_FAILURE",
+  "prompt": "Wird es regnen morgen?",
+  "response": "Ja, morgen wird es in München leicht regnen.  \n💡 Vorschlag:• Wenn du magst, kann ich dir auch die Temperatur für morgen nennen.\n21:34",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expected tool \"system.weather\" was not triggered. Tools called: none",
+  "timestamp": "2026-05-14T19:34:22.315Z"
+}

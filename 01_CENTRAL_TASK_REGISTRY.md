@@ -24,6 +24,37 @@
 
 ---
 
+## TestSpec Validation Registry
+
+**TestSpec-Validierungen für Diamond-Standard Test Pipeline:**
+
+| TestSpec-ID | TestSpec Name | Latest TestRun | Validation Date | Status | Pass Rate | Diamond Confidence | Production Confidence |
+|-------------|---------------|----------------|-----------------|--------|-----------|-------------------|----------------------|
+| **01** | Capability Overview and Help | TEST-RUN-2026-05-15-008 | 2026-05-15 | PASS | 100.00% | 10/10 | 100% |
+| **01.03** | Ambiguity Gate Calibration | TEST-RUN-2026-05-18-003 | 2026-05-18 | PASS | 100.00% | 10/10 | 100% |
+| **02.02** | API Response Privacy and Debug Leakage | TEST-RUN-2026-05-17-028 | 2026-05-18 | PASS | 100.00% | 10/10 | 100% |
+| **03.06** | API Tool Routing and Source Attribution | TEST-RUN-2026-05-18-002 | 2026-05-18 | PASS | 100.00% | 10/10 | 100% |
+
+**Referenzen:**
+- TestSpec: `documentation/TEST_SPEC/01_capability_overview_and_help.md`
+- TestPlan: `documentation/test-runs/TEST-RUN-2026-05-15-008_plan.json`
+- TestResult: `documentation/test-results/TEST-RUN-2026-05-15-008_results.md`
+- TestResultJson: `documentation/test-results/TEST-RUN-2026-05-15-008_results.json`
+- TestSpec 01.03: `documentation/TEST_SPEC/01_core_system/03_ambiguity_gate_calibration.md`
+- TestPlan 01.03: `documentation/test-runs/TEST-RUN-2026-05-18-003_plan.json`
+- TestResultJson 01.03: `documentation/test-results/TEST-RUN-2026-05-18-003_results.json`
+- Final Audit 01.03: `documentation/test-runs/BACKLOG-069_final_audit.md`
+- TestSpec 02.02: `documentation/TEST_SPEC/02_security_safety/02_api_response_privacy_and_debug_leakage.md`
+- TestPlan 02.02: `documentation/test-runs/TEST-RUN-2026-05-17-028_plan.json`
+- TestResultJson 02.02: `documentation/test-results/TEST-RUN-2026-05-17-028_results.json`
+- Final Audit 02.02: `documentation/test-runs/BACKLOG-068_final_audit.md`
+- TestSpec 03.06: `documentation/TEST_SPEC/03_tools_skills/06_api_tool_routing_and_source_attribution.md`
+- TestPlan 03.06: `documentation/test-runs/TEST-RUN-2026-05-18-002_plan.json`
+- TestResultJson 03.06: `documentation/test-results/TEST-RUN-2026-05-18-002_results.json`
+- Final Audit 03.06: `documentation/test-runs/BACKLOG-064_final_audit.md`
+
+---
+
 ## Resource-Status Dashboard (V2.9)
 
 **Quota-Stand vor jeder Task-Zuweisung prüfen:**
@@ -46,7 +77,13 @@
 
 | Task-ID | CU | Status | App | Modell | Prio | Cache | Tags | Meilenstein | Master-Prompt (Kurz) | Referenzen | Ergebnis |
 |---------|----|--------|-----|--------|------|-------|------|-------------|---------------------|------------|----------|
-| *—* | — | — | — | — | — | — | — | *Keine aktiven Tasks* | — | — | — |
+| **066** | 5 | SEALED & COMPLETE | Windsurf | SWE-1.6 | P1 | 🧊 | memory, threshold, context-bleed | Context Bleed Prevention | Memory Threshold Tuning: Raised minimum priority threshold from 0.50 to 0.65 in memory_budget.py and crud_service.py to reduce context bleed (irrelevant old entries in prompt). Improves response quality for small models like Gemini Flash. | `documentation/tasks/task_066_memory_context_bleed_prevention.md` | Threshold-Tuning: Minimum-Priority für Memory-Retrieval von 0.50 auf 0.65 angehoben. Reduziert Context Bleed und verbessert Antwortqualität bei kleinen Modellen. Files: memory_budget.py, crud_service.py. Tests: 28/28 passed. |
+| **064** | 2 | SEALED & COMPLETE | Windsurf | Kimi K2.6 | P0 | 🧊 | calendar, mutation, tool-choice | Breaking Calendar Listing Prison | Calendar Mutation Detection: Added is_calendar_mutation detection to IntentEngineV2 to distinguish between pure calendar queries (listing) and calendar mutations (updates). When is_calendar_mutation is true, the system no longer forces calendar.list_events tool_choice, allowing the model to reach calendar.find_and_update_event for mutation operations. | `documentation/tasks/task_064_calendar_mutation_detection.md` | Breaking the Calendar Listing Prison. Added is_calendar_mutation detection to IntentEngineV2 to distinguish between pure calendar queries (listing) and calendar mutations (updates). When is_calendar_mutation is true, the system no longer forces calendar.list_events tool_choice, allowing the model to reach calendar.find_and_update_event for mutation operations. |
+| **063** | 2 | SEALED & COMPLETE | Windsurf | Kimi K2.6 | P0 | 🧊 | calendar, proactive, mutation | Proactive Updates | Proactive Calendar Updates: Sharpened calendar update keywords in IntentEngineV2, added calendar.find_and_update_event as mandatory skill for calendar intents in CapabilityRegistry, added proactive mutation rule in prompt_registry.py to prioritize calendar updates over pure memory logging. | `documentation/tasks/task_063_proactive_calendar_updates.md` | Proactive Calendar Updates implementation. Sharpened calendar update keywords in IntentEngineV2 ("bring", "ergänze", "ergänzen", "hinzufügen", "mit"). Added calendar.find_and_update_event as mandatory skill for calendar intents in CapabilityRegistry. Added proactive calendar mutation rule in prompt_registry.py to prioritize calendar updates over pure memory logging. |
+| **062** | 2 | SEALED & COMPLETE | Windsurf | Kimi K2.6 | P0 | 🧊 | intent, calendar, safety-net | Intent-to-Selector Gap Fixed | Intent-to-Selector Gap Fix: Sharpened calendar keywords in IntentEngineV2, verified CapabilityRegistry returns calendar.list_events as mandatory for calendar intents, added safety net in ExecutionDispatcher to inject calendar.list_events if intent detected but selector returned empty. | `documentation/tasks/task_062_intent_selector_gap.md` | Fixed Intent-to-Selector gap. Sharpened calendar keywords in IntentEngineV2 ("habe ich", "was habe ich", "was steht an", "steht an", "meine termine", "meinen termin", "meinen terminen"). Verified CapabilityRegistry returns calendar.list_events as mandatory for calendar intents. Added safety net in ExecutionDispatcher to inject calendar.list_events if is_calendar_intent is true but selector returned empty. |
+| **061** | 2 | SEALED & COMPLETE | Windsurf | Kimi K2.6 | P0 | 🧊 | orchestrator, skill-selector, intent | Intent-Aware | SkillSelector Intent-Aware & Policy-Driven: Integration of IntentEngineV2 detection results into SkillSelector.get_relevant_skills() for intent-based skill filtering. | `documentation/tasks/task_061_skillselector_intent_aware.md` | SkillSelector is now Intent-Aware & Policy-Driven. Integrated IntentEngineV2 detection results into SkillSelector.get_relevant_skills() calls in chat_orchestrator.py for intent-based skill filtering. |
+| **060** | 10 | SEALED & COMPLETE | Windsurf | Kimi K2.6 | P0 | 🧊 | orchestrator, planner, skill-selector, intent, calendar | Harmonized | AgentPlanner & SkillSelector Harmonization: PlannerContext/PlannerProviderProfile, Calendar Guard (forbidden_skill_ids), 14-Day Weekday Calendar, CapabilityRegistry Integration. | `documentation/tasks/task_060_agent_planner_overhaul.md` | Harmonized AgentPlanner and SkillSelector with IntentEngineV2 and CapabilityRegistry. Introduced PlannerContext for structured handoff, added calendar guard to purge PDF/image skills for calendar queries, implemented forbidden_skill_ids guard based on intent detection, added 14-day weekday calendar to prevent date guessing. |
+| **058** | 18 | SEALED & COMPLETE | Windsurf | Kimi K2.6 | P0 | 🧊 | calendar, modal, api, sync, ui | Phase 1-4 COMPLETE | Calendar Modal: Holy Grail Layout, Day/Week/Agenda Views, Duration Buttons, All-Day Checkbox, Google Sync Hardening (Pagination, PATCH-Verify-Fallback, conferenceDataVersion, Output-Only-Key-Filter). Patterns: #GeminiV3Protocol, #GeminiNameSanitization, #CalendarSnapshotIntegrity. | `documentation/tasks/task_058_calendar_modal_diamond_plan.md` | Backend: API Router, Service, Schemas, Tests complete. Frontend: Dashboard UI complete with adaptive event cards, detail panel, inline editing. Google Sync: Pagination, PATCH-Verify-Fallback, conferenceDataVersion, forensische Logs aktiv. Protocol Hardening: thought_signature preservation, tool naming aliasing, calendar snapshot invalidation. |
 
 **Legende (Macro):**
 - **CU:** 1–10 · **Status:** TODO | IN_PROGRESS | DONE | **DEFERRED** · **Prio:** P0–P3 · **Cache:** 🧊 / 🔥
@@ -72,6 +109,10 @@
 | **Video Understanding V1 (VID-UNDERSTAND-001)** | 🥇 **SEALED & COMPLETE** (2026-04-18) | **Whisper-STT Fallback, Transkript-Modal, FinOps-Transparenz, Memory V2 Injektion** | `documentation/tasks/task_VID-UNDERSTAND-001_video_understanding_skill.md` |
 | **Stability Arc (Tasks 037-045)** | 🥇 **SEALED & COMPLETE** (2026-04-18) | **Upload-Audit, Forced Tool-Calls, Naming-Shims, Workspace-Unification** | `PROJECT_STATE.md`, `WHAT_I_LEARNED.md` |
 | **BUG-ORCH-002 — Audit-Loop Forced-Tool-Args** | 🥇 **SEALED & COMPLETE** (2026-04-18) | **Pre-filled Tool Injection, Initial-Loop-State Pattern, OpenAI 400 Fix** | `documentation/tasks/task_BUG-ORCH-002_audit_loop_forced_tool_args.md` |
+| **D10 — Logging Pipeline Phase 1** | 🥇 **SEALED & COMPLETE** (2026-04-25) | **Metadata Injection Pattern — Provider/Model in additional_context** | `documentation/tasks/D10_logging_pipeline_phase_1.md` |
+| **D16 — Deterministic Quality System** | 🥇 **SEALED & COMPLETE** (2026-04-26) | **Test Generator, Validation Engine, Model Routing, Escalation, Async-Integrity** | `documentation/tasks/D16_deterministic_quality_system.md` |
+| **D17 — Skill Health Matrix & Decision Interface** | 🥇 **SEALED & COMPLETE** (2026-04-26) | **Batch Runner, Health Matrix, Problem Classification, Decision Report** | `documentation/tasks/D17_skill_health_matrix.md` |
+| **D18 — Real Skill Performance Audit** | 🟡 **IN PROGRESS** (2026-04-26) | **Real Tool-Executor Bridge, Budget Guard (3 skills), Safety Mode (real_run=False)** | `documentation/tasks/D18_real_skill_audit.md` |
 
 > **Turbo-Flow (B5) Detail:** `documentation/tasks/task_019_turbo_flow_epic.md` — 🟡 B5 Phase-1 hot-path DONE; offen: D11 Prompt-Cache, Tool-Response-Store; Blocker: `OllamaCompiler` bei vollem `pytest backend/tests`.
 

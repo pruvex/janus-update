@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-16-002",
+  "testCaseId": "TC-001-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Erstelle im Test-Workspace den Ordner janus_fs_test",
+  "response": "Der Ordner janus_fs_test ist bereits vorhanden im Test-Workspace (Fehler: ALREADY_EXISTS).  \n💡 Passende nächste Schritte:• Soll ich einen Unterordner anlegen (z.B. janus_fs_test/logs)?• Soll ich die Ordnerstruktur im Test-Workspace einmal anzeigen?\n16:43",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-16T14:44:10.617Z"
+}

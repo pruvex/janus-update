@@ -186,6 +186,10 @@ class OpenAIServiceProvider(BaseLLMProvider):
     def __init__(self):
         self.image_generator = OpenAIImageGeneration()
 
+    @staticmethod
+    def _to_openai_tool_name(name: str) -> str:
+        return str(name or "").replace(".", "_")
+
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     async def generate_response(
         self,
@@ -266,8 +270,11 @@ class OpenAIServiceProvider(BaseLLMProvider):
                 if converted_tools:
                     api_call_params["tools"] = converted_tools
                     if force_tool_name:
-                        api_call_params["tool_choice"] = {"type": "function", "function": {"name": force_tool_name}}
-                    else:
+                        api_call_params["tool_choice"] = {
+                            "type": "function",
+                            "function": {"name": self._to_openai_tool_name(force_tool_name)},
+                        }
+                    elif "tool_choice" not in api_call_params:
                         api_call_params["tool_choice"] = "auto"
 
             # MUSS-FIX: Parameter-Umbenennung für neue Modelle (o1, o3, gpt-5-nano)
@@ -404,14 +411,20 @@ class OpenAIServiceProvider(BaseLLMProvider):
             if converted_tools:
                 api_call_params["tools"] = converted_tools
                 if force_tool_name:
-                    api_call_params["tool_choice"] = {"type": "function", "function": {"name": force_tool_name}}
+                    api_call_params["tool_choice"] = {
+                        "type": "function",
+                        "function": {"name": self._to_openai_tool_name(force_tool_name)},
+                    }
                     logger.info("💎 VIDEO-FORCE (stream): tool_choice forced to function: %s", force_tool_name)
                 else:
                     api_call_params["tool_choice"] = "auto"
                     logger.info("💎 VIDEO-FORCE (stream): tool_choice set to auto (no force_tool_name)")
             elif force_tool_name:
                 # Fallback: If tools conversion failed but force_tool_name is set, still try to force it
-                api_call_params["tool_choice"] = {"type": "function", "function": {"name": force_tool_name}}
+                api_call_params["tool_choice"] = {
+                    "type": "function",
+                    "function": {"name": self._to_openai_tool_name(force_tool_name)},
+                }
                 logger.warning("💎 VIDEO-FORCE (stream): tool_choice forced despite empty converted_tools: %s", force_tool_name)
 
         if "max_tokens" in api_call_params:
@@ -597,6 +610,7 @@ class OpenAIServiceProvider(BaseLLMProvider):
 
     def _convert_tools_to_openai_format(self, tools: List[Any]) -> List[Dict]:
         openai_tools = []
+        seen_names = set()
         for tool in tools:
             try:
                 name = getattr(tool, "name", tool.get("name") if isinstance(tool, dict) else "unknown")
@@ -605,7 +619,7 @@ class OpenAIServiceProvider(BaseLLMProvider):
                 schema = {"type": "object", "properties": {}}
                 if isinstance(tool, dict) and isinstance(tool.get("parameters"), dict):
                     schema = tool.get("parameters")
-                
+
                 if args_schema_model:
                     if hasattr(args_schema_model, "model_json_schema"):
                         schema = args_schema_model.model_json_schema()
@@ -613,7 +627,11 @@ class OpenAIServiceProvider(BaseLLMProvider):
                         schema = args_schema_model.schema()
 
                 raw_name = str(name)
-                openai_safe_name = raw_name.replace(".", "_")
+                openai_safe_name = self._to_openai_tool_name(raw_name)
+                if openai_safe_name in seen_names:
+                    logger.debug("OpenAI: Skipping duplicate tool name '%s'", openai_safe_name)
+                    continue
+                seen_names.add(openai_safe_name)
                 safe_schema = self._sanitize_openai_tool_schema(schema)
                 openai_tools.append({
                     "type": "function",
@@ -626,6 +644,12 @@ class OpenAIServiceProvider(BaseLLMProvider):
             except Exception as e:
                 logger.error(f"Überspringe Tool {getattr(tool, 'name', 'unknown')} wegen Konvertierungsfehler: {e}")
                 continue
+
+        # 💎 OPENAI_LIMIT: Max 128 tools (API hard limit)
+        if len(openai_tools) > 128:
+            logger.warning(f"[OPENAI_LIMIT] Truncating {len(openai_tools)} tools to 128 (OpenAI API limit)")
+            openai_tools = openai_tools[:128]
+
         return openai_tools
 
         

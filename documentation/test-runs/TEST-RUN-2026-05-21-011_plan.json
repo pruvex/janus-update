@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "janus.test-plan.v1",
+  "testRunId": "TEST-RUN-2026-05-21-011",
+  "title": "Ops Recovery Kill Switches",
+  "sourceSpec": "documentation/TEST_SPEC/02_security_safety/17_ops_recovery_kill_switches.md",
+  "createdAt": "2026-05-21T00:00:00+02:00",
+  "target": {
+    "mode": "packaged-local beta backend",
+    "url": "http://127.0.0.1:8001",
+    "providerMode": "safe dry-run; no live provider spend; no destructive data operations"
+  },
+  "controlsUnderTest": [
+    "Provider access kill switch",
+    "External/current-data tool kill switch",
+    "Write/destructive tool kill switch",
+    "Local beta user/account lock",
+    "Secret rotation dry-run",
+    "Telemetry recovery mode",
+    "Rollback and restore procedure",
+    "Beta export/delete dry-run",
+    "Incident reporting",
+    "Final gate decision"
+  ],
+  "matrix": [
+    "OPS-001",
+    "OPS-002",
+    "OPS-003",
+    "OPS-004",
+    "OPS-005",
+    "OPS-006",
+    "OPS-007",
+    "OPS-008",
+    "OPS-009",
+    "OPS-010"
+  ],
+  "artifacts": {
+    "runbook": "documentation/test-results/TEST-RUN-2026-05-21-011/ops_recovery_runbook.md",
+    "runner": "tests/e2e/generated/TEST-RUN-2026-05-21-011.ops-recovery.spec.js",
+    "playwrightConfig": "tests/e2e/generated/TEST-RUN-2026-05-21-011.ops-recovery.playwright.config.js",
+    "unitTests": "backend/tests/test_ops_kill_switches.py",
+    "finalAudit": "documentation/test-runs/TEST-RUN-2026-05-21-011_final_audit.md"
+  },
+  "requiredCommands": [
+    "python -m py_compile backend/main.py backend/services/ops_kill_switches.py backend/services/llm_gateway.py backend/services/tool_executor.py backend/dependencies.py backend/api/routers/system.py backend/api/routers/rag.py backend/api/routers/calendar.py backend/api/routers/memory.py backend/services/logging/logger_core.py backend/services/telemetry_service.py",
+    "python -m pytest backend/tests/test_ops_kill_switches.py -q",
+    "npx playwright test --config tests/e2e/generated/TEST-RUN-2026-05-21-011.ops-recovery.playwright.config.js --reporter=list"
+  ]
+}

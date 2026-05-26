@@ -14,15 +14,13 @@ from typing import Optional
 import aiohttp
 
 from backend.utils.paths import get_app_data_dir
+from backend.utils.redaction import redact_sensitive_text
 from backend.version import APP_VERSION
 
 logger = logging.getLogger("janus_backend")
 
-# Default Discord webhook URL (fallback if environment variable not set)
-DEFAULT_FEEDBACK_WEBHOOK = "https://discordapp.com/api/webhooks/1495478111687414053/WxrsZOEzyrJ8-ocUOHuFQUR28Gm1KXmx82RI6awMViqVxSNXq2owFyrAfPyh9AhtaL4m"
-
-# Webhook URL from environment variable, fallback to default
-FEEDBACK_WEBHOOK_URL = os.getenv("FEEDBACK_WEBHOOK_URL", DEFAULT_FEEDBACK_WEBHOOK)
+# Webhook URL from environment variable. No default webhook is embedded in code.
+FEEDBACK_WEBHOOK_URL = os.getenv("FEEDBACK_WEBHOOK_URL", "").strip()
 
 # Log file path in AppData directory (works in both dev and .exe)
 LOG_FILE_PATH = os.path.join(get_app_data_dir(), "logs", "janus_backend.log")
@@ -59,7 +57,7 @@ def _read_last_log_lines(lines: int = 200) -> str:
             all_lines = f.readlines()
             # Get last N lines
             last_lines = all_lines[-lines:] if len(all_lines) > lines else all_lines
-            return "".join(last_lines)
+            return redact_sensitive_text("".join(last_lines))
     except Exception as e:
         logger.error("Failed to read log file: %s", e)
         return f"[Error reading log file: {e}]"
@@ -95,7 +93,7 @@ def _build_discord_embed(
     
     embed = {
         "title": f"📝 Beta Feedback: {feedback_type.upper()}",
-        "description": description[:2000] if description else "No description provided",
+        "description": redact_sensitive_text(description or "No description provided")[:2000],
         "color": color,
         "timestamp": timestamp,
         "fields": [
@@ -121,7 +119,7 @@ def _build_discord_embed(
             },
             {
                 "name": "📎 Logs Attached",
-                "value": "✅ Yes" if include_logs else "❌ No",
+                "value": "Sanitized" if include_logs else "No",
                 "inline": True,
             },
         ],
@@ -155,6 +153,15 @@ async def send_feedback(
     Returns:
         Dictionary with success status and message.
     """
+    from backend.services.ops_kill_switches import telemetry_remote_upload_allowed
+
+    if not telemetry_remote_upload_allowed():
+        logger.warning("[TELEMETRY] Feedback submission skipped by JANUS_TELEMETRY_MODE")
+        return {
+            "success": False,
+            "message": "Telemetry remote upload disabled",
+        }
+
     if not FEEDBACK_WEBHOOK_URL:
         logger.warning("[TELEMETRY] FEEDBACK_WEBHOOK_URL not set, skipping feedback submission")
         return {

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-15-007",
+  "testCaseId": "TC-002-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Kannst du Dateien und Ordner bearbeiten?",
+  "response": "Ja.\n\nDateien: lesen, auflisten, suchen, verschieben, umbenennen, kopieren, löschen, Inhalte auslesen und je nach Format weiterverarbeiten.\nOrdner: auflisten, erstellen, durchsuchen, verschieben, umbenennen und löschen.\nDokument\n\n16:20",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-15T14:20:26.469Z"
+}

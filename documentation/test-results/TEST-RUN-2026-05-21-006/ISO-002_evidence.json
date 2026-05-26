@@ -1,0 +1,12 @@
+{
+  "testRunId": "TEST-RUN-2026-05-21-006",
+  "testCaseId": "ISO-002",
+  "result": "PASS",
+  "classification": "CHAT_PROFILE_ISOLATION_PASS",
+  "evidence": {
+    "profileAOwnChatPresent": true,
+    "profileALookupProfileBChatIdCount": 0,
+    "profileALookupProfileBMessageIdCount": 0
+  },
+  "timestamp": "2026-05-21T11:58:06.214Z"
+}

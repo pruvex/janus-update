@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-002",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Sortiere die Testdateien im Workspace nach Typ, fasse Textdateien zusammen und erstelle eine Uebersicht",
+  "response": "Hallo Admin,\nich habe deinen Workspace durchsucht und über 100 Testdateien gefunden. Hier ist die gewünschte Übersicht, sortiert nach Dateityp, mit den zusammengefassten Textdateien:\n📄 Zusammengefasste Textdateien (.md, .txt)Diese Dateien befinden sich vor allem in deinen persönlichen Ordnern:• test-memory.md (Ordner: alte windsurf sikkills)• test_skill.md (Ordner: alte windsurf sikkills)• TEST (2).txt (Ordner: JanusPDFs)\n📕 PDF-Dokumente• test.pdf (Ordner: JanusPDFs)\n🐍 Python- & Konfigurationsdateien (.py, .ini)(Hauptsächlich im Ordner OpenDevin/evaluation)• Test-Skripte: test_filter.py, test_spec.py, test_block.py, test_hello_world.py u. v. m.• Test-Runner & Setup: pytest.ini, conftest.py, run_tests.py\n🌐 Frontend- & TypeScript-Dateien (.ts, .tsx)(Zahlreiche Unit-Tests im Ordner OpenDevin/frontend)• Setup: test-utils.tsx, vitest.setup.ts• UI & Komponenten-Tests: browser.test.tsx, use-terminal.test.tsx, actions.test.ts u. v. m.\n⚙️ CI/CD Workflows (.yml)(Im Ordner OpenDevin/.github/workflows)• fe-unit-tests.yml• py-tests.yml\n⚠️ Wichtiger Hinweis zu Dubletten:Ich habe die Datei chat-interface.test.tsx an 2 Stellen gefunden:\n\nC:\\Users\\pruve\\Desktop\\OpenDevin\\frontend\\src\\components\\features\\chat\\chat-interface.test.tsx\nC:\\Users\\pruve\\Desktop\\OpenDevin\\frontend\\__tests__\\components\\chat\\chat-interface.test.tsx\n\n💡 Passende nächste Schritte:• Möchtest du, dass ich die zusammengefassten Textdateien an einen zentralen Ort verschiebe?• Soll ich den genauen Inhalt der test.pdf oder einer der Textdateien für dich analysieren?• Sollen wir bestimmte Projekt-Tests oder Dubletten aufräumen?\n15:39",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-19T13:40:16.157Z"
+}

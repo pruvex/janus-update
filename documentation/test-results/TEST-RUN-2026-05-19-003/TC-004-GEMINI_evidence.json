@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-05-19-003",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Sortiere die Testdateien im Workspace nach Typ, fasse Textdateien zusammen und erstelle eine Uebersicht",
+  "response": "Das ist ein mehrstufiger Workspace-Auftrag. Ich gehe dabei in Schritten vor: zuerst den Quellordner bestimmen, danach die Testdateien nach Typ sortieren, anschließend Textdateien zusammenfassen und daraus eine Übersicht erstellen. Bitte nenne mir den exakten Ordnerpfad oder Quellordner und, falls gewünscht, den Zielordner/Zielbereich, bevor ich Dateien verändere.\n16:37",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-05-19T14:38:01.243Z"
+}
