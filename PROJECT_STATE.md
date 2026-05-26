@@ -1,6 +1,6 @@
 ﻿# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-25 (BACKLOG-094 Dual Parallel Chat Execution â€” 0.4.17-beta.38)
+**Aktualisiert:** 2026-05-27 (BACKLOG-096 Chat-Header-Modellwahl beim neuen Chat im selben Fenster beibehalten â€” 0.4.17-beta.42)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **BACKLOG-096 Chat-Header-Modellwahl beim neuen Chat im selben Fenster beibehalten** | SEALED | Neuer Chat im selben Fenster behaelt jetzt die explizite Header-Modellwahl, auch fuer Gemini-Faelle; Renderer-Console-Logs werden zusaetzlich nach `documentation/logs/janus_frontend.log` gespiegelt. Final Audit: PASS; Validation: node syntax checks PASS, Dashboard Sync PASS, manuelle Janus-Bestaetigung fuer GPT und Gemini. |
 | **BACKLOG-095 Einheitliche Antwortform fuer Wetteranfragen** | SEALED WITH FIXES | Wetterantworten fuer GPT/HPZ und Gemini sind jetzt auf ein gemeinsames Bulletpoint-Format mit klarer Quellenzeile gezogen. Final Audit: PASS WITH FIXES; Backlog DONE; Validation: fokussierte Weather-Regression und py_compile PASS. |
 | **BACKLOG-094 Zwei Chats parallel mit eigener Modellwahl** | SEALED WITH FIXES | Zwei Chatfenster arbeiten jetzt parallel mit sauber isoliertem Stream-/UI-State und provider-lokaler Modellwahl (z. B. GPT in A, Gemini in B). Backend liefert STREAM_AUDIT/TOKEN_AUDIT Nachweise inklusive Log-Spiegel in `documentation/logs/janus_backend.log`. Final Audit: PASS WITH FIXES. |
 | **Websearch Provider Parity / Diamond List Templates** | SEALED | Gemini und GPT liefern fuer Release- und Ranking-Websuchen jetzt dieselbe Chat-Form: Titel/Datum oder Titel/Details, Beschreibung, Preiszeile bei Releases, echte Quellenlinks und keine Fake-/Google-/SVG-/Normalartikel-Listenlinks. Musik-Releases und fehlende per-entry Release-Links werden kostenbewusst ueber einen Batch-Resolver abgesichert. Final Audit PASS; Version unveraendert 0.4.17-beta.38; Validation: Websearch/Diamond 83/83 PASS, Markdown 4/4 PASS. |

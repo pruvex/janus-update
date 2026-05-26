@@ -4,6 +4,14 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Backlog Closures
 
+### BACKLOG-096 - Chat-Header-Modellwahl beim neuen Chat im selben Fenster beibehalten
+
+- **Status**: DONE
+- **Final Audit**: `documentation/test-runs/BACKLOG-096_final_audit.md` (PASS)
+- **Task**: `documentation/tasks/backlog_BACKLOG-096_chat_header_model_beibehalten_neuer_chat.md`
+- **Validation**: Neuer Chat im selben Fenster behaelt die explizit gesetzte Header-Modellwahl; GPT und Gemini folgen beide dem fensterlokalen Override; Frontend- und Backend-Logs liegen jetzt nebeneinander in `documentation/logs/`.
+- **Changed Files**: `frontend/js/chat-manager.js`, `main.electron.cjs`, `documentation/backlog/BACKLOG.md`, `documentation/tasks/backlog_BACKLOG-096_chat_header_model_beibehalten_neuer_chat.md`.
+
 ### BACKLOG-095 - Einheitliche Antwortform fuer Wetteranfragen
 
 - **Status**: DONE

@@ -82,6 +82,45 @@ Dashboard-Regeln:
 
 ## DONE
 
+### BACKLOG-096 - Chat-Header-Modellwahl beim neuen Chat im selben Fenster beibehalten
+
+- **Typ:** CHANGE
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-05-27
+- **Aktualisiert:** 2026-05-27
+- **Follow-up zu:** BACKLOG-091 - Chat-Header-Modellwahl pro Chat persistent speichern
+- **Kurzbeschreibung:** Wenn in einem Chatfenster im Header ein konkretes Provider-/Modellpaar statt `wie Sidebar` ausgewaehlt ist, soll ein neu gestarteter Chat in genau diesem Fenster diese Auswahl beibehalten. Nur die Fenster, in denen der Header noch auf `wie Sidebar` steht, sollen sich weiterhin an der Sidebar-Auswahl orientieren.
+- **Erwartetes Verhalten:** Eine explizite Header-Auswahl bleibt fensterlokal aktiv, auch wenn im selben Fenster ein neuer Chat gestartet wird. Der Default `wie Sidebar` bleibt nur dann wirksam, wenn im Fenster keine explizite Header-Auswahl gesetzt wurde.
+- **Tatsaechliches Verhalten:** Nach dem Start eines neuen Chats im selben Fenster wird die Header-Auswahl wieder auf `wie Sidebar` zurueckgesetzt, obwohl zuvor ein konkretes Modell im Fenster gewaehlt war.
+- **Reproduktion / Kontext:** In einem Chatfenster im Header ein anderes Modell als `wie Sidebar` waehlen. Danach im selben Fenster einen neuen Chat starten. Die Auswahl springt wieder auf `wie Sidebar`, statt auf dem zuvor gewaehlten Provider/Modell zu bleiben.
+- **Betroffener Bereich:** Frontend / Chatfenster-Header / Modell- und Provider-State
+- **Nachweise:** User Intake vom 2026-05-27; fachlicher Vorlaeufer `BACKLOG-091`.
+- **Akzeptanzkriterien:**
+  - [ ] Ein neu gestarteter Chat im selben Fenster behält die zuvor explizit gesetzte Header-Modellwahl.
+  - [ ] Die Auswahl springt nur dann auf `wie Sidebar`, wenn im Fenster keine explizite Header-Wahl gesetzt ist.
+  - [ ] Das Verhalten fuer andere Chatfenster bleibt unveraendert.
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Das ist die Fenster-neue-Chat-Kante zur bereits gelösten Neustart-Persistenz aus `BACKLOG-091`.
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Kleiner, klar begrenzter State-Bug im Chatfenster mit bereits vorhandener Vorarbeit aus dem verwandten Persistenz-Fix.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 2
+- **Routing decided at:** 2026-05-27
+- **Handoff:** documentation/tasks/backlog_BACKLOG-096_chat_header_model_beibehalten_neuer_chat.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-27
+- **Completed in version:** N/A
+- **Completed by task:** documentation/tasks/backlog_BACKLOG-096_chat_header_model_beibehalten_neuer_chat.md
+- **Final audit:** PASS - `documentation/test-runs/BACKLOG-096_final_audit.md`
+- **Validation evidence:** `node --check C:\KI\Janus-Projekt\frontend\js\chat-manager.js`; `node --check C:\KI\Janus-Projekt\main.electron.cjs`; `npm run sync:backlog`; manuelle Janus-Bestaetigung fuer GPT- und Gemini-Neuer-Chat-Verhalten; `documentation/logs/janus_frontend.log`; `documentation/logs/janus_backend.log`
+
 ### BACKLOG-095 - Einheitliche Antwortform fuer Wetteranfragen
 
 - **Typ:** IMPROVEMENT

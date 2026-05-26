@@ -740,6 +740,17 @@ async function handleDeleteChat(chatId) {
 export async function createNewChat() {
   console.log("createNewChat: Function entered.");
   try {
+    const activeWindowId = getActiveWindowId();
+    const activeWindow = getWindowState().windows[activeWindowId];
+    const headerProviderEl = document.getElementById(paneId("chat-header-provider", activeWindowId));
+    const headerModelEl = document.getElementById(paneId("chat-header-model", activeWindowId));
+    const windowProviderOverride =
+      normalizeChatLlmValue(activeWindow?.provider) ||
+      normalizeChatLlmValue(headerProviderEl?.value);
+    const windowModelOverride =
+      normalizeChatLlmValue(activeWindow?.modelId) ||
+      normalizeChatLlmValue(headerModelEl?.value);
+
     const response = await fetch(`${API_BASE_URL}/api/chats`, {
       method: "POST",
       headers: {
@@ -758,11 +769,20 @@ export async function createNewChat() {
     await loadChats(true, null, { suppressAutoCreate: true });
 
     // 2. Explicitly load the new chat's content and set it as active
-    await loadChat(newChat.id, { windowId: getActiveWindowId() });
+    await loadChat(newChat.id, { windowId: activeWindowId });
 
-    const inp = document.getElementById(paneId("user-input", getActiveWindowId()));
+    // Keep explicit window-local header override when starting a brand-new chat
+    // in the same pane. Sidebar-default windows (null/null) still follow sidebar.
+    if (windowProviderOverride) {
+      // Persist explicit header override even when modelId was not written to
+      // window-state yet (e.g. provider switched to gemini, model auto-selected in UI).
+      setWindowLlm(activeWindowId, windowProviderOverride, windowModelOverride);
+      await saveChatHeaderSelection(newChat.id, windowProviderOverride, windowModelOverride);
+    }
+
+    const inp = document.getElementById(paneId("user-input", activeWindowId));
     if (inp) inp.value = "";
-    resetUserInputHeight(getActiveWindowId());
+    resetUserInputHeight(activeWindowId);
   } catch (error) {
     console.error("createNewChat: Error creating new chat:", error);
   }

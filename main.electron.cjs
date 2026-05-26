@@ -17,6 +17,32 @@ const axios = require('axios');
 const { initJanusUpdateManager } = require('./electron/update-manager.cjs');
 const { readUpdateState, transitionUpdateState } = require('./electron/update-state.cjs');
 
+const DOCS_LOG_DIR = path.join(__dirname, 'documentation', 'logs');
+const FRONTEND_LOG_FILE = path.join(DOCS_LOG_DIR, 'janus_frontend.log');
+
+function ensureFrontendLogDir() {
+  try {
+    fs.mkdirSync(DOCS_LOG_DIR, { recursive: true });
+  } catch (error) {
+    console.error('[FrontendLog] Failed to create documentation/logs directory:', error);
+  }
+}
+
+function appendFrontendRendererLog(level, message, sourceId, line) {
+  try {
+    ensureFrontendLogDir();
+    const ts = new Date().toISOString().replace('T', ' ').replace('Z', '');
+    const lvl = String(level || 'INFO').toUpperCase();
+    const src = String(sourceId || 'renderer');
+    const ln = Number.isFinite(Number(line)) ? Number(line) : -1;
+    const msg = String(message ?? '');
+    const rendered = `${ts} - janus_frontend - [${lvl}] - ${src}:${ln} - ${msg}\n`;
+    fs.appendFileSync(FRONTEND_LOG_FILE, rendered, 'utf8');
+  } catch (error) {
+    console.error('[FrontendLog] Failed to append renderer log line:', error);
+  }
+}
+
 // ============================================================
 // STARTUP TELEMETRY (Dev Context Only)
 // ============================================================
@@ -587,6 +613,17 @@ function createWindow() {
     // YOUTUBE ORIGIN FIX: Mask Janus as real Chrome browser
     // ============================================================
     userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+  });
+
+  mainWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+    const levelMap = {
+      0: 'INFO',
+      1: 'WARN',
+      2: 'ERROR',
+      3: 'DEBUG',
+    };
+    const lvl = levelMap[level] || 'INFO';
+    appendFrontendRendererLog(lvl, message, sourceId, line);
   });
 
   // ============================================================

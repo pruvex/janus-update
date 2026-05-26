@@ -65,6 +65,31 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 
 ## Run Log
 
+### BACKLOG-096 - Chat-Header-Modellwahl beim neuen Chat im selben Fenster beibehalten - Documentation Sync Note
+
+- **Datum**: 2026-05-27
+- **Quelle**: Backlog / Documentation Update
+- **Artefakte**: `documentation/backlog/BACKLOG.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `WHAT_I_LEARNED.md`
+- **Getestete Faehigkeit**: Janus Chatfenster-Header-Persistenz und Dokumentationsabschluss
+- **Pipeline-Route**: final audit -> documentation update -> backlog sync
+- **Status**: PASS
+- **Summary**: BACKLOG-096 wurde in DONE verschoben, Dashboard synchronisiert und die Dokumentationsmarker fuer Audit, Projektstatus, Changelog, Registry und Wissensbasis wurden nachgezogen.
+- **Security Gate**: PASS - reine Dokumentationsaenderungen und Logging-Observability, keine produktive Risikoerhoehung.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+- **Findings**:
+  - Keine offenen Findings.
+- **Sofortfixes**:
+  - `documentation/backlog/BACKLOG.md`: BACKLOG-096 nach DONE verschoben und Abschlussfelder ergaenzt.
+  - `PROJECT_STATE.md`, `CHANGELOG.md`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `WHAT_I_LEARNED.md`: Abschlussmarker nachgezogen.
+- **Backlog-Follow-ups**:
+  - Keine
+- **Abschluss**:
+  - Diamond Confidence Score: 10/10
+  - Production Confidence: 100%
+  - Gesamtergebnis: PASS
+
 ### BACKLOG-095 - Einheitliche Wetterantworten - Documentation Sync Note
 
 - **Datum**: 2026-05-27

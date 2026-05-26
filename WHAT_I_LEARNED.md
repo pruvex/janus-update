@@ -10,3 +10,14 @@
 - **Epic:** BACKLOG-095
 - **Confidence:** High
 - **Tags:** Weather, ProviderParity, Formatting, SourceAttribution, UX, DeterministicRendering
+
+## [PATTERN] #FrontendConsoleMirrorForChatState "Renderer console logs should be mirrored to documentation/logs for chat-state debugging"
+- **Kontext:** BACKLOG-096 / Chat-header new-chat persistence and observability closure.
+- **Problem:** Frontend-only state regressions, especially window-local chat header overrides, are hard to diagnose when only backend stream logs are available.
+- **Loesung:** Mirror renderer console output from the Electron main process into `documentation/logs/janus_frontend.log` alongside `janus_backend.log`, so UI state transitions like `createNewChat`, `loadChat`, header override sync and related warnings can be read in one place.
+- **Haertung:** New log sink written via `mainWindow.webContents.on('console-message', ...)` and validated by syntax checks plus manual Janus retest. The frontend log now captures the new-chat flow needed to verify GPT and Gemini behavior side by side.
+- **Tripwire:** If frontend regressions can no longer be matched against backend streams in the same log folder, the renderer log sink has been removed or broken.
+- **Location:** `main.electron.cjs`, `documentation/logs/janus_frontend.log`
+- **Epic:** BACKLOG-096
+- **Confidence:** High
+- **Tags:** Logging, Frontend, Electron, Debugging, ChatState, Observability
