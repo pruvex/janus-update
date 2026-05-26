@@ -31,7 +31,9 @@ function hasRemote(name) {
 
 try {
   const branch = sh('git rev-parse --abbrev-ref HEAD');
-  if (branch !== 'master') {
+  const ciRefName = process.env.GITHUB_REF_NAME ? String(process.env.GITHUB_REF_NAME).trim() : '';
+  const effectiveBranch = branch === 'HEAD' && ciRefName ? ciRefName : branch;
+  if (effectiveBranch !== 'master') {
     fail(`Release nur von 'master' erlaubt (aktuell: '${branch}').`);
   }
 
@@ -85,7 +87,7 @@ try {
   }
 
   console.log(
-    `[RELEASE-GATE OK] branch=${branch}, clean=true, origin/master sync=true, version=${pkgVersion}`
+    `[RELEASE-GATE OK] branch=${effectiveBranch}, clean=true, origin/master sync=true, version=${pkgVersion}`
   );
   process.exit(0);
 } catch (err) {
