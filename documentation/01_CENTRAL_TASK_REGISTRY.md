@@ -4,6 +4,14 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Backlog Closures
 
+### BACKLOG-095 - Einheitliche Antwortform fuer Wetteranfragen
+
+- **Status**: DONE
+- **Final Audit**: `documentation/test-runs/BACKLOG-095_final_audit.md` (PASS WITH FIXES)
+- **Task**: `documentation/tasks/backlog_BACKLOG-095_einheitliche_antwortform_fuer_wetteranfragen.md`
+- **Validation**: GPT/HPZ und Gemini liefern jetzt dieselbe Wetterausgabe im Bulletpoint-Format mit konsistenter Quellenzeile; fokussierte Weather-Regression und py_compile PASS.
+- **Changed Files**: `backend/tools/weather_service.py`, `backend/renderers/implementations/weather_renderer.py`, `backend/renderers/attribution.py`, `backend/services/orchestrator/execution_engine.py`, `backend/services/orchestrator/response_finalizer.py`.
+
 ### BACKLOG-094 - Zwei Chats parallel mit eigener Modellwahl ausfuehren
 
 - **Status**: DONE
