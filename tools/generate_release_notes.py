@@ -95,7 +95,7 @@ def get_version_from_package_json():
 def generate_release_notes():
     """Generate complete release notes markdown from CHANGELOG.md."""
     version = get_version_from_package_json()
-    print(f"📦 Generating release notes for version: {version}")
+    print(f"Generating release notes for version: {version}")
 
     # Move [Unreleased] to new version
     move_unreleased_to_version(version)
@@ -116,10 +116,10 @@ def generate_release_notes():
         notes.append("No changelog entry found for this version.")
         notes.append("")
 
-    notes.append("## 📦 Installation")
+    notes.append("## Installation")
     notes.append("Download the installer from the GitHub releases page.")
     notes.append("")
-    notes.append("## 🐛 Known Issues")
+    notes.append("## Known Issues")
     notes.append("None reported for this release.")
     notes.append("")
 
