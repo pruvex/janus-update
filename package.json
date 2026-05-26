@@ -25,7 +25,7 @@
     "test:vision:stresstest:kpi": "python backend/tests/tools/vision_evaluator.py --matrix-dir backend/tests/vision_matrix/Stresstest --e2e --kpi-gate --max-contradiction-rate 0.0 --min-source-map-coverage 0.95",
     "test:vision:openworld": "python backend/tests/tools/vision_evaluator.py --matrix-dir backend/tests/vision_matrix/OpenWorldStandard --e2e --kpi-gate --max-contradiction-rate 0.0 --min-source-map-coverage 0.95",
     "prebuild-installer": "echo 'Vision-Tests deaktiviert für schnelle Builds'",
-    "prebuild-all": "npm run test:vision:stresstest:kpi && npm run test:vision:openworld",
+    "prebuild-all": "echo \"prebuild-all: vision gate moved to separate QA run\"",
     "build-installer": "electron-builder",
     "build-all": "npm run build && python -m PyInstaller janus_backend.spec --clean --noconfirm && npm run build-installer",
     "release:guard": "node scripts/release-gate.js",
