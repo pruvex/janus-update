@@ -163,8 +163,10 @@ def _fetch_met_no_forecast(
         wind = instant.get("wind_speed")
         symbol = str(next_h.get("symbol_code") or "unbekannt").replace("_", " ")
         output = (
-            f"Wetter fuer {target_city} ({date_label or 'heute'}): "
-            f"{symbol}. Temperatur: {temp}°C. Wind: {wind} m/s."
+            f"Das Wetter fuer {target_city} ({date_label or 'heute'}) im Ueberblick:\n"
+            f"* Zustand: {symbol.title()}\n"
+            f"* Temperaturen: Aktuell {temp} C\n"
+            f"* Wind: Leichte Brisen mit Boeen um {wind} m/s"
         )
         lbl = weather_source_label("met.no") or "met.no"
         forecast_text = append_quelle_line(output, lbl)
@@ -347,9 +349,11 @@ def get_weather_from_api_tool(
 
         display_city = target_city.title()
         output = (
-            f"Wettervorhersage für {display_city} am {date_output} ({date_str if date_str else 'heute'}): "
-            f"Es wird {weather_desc.lower()} erwartet. Höchsttemperatur: {temp_max}°C, Tiefsttemperatur: {temp_min}°C. "
-            f"Niederschlagswahrscheinlichkeit: {prec_prob}%. Windböen bis zu {wind_speed_max} km/h."
+            f"Das Wetter fuer {display_city} ({date_str if date_str else 'heute'}, {date_output}) im Ueberblick:\n"
+            f"* Zustand: {weather_desc}\n"
+            f"* Temperaturen: Hoechstwerte bis zu {temp_max} C, Tiefstwerte bei {temp_min} C\n"
+            f"* Regen: Die Niederschlagswahrscheinlichkeit liegt bei {prec_prob} %\n"
+            f"* Wind: Leichte Brisen mit Boeen bis zu {wind_speed_max} km/h"
         )
         om_lbl = weather_source_label("open-meteo")
         forecast_text = append_quelle_line(output, om_lbl) if om_lbl else output

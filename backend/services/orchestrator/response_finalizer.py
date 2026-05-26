@@ -21,7 +21,7 @@ from backend.services.orchestrator.modal_request_builder import resolve_modal_re
 from backend.services.orchestrator.schemas import AuditContext, ExecutionResponse
 from backend.services.skill_router import is_realtime_search_query
 from backend.utils import intent_classifier
-from backend.renderers.attribution import append_tool_attributions_from_tools
+from backend.renderers.attribution import append_tool_attributions_from_tools, render_weather_forecast_from_tools
 
 logger = logging.getLogger("janus_backend")
 
@@ -840,6 +840,9 @@ async def finalize_response(
     wf.has_websearch_result = has_websearch_tool(getattr(wf, "tool_results", []) or [])
     if wf.has_websearch_result:
         wf.final_text = strip_memory_references_from_live_answer(wf.final_text)
+    wf.rendered_weather = render_weather_forecast_from_tools(getattr(wf, "tool_results", []) or [])
+    if wf.rendered_weather:
+        wf.final_text = wf.rendered_weather
     wf.final_text = append_tool_attributions_from_tools(wf.final_text, getattr(wf, "tool_results", []) or [])
     wf.final_text = _normalize_inline_weather_source_footer(wf.final_text)
     try:

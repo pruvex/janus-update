@@ -121,6 +121,37 @@ def append_weather_attribution_from_tools(final_text: str, tool_results: List[Di
     return str(final_text or "")
 
 
+def render_weather_forecast_from_tools(tool_results: List[Dict[str, Any]]) -> str:
+    """Return the deterministic weather forecast text from the latest successful weather tool."""
+    if not tool_results:
+        return ""
+
+    for tr in reversed(tool_results):
+        if not isinstance(tr, dict):
+            continue
+        name = str(tr.get("name") or "").strip().lower()
+        skill_id = str(tr.get("_skill_id") or tr.get("skill_id") or "").strip().lower()
+        if name != "system.weather" and skill_id != "system.weather":
+            continue
+        raw = tr.get("_raw_content") or tr.get("content") or "{}"
+        try:
+            parsed = json.loads(raw) if isinstance(raw, str) else dict(raw or {})
+        except (json.JSONDecodeError, TypeError, ValueError):
+            continue
+        if not isinstance(parsed, dict):
+            continue
+        if str(parsed.get("status") or "").strip().lower() != "ok":
+            continue
+        data = parsed.get("data")
+        if not isinstance(data, dict):
+            continue
+        forecast = str(data.get("forecast") or "").strip()
+        if forecast:
+            return forecast
+
+    return ""
+
+
 def append_routing_attribution_from_tools(final_text: str, tool_results: List[Dict[str, Any]]) -> str:
     """Ergänzt „Quelle: OSRM“, wenn erfolgreiches ``system.routing`` (Distanz/Route) verwendet wurde."""
     text = str(final_text or "").strip()

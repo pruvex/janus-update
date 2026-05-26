@@ -27,7 +27,7 @@ from backend.services.orchestrator.intent_engine import IntentDetectionResult
 from backend.services.llm_silo_context import normalize_llm_silo_provider
 from backend.services.prompt_cache import clone_decision_for_route, decision_from_gateway_kwargs, merge_decision_into_usage
 from backend.utils.config_loader import load_config_data, load_model_catalog
-from backend.renderers.attribution import append_tool_attributions_from_tools
+from backend.renderers.attribution import append_tool_attributions_from_tools, render_weather_forecast_from_tools
 from backend.utils.link_sanitizer import force_sanitize_links
 from backend.services.security.injection_detector import detect_injection, get_injection_type
 
@@ -2653,6 +2653,9 @@ class OrchestratorExecutionEngine:
         if all_used_skills:
             logger.info("TOOL_LOOP: Skills executed in legacy path: %s", all_used_skills)
 
+        weather_text = render_weather_forecast_from_tools(results_buffer)
+        if weather_text:
+            text_value = weather_text
         text_value = append_tool_attributions_from_tools(text_value, results_buffer)
         text_value = _normalize_inline_weather_source(text_value, results_buffer)
 
@@ -3462,6 +3465,9 @@ class OrchestratorExecutionEngine:
                     text_value = "\n\n".join(successful_results)
                     logger.info("💎 GEMINI-FALLBACK: Constructed response from %d tool results", len(successful_results))
         
+        weather_text = render_weather_forecast_from_tools(results_buffer)
+        if weather_text:
+            text_value = weather_text
         text_value = force_sanitize_links(text_value)
         text_value = append_tool_attributions_from_tools(text_value, results_buffer)
         text_value = _normalize_inline_weather_source(text_value, results_buffer)

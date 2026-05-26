@@ -2,7 +2,7 @@
 
 import json
 
-from backend.renderers.attribution import append_weather_attribution_from_tools
+from backend.renderers.attribution import append_weather_attribution_from_tools, render_weather_forecast_from_tools
 
 
 def test_appends_when_model_omitted_source():
@@ -117,3 +117,34 @@ def test_skips_when_no_weather_tool():
         [{"role": "tool", "name": "memory.read", "content": "{}"}],
     )
     assert "Quelle:" not in out
+
+
+def test_render_weather_forecast_from_tools_prefers_tool_forecast_text():
+    forecast = (
+        "Das Wetter fuer Koeln (heute, 26.05.2026) im Ueberblick:\n"
+        "* Zustand: Bedeckt\n"
+        "* Temperaturen: Hoechstwerte bis zu 32.1 C, Tiefstwerte bei 18.5 C\n"
+        "* Regen: Die Niederschlagswahrscheinlichkeit liegt bei 0 %\n"
+        "* Wind: Leichte Brisen mit Boeen bis zu 7.9 km/h\n\n"
+        "Quelle: Open-Meteo"
+    )
+    tool_results = [
+        {
+            "role": "tool",
+            "name": "system.weather",
+            "_skill_id": "system.weather",
+            "content": json.dumps(
+                {
+                    "status": "ok",
+                    "data": {
+                        "forecast": forecast,
+                        "source": "open-meteo",
+                        "city": "Koeln",
+                    },
+                },
+                ensure_ascii=False,
+            ),
+        }
+    ]
+
+    assert render_weather_forecast_from_tools(tool_results) == forecast
