@@ -1,14 +1,19 @@
+import asyncio
 import json
 import logging
 import os
 import re
+import time
 import uuid
+from pathlib import Path
 from urllib.parse import urlparse
 from typing import Any, AsyncIterator, Dict, List, Optional, cast
 
 import keyring
 
-from backend.data.schemas import AgentSpec
+from backend.data.schemas import AgentSpec, PlannerContext, PlannerProviderProfile
+from backend.data.schemas_logging import LogEventCreate
+from backend.services.logging.logger_core import log_event
 from backend.llm_providers.gemini.service import GeminiServiceProvider
 from backend.llm_providers.ollama.service import OllamaServiceProvider
 from backend.llm_providers.openai.service import OpenAIServiceProvider
@@ -18,15 +23,237 @@ from backend.services.tool_executor import ToolExecutor
 from backend.services.tool_manager import tool_manager
 from backend.services.orchestrator.schemas import ExecutionResponse, OrchestratorContext
 from backend.services.orchestrator.stream_protocol import StreamEvent
+from backend.services.orchestrator.intent_engine import IntentDetectionResult
+from backend.services.llm_silo_context import normalize_llm_silo_provider
+from backend.services.prompt_cache import clone_decision_for_route, decision_from_gateway_kwargs, merge_decision_into_usage
 from backend.utils.config_loader import load_config_data, load_model_catalog
+from backend.renderers.attribution import append_tool_attributions_from_tools
 from backend.utils.link_sanitizer import force_sanitize_links
+from backend.services.security.injection_detector import detect_injection, get_injection_type
 
 logger = logging.getLogger("janus_backend")
 
 # Tool wall-clock limits: ToolExecutor uses asyncio.wait_for with each skill's ``timeout_ms``
 # (see backend/skills/). Example: system.local_business is 45s so geo/OSM + enrichment can finish.
+#
+# TASK-067: Pending calendar mutations (MutationProposal) live in
+# ``backend.services.calendar.mutation_guard_store`` — confirmed via ChatOrchestrator, not here.
 
 MAPS_LINK_REGEX = re.compile(r'"maps_link"\s*:\s*"([^"]+)"')
+
+
+def _has_websearch_tool_result(results: Any) -> bool:
+    for item in results or []:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "").strip().lower()
+        skill_id = str(item.get("_skill_id") or item.get("skill_id") or "").strip().lower()
+        if name in {"system.websearch", "system_websearch", "websearch_wrapper"} or skill_id == "system.websearch":
+            return True
+    return False
+
+
+def _normalize_inline_weather_source(text: str, tool_results: Any) -> str:
+    raw = str(text or "")
+    if not raw:
+        return raw
+    has_weather = False
+    for item in tool_results or []:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "").strip().lower()
+        skill_id = str(item.get("_skill_id") or item.get("skill_id") or "").strip().lower()
+        if name == "system.weather" or skill_id == "system.weather":
+            has_weather = True
+            break
+    if not has_weather:
+        return raw
+    patterns = [
+        r"(?is)\s*\(\s*\*{0,2}quelle\*{0,2}\s*:\s*([^)]+)\)\s*$",
+        r"(?is)\s+\*{0,2}quelle\*{0,2}\s*:\s*([^\n]+?)\s*$",
+    ]
+    for pat in patterns:
+        m = re.search(pat, raw)
+        if not m:
+            continue
+        source = str(m.group(1) or "").strip().strip(".")
+        if not source:
+            continue
+        body = raw[: m.start()].rstrip()
+        return f"{body}\n\nQuelle: {source}"
+    return raw
+
+
+def _extract_pseudo_tool_call_from_text(text: Any) -> Optional[Dict[str, Any]]:
+    """Extract a JSON tool-call intent emitted as plain assistant text.
+
+    Small models sometimes answer with {"tool_name": "...", "arguments": {...}}
+    instead of using native tool_calls. The tool loop should execute that intent
+    rather than rendering raw JSON to the user.
+    """
+    raw = str(text or "").strip()
+    if not raw or not raw.startswith("{"):
+        return None
+    try:
+        payload = json.loads(raw)
+    except Exception:
+        try:
+            payload, _ = json.JSONDecoder().raw_decode(raw)
+        except Exception:
+            return None
+    if not isinstance(payload, dict):
+        return None
+    tool_name = str(payload.get("tool_name") or payload.get("name") or "").strip()
+    arguments = payload.get("arguments")
+    if arguments is None:
+        arguments = payload.get("parameters")
+    if isinstance(arguments, str):
+        try:
+            arguments = json.loads(arguments)
+        except Exception:
+            arguments = {}
+    if not isinstance(arguments, dict):
+        return None
+    if not tool_name and any(
+        key in arguments
+        for key in ("start", "end", "start_iso", "end_iso", "start_datetime", "end_datetime")
+    ):
+        tool_name = "calendar.list_events"
+    if not tool_name:
+        return None
+    if tool_name == "calendar.list_events":
+        arguments = dict(arguments)
+        if "start_datetime" not in arguments:
+            start_value = arguments.get("start_iso") or arguments.get("start")
+            if start_value:
+                arguments["start_datetime"] = start_value
+        if "end_datetime" not in arguments:
+            end_value = arguments.get("end_iso") or arguments.get("end")
+            if end_value:
+                arguments["end_datetime"] = end_value
+        for alias in ("start", "end", "start_iso", "end_iso"):
+            arguments.pop(alias, None)
+    return {
+        "id": f"pseudo_tool_call_{uuid.uuid4().hex[:12]}",
+        "type": "function",
+        "function": {
+            "name": tool_name,
+            "arguments": json.dumps(arguments, ensure_ascii=False),
+        },
+    }
+
+
+def _is_generic_stability_fallback_text(text: Any) -> bool:
+    """Return true for generic model-stability fallback copy, not domain answers.
+    
+    BACKLOG-074 FIX: More restrictive detection to prevent false positives on complex tasks.
+    Only match the exact generic fallback message, not similar phrases.
+    """
+    normalized = str(text or "").casefold()
+    # Exact match for the generic fallback message
+    has_exact_generic_fallback = (
+        "ich konnte diesmal keine stabile antwort erzeugen" in normalized
+        and "bitte sende die anfrage direkt noch einmal" in normalized
+    )
+    has_stability_copy = (
+        "stabile" in normalized
+        and ("modellantwort" in normalized or "antwort" in normalized)
+        and ("neuaufbau" in normalized or "direkt noch einmal" in normalized)
+    )
+    has_dynamic_provider_fallback = (
+        "es ist ein fehler aufgetreten:" in normalized
+        and "provider:" in normalized
+        and ("robusten neuaufbau" in normalized or "direkt noch einmal" in normalized)
+    )
+    return has_exact_generic_fallback or has_dynamic_provider_fallback
+
+
+def _extract_user_text_from_history(history: List[Dict[str, str]]) -> str:
+    """
+    Extract the latest user message from chat history.
+    
+    Args:
+        history: Chat history list of message dicts with 'role' and 'content'
+        
+    Returns:
+        The content of the last user message, or empty string if not found
+    """
+    if not history or not isinstance(history, list):
+        return ""
+    
+    # Find the last user message (most recent)
+    for msg in reversed(history):
+        if isinstance(msg, dict) and msg.get("role") == "user":
+            return str(msg.get("content") or "")
+    
+    return ""
+
+
+def _build_dynamic_fallback_summary(
+    *,
+    is_audit_request: bool = False,
+    is_audit_decision: bool = False,
+    is_factcheck_yes: bool = False,
+    exception: Optional[Exception] = None,
+    tool_name: Optional[str] = None,
+    error_code: Optional[str] = None,
+    error_message: Optional[str] = None,
+    provider: Optional[str] = None,
+    model: Optional[str] = None,
+) -> str:
+    """
+    Baut eine dynamische Fallback-Zusammenfassung basierend auf tatsächlichen Fehlerdetails.
+    
+    Args:
+        is_audit_request: Ob es sich um einen Audit-Request handelt
+        is_audit_decision: Ob es sich um eine Audit-Entscheidung handelt
+        is_factcheck_yes: Ob Factcheck aktiv ist
+        exception: Die aufgetretene Exception (für vollständige Details im Backend-Log)
+        tool_name: Name des fehlgeschlagenen Tools
+        error_code: Fehlercode aus dem Tool-Ergebnis
+        error_message: Fehlermeldung aus dem Tool-Ergebnis
+        provider: Der verwendete Provider
+        model: Das verwendete Modell
+    
+    Returns:
+        Eine spezifische Fehlermeldung für den User
+    """
+    # Audit-spezifische Fallbacks
+    if is_audit_request or is_audit_decision or is_factcheck_yes:
+        return 'Der Audit-Bericht wurde erstellt, aber die Zusammenfassung konnte aufgrund der Größe nicht generiert werden. Bitte prüfen Sie die erstellte PDF.'
+    
+    # Wetter-spezifischer Fallback: keine Umleitung auf Websuche, klare Dienst-Info.
+    if str(tool_name or "").strip().lower() == "system.weather":
+        return "Der Wetterdienst ist aktuell nicht erreichbar. Bitte versuche die Wetteranfrage gleich noch einmal."
+
+    # Baue dynamische Fehlermeldung mit spezifischen Details
+    error_parts = []
+    
+    if tool_name:
+        error_parts.append(f"Tool: {tool_name}")
+    
+    if error_code:
+        error_parts.append(f"Fehlercode: {error_code}")
+    
+    if error_message:
+        # Kürze sehr lange Fehlermeldungen für den User
+        if len(error_message) > 200:
+            error_message = error_message[:197] + "..."
+        error_parts.append(f"Fehler: {error_message}")
+    
+    if provider:
+        error_parts.append(f"Provider: {provider}")
+    
+    if model:
+        error_parts.append(f"Modell: {model}")
+    
+    # Wenn wir spezifische Details haben, zeige sie dem User
+    if error_parts:
+        details_str = " | ".join(error_parts)
+        return f"Es ist ein Fehler aufgetreten: {details_str}. Bitte sende die Anfrage direkt noch einmal; ich versuche es dann mit einem robusten Neuaufbau."
+    
+    # Fallback zur generischen Nachricht wenn keine Details verfügbar
+    return 'Ich konnte diesmal keine stabile Antwort erzeugen. Bitte sende die Anfrage direkt noch einmal; ich versuche es dann mit einem robusten Neuaufbau.'
 
 
 def _reload_api_key_for_provider(provider: str) -> str:
@@ -96,16 +323,23 @@ def _stream_finalize_openai_tool_slots(acc: Dict[int, Dict[str, Any]]) -> List[D
 
 def _gemini_tool_delta_to_call(content: Dict[str, Any]) -> Dict[str, Any]:
     name = str(content.get("name") or "").strip()
+    provider_name = str(content.get("_gemini_provider_name") or "").strip()
     args = content.get("arguments")
     if isinstance(args, dict):
         args_str = json.dumps(args, ensure_ascii=False)
     else:
         args_str = str(args or "{}")
-    return {
+    function = {"name": name, "arguments": args_str}
+    if provider_name:
+        function["_gemini_provider_name"] = provider_name
+    call = {
         "id": f"gemini_{uuid.uuid4().hex[:16]}",
         "type": "function",
-        "function": {"name": name, "arguments": args_str},
+        "function": function,
     }
+    if provider_name:
+        call["_gemini_provider_name"] = provider_name
+    return call
 
 
 async def _async_iter_llm_stream(
@@ -119,11 +353,14 @@ async def _async_iter_llm_stream(
     model = gateway_kwargs.get("model") or ""
     messages = list(gateway_kwargs.get("chat_history") or [])
     max_tok = gateway_kwargs.get("max_tokens")
+    prompt_cache_decision = decision_from_gateway_kwargs(gateway_kwargs)
     extra: Dict[str, Any] = {}
     if provider == "ollama" and gateway_kwargs.get("format"):
         extra["format"] = gateway_kwargs["format"]
 
     logger.info("💎 VIDEO-FORCE (_async_iter_llm_stream): Received force_tool_name=%s for provider=%s", force_tool_name, provider)
+    if prompt_cache_decision is not None:
+        yield StreamEvent(type="cache_metrics", content=prompt_cache_decision.to_dict(), metadata={})
 
     # NOTE: Previous implementation injected a synthetic assistant message with
     # `tool_calls` into `messages` when `forced_tool_args` was present.
@@ -193,13 +430,66 @@ _IRON_GATE_TRUSTED_DOMAINS = ("idealo.de", "geizhals.de")
 class OrchestratorExecutionEngine:
     """Executes agent and gateway tool-loop flows for the orchestrator facade."""
 
-    def __init__(self, db, context_manager, model_hierarchy, agent_planner, agent_runtime, skill_selector):
+    def __init__(self, db, context_manager, model_hierarchy, agent_planner, agent_runtime, skill_selector, capability_registry=None):
         self.db = db
         self.context_manager = context_manager
         self.model_hierarchy = model_hierarchy
         self.agent_planner = agent_planner
         self.agent_runtime = agent_runtime
         self.skill_selector = skill_selector
+        self.capability_registry = capability_registry
+
+    @staticmethod
+    def _check_prompt_injection_early(
+        history: List[Dict[str, str]],
+        user_text: Optional[str] = None,
+        chat_id: Optional[int] = None,
+    ) -> Optional[ExecutionResponse]:
+        """
+        🔐 TASK-035-02: Early Prompt Injection Guard - MUST be called BEFORE any processing.
+        This is a defense-in-depth check that complements the guard in execution_dispatcher.py.
+        Returns an error response if injection is detected, None otherwise.
+
+        Args:
+            history: Chat history for historical context
+            user_text: Current user input (takes precedence over history extraction)
+            chat_id: Chat identifier for logging
+        """
+        # Prefer explicit user_text over history extraction for current input
+        if user_text:
+            text_to_check = str(user_text or "").strip()
+        else:
+            text_to_check = _extract_user_text_from_history(history)
+
+        if detect_injection(text_to_check):
+            injection_type = get_injection_type(text_to_check)
+            logger.warning(
+                f"🚨 PROMPT INJECTION BLOCKED (EARLY GUARD): type={injection_type}, user_text_preview={text_to_check[:100]}..."
+            )
+            # Telemetry event
+            asyncio.create_task(log_event(LogEventCreate(
+                event_type="prompt_injection_blocked",
+                skill="orchestrator.execution_engine",
+                status="blocked",
+                payload={
+                    "injection_type": injection_type or "unknown",
+                    "pattern_preview": text_to_check[:200] if text_to_check else "",
+                    "guard_location": "execution_engine_early",
+                },
+            )))
+            # Return error response immediately - no tool execution
+            return ExecutionResponse(
+                text="⚠️ Ihre Anfrage wurde aufgrund von verdächtigem Inhalt blockiert (Prompt Injection Detection).",
+                error={
+                    "code": "PROMPT_INJECTION_BLOCKED",
+                    "message": "Prompt injection detected",
+                    "injection_type": injection_type,
+                },
+                tool_calls=[],
+                usage={},
+                cost={},
+            )
+        return None
 
     # ------------------------------------------------------------------
     # IRON-GATE: Output-Auditor for price_comparison responses
@@ -342,6 +632,278 @@ class OrchestratorExecutionEngine:
             }
         return None
 
+    @staticmethod
+    def _parse_tool_result_payload(tool_result: Dict[str, Any]) -> Dict[str, Any]:
+        raw_content = tool_result.get("_raw_content") or tool_result.get("content") or "{}"
+        try:
+            parsed = json.loads(raw_content) if isinstance(raw_content, str) else dict(raw_content or {})
+        except Exception:
+            return {}
+        return parsed if isinstance(parsed, dict) else {}
+
+    @staticmethod
+    def _tool_result_skill_name(tool_result: Dict[str, Any]) -> str:
+        raw_name = str(
+            tool_result.get("skill_id")
+            or tool_result.get("_skill_id")
+            or tool_result.get("name")
+            or ""
+        ).strip()
+        return str(tool_manager.get_skill_id(raw_name) or raw_name).strip().lower()
+
+    @staticmethod
+    def _make_tool_call(name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "id": f"call_{uuid.uuid4().hex[:16]}",
+            "type": "function",
+            "function": {
+                "name": name,
+                "arguments": json.dumps(arguments, ensure_ascii=False),
+            },
+        }
+
+    @staticmethod
+    def _image_move_patterns_from_prompt(user_prompt: str) -> List[str]:
+        lowered = str(user_prompt or "").lower()
+        patterns: List[str] = []
+        if re.search(r"(?<![a-z0-9])jpe?g(?![a-z0-9])|\.jpe?g", lowered):
+            patterns.append("*.jpg")
+        if re.search(r"(?<![a-z0-9])png(?![a-z0-9])|\.png", lowered):
+            patterns.append("*.png")
+        return patterns
+
+    def _should_complete_filesystem_image_move(self, user_prompt: str, results_buffer: List[Dict[str, Any]]) -> bool:
+        lowered = str(user_prompt or "").lower()
+        if "desktop" not in lowered:
+            return False
+        if not any(token in lowered for token in ("verschieb", "verschiebe", "verschieben", "move")):
+            return False
+        if not self._image_move_patterns_from_prompt(user_prompt):
+            return False
+        skill_names = {
+            self._tool_result_skill_name(result)
+            for result in (results_buffer or [])
+            if isinstance(result, dict)
+        }
+        return "filesystem.create_directory" in skill_names and "filesystem.move_files" not in skill_names
+
+    def _created_directory_from_results(self, results_buffer: List[Dict[str, Any]]) -> str:
+        for result in reversed(results_buffer or []):
+            if not isinstance(result, dict):
+                continue
+            if self._tool_result_skill_name(result) != "filesystem.create_directory":
+                continue
+            payload = self._parse_tool_result_payload(result)
+            data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+            error = payload.get("error") if isinstance(payload.get("error"), dict) else {}
+            arguments = result.get("_arguments_json") if isinstance(result.get("_arguments_json"), dict) else {}
+            path = str(data.get("path") or arguments.get("path") or "").strip()
+            if payload.get("status") != "ok" and str(error.get("code") or "") != "ALREADY_EXISTS":
+                continue
+            if path:
+                return path
+        return ""
+
+    def _matches_from_find_results(self, results_buffer: List[Dict[str, Any]], source_directory: str) -> List[str]:
+        source_path = Path(source_directory)
+        matches: List[str] = []
+        seen: set[str] = set()
+        for result in results_buffer or []:
+            if not isinstance(result, dict):
+                continue
+            if self._tool_result_skill_name(result) != "filesystem.find_files":
+                continue
+            payload = self._parse_tool_result_payload(result)
+            data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+            for raw_match in data.get("matches") or []:
+                match_path = Path(str(raw_match))
+                try:
+                    if match_path.parent.resolve() != source_path.resolve():
+                        continue
+                except Exception:
+                    if str(match_path.parent).lower() != str(source_path).lower():
+                        continue
+                name = match_path.name
+                if name and name not in seen:
+                    seen.add(name)
+                    matches.append(name)
+        return matches
+
+    def _success_messages_from_tool_results(self, results_buffer: List[Dict[str, Any]]) -> List[str]:
+        messages: List[str] = []
+        for result in results_buffer or []:
+            if not isinstance(result, dict):
+                continue
+            payload = self._parse_tool_result_payload(result)
+            if payload.get("status") != "ok":
+                continue
+            message = str(payload.get("message") or payload.get("output") or "").strip()
+            if not message:
+                data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+                message = str(data.get("output") or "").strip()
+            if message:
+                messages.append(message)
+        return messages
+
+    async def _complete_pending_filesystem_image_move(
+        self,
+        *,
+        user_prompt: str,
+        tool_executor,
+        results_buffer: List[Dict[str, Any]],
+        bypass_policy: bool,
+    ) -> List[Dict[str, Any]]:
+        if not self._should_complete_filesystem_image_move(user_prompt, results_buffer):
+            return []
+
+        destination_directory = self._created_directory_from_results(results_buffer)
+        if not destination_directory:
+            return []
+
+        source_directory = str(Path(destination_directory).parent)
+        patterns = self._image_move_patterns_from_prompt(user_prompt)
+        existing_patterns: set[str] = set()
+        for result in results_buffer or []:
+            if not isinstance(result, dict):
+                continue
+            if self._tool_result_skill_name(result) != "filesystem.find_files":
+                continue
+            payload = self._parse_tool_result_payload(result)
+            data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+            pattern = str(data.get("pattern") or "").strip()
+            if pattern:
+                existing_patterns.add(pattern)
+
+        generated_results: List[Dict[str, Any]] = []
+        find_calls = [
+            self._make_tool_call(
+                "filesystem.find_files",
+                {
+                    "pattern": pattern,
+                    "root": source_directory,
+                    "max_results": 100,
+                    "recursive": False,
+                },
+            )
+            for pattern in patterns
+            if pattern not in existing_patterns
+        ]
+        if find_calls:
+            logger.info(
+                "FILESYSTEM-AUTO-COMPLETE: Running %d missing image search call(s) after directory creation.",
+                len(find_calls),
+            )
+            generated_results.extend(
+                await tool_executor.execute_tool_calls(find_calls, bypass_policy=bypass_policy)
+            )
+
+        all_find_results = list(results_buffer) + generated_results
+        file_names = self._matches_from_find_results(all_find_results, source_directory)
+        if not file_names:
+            return generated_results
+
+        move_call = self._make_tool_call(
+            "filesystem.move_files",
+            {
+                "source_directory": source_directory,
+                "destination_directory": destination_directory,
+                "file_names": file_names,
+            },
+        )
+        logger.info(
+            "FILESYSTEM-AUTO-COMPLETE: Moving %d image file(s) after deterministic search completion.",
+            len(file_names),
+        )
+        generated_results.extend(
+            await tool_executor.execute_tool_calls([move_call], bypass_policy=bypass_policy)
+        )
+        return generated_results
+
+    def _build_planner_capability_groups(self, *, allowed_skill_ids: List[str]) -> Dict[str, List[str]]:
+        if self.capability_registry is not None and hasattr(self.capability_registry, "get_capability_groups"):
+            groups = self.capability_registry.get_capability_groups(allowed_skill_ids=allowed_skill_ids)
+            if groups:
+                return groups
+        return self.skill_selector.filter_capability_groups(
+            tool_manager.get_capability_groups(),
+            allowed_skill_ids,
+        )
+
+    def _build_planner_context(
+        self,
+        *,
+        user_text: str,
+        relevant_skill_ids: List[str],
+        intent_result: IntentDetectionResult,
+    ) -> PlannerContext:
+        allowed = [
+            str(skill_id).strip()
+            for skill_id in (relevant_skill_ids or [])
+            if str(skill_id).strip()
+        ]
+        forbidden: List[str] = []
+        negative_constraints: List[str] = []
+        primary_intent = str(getattr(intent_result, "primary_intent", "") or "")
+
+        if getattr(intent_result, "is_calendar_intent", False) or primary_intent == "calendar":
+            forbidden.extend(["system.create_pdf", "knowledge.edit_pdf", "system.generate_image"])
+            negative_constraints.append(
+                "Kalender-Turn: PDF-, Bild- und Nicht-Kalender-Tools sind verboten. Nutze Kalender-Skills."
+            )
+        if getattr(intent_result, "is_personal_recall", False) or primary_intent == "personal_recall":
+            forbidden.extend(["system.websearch", "system.rss_news"])
+            negative_constraints.append(
+                "Personal-Recall-Turn: Websuche ist verboten; nutze Memory-/Kontext-Skills."
+            )
+        if getattr(intent_result, "is_shopping_intent", False) or primary_intent == "shopping":
+            negative_constraints.append(
+                "Shopping-Turn: system.price_comparison ist Pflicht; system.websearch darf nicht als Ersatz geplant werden."
+            )
+
+        forbidden_set = {s for s in forbidden if s}
+        return PlannerContext(
+            original_user_text=str(user_text or ""),
+            allowed_skill_ids=[s for s in allowed if s not in forbidden_set],
+            forbidden_skill_ids=sorted(forbidden_set),
+            negative_constraints=negative_constraints,
+        )
+
+    def _build_planner_provider_profile(
+        self,
+        *,
+        provider: str,
+        requested_model: Optional[str],
+        planner_model: str,
+    ) -> PlannerProviderProfile:
+        model_id = str(planner_model or requested_model or "").strip()
+        model_l = model_id.lower()
+        provider_key = str(provider or "").strip().lower()
+        is_local = provider_key == "ollama" or ":" in model_l
+        if is_local:
+            model_class = "local"
+            cap = 4
+        elif "nano" in model_l:
+            model_class = "nano"
+            cap = 4
+        elif "mini" in model_l or "flash" in model_l:
+            model_class = "mini"
+            cap = 6
+        elif "pro" in model_l or "logic" in model_l or "gpt-5" in model_l:
+            model_class = "logic"
+            cap = 8
+        else:
+            model_class = "standard"
+            cap = 6
+        return PlannerProviderProfile(
+            provider=provider_key,
+            requested_model=str(requested_model or ""),
+            planner_model=model_id,
+            model_class=model_class,
+            is_local=is_local,
+            max_iterations_cap=cap,
+            allow_llm_planning=True,
+        )
+
     async def run_agent_factory(
         self,
         *,
@@ -352,15 +914,25 @@ class OrchestratorExecutionEngine:
         provider: str,
         model: Optional[str],
         api_key: str,
+        intent_result: IntentDetectionResult,
     ) -> ExecutionResponse:
         if not enabled:
             return ExecutionResponse(text="", agent_payload=None, tool_calls=[], is_agent_flow=False)
 
         try:
             planner_model = self._resolve_planner_model(provider=provider, requested_model=model)
-            capability_groups = self.skill_selector.filter_capability_groups(
-                tool_manager.get_capability_groups(),
-                relevant_skill_ids,
+            provider_profile = self._build_planner_provider_profile(
+                provider=provider,
+                requested_model=model,
+                planner_model=planner_model,
+            )
+            planner_context = self._build_planner_context(
+                user_text=user_text,
+                relevant_skill_ids=relevant_skill_ids,
+                intent_result=intent_result,
+            )
+            capability_groups = self._build_planner_capability_groups(
+                allowed_skill_ids=planner_context.allowed_skill_ids,
             )
             completed_skills: List[str] = []
             step_outputs: List[str] = []
@@ -381,6 +953,17 @@ class OrchestratorExecutionEngine:
                     )
                 agent_spec = await self.agent_planner.plan(
                     user_prompt=planner_prompt,
+                    intent_result=intent_result,
+                    planner_context=planner_context.model_copy(
+                        update={
+                            "completed_skills": list(completed_skills),
+                            "failed_steps": list(failed_steps),
+                            "round_idx": round_idx,
+                            "lockdown_after_pdf": planner_lockdown_after_pdf,
+                        }
+                    ),
+                    provider_profile=provider_profile,
+                    capability_registry=self.capability_registry,
                     capability_groups=capability_groups,
                     relevant_skill_ids=relevant_skill_ids,
                     provider=provider,
@@ -732,6 +1315,24 @@ class OrchestratorExecutionEngine:
                     "MODEL-TIER-OVERRIDE: Skill '%s' upgrades tier '%s' -> '%s' (provider: %s)",
                     skill_id, user_tier, optimal_tier_norm, provider_key
                 )
+                
+                # Log fallback_trigger for model upgrade
+                import asyncio
+                from backend.services.logging.logger_core import log_event
+                from backend.data.schemas_logging import LogEventCreate
+                try:
+                    asyncio.create_task(log_event(LogEventCreate(
+                        event_type="fallback_trigger",
+                        status="success",
+                        payload={
+                            "input_hash": str(hash(skill_id)),
+                            "output_summary": f"Model tier upgraded from {user_tier} to {optimal_tier_norm}",
+                            "error_code": None
+                        }
+                    )))
+                except Exception as log_exc:
+                    logger.error(f"Failed to log fallback_trigger: {log_exc}")
+                
                 return resolved_model
             logger.info(
                 "MODEL-TIER-OVERRIDE: Skill '%s' requests tier '%s' but user tier '%s' is equal/higher; keep model '%s' (provider: %s)",
@@ -774,8 +1375,9 @@ class OrchestratorExecutionEngine:
     ) -> tuple[str, str]:
         """
         Keep provider/model consistent across MoA upgrades.
-        If model belongs to another known provider, switch provider too.
-        If model is empty, use provider fallback.
+        If model belongs to another known provider, align model to the session
+        provider (BYOK: no silent OpenAI↔Gemini migration). If model is empty,
+        refill from the session provider's tier map before using fallback.
         """
         prov = str(provider or "").strip().lower()
         mdl = str(model or "").strip()
@@ -786,22 +1388,59 @@ class OrchestratorExecutionEngine:
         if not prov:
             return "", mdl or fallback
 
+        prov_norm = normalize_llm_silo_provider(prov) or prov
+
         owner = self._find_provider_for_model(mdl) if mdl else ""
         if owner and owner != prov:
-            logger.warning(
-                "PROVIDER-MODEL-MISMATCH: model '%s' belongs to provider '%s' (active '%s') — switching provider.",
-                mdl,
-                owner,
-                prov,
-            )
-            prov = owner
+            owner_norm = normalize_llm_silo_provider(owner)
+            # BYOK: never silently migrate between OpenAI and Gemini/Google silos.
+            if (
+                owner_norm in ("openai", "gemini")
+                and prov_norm in ("openai", "gemini")
+                and owner_norm != prov_norm
+            ):
+                logger.error(
+                    "PROVIDER-MODEL-MISMATCH (BYOK): model %r is catalog-owned by %r but "
+                    "session provider is %r — refusing cross-cloud switch; clearing model "
+                    "to refill within the session provider.",
+                    mdl,
+                    owner_norm,
+                    prov_norm,
+                )
+                mdl = ""
+            else:
+                logger.warning(
+                    "PROVIDER-MODEL-MISMATCH: model '%s' belongs to provider '%s' (active '%s') — switching provider.",
+                    mdl,
+                    owner,
+                    prov,
+                )
+                prov = owner
+                prov_norm = normalize_llm_silo_provider(prov) or prov
 
         if not mdl:
             provider_map = self.model_hierarchy.get(prov) if isinstance(self.model_hierarchy, dict) else {}
             if isinstance(provider_map, dict):
-                mdl = str(provider_map.get("logic") or provider_map.get("balanced") or provider_map.get("speed") or "")
-            if not mdl:
-                mdl = fallback
+                for _k in ("logic", "balanced", "speed", "vision", "fast"):
+                    cand = str(provider_map.get(_k) or "").strip()
+                    if cand:
+                        mdl = cand
+                        break
+            if not mdl and fallback:
+                fb_owner = normalize_llm_silo_provider(self._find_provider_for_model(fallback))
+                if (
+                    prov_norm in ("openai", "gemini")
+                    and fb_owner in ("openai", "gemini")
+                    and fb_owner != prov_norm
+                ):
+                    logger.warning(
+                        "BYOK: ignoring cross-cloud fallback_model %r (owner=%r) for session provider %r",
+                        fallback,
+                        fb_owner,
+                        prov_norm,
+                    )
+                else:
+                    mdl = fallback
 
         return prov, mdl
 
@@ -909,8 +1548,17 @@ class OrchestratorExecutionEngine:
         bypass_policy_this_turn: bool,
         set_policy_pending,
         chat_id: Optional[int],
+        user_text: Optional[str] = None,
         agent_flow_error: Optional[Dict[str, Any]] = None,
     ) -> ExecutionResponse:
+        # 🔐 TASK-035-02: Early Prompt Injection Guard - Check BEFORE any processing
+        early_block = self._check_prompt_injection_early(orchestrator_context.history, user_text, chat_id)
+        if early_block:
+            return early_block
+        
+        # 💎 BACKLOG-006: Extract provider/model for dynamic fallback
+        provider = gateway_kwargs.get("provider") if isinstance(gateway_kwargs, dict) else None
+        model = gateway_kwargs.get("model") if isinstance(gateway_kwargs, dict) else None
         current_iteration = 0
         response = None
         latest_ui_command = None
@@ -926,7 +1574,6 @@ class OrchestratorExecutionEngine:
         aggregated_tokens_input = 0
         aggregated_tokens_output = 0
         aggregated_total_cost = 0.0
-        websearch_fallback_attempted = False
 
         gateway_kwargs = dict(gateway_kwargs)
         reason_and_respond_fn = gateway_kwargs.pop("reason_and_respond_fn", None)
@@ -1011,6 +1658,13 @@ class OrchestratorExecutionEngine:
                 model=current_call_model,
                 fallback_model=user_selected_model,
             )
+            prompt_cache_decision = clone_decision_for_route(
+                decision_from_gateway_kwargs(gateway_kwargs),
+                provider=current_call_provider,
+                model=current_call_model or user_selected_model,
+            )
+            if prompt_cache_decision is not None:
+                gateway_kwargs["_prompt_cache_decision"] = prompt_cache_decision
             # 🔐 AUTH-ISOLATION: Bei Provider-Switch frischen API-Key laden
             original_provider = str(gateway_kwargs.get("provider") or "").strip().lower()
             if current_call_provider and original_provider and current_call_provider != original_provider:
@@ -1078,23 +1732,55 @@ class OrchestratorExecutionEngine:
                 call_kwargs["model"] = current_call_model or user_selected_model
                 # 💎 VIDEO-FIX: Filter out unsupported parameters for non-stream gateways
                 # force_tool_name is only supported in streaming path, not in reason_and_respond
-                call_kwargs.pop("force_tool_name", None)
                 call_kwargs.pop("forced_tool", None)
                 call_kwargs.pop("forced_tool_args", None)
+                call_kwargs.pop("_prompt_cache_decision", None)
                 try:
                     response = await reason_and_respond_fn(**call_kwargs)
-                except Exception:
+                    # 💎 BACKLOG-047: Check for provider error response before processing
+                    if response and response.get("type") == "error":
+                        logger.error(
+                            f"Provider returned error response: provider={provider}, model={model}, "
+                            f"error_code={response.get('error_code', 'N/A')}, message={response.get('message', 'N/A')[:100]}"
+                        )
+                        # Build fallback from provider error details
+                        dynamic_fallback = _build_dynamic_fallback_summary(
+                            error_code=response.get("error_code"),
+                            error_message=response.get("message"),
+                            provider=provider,
+                            model=model,
+                        )
+                        response = {
+                            "type": "text",
+                            "text": dynamic_fallback,
+                            "tool_calls": [],
+                            "raw_assistant_response": {
+                                "role": "assistant",
+                                "content": dynamic_fallback,
+                            },
+                            "usage": {},
+                            "cost": {},
+                            "agent_payload": None,
+                        }
+                        break
+                except Exception as exc:
                     logger.error("Error in orchestrator.execution_engine.run_tool_loop: synthesis crash", exc_info=True)
+                    # 💎 BACKLOG-006: Build dynamic fallback summary with error details
+                    dynamic_fallback = _build_dynamic_fallback_summary(
+                        exception=exc,
+                        provider=provider,
+                        model=model,
+                    )
                     # 💎 AUDIT-LOOP-FALLBACK-SHAPE: build a complete LLM-response shape
                     # so downstream logic (cost aggregation, fact extraction trigger,
                     # response finalizer) never dereferences missing fields.
                     response = {
                         "type": "text",
-                        "text": fallback_summary,
+                        "text": dynamic_fallback,
                         "tool_calls": [],
                         "raw_assistant_response": {
                             "role": "assistant",
-                            "content": fallback_summary,
+                            "content": dynamic_fallback,
                         },
                         "usage": {},
                         "cost": {},
@@ -1104,6 +1790,9 @@ class OrchestratorExecutionEngine:
 
             # 💎 COST-AGGREGATION FIX: Extrahiere und addiere Usage/Cost aus jeder Iteration
             if isinstance(response, dict):
+                prompt_cache_decision = decision_from_gateway_kwargs(gateway_kwargs)
+                if prompt_cache_decision is not None:
+                    response["usage"] = merge_decision_into_usage(response.get("usage") or {}, prompt_cache_decision)
                 usage_data = response.get("usage") or {}
                 cost_data = response.get("cost") or {}
                 
@@ -1127,18 +1816,28 @@ class OrchestratorExecutionEngine:
                         from backend.services.cost_service import create_cost_entry
                         _iter_model = current_call_model or user_selected_model or "unknown"
                         _iter_provider = current_call_provider or gateway_kwargs.get("provider") or "unknown"
+                        _iter_tokens_saved = int(
+                            (prompt_cache_decision.estimated_tokens_saved if prompt_cache_decision is not None else 0) or 0
+                        )
                         create_cost_entry(
                             db=self.db,
                             amount=float(total_cost),
                             model=_iter_model,
                             provider=_iter_provider,
                             source_type="conversation",
+                            context_details=f"tool_loop_iteration={current_iteration};tool_calls={len(response.get('tool_calls') or [])}",
                             input_tokens=int(input_tokens),
                             output_tokens=int(output_tokens),
+                            cached_tokens=int(usage_data.get("cached_tokens") or usage_data.get("prompt_tokens_cached") or 0),
+                            total_tokens=int(usage_data.get("total_tokens") or 0),
+                            tokens_saved=_iter_tokens_saved,
                         )
+                        # 💎 COST-PERSISTENCE FIX: Explizites db.commit() nach create_cost_entry
+                        # Dies stellt sicher, dass Kosten auch im Meta-Agent-Kontext persistieren
+                        self.db.commit()
                         logger.info(
-                            "COST-PERSIST: Iteration %d saved %.6f€ for model '%s'",
-                            current_iteration, total_cost, _iter_model
+                            "COST-PERSIST: Iteration %d saved %.6f€ for model '%s' (tokens_saved=%d)",
+                            current_iteration, total_cost, _iter_model, _iter_tokens_saved
                         )
                     except Exception:
                         logger.warning("COST-PERSIST: Failed to save iteration cost", exc_info=True)
@@ -1156,6 +1855,22 @@ class OrchestratorExecutionEngine:
                             all_used_skills.append(_skill_name)
             tool_calls = response.get("tool_calls") if isinstance(response, dict) else []
             latest_tool_calls = tool_calls if isinstance(tool_calls, list) else []
+            if not latest_tool_calls and isinstance(response, dict):
+                pseudo_tool_call = _extract_pseudo_tool_call_from_text(response.get("text"))
+                if pseudo_tool_call:
+                    tool_calls = [pseudo_tool_call]
+                    latest_tool_calls = tool_calls
+                    response["tool_calls"] = tool_calls
+                    response["text"] = ""
+                    response["raw_assistant_response"] = {
+                        "role": "assistant",
+                        "content": None,
+                        "tool_calls": tool_calls,
+                    }
+                    logger.info(
+                        "PSEUDO-TOOL-CALL: Converted assistant JSON text into tool call: %s",
+                        pseudo_tool_call.get("function", {}).get("name"),
+                    )
             
             # 💎 MODEL-TIER-OVERRIDE: Check if any tool has optimal_model_tier and upgrade model accordingly
             # This must happen AFTER we get tool_calls from the response and BEFORE we break if empty
@@ -1180,6 +1895,24 @@ class OrchestratorExecutionEngine:
                                 "TOOL-LOOP: Model upgraded for skill '%s' from '%s' to '%s'",
                                 resolved_skill, requested_model, optimal_model
                             )
+                            
+                            # Log fallback_trigger for tool-loop model upgrade
+                            import asyncio
+                            from backend.services.logging.logger_core import log_event
+                            from backend.data.schemas_logging import LogEventCreate
+                            try:
+                                asyncio.create_task(log_event(LogEventCreate(
+                                    event_type="fallback_trigger",
+                                    status="success",
+                                    payload={
+                                        "input_hash": str(hash(resolved_skill)),
+                                        "output_summary": f"Model upgraded from {requested_model} to {optimal_model}",
+                                        "error_code": None
+                                    }
+                                )))
+                            except Exception as log_exc:
+                                logger.error(f"Failed to log fallback_trigger: {log_exc}")
+                            
                             break  # Only upgrade once based on first skill
             
             if not tool_calls:
@@ -1263,13 +1996,14 @@ class OrchestratorExecutionEngine:
                 force_loop_exit = True
                 # Nutze die letzte Antwort oder erstelle eine finale Meldung
                 final_response_text = (
-                    "Das Dokument wurde erfolgreich erstellt. "
-                    "Das PDF ist in Ihrer Dokumentenliste verfügbar."
+                    "Ich habe den gleichen Tool-Aufruf erneut erkannt und den Vorgang gestoppt, "
+                    "um eine Schleife zu vermeiden."
                 )
-                if isinstance(response, dict) and response.get("text"):
-                    # Behalte vorherigen Kontext bei wenn vorhanden
-                    final_response_text = response["text"]
-                
+                if str(_duplicate_tool_name).strip().lower() in {"system.create_pdf", "create_pdf"}:
+                    final_response_text = (
+                        "Das Dokument wurde erfolgreich erstellt. "
+                        "Das PDF ist in Ihrer Dokumentenliste verfügbar."
+                    )
                 logger.error(
                     "[HARD-LOOP-BREAKER] Emergency exit triggered. "
                     "Returning final response after blocking duplicate %s",
@@ -1307,26 +2041,129 @@ class OrchestratorExecutionEngine:
                     function.get("arguments"),
                 )
 
+            # Extract context data for logging
+            provider = str(gateway_kwargs.get("provider") or "").lower()
+            model = str(gateway_kwargs.get("model") or "")
+            session_id = str(gateway_kwargs.get("chat_id") or gateway_kwargs.get("session_id") or "")
+
+            # Log tool start events
+            for tc in tool_calls:
+                fn = tc.get("function") or {}
+                skill_name = str(fn.get("name") or "").strip()
+                try:
+                    await log_event(LogEventCreate(
+                        session_id=session_id,
+                        provider=provider,
+                        model=model,
+                        skill=skill_name,
+                        event_type="tool_start",
+                        payload={"arguments": fn.get("arguments")}
+                    ))
+                except Exception as log_exc:
+                    logger.error(f"Failed to log tool_start event: {log_exc}")
+
             try:
+                start_time = time.time()
                 tool_results = await tool_executor.execute_tool_calls(
                     tool_calls,
                     bypass_policy=bypass_policy_this_turn,
                 )
+                latency_ms = int((time.time() - start_time) * 1000)
                 if bypass_policy_this_turn:
                     bypass_policy_this_turn = False
             except Exception as exc:
+                latency_ms = int((time.time() - start_time) * 1000)
                 logger.error("Error in orchestrator.execution_engine.run_tool_loop: tool execution crash", exc_info=True)
-                response = {"text": f"Die Korrektur ist fehlgeschlagen. Grund: {exc}"}
+                # 💎 BACKLOG-006: Build dynamic fallback summary with error details
+                # Extract tool name from the first tool call for context
+                tool_name = None
+                if tool_calls and isinstance(tool_calls, list) and len(tool_calls) > 0:
+                    first_tc = tool_calls[0]
+                    if isinstance(first_tc, dict):
+                        fn = first_tc.get("function") or {}
+                        tool_name = str(fn.get("name") or "").strip()
+                dynamic_fallback = _build_dynamic_fallback_summary(
+                    exception=exc,
+                    tool_name=tool_name,
+                    provider=provider,
+                    model=model,
+                )
+                response = {"text": dynamic_fallback}
+                
+                # Log tool end events with error status
+                for tc in tool_calls:
+                    fn = tc.get("function") or {}
+                    skill_name = str(fn.get("name") or "").strip()
+                    try:
+                        await log_event(LogEventCreate(
+                            session_id=session_id,
+                            provider=provider,
+                            model=model,
+                            skill=skill_name,
+                            event_type="tool_end",
+                            status="error",
+                            payload={"error": str(exc)},
+                            latency_ms=latency_ms
+                        ))
+                    except Exception as log_exc:
+                        logger.error(f"Failed to log tool_end event: {log_exc}")
                 break
+
+            # Log tool end events with success status
+            for tr in (tool_results or []):
+                if isinstance(tr, dict):
+                    skill_name = str(tr.get("name") or "").strip()
+                    try:
+                        await log_event(LogEventCreate(
+                            session_id=session_id,
+                            provider=provider,
+                            model=model,
+                            skill=skill_name,
+                            event_type="tool_end",
+                            status="success",
+                            payload={"result": tr.get("content")},
+                            latency_ms=latency_ms
+                        ))
+                    except Exception as log_exc:
+                        logger.error(f"Failed to log tool_end event: {log_exc}")
 
             # 💎 PDF-SUCCESS-TRACKER: Tracken ob PDF bereits erfolgreich war für Loop-Break
             _pdf_already_succeeded = False
+            # 💎 SELF-CORRECTION TRACKER: Speichere Tool-Status für Retry-Logik
+            _kpi_tool_status = gateway_kwargs.get("_kpi_tool_status", {})
+            _normalize_tool_args_fn = gateway_kwargs.get("_normalize_tool_args_fn")
+            # 💎 BACKLOG-006: Track tool error details for dynamic fallback
+            _last_tool_error = None  # (tool_name, error_code, error_message)
             for _tr in (tool_results or []):
                 logger.error("💎 TOOL CALL RESULT: %s", _tr)
                 if isinstance(_tr, dict):
                     _skill_name = str(_tr.get("name") or "").strip()
                     if _skill_name and _skill_name not in all_used_skills:
                         all_used_skills.append(_skill_name)
+                    # 💎 SELF-CORRECTION: Speichere Tool-Status für Retry-Logik
+                    _raw_content = _tr.get("_raw_content") or _tr.get("content") or "{}"
+                    try:
+                        _parsed = json.loads(_raw_content) if isinstance(_raw_content, str) else dict(_raw_content or {})
+                        _status = str(_parsed.get("status", "")).lower()
+                        # Wenn Status "error" enthält, speichere für Self-Correction
+                        if "error" in _status or "invalid" in _status:
+                            # Extrahiere Tool-Name und Arguments aus dem Tool-Call
+                            _tool_args = _tr.get("arguments", {})
+                            if callable(_normalize_tool_args_fn):
+                                _cache_key = _normalize_tool_args_fn(_skill_name, _tool_args)
+                                _kpi_tool_status[_cache_key] = _status
+                                logger.info(
+                                    "[SELF-CORRECTION-TRACKER] Tool %s returned error status: %s. "
+                                    "Storing for potential retry.",
+                                    _skill_name, _status
+                                )
+                            # 💎 BACKLOG-006: Extract error details for dynamic fallback
+                            _error_code = str(_parsed.get("error_code", "")).strip()
+                            _error_message = str(_parsed.get("error_message", "")).strip()
+                            if _error_code or _error_message:
+                                _last_tool_error = (_skill_name, _error_code, _error_message)
+                    except Exception:
+                        pass
                     # Prüfe auf erfolgreiches PDF
                     if _skill_name.lower() == "system.create_pdf":
                         _raw = _tr.get("_raw_content") or _tr.get("content") or "{}"
@@ -1346,6 +2183,22 @@ class OrchestratorExecutionEngine:
                 for tr in tool_results:
                     if isinstance(tr, dict):
                         results_buffer.append(tr)
+
+            auto_completed_results = await self._complete_pending_filesystem_image_move(
+                user_prompt=str(gateway_kwargs.get("user_prompt") or ""),
+                tool_executor=tool_executor,
+                results_buffer=results_buffer,
+                bypass_policy=bypass_policy_this_turn,
+            )
+            if auto_completed_results:
+                for tr in auto_completed_results:
+                    if isinstance(tr, dict):
+                        results_buffer.append(tr)
+                        _skill_name = str(tr.get("name") or "").strip()
+                        if _skill_name and _skill_name not in all_used_skills:
+                            all_used_skills.append(_skill_name)
+                response = {"text": "\n\n".join(self._success_messages_from_tool_results(results_buffer)), "tool_calls": []}
+                break
 
             # 💎 REDUNDANT SYNTHESIS LOOP FIX: Check if any tool result is final response
             # If is_final_response=True, skip synthesis and use tool message directly
@@ -1582,69 +2435,16 @@ class OrchestratorExecutionEngine:
                                 "VIDEO-SEARCH-FALLBACK: system.websearch returned %d result(s). Continuing loop.",
                                 len(fallback_results),
                             )
-                if (
-                    not websearch_fallback_attempted
-                    and websearch_failure_detected
-                    and str(gateway_kwargs.get("provider") or "").strip().lower() == "openai"
-                ):
-                    websearch_fallback_attempted = True
-                    logger.error(
-                        "WEBSEARCH-FALLBACK: OpenAI websearch failed (%s). Retrying tool call via Gemini.",
+                if websearch_failure_detected and str(
+                    gateway_kwargs.get("provider") or ""
+                ).strip().lower() == "openai":
+                    # Policy: never silently retry websearch on another provider (was Gemini).
+                    # Users expect the selected chat provider/model for all billable LLM paths.
+                    logger.warning(
+                        "WEBSEARCH-CROSS-PROVIDER-DISABLED: OpenAI native websearch failed (%s). "
+                        "No automatic retry on another provider.",
                         websearch_failure_text or "unknown error",
                     )
-                    fallback_tool_calls: List[Dict[str, Any]] = []
-                    for _tc in (tool_calls or []):
-                        _fn = _tc.get("function") if isinstance(_tc, dict) else {}
-                        _name = str((_fn or {}).get("name") or "").strip().lower()
-                        if _name not in {"system.websearch", "websearch_wrapper"}:
-                            continue
-                        _args_raw = (_fn or {}).get("arguments") or "{}"
-                        try:
-                            _args = json.loads(_args_raw) if isinstance(_args_raw, str) else dict(_args_raw or {})
-                        except Exception:
-                            _args = {}
-                        _args["provider"] = "gemini"
-                        _args["model"] = "gemini-3-flash-preview"
-                        _tc_copy = dict(_tc)
-                        _fn_copy = dict(_fn or {})
-                        _fn_copy["arguments"] = json.dumps(_args, ensure_ascii=False)
-                        _tc_copy["function"] = _fn_copy
-                        fallback_tool_calls.append(_tc_copy)
-
-                    if fallback_tool_calls:
-                        prev_force_provider = tool_executor.additional_context.get("websearch_fallback_provider")
-                        tool_executor.additional_context["websearch_fallback_provider"] = "gemini"
-                        try:
-                            fallback_results = await tool_executor.execute_tool_calls(
-                                fallback_tool_calls,
-                                bypass_policy=bypass_policy_this_turn,
-                            )
-                        except Exception:
-                            logger.error(
-                                "WEBSEARCH-FALLBACK: Gemini retry crashed during tool execution.",
-                                exc_info=True,
-                            )
-                            fallback_results = []
-                        finally:
-                            if prev_force_provider is None:
-                                tool_executor.additional_context.pop("websearch_fallback_provider", None)
-                            else:
-                                tool_executor.additional_context["websearch_fallback_provider"] = prev_force_provider
-
-                        if fallback_results:
-                            # Replace failed websearch entries with fallback results.
-                            non_websearch_results = [
-                                tr
-                                for tr in (tool_results or [])
-                                if str(tr.get("name") or "").strip().lower()
-                                not in {"system.websearch", "websearch_wrapper"}
-                            ]
-                            tool_results = non_websearch_results + [tr for tr in fallback_results if isinstance(tr, dict)]
-                            tool_failure_message = None
-                            logger.error(
-                                "WEBSEARCH-FALLBACK: Gemini retry returned %d result(s). Continuing loop.",
-                                len(fallback_results),
-                            )
 
                 if tool_failure_message:
                     _err = tool_failure_message
@@ -1696,17 +2496,41 @@ class OrchestratorExecutionEngine:
                     logger.warning("WEBSEARCH-COST-PERSIST: Failed to save websearch costs", exc_info=True)
 
         if response is None:
-            response = {"text": fallback_summary}
+            # 💎 BACKLOG-006: Use dynamic fallback with tool error details if available
+            if _last_tool_error:
+                tool_name, error_code, error_message = _last_tool_error
+                dynamic_fallback = _build_dynamic_fallback_summary(
+                    tool_name=tool_name,
+                    error_code=error_code,
+                    error_message=error_message,
+                    provider=provider,
+                    model=model,
+                )
+                response = {"text": dynamic_fallback}
+            else:
+                response = {"text": fallback_summary}
         if isinstance(response, dict) and not response.get("modal_request"):
             derived_modal = self._build_video_modal_request_from_tool_results(results_buffer)
             if derived_modal:
                 response["modal_request"] = derived_modal
 
-        text_value = fallback_summary
-        if isinstance(response, dict):
-            text_value = str(response.get("text") or fallback_summary)
+        # 💎 BACKLOG-006: Use dynamic fallback with tool error details if available
+        if _last_tool_error:
+            tool_name, error_code, error_message = _last_tool_error
+            dynamic_fallback = _build_dynamic_fallback_summary(
+                tool_name=tool_name,
+                error_code=error_code,
+                error_message=error_message,
+                provider=provider,
+                model=model,
+            )
+            text_value = dynamic_fallback
         else:
-            text_value = str(response or fallback_summary)
+            text_value = fallback_summary
+        if isinstance(response, dict):
+            text_value = str(response.get("text") or text_value)
+        else:
+            text_value = str(response or text_value)
 
         text_value = force_sanitize_links(text_value)
 
@@ -1812,6 +2636,9 @@ class OrchestratorExecutionEngine:
         if all_used_skills:
             logger.info("TOOL_LOOP: Skills executed in legacy path: %s", all_used_skills)
 
+        text_value = append_tool_attributions_from_tools(text_value, results_buffer)
+        text_value = _normalize_inline_weather_source(text_value, results_buffer)
+
         return ExecutionResponse(
             text=text_value,
             agent_payload=tool_loop_agent_payload,
@@ -1843,10 +2670,35 @@ class OrchestratorExecutionEngine:
         bypass_policy_this_turn: bool,
         set_policy_pending,
         chat_id: Optional[int],
+        user_text: Optional[str] = None,
         agent_flow_error: Optional[Dict[str, Any]] = None,
         result_holder: Optional[Dict[str, Any]] = None,
     ) -> AsyncIterator[StreamEvent]:
         """Stream provider chunks: text_delta/usage sofort; tool_delta gepuffert; tool_start/tool_end bei Ausführung."""
+        # 🔐 TASK-035-02: Early Prompt Injection Guard - Check BEFORE any processing
+        early_block = self._check_prompt_injection_early(orchestrator_context.history, user_text, chat_id)
+        if early_block:
+            # Yield error event and stop streaming - no tool execution
+            yield StreamEvent(
+                type="error",
+                content=early_block.text,
+                metadata={
+                    "error_code": early_block.error.get("code") if early_block.error else "PROMPT_INJECTION_BLOCKED",
+                    "injection_type": early_block.error.get("injection_type") if early_block.error else "unknown",
+                },
+            )
+            return
+        
+        # 💎 BACKLOG-006: Extract provider/model for dynamic fallback
+        provider = gateway_kwargs.get("provider") if isinstance(gateway_kwargs, dict) else None
+        model = gateway_kwargs.get("model") if isinstance(gateway_kwargs, dict) else None
+        # 💎 CU-4: Sende pending status_update Event (wenn vorhanden)
+        # Dies wurde im chat_orchestrator._execute_generation gesetzt
+        pending_status_update = gateway_kwargs.get("_pending_status_update")
+        if pending_status_update:
+            logger.info("[CU-4] Yielding pending status_update event")
+            yield pending_status_update
+
         current_iteration = 0
         response: Any = None
         latest_ui_command = None
@@ -1859,6 +2711,7 @@ class OrchestratorExecutionEngine:
         aggregated_tokens_output = 0
         aggregated_total_cost = 0.0
         country_not_found_detected = False
+        _last_tool_error = None  # (tool_name, error_code, error_message) - 💎 BACKLOG-024
 
         gateway_kwargs = dict(gateway_kwargs)
         gateway_kwargs.pop("reason_and_respond_fn", None)
@@ -1932,6 +2785,13 @@ class OrchestratorExecutionEngine:
                 model=current_call_model,
                 fallback_model=user_selected_model,
             )
+            prompt_cache_decision = clone_decision_for_route(
+                decision_from_gateway_kwargs(gateway_kwargs),
+                provider=current_call_provider,
+                model=current_call_model or user_selected_model,
+            )
+            if prompt_cache_decision is not None:
+                gateway_kwargs["_prompt_cache_decision"] = prompt_cache_decision
             # 🔐 AUTH-ISOLATION (stream loop): Key-Refresh bei Provider-Switch
             _stream_orig_provider = str(gateway_kwargs.get("provider") or "").strip().lower()
             if current_call_provider and _stream_orig_provider and current_call_provider != _stream_orig_provider:
@@ -1961,6 +2821,7 @@ class OrchestratorExecutionEngine:
             gateway_kwargs["chat_history"] = messages
 
             round_text_parts: List[str] = []
+            pending_text_events: List[StreamEvent] = []
             openai_acc: Dict[int, Dict[str, Any]] = {}
             gemini_calls: List[Dict[str, Any]] = []
 
@@ -2026,7 +2887,7 @@ class OrchestratorExecutionEngine:
                         if ev.type == "text_delta":
                             if ev.content:
                                 round_text_parts.append(str(ev.content))
-                            yield ev
+                                pending_text_events.append(ev)
                         elif ev.type == "tool_delta":
                             if provider_key in ("gemini", "google"):
                                 c = ev.content if isinstance(ev.content, dict) else {}
@@ -2036,6 +2897,14 @@ class OrchestratorExecutionEngine:
                                 frag = ev.content if isinstance(ev.content, dict) else {}
                                 _stream_merge_openai_tool_delta(openai_acc, frag)
                         elif ev.type == "usage":
+                            prompt_cache_decision = decision_from_gateway_kwargs(gateway_kwargs)
+                            if prompt_cache_decision is not None and isinstance(ev.content, dict):
+                                u_blob_for_cache = dict(ev.content)
+                                u_blob_for_cache["usage"] = merge_decision_into_usage(
+                                    u_blob_for_cache.get("usage") or {},
+                                    prompt_cache_decision,
+                                )
+                                ev = StreamEvent(type=ev.type, content=u_blob_for_cache, metadata=ev.metadata)
                             yield ev
                             u_blob = ev.content if isinstance(ev.content, dict) else {}
                             u = u_blob.get("usage") or {}
@@ -2046,21 +2915,34 @@ class OrchestratorExecutionEngine:
                             if float(cst.get("total_cost") or 0) > 0 and self.db is not None:
                                 try:
                                     from backend.services.cost_service import create_cost_entry
-
+                                    _stream_tokens_saved = int(
+                                        (prompt_cache_decision.estimated_tokens_saved if prompt_cache_decision is not None else 0) or 0
+                                    )
                                     create_cost_entry(
                                         db=self.db,
                                         amount=float(cst.get("total_cost") or 0.0),
                                         model=str(current_call_model or user_selected_model or "unknown"),
                                         provider=str(current_call_provider or gateway_kwargs.get("provider") or "unknown"),
                                         source_type="conversation",
+                                        context_details="stream_final_usage=1",
                                         input_tokens=int(u.get("input_tokens") or u.get("prompt_tokens") or 0),
                                         output_tokens=int(u.get("output_tokens") or u.get("completion_tokens") or 0),
+                                        cached_tokens=int(u.get("cached_tokens") or u.get("prompt_tokens_cached") or 0),
+                                        total_tokens=int(u.get("total_tokens") or 0),
+                                        tokens_saved=_stream_tokens_saved,
                                     )
+                                    # 💎 COST-PERSISTENCE FIX: Explizites db.commit() nach create_cost_entry (Streaming)
+                                    self.db.commit()
                                 except Exception:
                                     logger.warning("COST-PERSIST (stream): iteration save failed", exc_info=True)
                         elif ev.type == "error":
-                            yield ev
-                            response = {"text": fallback_summary}
+                            # 💎 BACKLOG-006: Build dynamic fallback summary with error details
+                            dynamic_fallback = _build_dynamic_fallback_summary(
+                                provider=provider,
+                                model=model,
+                            )
+                            yield StreamEvent(type="error", content=dynamic_fallback, metadata={"fatal": True})
+                            response = {"text": dynamic_fallback}
                             stream_fatal = True
                             break
                         elif ev.type in ("finish", "done"):
@@ -2068,10 +2950,16 @@ class OrchestratorExecutionEngine:
                                 pass
                     if stream_fatal:
                         break
-                except Exception:
+                except Exception as exc:
                     logger.error("run_tool_loop_stream: provider stream crashed", exc_info=True)
-                    yield StreamEvent(type="error", content=fallback_summary, metadata={"fatal": True})
-                    response = {"text": fallback_summary}
+                    # 💎 BACKLOG-006: Build dynamic fallback summary with error details
+                    dynamic_fallback = _build_dynamic_fallback_summary(
+                        exception=exc,
+                        provider=provider,
+                        model=model,
+                    )
+                    yield StreamEvent(type="error", content=dynamic_fallback, metadata={"fatal": True})
+                    response = {"text": dynamic_fallback}
                     break
 
             if _forced_tool_calls_stream is not None:
@@ -2079,6 +2967,33 @@ class OrchestratorExecutionEngine:
             else:
                 tool_calls = gemini_calls if provider_key in ("gemini", "google") else _stream_finalize_openai_tool_slots(openai_acc)
             round_text = "".join(round_text_parts)
+            pseudo_tool_call_from_text: Optional[Dict[str, Any]] = None
+            if not tool_calls:
+                pseudo_tool_call_from_text = _extract_pseudo_tool_call_from_text(round_text)
+                if pseudo_tool_call_from_text:
+                    tool_calls = [pseudo_tool_call_from_text]
+                    round_text = ""
+                    round_text_parts = []
+                    logger.info(
+                        "PSEUDO-TOOL-CALL-STREAM: Converted assistant JSON text into tool call: %s",
+                        pseudo_tool_call_from_text.get("function", {}).get("name"),
+                    )
+            generic_stability_fallback_from_text = (
+                not tool_calls
+                and had_tool_round
+                and bool(results_buffer)
+                and _is_generic_stability_fallback_text(round_text)
+            )
+            if generic_stability_fallback_from_text:
+                logger.info(
+                    "GEMINI-FALLBACK-STREAM: Suppressing generic stability text after successful tool round"
+                )
+                round_text = ""
+                round_text_parts = []
+            suppress_raw_websearch_synthesis = had_tool_round and _has_websearch_tool_result(results_buffer)
+            if not pseudo_tool_call_from_text and not generic_stability_fallback_from_text and not suppress_raw_websearch_synthesis:
+                for pending_text_event in pending_text_events:
+                    yield pending_text_event
 
             if tool_calls and current_iteration == 0:
                 for tool_call in tool_calls:
@@ -2106,7 +3021,19 @@ class OrchestratorExecutionEngine:
             latest_tool_calls = list(tool_calls) if isinstance(tool_calls, list) else []
 
             if not tool_calls:
-                text_value = round_text if round_text.strip() else fallback_summary
+                # 💎 BACKLOG-006: Use dynamic fallback with tool error details if available
+                if _last_tool_error:
+                    tool_name, error_code, error_message = _last_tool_error
+                    dynamic_fallback = _build_dynamic_fallback_summary(
+                        tool_name=tool_name,
+                        error_code=error_code,
+                        error_message=error_message,
+                        provider=provider,
+                        model=model,
+                    )
+                    text_value = round_text if round_text.strip() else dynamic_fallback
+                else:
+                    text_value = round_text if round_text.strip() else fallback_summary
                 text_value = force_sanitize_links(text_value)
                 response = {"text": text_value, "usage": {}, "cost": {}}
                 break
@@ -2132,9 +3059,17 @@ class OrchestratorExecutionEngine:
 
             if _duplicate_detected:
                 final_response_text = round_text.strip() or (
-                    "Das Dokument wurde erfolgreich erstellt. "
-                    "Das PDF ist in Ihrer Dokumentenliste verfügbar."
+                    "Ich habe den gleichen Tool-Aufruf erneut erkannt und den Vorgang gestoppt, "
+                    "um eine Schleife zu vermeiden."
                 )
+                if (
+                    not round_text.strip()
+                    and str(_duplicate_tool_name).strip().lower() in {"system.create_pdf", "create_pdf"}
+                ):
+                    final_response_text = (
+                        "Das Dokument wurde erfolgreich erstellt. "
+                        "Das PDF ist in Ihrer Dokumentenliste verfügbar."
+                    )
                 er = ExecutionResponse(
                     text=final_response_text,
                     tool_calls=latest_tool_calls,
@@ -2202,18 +3137,60 @@ class OrchestratorExecutionEngine:
                     metadata={"name": fn.get("name"), "id": tc.get("id")},
                 )
 
+            # Extract context data for logging
+            provider = str(gateway_kwargs.get("provider") or "").lower()
+            model = str(gateway_kwargs.get("model") or "")
+            session_id = str(gateway_kwargs.get("chat_id") or gateway_kwargs.get("session_id") or "")
+
+            # Log tool start events (streaming)
+            for tc in tool_calls:
+                fn = tc.get("function") or {}
+                skill_name = str(fn.get("name") or "").strip()
+                try:
+                    await log_event(LogEventCreate(
+                        session_id=session_id,
+                        provider=provider,
+                        model=model,
+                        skill=skill_name,
+                        event_type="tool_start",
+                        payload={"arguments": fn.get("arguments")}
+                    ))
+                except Exception as log_exc:
+                    logger.error(f"Failed to log tool_start event: {log_exc}")
+
             tool_results: List[Dict[str, Any]] = []
             try:
+                start_time = time.time()
                 tool_results = await tool_executor.execute_tool_calls(
                     tool_calls,
                     bypass_policy=bypass_policy_this_turn,
                 )
+                latency_ms = int((time.time() - start_time) * 1000)
                 tool_results = tool_results or []
                 if bypass_policy_this_turn:
                     bypass_policy_this_turn = False
             except Exception as exc:
+                latency_ms = int((time.time() - start_time) * 1000)
                 logger.error("run_tool_loop_stream: tool execution crash", exc_info=True)
                 response = {"text": f"Die Korrektur ist fehlgeschlagen. Grund: {exc}"}
+                
+                # Log tool end events with error status (streaming)
+                for tc in tool_calls:
+                    fn = tc.get("function") or {}
+                    skill_name = str(fn.get("name") or "").strip()
+                    try:
+                        await log_event(LogEventCreate(
+                            session_id=session_id,
+                            provider=provider,
+                            model=model,
+                            skill=skill_name,
+                            event_type="tool_end",
+                            status="error",
+                            payload={"error": str(exc)},
+                            latency_ms=latency_ms
+                        ))
+                    except Exception as log_exc:
+                        logger.error(f"Failed to log tool_end event: {log_exc}")
                 break
 
             for tc in tool_calls:
@@ -2224,7 +3201,30 @@ class OrchestratorExecutionEngine:
                     metadata={"name": fn.get("name"), "id": tc.get("id")},
                 )
 
+            # Log tool end events with success status (streaming)
+            for tr in tool_results:
+                if isinstance(tr, dict):
+                    skill_name = str(tr.get("name") or "").strip()
+                    try:
+                        await log_event(LogEventCreate(
+                            session_id=session_id,
+                            provider=provider,
+                            model=model,
+                            skill=skill_name,
+                            event_type="tool_end",
+                            status="success",
+                            payload={"result": tr.get("content")},
+                            latency_ms=latency_ms
+                        ))
+                    except Exception as log_exc:
+                        logger.error(f"Failed to log tool_end event: {log_exc}")
+
+            # 💎 BACKLOG-006: Track tool error details for dynamic fallback (Stream)
+            _last_tool_error = None  # (tool_name, error_code, error_message)
             if tool_results:
+                # 💎 SELF-CORRECTION TRACKER: Speichere Tool-Status für Retry-Logik (Stream)
+                _kpi_tool_status = gateway_kwargs.get("_kpi_tool_status", {})
+                _normalize_tool_args_fn = gateway_kwargs.get("_normalize_tool_args_fn")
                 for tr in tool_results:
                     logger.error("💎 TOOL CALL RESULT: %s", tr)
                     if isinstance(tr, dict):
@@ -2232,6 +3232,42 @@ class OrchestratorExecutionEngine:
                         _sn = str(tr.get("name") or "").strip()
                         if _sn and _sn not in all_used_skills:
                             all_used_skills.append(_sn)
+                        # 💎 SELF-CORRECTION: Speichere Tool-Status für Retry-Logik
+                        _raw_content = tr.get("_raw_content") or tr.get("content", "{}")
+                        try:
+                            _parsed = json.loads(_raw_content) if isinstance(_raw_content, str) else dict(_raw_content or {})
+                            _status = str(_parsed.get("status", "")).lower()
+                            # Wenn Status "error" enthält, speichere für Self-Correction
+                            if "error" in _status or "invalid" in _status:
+                                # Extrahiere Tool-Name und Arguments aus dem Tool-Call
+                                _tool_args = tr.get("arguments", {})
+                                if callable(_normalize_tool_args_fn):
+                                    _cache_key = _normalize_tool_args_fn(_sn, _tool_args)
+                                    _kpi_tool_status[_cache_key] = _status
+                                    logger.info(
+                                        "[SELF-CORRECTION-TRACKER] (stream) Tool %s returned error status: %s. "
+                                        "Storing for potential retry.",
+                                        _sn, _status
+                                    )
+                                # 💎 BACKLOG-006: Extract error details for dynamic fallback
+                                _error_code = str(_parsed.get("error_code", "")).strip()
+                                _error_message = str(_parsed.get("error_message", "")).strip()
+                                if _error_code or _error_message:
+                                    _last_tool_error = (_sn, _error_code, _error_message)
+                        except Exception:
+                            pass
+                        # 💎 PATH-SENTINEL: Emit permission_required to frontend so consent modal opens
+                        try:
+                            _raw = tr.get("_raw_content") or tr.get("content", "{}")
+                            _parsed = json.loads(_raw) if isinstance(_raw, str) else dict(_raw or {})
+                            if isinstance(_parsed, dict) and _parsed.get("status") == "permission_required":
+                                yield StreamEvent(
+                                    type="tool_result",
+                                    content={"result": _parsed},
+                                    metadata={"name": _sn, "tool_call_id": tr.get("tool_call_id")},
+                                )
+                        except Exception:
+                            pass
                         # 💎 VIDEO-LIST-METADATA: Extrahiere video.search List-Mode Daten für Frontend
                         if _sn == "video.search":
                             try:
@@ -2254,6 +3290,22 @@ class OrchestratorExecutionEngine:
                                         logger.info("💎 VIDEO-LIST-METADATA: Sent %d videos to frontend", len(data.get("videos", [])))
                             except Exception:
                                 logger.warning("💎 VIDEO-LIST-METADATA: Failed to extract video list data", exc_info=True)
+
+            auto_completed_results = await self._complete_pending_filesystem_image_move(
+                user_prompt=str(gateway_kwargs.get("user_prompt") or ""),
+                tool_executor=tool_executor,
+                results_buffer=results_buffer,
+                bypass_policy=bypass_policy_this_turn,
+            )
+            if auto_completed_results:
+                for tr in auto_completed_results:
+                    if isinstance(tr, dict):
+                        results_buffer.append(tr)
+                        _sn = str(tr.get("name") or "").strip()
+                        if _sn and _sn not in all_used_skills:
+                            all_used_skills.append(_sn)
+                response = {"text": "\n\n".join(self._success_messages_from_tool_results(results_buffer)), "tool_calls": []}
+                break
 
             if tool_results:
                 for tool_result in tool_results:
@@ -2296,6 +3348,22 @@ class OrchestratorExecutionEngine:
                         tool_result["content"] = force_sanitize_links(content)
                 gateway_kwargs["chat_history"].append(tool_result)
 
+            # 💎 GEMINI-RESPONSE-TRIGGER: Force Gemini to generate text after tool execution
+            # Gemini unlike OpenAI often stops after tool calls without generating summary text
+            if provider_key in ("gemini", "google"):
+                gateway_kwargs["chat_history"].append({
+                    "role": "system",
+                    "content": "[System-Instruction]: The tool execution was successful. You MUST now provide a final, natural language response to the user summarizing this result."
+                })
+            # 💎 BACKLOG-010 FIX: Force OpenAI/gpt-5.4-nano to continue tool execution
+            # gpt-5.4-nano may stop after the first tool call without planning further tools
+            # This instruction ensures the model continues to evaluate if more tools are needed
+            elif provider_key in ("openai",):
+                gateway_kwargs["chat_history"].append({
+                    "role": "system",
+                    "content": "[System-Instruction]: The tool execution was successful. You MUST evaluate if the user's request is fully satisfied. If not, continue with additional tool calls to complete the task. Do not stop prematurely.\n\n!!! KRITISCH: MULTI-STEP FILESYSTEM-OPERATIONEN !!!\nWenn der User mehrere Dateitypen nennt (z.B. 'jpg und png', 'pdf und docx'), MUSST du für jeden Dateityp eine separate Suche durchführen und alle gefundenen Dateien verschieben.\nVERBOTEN: Nur einen Dateityp zu suchen und die anderen zu ignorieren - das ist ein Systemfehler.\nPFLICHT: Wenn die User-Anfrage 'jpg und png' enthält, MUSST du zuerst nach '*.jpg' suchen, dann nach '*.png' suchen, dann alle gefundenen Dateien verschieben.\n\n!!! KRITISCH: NACH DATEISUCHE MUSS VERSCHIEBEN FOLGEN !!!\nWenn du 'filesystem.find_files' aufgerufen hast und Dateien gefunden hast, MUSST du danach 'filesystem.move_files' aufrufen, um diese Dateien zu verschieben.\nVERBOTEN: Nur die gefundenen Dateien aufzulisten, ohne sie zu verschieben - das ist ein Systemfehler.\nPFLICHT: Extrahiere die Dateinamen aus dem 'find_files' Ergebnis und rufe 'filesystem.move_files' mit diesen Dateinamen auf.\n\n!!! KRITISCH: KEINE GENERISCHEN FEHLERMELDUNGEN !!!\nVERBOTEN: Generische Nachrichten wie 'Ich konnte keine stabile Antwort erzeugen', 'Ich kann das nicht ausführen' oder ähnliche.\nPFLICHT: Bei Filesystem-Intents (Ordner erstellen, Dateien verschieben, etc.) MUSST du die entsprechenden Tools (filesystem.create_directory, filesystem.move_files, etc.) AUFRUFEN. Wenn ein Tool einen Fehler zurückgibt, melde den konkreten Fehler und fordere den Nutzer auf, den Berechtigungs-Dialog zu bestätigen oder den Pfad zu korrigieren."
+                })
+
             _sctx = gateway_kwargs.get("_suggestion_context")
             if isinstance(_sctx, dict) and isinstance(gateway_kwargs.get("chat_history"), list):
                 from backend.services.orchestrator.suggestion_engine import (
@@ -2313,18 +3381,73 @@ class OrchestratorExecutionEngine:
             current_iteration += 1
 
         if response is None:
-            response = {"text": fallback_summary}
+            # 💎 BACKLOG-006: Use dynamic fallback with tool error details if available
+            if _last_tool_error:
+                tool_name, error_code, error_message = _last_tool_error
+                dynamic_fallback = _build_dynamic_fallback_summary(
+                    tool_name=tool_name,
+                    error_code=error_code,
+                    error_message=error_message,
+                    provider=provider,
+                    model=model,
+                )
+                response = {"text": dynamic_fallback}
+            else:
+                response = {"text": fallback_summary}
         if isinstance(response, dict) and not response.get("modal_request"):
             derived_modal = self._build_video_modal_request_from_tool_results(results_buffer)
             if derived_modal:
                 response["modal_request"] = derived_modal
 
-        text_value = fallback_summary
-        if isinstance(response, dict):
-            text_value = str(response.get("text") or fallback_summary)
+        # 💎 BACKLOG-006: Use dynamic fallback with tool error details if available
+        if _last_tool_error:
+            tool_name, error_code, error_message = _last_tool_error
+            dynamic_fallback = _build_dynamic_fallback_summary(
+                tool_name=tool_name,
+                error_code=error_code,
+                error_message=error_message,
+                provider=provider,
+                model=model,
+            )
+            text_value = dynamic_fallback
         else:
-            text_value = str(response or fallback_summary)
+            text_value = fallback_summary
+        if isinstance(response, dict):
+            text_value = str(response.get("text") or text_value)
+        else:
+            text_value = str(response or text_value)
+        
+        # 💎 GEMINI-FALLBACK: If text is still empty/whitespace after tool execution,
+        # try to extract meaningful text from successful tool results
+        if (
+            not text_value
+            or not text_value.strip()
+            or text_value == fallback_summary
+            or _is_generic_stability_fallback_text(text_value)
+        ):
+            if had_tool_round and results_buffer:
+                # Look for successful tool results to construct a meaningful response
+                successful_results = []
+                for tr in results_buffer:
+                    if not isinstance(tr, dict):
+                        continue
+                    try:
+                        raw = tr.get("_raw_content") or tr.get("content", "{}")
+                        parsed = json.loads(raw) if isinstance(raw, str) else dict(raw or {})
+                        if isinstance(parsed, dict) and parsed.get("status") == "ok":
+                            data = parsed.get("data") if isinstance(parsed.get("data"), dict) else {}
+                            msg = data.get("listing_text") or parsed.get("message") or parsed.get("output")
+                            if msg:
+                                successful_results.append(str(msg))
+                    except Exception:
+                        continue
+                if successful_results:
+                    text_value = "\n\n".join(successful_results)
+                    logger.info("💎 GEMINI-FALLBACK: Constructed response from %d tool results", len(successful_results))
+        
         text_value = force_sanitize_links(text_value)
+        text_value = append_tool_attributions_from_tools(text_value, results_buffer)
+        text_value = _normalize_inline_weather_source(text_value, results_buffer)
 
         if country_not_found_detected and isinstance(response, dict):
             response["skip_fact_extraction"] = True
@@ -2356,7 +3479,8 @@ class OrchestratorExecutionEngine:
         )
         if result_holder is not None:
             result_holder["execution_result"] = er
-        yield StreamEvent(type="stream_complete", content={"text": er.text}, metadata={})
+        if not _has_websearch_tool_result(results_buffer):
+            yield StreamEvent(type="stream_complete", content={"text": er.text}, metadata={})
 
     @staticmethod
     def _build_atomic_planner_prompt(
@@ -2490,6 +3614,8 @@ class OrchestratorExecutionEngine:
             additional_context={
                 "chat_id": chat_id,
                 "allowed_skill_ids": list(completed_skills),
+                "provider": provider,
+                "model": model,
             },
         )
 
@@ -2564,4 +3690,3 @@ class OrchestratorExecutionEngine:
         return ("pdf" in text or "dokument" in text) and any(
             token in text for token in ["erstelle", "create", "generiere", "schreibe"]
         )
-

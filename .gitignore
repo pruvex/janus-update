@@ -30,3 +30,5 @@ images/debug/
 nathan/
 *.vtt
 *.log
+# Runtime fallback logs (generated during local dev runs)
+backend/backend/
