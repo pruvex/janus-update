@@ -28,6 +28,7 @@ logger = logging.getLogger("janus_backend")
 
 ROLE_USER = "user"
 ROLE_ASSISTANT = "assistant"
+CHAT_UPDATE_UNSET = object()
 
 
 def _serialize_embedding_json(embedding_json: str) -> bytes:
@@ -124,6 +125,35 @@ def update_chat_title(db: Session, chat_id: int, new_title: str):
         chat.auto_generated = False
         db.commit()
         db.refresh(chat)
+    return chat
+
+
+def update_chat_header_llm(
+    db: Session,
+    chat_id: int,
+    provider=CHAT_UPDATE_UNSET,
+    model=CHAT_UPDATE_UNSET,
+):
+    chat = get_chat_by_id(db, chat_id)
+    if not chat:
+        return None
+
+    if provider is not CHAT_UPDATE_UNSET:
+        if provider is None:
+            chat.header_provider = None
+        else:
+            provider_value = str(provider).strip()
+            chat.header_provider = provider_value or None
+
+    if model is not CHAT_UPDATE_UNSET:
+        if model is None:
+            chat.header_model = None
+        else:
+            model_value = str(model).strip()
+            chat.header_model = model_value or None
+
+    db.commit()
+    db.refresh(chat)
     return chat
 
 
@@ -840,4 +870,3 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
         })
     
     return results
-

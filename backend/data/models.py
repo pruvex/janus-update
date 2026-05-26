@@ -70,6 +70,8 @@ class Chat(Base):
     category = Column(String, nullable=False, default="general", server_default=text("'general'"))
     auto_generated = Column(Boolean, default=True, nullable=False)
     last_topic_hash = Column(String, nullable=True)
+    header_provider = Column(String, nullable=True)
+    header_model = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     summary = Column(ContentType, nullable=True)
     summary_embedding_json = Column(String, nullable=True)

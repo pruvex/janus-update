@@ -618,6 +618,8 @@ class Chat(ChatBase):
     updated_at: datetime
     messages: List[MessageResponse] = []
     project_id: Optional[int] = None
+    header_provider: Optional[str] = None
+    header_model: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -631,6 +633,8 @@ class ChatResponse(ChatBase):
     project_id: Optional[int] = None
     auto_generated: bool = True
     last_topic_hash: Optional[str] = None
+    header_provider: Optional[str] = None
+    header_model: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -638,6 +642,11 @@ class ChatResponse(ChatBase):
 
 class ChatTitleUpdate(BaseModel):
     title: str
+
+
+class ChatHeaderLlmUpdate(BaseModel):
+    provider: Optional[str] = None
+    model: Optional[str] = None
 
 
 # --- Filesystem Tool Schemas ---

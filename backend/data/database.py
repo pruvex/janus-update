@@ -107,6 +107,14 @@ def _ensure_sqlite_schema_migrations() -> None:
                         )
                     )
                 logger.info("Migration: chats.auto_generated added (default=1).")
+            if "header_provider" not in chat_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE chats ADD COLUMN header_provider VARCHAR"))
+                logger.info("Migration: chats.header_provider added.")
+            if "header_model" not in chat_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE chats ADD COLUMN header_model VARCHAR"))
+                logger.info("Migration: chats.header_model added.")
 
         if insp.has_table("memories"):
             memory_cols = {c["name"] for c in insp.get_columns("memories")}
