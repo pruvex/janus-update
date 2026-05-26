@@ -76,12 +76,52 @@ Dashboard-Regeln:
 
 ## NEEDS INFO
 
-
 ## READY
 
 ## IN PROGRESS
 
 ## DONE
+
+### BACKLOG-095 - Einheitliche Antwortform fuer Wetteranfragen
+
+- **Typ:** IMPROVEMENT
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-05-26
+- **Aktualisiert:** 2026-05-27
+- **Kurzbeschreibung:** Wetteranfragen liefern inzwischen bei beiden Providern saubere fachliche Antworten, wirken aber je nach Provider unterschiedlich formatiert. Die Wetterantwort soll eine einheitliche, gut lesbare Form bekommen, damit OpenAI/HPZ und Gemini denselben Nutzwert und dieselbe Quellenklarheit liefern.
+- **Erwartetes Verhalten:** Wetterantworten fuer beide Provider nutzen eine konsistente Struktur mit Ort/Zeitraum, kurzer Wetterlage, Temperatur, Niederschlag, Wind und Quelle. Die Antwort soll natuerlich lesbar bleiben, aber nicht je Provider in komplett anderem Stil erscheinen.
+- **Tatsaechliches Verhalten:** OpenAI/HPZ antwortet knapp in einer kompakten Faktenzeile mit `Quelle: Open-Meteo`, waehrend Gemini denselben Inhalt frei als freundlichen Fliesstext formuliert. Beide Antworten sind korrekt, aber nicht einheitlich formatiert.
+- **Reproduktion / Kontext:** Wetterfrage wie `Wetter in Koeln heute` bzw. User-Beispiel: HPZ liefert `Wetter in Koeln (heute): bedeckt, Hoechsttemperatur ca. 32.1 Grad C, Tiefsttemperatur ca. 18.5 Grad C, Niederschlagswahrscheinlichkeit 0%, Windboeen bis ca. 7.9 km/h. Quelle: Open-Meteo`; Gemini liefert denselben Inhalt als lockeren Begruessungs-/Fliesstext.
+- **Betroffener Bereich:** Backend / Weather API / Provider-Antwortformatierung / UX
+- **Nachweise:** User Intake vom 2026-05-26; betroffener Codebereich laut Kontextsuche: `backend/tools/weather_service.py`; vorhandene Weather-Tool-Historie in `backend/config/routing_history.json`.
+- **Akzeptanzkriterien:**
+  - [x] Wetterantworten von OpenAI/HPZ und Gemini erscheinen bei gleicher Wetteranfrage in einer gemeinsamen, konsistenten Struktur.
+  - [x] Die Antwort enthaelt Ort, Zeitraum, Wetterlage, Hoechst-/Tiefsttemperatur, Niederschlagswahrscheinlichkeit, Windinformation und eine klare Quellenzeile.
+  - [x] Die Formatierung bleibt kurz, gut lesbar und deutschsprachig, ohne ueberfluessige Begruessung oder provider-spezifischen Stilbruch.
+  - [x] Die Quellenattribution `Quelle: Open-Meteo` bzw. ein gleichwertiges Fallback-Quellenlabel bleibt erhalten.
+  - [x] Bestehende Wetter-Tool-Routing- und Fallback-Funktionalitaet wird nicht verschlechtert.
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Naheliegender Loesungsraum ist ein zentraler Weather-Response-Formatter oder ein strikt vorgegebenes Tool-Result-Format, das beide Provider unveraendert bzw. nur minimal umformuliert ausgeben.
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Kleines, klar begrenztes Formatierungs- und Antwortkonsistenz-Thema mit einem naheliegenden einzelnen Task.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-05-26
+- **Handoff:** documentation/tasks/backlog_BACKLOG-095_einheitliche_antwortform_fuer_wetteranfragen.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-26
+- **Final audit:** PASS WITH FIXES - `documentation/test-runs/BACKLOG-095_final_audit.md`
+- **Validation evidence:** `backend/tests/unit/test_append_weather_attribution.py`; `backend/tests/tools/test_weather_renderer.py`; fokussierte Weather-Regression `PASS`; `py_compile` fuer Orchestrator/Renderer/Weather-Dateien `PASS`
+- **Completed in version:** N/A
+- **Completed by task:** `documentation/tasks/backlog_BACKLOG-095_einheitliche_antwortform_fuer_wetteranfragen.md`
+- **Completed at:** 2026-05-27
 
 ### BACKLOG-094 - Zwei Chats parallel mit eigener Modellwahl ausfuehren
 
