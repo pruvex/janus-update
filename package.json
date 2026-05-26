@@ -59,6 +59,7 @@
     "electron-log": "^5.4.3",
     "electron-updater": "^6.7.3",
     "formdata-node": "^6.0.3",
+    "interactjs": "^1.10.27",
     "node-fetch": "^2.7.0",
     "octokit": "^5.0.5"
   },
