@@ -7,6 +7,11 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+## [0.4.17-beta.47] - 2026-05-27
+
+### Fixed
+- **Auto-Update Feed-Reihenfolge repariert:** Der GitHub-Publisher setzt neue Releases jetzt explizit auf den aktuellen Git-HEAD (`target_commitish`), damit frische Beta-Tags im GitHub-Release-Feed korrekt vor aelteren Beta-Releases erscheinen. Dadurch findet Electron-Updater fuer installierte `0.4.17-beta.44` Clients wieder den neuesten Beta-Release statt am aelteren Feed-Eintrag haengen zu bleiben. Files: `scripts/publish_to_github.cjs`.
+
 ## [0.4.17-beta.46] - 2026-05-27
 
 ### Fixed

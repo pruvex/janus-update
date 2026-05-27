@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 const { Octokit } = require('octokit');
 
 const REPO_OWNER = 'pruvex';
@@ -32,6 +33,14 @@ function resolveChannelFile(version) {
   return 'latest.yml';
 }
 
+function getCurrentHead() {
+  return execSync('git rev-parse HEAD', {
+    cwd: PROJECT_ROOT,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    encoding: 'utf8',
+  }).trim();
+}
+
 function checkFileExists(filePath, required = true) {
   if (!fs.existsSync(filePath)) {
     if (required) {
@@ -48,6 +57,7 @@ function checkFileExists(filePath, required = true) {
 async function getOrCreateRelease(octokit, version) {
   const tagName = `v${version}`;
   const releaseName = `Janus Projekt ${version}`;
+  const targetCommitish = getCurrentHead();
 
   const releaseNotesPath = path.join(PROJECT_ROOT, 'RELEASE_NOTES.md');
   const releaseNotes = fs.existsSync(releaseNotesPath)
@@ -75,6 +85,7 @@ async function getOrCreateRelease(octokit, version) {
       owner: REPO_OWNER,
       repo: REPO_NAME,
       tag_name: tagName,
+      target_commitish: targetCommitish,
       name: releaseName,
       body: releaseNotes,
       draft: false,

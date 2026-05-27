@@ -1,6 +1,6 @@
 ﻿# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-27 (Auto-Update Beta-Channel-Erkennung gehaertet - 0.4.17-beta.46)
+**Aktualisiert:** 2026-05-27 (Auto-Update Feed-Reihenfolge repariert - 0.4.17-beta.47)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **Auto-Update Feed-Reihenfolge repariert** | SEALED | GitHub-Publisher setzt neue Releases jetzt explizit auf den aktuellen Git-HEAD (`target_commitish`), damit frische Beta-Tags im GitHub-Release-Feed vor aelteren Beta-Releases erscheinen. Root Cause des Testsystems: Electron-Updater auf `0.4.17-beta.44` las den GitHub-Atom-Feed und fand dort `0.4.17-beta.44` vor `0.4.17-beta.46`, wodurch kein Update angeboten wurde. Release-Version: 0.4.17-beta.47. |
 | **Auto-Update Beta-Channel-Erkennung gehaertet** | SEALED | Auto-Update fuer Beta-Ketten wurde channel-sicher gemacht: Client setzt explizit `autoUpdater.channel = 'beta'`, Build erzeugt Channel-Metadaten fuer alle Kanaele, und die Release-Skripte (Manifest/Verify/Publish/Published-Verify) nutzen fuer Beta-Versionen deterministisch `beta.yml` statt einer impliziten `latest.yml`-Annahme. Zusaetzlich wurde `update-not-available` Logging mit current/remote Version ergaenzt, damit Nicht-Erkennung auf Testsystemen sofort nachvollziehbar ist. Release-Version: 0.4.17-beta.46. |
 | **BACKLOG-098 GPU-Erkennung fuer lokale LLM-Empfehlungen gehaertet** | SEALED | Windows-GPU-Erkennung fuer den Local-LLM-Hardwarecheck wurde von einer Einzelabfrage auf eine robuste Kette erweitert (`nvidia-smi`, CIM/PowerShell, `wmic`, Registry, `dxdiag`). Remote-/virtuelle Adapter werden ausgefiltert, VRAM-Herkunft und Sicherheit werden im Backend mitgeliefert und im Wizard als Debug-Evidence angezeigt. Bei unsicherem VRAM wird die Anzeige jetzt ehrlich als "nicht sicher ermittelbar" markiert; bekannte Kartenprofile (u. a. RX 7700 XT) erhalten einen Heuristik-Fallback. Validation: py_compile PASS, fokussierte pytest 7/7 PASS, Vite-Build PASS. Release-Version: 0.4.17-beta.45. |
 | **BACKLOG-097 Lokales LLM Setup erneut ausfuehrbar machen** | SEALED | Der Local-LLM-Setup-Button laesst sich jetzt erneut ausloesen, der Hardwarecheck nutzt die aktuelle Ollama-Library und die Empfehlungen enthalten zusaetzlich zwei Coding/Vibecoding-Modelle. Use-Case-Texte sind deutsch, und fehlende Groessenangaben erscheinen als Klartext statt `0 GB`. Final Audit: PASS; Validation: py_compile PASS, focused pytest PASS, Logs sauber. Release-Version: 0.4.17-beta.44. |
