@@ -65,6 +65,38 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 
 ## Run Log
 
+### BACKLOG-097 - Lokales LLM Setup erneut ausfuehrbar machen - Documentation Sync Note
+
+- **Datum**: 2026-05-27
+- **Quelle**: Backlog / Documentation Update
+- **Artefakte**: `documentation/backlog/BACKLOG.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `WHAT_I_LEARNED.md`
+- **Getestete Faehigkeit**: Janus Local-LLM Hardware-Rescan, Ollama-Library Recommendation Refresh und Dokumentationsabschluss
+- **Pipeline-Route**: final audit -> documentation update -> backlog sync
+- **Status**: PASS
+- **Summary**: BACKLOG-097 wurde in DONE verschoben, Dashboard synchronisiert und die Dokumentationsmarker fuer Audit, Projektstatus, Changelog, Registry und Wissensbasis wurden nachgezogen.
+- **Security Gate**: PASS - reine Produkt-/Dokumentationsaenderungen, keine neue Risikoerhoehung.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+- **UX-Ergebnis**: Local-LLM-Rescan bleibt erneut ausfuehrbar, Empfehlungen sind aktuelle Ollama-Library-Treffer plus zwei Coding/Vibecoding-Modelle, Beschreibungen und Use-Cases sind deutsch und fehlende Groessenangaben sind klar lesbar.
+- **Intent-/Skill-Routing-Ergebnis**: Der Setup-Flow zeigt nun frische, hardwareangepasste Empfehlungen statt einer statischen Liste.
+- **Kosten-/Token-Ergebnis**: N/A
+- **Capability-Erklaerfaehigkeit**: PASS
+- **Findings**:
+  - Keine
+- **Sofortfixes**:
+  - Keine
+- **Backlog-Follow-ups**:
+  - Keine
+- **Nebenbefunde ausserhalb TestScope**:
+  - Bestehende SUPABASE_URL-Upload-Warnungen und alte Frontend-Sandbox/CSP-Meldungen bleiben als Umgebungsrauschen im Log sichtbar, beeinflussen BACKLOG-097 aber nicht.
+- **Optimierungspotential fuer Testpipeline**:
+  - Keine
+- **Abschluss**:
+  - Diamond Confidence Score: 9/10
+  - Production Confidence: 95%
+  - Gesamtergebnis: PASS
+
 ### BACKLOG-096 - Chat-Header-Modellwahl beim neuen Chat im selben Fenster beibehalten - Documentation Sync Note
 
 - **Datum**: 2026-05-27

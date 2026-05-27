@@ -4,6 +4,14 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Backlog Closures
 
+### BACKLOG-097 - Lokales LLM Setup erneut ausfuehrbar machen
+
+- **Status**: DONE
+- **Final Audit**: `documentation/test-runs/BACKLOG-097_final_audit.md` (PASS)
+- **Task**: `documentation/tasks/backlog_BACKLOG-097_lokales_llm_setup_erneut_ausfuehrbar_machen.md`
+- **Validation**: Der Local-LLM-Setup-Flow laesst sich erneut ausloesen, die Empfehlungen kommen aus der aktuellen Ollama-Library, zwei Coding/Vibecoding-Modelle werden zusaetzlich angehaengt, Use-Case-Texte sind deutsch und fehlende Groessen erscheinen als Klartext statt `0 GB`.
+- **Changed Files**: `backend/services/ollama_manager.py`, `backend/tests/test_ollama_manager_recommendations.py`, `frontend/src/components/Settings/LocalLLMWizard.tsx`, `documentation/backlog/BACKLOG.md`, `documentation/tasks/backlog_BACKLOG-097_lokales_llm_setup_erneut_ausfuehrbar_machen.md`.
+
 ### BACKLOG-096 - Chat-Header-Modellwahl beim neuen Chat im selben Fenster beibehalten
 
 - **Status**: DONE

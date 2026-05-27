@@ -1,4 +1,5 @@
 import logging
+import html
 import os
 import platform
 import re
@@ -21,6 +22,7 @@ class OllamaManager:
     OLLAMA_INSTALL_URL = "https://ollama.com/download"
     OLLAMA_REGISTRY_BASE_URL = "https://registry.ollama.ai/v2"
     OLLAMA_GITHUB_RELEASES_URL = "https://api.github.com/repos/ollama/ollama/releases/latest"
+    OLLAMA_SEARCH_URL = "https://ollama.com/search?sort=newest"
 
     _MODEL_MATRIX = {
         "low": [
@@ -121,6 +123,75 @@ class OllamaManager:
         "mistral-nemo",
         "qwen2.5",
         "gemma2",
+    }
+
+    _CODING_MODEL_MATRIX = {
+        "low": [
+            {
+                "name": "Qwen 2.5 Coder (3B)",
+                "id": "qwen2.5-coder:3b",
+                "size_gb": 2.0,
+                "description": "Leichtes Coding-Modell fuer kleine Codeaenderungen, Snippets und schnelle lokale Iterationen.",
+                "use_case": "Vibecoding auf schwacher Hardware",
+                "tools_supported": True,
+                "source": "janus_coding_profile",
+                "category": "coding",
+            },
+            {
+                "name": "CodeGemma (2B)",
+                "id": "codegemma:2b",
+                "size_gb": 1.4,
+                "description": "Sehr kleines Coding-Modell fuer kompakte technische Aufgaben und schnelle Codevorschlaege.",
+                "use_case": "Ultra-Light Coding und lokale Tests",
+                "tools_supported": False,
+                "source": "janus_coding_profile",
+                "category": "coding",
+            },
+        ],
+        "mid": [
+            {
+                "name": "Qwen 2.5 Coder (7B)",
+                "id": "qwen2.5-coder:7b",
+                "size_gb": 4.7,
+                "description": "Coding-starker Allrounder fuer lokale Entwicklung, Refactoring und agentische Codeaufgaben.",
+                "use_case": "Vibecoding, Refactoring und technische Analyse",
+                "tools_supported": True,
+                "source": "janus_coding_profile",
+                "category": "coding",
+            },
+            {
+                "name": "DeepSeek Coder (6.7B)",
+                "id": "deepseek-coder:6.7b",
+                "size_gb": 4.0,
+                "description": "Effizientes Coding-Modell fuer Softwareentwicklung, Logik und Janus-Erweiterungen.",
+                "use_case": "Technische Umsetzung und Code-Navigation",
+                "tools_supported": True,
+                "source": "janus_coding_profile",
+                "category": "coding",
+            },
+        ],
+        "high": [
+            {
+                "name": "Qwen 2.5 Coder (14B)",
+                "id": "qwen2.5-coder:14b",
+                "size_gb": 8.2,
+                "description": "Staerkeres Coding-Modell fuer groessere Refactorings, Architekturfragen und mehrschrittige Codearbeit.",
+                "use_case": "Vibecoding mit hoeherer Codequalitaet",
+                "tools_supported": True,
+                "source": "janus_coding_profile",
+                "category": "coding",
+            },
+            {
+                "name": "DeepSeek Coder (6.7B)",
+                "id": "deepseek-coder:6.7b",
+                "size_gb": 4.0,
+                "description": "Effizientes Coding-Modell fuer Softwareentwicklung, Logik und Janus-Erweiterungen.",
+                "use_case": "Technische Umsetzung und Code-Navigation",
+                "tools_supported": True,
+                "source": "janus_coding_profile",
+                "category": "coding",
+            },
+        ],
     }
 
     def __init__(self) -> None:
@@ -336,6 +407,13 @@ class OllamaManager:
         gpu_info: Dict[str, Any],
     ) -> List[Dict[str, Any]]:
         reasoning_priority = self._is_reasoning_priority_node(active_node, gpu_info)
+        live_recommendations = self._get_live_library_recommendations(
+            profile=profile,
+            reasoning_priority=reasoning_priority,
+        )
+        if live_recommendations:
+            return live_recommendations
+
         source_profile = "high" if reasoning_priority else profile
         base = list(self._MODEL_MATRIX.get(source_profile, self._MODEL_MATRIX["mid"]))
         if not reasoning_priority:
@@ -350,6 +428,209 @@ class OllamaManager:
             return (reasoning_high, strong_size, size_gb + penalty_small_allrounder)
 
         return sorted(base, key=_rank, reverse=True)
+
+    def _get_live_library_recommendations(self, *, profile: str, reasoning_priority: bool) -> List[Dict[str, Any]]:
+        library_models = self._fetch_ollama_library_models()
+        if not library_models:
+            return []
+
+        max_params = self._max_recommended_params_b(profile, reasoning_priority)
+        recommendations: List[Dict[str, Any]] = []
+        seen_ids: set[str] = set()
+
+        for model in library_models:
+            model_name = str(model.get("name") or "").strip()
+            if not model_name:
+                continue
+            sizes_b = [size for size in model.get("sizes_b", []) if isinstance(size, (int, float))]
+            eligible_sizes = [size for size in sizes_b if size <= max_params]
+            if sizes_b and not eligible_sizes:
+                continue
+
+            selected_size = max(eligible_sizes) if eligible_sizes else None
+            model_id = f"{model_name}:{self._format_size_tag(selected_size)}" if selected_size else model_name
+            if model_id in seen_ids:
+                continue
+            seen_ids.add(model_id)
+
+            capabilities = {str(capability).lower() for capability in model.get("capabilities", [])}
+            tools_supported = "tools" in capabilities or "tool" in capabilities
+            thinking = "thinking" in capabilities
+            if reasoning_priority and not (tools_supported or thinking):
+                continue
+
+            recommendations.append(
+                {
+                    "name": self._humanize_ollama_model_name(model_name),
+                    "id": model_id,
+                    "size_gb": self._estimate_model_size_gb(selected_size),
+                    "description": self._build_live_model_description(model_name, capabilities, selected_size),
+                    "use_case": self._build_live_model_use_case(capabilities, selected_size),
+                    "tools_supported": tools_supported,
+                    "reasoning_capability": "high" if thinking else "standard",
+                    "source": "ollama_library",
+                }
+            )
+            if len(recommendations) >= 6:
+                break
+
+        recommendations.extend(
+            self._get_coding_recommendations(
+                profile=profile,
+                reasoning_priority=reasoning_priority,
+                seen_ids=seen_ids,
+            )
+        )
+        return recommendations
+
+    def _get_coding_recommendations(
+        self,
+        *,
+        profile: str,
+        reasoning_priority: bool,
+        seen_ids: set[str],
+    ) -> List[Dict[str, Any]]:
+        source_profile = "high" if reasoning_priority else profile
+        candidates = self._CODING_MODEL_MATRIX.get(source_profile, self._CODING_MODEL_MATRIX["mid"])
+        selected: List[Dict[str, Any]] = []
+        for candidate in candidates:
+            model_id = str(candidate.get("id") or "")
+            if not model_id or model_id in seen_ids:
+                continue
+            seen_ids.add(model_id)
+            selected.append(dict(candidate))
+            if len(selected) >= 2:
+                break
+        return selected
+
+    def _fetch_ollama_library_models(self) -> List[Dict[str, Any]]:
+        try:
+            response = requests.get(self.OLLAMA_SEARCH_URL, timeout=8)
+            response.raise_for_status()
+        except Exception as exc:
+            logger.warning("Could not fetch latest Ollama library search results: %s", exc)
+            return []
+
+        html_text = response.text or ""
+        blocks = re.findall(r'<li\b[^>]*x-test-model[^>]*>(.*?)</li>', html_text, flags=re.IGNORECASE | re.DOTALL)
+        parsed: List[Dict[str, Any]] = []
+        for block in blocks:
+            title_match = re.search(
+                r'<span\b[^>]*x-test-search-response-title[^>]*>(.*?)</span>',
+                block,
+                flags=re.IGNORECASE | re.DOTALL,
+            )
+            if not title_match:
+                continue
+            name = self._strip_html(title_match.group(1)).strip()
+            if not name:
+                continue
+
+            desc_match = re.search(r'<p\b[^>]*text-neutral-800[^>]*>(.*?)</p>', block, flags=re.IGNORECASE | re.DOTALL)
+            description = self._strip_html(desc_match.group(1)).strip() if desc_match else ""
+            capabilities = [
+                self._strip_html(match).strip().lower()
+                for match in re.findall(
+                    r'<span\b[^>]*x-test-capability[^>]*>(.*?)</span>',
+                    block,
+                    flags=re.IGNORECASE | re.DOTALL,
+                )
+            ]
+            size_labels = [
+                self._strip_html(match).strip().lower()
+                for match in re.findall(
+                    r'<span\b[^>]*x-test-size[^>]*>(.*?)</span>',
+                    block,
+                    flags=re.IGNORECASE | re.DOTALL,
+                )
+            ]
+            sizes_b = [size for size in (self._parse_param_size_b(label) for label in size_labels) if size is not None]
+            parsed.append(
+                {
+                    "name": name,
+                    "description": description,
+                    "capabilities": capabilities,
+                    "sizes_b": sizes_b,
+                }
+            )
+
+        return parsed
+
+    @staticmethod
+    def _strip_html(value: str) -> str:
+        text = re.sub(r"<[^>]+>", " ", value or "")
+        return re.sub(r"\s+", " ", html.unescape(text)).strip()
+
+    @staticmethod
+    def _parse_param_size_b(label: str) -> Optional[float]:
+        match = re.search(r"(\d+(?:\.\d+)?)\s*b\b", str(label or "").lower())
+        if not match:
+            return None
+        return float(match.group(1))
+
+    @staticmethod
+    def _max_recommended_params_b(profile: str, reasoning_priority: bool) -> float:
+        if reasoning_priority:
+            return 40.0
+        return {
+            "low": 4.0,
+            "mid": 14.0,
+            "high": 32.0,
+        }.get(profile, 14.0)
+
+    @staticmethod
+    def _format_size_tag(size_b: Optional[float]) -> str:
+        if size_b is None:
+            return "latest"
+        if float(size_b).is_integer():
+            return f"{int(size_b)}b"
+        return f"{size_b:g}b"
+
+    @staticmethod
+    def _estimate_model_size_gb(size_b: Optional[float]) -> float:
+        if size_b is None:
+            return 0.0
+        return round(float(size_b) * 0.65, 1)
+
+    @staticmethod
+    def _humanize_ollama_model_name(model_id: str) -> str:
+        return " ".join(part.upper() if len(part) <= 3 else part.capitalize() for part in re.split(r"[-_]+", model_id))
+
+    @staticmethod
+    def _build_live_model_description(model_name: str, capabilities: set[str], size_b: Optional[float]) -> str:
+        capability_parts: List[str] = []
+        if "tools" in capabilities:
+            capability_parts.append("Tool-Calling")
+        if "thinking" in capabilities:
+            capability_parts.append("Reasoning")
+        if "vision" in capabilities:
+            capability_parts.append("Vision")
+
+        capability_text = ", ".join(capability_parts) if capability_parts else "allgemeine lokale Assistenz"
+        if size_b:
+            return f"Aktuelles Ollama-Modell fuer {capability_text}, passend im {OllamaManager._format_size_tag(size_b).upper()}-Profil."
+        return f"Aktuelles Ollama-Modell fuer {capability_text}."
+
+    @staticmethod
+    def _build_live_model_use_case(capabilities: set[str], size_b: Optional[float]) -> str:
+        size_label = OllamaManager._format_size_tag(size_b).upper() if size_b else ""
+        has_tools = "tools" in capabilities
+        has_thinking = "thinking" in capabilities
+        has_vision = "vision" in capabilities
+
+        if has_tools and has_thinking and has_vision:
+            return f"Janus Skills, mehrstufige Tool-Aufgaben und Bildanalyse{f' auf {size_label}-Hardware' if size_label else ''}"
+        if has_tools and has_thinking:
+            return f"Agentische Janus-Workflows, Planung und strukturierte Tool-Nutzung{f' im {size_label}-Profil' if size_label else ''}"
+        if has_tools and has_vision:
+            return f"Lokale Assistenz mit Tool-Nutzung und visueller Analyse{f' im {size_label}-Profil' if size_label else ''}"
+        if has_tools:
+            return f"Zuverlaessige Janus Skills, Tool-Aufrufe und lokale Automatisierung{f' im {size_label}-Profil' if size_label else ''}"
+        if has_thinking:
+            return f"Komplexe Fragen, Planung und analytische Aufgaben{f' im {size_label}-Profil' if size_label else ''}"
+        if has_vision:
+            return f"Lokale Bildanalyse und multimodale Aufgaben{f' im {size_label}-Profil' if size_label else ''}"
+        return f"Alltaegliche lokale Chat- und Assistenzaufgaben{f' im {size_label}-Profil' if size_label else ''}"
 
     def _is_reasoning_priority_node(self, active_node: Dict[str, Any], gpu_info: Dict[str, Any]) -> bool:
         if self._is_rolf_node(active_node):

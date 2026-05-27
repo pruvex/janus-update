@@ -77,10 +77,49 @@ Dashboard-Regeln:
 ## NEEDS INFO
 
 ## READY
-
 ## IN PROGRESS
 
 ## DONE
+
+### BACKLOG-097 - Lokales LLM Setup erneut ausfuehrbar machen
+
+- **Typ:** CHANGE
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-05-27
+- **Aktualisiert:** 2026-05-27
+- **Kurzbeschreibung:** Der Button `Lokales LLM einrichten` in den Einstellungen soll nach einer ersten Einrichtung nicht dauerhaft ausgegraut bleiben. Nutzer sollen spaeter erneut einen Hardwarecheck starten koennen, damit neue Hardware oder neue lokal verfuegbare Modelle beruecksichtigt werden.
+- **Erwartetes Verhalten:** Der Button bleibt bzw. wird erneut verfuegbar und startet einen frischen Hardware-Scan. Danach wird die aktuellste Ollama-Modellliste abgeglichen und daraus werden passende Empfehlungen erstellt, ohne bestehende installierte lokale LLMs oder gespeicherte Nodes anderer Rechner zu verlieren.
+- **Tatsaechliches Verhalten:** Nach einmaliger lokaler LLM-Einrichtung ist der Button ausgegraut und kann nicht mehr genutzt werden, obwohl sich Hardware und Modellangebot aendern koennen.
+- **Reproduktion / Kontext:** In den Einstellungen unter `Lokales LLM` einmal den Setup-Flow mit Hardwarecheck und Modellinstallation ausfuehren. Danach ist `Lokales LLM einrichten` deaktiviert; ein erneuter Hardwarecheck mit aktualisierten Ollama-Empfehlungen ist nicht erreichbar.
+- **Betroffener Bereich:** Frontend / Einstellungen / Lokales LLM Setup / Hardwarecheck / Ollama-Modellabgleich
+- **Nachweise:** User Intake vom 2026-05-27.
+- **Akzeptanzkriterien:**
+  - [ ] `Lokales LLM einrichten` ist auch nach bereits erfolgter Einrichtung erneut nutzbar oder bietet eine gleichwertige Re-Scan-Aktion.
+  - [ ] Ein erneuter Start fuehrt einen aktuellen Hardwarecheck aus und verwendet nicht nur das alte Scan-Ergebnis.
+  - [ ] Die Empfehlungen werden gegen die aktuell verfuegbare Ollama-Modellliste abgeglichen.
+  - [ ] Bereits installierte lokale Modelle und gespeicherte Nodes anderer Rechner bleiben erhalten und werden im Ergebnis sinnvoll beruecksichtigt.
+  - [ ] Die UI macht klar, dass ein erneuter Scan/Abgleich moeglich ist, ohne den Nutzer zum Zuruecksetzen der lokalen LLM-Konfiguration zu zwingen.
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Kernidee: Lokales-LLM-Setup ist kein einmaliger Wizard, sondern ein wiederholbarer Diagnose- und Empfehlungsflow, weil Hardware und Modellangebot dynamisch sind.
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Klar abgegrenzter UI-/State-Flow mit einmaliger Task-Spec und boundedem Risiko; der wiederholbare Hardware-Scan ist direkt vor der Umsetzung verifizierbar.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-05-27
+- **Handoff:** documentation/tasks/backlog_BACKLOG-097_lokales_llm_setup_erneut_ausfuehrbar_machen.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-27
+- **Completed in version:** 0.4.17-beta.43
+- **Completed by task:** documentation/tasks/backlog_BACKLOG-097_lokales_llm_setup_erneut_ausfuehrbar_machen.md
+- **Final audit:** PASS - `documentation/test-runs/BACKLOG-097_final_audit.md`
+- **Validation evidence:** `python -m py_compile backend/services/ollama_manager.py`; `python -m pytest backend/tests/test_ollama_manager_recommendations.py -q`; manuelle Janus-Bestaetigung; Logs `documentation/logs/janus_backend.log` und `documentation/logs/janus_frontend.log`
 
 ### BACKLOG-096 - Chat-Header-Modellwahl beim neuen Chat im selben Fenster beibehalten
 

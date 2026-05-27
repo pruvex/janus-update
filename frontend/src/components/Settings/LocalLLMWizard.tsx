@@ -8,7 +8,7 @@ type OllamaCheckResponse = {
 type RecommendedModel = {
   name: string;
   id: string;
-  size_gb: number;
+  size_gb?: number | null;
   description: string;
   use_case: string;
   tools_supported?: boolean;
@@ -185,7 +185,11 @@ const LocalLLMWizard: React.FC = () => {
     };
   }, []);
 
-  const canStart = !isBootstrapping && (phase === 'idle' || phase === 'install_needed' || phase === 'error' || phase === 'done');
+  const canStart =
+    !isBootstrapping &&
+    phase !== 'checking' &&
+    phase !== 'analyzing' &&
+    phase !== 'pulling';
 
   const buildNodeQualifiedModelId = (modelId: string, nodeId?: string): string => {
     const normalizedNodeId = (nodeId || '').trim();
@@ -966,6 +970,10 @@ const LocalLLMWizard: React.FC = () => {
               const skillReady = isSkillReady(model.id, model.tools_supported);
               const isDeleting = activeDeleteModel === resolveInstalledModelId(model.id);
               const isDisabled = (isInstalled && !hasUpdate) || phase === 'pulling';
+              const sizeLabel =
+                typeof model.size_gb === 'number' && model.size_gb > 0
+                  ? `${model.size_gb} GB`
+                  : 'Groessenangabe nicht verfuegbar';
 
               let buttonLabel = 'Modell herunterladen';
               let buttonClassName = 'local-llm-download-btn';
@@ -986,7 +994,7 @@ const LocalLLMWizard: React.FC = () => {
                   <h4>{model.name}</h4>
                   {skillReady && <span className="local-llm-skill-ready-badge">Skill-Ready</span>}
                   {hasUpdate && <span className="local-llm-update-badge">Update verfuegbar</span>}
-                  <p className="size">Groesse: {model.size_gb} GB</p>
+                  <p className="size">Groesse: {sizeLabel}</p>
                   <p>{model.description}</p>
                   <p className="use-case">Use-Case: {model.use_case}</p>
                   <div className="local-llm-model-node-target">
