@@ -1,6 +1,6 @@
 ﻿# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-27 (BACKLOG-097 Lokales LLM Setup erneut ausfuehrbar machen â€” 0.4.17-beta.44)
+**Aktualisiert:** 2026-05-27 (BACKLOG-098 GPU-Erkennung fuer lokale LLM-Empfehlungen gehaertet - 0.4.17-beta.45)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **BACKLOG-098 GPU-Erkennung fuer lokale LLM-Empfehlungen gehaertet** | SEALED | Windows-GPU-Erkennung fuer den Local-LLM-Hardwarecheck wurde von einer Einzelabfrage auf eine robuste Kette erweitert (`nvidia-smi`, CIM/PowerShell, `wmic`, Registry, `dxdiag`). Remote-/virtuelle Adapter werden ausgefiltert, VRAM-Herkunft und Sicherheit werden im Backend mitgeliefert und im Wizard als Debug-Evidence angezeigt. Bei unsicherem VRAM wird die Anzeige jetzt ehrlich als "nicht sicher ermittelbar" markiert; bekannte Kartenprofile (u. a. RX 7700 XT) erhalten einen Heuristik-Fallback. Validation: py_compile PASS, fokussierte pytest 7/7 PASS, Vite-Build PASS. Release-Version: 0.4.17-beta.45. |
 | **BACKLOG-097 Lokales LLM Setup erneut ausfuehrbar machen** | SEALED | Der Local-LLM-Setup-Button laesst sich jetzt erneut ausloesen, der Hardwarecheck nutzt die aktuelle Ollama-Library und die Empfehlungen enthalten zusaetzlich zwei Coding/Vibecoding-Modelle. Use-Case-Texte sind deutsch, und fehlende Groessenangaben erscheinen als Klartext statt `0 GB`. Final Audit: PASS; Validation: py_compile PASS, focused pytest PASS, Logs sauber. Release-Version: 0.4.17-beta.44. |
 | **BACKLOG-096 Chat-Header-Modellwahl beim neuen Chat im selben Fenster beibehalten** | SEALED | Neuer Chat im selben Fenster behaelt jetzt die explizite Header-Modellwahl, auch fuer Gemini-Faelle; Renderer-Console-Logs werden zusaetzlich nach `documentation/logs/janus_frontend.log` gespiegelt. Final Audit: PASS; Validation: node syntax checks PASS, Dashboard Sync PASS, manuelle Janus-Bestaetigung fuer GPT und Gemini. |
 | **BACKLOG-095 Einheitliche Antwortform fuer Wetteranfragen** | SEALED WITH FIXES | Wetterantworten fuer GPT/HPZ und Gemini sind jetzt auf ein gemeinsames Bulletpoint-Format mit klarer Quellenzeile gezogen. Final Audit: PASS WITH FIXES; Backlog DONE; Validation: fokussierte Weather-Regression und py_compile PASS. |

@@ -431,6 +431,15 @@
   100% { background-position: 200% 0; }
 }
 
+.local-llm-hardware-summary {
+  margin: 8px 0;
+}
+
+.local-llm-hardware-debug {
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
 .local-llm-model-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

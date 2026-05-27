@@ -23,6 +23,9 @@ type HardwareResponse = {
       type: string;
       vram_gb?: number | null;
       note?: string;
+      detection_source?: string;
+      vram_source?: string;
+      vram_confidence?: string;
     };
     platform: string;
   };
@@ -256,8 +259,29 @@ const LocalLLMWizard: React.FC = () => {
 
   const hardwareSummary = useMemo(() => {
     if (!analysis) return '';
-    const gpuName = analysis.hardware.gpu?.name || 'Unbekannt';
-    return `Dein PC hat ${analysis.hardware.ram_gb} GB RAM und eine ${gpuName}. Wir haben die optimalen Modelle für dich gefunden.`;
+    const gpu = analysis.hardware.gpu;
+    const gpuName = gpu?.name || 'Unbekannt';
+    const hasDedicatedGpu = gpu?.type && !['none', ''].includes(String(gpu.type).toLowerCase());
+    const hasReliableVram = typeof gpu?.vram_gb === 'number' && gpu.vram_gb > 0;
+    const vramConfidence = String(gpu?.vram_confidence || '').toLowerCase();
+    const vramText = hasReliableVram
+      ? ` mit ${gpu.vram_gb} GB VRAM${vramConfidence === 'medium' ? ' (geschaetzt)' : ''}`
+      : ' mit nicht sicher ermittelbarem VRAM';
+    const gpuText = hasDedicatedGpu
+      ? `die Grafikkarte ${gpuName}${vramText}`
+      : 'keine dedizierte Grafikkarte';
+    return `Dein PC hat ${analysis.hardware.ram_gb} GB RAM und ${gpuText}. Wir haben die passenden Modelle fuer dich gefunden.`;
+  }, [analysis]);
+
+  const hardwareDebugSummary = useMemo(() => {
+    if (!analysis) return '';
+    const gpu = analysis.hardware.gpu;
+    const parts = [
+      gpu?.detection_source ? `GPU-Quelle: ${gpu.detection_source}` : '',
+      gpu?.vram_source ? `VRAM-Quelle: ${gpu.vram_source}` : '',
+      gpu?.vram_confidence ? `Sicherheit: ${gpu.vram_confidence}` : '',
+    ].filter(Boolean);
+    return parts.join(' | ');
   }, [analysis]);
 
   const sortedInstalledModels = useMemo(() => {
@@ -961,6 +985,9 @@ const LocalLLMWizard: React.FC = () => {
       {(phase === 'ready' || phase === 'pulling' || phase === 'done') && analysis && (
         <div className="local-llm-results">
           <p className="local-llm-hardware-summary">{hardwareSummary}</p>
+          {hardwareDebugSummary && (
+            <p className="local-llm-hardware-summary local-llm-hardware-debug">{hardwareDebugSummary}</p>
+          )}
 
           <div className="local-llm-model-grid">
             {analysis.recommended_models.map((model) => {

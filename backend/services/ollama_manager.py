@@ -1,10 +1,12 @@
 import logging
 import html
+import json
 import os
 import platform
 import re
 import shutil
 import subprocess
+import tempfile
 import threading
 import time
 from datetime import datetime
@@ -1443,7 +1445,14 @@ class OllamaManager:
         if generic:
             return generic
 
-        return {"type": "none", "name": "Keine dedizierte GPU erkannt", "vram_gb": None}
+        return {
+            "type": "none",
+            "name": "Keine dedizierte GPU erkannt",
+            "vram_gb": None,
+            "detection_source": "none",
+            "vram_source": "none",
+            "vram_confidence": "none",
+        }
 
     @staticmethod
     def _detect_nvidia_gpu() -> Optional[Dict[str, Any]]:
@@ -1466,7 +1475,14 @@ class OllamaManager:
             first_line = (result.stdout or "").splitlines()[0]
             name, memory_mb = [part.strip() for part in first_line.split(",", maxsplit=1)]
             memory_gb = round(float(memory_mb) / 1024.0, 1)
-            return {"type": "nvidia", "name": name, "vram_gb": memory_gb}
+            return {
+                "type": "nvidia",
+                "name": name,
+                "vram_gb": memory_gb,
+                "detection_source": "nvidia-smi",
+                "vram_source": "nvidia-smi",
+                "vram_confidence": "high",
+            }
         except Exception:
             return None
 
@@ -1499,6 +1515,9 @@ class OllamaManager:
                 "name": cpu_brand,
                 "vram_gb": unified_gb,
                 "note": "Unified Memory (geteilt zwischen CPU/GPU)",
+                "detection_source": "sysctl",
+                "vram_source": "unified_memory",
+                "vram_confidence": "medium",
             }
         except Exception:
             return None
@@ -1513,6 +1532,13 @@ class OllamaManager:
             controllers = OllamaManager._read_windows_video_controllers()
             if not controllers:
                 return None
+            controllers = [
+                controller
+                for controller in controllers
+                if OllamaManager._is_preferred_windows_gpu_name(str(controller.get("name") or ""))
+            ]
+            if not controllers:
+                return None
 
             def gpu_score(item: Dict[str, Any]) -> tuple[int, float]:
                 name = str(item.get("name") or "").lower()
@@ -1524,6 +1550,14 @@ class OllamaManager:
             best = max(controllers, key=gpu_score)
             best_name = str(best.get("name") or "Unbekannt")
             best_vram = best.get("vram_gb")
+            detection_source = str(best.get("detection_source") or "windows")
+            vram_source = str(best.get("vram_source") or ("windows_adapter_ram" if best_vram else "none"))
+            vram_confidence = str(best.get("vram_confidence") or ("medium" if best_vram else "none"))
+            inferred_vram = OllamaManager._infer_vram_from_gpu_name(best_name)
+            if inferred_vram is not None and (best_vram is None or float(best_vram or 0.0) < inferred_vram):
+                best_vram = inferred_vram
+                vram_source = "gpu_name_heuristic"
+                vram_confidence = "medium"
 
             gpu_type = "generic"
             best_name_l = best_name.lower()
@@ -1534,7 +1568,14 @@ class OllamaManager:
             elif "intel" in best_name_l:
                 gpu_type = "intel"
 
-            return {"type": gpu_type, "name": best_name, "vram_gb": best_vram}
+            return {
+                "type": gpu_type,
+                "name": best_name,
+                "vram_gb": best_vram,
+                "detection_source": detection_source,
+                "vram_source": vram_source,
+                "vram_confidence": vram_confidence,
+            }
         except Exception:
             return None
 
@@ -1543,6 +1584,50 @@ class OllamaManager:
     @staticmethod
     def _read_windows_video_controllers() -> List[Dict[str, Any]]:
         controllers: List[Dict[str, Any]] = []
+
+        try:
+            ps_result = subprocess.run(
+                [
+                    "powershell",
+                    "-NoProfile",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-Command",
+                    "Get-CimInstance Win32_VideoController | "
+                    "Select-Object Name,AdapterRAM,PNPDeviceID | ConvertTo-Json -Compress",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                check=True,
+            )
+            raw = (ps_result.stdout or "").strip()
+            if raw:
+                payload = json.loads(raw)
+                entries = payload if isinstance(payload, list) else [payload]
+                for entry in entries:
+                    if not isinstance(entry, dict):
+                        continue
+                    name = str(entry.get("Name") or "").strip()
+                    if not name:
+                        continue
+                    adapter_ram = entry.get("AdapterRAM")
+                    controllers.append(
+                        {
+                            "name": name,
+                            "vram_gb": OllamaManager._parse_windows_adapter_ram_gb(adapter_ram),
+                            "pnp_device_id": str(entry.get("PNPDeviceID") or "").strip() or None,
+                            "detection_source": "cim",
+                            "vram_source": "cim_adapter_ram" if adapter_ram else "none",
+                            "vram_confidence": "medium" if adapter_ram else "none",
+                        }
+                    )
+        except Exception:
+            pass
+
+        if OllamaManager._has_preferred_windows_gpu(controllers):
+            return controllers
+        controllers = []
 
         # Erforderliche Kompatibilitaet: Name-Abfrage ueber WMIC (auch fuer AMD).
         try:
@@ -1561,29 +1646,32 @@ class OllamaManager:
                 check=True,
             )
             lines = [line.strip() for line in (csv_result.stdout or "").splitlines() if line.strip()]
+            headers: List[str] = []
             for line in lines:
-                if line.lower().startswith("node"):
-                    continue
                 parts = [part.strip() for part in line.split(",")]
-                if len(parts) < 3:
+                if not headers:
+                    headers = [part.lower() for part in parts]
                     continue
-                name = parts[-2]
+                row = {headers[idx]: value for idx, value in enumerate(parts) if idx < len(headers)}
+                name = str(row.get("name") or "").strip()
                 if not name:
                     continue
 
-                adapter_ram_raw = parts[-1]
-                vram_gb: Optional[float] = None
-                if adapter_ram_raw.isdigit():
-                    adapter_ram = int(adapter_ram_raw)
-                    if adapter_ram > 0:
-                        vram_gb = round(float(adapter_ram) / (1024**3), 1)
-
-                controllers.append({"name": name, "vram_gb": vram_gb})
+                controllers.append(
+                    {
+                        "name": name,
+                        "vram_gb": OllamaManager._parse_windows_adapter_ram_gb(row.get("adapterram")),
+                        "detection_source": "wmic",
+                        "vram_source": "wmic_adapter_ram" if row.get("adapterram") else "none",
+                        "vram_confidence": "medium" if row.get("adapterram") else "none",
+                    }
+                )
         except Exception:
             pass
 
-        if controllers:
+        if OllamaManager._has_preferred_windows_gpu(controllers):
             return controllers
+        controllers = []
 
         # Fallback nur Name, falls AdapterRAM nicht geliefert wird.
         try:
@@ -1598,11 +1686,205 @@ class OllamaManager:
                 name = raw_line.strip()
                 if not name or name.lower() == "name":
                     continue
-                controllers.append({"name": name, "vram_gb": None})
+                controllers.append(
+                    {
+                        "name": name,
+                        "vram_gb": None,
+                        "detection_source": "wmic_name",
+                        "vram_source": "none",
+                        "vram_confidence": "none",
+                    }
+                )
+        except Exception:
+            pass
+
+        if OllamaManager._has_preferred_windows_gpu(controllers):
+            return controllers
+        controllers = []
+
+        controllers = OllamaManager._read_windows_video_controllers_from_registry()
+        if OllamaManager._has_preferred_windows_gpu(controllers):
+            return controllers
+
+        return OllamaManager._read_windows_video_controllers_from_dxdiag()
+
+    @staticmethod
+    def _has_preferred_windows_gpu(controllers: List[Dict[str, Any]]) -> bool:
+        return any(OllamaManager._is_preferred_windows_gpu_name(str(item.get("name") or "")) for item in controllers)
+
+    @staticmethod
+    def _read_windows_video_controllers_from_registry() -> List[Dict[str, Any]]:
+        try:
+            registry_result = subprocess.run(
+                [
+                    "powershell",
+                    "-NoProfile",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-Command",
+                    "Get-ItemProperty 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Video\\*\\0000' "
+                    "-ErrorAction SilentlyContinue | "
+                    "Where-Object { $_.'HardwareInformation.AdapterString' } | "
+                    "Select-Object @{Name='Name';Expression={[Text.Encoding]::Unicode.GetString($_.'HardwareInformation.AdapterString').Trim([char]0)}},"
+                    "@{Name='MemorySize';Expression={$_.'HardwareInformation.MemorySize'}} | ConvertTo-Json -Compress",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                check=True,
+            )
+            raw = (registry_result.stdout or "").strip()
+            if not raw:
+                return []
+            payload = json.loads(raw)
+            entries = payload if isinstance(payload, list) else [payload]
+            controllers: List[Dict[str, Any]] = []
+            for entry in entries:
+                if not isinstance(entry, dict):
+                    continue
+                name = str(entry.get("Name") or "").strip()
+                if not name:
+                    continue
+                memory_size = entry.get("MemorySize")
+                controllers.append(
+                    {
+                        "name": name,
+                        "vram_gb": OllamaManager._parse_windows_adapter_ram_gb(memory_size),
+                        "detection_source": "registry",
+                        "vram_source": "registry_memory_size" if memory_size else "none",
+                        "vram_confidence": "medium" if memory_size else "none",
+                    }
+                )
+            return controllers
         except Exception:
             return []
 
+    @staticmethod
+    def _read_windows_video_controllers_from_dxdiag() -> List[Dict[str, Any]]:
+        dxdiag = shutil.which("dxdiag") or "dxdiag"
+
+        report_path = ""
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as report:
+                report_path = report.name
+            subprocess.run(
+                [dxdiag, "/whql:off", "/t", report_path],
+                capture_output=True,
+                text=True,
+                timeout=20,
+                check=True,
+            )
+            with open(report_path, "r", encoding="utf-16", errors="ignore") as handle:
+                text = handle.read()
+            if not text.strip():
+                with open(report_path, "r", encoding="utf-8", errors="ignore") as handle:
+                    text = handle.read()
+            return OllamaManager._parse_dxdiag_video_controllers(text)
+        except Exception:
+            return []
+        finally:
+            if report_path:
+                try:
+                    os.unlink(report_path)
+                except Exception:
+                    pass
+
+    @staticmethod
+    def _parse_dxdiag_video_controllers(text: str) -> List[Dict[str, Any]]:
+        controllers: List[Dict[str, Any]] = []
+        blocks = re.split(r"\r?\n\s*-{5,}\s*\r?\n", text or "")
+        for block in blocks:
+            if "Card name:" not in block and "Chip type:" not in block:
+                continue
+            name_match = re.search(r"Card name:\s*(.+)", block)
+            if not name_match:
+                continue
+            name = name_match.group(1).strip()
+            if not name:
+                continue
+            memory_match = re.search(r"(?:Display Memory|Dedicated Memory):\s*([0-9]+)\s*MB", block, flags=re.IGNORECASE)
+            vram_gb = None
+            if memory_match:
+                vram_gb = round(float(memory_match.group(1)) / 1024.0, 1)
+            controllers.append(
+                {
+                    "name": name,
+                    "vram_gb": vram_gb,
+                    "detection_source": "dxdiag",
+                    "vram_source": "dxdiag_memory" if vram_gb else "none",
+                    "vram_confidence": "medium" if vram_gb else "none",
+                }
+            )
         return controllers
+
+    @staticmethod
+    def _parse_windows_adapter_ram_gb(raw_value: Any) -> Optional[float]:
+        try:
+            if raw_value is None:
+                return None
+            value = int(str(raw_value).strip())
+            if value <= 0:
+                return None
+            return round(float(value) / (1024**3), 1)
+        except Exception:
+            return None
+
+    @staticmethod
+    def _infer_vram_from_gpu_name(name: str) -> Optional[float]:
+        normalized = re.sub(r"[^a-z0-9]+", " ", str(name or "").lower())
+        normalized = re.sub(r"\b(?:r|tm)\b", " ", normalized)
+        normalized = re.sub(r"\s+", " ", normalized).strip()
+        known_cards = [
+            (r"\brx 7900 xtx\b", 24.0),
+            (r"\brx 7900 xt\b", 20.0),
+            (r"\brx 7900 gre\b", 16.0),
+            (r"\brx 7800 xt\b", 16.0),
+            (r"\brx 7700 xt\b", 12.0),
+            (r"\brx 7600 xt\b", 16.0),
+            (r"\brx 7600\b", 8.0),
+            (r"\brx 6950 xt\b", 16.0),
+            (r"\brx 6900 xt\b", 16.0),
+            (r"\brx 6800 xt\b", 16.0),
+            (r"\brx 6800\b", 16.0),
+            (r"\brx 6750 xt\b", 12.0),
+            (r"\brx 6700 xt\b", 12.0),
+            (r"\brx 6700\b", 10.0),
+            (r"\brx 6650 xt\b", 8.0),
+            (r"\brx 6600 xt\b", 8.0),
+            (r"\brx 6600\b", 8.0),
+            (r"\brx 5700 xt\b", 8.0),
+            (r"\brx 5700\b", 8.0),
+            (r"\brx 580\b", 8.0),
+            (r"\brtx 4090\b", 24.0),
+            (r"\brtx 4080 super\b", 16.0),
+            (r"\brtx 4080\b", 16.0),
+            (r"\brtx 5070 ti\b", 16.0),
+            (r"\brtx 5070\b", 12.0),
+            (r"\brtx 5060 ti\b", 16.0),
+            (r"\brtx 5060\b", 8.0),
+            (r"\brtx 4070 ti super\b", 16.0),
+            (r"\brtx 4070 ti\b", 12.0),
+            (r"\brtx 4070 super\b", 12.0),
+            (r"\brtx 4070\b", 12.0),
+            (r"\brtx 3090 ti\b", 24.0),
+            (r"\brtx 3090\b", 24.0),
+            (r"\brtx 3080 ti\b", 12.0),
+            (r"\brtx 3080\b", 10.0),
+            (r"\brtx 3070 ti\b", 8.0),
+            (r"\brtx 3070\b", 8.0),
+            (r"\brtx 3060 ti\b", 8.0),
+            (r"\brtx 3060\b", 12.0),
+            (r"\brtx 4060 ti\b", 8.0),
+            (r"\brtx 4060\b", 8.0),
+            (r"\bintel arc a770\b", 16.0),
+            (r"\bintel arc a750\b", 8.0),
+            (r"\bintel arc a580\b", 8.0),
+            (r"\bintel arc a380\b", 6.0),
+        ]
+        for pattern, vram_gb in known_cards:
+            if re.search(pattern, normalized):
+                return vram_gb
+        return None
 
     @staticmethod
     def _is_preferred_windows_gpu_name(name: str) -> bool:

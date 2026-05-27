@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+import json
+import subprocess
 
 from backend.services.ollama_manager import OllamaManager
 
@@ -63,6 +65,131 @@ def test_ranked_recommendations_use_latest_ollama_library_when_available(monkeyp
 
     coding_ids = [entry["id"] for entry in recommendations if entry.get("category") == "coding"]
     assert coding_ids == ["qwen2.5-coder:7b", "deepseek-coder:6.7b"]
+
+
+def test_windows_gpu_detection_uses_powershell_cim_for_amd_radeon(monkeypatch):
+    manager = OllamaManager()
+    payload = [
+        {
+            "Name": "AMD Radeon RX 7700 XT",
+            "AdapterRAM": 4293918720,
+            "PNPDeviceID": "PCI\\VEN_1002&DEV_747E",
+        }
+    ]
+
+    def fake_run(command, **kwargs):
+        if command[0] == "powershell":
+            return subprocess.CompletedProcess(command, 0, stdout=json.dumps(payload), stderr="")
+        raise AssertionError(f"unexpected command: {command}")
+
+    monkeypatch.setattr("backend.services.ollama_manager.platform.system", lambda: "Windows")
+    monkeypatch.setattr("backend.services.ollama_manager.subprocess.run", fake_run)
+
+    gpu = manager._detect_generic_gpu()
+
+    assert gpu == {
+        "type": "amd",
+        "name": "AMD Radeon RX 7700 XT",
+        "vram_gb": 12.0,
+        "detection_source": "cim",
+        "vram_source": "gpu_name_heuristic",
+        "vram_confidence": "medium",
+    }
+    assert manager._is_reasoning_priority_node({"id": "local"}, gpu) is True
+
+
+def test_windows_gpu_detection_parses_wmic_csv_by_header(monkeypatch):
+    manager = OllamaManager()
+    wmic_output = "\n".join(
+        [
+            "Node,AdapterRAM,Name",
+            "TEST-PC,12884901888,AMD Radeon RX 7700 XT",
+        ]
+    )
+
+    def fake_run(command, **kwargs):
+        if command[0] == "powershell":
+            raise FileNotFoundError("powershell unavailable")
+        if command[0] == "wmic" and "/format:csv" in command:
+            return subprocess.CompletedProcess(command, 0, stdout=wmic_output, stderr="")
+        raise AssertionError(f"unexpected command: {command}")
+
+    monkeypatch.setattr("backend.services.ollama_manager.platform.system", lambda: "Windows")
+    monkeypatch.setattr("backend.services.ollama_manager.subprocess.run", fake_run)
+
+    gpu = manager._detect_generic_gpu()
+
+    assert gpu == {
+        "type": "amd",
+        "name": "AMD Radeon RX 7700 XT",
+        "vram_gb": 12.0,
+        "detection_source": "wmic",
+        "vram_source": "wmic_adapter_ram",
+        "vram_confidence": "medium",
+    }
+
+
+def test_windows_gpu_detection_uses_registry_when_cim_and_wmic_only_report_remote_adapters(monkeypatch):
+    manager = OllamaManager()
+    calls = []
+    registry_payload = {
+        "Name": "NVIDIA GeForce RTX 4070 SUPER",
+        "MemorySize": 12884901888,
+    }
+
+    def fake_run(command, **kwargs):
+        calls.append(command)
+        if command[0] == "powershell" and "Get-CimInstance" in command[-1]:
+            return subprocess.CompletedProcess(
+                command,
+                0,
+                stdout=json.dumps({"Name": "Microsoft Remote Display Adapter", "AdapterRAM": None}),
+                stderr="",
+            )
+        if command[0] == "wmic" and "/format:csv" in command:
+            return subprocess.CompletedProcess(command, 0, stdout="Node,AdapterRAM,Name\nTEST,,Microsoft Remote Display Adapter", stderr="")
+        if command[0] == "wmic" and command[-1] == "name":
+            return subprocess.CompletedProcess(command, 0, stdout="Name\nMicrosoft Remote Display Adapter", stderr="")
+        if command[0] == "powershell" and "CurrentControlSet" in command[-1]:
+            return subprocess.CompletedProcess(command, 0, stdout=json.dumps(registry_payload), stderr="")
+        raise AssertionError(f"unexpected command: {command}")
+
+    monkeypatch.setattr("backend.services.ollama_manager.platform.system", lambda: "Windows")
+    monkeypatch.setattr("backend.services.ollama_manager.subprocess.run", fake_run)
+
+    gpu = manager._detect_generic_gpu()
+
+    assert gpu == {
+        "type": "nvidia",
+        "name": "NVIDIA GeForce RTX 4070 SUPER",
+        "vram_gb": 12.0,
+        "detection_source": "registry",
+        "vram_source": "registry_memory_size",
+        "vram_confidence": "medium",
+    }
+
+
+def test_dxdiag_parser_extracts_gpu_and_memory():
+    text = """
+---------------
+Display Devices
+---------------
+          Card name: Intel(R) Arc(TM) A770 Graphics
+       Display Memory: 16322 MB
+    Dedicated Memory: 16305 MB
+"""
+
+    controllers = OllamaManager._parse_dxdiag_video_controllers(text)
+
+    assert controllers == [
+        {
+            "name": "Intel(R) Arc(TM) A770 Graphics",
+            "vram_gb": 15.9,
+            "detection_source": "dxdiag",
+            "vram_source": "dxdiag_memory",
+            "vram_confidence": "medium",
+        }
+    ]
 
 
 def test_get_pull_status_falls_back_to_latest_key_for_same_model_and_node(monkeypatch):
