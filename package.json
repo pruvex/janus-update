@@ -1,6 +1,6 @@
 {
   "name": "janus-projekt",
-  "version": "0.4.17-beta.45",
+  "version": "0.4.17-beta.46",
   "description": "",
   "type": "module",
   "main": "main.electron.cjs",
@@ -79,6 +79,7 @@
     "appId": "de.pruvex.janus",
     "productName": "Janus Projekt",
     "artifactName": "janus-setup-${version}.${ext}",
+    "generateUpdatesFilesForAllChannels": true,
     "directories": {
       "output": "release"
     },
@@ -86,6 +87,7 @@
       "provider": "github",
       "owner": "pruvex",
       "repo": "janus-update",
+      "channel": "beta",
       "releaseType": "prerelease",
       "timeout": 600000
     },

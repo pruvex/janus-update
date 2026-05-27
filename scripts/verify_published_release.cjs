@@ -48,8 +48,18 @@ function parseArgs(argv) {
   };
 }
 
-function getExpectedAssets(version, manifest, latest) {
-  const installerName = manifest.assetName || latest.path || `janus-setup-${version}.exe`;
+function resolveChannelFile(version) {
+  if (/-alpha(\.|$)/i.test(version)) {
+    return 'alpha.yml';
+  }
+  if (/-beta(\.|$)/i.test(version)) {
+    return 'beta.yml';
+  }
+  return 'latest.yml';
+}
+
+function getExpectedAssets(version, manifest, channelData, channelFile) {
+  const installerName = manifest.assetName || channelData.path || `janus-setup-${version}.exe`;
   const expected = [
     {
       name: installerName,
@@ -58,10 +68,10 @@ function getExpectedAssets(version, manifest, latest) {
       role: 'installer',
     },
     {
-      name: 'latest.yml',
-      path: path.join(RELEASE_DIR, 'latest.yml'),
+      name: channelFile,
+      path: path.join(RELEASE_DIR, channelFile),
       required: true,
-      role: 'electron-latest-metadata',
+      role: 'electron-channel-metadata',
     },
     {
       name: 'janus-update-manifest.json',
@@ -135,25 +145,27 @@ function buildEvidenceMarkdown({ version, release, verification, missing, unexpe
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const packagePath = path.join(PROJECT_ROOT, 'package.json');
-  const latestPath = path.join(RELEASE_DIR, 'latest.yml');
   const manifestPath = path.join(RELEASE_DIR, 'janus-update-manifest.json');
 
   const pkg = readJson(packagePath, 'package.json');
-  const latest = readYaml(latestPath, 'latest.yml');
+  const channelFile = resolveChannelFile(pkg.version);
+  const channelPath = path.join(RELEASE_DIR, channelFile);
+  ensure(fs.existsSync(channelPath), `${channelFile} is missing in release directory`);
+  const channelData = readYaml(channelPath, channelFile);
   const manifest = readJson(manifestPath, 'janus-update-manifest.json');
   const version = pkg.version;
   const tagName = `v${version}`;
 
   ensure(typeof version === 'string' && version.length > 0, 'package.json.version missing');
-  ensure(latest.version === version, `latest.yml version mismatch: ${latest.version} !== ${version}`);
+  ensure(channelData.version === version, `${channelFile} version mismatch: ${channelData.version} !== ${version}`);
   ensure(manifest.version === version, `manifest version mismatch: ${manifest.version} !== ${version}`);
-  ensure(latest.path === manifest.assetName, `manifest asset mismatch: ${manifest.assetName} !== ${latest.path}`);
-  ensure(latest.sha512 === manifest.sha512, 'manifest/latest sha512 mismatch');
+  ensure(channelData.path === manifest.assetName, `manifest asset mismatch: ${manifest.assetName} !== ${channelData.path}`);
+  ensure(channelData.sha512 === manifest.sha512, `manifest/${channelFile} sha512 mismatch`);
 
   const token = process.env.GH_TOKEN;
   ensure(typeof token === 'string' && token.length > 0, 'GH_TOKEN environment variable is not set');
 
-  const expectedAssets = getExpectedAssets(version, manifest, latest);
+  const expectedAssets = getExpectedAssets(version, manifest, channelData, channelFile);
   for (const asset of expectedAssets) {
     ensure(fs.existsSync(asset.path), `Local release artifact missing: ${asset.path}`);
   }

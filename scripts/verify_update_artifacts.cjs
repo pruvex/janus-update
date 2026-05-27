@@ -38,60 +38,73 @@ function calculateHash(filePath, algorithm, encoding) {
   });
 }
 
+function resolveChannelFile(version) {
+  const isAlpha = /-alpha(\.|$)/i.test(version);
+  const isBeta = /-beta(\.|$)/i.test(version);
+  if (isAlpha && fs.existsSync(path.join(RELEASE_DIR, 'alpha.yml'))) {
+    return 'alpha.yml';
+  }
+  if (isBeta && fs.existsSync(path.join(RELEASE_DIR, 'beta.yml'))) {
+    return 'beta.yml';
+  }
+  return 'latest.yml';
+}
+
 async function main() {
   const pkgPath = path.join(PROJECT_ROOT, 'package.json');
-  const latestPath = path.join(RELEASE_DIR, 'latest.yml');
   const manifestPath = path.join(RELEASE_DIR, 'janus-update-manifest.json');
 
   ensure(fs.existsSync(pkgPath), `Missing package.json: ${pkgPath}`);
-  ensure(fs.existsSync(latestPath), `Missing latest.yml: ${latestPath}`);
   ensure(fs.existsSync(manifestPath), `Missing manifest: ${manifestPath}`);
 
   const pkg = readJson(pkgPath, 'package.json');
-  const latest = readYaml(latestPath, 'latest.yml');
+  const channelFile = resolveChannelFile(pkg.version);
+  const channelPath = path.join(RELEASE_DIR, channelFile);
+  ensure(fs.existsSync(channelPath), `Missing ${channelFile}: ${channelPath}`);
+
+  const channelData = readYaml(channelPath, channelFile);
   const manifest = readJson(manifestPath, 'janus-update-manifest.json');
 
   ensure(typeof pkg.version === 'string' && pkg.version.length > 0, 'package.json.version missing');
-  ensure(typeof latest.version === 'string' && latest.version.length > 0, 'latest.yml version missing');
-  ensure(typeof latest.path === 'string' && latest.path.length > 0, 'latest.yml path missing');
-  ensure(typeof latest.sha512 === 'string' && latest.sha512.length > 0, 'latest.yml sha512 missing');
+  ensure(typeof channelData.version === 'string' && channelData.version.length > 0, `${channelFile} version missing`);
+  ensure(typeof channelData.path === 'string' && channelData.path.length > 0, `${channelFile} path missing`);
+  ensure(typeof channelData.sha512 === 'string' && channelData.sha512.length > 0, `${channelFile} sha512 missing`);
   ensure(typeof manifest.version === 'string' && manifest.version.length > 0, 'manifest version missing');
   ensure(typeof manifest.assetName === 'string' && manifest.assetName.length > 0, 'manifest assetName missing');
   ensure(typeof manifest.sha512 === 'string' && manifest.sha512.length > 0, 'manifest sha512 missing');
   ensure(typeof manifest.critical === 'boolean', 'manifest critical must be boolean');
   ensure(!Number.isNaN(Date.parse(manifest.createdAt)), 'manifest createdAt must be ISO timestamp');
 
-  ensure(pkg.version === latest.version, `Version mismatch: package=${pkg.version}, latest=${latest.version}`);
+  ensure(pkg.version === channelData.version, `Version mismatch: package=${pkg.version}, ${channelFile}=${channelData.version}`);
   ensure(pkg.version === manifest.version, `Version mismatch: package=${pkg.version}, manifest=${manifest.version}`);
-  ensure(latest.path === manifest.assetName, `Asset mismatch: latest.path=${latest.path}, manifest.assetName=${manifest.assetName}`);
+  ensure(channelData.path === manifest.assetName, `Asset mismatch: ${channelFile}.path=${channelData.path}, manifest.assetName=${manifest.assetName}`);
 
-  const installerPath = path.join(RELEASE_DIR, latest.path);
+  const installerPath = path.join(RELEASE_DIR, channelData.path);
   ensure(fs.existsSync(installerPath), `Installer missing: ${installerPath}`);
 
   const sha512Base64 = await calculateHash(installerPath, 'sha512', 'base64');
   const sha256Hex = await calculateHash(installerPath, 'sha256', 'hex');
 
-  ensure(sha512Base64 === latest.sha512, 'SHA512 mismatch: installer vs latest.yml');
+  ensure(sha512Base64 === channelData.sha512, `SHA512 mismatch: installer vs ${channelFile}`);
   ensure(sha512Base64 === manifest.sha512, 'SHA512 mismatch: installer vs manifest');
 
-  // Optional backwards-compat check if sha256 exists in manifest.
   if (typeof manifest.sha256 === 'string' && manifest.sha256.length > 0) {
     ensure(/^[a-f0-9]{64}$/i.test(manifest.sha256), 'manifest sha256 must be 64 hex chars');
     ensure(sha256Hex.toLowerCase() === manifest.sha256.toLowerCase(), 'SHA256 mismatch: installer vs manifest');
   }
 
-  // Optional latest.yml files list consistency check.
-  if (Array.isArray(latest.files) && latest.files.length > 0) {
-    const entry = latest.files.find((f) => f && f.url === latest.path);
-    ensure(!!entry, 'latest.yml files[] does not contain path entry');
+  if (Array.isArray(channelData.files) && channelData.files.length > 0) {
+    const entry = channelData.files.find((f) => f && f.url === channelData.path);
+    ensure(!!entry, `${channelFile} files[] does not contain path entry`);
     if (entry.sha512) {
-      ensure(entry.sha512 === latest.sha512, 'latest.yml files[].sha512 differs from root sha512');
+      ensure(entry.sha512 === channelData.sha512, `${channelFile} files[].sha512 differs from root sha512`);
     }
   }
 
   console.log('verify:update-artifacts PASS');
   console.log(`version=${pkg.version}`);
-  console.log(`asset=${latest.path}`);
+  console.log(`channel_file=${channelFile}`);
+  console.log(`asset=${channelData.path}`);
   console.log(`sha512=${sha512Base64}`);
   console.log(`sha256=${sha256Hex}`);
 }

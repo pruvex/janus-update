@@ -5,9 +5,21 @@ const yaml = require('js-yaml');
 const PROJECT_ROOT = path.join(__dirname, '..');
 const RELEASE_DIR = path.join(PROJECT_ROOT, 'release');
 
+function resolveChannelFile(version) {
+  const isAlpha = /-alpha(\.|$)/i.test(version);
+  const isBeta = /-beta(\.|$)/i.test(version);
+  if (isAlpha && fs.existsSync(path.join(RELEASE_DIR, 'alpha.yml'))) {
+    return 'alpha.yml';
+  }
+  if (isBeta && fs.existsSync(path.join(RELEASE_DIR, 'beta.yml'))) {
+    return 'beta.yml';
+  }
+  return 'latest.yml';
+}
+
 async function main() {
-  // 1. Read version from package.json
   const packageJsonPath = path.join(PROJECT_ROOT, 'package.json');
+
   let version;
   try {
     const packageData = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
@@ -22,53 +34,49 @@ async function main() {
     process.exit(1);
   }
 
-  // 2. Read latest.yml (Single Source of Truth from electron-builder)
-  const latestYmlPath = path.join(RELEASE_DIR, 'latest.yml');
-  if (!fs.existsSync(latestYmlPath)) {
-    console.error(`🚨 CRITICAL: latest.yml not found at ${latestYmlPath}`);
-    console.error(`🚨 Ensure electron-builder has completed successfully before generating the manifest.`);
+  const channelFile = resolveChannelFile(version);
+  const channelYmlPath = path.join(RELEASE_DIR, channelFile);
+  if (!fs.existsSync(channelYmlPath)) {
+    console.error(`[Manifest] CRITICAL: ${channelFile} not found at ${channelYmlPath}`);
     process.exit(1);
   }
 
-  console.log(`[Manifest] Reading latest.yml...`);
+  console.log(`[Manifest] Reading ${channelFile}...`);
 
-  let latestYmlContent;
+  let channelYmlContent;
   try {
-    latestYmlContent = fs.readFileSync(latestYmlPath, 'utf-8');
+    channelYmlContent = fs.readFileSync(channelYmlPath, 'utf-8');
   } catch (err) {
-    console.error('[Manifest] Failed to read latest.yml:', err.message);
+    console.error(`[Manifest] Failed to read ${channelFile}:`, err.message);
     process.exit(1);
   }
 
-  // 3. Parse YAML and extract SHA512 and filename
-  let latestData;
+  let channelData;
   try {
-    latestData = yaml.load(latestYmlContent);
+    channelData = yaml.load(channelYmlContent);
   } catch (err) {
-    console.error('[Manifest] Failed to parse latest.yml:', err.message);
+    console.error(`[Manifest] Failed to parse ${channelFile}:`, err.message);
     process.exit(1);
   }
 
-  if (!latestData || !latestData.sha512 || !latestData.path) {
-    console.error('🚨 CRITICAL: latest.yml is missing required fields (sha512 or path)');
+  if (!channelData || !channelData.sha512 || !channelData.path) {
+    console.error(`[Manifest] CRITICAL: ${channelFile} missing required fields (sha512 or path)`);
     process.exit(1);
   }
 
-  const sha512 = latestData.sha512;
-  const assetName = latestData.path;
+  const sha512 = channelData.sha512;
+  const assetName = channelData.path;
 
-  console.log(`[Manifest] Extracted from latest.yml:`);
+  console.log(`[Manifest] Extracted from ${channelFile}:`);
   console.log(`[Manifest]   Asset: ${assetName}`);
   console.log(`[Manifest]   SHA512: ${sha512}`);
 
-  // 4. Validate that the asset file exists
   const assetPath = path.join(RELEASE_DIR, assetName);
   if (!fs.existsSync(assetPath)) {
-    console.error(`🚨 CRITICAL: Asset file not found: ${assetPath}`);
+    console.error(`[Manifest] CRITICAL: Asset file not found: ${assetPath}`);
     process.exit(1);
   }
 
-  // 5. Build manifest object (ATOMIC: direct derivation from latest.yml)
   const manifest = {
     version,
     assetName,
@@ -77,7 +85,6 @@ async function main() {
     createdAt: new Date().toISOString(),
   };
 
-  // 6. Write manifest JSON
   const manifestPath = path.join(RELEASE_DIR, 'janus-update-manifest.json');
   try {
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf-8');

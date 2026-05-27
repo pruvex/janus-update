@@ -51,6 +51,23 @@ function initJanusUpdateManager({ app, autoUpdater, mainWindow, log }) {
     }
   });
 
+  autoUpdater.on('update-not-available', (info) => {
+    const currentVersion = app?.getVersion ? app.getVersion() : 'unknown';
+    const remoteVersion = info?.version || null;
+    log.info(`[JanusUpdateManager] No update available (current=${currentVersion}, remote=${remoteVersion || 'n/a'})`);
+    try {
+      const state = transitionUpdateState(app, {
+        status: 'idle',
+        errorCode: null,
+        errorMessage: null,
+        downloadProgress: null,
+      });
+      broadcast(state);
+    } catch (err) {
+      log.error('[JanusUpdateManager] Failed to transition to idle after update-not-available:', err);
+    }
+  });
+
   autoUpdater.on('download-progress', (progressObj) => {
     try {
       const raw = typeof progressObj?.percent === 'number' ? progressObj.percent : 0;

@@ -81,6 +81,7 @@ protocol.registerSchemesAsPrivileged([
 // ============================================================
 
 autoUpdater.allowPrerelease = true; 
+autoUpdater.channel = 'beta';
 autoUpdater.allowDowngrade = false;
 autoUpdater.disableDifferentialDownload = true;
 autoUpdater.disableWebInstaller = true;
