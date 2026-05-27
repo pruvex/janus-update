@@ -116,7 +116,7 @@ Dashboard-Regeln:
 - **Handoff:** documentation/tasks/backlog_BACKLOG-097_lokales_llm_setup_erneut_ausfuehrbar_machen.md
 - **Recommended next skill:** SKILL 3
 - **Handoff created:** 2026-05-27
-- **Completed in version:** 0.4.17-beta.43
+- **Completed in version:** 0.4.17-beta.44
 - **Completed by task:** documentation/tasks/backlog_BACKLOG-097_lokales_llm_setup_erneut_ausfuehrbar_machen.md
 - **Final audit:** PASS - `documentation/test-runs/BACKLOG-097_final_audit.md`
 - **Validation evidence:** `python -m py_compile backend/services/ollama_manager.py`; `python -m pytest backend/tests/test_ollama_manager_recommendations.py -q`; manuelle Janus-Bestaetigung; Logs `documentation/logs/janus_backend.log` und `documentation/logs/janus_frontend.log`
