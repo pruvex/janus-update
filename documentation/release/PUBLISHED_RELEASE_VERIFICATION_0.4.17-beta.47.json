@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "janus.release-verification.v1",
+  "status": "PASS",
+  "repository": "pruvex/janus-update",
+  "version": "0.4.17-beta.47",
+  "tagName": "v0.4.17-beta.47",
+  "releaseUrl": "https://github.com/pruvex/janus-update/releases/tag/v0.4.17-beta.47",
+  "prerelease": true,
+  "draft": false,
+  "assets": [
+    {
+      "name": "janus-setup-0.4.17-beta.47.exe",
+      "role": "installer",
+      "githubState": "uploaded",
+      "githubSize": 688659900,
+      "localSize": 688659900,
+      "githubDigest": "sha256:523e2e392b0e5ca596fd1c072bc8d74b291f16d64c041a62f369af008bb44bfa",
+      "localSha256": "523e2e392b0e5ca596fd1c072bc8d74b291f16d64c041a62f369af008bb44bfa",
+      "browserDownloadUrl": "https://github.com/pruvex/janus-update/releases/download/v0.4.17-beta.47/janus-setup-0.4.17-beta.47.exe",
+      "result": "PASS",
+      "notes": ""
+    },
+    {
+      "name": "beta.yml",
+      "role": "electron-channel-metadata",
+      "githubState": "uploaded",
+      "githubSize": 1029,
+      "localSize": 1029,
+      "githubDigest": "sha256:dba128ca53c17bfeb677f159b05eb0e3759a729b895e98ec0eda9205a80d1558",
+      "localSha256": "dba128ca53c17bfeb677f159b05eb0e3759a729b895e98ec0eda9205a80d1558",
+      "browserDownloadUrl": "https://github.com/pruvex/janus-update/releases/download/v0.4.17-beta.47/beta.yml",
+      "result": "PASS",
+      "notes": ""
+    },
+    {
+      "name": "janus-update-manifest.json",
+      "role": "janus-update-manifest",
+      "githubState": "uploaded",
+      "githubSize": 250,
+      "localSize": 250,
+      "githubDigest": "sha256:903d0ddcbe75c70ba79cbc9450cae68de935d21bbe6667129f57761c1ba7b213",
+      "localSha256": "903d0ddcbe75c70ba79cbc9450cae68de935d21bbe6667129f57761c1ba7b213",
+      "browserDownloadUrl": "https://github.com/pruvex/janus-update/releases/download/v0.4.17-beta.47/janus-update-manifest.json",
+      "result": "PASS",
+      "notes": ""
+    }
+  ],
+  "missing": [],
+  "unexpectedRelevant": [],
+  "verifiedAt": "2026-05-27T19:16:40.272Z"
+}
