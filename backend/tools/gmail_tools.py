@@ -101,7 +101,7 @@ def _get_google_client_secrets():
     return None
 
 
-def _get_gmail_service():
+def _get_gmail_service(expected_email: Optional[str] = None, force_select_account: bool = False):
     """Returns an authenticated Gmail service client."""
     creds = None
     token_json = keyring.get_password("janus_google_tokens", GOOGLE_TOKEN_KEY)
@@ -136,7 +136,12 @@ def _get_gmail_service():
             )
 
         flow = InstalledAppFlow.from_client_config(client_secrets, SCOPES)
-        creds = flow.run_local_server(port=0)
+        oauth_kwargs: Dict[str, Any] = {}
+        if force_select_account:
+            oauth_kwargs["prompt"] = "select_account consent"
+        if expected_email:
+            oauth_kwargs["login_hint"] = expected_email
+        creds = flow.run_local_server(port=0, **oauth_kwargs)
 
     # Save the updated credentials
     keyring.set_password("janus_google_tokens", GOOGLE_TOKEN_KEY, creds.to_json())

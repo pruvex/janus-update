@@ -237,6 +237,33 @@
             <button
               type="button"
               class="sidebar-nav-item"
+              id="sidebar-nav-mail"
+              aria-pressed="false"
+              aria-label="Janus Mail ein- oder ausblenden"
+              onclick="window.dockOpen && window.dockOpen('mail')"
+            >
+              <span class="sidebar-nav-icon icon-mail" aria-hidden="true">
+                <svg
+                  class="janus-nav-icon-svg"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                  <path d="m22 7-10 7L2 7"></path>
+                </svg>
+              </span>
+              <span class="sidebar-nav-label">Janus Mail</span>
+            </button>
+            <button
+              type="button"
+              class="sidebar-nav-item"
               id="sidebar-nav-day-panel"
               aria-pressed="false"
               aria-label="Tages-Panel ein- oder ausblenden"
@@ -705,6 +732,31 @@
           title="Video Player"
         >
           <span class="dock-video-icon" aria-hidden="true">▶</span>
+        </button>
+        <button
+          type="button"
+          id="dock-mail"
+          class="dock-item dock-item--mail"
+          aria-label="Janus Mail"
+          title="Janus Mail"
+        >
+          <span class="dock-mail-icon icon-mail" aria-hidden="true">
+            <svg
+              class="janus-nav-icon-svg"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+              <path d="m22 7-10 7L2 7"></path>
+            </svg>
+          </span>
         </button>
       </div>
       
@@ -1461,6 +1513,122 @@
           </div>
         </div>
       </div>
+
+      <div id="mail-modal" class="dock-panel dock-panel--mail" role="dialog" aria-label="Janus Mail">
+        <div class="dock-panel-content">
+          <div class="chat-header-dual dock-panel-header">
+            <div class="chat-header-row chat-header-row--top">
+              <button
+                type="button"
+                class="chat-window-reset-btn"
+                id="mail-reset-btn"
+                title="Mail-Modul zurücksetzen"
+                aria-label="Mail-Modul zurücksetzen"
+              >
+                ⟲
+              </button>
+              <div class="chat-header-drag-strip">
+                <span class="chat-header-title-label">Janus Mail</span>
+              </div>
+              <div class="chat-header-actions">
+                <button
+                  type="button"
+                  class="chat-window-minimize-btn"
+                  id="mail-minimize-btn"
+                  title="Mail minimieren"
+                  aria-label="Mail minimieren"
+                >
+                  _
+                </button>
+                <button
+                  type="button"
+                  class="chat-window-close-btn"
+                  id="mail-close-btn"
+                  title="Mail schließen"
+                  aria-label="Mail schließen"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="mail-client-root">
+            <aside class="mail-sidebar">
+              <section class="mail-sidebar-section">
+                <h4 class="mail-sidebar-title">Konten</h4>
+                <select id="mail-account-select" class="mail-op-input" aria-label="Gespeicherte Mailkonten"></select>
+                <button type="button" class="mail-refresh-btn" id="mail-add-account-btn">Neues Konto hinzufügen</button>
+                <button type="button" class="mail-refresh-btn" id="mail-switch-account-btn">Aktives Konto trennen</button>
+              </section>
+              <section class="mail-sidebar-section">
+                <h4 class="mail-sidebar-title">Ordner</h4>
+                <button type="button" class="mail-folder-item mail-folder-item--active" data-mail-folder="inbox">Posteingang</button>
+                <button type="button" class="mail-folder-item" data-mail-folder="sent">Gesendet</button>
+                <button type="button" class="mail-folder-item" data-mail-folder="drafts">Entwürfe</button>
+                <button type="button" class="mail-folder-item" data-mail-folder="trash">Papierkorb</button>
+              </section>
+              <section class="mail-sidebar-section">
+                <h4 class="mail-sidebar-title">Verbindung</h4>
+                <p class="mail-connection-row"><strong>Status:</strong> <span id="mail-connection-badge" aria-live="polite">Prüfe...</span></p>
+                <p id="mail-status-message" class="mail-status-message">Lade Verbindungsstatus...</p>
+                <button type="button" id="mail-refresh-status-btn" class="mail-refresh-btn">Status aktualisieren</button>
+                <p id="mail-last-checked" class="mail-last-checked"></p>
+              </section>
+            </aside>
+
+            <section class="mail-list-pane">
+              <div class="mail-list-toolbar">
+                <label for="mail-search-input" class="mail-search-label">Suche</label>
+                <input
+                  type="search"
+                  id="mail-search-input"
+                  class="mail-search-input"
+                  placeholder="Mails durchsuchen..."
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+              <p id="mail-inbox-empty" class="mail-inbox-empty">Verbinde Gmail, um Mails zu sehen.</p>
+              <div id="mail-thread-list" class="mail-thread-list" style="display: none;"></div>
+            </section>
+
+            <section class="mail-preview-pane">
+              <div class="mail-preview-content">
+                <h4 id="mail-preview-subject" class="mail-preview-subject">Keine Mail ausgewählt</h4>
+                <p id="mail-preview-meta" class="mail-preview-meta">Wähle eine Mail aus der Liste.</p>
+                <div id="mail-preview-snippet" class="mail-preview-snippet"></div>
+              </div>
+              <div class="mail-preview-ops">
+                <div class="mail-preview-ops-row">
+                  <button type="button" id="mail-trash-btn" class="mail-op-btn" disabled>In Papierkorb</button>
+                  <select id="mail-move-folder" class="mail-op-input" disabled>
+                    <option value="inbox">Posteingang</option>
+                    <option value="sent">Gesendet</option>
+                    <option value="drafts">Entwürfe</option>
+                    <option value="trash">Papierkorb</option>
+                  </select>
+                  <button type="button" id="mail-move-btn" class="mail-op-btn" disabled>Verschieben</button>
+                </div>
+                <div class="mail-preview-ops-row">
+                  <span id="mail-action-status" class="mail-preview-meta">Keine Aktion ausgeführt.</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <div id="mail-account-dialog" class="mail-account-dialog" style="display:none;">
+        <div class="mail-account-dialog-backdrop" id="mail-account-dialog-close"></div>
+        <div class="mail-account-dialog-card" role="dialog" aria-modal="true" aria-label="Neues Mailkonto hinzufügen">
+          <h4 class="mail-sidebar-title">Neues Gmail-Konto</h4>
+          <input id="mail-account-email-input" class="mail-op-input" type="email" placeholder="name@gmail.com" autocomplete="email" />
+          <div class="mail-preview-ops-row">
+            <button type="button" class="mail-op-btn" id="mail-account-cancel-btn">Abbrechen</button>
+            <button type="button" class="mail-op-btn" id="mail-account-connect-btn">Verbinden</button>
+          </div>
+        </div>
+      </div>
     </div>
     <script type="module" src="js/frontend-debug-log.js"></script>
     <script type="module" src="js/config.js"></script>
@@ -1468,6 +1636,7 @@
     <script type="module" src="js/modal-api.js"></script>
     <script type="module" src="js/calendar-day-widget.js"></script>
     <script type="module" src="js/calendar-modal.js"></script>
+    <script type="module" src="js/mail-modal.js"></script>
     <script type="module" src="js/video-player.js"></script>
     <script type="module" src="js/app.js"></script>
     <script type="module" src="js/settings.js"></script>
