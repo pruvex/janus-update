@@ -1,6 +1,6 @@
 ﻿# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-27 (Auto-Update Feed-Reihenfolge repariert - 0.4.17-beta.47)
+**Aktualisiert:** 2026-05-30 (Janus Mail Grundversion final auditiert, Chat-Persistenz-Fix bestaetigt - PASS WITH FIXES)
 
 ---
 
@@ -8,6 +8,8 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **TASK-098 Janus Mail Bundle (Spec 10-13)** | SEALED WITH FIXES | Janus Mail ist als belastbare Grundversion umgesetzt: Mail-Einstieg in Sidebar/Dock, modalgroesse und Layout am Kalender orientiert, Multi-Account-Gmail mit aktivem Konto-Persistenzflow, Inbox/Search/Detail, Compose/Reply, Anhang senden/speichern, Chat-gesteuerte Mailauftraege mit Konto-Rueckfragen, Consent-gesteuertes AI-Assist mit sichtbarem Degraded-State statt Hidden-Fallback. Privacy-Haertung: sensible Mail-Details aus technischen Logs entfernt, finaler Payload-Log auf Zaehler/Laengen reduziert. Validation: py_compile PASS; Backend-Mail/Intent/Privacy Tests 44/44 PASS; Frontend-Mail-Tests 7/7 PASS. |
+| **BACKLOG-099 Chat-Inhalt nach Neustart wiederhergestellt** | SEALED WITH FIXES | Nach Mail-/Ordner-Workflows bleiben persistierte User-Eingaben wieder als Originaltext im Chatverlauf erhalten statt durch interne Control-Replies wie `1`/`3` ersetzt zu werden. Der Fix friert den originalen Turn fuer Persistenz und Restart-/Reload-Darstellung ein und blockiert Control-Replies als normale Historiennachricht. Validation: finaler Re-Audit PASS WITH FIXES; gezielte Regression gegen Persistenz- und Account-Choice-Flow bestätigt. |
 | **Auto-Update Feed-Reihenfolge repariert** | SEALED | GitHub-Publisher setzt neue Releases jetzt explizit auf den aktuellen Git-HEAD (`target_commitish`), damit frische Beta-Tags im GitHub-Release-Feed vor aelteren Beta-Releases erscheinen. Root Cause des Testsystems: Electron-Updater auf `0.4.17-beta.44` las den GitHub-Atom-Feed und fand dort `0.4.17-beta.44` vor `0.4.17-beta.46`, wodurch kein Update angeboten wurde. Release-Version: 0.4.17-beta.47. |
 | **Auto-Update Beta-Channel-Erkennung gehaertet** | SEALED | Auto-Update fuer Beta-Ketten wurde channel-sicher gemacht: Client setzt explizit `autoUpdater.channel = 'beta'`, Build erzeugt Channel-Metadaten fuer alle Kanaele, und die Release-Skripte (Manifest/Verify/Publish/Published-Verify) nutzen fuer Beta-Versionen deterministisch `beta.yml` statt einer impliziten `latest.yml`-Annahme. Zusaetzlich wurde `update-not-available` Logging mit current/remote Version ergaenzt, damit Nicht-Erkennung auf Testsystemen sofort nachvollziehbar ist. Release-Version: 0.4.17-beta.46. |
 | **BACKLOG-098 GPU-Erkennung fuer lokale LLM-Empfehlungen gehaertet** | SEALED | Windows-GPU-Erkennung fuer den Local-LLM-Hardwarecheck wurde von einer Einzelabfrage auf eine robuste Kette erweitert (`nvidia-smi`, CIM/PowerShell, `wmic`, Registry, `dxdiag`). Remote-/virtuelle Adapter werden ausgefiltert, VRAM-Herkunft und Sicherheit werden im Backend mitgeliefert und im Wizard als Debug-Evidence angezeigt. Bei unsicherem VRAM wird die Anzeige jetzt ehrlich als "nicht sicher ermittelbar" markiert; bekannte Kartenprofile (u. a. RX 7700 XT) erhalten einen Heuristik-Fallback. Validation: py_compile PASS, fokussierte pytest 7/7 PASS, Vite-Build PASS. Release-Version: 0.4.17-beta.45. |

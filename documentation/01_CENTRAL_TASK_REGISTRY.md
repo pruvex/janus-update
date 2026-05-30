@@ -4,6 +4,22 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Backlog Closures
 
+### BACKLOG-098 - Janus Mail Backend Bootstrap und Connection State
+
+- **Status**: DONE
+- **Final Audit**: PASS WITH FIXES
+- **Task**: `documentation/tasks/task_098_janus_mail_bundle_generated.md`
+- **Validation**: Janus Mail wurde als funktionsfaehige Grundversion umgesetzt: Sidebar/Dock-Einstieg, Gmail-Kontenwechsel mit Persistenz, Inbox/Search/Detail, Composer/Reply/Attachment-Send und -Save, Chat-gesteuerte Mailaktionen, AI-Consent mit sichtbarem Degraded-State, robuste Multi-Account-Abfragen und Attachment-/Rechnungs-Workflows.
+- **Changed Files**: `backend/services/chat_orchestrator.py`, `backend/services/mail/mail_service.py`, `backend/services/mail/mail_ai_assist_service.py`, `backend/api/routers/mail.py`, `backend/data/schemas_mail.py`, `frontend/js/mail-modal.js`, `frontend/js/mail-inbox-ui.js`, `frontend/css/style.css`, `frontend/css/sidebar.css`, `frontend/index.html`, `backend/tests/test_mail_service.py`, `backend/tests/test_mail_ai_assist_service.py`, `frontend/tests/mail-modal.test.mjs`, `frontend/tests/mail-inbox-ui.test.mjs`.
+
+### BACKLOG-099 - Chat-Inhalt geht nach Neustart verloren und wird als Zahl wiederhergestellt
+
+- **Status**: DONE
+- **Final Audit**: PASS WITH FIXES
+- **Task**: `documentation/tasks/backlog_BACKLOG-099_chat_inhalt_restart_zahl_statt_text.md`
+- **Validation**: Der Chat-Persistenzpfad speichert wieder den originalen User-Text statt des internen Control-Replies; die Restart-/Reload-Darstellung bleibt nach einem Mail- oder Ordner-Flow konsistent und zeigt nicht mehr isoliert nur eine Zahl.
+- **Changed Files**: `backend/services/chat_orchestrator.py`, `documentation/backlog/BACKLOG.md`, `documentation/test-runs/BACKLOG-098_mail_bundle_reaudit_2026-05-30.md`.
+
 ### BACKLOG-097 - Lokales LLM Setup erneut ausfuehrbar machen
 
 - **Status**: DONE
