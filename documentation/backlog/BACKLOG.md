@@ -77,9 +77,90 @@ Dashboard-Regeln:
 ## NEEDS INFO
 
 ## READY
+- **Handoff:** none
+- **Recommended next skill:** SKILL 2
+- **Handoff created:** none
+
 ## IN PROGRESS
 
+Keine offenen Eintraege.
+
 ## DONE
+
+### BACKLOG-099 - Chat-Inhalt geht nach Neustart verloren und wird als Zahl wiederhergestellt
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-05-30
+- **Aktualisiert:** 2026-05-30
+- **Kurzbeschreibung:** Nach einem Neustart bleibt eine zuvor erfolgreiche Chat-Eingabe nicht korrekt im Verlauf erhalten. Statt des erwarteten Textes erscheint im Chat nur eine einzelne Zahl wie `3`, und das Verhalten trat sowohl bei GPT als auch bei Gemini auf.
+- **Erwartetes Verhalten:** Die originale Chat-Eingabe und die dazugehoerige Antwort bleiben nach Neustart, Reload oder Reopen im Verlauf lesbar erhalten.
+- **Tatsaechliches Verhalten:** Nach einem Neustart wurde die Eingabe nicht mehr korrekt im Chat angezeigt, sondern nur noch eine einzelne Zahl, obwohl die Aktion zuvor korrekt ausgefuehrt wurde.
+- **Reproduktion / Kontext:** Im Chat einen natuerlichen Mail-/Ordner-Auftrag ausfuehren, z. B. Rechnungen im Mailkontext suchen und speichern lassen. Nach Neustart des Clients war der urspruengliche Eingabetext nicht mehr sichtbar; im Verlauf stand stattdessen nur eine Zahl.
+- **Betroffener Bereich:** Frontend / Chat-Verlauf / Persistenz / Restart-Handling
+- **Nachweise:** User Intake vom 2026-05-30; Beobachtung im laufenden Mail-Workflow fuer GPT und Gemini; finale Regression gegen persisted control replies und Restart-Reload.
+- **Akzeptanzkriterien:**
+  - [x] Nach Neustart bleibt die originale User-Eingabe im Chatverlauf sichtbar.
+  - [x] Der Verlauf zeigt keine isolierte Nummer statt des eigentlichen Textes.
+  - [x] Das Verhalten ist bei GPT und Gemini identisch korrigiert.
+  - [x] Der Fix bricht bestehende Chat- oder Mail-Flows nicht.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Reproduzierbarer Restart-/Persistenzfehler mit klarer Nutzerwirkung und zwei Provider-Faellen.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-05-30
+- **Handoff:** documentation/tasks/backlog_BACKLOG-099_chat_inhalt_restart_zahl_statt_text.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-30
+- **Final Audit:** PASS WITH FIXES
+- **Validation:** Live Janus confirmation plus final re-audit `documentation/test-runs/BACKLOG-098_mail_bundle_reaudit_2026-05-30.md`
+
+### BACKLOG-098 - Janus Mail Backend Bootstrap und Connection State
+
+- **Typ:** ENHANCEMENT
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-05-28
+- **Aktualisiert:** 2026-05-30
+- **Kurzbeschreibung:** Janus Mail braucht ein minimales Backend-Fundament mit Mail-Schemas, einem Mail-Router und einem klaren Gmail-Connection-State, damit die neue Mail-Surface verlaesslich starten kann.
+- **Erwartetes Verhalten:** Das Backend kann einen klaren Mail-Connection-State liefern und den ersten Mail-Surface-Status ohne Pseudo-Inbox oder versteckte Fehlinterpretation bereitstellen.
+- **Tatsaechliches Verhalten:** Fuer das neue Mail-Modul fehlte initial ein dedizierter Backend-Bootstrap fuer Status, Routing und die spaetere Mail-Surface-Anbindung.
+- **Reproduktion / Kontext:** Das Mail-Feature wurde als bundleartig geplante Janus-Mail-Oberflaeche entschieden. Der erste technische Schritt war das Backend-Fundament fuer Connection State und Mail-Router.
+- **Betroffener Bereich:** Backend / Mail-Router / Mail-Schemas / Gmail-Connection-State
+- **Nachweise:** User Intake und die vier freigegebenen Mail-Specs in `documentation/SPEC/`.
+- **Akzeptanzkriterien:**
+  - [x] Ein Mail-Router ist im Backend registriert und erreichbar.
+  - [x] Der Mail-Status unterscheidet mindestens connected, disconnected, missing_scope und sync_error.
+  - [x] Fehler im Gmail-Statuspfad brechen den Backend-Start nicht.
+  - [x] Backend-Tests decken Erfolgs- und Fehlerpfade fuer den Statusvertrag ab.
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Das Bundle wurde ueber den Initial-Scope hinaus zu einer nutzbaren Janus-Mail-Basis ausgebaut (Inbox, Konto-Flow, Compose/Reply, AI-Assist mit Consent und Degraded-State, Attachment-Flows).
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Klar abgegrenztes Backend-Fundament fuer den Mail-Startzustand mit direkten Tests und ohne Architekturdrift.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 1
+- **Routing decided at:** 2026-05-28
+- **Handoff:** documentation/tasks/backlog_BACKLOG-098_janus_mail_backend_bootstrap_und_connection_state.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-05-28
+- **Completed in version:** 0.4.17-beta.47
+- **Completed by task:** documentation/tasks/task_098_janus_mail_bundle_generated.md
+- **Final audit:** PASS WITH FIXES
+- **Validation evidence:** `python -m pytest -q backend/tests/test_mail_service.py backend/tests/test_mail_chat_account_guard_store.py backend/tests/test_mail_send_guard_store.py backend/tests/test_memory_extractor_email_pii.py backend/tests/test_mail_ai_assist_service.py backend/tests/unit/test_intent_engine.py` (44 PASS); `node --test frontend/tests/mail-modal.test.mjs frontend/tests/mail-inbox-ui.test.mjs` (7 PASS); `python -m py_compile backend/services/chat_orchestrator.py backend/services/mail/mail_ai_assist_service.py backend/data/schemas_mail.py` PASS
 
 ### BACKLOG-097 - Lokales LLM Setup erneut ausfuehrbar machen
 
