@@ -1574,6 +1574,15 @@
                 <button type="button" id="mail-refresh-status-btn" class="mail-refresh-btn">Status aktualisieren</button>
                 <p id="mail-last-checked" class="mail-last-checked"></p>
               </section>
+              <section class="mail-sidebar-section">
+                <h4 class="mail-sidebar-title">AI Mail Assist</h4>
+                <p class="mail-status-message"><strong>Status:</strong> <span id="mail-ai-assist-status">OFF</span></p>
+                <label class="mail-connection-row" style="gap:8px;align-items:center;">
+                  <input id="mail-ai-assist-global-toggle" type="checkbox" />
+                  <span>Global aktivieren</span>
+                </label>
+                <p class="mail-last-checked">Wenn OFF, werden keine Thread-Inhalte an AI-Provider gesendet.</p>
+              </section>
             </aside>
 
             <section class="mail-list-pane">
@@ -1593,21 +1602,102 @@
             </section>
 
             <section class="mail-preview-pane">
+              <div class="mail-preview-ops">
+                <div class="mail-preview-ops-row">
+                  <button type="button" id="mail-compose-new-btn" class="mail-op-btn">Neu</button>
+                  <button type="button" id="mail-compose-reply-btn" class="mail-op-btn" disabled>Antworten</button>
+                  <button type="button" id="mail-compose-forward-btn" class="mail-op-btn" disabled>Weiterleiten</button>
+                  <button type="button" id="mail-compose-cancel-btn" class="mail-op-btn" style="display:none;">Entwurf schliessen</button>
+                </div>
+              </div>
               <div class="mail-preview-content">
                 <h4 id="mail-preview-subject" class="mail-preview-subject">Keine Mail ausgewählt</h4>
                 <p id="mail-preview-meta" class="mail-preview-meta">Wähle eine Mail aus der Liste.</p>
+                <div id="mail-preview-attachments" class="mail-preview-attachments" style="display:none;"></div>
                 <div id="mail-preview-snippet" class="mail-preview-snippet"></div>
+                <section id="mail-ai-panel" class="mail-ai-panel">
+                  <div class="mail-ai-panel-row">
+                    <strong>AI Thread Assist</strong>
+                    <label style="display:flex;align-items:center;gap:6px;">
+                      <input id="mail-ai-thread-toggle" type="checkbox" disabled />
+                      <span>Thread AI</span>
+                    </label>
+                  </div>
+                  <p id="mail-ai-summary" class="mail-preview-meta">Keine Analyse vorhanden.</p>
+                  <div class="mail-ai-panel-row">
+                    <span id="mail-ai-reply-needed" class="mail-compose-mode-badge mail-compose-mode-badge--new">Reply: ?</span>
+                    <span id="mail-ai-priority" class="mail-compose-mode-badge mail-compose-mode-badge--forward">Prio: ?</span>
+                    <span id="mail-ai-stale" class="mail-compose-mode-badge" style="display:none;">Stale</span>
+                  </div>
+                  <div class="mail-ai-panel-row">
+                    <select id="mail-ai-tone" class="mail-op-input" style="max-width:220px;">
+                      <option value="neutral">Ton: Neutral</option>
+                      <option value="freundlich">Ton: Freundlich</option>
+                      <option value="kurz">Ton: Kurz</option>
+                      <option value="formal">Ton: Formal</option>
+                    </select>
+                    <button type="button" id="mail-ai-refresh-btn" class="mail-op-btn">AI aktualisieren</button>
+                    <button type="button" id="mail-ai-draft-btn" class="mail-op-btn">Draft erzeugen</button>
+                  </div>
+                </section>
+                <form id="mail-compose-form" class="mail-compose-form" style="display:none;">
+                  <div id="mail-compose-mode-hint" class="mail-compose-mode-hint" aria-live="polite"></div>
+                  <div class="mail-compose-row">
+                    <label for="mail-compose-to">To</label>
+                    <input id="mail-compose-to" class="mail-op-input" type="text" autocomplete="email" list="mail-known-addresses" />
+                  </div>
+                  <div class="mail-compose-row">
+                    <label for="mail-compose-cc">CC</label>
+                    <input id="mail-compose-cc" class="mail-op-input" type="text" autocomplete="email" list="mail-known-addresses" />
+                  </div>
+                  <div class="mail-compose-row">
+                    <label for="mail-compose-bcc">BCC</label>
+                    <input id="mail-compose-bcc" class="mail-op-input" type="text" autocomplete="email" list="mail-known-addresses" />
+                  </div>
+                  <div class="mail-compose-row">
+                    <label for="mail-compose-subject">Betreff</label>
+                    <input id="mail-compose-subject" class="mail-op-input" type="text" />
+                  </div>
+                  <div class="mail-compose-row mail-compose-row--textarea">
+                    <label for="mail-compose-body">Text</label>
+                    <textarea id="mail-compose-body" class="mail-op-input mail-compose-textarea"></textarea>
+                  </div>
+                  <div class="mail-compose-row">
+                    <label for="mail-compose-attachments">Anhaenge</label>
+                    <input id="mail-compose-attachments" type="file" multiple />
+                  </div>
+                  <div class="mail-compose-row" id="mail-forward-attachments-row" style="display:none;">
+                    <label for="mail-forward-include-attachments">Forward</label>
+                    <label style="display:flex;align-items:center;gap:8px;">
+                      <input id="mail-forward-include-attachments" type="checkbox" />
+                      Original-Anhaenge mitschicken
+                    </label>
+                  </div>
+                  <div class="mail-preview-ops-row">
+                    <button type="button" id="mail-compose-send-btn" class="mail-op-btn">Senden</button>
+                    <span id="mail-compose-mode-badge" class="mail-compose-mode-badge" aria-live="polite">Neu</span>
+                    <span id="mail-compose-status" class="mail-preview-meta">Compose-Phase aktiv (Backend folgt).</span>
+                  </div>
+                </form>
+                <datalist id="mail-known-addresses"></datalist>
               </div>
               <div class="mail-preview-ops">
                 <div class="mail-preview-ops-row">
+                  <button type="button" id="mail-archive-btn" class="mail-op-btn" disabled>Archivieren</button>
+                  <button type="button" id="mail-restore-btn" class="mail-op-btn" disabled>In Posteingang</button>
                   <button type="button" id="mail-trash-btn" class="mail-op-btn" disabled>In Papierkorb</button>
                   <select id="mail-move-folder" class="mail-op-input" disabled>
                     <option value="inbox">Posteingang</option>
+                    <option value="archive">Archiv</option>
                     <option value="sent">Gesendet</option>
                     <option value="drafts">Entwürfe</option>
                     <option value="trash">Papierkorb</option>
                   </select>
                   <button type="button" id="mail-move-btn" class="mail-op-btn" disabled>Verschieben</button>
+                </div>
+                <div class="mail-preview-ops-row" id="mail-undo-row" style="display:none;">
+                  <span id="mail-undo-text" class="mail-preview-meta"></span>
+                  <button type="button" id="mail-undo-btn" class="mail-op-btn">Rueckgaengig</button>
                 </div>
                 <div class="mail-preview-ops-row">
                   <span id="mail-action-status" class="mail-preview-meta">Keine Aktion ausgeführt.</span>

@@ -765,11 +765,33 @@ export async function createNewChat() {
     }
     const newChat = await response.json();
 
-    // 1. Liste neu laden — ohne erneuten Auto-Create bei leerer Antwort (sonst 2× POST)
-    await loadChats(true, null, { suppressAutoCreate: true });
+    // 1. Fast-path: sofort in Sidebar-Snapshot einhängen (ohne blockierenden Voll-Reload)
+    if (!_sidebarChatsSnapshot.some((c) => c?.id === newChat.id)) {
+      _sidebarChatsSnapshot.push({
+        id: newChat.id,
+        title: newChat.title || `Neuer Chat ${newChat.id}`,
+        category: newChat.category || "general",
+        is_archived: false,
+        header_provider: null,
+        header_model: null,
+      });
+      rerenderChatListFromCache();
+    }
 
-    // 2. Explicitly load the new chat's content and set it as active
-    await loadChat(newChat.id, { windowId: activeWindowId });
+    // 2. Sofort auf neuen Chat umschalten (UI-first), ohne initialen Fetch.
+    setChatForWindow(activeWindowId, newChat.id);
+    const chatMessagesDiv = document.getElementById(paneId("chat-messages", activeWindowId));
+    if (chatMessagesDiv) {
+      chatMessagesDiv.innerHTML = "";
+    }
+    const chatHeaderElement = document.getElementById(paneId("chat-header", activeWindowId));
+    if (chatHeaderElement) {
+      const titleLabel = chatHeaderElement.querySelector(".chat-header-title-label");
+      if (titleLabel) titleLabel.textContent = newChat.title || `Chat ${newChat.id}`;
+      else chatHeaderElement.textContent = newChat.title || `Chat ${newChat.id}`;
+    }
+    setLastAssistantChatId(newChat.id);
+    syncSidebarWindowContextUi();
 
     // Keep explicit window-local header override when starting a brand-new chat
     // in the same pane. Sidebar-default windows (null/null) still follow sidebar.
@@ -777,12 +799,17 @@ export async function createNewChat() {
       // Persist explicit header override even when modelId was not written to
       // window-state yet (e.g. provider switched to gemini, model auto-selected in UI).
       setWindowLlm(activeWindowId, windowProviderOverride, windowModelOverride);
-      await saveChatHeaderSelection(newChat.id, windowProviderOverride, windowModelOverride);
+      void saveChatHeaderSelection(newChat.id, windowProviderOverride, windowModelOverride);
     }
 
     const inp = document.getElementById(paneId("user-input", activeWindowId));
     if (inp) inp.value = "";
     resetUserInputHeight(activeWindowId);
+    // Fokus nach New-Chat stabil halten.
+    window.requestAnimationFrame(() => {
+      const activeInput = document.getElementById(paneId("user-input", activeWindowId));
+      if (activeInput) activeInput.focus();
+    });
   } catch (error) {
     console.error("createNewChat: Error creating new chat:", error);
   }

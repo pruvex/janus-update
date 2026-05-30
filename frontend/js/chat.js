@@ -1165,6 +1165,10 @@ export async function sendMessage(fromWindowId) {
       setInFlightState(windowId, null);
     }
     clearThinkingMessageForWindow(windowId);
+    const inputEl = document.getElementById(paneId("user-input", windowId));
+    if (inputEl && getActiveWindowId() === windowId) {
+      inputEl.focus();
+    }
   }
 }
 
@@ -1190,6 +1194,15 @@ export function initChatComposer() {
     const form = document.getElementById(paneId("chat-form", wid));
     if (!input || !form) return;
     any = true;
+    // Browser/Chromium can restore the last form value after a restart.
+    // Janus does not persist chat drafts here, so we always start with a clean composer.
+    input.value = "";
+    input.defaultValue = "";
+    input.setAttribute("autocomplete", "off");
+    input.setAttribute("autocapitalize", "off");
+    input.setAttribute("autocorrect", "off");
+    input.setAttribute("spellcheck", "false");
+    input.setAttribute("inputmode", "text");
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
         e.preventDefault();

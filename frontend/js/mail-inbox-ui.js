@@ -1,5 +1,19 @@
+function threadTimestampMs(thread) {
+  const internalRaw = Number(thread?.internal_date_ms || 0);
+  if (Number.isFinite(internalRaw) && internalRaw > 0) return internalRaw;
+  const parsed = Date.parse(String(thread?.date || ""));
+  if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  return 0;
+}
+
+function sortThreadsChronologically(threads) {
+  const list = Array.isArray(threads) ? [...threads] : [];
+  list.sort((a, b) => threadTimestampMs(b) - threadTimestampMs(a));
+  return list;
+}
+
 export function filterMailThreads(threads, query) {
-  const list = Array.isArray(threads) ? threads : [];
+  const list = sortThreadsChronologically(threads);
   const q = String(query || "")
     .trim()
     .toLowerCase();

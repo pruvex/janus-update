@@ -94,6 +94,9 @@ function createInitialState() {
         calendar: dockModuleShape({
           exists: true,
         }),
+        mail: dockModuleShape({
+          exists: true,
+        }),
       },
     },
   };

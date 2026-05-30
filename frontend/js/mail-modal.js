@@ -19,10 +19,84 @@ let lastServerQuery = "";
 let searchDebounceTimer = null;
 let currentFolder = "inbox";
 let currentFilteredThreads = [];
+let nextThreadsPageToken = "";
+let hasMoreThreads = false;
+let loadingMoreThreads = false;
+let infiniteScrollBound = false;
+let composeMode = null;
+let composeMeta = {
+  inReplyTo: "",
+  references: "",
+  sourceMessageId: "",
+};
 const MAIL_ACCOUNTS_STORAGE_KEY = "janus_mail_accounts_v1";
 const MAIL_ACTIVE_ACCOUNT_STORAGE_KEY = "janus_mail_active_account_v1";
+const MAIL_KNOWN_ADDRESSES_STORAGE_KEY = "janus_mail_known_addresses_v1";
+const MAIL_AI_ASSIST_GLOBAL_STORAGE_KEY = "janus_mail_ai_assist_global_v1";
+const MAIL_AI_ASSIST_THREAD_STORAGE_KEY = "janus_mail_ai_assist_thread_v1";
 let knownAccounts = [];
 let activeAccountEmail = "";
+let knownAddresses = [];
+let undoTimer = null;
+let pendingUndoAction = null;
+let globalAiAssistEnabled = false;
+let threadAiAssistMap = {};
+let aiSummarySignature = "";
+let aiAnalysisState = null;
+
+function parseEmails(raw) {
+  const text = String(raw || "");
+  if (!text) return [];
+  const matches = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || [];
+  return matches.map((x) => x.trim().toLowerCase()).filter(Boolean);
+}
+
+function loadKnownAddresses() {
+  try {
+    const raw = localStorage.getItem(MAIL_KNOWN_ADDRESSES_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    knownAddresses = Array.isArray(parsed)
+      ? parsed.filter((x) => typeof x === "string" && x.includes("@")).map((x) => x.trim().toLowerCase())
+      : [];
+  } catch {
+    knownAddresses = [];
+  }
+}
+
+function saveKnownAddresses() {
+  try {
+    localStorage.setItem(MAIL_KNOWN_ADDRESSES_STORAGE_KEY, JSON.stringify(knownAddresses.slice(0, 300)));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function renderKnownAddressesDatalist() {
+  const datalist = document.getElementById("mail-known-addresses");
+  if (!(datalist instanceof HTMLDataListElement)) return;
+  datalist.innerHTML = "";
+  knownAddresses.slice(0, 200).forEach((email) => {
+    const option = document.createElement("option");
+    option.value = email;
+    datalist.appendChild(option);
+  });
+}
+
+function addKnownAddressesFromRaw(raw) {
+  const emails = parseEmails(raw);
+  if (!emails.length) return;
+  let changed = false;
+  emails.forEach((email) => {
+    if (!knownAddresses.includes(email)) {
+      knownAddresses.unshift(email);
+      changed = true;
+    }
+  });
+  if (!changed) return;
+  knownAddresses = knownAddresses.slice(0, 300);
+  saveKnownAddresses();
+  renderKnownAddressesDatalist();
+}
 
 function loadKnownAccounts() {
   try {
@@ -56,6 +130,30 @@ function saveActiveAccount(email) {
     } else {
       localStorage.removeItem(MAIL_ACTIVE_ACCOUNT_STORAGE_KEY);
     }
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function loadAiAssistSettings() {
+  try {
+    globalAiAssistEnabled = localStorage.getItem(MAIL_AI_ASSIST_GLOBAL_STORAGE_KEY) === "1";
+  } catch {
+    globalAiAssistEnabled = false;
+  }
+  try {
+    const raw = localStorage.getItem(MAIL_AI_ASSIST_THREAD_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    threadAiAssistMap = parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    threadAiAssistMap = {};
+  }
+}
+
+function saveAiAssistSettings() {
+  try {
+    localStorage.setItem(MAIL_AI_ASSIST_GLOBAL_STORAGE_KEY, globalAiAssistEnabled ? "1" : "0");
+    localStorage.setItem(MAIL_AI_ASSIST_THREAD_STORAGE_KEY, JSON.stringify(threadAiAssistMap));
   } catch {
     // ignore storage errors
   }
@@ -105,12 +203,170 @@ function setActionStatus(text) {
 }
 
 function setActionControlsEnabled(enabled) {
+  const archiveBtn = document.getElementById("mail-archive-btn");
+  const restoreBtn = document.getElementById("mail-restore-btn");
   const trashBtn = document.getElementById("mail-trash-btn");
   const moveBtn = document.getElementById("mail-move-btn");
   const moveSel = document.getElementById("mail-move-folder");
+  if (archiveBtn) archiveBtn.disabled = !enabled;
+  if (restoreBtn) restoreBtn.disabled = !enabled;
   if (trashBtn) trashBtn.disabled = !enabled;
   if (moveBtn) moveBtn.disabled = !enabled;
   if (moveSel) moveSel.disabled = !enabled;
+}
+
+function clearUndoUi() {
+  const row = document.getElementById("mail-undo-row");
+  const text = document.getElementById("mail-undo-text");
+  if (row) row.style.display = "none";
+  if (text) text.textContent = "";
+  pendingUndoAction = null;
+  if (undoTimer) {
+    window.clearTimeout(undoTimer);
+    undoTimer = null;
+  }
+}
+
+function showUndoUi({ messageId, sourceAction, text }) {
+  const row = document.getElementById("mail-undo-row");
+  const label = document.getElementById("mail-undo-text");
+  if (!(row instanceof HTMLElement) || !(label instanceof HTMLElement)) return;
+  pendingUndoAction = { messageId: String(messageId || ""), sourceAction: String(sourceAction || "") };
+  label.textContent = text || "Aktion ausgeführt.";
+  row.style.display = "";
+  if (undoTimer) window.clearTimeout(undoTimer);
+  undoTimer = window.setTimeout(() => clearUndoUi(), 8000);
+}
+
+function setComposeControlsEnabled(enabled) {
+  const replyBtn = document.getElementById("mail-compose-reply-btn");
+  const fwdBtn = document.getElementById("mail-compose-forward-btn");
+  if (replyBtn) replyBtn.disabled = !enabled;
+  if (fwdBtn) fwdBtn.disabled = !enabled;
+}
+
+function showComposeForm(show) {
+  const form = document.getElementById("mail-compose-form");
+  const cancelBtn = document.getElementById("mail-compose-cancel-btn");
+  const previewPane = document.querySelector("#mail-modal .mail-preview-pane");
+  if (form) form.style.display = show ? "flex" : "none";
+  if (cancelBtn) cancelBtn.style.display = show ? "" : "none";
+  if (previewPane) previewPane.classList.toggle("mail-preview-pane--composing", !!show);
+
+  if (show) {
+    const toEl = document.getElementById("mail-compose-to");
+    const bodyEl = document.getElementById("mail-compose-body");
+    const focusTarget = toEl instanceof HTMLInputElement && !toEl.value.trim() ? toEl : bodyEl;
+    focusTarget?.focus();
+    const contentEl = document.querySelector("#mail-modal .mail-preview-content");
+    if (contentEl instanceof HTMLElement) contentEl.scrollTop = 0;
+  }
+}
+
+function configureComposeModeUi(mode) {
+  const forwardRow = document.getElementById("mail-forward-attachments-row");
+  const forwardCheckbox = document.getElementById("mail-forward-include-attachments");
+  const hintEl = document.getElementById("mail-compose-mode-hint");
+  const isForward = mode === "forward";
+  if (forwardRow) forwardRow.style.display = isForward ? "" : "none";
+  if (forwardCheckbox instanceof HTMLInputElement) {
+    if (!isForward) forwardCheckbox.checked = false;
+    forwardCheckbox.onchange = () => {
+      if (!(hintEl instanceof HTMLElement)) return;
+      if (mode === "forward") {
+        hintEl.textContent = forwardCheckbox.checked
+          ? "Modus: Weiterleiten. Original-Anhaenge werden beim Senden mit uebernommen."
+          : "Modus: Weiterleiten. Original-Anhaenge werden nicht automatisch mitgeschickt.";
+      }
+    };
+  }
+  if (hintEl instanceof HTMLElement) {
+    if (mode === "reply") {
+      hintEl.textContent = "Modus: Antworten. Threading aktiv (In-Reply-To/References wird gesetzt).";
+    } else if (mode === "forward") {
+      const includeOriginal = forwardCheckbox instanceof HTMLInputElement ? forwardCheckbox.checked : false;
+      hintEl.textContent = includeOriginal
+        ? "Modus: Weiterleiten. Original-Anhaenge werden beim Senden mit uebernommen."
+        : "Modus: Weiterleiten. Original-Anhaenge werden nicht automatisch mitgeschickt.";
+    } else if (mode === "new") {
+      hintEl.textContent = "Modus: Neue E-Mail.";
+    } else {
+      hintEl.textContent = "";
+    }
+  }
+}
+
+function setComposeModeBadge(mode) {
+  const badgeEl = document.getElementById("mail-compose-mode-badge");
+  if (!(badgeEl instanceof HTMLElement)) return;
+  badgeEl.classList.remove(
+    "mail-compose-mode-badge--new",
+    "mail-compose-mode-badge--reply",
+    "mail-compose-mode-badge--forward",
+  );
+  if (mode === "reply") {
+    badgeEl.textContent = "Antwort";
+    badgeEl.classList.add("mail-compose-mode-badge--reply");
+  } else if (mode === "forward") {
+    badgeEl.textContent = "Weiterleiten";
+    badgeEl.classList.add("mail-compose-mode-badge--forward");
+  } else {
+    badgeEl.textContent = "Neu";
+    badgeEl.classList.add("mail-compose-mode-badge--new");
+  }
+}
+
+function fillComposeForm({ to = "", subject = "", body = "", cc = "", bcc = "" } = {}) {
+  const toEl = document.getElementById("mail-compose-to");
+  const ccEl = document.getElementById("mail-compose-cc");
+  const bccEl = document.getElementById("mail-compose-bcc");
+  const subjectEl = document.getElementById("mail-compose-subject");
+  const bodyEl = document.getElementById("mail-compose-body");
+  if (toEl instanceof HTMLInputElement) toEl.value = to;
+  if (ccEl instanceof HTMLInputElement) ccEl.value = cc;
+  if (bccEl instanceof HTMLInputElement) bccEl.value = bcc;
+  if (subjectEl instanceof HTMLInputElement) subjectEl.value = subject;
+  if (bodyEl instanceof HTMLTextAreaElement) bodyEl.value = body;
+}
+
+function openCompose(mode) {
+  composeMode = mode;
+  composeMeta = { inReplyTo: "", references: "", sourceMessageId: "" };
+  const current = currentSelectedDetail;
+  if (mode === "new") {
+    fillComposeForm({});
+  } else if (mode === "reply") {
+    const msgIdHeader = String(current?.message_id_header || "").trim();
+    const refsHeader = String(current?.references_header || "").trim();
+    composeMeta.inReplyTo = msgIdHeader;
+    composeMeta.references = refsHeader
+      ? `${refsHeader} ${msgIdHeader}`.trim()
+      : msgIdHeader;
+    fillComposeForm({
+      to: String(current?.from_display || ""),
+      subject: `Re: ${String(current?.subject || "(Kein Betreff)")}`,
+      body: `\n\n---\n${String(current?.body_text || current?.snippet || "")}`,
+    });
+  } else if (mode === "forward") {
+    composeMeta.sourceMessageId = String(current?.id || "").trim();
+    fillComposeForm({
+      subject: `Fwd: ${String(current?.subject || "(Kein Betreff)")}`,
+      body: `\n\n--- Forwarded message ---\nFrom: ${String(current?.from_display || "")}\nDate: ${String(current?.date || "")}\n\n${String(current?.body_text || current?.snippet || "")}`,
+    });
+  }
+  configureComposeModeUi(mode);
+  setComposeModeBadge(mode);
+  showComposeForm(true);
+}
+
+function closeCompose() {
+  composeMode = null;
+  composeMeta = { inReplyTo: "", references: "", sourceMessageId: "" };
+  configureComposeModeUi(null);
+  setComposeModeBadge(null);
+  showComposeForm(false);
+  const statusEl = document.getElementById("mail-compose-status");
+  if (statusEl) statusEl.textContent = "Compose-Phase aktiv (Backend folgt).";
 }
 
 function isPanelVisible() {
@@ -127,6 +383,143 @@ function renderStatus({ badge, message, lastChecked }) {
   if (checkedEl) checkedEl.textContent = lastChecked ? `Zuletzt geprüft: ${lastChecked}` : "";
 }
 
+function getCurrentThreadAiEnabled() {
+  if (!selectedThreadId) return false;
+  return !!threadAiAssistMap[String(selectedThreadId)];
+}
+
+function getMessageSignature(detail) {
+  const id = String(detail?.id || "");
+  const date = String(detail?.date || "");
+  const snippet = String(detail?.snippet || "").slice(0, 80);
+  return `${id}|${date}|${snippet}`;
+}
+
+function simpleAiSummary(detail) {
+  const text = String(detail?.body_text || detail?.snippet || "").replace(/\s+/g, " ").trim();
+  if (!text) return "Keine verwertbaren Inhalte im Thread.";
+  const firstSentence = text.split(/[.!?]\s/)[0] || text.slice(0, 220);
+  return firstSentence.slice(0, 260);
+}
+
+function simpleReplyNeeded(detail) {
+  const text = String(detail?.body_text || detail?.snippet || "").toLowerCase();
+  if (text.includes("?") || /bitte|kannst du|deadline|termin/.test(text)) return "Ja";
+  return "Eher nein";
+}
+
+function simplePriority(detail) {
+  const from = String(detail?.from_display || "").toLowerCase();
+  const subject = String(detail?.subject || "").toLowerCase();
+  if (/rechnung|invoice|mahnung|deadline|dringend/.test(subject) || /chef|boss|bank/.test(from)) return "Hoch";
+  if (/newsletter|promo|angebot/.test(subject)) return "Niedrig";
+  return "Mittel";
+}
+
+function renderAiPanel(detail) {
+  const statusEl = document.getElementById("mail-ai-assist-status");
+  const globalToggle = document.getElementById("mail-ai-assist-global-toggle");
+  const threadToggle = document.getElementById("mail-ai-thread-toggle");
+  const summaryEl = document.getElementById("mail-ai-summary");
+  const replyEl = document.getElementById("mail-ai-reply-needed");
+  const prioEl = document.getElementById("mail-ai-priority");
+  const staleEl = document.getElementById("mail-ai-stale");
+  if (statusEl) statusEl.textContent = globalAiAssistEnabled ? "ON" : "OFF";
+  if (globalToggle instanceof HTMLInputElement) globalToggle.checked = globalAiAssistEnabled;
+  if (threadToggle instanceof HTMLInputElement) {
+    threadToggle.disabled = !globalAiAssistEnabled || !detail;
+    threadToggle.checked = !!(detail && getCurrentThreadAiEnabled());
+  }
+  if (!summaryEl || !replyEl || !prioEl || !staleEl) return;
+  if (!detail) {
+    summaryEl.textContent = "Keine Analyse vorhanden.";
+    replyEl.textContent = "Reply: ?";
+    prioEl.textContent = "Prio: ?";
+    staleEl.style.display = "none";
+    return;
+  }
+  if (!globalAiAssistEnabled || !getCurrentThreadAiEnabled()) {
+    summaryEl.textContent = globalAiAssistEnabled
+      ? "Thread-AI ist für diesen Thread deaktiviert."
+      : "AI Mail Assist ist global OFF.";
+    replyEl.textContent = "Reply: -";
+    prioEl.textContent = "Prio: -";
+    staleEl.style.display = "none";
+    return;
+  }
+  const currentSig = getMessageSignature(detail);
+  if (aiAnalysisState) {
+    staleEl.style.display = aiAnalysisState.signature && aiAnalysisState.signature !== currentSig ? "" : "none";
+    if (aiAnalysisState.degraded) {
+      summaryEl.textContent = `AI nicht verfuegbar: ${aiAnalysisState.error_message || "Providerfehler"}`;
+      replyEl.textContent = "Reply: ?";
+      prioEl.textContent = "Prio: ?";
+      aiSummarySignature = aiAnalysisState.signature || currentSig;
+      return;
+    }
+    summaryEl.textContent = `Summary: ${aiAnalysisState.summary || "-"}`;
+    replyEl.textContent = `Reply: ${aiAnalysisState.reply_needed || "-"}`;
+    prioEl.textContent = `Prio: ${aiAnalysisState.priority || "-"}`;
+    aiSummarySignature = aiAnalysisState.signature || currentSig;
+  } else {
+    staleEl.style.display = "none";
+    summaryEl.textContent = "Noch keine AI-Analyse. Bitte 'AI aktualisieren' klicken.";
+    replyEl.textContent = "Reply: ?";
+    prioEl.textContent = "Prio: ?";
+  }
+}
+
+function generateAiDraft(detail, tone) {
+  const subject = String(detail?.subject || "(Kein Betreff)");
+  const sender = String(detail?.from_display || "Ihnen");
+  const base = tone === "kurz"
+    ? "Danke für die Nachricht. Ich bestätige und melde mich mit den nächsten Schritten."
+    : tone === "freundlich"
+      ? "Vielen Dank für Ihre Nachricht. Ich habe alles gesehen und antworte Ihnen gern zeitnah mit den Details."
+      : tone === "formal"
+        ? "Vielen Dank für Ihre Nachricht. Ich bestätige den Eingang und werde Ihnen kurzfristig eine Rückmeldung übermitteln."
+        : "Danke für die Nachricht. Ich habe den Punkt notiert und komme zeitnah mit einer Rückmeldung auf Sie zu.";
+  return `Bezug: ${subject}\n\nHallo ${sender},\n\n${base}\n\nBeste Grüße`;
+}
+
+async function persistAiSettings(threadId = null, threadEnabled = null) {
+  await fetch(`${API_BASE_URL}/api/mail/ai/settings`, {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify({
+      global_enabled: !!globalAiAssistEnabled,
+      thread_id: threadId,
+      thread_enabled: threadEnabled,
+    }),
+  });
+}
+
+async function requestAiAnalyze(messageId) {
+  const response = await fetch(`${API_BASE_URL}/api/mail/ai/analyze`, {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify({ message_id: messageId }),
+  });
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload?.detail || `HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+async function requestAiDraft(messageId, tone) {
+  const response = await fetch(`${API_BASE_URL}/api/mail/ai/draft`, {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify({ message_id: messageId, tone }),
+  });
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload?.detail || `HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
 function renderLoading() {
   renderStatus({
     badge: "Prüfe...",
@@ -139,12 +532,17 @@ function renderPreview(thread) {
   const subjectEl = document.getElementById("mail-preview-subject");
   const metaEl = document.getElementById("mail-preview-meta");
   const snippetEl = document.getElementById("mail-preview-snippet");
-  if (!subjectEl || !metaEl || !snippetEl) return;
+  const attachmentsEl = document.getElementById("mail-preview-attachments");
+  if (!subjectEl || !metaEl || !snippetEl || !attachmentsEl) return;
   if (!thread && !currentSelectedDetail) {
     subjectEl.textContent = "Keine Mail ausgewählt";
     metaEl.textContent = "Wähle eine Mail aus der Liste.";
     snippetEl.textContent = "";
+    attachmentsEl.innerHTML = "";
+    attachmentsEl.style.display = "none";
     setActionControlsEnabled(false);
+    setComposeControlsEnabled(false);
+    renderAiPanel(null);
     return;
   }
   if (currentSelectedDetail && thread && String(currentSelectedDetail.id) === String(thread.id)) {
@@ -154,7 +552,10 @@ function renderPreview(thread) {
     subjectEl.textContent = String(currentSelectedDetail.subject || "(Kein Betreff)");
     metaEl.textContent = `${fromDisplay}${toDisplay ? ` → ${toDisplay}` : ""} · ${dateText}`;
     snippetEl.textContent = String(currentSelectedDetail.body_text || currentSelectedDetail.snippet || "");
+    renderAttachments(currentSelectedDetail.attachments || []);
     setActionControlsEnabled(true);
+    setComposeControlsEnabled(true);
+    renderAiPanel(currentSelectedDetail);
     return;
   }
   const fromDisplay = String(thread?.from_display || thread?.from || "Unbekannt");
@@ -162,7 +563,69 @@ function renderPreview(thread) {
   subjectEl.textContent = String(thread?.subject || "(Kein Betreff)");
   metaEl.textContent = `${fromDisplay} · ${dateText}`;
   snippetEl.textContent = "Lade Nachricht...";
+  attachmentsEl.innerHTML = "";
+  attachmentsEl.style.display = "none";
   setActionControlsEnabled(false);
+  setComposeControlsEnabled(false);
+  renderAiPanel(null);
+}
+
+function formatBytes(size) {
+  const n = Number(size || 0);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${Math.round(n / 102.4) / 10} KB`;
+  return `${Math.round(n / 104857.6) / 10} MB`;
+}
+
+async function downloadAttachment(messageId, attachment) {
+  const aid = String(attachment?.attachment_id || "").trim();
+  if (!messageId || !aid) return;
+  const filename = String(attachment?.filename || "attachment.bin");
+  const response = await fetch(`${API_BASE_URL}/api/mail/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(aid)}`, {
+    method: "GET",
+    headers: { Accept: "*/*" },
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function renderAttachments(attachments) {
+  const attachmentsEl = document.getElementById("mail-preview-attachments");
+  if (!(attachmentsEl instanceof HTMLElement)) return;
+  attachmentsEl.innerHTML = "";
+  const items = Array.isArray(attachments) ? attachments : [];
+  if (!items.length || !selectedThreadId) {
+    attachmentsEl.style.display = "none";
+    return;
+  }
+  items.forEach((att) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "mail-attachment-chip";
+    const size = formatBytes(att?.size);
+    btn.textContent = size ? `${String(att?.filename || "Anhang")} (${size})` : String(att?.filename || "Anhang");
+    btn.addEventListener("click", async () => {
+      try {
+        setActionStatus(`Lade Anhang ${String(att?.filename || "")}...`);
+        await downloadAttachment(selectedThreadId, att);
+        setActionStatus(`Anhang geladen: ${String(att?.filename || "")}`);
+      } catch (error) {
+        setActionStatus(`Anhang konnte nicht geladen werden (${error instanceof Error ? error.message : "unbekannt"}).`);
+      }
+    });
+    attachmentsEl.appendChild(btn);
+  });
+  attachmentsEl.style.display = "";
 }
 
 async function fetchMessageDetail(messageId) {
@@ -177,11 +640,14 @@ async function fetchMessageDetail(messageId) {
 async function loadSelectedMessageDetail(thread) {
   if (!thread?.id) return;
   currentSelectedDetail = null;
+  aiAnalysisState = null;
   renderPreview(thread);
   try {
     const detail = await fetchMessageDetail(thread.id);
     if (String(selectedThreadId) !== String(thread.id)) return;
     currentSelectedDetail = detail;
+    addKnownAddressesFromRaw(detail?.from_display || "");
+    addKnownAddressesFromRaw(detail?.to_display || "");
     renderPreview(thread);
     setActionStatus("Nachricht geladen.");
   } catch (_error) {
@@ -196,14 +662,21 @@ async function loadSelectedMessageDetail(thread) {
 
 async function trashSelectedMessage() {
   if (!selectedThreadId) return;
+  const affectedId = selectedThreadId;
+  clearUndoUi();
   setActionStatus("Verschiebe in Papierkorb...");
-  const response = await fetch(`${API_BASE_URL}/api/mail/messages/${encodeURIComponent(selectedThreadId)}/trash`, {
+  const response = await fetch(`${API_BASE_URL}/api/mail/messages/${encodeURIComponent(affectedId)}/trash`, {
     method: "POST",
     headers: { Accept: "application/json" },
   });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const payload = await response.json();
   setActionStatus(payload.message || "In Papierkorb verschoben.");
+  showUndoUi({
+    messageId: affectedId,
+    sourceAction: "trash",
+    text: "In Papierkorb verschoben. Rueckgaengig moeglich (8s).",
+  });
   selectedThreadId = null;
   currentSelectedDetail = null;
   await refreshInboxThreadsFromApi(String(document.getElementById("mail-search-input")?.value || "").trim());
@@ -211,8 +684,10 @@ async function trashSelectedMessage() {
 
 async function moveSelectedMessage(targetFolder) {
   if (!selectedThreadId) return;
+  const affectedId = selectedThreadId;
+  clearUndoUi();
   setActionStatus("Verschiebe Mail...");
-  const response = await fetch(`${API_BASE_URL}/api/mail/messages/${encodeURIComponent(selectedThreadId)}/move`, {
+  const response = await fetch(`${API_BASE_URL}/api/mail/messages/${encodeURIComponent(affectedId)}/move`, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -223,6 +698,33 @@ async function moveSelectedMessage(targetFolder) {
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const payload = await response.json();
   setActionStatus(payload.message || "Mail verschoben.");
+  if (String(targetFolder) === "archive") {
+    showUndoUi({
+      messageId: affectedId,
+      sourceAction: "archive",
+      text: "Archiviert. Rueckgaengig moeglich (8s).",
+    });
+  }
+  selectedThreadId = null;
+  currentSelectedDetail = null;
+  await refreshInboxThreadsFromApi(String(document.getElementById("mail-search-input")?.value || "").trim());
+}
+
+async function undoLastMailAction() {
+  const ctx = pendingUndoAction;
+  if (!ctx?.messageId) return;
+  setActionStatus("Stelle Mail in Posteingang wieder her...");
+  const response = await fetch(`${API_BASE_URL}/api/mail/messages/${encodeURIComponent(ctx.messageId)}/move`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ target_folder: "inbox" }),
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  clearUndoUi();
+  setActionStatus("Rueckgaengig erfolgreich: Mail ist wieder im Posteingang.");
   selectedThreadId = null;
   currentSelectedDetail = null;
   await refreshInboxThreadsFromApi(String(document.getElementById("mail-search-input")?.value || "").trim());
@@ -248,11 +750,15 @@ function renderThreadList(threads) {
     }
     if (thread.unread) row.classList.add("mail-thread-row--unread");
     const fromDisplay = String(thread.from_display || thread.from || "");
-    const dateText = formatCompactDate(thread.date);
+    addKnownAddressesFromRaw(fromDisplay);
+    const dateText = formatCompactDate(thread);
+    const attachmentBadge = thread.has_attachments
+      ? `<span class="mail-thread-attachment" title="Hat Anhang" aria-label="Hat Anhang">📎</span>`
+      : "";
     row.innerHTML = `
       <div class="mail-thread-top">
         <span class="mail-thread-from">${fromDisplay || "Unbekannt"}</span>
-        <span class="mail-thread-date">${dateText}</span>
+        <span class="mail-thread-date">${dateText}${attachmentBadge}</span>
       </div>
       <div class="mail-thread-subject">${String(thread.subject || "(Kein Betreff)")}</div>
     `;
@@ -275,10 +781,27 @@ function renderThreadList(threads) {
   });
 }
 
-function formatCompactDate(rawDate) {
-  if (!rawDate) return "";
-  const d = new Date(rawDate);
-  if (Number.isNaN(d.getTime())) return String(rawDate);
+function mergeThreads(existing, incoming) {
+  const listA = Array.isArray(existing) ? existing : [];
+  const listB = Array.isArray(incoming) ? incoming : [];
+  const byId = new Map();
+  listA.forEach((item) => {
+    const id = String(item?.id || "");
+    if (id) byId.set(id, item);
+  });
+  listB.forEach((item) => {
+    const id = String(item?.id || "");
+    if (!id) return;
+    byId.set(id, item);
+  });
+  return Array.from(byId.values());
+}
+
+function formatCompactDate(thread) {
+  const internalRaw = Number(thread?.internal_date_ms || 0);
+  const rawDate = String(thread?.date || "");
+  const d = internalRaw > 0 ? new Date(internalRaw) : new Date(rawDate);
+  if (Number.isNaN(d.getTime())) return rawDate;
   const now = new Date();
   const isToday =
     d.getFullYear() === now.getFullYear()
@@ -351,11 +874,12 @@ function renderInboxForState() {
   renderPreview(active);
 }
 
-async function fetchInboxThreads(query = "") {
+async function fetchInboxThreads(query = "", pageToken = "") {
   const url = new URL(`${API_BASE_URL}/api/mail/threads`);
   url.searchParams.set("max_results", "20");
   url.searchParams.set("folder", currentFolder);
   if (query.trim()) url.searchParams.set("q", query.trim());
+  if (pageToken.trim()) url.searchParams.set("page_token", pageToken.trim());
 
   const response = await fetch(url.toString(), {
     method: "GET",
@@ -385,6 +909,9 @@ async function refreshInboxThreadsFromApi(query = "") {
   try {
     const payload = await fetchInboxThreads(query);
     currentThreads = Array.isArray(payload?.threads) ? payload.threads : [];
+    nextThreadsPageToken = String(payload?.next_page_token || "");
+    hasMoreThreads = !!nextThreadsPageToken;
+    loadingMoreThreads = false;
     if (!selectedThreadId && currentThreads.length) selectedThreadId = currentThreads[0].id;
     currentSelectedDetail = null;
     lastServerQuery = query.trim();
@@ -399,6 +926,44 @@ async function refreshInboxThreadsFromApi(query = "") {
       emptyEl.style.display = "";
       emptyEl.textContent = `Mails konnten nicht geladen werden (${error instanceof Error ? error.message : "unbekannter Fehler"}).`;
     }
+    hasMoreThreads = false;
+    nextThreadsPageToken = "";
+    loadingMoreThreads = false;
+  }
+}
+
+async function loadMoreThreadsFromApi() {
+  if (currentMailStatus !== "connected" || !hasMoreThreads || !nextThreadsPageToken || loadingMoreThreads) return;
+  loadingMoreThreads = true;
+  try {
+    const payload = await fetchInboxThreads(lastServerQuery, nextThreadsPageToken);
+    const incoming = Array.isArray(payload?.threads) ? payload.threads : [];
+    currentThreads = mergeThreads(currentThreads, incoming);
+    nextThreadsPageToken = String(payload?.next_page_token || "");
+    hasMoreThreads = !!nextThreadsPageToken;
+    renderInboxForState();
+  } catch (error) {
+    setActionStatus(`Weitere Mails konnten nicht geladen werden (${error instanceof Error ? error.message : "unbekannt"}).`);
+  } finally {
+    loadingMoreThreads = false;
+    // Large viewports can still be at the bottom after append; keep filling until content exceeds viewport.
+    handleThreadListInfiniteScroll().catch(() => {});
+  }
+}
+
+async function handleThreadListInfiniteScroll() {
+  const listEl = document.getElementById("mail-thread-list");
+  const paneEl = document.querySelector("#mail-modal .mail-list-pane");
+  if (!(listEl instanceof HTMLElement)) return;
+  if (currentMailStatus !== "connected" || !hasMoreThreads || loadingMoreThreads) return;
+  const thresholdPx = 120;
+  const listRemaining = listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight;
+  let paneRemaining = Number.POSITIVE_INFINITY;
+  if (paneEl instanceof HTMLElement) {
+    paneRemaining = paneEl.scrollHeight - paneEl.scrollTop - paneEl.clientHeight;
+  }
+  if (listRemaining <= thresholdPx || paneRemaining <= thresholdPx) {
+    await loadMoreThreadsFromApi();
   }
 }
 
@@ -442,6 +1007,9 @@ async function refreshMailStatus() {
       currentThreads = [];
       selectedThreadId = null;
       currentSelectedDetail = null;
+      nextThreadsPageToken = "";
+      hasMoreThreads = false;
+      loadingMoreThreads = false;
       renderInboxForState();
     }
   } catch (error) {
@@ -449,6 +1017,9 @@ async function refreshMailStatus() {
     currentThreads = [];
     selectedThreadId = null;
     currentSelectedDetail = null;
+    nextThreadsPageToken = "";
+    hasMoreThreads = false;
+    loadingMoreThreads = false;
     renderStatus({
       badge: "Fehler",
       message: `Status konnte nicht geladen werden (${error instanceof Error ? error.message : "unbekannter Fehler"}).`,
@@ -466,9 +1037,12 @@ function bindMailModalUi() {
   const modal = document.getElementById("mail-modal");
   const header = modal?.querySelector(".dock-panel-header");
   const searchInput = document.getElementById("mail-search-input");
+  const archiveBtn = document.getElementById("mail-archive-btn");
+  const restoreBtn = document.getElementById("mail-restore-btn");
   const trashBtn = document.getElementById("mail-trash-btn");
   const moveBtn = document.getElementById("mail-move-btn");
   const moveSel = document.getElementById("mail-move-folder");
+  const undoBtn = document.getElementById("mail-undo-btn");
   const folderButtons = Array.from(document.querySelectorAll(".mail-folder-item[data-mail-folder]"));
   const switchAccountBtn = document.getElementById("mail-switch-account-btn");
   const accountSelect = document.getElementById("mail-account-select");
@@ -478,6 +1052,16 @@ function bindMailModalUi() {
   const accountCancelBtn = document.getElementById("mail-account-cancel-btn");
   const accountConnectBtn = document.getElementById("mail-account-connect-btn");
   const accountEmailInput = document.getElementById("mail-account-email-input");
+  const composeNewBtn = document.getElementById("mail-compose-new-btn");
+  const composeReplyBtn = document.getElementById("mail-compose-reply-btn");
+  const composeForwardBtn = document.getElementById("mail-compose-forward-btn");
+  const composeCancelBtn = document.getElementById("mail-compose-cancel-btn");
+  const composeSendBtn = document.getElementById("mail-compose-send-btn");
+  const aiGlobalToggle = document.getElementById("mail-ai-assist-global-toggle");
+  const aiThreadToggle = document.getElementById("mail-ai-thread-toggle");
+  const aiRefreshBtn = document.getElementById("mail-ai-refresh-btn");
+  const aiDraftBtn = document.getElementById("mail-ai-draft-btn");
+  const aiToneEl = document.getElementById("mail-ai-tone");
 
   closeBtn?.addEventListener("click", () => dockClose(MODULE_ID));
   minimizeBtn?.addEventListener("click", () => dockMinimize(MODULE_ID, true));
@@ -505,6 +1089,18 @@ function bindMailModalUi() {
     }
   });
   const listEl = document.getElementById("mail-thread-list");
+  const listPaneEl = document.querySelector("#mail-modal .mail-list-pane");
+  if (!infiniteScrollBound && listEl instanceof HTMLElement) {
+    listEl.addEventListener("scroll", () => {
+      handleThreadListInfiniteScroll().catch(() => {});
+    });
+    if (listPaneEl instanceof HTMLElement) {
+      listPaneEl.addEventListener("scroll", () => {
+        handleThreadListInfiniteScroll().catch(() => {});
+      });
+    }
+    infiniteScrollBound = true;
+  }
   listEl?.addEventListener("keydown", (event) => {
     if (event.key === "ArrowDown") {
       event.preventDefault();
@@ -522,6 +1118,9 @@ function bindMailModalUi() {
       selectedThreadId = null;
       currentSelectedDetail = null;
       lastServerQuery = "";
+      nextThreadsPageToken = "";
+      hasMoreThreads = false;
+      loadingMoreThreads = false;
       folderButtons.forEach((node) => {
         node.classList.toggle("mail-folder-item--active", node === btn);
       });
@@ -531,6 +1130,20 @@ function bindMailModalUi() {
         renderInboxForState();
       }
     });
+  });
+  archiveBtn?.addEventListener("click", async () => {
+    try {
+      await moveSelectedMessage("archive");
+    } catch (error) {
+      setActionStatus(`Aktion fehlgeschlagen (${error instanceof Error ? error.message : "unbekannt"}).`);
+    }
+  });
+  restoreBtn?.addEventListener("click", async () => {
+    try {
+      await moveSelectedMessage("inbox");
+    } catch (error) {
+      setActionStatus(`Aktion fehlgeschlagen (${error instanceof Error ? error.message : "unbekannt"}).`);
+    }
   });
   trashBtn?.addEventListener("click", async () => {
     try {
@@ -545,6 +1158,152 @@ function bindMailModalUi() {
       await moveSelectedMessage(target);
     } catch (error) {
       setActionStatus(`Aktion fehlgeschlagen (${error instanceof Error ? error.message : "unbekannt"}).`);
+    }
+  });
+  aiGlobalToggle?.addEventListener("change", () => {
+    globalAiAssistEnabled = !!(aiGlobalToggle instanceof HTMLInputElement && aiGlobalToggle.checked);
+    saveAiAssistSettings();
+    persistAiSettings().catch(() => {});
+    renderAiPanel(currentSelectedDetail);
+    setActionStatus(globalAiAssistEnabled ? "AI Mail Assist global aktiviert." : "AI Mail Assist global deaktiviert.");
+  });
+  aiThreadToggle?.addEventListener("change", () => {
+    if (!selectedThreadId) return;
+    const enabled = !!(aiThreadToggle instanceof HTMLInputElement && aiThreadToggle.checked);
+    threadAiAssistMap[String(selectedThreadId)] = enabled;
+    saveAiAssistSettings();
+    persistAiSettings(String(selectedThreadId), enabled).catch(() => {});
+    aiAnalysisState = null;
+    renderAiPanel(currentSelectedDetail);
+  });
+  aiRefreshBtn?.addEventListener("click", async () => {
+    if (!currentSelectedDetail) return;
+    if (!globalAiAssistEnabled) {
+      setActionStatus("AI-Analyse gesperrt: Bitte AI Mail Assist global aktivieren.");
+      return;
+    }
+    if (!getCurrentThreadAiEnabled() && selectedThreadId) {
+      threadAiAssistMap[String(selectedThreadId)] = true;
+      saveAiAssistSettings();
+      persistAiSettings(String(selectedThreadId), true).catch(() => {});
+      renderAiPanel(currentSelectedDetail);
+    }
+    try {
+      setActionStatus("AI analysiert Thread...");
+      aiAnalysisState = await requestAiAnalyze(String(currentSelectedDetail.id));
+      renderAiPanel(currentSelectedDetail);
+      setActionStatus(aiAnalysisState?.degraded ? "AI-Analyse nicht verfuegbar." : "AI-Analyse aktualisiert.");
+    } catch (error) {
+      setActionStatus(`AI-Analyse fehlgeschlagen (${error instanceof Error ? error.message : "unbekannt"}).`);
+    }
+  });
+  aiDraftBtn?.addEventListener("click", async () => {
+    if (!currentSelectedDetail) return;
+    if (!globalAiAssistEnabled) {
+      setActionStatus("AI-Draft gesperrt: Bitte AI Mail Assist global aktivieren.");
+      return;
+    }
+    if (!getCurrentThreadAiEnabled() && selectedThreadId) {
+      threadAiAssistMap[String(selectedThreadId)] = true;
+      saveAiAssistSettings();
+      persistAiSettings(String(selectedThreadId), true).catch(() => {});
+      renderAiPanel(currentSelectedDetail);
+    }
+    const tone = aiToneEl instanceof HTMLSelectElement ? String(aiToneEl.value || "neutral") : "neutral";
+    try {
+      setActionStatus("AI erstellt Draft...");
+      const payload = await requestAiDraft(String(currentSelectedDetail.id), tone);
+      if (payload?.degraded) {
+        setActionStatus(`AI-Draft nicht verfuegbar (${payload.error_message || "Providerfehler"}).`);
+        return;
+      }
+      openCompose("reply");
+      const bodyEl = document.getElementById("mail-compose-body");
+      if (bodyEl instanceof HTMLTextAreaElement) bodyEl.value = String(payload?.draft || "");
+      const statusEl = document.getElementById("mail-compose-status");
+      if (statusEl) statusEl.textContent = "AI-Draft erstellt. Bitte prüfen und dann senden.";
+      setActionStatus("AI-Draft bereit.");
+    } catch (error) {
+      setActionStatus(`AI-Draft fehlgeschlagen (${error instanceof Error ? error.message : "unbekannt"}).`);
+    }
+  });
+  undoBtn?.addEventListener("click", async () => {
+    try {
+      await undoLastMailAction();
+    } catch (error) {
+      clearUndoUi();
+      setActionStatus(`Rueckgaengig fehlgeschlagen (${error instanceof Error ? error.message : "unbekannt"}).`);
+    }
+  });
+  composeNewBtn?.addEventListener("click", () => openCompose("new"));
+  composeReplyBtn?.addEventListener("click", () => {
+    if (!currentSelectedDetail) return;
+    openCompose("reply");
+  });
+  composeForwardBtn?.addEventListener("click", () => {
+    if (!currentSelectedDetail) return;
+    openCompose("forward");
+  });
+  composeCancelBtn?.addEventListener("click", () => closeCompose());
+  composeSendBtn?.addEventListener("click", async () => {
+    const statusEl = document.getElementById("mail-compose-status");
+    const toEl = document.getElementById("mail-compose-to");
+    const ccEl = document.getElementById("mail-compose-cc");
+    const bccEl = document.getElementById("mail-compose-bcc");
+    const subjectEl = document.getElementById("mail-compose-subject");
+    const bodyEl = document.getElementById("mail-compose-body");
+    const attachmentsEl = document.getElementById("mail-compose-attachments");
+    const forwardAttachEl = document.getElementById("mail-forward-include-attachments");
+    const to = toEl instanceof HTMLInputElement ? String(toEl.value || "").trim() : "";
+    const cc = ccEl instanceof HTMLInputElement ? String(ccEl.value || "").trim() : "";
+    const bcc = bccEl instanceof HTMLInputElement ? String(bccEl.value || "").trim() : "";
+    const subject = subjectEl instanceof HTMLInputElement ? String(subjectEl.value || "") : "";
+    const body = bodyEl instanceof HTMLTextAreaElement ? String(bodyEl.value || "") : "";
+
+    if (!to) {
+      if (statusEl) statusEl.textContent = "Bitte Empfaenger in 'To' eintragen.";
+      return;
+    }
+    if (statusEl) statusEl.textContent = "Sende E-Mail...";
+    if (composeSendBtn instanceof HTMLButtonElement) composeSendBtn.disabled = true;
+    try {
+      const formData = new FormData();
+      formData.append("to", to);
+      formData.append("cc", cc);
+      formData.append("bcc", bcc);
+      formData.append("subject", subject);
+      formData.append("body", body);
+      formData.append("in_reply_to", String(composeMeta.inReplyTo || ""));
+      formData.append("references", String(composeMeta.references || ""));
+      formData.append("source_message_id", String(composeMeta.sourceMessageId || ""));
+      const includeOriginal = composeMode === "forward" && forwardAttachEl instanceof HTMLInputElement && forwardAttachEl.checked;
+      formData.append("include_original_attachments", includeOriginal ? "true" : "false");
+      if (attachmentsEl instanceof HTMLInputElement && attachmentsEl.files) {
+        Array.from(attachmentsEl.files).forEach((file) => formData.append("attachments", file));
+      }
+      const response = await fetch(`${API_BASE_URL}/api/mail/messages/send`, {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: formData,
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload?.detail || `HTTP ${response.status}`);
+      }
+      if (statusEl) statusEl.textContent = "E-Mail gesendet.";
+      addKnownAddressesFromRaw(to);
+      addKnownAddressesFromRaw(cc);
+      addKnownAddressesFromRaw(bcc);
+      if (attachmentsEl instanceof HTMLInputElement) attachmentsEl.value = "";
+      closeCompose();
+      setActionStatus("E-Mail erfolgreich gesendet.");
+      if (currentFolder === "sent") {
+        await refreshInboxThreadsFromApi(String(searchInput?.value || "").trim());
+      }
+    } catch (error) {
+      if (statusEl) statusEl.textContent = `Senden fehlgeschlagen (${error instanceof Error ? error.message : "unbekannt"}).`;
+    } finally {
+      if (composeSendBtn instanceof HTMLButtonElement) composeSendBtn.disabled = false;
     }
   });
   switchAccountBtn?.addEventListener("click", async () => {
@@ -712,15 +1471,21 @@ function syncMailFromState() {
 }
 
 function initMailModal() {
+  loadKnownAddresses();
+  renderKnownAddressesDatalist();
   loadKnownAccounts();
+  loadAiAssistSettings();
   renderAccountSelect();
   bindMailModalUi();
   syncMailFromState();
   renderInboxForState();
   renderPreview(null);
+  renderAiPanel(null);
   syncSidebarActiveState();
   setActionStatus("Keine Aktion ausgeführt.");
   setActionControlsEnabled(false);
+  setComposeControlsEnabled(false);
+  showComposeForm(false);
   currentFilteredThreads = [];
 }
 

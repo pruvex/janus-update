@@ -136,10 +136,26 @@ function applyDockUi(state) {
     btnVideo.style.display = vOpen && vMin ? "" : "none";
   }
 
+  const btnMail = document.getElementById("dock-mail");
+  if (btnMail) {
+    const mm = state.dock?.modules?.mail || getDockModuleState("mail");
+    const mOpen = !!mm?.isOpen;
+    const mMin = !!mm?.minimized;
+    btnMail.classList.toggle("is-minimized", mMin);
+    btnMail.classList.toggle("is-active", mOpen && !mMin);
+    btnMail.style.display = mOpen && mMin ? "" : "none";
+  }
+
   const kcPanel = document.getElementById("knowledge-center-modal");
   if (kcPanel) {
     const km = state.dock?.modules?.["knowledge-center"] || getDockModuleState("knowledge-center");
     kcPanel.classList.toggle("dock-panel--open", !!km?.isOpen && !km?.minimized);
+  }
+
+  const mailPanel = document.getElementById("mail-modal");
+  if (mailPanel) {
+    const mm = state.dock?.modules?.mail || getDockModuleState("mail");
+    mailPanel.classList.toggle("dock-panel--open", !!mm?.isOpen && !mm?.minimized);
   }
 }
 
@@ -167,6 +183,11 @@ function bindDockModuleButtons() {
       return;
     }
     openModal({ type: "video" });
+  });
+
+  const btnMail = document.getElementById("dock-mail");
+  btnMail?.addEventListener("click", () => {
+    openModal({ type: "mail" });
   });
 }
 
@@ -214,6 +235,7 @@ function initDock() {
   setDockModuleExists("gallery", true);
   setDockModuleExists("video-player", true);
   setDockModuleExists("calendar", true);
+  setDockModuleExists("mail", true);
   ensureKnowledgePanelGeometry();
   bindDockEvents();
   subscribeWindowState((state) => {

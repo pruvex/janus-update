@@ -24,6 +24,7 @@ export const RENDERER_MAP = Object.freeze({
   video: "video-player",
   image: "image-viewer",
   calendar: "calendar",
+  mail: "mail",
 });
 
 const SUPPORTED_TYPES = Object.freeze(Object.keys(RENDERER_MAP));
@@ -48,6 +49,7 @@ const DOCK_HOST_ELEMENT_IDS = Object.freeze({
   "video-player": "video-player-modal",
   "transcript": "transcript-modal",
   calendar: "calendar-modal",
+  mail: "mail-modal",
 });
 
 function emitModalEvent(modalId, event, context = {}) {
@@ -216,6 +218,7 @@ const DOCK_MODULE_TO_OPEN_MODAL_TYPE = Object.freeze({
   "video-player": "video",
   "image-viewer": "image",
   calendar: "calendar",
+  mail: "mail",
 });
 
 // Global export for legacy code compatibility

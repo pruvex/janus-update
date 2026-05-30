@@ -59,3 +59,17 @@
   filter: drop-shadow(0 0 4px rgba(92, 219, 154, 0.55))
     drop-shadow(0 0 10px rgba(92, 219, 154, 0.28));
 }
+
+#sidebar-nav .sidebar-nav-item .sidebar-nav-icon.icon-mail {
+  color: #f59e0b;
+}
+
+#sidebar-nav .sidebar-nav-item:hover .sidebar-nav-icon.icon-mail {
+  color: #ffc14d;
+}
+
+#sidebar-nav .sidebar-nav-item.sidebar-nav-item--active .sidebar-nav-icon.icon-mail {
+  color: #ffd68a;
+  filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.58))
+    drop-shadow(0 0 10px rgba(245, 158, 11, 0.3));
+}
