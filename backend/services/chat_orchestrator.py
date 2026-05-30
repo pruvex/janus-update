@@ -1034,6 +1034,7 @@ class ChatOrchestrator:
         from backend.services.memory_identity import load_identity_slot as _load_identity
         wf._identity = _load_identity(self.db)
         wf.user_text = request.prompt or (request.content[0].text if request.content and request.content[0].type == 'text' else '')
+        wf.original_user_text = str(wf.user_text or "")
         wf._identity_from_current_msg = False
         if wf._identity.name is None:
             wf._realtime_name = ChatOrchestrator._extract_realtime_identity_name(wf.user_text)
@@ -1301,7 +1302,7 @@ class ChatOrchestrator:
         re.IGNORECASE,
     )
     _CHAT_MAIL_SAVE_CATEGORIZED_RE = re.compile(
-        r"(?is).*(?:papierkram).*(?:vodafone).*(?:sonstige).*",
+        r"(?is).*(?:papierkram).*(?:vodafone).*(?:sonstige|sostige).*",
         re.IGNORECASE,
     )
     _CHAT_MAIL_SAVE_RENAME_RE = re.compile(
@@ -1911,17 +1912,50 @@ class ChatOrchestrator:
             return None
         service = MailService()
         user_turn_persisted = False
+        original_user_text = str(
+            getattr(wf, "mail_original_user_text", "")
+            or getattr(wf, "original_user_text", "")
+            or wf.user_text
+            or ""
+        ).strip()
+
+        def _is_control_reply(text: str) -> bool:
+            normalized = str(text or "").strip().lower()
+            return normalized in {
+                "1", "1.",
+                "2", "2.",
+                "3", "3.",
+                "ja", "j", "yes", "y",
+                "nein", "n", "no",
+            }
 
         def _persist_user_turn_once() -> None:
             nonlocal user_turn_persisted
             if user_turn_persisted:
                 return
-            text_in = str(wf.user_text or "").strip()
+            if bool(getattr(wf, "mail_original_user_persisted", False)):
+                user_turn_persisted = True
+                return
+            # Freeze original user text for this request: later flow-steps may
+            # rewrite wf.user_text internally to control values like "1"/"3".
+            text_in = original_user_text
             if not text_in:
+                return
+            # Reine Entscheidungsantworten gehören nicht als normale Chat-Nachricht
+            # in die Historie, sonst ersetzt der Control-Reply beim Restart den
+            # sichtbaren Kontext (z. B. nur "3" statt der eigentlichen Anfrage).
+            if _is_control_reply(text_in) and get_pending_account_choice(chat_id) is not None:
+                user_turn_persisted = True
                 return
             try:
                 crud.create_message(self.db, chat_id, "user", text_in)
+                logger.info(
+                    "[MAIL-CHAT] persisted user turn chat_id=%s text=%r",
+                    chat_id,
+                    (text_in[:180] + "…") if len(text_in) > 180 else text_in,
+                )
                 user_turn_persisted = True
+                wf.mail_original_user_persisted = True
             except Exception:
                 logger.warning("[MAIL-CHAT] Failed to persist user turn for chat_id=%s", chat_id, exc_info=True)
 
@@ -2098,7 +2132,6 @@ class ChatOrchestrator:
                 categorize_invoices = bool(pending_acc.payload.get("categorize_invoices"))
                 desktop = Path.home() / "Desktop"
                 target_dir = desktop / folder_name
-                target_dir.mkdir(parents=True, exist_ok=True)
                 bucket_dirs = {
                     "papierkram_rechnungen": desktop / "papierkram rechnungen",
                     "vodafone_rechnungen": desktop / "vodafone rechnungen",
@@ -2108,6 +2141,8 @@ class ChatOrchestrator:
                 if categorize_invoices:
                     for d in bucket_dirs.values():
                         d.mkdir(parents=True, exist_ok=True)
+                else:
+                    target_dir.mkdir(parents=True, exist_ok=True)
 
                 accounts_to_process = pending_acc.accounts if selected == "all" else [selected]
                 saved_files: list[str] = []
@@ -2157,7 +2192,7 @@ class ChatOrchestrator:
                                             filename=filename,
                                             body_text=str(getattr(detail, "body_text", "") or ""),
                                         )
-                                        out_base = bucket_dirs.get(bucket, target_dir)
+                                        out_base = bucket_dirs.get(bucket, bucket_dirs["sonstige_rechnungen"])
                                         bucket_counts[bucket] = bucket_counts.get(bucket, 0) + 1
                                     out_path = self._unique_file_path(out_base, target_name)
                                     out_path.write_bytes(bytes(content))
@@ -2189,7 +2224,14 @@ class ChatOrchestrator:
                     wf.execution_for_api = ExecutionResponse(
                         text=(
                             f"Ich konnte keine passenden Anhänge speichern.\n"
-                            f"Ordner wurde erstellt: `{target_dir}`"
+                            + (
+                                "Ordner wurden erstellt:\n"
+                                f"- `{bucket_dirs['papierkram_rechnungen']}`\n"
+                                f"- `{bucket_dirs['vodafone_rechnungen']}`\n"
+                                f"- `{bucket_dirs['sonstige_rechnungen']}`"
+                                if categorize_invoices
+                                else f"Ordner wurde erstellt: `{target_dir}`"
+                            )
                             + (f"\nDetails: {errors[0]}" if errors else "")
                         )
                     )
@@ -2835,6 +2877,29 @@ class ChatOrchestrator:
                 bool(invoice_mail_probe),
             )
             accounts, _active = service.get_known_accounts()
+            # UX-Regel: Bei expliziter Mehrordner-Rechnungsverteilung (papierkram/vodafone/sonstige)
+            # automatisch über alle Konten ausführen, ohne Rückfrage.
+            if len(accounts) > 1 and categorize_invoices:
+                if not getattr(wf, "mail_original_user_text", None):
+                    wf.mail_original_user_text = original_user_text
+                _persist_user_turn_once()
+                set_pending_account_choice(
+                    chat_id,
+                    PendingMailAccountChoice(
+                        action="save_attachments",
+                        accounts=accounts,
+                        payload={
+                            "count": count,
+                            "invoice_only": invoice_only,
+                            "query": query,
+                            "folder_name": folder_name,
+                            "rename_with_date_sender": rename_with_date_sender,
+                            "categorize_invoices": categorize_invoices,
+                        },
+                    ),
+                )
+                wf.user_text = str(len(accounts) + 1)
+                return await self._try_chat_mail_confirmation(ctx)
             if len(accounts) > 1:
                 set_pending_account_choice(
                     chat_id,
@@ -2880,13 +2945,18 @@ class ChatOrchestrator:
             query = self._invoice_gmail_query() if invoice_only else None
             rename_with_date_sender = bool(self._CHAT_MAIL_SAVE_RENAME_RE.match(text))
             categorize_invoices = bool(self._CHAT_MAIL_SAVE_CATEGORIZED_RE.match(text))
+            if not categorize_invoices:
+                lower_text = text.lower()
+                if ("papierkram" in lower_text) and ("vodafone" in lower_text) and (
+                    ("sonstige" in lower_text) or ("sostige" in lower_text)
+                ):
+                    categorize_invoices = True
             folder_name = self._extract_target_folder_name(
                 text,
                 default=("rechnungen" if invoice_only else "anhaenge"),
             )
-            use_all_accounts = bool(re.search(r"(?is)\balle\s+gefunden(?:en|e)?\b|\balle\b", text))
             accounts, _active = service.get_known_accounts()
-            if len(accounts) > 1 and not use_all_accounts:
+            if len(accounts) > 1:
                 set_pending_account_choice(
                     chat_id,
                     PendingMailAccountChoice(
@@ -2907,25 +2977,6 @@ class ChatOrchestrator:
                 _persist_user_turn_once()
                 self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
                 return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
-
-            if len(accounts) > 1 and use_all_accounts:
-                set_pending_account_choice(
-                    chat_id,
-                    PendingMailAccountChoice(
-                        action="save_attachments",
-                        accounts=accounts,
-                        payload={
-                            "count": count,
-                            "invoice_only": invoice_only,
-                            "query": query,
-                            "folder_name": folder_name,
-                            "rename_with_date_sender": rename_with_date_sender,
-                            "categorize_invoices": categorize_invoices,
-                        },
-                    ),
-                )
-                wf.user_text = str(len(accounts) + 1)
-                return await self._try_chat_mail_confirmation(ctx)
 
             # Single-account shortcut: auto-run save directly.
             selected = accounts[0] if accounts else ""
@@ -2950,6 +3001,9 @@ class ChatOrchestrator:
                     },
                 ),
             )
+            if not getattr(wf, "mail_original_user_text", None):
+                wf.mail_original_user_text = original_user_text
+            _persist_user_turn_once()
             wf.user_text = "1"
             return await self._try_chat_mail_confirmation(ctx)
 
