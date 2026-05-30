@@ -7,7 +7,7 @@ description: Synchronize Janus documentation after a passed final audit, resolve
 
 ## Overview
 
-Use this skill after validation passed. Persist the result into Janus documentation and prepare the repository for `janus-build-release`. Do not implement product code, change architecture, hide failed validation, or run release commands.
+Use this skill after validation passed. Persist the result into Janus documentation, and when the user is preparing a release or release readiness, include the version bump as part of the same documentation checkpoint. Do not implement product code, change architecture, hide failed validation, or run release commands.
 
 ## Source References
 
@@ -69,10 +69,23 @@ Rules:
 - Default channel is the existing channel from `package.json` such as `0.4.17-beta.38`.
 - For normal beta/update releases, increment the prerelease number only: `0.4.17-beta.38` -> `0.4.17-beta.39`.
 - For stable releases, require explicit user approval before dropping `-beta.N` or changing major/minor/patch.
-- Keep `package.json`, `package-lock.json`, and `backend/version.py` synchronized.
+- Keep `package.json`, `package-lock.json`, and `backend/version.py` synchronized before the checkpoint is considered complete.
 - Prefer `npm version <version> --no-git-tag-version`, then `npm run write-version`, and verify lock/backend sync.
+- If the release-prep version bump is requested or implied, do not leave the docs step without the matching version files and completed release-facing documentation.
 - Do not create tags, merge branches, push to `origin`, publish GitHub releases, or build installers in this skill.
 - After the version/docs checkpoint is committed and pushed to `backup/develop`, route to `janus-build-release`.
+
+## Release Version Check
+
+If the user asks to move from a validated documentation state into build/release readiness, this skill must:
+
+1. bump the prerelease version in `package.json`
+2. run `npm run write-version`
+3. sync `package-lock.json` and `backend/version.py`
+4. update the release-facing docs for the completed marker to the new version
+5. validate the version consistency before handing off to `janus-git-governance`
+
+If any of those steps cannot be completed, the documentation update is not finished yet.
 
 Required version check:
 

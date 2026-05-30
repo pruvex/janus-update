@@ -1,6 +1,6 @@
 ﻿# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-30 (Janus Mail Grundversion final auditiert, Chat-Persistenz-Fix bestaetigt - PASS WITH FIXES)
+**Aktualisiert:** 2026-05-30 (Janus Mail Grundversion final auditiert, Chat-Persistenz-Fix bestaetigt, Release-Prep auf 0.4.17-beta.48 - PASS WITH FIXES)
 
 ---
 

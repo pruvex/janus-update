@@ -7,6 +7,8 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+## [0.4.17-beta.48] - 2026-05-30
+
 ### Added
 - **TASK-098 / Janus Mail Grundversion (Spec 10-13):** Neues Mail-Modul als eigenstaendige Janus-Surface mit Sidebar/Dock-Einstieg, kalenderaehnlicher Modal-Position/Groesse, Gmail-Kontoauswahl mit Persistenz des aktiven Kontos, Inbox/Search/Detail-Layout, Compose/Reply-Flow, Attachment-Send und Attachment-Save, sowie Chat-gesteuerte Mail-Aktionen inklusive Multi-Account-Rueckfragen.
 
