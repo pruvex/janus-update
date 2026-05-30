@@ -1,10 +1,11 @@
 import logging
+from datetime import datetime, timezone
 from typing import Optional, Dict, Any
 
 from sqlalchemy.orm import Session
 
 from backend.data import crud
-from backend.data.models import Document
+from backend.data.models import Document, Message
 from backend.services.orchestrator.schemas import AuditContext, ExecutionResponse, SyncResult
 
 logger = logging.getLogger("janus_backend")
@@ -75,6 +76,38 @@ class OrchestratorStatusSync:
             modal_request = None
         if not text and not image_path:
             return SyncResult(status="skipped", message_id=None, success=False)
+        try:
+            last_msg = (
+                self.db.query(Message)
+                .filter(Message.chat_id == chat_id)
+                .order_by(Message.id.desc())
+                .first()
+            )
+            if (
+                last_msg is not None
+                and str(getattr(last_msg, "role", "") or "").strip().lower() == "assistant"
+                and str(getattr(last_msg, "content", "") or "") == text
+            ):
+                created_at = getattr(last_msg, "created_at", None)
+                if isinstance(created_at, datetime):
+                    now_utc = datetime.now(timezone.utc)
+                    msg_utc = (
+                        created_at.replace(tzinfo=timezone.utc)
+                        if created_at.tzinfo is None
+                        else created_at.astimezone(timezone.utc)
+                    )
+                    if (now_utc - msg_utc).total_seconds() <= 5:
+                        logger.info(
+                            "[STATUS-SYNC] Duplicate assistant message suppressed for chat_id=%s",
+                            chat_id,
+                        )
+                        return SyncResult(
+                            status="duplicate_suppressed",
+                            message_id=getattr(last_msg, "id", None),
+                            success=True,
+                        )
+        except Exception:
+            logger.debug("[STATUS-SYNC] Duplicate guard failed (non-fatal)", exc_info=True)
         logger.info("💎 VIDEO-LIST-METADATA: persist_assistant_message: extra_metadata keys=%s", list(extra_metadata.keys()) if extra_metadata else None)
         if extra_metadata and "video_list_metadata" in extra_metadata:
             vlm = extra_metadata["video_list_metadata"]

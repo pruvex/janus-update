@@ -6,8 +6,12 @@ import re
 import time
 import uuid
 import keyring
+import io
+from pathlib import Path
+from datetime import datetime
 from typing import Dict, Optional, List, Any, Tuple
 from dataclasses import dataclass
+from pypdf import PdfReader
 
 from backend.services.vision_helper import analyze_image_strict_provider, analyze_image_with_cloud
 from backend.services.vision_service import vision_service
@@ -1265,6 +1269,419 @@ class ChatOrchestrator:
         r"(?P<rest>.*)$",
         re.DOTALL,
     )
+    _CHAT_MAIL_SEND_RE = re.compile(
+        r"(?is)^\s*(?:janus[,:\s-]*)?(?:schick(?:e)?|sende)\s+"
+        r"(?P<to>[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})"
+        r"\s+(?:eine\s+)?(?:mail|e-?mail)\s*(?::|mit)?\s*(?P<body>.+?)\s*$",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_SUBJECT_RE = re.compile(r"(?is)\bbetreff\s*:\s*(?P<subject>.+?)\s*(?:\n|$)")
+    _CHAT_MAIL_CC_RE = re.compile(r"(?is)\bcc\s*:\s*(?P<cc>.+?)\s*(?:\n|$)")
+    _CHAT_MAIL_BCC_RE = re.compile(r"(?is)\bbcc\s*:\s*(?P<bcc>.+?)\s*(?:\n|$)")
+    _CHAT_MAIL_REPLY_RE = re.compile(
+        r"(?is)^\s*(?:janus[,:\s-]*)?(?:antworte|beantworte)\s+"
+        r"(?:auf\s+)?(?:die\s+)?(?:letzte|neueste)\s+mail\s+von\s+"
+        r"(?P<sender>[^\n:]+?)\s*(?::|mit)?\s*(?P<body>.+?)\s*$",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_LIST_RE = re.compile(
+        r"(?is)^\s*(?:janus[,:\s-]*)?(?:was\s+waren|zeige|liste)\s+(?:mir\s+)?(?:die\s+)?letzten\s+(?P<count>\d{1,2})\s+e-?mails?.*$",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_ATTACHMENTS_RE = re.compile(
+        r"(?is)^\s*(?:janus[,:\s-]*)?(?:welche|zeige|liste)\s+(?:mir\s+)?(?:die\s+)?(?:e-?mails?|mails?)\s+(?:mit\s+)?anh(?:ang|aenge|änge?n?).*$",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_SAVE_ATTACHMENTS_RE = re.compile(
+        r"(?is).*(?:speicher|save).*(?:anh(?:ang|aenge|änge|attachments?)).*(?:ordner|folder).*",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_SAVE_INVOICES_RE = re.compile(
+        r"(?is).*(?:speicher|save).*(?:rechnung|rechnungen|invoice|invoices|beleg|quittung).*(?:ordner|folder).*",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_SAVE_CATEGORIZED_RE = re.compile(
+        r"(?is).*(?:papierkram).*(?:vodafone).*(?:sonstige).*",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_SAVE_RENAME_RE = re.compile(
+        r"(?is).*(?:name|namen|dateiname|umbenenn|rename).*(?:datum|absender|sender).*",
+        re.IGNORECASE,
+    )
+    _CHAT_SORT_DOCS_RE = re.compile(
+        r"(?is).*(?:sortier|sortiere|ordne).*(?:pdf|pdfs|txt|textdatei|md|markdown|dateien|dokumente).*",
+        re.IGNORECASE,
+    )
+
+    _MAIL_INVOICE_HINT_RE = re.compile(
+        r"(?is)\b(rechnung|rechnungen|invoice|invoices|bill|billing|quittung|beleg)\b",
+        re.IGNORECASE,
+    )
+
+    _CHAT_MAIL_SEND_PDF_RE = re.compile(
+        r"(?is)^\s*(?:janus[,:\s-]*)?(?:nimm|nehme?)\s+die\s+pdf\s*:\s*(?P<pdf>[^\n]+?)\s+aus\s+den\s+e-?mails?\s+und\s+sende\s+sie\s+per\s+e-?mail\s+.*?\s+an\s+(?P<to>[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})\s*$",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_EDIT_SUBJECT_RE = re.compile(
+        r"(?is)^\s*(?:der\s+)?betreff\s+(?:soll\s+)?(?P<subject>.+?)\s*(?:hei(?:ß|ss)en)?\s*$|^\s*(?:änder|aender|ändere|aendere)\s+(?:den\s+)?betreff(?:\s+(?:zu|auf))?\s*[:\-]?\s*(?P<subject2>.+?)\s*$",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_EDIT_BODY_RE = re.compile(
+        r"(?is)^\s*(?:ändere|aendere)\s+(?:den\s+)?text(?:\s+auf)?\s*[:\-]?\s*(?P<body>.+?)\s*$|^\s*text\s*[:\-]\s*(?P<body2>.+?)\s*$",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_EDIT_CC_RE = re.compile(
+        r"(?is)^\s*(?:füge|fuege)\s+cc\s+(?:hinzu\s+)?(?P<cc>.+?)\s*$|^\s*cc\s*[:\-]\s*(?P<cc2>.+?)\s*$",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_EDIT_TO_RE = re.compile(
+        r"(?is)^\s*(?:ändere|aendere)\s+(?:den\s+)?empf(?:ä|a)nger(?:\s+auf)?\s*[:\-]?\s*(?P<to>.+?)\s*$|^\s*an\s*[:\-]\s*(?P<to2>.+?)\s*$",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_EDIT_SUBJECT_AND_TEXT_RE = re.compile(
+        r"(?is)^\s*(?:der\s+)?betreff\s+(?:muss|soll)\s+(?P<subject>.+?)\s+hei(?:ß|ss)en\s+und\s+(?P<tail>.+?)\s*$",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_STYLE_RE = re.compile(
+        r"(?is)^\s*(?:schreib|formuliere|mach)\s+(?:den\s+)?text\s+(?P<style>locker|neutral|förmlich|foermlich)\s*$|^\s*(?P<style2>locker|neutral|förmlich|foermlich)\s*$",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_RENAME_ATTACHMENT_RE = re.compile(
+        r"(?is).*(?:benenn(?:e)?|umbenenn(?:en)?|rename)\s+(?:die\s+)?pdf(?:\s+um)?\s+(?:in|zu|auf)\s+(?P<name>[A-Z0-9._-]+).*",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_NICE_TEXT_RE = re.compile(
+        r"(?is).*(?:netten?|freundlichen?)\s+text.*",
+        re.IGNORECASE,
+    )
+
+    @staticmethod
+    def _mail_accounts_prompt(accounts: list[str], *, allow_all: bool) -> str:
+        lines = ["Ich habe mehrere Mailkonten. Welches soll ich verwenden?"]
+        for idx, acc in enumerate(accounts, start=1):
+            lines.append(f"{idx}. {acc}")
+        if allow_all:
+            lines.append(f"{len(accounts)+1}. all")
+        lines.append("Bitte antworte mit der Nummer.")
+        return "\n".join(lines)
+
+    @staticmethod
+    def _mail_pdf_candidates_prompt(candidates: list[dict]) -> str:
+        lines = ["Ich habe mehrere passende PDFs gefunden. Welche soll ich senden?"]
+        for idx, c in enumerate(candidates, start=1):
+            fname = str(c.get("filename") or "datei.pdf")
+            acc = str(c.get("account") or "unbekannt")
+            subj = str(c.get("subject") or "(ohne Betreff)")
+            when = str(c.get("date") or "")
+            lines.append(f"{idx}. {fname} | Konto: {acc} | Betreff: {subj} | Datum: {when}")
+        lines.append("Bitte antworte mit der Nummer.")
+        return "\n".join(lines)
+
+    @staticmethod
+    def _format_mail_when(row: Any) -> str:
+        try:
+            ms = int(getattr(row, "internal_date_ms", 0) or 0)
+            if ms > 0:
+                return datetime.fromtimestamp(ms / 1000).strftime("%d.%m.%Y %H:%M")
+        except Exception:
+            pass
+        raw = str(getattr(row, "date", "") or "").strip()
+        return raw or "Unbekannt"
+
+    @staticmethod
+    def _short_text(value: str, max_len: int = 120) -> str:
+        text = re.sub(r"\s+", " ", str(value or "")).strip()
+        if len(text) <= max_len:
+            return text
+        return text[: max_len - 1].rstrip() + "…"
+
+    def _extract_pdf_content_preview(self, pdf_bytes: bytes) -> str:
+        try:
+            reader = PdfReader(io.BytesIO(pdf_bytes))
+            parts: list[str] = []
+            for page in reader.pages[:3]:
+                txt = page.extract_text() or ""
+                txt = re.sub(r"\s+", " ", txt).strip()
+                if txt:
+                    parts.append(txt)
+                if len(" ".join(parts)) > 800:
+                    break
+            joined = self._short_text(" ".join(parts), 320)
+            return joined or ""
+        except Exception:
+            return ""
+
+    def _summarize_pdf_text_two_sentences(self, text: str) -> str:
+        cleaned = re.sub(r"\s+", " ", str(text or "")).strip()
+        if not cleaned:
+            return ""
+        sentences = re.split(r"(?<=[.!?])\s+", cleaned)
+        picked: list[str] = []
+        for s in sentences:
+            s2 = s.strip()
+            if len(s2) < 25:
+                continue
+            picked.append(s2)
+            if len(picked) >= 2:
+                break
+        if not picked:
+            return self._short_text(cleaned, 220)
+        return self._short_text(" ".join(picked), 260)
+
+    def _format_attachment_mail_rows(self, service: Any, rows: list[Any], *, title: str, limit: int) -> str:
+        lines: list[str] = [title]
+        if not rows:
+            lines.append("Keine Mails mit Anhängen gefunden.")
+            return "\n".join(lines)
+
+        for i, row in enumerate(rows[:limit], start=1):
+            subject = self._short_text(getattr(row, "subject", "") or "(ohne Betreff)", 90)
+            sender = self._short_text(getattr(row, "from_display", "") or "Unbekannt", 70)
+            when = self._format_mail_when(row)
+            snippet = self._short_text(getattr(row, "snippet", "") or "", 140)
+
+            attachment_names: list[str] = []
+            pdf_attachments: list[tuple[str, str]] = []
+            pdf_hint = ""
+            try:
+                detail = service.get_message_detail(str(getattr(row, "id", "")))
+                atts = list(getattr(detail, "attachments", []) or [])
+                for att in atts:
+                    name = str(getattr(att, "filename", "") or "").strip()
+                    if not name:
+                        continue
+                    attachment_names.append(name)
+                    lower = name.lower()
+                    if lower.endswith(".pdf") or "pdf" in lower:
+                        pdf_attachments.append((name, str(getattr(att, "attachment_id", "") or "").strip()))
+                body_text = self._short_text(getattr(detail, "body_text", "") or "", 220)
+                if body_text:
+                    pdf_hint = body_text
+                if pdf_attachments:
+                    previews: list[str] = []
+                    for pdf_name, attachment_id in pdf_attachments[:2]:
+                        if not attachment_id:
+                            continue
+                        try:
+                            payload = service.download_attachment(str(getattr(row, "id", "")), attachment_id)
+                            content = payload.get("content") if isinstance(payload, dict) else None
+                            if isinstance(content, (bytes, bytearray)):
+                                preview = self._extract_pdf_content_preview(bytes(content))
+                                if preview:
+                                    summary = self._summarize_pdf_text_two_sentences(preview)
+                                    previews.append(f"{pdf_name}: {summary or preview}")
+                        except Exception:
+                            continue
+                    if previews:
+                        pdf_hint = self._short_text(" | ".join(previews), 360)
+            except Exception:
+                pass
+
+            lines.append(f"{i}) {subject}")
+            lines.append(f"   Von: {sender} | Datum: {when}")
+            lines.append(f"   Kurzinhalt: {snippet or '—'}")
+            if attachment_names:
+                lines.append(f"   Anhänge: {', '.join(attachment_names)}")
+            if pdf_attachments:
+                lines.append(f"   PDF: {', '.join(name for name, _ in pdf_attachments)}")
+                lines.append(f"   PDF-Inhalt: {pdf_hint or 'Keine PDF-Vorschau verfügbar.'}")
+            lines.append("")
+        return "\n".join(lines).rstrip()
+
+    @staticmethod
+    def _is_invoice_attachment_request(text: str) -> bool:
+        return bool(ChatOrchestrator._MAIL_INVOICE_HINT_RE.search(str(text or "")))
+
+    @staticmethod
+    def _invoice_gmail_query() -> str:
+        return "(subject:rechnung OR subject:invoice OR subject:bill OR subject:quittung) has:attachment"
+
+    @staticmethod
+    def _row_matches_invoice_hint(row: Any) -> bool:
+        subject = str(getattr(row, "subject", "") or "").lower()
+        snippet = str(getattr(row, "snippet", "") or "").lower()
+        hay = f"{subject} {snippet}"
+        return any(term in hay for term in ("rechnung", "invoice", "bill", "quittung", "beleg"))
+
+    @staticmethod
+    def _detail_matches_invoice_hint(detail: Any) -> bool:
+        body = str(getattr(detail, "body_text", "") or "").lower()
+        if any(term in body for term in ("rechnung", "invoice", "bill", "quittung", "beleg", "ust", "mwst")):
+            return True
+        for att in list(getattr(detail, "attachments", []) or []):
+            filename = str(getattr(att, "filename", "") or "").lower()
+            if any(term in filename for term in ("rechnung", "invoice", "bill", "quittung", "beleg")):
+                return True
+        return False
+
+    def _filter_invoice_attachment_rows(self, service: Any, rows: list[Any]) -> list[Any]:
+        matched: list[Any] = []
+        for row in rows:
+            row_id = str(getattr(row, "id", "") or "").strip()
+            subject = str(getattr(row, "subject", "") or "").strip()
+            if not bool(getattr(row, "has_attachments", False)):
+                logger.debug("[MAIL-INVOICE-DEBUG] skip id=%s reason=no_attachments", row_id)
+                continue
+            if self._row_matches_invoice_hint(row):
+                logger.info("[MAIL-INVOICE-DEBUG] match id=%s reason=row_hint", row_id)
+                matched.append(row)
+                continue
+            try:
+                detail = service.get_message_detail(row_id)
+                if self._detail_matches_invoice_hint(detail):
+                    att_names = [
+                        str(getattr(att, "filename", "") or "").strip()
+                        for att in list(getattr(detail, "attachments", []) or [])
+                        if str(getattr(att, "filename", "") or "").strip()
+                    ]
+                    logger.info(
+                        "[MAIL-INVOICE-DEBUG] match id=%s reason=detail_hint attachment_count=%s",
+                        row_id,
+                        len(att_names),
+                    )
+                    matched.append(row)
+                else:
+                    logger.info(
+                        "[MAIL-INVOICE-DEBUG] skip id=%s reason=no_invoice_terms",
+                        row_id,
+                    )
+            except Exception:
+                logger.warning(
+                    "[MAIL-INVOICE-DEBUG] skip id=%s reason=detail_error",
+                    row_id,
+                    exc_info=True,
+                )
+                continue
+        logger.info("[MAIL-INVOICE-DEBUG] result matched=%s total=%s", len(matched), len(rows))
+        return matched
+
+    @staticmethod
+    def _extract_target_folder_name(text: str, default: str = "anhaenge") -> str:
+        raw = str(text or "")
+        m_quote = re.search(r'(?is)(?:ordner|folder)\s*(?:namens|name)?\s*["“](.+?)["”]', raw)
+        if not m_quote:
+            m_quote = re.search(r"(?is)(?:ordner|folder).{0,40}?['`](.+?)['`]", raw)
+        candidate = ""
+        if m_quote:
+            candidate = str(m_quote.group(1) or "").strip()
+        if not candidate:
+            m_plain = re.search(r"(?is)(?:ordner|folder)\s*(?:namens|name)?\s*([A-Z0-9 _.-]{2,60})", raw, re.IGNORECASE)
+            if m_plain:
+                candidate = str(m_plain.group(1) or "").strip()
+                candidate = re.split(r"\b(?:und|then|danach|speicher|save|in|auf|am|im)\b", candidate, maxsplit=1, flags=re.IGNORECASE)[0].strip()
+                if candidate.lower() in {"an", "am", "im", "in", "auf"}:
+                    candidate = ""
+        if not candidate:
+            candidate = default
+        # keep it filesystem-safe but readable
+        candidate = re.sub(r"[\\/:*?\"<>|]", "_", candidate).strip().strip(".")
+        return candidate or default
+
+    @staticmethod
+    def _unique_file_path(base_dir: Path, filename: str) -> Path:
+        safe_name = re.sub(r"[\\/:*?\"<>|]", "_", str(filename or "attachment.bin")).strip() or "attachment.bin"
+        candidate = base_dir / safe_name
+        if not candidate.exists():
+            return candidate
+        stem = candidate.stem
+        suffix = candidate.suffix
+        idx = 1
+        while True:
+            alt = base_dir / f"{stem}_{idx}{suffix}"
+            if not alt.exists():
+                return alt
+            idx += 1
+
+    @staticmethod
+    def _extract_sort_target_root(text: str) -> Path:
+        raw = str(text or "")
+        # "... in \"XYZ\""
+        q = re.search(r'(?is)\bin\s+["“](.+?)["”]', raw)
+        if q:
+            candidate = str(q.group(1) or "").strip()
+            if candidate:
+                p = Path(candidate)
+                if not p.is_absolute():
+                    p = (Path.home() / "Desktop" / candidate)
+                return p
+        if re.search(r"(?is)\bdesktop\b", raw):
+            return Path.home() / "Desktop"
+        return Path.home() / "Desktop"
+
+    @staticmethod
+    def _auto_pdf_category_from_text(text: str) -> str:
+        t = str(text or "").lower()
+        if any(k in t for k in ("rechnung", "invoice", "betrag", "ust", "mwst")):
+            return "Rechnungen"
+        if any(k in t for k in ("vertrag", "agreement", "kündigung", "laufzeit")):
+            return "Vertraege"
+        if any(k in t for k in ("kontoauszug", "iban", "bic", "bank", "buchung")):
+            return "Bank"
+        if any(k in t for k in ("versicherung", "police", "schaden", "beitrag")):
+            return "Versicherung"
+        if any(k in t for k in ("steuer", "finanzamt", "steuerbescheid", "elster")):
+            return "Steuern"
+        return "Sonstiges"
+
+    @staticmethod
+    def _extract_text_preview_for_file(path: Path) -> str:
+        suffix = path.suffix.lower()
+        try:
+            if suffix == ".pdf":
+                return ""
+            if suffix in {".txt", ".md"}:
+                return path.read_text(encoding="utf-8", errors="ignore")[:5000]
+        except Exception:
+            return ""
+        return ""
+
+    @staticmethod
+    def _sanitize_filename_part(value: str) -> str:
+        part = re.sub(r"[\\/:*?\"<>|]", "_", str(value or "")).strip()
+        part = re.sub(r"\s+", "_", part)
+        return part.strip("._")
+
+    def _build_saved_attachment_name(self, row: Any, original_filename: str, *, include_date_sender: bool) -> str:
+        base_name = str(original_filename or "attachment.bin").strip() or "attachment.bin"
+        if not include_date_sender:
+            return base_name
+        stem = Path(base_name).stem
+        suffix = Path(base_name).suffix or ""
+        when = self._format_mail_when(row)
+        # normalize to dd.mm.yy if possible
+        date_tag = ""
+        m_date = re.search(r"(\d{2})[.\-/](\d{2})[.\-/](\d{4}|\d{2})", when)
+        if m_date:
+            dd, mm, yy = m_date.group(1), m_date.group(2), m_date.group(3)
+            if len(yy) == 4:
+                yy = yy[-2:]
+            date_tag = f"{dd}.{mm}.{yy}"
+        sender_raw = str(getattr(row, "from_display", "") or "").strip()
+        sender = sender_raw
+        if "<" in sender_raw and ">" in sender_raw:
+            sender = sender_raw.split("<", 1)[0].strip() or sender_raw
+        sender = re.sub(r"@.*$", "", sender).strip()
+        sender_tag = self._sanitize_filename_part(sender) or "Unbekannt"
+        stem_tag = self._sanitize_filename_part(stem) or "Anhang"
+        if date_tag:
+            return f"{date_tag}_{stem_tag}_{sender_tag}{suffix}"
+        return f"{stem_tag}_{sender_tag}{suffix}"
+
+    @staticmethod
+    def _invoice_bucket_name(*, row: Any, filename: str, body_text: str) -> str:
+        hay = " ".join(
+            [
+                str(getattr(row, "subject", "") or ""),
+                str(getattr(row, "from_display", "") or ""),
+                str(filename or ""),
+                str(body_text or ""),
+            ]
+        ).lower()
+        if "vodafone" in hay:
+            return "vodafone_rechnungen"
+        if any(t in hay for t in ("papierkram", "odacer", "rechnung-r-")):
+            return "papierkram_rechnungen"
+        return "sonstige_rechnungen"
 
     async def _try_tools_command(self, ctx: RequestContext) -> Optional[Dict]:
         # --- SICHERHEITS-NOTBREMSE (Task-066 / Dispatcher-Bug) ---
@@ -1416,6 +1833,7 @@ class ChatOrchestrator:
                 )
             )
             wf.skip_llm_generation = True
+            _persist_user_turn_once()
             self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
             return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
 
@@ -1445,6 +1863,7 @@ class ChatOrchestrator:
             )
             wf.execution_for_api = ExecutionResponse(text=msg)
             wf.skip_llm_generation = True
+            _persist_user_turn_once()
             self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
             return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
 
@@ -1464,6 +1883,1371 @@ class ChatOrchestrator:
 
         wf.execution_for_api = ExecutionResponse(text=str(reply))
         wf.skip_llm_generation = True
+        _persist_user_turn_once()
+        self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+        return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+    async def _try_chat_mail_confirmation(self, ctx: RequestContext) -> Optional[Dict]:
+        """Chat fast-path: stage mail send and require explicit yes/no confirmation."""
+        from backend.services.calendar import mutation_guard_store as mgs
+        from backend.services.mail.mail_send_guard_store import (
+            PendingMailSend,
+            get_pending_mail_send,
+            pop_pending_mail_send,
+            set_pending_mail_send,
+        )
+        from backend.services.mail.mail_chat_account_guard_store import (
+            PendingMailAccountChoice,
+            get_pending_account_choice,
+            pop_pending_account_choice,
+            set_pending_account_choice,
+        )
+        from backend.services.mail.mail_service import MailService, MailServiceError
+
+        wf = ctx.workflow
+        request = ctx.request
+        chat_id = request.chat_id
+        if chat_id is None:
+            return None
+        service = MailService()
+        user_turn_persisted = False
+
+        def _persist_user_turn_once() -> None:
+            nonlocal user_turn_persisted
+            if user_turn_persisted:
+                return
+            text_in = str(wf.user_text or "").strip()
+            if not text_in:
+                return
+            try:
+                crud.create_message(self.db, chat_id, "user", text_in)
+                user_turn_persisted = True
+            except Exception:
+                logger.warning("[MAIL-CHAT] Failed to persist user turn for chat_id=%s", chat_id, exc_info=True)
+
+        pending_acc = get_pending_account_choice(chat_id)
+        if pending_acc is not None:
+            choice = str(wf.user_text or "").strip().lower()
+            selected = ""
+            if pending_acc.action == "send_pdf_choice":
+                if choice.isdigit():
+                    idx = int(choice) - 1
+                    candidates = list(pending_acc.payload.get("candidates") or [])
+                    if 0 <= idx < len(candidates):
+                        selected = str(idx)
+                if selected == "":
+                    wf.execution_for_api = ExecutionResponse(
+                        text=self._mail_pdf_candidates_prompt(list(pending_acc.payload.get("candidates") or []))
+                    )
+                    wf.skip_llm_generation = True
+                    _persist_user_turn_once()
+                    self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                    return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+                pop_pending_account_choice(chat_id)
+                candidates = list(pending_acc.payload.get("candidates") or [])
+                chosen = candidates[int(selected)]
+                account = str(chosen.get("account") or "").strip()
+                filename = str(chosen.get("filename") or "").strip()
+                attachment_id = str(chosen.get("attachment_id") or "").strip()
+                message_id = str(chosen.get("message_id") or "").strip()
+                to = str(pending_acc.payload.get("to") or "").strip().lower()
+                body = str(pending_acc.payload.get("body") or "").strip()
+                subject = str(pending_acc.payload.get("subject") or filename or "").strip()
+                if not account or not filename or not attachment_id or not message_id:
+                    wf.execution_for_api = ExecutionResponse(text="Die ausgewählte PDF ist unvollständig und konnte nicht vorbereitet werden.")
+                    wf.skip_llm_generation = True
+                    _persist_user_turn_once()
+                    self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                    return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+                try:
+                    service.activate_account(account)
+                    blob = service.download_attachment(message_id, attachment_id)
+                    content = blob.get("content") if isinstance(blob, dict) else None
+                    if not isinstance(content, (bytes, bytearray)):
+                        raise RuntimeError("Attachment payload fehlt")
+                    pending_send = PendingMailSend(
+                        to=to,
+                        subject=subject,
+                        body=body,
+                        cc="",
+                        bcc="",
+                        mode="new",
+                        context_hint=f"Account: {account}",
+                        attachments=[(filename, bytes(content), str(chosen.get('mime_type') or '') or None)],
+                    )
+                    set_pending_mail_send(chat_id, pending_send)
+                    wf.execution_for_api = ExecutionResponse(
+                        text=(
+                            "Ich habe den Versand vorbereitet:\n\n"
+                            f"- Konto: {account}\n"
+                            f"- An: {to}\n"
+                            f"- Betreff: {subject or '(leer)'}\n"
+                            f"- Anhang: {filename}\n\n"
+                            "Soll ich jetzt senden? Bitte mit **Ja** oder **Nein** antworten."
+                        )
+                    )
+                    wf.skip_llm_generation = True
+                    _persist_user_turn_once()
+                    self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                    return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+                except Exception as exc:
+                    wf.execution_for_api = ExecutionResponse(
+                        text=f"Die ausgewählte PDF konnte nicht geladen werden ({exc})."
+                    )
+                    wf.skip_llm_generation = True
+                    _persist_user_turn_once()
+                    self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                    return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+            if choice.isdigit():
+                idx = int(choice) - 1
+                if 0 <= idx < len(pending_acc.accounts):
+                    selected = pending_acc.accounts[idx]
+                elif pending_acc.action in {"list_latest", "list_attachments", "save_attachments"} and idx == len(pending_acc.accounts):
+                    selected = "all"
+            if not selected:
+                wf.execution_for_api = ExecutionResponse(
+                    text=self._mail_accounts_prompt(
+                        pending_acc.accounts,
+                        allow_all=(pending_acc.action in {"list_latest", "list_attachments", "save_attachments"}),
+                    )
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+            pop_pending_account_choice(chat_id)
+            if pending_acc.action in {"list_latest", "list_attachments"}:
+                count = int(pending_acc.payload.get("count") or 4)
+                only_attachments = pending_acc.action == "list_attachments"
+                invoice_only = bool(pending_acc.payload.get("invoice_only"))
+                query = str(pending_acc.payload.get("query") or "").strip() or None
+                if selected == "all":
+                    all_lines: list[str] = []
+                    for acc in pending_acc.accounts:
+                        try:
+                            service.activate_account(acc)
+                            rows = service.list_inbox_threads(folder="inbox", max_results=count, query=query).threads
+                            if only_attachments:
+                                if invoice_only:
+                                    rows = self._filter_invoice_attachment_rows(service, rows)
+                                else:
+                                    rows = [r for r in rows if bool(getattr(r, "has_attachments", False))]
+                            if only_attachments:
+                                all_lines.append(
+                                    self._format_attachment_mail_rows(
+                                        service,
+                                        rows,
+                                        title=f"[{acc}] Mails mit Anhängen:",
+                                        limit=count,
+                                    )
+                                )
+                                all_lines.append("")
+                                continue
+                            all_lines.append(f"[{acc}]")
+                            for i, row in enumerate(rows[:count], start=1):
+                                all_lines.append(f"{i}. {row.from_display} — {row.subject}")
+                            if only_attachments and not rows:
+                                all_lines.append("Keine Mails mit Anhaengen gefunden.")
+                            all_lines.append("")
+                        except Exception as exc:
+                            all_lines.append(f"[{acc}] Fehler: {exc}")
+                    text = "Letzte Mails über alle Konten:\n\n" + "\n".join(all_lines).strip()
+                else:
+                    try:
+                        service.activate_account(selected)
+                        rows = service.list_inbox_threads(folder="inbox", max_results=count, query=query).threads
+                        if only_attachments:
+                            if invoice_only:
+                                rows = self._filter_invoice_attachment_rows(service, rows)
+                            else:
+                                rows = [r for r in rows if bool(getattr(r, "has_attachments", False))]
+                            text = self._format_attachment_mail_rows(
+                                service,
+                                rows,
+                                title=f"Mails mit Anhängen ({selected}):",
+                                limit=count,
+                            )
+                            wf.execution_for_api = ExecutionResponse(text=text)
+                            wf.skip_llm_generation = True
+                            _persist_user_turn_once()
+                            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+                        else:
+                            lines = [f"Letzte {count} Mails ({selected}):"]
+                        for i, row in enumerate(rows[:count], start=1):
+                            lines.append(f"{i}. {row.from_display} — {row.subject}")
+                        if only_attachments and not rows:
+                            lines.append("Keine Mails mit Anhaengen gefunden.")
+                        text = "\n".join(lines)
+                    except Exception as exc:
+                        text = f"Mails konnten nicht geladen werden ({exc})."
+                wf.execution_for_api = ExecutionResponse(text=text)
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+            if pending_acc.action == "save_attachments":
+                count = int(pending_acc.payload.get("count") or 100)
+                invoice_only = bool(pending_acc.payload.get("invoice_only"))
+                query = str(pending_acc.payload.get("query") or "").strip() or None
+                folder_name = str(pending_acc.payload.get("folder_name") or "anhaenge").strip()
+                rename_with_date_sender = bool(pending_acc.payload.get("rename_with_date_sender"))
+                categorize_invoices = bool(pending_acc.payload.get("categorize_invoices"))
+                desktop = Path.home() / "Desktop"
+                target_dir = desktop / folder_name
+                target_dir.mkdir(parents=True, exist_ok=True)
+                bucket_dirs = {
+                    "papierkram_rechnungen": desktop / "papierkram rechnungen",
+                    "vodafone_rechnungen": desktop / "vodafone rechnungen",
+                    "sonstige_rechnungen": desktop / "sonstige rechnungen",
+                }
+                bucket_counts = {k: 0 for k in bucket_dirs.keys()}
+                if categorize_invoices:
+                    for d in bucket_dirs.values():
+                        d.mkdir(parents=True, exist_ok=True)
+
+                accounts_to_process = pending_acc.accounts if selected == "all" else [selected]
+                saved_files: list[str] = []
+                errors: list[str] = []
+
+                for acc in accounts_to_process:
+                    try:
+                        service.activate_account(acc)
+                        rows = service.list_inbox_threads(folder="inbox", max_results=count, query=query).threads
+                        if invoice_only:
+                            rows = self._filter_invoice_attachment_rows(service, rows)
+                        else:
+                            rows = [r for r in rows if bool(getattr(r, "has_attachments", False))]
+
+                        for row in rows:
+                            message_id = str(getattr(row, "id", "") or "").strip()
+                            if not message_id:
+                                continue
+                            try:
+                                detail = service.get_message_detail(message_id)
+                            except Exception:
+                                continue
+                            for att in list(getattr(detail, "attachments", []) or []):
+                                filename = str(getattr(att, "filename", "") or "").strip()
+                                attachment_id = str(getattr(att, "attachment_id", "") or "").strip()
+                                if not filename or not attachment_id:
+                                    continue
+                                if invoice_only and not any(
+                                    token in filename.lower() for token in ("rechnung", "invoice", "bill", "beleg", "quittung")
+                                ):
+                                    # In invoice mode, keep attachment-level filtering strict.
+                                    continue
+                                try:
+                                    blob = service.download_attachment(message_id, attachment_id)
+                                    content = blob.get("content") if isinstance(blob, dict) else None
+                                    if not isinstance(content, (bytes, bytearray)):
+                                        continue
+                                    target_name = self._build_saved_attachment_name(
+                                        row,
+                                        filename,
+                                        include_date_sender=rename_with_date_sender,
+                                    )
+                                    out_base = target_dir
+                                    if categorize_invoices:
+                                        bucket = self._invoice_bucket_name(
+                                            row=row,
+                                            filename=filename,
+                                            body_text=str(getattr(detail, "body_text", "") or ""),
+                                        )
+                                        out_base = bucket_dirs.get(bucket, target_dir)
+                                        bucket_counts[bucket] = bucket_counts.get(bucket, 0) + 1
+                                    out_path = self._unique_file_path(out_base, target_name)
+                                    out_path.write_bytes(bytes(content))
+                                    saved_files.append(str(out_path.name))
+                                except Exception as exc:
+                                    errors.append(f"{acc}/{filename}: {exc}")
+                    except Exception as exc:
+                        errors.append(f"{acc}: {exc}")
+
+                if saved_files:
+                    preview = ", ".join(saved_files[:8])
+                    more = "" if len(saved_files) <= 8 else f" (+{len(saved_files)-8} weitere)"
+                    wf.execution_for_api = ExecutionResponse(
+                        text=(
+                            f"Erledigt: **{len(saved_files)}** Anhänge gespeichert.\n"
+                            + (
+                                "Ordner:\n"
+                                f"- `{bucket_dirs['papierkram_rechnungen']}` ({bucket_counts.get('papierkram_rechnungen', 0)})\n"
+                                f"- `{bucket_dirs['vodafone_rechnungen']}` ({bucket_counts.get('vodafone_rechnungen', 0)})\n"
+                                f"- `{bucket_dirs['sonstige_rechnungen']}` ({bucket_counts.get('sonstige_rechnungen', 0)})\n"
+                                if categorize_invoices
+                                else f"Ordner: `{target_dir}`\n"
+                            )
+                            + f"Dateien: {preview}{more}"
+                            + (f"\nHinweise: {len(errors)} Fehler im Hintergrund." if errors else "")
+                        )
+                    )
+                else:
+                    wf.execution_for_api = ExecutionResponse(
+                        text=(
+                            f"Ich konnte keine passenden Anhänge speichern.\n"
+                            f"Ordner wurde erstellt: `{target_dir}`"
+                            + (f"\nDetails: {errors[0]}" if errors else "")
+                        )
+                    )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+            if pending_acc.action in {"send", "reply", "send_pdf"}:
+                payload = dict(pending_acc.payload or {})
+                try:
+                    service.activate_account(selected)
+                except Exception:
+                    pass
+                attachments_payload = payload.get("attachments")
+                if pending_acc.action == "send_pdf" and not isinstance(attachments_payload, list):
+                    wanted = str(payload.get("pdf_name") or "").strip().lower()
+                    found_rows = service.list_inbox_threads(folder="inbox", max_results=50).threads
+                    tmp_matches: list[dict] = []
+                    for row in found_rows:
+                        try:
+                            detail = service.get_message_detail(str(getattr(row, "id", "")))
+                        except Exception:
+                            continue
+                        for att in list(getattr(detail, "attachments", []) or []):
+                            filename = str(getattr(att, "filename", "") or "").strip()
+                            if not filename:
+                                continue
+                            lower = filename.lower()
+                            if lower == wanted or wanted in lower:
+                                tmp_matches.append(
+                                    {
+                                        "filename": filename,
+                                        "attachment_id": str(getattr(att, "attachment_id", "") or "").strip(),
+                                        "message_id": str(getattr(row, "id", "") or "").strip(),
+                                        "mime_type": str(getattr(att, "mime_type", "") or "").strip(),
+                                    }
+                                )
+                        if tmp_matches:
+                            break
+                    attachments_payload = tmp_matches
+                attachments: list[tuple[str, bytes, str | None]] | None = None
+                if isinstance(attachments_payload, list):
+                    rebuilt: list[tuple[str, bytes, str | None]] = []
+                    for item in attachments_payload:
+                        if not isinstance(item, dict):
+                            continue
+                        filename = str(item.get("filename") or "").strip()
+                        attachment_id = str(item.get("attachment_id") or "").strip()
+                        message_id = str(item.get("message_id") or "").strip()
+                        mime_type = str(item.get("mime_type") or "").strip() or None
+                        if not filename or not attachment_id or not message_id:
+                            continue
+                        try:
+                            blob = service.download_attachment(message_id, attachment_id)
+                            content = blob.get("content") if isinstance(blob, dict) else None
+                            if isinstance(content, (bytes, bytearray)):
+                                rebuilt.append((filename, bytes(content), mime_type))
+                        except Exception:
+                            continue
+                    if rebuilt:
+                        attachments = rebuilt
+                if pending_acc.action == "send_pdf" and not attachments:
+                    wanted = str(payload.get("pdf_name") or "").strip()
+                    wf.execution_for_api = ExecutionResponse(
+                        text=f"Ich konnte die PDF **{wanted or '(unbekannt)'}** im gewählten Konto nicht laden."
+                    )
+                    wf.skip_llm_generation = True
+                    _persist_user_turn_once()
+                    self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                    return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+                set_pending_mail_send(
+                    chat_id,
+                    PendingMailSend(
+                        to=str(payload.get("to") or ""),
+                        subject=str(payload.get("subject") or ""),
+                        body=str(payload.get("body") or ""),
+                        cc=str(payload.get("cc") or ""),
+                        bcc=str(payload.get("bcc") or ""),
+                        mode=str(payload.get("mode") or "new"),
+                        context_hint=f"Account: {selected}",
+                        attachments=attachments,
+                    ),
+                )
+                wf.execution_for_api = ExecutionResponse(
+                    text=(
+                        f"Entwurf mit Konto **{selected}** vorbereitet:\n\n"
+                        f"- An: {payload.get('to','')}\n"
+                        f"- Betreff: {payload.get('subject','(leer)') or '(leer)'}\n"
+                        f"- CC: {payload.get('cc','(leer)') or '(leer)'}\n"
+                        f"- BCC: {payload.get('bcc','(leer)') or '(leer)'}\n"
+                        f"- Text: {str(payload.get('body') or '')[:500]}\n"
+                        f"- Anhänge: {', '.join(a[0] for a in (attachments or [])) or '(keine)'}\n\n"
+                        f"Soll ich jetzt senden? Bitte mit **Ja** oder **Nein** antworten."
+                    )
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        pending = get_pending_mail_send(chat_id)
+        if pending is not None:
+            def _apply_style_to_pending_body(style_raw: str) -> None:
+                style = str(style_raw or "").strip().lower()
+                if style == "foermlich":
+                    style = "förmlich"
+                first_attachment = ""
+                if pending.attachments:
+                    first_attachment = str(pending.attachments[0][0] or "").strip()
+                pdf_ref = first_attachment or "die angehängte PDF"
+                if style == "locker":
+                    pending.body = (
+                        "Hi,\n\n"
+                        f"ich schicke dir {pdf_ref} rüber.\n"
+                        "Sag einfach Bescheid, wenn ich noch was ergänzen soll.\n\n"
+                        "Liebe Grüße"
+                    )
+                elif style == "förmlich":
+                    pending.body = (
+                        "Guten Tag,\n\n"
+                        f"anbei übersende ich Ihnen {pdf_ref}.\n"
+                        "Für Rückfragen oder weitere Ergänzungen stehe ich Ihnen gerne zur Verfügung.\n\n"
+                        "Mit freundlichen Grüßen"
+                    )
+                else:
+                    pending.body = (
+                        "Hallo,\n\n"
+                        f"anbei sende ich {pdf_ref}.\n"
+                        "Melde dich gerne, wenn ich noch etwas ergänzen soll.\n\n"
+                        "Viele Grüße"
+                    )
+
+            def _render_pending_preview() -> str:
+                return (
+                    "Entwurf aktualisiert.\n\n"
+                    f"- An: {pending.to}\n"
+                    f"- Betreff: {pending.subject or '(leer)'}\n"
+                    f"- CC: {pending.cc or '(leer)'}\n"
+                    f"- BCC: {pending.bcc or '(leer)'}\n"
+                    f"- Text: {str(pending.body or '')[:500]}\n"
+                    f"- Anhänge: {', '.join(a[0] for a in (pending.attachments or [])) or '(keine)'}\n\n"
+                    "Soll ich jetzt senden? Bitte mit **Ja** oder **Nein** antworten."
+                )
+
+            verdict = mgs.classify_confirmation_reply(wf.user_text or "")
+            if verdict is None:
+                edit_text = str(wf.user_text or "").strip()
+                lower_edit = edit_text.lower()
+
+                def _apply_friendly_text() -> None:
+                    first_attachment = ""
+                    if pending.attachments:
+                        first_attachment = str(pending.attachments[0][0] or "").strip()
+                    pending.body = (
+                        "Hallo Rolfi,\n\n"
+                        f"ich hoffe, dir geht’s gut. Im Anhang findest du die PDF {first_attachment or 'wie besprochen'}.\n"
+                        "Melde dich gern, wenn ich noch etwas ergänzen soll.\n\n"
+                        "Viele Grüße\n"
+                        "Jürgen"
+                    )
+
+                changed_any = False
+
+                # Deterministischer Kombi-Parser für natürliche Sprache:
+                # - Betreff setzen
+                # - PDF-Anhang umbenennen
+                # - netten/freundlichen Text setzen
+                segments = [s.strip() for s in re.split(r"(?is)[,;]|(?:\bund\b)", edit_text) if s.strip()]
+                for seg in segments:
+                    seg_l = seg.lower()
+                    if "betreff" in seg_l:
+                        m_seg_subj = re.search(r"(?is)\bbetreff(?:\s+(?:zu|auf))?\s+(.+)$", seg)
+                        if m_seg_subj:
+                            det_subject = str(m_seg_subj.group(1) or "").strip()
+                            det_subject = re.sub(r"^\s*zu\s+", "", det_subject, flags=re.IGNORECASE).strip()
+                            det_subject = re.sub(r"\s+", " ", det_subject).strip(" ,.;")
+                            if det_subject:
+                                pending.subject = det_subject
+                                changed_any = True
+                    if ("benenn" in seg_l or "umbenenn" in seg_l or "rename" in seg_l) and "pdf" in seg_l:
+                        m_seg_rename = re.search(
+                            r"(?is)\b(?:benenn(?:e)?|umbenenn(?:en)?|rename)\s+(?:die\s+)?pdf(?:\s+um)?\s+(?:in|zu|auf)\s+([A-Z0-9._-]+)\b",
+                            seg,
+                        )
+                        if m_seg_rename and pending.attachments:
+                            det_name = str(m_seg_rename.group(1) or "").strip()
+                            if det_name:
+                                if "." not in det_name:
+                                    det_name = f"{det_name}.pdf"
+                                renamed_det: list[tuple[str, bytes, str | None]] = []
+                                for idx, att in enumerate(list(pending.attachments or [])):
+                                    fname, content, mime_type = att
+                                    if idx == 0:
+                                        renamed_det.append((det_name, content, mime_type))
+                                    else:
+                                        renamed_det.append((fname, content, mime_type))
+                                pending.attachments = renamed_det
+                                changed_any = True
+                    if ("netten text" in seg_l) or ("freundlichen text" in seg_l):
+                        _apply_friendly_text()
+                        changed_any = True
+
+                if changed_any:
+                    set_pending_mail_send(chat_id, pending)
+                    wf.execution_for_api = ExecutionResponse(text=_render_pending_preview())
+                    wf.skip_llm_generation = True
+                    _persist_user_turn_once()
+                    self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                    return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+                subj_det = re.search(
+                    r"(?is)\bbetreff(?:\s+(?:zu|auf))?\s+(.+?)(?=(?:,|\bund\b|\.\s|$))",
+                    edit_text,
+                )
+                if subj_det:
+                    det_subject = str(subj_det.group(1) or "").strip()
+                    det_subject = re.sub(r"^\s*zu\s+", "", det_subject, flags=re.IGNORECASE).strip()
+                    det_subject = re.sub(r"\s+", " ", det_subject).strip(" ,.;")
+                    if det_subject:
+                        pending.subject = det_subject
+                        changed_any = True
+
+                rename_det = re.search(
+                    r"(?is)\b(?:benenn(?:e)?|umbenenn(?:en)?|rename)\s+(?:die\s+)?pdf(?:\s+um)?\s+(?:in|zu|auf)\s+([A-Z0-9._-]+)\b",
+                    edit_text,
+                )
+                if rename_det and pending.attachments:
+                    det_name = str(rename_det.group(1) or "").strip()
+                    if det_name:
+                        if "." not in det_name:
+                            det_name = f"{det_name}.pdf"
+                        renamed_det: list[tuple[str, bytes, str | None]] = []
+                        for idx, att in enumerate(list(pending.attachments or [])):
+                            fname, content, mime_type = att
+                            if idx == 0:
+                                renamed_det.append((det_name, content, mime_type))
+                            else:
+                                renamed_det.append((fname, content, mime_type))
+                        pending.attachments = renamed_det
+                        changed_any = True
+
+                if re.search(r"(?is)\b(netten?|freundlichen?)\s+text\b", edit_text):
+                    _apply_friendly_text()
+                    changed_any = True
+
+                if changed_any:
+                    set_pending_mail_send(chat_id, pending)
+                    wf.execution_for_api = ExecutionResponse(text=_render_pending_preview())
+                    wf.skip_llm_generation = True
+                    _persist_user_turn_once()
+                    self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                    return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+                # 1) Subject + optional trailing instructions in one sentence.
+                subj_match = self._CHAT_MAIL_EDIT_SUBJECT_RE.match(edit_text)
+                if subj_match:
+                    new_subject = str(subj_match.group("subject") or subj_match.group("subject2") or "").strip()
+                    if new_subject:
+                        new_subject = re.sub(r"^\s*zu\s+", "", new_subject, flags=re.IGNORECASE).strip()
+                        new_subject = re.sub(
+                            r"\s*(?:,|und)\s*(?:benenn(?:e)?|umbenenn(?:en)?|rename|ergänz(?:e)?|ergaenz(?:e)?|füge|fuege|schreib|formuliere|mach)\b.*$",
+                            "",
+                            new_subject,
+                            flags=re.IGNORECASE,
+                        ).strip()
+                        if new_subject:
+                            pending.subject = new_subject
+                            changed_any = True
+
+                # 2) Rename attachment intent (accept more variants incl. "Dateiname ...").
+                rename_match = self._CHAT_MAIL_RENAME_ATTACHMENT_RE.match(edit_text)
+                desired_name = ""
+                if rename_match:
+                    desired_name = str(rename_match.group("name") or "").strip()
+                if not desired_name and ("dateiname" in lower_edit or "pdf um" in lower_edit):
+                    m_name = re.search(
+                        r"(?is)(?:benenn(?:e)?|umbenenn(?:en)?|rename)\s+(?:die\s+)?pdf(?:\s+um)?\s+(?:in|zu|auf)\s+([A-Z0-9._-]+)\b",
+                        edit_text,
+                    )
+                    if m_name:
+                        desired_name = str(m_name.group(1) or "").strip()
+                if desired_name and pending.attachments:
+                    if "." not in desired_name:
+                        desired_name = f"{desired_name}.pdf"
+                    renamed: list[tuple[str, bytes, str | None]] = []
+                    for idx, att in enumerate(list(pending.attachments or [])):
+                        fname, content, mime_type = att
+                        if idx == 0:
+                            renamed.append((desired_name, content, mime_type))
+                        else:
+                            renamed.append((fname, content, mime_type))
+                    pending.attachments = renamed
+                    changed_any = True
+
+                # 3) Friendly text intent.
+                if self._CHAT_MAIL_NICE_TEXT_RE.match(edit_text):
+                    _apply_friendly_text()
+                    changed_any = True
+
+                rename_match = self._CHAT_MAIL_RENAME_ATTACHMENT_RE.match(edit_text)
+                if rename_match and pending.attachments:
+                    desired = str(rename_match.group("name") or "").strip()
+                    if desired:
+                        if "." not in desired:
+                            desired = f"{desired}.pdf"
+                        renamed: list[tuple[str, bytes, str | None]] = []
+                        for idx, att in enumerate(list(pending.attachments or [])):
+                            fname, content, mime_type = att
+                            if idx == 0:
+                                renamed.append((desired, content, mime_type))
+                            else:
+                                renamed.append((fname, content, mime_type))
+                        pending.attachments = renamed
+                        set_pending_mail_send(chat_id, pending)
+                        wf.execution_for_api = ExecutionResponse(text=_render_pending_preview())
+                        wf.skip_llm_generation = True
+                        _persist_user_turn_once()
+                        self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                        return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+                style_match = self._CHAT_MAIL_STYLE_RE.match(edit_text)
+                if style_match:
+                    style = str(style_match.group("style") or style_match.group("style2") or "").strip()
+                    if style:
+                        _apply_style_to_pending_body(style)
+                        set_pending_mail_send(chat_id, pending)
+                        wf.execution_for_api = ExecutionResponse(text=_render_pending_preview())
+                        wf.skip_llm_generation = True
+                        _persist_user_turn_once()
+                        self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                        return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+                if changed_any:
+                    set_pending_mail_send(chat_id, pending)
+                    wf.execution_for_api = ExecutionResponse(text=_render_pending_preview())
+                    wf.skip_llm_generation = True
+                    _persist_user_turn_once()
+                    self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                    return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+                combo_match = self._CHAT_MAIL_EDIT_SUBJECT_AND_TEXT_RE.match(edit_text)
+                if combo_match:
+                    new_subject = str(combo_match.group("subject") or "").strip()
+                    tail = str(combo_match.group("tail") or "").strip().lower()
+                    if new_subject:
+                        pending.subject = new_subject
+                    if tail:
+                        first_attachment = ""
+                        if pending.attachments:
+                            first_attachment = str(pending.attachments[0][0] or "").strip()
+                        if "netten text" in tail or "freundlichen text" in tail:
+                            pending.body = (
+                                "Hallo Rolf,\n\n"
+                                f"ich schicke dir wie besprochen die PDF {first_attachment or 'im Anhang'}.\n"
+                                "Ich wünsche dir viel Freude damit und melde dich gern, wenn du noch etwas brauchst.\n\n"
+                                "Viele Grüße"
+                            )
+                        else:
+                            tail_body_match = self._CHAT_MAIL_EDIT_BODY_RE.match(tail)
+                            if tail_body_match:
+                                new_body = str(tail_body_match.group("body") or tail_body_match.group("body2") or "").strip()
+                                if new_body:
+                                    pending.body = new_body
+                    rename_match_combo = self._CHAT_MAIL_RENAME_ATTACHMENT_RE.match(edit_text)
+                    if rename_match_combo and pending.attachments:
+                        desired = str(rename_match_combo.group("name") or "").strip()
+                        if desired:
+                            if "." not in desired:
+                                desired = f"{desired}.pdf"
+                            renamed: list[tuple[str, bytes, str | None]] = []
+                            for idx, att in enumerate(list(pending.attachments or [])):
+                                fname, content, mime_type = att
+                                if idx == 0:
+                                    renamed.append((desired, content, mime_type))
+                                else:
+                                    renamed.append((fname, content, mime_type))
+                            pending.attachments = renamed
+                    set_pending_mail_send(chat_id, pending)
+                    wf.execution_for_api = ExecutionResponse(text=_render_pending_preview())
+                    wf.skip_llm_generation = True
+                    _persist_user_turn_once()
+                    self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                    return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+                subj_match = self._CHAT_MAIL_EDIT_SUBJECT_RE.match(edit_text)
+                if subj_match:
+                    new_subject = str(subj_match.group("subject") or subj_match.group("subject2") or "").strip()
+                    if new_subject:
+                        new_subject = re.sub(r"^\s*zu\s+", "", new_subject, flags=re.IGNORECASE).strip()
+                        new_subject = re.sub(
+                            r"\s+und\s+(ergänze|ergaenze|füge|fuege|schreib|formuliere|mach)\b.*$",
+                            "",
+                            new_subject,
+                            flags=re.IGNORECASE,
+                        ).strip()
+                        if (
+                            " und " in new_subject
+                            and ("netten text" in new_subject.lower() or "freundlichen text" in new_subject.lower())
+                        ):
+                            left, _, right = new_subject.partition(" und ")
+                            new_subject = left.strip()
+                            first_attachment = ""
+                            if pending.attachments:
+                                first_attachment = str(pending.attachments[0][0] or "").strip()
+                            pending.body = (
+                                "Hallo Rolf,\n\n"
+                                f"ich schicke dir wie besprochen die PDF {first_attachment or 'im Anhang'}.\n"
+                                "Ich wünsche dir viel Freude damit und melde dich gern, wenn du noch etwas brauchst.\n\n"
+                                "Viele Grüße"
+                            )
+                        rename_match_subj = self._CHAT_MAIL_RENAME_ATTACHMENT_RE.match(edit_text)
+                        if rename_match_subj and pending.attachments:
+                            desired = str(rename_match_subj.group("name") or "").strip()
+                            if desired:
+                                if "." not in desired:
+                                    desired = f"{desired}.pdf"
+                                renamed: list[tuple[str, bytes, str | None]] = []
+                                for idx, att in enumerate(list(pending.attachments or [])):
+                                    fname, content, mime_type = att
+                                    if idx == 0:
+                                        renamed.append((desired, content, mime_type))
+                                    else:
+                                        renamed.append((fname, content, mime_type))
+                                pending.attachments = renamed
+                        pending.subject = new_subject
+                        set_pending_mail_send(chat_id, pending)
+                        wf.execution_for_api = ExecutionResponse(text=_render_pending_preview())
+                        wf.skip_llm_generation = True
+                        _persist_user_turn_once()
+                        self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                        return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+                body_match = self._CHAT_MAIL_EDIT_BODY_RE.match(edit_text)
+                if body_match:
+                    new_body = str(body_match.group("body") or body_match.group("body2") or "").strip()
+                    if new_body:
+                        pending.body = new_body
+                        set_pending_mail_send(chat_id, pending)
+                        wf.execution_for_api = ExecutionResponse(text=_render_pending_preview())
+                        wf.skip_llm_generation = True
+                        _persist_user_turn_once()
+                        self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                        return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+                cc_match = self._CHAT_MAIL_EDIT_CC_RE.match(edit_text)
+                if cc_match:
+                    raw_cc = str(cc_match.group("cc") or cc_match.group("cc2") or "").strip()
+                    cc_list = service._split_recipients(raw_cc)
+                    if cc_list:
+                        pending.cc = ", ".join(cc_list)
+                        set_pending_mail_send(chat_id, pending)
+                        wf.execution_for_api = ExecutionResponse(text=_render_pending_preview())
+                        wf.skip_llm_generation = True
+                        _persist_user_turn_once()
+                        self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                        return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+                to_match = self._CHAT_MAIL_EDIT_TO_RE.match(edit_text)
+                if to_match:
+                    raw_to = str(to_match.group("to") or to_match.group("to2") or "").strip()
+                    to_list = service._split_recipients(raw_to)
+                    if to_list:
+                        pending.to = ", ".join(to_list)
+                        set_pending_mail_send(chat_id, pending)
+                        wf.execution_for_api = ExecutionResponse(text=_render_pending_preview())
+                        wf.skip_llm_generation = True
+                        _persist_user_turn_once()
+                        self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                        return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+                # Bei offenem Entwurf niemals ins freie LLM fallen.
+                wf.execution_for_api = ExecutionResponse(
+                    text=(
+                        "Ich habe noch einen offenen Mail-Entwurf, konnte deine gewünschte Änderung aber nicht sicher zuordnen.\n\n"
+                        "Bitte sag z. B.:\n"
+                        "- `ändere den betreff zu ...`\n"
+                        "- `benenn die pdf in ... um`\n"
+                        "- `ergänze einen netten text`\n\n"
+                        + _render_pending_preview()
+                    )
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+            if verdict == "reject":
+                pop_pending_mail_send(chat_id)
+                wf.execution_for_api = ExecutionResponse(
+                    text="Alles klar, ich habe den Mail-Entwurf verworfen. Es wurde nichts gesendet."
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+            try:
+                sender_service = MailService()
+                final_subject = str(pending.subject or "")
+                final_body = str(pending.body or "")
+                final_to = str(pending.to or "")
+                final_cc = str(pending.cc or "")
+                final_bcc = str(pending.bcc or "")
+                final_attachments = [str(a[0] or "").strip() for a in list(pending.attachments or []) if isinstance(a, tuple) and len(a) > 0]
+                to_count = len([p for p in re.split(r"[;,]\s*", final_to) if p.strip()])
+                cc_count = len([p for p in re.split(r"[;,]\s*", final_cc) if p.strip()])
+                bcc_count = len([p for p in re.split(r"[;,]\s*", final_bcc) if p.strip()])
+                logger.info(
+                    "[MAIL-FINAL-PAYLOAD] chat_id=%s mode=%s to_count=%s cc_count=%s bcc_count=%s subject_len=%s attachment_count=%s body_len=%s",
+                    chat_id,
+                    str(pending.mode or "new"),
+                    to_count,
+                    cc_count,
+                    bcc_count,
+                    len(final_subject),
+                    len(final_attachments),
+                    len(final_body),
+                )
+                result = sender_service.send_message(
+                    to=final_to,
+                    subject=final_subject,
+                    body=final_body,
+                    cc=final_cc,
+                    bcc=final_bcc,
+                    attachments=pending.attachments or None,
+                )
+                verified_in_sent = False
+                try:
+                    verified_in_sent = sender_service.verify_message_in_sent(result.message_id)
+                except Exception:
+                    verified_in_sent = False
+                pop_pending_mail_send(chat_id)
+                action = "Antwort" if pending.mode == "reply" else "E-Mail"
+                wf.execution_for_api = ExecutionResponse(
+                    text=(
+                        f"Erledigt: {action} an **{final_to}** wurde gesendet. ({result.message})\n"
+                        f"Gmail-ID: `{result.message_id}`\n"
+                        f"Send-Verify: {'SENT-Ordner bestätigt' if verified_in_sent else 'noch nicht bestätigt'}\n\n"
+                        "Final Payload Preview:\n"
+                        f"- An: {final_to}\n"
+                        f"- Betreff: {final_subject or '(leer)'}\n"
+                        f"- CC: {final_cc or '(leer)'}\n"
+                        f"- BCC: {final_bcc or '(leer)'}\n"
+                        f"- Anhänge: {', '.join(final_attachments) if final_attachments else '(keine)'}\n"
+                        f"- Text: {final_body[:700]}"
+                    )
+                )
+            except MailServiceError as exc:
+                wf.execution_for_api = ExecutionResponse(
+                    text=f"Das Senden ist fehlgeschlagen: {exc.message}"
+                )
+            except Exception as exc:
+                wf.execution_for_api = ExecutionResponse(
+                    text=f"Das Senden ist fehlgeschlagen: {exc}"
+                )
+            wf.skip_llm_generation = True
+            _persist_user_turn_once()
+            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        # Kein offener Entwurf: Bestätigungen/Entwurfs-Edits nicht ins freie LLM laufen lassen.
+        text_no_pending = str(wf.user_text or "").strip()
+        if text_no_pending:
+            confirm_probe = mgs.classify_confirmation_reply(text_no_pending)
+            wants_mail_edit = any(
+                rx.match(text_no_pending)
+                for rx in (
+                    self._CHAT_MAIL_EDIT_SUBJECT_RE,
+                    self._CHAT_MAIL_EDIT_BODY_RE,
+                    self._CHAT_MAIL_EDIT_CC_RE,
+                    self._CHAT_MAIL_EDIT_TO_RE,
+                    self._CHAT_MAIL_EDIT_SUBJECT_AND_TEXT_RE,
+                    self._CHAT_MAIL_STYLE_RE,
+                )
+            )
+            if confirm_probe in {"confirm", "reject"} or wants_mail_edit:
+                wf.execution_for_api = ExecutionResponse(
+                    text=(
+                        "Es gibt gerade keinen offenen Mail-Entwurf in diesem Chat. "
+                        "Bitte starte zuerst einen neuen Versandauftrag, dann kann ich Betreff/Text/Empfänger direkt ändern und mit Ja/Nein senden."
+                    )
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        text = str(wf.user_text or "").strip()
+        sort_docs_match = self._CHAT_SORT_DOCS_RE.match(text)
+        if sort_docs_match:
+            source_root = self._extract_sort_target_root(text)
+            try:
+                source_root.mkdir(parents=True, exist_ok=True)
+            except Exception:
+                pass
+            doc_files: list[Path] = []
+            for pattern in ("*.pdf", "*.txt", "*.md"):
+                doc_files.extend([p for p in source_root.glob(pattern) if p.is_file()])
+            if not doc_files:
+                wf.execution_for_api = ExecutionResponse(
+                    text=f"Ich habe im Ordner `{source_root}` keine PDF/TXT/MD-Dateien gefunden."
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+            moved: list[str] = []
+            failures: list[str] = []
+            for file_path in doc_files:
+                try:
+                    preview = ""
+                    if file_path.suffix.lower() == ".pdf":
+                        raw = file_path.read_bytes()
+                        preview = self._extract_pdf_content_preview(raw)
+                    else:
+                        preview = self._extract_text_preview_for_file(file_path)
+                    category = self._auto_pdf_category_from_text(f"{file_path.name} {preview}")
+                    category_dir = source_root / category
+                    category_dir.mkdir(parents=True, exist_ok=True)
+                    target = self._unique_file_path(category_dir, file_path.name)
+                    file_path.replace(target)
+                    moved.append(f"{file_path.name} -> {category}")
+                except Exception as exc:
+                    failures.append(f"{file_path.name}: {exc}")
+            msg = (
+                f"Erledigt: {len(moved)} Dateien sortiert in `{source_root}`.\n"
+                f"Kategorien: Rechnungen, Vertraege, Bank, Versicherung, Steuern, Sonstiges.\n"
+                f"Beispiele: {', '.join(moved[:6])}"
+            )
+            if failures:
+                msg += f"\nHinweise: {len(failures)} Dateien konnten nicht sortiert werden."
+            wf.execution_for_api = ExecutionResponse(text=msg)
+            wf.skip_llm_generation = True
+            _persist_user_turn_once()
+            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        attach_match = self._CHAT_MAIL_ATTACHMENTS_RE.match(text)
+        invoice_mail_probe = self._is_invoice_attachment_request(text) and bool(
+            re.search(r"(?is)\b(e-?mail|mail|mails)\b", text)
+        )
+        if attach_match or invoice_mail_probe:
+            count = 50
+            invoice_only = self._is_invoice_attachment_request(text)
+            query = self._invoice_gmail_query() if invoice_only else None
+            logger.info(
+                "[MAIL-INVOICE-DEBUG] request invoice_only=%s has_query=%s attach_match=%s probe=%s",
+                invoice_only,
+                bool(query),
+                bool(attach_match),
+                bool(invoice_mail_probe),
+            )
+            accounts, _active = service.get_known_accounts()
+            if len(accounts) > 1:
+                set_pending_account_choice(
+                    chat_id,
+                    PendingMailAccountChoice(
+                        action="list_attachments",
+                        accounts=accounts,
+                        payload={"count": count, "invoice_only": invoice_only, "query": query},
+                    ),
+                )
+                wf.execution_for_api = ExecutionResponse(text=self._mail_accounts_prompt(accounts, allow_all=True))
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+            try:
+                if accounts:
+                    service.activate_account(accounts[0])
+                rows = service.list_inbox_threads(folder="inbox", max_results=count, query=query).threads
+                if invoice_only:
+                    rows = self._filter_invoice_attachment_rows(service, rows)
+                else:
+                    rows = [r for r in rows if bool(getattr(r, "has_attachments", False))]
+                wf.execution_for_api = ExecutionResponse(
+                    text=self._format_attachment_mail_rows(
+                        service,
+                        rows,
+                        title="Mails mit Anhängen:",
+                        limit=min(20, count),
+                    )
+                )
+            except Exception as exc:
+                wf.execution_for_api = ExecutionResponse(text=f"Mails konnten nicht geladen werden ({exc}).")
+            wf.skip_llm_generation = True
+            _persist_user_turn_once()
+            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        save_attachments_match = self._CHAT_MAIL_SAVE_ATTACHMENTS_RE.match(text)
+        save_invoices_match = self._CHAT_MAIL_SAVE_INVOICES_RE.match(text)
+        if save_attachments_match or save_invoices_match:
+            count = 120
+            invoice_only = self._is_invoice_attachment_request(text)
+            query = self._invoice_gmail_query() if invoice_only else None
+            rename_with_date_sender = bool(self._CHAT_MAIL_SAVE_RENAME_RE.match(text))
+            categorize_invoices = bool(self._CHAT_MAIL_SAVE_CATEGORIZED_RE.match(text))
+            folder_name = self._extract_target_folder_name(
+                text,
+                default=("rechnungen" if invoice_only else "anhaenge"),
+            )
+            use_all_accounts = bool(re.search(r"(?is)\balle\s+gefunden(?:en|e)?\b|\balle\b", text))
+            accounts, _active = service.get_known_accounts()
+            if len(accounts) > 1 and not use_all_accounts:
+                set_pending_account_choice(
+                    chat_id,
+                    PendingMailAccountChoice(
+                        action="save_attachments",
+                        accounts=accounts,
+                        payload={
+                            "count": count,
+                            "invoice_only": invoice_only,
+                            "query": query,
+                            "folder_name": folder_name,
+                            "rename_with_date_sender": rename_with_date_sender,
+                            "categorize_invoices": categorize_invoices,
+                        },
+                    ),
+                )
+                wf.execution_for_api = ExecutionResponse(text=self._mail_accounts_prompt(accounts, allow_all=True))
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+            if len(accounts) > 1 and use_all_accounts:
+                set_pending_account_choice(
+                    chat_id,
+                    PendingMailAccountChoice(
+                        action="save_attachments",
+                        accounts=accounts,
+                        payload={
+                            "count": count,
+                            "invoice_only": invoice_only,
+                            "query": query,
+                            "folder_name": folder_name,
+                            "rename_with_date_sender": rename_with_date_sender,
+                            "categorize_invoices": categorize_invoices,
+                        },
+                    ),
+                )
+                wf.user_text = str(len(accounts) + 1)
+                return await self._try_chat_mail_confirmation(ctx)
+
+            # Single-account shortcut: auto-run save directly.
+            selected = accounts[0] if accounts else ""
+            if not selected:
+                wf.execution_for_api = ExecutionResponse(text="Es ist kein Mailkonto verbunden.")
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+            set_pending_account_choice(
+                chat_id,
+                PendingMailAccountChoice(
+                    action="save_attachments",
+                    accounts=[selected],
+                    payload={
+                        "count": count,
+                        "invoice_only": invoice_only,
+                        "query": query,
+                        "folder_name": folder_name,
+                        "rename_with_date_sender": rename_with_date_sender,
+                        "categorize_invoices": categorize_invoices,
+                    },
+                ),
+            )
+            wf.user_text = "1"
+            return await self._try_chat_mail_confirmation(ctx)
+
+        list_match = self._CHAT_MAIL_LIST_RE.match(text)
+        if list_match:
+            count = max(1, min(20, int(list_match.group("count") or "4")))
+            accounts, _active = service.get_known_accounts()
+            if len(accounts) > 1:
+                set_pending_account_choice(
+                    chat_id,
+                    PendingMailAccountChoice(
+                        action="list_latest",
+                        accounts=accounts,
+                        payload={"count": count},
+                    ),
+                )
+                wf.execution_for_api = ExecutionResponse(text=self._mail_accounts_prompt(accounts, allow_all=True))
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+            try:
+                if accounts:
+                    service.activate_account(accounts[0])
+                rows = service.list_inbox_threads(folder="inbox", max_results=count).threads
+                lines = [f"Letzte {count} Mails:"]
+                for i, row in enumerate(rows[:count], start=1):
+                    lines.append(f"{i}. {row.from_display} — {row.subject}")
+                wf.execution_for_api = ExecutionResponse(text="\n".join(lines))
+            except Exception as exc:
+                wf.execution_for_api = ExecutionResponse(text=f"Mails konnten nicht geladen werden ({exc}).")
+            wf.skip_llm_generation = True
+            _persist_user_turn_once()
+            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        reply_match = self._CHAT_MAIL_REPLY_RE.match(text)
+        if reply_match:
+            sender = str(reply_match.group("sender") or "").strip()
+            body_raw = str(reply_match.group("body") or "").strip()
+            subject = ""
+            subject_match = self._CHAT_MAIL_SUBJECT_RE.search(body_raw)
+            if subject_match:
+                subject = str(subject_match.group("subject") or "").strip()
+                body_raw = self._CHAT_MAIL_SUBJECT_RE.sub("", body_raw).strip()
+            cc_match = self._CHAT_MAIL_CC_RE.search(body_raw)
+            cc = str(cc_match.group("cc") or "").strip() if cc_match else ""
+            if cc_match:
+                body_raw = self._CHAT_MAIL_CC_RE.sub("", body_raw).strip()
+            bcc_match = self._CHAT_MAIL_BCC_RE.search(body_raw)
+            bcc = str(bcc_match.group("bcc") or "").strip() if bcc_match else ""
+            if bcc_match:
+                body_raw = self._CHAT_MAIL_BCC_RE.sub("", body_raw).strip()
+
+            service = MailService()
+            detail = service.find_latest_message_by_sender(sender_query=sender, folder="inbox")
+            if detail is None:
+                wf.execution_for_api = ExecutionResponse(
+                    text=f"Ich konnte keine passende letzte Mail von '{sender}' finden."
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+            to = str(detail.from_display or "").strip()
+            if "<" in to and ">" in to:
+                m_addr = re.search(r"<([^>]+)>", to)
+                if m_addr:
+                    to = m_addr.group(1).strip()
+            if "@" not in to:
+                wf.execution_for_api = ExecutionResponse(
+                    text=f"Ich konnte aus der letzten Mail von '{sender}' keinen gültigen Empfänger extrahieren."
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+            final_subject = subject or f"Re: {str(detail.subject or '(Kein Betreff)')}"
+            body = body_raw or "(Kein Text)"
+            accounts, _active = service.get_known_accounts()
+            payload = {
+                "to": to.strip().lower(),
+                "subject": final_subject,
+                "body": body,
+                "cc": cc,
+                "bcc": bcc,
+                "mode": "reply",
+            }
+            if len(accounts) > 1:
+                set_pending_account_choice(
+                    chat_id,
+                    PendingMailAccountChoice(action="reply", accounts=accounts, payload=payload),
+                )
+                wf.execution_for_api = ExecutionResponse(text=self._mail_accounts_prompt(accounts, allow_all=False))
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+            set_pending_mail_send(chat_id, PendingMailSend(**payload))
+            preview = (
+                f"Ich habe eine Antwort vorbereitet ({sender}):\n\n"
+                f"- An: {to.strip().lower()}\n"
+                f"- Betreff: {final_subject}\n"
+                f"- CC: {cc or '(leer)'}\n"
+                f"- BCC: {bcc or '(leer)'}\n"
+                f"- Text: {body[:500]}\n\n"
+                f"Soll ich diese Antwort jetzt senden? Bitte mit **Ja** oder **Nein** antworten."
+            )
+            wf.execution_for_api = ExecutionResponse(text=preview)
+            wf.skip_llm_generation = True
+            _persist_user_turn_once()
+            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        send_pdf_match = self._CHAT_MAIL_SEND_PDF_RE.match(text)
+        if send_pdf_match:
+            pdf_name = str(send_pdf_match.group("pdf") or "").strip()
+            to = str(send_pdf_match.group("to") or "").strip().lower()
+            accounts, _active = service.get_known_accounts()
+
+            def _find_pdf_attachment_payload(active_service: MailService, wanted_name: str, *, account: str) -> list[dict]:
+                wanted = wanted_name.strip().lower()
+                if not wanted:
+                    return []
+                rows = active_service.list_inbox_threads(folder="inbox", max_results=50).threads
+                found: list[dict] = []
+                for row in rows:
+                    try:
+                        detail = active_service.get_message_detail(str(getattr(row, "id", "")))
+                    except Exception:
+                        continue
+                    for att in list(getattr(detail, "attachments", []) or []):
+                        filename = str(getattr(att, "filename", "") or "").strip()
+                        if not filename:
+                            continue
+                        lower = filename.lower()
+                        if lower == wanted or wanted in lower:
+                            found.append(
+                                {
+                                    "account": account,
+                                    "filename": filename,
+                                    "attachment_id": str(getattr(att, "attachment_id", "") or "").strip(),
+                                    "message_id": str(getattr(row, "id", "") or "").strip(),
+                                    "mime_type": str(getattr(att, "mime_type", "") or "").strip(),
+                                    "subject": str(getattr(row, "subject", "") or ""),
+                                    "date": self._format_mail_when(row),
+                                }
+                            )
+                return found
+
+            payload = {
+                "to": to,
+                "subject": f"{pdf_name}",
+                "body": (
+                    f"Hallo,\n\n"
+                    f"ich schicke dir im Anhang die PDF {pdf_name}.\n"
+                    f"Wenn du noch etwas dazu brauchst, sag gern Bescheid.\n\n"
+                    f"Viele Grüße"
+                ),
+                "cc": "",
+                "bcc": "",
+                "mode": "new",
+                "pdf_name": pdf_name,
+            }
+
+            all_candidates: list[dict] = []
+            for acc in accounts or []:
+                try:
+                    service.activate_account(acc)
+                    all_candidates.extend(_find_pdf_attachment_payload(service, pdf_name, account=acc))
+                except Exception:
+                    continue
+
+            attachments_payload: list[dict] = []
+            selected_account = ""
+            if len(all_candidates) == 1:
+                attachments_payload = [all_candidates[0]]
+                selected_account = str(all_candidates[0].get("account") or "")
+            elif len(all_candidates) > 1:
+                set_pending_account_choice(
+                    chat_id,
+                    PendingMailAccountChoice(
+                        action="send_pdf_choice",
+                        accounts=[str(i) for i in range(1, len(all_candidates) + 1)],
+                        payload={**payload, "candidates": all_candidates},
+                    ),
+                )
+                wf.execution_for_api = ExecutionResponse(text=self._mail_pdf_candidates_prompt(all_candidates))
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+            if not attachments_payload:
+                wf.execution_for_api = ExecutionResponse(
+                    text=f"Ich konnte die PDF **{pdf_name}** in deinen Mails nicht finden."
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+            rebuilt_attachments: list[tuple[str, bytes, str | None]] = []
+            for item in attachments_payload:
+                try:
+                    if item.get("account"):
+                        service.activate_account(str(item.get("account")))
+                    blob = service.download_attachment(item["message_id"], item["attachment_id"])
+                    content = blob.get("content") if isinstance(blob, dict) else None
+                    if isinstance(content, (bytes, bytearray)):
+                        rebuilt_attachments.append((item["filename"], bytes(content), item.get("mime_type") or None))
+                except Exception:
+                    continue
+
+            if not rebuilt_attachments:
+                wf.execution_for_api = ExecutionResponse(
+                    text=f"Ich habe **{pdf_name}** gefunden, konnte den Anhang aber nicht laden."
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+            set_pending_mail_send(
+                chat_id,
+                PendingMailSend(
+                    to=to,
+                    subject=f"{pdf_name}",
+                    body=payload["body"],
+                    cc="",
+                    bcc="",
+                    mode="new",
+                    context_hint=f"Account: {selected_account}" if selected_account else "",
+                    attachments=rebuilt_attachments,
+                ),
+            )
+            preview_text = (
+                "Ich habe den Versand vorbereitet:\n\n"
+                + (f"- Konto: {selected_account}\n" if selected_account else "")
+                + f"- An: {to}\n"
+                + f"- Betreff: {pdf_name}\n"
+                + f"- Anhang: {', '.join(a[0] for a in rebuilt_attachments)}\n\n"
+                + "Soll ich jetzt senden? Bitte mit **Ja** oder **Nein** antworten."
+            )
+            wf.execution_for_api = ExecutionResponse(text=preview_text)
+            wf.skip_llm_generation = True
+            _persist_user_turn_once()
+            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        m = self._CHAT_MAIL_SEND_RE.match(text)
+        if not m:
+            return None
+
+        to = str(m.group("to") or "").strip().lower()
+        body_raw = str(m.group("body") or "").strip()
+        subject = ""
+        subject_match = self._CHAT_MAIL_SUBJECT_RE.search(body_raw)
+        if subject_match:
+            subject = str(subject_match.group("subject") or "").strip()
+            body_raw = self._CHAT_MAIL_SUBJECT_RE.sub("", body_raw).strip()
+        cc_match = self._CHAT_MAIL_CC_RE.search(body_raw)
+        cc = str(cc_match.group("cc") or "").strip() if cc_match else ""
+        if cc_match:
+            body_raw = self._CHAT_MAIL_CC_RE.sub("", body_raw).strip()
+        bcc_match = self._CHAT_MAIL_BCC_RE.search(body_raw)
+        bcc = str(bcc_match.group("bcc") or "").strip() if bcc_match else ""
+        if bcc_match:
+            body_raw = self._CHAT_MAIL_BCC_RE.sub("", body_raw).strip()
+        body = body_raw
+        if not body:
+            body = "(Kein Text)"
+        accounts, _active = service.get_known_accounts()
+        payload = {"to": to, "subject": subject, "body": body, "cc": cc, "bcc": bcc, "mode": "new"}
+        if len(accounts) > 1:
+            set_pending_account_choice(
+                chat_id,
+                PendingMailAccountChoice(action="send", accounts=accounts, payload=payload),
+            )
+            wf.execution_for_api = ExecutionResponse(text=self._mail_accounts_prompt(accounts, allow_all=False))
+            wf.skip_llm_generation = True
+            _persist_user_turn_once()
+            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+        set_pending_mail_send(chat_id, PendingMailSend(**payload))
+        preview = (
+            f"Ich habe einen Mail-Entwurf vorbereitet:\n\n"
+            f"- An: {to}\n"
+            f"- Betreff: {subject or '(leer)'}\n"
+            f"- CC: {cc or '(leer)'}\n"
+            f"- BCC: {bcc or '(leer)'}\n"
+            f"- Text: {body[:500]}\n\n"
+            f"Soll ich diese E-Mail jetzt senden? Bitte mit **Ja** oder **Nein** antworten."
+        )
+        wf.execution_for_api = ExecutionResponse(text=preview)
+        wf.skip_llm_generation = True
+        _persist_user_turn_once()
         self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
         return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
 
@@ -1474,6 +3258,10 @@ class ChatOrchestrator:
         tools_cmd_result = await self._try_tools_command(ctx)
         if tools_cmd_result is not None:
             return tools_cmd_result
+
+        mail_guard_result = await self._try_chat_mail_confirmation(ctx)
+        if mail_guard_result is not None:
+            return mail_guard_result
 
         mutation_guard_result = await self._try_mutation_guard_confirmation(ctx)
         if mutation_guard_result is not None:

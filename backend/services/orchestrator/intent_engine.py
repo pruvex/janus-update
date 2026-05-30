@@ -764,6 +764,59 @@ HELP_HOW_TO_PATTERNS: Tuple[re.Pattern, ...] = (
     re.compile(r'how\s+to', re.IGNORECASE),
 )
 
+HELP_SCOPE_TERMS: Tuple[str, ...] = (
+    "janus",
+    "app",
+    "chat",
+    "assistent",
+    "assistant",
+    "dich",
+    "datei",
+    "dateien",
+    "ordner",
+    "workspace",
+    "workspaces",
+    "dokument",
+    "dokumente",
+    "pdf",
+    "bild",
+    "bilder",
+    "image",
+    "video",
+    "mail",
+    "email",
+    "e-mail",
+    "kontakt",
+    "kontakte",
+    "kalender",
+    "termin",
+    "termine",
+    "erinner",
+    "modell",
+    "modelle",
+    "llm",
+    "ollama",
+    "tool",
+    "tools",
+    "skill",
+    "skills",
+    "funktion",
+    "funktionen",
+    "feature",
+    "features",
+    "einstellung",
+    "einstellungen",
+    "profil",
+    "provider",
+    "suche",
+    "websuche",
+    "wissen",
+    "hochlad",
+    "upload",
+    "export",
+    "download",
+)
+
 HELP_NAVIGATION_PATTERNS: Tuple[re.Pattern, ...] = (
     re.compile(r'wo\s+finde\s+ich', re.IGNORECASE),
     re.compile(r'wo\s+ist', re.IGNORECASE),
@@ -1420,13 +1473,28 @@ class IntentEngine:
         normalized = self._normalize_intent_text(user_text)
         return normalized in HELP_CAPABILITY_OVERVIEW_TRIGGERS
 
+    def _has_help_scope(self, user_text: str) -> bool:
+        """Return True only when a generic help phrase is scoped to Janus/app features."""
+        text_norm = _normalize_text(user_text)
+        if not text_norm:
+            return False
+        return any(term in text_norm for term in HELP_SCOPE_TERMS)
+
     def detect_how_to(self, user_text: str) -> bool:
-        """Return True for how-to instructions requests ("Wie kann ich...", "Anleitung für")."""
+        """Return True for Janus/app how-to requests, not general-world advice."""
         if not user_text:
             return False
         if intent_classifier.is_greeting(user_text):
             return False
-        return any(pattern.search(user_text) for pattern in HELP_HOW_TO_PATTERNS)
+        if not any(pattern.search(user_text) for pattern in HELP_HOW_TO_PATTERNS):
+            return False
+        if self._has_help_scope(user_text):
+            return True
+        logger.debug(
+            "[INTENT-ENGINE] Help how-to blocked by missing Janus/app scope: %r",
+            user_text[:120],
+        )
+        return False
 
     @staticmethod
     def detect_routing_geo_intent(user_text: str) -> bool:
@@ -1570,7 +1638,15 @@ class IntentEngine:
                 )
                 return False
 
-        return any(pattern.search(user_text) for pattern in HELP_NAVIGATION_PATTERNS)
+        if not any(pattern.search(user_text) for pattern in HELP_NAVIGATION_PATTERNS):
+            return False
+        if self._has_help_scope(user_text):
+            return True
+        logger.debug(
+            "[INTENT-ENGINE] Help navigation blocked by missing Janus/app scope: %r",
+            user_text[:120],
+        )
+        return False
 
     def detect_model_introspektion(self, user_text: str) -> bool:
         """Return True for model introspection queries ("Welches Modell?", "Mit wem schreibe ich?")."""

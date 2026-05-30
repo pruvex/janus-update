@@ -195,10 +195,29 @@ _CALENDAR_INCOMPATIBLE_SKILLS = frozenset([
     "knowledge.edit_pdf",
 ])
 
+_MAIL_QUERY_RE = re.compile(
+    r"\b(?:mail|e-?mail|gmail|posteingang|inbox|anhang|anhänge|attachments?)\b",
+    re.IGNORECASE,
+)
+
+_MAIL_QUERY_RE = re.compile(
+    r"\b(?:mails?|e-?mails?|gmail|posteingang|inbox|anh(?:ang|aenge|\u00e4nge?n?)|attachments?)\b",
+    re.IGNORECASE,
+)
+
 
 def _is_calendar_query(query: str) -> bool:
     q = query.lower()
     return any(tok in q for tok in _CALENDAR_QUERY_TOKENS)
+
+
+def _is_mail_query(query: str) -> bool:
+    q = str(query or "").strip().lower()
+    if not q:
+        return False
+    if "mail" in q or "gmail" in q or "inbox" in q or "posteingang" in q:
+        return True
+    return bool(_MAIL_QUERY_RE.search(q))
 
 
 _DESTRUCTIVE_ACTION_RE = re.compile(
@@ -741,7 +760,7 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
 
         # Safety net: Inject calendar.list_events if intent is detected but selector returned empty
         intent_result = getattr(wf, 'intent_detection_result', None)
-        if intent_result and getattr(intent_result, 'is_calendar_intent', False):
+        if intent_result and getattr(intent_result, 'is_calendar_intent', False) and not _is_mail_query(query_for_ambiguity):
             _cal_mandatory = ("calendar.list_events", "calendar.find_and_update_event", "calendar.create_event")
             if hasattr(wf, 'relevant_skill_ids'):
                 for sid in _cal_mandatory:
@@ -1741,6 +1760,7 @@ async def execute_generation_prepare_gateway(
         _wikipedia = bool(getattr(_idr, "is_wikipedia_intent", False)) if _idr else False
         _news = bool(getattr(_idr, "is_news_intent", False)) if _idr else False
         _external_current_research = _is_external_current_research_query(wf.user_text)
+        _is_mail_query_text = _is_mail_query(wf.user_text)
 
         if _is_cal_creation:
             # ── CALENDAR-CREATE: Full model freedom — do NOT force any tool.
@@ -1756,7 +1776,7 @@ async def execute_generation_prepare_gateway(
                 request.provider,
             )
 
-        elif _is_cal_intent and not _is_cal_mutation and not _routing_geo and not _weather:
+        elif _is_cal_intent and not _is_cal_mutation and not _routing_geo and not _weather and not _is_mail_query_text:
             # 💎 TASK-003: BACKLOG-004 - Filesystem-Intent Veto
             # VIDEO-FORCE nicht bei Filesystem-Intents anwenden
             if _is_filesystem_intent:
@@ -1824,7 +1844,7 @@ async def execute_generation_prepare_gateway(
                 request.provider,
             )
 
-        elif _is_cal_intent and not _is_cal_mutation and (_routing_geo or _weather):
+        elif _is_cal_intent and not _is_cal_mutation and (_routing_geo or _weather or _is_mail_query_text):
             # Nur Kalender-Liste entfernen — andere Forces (z.B. video.search) unangetastet lassen.
             _ftn_cal = str(wf.gateway_kwargs.get("force_tool_name") or "").replace("_", ".").lower()
             if _ftn_cal == "calendar.list_events":

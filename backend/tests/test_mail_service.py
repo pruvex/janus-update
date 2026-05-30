@@ -1,3 +1,4 @@
+import base64
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -343,9 +344,21 @@ def test_get_message_detail_returns_full_payload():
                                 {"name": "To", "value": "bob@example.com"},
                                 {"name": "Subject", "value": "Betreff"},
                                 {"name": "Date", "value": "Thu, 28 May 2026 10:00:00 +0000"},
+                                {"name": "Message-ID", "value": "<abc@example.com>"},
+                                {"name": "References", "value": "<old@example.com>"},
                             ],
-                            "mimeType": "text/plain",
-                            "body": {"data": "SGFsbG8gV2VsdA=="},
+                            "parts": [
+                                {
+                                    "mimeType": "text/plain",
+                                    "body": {"data": "SGFsbG8gV2VsdA=="},
+                                },
+                                {
+                                    "mimeType": "application/pdf",
+                                    "filename": "test.pdf",
+                                    "body": {"attachmentId": "att-1", "size": 1234},
+                                }
+                            ],
+                            "mimeType": "multipart/mixed",
                         },
                     }
 
@@ -381,6 +394,73 @@ def test_get_message_detail_returns_full_payload():
     assert result.to_display == "bob@example.com"
     assert result.subject == "Betreff"
     assert result.body_text == "Hallo Welt"
+    assert result.message_id_header == "<abc@example.com>"
+    assert result.references_header == "<old@example.com>"
+    assert len(result.attachments) == 1
+    assert result.attachments[0].attachment_id == "att-1"
+
+
+def test_download_attachment_returns_payload():
+    service = MailService()
+    token_json = '{"client_id":"test-client"}'
+
+    class _AttachmentsApi:
+        def get(self, **kwargs):
+            class _Req:
+                def execute(self_nonlocal):
+                    assert kwargs["id"] == "att-1"
+                    return {"data": "aGVsbG8="}
+
+            return _Req()
+
+    class _MessagesApi:
+        def get(self, **kwargs):
+            class _Req:
+                def execute(self_nonlocal):
+                    return {
+                        "payload": {
+                            "parts": [
+                                {
+                                    "filename": "hello.txt",
+                                    "mimeType": "text/plain",
+                                    "body": {"attachmentId": "att-1", "size": 5},
+                                }
+                            ]
+                        }
+                    }
+
+            return _Req()
+
+        def attachments(self):
+            return _AttachmentsApi()
+
+    class _UsersApi:
+        def messages(self):
+            return _MessagesApi()
+
+    class _GmailApi:
+        def users(self):
+            return _UsersApi()
+
+    with (
+        patch("backend.services.mail.mail_service.keyring.get_password", return_value=token_json),
+        patch(
+            "backend.services.mail.mail_service.Credentials.from_authorized_user_info",
+            return_value=_creds(
+                valid=True,
+                scopes=[
+                    "https://www.googleapis.com/auth/calendar",
+                    "https://www.googleapis.com/auth/gmail.readonly",
+                    "https://www.googleapis.com/auth/gmail.send",
+                ],
+            ),
+        ),
+        patch("backend.services.mail.mail_service.build", return_value=_GmailApi()),
+    ):
+        payload = service.download_attachment("m42", "att-1")
+    assert payload["filename"] == "hello.txt"
+    assert payload["mime_type"] == "text/plain"
+    assert payload["content"] == b"hello"
 
 
 def test_mail_message_detail_endpoint_uses_service_contract():
@@ -502,3 +582,190 @@ def test_mail_disconnect_endpoint_returns_action_result():
     body = response.json()
     assert body["ok"] is True
     assert body["message_id"] == "account"
+
+
+def test_send_message_calls_gmail_send():
+    service = MailService()
+    token_json = '{"client_id":"test-client"}'
+    called = {"send": False}
+
+    class _MessagesApi:
+        def send(self, **kwargs):
+            class _Req:
+                def execute(self_nonlocal):
+                    called["send"] = True
+                    assert kwargs["userId"] == "me"
+                    raw = kwargs["body"].get("raw")
+                    assert raw
+                    decoded = base64.urlsafe_b64decode(raw.encode("ascii")).decode("utf-8", errors="replace")
+                    assert "To: alice@example.com" in decoded
+                    return {"id": "sent-123"}
+
+            return _Req()
+
+    class _UsersApi:
+        def messages(self):
+            return _MessagesApi()
+
+    class _GmailApi:
+        def users(self):
+            return _UsersApi()
+
+    with (
+        patch("backend.services.mail.mail_service.keyring.get_password", return_value=token_json),
+        patch(
+            "backend.services.mail.mail_service.Credentials.from_authorized_user_info",
+            return_value=_creds(valid=True, scopes=[
+                "https://www.googleapis.com/auth/calendar",
+                "https://www.googleapis.com/auth/gmail.readonly",
+                "https://www.googleapis.com/auth/gmail.send",
+            ]),
+        ),
+        patch("backend.services.mail.mail_service.build", return_value=_GmailApi()),
+    ):
+        result = service.send_message(
+            to="alice@example.com",
+            cc="",
+            bcc="",
+            subject="Test",
+            body="Hallo",
+        )
+    assert called["send"] is True
+    assert result.ok is True
+    assert result.target_folder == "sent"
+
+
+def test_send_message_includes_reply_headers_and_original_attachments():
+    service = MailService()
+    token_json = '{"client_id":"test-client"}'
+    called = {"send": False}
+
+    class _AttachmentsApi:
+        def get(self, **kwargs):
+            class _Req:
+                def execute(self_nonlocal):
+                    assert kwargs["id"] == "att-1"
+                    return {"data": "aGVsbG8="}
+            return _Req()
+
+    class _MessagesApi:
+        def get(self, **kwargs):
+            class _Req:
+                def execute(self_nonlocal):
+                    if kwargs.get("id") == "src-1":
+                        return {
+                            "payload": {
+                                "parts": [
+                                    {
+                                        "filename": "hello.txt",
+                                        "mimeType": "text/plain",
+                                        "body": {"attachmentId": "att-1", "size": 5},
+                                    }
+                                ]
+                            }
+                        }
+                    return {"payload": {"headers": []}, "snippet": ""}
+            return _Req()
+
+        def attachments(self):
+            return _AttachmentsApi()
+
+        def send(self, **kwargs):
+            class _Req:
+                def execute(self_nonlocal):
+                    called["send"] = True
+                    raw = kwargs["body"].get("raw")
+                    decoded = base64.urlsafe_b64decode(raw.encode("ascii")).decode("utf-8", errors="replace")
+                    assert "In-Reply-To: <abc@example.com>" in decoded
+                    assert "References: <old@example.com> <abc@example.com>" in decoded
+                    assert 'filename="hello.txt"' in decoded
+                    return {"id": "sent-124"}
+            return _Req()
+
+    class _UsersApi:
+        def messages(self):
+            return _MessagesApi()
+
+    class _GmailApi:
+        def users(self):
+            return _UsersApi()
+
+    with (
+        patch("backend.services.mail.mail_service.keyring.get_password", return_value=token_json),
+        patch(
+            "backend.services.mail.mail_service.Credentials.from_authorized_user_info",
+            return_value=_creds(valid=True, scopes=[
+                "https://www.googleapis.com/auth/calendar",
+                "https://www.googleapis.com/auth/gmail.readonly",
+                "https://www.googleapis.com/auth/gmail.send",
+            ]),
+        ),
+        patch("backend.services.mail.mail_service.build", return_value=_GmailApi()),
+    ):
+        result = service.send_message(
+            to="alice@example.com",
+            subject="Re: Test",
+            body="Antwort",
+            in_reply_to="<abc@example.com>",
+            references="<old@example.com> <abc@example.com>",
+            source_message_id="src-1",
+            include_original_attachments=True,
+        )
+    assert called["send"] is True
+    assert result.ok is True
+
+
+def test_mail_send_endpoint_uses_service_contract():
+    app.dependency_overrides[api_key_auth] = lambda: None
+    try:
+        with patch.object(
+            mail_router._mail_service,
+            "send_message",
+            return_value={
+                "ok": True,
+                "message_id": "sent-1",
+                "message": "E-Mail wurde gesendet.",
+                "target_folder": "sent",
+            },
+        ):
+            response = client.post(
+                "/api/mail/messages/send",
+                data={"to": "alice@example.com", "subject": "Hi", "body": "Hallo", "cc": "", "bcc": ""},
+            )
+    finally:
+        app.dependency_overrides.pop(api_key_auth, None)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["ok"] is True
+    assert body["message_id"] == "sent-1"
+
+
+def test_find_latest_message_by_sender_returns_detail():
+    service = MailService()
+    with (
+        patch.object(
+            service,
+            "list_inbox_threads",
+            return_value=SimpleNamespace(threads=[
+                SimpleNamespace(id="m1", from_display="Alice <alice@example.com>"),
+                SimpleNamespace(id="m2", from_display="Bob <bob@example.com>"),
+            ]),
+        ),
+        patch.object(
+            service,
+            "get_message_detail",
+            return_value=SimpleNamespace(
+                id="m2",
+                from_display="Bob <bob@example.com>",
+                to_display="me@example.com",
+                subject="Hallo",
+                date="",
+                snippet="",
+                body_text="",
+            ),
+        ),
+    ):
+        result = service.find_latest_message_by_sender("bob")
+    assert result is not None
+    assert result.id == "m2"

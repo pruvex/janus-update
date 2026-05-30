@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Any, Dict, List, Optional, Set, TYPE_CHECKING
 
 import chromadb
@@ -14,6 +15,25 @@ if TYPE_CHECKING:
     from backend.services.capability_registry import CapabilityRegistry
 
 logger = logging.getLogger("janus_backend")
+
+_MAIL_QUERY_RE = re.compile(
+    r"\b(?:mail|e-?mail|gmail|posteingang|inbox|anhang|anhänge|attachments?)\b",
+    re.IGNORECASE,
+)
+
+_MAIL_QUERY_RE = re.compile(
+    r"\b(?:mails?|e-?mails?|gmail|posteingang|inbox|anh(?:ang|aenge|\u00e4nge?n?)|attachments?)\b",
+    re.IGNORECASE,
+)
+
+
+def _looks_like_mail_query(text: str) -> bool:
+    q = str(text or "").strip().lower()
+    if not q:
+        return False
+    if "mail" in q or "gmail" in q or "inbox" in q or "posteingang" in q:
+        return True
+    return bool(_MAIL_QUERY_RE.search(q))
 
 
 class SkillSelector:
@@ -51,12 +71,41 @@ class SkillSelector:
         prompt = str(user_prompt or "").strip()
         if not prompt:
             return []
+        is_mail_query = _looks_like_mail_query(prompt)
+
+        # Hard guard: ensure mail-capable tools are always available for mail queries.
+        # This prevents drift into memory/calendar-only bundles for requests like
+        # "Welche Mails mit Anhängen habe ich?".
+        if is_mail_query:
+            base_mail = ["communication.list_emails", "communication.read_email"]
+            registry_universe = self._registry_skill_universe()
+            explicit_allowed: Set[str] = {
+                str(sid).strip()
+                for sid in (allowed_skill_ids or [])
+                if str(sid or "").strip()
+            }
+            universe: Optional[Set[str]] = (
+                explicit_allowed & registry_universe
+                if (explicit_allowed and registry_universe)
+                else explicit_allowed or registry_universe
+            )
+            mail_only = self._within_universe(base_mail, universe) or base_mail
+            logger.info(
+                "[SKILL-SELECTOR] Mail override active for query=%r -> %s",
+                prompt[:120],
+                mail_only,
+            )
+            return mail_only
 
         # --- Policy from intent (zero cost: pure logic) ---
         policy = self._intent_policy(intent_result)
         mandatory: List[str] = policy["mandatory"]
         boosted: List[str] = policy["boosted"]
         forbidden: Set[str] = set(policy["forbidden"])
+        if is_mail_query:
+            # Mail queries should not drift into calendar pipelines.
+            mandatory = [m for m in mandatory if not str(m).startswith("calendar.")]
+            mandatory = ["communication.list_emails", "communication.read_email"] + list(mandatory)
 
         # --- Universe: registry ∩ allowed_skill_ids ---
         registry_universe = self._registry_skill_universe()

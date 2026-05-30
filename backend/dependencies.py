@@ -92,6 +92,10 @@ async def api_key_auth(
     """
     Dependency to authenticate requests via an internal API key in the header.
     """
+    # Always allow CORS preflight requests to pass auth dependency.
+    if str(getattr(request, "method", "")).upper() == "OPTIONS":
+        return
+
     if (
         _debug_endpoints_enabled()
         and _is_local_request(request)

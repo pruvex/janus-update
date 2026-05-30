@@ -48,3 +48,26 @@ class TestIntentEngineNormalization:
         assert engine.detect_capability_overview("was kannst du?!?") is True
         assert engine.detect_capability_overview("was kannst du? ") is True
         assert engine.detect_capability_overview("WAS KANNST DU !!!") is True
+
+    def test_general_world_how_to_does_not_trigger_help_fast_path(self, engine):
+        """Generic advice must go to the LLM instead of deterministic Janus help."""
+        prompt = (
+            "schau mal ich habe gestern abend ein fertigback steinofenbagutt gemacht, "
+            "das wuerde ich gerne wieder aufbacken, wie mache ich das am bestne?"
+        )
+
+        result = engine.detect_all_intents(prompt)
+
+        assert result.is_how_to is False
+        assert result.is_navigation_query is False
+
+    def test_janus_scoped_how_to_still_triggers_help_fast_path(self, engine):
+        """Janus/app capability questions should still use deterministic help."""
+        assert engine.detect_how_to("Wie kann ich Dateien hochladen?") is True
+        assert engine.detect_how_to("Wie funktioniert lokales LLM in Janus?") is True
+
+    def test_general_world_navigation_does_not_trigger_help_fast_path(self, engine):
+        """General location questions must not be swallowed by Janus navigation help."""
+        assert engine.detect_navigation("Wo ist Berlin?") is False
+        assert engine.detect_navigation("Wo finde ich frische Baguettes?") is False
+        assert engine.detect_navigation("Wo finde ich meine Dateien?") is True

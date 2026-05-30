@@ -143,6 +143,7 @@ from backend.api.routers import (
     image_engine,
     consent,
     backlog,
+    mail,
 )
 log_startup_time("Router importiert")
 
@@ -893,7 +894,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # ----------------------------------------------------------
 
 def _cors_origins() -> list[str]:
-    """Return the allowed browser origins for packaged beta plus explicit dev mode."""
+    """Return allowed browser origins for local Janus runtime.
+
+    Janus is a local desktop app; loopback dev origins must stay reachable even
+    when NODE_ENV/JANUS_DEV_MODE flags are missing in a manual start.
+    """
 
     beta_origins = [
         "http://127.0.0.1:8001",
@@ -911,9 +916,8 @@ def _cors_origins() -> list[str]:
         "http://localhost:8080",
         "http://127.0.0.1:8080",
     ]
-    if os.getenv("NODE_ENV") == "development" or os.getenv("JANUS_DEV_MODE") == "true":
-        return beta_origins + dev_origins
-    return beta_origins
+    # Keep support for local Vite/dev hosts always enabled (loopback only).
+    return beta_origins + dev_origins
 
 
 # CORS Configuration
@@ -1129,6 +1133,7 @@ app.include_router(images.router, prefix="/api", tags=["Images"], dependencies=[
 app.include_router(users.router, prefix="/api", tags=["Users"], dependencies=[Depends(api_key_auth)])
 app.include_router(tasks.router, prefix="/api", tags=["Tasks"], dependencies=[Depends(api_key_auth)])
 app.include_router(calendar.router, prefix="/api", tags=["Calendar"], dependencies=[Depends(api_key_auth)])
+app.include_router(mail.router, prefix="/api", tags=["Mail"], dependencies=[Depends(api_key_auth)])
 app.include_router(backlog.router, prefix="/api", tags=["Backlog"], dependencies=[Depends(api_key_auth)])
 app.include_router(consent.router, prefix="/api/consent", tags=["Consent"])
 

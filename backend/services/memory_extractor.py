@@ -172,6 +172,16 @@ _VOLATILE_LIVE_DATA_RE = re.compile(
     re.IGNORECASE,
 )
 
+_EMAIL_PII_RE = re.compile(r"\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b", re.IGNORECASE)
+
+
+def _contains_email_pii(*values: Any) -> bool:
+    for value in values:
+        text = str(value or "")
+        if _EMAIL_PII_RE.search(text):
+            return True
+    return False
+
 
 def _is_volatile_live_data_interaction(user_msg: str, assistant_msg: str) -> bool:
     combined = f"{user_msg or ''}\n{assistant_msg or ''}".casefold()
@@ -1108,6 +1118,13 @@ async def extract_and_save_fact_from_interaction(
             if _is_meta_noise(fact_text):
                 logger.info(f"[META-NOISE-REJECTION] Meta-Instruktion erkannt und verworfen: {fact_text[:100]}...")
                 continue  # Skip this fact entirely - don't save to DB
+            if _contains_email_pii(
+                item.get("fact", ""),
+                item.get("object_value", ""),
+                item.get("canonical_key", ""),
+            ):
+                logger.info("[PII-EMAIL-REJECTION] Verwerfe E-Mail-PII-Fakt aus allgemeiner Extraktion: %r", item)
+                continue
             # ═══════════════════════════════════════════════════════════════════════════
 
             # A) KATEGORIE NORMALISIEREN

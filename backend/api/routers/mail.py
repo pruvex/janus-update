@@ -4,10 +4,16 @@ Mail API router for Janus Mail bootstrap state.
 
 import logging
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
+from fastapi.responses import Response
 
 from backend.data.schemas_mail import (
     MailAccountConnectRequest,
+    MailAiAnalyzeRequest,
+    MailAiAnalyzeResponse,
+    MailAiDraftRequest,
+    MailAiDraftResponse,
+    MailAiSettingsRequest,
     MailConnectionStatus,
     MailMessageActionResult,
     MailMessageDetail,
@@ -15,12 +21,14 @@ from backend.data.schemas_mail import (
     MailThreadListResponse,
 )
 from backend.services.mail import MailService
+from backend.services.mail.mail_ai_assist_service import MailAiAssistService
 from backend.services.mail.mail_service import MailServiceError
 
 logger = logging.getLogger("janus_backend.mail_router")
 
 router = APIRouter(prefix="/mail", tags=["mail"])
 _mail_service = MailService()
+_mail_ai_service = MailAiAssistService()
 
 
 @router.get("/sync/status", response_model=MailConnectionStatus)
@@ -122,6 +130,65 @@ async def move_mail_message(message_id: str, body: MailMessageMoveRequest) -> Ma
         ) from exc
 
 
+@router.get("/messages/{message_id}/attachments/{attachment_id}")
+async def download_mail_attachment(message_id: str, attachment_id: str) -> Response:
+    try:
+        payload = _mail_service.download_attachment(message_id, attachment_id)
+        filename = str(payload.get("filename") or "attachment.bin")
+        mime_type = str(payload.get("mime_type") or "application/octet-stream")
+        content = payload.get("content") or b""
+        headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
+        return Response(content=content, media_type=mime_type, headers=headers)
+    except MailServiceError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.message) from exc
+    except Exception as exc:
+        logger.error("Error while downloading mail attachment: %s", exc, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to download mail attachment.",
+        ) from exc
+
+
+@router.post("/messages/send", response_model=MailMessageActionResult)
+async def send_mail_message(
+    to: str = Form(...),
+    subject: str = Form(""),
+    body: str = Form(""),
+    cc: str = Form(""),
+    bcc: str = Form(""),
+    in_reply_to: str = Form(""),
+    references: str = Form(""),
+    source_message_id: str = Form(""),
+    include_original_attachments: bool = Form(False),
+    attachments: list[UploadFile] = File(default_factory=list),
+) -> MailMessageActionResult:
+    try:
+        prepared_attachments: list[tuple[str, bytes, str | None]] = []
+        for file in attachments:
+            content = await file.read()
+            prepared_attachments.append((file.filename or "attachment.bin", content, file.content_type))
+        return _mail_service.send_message(
+            to=to,
+            subject=subject,
+            body=body,
+            cc=cc,
+            bcc=bcc,
+            in_reply_to=in_reply_to,
+            references=references,
+            source_message_id=source_message_id,
+            include_original_attachments=include_original_attachments,
+            attachments=prepared_attachments,
+        )
+    except MailServiceError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.message) from exc
+    except Exception as exc:
+        logger.error("Error while sending mail message: %s", exc, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send mail message.",
+        ) from exc
+
+
 @router.post("/disconnect", response_model=MailMessageActionResult)
 async def disconnect_mail_account() -> MailMessageActionResult:
     try:
@@ -173,3 +240,48 @@ async def activate_mail_account(body: MailAccountConnectRequest) -> MailConnecti
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to activate mail account: {exc}",
         ) from exc
+
+
+@router.post("/ai/settings")
+async def set_mail_ai_settings(body: MailAiSettingsRequest) -> dict:
+    try:
+        return _mail_ai_service.set_settings(
+            global_enabled=body.global_enabled,
+            thread_id=body.thread_id,
+            thread_enabled=body.thread_enabled,
+        )
+    except Exception as exc:
+        logger.error("Error while setting mail ai settings: %s", exc, exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to save AI settings.") from exc
+
+
+@router.post("/ai/analyze", response_model=MailAiAnalyzeResponse)
+async def analyze_mail_thread(body: MailAiAnalyzeRequest) -> MailAiAnalyzeResponse:
+    try:
+        if not _mail_ai_service.is_thread_allowed(body.message_id):
+            raise HTTPException(status_code=403, detail="AI Mail Assist ist fuer diesen Thread nicht freigegeben.")
+        detail = _mail_service.get_message_detail(body.message_id)
+        return await _mail_ai_service.analyze_with_llm(detail.model_dump())
+    except MailServiceError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.message) from exc
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Error while analyzing mail thread: %s", exc, exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to analyze mail thread.") from exc
+
+
+@router.post("/ai/draft", response_model=MailAiDraftResponse)
+async def draft_mail_reply(body: MailAiDraftRequest) -> MailAiDraftResponse:
+    try:
+        if not _mail_ai_service.is_thread_allowed(body.message_id):
+            raise HTTPException(status_code=403, detail="AI Mail Assist ist fuer diesen Thread nicht freigegeben.")
+        detail = _mail_service.get_message_detail(body.message_id)
+        return await _mail_ai_service.draft_with_llm(detail.model_dump(), body.tone)
+    except MailServiceError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.message) from exc
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Error while drafting mail reply: %s", exc, exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to draft mail reply.") from exc

@@ -38,8 +38,10 @@ class MailThreadSummary(BaseModel):
     from_display: str = Field("", description="Raw From header value.")
     subject: str = Field("", description="Mail subject line.")
     date: str = Field("", description="Raw Date header value.")
+    internal_date_ms: int = Field(0, description="Gmail internalDate in epoch milliseconds.")
     snippet: str = Field("", description="Gmail snippet preview.")
     unread: bool = Field(False, description="Whether the message is currently unread.")
+    has_attachments: bool = Field(False, description="Whether the message includes at least one attachment.")
 
 
 class MailThreadListResponse(BaseModel):
@@ -67,10 +69,20 @@ class MailMessageDetail(BaseModel):
     date: str = Field("")
     snippet: str = Field("")
     body_text: str = Field("")
+    message_id_header: str = Field("")
+    references_header: str = Field("")
+    attachments: list["MailAttachmentSummary"] = Field(default_factory=list)
+
+
+class MailAttachmentSummary(BaseModel):
+    attachment_id: str = Field(...)
+    filename: str = Field("")
+    mime_type: str = Field("application/octet-stream")
+    size: int = Field(0)
 
 
 class MailMessageMoveRequest(BaseModel):
-    target_folder: Literal["inbox", "sent", "drafts", "trash"] = Field(...)
+    target_folder: Literal["inbox", "sent", "drafts", "trash", "archive"] = Field(...)
 
 
 class MailMessageActionResult(BaseModel):
@@ -82,3 +94,42 @@ class MailMessageActionResult(BaseModel):
 
 class MailAccountConnectRequest(BaseModel):
     email: str = Field(..., min_length=5, max_length=320)
+
+
+class MailComposeSendRequest(BaseModel):
+    to: str = Field(..., min_length=3, max_length=4000)
+    subject: str = Field("", max_length=998)
+    body: str = Field("", max_length=200000)
+    cc: str = Field("", max_length=4000)
+    bcc: str = Field("", max_length=4000)
+
+
+class MailAiSettingsRequest(BaseModel):
+    global_enabled: bool = Field(False)
+    thread_id: Optional[str] = Field(None, max_length=256)
+    thread_enabled: Optional[bool] = Field(None)
+
+
+class MailAiAnalyzeRequest(BaseModel):
+    message_id: str = Field(..., min_length=1, max_length=256)
+
+
+class MailAiDraftRequest(BaseModel):
+    message_id: str = Field(..., min_length=1, max_length=256)
+    tone: str = Field("neutral", max_length=40)
+
+
+class MailAiAnalyzeResponse(BaseModel):
+    summary: str = Field("")
+    reply_needed: str = Field("unknown")
+    priority: str = Field("unknown")
+    stale: bool = Field(False)
+    signature: str = Field("")
+    degraded: bool = Field(False)
+    error_message: str = Field("")
+
+
+class MailAiDraftResponse(BaseModel):
+    draft: str = Field("")
+    degraded: bool = Field(False)
+    error_message: str = Field("")
