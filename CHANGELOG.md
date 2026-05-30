@@ -7,6 +7,13 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+### Added
+- **TASK-098 / Janus Mail Grundversion (Spec 10-13):** Neues Mail-Modul als eigenstaendige Janus-Surface mit Sidebar/Dock-Einstieg, kalenderaehnlicher Modal-Position/Groesse, Gmail-Kontoauswahl mit Persistenz des aktiven Kontos, Inbox/Search/Detail-Layout, Compose/Reply-Flow, Attachment-Send und Attachment-Save, sowie Chat-gesteuerte Mail-Aktionen inklusive Multi-Account-Rueckfragen.
+
+### Fixed
+- **TASK-098 / Mail AI-Assist Privacy und Degraded-State:** AI-Assist zeigt bei Providerfehlern oder ungueltigen Antworten jetzt explizit einen Degraded-State statt stiller Heuristik-Fallbacks. Technische Mail-Debuglogs wurden auf datensparsame Zaehler/Laengen reduziert, sodass keine Betreffzeilen, Anhangnamen oder Body-Previews in diesen Logs landen.
+- **BACKLOG-099 / Chat-Persistenz gegen Control-Reply-Overwrite gehaertet:** Nach Mail- und Ordner-Workflows wird der originale User-Text wieder als Chat-Historie gespeichert statt eines internen Control-Replies wie `1` oder `3`. Zusaetzlich wurde der kategorisierte Attachment-Save-Flow so gehaertet, dass bei expliziten `papierkram/vodafone/sonstige`-Auftraegen kein leerer Extra-Ordner `rechnungen` mehr angelegt wird. Validation: finaler Re-Audit PASS WITH FIXES; gezielte Regression gegen Restart-/Reload-Display und Mehrordner-Speicherpfad. Files: `backend/services/chat_orchestrator.py`, `documentation/backlog/BACKLOG.md`, `documentation/test-runs/BACKLOG-098_mail_bundle_reaudit_2026-05-30.md`.
+
 ## [0.4.17-beta.47] - 2026-05-27
 
 ### Fixed

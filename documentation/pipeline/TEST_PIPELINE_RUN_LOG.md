@@ -1637,3 +1637,51 @@ Dieser Bereich wird nach mehreren echten TestRuns gepflegt, z. B. nach 5-10 Runs
 ### Offene Optimierungsideen
 
 - Noch keine Ideen.
+
+### BACKLOG-098 - Janus Mail Bundle - Documentation Sync Note
+
+- **Datum**: 2026-05-30
+- **Quelle**: Backlog / Documentation Update
+- **Artefakte**: documentation/backlog/BACKLOG.md, PROJECT_STATE.md, CHANGELOG.md, documentation/01_CENTRAL_TASK_REGISTRY.md, WHAT_I_LEARNED.md, documentation/tasks/task_098_janus_mail_bundle_generated.md, documentation/SPEC/Spec Done/10_janus_mail_module_shell_and_connection_state.md, documentation/SPEC/Spec Done/11_janus_mail_gmail_thread_inbox_and_search.md, documentation/SPEC/Spec Done/12_janus_mail_manual_actions_and_attachments.md, documentation/SPEC/Spec Done/13_janus_mail_ai_thread_assist_and_draft_replies.md
+- **Getestete Faehigkeit**: Janus Mail Grundversion inklusive Multi-Account, Inbox/Search/Detail, Compose/Attachment und AI-Assist-Haertung
+- **Pipeline-Route**: final audit -> documentation update -> backlog sync
+- **Status**: PASS WITH FIXES
+- **Summary**: BACKLOG-098 wurde in DONE ueberfuehrt, Mail-Specs wurden mit Implementierungsmetadaten nach Spec Done verschoben, und die Audit-Haertung (sichtbarer Degraded-State + privacy-safe technical logs) wurde dokumentarisch abgeschlossen.
+- **Security Gate**: PASS WITH WATCHPOINTS - sensible Maildaten in technischen Logs entfernt; AI-Ausfaelle liefern sichtbaren Degraded-State statt Hidden-Fallback.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+- **Findings**:
+  - Keine blockierenden Findings nach Hardening.
+- **Sofortfixes**:
+  - BACKLOG-098 Abschlussmarker in Backlog, Registry, Project-State und Changelog nachgezogen.
+- **Backlog-Follow-ups**:
+  - Keine.
+- **Abschluss**:
+  - Diamond Confidence Score: 9/10
+  - Production Confidence: 90% (Grundversion)
+  - Gesamtergebnis: PASS WITH FIXES
+
+### BACKLOG-099 - Chat-Persistenz und kategorisierter Attachment-Save-Fix
+
+- **Datum**: 2026-05-30
+- **Quelle**: Backlog / Documentation Update
+- **Artefakte**: documentation/backlog/BACKLOG.md, PROJECT_STATE.md, CHANGELOG.md, documentation/01_CENTRAL_TASK_REGISTRY.md, WHAT_I_LEARNED.md, documentation/tasks/backlog_BACKLOG-099_chat_inhalt_restart_zahl_statt_text.md, documentation/test-runs/BACKLOG-098_mail_bundle_reaudit_2026-05-30.md
+- **Getestete Faehigkeit**: Janus Mail Persistenz- und Ordner-Workflow inkl. Control-Reply-Guard, Restart-Darstellung und kategorisierter Attachment-Save-Pfad
+- **Pipeline-Route**: final audit -> documentation update -> backlog sync
+- **Status**: PASS WITH FIXES
+- **Summary**: BACKLOG-099 wurde in DONE ueberfuehrt. Der Mail-Chat speichert wieder den originalen User-Text statt eines internen Control-Replies, und der kategorisierte Ordner-Flow erzeugt keinen leeren Extra-Ordner `rechnungen` mehr.
+- **Security Gate**: PASS - keine neuen Secrets oder sensiblen Mailinhalte in Dokumentationsartefakten.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+- **Findings**:
+  - Keine blockierenden Findings nach Hardening.
+- **Sofortfixes**:
+  - BACKLOG-099 Abschlussmarker, Registry, Project-State, Changelog und Knowledge Base nachgezogen.
+- **Backlog-Follow-ups**:
+  - Keine.
+- **Abschluss**:
+  - Diamond Confidence Score: 9/10
+  - Production Confidence: 90%
+  - Gesamtergebnis: PASS WITH FIXES
