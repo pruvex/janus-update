@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "janus.release-verification.v1",
+  "status": "PASS",
+  "repository": "pruvex/janus-update",
+  "version": "0.4.17-beta.49",
+  "tagName": "v0.4.17-beta.49",
+  "releaseUrl": "https://github.com/pruvex/janus-update/releases/tag/v0.4.17-beta.49",
+  "prerelease": true,
+  "draft": false,
+  "assets": [
+    {
+      "name": "janus-setup-0.4.17-beta.49.exe",
+      "role": "installer",
+      "githubState": "uploaded",
+      "githubSize": 688213567,
+      "localSize": 688213567,
+      "githubDigest": "sha256:c48dda80ffa3fda5c5b1073b0f9fc249203b4a92f1fc348f837a96ca9966134a",
+      "localSha256": "c48dda80ffa3fda5c5b1073b0f9fc249203b4a92f1fc348f837a96ca9966134a",
+      "browserDownloadUrl": "https://github.com/pruvex/janus-update/releases/download/v0.4.17-beta.49/janus-setup-0.4.17-beta.49.exe",
+      "result": "PASS",
+      "notes": ""
+    },
+    {
+      "name": "beta.yml",
+      "role": "electron-channel-metadata",
+      "githubState": "uploaded",
+      "githubSize": 658,
+      "localSize": 658,
+      "githubDigest": "sha256:1dc07d32819f9b1882096f623dc0f550aba7f2af5cf298c90ec496f7b6d0180f",
+      "localSha256": "1dc07d32819f9b1882096f623dc0f550aba7f2af5cf298c90ec496f7b6d0180f",
+      "browserDownloadUrl": "https://github.com/pruvex/janus-update/releases/download/v0.4.17-beta.49/beta.yml",
+      "result": "PASS",
+      "notes": ""
+    },
+    {
+      "name": "janus-update-manifest.json",
+      "role": "janus-update-manifest",
+      "githubState": "uploaded",
+      "githubSize": 250,
+      "localSize": 250,
+      "githubDigest": "sha256:a87e8b5084b0ee8f06e96f552c01df1eb9b908670f2ef2f812573f82ac5ebfef",
+      "localSha256": "a87e8b5084b0ee8f06e96f552c01df1eb9b908670f2ef2f812573f82ac5ebfef",
+      "browserDownloadUrl": "https://github.com/pruvex/janus-update/releases/download/v0.4.17-beta.49/janus-update-manifest.json",
+      "result": "PASS",
+      "notes": ""
+    }
+  ],
+  "missing": [],
+  "unexpectedRelevant": [],
+  "verifiedAt": "2026-06-01T20:06:42.371Z"
+}

@@ -1,5 +1,5 @@
-# Janus Projekt 0.4.17-beta.49
-**Released:** 2026-06-01 21:20
+# Janus Projekt 0.4.17-beta.50
+**Released:** 2026-06-01 22:55
 
 ## 🚀 Changes in this Release
 

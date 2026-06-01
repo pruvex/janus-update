@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 /**
- * Prüft nach `vite build`, dass das Produktions-Bundle das Tages-Panel / Kalender-Widget enthält.
- * Verhindert „stilles“ Packen ohne aktuelle frontend/dist (Electron + Backend mounten beide darauf).
+ * Verifies production frontend artifacts for packaging safety:
+ * 1) frontend/dist and index.html exist
+ * 2) all ./assets/* references in index.html resolve to real files
+ * 3) day-panel markers are present in built output
  *
- * Aufruf: node scripts/verify-frontend-dist.cjs
+ * Usage: node scripts/verify-frontend-dist.cjs
  */
 const fs = require("fs");
 const path = require("path");
@@ -28,14 +30,28 @@ function fail(msg) {
 }
 
 if (!fs.existsSync(distDir)) {
-  fail('Ordner "frontend/dist" fehlt. Zuerst ausführen: npm run build (bzw. npx vite build)');
+  fail('Directory "frontend/dist" is missing. Run: npm run build');
 }
 
 if (!fs.existsSync(indexHtml)) {
-  fail('Datei "frontend/dist/index.html" fehlt.');
+  fail('File "frontend/dist/index.html" is missing.');
 }
 
 const html = fs.readFileSync(indexHtml, "utf8");
+const assetRefs = Array.from(
+  html.matchAll(/(?:src|href)=["']\.\/(assets\/[^"']+)["']/g),
+  (m) => m[1]
+);
+
+if (!assetRefs.length) {
+  fail('No "./assets/..." references found in frontend/dist/index.html.');
+}
+
+const missingAssets = assetRefs.filter((rel) => !fs.existsSync(path.join(distDir, rel)));
+if (missingAssets.length) {
+  fail(`Missing referenced assets: ${missingAssets.join(", ")}`);
+}
+
 const markers = ["calendar-day-widget", "janusCloseDayPanel", "calendar-day-widget-rail"];
 let found = markers.some((m) => html.includes(m));
 
@@ -49,16 +65,17 @@ if (!found) {
         break;
       }
     } catch {
-      /* ignore */
+      // ignore unreadable file
     }
   }
 }
 
 if (!found) {
   fail(
-    "Keine Tages-Panel-Artefakte (calendar-day-widget / janusCloseDayPanel) im Build gefunden. " +
-      "Prüfen, ob frontend/index.html die Module lädt und der Build fehlerfrei war."
+    "No day-panel markers found in frontend build output. Check frontend wiring/build integrity."
   );
 }
 
-console.log("[verify-frontend-dist] OK — frontend/dist enthält Tages-Panel / Kalender-Widget-Spuren.");
+console.log(
+  `[verify-frontend-dist] OK - ${assetRefs.length} asset refs resolved and day-panel markers present.`
+);

@@ -1,6 +1,6 @@
 {
   "name": "janus-projekt",
-  "version": "0.4.17-beta.49",
+  "version": "0.4.17-beta.50",
   "description": "",
   "type": "module",
   "main": "main.electron.cjs",
@@ -28,7 +28,7 @@
     "test:vision:stresstest:kpi": "python backend/tests/tools/vision_evaluator.py --matrix-dir backend/tests/vision_matrix/Stresstest --e2e --kpi-gate --max-contradiction-rate 0.0 --min-source-map-coverage 0.95",
     "test:vision:openworld": "python backend/tests/tools/vision_evaluator.py --matrix-dir backend/tests/vision_matrix/OpenWorldStandard --e2e --kpi-gate --max-contradiction-rate 0.0 --min-source-map-coverage 0.95",
     "verify:electron-runtime-deps": "node scripts/verify-electron-runtime-deps.cjs",
-    "prebuild-installer": "npm run verify:electron-runtime-deps && echo 'Vision-Tests deaktiviert für schnelle Builds'",
+    "prebuild-installer": "npm run verify:electron-runtime-deps && npm run verify:frontend-dist && npm run cleanup:release-artifacts && echo 'Vision-Tests deaktiviert für schnelle Builds'",
     "prebuild-all": "echo \"prebuild-all: vision gate moved to separate QA run\"",
     "build-installer": "electron-builder --publish never && npm run generate:update-manifest && npm run verify:update-artifacts",
     "build-all": "npm run build && python -m PyInstaller janus_backend.spec --clean --noconfirm && npm run build-installer",
@@ -37,7 +37,8 @@
     "release": "npm run release:guard && npm run build-all && node scripts/publish_to_github.cjs && npm run release:verify-published",
     "generate:update-manifest": "node scripts/generate_update_manifest.cjs",
     "verify:update-artifacts": "node scripts/verify_update_artifacts.cjs",
-    "release:ship": "node scripts/release-ship.cjs"
+    "release:ship": "node scripts/release-ship.cjs",
+    "cleanup:release-artifacts": "node scripts/cleanup-release-artifacts.cjs"
   },
   "keywords": [],
   "author": "",
