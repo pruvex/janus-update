@@ -5,6 +5,7 @@ import os
 import tempfile
 import time
 import base64
+import html
 import re
 import textwrap
 from dataclasses import dataclass
@@ -1174,6 +1175,10 @@ def _normalize_pdf_content(content: str, filename: str) -> str:
     if not cleaned_text:
         return ""
 
+    recipe_normalized = _normalize_recipe_content_if_detected_v2(cleaned_text, filename)
+    if recipe_normalized:
+        return recipe_normalized
+
     has_markdown_structure = bool(re.search(r"^\s*(#{1,3}\s+|[-*]\s+)", cleaned_text, flags=re.MULTILINE))
     if has_markdown_structure:
         return cleaned_text
@@ -1210,6 +1215,140 @@ def _normalize_pdf_content(content: str, filename: str) -> str:
     markdown_lines.append("## Fakten")
     markdown_lines.extend(f"- {entry}" for entry in unique_fact_lines)
     return "\n".join(markdown_lines).strip()
+
+
+def _normalize_recipe_content_if_detected(content: str, filename: str) -> str:
+    text = str(content or "")
+    if not text:
+        return ""
+    low = text.lower()
+    if "zutaten" not in low or ("zubereitung" not in low and "schritt" not in low):
+        return ""
+
+    # Remove common newsletter/footer noise.
+    text = html.unescape(text)
+    text = re.split(
+        r"(?is)\b(wie\s+findest\s+du\s+dieses\s+rezept\??|datenschutz|unsere\s+agb|kontakt|abmelden|impressum|picnic\s+gmbh)\b",
+        text,
+    )[0]
+    text = re.sub(r"(?i)https?://\S+", "", text)
+    text = re.sub(r"<[^>]+>", "", text)
+    text = re.sub(r"[\u200B-\u200F\u2060\uFEFF]", " ", text)
+    text = re.sub(r"-{3,}", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    if not text:
+        return ""
+
+    section_match = re.search(r"(?is)\bzutaten\b(.*?)\b(?:zubereitung|so wird'?s gemacht)\b(.*)$", text)
+    if not section_match:
+        return ""
+
+    ing_raw = str(section_match.group(1) or "").strip()
+    prep_raw = str(section_match.group(2) or "").strip()
+
+    ing_raw = re.sub(r"\s*\[\s*\]\s*", " | ", ing_raw)
+    ing_raw = re.sub(r"\s*\[\s*([^\]]+)\s*\]", r" (\1)", ing_raw)
+    ing_raw = ing_raw.replace(" • ", " | ").replace(" * ", " | ")
+    ing_raw = re.sub(r"\s*\|\s*", "|", ing_raw)
+    ing_candidates = [c.strip(" -;,.") for c in ing_raw.split("|") if c.strip(" -;,.")]
+
+    ingredients: list[str] = []
+    seen = set()
+    for c in ing_candidates:
+        c = re.sub(r"\s{2,}", " ", c).strip()
+        if len(c) < 2:
+            continue
+        lc = c.lower()
+        if lc in {"zutaten", "zubereitung"}:
+            continue
+        if lc in seen:
+            continue
+        seen.add(lc)
+        ingredients.append(c)
+
+    prep = re.sub(r"(?i)\bschritt\s*(\d+)\b", r"\n\nSchritt \1", prep_raw)
+    prep = re.sub(r"\n{3,}", "\n\n", prep).strip()
+
+    title = Path(str(filename or "rezept.pdf")).stem.replace("_", " ").replace("-", " ").strip()
+    if title.lower().startswith("tmp_mail_"):
+        title = "Rezept"
+
+    lines = [f"# {title or 'Rezept'}", "", "## Zutaten"]
+    if ingredients:
+        lines.extend([f"- {item}" for item in ingredients])
+    else:
+        lines.append("- (keine Zutaten erkannt)")
+    lines += ["", "## Zubereitung", prep or "- (keine Zubereitung erkannt)"]
+    return "\n".join(lines).strip()
+
+
+def _normalize_recipe_content_if_detected_v2(content: str, filename: str) -> str:
+    text = str(content or "")
+    if not text:
+        return ""
+    low = text.lower()
+    if "zutaten" not in low or ("zubereitung" not in low and "schritt" not in low):
+        return ""
+
+    title_from_content = ""
+    heading_match = re.search(r"(?m)^\s*#\s+(.+?)\s*$", text)
+    if heading_match:
+        title_from_content = str(heading_match.group(1) or "").strip()
+
+    clean = html.unescape(text)
+    clean = re.split(
+        r"(?is)\b(wie\s+findest\s+du\s+dieses\s+rezept\??|datenschutz|unsere\s+agb|kontakt|abmelden|impressum|picnic\s+gmbh)\b",
+        clean,
+    )[0]
+    clean = re.sub(r"(?i)https?://\S+", "", clean)
+    clean = re.sub(r"<[^>]+>", "", clean)
+    clean = re.sub(r"[\u200B-\u200F\u2060\uFEFF]", " ", clean)
+    clean = re.sub(r"-{3,}", " ", clean)
+    clean = re.sub(r"\s+", " ", clean).strip()
+    if not clean:
+        return ""
+
+    m = re.search(r"(?is)\bzutaten\b(.*?)\b(?:zubereitung|so wird'?s gemacht)\b(.*)$", clean)
+    if not m:
+        return ""
+    ing_raw = str(m.group(1) or "").strip()
+    prep_raw = str(m.group(2) or "").strip()
+
+    ing_raw = re.sub(r"\s*\[\s*\]\s*", " | ", ing_raw)
+    ing_raw = re.sub(r"\s*\[\s*([^\]]+)\s*\]", r" (\1)", ing_raw)
+    ing_raw = ing_raw.replace("•", " | ").replace(" * ", " | ").replace(" - ", " | ")
+    ing_raw = re.sub(r"\)\s+(?=[A-ZÄÖÜ])", ") | ", ing_raw)
+    ing_raw = re.sub(r",\s+(?=\d+\s*[A-Za-zÄÖÜäöüß])", " | ", ing_raw)
+    ing_raw = re.sub(r"\s*\|\s*", "|", ing_raw)
+    raw_items = [c.strip(" -;,.") for c in ing_raw.split("|") if c.strip(" -;,.")]
+
+    ingredients: list[str] = []
+    seen: set[str] = set()
+    for item in raw_items:
+        item = re.sub(r"\s{2,}", " ", item).strip(" -*!")
+        if len(item) < 2:
+            continue
+        low_item = item.lower()
+        if low_item in {"zutaten", "zubereitung"}:
+            continue
+        if low_item in seen:
+            continue
+        seen.add(low_item)
+        ingredients.append(item)
+
+    prep = re.sub(r"\s*[!*]+\s*", " ", prep_raw)
+    prep = re.sub(r"\s*\*\s*$", "", prep)
+    prep = re.sub(r"(?i)\bschritt\s*(\d+)\b", r"\n\nSchritt \1", prep)
+    prep = re.sub(r"\n{3,}", "\n\n", prep).strip()
+
+    title = title_from_content or Path(str(filename or "rezept.pdf")).stem.replace("_", " ").replace("-", " ").strip()
+    if title.lower().startswith("tmp_mail_"):
+        title = "Rezept"
+
+    out = [f"# {title or 'Rezept'}", "", "## Zutaten"]
+    out.extend([f"- {x}" for x in ingredients] if ingredients else ["- (keine Zutaten erkannt)"])
+    out += ["", "## Zubereitung", prep or "- (keine Zubereitung erkannt)"]
+    return "\n".join(out).strip()
 
 
 def _resolve_markdown_image_path(raw_path: str) -> Optional[str]:

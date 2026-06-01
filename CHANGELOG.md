@@ -7,6 +7,9 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+### Fixed
+- **BACKLOG-100 / Generische Anbieter-Mail-Suche nach Inhaltstypen:** Mailanfragen mit einem Anbieter plus Inhaltstyp (z. B. Rezepte, Bons, Rechnungen, Bestell-/Lieferbestaetigungen) werden jetzt als eigener Suchpfad erkannt und mit klaren Rueckfragen bei Mehrdeutigkeit abgesichert. Trefferlisten enthalten Anbieter, Betreff, Datum, Kategorie und Evidenz; ausgewaehlte Treffer koennen als Rezeptdetail geoeffnet und als PDF in Desktop-Ordner exportiert werden. Validation: `py_compile` PASS; backend regressions `39/39` PASS; frontend mail inbox test `3/3` PASS. Files: `backend/services/chat_orchestrator.py`, `backend/services/mail/mail_keyword_result_store.py`, `backend/services/memory_extractor.py`, `backend/services/orchestrator/execution_dispatcher.py`, `backend/services/orchestrator/intent_engine.py`, `backend/tools/pdf_generator.py`, `backend/tests/unit/test_chat_mail_provider_content_type_probe.py`.
+
 ## [0.4.17-beta.48] - 2026-05-30
 
 ### Added

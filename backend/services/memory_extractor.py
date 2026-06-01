@@ -189,6 +189,7 @@ def _is_volatile_live_data_interaction(user_msg: str, assistant_msg: str) -> boo
         return False
     return any(marker in combined for marker in ("quelle", "quellen", "suchergebnis", "stand", "http"))
 
+
 # ═══════════════════════════════════════════════════════════════════════════
 # PROVIDER CACHE & MODEL SELECTION
 # ═══════════════════════════════════════════════════════════════════════════
@@ -1125,6 +1126,7 @@ async def extract_and_save_fact_from_interaction(
             ):
                 logger.info("[PII-EMAIL-REJECTION] Verwerfe E-Mail-PII-Fakt aus allgemeiner Extraktion: %r", item)
                 continue
+
             # ═══════════════════════════════════════════════════════════════════════════
 
             # A) KATEGORIE NORMALISIEREN

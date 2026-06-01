@@ -220,6 +220,20 @@ def _is_mail_query(query: str) -> bool:
     return bool(_MAIL_QUERY_RE.search(q))
 
 
+_MAIL_SENDER_KEYWORD_CLEAR_RE = re.compile(
+    r"(?is)^(?=.*\bvon\s+[^\n,.;:!?]+)"
+    r"(?=.*\b(?:rezept|rezepte|bon|bons|kassenbon|kassenbons|beleg|belege|quittung|quittungen)\b).*$",
+    re.IGNORECASE,
+)
+
+
+def _is_clear_sender_keyword_mail_query(query: str) -> bool:
+    q = str(query or "").strip()
+    if not q:
+        return False
+    return bool(_MAIL_SENDER_KEYWORD_CLEAR_RE.match(q))
+
+
 _DESTRUCTIVE_ACTION_RE = re.compile(
     r"\b(?:loesch(?:e|en|st)?|losch(?:e|en|st)?|lösch(?:e|en|st)?|"
     r"entfern(?:e|en|st)?|delete|remove|vernicht(?:e|en|st)?|"
@@ -841,6 +855,18 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
                     ambiguity_confidence,
                     ambiguity_threshold,
                     query_for_ambiguity[:50] if query_for_ambiguity else "",
+                )
+            elif (
+                is_ambiguous
+                and ambiguity_confidence >= ambiguity_threshold
+                and _is_clear_sender_keyword_mail_query(query_for_ambiguity)
+            ):
+                logger.info(
+                    "[AMBIGUITY-BYPASS] Clear sender+keyword mail query stays tool-enabled despite ambiguity "
+                    "(confidence=%.2f >= %.2f). Query: %r",
+                    ambiguity_confidence,
+                    ambiguity_threshold,
+                    query_for_ambiguity[:80] if query_for_ambiguity else "",
                 )
             elif is_ambiguous and ambiguity_confidence >= ambiguity_threshold:
                 logger.info(

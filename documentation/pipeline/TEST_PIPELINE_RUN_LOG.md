@@ -118,6 +118,32 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 - **Backlog-Follow-ups**:
   - Keine
 - **Abschluss**:
+
+### BACKLOG-100 - Generische Anbieter-Mail-Suche nach Inhaltstypen - Documentation Sync Note
+
+- **Datum**: 2026-06-01
+- **Quelle**: Backlog / Final Audit / Documentation Update
+- **Artefakte**: `documentation/backlog/BACKLOG.md`, `janus-dashboard/data/backlog.snapshot.json`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `WHAT_I_LEARNED.md`, `documentation/audit/FINAL_SKILL_AUDIT_BACKLOG_100_PASS_2026-06-01.md`
+- **Getestete Faehigkeit**: Anbieter-plus-Kategorie Mailsuche mit Evidenzdarstellung, Mehrdeutigkeitsklaerung und Rezept-PDF-Export
+- **Pipeline-Route**: execution -> final audit -> documentation update -> backlog sync
+- **Status**: PASS
+- **Summary**: BACKLOG-100 wurde nach finalem PASS aus IN PROGRESS nach DONE verschoben, Spec-Done-Verweise ausgerichtet und alle Pflichtmarker in Registry/Project-State/Changelog/Learnings aktualisiert.
+- **Security Gate**: PASS - keine neuen Secrets, keine Ausweitung von Persistenzrisiken, mailbezogene Detaildaten bleiben im dokumentierten Scope.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+- **Findings**:
+  - Keine offenen Findings.
+- **Sofortfixes**:
+  - `documentation/backlog/BACKLOG.md`: BACKLOG-100 nach DONE verschoben und Abschlussfelder ergaenzt.
+  - `documentation/tasks/task_100_provider_content_type_mail_search.md`: Source-Spec auf Spec-Done-Pfad gesetzt, Completion Metadata ergaenzt.
+  - `documentation/01_CENTRAL_TASK_REGISTRY.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `WHAT_I_LEARNED.md`: Abschlussmarker fuer BACKLOG-100 ergaenzt.
+- **Backlog-Follow-ups**:
+  - Keine
+- **Abschluss**:
+  - Diamond Confidence Score: 9.4/10
+  - Production Confidence: 95%
+  - Gesamtergebnis: PASS
   - Diamond Confidence Score: 10/10
   - Production Confidence: 100%
   - Gesamtergebnis: PASS

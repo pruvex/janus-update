@@ -4,6 +4,14 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Backlog Closures
 
+### BACKLOG-100 - Generische Anbieter-Mail-Suche nach Inhaltstypen
+
+- **Status**: DONE
+- **Final Audit**: `documentation/audit/FINAL_SKILL_AUDIT_BACKLOG_100_PASS_2026-06-01.md` (PASS)
+- **Task**: `documentation/tasks/task_100_provider_content_type_mail_search.md`
+- **Validation**: Anbieter-plus-Inhaltstyp-Mailsuche mit Rueckfragepfad bei Mehrdeutigkeit, evidenzbasierter Trefferdarstellung, Rezept-Detailansicht und PDF-Export aus Trefferlisten final validiert; bestehende Mail-Flows bleiben regressionsfrei.
+- **Changed Files**: `backend/services/chat_orchestrator.py`, `backend/services/mail/mail_keyword_result_store.py`, `backend/services/memory_extractor.py`, `backend/services/orchestrator/execution_dispatcher.py`, `backend/services/orchestrator/intent_engine.py`, `backend/tools/pdf_generator.py`, `backend/tests/unit/test_chat_mail_provider_content_type_probe.py`, `documentation/backlog/BACKLOG.md`, `janus-dashboard/data/backlog.snapshot.json`.
+
 ### BACKLOG-098 - Janus Mail Backend Bootstrap und Connection State
 
 - **Status**: DONE

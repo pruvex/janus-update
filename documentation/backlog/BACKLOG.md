@@ -77,15 +77,50 @@ Dashboard-Regeln:
 ## NEEDS INFO
 
 ## READY
-- **Handoff:** none
-- **Recommended next skill:** SKILL 2
-- **Handoff created:** none
 
 ## IN PROGRESS
 
-Keine offenen Eintraege.
-
 ## DONE
+
+### BACKLOG-100 - Generische Anbieter-Mail-Suche nach Inhaltstypen
+
+- **Typ:** ENHANCEMENT
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-05-31
+- **Aktualisiert:** 2026-06-01
+- **Kurzbeschreibung:** Janus soll im Mailkontext natuerliche Suchauftraege ausfuehren koennen, bei denen ein Anbieter und ein Inhaltstyp kombiniert werden, z. B. "alle Mails von Picnic mit Rezepten", "alle Bons von Anbieter X" oder "alle Bestellbestaetigungen von Anbieter Y".
+- **Erwartetes Verhalten:** Janus erkennt Anbieter, Inhaltstyp und Zeitraum/Filter aus der Nutzeranfrage, durchsucht die verbundenen Mails passend und liefert eine nachvollziehbare Trefferliste mit relevanten Metadaten und Fundstellen.
+- **Tatsaechliches Verhalten:** Die gewuenschte generische Anbieter- und Inhaltstyp-Suche ist noch nicht als klarer Mail-Workflow erfasst; bisher wurde der Bedarf zuerst am Beispiel Picnic/Rezeptmails diskutiert.
+- **Reproduktion / Kontext:** Nutzer fragt im Janus-Mailkontext nach Mails eines konkreten Anbieters und einer Kategorie, z. B. Rezepte, Bons, Rechnungen, Lieferbestaetigungen oder sonstige Bestaetigungen. Picnic ist nur ein Beispielanbieter, nicht der eigentliche Spezialfall.
+- **Betroffener Bereich:** Backend / Mail-Suche / Gmail-Integration / Intent-Erkennung / Antwortformat
+- **Nachweise:** User Intake vom 2026-05-31; Klarstellung: "es geht ja nicht nur um rezepte von picnic, sondern generell suche alle mails von anbieter x mit zb rezepten, bons, bestaetigungen was auch immer".
+- **Akzeptanzkriterien:**
+  - [x] Janus kann natuerliche Anfragen mit Anbieter plus Inhaltstyp erkennen, ohne auf Picnic fest verdrahtet zu sein.
+  - [x] Die Suche funktioniert fuer mehrere Inhaltstypen wie Rezepte, Bons, Rechnungen und Bestell- oder Lieferbestaetigungen.
+  - [x] Die Ergebnisantwort nennt mindestens Anbieter, Betreff, Datum, erkannte Kategorie und eine kurze Fundstellen-Zusammenfassung pro Treffer.
+  - [x] Wenn Anbieter oder Inhaltstyp mehrdeutig ist, fragt Janus gezielt nach statt falsche Treffer zu behaupten.
+  - [x] Der Workflow beruecksichtigt bestehende Mail-Consent- und Gmail-Connection-State-Regeln.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** DONE
+- **Empfehlung:** DONE
+- **Entry Point:** SPEC_PIPELINE_START
+- **Routing reason:** Neue generische Mail-Faehigkeit mit mehreren Unterfaellen und Produktentscheidung fuer Such- und Klassifizierungslogik.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-05-31
+- **Handoff:** documentation/SPEC/Spec Done/backlog_BACKLOG-100_generische_anbieter_mail_suche_nach_inhaltstypen.md
+- **Recommended next skill:** DONE
+- **Handoff created:** 2026-05-31
+- **Final Audit:** PASS
+- **Validation evidence:** `python -m py_compile backend/services/chat_orchestrator.py backend/main.py backend/services/memory_extractor.py` PASS; `python -m pytest backend/tests/unit/test_chat_mail_provider_content_type_probe.py backend/tests/test_mail_service.py backend/tests/test_mail_chat_account_guard_store.py -q` PASS (39 passed); `node --test frontend/tests/mail-inbox-ui.test.mjs` PASS (3 passed); final audit `documentation/audit/FINAL_SKILL_AUDIT_BACKLOG_100_PASS_2026-06-01.md`.
+- **Abgeschlossen durch:** SKILL 4 (Executioner) + SKILL 6 (Final Audit) + SKILL 7 (Documentation Update)
+- **Abgeschlossen:** 2026-06-01
+- **Notizen:** BACKLOG-098 hat das Mail-Fundament bereits abgeschlossen; dieser Eintrag beschreibt die darauf aufbauende generische Such- und Klassifizierungsfaehigkeit.
 
 ### BACKLOG-099 - Chat-Inhalt geht nach Neustart verloren und wird als Zahl wiederhergestellt
 

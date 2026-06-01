@@ -7,11 +7,13 @@ import time
 import uuid
 import keyring
 import io
+import html
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, Optional, List, Any, Tuple
 from dataclasses import dataclass
 from pypdf import PdfReader
+from backend.tools.pdf_generator import create_pdf_from_markdown
 
 from backend.services.vision_helper import analyze_image_strict_provider, analyze_image_with_cloud
 from backend.services.vision_service import vision_service
@@ -1289,8 +1291,16 @@ class ChatOrchestrator:
         r"(?is)^\s*(?:janus[,:\s-]*)?(?:was\s+waren|zeige|liste)\s+(?:mir\s+)?(?:die\s+)?letzten\s+(?P<count>\d{1,2})\s+e-?mails?.*$",
         re.IGNORECASE,
     )
+    _CHAT_MAIL_RESULT_SELECT_RE = re.compile(
+        r"(?is)^\s*(?:zeig(?:e)?\s+mir\s+)?(?:das\s+)?(?:rezept|mail|e-?mail|eintrag|nummer)\s*(?P<index>\d{1,3})\s*$",
+        re.IGNORECASE,
+    )
     _CHAT_MAIL_ATTACHMENTS_RE = re.compile(
         r"(?is)^\s*(?:janus[,:\s-]*)?(?:welche|zeige|liste)\s+(?:mir\s+)?(?:die\s+)?(?:e-?mails?|mails?)\s+(?:mit\s+)?anh(?:ang|aenge|änge?n?).*$",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_PROVIDER_SEARCH_RE = re.compile(
+        r"(?is)^.*?\b(?:von\s+(?:anbieter\s+)?|anbieter\s+)(?P<sender>[^\n,.;:!?]+?)\b.*$",
         re.IGNORECASE,
     )
     _CHAT_MAIL_SAVE_ATTACHMENTS_RE = re.compile(
@@ -1321,6 +1331,10 @@ class ChatOrchestrator:
 
     _CHAT_MAIL_SEND_PDF_RE = re.compile(
         r"(?is)^\s*(?:janus[,:\s-]*)?(?:nimm|nehme?)\s+die\s+pdf\s*:\s*(?P<pdf>[^\n]+?)\s+aus\s+den\s+e-?mails?\s+und\s+sende\s+sie\s+per\s+e-?mail\s+.*?\s+an\s+(?P<to>[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})\s*$",
+        re.IGNORECASE,
+    )
+    _CHAT_MAIL_EXPORT_CONTENT_PDF_RE = re.compile(
+        r"(?is)^.*?\bspeicher(?:e|)\b.*?\b(?P<selector>alle|(?:\d+\s*(?:,|\bund\b)\s*\d+(?:\s*(?:,|\bund\b)\s*\d+)*)|(?:\d+\s*bis\s*\d+)|(?:rezept(?:e)?\s+)?\d+)\b.*?\bpdf(?:\s*datei(?:en)?)?\b.*$",
         re.IGNORECASE,
     )
     _CHAT_MAIL_EDIT_SUBJECT_RE = re.compile(
@@ -1391,10 +1405,28 @@ class ChatOrchestrator:
 
     @staticmethod
     def _short_text(value: str, max_len: int = 120) -> str:
-        text = re.sub(r"\s+", " ", str(value or "")).strip()
+        text = html.unescape(str(value or ""))
+        text = re.sub(r"[\u200B-\u200F\u2060\uFEFF]", " ", text)
+        text = re.sub(r"(?i)\b(?:evidenz|kurzinhalt)\s*:\s*.*$", "", text).strip()
+        text = re.sub(r"\s+", " ", text).strip()
         if len(text) <= max_len:
             return text
         return text[: max_len - 1].rstrip() + "…"
+
+    @staticmethod
+    def _is_uninformative_mail_snippet(text: str) -> bool:
+        t = str(text or "").strip().lower()
+        if not t:
+            return True
+        generic_markers = (
+            "so wird",
+            "so wird's gemacht",
+            "jetzt nachkochen",
+            "hier geht's zum rezept",
+            "hier gehts zum rezept",
+            "newsletter",
+        )
+        return any(marker in t for marker in generic_markers)
 
     def _extract_pdf_content_preview(self, pdf_bytes: bytes) -> str:
         try:
@@ -1496,6 +1528,365 @@ class ChatOrchestrator:
     @staticmethod
     def _invoice_gmail_query() -> str:
         return "(subject:rechnung OR subject:invoice OR subject:bill OR subject:quittung) has:attachment"
+
+    @staticmethod
+    def _mail_content_type_matches(text: str) -> list[dict]:
+        t = str(text or "").lower()
+        catalog = [
+            {
+                "label": "Rezepte",
+                "trigger_terms": ("rezept", "rezepte"),
+                "subject_terms": ("rezept", "rezepte"),
+            },
+            {
+                "label": "Bons/Belege",
+                "trigger_terms": ("bon", "bons", "kassenbon", "kassenbons", "beleg", "belege", "quittung", "quittungen"),
+                "subject_terms": ("bon", "bons", "kassenbon", "beleg", "quittung"),
+            },
+            {
+                "label": "Rechnungen",
+                "trigger_terms": ("rechnung", "rechnungen", "invoice", "invoices", "bill", "bills"),
+                "subject_terms": ("rechnung", "rechnungen", "invoice", "invoices", "bill"),
+            },
+            {
+                "label": "Bestellbestaetigungen",
+                "trigger_terms": ("bestellbestaetigung", "bestellbestätigung", "bestellung bestaetigt", "order confirmation"),
+                "subject_terms": ("bestellbestaetigung", "bestellung", "order confirmation"),
+            },
+            {
+                "label": "Lieferbestaetigungen",
+                "trigger_terms": ("lieferbestaetigung", "lieferbestätigung", "versandbestaetigung", "versandbestätigung", "shipping confirmation"),
+                "subject_terms": ("lieferbestaetigung", "versandbestaetigung", "shipping confirmation"),
+            },
+        ]
+        matches: list[dict] = []
+        for entry in catalog:
+            if any(term in t for term in entry["trigger_terms"]):
+                matches.append(entry)
+        return matches
+
+    @staticmethod
+    def _mail_content_type_probe(text: str) -> Optional[dict]:
+        matches = ChatOrchestrator._mail_content_type_matches(text)
+        if not matches:
+            return None
+        if len(matches) > 1:
+            return None
+        return matches[0]
+
+    @staticmethod
+    def _mail_content_type_catalog() -> list[dict]:
+        return [
+            {"label": "Rezepte", "subject_terms": ("rezept", "rezepte")},
+            {"label": "Bons/Belege", "subject_terms": ("bon", "bons", "kassenbon", "beleg", "quittung")},
+            {"label": "Rechnungen", "subject_terms": ("rechnung", "rechnungen", "invoice", "invoices", "bill")},
+            {"label": "Bestellbestaetigungen", "subject_terms": ("bestellbestaetigung", "bestellung", "order confirmation")},
+            {"label": "Lieferbestaetigungen", "subject_terms": ("lieferbestaetigung", "versandbestaetigung", "shipping confirmation")},
+        ]
+
+    @staticmethod
+    def _keyword_metadata_from_query(query: str) -> Optional[dict]:
+        q = str(query or "").strip()
+        if not q:
+            return None
+        m = re.search(r"from:\(([^)]+)\)", q, flags=re.IGNORECASE)
+        if not m:
+            return None
+        provider = str(m.group(1) or "").strip()
+        if not provider:
+            return None
+        ql = q.lower()
+        for entry in ChatOrchestrator._mail_content_type_catalog():
+            subject_terms = tuple(entry.get("subject_terms") or ())
+            if any(f"subject:{term.lower()}" in ql for term in subject_terms):
+                return {
+                    "keyword_sender": provider,
+                    "keyword_category": str(entry.get("label") or "").strip(),
+                    "keyword_subject_terms": subject_terms,
+                    "keyword_title": f"{entry.get('label')} von {provider} aus deinen Mails:",
+                }
+        return None
+
+    @staticmethod
+    def _mail_search_clarification_prompt(text: str) -> Optional[str]:
+        raw = str(text or "")
+        t = raw.lower()
+        if not any(token in t for token in ("mail", "mails", "e-mail", "emails", "postfach", "inbox")):
+            return None
+        if not any(token in t for token in ("zeige", "liste", "finde", "such", "welche", "alle", "suche")):
+            return None
+        has_sender = bool(ChatOrchestrator._CHAT_MAIL_PROVIDER_SEARCH_RE.match(raw))
+        has_content_type = ChatOrchestrator._mail_content_type_probe(raw) is not None
+        if has_sender and not has_content_type:
+            return (
+                "Ich kann das gezielt suchen. Welche Art von Mails meinst du von diesem Anbieter "
+                "(z. B. Rezepte, Bons, Rechnungen, Bestell- oder Lieferbestaetigungen)?"
+            )
+        if has_content_type and not has_sender:
+            return "Von welchem Anbieter soll ich diese Mails suchen?"
+        return None
+
+    @staticmethod
+    def _sender_keyword_mail_probe(text: str) -> Optional[dict]:
+        raw = str(text or "")
+        m = ChatOrchestrator._CHAT_MAIL_PROVIDER_SEARCH_RE.match(raw)
+        if not m:
+            return None
+
+        sender_raw = str(m.group("sender") or "").strip()
+        # Prefer a broader extraction for natural phrases like "von Rewe oder Lidl ...".
+        m_full = re.search(
+            r"(?is)\b(?:von\s+(?:anbieter\s+)?|anbieter\s+)(?P<sender>.+?)(?:\b(?:in\s+meinen\s+mails?|aus\s+meinen\s+mails?|finden\s+wir|zeig(?:e)?\s+mir|liste|$))",
+            raw,
+        )
+        if m_full:
+            sender_raw = str(m_full.group("sender") or "").strip()
+        sender = re.sub(r"\s+", " ", sender_raw).strip(" .,:;!?")
+        if not sender:
+            return None
+
+        providers = [p.strip() for p in re.split(r"\s+(?:oder|und)\s+|,", sender, flags=re.IGNORECASE) if p.strip()]
+        if len(providers) > 1:
+            return {
+                "ambiguous": "provider",
+                "provider_candidates": providers[:4],
+            }
+
+        content_type_matches = ChatOrchestrator._mail_content_type_matches(text)
+        if len(content_type_matches) > 1:
+            return {
+                "ambiguous": "content_type",
+                "content_type_candidates": [str(e.get("label") or "").strip() for e in content_type_matches[:4]],
+                "sender": providers[0],
+            }
+        if len(content_type_matches) == 1:
+            content_type = content_type_matches[0]
+            subject_query = " OR ".join(f"subject:{term}" for term in content_type["subject_terms"])
+            return {
+                "title": f"{content_type['label']} von {providers[0]} aus deinen Mails:",
+                "query": f"from:({providers[0]}) ({subject_query})",
+                "count": 20,
+                "sender": providers[0],
+                "content_type_label": content_type["label"],
+                "content_type_subject_terms": tuple(content_type["subject_terms"]),
+            }
+        return None
+
+    @staticmethod
+    def _mail_row_category_evidence(row: Any, subject_terms: tuple[str, ...]) -> tuple[bool, str]:
+        subject = str(getattr(row, "subject", "") or "").lower()
+        snippet = str(getattr(row, "snippet", "") or "").lower()
+        hay = f"{subject} {snippet}"
+        matched = [term for term in subject_terms if term and term.lower() in hay]
+        if not matched:
+            return False, ""
+        unique = list(dict.fromkeys(matched))[:2]
+        return True, f"Signal im Betreff/Kurzinhalt: {', '.join(unique)}"
+
+    def _format_provider_category_mail_rows(
+        self,
+        *,
+        rows: list[Any],
+        title: str,
+        provider: str,
+        category: str,
+        category_terms: tuple[str, ...],
+        limit: int,
+    ) -> str:
+        lines = [title]
+        matched_entries: list[tuple[Any, str]] = []
+        for row in rows[:limit]:
+            ok, evidence = self._mail_row_category_evidence(row, category_terms)
+            if ok:
+                matched_entries.append((row, evidence))
+
+        for i, (row, evidence) in enumerate(matched_entries, start=1):
+            when = self._format_mail_when(row)
+            subject = str(getattr(row, "subject", "") or "(Kein Betreff)")
+            short = self._short_text(getattr(row, "snippet", "") or "", 140)
+            lines.append(f"{i}) Anbieter: {provider}")
+            lines.append(f"   Betreff: {subject}")
+            lines.append(f"   Datum: {when}")
+            lines.append(f"   Kategorie: {category}")
+            lines.append(f"   Evidenz: {evidence}")
+            if short and not self._is_uninformative_mail_snippet(short):
+                lines.append(f"   Kurzinhalt: {short}")
+            lines.append("")
+
+        if not matched_entries:
+            lines.append(f"Keine passenden {category}-Mails von {provider} gefunden.")
+        return "\n".join(lines).rstrip()
+
+    def _collect_provider_category_hits(
+        self,
+        *,
+        rows: list[Any],
+        category_terms: tuple[str, ...],
+        limit: int,
+    ) -> list[dict]:
+        hits: list[dict] = []
+        for row in rows[:limit]:
+            ok, _evidence = self._mail_row_category_evidence(row, category_terms)
+            if not ok:
+                continue
+            hits.append(
+                {
+                    "message_id": str(getattr(row, "id", "") or "").strip(),
+                    "subject": str(getattr(row, "subject", "") or "(Kein Betreff)"),
+                    "date": self._format_mail_when(row),
+                    "snippet": self._short_text(getattr(row, "snippet", "") or "", 240),
+                }
+            )
+        return hits
+
+    @staticmethod
+    def _format_recipe_mail_body(raw_text: str) -> str:
+        text = html.unescape(str(raw_text or ""))
+        # Drop newsletter/footer tails early.
+        text = re.split(r"(?is)\b(wie\s+findest\s+du\s+dieses\s+rezept\??|möchtest\s+du\s+keine\s+rezepte\s+mehr|datenschutz|unsere\s+agb|kontakt|abmelden|picnic\s+gmbh)\b", text)[0]
+        text = re.sub(r"(?i)https?://click\.picnic\.de/\S+", "", text)
+        text = re.sub(r"(?i)\b(In der App ansehen|Teilen)\s*>\s*", "", text)
+        text = re.sub(r"<[^>]+>", "", text)
+        text = re.sub(r"[\u200B-\u200F\u2060\uFEFF]", " ", text)
+        text = re.sub(r"-{3,}", " ", text)
+        text = re.sub(r"\s+", " ", text).strip()
+        if not text:
+            return "-"
+
+        # Normalize section markers first.
+        norm = text
+        norm = re.sub(r"(?i)\bso wird'?s gemacht!?\b", " Zubereitung ", norm)
+        norm = re.sub(r"(?i)\bzubereitung\b", " Zubereitung ", norm)
+        norm = re.sub(r"(?i)\bzutaten\b", " Zutaten ", norm)
+        norm = re.sub(r"(?i)\binstagram:\s*|whatsapp:\s*|facebook:\s*", "", norm)
+        norm = re.sub(r"\s{2,}", " ", norm).strip()
+
+        # Split into ingredients / preparation blocks when possible.
+        m = re.search(r"(?is)\bzutaten\b(.*?)\bzubereitung\b(.*)$", norm)
+        if not m:
+            # Fallback: at least format steps cleanly.
+            rough = re.sub(r"(?i)\bschritt\s*(\d+)\b", r"\n\nSchritt \1", norm)
+            rough = re.sub(r"\n{3,}", "\n\n", rough).strip()
+            return rough
+
+        ing_raw = str(m.group(1) or "").strip()
+        prep_raw = str(m.group(2) or "").strip()
+
+        # Ingredients: convert newsletter inline style into one item per line.
+        ing_raw = re.sub(r"\s*\[\s*\]\s*", " | ", ing_raw)
+        ing_raw = re.sub(r"\s*\[\s*([^\]]+)\s*\]", r" (\1)", ing_raw)
+        ing_raw = ing_raw.replace(" • ", " | ").replace(" * ", " | ")
+        ing_raw = re.sub(r"\s*\|\s*", "|", ing_raw)
+        candidates = [c.strip(" -;,.") for c in ing_raw.split("|") if c.strip(" -;,.")]
+
+        cleaned_ing: list[str] = []
+        seen_ing: set[str] = set()
+        for c in candidates:
+            c = re.sub(r"\s{2,}", " ", c).strip()
+            if len(c) < 2:
+                continue
+            lc = c.lower()
+            if lc in {"zutaten", "zubereitung"}:
+                continue
+            if lc not in seen_ing:
+                seen_ing.add(lc)
+                cleaned_ing.append(c)
+
+        # Preparation: explicit numbered steps.
+        prep = re.sub(r"(?i)\bschritt\s*(\d+)\b", r"\n\nSchritt \1", prep_raw)
+        prep = re.sub(r"\n{3,}", "\n\n", prep).strip()
+
+        lines = ["Zutaten"]
+        if cleaned_ing:
+            lines.extend([f"- {item}" for item in cleaned_ing])
+        else:
+            lines.append("- (keine Zutaten erkannt)")
+        lines.append("")
+        lines.append("Zubereitung")
+        lines.append(prep or "- (keine Zubereitung erkannt)")
+        return "\n".join(lines).strip()
+
+    @staticmethod
+    def _safe_filename_stem(value: str, fallback: str) -> str:
+        stem = re.sub(r"[^\w\-. ]+", "", str(value or ""), flags=re.UNICODE).strip()
+        stem = re.sub(r"\s+", "_", stem)
+        stem = stem.strip("._")
+        return stem[:100] or fallback
+
+    @staticmethod
+    def _parse_selection_indices(selector: str, max_count: int) -> list[int]:
+        raw = str(selector or "").strip().lower()
+        if not raw:
+            return []
+        raw = raw.replace("rezepte", "").replace("rezept", "").strip()
+        raw = re.sub(r"\bund\b", ",", raw)
+        if raw == "alle":
+            return list(range(1, max_count + 1))
+        m_range = re.match(r"^\s*(\d+)\s*bis\s*(\d+)\s*$", raw)
+        if m_range:
+            a = int(m_range.group(1))
+            b = int(m_range.group(2))
+            lo, hi = min(a, b), max(a, b)
+            return [i for i in range(lo, hi + 1) if 1 <= i <= max_count]
+        if "," in raw:
+            out: list[int] = []
+            for part in raw.split(","):
+                part = part.strip()
+                if part.isdigit():
+                    v = int(part)
+                    if 1 <= v <= max_count and v not in out:
+                        out.append(v)
+            return out
+        if raw.isdigit():
+            v = int(raw)
+            return [v] if 1 <= v <= max_count else []
+        return []
+
+    @staticmethod
+    def _extract_selection_indices_from_text(text: str, max_count: int) -> list[int]:
+        t = str(text or "").lower()
+        m_range = re.search(r"\b(\d+)\s*bis\s*(\d+)\b", t)
+        if m_range:
+            a = int(m_range.group(1))
+            b = int(m_range.group(2))
+            lo, hi = min(a, b), max(a, b)
+            return [i for i in range(lo, hi + 1) if 1 <= i <= max_count]
+        nums = [int(n) for n in re.findall(r"\b\d{1,3}\b", t)]
+        out: list[int] = []
+        for n in nums:
+            if 1 <= n <= max_count and n not in out:
+                out.append(n)
+        return out
+
+    @staticmethod
+    def _looks_like_mail_pdf_export_request(text: str) -> bool:
+        t = str(text or "").lower()
+        if "pdf" not in t:
+            return False
+        if not any(k in t for k in ("speicher", "export", "als pdf")):
+            return False
+        if not any(k in t for k in ("rezept", "mail", "eintrag")):
+            return False
+        return bool(re.search(r"\b(alle|\d+)\b", t))
+
+    @staticmethod
+    def _extract_desktop_folder_from_export_text(text: str) -> str:
+        t = str(text or "")
+        m = re.search(r"(?is)\bordner\s+([a-z0-9äöüß _-]{2,80}?)\s+auf\s+dem\s+desktop\b", t)
+        if not m:
+            m = re.search(r"(?is)\bordner\s+([a-z0-9äöüß _-]{2,80}?)\s+an\b", t)
+        if not m:
+            m = re.search(
+                r"(?is)\b(?:liegt|gibt\s+es|ist)\s+(?:ein(?:en|em)?\s+)?([a-z0-9äöüß _-]{2,80}?ordner)\b",
+                t,
+            )
+        if not m:
+            m = re.search(r"(?is)\bein(?:en|em)?\s+([a-z0-9äöüß _-]{2,80}?ordner)\b", t)
+        if not m:
+            return ""
+        folder = str(m.group(1) or "").strip()
+        folder = re.sub(r"(?is)\b(rezeptordner)\b", "rezepte", folder).strip()
+        return folder
 
     @staticmethod
     def _row_matches_invoice_hint(row: Any) -> bool:
@@ -1903,6 +2294,11 @@ class ChatOrchestrator:
             pop_pending_account_choice,
             set_pending_account_choice,
         )
+        from backend.services.mail.mail_keyword_result_store import (
+            PendingMailKeywordSelection,
+            get_pending_keyword_selection,
+            set_pending_keyword_selection,
+        )
         from backend.services.mail.mail_service import MailService, MailServiceError
 
         wf = ctx.workflow
@@ -2053,16 +2449,48 @@ class ChatOrchestrator:
 
             pop_pending_account_choice(chat_id)
             if pending_acc.action in {"list_latest", "list_attachments"}:
+                logger.info(
+                    "[MAIL-ROUTE-DEBUG] pending-account action=%s chat_id=%s selected=%s payload_keys=%s",
+                    pending_acc.action,
+                    chat_id,
+                    selected,
+                    sorted(list((pending_acc.payload or {}).keys())),
+                )
                 count = int(pending_acc.payload.get("count") or 4)
                 only_attachments = pending_acc.action == "list_attachments"
                 invoice_only = bool(pending_acc.payload.get("invoice_only"))
                 query = str(pending_acc.payload.get("query") or "").strip() or None
+                keyword_provider = str(pending_acc.payload.get("keyword_sender") or "").strip()
+                keyword_category = str(pending_acc.payload.get("keyword_category") or "").strip()
+                keyword_title = str(pending_acc.payload.get("keyword_title") or "").strip() or "Ergebnisse:"
+                keyword_subject_terms = tuple(pending_acc.payload.get("keyword_subject_terms") or ())
+                if not (keyword_provider and keyword_category and keyword_subject_terms):
+                    query_metadata = self._keyword_metadata_from_query(str(query or ""))
+                    if query_metadata:
+                        keyword_provider = str(query_metadata.get("keyword_sender") or "").strip()
+                        keyword_category = str(query_metadata.get("keyword_category") or "").strip()
+                        keyword_title = str(query_metadata.get("keyword_title") or "").strip() or keyword_title
+                        keyword_subject_terms = tuple(query_metadata.get("keyword_subject_terms") or ())
+                is_keyword_category_flow = bool(keyword_provider and keyword_category and keyword_subject_terms)
                 if selected == "all":
                     all_lines: list[str] = []
                     for acc in pending_acc.accounts:
                         try:
                             service.activate_account(acc)
                             rows = service.list_inbox_threads(folder="inbox", max_results=count, query=query).threads
+                            if is_keyword_category_flow:
+                                all_lines.append(
+                                    self._format_provider_category_mail_rows(
+                                        rows=rows,
+                                        title=f"[{acc}] {keyword_title}",
+                                        provider=keyword_provider,
+                                        category=keyword_category,
+                                        category_terms=keyword_subject_terms,
+                                        limit=count,
+                                    )
+                                )
+                                all_lines.append("")
+                                continue
                             if only_attachments:
                                 if invoice_only:
                                     rows = self._filter_invoice_attachment_rows(service, rows)
@@ -2092,6 +2520,34 @@ class ChatOrchestrator:
                     try:
                         service.activate_account(selected)
                         rows = service.list_inbox_threads(folder="inbox", max_results=count, query=query).threads
+                        if is_keyword_category_flow:
+                            keyword_hits = self._collect_provider_category_hits(
+                                rows=rows,
+                                category_terms=keyword_subject_terms,
+                                limit=count,
+                            )
+                            set_pending_keyword_selection(
+                                chat_id,
+                                PendingMailKeywordSelection(
+                                    account=selected,
+                                    provider=keyword_provider,
+                                    category=keyword_category,
+                                    hits=keyword_hits,
+                                ),
+                            )
+                            text = self._format_provider_category_mail_rows(
+                                rows=rows,
+                                title=keyword_title,
+                                provider=keyword_provider,
+                                category=keyword_category,
+                                category_terms=keyword_subject_terms,
+                                limit=count,
+                            )
+                            wf.execution_for_api = ExecutionResponse(text=text)
+                            wf.skip_llm_generation = True
+                            _persist_user_turn_once()
+                            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
                         if only_attachments:
                             if invoice_only:
                                 rows = self._filter_invoice_attachment_rows(service, rows)
@@ -2811,6 +3267,209 @@ class ChatOrchestrator:
                 return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
 
         text = str(wf.user_text or "").strip()
+        result_select_match = self._CHAT_MAIL_RESULT_SELECT_RE.match(text)
+        if result_select_match:
+            pending_select = get_pending_keyword_selection(chat_id)
+            requested_index = int(result_select_match.group("index") or "0")
+            if pending_select and requested_index > 0:
+                idx = requested_index - 1
+                hits = list(pending_select.hits or [])
+                if 0 <= idx < len(hits):
+                    hit = hits[idx]
+                    message_id = str(hit.get("message_id") or "").strip()
+                    if message_id:
+                        try:
+                            if pending_select.account:
+                                service.activate_account(pending_select.account)
+                            detail = service.get_message_detail(message_id)
+                            raw_body = str(getattr(detail, "body_text", "") or "")
+                            if str(pending_select.category or "").strip().lower() == "rezepte":
+                                body = self._format_recipe_mail_body(raw_body)
+                            else:
+                                body = self._short_text(raw_body, 2200)
+                            if not body:
+                                body = str(hit.get("snippet") or "-").strip() or "-"
+                            subject = str(hit.get("subject") or "(Kein Betreff)")
+                            when = str(hit.get("date") or "Unbekannt")
+                            lines = [
+                                f"Rezept {requested_index}:",
+                                f"Betreff: {subject}",
+                                f"Datum: {when}",
+                                f"Konto: {pending_select.account or '-'}",
+                                f"Anbieter: {pending_select.provider or '-'}",
+                                f"Kategorie: {pending_select.category or '-'}",
+                                "",
+                                body,
+                            ]
+                            wf.execution_for_api = ExecutionResponse(text="\n".join(lines).rstrip())
+                            wf.skip_llm_generation = True
+                            _persist_user_turn_once()
+                            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+                        except Exception as exc:
+                            wf.execution_for_api = ExecutionResponse(
+                                text=f"Ich konnte Rezept {requested_index} nicht öffnen ({exc})."
+                            )
+                            wf.skip_llm_generation = True
+                            _persist_user_turn_once()
+                            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+                wf.execution_for_api = ExecutionResponse(
+                    text=f"Ich habe keinen Eintrag {requested_index} in der letzten Rezeptliste. Bitte nenne eine Nummer aus der Liste."
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        export_match = self._CHAT_MAIL_EXPORT_CONTENT_PDF_RE.match(text)
+        if export_match or self._looks_like_mail_pdf_export_request(text):
+            pending_select = get_pending_keyword_selection(chat_id)
+            if not pending_select or not list(pending_select.hits or []):
+                wf.execution_for_api = ExecutionResponse(
+                    text="Ich brauche zuerst eine Trefferliste aus deinen Mails. Such bitte erst die gewünschten Mails, dann kann ich sie als PDFs speichern."
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+            hits = list(pending_select.hits or [])
+            selector = str(export_match.group("selector") or "").strip() if export_match else ""
+            indices_from_selector = self._parse_selection_indices(selector, len(hits)) if selector else []
+            indices_from_text = self._extract_selection_indices_from_text(text, len(hits))
+            merged_indices: list[int] = []
+            for v in [*indices_from_selector, *indices_from_text]:
+                if v not in merged_indices:
+                    merged_indices.append(v)
+            indices = merged_indices
+            if not indices and "alle" in str(text or "").lower():
+                indices = list(range(1, len(hits) + 1))
+            if not indices:
+                wf.execution_for_api = ExecutionResponse(
+                    text=f"Die Auswahl konnte ich nicht auf die letzte Liste abbilden. Verfügbar sind 1 bis {len(hits)}."
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+            folder_raw = self._extract_desktop_folder_from_export_text(text)
+            folder_name = self._safe_filename_stem(folder_raw, "mail_exporte") if folder_raw else "mail_exporte"
+            # If user references "diesem Ordner", prefer an existing Desktop folder by fuzzy token match.
+            # If nothing matches, ask for clarification instead of silently falling back.
+            if "diesem ordner" in str(text or "").lower() and folder_raw:
+                desktop = Path.home() / "Desktop"
+                wanted_tokens = [tok for tok in re.split(r"[\s_-]+", folder_name.lower()) if len(tok) >= 3]
+                best_match: Optional[str] = None
+                best_score = 0
+                desktop_dirs: list[str] = []
+                try:
+                    for entry in desktop.iterdir():
+                        if not entry.is_dir():
+                            continue
+                        desktop_dirs.append(entry.name)
+                        name_l = entry.name.lower()
+                        score = sum(1 for tok in wanted_tokens if tok in name_l)
+                        if score > best_score:
+                            best_score = score
+                            best_match = entry.name
+                    if best_match and best_score > 0:
+                        folder_name = best_match
+                    else:
+                        suggestions = ", ".join(sorted(desktop_dirs)[:8]) if desktop_dirs else "-"
+                        wf.execution_for_api = ExecutionResponse(
+                            text=(
+                                f"Ich konnte auf deinem Desktop keinen bestehenden Ordner passend zu '{folder_raw}' finden. "
+                                f"Bitte nenne den Ordnernamen exakt oder sag 'neu anlegen: <Ordnername>'.\n\n"
+                                f"Gefundene Desktop-Ordner (Auswahl): {suggestions}"
+                            )
+                        )
+                        wf.skip_llm_generation = True
+                        _persist_user_turn_once()
+                        self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                        return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+                except Exception:
+                    pass
+            target_dir = Path.home() / "Desktop" / folder_name
+            target_dir.mkdir(parents=True, exist_ok=True)
+
+            saved_files: list[str] = []
+            errors: list[str] = []
+            for idx in indices:
+                try:
+                    hit = hits[idx - 1]
+                    message_id = str(hit.get("message_id") or "").strip()
+                    if not message_id:
+                        errors.append(f"{idx}: keine message_id")
+                        continue
+                    if pending_select.account:
+                        service.activate_account(pending_select.account)
+                    detail = service.get_message_detail(message_id)
+                    subject = str(hit.get("subject") or "(Kein Betreff)")
+                    when = str(hit.get("date") or "Unbekannt")
+                    raw_body = str(getattr(detail, "body_text", "") or "")
+                    if str(pending_select.category or "").strip().lower() == "rezepte":
+                        body = self._format_recipe_mail_body(raw_body)
+                    else:
+                        body = self._short_text(raw_body, 7000)
+                    if not body:
+                        body = str(hit.get("snippet") or "-").strip() or "-"
+
+                    title = self._safe_filename_stem(subject, f"mail_{idx}")
+                    tmp_name = f"tmp_mail_{idx}_{title}.pdf"
+                    content_md = (
+                        f"# {subject}\n\n"
+                        f"- Konto: {pending_select.account or '-'}\n"
+                        f"- Anbieter: {pending_select.provider or '-'}\n"
+                        f"- Kategorie: {pending_select.category or '-'}\n"
+                        f"- Datum: {when}\n\n"
+                        f"{body}\n"
+                    )
+                    result = create_pdf_from_markdown(
+                        content=content_md,
+                        filename=tmp_name,
+                        location="desktop",
+                    )
+                    status = getattr(result, "status", None)
+                    if status != "ok":
+                        errors.append(f"{idx}: PDF-Generator Status={status or 'error'}")
+                        continue
+                    data = getattr(result, "data", {}) or {}
+                    file_path = str(data.get("file_path") or "").strip()
+                    if not file_path:
+                        errors.append(f"{idx}: kein file_path im Ergebnis")
+                        continue
+                    src = Path(file_path)
+                    if not src.exists():
+                        errors.append(f"{idx}: temporäre Datei fehlt")
+                        continue
+                    final_name = f"{idx:03d}_{title}.pdf"
+                    dst = target_dir / final_name
+                    if dst.exists():
+                        dst = target_dir / f"{idx:03d}_{title}_{uuid.uuid4().hex[:6]}.pdf"
+                    src.replace(dst)
+                    saved_files.append(str(dst))
+                except Exception as exc:
+                    errors.append(f"{idx}: {exc}")
+
+            if saved_files:
+                msg = (
+                    f"Erledigt: {len(saved_files)} PDF-Datei(en) gespeichert in `{target_dir}`.\n"
+                    f"Beispiele:\n- " + "\n- ".join(saved_files[:6])
+                )
+                if errors:
+                    msg += f"\n\nHinweise: {len(errors)} Eintrag/Einträge konnten nicht exportiert werden."
+                wf.execution_for_api = ExecutionResponse(text=msg)
+            else:
+                wf.execution_for_api = ExecutionResponse(
+                    text=f"Ich konnte keine PDFs erzeugen. Prüfe bitte die Auswahl. Fehler: {errors[0] if errors else 'unbekannt'}"
+                )
+            wf.skip_llm_generation = True
+            _persist_user_turn_once()
+            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
         sort_docs_match = self._CHAT_SORT_DOCS_RE.match(text)
         if sort_docs_match:
             source_root = self._extract_sort_target_root(text)
@@ -2861,11 +3520,12 @@ class ChatOrchestrator:
             self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
             return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
 
+        keyword_probe = self._sender_keyword_mail_probe(text)
         attach_match = self._CHAT_MAIL_ATTACHMENTS_RE.match(text)
         invoice_mail_probe = self._is_invoice_attachment_request(text) and bool(
             re.search(r"(?is)\b(e-?mail|mail|mails)\b", text)
         )
-        if attach_match or invoice_mail_probe:
+        if (attach_match or invoice_mail_probe) and not keyword_probe:
             count = 50
             invoice_only = self._is_invoice_attachment_request(text)
             query = self._invoice_gmail_query() if invoice_only else None
@@ -3006,6 +3666,107 @@ class ChatOrchestrator:
             _persist_user_turn_once()
             wf.user_text = "1"
             return await self._try_chat_mail_confirmation(ctx)
+
+        clarification_prompt = self._mail_search_clarification_prompt(text)
+        if clarification_prompt:
+            wf.execution_for_api = ExecutionResponse(text=clarification_prompt)
+            wf.skip_llm_generation = True
+            _persist_user_turn_once()
+            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        if keyword_probe:
+            logger.info("[MAIL-ROUTE-DEBUG] keyword_probe route active chat_id=%s text=%s", chat_id, text[:160])
+            if str(keyword_probe.get("ambiguous") or "") == "provider":
+                providers = list(keyword_probe.get("provider_candidates") or [])
+                options = ", ".join(providers) if providers else "die genannten Anbieter"
+                wf.execution_for_api = ExecutionResponse(
+                    text=f"Ich sehe mehrere Anbieter ({options}). Bitte nenne genau einen Anbieter."
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+            if str(keyword_probe.get("ambiguous") or "") == "content_type":
+                cands = list(keyword_probe.get("content_type_candidates") or [])
+                provider = str(keyword_probe.get("sender") or "diesem Anbieter")
+                options = ", ".join(cands) if cands else "eine Kategorie"
+                wf.execution_for_api = ExecutionResponse(
+                    text=f"Ich sehe mehrere Kategorien für {provider} ({options}). Bitte nenne genau eine Kategorie."
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+            count = int(keyword_probe.get("count") or 20)
+            query = str(keyword_probe.get("query") or "").strip()
+            title = str(keyword_probe.get("title") or "Ergebnisse:")
+            provider = str(keyword_probe.get("sender") or "Unbekannt")
+            category = str(keyword_probe.get("content_type_label") or "Unbekannt")
+            category_terms = tuple(keyword_probe.get("content_type_subject_terms") or ())
+            accounts, _active = service.get_known_accounts()
+            if len(accounts) > 1:
+                logger.info("[MAIL-ROUTE-DEBUG] keyword_probe multi-account pending=list_latest chat_id=%s", chat_id)
+                set_pending_account_choice(
+                    chat_id,
+                    PendingMailAccountChoice(
+                        action="list_latest",
+                        accounts=accounts,
+                        payload={
+                            "count": count,
+                            "invoice_only": False,
+                            "query": query,
+                            "keyword_sender": provider,
+                            "keyword_category": category,
+                            "keyword_subject_terms": list(category_terms),
+                            "keyword_title": title,
+                        },
+                    ),
+                )
+                wf.execution_for_api = ExecutionResponse(
+                    text=(
+                        f"{self._mail_accounts_prompt(accounts, allow_all=True)}\n"
+                        "Hinweis: Ich suche hier nach Absender + Betreffinhalt (keine Anhaenge)."
+                    )
+                )
+                wf.skip_llm_generation = True
+                _persist_user_turn_once()
+                self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+                return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+            try:
+                if accounts:
+                    service.activate_account(accounts[0])
+                rows = service.list_inbox_threads(folder="inbox", max_results=count, query=query).threads
+                keyword_hits = self._collect_provider_category_hits(
+                    rows=rows,
+                    category_terms=category_terms,
+                    limit=count,
+                )
+                set_pending_keyword_selection(
+                    chat_id,
+                    PendingMailKeywordSelection(
+                        account=(accounts[0] if accounts else ""),
+                        provider=provider,
+                        category=category,
+                        hits=keyword_hits,
+                    ),
+                )
+                wf.execution_for_api = ExecutionResponse(
+                    text=self._format_provider_category_mail_rows(
+                        rows=rows,
+                        title=title,
+                        provider=provider,
+                        category=category,
+                        category_terms=category_terms,
+                        limit=count,
+                    )
+                )
+            except Exception as exc:
+                wf.execution_for_api = ExecutionResponse(text=f"Mails konnten nicht geladen werden ({exc}).")
+            wf.skip_llm_generation = True
+            _persist_user_turn_once()
+            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
 
         list_match = self._CHAT_MAIL_LIST_RE.match(text)
         if list_match:

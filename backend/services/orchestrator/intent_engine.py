@@ -1870,6 +1870,12 @@ def detect_ambiguity_in_query(query: str) -> tuple[bool, float]:
     
     query_norm = _normalize_text(query)
     query_lower = query_norm.lower()
+    if re.match(
+        r"(?is)^(?=.*\bvon\s+[^\n,.;:!?]+)"
+        r"(?=.*\b(?:rezept|rezepte|bon|bons|kassenbon|kassenbons|beleg|belege|quittung|quittungen)\b).*$",
+        query_lower,
+    ):
+        return False, 0.0
     words = query_lower.split()
 
     if re.search(r"\b(?:wetter|regen|regnen|regnet|niederschlag)\b", query_lower) and not re.search(

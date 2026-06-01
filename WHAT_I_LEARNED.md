@@ -53,3 +53,14 @@
 - **Epic:** BACKLOG-099
 - **Confidence:** High
 - **Tags:** Mail, Persistence, Restart, ControlReply, AttachmentSave, FolderRouting
+
+## [PATTERN] #MAIL_PROVIDER_CATEGORY_CLARITY_FIRST "Provider-plus-category mail search must clarify ambiguity before execution and keep evidence in every hit row"
+- **Kontext:** BACKLOG-100 / generische Anbieter-Mail-Suche nach Inhaltstypen.
+- **Problem:** Natuerliche Mailanfragen wie "Rezepte von Anbieter X" kippen leicht in unscharfe Treffer oder falsche Fallback-Routen, wenn Anbieter oder Kategorie mehrdeutig sind.
+- **Loesung:** Den Suchpfad als klare Anbieter-plus-Kategorie-Route behandeln, bei Mehrdeutigkeit gezielt nachfragen, Treffer konservativ filtern und pro Treffer eine kurze Evidenzzeile aus Betreff/Kurzinhalt ausgeben.
+- **Haertung:** Final Audit PASS; py_compile PASS; fokussierte Backend-Regression PASS (39/39); Frontend-Mail-Filtertest PASS (3/3); manuelle Janus-Evidenz fuer Detailansicht und PDF-Export vorhanden.
+- **Tripwire:** Wenn Treffer ohne Evidenz erscheinen, mehrere Anbieter/Kategorien stillschweigend zusammengezogen werden oder der Flow in Attachment-Suche abdriftet, ist die Route wieder unscharf.
+- **Location:** `backend/services/chat_orchestrator.py`, `backend/services/orchestrator/execution_dispatcher.py`, `backend/services/orchestrator/intent_engine.py`, `backend/tools/pdf_generator.py`, `backend/services/mail/mail_keyword_result_store.py`
+- **Epic:** BACKLOG-100
+- **Confidence:** High
+- **Tags:** Mail, IntentRouting, Ambiguity, Evidence, PDFExport, RegressionSafety
