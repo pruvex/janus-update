@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "janus.release-verification.v1",
+  "status": "PASS",
+  "repository": "pruvex/janus-update",
+  "version": "0.4.17-beta.48",
+  "tagName": "v0.4.17-beta.48",
+  "releaseUrl": "https://github.com/pruvex/janus-update/releases/tag/v0.4.17-beta.48",
+  "prerelease": true,
+  "draft": false,
+  "assets": [
+    {
+      "name": "janus-setup-0.4.17-beta.48.exe",
+      "role": "installer",
+      "githubState": "uploaded",
+      "githubSize": 688729597,
+      "localSize": 688729597,
+      "githubDigest": "sha256:d38b2de7ff1ffbc44913df92762bd1e49db270078c870fceab76ce4bdaaca1c4",
+      "localSha256": "d38b2de7ff1ffbc44913df92762bd1e49db270078c870fceab76ce4bdaaca1c4",
+      "browserDownloadUrl": "https://github.com/pruvex/janus-update/releases/download/v0.4.17-beta.48/janus-setup-0.4.17-beta.48.exe",
+      "result": "PASS",
+      "notes": ""
+    },
+    {
+      "name": "beta.yml",
+      "role": "electron-channel-metadata",
+      "githubState": "uploaded",
+      "githubSize": 2053,
+      "localSize": 2053,
+      "githubDigest": "sha256:ac8e4c4edee5a6f3ea7e850378784184a4e8560fc2c89b4e91c79208af8fc7a1",
+      "localSha256": "ac8e4c4edee5a6f3ea7e850378784184a4e8560fc2c89b4e91c79208af8fc7a1",
+      "browserDownloadUrl": "https://github.com/pruvex/janus-update/releases/download/v0.4.17-beta.48/beta.yml",
+      "result": "PASS",
+      "notes": ""
+    },
+    {
+      "name": "janus-update-manifest.json",
+      "role": "janus-update-manifest",
+      "githubState": "uploaded",
+      "githubSize": 250,
+      "localSize": 250,
+      "githubDigest": "sha256:7e95b36179fe624b0ffae2c00edd32ab897a430febc50dc6de3b525572095540",
+      "localSha256": "7e95b36179fe624b0ffae2c00edd32ab897a430febc50dc6de3b525572095540",
+      "browserDownloadUrl": "https://github.com/pruvex/janus-update/releases/download/v0.4.17-beta.48/janus-update-manifest.json",
+      "result": "PASS",
+      "notes": ""
+    }
+  ],
+  "missing": [],
+  "unexpectedRelevant": [],
+  "verifiedAt": "2026-05-30T20:18:59.941Z"
+}
