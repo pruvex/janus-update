@@ -33,9 +33,8 @@ User-Antworten:
 | Modell | Standardnutzung | Intelligenz |
 | --- | --- | --- |
 | `5.5` | Architektur, Security, Privacy, Prompt-Injection, komplexe Fehleranalyse, Release-Gates, finale Audits | hoch bis sehr hoch |
-| `5.4` | Feature-Design, Specs, TestSpecs, komplexe Produktentscheidungen, Review von Pipeline-Artefakten | mittel bis hoch |
+| `5.4` | Janus-Workhorse: Feature-Design, Specs, TestSpecs, Implementierung, Refactoring, Tests, Debugging, Pipeline-Reviews | mittel bis hoch |
 | `5.4 mini` | Backlog-Pflege, Doku-Normalisierung, Snapshot-/Dashboard-Sync, mechanische Checks | niedrig bis mittel |
-| `5.3 codex` | Implementierung, Refactoring, Tests, Debugging, lokale Repo-Arbeit | mittel bis hoch |
 | `5.2` | einfache Zusammenfassungen, kleine Textaenderungen, Statusberichte | niedrig |
 
 ## Janus Skill Map
@@ -80,6 +79,7 @@ User-Antworten:
 - Nur bindende Artefakte laden: Backlog-Item, Spec, TestSpec, Handoff, direkt betroffene Dateien.
 - Lange Historie nur als Archiv behandeln, nicht als aktive Anforderung.
 - Bei neuem Feature, langem Chat oder unabhaengigem Audit neuen Chat empfehlen.
+- Cache-Strategie nach Codex-Update: moeglichst auf `5.4` bleiben und nur die Intelligenz/Reasoning-Stufe wechseln; Modellwechsel nur fuer `5.4 mini`-Mechanik oder `5.5`-Eskalation.
 
 ## Codex Plugins
 
@@ -171,6 +171,7 @@ Jeder Abschluss nennt:
 - ausgefuehrte Checks
 - geaenderte Dateien
 - naechster Skill oder Gate
+- bei jedem `ok`-/`weiter`-/Freigabe-Gate: empfohlenes Modell und empfohlene Intelligenz/Reasoning-Stufe
 
 Substantielle Skill-Laeufe werden fuer spaetere Optimierung in `documentation/codex/SKILL_USAGE_LOG.md` dokumentiert. Dafuer bevorzugt das Script `documentation/codex/scripts/record_skill_usage.py` nutzen. Reine Rueckfragen, kurze Statusantworten und reine Git-Ausfuehrung ohne neue Prozessentscheidung muessen nicht geloggt werden.
 

@@ -81,10 +81,12 @@ Heuristik:
 | Status, kleine Doku, Commit-Governance | `5.4 mini` oder `5.2` | niedrig | nein |
 | Backlog, Dashboard, Normalisierung, Health DAILY | `5.4 mini` | niedrig bis mittel | nein |
 | Feature-Design, Spec, Review, Task Breakdown | `5.4` | mittel | bei langem Chat ja |
-| Code, Tests, lokale Debugging-Arbeit | `5.3 codex` | mittel bis hoch | meist nein |
+| Code, Tests, lokale Debugging-Arbeit | `5.4` | mittel bis hoch | meist nein |
 | Final Audit, Security, Privacy, Release-Risiko | `5.5` | hoch | ja |
 
-Codex soll proaktiv eine Umstellung empfehlen, wenn der naechste Schritt deutlich guenstiger oder sicherer mit einem anderen Modell ist.
+`5.4` ist das Janus-Workhorse. Fuer Prompt-Cache-Freundlichkeit moeglichst im selben Modell bleiben und nur die Intelligenz/Reasoning-Stufe anpassen. Zu `5.4 mini` nur fuer klar mechanische Bloecke wechseln; zu `5.5` nur bei Audit-, Security-, Privacy-, Architektur- oder Release-Risiko eskalieren.
+
+Codex soll proaktiv eine Umstellung empfehlen, wenn der naechste Schritt deutlich guenstiger oder sicherer mit einem anderen Modell ist. Jede Empfehlung fuer `ok`, `weiter`, Modellwechsel, neuen Chat oder Gate nennt immer Modell und Intelligenz/Reasoning-Stufe.
 
 ## Plugin-Einsatz
 
