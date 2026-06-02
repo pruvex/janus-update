@@ -208,7 +208,8 @@ Process:
 
 ## Model And Context Guidance
 
-- Use `5.4 mini` for TestPlan validation, artifact checks, and routine triage.
+- Use `5.4` low for short TestPlan validation, artifact checks, and routine triage when the current `5.4` context is warm or the next step returns to `5.4`.
+- Use `5.4 mini` for separated low-risk validation or triage batches only when likely cheaper than staying on warm `5.4`.
 - Use `5.4` for Playwright execution, local debugging, and script-level investigation.
 - Use `5.4` for ambiguous failures, product/spec classification, and retest audit.
 - Use `5.5` only for security-sensitive release blockers, provider trust boundaries, or complex audit disputes.

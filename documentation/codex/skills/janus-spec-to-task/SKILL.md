@@ -62,7 +62,7 @@ TASK-XXX
 - Reason:
 ```
 
-Use `5.4` as the normal Janus workhorse for implementation/refactor/test execution tasks. Use `5.4 mini` only for deterministic single-file text/data/test artifact edits. Recommend `5.5` as escalation when decomposition is ambiguous, security-sensitive, architecture-heavy, or high-risk.
+Use `5.4` as the normal Janus workhorse for implementation/refactor/test execution tasks. Use `5.4` low for deterministic single-file text/data/test artifact edits when the `5.4` context is warm or follow-up implementation will return to `5.4`. Use `5.4 mini` only for separated mechanical edits that are still likely cheaper than staying on warm `5.4`. Recommend `5.5` as escalation when decomposition is ambiguous, security-sensitive, architecture-heavy, or high-risk.
 
 Validate task structure when useful:
 

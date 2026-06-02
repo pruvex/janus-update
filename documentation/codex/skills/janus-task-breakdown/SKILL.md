@@ -52,8 +52,8 @@ If a task affects TestSpec, test oracle, assertions, `containsAny`, `mustNotCont
 ## Model Routing
 
 - `5.4`: normal task refinement and risk judgment.
-- `5.4 mini`: mechanical task artifact validation.
-- `5.4`: later implementation, not this skill.
+- `5.4 mini`: separated mechanical task artifact validation only when likely cheaper than staying on warm `5.4`.
+- `5.4` low: short mechanical validation when current `5.4` context is warm or the next step returns to `5.4`.
 - `5.5`: escalation for ambiguous, security-sensitive, or architecture-heavy tasks.
 
 ## Validation Script

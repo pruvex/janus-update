@@ -213,7 +213,8 @@ Verify:
 
 ## Model And Context Guidance
 
-- Use `5.4 mini`, low/medium, for readiness checks, metadata validation, and dry-run planning.
+- Use `5.4` low for short readiness checks, metadata validation, and dry-run planning when the current `5.4` context is warm or build/debug follow-up returns to `5.4`.
+- Use `5.4 mini`, low/medium, only for separated low-risk readiness or metadata batches that are still likely cheaper than staying on warm `5.4`.
 - Use `5.4`, medium/high, for build failures and local script/package debugging.
 - Use `5.4`, medium/high, for release readiness decisions and ambiguous artifact risk.
 - Use `5.5`, high, for production publish approval review, security-sensitive updater risk, or rollback decisions.

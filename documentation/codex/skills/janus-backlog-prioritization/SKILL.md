@@ -23,7 +23,8 @@ Default recommendation:
 
 - Model: `5.4` for meaningful prioritization.
 - Intelligence: medium/high.
-- Use `5.4 mini` only for purely mechanical cache-field cleanup.
+- Use `5.4` low for purely mechanical cache-field cleanup when the current `5.4` context is warm or prioritization continues in `5.4`.
+- Use `5.4 mini` only for separated mechanical cleanup batches that are still likely cheaper than staying on warm `5.4`.
 - Use `5.5` only for release/security/privacy-critical prioritization.
 
 ## Mode

@@ -32,6 +32,8 @@ Assigned Model: <5.4 | 5.4 mini | 5.5 | other explicit model>
 
 If a task file contains multiple tasks, `Target Task` is mandatory.
 
+Model choice is part of the gate. If the current `5.4` context is warm and the implementation will continue in `5.4`, prefer `Assigned Model: 5.4` with low reasoning for short mechanical work instead of assigning `5.4 mini`. Assign `5.4 mini` only when the task is a separated low-risk mechanical block that is still likely cheaper than staying on warm `5.4`.
+
 ## Validation Gates
 
 Verify:
@@ -153,4 +155,3 @@ When a precheck output is saved, run:
 ```powershell
 python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py <path-to-precheck-output.md>
 ```
-

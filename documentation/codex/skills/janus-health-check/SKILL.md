@@ -130,6 +130,13 @@ Use:
 
 If the working tree is dirty and cleanup candidates exist, max is `GELB`/89. If scans were incomplete, max is `GELB` unless core artifacts are missing.
 
+## Model Routing
+
+- Use `5.4` low for DAILY checks when the current `5.4` project context is warm.
+- Use `5.4 mini` only for separated low-risk healthcheck runs that are still likely cheaper than staying on warm `5.4`.
+- Use `5.4` medium/high for WEEKLY or MONTHLY analysis with meaningful judgment.
+- Recommend `5.5` only for security, privacy, architecture, release, or destructive ambiguity.
+
 ## Output
 
 Use German for user-facing text:

@@ -70,7 +70,7 @@ Risk:
 - 61-80: `HIGH`
 - 81-100: `CRITICAL`
 
-Recommend `5.4` for normal Spec review. Recommend `5.5` only for score above 70, central security/privacy/persistence/IPC risk, or multiple plausible interpretations. Use `5.4 mini` only for mechanical metadata checks.
+Recommend `5.4` for normal Spec review. Recommend `5.5` only for score above 70, central security/privacy/persistence/IPC risk, or multiple plausible interpretations. Use `5.4` low for mechanical metadata checks when the current `5.4` context is warm or review continues in `5.4`; use `5.4 mini` only for separated metadata batches that are still likely cheaper than staying on warm `5.4`.
 
 ## Required Metadata Block
 
