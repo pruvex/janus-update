@@ -34,7 +34,7 @@ User-Antworten:
 | --- | --- | --- |
 | `5.5` | Architektur, Security, Privacy, Prompt-Injection, komplexe Fehleranalyse, Release-Gates, finale Audits | hoch bis sehr hoch |
 | `5.4` | Janus-Workhorse: Feature-Design, Specs, TestSpecs, Implementierung, Refactoring, Tests, Debugging, Pipeline-Reviews | mittel bis hoch |
-| `5.4 mini` | Backlog-Pflege, Doku-Normalisierung, Snapshot-/Dashboard-Sync, mechanische Checks | niedrig bis mittel |
+| `5.4 mini` | Backlog-Pflege, Doku-Normalisierung, Snapshot-/Dashboard-Sync, mechanische Checks nur als eigener guenstiger Block | niedrig bis mittel |
 | `5.2` | einfache Zusammenfassungen, kleine Textaenderungen, Statusberichte | niedrig |
 
 ## Janus Skill Map
@@ -79,7 +79,7 @@ User-Antworten:
 - Nur bindende Artefakte laden: Backlog-Item, Spec, TestSpec, Handoff, direkt betroffene Dateien.
 - Lange Historie nur als Archiv behandeln, nicht als aktive Anforderung.
 - Bei neuem Feature, langem Chat oder unabhaengigem Audit neuen Chat empfehlen.
-- Cache-Strategie nach Codex-Update: moeglichst auf `5.4` bleiben und nur die Intelligenz/Reasoning-Stufe wechseln; Modellwechsel nur fuer `5.4 mini`-Mechanik oder `5.5`-Eskalation.
+- Cache-Strategie nach Codex-Update: moeglichst auf `5.4` bleiben und nur die Intelligenz/Reasoning-Stufe wechseln. Wenn der `5.4`-Kontext warm ist und die Aufgabe kurz, mechanisch oder direkt an dieselben Janus-Artefakte gebunden ist, bevorzugt `5.4` mit niedriger Intelligenz statt `5.4 mini` nutzen. Zu `5.4 mini` nur wechseln, wenn der mechanische Block trotz warmem `5.4`-Cache voraussichtlich guenstiger bleibt und danach kein teurer Rueckwechsel/Neuladen dominiert; zu `5.5` nur bei Risiko eskalieren.
 
 ## Codex Plugins
 
