@@ -74,7 +74,7 @@ def staged_entries(cwd):
         if i + 1 >= len(tokens):
             break
         path = tokens[i + 1]
-        entries.append(f"{status:>2} {path}")
+        entries.append(f"{status:<2} {path}")
         i += 2
     return entries
 
