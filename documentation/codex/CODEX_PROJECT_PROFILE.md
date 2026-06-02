@@ -3,6 +3,7 @@
 Purpose: compact startup profile for Codex threads opened inside
 `C:\KI\Janus-Projekt`. This file is an orientation layer only. Binding rules
 remain `AGENTS.md`, the Janus skills, and the named pipeline artifacts.
+Operational details live in `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`.
 
 ## What Janus Is
 
@@ -42,6 +43,7 @@ repository unless a bound artifact explicitly requires it.
 - `master`: release and production publish only.
 - After release, merge `master` back to `develop` before normal work resumes.
 - Never stage with `git add .`; use explicit pathspecs only.
+- Local clone guard: `git config core.hooksPath scripts/git-hooks`.
 
 ## Model Defaults
 

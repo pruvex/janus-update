@@ -1,7 +1,23 @@
 #Requires -Version 5.1
-# Janus Git Pre-Commit - Blocker-Check (>90MB)
+# Janus Git Pre-Commit - Git governance guard plus large-file blocker.
 $MAX_MB = 90
 $exitCode = 0
+
+$repoRoot = (git rev-parse --show-toplevel).Trim()
+$guard = Join-Path $repoRoot "documentation/codex/skills/janus-git-governance/scripts/git_guard.py"
+if (-not (Test-Path -Path $guard -ErrorAction SilentlyContinue)) {
+    Write-Host "[PRE-COMMIT BLOCKER] Missing git guard: $guard"
+    exit 1
+}
+
+python $guard $repoRoot --staged-only
+if ($LASTEXITCODE -ne 0) {
+    Write-Host ""
+    Write-Host "[PRE-COMMIT BLOCKED] git_guard.py rejected the staged changes."
+    Write-Host "Review staged paths, split the changeset, or switch away from master for normal work."
+    exit $LASTEXITCODE
+}
+
 $staged = git diff --cached --name-only --diff-filter=AM
 if (-not $staged) { exit 0 }
 foreach ($f in $staged) {
