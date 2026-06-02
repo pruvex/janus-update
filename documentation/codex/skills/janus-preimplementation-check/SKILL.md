@@ -27,7 +27,7 @@ Task: documentation/tasks/<task_file>.md
 Spec: <spec path | N/A WITH REASON>
 Backlog Item: <BACKLOG-XXX | N/A>
 Mode: SINGLE_TASK_PRECHECK
-Assigned Model: <5.3 codex | 5.4 mini | 5.5 | other explicit model>
+Assigned Model: <5.4 | 5.4 mini | 5.5 | other explicit model>
 ```
 
 If a task file contains multiple tasks, `Target Task` is mandatory.

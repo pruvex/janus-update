@@ -80,10 +80,11 @@ For larger features, do not create implementation tasks directly. Start decision
 ## Model Routing
 
 - `5.5`, high/very high: architecture, security, privacy, prompt-injection, complex failure analysis, release gates, final audits.
-- `5.4`, medium/high: feature design, specs, TestSpecs, complex product decisions, pipeline artifact review.
+- `5.4`, medium/high: Janus workhorse for feature design, specs, TestSpecs, implementation, refactoring, tests, debugging, local repository work, complex product decisions, and pipeline artifact review.
 - `5.4 mini`, low/medium: Backlog cleanup, documentation normalization, snapshot sync, mechanical checks.
-- `5.3 codex`, medium/high: implementation, refactoring, tests, debugging, local repository work.
 - `5.2`, low: summaries, small text edits, lightweight status checks.
+
+Cache strategy: prefer staying on `5.4` and changing only reasoning effort inside an ongoing Janus workflow. Recommend switching models only when `5.4 mini` is clearly sufficient for mechanical work or `5.5` is justified by risk.
 
 ## Plugin Routing
 
@@ -156,5 +157,7 @@ Canonical State:
 Executed Checks:
 Changed Files:
 Next Skill:
+Recommended Model:
+Recommended Reasoning:
 Evidence Paths:
 ```

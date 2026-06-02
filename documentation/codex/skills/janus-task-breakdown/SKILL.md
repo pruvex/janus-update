@@ -53,7 +53,7 @@ If a task affects TestSpec, test oracle, assertions, `containsAny`, `mustNotCont
 
 - `5.4`: normal task refinement and risk judgment.
 - `5.4 mini`: mechanical task artifact validation.
-- `5.3 codex`: later implementation, not this skill.
+- `5.4`: later implementation, not this skill.
 - `5.5`: escalation for ambiguous, security-sensitive, or architecture-heavy tasks.
 
 ## Validation Script
@@ -76,7 +76,7 @@ Backlog Item: <BACKLOG-XXX | N/A>
 Target Task: <TASK-XXX.Y>
 Target Subtask: <SUBTASK-XXX-YY | N/A>
 Mode: SINGLE_TASK_PRECHECK
-Execution Model: <5.3 codex | 5.4 mini>
+Execution Model: <5.4 | 5.4 mini>
 Rules: VALIDATE_ONE_TARGET_TASK_NO_IMPLEMENTATION_NO_CODE_CHANGES_RELEASE_EXECUTION_HANDOFF_ONLY_IF_SCOPE_FILES_TESTS_RISKS_ARE_CLEAR
 Expected Output: PRE_CHECK_PASSED_PLUS_EXECUTION_HANDOFF_OR_PRE_CHECK_BLOCKED
 ```

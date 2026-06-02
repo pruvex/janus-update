@@ -209,7 +209,7 @@ Process:
 ## Model And Context Guidance
 
 - Use `5.4 mini` for TestPlan validation, artifact checks, and routine triage.
-- Use `5.3 codex` for Playwright execution, local debugging, and script-level investigation.
+- Use `5.4` for Playwright execution, local debugging, and script-level investigation.
 - Use `5.4` for ambiguous failures, product/spec classification, and retest audit.
 - Use `5.5` only for security-sensitive release blockers, provider trust boundaries, or complex audit disputes.
 - Start a new chat when entering `LIVE_TEST_EXECUTION` or `DIAMOND_RETEST_AUDIT` with large prior context; bind only TestSpec, TestPlan, TestResult, and current Backlog entries.

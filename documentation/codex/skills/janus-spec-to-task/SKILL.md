@@ -58,11 +58,11 @@ TASK-XXX
 - Steps:
 - Acceptance Criteria:
 - Tests:
-- Model: 5.3 codex | 5.4 mini
+- Model: 5.4 | 5.4 mini | 5.5
 - Reason:
 ```
 
-Use `5.3 codex` for implementation/refactor/test execution tasks. Use `5.4 mini` only for deterministic single-file text/data/test artifact edits. Recommend `5.4` or `5.5` as escalation, not as normal execution, when decomposition is ambiguous or high-risk.
+Use `5.4` as the normal Janus workhorse for implementation/refactor/test execution tasks. Use `5.4 mini` only for deterministic single-file text/data/test artifact edits. Recommend `5.5` as escalation when decomposition is ambiguous, security-sensitive, architecture-heavy, or high-risk.
 
 Validate task structure when useful:
 

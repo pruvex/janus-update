@@ -44,7 +44,7 @@ Do not load the full file. Apply a learned pattern only if it directly matches t
 
 ## Model Gate
 
-Default: `5.3 codex`, high.
+Default: `5.4`, high.
 
 Recommend `5.5`, high/very high, when:
 

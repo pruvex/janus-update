@@ -214,7 +214,7 @@ Verify:
 ## Model And Context Guidance
 
 - Use `5.4 mini`, low/medium, for readiness checks, metadata validation, and dry-run planning.
-- Use `5.3 codex`, medium/high, for build failures and local script/package debugging.
+- Use `5.4`, medium/high, for build failures and local script/package debugging.
 - Use `5.4`, medium/high, for release readiness decisions and ambiguous artifact risk.
 - Use `5.5`, high, for production publish approval review, security-sensitive updater risk, or rollback decisions.
 - Prefer a new chat for `PUBLISH` and `POST_PUBLISH_VERIFY`; bind only release audit evidence, version, git status, manifest, installer, and release scripts.

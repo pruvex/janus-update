@@ -21,8 +21,8 @@ Read only when exact legacy wording is needed:
 
 Before auditing, recommend model/intelligence:
 
-- Low/local deterministic scope: `5.3 codex` or current capable coding model, medium.
-- Medium risk or multiple files: `5.3 codex`, high.
+- Low/local deterministic scope: `5.4` or current capable coding model, medium.
+- Medium risk or multiple files: `5.4`, high.
 - High/critical risk, security, privacy, provider routing, memory, release-critical, unclear evidence, contradictory artifacts, or missing tests: `5.5`, high/very high.
 
 If current setup is weaker than required, stop with a model-switch handoff. Do not perform the audit.

@@ -34,7 +34,7 @@ If a precheck is claimed, validate the handoff literals from `janus-preimplement
 
 ## Model Gate
 
-Default execution model is `5.3 codex`, medium/high.
+Default execution model is `5.4`, medium/high.
 
 Recommend `5.5` only for high-risk security/privacy/provider/memory architecture fixes or when the precheck requires strongest reasoning. Recommend `5.4 mini` only for deterministic low-risk docs/config edits.
 
