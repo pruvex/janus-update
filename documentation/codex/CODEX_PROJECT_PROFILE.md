@@ -44,6 +44,7 @@ repository unless a bound artifact explicitly requires it.
 - After release, merge `master` back to `develop` before normal work resumes.
 - Never stage with `git add .`; use explicit pathspecs only.
 - Local clone guard: `git config core.hooksPath scripts/git-hooks`.
+- Environment verification: `scripts/verify-codex-dev-environment.ps1`.
 
 ## Model Defaults
 

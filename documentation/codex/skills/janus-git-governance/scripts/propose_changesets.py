@@ -20,6 +20,7 @@ def classify_bucket(path_text):
     path = path_text.replace("\\", "/")
     if (
         path.startswith("scripts/git-hooks/")
+        or path in {"scripts/save.ps1", "scripts/verify-codex-dev-environment.ps1"}
         or path.startswith("documentation/codex/skills/janus-git-governance/")
         or path.startswith("documentation/codex/CODEX_")
         or path == "documentation/codex/SKILL_USAGE_LOG.md"

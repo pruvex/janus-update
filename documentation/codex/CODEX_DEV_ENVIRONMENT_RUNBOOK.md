@@ -29,6 +29,8 @@ Purpose: repeatable low-token workflow for Codex work inside
 
 - Local hook path should be:
   - `git config core.hooksPath scripts/git-hooks`
+- Verify local Codex setup with:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-codex-dev-environment.ps1`
 - Before staging:
   - `python documentation/codex/skills/janus-git-governance/scripts/git_guard.py C:\KI\Janus-Projekt`
   - `python documentation/codex/skills/janus-git-governance/scripts/propose_changesets.py C:\KI\Janus-Projekt`

@@ -1,60 +1,114 @@
 #Requires -Version 5.1
 <#
-Janus /save Skill - Hardened Auto-Backup
-  Step 0: Branch-Guard (nie auf master committen)
-  Step 1: Dirty-Check (abort if nothing to save)
-  Step 2: Blocker-Scan (>90MB)
-  Step 3: git add/commit/push backup develop
+Janus /save Skill - Diamond backup checkpoint.
+
+This helper is intentionally conservative:
+- never stages with `git add .`
+- requires explicit pathspecs and a commit message
+- blocks normal saves on master
+- runs Janus git governance checks before commit and push
+
+Examples:
+  .\scripts\save.ps1
+  .\scripts\save.ps1 -Path "AGENTS.md","documentation/codex/CODEX_PROJECT_PROFILE.md" -Message "docs(codex): update profile"
 #>
+
+param(
+    [string[]]$Path = @(),
+    [string]$Message = ""
+)
+
 $ErrorActionPreference = "Stop"
-$MAX_MB = 90
 $TARGET_BRANCH = "develop"
 
-# Step 0: Branch-Guard
-$branch = (git rev-parse --abbrev-ref HEAD).Trim()
+function Invoke-Step {
+    param(
+        [string]$Label,
+        [scriptblock]$Command
+    )
+    Write-Host "[SAVE] $Label" -ForegroundColor Cyan
+    & $Command
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Label failed with exit code $LASTEXITCODE"
+    }
+}
+
+$repoRoot = (git rev-parse --show-toplevel).Trim()
+if (-not $repoRoot) {
+    Write-Host "[SAVE BLOCKED] Not inside a git repository." -ForegroundColor Red
+    exit 1
+}
+Set-Location $repoRoot
+
+$branch = (git branch --show-current).Trim()
 if ($branch -eq "master") {
-    Write-Host "[SAVE BLOCKED] Direct commit to 'master' forbidden. Switch to 'develop' first." -ForegroundColor Red
+    Write-Host "[SAVE BLOCKED] Direct normal-development commits to master are forbidden." -ForegroundColor Red
     exit 1
 }
 if ($branch -ne $TARGET_BRANCH) {
-    Write-Host "[SAVE WARN] Current branch '$branch' != '$TARGET_BRANCH'. Proceeding anyway..." -ForegroundColor Yellow
+    Write-Host "[SAVE BLOCKED] Current branch '$branch' is not '$TARGET_BRANCH'." -ForegroundColor Red
+    exit 1
 }
 
-# Step 1: Dirty-Check
 $status = git status --porcelain
 if (-not $status) {
     Write-Host "[SAVE] Nothing to save. Working tree clean."
     exit 0
 }
 
-# Step 2: Blocker-Scan (pro-actively; pre-commit hook is backup safety net)
-$blockers = Get-ChildItem -Recurse -File -ErrorAction SilentlyContinue |
-    Where-Object { $_.Length -gt ($MAX_MB * 1MB) -and $_.FullName -notmatch "\\\.git\\" } |
-    Where-Object {
-        $rel = Resolve-Path -Relative $_.FullName
-        git check-ignore -q $rel 2>$null | Out-Null
-        $LASTEXITCODE -ne 0  # not ignored
-    }
-if ($blockers) {
-    Write-Host "[SAVE BLOCKED] Files >$MAX_MB MB not in .gitignore:" -ForegroundColor Red
-    $blockers | ForEach-Object {
-        $mb = [math]::Round($_.Length / 1MB, 2)
-        Write-Host "  $($_.FullName) = $mb MB" -ForegroundColor Red
-    }
+$guard = Join-Path $repoRoot "documentation/codex/skills/janus-git-governance/scripts/git_guard.py"
+$proposer = Join-Path $repoRoot "documentation/codex/skills/janus-git-governance/scripts/propose_changesets.py"
+if (-not (Test-Path -Path $guard -ErrorAction SilentlyContinue)) {
+    Write-Host "[SAVE BLOCKED] Missing git guard: $guard" -ForegroundColor Red
+    exit 1
+}
+if (-not (Test-Path -Path $proposer -ErrorAction SilentlyContinue)) {
+    Write-Host "[SAVE BLOCKED] Missing changeset proposer: $proposer" -ForegroundColor Red
     exit 1
 }
 
-# Step 3: Commit & Push
-$date = Get-Date -Format "yyyy-MM-dd HH:mm"
-git add .
-git commit -m "Auto-Save $date"
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "[SAVE] Commit failed (pre-commit hook?)." -ForegroundColor Red
+Invoke-Step "git guard full-worktree" { python $guard $repoRoot }
+Invoke-Step "changeset proposal" { python $proposer $repoRoot }
+Invoke-Step "diff whitespace check" { git diff --check }
+
+$alreadyStaged = git diff --cached --name-only
+if ($alreadyStaged) {
+    Write-Host "[SAVE BLOCKED] Staged files already exist. Commit or unstage them first." -ForegroundColor Red
+    $alreadyStaged | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
     exit 1
 }
+
+if (-not $Path -or $Path.Count -eq 0) {
+    Write-Host "[SAVE BLOCKED] Explicit -Path values are required. Never use git add ." -ForegroundColor Red
+    Write-Host "Use the proposed git add command above, then rerun with -Path and -Message."
+    exit 1
+}
+if (-not $Message.Trim()) {
+    Write-Host "[SAVE BLOCKED] A Conventional Commit -Message is required." -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "[SAVE] Staging explicit paths:" -ForegroundColor Cyan
+$Path | ForEach-Object { Write-Host "  $_" }
+git add -- @Path
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "[SAVE BLOCKED] Explicit staging failed." -ForegroundColor Red
+    exit 1
+}
+
+Invoke-Step "git guard staged-only" { python $guard $repoRoot --staged-only }
+Invoke-Step "pre-commit hook" { powershell -NoProfile -ExecutionPolicy Bypass -File "scripts/git-hooks/pre-commit.ps1" }
+
+git commit -m $Message
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "[SAVE BLOCKED] Commit failed. Review staged files before retrying." -ForegroundColor Red
+    exit 1
+}
+
 git push backup $branch
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "[SAVE] Push failed." -ForegroundColor Red
+    Write-Host "[SAVE BLOCKED] Push to backup/$branch failed." -ForegroundColor Red
     exit 1
 }
-Write-Host "[SAVE OK] Pushed to backup/$branch at $date" -ForegroundColor Green
+
+Write-Host "[SAVE OK] Committed and pushed to backup/$branch." -ForegroundColor Green
