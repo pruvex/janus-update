@@ -76,6 +76,7 @@ User-Antworten:
 
 - Zuerst `rg` und gezielte Dateiansichten nutzen.
 - Keine Vollrepo-Ladung.
+- Fuer Codex-Projektstarts zuerst das kompakte Profil `documentation/codex/CODEX_PROJECT_PROFILE.md` nutzen, danach nur bindende Artefakte laden.
 - Nur bindende Artefakte laden: Backlog-Item, Spec, TestSpec, Handoff, direkt betroffene Dateien.
 - Lange Historie nur als Archiv behandeln, nicht als aktive Anforderung.
 - Bei neuem Feature, langem Chat oder unabhaengigem Audit neuen Chat empfehlen.
