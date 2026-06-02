@@ -48,14 +48,16 @@ repository unless a bound artifact explicitly requires it.
 
 ## Model Defaults
 
-- `5.4 mini`: Backlog, dashboard, deterministic docs, light health checks.
+- `5.4 mini`: separated low-risk mechanical blocks when cheaper than staying on warm `5.4`.
 - `5.4`: Janus workhorse for feature design, specs, TestSpecs, implementation, tests, local debugging, and artifact review.
 - `5.5`: security, privacy, architecture risk, final audit, release gates.
 - `5.2`: simple status or short summaries.
 
 Cache strategy: stay on `5.4` when possible and change only reasoning effort.
-Switch to `5.4 mini` for clearly mechanical low-risk work; escalate to `5.5`
-only when confidence or risk justifies the cost.
+If the `5.4` context is warm, handle short mechanical side steps with `5.4`
+low unless switching to `5.4 mini` is still likely cheaper after accounting for
+context loss and the return to `5.4`. Escalate to `5.5` only when confidence or
+risk justifies the cost.
 
 ## Completion Checklist
 

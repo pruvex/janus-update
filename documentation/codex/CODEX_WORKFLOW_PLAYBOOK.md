@@ -78,13 +78,13 @@ Heuristik:
 
 | Aufgabe | Modell | Intelligenz | Neuer Chat |
 | --- | --- | --- | --- |
-| Status, kleine Doku, Commit-Governance | `5.4 mini` oder `5.2` | niedrig | nein |
-| Backlog, Dashboard, Normalisierung, Health DAILY | `5.4 mini` | niedrig bis mittel | nein |
+| Status, kleine Doku, Commit-Governance | warmes `5.4` low oder eigener `5.4 mini`-Block | niedrig | nein |
+| Backlog, Dashboard, Normalisierung, Health DAILY | warmes `5.4` low oder eigener `5.4 mini`-Block | niedrig bis mittel | nein |
 | Feature-Design, Spec, Review, Task Breakdown | `5.4` | mittel | bei langem Chat ja |
 | Code, Tests, lokale Debugging-Arbeit | `5.4` | mittel bis hoch | meist nein |
 | Final Audit, Security, Privacy, Release-Risiko | `5.5` | hoch | ja |
 
-`5.4` ist das Janus-Workhorse. Fuer Prompt-Cache-Freundlichkeit moeglichst im selben Modell bleiben und nur die Intelligenz/Reasoning-Stufe anpassen. Zu `5.4 mini` nur fuer klar mechanische Bloecke wechseln; zu `5.5` nur bei Audit-, Security-, Privacy-, Architektur- oder Release-Risiko eskalieren.
+`5.4` ist das Janus-Workhorse. Fuer Prompt-Cache-Freundlichkeit moeglichst im selben Modell bleiben und nur die Intelligenz/Reasoning-Stufe anpassen. Wenn der aktuelle `5.4`-Kontext warm ist, kurze mechanische Nebenaufgaben bevorzugt mit `5.4` und niedriger Intelligenz erledigen. Zu `5.4 mini` nur wechseln, wenn der Block klar getrennt, risikoarm und trotz warmem `5.4`-Cache voraussichtlich guenstiger ist als `5.4 low` plus weiter warmem Kontext; zu `5.5` nur bei Audit-, Security-, Privacy-, Architektur- oder Release-Risiko eskalieren.
 
 Codex soll proaktiv eine Umstellung empfehlen, wenn der naechste Schritt deutlich guenstiger oder sicherer mit einem anderen Modell ist. Jede Empfehlung fuer `ok`, `weiter`, Modellwechsel, neuen Chat oder Gate nennt immer Modell und Intelligenz/Reasoning-Stufe.
 
