@@ -1,6 +1,6 @@
 ﻿# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-05-30 (Janus Mail Grundversion final auditiert, Chat-Persistenz-Fix bestaetigt, Release-Prep auf 0.4.17-beta.48 - PASS WITH FIXES)
+**Aktualisiert:** 2026-06-03 (Spec 14 Gemini Cost Attribution und DeepDive Forensics final auditiert - PASS; Janus Mail Grundversion und Chat-Persistenz-Fix weiterhin bestaetigt)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **TASK-SPEC14 Gemini Cost Attribution and DeepDive Forensics** | SEALED | Gemini-Kostenforensik ist jetzt durchgaengig umgesetzt: strukturierte Kosten-/Attributionsbelege pro externem Gemini-Request, Session/Testlauf/Request-Gruppierung, historische May-2026-Reconciliation mit sichtbaren Restposten, anomaly-first DeepDive-Modal und Flash-by-default fuer Gemini Grounding/Websearch. Final Audit PASS; Validation: `py_compile` PASS, cost-token suite `9/9` PASS, routing/provider-policy suite `10/10` PASS, websearch suite `102/102` PASS, model-discipline suite `7/7` PASS, `node --check frontend/js/cost-visualizer.js` PASS. |
 | **TASK-098 Janus Mail Bundle (Spec 10-13)** | SEALED WITH FIXES | Janus Mail ist als belastbare Grundversion umgesetzt: Mail-Einstieg in Sidebar/Dock, modalgroesse und Layout am Kalender orientiert, Multi-Account-Gmail mit aktivem Konto-Persistenzflow, Inbox/Search/Detail, Compose/Reply, Anhang senden/speichern, Chat-gesteuerte Mailauftraege mit Konto-Rueckfragen, Consent-gesteuertes AI-Assist mit sichtbarem Degraded-State statt Hidden-Fallback. Privacy-Haertung: sensible Mail-Details aus technischen Logs entfernt, finaler Payload-Log auf Zaehler/Laengen reduziert. Validation: py_compile PASS; Backend-Mail/Intent/Privacy Tests 44/44 PASS; Frontend-Mail-Tests 7/7 PASS. |
 | **BACKLOG-100 Generische Anbieter-Mail-Suche nach Inhaltstypen** | SEALED | Mailanfragen wie "Rezepte von Anbieter X" werden jetzt generisch als Anbieter-plus-Kategorie erkannt, liefern evidenzbasierte Trefferlisten und fragen bei mehrdeutigem Anbieter oder Inhaltstyp gezielt nach. Treffer koennen als Rezeptdetail geoeffnet und als PDF in Desktop-Ordner exportiert werden, ohne bestehende Mail-Routen zu brechen. Final Audit: PASS; Validation: py_compile PASS, backend mail regression PASS (39), frontend mail inbox test PASS (3). |
 | **BACKLOG-099 Chat-Inhalt nach Neustart wiederhergestellt** | SEALED WITH FIXES | Nach Mail-/Ordner-Workflows bleiben persistierte User-Eingaben wieder als Originaltext im Chatverlauf erhalten statt durch interne Control-Replies wie `1`/`3` ersetzt zu werden. Der Fix friert den originalen Turn fuer Persistenz und Restart-/Reload-Darstellung ein und blockiert Control-Replies als normale Historiennachricht. Validation: finaler Re-Audit PASS WITH FIXES; gezielte Regression gegen Persistenz- und Account-Choice-Flow bestätigt. |

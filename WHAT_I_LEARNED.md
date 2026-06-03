@@ -64,3 +64,15 @@
 - **Epic:** BACKLOG-100
 - **Confidence:** High
 - **Tags:** Mail, IntentRouting, Ambiguity, Evidence, PDFExport, RegressionSafety
+
+
+## [PATTERN] #GeminiAttributionMustKeepPolicyAndCostSplitAligned "Gemini grounding/websearch policy evidence must stay aligned with component cost attribution"
+- **Kontext:** TASK-SPEC14 final audit remediation for Gemini cost attribution and DeepDive forensics (2026-06-03).
+- **Problem:** Gemini websearch can regress in three coupled ways at once: silent Pro routing without visible override, duplicated search cost between conversation and websearch components, and nested attribution metadata leaking prompt or response fragments.
+- **Loesung:** Treat Gemini grounding/websearch as a shared contract across ToolExecutor, gateway persistence, and cost sanitization. Default websearch to gemini-3-flash-preview unless a visible MODEL_OVERRIDE is present, persist grounding_websearch separately from residual conversation cost inside one request group, and recursively strip sensitive nested attribution keys before storage.
+- **Haertung:** Final re-audit PASS. Focused suites passed: cost-token 9/9, routing/provider-policy 10/10, websearch 102/102, model-discipline 7/7, plus py_compile and frontend node check.
+- **Tripwire:** If DeepDive totals exceed the real request sum, Gemini websearch uses Pro without a visible override, or attribution metadata starts containing nested prompt/response/messages/chat_history fields, the provider-policy and attribution contract has drifted.
+- **Location:** backend/services/tool_executor.py, backend/llm_providers/gemini/gateway.py, backend/services/cost_service.py, backend/tests/test_backlog_007_tool_routing_performance.py, backend/tests/test_cost_token_tracking_completeness.py, backend/tests/tools/test_websearch.py
+- **Epic:** TASK-SPEC14
+- **Confidence:** High
+- **Tags:** Gemini, CostAttribution, DeepDive, ProviderPolicy, Privacy, Websearch, AuditHardening

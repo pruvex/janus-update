@@ -2,6 +2,18 @@
 
 This registry tracks feature tasks, test validations, and pipeline runs.
 
+## Spec Closures
+
+### TASK-SPEC14 - Gemini Cost Attribution and DeepDive Forensics
+
+- **Status**: DONE
+- **Final Audit**: `documentation/test-runs/TASK-SPEC14_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/14_gemini_cost_attribution_and_deepdive_forensics.md`
+- **Task**: `documentation/tasks/TASK-SPEC14_gemini_cost_attribution_and_deepdive_forensics.md`
+- **Execution Results**: `documentation/tasks/TASK-SPEC14.1_execution_result.md`, `documentation/tasks/TASK-SPEC14.2_execution_result.md`, `documentation/tasks/TASK-SPEC14.3_execution_result.md`, `documentation/tasks/TASK-SPEC14.4_execution_result.md`, `documentation/tasks/TASK-SPEC14.5_execution_result.md`
+- **Validation**: Gemini cost attribution now persists request-linked conversation and grounding/websearch components without prompt/response storage, DeepDive exposes anomaly-first Gemini forensics with session/test-run/request drilldown and visible residuals, and Gemini grounding/websearch is Flash-by-default unless a visible `MODEL_OVERRIDE:` is present. Final re-audit PASS with targeted provider-policy, attribution, and UI evidence.
+- **Changed Files**: `backend/api/routers/system.py`, `backend/data/crud.py`, `backend/data/database.py`, `backend/data/models.py`, `backend/llm_providers/gemini/gateway.py`, `backend/services/cost_service.py`, `backend/services/tool_executor.py`, `backend/services/websearch/gemini_provider.py`, `backend/services/websearch/websearch.py`, `backend/tool_registry.py`, `backend/tests/test_backlog_007_tool_routing_performance.py`, `backend/tests/test_cost_token_tracking_completeness.py`, `backend/tests/tools/test_websearch.py`, `frontend/index.html`, `frontend/js/cost-visualizer.js`, `frontend/src/styles.css`.
+
 ## Backlog Closures
 
 ### BACKLOG-100 - Generische Anbieter-Mail-Suche nach Inhaltstypen
