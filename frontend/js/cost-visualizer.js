@@ -1,416 +1,641 @@
-// frontend/js/cost-visualizer.js
 import { API_BASE_URL } from "./config.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const costDashboardElement = document.getElementById("cost-dashboard");
-
   const refreshCostButton = document.getElementById("refresh-cost-button");
-  const costSummaryWidget = document.getElementById("cost-summary-widget"); // NEW
+  const costSummaryWidget = document.getElementById("cost-summary-widget");
+  const costDeepDiveModal = document.getElementById("cost-deep-dive-modal");
+  const closeButton = document.querySelector("#cost-deep-dive-modal .close-button");
+  const deepDiveContent = document.getElementById("deep-dive-content");
+
+  const deepDiveState = {
+    data: null,
+    dashboard: null,
+    selectedGroupKey: null,
+    selectedRequestId: null,
+    anomalyFilter: "all",
+    liveMeta: window.lastMetadata || null,
+  };
 
   if (refreshCostButton) {
     refreshCostButton.addEventListener("click", fetchCostData);
   }
 
-  // NEW: Event listener for the cost summary widget
   if (costSummaryWidget) {
     costSummaryWidget.addEventListener("click", showDeepDiveModal);
   }
 
-  const costDeepDiveModal = document.getElementById("cost-deep-dive-modal");
-  const closeButton = document.querySelector("#cost-deep-dive-modal .close-button");
-  const deepDiveContent = document.getElementById("deep-dive-content");
-
-  let currentSortMode = "model"; // "model" or "cost"
-
   async function showDeepDiveModal() {
+    if (!costDeepDiveModal || !deepDiveContent) {
+      return;
+    }
+
     costDeepDiveModal.style.display = "flex";
-    deepDiveContent.innerHTML = "Lade detaillierte Kosten...";
-
-    // Snapshot live metadata BEFORE async fetch (it won't change during await)
-    const liveMeta = window.lastMetadata || null;
-
-    let summaryData = [];
-    let totalCost = 0;
-    let dbOk = false;
+    deepDiveContent.innerHTML = '<div class="deep-dive-loading">Lade Gemini-Forensik...</div>';
+    deepDiveState.liveMeta = window.lastMetadata || null;
 
     try {
-      const [summaryResponse, dashboardResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/costs/summary-by-model`),
+      const [deepDiveResponse, dashboardResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/costs/deep-dive`),
         fetch(`${API_BASE_URL}/api/costs/dashboard`),
       ]);
 
-      if (summaryResponse.ok && dashboardResponse.ok) {
-        summaryData = await summaryResponse.json();
-        const dashboardData = await dashboardResponse.json();
-        totalCost = dashboardData.current_month_cost;
-        dbOk = true;
-        console.log("[COST-VIS] summaryData from API:", JSON.stringify(summaryData));
-        console.log("[COST-VIS] dashboardData:", JSON.stringify(dashboardData));
-      } else {
-        console.warn("[COST-VIS] API error:", summaryResponse.status, dashboardResponse.status);
+      if (!deepDiveResponse.ok || !dashboardResponse.ok) {
+        throw new Error(`DeepDive API error: ${deepDiveResponse.status}/${dashboardResponse.status}`);
       }
+
+      deepDiveState.data = await deepDiveResponse.json();
+      deepDiveState.dashboard = await dashboardResponse.json();
+      selectDefaultDeepDiveState();
+      renderDeepDiveContent();
     } catch (error) {
       console.error("Error fetching deep dive cost data:", error);
+      deepDiveState.data = null;
+      deepDiveState.dashboard = null;
+      deepDiveContent.innerHTML =
+        '<div class="deep-dive-empty-state">Die DeepDive-Daten konnten gerade nicht geladen werden.</div>';
     }
-
-    // Render the modal with current sort mode
-    renderDeepDiveContent(summaryData, totalCost, dbOk, liveMeta);
   }
 
-  function renderDeepDiveContent(summaryData, totalCost, dbOk, liveMeta) {
-    // --- BUILD HTML ---
-    const buttonText = currentSortMode === "cost" ? "Nach Modellen sortieren" : "Nach Kosten sortieren";
-    let html = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="margin: 0;">Kostenübersicht nach Modell (Dieser Monat)</h3>
-        <button id="toggle-sort-btn" style="padding: 0.5rem 1rem; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; white-space: nowrap;">
-          ${buttonText}
-        </button>
+  function selectDefaultDeepDiveState() {
+    const filteredGroups = getFilteredGroups();
+    if (!filteredGroups.length) {
+      deepDiveState.selectedGroupKey = null;
+      deepDiveState.selectedRequestId = null;
+      return;
+    }
+
+    const currentGroup = filteredGroups.find((group) => group.group_key === deepDiveState.selectedGroupKey);
+    const selectedGroup = currentGroup || filteredGroups[0];
+    deepDiveState.selectedGroupKey = selectedGroup.group_key;
+
+    const requests = selectedGroup.requests || [];
+    const currentRequest = requests.find((request) => request.request_id === deepDiveState.selectedRequestId);
+    deepDiveState.selectedRequestId = (currentRequest || requests[0] || {}).request_id || null;
+  }
+
+  function renderDeepDiveContent() {
+    if (!deepDiveContent) {
+      return;
+    }
+
+    const data = deepDiveState.data;
+    const dashboard = deepDiveState.dashboard;
+    if (!data || !dashboard) {
+      deepDiveContent.innerHTML =
+        '<div class="deep-dive-empty-state">Keine DeepDive-Daten fuer den aktuellen Monat verfuegbar.</div>';
+      return;
+    }
+
+    const filteredGroups = getFilteredGroups();
+    const selectedGroup = filteredGroups.find((group) => group.group_key === deepDiveState.selectedGroupKey) || null;
+    const selectedRequest = selectedGroup
+      ? (selectedGroup.requests || []).find((request) => request.request_id === deepDiveState.selectedRequestId) || null
+      : null;
+
+    const summary = data.summary || {};
+    const anomalies = Array.isArray(data.anomaly_overview) ? data.anomaly_overview : [];
+    const hasGroups = filteredGroups.length > 0;
+    const monthlyBudget = Number(dashboard.monthly_budget) || 0;
+    const currentMonthCost = Number(dashboard.current_month_cost) || 0;
+
+    deepDiveContent.innerHTML = `
+      <div class="deep-dive-shell">
+        <div class="deep-dive-topbar">
+          <div>
+            <div class="deep-dive-kicker">Gemini DeepDive</div>
+            <h3 class="deep-dive-title">Auffaelligkeiten zuerst, Drilldown danach</h3>
+            <p class="deep-dive-subtitle">
+              Zeitraum ${escapeHtml(formatPeriodLabel(data.period))} | Provider ${escapeHtml(
+                String(data.provider_scope || "gemini").toUpperCase(),
+              )}
+            </p>
+          </div>
+          <div class="deep-dive-budget-box">
+            <div class="deep-dive-budget-label">Monatsbudget</div>
+            <div class="deep-dive-budget-value">${formatCurrency(currentMonthCost)} / ${formatCurrency(monthlyBudget)}</div>
+            <div class="deep-dive-budget-note">
+              ${
+                monthlyBudget > 0 && currentMonthCost > monthlyBudget
+                  ? "Budget ueberschritten"
+                  : "Budget-Tracking aktiv"
+              }
+            </div>
+          </div>
+        </div>
+
+        ${renderLiveSnapshot(deepDiveState.liveMeta)}
+        ${renderSummaryCards(summary, data.historical_reconciliation || {})}
+        ${renderAnomalyOverview(anomalies)}
+
+        <div class="deep-dive-layout">
+          <section class="deep-dive-panel deep-dive-groups-panel">
+            <div class="deep-dive-panel-header">
+              <h4>Kostenbloecke</h4>
+              <span>${filteredGroups.length} Gruppen</span>
+            </div>
+            ${
+              hasGroups
+                ? renderGroupList(filteredGroups, deepDiveState.selectedGroupKey)
+                : '<div class="deep-dive-empty-state deep-dive-panel-empty">Keine Gruppen fuer den aktuellen Filter.</div>'
+            }
+          </section>
+
+          <section class="deep-dive-panel deep-dive-requests-panel">
+            <div class="deep-dive-panel-header">
+              <h4>Requests</h4>
+              <span>${selectedGroup ? selectedGroup.request_count : 0} Eintraege</span>
+            </div>
+            ${
+              selectedGroup
+                ? renderRequestList(selectedGroup, deepDiveState.selectedRequestId)
+                : '<div class="deep-dive-empty-state deep-dive-panel-empty">Waehle links einen Kostenblock.</div>'
+            }
+          </section>
+
+          <section class="deep-dive-panel deep-dive-detail-panel">
+            <div class="deep-dive-panel-header">
+              <h4>Request-Details</h4>
+              <span>${selectedRequest ? escapeHtml(selectedRequest.request_id) : "Keine Auswahl"}</span>
+            </div>
+            ${
+              selectedRequest
+                ? renderRequestDetail(selectedRequest, data.historical_reconciliation || {})
+                : '<div class="deep-dive-empty-state deep-dive-panel-empty">Waehle einen Request, um Komponenten, Abweichungen und Token zu sehen.</div>'
+            }
+          </section>
+        </div>
+
+        <div class="budget-setter deep-dive-budget-setter">
+          <label for="budget-input">Monatsbudget festlegen (EUR)</label>
+          <div class="deep-dive-budget-actions">
+            <input type="number" id="budget-input" step="0.01" value="${escapeAttribute(
+              monthlyBudget > 0 ? monthlyBudget.toFixed(2) : "",
+            )}">
+            <button id="save-budget-btn">Speichern</button>
+          </div>
+        </div>
       </div>
     `;
 
-    const hasDbData = dbOk && summaryData.length > 0;
-    const hasLiveData = liveMeta && liveMeta.cost > 0;
+    bindDeepDiveInteractions();
+  }
 
-    if (!hasDbData && !hasLiveData) {
-      html += "<p>Keine Kosteninformationen für den aktuellen Monat verfügbar.</p>";
-    } else {
-      html += `
-        <table id="cost-details-table">
-          <thead>
-            <tr>
-              <th>Modell</th>
-              <th>Details / Tokens</th>
-              <th>Gesamtkosten (€)</th>
-            </tr>
-          </thead>
-          <tbody>`;
-
-      // LIVE ROW FIRST — from window.lastMetadata
-      if (hasLiveData) {
-        const liveCostFmt = liveMeta.cost.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 4 }) + " €";
-        html += `
-            <tr class="live-cost-row" data-live-row="true" style="background: rgba(0,255,100,0.15);">
-              <td><strong>🟢 Aktuelle Session (Live)</strong></td>
-              <td>Eingabe: ${liveMeta.inputTokens}, Ausgabe: ${liveMeta.outputTokens}</td>
-              <td><strong>${liveCostFmt}</strong></td>
-            </tr>`;
-        // Live row is visual feedback only — DB total is the single source of truth
-      }
-
-      // Sort based on current mode
-      let sortedData = [...summaryData]; // Create a copy to avoid mutating original
-      
-      if (currentSortMode === "cost") {
-        // Sort by total_cost descending (highest first)
-        sortedData.sort((a, b) => (b.total_cost || 0) - (a.total_cost || 0));
-      } else {
-        // Custom sort: GPT models (nano → mini → base → 5.5 → pro), then Gemini (flash → pro)
-        sortedData.sort((a, b) => {
-          const modelA = (a.model || "").toLowerCase();
-          const modelB = (b.model || "").toLowerCase();
-          
-          const isGptA = modelA.includes("gpt");
-          const isGptB = modelB.includes("gpt");
-          const isGeminiA = modelA.includes("gemini");
-          const isGeminiB = modelB.includes("gemini");
-          
-          // GPT models come first
-          if (isGptA && !isGptB) return -1;
-          if (!isGptA && isGptB) return 1;
-          
-          // Within GPT: nano → mini → base → 5.5 → pro
-          if (isGptA && isGptB) {
-            const gptOrder = ["nano", "mini", "base", "5.5", "pro"];
-            let orderA = 999, orderB = 999;
-            for (let i = 0; i < gptOrder.length; i++) {
-              if (modelA.includes(gptOrder[i])) orderA = i;
-              if (modelB.includes(gptOrder[i])) orderB = i;
-            }
-            if (orderA !== orderB) return orderA - orderB;
-            // Fallback: alphabetical
-            return modelA.localeCompare(modelB);
-          }
-          
-          // Within Gemini: flash → pro
-          if (isGeminiA && isGeminiB) {
-            const geminiOrder = ["flash", "pro"];
-            let orderA = 999, orderB = 999;
-            for (let i = 0; i < geminiOrder.length; i++) {
-              if (modelA.includes(geminiOrder[i])) orderA = i;
-              if (modelB.includes(geminiOrder[i])) orderB = i;
-            }
-            if (orderA !== orderB) return orderA - orderB;
-            return modelA.localeCompare(modelB);
-          }
-          
-          // Gemini comes after GPT
-          if (isGeminiA && !isGeminiB) return 1;
-          if (!isGeminiA && isGeminiB) return -1;
-          
-          // Default: alphabetical
-          return modelA.localeCompare(modelB);
-        });
-      }
-
-      // DB ROWS
-      sortedData.forEach((item) => {
-        // Special handling for Web Search entry
-        if (item.model === "__WEB_SEARCHES__") {
-          const searchCount = item.search_count || 0;
-          const searchCost = item.search_cost || 0;
-          html += `
-            <tr class="web-search-row" style="background: rgba(100,149,237,0.15);">
-              <td><strong>🔍 Web-Recherchen</strong></td>
-              <td>${searchCount} Treffer | 0,01€ pro Suche</td>
-              <td><strong>${searchCost.toFixed(4)} €</strong></td>
-            </tr>`;
-          return; // Skip normal processing
-        }
-
-        let detailText = "";
-        if (item.total_input_tokens > 0 || item.total_output_tokens > 0 || item.total_cached_tokens > 0) {
-          const totalTokens = item.total_tokens || (item.total_input_tokens + item.total_output_tokens);
-          detailText = `Eingabe: ${item.total_input_tokens}, Ausgabe: ${item.total_output_tokens}, Gesamt: ${totalTokens}`;
-          if ((item.total_cached_tokens || 0) > 0) {
-            detailText += `, Cache: ${item.total_cached_tokens}`;
-          }
-        } else if (item.image_count > 0) {
-          detailText = `Bilder: ${item.image_count}`;
-        } else if (item.context_breakdown && item.context_breakdown.length > 0) {
-          detailText = `Kontexte: ${item.context_breakdown.length}`;
-        }
-
-        // Janus Caching Savings
-        const costSaved = item.total_cost_saved || 0;
-        const totalCostWithSavings = (item.total_cost || 0) + costSaved;
-        const efficiencyPct = totalCostWithSavings > 0
-          ? Math.round((costSaved / totalCostWithSavings) * 100)
-          : 0;
-        
-        if (costSaved > 0) {
-          detailText += `<br><span style="color: #4caf50; font-size: 0.9em;">(Janus Caching: -${costSaved.toFixed(4)} € | ${efficiencyPct}% gespart)</span>`;
-        }
-
-        html += `
-            <tr>
-              <td>${item.model === 'gpt-4o-mini' ? 'gpt-4o-mini (gpt Sprachausgabe)' : item.model}</td>
-              <td>${detailText}</td>
-              <td>${item.total_cost.toFixed(4)}</td>
-            </tr>`;
-        if (item.image_details && item.image_details.length > 0) {
-          item.image_details.forEach(detail => {
-            html += `
-              <tr class="image-detail-row">
-                <td></td>
-                <td class="image-detail-text">Qualität: ${detail.quality}, Größe: ${detail.size}</td>
-                <td>${detail.cost.toFixed(4)}</td>
-              </tr>`;
-          });
-        }
-        // Only expand context breakdown if there are multiple contexts or non-default context
-        const hasMultipleContexts = item.context_breakdown && item.context_breakdown.length > 1;
-        const hasMeaningfulContext = item.context_breakdown && item.context_breakdown.length === 1
-          && item.context_breakdown[0].context !== "conversation";
-        if (hasMultipleContexts || hasMeaningfulContext) {
-          item.context_breakdown.forEach(detail => {
-            const detailParts = [];
-            if (detail.input_tokens > 0 || detail.output_tokens > 0 || detail.cached_tokens > 0) {
-              const totalTokens = detail.total_tokens || (detail.input_tokens + detail.output_tokens);
-              let tokenText = `Eingabe: ${detail.input_tokens}, Ausgabe: ${detail.output_tokens}, Gesamt: ${totalTokens}`;
-              if ((detail.cached_tokens || 0) > 0) {
-                tokenText += `, Cache: ${detail.cached_tokens}`;
-              }
-              detailParts.push(tokenText);
-            }
-            if (detail.count > 0) {
-              detailParts.push(`Anfragen: ${detail.count}`);
-            }
-            html += `
-              <tr class="image-detail-row">
-                <td></td>
-                <td class="image-detail-text">${detail.context}: ${detailParts.join(" | ")}</td>
-                <td>${detail.cost.toFixed(4)}</td>
-              </tr>`;
-          });
-        }
+  function bindDeepDiveInteractions() {
+    document.querySelectorAll("[data-anomaly-filter]").forEach((button) => {
+      button.addEventListener("click", () => {
+        deepDiveState.anomalyFilter = button.getAttribute("data-anomaly-filter") || "all";
+        selectDefaultDeepDiveState();
+        renderDeepDiveContent();
       });
+    });
 
-      // Calculate total savings across all models
-      const totalSaved = summaryData.reduce((sum, item) => sum + (item.total_cost_saved || 0), 0);
-      const totalSpent = summaryData.reduce((sum, item) => sum + (item.total_cost || 0), 0);
-      const totalEffPct = (totalSpent + totalSaved) > 0
-        ? Math.round((totalSaved / (totalSpent + totalSaved)) * 100)
-        : 0;
+    document.querySelectorAll("[data-group-key]").forEach((button) => {
+      button.addEventListener("click", () => {
+        deepDiveState.selectedGroupKey = button.getAttribute("data-group-key");
+        const group = getFilteredGroups().find((entry) => entry.group_key === deepDiveState.selectedGroupKey);
+        deepDiveState.selectedRequestId = group?.requests?.[0]?.request_id || null;
+        renderDeepDiveContent();
+      });
+    });
 
-      html += `
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="2"><strong>Gesamt</strong></td>
-              <td><strong>${totalCost.toFixed(4)} €</strong></td>
-            </tr>`;
-      
-      if (totalSaved > 0) {
-        html += `
-            <tr style="background: rgba(76, 175, 80, 0.1);">
-              <td colspan="2"><strong>💚 Gesamtersparnis (Janus Caching)</strong></td>
-              <td><strong style="color: #4caf50;">-${totalSaved.toFixed(4)} € (${totalEffPct}%)</strong></td>
-            </tr>`;
-      }
-      
-      html += `
-          </tfoot>`;
-      html += "</table>";
+    document.querySelectorAll("[data-request-id]").forEach((button) => {
+      button.addEventListener("click", () => {
+        deepDiveState.selectedRequestId = button.getAttribute("data-request-id");
+        renderDeepDiveContent();
+      });
+    });
+  }
+
+  function getFilteredGroups() {
+    const groups = Array.isArray(deepDiveState.data?.groups) ? [...deepDiveState.data.groups] : [];
+    if (deepDiveState.anomalyFilter === "all") {
+      return groups;
     }
 
-    html += `
-      <div class="budget-setter">
-        <label for="budget-input">Monatsbudget festlegen (€):</label>
-        <input type="number" id="budget-input" step="0.01">
-        <button id="save-budget-btn">Speichern</button>
-      </div>`;
-    deepDiveContent.innerHTML = html;
+    return groups
+      .map((group) => ({
+        ...group,
+        requests: (group.requests || []).filter((request) =>
+          Array.isArray(request.anomaly_flags) && request.anomaly_flags.includes(deepDiveState.anomalyFilter),
+        ),
+      }))
+      .filter((group) => (group.requests || []).length > 0)
+      .map((group) => ({
+        ...group,
+        request_count: group.requests.length,
+        total_cost: sumCosts(group.requests, "total_cost"),
+        internal_attributed_total: sumCosts(group.requests, "internal_attributed_total"),
+        unattributed_residual_total: sumCosts(group.requests, "unattributed_residual_total"),
+      }));
+  }
 
-    // Add event listener for sort toggle button
-    const toggleBtn = document.getElementById("toggle-sort-btn");
-    if (toggleBtn) {
-      toggleBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        currentSortMode = currentSortMode === "model" ? "cost" : "model";
-        console.log("[COST-VIS] Sort mode toggled to:", currentSortMode);
-        renderDeepDiveContent(summaryData, totalCost, dbOk, liveMeta);
-      });
+  function renderSummaryCards(summary, historicalReconciliation) {
+    const statusBuckets = Array.isArray(summary.status_buckets) ? summary.status_buckets : [];
+    return `
+      <section class="deep-dive-summary-grid">
+        <article class="deep-dive-metric-card">
+          <span class="deep-dive-metric-label">Intern attribuiert</span>
+          <strong>${formatCurrency(summary.internal_attributed_total)}</strong>
+          <small>${summary.request_count || 0} Requests</small>
+        </article>
+        <article class="deep-dive-metric-card deep-dive-metric-card--warning">
+          <span class="deep-dive-metric-label">Restposten</span>
+          <strong>${formatCurrency(summary.unattributed_residual_total)}</strong>
+          <small>${historicalReconciliation.visible_residual_required ? "sichtbar verpflichtend" : "offene Attribution"}</small>
+        </article>
+        <article class="deep-dive-metric-card">
+          <span class="deep-dive-metric-label">Externe Billing-Summe</span>
+          <strong>${formatCurrency(summary.external_billing_total)}</strong>
+          <small>${escapeHtml(formatBillingReferenceLabel(historicalReconciliation.billing_reference_source))}</small>
+        </article>
+        <article class="deep-dive-metric-card ${
+          Math.abs(Number(summary.deviation_total) || 0) > 0 ? "deep-dive-metric-card--critical" : ""
+        }">
+          <span class="deep-dive-metric-label">Abweichung</span>
+          <strong>${formatSignedCurrency(summary.deviation_total)}</strong>
+          <small>${summary.group_count || 0} Gruppen</small>
+        </article>
+      </section>
+      <section class="deep-dive-status-strip">
+        ${statusBuckets
+          .map(
+            (bucket) => `
+              <div class="deep-dive-status-pill">
+                <span>${escapeHtml(bucket.status || "Unbekannt")}</span>
+                <strong>${formatCurrency(bucket.total_cost)}</strong>
+              </div>
+            `,
+          )
+          .join("")}
+      </section>
+    `;
+  }
+
+  function renderAnomalyOverview(anomalies) {
+    if (!anomalies.length) {
+      return `
+        <section class="deep-dive-anomaly-section">
+          <div class="deep-dive-anomaly-header">
+            <h4>Auffaelligkeiten</h4>
+            <div class="deep-dive-filter-row">
+              <button class="deep-dive-filter-chip is-active" data-anomaly-filter="all">Alle</button>
+            </div>
+          </div>
+          <div class="deep-dive-empty-state">Keine aktiven Auffaelligkeiten fuer diesen Zeitraum.</div>
+        </section>
+      `;
     }
+
+    return `
+      <section class="deep-dive-anomaly-section">
+        <div class="deep-dive-anomaly-header">
+          <h4>Auffaelligkeiten</h4>
+          <div class="deep-dive-filter-row">
+            ${renderFilterChip("all", "Alle")}
+            ${anomalies.map((item) => renderFilterChip(item.type, item.label)).join("")}
+          </div>
+        </div>
+        <div class="deep-dive-anomaly-grid">
+          ${anomalies
+            .map(
+              (item) => `
+                <article class="deep-dive-anomaly-card deep-dive-anomaly-card--${escapeAttribute(item.severity || "info")}">
+                  <div class="deep-dive-anomaly-topline">
+                    <span class="deep-dive-badge deep-dive-badge--${escapeAttribute(item.severity || "info")}">${escapeHtml(
+                      item.label || item.type || "Anomalie",
+                    )}</span>
+                    <strong>${formatCurrency(item.cost)}</strong>
+                  </div>
+                  <p>${escapeHtml(item.message || "Keine Zusatzdetails vorhanden.")}</p>
+                </article>
+              `,
+            )
+            .join("")}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderFilterChip(value, label) {
+    const isActive = deepDiveState.anomalyFilter === value;
+    return `
+      <button class="deep-dive-filter-chip ${isActive ? "is-active" : ""}" data-anomaly-filter="${escapeAttribute(
+        value,
+      )}">
+        ${escapeHtml(label)}
+      </button>
+    `;
+  }
+
+  function renderGroupList(groups, selectedGroupKey) {
+    return `
+      <div class="deep-dive-group-list">
+        ${groups
+          .map((group) => {
+            const isActive = group.group_key === selectedGroupKey;
+            return `
+              <button class="deep-dive-list-item ${isActive ? "is-active" : ""}" data-group-key="${escapeAttribute(
+                group.group_key,
+              )}">
+                <div class="deep-dive-list-item-main">
+                  <strong>${escapeHtml(group.group_label || group.group_key)}</strong>
+                  <span>${group.request_count || 0} Requests</span>
+                </div>
+                <div class="deep-dive-list-item-meta">
+                  <span>${formatCurrency(group.total_cost)}</span>
+                  ${
+                    Number(group.unattributed_residual_total) > 0
+                      ? `<span class="deep-dive-inline-flag">Rest ${formatCurrency(group.unattributed_residual_total)}</span>`
+                      : ""
+                  }
+                </div>
+              </button>
+            `;
+          })
+          .join("")}
+      </div>
+    `;
+  }
+
+  function renderRequestList(group, selectedRequestId) {
+    const requests = Array.isArray(group.requests) ? group.requests : [];
+    if (!requests.length) {
+      return '<div class="deep-dive-empty-state deep-dive-panel-empty">Keine Requests in dieser Gruppe.</div>';
+    }
+
+    return `
+      <div class="deep-dive-request-list">
+        ${requests
+          .map((request) => {
+            const isActive = request.request_id === selectedRequestId;
+            return `
+              <button class="deep-dive-list-item ${isActive ? "is-active" : ""}" data-request-id="${escapeAttribute(
+                request.request_id,
+              )}">
+                <div class="deep-dive-list-item-main">
+                  <strong>${escapeHtml(request.request_label || request.request_id)}</strong>
+                  <span>${escapeHtml(formatRequestMetaLine(request))}</span>
+                </div>
+                <div class="deep-dive-request-flags">
+                  ${renderRequestFlagList(request)}
+                </div>
+                <div class="deep-dive-list-item-meta">
+                  <span>${formatCurrency(request.total_cost)}</span>
+                </div>
+              </button>
+            `;
+          })
+          .join("")}
+      </div>
+    `;
+  }
+
+  function renderRequestDetail(request, historicalReconciliation) {
+    const components = Array.isArray(request.components) ? request.components : [];
+    const models = Array.isArray(request.models) ? request.models : [];
+
+    return `
+      <div class="deep-dive-request-detail">
+        <div class="deep-dive-request-header">
+          <div>
+            <h5>${escapeHtml(request.request_label || request.request_id)}</h5>
+            <p>${escapeHtml(formatRequestIdentity(request))}</p>
+          </div>
+          <div class="deep-dive-request-total">${formatCurrency(request.total_cost)}</div>
+        </div>
+
+        <div class="deep-dive-request-summary">
+          <div>
+            <span>Status</span>
+            <strong>${escapeHtml(request.attribution_status || "unbekannt")}</strong>
+          </div>
+          <div>
+            <span>Modelle</span>
+            <strong>${escapeHtml(models.join(", ") || "n/a")}</strong>
+          </div>
+          <div>
+            <span>Intern attribuiert</span>
+            <strong>${formatCurrency(request.internal_attributed_total)}</strong>
+          </div>
+          <div>
+            <span>Restposten</span>
+            <strong>${formatCurrency(request.unattributed_residual_total)}</strong>
+          </div>
+        </div>
+
+        ${
+          request.anomaly_flags?.length
+            ? `
+              <div class="deep-dive-flag-row">
+                ${request.anomaly_flags
+                  .map((flag) => `<span class="deep-dive-badge deep-dive-badge--neutral">${escapeHtml(formatFlagLabel(flag))}</span>`)
+                  .join("")}
+                ${
+                  historicalReconciliation.visible_residual_required && Number(request.unattributed_residual_total) > 0
+                    ? '<span class="deep-dive-badge deep-dive-badge--warning">historischer Rest sichtbar</span>'
+                    : ""
+                }
+              </div>
+            `
+            : ""
+        }
+
+        <div class="deep-dive-component-list">
+          ${components
+            .map(
+              (component) => `
+                <article class="deep-dive-component-card">
+                  <div class="deep-dive-component-topline">
+                    <div>
+                      <strong>${escapeHtml(formatComponentLabel(component.component))}</strong>
+                      <span>${escapeHtml(component.model || "unbekanntes Modell")}</span>
+                    </div>
+                    <div class="deep-dive-component-total">${formatCurrency(component.total_cost)}</div>
+                  </div>
+                  <div class="deep-dive-component-meta">
+                    <span>${escapeHtml(component.status || "unbekannt")}</span>
+                    <span>${escapeHtml(formatTokenLine(component))}</span>
+                    <span>${escapeHtml(formatTimestamp(component.timestamp))}</span>
+                    ${
+                      component.manual_override
+                        ? '<span class="deep-dive-badge deep-dive-badge--info">manueller Override</span>'
+                        : ""
+                    }
+                  </div>
+                  ${renderComponentMetadata(component.metadata)}
+                </article>
+              `,
+            )
+            .join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderComponentMetadata(metadata) {
+    if (!metadata || typeof metadata !== "object" || !Object.keys(metadata).length) {
+      return "";
+    }
+
+    const visibleEntries = Object.entries(metadata)
+      .filter(([, value]) => value !== null && value !== undefined && value !== "")
+      .slice(0, 6);
+
+    if (!visibleEntries.length) {
+      return "";
+    }
+
+    return `
+      <dl class="deep-dive-component-metadata">
+        ${visibleEntries
+          .map(
+            ([key, value]) => `
+              <div>
+                <dt>${escapeHtml(formatMetadataKey(key))}</dt>
+                <dd>${escapeHtml(String(value))}</dd>
+              </div>
+            `,
+          )
+          .join("")}
+      </dl>
+    `;
+  }
+
+  function renderRequestFlagList(request) {
+    const parts = [];
+    if (Number(request.unattributed_residual_total) > 0) {
+      parts.push('<span class="deep-dive-badge deep-dive-badge--warning">Attributionsluecke</span>');
+    }
+    if (Array.isArray(request.anomaly_flags) && request.anomaly_flags.includes("avoidable_pro")) {
+      parts.push('<span class="deep-dive-badge deep-dive-badge--info">Vermeidbarer Pro</span>');
+    }
+    return parts.join("");
+  }
+
+  function renderLiveSnapshot(liveMeta) {
+    if (!liveMeta || Number(liveMeta.cost) <= 0) {
+      return "";
+    }
+
+    return `
+      <section class="deep-dive-live-card">
+        <div>
+          <span class="deep-dive-kicker">Live-Signal</span>
+          <strong>Letzte Anfrage</strong>
+        </div>
+        <div class="deep-dive-live-metrics">
+          <span>${formatCurrency(liveMeta.cost)}</span>
+          <span>In ${Number(liveMeta.inputTokens) || 0}</span>
+          <span>Out ${Number(liveMeta.outputTokens) || 0}</span>
+        </div>
+      </section>
+    `;
   }
 
   function hideDeepDiveModal() {
-    costDeepDiveModal.style.display = "none";
+    if (costDeepDiveModal) {
+      costDeepDiveModal.style.display = "none";
+    }
   }
 
-  // Close the modal when the close button is clicked
   if (closeButton) {
     closeButton.addEventListener("click", hideDeepDiveModal);
   }
 
-  // Close the modal when clicking outside of the modal content
   window.addEventListener("click", (event) => {
     if (event.target === costDeepDiveModal) {
       hideDeepDiveModal();
     }
   });
 
-  window.fetchCostData = async function () {
+  async function fetchCostData() {
     const currentMonthCostElement = document.getElementById("current-month-cost");
     const monthlyBudgetElement = document.getElementById("monthly-budget");
     const budgetProgressFill = document.getElementById("budget-progress-fill");
     const costSummaryWidgetEl = document.getElementById("cost-summary-widget");
 
     try {
-      // Fetch dashboard data
       const dashboardResponse = await fetch(`${API_BASE_URL}/api/costs/dashboard`);
       const dashboardData = await dashboardResponse.json();
 
-      const dbTotal = dashboardData.current_month_cost;
-
-      // Math.max guard: never display less than the live metadata value
+      const dbTotal = Number(dashboardData.current_month_cost) || 0;
       const liveMeta = window.lastMetadata;
-      const liveCostFloor = (liveMeta && typeof liveMeta.cost === "number" && liveMeta.cost > 0) ? liveMeta.cost : 0;
+      const liveCostFloor =
+        liveMeta && typeof liveMeta.cost === "number" && liveMeta.cost > 0 ? liveMeta.cost : 0;
       const effectiveTotal = Math.max(dbTotal, liveCostFloor);
       const monthlyBudget = Number(dashboardData.monthly_budget) || 0;
 
-      // Guard: only update sidebar if effective value is strictly greater than currently displayed
       if (currentMonthCostElement) {
         const currentText = currentMonthCostElement.textContent || "";
         const currentMatch = currentText.match(/([\d.,]+)\s*€/);
         const currentShown = currentMatch ? parseFloat(currentMatch[1].replace(",", ".")) : 0;
         if (effectiveTotal > currentShown) {
           currentMonthCostElement.textContent = `Aktueller Monat: ${effectiveTotal.toFixed(2)} €`;
-          console.log(`[COST-VIS] Sidebar updated: ${currentShown} → ${effectiveTotal} (db=${dbTotal}, live=${liveCostFloor})`);
-        } else {
-          console.log(`[COST-VIS] Sidebar skip: effective ${effectiveTotal} <= shown ${currentShown}`);
-        }
-      }
-      if (monthlyBudgetElement) {
-        monthlyBudgetElement.textContent = `Budget: ${effectiveTotal.toFixed(2)} € / ${monthlyBudget.toFixed(2)} €`;
-        if (effectiveTotal > monthlyBudget) {
-          monthlyBudgetElement.classList.add("budget-exceeded");
-        } else {
-          monthlyBudgetElement.classList.remove("budget-exceeded");
         }
       }
 
-      if (budgetProgressFill && monthlyBudget > 0) {
-        const pct = Math.min(100, (effectiveTotal / monthlyBudget) * 100);
+      if (monthlyBudgetElement) {
+        monthlyBudgetElement.textContent = `Budget: ${effectiveTotal.toFixed(2)} € / ${monthlyBudget.toFixed(2)} €`;
+        monthlyBudgetElement.classList.toggle("budget-exceeded", monthlyBudget > 0 && effectiveTotal > monthlyBudget);
+      }
+
+      if (budgetProgressFill) {
+        const pct = monthlyBudget > 0 ? Math.min(100, (effectiveTotal / monthlyBudget) * 100) : 0;
         budgetProgressFill.style.width = `${pct}%`;
-      } else if (budgetProgressFill) {
-        budgetProgressFill.style.width = "0%";
       }
 
       if (costSummaryWidgetEl) {
-        if (effectiveTotal > monthlyBudget) {
-          costSummaryWidgetEl.classList.add("budget-exceeded");
-        } else {
-          costSummaryWidgetEl.classList.remove("budget-exceeded");
-        }
+        costSummaryWidgetEl.classList.toggle("budget-exceeded", monthlyBudget > 0 && effectiveTotal > monthlyBudget);
       }
-
-      // Existing cost dashboard update (if still needed, otherwise remove)
     } catch (error) {
       console.error("Error fetching cost data:", error);
-      if (currentMonthCostElement)
+      if (currentMonthCostElement) {
         currentMonthCostElement.textContent = "Fehler beim Laden der Kosten.";
-      if (monthlyBudgetElement) monthlyBudgetElement.textContent = "";
-      if (budgetProgressFill) budgetProgressFill.style.width = "0%";
-      if (costSummaryWidgetEl) costSummaryWidgetEl.classList.remove("budget-exceeded");
-
-      if (costDashboardElement) costDashboardElement.innerHTML = "";
+      }
+      if (monthlyBudgetElement) {
+        monthlyBudgetElement.textContent = "";
+      }
+      if (budgetProgressFill) {
+        budgetProgressFill.style.width = "0%";
+      }
+      if (costSummaryWidgetEl) {
+        costSummaryWidgetEl.classList.remove("budget-exceeded");
+      }
+      if (costDashboardElement) {
+        costDashboardElement.innerHTML = "";
+      }
     }
-  };
+  }
 
-  // Listen for cost update events (e.g., after video analysis)
-  window.addEventListener("janus:cost-update", (e) => {
-    console.log("[COST-VIS] janus:cost-update received, triggering fetchCostData");
+  window.fetchCostData = fetchCostData;
+
+  window.addEventListener("janus:cost-update", () => {
     window.fetchCostData();
   });
 
-  // Listen for live SSE metadata and inject into modal + sidebar
-  window.addEventListener("janus:metadata", (e) => {
-    const { cost, usage } = e.detail;
-    const totalCost = cost?.total_cost ?? cost?.total ?? cost?.cost_usd ?? 0;
-    const inputTokens = usage?.input_tokens ?? usage?.prompt_tokens ?? 0;
-    const outputTokens = usage?.output_tokens ?? usage?.completion_tokens ?? 0;
-    const costFormatted = totalCost.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 4 }) + " €";
+  window.addEventListener("janus:metadata", (event) => {
+    const { cost, usage } = event.detail;
+    const totalCost = Number(cost?.total_cost ?? cost?.total ?? cost?.cost_usd ?? 0);
+    const inputTokens = Number(usage?.input_tokens ?? usage?.prompt_tokens ?? 0);
+    const outputTokens = Number(usage?.output_tokens ?? usage?.completion_tokens ?? 0);
 
-    console.log("[COST-VIS] janus:metadata received, cost:", costFormatted);
+    deepDiveState.liveMeta = {
+      cost: totalCost,
+      inputTokens,
+      outputTokens,
+    };
 
-    // Update sidebar immediately
     const currentMonthCostElement = document.getElementById("current-month-cost");
     if (currentMonthCostElement) {
-      currentMonthCostElement.textContent = `Letzte Anfrage: ${costFormatted}`;
+      currentMonthCostElement.textContent = `Letzte Anfrage: ${formatCurrency(totalCost)}`;
     }
 
-    // If modal is open, inject live row
-    if (costDeepDiveModal && costDeepDiveModal.style.display !== "none") {
-      const tbody = document.querySelector("#cost-details-table tbody");
-      if (tbody) {
-        const liveRow = document.createElement("tr");
-        liveRow.style.background = "rgba(0,255,100,0.15)";
-        liveRow.innerHTML = `
-          <td><strong>Aktuelle Session (Live)</strong></td>
-          <td>Eingabe: ${inputTokens}, Ausgabe: ${outputTokens}</td>
-          <td><strong>${costFormatted}</strong></td>
-        `;
-        // Remove previous live row if exists
-        const prev = tbody.querySelector("tr[data-live-row]");
-        if (prev) prev.remove();
-        liveRow.setAttribute("data-live-row", "true");
-        tbody.insertBefore(liveRow, tbody.firstChild);
-      }
+    if (costDeepDiveModal && costDeepDiveModal.style.display !== "none" && deepDiveState.data) {
+      renderDeepDiveContent();
     }
   });
 
-  // Initial fetch with delay to allow backend to start
   setTimeout(window.fetchCostData, 2000);
 });
 
@@ -424,8 +649,127 @@ document.addEventListener("click", async (event) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ budget: newBudget }),
       });
-      // Aktualisiere die Anzeige nach dem Speichern
       window.fetchCostData();
     }
   }
 });
+
+function formatCurrency(value) {
+  const amount = Number(value) || 0;
+  return `${amount.toLocaleString("de-DE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4,
+  })} €`;
+}
+
+function formatSignedCurrency(value) {
+  const amount = Number(value) || 0;
+  const prefix = amount > 0 ? "+" : "";
+  return `${prefix}${formatCurrency(amount)}`;
+}
+
+function formatPeriodLabel(period) {
+  if (!period || !/^\d{4}-\d{2}$/.test(period)) {
+    return "aktueller Monat";
+  }
+
+  const [year, month] = period.split("-").map(Number);
+  const date = new Date(year, month - 1, 1);
+  return date.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+}
+
+function formatBillingReferenceLabel(value) {
+  if (value === "persisted_external_reference") {
+    return "persistierte Billing-Referenz";
+  }
+  if (value === "persisted_gemini_cost_records_proxy") {
+    return "persistierte Gemini-Kosten als Proxy";
+  }
+  return "Billing-Referenz";
+}
+
+function formatRequestMetaLine(request) {
+  const parts = [];
+  if (request.group_kind === "test_run") {
+    parts.push("Testlauf");
+  } else if (request.group_kind === "session") {
+    parts.push("Session");
+  } else {
+    parts.push("Legacy");
+  }
+  if (request.timestamp) {
+    parts.push(formatTimestamp(request.timestamp));
+  }
+  return parts.join(" | ");
+}
+
+function formatRequestIdentity(request) {
+  const parts = [request.group_label || request.group_key || "Unbekannte Gruppe"];
+  if (request.timestamp) {
+    parts.push(formatTimestamp(request.timestamp));
+  }
+  return parts.join(" | ");
+}
+
+function formatTimestamp(value) {
+  if (!value) {
+    return "ohne Zeitstempel";
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+  return date.toLocaleString("de-DE", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+function formatFlagLabel(flag) {
+  if (flag === "attribution_gap") {
+    return "Attributionsluecke";
+  }
+  if (flag === "avoidable_pro") {
+    return "Vermeidbarer Pro";
+  }
+  return flag;
+}
+
+function formatComponentLabel(value) {
+  if (value === "grounding_websearch") {
+    return "Grounding / Websearch";
+  }
+  if (value === "conversation") {
+    return "Conversation";
+  }
+  return value || "Komponente";
+}
+
+function formatMetadataKey(value) {
+  return String(value || "")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatTokenLine(component) {
+  return `In ${Number(component.input_tokens) || 0} | Out ${Number(component.output_tokens) || 0} | Total ${
+    Number(component.total_tokens) || 0
+  }`;
+}
+
+function sumCosts(items, key) {
+  return items.reduce((sum, item) => sum + (Number(item?.[key]) || 0), 0);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function escapeAttribute(value) {
+  return escapeHtml(value).replace(/`/g, "&#96;");
+}
