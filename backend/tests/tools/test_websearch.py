@@ -168,6 +168,7 @@ async def test_websearch_wrapper_persists_cost_entry_for_successful_openai_webse
 @pytest.mark.asyncio
 async def test_websearch_wrapper_persists_gemini_token_usage_costs():
     fake_db = Mock()
+    persisted_entry = object()
 
     with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
         "backend.services.websearch.websearch.GEMINI_PROVIDER.search",
@@ -175,13 +176,20 @@ async def test_websearch_wrapper_persists_gemini_token_usage_costs():
             return_value={
                 "text": "Release-Liste",
                 "sources": [{"url": "https://example.com/switch2", "title": "GamePro"}],
-                "metadata": {"provider": "gemini"},
+                "metadata": {
+                    "provider": "gemini",
+                    "query_count": 2,
+                    "grounding_metadata": {
+                        "groundingChunks": [{"web": {"uri": "https://example.com/switch2"}}],
+                    },
+                },
                 "usage": {"input_tokens": 1200, "output_tokens": 340, "total_tokens": 1540, "query_count": 2},
                 "cost": {"total_cost": 0.0025},
             }
         ),
     ), patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
-        "backend.services.cost_service.create_cost_entry"
+        "backend.services.cost_service.create_cost_entry",
+        return_value=persisted_entry,
     ) as create_cost_entry_mock:
         result = await websearch_wrapper(
             schemas.WebsearchArgsV2(
@@ -203,6 +211,110 @@ async def test_websearch_wrapper_persists_gemini_token_usage_costs():
     assert kwargs["output_tokens"] == 340
     assert kwargs["total_tokens"] == 1540
     assert kwargs["context_details"] == "query_count=2"
+    assert kwargs["attribution_status"] == "intern attribuiert"
+    assert kwargs["attribution_component"] == "grounding_websearch"
+    assert kwargs["attribution_request_id"]
+    assert kwargs["attribution_group_id"].startswith("gemini-websearch:")
+    assert kwargs["attribution_metadata"]["request_kind"] == "native_websearch"
+    assert kwargs["attribution_metadata"]["grounding_chunk_count"] == 1
+    assert kwargs["attribution_metadata"]["websearch_query_count"] == 2
+    assert rd["metadata"]["attribution_status"] == "intern attribuiert"
+    assert rd["metadata"]["attribution_request_id"] == kwargs["attribution_request_id"]
+    fake_db.close.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_websearch_wrapper_persists_blocked_gemini_pro_request_as_attribution_gap():
+    fake_db = Mock()
+    persisted_entry = object()
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
+        "backend.services.websearch.websearch.GEMINI_PROVIDER.search",
+        AsyncMock(
+            return_value={
+                "text": "Release-Liste",
+                "sources": [{"url": "https://example.com/switch2", "title": "GamePro"}],
+                "metadata": {
+                    "provider": "gemini",
+                    "requested_model": "gemini-3-pro-preview",
+                    "effective_model": "gemini-3-flash-preview",
+                    "model_policy_state": "blocked_pro_request",
+                    "grounding_metadata": {
+                        "groundingChunks": [{"web": {"uri": "https://example.com/switch2"}}],
+                    },
+                },
+                "usage": {"input_tokens": 1200, "output_tokens": 340, "total_tokens": 1540, "query_count": 2},
+                "cost": {"total_cost": 0.0025},
+            }
+        ),
+    ), patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
+        "backend.services.cost_service.create_cost_entry",
+        return_value=persisted_entry,
+    ) as create_cost_entry_mock:
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(
+                query="welche spiele erscheinen nÃ¤chsten monat fÃ¼r die nintendo switch 2",
+                provider="gemini",
+                model="gemini-3-pro-preview",
+            )
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    assert rd["status"] == "ok"
+    create_cost_entry_mock.assert_called_once()
+    kwargs = create_cost_entry_mock.call_args.kwargs
+    assert kwargs["attribution_status"] == "nicht eindeutig attribuiert"
+    assert kwargs["attribution_manual_override"] is False
+    assert kwargs["attribution_metadata"]["policy_model_state"] == "blocked_pro_request"
+    assert rd["metadata"]["attribution_status"] == "nicht eindeutig attribuiert"
+    fake_db.close.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_websearch_wrapper_records_visible_gemini_pro_override_as_manual():
+    fake_db = Mock()
+    persisted_entry = object()
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
+        "backend.services.websearch.websearch.GEMINI_PROVIDER.search",
+        AsyncMock(
+            return_value={
+                "text": "Release-Liste",
+                "sources": [{"url": "https://example.com/switch2", "title": "GamePro"}],
+                "metadata": {
+                    "provider": "gemini",
+                    "requested_model": "gemini-3-pro-preview",
+                    "effective_model": "gemini-3-pro-preview",
+                    "model_policy_state": "manual_pro_override",
+                    "explicit_model_override": True,
+                    "grounding_metadata": {
+                        "groundingChunks": [{"web": {"uri": "https://example.com/switch2"}}],
+                    },
+                },
+                "usage": {"input_tokens": 1200, "output_tokens": 340, "total_tokens": 1540, "query_count": 2},
+                "cost": {"total_cost": 0.0025},
+            }
+        ),
+    ), patch("backend.tool_registry.SessionLocal", return_value=fake_db), patch(
+        "backend.services.cost_service.create_cost_entry",
+        return_value=persisted_entry,
+    ) as create_cost_entry_mock:
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(
+                query="welche spiele erscheinen naechsten monat fuer die nintendo switch 2",
+                provider="gemini",
+                model="gemini-3-pro-preview",
+            )
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    assert rd["status"] == "ok"
+    create_cost_entry_mock.assert_called_once()
+    kwargs = create_cost_entry_mock.call_args.kwargs
+    assert kwargs["attribution_manual_override"] is True
+    assert kwargs["attribution_metadata"]["policy_model_state"] == "manual_pro_override"
+    assert kwargs["attribution_metadata"]["explicit_model_override"] is True
+    assert rd["metadata"]["attribution_status"] == "intern attribuiert"
     fake_db.close.assert_called_once()
 
 
@@ -2785,6 +2897,104 @@ async def test_gemini_provider_search_returns_clean_sources_and_raw_text_without
     assert result["sources"][1]["title"] == "Quelle B"
     assert result["sources"][1]["url"] == "https://example.com/b"
     assert "79,99 Euro" in result["sources"][1]["snippet"]
+
+
+@pytest.mark.asyncio
+async def test_gemini_provider_search_flags_blocked_pro_request_when_flash_is_enforced():
+    provider = GeminiWebSearchProvider()
+
+    class _Response:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def read(self):
+            return b""
+
+    with patch("backend.services.websearch.gemini_provider.urllib.request.urlopen", return_value=_Response()), patch(
+        "backend.services.websearch.gemini_provider.json.load",
+        return_value={
+            "candidates": [
+                {
+                    "content": {"parts": [{"text": "Antwort mit Quelle"}]},
+                    "groundingMetadata": {
+                        "webSearchQueries": ["Switch 2 Deutschland"],
+                        "groundingChunks": [{"web": {"uri": "https://example.com/a"}}],
+                    },
+                }
+            ]
+        },
+    ), patch(
+        "backend.services.websearch.gemini_provider.calculate_cost",
+        return_value=(
+            {"input_tokens": 10, "output_tokens": 20, "total_tokens": 30, "query_count": 1},
+            {"total_cost": 0.001},
+        ),
+    ):
+        result = await provider.search(
+            api_key="gem-key",
+            query="Switch 2 Deutschland",
+            model="gemini-3-flash-preview",
+            requested_model="gemini-3-pro-preview",
+        )
+
+    assert result["metadata"]["requested_model"] == "gemini-3-pro-preview"
+    assert result["metadata"]["effective_model"] == "gemini-3-flash-preview"
+    assert result["metadata"]["model_policy_state"] == "blocked_pro_request"
+    assert result["metadata"]["explicit_model_override"] is False
+
+
+@pytest.mark.asyncio
+async def test_gemini_provider_search_marks_manual_pro_override_when_request_is_visible():
+    provider = GeminiWebSearchProvider()
+
+    class _Response:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def read(self):
+            return b""
+
+    with patch("backend.services.websearch.gemini_provider.urllib.request.urlopen", return_value=_Response()), patch(
+        "backend.services.websearch.gemini_provider.json.load",
+        return_value={
+            "candidates": [
+                {
+                    "content": {"parts": [{"text": "Antwort mit Quelle"}]},
+                    "groundingMetadata": {
+                        "webSearchQueries": ["Switch 2 Deutschland"],
+                        "groundingChunks": [{"web": {"uri": "https://example.com/a"}}],
+                    },
+                }
+            ]
+        },
+    ), patch(
+        "backend.services.websearch.gemini_provider.calculate_cost",
+        return_value=(
+            {"input_tokens": 10, "output_tokens": 20, "total_tokens": 30, "query_count": 1},
+            {"total_cost": 0.001},
+        ),
+    ):
+        result = await provider.search(
+            api_key="gem-key",
+            query="Switch 2 Deutschland",
+            model="gemini-3-pro-preview",
+            requested_model="gemini-3-pro-preview",
+        )
+
+    assert result["metadata"]["requested_model"] == "gemini-3-pro-preview"
+    assert result["metadata"]["effective_model"] == "gemini-3-pro-preview"
+    assert result["metadata"]["model_policy_state"] == "manual_pro_override"
+    assert result["metadata"]["explicit_model_override"] is True
 
 
 def test_duckduckgo_provider_parse_html_results_extracts_titles_snippets_and_urls():

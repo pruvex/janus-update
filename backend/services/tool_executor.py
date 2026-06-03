@@ -920,6 +920,34 @@ class ToolExecutor:
                             request_model,
                             tool_args["model"],
                         )
+                    elif (
+                        request_provider == "gemini"
+                        and not str(tool_args.get("model") or "").strip()
+                    ):
+                        visible_override = False
+                        if isinstance(self.additional_context, dict):
+                            chat_history = self.additional_context.get("chat_history")
+                            if isinstance(chat_history, list):
+                                for message in chat_history:
+                                    if not isinstance(message, dict):
+                                        continue
+                                    if str(message.get("role") or "") != "system":
+                                        continue
+                                    content = str(message.get("content") or "")
+                                    if "MODEL_OVERRIDE:" in content:
+                                        visible_override = True
+                                        break
+                        if visible_override:
+                            tool_args["model"] = request_model or "gemini-3-flash-preview"
+                            logger.info(
+                                "WEBSEARCH-EXECUTOR: honoring visible Gemini override for websearch model '%s'.",
+                                tool_args["model"],
+                            )
+                        else:
+                            tool_args["model"] = "gemini-3-flash-preview"
+                            logger.info(
+                                "WEBSEARCH-EXECUTOR: enforcing Gemini Flash default for websearch without visible override.",
+                            )
                     elif request_model and not str(tool_args.get("model") or "").strip():
                         tool_args["model"] = request_model
 

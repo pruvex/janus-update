@@ -11,6 +11,7 @@ Zuständigkeiten:
 import json
 import logging
 import re
+import uuid
 from typing import Any, Dict, List, Optional
 
 from .compiler import GeminiCompiler
@@ -50,6 +51,193 @@ class GeminiGateway(BaseProviderGateway):
         for key in explicit_keys:
             sanitized.pop(key, None)
         return sanitized
+
+    @staticmethod
+    def _extract_grounding_query_count(grounding_metadata: Optional[Dict[str, Any]]) -> int:
+        if not isinstance(grounding_metadata, dict):
+            return 0
+        raw_queries = grounding_metadata.get("web_search_queries")
+        if not isinstance(raw_queries, list):
+            raw_queries = grounding_metadata.get("webSearchQueries")
+        if not isinstance(raw_queries, list):
+            return 0
+        return sum(1 for query in raw_queries if str(query or "").strip())
+
+    @staticmethod
+    def _build_gemini_request_attribution_ids(chat_id: Optional[int]) -> Dict[str, Optional[str]]:
+        request_id = uuid.uuid4().hex
+        session_id = str(chat_id) if chat_id is not None else None
+        group_id = f"gemini-request:{session_id or 'sessionless'}:{request_id}"
+        return {
+            "attribution_group_id": group_id,
+            "attribution_request_id": request_id,
+            "attribution_session_id": session_id,
+            "attribution_test_run_id": None,
+        }
+
+    @staticmethod
+    def _build_gemini_attribution_metadata(
+        *,
+        component: str,
+        request_kind: str,
+        grounding_metadata: Optional[Dict[str, Any]],
+        websearch_query_count: int,
+        persistence_gap: Optional[str] = None,
+        failed_components: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        grounding = grounding_metadata if isinstance(grounding_metadata, dict) else {}
+        metadata: Dict[str, Any] = {
+            "request_kind": request_kind,
+            "component_scope": component,
+            "grounding_metadata_present": bool(grounding),
+            "grounding_query_count": GeminiGateway._extract_grounding_query_count(grounding),
+            "websearch_query_count": int(websearch_query_count or 0),
+        }
+        grounding_chunks = grounding.get("groundingChunks")
+        if isinstance(grounding_chunks, list):
+            metadata["grounding_chunk_count"] = len(grounding_chunks)
+        failed = [str(item).strip() for item in (failed_components or []) if str(item).strip()]
+        if failed:
+            metadata["failed_components"] = failed
+        if persistence_gap:
+            metadata["attribution_gap"] = str(persistence_gap)
+        return metadata
+
+    @staticmethod
+    def _extract_visible_model_override(chat_history: Optional[List[Dict[str, Any]]]) -> Optional[str]:
+        if not chat_history:
+            return None
+        for msg in chat_history:
+            if msg.get("role") != "system":
+                continue
+            content = str(msg.get("content", ""))
+            if "MODEL_OVERRIDE:" not in content:
+                continue
+            match = re.search(r"MODEL_OVERRIDE:\s*(\S+)", content)
+            if match:
+                return match.group(1).strip()
+        return None
+
+    @staticmethod
+    def _persist_cost_entry_with_result(**kwargs: Any) -> bool:
+        from backend.services.cost_service import create_cost_entry
+
+        created_entry = create_cost_entry(**kwargs)
+        return created_entry is not None
+
+    def _persist_gemini_request_costs(
+        self,
+        *,
+        db: Any,
+        provider: Optional[str],
+        model: Optional[str],
+        chat_id: Optional[int],
+        conversation_cost_eur: float,
+        input_tokens: int,
+        output_tokens: int,
+        websearch_query_count: int,
+        grounding_metadata: Optional[Dict[str, Any]],
+        request_kind: str,
+    ) -> Dict[str, Any]:
+        attribution_ids = self._build_gemini_request_attribution_ids(chat_id)
+        provider_name = str(provider or "gemini")
+        model_name = str(model or "gemini")
+        failed_components: List[str] = []
+
+        if db is not None and websearch_query_count > 0:
+            websearch_ok = self._persist_cost_entry_with_result(
+                db=db,
+                amount=round(websearch_query_count * 0.01, 6),
+                model=model_name,
+                provider=provider_name,
+                source_type="websearch",
+                context_details=f"query_count={websearch_query_count}",
+                attribution_component="grounding_websearch",
+                attribution_status="intern attribuiert",
+                attribution_manual_override=False,
+                attribution_metadata=self._build_gemini_attribution_metadata(
+                    component="grounding_websearch",
+                    request_kind=request_kind,
+                    grounding_metadata=grounding_metadata,
+                    websearch_query_count=websearch_query_count,
+                ),
+                **attribution_ids,
+            )
+            if websearch_ok:
+                logger.info(
+                    "GEMINI-WEBSEARCH-PERSIST: Saved %d queries (%.4f€)",
+                    websearch_query_count,
+                    websearch_query_count * 0.01,
+                )
+            else:
+                failed_components.append("grounding_websearch")
+                logger.warning(
+                    "GEMINI-WEBSEARCH-PERSIST: Attribution record missing for %d queries.",
+                    websearch_query_count,
+                )
+
+        conversation_status = (
+            "intern attribuiert" if not failed_components else "nicht eindeutig attribuiert"
+        )
+        conversation_gap = None
+        if failed_components:
+            conversation_gap = f"component_persist_failed:{','.join(failed_components)}"
+
+        conversation_component_cost = max(
+            0.0,
+            float(conversation_cost_eur or 0.0) - round(float(websearch_query_count or 0) * 0.01, 6),
+        )
+
+        conversation_persisted = False
+        if db is not None and conversation_component_cost > 0:
+            conversation_persisted = self._persist_cost_entry_with_result(
+                db=db,
+                amount=conversation_component_cost,
+                model=model_name,
+                provider=provider_name,
+                source_type="conversation",
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                attribution_component="conversation",
+                attribution_status=conversation_status,
+                attribution_manual_override=False,
+                attribution_metadata=self._build_gemini_attribution_metadata(
+                    component="conversation",
+                    request_kind=request_kind,
+                    grounding_metadata=grounding_metadata,
+                    websearch_query_count=websearch_query_count,
+                    persistence_gap=conversation_gap,
+                    failed_components=failed_components,
+                ),
+                **attribution_ids,
+            )
+            if conversation_persisted:
+                logger.info(
+                    "GEMINI-COST-PERSIST: Saved %.6f€ for %s",
+                    conversation_component_cost,
+                    model_name,
+                )
+            else:
+                failed_components.append("conversation")
+                logger.warning(
+                    "GEMINI-COST-PERSIST: Attribution record missing for %s.",
+                    model_name,
+                )
+
+        elif db is not None and conversation_cost_eur > 0:
+            conversation_persisted = True
+
+        final_status = "intern attribuiert"
+        if failed_components or not conversation_persisted:
+            final_status = "nicht eindeutig attribuiert"
+
+        return {
+            **attribution_ids,
+            "attribution_status": final_status,
+            "failed_components": failed_components,
+            "conversation_persisted": conversation_persisted,
+            "websearch_persisted": websearch_query_count <= 0 or "grounding_websearch" not in failed_components,
+        }
 
     async def reason_and_respond(
         self,
@@ -202,6 +390,7 @@ class GeminiGateway(BaseProviderGateway):
                         bypass_policy=bypass_policy,
                         is_list_query=is_list_query,
                         db=db,
+                        chat_id=chat_id,
                         force_tool_name=force_tool_name,
                     )
                 else:
@@ -227,6 +416,7 @@ class GeminiGateway(BaseProviderGateway):
                         bypass_policy=bypass_policy,
                         is_list_query=is_list_query,
                         db=db,
+                        chat_id=chat_id,
                         force_tool_name=force_tool_name,
                     )
                 # Extrahiere Metadata aus dem Loop-Ergebnis
@@ -301,7 +491,7 @@ class GeminiGateway(BaseProviderGateway):
 
     async def _run_engine_owned_gemini_turn(self, **kwargs) -> Dict[str, Any]:
         """
-        Eine Gemini-API-Runde mit Tools; Tool-Ausführung bleibt beim Orchestrator
+        Eine Gemini-API-Runde mit Tools; Tool-Ausfuehrung bleibt beim Orchestrator
         (execution_engine), damit [GEMINI-FIX] und Hard-Loop-Breaker pro Runde greifen.
         """
         from backend.llm_providers.shared.utils import (
@@ -310,8 +500,6 @@ class GeminiGateway(BaseProviderGateway):
             _prevalidate_tool_calls,
             _apply_routing_quality_guards,
         )
-        from backend.llm_providers.shared.moa import resolve_moa_model
-
         passthrough_kwargs = dict(kwargs or {})
         provider = passthrough_kwargs.pop("provider", None)
         model = passthrough_kwargs.pop("model", None)
@@ -326,41 +514,43 @@ class GeminiGateway(BaseProviderGateway):
         force_tool_name = str(passthrough_kwargs.pop("force_tool_name", "") or "").strip() or None
         provider_service = passthrough_kwargs.pop("provider_service", None) or self.service
         db = passthrough_kwargs.pop("db", None)
+        chat_id = passthrough_kwargs.pop("chat_id", None)
         passthrough_kwargs.pop("is_list_query", None)
 
+        from backend.llm_providers.shared.moa import resolve_moa_model
+
         user_base_model = model
-        tool_execution_model, moa_active = resolve_moa_model(
-            provider=provider,
-            user_base_model=user_base_model,
-            allowed_skill_ids=allowed_skill_ids,
-        )
-
-        forced_model = None
-        if chat_history and len(chat_history) > 0:
-            for msg in chat_history:
-                if msg.get("role") == "system" and "MODEL_OVERRIDE:" in str(msg.get("content", "")):
-                    _match = re.search(r"MODEL_OVERRIDE:\s*(\S+)", str(msg.get("content", "")))
-                    if _match:
-                        forced_model = _match.group(1).strip()
-                        break
-
-        if forced_model:
-            tool_execution_model = forced_model
-            moa_active = True
-            logger.info("✅ GEMINI-OVERRIDE: Forced model '%s' successfully applied.", forced_model)
+        visible_override = self._extract_visible_model_override(chat_history)
+        if allowed_skill_ids and "system.websearch" in allowed_skill_ids:
+            tool_execution_model = visible_override or "gemini-3-flash-preview"
+            moa_active = bool(visible_override)
+            if visible_override:
+                logger.info("GEMINI-OVERRIDE: Visible override '%s' applied for system.websearch.", visible_override)
+            elif tool_execution_model != user_base_model:
+                logger.info("GEMINI-WEBSEARCH-POLICY: Defaulting system.websearch to '%s'.", tool_execution_model)
+        else:
+            tool_execution_model, moa_active = resolve_moa_model(
+                provider=provider,
+                user_base_model=user_base_model,
+                allowed_skill_ids=allowed_skill_ids,
+            )
+            if visible_override:
+                tool_execution_model = visible_override
+                moa_active = True
+                logger.info("GEMINI-OVERRIDE: Forced model '%s' successfully applied.", visible_override)
 
         if moa_active and tool_execution_model != user_base_model:
             logger.info(
-                "💎 GEMINI MOA: Forciere Modell-Switch %s -> %s",
+                "GEMINI MOA: Force model switch %s -> %s",
                 user_base_model,
                 tool_execution_model,
             )
 
         current_chat_history = list(chat_history)
-        _loop_cost_eur = 0.0
-        _loop_input_tokens = 0
-        _loop_output_tokens = 0
-        _loop_websearch_queries = 0
+        loop_cost_eur = 0.0
+        loop_input_tokens = 0
+        loop_output_tokens = 0
+        loop_websearch_queries = 0
 
         all_available_tools = _filter_tools_by_skill_ids(allowed_skill_ids)
         tools_for_call = _build_tool_definitions_for_llm(all_available_tools)
@@ -387,30 +577,29 @@ class GeminiGateway(BaseProviderGateway):
             **loop_kwargs,
         )
 
-        _r_cost = response.get("cost") or {}
-        _r_usage = response.get("usage") or {}
-        _loop_cost_eur += float(_r_cost.get("total_cost", 0.0))
-        _loop_input_tokens += int(_r_usage.get("input_tokens", 0))
-        _loop_output_tokens += int(_r_usage.get("output_tokens", 0))
-        _gm = response.get("grounding_metadata") or {}
-        _raw_queries = _gm.get("web_search_queries") or []
-        valid_queries = [str(q or "").strip() for q in _raw_queries if str(q or "").strip()]
+        round_cost = response.get("cost") or {}
+        round_usage = response.get("usage") or {}
+        loop_cost_eur += float(round_cost.get("total_cost", 0.0))
+        loop_input_tokens += int(round_usage.get("input_tokens", 0))
+        loop_output_tokens += int(round_usage.get("output_tokens", 0))
+        grounding_metadata = response.get("grounding_metadata") or {}
+        raw_queries = grounding_metadata.get("web_search_queries") or grounding_metadata.get("webSearchQueries") or []
+        valid_queries = [str(query or "").strip() for query in raw_queries if str(query or "").strip()]
         search_cost = len(valid_queries) * 0.01
-        _loop_websearch_queries += len(valid_queries)
-        _loop_cost_eur += search_cost
+        loop_websearch_queries += len(valid_queries)
+        loop_cost_eur += search_cost
         if valid_queries:
             logger.info(
-                "✅ GEMINI-SEARCH-BILLING: %d queries billed at %.4f€.",
+                "GEMINI-SEARCH-BILLING: %d queries billed at %.4f EUR.",
                 len(valid_queries),
                 search_cost,
             )
 
         if response.get("type") != "tool_code":
+            final_grounding_metadata = grounding_metadata
             if moa_active:
                 logger.info(
-                    "💎 SKILL-MOA RÜCKSPRUNG: Tool-Loop abgeschlossen mit '%s'. "
-                    "Synthetisiere finale Antwort mit smartem Tool-Modell '%s'.",
-                    tool_execution_model,
+                    "SKILL-MOA RETURN: Tool loop finished with '%s'.",
                     tool_execution_model,
                 )
                 synthesis_response = await provider_service.generate_response(
@@ -423,76 +612,53 @@ class GeminiGateway(BaseProviderGateway):
                 synthesis_response = _apply_routing_quality_guards(
                     synthesis_response, current_chat_history
                 )
-                _syn_cost = synthesis_response.get("cost") or {}
-                _syn_usage = synthesis_response.get("usage") or {}
-                _loop_cost_eur += float(_syn_cost.get("total_cost", 0.0))
-                _loop_input_tokens += int(_syn_usage.get("input_tokens", 0))
-                _loop_output_tokens += int(_syn_usage.get("output_tokens", 0))
-                _syn_gm = synthesis_response.get("grounding_metadata") or {}
-                _syn_raw_queries = _syn_gm.get("web_search_queries") or []
-                syn_valid_queries = [
-                    str(q or "").strip() for q in _syn_raw_queries if str(q or "").strip()
+                synthesis_cost = synthesis_response.get("cost") or {}
+                synthesis_usage = synthesis_response.get("usage") or {}
+                loop_cost_eur += float(synthesis_cost.get("total_cost", 0.0))
+                loop_input_tokens += int(synthesis_usage.get("input_tokens", 0))
+                loop_output_tokens += int(synthesis_usage.get("output_tokens", 0))
+                synthesis_grounding_metadata = synthesis_response.get("grounding_metadata") or {}
+                synthesis_raw_queries = (
+                    synthesis_grounding_metadata.get("web_search_queries")
+                    or synthesis_grounding_metadata.get("webSearchQueries")
+                    or []
+                )
+                synthesis_valid_queries = [
+                    str(query or "").strip()
+                    for query in synthesis_raw_queries
+                    if str(query or "").strip()
                 ]
-                syn_search_cost = len(syn_valid_queries) * 0.01
-                _loop_websearch_queries += len(syn_valid_queries)
-                _loop_cost_eur += syn_search_cost
-                if syn_valid_queries:
+                synthesis_search_cost = len(synthesis_valid_queries) * 0.01
+                loop_websearch_queries += len(synthesis_valid_queries)
+                loop_cost_eur += synthesis_search_cost
+                if synthesis_valid_queries:
                     logger.info(
-                        "✅ GEMINI-SEARCH-BILLING: %d queries billed at %.4f€.",
-                        len(syn_valid_queries),
-                        syn_search_cost,
+                        "GEMINI-SEARCH-BILLING: %d queries billed at %.4f EUR.",
+                        len(synthesis_valid_queries),
+                        synthesis_search_cost,
                     )
-                synthesis_response["cost"] = {"total_cost": _loop_cost_eur}
+                synthesis_response["cost"] = {"total_cost": loop_cost_eur}
                 synthesis_response["usage"] = {
-                    "input_tokens": _loop_input_tokens,
-                    "output_tokens": _loop_output_tokens,
+                    "input_tokens": loop_input_tokens,
+                    "output_tokens": loop_output_tokens,
                 }
-                if db is not None and _loop_cost_eur > 0:
-                    try:
-                        from backend.services.cost_service import create_cost_entry
-
-                        create_cost_entry(
-                            db=db,
-                            amount=_loop_cost_eur,
-                            model=tool_execution_model,
-                            provider=str(provider or "gemini"),
-                            source_type="conversation",
-                            input_tokens=_loop_input_tokens,
-                            output_tokens=_loop_output_tokens,
-                        )
-                        logger.info(
-                            "GEMINI-COST-PERSIST: Saved %.6f€ for %s",
-                            _loop_cost_eur,
-                            tool_execution_model,
-                        )
-                    except Exception:
-                        logger.warning("GEMINI-COST-PERSIST: Failed to save cost", exc_info=True)
-                if db is not None and _loop_websearch_queries > 0:
-                    try:
-                        from backend.services.cost_service import create_cost_entry
-
-                        create_cost_entry(
-                            db=db,
-                            amount=round(_loop_websearch_queries * 0.01, 6),
-                            model=tool_execution_model,
-                            provider=str(provider or "gemini"),
-                            source_type="websearch",
-                            context_details=f"query_count={_loop_websearch_queries}",
-                        )
-                        logger.info(
-                            "GEMINI-WEBSEARCH-PERSIST: Saved %d queries (%.4f€)",
-                            _loop_websearch_queries,
-                            _loop_websearch_queries * 0.01,
-                        )
-                    except Exception:
-                        logger.warning(
-                            "GEMINI-WEBSEARCH-PERSIST: Failed to save websearch cost",
-                            exc_info=True,
-                        )
+                attribution_result = self._persist_gemini_request_costs(
+                    db=db,
+                    provider=provider,
+                    model=tool_execution_model,
+                    chat_id=chat_id,
+                    conversation_cost_eur=loop_cost_eur,
+                    input_tokens=loop_input_tokens,
+                    output_tokens=loop_output_tokens,
+                    websearch_query_count=loop_websearch_queries,
+                    grounding_metadata=synthesis_grounding_metadata or grounding_metadata,
+                    request_kind="engine_owned_tool_loop",
+                )
                 synthesis_response["_preserved_metadata"] = (
                     synthesis_response.get("grounding_metadata")
                     or synthesis_response.get("groundingMetadata")
                 )
+                synthesis_response["_cost_attribution"] = attribution_result
                 synthesis_response["moa_tool_model"] = tool_execution_model
                 synthesis_response["moa_synthesis_model"] = tool_execution_model
                 synthesis_response.setdefault("provider", provider)
@@ -500,56 +666,27 @@ class GeminiGateway(BaseProviderGateway):
                 return synthesis_response
 
             response = _apply_routing_quality_guards(response, current_chat_history)
-            response["cost"] = {"total_cost": _loop_cost_eur}
+            response["cost"] = {"total_cost": loop_cost_eur}
             response["usage"] = {
-                "input_tokens": _loop_input_tokens,
-                "output_tokens": _loop_output_tokens,
+                "input_tokens": loop_input_tokens,
+                "output_tokens": loop_output_tokens,
             }
-            if db is not None and _loop_cost_eur > 0:
-                try:
-                    from backend.services.cost_service import create_cost_entry
-
-                    create_cost_entry(
-                        db=db,
-                        amount=_loop_cost_eur,
-                        model=tool_execution_model,
-                        provider=str(provider or "gemini"),
-                        source_type="conversation",
-                        input_tokens=_loop_input_tokens,
-                        output_tokens=_loop_output_tokens,
-                    )
-                    logger.info(
-                        "GEMINI-COST-PERSIST: Saved %.6f€ for %s",
-                        _loop_cost_eur,
-                        tool_execution_model,
-                    )
-                except Exception:
-                    logger.warning("GEMINI-COST-PERSIST: Failed to save cost", exc_info=True)
-            if db is not None and _loop_websearch_queries > 0:
-                try:
-                    from backend.services.cost_service import create_cost_entry
-
-                    create_cost_entry(
-                        db=db,
-                        amount=round(_loop_websearch_queries * 0.01, 6),
-                        model=tool_execution_model,
-                        provider=str(provider or "gemini"),
-                        source_type="websearch",
-                        context_details=f"query_count={_loop_websearch_queries}",
-                    )
-                    logger.info(
-                        "GEMINI-WEBSEARCH-PERSIST: Saved %d queries (%.4f€)",
-                        _loop_websearch_queries,
-                        _loop_websearch_queries * 0.01,
-                    )
-                except Exception:
-                    logger.warning(
-                        "GEMINI-WEBSEARCH-PERSIST: Failed to save websearch cost",
-                        exc_info=True,
-                    )
+            attribution_result = self._persist_gemini_request_costs(
+                db=db,
+                provider=provider,
+                model=tool_execution_model,
+                chat_id=chat_id,
+                conversation_cost_eur=loop_cost_eur,
+                input_tokens=loop_input_tokens,
+                output_tokens=loop_output_tokens,
+                websearch_query_count=loop_websearch_queries,
+                grounding_metadata=final_grounding_metadata,
+                request_kind="engine_owned_tool_loop",
+            )
             response["_preserved_metadata"] = response.get("grounding_metadata") or response.get(
                 "groundingMetadata"
             )
+            response["_cost_attribution"] = attribution_result
             response.setdefault("provider", provider)
             response.setdefault("model", model)
             return response
@@ -562,57 +699,27 @@ class GeminiGateway(BaseProviderGateway):
             return response
 
         response["tool_calls"] = validated_tool_calls
-
-        response["cost"] = {"total_cost": _loop_cost_eur}
+        response["cost"] = {"total_cost": loop_cost_eur}
         response["usage"] = {
-            "input_tokens": _loop_input_tokens,
-            "output_tokens": _loop_output_tokens,
+            "input_tokens": loop_input_tokens,
+            "output_tokens": loop_output_tokens,
         }
-        if db is not None and _loop_cost_eur > 0:
-            try:
-                from backend.services.cost_service import create_cost_entry
-
-                create_cost_entry(
-                    db=db,
-                    amount=_loop_cost_eur,
-                    model=tool_execution_model,
-                    provider=str(provider or "gemini"),
-                    source_type="conversation",
-                    input_tokens=_loop_input_tokens,
-                    output_tokens=_loop_output_tokens,
-                )
-                logger.info(
-                    "GEMINI-COST-PERSIST: Saved %.6f€ for %s",
-                    _loop_cost_eur,
-                    tool_execution_model,
-                )
-            except Exception:
-                logger.warning("GEMINI-COST-PERSIST: Failed to save cost", exc_info=True)
-        if db is not None and _loop_websearch_queries > 0:
-            try:
-                from backend.services.cost_service import create_cost_entry
-
-                create_cost_entry(
-                    db=db,
-                    amount=round(_loop_websearch_queries * 0.01, 6),
-                    model=tool_execution_model,
-                    provider=str(provider or "gemini"),
-                    source_type="websearch",
-                    context_details=f"query_count={_loop_websearch_queries}",
-                )
-                logger.info(
-                    "GEMINI-WEBSEARCH-PERSIST: Saved %d queries (%.4f€)",
-                    _loop_websearch_queries,
-                    _loop_websearch_queries * 0.01,
-                )
-            except Exception:
-                logger.warning(
-                    "GEMINI-WEBSEARCH-PERSIST: Failed to save websearch cost",
-                    exc_info=True,
-                )
+        attribution_result = self._persist_gemini_request_costs(
+            db=db,
+            provider=provider,
+            model=tool_execution_model,
+            chat_id=chat_id,
+            conversation_cost_eur=loop_cost_eur,
+            input_tokens=loop_input_tokens,
+            output_tokens=loop_output_tokens,
+            websearch_query_count=loop_websearch_queries,
+            grounding_metadata=grounding_metadata,
+            request_kind="engine_owned_tool_loop",
+        )
         response["_preserved_metadata"] = response.get("grounding_metadata") or response.get(
             "groundingMetadata"
         )
+        response["_cost_attribution"] = attribution_result
         response.setdefault("provider", provider)
         response.setdefault("model", model)
         return response
@@ -620,16 +727,14 @@ class GeminiGateway(BaseProviderGateway):
     async def _run_simple_tool_loop(self, **kwargs) -> Dict[str, Any]:
         """
         Interne Implementierung des Tool-Loops.
-        💎 MoA-Integration: Tool-Loop mit optimiertem Modell, Synthese mit User-Modell.
+        MoA-Integration: Tool-Loop mit optimiertem Modell, Synthese mit User-Modell.
         """
         from backend.llm_providers.shared.utils import (
             _filter_tools_by_skill_ids,
             _build_tool_definitions_for_llm,
             _prevalidate_tool_calls,
-            _apply_routing_quality_guards
+            _apply_routing_quality_guards,
         )
-        from backend.llm_providers.shared.moa import resolve_moa_model
-
         passthrough_kwargs = dict(kwargs or {})
         provider = passthrough_kwargs.pop("provider", None)
         model = passthrough_kwargs.pop("model", None)
@@ -644,6 +749,7 @@ class GeminiGateway(BaseProviderGateway):
         force_tool_name = str(passthrough_kwargs.pop("force_tool_name", "") or "").strip() or None
         provider_service = passthrough_kwargs.pop("provider_service", None) or self.service
         db = passthrough_kwargs.pop("db", None)
+        chat_id = passthrough_kwargs.pop("chat_id", None)
         is_list_query = passthrough_kwargs.pop("is_list_query", None)
         if is_list_query is None:
             is_list_query = self._is_list_query(str(user_prompt or "").strip().lower())
@@ -652,45 +758,43 @@ class GeminiGateway(BaseProviderGateway):
             previous_round_cap = max_tool_rounds
             max_tool_rounds = max(max_tool_rounds, 12)
             if max_tool_rounds != previous_round_cap:
-                logger.info("DIAMOND-RESEARCH: Listen-Anfrage. Max Tool-Rounds auf %s erhöht.", max_tool_rounds)
+                logger.info("DIAMOND-RESEARCH: Listen-Anfrage. Max Tool-Rounds auf %s erhoeht.", max_tool_rounds)
 
-        # 💎 MoA-Routing
+        from backend.llm_providers.shared.moa import resolve_moa_model
+
         user_base_model = model
-        tool_execution_model, moa_active = resolve_moa_model(
-            provider=provider,
-            user_base_model=user_base_model,
-            allowed_skill_ids=allowed_skill_ids,
-        )
-
-        # 💎 MODEL_OVERRIDE: Prüfe auf forced model in system messages (analog zu OpenAI)
-        forced_model = None
-        if chat_history and len(chat_history) > 0:
-            for msg in chat_history:
-                if msg.get("role") == "system" and "MODEL_OVERRIDE:" in str(msg.get("content", "")):
-                    _match = re.search(r"MODEL_OVERRIDE:\s*(\S+)", str(msg.get("content", "")))
-                    if _match:
-                        forced_model = _match.group(1).strip()
-                        break
-
-        if forced_model:
-            tool_execution_model = forced_model
-            moa_active = True
-            logger.info(f"✅ GEMINI-OVERRIDE: Forced model '{forced_model}' successfully applied.")
+        visible_override = self._extract_visible_model_override(chat_history)
+        if allowed_skill_ids and "system.websearch" in allowed_skill_ids:
+            tool_execution_model = visible_override or "gemini-3-flash-preview"
+            moa_active = bool(visible_override)
+            if visible_override:
+                logger.info("GEMINI-OVERRIDE: Visible override '%s' applied for system.websearch.", visible_override)
+            elif tool_execution_model != user_base_model:
+                logger.info("GEMINI-WEBSEARCH-POLICY: Defaulting system.websearch to '%s'.", tool_execution_model)
+        else:
+            tool_execution_model, moa_active = resolve_moa_model(
+                provider=provider,
+                user_base_model=user_base_model,
+                allowed_skill_ids=allowed_skill_ids,
+            )
+            if visible_override:
+                tool_execution_model = visible_override
+                moa_active = True
+                logger.info("GEMINI-OVERRIDE: Forced model '%s' successfully applied.", visible_override)
 
         if moa_active and tool_execution_model != user_base_model:
             logger.info(
-                "💎 GEMINI MOA: Forciere Modell-Switch %s -> %s",
+                "GEMINI MOA: Force model switch %s -> %s",
                 user_base_model,
                 tool_execution_model,
             )
 
         current_round = 0
         current_chat_history = list(chat_history)
-        # 💎 COST-ACCUMULATION: Sammle Kosten über alle internen Runden
-        _loop_cost_eur = 0.0
-        _loop_input_tokens = 0
-        _loop_output_tokens = 0
-        _loop_websearch_queries = 0
+        loop_cost_eur = 0.0
+        loop_input_tokens = 0
+        loop_output_tokens = 0
+        loop_websearch_queries = 0
 
         all_available_tools = _filter_tools_by_skill_ids(allowed_skill_ids)
         tools_for_call = _build_tool_definitions_for_llm(all_available_tools)
@@ -718,140 +822,109 @@ class GeminiGateway(BaseProviderGateway):
                 tools=tools_for_call,
                 image_data=image_data if current_round == 1 else None,
                 force_tool_name=round_force_tool_name,
-                **loop_kwargs
+                **loop_kwargs,
             )
 
-            # Accumulate cost from this round
-            _r_cost = response.get("cost") or {}
-            _r_usage = response.get("usage") or {}
-            _loop_cost_eur += float(_r_cost.get("total_cost", 0.0))
-            _loop_input_tokens += int(_r_usage.get("input_tokens", 0))
-            _loop_output_tokens += int(_r_usage.get("output_tokens", 0))
-            # 💎 SEARCH GROUNDING BILLING: Parse and bill non-empty native search queries
-            _gm = response.get("grounding_metadata") or {}
-            _raw_queries = _gm.get("web_search_queries") or []
-            valid_queries = [str(q or "").strip() for q in _raw_queries if str(q or "").strip()]
+            round_cost = response.get("cost") or {}
+            round_usage = response.get("usage") or {}
+            loop_cost_eur += float(round_cost.get("total_cost", 0.0))
+            loop_input_tokens += int(round_usage.get("input_tokens", 0))
+            loop_output_tokens += int(round_usage.get("output_tokens", 0))
+            grounding_metadata = response.get("grounding_metadata") or {}
+            raw_queries = grounding_metadata.get("web_search_queries") or grounding_metadata.get("webSearchQueries") or []
+            valid_queries = [str(query or "").strip() for query in raw_queries if str(query or "").strip()]
             search_cost = len(valid_queries) * 0.01
-            _loop_websearch_queries += len(valid_queries)
-            _loop_cost_eur += search_cost
+            loop_websearch_queries += len(valid_queries)
+            loop_cost_eur += search_cost
             if valid_queries:
-                logger.info(f"✅ GEMINI-SEARCH-BILLING: {len(valid_queries)} queries billed at {search_cost:.4f}€.")
+                logger.info(
+                    "GEMINI-SEARCH-BILLING: %d queries billed at %.4f EUR.",
+                    len(valid_queries),
+                    search_cost,
+                )
 
             if response.get("type") != "tool_code":
-                # 💎 MoA-Rücksprung
                 if moa_active:
                     logger.info(
-                        "💎 SKILL-MOA RÜCKSPRUNG: Tool-Loop abgeschlossen mit '%s'. "
-                        "Synthetisiere finale Antwort mit smartem Tool-Modell '%s'.",
-                        tool_execution_model,
+                        "SKILL-MOA RETURN: Tool-Loop abgeschlossen mit '%s'.",
                         tool_execution_model,
                     )
-                    # --- SMART SYNTHESIS FIX ---
                     synthesis_response = await provider_service.generate_response(
                         api_key=api_key,
-                        model=tool_execution_model, # <--- NICHT user_base_model nutzen!
+                        model=tool_execution_model,
                         messages=current_chat_history,
                         tools=None,
                         image_data=None,
                     )
                     synthesis_response = _apply_routing_quality_guards(synthesis_response, current_chat_history)
-                    # Add synthesis call cost to accumulated loop cost
-                    _syn_cost = synthesis_response.get("cost") or {}
-                    _syn_usage = synthesis_response.get("usage") or {}
-                    _loop_cost_eur += float(_syn_cost.get("total_cost", 0.0))
-                    _loop_input_tokens += int(_syn_usage.get("input_tokens", 0))
-                    _loop_output_tokens += int(_syn_usage.get("output_tokens", 0))
-                    _syn_gm = synthesis_response.get("grounding_metadata") or {}
-                    _syn_raw_queries = _syn_gm.get("web_search_queries") or []
-                    syn_valid_queries = [str(q or "").strip() for q in _syn_raw_queries if str(q or "").strip()]
-                    syn_search_cost = len(syn_valid_queries) * 0.01
-                    _loop_websearch_queries += len(syn_valid_queries)
-                    _loop_cost_eur += syn_search_cost
-                    if syn_valid_queries:
-                        logger.info(f"✅ GEMINI-SEARCH-BILLING: {len(syn_valid_queries)} queries billed at {syn_search_cost:.4f}€.")
-                    synthesis_response["cost"] = {"total_cost": _loop_cost_eur}
+                    synthesis_cost = synthesis_response.get("cost") or {}
+                    synthesis_usage = synthesis_response.get("usage") or {}
+                    loop_cost_eur += float(synthesis_cost.get("total_cost", 0.0))
+                    loop_input_tokens += int(synthesis_usage.get("input_tokens", 0))
+                    loop_output_tokens += int(synthesis_usage.get("output_tokens", 0))
+                    synthesis_grounding_metadata = synthesis_response.get("grounding_metadata") or {}
+                    synthesis_raw_queries = (
+                        synthesis_grounding_metadata.get("web_search_queries")
+                        or synthesis_grounding_metadata.get("webSearchQueries")
+                        or []
+                    )
+                    synthesis_valid_queries = [
+                        str(query or "").strip()
+                        for query in synthesis_raw_queries
+                        if str(query or "").strip()
+                    ]
+                    synthesis_search_cost = len(synthesis_valid_queries) * 0.01
+                    loop_websearch_queries += len(synthesis_valid_queries)
+                    loop_cost_eur += synthesis_search_cost
+                    if synthesis_valid_queries:
+                        logger.info(
+                            "GEMINI-SEARCH-BILLING: %d queries billed at %.4f EUR.",
+                            len(synthesis_valid_queries),
+                            synthesis_search_cost,
+                        )
+                    synthesis_response["cost"] = {"total_cost": loop_cost_eur}
                     synthesis_response["usage"] = {
-                        "input_tokens": _loop_input_tokens,
-                        "output_tokens": _loop_output_tokens,
+                        "input_tokens": loop_input_tokens,
+                        "output_tokens": loop_output_tokens,
                     }
-                    # 💎 PERSISTENCE: Speichere akkumulierte Tool-Loop Kosten
-                    if db is not None and _loop_cost_eur > 0:
-                        try:
-                            from backend.services.cost_service import create_cost_entry
-                            create_cost_entry(
-                                db=db,
-                                amount=_loop_cost_eur,
-                                model=tool_execution_model,
-                                provider=str(provider or "gemini"),
-                                source_type="conversation",
-                                input_tokens=_loop_input_tokens,
-                                output_tokens=_loop_output_tokens,
-                            )
-                            logger.info("GEMINI-COST-PERSIST: Saved %.6f€ for %s", _loop_cost_eur, tool_execution_model)
-                        except Exception:
-                            logger.warning("GEMINI-COST-PERSIST: Failed to save cost", exc_info=True)
-                    # 💎 NATIVE WEBSEARCH TRACKING
-                    if db is not None and _loop_websearch_queries > 0:
-                        try:
-                            from backend.services.cost_service import create_cost_entry
-                            create_cost_entry(
-                                db=db,
-                                amount=round(_loop_websearch_queries * 0.01, 6),
-                                model=tool_execution_model,
-                                provider=str(provider or "gemini"),
-                                source_type="websearch",
-                                context_details=f"query_count={_loop_websearch_queries}",
-                            )
-                            logger.info("GEMINI-WEBSEARCH-PERSIST: Saved %d queries (%.4f€)", _loop_websearch_queries, _loop_websearch_queries * 0.01)
-                        except Exception:
-                            logger.warning("GEMINI-WEBSEARCH-PERSIST: Failed to save websearch cost", exc_info=True)
-                    # 💎 METADATA PRESERVATION: Capture metadata from synthesis for parent method
-                    # Note: Link rendering happens at final return point in reason_and_respond
+                    attribution_result = self._persist_gemini_request_costs(
+                        db=db,
+                        provider=provider,
+                        model=tool_execution_model,
+                        chat_id=chat_id,
+                        conversation_cost_eur=loop_cost_eur,
+                        input_tokens=loop_input_tokens,
+                        output_tokens=loop_output_tokens,
+                        websearch_query_count=loop_websearch_queries,
+                        grounding_metadata=synthesis_grounding_metadata or grounding_metadata,
+                        request_kind="simple_tool_loop",
+                    )
                     synthesis_response["_preserved_metadata"] = synthesis_response.get("grounding_metadata") or synthesis_response.get("groundingMetadata")
+                    synthesis_response["_cost_attribution"] = attribution_result
                     synthesis_response["moa_tool_model"] = tool_execution_model
                     synthesis_response["moa_synthesis_model"] = tool_execution_model
                     return synthesis_response
 
                 response = _apply_routing_quality_guards(response, current_chat_history)
-                # Attach accumulated costs
-                response["cost"] = {"total_cost": _loop_cost_eur}
+                response["cost"] = {"total_cost": loop_cost_eur}
                 response["usage"] = {
-                    "input_tokens": _loop_input_tokens,
-                    "output_tokens": _loop_output_tokens,
+                    "input_tokens": loop_input_tokens,
+                    "output_tokens": loop_output_tokens,
                 }
-                # 💎 PERSISTENCE: Speichere akkumulierte Tool-Loop Kosten
-                if db is not None and _loop_cost_eur > 0:
-                    try:
-                        from backend.services.cost_service import create_cost_entry
-                        create_cost_entry(
-                            db=db,
-                            amount=_loop_cost_eur,
-                            model=tool_execution_model,
-                            provider=str(provider or "gemini"),
-                            source_type="conversation",
-                            input_tokens=_loop_input_tokens,
-                            output_tokens=_loop_output_tokens,
-                        )
-                        logger.info("GEMINI-COST-PERSIST: Saved %.6f€ for %s", _loop_cost_eur, tool_execution_model)
-                    except Exception:
-                        logger.warning("GEMINI-COST-PERSIST: Failed to save cost", exc_info=True)
-                # 💎 NATIVE WEBSEARCH TRACKING
-                if db is not None and _loop_websearch_queries > 0:
-                    try:
-                        from backend.services.cost_service import create_cost_entry
-                        create_cost_entry(
-                            db=db,
-                            amount=round(_loop_websearch_queries * 0.01, 6),
-                            model=tool_execution_model,
-                            provider=str(provider or "gemini"),
-                            source_type="websearch",
-                            context_details=f"query_count={_loop_websearch_queries}",
-                        )
-                        logger.info("GEMINI-WEBSEARCH-PERSIST: Saved %d queries (%.4f€)", _loop_websearch_queries, _loop_websearch_queries * 0.01)
-                    except Exception:
-                        logger.warning("GEMINI-WEBSEARCH-PERSIST: Failed to save websearch cost", exc_info=True)
-                # 💎 METADATA PRESERVATION: Capture metadata for parent method
+                attribution_result = self._persist_gemini_request_costs(
+                    db=db,
+                    provider=provider,
+                    model=tool_execution_model,
+                    chat_id=chat_id,
+                    conversation_cost_eur=loop_cost_eur,
+                    input_tokens=loop_input_tokens,
+                    output_tokens=loop_output_tokens,
+                    websearch_query_count=loop_websearch_queries,
+                    grounding_metadata=grounding_metadata,
+                    request_kind="simple_tool_loop",
+                )
                 response["_preserved_metadata"] = response.get("grounding_metadata") or response.get("groundingMetadata")
+                response["_cost_attribution"] = attribution_result
                 return response
 
             tool_calls = response.get("tool_calls", [])
@@ -866,7 +939,7 @@ class GeminiGateway(BaseProviderGateway):
             current_chat_history = self.service.prepare_history_for_second_call(
                 chat_history=current_chat_history,
                 raw_assistant_response=response.get("raw_assistant_response"),
-                tool_results=executor_results
+                tool_results=executor_results,
             )
 
         return {"text": "Maximale Tool-Runden erreicht.", "tool_limit_reached": True}

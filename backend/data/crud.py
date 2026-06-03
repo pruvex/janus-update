@@ -20,6 +20,12 @@ except ImportError:
 
 from backend.logger_config import setup_logging
 from backend.services import vector_service
+from backend.services.cost_service import (
+    ATTRIBUTION_STATUS_EXTERNAL_BILLING,
+    ATTRIBUTION_STATUS_INTERNAL,
+    ATTRIBUTION_STATUS_UNATTRIBUTED,
+    normalize_attribution_status,
+)
 from sqlalchemy.exc import IntegrityError
 
 setup_logging()
@@ -870,3 +876,276 @@ def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> Lis
         })
     
     return results
+
+
+def _cost_month_bounds(year: int, month: int) -> tuple[datetime, datetime]:
+    start_date = datetime(year, month, 1)
+    if month == 12:
+        end_date = datetime(year + 1, 1, 1)
+    else:
+        end_date = datetime(year, month + 1, 1)
+    return start_date, end_date
+
+
+def _cost_component_name(cost: models.Cost) -> str:
+    component = str(getattr(cost, "attribution_component", "") or "").strip()
+    if component:
+        return component
+    context = str(getattr(cost, "context", "") or "").strip().casefold()
+    if context.startswith("websearch"):
+        return "grounding_websearch"
+    if context.startswith("conversation"):
+        return "conversation"
+    return "unknown"
+
+
+def _cost_group_identity(cost: models.Cost) -> tuple[str, str, str]:
+    test_run_id = str(getattr(cost, "attribution_test_run_id", "") or "").strip()
+    if test_run_id:
+        return "test_run", test_run_id, f"Testlauf {test_run_id}"
+    session_id = str(getattr(cost, "attribution_session_id", "") or "").strip()
+    if session_id:
+        return "session", session_id, f"Session {session_id}"
+    return "unscoped", "__unscoped__", "Nicht gruppiert"
+
+
+def _extract_external_billing_reference(metadata: Dict[str, Any]) -> Optional[float]:
+    if not isinstance(metadata, dict):
+        return None
+    for key in (
+        "external_billing_total_eur",
+        "external_billing_total",
+        "billing_reference_total_eur",
+        "billing_reference_total",
+    ):
+        value = metadata.get(key)
+        if isinstance(value, (int, float)):
+            return float(value)
+        try:
+            if value is not None and str(value).strip():
+                return float(str(value).strip())
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
+def get_gemini_deep_dive_summary(db: Session, year: int, month: int) -> Dict[str, Any]:
+    start_date, end_date = _cost_month_bounds(year, month)
+    costs = (
+        db.query(models.Cost)
+        .filter(
+            models.Cost.provider == "gemini",
+            models.Cost.timestamp >= start_date,
+            models.Cost.timestamp < end_date,
+        )
+        .order_by(models.Cost.timestamp.asc(), models.Cost.id.asc())
+        .all()
+    )
+
+    groups_index: Dict[str, Dict[str, Any]] = {}
+    request_index: Dict[tuple[str, str], Dict[str, Any]] = {}
+    request_order: List[tuple[str, str]] = []
+    external_reference_values: List[float] = []
+    total_billed_cost = 0.0
+    internal_attributed_total = 0.0
+    unattributed_residual_total = 0.0
+    avoidable_pro_total = 0.0
+    historical_mode = year == 2026 and month == 5
+
+    for cost in costs:
+        metadata = dict(cost.attribution_metadata or {}) if isinstance(cost.attribution_metadata, dict) else {}
+        external_reference = _extract_external_billing_reference(metadata)
+        if external_reference is not None:
+            external_reference_values.append(external_reference)
+
+        total_cost = float(cost.total_cost or 0.0)
+        total_billed_cost += total_cost
+        group_kind, group_value, group_label = _cost_group_identity(cost)
+        group_key = f"{group_kind}:{group_value}"
+
+        group = groups_index.setdefault(
+            group_key,
+            {
+                "group_key": group_key,
+                "group_kind": group_kind,
+                "group_value": group_value,
+                "group_label": group_label,
+                "request_count": 0,
+                "total_cost": 0.0,
+                "internal_attributed_total": 0.0,
+                "unattributed_residual_total": 0.0,
+                "requests": [],
+            },
+        )
+
+        has_request_identity = bool(
+            str(getattr(cost, "attribution_request_id", "") or "").strip()
+            or str(getattr(cost, "attribution_group_id", "") or "").strip()
+        )
+        request_value = (
+            str(getattr(cost, "attribution_request_id", "") or "").strip()
+            or str(getattr(cost, "attribution_group_id", "") or "").strip()
+            or f"legacy-cost:{cost.id}"
+        )
+        request_lookup_key = (group_key, request_value)
+        request = request_index.get(request_lookup_key)
+        if request is None:
+            request = {
+                "request_id": request_value,
+                "request_label": request_value if has_request_identity else f"Legacy-Kostenblock {cost.id}",
+                "group_key": group_key,
+                "group_kind": group_kind,
+                "group_label": group_label,
+                "timestamp": cost.timestamp.isoformat() if getattr(cost, "timestamp", None) else None,
+                "provider": str(cost.provider or "gemini"),
+                "models": [],
+                "total_cost": 0.0,
+                "internal_attributed_total": 0.0,
+                "unattributed_residual_total": 0.0,
+                "attribution_status": ATTRIBUTION_STATUS_INTERNAL,
+                "manual_override": False,
+                "components": [],
+                "anomaly_flags": [],
+            }
+            request_index[request_lookup_key] = request
+            request_order.append(request_lookup_key)
+            group["requests"].append(request)
+            group["request_count"] += 1
+
+        status = normalize_attribution_status(getattr(cost, "attribution_status", None))
+        if not has_request_identity:
+            status = ATTRIBUTION_STATUS_UNATTRIBUTED
+
+        component_name = _cost_component_name(cost)
+        manual_override = bool(getattr(cost, "attribution_manual_override", False))
+        request["manual_override"] = request["manual_override"] or manual_override
+        if cost.model and cost.model not in request["models"]:
+            request["models"].append(cost.model)
+
+        component_entry = {
+            "cost_id": cost.id,
+            "component": component_name,
+            "status": status,
+            "model": str(cost.model or ""),
+            "context": str(cost.context or ""),
+            "timestamp": cost.timestamp.isoformat() if getattr(cost, "timestamp", None) else None,
+            "total_cost": total_cost,
+            "input_tokens": int(cost.input_tokens or 0),
+            "output_tokens": int(cost.output_tokens or 0),
+            "cached_tokens": int(getattr(cost, "cached_tokens", 0) or 0),
+            "total_tokens": int(getattr(cost, "total_tokens", 0) or 0),
+            "manual_override": manual_override,
+            "metadata": metadata,
+        }
+        request["components"].append(component_entry)
+        request["total_cost"] += total_cost
+        group["total_cost"] += total_cost
+
+        if status == ATTRIBUTION_STATUS_INTERNAL and has_request_identity:
+            request["internal_attributed_total"] += total_cost
+            group["internal_attributed_total"] += total_cost
+            internal_attributed_total += total_cost
+        else:
+            request["unattributed_residual_total"] += total_cost
+            group["unattributed_residual_total"] += total_cost
+            unattributed_residual_total += total_cost
+            if "attribution_gap" not in request["anomaly_flags"]:
+                request["anomaly_flags"].append("attribution_gap")
+
+        if request["unattributed_residual_total"] > 0:
+            request["attribution_status"] = ATTRIBUTION_STATUS_UNATTRIBUTED
+
+        if "pro" in str(cost.model or "").casefold() and not manual_override:
+            avoidable_pro_total += total_cost
+            if "avoidable_pro" not in request["anomaly_flags"]:
+                request["anomaly_flags"].append("avoidable_pro")
+
+    external_billing_total = (
+        max(external_reference_values) if external_reference_values else total_billed_cost
+    )
+    deviation_total = external_billing_total - internal_attributed_total
+
+    anomalies: List[Dict[str, Any]] = []
+    if unattributed_residual_total > 0:
+        anomalies.append(
+            {
+                "type": "attribution_gap",
+                "severity": "critical" if historical_mode else "warning",
+                "label": "Attributionsluecke",
+                "cost": round(unattributed_residual_total, 6),
+                "message": (
+                    "Historische Gemini-Kosten bleiben als sichtbarer Restposten erhalten."
+                    if historical_mode
+                    else "Mindestens ein Gemini-Kostenblock ist nicht eindeutig attribuiert."
+                ),
+            }
+        )
+    if abs(deviation_total) > 1e-9:
+        anomalies.append(
+            {
+                "type": "billing_deviation",
+                "severity": "warning",
+                "label": "Billing-Abweichung",
+                "cost": round(abs(deviation_total), 6),
+                "message": "Interne Attribution und externe Billing-Summe laufen auseinander.",
+            }
+        )
+    if avoidable_pro_total > 0:
+        anomalies.append(
+            {
+                "type": "avoidable_pro",
+                "severity": "info",
+                "label": "Vermeidbarer Pro-Verbrauch",
+                "cost": round(avoidable_pro_total, 6),
+                "message": "Pro-Kosten ohne sichtbaren manuellen Override wurden erkannt.",
+            }
+        )
+
+    for request_key in request_order:
+        request = request_index[request_key]
+        request["models"].sort()
+        request["components"].sort(key=lambda item: item["total_cost"], reverse=True)
+
+    groups = list(groups_index.values())
+    for group in groups:
+        group["requests"].sort(key=lambda item: item["total_cost"], reverse=True)
+    groups.sort(key=lambda item: item["total_cost"], reverse=True)
+    anomalies.sort(key=lambda item: item["cost"], reverse=True)
+
+    return {
+        "provider_scope": "gemini",
+        "period": f"{year:04d}-{month:02d}",
+        "anomaly_overview": anomalies,
+        "summary": {
+            "request_count": len(request_index),
+            "group_count": len(groups),
+            "internal_attributed_total": round(internal_attributed_total, 6),
+            "unattributed_residual_total": round(unattributed_residual_total, 6),
+            "external_billing_total": round(external_billing_total, 6),
+            "deviation_total": round(deviation_total, 6),
+            "status_buckets": [
+                {
+                    "status": ATTRIBUTION_STATUS_INTERNAL,
+                    "total_cost": round(internal_attributed_total, 6),
+                },
+                {
+                    "status": ATTRIBUTION_STATUS_UNATTRIBUTED,
+                    "total_cost": round(unattributed_residual_total, 6),
+                },
+                {
+                    "status": ATTRIBUTION_STATUS_EXTERNAL_BILLING,
+                    "total_cost": round(external_billing_total, 6),
+                },
+            ],
+        },
+        "historical_reconciliation": {
+            "mode": "may_2026_forensic_reconstruction" if historical_mode else "standard",
+            "visible_residual_required": historical_mode,
+            "billing_reference_source": (
+                "persisted_external_reference"
+                if external_reference_values
+                else "persisted_gemini_cost_records_proxy"
+            ),
+        },
+        "groups": groups,
+    }

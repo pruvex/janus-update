@@ -153,6 +153,38 @@ def _ensure_sqlite_schema_migrations() -> None:
                 with engine.begin() as conn:
                     conn.execute(text("ALTER TABLE costs ADD COLUMN total_tokens INTEGER NOT NULL DEFAULT 0"))
                 logger.info("Migration: costs.total_tokens added (default=0).")
+            if "attribution_group_id" not in cost_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE costs ADD COLUMN attribution_group_id VARCHAR"))
+                logger.info("Migration: costs.attribution_group_id added.")
+            if "attribution_request_id" not in cost_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE costs ADD COLUMN attribution_request_id VARCHAR"))
+                logger.info("Migration: costs.attribution_request_id added.")
+            if "attribution_session_id" not in cost_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE costs ADD COLUMN attribution_session_id VARCHAR"))
+                logger.info("Migration: costs.attribution_session_id added.")
+            if "attribution_test_run_id" not in cost_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE costs ADD COLUMN attribution_test_run_id VARCHAR"))
+                logger.info("Migration: costs.attribution_test_run_id added.")
+            if "attribution_status" not in cost_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE costs ADD COLUMN attribution_status VARCHAR"))
+                logger.info("Migration: costs.attribution_status added.")
+            if "attribution_component" not in cost_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE costs ADD COLUMN attribution_component VARCHAR"))
+                logger.info("Migration: costs.attribution_component added.")
+            if "attribution_manual_override" not in cost_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE costs ADD COLUMN attribution_manual_override BOOLEAN NOT NULL DEFAULT 0"))
+                logger.info("Migration: costs.attribution_manual_override added (default=0).")
+            if "attribution_metadata" not in cost_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE costs ADD COLUMN attribution_metadata JSON"))
+                logger.info("Migration: costs.attribution_metadata added.")
 
         # Path Sentinel: Create path_permissions table if it doesn't exist
         if not insp.has_table("path_permissions"):

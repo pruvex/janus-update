@@ -3,6 +3,7 @@ import asyncio
 import logging
 import os
 import re
+import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -880,10 +881,66 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
         if not isinstance(total_cost, (int, float)) or total_cost <= 0:
             return
         usage = raw.get("usage") if isinstance(raw.get("usage"), dict) else {}
+        metadata = raw.get("metadata") if isinstance(raw.get("metadata"), dict) else {}
+        is_gemini = str(provider_name or "").strip().lower() == "gemini"
+        query_count = int(usage.get("query_count") or metadata.get("query_count") or 0)
+        requested_model = str(metadata.get("requested_model") or model_name or "").strip()
+        effective_model = str(metadata.get("effective_model") or model_name or "").strip()
+        model_policy_state = str(metadata.get("model_policy_state") or "").strip()
+        explicit_override = bool(metadata.get("explicit_model_override"))
+        attribution_ids: Dict[str, Optional[str]] = {}
+        attribution_status: Optional[str] = None
+        attribution_component: Optional[str] = None
+        attribution_metadata: Optional[Dict[str, Any]] = None
+        final_attribution_status: Optional[str] = None
+
+        if is_gemini:
+            request_id = uuid.uuid4().hex
+            attribution_ids = {
+                "attribution_group_id": f"gemini-websearch:{request_id}",
+                "attribution_request_id": request_id,
+                "attribution_session_id": None,
+                "attribution_test_run_id": None,
+            }
+            attribution_status = "intern attribuiert"
+            attribution_component = "grounding_websearch"
+            grounding_metadata = (
+                metadata.get("grounding_metadata")
+                if isinstance(metadata.get("grounding_metadata"), dict)
+                else {}
+            )
+            grounding_chunks = grounding_metadata.get("groundingChunks") if isinstance(
+                grounding_metadata, dict
+            ) else None
+            attribution_metadata = {
+                "request_kind": "native_websearch",
+                "component_scope": "grounding_websearch",
+                "grounding_metadata_present": bool(grounding_metadata),
+                "grounding_chunk_count": len(grounding_chunks) if isinstance(grounding_chunks, list) else 0,
+                "websearch_query_count": query_count,
+                "requested_model": requested_model or None,
+                "effective_model": effective_model or None,
+                "model_policy_state": model_policy_state or "default_flash",
+                "explicit_model_override": explicit_override,
+            }
+            if not query_count:
+                attribution_status = "nicht eindeutig attribuiert"
+                attribution_metadata["attribution_gap"] = "missing_query_count"
+            if requested_model:
+                attribution_metadata["policy_model_requested"] = requested_model
+            if effective_model:
+                attribution_metadata["policy_model_effective"] = effective_model
+            if model_policy_state:
+                attribution_metadata["policy_model_state"] = model_policy_state
         db = SessionLocal()
         try:
             from backend.services.cost_service import create_cost_entry
-            create_cost_entry(
+            final_attribution_status = (
+                "nicht eindeutig attribuiert"
+                if is_gemini and model_policy_state == "blocked_pro_request"
+                else attribution_status
+            )
+            created_entry = create_cost_entry(
                 db=db,
                 amount=float(total_cost),
                 model=str(model_name or provider_name or "websearch"),
@@ -894,11 +951,28 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
                 cached_tokens=int(usage.get("cached_tokens") or 0),
                 total_tokens=int(usage.get("total_tokens") or 0),
                 context_details=(
-                    f"query_count={int(usage.get('query_count') or 1)}"
-                    if usage.get("query_count")
+                    f"query_count={int(usage.get('query_count') or metadata.get('query_count') or 1)}"
+                    if usage.get("query_count") or metadata.get("query_count")
                     else "token_usage=1"
                 ),
+                attribution_status=final_attribution_status,
+                attribution_component=attribution_component,
+                attribution_manual_override=bool(is_gemini and model_policy_state == "manual_pro_override"),
+                attribution_metadata=attribution_metadata,
+                **attribution_ids,
             )
+            if is_gemini:
+                metadata["attribution_status"] = (
+                    final_attribution_status if created_entry is not None else "nicht eindeutig attribuiert"
+                )
+                metadata["attribution_request_id"] = attribution_ids.get("attribution_request_id")
+                metadata["attribution_group_id"] = attribution_ids.get("attribution_group_id")
+                metadata["effective_model"] = effective_model or metadata.get("effective_model") or model_name
+                metadata["requested_model"] = requested_model or metadata.get("requested_model") or model_name
+                metadata["model_policy_state"] = model_policy_state or metadata.get("model_policy_state") or "default_flash"
+                metadata["explicit_model_override"] = explicit_override
+                if created_entry is None:
+                    metadata["attribution_gap"] = "persist_failed"
         finally:
             db.close()
 
@@ -976,6 +1050,7 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
                 api_key=key,
                 provider=provider,
                 model=provider_model,
+                requested_model=payload.model,
                 log_exceptions=not (provider == "gemini" and _is_current_data_query(normalized_query)),
             )
         except Exception as primary_exc:
@@ -989,6 +1064,7 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
                     api_key="",
                     provider="ollama",
                     model=None,
+                    requested_model=payload.model,
                 )
                 repair_provider = "ollama"
                 repair_model = None
@@ -1057,7 +1133,11 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
             logger.info("WEBSEARCH-V2: Smart Global Fallback → '%s'", en_query)
             try:
                 raw_en = await execute_websearch_service(
-                    query=en_query, api_key=key, provider=provider, model=payload.model,
+                    query=en_query,
+                    api_key=key,
+                    provider=provider,
+                    model=payload.model,
+                    requested_model=payload.model,
                 )
                 en_sources = raw_en.get("sources") if isinstance(raw_en.get("sources"), list) else []
                 fallback_items = _sources_to_items(en_sources)
@@ -1146,10 +1226,20 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
         output_dict["sources"] = sources
         if is_news_query:
             output_dict["verified_source_mode"] = "single"
+        result_metadata = {"execution_time_ms": _elapsed_ms()}
+        if source_provider == "gemini":
+            if meta.get("attribution_status"):
+                result_metadata["attribution_status"] = str(meta.get("attribution_status"))
+            if meta.get("attribution_request_id"):
+                result_metadata["attribution_request_id"] = str(meta.get("attribution_request_id"))
+            if meta.get("attribution_group_id"):
+                result_metadata["attribution_group_id"] = str(meta.get("attribution_group_id"))
+            if meta.get("attribution_gap"):
+                result_metadata["attribution_gap"] = str(meta.get("attribution_gap"))
         return ToolResultV1(
             status="ok",
             data=output_dict,
-            metadata={"execution_time_ms": _elapsed_ms()},
+            metadata=result_metadata,
         )
 
     except Exception as e:

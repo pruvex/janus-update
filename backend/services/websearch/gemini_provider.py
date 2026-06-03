@@ -273,7 +273,13 @@ def _build_gemini_native_websearch_prompt(query: str) -> str:
     return "\n".join(prompt_parts).strip()
 
 class GeminiWebSearchProvider(BaseWebSearchProvider):
-    async def search(self, api_key: str, query: str, model: Optional[str] = None) -> WebSearchResult:
+    async def search(
+        self,
+        api_key: str,
+        query: str,
+        model: Optional[str] = None,
+        requested_model: Optional[str] = None,
+    ) -> WebSearchResult:
         """
         Führt eine native Google-Suche via Gemini API durch (Direct REST).
         Nutzt ausschließlich das native `google_search`-Tool für Grounding.
@@ -285,12 +291,22 @@ class GeminiWebSearchProvider(BaseWebSearchProvider):
         logger.info(f"Using Gemini's native web search for query: {biased_query} with model: {model}")
 
         raw_model = getattr(model, "id", None) or str(model or "").strip()
+        requested_model_name = getattr(requested_model, "id", None) or str(requested_model or raw_model or "").strip()
         model_name = raw_model or "gemini-3-flash-preview"
+        policy_state = "default_flash"
 
         # --- NEU: Narrensicherer Fallback ---
         if not model_name.lower().startswith("gemini"):
             logger.warning(f"Falsches Modell für Gemini Provider übergeben ({model_name}). Fallback auf gemini-3-flash-preview.")
             model_name = "gemini-3-flash-preview"
+            policy_state = "forced_flash"
+        elif "pro" in requested_model_name.lower() and requested_model_name.lower().startswith("gemini"):
+            if "pro" in model_name.lower():
+                policy_state = "manual_pro_override"
+            else:
+                policy_state = "blocked_pro_request"
+        elif "pro" in model_name.lower():
+            policy_state = "manual_pro_override"
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
         search_prompt = _build_gemini_native_websearch_prompt(biased_query)
         
@@ -388,6 +404,10 @@ class GeminiWebSearchProvider(BaseWebSearchProvider):
             metadata: WebSearchMetadata = {
                 "provider": "gemini",
                 "model": model_name,
+                "requested_model": requested_model_name or None,
+                "effective_model": model_name,
+                "model_policy_state": policy_state,
+                "explicit_model_override": policy_state == "manual_pro_override",
                 "query_count": search_queries_count,
                 "usage": usage,
                 "cost": cost,

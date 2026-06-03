@@ -19,6 +19,7 @@ async def execute_websearch_service(
     api_key: str,
     provider: str,
     model: Optional[str] = None,
+    requested_model: Optional[str] = None,
     log_exceptions: bool = True,
 ) -> WebSearchResult:
     """Gateway-Funktion mit harter Provider-Weiche ohne Cloud-zu-DDG-Fallback."""
@@ -37,7 +38,12 @@ async def execute_websearch_service(
             logger.error("💎 WEBSEARCH CRASH: PROVIDER_KEY_MISSING for provider=gemini")
             raise RuntimeError("PROVIDER_KEY_MISSING: Gemini native web search requires an API key")
         try:
-            result = await GEMINI_PROVIDER.search(api_key=api_key, query=query, model=model)
+            result = await GEMINI_PROVIDER.search(
+                api_key=api_key,
+                query=query,
+                model=model,
+                requested_model=requested_model or model,
+            )
             return validate_websearch_result(result)
         except Exception as exc:
             if log_exceptions:

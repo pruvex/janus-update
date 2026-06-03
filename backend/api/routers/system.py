@@ -117,6 +117,20 @@ async def get_costs_summary_by_model(db: Session = Depends(get_db)):
     return summary
 
 
+@router.get("/costs/deep-dive")
+async def get_costs_deep_dive(
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    db: Session = Depends(get_db),
+):
+    today = datetime.now()
+    selected_year = int(year or today.year)
+    selected_month = int(month or today.month)
+    if selected_month < 1 or selected_month > 12:
+        raise HTTPException(status_code=400, detail="month must be between 1 and 12")
+    return crud.get_gemini_deep_dive_summary(db, selected_year, selected_month)
+
+
 @router.get("/costs/dashboard")
 async def get_costs_dashboard(db: Session = Depends(get_db)):
     today = datetime.now()

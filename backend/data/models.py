@@ -202,6 +202,14 @@ class Cost(Base):
     context = Column(String, nullable=True)
     tokens_saved = Column(Integer, default=0)
     cost_saved = Column(Float, default=0.0)
+    attribution_group_id = Column(String, nullable=True, index=True)
+    attribution_request_id = Column(String, nullable=True, index=True)
+    attribution_session_id = Column(String, nullable=True, index=True)
+    attribution_test_run_id = Column(String, nullable=True, index=True)
+    attribution_status = Column(String, nullable=True, index=True)
+    attribution_component = Column(String, nullable=True)
+    attribution_manual_override = Column(Boolean, default=False, nullable=False)
+    attribution_metadata = Column(JSON, nullable=True)
 
 
 class SkillTelemetry(Base):
