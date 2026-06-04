@@ -82,6 +82,48 @@ Dashboard-Regeln:
 
 ## DONE
 
+### BACKLOG-102 - Gemini-Streaming-Kosten erscheinen im DeepDive als Attributionsluecke
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-06-04
+- **Aktualisiert:** 2026-06-04
+- **Follow-up zu:** BACKLOG-101 - DeepDive zeigt GPT-, Modell- und Cache-Kostensicht nach Spec-14 nicht mehr vollstaendig
+- **Kurzbeschreibung:** Im neuen Gemini-DeepDive erscheint fuer Juni 2026 eine Attributionsluecke von 0,2891 EUR. Die Kosten sind gespeichert, aber ein relevanter Streaming-Persistenzpfad schreibt Gemini-Konversationseintraege ohne Request-Attributionsfelder in die `costs`-Tabelle.
+- **Erwartetes Verhalten:** Gemini-Kostenbloecke aus normalen Konversationen und Streaming-Usage werden mit `attribution_request_id`, `attribution_status` und `attribution_component` persistiert oder sauber de-dupliziert, sodass der DeepDive nur echte Restposten als Attributionsluecke anzeigt.
+- **Tatsaechliches Verhalten:** Der DeepDive markiert 50 Gemini-Kostenzeilen im Juni 2026 als nicht eindeutig attribuiert. 49 davon stammen aus `conversation (stream_final_usage=1)` und haben weder `attribution_request_id` noch `attribution_status` oder `attribution_component`; dadurch entsteht ein sichtbarer Restposten von 0,289071 EUR.
+- **Reproduktion / Kontext:** DeepDive fuer 2026-06 oeffnen und den Anomalieblock `Attributionsluecke` betrachten. In der produktiven Datenbank `C:\Users\pruve\AppData\Roaming\Janus Projekt\janus.db` liefern Aggregation und Stichprobe 50 Gemini-Gap-Zeilen mit insgesamt 0,289071 EUR; 49 Zeilen mit 0,288971 EUR haben `context = conversation (stream_final_usage=1)`. Der entsprechende Persistenzpfad liegt in `backend/services/orchestrator/execution_engine.py` und schrieb eine zusaetzliche Kostenzeile ohne Gemini-Attributionsfelder, waehrend die DeepDive-Logik solche Zeilen in `backend/data/crud.py` bewusst als `attribution_gap` klassifiziert.
+- **Betroffener Bereich:** Backend / Cost Tracking / Gemini / Streaming / DeepDive / SQLite-Persistenz
+- **Nachweise:** User-Frage vom 2026-06-04; DeepDive-Logik in `backend/data/crud.py`; Gemini-Attributionspersistenz in `backend/llm_providers/gemini/gateway.py`; Streaming-Kostenpersistenz in `backend/services/orchestrator/execution_engine.py`; lokale DB-Pruefung in `C:\Users\pruve\AppData\Roaming\Janus Projekt\janus.db`.
+- **Akzeptanzkriterien:**
+  - [x] Gemini-Streaming-Kosten werden nicht mehr als unattribuierte Legacy-Zeilen ohne Request-ID persistiert.
+  - [x] Der relevante Streaming- oder Gateway-Pfad schreibt konsistente Gemini-Attributionsfelder oder verhindert Doppelpersistenz derselben Anfrage.
+  - [x] Der DeepDive zeigt fuer neu erzeugte Gemini-Konversationseintraege keine kuenstliche Attributionsluecke mehr aus dem `stream_final_usage=1`-Pfad.
+  - [x] Bestehende historische Restposten bleiben nur dort sichtbar, wo sie fachlich wirklich legacy oder nicht rekonstruierbar sind.
+  - [x] Mindestens ein fokussierter Test deckt den Gemini-Streaming-/Attributionspfad gegen Regression ab.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Klar abgegrenzter Gemini-Cost-Tracking-Bug mit reproduzierbarem DB-Befund, einem wahrscheinlichen Backend-Persistenzpfad und ohne offene Produktentscheidung.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-06-04
+- **Handoff:** documentation/tasks/backlog_BACKLOG-102_gemini_streaming_cost_attribution_gap.md
+- **Recommended next skill:** DONE
+- **Handoff created:** 2026-06-04
+- **Completed by task:** `documentation/tasks/backlog_BACKLOG-102_gemini_streaming_cost_attribution_gap.md`
+- **Completed in version:** `0.4.17-beta.50`
+- **Completed at:** 2026-06-04
+- **Final Audit:** PASS
+- **Validation evidence:** `python -m pytest backend/tests/test_cost_token_tracking_completeness.py -q` PASS (10 passed); final audit `documentation/test-runs/BACKLOG-102_final_audit.md`.
+- **Notizen:** Root-Cause war ein zweiter generischer Streaming-Cost-Persistenzpfad, der fuer Gemini neben der bestehenden request-genauen Gateway-Attribution lief. Der Fix laesst den allgemeinen `stream_final_usage=1`-Persist fuer andere Provider aktiv, schliesst Gemini/Google dort aber aus, damit Gemini-Kosten nur ueber den attributierten Gateway-Pfad in den DeepDive laufen.
+
 ### BACKLOG-101 - DeepDive zeigt GPT-, Modell- und Cache-Kostensicht nach Spec-14 nicht mehr vollstaendig
 
 - **Typ:** BUG
@@ -121,7 +163,7 @@ Dashboard-Regeln:
 - **Completed at:** 2026-06-04
 - **Final Audit:** PASS
 - **Validation evidence:** `python -m py_compile backend/data/crud.py backend/api/routers/system.py backend/services/cost_service.py` PASS; `python -m pytest backend/tests/test_cost_token_tracking_completeness.py -q` PASS (9 passed); `node --check frontend/js/cost-visualizer.js` PASS; `npx playwright test tests/e2e/generated/BACKLOG-101-ui-smoke.spec.js --headed --workers=1 --reporter=list` PASS (1 passed); final audit `documentation/test-runs/BACKLOG-101_final_audit.md`.
-- **Notizen:** Wahrscheinlich kein komplett neues Feature, sondern Regression bzw. Scope-Luecke nach Spec 14. Die Kostenwahrheit fuer Gemini wurde verbessert, aber die fruehere provideruebergreifende Transparenz muss im DeepDive wieder vollstaendig bzw. sauber integriert werden.
+- **Notizen:** Wahrscheinlich kein komplett neues Feature, sondern Regression bzw. Scope-Luecke nach Spec 14. Die Kostenwahrheit fuer Gemini wurde verbessert, aber die fruehere provideruebergreifende Transparenz muss im DeepDive wieder vollstaendig bzw. sauber integriert werden. Follow-up fuer die spaeter sichtbare Gemini-Attributionsluecke: `BACKLOG-102`.
 
 ### BACKLOG-100 - Generische Anbieter-Mail-Suche nach Inhaltstypen
 
