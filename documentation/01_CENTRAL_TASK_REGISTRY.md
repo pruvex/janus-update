@@ -16,6 +16,14 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Backlog Closures
 
+### BACKLOG-102 - Gemini-Streaming-Kosten erscheinen im DeepDive als Attributionsluecke
+
+- **Status**: DONE
+- **Final Audit**: `documentation/test-runs/BACKLOG-102_final_audit.md` (PASS)
+- **Task**: `documentation/tasks/backlog_BACKLOG-102_gemini_streaming_cost_attribution_gap.md`
+- **Validation**: Der allgemeine Streaming-Cost-Persist schreibt fuer Gemini/Google keine zusaetzlichen `stream_final_usage=1`-Legacy-Zeilen mehr, sodass Gemini-Kosten fuer den DeepDive nur noch ueber den attributierten Gateway-Pfad laufen. Eine fokussierte Regression prueft, dass Gemini/Google vom generischen Streaming-Persist ausgeschlossen bleiben, waehrend andere Provider weiterhin den bestehenden Pfad nutzen.
+- **Changed Files**: `backend/services/orchestrator/execution_engine.py`, `backend/tests/test_cost_token_tracking_completeness.py`.
+
 ### BACKLOG-101 - DeepDive zeigt GPT-, Modell- und Cache-Kostensicht nach Spec-14 nicht mehr vollstaendig
 
 - **Status**: DONE

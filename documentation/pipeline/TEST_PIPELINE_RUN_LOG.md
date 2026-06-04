@@ -1744,3 +1744,27 @@ Dieser Bereich wird nach mehreren echten TestRuns gepflegt, z. B. nach 5-10 Runs
   - Diamond Confidence Score: 9/10
   - Production Confidence: 90%
   - Gesamtergebnis: PASS WITH FIXES
+
+### BACKLOG-102 - Gemini Streaming Attributionsluecke im DeepDive
+
+- **Datum**: 2026-06-04
+- **Quelle**: Backlog / Documentation Update
+- **Artefakte**: `documentation/backlog/BACKLOG.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `WHAT_I_LEARNED.md`, `documentation/tasks/backlog_BACKLOG-102_gemini_streaming_cost_attribution_gap.md`, `documentation/test-runs/BACKLOG-102_final_audit.md`
+- **Getestete Faehigkeit**: Gemini Cost-Tracking-/DeepDive-Haertung fuer request-attribuierte Streaming-Kosten
+- **Pipeline-Route**: final audit -> documentation update -> backlog sync
+- **Status**: PASS
+- **Summary**: BACKLOG-102 wurde in DONE ueberfuehrt. Der generische `stream_final_usage=1`-Persistenzpfad bleibt fuer andere Provider aktiv, wird fuer Gemini/Google aber ausgeschlossen, damit Gemini-Kosten nicht mehr doppelt und unattribuiert im DeepDive auftauchen.
+- **Security Gate**: PASS - keine neuen Secrets, keine Provider-Fallbacks, keine Ausweitung ueber den gebundenen Persistenzpfad hinaus.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: `gemini-3-flash-preview` / gateway-attributed persistence path preserved
+- **Findings**:
+  - Keine blockierenden Findings nach fokussierter Regression.
+- **Sofortfixes**:
+  - Abschlussmarker in Backlog, Registry, Project State, Changelog und Knowledge Base nachgezogen.
+- **Backlog-Follow-ups**:
+  - Keine.
+- **Abschluss**:
+  - Diamond Confidence Score: 9/10
+  - Production Confidence: 92%
+  - Gesamtergebnis: PASS

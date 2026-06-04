@@ -87,3 +87,15 @@
 - **Epic:** BACKLOG-101
 - **Confidence:** High
 - **Tags:** DeepDive, CostTransparency, ProviderParity, Savings, UX, RegressionGuard, Gemini, OpenAI
+
+
+## [PATTERN] #GeminiStreamUsageMustNotDoublePersistAttributedCosts "Gemini stream final usage costs must not be persisted a second time outside the attributed gateway path"
+- **Kontext:** BACKLOG-102 / Gemini streaming attribution gap after Spec-14 cost forensics and DeepDive rollout. (2026-06-04).
+- **Problem:** A generic stream-final-usage persistence path can silently create extra unscoped Gemini cost rows after the Gemini gateway already saved request-attributed cost components, which reappears in DeepDive as a fake attribution gap instead of a real billing residual.
+- **Loesung:** Keep Gemini request cost persistence single-owned by the Gemini gateway attribution path. The generic stream_final_usage persistence helper should skip gemini/google so that only providers without their own request-attribution contract continue using that fallback row.
+- **Haertung:** Focused cost-token regression suite passed 10/10, including a provider guard test that excludes gemini/google from generic stream persistence while leaving openai/anthropic enabled.
+- **Tripwire:** If new Gemini DeepDive entries again show unattributed stream_final_usage rows without attribution_request_id, or Gemini totals exceed the gateway-attributed request sum, a second persistence path has leaked back in.
+- **Location:** backend/services/orchestrator/execution_engine.py, backend/tests/test_cost_token_tracking_completeness.py
+- **Epic:** BACKLOG-102
+- **Confidence:** High
+- **Tags:** Gemini,CostAttribution,Streaming,DeepDive,DuplicatePersistence,RegressionGuard
