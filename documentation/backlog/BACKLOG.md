@@ -80,13 +80,15 @@ Dashboard-Regeln:
 
 ## IN PROGRESS
 
+## DONE
+
 ### BACKLOG-101 - DeepDive zeigt GPT-, Modell- und Cache-Kostensicht nach Spec-14 nicht mehr vollstaendig
 
 - **Typ:** BUG
-- **Status:** IN PROGRESS
+- **Status:** DONE
 - **Quelle:** User Intake
 - **Erstellt:** 2026-06-03
-- **Aktualisiert:** 2026-06-03
+- **Aktualisiert:** 2026-06-04
 - **Kurzbeschreibung:** Nach dem DeepDive-Umbau fuer Spec 14 ist die neue Gemini-Forensik zwar vorhanden, aber die zuvor sichtbare kostenbezogene Gesamttransparenz ist nicht mehr gleichwertig erhalten. Im DeepDive muessen weiterhin GPT/OpenAI-Verbrauch, modellgenaue Verbrauchsanzeige und die bisherige Cache-/Savings-Sicht sichtbar sein.
 - **Erwartetes Verhalten:** Das DeepDive zeigt provideruebergreifend mindestens Gemini und GPT/OpenAI, den Verbrauch pro Modell sowie die bisherige Sicht auf durch Caching eingesparte Tokens/Kosten. Die neue Gemini-Forensik und die alte Kostenuebersicht muessen zusammen funktionieren, ohne dass eine die andere verdraengt.
 - **Tatsaechliches Verhalten:** Nach dem Spec-14-Umbau ist der DeepDive-Fokus stark auf Gemini-Forensik verschoben. Laut Nutzer fehlt bzw. ist nicht mehr gleichwertig sichtbar, was vorher schon vorhanden war: GPT-Verbrauch, exakte Anzeige pro Modell und die Anzeige der durch Caching eingesparten Kosten.
@@ -104,19 +106,22 @@ Dashboard-Regeln:
 - **Wichtigkeit:** HIGH
 - **Umsetzungsrisiko:** MEDIUM
 - **Aufwand:** M
-- **Umsetzungsreife:** READY
-- **Empfehlung:** DO NOW
+- **Umsetzungsreife:** DONE
+- **Empfehlung:** DONE
 - **Entry Point:** SPEC_PIPELINE_START
 - **Routing reason:** DeepDive-Regression beruehrt Cross-Provider-Kostenansicht, Modell-Splits, Cache-Savings und die neue Gemini-Forensik gemeinsam; das braucht einen gebundenen Spec-Strang statt eines lokalen Bugfixes.
 - **Routing confidence:** HIGH
 - **Routing decided by:** BACKLOG SKILL 3
 - **Routing decided at:** 2026-06-03
 - **Handoff:** documentation/Planned Features/backlog_BACKLOG-101_deepdive_restore_cross_provider_cost_visibility_and_cache_savings.md
-- **Recommended next skill:** SKILL 1
+- **Recommended next skill:** DONE
 - **Handoff created:** 2026-06-03
+- **Completed by task:** `documentation/tasks/backlog_BACKLOG-101_deepdive_restore_cross_provider_cost_visibility_and_cache_savings.md`
+- **Completed in version:** `0.4.17-beta.50`
+- **Completed at:** 2026-06-04
+- **Final Audit:** PASS
+- **Validation evidence:** `python -m py_compile backend/data/crud.py backend/api/routers/system.py backend/services/cost_service.py` PASS; `python -m pytest backend/tests/test_cost_token_tracking_completeness.py -q` PASS (9 passed); `node --check frontend/js/cost-visualizer.js` PASS; `npx playwright test tests/e2e/generated/BACKLOG-101-ui-smoke.spec.js --headed --workers=1 --reporter=list` PASS (1 passed); final audit `documentation/test-runs/BACKLOG-101_final_audit.md`.
 - **Notizen:** Wahrscheinlich kein komplett neues Feature, sondern Regression bzw. Scope-Luecke nach Spec 14. Die Kostenwahrheit fuer Gemini wurde verbessert, aber die fruehere provideruebergreifende Transparenz muss im DeepDive wieder vollstaendig bzw. sauber integriert werden.
-
-## DONE
 
 ### BACKLOG-100 - Generische Anbieter-Mail-Suche nach Inhaltstypen
 
