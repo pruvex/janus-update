@@ -1,6 +1,6 @@
 ﻿# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-06-03 (Spec 14 Gemini Cost Attribution und DeepDive Forensics final auditiert - PASS; Janus Mail Grundversion und Chat-Persistenz-Fix weiterhin bestaetigt)
+**Aktualisiert:** 2026-06-04 (BACKLOG-101 DeepDive Cross-Provider Transparenz final auditiert - PASS; Spec 14 Gemini Cost Attribution und DeepDive Forensics weiterhin bestaetigt)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **BACKLOG-101 DeepDive Cross-Provider Transparenz und Cache-Savings** | SEALED | Das bestehende DeepDive zeigt jetzt wieder eine zusammenhaengende Kostenansicht fuer Gemini und GPT/OpenAI: provideruebergreifende Gesamtsicht, Modellsplits, Cache-Tokens und Savings sind zurueck, waehrend die Spec-14-Gemini-Forensik mit Anomalien, Billing-Abweichungen, Restposten und Request-Drilldown erhalten bleibt. Validation: `py_compile` PASS, cost-token suite `9/9` PASS, `node --check frontend/js/cost-visualizer.js` PASS, dauerhafter UI-Smoke `1/1` PASS. |
 | **TASK-SPEC14 Gemini Cost Attribution and DeepDive Forensics** | SEALED | Gemini-Kostenforensik ist jetzt durchgaengig umgesetzt: strukturierte Kosten-/Attributionsbelege pro externem Gemini-Request, Session/Testlauf/Request-Gruppierung, historische May-2026-Reconciliation mit sichtbaren Restposten, anomaly-first DeepDive-Modal und Flash-by-default fuer Gemini Grounding/Websearch. Final Audit PASS; Validation: `py_compile` PASS, cost-token suite `9/9` PASS, routing/provider-policy suite `10/10` PASS, websearch suite `102/102` PASS, model-discipline suite `7/7` PASS, `node --check frontend/js/cost-visualizer.js` PASS. |
 | **TASK-098 Janus Mail Bundle (Spec 10-13)** | SEALED WITH FIXES | Janus Mail ist als belastbare Grundversion umgesetzt: Mail-Einstieg in Sidebar/Dock, modalgroesse und Layout am Kalender orientiert, Multi-Account-Gmail mit aktivem Konto-Persistenzflow, Inbox/Search/Detail, Compose/Reply, Anhang senden/speichern, Chat-gesteuerte Mailauftraege mit Konto-Rueckfragen, Consent-gesteuertes AI-Assist mit sichtbarem Degraded-State statt Hidden-Fallback. Privacy-Haertung: sensible Mail-Details aus technischen Logs entfernt, finaler Payload-Log auf Zaehler/Laengen reduziert. Validation: py_compile PASS; Backend-Mail/Intent/Privacy Tests 44/44 PASS; Frontend-Mail-Tests 7/7 PASS. |
 | **BACKLOG-100 Generische Anbieter-Mail-Suche nach Inhaltstypen** | SEALED | Mailanfragen wie "Rezepte von Anbieter X" werden jetzt generisch als Anbieter-plus-Kategorie erkannt, liefern evidenzbasierte Trefferlisten und fragen bei mehrdeutigem Anbieter oder Inhaltstyp gezielt nach. Treffer koennen als Rezeptdetail geoeffnet und als PDF in Desktop-Ordner exportiert werden, ohne bestehende Mail-Routen zu brechen. Final Audit: PASS; Validation: py_compile PASS, backend mail regression PASS (39), frontend mail inbox test PASS (3). |

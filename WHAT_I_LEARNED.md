@@ -76,3 +76,14 @@
 - **Epic:** TASK-SPEC14
 - **Confidence:** High
 - **Tags:** Gemini, CostAttribution, DeepDive, ProviderPolicy, Privacy, Websearch, AuditHardening
+
+## [PATTERN] #DeepDiveMustKeepCrossProviderOverviewAndForensicsTogether "A forensic deep dive should add a top-level cross-provider cost view, not replace it"
+- **Kontext:** BACKLOG-101 / DeepDive Cross-Provider Transparenz und Cache-Savings nach Spec-14-Regressionsrepair.
+- **Problem:** Eine forensische Spezialansicht fuer einen Provider kann fachlich korrekt sein und trotzdem die eigentliche Nutzerwahrheit verschlechtern, wenn dabei die fruehere Gesamtansicht fuer andere Provider, Modelle und Savings aus dem sichtbaren DeepDive verschwindet.
+- **Loesung:** Das DeepDive in zwei explizite Ebenen teilen: oben eine provideruebergreifende Kostenuebersicht mit Provider-/Modellsplits sowie Cache-/Savings-Metriken, darunter die spezifische Forensik mit Anomalien, Billing-Abweichungen, Restposten und Request-/Komponenten-Drilldown. Keine parallele neue Billing-Oberflaeche bauen; die bestehende Modal-Surface erweitern.
+- **Haertung:** Focused backend contract test stayed green, `node --check` on the modal renderer passed, and a permanent Playwright smoke now fails if GPT/OpenAI visibility, model rows, savings text or Gemini forensics disappear from the same modal.
+- **Tripwire:** If a future DeepDive change again shows only one provider's forensic story but no cross-provider totals, no per-model view or no savings signal, the regression is back even if the provider-specific payload still looks internally correct.
+- **Location:** `backend/data/crud.py`, `backend/api/routers/system.py`, `frontend/js/cost-visualizer.js`, `frontend/src/styles.css`, `backend/tests/test_cost_token_tracking_completeness.py`, `tests/e2e/generated/BACKLOG-101-ui-smoke.spec.js`
+- **Epic:** BACKLOG-101
+- **Confidence:** High
+- **Tags:** DeepDive, CostTransparency, ProviderParity, Savings, UX, RegressionGuard, Gemini, OpenAI

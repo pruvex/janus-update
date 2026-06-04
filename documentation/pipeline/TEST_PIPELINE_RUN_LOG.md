@@ -148,6 +148,39 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
   - Production Confidence: 100%
   - Gesamtergebnis: PASS
 
+### BACKLOG-101 - DeepDive Cross-Provider Transparenz und Cache-Savings - Documentation Sync Note
+
+- **Datum**: 2026-06-04
+- **Quelle**: Backlog / Final Audit / Documentation Update
+- **Artefakte**: `documentation/backlog/BACKLOG.md`, `janus-dashboard/data/backlog.snapshot.json`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `WHAT_I_LEARNED.md`, `documentation/test-runs/BACKLOG-101_final_audit.md`
+- **Getestete Faehigkeit**: DeepDive-Kostenansicht mit Cross-Provider-Overview, Modellsplits, Cache-/Savings-Sicht und erhaltener Gemini-Forensik
+- **Pipeline-Route**: execution -> final audit -> documentation update -> backlog sync
+- **Status**: PASS
+- **Summary**: BACKLOG-101 wurde nach finalem PASS aus IN PROGRESS nach DONE verschoben, der Dashboard-Snapshot synchronisiert und die Pflichtmarker fuer Registry, Projektstatus, Changelog, Learnings und Test-Pipeline-Log wurden nachgezogen.
+- **Security Gate**: PASS - keine neuen Secrets, keine neue Persistenzflaeche und keine Privacy-Aufweichung; die bestehende Gemini-Forensik und sensible Datenredaktion bleiben intakt.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+- **UX-Ergebnis**: Das DeepDive zeigt wieder GPT/OpenAI und Gemini in einer zusammenhaengenden Kostenansicht, inklusive Top-Modelle, Cache-Tokens, Savings und beibehaltener Gemini-Anomalie-/Residual-Sicht.
+- **Intent-/Skill-Routing-Ergebnis**: Keine Routing-Aenderung; der Abschluss synchronisiert nur den erfolgreich auditierten Backlog-/Spec-Strang.
+- **Kosten-/Token-Ergebnis**: Cross-provider totals, cached tokens and savings remain visible in the modal; backend contract suite `9/9` PASS and UI smoke `1/1` PASS.
+- **Capability-Erklaerfaehigkeit**: PASS
+- **Findings**:
+  - Keine offenen Findings.
+- **Sofortfixes**:
+  - `documentation/backlog/BACKLOG.md`: BACKLOG-101 nach DONE verschoben und Abschlussfelder ergaenzt.
+  - `documentation/01_CENTRAL_TASK_REGISTRY.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `WHAT_I_LEARNED.md`: Abschlussmarker fuer BACKLOG-101 ergaenzt.
+- **Backlog-Follow-ups**:
+  - Keine
+- **Nebenbefunde ausserhalb TestScope**:
+  - Keine
+- **Optimierungspotential fuer Testpipeline**:
+  - Der schmale UI-Smoke fuer DeepDive ist als guter Regression-Guard ausreichend; kein breiter Live-Provider-Run noetig fuer jede spaetere Layout-Aenderung.
+- **Abschluss**:
+  - Diamond Confidence Score: 9.5/10
+  - Production Confidence: 96%
+  - Gesamtergebnis: PASS
+
 ### BACKLOG-095 - Einheitliche Wetterantworten - Documentation Sync Note
 
 - **Datum**: 2026-05-27

@@ -106,3 +106,15 @@ Routing Decision: 5.4
 Routing Reasoning: high
 Routing Confidence: HIGH
 Dashboard Hint: CAUTION
+
+## SPEC REVIEW METADATA
+
+- **Review Status:** APPROVED_WITH_NOTES
+- **Complexity Score:** 68
+- **Risk:** HIGH
+- **Recommended Review Model:** 5.4
+- **Skill-1 Ready:** YES
+- **Split Required:** NO
+- **Reviewed At:** 2026-06-04
+- **Review Confidence:** HIGH
+- **Review Source:** janus-spec-review
