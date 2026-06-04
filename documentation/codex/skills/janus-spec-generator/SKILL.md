@@ -21,49 +21,54 @@ Ignore earlier brainstorming, rejected options, stale drafts, contradictory chat
 
 ## References
 
-Read only when exact legacy wording is needed:
+Read only when exact wording or current governance alignment is needed:
 
-- `C:\KI\Janus-Projekt\documentation\prompts\2.JANUS DIAMANT SPEC GENERATOR v4.4.1.md`
+- `C:\KI\Janus-Projekt\AGENTS.md`
+- `C:\KI\Janus-Projekt\documentation\codex\CODEX_WORKFLOW_PLAYBOOK.md`
 - `C:\KI\Janus-Projekt\documentation\pipeline\PIPELINE_CONTRACT.md`
 
 ## Blocking Rule
 
 If one essential product decision is missing, output only:
 
-```markdown
-# BLOCKING QUESTIONS
-
-Question:
-<exactly one question>
-
-Option A:
-<concrete option>
-
-Option B:
-<concrete option>
-
-Recommendation:
-<short recommendation>
+```text
+BLOCKING QUESTION
+- Question: <exactly one question>
+- Option A: <concrete option>
+- Option B: <concrete option>
+- Recommendation: <short recommendation>
 ```
 
 Do not output a Spec with missing, optional, maybe, TBD, or ambiguous core decisions.
 
 ## Output Contract
 
-Successful output must be exactly one fenced markdown code block. No text before or after.
+Write the full Spec to the target file under `documentation/SPEC/`.
 
-The first line inside the block must be exactly:
+Do not paste the full Spec body into the user-facing response.
 
-```markdown
-# JANUS FEATURE SPEC – DIAMANTSTANDARD v4.4.3
+Successful user-facing output must stay compact and end in a small next-step summary. Keep it short enough that the user can just read it and answer `ok`.
+
+Use:
+
+```text
+SPEC GENERATION RESULT
+- Spec: <path>
+- Decision: GENERATED | BLOCKED
+- Complexity Score: <0-100 integer | N/A>
+- Model Recommendation: <5.4 | 5.5>, <low | medium | medium-high | high>
+- Key Note: <one short sentence>
+- Next Skill: janus-spec-review | janus-spec-normalizer | NEEDS_INFO
 ```
+
+If a model or chat switch is recommended for the next step, follow repository governance and emit the normal `MODEL SWITCH GATE` instead of dumping the Spec body.
 
 ## Required Structure
 
-Use these headings exactly and in this order:
+Use these headings exactly and in this order inside the written Spec:
 
 ```markdown
-# JANUS FEATURE SPEC – DIAMANTSTANDARD v4.4.3
+# JANUS FEATURE SPEC - DIAMANTSTANDARD v4.4.3
 
 ## SPEC REVIEW EXECUTION ROUTING
 
@@ -101,8 +106,10 @@ If a section is not applicable, write `Nicht zutreffend: <kurze Begruendung>`.
 Directly under `## SPEC REVIEW EXECUTION ROUTING`, include exactly these fields, one per physical line:
 
 ```text
-target_skill: SPEC_REVIEW
-execution_mode: SWE_1_6 | GPT_5_5
+target_skill: janus-spec-review
+recommended_model: 5.4 | 5.5
+recommended_reasoning: low | medium | medium-high | high
+new_chat: yes | no
 complexity_score: <0-100 integer>
 confidence: LOW | MEDIUM | HIGH
 dashboard_hint: SAFE | CAUTION | CRITICAL
@@ -149,11 +156,16 @@ Internal complexity dimensions each range 0-20:
 These values must match exactly:
 
 - routing `complexity_score` = `Total Complexity Score`
-- routing `execution_mode` = `Routing Decision`
+- routing `recommended_model` = `Routing Decision`
+- routing `recommended_reasoning` = `Routing Reasoning`
 - routing `confidence` = `Routing Confidence`
 - routing `dashboard_hint` = `Dashboard Hint`
 
-Route to `GPT_5_5` for high ambiguity, security/privacy risk, architecture risk, or release-critical decisions. Otherwise prefer `SWE_1_6`.
+Prefer `5.4` as the normal Janus workhorse for spec review.
+
+Escalate to `5.5` only for high ambiguity, security/privacy risk, architecture risk, or release-critical decisions.
+
+Use `new_chat: yes` only when the next review should happen in a fresh thread because of context size, audit independence, or scope shift. Otherwise use `no`.
 
 ## Forbidden Content
 
@@ -161,4 +173,6 @@ Do not include implementation code, API signatures, database schema, concrete fi
 
 ## Next Gate
 
-After a valid Spec is created, recommend `janus-spec-normalizer` and `janus-spec-review`.
+After a valid Spec is created, default to `janus-spec-review`.
+
+Recommend `janus-spec-normalizer` only when the generated Spec still needs mechanical parser-safe cleanup.
