@@ -42,6 +42,13 @@ logger = logging.getLogger("janus_backend")
 MAPS_LINK_REGEX = re.compile(r'"maps_link"\s*:\s*"([^"]+)"')
 
 
+def _should_persist_stream_final_usage_cost(provider: Any) -> bool:
+    provider_key = str(provider or "").strip().lower()
+    if provider_key in {"gemini", "google"}:
+        return False
+    return True
+
+
 def _has_websearch_tool_result(results: Any) -> bool:
     for item in results or []:
         if not isinstance(item, dict):
@@ -2932,7 +2939,13 @@ class OrchestratorExecutionEngine:
                             aggregated_tokens_input += int(u.get("input_tokens") or u.get("prompt_tokens") or 0)
                             aggregated_tokens_output += int(u.get("output_tokens") or u.get("completion_tokens") or 0)
                             aggregated_total_cost += float(cst.get("total_cost") or 0.0)
-                            if float(cst.get("total_cost") or 0) > 0 and self.db is not None:
+                            if (
+                                float(cst.get("total_cost") or 0) > 0
+                                and self.db is not None
+                                and _should_persist_stream_final_usage_cost(
+                                    current_call_provider or gateway_kwargs.get("provider")
+                                )
+                            ):
                                 try:
                                     from backend.services.cost_service import create_cost_entry
                                     _stream_tokens_saved = int(

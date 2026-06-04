@@ -8,6 +8,7 @@ from backend.api.routers import system
 from backend.data import crud
 from backend.data import database as database_module
 from backend.data.models import Base, Cost
+from backend.services.orchestrator.execution_engine import _should_persist_stream_final_usage_cost
 from backend.services.cost_service import create_cost_entry
 
 
@@ -172,6 +173,13 @@ def test_websearch_costs_remain_separate_deep_dive_component():
     assert row["display_name"] == "Web-Recherchen"
     assert row["search_count"] == 1
     assert row["search_cost"] == 0.009
+
+
+def test_gemini_stream_final_usage_costs_are_excluded_from_generic_stream_persistence():
+    assert _should_persist_stream_final_usage_cost("gemini") is False
+    assert _should_persist_stream_final_usage_cost("google") is False
+    assert _should_persist_stream_final_usage_cost("openai") is True
+    assert _should_persist_stream_final_usage_cost("anthropic") is True
 
 
 def test_costs_sqlite_schema_migration_adds_attribution_columns(monkeypatch):
