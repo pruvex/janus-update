@@ -1522,6 +1522,82 @@ button:hover {
     gap: 12px;
 }
 
+.deep-dive-provider-section,
+.deep-dive-model-section,
+.deep-dive-forensic-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.deep-dive-provider-summary-note {
+    font-size: 0.86rem;
+    color: #5f6368;
+    font-weight: 600;
+}
+
+.deep-dive-summary-grid--cross-provider {
+    margin-top: 0;
+}
+
+.deep-dive-metric-card--muted {
+    background: #f3f6f9;
+}
+
+.deep-dive-provider-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.deep-dive-provider-card,
+.deep-dive-model-row {
+    border: 1px solid #d7dde5;
+    border-radius: 8px;
+    background: #fff;
+    padding: 12px 14px;
+}
+
+.deep-dive-provider-topline,
+.deep-dive-provider-meta,
+.deep-dive-model-row,
+.deep-dive-model-metrics {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.deep-dive-provider-topline strong,
+.deep-dive-model-main strong {
+    font-size: 0.94rem;
+}
+
+.deep-dive-provider-meta,
+.deep-dive-model-main span,
+.deep-dive-model-metrics {
+    font-size: 0.82rem;
+    color: #5f6368;
+    flex-wrap: wrap;
+}
+
+.deep-dive-model-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.deep-dive-model-main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.deep-dive-forensic-heading h4 {
+    margin: 0;
+    font-size: 1rem;
+}
+
 .deep-dive-anomaly-header {
     display: flex;
     justify-content: space-between;
@@ -1855,6 +1931,10 @@ button:hover {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .deep-dive-provider-grid {
+        grid-template-columns: 1fr;
+    }
+
     .deep-dive-detail-panel {
         grid-column: 1 / -1;
     }
@@ -1870,6 +1950,7 @@ button:hover {
 
     .deep-dive-summary-grid,
     .deep-dive-anomaly-grid,
+    .deep-dive-provider-grid,
     .deep-dive-layout,
     .deep-dive-request-summary,
     .deep-dive-component-metadata {
@@ -1878,7 +1959,11 @@ button:hover {
 
     .deep-dive-live-card,
     .deep-dive-topbar,
-    .deep-dive-request-header {
+    .deep-dive-request-header,
+    .deep-dive-provider-topline,
+    .deep-dive-provider-meta,
+    .deep-dive-model-row,
+    .deep-dive-model-metrics {
         flex-direction: column;
         align-items: stretch;
     }

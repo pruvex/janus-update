@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     costDeepDiveModal.style.display = "flex";
-    deepDiveContent.innerHTML = '<div class="deep-dive-loading">Lade Gemini-Forensik...</div>';
+    deepDiveContent.innerHTML = '<div class="deep-dive-loading">Lade Kosten-DeepDive...</div>';
     deepDiveState.liveMeta = window.lastMetadata || null;
 
     try {
@@ -94,6 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
       : null;
 
     const summary = data.summary || {};
+    const crossProviderSummary = data.cross_provider_summary || {};
     const anomalies = Array.isArray(data.anomaly_overview) ? data.anomaly_overview : [];
     const hasGroups = filteredGroups.length > 0;
     const monthlyBudget = Number(dashboard.monthly_budget) || 0;
@@ -103,11 +104,11 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="deep-dive-shell">
         <div class="deep-dive-topbar">
           <div>
-            <div class="deep-dive-kicker">Gemini DeepDive</div>
-            <h3 class="deep-dive-title">Auffaelligkeiten zuerst, Drilldown danach</h3>
+            <div class="deep-dive-kicker">Kosten DeepDive</div>
+            <h3 class="deep-dive-title">Cross-Provider zuerst, Gemini-Forensik darunter</h3>
             <p class="deep-dive-subtitle">
               Zeitraum ${escapeHtml(formatPeriodLabel(data.period))} | Provider ${escapeHtml(
-                String(data.provider_scope || "gemini").toUpperCase(),
+                String(data.provider_scope || "cross_provider").toUpperCase(),
               )}
             </p>
           </div>
@@ -125,6 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
 
         ${renderLiveSnapshot(deepDiveState.liveMeta)}
+        ${renderCrossProviderOverview(crossProviderSummary)}
         ${renderSummaryCards(summary, data.historical_reconciliation || {})}
         ${renderAnomalyOverview(anomalies)}
 
@@ -233,6 +235,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderSummaryCards(summary, historicalReconciliation) {
     const statusBuckets = Array.isArray(summary.status_buckets) ? summary.status_buckets : [];
     return `
+      <section class="deep-dive-forensic-heading">
+        <div>
+          <div class="deep-dive-kicker">Gemini Forensik</div>
+          <h4>Attribution, Restposten und Billing-Abweichungen</h4>
+        </div>
+      </section>
       <section class="deep-dive-summary-grid">
         <article class="deep-dive-metric-card">
           <span class="deep-dive-metric-label">Intern attribuiert</span>
@@ -268,6 +276,112 @@ document.addEventListener("DOMContentLoaded", () => {
             `,
           )
           .join("")}
+      </section>
+    `;
+  }
+
+  function renderCrossProviderOverview(crossProviderSummary) {
+    const providerBreakdown = Array.isArray(crossProviderSummary.provider_breakdown)
+      ? crossProviderSummary.provider_breakdown
+      : [];
+    const modelBreakdown = Array.isArray(crossProviderSummary.model_breakdown)
+      ? crossProviderSummary.model_breakdown
+      : [];
+    const topModels = modelBreakdown.slice(0, 6);
+    const totalCostSaved = Number(crossProviderSummary.total_cost_saved) || 0;
+    const totalTokensSaved = Number(crossProviderSummary.total_tokens_saved) || 0;
+    const totalCachedTokens = Number(crossProviderSummary.total_cached_tokens) || 0;
+
+    return `
+      <section class="deep-dive-provider-section">
+        <div class="deep-dive-anomaly-header">
+          <div>
+            <div class="deep-dive-kicker">Cross-Provider</div>
+            <h4>Gesamtsicht ueber Provider, Modelle und Savings</h4>
+          </div>
+          <div class="deep-dive-provider-summary-note">
+            ${escapeHtml(formatProviderSummaryLine(crossProviderSummary))}
+          </div>
+        </div>
+
+        <section class="deep-dive-summary-grid deep-dive-summary-grid--cross-provider">
+          <article class="deep-dive-metric-card">
+            <span class="deep-dive-metric-label">Gesamtkosten</span>
+            <strong>${formatCurrency(crossProviderSummary.total_cost)}</strong>
+            <small>${providerBreakdown.length || 0} Provider aktiv</small>
+          </article>
+          <article class="deep-dive-metric-card">
+            <span class="deep-dive-metric-label">Modelle sichtbar</span>
+            <strong>${Number(crossProviderSummary.model_count) || 0}</strong>
+            <small>${modelBreakdown.length || 0} Modelle im DeepDive</small>
+          </article>
+          <article class="deep-dive-metric-card ${totalCachedTokens > 0 ? "" : "deep-dive-metric-card--muted"}">
+            <span class="deep-dive-metric-label">Cache-Tokens</span>
+            <strong>${formatNumber(totalCachedTokens)}</strong>
+            <small>${totalCachedTokens > 0 ? "wieder sichtbar" : "keine Cache-Tokens erfasst"}</small>
+          </article>
+          <article class="deep-dive-metric-card ${totalCostSaved > 0 ? "" : "deep-dive-metric-card--muted"}">
+            <span class="deep-dive-metric-label">Savings</span>
+            <strong>${formatCurrency(totalCostSaved)}</strong>
+            <small>${totalTokensSaved > 0 ? `${formatNumber(totalTokensSaved)} Tokens gespart` : "keine Savings erfasst"}</small>
+          </article>
+        </section>
+
+        <div class="deep-dive-provider-grid">
+          ${
+            providerBreakdown.length
+              ? providerBreakdown
+                  .map(
+                    (provider) => `
+                      <article class="deep-dive-provider-card">
+                        <div class="deep-dive-provider-topline">
+                          <strong>${escapeHtml(formatProviderLabel(provider.provider))}</strong>
+                          <span>${formatCurrency(provider.total_cost)}</span>
+                        </div>
+                        <div class="deep-dive-provider-meta">
+                          <span>${escapeHtml(formatModelCountLabel(provider.models))}</span>
+                          <span>${formatNumber(provider.total_cached_tokens || 0)} Cache-Tokens</span>
+                          <span>${formatCurrency(provider.total_cost_saved || 0)} Savings</span>
+                        </div>
+                      </article>
+                    `,
+                  )
+                  .join("")
+              : '<div class="deep-dive-empty-state">Keine provideruebergreifenden Kosten fuer diesen Zeitraum verfuegbar.</div>'
+          }
+        </div>
+
+        <section class="deep-dive-model-section">
+          <div class="deep-dive-panel-header">
+            <h4>Top-Modelle</h4>
+            <span>${modelBreakdown.length || 0} Modelle</span>
+          </div>
+          ${
+            topModels.length
+              ? `
+                <div class="deep-dive-model-list">
+                  ${topModels
+                    .map(
+                      (item) => `
+                        <article class="deep-dive-model-row">
+                          <div class="deep-dive-model-main">
+                            <strong>${escapeHtml(item.model || "Unbekanntes Modell")}</strong>
+                            <span>${escapeHtml(formatProviderLabel(item.provider))}</span>
+                          </div>
+                          <div class="deep-dive-model-metrics">
+                            <span>${formatCurrency(item.total_cost)}</span>
+                            <span>${formatNumber(item.total_cached_tokens || 0)} Cache</span>
+                            <span>${formatCurrency(item.total_cost_saved || 0)} Savings</span>
+                          </div>
+                        </article>
+                      `,
+                    )
+                    .join("")}
+                </div>
+              `
+              : '<div class="deep-dive-empty-state">Keine Modellsicht fuer diesen Zeitraum verfuegbar.</div>'
+          }
+        </section>
       </section>
     `;
   }
@@ -340,7 +454,7 @@ document.addEventListener("DOMContentLoaded", () => {
               )}">
                 <div class="deep-dive-list-item-main">
                   <strong>${escapeHtml(group.group_label || group.group_key)}</strong>
-                  <span>${group.request_count || 0} Requests</span>
+                  <span>${escapeHtml(formatGroupMetaLine(group))}</span>
                 </div>
                 <div class="deep-dive-list-item-meta">
                   <span>${formatCurrency(group.total_cost)}</span>
@@ -407,6 +521,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <div class="deep-dive-request-summary">
           <div>
+            <span>Provider</span>
+            <strong>${escapeHtml(formatProviderLabel(request.provider))}</strong>
+          </div>
+          <div>
             <span>Status</span>
             <strong>${escapeHtml(request.attribution_status || "unbekannt")}</strong>
           </div>
@@ -421,6 +539,14 @@ document.addEventListener("DOMContentLoaded", () => {
           <div>
             <span>Restposten</span>
             <strong>${formatCurrency(request.unattributed_residual_total)}</strong>
+          </div>
+          <div>
+            <span>Cache-Tokens</span>
+            <strong>${formatNumber(request.total_cached_tokens || 0)}</strong>
+          </div>
+          <div>
+            <span>Savings</span>
+            <strong>${formatCurrency(request.total_cost_saved)}</strong>
           </div>
         </div>
 
@@ -455,7 +581,9 @@ document.addEventListener("DOMContentLoaded", () => {
                   </div>
                   <div class="deep-dive-component-meta">
                     <span>${escapeHtml(component.status || "unbekannt")}</span>
+                    <span>${escapeHtml(formatProviderLabel(component.provider))}</span>
                     <span>${escapeHtml(formatTokenLine(component))}</span>
+                    <span>${escapeHtml(formatSavingsLine(component))}</span>
                     <span>${escapeHtml(formatTimestamp(component.timestamp))}</span>
                     ${
                       component.manual_override
@@ -694,8 +822,13 @@ function formatRequestMetaLine(request) {
     parts.push("Testlauf");
   } else if (request.group_kind === "session") {
     parts.push("Session");
+  } else if (request.group_kind === "provider") {
+    parts.push("Provider-Block");
   } else {
     parts.push("Legacy");
+  }
+  if (request.provider) {
+    parts.push(formatProviderLabel(request.provider));
   }
   if (request.timestamp) {
     parts.push(formatTimestamp(request.timestamp));
@@ -745,6 +878,34 @@ function formatComponentLabel(value) {
   return value || "Komponente";
 }
 
+function formatProviderLabel(value) {
+  if (String(value || "").toLowerCase() === "openai") {
+    return "GPT / OpenAI";
+  }
+  if (String(value || "").toLowerCase() === "gemini") {
+    return "Gemini";
+  }
+  return value || "Unbekannter Provider";
+}
+
+function formatProviderSummaryLine(summary) {
+  const providerCount = Number(summary.provider_count) || 0;
+  const modelCount = Number(summary.model_count) || 0;
+  return `${providerCount} Provider | ${modelCount} Modelle | ${formatCurrency(summary.total_cost)}`;
+}
+
+function formatModelCountLabel(models) {
+  const count = Array.isArray(models) ? models.length : 0;
+  return `${count} Modell${count === 1 ? "" : "e"}`;
+}
+
+function formatGroupMetaLine(group) {
+  const providerLabel = Array.isArray(group.providers) && group.providers.length
+    ? group.providers.map((provider) => formatProviderLabel(provider)).join(", ")
+    : "ohne Provider";
+  return `${group.request_count || 0} Requests | ${providerLabel}`;
+}
+
 function formatMetadataKey(value) {
   return String(value || "")
     .replace(/_/g, " ")
@@ -755,6 +916,19 @@ function formatTokenLine(component) {
   return `In ${Number(component.input_tokens) || 0} | Out ${Number(component.output_tokens) || 0} | Total ${
     Number(component.total_tokens) || 0
   }`;
+}
+
+function formatSavingsLine(component) {
+  const costSaved = Number(component.cost_saved) || 0;
+  const tokensSaved = Number(component.tokens_saved) || 0;
+  if (costSaved <= 0 && tokensSaved <= 0) {
+    return "keine Savings";
+  }
+  return `Savings ${formatCurrency(costSaved)} | ${formatNumber(tokensSaved)} Tokens`;
+}
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString("de-DE");
 }
 
 function sumCosts(items, key) {
