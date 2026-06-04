@@ -212,9 +212,22 @@ def test_costs_sqlite_schema_migration_adds_attribution_columns(monkeypatch):
     assert "attribution_metadata" in columns
 
 
-def test_gemini_deep_dive_summary_exposes_anomaly_overview_and_request_drilldown():
+def test_cross_provider_deep_dive_summary_restores_provider_model_and_savings_visibility():
     db = _session()
 
+    create_cost_entry(
+        db=db,
+        amount=0.004,
+        model="gpt-5.4-nano",
+        provider="openai",
+        source_type="conversation",
+        input_tokens=700,
+        output_tokens=90,
+        cached_tokens=250,
+        total_tokens=790,
+        tokens_saved=250,
+        context_details="tool_loop_iteration=1;tool_calls=1",
+    )
     create_cost_entry(
         db=db,
         amount=0.020,
@@ -262,11 +275,36 @@ def test_gemini_deep_dive_summary_exposes_anomaly_overview_and_request_drilldown
     )
 
     now = datetime.utcnow()
-    summary = crud.get_gemini_deep_dive_summary(db, now.year, now.month)
+    summary = crud.get_costs_deep_dive_summary(db, now.year, now.month)
 
-    assert summary["provider_scope"] == "gemini"
-    assert summary["summary"]["group_count"] == 2
-    assert summary["summary"]["request_count"] == 2
+    assert summary["provider_scope"] == "cross_provider"
+    cross_provider_summary = summary["cross_provider_summary"]
+    assert cross_provider_summary["provider_count"] == 2
+    assert cross_provider_summary["model_count"] == 3
+    assert cross_provider_summary["total_cached_tokens"] == 250
+    assert cross_provider_summary["total_tokens_saved"] == 250
+    assert cross_provider_summary["total_cost_saved"] > 0.0
+
+    providers = {item["provider"]: item for item in cross_provider_summary["provider_breakdown"]}
+    assert providers["openai"]["total_cost"] == 0.004
+    assert providers["openai"]["total_cached_tokens"] == 250
+    assert providers["openai"]["total_tokens_saved"] == 250
+    assert providers["openai"]["models"] == ["gpt-5.4-nano"]
+    assert providers["gemini"]["total_cost"] == 0.08
+
+    model_breakdown = {
+        (item["provider"], item["model"]): item
+        for item in cross_provider_summary["model_breakdown"]
+    }
+    openai_model = model_breakdown[("openai", "gpt-5.4-nano")]
+    assert openai_model["total_cost"] == 0.004
+    assert openai_model["total_cached_tokens"] == 250
+    assert openai_model["total_tokens_saved"] == 250
+    assert openai_model["component_breakdown"][0]["component"] == "conversation"
+
+    assert summary["summary"]["group_count"] == 3
+    assert summary["summary"]["request_count"] == 3
+    assert summary["summary"]["forensic_provider_scope"] == "gemini"
     assert summary["summary"]["internal_attributed_total"] == 0.08
     assert summary["summary"]["unattributed_residual_total"] == 0.0
     assert summary["summary"]["external_billing_total"] == 0.08
@@ -315,7 +353,7 @@ def test_gemini_deep_dive_summary_keeps_may_2026_residual_visible_for_legacy_cos
     legacy.timestamp = datetime(2026, 5, 14, 10, 5, 0)
     db.commit()
 
-    summary = crud.get_gemini_deep_dive_summary(db, 2026, 5)
+    summary = crud.get_costs_deep_dive_summary(db, 2026, 5)
 
     assert summary["historical_reconciliation"]["mode"] == "may_2026_forensic_reconstruction"
     assert summary["historical_reconciliation"]["visible_residual_required"] is True
@@ -351,7 +389,8 @@ def test_costs_deep_dive_endpoint_returns_anomaly_first_payload():
     now = datetime.utcnow()
     payload = asyncio.run(system.get_costs_deep_dive(year=now.year, month=now.month, db=db))
 
-    assert payload["provider_scope"] == "gemini"
+    assert payload["provider_scope"] == "cross_provider"
     assert "anomaly_overview" in payload
     assert "summary" in payload
+    assert "cross_provider_summary" in payload
     assert "groups" in payload
