@@ -80,6 +80,42 @@ Dashboard-Regeln:
 
 ## IN PROGRESS
 
+### BACKLOG-101 - DeepDive zeigt GPT-, Modell- und Cache-Kostensicht nach Spec-14 nicht mehr vollstaendig
+
+- **Typ:** BUG
+- **Status:** IN PROGRESS
+- **Quelle:** User Intake
+- **Erstellt:** 2026-06-03
+- **Aktualisiert:** 2026-06-03
+- **Kurzbeschreibung:** Nach dem DeepDive-Umbau fuer Spec 14 ist die neue Gemini-Forensik zwar vorhanden, aber die zuvor sichtbare kostenbezogene Gesamttransparenz ist nicht mehr gleichwertig erhalten. Im DeepDive muessen weiterhin GPT/OpenAI-Verbrauch, modellgenaue Verbrauchsanzeige und die bisherige Cache-/Savings-Sicht sichtbar sein.
+- **Erwartetes Verhalten:** Das DeepDive zeigt provideruebergreifend mindestens Gemini und GPT/OpenAI, den Verbrauch pro Modell sowie die bisherige Sicht auf durch Caching eingesparte Tokens/Kosten. Die neue Gemini-Forensik und die alte Kostenuebersicht muessen zusammen funktionieren, ohne dass eine die andere verdraengt.
+- **Tatsaechliches Verhalten:** Nach dem Spec-14-Umbau ist der DeepDive-Fokus stark auf Gemini-Forensik verschoben. Laut Nutzer fehlt bzw. ist nicht mehr gleichwertig sichtbar, was vorher schon vorhanden war: GPT-Verbrauch, exakte Anzeige pro Modell und die Anzeige der durch Caching eingesparten Kosten.
+- **Reproduktion / Kontext:** DeepDive vor dem Spec-14-Umbau mit dem aktuellen DeepDive vergleichen. Nutzerhinweis: Die fruehere DeepDive-Ansicht zeigte bereits GPT-Verbrauch, modellgenaue Verbrauchswerte und Cache-Savings; nach dem Umbau fuer Gemini-Kostenforensik wird diese Sicht nicht mehr als gleichwertig wahrgenommen. Gleichzeitig ist fuer den Nutzer lueckenloses und moeglichst genaues Kostentracking ueber alle relevanten Provider hinweg geschäftskritisch.
+- **Betroffener Bereich:** Frontend / DeepDive / Cost Visualizer / Kostenaggregation / Cross-Provider-Kostenansicht
+- **Nachweise:** User Intake vom 2026-06-03; Spec-14-Artefakte in `documentation/SPEC/Spec Done/14_gemini_cost_attribution_and_deepdive_forensics.md`; aktuelle DeepDive-Implementierung in `frontend/js/cost-visualizer.js`; Live-Test-/Debug-Kontext aus `documentation/test-runs/TEST-RUN-2026-05-21-042_gemini_timeout_debug.md`.
+- **Akzeptanzkriterien:**
+  - [ ] Das DeepDive zeigt weiterhin den Verbrauch fuer GPT/OpenAI und Gemini in einer zusammenhaengenden Kostenansicht.
+  - [ ] Der Verbrauch ist pro Provider und pro Modell nachvollziehbar sichtbar.
+  - [ ] Bereits vorhandene Cache-/Savings-Informationen sind im DeepDive wieder sichtbar und gehen durch die Gemini-Forensik nicht verloren.
+  - [ ] Die neue Gemini-Forensik aus Spec 14 bleibt erhalten, insbesondere Attributionsstatus, Komponenten-Split und Anomalie-/Residual-Sicht.
+  - [ ] Die kombinierte Ansicht reduziert das Risiko, dass interne DeepDive-Summen und externe Provider-Rechnungen fuer Nutzer unklar auseinanderlaufen.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** SPEC_PIPELINE_START
+- **Routing reason:** DeepDive-Regression beruehrt Cross-Provider-Kostenansicht, Modell-Splits, Cache-Savings und die neue Gemini-Forensik gemeinsam; das braucht einen gebundenen Spec-Strang statt eines lokalen Bugfixes.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-06-03
+- **Handoff:** documentation/Planned Features/backlog_BACKLOG-101_deepdive_restore_cross_provider_cost_visibility_and_cache_savings.md
+- **Recommended next skill:** SKILL 1
+- **Handoff created:** 2026-06-03
+- **Notizen:** Wahrscheinlich kein komplett neues Feature, sondern Regression bzw. Scope-Luecke nach Spec 14. Die Kostenwahrheit fuer Gemini wurde verbessert, aber die fruehere provideruebergreifende Transparenz muss im DeepDive wieder vollstaendig bzw. sauber integriert werden.
+
 ## DONE
 
 ### BACKLOG-100 - Generische Anbieter-Mail-Suche nach Inhaltstypen
