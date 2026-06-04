@@ -1078,6 +1078,23 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
         meta = raw.get("metadata") if isinstance(raw.get("metadata"), dict) else {}
         source_provider = str(meta.get("provider") or provider or "unknown")
         raw_status = str(meta.get("status") or "").strip().lower()
+        if provider == "gemini" and _is_current_data_query(normalized_query) and raw_status == "timeout":
+            logger.warning("WEBSEARCH-V2: Gemini current-data search timed out; trying neutral fallback.")
+            raw = await execute_websearch_service(
+                query=normalized_query,
+                api_key="",
+                provider="ollama",
+                model=None,
+                requested_model=payload.model,
+            )
+            repair_provider = "ollama"
+            repair_model = None
+            repair_key = ""
+            text = str(raw.get("text") or "")
+            sources = raw.get("sources") if isinstance(raw.get("sources"), list) else []
+            meta = raw.get("metadata") if isinstance(raw.get("metadata"), dict) else {}
+            source_provider = str(meta.get("provider") or provider or "unknown")
+            raw_status = str(meta.get("status") or "").strip().lower()
 
         # ── Build structured items from sources ────────────────────────────
         items = _sources_to_items(sources)

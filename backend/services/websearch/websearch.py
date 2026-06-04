@@ -14,6 +14,13 @@ GEMINI_PROVIDER = GeminiWebSearchProvider()
 DUCKDUCKGO_PROVIDER = DuckDuckGoWebSearchProvider()
 
 
+def _is_timeout_error(exc: Exception) -> bool:
+    text = str(exc or "").strip().lower()
+    if "timeout" in text or "timed out" in text:
+        return True
+    return isinstance(exc, TimeoutError)
+
+
 async def execute_websearch_service(
     query: str,
     api_key: str,
@@ -50,7 +57,7 @@ async def execute_websearch_service(
                 logger.error("💎 WEBSEARCH CRASH: %s", str(exc), exc_info=True)
             else:
                 logger.warning("WEBSEARCH-SERVICE: Gemini search failed for handled fallback path: %s", str(exc))
-            if "timeout" in str(exc).lower():
+            if _is_timeout_error(exc):
                 logger.warning("WEBSEARCH-SERVICE: Gemini search timed out. Graceful fail.")
                 return {
                     "text": "Die Suche dauerte zu lange (Timeout). Bitte versuche es später erneut oder präzisiere deine Anfrage.",
@@ -68,7 +75,7 @@ async def execute_websearch_service(
             return validate_websearch_result(result)
         except Exception as exc:
             logger.error("💎 WEBSEARCH CRASH: %s", str(exc), exc_info=True)
-            if "timeout" in str(exc).lower():
+            if _is_timeout_error(exc):
                 logger.warning("WEBSEARCH-SERVICE: OpenAI search timed out. Graceful fail.")
                 return {
                     "text": "Die Suche dauerte zu lange (Timeout). Bitte versuche es später erneut oder präzisiere deine Anfrage.",

@@ -16,6 +16,7 @@ from backend.services.websearch.gemini_provider import (
 from backend.services.websearch.duckduckgo_provider import DuckDuckGoWebSearchProvider
 from backend.services.websearch.openai_provider import coerce_openai_websearch_model, _build_diamond_search_system_prompt
 from backend.services.websearch.query_bias import augment_query_with_local_bias, normalize_source_url, prioritize_german_sources
+from backend.services.websearch.websearch import execute_websearch_service
 from backend.tool_registry import (
     _coerce_websearch_model_for_provider,
     _normalize_websearch_query,
@@ -81,6 +82,63 @@ async def test_websearch_wrapper_gemini_failure_does_not_fallback_for_static_que
     assert rd["error"]["code"] == "WEBSEARCH_FAILED"
     gemini_search_mock.assert_awaited_once()
     ddg_search_mock.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_execute_websearch_service_recognizes_timed_out_message_for_gemini():
+    with patch(
+        "backend.services.websearch.websearch.GEMINI_PROVIDER.search",
+        AsyncMock(side_effect=TimeoutError("The read operation timed out")),
+    ):
+        result = await execute_websearch_service(
+            query="Goldpreis heute",
+            api_key="gemini-key",
+            provider="gemini",
+            model="gemini-3-flash-preview",
+        )
+
+    assert result["metadata"]["status"] == "timeout"
+    assert result["metadata"]["provider"] == "gemini"
+    assert result["sources"] == []
+
+
+@pytest.mark.asyncio
+async def test_websearch_wrapper_gemini_timeout_uses_neutral_fallback_for_current_queries():
+    timeout_result = {
+        "text": "Die Suche dauerte zu lange (Timeout). Bitte versuche es spaeter erneut oder praezisiere deine Anfrage.",
+        "sources": [],
+        "metadata": {"status": "timeout", "provider": "gemini"},
+    }
+    fallback_result = {
+        "text": "1. Goldpreis aktuell. Quelle: boerse.de.",
+        "sources": [
+            {
+                "url": "https://www.boerse.de/goldpreis",
+                "title": "Goldpreis boerse.de",
+                "snippet": "Goldpreis aktuell in Euro.",
+            }
+        ],
+        "metadata": {"provider": "duckduckgo"},
+        "usage": {"query_count": 1},
+        "cost": {"total_cost": 0.0},
+    }
+
+    with patch("backend.tool_registry.keyring.get_password", return_value="gemini-key"), patch(
+        "backend.tool_registry.execute_websearch_service",
+        AsyncMock(side_effect=[timeout_result, fallback_result]),
+    ) as execute_mock, patch("backend.tool_registry.SessionLocal", return_value=Mock()), patch(
+        "backend.services.cost_service.create_cost_entry"
+    ):
+        result = await websearch_wrapper(
+            schemas.WebsearchArgsV2(query="Goldpreis heute in Euro", provider="gemini", model="gemini-3-flash-preview")
+        )
+
+    rd = result.model_dump() if hasattr(result, "model_dump") else result
+    assert rd["status"] == "ok"
+    assert rd["data"]["source"] == "duckduckgo"
+    assert rd["data"]["sources"][0]["url"] == "https://www.boerse.de/goldpreis"
+    assert execute_mock.await_count == 2
+    assert execute_mock.await_args_list[1].kwargs["provider"] == "ollama"
 
 
 @pytest.mark.asyncio
