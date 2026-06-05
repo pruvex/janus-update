@@ -1,0 +1,2 @@
+node --check frontend/js/cost-visualizer.js PASS
+npx playwright test tests/e2e/generated/BACKLOG-103-ui-smoke.spec.js --headed --workers=1 --reporter=list PASS (1 passed)

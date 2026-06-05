@@ -66,12 +66,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const currentGroup = filteredGroups.find((group) => group.group_key === deepDiveState.selectedGroupKey);
-    const selectedGroup = currentGroup || filteredGroups[0];
-    deepDiveState.selectedGroupKey = selectedGroup.group_key;
+    if (!currentGroup) {
+      deepDiveState.selectedGroupKey = null;
+      deepDiveState.selectedRequestId = null;
+      return;
+    }
 
-    const requests = selectedGroup.requests || [];
+    const requests = currentGroup.requests || [];
     const currentRequest = requests.find((request) => request.request_id === deepDiveState.selectedRequestId);
-    deepDiveState.selectedRequestId = (currentRequest || requests[0] || {}).request_id || null;
+    deepDiveState.selectedRequestId = currentRequest ? currentRequest.request_id : null;
   }
 
   function renderDeepDiveContent() {
@@ -101,6 +104,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const hasGroups = filteredGroups.length > 0;
     const monthlyBudget = Number(dashboard.monthly_budget) || 0;
     const currentMonthCost = Number(dashboard.current_month_cost) || 0;
+    const hasSelectedGroup = Boolean(selectedGroup);
+    const hasSelectedRequest = Boolean(selectedRequest);
 
     deepDiveContent.innerHTML = `
       <div class="deep-dive-shell">
@@ -133,43 +138,59 @@ document.addEventListener("DOMContentLoaded", () => {
         ${renderSummaryCards(summary, data.historical_reconciliation || {})}
         ${renderAnomalyOverview(anomalies)}
 
-        <div class="deep-dive-layout">
-          <section class="deep-dive-panel deep-dive-groups-panel">
-            <div class="deep-dive-panel-header">
-              <h4>Kostenquellen</h4>
-              <span>${filteredGroups.length} Gruppen</span>
+        <section class="deep-dive-drilldown" data-deep-dive-stage="${hasSelectedGroup ? "active" : "idle"}">
+          <div class="deep-dive-anomaly-header">
+            <div>
+              <div class="deep-dive-kicker">Details auf Nachfrage</div>
+              <h4>Kostenquellen zuerst, Requests nur bei Bedarf</h4>
             </div>
-            ${
-              hasGroups
-                ? renderGroupList(filteredGroups, deepDiveState.selectedGroupKey)
-                : '<div class="deep-dive-empty-state deep-dive-panel-empty">Keine Gruppen fuer den aktuellen Filter.</div>'
-            }
-          </section>
+            <div class="deep-dive-provider-summary-note">
+              ${
+                hasSelectedGroup
+                  ? "Quelle gewaehlt. Jetzt kannst du darunter einzelne Requests oeffnen."
+                  : "Starte mit einer Kostenquelle, um einzelne Requests und Kostenbestandteile zu sehen."
+              }
+            </div>
+          </div>
 
-          <section class="deep-dive-panel deep-dive-requests-panel">
-            <div class="deep-dive-panel-header">
-              <h4>Requests</h4>
-              <span>${selectedGroup ? selectedGroup.request_count : 0} Eintraege</span>
-            </div>
-            ${
-              selectedGroup
-                ? renderRequestList(selectedGroup, deepDiveState.selectedRequestId)
-                : '<div class="deep-dive-empty-state deep-dive-panel-empty">Waehle links einen Kostenblock.</div>'
-            }
-          </section>
+          <div class="deep-dive-layout ${hasSelectedGroup ? "deep-dive-layout--active" : "deep-dive-layout--idle"}">
+            <section class="deep-dive-panel deep-dive-groups-panel">
+              <div class="deep-dive-panel-header">
+                <h4>Kostenquellen</h4>
+                <span>${filteredGroups.length} Gruppen</span>
+              </div>
+              ${
+                hasGroups
+                  ? renderGroupList(filteredGroups, deepDiveState.selectedGroupKey)
+                  : '<div class="deep-dive-empty-state deep-dive-panel-empty">Keine Gruppen fuer den aktuellen Filter.</div>'
+              }
+            </section>
 
-          <section class="deep-dive-panel deep-dive-detail-panel">
-            <div class="deep-dive-panel-header">
-              <h4>Kostenaufschluesselung</h4>
-              <span>${selectedRequest ? escapeHtml(selectedRequest.request_id) : "Keine Auswahl"}</span>
-            </div>
-            ${
-              selectedRequest
-                ? renderRequestDetail(selectedRequest, data.historical_reconciliation || {})
-                : '<div class="deep-dive-empty-state deep-dive-panel-empty">Waehle einen Request, um Kostenbestandteile, Modelle und Savings zu sehen.</div>'
-            }
-          </section>
-        </div>
+            <section class="deep-dive-panel deep-dive-requests-panel ${hasSelectedGroup ? "" : "is-inactive"}">
+              <div class="deep-dive-panel-header">
+                <h4>Requests</h4>
+                <span>${selectedGroup ? selectedGroup.request_count : 0} Eintraege</span>
+              </div>
+              ${
+                selectedGroup
+                  ? renderRequestList(selectedGroup, deepDiveState.selectedRequestId)
+                  : '<div class="deep-dive-empty-state deep-dive-panel-empty" data-empty-state="requests">Waehle zuerst eine Kostenquelle.</div>'
+              }
+            </section>
+
+            <section class="deep-dive-panel deep-dive-detail-panel ${hasSelectedRequest ? "" : "is-inactive"}">
+              <div class="deep-dive-panel-header">
+                <h4>Kostenaufschluesselung</h4>
+                <span>${selectedRequest ? escapeHtml(selectedRequest.request_id) : "Keine Auswahl"}</span>
+              </div>
+              ${
+                selectedRequest
+                  ? renderRequestDetail(selectedRequest, data.historical_reconciliation || {})
+                  : '<div class="deep-dive-empty-state deep-dive-panel-empty" data-empty-state="request-detail">Waehle einen Request, um Modelle, Kostenbestandteile und Ersparnis zu sehen.</div>'
+              }
+            </section>
+          </div>
+        </section>
 
         <div class="budget-setter deep-dive-budget-setter">
           <label for="budget-input">Monatsbudget festlegen (EUR)</label>
@@ -198,8 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("[data-group-key]").forEach((button) => {
       button.addEventListener("click", () => {
         deepDiveState.selectedGroupKey = button.getAttribute("data-group-key");
-        const group = getFilteredGroups().find((entry) => entry.group_key === deepDiveState.selectedGroupKey);
-        deepDiveState.selectedRequestId = group?.requests?.[0]?.request_id || null;
+        deepDiveState.selectedRequestId = null;
         renderDeepDiveContent();
       });
     });
@@ -339,7 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="deep-dive-anomaly-header">
           <div>
             <div class="deep-dive-kicker">Cross-Provider</div>
-            <h4>${escapeHtml(userSummary.primary_message || "Gesamtsicht ueber Provider, Modelle und Savings")}</h4>
+            <h4>${escapeHtml(userSummary.primary_message || "Gesamtsicht ueber Provider, Modelle und Ersparnis")}</h4>
           </div>
           <div class="deep-dive-provider-summary-note">
             ${escapeHtml(formatProviderSummaryLine(crossProviderSummary))}
@@ -363,9 +383,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <small>${totalCachedTokens > 0 ? "wieder sichtbar" : "keine Cache-Tokens erfasst"}</small>
           </article>
           <article class="deep-dive-metric-card ${totalCostSaved > 0 ? "" : "deep-dive-metric-card--muted"}">
-            <span class="deep-dive-metric-label">Savings</span>
+            <span class="deep-dive-metric-label">Ersparnis</span>
             <strong>${formatCurrency(totalCostSaved)}</strong>
-            <small>${totalTokensSaved > 0 ? `${formatNumber(totalTokensSaved)} Tokens gespart` : "keine Savings erfasst"}</small>
+            <small>${formatSavingsMetricNote(totalCostSaved, totalTokensSaved, crossProviderSummary.total_cost)}</small>
           </article>
         </section>
 
@@ -383,7 +403,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div class="deep-dive-provider-meta">
                           <span>${escapeHtml(formatModelCountLabel(provider.models))}</span>
                           <span>${formatNumber(provider.total_cached_tokens || 0)} Cache-Tokens</span>
-                          <span>${formatCurrency(provider.total_cost_saved || 0)} Savings</span>
+                          <span>${formatCurrency(provider.total_cost_saved || 0)} Ersparnis</span>
                         </div>
                       </article>
                     `,
@@ -413,7 +433,7 @@ document.addEventListener("DOMContentLoaded", () => {
                           <div class="deep-dive-model-metrics">
                             <span>${formatCurrency(item.total_cost)}</span>
                             <span>${formatNumber(item.total_cached_tokens || 0)} Cache</span>
-                            <span>${formatCurrency(item.total_cost_saved || 0)} Savings</span>
+                            <span>${formatCurrency(item.total_cost_saved || 0)} Ersparnis</span>
                           </div>
                         </article>
                       `,
@@ -550,6 +570,23 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderRequestDetail(request, historicalReconciliation) {
     const components = Array.isArray(request.components) ? request.components : [];
     const models = Array.isArray(request.models) ? request.models : [];
+    const summaryCards = [
+      {
+        label: "Provider",
+        value: formatProviderLabel(request.provider),
+        note: formatRequestMetaLine(request),
+      },
+      {
+        label: "Modelle",
+        value: models.join(", ") || "n/a",
+        note: `${components.length} Kostenbestandteile`,
+      },
+      {
+        label: "Kostenbild",
+        value: formatRequestCostNarrative(request, historicalReconciliation),
+        note: `${formatCurrency(request.total_cost)} gesamt`,
+      },
+    ];
 
     return `
       <div class="deep-dive-request-detail">
@@ -562,54 +599,26 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
 
         <div class="deep-dive-request-summary">
-          <div>
-            <span>Provider</span>
-            <strong>${escapeHtml(formatProviderLabel(request.provider))}</strong>
-          </div>
-          <div>
-            <span>Status</span>
-            <strong>${escapeHtml(formatAttributionStatusLabel(request.attribution_status || "unbekannt"))}</strong>
-          </div>
-          <div>
-            <span>Modelle</span>
-            <strong>${escapeHtml(models.join(", ") || "n/a")}</strong>
-          </div>
-          <div>
-            <span>Intern attribuiert</span>
-            <strong>${formatCurrency(request.internal_attributed_total)}</strong>
-          </div>
-          <div>
-            <span>Restposten</span>
-            <strong>${formatCurrency(request.unattributed_residual_total)}</strong>
-          </div>
-          <div>
-            <span>Cache-Tokens</span>
-            <strong>${formatNumber(request.total_cached_tokens || 0)}</strong>
-          </div>
-          <div>
-            <span>Savings</span>
-            <strong>${formatCurrency(request.total_cost_saved)}</strong>
-          </div>
+          ${summaryCards
+            .map(
+              (item) => `
+                <div>
+                  <span>${escapeHtml(item.label)}</span>
+                  <strong>${escapeHtml(item.value)}</strong>
+                  <small>${escapeHtml(item.note)}</small>
+                </div>
+              `,
+            )
+            .join("")}
         </div>
 
-        ${
-          request.anomaly_flags?.length
-            ? `
-              <div class="deep-dive-flag-row">
-                ${request.anomaly_flags
-                  .map((flag) => `<span class="deep-dive-badge deep-dive-badge--neutral">${escapeHtml(formatFlagLabel(flag))}</span>`)
-                  .join("")}
-                ${
-                  historicalReconciliation.visible_residual_required && Number(request.unattributed_residual_total) > 0
-                    ? '<span class="deep-dive-badge deep-dive-badge--warning">historischer Anteil sichtbar</span>'
-                    : ""
-                }
-              </div>
-            `
-            : ""
-        }
+        ${renderRequestInsightRow(request, historicalReconciliation)}
 
         <div class="deep-dive-component-list">
+          <div class="deep-dive-panel-header deep-dive-component-list-header">
+            <h4>Kostenbestandteile</h4>
+            <span>${components.length} Teile</span>
+          </div>
           ${components
             .map(
               (component) => `
@@ -622,10 +631,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="deep-dive-component-total">${formatCurrency(component.total_cost)}</div>
                   </div>
                   <div class="deep-dive-component-meta">
-                    <span>${escapeHtml(component.status || "unbekannt")}</span>
                     <span>${escapeHtml(formatProviderLabel(component.provider))}</span>
-                    <span>${escapeHtml(formatTokenLine(component))}</span>
-                    <span>${escapeHtml(formatSavingsLine(component))}</span>
+                    <span>${escapeHtml(formatComponentContext(component))}</span>
                     <span>${escapeHtml(formatTimestamp(component.timestamp))}</span>
                     ${
                       component.manual_override
@@ -633,7 +640,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         : ""
                     }
                   </div>
-                  ${renderComponentMetadata(component.metadata)}
+                  ${renderComponentSignals(component)}
+                  ${renderComponentHighlights(component.metadata)}
                 </article>
               `,
             )
@@ -643,32 +651,34 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  function renderComponentMetadata(metadata) {
+  function renderComponentHighlights(metadata) {
     if (!metadata || typeof metadata !== "object" || !Object.keys(metadata).length) {
       return "";
     }
 
-    const visibleEntries = Object.entries(metadata)
-      .filter(([, value]) => value !== null && value !== undefined && value !== "")
-      .slice(0, 6);
+    const highlights = [];
+    if (metadata.request_kind) {
+      highlights.push(`Ablauf ${String(metadata.request_kind)}`);
+    }
+    if (metadata.websearch_query_count) {
+      const count = Number(metadata.websearch_query_count) || 0;
+      highlights.push(`${count} Suchanfrage${count === 1 ? "" : "n"}`);
+    }
 
-    if (!visibleEntries.length) {
+    if (!highlights.length) {
       return "";
     }
 
     return `
-      <dl class="deep-dive-component-metadata">
-        ${visibleEntries
+      <div class="deep-dive-component-highlights">
+        ${highlights
           .map(
-            ([key, value]) => `
-              <div>
-                <dt>${escapeHtml(formatMetadataKey(key))}</dt>
-                <dd>${escapeHtml(String(value))}</dd>
-              </div>
+            (item) => `
+              <span class="deep-dive-badge deep-dive-badge--neutral">${escapeHtml(item)}</span>
             `,
           )
           .join("")}
-      </dl>
+      </div>
     `;
   }
 
@@ -681,6 +691,58 @@ document.addEventListener("DOMContentLoaded", () => {
       parts.push('<span class="deep-dive-badge deep-dive-badge--info">Pro-Kosten pruefen</span>');
     }
     return parts.join("");
+  }
+
+  function renderRequestInsightRow(request, historicalReconciliation) {
+    const parts = [];
+    if (Number(request.total_cost_saved) > 0) {
+      parts.push(
+        `<span class="deep-dive-badge deep-dive-badge--info">Ersparnis ${escapeHtml(
+          formatCurrency(request.total_cost_saved),
+        )}</span>`,
+      );
+    }
+    if (Number(request.total_cached_tokens) > 0) {
+      parts.push(
+        `<span class="deep-dive-badge deep-dive-badge--neutral">${escapeHtml(
+          `${formatNumber(request.total_cached_tokens)} Cache-Tokens`,
+        )}</span>`,
+      );
+    }
+    if (request.anomaly_flags?.length) {
+      parts.push(
+        ...request.anomaly_flags.map(
+          (flag) => `<span class="deep-dive-badge deep-dive-badge--neutral">${escapeHtml(formatFlagLabel(flag))}</span>`,
+        ),
+      );
+    }
+    if (historicalReconciliation.visible_residual_required && Number(request.unattributed_residual_total) > 0) {
+      parts.push('<span class="deep-dive-badge deep-dive-badge--warning">historischer Anteil sichtbar</span>');
+    }
+    if (!parts.length) {
+      return "";
+    }
+    return `<div class="deep-dive-flag-row">${parts.join("")}</div>`;
+  }
+
+  function renderComponentSignals(component) {
+    const signals = [];
+    if (Number(component.total_tokens) > 0) {
+      signals.push(formatTokenLine(component));
+    }
+    if (Number(component.cost_saved) > 0 || Number(component.tokens_saved) > 0) {
+      signals.push(formatSavingsLine(component));
+    }
+    if (!signals.length) {
+      return "";
+    }
+    return `
+      <div class="deep-dive-component-signals">
+        ${signals
+          .map((signal) => `<span>${escapeHtml(signal)}</span>`)
+          .join("")}
+      </div>
+    `;
   }
 
   function renderLiveSnapshot(liveMeta) {
@@ -947,6 +1009,19 @@ function formatComponentLabel(value) {
   return value || "Komponente";
 }
 
+function formatComponentContext(component) {
+  if (component.component === "grounding_websearch") {
+    return "Recherche";
+  }
+  if (component.component === "conversation") {
+    return "Antwort";
+  }
+  if (component.context) {
+    return String(component.context);
+  }
+  return "Kostenbestandteil";
+}
+
 function formatProviderLabel(value) {
   if (String(value || "").toLowerCase() === "openai") {
     return "GPT / OpenAI";
@@ -975,6 +1050,17 @@ function formatGroupMetaLine(group) {
   return `${group.request_count || 0} Requests | ${providerLabel}`;
 }
 
+function formatRequestCostNarrative(request, historicalReconciliation) {
+  const residual = Number(request.unattributed_residual_total) || 0;
+  if (residual > 0) {
+    return historicalReconciliation.visible_residual_required ? "Teilweise noch offen sichtbar" : "Zuordnung laeuft noch";
+  }
+  if (Number(request.total_cost_saved) > 0) {
+    return "klar zugeordnet mit Ersparnis";
+  }
+  return formatAttributionStatusLabel(request.attribution_status || "unbekannt");
+}
+
 function formatMetadataKey(value) {
   return String(value || "")
     .replace(/_/g, " ")
@@ -991,9 +1077,35 @@ function formatSavingsLine(component) {
   const costSaved = Number(component.cost_saved) || 0;
   const tokensSaved = Number(component.tokens_saved) || 0;
   if (costSaved <= 0 && tokensSaved <= 0) {
-    return "keine Savings";
+    return "keine Ersparnis";
   }
-  return `Savings ${formatCurrency(costSaved)} | ${formatNumber(tokensSaved)} Tokens`;
+  return `Ersparnis ${formatCurrency(costSaved)} | ${formatNumber(tokensSaved)} Tokens`;
+}
+
+function formatSavingsMetricNote(totalCostSaved, totalTokensSaved, totalCost) {
+  const savingsPercent = formatSavingsPercent(totalCost, totalCostSaved);
+  if (Number(totalCostSaved) <= 0 && Number(totalTokensSaved) <= 0) {
+    return "keine Ersparnis durch Janus-Caching erfasst";
+  }
+
+  const parts = ["Durch Janus-Caching gespart"];
+  if (totalTokensSaved > 0) {
+    parts.push(`${formatNumber(totalTokensSaved)} Tokens`);
+  }
+  if (savingsPercent !== null) {
+    parts.push(`${savingsPercent}% weniger Kosten als ohne Cache`);
+  }
+  return parts.join(" | ");
+}
+
+function formatSavingsPercent(totalCost, totalCostSaved) {
+  const spentCost = Number(totalCost) || 0;
+  const savedCost = Number(totalCostSaved) || 0;
+  const totalWithoutCache = spentCost + savedCost;
+  if (savedCost <= 0 || totalWithoutCache <= 0) {
+    return null;
+  }
+  return Math.round((savedCost / totalWithoutCache) * 100);
 }
 
 function formatNumber(value) {
