@@ -1710,6 +1710,14 @@ button:hover {
     min-height: 420px;
 }
 
+.deep-dive-layout--idle {
+    grid-template-columns: minmax(260px, 1.1fr) minmax(220px, 0.9fr) minmax(220px, 0.9fr);
+}
+
+.deep-dive-layout--active {
+    grid-template-columns: minmax(220px, 0.9fr) minmax(260px, 1fr) minmax(320px, 1.3fr);
+}
+
 .deep-dive-panel {
     background: #fff;
     padding: 12px;
@@ -1725,6 +1733,11 @@ button:hover {
 .deep-dive-panel-header span {
     font-size: 0.82rem;
     color: #5f6368;
+}
+
+.deep-dive-requests-panel.is-inactive,
+.deep-dive-detail-panel.is-inactive {
+    background: #fbfcfe;
 }
 
 .deep-dive-group-list,
@@ -1821,7 +1834,6 @@ button:hover {
 
 .deep-dive-request-summary span,
 .deep-dive-component-meta,
-.deep-dive-component-metadata dt,
 .deep-dive-empty-state {
     color: #5f6368;
 }
@@ -1836,10 +1848,21 @@ button:hover {
     font-size: 0.92rem;
 }
 
+.deep-dive-request-summary small {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.76rem;
+    color: #6b7280;
+}
+
 .deep-dive-component-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.deep-dive-component-list-header {
+    margin-bottom: 0;
 }
 
 .deep-dive-component-card {
@@ -1867,29 +1890,13 @@ button:hover {
     flex-wrap: wrap;
 }
 
-.deep-dive-component-metadata {
-    margin: 0;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px 12px;
-}
-
-.deep-dive-component-metadata div {
-    min-width: 0;
-}
-
-.deep-dive-component-metadata dt {
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    margin-bottom: 3px;
-}
-
-.deep-dive-component-metadata dd {
-    margin: 0;
-    font-size: 0.84rem;
-    color: #111827;
-    word-break: break-word;
+.deep-dive-component-signals,
+.deep-dive-component-highlights {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+    color: #4b5563;
 }
 
 .deep-dive-empty-state {
