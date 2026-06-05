@@ -1,5 +1,7 @@
+import json
 import logging
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 from sqlalchemy.orm import Session
@@ -23,6 +25,8 @@ _SENSITIVE_ATTRIBUTION_KEYS = {
     "raw_prompt",
     "raw_response",
 }
+
+_COST_TRACKING_DEBUG_LOG_ENV = "JANUS_COST_TRACKING_DEBUG_LOG_PATH"
 
 
 def _sanitize_attribution_value(value: Any) -> Any:
@@ -125,6 +129,77 @@ def _sanitize_attribution_metadata(
     return sanitized or None
 
 
+def _get_cost_tracking_debug_log_path() -> Optional[Path]:
+    import os
+
+    override = _coerce_optional_str(os.environ.get(_COST_TRACKING_DEBUG_LOG_ENV))
+    if override:
+        return Path(override)
+
+    repo_log_dir = Path(__file__).resolve().parents[2] / "documentation" / "logs"
+    if repo_log_dir.exists():
+        return repo_log_dir / "cost-tracking-debug.jsonl"
+    return None
+
+
+def emit_cost_tracking_debug_event(
+    *,
+    event_type: str,
+    provider: Optional[str] = None,
+    model: Optional[str] = None,
+    source_type: Optional[str] = None,
+    amount: Optional[float] = None,
+    input_tokens: int = 0,
+    output_tokens: int = 0,
+    cached_tokens: int = 0,
+    total_tokens: int = 0,
+    tokens_saved: int = 0,
+    cost_saved: float = 0.0,
+    attribution_group_id: Optional[str] = None,
+    attribution_request_id: Optional[str] = None,
+    attribution_session_id: Optional[str] = None,
+    attribution_test_run_id: Optional[str] = None,
+    attribution_status: Optional[str] = None,
+    attribution_component: Optional[str] = None,
+    context_details: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+) -> None:
+    log_path = _get_cost_tracking_debug_log_path()
+    if log_path is None:
+        return
+
+    payload = {
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "event_type": _coerce_optional_str(event_type) or "unknown",
+        "provider": _coerce_optional_str(provider),
+        "model": _coerce_optional_str(model),
+        "source_type": _coerce_optional_str(source_type),
+        "amount": float(amount or 0.0),
+        "input_tokens": int(input_tokens or 0),
+        "output_tokens": int(output_tokens or 0),
+        "cached_tokens": int(cached_tokens or 0),
+        "total_tokens": int(total_tokens or 0),
+        "tokens_saved": int(tokens_saved or 0),
+        "cost_saved": float(cost_saved or 0.0),
+        "attribution_group_id": _coerce_optional_str(attribution_group_id),
+        "attribution_request_id": _coerce_optional_str(attribution_request_id),
+        "attribution_session_id": _coerce_optional_str(attribution_session_id),
+        "attribution_test_run_id": _coerce_optional_str(attribution_test_run_id),
+        "attribution_status": _coerce_optional_str(attribution_status),
+        "attribution_component": _coerce_optional_str(attribution_component),
+        "context_details": _coerce_optional_str(context_details),
+        "metadata": _sanitize_attribution_metadata(metadata, context_details),
+    }
+    payload = {key: value for key, value in payload.items() if value not in (None, "", [], {})}
+
+    try:
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        with log_path.open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write(json.dumps(payload, ensure_ascii=True, sort_keys=True) + "\n")
+    except Exception:
+        logger.warning("Cost tracking debug log write failed", exc_info=True)
+
+
 def create_cost_entry(
     db: Session, 
     amount: float, 
@@ -200,6 +275,27 @@ def create_cost_entry(
         db.add(cost_entry)
         db.commit()
         db.refresh(cost_entry)
+        emit_cost_tracking_debug_event(
+            event_type="cost_entry_persisted",
+            provider=provider,
+            model=model,
+            source_type=source_type,
+            amount=amount,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            cached_tokens=cached_tokens,
+            total_tokens=total_tokens,
+            tokens_saved=tokens_saved,
+            cost_saved=cost_saved,
+            attribution_group_id=cost_entry.attribution_group_id,
+            attribution_request_id=cost_entry.attribution_request_id,
+            attribution_session_id=cost_entry.attribution_session_id,
+            attribution_test_run_id=cost_entry.attribution_test_run_id,
+            attribution_status=cost_entry.attribution_status,
+            attribution_component=cost_entry.attribution_component,
+            context_details=context_details,
+            metadata=sanitized_attribution_metadata,
+        )
         
         logger.info(f"Kosten gespeichert: {amount:.6f}€ für {model} ({context_str})")
         return cost_entry

@@ -948,6 +948,49 @@ def _new_cost_totals() -> Dict[str, Any]:
     }
 
 
+def _build_truthfulness_hints(
+    *,
+    unattributed_residual_total: float,
+    deviation_total: float,
+    historical_mode: bool,
+    cross_provider_totals: Dict[str, Any],
+    model_breakdown: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    hints: List[Dict[str, Any]] = []
+    if unattributed_residual_total > 0:
+        hints.append(
+            {
+                "type": "attribution_partial",
+                "severity": "warning",
+                "cost": round(unattributed_residual_total, 6),
+                "message": (
+                    "Ein historischer Kostenanteil bleibt noch als sichtbarer Rest bestehen."
+                    if historical_mode
+                    else "Ein kleiner Kostenanteil ist noch nicht eindeutig zugeordnet."
+                ),
+            }
+        )
+    if abs(deviation_total) > 1e-9:
+        hints.append(
+            {
+                "type": "billing_alignment_partial",
+                "severity": "info",
+                "cost": round(abs(deviation_total), 6),
+                "message": "Die interne Kostensicht ist noch nicht vollstaendig mit der Billing-Referenz abgeglichen.",
+            }
+        )
+    if cross_provider_totals["total_cost"] > 0 and not model_breakdown:
+        hints.append(
+            {
+                "type": "model_visibility_partial",
+                "severity": "info",
+                "cost": 0.0,
+                "message": "Fuer einen Teil der Kosten ist derzeit keine belastbare Modellsicht verfuegbar.",
+            }
+        )
+    return hints
+
+
 def _accumulate_cost_totals(target: Dict[str, Any], cost: models.Cost, total_cost: float) -> None:
     cached_tokens = int(getattr(cost, "cached_tokens", 0) or 0)
     total_tokens = int(getattr(cost, "total_tokens", 0) or 0) or int((cost.input_tokens or 0) + (cost.output_tokens or 0))
@@ -1250,9 +1293,36 @@ def get_costs_deep_dive_summary(db: Session, year: int, month: int) -> Dict[str,
             }
         )
 
+    truthfulness_hints = _build_truthfulness_hints(
+        unattributed_residual_total=gemini_unattributed_residual_total,
+        deviation_total=gemini_deviation_total,
+        historical_mode=historical_mode,
+        cross_provider_totals=cross_provider_totals,
+        model_breakdown=model_breakdown,
+    )
+    truthfulness_status = "partial" if truthfulness_hints else "complete"
+
     return {
         "provider_scope": "cross_provider",
         "period": f"{year:04d}-{month:02d}",
+        "ui_contract": {
+            "primary_surface": "user_cost_overview",
+            "default_focus": "cost_understanding_and_optimization",
+            "detail_surface": "forensic_followup",
+            "debug_surface": "separate_dev_log",
+        },
+        "user_summary": {
+            "primary_message": "Kosten verstehen und Optimierungspotenziale erkennen.",
+            "total_cost": round(cross_provider_totals["total_cost"], 6),
+            "provider_count": len(provider_breakdown),
+            "model_count": len(model_breakdown),
+            "total_cached_tokens": cross_provider_totals["total_cached_tokens"],
+            "total_tokens_saved": cross_provider_totals["total_tokens_saved"],
+            "total_cost_saved": round(cross_provider_totals["total_cost_saved"], 6),
+            "top_providers": [item["provider"] for item in provider_breakdown[:3]],
+            "top_models": [item["model"] for item in model_breakdown[:5]],
+        },
+        "truthfulness_hints": truthfulness_hints,
         "anomaly_overview": anomalies,
         "cross_provider_summary": {
             "total_cost": round(cross_provider_totals["total_cost"], 6),
@@ -1272,6 +1342,12 @@ def get_costs_deep_dive_summary(db: Session, year: int, month: int) -> Dict[str,
             "unattributed_residual_total": round(gemini_unattributed_residual_total, 6),
             "external_billing_total": round(gemini_external_billing_total, 6),
             "deviation_total": round(gemini_deviation_total, 6),
+            "truthfulness_status": truthfulness_status,
+            "truthfulness_message": (
+                truthfulness_hints[0]["message"]
+                if truthfulness_hints
+                else "Die sichtbare Kostensicht ist fuer diesen Zeitraum belastbar."
+            ),
             "status_buckets": [
                 {
                     "status": ATTRIBUTION_STATUS_INTERNAL,

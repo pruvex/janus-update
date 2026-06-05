@@ -231,6 +231,34 @@ class GeminiGateway(BaseProviderGateway):
         if failed_components or not conversation_persisted:
             final_status = "nicht eindeutig attribuiert"
 
+        try:
+            from backend.services.cost_service import emit_cost_tracking_debug_event
+
+            emit_cost_tracking_debug_event(
+                event_type="gemini_request_cost_attribution",
+                provider=provider_name,
+                model=model_name,
+                source_type="conversation",
+                amount=float(conversation_cost_eur or 0.0),
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                attribution_group_id=attribution_ids["attribution_group_id"],
+                attribution_request_id=attribution_ids["attribution_request_id"],
+                attribution_session_id=attribution_ids["attribution_session_id"],
+                attribution_test_run_id=attribution_ids["attribution_test_run_id"],
+                attribution_status=final_status,
+                attribution_component="gemini_request",
+                metadata={
+                    "request_kind": request_kind,
+                    "websearch_query_count": int(websearch_query_count or 0),
+                    "failed_components": failed_components,
+                    "conversation_persisted": conversation_persisted,
+                    "websearch_persisted": websearch_query_count <= 0 or "grounding_websearch" not in failed_components,
+                },
+            )
+        except Exception:
+            logger.warning("GEMINI-COST-DEBUG: request summary log failed", exc_info=True)
+
         return {
             **attribution_ids,
             "attribution_status": final_status,

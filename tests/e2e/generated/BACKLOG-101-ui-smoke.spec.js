@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('BACKLOG-101 deep dive keeps cross-provider visibility and Gemini forensics together', async ({ page }) => {
+test('BACKLOG-101 deep dive prioritizes user-facing cost understanding and optimization', async ({ page }) => {
   await page.route('**/api/costs/deep-dive', async (route) => {
     await route.fulfill({
       status: 200,
@@ -8,6 +8,25 @@ test('BACKLOG-101 deep dive keeps cross-provider visibility and Gemini forensics
       body: JSON.stringify({
         provider_scope: 'cross_provider',
         period: '2026-06',
+        user_summary: {
+          primary_message: 'Kosten verstehen und Optimierungspotenziale erkennen.',
+          total_cost: 0.084,
+          provider_count: 2,
+          model_count: 3,
+          total_cached_tokens: 250,
+          total_tokens_saved: 250,
+          total_cost_saved: 0.001,
+          top_providers: ['gemini', 'openai'],
+          top_models: ['gemini-3-pro-preview', 'gemini-3-flash-preview', 'gpt-5.4-nano'],
+        },
+        truthfulness_hints: [
+          {
+            type: 'billing_alignment_partial',
+            severity: 'info',
+            cost: 0.001,
+            message: 'Die interne Kostensicht ist noch nicht vollstaendig mit der Billing-Referenz abgeglichen.',
+          },
+        ],
         cross_provider_summary: {
           total_cost: 0.084,
           provider_count: 2,
@@ -83,6 +102,8 @@ test('BACKLOG-101 deep dive keeps cross-provider visibility and Gemini forensics
           unattributed_residual_total: 0,
           external_billing_total: 0.08,
           deviation_total: 0,
+          truthfulness_status: 'partial',
+          truthfulness_message: 'Die interne Kostensicht ist noch nicht vollstaendig mit der Billing-Referenz abgeglichen.',
           status_buckets: [
             { status: 'intern attribuiert', total_cost: 0.08 },
             { status: 'nicht eindeutig attribuiert', total_cost: 0 },
@@ -299,10 +320,15 @@ test('BACKLOG-101 deep dive keeps cross-provider visibility and Gemini forensics
   await page.evaluate(() => document.getElementById('cost-summary-widget')?.click());
 
   const deepDive = page.locator('#deep-dive-content');
-  await expect(deepDive).toContainText('Cross-Provider');
+  await expect(deepDive).toContainText('Kosten verstehen, Einsparungen sehen, Hinweise klar lesen');
+  await expect(deepDive).toContainText('Kosten verstehen und Optimierungspotenziale erkennen.');
+  await expect(deepDive).toContainText('Hinweise zur Kostensicht');
+  await expect(deepDive).toContainText('Billing-Abgleich laeuft');
   await expect(deepDive).toContainText('GPT / OpenAI');
   await expect(deepDive).toContainText('gpt-5.4-nano');
-  await expect(deepDive).toContainText('Gemini Forensik');
-  await expect(deepDive).toContainText('Grounding / Websearch');
+  await expect(deepDive).toContainText('Kostenwahrheit');
+  await expect(deepDive).toContainText('Recherche-Anteil');
   await expect(deepDive).toContainText('Savings');
+  await expect(deepDive).not.toContainText('Gemini Forensik');
+  await expect(deepDive).not.toContainText('Attributionsluecke');
 });

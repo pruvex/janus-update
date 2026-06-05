@@ -1,4 +1,5 @@
 import asyncio
+import json
 from datetime import datetime
 
 from sqlalchemy import create_engine, inspect, text
@@ -8,7 +9,11 @@ from backend.api.routers import system
 from backend.data import crud
 from backend.data import database as database_module
 from backend.data.models import Base, Cost
-from backend.services.orchestrator.execution_engine import _should_persist_stream_final_usage_cost
+from backend.llm_providers.gemini.gateway import GeminiGateway
+from backend.services.orchestrator.execution_engine import (
+    _emit_stream_final_usage_debug_decision,
+    _should_persist_stream_final_usage_cost,
+)
 from backend.services.cost_service import create_cost_entry
 
 
@@ -182,6 +187,97 @@ def test_gemini_stream_final_usage_costs_are_excluded_from_generic_stream_persis
     assert _should_persist_stream_final_usage_cost("anthropic") is True
 
 
+def test_cost_entry_writes_privacy_safe_debug_log_in_dev_mode(monkeypatch, tmp_path):
+    log_path = tmp_path / "cost-tracking-debug.jsonl"
+    monkeypatch.setenv("JANUS_COST_TRACKING_DEBUG_LOG_PATH", str(log_path))
+    db = _session()
+
+    create_cost_entry(
+        db=db,
+        amount=0.0025,
+        model="gemini-3-flash-preview",
+        provider="gemini",
+        source_type="conversation",
+        input_tokens=800,
+        output_tokens=140,
+        context_details="component=grounding;query_count=2",
+        attribution_group_id="grp-001",
+        attribution_request_id="req-001",
+        attribution_status="intern attribuiert",
+        attribution_component="grounding",
+        attribution_metadata={
+            "provider_scope": "gemini",
+            "prompt": "do not persist me",
+            "nested": {
+                "response": "drop me",
+                "allowed": "keep me",
+            },
+        },
+    )
+
+    payload = json.loads(log_path.read_text(encoding="utf-8").strip())
+    assert payload["event_type"] == "cost_entry_persisted"
+    assert payload["provider"] == "gemini"
+    assert payload["attribution_request_id"] == "req-001"
+    assert payload["context_details"] == "component=grounding;query_count=2"
+    assert payload["metadata"]["provider_scope"] == "gemini"
+    assert payload["metadata"]["nested"] == {"allowed": "keep me"}
+    assert "prompt" not in payload["metadata"]
+    assert "response" not in payload["metadata"]
+
+
+def test_gemini_gateway_emits_request_level_debug_log_summary(monkeypatch, tmp_path):
+    log_path = tmp_path / "cost-tracking-debug.jsonl"
+    monkeypatch.setenv("JANUS_COST_TRACKING_DEBUG_LOG_PATH", str(log_path))
+    gateway = GeminiGateway()
+    monkeypatch.setattr(gateway, "_persist_cost_entry_with_result", lambda **kwargs: True)
+
+    result = gateway._persist_gemini_request_costs(
+        db=object(),
+        provider="gemini",
+        model="gemini-3-flash-preview",
+        chat_id=321,
+        conversation_cost_eur=0.03,
+        input_tokens=900,
+        output_tokens=180,
+        websearch_query_count=1,
+        grounding_metadata={"web_search_queries": ["switch 2 release"]},
+        request_kind="simple_tool_loop",
+    )
+
+    lines = [json.loads(line) for line in log_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    summary_event = next(item for item in lines if item["event_type"] == "gemini_request_cost_attribution")
+    assert summary_event["provider"] == "gemini"
+    assert summary_event["attribution_request_id"] == result["attribution_request_id"]
+    assert summary_event["attribution_component"] == "gemini_request"
+    assert summary_event["metadata"]["request_kind"] == "simple_tool_loop"
+    assert summary_event["metadata"]["websearch_query_count"] == 1
+    assert "prompt" not in summary_event["metadata"]
+    assert "response" not in summary_event["metadata"]
+
+
+def test_stream_final_usage_skip_emits_debug_event_for_gemini(monkeypatch, tmp_path):
+    log_path = tmp_path / "cost-tracking-debug.jsonl"
+    monkeypatch.setenv("JANUS_COST_TRACKING_DEBUG_LOG_PATH", str(log_path))
+
+    _emit_stream_final_usage_debug_decision(
+        provider="gemini",
+        model="gemini-3-flash-preview",
+        total_cost=0.031,
+        input_tokens=1000,
+        output_tokens=120,
+        cached_tokens=0,
+        total_tokens=1120,
+        reason="provider_has_own_attribution_path",
+    )
+
+    payload = json.loads(log_path.read_text(encoding="utf-8").strip())
+    assert payload["event_type"] == "stream_final_usage_persist_skipped"
+    assert payload["provider"] == "gemini"
+    assert payload["attribution_component"] == "stream_final_usage"
+    assert payload["metadata"]["reason"] == "provider_has_own_attribution_path"
+
+
 def test_costs_sqlite_schema_migration_adds_attribution_columns(monkeypatch):
     engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
     with engine.begin() as conn:
@@ -286,6 +382,15 @@ def test_cross_provider_deep_dive_summary_restores_provider_model_and_savings_vi
     summary = crud.get_costs_deep_dive_summary(db, now.year, now.month)
 
     assert summary["provider_scope"] == "cross_provider"
+    assert summary["ui_contract"]["primary_surface"] == "user_cost_overview"
+    assert summary["ui_contract"]["debug_surface"] == "separate_dev_log"
+    assert summary["ui_contract"]["detail_surface"] == "forensic_followup"
+    assert summary["user_summary"]["primary_message"] == "Kosten verstehen und Optimierungspotenziale erkennen."
+    assert summary["user_summary"]["provider_count"] == 2
+    assert summary["user_summary"]["model_count"] == 3
+    assert summary["user_summary"]["top_providers"] == ["gemini", "openai"]
+    assert summary["user_summary"]["top_models"][0] == "gemini-3-pro-preview"
+    assert summary["truthfulness_hints"] == []
     cross_provider_summary = summary["cross_provider_summary"]
     assert cross_provider_summary["provider_count"] == 2
     assert cross_provider_summary["model_count"] == 3
@@ -316,7 +421,10 @@ def test_cross_provider_deep_dive_summary_restores_provider_model_and_savings_vi
     assert summary["summary"]["internal_attributed_total"] == 0.08
     assert summary["summary"]["unattributed_residual_total"] == 0.0
     assert summary["summary"]["external_billing_total"] == 0.08
+    assert summary["summary"]["truthfulness_status"] == "complete"
+    assert summary["summary"]["truthfulness_message"] == "Die sichtbare Kostensicht ist fuer diesen Zeitraum belastbar."
     assert summary["anomaly_overview"][0]["type"] == "avoidable_pro"
+    assert not any(hint["type"] == "attribution_partial" for hint in summary["truthfulness_hints"])
 
     groups = {group["group_key"]: group for group in summary["groups"]}
     session_group = groups["session:chat-88"]
@@ -365,11 +473,16 @@ def test_gemini_deep_dive_summary_keeps_may_2026_residual_visible_for_legacy_cos
 
     assert summary["historical_reconciliation"]["mode"] == "may_2026_forensic_reconstruction"
     assert summary["historical_reconciliation"]["visible_residual_required"] is True
+    assert summary["truthfulness_hints"][0]["type"] == "attribution_partial"
+    assert summary["truthfulness_hints"][0]["message"] == "Ein historischer Kostenanteil bleibt noch als sichtbarer Rest bestehen."
     assert summary["summary"]["internal_attributed_total"] == 0.03
     assert summary["summary"]["unattributed_residual_total"] == 0.02
     assert summary["summary"]["external_billing_total"] == 0.05
     assert summary["summary"]["deviation_total"] == 0.02
+    assert summary["summary"]["truthfulness_status"] == "partial"
+    assert summary["summary"]["truthfulness_message"] == "Ein historischer Kostenanteil bleibt noch als sichtbarer Rest bestehen."
     assert summary["anomaly_overview"][0]["type"] == "attribution_gap"
+    assert any(hint["type"] == "billing_alignment_partial" for hint in summary["truthfulness_hints"])
 
     unscoped_group = next(group for group in summary["groups"] if group["group_kind"] == "unscoped")
     legacy_request = unscoped_group["requests"][0]
@@ -398,6 +511,9 @@ def test_costs_deep_dive_endpoint_returns_anomaly_first_payload():
     payload = asyncio.run(system.get_costs_deep_dive(year=now.year, month=now.month, db=db))
 
     assert payload["provider_scope"] == "cross_provider"
+    assert "ui_contract" in payload
+    assert "user_summary" in payload
+    assert "truthfulness_hints" in payload
     assert "anomaly_overview" in payload
     assert "summary" in payload
     assert "cross_provider_summary" in payload

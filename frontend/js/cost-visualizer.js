@@ -94,6 +94,8 @@ document.addEventListener("DOMContentLoaded", () => {
       : null;
 
     const summary = data.summary || {};
+    const userSummary = data.user_summary || {};
+    const truthfulnessHints = Array.isArray(data.truthfulness_hints) ? data.truthfulness_hints : [];
     const crossProviderSummary = data.cross_provider_summary || {};
     const anomalies = Array.isArray(data.anomaly_overview) ? data.anomaly_overview : [];
     const hasGroups = filteredGroups.length > 0;
@@ -105,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="deep-dive-topbar">
           <div>
             <div class="deep-dive-kicker">Kosten DeepDive</div>
-            <h3 class="deep-dive-title">Cross-Provider zuerst, Gemini-Forensik darunter</h3>
+            <h3 class="deep-dive-title">Kosten verstehen, Einsparungen sehen, Hinweise klar lesen</h3>
             <p class="deep-dive-subtitle">
               Zeitraum ${escapeHtml(formatPeriodLabel(data.period))} | Provider ${escapeHtml(
                 String(data.provider_scope || "cross_provider").toUpperCase(),
@@ -126,14 +128,15 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
 
         ${renderLiveSnapshot(deepDiveState.liveMeta)}
-        ${renderCrossProviderOverview(crossProviderSummary)}
+        ${renderCrossProviderOverview(crossProviderSummary, userSummary)}
+        ${renderTruthfulnessHints(truthfulnessHints, summary)}
         ${renderSummaryCards(summary, data.historical_reconciliation || {})}
         ${renderAnomalyOverview(anomalies)}
 
         <div class="deep-dive-layout">
           <section class="deep-dive-panel deep-dive-groups-panel">
             <div class="deep-dive-panel-header">
-              <h4>Kostenbloecke</h4>
+              <h4>Kostenquellen</h4>
               <span>${filteredGroups.length} Gruppen</span>
             </div>
             ${
@@ -157,13 +160,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
           <section class="deep-dive-panel deep-dive-detail-panel">
             <div class="deep-dive-panel-header">
-              <h4>Request-Details</h4>
+              <h4>Kostenaufschluesselung</h4>
               <span>${selectedRequest ? escapeHtml(selectedRequest.request_id) : "Keine Auswahl"}</span>
             </div>
             ${
               selectedRequest
                 ? renderRequestDetail(selectedRequest, data.historical_reconciliation || {})
-                : '<div class="deep-dive-empty-state deep-dive-panel-empty">Waehle einen Request, um Komponenten, Abweichungen und Token zu sehen.</div>'
+                : '<div class="deep-dive-empty-state deep-dive-panel-empty">Waehle einen Request, um Kostenbestandteile, Modelle und Savings zu sehen.</div>'
             }
           </section>
         </div>
@@ -232,35 +235,74 @@ document.addEventListener("DOMContentLoaded", () => {
       }));
   }
 
+  function renderTruthfulnessHints(hints, summary) {
+    const truthfulnessMessage = String(summary.truthfulness_message || "").trim();
+    if (!hints.length && !truthfulnessMessage) {
+      return "";
+    }
+
+    return `
+      <section class="deep-dive-anomaly-section">
+        <div class="deep-dive-anomaly-header">
+          <h4>Hinweise zur Kostensicht</h4>
+          <div class="deep-dive-provider-summary-note">${escapeHtml(truthfulnessMessage || "Die Kostensicht ist fuer diesen Zeitraum belastbar.")}</div>
+        </div>
+        ${
+          hints.length
+            ? `
+              <div class="deep-dive-anomaly-grid">
+                ${hints
+                  .map(
+                    (item) => `
+                      <article class="deep-dive-anomaly-card deep-dive-anomaly-card--${escapeAttribute(item.severity || "info")}">
+                        <div class="deep-dive-anomaly-topline">
+                          <span class="deep-dive-badge deep-dive-badge--${escapeAttribute(item.severity || "info")}">${escapeHtml(
+                            formatHintLabel(item.type),
+                          )}</span>
+                          <strong>${formatCurrency(item.cost)}</strong>
+                        </div>
+                        <p>${escapeHtml(item.message || "Keine Zusatzdetails vorhanden.")}</p>
+                      </article>
+                    `,
+                  )
+                  .join("")}
+              </div>
+            `
+            : '<div class="deep-dive-empty-state">Keine besonderen Hinweise fuer diesen Zeitraum.</div>'
+        }
+      </section>
+    `;
+  }
+
   function renderSummaryCards(summary, historicalReconciliation) {
     const statusBuckets = Array.isArray(summary.status_buckets) ? summary.status_buckets : [];
     return `
       <section class="deep-dive-forensic-heading">
         <div>
-          <div class="deep-dive-kicker">Gemini Forensik</div>
-          <h4>Attribution, Restposten und Billing-Abweichungen</h4>
+          <div class="deep-dive-kicker">Kostenwahrheit</div>
+          <h4>Zuordnung, offene Anteile und Billing-Abgleich</h4>
         </div>
       </section>
       <section class="deep-dive-summary-grid">
         <article class="deep-dive-metric-card">
-          <span class="deep-dive-metric-label">Intern attribuiert</span>
+          <span class="deep-dive-metric-label">Klar zugeordnet</span>
           <strong>${formatCurrency(summary.internal_attributed_total)}</strong>
           <small>${summary.request_count || 0} Requests</small>
         </article>
         <article class="deep-dive-metric-card deep-dive-metric-card--warning">
-          <span class="deep-dive-metric-label">Restposten</span>
+          <span class="deep-dive-metric-label">Noch offen</span>
           <strong>${formatCurrency(summary.unattributed_residual_total)}</strong>
-          <small>${historicalReconciliation.visible_residual_required ? "sichtbar verpflichtend" : "offene Attribution"}</small>
+          <small>${historicalReconciliation.visible_residual_required ? "historisch weiter sichtbar" : "weitere Zuordnung laeuft"}</small>
         </article>
         <article class="deep-dive-metric-card">
-          <span class="deep-dive-metric-label">Externe Billing-Summe</span>
+          <span class="deep-dive-metric-label">Billing-Referenz</span>
           <strong>${formatCurrency(summary.external_billing_total)}</strong>
           <small>${escapeHtml(formatBillingReferenceLabel(historicalReconciliation.billing_reference_source))}</small>
         </article>
         <article class="deep-dive-metric-card ${
           Math.abs(Number(summary.deviation_total) || 0) > 0 ? "deep-dive-metric-card--critical" : ""
         }">
-          <span class="deep-dive-metric-label">Abweichung</span>
+          <span class="deep-dive-metric-label">Abgleich</span>
           <strong>${formatSignedCurrency(summary.deviation_total)}</strong>
           <small>${summary.group_count || 0} Gruppen</small>
         </article>
@@ -280,7 +322,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  function renderCrossProviderOverview(crossProviderSummary) {
+  function renderCrossProviderOverview(crossProviderSummary, userSummary) {
     const providerBreakdown = Array.isArray(crossProviderSummary.provider_breakdown)
       ? crossProviderSummary.provider_breakdown
       : [];
@@ -297,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="deep-dive-anomaly-header">
           <div>
             <div class="deep-dive-kicker">Cross-Provider</div>
-            <h4>Gesamtsicht ueber Provider, Modelle und Savings</h4>
+            <h4>${escapeHtml(userSummary.primary_message || "Gesamtsicht ueber Provider, Modelle und Savings")}</h4>
           </div>
           <div class="deep-dive-provider-summary-note">
             ${escapeHtml(formatProviderSummaryLine(crossProviderSummary))}
@@ -396,7 +438,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <button class="deep-dive-filter-chip is-active" data-anomaly-filter="all">Alle</button>
             </div>
           </div>
-          <div class="deep-dive-empty-state">Keine aktiven Auffaelligkeiten fuer diesen Zeitraum.</div>
+          <div class="deep-dive-empty-state">Keine zusaetzlichen Optimierungshinweise fuer diesen Zeitraum.</div>
         </section>
       `;
     }
@@ -404,7 +446,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return `
       <section class="deep-dive-anomaly-section">
         <div class="deep-dive-anomaly-header">
-          <h4>Auffaelligkeiten</h4>
+          <h4>Optimierungshinweise</h4>
           <div class="deep-dive-filter-row">
             ${renderFilterChip("all", "Alle")}
             ${anomalies.map((item) => renderFilterChip(item.type, item.label)).join("")}
@@ -417,7 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <article class="deep-dive-anomaly-card deep-dive-anomaly-card--${escapeAttribute(item.severity || "info")}">
                   <div class="deep-dive-anomaly-topline">
                     <span class="deep-dive-badge deep-dive-badge--${escapeAttribute(item.severity || "info")}">${escapeHtml(
-                      item.label || item.type || "Anomalie",
+                      item.label || item.type || "Hinweis",
                     )}</span>
                     <strong>${formatCurrency(item.cost)}</strong>
                   </div>
@@ -526,7 +568,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
           <div>
             <span>Status</span>
-            <strong>${escapeHtml(request.attribution_status || "unbekannt")}</strong>
+            <strong>${escapeHtml(formatAttributionStatusLabel(request.attribution_status || "unbekannt"))}</strong>
           </div>
           <div>
             <span>Modelle</span>
@@ -559,7 +601,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   .join("")}
                 ${
                   historicalReconciliation.visible_residual_required && Number(request.unattributed_residual_total) > 0
-                    ? '<span class="deep-dive-badge deep-dive-badge--warning">historischer Rest sichtbar</span>'
+                    ? '<span class="deep-dive-badge deep-dive-badge--warning">historischer Anteil sichtbar</span>'
                     : ""
                 }
               </div>
@@ -633,10 +675,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderRequestFlagList(request) {
     const parts = [];
     if (Number(request.unattributed_residual_total) > 0) {
-      parts.push('<span class="deep-dive-badge deep-dive-badge--warning">Attributionsluecke</span>');
+      parts.push('<span class="deep-dive-badge deep-dive-badge--warning">Zuordnung noch offen</span>');
     }
     if (Array.isArray(request.anomaly_flags) && request.anomaly_flags.includes("avoidable_pro")) {
-      parts.push('<span class="deep-dive-badge deep-dive-badge--info">Vermeidbarer Pro</span>');
+      parts.push('<span class="deep-dive-badge deep-dive-badge--info">Pro-Kosten pruefen</span>');
     }
     return parts.join("");
   }
@@ -860,20 +902,47 @@ function formatTimestamp(value) {
 
 function formatFlagLabel(flag) {
   if (flag === "attribution_gap") {
-    return "Attributionsluecke";
+    return "Zuordnung noch offen";
   }
   if (flag === "avoidable_pro") {
-    return "Vermeidbarer Pro";
+    return "Pro-Kosten pruefen";
   }
   return flag;
 }
 
+function formatHintLabel(type) {
+  if (type === "attribution_partial") {
+    return "Teilweise zugeordnet";
+  }
+  if (type === "billing_alignment_partial") {
+    return "Billing-Abgleich laeuft";
+  }
+  if (type === "model_visibility_partial") {
+    return "Modellsicht teilweise";
+  }
+  return "Hinweis";
+}
+
+function formatAttributionStatusLabel(value) {
+  const normalized = String(value || "").toLowerCase();
+  if (normalized.includes("intern")) {
+    return "klar zugeordnet";
+  }
+  if (normalized.includes("nicht eindeutig")) {
+    return "noch offen";
+  }
+  if (normalized.includes("extern")) {
+    return "Billing-Referenz";
+  }
+  return String(value || "unbekannt");
+}
+
 function formatComponentLabel(value) {
   if (value === "grounding_websearch") {
-    return "Grounding / Websearch";
+    return "Recherche-Anteil";
   }
   if (value === "conversation") {
-    return "Conversation";
+    return "Antwort-Anteil";
   }
   return value || "Komponente";
 }

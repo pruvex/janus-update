@@ -49,6 +49,38 @@ def _should_persist_stream_final_usage_cost(provider: Any) -> bool:
     return True
 
 
+def _emit_stream_final_usage_debug_decision(
+    *,
+    provider: Any,
+    model: Any,
+    total_cost: float,
+    input_tokens: int,
+    output_tokens: int,
+    cached_tokens: int,
+    total_tokens: int,
+    reason: str,
+) -> None:
+    try:
+        from backend.services.cost_service import emit_cost_tracking_debug_event
+
+        emit_cost_tracking_debug_event(
+            event_type="stream_final_usage_persist_skipped",
+            provider=str(provider or "unknown"),
+            model=str(model or "unknown"),
+            source_type="conversation",
+            amount=float(total_cost or 0.0),
+            input_tokens=int(input_tokens or 0),
+            output_tokens=int(output_tokens or 0),
+            cached_tokens=int(cached_tokens or 0),
+            total_tokens=int(total_tokens or 0),
+            attribution_component="stream_final_usage",
+            context_details="stream_final_usage=1",
+            metadata={"reason": str(reason or "unknown")},
+        )
+    except Exception:
+        logger.warning("COST-PERSIST (stream): debug skip log failed", exc_info=True)
+
+
 def _has_websearch_tool_result(results: Any) -> bool:
     for item in results or []:
         if not isinstance(item, dict):
@@ -2939,13 +2971,10 @@ class OrchestratorExecutionEngine:
                             aggregated_tokens_input += int(u.get("input_tokens") or u.get("prompt_tokens") or 0)
                             aggregated_tokens_output += int(u.get("output_tokens") or u.get("completion_tokens") or 0)
                             aggregated_total_cost += float(cst.get("total_cost") or 0.0)
-                            if (
-                                float(cst.get("total_cost") or 0) > 0
-                                and self.db is not None
-                                and _should_persist_stream_final_usage_cost(
-                                    current_call_provider or gateway_kwargs.get("provider")
-                                )
-                            ):
+                            _stream_total_cost = float(cst.get("total_cost") or 0)
+                            _stream_provider = current_call_provider or gateway_kwargs.get("provider")
+                            _stream_persist_allowed = _should_persist_stream_final_usage_cost(_stream_provider)
+                            if _stream_total_cost > 0 and self.db is not None and _stream_persist_allowed:
                                 try:
                                     from backend.services.cost_service import create_cost_entry
                                     _stream_tokens_saved = int(
@@ -2968,6 +2997,17 @@ class OrchestratorExecutionEngine:
                                     self.db.commit()
                                 except Exception:
                                     logger.warning("COST-PERSIST (stream): iteration save failed", exc_info=True)
+                            elif _stream_total_cost > 0 and self.db is not None:
+                                _emit_stream_final_usage_debug_decision(
+                                    provider=_stream_provider,
+                                    model=current_call_model or user_selected_model or "unknown",
+                                    total_cost=_stream_total_cost,
+                                    input_tokens=int(u.get("input_tokens") or u.get("prompt_tokens") or 0),
+                                    output_tokens=int(u.get("output_tokens") or u.get("completion_tokens") or 0),
+                                    cached_tokens=int(u.get("cached_tokens") or u.get("prompt_tokens_cached") or 0),
+                                    total_tokens=int(u.get("total_tokens") or 0),
+                                    reason="provider_has_own_attribution_path",
+                                )
                         elif ev.type == "error":
                             # 💎 BACKLOG-006: Build dynamic fallback summary with error details
                             dynamic_fallback = _build_dynamic_fallback_summary(
