@@ -11,6 +11,20 @@ Use this skill for Janus testing work that starts from `documentation/TEST_SPEC/
 
 This skill replaces the old five-stage Test Skill pipeline with one Codex-native router. Keep the pipeline deterministic, evidence-first, and bounded. Do not implement product changes in this skill.
 
+## Context Budget
+
+Bind one `TEST_RUN_ID` or one TestSpec at a time and keep the evidence surface narrow.
+
+Prefer:
+
+- one TestSpec
+- one TestPlan
+- one generated runner
+- one `TestResultJson`
+- one related Backlog or audit marker only when the mode needs it
+
+Do not reread broad test-run history when the current mode can be decided from the active `TEST_RUN_ID` bundle.
+
 ## Hard Rules
 
 - Work on exactly one TestSpec, TestPlan, TestRun, or TestResult set at a time.
@@ -76,6 +90,17 @@ node tests/e2e/generator/validate-test-plan.mjs --plan <TestPlan>
 4. Report generated paths, scope, provider/model expectations, and blockers.
 5. Handoff to `TEST_RUN_PRECHECK`.
 
+Use a compact package:
+
+```text
+TEST_SCOPE:
+- TestSpec:
+- Generated Plan:
+- Provider Expectations:
+- Evidence Paths:
+- Dropped Context:
+```
+
 Do not create an alternate manual plan unless the compiler is unavailable or clearly broken. If that happens, stop and route to `janus-debug`.
 
 ## Mode: TEST_RUN_PRECHECK
@@ -112,6 +137,18 @@ node tests/e2e/generator/generate-live-runner.mjs --plan <TestPlan> --out docume
 
 If precheck passes and live external calls are involved, ask the user for `OK START LIVE TEST`.
 
+Use a compact package:
+
+```text
+TEST_SCOPE:
+- TEST_RUN_ID:
+- Plan:
+- Runner:
+- Prerequisites:
+- Evidence Paths:
+- Dropped Context:
+```
+
 ## Mode: LIVE_TEST_EXECUTION
 
 Inputs:
@@ -145,6 +182,17 @@ python C:\Users\pruve\.codex\skills\janus-test-pipeline\scripts\validate_test_pi
 
 Never use PowerShell `curl` aliases for provider checks. Prefer repository scripts or explicit `Invoke-WebRequest` only if the repo has no dedicated helper.
 
+Summarize only the current run bundle:
+
+```text
+TEST_SCOPE:
+- TEST_RUN_ID:
+- Runner:
+- Result Json:
+- Evidence Files:
+- Dropped Context:
+```
+
 ## Mode: FINDING_TRIAGE
 
 Inputs:
@@ -173,6 +221,8 @@ Process:
 6. Mark dashboard sync/documentation update needs explicitly.
 
 Do not implement fixes in this mode.
+
+Do not reread the full Backlog unless a new item number or duplicate check is actually needed.
 
 ## Mode: DIAMOND_RETEST_AUDIT
 
@@ -206,6 +256,14 @@ Process:
 - `PASS WITH FIXES` -> `janus-documentation-update` for non-code cleanup.
 - `BLOCKED` -> `janus-debug` or Backlog intake.
 
+For re-audit after a local fix, prefer comparing only:
+
+- prior failing result bundle
+- current retest result bundle
+- exact blocker closure evidence
+
+Do not reopen unrelated historical runs unless coverage is still ambiguous.
+
 ## Model And Context Guidance
 
 - Use `5.4` low for short TestPlan validation, artifact checks, and routine triage when the current `5.4` context is warm or the next step returns to `5.4`.
@@ -225,5 +283,7 @@ For every mode, respond with:
 - `Evidence`
 - `Next skill`
 - `Model recommendation`
+- `Keep Context`
+- `Drop Context`
 
 Keep summaries short and point to file paths instead of pasting large artifacts.

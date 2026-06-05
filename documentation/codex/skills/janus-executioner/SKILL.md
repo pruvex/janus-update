@@ -137,7 +137,23 @@ Auto-Verification:
 
 If Auto-Verification is N/A, do not say `TASK COMPLETE`; use `N/A-SCOPE CLOSURE` with reason and next gate.
 
-For final task completion, hand off to `janus-final-audit`; otherwise hand off to the next task/precheck.
+For final task completion, hand off to `janus-final-audit` only with a compact audit package path or explicit instruction to build/update one first; otherwise hand off to the next task/precheck.
+
+## Audit Package Handoff Rule
+
+Before handing off to `janus-final-audit`, prepare or refresh a compact audit package, preferably `AUDIT_PACKAGE.md`, containing:
+
+- scope and target task
+- changed files
+- validation commands and results
+- evidence paths
+- known risks
+- open issues
+- if this is a re-audit, a short blocker delta summary
+
+Prefer `codex-audit-package-builder` for this package. For blocker follow-up work, update the existing package instead of creating a new broad package from scratch.
+
+If the next step should happen in a fresh chat, the final answer must include one fenced `text` `NEW_CHAT_HANDOFF` block that references the package path, target skill, and model/reasoning. Do not rely on prose-only routing.
 
 ## Output Skeleton
 
@@ -155,12 +171,16 @@ NEXT_SKILL_HANDOFF
 Target Skill: janus-final-audit | janus-debug | janus-test-pipeline | janus-preimplementation-check
 Canonical State: HANDOFF | BLOCKED
 Required Artifacts:
+Audit Package:
 Evidence Paths:
 Failure Code:
 Changed Files:
 Decision:
 Reason:
-Copy Prompt:
+Recommended Model:
+Recommended Intelligence:
+New Chat: yes | no
+NEW_CHAT_HANDOFF: <fenced text block only when New Chat: yes>
 ```
 
 ## Validator

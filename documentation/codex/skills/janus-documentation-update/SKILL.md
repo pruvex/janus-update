@@ -33,6 +33,17 @@ Block if:
 - required evidence paths are missing
 - version files are inconsistent and cannot be parsed
 
+## Context Budget
+
+Documentation update should be marker-scoped, not history-scoped. Resolve only:
+
+- final audit result or green validation package
+- target marker such as `BACKLOG-XXX`, `SPEC-XX`, or `TEST-RUN-XXX`
+- files that must carry that marker
+- exact evidence paths needed for validation
+
+Do not reread old specs, execution chatter, or unrelated DONE backlog history when the marker package already identifies the required updates.
+
 ## Allowed Edits
 
 - append audit trail to task or Spec files
@@ -97,26 +108,39 @@ node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.j
 
 1. Verify final audit/manual/debug gates.
 2. Resolve task file, Spec path, Backlog ID, TestRun/TestSpec artifacts, version, and validation evidence.
-3. Update task/Spec implementation metadata.
-4. Update central registry and project state.
-5. Update changelog or report exact skip reason.
-6. Update `WHAT_I_LEARNED.md` if a reusable pattern exists, using append-only format and avoiding duplicates.
-7. Move Backlog item to DONE when applicable.
-8. Sync dashboard snapshot if Backlog changed.
-9. Validate Backlog with:
+3. Build a compact documentation scope package in notes or scratch form:
+
+```text
+DOC_SCOPE:
+- Marker:
+- Required Files:
+- Optional Files:
+- Evidence Paths:
+- Exact Skip Reasons:
+```
+
+4. Update task/Spec implementation metadata.
+5. Update central registry and project state.
+6. Update changelog or report exact skip reason.
+7. Update `WHAT_I_LEARNED.md` if a reusable pattern exists, using append-only format and avoiding duplicates.
+8. Move Backlog item to DONE when applicable.
+9. Sync dashboard snapshot if Backlog changed.
+10. Validate Backlog with:
 
 ```powershell
 python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md
 ```
 
-10. Run documentation completion validator when applicable:
+11. Run documentation completion validator when applicable:
 
 ```powershell
 python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker <BACKLOG-XXX-or-TEST-RUN-id>
 ```
 
-11. Recommend `janus-git-governance` for a checkpoint commit.
-12. For release prep, verify version sync and recommend `janus-build-release` only after the Git checkpoint is clean.
+12. Recommend `janus-git-governance` for a checkpoint commit.
+13. For release prep, verify version sync and recommend `janus-build-release` only after the Git checkpoint is clean.
+
+Prefer exact skip reasons over optional rereads. Example: `CHANGELOG skipped: validation-only internal hardening, no user-facing behavior change`.
 
 ## Test Pipeline Completion Mode
 
@@ -184,6 +208,11 @@ Use:
 
 ## Validation
 - <command>: <PASS | FAIL | NOT RUN WITH REASON>
+
+## Scope Package
+- **Marker:** <BACKLOG-XXX | SPEC-XX | TEST-RUN-XXX | N/A>
+- **Required Files:** <paths>
+- **Dropped Context:** <broad docs/history intentionally not reread>
 
 ## Completion Checklist
 - **Task/Spec marker:** PASS | UPDATED | N/A | MISSING

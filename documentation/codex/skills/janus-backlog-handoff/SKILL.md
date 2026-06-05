@@ -37,6 +37,16 @@ Default is `DASHBOARD_PREP`.
 - Dashboard fields must be individual markdown list fields.
 - After Backlog changes, sync dashboard snapshot with `npm run sync:backlog` in `C:\KI\Janus-Projekt\janus-dashboard` or explicitly report why not run.
 
+## Context Budget
+
+Work on the smallest Backlog slice possible:
+
+- one selected `BACKLOG-XXX` in `SELECTED_HANDOFF`
+- one filtered READY cluster in `DASHBOARD_PREP`
+- one metadata-only item set in `ROUTING_ENRICHMENT`
+
+Do not reread unrelated `DONE` history when routing a current READY item unless duplicate or lifecycle identity is unclear.
+
 ## Dashboard Fields
 
 Write:
@@ -94,6 +104,18 @@ C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-XXX_<slug>.md
 
 Use concise artifact content. Do not invent product requirements beyond the Backlog item.
 
+Prefer a compact handoff package inside the artifact or response:
+
+```text
+HANDOFF_SCOPE:
+- Backlog Item:
+- Entry Point:
+- Required Artifact:
+- Required Next Skill:
+- Evidence Paths:
+- Dropped Context:
+```
+
 ## Completion Gate
 
 A success output must include `## Next Skill Copy Prompts`.
@@ -130,6 +152,20 @@ If prompts cannot be produced, output:
 ```text
 BACKLOG SKILL 3 BLOCKED: NEXT_SKILL_HANDOVER_MISSING
 Reason: <missing prompt or artifact mismatch>
+```
+
+Every successful handoff should also state:
+
+```text
+Keep Context:
+- selected backlog item
+- created/reused handoff artifact
+- exact next-skill prompt
+
+Drop Context:
+- unrelated READY items
+- old DONE history
+- broad backlog narrative
 ```
 
 ## Validator

@@ -55,6 +55,17 @@ Verify:
 
 Block with `PRE-CHECK BLOCKED: ARTIFACT_IDENTITY_MISMATCH` if Backlog ID, Target Task, Task path, or Handoff path do not match.
 
+## Context Budget
+
+Precheck is a gate, not a reread of the whole project. Load only:
+
+- the target task file
+- the bound Spec or `N/A WITH REASON`
+- the matching Backlog handoff if applicable
+- the minimum relevant tests or evidence surface
+
+Do not reload prior execution chatter, old audit text, or unrelated task history when artifact identity is already clear.
+
 ## TestSpec and TestRun Boundary
 
 For TestSpec, TestPlan, Test-Oracle, assertion, `containsAny`, `mustNotContain`, response-format, or TestRun-finding tasks:
@@ -131,6 +142,10 @@ Mode: SINGLE_TASK_EXECUTION
 Pre-Check: PRE-CHECK PASSED
 Pre-Check Context:
 - <concise scope/evidence summary>
+Affected Files:
+- <explicit files or deterministic file cluster>
+Evidence Focus:
+- <exact commands, tests, or validator paths>
 Scope-Regel:
 - Implement only the bound target task. No architecture drift, no provider fallback, no scope expansion.
 Automated Evidence Gate:
@@ -140,6 +155,13 @@ Artifact Identity Check:
 - Task, Target Task, Backlog Item, Spec, and Handoff path verified.
 Oracle-/TestPlan-Regel:
 - Do not manually patch generated TestPlan/TestResult artifacts. Route TestSpec changes to janus-test-pipeline.
+Keep Context:
+- bound task/spec/backlog identity
+- affected files
+- evidence commands
+Drop Context:
+- old failed drafts
+- unrelated backlog or audit history
 Completion Rule:
 - End with PASS/BLOCKED/HANDOFF and concrete evidence paths.
 Expected Output:

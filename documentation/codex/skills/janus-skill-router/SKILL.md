@@ -22,6 +22,23 @@ Prefer these files, only as needed:
 
 Do not load broad archives unless the active artifact references them.
 
+## Context Budget
+
+Default to the smallest context that can still make a safe routing decision:
+
+- one bound artifact or one changed-file cluster
+- one active decision question
+- one next skill
+
+Prefer compact summary artifacts over full source artifacts when available:
+
+- audit package over full audit history
+- selected backlog handoff over full backlog reread
+- precheck/execution result over old chat history
+- marker-specific documentation evidence over broad doc rereads
+
+If you must expand context, state the reason in one line before doing so.
+
 ## Routing Output
 
 Before substantial work, output:
@@ -37,6 +54,24 @@ MODEL SWITCH GATE
 ```
 
 If current setup is acceptable, say so and continue. If a switch is recommended, wait for user `ok`, `bleib hier`, or another explicit instruction.
+
+If `Neuer Chat: ja`, always include one compact fenced `text` handoff block directly in the user-visible answer so it renders as a gray copy box. Do not make the user reconstruct the next prompt from prose.
+
+Use:
+
+```text
+NEW_CHAT_HANDOFF
+NEXT: <next skill or audit entry point>
+MODEL: <model>/<reasoning>
+LOAD:
+- <minimal bound artifact path>
+- <second artifact path only if required>
+ASK: <one-line instruction for the new chat>
+DROP:
+- <broad history to leave behind>
+```
+
+Keep the block minimal. Prefer one primary package such as `AUDIT_PACKAGE.md` over multiple raw artifacts whenever possible.
 
 ## Skill Selection
 
@@ -124,6 +159,14 @@ Stay in the current chat for:
 - documentation update tied to just-completed work
 - user asks for status or continuation
 
+Prefer returning to the same chat after a local blocker fix when:
+
+- the task scope did not change
+- only one bounded artifact bundle changed
+- the next skill can consume a compact delta handoff
+
+Recommend a new chat only when the previous context is now more expensive than reloading a compact package.
+
 ## Working-Style Guardrails
 
 Prefer a narrow guided flow:
@@ -135,6 +178,26 @@ Prefer a narrow guided flow:
 - one evidence/check block
 
 Stop and clarify when no artifact is bound, the chat conflicts with the artifact, a product decision is missing, scope has multiple plausible paths, evidence would be missing, or a risky Git/release/destructive action would be needed.
+
+## Compact Handoff Rule
+
+When routing to the next Janus skill, prefer a compact handoff block that tells the next skill what to keep and what to drop.
+
+Use:
+
+```text
+KEEP_CONTEXT:
+- <bound artifact path>
+- <exact changed files or file cluster>
+- <active blocker or evidence path>
+
+DROP_CONTEXT:
+- <broad history, old drafts, unrelated backlog items, stale failures>
+```
+
+Do not forward broad historical narrative when the next skill only needs artifact identity, changed files, and evidence.
+
+When a new chat is recommended, convert the compact handoff into exactly one fenced `text` `NEW_CHAT_HANDOFF` block in the answer. The prose summary can stay brief, but the copy box is mandatory.
 
 Use `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md` as the concise operating guide when the user asks how we should work.
 
@@ -160,4 +223,8 @@ Next Skill:
 Recommended Model:
 Recommended Reasoning:
 Evidence Paths:
+Keep Context:
+Drop Context:
 ```
+
+If `Neuer Chat: ja`, append exactly one fenced `text` `NEW_CHAT_HANDOFF` block after the normal completion format.

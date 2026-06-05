@@ -29,7 +29,9 @@ If current setup is weaker than required, stop with a model-switch handoff. Do n
 
 ## Required Input
 
-Require a compact audit package:
+Require one compact audit package file, preferably `AUDIT_PACKAGE.md`.
+
+Minimum required package contents:
 
 - Spec or `N/A WITH REASON`
 - Task file or TestSpec/TestRun package
@@ -42,7 +44,22 @@ Require a compact audit package:
 - manual Janus evidence: `PRESENT`, `MISSING`, or `N/A WITH REASON`
 - pipeline completion status: remaining tasks none, implementation complete yes, or validation-only run
 
+The audit package is the primary source for the audit. Open additional artifacts only when the package points to a specific ambiguity, risk, or contradiction.
+
 If the package is incomplete, return `FINAL AUDIT RESULT: BLOCKED`.
+
+## Audit Package Rule
+
+Before a fresh final audit in a new chat, prefer `codex-audit-package-builder` to create or refresh the package. For single-task or bounded Backlog audits inside a still-warm `5.4` thread, a fresh chat is optional if the audit package is already compact and current.
+
+Do not re-read broad development history when the package already contains:
+
+- scope
+- changed files
+- validation evidence
+- explicit risks
+- open issues
+- prior audit blocker if one exists
 
 ## Debug Package Blocker
 
@@ -72,13 +89,36 @@ Do not turn a debug package into a final audit PASS.
 6. Check regression risk outside declared scope.
 7. Check precheck compliance where applicable.
 8. For BLOCKED, PASS WITH FIXES, or high-risk findings, targeted-search `WHAT_I_LEARNED.md` for matching prior tripwires before deciding final routing.
-9. Decide exactly one result: `PASS`, `PASS WITH FIXES`, or `BLOCKED`.
+9. If this is a re-audit after a previously blocked audit, review only the blocker-related delta first, then widen scope only if the new evidence suggests spillover.
+10. Decide exactly one result: `PASS`, `PASS WITH FIXES`, or `BLOCKED`.
 
 ## Decision Rules
 
 - `PASS`: requirements met, tests green, no relevant blockers, manual evidence present or N/A with reason.
 - `PASS WITH FIXES`: only small safe documentation or non-architectural fixes remain and are already applied or explicitly non-blocking.
 - `BLOCKED`: missing/failed evidence, incomplete tasks, unclear package, scope drift, security/privacy/provider risk, unresolved debug, failed manual test, or non-deterministic assessment.
+
+## Re-Audit Loop Rule
+
+If the audit is `BLOCKED` and the issue is locally fixable, do not force a full restart. Hand back a narrow re-audit package update path:
+
+- identify the exact blocker category
+- name the minimum files or evidence that must change
+- require the existing audit package to be updated, not rebuilt from scratch
+- route back to `janus-executioner`, `janus-debug`, or `janus-preimplementation-check` with a blocker-focused copy prompt
+
+Prefer a same-chat re-audit after the fix when all are true:
+
+- the scope is still the same task/backlog item
+- no new architecture or provider decision was introduced
+- the updated audit package contains a short delta summary
+
+Recommend a fresh audit chat only when:
+
+- the blocker changed the scope materially
+- multiple new files or subsystems were touched
+- the first blocker exposed a broader security/privacy/provider risk
+- the audit package is no longer compact
 
 ## Spec Done Rule
 
@@ -115,6 +155,19 @@ Findings:
 - NONE
 ```
 
+For `BLOCKED`, also include:
+
+```text
+Blocked By:
+- <single primary blocker>
+
+Re-Audit Trigger:
+- <what must be true before re-audit>
+
+Audit Package Delta Required:
+- <exact section or evidence updates required in AUDIT_PACKAGE.md>
+```
+
 For `PASS` or `PASS WITH FIXES`, end with:
 
 ```text
@@ -130,7 +183,7 @@ Reason: FINAL AUDIT RESULT PASS | PASS WITH FIXES; documentation sync required.
 Copy Prompt: Use janus-documentation-update with this audit result and evidence package.
 ```
 
-For `BLOCKED`, hand off to `janus-debug`, `janus-executioner`, or `janus-preimplementation-check` with exact reason and required artifacts.
+For `BLOCKED`, hand off to `janus-debug`, `janus-executioner`, or `janus-preimplementation-check` with exact reason, exact required artifacts, and the minimum audit-package delta needed before re-audit.
 
 ## Validator
 
