@@ -68,6 +68,12 @@ Prefer small, coherent commits:
 - no unrelated formatting or cleanup
 - no secret files, local DBs, large binaries, build output, or private logs unless explicitly required and reviewed
 
+Lean mode for small validated Janus work is allowed:
+
+- one small `BACKLOG-XXX` item may stay in one commit even if it spans product code, related tests, task/precheck/execution/final-audit artifacts, backlog marker updates, dashboard sync, registry/project-state/changelog updates, `AUDIT_PACKAGE.md`, and `documentation/codex/SKILL_USAGE_LOG.md`
+- do not split only because code, audit evidence, backlog sync, and closeout docs land in different folders
+- split only when there is genuinely unrelated scope, especially parallel product work, separate skill-rule changes, release-only verification, local debris, or a second independent feature slice
+
 If the worktree is dirty, inspect and propose commit groups before staging.
 
 ## Commit Message Format
@@ -108,6 +114,12 @@ git diff --check
 ```
 
 Then propose an explicit staging plan. Use pathspecs, not `git add .`, unless the entire dirty tree has been reviewed and belongs to one changeset.
+
+Treat the guard as a coherence check, not a mechanical bucket counter:
+
+- if one validated Backlog item plus its evidence and closeout docs is the only intended scope, a single commit is usually correct
+- if `skill-rules` appears alongside product work, keep it separate unless the user explicitly wants a governance follow-up in the same batch
+- if uncertain, prefer one intentional commit over automatically exploding the same feature into several docs-only commits
 
 Allowed only after user approval:
 

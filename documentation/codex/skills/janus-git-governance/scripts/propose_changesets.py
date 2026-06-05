@@ -18,10 +18,11 @@ def run(cwd, *args):
 
 def classify_bucket(path_text):
     path = path_text.replace("\\", "/")
+    if path.startswith("documentation/codex/skills/"):
+        return "skill-rules"
     if (
         path.startswith("scripts/git-hooks/")
         or path in {"scripts/save.ps1", "scripts/verify-codex-dev-environment.ps1"}
-        or path.startswith("documentation/codex/skills/janus-git-governance/")
         or path.startswith("documentation/codex/CODEX_")
         or path == "documentation/codex/SKILL_USAGE_LOG.md"
     ):
@@ -30,8 +31,6 @@ def classify_bucket(path_text):
         return "frontend"
     if path.startswith("backend/"):
         return "backend"
-    if path.startswith("documentation/codex/skills/"):
-        return "skill-rules"
     if path.startswith("documentation/release/"):
         return "release-verification"
     if path == "janus-dashboard/data/backlog.snapshot.json" or path.startswith("documentation/backlog/"):
@@ -72,14 +71,21 @@ def main():
         quoted = " ".join([f'"{p}"' for p in paths])
         print(f"git add -- {quoted}")
 
+    active = set(groups)
+    implementation = sorted(active & {"frontend", "backend", "tooling"})
+    companions = active - {"frontend", "backend", "tooling", "skill-rules", "release-verification"}
+    if implementation and "skill-rules" not in active and "release-verification" not in active and len(implementation) <= 2:
+        print("\nLean mode candidate:")
+        print("- One combined commit is reasonable if these files belong to one validated Backlog item plus its evidence and closeout docs.")
+        if companions:
+            print(f"- Companion buckets that may stay together: {', '.join(sorted(companions))}")
+
     print("\nCommit order recommendation:")
-    print("1. codex-governance")
+    print("1. one lean commit for a single validated Backlog item, if applicable")
     print("2. skill-rules")
-    print("3. dashboard-backlog-sync")
-    print("4. release-verification")
-    print("5. frontend/backend/tooling")
-    print("6. generated-test-artifacts (only if explicitly needed)")
-    print("7. manual-review")
+    print("3. release-verification")
+    print("4. separate product slices only when scopes are genuinely unrelated")
+    print("5. generated-test-artifacts (only if explicitly needed)")
     return 0
 
 

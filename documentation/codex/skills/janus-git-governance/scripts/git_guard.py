@@ -1,19 +1,30 @@
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
 
 
 MAX_FILE_MB = 90
-MIXED_GROUP_THRESHOLD = 3
+IMPLEMENTATION_BUCKETS = {"frontend", "backend", "tooling"}
+COMPANION_BUCKETS = {
+    "codex-governance",
+    "dashboard-backlog-sync",
+    "generated-test-artifacts",
+    "manual-review",
+    "release-notes",
+}
+STRICT_SPLIT_BUCKETS = {"skill-rules", "release-verification"}
+MAX_IMPLEMENTATION_BUCKETS = 2
 
 
 def classify_bucket(path_text):
     path = path_text.replace("\\", "/")
+    if path.startswith("documentation/codex/skills/"):
+        return "skill-rules"
     if (
         path.startswith("scripts/git-hooks/")
         or path in {"scripts/save.ps1", "scripts/verify-codex-dev-environment.ps1"}
-        or path.startswith("documentation/codex/skills/janus-git-governance/")
         or path.startswith("documentation/codex/CODEX_")
         or path == "documentation/codex/SKILL_USAGE_LOG.md"
     ):
@@ -22,8 +33,6 @@ def classify_bucket(path_text):
         return "frontend"
     if path.startswith("backend/"):
         return "backend"
-    if path.startswith("documentation/codex/skills/"):
-        return "skill-rules"
     if path.startswith("documentation/release/"):
         return "release-verification"
     if path == "janus-dashboard/data/backlog.snapshot.json" or path.startswith("documentation/backlog/"):
@@ -34,7 +43,56 @@ def classify_bucket(path_text):
         return "tooling"
     if path in {"CHANGELOG.md", "release_notes.md"}:
         return "release-notes"
-    return "other"
+    return "manual-review"
+
+
+def extract_backlog_markers(path_text):
+    return set(re.findall(r"BACKLOG-\d+", path_text.upper()))
+
+
+def evaluate_changeset(buckets, markers):
+    active_buckets = sorted([bucket for bucket, count in buckets.items() if count > 0])
+    active_set = set(active_buckets)
+    active_markers = sorted(marker for marker, count in markers.items() if count > 0)
+
+    if not active_buckets:
+        return active_buckets, active_markers, None
+
+    if "skill-rules" in active_set and len(active_set) > 1:
+        return (
+            active_buckets,
+            active_markers,
+            "BLOCKER: skill-rules are mixed with non-skill work. Keep governance changes separate.",
+        )
+
+    if "release-verification" in active_set and len(active_set - {"release-verification", "release-notes"}) > 0:
+        return (
+            active_buckets,
+            active_markers,
+            "BLOCKER: release verification is mixed with normal development work. Commit it separately.",
+        )
+
+    implementation_buckets = sorted(active_set & IMPLEMENTATION_BUCKETS)
+    noncompanion_buckets = sorted(
+        bucket
+        for bucket in active_set
+        if bucket not in IMPLEMENTATION_BUCKETS
+        and bucket not in COMPANION_BUCKETS
+        and bucket not in STRICT_SPLIT_BUCKETS
+    )
+    if len(implementation_buckets) > MAX_IMPLEMENTATION_BUCKETS:
+        return (
+            active_buckets,
+            active_markers,
+            "BLOCKER: too many implementation surfaces are mixed together. Split into smaller feature slices.",
+        )
+    if noncompanion_buckets:
+        return (
+            active_buckets,
+            active_markers,
+            f"BLOCKER: non-companion scope detected: {', '.join(noncompanion_buckets)}",
+        )
+    return active_buckets, active_markers, None
 
 
 def run(cwd, *args):
@@ -111,19 +169,23 @@ def main():
     unstaged = [e for e in entries if e[:2] != "??" and e[1] != " "]
     untracked = [e for e in entries if e[:2] == "??"]
     buckets = {}
+    markers = {}
 
     large = []
     for entry in entries:
         raw = entry[3:].strip()
         if " -> " in raw:
             raw = raw.split(" -> ", 1)[1].strip()
-        bucket = classify_bucket(raw.strip('"'))
+        normalized = raw.strip('"')
+        bucket = classify_bucket(normalized)
         buckets[bucket] = buckets.get(bucket, 0) + 1
-        path = cwd / raw.strip('"')
+        for marker in extract_backlog_markers(normalized):
+            markers[marker] = markers.get(marker, 0) + 1
+        path = cwd / normalized
         if path.is_file():
             size = file_size_mb(path)
             if size >= MAX_FILE_MB:
-                large.append((raw, size))
+                large.append((normalized, size))
 
     print("GIT GUARD REPORT")
     print(f"- Repository: {cwd}")
@@ -152,14 +214,21 @@ def main():
     else:
         print("- Large file risk: none detected in dirty entries")
 
-    active_buckets = sorted([k for k, v in buckets.items() if v > 0])
-    if len(active_buckets) >= MIXED_GROUP_THRESHOLD:
+    active_buckets, active_markers, mixed_blocker_message = evaluate_changeset(buckets, markers)
+    if active_buckets:
+        print(f"- Active buckets: {', '.join(active_buckets)}")
+    if active_markers:
+        print(f"- Backlog markers in scope: {', '.join(active_markers)}")
+    if mixed_blocker_message:
+        print(mixed_blocker_message)
         print(
-            "BLOCKER: mixed changeset risk detected. Run propose_changesets.py and commit one bucket at a time."
+            "BLOCKER: mixed changeset risk detected. Run propose_changesets.py and split only the unrelated scope."
         )
-        print(f"- Active buckets: {', '.join(active_buckets)}")
     elif active_buckets:
-        print(f"- Active buckets: {', '.join(active_buckets)}")
+        if active_markers:
+            print("- Lean mode: one backlog-linked commit is reasonable if the staged scope matches this item and its closeout artifacts.")
+        else:
+            print("- Lean mode: one coherent commit is reasonable if the scope is intentional and validated.")
 
     if entries:
         print("- Recommendation: review and stage coherent path groups; avoid git add .")
@@ -169,7 +238,7 @@ def main():
     else:
         print("- Recommendation: no commit needed; worktree clean")
 
-    mixed_blocker = len(active_buckets) >= MIXED_GROUP_THRESHOLD and len(entries) > 0
+    mixed_blocker = mixed_blocker_message is not None and len(entries) > 0
     return 1 if branch == "master" or large or "backup" not in remotes or mixed_blocker else 0
 
 
