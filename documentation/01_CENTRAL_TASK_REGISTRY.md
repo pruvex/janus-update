@@ -16,6 +16,25 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Backlog Closures
 
+### BACKLOG-104 - DeepDive Savings auf Deutsch, mit Janus-Caching-Erklaerung und Prozentwert
+
+- **Status**: DONE
+- **Final Audit**: `documentation/test-runs/BACKLOG-104_final_audit.md` (PASS)
+- **Task**: `documentation/tasks/backlog_BACKLOG-104_deepdive_savings_deutsch_caching_prozentwert.md`
+- **Execution Result**: `documentation/tasks/backlog_BACKLOG-104_execution_result.md`
+- **Validation**: DeepDive nennt die sichtbare Savings-KPI jetzt durchgaengig `Ersparnis`, erklaert die zentrale KPI explizit als Janus-Caching-Effekt und zeigt einen Prozentwert auf Basis des bereits verwendeten Kostenverhaeltnisses `total_cost_saved / (total_cost + total_cost_saved)`. Die bestehende fokussierte DeepDive-Smoke deckt den KPI-Hinweis und die deutsche Terminologie mit ab.
+- **Changed Files**: `frontend/js/cost-visualizer.js`, `tests/e2e/generated/BACKLOG-103-ui-smoke.spec.js`, `documentation/backlog/BACKLOG.md`, `documentation/tasks/backlog_BACKLOG-104_deepdive_savings_deutsch_caching_prozentwert.md`, `documentation/tasks/backlog_BACKLOG-104_preimplementation_check.md`, `documentation/tasks/backlog_BACKLOG-104_execution_result.md`, `documentation/test-runs/BACKLOG-104_final_audit.md`.
+
+### BACKLOG-103 - DeepDive UX Information Architecture Cleanup
+
+- **Status**: DONE
+- **Final Audit**: `documentation/test-runs/BACKLOG-103_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/backlog_BACKLOG-103_deepdive_ux_information_architecture_cleanup.md`
+- **Task**: `documentation/tasks/backlog_BACKLOG-103_deepdive_ux_information_architecture_cleanup.md`
+- **Execution Results**: `documentation/tasks/backlog_BACKLOG-103.1_execution_result.md`, `documentation/tasks/backlog_BACKLOG-103.2_execution_result.md`, `documentation/tasks/backlog_BACKLOG-103.3_execution_result.md`
+- **Validation**: DeepDive now opens as a compact management surface, keeps request-level details behind explicit cost-source and request selection, compresses the lower layer into user-meaningful cost summaries, and uses one stable Playwright smoke to guard trust-hint compactness, cost-source-first drilldown, and the absence of default detail density.
+- **Changed Files**: `frontend/js/cost-visualizer.js`, `frontend/src/styles.css`, `tests/e2e/generated/BACKLOG-103-ui-smoke.spec.js`.
+
 ### BACKLOG-102 - Gemini-Streaming-Kosten erscheinen im DeepDive als Attributionsluecke
 
 - **Status**: DONE

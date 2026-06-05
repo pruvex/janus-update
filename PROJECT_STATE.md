@@ -1,6 +1,6 @@
 ﻿# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-06-05 (BACKLOG-101 R2 final dokumentiert und final auditiert - PASS; DeepDive ist jetzt user-first mit getrenntem Dev-Debuglog)
+**Aktualisiert:** 2026-06-05 (BACKLOG-104 final dokumentiert und final auditiert - PASS; DeepDive benennt Ersparnis jetzt deutsch, erklaert Janus-Caching und zeigt den Prozentwert nachvollziehbar an)
 
 ---
 
@@ -8,6 +8,8 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **BACKLOG-104 DeepDive Ersparnis auf Deutsch mit Janus-Caching-Erklaerung und Prozentwert** | SEALED | Das DeepDive verwendet in der Nutzeransicht jetzt durchgaengig `Ersparnis` statt `Savings`, erklaert die zentrale Ersparnis-KPI als Janus-Caching-Effekt und zeigt dazu einen Prozentwert auf Basis derselben Kostenformel wie die uebrige Janus-Caching-Sicht. Validation: `node --check frontend/js/cost-visualizer.js` PASS; Playwright `BACKLOG-103-ui-smoke` PASS (1/1); Final Audit PASS. |
+| **BACKLOG-103 DeepDive UX Information Architecture Cleanup** | SEALED | Das bestehende DeepDive startet jetzt als kompakte Management-Sicht fuer Kosten, Ersparnis, Budgetkontext und Treiber. Requests und Kostenbestandteile erscheinen erst nach bewusster Auswahl einer Kostenquelle, und die untere Ebene wurde von diagnoseartiger Metadaten-Dichte zu nutzerrelevanten Kosten-Zusammenfassungen verdichtet. Validation: `node --check frontend/js/cost-visualizer.js` PASS; Playwright `BACKLOG-103-ui-smoke` PASS (1/1); Final Audit PASS. |
 | **BACKLOG-102 Gemini Streaming Attributionsluecke im DeepDive** | SEALED | Der allgemeine Streaming-Cost-Persist schreibt fuer Gemini/Google keine zusaetzlichen unattribuierten `stream_final_usage=1`-Zeilen mehr. Damit bleibt fuer Gemini der request-genaue Gateway-Attributionspfad die einzige Quelle fuer DeepDive-Kosten, waehrend andere Provider ihren bisherigen Streaming-Persist behalten. Validation: `pytest backend/tests/test_cost_token_tracking_completeness.py` PASS (10/10); Final Audit PASS. |
 | **BACKLOG-101 DeepDive Cross-Provider Transparenz und Cache-Savings** | SEALED | DeepDive ist jetzt bewusst user-first: provideruebergreifende Kostenansicht fuer Gemini und GPT/OpenAI, Modellsplits, Cache-/Savings-Sicht und kompakte Wahrheits-Hinweise stehen oben, waehrend technische Trackingdiagnose in ein getrenntes Dev-Debuglog (`documentation/logs/cost-tracking-debug.jsonl`) ausgelagert ist. Validation: Backend `py_compile` PASS, cost-token suite `13/13` PASS, `node --check frontend/js/cost-visualizer.js` PASS, dauerhafter UI-Smoke `1/1` PASS, Final Audit PASS. |
 | **TASK-SPEC14 Gemini Cost Attribution and DeepDive Forensics** | SEALED | Gemini-Kostenforensik ist jetzt durchgaengig umgesetzt: strukturierte Kosten-/Attributionsbelege pro externem Gemini-Request, Session/Testlauf/Request-Gruppierung, historische May-2026-Reconciliation mit sichtbaren Restposten, anomaly-first DeepDive-Modal und Flash-by-default fuer Gemini Grounding/Websearch. Final Audit PASS; Validation: `py_compile` PASS, cost-token suite `9/9` PASS, routing/provider-policy suite `10/10` PASS, websearch suite `102/102` PASS, model-discipline suite `7/7` PASS, `node --check frontend/js/cost-visualizer.js` PASS. |
