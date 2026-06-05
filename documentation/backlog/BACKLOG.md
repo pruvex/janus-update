@@ -82,6 +82,93 @@ Dashboard-Regeln:
 
 ## DONE
 
+### BACKLOG-104 - DeepDive Savings auf Deutsch, mit Janus-Caching-Erklaerung und Prozentwert
+
+- **Typ:** IMPROVEMENT
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-06-05
+- **Aktualisiert:** 2026-06-05
+- **Follow-up zu:** BACKLOG-103 - DeepDive UX Information Architecture Cleanup
+- **Kurzbeschreibung:** Im DeepDive stehen noch englische Begriffe wie `Savings`, und die Ersparnis-Kachel erklaert nicht, woher die Ersparnis kommt. Die Nutzeransicht soll stattdessen durchgaengig deutsch sein und klar machen, dass die Ersparnis aus dem Janus-Caching stammt. Zusaetzlich soll die Kachel einen Prozentwert anzeigen, wie viel durch das Caching gespart wurde.
+- **Erwartetes Verhalten:** Das DeepDive verwendet in der Nutzeransicht deutsche Begriffe wie `Ersparnis` statt `Savings`. Die Ersparnis-Kachel zeigt neben dem absoluten Betrag auch einen Prozentwert und erklaert, dass die Ersparnis durch Janus-Caching entsteht.
+- **Tatsaechliches Verhalten:** Das DeepDive zeigt an mehreren Stellen noch `Savings`, darunter in der zentralen Uebersicht, in Drilldown-Hinweisen und in Detail-Signalen. In der Ersparnis-Kachel fehlt ausserdem eine fuer Nutzer klare Herkunftserklaerung, sodass unklar bleibt, warum und wodurch diese Ersparnis entsteht.
+- **Reproduktion / Kontext:** DeepDive oeffnen und die Cross-Provider-Uebersicht betrachten. Sichtbare Beispiele in `frontend/js/cost-visualizer.js`: Metric-Label `Savings`, Texte wie `keine Savings erfasst`, `... Savings zu sehen`, Provider-/Modellzeilen mit `Savings`, Request-Badges mit `Savings ...` sowie `klar zugeordnet mit Savings`.
+- **Betroffener Bereich:** Frontend / DeepDive / Cost Visualizer / UX / Terminologie
+- **Nachweise:** User Intake vom 2026-06-05; aktuelle UI-Texte in `frontend/js/cost-visualizer.js`.
+- **Akzeptanzkriterien:**
+  - [x] Sichtbare Nutzertexte im DeepDive verwenden `Ersparnis` bzw. passende deutsche Formulierungen statt `Savings`.
+  - [x] Die zentrale Ersparnis-Kachel erklaert explizit, dass die Ersparnis durch Janus-Caching entsteht.
+  - [x] Die Ersparnis-Kachel zeigt neben dem absoluten Betrag auch einen Prozentwert fuer die durch Caching erzielte Ersparnis.
+  - [x] Die Prozentanzeige ist fuer Nutzer nachvollziehbar und basiert auf einem klaren, konsistenten Verhaeltnis aus Kosten und erspartem Anteil.
+  - [x] Die Umbenennung und Erklaerung gelten auch fuer die wichtigsten sichtbaren DeepDive-Drilldown-Texte, damit kein Mischbild aus Deutsch und Englisch bleibt.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** S
+- **Umsetzungsreife:** DONE
+- **Empfehlung:** DONE
+- **Entry Point:** EXECUTION_READY
+- **Routing reason:** Kleiner klar begrenzter DeepDive-Frontend-Pass mit vorhandenem Task-Handoff und abgeschlossenem Precheck.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-06-05
+- **Handoff:** documentation/tasks/backlog_BACKLOG-104_deepdive_savings_deutsch_caching_prozentwert.md
+- **Recommended next skill:** DONE
+- **Handoff created:** 2026-06-05
+- **Precheck artifact:** documentation/tasks/backlog_BACKLOG-104_preimplementation_check.md
+- **Target Task:** BACKLOG-104
+- **Completed by task:** `documentation/tasks/backlog_BACKLOG-104_deepdive_savings_deutsch_caching_prozentwert.md`
+- **Completed in version:** `0.4.17-beta.50`
+- **Completed at:** 2026-06-05
+- **Final Audit:** PASS
+- **Validation evidence:** `node --check frontend/js/cost-visualizer.js` PASS; `npx playwright test tests/e2e/generated/BACKLOG-103-ui-smoke.spec.js --headed --workers=1 --reporter=list` PASS (1 passed); Final Audit `documentation/test-runs/BACKLOG-104_final_audit.md`.
+- **Notizen:** Der Wunsch blieb bewusst auf bestehende DeepDive-Terminologie und die zentrale Ersparnis-KPI begrenzt. Die Prozentanzeige nutzt dasselbe Kostenverhaeltnis wie die uebrige Janus-Caching-Sicht und fuehrt keine neue Backend-Tracking-Logik ein.
+
+### BACKLOG-103 - DeepDive UX Information Architecture Cleanup
+
+- **Typ:** IMPROVEMENT
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-06-05
+- **Aktualisiert:** 2026-06-05
+- **Follow-up zu:** BACKLOG-101 - DeepDive zeigt GPT-, Modell- und Cache-Kostensicht nach Spec-14 nicht mehr vollstaendig
+- **Kurzbeschreibung:** Das fachlich bereits bereinigte DeepDive fuehlte sich fuer Nutzer weiter zu sehr wie eine Diagnose- oder Logflaeche an. Die bestehende Oberflaeche sollte deshalb nicht nur inhaltlich, sondern auch in ihrer Informationsarchitektur klarer, ruhiger und zweistufig aufgebaut werden.
+- **Erwartetes Verhalten:** Das DeepDive startet als kompakte Management-Sicht fuer Kosten, Ersparnis, Budgetkontext und wichtige Treiber. Details erscheinen erst nach bewusster Auswahl einer Kostenquelle und bleiben in der unteren Ebene auf nutzerrelevante Informationen verdichtet.
+- **Tatsaechliches Verhalten:** Trotz der `BACKLOG-101`-Bereinigung startete das DeepDive optisch und strukturell noch zu dicht. Requests und requestnahe Kostenbestandteile wirkten weiterhin wie ein halb verdeckter Diagnosebereich statt wie ein kontrollierter Drilldown fuer Nutzer.
+- **Reproduktion / Kontext:** DeepDive ueber das Cost Summary Widget oeffnen. Vor dem UX-Refactor wurden Gruppen-/Request-/Detailspalten noch sehr direkt praesentiert, inklusive requestnaher Kostenbestandteile und Metadaten. Nutzerfeedback: "das deepdive ist extrem unuebersichtlich" und "so ist das keine gute ux".
+- **Betroffener Bereich:** Frontend / DeepDive / Cost Visualizer / Informationsarchitektur / UX
+- **Nachweise:** User Intake vom 2026-06-05; Feature-Spec `documentation/SPEC/Spec Done/backlog_BACKLOG-103_deepdive_ux_information_architecture_cleanup.md`; Final Audit `documentation/test-runs/BACKLOG-103_final_audit.md`.
+- **Akzeptanzkriterien:**
+  - [x] Das DeepDive startet mit einer dashboard-kompakten Management-Sicht statt mit sofort sichtbarer Request- und Detaildichte.
+  - [x] Kosten, Ersparnis, Budgetkontext und wichtigste Treiber stehen in der ersten Sicht klar ueber den Details.
+  - [x] Der Vertrauenshinweis bleibt als kompakter eigener Block sichtbar und zerfasert nicht in mehrere Warnflaechen.
+  - [x] Ohne Auswahl einer Kostenquelle bleibt die Detail-Ebene geschlossen oder klar leer.
+  - [x] Die erste Drilldown-Navigation fuehrt ueber Kostenquellen und nicht direkt in einzelne Requests.
+  - [x] Die untere Detailtiefe ist reduziert und bleibt fuer Nutzer nachvollziehbar, ohne wieder wie eine Logging-/Diagnoseflaeche zu wirken.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** DONE
+- **Empfehlung:** DONE
+- **Entry Point:** SPEC_PIPELINE_START
+- **Routing reason:** Bestehende Kernoberflaeche brauchte eine echte UX-/Informationsarchitektur-Entscheidung statt eines lokalen Tweak-Fixes.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-06-05
+- **Handoff:** documentation/SPEC/Spec Done/backlog_BACKLOG-103_deepdive_ux_information_architecture_cleanup.md
+- **Recommended next skill:** DONE
+- **Handoff created:** 2026-06-05
+- **Completed by task:** `documentation/tasks/backlog_BACKLOG-103_deepdive_ux_information_architecture_cleanup.md`
+- **Completed in version:** `0.4.31-beta.82`
+- **Completed at:** 2026-06-05
+- **Final Audit:** PASS
+- **Validation evidence:** `node --check frontend/js/cost-visualizer.js` PASS; `npx playwright test tests/e2e/generated/BACKLOG-103-ui-smoke.spec.js --headed --workers=1 --reporter=list` PASS (1 passed); Final Audit `documentation/test-runs/BACKLOG-103_final_audit.md`.
+- **Notizen:** Der DeepDive-Refactor blieb bewusst auf derselben Surface. Kein neues Diagnose-UI, kein neues Backend-Tracking und kein zweiter DeepDive. Stattdessen fuehrt die bestehende Modal-Oberflaeche jetzt ruhig von Kostenueberblick zu Kostenquelle zu reduzierter Request-/Bestandteil-Sicht.
+
 ### BACKLOG-102 - Gemini-Streaming-Kosten erscheinen im DeepDive als Attributionsluecke
 
 - **Typ:** BUG
