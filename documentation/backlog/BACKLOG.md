@@ -130,7 +130,7 @@ Dashboard-Regeln:
 - **Status:** DONE
 - **Quelle:** User Intake
 - **Erstellt:** 2026-06-03
-- **Aktualisiert:** 2026-06-04
+- **Aktualisiert:** 2026-06-05
 - **Kurzbeschreibung:** Nach dem DeepDive-Umbau fuer Spec 14 ist die neue Gemini-Forensik zwar vorhanden, aber die zuvor sichtbare kostenbezogene Gesamttransparenz ist nicht mehr gleichwertig erhalten. Im DeepDive muessen weiterhin GPT/OpenAI-Verbrauch, modellgenaue Verbrauchsanzeige und die bisherige Cache-/Savings-Sicht sichtbar sein.
 - **Erwartetes Verhalten:** Das DeepDive zeigt provideruebergreifend mindestens Gemini und GPT/OpenAI, den Verbrauch pro Modell sowie die bisherige Sicht auf durch Caching eingesparte Tokens/Kosten. Die neue Gemini-Forensik und die alte Kostenuebersicht muessen zusammen funktionieren, ohne dass eine die andere verdraengt.
 - **Tatsaechliches Verhalten:** Nach dem Spec-14-Umbau ist der DeepDive-Fokus stark auf Gemini-Forensik verschoben. Laut Nutzer fehlt bzw. ist nicht mehr gleichwertig sichtbar, was vorher schon vorhanden war: GPT-Verbrauch, exakte Anzeige pro Modell und die Anzeige der durch Caching eingesparten Kosten.
@@ -138,11 +138,11 @@ Dashboard-Regeln:
 - **Betroffener Bereich:** Frontend / DeepDive / Cost Visualizer / Kostenaggregation / Cross-Provider-Kostenansicht
 - **Nachweise:** User Intake vom 2026-06-03; Spec-14-Artefakte in `documentation/SPEC/Spec Done/14_gemini_cost_attribution_and_deepdive_forensics.md`; aktuelle DeepDive-Implementierung in `frontend/js/cost-visualizer.js`; Live-Test-/Debug-Kontext aus `documentation/test-runs/TEST-RUN-2026-05-21-042_gemini_timeout_debug.md`.
 - **Akzeptanzkriterien:**
-  - [ ] Das DeepDive zeigt weiterhin den Verbrauch fuer GPT/OpenAI und Gemini in einer zusammenhaengenden Kostenansicht.
-  - [ ] Der Verbrauch ist pro Provider und pro Modell nachvollziehbar sichtbar.
-  - [ ] Bereits vorhandene Cache-/Savings-Informationen sind im DeepDive wieder sichtbar und gehen durch die Gemini-Forensik nicht verloren.
-  - [ ] Die neue Gemini-Forensik aus Spec 14 bleibt erhalten, insbesondere Attributionsstatus, Komponenten-Split und Anomalie-/Residual-Sicht.
-  - [ ] Die kombinierte Ansicht reduziert das Risiko, dass interne DeepDive-Summen und externe Provider-Rechnungen fuer Nutzer unklar auseinanderlaufen.
+  - [x] Das DeepDive zeigt weiterhin den Verbrauch fuer GPT/OpenAI und Gemini in einer zusammenhaengenden Kostenansicht.
+  - [x] Der Verbrauch ist pro Provider und pro Modell nachvollziehbar sichtbar.
+  - [x] Bereits vorhandene Cache-/Savings-Informationen sind im DeepDive wieder sichtbar und gehen durch die Gemini-Forensik nicht verloren.
+  - [x] Die neue Gemini-Forensik aus Spec 14 bleibt erhalten, insbesondere Attributionsstatus, Komponenten-Split und Anomalie-/Residual-Sicht.
+  - [x] Die kombinierte Ansicht reduziert das Risiko, dass interne DeepDive-Summen und externe Provider-Rechnungen fuer Nutzer unklar auseinanderlaufen.
 - **Fehlende Informationen:**
   - Keine
 - **Wichtigkeit:** HIGH
@@ -155,15 +155,15 @@ Dashboard-Regeln:
 - **Routing confidence:** HIGH
 - **Routing decided by:** BACKLOG SKILL 3
 - **Routing decided at:** 2026-06-03
-- **Handoff:** documentation/Planned Features/backlog_BACKLOG-101_deepdive_restore_cross_provider_cost_visibility_and_cache_savings.md
+- **Handoff:** documentation/SPEC/Spec Done/backlog_BACKLOG-101_deepdive_restore_cross_provider_cost_visibility_and_cache_savings.md
 - **Recommended next skill:** DONE
 - **Handoff created:** 2026-06-03
-- **Completed by task:** `documentation/tasks/backlog_BACKLOG-101_deepdive_restore_cross_provider_cost_visibility_and_cache_savings.md`
+- **Completed by task:** `documentation/tasks/backlog_BACKLOG-101_clean_deepdive_user_ux_and_cost_debug_log.md`
 - **Completed in version:** `0.4.17-beta.50`
-- **Completed at:** 2026-06-04
+- **Completed at:** 2026-06-05
 - **Final Audit:** PASS
-- **Validation evidence:** `python -m py_compile backend/data/crud.py backend/api/routers/system.py backend/services/cost_service.py` PASS; `python -m pytest backend/tests/test_cost_token_tracking_completeness.py -q` PASS (9 passed); `node --check frontend/js/cost-visualizer.js` PASS; `npx playwright test tests/e2e/generated/BACKLOG-101-ui-smoke.spec.js --headed --workers=1 --reporter=list` PASS (1 passed); final audit `documentation/test-runs/BACKLOG-101_final_audit.md`.
-- **Notizen:** Wahrscheinlich kein komplett neues Feature, sondern Regression bzw. Scope-Luecke nach Spec 14. Die Kostenwahrheit fuer Gemini wurde verbessert, aber die fruehere provideruebergreifende Transparenz muss im DeepDive wieder vollstaendig bzw. sauber integriert werden. Follow-up fuer die spaeter sichtbare Gemini-Attributionsluecke: `BACKLOG-102`.
+- **Validation evidence:** `python -m py_compile backend/data/crud.py backend/api/routers/system.py` PASS; `python -m py_compile backend/services/orchestrator/execution_engine.py backend/llm_providers/gemini/gateway.py backend/services/cost_service.py` PASS; `python -m pytest backend/tests/test_cost_token_tracking_completeness.py -q` PASS (13 passed); `node --check frontend/js/cost-visualizer.js` PASS; `npx playwright test tests/e2e/generated/BACKLOG-101-ui-smoke.spec.js --headed --workers=1 --reporter=list` PASS (1 passed); final audit `documentation/test-runs/BACKLOG-101-R2_final_audit.md`.
+- **Notizen:** Der finale R2-Abschluss hat DeepDive bewusst von einer forensiklastigen Diagnoseflaeche zu einer nutzerorientierten Kostenansicht verschoben. Kostenwahrheit bleibt sichtbar ueber kompakte `truthfulness_hints`, waehrend request-nahe Trackingdiagnose jetzt getrennt in `documentation/logs/cost-tracking-debug.jsonl` landet. Follow-up fuer die spaeter sichtbare Gemini-Attributionsluecke bleibt `BACKLOG-102`.
 
 ### BACKLOG-100 - Generische Anbieter-Mail-Suche nach Inhaltstypen
 

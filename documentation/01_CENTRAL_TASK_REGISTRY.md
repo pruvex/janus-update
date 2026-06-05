@@ -27,12 +27,12 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 ### BACKLOG-101 - DeepDive zeigt GPT-, Modell- und Cache-Kostensicht nach Spec-14 nicht mehr vollstaendig
 
 - **Status**: DONE
-- **Final Audit**: `documentation/test-runs/BACKLOG-101_final_audit.md` (PASS)
-- **Spec**: `documentation/SPEC/backlog_BACKLOG-101_deepdive_restore_cross_provider_cost_visibility_and_cache_savings.md`
-- **Task**: `documentation/tasks/backlog_BACKLOG-101_deepdive_restore_cross_provider_cost_visibility_and_cache_savings.md`
-- **Execution Results**: `documentation/tasks/backlog_BACKLOG-101.1_execution_result.md`, `documentation/tasks/backlog_BACKLOG-101.2_execution_result.md`, `documentation/tasks/backlog_BACKLOG-101.3_execution_result.md`
-- **Validation**: The existing DeepDive now combines cross-provider totals, GPT/OpenAI visibility, per-model breakdowns, cache/savings metrics and the preserved Gemini anomaly-first forensic drilldown in one bounded modal. Focused backend contract evidence stays green and a permanent UI smoke guard now fails if provider/model/savings visibility disappears again.
-- **Changed Files**: `backend/data/crud.py`, `backend/api/routers/system.py`, `backend/tests/test_cost_token_tracking_completeness.py`, `frontend/js/cost-visualizer.js`, `frontend/src/styles.css`, `tests/e2e/generated/BACKLOG-101-ui-smoke.spec.js`.
+- **Final Audit**: `documentation/test-runs/BACKLOG-101-R2_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/backlog_BACKLOG-101_deepdive_restore_cross_provider_cost_visibility_and_cache_savings.md`
+- **Task**: `documentation/tasks/backlog_BACKLOG-101_clean_deepdive_user_ux_and_cost_debug_log.md`
+- **Execution Results**: `documentation/tasks/backlog_BACKLOG-101-R2.1_execution_result.md`, `documentation/tasks/backlog_BACKLOG-101-R2.2_execution_result.md`, `documentation/tasks/backlog_BACKLOG-101-R2.3_execution_result.md`, `documentation/tasks/backlog_BACKLOG-101-R2.4_execution_result.md`
+- **Validation**: DeepDive now starts as a user-facing cost understanding surface with provider/model visibility, savings context and compact truthfulness hints, while technical attribution diagnostics are written to a separate dev-only JSONL debug log with prompt/response/chat-history redaction. Focused backend and UI regression guards fail if forensic-first wording returns or if debug-log events leak user content.
+- **Changed Files**: `backend/data/crud.py`, `backend/services/cost_service.py`, `backend/llm_providers/gemini/gateway.py`, `backend/services/orchestrator/execution_engine.py`, `backend/tests/test_cost_token_tracking_completeness.py`, `frontend/js/cost-visualizer.js`, `tests/e2e/generated/BACKLOG-101-ui-smoke.spec.js`.
 
 ### BACKLOG-100 - Generische Anbieter-Mail-Suche nach Inhaltstypen
 
