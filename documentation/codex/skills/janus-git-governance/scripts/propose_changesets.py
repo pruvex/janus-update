@@ -82,10 +82,11 @@ def main():
 
     print("\nCommit order recommendation:")
     print("1. one lean commit for a single validated Backlog item, if applicable")
-    print("2. skill-rules")
-    print("3. release-verification")
-    print("4. separate product slices only when scopes are genuinely unrelated")
-    print("5. generated-test-artifacts (only if explicitly needed)")
+    print("2. stop after the intended item commit unless the user explicitly asked for leftover cleanup")
+    print("3. skill-rules")
+    print("4. release-verification")
+    print("5. separate product slices only when scopes are genuinely unrelated")
+    print("6. generated-test-artifacts (only if explicitly needed)")
     return 0
 
 

@@ -74,6 +74,13 @@ Lean mode for small validated Janus work is allowed:
 - do not split only because code, audit evidence, backlog sync, and closeout docs land in different folders
 - split only when there is genuinely unrelated scope, especially parallel product work, separate skill-rule changes, release-only verification, local debris, or a second independent feature slice
 
+Default stop rule after small work:
+
+- after the intended small Backlog item is committed and, if requested, pushed to `backup`, stop by default
+- do not automatically start historical cleanup, archaeology, leftover sorting, or follow-up commit hunting just because the worktree is still dirty
+- treat pre-existing unrelated dirt as parked context unless the user explicitly asks to clean it up now
+- at most recommend one product commit and, if truly needed, one small follow-up governance/doc commit for the same item; anything beyond that needs explicit user intent
+
 If the worktree is dirty, inspect and propose commit groups before staging.
 
 ## Commit Message Format
@@ -120,6 +127,7 @@ Treat the guard as a coherence check, not a mechanical bucket counter:
 - if one validated Backlog item plus its evidence and closeout docs is the only intended scope, a single commit is usually correct
 - if `skill-rules` appears alongside product work, keep it separate unless the user explicitly wants a governance follow-up in the same batch
 - if uncertain, prefer one intentional commit over automatically exploding the same feature into several docs-only commits
+- if the intended item is already safely committed, prefer `STOP` over proposing cleanup of older unrelated leftovers
 
 Allowed only after user approval:
 
