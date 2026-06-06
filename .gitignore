@@ -31,6 +31,10 @@ images/debug/
 nathan/
 *.vtt
 *.log
+janus.db*
+chat_history.db*
+costs.db*
+janus_fallback.db*
 # Runtime fallback logs (generated during local dev runs)
 backend/backend/
 e2e_janus.db*

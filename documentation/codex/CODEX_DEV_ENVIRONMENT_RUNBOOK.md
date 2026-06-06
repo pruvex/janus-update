@@ -67,6 +67,15 @@ After any release from `master`:
 - Historical root log artifacts are hygiene cleanup, not proof of the intended
   target path.
 
+## Local Runtime Data
+
+- The active Janus application SQLite database belongs under
+  `%APPDATA%\Janus Projekt\janus.db`, matching `backend/data/database.py`.
+- Root-level `chat_history.db` and `costs.db` are legacy local split-db
+  artifacts, not the intended active runtime persistence path.
+- Root-level `janus.db` or `janus_fallback.db` files are stray local-state
+  artifacts and should not be treated as the canonical runtime data location.
+
 ## Completion Template
 
 End substantive work with:

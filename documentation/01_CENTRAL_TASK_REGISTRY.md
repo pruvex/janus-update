@@ -16,6 +16,15 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Backlog Closures
 
+### BACKLOG-106 - Lokale Datenbank-Artefakte aus dem Repo-Root herausziehen und sauber einordnen
+
+- **Status**: DONE
+- **Final Audit**: `documentation/test-runs/BACKLOG-106_AUDIT_PACKAGE.md` (PASS)
+- **Task**: `documentation/tasks/backlog_BACKLOG-106_root_db_artefakte_klassifizieren_und_laufzeitpfad_definieren.md`
+- **Execution Result**: `documentation/tasks/backlog_BACKLOG-106_execution_result.md`
+- **Validation**: Der Healthcheck meldet die drei Root-DB-Artefakte `janus.db`, `chat_history.db` und `costs.db` jetzt gezielt als `root_runtime_db_artifacts` statt als generische `root_suspicious`-Funde. Zusaetzlich ist `%APPDATA%/Janus Projekt/janus.db` jetzt explizit als kanonischer aktiver Runtime-Pfad dokumentiert, waehrend Root-Kopien als stray oder legacy lokale Zustandsartefakte eingeordnet sind.
+- **Changed Files**: `.gitignore`, `documentation/backlog/BACKLOG.md`, `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`, `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py`, `documentation/tasks/backlog_BACKLOG-106_root_db_artefakte_klassifizieren_und_laufzeitpfad_definieren.md`, `documentation/tasks/backlog_BACKLOG-106_preimplementation_check.md`, `documentation/tasks/backlog_BACKLOG-106_execution_result.md`, `documentation/test-runs/BACKLOG-106_execution_validation.md`, `documentation/test-runs/BACKLOG-106_AUDIT_PACKAGE.md`.
+
 ### BACKLOG-105 - Root-Logs aus dem Repo-Root in festen Laufzeitpfad verlagern
 
 - **Status**: DONE

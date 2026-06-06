@@ -76,33 +76,9 @@ Dashboard-Regeln:
 
 ## NEEDS INFO
 
+## IN PROGRESS
+
 ## READY
-
-### BACKLOG-106 - Lokale Datenbank-Artefakte aus dem Repo-Root herausziehen und sauber einordnen
-
-- **Typ:** TECH_DEBT
-- **Status:** READY
-- **Quelle:** System Health
-- **Erstellt:** 2026-06-06
-- **Aktualisiert:** 2026-06-06
-- **Kurzbeschreibung:** Der Healthcheck meldet lokale DB-Artefakte im Repo-Root, darunter `janus.db`, `chat_history.db` und `costs.db`. Solche Laufzeitdaten sollten nicht lose im Projektwurzelverzeichnis liegen, weil sie den Arbeitszustand verunklaren und die Repo-Hygiene verschlechtern.
-- **Erwartetes Verhalten:** Lokale Datenbankdateien liegen in einem klar definierten Runtime-/Data-Pfad und sind in ihrer Rolle dokumentiert und korrekt ignoriert, falls sie nicht versioniert sein sollen.
-- **Tatsaechliches Verhalten:** Mehrere DB-Dateien liegen lose im Repo-Root und tauchen im Healthcheck als suspicious root artifacts auf.
-- **Reproduktion / Kontext:** MONTHLY-Healthcheck vom 2026-06-06 ausfuehren und den `root_suspicious`-Block pruefen. Dort erscheinen `chat_history.db`, `costs.db` und `janus.db` als Hygiene-Funde.
-- **Betroffener Bereich:** Dev Environment / Runtime Data / Repo-Hygiene
-- **Nachweise:** MONTHLY-Healthcheck `health_snapshot.py --mode MONTHLY` vom 2026-06-06; Root-Funde aus `root_suspicious`.
-- **Akzeptanzkriterien:**
-  - [ ] Fuer lokale DB-Artefakte ist ein definierter Speicherort ausserhalb des Repo-Roots oder in einem klaren Runtime-Pfad festgelegt.
-  - [ ] Ignore- und Dokumentationsregeln sind fuer diese Artefakte konsistent.
-  - [ ] Der Root wird bei erneutem Healthcheck nicht mehr durch lose DB-Artefakte belastet.
-- **Fehlende Informationen:**
-  - Keine
-- **Wichtigkeit:** HIGH
-- **Umsetzungsrisiko:** LOW
-- **Aufwand:** S
-- **Umsetzungsreife:** READY
-- **Empfehlung:** DO NOW
-- **Notizen:** Nicht alle DB-Dateien muessen fachlich gleich behandelt werden; entscheidend ist die saubere Einordnung je Artefakt.
 
 ### BACKLOG-107 - Script-Output-Pfade haerten, damit Dirty-Tree und Root-Suspicious nicht dauernd nachwachsen
 
@@ -130,9 +106,46 @@ Dashboard-Regeln:
 - **Empfehlung:** SCHEDULE
 - **Notizen:** Dieses Item ist absichtlich als uebergreifender Hygiene-Haertungsblock formuliert und kann nach Priorisierung in kleinere technische Tasks zerlegt werden.
 
-## IN PROGRESS
-
 ## DONE
+
+### BACKLOG-106 - Lokale Datenbank-Artefakte aus dem Repo-Root herausziehen und sauber einordnen
+
+- **Typ:** TECH_DEBT
+- **Status:** DONE
+- **Quelle:** System Health
+- **Erstellt:** 2026-06-06
+- **Aktualisiert:** 2026-06-06
+- **Kurzbeschreibung:** Der Healthcheck meldet lokale DB-Artefakte im Repo-Root, darunter `janus.db`, `chat_history.db` und `costs.db`. Solche Laufzeitdaten sollten nicht lose im Projektwurzelverzeichnis liegen, weil sie den Arbeitszustand verunklaren und die Repo-Hygiene verschlechtern.
+- **Erwartetes Verhalten:** Lokale Datenbankdateien liegen in einem klar definierten Runtime-/Data-Pfad und sind in ihrer Rolle dokumentiert und korrekt ignoriert, falls sie nicht versioniert sein sollen.
+- **Tatsaechliches Verhalten:** Mehrere DB-Dateien liegen lose im Repo-Root und tauchen im Healthcheck als suspicious root artifacts auf.
+- **Reproduktion / Kontext:** MONTHLY-Healthcheck vom 2026-06-06 ausfuehren und den `root_suspicious`-Block pruefen. Dort erscheinen `chat_history.db`, `costs.db` und `janus.db` als Hygiene-Funde.
+- **Betroffener Bereich:** Dev Environment / Runtime Data / Repo-Hygiene
+- **Nachweise:** MONTHLY-Healthcheck `health_snapshot.py --mode MONTHLY` vom 2026-06-06; Root-Funde aus `root_suspicious`.
+- **Akzeptanzkriterien:**
+  - [x] Fuer lokale DB-Artefakte ist ein definierter Speicherort ausserhalb des Repo-Roots oder in einem klaren Runtime-Pfad festgelegt.
+  - [x] Ignore- und Dokumentationsregeln sind fuer diese Artefakte konsistent.
+  - [x] Der Root wird bei erneutem Healthcheck nicht mehr durch lose DB-Artefakte belastet.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Kleiner klar begrenzter Hygiene-Task: die drei Root-DB-Artefakte werden gegen aktive Runtime-Pfade klassifiziert, im Healthcheck gezielt eingeordnet und minimal dokumentiert, ohne breiten Cleanup.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-06-06
+- **Handoff:** documentation/tasks/backlog_BACKLOG-106_root_db_artefakte_klassifizieren_und_laufzeitpfad_definieren.md
+- **Recommended next skill:** DONE
+- **Handoff created:** 2026-06-06
+- **Completed by task:** `documentation/tasks/backlog_BACKLOG-106_root_db_artefakte_klassifizieren_und_laufzeitpfad_definieren.md`
+- **Completed in version:** `0.4.17-beta.50`
+- **Completed at:** 2026-06-06
+- **Final Audit:** PASS
+- **Validation evidence:** `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\KI\Janus-Projekt --mode MONTHLY` PASS; `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md` PASS WITH LEGACY WARNINGS; `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-106_preimplementation_check.md` PASS; Final Audit PASS via `documentation/test-runs/BACKLOG-106_AUDIT_PACKAGE.md`.
+- **Notizen:** Die vorhandenen Root-DB-Dateien wurden bewusst nicht geloescht oder migriert. Der Fix blieb auf Klassifizierung, intended runtime path, Healthcheck-Ausgabe und Ignore-/Doku-Konsistenz begrenzt.
 
 ### BACKLOG-105 - Root-Logs aus dem Repo-Root in festen Laufzeitpfad verlagern
 
