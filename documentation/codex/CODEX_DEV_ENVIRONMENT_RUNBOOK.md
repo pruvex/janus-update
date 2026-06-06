@@ -57,6 +57,16 @@ After any release from `master`:
 - Log substantive workflow improvements in
   `documentation/codex/SKILL_USAGE_LOG.md`.
 
+## Local Runtime Logs
+
+- Local dev runtime logs for `npm run start-backend-only`,
+  `npm run start-backend-only-without-reload`, and `npm run start-vite`
+  belong under `debug_logs/`.
+- Versioned dev start paths should not create recurring backend or Vite
+  runtime logs directly in the repository root.
+- Historical root log artifacts are hygiene cleanup, not proof of the intended
+  target path.
+
 ## Completion Template
 
 End substantive work with:

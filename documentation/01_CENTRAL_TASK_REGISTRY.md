@@ -16,6 +16,14 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Backlog Closures
 
+### BACKLOG-105 - Root-Logs aus dem Repo-Root in festen Laufzeitpfad verlagern
+
+- **Status**: DONE
+- **Final Audit**: `AUDIT_PACKAGE.md` (PASS)
+- **Task**: `documentation/tasks/backlog_BACKLOG-105_root_logs_aus_repo_root_in_laufzeitpfad_verlagern.md`
+- **Validation**: Die versionierten lokalen Dev-Startpfade fuer Backend und Vite schreiben ihre Runtime-Logs jetzt in `debug_logs/` statt den Repo-Root weiter zu belasten. Das Ziel wurde zusaetzlich im Dev-Environment-Runbook dokumentiert, damit die Hygiene-Regel nicht nur implizit im Code lebt.
+- **Changed Files**: `package.json`, `scripts/run-backend-dev.cjs`, `scripts/run-vite-dev.cjs`, `scripts/dev-log-utils.cjs`, `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`, `documentation/backlog/BACKLOG.md`, `documentation/tasks/backlog_BACKLOG-105_root_logs_aus_repo_root_in_laufzeitpfad_verlagern.md`, `documentation/test-runs/BACKLOG-105_execution_validation.md`, `janus-dashboard/data/backlog.snapshot.json`, `AUDIT_PACKAGE.md`.
+
 ### BACKLOG-104 - DeepDive Savings auf Deutsch, mit Janus-Caching-Erklaerung und Prozentwert
 
 - **Status**: DONE

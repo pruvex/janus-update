@@ -1768,3 +1768,52 @@ Dieser Bereich wird nach mehreren echten TestRuns gepflegt, z. B. nach 5-10 Runs
   - Diamond Confidence Score: 9/10
   - Production Confidence: 92%
   - Gesamtergebnis: PASS
+
+### BACKLOG-103 - DeepDive UX Information Architecture Cleanup
+
+- **Datum**: 2026-06-05
+- **Quelle**: Backlog / Documentation Update
+- **Artefakte**: `documentation/backlog/BACKLOG.md`, `janus-dashboard/data/backlog.snapshot.json`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`, `documentation/tasks/backlog_BACKLOG-103_deepdive_ux_information_architecture_cleanup.md`, `documentation/test-runs/BACKLOG-103_final_audit.md`, `documentation/SPEC/Spec Done/backlog_BACKLOG-103_deepdive_ux_information_architecture_cleanup.md`
+- **Getestete Faehigkeit**: DeepDive als ruhige zweistufige Kostenoberflaeche mit kompaktem Vertrauenshinweis und reduziertem Drilldown
+- **Pipeline-Route**: final audit -> documentation update -> backlog sync
+- **Status**: PASS
+- **Summary**: BACKLOG-103 wurde in DONE ueberfuehrt. Das bestehende DeepDive startet jetzt als kompakte Management-Sicht, fuehrt Nutzer erst ueber Kostenquellen in Requests und reduziert die untere Ebene auf nutzerrelevante Kosten-Zusammenfassungen statt metadatenlastiger Diagnosebloecke.
+- **Security Gate**: PASS - keine neuen Debug-/Tracking-Rohdaten in der Nutzeroberflaeche, keine neuen Persistenzpfade, keine Scope-Ausweitung ueber den bestehenden DeepDive hinaus.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+- **Findings**:
+  - Keine blockierenden Findings nach UX-Refactor und fokussierter Browser-Evidenz.
+- **Sofortfixes**:
+  - Abschlussmarker in Backlog, Registry, Project State, Changelog, Pipeline-Log und Dashboard-Snapshot nachgezogen.
+- **Backlog-Follow-ups**:
+  - Keine.
+- **Abschluss**:
+  - Diamond Confidence Score: 9/10
+  - Production Confidence: 91%
+  - Gesamtergebnis: PASS
+
+### BACKLOG-105 - Root-Logs aus dem Repo-Root in festen Laufzeitpfad verlagern
+
+- **Datum**: 2026-06-06
+- **Quelle**: Backlog / Documentation Update
+- **Artefakte**: `documentation/backlog/BACKLOG.md`, `janus-dashboard/data/backlog.snapshot.json`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `WHAT_I_LEARNED.md`, `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`, `documentation/tasks/backlog_BACKLOG-105_root_logs_aus_repo_root_in_laufzeitpfad_verlagern.md`, `documentation/test-runs/BACKLOG-105_execution_validation.md`, `AUDIT_PACKAGE.md`
+- **Getestete Faehigkeit**: Repo-Hygiene fuer lokale Dev-Startpfade mit dokumentiertem Runtime-Log-Zielpfad
+- **Pipeline-Route**: final audit -> documentation update -> backlog sync
+- **Status**: PASS
+- **Summary**: BACKLOG-105 wurde in DONE ueberfuehrt. Die versionierten lokalen Dev-Startpfade fuer Backend und Vite schreiben ihre Runtime-Logs jetzt in `debug_logs/`, und das Ziel ist zusaetzlich im Dev-Environment-Runbook dokumentiert.
+- **Security Gate**: PASS - keine Secrets, keine Produktpfad-Aenderung, keine Architektur- oder Provider-Ausweitung.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+- **Findings**:
+  - Keine blockierenden Findings nach Re-Audit.
+- **Sofortfixes**:
+  - Abschlussmarker in Backlog, Registry, Project State, Changelog, WHAT_I_LEARNED und Dashboard-Snapshot nachgezogen.
+- **Backlog-Follow-ups**:
+  - `BACKLOG-106`
+  - `BACKLOG-107`
+- **Abschluss**:
+  - Diamond Confidence Score: 9/10
+  - Production Confidence: 93%
+  - Gesamtergebnis: PASS

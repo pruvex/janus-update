@@ -1,10 +1,10 @@
 # AUDIT_PACKAGE
 
-Generated: 2026-06-05 19:44:33 UTC
+Generated: 2026-06-06 13:43:49 UTC
 
 ## Goal
 
-Final audit package for BACKLOG-104 DeepDive savings localization and Janus-caching KPI clarification.
+Final audit BACKLOG-105 root-log relocation hygiene fix.
 
 ## Scope Rules
 
@@ -16,36 +16,33 @@ Final audit package for BACKLOG-104 DeepDive savings localization and Janus-cach
 
 ## Bound Audit Inputs
 
-- Spec: N/A WITH REASON - This is a small bounded Backlog improvement routed through PRE_IMPLEMENTATION_VERIFICATION without a separate Spec artifact.
-- Task File: C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-104_deepdive_savings_deutsch_caching_prozentwert.md
-- Backlog Item: BACKLOG-104
-- Pre-Implementation Check: C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-104_preimplementation_check.md
-- Manual Janus Evidence: N/A WITH REASON - No separate manual Janus UI evidence was required because the bound evidence gate for this task was syntax validation plus focused Playwright coverage on the affected DeepDive surface.
-- Pipeline Completion Status: remaining tasks none; implementation complete yes; validation-only run no
+- Spec: N/A WITH REASON - BACKLOG-105 is a bounded local dev-script hygiene fix, not a feature spec.
+- Task File: documentation\tasks\backlog_BACKLOG-105_root_logs_aus_repo_root_in_laufzeitpfad_verlagern.md
+- Backlog Item: BACKLOG-105
+- Pre-Implementation Check: documentation\tasks\backlog_BACKLOG-105_root_logs_aus_repo_root_in_laufzeitpfad_verlagern.md
+- Manual Janus Evidence: N/A WITH REASON - local dev script log destination change only; no product UI or runtime user workflow.
+- Pipeline Completion Status: remaining tasks none for BACKLOG-105; implementation complete yes; validation complete yes
 
 ## Backlog Item
 
 ```text
-### BACKLOG-104 - DeepDive Savings auf Deutsch, mit Janus-Caching-Erklaerung und Prozentwert
+### BACKLOG-105 - Root-Logs aus dem Repo-Root in festen Laufzeitpfad verlagern
 
-- **Typ:** IMPROVEMENT
+- **Typ:** TECH_DEBT
 - **Status:** IN PROGRESS
-- **Quelle:** User Intake
-- **Erstellt:** 2026-06-05
-- **Aktualisiert:** 2026-06-05
-- **Follow-up zu:** BACKLOG-103 - DeepDive UX Information Architecture Cleanup
-- **Kurzbeschreibung:** Im DeepDive stehen noch englische Begriffe wie `Savings`, und die Ersparnis-Kachel erklaert nicht, woher die Ersparnis kommt. Die Nutzeransicht soll stattdessen durchgaengig deutsch sein und klar machen, dass die Ersparnis aus dem Janus-Caching stammt. Zusaetzlich soll die Kachel einen Prozentwert anzeigen, wie viel durch das Caching gespart wurde.
-- **Erwartetes Verhalten:** Das DeepDive verwendet in der Nutzeransicht deutsche Begriffe wie `Ersparnis` statt `Savings`. Die Ersparnis-Kachel zeigt neben dem absoluten Betrag auch einen Prozentwert und erklaert, dass die Ersparnis durch Janus-Caching entsteht.
-- **Tatsaechliches Verhalten:** Das DeepDive zeigt an mehreren Stellen noch `Savings`, darunter in der zentralen Uebersicht, in Drilldown-Hinweisen und in Detail-Signalen. In der Ersparnis-Kachel fehlt ausserdem eine fuer Nutzer klare Herkunftserklaerung, sodass unklar bleibt, warum und wodurch diese Ersparnis entsteht.
-- **Reproduktion / Kontext:** DeepDive oeffnen und die Cross-Provider-Uebersicht betrachten. Sichtbare Beispiele in `frontend/js/cost-visualizer.js`: Metric-Label `Savings`, Texte wie `keine Savings erfasst`, `... Savings zu sehen`, Provider-/Modellzeilen mit `Savings`, Request-Badges mit `Savings ...` sowie `klar zugeordnet mit Savings`.
-- **Betroffener Bereich:** Frontend / DeepDive / Cost Visualizer / UX / Terminologie
-- **Nachweise:** User Intake vom 2026-06-05; aktuelle UI-Texte in `frontend/js/cost-visualizer.js`.
+- **Quelle:** System Health
+- **Erstellt:** 2026-06-06
+- **Aktualisiert:** 2026-06-06
+- **Kurzbeschreibung:** Der MONTHLY-Healthcheck fand zahlreiche Laufzeit- und Debug-Logs direkt im Repo-Root. Diese Dateien verschlechtern die operative Hygiene, machen den Arbeitsbereich unruhig und senken die Systemhealth, obwohl sie keine produktive Quellstruktur darstellen.
+- **Erwartetes Verhalten:** Laufzeit-, Start-, Vite- und Debug-Logs landen konsistent in einem definierten Unterordner statt im Repo-Root.
+- **Tatsaechliches Verhalten:** Dateien wie `.codex-vite-err.log`, `backend_hotfix.err.log`, `backend_live.out.log`, `backend_verify.out.log` und `startdev.log` liegen direkt im Root und sammeln sich ueber die Zeit an.
+- **Reproduktion / Kontext:** MONTHLY-Healthcheck vom 2026-06-06 ausfuehren und den Block `root_suspicious` pruefen. Dort erscheinen zahlreiche Root-Logdateien als wiederkehrende Hygiene-Funde.
+- **Betroffener Bereich:** Dev Environment / Scripts / Logging / Repo-Hygiene
+- **Nachweise:** MONTHLY-Healthcheck `health_snapshot.py --mode MONTHLY` vom 2026-06-06; Root-Funde aus `root_suspicious`.
 - **Akzeptanzkriterien:**
-  - [ ] Sichtbare Nutzertexte im DeepDive verwenden `Ersparnis` bzw. passende deutsche Formulierungen statt `Savings`.
-  - [ ] Die zentrale Ersparnis-Kachel erklaert explizit, dass die Ersparnis durch Janus-Caching entsteht.
-  - [ ] Die Ersparnis-Kachel zeigt neben dem absoluten Betrag auch einen Prozentwert fuer die durch Caching erzielte Ersparnis.
-  - [ ] Die Prozentanzeige ist fuer Nutzer nachvollziehbar und basiert auf einem klaren, konsistenten Verhaeltnis aus Kosten und erspartem Anteil.
-  - [ ] Die Umbenennung und Erklaerung gelten auch fuer die wichtigsten sichtbaren DeepDive-Drilldown-Texte, damit kein Mischbild aus Deutsch und Englisch bleibt.
+  - [ ] Relevante Start-, Debug- und Laufzeitskripte schreiben Logs nicht mehr in den Repo-Root.
+  - [ ] Es gibt einen dokumentierten Zielpfad fuer solche Logs.
+  - [ ] Der Root wird bei erneutem Healthcheck nicht mehr durch diese Logfamilie belastet.
 - **Fehlende Informationen:**
   - Keine
 - **Wichtigkeit:** HIGH
@@ -53,222 +50,177 @@ Final audit package for BACKLOG-104 DeepDive savings localization and Janus-cach
 - **Aufwand:** S
 - **Umsetzungsreife:** READY
 - **Empfehlung:** DO NOW
-- **Entry Point:** EXECUTION_READY
-- **Routing reason:** Kleiner klar begrenzter DeepDive-Frontend-Pass mit vorhandenem Task-Handoff und abgeschlossenem Precheck.
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Kleiner klar begrenzter Hygiene-Fix mit lokalem Script- und Logging-Scope, klaren Akzeptanzkriterien und ohne offene Produktentscheidung.
 - **Routing confidence:** HIGH
 - **Routing decided by:** BACKLOG SKILL 3
-- **Routing decided at:** 2026-06-05
-- **Handoff:** documentation/tasks/backlog_BACKLOG-104_deepdive_savings_deutsch_caching_prozentwert.md
-- **Recommended next skill:** SKILL 4
-- **Handoff created:** 2026-06-05
-- **Precheck artifact:** documentation/tasks/backlog_BACKLOG-104_preimplementation_check.md
-- **Target Task:** BACKLOG-104
-- **Notizen:** Der Wunsch bleibt bewusst auf bestehende UI-Texte, sichtbare DeepDive-KPI-Erklaerungen und eine lokal herleitbare Prozentanzeige begrenzt. Kein Backend-Tracking-Neubau, solange die benoetigten Savings-/Cache-Werte bereits im DeepDive-Vertrag vorhanden sind.
+- **Routing decided at:** 2026-06-06
+- **Handoff:** documentation/tasks/backlog_BACKLOG-105_root_logs_aus_repo_root_in_laufzeitpfad_verlagern.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-06-06
+- **Notizen:** Kein globaler Rundum-Cleanup. Fokus nur auf wiederkehrend erzeugte Root-Logs und ihre Erzeugerpfade.
 ```
 
 ## Task Acceptance Scope
 
 ```text
-BACKLOG-104
-- Backlog Item: `BACKLOG-104`
+BACKLOG-105
+- Backlog Item: `BACKLOG-105`
 - Source: `documentation/backlog/BACKLOG.md`
-- Generated At: 2026-06-05
+- Generated At: 2026-06-06
 
 ## Task
 
-### BACKLOG-104 DeepDive Savings deutsch benennen und Janus-Caching-Erklaerung mit Prozentwert ergaenzen
+### BACKLOG-105 Root-Logs aus dem Repo-Root in festen Laufzeitpfad verlagern
 - Ziel:
-  - Bereinige die sichtbare DeepDive-Terminologie rund um `Savings`, sodass Nutzer durchgaengig deutsche Formulierungen sehen, und erweitere die zentrale Ersparnis-Kachel um eine klare Janus-Caching-Erklaerung inklusive Prozentwert.
+  - Verlagere die Erzeugung wiederkehrender Start-, Debug- und Laufzeit-Logs aus dem Repo-Root in einen klar definierten Zielpfad, damit der Arbeitsbereich sauberer bleibt und der Healthcheck diese Root-Artefakte nicht weiter als Hygiene-Fund meldet.
 - Scope:
-  - Touch only the existing DeepDive rendering and visible text/helpers in the current cost visualizer surface.
-  - Do not add backend tracking, API contract changes, or a new DeepDive surface.
+  - Touch only the local start, debug, or helper scripts and related documentation/config that currently write recurring logs into the repository root.
+  - Do not perform a broad repository cleanup, delete unrelated historical artifacts, or change product architecture.
 - Files:
-  - `frontend/js/cost-visualizer.js`
-  - `tests/e2e/generated/BACKLOG-103-ui-smoke.spec.js`
+  - `scripts/`
+  - `documentation/`
+  - other directly involved local start/debug script files only if they currently write logs into the repo root
 - Steps:
-  1. Ersetze sichtbare Nutzertexte mit `Savings` durch deutsche Ersparnis-Formulierungen in Uebersicht, Drilldown, Badges und Signals.
-  2. Erweitere die zentrale Ersparnis-Kachel so, dass sie die Ersparnis explizit als Janus-Caching-Effekt erklaert.
-  3. Zeige in der Ersparnis-Kachel neben dem absoluten Betrag einen nachvollziehbaren Prozentwert auf Basis der bereits vorhandenen Kosten- und Savings-Daten.
-  4. Halte die Berechnung und Beschriftung konsistent ueber die wichtigsten DeepDive-Teilansichten hinweg.
+  1. Identify the local scripts or launch paths that currently emit recurring root-level log files such as Vite, backend start, verify, hotfix, or live logs.
+  2. Define one consistent target path for these logs and update the relevant scripts to write there instead of into the repository root.
+  3. Add or adjust minimal documentation or ignore handling only where needed so the new log path is intentional and understandable.
+  4. Verify that the affected scripts no longer default to creating those recurring logs directly in the root.
 - Acceptance Criteria:
-  - Sichtbare Nutzertexte im DeepDive verwenden `Ersparnis` oder passende deutsche Formulierungen statt `Savings`.
-  - Die zentrale Ersparnis-Kachel erklaert explizit, dass die Ersparnis durch Janus-Caching entsteht.
-  - Die Ersparnis-Kachel zeigt neben dem absoluten Betrag einen Prozentwert fuer die durch Caching erzielte Ersparnis.
-  - Die Prozentanzeige basiert auf einem klaren, konsistenten Verhaeltnis aus Kosten und erspartem Anteil.
-  - Die wichtigsten sichtbaren DeepDive-Drilldowns bleiben ohne deutsch-englisches Mischbild.
+  - Relevante Start-, Debug- und Laufzeitskripte schreiben ihre wiederkehrenden Logs nicht mehr in den Repo-Root.
+  - Es gibt einen klaren und konsistenten Zielpfad fuer diese Logs.
+  - Die betroffenen lokalen Script-Pfade sind so angepasst, dass der Root durch diese Logfamilie nicht weiter standardmaessig belastet wird.
 - Tests:
-  - `node --check frontend/js/cost-visualizer.js`
-  - `npx playwright test tests/e2e/generated/BACKLOG-103-ui-smoke.spec.js --headed --workers=1 --reporter=list`
+  - `rg --files -g "*log*" .`
+  - targeted script/config inspection for affected log-output paths
 - Model: 5.4
 - Reason:
-  - Small bounded frontend UX/text pass on one existing surface with no architecture or data-contract change.
+  - Small bounded repo-hygiene fix with local script scope, low risk, and clear acceptance criteria from the monthly healthcheck.
 ```
 
 ## Pre-Implementation Check
 
 ```text
-PRE-CHECK RESULT
-PRE-CHECK PASSED
+BACKLOG-105
+- Backlog Item: `BACKLOG-105`
+- Source: `documentation/backlog/BACKLOG.md`
+- Generated At: 2026-06-06
 
-Target Task: BACKLOG-104
-Target Subtask: N/A
-Task: documentation/tasks/backlog_BACKLOG-104_deepdive_savings_deutsch_caching_prozentwert.md
-Spec: N/A WITH REASON - This is a small bounded Backlog improvement routed through PRE_IMPLEMENTATION_VERIFICATION without a separate Spec artifact.
-Backlog Item: BACKLOG-104
-Assigned Model: 5.4
-Mode: SINGLE_TASK_EXECUTION
-Pre-Check: PRE-CHECK PASSED
-Pre-Check Context:
-- The bound task is atomic enough for execution: localize visible DeepDive savings language, explain the central savings KPI as Janus caching, and derive one user-facing percent value from the already available cost-saved and cost totals.
-- Artifact identity is consistent across `BACKLOG-104`, the selected handoff in `documentation/backlog/BACKLOG.md`, and the task artifact `documentation/tasks/backlog_BACKLOG-104_deepdive_savings_deutsch_caching_prozentwert.md`.
-- Implementation risk is LOW because the work stays on one existing frontend surface and relies on already exposed DeepDive savings/cache fields instead of adding backend scope.
-- Existing DeepDive smoke coverage in `tests/e2e/generated/BACKLOG-103-ui-smoke.spec.js` is a valid focused evidence surface for this text-and-KPI regression pass.
-Affected Files:
-- frontend/js/cost-visualizer.js
-- tests/e2e/generated/BACKLOG-103-ui-smoke.spec.js
-Evidence Focus:
-- node --check frontend/js/cost-visualizer.js
-- npx playwright test tests/e2e/generated/BACKLOG-103-ui-smoke.spec.js --headed --workers=1 --reporter=list
-Scope-Regel:
-- Implement only the bound target task. No architecture drift, no provider fallback, no scope expansion.
-Automated Evidence Gate:
-- node --check frontend/js/cost-visualizer.js
-- npx playwright test tests/e2e/generated/BACKLOG-103-ui-smoke.spec.js --headed --workers=1 --reporter=list
-- npx playwright test <runner> --headed --workers=1 --reporter=list
-Artifact Identity Check:
-- Task, Target Task, Backlog Item, Spec, and Handoff path verified.
-Oracle-/TestPlan-Regel:
-- Do not manually patch generated TestPlan/TestResult artifacts. Route TestSpec changes to janus-test-pipeline.
-Keep Context:
-- documentation/backlog/BACKLOG.md section for BACKLOG-104
-- documentation/tasks/backlog_BACKLOG-104_deepdive_savings_deutsch_caching_prozentwert.md
-- frontend/js/cost-visualizer.js savings and cache rendering helpers
-Drop Context:
-- old DeepDive audit history
-- unrelated backlog items
-- unrelated backend cost attribution work
-Completion Rule:
-- End with PASS/BLOCKED/HANDOFF and concrete evidence paths.
-Expected Output:
-- Implementation result, executed checks, changed files, and next-skill handoff.
+## Task
 
-NEXT STEP
-Recommended Skill: janus-executioner
-Recommended Model: 5.4
-Recommended Intelligence: medium
-Reason: The task is a bounded frontend terminology and KPI-clarity pass on an already warm DeepDive surface with explicit evidence gates and no open architecture decisions.
-User Action: Say `ok` to start implementation of `BACKLOG-104` with the bound scope and evidence gate above.
+### BACKLOG-105 Root-Logs aus dem Repo-Root in festen Laufzeitpfad verlagern
+- Ziel:
+  - Verlagere die Erzeugung wiederkehrender Start-, Debug- und Laufzeit-Logs aus dem Repo-Root in einen klar definierten Zielpfad, damit der Arbeitsbereich sauberer bleibt und der Healthcheck diese Root-Artefakte nicht weiter als Hygiene-Fund meldet.
+- Scope:
+  - Touch only the local start, debug, or helper scripts and related documentation/config that currently write recurring logs into the repository root.
+  - Do not perform a broad repository cleanup, delete unrelated historical artifacts, or change product architecture.
+- Files:
+  - `scripts/`
+  - `documentation/`
+  - other directly involved local start/debug script files only if they currently write logs into the repo root
+- Steps:
+  1. Identify the local scripts or launch paths that currently emit recurring root-level log files such as Vite, backend start, verify, hotfix, or live logs.
+  2. Define one consistent target path for these logs and update the relevant scripts to write there instead of into the repository root.
+  3. Add or adjust minimal documentation or ignore handling only where needed so the new log path is intentional and understandable.
+  4. Verify that the affected scripts no longer default to creating those recurring logs directly in the root.
+- Acceptance Criteria:
+  - Relevante Start-, Debug- und Laufzeitskripte schreiben ihre wiederkehrenden Logs nicht mehr in den Repo-Root.
+  - Es gibt einen klaren und konsistenten Zielpfad fuer diese Logs.
+  - Die betroffenen lokalen Script-Pfade sind so angepasst, dass der Root durch diese Logfamilie nicht weiter standardmaessig belastet wird.
+- Tests:
+  - `rg --files -g "*log*" .`
+  - targeted script/config inspection for affected log-output paths
+- Model: 5.4
+- Reason:
+  - Small bounded repo-hygiene fix with local script scope, low risk, and clear acceptance criteria from the monthly healthcheck.
 ```
 
 ## Changed Files
 
 ```text
 M documentation/backlog/BACKLOG.md
- M documentation/codex/SKILL_USAGE_LOG.md
- M frontend/js/cost-visualizer.js
-?? documentation/tasks/backlog_BACKLOG-104_deepdive_savings_deutsch_caching_prozentwert.md
-?? documentation/tasks/backlog_BACKLOG-104_execution_result.md
-?? documentation/tasks/backlog_BACKLOG-104_preimplementation_check.md
-?? tests/e2e/generated/BACKLOG-103-ui-smoke.spec.js
+ M documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md
+ M janus-dashboard/data/backlog.snapshot.json
+ M package.json
+ M scripts/run-backend-dev.cjs
+?? documentation/tasks/backlog_BACKLOG-105_root_logs_aus_repo_root_in_laufzeitpfad_verlagern.md
+?? documentation/test-runs/BACKLOG-105_execution_validation.md
+?? scripts/dev-log-utils.cjs
+?? scripts/run-vite-dev.cjs
 ```
 
 ## Artifact Inventory
 
 ```text
-FILE C:\KI\Janus-Projekt\frontend\js\cost-visualizer.js (42256 bytes)
-FILE C:\KI\Janus-Projekt\tests\e2e\generated\BACKLOG-103-ui-smoke.spec.js (10668 bytes)
-FILE C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md (170439 bytes)
-FILE C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-104_deepdive_savings_deutsch_caching_prozentwert.md (2164 bytes)
-FILE C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-104_preimplementation_check.md (3023 bytes)
-FILE C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-104_execution_result.md (3277 bytes)
+FILE C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-105_root_logs_aus_repo_root_in_laufzeitpfad_verlagern.md (2051 bytes)
+FILE C:\KI\Janus-Projekt\documentation\test-runs\BACKLOG-105_execution_validation.md (1320 bytes)
+FILE C:\KI\Janus-Projekt\documentation\codex\CODEX_DEV_ENVIRONMENT_RUNBOOK.md (2828 bytes)
+FILE C:\KI\Janus-Projekt\package.json (5330 bytes)
+FILE C:\KI\Janus-Projekt\scripts\run-backend-dev.cjs (1277 bytes)
+FILE C:\KI\Janus-Projekt\scripts\run-vite-dev.cjs (195 bytes)
+FILE C:\KI\Janus-Projekt\scripts\dev-log-utils.cjs (1861 bytes)
 ```
 
 ## Diff Summary
 
 ```text
-documentation/backlog/BACKLOG.md       |  82 ++++++++
- documentation/codex/SKILL_USAGE_LOG.md |  21 +++
- frontend/js/cost-visualizer.js         | 330 ++++++++++++++++++++++-----------
- 3 files changed, 324 insertions(+), 109 deletions(-)
+documentation/backlog/BACKLOG.md                   |  86 +++++++++
+ .../codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md         |  10 +
+ janus-dashboard/data/backlog.snapshot.json         | 203 ++++++++++++++++++++-
+ package.json                                       |   2 +-
+ scripts/run-backend-dev.cjs                        |  10 +-
+ 5 files changed, 299 insertions(+), 12 deletions(-)
+warning: in the working copy of 'janus-dashboard/data/backlog.snapshot.json', CRLF will be replaced by LF the next time Git touches it
 ```
 
 ## Validation
 
 ```text
-node --check frontend/js/cost-visualizer.js PASS
-npx playwright test tests/e2e/generated/BACKLOG-103-ui-smoke.spec.js --headed --workers=1 --reporter=list PASS (1 passed)
+# BACKLOG-105 Execution Validation
+
+- **Target Task:** BACKLOG-105
+- **Date:** 2026-06-06
+- **Scope:** Move recurring local dev backend and Vite log output away from the repository root into the existing `debug_logs/` runtime log folder.
+
+## Checks
+
+- `node --check scripts/dev-log-utils.cjs` - PASS
+- `node --check scripts/run-vite-dev.cjs` - PASS
+- `node --check scripts/run-backend-dev.cjs` - PASS
+- `git diff --check` - PASS, with pre-existing CRLF warning for `janus-dashboard/data/backlog.snapshot.json`
+- Targeted `rg` inspection confirmed updated dev start paths:
+  - `package.json` maps `start-vite` to `node scripts/run-vite-dev.cjs`
+  - `scripts/run-vite-dev.cjs` uses `runtime_vite` logs
+  - `scripts/run-backend-dev.cjs` uses `runtime_backend` logs
+  - `scripts/dev-log-utils.cjs` writes logs under `debug_logs/`
+  - `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md` documents `debug_logs/` as the intended local runtime log target path
+
+## Manual Janus Evidence
+
+N/A WITH REASON - This task changes local development script log destinations only. No product UI, provider behavior, backend API contract, user workflow, or release artifact behavior is changed.
+
+## Notes
+
+Historical root logs were not deleted or moved in this execution. That cleanup remains intentionally out of scope for BACKLOG-105.
 ```
 
 ## Notes
 
-# BACKLOG-104 Execution Result
-
-TASK EXECUTION RESULT
-Canonical State: PASS
-Target Task: BACKLOG-104
-Changed Files:
-- C:\KI\Janus-Projekt\frontend\js\cost-visualizer.js
-- C:\KI\Janus-Projekt\tests\e2e\generated\BACKLOG-103-ui-smoke.spec.js
-- C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md
-- C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-104_deepdive_savings_deutsch_caching_prozentwert.md
-- C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-104_preimplementation_check.md
-- C:\KI\Janus-Projekt\documentation\codex\SKILL_USAGE_LOG.md
-- C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-104_execution_result.md
-Executed Checks:
-- `node --check frontend/js/cost-visualizer.js` PASS
-- `npx playwright test tests/e2e/generated/BACKLOG-103-ui-smoke.spec.js --headed --workers=1 --reporter=list` PASS
-Auto-Verification:
-- Status: PASS
-- Evidence:
-  - C:\KI\Janus-Projekt\frontend\js\cost-visualizer.js
-  - C:\KI\Janus-Projekt\tests\e2e\generated\BACKLOG-103-ui-smoke.spec.js
-
-Implementation Notes:
-- Replaced visible `Savings` user-facing strings in the DeepDive with German `Ersparnis` wording across overview, drilldown empty state, request badges, and component signals.
-- Expanded the main savings KPI card with a Janus-caching explanation and a percentage based on `total_cost_saved / (total_cost + total_cost_saved)`, matching the existing sidebar savings formula.
-- Tightened the existing DeepDive smoke to assert the new caching explanation and percent note on the central KPI card.
-
-NEXT_STEP
-Target Skill: janus-final-audit
-Canonical State: HANDOFF
-Required Artifacts:
-- C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md
-- C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-104_deepdive_savings_deutsch_caching_prozentwert.md
-- C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-104_preimplementation_check.md
-- C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-104_execution_result.md
-Audit Package:
-- C:\KI\Janus-Projekt\AUDIT_PACKAGE.md
-Evidence Paths:
-- C:\KI\Janus-Projekt\frontend\js\cost-visualizer.js
-- C:\KI\Janus-Projekt\tests\e2e\generated\BACKLOG-103-ui-smoke.spec.js
-- C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-104_execution_result.md
-Failure Code: N/A
-Changed Files:
-- C:\KI\Janus-Projekt\frontend\js\cost-visualizer.js
-- C:\KI\Janus-Projekt\tests\e2e\generated\BACKLOG-103-ui-smoke.spec.js
-- C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md
-- C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-104_deepdive_savings_deutsch_caching_prozentwert.md
-- C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-104_preimplementation_check.md
-- C:\KI\Janus-Projekt\documentation\codex\SKILL_USAGE_LOG.md
-- C:\KI\Janus-Projekt\documentation\tasks\backlog_BACKLOG-104_execution_result.md
-Decision: Route to final audit with a compact package because implementation and bound evidence passed and the change is now ready for an independent review gate.
-Reason: The task stayed within one existing frontend surface, used existing savings/cache contract fields only, and produced passing syntax and Playwright evidence.
-Recommended Model: 5.5
-Recommended Intelligence: high
-Next User Action: Start `janus-final-audit` in a fresh high-reasoning pass with the bound execution artifacts and audit package.
+No additional notes provided.
 
 ## Risks
 
-Low risk: change is limited to existing DeepDive frontend text/render helpers and a percentage derived from existing total_cost and total_cost_saved fields.
+Low risk local dev-script logging change. Main residual risk is that ad-hoc unversioned launch commands may still create historical root log names outside the versioned script paths.
 
 ## Open Issues
 
-No known open implementation issues. Final audit should confirm that the rounded percent wording is acceptable for the DeepDive UX.
+Historical root logs were not deleted or moved; BACKLOG-106 and BACKLOG-107 remain separate hygiene items.
 
 ## Re-Audit Delta
 
+Primary blocker: DOCUMENTED_LOG_TARGET_MISSING
 
-Added explicit Spec status, embedded BACKLOG-104 scope and acceptance criteria, embedded task and precheck contents, manual Janus evidence status, and explicit pipeline completion status after final-audit completeness blocker.
+Added explicit dev-environment documentation that versioned local backend/Vite runtime logs belong under debug_logs/. Validation notes updated to include the documentation evidence.
 
 ## Final Audit Handoff
 
@@ -280,5 +232,7 @@ PASS: C:\KI\Janus-Projekt\AUDIT_PACKAGE.md
 ASK: Lade nur dieses Paket im neuen Chat und starte dann den Final Audit.
 DROP: dev chat history
 ```
+
+Change the model/reasoning to `5.5/high`, paste the block above into a fresh chat, write `ok`, and the final audit starts immediately.
 
 For bounded same-thread re-audits after a local blocker fix, `5.4/high` is acceptable when the package stays compact and the risk did not escalate.

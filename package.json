@@ -15,7 +15,7 @@
     "start-dev": "node scripts/write-startup-marker.cjs && concurrently \"npm:start-backend-only\" \"npm:start-vite\" \"npm:start-electron\"",
     "start-electron": "wait-on --timeout 180000 tcp:8001 && cross-env NODE_ENV=development electron .",
     "start-electron-only": "cross-env NODE_ENV=development electron .",
-    "start-vite": "vite",
+    "start-vite": "node scripts/run-vite-dev.cjs",
     "start-backend-only": "node scripts/run-backend-dev.cjs",
     "start-backend-only-without-reload": "node scripts/run-backend-dev.cjs noreload",
     "test:e2e": "playwright test",

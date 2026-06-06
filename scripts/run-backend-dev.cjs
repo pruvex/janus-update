@@ -2,6 +2,7 @@
 const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
+const { runWithLogs } = require("./dev-log-utils.cjs");
 
 function resolvePython() {
   const venvPython = path.join(process.cwd(), "backend", "venv", "Scripts", "python.exe");
@@ -34,12 +35,11 @@ function main() {
   }
 
   console.log(`[backend-start] python=${python.cmd} mode=${mode}`);
-  const result = spawnSync(python.cmd, uvicornArgs, {
-    stdio: "inherit",
-    env: { ...process.env, PYTHONIOENCODING: "UTF-8", NODE_ENV: "development" },
-    shell: true,
+  runWithLogs(python.cmd, uvicornArgs, {
+    label: "backend-start",
+    logPrefix: "runtime_backend",
+    env: { PYTHONIOENCODING: "UTF-8", NODE_ENV: "development" },
   });
-  process.exit(result.status || 0);
 }
 
 main();

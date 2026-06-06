@@ -99,3 +99,14 @@
 - **Epic:** BACKLOG-102
 - **Confidence:** High
 - **Tags:** Gemini,CostAttribution,Streaming,DeepDive,DuplicatePersistence,RegressionGuard
+
+## [PATTERN] #DevRuntimeLogsNeedOneDocumentedSink "Local dev start paths should share one documented runtime log folder instead of growing root-level log files"
+- **Kontext:** BACKLOG-105 / Monthly healthcheck repo-hygiene hardening for recurring backend and Vite logs.
+- **Problem:** Local dev helper paths can silently normalize bad hygiene if they keep creating ad-hoc `.log` files in the repository root. Even when those files are ignored by Git, they still drag system health down and make the workspace feel dirtier than the actual code state.
+- **Loesung:** Route versioned local dev start paths through one shared helper that mirrors stdout/stderr to the console while writing runtime logs into a dedicated folder such as `debug_logs/`. Document that folder in the dev runbook so the intended sink is explicit and auditable, not just implied by code.
+- **Haertung:** `start-vite` now runs through `scripts/run-vite-dev.cjs`, backend dev runs use the shared log helper, syntax checks passed for all touched scripts, and the final re-audit passed only after the `debug_logs/` target path was documented in `CODEX_DEV_ENVIRONMENT_RUNBOOK.md`.
+- **Tripwire:** If new recurring backend or Vite `.log` files start appearing in the repo root again, either a versioned start path bypassed the shared helper or the documented log-sink rule drifted out of sync with the scripts.
+- **Location:** `package.json`, `scripts/run-backend-dev.cjs`, `scripts/run-vite-dev.cjs`, `scripts/dev-log-utils.cjs`, `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`
+- **Epic:** BACKLOG-105
+- **Confidence:** High
+- **Tags:** Logging, DevEnvironment, RepoHygiene, RuntimeLogs, Vite, Backend, AuditHardening

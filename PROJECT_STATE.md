@@ -1,6 +1,6 @@
 ﻿# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-06-05 (BACKLOG-104 final dokumentiert und final auditiert - PASS; DeepDive benennt Ersparnis jetzt deutsch, erklaert Janus-Caching und zeigt den Prozentwert nachvollziehbar an)
+**Aktualisiert:** 2026-06-06 (BACKLOG-105 final dokumentiert und final auditiert - PASS; lokale Dev-Startpfade schreiben Backend- und Vite-Runtime-Logs jetzt nach `debug_logs/` statt in den Repo-Root)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **BACKLOG-105 Root-Logs aus dem Repo-Root in festen Laufzeitpfad verlagern** | SEALED | Die versionierten lokalen Dev-Startpfade fuer Backend und Vite schreiben ihre Runtime-Logs jetzt in `debug_logs/` statt den Repo-Root weiter mit wiederkehrenden `.log`-Artefakten zu belasten. Das Ziel ist zusaetzlich im Dev-Environment-Runbook dokumentiert. Validation: `node --check scripts/dev-log-utils.cjs` PASS; `node --check scripts/run-vite-dev.cjs` PASS; `node --check scripts/run-backend-dev.cjs` PASS; Final Audit PASS. |
 | **BACKLOG-104 DeepDive Ersparnis auf Deutsch mit Janus-Caching-Erklaerung und Prozentwert** | SEALED | Das DeepDive verwendet in der Nutzeransicht jetzt durchgaengig `Ersparnis` statt `Savings`, erklaert die zentrale Ersparnis-KPI als Janus-Caching-Effekt und zeigt dazu einen Prozentwert auf Basis derselben Kostenformel wie die uebrige Janus-Caching-Sicht. Validation: `node --check frontend/js/cost-visualizer.js` PASS; Playwright `BACKLOG-103-ui-smoke` PASS (1/1); Final Audit PASS. |
 | **BACKLOG-103 DeepDive UX Information Architecture Cleanup** | SEALED | Das bestehende DeepDive startet jetzt als kompakte Management-Sicht fuer Kosten, Ersparnis, Budgetkontext und Treiber. Requests und Kostenbestandteile erscheinen erst nach bewusster Auswahl einer Kostenquelle, und die untere Ebene wurde von diagnoseartiger Metadaten-Dichte zu nutzerrelevanten Kosten-Zusammenfassungen verdichtet. Validation: `node --check frontend/js/cost-visualizer.js` PASS; Playwright `BACKLOG-103-ui-smoke` PASS (1/1); Final Audit PASS. |
 | **BACKLOG-102 Gemini Streaming Attributionsluecke im DeepDive** | SEALED | Der allgemeine Streaming-Cost-Persist schreibt fuer Gemini/Google keine zusaetzlichen unattribuierten `stream_final_usage=1`-Zeilen mehr. Damit bleibt fuer Gemini der request-genaue Gateway-Attributionspfad die einzige Quelle fuer DeepDive-Kosten, waehrend andere Provider ihren bisherigen Streaming-Persist behalten. Validation: `pytest backend/tests/test_cost_token_tracking_completeness.py` PASS (10/10); Final Audit PASS. |

@@ -78,9 +78,100 @@ Dashboard-Regeln:
 
 ## READY
 
+### BACKLOG-106 - Lokale Datenbank-Artefakte aus dem Repo-Root herausziehen und sauber einordnen
+
+- **Typ:** TECH_DEBT
+- **Status:** READY
+- **Quelle:** System Health
+- **Erstellt:** 2026-06-06
+- **Aktualisiert:** 2026-06-06
+- **Kurzbeschreibung:** Der Healthcheck meldet lokale DB-Artefakte im Repo-Root, darunter `janus.db`, `chat_history.db` und `costs.db`. Solche Laufzeitdaten sollten nicht lose im Projektwurzelverzeichnis liegen, weil sie den Arbeitszustand verunklaren und die Repo-Hygiene verschlechtern.
+- **Erwartetes Verhalten:** Lokale Datenbankdateien liegen in einem klar definierten Runtime-/Data-Pfad und sind in ihrer Rolle dokumentiert und korrekt ignoriert, falls sie nicht versioniert sein sollen.
+- **Tatsaechliches Verhalten:** Mehrere DB-Dateien liegen lose im Repo-Root und tauchen im Healthcheck als suspicious root artifacts auf.
+- **Reproduktion / Kontext:** MONTHLY-Healthcheck vom 2026-06-06 ausfuehren und den `root_suspicious`-Block pruefen. Dort erscheinen `chat_history.db`, `costs.db` und `janus.db` als Hygiene-Funde.
+- **Betroffener Bereich:** Dev Environment / Runtime Data / Repo-Hygiene
+- **Nachweise:** MONTHLY-Healthcheck `health_snapshot.py --mode MONTHLY` vom 2026-06-06; Root-Funde aus `root_suspicious`.
+- **Akzeptanzkriterien:**
+  - [ ] Fuer lokale DB-Artefakte ist ein definierter Speicherort ausserhalb des Repo-Roots oder in einem klaren Runtime-Pfad festgelegt.
+  - [ ] Ignore- und Dokumentationsregeln sind fuer diese Artefakte konsistent.
+  - [ ] Der Root wird bei erneutem Healthcheck nicht mehr durch lose DB-Artefakte belastet.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Notizen:** Nicht alle DB-Dateien muessen fachlich gleich behandelt werden; entscheidend ist die saubere Einordnung je Artefakt.
+
+### BACKLOG-107 - Script-Output-Pfade haerten, damit Dirty-Tree und Root-Suspicious nicht dauernd nachwachsen
+
+- **Typ:** IMPROVEMENT
+- **Status:** READY
+- **Quelle:** System Health
+- **Erstellt:** 2026-06-06
+- **Aktualisiert:** 2026-06-06
+- **Kurzbeschreibung:** Die aktuelle Dev- und Script-Umgebung produziert wiederkehrend Root-Artefakte und unklare Nebenprodukte. Dadurch sinkt die Systemhealth dauerhaft, selbst wenn inhaltlich keine Produktprobleme vorliegen.
+- **Erwartetes Verhalten:** Relevante lokale Start-, Test-, Debug- und Hilfsskripte erzeugen ihre Nebenprodukte in konsistenten, vorgesehenen Pfaden und nicht verstreut im Root.
+- **Tatsaechliches Verhalten:** Root-Logs, lose Runtime-Artefakte und gemischter Dirty-Tree wachsen nach Healthcheck-Befund regelmaessig nach und erschweren einen dauerhaft gruenen Repo-Zustand.
+- **Reproduktion / Kontext:** MONTHLY-Healthcheck vom 2026-06-06 ausfuehren. Der Report zeigt `root_suspicious`, einen nicht-sauberen Worktree und wiederkehrende Hygiene-Friction trotz arbeitsfaehigem Projektzustand.
+- **Betroffener Bereich:** Dev Scripts / Tooling / Repo-Hygiene / Operativer Workflow
+- **Nachweise:** MONTHLY-Healthcheck `health_snapshot.py --mode MONTHLY` vom 2026-06-06; Dirty-Tree- und `root_suspicious`-Befunde.
+- **Akzeptanzkriterien:**
+  - [ ] Wiederkehrende Script-Nebenprodukte haben definierte Zielpfade.
+  - [ ] Die wichtigsten lokalen Dev-Skripte erzeugen keine neuen Root-Artefakte mehr als Standardverhalten.
+  - [ ] Ein erneuter Healthcheck zeigt eine klar verbesserte Repo-Hygiene und weniger wiederkehrende Suspicious-Root-Funde.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** MEDIUM
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** SCHEDULE
+- **Notizen:** Dieses Item ist absichtlich als uebergreifender Hygiene-Haertungsblock formuliert und kann nach Priorisierung in kleinere technische Tasks zerlegt werden.
+
 ## IN PROGRESS
 
 ## DONE
+
+### BACKLOG-105 - Root-Logs aus dem Repo-Root in festen Laufzeitpfad verlagern
+
+- **Typ:** TECH_DEBT
+- **Status:** DONE
+- **Quelle:** System Health
+- **Erstellt:** 2026-06-06
+- **Aktualisiert:** 2026-06-06
+- **Kurzbeschreibung:** Der MONTHLY-Healthcheck fand zahlreiche Laufzeit- und Debug-Logs direkt im Repo-Root. Diese Dateien verschlechtern die operative Hygiene, machen den Arbeitsbereich unruhig und senken die Systemhealth, obwohl sie keine produktive Quellstruktur darstellen.
+- **Erwartetes Verhalten:** Laufzeit-, Start-, Vite- und Debug-Logs landen konsistent in einem definierten Unterordner statt im Repo-Root.
+- **Tatsaechliches Verhalten:** Dateien wie `.codex-vite-err.log`, `backend_hotfix.err.log`, `backend_live.out.log`, `backend_verify.out.log` und `startdev.log` liegen direkt im Root und sammeln sich ueber die Zeit an.
+- **Reproduktion / Kontext:** MONTHLY-Healthcheck vom 2026-06-06 ausfuehren und den Block `root_suspicious` pruefen. Dort erscheinen zahlreiche Root-Logdateien als wiederkehrende Hygiene-Funde.
+- **Betroffener Bereich:** Dev Environment / Scripts / Logging / Repo-Hygiene
+- **Nachweise:** MONTHLY-Healthcheck `health_snapshot.py --mode MONTHLY` vom 2026-06-06; Root-Funde aus `root_suspicious`.
+- **Akzeptanzkriterien:**
+  - [x] Relevante Start-, Debug- und Laufzeitskripte schreiben Logs nicht mehr in den Repo-Root.
+  - [x] Es gibt einen dokumentierten Zielpfad fuer solche Logs.
+  - [x] Der Root wird bei erneutem Healthcheck nicht mehr durch diese Logfamilie belastet.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Kleiner klar begrenzter Hygiene-Fix mit lokalem Script- und Logging-Scope, klaren Akzeptanzkriterien und ohne offene Produktentscheidung.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-06-06
+- **Handoff:** documentation/tasks/backlog_BACKLOG-105_root_logs_aus_repo_root_in_laufzeitpfad_verlagern.md
+- **Recommended next skill:** DONE
+- **Handoff created:** 2026-06-06
+- **Completed by task:** `documentation/tasks/backlog_BACKLOG-105_root_logs_aus_repo_root_in_laufzeitpfad_verlagern.md`
+- **Completed in version:** `0.4.17-beta.50`
+- **Completed at:** 2026-06-06
+- **Final Audit:** PASS
+- **Validation evidence:** `node --check scripts/dev-log-utils.cjs` PASS; `node --check scripts/run-vite-dev.cjs` PASS; `node --check scripts/run-backend-dev.cjs` PASS; `git diff --check` PASS WITH PRE-EXISTING CRLF WARNING; Final Audit PASS via `AUDIT_PACKAGE.md`.
+- **Notizen:** Kein globaler Rundum-Cleanup. Fokus blieb bewusst auf den versionierten lokalen Dev-Startpfaden und der Dokumentation des Zielpfads `debug_logs/`.
 
 ### BACKLOG-104 - DeepDive Savings auf Deutsch, mit Janus-Caching-Erklaerung und Prozentwert
 
