@@ -40,6 +40,27 @@ KNOWN_ROOT_RUNTIME_DB_ARTIFACTS = {
     "costs.db": "legacy local split-cost DB artifact; not the intended active Janus runtime DB path",
 }
 
+KNOWN_ROOT_LEGACY_LOG_ARTIFACTS = {
+    ".codex-vite-err.log": "legacy root Vite error log; current versioned dev start path writes Vite logs under debug_logs/",
+    ".codex-vite-out.log": "legacy root Vite output log; current versioned dev start path writes Vite logs under debug_logs/",
+    "backend_hotfix.err.log": "legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_hotfix.out.log": "legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_live.err.log": "legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_live.out.log": "legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_persist.err.log": "legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_persist.out.log": "legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_restart.err.log": "legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_restart.out.log": "legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_start.log": "legacy root backend start log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_start_manual.err.log": "legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_start_manual.log": "legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_verify.err.log": "legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_verify.out.log": "legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "startdev.log": "legacy root start-dev log; current versioned startup telemetry belongs under documentation/logs and dev runtime logs under debug_logs/",
+    "tmp_uv8011_err.log": "legacy root temporary backend log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "tmp_uv8011_out.log": "legacy root temporary backend log; current versioned backend dev/runtime logs belong under debug_logs/",
+}
+
 
 def git(repo: Path, *args: str) -> str:
     try:
@@ -101,6 +122,7 @@ def root_suspicious(repo: Path, limit: int = 20) -> list[str]:
             path.is_file()
             and path.suffix.lower() in patterns
             and path.name not in KNOWN_ROOT_RUNTIME_DB_ARTIFACTS
+            and path.name not in KNOWN_ROOT_LEGACY_LOG_ARTIFACTS
         ):
             items.append(path.name)
     return items[:limit]
@@ -111,6 +133,14 @@ def root_runtime_db_artifacts(repo: Path, limit: int = 20) -> list[str]:
     for path in repo.iterdir():
         if path.is_file() and path.name in KNOWN_ROOT_RUNTIME_DB_ARTIFACTS:
             items.append(f"{path.name}: {KNOWN_ROOT_RUNTIME_DB_ARTIFACTS[path.name]}")
+    return items[:limit]
+
+
+def root_legacy_log_artifacts(repo: Path, limit: int = 20) -> list[str]:
+    items: list[str] = []
+    for path in repo.iterdir():
+        if path.is_file() and path.name in KNOWN_ROOT_LEGACY_LOG_ARTIFACTS:
+            items.append(f"{path.name}: {KNOWN_ROOT_LEGACY_LOG_ARTIFACTS[path.name]}")
     return items[:limit]
 
 
@@ -184,6 +214,7 @@ def main() -> int:
         "migration_gaps": migration_gaps(repo),
         "root_suspicious": root_suspicious(repo),
         "root_runtime_db_artifacts": root_runtime_db_artifacts(repo),
+        "root_legacy_log_artifacts": root_legacy_log_artifacts(repo),
         "skill_usage": usage_summary(repo, args.mode),
     }
 
