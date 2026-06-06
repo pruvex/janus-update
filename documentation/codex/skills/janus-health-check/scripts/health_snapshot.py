@@ -33,6 +33,13 @@ CORE_ARTIFACTS = [
     "janus-dashboard/data/backlog.snapshot.json",
 ]
 
+KNOWN_ROOT_RUNTIME_DB_ARTIFACTS = {
+    "janus.db": "stray root copy; active Janus runtime DB belongs under %APPDATA%/Janus Projekt/janus.db",
+    "janus_fallback.db": "fallback root DB; normal runtime should still resolve to %APPDATA%/Janus Projekt/janus.db",
+    "chat_history.db": "legacy local split-chat DB artifact; not the intended active Janus runtime DB path",
+    "costs.db": "legacy local split-cost DB artifact; not the intended active Janus runtime DB path",
+}
+
 
 def git(repo: Path, *args: str) -> str:
     try:
@@ -90,8 +97,20 @@ def root_suspicious(repo: Path, limit: int = 20) -> list[str]:
     patterns = {".tmp", ".bak", ".old", ".log", ".db", ".sqlite", ".exe"}
     items: list[str] = []
     for path in repo.iterdir():
-        if path.is_file() and path.suffix.lower() in patterns:
+        if (
+            path.is_file()
+            and path.suffix.lower() in patterns
+            and path.name not in KNOWN_ROOT_RUNTIME_DB_ARTIFACTS
+        ):
             items.append(path.name)
+    return items[:limit]
+
+
+def root_runtime_db_artifacts(repo: Path, limit: int = 20) -> list[str]:
+    items: list[str] = []
+    for path in repo.iterdir():
+        if path.is_file() and path.name in KNOWN_ROOT_RUNTIME_DB_ARTIFACTS:
+            items.append(f"{path.name}: {KNOWN_ROOT_RUNTIME_DB_ARTIFACTS[path.name]}")
     return items[:limit]
 
 
@@ -164,6 +183,7 @@ def main() -> int:
         "backlog": count_backlog_markers(repo / "documentation" / "backlog" / "BACKLOG.md"),
         "migration_gaps": migration_gaps(repo),
         "root_suspicious": root_suspicious(repo),
+        "root_runtime_db_artifacts": root_runtime_db_artifacts(repo),
         "skill_usage": usage_summary(repo, args.mode),
     }
 
