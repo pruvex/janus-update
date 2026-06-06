@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-// Write npm startup marker
-const logDir = "C:\\KI\\Janus-Projekt\\documentation\\Startup log";
+// Keep startup telemetry alongside other versioned dev logs.
+const logDir = path.join(process.cwd(), "documentation", "logs");
 const logFile = path.join(logDir, "janus_startup_telemetry.log");
 
 try {

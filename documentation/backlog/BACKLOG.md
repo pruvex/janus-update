@@ -80,10 +80,12 @@ Dashboard-Regeln:
 
 ## READY
 
+## DONE
+
 ### BACKLOG-107 - Script-Output-Pfade haerten, damit Dirty-Tree und Root-Suspicious nicht dauernd nachwachsen
 
 - **Typ:** IMPROVEMENT
-- **Status:** READY
+- **Status:** DONE
 - **Quelle:** System Health
 - **Erstellt:** 2026-06-06
 - **Aktualisiert:** 2026-06-06
@@ -94,9 +96,9 @@ Dashboard-Regeln:
 - **Betroffener Bereich:** Dev Scripts / Tooling / Repo-Hygiene / Operativer Workflow
 - **Nachweise:** MONTHLY-Healthcheck `health_snapshot.py --mode MONTHLY` vom 2026-06-06; Dirty-Tree- und `root_suspicious`-Befunde.
 - **Akzeptanzkriterien:**
-  - [ ] Wiederkehrende Script-Nebenprodukte haben definierte Zielpfade.
-  - [ ] Die wichtigsten lokalen Dev-Skripte erzeugen keine neuen Root-Artefakte mehr als Standardverhalten.
-  - [ ] Ein erneuter Healthcheck zeigt eine klar verbesserte Repo-Hygiene und weniger wiederkehrende Suspicious-Root-Funde.
+  - [x] Wiederkehrende Script-Nebenprodukte haben definierte Zielpfade.
+  - [x] Die wichtigsten lokalen Dev-Skripte erzeugen keine neuen Root-Artefakte mehr als Standardverhalten.
+  - [x] Ein erneuter Healthcheck zeigt eine klar verbesserte Repo-Hygiene und weniger wiederkehrende Suspicious-Root-Funde.
 - **Fehlende Informationen:**
   - Keine
 - **Wichtigkeit:** MEDIUM
@@ -104,9 +106,20 @@ Dashboard-Regeln:
 - **Aufwand:** M
 - **Umsetzungsreife:** READY
 - **Empfehlung:** SCHEDULE
-- **Notizen:** Dieses Item ist absichtlich als uebergreifender Hygiene-Haertungsblock formuliert und kann nach Priorisierung in kleinere technische Tasks zerlegt werden.
-
-## DONE
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Gebundener Hygiene- und Tooling-Task mit klaren Akzeptanzkriterien: die relevanten lokalen Script-Output-Pfade koennen gezielt gehaertet werden, ohne Produktentscheidungen oder Architekturarbeit.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-06-06
+- **Handoff:** documentation/tasks/backlog_BACKLOG-107_script_output_pfade_haerten_und_root_nebenprodukte_reduzieren.md
+- **Recommended next skill:** DONE
+- **Handoff created:** 2026-06-06
+- **Completed by task:** `documentation/tasks/backlog_BACKLOG-107_script_output_pfade_haerten_und_root_nebenprodukte_reduzieren.md`
+- **Completed in version:** `0.4.17-beta.50`
+- **Completed at:** 2026-06-06
+- **Final Audit:** PASS
+- **Validation evidence:** `node --check scripts/write-startup-marker.cjs` PASS; `node --check electron/startup-telemetry.cjs` PASS; `python -m py_compile backend/services/telemetry/startup_config.py backend/main.py documentation/codex/skills/janus-health-check/scripts/health_snapshot.py` PASS; `python -m pytest -q tests/test_startup_config.py` PASS; `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\KI\Janus-Projekt --mode MONTHLY` PASS; Final Audit PASS via `documentation/test-runs/BACKLOG-107_final_audit.md`.
+- **Notizen:** Die Root-Logdateien selbst wurden bewusst nicht geloescht. Der Fix blieb auf Pfadhaertung, Startup-Telemetrie-Zielpfad und die gezielte Healthcheck-Einordnung der bekannten Legacy-Root-Logs begrenzt.
 
 ### BACKLOG-106 - Lokale Datenbank-Artefakte aus dem Repo-Root herausziehen und sauber einordnen
 

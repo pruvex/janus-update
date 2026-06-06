@@ -110,3 +110,15 @@
 - **Epic:** BACKLOG-105
 - **Confidence:** High
 - **Tags:** Logging, DevEnvironment, RepoHygiene, RuntimeLogs, Vite, Backend, AuditHardening
+
+
+## [PATTERN] #StartupTelemetryAndHealthcheckMustShareDocumentedLogContract "Startup telemetry and monthly healthcheck should share one documented log-path contract"
+- **Kontext:** BACKLOG-107 / script output path hardening and root suspicious reduction (2026-06-06).
+- **Problem:** Startup telemetry can silently drift into ad-hoc folders while monthly hygiene checks still treat old root logs as fresh suspicious artifacts, which makes repo health look worse even when current versioned script paths are already fixed.
+- **Loesung:** Keep dev startup telemetry on one documented repo-local path such as documentation/logs/janus_startup_telemetry.log and teach the monthly health snapshot to classify known historical root log families separately from genuinely new suspicious root files.
+- **Haertung:** Node syntax checks, Python py_compile, startup_config pytest, monthly health_snapshot PASS, and final audit PASS confirmed the shared contract and left root_suspicious empty for the known recurring legacy log family.
+- **Tripwire:** If startup markers start writing into a new ad-hoc folder again or monthly health checks reintroduce the same old root log names under root_suspicious, the telemetry path contract and healthcheck classification have drifted apart.
+- **Location:** scripts/write-startup-marker.cjs, backend/services/telemetry/startup_config.py, electron/startup-telemetry.cjs, backend/main.py, documentation/codex/skills/janus-health-check/scripts/health_snapshot.py, documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md
+- **Epic:** BACKLOG-107
+- **Confidence:** High
+- **Tags:** Logging, StartupTelemetry, RepoHygiene, Healthcheck, LegacyArtifacts, Observability

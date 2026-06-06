@@ -6,9 +6,9 @@ try:
 
     # Only write in dev context
     if os.environ.get("JANUS_DEV_MODE") == "true" or os.environ.get("NODE_ENV") == "development":
-        # Portable path: find documentation/Startup log relative to this file
+        # Keep startup telemetry alongside other repo-local logs.
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        log_dir = os.path.join(current_dir, '..', 'documentation', 'Startup log')
+        log_dir = os.path.join(current_dir, '..', 'documentation', 'logs')
         os.makedirs(log_dir, exist_ok=True)
         log_file = os.path.join(log_dir, "janus_startup_telemetry.log")
         marker = {
@@ -611,9 +611,9 @@ async def lifespan(app: FastAPI):
         if os.environ.get("JANUS_DEV_MODE") == "true" or os.environ.get("NODE_ENV") == "development":
             import json
             from datetime import datetime
-            # Portable path: find documentation/Startup log relative to this file
+            # Keep startup telemetry alongside other repo-local logs.
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            log_dir = os.path.join(current_dir, '..', 'documentation', 'Startup log')
+            log_dir = os.path.join(current_dir, '..', 'documentation', 'logs')
             os.makedirs(log_dir, exist_ok=True)
             log_file = os.path.join(log_dir, "janus_startup_telemetry.log")
             marker = {

@@ -62,8 +62,12 @@ After any release from `master`:
 - Local dev runtime logs for `npm run start-backend-only`,
   `npm run start-backend-only-without-reload`, and `npm run start-vite`
   belong under `debug_logs/`.
+- Local startup telemetry markers and aggregated startup timing logs belong
+  under `documentation/logs/janus_startup_telemetry.log`.
 - Versioned dev start paths should not create recurring backend or Vite
   runtime logs directly in the repository root.
+- Versioned startup telemetry paths should not write into ad-hoc folders such
+  as `documentation/Startup log`.
 - Historical root log artifacts are hygiene cleanup, not proof of the intended
   target path.
 

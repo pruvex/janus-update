@@ -9,6 +9,10 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
+function getDevTelemetryLogDir() {
+  return path.resolve(__dirname, "..", "documentation", "logs");
+}
+
 class StartupTelemetryLogger {
   /**
    * Initialize the logger with configuration.
@@ -345,8 +349,8 @@ function getDocumentsFolderPath() {
       return app.getPath('userData');
     }
   } else {
-    // Development: C:\KI\Janus-Projekt\documentation\Startup log
-    const devLogDir = 'C:\\KI\\Janus-Projekt\\documentation\\Startup log';
+    // Development: keep startup telemetry alongside other repo-local logs.
+    const devLogDir = getDevTelemetryLogDir();
 
     try {
       if (!fs.existsSync(devLogDir)) {

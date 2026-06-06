@@ -16,6 +16,15 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Backlog Closures
 
+### BACKLOG-107 - Script-Output-Pfade haerten, damit Dirty-Tree und Root-Suspicious nicht dauernd nachwachsen
+
+- **Status**: DONE
+- **Final Audit**: `documentation/test-runs/BACKLOG-107_final_audit.md` (PASS)
+- **Task**: `documentation/tasks/backlog_BACKLOG-107_script_output_pfade_haerten_und_root_nebenprodukte_reduzieren.md`
+- **Execution Result**: `documentation/tasks/backlog_BACKLOG-107_execution_result.md`
+- **Validation**: Startup-Telemetrie-Marker und aggregierte Startup-Zeiten laufen jetzt konsistent nach `documentation/logs/janus_startup_telemetry.log`, waehrend der Monthly-Healthcheck bekannte alte Root-Logdateien gezielt unter `root_legacy_log_artifacts` fuehrt und `root_suspicious` fuer diese wiederkehrende Script-Familie leer bleibt.
+- **Changed Files**: `scripts/write-startup-marker.cjs`, `backend/services/telemetry/startup_config.py`, `electron/startup-telemetry.cjs`, `backend/main.py`, `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py`, `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`, `documentation/tasks/backlog_BACKLOG-107_execution_result.md`, `documentation/test-runs/BACKLOG-107_execution_validation.md`, `documentation/test-runs/BACKLOG-107_AUDIT_PACKAGE.md`, `documentation/test-runs/BACKLOG-107_final_audit.md`.
+
 ### BACKLOG-106 - Lokale Datenbank-Artefakte aus dem Repo-Root herausziehen und sauber einordnen
 
 - **Status**: DONE

@@ -12,6 +12,13 @@ from dataclasses import dataclass
 from typing import Optional
 
 
+def _repo_documentation_logs_dir() -> str:
+    """Return the repo-local documentation/logs directory for dev telemetry."""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.abspath(os.path.join(current_dir, "..", "..", ".."))
+    return os.path.join(repo_root, "documentation", "logs")
+
+
 @dataclass
 class StartupTelemetryConfig:
     """Configuration object for startup telemetry logging."""
@@ -73,8 +80,8 @@ def get_documents_folder_path() -> str:
 
         return prod_log_dir
     else:
-        # Development: C:\KI\Janus-Projekt\documentation\Startup log
-        dev_log_dir = r"C:\KI\Janus-Projekt\documentation\Startup log"
+        # Development: keep startup telemetry under the repo-local documentation/logs path.
+        dev_log_dir = _repo_documentation_logs_dir()
 
         # Ensure directory exists
         if not os.path.exists(dev_log_dir):
