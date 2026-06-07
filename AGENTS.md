@@ -43,6 +43,7 @@ User-Antworten:
 | --- | --- |
 | Vage Feature-Idee, Produktverhalten klaeren | `janus-feature-design` |
 | Passenden Prozess, Modell, Kontext und naechsten Schritt bestimmen | `janus-skill-router` |
+| Triviale lokale Aenderung mit klarer Evidenz | `janus-quickchange` |
 | Kleine Bugs, Verbesserungen, lokale Aenderungen | `janus-backlog-intake` / Backlog-Pipeline |
 | Feature-Spec aus Decision Summary erzeugen | `janus-spec-generator` |
 | Spec copy-safe und parserfaehig finalisieren | `janus-spec-normalizer` |
@@ -124,12 +125,14 @@ Wenn der Nutzer nur `ok`, `weiter`, `los` oder aehnlich schreibt, fuehrt Codex d
 
 Wenn der Nutzer einen konkreten, klein wirkenden Wunsch beschreibt, zum Beispiel ein bestehendes UI-Verhalten, eine gespeicherte Einstellung, einen kleinen Bug oder eine klar begrenzte Verbesserung, macht Codex zuerst eine kurze Bewertung:
 
-- vermuteter Pfad: Backlog-Pipeline oder Feature-Pipeline
+- vermuteter Pfad: Quickchange, Backlog-Pipeline oder Feature-Pipeline
 - empfohlene Modelle fuer Bewertung, Planung und Umsetzung
 - grober Aufwand: S, M oder L
 - Risiko: niedrig, mittel oder hoch
 - Nutzen: niedrig, mittel oder hoch
 - naechster Skill und ob ein Dashboard-/Backlog-Task angelegt werden soll
+
+Triviale, risikoarme Mini-Aenderungen duerfen in `janus-quickchange` laufen, wenn sie auf eine kleine Datei-/Komponenten-Gruppe begrenzt sind, keine Produktentscheidung brauchen und vor dem Edit ein Mini-Testplan plus klare Akzeptanz formuliert werden kann. Typische Beispiele: Copy-Fix, Label-Tausch, Prozentanzeige, lokale Darstellungskorrektur. Sobald Scope, Risiko oder Testflaeche wachsen, faellt der Wunsch zurueck in `janus-backlog-intake` oder `janus-feature-design`.
 
 Kleine, klare Verbesserungen gehen standardmaessig in `janus-backlog-intake`, danach Priorisierung und Dashboard-Handoff. Codex implementiert nicht direkt, solange kein Backlog-/Handoff-/Precheck-Artefakt gebunden ist.
 

@@ -37,6 +37,31 @@ Secret Printed: NO
 Result: AUTOMATABLE | CONFIG_BLOCKED | PROVIDER_BLOCKED
 ```
 
+## P1.3: QUICKCHANGE LANE
+
+`janus-quickchange` is an allowed narrow path for trivial low-risk changes, not a free-form pipeline bypass.
+
+Required conditions:
+
+- one tiny bounded intent on an existing surface
+- no architecture, persistence, API, provider, auth, security, privacy, migration, or release-boundary change
+- expected scope is a small file cluster
+- a Mini-TestPlan can be stated before edits
+- evidence can be produced with targeted commands or one focused visual/manual check
+
+Required artifacts in the skill output:
+
+- `QUICKCHANGE BRIEF`
+- `MINI TEST PLAN`
+- executed validation evidence
+- exactly one canonical state from P1.1
+
+Mandatory reroute:
+
+- if scope expands beyond the brief, stop and reroute to `janus-backlog-intake`, `janus-feature-design`, or `janus-preimplementation-check`
+- if validation needs broad or unclear coverage, stop and reroute to the standard pipeline
+- if dashboard/backlog visibility becomes important, create the Backlog item before continuing
+
 ## P2: OUTPUT & HANDOVER
 Every inter-skill handoff uses the extended V3.1 block:
 

@@ -40,6 +40,7 @@ Bei einer neuen Janus-Arbeitssession fuehrt Codex zuerst einen leichten `janus-h
 | Fertige Feature-Entscheidung | `janus-spec-generator` -> `janus-spec-normalizer` |
 | Fertige Spec | `janus-spec-review` -> `janus-spec-to-task` |
 | Grobe Task-Datei | `janus-task-breakdown` |
+| Triviale lokale Aenderung | `janus-quickchange` |
 | Kleiner Bug oder Verbesserung | `janus-backlog-intake` -> `janus-backlog-prioritization` -> `janus-backlog-handoff` |
 | READY Backlog-Item aus Dashboard | `janus-backlog-handoff` |
 | Umsetzung starten | `janus-preimplementation-check` -> `janus-executioner` |
@@ -51,10 +52,18 @@ Bei einer neuen Janus-Arbeitssession fuehrt Codex zuerst einen leichten `janus-h
 
 ## Wunsch-Intake im Alltag
 
-Wenn der Nutzer einen konkreten Wunsch nennt, klassifiziert Codex ihn zuerst in eine von zwei Bahnen:
+Wenn der Nutzer einen konkreten Wunsch nennt, klassifiziert Codex ihn zuerst in eine von drei Bahnen:
 
-1. Kleine, klare Verbesserung: bestehende Oberflaeche, einzelnes Verhalten, lokaler Bug, gespeicherte Einstellung, kleiner UI-/UX-Schliff oder klar begrenzte technische Schuld.
-2. Groesseres Feature: neue oder unklare Oberflaeche, mehrere Entscheidungen, neue Persistenz/Integration, Sicherheits-/Datenschutzrisiko, mehrere betroffene Bereiche oder unklarer Nutzen/Scope.
+1. Quickchange: triviale, lokale Aenderung wie Copy-Fix, Label-Tausch, Prozentanzeige, kleiner visuell klarer Schliff.
+2. Kleine, klare Verbesserung: bestehende Oberflaeche, einzelnes Verhalten, lokaler Bug, gespeicherte Einstellung, kleiner UI-/UX-Schliff oder klar begrenzte technische Schuld.
+3. Groesseres Feature: neue oder unklare Oberflaeche, mehrere Entscheidungen, neue Persistenz/Integration, Sicherheits-/Datenschutzrisiko, mehrere betroffene Bereiche oder unklarer Nutzen/Scope.
+
+Bei einem Quickchange macht Codex kurz:
+
+- betroffene Datei- oder Komponenten-Cluster gezielt anschauen
+- Eligibility pruefen: keine Architektur-/Persistenz-/Security-/Provider-Grenze, kleine Testflaeche, klare Akzeptanz
+- `janus-quickchange` mit Mini-Brief und Mini-Testplan starten
+- bei Scope-Wachstum sofort zur Backlog- oder Feature-Bahn zurueckkehren
 
 Bei einer kleinen, klaren Verbesserung macht Codex kurz:
 
@@ -68,6 +77,7 @@ Bei einem groesseren oder unscharfen Feature startet Codex automatisch mit `janu
 Heuristik:
 
 - S-Aufwand: ein klarer Task, wenige Dateien, wenig Testflaeche.
+- Quickchange: in der Regel S-Aufwand, eine Intention, ein kleiner Datei-Cluster, wenige Checks.
 - M-Aufwand: mehrere Dateien oder Persistenz/Testanpassungen, aber ein klares Ziel.
 - L-Aufwand: neue UX-Flows, mehrere Systeme, Migrationen, Provider-/Security-/Release-Risiko.
 - Niedriges Risiko: lokales Verhalten, gute Testbarkeit, keine Datenmigration.
