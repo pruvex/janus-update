@@ -133,6 +133,7 @@ class Contact(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
+    nickname = Column(String, nullable=True)
     contact_type = Column(String, nullable=True, default="private_person")
     email = Column(String, nullable=True)
     phone = Column(String, nullable=True)

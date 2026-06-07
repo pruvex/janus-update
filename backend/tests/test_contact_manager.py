@@ -428,3 +428,56 @@ def test_contact_create_schema_normalizes_structured_fields():
     assert contact.preferences == ["italienisch", "ruhige Orte", "Espresso"]
     assert contact.dislikes == ["Spam", "Laerm"]
     assert contact.personal_details == []
+
+
+def test_contact_crud_roundtrip_persists_nickname_and_legacy_fields(db_session):
+    created = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Clara Beispiel",
+            nickname="Cla",
+            personal_details=["Vegetarierin"],
+            notes="Hat Allergie gegen Haselnuesse",
+            category="Privat",
+        ),
+    )
+
+    assert created is not None
+    assert created.nickname == "Cla"
+    assert created.personal_details == ["Vegetarierin"]
+    assert created.notes == "Hat Allergie gegen Haselnuesse"
+
+    loaded = crud.get_contact(db_session, created.id)
+
+    assert loaded is not None
+    assert loaded.nickname == "Cla"
+    assert loaded.personal_details == ["Vegetarierin"]
+    assert loaded.notes == "Hat Allergie gegen Haselnuesse"
+
+
+def test_contact_update_keeps_legacy_fields_while_adding_nickname(db_session):
+    created = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Tom Beispiel",
+            personal_details=["mag Espresso"],
+            notes="Laktoseintoleranz",
+            category="Privat",
+        ),
+    )
+    assert created is not None
+
+    updated = crud.update_contact(
+        db_session,
+        created.id,
+        {"nickname": "Tommi"},
+    )
+
+    assert updated is not None
+    assert updated.nickname == "Tommi"
+
+    loaded = crud.get_contact(db_session, created.id)
+    assert loaded is not None
+    assert loaded.nickname == "Tommi"
+    assert loaded.personal_details == ["mag Espresso"]
+    assert loaded.notes == "Laktoseintoleranz"

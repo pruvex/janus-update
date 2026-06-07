@@ -18,6 +18,7 @@ def _normalize_string_list(value: Optional[object]) -> List[str]:
 
 class ContactBase(BaseModel):
     name: str = Field(..., description="Der vollstaendige Name des Kontakts.")
+    nickname: Optional[str] = Field(None, description="Ein optionaler Kurz- oder Spitzname des Kontakts.")
     contact_type: str = Field(
         "private_person",
         description="Die Art des Kontakts: 'private_person' oder 'organization'.",
@@ -115,6 +116,7 @@ class ContactSearchArgs(BaseModel):
 
 class ContactUpdate(BaseModel):
     name: Optional[str] = Field(None, description="Der neue vollstaendige Name des Kontakts.")
+    nickname: Optional[str] = Field(None, description="Der neue Kurz- oder Spitzname des Kontakts.")
     contact_type: Optional[str] = Field(None, description="Die Art des Kontakts.")
     category: Optional[str] = Field(None, description="Die neue Kategorie fuer den Kontakt.")
     email: Optional[str] = Field(None, description="Die neue E-Mail-Adresse des Kontakts.")
@@ -166,6 +168,7 @@ class UpdateContactToolArgs(BaseModel):
     new_name: Optional[str] = Field(
         None, description="Der neue vollstaendige Name des Kontakts, falls er geaendert werden soll."
     )
+    nickname: Optional[str] = Field(None, description="Der neue Kurz- oder Spitzname des Kontakts.")
     contact_type: Optional[str] = Field(None, description="Die Art des Kontakts.")
     category: Optional[str] = Field(None, description="Die neue Kategorie fuer den Kontakt.")
     email: Optional[str] = Field(None, description="Die neue E-Mail-Adresse des Kontakts.")
@@ -196,6 +199,7 @@ class CreateOrUpdateContactArgs(BaseModel):
     """Argumente zum Erstellen oder Aktualisieren eines Kontakts."""
 
     name: str = Field(..., description="Der vollstaendige Name des Kontakts.")
+    nickname: Optional[str] = Field(None, description="Ein optionaler Kurz- oder Spitzname des Kontakts.")
     contact_type: Optional[str] = Field(None, description="Die Art des Kontakts.")
     email: Optional[str] = Field(None, description="Die E-Mail-Adresse des Kontakts.")
     phone: Optional[str] = Field(None, description="Die Telefonnummer des Kontakts.")

@@ -1,5 +1,11 @@
 # KNOWLEDGE BASE: WHAT I LEARNED
 
+## [SKIP] TASK-SPEC16 "No new cross-feature learning pattern recorded"
+- **Kontext:** TASK-SPEC16 / Adressbuch-Karten Redesign und Spitzname/Besonderheiten-Struktur documentation update.
+- **Reason:** Die Umsetzung erweitert ein bestehendes Adressbuch kontraktkonform um Spitzname, bereinigte Karten und den kombinierten Besonderheiten-Pfad, erzeugt aber kein neues repo-weites Muster ueber bereits dokumentierte UI-Evidence- und Compatibility-Hardening-Regeln hinaus.
+- **Tripwire:** Wenn kuenftige Kontaktmigrationen persoenliche Details aus mehreren Legacy-Feldern in eine neue sichtbare Struktur ueberfuehren muessen und dabei wiederholbar dieselbe Kompatibilitaetslogik oder neue Audit-Hardening-Regeln entsteht, sollte daraus ein echtes Pattern erfasst werden.
+- **Epic:** TASK-SPEC16
+
 ## [PATTERN] #WeatherFormatterOwnsCrossProviderParity "Weather answers should be normalized in the product formatter, not left to provider style"
 - **Kontext:** BACKLOG-095 / Weather API response parity and documentation closure.
 - **Problem:** GPT/HPZ and Gemini can both produce correct weather facts but wrap them in different surface styles, which creates a UX split even when the underlying data is the same.

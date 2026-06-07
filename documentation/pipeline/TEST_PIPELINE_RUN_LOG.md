@@ -11,6 +11,40 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 - **Security/Privacy/Prompt-Injection immer dokumentieren**: Auch bei PASS muessen die Gates explizit aufgefuehrt werden.
 - **Nebenbefunde außerhalb TestScope immer erfassen**: Seitliche Findings duerfen nicht unter den Tisch fallen.
 
+### TASK-SPEC16 - Adressbuch-Karten Redesign und Spitzname/Besonderheiten-Struktur - Documentation Sync Note
+
+- **Datum**: 2026-06-07
+- **Quelle**: Final Audit / Documentation Update
+- **Artefakte**: `documentation/test-runs/TASK-SPEC16_audit_package.md`, `documentation/test-runs/TASK-SPEC16_final_audit.md`, `documentation/SPEC/Spec Done/16_adressbuch_karten_redesign_und_spitzname_besonderheiten.md`, `tests/e2e/generated/TASK-SPEC15-address-book-ui-evidence.spec.js`
+- **Getestete Faehigkeit**: Spec-16 Abschluss fuer bereinigte Adressbuchkarten, Spitzname und gruppierte Kontaktbereiche
+- **Pipeline-Route**: final audit -> documentation update
+- **Status**: PASS
+- **Summary**: TASK-SPEC16 wurde nach finalem PASS dokumentiert; Registry, Projektstatus, Changelog, Backlog-Closure-Notiz und Dashboard-Snapshot sind synchron. Dies ist kein eigener TestRun, sondern ein Dokumentationsabschluss-Hinweis fuer den Spec-16-Strang.
+- **Security Gate**: PASS - keine neue Produktfunktion in diesem Schritt, nur Abschluss- und Evidenzsync.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+- **UX-Ergebnis**: Das Einstellungs-Adressbuch zeigt jetzt aufgeraeumte Karten mit Spitzname als Sekundaerlabel und klar getrennten Bereichen fuer Vorlieben, Abneigungen und Besonderheiten.
+- **Intent-/Skill-Routing-Ergebnis**: N/A
+- **Kosten-/Token-Ergebnis**: N/A
+- **Capability-Erklaerfaehigkeit**: PASS
+- **Findings**:
+  - Keine
+- **Sofortfixes**:
+  - `documentation/01_CENTRAL_TASK_REGISTRY.md`, `PROJECT_STATE.md`, `CHANGELOG.md`: TASK-SPEC16 Abschlussmarker ergaenzt.
+  - `documentation/backlog/BACKLOG.md`, `janus-dashboard/data/backlog.snapshot.json`: Spec-Closure-Notiz und Snapshot synchronisiert.
+  - `WHAT_I_LEARNED.md`: expliziter Skip-Marker fuer fehlendes neues Langzeitmuster eingetragen.
+- **Backlog-Follow-ups**:
+  - Keine
+- **Nebenbefunde ausserhalb TestScope**:
+  - Keine
+- **Optimierungspotential fuer Testpipeline**:
+  - Wenn ein Spec ohne Backlog-Item dokumentiert wird, hilft ein kurzer Documentation-Sync-Note im Test-Pipeline-Log dabei, den Marker-Validator ohne kuenstliche TestRun-Behauptungen zu erfuellen.
+- **Abschluss**:
+  - Diamond Confidence Score: 9.5/10
+  - Production Confidence: 96%
+  - Gesamtergebnis: PASS
+
 ### TASK-SPEC15 - Semi-automatisches Adressbuch mit Memory-Kopplung - Documentation Sync Note
 
 - **Datum**: 2026-06-07

@@ -865,6 +865,25 @@ function joinContactArray(value) {
   return normalizeContactArray(value).join("\n");
 }
 
+function mergeContactSpecialDetails(contact) {
+  const merged = [];
+  normalizeContactArray(contact?.personal_details).forEach((item) => {
+    if (!merged.includes(item)) {
+      merged.push(item);
+    }
+  });
+  String(contact?.notes || "")
+    .split(/\r?\n+/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .forEach((item) => {
+      if (!merged.includes(item)) {
+        merged.push(item);
+      }
+    });
+  return merged;
+}
+
 function formatContactType(contactType) {
   return contactType === "organization" ? "Organisation" : "Privatperson";
 }
@@ -944,10 +963,12 @@ function renderContactList(contacts) {
     const contactCard = document.createElement("div");
     contactCard.className = "contact-card";
     contactCard.dataset.id = contact.id;
+    const nickname = String(contact.nickname || "").trim();
+    const combinedSpecialDetails = mergeContactSpecialDetails(contact);
 
     // Create website link if it exists
     const websiteLink = contact.website
-      ? `<p class="website"><a href="${contact.website}" target="_blank" rel="noopener noreferrer">${contact.website}</a></p>`
+      ? `<p class="website contact-link-row"><a href="${contact.website}" target="_blank" rel="noopener noreferrer">${contact.website}</a></p>`
       : "";
     const preferencesBlock = renderOptionalContactBlock(
       "Vorlieben",
@@ -960,39 +981,38 @@ function renderContactList(contacts) {
       (items) => renderContactPills(items, "contact-pill-group-dislikes")
     );
     const personalDetailsBlock = renderOptionalContactBlock(
-      "Persoenliche Details",
-      contact.personal_details,
+      "Besonderheiten",
+      combinedSpecialDetails,
       (items) => renderContactPills(items, "contact-pill-group-details")
     );
-    const sourceContextBlock = renderOptionalContactBlock(
-      "Herkunft",
-      contact.proposal_source_context
-    );
-    const lastOutcomeBlock = renderOptionalContactBlock(
-      "Letztes Ergebnis",
-      contact.proposal_last_outcome
-    );
+    const nicknameMarkup = nickname
+      ? `<span class="contact-nickname">${nickname}</span>`
+      : "";
 
     // Populate card with more details
     contactCard.innerHTML = `
       <div class="contact-details">
-        <strong>${contact.name}</strong>
-        <div class="contact-badge-row">
-          <small class="category">${contact.category || "Unkategorisiert"}</small>
-          <small class="category contact-type-badge">${formatContactType(contact.contact_type)}</small>
-          <small class="category contact-status-badge">${formatProposalStatus(contact.proposal_status)}</small>
-          <small class="category contact-sync-badge">${formatMemorySyncStatus(contact.memory_sync_status)}</small>
+        <div class="contact-card-header">
+          <div class="contact-title-group">
+            <strong>${contact.name}</strong>
+            ${nicknameMarkup}
+          </div>
+          <div class="contact-badge-row">
+            <small class="category">${contact.category || "Unkategorisiert"}</small>
+            <small class="category contact-type-badge">${formatContactType(contact.contact_type)}</small>
+          </div>
         </div>
-        <p class="email">${contact.email || ""}</p>
-        <p class="phone">${contact.phone || ""}</p>
-        <p class="address">${contact.address || ""}</p>
+        <div class="contact-core-info">
+          <p class="email">${contact.email || ""}</p>
+          <p class="phone">${contact.phone || ""}</p>
+          <p class="address">${contact.address || ""}</p>
+        </div>
         ${websiteLink}
-        ${preferencesBlock}
-        ${dislikesBlock}
-        ${personalDetailsBlock}
-        <p class="notes">${contact.notes || ""}</p>
-        ${sourceContextBlock}
-        ${lastOutcomeBlock}
+        <div class="contact-section-grid">
+          ${preferencesBlock}
+          ${dislikesBlock}
+          ${personalDetailsBlock}
+        </div>
       </div>
       <div class="contact-actions">
         <button class="edit-contact-btn">Bearbeiten</button>
@@ -1044,6 +1064,7 @@ function renderContactList(contacts) {
 function showContactModal(contact = null) {
   contactForm.reset();
   const contactIdInput = document.getElementById("contact-id");
+  document.getElementById("contact-nickname").value = "";
   document.getElementById("contact-type").value = "private_person";
   document.getElementById("contact-proposal-status").value = "confirmed";
   document.getElementById("contact-memory-sync-status").value = "unlinked";
@@ -1051,6 +1072,7 @@ function showContactModal(contact = null) {
     contactModalTitle.textContent = "Kontakt bearbeiten";
     contactIdInput.value = contact.id;
     document.getElementById("contact-name").value = contact.name || "";
+    document.getElementById("contact-nickname").value = contact.nickname || "";
     document.getElementById("contact-type").value = contact.contact_type || "private_person";
     document.getElementById("contact-category").value = contact.category || "";
     document.getElementById("contact-email").value = contact.email || "";
@@ -1059,10 +1081,9 @@ function showContactModal(contact = null) {
     document.getElementById("contact-website").value = contact.website || "";
     document.getElementById("contact-preferences").value = joinContactArray(contact.preferences);
     document.getElementById("contact-dislikes").value = joinContactArray(contact.dislikes);
-    document.getElementById("contact-personal-details").value = joinContactArray(
-      contact.personal_details
+    document.getElementById("contact-special-details").value = joinContactArray(
+      mergeContactSpecialDetails(contact)
     );
-    document.getElementById("contact-notes").value = contact.notes || "";
     document.getElementById("contact-proposal-status").value =
       contact.proposal_status || "confirmed";
     document.getElementById("contact-memory-sync-status").value =
@@ -1094,8 +1115,12 @@ window.addEventListener("click", (event) => {
 contactForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const id = document.getElementById("contact-id").value;
+  const specialDetails = normalizeContactArray(
+    document.getElementById("contact-special-details").value
+  );
   const contactData = {
     name: document.getElementById("contact-name").value,
+    nickname: document.getElementById("contact-nickname").value,
     contact_type: document.getElementById("contact-type").value,
     category: document.getElementById("contact-category").value,
     email: document.getElementById("contact-email").value,
@@ -1104,10 +1129,8 @@ contactForm.addEventListener("submit", async (e) => {
     website: document.getElementById("contact-website").value,
     preferences: normalizeContactArray(document.getElementById("contact-preferences").value),
     dislikes: normalizeContactArray(document.getElementById("contact-dislikes").value),
-    personal_details: normalizeContactArray(
-      document.getElementById("contact-personal-details").value
-    ),
-    notes: document.getElementById("contact-notes").value,
+    personal_details: specialDetails,
+    notes: specialDetails.join("\n"),
     proposal_status: document.getElementById("contact-proposal-status").value,
     proposal_source_context: document.getElementById("contact-proposal-source-context").value,
     proposal_last_outcome: document.getElementById("contact-proposal-last-outcome").value,

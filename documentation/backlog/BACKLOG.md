@@ -7,6 +7,7 @@ Healthcheck-Findings aus `SYSTEM HEALTH â€“ HYGIENE CHECK` dÃ¼rfen hier a
 ## Spec Closure Notes
 
 - `TASK-SPEC15`: N/A - Spec-generated feature closure with no bound Backlog item; the final audit and documentation sync were completed directly on the Spec/task artifacts.
+- `TASK-SPEC16`: N/A - Spec-generated address-book polish closure with no bound Backlog item; the final audit and documentation sync were completed directly on the Spec/task artifacts.
 
 ## Status-Regeln
 

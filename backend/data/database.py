@@ -137,6 +137,10 @@ def _ensure_sqlite_schema_migrations() -> None:
 
         if insp.has_table("contacts"):
             contact_cols = {c["name"] for c in insp.get_columns("contacts")}
+            if "nickname" not in contact_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE contacts ADD COLUMN nickname VARCHAR"))
+                logger.info("Migration: contacts.nickname added.")
             if "contact_type" not in contact_cols:
                 with engine.begin() as conn:
                     conn.execute(

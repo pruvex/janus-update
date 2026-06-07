@@ -347,6 +347,7 @@ def _contact_response_from_model(contact: models.Contact) -> contact_schemas.Con
         {
             "id": contact.id,
             "name": contact.name,
+            "nickname": getattr(contact, "nickname", None),
             "contact_type": getattr(contact, "contact_type", None),
             "category": contact.category,
             "email": contact.email,
@@ -393,6 +394,7 @@ def create_contact(
     try:
         db_contact = models.Contact(
             name=contact.name,
+            nickname=contact.nickname,
             contact_type=contact.contact_type or "private_person",
             email=contact.email,
             phone=contact.phone,

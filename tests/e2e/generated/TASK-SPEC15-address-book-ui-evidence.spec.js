@@ -4,6 +4,7 @@ const CONTACTS = [
   {
     id: 1501,
     name: "Clara Kontakt",
+    nickname: "Cla",
     contact_type: "private_person",
     category: "Privat",
     email: "clara@example.com",
@@ -23,6 +24,7 @@ const CONTACTS = [
   {
     id: 1502,
     name: "Praxis Klarblick",
+    nickname: "",
     contact_type: "organization",
     category: "Business",
     email: "",
@@ -175,7 +177,7 @@ async function installApiMocks(page) {
   });
 }
 
-test("Spec 15 settings address book shows proposal, contact type, rich fields, and memory state", async ({ page }) => {
+test("Spec 16 settings address book shows cleaned cards, nickname, and grouped contact details", async ({ page }) => {
   test.setTimeout(60000);
   await installApiMocks(page);
   await page.goto("/");
@@ -195,26 +197,34 @@ test("Spec 15 settings address book shows proposal, contact type, rich fields, a
   const praxisCard = addressBook.locator('.contact-card[data-id="1502"]');
 
   await expect(claraCard.getByText("Clara Kontakt")).toBeVisible();
+  await expect(claraCard.locator(".contact-nickname")).toHaveText("Cla");
   await expect(claraCard.getByText("Privatperson")).toBeVisible();
-  await expect(claraCard.getByText("Offen")).toBeVisible();
-  await expect(claraCard.getByText("Bereit")).toBeVisible();
+  await expect(claraCard.getByText("Herkunft")).toHaveCount(0);
+  await expect(claraCard.getByText("Letztes Ergebnis")).toHaveCount(0);
+  await expect(claraCard.getByText("Offen")).toHaveCount(0);
+  await expect(claraCard.getByText("Bereit")).toHaveCount(0);
+  await expect(claraCard.getByText("Besonderheiten")).toBeVisible();
   await expect(claraCard.getByText("espresso")).toBeVisible();
   await expect(claraCard.getByText("laute Orte")).toBeVisible();
   await expect(claraCard.getByText("spricht Franzoesisch")).toBeVisible();
-  await expect(claraCard.getByText("suggested_from_memory")).toBeVisible();
+  await expect(claraCard.getByText("Bestaetigter direkter Kontext")).toBeVisible();
 
   await expect(praxisCard.getByText("Praxis Klarblick")).toBeVisible();
   await expect(praxisCard.getByText("Organisation", { exact: true })).toBeVisible();
-  await expect(praxisCard.getByText("conflict_requires_confirmation")).toBeVisible();
+  await expect(praxisCard.getByText("Oeffentliche Organisation")).toBeVisible();
 
   await claraCard.locator(".edit-contact-btn").click();
   await expect(page.locator("#contact-modal")).toBeVisible();
+  await expect(page.locator('label[for="contact-nickname"]')).toHaveText("Kurz-/Spitzname:");
+  await expect(page.locator("#contact-nickname")).toHaveValue("Cla");
   await expect(page.locator("#contact-type")).toHaveValue("private_person");
   await expect(page.locator("#contact-proposal-status")).toHaveValue("pending");
   await expect(page.locator("#contact-memory-sync-status")).toHaveValue("ready");
   await expect(page.locator("#contact-preferences")).toHaveValue(/espresso/);
   await expect(page.locator("#contact-dislikes")).toHaveValue(/laute Orte/);
-  await expect(page.locator("#contact-personal-details")).toHaveValue(/spricht Franzoesisch/);
+  await expect(page.locator('label[for="contact-special-details"]')).toHaveText("Besonderheiten:");
+  await expect(page.locator("#contact-special-details")).toHaveValue(/spricht Franzoesisch/);
+  await expect(page.locator("#contact-special-details")).toHaveValue(/Bestaetigter direkter Kontext/);
   await expect(page.locator("#contact-proposal-source-context")).toHaveValue("direct_context");
   await expect(page.locator("#contact-proposal-last-outcome")).toHaveValue("suggested_from_memory");
 });

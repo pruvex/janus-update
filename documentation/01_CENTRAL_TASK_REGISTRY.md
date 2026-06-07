@@ -4,6 +4,16 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC16 - Adressbuch-Karten Redesign und Spitzname/Besonderheiten-Struktur
+
+- **Status**: DONE
+- **Final Audit**: `documentation/test-runs/TASK-SPEC16_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/16_adressbuch_karten_redesign_und_spitzname_besonderheiten.md`
+- **Task**: `documentation/tasks/TASK-SPEC16_adressbuch_karten_redesign_und_spitzname_besonderheiten.md`
+- **Execution Results**: `documentation/tasks/TASK-SPEC16.1_execution_result.md`, `documentation/tasks/TASK-SPEC16.2_execution_result.md`, `documentation/tasks/TASK-SPEC16.3_execution_result.md`
+- **Validation**: Das Einstellungs-Adressbuch zeigt jetzt aufgeraeumte, Janus-passende Kontaktkarten ohne prominente interne Status-/Herkunftsinfos, speichert Spitznamen persistiert mit und gruppiert persoenliche Kontaktinhalte konsistent in Vorlieben, Abneigungen und Besonderheiten. Legacy-Details und Notizen bleiben ueber den kombinierten Besonderheiten-Pfad sichtbar und bearbeitbar; fokussierte Backend- und Playwright-Evidenz sind gruen.
+- **Changed Files**: `backend/data/models.py`, `backend/data/contact_schemas.py`, `backend/data/crud.py`, `backend/data/database.py`, `backend/tests/test_contact_manager.py`, `frontend/js/settings.js`, `frontend/index.html`, `frontend/css/settings.css`, `tests/e2e/generated/TASK-SPEC15-address-book-ui-evidence.spec.js`, `documentation/test-runs/TASK-SPEC16_audit_package.md`, `documentation/test-runs/TASK-SPEC16_final_audit.md`.
+
 ### TASK-SPEC14 - Gemini Cost Attribution and DeepDive Forensics
 
 - **Status**: DONE
