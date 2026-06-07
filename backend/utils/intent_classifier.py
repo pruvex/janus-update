@@ -218,8 +218,8 @@ def smalltalk_response(prompt: str) -> str:
         return "Mir geht's gut, danke. Ich bin bereit. Was liegt an?"
     if is_greeting(prompt):
         if _normalize(prompt).startswith("na"):
-            return "Na du! Schoen, dich zu sehen. Was machen wir?"
-        return "Hey! Schoen, dich zu sehen. Was machen wir als Naechstes?"
+            return "Na du! Schön, dich zu sehen. Was machen wir?"
+        return "Hey! Schön, dich zu sehen. Was machen wir als Nächstes?"
     return ""
 
 

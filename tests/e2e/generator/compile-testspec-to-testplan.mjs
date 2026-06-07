@@ -1504,8 +1504,8 @@ function expectedFor(id, prompt, criterion = '', specPath = '', specPatterns = n
           'danke',
           'bereit',
           'Was liegt an',
-          'Schoen',
-          'Schoen, dich zu sehen',
+          'Sch\u00f6n',
+          'Sch\u00f6n, dich zu sehen',
           'Was machen wir',
         ]),
         mustNotContain: ['Quelle:', 'Wetterdienst', 'Open-Meteo', 'Wetterdaten laut', 'Wetterdaten nach'],
@@ -1647,10 +1647,10 @@ function expectedFor(id, prompt, criterion = '', specPath = '', specPatterns = n
       // Smalltalk: direct_response, no tool call
       return {
         containsAny: uniq([
-          'Schoen',
-          'Schoen, dich zu sehen',
+          'Sch\u00f6n',
+          'Sch\u00f6n, dich zu sehen',
           'Was machen wir',
-          'als Naechstes',
+          'als N\u00e4chstes',
           'Hey',
           'Hallo',
         ]),
