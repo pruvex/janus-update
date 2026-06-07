@@ -292,6 +292,7 @@ async def create_calendar_event(
     api_key: str = None,
     provider: str = None,
     model: str = None,
+    chat_id: Optional[int] = None,
 ) -> ToolResultV1:
     """
     Erstellt einen Kalendereintrag und prüft automatisch auf neue Kontakte im Kontext.
@@ -420,15 +421,18 @@ async def create_calendar_event(
 
                 logger.info(f"Autonomes Tool: Starte Kontaktextraktion für Event '{summary}'")
 
-                asyncio.create_task(
-                    contact_manager.extract_and_save_contact(
-                        text_block=full_text_for_extraction,
-                        api_key=api_key,
-                        provider=provider,
-                        model=model,
-                    )
+                extraction_result = await contact_manager.extract_and_save_contact(
+                    text_block=full_text_for_extraction,
+                    api_key=api_key,
+                    provider=provider,
+                    model=model,
+                    chat_id=chat_id,
                 )
-                output_msg += " (Ich prüfe im Hintergrund, ob neue Kontakte enthalten sind.)"
+                proposal_message = extraction_result.get("user_message")
+                if proposal_message:
+                    output_msg += f"\n\n{proposal_message}"
+                elif extraction_result.get("proposals_staged", 0) == 0:
+                    output_msg += " (Ich habe den Kontext geprüft, aber keinen bestätigbaren Kontaktvorschlag gefunden.)"
             except Exception as e:
                 logger.error(f"Fehler bei autonomer Kontaktextraktion: {e}")
         # ---------------------------

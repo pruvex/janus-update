@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from backend.data import crud, schemas
+from backend.data import contact_schemas, crud, schemas
 from backend.data.models import Contact
 from backend.services.chat_orchestrator import ChatOrchestrator
 
@@ -97,3 +97,61 @@ def test_update_contact_duplicate_email_no_keyerror(db_session):
     refreshed = db_session.query(Contact).filter(Contact.id == second.id).first()
     assert refreshed is not None
     assert "dup@example.com" in str(refreshed.notes or "")
+
+
+def test_create_contact_rich_fields_roundtrip(db_session):
+    created = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Rita Example",
+            contact_type="organization",
+            category="Business",
+            email="rita@example.com",
+            phone="+49 30 123456",
+            preferences=["Terrasse", "Mittagsmenue"],
+            dislikes=["Laut"],
+            personal_details=["Stammkundin seit 2024"],
+            proposal_status="confirmed",
+            proposal_source_context="manuell",
+            proposal_last_outcome="imported",
+            memory_sync_status="ready",
+        ),
+    )
+
+    assert created is not None
+    assert created.contact_type == "organization"
+    assert created.preferences == ["Terrasse", "Mittagsmenue"]
+    assert created.dislikes == ["Laut"]
+    assert created.personal_details == ["Stammkundin seit 2024"]
+    assert created.proposal_status == "confirmed"
+    assert created.proposal_source_context == "manuell"
+    assert created.proposal_last_outcome == "imported"
+    assert created.memory_sync_status == "ready"
+
+
+def test_get_contact_applies_safe_defaults_for_legacy_rich_fields(db_session):
+    legacy = Contact(
+        name="Legacy Contact",
+        email="legacy@example.com",
+        contact_type=None,
+        preferences=None,
+        dislikes=None,
+        personal_details=None,
+        proposal_status=None,
+        proposal_source_context=None,
+        proposal_last_outcome=None,
+        memory_sync_status=None,
+    )
+    db_session.add(legacy)
+    db_session.commit()
+    db_session.refresh(legacy)
+
+    response = crud.get_contact(db_session, legacy.id)
+
+    assert response is not None
+    assert response.contact_type == "private_person"
+    assert response.preferences == []
+    assert response.dislikes == []
+    assert response.personal_details == []
+    assert response.proposal_status == "confirmed"
+    assert response.memory_sync_status == "unlinked"

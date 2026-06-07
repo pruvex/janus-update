@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 import pytz
@@ -355,3 +355,33 @@ async def test_get_calendar_events_invalid_date_range(mock_calendar_service):
 
     assert result["status"] == "error"
     assert "ungültiges datum" in result["error"]["message"]
+
+
+@pytest.mark.asyncio
+async def test_create_calendar_event_includes_contact_proposal_message(mock_calendar_service):
+    summary = "Treffen mit Anna Beispiel"
+    start_time_str = "morgen um 15 Uhr"
+
+    with patch("backend.services.contact_manager.extract_and_save_contact", new_callable=AsyncMock) as mock_extract:
+        mock_extract.return_value = {
+            "proposals_staged": 1,
+            "suppressed": 0,
+            "proposal_id": "contact-proposal-1",
+            "user_message": "Janus: Ich habe einen Kontaktvorschlag vorbereitet.",
+        }
+        result = _md(
+            await calendar_tools.create_calendar_event(
+                summary,
+                start_time_str,
+                db=MagicMock(),
+                api_key="dummy",
+                provider="gemini",
+                model="gemini-3-flash-preview",
+                chat_id=42,
+            )
+        )
+
+    assert result["status"] == "ok"
+    assert "Kontaktvorschlag" in (result.get("message") or "")
+    mock_extract.assert_awaited_once()
+    assert mock_extract.await_args.kwargs["chat_id"] == 42

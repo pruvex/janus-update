@@ -1,6 +1,6 @@
 ﻿# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-06-06 (BACKLOG-107 final dokumentiert und final auditiert - PASS; Startup-Telemetrie und Legacy-Root-Log-Hygiene sind jetzt auf dokumentierte Zielpfade und gezielte Healthcheck-Klassifizierung gehaertet)
+**Aktualisiert:** 2026-06-07 (TASK-SPEC15 final dokumentiert und final auditiert - PASS WITH FIXES; Spec 15 Adressbuch, Kontaktvorschlaege, Public-Enrichment-Grenze und Memory-Kopplung sind jetzt in zentraler Registry, Spec Done und Changelog gespiegelt)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **TASK-SPEC15 Semi-automatisches Adressbuch mit Memory-Kopplung** | SEALED WITH FIXES | Das Adressbuch in den Einstellungen traegt jetzt reichere Kontaktkarten mit Kontaktart, Vorschlagsstatus und Memory-Kopplung. Neue private Kontakte laufen confirmation-first, oeffentliche Eintraege werden nur innerhalb der Privacy-Grenzen angereichert, und bounded Playwright UI-Evidenz bestaetigt die Settings-Karte sowie die sichtbare Chat-Kontaktvorschlagsausgabe. Validation: Backend-Regressionen PASS; Playwright `TASK-SPEC15-address-book-ui-evidence` PASS (2/2); Final Audit PASS WITH FIXES. |
 | **BACKLOG-107 Script-Output-Pfade haerten, damit Dirty-Tree und Root-Suspicious nicht dauernd nachwachsen** | SEALED | Startup-Telemetrie schreibt im Dev-Kontext jetzt nach `documentation/logs/janus_startup_telemetry.log` statt in einen separaten Ad-hoc-Ordner, und der Monthly-Healthcheck trennt bekannte alte Root-Logs als `root_legacy_log_artifacts` von echten neuen `root_suspicious`-Funden. Validation: `node --check scripts/write-startup-marker.cjs` PASS; `node --check electron/startup-telemetry.cjs` PASS; `py_compile` PASS; `pytest tests/test_startup_config.py` PASS; `health_snapshot.py --mode MONTHLY` PASS; Final Audit PASS. |
 | **BACKLOG-106 Lokale Datenbank-Artefakte aus dem Repo-Root herausziehen und sauber einordnen** | SEALED | Der monatliche Healthcheck fuehrt `janus.db`, `chat_history.db` und `costs.db` jetzt als gezielte `root_runtime_db_artifacts` statt als generische Root-Suspicious-Funde. Gleichzeitig ist `%APPDATA%\Janus Projekt\janus.db` im Runbook als kanonischer aktiver Runtime-Pfad dokumentiert, waehrend Root-Kopien als stray oder legacy lokale Zustandsartefakte eingeordnet sind. Validation: `health_snapshot.py --mode MONTHLY` PASS; Backlog-Validator PASS WITH LEGACY WARNINGS; Final Audit PASS. |
 | **BACKLOG-105 Root-Logs aus dem Repo-Root in festen Laufzeitpfad verlagern** | SEALED | Die versionierten lokalen Dev-Startpfade fuer Backend und Vite schreiben ihre Runtime-Logs jetzt in `debug_logs/` statt den Repo-Root weiter mit wiederkehrenden `.log`-Artefakten zu belasten. Das Ziel ist zusaetzlich im Dev-Environment-Runbook dokumentiert. Validation: `node --check scripts/dev-log-utils.cjs` PASS; `node --check scripts/run-vite-dev.cjs` PASS; `node --check scripts/run-backend-dev.cjs` PASS; Final Audit PASS. |

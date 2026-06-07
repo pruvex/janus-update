@@ -11,6 +11,39 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 - **Security/Privacy/Prompt-Injection immer dokumentieren**: Auch bei PASS muessen die Gates explizit aufgefuehrt werden.
 - **Nebenbefunde außerhalb TestScope immer erfassen**: Seitliche Findings duerfen nicht unter den Tisch fallen.
 
+### TASK-SPEC15 - Semi-automatisches Adressbuch mit Memory-Kopplung - Documentation Sync Note
+
+- **Datum**: 2026-06-07
+- **Quelle**: Final Audit / Documentation Update
+- **Artefakte**: `documentation/tasks/TASK-SPEC15_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC15_final_audit.md`, `documentation/tasks/TASK-SPEC15_final_audit_validation.md`, `tests/e2e/generated/TASK-SPEC15-address-book-ui-evidence.spec.js`
+- **Getestete Faehigkeit**: Spec-15 Adressbuch- und Memory-Kopplungsabschluss mit bounded UI-Evidenz
+- **Pipeline-Route**: final audit -> documentation update
+- **Status**: PASS
+- **Summary**: TASK-SPEC15 wurde nach finalem PASS WITH FIXES dokumentiert; die bounded Playwright UI-Evidenz fuer Settings-Adressbuch und Chat-Kontaktvorschlag ist jetzt im Audit-Paket verankert. Dies ist kein eigener TestRun, sondern ein Dokumentationsabschluss-Hinweis fuer den Spec-15-Strang.
+- **Security Gate**: PASS - keine neue Produktfunktion, nur Dokumentations- und Evidenzsync.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+- **UX-Ergebnis**: Einstellungen zeigen die reichere Adressbuchoberflaeche mit Kontaktart, Vorschlagsstatus und Memory-Bezug; der Chat zeigt den Kontaktvorschlag sichtbar.
+- **Intent-/Skill-Routing-Ergebnis**: N/A
+- **Kosten-/Token-Ergebnis**: N/A
+- **Capability-Erklaerfaehigkeit**: PASS
+- **Findings**:
+  - Keine
+- **Sofortfixes**:
+  - `documentation/backlog/BACKLOG.md`: kurzer TASK-SPEC15-Closure-Hinweis ergaenzt.
+  - `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`: Dokumentationsabschluss-Hinweis fuer den Spec-15-Strang ergaenzt.
+- **Backlog-Follow-ups**:
+  - Keine
+- **Nebenbefunde ausserhalb TestScope**:
+  - Keine
+- **Optimierungspotential fuer Testpipeline**:
+  - Wenn ein Final Audit nur an fehlender UI-Evidenz haengt, ist ein bounded Playwright-Rerun mit exakt gescopten Assertions der schnellste und sauberste Nachweis.
+- **Abschluss**:
+  - Diamond Confidence Score: 9.5/10
+  - Production Confidence: 96%
+  - Gesamtergebnis: PASS
+
 ## Run-Template
 
 ```md

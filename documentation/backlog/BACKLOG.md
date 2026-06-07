@@ -4,6 +4,10 @@ Dieses Backlog sammelt Bugs, Ã„nderungswÃ¼nsche, kleine ErgÃ¤nzungen, Ver
 
 Healthcheck-Findings aus `SYSTEM HEALTH â€“ HYGIENE CHECK` dÃ¼rfen hier als `Quelle: System Health` aufgenommen werden, wenn sie nicht sicher mechanisch auto-fixbar sind.
 
+## Spec Closure Notes
+
+- `TASK-SPEC15`: N/A - Spec-generated feature closure with no bound Backlog item; the final audit and documentation sync were completed directly on the Spec/task artifacts.
+
 ## Status-Regeln
 
 - **NEEDS INFO:** Pflichtinformationen fehlen.

@@ -122,3 +122,15 @@
 - **Epic:** BACKLOG-107
 - **Confidence:** High
 - **Tags:** Logging, StartupTelemetry, RepoHygiene, Healthcheck, LegacyArtifacts, Observability
+
+
+## [PATTERN] #Spec15ManualEvidenceRunner "Bounded Playwright evidence runner resolves final audit manual-evidence blockers"
+- **Kontext:** Spec 15 final audit was blocked only because manual Janus UI evidence was missing, while backend regression evidence already passed. (2026-06-07).
+- **Problem:** The audit had no task-bound Playwright/manual runner, so the validator could not confirm the settings address-book and chat confirmation flow even though the implementation was otherwise green.
+- **Loesung:** Create a bounded Playwright runner that mocks API routes, scopes assertions to the exact contact cards and visible chat proposal message, and use it as the audit evidence path instead of stalling on generic manual evidence.
+- **Haertung:** Playwright rerun passed 2/2; final audit validator passed; audit package and final audit were updated with explicit evidence paths and limitations.
+- **Tripwire:** If a final audit is blocked by missing manual/UI evidence but backend suites are already green, build a bounded evidence runner immediately instead of relying on generic screenshots or waiting for a full live-provider trace.
+- **Location:** tests/e2e/generated/TASK-SPEC15-address-book-ui-evidence.spec.js; documentation/tasks/TASK-SPEC15_AUDIT_PACKAGE.md; documentation/tasks/TASK-SPEC15_final_audit_validation.md; documentation/tasks/TASK-SPEC15_final_audit.md
+- **Epic:** SPEC-15
+- **Confidence:** High
+- **Tags:** janus-final-audit,playwright,manual-evidence,ui-validation

@@ -1333,13 +1333,22 @@ async def extract_and_save_fact_from_interaction(
 
             s_type = "vision" if "[VISION ANALYSE]" in extraction_assistant_msg else "text"
 
-            if memory_manager.save_memory_snippet(
+            saved_memory = memory_manager.save_memory_snippet(
                 db=db, 
                 chat_id=chat_id, 
                 fact_object=item,
                 source_type=s_type, # NEU
                 source_metadata={"user_msg": user_msg[:100]} # NEU: Metadaten mitgeben
-            ):
+            )
+            if saved_memory:
+                if str(item.get("subject_role") or "").strip().lower() == "contact":
+                    from backend.services import contact_manager
+
+                    contact_manager.stage_contact_update_from_memory(
+                        db,
+                        memory=saved_memory,
+                        chat_id=chat_id,
+                    )
                 processed_count += 1
         
         if processed_count > 0:
@@ -1432,6 +1441,14 @@ async def extract_and_save_fact(
                 fact_object=item 
             )
             if result:
+                if str(item.get("subject_role") or "").strip().lower() == "contact":
+                    from backend.services import contact_manager
+
+                    contact_manager.stage_contact_update_from_memory(
+                        db,
+                        memory=result,
+                        chat_id=chat_id,
+                    )
                 processed_count += 1
         
         logger.info(f"Erfolgreich {processed_count}/{len(extracted_items)} Fakten verarbeitet.")

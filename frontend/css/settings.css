@@ -1183,6 +1183,85 @@
   background-color: #0056b3;
 }
 
+.contact-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.contact-type-badge {
+  background-color: #22577a;
+}
+
+.contact-status-badge {
+  background-color: #6a4c93;
+}
+
+.contact-sync-badge {
+  background-color: #2d6a4f;
+}
+
+.contact-meta-block {
+  margin-top: 10px;
+}
+
+.contact-meta-label {
+  display: block;
+  font-size: 0.78em;
+  color: #aeb8c2;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.contact-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.contact-pill {
+  display: inline-flex;
+  align-items: center;
+  background-color: #4a4a4a;
+  color: #f1f1f1;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 0.78em;
+}
+
+#contact-form select,
+#contact-form input[type="url"],
+#contact-form input[type="text"],
+#contact-form input[type="email"],
+#contact-form input[type="tel"],
+#contact-form textarea {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #3a3a3a;
+  color: #eee;
+  box-sizing: border-box;
+}
+
+#contact-form select {
+  appearance: auto;
+}
+
+.contact-system-section {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #444;
+}
+
+.contact-system-section h4 {
+  margin: 0 0 12px;
+  color: #e8e8e8;
+}
+
 /* --- Assistenz & Proaktivität (suggestion_mode) --- */
 .settings-lead {
   color: #b3b3b3;

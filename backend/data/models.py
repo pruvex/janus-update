@@ -133,6 +133,7 @@ class Contact(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
+    contact_type = Column(String, nullable=True, default="private_person")
     email = Column(String, nullable=True)
     phone = Column(String, nullable=True)
     notes = Column(ContentType, nullable=True)
@@ -140,6 +141,32 @@ class Contact(Base):
     address = Column(String, nullable=True)
     website = Column(String, nullable=True)
     category = Column(String, nullable=True)
+    preferences = Column(JSON, default=list, nullable=True)
+    dislikes = Column(JSON, default=list, nullable=True)
+    personal_details = Column(JSON, default=list, nullable=True)
+    proposal_status = Column(String, nullable=True, default="confirmed")
+    proposal_source_context = Column(String, nullable=True)
+    proposal_last_outcome = Column(String, nullable=True)
+    memory_sync_status = Column(String, nullable=True, default="unlinked")
+
+
+class ContactProposal(Base):
+    __tablename__ = "contact_proposals"
+
+    id = Column(Integer, primary_key=True, index=True)
+    proposal_batch_id = Column(String, index=True, nullable=False)
+    proposal_key = Column(String, index=True, nullable=False, unique=True)
+    chat_id = Column(Integer, nullable=True, index=True)
+    contact_id = Column(Integer, nullable=True, index=True)
+    contact_name = Column(String, nullable=False, index=True)
+    proposal_type = Column(String, nullable=False)
+    status = Column(String, nullable=False, default="pending")
+    evidence_hash = Column(String, nullable=False, index=True)
+    source_context = Column(Text, nullable=True)
+    payload_json = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    resolved_at = Column(DateTime, nullable=True)
 
 # --- COMPLETE GENERATED IMAGE MODEL ---
 class GeneratedImage(Base):

@@ -14,6 +14,16 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Validation**: Gemini cost attribution now persists request-linked conversation and grounding/websearch components without prompt/response storage, DeepDive exposes anomaly-first Gemini forensics with session/test-run/request drilldown and visible residuals, and Gemini grounding/websearch is Flash-by-default unless a visible `MODEL_OVERRIDE:` is present. Final re-audit PASS with targeted provider-policy, attribution, and UI evidence.
 - **Changed Files**: `backend/api/routers/system.py`, `backend/data/crud.py`, `backend/data/database.py`, `backend/data/models.py`, `backend/llm_providers/gemini/gateway.py`, `backend/services/cost_service.py`, `backend/services/tool_executor.py`, `backend/services/websearch/gemini_provider.py`, `backend/services/websearch/websearch.py`, `backend/tool_registry.py`, `backend/tests/test_backlog_007_tool_routing_performance.py`, `backend/tests/test_cost_token_tracking_completeness.py`, `backend/tests/tools/test_websearch.py`, `frontend/index.html`, `frontend/js/cost-visualizer.js`, `frontend/src/styles.css`.
 
+### TASK-SPEC15 - Semi-automatisches Adressbuch mit Memory-Kopplung
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC15_final_audit.md` (PASS WITH FIXES)
+- **Spec**: `documentation/SPEC/Spec Done/15_semi_automatisches_adressbuch_mit_memory_kopplung.md`
+- **Task**: `documentation/tasks/TASK-SPEC15_semi_automatisches_adressbuch_mit_memory_kopplung.md`
+- **Execution Results**: `documentation/tasks/TASK-SPEC15.1_execution_result.md`, `documentation/tasks/TASK-SPEC15.2_execution_result.md`, `documentation/tasks/TASK-SPEC15.3_execution_result.md`, `documentation/tasks/TASK-SPEC15.4_execution_result.md`, `documentation/tasks/TASK-SPEC15.5_execution_result.md`
+- **Validation**: Spec 15 now has the richer contact card contract, confirmation-first proposal flow, public-enrichment privacy boundary, and confirmed Memory coupling locked in by focused backend suites plus bounded Playwright UI evidence for the settings address-book surface and visible chat proposal copy. Final audit PASS WITH FIXES after a re-created bounded evidence runner resolved the missing-manual-evidence blocker.
+- **Changed Files**: `backend/api/routers/contacts.py`, `backend/data/contact_schemas.py`, `backend/data/crud.py`, `backend/data/database.py`, `backend/data/models.py`, `backend/services/chat_orchestrator.py`, `backend/services/contact_manager.py`, `backend/services/memory_extractor.py`, `backend/tests/integration/test_error_resilience.py`, `backend/tests/test_calendar_tools.py`, `backend/tests/test_contact_manager.py`, `backend/tests/test_memory_tools.py`, `backend/tests/test_memory_write_update_conflict_handling.py`, `backend/tools/calendar_tools.py`, `backend/tools/contact_tools.py`, `backend/tools/memory_tools.py`, `frontend/css/settings.css`, `frontend/index.html`, `frontend/js/settings.js`, `tests/e2e/generated/TASK-SPEC15-address-book-ui-evidence.spec.js`, `documentation/tasks/TASK-SPEC15_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC15_final_audit_validation.md`, `documentation/tasks/TASK-SPEC15_final_audit.md`.
+
 ## Backlog Closures
 
 ### BACKLOG-107 - Script-Output-Pfade haerten, damit Dirty-Tree und Root-Suspicious nicht dauernd nachwachsen

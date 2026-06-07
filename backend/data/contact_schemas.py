@@ -1,21 +1,81 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_serializer
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 
 
-# --- Contact Schemas ---
+def _normalize_string_list(value: Optional[object]) -> List[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    if isinstance(value, str):
+        normalized = value.replace("\r", "\n").replace(",", "\n")
+        return [item.strip() for item in normalized.split("\n") if item.strip()]
+    text = str(value).strip()
+    return [text] if text else []
+
+
 class ContactBase(BaseModel):
-    name: str = Field(..., description="Der vollständige Name des Kontakts.")
+    name: str = Field(..., description="Der vollstaendige Name des Kontakts.")
+    contact_type: str = Field(
+        "private_person",
+        description="Die Art des Kontakts: 'private_person' oder 'organization'.",
+    )
     category: Optional[str] = Field(
         "Unkategorisiert",
-        description="Eine Kategorie für den Kontakt (z.B. 'Familie', 'Arzt', 'Arbeit').",
+        description="Eine Kategorie fuer den Kontakt (z.B. 'Familie', 'Arzt', 'Arbeit').",
     )
-    email: Optional[str] = Field(None, description="Die primäre E-Mail-Adresse des Kontakts.")
-    phone: Optional[str] = Field(None, description="Die primäre Telefonnummer des Kontakts.")
+    email: Optional[str] = Field(None, description="Die primaere E-Mail-Adresse des Kontakts.")
+    phone: Optional[str] = Field(None, description="Die primaere Telefonnummer des Kontakts.")
     address: Optional[str] = Field(None, description="Die physische Adresse des Kontakts.")
     website: Optional[str] = Field(None, description="Die Website oder URL des Kontakts.")
-    notes: Optional[str] = Field(None, description="Zusätzliche Notizen zum Kontakt.")
+    preferences: List[str] = Field(
+        default_factory=list,
+        description="Strukturierte Vorlieben des Kontakts.",
+    )
+    dislikes: List[str] = Field(
+        default_factory=list,
+        description="Strukturierte Abneigungen des Kontakts.",
+    )
+    personal_details: List[str] = Field(
+        default_factory=list,
+        description="Weitere strukturierte, bestaetigte Kontaktdetails.",
+    )
+    notes: Optional[str] = Field(None, description="Zusaetzliche Notizen zum Kontakt.")
+    proposal_status: str = Field(
+        "confirmed",
+        description="Vorschlagsstatus des Kontakts, z.B. 'confirmed' oder 'pending'.",
+    )
+    proposal_source_context: Optional[str] = Field(
+        None,
+        description="Kurzer Herkunftskontext fuer Kontakt- oder Update-Vorschlaege.",
+    )
+    proposal_last_outcome: Optional[str] = Field(
+        None,
+        description="Zuletzt dokumentiertes Ergebnis eines Kontaktvorschlags.",
+    )
+    memory_sync_status: str = Field(
+        "unlinked",
+        description="Status der Memory-Kopplung fuer diesen Kontakt.",
+    )
+
+    @field_validator("preferences", "dislikes", "personal_details", mode="before")
+    @classmethod
+    def _normalize_lists(cls, value: Optional[object]) -> List[str]:
+        return _normalize_string_list(value)
+
+    @field_validator("contact_type", "proposal_status", "memory_sync_status", mode="before")
+    @classmethod
+    def _default_required_strings(cls, value: Optional[object], info) -> str:
+        if value is None or not str(value).strip():
+            defaults = {
+                "contact_type": "private_person",
+                "proposal_status": "confirmed",
+                "memory_sync_status": "unlinked",
+            }
+            return defaults[info.field_name]
+        return str(value).strip()
 
 
 class ContactCreate(ContactBase):
@@ -35,7 +95,6 @@ class ContactResponse(ContactBase):
     )
 
 
-# --- Contact Tool Schemas ---
 class ContactExtractionArgs(BaseModel):
     text: str = Field(
         ...,
@@ -55,13 +114,36 @@ class ContactSearchArgs(BaseModel):
 
 
 class ContactUpdate(BaseModel):
-    name: Optional[str] = Field(None, description="Der neue vollständige Name des Kontakts.")
-    category: Optional[str] = Field(None, description="Die neue Kategorie für den Kontakt.")
+    name: Optional[str] = Field(None, description="Der neue vollstaendige Name des Kontakts.")
+    contact_type: Optional[str] = Field(None, description="Die Art des Kontakts.")
+    category: Optional[str] = Field(None, description="Die neue Kategorie fuer den Kontakt.")
     email: Optional[str] = Field(None, description="Die neue E-Mail-Adresse des Kontakts.")
     phone: Optional[str] = Field(None, description="Die neue Telefonnummer des Kontakts.")
     address: Optional[str] = Field(None, description="Die neue physische Adresse des Kontakts.")
     website: Optional[str] = Field(None, description="Die neue Website oder URL des Kontakts.")
+    preferences: Optional[List[str]] = Field(None, description="Die neuen strukturierten Vorlieben.")
+    dislikes: Optional[List[str]] = Field(None, description="Die neuen strukturierten Abneigungen.")
+    personal_details: Optional[List[str]] = Field(
+        None, description="Neue strukturierte Kontaktdetails."
+    )
     notes: Optional[str] = Field(None, description="Die neuen Notizen zum Kontakt.")
+    proposal_status: Optional[str] = Field(None, description="Der neue Vorschlagsstatus.")
+    proposal_source_context: Optional[str] = Field(
+        None, description="Der neue Herkunftskontext eines Vorschlags."
+    )
+    proposal_last_outcome: Optional[str] = Field(
+        None, description="Das neue Ergebnis des letzten Vorschlags."
+    )
+    memory_sync_status: Optional[str] = Field(
+        None, description="Der neue Memory-Kopplungsstatus."
+    )
+
+    @field_validator("preferences", "dislikes", "personal_details", mode="before")
+    @classmethod
+    def _normalize_optional_lists(cls, value: Optional[object]) -> Optional[List[str]]:
+        if value is None:
+            return None
+        return _normalize_string_list(value)
 
 
 class ContactUpdateArgs(BaseModel):
@@ -72,7 +154,7 @@ class ContactUpdateArgs(BaseModel):
 
 
 class ContactDeleteArgs(BaseModel):
-    contact_id: int = Field(..., description="Die ID des zu löschenden Kontakts.")
+    contact_id: int = Field(..., description="Die ID des zu loeschenden Kontakts.")
 
 
 class UpdateContactToolArgs(BaseModel):
@@ -82,26 +164,59 @@ class UpdateContactToolArgs(BaseModel):
         ..., description="Der exakte Name des Kontakts, der aktualisiert werden soll."
     )
     new_name: Optional[str] = Field(
-        None, description="Der neue vollständige Name des Kontakts, falls er geändert werden soll."
+        None, description="Der neue vollstaendige Name des Kontakts, falls er geaendert werden soll."
     )
-    category: Optional[str] = Field(None, description="Die neue Kategorie für den Kontakt.")
+    contact_type: Optional[str] = Field(None, description="Die Art des Kontakts.")
+    category: Optional[str] = Field(None, description="Die neue Kategorie fuer den Kontakt.")
     email: Optional[str] = Field(None, description="Die neue E-Mail-Adresse des Kontakts.")
     phone: Optional[str] = Field(None, description="Die neue Telefonnummer des Kontakts.")
     address: Optional[str] = Field(None, description="Die neue physische Adresse des Kontakts.")
     website: Optional[str] = Field(None, description="Die neue Website oder URL des Kontakts.")
+    preferences: Optional[List[str]] = Field(None, description="Neue strukturierte Vorlieben.")
+    dislikes: Optional[List[str]] = Field(None, description="Neue strukturierte Abneigungen.")
+    personal_details: Optional[List[str]] = Field(
+        None, description="Neue strukturierte Kontaktdetails."
+    )
     notes: Optional[str] = Field(
-        None, description="Die neuen oder zu ergänzenden Notizen zum Kontakt."
+        None, description="Die neuen oder zu ergaenzenden Notizen zum Kontakt."
+    )
+    proposal_status: Optional[str] = Field(None, description="Der neue Vorschlagsstatus.")
+    proposal_source_context: Optional[str] = Field(
+        None, description="Der neue Herkunftskontext eines Vorschlags."
+    )
+    proposal_last_outcome: Optional[str] = Field(
+        None, description="Das neue Ergebnis des letzten Vorschlags."
+    )
+    memory_sync_status: Optional[str] = Field(
+        None, description="Der neue Memory-Kopplungsstatus."
     )
 
 
 class CreateOrUpdateContactArgs(BaseModel):
     """Argumente zum Erstellen oder Aktualisieren eines Kontakts."""
 
-    name: str = Field(..., description="Der vollständige Name des Kontakts.")
+    name: str = Field(..., description="Der vollstaendige Name des Kontakts.")
+    contact_type: Optional[str] = Field(None, description="Die Art des Kontakts.")
     email: Optional[str] = Field(None, description="Die E-Mail-Adresse des Kontakts.")
     phone: Optional[str] = Field(None, description="Die Telefonnummer des Kontakts.")
     address: Optional[str] = Field(None, description="Die physische Adresse des Kontakts.")
-    notes: Optional[str] = Field(None, description="Zusätzliche Notizen zum Kontakt.")
+    website: Optional[str] = Field(None, description="Die Website oder URL des Kontakts.")
+    preferences: Optional[List[str]] = Field(None, description="Strukturierte Vorlieben.")
+    dislikes: Optional[List[str]] = Field(None, description="Strukturierte Abneigungen.")
+    personal_details: Optional[List[str]] = Field(
+        None, description="Weitere strukturierte Kontaktdetails."
+    )
+    notes: Optional[str] = Field(None, description="Zusaetzliche Notizen zum Kontakt.")
     category: Optional[str] = Field(
         "Privat", description="Die Kategorie des Kontakts, z.B. 'Privat' oder 'Business'."
+    )
+    proposal_status: Optional[str] = Field(None, description="Der Vorschlagsstatus.")
+    proposal_source_context: Optional[str] = Field(
+        None, description="Der Herkunftskontext eines Vorschlags."
+    )
+    proposal_last_outcome: Optional[str] = Field(
+        None, description="Das Ergebnis des letzten Vorschlags."
+    )
+    memory_sync_status: Optional[str] = Field(
+        None, description="Der Memory-Kopplungsstatus."
     )

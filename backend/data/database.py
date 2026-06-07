@@ -135,6 +135,59 @@ def _ensure_sqlite_schema_migrations() -> None:
                     )
                 logger.info("Migration: memories.source_type added (default='text').")
 
+        if insp.has_table("contacts"):
+            contact_cols = {c["name"] for c in insp.get_columns("contacts")}
+            if "contact_type" not in contact_cols:
+                with engine.begin() as conn:
+                    conn.execute(
+                        text(
+                            "ALTER TABLE contacts ADD COLUMN contact_type VARCHAR DEFAULT 'private_person'"
+                        )
+                    )
+                    conn.execute(
+                        text(
+                            "UPDATE contacts SET contact_type = 'organization' "
+                            "WHERE lower(coalesce(category, '')) = 'business'"
+                        )
+                    )
+                logger.info("Migration: contacts.contact_type added (default='private_person').")
+            if "preferences" not in contact_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE contacts ADD COLUMN preferences JSON"))
+                logger.info("Migration: contacts.preferences added.")
+            if "dislikes" not in contact_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE contacts ADD COLUMN dislikes JSON"))
+                logger.info("Migration: contacts.dislikes added.")
+            if "personal_details" not in contact_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE contacts ADD COLUMN personal_details JSON"))
+                logger.info("Migration: contacts.personal_details added.")
+            if "proposal_status" not in contact_cols:
+                with engine.begin() as conn:
+                    conn.execute(
+                        text(
+                            "ALTER TABLE contacts ADD COLUMN proposal_status VARCHAR DEFAULT 'confirmed'"
+                        )
+                    )
+                logger.info("Migration: contacts.proposal_status added (default='confirmed').")
+            if "proposal_source_context" not in contact_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE contacts ADD COLUMN proposal_source_context VARCHAR"))
+                logger.info("Migration: contacts.proposal_source_context added.")
+            if "proposal_last_outcome" not in contact_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE contacts ADD COLUMN proposal_last_outcome VARCHAR"))
+                logger.info("Migration: contacts.proposal_last_outcome added.")
+            if "memory_sync_status" not in contact_cols:
+                with engine.begin() as conn:
+                    conn.execute(
+                        text(
+                            "ALTER TABLE contacts ADD COLUMN memory_sync_status VARCHAR DEFAULT 'unlinked'"
+                        )
+                    )
+                logger.info("Migration: contacts.memory_sync_status added (default='unlinked').")
+
         if insp.has_table("costs"):
             cost_cols = {c["name"] for c in insp.get_columns("costs")}
             if "tokens_saved" not in cost_cols:

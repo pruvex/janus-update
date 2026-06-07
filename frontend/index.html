@@ -1099,6 +1099,11 @@
             <input type="hidden" id="contact-id" />
             <label for="contact-name">Name:</label>
             <input type="text" id="contact-name" required />
+            <label for="contact-type">Kontaktart:</label>
+            <select id="contact-type">
+              <option value="private_person">Privatperson</option>
+              <option value="organization">Organisation</option>
+            </select>
             <label for="contact-category">Kategorie:</label>
             <input type="text" id="contact-category" />
             <label for="contact-email">E-Mail:</label>
@@ -1109,8 +1114,44 @@
             <textarea id="contact-address"></textarea>
             <label for="contact-website">Website:</label>
             <input type="url" id="contact-website" />
+            <label for="contact-preferences">Vorlieben:</label>
+            <textarea
+              id="contact-preferences"
+              placeholder="Eintrag pro Zeile oder komma-getrennt"
+            ></textarea>
+            <label for="contact-dislikes">Abneigungen:</label>
+            <textarea
+              id="contact-dislikes"
+              placeholder="Eintrag pro Zeile oder komma-getrennt"
+            ></textarea>
+            <label for="contact-personal-details">Persoenliche Details:</label>
+            <textarea
+              id="contact-personal-details"
+              placeholder="Bestaetigte Details, ein Eintrag pro Zeile oder komma-getrennt"
+            ></textarea>
             <label for="contact-notes">Notizen:</label>
             <textarea id="contact-notes"></textarea>
+            <div class="contact-system-section">
+              <h4>Systemstatus</h4>
+              <label for="contact-proposal-status">Vorschlagsstatus:</label>
+              <select id="contact-proposal-status">
+                <option value="confirmed">Bestaetigt</option>
+                <option value="pending">Offen</option>
+                <option value="suggested_update">Update-Vorschlag</option>
+                <option value="suppressed">Unterdrueckt</option>
+              </select>
+              <label for="contact-memory-sync-status">Memory-Kopplung:</label>
+              <select id="contact-memory-sync-status">
+                <option value="unlinked">Nicht verknuepft</option>
+                <option value="ready">Bereit</option>
+                <option value="synced">Synchronisiert</option>
+                <option value="blocked">Blockiert</option>
+              </select>
+              <label for="contact-proposal-source-context">Herkunftskontext:</label>
+              <textarea id="contact-proposal-source-context"></textarea>
+              <label for="contact-proposal-last-outcome">Letztes Vorschlagsergebnis:</label>
+              <input type="text" id="contact-proposal-last-outcome" />
+            </div>
             <div class="modal-buttons">
               <button type="submit" id="contact-save-btn">Speichern</button>
             </div>

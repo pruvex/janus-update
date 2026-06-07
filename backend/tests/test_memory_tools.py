@@ -15,9 +15,10 @@ import json
 from datetime import datetime
 
 import pytest
-from backend.data import models
+from backend.data import contact_schemas, crud, models
 from backend.data.database import Base
 from backend.data.schemas_tools import ToolResultV1
+from backend.services import contact_manager
 from backend.tools.memory_tools import (
     _build_canonical_key,
     _parse_snippet,
@@ -32,6 +33,13 @@ from sqlalchemy.orm import sessionmaker
 
 def _md(r: ToolResultV1) -> dict:
     return r.model_dump()
+
+
+def _db_gen(db_session):
+    def _factory():
+        yield db_session
+
+    return _factory
 
 
 # Test-Datenbank Setup
@@ -473,3 +481,98 @@ async def test_write_with_ttl(db_session):
         models.Memory.id == result["data"]["memory_id"]
     ).first()
     assert memory.expires_at is not None
+
+
+@pytest.mark.asyncio
+async def test_confirmed_memory_write_can_stage_contact_update_suggestion(db_session):
+    chat_id = db_session.query(models.Chat).first().id
+    contact = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Anna Erinnerung",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+    assert contact is not None
+
+    result = _md(
+        await handle_memory_write(
+            params={
+                "fact": "Anna Erinnerung mag Espresso",
+                "subject_name": "Anna Erinnerung",
+                "category": "Vorlieben",
+            },
+            db=db_session,
+            chat_id=chat_id,
+        )
+    )
+
+    proposals = crud.list_contact_proposals(db_session, contact_id=contact.id)
+    refreshed = crud.get_contact(db_session, contact.id)
+
+    assert result["status"] == "ok"
+    assert result["data"]["contact_proposal"]["proposals_staged"] == 1
+    assert len(proposals) == 1
+    assert proposals[0]["proposal_type"] == "memory_contact_update"
+    assert proposals[0]["payload_json"]["payload"]["preferences"] == ["espresso"]
+    assert refreshed.proposal_status == "pending"
+    assert refreshed.proposal_source_context == "memory_sync"
+
+
+@pytest.mark.asyncio
+async def test_rejected_memory_contact_suggestion_is_suppressed_until_new_evidence(db_session):
+    chat_id = db_session.query(models.Chat).first().id
+    contact_manager._clear_pending_contact_proposals_for_tests()
+    contact = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Anna Erinnerung",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+    assert contact is not None
+
+    first = _md(
+        await handle_memory_write(
+            params={
+                "fact": "Anna Erinnerung mag Espresso",
+                "subject_name": "Anna Erinnerung",
+                "category": "Vorlieben",
+            },
+            db=db_session,
+            chat_id=chat_id,
+        )
+    )
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(
+            "backend.services.contact_manager.database.get_db_sync",
+            _db_gen(db_session),
+        )
+        reject_result = contact_manager.reject_pending_contact_proposal(chat_id)
+    second = _md(
+        await handle_memory_write(
+            params={
+                "fact": "Anna Erinnerung mag Espresso",
+                "subject_name": "Anna Erinnerung",
+                "category": "Vorlieben",
+            },
+            db=db_session,
+            chat_id=chat_id,
+        )
+    )
+
+    proposals = crud.list_contact_proposals(db_session, contact_id=contact.id)
+    refreshed = crud.get_contact(db_session, contact.id)
+
+    assert first["status"] == "ok"
+    assert first["data"]["contact_proposal"]["proposals_staged"] == 1
+    assert reject_result["status"] == "rejected"
+    assert second["status"] == "ok"
+    assert second["data"]["contact_proposal"]["proposals_staged"] == 0
+    assert second["data"]["contact_proposal"]["suppressed"] == 1
+    assert len(proposals) == 1
+    assert proposals[0]["status"] == "rejected"
+    assert refreshed.proposal_status == "confirmed"
+    assert refreshed.proposal_source_context == "memory_sync"

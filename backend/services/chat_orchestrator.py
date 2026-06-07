@@ -2279,6 +2279,42 @@ class ChatOrchestrator:
         self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
         return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
 
+    async def _try_contact_proposal_confirmation(self, ctx: RequestContext) -> Optional[Dict]:
+        from backend.services import contact_manager
+        from backend.services.calendar import mutation_guard_store as mgs
+        from backend.services.orchestrator.schemas import ExecutionResponse
+
+        request = ctx.request
+        wf = ctx.workflow
+        chat_id = request.chat_id
+        if chat_id is None:
+            return None
+
+        pending = contact_manager.get_pending_contact_proposal(chat_id)
+        if pending is None:
+            return None
+
+        verdict = mgs.classify_confirmation_reply(wf.user_text or "")
+        if verdict is None:
+            return None
+
+        if verdict == "reject":
+            result = contact_manager.reject_pending_contact_proposal(int(chat_id))
+            wf.execution_for_api = ExecutionResponse(
+                text=result.get("user_message") or "Ich habe den Kontaktvorschlag verworfen."
+            )
+            wf.skip_llm_generation = True
+            self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+            return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
+        result = contact_manager.confirm_pending_contact_proposal(int(chat_id))
+        wf.execution_for_api = ExecutionResponse(
+            text=result.get("user_message") or "Die Kontaktvorschlaege wurden bestaetigt."
+        )
+        wf.skip_llm_generation = True
+        self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
+        return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
     async def _try_chat_mail_confirmation(self, ctx: RequestContext) -> Optional[Dict]:
         """Chat fast-path: stage mail send and require explicit yes/no confirmation."""
         from backend.services.calendar import mutation_guard_store as mgs
@@ -4081,6 +4117,10 @@ class ChatOrchestrator:
         mutation_guard_result = await self._try_mutation_guard_confirmation(ctx)
         if mutation_guard_result is not None:
             return mutation_guard_result
+
+        contact_proposal_result = await self._try_contact_proposal_confirmation(ctx)
+        if contact_proposal_result is not None:
+            return contact_proposal_result
 
         policy_response = await handle_policy_consent_phase(self, ctx)
         if policy_response is not None:

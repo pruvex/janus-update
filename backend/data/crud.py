@@ -342,17 +342,41 @@ def delete_memory(db: Session, memory_id: int) -> bool:
 
 
 # --- Contact CRUD ---
+def _contact_response_from_model(contact: models.Contact) -> contact_schemas.ContactResponse:
+    return contact_schemas.ContactResponse.model_validate(
+        {
+            "id": contact.id,
+            "name": contact.name,
+            "contact_type": getattr(contact, "contact_type", None),
+            "category": contact.category,
+            "email": contact.email,
+            "phone": contact.phone,
+            "address": contact.address,
+            "website": contact.website,
+            "preferences": getattr(contact, "preferences", None),
+            "dislikes": getattr(contact, "dislikes", None),
+            "personal_details": getattr(contact, "personal_details", None),
+            "notes": contact.notes,
+            "proposal_status": getattr(contact, "proposal_status", None),
+            "proposal_source_context": getattr(contact, "proposal_source_context", None),
+            "proposal_last_outcome": getattr(contact, "proposal_last_outcome", None),
+            "memory_sync_status": getattr(contact, "memory_sync_status", None),
+            "created_at": contact.created_at,
+        }
+    )
+
+
 def get_contact(db: Session, contact_id: int) -> Optional[contact_schemas.ContactResponse]:
     db_contact = db.query(models.Contact).filter(models.Contact.id == contact_id).first()
     if db_contact:
-        return contact_schemas.ContactResponse.model_validate(db_contact)
+        return _contact_response_from_model(db_contact)
     return None
 
 
 def get_contact_by_email(db: Session, email: str) -> Optional[contact_schemas.ContactResponse]:
     db_contact = db.query(models.Contact).filter(models.Contact.email == email).first()
     if db_contact:
-        return contact_schemas.ContactResponse.model_validate(db_contact)
+        return _contact_response_from_model(db_contact)
     return None
 
 
@@ -360,7 +384,7 @@ def get_contacts(
     db: Session, skip: int = 0, limit: int = 100
 ) -> List[contact_schemas.ContactResponse]:
     contacts = db.query(models.Contact).offset(skip).limit(limit).all()
-    return [contact_schemas.ContactResponse.model_validate(contact) for contact in contacts]
+    return [_contact_response_from_model(contact) for contact in contacts]
 
 
 def create_contact(
@@ -369,17 +393,25 @@ def create_contact(
     try:
         db_contact = models.Contact(
             name=contact.name,
+            contact_type=contact.contact_type or "private_person",
             email=contact.email,
             phone=contact.phone,
             address=contact.address,
             website=contact.website,
+            preferences=contact.preferences or [],
+            dislikes=contact.dislikes or [],
+            personal_details=contact.personal_details or [],
             notes=contact.notes,
-            category=contact.category or "Unkategorisiert"
+            category=contact.category or "Unkategorisiert",
+            proposal_status=contact.proposal_status or "confirmed",
+            proposal_source_context=contact.proposal_source_context,
+            proposal_last_outcome=contact.proposal_last_outcome,
+            memory_sync_status=contact.memory_sync_status or "unlinked",
         )
         db.add(db_contact)
         db.commit()
         db.refresh(db_contact)
-        return contact_schemas.ContactResponse.model_validate(db_contact)
+        return _contact_response_from_model(db_contact)
     except IntegrityError:
         db.rollback()  # Wichtig: Transaktion bei Duplikat-Fehler zurückrollen
         logger.warning(
@@ -480,7 +512,7 @@ def search_contacts_by_name(db: Session, name_query: str) -> List[contact_schema
             models.Contact.name.ilike(f'%{name_query}%')
         ).all()
     )
-    return [contact_schemas.ContactResponse.model_validate(contact) for contact in contacts]
+    return [_contact_response_from_model(contact) for contact in contacts]
 
 
 def delete_contact(db: Session, contact_id: int) -> bool:
@@ -500,6 +532,164 @@ def delete_contact(db: Session, contact_id: int) -> bool:
         return True
     logger.warning(f"Kontakt mit ID {contact_id} zum Löschen nicht gefunden.")
     return False
+
+
+# --- Contact Proposal CRUD ---
+
+def get_contact_proposal_by_key(db: Session, proposal_key: str) -> Optional[models.ContactProposal]:
+    return (
+        db.query(models.ContactProposal)
+        .filter(models.ContactProposal.proposal_key == proposal_key)
+        .first()
+    )
+
+
+def create_or_update_contact_proposal(
+    db: Session,
+    *,
+    proposal_batch_id: str,
+    proposal_key: str,
+    chat_id: Optional[int],
+    contact_id: Optional[int],
+    contact_name: str,
+    proposal_type: str,
+    status: str,
+    evidence_hash: str,
+    source_context: Optional[str],
+    payload_json: Optional[Dict[str, Any]],
+) -> Optional[models.ContactProposal]:
+    record = get_contact_proposal_by_key(db, proposal_key)
+    now = datetime.utcnow()
+    if record is None:
+        record = models.ContactProposal(
+            proposal_batch_id=proposal_batch_id,
+            proposal_key=proposal_key,
+            chat_id=chat_id,
+            contact_id=contact_id,
+            contact_name=contact_name,
+            proposal_type=proposal_type,
+            status=status,
+            evidence_hash=evidence_hash,
+            source_context=source_context,
+            payload_json=payload_json or {},
+            resolved_at=now if status in {"rejected", "applied", "failed"} else None,
+        )
+        db.add(record)
+    else:
+        record.proposal_batch_id = proposal_batch_id
+        record.chat_id = chat_id
+        record.contact_id = contact_id
+        record.contact_name = contact_name
+        record.proposal_type = proposal_type
+        record.status = status
+        record.evidence_hash = evidence_hash
+        record.source_context = source_context
+        record.payload_json = payload_json or {}
+        record.updated_at = now
+        record.resolved_at = now if status in {"rejected", "applied", "failed"} else None
+
+    try:
+        db.commit()
+        db.refresh(record)
+        return record
+    except Exception:
+        db.rollback()
+        logger.error("Error in create_or_update_contact_proposal: commit failed", exc_info=True)
+        return None
+
+
+def update_contact_proposal_status(
+    db: Session,
+    *,
+    proposal_id: int,
+    status: str,
+    contact_id: Optional[int] = None,
+    payload_json: Optional[Dict[str, Any]] = None,
+) -> Optional[models.ContactProposal]:
+    record = db.query(models.ContactProposal).filter(models.ContactProposal.id == proposal_id).first()
+    if not record:
+        return None
+
+    record.status = status
+    record.updated_at = datetime.utcnow()
+    record.resolved_at = datetime.utcnow() if status in {"rejected", "applied", "failed"} else None
+    if contact_id is not None:
+        record.contact_id = contact_id
+    if payload_json is not None:
+        record.payload_json = payload_json
+
+    try:
+        db.commit()
+        db.refresh(record)
+        return record
+    except Exception:
+        db.rollback()
+        logger.error("Error in update_contact_proposal_status: commit failed", exc_info=True)
+        return None
+
+
+def update_contact_proposals_batch_status(
+    db: Session,
+    *,
+    proposal_batch_id: str,
+    status: str,
+) -> int:
+    records = (
+        db.query(models.ContactProposal)
+        .filter(models.ContactProposal.proposal_batch_id == proposal_batch_id)
+        .all()
+    )
+    if not records:
+        return 0
+
+    now = datetime.utcnow()
+    for record in records:
+        record.status = status
+        record.updated_at = now
+        record.resolved_at = now if status in {"rejected", "applied", "failed"} else None
+
+    try:
+        db.commit()
+        return len(records)
+    except Exception:
+        db.rollback()
+        logger.error("Error in update_contact_proposals_batch_status: commit failed", exc_info=True)
+        return 0
+
+
+def _serialize_contact_proposal(record: models.ContactProposal) -> Dict[str, Any]:
+    return {
+        "id": record.id,
+        "proposal_batch_id": record.proposal_batch_id,
+        "proposal_key": record.proposal_key,
+        "chat_id": record.chat_id,
+        "contact_id": record.contact_id,
+        "contact_name": record.contact_name,
+        "proposal_type": record.proposal_type,
+        "status": record.status,
+        "evidence_hash": record.evidence_hash,
+        "source_context": record.source_context,
+        "payload_json": record.payload_json or {},
+        "created_at": record.created_at.isoformat() if record.created_at else None,
+        "updated_at": record.updated_at.isoformat() if record.updated_at else None,
+        "resolved_at": record.resolved_at.isoformat() if record.resolved_at else None,
+    }
+
+
+def list_contact_proposals(
+    db: Session,
+    *,
+    contact_id: int,
+    status: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    query = (
+        db.query(models.ContactProposal)
+        .filter(models.ContactProposal.contact_id == contact_id)
+        .order_by(models.ContactProposal.created_at.desc())
+    )
+    if status:
+        query = query.filter(models.ContactProposal.status == status)
+    return [_serialize_contact_proposal(record) for record in query.all()]
 
 
 # --- Project CRUD ---

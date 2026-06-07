@@ -248,6 +248,16 @@ async def handle_memory_write(
             f"[TOOL WRITE] Skill={source_skill}, Key={enriched.get('canonical_key')}, "
             f"Priority={final_priority}, ID={saved.id}"
         )
+
+        contact_proposal_result = None
+        if str(source_skill or "") != "system.contact_memory_sync":
+            from backend.services import contact_manager
+
+            contact_proposal_result = contact_manager.stage_contact_update_from_memory(
+                db,
+                memory=saved,
+                chat_id=chat_id,
+            )
         
         return tool_ok_v1(
             {
@@ -255,6 +265,7 @@ async def handle_memory_write(
                 "memory_id": saved.id,
                 "priority": final_priority,
                 "canonical_key": enriched.get("canonical_key"),
+                "contact_proposal": contact_proposal_result,
             },
             tags=_MEMORY_TAGS,
             started_at=t0,

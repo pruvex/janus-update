@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from backend.data import models
+from backend.data import contact_schemas, crud, models
 from backend.data.database import Base
 from backend.tools.memory_tools import (
     _parse_snippet,
@@ -162,3 +162,41 @@ async def test_prompt_injection_cannot_force_sensitive_persistence(db_session):
     assert result["status"] == "error"
     assert result["error"]["code"] == "SENSITIVE_MEMORY_BLOCKED"
     assert db_session.query(models.Memory).count() == 0
+
+
+@pytest.mark.asyncio
+async def test_sensitive_confirmed_memory_fact_becomes_pending_contact_review_not_silent_mutation(db_session):
+    contact = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Mila Sensitiv",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+    assert contact is not None
+
+    result = _md(
+        await handle_memory_write(
+            {
+                "fact": "Mila Sensitiv hat eine Glutenunvertraeglichkeit",
+                "subject_name": "Mila Sensitiv",
+                "category": "Gesundheit",
+            },
+            db_session,
+            _chat_id(db_session),
+        )
+    )
+
+    refreshed = crud.get_contact(db_session, contact.id)
+    proposals = crud.list_contact_proposals(db_session, contact_id=contact.id)
+
+    assert result["status"] == "ok"
+    assert result["data"]["contact_proposal"]["proposals_staged"] == 1
+    assert refreshed.personal_details == []
+    assert refreshed.proposal_status == "pending"
+    assert refreshed.proposal_source_context == "memory_sync"
+    assert proposals[0]["payload_json"]["payload"]["proposal_metadata"]["sensitive"] is True
+    assert proposals[0]["payload_json"]["payload"]["personal_details"] == [
+        "Mila sensitiv hat eine glutenunvertraeglichkeit"
+    ]

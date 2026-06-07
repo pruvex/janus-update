@@ -845,6 +845,77 @@ const contactModalTitle = document.getElementById("contact-modal-title");
 const closeContactModalBtn = contactModal.querySelector(".close-button");
 const addContactBtn = document.getElementById("add-contact-btn");
 
+function normalizeContactArray(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => String(entry || "").trim())
+      .filter(Boolean);
+  }
+  if (typeof value === "string") {
+    return value
+      .replace(/\r/g, "\n")
+      .split(/[\n,]/)
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function joinContactArray(value) {
+  return normalizeContactArray(value).join("\n");
+}
+
+function formatContactType(contactType) {
+  return contactType === "organization" ? "Organisation" : "Privatperson";
+}
+
+function formatProposalStatus(proposalStatus) {
+  const lookup = {
+    confirmed: "Bestaetigt",
+    pending: "Offen",
+    suggested_update: "Update-Vorschlag",
+    suppressed: "Unterdrueckt",
+  };
+  return lookup[proposalStatus] || proposalStatus || "Bestaetigt";
+}
+
+function formatMemorySyncStatus(memorySyncStatus) {
+  const lookup = {
+    unlinked: "Nicht verknuepft",
+    ready: "Bereit",
+    synced: "Synchronisiert",
+    blocked: "Blockiert",
+  };
+  return lookup[memorySyncStatus] || memorySyncStatus || "Nicht verknuepft";
+}
+
+function renderContactPills(items, cssClass) {
+  const normalizedItems = normalizeContactArray(items);
+  if (!normalizedItems.length) {
+    return "";
+  }
+  return `
+    <div class="contact-pill-group ${cssClass}">
+      ${normalizedItems
+        .map((item) => `<span class="contact-pill">${item}</span>`)
+        .join("")}
+    </div>
+  `;
+}
+
+function renderOptionalContactBlock(label, value, renderer = null) {
+  if (!value || (Array.isArray(value) && value.length === 0)) {
+    return "";
+  }
+  const content = renderer ? renderer(value) : `<p>${value}</p>`;
+  return `
+    <div class="contact-meta-block">
+      <span class="contact-meta-label">${label}</span>
+      ${content}
+    </div>
+  `;
+}
+
 async function renderAddressBookView() {
   setActiveSettingsSection("address-book-section");
   contactListContainer.innerHTML = "<p>Lade Kontakte...</p>";
@@ -878,17 +949,50 @@ function renderContactList(contacts) {
     const websiteLink = contact.website
       ? `<p class="website"><a href="${contact.website}" target="_blank" rel="noopener noreferrer">${contact.website}</a></p>`
       : "";
+    const preferencesBlock = renderOptionalContactBlock(
+      "Vorlieben",
+      contact.preferences,
+      (items) => renderContactPills(items, "contact-pill-group-preferences")
+    );
+    const dislikesBlock = renderOptionalContactBlock(
+      "Abneigungen",
+      contact.dislikes,
+      (items) => renderContactPills(items, "contact-pill-group-dislikes")
+    );
+    const personalDetailsBlock = renderOptionalContactBlock(
+      "Persoenliche Details",
+      contact.personal_details,
+      (items) => renderContactPills(items, "contact-pill-group-details")
+    );
+    const sourceContextBlock = renderOptionalContactBlock(
+      "Herkunft",
+      contact.proposal_source_context
+    );
+    const lastOutcomeBlock = renderOptionalContactBlock(
+      "Letztes Ergebnis",
+      contact.proposal_last_outcome
+    );
 
     // Populate card with more details
     contactCard.innerHTML = `
       <div class="contact-details">
         <strong>${contact.name}</strong>
-        <small class="category">${contact.category || "Unkategorisiert"}</small>
+        <div class="contact-badge-row">
+          <small class="category">${contact.category || "Unkategorisiert"}</small>
+          <small class="category contact-type-badge">${formatContactType(contact.contact_type)}</small>
+          <small class="category contact-status-badge">${formatProposalStatus(contact.proposal_status)}</small>
+          <small class="category contact-sync-badge">${formatMemorySyncStatus(contact.memory_sync_status)}</small>
+        </div>
         <p class="email">${contact.email || ""}</p>
         <p class="phone">${contact.phone || ""}</p>
         <p class="address">${contact.address || ""}</p>
         ${websiteLink}
+        ${preferencesBlock}
+        ${dislikesBlock}
+        ${personalDetailsBlock}
         <p class="notes">${contact.notes || ""}</p>
+        ${sourceContextBlock}
+        ${lastOutcomeBlock}
       </div>
       <div class="contact-actions">
         <button class="edit-contact-btn">Bearbeiten</button>
@@ -940,16 +1044,33 @@ function renderContactList(contacts) {
 function showContactModal(contact = null) {
   contactForm.reset();
   const contactIdInput = document.getElementById("contact-id");
+  document.getElementById("contact-type").value = "private_person";
+  document.getElementById("contact-proposal-status").value = "confirmed";
+  document.getElementById("contact-memory-sync-status").value = "unlinked";
   if (contact) {
     contactModalTitle.textContent = "Kontakt bearbeiten";
     contactIdInput.value = contact.id;
     document.getElementById("contact-name").value = contact.name || "";
+    document.getElementById("contact-type").value = contact.contact_type || "private_person";
     document.getElementById("contact-category").value = contact.category || "";
     document.getElementById("contact-email").value = contact.email || "";
     document.getElementById("contact-phone").value = contact.phone || "";
     document.getElementById("contact-address").value = contact.address || "";
     document.getElementById("contact-website").value = contact.website || "";
+    document.getElementById("contact-preferences").value = joinContactArray(contact.preferences);
+    document.getElementById("contact-dislikes").value = joinContactArray(contact.dislikes);
+    document.getElementById("contact-personal-details").value = joinContactArray(
+      contact.personal_details
+    );
     document.getElementById("contact-notes").value = contact.notes || "";
+    document.getElementById("contact-proposal-status").value =
+      contact.proposal_status || "confirmed";
+    document.getElementById("contact-memory-sync-status").value =
+      contact.memory_sync_status || "unlinked";
+    document.getElementById("contact-proposal-source-context").value =
+      contact.proposal_source_context || "";
+    document.getElementById("contact-proposal-last-outcome").value =
+      contact.proposal_last_outcome || "";
   } else {
     contactModalTitle.textContent = "Neuer Kontakt";
     contactIdInput.value = "";
@@ -975,12 +1096,22 @@ contactForm.addEventListener("submit", async (e) => {
   const id = document.getElementById("contact-id").value;
   const contactData = {
     name: document.getElementById("contact-name").value,
+    contact_type: document.getElementById("contact-type").value,
     category: document.getElementById("contact-category").value,
     email: document.getElementById("contact-email").value,
     phone: document.getElementById("contact-phone").value,
     address: document.getElementById("contact-address").value,
     website: document.getElementById("contact-website").value,
+    preferences: normalizeContactArray(document.getElementById("contact-preferences").value),
+    dislikes: normalizeContactArray(document.getElementById("contact-dislikes").value),
+    personal_details: normalizeContactArray(
+      document.getElementById("contact-personal-details").value
+    ),
     notes: document.getElementById("contact-notes").value,
+    proposal_status: document.getElementById("contact-proposal-status").value,
+    proposal_source_context: document.getElementById("contact-proposal-source-context").value,
+    proposal_last_outcome: document.getElementById("contact-proposal-last-outcome").value,
+    memory_sync_status: document.getElementById("contact-memory-sync-status").value,
   };
 
   const url = id ? `${API_BASE_URL}/api/contacts/${id}` : `${API_BASE_URL}/api/contacts`;
