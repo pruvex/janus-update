@@ -118,6 +118,12 @@ def _ensure_sqlite_schema_migrations() -> None:
 
         if insp.has_table("memories"):
             memory_cols = {c["name"] for c in insp.get_columns("memories")}
+            if "original_memory_id" not in memory_cols:
+                with engine.begin() as conn:
+                    conn.execute(
+                        text("ALTER TABLE memories ADD COLUMN original_memory_id INTEGER")
+                    )
+                logger.info("Migration: memories.original_memory_id added.")
             if "user_editable" not in memory_cols:
                 with engine.begin() as conn:
                     conn.execute(
@@ -134,6 +140,10 @@ def _ensure_sqlite_schema_migrations() -> None:
                         )
                     )
                 logger.info("Migration: memories.source_type added (default='text').")
+            if "archived_at" not in memory_cols:
+                with engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE memories ADD COLUMN archived_at DATETIME"))
+                logger.info("Migration: memories.archived_at added.")
 
         if insp.has_table("contacts"):
             contact_cols = {c["name"] for c in insp.get_columns("contacts")}

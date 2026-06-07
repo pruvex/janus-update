@@ -101,6 +101,7 @@ class Memory(Base):
     __tablename__ = "memories"
 
     id = Column(Integer, primary_key=True, index=True)
+    original_memory_id = Column(Integer, nullable=True, index=True)
     chat_id = Column(Integer, ForeignKey("chats.id"), nullable=True)
     snippet = Column(ContentType, nullable=True)
     embedding_json = Column(LargeBinary, nullable=True)
@@ -125,6 +126,7 @@ class Memory(Base):
     user_editable = Column(Boolean, default=True, nullable=False)
     canonical_key = Column(String(255), nullable=True)
     change_history = Column(JSON, default=list, nullable=True)
+    archived_at = Column(DateTime, nullable=True)
 
     chat = relationship("Chat", back_populates="memories")
 
