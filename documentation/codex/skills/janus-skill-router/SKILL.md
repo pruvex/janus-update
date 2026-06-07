@@ -78,6 +78,7 @@ Keep the block minimal. Prefer one primary package such as `AUDIT_PACKAGE.md` ov
 Use:
 
 - `janus-feature-design` for vague feature ideas and product decisions.
+- `janus-quickchange` for trivial low-risk copy, label, formatting, or tightly bounded UI fixes that do not need Backlog, Spec, or Precheck artifacts.
 - `janus-spec-generator` for generating a feature spec from a decision summary.
 - `janus-spec-normalizer` for final copy-safe parser-safe spec formatting.
 - `janus-backlog-intake`, `janus-backlog-prioritization`, or `janus-backlog-handoff` for small bugs, improvements, and execution routing.
@@ -95,6 +96,7 @@ Use:
 
 When the user describes a desired product change, classify it before implementation:
 
+- Quickchange candidate: one tiny bounded change such as copy replacement, label tweak, percentage display, or visually local polish with low ambiguity, no architecture/storage/provider/security impact, and a validation plan that fits in a few targeted checks. Route to `janus-quickchange`.
 - Small bounded improvement: existing surface, one behavior, local bug, remembered setting, UI polish, small technical debt, low ambiguity. Route to `janus-backlog-intake`, then prioritization and dashboard handoff.
 - Larger feature: new/unclear surface, multiple product decisions, persistence or integration design, multiple affected areas, security/privacy/provider risk, or unclear scope. Route to `janus-feature-design` first.
 
@@ -109,6 +111,26 @@ Kurzbewertung:
 - Nutzen: niedrig | mittel | hoch
 - Naechster Skill:
 ```
+
+For quickchange candidates, use:
+
+```text
+Kurzbewertung:
+- Pfad: Quickchange
+- Modelle:
+- Aufwand: S
+- Risiko: niedrig | mittel
+- Nutzen: niedrig | mittel | hoch
+- Naechster Skill: janus-quickchange
+```
+
+Only route to `janus-quickchange` when all are true:
+
+- expected scope stays within one user-visible intent and one file cluster
+- likely change footprint is about one to three files
+- no new product decision, persistence change, API contract, provider logic, auth, security, privacy, or migration
+- acceptance can be verified with targeted commands or one focused visual/manual check
+- if the quick fix expands mid-flight, the next step is to stop and reroute to `janus-backlog-intake` or `janus-feature-design`
 
 For larger features, do not create implementation tasks directly. Start decision mode, lock the user's decisions, then route to spec generation, normalization, review, task breakdown, and Backlog/dashboard visibility.
 

@@ -7,7 +7,7 @@ description: Capture raw Janus bugs, changes, enhancements, improvements, and te
 
 ## Overview
 
-Turn raw Janus input into one or more structured items in `C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`. Do not prioritize, implement, create handoff files, or route directly to execution.
+Turn raw Janus input into one or more structured items in `C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`, unless the request clearly qualifies for the `janus-quickchange` lane. Do not prioritize, implement, create handoff files, or route directly to execution.
 
 ## Source Reference
 
@@ -22,11 +22,31 @@ Read only if exact wording is needed.
 - No code changes.
 - No architecture decisions.
 - No direct Skill 1-8 handoff.
+- `janus-quickchange` is the only allowed non-Backlog route from intake, and only after an explicit eligibility check.
 - Do not reactivate `DONE` items. Create a new follow-up item instead.
 - Split unrelated topics into separate Backlog items or ask the user to choose one.
 - If required information is missing, create/update an item under `NEEDS INFO` and ask one concrete follow-up.
 - Every new item gets the next free `BACKLOG-XXX` ID.
 - Physically place the item under its canonical status heading.
+
+## Quickchange Eligibility
+
+Route to `janus-quickchange` instead of creating a Backlog item only when all are true:
+
+- exactly one tiny bounded intent, such as copy replacement, label rename, percentage display, spacing, or local UI polish
+- likely one to three touched files in one file cluster
+- no new decision about product behavior, persistence, routing, provider logic, data shape, auth, security, privacy, or release flow
+- no dependency on dashboard tracking, cross-team visibility, or later task decomposition
+- acceptance can be stated in one or two checkable lines and validated with a few targeted checks
+
+Do not use quickchange when any of these apply:
+
+- a new bug record should remain visible in `BACKLOG.md`
+- the user asks for planning, prioritization, or dashboard visibility
+- the change may affect multiple surfaces or existing user data
+- the test or verification story is unclear before editing
+
+If unsure, create the Backlog item and keep the normal pipeline.
 
 ## Classification
 
@@ -84,6 +104,23 @@ If the new issue follows up on a `DONE` item:
 - Never move the old item out of `DONE`.
 
 ## Output
+
+For quickchange-eligible input:
+
+```markdown
+# QUICKCHANGE CANDIDATE
+
+## Assessment
+- **Pfad:** Quickchange
+- **Titel:** <kurzer Titel>
+- **Scope:** <1-2 Saetze>
+- **Warum kein Backlog-Item:** <knappe Begruendung>
+- **Akzeptanzcheck:**
+  - [ ] <pruefbares Kriterium>
+
+## Naechster Schritt
+Nutze `janus-quickchange`.
+```
 
 For missing information:
 
