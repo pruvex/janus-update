@@ -1,5 +1,16 @@
 # KNOWLEDGE BASE: WHAT I LEARNED
 
+## [PATTERN] #ExactChatContactFactsCanAutoApplyWhileMemoryWritesStayReviewable "Exact existing-contact chat facts can auto-apply safely when memory-origin writes stay on the proposal path"
+- **Kontext:** BACKLOG-108 / bestaetigtes Kontaktwissen aus Chat landet nicht im bestehenden Adressbuchkontakt (2026-06-07).
+- **Problem:** Bestätigte Kontaktfakten aus der Hintergrund-Faktenextraktion konnten bei bestehenden Kontakten unsichtbar im Memory-/Pending-Proposal-Seam hängen bleiben, obwohl der Nutzer im Chat bereits eine klare, direkte Bestätigung geliefert hatte.
+- **Loesung:** Den direkten Apply-Pfad nur für den engsten sicheren Fall öffnen: `source_type="text"`, exakter bestehender Kontakt-Match, nicht-sensitive Fakten und nur `preferences`/`dislikes`. Memory-Tool-Writes, sensitive Fakten, Near-Matches und mehrdeutige Fälle bleiben weiter im bestehenden Proposal-/Review-Pfad.
+- **Haertung:** Gesamtregressionen für Kontakt-/Memory-Pfade PASS; fokussierter Seam-Test für `Christoph Gier liebt Star Wars` PASS; Gegenprobe für weiter pending bleibende Memory-Tool-Suggestions PASS; Final Audit PASS mit kompaktem Audit-Package und gebundener Seam-Evidenz.
+- **Tripwire:** Wenn bestehende Kontakte wieder nur ein Memory-Fakt bekommen, aber keine Kontaktmutation sehen, oder wenn spätere Memory-Tool-Writes plötzlich still direkt Kontakte verändern, ist die Trennung zwischen bestätigtem Chat-Fakt und review-pflichtigem Memory-Ursprung driftig geworden.
+- **Location:** `backend/services/contact_manager.py`, `backend/tests/test_contact_manager.py`, `backend/tests/test_memory_tools.py`, `documentation/test-runs/BACKLOG-108_execution_validation.md`
+- **Epic:** BACKLOG-108
+- **Confidence:** High
+- **Tags:** Contacts, Memory, Persistence, ProposalFlow, SafetyBoundary, Regression, Audit
+
 ## [SKIP] TASK-SPEC16 "No new cross-feature learning pattern recorded"
 - **Kontext:** TASK-SPEC16 / Adressbuch-Karten Redesign und Spitzname/Besonderheiten-Struktur documentation update.
 - **Reason:** Die Umsetzung erweitert ein bestehendes Adressbuch kontraktkonform um Spitzname, bereinigte Karten und den kombinierten Besonderheiten-Pfad, erzeugt aber kein neues repo-weites Muster ueber bereits dokumentierte UI-Evidence- und Compatibility-Hardening-Regeln hinaus.

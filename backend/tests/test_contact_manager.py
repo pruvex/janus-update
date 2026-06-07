@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from backend.data import contact_schemas, crud, models
 from backend.services import contact_manager
+from backend.services.memory import save_memory_snippet
 from backend.tools.memory_tools import handle_memory_write
 
 
@@ -245,6 +246,54 @@ async def test_confirmed_contact_proposal_syncs_confirmed_contact_knowledge_to_m
     assert confirm_result["status"] == "applied"
     assert created_contact.memory_sync_status == "synced"
     assert any("clara@example.com" in str(memory.snippet or "") for memory in memories)
+
+
+def test_confirmed_chat_fact_for_exact_existing_contact_updates_contact_without_pending_proposal(db_session):
+    existing = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Christoph Gier",
+            nickname="Cris",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+    assert existing is not None
+
+    saved_memory = save_memory_snippet(
+        db=db_session,
+        chat_id=42,
+        fact_object={
+            "fact": "Christoph Gier liebt Star Wars",
+            "subject_name": "Christoph Gier",
+            "subject_role": "contact",
+            "predicate": "mag",
+            "object_value": "Star Wars",
+            "category": "Vorlieben",
+            "canonical_key": "christoph_gier:contact:vorlieben:mag:star_wars",
+        },
+        source_type="text",
+        source_metadata={"user_msg": "Chris liebt Star Wars"},
+    )
+    assert saved_memory is not None
+
+    result = contact_manager.stage_contact_update_from_memory(
+        db_session,
+        memory=saved_memory,
+        chat_id=42,
+    )
+
+    refreshed = crud.get_contact(db_session, existing.id)
+    proposals = crud.list_contact_proposals(db_session, contact_id=existing.id)
+
+    assert result["status"] == "applied"
+    assert result["proposals_staged"] == 0
+    assert refreshed is not None
+    assert refreshed.preferences == ["star wars"]
+    assert refreshed.proposal_status == "confirmed"
+    assert refreshed.proposal_source_context == "direct_context"
+    assert refreshed.proposal_last_outcome == "applied_from_confirmed_chat_fact"
+    assert proposals == []
 
 
 @pytest.mark.asyncio

@@ -87,6 +87,46 @@ Dashboard-Regeln:
 
 ## DONE
 
+### BACKLOG-108 - Bestaetigtes Kontaktwissen aus Chat landet nicht im bestehenden Adressbuchkontakt
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-06-07
+- **Aktualisiert:** 2026-06-07
+- **Kurzbeschreibung:** Wenn Janus in einem laufenden Chat bestaetigtes Wissen zu einem bereits bekannten Kontakt erhaelt, merkt sich das System den Fakt offenbar nur im Memory-/Chat-Kontext, schreibt ihn aber nicht in den bestehenden Adressbuchkontakt zurueck. Dadurch laufen Chat-Wissen und Adressbuch sichtbar auseinander.
+- **Erwartetes Verhalten:** Wenn ein bestehender Kontakt im Chat eindeutig referenziert wird und der Nutzer einen klaren Kontaktfakt wie Vorliebe, Abneigung oder Besonderheit bestaetigt oder ergaenzt, sollte dieser Fakt im passenden bestehenden Adressbuchkontakt landen oder als sauberer Kontakt-Update-Vorschlag behandelt werden.
+- **Tatsaechliches Verhalten:** Janus bestaetigt Sätze wie `chris liebt starwars` als gemerktes Kontaktwissen ueber `Christoph Gier (Cris)`, hinterlegt diesen Fakt aber nicht im Adressbuchkontakt. Stattdessen bleibt die Information nur im Memory-/Chat-Kontext sichtbar.
+- **Reproduktion / Kontext:** Im Chat wurde zuerst nach dem Kurznamen von `Chris Gier` gefragt und Janus antwortete mit `Christoph Gier wird einfach Cris genannt`. Danach folgte `genau. und chris liebt starwars`. Janus antwortete, es habe sich notiert, dass `Christoph Gier (Cris)` ein grosser Star-Wars-Fan sei, bot aber anschliessend sogar noch an, den Fakt erst jetzt in den Kontaktdetails fest zu hinterlegen. Das zeigt, dass Kontaktpersistenz und bestaetigtes Kontaktwissen auseinanderlaufen.
+- **Betroffener Bereich:** Chat-Orchestrierung / Kontakt-Memory-Kopplung / Adressbuch / Backend
+- **Nachweise:** User-Reproduktion vom 2026-06-07 mit bestehendem Kontakt `Christoph Gier (Cris)`; sichtbare Assistant-Antwort bestaetigt Memory-Merkung ohne Rueckschreiben ins Adressbuch.
+- **Akzeptanzkriterien:**
+  - [ ] Wenn ein bestehender Kontakt im Chat eindeutig erkannt wird und der Nutzer einen klaren persoenlichen Fakt wie `X liebt Star Wars` nennt, landet dieser Fakt im passenden Kontaktfeld des bestehenden Adressbuchkontakts oder in einem konsistenten bestaetigungs-/proposal-basierten Updatepfad.
+  - [ ] Janus behauptet nicht mehr, einen Kontaktfakt fest gemerkt zu haben, wenn dieser nur im Memory-Kontext steht, aber nicht im Kontaktpersistenzpfad angekommen ist.
+  - [ ] Die Loesung erzeugt keine ueberaggressive Kontaktmutation fuer unklare oder mehrdeutige Chat-Aussagen.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Kleiner klarer Bug auf bestehender Kontakt-/Memory-Kopplung ohne neue Produktentscheidung; vor der Umsetzung braucht er einen gebundenen Precheck fuer den bestehenden Kontaktpersistenzpfad.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-06-07
+- **Handoff:** documentation/tasks/backlog_BACKLOG-108_bestaetigtes_kontaktwissen_aus_chat_landung_im_bestehenden_adressbuchkontakt.md
+- **Recommended next skill:** DONE
+- **Handoff created:** 2026-06-07
+- **Precheck artifact:** documentation/tasks/backlog_BACKLOG-108_preimplementation_check.md
+- **Target Task:** BACKLOG-108
+- **Completed by task:** `documentation/tasks/backlog_BACKLOG-108_bestaetigtes_kontaktwissen_aus_chat_landung_im_bestehenden_adressbuchkontakt.md`
+- **Completed at:** 2026-06-07
+- **Final Audit:** PASS
+- **Validation evidence:** `python -m pytest backend/tests/test_contact_manager.py -q` PASS; `python -m pytest backend/tests/test_memory_tools.py -q` PASS; `python -m pytest backend/tests/test_memory_write_update_conflict_handling.py -q` PASS; `python -m py_compile backend/services/chat_orchestrator.py backend/services/contact_manager.py backend/services/memory_extractor.py backend/tools/memory_tools.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_memory_tools.py backend/tests/test_memory_write_update_conflict_handling.py` PASS; targeted seam checks PASS via `documentation/test-runs/BACKLOG-108_execution_validation.md`; Final Audit PASS via `documentation/test-runs/BACKLOG-108_final_audit.md`.
+- **Notizen:** Verwandt mit dem abgeschlossenen Adressbuch-/Kontakt-Strang aus Spec 15 und Spec 16, aber als neues Folgeproblem in der Chat-zu-Kontakt-Persistenz zu behandeln.
+
 ### BACKLOG-107 - Script-Output-Pfade haerten, damit Dirty-Tree und Root-Suspicious nicht dauernd nachwachsen
 
 - **Typ:** IMPROVEMENT

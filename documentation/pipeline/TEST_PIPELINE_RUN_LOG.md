@@ -1884,3 +1884,27 @@ Dieser Bereich wird nach mehreren echten TestRuns gepflegt, z. B. nach 5-10 Runs
   - Diamond Confidence Score: 9/10
   - Production Confidence: 93%
   - Gesamtergebnis: PASS
+
+### BACKLOG-108 - Bestaetigtes Kontaktwissen aus Chat landet nicht im bestehenden Adressbuchkontakt
+
+- **Datum**: 2026-06-07
+- **Quelle**: Backlog / Documentation Update
+- **Artefakte**: `documentation/backlog/BACKLOG.md`, `janus-dashboard/data/backlog.snapshot.json`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `WHAT_I_LEARNED.md`, `documentation/tasks/backlog_BACKLOG-108_bestaetigtes_kontaktwissen_aus_chat_landung_im_bestehenden_adressbuchkontakt.md`, `documentation/tasks/backlog_BACKLOG-108_preimplementation_check.md`, `documentation/tasks/backlog_BACKLOG-108_execution_result.md`, `documentation/test-runs/BACKLOG-108_execution_validation.md`, `documentation/test-runs/BACKLOG-108_AUDIT_PACKAGE.md`, `documentation/test-runs/BACKLOG-108_final_audit.md`
+- **Getestete Faehigkeit**: bestaetigte bestehende Kontaktfakten aus Chat-Extraktion direkt im Adressbuchkontakt persistieren, ohne den Proposal-Schutzpfad fuer riskantere Urspruenge aufzugeben
+- **Pipeline-Route**: final audit -> documentation update -> backlog sync
+- **Status**: PASS
+- **Summary**: BACKLOG-108 wurde in DONE ueberfuehrt. Exakt gematchte, nicht-sensitive Kontaktfakten aus der Chat-Hintergrundextraktion landen jetzt direkt im bestehenden Kontakt, waehrend Memory-Tool-Writes, sensitive Fakten, Near-Matches und Mehrdeutigkeiten weiter ueber den bestehenden Proposal-/Review-Pfad laufen.
+- **Security Gate**: PASS - keine Scope-Ausweitung ueber den gebundenen Kontakt-/Memory-Seam hinaus, keine stille Mutation fuer sensitive oder mehrdeutige Faelle, kein Provider- oder Schema-Drift.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+- **Findings**:
+  - Keine blockierenden Findings nach Re-Audit mit kompaktem Audit-Package und seam-spezifischer Evidenz.
+- **Sofortfixes**:
+  - Abschlussmarker in Backlog, Registry, Project State, Changelog, WHAT_I_LEARNED, Pipeline-Log und Dashboard-Snapshot nachgezogen.
+- **Backlog-Follow-ups**:
+  - Keine.
+- **Abschluss**:
+  - Diamond Confidence Score: 9/10
+  - Production Confidence: 93%
+  - Gesamtergebnis: PASS

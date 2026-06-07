@@ -36,6 +36,15 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Backlog Closures
 
+### BACKLOG-108 - Bestaetigtes Kontaktwissen aus Chat landet nicht im bestehenden Adressbuchkontakt
+
+- **Status**: DONE
+- **Final Audit**: `documentation/test-runs/BACKLOG-108_final_audit.md` (PASS)
+- **Task**: `documentation/tasks/backlog_BACKLOG-108_bestaetigtes_kontaktwissen_aus_chat_landung_im_bestehenden_adressbuchkontakt.md`
+- **Execution Result**: `documentation/tasks/backlog_BACKLOG-108_execution_result.md`
+- **Validation**: Bestaetigte, nicht-sensitive Kontaktfakten aus der Chat-Extraktion landen fuer exakt gematchte bestehende Kontakte jetzt direkt im Adressbuchkontakt statt unsichtbar nur im Memory-/Pending-Proposal-Pfad zu haengen. Gleichzeitig bleibt der Sicherheitszaun erhalten: Memory-Tool-Writes, sensitive Fakten, Near-Matches und Mehrdeutigkeiten laufen weiter ueber den bestehenden Proposal-/Review-Pfad. Final Audit PASS mit kompaktem Audit-Package und seam-spezifischer Evidenz fuer den reproduzierten `Christoph Gier liebt Star Wars`-Fall.
+- **Changed Files**: `backend/services/contact_manager.py`, `backend/tests/test_contact_manager.py`, `documentation/tasks/backlog_BACKLOG-108_execution_result.md`, `documentation/test-runs/BACKLOG-108_execution_validation.md`, `documentation/test-runs/BACKLOG-108_AUDIT_PACKAGE.md`, `documentation/test-runs/BACKLOG-108_final_audit.md`.
+
 ### BACKLOG-107 - Script-Output-Pfade haerten, damit Dirty-Tree und Root-Suspicious nicht dauernd nachwachsen
 
 - **Status**: DONE

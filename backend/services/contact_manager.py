@@ -414,6 +414,49 @@ def _extract_contact_updates_from_memory_payload(memory_payload: Dict[str, Any])
     return {"updates": updates, "metadata": metadata}
 
 
+def _should_auto_apply_contact_memory_update(
+    *,
+    memory: Any,
+    match_mode: str,
+    metadata: Dict[str, Any],
+    proposal_payload: Dict[str, Any],
+) -> bool:
+    source_type = str(getattr(memory, "source_type", "") or "").strip().lower()
+    if source_type != "text":
+        return False
+    if match_mode != "exact":
+        return False
+    if bool(metadata.get("sensitive")):
+        return False
+    allowed_fields = {"preferences", "dislikes"}
+    payload_fields = {field for field in proposal_payload.keys() if field != "memory_sync_status"}
+    return bool(payload_fields) and payload_fields.issubset(allowed_fields)
+
+
+def _apply_contact_memory_update_directly(
+    db_session: Session,
+    *,
+    target_contact: Any,
+    proposal_payload: Dict[str, Any],
+) -> Dict[str, Any]:
+    updates = dict(proposal_payload)
+    updates["proposal_status"] = "confirmed"
+    updates["proposal_source_context"] = "direct_context"
+    updates["proposal_last_outcome"] = "applied_from_confirmed_chat_fact"
+    updated_contact = crud.update_contact(db_session, int(target_contact.id), updates)
+    if updated_contact is None:
+        return {"status": "failed", "reason": "update_failed", "proposals_staged": 0}
+    return {
+        "status": "applied",
+        "reason": "direct_confirmed_chat_fact",
+        "proposals_staged": 0,
+        "suppressed": 0,
+        "review_notes": [],
+        "user_message": None,
+        "applied_contact_id": updated_contact.id,
+    }
+
+
 def _coerce_public_contact_value(field: str, value: Any) -> Optional[str]:
     if isinstance(value, list):
         value = ", ".join(str(item) for item in value if str(item).strip())
@@ -1337,7 +1380,8 @@ def stage_contact_update_from_memory(
 
     match_info = _find_existing_contact_candidates(db_session, subject_name)
     target_contact = match_info.get("primary")
-    if target_contact is None or match_info.get("mode") not in {"exact", "near_match"}:
+    match_mode = str(match_info.get("mode") or "")
+    if target_contact is None or match_mode not in {"exact", "near_match"}:
         return {"status": "ignored", "reason": "ambiguous_contact", "proposals_staged": 0}
 
     extracted = _extract_contact_updates_from_memory_payload(memory_payload)
@@ -1366,6 +1410,18 @@ def stage_contact_update_from_memory(
 
     if not proposal_payload:
         return {"status": "ignored", "reason": "already_applied", "proposals_staged": 0}
+
+    if _should_auto_apply_contact_memory_update(
+        memory=memory,
+        match_mode=match_mode,
+        metadata=metadata,
+        proposal_payload=proposal_payload,
+    ):
+        return _apply_contact_memory_update_directly(
+            db_session,
+            target_contact=target_contact,
+            proposal_payload=proposal_payload,
+        )
 
     proposal_payload["memory_sync_status"] = "ready"
     proposal_payload["proposal_metadata"] = {
