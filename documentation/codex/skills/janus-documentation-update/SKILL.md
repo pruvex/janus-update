@@ -9,6 +9,15 @@ description: Synchronize Janus documentation after a passed final audit, resolve
 
 Use this skill after validation passed. Persist the result into Janus documentation, and when the user is preparing a release or release readiness, include the version bump as part of the same documentation checkpoint. Do not implement product code, change architecture, hide failed validation, or run release commands.
 
+Primary actor is shared:
+
+- ChatGPT uses this skill to review scope, decide which documentation artifacts must change, and prepare compact handoffs.
+- Codex uses this skill to perform the actual bounded documentation edits, validations, and closeout sync.
+
+Stay in the same Codex context when the validated marker, evidence bundle, and documentation scope are already bound and no actor change is needed.
+
+If control must move across an actor or chat boundary, emit exactly one compact fenced `text` handoff block. Do not use bare acknowledgements like `ok` as a handoff substitute.
+
 ## Source References
 
 Read only when exact legacy wording is needed:
@@ -37,12 +46,15 @@ Block if:
 
 Documentation update should be marker-scoped, not history-scoped. Resolve only:
 
+- `documentation/ai/CURRENT_STATE.md` when this is a substantial Janus work block
 - final audit result or green validation package
 - target marker such as `BACKLOG-XXX`, `SPEC-XX`, or `TEST-RUN-XXX`
 - files that must carry that marker
 - exact evidence paths needed for validation
 
 Do not reread old specs, execution chatter, or unrelated DONE backlog history when the marker package already identifies the required updates.
+
+Do not treat local installed skills under `C:\Users\pruve\.codex\skills\` as repo skill sources. This skill operates on repo artifacts only unless the user explicitly requests otherwise.
 
 ## Allowed Edits
 
@@ -141,6 +153,8 @@ python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_
 13. For release prep, verify version sync and recommend `janus-build-release` only after the Git checkpoint is clean.
 
 Prefer exact skip reasons over optional rereads. Example: `CHANGELOG skipped: validation-only internal hardening, no user-facing behavior change`.
+
+If another actor should take over after this step, include exactly one compact fenced `text` handoff block with only the marker, the required next skill, the minimum load artifacts, and any exact skip reasons.
 
 ## Test Pipeline Completion Mode
 
@@ -256,6 +270,18 @@ Use:
 ```
 
 Do not report `COMPLETE` if any required checklist item is `MISSING`.
+
+When handing off across an actor or chat boundary, append exactly one compact fenced `text` block after the normal result. Include:
+
+```text
+NEXT: <next skill>
+MODEL: <model>/<reasoning>
+LOAD:
+- <minimal artifact path>
+ASK: <one-line instruction>
+```
+
+If the next step stays in the same warm Codex context, naming `Next Skill` is enough and no extra copy-box is required.
 
 ## WHAT_I_LEARNED Rules
 
