@@ -8,12 +8,13 @@ description: Verify exactly one Janus task before implementation and produce a s
 ## Overview
 
 This is a pure gate before implementation. It decides only `PRE-CHECK PASSED`, `PRE-CHECK FAILED`, `PRE-CHECK BLOCKED`, or `MODEL SWITCH REQUIRED`. Do not edit product code, generate TestPlans, run TestRuns, or expand scope.
+This is primarily a Codex execution skill. ChatGPT normally uses its result only when Codex returns `BLOCKED`, `NEEDS_INFO`, `SCOPE_MISMATCH`, or a model-switch escalation.
 
 ## Source References
 
 Read only when exact legacy wording is needed:
 
-- `C:\KI\Janus-Projekt\.windsurf\workflows\SKILL 3 – PRE-IMPLEMENTATION VERIFICATION.md`
+- `C:\KI\Janus-Projekt\.windsurf\workflows\SKILL 3 - PRE-IMPLEMENTATION VERIFICATION.md`
 - `C:\KI\Janus-Projekt\documentation\pipeline\PIPELINE_CONTRACT.md`
 - `C:\KI\Janus-Projekt\AGENTS.md`
 
@@ -31,6 +32,7 @@ Assigned Model: <5.4 | 5.4 mini | 5.5 | other explicit model>
 ```
 
 If a task file contains multiple tasks, `Target Task` is mandatory.
+Exactly one target task or implementation slice may be checked per run. If the request spans multiple tasks, stop and require a narrower handoff.
 
 Model choice is part of the gate. If the current `5.4` context is warm and the implementation will continue in `5.4`, prefer `Assigned Model: 5.4` with low reasoning for short mechanical work instead of assigning `5.4 mini`. Assign `5.4 mini` only when the task is a separated low-risk mechanical block that is still likely cheaper than staying on warm `5.4`.
 
@@ -55,6 +57,8 @@ Verify:
 
 Block with `PRE-CHECK BLOCKED: ARTIFACT_IDENTITY_MISMATCH` if Backlog ID, Target Task, Task path, or Handoff path do not match.
 
+Use `PRE-CHECK BLOCKED: SCOPE_MISMATCH` when the requested work is not exactly one target task or one implementation slice.
+
 ## Context Budget
 
 Precheck is a gate, not a reread of the whole project. Load only:
@@ -71,9 +75,9 @@ Do not reload prior execution chatter, old audit text, or unrelated task history
 For TestSpec, TestPlan, Test-Oracle, assertion, `containsAny`, `mustNotContain`, response-format, or TestRun-finding tasks:
 
 - identify the source-of-truth TestSpec under `documentation/TEST_SPEC/`
-- Skill 4 may edit only the source-of-truth TestSpec/Oracle file
-- Skill 4 must not manually patch old `documentation/test-runs/*_plan.json`
-- Skill 4 must not manually create `documentation/test-results/*`
+- `janus-executioner` may edit only the source-of-truth TestSpec/Oracle file
+- `janus-executioner` must not manually patch old `documentation/test-runs/*_plan.json`
+- `janus-executioner` must not manually create `documentation/test-results/*`
 - after TestSpec edit, route to `janus-test-pipeline`
 - if no source-of-truth TestSpec can be determined, block with `PRE-CHECK BLOCKED: TESTSPEC_SOURCE_OF_TRUTH_MISSING`
 
@@ -87,6 +91,7 @@ A valid PASS output must contain these literal lines:
 PRE-CHECK RESULT
 PRE-CHECK PASSED
 BEGIN COPY FOR SKILL 4
+NEXT: janus-executioner
 Pre-Check: PRE-CHECK PASSED
 Pre-Check Context:
 Scope-Regel:
@@ -97,7 +102,8 @@ Oracle-/TestPlan-Regel:
 END COPY FOR SKILL 4
 ```
 
-The Skill-4 copyblock must be a single fenced `text` code block.
+The execution handoff copyblock must be a single fenced `text` code block.
+A bare `ok` or similar acknowledgement is never a valid handoff replacement.
 
 ## Forbidden PASS Content
 
@@ -131,7 +137,7 @@ PRE-CHECK PASSED
 
 ```text
 BEGIN COPY FOR SKILL 4
-@[/SKILL 4 – EXECUTIONER]
+NEXT: janus-executioner
 Target Task: <task id>
 Target Subtask: <subtask id | N/A>
 Task: <task path>
@@ -169,6 +175,21 @@ Expected Output:
 END COPY FOR SKILL 4
 ```
 ```
+
+If the next step stays inside the same warm Codex context, the fenced `text` block is still required, but it may remain compact and artifact-bound.
+
+## Non-PASS Handoff Rule
+
+If the result is `PRE-CHECK BLOCKED`, `NEEDS_INFO`, `SCOPE_MISMATCH`, or `MODEL SWITCH REQUIRED`, output exactly one compact fenced `text` block for Codex -> ChatGPT handoff.
+
+That handoff must include:
+
+- `NEXT:` with the exact next skill when known
+- the blocked target task identity
+- the missing, contradictory, or escalation-triggering artifact
+- the concrete decision or clarification needed
+
+Do not use bare `ok`, prose-only routing, or broad chat-history recap as a substitute.
 
 ## Validator
 
