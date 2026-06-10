@@ -13,7 +13,7 @@ If a detail matters, a status looks contradictory, or routing needs exact accept
 - Source backlog file: `documentation/backlog/BACKLOG.md`
 - Summary scope: active open backlog only
 - Open NEEDS INFO items: 0
-- Open READY items: 1
+- Open READY items: 3
 - Open IN PROGRESS items: 2
 - Open BLOCKED items: 0 structurally listed
 - Last backlog file review for this summary: 2026-06-10
@@ -57,21 +57,24 @@ If a detail matters, a status looks contradictory, or routing needs exact accept
 
 ## Top Priorities
 
+- BACKLOG-062: kritischer Sicherheitsblocker aus TestRun, aber sauber als READY eingeordnet
+- BACKLOG-061: naechster technischer Folgepunkt mit niedrigerem Risiko und klarem Oracle-Fix
 - BACKLOG-111: klein, klar, bereits `IN PROGRESS`, niedrigeres Risiko, direkte Nutzerwirkung
 - BACKLOG-110: klein, klar, bereits `IN PROGRESS`, Daten-/UI-Konsistenz fuer Kontaktkarten
 - BACKLOG-109: wichtig als Workflow-Haertung, aber aktuell noch nicht in `IN PROGRESS`
 
 ## Blockers
 
-- Der `BLOCKED`-Abschnitt in `documentation/backlog/BACKLOG.md` ist strukturell inkonsistent: dort stehen derzeit zwei offene Alt-Eintraege ohne `### BACKLOG-XXX`-Ueberschrift und mit `Status: READY`.
-- Fuer Orchestrierung bedeutet das: `BACKLOG_ACTIVE_SUMMARY.md` eignet sich fuer den schnellen Ueberblick, aber bei Sicherheits- oder Blockerfragen muss `BACKLOG.md` direkt geprueft werden.
-- Es gibt aktuell keine sauber strukturierten aktiven `BLOCKED`-Items im kanonischen Format.
+- Der `BLOCKED`-Abschnitt in `documentation/backlog/BACKLOG.md` ist jetzt nur noch ein Hinweisbereich ohne aktive Eintraege.
+- Die beiden frueheren Alt-Eintraege wurden strukturell in die passende `READY`-Sektion zurueckgefuehrt, weil ihr Status `READY` war.
+- Fuer Orchestrierung bleibt `BACKLOG_ACTIVE_SUMMARY.md` die schnelle Orientierung; bei Detailfragen, Akzeptanzkriterien oder Routing-Widerspruechen muss `BACKLOG.md` weiterhin direkt geprueft werden.
 
 ## Recommended Next Backlog Items
 
 - Wenn laufende Kontaktarbeit fortgesetzt wird: `BACKLOG-111`
 - Wenn Kontaktkarten-/Adressnormalisierung priorisiert wird: `BACKLOG-110`
 - Wenn Debug-/Repair-Haertung vor weiteren riskanten Persistenzarbeiten wichtig ist: `BACKLOG-109`
+- Wenn Sicherheits-/Oracle-Arbeit priorisiert wird: `BACKLOG-062`, danach `BACKLOG-061`
 
 ## Orchestration Rule
 
