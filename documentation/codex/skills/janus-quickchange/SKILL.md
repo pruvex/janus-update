@@ -10,6 +10,7 @@ description: Execute a trivial low-risk Janus quick change such as copy replacem
 Use this skill for one tiny bounded change on an existing Janus surface. It is a guarded express lane for edits that would be wasteful in the full pipeline, not a loophole for skipping scope control, evidence, or rerouting.
 
 Default execution model is `5.4`, low/medium. Stay on warm `5.4` when possible. Escalate to `janus-backlog-intake`, `janus-feature-design`, or `janus-preimplementation-check` as soon as the change stops being trivial.
+This is primarily a Codex execution skill. ChatGPT normally uses its result only when scope grows, risk becomes unclear, or Codex returns a blocked or reroute state.
 
 ## Allowed Scope
 
@@ -38,6 +39,8 @@ Stop and reroute when any of these apply:
 - verification needs a broad test matrix, unclear manual exploration, or a normal precheck
 - the user asked for a feature, refactor, test expansion, or architecture change
 
+If two or more reroute signals appear, stop immediately instead of trying to rescue the change as a quickchange.
+
 ## Required Input
 
 Start only when you can state this brief up front:
@@ -64,6 +67,9 @@ If any line is unclear, do not guess broadly. Route out.
 6. If checks fail, fix only inside the brief. Make at most two focused attempts.
 7. If scope expands, stop and reroute instead of growing the quickchange.
 8. End in exactly one canonical state from the pipeline contract.
+
+If the change remains valid and the same warm Codex context can continue, route directly to `janus-documentation-update` with a compact same-context `NEXT`.
+If control must move to ChatGPT, emit exactly one compact fenced `text` handoff block.
 
 ## Mini Test Plan
 
@@ -99,6 +105,14 @@ Reroute to:
 - `janus-feature-design` when product decisions appear
 - `janus-preimplementation-check` when implementation scope is real but still bounded
 - `janus-debug` when validation fails for reasons outside the brief
+
+Treat any of these as scope-growth signals:
+
+- more than one user-visible intent
+- more than one small file cluster
+- hidden backend, persistence, routing, or data-shape impact
+- unclear acceptance or unclear validation path
+- follow-up work that obviously needs tracking
 
 ## CURRENT_STATE Requirement
 
@@ -153,3 +167,6 @@ New Chat: yes | no
 ```
 
 Use `Target Skill: none` only when the quickchange is fully validated and no additional Janus gate is required yet.
+
+If the next step is `janus-documentation-update` in the same warm Codex context, naming `NEXT: janus-documentation-update` is enough.
+If control moves to ChatGPT, use exactly one compact fenced `text` block and do not use bare `ok` or prose-only routing as a handoff substitute.
