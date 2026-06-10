@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Review `janus-git-governance` against the collaboration matrix and align its approval and handoff behavior with Diamond standard.
+Review `janus-backlog-handoff` against the collaboration matrix and align its summary-first routing and handoff behavior with Diamond standard.
 
 ## Active Phase
-Git Governance Targeted Review
+Backlog Handoff Targeted Review
 
 ## Last Decision
 `documentation/backlog/BACKLOG.md` remains the binding backlog source.
@@ -18,31 +18,32 @@ Repo-skill governance must distinguish versioned repo skill sources under `docum
 `janus-skill-router` must treat bare acknowledgements as continuation signals only, not as handoff substitutes.
 `janus-documentation-update` should be shared in governance, usually executed by Codex, and require a compact copyable handoff when the actor or chat boundary changes.
 `janus-git-governance` must require explicit Git approval, reject bare `ok` as a substitute, and ask for a compact fenced `text` handoff on actor or chat boundaries.
+`janus-backlog-handoff` should stay ChatGPT-led, prefer `BACKLOG_ACTIVE_SUMMARY.md` first, read `BACKLOG.md` only for the selected READY block or contradiction checks, and emit explicit model/reasoning plus one compact fenced `text` handoff for ChatGPT -> Codex transitions.
 
 ## Last Codex Work
-Reviewed `janus-git-governance`, clarified explicit Git approval wording, tightened cross-actor handoff wording, and marked the matrix row as `UPDATED`.
+Reviewed `janus-backlog-handoff`, clarified summary-first routing behavior, modernized next-skill handoff wording, and marked the matrix row as `UPDATED`.
 
 ## Changed Files
 - documentation/ai/CURRENT_STATE.md
 - documentation/ai/SKILL_COLLABORATION_MATRIX.md
-- documentation/codex/skills/janus-git-governance/SKILL.md
+- documentation/codex/skills/janus-backlog-handoff/SKILL.md
 
 ## Tests / Validation
-- Targeted review of `janus-git-governance` against `SKILL_COLLABORATION_MATRIX.md`
-- Verified the skill now distinguishes shared governance from practical Codex execution
-- Verified actor-change handoffs require one compact fenced `text` block and do not allow bare `ok` as a substitute
-- Verified explicit Git approval is required for commit/push/tag/merge/reset/release actions
+- Targeted review of `janus-backlog-handoff` against `SKILL_COLLABORATION_MATRIX.md`
+- Verified the skill remains ChatGPT-led and routes work into the next Codex-facing skill
+- Verified `BACKLOG_ACTIVE_SUMMARY.md` stays the preferred orientation artifact and `BACKLOG.md` is only read selectively
+- Verified ChatGPT -> Codex handoffs require model/reasoning plus one compact fenced `text` block and do not allow bare `ok` as a substitute
 - Validation that no other repo skill source file was edited
 
 ## Open Risks
 - Most other skill rows are still `UNREVIEWED`; the matrix remains inventory first, not a full skill-quality review.
-- The git-governance copy-box template may still be harmonized later with backlog handoff or final-audit formatting.
+- The backlog-handoff copy-box template may still be harmonized later with documentation-update or final-audit formatting.
 
 ## Next Recommended Step for ChatGPT
-Review the updated `janus-git-governance` row in `documentation/ai/SKILL_COLLABORATION_MATRIX.md` and choose the next repo skill to move from `UNREVIEWED` into targeted individual review.
+Review the updated `janus-backlog-handoff` row in `documentation/ai/SKILL_COLLABORATION_MATRIX.md` and choose the next repo skill to move from `UNREVIEWED` into targeted individual review.
 
 ## Next Recommended Step for Codex
-Use `janus-git-governance` to keep Git approvals and state aligned, then review the next repo skill one by one.
+Use `janus-backlog-handoff` to keep READY-item routing compact and deterministic, then review the next repo skill one by one.
 
 ## Last Updated
-2026-06-11 00:28 local time
+2026-06-11 14:19 local time
