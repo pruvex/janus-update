@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Create a compact governance artifact for future ChatGPT/Codex collaboration across the versioned repo skill sources.
+Review `janus-skill-router` against the collaboration matrix and tighten its handoff wording.
 
 ## Active Phase
-Skill Collaboration Matrix Drafted
+Skill Router Targeted Review
 
 ## Last Decision
 `documentation/backlog/BACKLOG.md` remains the binding backlog source.
@@ -15,41 +15,31 @@ Skill Collaboration Matrix Drafted
 When summary and backlog disagree or detail matters, skills must read `BACKLOG.md`.
 The legacy `BLOCKED` section remains a note-only area, while the two structurally misplaced READY items live in the canonical `READY` section.
 Repo-skill governance must distinguish versioned repo skill sources under `documentation/codex/skills/` from local installed Codex dev skills under `C:\Users\pruve\.codex\skills\`.
+`janus-skill-router` must treat bare acknowledgements as continuation signals only, not as handoff substitutes.
 
 ## Last Codex Work
-Created `documentation/ai/SKILL_COLLABORATION_MATRIX.md` as a repo-skill-only governance artifact with role, handoff, model, load, cache, and review metadata for every versioned skill under `documentation/codex/skills/`.
+Reviewed `janus-skill-router` against the collaboration matrix, tightened its handoff wording for bare acknowledgements, and marked the router row as `UPDATED`.
 
 ## Changed Files
 - documentation/ai/CURRENT_STATE.md
 - documentation/ai/SKILL_COLLABORATION_MATRIX.md
-- documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md
 - documentation/codex/skills/janus-skill-router/SKILL.md
-- documentation/codex/skills/janus-backlog-intake/SKILL.md
-- documentation/codex/skills/janus-backlog-prioritization/SKILL.md
-- documentation/codex/skills/janus-backlog-handoff/SKILL.md
-- documentation/backlog/BACKLOG.md
 
 ## Tests / Validation
-- Verified that `documentation/backlog/BACKLOG.md` exists and remains the canonical source
-- Targeted backlog review of active `NEEDS INFO`, `READY`, `IN PROGRESS`, and legacy `BLOCKED` area
-- Structural normalization of the legacy `BLOCKED` section and revalidation of READY placement
-- Summary/plausibility check against the three open READY items in `BACKLOG.md`
-- Repo skill review and update for backlog-summary-first orchestration guidance
-- Manual consistency check that summary explicitly defers to `BACKLOG.md` for details and contradictions
+- Targeted review of `janus-skill-router` against `SKILL_COLLABORATION_MATRIX.md`
+- Verified router handoff rules now reject bare acknowledgements as handoff substitutes
 - Inventory check that every directory under `documentation/codex/skills/` is represented in the collaboration matrix
-- Validation that no repo skill source file was edited while drafting the matrix
+- Validation that no other repo skill source file was edited
 
 ## Open Risks
-- `BACKLOG_ACTIVE_SUMMARY.md` can drift if later backlog edits are not mirrored promptly.
-- The legacy `BLOCKED` note section will need to stay aligned if future READY items are ever temporarily misplaced there again.
-- Summary and backlog still need periodic manual drift checks after later backlog edits.
-- All skill rows are still `UNREVIEWED`; the matrix is governance inventory first, not a full skill-quality review.
+- Other skill rows are still `UNREVIEWED`; the matrix is governance inventory first, not a full skill-quality review.
+- Future router edits may need a follow-up pass if new handoff conventions are added.
 
 ## Next Recommended Step for ChatGPT
-Review the new `documentation/ai/SKILL_COLLABORATION_MATRIX.md` and choose the first repo skill to move from `UNREVIEWED` into targeted individual review.
+Review the updated `janus-skill-router` row in `documentation/ai/SKILL_COLLABORATION_MATRIX.md` and choose the next repo skill to move from `UNREVIEWED` into targeted individual review.
 
 ## Next Recommended Step for Codex
-Use `janus-skill-router` plus `janus-documentation-update` to review repo skills one by one against the matrix and update only the selected skill after review.
+Use `janus-documentation-update` to keep the collaboration matrix and state aligned, then review the next repo skill one by one.
 
 ## Last Updated
 2026-06-11 00:11 local time
