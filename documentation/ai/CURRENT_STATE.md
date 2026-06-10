@@ -4,7 +4,7 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Keep the backlog overview compact while keeping the backlog summary and source backlog aligned.
+Keep the backlog overview compact while keeping the backlog summary aligned with the active READY count.
 
 ## Active Phase
 Backlog Summary Maintenance
@@ -16,7 +16,7 @@ When summary and backlog disagree or detail matters, skills must read `BACKLOG.m
 The legacy `BLOCKED` section remains a note-only area, while the two structurally misplaced READY items live in the canonical `READY` section.
 
 ## Last Codex Work
-Aligned `CURRENT_STATE.md` with the pushed backlog normalization state and refreshed the summary-first workflow wording so it stays compact and consistent.
+Aligned `BACKLOG_ACTIVE_SUMMARY.md` with the three open READY items and kept `CURRENT_STATE.md` compact and consistent with the pushed backlog normalization state.
 
 ## Changed Files
 - documentation/ai/CURRENT_STATE.md
@@ -31,6 +31,7 @@ Aligned `CURRENT_STATE.md` with the pushed backlog normalization state and refre
 - Verified that `documentation/backlog/BACKLOG.md` exists and remains the canonical source
 - Targeted backlog review of active `NEEDS INFO`, `READY`, `IN PROGRESS`, and legacy `BLOCKED` area
 - Structural normalization of the legacy `BLOCKED` section and revalidation of READY placement
+- Summary/plausibility check against the three open READY items in `BACKLOG.md`
 - Repo skill review and update for backlog-summary-first orchestration guidance
 - Manual consistency check that summary explicitly defers to `BACKLOG.md` for details and contradictions
 
@@ -46,4 +47,4 @@ Use `documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md` first for backlog overview
 Use `janus-git-governance` to prepare a checkpoint plan for the backlog normalization follow-up and verify whether the summary still matches the READY/IN PROGRESS counts.
 
 ## Last Updated
-2026-06-10 23:16 local time
+2026-06-10 23:53 local time

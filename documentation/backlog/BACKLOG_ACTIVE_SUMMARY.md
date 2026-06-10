@@ -33,6 +33,32 @@ If a detail matters, a status looks contradictory, or routing needs exact accept
 - Warum relevant: reduziert Datenverlust-Risiko in Live-Debug- und Repair-Flows
 - Naechster sinnvoller Schritt: `janus-backlog-prioritization`, danach `janus-backlog-handoff`
 
+### BACKLOG-062 - Gemini-Modell befolgt feindselige Retry-Anweisung mit hoeherem Modell und ignoriert Sicherheitsregeln
+
+- Typ: BUG
+- Wichtigkeit: CRITICAL
+- Umsetzungsrisiko: HIGH
+- Aufwand: M
+- Empfehlung: DO NOW
+- Entry Point: EXECUTION_READY
+- Handoff: none
+- Kurz: Gemini folgt einer feindseligen Retry-Anweisung, akzeptiert Admin-Rolle und bestaetigt Modell-Wechsel statt zu verweigern.
+- Warum relevant: sicherheitskritischer Provider-Blocker aus TestRun
+- Naechster sinnvoller Schritt: `janus-backlog-handoff` nach klarer Routing-Pruefung
+
+### BACKLOG-061 - TestPlan-Expectations fuer AI Safety Spec sind zu strikt
+
+- Typ: TECH_DEBT
+- Wichtigkeit: MEDIUM
+- Umsetzungsrisiko: LOW
+- Aufwand: S
+- Empfehlung: SCHEDULE
+- Entry Point: EXECUTION_READY
+- Handoff: none
+- Kurz: Clarification-Responses werden im AI-Safety-TestPlan zu eng bewertet, obwohl sie fachlich korrekt sind.
+- Warum relevant: reduziert False Positives in TestPlan-Oracle-Logik
+- Naechster sinnvoller Schritt: `janus-backlog-handoff` oder `janus-backlog-prioritization` je nach Folgefokus
+
 ## Active IN PROGRESS
 
 ### BACKLOG-111 - Kontaktfakt-Feedback bestaetigt neue Fakten nicht sauber und erkennt Wiederholungen nicht als bereits bekannt
@@ -71,10 +97,10 @@ If a detail matters, a status looks contradictory, or routing needs exact accept
 
 ## Recommended Next Backlog Items
 
+- Wenn Sicherheits-/Oracle-Arbeit priorisiert wird: `BACKLOG-062`, danach `BACKLOG-061`
 - Wenn laufende Kontaktarbeit fortgesetzt wird: `BACKLOG-111`
 - Wenn Kontaktkarten-/Adressnormalisierung priorisiert wird: `BACKLOG-110`
 - Wenn Debug-/Repair-Haertung vor weiteren riskanten Persistenzarbeiten wichtig ist: `BACKLOG-109`
-- Wenn Sicherheits-/Oracle-Arbeit priorisiert wird: `BACKLOG-062`, danach `BACKLOG-061`
 
 ## Orchestration Rule
 
