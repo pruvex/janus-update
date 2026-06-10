@@ -4,6 +4,15 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC11 - CURRENT_STATE als verpflichtendes Janus-Sync-Artefakt
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC11_AUDIT_PACKAGE.md` (PASS WITH FIXES)
+- **Spec**: `documentation/SPEC/Spec Done/11_current_state_mandatory_sync_artifact.md`
+- **Task**: `documentation/tasks/TASK-SPEC11_current_state_mandatory_sync_artifact.md`
+- **Validation**: CURRENT_STATE ist jetzt als verpflichtender Rolling Snapshot fuer substantielle Janus-Arbeitsbloecke in `AGENTS.md`, im Workflow-Playbook und in den relevanten Janus-Skills verankert. Git-Governance bleibt explizit erhalten: Commit/Push nur ueber `janus-git-governance` und mit User-Freigabe; ohne Push muss der Abschluss klar sagen, dass Remotes wie GitHub noch nicht aktuell sind. Final Audit PASS WITH FIXES; offener Mini-Fix ist nur die Frage, ob `codex-start-of-work-check` zusaetzlich eine versionierte Repo-Quelle unter `documentation/codex/skills/` bekommen soll.
+- **Changed Files**: `AGENTS.md`, `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`, `documentation/ai/CURRENT_STATE.md`, `documentation/codex/skills/janus-skill-router/SKILL.md`, `documentation/codex/skills/janus-executioner/SKILL.md`, `documentation/codex/skills/janus-final-audit/SKILL.md`, `documentation/codex/skills/janus-documentation-update/SKILL.md`, `documentation/codex/skills/janus-git-governance/SKILL.md`, `documentation/codex/skills/janus-build-release/SKILL.md`, `documentation/codex/skills/janus-quickchange/SKILL.md`, `documentation/tasks/TASK-SPEC11_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC11_preimplementation_checks.md`, `documentation/tasks/TASK-SPEC11_validation_summary.md`.
+
 ### TASK-SPEC16 - Adressbuch-Karten Redesign und Spitzname/Besonderheiten-Struktur
 
 - **Status**: DONE

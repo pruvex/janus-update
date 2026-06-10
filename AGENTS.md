@@ -164,6 +164,43 @@ Wenn der Wunsch groesser, produktentscheidend, mehrdeutig, surface-uebergreifend
 - Production Publish laeuft nur sauber von `master`, cleanem Worktree, synchronem `backup/master`, explizitem Tag/Origin-Schritt und finaler Freigabe `Publish: YES`.
 - Das Electron Auto-Update gilt erst als releasebereit, wenn `latest.yml`, `janus-update-manifest.json`, Installer, Blockmap falls vorhanden, lokale Hashes und GitHub Assets validiert sind.
 
+## Mandatory CURRENT_STATE update
+
+Jeder substantielle Janus-Arbeitsblock endet mit einem Update von:
+
+- `documentation/ai/CURRENT_STATE.md`
+
+Substantiell bedeutet: mindestens eines trifft zu.
+
+- Dateien wurden geaendert.
+- Validierung wurde ausgefuehrt.
+- Ein Blocker wurde dokumentiert.
+- Ein formaler Next-Skill-Handoff wurde erzeugt.
+
+Reine Rueckfragen, Routing-only, kurze Statusantworten und andere Mini-Interaktionen zaehlen nicht als substantielle Janus-Arbeitsbloecke.
+
+Das CURRENT_STATE-Update bleibt kompakt und enthaelt mindestens:
+
+- current goal
+- active phase
+- last Codex work
+- changed files
+- tests / validation performed
+- open risks
+- next recommended step for ChatGPT
+- next recommended step for Codex
+- last updated timestamp
+
+Kein substantieller Janus-Arbeitsblock gilt als abgeschlossen, bevor `documentation/ai/CURRENT_STATE.md` aktualisiert wurde.
+
+CURRENT_STATE ist ein Rolling Snapshot fuer Synchronisierung zwischen Codex und ChatGPT. Es ersetzt nicht Backlog, Spec, TestSpec, TestRun, TestResult, Audit Package oder Dashboard-Snapshot als Single Source of Truth.
+
+Keine Secrets, API-Keys, Credentials, privaten Tokens oder sensiblen lokalen Maschinendetails in CURRENT_STATE schreiben.
+
+Commit und Push bleiben an `janus-git-governance` und explizite User-Freigabe gebunden.
+
+Wenn kein Push erfolgt oder der Push fehlschlaegt, muss der Abschluss explizit sagen, dass ein Remote-Stand wie GitHub den neuesten CURRENT_STATE noch nicht enthalten muss. ChatGPT darf dann keinen aktuellen Remote-Stand annehmen.
+
 ## Completion Rules
 
 Ein Schritt ist erst fertig, wenn es echte Evidenz gibt oder ein Blocker dokumentiert ist.

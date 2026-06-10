@@ -185,6 +185,38 @@ Immer:
 - nie `git add .` im grossen Dirty Tree
 - normale Entwicklungscommits nur nach `backup/develop` pushen
 
+## CURRENT_STATE Snapshot
+
+Fuer jeden substantielle Janus-Arbeitsblock ist `documentation/ai/CURRENT_STATE.md` ein Pflichtartefakt.
+
+Ein Arbeitsblock ist substantielle, sobald mindestens eines zutrifft:
+
+- Dateien wurden geaendert
+- Validierung wurde ausgefuehrt
+- ein Blocker wurde dokumentiert
+- ein formaler Next-Skill-Handoff wurde erzeugt
+
+Kein CURRENT_STATE-Update ist noetig fuer reine Rueckfragen, Routing-only, kurze Statusantworten oder andere Mini-Interaktionen.
+
+Der Snapshot bleibt kurz und beschreibt nur den aktuellen Stand:
+
+- current goal
+- active phase
+- last Codex work
+- changed files
+- tests / validation performed
+- open risks
+- next recommended step for ChatGPT
+- next recommended step for Codex
+- last updated timestamp
+
+CURRENT_STATE ist eine Sync-Hilfe zwischen Codex und ChatGPT und ersetzt nicht Backlog, Specs, Test-Artefakte, Audit Packages oder Dashboard-Snapshots.
+
+Git-Governance bleibt unveraendert:
+
+- Commit/Push weiter nur ueber `janus-git-governance` und mit expliziter User-Freigabe
+- wenn kein Push erfolgt oder ein Push scheitert, muss der Abschluss klar sagen, dass ein Remote wie GitHub noch nicht aktuell ist
+
 ## Versionierung Und Auto-Update Release
 
 Codex fuehrt Versionierung und Electron Auto-Update Release ueber Skills, nicht per Ad-hoc-Kommandos:
