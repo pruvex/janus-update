@@ -4,22 +4,24 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Keep the backlog overview compact while keeping the backlog summary aligned with the active READY count.
+Create a compact governance artifact for future ChatGPT/Codex collaboration across the versioned repo skill sources.
 
 ## Active Phase
-Backlog Summary Maintenance
+Skill Collaboration Matrix Drafted
 
 ## Last Decision
 `documentation/backlog/BACKLOG.md` remains the binding backlog source.
 `documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md` becomes the preferred compact orientation artifact for backlog overview and orchestration questions.
 When summary and backlog disagree or detail matters, skills must read `BACKLOG.md`.
 The legacy `BLOCKED` section remains a note-only area, while the two structurally misplaced READY items live in the canonical `READY` section.
+Repo-skill governance must distinguish versioned repo skill sources under `documentation/codex/skills/` from local installed Codex dev skills under `C:\Users\pruve\.codex\skills\`.
 
 ## Last Codex Work
-Aligned `BACKLOG_ACTIVE_SUMMARY.md` with the three open READY items and kept `CURRENT_STATE.md` compact and consistent with the pushed backlog normalization state.
+Created `documentation/ai/SKILL_COLLABORATION_MATRIX.md` as a repo-skill-only governance artifact with role, handoff, model, load, cache, and review metadata for every versioned skill under `documentation/codex/skills/`.
 
 ## Changed Files
 - documentation/ai/CURRENT_STATE.md
+- documentation/ai/SKILL_COLLABORATION_MATRIX.md
 - documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md
 - documentation/codex/skills/janus-skill-router/SKILL.md
 - documentation/codex/skills/janus-backlog-intake/SKILL.md
@@ -34,17 +36,20 @@ Aligned `BACKLOG_ACTIVE_SUMMARY.md` with the three open READY items and kept `CU
 - Summary/plausibility check against the three open READY items in `BACKLOG.md`
 - Repo skill review and update for backlog-summary-first orchestration guidance
 - Manual consistency check that summary explicitly defers to `BACKLOG.md` for details and contradictions
+- Inventory check that every directory under `documentation/codex/skills/` is represented in the collaboration matrix
+- Validation that no repo skill source file was edited while drafting the matrix
 
 ## Open Risks
 - `BACKLOG_ACTIVE_SUMMARY.md` can drift if later backlog edits are not mirrored promptly.
 - The legacy `BLOCKED` note section will need to stay aligned if future READY items are ever temporarily misplaced there again.
 - Summary and backlog still need periodic manual drift checks after later backlog edits.
+- All skill rows are still `UNREVIEWED`; the matrix is governance inventory first, not a full skill-quality review.
 
 ## Next Recommended Step for ChatGPT
-Use `documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md` first for backlog overview, then open `BACKLOG.md` only for exact item details, contradictions, or acceptance criteria.
+Review the new `documentation/ai/SKILL_COLLABORATION_MATRIX.md` and choose the first repo skill to move from `UNREVIEWED` into targeted individual review.
 
 ## Next Recommended Step for Codex
-Use `janus-git-governance` to prepare a checkpoint plan for the backlog normalization follow-up and verify whether the summary still matches the READY/IN PROGRESS counts.
+Use `janus-skill-router` plus `janus-documentation-update` to review repo skills one by one against the matrix and update only the selected skill after review.
 
 ## Last Updated
-2026-06-10 23:53 local time
+2026-06-11 00:11 local time
