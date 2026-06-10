@@ -8,6 +8,7 @@ description: Enrich Janus Backlog routing metadata, prepare dashboard-ready hand
 ## Overview
 
 Route `READY` Backlog items into the correct Diamond pipeline entry point. Do not prioritize, implement, debug, final-audit, or release.
+This is primarily a ChatGPT-side routing skill. Codex normally consumes the resulting handoff rather than executing this skill as the next actor.
 
 ## Source Reference
 
@@ -52,6 +53,7 @@ Do not reread unrelated `DONE` history when routing a current READY item unless 
 For orchestration and quick READY-state orientation, read `C:\KI\Janus-Projekt\documentation\backlog\BACKLOG_ACTIVE_SUMMARY.md` first when it exists.
 
 Then verify the selected item in `C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md` before creating or reusing handoff artifacts.
+Do not deep-read the full backlog when one selected `READY` item block or one contradiction check is enough.
 
 Always fall back to `BACKLOG.md` when:
 
@@ -72,7 +74,7 @@ Write:
 - **Routing decided by:** BACKLOG SKILL 3
 - **Routing decided at:** YYYY-MM-DD
 - **Handoff:** <path> | none
-- **Recommended next skill:** SKILL 1 | SKILL 2 | SKILL 3 | SKILL 4 | none
+- **Recommended next skill:** janus-feature-design | janus-task-breakdown | janus-preimplementation-check | janus-executioner | none
 - **Handoff created:** YYYY-MM-DD | none
 ```
 
@@ -81,10 +83,10 @@ Write:
 Valid combinations:
 
 ```text
-SPEC_PIPELINE_START -> documentation/Planned Features/...md -> SKILL 1
-TASK_BREAKDOWN -> existing Spec/Tasks -> SKILL 2
-PRE_IMPLEMENTATION_VERIFICATION -> documentation/tasks/...md -> SKILL 3
-EXECUTION_READY -> documentation/tasks/...md + Precheck artifact + Target Task -> SKILL 4
+SPEC_PIPELINE_START -> documentation/Planned Features/...md -> janus-feature-design
+TASK_BREAKDOWN -> existing Spec/Tasks -> janus-task-breakdown
+PRE_IMPLEMENTATION_VERIFICATION -> documentation/tasks/...md -> janus-preimplementation-check
+EXECUTION_READY -> documentation/tasks/...md + Precheck artifact + Target Task -> janus-executioner
 ROUTING_BLOCKED -> none -> none
 ```
 
@@ -98,7 +100,7 @@ Use `PRE_IMPLEMENTATION_VERIFICATION` for small clear bugfixes or local changes 
 
 Use `TASK_BREAKDOWN` only if a suitable spec or coarse task artifact already exists but needs breakdown.
 
-Use `EXECUTION_READY` only if a valid Skill-3 precheck PASS artifact and Target Task already exist.
+Use `EXECUTION_READY` only if a valid `janus-preimplementation-check` PASS artifact and Target Task already exist.
 
 Use `ROUTING_BLOCKED` if required information is missing, risk/scope is ambiguous, status is not `READY`, or multiple entry points are equally plausible.
 
@@ -133,20 +135,27 @@ HANDOFF_SCOPE:
 ## Completion Gate
 
 A success output must include `## Next Skill Copy Prompts`.
+A bare `ok` or similar acknowledgement is never a valid handoff replacement.
+
+For every ChatGPT -> Codex transition, output:
+
+- model/reasoning header above the handoff
+- exactly one fenced `text` block per prepared item
+- short, artifact-bound, cache-friendly wording
 
 Each prepared item gets exactly one fenced `text` copy block:
 
 ```text
-@[/SKILL 1 - SPEC TO TASK COMPILER]
-Spec: documentation/Planned Features/...
+NEXT: janus-feature-design
+NEW_CHAT_HANDOFF
+Spec Seed: documentation/Planned Features/...
 Backlog Item: BACKLOG-XXX
 ```
 
 or
 
 ```text
-@[/SKILL 3 - PRE-IMPLEMENTATION VERIFICATION]
-Target Task: <task id>
+NEXT: janus-preimplementation-check
 Task: documentation/tasks/...
 Backlog Item: BACKLOG-XXX
 ```
@@ -154,7 +163,7 @@ Backlog Item: BACKLOG-XXX
 or
 
 ```text
-@[/SKILL 4 - EXECUTIONER]
+NEXT: janus-executioner
 Target Task: <task id>
 Task: documentation/tasks/...
 Pre-Check: <artifact path>
