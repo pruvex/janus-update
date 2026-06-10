@@ -11,6 +11,8 @@ Use this skill before acting on Janus work. Classify the user's request, recomme
 
 Default posture for this user: guide the process actively, keep the next step explicit, and prevent skipped gates. If the user says only `ok`, `weiter`, `los`, or similar, continue with the last recommended safe next step. Still require explicit approval for commit, push, tag, merge, release, delete, publish, or risky auto-fix actions.
 
+Bare acknowledgements like `ok` are continuation signals only when no actor or chat boundary changes. Never use them as a substitute for a required handoff block.
+
 ## Required Context
 
 Prefer these files, only as needed:
