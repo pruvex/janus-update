@@ -4,19 +4,19 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Keep the backlog overview compact while normalizing the legacy BLOCKED section structure in `BACKLOG.md`.
+Keep the backlog overview compact while keeping the backlog summary and source backlog aligned.
 
 ## Active Phase
-Backlog Blocked-Section Normalization
+Backlog Summary Maintenance
 
 ## Last Decision
 `documentation/backlog/BACKLOG.md` remains the binding backlog source.
 `documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md` becomes the preferred compact orientation artifact for backlog overview and orchestration questions.
 When summary and backlog disagree or detail matters, skills must read `BACKLOG.md`.
-The legacy `BLOCKED` section now stays as a note-only area, while the two structurally misplaced READY items live in the canonical `READY` section.
+The legacy `BLOCKED` section remains a note-only area, while the two structurally misplaced READY items live in the canonical `READY` section.
 
 ## Last Codex Work
-Normalized the legacy `BLOCKED` area in `documentation/backlog/BACKLOG.md`, moved its two READY entries back into the canonical READY section, refreshed `BACKLOG_ACTIVE_SUMMARY.md`, and kept the backlog-routing skills aligned with the summary-first workflow.
+Aligned `CURRENT_STATE.md` with the pushed backlog normalization state and refreshed the summary-first workflow wording so it stays compact and consistent.
 
 ## Changed Files
 - documentation/ai/CURRENT_STATE.md
@@ -37,7 +37,7 @@ Normalized the legacy `BLOCKED` area in `documentation/backlog/BACKLOG.md`, move
 ## Open Risks
 - `BACKLOG_ACTIVE_SUMMARY.md` can drift if later backlog edits are not mirrored promptly.
 - The legacy `BLOCKED` note section will need to stay aligned if future READY items are ever temporarily misplaced there again.
-- No remote reflects this backlog-summary follow-up until a later user-approved Git step happens.
+- Summary and backlog still need periodic manual drift checks after later backlog edits.
 
 ## Next Recommended Step for ChatGPT
 Use `documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md` first for backlog overview, then open `BACKLOG.md` only for exact item details, contradictions, or acceptance criteria.
