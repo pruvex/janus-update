@@ -137,7 +137,31 @@ Auto-Verification:
 
 If Auto-Verification is N/A, do not say `TASK COMPLETE`; use `N/A-SCOPE CLOSURE` with reason and next gate.
 
-For final task completion, hand off to `janus-final-audit` only with a compact audit package path or explicit instruction to build/update one first; otherwise hand off to the next task/precheck.
+## Manual Janus Validation Gate
+
+After Auto-Verification PASS and before any `janus-final-audit` handoff, require an explicit user-facing manual Janus validation gate for product-relevant changes.
+
+The gate must include:
+
+- one concrete Janus test prompt, click path, or UI check the user can run
+- the expected successful behavior in plain language
+- the failure route: if the user reports the manual test failed, route to `janus-debug`
+- the success route: only after the user confirms the manual test passed may the next handoff target `janus-final-audit`
+
+Use this block in the execution result:
+
+```text
+Manual Janus Validation Gate:
+- Status: PENDING_USER_TEST | PASS | N/A WITH REASON
+- Test Example:
+- Expected Result:
+- If Failed: route to janus-debug
+- If Passed: route to janus-final-audit
+```
+
+`N/A WITH REASON` is valid only for pure documentation/config/meta-skill changes with no Janus product runtime behavior. Backend, frontend, chat, provider, stream, tool, memory, persistence, Electron, and UI changes require a concrete manual test request unless a bound TestRun/TestPipeline result already provides equivalent live Janus evidence.
+
+For final task completion, hand off to `janus-final-audit` only when Auto-Verification is PASS, the Manual Janus Validation Gate is PASS or valid `N/A WITH REASON`, and a compact audit package path exists or is explicitly requested to be built. If the Manual Janus Validation Gate is `PENDING_USER_TEST`, stop with `Canonical State: NEEDS_INFO` and ask the user to run the example. If the user reports failure, route to `janus-debug`.
 
 ## Audit Package Handoff Rule
 
@@ -155,6 +179,34 @@ Prefer `codex-audit-package-builder` for this package. For blocker follow-up wor
 
 If the next step should happen in a fresh chat, the final answer must include one fenced `text` `NEW_CHAT_HANDOFF` block that references the package path, target skill, and model/reasoning. Do not rely on prose-only routing.
 
+## CURRENT_STATE Requirement
+
+Before finishing a substantial Janus work block, update `documentation/ai/CURRENT_STATE.md`.
+
+A Janus work block is substantial when at least one of these is true:
+
+- files changed
+- validation executed
+- a blocker documented
+- a formal next-skill handoff produced
+
+Pure routing replies, short status answers, and other mini-interactions do not require a CURRENT_STATE update.
+
+Keep the update concise and include:
+
+- what changed
+- which files changed
+- which checks ran
+- what remains risky or open
+- what ChatGPT should review next
+- what Codex should do next
+
+CURRENT_STATE does not replace Backlog, Spec, TestSpec, TestRun, TestResult, audit package, or dashboard artifacts.
+
+Commit and push remain gated by `janus-git-governance` and explicit user approval.
+
+If no push happens or push fails, the execution result or handoff must explicitly say that a remote such as GitHub may not contain the latest CURRENT_STATE yet.
+
 ## Output Skeleton
 
 ```text
@@ -166,8 +218,14 @@ Executed Checks:
 Auto-Verification:
 - Status: PASS | FAIL | N/A
 - Evidence:
+Manual Janus Validation Gate:
+- Status: PENDING_USER_TEST | PASS | N/A WITH REASON
+- Test Example:
+- Expected Result:
+- If Failed: route to janus-debug
+- If Passed: route to janus-final-audit
 
-NEXT_SKILL_HANDOFF
+NEXT_STEP
 Target Skill: janus-final-audit | janus-debug | janus-test-pipeline | janus-preimplementation-check
 Canonical State: HANDOFF | BLOCKED
 Required Artifacts:
@@ -180,6 +238,7 @@ Reason:
 Recommended Model:
 Recommended Intelligence:
 New Chat: yes | no
+Next User Action:
 NEW_CHAT_HANDOFF: <fenced text block only when New Chat: yes>
 ```
 

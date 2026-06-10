@@ -233,6 +233,34 @@ python documentation\codex\scripts\record_skill_usage.py --skill <skill> --trigg
 
 Do not log pure status replies, simple questions, or git-only execution that does not change the process decision. Use the log to identify repeated friction, over-expensive model choices, missing handoffs, and skill improvements.
 
+## CURRENT_STATE Requirement
+
+Before finishing a substantial Janus work block, update `documentation/ai/CURRENT_STATE.md`.
+
+A Janus work block is substantial when at least one of these is true:
+
+- files changed
+- validation executed
+- a blocker documented
+- a formal next-skill handoff produced
+
+Pure routing replies, short status answers, and other mini-interactions do not require a CURRENT_STATE update.
+
+Keep the update concise and include:
+
+- what changed
+- which files changed
+- which checks ran
+- what remains risky or open
+- what ChatGPT should review next
+- what Codex should do next
+
+CURRENT_STATE does not replace Backlog, Spec, TestSpec, TestRun, TestResult, audit package, or dashboard artifacts.
+
+Commit and push remain gated by `janus-git-governance` and explicit user approval.
+
+If no push happens or push fails, the completion or handoff must explicitly say that a remote such as GitHub may not contain the latest CURRENT_STATE yet.
+
 ## Completion Format
 
 End each routed step with:
