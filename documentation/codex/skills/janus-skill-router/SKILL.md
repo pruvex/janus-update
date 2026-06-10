@@ -33,6 +33,7 @@ Default to the smallest context that can still make a safe routing decision:
 Prefer compact summary artifacts over full source artifacts when available:
 
 - audit package over full audit history
+- `documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md` over full `documentation/backlog/BACKLOG.md` for backlog overview/orchestration
 - selected backlog handoff over full backlog reread
 - precheck/execution result over old chat history
 - marker-specific documentation evidence over broad doc rereads
@@ -200,6 +201,16 @@ Prefer a narrow guided flow:
 - one evidence/check block
 
 Stop and clarify when no artifact is bound, the chat conflicts with the artifact, a product decision is missing, scope has multiple plausible paths, evidence would be missing, or a risky Git/release/destructive action would be needed.
+
+## Backlog Summary Rule
+
+For backlog orchestration questions, overview requests, or "what next" guidance:
+
+- read `documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md` first when it exists
+- treat it as the preferred compact orientation artifact
+- use `documentation/backlog/BACKLOG.md` for exact item details, acceptance criteria, cache fields, or contradiction checks
+
+`documentation/backlog/BACKLOG.md` remains the binding backlog source of truth.
 
 ## Compact Handoff Rule
 

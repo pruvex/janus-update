@@ -17,6 +17,18 @@ Legacy source:
 
 Read only if exact wording is needed.
 
+## Backlog Reading Rule
+
+For quick orientation, open `C:\KI\Janus-Projekt\documentation\backlog\BACKLOG_ACTIVE_SUMMARY.md` first when it exists.
+
+Then read `C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md` when:
+
+- intake might duplicate or follow up on an existing item
+- exact status, acceptance criteria, or cache fields matter
+- the summary and the backlog appear inconsistent
+
+`BACKLOG.md` remains the binding source of truth.
+
 ## Hard Rules
 
 - No code changes.

@@ -47,6 +47,19 @@ Use `FULL` only when explicitly requested, the review basis is inconsistent, mor
 - Do not deeply re-review unchanged items that already have all cache fields.
 - If nothing changed, report `Bewertungs-Cache: unveraendert`.
 
+## Backlog Reading Rule
+
+For overview and candidate selection, read `C:\KI\Janus-Projekt\documentation\backlog\BACKLOG_ACTIVE_SUMMARY.md` first when it exists.
+
+Then read `C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md` to verify:
+
+- exact cache fields
+- exact status placement
+- acceptance criteria
+- contradictions or malformed sections
+
+`BACKLOG.md` remains the binding source of truth.
+
 ## Evaluation Cache Fields
 
 For each deeply reviewed open item, set or update:

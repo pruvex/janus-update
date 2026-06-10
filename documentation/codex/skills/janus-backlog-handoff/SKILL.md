@@ -47,6 +47,20 @@ Work on the smallest Backlog slice possible:
 
 Do not reread unrelated `DONE` history when routing a current READY item unless duplicate or lifecycle identity is unclear.
 
+## Backlog Reading Rule
+
+For orchestration and quick READY-state orientation, read `C:\KI\Janus-Projekt\documentation\backlog\BACKLOG_ACTIVE_SUMMARY.md` first when it exists.
+
+Then verify the selected item in `C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md` before creating or reusing handoff artifacts.
+
+Always fall back to `BACKLOG.md` when:
+
+- routing metadata must be written back
+- acceptance criteria or risk fields matter
+- section structure or item status looks contradictory
+
+`BACKLOG.md` remains the binding source of truth.
+
 ## Dashboard Fields
 
 Write:
