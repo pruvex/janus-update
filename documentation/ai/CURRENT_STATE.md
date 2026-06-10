@@ -4,59 +4,43 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Establish CURRENT_STATE as a mandatory sync artifact for substantial Janus work blocks.
+Give ChatGPT a reliable compact backlog overview from the repo without loading the full BACKLOG.md every time.
 
 ## Active Phase
-Follow-up Repo Source Added
+Backlog Summary Rollout
 
 ## Last Decision
-CURRENT_STATE is mandatory only for substantial Janus work blocks.
-Commit and push remain gated by janus-git-governance and explicit user approval.
-If no push happens, completions must say that GitHub or other remotes may not have the latest CURRENT_STATE yet.
-Relevant Janus skills now also carry explicit CURRENT_STATE completion rules.
-`codex-start-of-work-check` now has a versioned repo source under `documentation/codex/skills/`.
+`documentation/backlog/BACKLOG.md` remains the binding backlog source.
+`documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md` becomes the preferred compact orientation artifact for backlog overview and orchestration questions.
+When summary and backlog disagree or detail matters, skills must read `BACKLOG.md`.
 
 ## Last Codex Work
-Created the versioned repo source for `codex-start-of-work-check`, including `SKILL.md`, the reminder script, and the agent metadata, and aligned the skill text with CURRENT_STATE and backup/develop as the active remote sync source.
+Created `documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md`, summarized active backlog state from `BACKLOG.md`, and updated Janus routing/backlog skills so they prefer the summary for overview but fall back to `BACKLOG.md` for details and contradictions.
 
 ## Changed Files
 - documentation/ai/CURRENT_STATE.md
-- documentation/01_CENTRAL_TASK_REGISTRY.md
-- PROJECT_STATE.md
-- documentation/SPEC/Spec Done/11_current_state_mandatory_sync_artifact.md
-- documentation/codex/skills/codex-start-of-work-check/SKILL.md
-- documentation/codex/skills/codex-start-of-work-check/agents/openai.yaml
-- documentation/codex/skills/codex-start-of-work-check/scripts/due_healthchecks.py
-- documentation/tasks/TASK-SPEC11_AUDIT_PACKAGE.md
-- documentation/tasks/TASK-SPEC11_preimplementation_checks.md
-- documentation/tasks/TASK-SPEC11_validation_summary.md
+- documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md
 - documentation/codex/skills/janus-skill-router/SKILL.md
-- documentation/codex/skills/janus-executioner/SKILL.md
-- documentation/codex/skills/janus-final-audit/SKILL.md
-- documentation/codex/skills/janus-documentation-update/SKILL.md
-- documentation/codex/skills/janus-git-governance/SKILL.md
-- documentation/codex/skills/janus-build-release/SKILL.md
-- documentation/codex/skills/janus-quickchange/SKILL.md
-- installed Codex skill working copies for the same Janus skills and codex-start-of-work-check
+- documentation/codex/skills/janus-backlog-intake/SKILL.md
+- documentation/codex/skills/janus-backlog-prioritization/SKILL.md
+- documentation/codex/skills/janus-backlog-handoff/SKILL.md
 
 ## Tests / Validation
-- Repo skill search for `CURRENT_STATE`, substantial-threshold wording, GitHub remote warning, and `janus-git-governance`
-- Manual consistency review across the touched repo skill rules and installed working copies
-- Manual review that CURRENT_STATE remains compact and does not become a diary
-- Compact audit package created at `documentation/tasks/TASK-SPEC11_AUDIT_PACKAGE.md`
-- Final audit result: `PASS WITH FIXES`
-- Documentation sync completed in central registry and `PROJECT_STATE.md`
-- Repo source for `codex-start-of-work-check` created and aligned with CURRENT_STATE guidance
+- Verified that `documentation/backlog/BACKLOG.md` exists and remains the canonical source
+- Targeted backlog review of active `NEEDS INFO`, `READY`, `IN PROGRESS`, and malformed `BLOCKED` area
+- Repo skill review and update for backlog-summary-first orchestration guidance
+- Manual consistency check that summary explicitly defers to `BACKLOG.md` for details and contradictions
 
 ## Open Risks
-- The repository remote will not reflect this follow-up until a later user-approved Git step happens.
-- CURRENT_STATE can lose value if later updates become too verbose.
+- `BACKLOG_ACTIVE_SUMMARY.md` can drift if later backlog edits are not mirrored promptly.
+- The current `BLOCKED` area in `BACKLOG.md` is structurally inconsistent and may confuse future summary/parsing logic if left unchanged.
+- No remote reflects this backlog-summary follow-up until a later user-approved Git step happens.
 
 ## Next Recommended Step for ChatGPT
-Review the new versioned `codex-start-of-work-check` repo source and confirm that the sync-source wording is concise enough for future Janus starts.
+Use `documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md` first for backlog overview, then open `BACKLOG.md` only for exact item details, contradictions, or acceptance criteria.
 
 ## Next Recommended Step for Codex
-Use `janus-git-governance` to prepare a user-approved checkpoint plan for the new `codex-start-of-work-check` repo-source follow-up.
+Use `janus-git-governance` to prepare a checkpoint plan for the backlog-summary rollout and decide later whether the malformed `BLOCKED` section should be normalized as a separate cleanup item.
 
 ## Last Updated
-2026-06-10 21:08 local time
+2026-06-10 23:16 local time
