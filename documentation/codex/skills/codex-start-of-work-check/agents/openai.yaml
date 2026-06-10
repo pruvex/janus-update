@@ -1,0 +1,3 @@
+display_name: Codex Start Of Work Check
+short_description: Remind about due Codex or Janus healthchecks at the start of work.
+default_prompt: Check whether any Codex or Janus healthcheck reminder is due before starting work.
