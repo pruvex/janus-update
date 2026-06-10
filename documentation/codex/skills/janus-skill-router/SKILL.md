@@ -139,10 +139,9 @@ For larger features, do not create implementation tasks directly. Start decision
 
 ## Model Routing
 
-- `5.5`, high/very high: architecture, security, privacy, prompt-injection, complex failure analysis, release gates, final audits.
+- `5.5`, high: architecture, security, privacy, prompt-injection, complex failure analysis, release gates, final audits.
 - `5.4`, medium/high: Janus workhorse for feature design, specs, TestSpecs, implementation, refactoring, tests, debugging, local repository work, complex product decisions, and pipeline artifact review.
 - `5.4 mini`, low/medium: separated Backlog cleanup, documentation normalization, snapshot sync, and mechanical checks only when cheaper than staying on warm `5.4`.
-- `5.2`, low: summaries, small text edits, lightweight status checks.
 
 Cache strategy: prefer staying on `5.4` and changing only reasoning effort inside an ongoing Janus workflow. If `5.4` is warm and the next task is short, mechanical, or tied to the same Janus artifacts, recommend `5.4` low instead of `5.4 mini`. Recommend switching to `5.4 mini` only for separated low-risk mechanical blocks where the lower model cost is still likely to beat the warm-cache benefit and the later return to `5.4`; recommend `5.5` only when justified by risk.
 
