@@ -8,6 +8,7 @@ description: Govern Janus Git and GitHub workflow, including branch safety, back
 ## Overview
 
 Use this skill before any Janus commit, push, audit checkpoint, release merge, tag, or GitHub publication. Never commit, push, tag, merge, or reset without explicit user approval.
+Do not treat bare acknowledgements like `ok` as approval for commit, push, tag, merge, reset, or release actions.
 
 ## Source References
 
@@ -121,6 +122,7 @@ git diff --check
 ```
 
 Then propose an explicit staging plan. Use pathspecs, not `git add .`, unless the entire dirty tree has been reviewed and belongs to one changeset.
+If the actor or chat boundary changes, include exactly one compact fenced `text` handoff block before any Git action plan.
 
 Treat the guard as a coherence check, not a mechanical bucket counter:
 
@@ -136,6 +138,8 @@ git add -- <paths>
 git commit -m "<message>"
 git push backup develop
 ```
+
+Approval must be explicit and specific; a bare `ok` only continues work when it clearly refers to a previously recommended non-Git step.
 
 ## Release Flow
 
