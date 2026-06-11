@@ -10,6 +10,7 @@ description: Review exactly one Janus Feature Spec before task compilation. Use 
 Use this skill as the mandatory pre-compilation gate for one Feature Spec under `documentation/SPEC/`.
 
 It checks whether the Spec is complete, deterministic, scoped, testable, and ready for `janus-spec-to-task`. It does not create tasks and does not implement anything.
+This is primarily a ChatGPT-led review skill. Codex normally consumes the approval or revision handoff rather than leading the review decision.
 
 ## Inputs
 
@@ -17,6 +18,7 @@ It checks whether the Spec is complete, deterministic, scoped, testable, and rea
 - Mode: `REVIEW_ONLY` by default, or `OPTIMIZE_WRITE` for mechanical structure cleanup only.
 
 When a Spec path is provided, treat that file as the only source of truth. Ignore conflicting chat history, drafts, and side notes.
+If the Spec file is missing, unreadable, or not a final Feature Spec, block instead of inferring intent from other artifacts.
 
 ## Hard Rules
 
@@ -25,8 +27,10 @@ When a Spec path is provided, treat that file as the only source of truth. Ignor
 - No product decisions from chat context.
 - No architecture decisions.
 - No invented requirements.
+- No silent filling of product gaps.
 - Write or update only the `SPEC REVIEW METADATA` block when the review decision is clear.
 - If a blocking product decision is missing, ask exactly one blocking question with at most two options.
+- Do not treat a vague `ok` as an approval signal or as a valid handoff substitute.
 
 ## Review Gates
 
@@ -42,16 +46,19 @@ Check:
 - decomposition readiness for `janus-spec-to-task`
 - size and split boundaries
 
+Use these interpretations:
+
+- complete: all required behavior, boundaries, constraints, and acceptance checks for one feature are present
+- deterministic: no conflicting interpretations, hidden branches, or unresolved product choices remain
+- task-ready: `janus-spec-to-task` can decompose the Spec without inventing scope, files, or acceptance meaning
+
 ## Decisions
 
 Return exactly one:
 
-- `APPROVED`: ready for task compilation.
-- `APPROVED_WITH_NOTES`: ready, with non-blocking notes.
-- `NEEDS_REFINEMENT`: repairable but not ready.
-- `BLOCKED`: one essential product decision missing.
-- `TOO_LARGE`: split required.
-- `SPEC FILE INVALID`: file missing, unreadable, or not a final Spec.
+- `APPROVED`: ready for task compilation with no blocking ambiguity.
+- `NEEDS_REVISION`: repairable but not yet complete, deterministic, or task-ready.
+- `BLOCKED`: an essential product decision is missing, the file is invalid, or the scope must be split before review can pass.
 
 ## Complexity And Model Routing
 
@@ -79,7 +86,7 @@ Write or update this block in the Spec when the review decision is clear:
 ```markdown
 ## SPEC REVIEW METADATA
 
-- **Review Status:** APPROVED | APPROVED_WITH_NOTES | NEEDS_REFINEMENT | BLOCKED | TOO_LARGE | SPEC FILE INVALID
+- **Review Status:** APPROVED | NEEDS_REVISION | BLOCKED
 - **Complexity Score:** <0-100>
 - **Risk:** LOW | MEDIUM | HIGH | CRITICAL
 - **Recommended Review Model:** 5.4 | 5.5
@@ -116,4 +123,13 @@ SPEC REVIEW RESULT
 - Next Skill:
 ```
 
-For `APPROVED` or `APPROVED_WITH_NOTES`, next skill is `janus-spec-to-task`.
+For `APPROVED`, next skill is `janus-spec-to-task`.
+For `NEEDS_REVISION`, route back to `janus-spec-generator`.
+For `BLOCKED`, route back to `janus-feature-design` when a product decision is missing, otherwise route to `janus-spec-generator`.
+
+When control moves from ChatGPT to Codex, output model/reasoning above exactly one compact fenced `text` block that contains only:
+
+- `NEXT: janus-spec-to-task` or `NEXT: janus-spec-generator` or `NEXT: janus-feature-design`
+- the Spec path
+- the review decision
+- one short note with the key blocking issue or approval note
