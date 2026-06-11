@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Review `codex-audit-package-builder` against the collaboration matrix and align its evidence-bound audit-package handoff behavior with Diamond standard.
+Review `codex-audit-package-builder` against the collaboration matrix and close out its evidence-bound audit-package handoff behavior with Diamond standard.
 
 ## Active Phase
-Audit Package Builder Targeted Review
+Review-Closeout
 
 ## Last Decision
 `documentation/backlog/BACKLOG.md` remains the binding backlog source.
@@ -54,17 +54,19 @@ Reviewed `codex-audit-package-builder`, tightened evidence requirements, final-a
 - Verified the skill forbids product decisions, broad chat-history reconstruction, tests, builds, Git actions, and release actions
 - Verified the next handoff to `janus-final-audit`, `janus-debug`, `janus-test-pipeline`, or caller review is explicit and compact
 - Verified bare `ok` is not accepted as a handoff substitute
+- Verified no other skill file changed in this closeout
 - Validation that no other repo skill source file was edited
 
 ## Open Risks
 - Most other skill rows are still `UNREVIEWED`; the matrix remains inventory first, not a full skill-quality review.
 - The audit package builder may still be harmonized later with the concrete output shape of `scripts/build_audit_package.py`.
+- Commit and push for this review closeout have not been requested yet.
 
 ## Next Recommended Step for ChatGPT
-Review the updated `codex-audit-package-builder` row in `documentation/ai/SKILL_COLLABORATION_MATRIX.md` and choose the next repo skill to move from `UNREVIEWED` into targeted individual review.
+Perform a final remote check and confirm that no `UNREVIEWED` repo-skill rows remain.
 
 ## Next Recommended Step for Codex
-Use `codex-audit-package-builder` only to prepare compact evidence packages, then route actual audit decisions to `janus-final-audit`.
+No further skill review work is needed here; use `janus-git-governance` only if the user later approves a commit or push.
 
 ## Last Updated
-2026-06-11 18:09 local time
+2026-06-11 18:15 local time
