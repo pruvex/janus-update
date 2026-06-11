@@ -8,10 +8,12 @@ description: Normalize and validate Janus Feature Specs into copy-safe, parser-s
 ## Overview
 
 Transform one approved Janus Feature Spec draft into a final copy-safe Markdown block. Do not brainstorm, reinterpret decisions, add requirements, generate tasks, or implement.
+This is primarily a ChatGPT-led mechanical cleanup skill. Codex normally consumes the normalized Spec rather than leading the normalizer step.
 
 ## Source Priority
 
-Use only the latest approved Spec draft or latest approved decision source. Ignore older drafts, rejected options, chat speculation, malformed prior outputs, and implementation suggestions.
+Use only one draft Spec at a time. If the draft is missing, ambiguous, or conflicts with the locked decision source, block instead of guessing.
+Ignore older drafts, rejected options, chat speculation, malformed prior outputs, and implementation suggestions.
 
 ## References
 
@@ -38,7 +40,7 @@ Inside the code block:
 
 Before final output, silently verify:
 
-- exactly one Spec exists
+- exactly one draft Spec exists
 - no text before or after the final code block
 - required headings exist in the required order
 - routing block has exactly the required keys
@@ -50,7 +52,7 @@ Before final output, silently verify:
 - routing values match internal complexity values
 - no implementation detail, task list, API signature, DB schema, or code is present
 
-If validation fails, correct the Spec before answering. If a product decision is missing, output one blocking question instead of a normalized Spec.
+If validation fails, correct the Spec before answering. If a product decision is missing or the draft is unclear, output one blocking question instead of a normalized Spec.
 
 ## Validator Script
 
@@ -98,3 +100,10 @@ Decision: Ready for SPEC_REVIEW
 Reason: Spec is normalized and parser-safe.
 Copy Prompt: Use janus-spec-review on the normalized Spec.
 ```
+
+When control moves from ChatGPT to Codex, output model/reasoning above exactly one compact fenced `text` block that contains only:
+
+- `NEXT: janus-spec-review`
+- the Spec path
+- the draft source path or locked decision source
+- one short note if a mechanical cleanup was needed
