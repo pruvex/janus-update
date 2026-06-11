@@ -38,7 +38,7 @@ An audit package must include or explicitly mark as `MISSING` / `N/A WITH REASON
 
 ## Workflow
 
-1. Run `scripts/build_audit_package.py` from the target workspace.
+1. Run `documentation/codex/skills/codex-audit-package-builder/scripts/build_audit_package.py` and pass `--cwd <target-workspace>`.
 2. Add or verify goal, scope, changed files, diff summary, validation, risks, and open issues.
 3. If the worktree is dirty, pass `--only <path>` for the relevant task files so unrelated diffs stay out of the package.
 4. If re-auditing after a blocker, pass a blocker label and a short delta summary.
@@ -48,10 +48,29 @@ An audit package must include or explicitly mark as `MISSING` / `N/A WITH REASON
 
 If required evidence is missing or contradictory, do not build a confident audit package. Return a compact blocker summary and route to caller review, `janus-debug`, `janus-test-pipeline`, or the skill that can produce the missing evidence.
 
+## Script Contract
+
+- Default output path: `<cwd>/AUDIT_PACKAGE.md` unless `--out` overrides it.
+- Core CLI options:
+  - `--cwd`, `--out`, `--goal`
+  - `--validation-file`, `--notes-file`
+  - `--risks`, `--open-issues`
+  - `--reaudit-blocker`, `--reaudit-delta`, `--prior-audit`
+  - `--spec-status`, `--task-file`, `--precheck-file`
+  - `--backlog-file`, `--backlog-marker`
+  - `--manual-janus-evidence`, `--pipeline-completion`
+  - `--only`, `--include`
+- The script renders bound excerpts for backlog, task, and precheck inputs and emits `MISSING FILE` or `N/A WITH REASON` markers when those inputs are absent.
+- Re-audit deltas render as a compact section combining the primary blocker, prior audit/package reference, and the current delta summary.
+
 ## Package Sections
 
 - Goal
 - Scope Rules
+- Bound Audit Inputs
+- Backlog Item
+- Task Acceptance Scope
+- Pre-Implementation Check
 - Changed Files
 - Artifact Inventory
 - Diff Summary
@@ -60,24 +79,22 @@ If required evidence is missing or contradictory, do not build a confident audit
 - Risks
 - Open Issues
 - Re-Audit Delta
-- Bound Audit Inputs
-- Backlog Item
-- Task Acceptance Scope
-- Pre-Implementation Check
 - Final Audit Handoff
 
 ## Output
 
-Return the package path and this copy-paste handoff in one fenced `text` block:
+The generated package ends with this handoff block:
 
 ```text
 NEW_CHAT_HANDOFF
-NEXT: janus-final-audit
+NEXT: final-skill-audit
 MODEL: 5.5/high
 PASS: <AUDIT_PACKAGE.md>
 ASK: Lade nur dieses Paket im neuen Chat und starte dann den Final Audit.
 DROP: dev chat history
 ```
+
+When presenting the next repo-skill step to the user, route that handoff to `janus-final-audit` without widening scope or turning the builder itself into a final-audit decision step.
 
 For bounded same-thread re-audits after a local blocker fix, `5.4/high` is acceptable when the package stays compact and the risk did not escalate.
 

@@ -250,7 +250,7 @@ Generated: {generated}
 
 ```text
 NEW_CHAT_HANDOFF
-NEXT: final-skill-audit
+NEXT: janus-final-audit
 MODEL: 5.5/high
 PASS: {out}
 ASK: Lade nur dieses Paket im neuen Chat und starte dann den Final Audit.
