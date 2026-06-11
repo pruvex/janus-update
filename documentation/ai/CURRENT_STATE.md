@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Review `janus-quickchange` against the collaboration matrix and align its bounded-change, reroute, and closeout behavior with Diamond standard.
+Review `janus-executioner` against the collaboration matrix and align its one-task execution, reroute, and final-audit handoff behavior with Diamond standard.
 
 ## Active Phase
-Quickchange Targeted Review
+Executioner Targeted Review
 
 ## Last Decision
 `documentation/backlog/BACKLOG.md` remains the binding backlog source.
@@ -21,32 +21,34 @@ Repo-skill governance must distinguish versioned repo skill sources under `docum
 `janus-backlog-handoff` should stay ChatGPT-led, prefer `BACKLOG_ACTIVE_SUMMARY.md` first, read `BACKLOG.md` only for the selected READY block or contradiction checks, and emit explicit model/reasoning plus one compact fenced `text` handoff for ChatGPT -> Codex transitions.
 `janus-preimplementation-check` should stay Codex-led, validate exactly one target task, emit a compact execution handoff for `janus-executioner` on PASS, and emit a compact fenced `text` handoff back to ChatGPT on `BLOCKED`, `NEEDS_INFO`, `SCOPE_MISMATCH`, or model-switch escalation.
 `janus-quickchange` should stay Codex-led, allow only one tiny low-risk change, reroute immediately on scope growth, use same-context `NEXT: janus-documentation-update` on success when possible, and emit exactly one compact fenced `text` handoff when ChatGPT must take over.
+`janus-executioner` should stay Codex-led, implement exactly one target task from a valid precheck, stop immediately on scope growth, hand successful bounded work to `janus-final-audit`, and emit exactly one compact fenced `text` handoff when ChatGPT must take over.
 
 ## Last Codex Work
-Reviewed `janus-quickchange`, clarified reroute triggers and same-context closeout behavior, and marked the matrix row as `UPDATED`.
+Reviewed `janus-executioner`, clarified one-task execution boundaries, tightened scope-growth stop behavior, and marked the matrix row as `UPDATED`.
 
 ## Changed Files
 - documentation/ai/CURRENT_STATE.md
 - documentation/ai/SKILL_COLLABORATION_MATRIX.md
-- documentation/codex/skills/janus-quickchange/SKILL.md
+- documentation/codex/skills/janus-executioner/SKILL.md
 
 ## Tests / Validation
-- Targeted review of `janus-quickchange` against `SKILL_COLLABORATION_MATRIX.md`
-- Verified the skill remains Codex-led and stays limited to one tiny low-risk change
+- Targeted review of `janus-executioner` against `SKILL_COLLABORATION_MATRIX.md`
+- Verified the skill remains Codex-led and stays limited to exactly one target task or implementation slice
+- Verified execution requires a matching `PRE-CHECK PASSED` handoff before edits
 - Verified scope growth now forces reroute instead of silent expansion
-- Verified successful quickchanges can continue in the same warm context to `janus-documentation-update`
+- Verified successful bounded execution can hand off directly to `janus-final-audit`
 - Verified bare `ok` is not accepted as a handoff substitute
 - Validation that no other repo skill source file was edited
 
 ## Open Risks
 - Most other skill rows are still `UNREVIEWED`; the matrix remains inventory first, not a full skill-quality review.
-- The quickchange result handoff may still be harmonized later with documentation-update or executioner formatting.
+- The execution result handoff may still be harmonized later with final-audit or documentation-update formatting.
 
 ## Next Recommended Step for ChatGPT
-Review the updated `janus-quickchange` row in `documentation/ai/SKILL_COLLABORATION_MATRIX.md` and choose the next repo skill to move from `UNREVIEWED` into targeted individual review.
+Review the updated `janus-executioner` row in `documentation/ai/SKILL_COLLABORATION_MATRIX.md` and choose the next repo skill to move from `UNREVIEWED` into targeted individual review.
 
 ## Next Recommended Step for Codex
-Use `janus-quickchange` only for truly tiny bounded changes, then review the next repo skill one by one.
+Use `janus-executioner` only for valid one-task execution slices, then review the next repo skill one by one.
 
 ## Last Updated
-2026-06-11 14:47 local time
+2026-06-11 15:01 local time
