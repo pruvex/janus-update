@@ -8,6 +8,7 @@ metadata:
 # Codex Audit Package Builder
 
 Create a compact final-review package so the final audit runs with minimal noise.
+This is a Codex-led package-building skill. It prepares bounded evidence for `janus-final-audit`; it does not perform the final audit decision.
 
 ## Scope
 
@@ -16,6 +17,24 @@ Create a compact final-review package so the final audit runs with minimal noise
 - Prefer artifact paths and concise summaries over copied logs.
 - Include full logs only when they are current failures.
 - For blocked audits, update the existing package with a small delta instead of rebuilding from scratch.
+- Use only bound evidence: changed files, validation evidence, known risks, relevant audit notes, unresolved blockers, and explicitly named artifacts.
+- Do not reconstruct broad chat history, invent product decisions, add requirements, or infer unverified scope.
+- Do not decide `PASS`, `PASS WITH FIXES`, or `BLOCKED`; that belongs to `janus-final-audit`.
+- Do not run tests, builds, Git actions, release actions, or publish steps.
+- Do not treat bare `ok` as a handoff, Git, release, or audit approval.
+
+## Required Evidence
+
+An audit package must include or explicitly mark as `MISSING` / `N/A WITH REASON`:
+
+- changed files
+- validation commands and results
+- known risks
+- relevant audit notes or prior blocker notes
+- unresolved blockers
+- bound Spec, Task, Backlog item, TestSpec/TestRun, or `N/A WITH REASON`
+- preimplementation result when applicable
+- manual Janus evidence when applicable
 
 ## Workflow
 
@@ -26,6 +45,8 @@ Create a compact final-review package so the final audit runs with minimal noise
 5. Pass the minimum final-audit input fields explicitly: `Spec` or `N/A WITH REASON`, task file, backlog item, precheck result, manual Janus evidence, and pipeline completion status.
 6. When the workspace is not a Git checkout, pass important artifact paths with `--include` so the package still has provenance.
 7. Return a copy-paste final-audit handoff as one fenced `text` block so it renders as a gray box in Codex.
+
+If required evidence is missing or contradictory, do not build a confident audit package. Return a compact blocker summary and route to caller review, `janus-debug`, `janus-test-pipeline`, or the skill that can produce the missing evidence.
 
 ## Package Sections
 
@@ -51,7 +72,7 @@ Return the package path and this copy-paste handoff in one fenced `text` block:
 
 ```text
 NEW_CHAT_HANDOFF
-NEXT: final-skill-audit
+NEXT: janus-final-audit
 MODEL: 5.5/high
 PASS: <AUDIT_PACKAGE.md>
 ASK: Lade nur dieses Paket im neuen Chat und starte dann den Final Audit.
@@ -59,3 +80,5 @@ DROP: dev chat history
 ```
 
 For bounded same-thread re-audits after a local blocker fix, `5.4/high` is acceptable when the package stays compact and the risk did not escalate.
+
+For same-context handoff, naming `NEXT: janus-final-audit` with the package path is enough. For any actor or fresh-chat boundary, emit exactly one compact fenced `text` block.
