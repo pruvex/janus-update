@@ -10,6 +10,7 @@ description: Refine one Janus task artifact against its source Spec and release 
 Use this skill to refine Skill-1 task artifacts into exactly one implementation-ready target task for `janus-preimplementation-check`.
 
 It validates scope, files, tests, source of truth, and execution model. It does not implement code.
+This is a shared refinement skill. ChatGPT may shape the slice and frame the handoff, while Codex may refine the artifact inside a warm context, but neither actor may implement, run precheck, or fill product gaps here.
 
 ## Inputs
 
@@ -19,20 +20,26 @@ It validates scope, files, tests, source of truth, and execution model. It does 
 - Optional target task or subtask.
 
 When artifacts are named, they are the only requirements sources.
+Accept either one compiled task artifact or one clear backlog handoff that already identifies the artifact path and intended slice. If the input points to multiple plausible task artifacts or lacks source identity, block instead of guessing.
 
 ## Hard Rules
 
 - No implementation.
+- No test execution.
+- No precheck execution.
 - No code generation.
 - No new requirements.
+- No product decisions from chat context.
 - No architecture decisions.
 - No full chain auto-release.
 - Release exactly one target task.
 - Later tasks require a separate handoff.
+- If multiple target tasks remain plausible, stop and route back for narrowing instead of selecting one implicitly.
+- Do not treat a vague `ok` as a valid handoff substitute.
 
 ## Validation Gates
 
-For each task, check:
+For each candidate task, check:
 
 - goal is clear
 - scope is bounded
@@ -41,6 +48,14 @@ For each task, check:
 - tests are appropriate
 - execution model is valid
 - no verify-only, review-only, analysis-only, or design-only standalone task is forwarded
+
+Precheck-ready target task means:
+
+- exactly one selected target task is named
+- scope is atomic enough for one preimplementation check run
+- required files or file cluster are concrete or deliberately bounded
+- tests and acceptance criteria are explicit enough for precheck
+- no missing product decision or source-of-truth contradiction remains
 
 If a task affects TestSpec, test oracle, assertions, `containsAny`, `mustNotContain`, response format, or expected output, enforce source of truth:
 
@@ -66,7 +81,7 @@ python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_h
 
 ## Handoff
 
-End with exactly one copyable handoff:
+End with exactly one compact copyable fenced `text` handoff:
 
 ```text
 @janus-preimplementation-check
@@ -80,6 +95,8 @@ Execution Model: <5.4 | 5.4 mini>
 Rules: VALIDATE_ONE_TARGET_TASK_NO_IMPLEMENTATION_NO_CODE_CHANGES_RELEASE_EXECUTION_HANDOFF_ONLY_IF_SCOPE_FILES_TESTS_RISKS_ARE_CLEAR
 Expected Output: PRE_CHECK_PASSED_PLUS_EXECUTION_HANDOFF_OR_PRE_CHECK_BLOCKED
 ```
+
+If the task artifact is unclear, routes conflict, or multiple target tasks remain plausible, route back to `janus-spec-to-task` or `janus-backlog-handoff` with one compact fenced `text` block instead of releasing an implicit choice.
 
 ## Decisions
 
