@@ -10,6 +10,7 @@ description: Run bounded Janus repository hygiene and drift checks. Use when the
 Use this skill to answer: "Ist Janus gerade sauber genug, um weiterzuarbeiten?"
 
 It checks repository hygiene, documentation drift, backlog visibility, stale artifacts, large files, and safe next actions. It is not a feature, bugfix, refactor, release, or architecture execution skill.
+This is primarily a Codex-led bounded scan skill. ChatGPT uses it for triage or follow-up review when the scan finds drift, risk, or unclear evidence.
 
 ## Modes
 
@@ -32,6 +33,9 @@ If the user asks which mode to use, recommend:
 - Do not delete files.
 - Do not upgrade dependencies.
 - Do not release, bump versions, tag, merge, or push.
+- Do not run Auto-Fix changes unless the user explicitly approves exact paths/actions after the scan result.
+- Do not run tests or builds as part of the healthcheck itself unless the user separately requests that after the scan.
+- Do not perform Git actions; route Git risk to `janus-git-governance`.
 - Do not mutate Backlog in `DAILY`; only propose candidates.
 - In `WEEKLY` or `MONTHLY`, create Backlog items only after concrete evidence and only via `janus-backlog-intake`.
 - Auto-fixes are proposal-only unless the user explicitly approves exact paths/actions.
@@ -75,6 +79,8 @@ python C:\Users\pruve\.codex\skills\janus-health-check\scripts\health_snapshot.p
 
 Use `--mode WEEKLY` or `--mode MONTHLY` when selected. The script is read-only.
 
+If a quick reminder check is all that is needed at session start, prefer `codex-start-of-work-check` instead of this skill.
+
 ## DAILY Checklist
 
 Check:
@@ -87,6 +93,7 @@ Check:
 - Skill usage log exists and entry count is visible.
 
 No Backlog writes in `DAILY`.
+No Git actions, auto-fixes, tests, or builds in `DAILY`.
 
 ## WEEKLY Checklist
 
@@ -100,6 +107,7 @@ Includes DAILY plus:
 - skill usage summary and repeated friction from `documentation/codex/SKILL_USAGE_LOG.md`
 
 Concrete, non-speculative findings may be routed to `janus-backlog-intake`.
+Do not execute fixes, tests, builds, or Git actions as part of the scan.
 
 ## MONTHLY Checklist
 
@@ -113,6 +121,7 @@ Includes WEEKLY plus bounded architecture review:
 - repeated skill usage friction that suggests router or skill changes
 
 Do not perform large fixes. Route to Backlog or recommend `5.5` review for high-risk ambiguity.
+Do not execute fixes, tests, builds, or Git actions as part of the scan.
 
 ## Ampel
 
@@ -162,3 +171,9 @@ SYSTEM HEALTH REPORT
 ```
 
 End with one concrete recommendation. Do not use vague "bei Bedarf" as the main recommendation.
+
+## Handoff
+
+If the actor or chat boundary changes, emit exactly one short fenced `text` block with the scan result and next gate.
+Include `PASS`, `DRIFT_FOUND`, `BLOCKED`, or `NEEDS_INFO` explicitly.
+A bare `ok` is never a valid handoff replacement.
