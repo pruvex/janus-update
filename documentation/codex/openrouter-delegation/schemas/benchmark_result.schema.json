@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://janus.local/schemas/openrouter/benchmark_result.schema.json",
+  "title": "OpenRouter Delegation Benchmark Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "created_at",
+    "corpus_version",
+    "models",
+    "cases",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["janus.openrouter.benchmark_result.v1"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "corpus_version": {
+      "type": "string"
+    },
+    "models": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "task_id",
+          "model_id",
+          "schema_valid",
+          "expected_mode",
+          "actual_mode",
+          "score",
+          "errors",
+          "elapsed_ms"
+        ],
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "model_id": {
+            "type": "string"
+          },
+          "schema_valid": {
+            "type": "boolean"
+          },
+          "expected_mode": {
+            "type": "string",
+            "enum": ["ALLOW", "ASSIST", "DENY", "UNKNOWN"]
+          },
+          "actual_mode": {
+            "type": ["string", "null"],
+            "enum": ["ALLOW", "ASSIST", "DENY", "UNKNOWN", null]
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "elapsed_ms": {
+            "type": ["number", "null"],
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["production_approved", "notes"],
+      "properties": {
+    "production_approved": {
+      "type": "boolean",
+      "enum": [false]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://janus.local/schemas/openrouter/delegated_task_result.schema.json",
+  "title": "Delegated Task Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "model_id",
+    "delegation_mode",
+    "confidence",
+    "summary",
+    "findings",
+    "required_codex_checks",
+    "refusal_reason",
+    "privacy_notes",
+    "no_write_assertion",
+    "risk_flags"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": ["janus.openrouter.delegated_task_result.v1"]
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "delegation_mode": {
+      "type": "string",
+      "enum": ["ALLOW", "ASSIST", "DENY", "UNKNOWN"]
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1200
+    },
+    "findings": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity", "title", "evidence", "recommendation"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["info", "low", "medium", "high", "critical"]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 600
+          },
+          "recommendation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 600
+          }
+        }
+      }
+    },
+    "required_codex_checks": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 180
+      }
+    },
+    "refusal_reason": {
+      "type": ["string", "null"],
+      "maxLength": 600
+    },
+    "privacy_notes": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 800
+    },
+    "no_write_assertion": {
+      "type": "boolean",
+      "enum": [true]
+    },
+    "risk_flags": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9_]+$"
+      },
+      "uniqueItems": true
+    }
+  }
+}
