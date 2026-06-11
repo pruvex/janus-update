@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Harmonize `codex-audit-package-builder` with the concrete output shape of its versioned package-builder script.
+Skill-Orchestration Closeout abgeschlossen.
 
 ## Active Phase
-Audit Package Builder Output-Shape Alignment
+Ready for Git Governance
 
 ## Last Decision
 `documentation/backlog/BACKLOG.md` remains the binding backlog source.
@@ -39,30 +39,30 @@ Repo-skill governance must distinguish versioned repo skill sources under `docum
 `codex-audit-package-builder` should stay Codex-led, build compact packages only from bound evidence, avoid final audit decisions, product decisions, tests, builds, and Git actions, and emit exactly one compact fenced `text` handoff toward `janus-final-audit` when a fresh audit chat or actor boundary is needed.
 
 ## Last Codex Work
-Compared `documentation/codex/skills/codex-audit-package-builder/SKILL.md` against the versioned script at `documentation/codex/skills/codex-audit-package-builder/scripts/build_audit_package.py`.
-Aligned the skill with the real script path, default output path, core CLI options, concrete section order, and the script-emitted final handoff block, while keeping the repo-level next step routed to `janus-final-audit`.
-Renamed the script's final handoff target from `final-skill-audit` to `janus-final-audit` so the script and repo workflow now match exactly.
+Completed the final skill-orchestration closeout after the audit-package-builder output-shape alignment.
+Confirmed the versioned audit-package-builder script and its skill now use `NEXT: janus-final-audit`, the skill remains consistent with the script, and the matrix still has no `UNREVIEWED` rows.
+No further skill work was needed; only Git governance remains if the user approves commit and push.
 
 ## Changed Files
 - documentation/ai/CURRENT_STATE.md
 - documentation/codex/skills/codex-audit-package-builder/SKILL.md
 
 ## Tests / Validation
-- Read the versioned `build_audit_package.py` implementation directly
-- Verified the actual output path default is `<cwd>/AUDIT_PACKAGE.md`
-- Verified the actual CLI surface, section order, required excerpt behavior, and re-audit delta rendering
-- Verified the skill remains Codex-led, evidence-bound, and not a final-audit decision step
-- Verified no other skill file changed and no product code changed
+- Verified `git status`, `git diff --name-only`, and `git diff --check`
+- Verified no `NEXT: final-skill-audit` remains in the audit-package-builder script or skill
+- Verified `NEXT: janus-final-audit` is now the consistent next skill
+- Verified `SKILL_COLLABORATION_MATRIX.md` still contains no `UNREVIEWED` rows
+- Verified no matrix change is needed
 - Ran `git diff --check`
 
 ## Open Risks
-- Commit and push for this output-shape alignment have not been requested yet.
+- Commit and push have not been user-approved yet.
 
 ## Next Recommended Step for ChatGPT
-Review the aligned skill/script contract and confirm that no remaining audit-package naming mismatch exists.
+Ask the user for explicit commit/push approval or mark the closeout complete locally.
 
 ## Next Recommended Step for Codex
-Use `janus-git-governance` only if the user later approves a commit or push for this skill/script alignment.
+Use `janus-git-governance` only after explicit user approval for commit/push.
 
 ## Last Updated
-2026-06-11 19:45 local time
+2026-06-11 19:55 local time
