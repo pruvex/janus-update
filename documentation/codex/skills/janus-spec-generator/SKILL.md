@@ -8,13 +8,14 @@ description: Generate deterministic Janus Diamond feature specs from the latest 
 ## Overview
 
 Generate a final Janus Feature Spec from a locked decision source. Do not brainstorm, implement, create tasks, or invent unresolved requirements.
+This is primarily a ChatGPT-led generation skill. Codex normally consumes the resulting Spec handoff rather than leading the spec-generation decision step.
 
 ## Source Priority
 
-Use only one source:
+Use only one locked source:
 
 1. Latest `LATEST DECISION SUMMARY`.
-2. Latest explicit user-approved feature decision.
+2. Latest explicit user-approved feature decision, but only if it is already decision-locked and not a fresh brainstorm.
 3. If neither exists, ask exactly one blocking question.
 
 Ignore earlier brainstorming, rejected options, stale drafts, contradictory chat context, implementation suggestions, and optional nice-to-haves.
@@ -40,6 +41,7 @@ BLOCKING QUESTION
 ```
 
 Do not output a Spec with missing, optional, maybe, TBD, or ambiguous core decisions.
+Do not treat a vague `ok` as a locked decision or as a valid handoff substitute.
 
 ## Output Contract
 
@@ -56,7 +58,7 @@ SPEC GENERATION RESULT
 - Spec: <path>
 - Decision: GENERATED | BLOCKED
 - Complexity Score: <0-100 integer | N/A>
-- Model Recommendation: <5.4 | 5.5>, <low | medium | medium-high | high>
+- Model Recommendation: <5.4 | 5.5>, <low | medium | high>
 - Key Note: <one short sentence>
 - Next Skill: janus-spec-review | janus-spec-normalizer | NEEDS_INFO
 ```
@@ -101,6 +103,8 @@ Use these headings exactly and in this order inside the written Spec:
 
 If a section is not applicable, write `Nicht zutreffend: <kurze Begruendung>`.
 
+If any required product decision is still open, stop with the blocking question instead of drafting around the gap.
+
 ## Routing Block
 
 Directly under `## SPEC REVIEW EXECUTION ROUTING`, include exactly these fields, one per physical line:
@@ -108,7 +112,7 @@ Directly under `## SPEC REVIEW EXECUTION ROUTING`, include exactly these fields,
 ```text
 target_skill: janus-spec-review
 recommended_model: 5.4 | 5.5
-recommended_reasoning: low | medium | medium-high | high
+recommended_reasoning: low | medium | high
 new_chat: yes | no
 complexity_score: <0-100 integer>
 confidence: LOW | MEDIUM | HIGH
@@ -176,3 +180,10 @@ Do not include implementation code, API signatures, database schema, concrete fi
 After a valid Spec is created, default to `janus-spec-review`.
 
 Recommend `janus-spec-normalizer` only when the generated Spec still needs mechanical parser-safe cleanup.
+
+When control moves from ChatGPT to Codex, output model/reasoning above exactly one compact fenced `text` block that contains only:
+
+- `NEXT: janus-spec-normalizer` or `NEXT: janus-spec-review`
+- the Spec path
+- the locked decision source
+- one short note if a mechanical cleanup is still required
