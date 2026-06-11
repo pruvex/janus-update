@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Review `codex-audit-package-builder` against the collaboration matrix and close out its evidence-bound audit-package handoff behavior with Diamond standard.
+Harmonize `codex-audit-package-builder` with the concrete output shape of its versioned package-builder script.
 
 ## Active Phase
-Review-Closeout
+Audit Package Builder Output-Shape Alignment
 
 ## Last Decision
 `documentation/backlog/BACKLOG.md` remains the binding backlog source.
@@ -39,33 +39,30 @@ Repo-skill governance must distinguish versioned repo skill sources under `docum
 `codex-audit-package-builder` should stay Codex-led, build compact packages only from bound evidence, avoid final audit decisions, product decisions, tests, builds, and Git actions, and emit exactly one compact fenced `text` handoff toward `janus-final-audit` when a fresh audit chat or actor boundary is needed.
 
 ## Last Codex Work
-Reviewed `codex-audit-package-builder`, tightened evidence requirements, final-audit boundaries, no-tests/no-builds/no-Git rules, and fresh audit handoff behavior, and marked the matrix row as `UPDATED`.
+Compared `documentation/codex/skills/codex-audit-package-builder/SKILL.md` against the versioned script at `documentation/codex/skills/codex-audit-package-builder/scripts/build_audit_package.py`.
+Aligned the skill with the real script path, default output path, core CLI options, concrete section order, and the script-emitted final handoff block, while keeping the repo-level next step routed to `janus-final-audit`.
+Renamed the script's final handoff target from `final-skill-audit` to `janus-final-audit` so the script and repo workflow now match exactly.
 
 ## Changed Files
 - documentation/ai/CURRENT_STATE.md
-- documentation/ai/SKILL_COLLABORATION_MATRIX.md
 - documentation/codex/skills/codex-audit-package-builder/SKILL.md
 
 ## Tests / Validation
-- Targeted review of `codex-audit-package-builder` against `SKILL_COLLABORATION_MATRIX.md`
-- Verified the skill remains Codex-led and package-building only
-- Verified required evidence includes changed files, validation evidence, known risks, audit notes, unresolved blockers, and bound artifacts
-- Verified the skill does not decide final audit `PASS`, `PASS WITH FIXES`, or `BLOCKED`
-- Verified the skill forbids product decisions, broad chat-history reconstruction, tests, builds, Git actions, and release actions
-- Verified the next handoff to `janus-final-audit`, `janus-debug`, `janus-test-pipeline`, or caller review is explicit and compact
-- Verified bare `ok` is not accepted as a handoff substitute
-- Verified no other skill file changed in this closeout
-- Validation that no other repo skill source file was edited
+- Read the versioned `build_audit_package.py` implementation directly
+- Verified the actual output path default is `<cwd>/AUDIT_PACKAGE.md`
+- Verified the actual CLI surface, section order, required excerpt behavior, and re-audit delta rendering
+- Verified the skill remains Codex-led, evidence-bound, and not a final-audit decision step
+- Verified no other skill file changed and no product code changed
+- Ran `git diff --check`
 
 ## Open Risks
-- The audit package builder may still be harmonized later with the concrete output shape of `scripts/build_audit_package.py`.
-- Commit and push for this review closeout have not been requested yet.
+- Commit and push for this output-shape alignment have not been requested yet.
 
 ## Next Recommended Step for ChatGPT
-Perform a final remote check and confirm that no `UNREVIEWED` repo-skill rows remain.
+Review the aligned skill/script contract and confirm that no remaining audit-package naming mismatch exists.
 
 ## Next Recommended Step for Codex
-No further skill review work is needed here; use `janus-git-governance` only if the user later approves a commit or push.
+Use `janus-git-governance` only if the user later approves a commit or push for this skill/script alignment.
 
 ## Last Updated
-2026-06-11 18:15 local time
+2026-06-11 19:45 local time
