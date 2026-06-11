@@ -8,6 +8,7 @@ description: Debug failed Janus execution, tests, provider/runtime behavior, E2E
 ## Overview
 
 Perform bounded debug inside the bound task/spec/backlog scope. Do not add new features, expand scope, bypass generated test evidence, expose secrets, or claim `FIXED` without validation.
+This is primarily a Codex-led debug skill. ChatGPT should take over only when evidence is unclear, risk escalates, a product decision is required, or an actor/chat boundary needs one compact handoff.
 
 ## Source References
 
@@ -31,6 +32,9 @@ Require:
 - previous failure code/evidence summary when iteration > 1
 
 If missing, return `SKILL 5 DEBUG RESULT: BLOCKED` with `Reason: DEBUG PACKAGE INCOMPLETE`.
+Bind exactly one failure slice per run. If the package mixes multiple unrelated bugs, failure chains, or fix goals, block and require a narrower debug package instead of batching them together.
+
+Do not reconstruct scope from broad chat history when the debug package, failure code, and evidence paths are already sufficient to isolate the slice.
 
 ## WHAT_I_LEARNED Lookup
 
@@ -61,6 +65,7 @@ Recommend `5.5`, high/very high, when:
 - From iteration 2 onward, compare failure code and evidence with previous iteration.
 - Before iteration 5, stop and escalate if there are 3 unchanged transitions or 4 identical failure snapshots.
 - After iteration 5 without valid fix, escalate to `5.5`.
+- If evidence becomes contradictory, stale, or no longer points to one failure slice, stop with `BLOCKED` instead of widening scope.
 
 ## Verification Chain
 
@@ -72,6 +77,7 @@ After a fix touching chat, frontend, backend, provider, tool, memory, stream, or
 4. Handoff to `janus-final-audit` or `janus-test-pipeline`.
 
 Manual checks can supplement evidence but cannot replace generated/automated evidence.
+Do not make product decisions, architecture changes, or scope additions inside debug. Route those decisions back to the caller or the appropriate upstream planning skill.
 
 ## Generator and Runner Gate
 
@@ -110,6 +116,15 @@ SKILL 5 OUTPUT BLOCKED: SECRET_REDACTION_REQUIRED
 
 For TestRun findings, prefer `janus-test-pipeline` retest before final audit.
 
+Use these canonical meanings:
+
+- `FIXED`: one bounded failure slice is resolved and validated
+- `BLOCKED`: required evidence is missing, contradictory, redaction-limited, or unsafe to continue
+- `NEEDS_INFO`: one specific clarification or artifact is missing from the bound slice
+- `REROUTE`: the slice belongs in `janus-test-pipeline`, `janus-executioner`, `janus-final-audit`, or caller review instead of more debug
+
+A bare `ok` or similar acknowledgement is never a valid handoff replacement.
+
 ## Escalation
 
 On iteration 5, stagnation, or non-deterministic root cause:
@@ -122,7 +137,7 @@ On iteration 5, stagnation, or non-deterministic root cause:
 ## Output Skeleton
 
 ```text
-SKILL 5 DEBUG RESULT: FIXED | NEEDS RETEST | ESCALATION REQUIRED | BLOCKED | OUT OF SCOPE
+SKILL 5 DEBUG RESULT: FIXED | BLOCKED | NEEDS_INFO | REROUTE | ESCALATION REQUIRED
 
 Iteration: <1-5>
 Progress-Validierung: Failure Code <code>; Evidence geaendert ggü. N-1: JA | NEIN | N/A; Stagnationszaehler: <n>; Stopp-Regel ausgeloest: JA | NEIN
@@ -146,6 +161,13 @@ Decision:
 Reason:
 Copy Prompt:
 ```
+
+If control moves across an actor or chat boundary, emit exactly one compact fenced `text` block with:
+
+- `NEXT:` and the exact next skill when known
+- the bound failure slice identity
+- the primary blocker or fix state
+- the minimum evidence or action needed next
 
 ## Validator
 
