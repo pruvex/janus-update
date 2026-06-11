@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Review `janus-spec-review` against the collaboration matrix and align its single-spec, completeness, determinism, task-readiness, and handoff behavior with Diamond standard.
+Review `janus-spec-to-task` against the collaboration matrix and align its approved-spec-only, deterministic task-artifact, and handoff behavior with Diamond standard.
 
 ## Active Phase
-Spec Review Targeted Review
+Spec To Task Targeted Review
 
 ## Last Decision
 `documentation/backlog/BACKLOG.md` remains the binding backlog source.
@@ -27,33 +27,34 @@ Repo-skill governance must distinguish versioned repo skill sources under `docum
 `janus-spec-generator` should stay ChatGPT-led, require one locked decision source, block on open product questions, avoid re-brainstorming, and emit explicit model/reasoning plus exactly one compact fenced `text` handoff toward `janus-spec-normalizer` or `janus-spec-review`.
 `janus-spec-normalizer` should stay ChatGPT-led, accept exactly one draft Spec, block on missing or unclear drafts, preserve product meaning, and emit explicit model/reasoning plus exactly one compact fenced `text` handoff toward `janus-spec-review` when control must pass to Codex.
 `janus-spec-review` should stay ChatGPT-led, review exactly one Feature Spec, distinguish `APPROVED`, `NEEDS_REVISION`, and `BLOCKED`, never fill product gaps silently, and emit explicit model/reasoning plus exactly one compact fenced `text` handoff toward `janus-spec-to-task`, `janus-spec-generator`, or `janus-feature-design`.
+`janus-spec-to-task` should stay ChatGPT-led, accept exactly one `APPROVED` Feature Spec, block on missing approval evidence, never fill product gaps silently, and emit explicit model/reasoning plus exactly one compact fenced `text` handoff toward `janus-task-breakdown`, `janus-spec-review`, or `janus-spec-generator`.
 
 ## Last Codex Work
-Reviewed `janus-spec-review`, tightened single-spec review rules, clarified decision states, and marked the matrix row as `UPDATED`.
+Reviewed `janus-spec-to-task`, tightened approval-evidence requirements, deterministic task-artifact rules, and handoff behavior, and marked the matrix row as `UPDATED`.
 
 ## Changed Files
 - documentation/ai/CURRENT_STATE.md
 - documentation/ai/SKILL_COLLABORATION_MATRIX.md
-- documentation/codex/skills/janus-spec-review/SKILL.md
+- documentation/codex/skills/janus-spec-to-task/SKILL.md
 
 ## Tests / Validation
-- Targeted review of `janus-spec-review` against `SKILL_COLLABORATION_MATRIX.md`
-- Verified the skill remains ChatGPT-led and single-spec-first
-- Verified completeness, determinism, and task-readiness are now explicitly defined
-- Verified `APPROVED`, `NEEDS_REVISION`, and `BLOCKED` are clearly separated
-- Verified the next handoff to `janus-spec-to-task` or the proper upstream skill is compact and explicit
+- Targeted review of `janus-spec-to-task` against `SKILL_COLLABORATION_MATRIX.md`
+- Verified the skill remains ChatGPT-led and approved-spec-only
+- Verified missing or unclear approval evidence now blocks instead of being inferred
+- Verified deterministic task artifacts are now explicitly defined for `janus-task-breakdown`
+- Verified the next handoff to `janus-task-breakdown` or the proper upstream skill is compact and explicit
 - Verified bare `ok` is not accepted as a handoff substitute
 - Validation that no other repo skill source file was edited
 
 ## Open Risks
 - Most other skill rows are still `UNREVIEWED`; the matrix remains inventory first, not a full skill-quality review.
-- The spec-review handoff may still be harmonized later with spec-to-task formatting.
+- The spec-to-task handoff may still be harmonized later with task-breakdown formatting.
 
 ## Next Recommended Step for ChatGPT
-Review the updated `janus-spec-review` row in `documentation/ai/SKILL_COLLABORATION_MATRIX.md` and choose the next repo skill to move from `UNREVIEWED` into targeted individual review.
+Review the updated `janus-spec-to-task` row in `documentation/ai/SKILL_COLLABORATION_MATRIX.md` and choose the next repo skill to move from `UNREVIEWED` into targeted individual review.
 
 ## Next Recommended Step for Codex
-Use `janus-spec-review` only on one Feature Spec, then review the next repo skill one by one.
+Use `janus-spec-to-task` only from one approved Feature Spec, then review the next repo skill one by one.
 
 ## Last Updated
-2026-06-11 15:59 local time
+2026-06-11 16:06 local time
