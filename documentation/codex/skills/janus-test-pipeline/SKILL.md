@@ -10,6 +10,7 @@ description: Route Janus TestSpec, TestPlan, TestRun, live execution, finding tr
 Use this skill for Janus testing work that starts from `documentation/TEST_SPEC/`, `documentation/test-runs/`, or `documentation/test-results/`.
 
 This skill replaces the old five-stage Test Skill pipeline with one Codex-native router. Keep the pipeline deterministic, evidence-first, and bounded. Do not implement product changes in this skill.
+This is primarily a Codex-led evidence skill. ChatGPT should take over only when evidence is unclear, risk is elevated, or an actor/chat boundary needs a compact routing handoff.
 
 ## Context Budget
 
@@ -25,6 +26,14 @@ Prefer:
 
 Do not reread broad test-run history when the current mode can be decided from the active `TEST_RUN_ID` bundle.
 
+Keep these artifacts separate:
+
+- TestSpec: source-of-truth intent and assertions under `documentation/TEST_SPEC/`
+- TestPlan: compiled execution plan under `documentation/test-runs/`
+- TestRun: one concrete `TEST_RUN_ID` bundle under `documentation/test-runs/`
+- TestResult: execution evidence under `documentation/test-results/`
+- Retest evidence: the later `TEST_RUN_ID` bundle used to close a prior blocker
+
 ## Hard Rules
 
 - Work on exactly one TestSpec, TestPlan, TestRun, or TestResult set at a time.
@@ -35,6 +44,7 @@ Do not reread broad test-run history when the current mode can be decided from t
 - Infrastructure, auth, provider outage, missing credentials, or broken test harness issues are blockers, not product findings.
 - Before live external/provider execution, present the preflight evidence and wait for explicit user approval: `OK START LIVE TEST`.
 - Use `janus-git-governance` before committing, pushing, tagging, or release branching.
+- Do not treat a vague `ok` as permission to start live tests or as a valid handoff substitute.
 
 ## Evidence Retention
 
@@ -149,6 +159,15 @@ TEST_SCOPE:
 - Dropped Context:
 ```
 
+Only allow live test execution when:
+
+- one validated TestPlan is bound
+- one generated runner is bound
+- one `TEST_RUN_ID` is bound
+- prerequisites and evidence output paths are explicit
+
+Otherwise block instead of improvising a run.
+
 ## Mode: LIVE_TEST_EXECUTION
 
 Inputs:
@@ -192,6 +211,13 @@ TEST_SCOPE:
 - Evidence Files:
 - Dropped Context:
 ```
+
+Document the execution outcome explicitly as one of:
+
+- `PASS`: evidence supports the tested claim
+- `FAIL`: reproducible product/spec/test failure is present
+- `FLAKY`: inconsistent outcome across intended identical conditions
+- `INCONCLUSIVE`: evidence is missing, contradictory, infra-blocked, or insufficient
 
 ## Mode: FINDING_TRIAGE
 
@@ -256,6 +282,13 @@ Process:
 - `PASS WITH FIXES` -> `janus-documentation-update` for non-code cleanup.
 - `BLOCKED` -> `janus-debug` or Backlog intake.
 
+Map retest evidence states as:
+
+- `PASS` -> route to `janus-final-audit`
+- `FAIL` -> route to `janus-debug`
+- `FLAKY` -> route to `janus-debug`
+- `INCONCLUSIVE` -> route to caller review or `janus-debug` depending on the blocker type
+
 For re-audit after a local fix, prefer comparing only:
 
 - prior failing result bundle
@@ -287,3 +320,10 @@ For every mode, respond with:
 - `Drop Context`
 
 Keep summaries short and point to file paths instead of pasting large artifacts.
+
+If control moves across actor or chat boundaries, emit exactly one compact fenced `text` block with:
+
+- `NEXT:` and the exact next skill when known
+- the bound TestSpec/TestPlan/TestRun/TestResult identity
+- the evidence state (`PASS`, `FAIL`, `FLAKY`, or `INCONCLUSIVE`)
+- the minimum next action
