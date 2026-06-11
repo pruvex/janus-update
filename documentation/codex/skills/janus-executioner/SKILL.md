@@ -8,6 +8,7 @@ description: Execute exactly one Janus target task from bound artifacts after a 
 ## Overview
 
 Implement exactly one target task. Use bound artifacts only: task, Spec, Backlog item, precheck, and validation plan. Do not plan new features, expand scope, bypass evidence, or change provider/architecture boundaries unless the task explicitly requires it.
+This is primarily a Codex execution skill. ChatGPT normally uses its result only when Codex returns `BLOCKED`, `FAILED`, `NEEDS_INFO`, or a reroute/escalation outcome.
 
 ## Source References
 
@@ -31,6 +32,7 @@ Pre-Check: PRE-CHECK PASSED
 ```
 
 If a precheck is claimed, validate the handoff literals from `janus-preimplementation-check`. Block if invalid.
+Do not start implementation without a matching `PRE-CHECK PASSED` handoff bound to exactly one target task or implementation slice.
 
 ## Model Gate
 
@@ -49,6 +51,8 @@ Recommend `5.5` only for high-risk security/privacy/provider/memory architecture
 7. Run Playwright/generator validation unless N/A is explicitly valid.
 8. Fix verification failures only inside task scope, max two focused attempts.
 9. End in exactly one canonical state: `PASS`, `BLOCKED`, `NEEDS_INFO`, `FAILED`, or `HANDOFF`.
+
+If the work stops being exactly one target task or one implementation slice, stop immediately and reroute instead of widening the execution.
 
 ## Command-First Rule
 
@@ -90,6 +94,8 @@ Reason: Skill-3 handoff lacks complete V3.2 copyblock.
 Required Fix: Run janus-preimplementation-check again.
 ```
 
+A bare `ok` or similar acknowledgement is never a valid handoff replacement.
+
 ## Provider Isolation
 
 For provider-specific tasks:
@@ -125,6 +131,13 @@ If validation fails:
 - make at most two focused fixes in scope
 - if still failing or out of scope, hand off to `janus-debug`
 - never proceed to final audit on unresolved failure
+
+Treat any of these as scope-growth or reroute signals:
+
+- a second target task becomes necessary
+- the touched area expands beyond the expected file cluster
+- product or architecture decisions appear mid-implementation
+- the required validation surface stops being bounded and obvious
 
 ## Completion Rules
 
@@ -178,6 +191,7 @@ Before handing off to `janus-final-audit`, prepare or refresh a compact audit pa
 Prefer `codex-audit-package-builder` for this package. For blocker follow-up work, update the existing package instead of creating a new broad package from scratch.
 
 If the next step should happen in a fresh chat, the final answer must include one fenced `text` `NEW_CHAT_HANDOFF` block that references the package path, target skill, and model/reasoning. Do not rely on prose-only routing.
+If the next step stays in the same warm Codex context, naming `Target Skill: janus-final-audit` is enough after a successful bounded execution.
 
 ## CURRENT_STATE Requirement
 
@@ -241,6 +255,8 @@ New Chat: yes | no
 Next User Action:
 NEW_CHAT_HANDOFF: <fenced text block only when New Chat: yes>
 ```
+
+For `BLOCKED`, `FAILED`, `NEEDS_INFO`, or reroute states that must go back to ChatGPT, emit exactly one compact fenced `text` block with the blocked target task, failure or scope-growth reason, minimum artifacts, and exact next skill when known.
 
 ## Validator
 
