@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-OpenRouter delegation harness progress, timeout, and finish-reason classification patch is local and validated.
+OpenRouter delegation harness progress, timeout, and finish-reason classification patch is synchronized to `backup/develop`.
 
 ## Active Phase
-Dev-environment OpenRouter benchmark tooling robustness patch; no production routing.
+Dev-environment OpenRouter benchmark tooling ready for Gemma 31B retry gate with progress and timeout controls; no production routing.
 
 ## Last Decision
 This work is a Codex development-environment and skill-orchestration improvement, not a Janus application backlog item.
@@ -27,6 +27,7 @@ The harness robustness commit `ba9458c0d` was pushed to `backup/develop`.
 The post-robustness state reconciliation commit `218ed5fd9` was pushed to `backup/develop`.
 The outbound schema projection commit `f235819be` was pushed to `backup/develop`.
 The post-projection state reconciliation commit `9c1a750de` was pushed to `backup/develop`.
+The progress/timeout/error-classification commit `3019b9fb` was pushed to `backup/develop`.
 
 ## Last Codex Work
 Confirmed no healthcheck reminder was due.
@@ -37,7 +38,8 @@ Added `--request-timeout-seconds` with default `120`; it applies only to externa
 Added finish-reason-based invalid JSON classification: `length` -> `truncated_json`, `error` -> `provider_generation_error`, otherwise `invalid_json`.
 Preserved HTTP 429 classification as `rate_limited / HTTP 429` and preserved HTTP 200 top-level OpenRouter error-payload classification.
 Updated README and model scoring report for progress output, timeout behavior, and failure classification.
-No live OpenRouter calls were run during this patch.
+Committed and pushed the scoped progress/timeout/error-classification patch as `3019b9fb`.
+No live OpenRouter calls were run after this patch.
 No production routing was approved.
 
 ## Changed Files
@@ -48,11 +50,11 @@ No production routing was approved.
 - documentation/codex/openrouter-delegation/scripts/openrouter_delegation_benchmark.py
 
 ## Remote Sync Evidence
-- Latest synchronized commit: `9c1a750de` (`docs(ai): reconcile openrouter schema projection sync state`)
+- Latest synchronized patch commit: `3019b9fb` (`docs(codex): improve openrouter benchmark run feedback`)
 - Branch: `develop`
 - Remote: `backup/develop`
+- Verified after push: `HEAD`, `refs/remotes/backup/develop`, and `.git/FETCH_HEAD` resolved to `3019b9fb5729c41daa108106437484a02314398d`
 - Generated benchmark JSON files remain untracked local evidence and were not staged or pushed.
-- This progress/timeout/classification patch is local until committed/pushed through `janus-git-governance`.
 
 ## Tests / Validation
 - `python C:\Users\pruve\.codex\skills\codex-start-of-work-check\scripts\due_healthchecks.py` -> CLEAR
@@ -68,6 +70,9 @@ No production routing was approved.
 - HTTP 200 top-level error payload smoke test -> PASS; classification remains `OpenRouter error payload returned with HTTP 200`
 - Live gate without `--allow-external` -> blocked as expected before API-key use
 - Live gate with `--allow-external` but without `OPENROUTER_API_KEY` -> blocked as expected
+- Staged-only `janus-git-governance` guard for the progress/timeout/error-classification patch -> PASS
+- `git push backup develop` for `3019b9fb` -> PASS
+- Remote sync verification for `3019b9fb` -> PASS
 
 ## Open Risks
 - No live OpenRouter call has been run after this progress/timeout/classification patch.
@@ -75,13 +80,13 @@ No production routing was approved.
 - `nvidia/nemotron-nano-9b-v2:free` remains excluded/incompatible pending a future provider response change.
 - Production routing remains `UNKNOWN`/disabled.
 - The existing worktree contains many pre-existing Janus product/test/documentation changes unrelated to this prototype; do not stage broadly.
-- GitHub or other remote readers will not see this local CURRENT_STATE until a later explicit `janus-git-governance` commit/push.
+- This rolling snapshot records the synchronized `3019b9fb` patch state; the closeout response records the follow-up CURRENT_STATE reconciliation commit.
 
 ## Next Recommended Step for ChatGPT
-Review the local progress/timeout/classification patch and confirm that the read-only, curated-corpus-only, non-production boundaries still hold.
+Use `backup/develop` commit `3019b9fb` as the shared state for the OpenRouter progress/timeout/error-classification patch.
 
 ## Next Recommended Step for Codex
 After explicit user approval and a process-local `OPENROUTER_API_KEY`, the next optional live gate is a curated-corpus-only retry for `google/gemma-4-31b-it:free` using `--run-live --allow-external --debug-response-shape --request-timeout-seconds 120`. Do not run live calls, approve production routing, or delegate Git/final-audit/release decisions without separate explicit approval.
 
 ## Last Updated
-2026-06-11 22:27 local time
+2026-06-11 22:41 local time
