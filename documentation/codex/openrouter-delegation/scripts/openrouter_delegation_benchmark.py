@@ -12,6 +12,7 @@ import datetime as dt
 import json
 import os
 import re
+import socket
 import sys
 import time
 import urllib.error
@@ -27,6 +28,7 @@ RESULT_SCHEMA_PATH = ROOT / "schemas" / "delegated_task_result.schema.json"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 MAX_DEBUG_ERROR_MESSAGE_CHARS = 180
 OPENROUTER_SCHEMA_STRIP_KEYS = {"$schema", "$id", "uniqueItems"}
+DEFAULT_REQUEST_TIMEOUT_SECONDS = 120.0
 
 FORBIDDEN_PRIVACY_TIERS = {
     "SECRET",
@@ -120,6 +122,32 @@ def response_shape_metadata(
     return metadata
 
 
+def classify_invalid_json(finish_reason: Any) -> str:
+    if finish_reason == "length":
+        return "truncated_json"
+    if finish_reason == "error":
+        return "provider_generation_error"
+    return "invalid_json"
+
+
+def is_timeout_error(exc: BaseException) -> bool:
+    if isinstance(exc, (TimeoutError, socket.timeout)):
+        return True
+    return "timed out" in str(exc).lower()
+
+
+def progress(event: str, *, task_id: str, model_id: str, status: str, elapsed_ms: float | None = None) -> None:
+    fields = [
+        f"event={event}",
+        f"task_id={task_id}",
+        f"model_id={model_id}",
+        f"status={status}",
+    ]
+    if elapsed_ms is not None:
+        fields.append(f"elapsed_ms={int(elapsed_ms)}")
+    print("PROGRESS " + " ".join(fields), file=sys.stderr)
+
+
 def parse_openrouter_payload(
     *,
     payload: dict[str, Any],
@@ -141,8 +169,8 @@ def parse_openrouter_payload(
         return None, "missing string content", debug_shape
     try:
         parsed = json.loads(content)
-    except json.JSONDecodeError as exc:
-        return None, f"invalid JSON content: {exc}", debug_shape
+    except json.JSONDecodeError:
+        return None, classify_invalid_json(debug_shape.get("finish_reason")), debug_shape
     parsed.setdefault("model_id", payload.get("model", model_id))
     return parsed, None, debug_shape
 
@@ -343,6 +371,7 @@ def call_openrouter(
     case: dict[str, Any],
     schema: dict[str, Any],
     api_key: str,
+    request_timeout_seconds: float,
 ) -> tuple[dict[str, Any] | None, float, str | None, dict[str, Any] | None]:
     body = {
         "model": model,
@@ -371,18 +400,20 @@ def call_openrouter(
     started = time.perf_counter()
     http_status: int | None = None
     try:
-        with urllib.request.urlopen(request, timeout=90) as response:
+        with urllib.request.urlopen(request, timeout=request_timeout_seconds) as response:
             http_status = response.status
             payload = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
-        return None, (time.perf_counter() - started) * 1000, f"HTTP {exc.code}", response_shape_metadata(
+        error = "rate_limited / HTTP 429" if exc.code == 429 else f"HTTP {exc.code}"
+        return None, (time.perf_counter() - started) * 1000, error, response_shape_metadata(
             task_id=case["task_id"],
             model_id=model,
             http_status=exc.code,
             payload=None,
         )
     except OSError as exc:
-        return None, (time.perf_counter() - started) * 1000, str(exc), response_shape_metadata(
+        error = "request_timeout" if is_timeout_error(exc) else str(exc)
+        return None, (time.perf_counter() - started) * 1000, error, response_shape_metadata(
             task_id=case["task_id"],
             model_id=model,
             http_status=http_status,
@@ -401,7 +432,7 @@ def call_openrouter(
     return parsed, elapsed_ms, None, None
 
 
-def run_live(models: list[str], output: Path | None, debug_response_shape: bool) -> int:
+def run_live(models: list[str], output: Path | None, debug_response_shape: bool, request_timeout_seconds: float) -> int:
     api_key = os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
         print("ERROR: OPENROUTER_API_KEY is not set", file=sys.stderr)
@@ -420,6 +451,7 @@ def run_live(models: list[str], output: Path | None, debug_response_shape: bool)
     for model in models:
         for case in corpus["cases"]:
             if case.get("privacy_tier") in FORBIDDEN_PRIVACY_TIERS:
+                progress("start", task_id=case["task_id"], model_id=model, status="local_deny")
                 result_cases.append(
                     {
                         "task_id": case["task_id"],
@@ -432,10 +464,19 @@ def run_live(models: list[str], output: Path | None, debug_response_shape: bool)
                         "elapsed_ms": 0,
                     }
                 )
+                progress("complete", task_id=case["task_id"], model_id=model, status="local_deny", elapsed_ms=0)
                 continue
 
-            parsed, elapsed_ms, call_error, debug_shape = call_openrouter(model, case, schema, api_key)
+            progress("start", task_id=case["task_id"], model_id=model, status="external")
+            parsed, elapsed_ms, call_error, debug_shape = call_openrouter(
+                model,
+                case,
+                schema,
+                api_key,
+                request_timeout_seconds,
+            )
             if call_error or parsed is None:
+                progress("complete", task_id=case["task_id"], model_id=model, status="call_error", elapsed_ms=elapsed_ms)
                 result_case = {
                     "task_id": case["task_id"],
                     "model_id": model,
@@ -453,6 +494,13 @@ def run_live(models: list[str], output: Path | None, debug_response_shape: bool)
 
             schema_errors = validate_delegated_result(parsed)
             score, score_errors = score_result(case, parsed, schema_errors)
+            progress(
+                "complete",
+                task_id=case["task_id"],
+                model_id=model,
+                status="schema_valid" if not schema_errors else "schema_invalid",
+                elapsed_ms=elapsed_ms,
+            )
             result_cases.append(
                 {
                     "task_id": case["task_id"],
@@ -499,6 +547,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--debug-response-shape", action="store_true", help="Record safe response-shape metadata for missing or invalid live content.")
     parser.add_argument("--models", default="", help="Comma-separated OpenRouter model ids for live benchmark.")
     parser.add_argument("--output", type=Path, help="Optional output path for live benchmark JSON.")
+    parser.add_argument("--request-timeout-seconds", type=float, default=DEFAULT_REQUEST_TIMEOUT_SECONDS, help="Per-request timeout for external OpenRouter HTTP calls.")
     args = parser.parse_args(argv)
 
     corpus = load_json(CORPUS_PATH)
@@ -543,11 +592,14 @@ def main(argv: list[str]) -> int:
         if not args.allow_external:
             print("ERROR: --allow-external is required with --run-live", file=sys.stderr)
             return 2
+        if args.request_timeout_seconds <= 0:
+            print("ERROR: --request-timeout-seconds must be greater than 0", file=sys.stderr)
+            return 2
         models = [item.strip() for item in args.models.split(",") if item.strip()]
         if not models:
             print("ERROR: provide at least one model with --models", file=sys.stderr)
             return 2
-        return run_live(models, args.output, args.debug_response_shape)
+        return run_live(models, args.output, args.debug_response_shape, args.request_timeout_seconds)
 
     parser.print_help()
     return 0

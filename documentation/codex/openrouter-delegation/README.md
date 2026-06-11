@@ -106,6 +106,10 @@ The script never reads arbitrary repo files for prompts. It only reads the curat
 
 Before sending a JSON Schema to OpenRouter, the harness projects the local schema into a provider-compatible request schema. It strips local or provider-incompatible schema keywords currently known to break providers: `$schema`, `$id`, and `uniqueItems`. The checked-in local schemas remain stricter and continue to be used for local validation.
 
+Live benchmark operator feedback is intentionally narrow. The harness prints progress lines to stderr with task id, model id, coarse status, and elapsed milliseconds only. It does not print prompts, generated content, raw responses, headers, API keys, user ids, environment variables, private files, arbitrary repo files, or secrets.
+
+External request timeouts are bounded by `--request-timeout-seconds`, defaulting to `120`. The timeout applies only to OpenRouter HTTP calls, not to dry-run, validate-only, or local privacy-tier deny behavior. Timeout results are recorded as `request_timeout` while preserving the benchmark-result JSON structure.
+
 Optional debug mode:
 
 - `--debug-response-shape` may be combined with live benchmark mode to diagnose provider response-shape mismatches.
@@ -132,6 +136,14 @@ Core fields:
 - `risk_flags`
 
 Codex treats schema failure as a benchmark failure, not as something to repair silently. Response-healing can be tested later as a separate model capability, but the baseline should measure native compliance first.
+
+Invalid JSON failures are classified by safe response metadata when available:
+
+- `finish_reason: length` -> `truncated_json`
+- `finish_reason: error` -> `provider_generation_error`
+- no finish-reason signal -> `invalid_json`
+- HTTP 429 -> `rate_limited / HTTP 429`
+- HTTP 200 top-level OpenRouter error payload -> `OpenRouter error payload returned with HTTP 200`
 
 ## Routing Policy
 

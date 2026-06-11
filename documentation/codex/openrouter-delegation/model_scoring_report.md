@@ -21,6 +21,8 @@ This report tracks candidate OpenRouter models for bounded Codex development-wor
 - A debug run for `google/gemma-4-31b-it:free` produced HTTP 200 top-level `error` payloads for external cases, with no `choices`, no `message`, no `content`, and no `parsed`/`reasoning`/`refusal`/`tool_calls`.
 - The sanitized provider message was `Upstream error from OpenInference: Grammar error: Unimplemented keys: ["uniqueItems"]`; local forbidden privacy-tier blocking still passed.
 - The harness now projects the local schema before sending it to OpenRouter by stripping `$schema`, `$id`, and `uniqueItems`. Local schema validation remains stricter.
+- Gemma 31B retry evidence after the schema projection patch showed the prior `uniqueItems` grammar error was resolved, local forbidden privacy-tier blocking still passed, two external cases returned schema-valid partial scores, and three external cases returned invalid JSON with finish reasons `error` or `length`.
+- The harness now reports safe per-case progress, supports configurable OpenRouter request timeouts, and maps invalid JSON with `finish_reason: length` to `truncated_json` and `finish_reason: error` to `provider_generation_error`.
 
 ## Candidate Classes
 
@@ -96,6 +98,12 @@ After the outbound schema projection patch, Gemma 31B may be retried with the sa
 
 ```powershell
 python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py --run-live --allow-external --debug-response-shape --models "google/gemma-4-31b-it:free" --output documentation\codex\openrouter-delegation\benchmark_result_free_gemma_31b_retry_2026-06-11.json
+```
+
+For long-running free-model retries, keep progress visible and bound each external request:
+
+```powershell
+python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py --run-live --allow-external --debug-response-shape --request-timeout-seconds 120 --models "google/gemma-4-31b-it:free" --output documentation\codex\openrouter-delegation\benchmark_result_free_gemma_31b_retry_progress_2026-06-11.json
 ```
 
 ## Routing Recommendation
