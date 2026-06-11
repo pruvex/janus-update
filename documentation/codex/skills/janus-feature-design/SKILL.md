@@ -8,6 +8,7 @@ description: Guide vague Janus feature ideas into decision-locked, spec-ready su
 ## Overview
 
 Use this skill to turn a rough Janus idea into a `LATEST DECISION SUMMARY`. Do not implement, create tasks, or make code-level architecture decisions.
+This is primarily a ChatGPT-led clarification skill. Codex normally consumes the resulting locked decision handoff rather than leading the feature-design conversation.
 
 ## Source Reference
 
@@ -26,6 +27,7 @@ Read the source only if exact legacy wording is needed. Otherwise follow this co
 - Avoid code, APIs, file paths, database design, model assignment, and task breakdown.
 - Do not list many open alternatives.
 - Do not start implementation.
+- Do not send an idea forward to `janus-spec-generator` while relevant product questions are still open.
 
 ## Decision Areas
 
@@ -92,8 +94,19 @@ Routing Reason:
 Recommended Next Skill:
 ```
 
+If any required product decision is still open, stop instead of forcing a summary forward. Do not treat a vague `ok` as a locked decision or as a valid handoff substitute.
+
+When control moves from ChatGPT to Codex, output:
+
+- model/reasoning header above the handoff
+- exactly one compact fenced `text` block
+- only the locked decision summary and the exact next skill
+
 ## Pipeline Routing
 
 Choose `FULL FEATURE PIPELINE` for new features, complex UX, persistence, integrations, multiple surfaces, or medium/high risk.
 
 Choose `BACKLOG PIPELINE` for small bugs, local UI tweaks, atomar behavior changes, low-risk improvements, and clearly bounded technical debt.
+
+Route to `janus-spec-generator` only when the summary is decision-locked and spec-ready.
+Route to `janus-backlog-intake` when the request is backlog-worthy but does not require feature-design clarification first.
