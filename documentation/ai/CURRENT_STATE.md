@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Review `janus-task-breakdown` against the collaboration matrix and align its one-target-task, precheck-ready, and handoff behavior with Diamond standard.
+Review `janus-test-pipeline` against the collaboration matrix and align its test-artifact-bound, evidence-first, and handoff behavior with Diamond standard.
 
 ## Active Phase
-Task Breakdown Targeted Review
+Test Pipeline Targeted Review
 
 ## Last Decision
 `documentation/backlog/BACKLOG.md` remains the binding backlog source.
@@ -29,33 +29,35 @@ Repo-skill governance must distinguish versioned repo skill sources under `docum
 `janus-spec-review` should stay ChatGPT-led, review exactly one Feature Spec, distinguish `APPROVED`, `NEEDS_REVISION`, and `BLOCKED`, never fill product gaps silently, and emit explicit model/reasoning plus exactly one compact fenced `text` handoff toward `janus-spec-to-task`, `janus-spec-generator`, or `janus-feature-design`.
 `janus-spec-to-task` should stay ChatGPT-led, accept exactly one `APPROVED` Feature Spec, block on missing approval evidence, never fill product gaps silently, and emit explicit model/reasoning plus exactly one compact fenced `text` handoff toward `janus-task-breakdown`, `janus-spec-review`, or `janus-spec-generator`.
 `janus-task-breakdown` should stay shared, accept exactly one compiled task artifact or clear backlog handoff, release exactly one precheck-ready target task, block on multiple plausible targets, and emit exactly one compact fenced `text` handoff toward `janus-preimplementation-check`, `janus-spec-to-task`, or `janus-backlog-handoff`.
+`janus-test-pipeline` should stay Codex-led, keep TestSpec, TestPlan, TestRun, TestResult, and retest evidence clearly separated, allow execution only from a bound plan/run bundle, document `PASS`, `FAIL`, `FLAKY`, and `INCONCLUSIVE` explicitly, and emit exactly one compact fenced `text` handoff toward `janus-final-audit`, `janus-debug`, or caller review.
 
 ## Last Codex Work
-Reviewed `janus-task-breakdown`, tightened one-target-task requirements, precheck-ready criteria, and handoff behavior, and marked the matrix row as `UPDATED`.
+Reviewed `janus-test-pipeline`, tightened test-artifact separation, execution prerequisites, evidence states, and handoff behavior, and marked the matrix row as `UPDATED`.
 
 ## Changed Files
 - documentation/ai/CURRENT_STATE.md
 - documentation/ai/SKILL_COLLABORATION_MATRIX.md
-- documentation/codex/skills/janus-task-breakdown/SKILL.md
+- documentation/codex/skills/janus-test-pipeline/SKILL.md
 
 ## Tests / Validation
-- Targeted review of `janus-task-breakdown` against `SKILL_COLLABORATION_MATRIX.md`
-- Verified the skill remains shared and one-target-task-only
-- Verified multiple plausible target tasks now block instead of being selected implicitly
-- Verified precheck-ready criteria are now explicitly defined
-- Verified the next handoff to `janus-preimplementation-check` or the proper upstream skill is compact and explicit
+- Targeted review of `janus-test-pipeline` against `SKILL_COLLABORATION_MATRIX.md`
+- Verified the skill remains Codex-led and test-artifact-bound
+- Verified TestSpec, TestPlan, TestRun, TestResult, and retest evidence are now explicitly separated
+- Verified live execution now requires a bound plan/run bundle and explicit approval
+- Verified `PASS`, `FAIL`, `FLAKY`, and `INCONCLUSIVE` are documented explicitly
+- Verified the next handoff to `janus-final-audit`, `janus-debug`, or caller review is compact and explicit
 - Verified bare `ok` is not accepted as a handoff substitute
 - Validation that no other repo skill source file was edited
 
 ## Open Risks
 - Most other skill rows are still `UNREVIEWED`; the matrix remains inventory first, not a full skill-quality review.
-- The task-breakdown handoff may still be harmonized later with preimplementation-check formatting.
+- The test-pipeline handoff may still be harmonized later with final-audit formatting.
 
 ## Next Recommended Step for ChatGPT
-Review the updated `janus-task-breakdown` row in `documentation/ai/SKILL_COLLABORATION_MATRIX.md` and choose the next repo skill to move from `UNREVIEWED` into targeted individual review.
+Review the updated `janus-test-pipeline` row in `documentation/ai/SKILL_COLLABORATION_MATRIX.md` and choose the next repo skill to move from `UNREVIEWED` into targeted individual review.
 
 ## Next Recommended Step for Codex
-Use `janus-task-breakdown` only for one task artifact or clear backlog handoff and release exactly one target task, then review the next repo skill one by one.
+Use `janus-test-pipeline` only on one bound test-artifact bundle at a time, then review the next repo skill one by one.
 
 ## Last Updated
-2026-06-11 16:13 local time
+2026-06-11 16:22 local time
