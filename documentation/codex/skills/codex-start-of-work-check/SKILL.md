@@ -14,6 +14,7 @@ At the start of a work session, check whether a scheduled healthcheck reminder i
 - This is a reminder gate, not a healthcheck runner.
 - It can mention Janus healthcheck reminders, but does not inspect or modify Janus code.
 - It can mention Codex skill healthcheck reminders, but does not optimize skills directly.
+- It should stay tiny and avoid loading broad repo context beyond `CURRENT_STATE.md` and the local reminder state.
 
 ## Workflow
 
@@ -22,6 +23,7 @@ At the start of a work session, check whether a scheduled healthcheck reminder i
 3. If it reports no due reminders, continue with the user's request normally.
 4. If it reports one or more due reminders, tell the user what is due and ask whether to start it now.
 5. Only run a healthcheck after the user replies `ok`.
+6. If the user wants a real healthcheck after the reminder, route to `janus-health-check` instead of expanding this skill.
 
 ## Sync Source
 
@@ -31,6 +33,12 @@ For substantial Janus work, use `documentation/ai/CURRENT_STATE.md` as the prima
 - `CURRENT_STATE.md` is a sync source, not a replacement for Spec, Backlog, TestSpec, or audit artifacts.
 - Do not treat `pruvex/janus-update` or `origin/master` as the current Janus project state.
 - For Git steps, use `janus-git-governance`.
+
+## Boundary
+
+- This skill is reminder-only and must not become a hygiene, drift, or repository-cleanliness scanner.
+- It must not run tests, builds, or Git actions.
+- A bare `ok` only means "start the due reminder flow", not "approve Git", "start a healthcheck", or "accept a handoff".
 
 ## Reminder Text
 
@@ -50,6 +58,7 @@ PASS: due reminder id
 DROP: unrelated work until user confirms
 
 Change the model/reasoning to `5.4/low`, write `ok`, and the due healthcheck starts immediately.
+If no reminder is due, keep the answer short and continue with the current work without loading more context.
 
 ## CURRENT_STATE Requirement
 
@@ -76,3 +85,9 @@ If a CURRENT_STATE update is required, keep it concise and include:
 Commit and push remain gated by `janus-git-governance` and explicit user approval.
 
 If no push happens or push fails, the completion or handoff must explicitly say that a remote such as GitHub may not contain the latest CURRENT_STATE yet.
+
+## Handoff
+
+If the actor or chat boundary changes, emit exactly one short fenced `text` block with the reminder result and next gate.
+Include `PASS`, `BLOCKED`, or `NEEDS_INFO` explicitly.
+A bare `ok` is never a valid handoff replacement for a cross-actor transition.
