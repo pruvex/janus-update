@@ -26,6 +26,7 @@ CORPUS_PATH = ROOT / "benchmark_corpus.json"
 RESULT_SCHEMA_PATH = ROOT / "schemas" / "delegated_task_result.schema.json"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 MAX_DEBUG_ERROR_MESSAGE_CHARS = 180
+OPENROUTER_SCHEMA_STRIP_KEYS = {"$schema", "$id", "uniqueItems"}
 
 FORBIDDEN_PRIVACY_TIERS = {
     "SECRET",
@@ -147,14 +148,14 @@ def parse_openrouter_payload(
 
 
 def schema_for_openrouter(schema: dict[str, Any]) -> dict[str, Any]:
-    """Strip local-only schema metadata before sending to OpenRouter."""
+    """Strip local-only or provider-incompatible schema keywords."""
 
     def clean(value: Any) -> Any:
         if isinstance(value, dict):
             return {
                 key: clean(item)
                 for key, item in value.items()
-                if key not in {"$schema", "$id"}
+                if key not in OPENROUTER_SCHEMA_STRIP_KEYS
             }
         if isinstance(value, list):
             return [clean(item) for item in value]

@@ -18,6 +18,9 @@ This report tracks candidate OpenRouter models for bounded Codex development-wor
 - A free-only run for `nvidia/nemotron-nano-9b-v2:free` produced no chat completion content for all external cases while the forbidden privacy-tier block passed locally.
 - Follow-up debug evidence showed HTTP 200 responses with top-level `error` payloads, no `choices`, no `message`, and no `content`.
 - The harness now classifies this edge case as `OpenRouter error payload returned with HTTP 200` and can record safe response metadata when `--debug-response-shape` is enabled.
+- A debug run for `google/gemma-4-31b-it:free` produced HTTP 200 top-level `error` payloads for external cases, with no `choices`, no `message`, no `content`, and no `parsed`/`reasoning`/`refusal`/`tool_calls`.
+- The sanitized provider message was `Upstream error from OpenInference: Grammar error: Unimplemented keys: ["uniqueItems"]`; local forbidden privacy-tier blocking still passed.
+- The harness now projects the local schema before sending it to OpenRouter by stripping `$schema`, `$id`, and `uniqueItems`. Local schema validation remains stricter.
 
 ## Candidate Classes
 
@@ -34,7 +37,7 @@ The public models endpoint returned these response-format-capable candidates dur
 | Model id | Cost metadata | Notes |
 | --- | --- | --- |
 | `google/gemma-4-26b-a4b-it:free` | prompt `0`, completion `0` | Free candidate; benchmark quality unknown |
-| `google/gemma-4-31b-it:free` | prompt `0`, completion `0` | Free candidate; benchmark quality unknown |
+| `google/gemma-4-31b-it:free` | prompt `0`, completion `0` | Schema-incompatible pending projection retry: returned OpenInference grammar error for `uniqueItems` |
 | `mistralai/magistral-medium-2509` | prompt `0`, completion `0` | Reported response-format support; verify live behavior |
 | `nvidia/nemotron-nano-9b-v2:free` | prompt `0`, completion `0` | Incompatible/pending: returned HTTP 200 top-level OpenRouter error payload instead of chat completion content |
 | `qwen/qwen3-next-80b-a3b-instruct:free` | prompt `0`, completion `0` | Free candidate; benchmark quality unknown |
@@ -88,6 +91,12 @@ python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_b
 ```
 
 The debug output must contain response shape metadata only, not prompts, content, headers, API keys, environment variables, private files, or raw repo data.
+
+After the outbound schema projection patch, Gemma 31B may be retried with the same safety gates:
+
+```powershell
+python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py --run-live --allow-external --debug-response-shape --models "google/gemma-4-31b-it:free" --output documentation\codex\openrouter-delegation\benchmark_result_free_gemma_31b_retry_2026-06-11.json
+```
 
 ## Routing Recommendation
 

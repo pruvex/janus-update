@@ -104,6 +104,8 @@ Live benchmark calls require all of these:
 
 The script never reads arbitrary repo files for prompts. It only reads the curated benchmark corpus. That keeps data exfiltration boring in the best possible way.
 
+Before sending a JSON Schema to OpenRouter, the harness projects the local schema into a provider-compatible request schema. It strips local or provider-incompatible schema keywords currently known to break providers: `$schema`, `$id`, and `uniqueItems`. The checked-in local schemas remain stricter and continue to be used for local validation.
+
 Optional debug mode:
 
 - `--debug-response-shape` may be combined with live benchmark mode to diagnose provider response-shape mismatches.
@@ -225,3 +227,5 @@ Known debug path:
 - Follow-up debug evidence showed HTTP 200 responses with top-level `error` payloads and no `choices` or `message`.
 - The harness classifies that shape as `OpenRouter error payload returned with HTTP 200`.
 - Treat the model as incompatible/pending until a future provider response changes.
+- `google/gemma-4-31b-it:free` produced HTTP 200 top-level `error` payloads with a sanitized OpenInference grammar error: `Unimplemented keys: ["uniqueItems"]`.
+- Retry Gemma 31B only after the outbound schema projection strips `uniqueItems`, using `--debug-response-shape`.
