@@ -10,19 +10,28 @@ description: Build, package, verify, and optionally publish Janus releases throu
 Use this skill only for Janus build, packaging, release artifact verification, and GitHub release publishing.
 
 This is a release gate, not an implementation skill. It may run build and verification commands, generate release notes, generate manifests, and publish only after explicit approval.
+This is primarily a Codex-led build and verification skill, with strict ChatGPT/User gates for release risk, publish, tag, origin/master, or unclear evidence decisions.
 
 ## Hard Rules
 
 - Do not implement features, fixes, architecture changes, or refactors in this skill.
 - Do not bump versions. Version bump belongs to `janus-documentation-update`.
 - Do not publish unless Final Audit is `PASS` or `PASS WITH FIXES`, documentation update is complete, and Git checkpoint is complete.
+- Do not build or verify release artifacts unless Final Audit is `PASS` or `PASS WITH FIXES`, required documentation update evidence is bound, and version metadata is coherent for the requested mode.
 - Do not publish from `develop`; production publish must go through the release branch/`master` protocol in `janus-git-governance`.
 - Do not publish from a dirty working tree.
 - Do not publish without showing target repository, version, installer path, manifest path, manifest SHA512, installer SHA256, and validation summary.
 - Do not publish without the exact user approval phrase: `Publish: YES`.
 - Do not push to `origin`, create tags, merge branches, or publish GitHub releases without explicit user approval.
+- Do not treat a bare `ok` as approval for publish, tag, push, merge, release creation, or Git boundary steps.
 - Do not run Vision test suites by default. For Vision-relevant releases, stop and ask approval for the exact Vision command.
 - Stop on the first blocking release failure and report the failed gate.
+
+Keep build/verify and publish boundaries separate:
+
+- Build/Verify may create or validate local release artifacts when all release-readiness preconditions are bound.
+- Publish/Tag/Push/Release may happen only after `janus-git-governance` and explicit user approval for the exact target.
+- Normal development commits must not be mixed with release-only verification, publish, tag, or origin/master steps.
 
 ## Modes
 
@@ -42,8 +51,10 @@ Bind or infer:
 - Documentation update result and path.
 - Git checkpoint evidence after documentation update.
 - Current version from root `package.json`.
+- Matching `package-lock.json` and `backend/version.py` version evidence.
 - Release intent: dry-run/build-only or real production publish.
 - Whether the release is Vision-related.
+- Release artifact targets: installer, `latest.yml`, `janus-update-manifest.json`, blockmap if generated, and release notes source when applicable.
 
 If any production publish input is missing, stop with `RELEASE BLOCKED`.
 
@@ -71,6 +82,8 @@ For production publishing, verify:
 - Git checkpoint after documentation update: complete and pushed to `backup`.
 - `CHANGELOG.md` or release notes source updated.
 - Current branch and dirty state are compatible with the requested mode.
+
+For build rehearsal or release readiness, verify the same Final Audit, documentation update, version source, and release intent, but do not require publish approval until a publish step is requested.
 
 Run the helper script for local metadata checks:
 
@@ -169,6 +182,7 @@ PUBLISH APPROVAL REQUIRED
 ```
 
 Stop and wait. Any other answer means `RELEASE NOT PUBLISHED`.
+Run `janus-git-governance` before any push, tag, merge, release branch, origin/master, or GitHub release boundary. A publish approval does not replace Git governance.
 
 ## Gate 7: Publish
 
@@ -252,6 +266,8 @@ If no push happens or push fails, the release result or handoff must explicitly 
 
 ```text
 RELEASE RESULT: SUCCESS | RELEASE NOT PUBLISHED | RELEASE BLOCKED | RELEASE PUBLISHED WITH RISK
+- Build Status: BUILD_PASS | BUILD_FAIL | BLOCKED | N/A
+- Release Readiness: RELEASE_READY | NOT_RELEASE_READY | BLOCKED | N/A
 - Mode:
 - Version:
 - Branch:
@@ -269,3 +285,14 @@ RELEASE RESULT: SUCCESS | RELEASE NOT PUBLISHED | RELEASE BLOCKED | RELEASE PUBL
 - Next Skill:
 - Model Recommendation:
 ```
+
+For release-ready evidence, next skill is `janus-git-governance`.
+For build failure or unclear evidence, next skill is `janus-debug`, `janus-final-audit`, or caller review depending on the failed gate.
+
+If control moves across actor or chat boundaries, emit exactly one compact fenced `text` block with:
+
+- `NEXT:` and the exact next skill when known
+- version and mode
+- final audit, documentation update, git checkpoint, and artifact evidence paths
+- the release state (`BUILD_PASS`, `BUILD_FAIL`, `BLOCKED`, `RELEASE_READY`, or `NOT_RELEASE_READY`)
+- the minimum next action or approval phrase required
