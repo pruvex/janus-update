@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Review `janus-build-release` against the collaboration matrix and align its release-critical build, verify, publish, and Git-gate behavior with Diamond standard.
+Review `janus-backlog-intake` against the collaboration matrix and align its raw-request intake, duplicate-check, and handoff behavior with Diamond standard.
 
 ## Active Phase
-Build Release Targeted Review
+Backlog Intake Targeted Review
 
 ## Last Decision
 `documentation/backlog/BACKLOG.md` remains the binding backlog source.
@@ -32,34 +32,35 @@ Repo-skill governance must distinguish versioned repo skill sources under `docum
 `janus-test-pipeline` should stay Codex-led, keep TestSpec, TestPlan, TestRun, TestResult, and retest evidence clearly separated, allow execution only from a bound plan/run bundle, document `PASS`, `FAIL`, `FLAKY`, and `INCONCLUSIVE` explicitly, and emit exactly one compact fenced `text` handoff toward `janus-final-audit`, `janus-debug`, or caller review.
 `janus-debug` should stay Codex-led, bind exactly one failure slice, block on unclear or contradictory evidence, forbid broad history reconstruction and silent product decisions, and emit exactly one compact fenced `text` handoff toward `janus-final-audit`, `janus-documentation-update`, `janus-test-pipeline`, `janus-executioner`, or caller review.
 `janus-build-release` should stay Codex-led for local build/verify work, require final-audit and documentation-update evidence before release readiness, keep build/verify separate from publish/tag/push, require `janus-git-governance` plus explicit user approval for all Git/release boundaries, and emit exactly one compact fenced `text` release-evidence handoff toward `janus-git-governance`, `janus-debug`, `janus-final-audit`, or caller review.
+`janus-backlog-intake` should stay ChatGPT-led, transform raw wishes/bugs into structured backlog candidates, use `BACKLOG_ACTIVE_SUMMARY.md` first and `BACKLOG.md` only for targeted duplicate or status checks, avoid product decisions, prioritization, and implementation, and emit exactly one compact fenced `text` handoff toward `janus-backlog-prioritization` or `janus-feature-design`.
 
 ## Last Codex Work
-Reviewed `janus-build-release`, tightened release preconditions, build/verify vs publish/tag/push boundaries, release status semantics, and handoff behavior, and marked the matrix row as `UPDATED`.
+Reviewed `janus-backlog-intake`, tightened raw-request intake boundaries, duplicate-check strategy, and handoff behavior, and marked the matrix row as `UPDATED`.
 
 ## Changed Files
 - documentation/ai/CURRENT_STATE.md
 - documentation/ai/SKILL_COLLABORATION_MATRIX.md
-- documentation/codex/skills/janus-build-release/SKILL.md
+- documentation/codex/skills/janus-backlog-intake/SKILL.md
 
 ## Tests / Validation
-- Targeted review of `janus-build-release` against `SKILL_COLLABORATION_MATRIX.md`
-- Verified the skill remains Codex-led with strict release gates
-- Verified final-audit, documentation-update, git-checkpoint, version-source, and artifact evidence are explicit preconditions
-- Verified build/verify remains separate from publish/tag/push/release boundaries
-- Verified `BUILD_PASS`, `BUILD_FAIL`, `BLOCKED`, `RELEASE_READY`, and `NOT_RELEASE_READY` are documented explicitly
-- Verified the next handoff to `janus-git-governance`, `janus-debug`, `janus-final-audit`, or caller review is compact and explicit
-- Verified bare `ok` is not accepted as release, Git, or handoff approval
+- Targeted review of `janus-backlog-intake` against `SKILL_COLLABORATION_MATRIX.md`
+- Verified the skill remains ChatGPT-led and raw-request-first
+- Verified backlog-worthy vs feature-design-needed vs needs-info are now explicitly separated
+- Verified duplicate strategy is summary-first and reads `BACKLOG.md` only for targeted checks
+- Verified required backlog candidate fields are explicit
+- Verified the next handoff to `janus-backlog-prioritization` or `janus-feature-design` is compact and explicit
+- Verified bare `ok` is not accepted as a handoff substitute
 - Validation that no other repo skill source file was edited
 
 ## Open Risks
 - Most other skill rows are still `UNREVIEWED`; the matrix remains inventory first, not a full skill-quality review.
-- The build-release handoff may still be harmonized later with git-governance release approval formatting.
+- The backlog-intake handoff may still be harmonized later with backlog-prioritization formatting.
 
 ## Next Recommended Step for ChatGPT
-Review the updated `janus-build-release` row in `documentation/ai/SKILL_COLLABORATION_MATRIX.md` and choose the next repo skill to move from `UNREVIEWED` into targeted individual review.
+Review the updated `janus-backlog-intake` row in `documentation/ai/SKILL_COLLABORATION_MATRIX.md` and choose the next repo skill to move from `UNREVIEWED` into targeted individual review.
 
 ## Next Recommended Step for Codex
-Use `janus-build-release` only with bound final-audit, documentation, git, version, and artifact evidence, then review the next repo skill one by one.
+Use `janus-backlog-intake` only for one raw request at a time and hand valid intake forward to `janus-backlog-prioritization`.
 
 ## Last Updated
-2026-06-11 16:40 local time
+2026-06-11 16:48 local time
