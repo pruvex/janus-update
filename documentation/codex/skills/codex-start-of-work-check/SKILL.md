@@ -22,8 +22,8 @@ At the start of a work session, check whether a scheduled healthcheck reminder i
 2. Run `scripts/due_healthchecks.py`.
 3. If it reports no due reminders, continue with the user's request normally.
 4. If it reports one or more due reminders, tell the user what is due and ask whether to start it now.
-5. Only run a healthcheck after the user replies `ok`.
-6. If the user wants a real healthcheck after the reminder, route to `janus-health-check` instead of expanding this skill.
+5. Treat user `ok` only as confirmation to move into the next reminder-approved gate.
+6. If the user confirms that the due check should start, route to `janus-health-check`; this skill does not run the real healthcheck itself.
 
 ## Sync Source
 
@@ -57,7 +57,7 @@ MODEL: 5.4/low
 PASS: due reminder id
 DROP: unrelated work until user confirms
 
-Change the model/reasoning to `5.4/low`, write `ok`, and the due healthcheck starts immediately.
+Change the model/reasoning to `5.4/low`, reply `ok` only to confirm the next gate, then continue in `janus-health-check` for the actual hygiene or drift scan.
 If no reminder is due, keep the answer short and continue with the current work without loading more context.
 
 ## CURRENT_STATE Requirement
