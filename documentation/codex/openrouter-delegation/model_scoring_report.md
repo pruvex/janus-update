@@ -15,6 +15,9 @@ This report tracks candidate OpenRouter models for bounded Codex development-wor
 - The local Codex CLI is installed as `codex-cli 0.139.0`.
 - `OPENROUTER_API_KEY` is not present in the current shell, so no live benchmark calls were made during prototype creation.
 - Public model metadata listing with `supported_parameters=response_format` succeeded during prototype validation.
+- A free-only run for `nvidia/nemotron-nano-9b-v2:free` produced no chat completion content for all external cases while the forbidden privacy-tier block passed locally.
+- Follow-up debug evidence showed HTTP 200 responses with top-level `error` payloads, no `choices`, no `message`, and no `content`.
+- The harness now classifies this edge case as `OpenRouter error payload returned with HTTP 200` and can record safe response metadata when `--debug-response-shape` is enabled.
 
 ## Candidate Classes
 
@@ -33,7 +36,7 @@ The public models endpoint returned these response-format-capable candidates dur
 | `google/gemma-4-26b-a4b-it:free` | prompt `0`, completion `0` | Free candidate; benchmark quality unknown |
 | `google/gemma-4-31b-it:free` | prompt `0`, completion `0` | Free candidate; benchmark quality unknown |
 | `mistralai/magistral-medium-2509` | prompt `0`, completion `0` | Reported response-format support; verify live behavior |
-| `nvidia/nemotron-nano-9b-v2:free` | prompt `0`, completion `0` | Free candidate; benchmark quality unknown |
+| `nvidia/nemotron-nano-9b-v2:free` | prompt `0`, completion `0` | Incompatible/pending: returned HTTP 200 top-level OpenRouter error payload instead of chat completion content |
 | `qwen/qwen3-next-80b-a3b-instruct:free` | prompt `0`, completion `0` | Free candidate; benchmark quality unknown |
 
 ## Scoring Rubric
@@ -77,6 +80,14 @@ python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_b
 ```
 
 `benchmark_result.local.json` should be treated as local evidence until reviewed. Do not commit it if it contains prompts, raw outputs, costs, account metadata, or anything not intended for the repo.
+
+For provider-shape debugging after explicit approval:
+
+```powershell
+python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py --run-live --allow-external --debug-response-shape --models "nvidia/nemotron-nano-9b-v2:free" --output documentation\codex\openrouter-delegation\benchmark_result_free_nemotron_nano_debug_2026-06-11.json
+```
+
+The debug output must contain response shape metadata only, not prompts, content, headers, API keys, environment variables, private files, or raw repo data.
 
 ## Routing Recommendation
 

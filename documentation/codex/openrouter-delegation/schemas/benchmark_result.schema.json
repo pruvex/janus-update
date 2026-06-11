@@ -78,6 +78,86 @@
           "elapsed_ms": {
             "type": ["number", "null"],
             "minimum": 0
+          },
+          "response_debug": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "task_id",
+              "model_id",
+              "http_status",
+              "top_level_payload_keys",
+              "choice_keys",
+              "message_keys",
+              "finish_reason",
+              "message_content_type",
+              "message_content_shape",
+              "has_reasoning",
+              "has_refusal",
+              "has_tool_calls",
+              "has_parsed"
+            ],
+            "properties": {
+              "task_id": {
+                "type": "string"
+              },
+              "model_id": {
+                "type": "string"
+              },
+              "http_status": {
+                "type": ["integer", "null"]
+              },
+              "top_level_payload_keys": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "choice_keys": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "message_keys": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "finish_reason": {
+                "type": ["string", "null"]
+              },
+              "message_content_type": {
+                "type": "string"
+              },
+              "message_content_shape": {
+                "type": "string",
+                "enum": ["null", "empty", "string", "object", "list", "int", "float", "bool"]
+              },
+              "has_reasoning": {
+                "type": "boolean"
+              },
+              "has_refusal": {
+                "type": "boolean"
+              },
+              "has_tool_calls": {
+                "type": "boolean"
+              },
+              "has_parsed": {
+                "type": "boolean"
+              },
+              "error_code": {
+                "type": ["string", "null"]
+              },
+              "error_provider_name": {
+                "type": ["string", "null"]
+              },
+              "error_message": {
+                "type": ["string", "null"],
+                "maxLength": 180
+              }
+            }
           }
         }
       }

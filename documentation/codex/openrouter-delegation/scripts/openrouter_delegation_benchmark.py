@@ -11,6 +11,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -24,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CORPUS_PATH = ROOT / "benchmark_corpus.json"
 RESULT_SCHEMA_PATH = ROOT / "schemas" / "delegated_task_result.schema.json"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+MAX_DEBUG_ERROR_MESSAGE_CHARS = 180
 
 FORBIDDEN_PRIVACY_TIERS = {
     "SECRET",
@@ -41,6 +43,107 @@ def load_json(path: Path) -> Any:
 
 def dump_json(data: Any) -> str:
     return json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False)
+
+
+def content_shape(value: Any) -> str:
+    if value is None:
+        return "null"
+    if isinstance(value, str):
+        return "empty" if value == "" else "string"
+    if isinstance(value, dict):
+        return "object"
+    if isinstance(value, list):
+        return "list"
+    return type(value).__name__
+
+
+def sanitize_error_message(value: Any) -> str | None:
+    if not isinstance(value, str) or not value:
+        return None
+
+    text = " ".join(value.split())
+    redactions = [
+        (r"(?i)(bearer\s+)[a-z0-9._~+/=-]+", r"\1[redacted]"),
+        (r"(?i)(api[_-]?key\s*[:=]\s*)[^\s,;]+", r"\1[redacted]"),
+        (r"(?i)(key\s*[:=]\s*)[^\s,;]+", r"\1[redacted]"),
+        (r"(?i)(user[_ -]?id\s*[:=]\s*)[^\s,;]+", r"\1[redacted]"),
+        (r"sk-[A-Za-z0-9_-]+", "[redacted]"),
+        (r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", "[redacted-email]"),
+        (r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b", "[redacted-id]"),
+    ]
+    for pattern, replacement in redactions:
+        text = re.sub(pattern, replacement, text)
+    return text[:MAX_DEBUG_ERROR_MESSAGE_CHARS]
+
+
+def safe_error_fields(payload: dict[str, Any] | None) -> dict[str, Any]:
+    error = payload.get("error") if isinstance(payload, dict) else None
+    if not isinstance(error, dict):
+        return {}
+
+    return {
+        "error_code": error.get("code") if isinstance(error.get("code"), str) else None,
+        "error_provider_name": error.get("provider_name") if isinstance(error.get("provider_name"), str) else None,
+        "error_message": sanitize_error_message(error.get("message")),
+    }
+
+
+def response_shape_metadata(
+    *,
+    task_id: str,
+    model_id: str,
+    http_status: int | None,
+    payload: dict[str, Any] | None,
+) -> dict[str, Any]:
+    choices = payload.get("choices") if isinstance(payload, dict) else None
+    first_choice = choices[0] if isinstance(choices, list) and choices else None
+    message = first_choice.get("message") if isinstance(first_choice, dict) else None
+    content = message.get("content") if isinstance(message, dict) else None
+
+    metadata = {
+        "task_id": task_id,
+        "model_id": model_id,
+        "http_status": http_status,
+        "top_level_payload_keys": sorted(payload.keys()) if isinstance(payload, dict) else [],
+        "choice_keys": sorted(first_choice.keys()) if isinstance(first_choice, dict) else [],
+        "message_keys": sorted(message.keys()) if isinstance(message, dict) else [],
+        "finish_reason": first_choice.get("finish_reason") if isinstance(first_choice, dict) else None,
+        "message_content_type": type(content).__name__,
+        "message_content_shape": content_shape(content),
+        "has_reasoning": isinstance(message, dict) and "reasoning" in message,
+        "has_refusal": isinstance(message, dict) and "refusal" in message,
+        "has_tool_calls": isinstance(message, dict) and "tool_calls" in message,
+        "has_parsed": isinstance(message, dict) and "parsed" in message,
+    }
+    metadata.update(safe_error_fields(payload))
+    return metadata
+
+
+def parse_openrouter_payload(
+    *,
+    payload: dict[str, Any],
+    task_id: str,
+    model_id: str,
+    http_status: int | None,
+) -> tuple[dict[str, Any] | None, str | None, dict[str, Any]]:
+    debug_shape = response_shape_metadata(
+        task_id=task_id,
+        model_id=model_id,
+        http_status=http_status,
+        payload=payload,
+    )
+    if "error" in payload:
+        return None, "OpenRouter error payload returned with HTTP 200", debug_shape
+
+    content = payload.get("choices", [{}])[0].get("message", {}).get("content")
+    if not isinstance(content, str):
+        return None, "missing string content", debug_shape
+    try:
+        parsed = json.loads(content)
+    except json.JSONDecodeError as exc:
+        return None, f"invalid JSON content: {exc}", debug_shape
+    parsed.setdefault("model_id", payload.get("model", model_id))
+    return parsed, None, debug_shape
 
 
 def schema_for_openrouter(schema: dict[str, Any]) -> dict[str, Any]:
@@ -234,7 +337,12 @@ def build_messages(case: dict[str, Any]) -> list[dict[str, str]]:
     ]
 
 
-def call_openrouter(model: str, case: dict[str, Any], schema: dict[str, Any], api_key: str) -> tuple[dict[str, Any] | None, float, str | None]:
+def call_openrouter(
+    model: str,
+    case: dict[str, Any],
+    schema: dict[str, Any],
+    api_key: str,
+) -> tuple[dict[str, Any] | None, float, str | None, dict[str, Any] | None]:
     body = {
         "model": model,
         "messages": build_messages(case),
@@ -260,28 +368,39 @@ def call_openrouter(model: str, case: dict[str, Any], schema: dict[str, Any], ap
         },
     )
     started = time.perf_counter()
+    http_status: int | None = None
     try:
         with urllib.request.urlopen(request, timeout=90) as response:
+            http_status = response.status
             payload = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")
-        return None, (time.perf_counter() - started) * 1000, f"HTTP {exc.code}: {detail[:500]}"
+        return None, (time.perf_counter() - started) * 1000, f"HTTP {exc.code}", response_shape_metadata(
+            task_id=case["task_id"],
+            model_id=model,
+            http_status=exc.code,
+            payload=None,
+        )
     except OSError as exc:
-        return None, (time.perf_counter() - started) * 1000, str(exc)
+        return None, (time.perf_counter() - started) * 1000, str(exc), response_shape_metadata(
+            task_id=case["task_id"],
+            model_id=model,
+            http_status=http_status,
+            payload=None,
+        )
 
     elapsed_ms = (time.perf_counter() - started) * 1000
-    content = payload.get("choices", [{}])[0].get("message", {}).get("content")
-    if not isinstance(content, str):
-        return None, elapsed_ms, "missing string content"
-    try:
-        parsed = json.loads(content)
-    except json.JSONDecodeError as exc:
-        return None, elapsed_ms, f"invalid JSON content: {exc}"
-    parsed.setdefault("model_id", payload.get("model", model))
-    return parsed, elapsed_ms, None
+    parsed, call_error, debug_shape = parse_openrouter_payload(
+        payload=payload,
+        task_id=case["task_id"],
+        model_id=model,
+        http_status=http_status,
+    )
+    if call_error:
+        return None, elapsed_ms, call_error, debug_shape
+    return parsed, elapsed_ms, None, None
 
 
-def run_live(models: list[str], output: Path | None) -> int:
+def run_live(models: list[str], output: Path | None, debug_response_shape: bool) -> int:
     api_key = os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
         print("ERROR: OPENROUTER_API_KEY is not set", file=sys.stderr)
@@ -314,20 +433,21 @@ def run_live(models: list[str], output: Path | None) -> int:
                 )
                 continue
 
-            parsed, elapsed_ms, call_error = call_openrouter(model, case, schema, api_key)
+            parsed, elapsed_ms, call_error, debug_shape = call_openrouter(model, case, schema, api_key)
             if call_error or parsed is None:
-                result_cases.append(
-                    {
-                        "task_id": case["task_id"],
-                        "model_id": model,
-                        "schema_valid": False,
-                        "expected_mode": case["expected"]["delegation_mode"],
-                        "actual_mode": None,
-                        "score": 0.0,
-                        "errors": [call_error or "unknown call error"],
-                        "elapsed_ms": elapsed_ms,
-                    }
-                )
+                result_case = {
+                    "task_id": case["task_id"],
+                    "model_id": model,
+                    "schema_valid": False,
+                    "expected_mode": case["expected"]["delegation_mode"],
+                    "actual_mode": None,
+                    "score": 0.0,
+                    "errors": [call_error or "unknown call error"],
+                    "elapsed_ms": elapsed_ms,
+                }
+                if debug_response_shape and debug_shape:
+                    result_case["response_debug"] = debug_shape
+                result_cases.append(result_case)
                 continue
 
             schema_errors = validate_delegated_result(parsed)
@@ -375,6 +495,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--limit", type=int, default=12, help="Limit model listing output.")
     parser.add_argument("--run-live", action="store_true", help="Run live OpenRouter benchmark calls.")
     parser.add_argument("--allow-external", action="store_true", help="Required confirmation for live external calls.")
+    parser.add_argument("--debug-response-shape", action="store_true", help="Record safe response-shape metadata for missing or invalid live content.")
     parser.add_argument("--models", default="", help="Comma-separated OpenRouter model ids for live benchmark.")
     parser.add_argument("--output", type=Path, help="Optional output path for live benchmark JSON.")
     args = parser.parse_args(argv)
@@ -425,7 +546,7 @@ def main(argv: list[str]) -> int:
         if not models:
             print("ERROR: provide at least one model with --models", file=sys.stderr)
             return 2
-        return run_live(models, args.output)
+        return run_live(models, args.output, args.debug_response_shape)
 
     parser.print_help()
     return 0

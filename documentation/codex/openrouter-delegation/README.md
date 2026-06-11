@@ -104,6 +104,12 @@ Live benchmark calls require all of these:
 
 The script never reads arbitrary repo files for prompts. It only reads the curated benchmark corpus. That keeps data exfiltration boring in the best possible way.
 
+Optional debug mode:
+
+- `--debug-response-shape` may be combined with live benchmark mode to diagnose provider response-shape mismatches.
+- It records only safe response metadata for missing or invalid content: task id, model id, HTTP status, payload/choice/message key names, finish reason, content type/shape, and booleans for `reasoning`, `refusal`, `tool_calls`, and `parsed`.
+- It must not record API keys, request headers, full prompts, full message content, raw private files, arbitrary repo files, secrets, or environment variables.
+
 ## Delegated Output Schema
 
 Delegated model outputs must match `schemas/delegated_task_result.schema.json`.
@@ -213,3 +219,9 @@ Blocked for live scoring:
 - `OPENROUTER_API_KEY` is not present in this shell.
 - No user approval has been given for live external benchmark calls.
 
+Known debug path:
+
+- `nvidia/nemotron-nano-9b-v2:free` produced no chat completion content for all external cases in one free-model benchmark.
+- Follow-up debug evidence showed HTTP 200 responses with top-level `error` payloads and no `choices` or `message`.
+- The harness classifies that shape as `OpenRouter error payload returned with HTTP 200`.
+- Treat the model as incompatible/pending until a future provider response changes.
