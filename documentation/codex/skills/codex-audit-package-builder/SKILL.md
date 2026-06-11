@@ -87,7 +87,7 @@ The generated package ends with this handoff block:
 
 ```text
 NEW_CHAT_HANDOFF
-NEXT: final-skill-audit
+NEXT: janus-final-audit
 MODEL: 5.5/high
 PASS: <AUDIT_PACKAGE.md>
 ASK: Lade nur dieses Paket im neuen Chat und starte dann den Final Audit.
