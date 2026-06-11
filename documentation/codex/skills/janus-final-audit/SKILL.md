@@ -8,6 +8,7 @@ description: Perform the Janus final quality and release gate after implementati
 ## Overview
 
 Audit completed Janus work against the bound Spec, Task, Backlog item, TestSpec, changed files, diff, precheck, and evidence. Do not implement, redesign, add requirements, or use chat history as source of truth.
+This is a shared governance skill. ChatGPT is preferred for independent final review when risk, release proximity, security/privacy/provider impact, or unclear evidence matters. Codex may audit bounded evidence in the same warm context only when the audit package is compact, current, and low risk.
 
 ## Source References
 
@@ -23,7 +24,7 @@ Before auditing, recommend model/intelligence:
 
 - Low/local deterministic scope: `5.4` or current capable coding model, medium.
 - Medium risk or multiple files: `5.4`, high.
-- High/critical risk, security, privacy, provider routing, memory, release-critical, unclear evidence, contradictory artifacts, or missing tests: `5.5`, high/very high.
+- High/critical risk, security, privacy, provider routing, memory, release-critical, unclear evidence, contradictory artifacts, or missing tests: `5.5`, high.
 
 If current setup is weaker than required, stop with a model-switch handoff. Do not perform the audit.
 
@@ -45,6 +46,7 @@ Minimum required package contents:
 - pipeline completion status: remaining tasks none, implementation complete yes, or validation-only run
 
 The audit package is the primary source for the audit. Open additional artifacts only when the package points to a specific ambiguity, risk, or contradiction.
+Do not reconstruct requirements from broad chat history. If the bound package cannot support the decision, return `FINAL AUDIT RESULT: BLOCKED`.
 
 If the package is incomplete, return `FINAL AUDIT RESULT: BLOCKED`.
 
@@ -95,8 +97,10 @@ Do not turn a debug package into a final audit PASS.
 ## Decision Rules
 
 - `PASS`: requirements met, tests green, no relevant blockers, manual evidence present or N/A with reason.
-- `PASS WITH FIXES`: only small safe documentation or non-architectural fixes remain and are already applied or explicitly non-blocking.
+- `PASS WITH FIXES`: only small safe documentation, metadata, or non-architectural fixes remain and are already applied or explicitly non-blocking; no product, test, security, provider, or release risk may remain open.
 - `BLOCKED`: missing/failed evidence, incomplete tasks, unclear package, scope drift, security/privacy/provider risk, unresolved debug, failed manual test, or non-deterministic assessment.
+
+A bare `ok` or similar acknowledgement is never a valid audit handoff replacement.
 
 ## Re-Audit Loop Rule
 
@@ -212,6 +216,8 @@ Copy Prompt: Use janus-documentation-update with this audit result and evidence 
 ```
 
 For `BLOCKED`, hand off to `janus-debug`, `janus-executioner`, or `janus-preimplementation-check` with exact reason, exact required artifacts, and the minimum audit-package delta needed before re-audit.
+If control moves to ChatGPT for `BLOCKED`, `UNCLEAR_EVIDENCE`, or `RISK_ESCALATION`, emit exactly one compact fenced `text` block with the blocker, bound evidence paths, minimum next action, and exact next skill when known.
+If `PASS` or `PASS WITH FIXES` stays in the same warm Codex context, naming `Target Skill: janus-documentation-update` is enough; across actor or chat boundaries, emit exactly one compact fenced `text` handoff block.
 
 ## Validator
 
