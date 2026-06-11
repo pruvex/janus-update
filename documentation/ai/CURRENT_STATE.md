@@ -58,7 +58,6 @@ Reviewed `codex-audit-package-builder`, tightened evidence requirements, final-a
 - Validation that no other repo skill source file was edited
 
 ## Open Risks
-- Most other skill rows are still `UNREVIEWED`; the matrix remains inventory first, not a full skill-quality review.
 - The audit package builder may still be harmonized later with the concrete output shape of `scripts/build_audit_package.py`.
 - Commit and push for this review closeout have not been requested yet.
 
