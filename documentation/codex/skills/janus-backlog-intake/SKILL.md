@@ -8,6 +8,7 @@ description: Capture raw Janus bugs, changes, enhancements, improvements, and te
 ## Overview
 
 Turn raw Janus input into one or more structured items in `C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`, unless the request clearly qualifies for the `janus-quickchange` lane. Do not prioritize, implement, create handoff files, or route directly to execution.
+This is primarily a ChatGPT-led intake skill. Codex should only consume a bounded handoff for the actual backlog-file edit when the intake decision is already clear.
 
 ## Source Reference
 
@@ -28,37 +29,42 @@ Then read `C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md` when:
 - the summary and the backlog appear inconsistent
 
 `BACKLOG.md` remains the binding source of truth.
+Do not deep-read the full backlog when the summary plus one targeted duplicate or status check is enough.
 
 ## Hard Rules
 
 - No code changes.
 - No architecture decisions.
 - No direct Skill 1-8 handoff.
-- `janus-quickchange` is the only allowed non-Backlog route from intake, and only after an explicit eligibility check.
+- No prioritization.
+- No implementation.
+- Route feature-sized or product-decision-heavy requests to `janus-feature-design` instead of forcing backlog intake.
 - Do not reactivate `DONE` items. Create a new follow-up item instead.
 - Split unrelated topics into separate Backlog items or ask the user to choose one.
 - If required information is missing, create/update an item under `NEEDS INFO` and ask one concrete follow-up.
 - Every new item gets the next free `BACKLOG-XXX` ID.
 - Physically place the item under its canonical status heading.
+- Do not treat a vague `ok` as a valid handoff substitute.
 
-## Quickchange Eligibility
+## Intake Routing
 
-Route to `janus-quickchange` instead of creating a Backlog item only when all are true:
+Use `janus-backlog-intake` when the user reports one of these:
 
-- exactly one tiny bounded intent, such as copy replacement, label rename, percentage display, spacing, or local UI polish
-- likely one to three touched files in one file cluster
-- no new decision about product behavior, persistence, routing, provider logic, data shape, auth, security, privacy, or release flow
-- no dependency on dashboard tracking, cross-team visibility, or later task decomposition
-- acceptance can be stated in one or two checkable lines and validated with a few targeted checks
+- bug report
+- small change request
+- enhancement request
+- improvement idea
+- annoying behavior
+- logs, screenshots, or manual findings that should become a visible backlog candidate
 
-Do not use quickchange when any of these apply:
+Route to `janus-feature-design` instead when any of these apply:
 
-- a new bug record should remain visible in `BACKLOG.md`
-- the user asks for planning, prioritization, or dashboard visibility
-- the change may affect multiple surfaces or existing user data
-- the test or verification story is unclear before editing
+- the request needs a product decision before it can be framed as one backlog item
+- multiple surfaces or behaviors may change and the intended outcome is still ambiguous
+- scope is feature-like rather than backlog-candidate-like
+- acceptance depends on unresolved UX or product tradeoffs
 
-If unsure, create the Backlog item and keep the normal pipeline.
+If the intake is still too vague even for one backlog candidate, ask one concrete follow-up and keep it in `NEEDS INFO`.
 
 ## Classification
 
@@ -98,6 +104,19 @@ Every item must include:
 
 Use existing file style where it already differs slightly, but preserve all dashboard-required fields.
 
+These fields are mandatory for every new backlog candidate:
+
+- `Typ`
+- `Status`
+- `Quelle`
+- `Erstellt`
+- `Aktualisiert`
+- `Kurzbeschreibung`
+- `Betroffener Bereich`
+- `Nachweise`
+- `Akzeptanzkriterien`
+- `Fehlende Informationen`
+
 ## Status Decision
 
 - `NEEDS INFO`: required details are missing.
@@ -116,23 +135,6 @@ If the new issue follows up on a `DONE` item:
 - Never move the old item out of `DONE`.
 
 ## Output
-
-For quickchange-eligible input:
-
-```markdown
-# QUICKCHANGE CANDIDATE
-
-## Assessment
-- **Pfad:** Quickchange
-- **Titel:** <kurzer Titel>
-- **Scope:** <1-2 Saetze>
-- **Warum kein Backlog-Item:** <knappe Begruendung>
-- **Akzeptanzcheck:**
-  - [ ] <pruefbares Kriterium>
-
-## Naechster Schritt
-Nutze `janus-quickchange`.
-```
 
 For missing information:
 
@@ -165,3 +167,9 @@ For ready items:
 ## Naechster Schritt
 Nutze `janus-backlog-prioritization`.
 ```
+
+If control moves across an actor or chat boundary, emit exactly one compact fenced `text` block with:
+
+- `NEXT: janus-backlog-prioritization` or `NEXT: janus-feature-design`
+- the raw request identity or new `BACKLOG-XXX`
+- one short note about duplicate check outcome or missing information
