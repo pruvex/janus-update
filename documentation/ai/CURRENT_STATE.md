@@ -4,60 +4,49 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Record the generated OpenRouter metadata snapshot and A1 candidate shortlist for future documentation-skill evaluation.
+Create the per-task live-evaluation preparation queue for documentation-skill tasks currently allowed for GPT-5.4 mini.
 
 ## Active Phase
-Documentation-skill OpenRouter metadata documentation checkpoint. No OpenRouter inference/model tests, no production routing, no benchmark execution, no benchmark JSON generation, no release action, and no product-code change.
+Documentation-skill live-evaluation planning checkpoint. No OpenRouter inference/model tests, no production routing, no benchmark execution, no benchmark JSON generation, no release action, and no product-code change.
 
 ## Last Decision
-The generated OpenRouter metadata snapshot and candidate CSVs are recorded as planning/evidence inputs only.
+The documentation-skill routing table remains the canonical reference for documentation-skill model and scope boundaries.
 
-The metadata snapshot was created from the OpenRouter model list, but no inference/model tests were run in this checkpoint. The A1 documentation-skill candidate shortlist contains 12 candidates. No production routing decision was made, and any future live evaluation still requires explicit user approval.
+Rows currently allowed for GPT-5.4 mini were identified from `documentation/codex/model-routing/documentation_skill_routing_table_v1_2026-06-12.md` and prepared as a per-task evaluation queue. The eligible rows are DOC-SKILL-001, DOC-SKILL-002, DOC-SKILL-003, DOC-SKILL-006, DOC-SKILL-008, DOC-SKILL-009, and DOC-SKILL-010.
 
-Final authority remains with Janus/Codex governance. OpenRouter metadata and future candidate output may only support local Codex review; it must not activate routing, approve models, or write canonical project state by itself.
+Each task remains `NOT RUN` and must be evaluated separately before moving to the next task. The queue is planning only and does not approve OpenRouter calls, external model use, production routing, or repo-write authority.
 
 ## Last Codex Work
-Reviewed the generated metadata files:
+Created:
 
-- `documentation/codex/model-routing/openrouter_models_snapshot_2026-06-12.json`
-- `documentation/codex/model-routing/openrouter_paid_text_candidates_cheaper_than_gpt54_mini_2026-06-12.csv`
-- `documentation/codex/model-routing/openrouter_free_text_candidates_2026-06-12.csv`
-- `documentation/codex/model-routing/openrouter_gpt_family_price_check_2026-06-12.csv`
-- `documentation/codex/model-routing/openrouter_excluded_non_text_or_router_2026-06-12.csv`
-- `documentation/codex/model-routing/openrouter_doc_skill_candidate_tiers_2026-06-12.csv`
-- `documentation/codex/model-routing/openrouter_doc_skill_a1_shortlist_2026-06-12.csv`
+- `documentation/codex/model-routing/documentation_skill_gpt54_mini_task_eval_queue_v1_2026-06-13.md`
 
-Review results:
+Queue contents:
 
-- metadata snapshot JSON parse: PASS, 337 model records
-- CSV headers readable: PASS
-- A1 shortlist count: PASS, 12 candidates
-- inference/model tests run: NO
-- production routing decision: NO
-- future live evaluation approval required: YES
+- eligible task count: 7
+- one `NOT RUN` section per eligible DOC-SKILL row
+- task id and routing-table summary
+- required model/reasoning
+- proposed single-task fixture name
+- pass/fail rubric reference
+- A1 candidate set reference
+- per-task note that evaluation must be separate before moving to the next task
 
 ## Changed Files
-- `documentation/codex/model-routing/openrouter_models_snapshot_2026-06-12.json`
-- `documentation/codex/model-routing/openrouter_paid_text_candidates_cheaper_than_gpt54_mini_2026-06-12.csv`
-- `documentation/codex/model-routing/openrouter_free_text_candidates_2026-06-12.csv`
-- `documentation/codex/model-routing/openrouter_gpt_family_price_check_2026-06-12.csv`
-- `documentation/codex/model-routing/openrouter_excluded_non_text_or_router_2026-06-12.csv`
-- `documentation/codex/model-routing/openrouter_doc_skill_candidate_tiers_2026-06-12.csv`
-- `documentation/codex/model-routing/openrouter_doc_skill_a1_shortlist_2026-06-12.csv`
+- `documentation/codex/model-routing/documentation_skill_gpt54_mini_task_eval_queue_v1_2026-06-13.md`
 - `documentation/ai/CURRENT_STATE.md`
 - `documentation/codex/SKILL_USAGE_LOG.md`
 
 ## Remote Sync Evidence
 - Branch context: `develop` / `backup/develop` workflow.
-- This block is intended to be committed as `docs(codex): record openrouter doc skill candidate shortlist` and pushed to `backup/develop` only.
+- This block is intended to be committed as `docs(codex): prepare gpt54 mini doc skill eval queue` and pushed to `backup/develop` only.
 - No push to `origin`, tag, merge, reset, release, OpenRouter inference/model test, benchmark result JSON generation, or production routing activation is part of this block.
 
 ## Tests / Validation
 - Start-of-work healthcheck reminder: DUE, user deferred it for later.
-- Bound artifact reread for metadata checkpoint: PASS.
-- JSON parse check for metadata snapshot: PASS.
-- CSV headers readable: PASS.
-- A1 shortlist count: PASS, 12 candidates.
+- Bound artifact reread for queue checkpoint: PASS.
+- Routing table reread: PASS.
+- A1 shortlist CSV readable: PASS, 12 candidates.
 - Markdown sanity on touched documentation files: PASS.
 - `git diff --check` on touched tracked files: PASS.
 - OpenRouter inference/model tests: NOT RUN / forbidden by scope.
@@ -65,14 +54,14 @@ Review results:
 
 ## Open Risks
 - The repository worktree contains many unrelated pre-existing modified and untracked files. Commit staging must remain path-specific.
-- The snapshot and candidate lists are time-sensitive metadata; current OpenRouter pricing must be rechecked before any future execution.
-- The A1 shortlist is not approval to run OpenRouter calls, offer a model externally, or activate production routing.
+- The A1 candidate list is time-sensitive metadata; current OpenRouter pricing must be rechecked before any future execution.
+- The queue is not approval to run OpenRouter calls, offer a model externally, batch multiple tasks, or activate production routing.
 
 ## Next Recommended Step for ChatGPT
-Review whether the A1 shortlist and metadata files are sufficient for a future explicit live-evaluation gate.
+Review whether the seven-task GPT-5.4 mini queue is the right first live-evaluation order before any explicit live-run approval.
 
 ## Next Recommended Step for Codex
-Run final validation, commit the metadata checkpoint, and push `backup/develop` only.
+Run final validation, commit the queue checkpoint, and push `backup/develop` only.
 
 ## Last Updated
-2026-06-13 00:11 local time
+2026-06-13 00:20 local time
