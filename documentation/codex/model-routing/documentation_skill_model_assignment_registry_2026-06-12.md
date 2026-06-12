@@ -26,7 +26,7 @@ This registry condenses the documentation-skill inventory into a model-assignmen
 | DOC-SKILL-008 | `OR_ASSIST_CANDIDATE` | `5.4 mini` low for sanitized draft; `5.4` medium for real changelog | Safe first fixture candidate | Draft only; no release/readiness or product-scope invention. |
 | DOC-SKILL-009 | `SCRIPT_ONLY` | `record_skill_usage.py`; `summarize_skill_usage.py`; Codex review | Later sanitized assist candidate for synthetic summary only | Real append operations remain script/Codex-owned. |
 | DOC-SKILL-010 | `OR_ASSIST_CANDIDATE` | `5.4 mini` low | Later fixture candidate | Non-binding review notes from sanitized excerpts only. |
-| DOC-SKILL-011 | `BLOCKED_FOR_OR` | `5.5` high for release/final-audit gate; `5.4` medium after PASS for mechanical docs | Blocked | Final audit/release docs are authority-bearing. |
+| DOC-SKILL-011 | `POST_AUDIT_DOC_SYNC_ONLY` | No normal documentation routing before audit; after `PASS` or `PASS WITH FIXES`, use `janus-documentation-update` for bounded sync only | Blocked | This task must not perform final audit. Final required path is `janus-final-audit -> janus-documentation-update`. |
 | DOC-SKILL-012 | `BLOCKED_FOR_OR` | `5.4` medium/high; `5.5` high if product/security risk | Blocked | Backlog/product-scope docs are decision-adjacent. |
 | DOC-SKILL-013 | `SCRIPT_ONLY` | Local JSON/schema validators, then Codex review | Blocked | Deterministic validation should not be delegated. |
 | DOC-SKILL-014 | `LOCAL_BASELINE_ONLY` | `5.4` medium with validator/search support; isolated `5.4 mini` low marker checks only | Blocked for now | Checklist truth depends on local markers. |
@@ -44,9 +44,17 @@ This registry condenses the documentation-skill inventory into a model-assignmen
 | `OR_ASSIST_CANDIDATE` | 6 | DOC-SKILL-001, DOC-SKILL-002, DOC-SKILL-003, DOC-SKILL-006, DOC-SKILL-008, DOC-SKILL-010 |
 | `OR_EXECUTION_CANDIDATE` | 0 | none |
 | `SCRIPT_ONLY` | 2 | DOC-SKILL-009, DOC-SKILL-013 |
-| `BLOCKED_FOR_OR` | 3 | DOC-SKILL-011, DOC-SKILL-012, DOC-SKILL-017 |
+| `POST_AUDIT_DOC_SYNC_ONLY` | 1 | DOC-SKILL-011 |
+| `BLOCKED_FOR_OR` | 2 | DOC-SKILL-012, DOC-SKILL-017 |
 
 Total inventoried documentation tasks: 18.
+
+## DOC-SKILL-011 Gate
+
+- `DOC-SKILL-011` is not a final-audit execution task.
+- Prerequisite: an existing final audit result of `PASS` or `PASS WITH FIXES`.
+- Final required path: `janus-final-audit -> janus-documentation-update`.
+- Do not assign `DOC-SKILL-011` to OpenRouter or normal documentation model routing.
 
 ## Activation Rules
 

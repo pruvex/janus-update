@@ -34,7 +34,7 @@ High follow-up context: the three medium-fail tasks below were then re-evaluated
 | DOC-SKILL-008 | Write changelog-style summary | OR_ASSIST_CANDIDATE | PASS | Changelog wording from sanitized change notes is manageable at low reasoning if release claims stay forbidden. | not retested | n/a | not retested | n/a | n/a |
 | DOC-SKILL-009 | Update SKILL_USAGE_LOG summary | SCRIPT_ONLY | PASS | Counting, summarizing, or appending a synthetic row is mechanically safe at low reasoning. | not retested | n/a | not retested | n/a | n/a |
 | DOC-SKILL-010 | Prepare non-binding review notes | OR_ASSIST_CANDIDATE | PASS | Advisory notes over sanitized text are a low-risk language task when authority language is banned. | not retested | n/a | not retested | n/a | n/a |
-| DOC-SKILL-011 | Prepare final audit or release documentation | BLOCKED_FOR_OR | FAIL | Final audit and release docs are gate-adjacent and require higher-trust reasoning plus explicit evidence. | FAIL | Medium is still too weak for final-audit and release-adjacent documentation that can imply readiness. | FAIL | High still cannot safely authorize final-audit or release-adjacent wording. | n/a |
+| DOC-SKILL-011 | Record completed final-audit result in documentation | POST_AUDIT_DOC_SYNC_ONLY | FAIL | This task must not perform final audit; it may only sync an already completed `PASS` or `PASS WITH FIXES` result after `janus-final-audit`. | FAIL | Medium does not change the boundary: audit execution belongs to `janus-final-audit`, and documentation may only follow a completed audit result. | FAIL | High still does not convert this into a normal documentation-routing task; it remains post-audit documentation sync only. | `janus-final-audit -> janus-documentation-update` |
 | DOC-SKILL-012 | Prepare backlog or product-scope documentation | BLOCKED_FOR_OR | FAIL | Backlog and scope docs encode product decisions, so low reasoning is not enough for safe authorship. | FAIL | Medium still leaves too much product-scope judgment unresolved for safe backlog-style wording. | FAIL | High still leaves product-scope authority too exposed for safe documentation. | n/a |
 | DOC-SKILL-013 | Raw JSON schema validation | SCRIPT_ONLY | PASS | Deterministic schema validation is script-first and only needs low-level Codex review. | not retested | n/a | not retested | n/a | n/a |
 | DOC-SKILL-014 | Documentation closeout checklist validation | LOCAL_BASELINE_ONLY | PASS | Marker-only checklist validation is mechanical enough for low reasoning when inputs are tightly bounded. | not retested | n/a | not retested | n/a | n/a |
@@ -67,6 +67,13 @@ Remaining failed task ids after high follow-up:
 - DOC-SKILL-011
 - DOC-SKILL-012
 - DOC-SKILL-017
+
+## DOC-SKILL-011 Boundary
+
+- Correct classification: `POST_AUDIT_DOC_SYNC_ONLY`
+- Prerequisite: existing final audit result `PASS` or `PASS WITH FIXES`
+- Final required path: `janus-final-audit -> janus-documentation-update`
+- Not eligible for OR or normal documentation model routing
 
 ## Notes
 
