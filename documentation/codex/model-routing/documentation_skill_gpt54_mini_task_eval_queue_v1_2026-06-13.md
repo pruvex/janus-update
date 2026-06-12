@@ -27,7 +27,7 @@ This artifact does not run model calls, fetch live pricing, generate benchmark J
 - Proposed single-task fixture name: `DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001`
 - Expected pass/fail rubric reference: `documentation/codex/model-routing/documentation_skill_or_candidate_evaluation_plan_v1_2026-06-12.md#passfail-rubric`
 - A1 candidate set reference: `documentation/codex/model-routing/openrouter_doc_skill_a1_shortlist_2026-06-12.csv`
-- Status: NOT RUN
+- Status: TASK_DECISION_RECORDED
 - Note: Evaluate this task separately before moving to the next task.
 
 ## DOC-SKILL-002 - Summarize model scoring report
