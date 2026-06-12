@@ -4,7 +4,7 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Create the reasoning baseline matrix for all 18 documentation-skill tasks at local `5.4 mini low` and record the pass/fail split honestly.
+Create and maintain the reasoning baseline matrix for all 18 documentation-skill tasks at local `5.4 mini low`, then follow up the low-fail set at `5.4 mini medium` and record the split honestly.
 
 ## Active Phase
 Documentation/design-only reasoning baseline review for the documentation skill. No OpenRouter live calls, OR comparison, benchmark execution through OpenRouter, benchmark result JSON generation, production routing activation, backlog update, Git staging, commit, push, tag, merge, reset, or release in this pass.
@@ -22,7 +22,7 @@ Local `5.4 mini` low remains the clean baseline for small sanitized documentatio
 OpenRouter remains disallowed for routing decisions and production routing remains `UNKNOWN`/disabled. OpenRouter may only be considered later for public/sanitized, non-binding documentation assist fixtures after explicit approval and Codex review.
 
 ## Last Codex Work
-Reviewed the bound documentation-skill routing artifacts and wrote the reasoning baseline matrix:
+Reviewed the bound documentation-skill routing artifacts and extended the reasoning baseline matrix with the `5.4 mini medium` follow-up for the low-fail tasks:
 
 - `documentation/codex/model-routing/documentation_skill_codex_reasoning_baseline_matrix_2026-06-12.md`
 - `documentation/codex/model-routing/documentation_skill_task_inventory_2026-06-12.md`
@@ -36,6 +36,8 @@ Reviewed the bound documentation-skill routing artifacts and wrote the reasoning
 Confirmed:
 
 - The documentation-skill inventory still contains 18 tasks, and the matrix now records a low-reasoning PASS/FAIL split for all of them.
+- The medium follow-up pass lifts six of the nine low-fail tasks to PASS: CURRENT_STATE drafting, CURRENT_STATE reconciliation, contradiction detection, test pipeline documentation completion, WHAT_I_LEARNED pattern proposal, and documentation skill inventory/model-assignment planning.
+- The remaining medium-fail tasks are the strongest governance items: final audit/release documentation, backlog or product-scope documentation, and capability registry or UX capability documentation.
 - Low-reasoning `PASS` tasks are the compact, sanitized, low-authority ones: benchmark JSON summary, scoring report summary, handoff draft, Markdown formatting, changelog summary, skill-usage summary, non-binding review notes, raw JSON schema validation, and marker-only closeout validation.
 - Low-reasoning `FAIL` tasks remain the governance-heavy or binding ones: CURRENT_STATE drafting/reconciliation, contradiction analysis, final audit/release docs, backlog/product-scope docs, test pipeline completion, WHAT_I_LEARNED proposals, capability registry docs, and inventory/model-assignment planning.
 - The work remains local-only and does not activate OpenRouter, benchmark execution, production routing, Git actions, release, final audit, backlog authority, repo-write delegation, command authority, or private-file authority.
@@ -65,7 +67,7 @@ Planning result:
 
 ## Tests / Validation
 - Matrix content review -> PASS.
-- Low/PASS and low/FAIL counts checked -> PASS.
+- Low-follow-up medium pass/fail counts checked -> PASS.
 - Markdown sanity on touched documentation files -> PASS.
 - `git diff --check` on touched files -> pending.
 - Confirmed no OpenRouter live calls in this documentation pass -> PASS.
@@ -74,14 +76,14 @@ Planning result:
 
 ## Open Risks
 - The matrix is conceptual, not an execution benchmark, so it should not be reused as proof of live model behavior.
-- High-authority documentation tasks still need stronger reasoning or direct Codex handling before any binding output.
+- The remaining medium-fail tasks still need stronger reasoning or direct Codex handling before any binding output.
 - The worktree may contain unrelated pre-existing changes; do not stage broadly.
 
 ## Next Recommended Step for ChatGPT
-Review `documentation/codex/model-routing/documentation_skill_codex_reasoning_baseline_matrix_2026-06-12.md` and decide whether the failed set should be rerun conceptually at `5.4 medium` next.
+Review `documentation/codex/model-routing/documentation_skill_codex_reasoning_baseline_matrix_2026-06-12.md` and decide whether the remaining failed set should be rerun conceptually at `5.5 high`.
 
 ## Next Recommended Step for Codex
-Use the failed task ids as the next medium-reasoning candidate set if the user asks for a follow-up pass, and keep OpenRouter and production routing disabled.
+Use the remaining failed task ids as the next high-reasoning candidate set if the user asks for a follow-up pass, and keep OpenRouter and production routing disabled.
 
 ## Last Updated
-2026-06-12 21:28 local time
+2026-06-12 21:40 local time
