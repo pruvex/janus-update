@@ -4,7 +4,7 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Run the local Codex mini baselines for TMR-001, TMR-002, and TMR-003 only, starting with `5.4 mini` low reasoning and recording compact local evidence notes.
+Run the local Codex mini baselines for TMR-001 through TMR-005 only, starting with `5.4 mini` low reasoning and recording compact local evidence notes.
 
 ## Active Phase
 Dev-environment Codex model-routing and local mini-baseline evidence capture. No production routing.
@@ -39,13 +39,17 @@ The append-only local evidence note already contains the clean baseline record:
 The recorded baseline is a clean `ALLOW` classification for the sanitized/mechanical excerpt fixture, with required flags present, forbidden flags absent, schema/shape pass, and no escalation needed.
 Validated the second local mini baseline result for `TMR-002 / MINI-002` with `5.4 mini` low reasoning only.
 Validated the third local mini baseline result for `TMR-003 / MINI-003` with `5.4 mini` low reasoning only.
-The append-only local evidence note now contains all three clean baseline records.
+Validated the fourth local mini baseline result for `TMR-004 / MINI-004` with `5.4 mini` low reasoning only.
+Validated the fifth local mini baseline result for `TMR-005 / MINI-005` with `5.4 mini` low reasoning only.
+The append-only local evidence note now contains all five clean baseline records.
 
 The recorded baselines are:
 
 - `TMR-001 / MINI-001`: clean `ALLOW` classification for the sanitized/mechanical excerpt fixture, with required flags present, forbidden flags absent, schema/shape pass, and no escalation needed.
 - `TMR-002 / MINI-002`: exact four-label extraction with correct meanings, all labels present, forbidden authority absent, schema/shape pass, and no escalation needed.
 - `TMR-003 / MINI-003`: advisory-only benchmark interpretation with all three models set to `HOLD`, schema-vs-mode distinction preserved, risk-flag caveat preserved, timeout caveat preserved, and no escalation needed.
+- `TMR-004 / MINI-004`: advisory cost/latency ranking with Model A highest practical candidate, Model C strong latency fallback, Model B secondary, Model D HOLD/UNKNOWN, and no escalation needed.
+- `TMR-005 / MINI-005`: clarified advisory wording preserving the no-test-yet restriction, schema/risk-flag prerequisite, and Codex/User policy authority, with no escalation needed.
 No OpenRouter live calls were run.
 No broad benchmark sweep was run.
 No Git staging, commit, push, tag, merge, release, or backlog update was performed.
@@ -67,16 +71,16 @@ No Git staging, commit, push, tag, merge, release, or backlog update was perform
 - No broad diff or OpenRouter validation run.
 
 ## Open Risks
-- The baselines are only for TMR-001 / MINI-001, TMR-002 / MINI-002, and TMR-003 / MINI-003; the rest of the matrix remains untested.
+- The baselines are only for TMR-001 / MINI-001, TMR-002 / MINI-002, TMR-003 / MINI-003, TMR-004 / MINI-004, and TMR-005 / MINI-005; the rest of the matrix remains untested.
 - The local evidence note is not a routing policy and should not be treated as production approval.
 - The existing worktree contains many unrelated pre-existing Janus product/test/documentation changes; do not stage broadly.
 - GitHub or other remotes will not see this local CURRENT_STATE until a later explicit `janus-git-governance` commit/push.
 
 ## Next Recommended Step for ChatGPT
-Review the recorded TMR-001, TMR-002, and TMR-003 results and decide whether to continue with TMR-004 or hold the matching OpenRouter fixture until the harness changes are ready.
+Review the recorded TMR-001 through TMR-005 results and decide whether to summarize the first-batch local baselines or prepare harness fixes before any OpenRouter comparison.
 
 ## Next Recommended Step for Codex
-If the user wants to continue, run the exact same local baseline sequence for TMR-004 only. Do not expand to OpenRouter live calls.
+If the user wants to continue, summarize the first-batch local baselines or prepare the harness fixes separately. Do not expand to OpenRouter live calls.
 
 ## Last Updated
-2026-06-12 02:20 local time
+2026-06-12 02:34 local time
