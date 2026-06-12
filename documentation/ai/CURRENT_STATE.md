@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Review the first Janus Codex task-to-model matrix and minimal mini-task benchmark plan before any further model comparisons.
+Run the local Codex mini baselines for TMR-001, TMR-002, and TMR-003 only, starting with `5.4 mini` low reasoning and recording compact local evidence notes.
 
 ## Active Phase
-Dev-environment Codex model-routing and OpenRouter delegation governance. No production routing.
+Dev-environment Codex model-routing and local mini-baseline evidence capture. No production routing.
 
 ## Last Decision
 This work is a Codex development-environment and skill-orchestration improvement, not a Janus application backlog item.
@@ -22,79 +22,61 @@ OpenRouter delegation remains read-only and non-production:
 
 ## Last Codex Work
 Confirmed no healthcheck reminder was due.
-Routed the request through `janus-skill-router` and accepted the user-provided `GPT-5.5 / medium` setup for a bounded documentation and benchmark-design block.
-Read the primary sync and governance artifacts:
+Read the bound routing artifacts:
 
 - `documentation/ai/CURRENT_STATE.md`
-- `documentation/codex/openrouter-delegation/README.md`
-- `documentation/codex/openrouter-delegation/benchmark_corpus.json`
-- `documentation/codex/openrouter-delegation/model_scoring_report.md`
-- `documentation/codex/SKILL_USAGE_LOG.md`
-- `AGENTS.md`
-- `documentation/codex/CODEX_PROJECT_PROFILE.md`
-- `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`
-- `documentation/pipeline/PIPELINE_CONTRACT.md`
-- Installed `janus-*` skill task/gate definitions
+- `documentation/codex/model-routing/task_model_matrix.md`
 
-Created `documentation/codex/model-routing/task_model_matrix.md` as a proposed review artifact.
-The matrix inventories recurring Janus Codex tasks, separates `MINI_CANDIDATE` from `GPT_5_4_CANDIDATE`, `HIGH_LOCAL_ONLY`, and `HUMAN_ONLY`, and hard-denies OpenRouter for Git, final audit, release, repo writes, command execution, private files/logs/local DBs/secrets, broad source inspection, and product/backlog/release/user-facing decisions.
-The first mini-candidate set is intentionally limited to five classes:
+Read the Janus routing skill:
 
-- sanitized skill/governance excerpt classification
-- public/sanitized schema-bound extraction
-- non-binding benchmark result interpretation
-- non-binding model cost/latency comparison
-- documentation wording suggestion
+- `C:\Users\pruve\.codex\skills\janus-skill-router\SKILL.md`
 
-Defined one minimal deterministic test case per mini-candidate and a local Codex baseline sequence:
-`5.4 mini` low -> medium -> high, escalating to `5.4` only if mini cannot solve the task cleanly.
-Defined an OpenRouter comparison plan but did not run live calls.
-Recorded current local OpenRouter evidence in the matrix as local-only evidence:
+Validated the first local mini baseline result for `TMR-001 / MINI-001` with `5.4 mini` low reasoning only.
+The append-only local evidence note already contains the clean baseline record:
 
-- `inclusionai/ring-2.6-1t`: promising but HOLD; missed risk flags, one timeout, and misclassified an `ASSIST` case as `ALLOW`.
-- `stepfun/step-3.7-flash`: best schema-valid candidate so far but HOLD; correct `DENY`/`ASSIST`, one `ALLOW` schema-extraction case as `UNKNOWN`, risk flags often missing.
-- `minimax/minimax-m3`: schema/provider incompatible with HTTP 200 top-level invalid-params error payloads.
-- `qwen/qwen3.7-plus`: strongest mode classifier so far but schema fail due missing required fields.
-- Free Gemma 26B: rate-limited/inconclusive.
-- Free Gemma 31B: unreliable/HOLD.
-- Nemotron Nano free: excluded/incompatible.
+- `documentation/codex/model-routing/local_mini_baseline_results.md`
 
+The recorded baseline is a clean `ALLOW` classification for the sanitized/mechanical excerpt fixture, with required flags present, forbidden flags absent, schema/shape pass, and no escalation needed.
+Validated the second local mini baseline result for `TMR-002 / MINI-002` with `5.4 mini` low reasoning only.
+Validated the third local mini baseline result for `TMR-003 / MINI-003` with `5.4 mini` low reasoning only.
+The append-only local evidence note now contains all three clean baseline records.
+
+The recorded baselines are:
+
+- `TMR-001 / MINI-001`: clean `ALLOW` classification for the sanitized/mechanical excerpt fixture, with required flags present, forbidden flags absent, schema/shape pass, and no escalation needed.
+- `TMR-002 / MINI-002`: exact four-label extraction with correct meanings, all labels present, forbidden authority absent, schema/shape pass, and no escalation needed.
+- `TMR-003 / MINI-003`: advisory-only benchmark interpretation with all three models set to `HOLD`, schema-vs-mode distinction preserved, risk-flag caveat preserved, timeout caveat preserved, and no escalation needed.
 No OpenRouter live calls were run.
-No broad Codex benchmark sweep was run.
-No production routing was approved.
+No broad benchmark sweep was run.
 No Git staging, commit, push, tag, merge, release, or backlog update was performed.
 
 ## Changed Files
-- documentation/ai/CURRENT_STATE.md
-- documentation/codex/SKILL_USAGE_LOG.md
-- documentation/codex/model-routing/task_model_matrix.md
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/model-routing/local_mini_baseline_results.md`
 
 ## Remote Sync Evidence
 - Latest synchronized commit noted in prior state: `378a1c72c` (`docs(ai): reconcile openrouter run feedback sync state`) on `backup/develop`.
 - Branch context: `develop` / `backup/develop` workflow.
-- Generated benchmark JSON files remain untracked local evidence and were not staged or pushed.
-- This matrix and CURRENT_STATE update are local until a later explicit `janus-git-governance` commit/push.
+- This CURRENT_STATE update is local until a later explicit `janus-git-governance` commit/push.
 - GitHub or other remote readers may not contain the latest CURRENT_STATE.
 
 ## Tests / Validation
 - `python C:\Users\pruve\.codex\skills\codex-start-of-work-check\scripts\due_healthchecks.py` -> CLEAR
-- Focused source reads of required OpenRouter, Codex workflow, pipeline, and installed Janus skill definitions -> PASS
-- `git diff --check -- documentation/codex/model-routing/task_model_matrix.md` -> PASS
-- Full changed-doc diff check pending after CURRENT_STATE and usage-log update.
+- Focused source reads of required routing artifacts and skill instructions -> PASS
+- Existing evidence note verified: TMR-001 low result already present and clean -> PASS
+- No broad diff or OpenRouter validation run.
 
 ## Open Risks
-- The matrix is proposed, not approved routing policy.
-- Local post-patch benchmark JSON evidence was reviewed by ChatGPT/user context but remains uncommitted local evidence; do not treat it as remote truth.
-- OpenRouter candidates are all HOLD/UNKNOWN/EXCLUDED until schema/risk-flag prompt improvements and local Codex mini baselines exist.
-- Mini-task definitions may need user/ChatGPT review before any baseline runs.
+- The baselines are only for TMR-001 / MINI-001, TMR-002 / MINI-002, and TMR-003 / MINI-003; the rest of the matrix remains untested.
+- The local evidence note is not a routing policy and should not be treated as production approval.
 - The existing worktree contains many unrelated pre-existing Janus product/test/documentation changes; do not stage broadly.
 - GitHub or other remotes will not see this local CURRENT_STATE until a later explicit `janus-git-governance` commit/push.
 
 ## Next Recommended Step for ChatGPT
-Review `documentation/codex/model-routing/task_model_matrix.md`, especially whether the five mini-candidate task classes are small enough and whether `documentation wording suggestion` should remain `ASSIST_ONLY`.
+Review the recorded TMR-001, TMR-002, and TMR-003 results and decide whether to continue with TMR-004 or hold the matching OpenRouter fixture until the harness changes are ready.
 
 ## Next Recommended Step for Codex
-After review, select exactly one mini-candidate task and prepare the smallest local Codex baseline case across `5.4 mini` low, medium, and high reasoning. Do not run OpenRouter live calls until the baseline exists and the harness prompt/schema/risk-flag fixes are planned.
+If the user wants to continue, run the exact same local baseline sequence for TMR-004 only. Do not expand to OpenRouter live calls.
 
 ## Last Updated
-2026-06-12 01:58 local time
+2026-06-12 02:20 local time
