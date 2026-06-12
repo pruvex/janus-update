@@ -57,9 +57,11 @@ Recommended first fixture to benchmark after review: `DOC-FIX-001` benchmark JSO
 
 ## Remote Sync Evidence
 - Branch context: `develop` / `backup/develop` workflow.
-- No Git staging, commit, push, tag, merge, reset, release, or backlog update was performed.
-- These documentation planning artifacts and this CURRENT_STATE update are local until a later explicit `janus-git-governance` commit/push.
-- GitHub or other remote readers may not contain the latest CURRENT_STATE or documentation-skill model-assignment artifacts.
+- Documentation planning artifacts were committed and pushed to `backup/develop`.
+- Commit pushed: `245c2e861` (`docs(codex): add documentation skill OR planning`).
+- Push target: `backup develop`.
+- No push to `origin`, tag, merge, reset, release, benchmark rerun, OpenRouter live call, or backlog update was performed.
+- GitHub private backup readers can see the new documentation-skill model-assignment artifacts after `backup/develop` refresh.
 
 ## Tests / Validation
 - Markdown sanity on touched documentation files -> PASS.
@@ -77,10 +79,10 @@ Recommended first fixture to benchmark after review: `DOC-FIX-001` benchmark JSO
 - The worktree may contain unrelated pre-existing changes; do not stage broadly.
 
 ## Next Recommended Step for ChatGPT
-Review the documentation-skill task inventory and model-assignment registry. Confirm whether the first safe OR-assist benchmark should be `DOC-FIX-001` benchmark JSON summary.
+Fetch or inspect `backup/develop` at or after commit `245c2e861`, then review the documentation-skill task inventory and model-assignment registry. Confirm whether the first safe OR-assist benchmark should be `DOC-FIX-001` benchmark JSON summary.
 
 ## Next Recommended Step for Codex
 If the user approves a benchmark follow-up, prepare a gated no-live-to-live handoff for exactly one fixture: local `5.4 mini` low baseline versus one explicitly named OpenRouter candidate on `DOC-FIX-001`. Do not run OpenRouter without explicit approval.
 
 ## Last Updated
-2026-06-12 20:58 local time
+2026-06-12 21:04 local time
