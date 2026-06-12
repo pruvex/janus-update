@@ -4,7 +4,7 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Save the validated documentation-skill model-switch gate as a reusable template for future Janus skills.
+Create a no-live planning artifact for future OpenRouter candidate evaluation of documentation-skill tasks.
 
 ## Active Phase
 Documentation-skill governance update. No OpenRouter activation, no OpenRouter live calls, no production routing, no benchmark execution, no benchmark JSON generation, no release action, and no product-code change.
@@ -19,36 +19,39 @@ The documentation-skill routing table v1 remains the canonical reference for doc
 The gate output uses `Declared model/reasoning` instead of `Current model/reasoning`. The gate does not switch models automatically, does not activate OpenRouter, and does not enable production routing.
 
 ## Last Codex Work
-Created a reusable model-switch gate template from the validated `janus-documentation-update` gate and dry-run cases.
+Created a no-live planning artifact for a future OpenRouter candidate evaluation of documentation-skill tasks.
 
-Template saved at:
+Planning artifact saved at:
 
-- `documentation/codex/model-routing/skill_model_switch_gate_template_v1_2026-06-12.md`
+- `documentation/codex/model-routing/documentation_skill_or_candidate_evaluation_plan_v1_2026-06-12.md`
 
-The template includes:
+The plan includes:
 
 - purpose
-- required `DECLARED CODEX MODEL`
-- stop-before-sufficiency rule
-- user-confirmation rule
-- blocked-scope upstream rule
-- no auto-switch / no OR / no production routing
-- five required dry-run cases for future skills
+- hard constraint: no OpenRouter live calls in this planning step
+- all 18 `DOC-SKILL-*` rows from routing table v1
+- current `5.4 mini` low/medium allowances
+- per-task fixture structure
+- candidate filtering based on execution-time pricing cheaper than GPT-5.4 mini
+- pass/fail rubric
+- future terminal-driven workflow
+- external-option decision rule
+- final-authority boundary with Janus/Codex governance
 
 ## Changed Files
-- `documentation/codex/model-routing/skill_model_switch_gate_template_v1_2026-06-12.md`
+- `documentation/codex/model-routing/documentation_skill_or_candidate_evaluation_plan_v1_2026-06-12.md`
 - `documentation/ai/CURRENT_STATE.md`
 - `documentation/codex/SKILL_USAGE_LOG.md`
 
 ## Remote Sync Evidence
 - Branch context: `develop` / `backup/develop` workflow.
-- This block is intended to be committed as `docs(codex): add reusable model switch gate template` and pushed to `backup/develop` only.
+- This block is intended to be committed as `docs(codex): plan documentation skill or candidate evaluation` and pushed to `backup/develop` only.
 - No push to `origin`, tag, merge, reset, release, OpenRouter comparison, benchmark result JSON generation, or production routing activation is part of this block.
 
 ## Tests / Validation
 - Start-of-work healthcheck reminder: CLEAR.
-- Bound artifact reread for template extraction: PASS.
-- Reusable template created from validated dry-run gate: PASS.
+- Bound artifact reread for no-live OR evaluation planning: PASS.
+- Future OR candidate evaluation plan created without live calls: PASS.
 - Markdown sanity on touched documentation files: PASS.
 - `git diff --check` on touched tracked files: PASS.
 - OpenRouter live calls: NOT RUN / forbidden by scope.
@@ -56,14 +59,14 @@ The template includes:
 
 ## Open Risks
 - The repository worktree contains many unrelated pre-existing modified and untracked files. Commit staging must remain path-specific.
-- The template is intentionally generic and must be bound to each future skill's own routing table or model requirements before use.
-- The dry-run evidence remains conversational validation, not an automated test harness.
+- The plan depends on current OpenRouter pricing at future execution time; pricing was not fetched in this planning step.
+- The plan is not approval to run OpenRouter calls, generate result JSON, offer a model externally, or activate production routing.
 
 ## Next Recommended Step for ChatGPT
-Review the template wording before reusing it in another Janus skill.
+Review the no-live evaluation plan and decide whether a future approved live-run gate is warranted.
 
 ## Next Recommended Step for Codex
-Run final validation, commit the template checkpoint, and push `backup/develop` only.
+Run final validation, commit the planning artifact checkpoint, and push `backup/develop` only.
 
 ## Last Updated
-2026-06-12 23:46 local time
+2026-06-12 23:53 local time
