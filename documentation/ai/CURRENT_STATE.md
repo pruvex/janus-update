@@ -4,7 +4,7 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Validate the safe documentation-maintenance subparts of `DOC-SKILL-012` and `DOC-SKILL-017` against local `5.4` medium while keeping blocked governance subparts upstream.
+Clean up the documentation-skill baseline state and prepare the final documentation-skill routing-table v1 step.
 
 ## Active Phase
 Documentation/design-only reasoning baseline review for the documentation skill. No OpenRouter live calls, OR comparison, benchmark execution through OpenRouter, benchmark result JSON generation, production routing activation, backlog update, Git staging, commit, push, tag, merge, reset, or release in this pass.
@@ -84,7 +84,7 @@ Planning result:
 - Low-follow-up medium pass/fail counts checked -> PASS.
 - High-follow-up pass/fail counts checked -> PASS.
 - Markdown sanity on touched documentation files -> PASS.
-- `git diff --check` on touched files -> pending.
+- `git diff --check` on touched files -> PASS.
 - Confirmed no OpenRouter live calls in this documentation pass -> PASS.
 - Confirmed no benchmark JSON generated in this documentation pass -> PASS.
 - Verified no staged files -> PASS.
@@ -97,10 +97,10 @@ Planning result:
 - The worktree may contain unrelated pre-existing changes; do not stage broadly.
 
 ## Next Recommended Step for ChatGPT
-Review the new safe-subpart `PASS` result for `DOC-SKILL-012` and `DOC-SKILL-017`, then decide whether the blocked subparts should stay blocked or be routed into their upstream Janus governance path.
+Condense the completed reasoning baseline, split boundaries, and safe-subpart validations into a final documentation-skill routing-table v1.
 
 ## Next Recommended Step for Codex
-Keep `DOC-SKILL-011` on the strict path `janus-final-audit -> janus-documentation-update`, keep `DOC-SKILL-012` and `DOC-SKILL-017` split between safe maintenance and blocked governance work, and preserve the local-only boundary.
+Prepare the final documentation-skill routing-table v1 from the current matrix and registry while preserving the local-only boundary and blocked upstream paths.
 
 ## Last Updated
-2026-06-12 22:28 local time
+2026-06-12 22:38 local time
