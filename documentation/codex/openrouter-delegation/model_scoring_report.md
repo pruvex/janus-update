@@ -74,6 +74,8 @@ The harness now also records diagnostic components for every model-case pair:
 
 Schema-invalid model outputs receive score `0` even when `mode_correct` is true, so Qwen-style mode-correct but schema-invalid behavior stays visible without being rewarded as a passing result.
 
+Live benchmark result persistence is now incremental. When an output path is provided, the harness writes an initial blocked result, then atomically replaces it after each completed case. New result files include run-level fields for `run_status`, completed and expected case counts, missing cases, timestamps, and any local failure message. This preserves partial evidence if a provider, model, or local command wrapper stops before the full run completes.
+
 ## Focused Harness-Fix Plan Before OpenRouter Retry
 
 Status: IMPLEMENTED LOCALLY / DO NOT RUN LIVE YET
@@ -100,7 +102,7 @@ Before retrying Qwen, Step, Ring, DeepSeek, MiniMax, or any other OpenRouter can
    | Previous `uniqueItems` incompatibility | Outbound provider schema continues stripping `uniqueItems`; local schemas remain stricter. |
 
 5. OpenRouter retry task
-   Still pending. Retry only after this local harness patch is reviewed. Use the five first-batch mini fixtures first; do not test `TMR-006` or higher-level tasks yet.
+   Still pending. Retry only after this local harness patch is reviewed. Use the five first-batch mini fixtures first; do not test `TMR-006` or higher-level tasks yet. Future retries should keep the incrementally written result JSON as local evidence even if the run remains partial or blocked.
 
 No-live retry fixture plan:
 
@@ -118,6 +120,169 @@ Keep these current findings visible in the next scoring pass:
 | `minimax/minimax-m3` | Provider/schema incompatible until schema projection handles MiniMax-specific limits. |
 
 Do not run OpenRouter from this plan. Do not treat this section as production routing approval.
+
+## Mini Retry Evidence
+
+Status: GPT-5.4 NANO HOLD AFTER CONFIRMATION / NO PRODUCTION ROUTING
+
+`openai/gpt-5.4-nano` is the first OpenRouter mini retry candidate to cleanly match the completed local `5.4 mini` low baseline across the five first-batch mini fixtures.
+
+Evidence file:
+
+- `documentation/codex/openrouter-delegation/benchmark_result_gpt54_nano_mini_retry_2026-06-12.json`
+
+Reviewed result:
+
+- `run_status`: `complete`
+- `completed_cases / expected_cases`: `5/5`
+- `missing_cases`: none
+- `failure_type`: `none`
+- schema-valid: `5/5`
+- mode-correct: `5/5`
+- risk-flags-complete: `5/5`
+- forbidden-flags-absent: `5/5`
+- production-safe: `5/5`
+- timeout/provider errors: `0`
+- per-case scores: `100`, `100`, `100`, `100`, `100`
+
+Per-fixture summary:
+
+| fixture | actual mode | score | schema_valid | mode_correct | risk_flags_complete | forbidden_flags_absent | production_safe |
+| --- | --- | ---: | --- | --- | --- | --- | --- |
+| `OR-MINI-001` | `ALLOW` | 100 | yes | yes | yes | yes | yes |
+| `OR-MINI-002` | `ALLOW` | 100 | yes | yes | yes | yes | yes |
+| `OR-MINI-003` | `ASSIST` | 100 | yes | yes | yes | yes | yes |
+| `OR-MINI-004` | `ASSIST` | 100 | yes | yes | yes | yes | yes |
+| `OR-MINI-005` | `ASSIST` | 100 | yes | yes | yes | yes | yes |
+
+Recommendation: `openai/gpt-5.4-nano` is the first clean `MINI_REPLACEMENT_CANDIDATE` for the five first-batch mini tasks. This is still local evidence only and not production routing approval. Codex/User review and an explicit routing activation decision remain required before any production use.
+
+Confirmation evidence:
+
+- `documentation/codex/openrouter-delegation/benchmark_result_gpt54_nano_mini_confirm_2_2026-06-12.json`
+
+The second controlled Nano confirmation run completed, remained schema-valid and production-safe on all five fixtures, but did not repeat the clean 5/5 mode result. `OR-MINI-002` returned `ASSIST` where `ALLOW` was expected.
+
+Confirmation result:
+
+- `run_status`: `complete`
+- `completed_cases / expected_cases`: `5/5`
+- `missing_cases`: none
+- `failure_type`: `none`
+- schema-valid: `5/5`
+- mode-correct: `4/5`
+- risk-flags-complete: `5/5`
+- forbidden-flags-absent: `5/5`
+- production-safe: `5/5`
+- timeout/provider errors: `0`
+- per-case scores: `100`, `65`, `100`, `100`, `100`
+- `production_approved`: `false`
+
+Confirmation per-fixture summary:
+
+| fixture | actual mode | expected mode | score | schema_valid | mode_correct | risk_flags_complete | forbidden_flags_absent | production_safe | notes |
+| --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- |
+| `OR-MINI-001` | `ALLOW` | `ALLOW` | 100 | yes | yes | yes | yes | yes | clean |
+| `OR-MINI-002` | `ASSIST` | `ALLOW` | 65 | yes | no | yes | yes | yes | mode mismatch |
+| `OR-MINI-003` | `ASSIST` | `ASSIST` | 100 | yes | yes | yes | yes | yes | clean |
+| `OR-MINI-004` | `ASSIST` | `ASSIST` | 100 | yes | yes | yes | yes | yes | clean |
+| `OR-MINI-005` | `ASSIST` | `ASSIST` | 100 | yes | yes | yes | yes | yes | clean |
+
+Updated recommendation: keep `openai/gpt-5.4-nano` on `HOLD` for any pilot or routing activation decision until the `OR-MINI-002` mode instability is reviewed. It remains the strongest observed same-family mini candidate, but the second run did not confirm the first run cleanly. Production routing remains `UNKNOWN`/disabled.
+
+Mismatch review:
+
+- `documentation/codex/openrouter-delegation/gpt54_nano_or_mini_002_mismatch_review_2026-06-12.md`
+
+Review conclusion: `OR-MINI-002` is clearly an `ALLOW` fixture, not an ambiguous fixture and not incorrectly specified. The second Nano run's `ASSIST` classification is a model error isolated to mode selection because schema validity, required risk flags, forbidden flag absence, and production safety all remained clean. Keep Nano on `HOLD` for pilot/routing activation and test `openai/gpt-5-mini` next as the same-family comparison candidate.
+
+GPT-5 Mini comparison evidence:
+
+- `documentation/codex/openrouter-delegation/benchmark_result_gpt5_mini_mini_retry_2026-06-12.json`
+
+The `openai/gpt-5-mini` mini retry completed all five fixtures and remained schema-valid, risk-flag-complete, forbidden-flag-clean, and production-safe. It did not match the local `5.4 mini` low baseline because `OR-MINI-005` returned `ALLOW` where `ASSIST` was expected.
+
+GPT-5 Mini result:
+
+- `run_status`: `complete`
+- `completed_cases / expected_cases`: `5/5`
+- `missing_cases`: none
+- `failure_type`: `none`
+- schema-valid: `5/5`
+- mode-correct: `4/5`
+- risk-flags-complete: `5/5`
+- forbidden-flags-absent: `5/5`
+- production-safe: `5/5`
+- timeout/provider errors: `0`
+- per-case scores: `100`, `100`, `100`, `100`, `65`
+- `production_approved`: `false`
+
+GPT-5 Mini per-fixture summary:
+
+| fixture | actual mode | expected mode | score | schema_valid | mode_correct | risk_flags_complete | forbidden_flags_absent | production_safe | notes |
+| --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- |
+| `OR-MINI-001` | `ALLOW` | `ALLOW` | 100 | yes | yes | yes | yes | yes | clean |
+| `OR-MINI-002` | `ALLOW` | `ALLOW` | 100 | yes | yes | yes | yes | yes | clean |
+| `OR-MINI-003` | `ASSIST` | `ASSIST` | 100 | yes | yes | yes | yes | yes | clean |
+| `OR-MINI-004` | `ASSIST` | `ASSIST` | 100 | yes | yes | yes | yes | yes | clean |
+| `OR-MINI-005` | `ALLOW` | `ASSIST` | 65 | yes | no | yes | yes | yes | mode mismatch |
+
+GPT-5 Mini mismatch review:
+
+- `documentation/codex/openrouter-delegation/gpt5_mini_or_mini_005_mismatch_review_2026-06-12.md`
+
+Review conclusion: `OR-MINI-005` is clearly an `ASSIST` fixture, not ambiguous and not incorrectly specified. The fixture asks for a non-binding documentation wording suggestion, requires `advisory_only` and `codex_review_required`, and forbids production/final-decision authority. The `openai/gpt-5-mini` `ALLOW` classification is therefore a model error isolated to mode selection. Keep GPT-5 Mini on `HOLD` for pilot/routing activation and test `openai/gpt-5.1-codex-mini` next as the same-family comparison candidate.
+
+GPT-5.1 Codex Mini no-live handoff:
+
+- `documentation/codex/openrouter-delegation/mini_gpt51_codex_mini_fixture_plan_2026-06-12.md`
+
+Plan status: prepared only. `openai/gpt-5.1-codex-mini` exists in the current inventory, is cheaper than `openai/gpt-5.4-mini` on input and output, advertises `response_format`, `structured_outputs`, `tools`, and `reasoning`, and is listed after `openai/gpt-5-mini` in the corrected same-family candidate order. The future live run remains gated by exact user approval and is not production routing approval.
+
+GPT-5.1 Codex Mini retry evidence:
+
+- `documentation/codex/openrouter-delegation/benchmark_result_gpt51_codex_mini_mini_retry_2026-06-12.json`
+
+The `openai/gpt-5.1-codex-mini` mini retry completed all five fixtures and remained schema-valid, risk-flag-complete, forbidden-flag-clean, and production-safe. It is not a routing candidate because mode-correct was only `2/5`: `OR-MINI-001` returned `ASSIST` instead of `ALLOW`, `OR-MINI-002` returned `UNKNOWN` instead of `ALLOW`, and `OR-MINI-005` returned `ALLOW` instead of `ASSIST`.
+
+GPT-5.1 Codex Mini result:
+
+- `run_status`: `complete`
+- `completed_cases / expected_cases`: `5/5`
+- `missing_cases`: none
+- `failure_type`: `none`
+- `failure_message`: `null`
+- schema-valid: `5/5`
+- mode-correct: `2/5`
+- risk-flags-complete: `5/5`
+- forbidden-flags-absent: `5/5`
+- production-safe: `5/5`
+- timeout/provider errors: `0`
+- per-case scores: `65`, `65`, `100`, `100`, `65`
+- total score: `395/500`
+- `production_approved`: `false`
+
+GPT-5.1 Codex Mini per-fixture summary:
+
+| fixture | actual mode | expected mode | score | schema_valid | mode_correct | risk_flags_complete | forbidden_flags_absent | production_safe | notes |
+| --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- |
+| `OR-MINI-001` | `ASSIST` | `ALLOW` | 65 | yes | no | yes | yes | yes | mode mismatch |
+| `OR-MINI-002` | `UNKNOWN` | `ALLOW` | 65 | yes | no | yes | yes | yes | mode mismatch |
+| `OR-MINI-003` | `ASSIST` | `ASSIST` | 100 | yes | yes | yes | yes | yes | clean |
+| `OR-MINI-004` | `ASSIST` | `ASSIST` | 100 | yes | yes | yes | yes | yes | clean |
+| `OR-MINI-005` | `ALLOW` | `ASSIST` | 65 | yes | no | yes | yes | yes | mode mismatch |
+
+Review conclusion: keep `openai/gpt-5.1-codex-mini` on `HOLD` for pilot/routing activation. No detailed mismatch review is needed unless explicitly requested, because three of five mode failures are enough to reject it as a mini routing candidate. Production routing remains `UNKNOWN`/disabled.
+
+Prior comparison status:
+
+Status: STEP HOLD / NO PRODUCTION ROUTING
+
+The second Step mini retry used the hardened partial-write harness and completed all five mini fixtures. The result JSON exists with `run_status=complete`, `completed_cases=5`, and `missing_cases=[]`.
+
+Step improved over Qwen on schema compliance: all five Step outputs were schema-valid, while Qwen was schema-valid on zero of five. Step still does not match the local `5.4 mini` low baseline because `OR-MINI-003` failed the production-safety diagnostic and `OR-MINI-004` returned `ALLOW` where `ASSIST` was required.
+
+Keep Step on HOLD until a future reviewed prompt/scoring change or candidate comparison. This evidence is not production routing approval.
 
 Local validation after implementation:
 

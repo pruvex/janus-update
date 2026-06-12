@@ -4,150 +4,126 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Review the controlled OpenRouter live retry attempts for Qwen and Step against the five first-batch mini fixtures.
+Review and document the completed `openai/gpt-5.1-codex-mini` mini retry result.
 
 ## Active Phase
-Dev-environment Codex model-routing and OpenRouter live retry evidence review. No production routing.
+Dev-environment Codex model-routing evidence review. No OpenRouter live calls, benchmark reruns, model execution, production routing activation, backlog update, or Git action in this pass.
 
 ## Last Decision
-This work is a Codex development-environment and skill-orchestration improvement, not a Janus application backlog item.
-Do not add it to `documentation/backlog/BACKLOG.md` unless the user explicitly changes scope.
+This remains a Codex development-environment and skill-orchestration evaluation, not a Janus application backlog item.
 
-OpenRouter delegation remains read-only and non-production:
+OpenRouter delegation remains non-production:
 
-- OpenRouter may only receive public or sanitized benchmark prompts from a curated corpus or reviewed mini-task fixture.
+- OpenRouter may only receive public or sanitized benchmark prompts from curated fixtures when explicitly approved.
 - OpenRouter must not read private local files, secrets, local databases, private logs, broad source trees, runtime state, dirty worktree content, or unredacted Janus project history.
 - OpenRouter must not write repo files, patch code, run commands, approve Git actions, approve final audits, make release-readiness or publish decisions, or decide Janus product scope/backlog priority/user-facing behavior.
-- Production routing remains `UNKNOWN`/disabled until local Codex mini baselines exist, OpenRouter prompt/schema fixes are reviewed, benchmark evidence is reviewed, and the user explicitly approves activation.
+- Production routing remains `UNKNOWN`/disabled until local and external evidence is reviewed and the user explicitly approves activation.
 
 ## Last Codex Work
-Received explicit approval phrase: `APPROVE STEP LIVE RETRY ONLY`.
+Reviewed and documented the completed `openai/gpt-5.1-codex-mini` mini retry result.
 
-Read the bound Step retry artifacts:
+Evidence reviewed:
 
-- `documentation/ai/CURRENT_STATE.md`
-- `documentation/codex/model-routing/local_mini_baseline_results.md`
-- `documentation/codex/openrouter-delegation/mini_retry_fixture_plan.md`
+- `documentation/codex/openrouter-delegation/benchmark_result_gpt51_codex_mini_mini_retry_2026-06-12.json`
+- `documentation/codex/openrouter-delegation/mini_gpt51_codex_mini_fixture_plan_2026-06-12.md`
 - `documentation/codex/openrouter-delegation/model_scoring_report.md`
-- `documentation/codex/openrouter-delegation/README.md`
+- `documentation/codex/openrouter-delegation/model_candidate_shortlist_2026-06-12.md`
+- `documentation/codex/openrouter-delegation/model_price_inventory_2026-06-12.json`
 - `documentation/codex/openrouter-delegation/mini_retry_corpus.json`
-- `documentation/codex/openrouter-delegation/benchmark_result_qwen37_plus_mini_retry_2026-06-12.json`
-- `documentation/codex/openrouter-delegation/schemas/delegated_task_result.schema.json`
-- `documentation/codex/openrouter-delegation/schemas/benchmark_result.schema.json`
-
-Pre-run checks for Step:
-
-- `OPENROUTER_API_KEY` was set.
-- Step output path was new before the run.
-- Dry-run confirmed the run used `mini_retry_corpus.json` with exactly `OR-MINI-001` through `OR-MINI-005`.
-- No parallel model run was started.
-
-Ran one approved Step-only OpenRouter live batch attempt:
-
-```powershell
-python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py --run-live --allow-external --debug-response-shape --request-timeout-seconds 120 --corpus documentation\codex\openrouter-delegation\mini_retry_corpus.json --models stepfun/step-3.7-flash --output documentation\codex\openrouter-delegation\benchmark_result_step_37_flash_mini_retry_2026-06-12.json
-```
-
-The local command wrapper timed out after about 184 seconds. A Python benchmark process continued briefly, then exited without writing `documentation/codex/openrouter-delegation/benchmark_result_step_37_flash_mini_retry_2026-06-12.json`.
-
-No Step result JSON exists, so there are no scorably complete per-fixture Step diagnostics. Step remains `HOLD` / inconclusive and does not match the completed local `5.4 mini` low baseline on available evidence. No second Step run was started because the user approved only one live retry batch.
-
-No Qwen rerun, Ring, MiniMax, DeepSeek, Gemma, or Nemotron run was started.
-No production routing was approved.
-No benchmark result JSON was staged or committed.
-No Git staging, commit, push, tag, merge, release, or backlog update was performed.
-
-Previous Qwen work:
-
-Read the bound model-routing and OpenRouter delegation artifacts:
-
-- `documentation/ai/CURRENT_STATE.md`
 - `documentation/codex/model-routing/local_mini_baseline_results.md`
-- `documentation/codex/openrouter-delegation/mini_retry_fixture_plan.md`
 - `documentation/codex/openrouter-delegation/README.md`
-- `documentation/codex/openrouter-delegation/benchmark_corpus.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Updated:
+
 - `documentation/codex/openrouter-delegation/model_scoring_report.md`
-- `documentation/codex/openrouter-delegation/scripts/openrouter_delegation_benchmark.py`
-- `documentation/codex/openrouter-delegation/schemas/delegated_task_result.schema.json`
-- `documentation/codex/openrouter-delegation/schemas/benchmark_result.schema.json`
+- `documentation/codex/openrouter-delegation/mini_gpt51_codex_mini_fixture_plan_2026-06-12.md`
 
-Received explicit approval phrase: `APPROVE QWEN LIVE RETRY ONLY`.
+`openai/gpt-5.1-codex-mini` result:
 
-Pre-run checks:
+- `run_status`: `complete`
+- `completed_cases / expected_cases`: `5/5`
+- `missing_cases`: none
+- `failure_type`: `none`
+- `failure_message`: `null`
+- schema-valid: `5/5`
+- mode-correct: `2/5`
+- risk-flags-complete: `5/5`
+- forbidden-flags-absent: `5/5`
+- production-safe: `5/5`
+- production_approved: `false`
+- total score: `395/500`
+- timeout/provider errors: `0`
 
-- `OPENROUTER_API_KEY` was set.
-- `/api/v1/key` check succeeded and reported `is_free_tier: False`.
-- Output file path was new before the run.
-- No existing OpenRouter benchmark run was found.
-- The reviewed five-fixture mini retry corpus used only public/sanitized input.
+Per-fixture summary:
 
-Because the harness default corpus did not match the five approved mini fixtures, added a minimal `--corpus` option and created `documentation/codex/openrouter-delegation/mini_retry_corpus.json` with exactly the five reviewed mini fixtures. Offline validation passed before the live call.
+- `OR-MINI-001`: HOLD, expected `ALLOW`, got `ASSIST`, score `65`.
+- `OR-MINI-002`: HOLD, expected `ALLOW`, got `UNKNOWN`, score `65`.
+- `OR-MINI-003`: PASS, expected `ASSIST`, got `ASSIST`, score `100`.
+- `OR-MINI-004`: PASS, expected `ASSIST`, got `ASSIST`, score `100`.
+- `OR-MINI-005`: HOLD, expected `ASSIST`, got `ALLOW`, score `65`.
 
-Ran one OpenRouter live batch only:
+Decision:
 
-```powershell
-python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py --run-live --allow-external --debug-response-shape --request-timeout-seconds 120 --corpus documentation\codex\openrouter-delegation\mini_retry_corpus.json --models qwen/qwen3.7-plus --output documentation\codex\openrouter-delegation\benchmark_result_qwen37_plus_mini_retry_2026-06-12.json
-```
+- Keep `openai/gpt-5.1-codex-mini` on `HOLD` for pilot/routing activation.
+- Do not perform detailed mismatch review unless explicitly requested, because `3/5` mode failures are enough to reject it as a mini routing candidate.
+- Do not edit mini fixtures.
+- Production routing remains `UNKNOWN`/disabled.
 
-Qwen result summary:
+Current same-family status:
 
-- `OR-MINI-001`: mode correct, risk flags complete, forbidden flags absent, production safe, schema invalid, score `0`.
-- `OR-MINI-002`: mode correct, risk flags complete, forbidden flags absent, production safe, schema invalid, score `0`.
-- `OR-MINI-003`: mode correct, risk flags complete, forbidden flags absent, production safe, schema invalid, score `0`.
-- `OR-MINI-004`: mode incorrect (`ALLOW` vs expected `ASSIST`), risk flags complete, forbidden flags absent, production safe, schema invalid, score `0`.
-- `OR-MINI-005`: mode correct, risk flags complete, forbidden flags absent, production safe, schema invalid, score `0`.
+- Local `5.4 mini low`: clean repeatable baseline for `TMR-001` through `TMR-005`.
+- `openai/gpt-5.4-nano`: `HOLD`; first run clean `5/5`, second confirmation `4/5` mode-correct because `OR-MINI-002` returned `ASSIST` instead of expected `ALLOW`; mismatch reviewed as true model error.
+- `openai/gpt-5-mini`: `HOLD`; first run `4/5` mode-correct because `OR-MINI-005` returned `ALLOW` instead of expected `ASSIST`; mismatch reviewed as true model error.
+- `openai/gpt-5.1-codex-mini`: `HOLD`; retry complete but mode-correct only `2/5`.
 
-Schema-invalid causes included `schema_version mismatch`, `findings must be an array`, and `summary/checks quality failed`.
-No timeout or provider-level error occurred.
-Final recommendation: Qwen remains `HOLD`; it did not match the completed local `5.4 mini` low baseline.
-Step was not run.
-No production routing was approved.
-No benchmark result JSON was staged or committed.
-No Git staging, commit, push, tag, merge, release, or backlog update was performed.
+Prior non-OpenAI status:
+
+- `qwen/qwen3.7-plus`: `HOLD`; schema-valid `0/5`, mode-correct `4/5`, risk-flags-complete `5/5`, forbidden-flags-absent `5/5`, production-safe `5/5`.
+- `stepfun/step-3.7-flash`: `HOLD`; second retry completed, schema-valid `5/5`, mode-correct `4/5`, risk-flags-complete `5/5`, forbidden-flags-absent `5/5`, production-safe `4/5`.
+- `minimax/minimax-m3`: `HOLD`; schema projection history requires review.
+- `inclusionai/ring-2.6-1t`: `HOLD`; prior timeout, missing risk flags, and ASSIST/ALLOW issue.
+- Free models: `HOLD` / inconclusive for production-style routing.
 
 ## Changed Files
 - `documentation/ai/CURRENT_STATE.md`
-- `documentation/codex/openrouter-delegation/mini_retry_corpus.json`
-- `documentation/codex/openrouter-delegation/scripts/openrouter_delegation_benchmark.py`
-- `documentation/codex/openrouter-delegation/benchmark_result_qwen37_plus_mini_retry_2026-06-12.json` (local evidence only; do not commit unless separately reviewed)
+- `documentation/codex/openrouter-delegation/model_scoring_report.md`
+- `documentation/codex/openrouter-delegation/mini_gpt51_codex_mini_fixture_plan_2026-06-12.md`
 - `documentation/codex/SKILL_USAGE_LOG.md`
-- `documentation/codex/openrouter-delegation/benchmark_result_step_37_flash_mini_retry_2026-06-12.json` was requested but was not created
+- `documentation/codex/openrouter-delegation/benchmark_result_gpt51_codex_mini_mini_retry_2026-06-12.json` (reviewed local evidence only; not generated in this documentation pass)
 
 ## Remote Sync Evidence
-- Latest synchronized commit noted in prior state: `378a1c72c` (`docs(ai): reconcile openrouter run feedback sync state`) on `backup/develop`.
 - Branch context: `develop` / `backup/develop` workflow.
-- This CURRENT_STATE update is local until a later explicit `janus-git-governance` commit/push.
-- GitHub or other remote readers may not contain the latest CURRENT_STATE.
+- No Git staging, commit, push, tag, merge, release, or backlog update was performed.
+- This CURRENT_STATE update and the GPT-5.1-Codex-Mini evidence review are local until a later explicit `janus-git-governance` commit/push.
+- GitHub or other remote readers may not contain the latest CURRENT_STATE or scoring-report updates.
 
 ## Tests / Validation
-- `python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py --validate-only` -> PASS
-- `python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py --validate-only --corpus documentation\codex\openrouter-delegation\mini_retry_corpus.json` -> PASS
-- `python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py --dry-run --corpus documentation\codex\openrouter-delegation\mini_retry_corpus.json --models qwen/qwen3.7-plus` -> PASS
-- `python -m py_compile documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py` -> PASS
-- One approved Qwen-only OpenRouter live retry -> completed, wrote local JSON evidence.
-- `python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py --validate-only --corpus documentation\codex\openrouter-delegation\mini_retry_corpus.json` -> PASS before Step attempt
-- `python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py --dry-run --corpus documentation\codex\openrouter-delegation\mini_retry_corpus.json --models stepfun/step-3.7-flash` -> PASS before Step attempt
-- `python -m py_compile documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py` -> PASS before Step attempt
-- One approved Step-only OpenRouter live retry attempt -> local command wrapper timed out; no result JSON was written; Step remains HOLD/inconclusive.
-- No Qwen rerun or other model live calls after Step approval.
-- `python documentation\codex\scripts\record_skill_usage.py --skill janus-skill-router ...` -> PASS
-- `python documentation\codex\scripts\record_skill_usage.py --skill janus-skill-router ... --state BLOCKED` for Step retry -> PASS
+- JSON parse for `benchmark_result_gpt51_codex_mini_mini_retry_2026-06-12.json` -> PASS.
+- Confirmed required benchmark result fields -> PASS.
+- Confirmed `completed_cases / expected_cases = 5/5` -> PASS.
+- Confirmed mode-correct `2/5` -> PASS.
+- Confirmed schema-valid, risk-flags-complete, forbidden-flags-absent, and production-safe all `5/5` -> PASS.
+- Confirmed `summary.production_approved=false` -> PASS.
+- Markdown sanity on touched docs -> PASS.
+- No OpenRouter live calls, benchmark reruns, or model execution in this documentation pass -> PASS.
+- No benchmark result JSON generated in this documentation pass -> PASS.
+- `git diff --check` on touched files -> PASS.
+- Verified no staged files -> PASS.
+- Skill usage recorded with `documentation/codex/scripts/record_skill_usage.py` -> PASS.
 
 ## Open Risks
-- Qwen remains `HOLD` after the first mini retry because all five outputs were schema-invalid and one fixture had an incorrect mode.
-- Step remains `HOLD` / inconclusive because the approved live attempt produced no result JSON and therefore no scorably complete diagnostics.
-- The local evidence note is not a routing policy and should not be treated as production approval.
+- `openai/gpt-5.1-codex-mini` is schema-stable and production-safe on this run, but fails route-label reliability with three mode mismatches.
+- Cheaper same-family candidates tested so far are all `HOLD`; local `5.4 mini low` remains the cleaner mini baseline.
+- Broader tasks beyond `TMR-001` through `TMR-005` remain untested for same-family candidates.
 - Production routing remains `UNKNOWN`/disabled.
-- Existing untracked benchmark JSON files remain local evidence and were not touched or committed in this pass.
-- The new Qwen retry JSON is local evidence and was not staged or committed.
-- The existing worktree contains many unrelated pre-existing Janus product/test/documentation changes; do not stage broadly.
-- GitHub or other remotes will not see this local CURRENT_STATE until a later explicit `janus-git-governance` commit/push.
+- The worktree contains unrelated pre-existing changes; do not stage broadly.
 
 ## Next Recommended Step for ChatGPT
-Review the Step execution blocker and decide whether to approve a second Step retry with a longer local command timeout and/or interim per-case flushing, or patch the harness to write partial results safely during long runs.
+Review the GPT-5.1-Codex-Mini HOLD conclusion. Recommended next task: prepare a no-live fixture plan and gated live-run handoff for `openai/gpt-5-nano` as the next same-family comparison candidate.
 
 ## Next Recommended Step for Codex
-If the user wants to continue, prepare a tiny harness hardening patch to flush per-case results incrementally before any second Step live retry. Do not run further OpenRouter live calls without explicit approval.
+If the user continues, prepare the no-live fixture plan and gated live-run handoff for `openai/gpt-5-nano`. Do not run OpenRouter or approve production routing.
 
 ## Last Updated
-2026-06-12 15:02 local time
+2026-06-12 19:57 local time
