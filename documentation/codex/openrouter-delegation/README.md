@@ -104,11 +104,11 @@ Live benchmark calls require all of these:
 
 The script never reads arbitrary repo files for prompts. It only reads the curated benchmark corpus. That keeps data exfiltration boring in the best possible way.
 
-Before sending a JSON Schema to OpenRouter, the harness projects the local schema into a provider-compatible request schema. It strips local or provider-incompatible schema keywords currently known to break providers: `$schema`, `$id`, and `uniqueItems`. The checked-in local schemas remain stricter and continue to be used for local validation.
+Before sending a JSON Schema to OpenRouter, the harness projects the local schema into a provider-compatible request schema. It strips local or provider-incompatible schema keywords currently known to break providers: `$schema`, `$id`, and `uniqueItems`. It also removes outbound Boolean enum constraints such as `[true]` that some providers reject while keeping the checked-in local schemas stricter for local validation.
 
 Live benchmark operator feedback is intentionally narrow. The harness prints progress lines to stderr with task id, model id, coarse status, and elapsed milliseconds only. It does not print prompts, generated content, raw responses, headers, API keys, user ids, environment variables, private files, arbitrary repo files, or secrets.
 
-External request timeouts are bounded by `--request-timeout-seconds`, defaulting to `120`. The timeout applies only to OpenRouter HTTP calls, not to dry-run, validate-only, or local privacy-tier deny behavior. Timeout results are recorded as `request_timeout` while preserving the benchmark-result JSON structure.
+External request timeouts are bounded by `--request-timeout-seconds`, defaulting to `120`. The timeout applies only to OpenRouter HTTP calls, not to dry-run, validate-only, or local privacy-tier deny behavior. The harness uses an explicit wall-clock guard around the HTTP request, response read, and JSON decode because the underlying `urllib` socket timeout is not a total provider-generation deadline. Timeout results are recorded as `request_timeout` while preserving the benchmark-result JSON structure.
 
 Optional debug mode:
 
@@ -136,6 +136,8 @@ Core fields:
 - `risk_flags`
 
 Codex treats schema failure as a benchmark failure, not as something to repair silently. Response-healing can be tested later as a separate model capability, but the baseline should measure native compliance first.
+
+Benchmark prompts include an explicit required-field checklist and the per-case required and forbidden risk flags. Delegated outputs must use risk flags from the canonical taxonomy in the local schema.
 
 Invalid JSON failures are classified by safe response metadata when available:
 
@@ -173,9 +175,20 @@ Scoring dimensions:
 - schema compliance
 - correct route label
 - risk flag recall
+- forbidden risk flag absence
+- production safety
 - concise evidence quality
 - refusal quality for DENY cases
 - cost and latency metadata when available
+
+Benchmark result cases expose diagnostic components in addition to the legacy total score:
+
+- `mode_correct`
+- `schema_valid`
+- `risk_flags_complete`
+- `forbidden_flags_absent`
+- `production_safe`
+- `failure_type`
 
 No model is production-approved by this prototype alone.
 
@@ -226,6 +239,10 @@ Implemented artifacts:
 - delegated output JSON Schema
 - benchmark result JSON Schema
 - read-only benchmark harness
+- complete-result prompt checklist
+- canonical risk-flag taxonomy handling
+- diagnostic scoring components
+- provider schema projection for `uniqueItems` and Boolean enum constraints
 - initial scoring report shell
 
 Blocked for live scoring:
@@ -241,3 +258,4 @@ Known debug path:
 - Treat the model as incompatible/pending until a future provider response changes.
 - `google/gemma-4-31b-it:free` produced HTTP 200 top-level `error` payloads with a sanitized OpenInference grammar error: `Unimplemented keys: ["uniqueItems"]`.
 - Retry Gemma 31B only after the outbound schema projection strips `uniqueItems`, using `--debug-response-shape`.
+- A later Gemma 31B retry resolved the `uniqueItems` grammar error, but repeated truncated/invalid JSON, only one schema-valid external case, and several responses around 197-211 seconds. Treat Gemma 31B as `UNRELIABLE / HOLD` until future evidence changes.

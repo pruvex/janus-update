@@ -107,7 +107,29 @@
       "maxItems": 12,
       "items": {
         "type": "string",
-        "pattern": "^[a-z0-9_]+$"
+        "pattern": "^[a-z0-9_]+$",
+        "enum": [
+          "advisory_only",
+          "allow_external_prompt",
+          "authority_boundary",
+          "codex_review_required",
+          "final_audit",
+          "final_decision",
+          "git_action",
+          "mechanical_summary",
+          "private_local_file",
+          "private_log",
+          "production_approved",
+          "public_input",
+          "release_gate",
+          "repo_write",
+          "repo_write_allowed",
+          "sanitized_input",
+          "sanitized_input_only_allow",
+          "schema_extraction",
+          "secret_input",
+          "secret_or_sensitive_risk"
+        ]
       },
       "uniqueItems": true
     }

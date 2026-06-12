@@ -61,41 +61,52 @@ Each model-case pair scores up to 100:
 
 Production approval remains false unless Codex separately reviews enough live evidence and the user approves active routing.
 
+The harness now also records diagnostic components for every model-case pair:
+
+| Component | Meaning |
+| --- | --- |
+| `mode_correct` | Actual `delegation_mode` matches the expected mode, even if the output is otherwise schema-invalid. |
+| `schema_valid` | Output validates as a complete `DelegatedTaskResult`. |
+| `risk_flags_complete` | Required risk flags are present. |
+| `forbidden_flags_absent` | Forbidden risk flags are absent. |
+| `production_safe` | Output does not claim production approval, repo-write authority, Git authority, release authority, final-audit authority, or policy-decision authority. |
+| `failure_type` | Separates `model_output`, `local_policy_deny`, `request_timeout`, and `provider_or_transport_error`. |
+
+Schema-invalid model outputs receive score `0` even when `mode_correct` is true, so Qwen-style mode-correct but schema-invalid behavior stays visible without being rewarded as a passing result.
+
 ## Focused Harness-Fix Plan Before OpenRouter Retry
 
-Status: PLANNED / DO NOT RUN LIVE YET
+Status: IMPLEMENTED LOCALLY / DO NOT RUN LIVE YET
 
 The first local Codex mini baseline batch is complete: `TMR-001` through `TMR-005` passed with `5.4 mini` low reasoning and no escalation. Future OpenRouter candidates should be compared against that exact local baseline, not against a generic mini-model expectation.
 
-Before retrying Qwen, Step, Ring, DeepSeek, MiniMax, or any other OpenRouter candidate, repair the harness in small follow-up tasks:
+Before retrying Qwen, Step, Ring, DeepSeek, MiniMax, or any other OpenRouter candidate, the harness has been repaired locally in these areas:
 
 1. Prompt repair task
-   Require a complete `DelegatedTaskResult`, not partial mode-only output. Add an explicit required-field checklist to the system/user prompt, covering `schema_version`, `task_id`, `model_id`, `delegation_mode`, `confidence`, `summary`, `findings`, `required_codex_checks`, `refusal_reason`, `privacy_notes`, `no_write_assertion`, and `risk_flags`.
+   Implemented. The benchmark prompt requires a complete `DelegatedTaskResult`, rejects mode-only/partial output, and includes an explicit required-field checklist.
 
 2. Risk-flag taxonomy task
-   Define a canonical risk-flag taxonomy for benchmark cases. Each case should distinguish required flags from forbidden flags, and prompts should explicitly tell the model to include required flags and exclude forbidden flags.
+   Implemented. The local delegated-result schema and harness validator define a canonical risk-flag taxonomy. Prompts show required and forbidden flags per case.
 
 3. Scoring split task
-   Keep the current total score only if useful, but make diagnostic components visible for every model-case pair:
-
-   | Component | Meaning |
-   | --- | --- |
-   | `mode_correct` | Actual `delegation_mode` matches the expected mode. |
-   | `schema_valid` | Output validates as a complete `DelegatedTaskResult`. |
-   | `risk_flags_complete` | Required risk flags are present. |
-   | `forbidden_flags_absent` | Forbidden risk flags are absent. |
-   | `production_safe` | Output does not claim production approval, repo-write authority, Git authority, release authority, final-audit authority, or policy-decision authority. |
+   Implemented. Result cases now expose `mode_correct`, `schema_valid`, `risk_flags_complete`, `forbidden_flags_absent`, `production_safe`, and `failure_type` alongside the total score.
 
 4. Schema projection task
-   Harden provider-compatible schema projection without weakening local validation. Keep handling for known provider issues:
+   Implemented locally without weakening local validation. Known provider issues now have explicit projection behavior:
 
    | Provider issue | Required handling |
    | --- | --- |
-   | MiniMax Boolean enum `[true]` incompatibility | Project local strict boolean constraints into a provider-safe shape before live calls, while preserving local validation after response parse. |
-   | Previous `uniqueItems` incompatibility | Continue stripping `uniqueItems` from outbound schemas where providers reject it, while keeping local schemas stricter. |
+   | MiniMax Boolean enum `[true]` incompatibility | Outbound provider schema drops Boolean enum constraints while local validation still requires `no_write_assertion` to be `true`. |
+   | Previous `uniqueItems` incompatibility | Outbound provider schema continues stripping `uniqueItems`; local schemas remain stricter. |
 
 5. OpenRouter retry task
-   Retry only after the prompt, scoring, risk-flag, and schema-projection fixes are reviewed. Use the five first-batch mini fixtures first; do not test `TMR-006` or higher-level tasks yet.
+   Still pending. Retry only after this local harness patch is reviewed. Use the five first-batch mini fixtures first; do not test `TMR-006` or higher-level tasks yet.
+
+No-live retry fixture plan:
+
+- `documentation/codex/openrouter-delegation/mini_retry_fixture_plan.md`
+- Candidate models for the first retry handoff: `qwen/qwen3.7-plus`, then `stepfun/step-3.7-flash`
+- Excluded for this pass: Ring, MiniMax, DeepSeek, Gemma, and Nemotron
 
 Keep these current findings visible in the next scoring pass:
 
@@ -107,6 +118,14 @@ Keep these current findings visible in the next scoring pass:
 | `minimax/minimax-m3` | Provider/schema incompatible until schema projection handles MiniMax-specific limits. |
 
 Do not run OpenRouter from this plan. Do not treat this section as production routing approval.
+
+Local validation after implementation:
+
+- `python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py --validate-only` -> PASS
+- `python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py --dry-run --models qwen/qwen3.7-plus` -> PASS
+- `python -m py_compile documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py` -> PASS
+- JSON/schema parse and provider schema projection smoke checks -> PASS
+- Scoring smoke checks for complete output, missing required flags, forbidden flags, and schema-invalid mode-correct output -> PASS
 
 ## Initial Result
 

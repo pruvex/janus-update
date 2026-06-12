@@ -40,6 +40,11 @@
           "task_id",
           "model_id",
           "schema_valid",
+          "mode_correct",
+          "risk_flags_complete",
+          "forbidden_flags_absent",
+          "production_safe",
+          "failure_type",
           "expected_mode",
           "actual_mode",
           "score",
@@ -55,6 +60,22 @@
           },
           "schema_valid": {
             "type": "boolean"
+          },
+          "mode_correct": {
+            "type": "boolean"
+          },
+          "risk_flags_complete": {
+            "type": "boolean"
+          },
+          "forbidden_flags_absent": {
+            "type": "boolean"
+          },
+          "production_safe": {
+            "type": "boolean"
+          },
+          "failure_type": {
+            "type": "string",
+            "enum": ["model_output", "local_policy_deny", "request_timeout", "provider_or_transport_error"]
           },
           "expected_mode": {
             "type": "string",
@@ -167,9 +188,9 @@
       "additionalProperties": false,
       "required": ["production_approved", "notes"],
       "properties": {
-    "production_approved": {
-      "type": "boolean",
-      "enum": [false]
+        "production_approved": {
+          "type": "boolean",
+          "enum": [false]
         },
         "notes": {
           "type": "string"
