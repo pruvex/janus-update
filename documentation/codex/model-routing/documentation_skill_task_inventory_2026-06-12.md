@@ -1,0 +1,83 @@
+# Documentation Skill Task Inventory - 2026-06-12
+
+Status: DESIGN / REVIEW-ONLY / NO PRODUCTION ROUTING
+
+Scope: Janus documentation skill and documentation-adjacent Codex workflow tasks. This inventory does not approve OpenRouter routing, model execution, repo writes by delegated models, benchmark reruns, Git actions, release decisions, final-audit decisions, backlog decisions, or product-scope decisions.
+
+## Sources
+
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/openrouter-delegation/same_family_mini_routing_interim_assessment_2026-06-12.md`
+- `documentation/codex/openrouter-delegation/model_scoring_report.md`
+- `documentation/codex/openrouter-delegation/README.md`
+- `documentation/codex/model-routing/local_mini_baseline_results.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/codex/skills/janus-documentation-update/SKILL.md`
+- legacy Skill 7 documentation workflow under `.windsurf/workflows/`
+- `documentation/codex/scripts/record_skill_usage.py`
+- `documentation/codex/scripts/summarize_skill_usage.py`
+
+## Current Evidence Position
+
+Local `5.4 mini` low remains the clean baseline for the first mini-routing batch. The cheaper same-family OpenAI candidates tested through OpenRouter remain `HOLD`: `openai/gpt-5.4-nano`, `openai/gpt-5-mini`, `openai/gpt-5.1-codex-mini`, and `openai/gpt-5-nano`.
+
+OpenRouter is not approved for routing decisions. It may be considered only for public or sanitized, non-binding documentation assist tasks after separate fixture validation and Codex review. Production routing remains `UNKNOWN`/disabled.
+
+## Assignment Classes
+
+| class | meaning |
+| --- | --- |
+| `CODEX_ONLY` | Codex must do the task locally because the task is binding, repo-state-sensitive, product/release/audit relevant, or requires final authority. |
+| `LOCAL_BASELINE_ONLY` | Keep on local `5.4 mini` or local Codex-family baseline for now; no OpenRouter activation until stronger evidence exists. |
+| `OR_ASSIST_CANDIDATE` | OpenRouter may draft or summarize only from public/sanitized input; Codex must review and make every final decision or repo edit. |
+| `OR_EXECUTION_CANDIDATE` | OpenRouter could eventually execute a fully sanitized mechanical task with schema-bound output, but none are approved in this documentation-skill pass. |
+| `SCRIPT_ONLY` | Deterministic script/parser/validator should do this first; Codex reviews the result. |
+| `BLOCKED_FOR_OR` | Not eligible for OpenRouter because it touches authority, private repo state, final gates, Git/release/backlog/product decisions, or unsafe context. |
+
+## Inventory
+
+| task_id | task_name | input sensitivity | expected output | binding vs non-binding | safety risk | current baseline model | script-only suitability | OR eligibility | recommended assignment | required evidence before OR activation | fallback behavior |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| DOC-SKILL-001 | Summarize benchmark JSON | Sanitized benchmark result JSON only; no raw private prompts, account metadata, secrets, local logs, or unreviewed model content. | Short result summary with run status, completed/expected cases, diagnostics, production_approved state, and HOLD/PASS wording as advisory. | Non-binding unless Codex incorporates it into a report. | Low if sanitized; medium if raw result content includes prompt/output leakage. | `5.4 mini` low for local baseline summaries. | Medium: JSON parsing and field extraction should be scripted first when possible. | Eligible as sanitized assist only. | `OR_ASSIST_CANDIDATE` | Fixture proves exact field preservation, no production approval, no route activation, and `production_approved=false`; at least one local baseline comparison and one OR candidate reviewed. | Keep local `5.4 mini` low; Codex parses JSON and writes final summary. |
+| DOC-SKILL-002 | Summarize model scoring report | Public/sanitized report excerpt; may include local model ids and benchmark diagnostics but no secrets or raw private prompts. | Advisory summary of candidate status, HOLD reasons, and next no-live decision. | Non-binding. | Low-medium because bad wording could imply routing approval. | `5.4 mini` low. | Low: script can extract headings but cannot safely interpret status alone. | Eligible as sanitized assist only. | `OR_ASSIST_CANDIDATE` | Fixture must preserve every `HOLD`/`UNKNOWN`/disabled state and explicitly forbid production routing approval. | Codex summarizes locally; `5.4` medium if policy nuance is high. |
+| DOC-SKILL-003 | Draft Codex handoff | Sanitized scope, paths, next skill, model/reasoning, and explicit exclusions. No private file contents unless redacted. | Copy-safe handoff draft with `NEXT`, `MODEL`, `LOAD`, `ASK`, and `DROP` fields. | Non-binding until Codex reviews and emits it. | Low-medium; malformed handoff can cause context overloading or skipped gates. | `5.4 mini` low for simple handoff wording; `5.4` medium for Janus gates. | Low: templates help, but judgment remains needed. | Eligible as sanitized assist only. | `OR_ASSIST_CANDIDATE` | Fixture proves no missing gate, no direct implementation instruction, no Git/release/final-audit authority, and no broad context load. | Codex writes handoff locally from bound artifacts. |
+| DOC-SKILL-004 | Draft CURRENT_STATE update | Active local repo state, changed files, validation, remote sync truth, risks, next steps. | Compact rolling snapshot with current goal, phase, last work, changed files, checks, risks, next ChatGPT/Codex steps, timestamp. | Binding once written. | High because it synchronizes local truth between Codex and ChatGPT. | `5.4` medium or `5.5` medium for governance-heavy state. | Low: scripts can check structure, not truth. | Not eligible for OR final output; sanitized wording assist only after Codex prepares facts. | `CODEX_ONLY` | No OR activation for final updates. Any future assist fixture must be sanitized, advisory, and Codex-reviewed. | Codex writes final snapshot; if uncertain, block with exact missing evidence. |
+| DOC-SKILL-005 | Reconcile CURRENT_STATE with user-reported local state | User report plus local `CURRENT_STATE`, Git/validation evidence, possible dirty worktree. | Corrected local state and explicit remote-sync caveat. | Binding once written. | High; stale or false state can mislead downstream actors. | `5.4` medium; `5.5` medium/high for risky governance contradictions. | Low: diff/status scripts can provide evidence only. | Not eligible for OR except public/sanitized excerpt commentary. | `CODEX_ONLY` | No OR activation for private repo-state reconciliation. | Codex reads local evidence and updates or blocks. |
+| DOC-SKILL-006 | Format Markdown documentation | Sanitized Markdown text or local repo docs. | Parser-safe, readable Markdown with preserved meaning. | Non-binding for isolated sanitized text; binding when applied to repo. | Low for sanitized text; medium for repo docs where semantic drift matters. | `5.4 mini` low for isolated formatting; `5.4` low/medium for repo docs. | Medium-high: format/lint checks should run where available. | Eligible only for sanitized assist; repo writes remain Codex-only. | `OR_ASSIST_CANDIDATE` | Fixture proves semantic preservation, no policy changes, no added authority, and `production_approved=false`. | Codex formats locally; script/linter checks whitespace and Markdown sanity. |
+| DOC-SKILL-007 | Detect contradictions between documentation artifacts | Usually private local repo docs, artifact history, dirty-worktree context, user reports. | Contradiction list with exact artifact paths and recommended Codex review action. | Binding if used to update docs or gates. | High when based on repo state; medium when based on sanitized excerpts. | `5.4` medium; `5.5` high for release/security/audit contradictions. | Medium: scripts can search markers and duplicate ids, but not judge all contradictions. | OR assist only for public/sanitized excerpt comparison; never private repo-state analysis. | `CODEX_ONLY` | Sanitized fixture must limit input to two short excerpts, require advisory-only output, and forbid final state decisions. | Keep local; use scripts/rg first, then Codex judgment. |
+| DOC-SKILL-008 | Write changelog-style summary | Sanitized change summary or validated local implementation/audit package. | Changelog-style bullet under Added/Changed/Fixed/Security with marker references. | Non-binding if drafted; binding once applied to `CHANGELOG.md`. | Medium; can overstate product behavior or imply release readiness. | `5.4 mini` low for sanitized draft; `5.4` medium for real changelog update. | Low-medium: scripts can locate sections, not decide wording safely. | Eligible as sanitized non-binding assist only. | `OR_ASSIST_CANDIDATE` | Fixture must preserve "draft only", avoid release approval, avoid invented user-visible behavior, and require Codex review. | Codex writes or edits final changelog entry locally. |
+| DOC-SKILL-009 | Update SKILL_USAGE_LOG summary | Local skill usage log, model names, state counts, friction/optimization notes. | Summary of entries, skills, states, models, frictions, optimizations, or one append-only row via script. | Summary is non-binding; append to log is binding. | Low-medium; raw log is repo-local and may include internal paths/context. | `5.4 mini` low for summary; script for append. | High for counts and append-only row generation via `summarize_skill_usage.py` and `record_skill_usage.py`. | Eligible only if sanitized/public and non-binding; append remains script/Codex. | `SCRIPT_ONLY` for row append; `OR_ASSIST_CANDIDATE` for sanitized summary. | Sanitized fixture must use synthetic log rows and require no file writes. | Use local scripts; Codex reviews and records final row. |
+| DOC-SKILL-010 | Prepare non-binding review notes | Sanitized documentation excerpt or public policy text. | Advisory notes with risks, wording issues, and Codex follow-up checks. | Non-binding. | Low-medium; can drift into authority if not constrained. | `5.4 mini` low. | Low: mostly language/judgment. | Eligible as sanitized assist only. | `OR_ASSIST_CANDIDATE` | Fixture requires advisory-only notes, no task creation, no approval language, no repo-write claim. | Codex prepares notes locally. |
+| DOC-SKILL-011 | Prepare final audit or release documentation | Final audit package, release state, version files, build/release evidence, GitHub/release assets. | Release/final-audit documentation, readiness caveats, version sync notes, next build/release gate. | Binding and gate-adjacent. | High. | `5.5` high for audit/release gates; `5.4` medium for mechanical docs after PASS. | Medium: validators can check version sync and marker presence. | Not eligible for OR. | `BLOCKED_FOR_OR` | No OR activation; sanitized wording assist only if it cannot affect readiness and Codex reviews. | Codex/final-audit/build-release skills only; block if evidence missing. |
+| DOC-SKILL-012 | Prepare backlog or product-scope documentation | Backlog items, product behavior, priorities, user-facing scope, dashboard handoffs. | Backlog/product docs, selected handoff, DONE sync, dashboard metadata, scope notes. | Binding or decision-adjacent. | High. | `5.4` medium/high; `5.5` high for risky product/security scope. | Medium: backlog validators and dashboard sync scripts help. | Not eligible for OR. | `BLOCKED_FOR_OR` | No OR activation for backlog/product decisions. | Codex routes through backlog/feature/documentation skills and asks user for missing product decisions. |
+| DOC-SKILL-013 | Raw JSON schema validation | Local schema files, benchmark result JSON, generated result files. | PASS/FAIL parse/schema result with exact error path when possible. | Binding evidence when reported by Codex. | Low if local-only; high if delegated model is asked to validate private content. | Script first; Codex review second. | High: deterministic validators are preferred. | Not an OR task. | `SCRIPT_ONLY` | No OR activation; local schema validator and Codex review are sufficient. | Use local Python/Node validators; Codex reports result. |
+| DOC-SKILL-014 | Documentation closeout checklist validation | Marker-scoped docs such as task/spec, registry, project state, changelog, WHAT_I_LEARNED, dashboard snapshot. | Checklist with PASS/UPDATED/SKIPPED/MISSING and exact blockers. | Binding. | Medium-high; missing marker can falsely close work. | `5.4` medium or `5.4 mini` low only for isolated mechanical marker checks. | High for marker checks via validators/search; judgment still Codex. | Not eligible for OR. | `LOCAL_BASELINE_ONLY` | No OR activation until a synthetic marker-only fixture proves safe and Codex limits input to sanitized excerpts. | Codex uses validators and targeted `rg`; block on missing mandatory markers. |
+| DOC-SKILL-015 | Test pipeline documentation completion | TestSpec/TestPlan/TestResultJson/TestResult plus pipeline log, registry, project state, latest validation marker. | `TEST PIPELINE COMPLETE` docs and checklist, or exact blocked handoff. | Binding. | High because it records validation status. | `5.4` medium; `5.4 mini` low only for isolated formatting after Codex facts. | Medium-high: JSON validation and marker checks are script-suitable. | Not eligible for OR. | `CODEX_ONLY` | No OR activation for final completion. | Codex reads artifacts, validates, updates docs, and blocks on missing markers. |
+| DOC-SKILL-016 | WHAT_I_LEARNED pattern proposal | Root cause, fix, hardening evidence, tripwire, matching existing patterns. | Append-only reusable pattern or explicit skip reason. | Binding when appended. | Medium-high; generic or duplicate learnings pollute long-term memory. | `5.4` medium; `5.5` high for security/release/provider root causes. | Medium: search helper detects duplicates; judgment is Codex. | Not eligible for final output; sanitized brainstorm assist only. | `CODEX_ONLY` | Any OR assist must use synthetic/sanitized root-cause summaries and cannot decide append. | Codex searches targeted patterns and appends only with validated evidence. |
+| DOC-SKILL-017 | Capability registry or UX capability documentation | User-visible product capabilities, registry JSON, UX overview behavior, validation evidence. | Product-language capability updates or validation notes. | Binding and product-facing. | High due product-scope/user-facing implications. | `5.4` medium; `5.5` high for security/privacy capability claims. | Medium: JSON parse and schema checks are script-suitable. | Not eligible for OR. | `BLOCKED_FOR_OR` | No OR activation for product capability decisions. | Codex updates only from validated product evidence; block if capability scope is unclear. |
+| DOC-SKILL-018 | Documentation skill inventory and model-assignment planning | Sanitized summaries, current routing evidence, documentation skill rules, local policy docs. | Inventory, assignment registry, fixture plan, and no-live next-step recommendation. | Design artifact; non-production but policy-relevant. | Medium; wrong assignment could weaken delegation boundaries. | `5.5` medium for current pass; future `5.4` medium acceptable after policy stabilizes. | Low-medium: scripts can sanity-check Markdown and counts. | OR assist only for later sanitized fixture drafting, not policy decision. | `CODEX_ONLY` | No OR activation for the assignment decision itself; fixtures can later benchmark safe assist tasks only. | Codex keeps production routing disabled and routes follow-up through review. |
+
+## Initial Safe OR-Assist Candidates
+
+The safe first set is intentionally narrow:
+
+1. `DOC-SKILL-001` - summarize benchmark JSON from sanitized, schema-reviewed result fields.
+2. `DOC-SKILL-002` - summarize model scoring report excerpt.
+3. `DOC-SKILL-003` - draft non-binding Codex handoff from sanitized scope.
+4. `DOC-SKILL-006` - clean up sanitized Markdown text.
+5. `DOC-SKILL-008` - draft changelog-style summary from sanitized facts.
+
+`DOC-SKILL-009` can become a later assist fixture only with synthetic or sanitized log rows. It is not part of the first fixture batch because the real `SKILL_USAGE_LOG.md` is repo-local and append operations are script/Codex-owned.
+
+## Explicit Non-Candidates
+
+OpenRouter must not be assigned to:
+
+- final `CURRENT_STATE` updates
+- final audit decisions or final audit documentation authority
+- release readiness, versioning, build, publish, or Git documentation authority
+- backlog/product-scope decisions or dashboard routing
+- private repo-state contradiction analysis
+- capability registry/product capability wording decisions
+- WHAT_I_LEARNED append decisions
+- raw validation over private files or unredacted local artifacts
