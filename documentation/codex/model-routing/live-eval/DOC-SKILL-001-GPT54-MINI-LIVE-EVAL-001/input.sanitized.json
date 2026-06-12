@@ -1,0 +1,53 @@
+﻿{
+  "benchmark_id": "DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001",
+  "sanitized": true,
+  "contains_private_prompts": false,
+  "production_approved": false,
+  "overall_status": "HOLD",
+  "summary_target": "benchmark_result_summary",
+  "models": [
+    {
+      "model": "model_alpha",
+      "status": "PASS",
+      "score": 0.86,
+      "notes": [
+        "Completed schema projection",
+        "No policy violations detected",
+        "Requires reviewer confirmation before production use"
+      ]
+    },
+    {
+      "model": "model_beta",
+      "status": "HOLD",
+      "score": 0.71,
+      "notes": [
+        "Output preserved required fields",
+        "One ambiguity in disabled-state wording",
+        "Not eligible for production routing"
+      ]
+    },
+    {
+      "model": "model_gamma",
+      "status": "PASS",
+      "score": 0.79,
+      "notes": [
+        "Summarized benchmark evidence correctly",
+        "No raw prompt exposure",
+        "Still blocked from production approval"
+      ]
+    }
+  ],
+  "constraints": {
+    "must_preserve": [
+      "HOLD",
+      "PASS",
+      "production_approved=false"
+    ],
+    "must_not_do": [
+      "make routing decisions",
+      "approve production use",
+      "expose raw private prompts",
+      "write repository changes"
+    ]
+  }
+}
