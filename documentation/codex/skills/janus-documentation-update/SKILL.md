@@ -34,14 +34,16 @@ The canonical model-routing reference for documentation-skill work is:
 
 Before doing documentation-skill work, classify the request against the routing table's `DOC-SKILL-*` rows. Use the table's `minimal_local_model_reasoning`, `safe_scope`, `blocked_scope`, `OR_eligibility`, `required_upstream_skill_path`, and `final_status` columns as the binding reference for documentation-skill model and authority boundaries.
 
-If the current Codex model or reasoning level is insufficient for the matching documentation task, stop before editing or validating and tell the user exactly which model and reasoning level to select. Continue only after the user confirms the selection or explicitly instructs Codex to stay in the current setup.
+Treat the current Codex model and reasoning level as user-declared, not self-detected. If `DECLARED CODEX MODEL` is missing, stop before deciding sufficiency and ask the user to provide or confirm the selected model and reasoning level.
+
+If the declared Codex model or reasoning level is insufficient for the matching documentation task, stop before editing or validating and tell the user exactly which model and reasoning level to select. Continue only after the user confirms the selection or explicitly instructs Codex to stay in the current setup.
 
 Use this gate format:
 
 ```text
 DOCUMENTATION SKILL MODEL SWITCH GATE
 - Documentation task:
-- Current model/reasoning:
+- Declared model/reasoning:
 - Required model/reasoning:
 - User action:
 - Reason:
