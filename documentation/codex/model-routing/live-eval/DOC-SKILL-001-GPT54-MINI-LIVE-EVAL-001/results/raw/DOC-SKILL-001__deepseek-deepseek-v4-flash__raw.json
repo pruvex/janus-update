@@ -1,0 +1,50 @@
+{
+  "request_model": "deepseek/deepseek-v4-flash",
+  "http_status": 200,
+  "response": {
+    "id": "gen-1781306433-aqmySrNixVmQ7nPfVE3T",
+    "object": "chat.completion",
+    "created": 1781306433,
+    "model": "deepseek/deepseek-v4-flash-20260423",
+    "provider": "DigitalOcean",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "**1. Overall status**  \n**HOLD** — The overall benchmark state remains HOLD. No production approval has been granted (`production_approved=false`). No production routing decision is approved.\n\n**2. Per-model summary**  \n- **model_alpha**: PASS (score 0.86). Schema projection complete, no policy violations detected. Reviewer confirmation required before any production use.  \n- **model_beta**: HOLD (score 0.71). Required fields preserved, but one ambiguity in disabled-state wording stands. Explicitly noted as not eligible for production routing.  \n- **model_gamma**: PASS (score 0.79). Benchmark evidence correctly summarized, no raw prompt exposure. Still blocked from production approval.\n\n**3. Blocking notes**  \n- **model_beta** is on HOLD due to wording ambiguity; it currently blocks the overall HOLD status from being lifted.  \n- All three models remain unapproved for production use. No production routing decision has been made or is authorized by this summary.\n\n**4. Final governance note**  \nThis summary is scoped strictly to DOC-SKILL-001. No inference calls, benchmark generation, routing decisions, or repository/git actions are performed or proposed. No raw private prompts are exposed or invented. No model is marked as production-approved. The overall HOLD state and per-model statuses are preserved exactly as presented in the sanitized JSON.",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 596,
+      "completion_tokens": 291,
+      "total_tokens": 887,
+      "cost": 0.00012369,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00012369,
+        "upstream_inference_prompt_cost": 6.258e-05,
+        "upstream_inference_completions_cost": 6.111e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

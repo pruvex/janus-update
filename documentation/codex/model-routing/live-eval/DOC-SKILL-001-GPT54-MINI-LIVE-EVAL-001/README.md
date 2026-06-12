@@ -24,10 +24,22 @@ GPT-5.4 mini low; script-first when possible.
 
 ## Status
 
-NOT RUN
+COMPLETED_EVALUATED
+
+## Latest Live Evaluation
+
+- Attempted candidates: 12
+- Completed with normalized model content: 10
+- Failed/skipped attempts: 2
+- PASS: 9
+- HOLD: 3
+- FAIL: 0
+- Evidence files:
+  - `results/evaluation_summary.md`
+  - `results/evaluation_results.json`
 
 ## Notes
 
-This fixture prepares a single-task evaluation only.
-Do not run OpenRouter inference/model tests until explicitly approved.
+This fixture evaluated DOC-SKILL-001 only after explicit user approval.
 Do not batch with DOC-SKILL-002 or later tasks.
+Do not update routing tables, mark any model production-approved, or treat these results as a canonical external model recommendation.

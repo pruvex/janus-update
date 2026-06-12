@@ -1,0 +1,59 @@
+{
+  "request_model": "openai/gpt-5-mini",
+  "http_status": 200,
+  "response": {
+    "id": "gen-1781306509-CrpHx9hmWfHHf8r3eFHz",
+    "object": "chat.completion",
+    "created": 1781306509,
+    "model": "openai/gpt-5-mini-2025-08-07",
+    "provider": "OpenAI",
+    "system_fingerprint": null,
+    "service_tier": "default",
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "completed",
+        "message": {
+          "role": "assistant",
+          "content": "1) Overall status\n- Overall: HOLD\n- production_approved = false\n- No production routing decision is approved. Do not infer production readiness or approve any model for production use.\n\n2) Per-model summary\n- model_alpha — Status: PASS, Score: 0.86. Completed schema projection; no policy violations flagged. Requires reviewer confirmation before any production use (not approved).\n- model_beta — Status: HOLD, Score: 0.71. Preserved required fields but has an ambiguity in disabled-state wording; explicitly not eligible for production routing.\n- model_gamma — Status: PASS, Score: 0.79. Summarized benchmark evidence correctly with no raw prompt exposure; explicitly blocked from production approval.\n\n3) Blocking notes\n- Overall HOLD must be preserved.\n- production_approved=false (no models approved for production).\n- model_beta remains a blocker (HOLD for wording ambiguity and ineligibility for routing).\n- model_alpha and model_gamma, while PASS, are not approved for production and require reviewer action before any routing decision.\n- No production routing decision is authorized in this summary.\n\n4) Final governance note\n- Maintain scope DOC-SKILL-001 only. Do not approve or route any model to production, do not infer production readiness, do not expose private prompts, and do not perform repository/Git actions. Stop after this DOC-SKILL-001 summary.",
+          "refusal": null,
+          "reasoning": null,
+          "reasoning_details": [
+            {
+              "type": "reasoning.encrypted",
+              "data": "gAAAAABqLJSRovnCD3GtT9GKhGEjY51q5caaJRqCG85CvQrmMXABst4Kt_H31KwqDB9JAjoFssYL_GLbvGZKrDut6YL-kSVQ1s1PWSVdvIXi2YcNuSDWEKD7ZU-Sh89oHsSI8P_1j8miOUFN5scbbgM25EoU9omjd6nocaBmaGq3eU22w5tPNgl54KGK76kAi5yUOyimOSgFVYU2uq64EMXtcK-sA7vQSoDsknUNLdktyvOiASrKfj742HFglMmJTDWG58Cpo6H1EtrrejaOrIxBfcOhkUnQ2haduewQZEWFO0W8Vknk11GfScaX4I2NcHOCPyESEAlgA7n0g5SgjgNds5Whgdbby-WD1qSvHL3Y-7OXxv6PGQV9DnMhSUf3wXrJYE6XBvYKYGuKJBjgg0ciE21RmHmnZBgQQPitnrSLjwy1Owhr3EEsw7AqxrsS_Lz_PNPl_qr9oTcQBB1tpOVqnJqRpzQpZ-0gqXmOdB-q9KVCQxJnQsXcsT-3frsZi_Iu-DJVRtzmMoevcTP72xPwuir199-uOzdBsPFGI7ITIs9F6OPZYiJ4zBRNfaPI25RIaUbEckvCtmpojihNJmZhVI-8WynwSjYUDwXQsZw1bOqM5FMQUJU64n65SOXYwPUrnTDL0Gz6euw3AcCxiDav2JBEg1rTm_HbIm1eekIew49ynOb7JFo1w8L56IBnrz1CRG9FPKcnU9FMS9R3NsIIxS3H1MaI3dBp4oDPYj5od_hCk1HLG596ieA_7ltbj7ZMDbwB4uBwN8yjhyL6JbLAjHMcNAwQWtcvJEfUOaGKFQ8NJlRRznxA0FlRPDoUb6oHKQchGj6D14KtLeewLsOs80m2sTsUcSJdmit2a-Y4bR90yFIU3meSh-3u67RexN-VxbS7IahvDuTieZAZ7eJwtOcNrKWLbkEpWIQCF75L8Rhmj-Kkp8_1Qn8qEM_DgWVyl2J1ZLtKOhL5di5exlsZUepVDlYr3dxfL2BbmXzzjkuzrOjXDdTrGlBHhbdnZc52Rn55PKJgAkz1lvYwYRnm2G56I7DQZ0oj1Zj2hWM1EgBvq9GIoeYCKomdCR2drrrx2GFIrQpRidrDn2KPsO2pNuPorTuTUcd21NRQbpUF6MMl-xcwxgIYIzO6Ai0nFQUVtuCP8EKNB8SlYsZRp7Jp4656R-xA_YZ1bKNE2ZM1vutbqOJYMQiZiNVLhrdJ70SzKGXz_c4-aTkWGYg7okRiWME_YVPjR6NkQQUrAz33f15mikNqnmJE5sU820yjV_-J8bvot6UZo2Qy2NKhyQv4rm0v_V_AYHrC3HN4BAIoDz7F7Ie8hWwb-WZv-NRf6SFS3xX8tG5RmGFoJQ9qIpQJ-7Z8Sp21i8Ovu5JqkkHez5AsAfHFZkA7N3q9NdtbgLmef44i1ozBmgWTjEKyFsSSGtgIfaEgNFwVOMAY81tKKD5X97qKkS2XyQDRuQDMve3v8yomgKHPShS0LZkyNvgC6IdOXuBXWlWNnSLEU9pyxQ317QDxDhMJdVHqYItP8IEj9PH_2v7Nui58SDAnQFu3eOvZhdumzY0FV_JvxtQtgLyKOzTOusB5OaoPygYTTd1L7Oc-k1Dh5it8i_jQyxigmUeLcMMzYXydVTSGRdPLBfenLzcMiOM3Hzyg_LLVHWyak2eqe3oeE2KDeYcnOvNEE5-6waIZm5Qrrzktyfoa8-PSixuhyUkUkddTZoHo7-dZX-FcACcCvEA9UEIICVUCNrsZpqNkmkuApohXLdUbrRRueMnbiB0P0ZzPAyVqJoPOmqtKYnriYXkP0g92xK5z7U6qhCX414KVteLcb6SD4EfHtngxgD2oGq__F3OrXeVYcP8LJCiD0NxdJElG4cXX2qJz2nVuoGiIr0Mm0y7JMcesPtjaWJ21Rgc8vZNY4Pm4bOyncBBMlrNpz2XCv0J-4AJSVrwbIONTdI6ks_UWKtVPsOSrhTBY5XjL_77nuyqxWap-umGpzkCaa3e3MhRITApbX8FAf7xe0YQWe6_iLSRqzEgDynLGYa6DwsgRwbOOzV-QDBjqW_1B0oBP8DyScSRaB_CQnyX1dZU4-XVN7W9irTTN2P6gyd00BHuQaCH1dYX8RRzAGmwd0s_Avxjh2ZTwcmuqbfs2KwzNps27RFfovBM9Z0NZL99wxKdqleSAzM24SxQldBNzcBt-PE6f3-3isHSskctxtTah2mNYdNUCOfiA86k1zEipZICglvqThNvbsT8AIjKKqC-2vyYLW4ySORZECU3g12R8C_IZZrnIdq2E0TXHHlzlu-J0fF5vG2FW-cSWsGBh00o5Vou3c4ir9kyfiIu1tiEp6nyZInWZxjbRVUwfQdHH3ILIX56dDSV5T-hHQ6OcqgC5d8SY3Q2J1E7AZHQs9WysoQhbOZs2xD3Zts0_Z0kpyxr_TGKNTsoAEK2_VLiGl2jBiz3103mv5vRgyP9FOKXjPxnMHXzJfyIn0P_9og44D-kQA59CbJOYNQIEZa1ZN_RdwnUvvJYoLufjN6vgfDZq3YxoB-7I4TfIIDOIzUusZD6PwmYHg2YQV_ml5DEoMdzfdNBEM0ylIcP2UGpMtA87pdnPbzdtxOMkR-XV0MUYDSzdJAqopMB0-hycZWvF0URoHBjKSJg3BG5me3qtQIWUEeBY-gl5tikKD_KapQqbnPZ8TTZtdDZeuI3RVU69pL26qqedKSuR3e-t825gdRiHUHnXEMPMpBlgTmGX9M_HH92RsIfbds83q-jhDEyCSo_jtVO2INxjQnUvhJc_x4sWE7y1_s4aqYyt5ZARPC9yp1H8aj0bnYx1QzFWQaPpxy9VhU8gySqHwqwEL4lyFowp7KF_wO8iTn5ykxZX5HkeEct8Enwq6G3aAV8ZDK3AkMHroH2A9ziEra6BpG_uvMcX_l7Zif1-CxGqtNo3kDf419BFJD4dlbPJlRC70nqWYWIDW1bMk0usUpmyAqoKQbWkLwhpxPomjzQbrKQHRwck1SzLcFMm--wm8qZa",
+              "format": "openai-responses-v1",
+              "id": "rs_00a60a7102d81603016a2c948df96c8195859adc8297d94209",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 576,
+      "completion_tokens": 604,
+      "total_tokens": 1180,
+      "cost": 0.001352,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.001352,
+        "upstream_inference_prompt_cost": 0.000144,
+        "upstream_inference_completions_cost": 0.001208
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 256,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "request_model": "openai/gpt-oss-20b",
+  "http_status": 200,
+  "response": {
+    "id": "gen-1781306558-hZsRskhyySlsMczTfaNV",
+    "object": "chat.completion",
+    "created": 1781306558,
+    "model": "openai/gpt-oss-20b",
+    "provider": "DekaLLM",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "**1. Overall status**  \n- Benchmark result: **HOLD**  \n- Production approval: **false** (no models approved for production use)\n\n**2. Per‑model summary**  \n\n| Model | Status | Score | Notes |\n|-------|--------|-------|-------|\n| model_alpha | PASS | 0.86 | Completed schema projection; no policy violations; requires reviewer confirmation before production use |\n| model_beta | HOLD | 0.71 | Output preserved required fields; one ambiguity in disabled‑state wording; not eligible for production routing |\n| model_gamma | PASS | 0.79 | Summarized benchmark evidence correctly; no raw prompt exposure; still blocked from production approval |\n\n**3. Blocking notes**  \n- model_beta remains on HOLD and is explicitly not eligible for production routing.  \n- All models are blocked from production approval; no routing decisions are made.\n\n**4. Final governance note**  \n- The benchmark is scoped to DOC‑SKILL‑001 only.  \n- No production routing decisions, approvals, or repository changes are made.  \n- Raw private prompts are not exposed or invented.  \n- The overall HOLD status and PASS entries are preserved as specified.",
+          "refusal": null,
+          "reasoning": "We need to produce a concise summary with the required sections. Must preserve overall status HOLD, production_approved=false, no routing decision, no approval. Provide per-model summary: status, score, notes. Blocking notes: maybe mention that model_beta is on HOLD, and all models blocked from production. Final governance note: summarizing constraints. Ensure no mention of production routing or approval. Keep concise.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "We need to produce a concise summary with the required sections. Must preserve overall status HOLD, production_approved=false, no routing decision, no approval. Provide per-model summary: status, score, notes. Blocking notes: maybe mention that model_beta is on HOLD, and all models blocked from production. Final governance note: summarizing constraints. Ensure no mention of production routing or approval. Keep concise.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 637,
+      "completion_tokens": 333,
+      "total_tokens": 970,
+      "cost": 6.5093e-05,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 6.5093e-05,
+        "upstream_inference_prompt_cost": 1.8473e-05,
+        "upstream_inference_completions_cost": 4.662e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 79,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

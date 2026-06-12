@@ -1,0 +1,58 @@
+{
+  "request_model": "stepfun/step-3.7-flash",
+  "http_status": 200,
+  "response": {
+    "id": "gen-1781306587-ipgNh7HLNCw4Ecm7eLfM",
+    "object": "chat.completion",
+    "created": 1781306587,
+    "model": "stepfun/step-3.7-flash-20260528",
+    "provider": "StepFun",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "length",
+        "native_finish_reason": "length",
+        "message": {
+          "role": "assistant",
+          "content": "### 1. Overall status\nBenchmark DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001 is in overall HOLD state. `production_approved` is explicitly false, and no production routing decision is approved for any evaluated model.\n\n### 2. Per-model summary\n- `model_alpha`: PASS status, 0.86 score. Completed schema projection with no policy violations; requires reviewer confirmation before any production use consideration.\n- `model_beta`: HOLD status, 0.71 score. Preserved required output fields, but has",
+          "refusal": null,
+          "reasoning": "Got it, let's tackle this step by step. First, the overall status is HOLD, right? And I need to make sure production_approved is explicitly stated as false, no production routing approved.\n\nFirst, 1. Overall status: The benchmark DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001 is in overall HOLD state, and production_approved is explicitly false, with no production routing decision approved for any model.\n\nThen 2. Per-model summary: Let's list each one. model_alpha: PASS status, 0.86 score, completed schema projection, no policy violations, requires reviewer confirmation before production use. model_beta: HOLD status, 0.71 score, preserved required output fields, has one ambiguity in disabled-state wording, not eligible for production routing. model_gamma: PASS status, 0.79 score, correctly summarized benchmark evidence, no raw prompt exposure, blocked from production approval.\n\n3. Blocking notes: Wait, what's blocking? The overall benchmark is HOLD, model_beta is in HOLD status with unresolved wording ambiguity, and all models are blocked from production approval regardless of individual PASS status, no production routing decisions are made for any entry.\n\n4. Final governance note: This summary is scoped strictly to DOC-SKILL-001, no production readiness is inferred, no model is approved for production use, no repository writes, Git actions, raw prompt exposure, or routing decisions are made, and no inference or model calls were performed during this preparation.\n\nWait let me make sure I hit all the requirements. Let's check: preserve overall HOLD/PASS, yes. Explicitly state production_approved=false, yes. Mention no production routing approved, yes. Don't infer production readiness, yes. Don't approve any model for production, yes. No private prompts, yes. No repo writes, yes. Concise.\n\nWait let's structure it properly as per the required sections:\n\n1. Overall status\nBenchmark DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001 is in overall HOLD state. production_approved is explicitly false, and no production routing decision is approved for any evaluated model.\n\n2. Per-model summary\n- model_alpha: PASS status, 0.86 score. Completed schema projection with no policy violations; requires reviewer confirmation before any production use consideration.\n- model_beta: HOLD status, 0.71 score. Preserved required output fields, but has one unresolved ambiguity in disabled-state wording, and is not eligible for production routing.\n- model_gamma: PASS status, 0.79 score. Correctly summarized benchmark evidence with no raw prompt exposure, but remains blocked from production approval.\n\n3. Blocking notes\nThe overall benchmark HOLD state is driven by model_beta's unresolved wording ambiguity, and all models are blocked from production approval regardless of individual PASS status. No production routing decisions are made for any entry.\n\n4. Final governance note\nThis summary is strictly scoped to DOC-SKILL-001. No production readiness is inferred, no model is approved for production use, no repository writes, Git actions, raw prompt exposure, or routing decisions are performed, and no model inference calls were made during this preparation step.\n\nWait that's good. Let me make sure I didn't miss anything. Let's check the constraints: no infer production readiness, yes. No approve production, yes. No private prompts, yes. No repo writes, yes. Concise, yes. All required points are there. Let me make sure production_approved is explicitly stated, yes. No production routing approved, yes. Overall HOLD is preserved, PASS entries remain PASS, yes. No batching later docs, yes. No marking any as production approved, yes. Perfect.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Got it, let's tackle this step by step. First, the overall status is HOLD, right? And I need to make sure production_approved is explicitly stated as false, no production routing approved.\n\nFirst, 1. Overall status: The benchmark DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001 is in overall HOLD state, and production_approved is explicitly false, with no production routing decision approved for any model.\n\nThen 2. Per-model summary: Let's list each one. model_alpha: PASS status, 0.86 score, completed schema projection, no policy violations, requires reviewer confirmation before production use. model_beta: HOLD status, 0.71 score, preserved required output fields, has one ambiguity in disabled-state wording, not eligible for production routing. model_gamma: PASS status, 0.79 score, correctly summarized benchmark evidence, no raw prompt exposure, blocked from production approval.\n\n3. Blocking notes: Wait, what's blocking? The overall benchmark is HOLD, model_beta is in HOLD status with unresolved wording ambiguity, and all models are blocked from production approval regardless of individual PASS status, no production routing decisions are made for any entry.\n\n4. Final governance note: This summary is scoped strictly to DOC-SKILL-001, no production readiness is inferred, no model is approved for production use, no repository writes, Git actions, raw prompt exposure, or routing decisions are made, and no inference or model calls were performed during this preparation.\n\nWait let me make sure I hit all the requirements. Let's check: preserve overall HOLD/PASS, yes. Explicitly state production_approved=false, yes. Mention no production routing approved, yes. Don't infer production readiness, yes. Don't approve any model for production, yes. No private prompts, yes. No repo writes, yes. Concise.\n\nWait let's structure it properly as per the required sections:\n\n1. Overall status\nBenchmark DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001 is in overall HOLD state. production_approved is explicitly false, and no production routing decision is approved for any evaluated model.\n\n2. Per-model summary\n- model_alpha: PASS status, 0.86 score. Completed schema projection with no policy violations; requires reviewer confirmation before any production use consideration.\n- model_beta: HOLD status, 0.71 score. Preserved required output fields, but has one unresolved ambiguity in disabled-state wording, and is not eligible for production routing.\n- model_gamma: PASS status, 0.79 score. Correctly summarized benchmark evidence with no raw prompt exposure, but remains blocked from production approval.\n\n3. Blocking notes\nThe overall benchmark HOLD state is driven by model_beta's unresolved wording ambiguity, and all models are blocked from production approval regardless of individual PASS status. No production routing decisions are made for any entry.\n\n4. Final governance note\nThis summary is strictly scoped to DOC-SKILL-001. No production readiness is inferred, no model is approved for production use, no repository writes, Git actions, raw prompt exposure, or routing decisions are performed, and no model inference calls were made during this preparation step.\n\nWait that's good. Let me make sure I didn't miss anything. Let's check the constraints: no infer production readiness, yes. No approve production, yes. No private prompts, yes. No repo writes, yes. Concise, yes. All required points are there. Let me make sure production_approved is explicitly stated, yes. No production routing approved, yes. Overall HOLD is preserved, PASS entries remain PASS, yes. No batching later docs, yes. No marking any as production approved, yes. Perfect.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 604,
+      "completion_tokens": 900,
+      "total_tokens": 1504,
+      "cost": 0.0011558,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0011558,
+        "upstream_inference_prompt_cost": 0.0001208,
+        "upstream_inference_completions_cost": 0.001035
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

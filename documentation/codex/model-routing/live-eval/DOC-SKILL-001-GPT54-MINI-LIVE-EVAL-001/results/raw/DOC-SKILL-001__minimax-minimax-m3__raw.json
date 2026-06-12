@@ -1,0 +1,58 @@
+{
+  "request_model": "minimax/minimax-m3",
+  "http_status": 200,
+  "response": {
+    "id": "gen-1781306460-uNgNq0c1sj21Usqmd9Bo",
+    "object": "chat.completion",
+    "created": 1781306460,
+    "model": "minimax/minimax-m3-20260531",
+    "provider": "Novita",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "# Benchmark Summary — DOC-SKILL-001\n\n**Benchmark ID:** DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001\n**Sanitized:** true | **contains_private_prompts:** false | **production_approved:** false\n\n---\n\n## 1. Overall Status\n\n**HOLD** — The benchmark run for DOC-SKILL-001 is in a **HOLD** state. `production_approved` is explicitly **false**. **No production routing decision is approved** as a result of this benchmark.\n\n---\n\n## 2. Per-Model Summary\n\n| Model | Status | Score | Key Notes |\n|---|---|---|---|\n| **model_alpha** | PASS | 0.86 | Completed schema projection; no policy violations detected. Note: PASS is a benchmark result, not a production approval. Requires reviewer confirmation before any production consideration. |\n| **model_beta** | HOLD | 0.71 | Output preserved required fields; one ambiguity in disabled-state wording observed. Not eligible for production routing at this time. |\n| **model_gamma** | PASS | 0.79 | Summarized benchmark evidence correctly; no raw prompt exposure. Still blocked from production approval under current governance. |\n\nPASS entries reflect benchmark outcome only; they do not constitute or imply production approval for any model.\n\n---\n\n## 3. Blocking Notes\n\n- **Overall benchmark is HOLD** — not all evaluated models cleared the threshold needed to lift the run-level hold.\n- **`production_approved` = false** — this field is preserved and must not be reinterpreted as true.\n- **No production routing decision is approved** for any model in this benchmark set.\n- **model_beta** remains on HOLD due to a wording ambiguity in disabled-state output and is not eligible for production routing.\n- **No raw private prompts** are present, exposed, or inferred in this summary; the input was sanitized and `contains_private_prompts` is false.\n- **No repository writes or Git actions** are proposed or performed in this preparation step.\n\n---\n\n## 4. Final Governance Note\n\nThis summary is scoped strictly to **DOC-SKILL-001** and is intended for local reviewer reference only. It does **not** infer production readiness, does **not** approve any model for production use, and does **not** authorize a production routing decision. The `production_approved=false` flag and overall **HOLD** state are preserved as-is. No follow-on benchmark (e.g., DOC-SKILL-002) is initiated, batched, or addressed in this step. Reviewers should treat all PASS entries as benchmark-level results pending separate production-readiness review.",
+          "refusal": null,
+          "reasoning": "\nThe user wants me to summarize a sanitized benchmark JSON for local reviewer use, following specific requirements. Let me carefully parse the JSON and produce a summary that:\n\n1. Preserves the overall HOLD/PASS state accurately\n2. Explicitly states production_approved=false\n3. Mentions no production routing decision is approved\n4. Does not infer production readiness\n5. Does not approve any model for production use\n6. Does not expose or invent raw private prompts\n7. Does not propose repository writes or Git actions\n8. Keeps the summary concise\n\nThe JSON shows:\n- Overall status: HOLD\n- production_approved: false\n- 3 models:\n  - model_alpha: PASS, score 0.86\n  - model_beta: HOLD, score 0.71\n  - model_gamma: PASS, score 0.79\n\nLet me structure the response with the four required sections:\n1. Overall status\n2. Per-model summary\n3. Blocking notes\n4. Final governance note\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "\nThe user wants me to summarize a sanitized benchmark JSON for local reviewer use, following specific requirements. Let me carefully parse the JSON and produce a summary that:\n\n1. Preserves the overall HOLD/PASS state accurately\n2. Explicitly states production_approved=false\n3. Mentions no production routing decision is approved\n4. Does not infer production readiness\n5. Does not approve any model for production use\n6. Does not expose or invent raw private prompts\n7. Does not propose repository writes or Git actions\n8. Keeps the summary concise\n\nThe JSON shows:\n- Overall status: HOLD\n- production_approved: false\n- 3 models:\n  - model_alpha: PASS, score 0.86\n  - model_beta: HOLD, score 0.71\n  - model_gamma: PASS, score 0.79\n\nLet me structure the response with the four required sections:\n1. Overall status\n2. Per-model summary\n3. Blocking notes\n4. Final governance note\n",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 746,
+      "completion_tokens": 756,
+      "total_tokens": 1502,
+      "cost": 0.00110364,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 114,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00110364,
+        "upstream_inference_prompt_cost": 0.00019644,
+        "upstream_inference_completions_cost": 0.0009072
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 237,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

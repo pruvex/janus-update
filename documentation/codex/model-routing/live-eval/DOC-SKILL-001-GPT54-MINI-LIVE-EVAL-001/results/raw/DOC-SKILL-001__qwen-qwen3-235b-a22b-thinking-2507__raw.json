@@ -1,0 +1,58 @@
+{
+  "request_model": "qwen/qwen3-235b-a22b-thinking-2507",
+  "http_status": 200,
+  "response": {
+    "id": "gen-1781306563-OfPMnjfiRckRxKTk2nY9",
+    "object": "chat.completion",
+    "created": 1781306563,
+    "model": "qwen/qwen3-235b-a22b-thinking-2507",
+    "provider": "WandB",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "length",
+        "native_finish_reason": "length",
+        "message": {
+          "role": "assistant",
+          "content": null,
+          "refusal": null,
+          "reasoning": "\nWe are given a sanitized benchmark JSON for DOC-SKILL-001.\n Requirements:\n - Preserve overall HOLD/PASS state: overall_status is \"HOLD\", so we state HOLD.\n - Explicitly state that production_approved=false.\n - Mention that no production routing decision is approved.\n - Do not infer production readiness.\n - Do not approve any model for production use.\n - Do not expose or invent raw private prompts (the JSON says contains_private_prompts=false, so we don't have any to expose).\n - Do not propose repository writes or Git actions.\n - Keep the summary concise.\n\n Return structure:\n 1. Overall status\n 2. Per-model summary\n 3. Blocking notes\n 4. Final governance note\n\n Steps:\n 1. Overall status: \n    - The overall_status is \"HOLD\", so we state that.\n    - Also, we must explicitly state production_approved=false.\n\n 2. Per-model summary:\n    - For each model, we note the model name, status (PASS or HOLD), and a very brief note (we can take the first note or a key point, but keep concise).\n    - However, note the requirement: do not infer production readiness and do not approve any model.\n\n 3. Blocking notes:\n    - We can list the main reasons for the HOLD status (overall) and for any model that is on HOLD, but note that even PASS models have blocking notes (like \"Requires reviewer confirmation\" or \"Still blocked from production approval\").\n    - We must mention that no production routing decision is approved.\n\n 4. Final governance note:\n    - Reiterate that production_approved remains false and no model is approved for production.\n\n Important: \n   - The overall status is HOLD, so the entire benchmark is on hold.\n   - Even though two models have PASS, they are not approved for production (as per the notes and the overall HOLD).\n\n Let's break down:\n\n Overall status:\n   - \"Overall status: HOLD (production_approved=false)\"\n\n Per-model summary:\n   - model_alpha: PASS (score 0.86) - note: \"Requires reviewer confirmation before production use\"\n   - model_beta: HOLD (score 0.71) - note: \"Not eligible for production routing\"\n   - model_gamma: PASS (score 0.79) - note: \"Still blocked from production approval\"\n\n Blocking notes:\n   - The overall benchmark is on HOLD, so no model is approved for production routing.\n   - Specific blocking issues: \n        * model_beta has an ambiguity in disabled-state wording and is not eligible.\n        * All models, even PASS ones, have notes indicating they are not approved for production (e.g., \"Requires reviewer confirmation\", \"Still blocked from production approval\").\n\n Final governance note:\n   - Explicitly state: \"No production routing decision is approved. Production use of any model remains unapproved.\"\n\n We must be concise and avoid any inference.\n\n Draft:\n\n1. Overall status: HOLD (production_approved=false)\n\n2. Per-model summary:\n   - model_alpha: PASS (0.86) - Requires reviewer confirmation\n   - model_beta: HOLD (0.71) - Ambiguity in disabled-state wording; not eligible for production\n   - model_gamma: PASS (0.79) - Still blocked from production approval\n\n3. Blocking notes:\n   - Overall benchmark HOLD state blocks all production routing.\n   - model_beta has a specific HOLD due to wording ambiguity.\n   - PASS models require additional steps and are not approved for production.\n\n4. Final governance note: \n   - Production approval remains false for all models. No model is approved for production use.\n\n However, note the requirement: \"Mention that no production routing decision is approved.\" -> we have that in the blocking notes and final note.\n\n Let's make it even more concise and stick to the facts without adding inference.\n\n Revised:\n\n1. Overall status: HOLD (production_approved=false)\n\n2. Per-model summary:\n   - model_alpha: PASS (0.86) - Requires reviewer confirmation\n   - model_beta: HOLD (0.71) - Not eligible for production routing\n   - model_gamma: PASS (0.79) - Still blocked from production approval\n\n3. Blocking notes:\n   - Overall HOLD state prevents production routing.\n   - model_beta: One ambiguity in disabled-state wording.\n   - PASS models are not approved for production",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "\nWe are given a sanitized benchmark JSON for DOC-SKILL-001.\n Requirements:\n - Preserve overall HOLD/PASS state: overall_status is \"HOLD\", so we state HOLD.\n - Explicitly state that production_approved=false.\n - Mention that no production routing decision is approved.\n - Do not infer production readiness.\n - Do not approve any model for production use.\n - Do not expose or invent raw private prompts (the JSON says contains_private_prompts=false, so we don't have any to expose).\n - Do not propose repository writes or Git actions.\n - Keep the summary concise.\n\n Return structure:\n 1. Overall status\n 2. Per-model summary\n 3. Blocking notes\n 4. Final governance note\n\n Steps:\n 1. Overall status: \n    - The overall_status is \"HOLD\", so we state that.\n    - Also, we must explicitly state production_approved=false.\n\n 2. Per-model summary:\n    - For each model, we note the model name, status (PASS or HOLD), and a very brief note (we can take the first note or a key point, but keep concise).\n    - However, note the requirement: do not infer production readiness and do not approve any model.\n\n 3. Blocking notes:\n    - We can list the main reasons for the HOLD status (overall) and for any model that is on HOLD, but note that even PASS models have blocking notes (like \"Requires reviewer confirmation\" or \"Still blocked from production approval\").\n    - We must mention that no production routing decision is approved.\n\n 4. Final governance note:\n    - Reiterate that production_approved remains false and no model is approved for production.\n\n Important: \n   - The overall status is HOLD, so the entire benchmark is on hold.\n   - Even though two models have PASS, they are not approved for production (as per the notes and the overall HOLD).\n\n Let's break down:\n\n Overall status:\n   - \"Overall status: HOLD (production_approved=false)\"\n\n Per-model summary:\n   - model_alpha: PASS (score 0.86) - note: \"Requires reviewer confirmation before production use\"\n   - model_beta: HOLD (score 0.71) - note: \"Not eligible for production routing\"\n   - model_gamma: PASS (score 0.79) - note: \"Still blocked from production approval\"\n\n Blocking notes:\n   - The overall benchmark is on HOLD, so no model is approved for production routing.\n   - Specific blocking issues: \n        * model_beta has an ambiguity in disabled-state wording and is not eligible.\n        * All models, even PASS ones, have notes indicating they are not approved for production (e.g., \"Requires reviewer confirmation\", \"Still blocked from production approval\").\n\n Final governance note:\n   - Explicitly state: \"No production routing decision is approved. Production use of any model remains unapproved.\"\n\n We must be concise and avoid any inference.\n\n Draft:\n\n1. Overall status: HOLD (production_approved=false)\n\n2. Per-model summary:\n   - model_alpha: PASS (0.86) - Requires reviewer confirmation\n   - model_beta: HOLD (0.71) - Ambiguity in disabled-state wording; not eligible for production\n   - model_gamma: PASS (0.79) - Still blocked from production approval\n\n3. Blocking notes:\n   - Overall benchmark HOLD state blocks all production routing.\n   - model_beta has a specific HOLD due to wording ambiguity.\n   - PASS models require additional steps and are not approved for production.\n\n4. Final governance note: \n   - Production approval remains false for all models. No model is approved for production use.\n\n However, note the requirement: \"Mention that no production routing decision is approved.\" -> we have that in the blocking notes and final note.\n\n Let's make it even more concise and stick to the facts without adding inference.\n\n Revised:\n\n1. Overall status: HOLD (production_approved=false)\n\n2. Per-model summary:\n   - model_alpha: PASS (0.86) - Requires reviewer confirmation\n   - model_beta: HOLD (0.71) - Not eligible for production routing\n   - model_gamma: PASS (0.79) - Still blocked from production approval\n\n3. Blocking notes:\n   - Overall HOLD state prevents production routing.\n   - model_beta: One ambiguity in disabled-state wording.\n   - PASS models are not approved for production",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 591,
+      "completion_tokens": 900,
+      "total_tokens": 1491,
+      "cost": 0.0001491,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0001491,
+        "upstream_inference_prompt_cost": 5.91e-05,
+        "upstream_inference_completions_cost": 9e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1089,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

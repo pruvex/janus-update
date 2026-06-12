@@ -1,0 +1,58 @@
+{
+  "request_model": "openai/gpt-oss-120b",
+  "http_status": 200,
+  "response": {
+    "id": "gen-1781306543-JjqkvelmJbHbJKyuFpJo",
+    "object": "chat.completion",
+    "created": 1781306543,
+    "model": "openai/gpt-oss-120b",
+    "provider": "WandB",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "**Overall Status**  \n- Benchmark ID: DOC‑SKILL‑001‑GPT54‑MINI‑LIVE‑EVAL‑001  \n- Overall state: **HOLD**  \n- `production_approved = false` (no production routing decision is approved)\n\n**Per‑Model Summary**  \n\n| Model | Status | Score | Key Points |\n|-------|--------|-------|------------|\n| **model_alpha** | PASS | 0.86 | Schema projection completed; no policy violations; needs reviewer confirmation before any production use. |\n| **model_beta**  | HOLD | 0.71 | Required fields preserved; one wording ambiguity in disabled‑state; **not eligible for production routing**. |\n| **model_gamma** | PASS | 0.79 | Benchmark evidence summarized correctly; no raw prompt exposure; **still blocked from production approval**. |\n\n**Blocking Notes**  \n- Any model marked **HOLD** (model_beta) cannot be routed to production.  \n- Models with PASS status (model_alpha, model_gamma) are **not** production‑approved; they require explicit reviewer sign‑off and remain blocked from routing.  \n\n**Final Governance Note**  \n- The benchmark remains under **HOLD** with `production_approved = false`.  \n- No production routing decisions are approved, and no model is cleared for production use.  \n- All constraints (no exposure of private prompts, no repository writes, no routing decisions) are fully respected.",
+          "refusal": null,
+          "reasoning": "We need to produce a concise summary with sections: Overall status, Per-model summary, Blocking notes, Final governance note. Must preserve HOLD/PASS, state production_approved=false, mention no production routing decision approved, not infer readiness, not approve any model. No raw prompts. Provide concise.\n\nLet's craft:\n\n1. Overall status: HOLD, production_approved=false.\n\n2. Per-model summary: model_alpha PASS score 0.86, notes; model_beta HOLD score 0.71, notes; model_gamma PASS score 0.79, notes.\n\n3. Blocking notes: models on HOLD, and all models require reviewer confirmation, not eligible for production routing, still blocked.\n\n4. Final governance note: reaffirm constraints, no production approval, no routing decisions, etc.\n\nMake concise.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "We need to produce a concise summary with sections: Overall status, Per-model summary, Blocking notes, Final governance note. Must preserve HOLD/PASS, state production_approved=false, mention no production routing decision approved, not infer readiness, not approve any model. No raw prompts. Provide concise.\n\nLet's craft:\n\n1. Overall status: HOLD, production_approved=false.\n\n2. Per-model summary: model_alpha PASS score 0.86, notes; model_beta HOLD score 0.71, notes; model_gamma PASS score 0.79, notes.\n\n3. Blocking notes: models on HOLD, and all models require reviewer confirmation, not eligible for production routing, still blocked.\n\n4. Final governance note: reaffirm constraints, no production approval, no routing decisions, etc.\n\nMake concise.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 635,
+      "completion_tokens": 470,
+      "total_tokens": 1105,
+      "cost": 9.12e-05,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 64,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 9.12e-05,
+        "upstream_inference_prompt_cost": 2.54e-05,
+        "upstream_inference_completions_cost": 6.58e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 198,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

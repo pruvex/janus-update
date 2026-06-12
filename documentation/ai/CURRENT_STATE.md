@@ -4,69 +4,91 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Prepare a no-call request dry run for DOC-SKILL-001 live evaluation.
+Run the approved DOC-SKILL-001 live evaluation against the 12 A1 OpenRouter candidates only.
 
 ## Active Phase
-Documentation-skill single-fixture request-payload preparation. No OpenRouter inference/model tests, no production routing, no benchmark execution, no benchmark JSON generation, no result JSON generation, no release action, and no product-code change.
+Documentation-skill single-fixture live evaluation evidence checkpoint. OpenRouter inference/model calls were run only for DOC-SKILL-001 after explicit user approval. No production routing, no routing-table update, no benchmark JSON generation, no release action, and no product-code change.
 
 ## Last Decision
 The documentation-skill routing table remains the canonical reference for documentation-skill model and scope boundaries.
 
-The prepared single-task fixture for DOC-SKILL-001 now has a no-call request dry-run payload set for the 12 A1 candidates.
+The approved DOC-SKILL-001 live evaluation ran exactly the 12 A1 request payloads listed in the manifest.
 
-DOC-SKILL-001 remains `NOT RUN`. No OpenRouter inference/model tests were run, no benchmark JSON or result JSON was generated, no routing decision was made, and actual OpenRouter calls still require explicit user approval after gate review.
+DOC-SKILL-001 is now `COMPLETED_EVALUATED` as evidence only. No routing decision was made, no model was marked production-approved, no external model recommendation is canonical, and no DOC-SKILL-002 or later task was started.
 
 ## Last Codex Work
 Created:
 
-- `documentation/codex/model-routing/live-eval/DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001/request_payloads/manifest.md`
-- 12 payload JSON files under `documentation/codex/model-routing/live-eval/DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001/request_payloads/`
+- `documentation/codex/model-routing/live-eval/DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001/results/evaluation_summary.md`
+- `documentation/codex/model-routing/live-eval/DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001/results/evaluation_results.json`
+- raw response evidence under `documentation/codex/model-routing/live-eval/DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001/results/raw/`
+- normalized response evidence under `documentation/codex/model-routing/live-eval/DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001/results/normalized/`
 
-Payload contents:
+Run results:
 
-- one payload file per A1 candidate
-- model id and model name
-- prompt text
-- sanitized JSON input
-- explicit governance constraints
-- status `NOT RUN`
+- attempted: 12
+- completed with normalized model content: 10
+- failed/skipped attempts: 2
+- PASS: 9
+- HOLD: 3
+- FAIL: 0
+
+PASS:
+
+- `deepseek/deepseek-v4-flash`
+- `minimax/minimax-m3`
+- `nvidia/nemotron-3-nano-30b-a3b`
+- `openai/gpt-5-mini`
+- `openai/gpt-5.1-codex-mini`
+- `openai/gpt-5.4-nano`
+- `openai/gpt-oss-120b`
+- `openai/gpt-oss-20b`
+- `qwen/qwen3.5-flash-02-23`
+
+HOLD:
+
+- `openai/gpt-5-nano`: empty normalized content
+- `qwen/qwen3-235b-a22b-thinking-2507`: empty normalized content
+- `stepfun/step-3.7-flash`: incomplete response missing completion of model_beta/model_gamma and final governance note
 
 ## Changed Files
-- `documentation/codex/model-routing/live-eval/DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001/request_payloads/manifest.md`
-- `documentation/codex/model-routing/live-eval/DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001/request_payloads/*.json`
+- `documentation/codex/model-routing/live-eval/DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001/README.md`
+- `documentation/codex/model-routing/live-eval/DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001/results/evaluation_summary.md`
+- `documentation/codex/model-routing/live-eval/DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001/results/evaluation_results.json`
+- `documentation/codex/model-routing/live-eval/DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001/results/raw/*.json`
+- `documentation/codex/model-routing/live-eval/DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001/results/normalized/*.md`
 - `documentation/ai/CURRENT_STATE.md`
 - `documentation/codex/SKILL_USAGE_LOG.md`
 
 ## Remote Sync Evidence
 - Branch context: `develop` / `backup/develop` workflow.
-- This block is intended to be committed as `docs(codex): prepare doc skill 001 request dry run` and pushed to `backup/develop` only.
-- No push to `origin`, tag, merge, reset, release, OpenRouter inference/model test, benchmark JSON generation, result JSON generation, or production routing activation is part of this block.
+- This block is intended to be committed as `docs(codex): run doc skill 001 live evaluation` and pushed to `backup/develop` only.
+- No push to `origin`, tag, merge, reset, release, routing-table update, benchmark JSON generation, DOC-SKILL-002 continuation, or production routing activation is part of this block.
 
 ## Tests / Validation
 - Start-of-work healthcheck reminder: DUE, user deferred it for later.
-- Bound artifact reread for DOC-SKILL-001 request dry-run checkpoint: PASS.
-- JSON parse input: PASS.
-- A1 count: PASS, 12.
-- Payload count: PASS, 12.
-- Payload JSON parse: PASS, 12.
-- Manifest exists: PASS.
-- Status remains `NOT RUN`: PASS.
-- Markdown sanity on touched documentation files: PASS.
+- Bound artifact reread for DOC-SKILL-001 live evaluation: PASS.
+- Exactly 12 model calls attempted or explicitly recorded: PASS.
+- Raw responses saved for completed calls and recorded attempts: PASS.
+- Normalized responses saved for completed calls and recorded attempts: PASS.
+- `evaluation_results.json` parses: PASS.
+- `evaluation_summary.md` exists: PASS.
+- DOC-SKILL-001 status updated to `COMPLETED_EVALUATED`: PASS.
+- No DOC-SKILL-002+ files created or modified: PASS.
+- No routing table update: PASS.
 - `git diff --check` on touched files: PASS.
-- OpenRouter inference/model tests: NOT RUN / forbidden by scope.
 - Benchmark JSON generation: NOT RUN / forbidden by scope.
-- Result JSON generation: NOT RUN / forbidden by scope.
 
 ## Open Risks
 - The repository worktree contains many unrelated pre-existing modified and untracked files. Commit staging must remain path-specific.
 - The A1 candidate list is time-sensitive metadata; current OpenRouter pricing must be rechecked before any future execution.
-- The DOC-SKILL-001 request dry run is not approval to run OpenRouter calls, offer a model externally, batch multiple tasks, update the routing table, or activate production routing.
+- The DOC-SKILL-001 live results are evidence only; they are not approval to offer a model externally, batch multiple tasks, update the routing table, or activate production routing.
 
 ## Next Recommended Step for ChatGPT
-Review the DOC-SKILL-001 no-call request payload manifest and decide whether a future live-run approval prompt is appropriate.
+Review the DOC-SKILL-001 evidence summary and decide whether a separate governance review should consider any non-production external option.
 
 ## Next Recommended Step for Codex
-Run final validation, commit the request dry-run checkpoint, and push `backup/develop` only.
+Run final validation, commit the DOC-SKILL-001 live evaluation evidence checkpoint, and push `backup/develop` only.
 
 ## Last Updated
-2026-06-13 00:47 local time
+2026-06-13 01:24 local time

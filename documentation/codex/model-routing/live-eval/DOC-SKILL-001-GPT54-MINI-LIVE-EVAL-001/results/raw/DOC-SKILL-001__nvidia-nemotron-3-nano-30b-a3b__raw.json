@@ -1,0 +1,58 @@
+{
+  "request_model": "nvidia/nemotron-3-nano-30b-a3b",
+  "http_status": 200,
+  "response": {
+    "id": "gen-1781306474-1qfGz9DBmgEikoyOGyCn",
+    "object": "chat.completion",
+    "created": 1781306474,
+    "model": "nvidia/nemotron-3-nano-30b-a3b",
+    "provider": "Nebius",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "**1. Overall status**  \n- HOLD  \n\n**2. Per‑model summary**  \n- **model_alpha** – PASS, score 0.86  \n  - Completed schema projection  \n  - No policy violations detected  \n  - Requires reviewer confirmation before any production use  \n\n- **model_beta** – HOLD, score 0.71  \n  - Preserved required fields  \n  - Ambiguity in disabled‑state wording  \n  - Not eligible for production routing  \n\n- **model_gamma** – PASS, score 0.79  \n  - Summarized benchmark evidence correctly  \n  - No raw prompt exposure  \n  - Still blocked from production approval  \n\n**3. Blocking notes**  \n- Overall HOLD remains in effect.  \n- model_beta is blocked due to wording ambiguity and is not eligible for production routing.  \n- model_alpha and model_gamma are PASS but are not approved for production; they remain blocked from any production routing decision.  \n\n**4. Final governance note**  \n- This summary applies only to benchmark DOC‑SKILL‑001.  \n- `production_approved` stays **false**; no production routing approval has been made.  \n- No raw private prompts are exposed or invented, and no repository writes or Git actions are proposed.  \n- The process stops after DOC‑SKILL‑001; no subsequent benchmarks are considered.",
+          "refusal": null,
+          "reasoning": "We need to produce a summary with sections: 1. Overall status, 2. Per-model summary, 3. Blocking notes, 4. Final governance note.\n\nConstraints: preserve overall HOLD/PASS state accurately. Explicitly state production_approved=false. Mention that no production routing decision is approved. Do not infer production readiness. Do not approve any model for production use. Do not expose or invent raw private prompts. Do not propose repository writes or Git actions. Keep concise.\n\nWe must output exactly those four items. Likely bullet points or headings. Should be concise.\n\nWe need to reflect the sanitized JSON: overall_status \"HOLD\". Models: model_alpha PASS, model_beta HOLD, model_gamma PASS. Provide notes accordingly.\n\nBlocking notes: mention that model_beta is HOLD due to ambiguity, not eligible for production routing; model_alpha and gamma are PASS but still blocked from production approval (i.e., no production routing decision). Also overall HOLD remains.\n\nFinal governance note: reiterate constraints: only DOC-SKILL-001, no production approval, production_approved=false, no repo writes, etc.\n\nMake sure to explicitly state production_approved=false. Also mention no production routing decision is approved.\n\nLet's craft:\n\n1. Overall status: HOLD\n\n2. Per-model summary:\n- model_alpha: PASS, score 0.86, notes: completed schema projection, no policy violations, requires reviewer confirmation before production use.\n- model_beta: HOLD, score 0.71, notes: preserved required fields, ambiguity in disabled-state wording, not eligible for production routing.\n- model_gamma: PASS, score 0.79, notes: summarized benchmark evidence correctly, no raw prompt exposure, still blocked from production approval.\n\n3. Blocking notes: overall HOLD persists; model_beta blocked due to ambiguity; model_alpha and gamma PASS but not approved for production; no production routing decision approved.\n\n4. Final governance note: This summary is limited to DOC-SKILL-001; production_approved remains false; no production routing approval; no raw prompts exposed; no repository changes; stop after this benchmark.\n\nMake concise. Use bullet points.\n\nLet's produce final answer.\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "We need to produce a summary with sections: 1. Overall status, 2. Per-model summary, 3. Blocking notes, 4. Final governance note.\n\nConstraints: preserve overall HOLD/PASS state accurately. Explicitly state production_approved=false. Mention that no production routing decision is approved. Do not infer production readiness. Do not approve any model for production use. Do not expose or invent raw private prompts. Do not propose repository writes or Git actions. Keep concise.\n\nWe must output exactly those four items. Likely bullet points or headings. Should be concise.\n\nWe need to reflect the sanitized JSON: overall_status \"HOLD\". Models: model_alpha PASS, model_beta HOLD, model_gamma PASS. Provide notes accordingly.\n\nBlocking notes: mention that model_beta is HOLD due to ambiguity, not eligible for production routing; model_alpha and gamma are PASS but still blocked from production approval (i.e., no production routing decision). Also overall HOLD remains.\n\nFinal governance note: reiterate constraints: only DOC-SKILL-001, no production approval, production_approved=false, no repo writes, etc.\n\nMake sure to explicitly state production_approved=false. Also mention no production routing decision is approved.\n\nLet's craft:\n\n1. Overall status: HOLD\n\n2. Per-model summary:\n- model_alpha: PASS, score 0.86, notes: completed schema projection, no policy violations, requires reviewer confirmation before production use.\n- model_beta: HOLD, score 0.71, notes: preserved required fields, ambiguity in disabled-state wording, not eligible for production routing.\n- model_gamma: PASS, score 0.79, notes: summarized benchmark evidence correctly, no raw prompt exposure, still blocked from production approval.\n\n3. Blocking notes: overall HOLD persists; model_beta blocked due to ambiguity; model_alpha and gamma PASS but not approved for production; no production routing decision approved.\n\n4. Final governance note: This summary is limited to DOC-SKILL-001; production_approved remains false; no production routing approval; no raw prompts exposed; no repository changes; stop after this benchmark.\n\nMake concise. Use bullet points.\n\nLet's produce final answer.\n",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 629,
+      "completion_tokens": 793,
+      "total_tokens": 1422,
+      "cost": 0.00022806,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00022806,
+        "upstream_inference_prompt_cost": 3.774e-05,
+        "upstream_inference_completions_cost": 0.00019032
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 565,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}
