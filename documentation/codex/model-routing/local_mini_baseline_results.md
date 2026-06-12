@@ -2,6 +2,18 @@
 
 Append-only local evidence for the first mini baseline runs.
 
+## First Mini Batch Summary
+
+Status: COMPLETE
+
+The first mini baseline batch is complete. `TMR-001` through `TMR-005` all passed with `5.4 mini` low reasoning on the first attempt.
+
+No escalation to `5.4 mini` medium, `5.4 mini` high, or full `5.4` was required. No OpenRouter live calls were run during these local baselines.
+
+This establishes the local baseline to beat for the first-batch mini tasks. Future OpenRouter candidates must beat or match `5.4 mini` low on the same cases, not just a generic mini-model baseline.
+
+This is local development evidence only. It is not production routing approval, and production routing remains `UNKNOWN`/disabled until Codex review and explicit user approval.
+
 ## TMR-001 / MINI-001
 
 | field | value |
