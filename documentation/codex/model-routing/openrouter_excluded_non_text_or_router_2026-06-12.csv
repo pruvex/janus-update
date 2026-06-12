@@ -1,0 +1,18 @@
+id,name,prompt,completion,context_length,modality,input_modalities,output_modalities,supports_reasoning,supports_structured_outputs,supports_tools
+google/gemini-2.5-flash-image,Google: Nano Banana (Gemini 2.5 Flash Image),3E-7,0.0000025,32768,text+image->text+image,"image,text","image,text",False,True,False
+google/gemini-3-pro-image-preview,Google: Nano Banana Pro (Gemini 3 Pro Image Preview),0.000002,0.000012,65536,text+image->text+image,"image,text","image,text",True,True,False
+google/gemini-3.1-flash-image-preview,Google: Nano Banana 2 (Gemini 3.1 Flash Image Preview),5E-7,0.000003,131072,text+image->text+image,"image,text","image,text",True,True,False
+google/lyria-3-clip-preview,Google: Lyria 3 Clip Preview,0,0,1048576,text+image->text+audio,"text,image","text,audio",False,False,False
+google/lyria-3-pro-preview,Google: Lyria 3 Pro Preview,0,0,1048576,text+image->text+audio,"text,image","text,audio",False,False,False
+nvidia/nemotron-3.5-content-safety:free,NVIDIA: Nemotron 3.5 Content Safety (free),0,0,128000,text+image->text,"text,image",text,True,False,False
+openai/gpt-5-image,OpenAI: GPT-5 Image,0.00001,0.00001,400000,text+image+file->text+image,"image,text,file","image,text",True,True,False
+openai/gpt-5-image-mini,OpenAI: GPT-5 Image Mini,0.0000025,0.000002,400000,text+image+file->text+image,"file,image,text","image,text",True,True,False
+openai/gpt-5.4-image-2,OpenAI: GPT-5.4 Image 2,0.000008,0.000015,272000,text+image+file->text+image,"image,text,file","image,text",True,True,False
+openai/gpt-audio,OpenAI: GPT Audio,0.0000025,0.00001,128000,text+audio->text+audio,"text,audio","text,audio",False,True,True
+openai/gpt-audio-mini,OpenAI: GPT Audio Mini,6E-7,0.0000024,128000,text+audio->text+audio,"text,audio","text,audio",False,True,True
+openrouter/auto,Auto Router,-1,-1,2000000,text+image+file+audio+video->text+image,"text,image,audio,file,video","text,image",True,True,True
+openrouter/bodybuilder,Body Builder (beta),-1,-1,128000,text->text,text,text,False,False,False
+openrouter/free,Free Models Router,0,0,200000,text+image->text,"text,image",text,True,True,True
+openrouter/fusion,OpenRouter: Fusion,-1,-1,128000,text->text,text,text,False,False,False
+openrouter/owl-alpha,Owl Alpha,0,0,1048756,text->text,text,text,False,True,True
+openrouter/pareto-code,Pareto Code Router,-1,-1,2000000,text->text,text,text,False,False,False

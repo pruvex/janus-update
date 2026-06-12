@@ -4,69 +4,75 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Create a no-live planning artifact for future OpenRouter candidate evaluation of documentation-skill tasks.
+Record the generated OpenRouter metadata snapshot and A1 candidate shortlist for future documentation-skill evaluation.
 
 ## Active Phase
-Documentation-skill governance update. No OpenRouter activation, no OpenRouter live calls, no production routing, no benchmark execution, no benchmark JSON generation, no release action, and no product-code change.
+Documentation-skill OpenRouter metadata documentation checkpoint. No OpenRouter inference/model tests, no production routing, no benchmark execution, no benchmark JSON generation, no release action, and no product-code change.
 
 ## Last Decision
-The documentation-skill routing table v1 remains the canonical reference for documentation-skill work:
+The generated OpenRouter metadata snapshot and candidate CSVs are recorded as planning/evidence inputs only.
 
-- `documentation/codex/model-routing/documentation_skill_routing_table_v1_2026-06-12.md`
+The metadata snapshot was created from the OpenRouter model list, but no inference/model tests were run in this checkpoint. The A1 documentation-skill candidate shortlist contains 12 candidates. No production routing decision was made, and any future live evaluation still requires explicit user approval.
 
-`janus-documentation-update` must treat the active model and reasoning level as user-declared, not self-detected. If `DECLARED CODEX MODEL` is missing, Codex must stop before deciding sufficiency and ask the user to provide or confirm the selected model and reasoning level.
-
-The gate output uses `Declared model/reasoning` instead of `Current model/reasoning`. The gate does not switch models automatically, does not activate OpenRouter, and does not enable production routing.
+Final authority remains with Janus/Codex governance. OpenRouter metadata and future candidate output may only support local Codex review; it must not activate routing, approve models, or write canonical project state by itself.
 
 ## Last Codex Work
-Created a no-live planning artifact for a future OpenRouter candidate evaluation of documentation-skill tasks.
+Reviewed the generated metadata files:
 
-Planning artifact saved at:
+- `documentation/codex/model-routing/openrouter_models_snapshot_2026-06-12.json`
+- `documentation/codex/model-routing/openrouter_paid_text_candidates_cheaper_than_gpt54_mini_2026-06-12.csv`
+- `documentation/codex/model-routing/openrouter_free_text_candidates_2026-06-12.csv`
+- `documentation/codex/model-routing/openrouter_gpt_family_price_check_2026-06-12.csv`
+- `documentation/codex/model-routing/openrouter_excluded_non_text_or_router_2026-06-12.csv`
+- `documentation/codex/model-routing/openrouter_doc_skill_candidate_tiers_2026-06-12.csv`
+- `documentation/codex/model-routing/openrouter_doc_skill_a1_shortlist_2026-06-12.csv`
 
-- `documentation/codex/model-routing/documentation_skill_or_candidate_evaluation_plan_v1_2026-06-12.md`
+Review results:
 
-The plan includes:
-
-- purpose
-- hard constraint: no OpenRouter live calls in this planning step
-- all 18 `DOC-SKILL-*` rows from routing table v1
-- current `5.4 mini` low/medium allowances
-- per-task fixture structure
-- candidate filtering based on execution-time pricing cheaper than GPT-5.4 mini
-- pass/fail rubric
-- future terminal-driven workflow
-- external-option decision rule
-- final-authority boundary with Janus/Codex governance
+- metadata snapshot JSON parse: PASS, 337 model records
+- CSV headers readable: PASS
+- A1 shortlist count: PASS, 12 candidates
+- inference/model tests run: NO
+- production routing decision: NO
+- future live evaluation approval required: YES
 
 ## Changed Files
-- `documentation/codex/model-routing/documentation_skill_or_candidate_evaluation_plan_v1_2026-06-12.md`
+- `documentation/codex/model-routing/openrouter_models_snapshot_2026-06-12.json`
+- `documentation/codex/model-routing/openrouter_paid_text_candidates_cheaper_than_gpt54_mini_2026-06-12.csv`
+- `documentation/codex/model-routing/openrouter_free_text_candidates_2026-06-12.csv`
+- `documentation/codex/model-routing/openrouter_gpt_family_price_check_2026-06-12.csv`
+- `documentation/codex/model-routing/openrouter_excluded_non_text_or_router_2026-06-12.csv`
+- `documentation/codex/model-routing/openrouter_doc_skill_candidate_tiers_2026-06-12.csv`
+- `documentation/codex/model-routing/openrouter_doc_skill_a1_shortlist_2026-06-12.csv`
 - `documentation/ai/CURRENT_STATE.md`
 - `documentation/codex/SKILL_USAGE_LOG.md`
 
 ## Remote Sync Evidence
 - Branch context: `develop` / `backup/develop` workflow.
-- This block is intended to be committed as `docs(codex): plan documentation skill or candidate evaluation` and pushed to `backup/develop` only.
-- No push to `origin`, tag, merge, reset, release, OpenRouter comparison, benchmark result JSON generation, or production routing activation is part of this block.
+- This block is intended to be committed as `docs(codex): record openrouter doc skill candidate shortlist` and pushed to `backup/develop` only.
+- No push to `origin`, tag, merge, reset, release, OpenRouter inference/model test, benchmark result JSON generation, or production routing activation is part of this block.
 
 ## Tests / Validation
-- Start-of-work healthcheck reminder: CLEAR.
-- Bound artifact reread for no-live OR evaluation planning: PASS.
-- Future OR candidate evaluation plan created without live calls: PASS.
+- Start-of-work healthcheck reminder: DUE, user deferred it for later.
+- Bound artifact reread for metadata checkpoint: PASS.
+- JSON parse check for metadata snapshot: PASS.
+- CSV headers readable: PASS.
+- A1 shortlist count: PASS, 12 candidates.
 - Markdown sanity on touched documentation files: PASS.
 - `git diff --check` on touched tracked files: PASS.
-- OpenRouter live calls: NOT RUN / forbidden by scope.
+- OpenRouter inference/model tests: NOT RUN / forbidden by scope.
 - Benchmark JSON generation: NOT RUN / forbidden by scope.
 
 ## Open Risks
 - The repository worktree contains many unrelated pre-existing modified and untracked files. Commit staging must remain path-specific.
-- The plan depends on current OpenRouter pricing at future execution time; pricing was not fetched in this planning step.
-- The plan is not approval to run OpenRouter calls, generate result JSON, offer a model externally, or activate production routing.
+- The snapshot and candidate lists are time-sensitive metadata; current OpenRouter pricing must be rechecked before any future execution.
+- The A1 shortlist is not approval to run OpenRouter calls, offer a model externally, or activate production routing.
 
 ## Next Recommended Step for ChatGPT
-Review the no-live evaluation plan and decide whether a future approved live-run gate is warranted.
+Review whether the A1 shortlist and metadata files are sufficient for a future explicit live-evaluation gate.
 
 ## Next Recommended Step for Codex
-Run final validation, commit the planning artifact checkpoint, and push `backup/develop` only.
+Run final validation, commit the metadata checkpoint, and push `backup/develop` only.
 
 ## Last Updated
-2026-06-12 23:53 local time
+2026-06-13 00:11 local time

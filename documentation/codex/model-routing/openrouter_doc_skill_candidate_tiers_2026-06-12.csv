@@ -1,0 +1,183 @@
+tier,score,id,name,prompt,completion,context_length,modality,input_modalities,output_modalities,supports_reasoning,supports_structured_outputs,supports_tools
+A,200,deepseek/deepseek-v4-flash,DeepSeek: DeepSeek V4 Flash,9.8E-8,1.96E-7,1048576,text->text,text,text,True,True,True
+A,200,qwen/qwen3.5-flash-02-23,Qwen: Qwen3.5-Flash,6.5E-8,2.6E-7,1000000,text+image+video->text,"text,image,video",text,True,True,True
+A,200,openai/gpt-5-nano,OpenAI: GPT-5 Nano,5E-8,4E-7,400000,text+image+file->text,"text,image,file",text,True,True,True
+A,190,openai/gpt-oss-20b,OpenAI: gpt-oss-20b,2.9E-8,1.4E-7,131072,text->text,text,text,True,True,True
+A,190,qwen/qwen3-235b-a22b-thinking-2507,Qwen: Qwen3 235B A22B Thinking 2507,1E-7,1E-7,262144,text->text,text,text,True,True,True
+A,190,openai/gpt-oss-120b,OpenAI: gpt-oss-120b,3.9E-8,1.8E-7,131072,text->text,text,text,True,True,True
+A,190,openai/gpt-5.4-nano,OpenAI: GPT-5.4 Nano,2E-7,0.00000125,400000,text+image+file->text,"file,image,text",text,True,True,True
+A,190,openai/gpt-5-mini,OpenAI: GPT-5 Mini,2.5E-7,0.000002,400000,text+image+file->text,"text,image,file",text,True,True,True
+A,190,openai/gpt-5.1-codex-mini,OpenAI: GPT-5.1-Codex-Mini,2.5E-7,0.000002,400000,text+image->text,"image,text",text,True,True,True
+A,180,nvidia/nemotron-3-nano-30b-a3b,NVIDIA: Nemotron 3 Nano 30B A3B,5E-8,2E-7,262144,text->text,text,text,True,False,True
+A,180,stepfun/step-3.7-flash,StepFun: Step 3.7 Flash,2E-7,0.00000115,256000,text+image+video->text,"text,image,video",text,True,True,True
+A,180,minimax/minimax-m3,MiniMax: MiniMax M3,3E-7,0.0000012,1048576,text+image+video->text,"text,image,video",text,True,False,True
+A,165,qwen/qwen3-235b-a22b-2507,Qwen: Qwen3 235B A22B Instruct 2507,9E-8,1E-7,262144,text->text,text,text,False,True,True
+A,90,qwen/qwen3.5-9b,Qwen: Qwen3.5-9B,1E-7,1.5E-7,262144,text+image+video->text,"text,image,video",text,True,True,True
+A,90,qwen/qwen3-14b,Qwen: Qwen3 14B,1E-7,2.4E-7,131702,text->text,text,text,True,True,True
+A,90,qwen/qwen3-32b,Qwen: Qwen3 32B,8E-8,2.8E-7,131072,text->text,text,text,True,True,True
+A,90,qwen/qwen3-8b,Qwen: Qwen3 8B,5E-8,4E-7,131072,text->text,text,text,True,True,True
+A,90,qwen/qwen3-30b-a3b-thinking-2507,Qwen: Qwen3 30B A3B Thinking 2507,8E-8,4E-7,131072,text->text,text,text,True,True,True
+A,90,nvidia/nemotron-3-super-120b-a12b,NVIDIA: Nemotron 3 Super,9E-8,4.5E-7,1000000,text->text,text,text,True,True,True
+A,90,qwen/qwen-plus-2025-07-28:thinking,Qwen: Qwen Plus 0728 (thinking),2.6E-7,7.8E-7,1000000,text->text,text,text,True,True,True
+A,90,deepseek/deepseek-v4-pro,DeepSeek: DeepSeek V4 Pro,4.35E-7,8.7E-7,1048576,text->text,text,text,True,True,True
+A,90,qwen/qwen3.6-flash,Qwen: Qwen3.6 Flash,1.875E-7,0.000001125,1000000,text+image+video->text,"text,image,video",text,True,True,True
+A,90,qwen/qwen3.7-plus,Qwen: Qwen3.7 Plus,3.2E-7,0.00000128,1000000,text+image->text,"text,image",text,True,True,True
+A,90,qwen/qwen3.5-plus-02-15,Qwen: Qwen3.5 Plus 2026-02-15,2.6E-7,0.00000156,1000000,text+image+video->text,"text,image,video",text,True,True,True
+A,90,qwen/qwen3.5-plus-20260420,Qwen: Qwen3.5 Plus 2026-04-20,3E-7,0.0000018,1000000,text+image+video->text,"text,image,video",text,True,True,True
+A,90,qwen/qwen3.6-plus,Qwen: Qwen3.6 Plus,3.25E-7,0.00000195,1000000,text+image+video->text,"text,image,video",text,True,True,True
+A,90,nvidia/nemotron-3-ultra-550b-a55b,NVIDIA: Nemotron 3 Ultra,5E-7,0.0000025,1000000,text->text,text,text,True,True,True
+A,80,stepfun/step-3.5-flash,StepFun: Step 3.5 Flash,9E-8,3E-7,262144,text->text,text,text,True,False,True
+A,80,deepseek/deepseek-v3.2,DeepSeek: DeepSeek V3.2,2.288E-7,3.432E-7,131072,text->text,text,text,True,True,True
+A,80,qwen/qwen3-30b-a3b,Qwen: Qwen3 30B A3B,1.2E-7,5E-7,131072,text->text,text,text,True,True,True
+A,80,deepseek/deepseek-v3.2-exp,DeepSeek: DeepSeek V3.2 Exp,2.7E-7,4.1E-7,163840,text->text,text,text,True,True,True
+A,80,qwen/qwen3-next-80b-a3b-thinking,Qwen: Qwen3 Next 80B A3B Thinking,9.75E-8,7.8E-7,262144,text->text,text,text,True,True,True
+A,80,deepseek/deepseek-chat-v3.1,DeepSeek: DeepSeek V3.1,2.1E-7,7.9E-7,163840,text->text,text,text,True,True,True
+A,80,minimax/minimax-m2.5,MiniMax: MiniMax M2.5,1.5E-7,9E-7,204800,text->text,text,text,True,True,True
+A,80,qwen/qwen3.5-35b-a3b,Qwen: Qwen3.5-35B-A3B,1.4E-7,0.000001,262144,text+image+video->text,"text,image,video",text,True,True,True
+A,80,qwen/qwen3.6-35b-a3b,Qwen: Qwen3.6 35B A3B,1.5E-7,0.000001,262144,text+image+video->text,"text,image,video",text,True,True,True
+A,80,deepseek/deepseek-v3.1-terminus,DeepSeek: DeepSeek V3.1 Terminus,2.7E-7,9.5E-7,163840,text->text,text,text,True,True,True
+A,80,minimax/minimax-m2.1,MiniMax: MiniMax M2.1,2.9E-7,9.5E-7,204800,text->text,text,text,True,True,True
+A,80,minimax/minimax-m2.7,MiniMax: MiniMax M2.7,2.5E-7,0.000001,204800,text->text,text,text,True,True,True
+A,80,minimax/minimax-m2,MiniMax: MiniMax M2,2.55E-7,0.000001,204800,text->text,text,text,True,True,True
+A,80,qwen/qwen3-vl-8b-thinking,Qwen: Qwen3 VL 8B Thinking,1.17E-7,0.000001365,256000,text+image->text,"image,text",text,True,True,True
+A,80,qwen/qwen3-vl-30b-a3b-thinking,Qwen: Qwen3 VL 30B A3B Thinking,1.3E-7,0.00000156,131072,text+image->text,"text,image",text,True,True,True
+A,80,qwen/qwen3.5-27b,Qwen: Qwen3.5-27B,1.95E-7,0.00000156,262144,text+image+video->text,"text,image,video",text,True,True,True
+A,80,qwen/qwen3.5-122b-a10b,Qwen: Qwen3.5-122B-A10B,2.6E-7,0.00000208,262144,text+image+video->text,"text,image,video",text,True,True,True
+A,80,minimax/minimax-m1,MiniMax: MiniMax M1,4E-7,0.0000022,1000000,text->text,text,text,True,False,True
+A,80,deepseek/deepseek-r1-0528,DeepSeek: R1 0528,5E-7,0.00000215,163840,text->text,text,text,True,True,True
+A,80,qwen/qwen3.5-397b-a17b,Qwen: Qwen3.5 397B A17B,3.9E-7,0.00000234,262144,text+image+video->text,"text,image,video",text,True,True,True
+B,70,arcee-ai/trinity-mini,Arcee AI: Trinity Mini,4.5E-8,1.5E-7,131072,text->text,text,text,True,True,True
+B,70,bytedance-seed/seed-1.6-flash,ByteDance Seed: Seed 1.6 Flash,7.5E-8,3E-7,262144,text+image+video->text,"image,text,video",text,True,True,True
+B,70,google/gemma-4-26b-a4b-it,Google: Gemma 4 26B A4B ,6E-8,3.3E-7,262144,text+image+video->text,"image,text,video",text,True,True,True
+B,70,xiaomi/mimo-v2.5,Xiaomi: MiMo-V2.5,1.4E-7,2.8E-7,1048576,text+image+audio+video->text,"text,audio,image,video",text,True,False,True
+B,70,z-ai/glm-4.7-flash,Z.ai: GLM 4.7 Flash,6E-8,4E-7,202752,text->text,text,text,True,True,True
+B,70,google/gemma-4-31b-it,Google: Gemma 4 31B,1.2E-7,3.5E-7,262144,text+image+video->text,"image,text,video",text,True,True,True
+B,70,google/gemini-2.5-flash-lite,Google: Gemini 2.5 Flash Lite,1E-7,4E-7,1048576,text+image+file+audio+video->text,"text,image,file,audio,video",text,True,True,True
+B,70,google/gemini-2.5-flash-lite-preview-09-2025,Google: Gemini 2.5 Flash Lite Preview 09-2025,1E-7,4E-7,1048576,text+image+file+audio+video->text,"text,image,file,audio,video",text,True,True,True
+B,70,nvidia/llama-3.3-nemotron-super-49b-v1.5,NVIDIA: Llama 3.3 Nemotron Super 49B V1.5,4E-7,4E-7,131072,text->text,text,text,True,False,True
+B,70,xiaomi/mimo-v2.5-pro,Xiaomi: MiMo-V2.5-Pro,4.35E-7,8.7E-7,1048576,text->text,text,text,True,True,True
+B,70,google/gemini-3.1-flash-lite,Google: Gemini 3.1 Flash Lite,2.5E-7,0.0000015,1048576,text+image+file+audio+video->text,"text,image,video,file,audio",text,True,True,True
+B,70,google/gemini-3.1-flash-lite-preview,Google: Gemini 3.1 Flash Lite Preview,2.5E-7,0.0000015,1048576,text+image+file+audio+video->text,"text,image,video,file,audio",text,True,True,True
+B,70,qwen/qwen3-235b-a22b,Qwen: Qwen3 235B A22B,4.55E-7,0.00000182,131072,text->text,text,text,True,False,True
+B,70,google/gemini-2.5-flash,Google: Gemini 2.5 Flash,3E-7,0.0000025,1048576,text+image+file+audio+video->text,"file,image,text,audio,video",text,True,True,True
+B,70,qwen/qwen3-vl-235b-a22b-thinking,Qwen: Qwen3 VL 235B A22B Thinking,2.6E-7,0.0000026,131072,text+image->text,"text,image",text,True,False,True
+B,70,deepseek/deepseek-r1,DeepSeek: R1,7E-7,0.0000025,163840,text->text,text,text,True,True,True
+B,70,qwen/qwen3.6-27b,Qwen: Qwen3.6 27B,2.885E-7,0.00000317,262144,text+image+video->text,"text,image,video",text,True,True,True
+B,65,qwen/qwen3-30b-a3b-instruct-2507,Qwen: Qwen3 30B A3B Instruct 2507,4.815E-8,1.9305E-7,131072,text->text,text,text,False,True,True
+B,65,qwen/qwen3-coder-30b-a3b-instruct,Qwen: Qwen3 Coder 30B A3B Instruct,7E-8,2.7E-7,160000,text->text,text,text,False,True,True
+B,65,deepseek/deepseek-r1-distill-qwen-32b,DeepSeek: R1 Distill Qwen 32B,2.9E-7,2.9E-7,128000,text->text,text,text,True,True,False
+B,65,qwen/qwen-plus-2025-07-28,Qwen: Qwen Plus 0728,2.6E-7,7.8E-7,1000000,text->text,text,text,False,True,True
+B,65,qwen/qwen3-coder,Qwen: Qwen3 Coder 480B A35B,2.2E-7,0.0000018,1048576,text->text,text,text,False,True,True
+B,60,tencent/hy3-preview,Tencent: Hy3 preview,6.3E-8,2.1E-7,262144,text->text,text,text,True,False,True
+B,60,xiaomi/mimo-v2-flash,Xiaomi: MiMo-V2-Flash,1E-7,3E-7,262144,text->text,text,text,True,False,True
+B,60,bytedance-seed/seed-2.0-mini,ByteDance Seed: Seed-2.0-Mini,1E-7,4E-7,262144,text+image+video->text,"text,image,video",text,True,True,True
+B,60,mistralai/mistral-small-2603,Mistral: Mistral Small 4,1.5E-7,6E-7,262144,text+image->text,"text,image",text,True,True,True
+B,60,upstage/solar-pro-3,Upstage: Solar Pro 3,1.5E-7,6E-7,128000,text->text,text,text,True,True,True
+B,60,z-ai/glm-4.5-air,Z.ai: GLM 4.5 Air,1.25E-7,8.5E-7,131072,text->text,text,text,True,True,True
+B,60,inception/mercury-2,Inception: Mercury 2,2.5E-7,7.5E-7,128000,text->text,text,text,True,True,True
+B,60,arcee-ai/trinity-large-thinking,Arcee AI: Trinity Large Thinking,2.2E-7,8.5E-7,262144,text->text,text,text,True,True,True
+B,60,prime-intellect/intellect-3,Prime Intellect: INTELLECT-3,2E-7,0.0000011,131072,text->text,text,text,True,True,True
+B,60,z-ai/glm-4.7,Z.ai: GLM 4.7,4E-7,0.00000175,202752,text->text,text,text,True,True,True
+B,60,z-ai/glm-4.6,Z.ai: GLM 4.6,4.3E-7,0.00000174,202752,text->text,text,text,True,True,True
+B,60,bytedance-seed/seed-1.6,ByteDance Seed: Seed 1.6,2.5E-7,0.000002,262144,text+image+video->text,"image,text,video",text,True,True,True
+B,60,bytedance-seed/seed-2.0-lite,ByteDance Seed: Seed-2.0-Lite,2.5E-7,0.000002,262144,text+image+video->text,"text,image,video",text,True,True,True
+B,60,moonshotai/kimi-k2.5,MoonshotAI: Kimi K2.5,4E-7,0.0000019,262144,text+image->text,"text,image",text,True,True,True
+B,60,z-ai/glm-5,Z.ai: GLM 5,6E-7,0.00000192,202752,text->text,text,text,True,True,True
+B,60,amazon/nova-2-lite-v1,Amazon: Nova 2 Lite,3E-7,0.0000025,1000000,text+image+file+video->text,"text,image,video,file",text,True,False,True
+B,60,google/gemini-3-flash-preview,Google: Gemini 3 Flash Preview,5E-7,0.000003,1048576,text+image+file+audio+video->text,"text,image,file,audio,video",text,True,True,True
+B,55,meta-llama/llama-4-scout,Meta: Llama 4 Scout,1E-7,3E-7,10000000,text+image->text,"text,image",text,False,True,True
+B,55,qwen/qwen3-vl-8b-instruct,Qwen: Qwen3 VL 8B Instruct,8E-8,5E-7,256000,text+image->text,"image,text",text,False,True,True
+B,55,qwen/qwen3-vl-30b-a3b-instruct,Qwen: Qwen3 VL 30B A3B Instruct,1.3E-7,5.2E-7,262144,text+image->text,"text,image",text,False,True,True
+B,55,qwen/qwen-2.5-72b-instruct,Qwen2.5 72B Instruct,3.6E-7,4E-7,131072,text->text,text,text,False,True,True
+B,55,qwen/qwen3-coder-next,Qwen: Qwen3 Coder Next,1.1E-7,8E-7,262144,text->text,text,text,False,True,True
+B,55,deepseek/deepseek-chat-v3-0324,DeepSeek: DeepSeek V3 0324,2E-7,7.7E-7,163840,text->text,text,text,False,True,True
+B,55,deepseek/deepseek-chat,DeepSeek: DeepSeek V3,2.002E-7,8.001E-7,131072,text->text,text,text,False,True,True
+B,55,qwen/qwen-plus,Qwen: Qwen-Plus,2.6E-7,7.8E-7,1000000,text->text,text,text,False,False,True
+B,55,qwen/qwen3-vl-235b-a22b-instruct,Qwen: Qwen3 VL 235B A22B Instruct,2E-7,8.8E-7,262144,text+image->text,"text,image",text,False,True,True
+B,55,qwen/qwen3-coder-flash,Qwen: Qwen3 Coder Flash,1.95E-7,9.75E-7,1000000,text->text,text,text,False,False,True
+B,55,qwen/qwen3-next-80b-a3b-instruct,Qwen: Qwen3 Next 80B A3B Instruct,9E-8,0.0000011,262144,text->text,text,text,False,True,True
+B,55,qwen/qwen3-coder-plus,Qwen: Qwen3 Coder Plus,6.5E-7,0.00000325,1000000,text->text,text,text,False,True,True
+B,50,inclusionai/ring-2.6-1t,inclusionAI: Ring-2.6-1T,7.5E-8,6.25E-7,262144,text->text,text,text,True,False,True
+B,50,z-ai/glm-4.6v,Z.ai: GLM 4.6V,3E-7,9E-7,131072,text+image+video->text,"image,text,video",text,True,False,True
+B,50,z-ai/glm-4.5,Z.ai: GLM 4.5,6E-7,0.0000022,131072,text->text,text,text,True,False,True
+B,50,moonshotai/kimi-k2-thinking,MoonshotAI: Kimi K2 Thinking,6E-7,0.0000025,262144,text->text,text,text,True,True,True
+B,50,moonshotai/kimi-k2.6,MoonshotAI: Kimi K2.6,6.8E-7,0.00000341,262144,text+image->text,"text,image",text,True,True,True
+B,50,~moonshotai/kimi-latest,MoonshotAI Kimi Latest,6.8E-7,0.00000341,262144,text+image->text,"text,image",text,True,True,True
+B,45,inclusionai/ling-2.6-flash,inclusionAI: Ling-2.6-flash,1E-8,3E-8,262144,text->text,text,text,False,True,True
+B,45,meta-llama/llama-3.1-8b-instruct,Meta: Llama 3.1 8B Instruct,2E-8,3E-8,131072,text->text,text,text,False,True,True
+B,45,mistralai/mistral-nemo,Mistral: Mistral Nemo,2E-8,3E-8,131072,text->text,text,text,False,True,True
+B,45,ibm-granite/granite-4.1-8b,IBM: Granite 4.1 8B,5E-8,1E-7,131072,text->text,text,text,False,True,True
+B,45,google/gemma-3-12b-it,Google: Gemma 3 12B,5E-8,1.5E-7,131072,text+image->text,"text,image",text,False,True,True
+B,45,mistralai/ministral-3b-2512,Mistral: Ministral 3 3B 2512,1E-7,1E-7,131072,text+image->text,"text,image",text,False,True,True
+B,45,google/gemma-3-27b-it,Google: Gemma 3 27B,8E-8,1.6E-7,131072,text+image->text,"text,image",text,False,True,True
+B,45,mistralai/mistral-small-3.2-24b-instruct,Mistral: Mistral Small 3.2 24B,7.5E-8,2E-7,128000,text+image->text,"image,text",text,False,True,True
+B,45,mistralai/ministral-8b-2512,Mistral: Ministral 3 8B 2512,1.5E-7,1.5E-7,262144,text+image->text,"text,image",text,False,True,True
+B,45,mistralai/ministral-14b-2512,Mistral: Ministral 3 14B 2512,2E-7,2E-7,262144,text+image->text,"text,image",text,False,True,True
+B,45,meta-llama/llama-3.3-70b-instruct,Meta: Llama 3.3 70B Instruct,1E-7,3.2E-7,131072,text->text,text,text,False,True,True
+B,45,openai/gpt-4.1-nano,OpenAI: GPT-4.1 Nano,1E-7,4E-7,1047576,text+image+file->text,"image,text,file",text,False,True,True
+B,45,qwen/qwen3-vl-32b-instruct,Qwen: Qwen3 VL 32B Instruct,1.04E-7,4.16E-7,262144,text+image->text,"text,image",text,False,False,True
+B,45,tencent/hunyuan-a13b-instruct,Tencent: Hunyuan A13B Instruct,1.4E-7,5.7E-7,131072,text->text,text,text,True,True,False
+B,45,meta-llama/llama-4-maverick,Meta: Llama 4 Maverick,1.5E-7,6E-7,1048576,text+image->text,"text,image",text,False,True,True
+B,45,openai/gpt-4.1-mini,OpenAI: GPT-4.1 Mini,4E-7,0.0000016,1047576,text+image+file->text,"image,text,file",text,False,True,True
+B,40,qwen/qwen-2.5-7b-instruct,Qwen: Qwen2.5 7B Instruct,4E-8,1E-7,131072,text->text,text,text,False,False,False
+B,40,minimax/minimax-01,MiniMax: MiniMax-01,2E-7,0.0000011,1000192,text+image->text,"text,image",text,False,False,False
+B,40,z-ai/glm-4.5v,Z.ai: GLM 4.5V,6E-7,0.0000018,65536,text+image->text,"text,image",text,True,False,True
+B,35,amazon/nova-micro-v1,Amazon: Nova Micro 1.0,3.5E-8,1.4E-7,128000,text->text,text,text,False,False,True
+B,35,amazon/nova-lite-v1,Amazon: Nova Lite 1.0,6E-8,2.4E-7,300000,text+image->text,"text,image",text,False,False,True
+B,35,essentialai/rnj-1-instruct,EssentialAI: Rnj 1 Instruct,1.5E-7,1.5E-7,32768,text->text,text,text,False,True,True
+B,35,rekaai/reka-flash-3,Reka Flash 3,1E-7,2E-7,65536,text->text,text,text,True,False,False
+B,35,mistralai/voxtral-small-24b-2507,Mistral: Voxtral Small 24B 2507,1E-7,3E-7,32000,text+file+audio->text,"text,audio,file",text,False,True,True
+B,35,nousresearch/hermes-4-70b,Nous: Hermes 4 70B,1.3E-7,4E-7,131072,text->text,text,text,True,False,False
+B,35,allenai/olmo-3-32b-think,AllenAI: Olmo 3 32B Think,1.5E-7,5E-7,65536,text->text,text,text,True,True,False
+B,35,inclusionai/ling-2.6-1t,inclusionAI: Ling-2.6-1T,7.5E-8,6.25E-7,262144,text->text,text,text,False,True,True
+B,35,cohere/command-r-08-2024,Cohere: Command R (08-2024),1.5E-7,6E-7,128000,text->text,text,text,False,True,True
+B,35,openai/gpt-4o-mini,OpenAI: GPT-4o-mini,1.5E-7,6E-7,128000,text+image+file->text,"text,image,file",text,False,True,True
+B,35,openai/gpt-4o-mini-2024-07-18,OpenAI: GPT-4o-mini (2024-07-18),1.5E-7,6E-7,128000,text+image+file->text,"text,image,file",text,False,True,True
+B,35,meta-llama/llama-3.1-70b-instruct,Meta: Llama 3.1 70B Instruct,4E-7,4E-7,131072,text->text,text,text,False,True,True
+B,35,mistralai/codestral-2508,Mistral: Codestral 2508,3E-7,9E-7,256000,text+file->text,"text,file",text,False,True,True
+B,35,kwaipilot/kat-coder-pro-v2,Kwaipilot: KAT-Coder-Pro V2,3E-7,0.0000012,256000,text->text,text,text,False,True,True
+B,35,perceptron/perceptron-mk1,Perceptron: Perceptron Mk1,1.5E-7,0.0000015,32768,text+image+video->text,"text,image,video",text,True,True,False
+B,35,baidu/ernie-4.5-vl-424b-a47b,Baidu: ERNIE 4.5 VL 424B A47B ,4.2E-7,0.00000125,131072,text+image->text,"image,text",text,True,False,False
+B,35,mistralai/mistral-large-2512,Mistral: Mistral Large 3 2512,5E-7,0.0000015,262144,text+image+file->text,"text,image,file",text,False,True,True
+B,35,aion-labs/aion-1.0-mini,AionLabs: Aion-1.0-Mini,7E-7,0.0000014,131072,text->text,text,text,True,False,False
+B,35,mistralai/devstral-2512,Mistral: Devstral 2 2512,4E-7,0.000002,262144,text+file->text,"text,file",text,False,True,True
+B,35,mistralai/mistral-medium-3,Mistral: Mistral Medium 3,4E-7,0.000002,131072,text+image+file->text,"text,image,file",text,False,True,True
+B,35,mistralai/mistral-medium-3.1,Mistral: Mistral Medium 3.1,4E-7,0.000002,131072,text+image+file->text,"text,image,file",text,False,True,True
+X,30,google/gemma-3-4b-it,Google: Gemma 3 4B,5E-8,1E-7,131072,text+image->text,"text,image",text,False,True,False
+X,30,cohere/command-r7b-12-2024,Cohere: Command R7B (12-2024),3.75E-8,1.5E-7,128000,text->text,text,text,False,True,False
+X,30,microsoft/phi-4-mini-instruct,Microsoft: Phi 4 Mini Instruct,8E-8,3.5E-7,131072,text->text,text,text,False,True,False
+X,30,qwen/qwen-2.5-coder-32b-instruct,Qwen2.5 Coder 32B Instruct,6.6E-7,0.000001,128000,text->text,text,text,False,False,False
+X,25,thedrummer/rocinante-12b,TheDrummer: Rocinante 12B,1.7E-7,4.3E-7,32768,text->text,text,text,False,True,True
+X,25,mistralai/mistral-saba,Mistral: Saba,2E-7,6E-7,32768,text+file->text,"text,file",text,False,True,True
+X,25,thedrummer/unslopnemo-12b,TheDrummer: UnslopNemo 12B,4E-7,4E-7,32768,text->text,text,text,False,True,True
+X,25,anthropic/claude-3-haiku,Anthropic: Claude 3 Haiku,2.5E-7,0.00000125,200000,text+image->text,"text,image",text,False,False,True
+X,25,moonshotai/kimi-k2,MoonshotAI: Kimi K2 0711,5.7E-7,0.0000023,131072,text->text,text,text,False,False,True
+X,25,moonshotai/kimi-k2-0905,MoonshotAI: Kimi K2 0905,6E-7,0.0000025,262144,text->text,text,text,False,True,True
+X,20,ibm-granite/granite-4.0-h-micro,IBM: Granite 4.0 Micro,1.7E-8,1.12E-7,131000,text->text,text,text,False,False,False
+X,20,mistralai/mistral-small-24b-instruct-2501,Mistral: Mistral Small 3,5E-8,8E-8,32768,text->text,text,text,False,True,False
+X,20,liquid/lfm-2-24b-a2b,LiquidAI: LFM2-24B-A2B,3E-8,1.2E-7,128000,text->text,text,text,False,False,False
+X,20,meta-llama/llama-3.2-1b-instruct,Meta: Llama 3.2 1B Instruct,2.7E-8,2.01E-7,131072,text->text,text,text,False,False,False
+X,20,bytedance/ui-tars-1.5-7b,ByteDance: UI-TARS 7B ,1E-7,2E-7,128000,text+image->text,"image,text",text,False,False,False
+X,20,meta-llama/llama-3.2-3b-instruct,Meta: Llama 3.2 3B Instruct,5.09E-8,3.35E-7,131072,text->text,text,text,False,False,False
+X,20,openai/gpt-4o-mini-search-preview,OpenAI: GPT-4o-mini Search Preview,1.5E-7,6E-7,128000,text->text,text,text,False,True,False
+X,20,nousresearch/hermes-3-llama-3.1-70b,Nous: Hermes 3 70B Instruct,7E-7,7E-7,131072,text->text,text,text,False,True,False
+X,20,sao10k/l3.3-euryale-70b,Sao10K: Llama 3.3 Euryale 70B,6.5E-7,7.5E-7,131072,text->text,text,text,False,True,False
+X,20,minimax/minimax-m2-her,MiniMax: MiniMax M2-her,3E-7,0.0000012,65536,text->text,text,text,False,False,False
+X,15,rekaai/reka-edge,Reka Edge,1E-7,1E-7,16384,text+image+video->text,"image,text,video",text,False,True,True
+X,10,google/gemma-3n-e4b-it,Google: Gemma 3n 4B,6E-8,1.2E-7,32768,text->text,text,text,False,False,False
+X,10,meta-llama/llama-3.2-11b-vision-instruct,Meta: Llama 3.2 11B Vision Instruct,3.45E-7,3.45E-7,131072,text+image->text,"text,image",text,False,False,False
+X,10,thedrummer/cydonia-24b-v4.1,TheDrummer: Cydonia 24B V4.1,3E-7,5E-7,131072,text->text,text,text,False,False,False
+X,10,mistralai/mistral-small-3.1-24b-instruct,Mistral: Mistral Small 3.1 24B,3.51E-7,5.55E-7,128000,text+image->text,"text,image",text,False,False,False
+X,5,openai/gpt-3.5-turbo,OpenAI: GPT-3.5 Turbo,5E-7,0.0000015,16385,text->text,text,text,False,True,True
+X,0,microsoft/phi-4,Microsoft: Phi 4,6.5E-8,1.4E-7,16384,text->text,text,text,False,True,False
+X,0,microsoft/wizardlm-2-8x22b,WizardLM-2 8x22B,6.2E-7,6.2E-7,65536,text->text,text,text,False,False,False
+X,0,arcee-ai/coder-large,Arcee AI: Coder Large,5E-7,8E-7,32768,text->text,text,text,False,False,False
+X,0,thedrummer/skyfall-36b-v2,TheDrummer: Skyfall 36B V2,5.5E-7,8E-7,32768,text->text,text,text,False,False,False
+X,-10,meta-llama/llama-3-8b-instruct,Meta: Llama 3 8B Instruct,1.4E-7,1.4E-7,8192,text->text,text,text,False,False,False
+X,-10,undi95/remm-slerp-l2-13b,ReMM SLERP 13B,4.5E-7,6.5E-7,6144,text->text,text,text,False,True,False
+X,-10,meta-llama/llama-3-70b-instruct,Meta: Llama 3 70B Instruct,5.1E-7,7.4E-7,8192,text->text,text,text,False,True,False
+X,-10,google/gemma-2-27b-it,Google: Gemma 2 27B,6.5E-7,6.5E-7,8192,text->text,text,text,False,True,False
+X,-20,openai/gpt-oss-safeguard-20b,OpenAI: gpt-oss-safeguard-20b,7.5E-8,3E-7,131072,text->text,text,text,True,False,True
+X,-80,meta-llama/llama-guard-4-12b,Meta: Llama Guard 4 12B,1.8E-7,1.8E-7,163840,text+image->text,"image,text",text,False,False,False
+X,-100,sao10k/l3-lunaris-8b,Sao10K: Llama 3 8B Lunaris,4E-8,5E-8,8192,text->text,text,text,False,True,False
+X,-100,gryphe/mythomax-l2-13b,MythoMax 13B,6E-8,6E-8,4096,text->text,text,text,False,True,False

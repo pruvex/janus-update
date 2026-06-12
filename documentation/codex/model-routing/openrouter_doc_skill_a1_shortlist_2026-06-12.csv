@@ -1,0 +1,13 @@
+tier,score,id,name,prompt,completion,context_length,modality,input_modalities,output_modalities,supports_reasoning,supports_structured_outputs,supports_tools
+A,200,deepseek/deepseek-v4-flash,DeepSeek: DeepSeek V4 Flash,9.8E-8,1.96E-7,1048576,text->text,text,text,True,True,True
+A,180,minimax/minimax-m3,MiniMax: MiniMax M3,3E-7,0.0000012,1048576,text+image+video->text,"text,image,video",text,True,False,True
+A,180,nvidia/nemotron-3-nano-30b-a3b,NVIDIA: Nemotron 3 Nano 30B A3B,5E-8,2E-7,262144,text->text,text,text,True,False,True
+A,190,openai/gpt-5-mini,OpenAI: GPT-5 Mini,2.5E-7,0.000002,400000,text+image+file->text,"text,image,file",text,True,True,True
+A,200,openai/gpt-5-nano,OpenAI: GPT-5 Nano,5E-8,4E-7,400000,text+image+file->text,"text,image,file",text,True,True,True
+A,190,openai/gpt-5.1-codex-mini,OpenAI: GPT-5.1-Codex-Mini,2.5E-7,0.000002,400000,text+image->text,"image,text",text,True,True,True
+A,190,openai/gpt-5.4-nano,OpenAI: GPT-5.4 Nano,2E-7,0.00000125,400000,text+image+file->text,"file,image,text",text,True,True,True
+A,190,openai/gpt-oss-120b,OpenAI: gpt-oss-120b,3.9E-8,1.8E-7,131072,text->text,text,text,True,True,True
+A,190,openai/gpt-oss-20b,OpenAI: gpt-oss-20b,2.9E-8,1.4E-7,131072,text->text,text,text,True,True,True
+A,190,qwen/qwen3-235b-a22b-thinking-2507,Qwen: Qwen3 235B A22B Thinking 2507,1E-7,1E-7,262144,text->text,text,text,True,True,True
+A,200,qwen/qwen3.5-flash-02-23,Qwen: Qwen3.5-Flash,6.5E-8,2.6E-7,1000000,text+image+video->text,"text,image,video",text,True,True,True
+A,180,stepfun/step-3.7-flash,StepFun: Step 3.7 Flash,2E-7,0.00000115,256000,text+image+video->text,"text,image,video",text,True,True,True

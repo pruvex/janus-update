@@ -1,0 +1,65 @@
+id,name,prompt,completion,context_length,modality,input_modalities,output_modalities,supports_reasoning,supports_structured_outputs,supports_tools
+openai/gpt-3.5-turbo,OpenAI: GPT-3.5 Turbo,5E-7,0.0000015,16385,text->text,text,text,False,True,True
+openai/gpt-3.5-turbo-0613,OpenAI: GPT-3.5 Turbo (older v0613),0.000001,0.000002,4095,text->text,text,text,False,True,True
+openai/gpt-3.5-turbo-16k,OpenAI: GPT-3.5 Turbo 16k,0.000003,0.000004,16385,text->text,text,text,False,True,True
+openai/gpt-3.5-turbo-instruct,OpenAI: GPT-3.5 Turbo Instruct,0.0000015,0.000002,4095,text->text,text,text,False,True,False
+openai/gpt-4,OpenAI: GPT-4,0.00003,0.00006,8191,text->text,text,text,False,True,True
+openai/gpt-4-turbo,OpenAI: GPT-4 Turbo,0.00001,0.00003,128000,text+image->text,"text,image",text,False,True,True
+openai/gpt-4-turbo-preview,OpenAI: GPT-4 Turbo Preview,0.00001,0.00003,128000,text->text,text,text,False,True,True
+openai/gpt-4.1,OpenAI: GPT-4.1,0.000002,0.000008,1047576,text+image+file->text,"image,text,file",text,False,True,True
+openai/gpt-4.1-mini,OpenAI: GPT-4.1 Mini,4E-7,0.0000016,1047576,text+image+file->text,"image,text,file",text,False,True,True
+openai/gpt-4.1-nano,OpenAI: GPT-4.1 Nano,1E-7,4E-7,1047576,text+image+file->text,"image,text,file",text,False,True,True
+openai/gpt-4o,OpenAI: GPT-4o,0.0000025,0.00001,128000,text+image+file->text,"text,image,file",text,False,True,True
+openai/gpt-4o-2024-05-13,OpenAI: GPT-4o (2024-05-13),0.000005,0.000015,128000,text+image+file->text,"text,image,file",text,False,True,True
+openai/gpt-4o-2024-08-06,OpenAI: GPT-4o (2024-08-06),0.0000025,0.00001,128000,text+image+file->text,"text,image,file",text,False,True,True
+openai/gpt-4o-2024-11-20,OpenAI: GPT-4o (2024-11-20),0.0000025,0.00001,128000,text+image+file->text,"text,image,file",text,False,True,True
+openai/gpt-4o-mini,OpenAI: GPT-4o-mini,1.5E-7,6E-7,128000,text+image+file->text,"text,image,file",text,False,True,True
+openai/gpt-4o-mini-2024-07-18,OpenAI: GPT-4o-mini (2024-07-18),1.5E-7,6E-7,128000,text+image+file->text,"text,image,file",text,False,True,True
+openai/gpt-4o-mini-search-preview,OpenAI: GPT-4o-mini Search Preview,1.5E-7,6E-7,128000,text->text,text,text,False,True,False
+openai/gpt-4o-search-preview,OpenAI: GPT-4o Search Preview,0.0000025,0.00001,128000,text->text,text,text,False,True,False
+openai/gpt-5,OpenAI: GPT-5,0.00000125,0.00001,400000,text+image+file->text,"text,image,file",text,True,True,True
+openai/gpt-5-chat,OpenAI: GPT-5 Chat,0.00000125,0.00001,128000,text+image+file->text,"file,image,text",text,False,True,False
+openai/gpt-5-codex,OpenAI: GPT-5 Codex,0.00000125,0.00001,400000,text+image->text,"text,image",text,True,True,True
+openai/gpt-5-image,OpenAI: GPT-5 Image,0.00001,0.00001,400000,text+image+file->text+image,"image,text,file","image,text",True,True,False
+openai/gpt-5-image-mini,OpenAI: GPT-5 Image Mini,0.0000025,0.000002,400000,text+image+file->text+image,"file,image,text","image,text",True,True,False
+openai/gpt-5-mini,OpenAI: GPT-5 Mini,2.5E-7,0.000002,400000,text+image+file->text,"text,image,file",text,True,True,True
+openai/gpt-5-nano,OpenAI: GPT-5 Nano,5E-8,4E-7,400000,text+image+file->text,"text,image,file",text,True,True,True
+openai/gpt-5-pro,OpenAI: GPT-5 Pro,0.000015,0.00012,400000,text+image+file->text,"image,text,file",text,True,True,True
+openai/gpt-5.1,OpenAI: GPT-5.1,0.00000125,0.00001,400000,text+image+file->text,"image,text,file",text,True,True,True
+openai/gpt-5.1-chat,OpenAI: GPT-5.1 Chat,0.00000125,0.00001,128000,text+image+file->text,"file,image,text",text,False,True,True
+openai/gpt-5.1-codex,OpenAI: GPT-5.1-Codex,0.00000125,0.00001,400000,text+image->text,"text,image",text,True,True,True
+openai/gpt-5.1-codex-max,OpenAI: GPT-5.1-Codex-Max,0.00000125,0.00001,400000,text+image->text,"text,image",text,True,True,True
+openai/gpt-5.1-codex-mini,OpenAI: GPT-5.1-Codex-Mini,2.5E-7,0.000002,400000,text+image->text,"image,text",text,True,True,True
+openai/gpt-5.2,OpenAI: GPT-5.2,0.00000175,0.000014,400000,text+image+file->text,"file,image,text",text,True,True,True
+openai/gpt-5.2-chat,OpenAI: GPT-5.2 Chat,0.00000175,0.000014,128000,text+image+file->text,"file,image,text",text,False,True,True
+openai/gpt-5.2-codex,OpenAI: GPT-5.2-Codex,0.00000175,0.000014,400000,text+image->text,"text,image",text,True,True,True
+openai/gpt-5.2-pro,OpenAI: GPT-5.2 Pro,0.000021,0.000168,400000,text+image+file->text,"image,text,file",text,True,True,True
+openai/gpt-5.3-chat,OpenAI: GPT-5.3 Chat,0.00000175,0.000014,128000,text+image+file->text,"text,image,file",text,False,True,True
+openai/gpt-5.3-codex,OpenAI: GPT-5.3-Codex,0.00000175,0.000014,400000,text+image+file->text,"text,image,file",text,True,True,True
+openai/gpt-5.4,OpenAI: GPT-5.4,0.0000025,0.000015,1050000,text+image+file->text,"text,image,file",text,True,True,True
+openai/gpt-5.4-image-2,OpenAI: GPT-5.4 Image 2,0.000008,0.000015,272000,text+image+file->text+image,"image,text,file","image,text",True,True,False
+openai/gpt-5.4-mini,OpenAI: GPT-5.4 Mini,7.5E-7,0.0000045,400000,text+image+file->text,"file,image,text",text,True,True,True
+openai/gpt-5.4-nano,OpenAI: GPT-5.4 Nano,2E-7,0.00000125,400000,text+image+file->text,"file,image,text",text,True,True,True
+openai/gpt-5.4-pro,OpenAI: GPT-5.4 Pro,0.00003,0.00018,1050000,text+image+file->text,"text,image,file",text,True,True,True
+openai/gpt-5.5,OpenAI: GPT-5.5,0.000005,0.00003,1050000,text+image+file->text,"file,image,text",text,True,True,True
+openai/gpt-5.5-pro,OpenAI: GPT-5.5 Pro,0.00003,0.00018,1050000,text+image+file->text,"file,image,text",text,True,True,True
+openai/gpt-audio,OpenAI: GPT Audio,0.0000025,0.00001,128000,text+audio->text+audio,"text,audio","text,audio",False,True,True
+openai/gpt-audio-mini,OpenAI: GPT Audio Mini,6E-7,0.0000024,128000,text+audio->text+audio,"text,audio","text,audio",False,True,True
+openai/gpt-chat-latest,OpenAI: GPT Chat Latest,0.000005,0.00003,400000,text+image+file->text,"text,image,file",text,False,True,True
+openai/gpt-oss-120b,OpenAI: gpt-oss-120b,3.9E-8,1.8E-7,131072,text->text,text,text,True,True,True
+openai/gpt-oss-120b:free,OpenAI: gpt-oss-120b (free),0,0,131072,text->text,text,text,True,False,True
+openai/gpt-oss-20b,OpenAI: gpt-oss-20b,2.9E-8,1.4E-7,131072,text->text,text,text,True,True,True
+openai/gpt-oss-20b:free,OpenAI: gpt-oss-20b (free),0,0,131072,text->text,text,text,True,False,True
+openai/gpt-oss-safeguard-20b,OpenAI: gpt-oss-safeguard-20b,7.5E-8,3E-7,131072,text->text,text,text,True,False,True
+openai/o1,OpenAI: o1,0.000015,0.00006,200000,text+image+file->text,"text,image,file",text,True,True,True
+openai/o1-pro,OpenAI: o1-pro,0.00015,0.0006,200000,text+image+file->text,"text,image,file",text,True,True,False
+openai/o3,OpenAI: o3,0.000002,0.000008,200000,text+image+file->text,"image,text,file",text,True,True,True
+openai/o3-deep-research,OpenAI: o3 Deep Research,0.00001,0.00004,200000,text+image+file->text,"image,text,file",text,True,True,True
+openai/o3-mini,OpenAI: o3 Mini,0.0000011,0.0000044,200000,text+file->text,"text,file",text,True,True,True
+openai/o3-mini-high,OpenAI: o3 Mini High,0.0000011,0.0000044,200000,text+file->text,"text,file",text,True,True,True
+openai/o3-pro,OpenAI: o3 Pro,0.00002,0.00008,200000,text+image+file->text,"text,file,image",text,True,True,True
+openai/o4-mini,OpenAI: o4 Mini,0.0000011,0.0000044,200000,text+image+file->text,"image,text,file",text,True,True,True
+openai/o4-mini-deep-research,OpenAI: o4 Mini Deep Research,0.000002,0.000008,200000,text+image+file->text,"file,image,text",text,True,True,True
+openai/o4-mini-high,OpenAI: o4 Mini High,0.0000011,0.0000044,200000,text+image+file->text,"image,text,file",text,True,True,True
+~openai/gpt-latest,OpenAI GPT Latest,0.000005,0.00003,1050000,text+image+file->text,"file,image,text",text,True,True,True
+~openai/gpt-mini-latest,OpenAI GPT Mini Latest,7.5E-7,0.0000045,400000,text+image+file->text,"file,image,text",text,True,True,True
