@@ -82,6 +82,9 @@ Remaining failed task ids after high follow-up:
 - sync validated marker metadata, evidence paths, and exact skip reasons after the governing decision already exists
 - apply mechanical backlog closeout formatting and dashboard-sync notes after approval and validation are already bound
 - Minimal local model or reasoning path for safe subparts: `5.4` medium via `janus-documentation-update`; isolated marker-only cleanup may be handled as bounded local maintenance
+- `safe_subpart_54_medium_result`: PASS
+- `safe_subpart_54_medium_reason`: The safe subparts are marker-scoped, evidence-bound synchronization work that fits local `5.4` medium through `janus-documentation-update` without reopening backlog decisions.
+- `blocked_subparts_remain_upstream`: true
 - Blocked product or governance-decision subparts:
 - choosing backlog priority, readiness, importance, recommendation, or routing target
 - deciding whether scope belongs in backlog versus feature pipeline
@@ -97,6 +100,9 @@ Remaining failed task ids after high follow-up:
 - sync validation markers, evidence references, or latest-pass notes for an already established capability
 - perform mechanical cleanup that preserves exact approved capability wording and does not change claim scope
 - Minimal local model or reasoning path for safe subparts: `5.4` medium via `janus-documentation-update`; keep edits marker-scoped and evidence-bound
+- `safe_subpart_54_medium_result`: PASS
+- `safe_subpart_54_medium_reason`: The safe subparts are bounded documentation synchronization tasks that preserve an already fixed capability claim and fit local `5.4` medium through `janus-documentation-update`.
+- `blocked_subparts_remain_upstream`: true
 - Blocked product or governance-decision subparts:
 - adding, removing, broadening, or softening product-facing capability claims
 - deciding UX behavior, privacy posture, security guarantees, or support level from incomplete evidence

@@ -64,6 +64,9 @@ Total inventoried documentation tasks: 18.
 - sync validated evidence paths and marker metadata
 - record already-approved dashboard or closeout notes
 - Minimal local model or reasoning path for safe subparts: `5.4` medium through `janus-documentation-update`
+- `safe_subpart_54_medium_result`: PASS
+- `safe_subpart_54_medium_reason`: These safe subparts are bounded maintenance edits over already-approved backlog artifacts and fit local `5.4` medium.
+- `blocked_subparts_remain_upstream`: true
 - Blocked product or governance-decision subparts:
 - set backlog priority, recommendation, routing, or scope
 - decide backlog versus feature-pipeline ownership
@@ -78,6 +81,9 @@ Total inventoried documentation tasks: 18.
 - sync validation markers and evidence references for an existing capability
 - apply mechanical cleanup around capability docs after validation is already bound
 - Minimal local model or reasoning path for safe subparts: `5.4` medium through `janus-documentation-update`
+- `safe_subpart_54_medium_result`: PASS
+- `safe_subpart_54_medium_reason`: These safe subparts stay evidence-bound and preserve already-approved capability wording, which fits local `5.4` medium.
+- `blocked_subparts_remain_upstream`: true
 - Blocked product or governance-decision subparts:
 - add, remove, or reinterpret capability claims
 - decide UX behavior, support level, privacy posture, or security guarantees
