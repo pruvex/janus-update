@@ -35,12 +35,12 @@ High follow-up context: the three medium-fail tasks below were then re-evaluated
 | DOC-SKILL-009 | Update SKILL_USAGE_LOG summary | SCRIPT_ONLY | PASS | Counting, summarizing, or appending a synthetic row is mechanically safe at low reasoning. | not retested | n/a | not retested | n/a | n/a |
 | DOC-SKILL-010 | Prepare non-binding review notes | OR_ASSIST_CANDIDATE | PASS | Advisory notes over sanitized text are a low-risk language task when authority language is banned. | not retested | n/a | not retested | n/a | n/a |
 | DOC-SKILL-011 | Record completed final-audit result in documentation | POST_AUDIT_DOC_SYNC_ONLY | FAIL | This task must not perform final audit; it may only sync an already completed `PASS` or `PASS WITH FIXES` result after `janus-final-audit`. | FAIL | Medium does not change the boundary: audit execution belongs to `janus-final-audit`, and documentation may only follow a completed audit result. | FAIL | High still does not convert this into a normal documentation-routing task; it remains post-audit documentation sync only. | `janus-final-audit -> janus-documentation-update` |
-| DOC-SKILL-012 | Prepare backlog or product-scope documentation | BLOCKED_FOR_OR | FAIL | Backlog and scope docs encode product decisions, so low reasoning is not enough for safe authorship. | FAIL | Medium still leaves too much product-scope judgment unresolved for safe backlog-style wording. | FAIL | High still leaves product-scope authority too exposed for safe documentation. | n/a |
+| DOC-SKILL-012 | Split backlog documentation maintenance from backlog or product-scope decisions | NEEDS_SPLIT | FAIL | Mixed task bundle: some backlog sync work is mechanical, but scope and prioritization decisions are not. | FAIL | Medium still cannot safely mix maintenance with product-scope authority. | FAIL | High still does not collapse backlog maintenance and product decision-making into one safe routing task. | `safe: janus-documentation-update (5.4 medium); blocked: janus-backlog-intake or janus-feature-design -> janus-backlog-prioritization -> janus-backlog-handoff -> janus-documentation-update` |
 | DOC-SKILL-013 | Raw JSON schema validation | SCRIPT_ONLY | PASS | Deterministic schema validation is script-first and only needs low-level Codex review. | not retested | n/a | not retested | n/a | n/a |
 | DOC-SKILL-014 | Documentation closeout checklist validation | LOCAL_BASELINE_ONLY | PASS | Marker-only checklist validation is mechanical enough for low reasoning when inputs are tightly bounded. | not retested | n/a | not retested | n/a | n/a |
 | DOC-SKILL-015 | Test pipeline documentation completion | CODEX_ONLY | FAIL | Test-pipeline closeout binds validation status, so it needs stronger evidence handling than low reasoning. | PASS | Medium can integrate the artifact set and document pipeline completion or an exact blocked handoff. | not retested | n/a | n/a |
 | DOC-SKILL-016 | WHAT_I_LEARNED pattern proposal | CODEX_ONLY | FAIL | Pattern proposals need root-cause judgment and long-term memory discipline, which low reasoning cannot safely cover. | PASS | Medium is enough to draft a pattern proposal from validated evidence while keeping append authority with Codex. | not retested | n/a | n/a |
-| DOC-SKILL-017 | Capability registry or UX capability documentation | BLOCKED_FOR_OR | FAIL | Capability docs are product-facing claims and must not be inferred at low reasoning from sanitized snippets alone. | FAIL | Medium still does not provide enough safety for product-facing capability wording without stronger governance review. | FAIL | High still lacks enough safety for product-facing capability wording. | n/a |
+| DOC-SKILL-017 | Split capability documentation maintenance from capability or UX claim decisions | NEEDS_SPLIT | FAIL | Mixed task bundle: marker sync and formatting may be safe, but product-facing capability claims are not. | FAIL | Medium still cannot safely infer or approve capability claims while doing documentation maintenance. | FAIL | High still does not make product-facing capability wording a safe documentation-only task. | `safe: janus-documentation-update (5.4 medium); blocked: janus-feature-design or janus-backlog-intake -> validation or janus-final-audit -> janus-documentation-update` |
 | DOC-SKILL-018 | Documentation skill inventory and model-assignment planning | CODEX_ONLY | FAIL | The planning artifact itself sets policy boundaries, so low reasoning is too shallow for final assignment decisions. | PASS | Medium can handle the policy-mapped inventory follow-up and preserve the local no-OR decision boundary. | not retested | n/a | n/a |
 
 ## Failed Tasks for Next Medium Run
@@ -74,6 +74,35 @@ Remaining failed task ids after high follow-up:
 - Prerequisite: existing final audit result `PASS` or `PASS WITH FIXES`
 - Final required path: `janus-final-audit -> janus-documentation-update`
 - Not eligible for OR or normal documentation model routing
+
+## DOC-SKILL-012 Split
+
+- Safe documentation-maintenance subparts:
+- normalize already-approved backlog wording without changing priority, scope, status meaning, or routing intent
+- sync validated marker metadata, evidence paths, and exact skip reasons after the governing decision already exists
+- apply mechanical backlog closeout formatting and dashboard-sync notes after approval and validation are already bound
+- Minimal local model or reasoning path for safe subparts: `5.4` medium via `janus-documentation-update`; isolated marker-only cleanup may be handled as bounded local maintenance
+- Blocked product or governance-decision subparts:
+- choosing backlog priority, readiness, importance, recommendation, or routing target
+- deciding whether scope belongs in backlog versus feature pipeline
+- inventing, widening, or narrowing product scope, acceptance, or user-facing behavior
+- moving an item to DONE or changing decision-bearing backlog fields without an already validated upstream result
+- Final required skill path for blocked subparts: `janus-backlog-intake` or `janus-feature-design` -> `janus-backlog-prioritization` -> `janus-backlog-handoff` -> `janus-documentation-update`
+- OR eligibility: blocked, except later sanitized non-binding assist on public wording snippets after the decision is already fixed locally
+
+## DOC-SKILL-017 Split
+
+- Safe documentation-maintenance subparts:
+- format or normalize capability-registry text after the capability claim is already approved and validated
+- sync validation markers, evidence references, or latest-pass notes for an already established capability
+- perform mechanical cleanup that preserves exact approved capability wording and does not change claim scope
+- Minimal local model or reasoning path for safe subparts: `5.4` medium via `janus-documentation-update`; keep edits marker-scoped and evidence-bound
+- Blocked product or governance-decision subparts:
+- adding, removing, broadening, or softening product-facing capability claims
+- deciding UX behavior, privacy posture, security guarantees, or support level from incomplete evidence
+- inferring new capability language from implementation hints without validated product approval
+- Final required skill path for blocked subparts: `janus-feature-design` or `janus-backlog-intake` -> validation or `janus-final-audit` -> `janus-documentation-update`
+- OR eligibility: blocked, except later sanitized non-binding assist on wording review after the capability claim is already fixed and validated locally
 
 ## Notes
 

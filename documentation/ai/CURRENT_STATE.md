@@ -4,7 +4,7 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Correct the documentation-skill routing boundary for `DOC-SKILL-011` so it is explicitly treated as post-audit documentation sync only, not as final-audit execution.
+Split the remaining unresolved documentation-skill governance tasks, `DOC-SKILL-012` and `DOC-SKILL-017`, into safe documentation-maintenance subparts versus blocked product or governance-decision subparts.
 
 ## Active Phase
 Documentation/design-only reasoning baseline review for the documentation skill. No OpenRouter live calls, OR comparison, benchmark execution through OpenRouter, benchmark result JSON generation, production routing activation, backlog update, Git staging, commit, push, tag, merge, reset, or release in this pass.
@@ -22,7 +22,7 @@ Local `5.4 mini` low remains the clean baseline for small sanitized documentatio
 OpenRouter remains disallowed for routing decisions and production routing remains `UNKNOWN`/disabled. OpenRouter may only be considered later for public/sanitized, non-binding documentation assist fixtures after explicit approval and Codex review.
 
 ## Last Codex Work
-Reviewed the bound documentation-skill routing artifacts plus the `janus-final-audit` and `janus-documentation-update` skill definitions, then corrected the `DOC-SKILL-011` boundary in the reasoning matrix and assignment registry:
+Reviewed the bound documentation-skill routing artifacts plus the `janus-documentation-update` skill definition, then split `DOC-SKILL-012` and `DOC-SKILL-017` into safe maintenance subparts versus blocked governance subparts in the reasoning matrix and assignment registry:
 
 - `documentation/codex/model-routing/documentation_skill_codex_reasoning_baseline_matrix_2026-06-12.md`
 - `documentation/codex/model-routing/documentation_skill_task_inventory_2026-06-12.md`
@@ -39,6 +39,10 @@ Confirmed:
 - `DOC-SKILL-011` must not mean "perform final audit". Final audit execution belongs to `janus-final-audit`.
 - The documentation skill may only record or synchronize an already completed final-audit result through `janus-documentation-update`.
 - `DOC-SKILL-011` is now classified as `POST_AUDIT_DOC_SYNC_ONLY` with prerequisite `PASS` or `PASS WITH FIXES` and final required path `janus-final-audit -> janus-documentation-update`.
+- `DOC-SKILL-012` is now treated as `NEEDS_SPLIT`: safe maintenance is limited to already-approved backlog synchronization, while priority, scope, routing, and status decisions remain upstream governance work.
+- `DOC-SKILL-017` is now treated as `NEEDS_SPLIT`: safe maintenance is limited to evidence-bound capability sync, while product-facing capability claims and UX meaning remain upstream governance work.
+- Safe subparts for both tasks stay on local `5.4` medium via `janus-documentation-update`.
+- Blocked subparts remain outside OR and require their upstream Janus skill path before documentation sync.
 - The medium follow-up pass lifts six of the nine low-fail tasks to PASS: CURRENT_STATE drafting, CURRENT_STATE reconciliation, contradiction detection, test pipeline documentation completion, WHAT_I_LEARNED pattern proposal, and documentation skill inventory/model-assignment planning.
 - The remaining medium-fail tasks were then re-tested at high reasoning and all three still fail: final audit/release documentation, backlog or product-scope documentation, and capability registry or UX capability documentation.
 - Low-reasoning `PASS` tasks are the compact, sanitized, low-authority ones: benchmark JSON summary, scoring report summary, handoff draft, Markdown formatting, changelog summary, skill-usage summary, non-binding review notes, raw JSON schema validation, and marker-only closeout validation.
@@ -72,6 +76,7 @@ Planning result:
 ## Tests / Validation
 - Matrix content review -> PASS.
 - Registry boundary review -> PASS.
+- Split review for `DOC-SKILL-012` and `DOC-SKILL-017` -> PASS.
 - Low-follow-up medium pass/fail counts checked -> PASS.
 - High-follow-up pass/fail counts checked -> PASS.
 - Markdown sanity on touched documentation files -> PASS.
@@ -83,14 +88,15 @@ Planning result:
 ## Open Risks
 - The matrix is conceptual, not an execution benchmark, so it should not be reused as proof of live model behavior.
 - `DOC-SKILL-011` must stay split from final-audit execution in future planning artifacts so the documentation skill does not absorb audit authority.
-- The remaining unresolved routing-boundary tasks still need stronger governance handling before any binding output.
+- The safe subparts for `DOC-SKILL-012` and `DOC-SKILL-017` are narrow and must not be used to smuggle in product or governance decisions.
+- The blocked subparts for `DOC-SKILL-012` and `DOC-SKILL-017` still need their upstream Janus skill path before any binding output.
 - The worktree may contain unrelated pre-existing changes; do not stage broadly.
 
 ## Next Recommended Step for ChatGPT
-Review the corrected `DOC-SKILL-011` boundary and then decide whether `DOC-SKILL-012` and `DOC-SKILL-017` should stay blocked or move into a broader Codex governance path.
+Review the new `DOC-SKILL-012` and `DOC-SKILL-017` splits and decide whether the blocked subparts should stay blocked or be routed into their upstream Janus governance path.
 
 ## Next Recommended Step for Codex
-Keep `DOC-SKILL-011` on the strict path `janus-final-audit -> janus-documentation-update`, keep the remaining unresolved task ids blocked for OR, and preserve the local-only boundary.
+Keep `DOC-SKILL-011` on the strict path `janus-final-audit -> janus-documentation-update`, keep `DOC-SKILL-012` and `DOC-SKILL-017` split between safe maintenance and blocked governance work, and preserve the local-only boundary.
 
 ## Last Updated
-2026-06-12 22:06 local time
+2026-06-12 22:18 local time

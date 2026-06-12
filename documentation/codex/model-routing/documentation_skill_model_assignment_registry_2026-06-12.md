@@ -27,12 +27,12 @@ This registry condenses the documentation-skill inventory into a model-assignmen
 | DOC-SKILL-009 | `SCRIPT_ONLY` | `record_skill_usage.py`; `summarize_skill_usage.py`; Codex review | Later sanitized assist candidate for synthetic summary only | Real append operations remain script/Codex-owned. |
 | DOC-SKILL-010 | `OR_ASSIST_CANDIDATE` | `5.4 mini` low | Later fixture candidate | Non-binding review notes from sanitized excerpts only. |
 | DOC-SKILL-011 | `POST_AUDIT_DOC_SYNC_ONLY` | No normal documentation routing before audit; after `PASS` or `PASS WITH FIXES`, use `janus-documentation-update` for bounded sync only | Blocked | This task must not perform final audit. Final required path is `janus-final-audit -> janus-documentation-update`. |
-| DOC-SKILL-012 | `BLOCKED_FOR_OR` | `5.4` medium/high; `5.5` high if product/security risk | Blocked | Backlog/product-scope docs are decision-adjacent. |
+| DOC-SKILL-012 | `NEEDS_SPLIT` | Safe maintenance only: `5.4` medium via `janus-documentation-update`; blocked decisions stay upstream | Blocked except later sanitized non-binding wording assist | Split required between already-approved backlog maintenance and product or prioritization decisions. |
 | DOC-SKILL-013 | `SCRIPT_ONLY` | Local JSON/schema validators, then Codex review | Blocked | Deterministic validation should not be delegated. |
 | DOC-SKILL-014 | `LOCAL_BASELINE_ONLY` | `5.4` medium with validator/search support; isolated `5.4 mini` low marker checks only | Blocked for now | Checklist truth depends on local markers. |
 | DOC-SKILL-015 | `CODEX_ONLY` | `5.4` medium | Blocked | Test pipeline completion is binding validation documentation. |
 | DOC-SKILL-016 | `CODEX_ONLY` | `5.4` medium; `5.5` high for security/release/provider root cause | Blocked for final append | Long-term memory writes need validated root cause and duplicate search. |
-| DOC-SKILL-017 | `BLOCKED_FOR_OR` | `5.4` medium; `5.5` high for sensitive capability claims | Blocked | Product-facing capability registry changes are not assist-safe. |
+| DOC-SKILL-017 | `NEEDS_SPLIT` | Safe maintenance only: `5.4` medium via `janus-documentation-update`; blocked capability claims stay upstream | Blocked except later sanitized non-binding wording assist | Split required between evidence-bound capability sync and product-facing capability or UX claim decisions. |
 | DOC-SKILL-018 | `CODEX_ONLY` | `5.5` medium for this policy pass; future `5.4` medium after stabilization | Blocked for policy decision | OR may later assist with sanitized fixture text, not assignment policy. |
 
 ## Counts
@@ -45,7 +45,8 @@ This registry condenses the documentation-skill inventory into a model-assignmen
 | `OR_EXECUTION_CANDIDATE` | 0 | none |
 | `SCRIPT_ONLY` | 2 | DOC-SKILL-009, DOC-SKILL-013 |
 | `POST_AUDIT_DOC_SYNC_ONLY` | 1 | DOC-SKILL-011 |
-| `BLOCKED_FOR_OR` | 2 | DOC-SKILL-012, DOC-SKILL-017 |
+| `NEEDS_SPLIT` | 2 | DOC-SKILL-012, DOC-SKILL-017 |
+| `BLOCKED_FOR_OR` | 0 | none |
 
 Total inventoried documentation tasks: 18.
 
@@ -55,6 +56,34 @@ Total inventoried documentation tasks: 18.
 - Prerequisite: an existing final audit result of `PASS` or `PASS WITH FIXES`.
 - Final required path: `janus-final-audit -> janus-documentation-update`.
 - Do not assign `DOC-SKILL-011` to OpenRouter or normal documentation model routing.
+
+## DOC-SKILL-012 Split
+
+- Safe documentation-maintenance subparts:
+- normalize already-decided backlog wording
+- sync validated evidence paths and marker metadata
+- record already-approved dashboard or closeout notes
+- Minimal local model or reasoning path for safe subparts: `5.4` medium through `janus-documentation-update`
+- Blocked product or governance-decision subparts:
+- set backlog priority, recommendation, routing, or scope
+- decide backlog versus feature-pipeline ownership
+- change DONE or other decision-bearing status without upstream evidence
+- Final required skill path for blocked subparts: `janus-backlog-intake` or `janus-feature-design` -> `janus-backlog-prioritization` -> `janus-backlog-handoff` -> `janus-documentation-update`
+- OR eligibility: blocked, except later sanitized non-binding wording assist after the decision is already fixed locally
+
+## DOC-SKILL-017 Split
+
+- Safe documentation-maintenance subparts:
+- normalize already-approved capability wording without changing claim meaning
+- sync validation markers and evidence references for an existing capability
+- apply mechanical cleanup around capability docs after validation is already bound
+- Minimal local model or reasoning path for safe subparts: `5.4` medium through `janus-documentation-update`
+- Blocked product or governance-decision subparts:
+- add, remove, or reinterpret capability claims
+- decide UX behavior, support level, privacy posture, or security guarantees
+- infer capability language from incomplete evidence
+- Final required skill path for blocked subparts: `janus-feature-design` or `janus-backlog-intake` -> validation or `janus-final-audit` -> `janus-documentation-update`
+- OR eligibility: blocked, except later sanitized non-binding wording assist after the claim is already fixed and validated locally
 
 ## Activation Rules
 
