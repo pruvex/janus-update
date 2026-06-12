@@ -26,6 +26,31 @@ Read only when exact legacy wording is needed:
 - `C:\KI\Janus-Projekt\documentation\pipeline\PIPELINE_CONTRACT.md`
 - `C:\KI\Janus-Projekt\AGENTS.md`
 
+## Documentation Skill Model-Switch Gate
+
+The canonical model-routing reference for documentation-skill work is:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\documentation_skill_routing_table_v1_2026-06-12.md`
+
+Before doing documentation-skill work, classify the request against the routing table's `DOC-SKILL-*` rows. Use the table's `minimal_local_model_reasoning`, `safe_scope`, `blocked_scope`, `OR_eligibility`, `required_upstream_skill_path`, and `final_status` columns as the binding reference for documentation-skill model and authority boundaries.
+
+If the current Codex model or reasoning level is insufficient for the matching documentation task, stop before editing or validating and tell the user exactly which model and reasoning level to select. Continue only after the user confirms the selection or explicitly instructs Codex to stay in the current setup.
+
+Use this gate format:
+
+```text
+DOCUMENTATION SKILL MODEL SWITCH GATE
+- Documentation task:
+- Current model/reasoning:
+- Required model/reasoning:
+- User action:
+- Reason:
+```
+
+Do not switch models automatically. Do not activate OpenRouter. Do not enable production routing. OpenRouter remains disabled for routing and production decisions; any future OR assist remains limited to explicitly approved, sanitized, non-binding assist fixtures outside repo-write authority.
+
+If the routing table marks any requested scope as blocked or upstream-owned, do not solve it inside this skill. Route to the required upstream Janus skill path first, then return to `janus-documentation-update` only after the upstream decision, audit, validation, or approval evidence exists.
+
 ## Required Gate
 
 Proceed only when one is true:
