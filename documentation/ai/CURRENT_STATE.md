@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-OpenRouter delegation harness progress, timeout, and finish-reason classification patch is synchronized to `backup/develop`.
+Review the first Janus Codex task-to-model matrix and minimal mini-task benchmark plan before any further model comparisons.
 
 ## Active Phase
-Dev-environment OpenRouter benchmark tooling ready for Gemma 31B retry gate with progress and timeout controls; no production routing.
+Dev-environment Codex model-routing and OpenRouter delegation governance. No production routing.
 
 ## Last Decision
 This work is a Codex development-environment and skill-orchestration improvement, not a Janus application backlog item.
@@ -15,78 +15,86 @@ Do not add it to `documentation/backlog/BACKLOG.md` unless the user explicitly c
 
 OpenRouter delegation remains read-only and non-production:
 
-- OpenRouter may only receive sanitized benchmark prompts from the curated corpus.
-- OpenRouter must not read private local files, secrets, local databases, private logs, broad source trees, or runtime state.
-- OpenRouter must not write repo files, run commands, approve Git actions, approve final audits, or make release decisions.
-- Production routing remains `UNKNOWN`/disabled until benchmark evidence is reviewed and the user approves activation.
-
-The prototype lives under `documentation/codex/openrouter-delegation/` and separates design, corpus, schemas, scoring, and harness code.
-The prototype commit `6281fe59f` was pushed to `backup/develop`.
-The state reconciliation commit `0d07d24fc` was pushed to `backup/develop`.
-The harness robustness commit `ba9458c0d` was pushed to `backup/develop`.
-The post-robustness state reconciliation commit `218ed5fd9` was pushed to `backup/develop`.
-The outbound schema projection commit `f235819be` was pushed to `backup/develop`.
-The post-projection state reconciliation commit `9c1a750de` was pushed to `backup/develop`.
-The progress/timeout/error-classification commit `3019b9fb` was pushed to `backup/develop`.
+- OpenRouter may only receive public or sanitized benchmark prompts from a curated corpus or reviewed mini-task fixture.
+- OpenRouter must not read private local files, secrets, local databases, private logs, broad source trees, runtime state, dirty worktree content, or unredacted Janus project history.
+- OpenRouter must not write repo files, patch code, run commands, approve Git actions, approve final audits, make release-readiness or publish decisions, or decide Janus product scope/backlog priority/user-facing behavior.
+- Production routing remains `UNKNOWN`/disabled until local Codex mini baselines exist, OpenRouter prompt/schema fixes are reviewed, benchmark evidence is reviewed, and the user explicitly approves activation.
 
 ## Last Codex Work
 Confirmed no healthcheck reminder was due.
-Reviewed Gemma 31B retry evidence after the schema projection patch: the prior `uniqueItems` grammar error no longer appeared; `OR-DELEGATE-005` local forbidden privacy-tier block passed; two external cases returned schema-valid partial scores; three external cases returned invalid JSON with `finish_reason` values `error` or `length`.
-Added safe progress output for live benchmark cases on stderr. Progress lines include only event, task id, model id, coarse status, and elapsed milliseconds.
-Local forbidden privacy-tier deny cases now report progress as `local_deny` and do not call OpenRouter.
-Added `--request-timeout-seconds` with default `120`; it applies only to external OpenRouter HTTP requests and records `request_timeout` on timeout.
-Added finish-reason-based invalid JSON classification: `length` -> `truncated_json`, `error` -> `provider_generation_error`, otherwise `invalid_json`.
-Preserved HTTP 429 classification as `rate_limited / HTTP 429` and preserved HTTP 200 top-level OpenRouter error-payload classification.
-Updated README and model scoring report for progress output, timeout behavior, and failure classification.
-Committed and pushed the scoped progress/timeout/error-classification patch as `3019b9fb`.
-No live OpenRouter calls were run after this patch.
+Routed the request through `janus-skill-router` and accepted the user-provided `GPT-5.5 / medium` setup for a bounded documentation and benchmark-design block.
+Read the primary sync and governance artifacts:
+
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/openrouter-delegation/README.md`
+- `documentation/codex/openrouter-delegation/benchmark_corpus.json`
+- `documentation/codex/openrouter-delegation/model_scoring_report.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `AGENTS.md`
+- `documentation/codex/CODEX_PROJECT_PROFILE.md`
+- `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`
+- `documentation/pipeline/PIPELINE_CONTRACT.md`
+- Installed `janus-*` skill task/gate definitions
+
+Created `documentation/codex/model-routing/task_model_matrix.md` as a proposed review artifact.
+The matrix inventories recurring Janus Codex tasks, separates `MINI_CANDIDATE` from `GPT_5_4_CANDIDATE`, `HIGH_LOCAL_ONLY`, and `HUMAN_ONLY`, and hard-denies OpenRouter for Git, final audit, release, repo writes, command execution, private files/logs/local DBs/secrets, broad source inspection, and product/backlog/release/user-facing decisions.
+The first mini-candidate set is intentionally limited to five classes:
+
+- sanitized skill/governance excerpt classification
+- public/sanitized schema-bound extraction
+- non-binding benchmark result interpretation
+- non-binding model cost/latency comparison
+- documentation wording suggestion
+
+Defined one minimal deterministic test case per mini-candidate and a local Codex baseline sequence:
+`5.4 mini` low -> medium -> high, escalating to `5.4` only if mini cannot solve the task cleanly.
+Defined an OpenRouter comparison plan but did not run live calls.
+Recorded current local OpenRouter evidence in the matrix as local-only evidence:
+
+- `inclusionai/ring-2.6-1t`: promising but HOLD; missed risk flags, one timeout, and misclassified an `ASSIST` case as `ALLOW`.
+- `stepfun/step-3.7-flash`: best schema-valid candidate so far but HOLD; correct `DENY`/`ASSIST`, one `ALLOW` schema-extraction case as `UNKNOWN`, risk flags often missing.
+- `minimax/minimax-m3`: schema/provider incompatible with HTTP 200 top-level invalid-params error payloads.
+- `qwen/qwen3.7-plus`: strongest mode classifier so far but schema fail due missing required fields.
+- Free Gemma 26B: rate-limited/inconclusive.
+- Free Gemma 31B: unreliable/HOLD.
+- Nemotron Nano free: excluded/incompatible.
+
+No OpenRouter live calls were run.
+No broad Codex benchmark sweep was run.
 No production routing was approved.
+No Git staging, commit, push, tag, merge, release, or backlog update was performed.
 
 ## Changed Files
 - documentation/ai/CURRENT_STATE.md
 - documentation/codex/SKILL_USAGE_LOG.md
-- documentation/codex/openrouter-delegation/README.md
-- documentation/codex/openrouter-delegation/model_scoring_report.md
-- documentation/codex/openrouter-delegation/scripts/openrouter_delegation_benchmark.py
+- documentation/codex/model-routing/task_model_matrix.md
 
 ## Remote Sync Evidence
-- Latest synchronized patch commit: `3019b9fb` (`docs(codex): improve openrouter benchmark run feedback`)
-- Branch: `develop`
-- Remote: `backup/develop`
-- Verified after push: `HEAD`, `refs/remotes/backup/develop`, and `.git/FETCH_HEAD` resolved to `3019b9fb5729c41daa108106437484a02314398d`
+- Latest synchronized commit noted in prior state: `378a1c72c` (`docs(ai): reconcile openrouter run feedback sync state`) on `backup/develop`.
+- Branch context: `develop` / `backup/develop` workflow.
 - Generated benchmark JSON files remain untracked local evidence and were not staged or pushed.
+- This matrix and CURRENT_STATE update are local until a later explicit `janus-git-governance` commit/push.
+- GitHub or other remote readers may not contain the latest CURRENT_STATE.
 
 ## Tests / Validation
 - `python C:\Users\pruve\.codex\skills\codex-start-of-work-check\scripts\due_healthchecks.py` -> CLEAR
-- `python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py --validate-only` -> PASS
-- `python documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py --dry-run --models google/gemma-4-31b-it:free` -> PASS, no external prompts sent
-- `python -m py_compile documentation\codex\openrouter-delegation\scripts\openrouter_delegation_benchmark.py` -> PASS
-- JSON parse check for both OpenRouter schemas -> PASS
-- Progress output smoke test -> PASS; stderr progress contains task id/model id/status/elapsed only and excludes prompts/API-key test marker
-- Timeout classification smoke test -> PASS; external timeout records `request_timeout`
-- Timeout report-structure smoke test -> PASS; benchmark result keeps `schema_version`, `corpus_version`, cases, and `production_approved: false`
-- Finish-reason smoke test -> PASS; `length` maps to `truncated_json`, `error` maps to `provider_generation_error`, no signal maps to `invalid_json`
-- HTTP 429 smoke test -> PASS; classification is `rate_limited / HTTP 429`
-- HTTP 200 top-level error payload smoke test -> PASS; classification remains `OpenRouter error payload returned with HTTP 200`
-- Live gate without `--allow-external` -> blocked as expected before API-key use
-- Live gate with `--allow-external` but without `OPENROUTER_API_KEY` -> blocked as expected
-- Staged-only `janus-git-governance` guard for the progress/timeout/error-classification patch -> PASS
-- `git push backup develop` for `3019b9fb` -> PASS
-- Remote sync verification for `3019b9fb` -> PASS
+- Focused source reads of required OpenRouter, Codex workflow, pipeline, and installed Janus skill definitions -> PASS
+- `git diff --check -- documentation/codex/model-routing/task_model_matrix.md` -> PASS
+- Full changed-doc diff check pending after CURRENT_STATE and usage-log update.
 
 ## Open Risks
-- No live OpenRouter call has been run after this progress/timeout/classification patch.
-- Gemma 31B still needs a retry to determine whether invalid JSON rates improve with operator feedback and timeout controls.
-- `nvidia/nemotron-nano-9b-v2:free` remains excluded/incompatible pending a future provider response change.
-- Production routing remains `UNKNOWN`/disabled.
-- The existing worktree contains many pre-existing Janus product/test/documentation changes unrelated to this prototype; do not stage broadly.
-- This rolling snapshot records the synchronized `3019b9fb` patch state; the closeout response records the follow-up CURRENT_STATE reconciliation commit.
+- The matrix is proposed, not approved routing policy.
+- Local post-patch benchmark JSON evidence was reviewed by ChatGPT/user context but remains uncommitted local evidence; do not treat it as remote truth.
+- OpenRouter candidates are all HOLD/UNKNOWN/EXCLUDED until schema/risk-flag prompt improvements and local Codex mini baselines exist.
+- Mini-task definitions may need user/ChatGPT review before any baseline runs.
+- The existing worktree contains many unrelated pre-existing Janus product/test/documentation changes; do not stage broadly.
+- GitHub or other remotes will not see this local CURRENT_STATE until a later explicit `janus-git-governance` commit/push.
 
 ## Next Recommended Step for ChatGPT
-Use `backup/develop` commit `3019b9fb` as the shared state for the OpenRouter progress/timeout/error-classification patch.
+Review `documentation/codex/model-routing/task_model_matrix.md`, especially whether the five mini-candidate task classes are small enough and whether `documentation wording suggestion` should remain `ASSIST_ONLY`.
 
 ## Next Recommended Step for Codex
-After explicit user approval and a process-local `OPENROUTER_API_KEY`, the next optional live gate is a curated-corpus-only retry for `google/gemma-4-31b-it:free` using `--run-live --allow-external --debug-response-shape --request-timeout-seconds 120`. Do not run live calls, approve production routing, or delegate Git/final-audit/release decisions without separate explicit approval.
+After review, select exactly one mini-candidate task and prepare the smallest local Codex baseline case across `5.4 mini` low, medium, and high reasoning. Do not run OpenRouter live calls until the baseline exists and the harness prompt/schema/risk-flag fixes are planned.
 
 ## Last Updated
-2026-06-11 22:41 local time
+2026-06-12 01:58 local time
