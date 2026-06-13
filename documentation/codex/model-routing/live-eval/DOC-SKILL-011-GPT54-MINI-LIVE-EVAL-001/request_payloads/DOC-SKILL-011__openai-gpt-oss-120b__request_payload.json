@@ -1,0 +1,79 @@
+{
+  "status": "NOT RUN",
+  "role": "backup 1",
+  "task_id": "DOC-SKILL-011",
+  "fixture_id": "DOC-SKILL-011-GPT54-MINI-LIVE-EVAL-001",
+  "model_id": "openai/gpt-oss-120b",
+  "prompt_text": "You are assisting with DOC-SKILL-011: Record completed final-audit result in documentation.\n\nDraft sanitized documentation-status notes from the validated facts for local reviewer use.\n\nRequirements:\n- Use only the sanitized input.\n- Summarize validated facts only.\n- Preserve no-release-readiness boundaries.\n- Preserve no-production approval and no-routing approval boundaries.\n- Do not invent behavior.\n- Do not expand product scope.\n- Do not grant implementation, Git, release, repo-write, routing, or production authority.\n- Do not imply release readiness.\n- Keep the notes concise.\n\nReturn:\n1. Short title\n2. Bullets for validated facts\n3. Governance note\n",
+  "governance_constraints": [
+    "scope DOC-SKILL-011 only",
+    "no OpenRouter inference/model calls in this preparation step",
+    "no benchmark JSON generation",
+    "no routing decision",
+    "use only sanitized input",
+    "summarize validated facts only",
+    "preserve no-release-readiness boundaries",
+    "preserve no-production approval and no-routing approval boundaries",
+    "no invented behavior",
+    "no product-scope expansion",
+    "no semantic rewrite",
+    "no implementation authority",
+    "no Git authority",
+    "no release authority",
+    "no repo-write delegation",
+    "no production routing approval",
+    "no OpenRouter production activation",
+    "no raw private prompt or evidence exposure",
+    "stop after DOC-SKILL-011",
+    "do not batch DOC-SKILL-012 or later",
+    "do not mark any model as production-approved"
+  ],
+  "sanitized_input": {
+    "fixture_id": "DOC-SKILL-011-GPT54-MINI-LIVE-EVAL-001",
+    "task_id": "DOC-SKILL-011",
+    "task_name": "Record completed final-audit result in documentation",
+    "sanitized": true,
+    "contains_private_evidence": false,
+    "production_approved": false,
+    "routing_approved": false,
+    "summary_target": "documentation_status_bullets",
+    "source_notes": [
+      {
+        "item": "DOC-SKILL-010 task-level decision",
+        "facts": [
+          "selected external candidate qwen/qwen3.5-flash-02-23",
+          "status recorded as TASK_DECISION_RECORDED",
+          "no production routing decision",
+          "no canonical routing-table update"
+        ]
+      }
+    ],
+    "skill_usage_log_goals": [
+      "summarize validated facts only",
+      "avoid release readiness claims",
+      "avoid invented behavior",
+      "preserve no-production boundaries"
+    ],
+    "constraints": {
+      "must_preserve": [
+        "validated facts only",
+        "no release-readiness implication",
+        "no production approval",
+        "no routing approval",
+        "no repo-write delegation",
+        "no invented behavior",
+        "no production routing activation"
+      ],
+      "must_not_do": [
+        "claim release readiness",
+        "invent behavior",
+        "expand product scope",
+        "approve production routing",
+        "activate production routing",
+        "grant repo-write authority",
+        "grant Git authority",
+        "grant release authority"
+      ]
+    }
+  }
+}

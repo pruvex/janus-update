@@ -1,6 +1,6 @@
 # Documentation Skill GPT-5.4 Mini Task Eval Queue v1 - 2026-06-13
 
-Status: PLANNING + LIVE-EVAL CLOSEOUT / DOC-SKILL-010 TASK_DECISION_RECORDED / NO OPENROUTER INFERENCE
+Status: PLANNING + LIVE-EVAL CLOSEOUT / DOC-SKILL-010 TASK_DECISION_RECORDED / DOC-SKILL-011 NOT RUN / NO OPENROUTER INFERENCE
 
 ## Purpose
 
@@ -112,4 +112,15 @@ This artifact does not run model calls, fetch live pricing, generate benchmark J
 - A1 candidate set reference: `documentation/codex/model-routing/openrouter_doc_skill_a1_shortlist_2026-06-12.csv`
 - Reduced live-evaluation result: selected external candidate `qwen/qwen3.5-flash-02-23`; `openai/gpt-oss-20b` and `openai/gpt-oss-120b` were HOLD; `deepseek/deepseek-v4-flash` was NOT RUN / not needed after first PASS.
 - Status: TASK_DECISION_RECORDED
+- Note: Evaluate this task separately before moving to the next task.
+
+## DOC-SKILL-011 - Record completed final-audit result in documentation
+
+- Task id: DOC-SKILL-011
+- Routing-table summary: `POST_AUDIT_DOC_SYNC_ONLY` for recording an already completed final-audit result of `PASS` or `PASS WITH FIXES`; blocked for performing final audit, deciding audit outcome, release-gate authority, or readiness judgment.
+- Required model/reasoning: `5.4` medium after completed audit.
+- Proposed single-task fixture name: `DOC-SKILL-011-GPT54-MINI-LIVE-EVAL-001`
+- Prepared fixture path: `documentation/codex/model-routing/live-eval/DOC-SKILL-011-GPT54-MINI-LIVE-EVAL-001/`
+- Candidate strategy: default `openai/gpt-oss-20b`; backups `openai/gpt-oss-120b`, `qwen/qwen3.5-flash-02-23`, `deepseek/deepseek-v4-flash`.
+- Status: NOT RUN
 - Note: Evaluate this task separately before moving to the next task.
