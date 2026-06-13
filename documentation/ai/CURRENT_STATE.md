@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Draft a controlled `Auto-sparsam` mode proposal for the seven live-evidenced `5.4 mini` documentation skills while keeping the bounded mini evidence layer closed, the original first `DOC-SKILL-008` smoke-test row debug-only, and the separate `5.4` candidate phase paused.
+Draft the operator-invoked implementation plan for bounded `Auto-sparsam` mode across the seven live-evidenced `5.4 mini` documentation skills while keeping the bounded mini evidence layer closed, the original first `DOC-SKILL-008` smoke-test row debug-only, and the separate `5.4` candidate phase paused.
 
 ## Active Phase
-Documentation-skill mini Auto-sparsam proposal drafting. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The original first explicitly approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains debug failure evidence only because shell-side capture lost response body, `generation_id`, and `response_usage`. Accepted live evidence still consists only of the approved `DOC-SKILL-008` live retry, the accepted three-row mini batch for `DOC-SKILL-009`, `DOC-SKILL-010`, and `DOC-SKILL-006`, and the accepted three-row remaining mini batch for `DOC-SKILL-001`, `DOC-SKILL-002`, and `DOC-SKILL-003`. The new proposal adds a planning-only bounded `Auto-sparsam` operating mode for those seven skills with explicit cost, confidence, file-first telemetry, healthcheck ingestion, fallback, abort, and manual-review gates. This remains bounded local workflow planning only: no production routing, no canonical routing-table update, no `DOC-SKILL-011` run, no `DOC-SKILL-012` start, no release action, and no product-code change. The separate `5.4` candidate phase remains paused and planning-only.
+Documentation-skill mini Auto-sparsam implementation planning. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The original first explicitly approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains debug failure evidence only because shell-side capture lost response body, `generation_id`, and `response_usage`. Accepted live evidence still consists only of the approved `DOC-SKILL-008` live retry, the accepted three-row mini batch for `DOC-SKILL-009`, `DOC-SKILL-010`, and `DOC-SKILL-006`, and the accepted three-row remaining mini batch for `DOC-SKILL-001`, `DOC-SKILL-002`, and `DOC-SKILL-003`. The new implementation plan translates the proposal into an operator-invoked flow with allowed-skill detection, fixed per-skill model mapping, pre-call estimate and confidence displays, file-first wrapper invocation, session JSONL naming, required healthcheck ingestion, fallback-to-Codex-only behavior, manual-review triggers, abort rules, and required operator summary output. This remains bounded local workflow planning only: no production routing, no canonical routing-table update, no `DOC-SKILL-011` run, no `DOC-SKILL-012` start, no release action, and no product-code change. The separate `5.4` candidate phase remains paused and planning-only.
 
 ## Last Decision
 The documentation-skill routing table remains the canonical reference for documentation-skill model and scope boundaries.
@@ -39,7 +39,7 @@ The separate `5.4` candidate phase remains paused and planning-only.
 This cost-accounting planning step does not create a global model approval, does not mark any model production-approved, does not update the canonical routing table, does not run DOC-SKILL-011, does not continue the `5.4` candidate phase, and does not start DOC-SKILL-012.
 
 ## Last Codex Work
-Drafted a controlled `Auto-sparsam` mode proposal for the seven live-evidenced mini documentation skills. The proposal maps each approved skill to its selected OR model, keeps the first `DOC-SKILL-008` smoke-test row excluded as debug-only evidence, and defines bounded non-production gates for per-call cost, total session cost, pre-call estimate display, confidence display, mandatory file-first telemetry capture, mandatory healthcheck ingestion, fallback rules, abort rules, and manual-review triggers.
+Drafted the implementation plan for operator-invoked mini `Auto-sparsam` mode. The plan keeps the first `DOC-SKILL-008` smoke-test row excluded as debug-only evidence and defines the bounded execution flow from allowed-skill detection through model selection, pre-call estimate/confidence display, file-first wrapper invocation, telemetry session naming, healthcheck ingestion, fallback-to-Codex-only behavior, manual-review triggers, abort rules, operator summary output, and governance boundaries.
 
 The telemetry plan keeps the mini phase bounded to:
 
@@ -54,7 +54,7 @@ The telemetry plan keeps the mini phase bounded to:
 Exactly one approved OR call was attempted for the smoke test in the prior block. No second OR call was made in this debugging block, no production routing decision was made, no canonical routing-table update was made, no DOC-SKILL-011 run was started, and the separate `5.4` candidate phase was not continued.
 
 ## Changed Files
-- `documentation/codex/model-routing/doc_skill_gpt54_mini_auto_sparsam_mode_proposal_2026-06-13.md`
+- `documentation/codex/model-routing/doc_skill_gpt54_mini_auto_sparsam_implementation_plan_2026-06-13.md`
 - `documentation/ai/CURRENT_STATE.md`
 - `documentation/codex/SKILL_USAGE_LOG.md`
 - `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-001-openai-gpt-oss-20b/request_body.json`
