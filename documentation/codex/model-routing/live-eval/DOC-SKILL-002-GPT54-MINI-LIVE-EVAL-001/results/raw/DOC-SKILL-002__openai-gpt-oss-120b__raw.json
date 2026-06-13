@@ -1,0 +1,58 @@
+{
+  "request_model": "openai/gpt-oss-120b",
+  "http_status": 200,
+  "response": {
+    "id": "gen-1781346820-ncU2wFuxPFqwrp3ONI1o",
+    "object": "chat.completion",
+    "created": 1781346820,
+    "model": "openai/gpt-oss-120b",
+    "provider": "WandB",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "**1. Overall status**  \n- **HOLD** (as indicated in the report).\n\n**2. Per‑model scoring summary**  \n\n| Model | Score | Status | Routing state | Disabled | Notes |\n|-------|-------|--------|---------------|----------|-------|\n| **model_alpha** | 88 | PASS | HOLD | No | Met schema & preservation checks; repeatability confirmation still required before any routing discussion. |\n| **model_beta** | – (no score) | **UNKNOWN** | HOLD | **Yes** (disabled) – missing repeatability evidence. | Do not treat as PASS; disabled state must be preserved. |\n| **model_gamma** | 74 | **HOLD** | HOLD | No | Partial preservation of disabled‑state wording; no production activation allowed. |\n\n**3. Disabled / UNKNOWN / HOLD notes**  \n- **model_beta** is **disabled = true** and its status remains **UNKNOWN**; it must not be marked PASS.  \n- **model_gamma** remains in **HOLD** status.  \n- The overall report is in **HOLD**; no change to this state is permitted.\n\n**4. Final governance note**  \n- **production_approved = false** – production use must not be activated.  \n- **routing_approved = false** – routing cannot be approved.  \n- No routing approval, policy override, or production activation is performed.  \n- No private evidence is interpreted (the report contains none).  \n\nAll required HOLD, UNKNOWN, and disabled states are preserved per the DOC‑SKILL‑002 constraints.",
+          "refusal": null,
+          "reasoning": "We need to produce a concise summary with sections: overall status, per-model scoring summary, disabled/UNKNOWN/HOLD notes, final governance note. Must preserve states. Must explicitly state production_approved=false and routing_approved=false. Must not approve routing. Must not override policy. Must not activate production. Must not interpret private evidence. Must not convert UNKNOWN or disabled entries to PASS.\n\nSo produce something like:\n\nOverall status: HOLD.\n\nPer-model:\n- model_alpha: score 88, status PASS, routing_state HOLD, not disabled.\n- model_beta: score N/A, status UNKNOWN, routing_state HOLD, disabled true (missing repeatability evidence).\n- model_gamma: score 74, status HOLD, routing_state HOLD, not disabled.\n\nDisabled/UNKNOWN/HOLD notes: mention that model_beta is disabled, model_gamma is HOLD, overall HOLD, etc.\n\nFinal governance note: production_approved=false, routing_approved=false, no routing approval, no policy override, no production activation, etc.\n\nMake concise.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "We need to produce a concise summary with sections: overall status, per-model scoring summary, disabled/UNKNOWN/HOLD notes, final governance note. Must preserve states. Must explicitly state production_approved=false and routing_approved=false. Must not approve routing. Must not override policy. Must not activate production. Must not interpret private evidence. Must not convert UNKNOWN or disabled entries to PASS.\n\nSo produce something like:\n\nOverall status: HOLD.\n\nPer-model:\n- model_alpha: score 88, status PASS, routing_state HOLD, not disabled.\n- model_beta: score N/A, status UNKNOWN, routing_state HOLD, disabled true (missing repeatability evidence).\n- model_gamma: score 74, status HOLD, routing_state HOLD, not disabled.\n\nDisabled/UNKNOWN/HOLD notes: mention that model_beta is disabled, model_gamma is HOLD, overall HOLD, etc.\n\nFinal governance note: production_approved=false, routing_approved=false, no routing approval, no policy override, no production activation, etc.\n\nMake concise.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 767,
+      "completion_tokens": 538,
+      "total_tokens": 1305,
+      "cost": 0.000106,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 64,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.000106,
+        "upstream_inference_prompt_cost": 3.068e-05,
+        "upstream_inference_completions_cost": 7.532e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 262,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

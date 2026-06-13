@@ -1,0 +1,58 @@
+{
+  "request_model": "openai/gpt-oss-20b",
+  "http_status": 200,
+  "response": {
+    "id": "gen-1781346817-Zc308BicsqTd4vdKpMpa",
+    "object": "chat.completion",
+    "created": 1781346817,
+    "model": "openai/gpt-oss-20b",
+    "provider": "WandB",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "**1. Overall status**  \n- HOLD  \n\n**2. Per‑model scoring summary**  \n| Model | Score | Status | Routing State | Disabled | Notes |\n|-------|-------|--------|---------------|----------|-------|\n| model_alpha | 88 | PASS | HOLD | No | Met schema & preservation; repeatability confirmation pending |\n| model_beta | – | UNKNOWN | HOLD | Yes | Disabled – missing repeatability evidence; not scored as PASS |\n| model_gamma | 74 | HOLD | HOLD | No | Partial preservation of disabled‑state wording; no production activation |\n\n**3. Disabled / UNKNOWN / HOLD notes**  \n- `model_beta` remains **disabled** (reason: missing repeatability evidence) and its status is **UNKNOWN**; it is **not** treated as PASS.  \n- `model_gamma` is **HOLD**; no production activation is allowed.  \n- All models have a routing state of **HOLD**; no routing approval is granted.  \n\n**4. Final governance note**  \n- `production_approved = false`  \n- `routing_approved = false`  \n- No routing decisions, no policy overrides, and no production activation are made.",
+          "refusal": null,
+          "reasoning": "We need to produce a concise summary with the required sections. Must preserve states. Provide overall status, per-model scoring summary, disabled/UNKNOWN/HOLD notes, final governance note. Must explicitly state production_approved=false, routing_approved=false. Do not approve routing. Do not override policy. Do not activate production use. Do not interpret or invent private evidence. Do not convert UNKNOWN or disabled entries to PASS. Keep summary concise.\n\nWe need to output in plain text? The prompt says \"Return:\" with bullet points. Likely plain text. Provide sections.\n\nLet's craft:\n\n1. Overall status: HOLD\n\n2. Per-model scoring summary:\n- model_alpha: score 88, status PASS, routing_state HOLD, disabled false\n- model_beta: score null, status UNKNOWN, routing_state HOLD, disabled true\n- model_gamma: score 74, status HOLD, routing_state HOLD, disabled false\n\n3. Disabled/UNKNOWN/HOLD notes:\n- model_beta is disabled due to missing repeatability evidence; remains disabled.\n- model_beta status UNKNOWN; not scored as PASS.\n- model_gamma status HOLD; no production activation allowed.\n- All models have routing_state HOLD; no routing approval.\n\n4. Final governance note:\n- production_approved = false\n- routing_approved = false\n- No routing decisions, no policy override, no production activation.\n\nMake concise.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "We need to produce a concise summary with the required sections. Must preserve states. Provide overall status, per-model scoring summary, disabled/UNKNOWN/HOLD notes, final governance note. Must explicitly state production_approved=false, routing_approved=false. Do not approve routing. Do not override policy. Do not activate production use. Do not interpret or invent private evidence. Do not convert UNKNOWN or disabled entries to PASS. Keep summary concise.\n\nWe need to output in plain text? The prompt says \"Return:\" with bullet points. Likely plain text. Provide sections.\n\nLet's craft:\n\n1. Overall status: HOLD\n\n2. Per-model scoring summary:\n- model_alpha: score 88, status PASS, routing_state HOLD, disabled false\n- model_beta: score null, status UNKNOWN, routing_state HOLD, disabled true\n- model_gamma: score 74, status HOLD, routing_state HOLD, disabled false\n\n3. Disabled/UNKNOWN/HOLD notes:\n- model_beta is disabled due to missing repeatability evidence; remains disabled.\n- model_beta status UNKNOWN; not scored as PASS.\n- model_gamma status HOLD; no production activation allowed.\n- All models have routing_state HOLD; no routing approval.\n\n4. Final governance note:\n- production_approved = false\n- routing_approved = false\n- No routing decisions, no policy override, no production activation.\n\nMake concise.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 767,
+      "completion_tokens": 532,
+      "total_tokens": 1299,
+      "cost": 9.217e-05,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 32,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 9.217e-05,
+        "upstream_inference_prompt_cost": 2.301e-05,
+        "upstream_inference_completions_cost": 6.916e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 349,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}
