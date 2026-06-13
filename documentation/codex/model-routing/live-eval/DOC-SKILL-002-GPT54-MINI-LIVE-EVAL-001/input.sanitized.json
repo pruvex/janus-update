@@ -1,0 +1,66 @@
+{
+  "fixture_id": "DOC-SKILL-002-GPT54-MINI-LIVE-EVAL-001",
+  "task_id": "DOC-SKILL-002",
+  "task_name": "Summarize model scoring report",
+  "sanitized": true,
+  "contains_private_evidence": false,
+  "production_approved": false,
+  "routing_approved": false,
+  "summary_target": "model_scoring_report_summary",
+  "overall_status": "HOLD",
+  "scoring_report": {
+    "report_id": "SANITIZED-DOC-SKILL-002-SCORING-001",
+    "models": [
+      {
+        "model": "model_alpha",
+        "score": 88,
+        "status": "PASS",
+        "routing_state": "HOLD",
+        "disabled": false,
+        "notes": [
+          "Met schema and preservation checks",
+          "Needs repeatability confirmation before any routing discussion"
+        ]
+      },
+      {
+        "model": "model_beta",
+        "score": null,
+        "status": "UNKNOWN",
+        "routing_state": "HOLD",
+        "disabled": true,
+        "disabled_reason": "missing repeatability evidence",
+        "notes": [
+          "Do not score as PASS",
+          "Disabled state must be preserved"
+        ]
+      },
+      {
+        "model": "model_gamma",
+        "score": 74,
+        "status": "HOLD",
+        "routing_state": "HOLD",
+        "disabled": false,
+        "notes": [
+          "Partial preservation of disabled-state wording",
+          "No production activation allowed"
+        ]
+      }
+    ]
+  },
+  "constraints": {
+    "must_preserve": [
+      "HOLD",
+      "UNKNOWN",
+      "disabled=true",
+      "production_approved=false",
+      "routing_approved=false"
+    ],
+    "must_not_do": [
+      "approve routing",
+      "override policy",
+      "activate production",
+      "interpret private evidence",
+      "mark disabled model as PASS"
+    ]
+  }
+}

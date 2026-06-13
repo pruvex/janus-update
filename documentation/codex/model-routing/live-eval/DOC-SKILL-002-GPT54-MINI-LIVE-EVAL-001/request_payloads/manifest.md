@@ -1,0 +1,40 @@
+# DOC-SKILL-002 Request Payload Manifest
+
+Status: NOT RUN / NO OPENROUTER INFERENCE / NO RESULT JSON
+
+## Scope
+
+These request payloads are for DOC-SKILL-002 only. They prepare future request bodies for the reduced candidate strategy without sending OpenRouter requests, generating benchmark JSON, making routing decisions, or changing production status.
+
+## Candidate Strategy
+
+- Default external candidate: `openai/gpt-oss-20b`
+- Backups, only if needed:
+  1. `openai/gpt-oss-120b`
+  2. `qwen/qwen3.5-flash-02-23`
+  3. `deepseek/deepseek-v4-flash`
+
+## Source Files
+
+- `documentation/codex/model-routing/live-eval/DOC-SKILL-002-GPT54-MINI-LIVE-EVAL-001/input.sanitized.json`
+- `documentation/codex/model-routing/live-eval/DOC-SKILL-002-GPT54-MINI-LIVE-EVAL-001/prompt.md`
+- `documentation/codex/model-routing/live-eval/DOC-SKILL-002-GPT54-MINI-LIVE-EVAL-001/expected_reference.md`
+- `documentation/codex/model-routing/live-eval/DOC-SKILL-002-GPT54-MINI-LIVE-EVAL-001/live_eval_gate.md`
+
+## Generated Payload Files
+
+| role | candidate | payload_file | status |
+| --- | --- | --- | --- |
+| default | `openai/gpt-oss-20b` | `DOC-SKILL-002__openai-gpt-oss-20b__request_payload.json` | NOT RUN |
+| backup 1 | `openai/gpt-oss-120b` | `DOC-SKILL-002__openai-gpt-oss-120b__request_payload.json` | NOT RUN |
+| backup 2 | `qwen/qwen3.5-flash-02-23` | `DOC-SKILL-002__qwen-qwen3.5-flash-02-23__request_payload.json` | NOT RUN |
+| backup 3 | `deepseek/deepseek-v4-flash` | `DOC-SKILL-002__deepseek-deepseek-v4-flash__request_payload.json` | NOT RUN |
+
+## Governance
+
+- No OpenRouter inference/model calls were run.
+- No benchmark JSON was generated.
+- No routing decision was made.
+- No model is production-approved.
+- Status remains NOT RUN.
+- Stop after DOC-SKILL-002; do not batch DOC-SKILL-003 or later tasks.
