@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Close the remaining bounded mini OR live evidence batch for `DOC-SKILL-001`, `DOC-SKILL-002`, and `DOC-SKILL-003` with accepted file-first capture evidence, keep the original first `DOC-SKILL-008` smoke-test row as debug failure evidence only, and preserve the completed 5.4-mini phase boundaries while the separate `5.4` candidate phase remains paused.
+Close the `5.4 mini` OR live evidence layer across all seven approved mini skills, keep the original first `DOC-SKILL-008` smoke-test row as debug failure evidence only, and preserve the completed `5.4 mini` phase boundaries while the separate `5.4` candidate phase remains paused.
 
 ## Active Phase
-Documentation-skill remaining mini OR live evidence batch closure. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The original first approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains debug failure evidence only because shell-side capture lost response body, `generation_id`, and `response_usage`. The separately approved `DOC-SKILL-008` live retry remains accepted bounded telemetry evidence only. One controlled batch already executed `DOC-SKILL-009`, `DOC-SKILL-010`, and optional `DOC-SKILL-006` through the file-first wrapper. A second controlled remaining batch then executed exactly three live OR calls through the same file-first wrapper for `DOC-SKILL-001`, `DOC-SKILL-002`, and `DOC-SKILL-003`, each on `openai/gpt-oss-20b`. All three remaining calls stayed within the `0.0020` per-call cap and the `0.0060` batch cap, persisted file-first artifacts, recovered `generation_id` plus usage from `response_summary.json`, wrote accepted telemetry rows, and passed `health_snapshot.py --or-telemetry-jsonl` ingestion as a three-row batch. This remains bounded local telemetry evidence only: no production routing, no canonical routing-table update, no `DOC-SKILL-011` run, no `DOC-SKILL-012` start, no release action, and no product-code change. The separate `5.4` candidate phase remains paused and planning-only.
+Documentation-skill mini OR live evidence closeout. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The original first explicitly approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains debug failure evidence only because shell-side capture lost response body, `generation_id`, and `response_usage`. After that debug-only first row, all later explicitly approved live OR executions in this layer completed as bounded accepted telemetry: one approved `DOC-SKILL-008` live retry on `qwen/qwen3.5-flash-02-23`, one approved three-call mini batch for `DOC-SKILL-009`, `DOC-SKILL-010`, and optional `DOC-SKILL-006`, and one approved three-call remaining mini batch for `DOC-SKILL-001`, `DOC-SKILL-002`, and `DOC-SKILL-003`. All accepted live calls used the file-first wrapper, stayed within the approved cost caps, persisted response body plus `generation_id` and usage, wrote accepted telemetry rows, and passed `health_snapshot.py --or-telemetry-jsonl` ingestion. This remains bounded local telemetry evidence only: no production routing, no canonical routing-table update, no `DOC-SKILL-011` run, no `DOC-SKILL-012` start, no release action, and no product-code change. The separate `5.4` candidate phase remains paused and planning-only.
 
 ## Last Decision
 The documentation-skill routing table remains the canonical reference for documentation-skill model and scope boundaries.
@@ -39,7 +39,7 @@ The separate `5.4` candidate phase remains paused and planning-only.
 This cost-accounting planning step does not create a global model approval, does not mark any model production-approved, does not update the canonical routing table, does not run DOC-SKILL-011, does not continue the `5.4` candidate phase, and does not start DOC-SKILL-012.
 
 ## Last Codex Work
-Ran the controlled remaining mini live batch through the file-first wrapper for `DOC-SKILL-001`, `DOC-SKILL-002`, and `DOC-SKILL-003` on `openai/gpt-oss-20b`. The first orchestration attempt stopped before any accepted row because `DOC-SKILL-001` lacked `sanitized_input.task_name`; the bounded rerun used a safe task-name fallback and then completed cleanly. The remaining batch produced accepted telemetry rows for all three skills, with total actual OR cost `0.00031437`. Each call persisted `request_body.json`, `response_body.json`, `response_headers.txt`, `response_summary.json`, `stdout.log`, `stderr.log`, and `exit_code.txt`, and each accepted row recorded `generation_id`, usage, actual cost, and `validation_result=PASS`. `health_snapshot.py --or-telemetry-jsonl` successfully ingested the remaining batch file with `record_count=3`, `fallback_count=0`, `validation_result_counts={"PASS": 3}`, and `recommendation_signal_counts={"OR_PREFERRED": 3}`. The original first `DOC-SKILL-008` smoke-test result still remains debug-only because that earlier run lost response body, `generation_id`, and `response_usage`.
+Closed the mini OR live evidence layer with one consolidated closeout note that summarizes all seven accepted live telemetry rows across the approved `DOC-SKILL-008` retry, the accepted three-row mini batch, and the accepted three-row remaining mini batch. The closeout keeps the first `DOC-SKILL-008` smoke-test row excluded as debug-only evidence and fixes CURRENT_STATE wording so it now acknowledges every explicitly approved live OR call and batch in this layer instead of only the earliest smoke-test/retry chain.
 
 The telemetry plan keeps the mini phase bounded to:
 
@@ -55,6 +55,7 @@ Exactly one approved OR call was attempted for the smoke test in the prior block
 
 ## Changed Files
 - `documentation/codex/model-routing/scripts/or_file_first_capture_wrapper.ps1`
+- `documentation/codex/model-routing/doc_skill_gpt54_mini_or_live_evidence_closeout_2026-06-13.md`
 - `documentation/codex/model-routing/or_healthcheck_telemetry_mini_live_batch_remaining_2026-06-13.jsonl`
 - `documentation/codex/model-routing/or_healthcheck_mini_live_batch_remaining_result_2026-06-13.md`
 - `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-001-openai-gpt-oss-20b/request_body.json`
@@ -166,6 +167,7 @@ Exactly one approved OR call was attempted for the smoke test in the prior block
 - Separately approved single live retry attempted exactly once: PASS.
 - Controlled mini live evidence batch attempted `3` calls total: PASS.
 - Remaining mini live evidence batch attempted `3` calls total: PASS.
+- Mini OR live evidence closeout note exists: PASS.
 - Pre-call cost estimate under cap: PASS.
 - Direct shell-side response capture recovered `response_usage`: FAIL.
 - Fallback-estimate debug row created: PASS.
@@ -190,6 +192,10 @@ Exactly one approved OR call was attempted for the smoke test in the prior block
 - Remaining mini live batch total actual cost `0.00031437` <= `0.0060`: PASS.
 - `health_snapshot.py --or-telemetry-jsonl` reads the accepted remaining batch file: PASS.
 - Remaining mini live batch OR summary output matches the accepted remaining batch file: PASS.
+- All seven accepted telemetry rows are represented in the closeout: PASS.
+- Debug-only first `DOC-SKILL-008` smoke-test row remains excluded from accepted telemetry: PASS.
+- CURRENT_STATE wording bug fixed so all explicitly approved live OR calls and batches are acknowledged: PASS.
+- SKILL_USAGE_LOG updated for closeout: PASS.
 - Capture-debug note exists: PASS.
 - No new OR call was made in the capture-debug block: PASS.
 - Likely root cause documented: PASS.
@@ -233,4 +239,4 @@ Treat the first `DOC-SKILL-008` smoke-test row as debug-only, treat the accepted
 Stop after documentation/governance closeout, keep the accepted retry row plus both accepted mini batches as bounded smoke-test evidence only, and do not continue into any further OR call or `5.4` candidate work without a new explicit request.
 
 ## Last Updated
-2026-06-13 20:30 local time
+2026-06-13 20:39 local time
