@@ -43,6 +43,14 @@ Every OR-routed activity should be recordable with these fields:
 - `estimated_prompt_tokens`
 - `estimated_completion_tokens`
 - `estimated_or_cost`
+- `cost_estimate_confidence_percent`
+- `cost_estimate_sample_count`
+- `cost_estimate_mean_abs_error_percent`
+- `cost_estimate_p50_error_percent`
+- `cost_estimate_p90_error_percent`
+- `cost_estimate_basis`
+- `prompt_template_hash`
+- `task_variant`
 - `price_snapshot_source`
 - `price_snapshot_timestamp`
 - `actual_prompt_tokens`
@@ -74,6 +82,14 @@ Every OR-routed activity should be recordable with these fields:
 - `estimated_prompt_tokens`: predicted prompt-token count before the OR call.
 - `estimated_completion_tokens`: predicted completion-token count before the OR call.
 - `estimated_or_cost`: planned OR spend estimate from the current price snapshot.
+- `cost_estimate_confidence_percent`: confidence score for the current OR cost estimate based on comparable historical runs.
+- `cost_estimate_sample_count`: number of comparable historical runs used for the confidence calculation.
+- `cost_estimate_mean_abs_error_percent`: historical mean absolute percent error for comparable runs.
+- `cost_estimate_p50_error_percent`: median historical percent error for comparable runs.
+- `cost_estimate_p90_error_percent`: p90 historical percent error for comparable runs.
+- `cost_estimate_basis`: short label describing the comparison cohort, such as `model+skill+prompt_template`.
+- `prompt_template_hash`: stable hash for the prompt template family used by the workflow.
+- `task_variant`: bounded variant label for the task shape, such as `summary_short`, `handoff_gate`, or `format_mechanical`.
 - `price_snapshot_source`: source for the model price snapshot used in the estimate.
 - `price_snapshot_timestamp`: timestamp of the price snapshot used for the estimate.
 - `actual_prompt_tokens`: prompt-token count reported after the OR call when available.
@@ -107,6 +123,13 @@ estimated_or_cost =
 ```
 
 If the price model exposes one blended output rate rather than separate completion categories, use the best bounded approximation from the active price snapshot and note it in `quality_notes`.
+
+The estimate should also carry a confidence envelope derived from comparable historical rows grouped by:
+
+- `or_model`
+- `skill_id`
+- `prompt_template_hash`
+- `task_variant`
 
 ### Post-call Actual Cost Capture
 
@@ -151,6 +174,95 @@ estimation_error_percent =
 
 If `estimated_or_cost` is zero or unavailable, leave `estimation_error_percent` blank or `N_A`.
 
+## Confidence And Historical Accuracy
+
+### Confidence Calculation
+
+Compute estimate confidence from comparable historical rows where both `estimated_or_cost` and `actual_or_cost` exist.
+
+Suggested cohort basis:
+
+```text
+cost_estimate_basis = or_model + skill_id + prompt_template_hash + task_variant
+```
+
+For the active cohort:
+
+1. count comparable rows into `cost_estimate_sample_count`
+2. compute absolute percent error for each row
+3. summarize:
+   - `cost_estimate_mean_abs_error_percent`
+   - `cost_estimate_p50_error_percent`
+   - `cost_estimate_p90_error_percent`
+4. convert those error bands into `cost_estimate_confidence_percent`
+
+Suggested planning conversion:
+
+```text
+base_confidence =
+  100
+  - min(cost_estimate_mean_abs_error_percent, 60)
+  - min(cost_estimate_p90_error_percent / 2, 25)
+```
+
+Then cap the result by sample-count tier and any degradation rules below.
+
+### Sample Count Thresholds
+
+Use these confidence tiers:
+
+- `low confidence`: `cost_estimate_sample_count < 5`
+- `medium confidence`: `cost_estimate_sample_count >= 5` and `< 15`
+- `high confidence`: `cost_estimate_sample_count >= 15`
+
+Suggested caps:
+
+- low confidence cap: `55%`
+- medium confidence cap: `80%`
+- high confidence cap: `95%`
+
+### Reset Or Degrade Rules For Price Snapshot Changes
+
+When the active `price_snapshot_source` or effective price snapshot changes materially:
+
+- keep historical rows for audit, but do not treat them as full-confidence matches
+- degrade carried confidence for the first new-price estimates
+- if the price structure changed substantially, reset the cohort to a fresh baseline
+
+Suggested planning rule:
+
+- minor snapshot refresh with same pricing structure: degrade confidence by `10` points
+- changed prompt/output rates for the same model: degrade confidence by `25` points
+- changed billing structure or missing comparability: reset to low-confidence tier
+
+### Reset Or Degrade Rules For Prompt Template Changes
+
+When `prompt_template_hash` changes:
+
+- do not reuse the previous cohort as a direct full-confidence basis
+- treat the new hash as a distinct cohort in `cost_estimate_basis`
+- if only tiny wording changed but task shape is the same, older rows may be referenced only as weak prior evidence
+
+Suggested planning rule:
+
+- same hash: normal cohort reuse
+- new hash, same `task_variant`: degrade confidence by `20` points until at least `5` new samples exist
+- new hash, changed `task_variant`: reset to low-confidence tier
+
+### Startup Prompt Display Format
+
+When a workflow start screen later shows OR cost guidance, use:
+
+```text
+Estimated OR cost: <estimated_or_cost> | Confidence: <cost_estimate_confidence_percent>% | Samples: <cost_estimate_sample_count> | Avg error: <cost_estimate_mean_abs_error_percent>%
+```
+
+If no reliable cohort exists, show:
+
+```text
+Estimated OR cost: <estimated_or_cost or N_A> | Confidence: LOW | Samples: 0-4 | Avg error: N_A
+```
+
 ## Healthcheck Outputs
 
 The Codex healthcheck extension should summarize OR telemetry into these outputs:
@@ -165,6 +277,7 @@ The Codex healthcheck extension should summarize OR telemetry into these outputs
 - `price snapshot coverage summary`
 - `usage accounting completeness summary`
 - `estimation error summary`
+- `estimate confidence summary`
 
 ## Output Interpretation
 
@@ -230,6 +343,15 @@ When both predicted and actual costs exist, summarize:
 - worst underestimate
 - skills or models with repeated error drift
 
+### Estimate confidence summary
+
+Summarize:
+
+- rows in low / medium / high confidence tiers
+- top cohorts with strong prediction stability
+- cohorts that were reset after price or prompt changes
+- average displayed confidence vs realized mean absolute error
+
 ### Time delta summary
 
 When latency or local effort proxies exist, compare:
@@ -263,6 +385,7 @@ Healthcheck optimization reports should prefer these summary fields when availab
 - top `or_model` by validation stability
 - cost prediction accuracy band
 - usage accounting completeness rate
+- estimate confidence tier distribution
 - median latency by model
 - OR-vs-Codex cost delta trend
 - recommendation signal distribution
